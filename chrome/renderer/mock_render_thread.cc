@@ -97,8 +97,9 @@ void MockRenderThread::OnMsgCreateWidget(int opener_id,
 }
 
 void MockRenderThread::OnMsgOpenChannelToExtension(
-    int routing_id, const std::string& extension_id, int* channel_id) {
-  *channel_id = 0;
+    int routing_id, const std::string& extension_id,
+    const std::string& channel_name, int* port_id) {
+  *port_id = 0;
 }
 
 void MockRenderThread::OnDuplicateSection(

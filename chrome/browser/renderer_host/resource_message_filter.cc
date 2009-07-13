@@ -884,9 +884,10 @@ void ResourceMessageFilter::OnFreeTransportDIB(
 #endif
 
 void ResourceMessageFilter::OnOpenChannelToExtension(
-    int routing_id, const std::string& extension_id, int* port_id) {
+    int routing_id, const std::string& extension_id,
+    const std::string& channel_name, int* port_id) {
   *port_id = ExtensionMessageService::GetInstance(request_context_.get())->
-      OpenChannelToExtension(routing_id, extension_id, this);
+      OpenChannelToExtension(routing_id, extension_id, channel_name, this);
 }
 
 bool ResourceMessageFilter::CheckBenchmarkingEnabled() {

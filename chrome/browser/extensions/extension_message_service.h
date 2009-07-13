@@ -19,15 +19,27 @@ class RenderProcessHost;
 class ResourceMessageFilter;
 class URLRequestContext;
 
-// This class manages message passing between renderer processes.  It maintains
-// a list of available extensions and which renderers each lives in, as well as
-// a set of open channels.
+// This class manages message and event passing between renderer processes.
+// It maintains a list of processes that are listening to events (including
+// messaging events), as well as a set of open channels.
+// 
+// Messaging works this way:
+// - An extension-owned script context (like a toolstrip or a content script)
+// adds an event listener to the "onConnect" event.  We keep track here of a
+// list of "listeners" that registered interest in receiving extension
+// messages.
+// - Another context calls "connect()" to open a channel to every listener
+// owned by the same extension.  This is a broadcast event, so every listener
+// will get notified.
+// - Once the channel is established, either side can call postMessage to send
+// a message to the opposite side of the channel, which may have multiple
+// listeners.
 //
 // Terminology:
-// channel: connection between two ports (one of which belongs to an extension)
-// port: an IPC::Message::Sender interface through which we communicate to a
-//   process.  We use MessageFilters for this since that allows us to send our
-//   messages on the IO thread.
+// channel: connection between two ports (one side of which can have multiple
+// listeners)
+// port: one or more IPC::Message::Sender interfaces through which we
+// communicate to process(es).  These are generally RenderProcessHosts.
 class ExtensionMessageService : public NotificationObserver {
  public:
   // Javascript function name constants.
@@ -35,6 +47,7 @@ class ExtensionMessageService : public NotificationObserver {
   static const char kDispatchOnDisconnect[];
   static const char kDispatchOnMessage[];
   static const char kDispatchEvent[];
+  static const char kDispatchError[];
 
   // Returns the message service for the given context.  Messages can only
   // be sent within a single context.
@@ -78,11 +91,13 @@ class ExtensionMessageService : public NotificationObserver {
   // --- IO thread only:
 
   // Given an extension's ID, opens a channel between the given renderer "port"
-  // and that extension.  Returns a channel ID to be used for posting messages
-  // between the processes, or -1 if the extension doesn't exist.
+  // and every listening context owned by that extension.  Returns a port ID
+  // to be used for posting messages between the processes.  |channel_name| is
+  // an optional identifier for use by extension developers.
   // This runs on the IO thread so that it can be used in a synchronous IPC
   // message.
   int OpenChannelToExtension(int routing_id, const std::string& extension_id,
+                             const std::string& channel_name,
                              ResourceMessageFilter* source);
   
  private:
@@ -110,16 +125,17 @@ class ExtensionMessageService : public NotificationObserver {
 
   // --- UI thread only:
 
-  // Handles channel creation and notifies the destination that a channel was
+  // Handles channel creation and notifies the destinations that a channel was
   // opened.
   void OpenChannelOnUIThread(int source_routing_id,
       int source_port_id, int source_process_id,
-      const std::string& extension_id);
+      const std::string& extension_id, const std::string& channel_name);
 
   // Common between OpenChannelOnUIThread and OpenAutomationChannelToExtension.
   void OpenChannelOnUIThreadImpl(
     int source_routing_id, int source_port_id, int source_process_id,
-    IPC::Message::Sender* source, const std::string& extension_id);
+    IPC::Message::Sender* source, const std::string& extension_id,
+    const std::string& channel_name);
 
   NotificationRegistrar registrar_;
 

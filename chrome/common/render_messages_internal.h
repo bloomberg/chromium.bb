@@ -1403,12 +1403,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_ForwardToWorker,
                        IPC::Message /* message */)
 
-  // Get a port handle to a currently-running extension process for the
-  // extension with the given ID.  If no such extension is found, -1 is
-  // returned.  The handle can be used for sending messages to the extension.
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_OpenChannelToExtension,
+  // Open a channel to all listening contexts owned by the extension with
+  // the given ID.  This always returns a valid port ID which can be used for
+  // sending messages.  If an error occurred, the opener will be notified
+  // asynchronously.
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_OpenChannelToExtension,
                               int /* routing_id */,
                               std::string /* extension_id */,
+                              std::string /* channel_name */,
                               int /* port_id */)
 
   // Get a port handle to the given tab's process.  The handle can be used for

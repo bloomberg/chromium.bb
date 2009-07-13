@@ -42,13 +42,15 @@ struct SingletonData {
   InstanceMap map;
 };
 
-static void DispatchOnConnect(IPC::Message::Sender* channel, int source_port_id,
+static void DispatchOnConnect(IPC::Message::Sender* channel, int dest_port_id,
+                              const std::string& channel_name,
                               const std::string& tab_json,
                               const std::string& extension_id) {
   ListValue args;
-  args.Set(0, Value::CreateIntegerValue(source_port_id));
-  args.Set(1, Value::CreateStringValue(tab_json));
-  args.Set(2, Value::CreateStringValue(extension_id));
+  args.Set(0, Value::CreateIntegerValue(dest_port_id));
+  args.Set(1, Value::CreateStringValue(channel_name));
+  args.Set(2, Value::CreateStringValue(tab_json));
+  args.Set(3, Value::CreateStringValue(extension_id));
   channel->Send(new ViewMsg_ExtensionMessageInvoke(
       ExtensionMessageService::kDispatchOnConnect, args));
 }
@@ -172,7 +174,7 @@ void ExtensionMessageService::AllocatePortIdPair(int* port1, int* port2) {
 
 int ExtensionMessageService::OpenChannelToExtension(
     int routing_id, const std::string& extension_id,
-    ResourceMessageFilter* source) {
+    const std::string& channel_name, ResourceMessageFilter* source) {
   DCHECK_EQ(MessageLoop::current(),
             ChromeThread::GetMessageLoop(ChromeThread::IO));
   DCHECK(initialized_);
@@ -182,24 +184,29 @@ int ExtensionMessageService::OpenChannelToExtension(
   int port2_id = -1;
   AllocatePortIdPair(&port1_id, &port2_id);
 
+  // Each side of the port is given his own port ID.  When they send messages,
+  // we convert to the opposite port ID.  See PostMessageFromRenderer.
   ui_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &ExtensionMessageService::OpenChannelOnUIThread,
-          routing_id, port1_id, source->GetProcessId(), extension_id));
+          routing_id, port2_id, source->GetProcessId(), extension_id,
+          channel_name));
 
-  return port2_id;
+  return port1_id;
 }
 
 void ExtensionMessageService::OpenChannelOnUIThread(
-    int source_routing_id, int source_port_id, int source_process_id,
-    const std::string& extension_id) {
+    int source_routing_id, int receivers_port_id, int source_process_id,
+    const std::string& extension_id, const std::string& channel_name) {
   RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
-  OpenChannelOnUIThreadImpl(source_routing_id, source_port_id,
-                            source_process_id, source, extension_id);
+  OpenChannelOnUIThreadImpl(source_routing_id, receivers_port_id,
+                            source_process_id, source, extension_id,
+                            channel_name);
 }
 
 void ExtensionMessageService::OpenChannelOnUIThreadImpl(
-    int source_routing_id, int source_port_id, int source_process_id,
-    IPC::Message::Sender* source, const std::string& extension_id) {
+    int source_routing_id, int receivers_port_id, int source_process_id,
+    IPC::Message::Sender* source, const std::string& extension_id,
+    const std::string& channel_name) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   if (!source)
@@ -224,7 +231,7 @@ void ExtensionMessageService::OpenChannelOnUIThreadImpl(
     return;
   }
 
-  channels_[GET_CHANNEL_ID(source_port_id)] = channel;
+  channels_[GET_CHANNEL_ID(receivers_port_id)] = channel;
 
   // Include info about the opener's tab (if it was a tab).
   std::string tab_json = "null";
@@ -239,7 +246,8 @@ void ExtensionMessageService::OpenChannelOnUIThreadImpl(
   // port ID (the opener has the opposite port ID).
   for (MessageChannel::Ports::iterator it = channel->receivers.begin();
        it != channel->receivers.end(); ++it) {
-    DispatchOnConnect(*it, source_port_id, tab_json, extension_id);
+    DispatchOnConnect(*it, receivers_port_id, channel_name, tab_json,
+                      extension_id);
   }
 }
 
@@ -259,10 +267,10 @@ int ExtensionMessageService::OpenAutomationChannelToExtension(
   //      This isn't really appropriate here, the originating tab
   //      information should be supplied by the caller for
   //      automation-initiated ports.
-  OpenChannelOnUIThreadImpl(routing_id, port1_id, source_process_id,
-                            source, extension_id);
+  OpenChannelOnUIThreadImpl(routing_id, port2_id, source_process_id,
+                            source, extension_id, "");
 
-  return port2_id;
+  return port1_id;
 }
 
 void ExtensionMessageService::CloseChannel(int port_id) {
@@ -292,23 +300,23 @@ void ExtensionMessageService::CloseChannelImpl(
 }
 
 void ExtensionMessageService::PostMessageFromRenderer(
-    int dest_port_id, const std::string& message) {
+    int source_port_id, const std::string& message) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   MessageChannelMap::iterator iter =
-      channels_.find(GET_CHANNEL_ID(dest_port_id));
+      channels_.find(GET_CHANNEL_ID(source_port_id));
   if (iter == channels_.end())
     return;
 
   // Figure out which port the ID corresponds to.
+  int dest_port_id = GET_OPPOSITE_PORT_ID(source_port_id);
   MessageChannel::Ports* ports =
       IS_OPENER_PORT_ID(dest_port_id) ?
           &iter->second->opener : &iter->second->receivers;
-  int source_port_id = GET_OPPOSITE_PORT_ID(dest_port_id);
 
   for (MessageChannel::Ports::iterator it = ports->begin();
        it != ports->end(); ++it) {
-    DispatchOnMessage(*it, message, source_port_id);
+    DispatchOnMessage(*it, message, dest_port_id);
   }
 }
 

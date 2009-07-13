@@ -9,11 +9,13 @@
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static void DispatchOnConnect(int source_port_id, const std::string& tab_json) {
+static void DispatchOnConnect(int source_port_id, const std::string& name,
+                              const std::string& tab_json) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(source_port_id));
-  args.Set(1, Value::CreateStringValue(tab_json));
-  args.Set(2, Value::CreateStringValue(""));  // extension ID is empty for tests
+  args.Set(1, Value::CreateStringValue(name));
+  args.Set(2, Value::CreateStringValue(tab_json));
+  args.Set(3, Value::CreateStringValue(""));  // extension ID is empty for tests
   RendererExtensionBindings::Invoke(
       ExtensionMessageService::kDispatchOnConnect, args);
 }
@@ -40,7 +42,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   LoadHTML("<body></body>");
   ExecuteJavaScript(
     "var e = new chrome.Extension('foobar');"
-    "var port = e.connect();"
+    "var port = e.connect('testName');"
     "port.onMessage.addListener(doOnMessage);"
     "port.postMessage({message: 'content ready'});"
     "function doOnMessage(msg, port) {"
@@ -51,7 +53,11 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   const IPC::Message* open_channel_msg =
       render_thread_.sink().GetUniqueMessageMatching(
           ViewHostMsg_OpenChannelToExtension::ID);
-  EXPECT_TRUE(open_channel_msg);
+  ASSERT_TRUE(open_channel_msg);
+  void* iter = IPC::SyncMessage::GetDataIterator(open_channel_msg);
+  ViewHostMsg_OpenChannelToExtension::SendParam open_params;
+  ASSERT_TRUE(IPC::ReadParam(open_channel_msg, &iter, &open_params));
+  EXPECT_EQ("testName", open_params.c);
 
   const IPC::Message* post_msg =
       render_thread_.sink().GetUniqueMessageMatching(
@@ -71,7 +77,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
       render_thread_.sink().GetUniqueMessageMatching(
           ViewHostMsg_RunJavaScriptMessage::ID);
   ASSERT_TRUE(alert_msg);
-  void* iter = IPC::SyncMessage::GetDataIterator(alert_msg);
+  iter = IPC::SyncMessage::GetDataIterator(alert_msg);
   ViewHostMsg_RunJavaScriptMessage::SendParam alert_param;
   ASSERT_TRUE(IPC::ReadParam(alert_msg, &iter, &alert_param));
   EXPECT_EQ(L"content got: 42", alert_param.a);
@@ -86,7 +92,8 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
     "  port.test = 24;"
     "  port.onMessage.addListener(doOnMessage);"
     "  port.onDisconnect.addListener(doOnDisconnect);"
-    "  port.postMessage({message: 'onconnect from ' + port.tab.url});"
+    "  port.postMessage({message: 'onconnect from ' + port.tab.url + "
+    "                   ' name ' + port.name});"
     "});"
     "function doOnMessage(msg, port) {"
     "  alert('got: ' + msg.val);"
@@ -99,7 +106,8 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
 
   // Simulate a new connection being opened.
   const int kPortId = 0;
-  DispatchOnConnect(kPortId, "{\"url\":\"foo://bar\"}");
+  const std::string kPortName = "testName";
+  DispatchOnConnect(kPortId, kPortName, "{\"url\":\"foo://bar\"}");
 
   // Verify that we handled the new connection by posting a message.
   const IPC::Message* post_msg =
@@ -108,7 +116,9 @@ TEST_F(RenderViewTest, ExtensionMessagesOnConnect) {
   ASSERT_TRUE(post_msg);
   ViewHostMsg_ExtensionPostMessage::Param post_params;
   ViewHostMsg_ExtensionPostMessage::Read(post_msg, &post_params);
-  EXPECT_EQ("{\"message\":\"onconnect from foo://bar\"}", post_params.b);
+  std::string expected_msg =
+      "{\"message\":\"onconnect from foo://bar name " + kPortName + "\"}";
+  EXPECT_EQ(expected_msg, post_params.b);
 
   // Now simulate getting a message back from the channel opener.
   render_thread_.sink().ClearMessages();

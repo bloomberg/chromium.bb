@@ -79,9 +79,9 @@ class MockRenderThread : public RenderThreadBase {
                          int* route_id);
 
   // The callee expects to be returned a valid channel_id.
-  void OnMsgOpenChannelToExtension(int routing_id,
-                                   const std::string& extension_id,
-                                   int* channel_id);
+  void OnMsgOpenChannelToExtension(
+      int routing_id, const std::string& extension_id,
+      const std::string& channel_name, int* port_id);
 
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
                           base::SharedMemoryHandle* browser_handle);

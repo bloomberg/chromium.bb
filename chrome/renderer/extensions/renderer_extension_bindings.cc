@@ -61,11 +61,12 @@ class ExtensionImpl : public ExtensionBase {
     if (!renderview)
       return v8::Undefined();
 
-    if (args.Length() >= 1 && args[0]->IsString()) {
+    if (args.Length() >= 2 && args[0]->IsString() && args[1]->IsString()) {
       std::string id = *v8::String::Utf8Value(args[0]->ToString());
+      std::string channel_name = *v8::String::Utf8Value(args[1]->ToString());
       int port_id = -1;
       renderview->Send(new ViewHostMsg_OpenChannelToExtension(
-          renderview->routing_id(), id, &port_id));
+          renderview->routing_id(), id, channel_name, &port_id));
       return v8::Integer::New(port_id);
     }
     return v8::Undefined();

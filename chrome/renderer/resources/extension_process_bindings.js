@@ -7,6 +7,9 @@
 // have your change take effect.
 // -----------------------------------------------------------------------------
 
+// This script contains privileged chrome extension related javascript APIs.
+// It is loaded by pages whose URL has the chrome-extension protocol.
+
 var chrome = chrome || {};
 (function() {
   native function GetViews();

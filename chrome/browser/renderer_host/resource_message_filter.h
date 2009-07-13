@@ -218,8 +218,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                            TransportDIB::Handle* result);
   void OnFreeTransportDIB(TransportDIB::Id dib_id);
 
-  void OnOpenChannelToExtension(int routing_id,
-                                const std::string& extension_id, int* port_id);
+  void OnOpenChannelToExtension(int routing_id, const std::string& extension_id,
+                                const std::string& channel_name, int* port_id);
 
   void OnCloseIdleConnections();
   void OnSetCacheMode(bool enabled);

@@ -7,6 +7,13 @@
 // have your change take effect.
 // -----------------------------------------------------------------------------
 
+// This script contains unprivileged javascript APIs related to chrome
+// extensions.  It is loaded by any extension-related context, such as content
+// scripts or toolstrips.
+// See user_script_slave.cc for script that is loaded by content scripts only.
+// TODO(mpcomplete): we also load this in regular web pages, but don't need
+// to.
+
 var chrome = chrome || {};
 (function () {
   native function OpenChannelToExtension(id);
@@ -21,8 +28,9 @@ var chrome = chrome || {};
 
   // Port object.  Represents a connection to another script context through
   // which messages can be passed.
-  chrome.Port = function(portId) {
+  chrome.Port = function(portId, opt_name) {
     this.portId_ = portId;
+    this.name = opt_name;
     this.onDisconnect = new chrome.Event();
     this.onMessage = new chrome.Event();
   };
@@ -31,11 +39,11 @@ var chrome = chrome || {};
 
   // Hidden port creation function.  We don't want to expose an API that lets
   // people add arbitrary port IDs to the port list.
-  chromeHidden.Port.createPort = function(portId) {
+  chromeHidden.Port.createPort = function(portId, opt_name) {
     if (ports[portId]) {
       throw new Error("Port '" + portId + "' already exists.");
     }
-    var port = new chrome.Port(portId);
+    var port = new chrome.Port(portId, opt_name);
     ports[portId] = port;
     chromeHidden.onUnload.addListener(function() {
       port.disconnect();
@@ -44,14 +52,15 @@ var chrome = chrome || {};
   }
 
   // Called by native code when a channel has been opened to this context.
-  chromeHidden.Port.dispatchOnConnect = function(portId, tab, extensionId) {
+  chromeHidden.Port.dispatchOnConnect = function(portId, channelName, tab,
+                                                 extensionId) {
     // Only create a new Port if someone is actually listening for a connection.
     // In addition to being an optimization, this also fixes a bug where if 2
     // channels were opened to and from the same process, closing one would
     // close both.
     var connectEvent = "channel-connect:" + extensionId;
     if (chromeHidden.Event.hasListener(connectEvent)) {
-      var port = chromeHidden.Port.createPort(portId);
+      var port = chromeHidden.Port.createPort(portId, channelName);
       if (tab) {
         tab = JSON.parse(tab);
       }
@@ -103,11 +112,11 @@ var chrome = chrome || {};
 
   // Opens a message channel to the extension.  Returns a Port for
   // message passing.
-  chrome.Extension.prototype.connect = function() {
-    var portId = OpenChannelToExtension(this.id_);
+  chrome.Extension.prototype.connect = function(opt_name) {
+    var portId = OpenChannelToExtension(this.id_, opt_name || "");
     if (portId == -1)
       throw new Error("No such extension: '" + this.id_ + "'");
-    return chromeHidden.Port.createPort(portId);
+    return chromeHidden.Port.createPort(portId, opt_name);
   };
 
   // Returns a resource URL that can be used to fetch a resource from this
