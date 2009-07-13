@@ -93,7 +93,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
 
   // Destruction can happen on either UI thread or IO thread, but at destruction
   // all associated sources are destroyed and streams are closed.
-  ~AudioRendererHost();
+  virtual ~AudioRendererHost();
 
   // Called from UI thread from the owner of this object to kick start
   // destruction of streams in IO thread.
