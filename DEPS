@@ -52,14 +52,11 @@ deps = {
   "src/third_party/WebKit/WebCore":
     Var("webkit_trunk") + "/WebCore@" + Var("webkit_revision"),
 
-  "src/third_party/WebKit/WebKitLibraries":
-    Var("webkit_trunk") + "/WebKitLibraries@" + Var("webkit_revision"),
-
   "src/third_party/tcmalloc/tcmalloc":
     "http://google-perftools.googlecode.com/svn/trunk@74",
 
   "src/tools/page_cycler/acid3":
-      "/trunk/deps/page_cycler/acid3@19546",
+    "/trunk/deps/page_cycler/acid3@19546",
     
   # TODO(jianli): Remove this once we do not need to run worker's layout tests
   # in ui test.
@@ -89,6 +86,8 @@ deps_os = {
       "http://pdfsqueeze.googlecode.com/svn/trunk@2",
     "src/third_party/WebKit/WebKit/mac":
       Var("webkit_trunk") + "/WebKit/mac@" + Var("webkit_revision"),
+    "src/third_party/WebKit/WebKitLibraries":
+      Var("webkit_trunk") + "/WebKitLibraries@" + Var("webkit_revision"),
   },
   "unix": {
     # Linux, really.
