@@ -936,9 +936,8 @@ void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext context,
   cairo_set_source_surface(cairo, cairo_get_target(context),
                            plugin_rect_.x(), plugin_rect_.y());
   cairo_paint(cairo);
-  cairo_destroy(cairo);
   // We have no endPlatformPaint() on the Linux PlatformDevice.
-  // The surface is owned by the device.
+  // The cairo_t* is owned by the device.
 #elif defined(OS_MACOSX)
   canvas.getTopPlatformDevice().DrawToContext(
       context, plugin_rect_.x(), plugin_rect_.y(), NULL);
