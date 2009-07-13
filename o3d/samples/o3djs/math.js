@@ -108,29 +108,48 @@ o3djs.provide('o3djs.math');
 o3djs.math = o3djs.math || {};
 
 /**
+ * A random seed for the pseudoRandom function.
+ * @private
+ * @type {number}
+ */
+o3djs.math.randomSeed_ = 0;
+
+/**
+ * A constant for the pseudoRandom function
+ * @private
+ * @type {number}
+ */
+o3djs.math.RANDOM_RANGE_ = Math.pow(2, 32);
+
+/**
  * Functions which deal with 4-by-4 transformation matrices are kept in their
  * own namespsace.
+ * @namespace
  */
 o3djs.math.matrix4 = o3djs.math.matrix4 || {};
 
 /**
  * Functions that are specifically row major are kept in their own namespace.
+ * @namespace
  */
 o3djs.math.rowMajor = o3djs.math.rowMajor || {};
 
 /**
  * Functions that are specifically column major are kept in their own namespace.
+ * @namespace
  */
 o3djs.math.columnMajor = o3djs.math.columnMajor || {};
 
 /**
  * Functions that do error checking are stored in their own namespace.
+ * @namespace
  */
 o3djs.math.errorCheck = o3djs.math.errorCheck || {};
 
 /**
  * Functions that do no error checking and have a separate version that does in
  * o3djs.math.errorCheck are stored in their own namespace.
+ * @namespace
  */
 o3djs.math.errorCheckFree = o3djs.math.errorCheckFree || {};
 
@@ -187,6 +206,24 @@ o3djs.math.Matrix4 = goog.typedef;
  * @type {(!Array.<!Array.<number>>|!o3d.Matrix4)}
  */
 o3djs.math.Matrix = goog.typedef;
+
+/**
+ * Returns a deterministic pseudorandom number between 0 and 1
+ * @return {number} a random number between 0 and 1
+ */
+o3djs.math.pseudoRandom = function() {
+  var math = o3djs.math;
+  return (math.randomSeed_ = 
+          (134775813 * math.randomSeed_ + 1) % 
+          math.RANDOM_RANGE_) / math.RANDOM_RANGE_;
+};
+
+/**
+ * Resets the pseudoRandom function sequence.
+ */
+o3djs.math.resetPseudoRandom = function() {
+  o3djs.math.randomSeed_ = 0;
+};
 
 /**
  * Converts degrees to radians.

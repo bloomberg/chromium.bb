@@ -56,6 +56,25 @@ var isInternetExplorer = navigator.userAgent.indexOf('Internet Explorer' != -1);
 
 var g_suite = {};
 
+g_suite.testPseudoRandom = function() {
+  var values = [];
+  g_math.resetPseudoRandom();
+  for (var ii = 0; ii < 100; ++ii) {
+    value = g_math.pseudoRandom();
+    g_test.assertTrue(value >= 0);
+    g_test.assertTrue(value <= 1);
+    for (var jj = 0; jj < ii - 1; ++jj) {
+      g_test.assertTrue(value !== values[jj]);
+    }
+    values.push(value);
+  }
+  g_math.resetPseudoRandom();
+  for (var ii = 0; ii < values.length; ++ii) {
+    value = g_math.pseudoRandom();
+		g_test.assertEquals(value, values[ii]);
+  }
+};
+
 g_suite.testDegToRad = function() {
   g_test.assertEquals(Math.PI, g_math.degToRad(180));
 };

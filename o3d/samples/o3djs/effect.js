@@ -50,6 +50,71 @@ o3djs.require('o3djs.io');
 o3djs.effect = o3djs.effect || {};
 
 /**
+ * The name of standard 2 color checker effect.
+ * @type {string}
+ */
+o3djs.effect.TWO_COLOR_CHECKER_EFFECT_NAME = 
+    'o3djs.effect.twoColorCheckerEffect';
+
+/**
+ * An effect string for a 2 color checker effect.
+ * @type {string}
+ */
+o3djs.effect.TWO_COLOR_CHECKER_FXSTRING = '' +
+    'float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
+    'float4x4 worldInverseTranspose : WORLDINVERSETRANSPOSE;\n' +
+    'float4x4 world : WORLD;\n' +
+    'float4 color1;\n' +
+    'float4 color2;\n' +
+    'float checkSize;\n' +
+    'float3 lightWorldPos;\n' +
+    'float3 lightColor;\n' +
+    '\n' +
+    'struct VertexShaderInput {\n' +
+    '  float4 position : POSITION;\n' +
+    '  float4 normal : NORMAL;\n' +
+    '  float2 texcoord : TEXCOORD0;\n' +
+    '};\n' +
+    '\n' +
+    'struct PixelShaderInput {\n' +
+    '  float4 position : POSITION;\n' +
+    '  float2 texcoord : TEXCOORD0;\n' +
+    '  float3 normal : TEXCOORD1;\n' +
+    '  float3 worldPosition : TEXCOORD2;\n' +
+    '};\n' +
+    '\n' +
+    'float4 checker(float2 uv) {\n' +
+    '  float fmodResult = fmod(floor(checkSize * uv.x) + \n' +
+    '                          floor(checkSize * uv.y), 2.0);\n' +
+    '  return (fmodResult < 1) ? color1 : color2;\n' +
+    '}\n' +
+    '\n' +
+    'PixelShaderInput vertexShaderFunction(VertexShaderInput input) {\n' +
+    '  PixelShaderInput output;\n' +
+    '\n' +
+    '  output.position = mul(input.position, worldViewProjection);\n' +
+    '  output.normal = mul(input.normal, worldInverseTranspose).xyz;\n' +
+    '  output.worldPosition = mul(input.position, world).xyz;\n' +
+    '  output.texcoord = input.texcoord;\n' +
+    '  return output;\n' +
+    '}\n' +
+    '\n' +
+    'float4 pixelShaderFunction(PixelShaderInput input): COLOR {\n' +
+    '  float3 surfaceToLight = \n' +
+    '      normalize(lightWorldPos - input.worldPosition);\n' +
+    '  float3 worldNormal = normalize(input.normal);\n' +
+    '  float4 check = checker(input.texcoord);\n' +
+    '  float4 directionalIntensity = \n' +
+    '      saturate(dot(worldNormal, surfaceToLight));\n' +
+    '  float4 outColor = directionalIntensity * check;\n' +
+    '  return float4(outColor.rgb, check.a);\n' +
+    '}\n' +
+    '\n' +
+    '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
+    '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
+    '// #o3d MatrixLoadOrder RowMajor\n';
+
+/**
  * The name of the parameter on a material if it's a collada standard
  * material.
  *
@@ -770,3 +835,21 @@ o3djs.effect.createUniformParameters = function(pack, effect, paramObject) {
   }
 };
 
+/**
+ * Creates an effect that draws a 2 color procedural checker pattern.
+ * @param {!o3d.Pack} pack The pack to create the effect in. If the pack
+ *     already has an effect with the same name that effect will be returned.
+ * @return {!o3d.Effect} The effect.
+ */
+o3djs.effect.createCheckerEffect = function(pack) {
+  var effects = pack.getObjects(o3djs.effect.TWO_COLOR_CHECKER_EFFECT_NAME,
+                                'o3d.Effect');
+  if (effects.length > 0) {
+    return effects[0];
+  }
+
+  var effect = pack.createObject('Effect');
+  effect.loadFromFXString(o3djs.effect.TWO_COLOR_CHECKER_FXSTRING);
+  effect.name = o3djs.effect.TWO_COLOR_CHECKER_EFFECT_NAME;
+  return effect;
+};

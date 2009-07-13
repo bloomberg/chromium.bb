@@ -57,7 +57,7 @@ o3djs.require('o3djs.loader');
 // init() once the page has finished loading.
 // unload() when the page is unloaded.
 window.onload = init;
-window.onunload= unload;
+window.onunload = unload;
 
 // global variables
 var g_o3dElement;
@@ -76,16 +76,6 @@ var g_cameraRadius = 35;
 var g_cameraSpeed = 0.3;
 var g_randSeed = 0;
 var g_textures = [];
-
-/**
- * Returns a deterministic pseudorandom number bewteen 0 and 1
- * @return {number} a random number between 0 and 1
- */
-function pseudoRandom() {
-  var range = Math.pow(2, 32);
-
-  return (g_randSeed = (134775813 * g_randSeed + 1) % range) / range;
-}
 
 /**
  * Creates the client area.
@@ -147,9 +137,8 @@ function initStep3() {
     g_viewInfo,
     [0.2, 1, 0.2, 1]);  // green
 
-  var checkerMaterial = o3djs.material.createMaterialFromFile(
-      g_pack, 'shaders/green-blue-checker.shader', 
-      g_viewInfo.performanceDrawList);
+  var checkerMaterial = o3djs.material.createCheckerMaterial(g_pack, 
+                                                             g_viewInfo);
 
   var billboardMaterial = o3djs.material.createMaterialFromFile(
       g_pack, 'shaders/billboard.shader', g_viewInfo.zOrderedDrawList);
@@ -204,9 +193,9 @@ function initStep3() {
   for (var ii = 0; ii < 30; ++ii) {
     transform = g_pack.createObject('Transform');
     transform.parent = g_root;
-    transform.translate((pseudoRandom() - 0.5) * 90,
+    transform.translate((g_math.pseudoRandom() - 0.5) * 90,
                         0,
-                        (pseudoRandom() - 0.5) * 90);
+                        (g_math.pseudoRandom() - 0.5) * 90);
     transform.addShape(cylinderShape);
 
     var topTransform = g_pack.createObject('Transform');
