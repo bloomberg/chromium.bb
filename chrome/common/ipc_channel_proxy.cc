@@ -228,19 +228,6 @@ void ChannelProxy::Init(const std::string& channel_id, Channel::Mode mode,
     // to connect and get an error since the pipe doesn't exist yet.
     context_->CreateChannel(channel_id, mode);
   } else {
-#if defined(OS_POSIX)
-    // TODO(playmobil): On POSIX, IPC::Channel uses a socketpair(), one side of
-    // which needs to be mapped into the child process' address space.
-    // To know the value of the client side FD we need to have already
-    // created a socketpair which currently occurs in IPC::Channel's
-    // constructor.
-    // If we lazilly construct the IPC::Channel then the caller has no way
-    // of knowing the FD #.
-    //
-    // We can solve this either by having the Channel's creation launch the
-    // subprocess itself or by creating the socketpair() externally.
-    NOTIMPLEMENTED();
-#endif  // defined(OS_POSIX)
     context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
         context_.get(), &Context::CreateChannel, channel_id, mode));
   }
