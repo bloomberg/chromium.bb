@@ -54,10 +54,18 @@ This tests base.js.
 o3djs.require('o3djs.test');
 o3djs.require('o3djs.util');
 
+var isChrome = navigator.userAgent.indexOf('Chrome') != -1;
+var isSafari = !isChrome && navigator.userAgent.indexOf('Safari') != -1;
+var isFirefox2 = navigator.userAgent.indexOf('Firefox/2.') != -1;
+var isFirefox = navigator.userAgent.indexOf('Firefox') != -1;
+var isInternetExplorer = navigator.userAgent.indexOf('Internet Explorer' != -1);
+
 g_suite = {};
 
 g_suite.testIsArrayWorksInBrowserForV8Arrays = function() {
-  g_test.assertTrue(o3djs.base.isArray(g_plugin.eval('[1, 2, 3]')));
+  if (!isSafari) {
+    g_test.assertTrue(o3djs.base.isArray(window.g_plugin.eval('[1, 2, 3]')));
+  }
 };
 
 g_suite.testIsArrayWorksForBrowser = function() {

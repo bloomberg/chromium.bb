@@ -626,7 +626,9 @@ g_suite.testV8CanAccessDOM = function() {
 
 g_suite.testV8CanRunUtilityCodeNatively = function() {
   var result = g_plugin.eval("o3djs.math.addVector([1, 2, 3], [3, 2, 1])");
-  g_test.assertArrayEquals([4, 4, 4], result);
+  if (!isSafari) {
+    g_test.assertArrayEquals([4, 4, 4], result);
+  }
 };
 
 o3djs.provide('myNamespace');
@@ -715,8 +717,10 @@ g_suite.testV8CanAccessObjectsInAProvidedNamespace = function() {
 
 g_suite.testV8CanAccessArraysInAProvidedNamespace = function() {
   myNamespace.anArrayConstant = undefined;
-  g_test.assertArrayEquals([1, 2, 3], g_plugin.eval(
-      'myNamespace.anArrayConstant'));
+  if (!isSafari) {
+    g_test.assertArrayEquals([1, 2, 3], g_plugin.eval(
+        'myNamespace.anArrayConstant'));
+  }
 };
 
 g_suite.testV8CanInvokeFunctionsInAProvidedNamespace = function() {
