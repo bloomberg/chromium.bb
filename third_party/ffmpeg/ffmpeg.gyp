@@ -170,83 +170,53 @@
       ],
     },
     {
-      # We prefer the Chrome binaries over the Chromium ones, which will get
-      # overwritten due to the order that the binaries are copied.
       'target_name': 'ffmpeg_binaries',
       'type': 'none',
       'msvs_guid': '4E4070E1-EFD9-4EF1-8634-3960956F6F10',
+      'variables': {
+        'conditions': [
+          [ 'branding=="Chrome"', {
+               'branding_dir': 'chrome',
+          }, { # else branding!="Chrome"
+               'branding_dir': 'chromium',
+          }],
+        ],
+      },
       'conditions': [
         ['OS=="win"', {
           'variables': {
             'source_files': [
-              'binaries/chromium/avcodec-52.dll',
-              'binaries/chromium/avformat-52.dll',
-              'binaries/chromium/avutil-50.dll',
-              'binaries/chromium/pthreadGC2.dll',
-              'binaries/chrome/avcodec-52.dll',
-              'binaries/chrome/avformat-52.dll',
-              'binaries/chrome/avutil-50.dll',
-              'binaries/chrome/pthreadGC2.dll',
-            ],
-            'output_files': [
-              '<(PRODUCT_DIR)/avcodec-52.dll',
-              '<(PRODUCT_DIR)/avformat-52.dll',
-              '<(PRODUCT_DIR)/avutil-50.dll',
-              '<(PRODUCT_DIR)/pthreadGC2.dll',
+              'binaries/<(branding_dir)/avcodec-52.dll',
+              'binaries/<(branding_dir)/avformat-52.dll',
+              'binaries/<(branding_dir)/avutil-50.dll',
+              'binaries/<(branding_dir)/pthreadGC2.dll',
             ],
           },
           'dependencies': ['../../build/win/system.gyp:cygwin'],
         }], ['OS=="linux"', {
           'variables': {
             'source_files': [
-              'binaries/chromium/libavcodec.so.52',
-              'binaries/chromium/libavformat.so.52',
-              'binaries/chromium/libavutil.so.50',
-              'binaries/chrome/libavcodec.so.52',
-              'binaries/chrome/libavformat.so.52',
-              'binaries/chrome/libavutil.so.50',
-            ],
-            'output_files': [
-              '<(PRODUCT_DIR)/libavcodec.so.52',
-              '<(PRODUCT_DIR)/libavformat.so.52',
-              '<(PRODUCT_DIR)/libavutil.so.50',
+              'binaries/<(branding_dir)/libavcodec.so.52',
+              'binaries/<(branding_dir)/libavformat.so.52',
+              'binaries/<(branding_dir)/libavutil.so.50',
             ],
           },
         }], ['OS=="mac"', {
-          'variables': {
-            'source_files': [
-              'binaries/chromium/libavcodec.52.dylib',
-              'binaries/chromium/libavformat.52.dylib',
-              'binaries/chromium/libavutil.50.dylib',
-              'binaries/chrome/libavcodec.52.dylib',
-              'binaries/chrome/libavformat.52.dylib',
-              'binaries/chrome/libavutil.50.dylib',
-            ],
-            'output_files': [
-              '<(PRODUCT_DIR)/libavcodec.52.dylib',
-              '<(PRODUCT_DIR)/libavformat.52.dylib',
-              '<(PRODUCT_DIR)/libavutil.50.dylib',
-            ],
-          },
+              'variables': {
+                'source_files': [
+                  'binaries/<(branding_dir)/libavcodec.52.dylib',
+                  'binaries/<(branding_dir)/libavformat.52.dylib',
+                  'binaries/<(branding_dir)/libavutil.50.dylib',
+                ],
+              },
         }],
       ],
-      'sources': [
-      ],
-      'actions': [
+      'copies': [
         {
-          'action_name': 'copy_binaries',
-          'inputs': [
-            'copy_binaries.sh',
-          ],
-          'outputs': [
-            '<@(output_files)',
-          ],
-          'action': [
-            './copy_binaries.sh',
+          'destination': '<(PRODUCT_DIR)/',
+          'files': [
             '<@(source_files)',
-            '<(PRODUCT_DIR)/'
-          ],
-          'message': 'Copying FFmpeg binaries...',
+          ]
         },
       ],
     },
