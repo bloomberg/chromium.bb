@@ -54,6 +54,10 @@ void AudioRendererAlgorithmBase::FlushBuffers() {
   request_read_callback_->Run();
 }
 
+base::TimeDelta AudioRendererAlgorithmBase::GetTime() {
+  return queue_.GetTime(1.0 / (channels() * sample_rate() * sample_bytes()));
+}
+
 void AudioRendererAlgorithmBase::EnqueueBuffer(Buffer* buffer_in) {
   // If we're at end of stream, |buffer_in| contains no data.
   if (!buffer_in->IsEndOfStream())

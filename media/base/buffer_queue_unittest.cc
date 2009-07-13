@@ -4,6 +4,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "media/base/buffer_queue.h"
 #include "media/base/data_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,6 +122,46 @@ TEST_F(BufferQueueTest, CopyFromMiddleOfBuffer) {
                       kNewDataSize - kDataSize));
   dataBig += (kNewDataSize - kDataSize);
   EXPECT_EQ(0, memcmp(dataBig, kData, kDataSize));
+}
+
+TEST_F(BufferQueueTest, GetTime) {
+  const struct {
+    int64 first_time_seconds;
+    size_t consume_bytes;
+    double bytes_to_seconds;
+  } tests[] = {
+    { 0, 0, 0.5  },
+    { 0, 0, 1    },
+    { 0, 0, 1.75 },
+    { 0, 4, 0.5  },
+    { 0, 4, 1    },
+    { 0, 4, 1.75 },
+    { 5, 0, 0.5  },
+    { 5, 0, 1    },
+    { 5, 0, 1.75 },
+    { 5, 4, 0.5  },
+    { 5, 4, 1    },
+    { 5, 4, 1.75 },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    buffer2->SetTimestamp(base::TimeDelta::FromSeconds(
+        tests[i].first_time_seconds));
+    queue_.Enqueue(buffer2.get());
+    queue_.Consume(tests[i].consume_bytes);
+
+    int64 expected = base::TimeDelta::FromSeconds(static_cast<int64>(
+        tests[i].first_time_seconds + (tests[i].consume_bytes *
+        tests[i].bytes_to_seconds))).ToInternalValue();
+
+    int64 actual = queue_.GetTime(tests[i].bytes_to_seconds).ToInternalValue();
+
+    EXPECT_EQ(expected, actual) << "With test = {"
+        << tests[i].first_time_seconds << ", " << tests[i].consume_bytes
+        << ", " << tests[i].bytes_to_seconds << "}\n";
+
+    queue_.Clear();
+  }
 }
 
 }  // namespace media

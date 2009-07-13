@@ -80,6 +80,14 @@ void BufferQueue::Enqueue(Buffer* buffer_in) {
   size_in_bytes_ += buffer_in->GetDataSize();
 }
 
+base::TimeDelta BufferQueue::GetTime(double bytes_to_sec) {
+  double bytes_to_usec = bytes_to_sec * base::Time::kMicrosecondsPerSecond;
+
+  return queue_.front()->GetTimestamp() +
+      base::TimeDelta::FromMicroseconds(static_cast<int64>(
+          data_offset_ * bytes_to_usec));
+}
+
 void BufferQueue::Clear() {
   queue_.clear();
   size_in_bytes_ = 0;

@@ -58,6 +58,9 @@ class AudioRendererAlgorithmBase {
   // Clears |queue_|.
   virtual void FlushBuffers();
 
+  // Returns the time of the next byte in our data.
+  virtual base::TimeDelta GetTime();
+
   // Enqueues a buffer. It is called from the owner of the algorithm after a
   // read completes.
   virtual void EnqueueBuffer(Buffer* buffer_in);

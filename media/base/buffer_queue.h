@@ -14,6 +14,7 @@
 #include <deque>
 
 #include "base/ref_counted.h"
+#include "base/time.h"
 
 namespace media {
 
@@ -37,6 +38,10 @@ class BufferQueue {
 
   // Enqueues |buffer_in| and adds a reference.
   void Enqueue(Buffer* buffer_in);
+
+  // Returns the timestamp of the first buffer plus |data_offset_| in
+  // microseconds, calculated using the conversion |bytes_to_sec|.
+  base::TimeDelta GetTime(double bytes_to_sec);
 
   // Returns true if the |queue_| is empty.
   bool IsEmpty();
