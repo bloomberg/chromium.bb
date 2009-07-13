@@ -2471,6 +2471,9 @@ each locale. -->
       <message name="IDS_TAB_CXMENU_CLOSETABSOPENEDBY" desc="The label of the 'Close Tabs opened by this Tab' Tab context menu item.">
         Close tabs opened by this tab
       </message>
+      <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning a tab.">
+        Pin tab
+      </message>
 
       <!-- Items in the bookmarks destination mode -->
       <message name="IDS_BOOKMARKS_DEST_MODE_BOOKMARK_BAR_ON_BOOKMARK_BAR" desc="Text shown when entry is on the bookmark bar">

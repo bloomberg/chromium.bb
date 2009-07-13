@@ -80,6 +80,10 @@ class TabRendererGtk : public AnimationDelegate {
   // update everything.
   virtual void UpdateData(TabContents* contents, bool loading_only);
 
+  // Sets the pinned state of the tab.
+  void set_pinned(bool pinned);
+  bool is_pinned() const;
+
   // Updates the display to reflect the contents of this TabRenderer's model.
   void UpdateFromModel();
 
@@ -118,6 +122,9 @@ class TabRendererGtk : public AnimationDelegate {
   // Returns the preferred size of a single Tab, assuming space is
   // available.
   static gfx::Size GetStandardSize();
+
+  // Returns the width for pinned tabs. Pinned tabs always have this width.
+  static int GetPinnedWidth();
 
   // Loads the images to be used for the tab background.
   static void LoadTabImages();
@@ -166,6 +173,7 @@ class TabRendererGtk : public AnimationDelegate {
     bool crashed;
     bool off_the_record;
     bool show_icon;
+    bool pinned;
   };
 
   // TODO(jhawkins): Move into TabResources class.
@@ -212,9 +220,12 @@ class TabRendererGtk : public AnimationDelegate {
   void PaintTab(GdkEventExpose* event);
 
   // Paint various portions of the Tab
+  void PaintTitle(gfx::Canvas* canvas);
+  void PaintIcon(gfx::Canvas* canvas);
   void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
+  void PaintPinnedTabBackground(gfx::Canvas* canvas);
   void PaintLoadingAnimation(gfx::Canvas* canvas);
 
   // Returns the number of favicon-size elements that can fit in the tab's
@@ -255,7 +266,6 @@ class TabRendererGtk : public AnimationDelegate {
   static TabImage tab_active_;
   static TabImage tab_inactive_;
   static TabImage tab_alpha;
-  static TabImage tab_hover_;
 
   static gfx::Font* title_font_;
   static int title_font_height_;
@@ -265,6 +275,15 @@ class TabRendererGtk : public AnimationDelegate {
 
   static SkColor selected_title_color_;
   static SkColor unselected_title_color_;
+
+  // Preferred width of pinned tabs.
+  static int pinned_tab_pref_width_;
+
+  // When a non-pinned tab is pinned the width of the tab animates. If the
+  // width of a pinned tab is >= pinned_tab_renderer_as_tab_width then the
+  // tab is rendered as a normal tab. This is done to avoid having the title
+  // immediately disappear when transitioning a tab from normal to pinned.
+  static int pinned_tab_renderer_as_tab_width_;
 
   // The GtkDrawingArea we draw the tab on.
   OwnedWidgetGtk tab_;

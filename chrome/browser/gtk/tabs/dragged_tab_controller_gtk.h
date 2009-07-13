@@ -108,6 +108,18 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // Handles moving the Tab within a TabStrip as well as updating the View.
   void MoveTab(const gfx::Point& screen_point);
 
+  // Invoked from |MoveTab| to adjust |dragged_tab_point|. |screen_point| is
+  // the location of the mouse and |from_index| the index the dragged tab is
+  // at.
+  // This updates the pinned state of the dragged tab and model based on the
+  // location of the mouse. If |screen_point| is before the pinned threshold
+  // the dragged tab (and model) are pinned. If |screen_point| is after the
+  // pinned threshold, the dragged tab is not allowed to go before the first
+  // non-pinned tab and the dragged tab (and model) are marked as non-pinned.
+  void AdjustDragPointForPinnedTabs(const gfx::Point& screen_point,
+                                    int from_index,
+                                    gfx::Point* dragged_tab_point);
+
   // Returns the compatible TabStrip that is under the specified point (screen
   // coordinates), or NULL if there is none.
   TabStripGtk* GetTabStripForPoint(const gfx::Point& screen_point);
@@ -126,6 +138,12 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // Converts a screen point to a point relative to the tab strip.
   gfx::Point ConvertScreenPointToTabStripPoint(TabStripGtk* tabstrip,
                                                const gfx::Point& screen_point);
+
+  // Returns the horizontal location (relative to the tabstrip) at which the
+  // dragged tab is pinned. That is, if the current x location is < then the
+  // return value of this the dragged tab and model should be made pinned,
+  // otherwise the dragged tab and model should not be pinned.
+  int GetPinnedThreshold();
 
   // Retrieve the bounds of the DraggedTabGtk, relative to the attached
   // TabStrip, given location of the dragged tab in screen coordinates.
@@ -242,6 +260,9 @@ class DraggedTabControllerGtk : public NotificationObserver,
 
   typedef std::set<GtkWidget*> DockWindows;
   DockWindows dock_windows_;
+
+  // Was the tab originally pinned? Used if we end up reverting the drag.
+  const bool was_pinned_;
 
   // Timer used to bring the window under the cursor to front. If the user
   // stops moving the mouse for a brief time over a browser window, it is

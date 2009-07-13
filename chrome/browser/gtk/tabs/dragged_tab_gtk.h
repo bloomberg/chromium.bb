@@ -30,8 +30,27 @@ class DraggedTabGtk : public AnimationDelegate {
   // pointer at |screen_point|.
   void MoveTo(const gfx::Point& screen_point);
 
+  // Sets the offset of the mouse from the upper left corner of the tab.
+  void set_mouse_tab_offset(const gfx::Point& offset) {
+    mouse_tab_offset_ = offset;
+  }
+
+  // Sets the non-pinned tab width. The actual width of the dragged tab is the
+  // value last past to Attach or Resize. |tab_width| is used when Detach is
+  // invoked (which triggers resizing to |tab_width|), or when dragging within
+  // a tab strip and the dragged tab changes state from pinned to non-pinned.
+  void set_tab_width(int tab_width) { tab_width_ = tab_width; }
+  int tab_width() const { return tab_width_; }
+
   // Notifies the dragged tab that it has become attached to a tabstrip.
   void Attach(int selected_width);
+
+  // Resizes the dragged tab to a width of |width|.
+  void Resize(int width);
+
+  // Sets whether the tab is rendered pinned or not.
+  void set_pinned(bool pinned);
+  bool is_pinned() const;
 
   // Notifies the dragged tab that it has been detached from a tabstrip.
   // |contents| is the widget that contains the dragged tab contents, while
@@ -50,7 +69,7 @@ class DraggedTabGtk : public AnimationDelegate {
 
   // Returns the size of the dragged tab. Used when attaching to a tabstrip
   // to determine where to place the tab in the attached tabstrip.
-  gfx::Size attached_tab_size() const { return attached_tab_size_; }
+  const gfx::Size& attached_tab_size() const { return attached_tab_size_; }
 
   GtkWidget* widget() const { return container_; }
 
@@ -119,8 +138,8 @@ class DraggedTabGtk : public AnimationDelegate {
   // position of detached windows.
   gfx::Point mouse_tab_offset_;
 
-  // The desired width of the tab renderer when the dragged tab is attached
-  // to a tabstrip.
+  // The size of the tab renderer when the dragged tab is attached to a
+  // tabstrip.
   gfx::Size attached_tab_size_;
 
   // The dimensions of the TabContents being dragged.
@@ -135,6 +154,9 @@ class DraggedTabGtk : public AnimationDelegate {
   // The start and end bounds of the animation sequence.
   gfx::Rect animation_start_bounds_;
   gfx::Rect animation_end_bounds_;
+
+  // Non-pinned tab width. See description above setter for how this is used.
+  int tab_width_;
 
   DISALLOW_COPY_AND_ASSIGN(DraggedTabGtk);
 };

@@ -48,7 +48,8 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
       mouse_tab_offset_(mouse_tab_offset),
       attached_tab_size_(TabRendererGtk::GetMinimumSelectedSize()),
       contents_size_(contents_size),
-      close_animation_(this) {
+      close_animation_(this),
+      tab_width_(0) {
   renderer_->UpdateData(datasource, false);
 
   container_ = gtk_window_new(GTK_WINDOW_POPUP);
@@ -76,15 +77,35 @@ void DraggedTabGtk::MoveTo(const gfx::Point& screen_point) {
 
 void DraggedTabGtk::Attach(int selected_width) {
   attached_ = true;
-  attached_tab_size_.set_width(selected_width);
-  ResizeContainer();
-  Update();
+  Resize(selected_width);
 
   if (gtk_util::IsScreenComposited())
     gdk_window_set_opacity(container_->window, kOpaqueAlpha);
 }
 
+void DraggedTabGtk::Resize(int width) {
+  attached_tab_size_.set_width(width);
+  ResizeContainer();
+  Update();
+}
+
+void DraggedTabGtk::set_pinned(bool pinned) {
+  renderer_->set_pinned(pinned);
+}
+
+bool DraggedTabGtk::is_pinned() const {
+  return renderer_->is_pinned();
+}
+
 void DraggedTabGtk::Detach(GtkWidget* contents, BackingStore* backing_store) {
+  // Detached tabs are never pinned.
+  renderer_->set_pinned(false);
+
+  if (attached_tab_size_.width() != tab_width_) {
+    // The attached tab size differs from current tab size. Resize accordingly.
+    Resize(tab_width_);
+  }
+
   attached_ = false;
   contents_ = contents;
   backing_store_ = backing_store;

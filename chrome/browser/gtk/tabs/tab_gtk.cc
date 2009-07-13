@@ -53,6 +53,12 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
     menu_->AppendMenuItemWithLabel(
         TabStripModel::CommandRestoreTab,
         l10n_util::GetStringUTF8(IDS_RESTORE_TAB));
+    if (TabStripModel::IsTabPinningEnabled()) {
+      menu_->AppendSeparator();
+      menu_->AppendCheckMenuItemWithLabel(
+          TabStripModel::CommandTogglePinned,
+          l10n_util::GetStringUTF8(IDS_TAB_CXMENU_PIN_TAB));
+    }
   }
 
   virtual ~ContextMenuController() {}
@@ -67,7 +73,6 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
   }
 
  private:
-
   // MenuGtk::Delegate implementation:
   virtual bool IsCommandEnabled(int command_id) const {
     if (!tab_)
@@ -75,6 +80,12 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
 
     return tab_->delegate()->IsCommandEnabledForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id), tab_);
+  }
+
+  virtual bool IsItemChecked(int command_id) const {
+    if (!tab_ || command_id != TabStripModel::CommandTogglePinned)
+      return false;
+    return tab_->is_pinned();
   }
 
   virtual void ExecuteCommand(int command_id) {

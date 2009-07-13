@@ -97,9 +97,13 @@ class TabStripGtk : public TabStripModelObserver,
                              TabContents* contents,
                              int index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents, int from_index, int to_index);
+  virtual void TabMoved(TabContents* contents,
+                        int from_index,
+                        int to_index,
+                        bool pinned_state_changed);
   virtual void TabChangedAt(TabContents* contents, int index,
                             bool loading_only);
+  virtual void TabPinnedStateChanged(TabContents* contents, int index);
 
   // TabGtk::TabDelegate implementation:
   virtual bool IsTabSelected(const TabGtk* tab) const;
@@ -128,6 +132,8 @@ class TabStripGtk : public TabStripModelObserver,
   friend class InsertTabAnimation;
   friend class RemoveTabAnimation;
   friend class MoveTabAnimation;
+  friend class PinAndMoveAnimation;
+  friend class PinnedTabAnimation;
   friend class ResizeLayoutAnimation;
   friend class TabAnimation;
 
@@ -231,6 +237,9 @@ class TabStripGtk : public TabStripModelObserver,
   // Gets the number of Tabs in the collection.
   int GetTabCount() const;
 
+  // Returns the number of pinned tabs.
+  int GetPinnedTabCount() const;
+
   // Retrieves the Tab at the specified index.
   TabGtk* GetTabAt(int index) const;
 
@@ -242,9 +251,15 @@ class TabStripGtk : public TabStripModelObserver,
   // desired strip width and number of tabs.  If
   // |width_of_tabs_for_mouse_close_| is nonnegative we use that value in
   // calculating the desired strip width; otherwise we use the current width.
+  // |pinned_tab_count| gives the number of pinned tabs, and |tab_count| the
+  // number of pinned and non-pinned tabs.
   void GetDesiredTabWidths(int tab_count,
+                           int pinned_tab_count,
                            double* unselected_width,
                            double* selected_width) const;
+
+  // Returns the horizontal offset before the tab at |tab_index|.
+  int GetTabHOffset(int tab_index);
 
   // Returns the x-coordinate tabs start from.
   int tab_start_x() const;
@@ -324,8 +339,11 @@ class TabStripGtk : public TabStripModelObserver,
   // Starts various types of TabStrip animations.
   void StartInsertTabAnimation(int index);
   void StartRemoveTabAnimation(int index, TabContents* contents);
-  void StartResizeLayoutAnimation();
   void StartMoveTabAnimation(int from_index, int to_index);
+  void StartResizeLayoutAnimation();
+  void StartPinnedTabAnimation(int index);
+  void StartPinAndMoveTabAnimation(int from_index, int to_index,
+                                   const gfx::Rect& start_bounds);
 
   // Returns true if detach or select changes in the model should be reflected
   // in the TabStrip. This returns false if we're closing all tabs in the

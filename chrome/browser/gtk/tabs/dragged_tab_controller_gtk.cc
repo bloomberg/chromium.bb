@@ -23,6 +23,9 @@ const int kBringToFrontDelay = 750;
 // their indexes.
 const int kHorizontalMoveThreshold = 16;  // pixels
 
+// Threshold for pinned tabs.
+const int kHorizontalPinnedMoveThreshold = 4;  // pixels
+
 // How far a drag must pull a tab out of the tabstrip in order to detach it.
 const int kVerticalDetachMagnetism = 15;  // pixels
 
@@ -37,7 +40,8 @@ DraggedTabControllerGtk::DraggedTabControllerGtk(TabGtk* source_tab,
       source_model_index_(source_tabstrip->GetIndexOfTab(source_tab)),
       attached_tabstrip_(source_tabstrip),
       in_destructor_(false),
-      last_move_screen_x_(0) {
+      last_move_screen_x_(0),
+      was_pinned_(source_tabstrip->model()->IsTabPinned(source_model_index_)) {
   SetDraggedContents(
       source_tabstrip_->model()->GetTabContentsAt(source_model_index_));
 }
@@ -251,24 +255,34 @@ void DraggedTabControllerGtk::MoveTab(const gfx::Point& screen_point) {
   gfx::Point dragged_tab_point = GetDraggedTabPoint(screen_point);
 
   if (attached_tabstrip_) {
+    TabStripModel* attached_model = attached_tabstrip_->model();
+    int from_index = attached_model->GetIndexOfTabContents(dragged_contents_);
+    AdjustDragPointForPinnedTabs(screen_point, from_index, &dragged_tab_point);
+
     // Determine the horizontal move threshold. This is dependent on the width
     // of tabs. The smaller the tabs compared to the standard size, the smaller
     // the threshold.
-    double unselected, selected;
-    attached_tabstrip_->GetCurrentTabWidths(&unselected, &selected);
-    double ratio = unselected / TabGtk::GetStandardSize().width();
-    int threshold = static_cast<int>(ratio * kHorizontalMoveThreshold);
+    int threshold = kHorizontalPinnedMoveThreshold;
+    if (!dragged_tab_->is_pinned()) {
+      double unselected, selected;
+      attached_tabstrip_->GetCurrentTabWidths(&unselected, &selected);
+      double ratio = unselected / TabGtk::GetStandardSize().width();
+      threshold = static_cast<int>(ratio * kHorizontalMoveThreshold);
+    }
 
     // Update the model, moving the TabContents from one index to another. Do
     // this only if we have moved a minimum distance since the last reorder (to
     // prevent jitter).
     if (abs(screen_point.x() - last_move_screen_x_) > threshold) {
-      TabStripModel* attached_model = attached_tabstrip_->model();
-      int from_index =
-          attached_model->GetIndexOfTabContents(dragged_contents_);
       gfx::Rect bounds = GetDraggedTabTabStripBounds(dragged_tab_point);
       int to_index = GetInsertionIndexForDraggedBounds(bounds);
       to_index = NormalizeIndexToAttachedTabStrip(to_index);
+      if (!dragged_tab_->is_pinned()) {
+        // If the dragged tab isn't pinned, don't allow the drag to a pinned
+        // tab.
+        to_index =
+            std::max(to_index, attached_model->IndexOfFirstNonPinnedTab());
+      }
       if (from_index != to_index) {
         last_move_screen_x_ = screen_point.x();
         attached_model->MoveTabContentsAt(from_index, to_index, true);
@@ -278,6 +292,56 @@ void DraggedTabControllerGtk::MoveTab(const gfx::Point& screen_point) {
 
   // Move the dragged tab. There are no changes to the model if we're detached.
   dragged_tab_->MoveTo(dragged_tab_point);
+}
+
+void DraggedTabControllerGtk::AdjustDragPointForPinnedTabs(
+    const gfx::Point& screen_point,
+    int from_index,
+    gfx::Point* dragged_tab_point) {
+  TabStripModel* attached_model = attached_tabstrip_->model();
+  int pinned_count = attached_model->IndexOfFirstNonPinnedTab();
+  if (pinned_count == 0)
+    return;
+
+  gfx::Point local_point =
+      ConvertScreenPointToTabStripPoint(attached_tabstrip_, screen_point);
+  int pinned_threshold = GetPinnedThreshold();
+  if (!dragged_tab_->is_pinned()) {
+    gfx::Rect tab_bounds = attached_tabstrip_->GetIdealBounds(pinned_count);
+    if (local_point.x() <= pinned_threshold) {
+      // The mouse was moved below the threshold that triggers the tab to be
+      // pinned.
+
+      // Mark the tab as pinned and update the model.
+      dragged_tab_->set_pinned(true);
+      attached_model->SetTabPinned(from_index, true);
+
+      // Resize the dragged tab.
+      mouse_offset_.set_x(TabGtk::GetPinnedWidth() / 2 - 1);
+      InitWindowCreatePoint();
+      dragged_tab_->set_mouse_tab_offset(mouse_offset_);
+      dragged_tab_->Resize(TabGtk::GetPinnedWidth());
+
+      // The dragged tab point was calculated using the old mouse_offset, which
+      // we just reset. Recalculate it.
+      *dragged_tab_point = GetDraggedTabPoint(screen_point);
+    } else if (local_point.x() - mouse_offset_.x() < tab_bounds.x()) {
+      // The mouse has not moved below the threshold that triggers the tab to
+      // be pinned. Make sure the dragged tab does not go before the first
+      // non-pinned tab.
+      gfx::Rect tabstrip_bounds =
+          gtk_util::GetWidgetScreenBounds(attached_tabstrip_->tabstrip_.get());
+      dragged_tab_point->set_x(std::max(dragged_tab_point->x(),
+                                        tabstrip_bounds.x() + tab_bounds.x()));
+    }
+  } else if (local_point.x() > pinned_threshold) {
+    // The mouse has moved past the point that triggers the tab to be unpinned.
+    // Update the dragged tab and model accordingly.
+    dragged_tab_->set_pinned(false);
+    attached_model->SetTabPinned(from_index, false);
+
+    dragged_tab_->Resize(dragged_tab_->tab_width());
+  }
 }
 
 TabStripGtk* DraggedTabControllerGtk::GetTabStripForPoint(
@@ -340,13 +404,38 @@ void DraggedTabControllerGtk::Attach(TabStripGtk* attached_tabstrip,
   // the dragged representation will be a different size to others in the
   // tabstrip.
   int tab_count = attached_tabstrip_->GetTabCount();
+  int pinned_tab_count = attached_tabstrip_->GetPinnedTabCount();
   if (!tab)
     ++tab_count;
   double unselected_width = 0, selected_width = 0;
-  attached_tabstrip_->GetDesiredTabWidths(tab_count, &unselected_width,
-                                          &selected_width);
+  attached_tabstrip_->GetDesiredTabWidths(tab_count, pinned_tab_count,
+                                          &unselected_width, &selected_width);
   EnsureDraggedTab();
-  dragged_tab_->Attach(static_cast<int>(selected_width));
+  int dragged_tab_width = static_cast<int>(selected_width);
+  dragged_tab_->set_tab_width(dragged_tab_width);
+  bool pinned = false;
+  if (pinned_tab_count > 0) {
+    int insert_index;
+    if (tab && tab->IsVisible()) {
+      // Initial call to Attach. Don't use the screen_point as it's 0,0.
+      insert_index = source_model_index_;
+    } else {
+      gfx::Point client_point =
+          ConvertScreenPointToTabStripPoint(attached_tabstrip_, screen_point);
+      insert_index = GetInsertionIndexForDraggedBounds(
+          gfx::Rect(client_point, gfx::Size(1, 1)));
+      insert_index = std::max(
+          std::min(insert_index, attached_tabstrip_->model()->count()), 0);
+    }
+    if (insert_index < pinned_tab_count) {
+      // New tab is going to be pinned, use the pinned size for the dragged
+      // tab.
+      dragged_tab_width = TabGtk::GetPinnedWidth();
+      pinned = true;
+    }
+  }
+  dragged_tab_->set_pinned(pinned);
+  dragged_tab_->Attach(dragged_tab_width);
 
   if (!tab) {
     // There is no tab in |attached_tabstrip| that corresponds to the dragged
@@ -424,6 +513,20 @@ gfx::Point DraggedTabControllerGtk::ConvertScreenPointToTabStripPoint(
   gint x, y;
   gdk_window_get_origin(tabstrip->tabstrip_->window, &x, &y);
   return gfx::Point(screen_point.x() - x, screen_point.y() - y);
+}
+
+int DraggedTabControllerGtk::GetPinnedThreshold() {
+  int pinned_count = attached_tabstrip_->model()->IndexOfFirstNonPinnedTab();
+  if (pinned_count == 0)
+    return 0;
+  if (!dragged_tab_->is_pinned()) {
+    gfx::Rect non_pinned_bounds =
+        attached_tabstrip_->GetIdealBounds(pinned_count);
+    return non_pinned_bounds.x() + TabGtk::GetPinnedWidth() / 2;
+  }
+  gfx::Rect last_pinned_bounds =
+      attached_tabstrip_->GetIdealBounds(pinned_count - 1);
+  return last_pinned_bounds.x() + TabGtk::GetPinnedWidth() / 2;
 }
 
 gfx::Rect DraggedTabControllerGtk::GetDraggedTabTabStripBounds(
@@ -600,6 +703,7 @@ void DraggedTabControllerGtk::RevertDrag() {
     source_tabstrip_->model()->InsertTabContentsAt(source_model_index_,
         dragged_contents_, true, false);
   }
+  source_tabstrip_->model()->SetTabPinned(source_model_index_, was_pinned_);
 
   source_tab_->SetVisible(true);
 }
