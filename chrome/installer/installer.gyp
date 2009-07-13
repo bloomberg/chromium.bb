@@ -42,6 +42,13 @@
                   ]
                 },
                 {
+                  'destination': '<(PRODUCT_DIR)/installer/rpm/',
+                  'files': [
+                    'linux/internal/rpm/build.sh',
+                    'linux/internal/rpm/chrome.spec.template',
+                  ]
+                },
+                {
                   'destination': '<(PRODUCT_DIR)/installer/common/',
                   'files': [
                     'linux/internal/common/apt.include',
