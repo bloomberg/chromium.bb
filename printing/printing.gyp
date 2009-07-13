@@ -29,6 +29,8 @@
       'sources': [
         'emf_win.cc',
         'emf_win.h',
+        'image.cc',
+        'image.h',
         'native_metafile.h',
         'page_number.cc',
         'page_number.h',
