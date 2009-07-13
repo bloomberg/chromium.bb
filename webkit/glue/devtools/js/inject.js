@@ -191,7 +191,7 @@ devtools.Injected.prototype.getStyles = function(nodeId, authorOnly) {
       ruleValue['parentStyleSheet'] = {
         'href' : parentStyleSheet.href,
         'ownerNodeName' : parentStyleSheet.ownerNode ?
-            parentStyleSheet.ownerNode.name : null
+            parentStyleSheet.ownerNode.nodeName : null
       };
     }
     matchedCSSRulesObj.push(ruleValue);
