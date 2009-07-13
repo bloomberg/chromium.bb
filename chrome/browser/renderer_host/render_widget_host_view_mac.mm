@@ -220,23 +220,14 @@ void RenderWidgetHostViewMac::DidScrollRect(
   if (is_hidden_)
     return;
 
-  // Before asking the cocoa view to scroll, shorten the rect's bounds
-  // by the amount we are scrolling.  This will prevent us from moving
-  // data beyond the bounds of the original rect, which in turn
-  // prevents us from accidentally drawing over other parts of the
-  // page (scrolbars, other frames, etc).
-  gfx::Rect scroll_rect = rect;
-  scroll_rect.Inset(dx < 0 ? -dx : 0,
-                    dy < 0 ? -dy : 0,
-                    dx > 0 ? dx : 0,
-                    dy > 0 ? dy : 0);
-  [cocoa_view_ scrollRect:[cocoa_view_ RectToNSRect:scroll_rect]
-                       by:NSMakeSize(dx, -dy)];
-
-  gfx::Rect new_rect = rect;
-  new_rect.Offset(dx, dy);
-  gfx::Rect dirty_rect = rect.Subtract(new_rect);
-  [cocoa_view_ setNeedsDisplayInRect:[cocoa_view_ RectToNSRect:dirty_rect]];
+  // We've already modified the BackingStore to reflect the scroll, so
+  // simply ask the RWHVCocoa to redraw itself based on the new
+  // pixels.  We cannot use -[NSView scrollRect:by:] here because the
+  // findbar and blocked popups will leave trails behind.
+  // TODO(rohitrao): Evaluate how slow this full redraw is.  If it
+  // turns out to be a problem, consider scrolling only a portion of
+  // the view, based on where the findbar and blocked popups are.
+  [cocoa_view_ setNeedsDisplay:YES];
 }
 
 void RenderWidgetHostViewMac::RenderViewGone() {
