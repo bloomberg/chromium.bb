@@ -161,6 +161,8 @@ class AlertInfoBar : public InfoBar {
     GtkWidget* label = gtk_label_new(WideToUTF8(text).c_str());
     gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
     gtk_box_pack_start(GTK_BOX(hbox_), label, FALSE, FALSE, 0);
+
+    gtk_widget_show_all(border_bin_.get());
   }
 };
 

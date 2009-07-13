@@ -1530,11 +1530,10 @@ void TabContents::OnMissingPluginStatus(int status) {
 }
 
 void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
-#if defined(OS_WIN)
-// TODO(PORT): pull in when plug-ins work
   DCHECK(!plugin_path.value().empty());
 
   std::wstring plugin_name = plugin_path.ToWStringHack();
+#if defined(OS_WIN)
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(plugin_path));
   if (version_info.get()) {
@@ -1542,10 +1541,12 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
     if (!product_name.empty())
       plugin_name = product_name;
   }
+#else
+  NOTIMPLEMENTED() << " convert plugin path to plugin name";
+#endif
   AddInfoBar(new SimpleAlertInfoBarDelegate(
       this, l10n_util::GetStringF(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
       NULL));
-#endif
 }
 
 void TabContents::OnCrashedWorker() {
