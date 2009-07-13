@@ -169,11 +169,17 @@ static void GLibLogHandler(const gchar* log_domain,
       strstr(message, "wrong ELF class: ELFCLASS64")) {
     // http://crbug.com/9643
     // Until we have a real 64-bit build or all of these 32-bit package issues
-    // are sorted out, don't fatal on ELF 32/64-bit mismatch warnings.
-    LOG(ERROR) << "Bug 9643: " << log_domain << ": " << message;
+    // are sorted out, don't fatal on ELF 32/64-bit mismatch warnings and don't
+    // spam the user with more than one of them.
+    static bool alerted = false;
+    if (!alerted) {
+      LOG(ERROR) << "Bug 9643: " << log_domain << ": " << message;
+      alerted = true;
+    }
   } else if (strstr(message, "gtk_widget_size_allocate(): attempt to "
                              "allocate widget with width") &&
              !GTK_CHECK_VERSION(2, 16, 1)) {
+    // This warning only occurs in obsolete versions of GTK and is harmless.
     // http://crbug.com/11133
   } else if (strstr(message, "Theme file for default has no") ||
              strstr(message, "Theme directory")) {
