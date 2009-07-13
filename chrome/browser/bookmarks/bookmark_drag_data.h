@@ -62,7 +62,7 @@ struct BookmarkDragData {
     bool ReadFromPickle(Pickle* pickle, void** iterator);
 
     // ID of the node.
-    int id_;
+    int64 id_;
   };
 
   BookmarkDragData() { }

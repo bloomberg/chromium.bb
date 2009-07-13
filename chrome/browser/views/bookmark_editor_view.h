@@ -113,7 +113,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
  private:
   // Type of node in the tree.
-  typedef TreeNodeWithValue<int> EditorNode;
+  typedef TreeNodeWithValue<int64> EditorNode;
 
   // Model for the TreeView. Trivial subclass that doesn't allow titles with
   // empty strings.
@@ -175,7 +175,7 @@ class BookmarkEditorView : public BookmarkEditor,
   void CreateNodes(const BookmarkNode* bb_node, EditorNode* b_node);
 
   // Returns the node with the specified id, or NULL if one can't be found.
-  EditorNode* FindNodeWithID(BookmarkEditorView::EditorNode* node, int id);
+  EditorNode* FindNodeWithID(BookmarkEditorView::EditorNode* node, int64 id);
 
   // Invokes ApplyEdits with the selected node.
   void ApplyEdits();
