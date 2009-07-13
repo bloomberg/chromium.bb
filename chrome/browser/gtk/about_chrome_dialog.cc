@@ -227,6 +227,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   GtkWidget* license_vbox = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(license_vbox), license_hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(license_vbox), license_hbox2, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), license_vbox, TRUE, TRUE, 0);
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::vector<size_t> url_offsets;
@@ -251,10 +252,9 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
 
   g_signal_connect(tos_link, "clicked", G_CALLBACK(OnLinkButtonClick),
                    const_cast<char*>(kTOS));
+  gtk_box_pack_start(GTK_BOX(vbox), tos_hbox, TRUE, TRUE, 0);
 #endif
 
-  gtk_box_pack_start(GTK_BOX(vbox), license_vbox, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), tos_hbox, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(content_area), vbox, TRUE, TRUE, 0);
 
   g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), NULL);
