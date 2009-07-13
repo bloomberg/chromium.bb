@@ -19,6 +19,9 @@
 
 namespace media {
 
+// In this class, we over-specify method lookup via this-> to avoid unexpected
+// name resolution issues due to the two-phase lookup needed for dependent
+// name resolution in templates.
 template <class Decoder, class Output>
 class DecoderBase : public Decoder {
  public:

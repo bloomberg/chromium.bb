@@ -103,6 +103,9 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
   friend class base::RefCountedThreadSafe<MediaFilter>;
   virtual ~MediaFilter() {}
 
+  FilterHost* host() const { return host_; }
+  MessageLoop* message_loop() const { return message_loop_; }
+
  private:
   FilterHost* host_;
   MessageLoop* message_loop_;
