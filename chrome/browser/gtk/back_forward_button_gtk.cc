@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/back_forward_menu_model_gtk.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/gtk_util.h"
@@ -42,7 +43,8 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
     tooltip = IDS_TOOLTIP_BACK;
     stock = GTK_STOCK_GO_BACK;
   }
-  button_.reset(new CustomDrawButton(browser_->profile()->GetThemeProvider(),
+  button_.reset(new CustomDrawButton(
+      GtkThemeProvider::GetFrom(browser_->profile()),
       normal, active, highlight, depressed, stock));
   gtk_widget_set_tooltip_text(widget(),
                               l10n_util::GetStringUTF8(tooltip).c_str());
@@ -75,10 +77,6 @@ BackForwardButtonGtk::~BackForwardButtonGtk() {
 
 void BackForwardButtonGtk::StoppedShowingMenu() {
   button_->UnsetPaintOverride();
-}
-
-void BackForwardButtonGtk::SetUseSystemTheme(bool use_gtk) {
-  button_->SetUseSystemTheme(use_gtk);
 }
 
 void BackForwardButtonGtk::ShowBackForwardMenu() {

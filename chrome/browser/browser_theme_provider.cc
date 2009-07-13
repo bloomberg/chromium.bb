@@ -29,78 +29,91 @@
 #include "app/win_util.h"
 #endif
 
-
-namespace themes {
-
 // Strings used by themes to identify colors for different parts of our UI.
-const char* kColorFrame = "frame";
-const char* kColorFrameInactive = "frame_inactive";
-const char* kColorFrameIncognito = "frame_incognito";
-const char* kColorFrameIncognitoInactive = "frame_incognito_inactive";
-const char* kColorToolbar = "toolbar";
-const char* kColorTabText = "tab_text";
-const char* kColorBackgroundTabText = "background_tab_text";
-const char* kColorBookmarkText = "bookmark_text";
-const char* kColorNTPBackground = "ntp_background";
-const char* kColorNTPText = "ntp_text";
-const char* kColorNTPLink = "ntp_link";
-const char* kColorNTPSection = "ntp_section";
-const char* kColorNTPSectionText = "ntp_section_text";
-const char* kColorNTPSectionLink = "ntp_section_link";
-const char* kColorControlBackground = "control_background";
-const char* kColorButtonBackground = "button_background";
+const char* BrowserThemeProvider::kColorFrame = "frame";
+const char* BrowserThemeProvider::kColorFrameInactive = "frame_inactive";
+const char* BrowserThemeProvider::kColorFrameIncognito = "frame_incognito";
+const char* BrowserThemeProvider::kColorFrameIncognitoInactive =
+    "frame_incognito_inactive";
+const char* BrowserThemeProvider::kColorToolbar = "toolbar";
+const char* BrowserThemeProvider::kColorTabText = "tab_text";
+const char* BrowserThemeProvider::kColorBackgroundTabText =
+    "background_tab_text";
+const char* BrowserThemeProvider::kColorBookmarkText = "bookmark_text";
+const char* BrowserThemeProvider::kColorNTPBackground = "ntp_background";
+const char* BrowserThemeProvider::kColorNTPText = "ntp_text";
+const char* BrowserThemeProvider::kColorNTPLink = "ntp_link";
+const char* BrowserThemeProvider::kColorNTPSection = "ntp_section";
+const char* BrowserThemeProvider::kColorNTPSectionText = "ntp_section_text";
+const char* BrowserThemeProvider::kColorNTPSectionLink = "ntp_section_link";
+const char* BrowserThemeProvider::kColorControlBackground =
+    "control_background";
+const char* BrowserThemeProvider::kColorButtonBackground = "button_background";
 
 // Strings used by themes to identify tints to apply to different parts of
 // our UI. The frame tints apply to the frame color and produce the
 // COLOR_FRAME* colors.
-const char* kTintButtons = "buttons";
-const char* kTintFrame = "frame";
-const char* kTintFrameInactive = "frame_inactive";
-const char* kTintFrameIncognito = "frame_incognito";
-const char* kTintFrameIncognitoInactive = "frame_incognito_inactive";
-const char* kTintBackgroundTab = "background_tab";
+const char* BrowserThemeProvider::kTintButtons = "buttons";
+const char* BrowserThemeProvider::kTintFrame = "frame";
+const char* BrowserThemeProvider::kTintFrameInactive = "frame_inactive";
+const char* BrowserThemeProvider::kTintFrameIncognito = "frame_incognito";
+const char* BrowserThemeProvider::kTintFrameIncognitoInactive =
+    "frame_incognito_inactive";
+const char* BrowserThemeProvider::kTintBackgroundTab = "background_tab";
 
 // Strings used by themes to identify miscellaneous numerical properties.
-const char* kDisplayPropertyNTPAlignment = "ntp_background_alignment";
+const char* BrowserThemeProvider::kDisplayPropertyNTPAlignment =
+    "ntp_background_alignment";
 
 // Strings used in alignment properties.
-const char* kAlignmentTop = "top";
-const char* kAlignmentBottom = "bottom";
-const char* kAlignmentLeft = "left";
-const char* kAlignmentRight = "right";
+const char* BrowserThemeProvider::kAlignmentTop = "top";
+const char* BrowserThemeProvider::kAlignmentBottom = "bottom";
+const char* BrowserThemeProvider::kAlignmentLeft = "left";
+const char* BrowserThemeProvider::kAlignmentRight = "right";
 
 // Default colors.
-const SkColor kDefaultColorFrame = SkColorSetRGB(77, 139, 217);
-const SkColor kDefaultColorFrameInactive = SkColorSetRGB(152, 188, 233);
-const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(83, 106, 139);
-const SkColor kDefaultColorFrameIncognitoInactive =
+const SkColor BrowserThemeProvider::kDefaultColorFrame =
+    SkColorSetRGB(77, 139, 217);
+const SkColor BrowserThemeProvider::kDefaultColorFrameInactive =
+    SkColorSetRGB(152, 188, 233);
+const SkColor BrowserThemeProvider::kDefaultColorFrameIncognito =
+    SkColorSetRGB(83, 106, 139);
+const SkColor BrowserThemeProvider::kDefaultColorFrameIncognitoInactive =
     SkColorSetRGB(126, 139, 156);
-const SkColor kDefaultColorToolbar = SkColorSetRGB(210, 225, 246);
-const SkColor kDefaultColorTabText = SkColorSetRGB(0, 0, 0);
-const SkColor kDefaultColorBackgroundTabText = SkColorSetRGB(64, 64, 64);
-const SkColor kDefaultColorBookmarkText = SkColorSetRGB(64, 64, 64);
-const SkColor kDefaultColorNTPBackground = SkColorSetRGB(255, 255, 255);
-const SkColor kDefaultColorNTPText = SkColorSetRGB(0, 0, 0);
-const SkColor kDefaultColorNTPLink = SkColorSetRGB(0, 0, 204);
-const SkColor kDefaultColorNTPSection = SkColorSetRGB(225, 236, 254);
-const SkColor kDefaultColorNTPSectionText = SkColorSetRGB(0, 0, 0);
-const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(0, 0, 204);
-const SkColor kDefaultColorControlBackground = NULL;
-const SkColor kDefaultColorButtonBackground = NULL;
+const SkColor BrowserThemeProvider::kDefaultColorToolbar =
+    SkColorSetRGB(210, 225, 246);
+const SkColor BrowserThemeProvider::kDefaultColorTabText =
+    SkColorSetRGB(0, 0, 0);
+const SkColor BrowserThemeProvider::kDefaultColorBackgroundTabText =
+    SkColorSetRGB(64, 64, 64);
+const SkColor BrowserThemeProvider::kDefaultColorBookmarkText =
+    SkColorSetRGB(64, 64, 64);
+const SkColor BrowserThemeProvider::kDefaultColorNTPBackground =
+    SkColorSetRGB(255, 255, 255);
+const SkColor BrowserThemeProvider::kDefaultColorNTPText =
+    SkColorSetRGB(0, 0, 0);
+const SkColor BrowserThemeProvider::kDefaultColorNTPLink =
+    SkColorSetRGB(0, 0, 204);
+const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
+    SkColorSetRGB(225, 236, 254);
+const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText =
+    SkColorSetRGB(0, 0, 0);
+const SkColor BrowserThemeProvider::kDefaultColorNTPSectionLink =
+    SkColorSetRGB(0, 0, 204);
+const SkColor BrowserThemeProvider::kDefaultColorControlBackground = NULL;
+const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
 
 // Default tints.
-const skia::HSL kDefaultTintButtons = { -1, -1, -1 };
-const skia::HSL kDefaultTintFrame = { -1, -1, -1 };
-const skia::HSL kDefaultTintFrameInactive = { -1, 0.5f, 0.72f };
-const skia::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
-const skia::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
-const skia::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
-}  // namespace themes
-
-// We really want every member of the previous namespace to be exposed
-// here. The alternative is to list every member of namespace themes in a using
-// directive.
-using namespace themes;
+const skia::HSL BrowserThemeProvider::kDefaultTintButtons = { -1, -1, -1 };
+const skia::HSL BrowserThemeProvider::kDefaultTintFrame = { -1, -1, -1 };
+const skia::HSL BrowserThemeProvider::kDefaultTintFrameInactive =
+    { -1, 0.5f, 0.72f };
+const skia::HSL BrowserThemeProvider::kDefaultTintFrameIncognito =
+    { -1, 0.2f, 0.35f };
+const skia::HSL BrowserThemeProvider::kDefaultTintFrameIncognitoInactive =
+    { -1, 0.3f, 0.6f };
+const skia::HSL BrowserThemeProvider::kDefaultTintBackgroundTab =
+    { -1, 0.5, 0.75 };
 
 // Default display properties.
 static const int kDefaultDisplayPropertyNTPAlignment =
@@ -738,7 +751,7 @@ void BrowserThemeProvider::NotifyThemeChanged() {
   // Redraw!
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::BROWSER_THEME_CHANGED,
-                  NotificationService::AllSources(),
+                  Source<BrowserThemeProvider>(this),
                   NotificationService::NoDetails());
 }
 

@@ -20,6 +20,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 
@@ -658,13 +660,12 @@ TabStripGtk::TabStripGtk(TabStripModel* model)
       available_width_for_tabs_(-1),
       resize_layout_scheduled_(false),
       model_(model),
+      theme_provider_(GtkThemeProvider::GetFrom(model->profile())),
       resize_layout_factory_(this),
       added_as_message_loop_observer_(false) {
-  ThemeProvider* theme_provider = model->profile()->GetThemeProvider();
-  TabRendererGtk::SetSelectedTitleColor(theme_provider->GetColor(
-      BrowserThemeProvider::COLOR_TAB_TEXT));
-  TabRendererGtk::SetUnselectedTitleColor(theme_provider->GetColor(
-      BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT));
+  theme_provider_->InitThemesFor(this);
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 }
 
 TabStripGtk::~TabStripGtk() {
@@ -852,14 +853,6 @@ gfx::Point TabStripGtk::GetTabStripOriginForWidget(GtkWidget* target) {
     y += target->allocation.y;
   }
   return gfx::Point(x, y);
-}
-
-void TabStripGtk::UserChangedTheme(GtkThemeProperties* properties) {
-  ThemeProvider* theme_provider = properties->provider;
-  TabRendererGtk::SetSelectedTitleColor(theme_provider->GetColor(
-      BrowserThemeProvider::COLOR_TAB_TEXT));
-  TabRendererGtk::SetUnselectedTitleColor(theme_provider->GetColor(
-      BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1110,6 +1103,17 @@ void TabStripGtk::DidProcessEvent(GdkEvent* event) {
       break;
     default:
       break;
+  }
+}
+
+void TabStripGtk::Observe(NotificationType type,
+                          const NotificationSource& source,
+                          const NotificationDetails& details) {
+  if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    TabRendererGtk::SetSelectedTitleColor(theme_provider_->GetColor(
+        BrowserThemeProvider::COLOR_TAB_TEXT));
+    TabRendererGtk::SetUnselectedTitleColor(theme_provider_->GetColor(
+        BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT));
   }
 }
 

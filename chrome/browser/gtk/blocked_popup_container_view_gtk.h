@@ -15,7 +15,7 @@
 
 class BlockedPopupContainerInternalView;
 class CustomDrawButton;
-class GtkThemeProperties;
+class GtkThemeProvider;
 class MenuGtk;
 class PrefService;
 class Profile;
@@ -41,10 +41,6 @@ class BlockedPopupContainerViewGtk : public BlockedPopupContainerView,
   void GetURLAndTitleForPopup(size_t index,
                               string16* url,
                               string16* title) const;
-
-  // Notification that the theme has changed at that we should detect new
-  // values.
-  void UserChangedTheme(GtkThemeProperties* properties);
 
   GtkWidget* widget() { return container_.get(); }
 
@@ -89,8 +85,8 @@ class BlockedPopupContainerViewGtk : public BlockedPopupContainerView,
   // The "Blocked Popups: XXX" button.
   GtkWidget* menu_button_;
 
-  // Whether we should let GTK paint the background and the button decorations.
-  bool use_gtk_rendering_;
+  // Our theme provider.
+  GtkThemeProvider* theme_provider_;
 
   // Closes the container.
   scoped_ptr<CustomDrawButton> close_button_;

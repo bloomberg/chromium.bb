@@ -12,9 +12,11 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/status_bubble.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
-class GtkThemeProperties;
+class GtkThemeProvider;
 class GURL;
 class Profile;
 
@@ -22,9 +24,10 @@ class Profile;
 // doesn't have the nice leave-the-window effect since we can't rely on the
 // window manager to not try to be "helpful" and center our popups, etc.
 // We therefore position it absolutely in a GtkFixed, that we don't own.
-class StatusBubbleGtk : public StatusBubble {
+class StatusBubbleGtk : public StatusBubble,
+                        public NotificationObserver {
  public:
-  StatusBubbleGtk(Profile* profile);
+  explicit StatusBubbleGtk(Profile* profile);
   virtual ~StatusBubbleGtk();
 
   // StatusBubble implementation.
@@ -38,13 +41,15 @@ class StatusBubbleGtk : public StatusBubble {
   // the download shelf, when it is visible.
   virtual void UpdateDownloadShelfVisibility(bool visible) { }
 
+  // Overridden from NotificationObserver:
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details);
+
   // Top of the widget hierarchy for a StatusBubble. This top level widget is
   // guarenteed to have its gtk_widget_name set to "status-bubble" for
   // identification.
   GtkWidget* widget() { return container_.get(); }
-
-  // Notification from the window that we should retheme ourself.
-  void UserChangedTheme(GtkThemeProperties* properties);
 
  private:
   // Sets the text of the label widget and controls visibility. (As contrasted
@@ -60,6 +65,14 @@ class StatusBubbleGtk : public StatusBubble {
 
   // Builds the widgets, containers, etc.
   void InitWidgets();
+
+  // Notification from the window that we should retheme ourself.
+  void UserChangedTheme();
+
+  NotificationRegistrar registrar_;
+
+  // Provides colors.
+  GtkThemeProvider* theme_provider_;
 
   // A GtkAlignment that is the child of |slide_widget_|.
   OwnedWidgetGtk container_;

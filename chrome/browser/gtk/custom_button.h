@@ -15,7 +15,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
-class ThemeProvider;
+class GtkThemeProvider;
 
 // These classes implement two kinds of custom-drawn buttons.  They're
 // used on the toolbar and the bookmarks bar.
@@ -27,7 +27,7 @@ class CustomDrawButtonBase : public NotificationObserver {
  public:
   // If the images come from ResourceBundle rather than the theme provider,
   // pass in NULL for |theme_provider|.
-  CustomDrawButtonBase(ThemeProvider* theme_provider,
+  CustomDrawButtonBase(GtkThemeProvider* theme_provider,
                        int normal_id,
                        int active_id,
                        int highlight_id,
@@ -60,7 +60,7 @@ class CustomDrawButtonBase : public NotificationObserver {
   int active_id_;
   int highlight_id_;
   int depressed_id_;
-  ThemeProvider* theme_provider_;
+  GtkThemeProvider* theme_provider_;
 
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;
@@ -71,7 +71,7 @@ class CustomDrawButtonBase : public NotificationObserver {
 // CustomDrawButton is a plain button where all its various states are drawn
 // with static images. In GTK rendering mode, it will show the standard button
 // with GTK |stock_id|.
-class CustomDrawButton {
+class CustomDrawButton : public NotificationObserver {
  public:
   // The constructor takes 4 resource ids.  If a resource doesn't exist for a
   // button, pass in 0.
@@ -82,7 +82,7 @@ class CustomDrawButton {
                    const char* stock_id);
 
   // Same as above, but uses themed (and possibly tinted) images.
-  CustomDrawButton(ThemeProvider* theme_provider,
+  CustomDrawButton(GtkThemeProvider* theme_provider,
                    int normal_id,
                    int active_id,
                    int highlight_id,
@@ -105,12 +105,6 @@ class CustomDrawButton {
   int width() const { return widget_->allocation.width; }
   int height() const { return widget_->allocation.height; }
 
-  // Sets properties on the GtkButton returned by widget(). By default, the
-  // button is very boring. This will either give it an image from the
-  // |gtk_stock_name_| if |use_gtk| is true or will use the chrome frame
-  // images.
-  void SetUseSystemTheme(bool use_gtk);
-
   // Set the state to draw. We will paint the widget as if it were in this
   // state.
   void SetPaintOverride(GtkStateType state);
@@ -118,10 +112,19 @@ class CustomDrawButton {
   // Resume normal drawing of the widget's state.
   void UnsetPaintOverride();
 
+  // Provide NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Returns a standard close button.
   static CustomDrawButton* CloseButton();
 
  private:
+  // Sets the button to themed or not. Buttons that don't take a theme_provider
+  // can safely pass in NULL.
+  void SetBrowserTheme(GtkThemeProvider* theme_provider);
+
   // Callback for custom button expose, used to draw the custom graphics.
   static gboolean OnCustomExpose(GtkWidget* widget,
                                  GdkEventExpose* e,
@@ -137,6 +140,9 @@ class CustomDrawButton {
 
   // Whether we have an expose signal handler we may need to remove.
   bool has_expose_signal_handler_;
+
+  // Used to listen for theme change notifications.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomDrawButton);
 };

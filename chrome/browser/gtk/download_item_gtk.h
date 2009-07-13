@@ -7,22 +7,27 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
+
 #include "app/animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class BaseDownloadItemModel;
 class DownloadShelfContextMenuGtk;
 class DownloadShelfGtk;
-class GtkThemeProperties;
+class GtkThemeProvider;
 class NineBox;
 class SkBitmap;
 class SlideAnimation;
 
 class DownloadItemGtk : public DownloadItem::Observer,
-                        public AnimationDelegate {
+                        public AnimationDelegate,
+                        public NotificationObserver {
  public:
   // DownloadItemGtk takes ownership of |download_item_model|.
   DownloadItemGtk(DownloadShelfGtk* parent_shelf,
@@ -38,8 +43,10 @@ class DownloadItemGtk : public DownloadItem::Observer,
   // AnimationDelegate implementation.
   virtual void AnimationProgressed(const Animation* animation);
 
-  // Changes the color of the background shelf.
-  void UserChangedTheme(GtkThemeProperties* properties);
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Called when the icon manager has finished loading the icon. We take
   // ownership of |icon_bitmap|.
@@ -143,7 +150,7 @@ class DownloadItemGtk : public DownloadItem::Observer,
   bool menu_showing_;
 
   // Whether we should use the GTK text color
-  bool use_gtk_colors_;
+  GtkThemeProvider* theme_provider_;
 
   // The widget that contains the animation progress and the file's icon
   // (as well as the complete animation).
@@ -182,6 +189,8 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The file icon for the download. May be null.
   SkBitmap* icon_;
+
+  NotificationRegistrar registrar_;
 
   // For canceling an in progress icon request.
   CancelableRequestConsumerT<int, 0> icon_consumer_;

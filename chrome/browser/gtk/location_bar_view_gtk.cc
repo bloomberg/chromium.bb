@@ -163,17 +163,14 @@ void LocationBarViewGtk::Init() {
   gtk_box_pack_start(GTK_BOX(hbox_.get()), tab_to_search_, FALSE, FALSE, 0);
 
   GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  // TODO(erg): Redo this so that it adjusts during theme changes.
-  if (GtkThemeProvider::UseSystemThemeGraphics(profile_)) {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(align),
-                              0, 0,
-                              kEditLeftRightPadding, kEditLeftRightPadding);
-  } else {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(align),
-                              kTopMargin + kBorderThickness,
-                              kBottomMargin + kBorderThickness,
-                              kEditLeftRightPadding, kEditLeftRightPadding);
-  }
+  // TODO(erg): Like in BrowserToolbarGtk, this used to have a code path on
+  // construction for with GTK themes and without. Doing that only on
+  // construction was wrong, and I can't see a difference between the two ways
+  // anyway... Investigate more later.
+  gtk_alignment_set_padding(GTK_ALIGNMENT(align),
+                            kTopMargin + kBorderThickness,
+                            kBottomMargin + kBorderThickness,
+                            kEditLeftRightPadding, kEditLeftRightPadding);
   gtk_container_add(GTK_CONTAINER(align), location_entry_->widget());
   gtk_box_pack_start(GTK_BOX(hbox_.get()), align, TRUE, TRUE, 0);
 

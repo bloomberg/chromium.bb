@@ -14,15 +14,17 @@
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/tabs/tab_gtk.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class CustomDrawButton;
 class DraggedTabControllerGtk;
-class GtkThemeProperties;
+class GtkThemeProvider;
 
 class TabStripGtk : public TabStripModelObserver,
                     public TabGtk::TabDelegate,
-                    public MessageLoopForUI::Observer {
+                    public MessageLoopForUI::Observer,
+                    public NotificationObserver {
  public:
   class TabAnimation;
 
@@ -84,9 +86,6 @@ class TabStripGtk : public TabStripModelObserver,
   // allocated.
   gfx::Point GetTabStripOriginForWidget(GtkWidget* widget);
 
-  // Alerts us that the theme changed, and we might need to change theme images.
-  void UserChangedTheme(GtkThemeProperties* properties);
-
  protected:
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContents* contents,
@@ -126,6 +125,11 @@ class TabStripGtk : public TabStripModelObserver,
   // MessageLoop::Observer implementation:
   virtual void WillProcessEvent(GdkEvent* event);
   virtual void DidProcessEvent(GdkEvent* event);
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   friend class DraggedTabControllerGtk;
@@ -364,6 +368,8 @@ class TabStripGtk : public TabStripModelObserver,
                                          TabStripGtk* tabstrip);
 #endif
 
+  NotificationRegistrar registrar_;
+
   // The Tabs we contain, and their last generated "good" bounds.
   std::vector<TabData> tab_data_;
 
@@ -396,6 +402,9 @@ class TabStripGtk : public TabStripModelObserver,
 
   // Our model.
   TabStripModel* model_;
+
+  // Theme resources.
+  GtkThemeProvider* theme_provider_;
 
   // The currently running animation.
   scoped_ptr<TabAnimation> active_animation_;

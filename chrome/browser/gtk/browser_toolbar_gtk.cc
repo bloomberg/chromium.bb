@@ -94,6 +94,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
   // Make sure to tell the location bar the profile before calling its Init.
   SetProfile(profile);
 
+  theme_provider_ = GtkThemeProvider::GetFrom(profile);
+
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
 
   event_box_ = gtk_event_box_new();
@@ -175,9 +177,6 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(menus_hbox_), chrome_menu, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(toolbar_), menus_hbox_, FALSE, FALSE, 0);
-
-  // Force all the CustomDrawButtons to load the correct rendering style.
-  UserChangedTheme();
 
   gtk_widget_show_all(event_box_);
 
@@ -291,19 +290,6 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
   location_bar_->Update(should_restore_state ? contents : NULL);
 }
 
-void BrowserToolbarGtk::UserChangedTheme() {
-  bool use_gtk = GtkThemeProvider::UseSystemThemeGraphics(profile_);
-  back_->SetUseSystemTheme(use_gtk);
-  forward_->SetUseSystemTheme(use_gtk);
-  reload_->SetUseSystemTheme(use_gtk);
-  home_->SetUseSystemTheme(use_gtk);
-
-  gtk_chrome_button_set_use_gtk_rendering(
-      GTK_CHROME_BUTTON(page_menu_button_.get()), use_gtk);
-  gtk_chrome_button_set_use_gtk_rendering(
-      GTK_CHROME_BUTTON(app_menu_button_.get()), use_gtk);
-}
-
 gfx::Rect BrowserToolbarGtk::GetPopupBounds() const {
   GtkWidget* star = star_->widget();
   GtkWidget* go = go_->widget();
@@ -328,7 +314,8 @@ gfx::Rect BrowserToolbarGtk::GetPopupBounds() const {
 CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
     int normal_id, int active_id, int highlight_id, int depressed_id,
     const std::string& localized_tooltip, const char* stock_id) {
-  CustomDrawButton* button = new CustomDrawButton(profile_->GetThemeProvider(),
+  CustomDrawButton* button = new CustomDrawButton(
+      GtkThemeProvider::GetFrom(profile_),
       normal_id, active_id, highlight_id, depressed_id, stock_id);
 
   gtk_widget_set_tooltip_text(button->widget(),
@@ -358,12 +345,14 @@ GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
     int icon_id,
     const std::string& localized_tooltip,
     OwnedWidgetGtk* owner) {
-  GtkWidget* button = gtk_chrome_button_new();
+  GtkWidget* button = theme_provider_->BuildChromeButton();
   owner->Own(button);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (!GtkThemeProvider::UseSystemThemeGraphics(profile_))
-    gtk_container_set_border_width(GTK_CONTAINER(button), 2);
+  // TODO(erg): This was under conditional for gtk, but after playing around
+  // with not having it under conditional, I actually think this is correct
+  // instead. Investigate more later.
+  gtk_container_set_border_width(GTK_CONTAINER(button), 2);
   gtk_container_add(GTK_CONTAINER(button),
                     gtk_image_new_from_pixbuf(rb.GetPixbufNamed(icon_id)));
 

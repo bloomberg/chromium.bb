@@ -11,8 +11,8 @@
 
 class BookmarkModel;
 class BookmarkNode;
+class GtkThemeProvider;
 class Profile;
-struct GtkThemeProperties;
 
 namespace bookmark_utils {
 
@@ -34,12 +34,12 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model);
 // gtk_drag_set_icon_widget().
 GtkWidget* GetDragRepresentation(const BookmarkNode* node,
                                  BookmarkModel* model,
-                                 GtkThemeProperties* properties);
+                                 GtkThemeProvider* provider);
 
 // Helper function that sets visual properties of GtkButton |button| to the
 // contents of |node|.
 void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
-                            GtkWidget* button, GtkThemeProperties* properties);
+                            GtkWidget* button, GtkThemeProvider* provider);
 
 // Returns the tooltip.
 std::string BuildTooltipFor(const BookmarkNode* node);
@@ -49,7 +49,7 @@ const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget);
 
 // This function is a temporary hack to fix fonts on dark system themes.
 // TODO(estade): remove this function.
-void SetButtonTextColors(GtkWidget* label, GtkThemeProperties* properties);
+void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider);
 
 // Drag and drop. --------------------------------------------------------------
 

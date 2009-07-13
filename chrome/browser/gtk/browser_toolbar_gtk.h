@@ -18,6 +18,7 @@ class BackForwardButtonGtk;
 class Browser;
 class BrowserWindowGtk;
 class CustomDrawButton;
+class GtkThemeProvider;
 class GoButtonGtk;
 class LocationBar;
 class LocationBarViewGtk;
@@ -77,9 +78,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   void UpdateTabContents(TabContents* contents, bool should_restore_state);
 
   ToolbarStarToggleGtk* star() { return star_.get(); }
-
-  // Alerts us that the theme changed, and we might need to change theme images.
-  void UserChangedTheme();
 
   // Implement AutocompletePopupPositioner, return the position of where the
   // Omnibox results popup should go (from the star to the go buttons).
@@ -178,6 +176,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
+
+  GtkThemeProvider* theme_provider_;
 
   scoped_ptr<MenuGtk> page_menu_;
   scoped_ptr<MenuGtk> app_menu_;

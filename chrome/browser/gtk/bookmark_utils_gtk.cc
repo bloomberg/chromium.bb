@@ -86,10 +86,10 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model) {
 
 GtkWidget* GetDragRepresentation(const BookmarkNode* node,
                                  BookmarkModel* model,
-                                 GtkThemeProperties* properties) {
+                                 GtkThemeProvider* provider) {
   // Build a windowed representation for our button.
   GtkWidget* window = gtk_window_new(GTK_WINDOW_POPUP);
-  if (!properties->use_gtk_rendering) {
+  if (!provider->UseGtkTheme()) {
     // TODO(erg): Theme wise, which color should I be picking here?
     // COLOR_BUTTON_BACKGROUND doesn't match the default theme!
     gtk_widget_modify_bg(window, GTK_STATE_NORMAL, &kBackgroundColor);
@@ -101,9 +101,9 @@ GtkWidget* GetDragRepresentation(const BookmarkNode* node,
   gtk_container_add(GTK_CONTAINER(window), frame);
   gtk_widget_show(frame);
 
-  GtkWidget* floating_button = gtk_chrome_button_new();
+  GtkWidget* floating_button = provider->BuildChromeButton();
   bookmark_utils::ConfigureButtonForNode(node, model, floating_button,
-                                         properties);
+                                         provider);
   gtk_container_add(GTK_CONTAINER(frame), floating_button);
   gtk_widget_show(floating_button);
 
@@ -111,7 +111,7 @@ GtkWidget* GetDragRepresentation(const BookmarkNode* node,
 }
 
 void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
-                            GtkWidget* button, GtkThemeProperties* properties) {
+                            GtkWidget* button, GtkThemeProvider* provider) {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(button));
   if (former_child)
     gtk_container_remove(GTK_CONTAINER(button), former_child);
@@ -141,12 +141,9 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
   gtk_container_add(GTK_CONTAINER(alignment), box);
   gtk_container_add(GTK_CONTAINER(button), alignment);
 
-  SetButtonTextColors(label, properties);
+  SetButtonTextColors(label, provider);
   g_object_set_data(G_OBJECT(button), bookmark_utils::kBookmarkNode,
                     AsVoid(node));
-
-  gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(button),
-                                          properties->use_gtk_rendering);
 
   gtk_widget_show_all(alignment);
 }
@@ -162,14 +159,14 @@ const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {
       g_object_get_data(G_OBJECT(widget), bookmark_utils::kBookmarkNode));
 }
 
-void SetButtonTextColors(GtkWidget* label, GtkThemeProperties* properties) {
-  if (properties->use_gtk_rendering) {
+void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider) {
+  if (provider->UseGtkTheme()) {
     gtk_widget_modify_fg(label, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, NULL);
     gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, NULL);
     gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, NULL);
   } else {
-    GdkColor color = properties->GetGdkColor(
+    GdkColor color = provider->GetGdkColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
     gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &color);
     gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &color);

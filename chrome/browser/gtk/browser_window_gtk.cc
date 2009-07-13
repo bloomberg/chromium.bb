@@ -760,15 +760,6 @@ void BrowserWindowGtk::UserChangedTheme() {
   SetBackgroundColor();
   gdk_window_invalidate_rect(GTK_WIDGET(window_)->window,
       &GTK_WIDGET(window_)->allocation, TRUE);
-
-  toolbar_->UserChangedTheme();
-  GtkThemeProperties properties(browser_->profile());
-  bookmark_bar_->UserChangedTheme(&properties);
-  status_bubble_->UserChangedTheme(&properties);
-  tabstrip_->UserChangedTheme(&properties);
-  if (download_shelf_.get()) {
-    download_shelf_->UserChangedTheme(&properties);
-  }
 }
 
 int BrowserWindowGtk::GetExtraRenderViewHeight() const {

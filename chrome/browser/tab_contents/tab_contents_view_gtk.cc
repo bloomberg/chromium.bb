@@ -357,8 +357,6 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
   gtk_widget_show(floating_.get());
   registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
-  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                 NotificationService::AllSources());
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -579,11 +577,6 @@ void TabContentsViewGtk::Observe(NotificationType type,
       sad_tab_.reset();
       break;
     }
-    case NotificationType::BROWSER_THEME_CHANGED: {
-      GtkThemeProperties properties(tab_contents()->profile());
-      UserChangedTheme(&properties);
-      break;
-    }
     default:
       NOTREACHED() << "Got a notification we didn't register for.";
       break;
@@ -700,15 +693,6 @@ void TabContentsViewGtk::OnDragEnd(GtkWidget* widget,
 }
 
 // -----------------------------------------------------------------------------
-
-void TabContentsViewGtk::UserChangedTheme(GtkThemeProperties* properties) {
-  if (popup_view_)
-    popup_view_->UserChangedTheme(properties);
-
-  // TODO(erg): Plumb the selected text color, etc from here all the way to
-  // RenderThemeChromiumLinux.cpp in WebKit through our associated
-  // RenderViewHost.
-}
 
 void TabContentsViewGtk::InsertIntoContentArea(GtkWidget* widget) {
   gtk_fixed_put(GTK_FIXED(fixed_), widget, 0, 0);

@@ -25,6 +25,7 @@
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -169,7 +170,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
                                  BaseDownloadItemModel* download_model)
     : parent_shelf_(parent_shelf),
       menu_showing_(false),
-      use_gtk_colors_(GtkThemeProvider::UseSystemThemeGraphics(
+      theme_provider_(GtkThemeProvider::GetFrom(
                           parent_shelf->browser()->profile())),
       progress_angle_(download_util::kStartAngleDegrees),
       download_model_(download_model),
@@ -181,6 +182,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   body_.Own(gtk_button_new());
   gtk_widget_set_app_paintable(body_.get(), TRUE);
+
   g_signal_connect(body_.get(), "expose-event",
                    G_CALLBACK(OnExpose), this);
   g_signal_connect(body_.get(), "clicked",
@@ -337,6 +339,9 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     dangerous_hbox_start_width_ = dangerous_hbox_full_width_ - req.width;
   }
 
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+
   new_item_animation_->Show();
 }
 
@@ -425,6 +430,15 @@ void DownloadItemGtk::AnimationProgressed(const Animation* animation) {
   }
 }
 
+void DownloadItemGtk::Observe(NotificationType type,
+                              const NotificationSource& source,
+                              const NotificationDetails& details) {
+  if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    UpdateNameLabel();
+    UpdateStatusLabel(status_label_, status_text_);
+  }
+}
+
 DownloadItem* DownloadItemGtk::get_download() {
   return download_model_->download();
 }
@@ -454,13 +468,6 @@ void DownloadItemGtk::StopDownloadProgress() {
   progress_timer_.Stop();
 }
 
-void DownloadItemGtk::UserChangedTheme(GtkThemeProperties* properties) {
-  use_gtk_colors_ = properties->use_gtk_rendering;
-
-  UpdateNameLabel();
-  UpdateStatusLabel(status_label_, status_text_);
-}
-
 // Icon loading functions.
 
 void DownloadItemGtk::OnLoadIconComplete(IconManager::Handle handle,
@@ -480,7 +487,7 @@ void DownloadItemGtk::UpdateNameLabel() {
   std::wstring elided_filename = gfx::ElideFilename(
       get_download()->GetFileName(),
       gfx::Font(), kTextWidth);
-  if (use_gtk_colors_) {
+  if (theme_provider_->UseGtkTheme()) {
     gtk_label_set_markup(GTK_LABEL(name_label_),
                          WideToUTF8(elided_filename).c_str());
   } else {
@@ -495,7 +502,7 @@ void DownloadItemGtk::UpdateNameLabel() {
 void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
                                         const std::string& status_text) {
   if (status_label) {
-    if (use_gtk_colors_) {
+    if (theme_provider_->UseGtkTheme()) {
       gtk_label_set_label(GTK_LABEL(status_label), status_text.c_str());
     } else {
       // TODO(erg): I am not sure which ThemeProvider color I'm supposed to use

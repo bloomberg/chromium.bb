@@ -61,14 +61,6 @@ void BlockedPopupContainerViewGtk::GetURLAndTitleForPopup(
   *title = tab_contents->GetTitle();
 }
 
-void BlockedPopupContainerViewGtk::UserChangedTheme(
-    GtkThemeProperties* properties) {
-  use_gtk_rendering_ = properties->use_gtk_rendering;
-
-  gtk_chrome_button_set_use_gtk_rendering(
-      GTK_CHROME_BUTTON(menu_button_), use_gtk_rendering_);
-}
-
 // Overridden from BlockedPopupContainerView:
 void BlockedPopupContainerViewGtk::SetPosition() {
   // No-op. Not required with the GTK version.
@@ -131,16 +123,13 @@ void BlockedPopupContainerViewGtk::ExecuteCommand(int id) {
 BlockedPopupContainerViewGtk::BlockedPopupContainerViewGtk(
     BlockedPopupContainer* container)
     : model_(container),
-      use_gtk_rendering_(false),
+      theme_provider_(GtkThemeProvider::GetFrom(container->profile())),
       close_button_(CustomDrawButton::CloseButton()) {
   Init();
-
-  GtkThemeProperties properties(container->profile());
-  UserChangedTheme(&properties);
 }
 
 void BlockedPopupContainerViewGtk::Init() {
-  menu_button_ = gtk_chrome_button_new();
+  menu_button_ = theme_provider_->BuildChromeButton();
   UpdateLabel();
   g_signal_connect(menu_button_, "clicked",
                    G_CALLBACK(OnMenuButtonClicked), this);
@@ -209,7 +198,7 @@ gboolean BlockedPopupContainerViewGtk::OnContainerExpose(
                   event->area.width, event->area.height);
   cairo_clip(cr);
 
-  if (!container->use_gtk_rendering_) {
+  if (!container->theme_provider_->UseGtkTheme()) {
     // TODO(erg): We draw the gradient background only when GTK themes are
     // off. This isn't a perfect solution as this isn't themed! The views
     // version doesn't appear to be themed either, so at least for now,

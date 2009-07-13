@@ -18,6 +18,7 @@
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -49,7 +50,8 @@ const int kShelfAnimationDurationMs = 120;
 
 DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
     : DownloadShelf(browser),
-      is_showing_(false) {
+      is_showing_(false),
+      theme_provider_(GtkThemeProvider::GetFrom(browser->profile())) {
   // Logically, the shelf is a vbox that contains two children: a one pixel
   // tall event box, which serves as the top border, and an hbox, which holds
   // the download items and other shelf widgets (close button, show-all-
@@ -118,8 +120,8 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
                                            kShelfAnimationDurationMs,
                                            false, NULL));
 
-  GtkThemeProperties properties(browser->profile());
-  UserChangedTheme(&properties);
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 
   gtk_widget_show_all(shelf_.get());
 
@@ -166,18 +168,18 @@ void DownloadShelfGtk::Close() {
   browser_->UpdateDownloadShelfVisibility(false);
 }
 
-int DownloadShelfGtk::GetHeight() const {
-  return slide_widget_->widget()->allocation.height;
+void DownloadShelfGtk::Observe(NotificationType type,
+                               const NotificationSource& source,
+                               const NotificationDetails& details) {
+  if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    GdkColor color = theme_provider_->GetGdkColor(
+        BrowserThemeProvider::COLOR_TOOLBAR);
+    gtk_widget_modify_bg(padding_bg_, GTK_STATE_NORMAL, &color);
+  }
 }
 
-void DownloadShelfGtk::UserChangedTheme(GtkThemeProperties* properties) {
-  GdkColor color = properties->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
-  gtk_widget_modify_bg(padding_bg_, GTK_STATE_NORMAL, &color);
-
-  for (std::vector<DownloadItemGtk*>::iterator it = download_items_.begin();
-       it != download_items_.end(); ++it) {
-    (*it)->UserChangedTheme(properties);
-  }
+int DownloadShelfGtk::GetHeight() const {
+  return slide_widget_->widget()->allocation.height;
 }
 
 void DownloadShelfGtk::RemoveDownloadItem(DownloadItemGtk* download_item) {

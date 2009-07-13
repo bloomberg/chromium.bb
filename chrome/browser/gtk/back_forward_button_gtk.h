@@ -27,9 +27,6 @@ class BackForwardButtonGtk {
 
   GtkWidget* widget() { return button_->widget(); }
 
-  // Advises our CustomDrawButtons on how to render.
-  void SetUseSystemTheme(bool use_gtk);
-
  private:
   // Executes the browser command.
   static void OnClick(GtkWidget* widget, BackForwardButtonGtk* button);

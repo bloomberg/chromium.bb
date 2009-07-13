@@ -20,74 +20,74 @@ class Extension;
 class Profile;
 class DictionaryValue;
 
-namespace themes {
-
-// Strings used by themes to identify colors for different parts of our UI.
-extern const char* kColorFrame;
-extern const char* kColorFrameInactive;
-extern const char* kColorFrameIncognito;
-extern const char* kColorFrameIncognitoInactive;
-extern const char* kColorToolbar;
-extern const char* kColorTabText;
-extern const char* kColorBackgroundTabText;
-extern const char* kColorBookmarkText;
-extern const char* kColorNTPBackground;
-extern const char* kColorNTPText;
-extern const char* kColorNTPLink;
-extern const char* kColorNTPSection;
-extern const char* kColorNTPSectionText;
-extern const char* kColorNTPSectionLink;
-extern const char* kColorControlBackground;
-extern const char* kColorButtonBackground;
-
-// Strings used by themes to identify tints to apply to different parts of
-// our UI. The frame tints apply to the frame color and produce the
-// COLOR_FRAME* colors.
-extern const char* kTintButtons;
-extern const char* kTintFrame;
-extern const char* kTintFrameInactive;
-extern const char* kTintFrameIncognito;
-extern const char* kTintFrameIncognitoInactive;
-extern const char* kTintBackgroundTab;
-
-// Strings used by themes to identify miscellaneous numerical properties.
-extern const char* kDisplayPropertyNTPAlignment;
-
-// Strings used in alignment properties.
-extern const char* kAlignmentTop;
-extern const char* kAlignmentBottom;
-extern const char* kAlignmentLeft;
-extern const char* kAlignmentRight;
-
-// Default colors.
-extern const SkColor kDefaultColorFrame;
-extern const SkColor kDefaultColorFrameInactive;
-extern const SkColor kDefaultColorFrameIncognito;
-extern const SkColor kDefaultColorFrameIncognitoInactive;
-extern const SkColor kDefaultColorToolbar;
-extern const SkColor kDefaultColorTabText;
-extern const SkColor kDefaultColorBackgroundTabText;
-extern const SkColor kDefaultColorBookmarkText;
-extern const SkColor kDefaultColorNTPBackground;
-extern const SkColor kDefaultColorNTPText;
-extern const SkColor kDefaultColorNTPLink;
-extern const SkColor kDefaultColorNTPSection;
-extern const SkColor kDefaultColorNTPSectionText;
-extern const SkColor kDefaultColorNTPSectionLink;
-extern const SkColor kDefaultColorControlBackground;
-extern const SkColor kDefaultColorButtonBackground;
-
-extern const skia::HSL kDefaultTintButtons;
-extern const skia::HSL kDefaultTintFrame;
-extern const skia::HSL kDefaultTintFrameInactive;
-extern const skia::HSL kDefaultTintFrameIncognito;
-extern const skia::HSL kDefaultTintFrameIncognitoInactive;
-extern const skia::HSL kDefaultTintBackgroundTab;
-}  // namespace themes
-
 class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
                              public NonThreadSafe,
                              public ThemeProvider {
+ public:
+  // Public constants used in BrowserThemeProvider and its subclasses:
+
+  // Strings used by themes to identify colors for different parts of our UI.
+  static const char* kColorFrame;
+  static const char* kColorFrameInactive;
+  static const char* kColorFrameIncognito;
+  static const char* kColorFrameIncognitoInactive;
+  static const char* kColorToolbar;
+  static const char* kColorTabText;
+  static const char* kColorBackgroundTabText;
+  static const char* kColorBookmarkText;
+  static const char* kColorNTPBackground;
+  static const char* kColorNTPText;
+  static const char* kColorNTPLink;
+  static const char* kColorNTPSection;
+  static const char* kColorNTPSectionText;
+  static const char* kColorNTPSectionLink;
+  static const char* kColorControlBackground;
+  static const char* kColorButtonBackground;
+
+  // Strings used by themes to identify tints to apply to different parts of
+  // our UI. The frame tints apply to the frame color and produce the
+  // COLOR_FRAME* colors.
+  static const char* kTintButtons;
+  static const char* kTintFrame;
+  static const char* kTintFrameInactive;
+  static const char* kTintFrameIncognito;
+  static const char* kTintFrameIncognitoInactive;
+  static const char* kTintBackgroundTab;
+
+  // Strings used by themes to identify miscellaneous numerical properties.
+  static const char* kDisplayPropertyNTPAlignment;
+
+  // Strings used in alignment properties.
+  static const char* kAlignmentTop;
+  static const char* kAlignmentBottom;
+  static const char* kAlignmentLeft;
+  static const char* kAlignmentRight;
+
+  // Default colors.
+  static const SkColor kDefaultColorFrame;
+  static const SkColor kDefaultColorFrameInactive;
+  static const SkColor kDefaultColorFrameIncognito;
+  static const SkColor kDefaultColorFrameIncognitoInactive;
+  static const SkColor kDefaultColorToolbar;
+  static const SkColor kDefaultColorTabText;
+  static const SkColor kDefaultColorBackgroundTabText;
+  static const SkColor kDefaultColorBookmarkText;
+  static const SkColor kDefaultColorNTPBackground;
+  static const SkColor kDefaultColorNTPText;
+  static const SkColor kDefaultColorNTPLink;
+  static const SkColor kDefaultColorNTPSection;
+  static const SkColor kDefaultColorNTPSectionText;
+  static const SkColor kDefaultColorNTPSectionLink;
+  static const SkColor kDefaultColorControlBackground;
+  static const SkColor kDefaultColorButtonBackground;
+
+  static const skia::HSL kDefaultTintButtons;
+  static const skia::HSL kDefaultTintFrame;
+  static const skia::HSL kDefaultTintFrameInactive;
+  static const skia::HSL kDefaultTintFrameIncognito;
+  static const skia::HSL kDefaultTintFrameIncognitoInactive;
+  static const skia::HSL kDefaultTintBackgroundTab;
+
  public:
   BrowserThemeProvider();
   virtual ~BrowserThemeProvider();
@@ -127,7 +127,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
     ALIGN_BOTTOM = 0x8,
   } AlignmentMasks;
 
-  void Init(Profile* profile);
+  virtual void Init(Profile* profile);
 
   // ThemeProvider implementation.
   virtual SkBitmap* GetBitmapNamed(int id);
@@ -181,7 +181,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   virtual void LoadThemePrefs();
 
   // Let all the browser views know that themes have changed.
-  void NotifyThemeChanged();
+  virtual void NotifyThemeChanged();
 
   // Loads a bitmap from the theme, which may be tinted or
   // otherwise modified, or an application default.

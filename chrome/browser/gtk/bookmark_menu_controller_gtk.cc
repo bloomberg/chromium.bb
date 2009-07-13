@@ -244,9 +244,9 @@ void BookmarkMenuController::OnMenuItemDragBegin(
   controller->ignore_button_release_ = true;
 
   const BookmarkNode* node = bookmark_utils::BookmarkNodeForWidget(menu_item);
-  GtkThemeProperties properties(controller->profile_);
   GtkWidget* window = bookmark_utils::GetDragRepresentation(
-      node, controller->model_, &properties);
+      node, controller->model_,
+      GtkThemeProvider::GetFrom(controller->profile_));
   gint x, y;
   gtk_widget_get_pointer(menu_item, &x, &y);
   gtk_drag_set_icon_widget(drag_context, window, x, y);

@@ -10,8 +10,10 @@
 #include <string>
 
 #include "app/slide_animation.h"
-#include "chrome/common/owned_widget_gtk.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/owned_widget_gtk.h"
 
 class BookmarkContextMenu;
 class BookmarkMenuController;
@@ -21,10 +23,11 @@ class CustomContainerButton;
 class NineBox;
 class PageNavigator;
 class Profile;
-struct GtkThemeProperties;
+struct GtkThemeProvider;
 
 class BookmarkBarGtk : public AnimationDelegate,
-                       public BookmarkModelObserver {
+                       public BookmarkModelObserver,
+                       public NotificationObserver {
  public:
   explicit BookmarkBarGtk(Profile* profile, Browser* browser,
                           BrowserWindowGtk* window);
@@ -67,9 +70,6 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // Returns true if the bookmarks bar preference is set to 'always show'.
   bool IsAlwaysShown();
-
-  // Alerts us that the theme changed, and we might need to change theme images.
-  void UserChangedTheme(GtkThemeProperties* properties);
 
   // AnimationDelegate implementation ------------------------------------------
   virtual void AnimationProgressed(const Animation* animation);
@@ -119,6 +119,11 @@ class BookmarkBarGtk : public AnimationDelegate,
                                          const BookmarkNode* node);
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
                                              const BookmarkNode* node);
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   GtkWidget* CreateBookmarkButton(const BookmarkNode* node);
   GtkToolItem* CreateBookmarkToolItem(const BookmarkNode* node);
@@ -228,6 +233,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   // We create a GtkToolbarItem from |dragged_node_| for display.
   GtkToolItem* toolbar_drop_item_;
 
+  // Theme provider for building buttons.
+  GtkThemeProvider* theme_provider_;
+
   // Whether we should show the instructional text in the bookmark bar.
   bool show_instructions_;
 
@@ -243,6 +251,8 @@ class BookmarkBarGtk : public AnimationDelegate,
   scoped_ptr<NineBox> background_ninebox_;
 
   scoped_ptr<SlideAnimation> slide_animation_;
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_BAR_GTK_H_

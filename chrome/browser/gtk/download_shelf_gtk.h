@@ -12,16 +12,19 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class BaseDownloadItemModel;
 class Browser;
 class CustomDrawButton;
 class DownloadItemGtk;
-class GtkThemeProperties;
+class GtkThemeProvider;
 class SlideAnimatorGtk;
 
-class DownloadShelfGtk : public DownloadShelf {
+class DownloadShelfGtk : public DownloadShelf,
+                         public NotificationObserver {
  public:
   explicit DownloadShelfGtk(Browser* browser, gfx::NativeView view);
 
@@ -34,11 +37,13 @@ class DownloadShelfGtk : public DownloadShelf {
   virtual void Show();
   virtual void Close();
 
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Returns the current height of the shelf.
   int GetHeight() const;
-
-  // Changes the color of the background shelf.
-  void UserChangedTheme(GtkThemeProperties* properties);
 
  private:
   // Remove |download_item| from the download shelf and delete it.
@@ -77,6 +82,11 @@ class DownloadShelfGtk : public DownloadShelf {
 
   // The download items we have added to our shelf.
   std::vector<DownloadItemGtk*> download_items_;
+
+  // Gives us our colors and theme information.
+  GtkThemeProvider* theme_provider_;
+
+  NotificationRegistrar registrar_;
 
   friend class DownloadItemGtk;
 };

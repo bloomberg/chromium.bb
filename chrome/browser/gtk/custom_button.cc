@@ -9,10 +9,11 @@
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/gfx/gtk_util.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
 
-CustomDrawButtonBase::CustomDrawButtonBase(ThemeProvider* theme_provider,
+CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
     int normal_id, int active_id, int highlight_id, int depressed_id)
     : paint_override_(-1),
       normal_id_(normal_id),
@@ -23,9 +24,7 @@ CustomDrawButtonBase::CustomDrawButtonBase(ThemeProvider* theme_provider,
   if (theme_provider) {
     // Load images by pretending that we got a BROWSER_THEME_CHANGED
     // notification.
-    Observe(NotificationType::BROWSER_THEME_CHANGED,
-            NotificationService::AllSources(),
-            NotificationService::NoDetails());
+    theme_provider->InitThemesFor(this);
 
     registrar_.Add(this,
                    NotificationType::BROWSER_THEME_CHANGED,
@@ -99,9 +98,12 @@ CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
       gtk_stock_name_(stock_id),
       has_expose_signal_handler_(false) {
   Init();
+
+  // Initialize the theme stuff with no theme_provider.
+  SetBrowserTheme(NULL);
 }
 
-CustomDrawButton::CustomDrawButton(ThemeProvider* theme_provider,
+CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
     int normal_id, int active_id, int highlight_id, int depressed_id,
     const char* stock_id)
     : button_base_(theme_provider, normal_id, active_id, highlight_id,
@@ -109,6 +111,11 @@ CustomDrawButton::CustomDrawButton(ThemeProvider* theme_provider,
       gtk_stock_name_(stock_id),
       has_expose_signal_handler_(false) {
   Init();
+
+  theme_provider->InitThemesFor(this);
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 }
 
 CustomDrawButton::~CustomDrawButton() {
@@ -118,33 +125,15 @@ CustomDrawButton::~CustomDrawButton() {
 void CustomDrawButton::Init() {
   widget_.Own(gtk_button_new());
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
-  SetUseSystemTheme(false);
 }
 
-void CustomDrawButton::SetUseSystemTheme(bool use_gtk) {
-  if (use_gtk && gtk_stock_name_) {
-    gtk_button_set_image(
-        GTK_BUTTON(widget_.get()),
-        gtk_image_new_from_stock(gtk_stock_name_, GTK_ICON_SIZE_BUTTON));
-    gtk_widget_set_size_request(widget_.get(), -1, -1);
-    gtk_widget_set_app_paintable(widget_.get(), FALSE);
-    gtk_widget_set_double_buffered(widget_.get(), TRUE);
+void CustomDrawButton::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
 
-    if (has_expose_signal_handler_)
-      gtk_signal_disconnect_by_data(GTK_OBJECT(widget_.get()), this);
-    has_expose_signal_handler_ = false;
-  } else {
-    gtk_widget_set_size_request(widget_.get(),
-                                gdk_pixbuf_get_width(button_base_.pixbufs(0)),
-                                gdk_pixbuf_get_height(button_base_.pixbufs(0)));
-
-    gtk_widget_set_app_paintable(widget_.get(), TRUE);
-    // We effectively double-buffer by virtue of having only one image...
-    gtk_widget_set_double_buffered(widget_.get(), FALSE);
-    g_signal_connect(G_OBJECT(widget_.get()), "expose-event",
-                     G_CALLBACK(OnCustomExpose), this);
-    has_expose_signal_handler_ = true;
-  }
+  GtkThemeProvider* provider = static_cast<GtkThemeProvider*>(
+      Source<GtkThemeProvider>(source).ptr());
+  SetBrowserTheme(provider);
 }
 
 void CustomDrawButton::SetPaintOverride(GtkStateType state) {
@@ -170,4 +159,30 @@ CustomDrawButton* CustomDrawButton::CloseButton() {
       new CustomDrawButton(IDR_CLOSE_BAR, IDR_CLOSE_BAR_P,
                            IDR_CLOSE_BAR_H, 0, NULL);
   return button;
+}
+
+void CustomDrawButton::SetBrowserTheme(GtkThemeProvider* theme_provider) {
+  if (theme_provider && theme_provider->UseGtkTheme() && gtk_stock_name_) {
+    gtk_button_set_image(
+        GTK_BUTTON(widget_.get()),
+        gtk_image_new_from_stock(gtk_stock_name_, GTK_ICON_SIZE_BUTTON));
+    gtk_widget_set_size_request(widget_.get(), -1, -1);
+    gtk_widget_set_app_paintable(widget_.get(), FALSE);
+    gtk_widget_set_double_buffered(widget_.get(), TRUE);
+
+    if (has_expose_signal_handler_)
+      gtk_signal_disconnect_by_data(GTK_OBJECT(widget_.get()), this);
+    has_expose_signal_handler_ = false;
+  } else {
+    gtk_widget_set_size_request(widget_.get(),
+                                gdk_pixbuf_get_width(button_base_.pixbufs(0)),
+                                gdk_pixbuf_get_height(button_base_.pixbufs(0)));
+
+    gtk_widget_set_app_paintable(widget_.get(), TRUE);
+    // We effectively double-buffer by virtue of having only one image...
+    gtk_widget_set_double_buffered(widget_.get(), FALSE);
+    g_signal_connect(G_OBJECT(widget_.get()), "expose-event",
+                     G_CALLBACK(OnCustomExpose), this);
+    has_expose_signal_handler_ = true;
+  }
 }
