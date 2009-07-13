@@ -363,9 +363,9 @@
         #'../third_party/skia/src/ports/SkFontHost_gamma.cpp',
         '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
         #'../third_party/skia/src/ports/SkFontHost_linux.cpp',
-        #'../third_party/skia/src/ports/SkFontHost_mac.cpp',
-        '../third_party/skia/src/ports/SkFontHost_none.cpp',
-        #'../third_party/skia/src/ports/SkFontHost_win.cpp',
+        '../third_party/skia/src/ports/SkFontHost_mac.cpp',
+        #'../third_party/skia/src/ports/SkFontHost_none.cpp',
+        '../third_party/skia/src/ports/SkFontHost_win.cpp',
         '../third_party/skia/src/ports/SkGlobals_global.cpp',
         #'../third_party/skia/src/ports/SkImageDecoder_CG.cpp',
         #'../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
@@ -523,7 +523,6 @@
         'ext/platform_device_win.cc',
         'ext/platform_device_win.h',
         'ext/SkMemory_new_handler.cpp',
-        'ext/SkTypeface_fake.cpp',
         'ext/skia_utils.cc',
         'ext/skia_utils.h',
         'ext/skia_utils_mac.mm',
@@ -568,7 +567,6 @@
             '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
             '../third_party/skia/src/ports/SkFontHost_gamma_none.cpp',
             '../third_party/skia/src/ports/SkFontHost_tables.cpp',
-            '../third_party/skia/src/core/SkTypeface.cpp',
           ],
         }],
         [ 'OS != "win"', {
@@ -589,10 +587,6 @@
           'cflags': [
             '-Wno-unused',
             '-Wno-unused-function',
-          ],
-          'sources!': [
-            '../third_party/skia/src/ports/SkFontHost_none.cpp',
-            'ext/SkTypeface_fake.cpp',
           ],
           'sources': [
             # http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
