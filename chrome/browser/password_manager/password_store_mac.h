@@ -34,6 +34,11 @@ class PasswordStoreMac : public PasswordStore {
   // succeeded (either we added successfully, or we didn't need to).
   bool AddToKeychainIfNecessary(const webkit_glue::PasswordForm& form);
 
+  // Returns true if our database contains a form that exactly matches the given
+  // keychain form.
+  bool DatabaseHasFormMatchingKeychainForm(
+    const webkit_glue::PasswordForm& form);
+
   scoped_ptr<MacKeychain> keychain_;
   scoped_ptr<LoginDatabaseMac> login_metadata_db_;
 

@@ -229,6 +229,16 @@ OSStatus MockKeychain::ItemFreeAttributesAndData(
   return noErr;
 }
 
+OSStatus MockKeychain::ItemDelete(SecKeychainItemRef itemRef) const {
+  unsigned int item_index = reinterpret_cast<unsigned int>(itemRef) - 1;
+  // The mock only supports deleting the last item.
+  if (item_index != item_count_ - 1) {
+    NOTIMPLEMENTED();
+  }
+  --item_count_;
+  return noErr;
+}
+
 OSStatus MockKeychain::SearchCreateFromAttributes(
     CFTypeRef keychainOrArray, SecItemClass itemClass,
     const SecKeychainAttributeList *attrList,

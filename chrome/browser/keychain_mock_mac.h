@@ -33,6 +33,7 @@ class MockKeychain : public MacKeychain {
       UInt32 length, const void *data) const;
   virtual OSStatus ItemFreeAttributesAndData(SecKeychainAttributeList *attrList,
                                              void *data) const;
+  virtual OSStatus ItemDelete(SecKeychainItemRef itemRef) const;
   virtual OSStatus SearchCreateFromAttributes(
       CFTypeRef keychainOrArray, SecItemClass itemClass,
       const SecKeychainAttributeList *attrList,

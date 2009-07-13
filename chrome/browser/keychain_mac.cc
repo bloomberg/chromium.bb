@@ -24,6 +24,10 @@ OSStatus MacKeychain::ItemFreeAttributesAndData(
   return SecKeychainItemFreeAttributesAndData(attrList, data);
 }
 
+OSStatus MacKeychain::ItemDelete(SecKeychainItemRef itemRef) const {
+  return SecKeychainItemDelete(itemRef);
+}
+
 OSStatus MacKeychain::SearchCreateFromAttributes(
     CFTypeRef keychainOrArray, SecItemClass itemClass,
     const SecKeychainAttributeList *attrList,

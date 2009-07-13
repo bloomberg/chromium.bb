@@ -320,13 +320,21 @@ TEST_F(PasswordStoreMacTest, TestKeychainSearch) {
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 0 },
   };
 
-  MacKeychainPasswordFormAdapter keychainAdapter(keychain_);
+  MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     scoped_ptr<PasswordForm> query_form(
         CreatePasswordFormFromData(test_data[i].data));
     std::vector<PasswordForm*> matching_items =
-        keychainAdapter.PasswordsMatchingForm(*query_form);
+        keychain_adapter.PasswordsMatchingForm(*query_form);
     EXPECT_EQ(test_data[i].expected_matches, matching_items.size());
+    STLDeleteElements(&matching_items);
+
+    // None of the pre-seeded items are owned by us, so none should match an
+    // owned-passwords-only search.
+    matching_items = owned_keychain_adapter.PasswordsMatchingForm(*query_form);
+    EXPECT_EQ(0U, matching_items.size());
     STLDeleteElements(&matching_items);
   }
 }
@@ -358,7 +366,7 @@ static void SetPasswordFormRealm(PasswordForm* form, const char* realm) {
 }
 
 TEST_F(PasswordStoreMacTest, TestKeychainExactSearch) {
-  MacKeychainPasswordFormAdapter keychainAdapter(keychain_);
+  MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
 
   PasswordFormData base_form_data[] = {
     { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
@@ -377,7 +385,7 @@ TEST_F(PasswordStoreMacTest, TestKeychainExactSearch) {
     scoped_ptr<PasswordForm> base_form(CreatePasswordFormFromData(
         base_form_data[i]));
     PasswordForm* match =
-        keychainAdapter.PasswordExactlyMatchingForm(*base_form);
+        keychain_adapter.PasswordExactlyMatchingForm(*base_form);
     EXPECT_TRUE(match != NULL);
     if (match) {
       EXPECT_EQ(base_form->scheme, match->scheme);
@@ -413,7 +421,7 @@ TEST_F(PasswordStoreMacTest, TestKeychainExactSearch) {
 
     for (unsigned int j = 0; j < modified_forms.size(); ++j) {
       PasswordForm* match =
-          keychainAdapter.PasswordExactlyMatchingForm(*modified_forms[j]);
+          keychain_adapter.PasswordExactlyMatchingForm(*modified_forms[j]);
       EXPECT_EQ(NULL, match) << "In modified version " << j << " of base form "
                              << i;
     }
@@ -451,15 +459,16 @@ TEST_F(PasswordStoreMacTest, TestKeychainAdd) {
         L"joe_user", L"fail_me", false, false, 0 }, false },
   };
 
-  MacKeychainPasswordFormAdapter keychainAdapter(keychain_);
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
 
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     PasswordForm* in_form = CreatePasswordFormFromData(test_data[i].data);
-    bool add_succeeded = keychainAdapter.AddLogin(*in_form);
+    bool add_succeeded = owned_keychain_adapter.AddPassword(*in_form);
     EXPECT_EQ(test_data[i].should_succeed, add_succeeded);
     if (add_succeeded) {
       scoped_ptr<PasswordForm> out_form(
-          keychainAdapter.PasswordExactlyMatchingForm(*in_form));
+          owned_keychain_adapter.PasswordExactlyMatchingForm(*in_form));
       EXPECT_TRUE(out_form.get() != NULL);
       EXPECT_EQ(out_form->scheme, in_form->scheme);
       EXPECT_EQ(out_form->signon_realm, in_form->signon_realm);
@@ -478,7 +487,8 @@ TEST_F(PasswordStoreMacTest, TestKeychainAdd) {
       NULL, NULL, NULL, L"joe_user", L"updated_password", false, false, 0
     };
     PasswordForm* update_form = CreatePasswordFormFromData(data);
-    EXPECT_TRUE(keychainAdapter.AddLogin(*update_form));
+    MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
+    EXPECT_TRUE(keychain_adapter.AddPassword(*update_form));
     SecKeychainItemRef keychain_item = reinterpret_cast<SecKeychainItemRef>(2);
     PasswordForm stored_form;
     internal_keychain_helpers::FillPasswordFormFromKeychainItem(*keychain_,
@@ -486,6 +496,45 @@ TEST_F(PasswordStoreMacTest, TestKeychainAdd) {
                                                                 &stored_form);
     EXPECT_EQ(update_form->password_value, stored_form.password_value);
     delete update_form;
+  }
+}
+
+TEST_F(PasswordStoreMacTest, TestKeychainRemove) {
+  struct TestDataAndExpectation {
+    PasswordFormData data;
+    bool should_succeed;
+  };
+  TestDataAndExpectation test_data[] = {
+    // Test deletion of an item that we add.
+    { { PasswordForm::SCHEME_HTML, "http://web.site.com/",
+        "http://web.site.com/path/to/page.html", NULL, NULL, NULL, NULL,
+        L"anonymous", L"knock-knock", false, false, 0 }, true },
+    // Make sure we don't delete items we don't own.
+    { { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
+        "http://some.domain.com/insecure.html", NULL, NULL, NULL, NULL,
+        L"joe_user", NULL, true, false, 0 }, false },
+  };
+
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
+
+  // Add our test item so that we can delete it.
+  PasswordForm* add_form = CreatePasswordFormFromData(test_data[0].data);
+  EXPECT_TRUE(owned_keychain_adapter.AddPassword(*add_form));
+  delete add_form;
+  
+  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
+    scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(
+        test_data[i].data));
+    EXPECT_EQ(test_data[i].should_succeed,
+              owned_keychain_adapter.RemovePassword(*form));
+
+    MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
+    PasswordForm* match = keychain_adapter.PasswordExactlyMatchingForm(*form);
+    EXPECT_EQ(test_data[i].should_succeed, match == NULL);
+    if (match) {
+      delete match;
+    }
   }
 }
 
@@ -506,18 +555,13 @@ TEST_F(PasswordStoreMacTest, TestFormMatch) {
     different_form.ssl_valid = true;
     different_form.preferred = true;
     different_form.date_created = base::Time::Now();
-    bool paths_match = false;
     EXPECT_TRUE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                              different_form,
-                                                              &paths_match));
-    EXPECT_TRUE(paths_match);
+                                                              different_form));
 
-    // Check that we detect path differences, but still match.
+    // Check that path differences don't prevent a match.
     base_form.origin = GURL("http://some.domain.com/other_page.html");
     EXPECT_TRUE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                              different_form,
-                                                              &paths_match));
-    EXPECT_FALSE(paths_match);
+                                                              different_form));
   }
 
   // Check that any one primary key changing is enough to prevent matching.
@@ -525,29 +569,25 @@ TEST_F(PasswordStoreMacTest, TestFormMatch) {
     PasswordForm different_form(base_form);
     different_form.scheme = PasswordForm::SCHEME_DIGEST;
     EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                               different_form,
-                                                               NULL));
+                                                               different_form));
   }
   {
     PasswordForm different_form(base_form);
     different_form.signon_realm = std::string("http://some.domain.com:8080/");
     EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                               different_form,
-                                                               NULL));
+                                                               different_form));
   }
   {
     PasswordForm different_form(base_form);
     different_form.username_value = std::wstring(L"john.doe");
     EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                               different_form,
-                                                               NULL));
+                                                               different_form));
   }
   {
     PasswordForm different_form(base_form);
     different_form.blacklisted_by_user = true;
     EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(base_form,
-                                                               different_form,
-                                                               NULL));
+                                                               different_form));
   }
 
   // Blacklist forms should *never* match for merging, even when identical
@@ -556,8 +596,7 @@ TEST_F(PasswordStoreMacTest, TestFormMatch) {
     PasswordForm form_a(base_form);
     form_a.blacklisted_by_user = true;
     PasswordForm form_b(form_a);
-    EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(form_a, form_b,
-                                                               NULL));
+    EXPECT_FALSE(internal_keychain_helpers::FormsMatchForMerge(form_a, form_b));
   }
 }
 

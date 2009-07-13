@@ -37,7 +37,15 @@ class MacKeychainPasswordFormAdapter {
   // Creates a new keychain entry from |form|, or updates the password of an
   // existing keychain entry if there is a collision. Returns true if a keychain
   // entry was successfully added/updated.
-  bool AddLogin(const webkit_glue::PasswordForm& form);
+  bool AddPassword(const webkit_glue::PasswordForm& form);
+
+  // Removes the keychain password matching |form| if any. Returns true if a
+  // keychain item was found and successfully removed.
+  bool RemovePassword(const webkit_glue::PasswordForm& form);
+
+  // Controls whether or not Chrome will restrict Keychain searches to items
+  // that it created. Defaults to false.
+  void SetFindsOnlyOwnedItems(bool finds_only_owned);
 
  private:
   // Returns PasswordForms constructed from the given Keychain items.
@@ -52,14 +60,14 @@ class MacKeychainPasswordFormAdapter {
       const webkit_glue::PasswordForm& form);
 
   // Searches |keychain| for the specific keychain entry that corresponds to the
-  // given form, and returns it (or NULL if no match is found).  The caller is
+  // given form, and returns it (or NULL if no match is found). The caller is
   // responsible for calling MacKeychain::Free on on the returned item.
   SecKeychainItemRef KeychainItemForForm(
       const webkit_glue::PasswordForm& form);
 
   // Returns the Keychain items matching the given signon_realm, scheme, and
   // optionally path and username (either of both can be NULL).
-  // them. The caller is responsible for calling MacKeychain::Free on the
+  // The caller is responsible for calling MacKeychain::Free on the
   // returned items.
   std::vector<SecKeychainItemRef> MatchingKeychainItems(
       const std::string& signon_realm, webkit_glue::PasswordForm::Scheme scheme,
@@ -91,6 +99,9 @@ class MacKeychainPasswordFormAdapter {
 
   MacKeychain* keychain_;
 
+  // If true, Keychain searches are restricted to items created by Chrome.
+  bool finds_only_owned_;
+
   DISALLOW_COPY_AND_ASSIGN(MacKeychainPasswordFormAdapter);
 };
 
@@ -113,11 +124,8 @@ bool FillPasswordFormFromKeychainItem(const MacKeychain& keychain,
 
 // Returns true if the two given forms match based on signon_reaml, scheme, and
 // username_value, and are thus suitable for merging (see MergePasswordForms).
-// If this returns true, and path_matches is non-NULL, *path_matches will be set
-// based on whether the full origin matches as well.
 bool FormsMatchForMerge(const webkit_glue::PasswordForm& form_a,
-                        const webkit_glue::PasswordForm& form_b,
-                        bool* path_matches);
+                        const webkit_glue::PasswordForm& form_b);
 
 // Populates merged_forms by combining the password data from keychain_forms and
 // the metadata from database_forms, removing used entries from the two source
