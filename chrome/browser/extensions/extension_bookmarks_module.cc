@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 
 #include "base/json_writer.h"
+#include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -25,11 +26,11 @@ class ExtensionBookmarks {
   static DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
                                             bool recurse) {
     DictionaryValue* dict = new DictionaryValue();
-    dict->SetInteger(keys::kIdKey, node->id());
+    dict->SetString(keys::kIdKey, Int64ToString(node->id()));
 
     const BookmarkNode* parent = node->GetParent();
     if (parent)
-      dict->SetInteger(keys::kParentIdKey, parent->id());
+      dict->SetString(keys::kParentIdKey, Int64ToString(parent->id()));
 
     if (!node->is_folder()) {
       dict->SetString(keys::kUrlKey, node->GetURL().spec());
@@ -68,7 +69,7 @@ class ExtensionBookmarks {
     list->Append(dict);
   }
 
-  static bool RemoveNode(BookmarkModel* model, int id, bool recursive,
+  static bool RemoveNode(BookmarkModel* model, int64 id, bool recursive,
                          std::string* error) {
     const BookmarkNode* node = model->GetNodeByID(id);
     if (!node) {
@@ -112,6 +113,15 @@ void BookmarksFunction::Run() {
       ExtensionBookmarkEventRouter::GetSingleton();
   event_router->Observe(model);
   SendResponse(RunImpl());
+}
+
+bool BookmarksFunction::GetBookmarkIdAsInt64(
+    const std::string& id_string, int64* id) {
+  if (StringToInt64(id_string, id))
+    return true;
+
+  error_ = keys::kInvalidIdError;
+  return false;
 }
 
 void BookmarksFunction::Observe(NotificationType type,
@@ -161,11 +171,12 @@ void ExtensionBookmarkEventRouter::BookmarkNodeMoved(
     int new_index) {
   ListValue args;
   const BookmarkNode* node = new_parent->GetChild(new_index);
-  args.Append(new FundamentalValue(node->id()));
+  args.Append(new StringValue(Int64ToString(node->id())));
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->SetInteger(keys::kParentIdKey, new_parent->id());
+  object_args->SetString(keys::kParentIdKey, Int64ToString(new_parent->id()));
   object_args->SetInteger(keys::kIndexKey, new_index);
-  object_args->SetInteger(keys::kOldParentIdKey, old_parent->id());
+  object_args->SetString(keys::kOldParentIdKey,
+                         Int64ToString(old_parent->id()));
   object_args->SetInteger(keys::kOldIndexKey, old_index);
   args.Append(object_args);
 
@@ -179,7 +190,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                                      int index) {
   ListValue args;
   const BookmarkNode* node = parent->GetChild(index);
-  args.Append(new FundamentalValue(node->id()));
+  args.Append(new StringValue(Int64ToString(node->id())));
   DictionaryValue* obj = ExtensionBookmarks::GetNodeDictionary(node, false);
 
   // Remove id since it's already being passed as the first argument.
@@ -205,9 +216,9 @@ void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
     int index,
     const BookmarkNode* node) {
   ListValue args;
-  args.Append(new FundamentalValue(node->id()));
+  args.Append(new StringValue(Int64ToString(node->id())));
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->SetInteger(keys::kParentIdKey, parent->id());
+  object_args->SetString(keys::kParentIdKey, Int64ToString(parent->id()));
   object_args->SetInteger(keys::kIndexKey, index);
   args.Append(object_args);
 
@@ -219,7 +230,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
 void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
     BookmarkModel* model, const BookmarkNode* node) {
   ListValue args;
-  args.Append(new FundamentalValue(node->id()));
+  args.Append(new StringValue(Int64ToString(node->id())));
 
   // TODO(erikkay) The only two things that BookmarkModel sends this
   // notification for are title and favicon.  Since we're currently ignoring
@@ -243,12 +254,12 @@ void ExtensionBookmarkEventRouter::BookmarkNodeFavIconLoaded(
 void ExtensionBookmarkEventRouter::BookmarkNodeChildrenReordered(
     BookmarkModel* model, const BookmarkNode* node) {
   ListValue args;
-  args.Append(new FundamentalValue(node->id()));
+  args.Append(new StringValue(Int64ToString(node->id())));
   int childCount = node->GetChildCount();
   ListValue* children = new ListValue();
   for (int i = 0; i < childCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
-    Value* child_id = new FundamentalValue(child->id());
+    Value* child_id = new StringValue(Int64ToString(child->id()));
     children->Append(child_id);
   }
   args.Append(children);
@@ -268,8 +279,11 @@ bool GetBookmarksFunction::RunImpl() {
     size_t count = ids->GetSize();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {
-      int id = 0;
-      EXTENSION_FUNCTION_VALIDATE(ids->GetInteger(i, &id));
+      int64 id;
+      std::string id_string;
+      EXTENSION_FUNCTION_VALIDATE(ids->GetString(i, &id_string));
+      if (!GetBookmarkIdAsInt64(id_string, &id))
+        return false;
       const BookmarkNode* node = model->GetNodeByID(id);
       if (!node) {
         error_ = keys::kNoNodeError;
@@ -279,8 +293,11 @@ bool GetBookmarksFunction::RunImpl() {
       }
     }
   } else {
-    int id;
-    EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&id));
+    int64 id;
+    std::string id_string;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&id_string));
+    if (!GetBookmarkIdAsInt64(id_string, &id))
+      return false;
     const BookmarkNode* node = model->GetNodeByID(id);
     if (!node) {
       error_ = keys::kNoNodeError;
@@ -295,8 +312,11 @@ bool GetBookmarksFunction::RunImpl() {
 
 bool GetBookmarkChildrenFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
-  int id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&id));
+  int64 id;
+  std::string id_string;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&id_string));
+  if (!GetBookmarkIdAsInt64(id_string, &id))
+    return false;
   scoped_ptr<ListValue> json(new ListValue());
   const BookmarkNode* node = model->GetNodeByID(id);
   if (!node) {
@@ -350,8 +370,9 @@ bool RemoveBookmarkFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(1, &recursive));
 
   BookmarkModel* model = profile()->GetBookmarkModel();
-  int id;
-  if (args->GetInteger(0, &id)) {
+  int64 id;
+  std::string id_string;
+  if (args->GetString(0, &id_string) && StringToInt64(id_string, &id)) {
     return ExtensionBookmarks::RemoveNode(model, id, recursive, &error_);
   } else {
     ListValue* ids;
@@ -359,7 +380,9 @@ bool RemoveBookmarkFunction::RunImpl() {
     size_t count = ids->GetSize();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {
-      EXTENSION_FUNCTION_VALIDATE(ids->GetInteger(i, &id));
+      EXTENSION_FUNCTION_VALIDATE(ids->GetString(i, &id_string));
+      if (!GetBookmarkIdAsInt64(id_string, &id))
+        return false;
       if (!ExtensionBookmarks::RemoveNode(model, id, recursive, &error_))
         return false;
     }
@@ -372,13 +395,16 @@ bool CreateBookmarkFunction::RunImpl() {
   DictionaryValue* json = static_cast<DictionaryValue*>(args_);
 
   BookmarkModel* model = profile()->GetBookmarkModel();
-  int parentId;
+  int64 parentId;
   if (!json->HasKey(keys::kParentIdKey)) {
     // Optional, default to "other bookmarks".
     parentId = model->other_node()->id();
   } else {
-    EXTENSION_FUNCTION_VALIDATE(json->GetInteger(keys::kParentIdKey,
-                                                 &parentId));
+    std::string parentId_string;
+    EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kParentIdKey,
+                                                &parentId_string));
+    if (!GetBookmarkIdAsInt64(parentId_string, &parentId))
+      return false;
   }
   const BookmarkNode* parent = model->GetNodeByID(parentId);
   if (!parent) {
@@ -431,8 +457,11 @@ bool CreateBookmarkFunction::RunImpl() {
 bool MoveBookmarkFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
   const ListValue* args = static_cast<const ListValue*>(args_);
-  int id;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(0, &id));
+  int64 id;
+  std::string id_string;
+  EXTENSION_FUNCTION_VALIDATE(args->GetString(0, &id_string));
+  if (!GetBookmarkIdAsInt64(id_string, &id))
+    return false;
   DictionaryValue* destination;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &destination));
 
@@ -493,8 +522,11 @@ bool SetBookmarkTitleFunction::RunImpl() {
   json->GetString(keys::kTitleKey, &title);  // Optional (empty is clear).
 
   BookmarkModel* model = profile()->GetBookmarkModel();
-  int id = 0;
-  EXTENSION_FUNCTION_VALIDATE(json->GetInteger(keys::kIdKey, &id));
+  int64 id = 0;
+  std::string id_string;
+  EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kIdKey, &id_string));
+  if (!GetBookmarkIdAsInt64(id_string, &id))
+    return false;
   const BookmarkNode* node = model->GetNodeByID(id);
   if (!node) {
     error_ = keys::kNoNodeError;

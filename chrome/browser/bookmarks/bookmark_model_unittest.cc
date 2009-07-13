@@ -593,7 +593,7 @@ class BookmarkModelTestWithProfile : public testing::Test,
 
   void VerifyNoDuplicateIDs(BookmarkModel* model) {
     TreeNodeIterator<const BookmarkNode> it(model->root_node());
-    base::hash_set<int> ids;
+    base::hash_set<int64> ids;
     while (it.has_next())
       ASSERT_TRUE(ids.insert(it.Next()->id()).second);
   }

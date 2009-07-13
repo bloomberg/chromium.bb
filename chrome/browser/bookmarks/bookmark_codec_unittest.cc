@@ -106,7 +106,7 @@ class BookmarkCodecTest : public testing::Test {
   }
 
   bool Decode(BookmarkCodec* codec, BookmarkModel* model, const Value& value) {
-    int max_id;
+    int64 max_id;
     bool result = codec->Decode(AsMutable(model->GetBookmarkBarNode()),
                                 AsMutable(model->other_node()),
                                 &max_id, value);
@@ -201,11 +201,11 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
 
 TEST_F(BookmarkCodecTest, PersistIDsTest) {
   scoped_ptr<BookmarkModel> model_to_encode(CreateTestModel3());
-  BookmarkCodec encoder(true);
+  BookmarkCodec encoder;
   scoped_ptr<Value> model_value(encoder.Encode(model_to_encode.get()));
 
   BookmarkModel decoded_model(NULL);
-  BookmarkCodec decoder(true);
+  BookmarkCodec decoder;
   ASSERT_TRUE(Decode(&decoder, &decoded_model, *model_value.get()));
   BookmarkModelTestUtils::AssertModelsEqual(model_to_encode.get(),
                                             &decoded_model,
@@ -220,11 +220,11 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
       bookmark_bar, bookmark_bar->GetChildCount(), kGroup2Title);
   decoded_model.AddURL(group2_node, 0, kUrl4Title, GURL(kUrl4Url));
 
-  BookmarkCodec encoder2(true);
+  BookmarkCodec encoder2;
   scoped_ptr<Value> model_value2(encoder2.Encode(&decoded_model));
 
   BookmarkModel decoded_model2(NULL);
-  BookmarkCodec decoder2(true);
+  BookmarkCodec decoder2;
   ASSERT_TRUE(Decode(&decoder2, &decoded_model2, *model_value2.get()));
   BookmarkModelTestUtils::AssertModelsEqual(&decoded_model,
                                             &decoded_model2,
@@ -235,17 +235,17 @@ class UniqueIDGeneratorTest : public testing::Test {
  protected:
   void TestMixed(UniqueIDGenerator* gen) {
     // Few unique numbers.
-    for (int i = 1; i <= 5; ++i) {
+    for (int64 i = 1; i <= 5; ++i) {
       EXPECT_EQ(i, gen->GetUniqueID(i));
     }
 
     // All numbers from 1 to 5 should produce numbers 6 to 10.
-    for (int i = 1; i <= 5; ++i) {
+    for (int64 i = 1; i <= 5; ++i) {
       EXPECT_EQ(5 + i, gen->GetUniqueID(i));
     }
 
     // 10 should produce 11, then 11 should produce 12, and so on.
-    for (int i = 1; i <= 5; ++i) {
+    for (int64 i = 1; i <= 5; ++i) {
       EXPECT_EQ(10 + i, gen->GetUniqueID(9 + i));
     }
 
@@ -272,14 +272,14 @@ class UniqueIDGeneratorTest : public testing::Test {
 
 TEST_F(UniqueIDGeneratorTest, SerialNumbersTest) {
   UniqueIDGenerator gen;
-  for (int i = 1; i <= 10; ++i) {
+  for (int64 i = 1; i <= 10; ++i) {
     EXPECT_EQ(i, gen.GetUniqueID(i));
   }
 }
 
 TEST_F(UniqueIDGeneratorTest, UniqueSortedNumbersTest) {
   UniqueIDGenerator gen;
-  for (int i = 1; i <= 10; i += 2) {
+  for (int64 i = 1; i <= 10; i += 2) {
     EXPECT_EQ(i, gen.GetUniqueID(i));
   }
 }
@@ -287,7 +287,7 @@ TEST_F(UniqueIDGeneratorTest, UniqueSortedNumbersTest) {
 TEST_F(UniqueIDGeneratorTest, UniqueUnsortedConsecutiveNumbersTest) {
   UniqueIDGenerator gen;
   int numbers[] = {2, 10, 6, 3, 8, 5, 1, 7, 4, 9};
-  for (int i = 0; i < ARRAYSIZE(numbers); ++i) {
+  for (int64 i = 0; i < ARRAYSIZE(numbers); ++i) {
     EXPECT_EQ(numbers[i], gen.GetUniqueID(numbers[i]));
   }
 }
@@ -295,14 +295,14 @@ TEST_F(UniqueIDGeneratorTest, UniqueUnsortedConsecutiveNumbersTest) {
 TEST_F(UniqueIDGeneratorTest, UniqueUnsortedNumbersTest) {
   UniqueIDGenerator gen;
   int numbers[] = {20, 100, 60, 30, 80, 50, 10, 70, 40, 90};
-  for (int i = 0; i < ARRAYSIZE(numbers); ++i) {
+  for (int64 i = 0; i < ARRAYSIZE(numbers); ++i) {
     EXPECT_EQ(numbers[i], gen.GetUniqueID(numbers[i]));
   }
 }
 
 TEST_F(UniqueIDGeneratorTest, AllDuplicatesTest) {
   UniqueIDGenerator gen;
-  for (int i = 1; i <= 10; ++i) {
+  for (int64 i = 1; i <= 10; ++i) {
     EXPECT_EQ(i, gen.GetUniqueID(1));
   }
 }
@@ -314,7 +314,7 @@ TEST_F(UniqueIDGeneratorTest, MixedTest) {
 
 TEST_F(UniqueIDGeneratorTest, ResetTest) {
   UniqueIDGenerator gen;
-  for (int i = 0; i < 5; ++i) {
+  for (int64 i = 0; i < 5; ++i) {
     TestMixed(&gen);
     gen.Reset();
   }

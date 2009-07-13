@@ -35,12 +35,12 @@ BookmarkNode::BookmarkNode(const GURL& url)
   Initialize(0);
 }
 
-BookmarkNode::BookmarkNode(int id, const GURL& url)
+BookmarkNode::BookmarkNode(int64 id, const GURL& url)
     : url_(url){
   Initialize(id);
 }
 
-void BookmarkNode::Initialize(int id) {
+void BookmarkNode::Initialize(int64 id) {
   id_ = id;
   loaded_favicon_ = false;
   favicon_load_handle_ = 0;
@@ -77,9 +77,6 @@ void BookmarkNode::Reset(const history::StarredEntry& entry) {
 
 namespace {
 
-// Constant for persist IDs prefernece.
-const wchar_t kPrefPersistIDs[] = L"bookmarks.persist_ids";
-
 // Comparator used when sorting bookmarks. Folders are sorted first, then
   // bookmarks.
 class SortComparator : public std::binary_function<const BookmarkNode*,
@@ -110,7 +107,6 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
 BookmarkModel::BookmarkModel(Profile* profile)
     : profile_(profile),
       loaded_(false),
-      persist_ids_(false),
       file_changed_(false),
       root_(GURL()),
       bookmark_bar_node_(NULL),
@@ -122,8 +118,6 @@ BookmarkModel::BookmarkModel(Profile* profile)
     // Profile is null during testing.
     DoneLoading(CreateLoadDetails());
   }
-  RegisterPreferences();
-  LoadPreferences();
 }
 
 BookmarkModel::~BookmarkModel() {
@@ -282,7 +276,7 @@ bool BookmarkModel::IsBookmarked(const GURL& url) {
   return IsBookmarkedNoLock(url);
 }
 
-const BookmarkNode* BookmarkModel::GetNodeByID(int id) {
+const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) {
   // TODO(sky): TreeNode needs a method that visits all nodes using a predicate.
   return GetNodeByID(&root_, id);
 }
@@ -408,19 +402,6 @@ void BookmarkModel::ClearStore() {
   store_ = NULL;
 }
 
-void BookmarkModel::SetPersistIDs(bool value) {
-  if (value == persist_ids_)
-    return;
-  persist_ids_ = value;
-  if (profile_) {
-    PrefService* pref_service = profile_->GetPrefs();
-    pref_service->SetBoolean(kPrefPersistIDs, persist_ids_);
-  }
-  // Need to save the bookmark data if the value of persist IDs changes.
-  if (store_.get())
-    store_->ScheduleSave();
-}
-
 bool BookmarkModel::IsBookmarkedNoLock(const GURL& url) {
   BookmarkNode tmp_node(url);
   return (nodes_ordered_by_url_set_.find(&tmp_node) !=
@@ -477,6 +458,15 @@ void BookmarkModel::DoneLoading(
   next_node_id_ = details->max_id();
   if (details->computed_checksum() != details->stored_checksum())
     SetFileChanged();
+  if (details->computed_checksum() != details->stored_checksum() ||
+      details->ids_reassigned()) {
+    // If bookmarks file changed externally, the IDs may have changed
+    // externally. In that case, the decoder may have reassigned IDs to make
+    // them unique. So when the file has changed externally, we should save the
+    // bookmarks file to persist new IDs.
+    if (store_.get())
+      store_->ScheduleSave();
+  }
   index_.reset(details->index());
   details->release();
 
@@ -587,7 +577,7 @@ void BookmarkModel::BlockTillLoaded() {
 }
 
 const BookmarkNode* BookmarkModel::GetNodeByID(const BookmarkNode* node,
-                                               int id) {
+                                               int64 id) {
   if (node->id() == id)
     return node;
 
@@ -725,18 +715,12 @@ void BookmarkModel::PopulateNodesByURL(BookmarkNode* node) {
     PopulateNodesByURL(node->GetChild(i));
 }
 
-int BookmarkModel::generate_next_node_id() {
+int64 BookmarkModel::generate_next_node_id() {
   return next_node_id_++;
 }
 
 void BookmarkModel::SetFileChanged() {
   file_changed_ = true;
-  // If bookmarks file changed externally, the IDs may have changed externally.
-  // in that case, the decoder may have reassigned IDs to make them unique.
-  // So when the file has changed externally and IDs are persisted, we should
-  // save the bookmarks file to persist new IDs.
-  if (persist_ids_ && store_.get())
-    store_->ScheduleSave();
 }
 
 BookmarkStorage::LoadDetails* BookmarkModel::CreateLoadDetails() {
@@ -744,19 +728,4 @@ BookmarkStorage::LoadDetails* BookmarkModel::CreateLoadDetails() {
   BookmarkNode* other_folder_node = CreateOtherBookmarksNode();
   return new BookmarkStorage::LoadDetails(
       bb_node, other_folder_node, new BookmarkIndex(), next_node_id_);
-}
-
-void BookmarkModel::RegisterPreferences() {
-  if (!profile_)
-    return;
-  PrefService* pref_service = profile_->GetPrefs();
-  if (!pref_service->IsPrefRegistered(kPrefPersistIDs))
-    pref_service->RegisterBooleanPref(kPrefPersistIDs, false);
-}
-
-void BookmarkModel::LoadPreferences() {
-  if (!profile_)
-    return;
-  PrefService* pref_service = profile_->GetPrefs();
-  persist_ids_ = pref_service->GetBoolean(kPrefPersistIDs);
 }

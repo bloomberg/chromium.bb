@@ -26,6 +26,7 @@ extern const wchar_t kDateGroupModifiedKey[];
 extern const char kNoNodeError[];
 extern const char kNoParentError[];
 extern const char kFolderNotEmptyError[];
+extern const char kInvalidIdError[];
 extern const char kInvalidIndexError[];
 extern const char kInvalidUrlError[];
 extern const char kModifySpecialError[];

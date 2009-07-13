@@ -17,7 +17,7 @@ UniqueIDGenerator::UniqueIDGenerator() {
   Reset();
 }
 
-int UniqueIDGenerator::GetUniqueID(int id) {
+int64 UniqueIDGenerator::GetUniqueID(int64 id) {
   // If the given ID is already assigned, generate new ID.
   if (IsIdAssigned(id))
     id = current_max_ + 1;
@@ -31,7 +31,7 @@ int UniqueIDGenerator::GetUniqueID(int id) {
   return id;
 }
 
-bool UniqueIDGenerator::IsIdAssigned(int id) const {
+bool UniqueIDGenerator::IsIdAssigned(int64 id) const {
   // If the set is already instantiated, then use the set to determine if the
   // given ID is assigned. Otherwise use the current maximum to determine if the
   // given ID is assigned.
@@ -41,7 +41,7 @@ bool UniqueIDGenerator::IsIdAssigned(int id) const {
     return id <= current_max_;
 }
 
-void UniqueIDGenerator::RecordId(int id) {
+void UniqueIDGenerator::RecordId(int64 id) {
   // If the set is instantiated, then use the set.
   if (assigned_ids_.get()) {
     assigned_ids_->insert(id);
@@ -55,8 +55,8 @@ void UniqueIDGenerator::RecordId(int id) {
     ++current_max_;
     return;
   }
-  assigned_ids_.reset(new std::set<int>);
-  for (int i = 0; i <= current_max_; ++i)
+  assigned_ids_.reset(new std::set<int64>);
+  for (int64 i = 0; i <= current_max_; ++i)
     assigned_ids_->insert(i);
   assigned_ids_->insert(id);
 }
@@ -85,11 +85,7 @@ const wchar_t* BookmarkCodec::kTypeFolder = L"folder";
 static const int kCurrentVersion = 1;
 
 BookmarkCodec::BookmarkCodec()
-    : persist_ids_(false) {
-}
-
-BookmarkCodec::BookmarkCodec(bool persist_ids)
-    : persist_ids_(persist_ids) {
+    : ids_reassigned_(false) {
 }
 
 Value* BookmarkCodec::Encode(BookmarkModel* model) {
@@ -98,6 +94,7 @@ Value* BookmarkCodec::Encode(BookmarkModel* model) {
 
 Value* BookmarkCodec::Encode(const BookmarkNode* bookmark_bar_node,
                              const BookmarkNode* other_folder_node) {
+  ids_reassigned_ = false;
   InitializeChecksum();
   DictionaryValue* roots = new DictionaryValue();
   roots->Set(kRootFolderNameKey, EncodeNode(bookmark_bar_node));
@@ -116,12 +113,16 @@ Value* BookmarkCodec::Encode(const BookmarkNode* bookmark_bar_node,
 
 bool BookmarkCodec::Decode(BookmarkNode* bb_node,
                            BookmarkNode* other_folder_node,
-                           int* max_id,
+                           int64* max_id,
                            const Value& value) {
+  // TODO(munjal): Instead of paying the price of ID generator in al lcases, we
+  // should only pay the price if we detect the file has changed and do a second
+  // pass to reassign IDs. See issue 16357.
   id_generator_.Reset();
+  ids_reassigned_ = false;
   stored_checksum_.clear();
   InitializeChecksum();
-  bool success = DecodeHelper(bb_node, other_folder_node, max_id, value);
+  bool success = DecodeHelper(bb_node, other_folder_node, value);
   FinalizeChecksum();
   *max_id = id_generator_.current_max() + 1;
   return success;
@@ -130,10 +131,8 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
 Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
   DictionaryValue* value = new DictionaryValue();
   std::string id;
-  if (persist_ids_) {
-    id = IntToString(node->id());
-    value->SetString(kIdKey, id);
-  }
+  id = Int64ToString(node->id());
+  value->SetString(kIdKey, id);
   const std::wstring& title = node->GetTitle();
   value->SetString(kNameKey, title);
   value->SetString(kDateAddedKey,
@@ -160,7 +159,6 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
 
 bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
                                  BookmarkNode* other_folder_node,
-                                 int* max_id,
                                  const Value& value) {
   if (value.GetType() != Value::TYPE_DICTIONARY)
     return false;  // Unexpected type.
@@ -231,13 +229,14 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
                                BookmarkNode* parent,
                                BookmarkNode* node) {
   std::string id_string;
-  int id = 0;
-  if (persist_ids_) {
-    if (value.GetString(kIdKey, &id_string))
-      if (!StringToInt(id_string, &id))
-        return false;
-  }
-  id = id_generator_.GetUniqueID(id);
+  int64 id = 0;
+  if (value.GetString(kIdKey, &id_string))
+    if (!StringToInt64(id_string, &id))
+      return false;
+  int64 new_id = id_generator_.GetUniqueID(id);
+  if (new_id != id)
+    ids_reassigned_ = true;
+  id = new_id;
 
   std::wstring title;
   if (!value.GetString(kNameKey, &title))
