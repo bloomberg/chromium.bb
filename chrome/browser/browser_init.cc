@@ -436,6 +436,27 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
         browser = BrowserList::GetLastActive();
       OpenURLsInBrowser(browser, process_startup, urls_to_open);
     }
+#if defined(OS_LINUX)
+    // TODO(port): Remove ifdef when the Linux splash page is not needed.
+    const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+    // This can mess up UI tests, so only do it when UI tests aren't running.
+    if (!parsed_command_line.HasSwitch(switches::kHomePage)) {
+      Browser* browser = BrowserList::GetLastActive();
+      // Only show the splash page if it isn't already showing.
+      bool open_splash = true;
+      for (int i = 0; i < browser->tab_count(); ++i) {
+        if (browser->GetTabContentsAt(i)->GetURL().spec() ==
+            "about:linux-splash") {
+          open_splash = false;
+        }
+      }
+
+      if (open_splash) {
+        browser->OpenURL(GURL("about:linux-splash"), GURL(),
+                         NEW_FOREGROUND_TAB, PageTransition::START_PAGE);
+      }
+    }
+#endif
     // Check whether we are the default browser.
     if (!command_line_.HasSwitch(switches::kNoDefaultBrowserCheck))
       CheckDefaultBrowser(profile);
