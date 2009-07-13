@@ -219,7 +219,7 @@ void WorkerTest::RunLayoutTest(const std::string& test_case_file_name,
   if (is_http_test)
     new_test_url.reset(new GURL(
         std::string("http://localhost:8080/") +
-        UTF16ToUTF8(test_case_dir_.ToWStringHack()) +
+        WideToUTF8(test_case_dir_.ToWStringHack()) +
         "/" +
         test_case_file_name));
   else
@@ -304,7 +304,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
   worker_test_dir = worker_test_dir.AppendASCII("workers");
   InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
 
-  for (int i = 0; i < arraysize(kLayoutTestFiles); ++i)
+  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
@@ -325,7 +325,7 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   InitializeForLayoutTest(http_test_dir, worker_test_dir, true);
 
   StartHttpServer(new_http_root_dir_);
-  for (int i = 0; i < arraysize(kLayoutTestFiles); ++i)
+  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], true);
   StopHttpServer();
 }
@@ -350,7 +350,7 @@ TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   InitializeForLayoutTest(http_test_dir, worker_test_dir, true);
 
   StartHttpServer(new_http_root_dir_);
-  for (int i = 0; i < arraysize(kLayoutTestFiles); ++i)
+  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], true);
   StopHttpServer();
 }
