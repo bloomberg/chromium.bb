@@ -60,13 +60,13 @@ var g_o3djsMode = false;
 function publish(symbolSet) {
   publish.conf = {  // trailing slash expected for dirs
     ext: '.ezt',
-    outDir: JSDOC.opt.d || SYS.pwd + '../out/jsdoc/',
-    templatesDir: JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/',
+    outDir: JSDOC.opt.d,
+    templatesDir: JSDOC.opt.t,
     symbolsDir: '',
-    prefix: JSDOC.opt.D.prefix || 'js_1_0_',
-    o3djs: JSDOC.opt.D.o3djs || ''};
-  publish.conf.srcDir = publish.conf.outDir + 'src/'
-  publish.conf.htmlDir = publish.conf.outDir + 'original_html/'
+    prefix: JSDOC.opt.D.prefix,
+    o3djs: JSDOC.opt.D.o3djs};
+  publish.conf.srcDir = publish.conf.outDir + 'src/';
+  publish.conf.htmlDir = JSDOC.opt.D.htmlOutDir;
 
   if (publish.conf.o3djs) {
     g_o3djsMode = true;
@@ -83,6 +83,7 @@ function publish(symbolSet) {
   }
 
   // create the folders and subfolders to hold the output
+  IO.mkPath((publish.conf.outDir).split('/'));
   IO.mkPath((publish.conf.htmlDir).split('/'));
 
   // used to allow Link to check the details of things being linked to
@@ -296,9 +297,9 @@ function resolveLinks(str) {
 
 /**
  * Makes a link for a symbol.
- * 
- * @param {string} symbolName Name of symbol 
- * @param {string} extra extra 
+ *
+ * @param {string} symbolName Name of symbol
+ * @param {string} extra extra
  * @param {string} opt_bookmark Optional bookmark.
  */
 function makeSymbolLink(symbolName, extra, opt_bookmark) {
@@ -307,7 +308,7 @@ function makeSymbolLink(symbolName, extra, opt_bookmark) {
     prefix = '../classo3d_1_1_';
   }
   return (prefix + symbolName + extra +
-          '.html').toLowerCase() + 
+          '.html').toLowerCase() +
          (opt_bookmark ? '#' + opt_bookmark : '');
 }
 
