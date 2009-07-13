@@ -6,10 +6,10 @@
 
 #include <gtk/gtk.h>
 
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "chrome/common/process_watcher.h"
 
 namespace {
 
@@ -18,7 +18,9 @@ void XDGOpen(const FilePath& path) {
   argv.push_back("xdg-open");
   argv.push_back(path.value());
   base::file_handle_mapping_vector no_files;
-  base::LaunchApp(argv, no_files, false, NULL);
+  base::ProcessHandle handle;
+  if (base::LaunchApp(argv, no_files, false, &handle))
+    ProcessWatcher::EnsureProcessGetsReaped(handle);
 }
 
 }  // namespace

@@ -513,7 +513,9 @@ void SaveFileManager::OnDeleteDirectoryOrFile(const FilePath& full_path,
 // We run on this thread to avoid blocking the UI with slow Shell operations.
 void SaveFileManager::OnShowSavedFileInShell(const FilePath full_path) {
   DCHECK(MessageLoop::current() == GetSaveLoop());
+  LOG(ERROR) << "BBB";
   platform_util::ShowItemInFolder(full_path);
+  LOG(ERROR) << "BBB2";
 }
 
 void SaveFileManager::RenameAllFiles(

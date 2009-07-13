@@ -25,7 +25,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 
 static const char kUploadURL[] =
-    "https://clients2.google.com/cr/report";
+    "http://crash-staging-collector.corp.google.com:3841/cr/report";
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
