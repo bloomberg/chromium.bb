@@ -252,7 +252,7 @@ void BrowserWindowCocoa::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
 }
 
 void BrowserWindowCocoa::UserChangedTheme() {
-  NOTIMPLEMENTED();
+  [controller_ userChangedTheme];
 }
 
 int BrowserWindowCocoa::GetExtraRenderViewHeight() const {

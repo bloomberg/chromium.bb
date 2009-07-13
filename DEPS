@@ -57,7 +57,7 @@ deps = {
 
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@19546",
-    
+
   # TODO(jianli): Remove this once we do not need to run worker's layout tests
   # in ui test.
   "src/chrome/test/data/workers/LayoutTests/fast/workers":
@@ -81,7 +81,7 @@ deps_os = {
   },
   "mac": {
     "src/third_party/GTM":
-      "http://google-toolbox-for-mac.googlecode.com/svn/trunk@119",
+      "http://google-toolbox-for-mac.googlecode.com/svn/trunk@154",
     "src/third_party/pdfsqueeze":
       "http://pdfsqueeze.googlecode.com/svn/trunk@2",
     "src/third_party/WebKit/WebKit/mac":

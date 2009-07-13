@@ -9,7 +9,7 @@
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="48"/>
-			<integer value="119"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -43,7 +43,7 @@
 					<object class="NSTextField" id="535508469">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">266</int>
-						<string key="NSFrame">{{168, 5}, {338, 27}}</string>
+						<string key="NSFrame">{{165, 5}, {341, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33004</int>
 						<bool key="NSEnabled">YES</bool>
@@ -81,7 +81,7 @@
 					<object class="NSButton" id="368496192">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{104, 4}, {29, 29}}</string>
+						<string key="NSFrame">{{101, 5}, {31, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33003</int>
 						<bool key="NSEnabled">YES</bool>
@@ -99,7 +99,7 @@
 							<int key="NSButtonFlags2">6</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">home</string>
+								<string key="NSResourceName">home_Template</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -110,7 +110,7 @@
 					<object class="NSButton" id="559273956">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{139, 4}, {29, 29}}</string>
+						<string key="NSFrame">{{136, 5}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">35000</int>
 						<bool key="NSEnabled">YES</bool>
@@ -125,7 +125,11 @@
 							<int key="NSButtonFlags2">6</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">star</string>
+								<string key="NSResourceName">star_Template</string>
+							</object>
+							<object class="NSCustomResource" key="NSAlternateImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">starred</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -136,21 +140,21 @@
 					<object class="NSButton" id="458854861">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{69, 4}, {29, 29}}</string>
+						<string key="NSFrame">{{66, 5}, {31, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33002</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="386107000">
-							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">134250496</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
 							<reference key="NSControlView" ref="458854861"/>
-							<int key="NSButtonFlags">-2033434369</int>
+							<int key="NSButtonFlags">-2033958657</int>
 							<int key="NSButtonFlags2">6</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">reload</string>
+								<string key="NSResourceName">reload_Template</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -161,7 +165,7 @@
 					<object class="NSButton" id="781044416">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{34, 4}, {29, 29}}</string>
+						<string key="NSFrame">{{34, 5}, {28, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33001</int>
 						<bool key="NSEnabled">YES</bool>
@@ -172,11 +176,11 @@
 							<reference key="NSSupport" ref="64724822"/>
 							<int key="NSTag">1</int>
 							<reference key="NSControlView" ref="781044416"/>
-							<int key="NSButtonFlags">-2031337217</int>
+							<int key="NSButtonFlags">-2031861505</int>
 							<int key="NSButtonFlags2">6</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">forward</string>
+								<string key="NSResourceName">forward_Template</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -187,22 +191,22 @@
 					<object class="NSButton" id="634265909">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{6, 4}, {29, 29}}</string>
+						<string key="NSFrame">{{5, 5}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33000</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="697431051">
-							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">134250496</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
 							<int key="NSTag">-2</int>
 							<reference key="NSControlView" ref="634265909"/>
-							<int key="NSButtonFlags">-2030288641</int>
+							<int key="NSButtonFlags">-2030812929</int>
 							<int key="NSButtonFlags2">6</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">back</string>
+								<string key="NSResourceName">back_Template</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -213,7 +217,7 @@
 					<object class="NSButton" id="480525277">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{505, 4}, {29, 29}}</string>
+						<string key="NSFrame">{{506, 5}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33005</int>
 						<bool key="NSEnabled">YES</bool>
@@ -228,7 +232,7 @@
 							<int key="NSButtonFlags2">6</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">go</string>
+								<string key="NSResourceName">go_Template</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -239,7 +243,7 @@
 					<object class="NSButton" id="571076484">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{540, 4}, {30, 29}}</string>
+						<string key="NSFrame">{{539, 5}, {30, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33005</int>
 						<bool key="NSEnabled">YES</bool>
@@ -253,7 +257,7 @@
 							<int key="NSButtonFlags2">134</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">menu_page</string>
+								<string key="NSResourceName">menu_page_Template</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -264,7 +268,7 @@
 					<object class="NSButton" id="602421009">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">265</int>
-						<string key="NSFrame">{{575, 4}, {29, 29}}</string>
+						<string key="NSFrame">{{574, 5}, {29, 29}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<int key="NSTag">33005</int>
 						<bool key="NSEnabled">YES</bool>
@@ -278,7 +282,7 @@
 							<int key="NSButtonFlags2">134</int>
 							<object class="NSCustomResource" key="NSNormalImage">
 								<string key="NSClassName">NSImage</string>
-								<string key="NSResourceName">menu_chrome</string>
+								<string key="NSResourceName">menu_chrome_Template</string>
 							</object>
 							<string key="NSAlternateContents"/>
 							<string key="NSKeyEquivalent"/>
@@ -294,7 +298,7 @@
 						<string key="NSClassName">BookmarkBarView</string>
 					</object>
 				</object>
-				<string key="NSFrameSize">{607, 38}</string>
+				<string key="NSFrameSize">{607, 39}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">ToolbarView</string>
 			</object>
@@ -1524,6 +1528,7 @@
 					<string>-3.IBPluginDependency</string>
 					<string>1.IBEditorWindowLastContentRect</string>
 					<string>1.IBPluginDependency</string>
+					<string>1.IBViewEditorWindowController.showingLayoutRectangles</string>
 					<string>10.CustomClassName</string>
 					<string>10.IBPluginDependency</string>
 					<string>100.IBPluginDependency</string>
@@ -1606,8 +1611,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{525, 688}, {607, 38}}</string>
+					<string>{{287, 51}, {607, 39}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<boolean value="YES"/>
 					<string>ToolbarButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1644,7 +1650,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{571, 1058}, {248, 263}}</string>
+					<string>{{961, 437}, {248, 263}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

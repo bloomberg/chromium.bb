@@ -3,23 +3,58 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/location_bar_cell.h"
+#import "third_party/GTM/AppKit/GTMTheme.h"
 
-const NSInteger kBaselineOffset = 1;
+const NSInteger kBaselineOffset = 2;
 
 @implementation LocationBarCell
 
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
+  NSFrameRectWithWidthUsingOperation(cellFrame,  1, NSCompositeSourceOver);
+
+  NSRect frame = NSInsetRect(cellFrame, 0, 1);
+  [[NSColor whiteColor] setFill];
+  NSRect innerFrame = NSInsetRect(frame, 1, 1);
+  NSRectFill(innerFrame);
+
+  NSRect shadowFrame, restFrame;
+  NSDivideRect(innerFrame, &shadowFrame, &restFrame, 1, NSMinYEdge);
+
+  BOOL isMainWindow = [[controlView window] isMainWindow];
+  GTMTheme *theme = [controlView gtm_theme];
+  NSColor* stroke = [theme strokeColorForStyle:GTMThemeStyleToolBarButton
+                                         state:isMainWindow];
+  [stroke set];
+  NSFrameRectWithWidthUsingOperation(frame, 1.0, NSCompositeSourceOver);
+
+  // Draw the location bar shadow.
+  [[NSColor colorWithCalibratedWhite:0.0 alpha:0.05] setFill];
+  NSRectFillUsingOperation(shadowFrame, NSCompositeSourceOver);
+
+  if ([self showsFirstResponder]) {
+    [[[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:0.5] set];
+    NSFrameRectWithWidthUsingOperation(NSInsetRect(frame, 0, 0), 2,
+                                       NSCompositeSourceOver);
+  }
+
+  [self drawInteriorWithFrame:cellFrame
+                        inView:controlView];
+
+}
+
 - (void)drawInteriorWithFrame:(NSRect)cellFrame
-                       inView:(NSView *)controlView {
+                       inView:(NSView*)controlView {
   [super drawInteriorWithFrame:NSInsetRect(cellFrame, 0, kBaselineOffset)
                         inView:controlView];
 }
 
 // Override these methods so that the field editor shows up in the right place
 - (void)editWithFrame:(NSRect)cellFrame
-               inView:(NSView *)controlView
-               editor:(NSText *)textObj
+               inView:(NSView*)controlView
+               editor:(NSText*)textObj
              delegate:(id)anObject
-                event:(NSEvent *)theEvent {
+                event:(NSEvent*)theEvent {
   [super editWithFrame:NSInsetRect(cellFrame, 0, kBaselineOffset)
                 inView:controlView
                 editor:textObj
@@ -30,8 +65,8 @@ const NSInteger kBaselineOffset = 1;
 
 // Override these methods so that the field editor shows up in the right place
 - (void)selectWithFrame:(NSRect)cellFrame
-                 inView:(NSView *)controlView
-                 editor:(NSText *)textObj
+                 inView:(NSView*)controlView
+                 editor:(NSText*)textObj
                delegate:(id)anObject
                   start:(NSInteger)selStart
                  length:(NSInteger)selLength {

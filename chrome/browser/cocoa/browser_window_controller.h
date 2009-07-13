@@ -16,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "third_party/GTM/AppKit/GTMTheme.h"
 
 class Browser;
 class BrowserWindow;
@@ -32,7 +33,9 @@ class TabStripModelObserverBridge;
 @class ToolbarController;
 
 @interface BrowserWindowController :
-  TabWindowController<NSUserInterfaceValidations,BookmarkURLOpener> {
+  TabWindowController<NSUserInterfaceValidations,
+                      BookmarkURLOpener,
+                      GTMThemeDelegate> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -52,6 +55,7 @@ class TabStripModelObserverBridge;
   scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   scoped_ptr<StatusBubble> statusBubble_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
+  scoped_nsobject<GTMTheme> theme_;
   BOOL ownsBrowser_;  // Only ever NO when testing
   BOOL fullscreen_;
 }
@@ -115,6 +119,9 @@ class TabStripModelObserverBridge;
 
 // Returns fullscreen state.
 - (BOOL)isFullscreen;
+
+// The user changed the theme.
+- (void)userChangedTheme;
 
 // Executes the command in the context of the current browser.
 // |command| is an integer value containing one of the constants defined in the

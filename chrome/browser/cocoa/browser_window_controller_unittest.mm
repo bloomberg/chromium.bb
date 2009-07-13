@@ -95,6 +95,15 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   controller_.release();
 }
 
+@interface GTMTheme (BrowserThemeProviderInitialization)
++ (GTMTheme *)themeWithBrowserThemeProvider:(BrowserThemeProvider *)provider
+                             isOffTheRecord:(BOOL)isOffTheRecord;
+@end
+
+TEST_F(BrowserWindowControllerTest, TestTheme) {
+  [controller_ userChangedTheme];
+}
+
 TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
   EXPECT_FALSE([controller_ isBookmarkBarVisible]);
   [controller_ toggleBookmarkBar];

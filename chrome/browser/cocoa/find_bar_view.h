@@ -7,9 +7,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "chrome/browser/cocoa/background_gradient_view.h"
+
 // A view that handles painting the border for the FindBar.
 
-@interface FindBarView : NSView {
+@interface FindBarView : BackgroundGradientView {
 }
 @end
 

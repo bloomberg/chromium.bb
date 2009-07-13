@@ -150,7 +150,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 // Preference changing (global state) is handled in
 // BrowserWindowCocoa::ToggleBookmarkBar().
 - (void)toggleBookmarkBar {
-  [self showBookmarkBar:!barShouldBeShown_ immediately:NO];
+  [self showBookmarkBar:!barShouldBeShown_ immediately:YES];
 }
 
 - (void)setBookmarkBarEnabled:(BOOL)enabled {

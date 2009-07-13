@@ -4,26 +4,77 @@
 
 #include "chrome/browser/cocoa/background_gradient_view.h"
 
-@implementation BackgroundGradientView
+#define kToolbarTopOffset 12
+#define kToolbarMaxHeight 128
 
-// TODO(jrg): this may be a good spot to add theme changes.
-// "Theme changes" may include both GTMTheme and "Chrome Themes".
+@implementation BackgroundGradientView
+@synthesize showsDivider = showsDivider_;
+
+- (id)initWithFrame:(NSRect)frameRect {
+  self = [super initWithFrame:frameRect];
+  if (self != nil) {
+    showsDivider_ = YES;
+  }
+  return self;
+}
+
+- (void)awakeFromNib {
+  showsDivider_ = YES;
+}
+
+- (void)setShowsDivider:(BOOL)show {
+  showsDivider_ = show;
+  [self setNeedsDisplay:YES];
+}
+
+// The offset of this pattern to make it line up with the top of the window.
+- (NSPoint)patternPhase {
+  NSPoint phase = NSZeroPoint;
+  phase.y += NSHeight([[self window] frame]) - kToolbarTopOffset;
+  return phase;
+}
 
 - (void)drawRect:(NSRect)rect {
   BOOL isKey = [[self window] isKeyWindow];
 
-  NSColor* start =
-      [NSColor colorWithCalibratedWhite: isKey ? 0.95 : 0.98 alpha:1.0];
-  NSColor* end = [NSColor colorWithCalibratedWhite:0.90 alpha:1.0];
-  NSGradient *gradient =
-      [[[NSGradient alloc] initWithStartingColor:start endingColor:end]
-          autorelease];
-  [gradient drawInRect:[self bounds] angle:270.0];
-  NSRect borderRect, contentRect;
-  NSDivideRect([self bounds], &borderRect, &contentRect, 1, NSMinYEdge);
+  GTMTheme *theme = [self gtm_theme];
 
-  [[NSColor colorWithDeviceWhite:0.0 alpha:0.3] set];
-  NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+  NSImage *backgroundImage = [theme backgroundImageForStyle:GTMThemeStyleToolBar
+                                               state:GTMThemeStateActiveWindow];
+  if (backgroundImage) {
+    NSPoint phase = [self patternPhase];
+    [[NSGraphicsContext currentContext] setPatternPhase:phase];
+
+    NSColor *color = [NSColor colorWithPatternImage:backgroundImage];
+    [color set];
+    NSRectFill([self bounds]);
+  } else {
+    CGFloat winHeight = NSHeight([[self window] frame]);
+    NSGradient *gradient = [theme gradientForStyle:GTMThemeStyleToolBar
+                                             state:isKey];
+    NSPoint startPoint = [self convertPointFromBase:
+                          NSMakePoint(0, winHeight - kToolbarTopOffset)];
+    NSPoint endPoint = [self convertPointFromBase:
+        NSMakePoint(0, winHeight - kToolbarTopOffset - kToolbarMaxHeight)];
+
+    [gradient drawFromPoint:startPoint
+                    toPoint:endPoint
+                    options:NSGradientDrawsBeforeStartingLocation |
+                            NSGradientDrawsAfterEndingLocation];
+  }
+
+  if (showsDivider_) {
+    // Draw bottom stroke
+    [[self strokeColor] set];
+    NSRect borderRect, contentRect;
+    NSDivideRect([self bounds], &borderRect, &contentRect, 1, NSMinYEdge);
+    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+  }
+}
+
+- (NSColor*)strokeColor {
+  return [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBar
+                                         state:[[self window] isKeyWindow]];
 }
 
 @end

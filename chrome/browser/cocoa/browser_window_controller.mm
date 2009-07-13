@@ -6,6 +6,7 @@
 
 #include "base/mac_util.h"
 #include "base/scoped_nsdisable_screen_updates.h"
+#import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
 #include "chrome/browser/browser.h"
@@ -29,7 +30,10 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
+#import "chrome/browser/browser_theme_provider.h"
 #include "chrome/common/pref_service.h"
+#import "chrome/browser/cocoa/background_gradient_view.h"
+#import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {
 
@@ -38,6 +42,11 @@ namespace {
 const int kWindowGradientHeight = 24;
 
 }
+
+@interface GTMTheme (BrowserThemeProviderInitialization)
++ (GTMTheme *)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
+                             isOffTheRecord:(BOOL)offTheRecord;
+@end
 
 @interface NSWindow (NSPrivateApis)
 // Note: These functions are private, use -[NSObject respondsToSelector:]
@@ -77,9 +86,12 @@ const int kWindowGradientHeight = 24;
 
 // We need to adjust where sheets come out of the window, as by default they
 // erupt from the omnibox, which is rather weird.
-- (NSRect)window:(NSWindow *)window
-willPositionSheet:(NSWindow *)sheet
+- (NSRect)window:(NSWindow*)window
+willPositionSheet:(NSWindow*)sheet
        usingRect:(NSRect)defaultSheetRect;
+
+// Theme up the window.
+- (void)applyTheme;
 @end
 
 
@@ -96,7 +108,7 @@ willPositionSheet:(NSWindow *)sheet
 - (id)initWithBrowser:(Browser*)browser takeOwnership:(BOOL)ownIt {
   // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
   // can override it in a unit test.
-  NSString *nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [mac_util::MainAppBundle()
                         pathForResource:@"BrowserWindow"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
@@ -117,6 +129,8 @@ willPositionSheet:(NSWindow *)sheet
     // the resize control from being inset slightly and looking ugly.
     if ([window_ respondsToSelector:@selector(setBottomCornerRounded:)])
       [window_ setBottomCornerRounded:NO];
+
+    [self applyTheme];
 
     // Register ourselves for frame changed notifications from the
     // tabContentArea.
@@ -166,6 +180,20 @@ willPositionSheet:(NSWindow *)sheet
 
     // Create the bridge for the status bubble.
     statusBubble_.reset(new StatusBubbleMac([self window]));
+
+#if 0
+    // Move all buttons down two pixels for visual balance.
+    // TODO(alcor): remove this if we can't prevent window resize from breaking.
+    NSArray* buttons =
+        [NSArray arrayWithObjects:
+          [[self window] standardWindowButton:NSWindowCloseButton],
+          [[self window] standardWindowButton:NSWindowZoomButton],
+          [[self window] standardWindowButton:NSWindowMiniaturizeButton],
+          nil];
+    for (NSButton* button in buttons) {
+      [button setFrame:NSOffsetRect([button frame], 0, -2.0)];
+    }
+#endif
   }
   return self;
 }
@@ -194,7 +222,7 @@ willPositionSheet:(NSWindow *)sheet
 // |-windowShoudlClose:| returns YES). We must be careful to preserve the
 // semantics of BrowserWindow::Close() and not call the Browser's dtor directly
 // from this method.
-- (void)windowWillClose:(NSNotification *)notification {
+- (void)windowWillClose:(NSNotification*)notification {
   DCHECK(!browser_->tabstrip_model()->count());
 
   // We can't actually use |-autorelease| here because there's an embedded
@@ -239,10 +267,21 @@ willPositionSheet:(NSWindow *)sheet
 }
 
 // Called right after our window became the main window.
-- (void)windowDidBecomeMain:(NSNotification *)notification {
+- (void)windowDidBecomeMain:(NSNotification*)notification {
   BrowserList::SetLastActive(browser_.get());
   [self saveWindowPositionIfNeeded];
+  NSColor* color = [theme_ backgroundPatternColorForStyle:GTMThemeStyleWindow
+                                                    state:YES];
+  [[self window] setBackgroundColor:color];
 }
+
+- (void)windowDidResignMain:(NSNotification*)notification {
+  NSColor* color = [theme_ backgroundPatternColorForStyle:GTMThemeStyleWindow
+                                                    state:NO];
+  [[self window] setBackgroundColor:color];
+}
+
+
 
 // Called when the user clicks the zoom button (or selects it from the Window
 // menu). Zoom to the appropriate size based on the content. Make sure we
@@ -476,7 +515,7 @@ willPositionSheet:(NSWindow *)sheet
   browser_->tabstrip_model()->DetachTabContentsAt(index);
 }
 
-- (NSView *)selectedTabView {
+- (NSView*)selectedTabView {
   return [tabStripController_ selectedTabView];
 }
 
@@ -579,7 +618,11 @@ willPositionSheet:(NSWindow *)sheet
 }
 
 - (void)toggleBookmarkBar {
-  [[toolbarController_ bookmarkBarController] toggleBookmarkBar];
+  BookmarkBarController* bar = [toolbarController_ bookmarkBarController];
+  [bar toggleBookmarkBar];
+
+  [(BackgroundGradientView*)[toolbarController_ view]
+      setShowsDivider:![bar isBookmarkBarVisible]];
 }
 
 - (BOOL)isDownloadShelfVisible {
@@ -727,6 +770,14 @@ willPositionSheet:(NSWindow *)sheet
     windowShim_->UpdateTitleBar();
 }
 
+- (void)userChangedTheme {
+  [self applyTheme];
+}
+
+- (GTMTheme *)gtm_themeForWindow:(NSWindow*)window {
+  return theme_ ? theme_ : [GTMTheme defaultTheme];
+}
+
 @end
 
 @implementation BrowserWindowController (Private)
@@ -774,7 +825,7 @@ willPositionSheet:(NSWindow *)sheet
   [self positionOrRemoveToolbar:NO];
 }
 
-// If the browser is in incognito mode, install the image view to decordate
+// If the browser is in incognito mode, install the image view to decorate
 // the window at the upper right. Use the same base y coordinate as the
 // tab strip.
 - (void)installIncognitoBadge {
@@ -782,7 +833,7 @@ willPositionSheet:(NSWindow *)sheet
     return;
 
   static const float kOffset = 4;
-  NSString *incognitoPath = [mac_util::MainAppBundle()
+  NSString* incognitoPath = [mac_util::MainAppBundle()
                                 pathForResource:@"otr_icon"
                                          ofType:@"pdf"];
   scoped_nsobject<NSImage> incognitoImage(
@@ -795,7 +846,14 @@ willPositionSheet:(NSWindow *)sheet
   incognitoFrame.size = imageSize;
   scoped_nsobject<NSImageView> incognitoView(
       [[NSImageView alloc] initWithFrame:incognitoFrame]);
-  [incognitoView setImage:incognitoImage];
+  [incognitoView setImage:incognitoImage.get()];
+  [incognitoView setWantsLayer:YES];
+  [incognitoView setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.5]];
+  [shadow setShadowOffset:NSMakeSize(0, -1)];
+  [shadow setShadowBlurRadius:2.0];
+  [incognitoView setShadow:shadow];
   [[[[self window] contentView] superview] addSubview:incognitoView.get()];
 }
 
@@ -853,8 +911,8 @@ willPositionSheet:(NSWindow *)sheet
   windowPreferences->SetBoolean(L"always_on_top", false);
 }
 
-- (NSRect)window:(NSWindow *)window
-willPositionSheet:(NSWindow *)sheet
+- (NSRect)window:(NSWindow*)window
+willPositionSheet:(NSWindow*)sheet
        usingRect:(NSRect)defaultSheetRect {
   NSRect windowFrame = [window frame];
   defaultSheetRect.origin.y = windowFrame.size.height - 10;
@@ -899,4 +957,108 @@ willPositionSheet:(NSWindow *)sheet
   return [toolbarController_ customFieldEditorForObject:obj];
 }
 
+- (void)applyTheme {
+  ThemeProvider* theme_provider = browser_->profile()->GetThemeProvider();
+  if (theme_provider) {
+    GTMTheme *theme = [GTMTheme themeWithBrowserThemeProvider:
+                        (BrowserThemeProvider *)theme_provider
+                          isOffTheRecord:browser_->profile()->IsOffTheRecord()];
+    theme_.reset([theme retain]);
+  }
+}
+
 @end
+
+@implementation GTMTheme (BrowserThemeProviderInitialization)
++ (GTMTheme *)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
+                             isOffTheRecord:(BOOL)isOffTheRecord {
+  GTMTheme *theme = [[[GTMTheme alloc] init] autorelease];
+  if (isOffTheRecord) {
+    NSColor* incognitoColor = [NSColor colorWithCalibratedRed:83/255.0
+                                                        green:108.0/255.0
+                                                         blue:140/255.0
+                                                        alpha:1.0];
+    [theme setBackgroundColor:incognitoColor];
+    return theme;
+  }
+
+  NSImage* frameImage = provider->GetNSImageNamed(IDR_THEME_FRAME);
+  NSImage* frameInactiveImage =
+      provider->GetNSImageNamed(IDR_THEME_FRAME_INACTIVE);
+
+  [theme setValue:frameImage
+     forAttribute:@"backgroundImage"
+            style:GTMThemeStyleWindow
+            state:YES];
+
+  NSColor* tabTextColor = [NSColor blackColor];
+  [theme setValue:tabTextColor
+     forAttribute:@"textColor"
+            style:GTMThemeStyleToolBar
+            state:YES];
+
+  NSColor* tabInactiveTextColor = [NSColor grayColor];
+  [theme setValue:tabInactiveTextColor
+     forAttribute:@"textColor"
+            style:GTMThemeStyleToolBar
+            state:NO];
+
+  NSColor* bookmarkBarTextColor = [NSColor blackColor];
+  [theme setValue:bookmarkBarTextColor
+     forAttribute:@"textColor"
+            style:GTMThemeStyleBookmarksBarButton
+            state:YES];
+
+  [theme setValue:frameInactiveImage
+     forAttribute:@"backgroundImage"
+            style:GTMThemeStyleWindow
+            state:NO];
+
+  NSImage* toolbarImage = provider->GetNSImageNamed(IDR_THEME_TOOLBAR);
+  [theme setValue:toolbarImage
+     forAttribute:@"backgroundImage"
+            style:GTMThemeStyleToolBar
+            state:YES];
+
+  NSImage* toolbarButtonImage =
+      provider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND);
+  if (toolbarButtonImage) {
+    [theme setValue:toolbarButtonImage
+     forAttribute:@"backgroundImage"
+            style:GTMThemeStyleToolBarButton
+            state:YES];
+  } else {
+    NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.0];
+    NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.3];
+    scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
+                                          initWithStartingColor:startColor
+                                                    endingColor:endColor]);
+
+    [theme setValue:gradient
+       forAttribute:@"gradient"
+              style:GTMThemeStyleToolBarButton
+              state:YES];
+
+    [theme setValue:gradient
+       forAttribute:@"gradient"
+              style:GTMThemeStyleToolBarButton
+              state:NO];
+  }
+
+  NSColor* toolbarButtonIconColor =
+      provider->GetNSColorTint(BrowserThemeProvider::TINT_BUTTONS);
+  [theme setValue:toolbarButtonIconColor
+     forAttribute:@"iconColor"
+            style:GTMThemeStyleToolBarButton
+            state:YES];
+
+  NSColor* toolbarButtonBorderColor = toolbarButtonIconColor;
+  [theme setValue:toolbarButtonBorderColor
+     forAttribute:@"borderColor"
+            style:GTMThemeStyleToolBar
+            state:YES];
+
+  return theme;
+}
+@end
+

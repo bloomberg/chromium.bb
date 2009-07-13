@@ -18,7 +18,7 @@
 #include "chrome/common/pref_service.h"
 
 // Names of images in the bundle for the star icon (normal and 'starred').
-static NSString* const kStarImageName = @"star.pdf";
+static NSString* const kStarImageName = @"star_Template.pdf";
 static NSString* const kStarredImageName = @"starred.pdf";
 
 @implementation LocationBarFieldEditor
@@ -174,19 +174,27 @@ class PrefObserverBridge : public NotificationObserver {
 
 - (void)setStarredState:(BOOL)isStarred {
   NSString* starImageName = kStarImageName;
-  if (isStarred)
+  BOOL isTemplate = YES;
+  if (isStarred) {
     starImageName = kStarredImageName;
-  [starButton_ setImage:nsimage_cache::ImageNamed(starImageName)];
+    isTemplate = NO;
+  }
+  NSImage* starImage = nsimage_cache::ImageNamed(starImageName);
+  if (isTemplate)
+    [starImage setTemplate:YES];
+  [starButton_ setImage:starImage];
 }
 
 - (void)setIsLoading:(BOOL)isLoading {
-  NSString* imageName = @"go.pdf";
+  NSString* imageName = @"go_Template.pdf";
   NSInteger tag = IDC_GO;
   if (isLoading) {
-    imageName = @"stop.pdf";
+    imageName = @"stop_Template.pdf";
     tag = IDC_STOP;
   }
-  [goButton_ setImage:nsimage_cache::ImageNamed(imageName)];
+  NSImage* stopStartImage = nsimage_cache::ImageNamed(imageName);
+  [stopStartImage setTemplate:YES];
+  [goButton_ setImage:stopStartImage];
   [goButton_ setTag:tag];
 }
 

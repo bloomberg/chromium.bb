@@ -7,11 +7,23 @@
 #include "chrome/browser/cocoa/tab_view.h"
 #include "chrome/browser/cocoa/tab_window_controller.h"
 
+
+// Constants for inset and control points for tab shape.
+static const CGFloat kInsetMultiplier = 2.0/3.0;
+static const CGFloat kControlPoint1Multiplier = 1.0/3.0;
+static const CGFloat kControlPoint2Multiplier = 3.0/8.0;
+
+static const CGFloat kToolbarTopOffset = 12;
+static const CGFloat kToolbarMaxHeight = 128;
+
 @implementation TabView
+
+@synthesize state = state_;
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    [self setShowsDivider:NO];
     // TODO(alcor): register for theming, either here or the cell
     // [self gtm_registerForThemeNotifications];
   }
@@ -19,6 +31,7 @@
 }
 
 - (void)awakeFromNib {
+  [self setShowsDivider:NO];
   // Set up the tracking rect for the close button mouseover.  Add it
   // to the |closeButton_| view, but we'll handle the message ourself.
   // The mouseover is always enabled, because the close button works
@@ -361,6 +374,121 @@ static const double kDragStartDistance = 3.0;
   if ([theEvent buttonNumber] == 2) {
     [controller_ closeTab:self];
   }
+}
+
+- (NSPoint)patternPhase {
+  NSPoint phase = NSZeroPoint;
+  phase.x -= [self convertRect:[self bounds] toView:nil].origin.x;
+  // offset to start pattern in upper left corner
+  phase.y += NSHeight([self bounds]) - 1;
+  return phase;
+}
+
+- (void)drawRect:(NSRect)rect {
+  [[NSGraphicsContext currentContext] saveGraphicsState];
+  rect = [self bounds];
+  BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
+  BOOL selected = [(NSButton *)self state];
+
+  // Inset by 0.5 in order to draw on pixels rather than on borders (which would
+  // cause blurry pixels). Decrease height by 1 in order to move away from the
+  // edge for the dark shadow.
+  rect = NSInsetRect(rect, 0.5, -0.5);
+  rect.origin.y -= 1;
+
+  NSPoint bottomLeft = NSMakePoint(NSMinX(rect), NSMinY(rect));
+  NSPoint bottomRight = NSMakePoint(NSMaxX(rect), NSMinY(rect));
+  NSPoint topRight =
+      NSMakePoint(NSMaxX(rect) - kInsetMultiplier * NSHeight(rect),
+                  NSMaxY(rect));
+  NSPoint topLeft =
+      NSMakePoint(NSMinX(rect)  + kInsetMultiplier * NSHeight(rect),
+                  NSMaxY(rect));
+
+  float baseControlPointOutset = NSHeight(rect) * kControlPoint1Multiplier;
+  float bottomControlPointInset = NSHeight(rect) * kControlPoint2Multiplier;
+
+  // Outset many of these values by 1 to cause the fill to bleed outside the
+  // clip area.
+  NSBezierPath *path = [NSBezierPath bezierPath];
+  [path moveToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y + 1)];
+  [path lineToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y)];
+  [path lineToPoint:bottomLeft];
+  [path curveToPoint:topLeft
+       controlPoint1:NSMakePoint(bottomLeft.x + baseControlPointOutset,
+                                 bottomLeft.y)
+       controlPoint2:NSMakePoint(topLeft.x - bottomControlPointInset,
+                                 topLeft.y)];
+  [path lineToPoint:topRight];
+  [path curveToPoint:bottomRight
+       controlPoint1:NSMakePoint(topRight.x + bottomControlPointInset,
+                                 topRight.y)
+       controlPoint2:NSMakePoint(bottomRight.x - baseControlPointOutset,
+                                 bottomRight.y)];
+  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y)];
+  [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y + 1)];
+
+  if (selected) {
+    // Stroke with a translucent black.
+    [[NSColor colorWithCalibratedWhite:0.0 alpha:active ? 0.5 : 0.3] set];
+    [[NSGraphicsContext currentContext] saveGraphicsState];
+    scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+    [shadow setShadowOffset:NSMakeSize(2, -1)];
+    [shadow setShadowBlurRadius:2.0];
+    [path fill];
+    [[NSGraphicsContext currentContext] restoreGraphicsState];
+  } else {
+    // Stroke with a translucent black.
+    [[NSBezierPath bezierPathWithRect:NSOffsetRect([self bounds], 0, 1)]
+        addClip];
+
+    [[NSColor colorWithCalibratedWhite:0.0 alpha:active ? 0.3 : 0.1] set];
+  }
+
+  [[NSGraphicsContext currentContext] saveGraphicsState];
+  [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
+  [path setLineWidth:selected ? 2.0 : 1.0];
+  [path stroke];
+  [[NSGraphicsContext currentContext] restoreGraphicsState];
+
+  GTMTheme *theme = [[self self] gtm_theme];
+
+  if (!selected) {
+    NSColor *windowColor =
+        [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
+                                        state:GTMThemeStateActiveWindow];
+    if (windowColor) {
+      NSPoint phase = [self patternPhase];
+      [windowColor set];
+      [[NSGraphicsContext currentContext] setPatternPhase:phase];
+    } else {
+      [[NSColor colorWithCalibratedWhite:0.6 alpha:1.0] set];
+    }
+    [path fill];
+  }
+
+  // Draw the background.
+  [[NSGraphicsContext currentContext] saveGraphicsState];
+  CGContextRef context =
+      (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
+  CGContextBeginTransparencyLayer(context, 0);
+  if (!selected)
+    CGContextSetAlpha(context, 0.5);
+  [path addClip];
+  [super drawRect:rect];
+
+  CGContextEndTransparencyLayer(context);
+  [[NSGraphicsContext currentContext] restoreGraphicsState];
+
+  // Draw the bottom border.
+  if (!selected) {
+    [path addClip];
+    NSRect borderRect, contentRect;
+    NSDivideRect(rect, &borderRect, &contentRect, 1, NSMinYEdge);
+    [[NSColor colorWithCalibratedWhite:0.0 alpha:0.4] set];
+    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+  }
+  [[NSGraphicsContext currentContext] restoreGraphicsState];
 }
 
 // Called when the user hits the right mouse button (or control-clicks) to

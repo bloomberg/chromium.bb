@@ -34,6 +34,8 @@ TEST_F(BackgroundGradientViewTest, AddRemove) {
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(BackgroundGradientViewTest, Display) {
   [view_ display];
+  [view_ setShowsDivider:YES];
+  [view_ display];
 }
 
 }  // namespace

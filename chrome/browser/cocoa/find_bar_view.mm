@@ -7,29 +7,34 @@
 @implementation FindBarView
 
 - (void)drawRect:(NSRect)rect {
+  CGFloat curveSize = 8;
   // TODO(rohitrao): Make this prettier.
-  rect = [self bounds];
+  rect = NSInsetRect([self bounds], 0.5, 0.5);
+  rect = NSOffsetRect(rect, 0, 1.0);
+
   NSPoint topLeft = NSMakePoint(NSMinX(rect), NSMaxY(rect));
   NSPoint topRight = NSMakePoint(NSMaxX(rect), NSMaxY(rect));
   // Inset the bottom points by 1 so we draw the border entirely
   // inside the frame.
-  NSPoint bottomLeft = NSMakePoint(NSMinX(rect) + 15, NSMinY(rect) + 1);
-  NSPoint bottomRight = NSMakePoint(NSMaxX(rect) - 15, NSMinY(rect) + 1);
+  NSPoint bottomLeft = NSMakePoint(NSMinX(rect) + curveSize, NSMinY(rect) + 1);
+  NSPoint bottomRight = NSMakePoint(NSMaxX(rect) - curveSize, NSMinY(rect) + 1);
 
   NSBezierPath *path = [NSBezierPath bezierPath];
   [path moveToPoint:topLeft];
   [path curveToPoint:bottomLeft
-        controlPoint1:NSMakePoint(topLeft.x + 15, topLeft.y)
-        controlPoint2:NSMakePoint(bottomLeft.x - 15, bottomLeft.y)];
+        controlPoint1:NSMakePoint(topLeft.x + curveSize, topLeft.y)
+        controlPoint2:NSMakePoint(bottomLeft.x - curveSize, bottomLeft.y)];
   [path lineToPoint:bottomRight];
   [path curveToPoint:topRight
-        controlPoint1:NSMakePoint(bottomRight.x + 15, bottomRight.y)
-        controlPoint2:NSMakePoint(topRight.x - 15, topRight.y)];
+        controlPoint1:NSMakePoint(bottomRight.x + curveSize, bottomRight.y)
+        controlPoint2:NSMakePoint(topRight.x - curveSize, topRight.y)];
 
-  [[NSColor colorWithCalibratedWhite:0.90 alpha:1.0] set];
-  [path fill];
+  [NSGraphicsContext saveGraphicsState];
+  [path addClip];
+  [super drawRect:rect];
+  [NSGraphicsContext restoreGraphicsState];
 
-  [[NSColor colorWithCalibratedWhite:0.0 alpha:0.3] set];
+  [[self strokeColor] set];
   [path stroke];
 }
 

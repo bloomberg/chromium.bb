@@ -6,6 +6,7 @@
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
+#import "chrome/browser/cocoa/tab_view.h"
 
 @implementation TabController
 
@@ -36,7 +37,7 @@
 // mark ourselves as needing a redraw.
 - (void)internalSetSelected:(BOOL)selected {
   selected_ = selected;
-  [backgroundButton_ setState:selected];
+  [(TabView *)[self view] setState:selected];
   [[self view] setNeedsDisplay:YES];
 }
 

@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/background_gradient_view.h"
 
 @class TabController, TabWindowController;
 
@@ -15,7 +16,7 @@
 // on the tab strip. Relies on an associated TabController to provide a
 // target/action for selecting the tab.
 
-@interface TabView : NSView {
+@interface TabView : BackgroundGradientView {
  @private
   IBOutlet TabController* controller_;
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it
@@ -47,7 +48,9 @@
   NSWindow* dragOverlay_;  // weak. The overlay being dragged
 
   TabWindowController* targetController_;  // weak. Controller being targeted
+  NSCellStateValue state_;
 }
+@property(assign) NSCellStateValue state;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_VIEW_H_
