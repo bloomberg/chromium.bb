@@ -290,9 +290,11 @@ NSRange AutocompleteEditViewMac::GetSelectedRange() const {
 }
 
 void AutocompleteEditViewMac::SetSelectedRange(const NSRange range) {
+  // This can be called when we don't have focus.  For instance, when
+  // the user clicks the "Go" button.
   if (model_->has_focus()) {
-    // TODO(shess): This should not be necessary.  Try to convert to
-    // DCHECK(IsFirstResponder()).
+    // TODO(shess): If |model_| thinks we have focus, this should not
+    // be necessary.  Try to convert to DCHECK(IsFirstResponder()).
     FocusLocation();
 
     // TODO(shess): What if it didn't get first responder, and there is
@@ -543,9 +545,6 @@ void AutocompleteEditViewMac::OnDidResignKey() {
 
 void AutocompleteEditViewMac::AcceptInput(
     WindowOpenDisposition disposition, bool for_drop) {
-  // We should only arrive here when the field is focussed.
-  DCHECK([field_ currentEditor]);
-
   model_->AcceptInput(disposition, for_drop);
 }
 
