@@ -528,9 +528,7 @@ void DownloadFileManager::OnDownloadUrl(const GURL& url,
 // TODO(paulg): File 'stat' operations.
 void DownloadFileManager::OnShowDownloadInShell(const FilePath& full_path) {
   DCHECK(MessageLoop::current() == file_loop_);
-  LOG(ERROR) << "AAA";
   platform_util::ShowItemInFolder(full_path);
-  LOG(ERROR) << "AAA2";
 }
 
 // Launches the selected download using ShellExecute 'open' verb. For windows,

@@ -247,13 +247,13 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
     }
 
     // output row after converting
-    scoped_array<unsigned char> row_data(new unsigned char[w * 3]);
-    unsigned char* row = row_data.get();
+    unsigned char* row = new unsigned char[w * 3];
 
     while (cinfo.next_scanline < cinfo.image_height) {
       converter(&input[cinfo.next_scanline * row_byte_width], w, row);
       jpeg_write_scanlines(&cinfo, &row, 1);
     }
+    delete[] row;
   }
 
   jpeg_finish_compress(&cinfo);

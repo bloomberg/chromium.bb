@@ -30,9 +30,8 @@ static bool IsChildDead(pid_t child) {
 // If the child doesn't exit within a couple of seconds, kill it.
 class BackgroundReaper : public PlatformThread::Delegate {
  public:
-  explicit BackgroundReaper(pid_t child, unsigned timeout)
-      : child_(child),
-        timeout_(timeout) {
+  explicit BackgroundReaper(pid_t child)
+      : child_(child) {
   }
 
   void ThreadMain() {
@@ -44,17 +43,8 @@ class BackgroundReaper : public PlatformThread::Delegate {
     // There's no good way to wait for a specific child to exit in a timed
     // fashion. (No kqueue on Linux), so we just loop and sleep.
 
-    // Wait forever case.
-    if (timeout_ == 0) {
-      while (1) {
-        PlatformThread::Sleep(5000);  // 5 seconds, not in a hurry.
-        if (IsChildDead(child_))
-          return;
-      }
-    }
-
-    // Waits 0.5 * timeout_ seconds
-    for (unsigned i = 0; i < timeout_; ++i) {
+    // Waits 0.5 * 4 = 2 seconds.
+    for (unsigned i = 0; i < 4; ++i) {
       PlatformThread::Sleep(500);  // 0.5 seconds
       if (IsChildDead(child_))
         return;
@@ -72,9 +62,6 @@ class BackgroundReaper : public PlatformThread::Delegate {
 
  private:
   const pid_t child_;
-  // Number of 0.5 seconds intervals to wait, if 0 then wait forever and do
-  // not attempt to kill |child_|.
-  const unsigned timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundReaper);
 };
@@ -85,17 +72,6 @@ void ProcessWatcher::EnsureProcessTerminated(base::ProcessHandle process) {
   if (IsChildDead(process))
     return;
 
-  const unsigned timeout = 4;  // 4 * 0.5 seconds = 2 seconds
-  BackgroundReaper* reaper = new BackgroundReaper(process, timeout);
-  PlatformThread::CreateNonJoinable(0, reaper);
-}
-
-// static
-void ProcessWatcher::EnsureProcessGetsReaped(base::ProcessHandle process) {
-  // If the child is already dead, then there's nothing to do
-  if (IsChildDead(process))
-    return;
-
-  BackgroundReaper* reaper = new BackgroundReaper(process, 0);
+  BackgroundReaper* reaper = new BackgroundReaper(process);
   PlatformThread::CreateNonJoinable(0, reaper);
 }
