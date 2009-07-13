@@ -249,8 +249,7 @@ int ChromePluginLib::CP_Test(void* param) {
 
 bool ChromePluginLib::Load() {
 #if !defined(OS_WIN)
-  // TODO(port): plugins not yet implemented
-  NOTIMPLEMENTED() << " -- gears loading code.";
+  // Mac and Linux won't implement Gears.
   return false;
 #else
   DCHECK(module_ == 0);
