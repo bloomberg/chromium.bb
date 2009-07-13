@@ -36,6 +36,8 @@
         'cross/collada.h',
         'cross/collada_zip_archive.cc',
         'cross/collada_zip_archive.h',
+        'cross/destination_buffer.cc',
+        'cross/destination_buffer.h',
         'cross/file_output_stream_processor.cc',
         'cross/file_output_stream_processor.h',
         'cross/gz_compressor.cc',

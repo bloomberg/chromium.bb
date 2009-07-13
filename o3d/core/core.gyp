@@ -62,6 +62,8 @@
         'cross/clear_buffer.h',
         'cross/client.cc',
         'cross/client.h',
+        'cross/client_info.cc',
+        'cross/client_info.h',
         'cross/core_metrics.cc',
         'cross/core_metrics.h',
         'cross/counter.cc',

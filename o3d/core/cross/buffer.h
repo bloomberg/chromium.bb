@@ -40,6 +40,7 @@
 #include "core/cross/field.h"
 #include "core/cross/named_object.h"
 #include "core/cross/types.h"
+#include "base/scoped_ptr.h"
 
 namespace o3d {
 
