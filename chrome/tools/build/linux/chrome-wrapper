@@ -57,6 +57,9 @@ case ":$PATH:" in
     ;;
 esac
 
+# Always use our ffmpeg libs.
+export LD_LIBRARY_PATH="$HERE:$LD_LIBRARY_PATH"
+
 exists_desktop_file || generate_desktop_file
 
 exec "$HERE/chrome" "$@"
