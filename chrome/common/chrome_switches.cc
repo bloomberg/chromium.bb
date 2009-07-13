@@ -359,6 +359,10 @@ const wchar_t kDisableJava[]                   = L"disable-java";
 // Prevent plugins from running.
 const wchar_t kDisablePlugins[]                = L"disable-plugins";
 
+// Force plugins to run (for ports in progress where they are turned off by
+// default).
+const wchar_t kEnablePlugins[]                 = L"enable-plugins";
+
 // Prevent images from loading.
 const wchar_t kDisableImages[]                 = L"disable-images";
 

@@ -155,9 +155,15 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.web_security_enabled =
         !command_line.HasSwitch(switches::kDisableWebSecurity) &&
         prefs->GetBoolean(prefs::kWebKitWebSecurityEnabled);
+#if defined(OS_WIN)
     web_prefs.plugins_enabled =
         !command_line.HasSwitch(switches::kDisablePlugins) &&
         prefs->GetBoolean(prefs::kWebKitPluginsEnabled);
+#else
+    web_prefs.plugins_enabled =
+        command_line.HasSwitch(switches::kEnablePlugins) &&
+        prefs->GetBoolean(prefs::kWebKitPluginsEnabled);
+#endif
     web_prefs.java_enabled =
         !command_line.HasSwitch(switches::kDisableJava) &&
         prefs->GetBoolean(prefs::kWebKitJavaEnabled);
