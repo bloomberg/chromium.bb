@@ -63,6 +63,8 @@ class RenderWidgetHostViewGtkWidget {
                      G_CALLBACK(OnFocusIn), host_view);
     g_signal_connect(widget, "focus-out-event",
                      G_CALLBACK(OnFocusOut), host_view);
+    g_signal_connect(widget, "grab-notify",
+                     G_CALLBACK(OnGrabNotify), host_view);
     g_signal_connect(widget, "button-press-event",
                      G_CALLBACK(ButtonPressReleaseEvent), host_view);
     g_signal_connect(widget, "button-release-event",
@@ -154,6 +156,8 @@ class RenderWidgetHostViewGtkWidget {
     return TRUE;
   }
 
+  // WARNING: OnGrabNotify relies on the fact this function doesn't try to
+  // dereference |focus|.
   static gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* focus,
                             RenderWidgetHostViewGtk* host_view) {
     int x, y;
@@ -191,6 +195,8 @@ class RenderWidgetHostViewGtkWidget {
     return FALSE;
   }
 
+  // WARNING: OnGrabNotify relies on the fact this function doesn't try to
+  // dereference |focus|.
   static gboolean OnFocusOut(GtkWidget* widget, GdkEventFocus* focus,
                              RenderWidgetHostViewGtk* host_view) {
     // Whenever we lose focus, set the cursor back to that of our parent window,
@@ -206,6 +212,18 @@ class RenderWidgetHostViewGtkWidget {
     gtk_im_context_focus_out(host_view->im_context_);
     gtk_im_context_set_client_window(host_view->im_context_, NULL);
     return FALSE;
+  }
+
+  // Called when we are shadowed or unshadowed by a keyboard grab (which will
+  // occur for activatable popups, such as dropdown menus). Popup windows do not
+  // take focus, so we never get a focus out or focus in event when they are
+  // shown, and must rely on this signal instead.
+  static void OnGrabNotify(GtkWidget* widget, gboolean was_grabbed,
+                           RenderWidgetHostViewGtk* host_view) {
+    if (was_grabbed)
+      OnFocusIn(widget, NULL, host_view);
+    else
+      OnFocusOut(widget, NULL, host_view);
   }
 
   static gboolean ButtonPressReleaseEvent(
