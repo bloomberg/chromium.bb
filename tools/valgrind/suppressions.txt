@@ -786,7 +786,6 @@
    Memcheck:Leak
    fun:malloc
    fun:g_malloc
-   fun:gtk_target_list_new
    ...
    fun:gtk_clipboard_set_text
    fun:_ZN23AutocompleteEditViewGtk20SavePrimarySelectionERKSs
@@ -846,19 +845,11 @@
    fun:g_slice_alloc
    fun:g_slice_alloc0
    fun:g_type_create_instance
-   fun:g_object_constructor
+   fun:*
    fun:g_object_newv
    fun:g_object_new_valist
    ...
-   fun:gdk_window_new
    fun:gtk_window_realize
-   fun:g_cclosure_marshal_VOID__VOID
-   fun:g_type_class_meta_marshal
-   fun:g_closure_invoke
-   fun:signal_emit_unlocked_R
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gtk_widget_realize
 }
 {
    bug_16584
