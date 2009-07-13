@@ -493,7 +493,7 @@ o3djs.rendergraph.DrawPassInfo = function(pack,
                                           opt_drawList) {
   var ownDrawList = opt_drawList ? false : true;
 
-  opt_parent = opt_parent || NULL;
+  opt_parent = opt_parent || null;
   opt_drawList = opt_drawList || pack.createObject('DrawList');
 
   var stateSet = pack.createObject('StateSet');
