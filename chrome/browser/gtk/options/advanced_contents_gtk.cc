@@ -18,6 +18,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/cookie_policy.h"
 
 namespace {
 
@@ -122,6 +123,8 @@ class PrivacySection : public OptionsPageBase {
                                    PrivacySection* options_window);
   static void OnLoggingChange(GtkWidget* widget,
                               PrivacySection* options_window);
+  static void OnCookieBehaviorChanged(GtkComboBox* combo_box,
+                                      PrivacySection* privacy_section);
 
   // The widget containing the options for this section.
   GtkWidget* page_;
@@ -132,6 +135,7 @@ class PrivacySection : public OptionsPageBase {
   GtkWidget* enable_dns_prefetching_checkbox_;
   GtkWidget* enable_safe_browsing_checkbox_;
   GtkWidget* reporting_enabled_checkbox_;
+  GtkWidget* cookie_behavior_combobox_;
 
   // Preferences for this section:
   BooleanPrefMember alternate_error_pages_;
@@ -196,7 +200,27 @@ PrivacySection::PrivacySection(Profile* profile)
   g_signal_connect(reporting_enabled_checkbox_, "clicked",
                    G_CALLBACK(OnLoggingChange), this);
 
-  // TODO(mattm): cookie combobox and button
+  cookie_behavior_combobox_ = gtk_combo_box_new_text();
+  gtk_combo_box_append_text(
+      GTK_COMBO_BOX(cookie_behavior_combobox_),
+      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES).c_str());
+  gtk_combo_box_append_text(
+      GTK_COMBO_BOX(cookie_behavior_combobox_),
+      l10n_util::GetStringUTF8(
+          IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES).c_str());
+  gtk_combo_box_append_text(
+      GTK_COMBO_BOX(cookie_behavior_combobox_),
+      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_BLOCK_ALL_COOKIES).c_str());
+  g_signal_connect(G_OBJECT(cookie_behavior_combobox_), "changed",
+                   G_CALLBACK(OnCookieBehaviorChanged), this);
+
+  GtkWidget* cookie_controls = gtk_util::CreateLabeledControlsGroup(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_ACCEPT_LABEL).c_str(),
+      cookie_behavior_combobox_,
+      NULL);
+  gtk_box_pack_start(GTK_BOX(page_), cookie_controls, FALSE, FALSE, 0);
+
+  // TODO(mattm): show cookies button
   gtk_box_pack_start(GTK_BOX(page_),
                      gtk_label_new("TODO rest of the privacy options"),
                      FALSE, FALSE, 0);
@@ -294,6 +318,28 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
   GoogleUpdateSettings::SetCollectStatsConsent(enabled);
 }
 
+// static
+void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
+                                             PrivacySection* privacy_section) {
+  if (privacy_section->initializing_)
+    return;
+  net::CookiePolicy::Type cookie_policy =
+      net::CookiePolicy::FromInt(gtk_combo_box_get_active(combo_box));
+  const wchar_t* kUserMetrics[] = {
+      L"Options_AllowAllCookies",
+      L"Options_BlockThirdPartyCookies",
+      L"Options_BlockAllCookies"
+  };
+  if (cookie_policy < 0 ||
+      static_cast<size_t>(cookie_policy) >= arraysize(kUserMetrics)) {
+    NOTREACHED();
+    return;
+  }
+  privacy_section->UserMetricsRecordAction(
+      kUserMetrics[cookie_policy], privacy_section->profile()->GetPrefs());
+  privacy_section->cookie_behavior_.SetValue(cookie_policy);
+}
+
 void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
   initializing_ = true;
   if (!pref_name || *pref_name == prefs::kAlternateErrorPagesEnabled) {
@@ -322,7 +368,9 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
     // TODO(mattm): ResolveMetricsReportingEnabled()?
   }
   if (!pref_name || *pref_name == prefs::kCookieBehavior) {
-    // TODO(mattm): set cookie combobox state
+    gtk_combo_box_set_active(
+        GTK_COMBO_BOX(cookie_behavior_combobox_),
+        net::CookiePolicy::FromInt(cookie_behavior_.GetValue()));
   }
   initializing_ = false;
 }
