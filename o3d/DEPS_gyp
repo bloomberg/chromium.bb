@@ -2,7 +2,7 @@ vars = {
   "chromium_trunk":
     "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "25",
-  "chromium_rev": "19057",
+  "chromium_rev": "19644",
   "o3d_code_rev": "93",
 }
 
@@ -52,7 +52,7 @@ deps = {
 # Stuff from the Chromium tree.
 
   "third_party/skia":
-    "http://skia.googlecode.com/svn/trunk@233",
+    "http://skia.googlecode.com/svn/trunk@239",
 
   "third_party/boost":
     Var("chromium_trunk") + "/src/third_party/boost@" + Var("chromium_rev"),
@@ -70,7 +70,7 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/zlib@" + Var("chromium_rev"),
 
   "v8":
-    "http://v8.googlecode.com/svn/trunk@2249",
+    "http://v8.googlecode.com/svn/trunk@2291",
 
   "testing":
     Var("chromium_trunk") + "/src/testing@" + Var("chromium_rev"),
@@ -116,7 +116,7 @@ deps = {
     Var("chromium_trunk") + "/src/build@" + Var("chromium_rev"),
 
   "tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@525",
+    "http://gyp.googlecode.com/svn/trunk@532",
 }
 
 deps_os = {
@@ -125,7 +125,7 @@ deps_os = {
       "/trunk/deps/third_party/cygwin@11984",
 
     "third_party/python_24":
-      Var("chromium_trunk") + "/deps/third_party/python_24@7444",
+      Var("chromium_trunk") + "/deps/third_party/python_24@19441",
   },
 }
 
