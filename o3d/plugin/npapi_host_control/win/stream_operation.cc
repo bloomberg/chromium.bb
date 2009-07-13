@@ -495,7 +495,10 @@ HRESULT StreamOperation::OpenURL(NPPluginProxy *owning_plugin,
   URL_COMPONENTS components = { sizeof(URL_COMPONENTS) };
   if (!InternetCrackUrl(url, 0, 0, &components))
     return E_INVALIDARG;
-  if (components.nScheme == INTERNET_SCHEME_UNKNOWN) {
+  if (components.nScheme != INTERNET_SCHEME_FILE &&
+      components.nScheme != INTERNET_SCHEME_FTP &&
+      components.nScheme != INTERNET_SCHEME_HTTP &&
+      components.nScheme != INTERNET_SCHEME_HTTPS) {
     return E_INVALIDARG;
   }
 
