@@ -95,11 +95,29 @@ void Canvas::SizeStringInt(const std::wstring& text,
   cairo_surface_destroy(surface);
 }
 
+void Canvas::ApplySkiaMatrixToCairoContext(cairo_t* cr) {
+  const SkMatrix& skia_matrix = getTotalMatrix();
+  cairo_matrix_t cairo_matrix;
+  cairo_matrix_init(&cairo_matrix,
+                    SkScalarToFloat(skia_matrix.getScaleX()),
+                    SkScalarToFloat(skia_matrix.getSkewY()),
+                    SkScalarToFloat(skia_matrix.getSkewX()),
+                    SkScalarToFloat(skia_matrix.getScaleY()),
+                    SkScalarToFloat(skia_matrix.getTranslateX()),
+                    SkScalarToFloat(skia_matrix.getTranslateY()));
+  cairo_set_matrix(cr, &cairo_matrix);
+}
+
 void Canvas::DrawStringInt(const std::wstring& text,
                            const gfx::Font& font,
                            const SkColor& color, int x, int y, int w, int h,
                            int flags) {
-  cairo_t* cr = beginPlatformPaint();
+  cairo_surface_t* surface = beginPlatformPaint();
+  cairo_t* cr = cairo_create(surface);
+  // We're going to draw onto the surface directly. This circumvents the matrix
+  // installed by Skia. Apply the matrix from skia to cairo so they align and
+  // we draw at the right place.
+  ApplySkiaMatrixToCairoContext(cr);
   PangoLayout* layout = pango_cairo_create_layout(cr);
 
   cairo_set_source_rgb(cr,
@@ -151,6 +169,7 @@ void Canvas::DrawStringInt(const std::wstring& text,
   pango_cairo_show_layout(cr, layout);
 
   g_object_unref(layout);
+  cairo_destroy(cr);
   // NOTE: beginPlatformPaint returned its surface, we shouldn't destroy it.
 }
 

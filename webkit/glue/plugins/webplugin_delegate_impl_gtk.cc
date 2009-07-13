@@ -174,13 +174,13 @@ void WebPluginDelegateImpl::UpdateGeometry(
   }
 }
 
-void WebPluginDelegateImpl::Paint(cairo_t* context,
+void WebPluginDelegateImpl::Paint(cairo_surface_t* context,
                                   const gfx::Rect& rect) {
   if (windowless_)
     WindowlessPaint(context, rect);
 }
 
-void WebPluginDelegateImpl::Print(cairo_t* context) {
+void WebPluginDelegateImpl::Print(cairo_surface_t* context) {
   NOTIMPLEMENTED();
 }
 
@@ -399,7 +399,7 @@ void DrawDebugRectangle(cairo_surface_t* surface,
 }  // namespace
 #endif
 
-void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
+void WebPluginDelegateImpl::WindowlessPaint(cairo_surface_t* context,
                                             const gfx::Rect& damage_rect) {
   // Compare to:
   // http://mxr.mozilla.org/firefox/source/layout/generic/nsObjectFrame.cpp:
@@ -526,8 +526,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   // Copy the current image into the pixmap, so the plugin can draw over
   // this background.
   cairo_t* cairo = gdk_cairo_create(pixmap_);
-  cairo_set_source_surface(cairo, cairo_get_target(context),
-                           offset_x, offset_y);
+  cairo_set_source_surface(cairo, context, offset_x, offset_y);
   cairo_rectangle(cairo, draw_rect.x() + offset_x, draw_rect.y() + offset_y,
                   draw_rect.width(), draw_rect.height());
   cairo_clip(cairo);
@@ -552,12 +551,13 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   DCHECK_EQ(err, NPERR_NO_ERROR);
 
   // Now copy the rendered image pixmap back into the drawing buffer.
-  gdk_cairo_set_source_pixmap(context, pixmap_, -offset_x, -offset_y);
-  cairo_rectangle(context, draw_rect.x(), draw_rect.y(),
+  cairo = cairo_create(context);
+  gdk_cairo_set_source_pixmap(cairo, pixmap_, -offset_x, -offset_y);
+  cairo_rectangle(cairo, draw_rect.x(), draw_rect.y(),
                   draw_rect.width(), draw_rect.height());
-  cairo_clip(context);
-  cairo_paint(context);
-  cairo_destroy(context);
+  cairo_clip(cairo);
+  cairo_paint(cairo);
+  cairo_destroy(cairo);
 
 #ifdef DEBUG_RECTANGLES
   // Draw some debugging rectangles.

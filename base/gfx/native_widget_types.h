@@ -50,7 +50,7 @@ class NSTextField;
 typedef struct _GdkCursor GdkCursor;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
-typedef struct _cairo cairo_t;
+typedef struct _cairo_surface cairo_surface_t;
 #endif
 
 namespace gfx {
@@ -73,7 +73,7 @@ typedef void* NativeMenu;
 typedef GtkWidget* NativeView;
 typedef GtkWindow* NativeWindow;
 typedef GtkWidget* NativeEditView;
-typedef cairo_t* NativeDrawingContext;
+typedef cairo_surface_t* NativeDrawingContext;
 typedef GdkCursor* NativeCursor;
 typedef GtkWidget* NativeMenu;
 #endif

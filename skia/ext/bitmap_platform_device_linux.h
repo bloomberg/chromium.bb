@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,11 +85,9 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   // If someone wants to paint on a Cairo surface version of our
   // buffer, then give them the surface we're already using.
-  virtual cairo_t* beginPlatformPaint();
+  virtual cairo_surface_t* beginPlatformPaint() { return surface(); }
 
-  // Loads the given transform and clipping region into the HDC. This is
-  // overridden from SkDevice.
-  virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
+  cairo_surface_t* surface() const;
 
  private:
   scoped_refptr<BitmapPlatformDeviceData> data_;
