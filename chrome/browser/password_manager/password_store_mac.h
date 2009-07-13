@@ -29,6 +29,11 @@ class PasswordStoreMac : public PasswordStore {
   void GetAllLoginsImpl(GetLoginsRequest* request);
   void GetAllAutofillableLoginsImpl(GetLoginsRequest* request);
 
+  // Adds the given form to the Keychain if it's something we want to store
+  // there (i.e., not a blacklist entry). Returns true if the operation
+  // succeeded (either we added successfully, or we didn't need to).
+  bool AddToKeychainIfNecessary(const webkit_glue::PasswordForm& form);
+
   scoped_ptr<MacKeychain> keychain_;
   scoped_ptr<LoginDatabaseMac> login_metadata_db_;
 

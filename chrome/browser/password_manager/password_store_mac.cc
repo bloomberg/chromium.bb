@@ -449,6 +449,9 @@ PasswordForm* MacKeychainPasswordFormAdapter::PasswordExactlyMatchingForm(
 }
 
 bool MacKeychainPasswordFormAdapter::AddLogin(const PasswordForm& form) {
+  // We should never be trying to store a blacklist in the keychain.
+  DCHECK(!form.blacklisted_by_user);
+
   std::string server;
   std::string security_domain;
   int port;
@@ -631,17 +634,15 @@ PasswordStoreMac::PasswordStoreMac(MacKeychain* keychain,
 PasswordStoreMac::~PasswordStoreMac() {}
 
 void PasswordStoreMac::AddLoginImpl(const PasswordForm& form) {
-  MacKeychainPasswordFormAdapter keychainAdapter(keychain_.get());
-  if (keychainAdapter.AddLogin(form)) {
+  if (AddToKeychainIfNecessary(form)) {
     login_metadata_db_->AddLogin(form);
   }
 }
 
 void PasswordStoreMac::UpdateLoginImpl(const PasswordForm& form) {
-  MacKeychainPasswordFormAdapter keychainAdapter(keychain_.get());
   // The keychain AddLogin will update if there is a collision and add if there
   // isn't, which is the behavior we want, so there's no separate UpdateLogin.
-  if (keychainAdapter.AddLogin(form)) {
+  if (AddToKeychainIfNecessary(form)) {
     int update_count = 0;
     login_metadata_db_->UpdateLogin(form, &update_count);
     // Update will catch any database entries that we already had, but we could
@@ -693,4 +694,12 @@ void PasswordStoreMac::GetAllLoginsImpl(GetLoginsRequest* request) {
 
 void PasswordStoreMac::GetAllAutofillableLoginsImpl(GetLoginsRequest* request) {
   NOTIMPLEMENTED();
+}
+
+bool PasswordStoreMac::AddToKeychainIfNecessary(const PasswordForm& form) {
+  if (form.blacklisted_by_user) {
+    return true;
+  }
+  MacKeychainPasswordFormAdapter keychainAdapter(keychain_.get());
+  return keychainAdapter.AddLogin(form);
 }
