@@ -74,18 +74,23 @@ void PrintSettings::SetPrinterPrintableArea(
     gfx::Size const& physical_size_pixels,
     gfx::Rect const& printable_area_pixels) {
 
-  int margin_printer_units = ConvertUnit(500, kHundrethsMMPerInch, dpi_);
+  // Hard-code text_height = 0.5cm = ~1/5 of inch.
+  int header_footer_text_height = ConvertUnit(500, kHundrethsMMPerInch, dpi_);
 
   // Start by setting the user configuration
-  // Hard-code text_height = 0.5cm = ~1/5 of inch
   page_setup_pixels_.Init(physical_size_pixels,
                           printable_area_pixels,
-                          margin_printer_units);
+                          header_footer_text_height);
 
-  // Now apply user configured settings.
+  // Default margins 1.0cm = ~2/5 of an inch.
+  int margin_printer_units = ConvertUnit(1000, kHundrethsMMPerInch, dpi_);
+
+  // Apply default margins (not user configurable just yet).
+  // Since the font height is half the margin we put the header and footers at
+  // the font height from the margins.
   PageMargins margins;
-  margins.header = margin_printer_units;
-  margins.footer = margin_printer_units;
+  margins.header = header_footer_text_height;
+  margins.footer = header_footer_text_height;
   margins.left = margin_printer_units;
   margins.top = margin_printer_units;
   margins.right = margin_printer_units;

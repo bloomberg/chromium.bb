@@ -49,6 +49,7 @@ class PageSetup {
   const gfx::Size& physical_size() const { return physical_size_; }
   const gfx::Rect& overlay_area() const { return overlay_area_; }
   const gfx::Rect& content_area() const { return content_area_; }
+  const gfx::Rect& printable_area() const { return printable_area_; }
   const PageMargins& effective_margins() const {
     return effective_margins_;
   }

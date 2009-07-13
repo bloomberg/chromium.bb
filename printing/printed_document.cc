@@ -36,6 +36,22 @@ struct PrintDebugDumpPath {
 
 Singleton<PrintDebugDumpPath> g_debug_dump_info;
 
+void SimpleModifyWorldTransform(HDC context,
+                                int offset_x,
+                                int offset_y,
+                                double shrink_factor) {
+  XFORM xform = { 0 };
+  xform.eDx = static_cast<float>(offset_x);
+  xform.eDy = static_cast<float>(offset_y);
+  xform.eM11 = xform.eM22 = static_cast<float>(1. / shrink_factor);
+  BOOL res = ModifyWorldTransform(context, &xform, MWT_LEFTMULTIPLY);
+  DCHECK_NE(res, 0);
+}
+
+void DrawRect(HDC context, gfx::Rect rect) {
+  Rectangle(context, rect.x(), rect.y(), rect.right(), rect.bottom());
+}
+
 }  // namespace
 
 namespace printing {
@@ -102,6 +118,9 @@ void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
   }
 #endif
 
+  const printing::PageSetup& page_setup(
+      immutable_.settings_.page_setup_pixels());
+
   // Save the state to make sure the context this function call does not modify
   // the device context.
   int saved_state = SaveDC(context);
@@ -112,27 +131,57 @@ void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
     int saved_state = SaveDC(context);
     DCHECK_NE(saved_state, 0);
 
+#if 0
+    // Debug code to visually verify margins (leaks GDI handles).
+    XFORM debug_xform = { 0 };
+    ModifyWorldTransform(context, &debug_xform, MWT_IDENTITY);
+    // Printable area:
+    SelectObject(context, CreatePen(PS_SOLID, 1, RGB(0, 0, 0)));
+    SelectObject(context, CreateSolidBrush(RGB(0x90, 0x90, 0x90)));
+    Rectangle(context,
+              0,
+              0,
+              page_setup.printable_area().width(),
+              page_setup.printable_area().height());
+    // Overlay area:
+    gfx::Rect debug_overlay_area(page_setup.overlay_area());
+    debug_overlay_area.Offset(-page_setup.printable_area().x(),
+                              -page_setup.printable_area().y());
+    SelectObject(context, CreateSolidBrush(RGB(0xb0, 0xb0, 0xb0)));
+    DrawRect(context, debug_overlay_area);
+    // Content area:
+    gfx::Rect debug_content_area(page_setup.content_area());
+    debug_content_area.Offset(-page_setup.printable_area().x(),
+                              -page_setup.printable_area().y());
+    SelectObject(context, CreateSolidBrush(RGB(0xd0, 0xd0, 0xd0)));
+    DrawRect(context, debug_content_area);
+#endif
+
     // Setup the matrix to translate and scale to the right place. Take in
     // account the actual shrinking factor.
-    XFORM xform = { 0 };
-    xform.eDx = static_cast<float>(
-        immutable_.settings_.page_setup_pixels().content_area().x());
-    xform.eDy = static_cast<float>(
-        immutable_.settings_.page_setup_pixels().content_area().y());
-    xform.eM11 = static_cast<float>(1. / mutable_.shrink_factor);
-    xform.eM22 = static_cast<float>(1. / mutable_.shrink_factor);
-    BOOL res = ModifyWorldTransform(context, &xform, MWT_LEFTMULTIPLY);
-    DCHECK_NE(res, 0);
+    // Note that the printing output is relative to printable area of the page.
+    // That is 0,0 is offset by PHYSICALOFFSETX/Y from the page.
+    SimpleModifyWorldTransform(
+        context,
+        page_setup.content_area().x() - page_setup.printable_area().x(),
+        page_setup.content_area().y() - page_setup.printable_area().y(),
+        mutable_.shrink_factor);
 
     if (!page.native_metafile()->SafePlayback(context)) {
       NOTREACHED();
     }
 
-    res = RestoreDC(context, saved_state);
+    BOOL res = RestoreDC(context, saved_state);
     DCHECK_NE(res, 0);
   }
 
-  // Print the header and footer.
+  // Print the header and footer.  Offset by printable area offset (see comment
+  // above).
+  SimpleModifyWorldTransform(
+      context,
+      -page_setup.printable_area().x(),
+      -page_setup.printable_area().y(),
+      1);
   int base_font_size = gfx::Font().height();
   int new_font_size = ConvertUnit(10,
                                   immutable_.settings_.desired_dpi,
@@ -243,7 +292,7 @@ void PrintedDocument::PrintHeaderFooter(HDC context,
   }
   std::wstring output(PageOverlays::ReplaceVariables(line, *this, page));
   if (output.empty()) {
-    // May happens if document name or url is empty.
+    // May happen if document name or url is empty.
     return;
   }
   const gfx::Size string_size(font.GetStringWidth(output), font.height());
@@ -305,8 +354,7 @@ void PrintedDocument::PrintHeaderFooter(HDC context,
   DCHECK_NE(res, 0);
 }
 
-void PrintedDocument::DebugDump(const PrintedPage& page)
-{
+void PrintedDocument::DebugDump(const PrintedPage& page) {
   if (!g_debug_dump_info->enabled)
     return;
 
