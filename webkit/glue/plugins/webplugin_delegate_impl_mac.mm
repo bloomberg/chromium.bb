@@ -38,16 +38,15 @@ using WebKit::WebMouseEvent;
 
 namespace {
 
-// The fastest we are willing to process idle events for Flash.
-// Flash can easily exceed the limits of our CPU if we don't throttle it.
-// The throttle has been chosen by testing various delays and compromising
-// on acceptable Flash performance and reasonable CPU consumption.
+// The fastest we are willing to process idle events for plugins.
+// Some can easily exceed the limits of our CPU if we don't throttle them.
+// The throttle has been chosen by using the same value as Apple's WebKit port.
 //
 // We'd like to make the throttle delay variable, based on the amount of
-// time currently required to paint Flash plugins.  There isn't a good
+// time currently required to paint plugins.  There isn't a good
 // way to count the time spent in aggregate plugin painting, however, so
 // this seems to work well enough.
-const int kFlashIdleThrottleDelayMs = 20;  // 20ms (50Hz)
+const int kPluginIdleThrottleDelayMs = 20;  // 20ms (50Hz)
 
 // The current instance of the plugin which entered the modal loop.
 WebPluginDelegateImpl* g_current_plugin_instance = NULL;
@@ -84,7 +83,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       windowless_needs_set_window_(true),
       handle_event_depth_(0),
       user_gesture_message_posted_(this),
-      user_gesture_msg_factory_(this) {
+      user_gesture_msg_factory_(this),
+      null_event_factory_(this) {
   memset(&window_, 0, sizeof(window_));
 }
 
@@ -126,6 +126,10 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
   plugin->SetWindow(NULL);
   plugin_url_ = url.spec();
 
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      null_event_factory_.NewRunnableMethod(
+          &WebPluginDelegateImpl::OnNullEvent),
+      kPluginIdleThrottleDelayMs);
   return true;
 }
 
@@ -506,4 +510,16 @@ void WebPluginDelegateImpl::URLRequestRouted(const std::string&url,
   if (notify_needed) {
     instance()->SetURLLoadData(GURL(url.c_str()), notify_data);
   }
+}
+
+void WebPluginDelegateImpl::OnNullEvent() {
+  NPEvent np_event = {0};
+  np_event.what = nullEvent;
+  np_event.when = TickCount();
+  instance()->NPP_HandleEvent(&np_event);
+
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      null_event_factory_.NewRunnableMethod(
+          &WebPluginDelegateImpl::OnNullEvent),
+      kPluginIdleThrottleDelayMs);
 }

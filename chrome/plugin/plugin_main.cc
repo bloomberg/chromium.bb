@@ -27,47 +27,6 @@
 #include "base/global_descriptors_posix.h"
 #endif
 
-#if defined(OS_MACOSX)
-
-// To support Mac NPAPI plugins that use the Carbon event model (i.e., most
-// shipping plugins for MacOS X 10.5 and earlier), we need some way for the
-// Carbon event dispatcher to run, even though the plugin host process itself
-// does not use Carbon events.  Rather than give control to the standard
-// Carbon event loop, we schedule a periodic task on the main thread which
-// empties the Carbon event queue every 20ms (chosen to match how often Safari
-// does the equivalent operation).  This allows plugins to receive idle events
-// and schedule Carbon timers without swamping the CPU.  If, in the future,
-// we remove support for the Carbon event model and only support the Cocoa
-// event model, this can be removed.  Note that this approach does not install
-// standard application event handlers for the menubar, AppleEvents, and so on.
-// This is intentional, since the plugin process is not actually an application
-// with its own UI elements--all rendering and event handling happens via IPC
-// to the renderer process which invoked it.
-
-namespace {
-
-const int kPluginUpdateIntervalMs = 20; // 20ms = 50Hz
-
-void PluginCarbonEventTask() {
-  EventRef theEvent;
-  EventTargetRef theTarget;
-
-  theTarget = GetEventDispatcherTarget();
-
-  // Dispatch any pending events. but do not block if there are no events.
-  while (ReceiveNextEvent(0, NULL, kEventDurationNoWait,
-                          true, &theEvent) == noErr) {
-    SendEventToEventTarget (theEvent, theTarget);
-    ReleaseEvent(theEvent);
-  }
-
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(PluginCarbonEventTask), kPluginUpdateIntervalMs);
-}
-
-}
-#endif
-
 // main() routine for running as the plugin process.
 int PluginMain(const MainFunctionParams& parameters) {
   // The main thread of the plugin services IO.
@@ -119,13 +78,6 @@ int PluginMain(const MainFunctionParams& parameters) {
   NOTIMPLEMENTED() << " non-windows startup, plugin startup dialog etc.";
 #endif
   }
-
-#if defined(OS_MACOSX)
-  // Spin off a consumer for the native (Carbon) event stream so
-  // that plugin timers, event handlers, etc. will work properly.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(PluginCarbonEventTask), kPluginUpdateIntervalMs);
-#endif
 
   {
     ChildProcess plugin_process(new PluginThread());

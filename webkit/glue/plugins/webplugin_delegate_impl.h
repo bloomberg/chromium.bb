@@ -272,6 +272,14 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   static HCURSOR WINAPI SetCursorPatch(HCURSOR cursor);
 #endif
 
+#if defined(OS_MACOSX)
+  // Runnable Method Factory used to drip null events into the plugin
+  ScopedRunnableMethodFactory<WebPluginDelegateImpl> null_event_factory_;
+
+  // indicates that it's time to send the plugin a null event
+  void OnNullEvent();
+#endif
+
   // Holds the current cursor set by the windowless plugin.
   WebCursor current_windowless_cursor_;
 
