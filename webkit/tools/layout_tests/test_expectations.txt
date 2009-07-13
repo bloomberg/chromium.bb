@@ -2833,3 +2833,4 @@ BUG16410 : LayoutTests/fast/events/message-channel-listener-circular-ownership.h
 BUG16410 : LayoutTests/fast/events/message-port-constructor-for-deleted-document.html = CRASH
 BUG16410 : LayoutTests/fast/events/message-port-deleted-frame.html = CRASH
 BUG16639 : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
+BUG16652 : LayoutTests/fast/replaced/embed-display-none.html = PASS CRASH
