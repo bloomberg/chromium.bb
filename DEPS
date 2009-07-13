@@ -37,7 +37,7 @@ deps = {
   "src/third_party/skia":
     "http://skia.googlecode.com/svn/trunk@250",
 
-  "src/webkit/data/layout_tests/LayoutTests":
+  "src/third_party/WebKit/LayoutTests":
     Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
 
   "src/third_party/WebKit/JavaScriptCore":
