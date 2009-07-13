@@ -106,6 +106,7 @@ PluginObject::PluginObject(NPP npp)
       features_(NULL),
       fullscreen_region_valid_(false),
       renderer_init_status_(Renderer::UNINITIALIZED),
+      pending_ticks_(0),
 #ifdef OS_WIN
       hWnd_(NULL),
       fullscreen_hWnd_(NULL),
@@ -131,7 +132,6 @@ PluginObject::PluginObject(NPP npp)
       mac_agl_context_(0),
       mac_cgl_context_(0),
       last_mac_event_time_(0),
-      wants_redraw_(false),
       time_to_hide_overlay_(0.0),
 #endif
 #ifdef OS_LINUX
@@ -388,15 +388,6 @@ void PluginObject::PlatformSpecificSetCursor() {
   }
 }
 
-bool PluginObject::WantsRedraw() {
-  if (client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS)
-    return true;
-
-  // If we're rendering on-demand, then a call to client->render() should
-  // only force a redraw one time
-  return wants_redraw_;
-}
-
 bool PluginObject::SetRendererIsSoftware(bool state) {
   renderer_is_software_ = state;
   ClientInfoManager* client_info_manager =
@@ -511,12 +502,14 @@ static void PluginDeallocate(NPObject *object) {
 static bool PluginHasMethod(NPObject *header, NPIdentifier name) {
   DebugScopedId id(name);
   PluginObject *plugin_object = static_cast<PluginObject *>(header);
-  if (name == method_ids[METHOD_EVAL]) {
-    return true;
-  } else {
-    NPObject *globals = plugin_object->globals_npobject();
-    return globals->_class->hasMethod(globals, name);
+  for (int i = 0; i < NUM_METHOD_IDS; ++i) {
+    if (name == method_ids[i]) {
+      return true;
+    }
   }
+
+  NPObject *globals = plugin_object->globals_npobject();
+  return globals->_class->hasMethod(globals, name);
 }
 
 static bool PluginInvoke(NPObject *header, NPIdentifier name,
@@ -828,6 +821,54 @@ void PluginObject::PlatformSpecificSetCursor() {
 }
 
 #endif  // OS_LINUX
+
+void PluginObject::AsyncTick() {
+  if (pending_ticks_ >= 1)
+    return;
+
+  class TickCallback : public StreamManager::FinishedCallback {
+   public:
+    explicit TickCallback(PluginObject* plugin_object)
+        : plugin_object_(plugin_object) {
+    }
+
+    virtual void Run(DownloadStream*,
+                     bool,
+                     const std::string&,
+                     const std::string&) {
+      plugin_object_->Tick();
+    }
+
+   private:
+    PluginObject* plugin_object_;
+  };
+
+  ++pending_ticks_;
+
+  // Invoke Client::Tick and Client::RenderClient in a way that is asynchronous
+  // in Chrome. This avoids issues with making calls into the browser from a
+  // message handler.
+  // If NPN_PluginThreadAsyncCall worked in more browsers, it would be simpler
+  // to use that.
+  // We're calling LoadURL here with a URL that will return 0 bytes on browsers
+  // that support the "data:" protocol and fail in browsers that don't like IE.
+  // On browsers that support it, the side effect is to call the TickCallback.
+  if (!stream_manager_->LoadURL("data:,", NULL, NULL, NULL,
+                                new TickCallback(this), NP_NORMAL)) {
+    // Fallback on synchronous call if asynchronous load fails.
+    Tick();
+  }
+}
+
+void PluginObject::Tick() {
+  client_->Tick();
+  if (renderer_ && renderer_->need_to_render()) {
+    client_->RenderClient();
+  }
+
+  DCHECK(pending_ticks_ > 0);
+  --pending_ticks_;
+}
 
 }  // namespace _o3d
 

@@ -139,32 +139,11 @@ class Client {
                             //    (like uncovering part of a window.)
   };
 
-  typedef NonRecursiveClosureManager RenderOnDemandCallbackManager;
-  typedef RenderOnDemandCallbackManager::ClosureType RenderOnDemandCallback;
-
   RenderMode render_mode() const {
     return render_mode_;
   }
 
   void set_render_mode(RenderMode render_mode);
-
-  // Sets a callback for when the Client::Render() is called and the render
-  // mode is RENDERMODE_ON_DEMAND.
-  // NOTE: The client takes ownership of the RenderOnDemandCallback you
-  // pass in. It will be deleted if you call SetRenderOnDemandCallback a second
-  // time or if you call ClearRenderOnDemandCallback
-  //
-  // Parameters:
-  //   render_on_demand_callback: RenderOnDemandCallback to call when the
-  //        Client::Render is called.
-  void SetRenderOnDemandCallback(
-      RenderOnDemandCallback* render_on_demand_callback);
-
-  // Clears the render on demand callback.
-  // NOTE: The client takes ownership of the RenderOnDemandCallback you
-  // pass in. It will be deleted if you call SetRenderOnDemandCallback a second
-  // time or if you call ClearRenderOnDemandCallback
-  void ClearRenderOnDemandCallback();
 
   // Returns the rendergraph root render node.
   // Parameters:
@@ -475,9 +454,6 @@ class Client {
   RenderCallbackManager render_callback_manager_;
 
   RenderCallbackManager post_render_callback_manager_;
-
-  // Render On Demand Callback.
-  RenderOnDemandCallbackManager render_on_demand_callback_manager_;
 
   // Render Event to pass to the render callback.
   RenderEvent render_event_;

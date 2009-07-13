@@ -98,6 +98,7 @@ Renderer::Renderer(ServiceLocator* service_locator)
       features_(service_locator),
       supports_npot_(false),
       clear_client_(true),
+      need_to_render_(true),
       current_render_surface_(NULL),
       current_depth_surface_(NULL),
       render_frame_count_(0),

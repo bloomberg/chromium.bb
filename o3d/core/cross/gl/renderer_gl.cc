@@ -1159,6 +1159,7 @@ void RendererGL::Clear(const Float4 &color,
             (depth_flag   ? GL_DEPTH_BUFFER_BIT   : 0) |
             (stencil_flag ? GL_STENCIL_BUFFER_BIT : 0));
   CHECK_GL_ERROR();
+  set_need_to_render(false);
 }
 
 // Updates the helper constant used for the D3D -> GL remapping.
@@ -1256,6 +1257,8 @@ bool RendererGL::StartRendering() {
 // Returns true on success.
 bool RendererGL::BeginDraw() {
   DLOG_FIRST_N(INFO, 10) << "RendererGL BeginDraw";
+  set_need_to_render(true);
+
   MakeCurrentLazy();
 
   // Reset the viewport.
@@ -1319,10 +1322,14 @@ void RendererGL::EndDraw() {
   DLOG_FIRST_N(INFO, 10) << "RendererGL EndDraw";
   DCHECK(IsCurrent());
   SetChangedStates();
+  set_need_to_render(false);
 }
 
 // Swaps the buffers.
 void RendererGL::FinishRendering() {
+  if (need_to_render())
+    return;
+
   DLOG_FIRST_N(INFO, 10) << "RendererGL Present";
   DCHECK(IsCurrent());
   SetChangedStates();
@@ -1330,6 +1337,13 @@ void RendererGL::FinishRendering() {
   CHECK_GL_ERROR();
 #ifdef OS_WIN
   ::SwapBuffers(device_context_);
+#endif
+#ifdef OS_MACOSX
+#ifdef USE_AGL_DOUBLE_BUFFER
+  if (mac_agl_context_) {
+    ::aglSwapBuffers(mac_agl_context_);
+  }
+#endif
 #endif
 #ifdef OS_LINUX
   ::glXSwapBuffers(display_, window_);

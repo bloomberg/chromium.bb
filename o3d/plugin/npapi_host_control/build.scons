@@ -44,6 +44,9 @@ env.Append(
     'win',
     '$SCONSTRUCT_DIR/plugin/npapi_host_control/win',
   ],
+  LIBS = [
+    'wininet',
+  ],
   LINKFLAGS = [
     '/DEF:$SCONSTRUCT_DIR/plugin/npapi_host_control/win/npapi_host_control.def'
   ],

@@ -38,6 +38,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#include <wininet.h>
 
 #include "plugin/npapi_host_control/win/stream_operation.h"
 #include "plugin/npapi_host_control/win/host_control.h"
@@ -488,6 +489,16 @@ HRESULT STDMETHODCALLTYPE StreamOperation::OnObjectAvailable(REFIID riid,
 HRESULT StreamOperation::OpenURL(NPPluginProxy *owning_plugin,
                                  const wchar_t *url,
                                  void *notify_data) {
+  // Validate the URL. If the URL is invalid there is no need to create a new
+  // thread only to have it immediately fail.
+  HRESULT hr;
+  URL_COMPONENTS components = { sizeof(URL_COMPONENTS) };
+  if (!InternetCrackUrl(url, 0, 0, &components))
+    return E_INVALIDARG;
+  if (components.nScheme == INTERNET_SCHEME_UNKNOWN) {
+    return E_INVALIDARG;
+  }
+
   // The StreamOperation instance is created with a ref-count of zero,
   // so we explicitly attach a CComPtr to the object to boost the count, and
   // manage the lifetime of the object.
@@ -507,7 +518,6 @@ HRESULT StreamOperation::OpenURL(NPPluginProxy *owning_plugin,
   stream_object->SetOwner(owning_plugin);
 
   CString full_path;
-  HRESULT hr;
   if (FAILED(hr = ConstructFullURLPath(*stream_object,
                                        base_url_moniker,
                                        &full_path))) {

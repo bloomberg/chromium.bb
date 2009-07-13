@@ -279,13 +279,7 @@ bool NPPluginProxy::Init(NPBrowserProxy* browser_proxy,
   }
   ATLASSERT(np_object);
 
-  HRESULT hr = NPObjectProxy::CreateInstance(&scriptable_object_);
-  ATLASSERT(SUCCEEDED(hr));
-
-  scriptable_object_->SetBrowserProxy(browser_proxy_);
-  scriptable_object_->SetHostedObject(np_object);
-
-  browser_proxy_->RegisterNPObjectProxy(np_object, scriptable_object_);
+  scriptable_object_ = browser_proxy_->GetDispatchObject(np_object);
 
   NPBrowserProxy::GetBrowserFunctions()->releaseobject(np_object);
 

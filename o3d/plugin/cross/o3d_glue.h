@@ -140,6 +140,8 @@ class PluginObject: public NPObject {
   ClientNPObject *client_npobject_;
   std::string user_agent_;
   Renderer::InitStatus renderer_init_status_;
+  int pending_ticks_;
+
   // The current cursor type.
   o3d::Cursor::CursorType cursor_type_;
 
@@ -207,12 +209,6 @@ class PluginObject: public NPObject {
     return mac_fullscreen_window_;
   }
 
-  // Always returns |true| if RENDERMODE_CONTINUOUS, otherwise
-  // only if client->render() has been called and we haven't yet
-  // handled it
-  bool WantsRedraw();
-  void SetWantsRedraw(bool wants) { wants_redraw_ = wants; }
-
   bool ScrollIsInProgress() { return scroll_is_in_progress_; }
   void SetScrollIsInProgress(bool state) { scroll_is_in_progress_ = state; }
   bool scroll_is_in_progress_;
@@ -226,7 +222,6 @@ class PluginObject: public NPObject {
   WindowRef mac_window_;  // may be NULL in the Chrome case
   // these vars needed for the Safari tab switch detection hack
   CFDateRef last_mac_event_time_;
-  bool wants_redraw_;
   void * mac_cocoa_window_;
   void* mac_window_selected_tab_;
   bool mac_surface_hidden_;
@@ -361,6 +356,13 @@ class PluginObject: public NPObject {
 
   // Sets the cursor to whatever the current cursor is.
   void PlatformSpecificSetCursor();
+
+  // Asynchronously (if possible, synchronously otherwise) invoke Tick. No
+  // operation if an asynchronous tick is already pending.
+  void AsyncTick();
+
+  // Tick the client.
+  void Tick();
 
   const std::string& user_agent() const { return user_agent_; }
   bool IsFirefox() const {

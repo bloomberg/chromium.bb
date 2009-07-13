@@ -70,10 +70,14 @@ void LinuxTimer(XtPointer data, XtIntervalId* id) {
   DCHECK(obj->xt_interval_ == *id);
   obj->client()->Tick();
   obj->draw_ = true;
-  if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS) {
-    // NOTE: this draws no matter what instead of just invalidating the region,
-    // which means it will execute even if the plug-in window is invisible.
-    DrawPlugin(obj);
+  if (obj->renderer()) {
+    if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
+        obj->renderer()->need_to_render()) {
+      // NOTE: this draws no matter what instead of just invalidating the
+      // region, which means it will execute even if the plug-in window is
+      // invisible.
+      DrawPlugin(obj);
+    }
   }
   obj->xt_interval_ =
       XtAppAddTimeOut(obj->xt_app_context_, 10, LinuxTimer, obj);
@@ -563,9 +567,11 @@ static gboolean GtkTimeoutCallback(gpointer user_data) {
   PluginObject *obj = static_cast<PluginObject *>(user_data);
   obj->draw_ = true;
   obj->client()->Tick();
-  if (obj->client()->render_mode() ==
-      o3d::Client::RENDERMODE_CONTINUOUS) {
-    gtk_widget_queue_draw(obj->gtk_container_);
+  if (obj->renderer()) {
+    if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
+        obj->renderer()->need_to_render()) {
+      gtk_widget_queue_draw(obj->gtk_container_);
+    }
   }
   return TRUE;
 }
@@ -645,10 +651,6 @@ NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
       return NPERR_INVALID_PARAM;
   }
   return NPERR_NO_ERROR;
-}
-
-void RenderOnDemandCallbackHandler::Run() {
-  DrawPlugin(obj_);
 }
 
 NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
@@ -761,8 +763,6 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
 
     obj->CreateRenderer(default_display);
     obj->client()->Init();
-    obj->client()->SetRenderOnDemandCallback(
-        new RenderOnDemandCallbackHandler(obj));
     obj->display_ = display;
     obj->window_ = xwindow;
   }

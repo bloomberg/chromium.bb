@@ -99,19 +99,6 @@ extern "C" {
 
 namespace o3d {
 
-class RenderOnDemandCallbackHandler
-    : public o3d::Client::RenderOnDemandCallback {
- public:
-  explicit RenderOnDemandCallbackHandler(glue::_o3d::PluginObject* obj)
-      : obj_(obj) {
-  }
-
-  // This function is implemented for each platform.
-  virtual void Run();
- private:
-  glue::_o3d::PluginObject* obj_;
-};
-
 void WriteLogString(const char* text, int length);
 NPError NPP_Destroy(NPP instance, NPSavedData **save);
 NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason);

@@ -178,6 +178,16 @@ class Renderer {
   // Presents the results of the draw calls for this frame.
   virtual void FinishRendering() = 0;
 
+  // Returns whether a render is required.
+  bool need_to_render() const {
+    return need_to_render_;
+  }
+
+  // Invalidate the last rendered frame.
+  void set_need_to_render(bool need_to_render) {
+    need_to_render_ = need_to_render;
+  }
+
   // Handles the plugin resize event.
   virtual void Resize(int width, int height) = 0;
 
@@ -557,6 +567,9 @@ class Renderer {
 
   // Whether we need to clear the entire client area next render.
   bool clear_client_;
+
+  // Whether a render is required.
+  bool need_to_render_;
 
   // The current render surfaces. NULL = no surface.
   RenderSurface* current_render_surface_;

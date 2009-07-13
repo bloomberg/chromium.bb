@@ -512,7 +512,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
             ::SetPixelV(hdc, 0, 0, RGB(0, 0, 0));
           }
 
-          obj->client()->RenderClient();
+          obj->renderer()->set_need_to_render(true);
         } else {
           // If there Client has no Renderer associated with it, paint the draw
           // area gray.
@@ -552,24 +552,22 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
       if (reentrance_count.get() > 1) {
         break;  // Ignore this message; we're reentrant.
       }
-      // DoOnFrameCallback(obj);
 
       // TODO: Only logging for windows until we figure out the proper
       //            mac way
       if (g_logger) g_logger->UpdateLogging();
 
-      obj->client()->Tick();
-      if (obj->client()->render_mode() ==
-          o3d::Client::RENDERMODE_CONTINUOUS) {
-        // Must invalidate GetHWnd()'s drawing area, no matter which window is
-        // receiving this event.  It turns out that we have to set the timer on
-        // the window we're using for drawing anyway, whichever that is, but
-        // it's possible that an extra event will slip through.
-        ::InvalidateRect(obj->GetHWnd(), NULL, TRUE);
+      // If rendering continuously, invalidate the window and force a paint if
+      // it is visible. The paint invalidates the renderer and Tick will later
+      // repaint the window.
+      if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS) {
+        InvalidateRect(obj->GetHWnd(), NULL, FALSE);
+        reentrance_count.decrement();
+        UpdateWindow(obj->GetHWnd());
       }
-      // Calling UpdateWindow to force a WM_PAINT here causes problems in
-      // Firefox 2 if rendering takes too long. WM_PAINT will be sent anyway
-      // when there are no other messages to process.
+
+      obj->AsyncTick();
+
       break;
     }
     case WM_NCDESTROY: {
@@ -815,9 +813,6 @@ NPError OSCALL NP_Shutdown(void) {
 }  // extern "C" / namespace o3d
 
 namespace o3d {
-void RenderOnDemandCallbackHandler::Run() {
-  ::InvalidateRect(obj_->GetHWnd(), NULL, TRUE);
-}
 
 NPError NPP_New(NPMIMEType pluginType,
                 NPP instance,
@@ -912,8 +907,6 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
 
   obj->CreateRenderer(default_display);
   obj->client()->Init();
-  obj->client()->SetRenderOnDemandCallback(
-      new RenderOnDemandCallbackHandler(obj));
 
   // we set the timer to 10ms or 100fps. At the time of this comment
   // the renderer does a vsync the max fps it will run will be the refresh

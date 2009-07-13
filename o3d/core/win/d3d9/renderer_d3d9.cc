@@ -1091,6 +1091,7 @@ void RendererD3D9::Clear(const Float4 &color,
                              color[3]),
          depth,
          stencil));
+  set_need_to_render(false);
 }
 
 void RendererD3D9::SetViewportInPixels(int left,
@@ -1251,6 +1252,7 @@ bool RendererD3D9::RestoreDeviceObjects() {
 bool RendererD3D9::ResetDevice() {
   // First update the flag if it hasn't been set yet.
   have_device_ = false;
+  set_need_to_render(true);
 
   // Try to release all resources
   if (!InvalidateDeviceObjects())
@@ -1268,6 +1270,7 @@ bool RendererD3D9::ResetDevice() {
   SetInitialStates();
 
   // successful
+  have_device_ = true;
   return true;
 }
 
@@ -1293,23 +1296,21 @@ void RendererD3D9::TestLostDevice() {
   // In this case, we attempt to invalidate all resources in D3DPOOL_DEFAULT,
   // reset the device, and then restore the resources.
   // This should succeed and we set the have_device_ flag to true.
-  // If it fails, we do not set the flag to true so as
+  // If it fails, we do not set the flag to true.
 
   if (hr == D3DERR_DEVICELOST) {
     // We've lost the device, update the flag so that render calls don't
     // get called.
     have_device_ = false;
+    set_need_to_render(true);
     return;
   } else if (hr == D3DERR_DEVICENOTRESET) {
     // Direct3d tells us it is possible to reset the device now..
     // So let's attempt a reset!
-    ResetDevice();
+    if (ResetDevice()) {
+      lost_resources_callback_manager_.Run();
+    }
   }
-
-  // TestCooperativeLevel doesn't give us a device lost error or variant
-  // or the device has been successfully reset and reinitialized.
-  // We can safely set our have_device_ flag to true.
-  have_device_ = true;
 }
 
 // The window has been resized; change the size of our back buffer
@@ -1426,9 +1427,8 @@ bool RendererD3D9::StartRendering() {
   draw_elements_rendered_ = 0;
   primitives_rendered_ = 0;
 
-  // Attempt to reset the device if it is lost.
-  if (!have_device_)
-    TestLostDevice();
+  // Determine whether the device is lost, resetting if possible.
+  TestLostDevice();
 
   // Only perform ops with the device if we have it.
   if (have_device_) {
@@ -1448,6 +1448,7 @@ bool RendererD3D9::StartRendering() {
 bool RendererD3D9::BeginDraw() {
   // Only perform ops with the device if we have it.
   if (have_device_) {
+    set_need_to_render(true);
     if (!HR(d3d_device_->GetRenderTarget(0, &back_buffer_surface_)))
       return false;
     if (!HR(d3d_device_->GetDepthStencilSurface(&back_buffer_depth_surface_)))
@@ -1539,6 +1540,8 @@ void RendererD3D9::EndDraw() {
     }
     HR(d3d_device_->EndScene());
 
+    set_need_to_render(false);
+
     // Release the back-buffer references.
     back_buffer_surface_ = NULL;
     back_buffer_depth_surface_ = NULL;
@@ -1548,16 +1551,8 @@ void RendererD3D9::EndDraw() {
 void RendererD3D9::FinishRendering() {
   // No need to call Present(...) if we are rendering to an off-screen
   // target.
-  if (!off_screen_surface_) {
-    HRESULT hr = d3d_device_->Present(NULL, NULL, NULL, NULL);
-    // Test for lost device if Present fails.
-    if (hr != D3D_OK) {
-      TestLostDevice();
-      // TODO: This should only be called if some resources were
-      //    actually lost. In other words if there are no RenderSurfaces
-      //    then there is no reason to call this.
-      lost_resources_callback_manager_.Run();
-    }
+  if (have_device_ && !off_screen_surface_ && !need_to_render()) {
+    d3d_device_->Present(NULL, NULL, NULL, NULL);
   }
 }
 

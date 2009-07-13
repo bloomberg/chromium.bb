@@ -372,18 +372,11 @@ void Client::ClearPostRenderCallback() {
   post_render_callback_manager_.Clear();
 }
 
-void Client::SetRenderOnDemandCallback(
-    RenderOnDemandCallback* render_on_demand_callback) {
-  render_on_demand_callback_manager_.Set(render_on_demand_callback);
-}
-
-void Client::ClearRenderOnDemandCallback() {
-  render_on_demand_callback_manager_.Clear();
-}
-
 void Client::Render() {
   if (render_mode() == RENDERMODE_ON_DEMAND) {
-    render_on_demand_callback_manager_.Run();
+    if (renderer_.IsAvailable()) {
+      renderer_->set_need_to_render(true);
+    }
   }
 }
 

@@ -70,25 +70,11 @@ namespace {
 // destroy it explicitly.
 scoped_ptr<base::AtExitManager> g_at_exit_manager;
 
-// if defined, in AGL mode we do double buffered drawing
-// #define USE_AGL_DOUBLE_BUFFER
-
 #define CFTIMER
 // #define DEFERRED_DRAW_ON_NULLEVENTS
 
-// currently drawing with the timer doesn't play well with USE_AGL_DOUBLE_BUFFER
-#ifdef CFTIMER
-#undef USE_AGL_DOUBLE_BUFFER
-#endif
-
 void DrawPlugin(PluginObject* obj) {
   obj->client()->RenderClient();
-#ifdef USE_AGL_DOUBLE_BUFFER
-  // In AGL mode, we have to call aglSwapBuffers to guarantee that our
-  // pixels make it to the screen.
-  if (obj->mac_agl_context_ != NULL)
-    aglSwapBuffers(obj->mac_agl_context_);
-#endif
 }
 
 unsigned char GetMacEventKeyChar(const EventRecord *the_event) {
@@ -809,10 +795,6 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
   return handled;
 }
 
-void RenderOnDemandCallbackHandler::Run() {
-  obj_->SetWantsRedraw(true);
-}
-
 NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc,
                 char* argn[], char* argv[], NPSavedData* saved) {
   HANDLE_CRASHES;
@@ -1124,8 +1106,6 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   }
 
   obj->client()->Init();
-  obj->client()->SetRenderOnDemandCallback(
-      new RenderOnDemandCallbackHandler(obj));
 
   if (obj->renderer()) {
     obj->renderer()->SetClientOriginOffset(gl_x_origin, gl_y_origin);

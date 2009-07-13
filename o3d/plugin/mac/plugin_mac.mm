@@ -234,19 +234,20 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
     bool plugin_visible = in_fullscreen ||
         (obj->last_buffer_rect_[2] > 1 && obj->last_buffer_rect_[3] > 1);
 
-    if (plugin_visible && obj->WantsRedraw()) {
-      obj->SetWantsRedraw(false);  // for on-demand drawing
+    if (plugin_visible && obj->renderer()) {
+      if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
+          obj->renderer()->need_to_render()) {
+        // Force a sync to the VBL (once per timer callback)
+        // to avoid tearing
+        GLint sync = (i == 0);
+        if (obj->mac_cgl_context_) {
+          CGLSetParameter(obj->mac_cgl_context_, kCGLCPSwapInterval, &sync);
+        } else if (obj->mac_agl_context_) {
+          aglSetInteger(obj->mac_agl_context_, AGL_SWAP_INTERVAL, &sync);
+        }
 
-      // Force a sync to the VBL (once per timer callback)
-      // to avoid tearing
-      GLint sync = (i == 0);
-      if (obj->mac_cgl_context_) {
-        CGLSetParameter(obj->mac_cgl_context_, kCGLCPSwapInterval, &sync);
-      } else if (obj->mac_agl_context_) {
-        aglSetInteger(obj->mac_agl_context_, AGL_SWAP_INTERVAL, &sync);
+        obj->client()->RenderClient();
       }
-
-      obj->client()->RenderClient();
     }
   }
 }

@@ -50,20 +50,20 @@ namespace {
 
 // Helper routine that invokes the host-control stream request function.
 NPError OpenURL(NPBrowserProxy* browser_proxy,
-                const char *szURL,
-                const char *szTarget,
-                void *pNotifyData) {
+                const char *url,
+                const char *target,
+                void *notify_data) {
   CHostControl* host_control = browser_proxy->GetHostingControl();
 
   USES_CONVERSION;
-  HRESULT hr = host_control->OpenUrlStream(A2CW(szURL), pNotifyData);
+  HRESULT hr = host_control->OpenUrlStream(A2CW(url), notify_data);
   return SUCCEEDED(hr) ? NPERR_NO_ERROR : NPERR_GENERIC_ERROR;
 }
 }  // unnamed namespace
 
 NPNetscapeFuncs NPBrowserProxy::kNetscapeFunctions = {
   sizeof(kNetscapeFunctions),
-  NP_VERSION_MAJOR << 8 | NP_VERSION_MINOR,
+  NPVERS_HAS_NPOBJECT_ENUM,
   NPN_GetURL,
   NPN_PostURL,
   NPN_RequestRead,
