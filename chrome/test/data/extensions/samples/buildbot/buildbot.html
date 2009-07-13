@@ -1,7 +1,6 @@
 <script>
 var botRoot = "http://build.chromium.org/buildbot/waterfall";
 var statusURL = "http://chromium-status.appspot.com/current";
-//var waterfallURL = botRoot + "/console_json?name=username@chromium.org&json=1";
 var waterfallURL = botRoot + "/console_json?json=1";
 var botList;
 var checkinResults;
@@ -25,6 +24,10 @@ function updateStatus(text) {
 }
 
 function updateBots(text) {
+  // There's a bug with the buildbot output where this quote is in the wrong
+  // place.
+  text = text.replace("'{revision':", "{'revision':");
+
   var results = (new RegExp('(.*)<\/body>', 'g')).exec(text);
   if (!results || results.index < 0) {
     console.log("Error: couldn't find bot JSON");
@@ -51,8 +54,6 @@ function updateBots(text) {
 function showBot(botIndex) {
   var bot = botList[botIndex];
   var url = botRoot + "/waterfall?builder=" + bot.name;
-  //var url = botRoot + "/builders/" + bot.name;
-  //var url = botRoot + "/" + bot.url;
   window.open(url);
   window.event.stopPropagation();
 }
@@ -66,7 +67,7 @@ function displayBots() {
   var html = "";
   if (bots.className == "visible") {
     botList.forEach(function(bot, i) {
-      html += "<div class='bot " + bot.color + 
+      html += "<div class='bot " + bot.color +
           "' onclick='showBot(" + i + ")' " +
           "title='" + bot.title + "'></div>";
     });
@@ -89,12 +90,12 @@ function requestURL(url, callback) {
         callback(text);
       }
     }
-    
+
     xhr.onerror = function(error) {
       console.log("xhr error: " + error);
     }
 
-    xhr.open("GET", url);
+    xhr.open("GET", url, true);
     xhr.send({});
   } catch(e) {
     console.log("exception: " + e);
@@ -129,7 +130,6 @@ window.addEventListener("mouseout", function(e) {
       hideTimerId = null;
       var bots = document.getElementById("bots");
       bots.className = "";
-      //displayBots();
     }, 1000);
   }
 }, false);
@@ -138,7 +138,11 @@ window.addEventListener("click", function() {
   window.open(botRoot);
 }, false);
 
-requestStatus();
+window.onload = function() {
+  // This is weird, but somehow doing an XHR -- even though it is
+  // asynchronous!! -- in onload delays the initial render from happening.
+  window.setTimeout(requestStatus, 10);
+}
 </script>
 
 <style>
@@ -159,29 +163,34 @@ requestStatus();
 }
 
 #bots {
-  border: none;
   height: 100%;
-  width: 0;
+  /* We would rather this be zero, but a rendering bug in WebKit causes the
+     offset width of the document to sometimes be caluculated incorrectly that
+     way. */
+  width: 1px;
   -webkit-transition: width .2s linear;
-  background-color: transparent;
   display:-webkit-box;
   -webkit-box-align:center; /* center content vertically */
   overflow: hidden;
-  padding-left: 2px;
 }
 
 #bots.visible {
-  width: 612px;  /* hardcoded width sucks */
+  width:470px;
 }
 
 .bot {
-  margin-right: 1px;
   line-height: 100%;
   cursor: pointer;
   -webkit-border-radius: 2px;
   display:-webkit-box;
-  width: 10px;
+  width: 6px;
   height: 15px;
+}
+
+.bot:first-child {
+  /* Since #bots is 1px wide, this is necessary so that we don't show the first
+     pixel of the first bot. */
+  margin-left:1px;
 }
 
 .running {
@@ -217,7 +226,9 @@ requestStatus();
 </style>
 
 <div class="toolstrip-button">
-<span id="status" class="open">tree: open?</span>
+  <span id="status" class="open">
+    <span style="color:#ff6600">loading...</span>
+  </span>
 </div>
 <div id="bots">
 </div>

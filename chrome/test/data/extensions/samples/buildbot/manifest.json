@@ -1,8 +1,8 @@
 {
-  "description": "Buildbot waterfall monitor",
-  "name": "buildbot", 
+  "name": "Chromium Buildbot Monitor",
+  "version": "0.2",
+  "description": "Displays the status of the Chromium buildbot in the extension toolstrip. On hover, expands to give more detail about each bot.",
   "toolstrips": [
     "buildbot.html"
-  ], 
-  "version": "0.1"
+  ]
 }
