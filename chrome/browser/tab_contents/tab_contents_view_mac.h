@@ -74,7 +74,9 @@ class TabContentsViewMac : public TabContentsView,
                        const NotificationDetails& details);
 
  private:
-  // ---------------------------------------------------------------------------
+  // Returns a drag pasteboard filled with the appropriate data. The types are
+  // populated in decending order of richness.
+  NSPasteboard* FillDragData(const WebDropData& drop_data);
 
   // The Cocoa NSView that lives in the view hierarchy.
   scoped_nsobject<TabContentsViewCocoa> cocoa_view_;
