@@ -41,6 +41,7 @@ class TestWebWorker : public WebKit::WebWorker,
   virtual void postConsoleMessageToWorkerObject(
       int destination_id,
       int source_id,
+      int message_type,
       int message_level,
       const WebKit::WebString& message,
       int line_number,

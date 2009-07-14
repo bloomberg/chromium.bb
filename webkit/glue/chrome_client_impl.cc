@@ -312,6 +312,7 @@ void ChromeClientImpl::setResizable(bool value) {
 }
 
 void ChromeClientImpl::addMessageToConsole(WebCore::MessageSource source,
+                                           WebCore::MessageType type,
                                            WebCore::MessageLevel level,
                                            const WebCore::String& message,
                                            unsigned int line_no,

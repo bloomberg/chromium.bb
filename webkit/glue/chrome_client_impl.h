@@ -70,6 +70,7 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
   virtual void setResizable(bool);
 
   virtual void addMessageToConsole(WebCore::MessageSource source,
+                                   WebCore::MessageType type,
                                    WebCore::MessageLevel level,
                                    const WebCore::String& message,
                                    unsigned int lineNumber,

@@ -33,6 +33,7 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient,
   virtual void postConsoleMessageToWorkerObject(
       int destination,
       int source,
+      int type,
       int level,
       const WebKit::WebString& message,
       int line_number,

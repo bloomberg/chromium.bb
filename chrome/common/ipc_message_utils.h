@@ -1173,6 +1173,44 @@ struct ParamTraits< Tuple6<A, B, C, D, E, F> > {
   }
 };
 
+template <class A, class B, class C, class D, class E, class F, class G>
+struct ParamTraits< Tuple7<A, B, C, D, E, F, G> > {
+  typedef Tuple7<A, B, C, D, E, F, G> param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.a);
+    WriteParam(m, p.b);
+    WriteParam(m, p.c);
+    WriteParam(m, p.d);
+    WriteParam(m, p.e);
+    WriteParam(m, p.f);
+    WriteParam(m, p.g);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return (ReadParam(m, iter, &r->a) &&
+            ReadParam(m, iter, &r->b) &&
+            ReadParam(m, iter, &r->c) &&
+            ReadParam(m, iter, &r->d) &&
+            ReadParam(m, iter, &r->e) &&
+            ReadParam(m, iter, &r->f) &&
+            ReadParam(m, iter, &r->g));
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(p.a, l);
+    l->append(L", ");
+    LogParam(p.b, l);
+    l->append(L", ");
+    LogParam(p.c, l);
+    l->append(L", ");
+    LogParam(p.d, l);
+    l->append(L", ");
+    LogParam(p.e, l);
+    l->append(L", ");
+    LogParam(p.f, l);
+    l->append(L", ");
+    LogParam(p.g, l);
+  }
+};
+
 
 
 //-----------------------------------------------------------------------------

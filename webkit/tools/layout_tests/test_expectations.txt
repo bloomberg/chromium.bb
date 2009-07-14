@@ -2843,3 +2843,36 @@ BUG16675 : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH
 BUG16675 : LayoutTests/fast/images/favicon-as-image.html = CRASH
 BUG16675 : LayoutTests/fast/images/pdf-as-background.html = CRASH
 
+// WebKit merge 42738:45840
+// Canvas-related failures.
+BUG16676 : LayoutTests/fast/canvas/canvas-composite-alpha.html = FAIL
+BUG16676 : LayoutTests/fast/canvas/canvas-invalid-strokestyle.html = FAIL
+BUG16676 : LayoutTests/fast/canvas/canvas-path-with-inf-nan-dimensions.html = FAIL
+BUG16676 : LayoutTests/fast/canvas/canvas-set-properties-with-non-invertible-ctm.html = FAIL
+BUG16676 : LayoutTests/fast/canvas/canvas-stroke-empty-fill.html = FAIL
+BUG16676 : LayoutTests/fast/canvas/canvas-text-baseline.html = FAIL
+BUG16676 : LayoutTests/fast/canvas/canvas-transforms-during-path.html = FAIL
+BUG16676 : LayoutTests/fast/canvas/fill-stroke-clip-reset-path.html = FAIL
+BUG16676 : LayoutTests/fast/canvas/quadraticCurveTo.xml = FAIL
+
+// WebKit merge 42738:45840
+// New tests, need baseline.
+BUG16678 : LayoutTests/media/audio-data-url.html = FAIL
+BUG16678 : LayoutTests/fast/dom/replace-first-child.html = FAIL
+BUG16678 : LayoutTests/fast/text/international/khmer-selection.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/base-href-safe3.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/inline-event-HTML-entities.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities-control-char.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities-named.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities-null-char.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-control-char.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-null-char.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/link-onclick-entities.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-entities.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-src-redirect-safe.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-double-quote.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-entities.html = FAIL
+BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-quote.html = FAIL
+

@@ -55,9 +55,10 @@ IPC_BEGIN_MESSAGES(WorkerHost)
                       int  /* line_number */,
                       string16  /* source_url*/)
 
-  IPC_MESSAGE_ROUTED6(WorkerHostMsg_PostConsoleMessageToWorkerObject,
+  IPC_MESSAGE_ROUTED7(WorkerHostMsg_PostConsoleMessageToWorkerObject,
                       int  /* destination */,
                       int  /* source */,
+                      int  /* type */,
                       int  /* level */,
                       string16  /* message */,
                       int  /* line_number */,

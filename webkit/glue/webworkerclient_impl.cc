@@ -221,6 +221,7 @@ void WebWorkerClientImpl::postExceptionToWorkerObject(
 void WebWorkerClientImpl::postConsoleMessageToWorkerObject(
     int destination_id,
     int source_id,
+    int message_type,
     int message_level,
     const WebString& message,
     int line_number,
@@ -228,7 +229,7 @@ void WebWorkerClientImpl::postConsoleMessageToWorkerObject(
   if (WTF::currentThread() != worker_thread_id_) {
     script_execution_context_->postTask(
         WebCore::createCallbackTask(&PostConsoleMessageToWorkerObjectTask, this,
-            destination_id, source_id, message_level,
+            destination_id, source_id, message_type, message_level,
             webkit_glue::WebStringToString(message),
             line_number,
             webkit_glue::WebStringToString(source_url)));
@@ -238,6 +239,7 @@ void WebWorkerClientImpl::postConsoleMessageToWorkerObject(
   script_execution_context_->addMessage(
       static_cast<WebCore::MessageDestination>(destination_id),
       static_cast<WebCore::MessageSource>(source_id),
+      static_cast<WebCore::MessageType>(message_type),
       static_cast<WebCore::MessageLevel>(message_level),
       webkit_glue::WebStringToString(message),
       line_number,
@@ -332,6 +334,7 @@ void WebWorkerClientImpl::PostConsoleMessageToWorkerObjectTask(
     WebWorkerClientImpl* this_ptr,
     int destination_id,
     int source_id,
+    int message_type,
     int message_level,
     const WebCore::String& message,
     int line_number,
@@ -339,6 +342,7 @@ void WebWorkerClientImpl::PostConsoleMessageToWorkerObjectTask(
   this_ptr->script_execution_context_->addMessage(
       static_cast<WebCore::MessageDestination>(destination_id),
       static_cast<WebCore::MessageSource>(source_id),
+      static_cast<WebCore::MessageType>(message_type),
       static_cast<WebCore::MessageLevel>(message_level),
       message,
       line_number,

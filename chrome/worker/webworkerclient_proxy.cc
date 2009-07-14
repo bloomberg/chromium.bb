@@ -93,12 +93,14 @@ void WebWorkerClientProxy::postExceptionToWorkerObject(
 void WebWorkerClientProxy::postConsoleMessageToWorkerObject(
     int destination,
     int source,
+    int type,
     int level,
     const WebString& message,
     int line_number,
     const WebString& source_url) {
   Send(new WorkerHostMsg_PostConsoleMessageToWorkerObject(
-      route_id_, destination, source, level,message, line_number, source_url));
+      route_id_, destination, source, type, level,
+      message, line_number, source_url));
 }
 
 void WebWorkerClientProxy::confirmMessageFromWorkerObject(

@@ -277,6 +277,7 @@ void WebWorkerImpl::PostExceptionTask(
 void WebWorkerImpl::postConsoleMessageToWorkerObject(
     WebCore::MessageDestination destination,
     WebCore::MessageSource source,
+    WebCore::MessageType type,
     WebCore::MessageLevel level,
     const WebCore::String& message,
     int line_number,
@@ -286,6 +287,7 @@ void WebWorkerImpl::postConsoleMessageToWorkerObject(
       this,
       static_cast<int>(destination),
       static_cast<int>(source),
+      static_cast<int>(type),
       static_cast<int>(level),
       message,
       line_number,
@@ -297,6 +299,7 @@ void WebWorkerImpl::PostConsoleMessageTask(
     WebWorkerImpl* this_ptr,
     int destination,
     int source,
+    int type,
     int level,
     const WebCore::String& message,
     int line_number,
@@ -304,6 +307,7 @@ void WebWorkerImpl::PostConsoleMessageTask(
   this_ptr->client_->postConsoleMessageToWorkerObject(
       destination,
       source,
+      type,
       level,
       webkit_glue::StringToWebString(message),
       line_number,

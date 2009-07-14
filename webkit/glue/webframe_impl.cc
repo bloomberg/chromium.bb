@@ -1708,8 +1708,9 @@ void WebFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
   }
 
   frame()->domWindow()->console()->addMessage(
-      WebCore::OtherMessageSource, webcore_message_level,
-      webkit_glue::WebStringToString(message.text), 1, String());
+      WebCore::OtherMessageSource, WebCore::LogMessageType,
+      webcore_message_level, webkit_glue::WebStringToString(message.text),
+      1, String());
 }
 
 void WebFrameImpl::ClosePage() {

@@ -87,14 +87,15 @@ void TestWebWorker::postExceptionToWorkerObject(const WebString& error_message,
 void TestWebWorker::postConsoleMessageToWorkerObject(
     int destination_id,
     int source_id,
+    int message_type,
     int message_level,
     const WebString& message,
     int line_number,
     const WebString& source_url) {
   if (webworkerclient_delegate_)
     webworkerclient_delegate_->postConsoleMessageToWorkerObject(
-        destination_id, source_id, message_level, message, line_number,
-        source_url);
+        destination_id, source_id, message_type, message_level,
+        message, line_number, source_url);
 }
 
 void TestWebWorker::confirmMessageFromWorkerObject(bool has_pending_activity) {
