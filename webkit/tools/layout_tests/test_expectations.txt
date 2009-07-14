@@ -2855,11 +2855,14 @@ BUG16676 : LayoutTests/fast/canvas/canvas-transforms-during-path.html = FAIL
 BUG16676 : LayoutTests/fast/canvas/fill-stroke-clip-reset-path.html = FAIL
 BUG16676 : LayoutTests/fast/canvas/quadraticCurveTo.xml = FAIL
 
+// New test, added in http://trac.webkit.org/changeset/45783
+// audio/3gpp mime type, does not play in Chromium yet.
+BUG13907 SKIP : LayoutTests/media/audio-data-url.html = FAIL
+
 // WebKit merge 42738:45840
 // New tests, need baseline.
-BUG16678 : LayoutTests/media/audio-data-url.html = FAIL
 BUG16678 : LayoutTests/fast/dom/replace-first-child.html = FAIL
-BUG16678 : LayoutTests/fast/text/international/khmer-selection.html = FAIL
+BUG16678 SKIP : LayoutTests/fast/text/international/khmer-selection.html = FAIL
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/base-href-safe3.html = FAIL
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/inline-event-HTML-entities.html = FAIL
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities-control-char.html = FAIL
