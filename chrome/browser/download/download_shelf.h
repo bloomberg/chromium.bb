@@ -14,23 +14,14 @@ class BaseDownloadItemModel;
 class Browser;
 class DownloadItem;
 
-// DownloadShelf is an interface for platform-specific download shelves to
-// implement. It also contains some shared logic. This class should not be
-// instantiated directly, but rather created via a call to Create().
-// It is a view object.
+// DownloadShelf is an interface for platform-specific download shelf views.
 class DownloadShelf {
  public:
-  explicit DownloadShelf(Browser* browser)
-      : browser_(browser) { DCHECK(browser_); }
-
   virtual ~DownloadShelf() { }
 
   // A new download has started, so add it to our shelf. This object will
   // take ownership of |download_model|. Also make the shelf visible.
   virtual void AddDownload(BaseDownloadItemModel* download_model) = 0;
-
-  // Invoked when the user clicks the 'show all downloads' link button.
-  void ShowAllDownloads();
 
   // The browser view needs to know when we are going away to properly return
   // the resize corner size to WebKit so that we don't draw on top of it.
@@ -47,13 +38,7 @@ class DownloadShelf {
   // Closes the shelf.
   virtual void Close() = 0;
 
-  Browser* browser() { return browser_; }
-
- protected:
-  Browser* browser_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadShelf);
+  virtual Browser* browser() const = 0;
 };
 
 // Logic for the download shelf context menu. Platform specific subclasses are

@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/cocoa/download_item_controller.h"
@@ -84,7 +85,7 @@ const int kDownloadItemPadding = 10;
 - (BOOL)textView:(NSTextView *)aTextView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  bridge_->ShowAllDownloads();
+  bridge_->browser()->ShowDownloadsTab();
   return YES;
 }
 

@@ -72,7 +72,7 @@ int CenterPosition(int size, int target_size) {
 }  // namespace
 
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
-    : DownloadShelf(browser), parent_(parent) {
+    : browser_(browser), parent_(parent) {
   parent->AddChildView(this);
   Init();
 }
@@ -285,7 +285,7 @@ bool DownloadShelfView::CanFitFirstDownloadItem() {
 }
 
 void DownloadShelfView::LinkActivated(views::Link* source, int event_flags) {
-  ShowAllDownloads();
+  browser_->ShowDownloadsTab();
 }
 
 void DownloadShelfView::ButtonPressed(views::Button* button) {

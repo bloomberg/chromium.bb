@@ -10,7 +10,7 @@
 
 DownloadShelfMac::DownloadShelfMac(Browser* browser,
                                    DownloadShelfController* controller)
-    : DownloadShelf(browser),
+    : browser_(browser),
       shelf_controller_(controller) {
   Show();
 }

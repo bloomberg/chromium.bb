@@ -36,6 +36,7 @@ class DownloadShelfGtk : public DownloadShelf,
   virtual bool IsClosing() const;
   virtual void Show();
   virtual void Close();
+  virtual Browser* browser() const { return browser_; }
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -56,6 +57,9 @@ class DownloadShelfGtk : public DownloadShelf,
   GtkWidget* GetHBox() const;
 
   static void OnButtonClick(GtkWidget* button, DownloadShelfGtk* toolbar);
+
+  // The browser that owns this download shelf.
+  Browser* browser_;
 
   // The top level widget of the shelf.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;

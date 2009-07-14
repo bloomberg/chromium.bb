@@ -61,6 +61,7 @@ class DownloadShelfView : public DownloadShelf,
   virtual bool IsClosing() const;
   virtual void Show();
   virtual void Close();
+  virtual Browser* browser() const { return browser_; }
 
   // Removes a specified download view. The supplied view is deleted after
   // it's removed.
@@ -79,6 +80,9 @@ class DownloadShelfView : public DownloadShelf,
 
   // Returns true if the shelf is wide enough to show the first download item.
   bool CanFitFirstDownloadItem();
+
+  // The browser for this shelf.
+  Browser* browser_;
 
   // The animation for adding new items to the shelf.
   scoped_ptr<SlideAnimation> new_item_animation_;

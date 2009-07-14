@@ -49,7 +49,7 @@ const int kShelfAnimationDurationMs = 120;
 }  // namespace
 
 DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
-    : DownloadShelf(browser),
+    : browser_(browser),
       is_showing_(false),
       theme_provider_(GtkThemeProvider::GetFrom(browser->profile())) {
   // Logically, the shelf is a vbox that contains two children: a one pixel
@@ -213,6 +213,6 @@ void DownloadShelfGtk::OnButtonClick(GtkWidget* button,
     shelf->Close();
   } else {
     // The link button was clicked.
-    shelf->ShowAllDownloads();
+    shelf->browser_->ShowDownloadsTab();
   }
 }

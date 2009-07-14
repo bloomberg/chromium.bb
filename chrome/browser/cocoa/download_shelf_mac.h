@@ -33,8 +33,12 @@ class DownloadShelfMac : public DownloadShelf {
   virtual bool IsClosing() const;
   virtual void Show();
   virtual void Close();
+  virtual Browser* browser() const { return browser_; }
 
  private:
+  // The browser that owns this shelf.
+  Browser* browser_;
+
   DownloadShelfController* shelf_controller_;  // weak, owns us
 };
 

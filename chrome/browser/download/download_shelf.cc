@@ -15,17 +15,6 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
-
-// DownloadShelf ---------------------------------------------------------------
-
-void DownloadShelf::ShowAllDownloads() {
-  Profile* profile = browser_->profile();
-  if (profile)
-    UserMetrics::RecordAction(L"ShowDownloads", profile);
-  browser_->OpenURL(GURL(chrome::kChromeUIDownloadsURL), GURL(),
-                    NEW_FOREGROUND_TAB, PageTransition::AUTO_BOOKMARK);
-}
-
 // DownloadShelfContextMenu ----------------------------------------------------
 
 DownloadShelfContextMenu::DownloadShelfContextMenu(
