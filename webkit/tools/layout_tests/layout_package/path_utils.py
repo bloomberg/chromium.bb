@@ -65,11 +65,13 @@ def LayoutTestsDir(path = None):
   if _layout_tests_dir:
     return _layout_tests_dir
 
-  if os.path.exists(os.path.join(LayoutDataDir(), 'LayoutTests')):
-    _layout_tests_dir = LayoutDataDir()
+  webkit_dir = google.path_utils.FindUpward(
+      google.path_utils.ScriptDir(), 'third_party', 'WebKit')
+
+  if os.path.exists(os.path.join(webkit_dir, 'LayoutTests')):
+    _layout_tests_dir = webkit_dir
   else:
-    _layout_tests_dir = google.path_utils.FindUpward(
-        google.path_utils.ScriptDir(), 'third_party', 'WebKit')
+    _layout_tests_dir = LayoutDataDir()
 
   return _layout_tests_dir
 

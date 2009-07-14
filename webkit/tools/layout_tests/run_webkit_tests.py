@@ -83,7 +83,7 @@ class TestRunner:
   _skipped_directories = set(['.svn', '_svn', 'resources'])
 
   # Top-level directories to shard when running tests.
-  _shardable_directories = set(['chrome', 'LayoutTests'])
+  _shardable_directories = set(['chrome', 'LayoutTests', 'pending'])
 
   HTTP_SUBDIR = os.sep.join(['', 'http', ''])
 
@@ -1000,7 +1000,12 @@ def main(options, args):
       options.time_out_ms = str(TestRunner.DEFAULT_TEST_TIMEOUT_MS)
 
   # Include all tests if none are specified.
-  paths = args
+  new_args = []
+  for arg in args:
+    if arg and arg != '':
+      new_args.append(arg)
+
+  paths = new_args
   if not paths:
     paths = []
   if options.test_list:
