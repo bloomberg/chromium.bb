@@ -6,7 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/options_page_base.h"
@@ -18,6 +20,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "net/base/cookie_policy.h"
 
 namespace {
@@ -113,6 +116,8 @@ class PrivacySection : public OptionsPageBase {
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
   // The callback functions for the options widgets.
+  static void OnLearnMoreLinkClicked(GtkButton *button,
+                                     PrivacySection* privacy_section);
   static void OnEnableLinkDoctorChange(GtkWidget* widget,
                                        PrivacySection* options_window);
   static void OnEnableSuggestChange(GtkWidget* widget,
@@ -163,7 +168,16 @@ PrivacySection::PrivacySection(Profile* profile)
   gtk_box_pack_start(GTK_BOX(page_), section_description_label,
                      FALSE, FALSE, 0);
 
-  // TODO(mattm): Learn more link
+  GtkWidget* learn_more_link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
+  // Stick it in an hbox so it doesn't expand to the whole width.
+  GtkWidget* learn_more_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(learn_more_hbox), learn_more_link,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page_), learn_more_hbox,
+                     FALSE, FALSE, 0);
+  g_signal_connect(learn_more_link, "clicked",
+                   G_CALLBACK(OnLearnMoreLinkClicked), this);
 
   enable_link_doctor_checkbox_ = CreateCheckButtonWithWrappedLabel(
       IDS_OPTIONS_LINKDOCTOR_PREF);
@@ -238,6 +252,14 @@ PrivacySection::PrivacySection(Profile* profile)
   cookie_behavior_.Init(prefs::kCookieBehavior, profile->GetPrefs(), this);
 
   NotifyPrefChanged(NULL);
+}
+
+// static
+void PrivacySection::OnLearnMoreLinkClicked(GtkButton *button,
+                                            PrivacySection* privacy_section) {
+  BrowserList::GetLastActive()->
+      OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LEARN_MORE_PRIVACY_URL)),
+              GURL(), NEW_WINDOW, PageTransition::LINK);
 }
 
 // static
