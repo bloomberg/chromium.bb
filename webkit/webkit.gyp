@@ -570,8 +570,6 @@
 
         '<@(webcore_files)',
 
-        'port/bindings/v8/UndetectableHTMLCollection.idl',
-
         # This file includes all the .cpp files generated from the above idl.
         '../third_party/WebKit/WebCore/bindings/v8/DerivedSourcesAllInOne.cpp',
 
