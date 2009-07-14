@@ -3233,8 +3233,8 @@ each locale. -->
         Allow all content to load
       </message>
 
-      <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing Data' group.">
-        Browsing Data:
+      <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
+        Browsing data:
       </message>
       <message name="IDS_OPTIONS_BROWSING_DATA_INFO" desc="Information text about browsing data options.">
         You can import your bookmarks and settings from other browsers or clear your browsing data from this computer.
