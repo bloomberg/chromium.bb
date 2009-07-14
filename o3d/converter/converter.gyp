@@ -31,7 +31,7 @@
         '../compiler/technique/technique.gyp:technique',
         '../core/core.gyp:o3dCore',
         '../core/core.gyp:o3dCorePlatform',
-        '../import/import.gyp:o3dArchive',
+        '../import/archive.gyp:o3dArchive',
         '../import/import.gyp:o3dImport',
         '../serializer/serializer.gyp:o3dSerializer',
         '../utils/utils.gyp:o3dUtils',

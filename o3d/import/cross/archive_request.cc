@@ -31,8 +31,6 @@
 
 // This file contains the definition of the ArchiveRequest class.
 
-#include "import/cross/precompile.h"
-
 #include "import/cross/archive_request.h"
 
 #include "import/cross/targz_processor.h"
