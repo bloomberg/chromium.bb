@@ -386,7 +386,7 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 void WebPluginDelegateProxy::OnChannelError() {
   if (plugin_)
     plugin_->Invalidate();
-  render_view_->PluginCrashed(plugin_path_);
+  render_view_->PluginCrashed(GetProcessId(), plugin_path_);
 }
 
 void WebPluginDelegateProxy::UpdateGeometry(
@@ -709,7 +709,7 @@ void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
 void WebPluginDelegateProxy::OnCreatePluginContainer(
     gfx::PluginWindowHandle* container) {
   RenderThread::current()->Send(new ViewHostMsg_CreatePluginContainer(
-      render_view_->routing_id(), container));
+      render_view_->routing_id(), GetProcessId(), container));
 }
 
 void WebPluginDelegateProxy::OnDestroyPluginContainer(

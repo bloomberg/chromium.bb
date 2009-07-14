@@ -945,8 +945,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               FilePath /* plugin_path */)
 
 #if defined(OS_LINUX)
-  IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_CreatePluginContainer,
+  // A renderer sends this when it needs a browser-side widget for
+  // hosting a windowed plugin.  The PID is the PID of the *plugin*
+  // process, which is used to associate the browser-side container with
+  // the lifetime of the plugin process.
+  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CreatePluginContainer,
+                             base::ProcessId /* pid */,
                              gfx::PluginWindowHandle /* container */)
+
+  // Destroy a plugin container previously created using CreatePluginContainer.
   IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_DestroyPluginContainer,
                              gfx::PluginWindowHandle /* container */)
 #endif
@@ -1152,7 +1159,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Sent by the renderer process to indicate that a plugin instance has
   // crashed.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_CrashedPlugin,
+                      base::ProcessId /* plugin process id */,
                       FilePath /* plugin_path */)
 
   // Displays a JavaScript out-of-memory message in the infobar.
