@@ -20,8 +20,7 @@ class NativeWebWorkerImpl : public WebKit::WebWorker {
   explicit NativeWebWorkerImpl(WebKit::WebWorkerClient* client);
   virtual ~NativeWebWorkerImpl();
 
-  static WebWorker* NativeWebWorkerImpl::create(
-            WebKit::WebWorkerClient* client);
+  static WebWorker* create(WebKit::WebWorkerClient* client);
 
   // WebWorker implementation.
   void startWorkerContext(const WebKit::WebURL& script_url,

@@ -8,6 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/debug_util.h"
+#if defined(OS_POSIX)
+#include "base/global_descriptors_posix.h"
+#endif
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -16,6 +19,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/worker_host/worker_service.h"
+#include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
 #include "chrome/common/process_watcher.h"
@@ -98,7 +102,15 @@ bool WorkerProcessHost::Init() {
 #if defined(OS_WIN)
   process = sandbox::StartProcess(&cmd_line);
 #else
-  base::LaunchApp(cmd_line, false, false, &process);
+  // This code is duplicated with browser_render_process_host.cc, but
+  // there's not a good place to de-duplicate it.
+  base::file_handle_mapping_vector fds_to_map;
+  const int ipcfd = channel().GetClientFileDescriptor();
+  if (ipcfd > -1) {
+    fds_to_map.push_back(std::pair<int, int>(
+        ipcfd, kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
+  }
+  base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
 #endif
   if (!process)
     return false;

@@ -20,8 +20,6 @@
 
 // Mainline routine for running as the worker process.
 int WorkerMain(const MainFunctionParams& parameters) {
-  const CommandLine& parsed_command_line = parameters.command_line_;
-
   // The main thread of the render process.
   MessageLoopForIO main_message_loop;
   std::wstring app_name = chrome::kBrowserAppName;

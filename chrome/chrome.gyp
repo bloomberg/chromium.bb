@@ -15,6 +15,7 @@
       'debugger',
       'renderer',
       'utility',
+      'worker',
       '../printing/printing.gyp:printing',
       '../webkit/webkit.gyp:inspector_resources',
     ],
@@ -2439,13 +2440,6 @@
             'third_party/wtl/include',
           ],
         },],
-        # As of yet unported-from-Windows code.
-        ['OS!="win"', {
-          'sources!': [
-            'renderer/webworker_proxy.cc',
-            'renderer/webworker_proxy.h',
-          ],
-        },],
       ],
     },
     {
@@ -2481,6 +2475,40 @@
         }],
       ],
     },
+        {
+          'target_name': 'worker',
+          'type': '<(library)',
+          'msvs_guid': 'C78D02D0-A366-4EC6-A248-AA8E64C4BA18',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../webkit/webkit.gyp:webkit',
+          ],
+          'sources': [
+            'tools/build/win/precompiled.cc',
+            'tools/build/win/precompiled.h',
+
+            'worker/nativewebworker_impl.cc',
+            'worker/nativewebworker_impl.h',
+            'worker/nativewebworker_stub.cc',
+            'worker/nativewebworker_stub.h',
+            'worker/webworkerclient_proxy.cc',
+            'worker/webworkerclient_proxy.h',
+            'worker/worker_main.cc',
+            'worker/worker_thread.cc',
+            'worker/worker_thread.h',
+            'worker/worker_webkitclient_impl.cc',
+            'worker/worker_webkitclient_impl.h',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'configurations': {
+            'Debug': {
+              'msvs_precompiled_header': 'tools/build/win/precompiled.h',
+              'msvs_precompiled_source': 'tools/build/win/precompiled.cc',
+            },
+          },
+        },
     {
       'target_name': 'chrome',
       'type': 'executable',
@@ -4940,40 +4968,6 @@
                   'LinkIncremental': '1',       # /INCREMENTAL:NO
                 },
               },
-            },
-          },
-        },
-        {
-          'target_name': 'worker',
-          'type': '<(library)',
-          'msvs_guid': 'C78D02D0-A366-4EC6-A248-AA8E64C4BA18',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../webkit/webkit.gyp:webkit',
-          ],
-          'sources': [
-            'tools/build/win/precompiled.cc',
-            'tools/build/win/precompiled.h',
-
-            'worker/nativewebworker_impl.cc',
-            'worker/nativewebworker_impl.h',
-            'worker/nativewebworker_stub.cc',
-            'worker/nativewebworker_stub.h',
-            'worker/webworkerclient_proxy.cc',
-            'worker/webworkerclient_proxy.h',
-            'worker/worker_main.cc',
-            'worker/worker_thread.cc',
-            'worker/worker_thread.h',
-            'worker/worker_webkitclient_impl.cc',
-            'worker/worker_webkitclient_impl.h',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'tools/build/win/precompiled.h',
-              'msvs_precompiled_source': 'tools/build/win/precompiled.cc',
             },
           },
         },

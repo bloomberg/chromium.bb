@@ -478,11 +478,7 @@ int ChromeMain(int argc, const char** argv) {
   } else if (process_type == switches::kUtilityProcess) {
     rv = UtilityMain(main_params);
   } else if (process_type == switches::kWorkerProcess) {
-#if defined(OS_WIN)
     rv = WorkerMain(main_params);
-#else
-    NOTIMPLEMENTED();
-#endif
   } else if (process_type == switches::kZygoteProcess) {
 #if defined(OS_LINUX)
     if (ZygoteMain(main_params)) {
