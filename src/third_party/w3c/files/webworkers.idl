@@ -1,0 +1,69 @@
+interface WorkerGlobalScope {
+  readonly attribute WorkerGlobalScope self;
+  readonly attribute WorkerLocation location;
+  // also implements everything on WorkerUtils
+
+  void close();
+           attribute EventListener onclose;
+           attribute EventListener onerror;
+};
+
+[NoInterfaceObject, XXX] interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
+  void postMessage(in any message, [Optional] in MessagePortArray ports);
+           attribute EventListener onmessage;
+};
+
+[NoInterfaceObject, XXX] interface SharedWorkerGlobalScope : WorkerGlobalScope {
+  readonly attribute DOMString name;
+  readonly attribute ApplicationCache applicationCache;
+           attribute EventListener onconnect;
+};
+
+interface ErrorEvent : Event {
+  readonly attribute DOMObject message;
+  readonly attribute DOMObject filename;
+  readonly attribute unsigned long lineno;
+  void initErrorEvent(in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMObject messageArg, in DOMObject filenameArg, in unsigned long linenoArg);
+  void initErrorEventNS(in DOMString namespaceURIArg, in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMObject messageArg, in DOMObject filenameArg, in unsigned long linenoArg);
+};
+
+interface AbstractWorker {
+           attribute EventListener onerror;
+           attribute EventListener onclose;
+};
+
+[Constructor(in DOMString scriptURL)]
+interface Worker : AbstractWorker {
+  void terminate();
+
+  void postMessage(in any message, [Optional] in MessagePortArray ports);
+           attribute EventListener onmessage;
+};
+
+[Constructor(in DOMString scriptURL, in DOMString name)]
+interface SharedWorker : AbstractWorker {
+  readonly attribute MessagePort port;
+};
+
+[NoInterfaceObject, ImplementedOn=WorkerGlobalScope, XXX] interface WorkerUtils {
+  void importScripts([Variadic] in DOMString urls);
+  readonly attribute Navigator navigator;
+  Database openDatabase(in DOMString name, in DOMString version, in DOMString displayName, in unsigned long estimatedSize);
+  DatabaseSync openDatabaseSync(in DOMString name, in DOMString version, in DOMString displayName, in unsigned long estimatedSize);
+};
+
+interface Navigator {
+  // objects implementing this interface also implement the interfaces listed below
+};
+
+interface WorkerLocation {
+  readonly attribute DOMString href;
+  readonly attribute DOMString protocol;
+  readonly attribute DOMString host;
+  readonly attribute DOMString hostname;
+  readonly attribute DOMString port;
+  readonly attribute DOMString pathname;
+  readonly attribute DOMString search;
+  readonly attribute DOMString hash;
+};
+

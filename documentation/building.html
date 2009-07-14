@@ -1,0 +1,402 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Native Client: Building Native Client</title>
+<link href="stylesheet.css" type="text/css" rel="stylesheet"></link>
+</head>
+
+<body>
+
+<div id="toplink">
+<a href="../README.html">Back to README</a>
+</div>
+
+<h1>Building Native Client</h1>
+
+<p>
+This page tells you how to build Native Client,
+including its examples and tests.
+Building Native Client is simple
+if you've already installed the distribution for your platform,
+as described in the Getting Started section
+<a href="getting_started.html#software">Get the software</a>.
+</p>
+
+<p>
+<strong>Note:</strong>
+You might not need to build Native Client, at all.
+You can use Native Client and develop modules without building Native Client,
+since the platform-specific distributions
+include binaries for Native Client and its SDK.
+For more information,
+see <a href="getting_started.html">Getting Started</a>.
+</p>
+
+<h3>Contents</h3>
+
+<ul>
+<li> <a href="#setup">Perform one-time setup</a>
+  <ul>
+  <li> <a href="#devenv">Set up your development environment</a> </li>
+  <li> <a href="#python">Check your Python version</a> </li>
+  </ul></li>
+<li> <a href="#building">Build Native Client</a> </li>
+<li> <a href="#sdk">If you need to build the SDK</a> </li>
+<li> <a href="#more">More build options</a>
+  <ul>
+  <li> <a href="#h-option">-h: Help</a></li>
+  <li> <a href="#c-option">-c: Clean</a></li>
+  <li> <a href="#prebuilt-option">--prebuilt: Use existing binaries</a></li>
+  <li> <a href="#j-option">-j<em>X</em>: Use multiple processes to build</a> </li>
+  </ul></li>
+</ul>
+
+<h2><a name="setup"> </a> Perform one-time setup </h2>
+
+<p>
+To build Native Client you must have
+a platform-specific development environment and Python.
+</p>
+
+
+<h3><a name="devenv"> </a> Set up your development environment </h3>
+
+<p>
+Follow the instructions for your platform.
+</p>
+
+<ul>
+<li> <a href="platform-linux.html#dev">Setup instructions for Linux</a> </li>
+<li> <a href="platform-mac.html#dev">Setup instructions for Mac</a> </li>
+<li> <a href="platform-windows.html#dev">Setup instructions for Windows</a> </li>
+</ul>
+
+<h3><a name="python"> </a> Check your Python version </h3>
+
+<p>
+If you followed the instructions in
+<a href="getting_started.html">Getting Started</a>,
+you should already have the right version of Python.
+The summary: Use Python 2.4 or 2.5
+(possibly 2.6),
+don't use the Cygwin version of Python,
+and avoid spaces in the path to <code>python</code>.
+For further details, see
+<a href="getting_started.html#software">Get the software</a>
+and the details page for your platform
+(<a href="platform-linux.html">Linux</a>,
+<a href="platform-mac.html">Mac</a>, or
+<a href="platform-windows.html">Windows</a>).
+</p>
+
+<h2><a name="building"> </a> Build Native Client </h2>
+
+<p>
+Thanks to SCons,
+you use the same basic commands to build on all platforms.
+</p>
+
+<ol>
+<li> <p>
+     In a shell window, go to the <code>native_client</code> directory
+     under your Native Client distribution.
+     For example:
+
+<p>
+Linux or Mac:
+</p>
+
+<pre class="platform-linux-mac">
+<kbd>cd <em>install_dir</em>/nacl/googleclient/native_client</kbd>
+</pre>
+
+<p>
+Windows:
+</p>
+
+<pre class="platform-windows">
+<kbd>cd <em>install_dir</em>\nacl\googleclient\native_client</kbd>
+</pre>
+</li>
+
+<li><a name="download-sdk" name="build"> </a>
+  Build Native Client.
+  Unless you've recently downloaded or built the Native Client SDK,
+  specify the <code>--download</code> flag
+  to download the latest build of the SDK.
+  The following command downloads the SDK
+  and builds Native Client.
+
+<p>
+Linux or Mac:
+</p>
+
+<pre class="platform-linux-mac">
+<kbd>./scons -c</kbd>             <em>#clean (optional)</em>
+<kbd>./scons --download</kbd>     <em>#build; <b>--download</b> is optional if you already have the latest SDK</em>
+</pre>
+
+<p>
+Windows:
+</p>
+
+<pre class="platform-windows">
+<kbd>.\scons.bat -c</kbd>         <em>#clean (optional)</em>
+<kbd>.\scons.bat --download</kbd> <em>#build; <b>--download</b> is optional if you already have the latest SDK</em>
+</pre>
+
+<p>
+<b>Troubleshooting (Windows):</b>
+If the build fails with the message
+"'cl' is not recognized as an internal or external command",
+make sure you have your Visual Studio environment set up correctly.
+For instructions, see
+<a href="platform-windows.html#dev">Developing on Windows</a>.
+</p>
+</li>
+
+<li> Build the optimized binaries.
+<span class="comment">[PENDING: This step should go away
+if/when we update the default scons target
+to build everything.]</span>
+
+<p>
+Linux:
+</p>
+
+<pre class="platform-linux">
+<kbd>./scons -c --mode=opt-linux</kbd> <em>#clean (optional)</em>
+<kbd>./scons --mode=opt-linux</kbd>
+</pre>
+
+<p>
+Mac:
+</p>
+
+<pre class="platform-mac">
+<kbd>./scons -c --mode=opt-mac</kbd>   <em>#clean (optional)</em>
+<kbd>./scons --mode=opt-mac</kbd>
+</pre>
+
+<p>
+Windows:
+</p>
+
+<pre class="platform-windows">
+<kbd>.\scons.bat --mode=opt-win</kbd>
+</pre>
+</li>
+
+<li> Build the modules that use Native Client.
+<span class="comment">
+[PENDING: This step might not be necessary
+if/when we update the default scons target
+to build everything.]
+</span>
+
+<p>
+Linux or Mac:
+</p>
+
+<pre class="platform-linux-mac">
+<kbd>./scons --mode=nacl -c</kbd>     <em>#clean (optional)</em>
+<kbd>./scons --mode=nacl</kbd>        <em>#build</em>
+</pre>
+
+<p>
+Windows:
+</p>
+
+<pre class="platform-windows">
+<kbd>.\scons.bat --mode=nacl -c</kbd> <em>#clean (optional)</em>
+<kbd>.\scons.bat --mode=nacl</kbd>    <em>#build</em>
+</pre>
+</li>
+
+<li>
+<p> Verify that the build succeeded.
+    One way to do this is to use the <code>run_all_tests</code> target.
+    <span class="comment">[PENDING: is that the best, easiest way
+    to verify that you have something useable?]</span>
+    </p>
+
+<p>
+Linux or Mac:
+</p>
+
+<pre class="platform-linux-mac">
+<kbd>./scons run_all_tests</kbd>
+</pre>
+
+<p>
+Windows:
+</p>
+
+<pre class="platform-windows">
+<kbd>.\scons.bat run_all_tests</kbd>
+</pre>
+
+</li>
+</ol>
+
+<p>
+Now you can follow the steps in
+<a href="getting_started.html">Getting Started</a>.
+Start by
+<a href="getting_started.html#example-nacl">running an example</a>.
+</p>
+
+
+<h2><a name="sdk"> </a> If you need to build the SDK </h2>
+
+<p class="comment">
+[PENDING: We haven't tested this section since
+the massive upheaval to our codebase.]
+</p>
+
+<p>
+You can probably ignore this section.
+The platform-specific distributions of Native Client
+have prebuilt SDKs,
+and the source distribution
+includes a <code>--download</code> option to get the SDK.
+You don't need to build the SDK unless you
+have changed SDK files &mdash;
+such as to change the tools or add doc comments.
+</p>
+
+<p>
+To build the SDK,
+you need <code>make</code> and <code>texinfo</code>.
+</p>
+
+<p>
+Currently, you can build only on Linux or Mac;
+you can't build the SDK on Windows, even with Cygwin.
+<span class="comment">[PENDING:
+When the Windows build starts working, add this:
+You can get <code>make</code> as part of Cygwin.]
+</span>
+</p>
+
+<p class="technote">
+<b>Technical detail:</b>
+Building the SDK requires <code>make</code>
+because part of the SDK
+is derived from GNU tools, such as GCC,
+that are built using <code>make</code>.
+</p>
+
+<p>
+Here's how to build the SDK:
+</p>
+
+<ol>
+<li> In a shell window,
+go to the <code>tools</code> directory
+under your Native Client distribution.
+For example:
+
+<pre class="platform-all">
+<kbd>cd <em>install_dir</em>/nacl/googleclient/native_client/tools</kbd>
+</pre>
+
+<li> Run <code>make</code>,
+     specifying where to put the SDK (<code>SDKLOC=</code>...).
+
+<p>
+Linux:
+</p>
+
+<pre class="platform-linux">
+<kbd>make SDKLOC=`pwd`/../../third_party/nacl_sdk/linux/sdk</kbd>
+</pre>
+
+<p>
+Mac:
+</p>
+
+<pre class="platform-mac">
+<kbd>make SDKLOC=`pwd`/../../third_party/nacl_sdk/mac/sdk</kbd>
+</pre>
+
+<div class="comment">
+<p>
+Windows (Cygwin): [PENDING: add this once the Windows build works]
+</p>
+
+<pre class="platform-windows">
+<kbd>make SDKLOC=`pwd`/../../third_party/nacl_sdk/windows/sdk</kbd>
+</pre>
+</div>
+
+</li>
+
+<li> <p>
+     Check the output to make sure
+     the build completed successfully.
+     The build should take about 20 minutes.
+     </p>
+     </li>
+</ol>
+
+<p>
+You should now be able to
+<a href="#building">build Native Client</a>.
+</p>
+
+
+<h2><a name="more"> </a> More build options </h2>
+
+<p>
+This section describes some of the most commonly used options to SCons.
+Use the <code>-h</code> option
+to get more information on these and other options.
+
+<h3><a name="h-option"> </a> -h: Help</h3>
+
+<p>
+Displays SCons options.
+</p>
+
+<h3><a name="c-option"> </a> -c: Clean</h3>
+
+<p>
+Removes build artifacts.
+</p>
+
+<h3><a name="prebuilt-option"> </a> --prebuilt: Use existing binaries</h3>
+
+<p>
+Forces SCons to use prebuilt binaries,
+rather than rebuilding.
+For use with <code>firefox_install</code>.
+</p>
+
+<h3><a name="j-option"> </a> -j<em>X</em>: Use multiple processes to build </h3>
+<p>
+If you are on a multi-core machine,
+the build process can use multiple cores to speed up the process
+by using the <code>-j<em>X</em></code> option,
+where <em>X</em> is the number of concurrent processes
+you would like to have in flight.
+Normally, a good value is the number of physical cores in the machine.
+For example, use <code>-j4</code> if your machine has 4 cores,
+as the following example shows.
+</p>
+
+<pre class="platform-linux">
+<kbd>./scons --mode=nacl -j4</kbd>
+</pre>
+
+<p id="license">
+Except as otherwise
+<a href="http://code.google.com/policies.html#restrictions">noted</a>,
+the content of this page is licensed under a
+<a href="http://creativecommons.org/licenses/by/2.5/">Creative Commons
+Attribution 2.5 license</a>.
+</p>
+
+</body>
+</html>

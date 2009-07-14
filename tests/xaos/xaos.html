@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>XaoS Demo</title>
+
+<script type="text/javascript">
+//<![CDATA[
+
+var startupTimeout = -1;
+
+// ======================================================================
+// Keep track of which files ...
+// ======================================================================
+var Completion = function(files_array) {
+  var i;
+
+  this.seen = new Array();
+  this.files = files_array;
+  this.num_left = files_array.length;
+
+  for (i = 0; i < this.num_left; ++i) {
+    this.seen[i] = 0;
+  }
+
+  this.done = function(name) {
+    var i;
+
+    for (i = 0; i < this.files.length; ++i) {
+      if (this.seen[i]) {
+        continue;
+      }
+      if (name == this.files[i]) {
+        this.seen[i] = 1;
+        --this.num_left;
+        break;
+      }
+    }
+    return (0 == this.num_left) ? 1 : 0;
+  }
+}
+
+// ======================================================================
+//
+// ======================================================================
+
+var FileLoadCallback = function(filename, url, completion) {
+  this.filename = filename;
+  this.url = url;
+  this.pred = completion;
+
+  this.onload = function(nacl_desc) {
+    nacl_elt.file(this.filename, nacl_desc, this.pred.done(this.filename));
+  }
+
+  this.onfail = function(object) {
+    window.alert('Failed to load URL: ' + this.url + ', error ' + object);
+  }
+}
+
+// ======================================================================
+//
+// ======================================================================
+
+function RegisterFileHandlers(nacl_elt) {
+  var load_array = new Array('./xaos.hlp');
+  var completion = new Completion(load_array);
+  var i;
+  for (i = 0; i < load_array.length; ++i) {
+    var filename = load_array[i];
+    var url = load_array[i];
+    var callback = new FileLoadCallback(filename, url, completion);
+    nacl_elt.__urlAsNaClDesc(url, callback);
+  }
+}
+
+// ======================================================================
+// Wait for the nacl module to become ready
+// ======================================================================
+
+function Init() {
+  var nacl_elt = document.getElementById('xaos');
+  if (nacl_elt.__moduleReady == 1) {
+    var wait = document.getElementById('wait');
+    wait.style.visibility = "hidden";
+
+    if (window.startupTimeout != -1) {
+        window.clearTimeout(window.startupTimeout);
+    }
+    // module is ready so start it
+    // RegisterFileHandlers(nacl_elt);
+    nacl_elt.focus();
+    return;
+  }
+
+  if (nacl_elt.__moduleReady == undefined) {
+     alert('The Native Client plugin was unable to load');
+     return;
+  }
+
+  window.startupTimeout = setTimeout(Init, 100);
+}
+//]]>
+</script>
+</head>
+
+
+<body onload="Init();" >
+<h1>Native Client XaoS Demo</h1>
+
+<div id="wait">Waiting for plug-in to load...</div>
+
+<p>
+Use the mouse buttons inside the window.
+<p>
+Move the mouse to the top of the embedded window for a menu,
+or press 'h' for help.
+<p>
+<!-- embed seems to work -->
+<embed id="xaos" src="xaos.nexe" type="application/x-nacl-srpc"
+        width="800" height="600" />
+
+<!-- object does not seem to work -->
+<!-- object id="xaos" data="xaos" type="application/x-nacl-srpc"
+        width="800" height="600" -->
+</body>
+</html>

@@ -1,0 +1,1567 @@
+diff --git a/configure b/configure
+index a2a792c..71ae623 100755
+--- a/configure
++++ b/configure
+@@ -580,42 +580,6 @@ PACKAGE_STRING='GNU C Library (see version.h)'
+ PACKAGE_BUGREPORT='glibc'
+
+ ac_unique_file="include/features.h"
+-# Factoring default headers for most tests.
+-ac_includes_default="\
+-#include <stdio.h>
+-#ifdef HAVE_SYS_TYPES_H
+-# include <sys/types.h>
+-#endif
+-#ifdef HAVE_SYS_STAT_H
+-# include <sys/stat.h>
+-#endif
+-#ifdef STDC_HEADERS
+-# include <stdlib.h>
+-# include <stddef.h>
+-#else
+-# ifdef HAVE_STDLIB_H
+-#  include <stdlib.h>
+-# endif
+-#endif
+-#ifdef HAVE_STRING_H
+-# if !defined STDC_HEADERS && defined HAVE_MEMORY_H
+-#  include <memory.h>
+-# endif
+-# include <string.h>
+-#endif
+-#ifdef HAVE_STRINGS_H
+-# include <strings.h>
+-#endif
+-#ifdef HAVE_INTTYPES_H
+-# include <inttypes.h>
+-#endif
+-#ifdef HAVE_STDINT_H
+-# include <stdint.h>
+-#endif
+-#ifdef HAVE_UNISTD_H
+-# include <unistd.h>
+-#endif"
+-
+ ac_subst_vars='SHELL
+ PATH_SEPARATOR
+ PACKAGE_NAME
+@@ -735,8 +699,6 @@ LIBGD
+ have_libaudit
+ have_libcap
+ have_selinux
+-GREP
+-EGREP
+ sizeof_long_double
+ libc_cv_gcc_unwind_find_fde
+ uname_sysname
+@@ -2621,7 +2583,7 @@ done
+
+ # Find what sysdep directories exist.
+ sysnames_add_ons=
+-sysnames=
++sysnames="sysdeps/nacl "
+ for b in $base ''; do
+  for m0 in $mach ''; do
+    for v in /$vendor ''; do
+@@ -7486,818 +7448,8 @@ _ACEOF
+ fi
+
+
+-
+-{ echo "$as_me:$LINENO: checking for grep that handles long lines and -e" >&5
+-echo $ECHO_N "checking for grep that handles long lines and -e... $ECHO_C" >&6; }
+-if test "${ac_cv_path_GREP+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  # Extract the first word of "grep ggrep" to use in msg output
+-if test -z "$GREP"; then
+-set dummy grep ggrep; ac_prog_name=$2
+-if test "${ac_cv_path_GREP+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  ac_path_GREP_found=false
+-# Loop through the user's path and test for each of PROGNAME-LIST
+-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+-for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
+-do
+-  IFS=$as_save_IFS
+-  test -z "$as_dir" && as_dir=.
+-  for ac_prog in grep ggrep; do
+-  for ac_exec_ext in '' $ac_executable_extensions; do
+-    ac_path_GREP="$as_dir/$ac_prog$ac_exec_ext"
+-    { test -f "$ac_path_GREP" && $as_test_x "$ac_path_GREP"; } || continue
+-    # Check for GNU ac_path_GREP and select it if it is found.
+-  # Check for GNU $ac_path_GREP
+-case `"$ac_path_GREP" --version 2>&1` in
+-*GNU*)
+-  ac_cv_path_GREP="$ac_path_GREP" ac_path_GREP_found=:;;
+-*)
+-  ac_count=0
+-  echo $ECHO_N "0123456789$ECHO_C" >"conftest.in"
+-  while :
+-  do
+-    cat "conftest.in" "conftest.in" >"conftest.tmp"
+-    mv "conftest.tmp" "conftest.in"
+-    cp "conftest.in" "conftest.nl"
+-    echo 'GREP' >> "conftest.nl"
+-    "$ac_path_GREP" -e 'GREP$' -e '-(cannot match)-' < "conftest.nl" >"conftest.out" 2>/dev/null || break
+-    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
+-    ac_count=`expr $ac_count + 1`
+-    if test $ac_count -gt ${ac_path_GREP_max-0}; then
+-      # Best one so far, save it but keep looking for a better one
+-      ac_cv_path_GREP="$ac_path_GREP"
+-      ac_path_GREP_max=$ac_count
+-    fi
+-    # 10*(2^10) chars as input seems more than enough
+-    test $ac_count -gt 10 && break
+-  done
+-  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
+-esac
+-
+-
+-    $ac_path_GREP_found && break 3
+-  done
+-done
+-
+-done
+-IFS=$as_save_IFS
+-
+-
+-fi
+-
+-GREP="$ac_cv_path_GREP"
+-if test -z "$GREP"; then
+-  { { echo "$as_me:$LINENO: error: no acceptable $ac_prog_name could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" >&5
+-echo "$as_me: error: no acceptable $ac_prog_name could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" >&2;}
+-   { (exit 1); exit 1; }; }
+-fi
+-
+-else
+-  ac_cv_path_GREP=$GREP
+-fi
+-
+-
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_path_GREP" >&5
+-echo "${ECHO_T}$ac_cv_path_GREP" >&6; }
+- GREP="$ac_cv_path_GREP"
+-
+-
+-{ echo "$as_me:$LINENO: checking for egrep" >&5
+-echo $ECHO_N "checking for egrep... $ECHO_C" >&6; }
+-if test "${ac_cv_path_EGREP+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  if echo a | $GREP -E '(a|b)' >/dev/null 2>&1
+-   then ac_cv_path_EGREP="$GREP -E"
+-   else
+-     # Extract the first word of "egrep" to use in msg output
+-if test -z "$EGREP"; then
+-set dummy egrep; ac_prog_name=$2
+-if test "${ac_cv_path_EGREP+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  ac_path_EGREP_found=false
+-# Loop through the user's path and test for each of PROGNAME-LIST
+-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+-for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
+-do
+-  IFS=$as_save_IFS
+-  test -z "$as_dir" && as_dir=.
+-  for ac_prog in egrep; do
+-  for ac_exec_ext in '' $ac_executable_extensions; do
+-    ac_path_EGREP="$as_dir/$ac_prog$ac_exec_ext"
+-    { test -f "$ac_path_EGREP" && $as_test_x "$ac_path_EGREP"; } || continue
+-    # Check for GNU ac_path_EGREP and select it if it is found.
+-  # Check for GNU $ac_path_EGREP
+-case `"$ac_path_EGREP" --version 2>&1` in
+-*GNU*)
+-  ac_cv_path_EGREP="$ac_path_EGREP" ac_path_EGREP_found=:;;
+-*)
+-  ac_count=0
+-  echo $ECHO_N "0123456789$ECHO_C" >"conftest.in"
+-  while :
+-  do
+-    cat "conftest.in" "conftest.in" >"conftest.tmp"
+-    mv "conftest.tmp" "conftest.in"
+-    cp "conftest.in" "conftest.nl"
+-    echo 'EGREP' >> "conftest.nl"
+-    "$ac_path_EGREP" 'EGREP$' < "conftest.nl" >"conftest.out" 2>/dev/null || break
+-    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
+-    ac_count=`expr $ac_count + 1`
+-    if test $ac_count -gt ${ac_path_EGREP_max-0}; then
+-      # Best one so far, save it but keep looking for a better one
+-      ac_cv_path_EGREP="$ac_path_EGREP"
+-      ac_path_EGREP_max=$ac_count
+-    fi
+-    # 10*(2^10) chars as input seems more than enough
+-    test $ac_count -gt 10 && break
+-  done
+-  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
+-esac
+-
+-
+-    $ac_path_EGREP_found && break 3
+-  done
+-done
+-
+-done
+-IFS=$as_save_IFS
+-
+-
+-fi
+-
+-EGREP="$ac_cv_path_EGREP"
+-if test -z "$EGREP"; then
+-  { { echo "$as_me:$LINENO: error: no acceptable $ac_prog_name could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" >&5
+-echo "$as_me: error: no acceptable $ac_prog_name could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" >&2;}
+-   { (exit 1); exit 1; }; }
+-fi
+-
+-else
+-  ac_cv_path_EGREP=$EGREP
+-fi
+-
+-
+-   fi
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_path_EGREP" >&5
+-echo "${ECHO_T}$ac_cv_path_EGREP" >&6; }
+- EGREP="$ac_cv_path_EGREP"
+-
+-
+-{ echo "$as_me:$LINENO: checking for ANSI C header files" >&5
+-echo $ECHO_N "checking for ANSI C header files... $ECHO_C" >&6; }
+-if test "${ac_cv_header_stdc+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-#include <stdlib.h>
+-#include <stdarg.h>
+-#include <string.h>
+-#include <float.h>
+-
+-int
+-main ()
+-{
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-        test -z "$ac_c_werror_flag" ||
+-        test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_cv_header_stdc=yes
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-       ac_cv_header_stdc=no
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-
+-if test $ac_cv_header_stdc = yes; then
+-  # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-#include <string.h>
+-
+-_ACEOF
+-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+-  $EGREP "memchr" >/dev/null 2>&1; then
+-  :
+-else
+-  ac_cv_header_stdc=no
+-fi
+-rm -f conftest*
+-
+-fi
+-
+-if test $ac_cv_header_stdc = yes; then
+-  # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-#include <stdlib.h>
+-
+-_ACEOF
+-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+-  $EGREP "free" >/dev/null 2>&1; then
+-  :
+-else
+-  ac_cv_header_stdc=no
+-fi
+-rm -f conftest*
+-
+-fi
+-
+-if test $ac_cv_header_stdc = yes; then
+-  # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
+-  if test "$cross_compiling" = yes; then
+-  :
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-#include <ctype.h>
+-#include <stdlib.h>
+-#if ((' ' & 0x0FF) == 0x020)
+-# define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
+-# define TOUPPER(c) (ISLOWER(c) ? 'A' + ((c) - 'a') : (c))
+-#else
+-# define ISLOWER(c) \
+-                  (('a' <= (c) && (c) <= 'i') \
+-                    || ('j' <= (c) && (c) <= 'r') \
+-                    || ('s' <= (c) && (c) <= 'z'))
+-# define TOUPPER(c) (ISLOWER(c) ? ((c) | 0x40) : (c))
+-#endif
+-
+-#define XOR(e, f) (((e) && !(f)) || (!(e) && (f)))
+-int
+-main ()
+-{
+-  int i;
+-  for (i = 0; i < 256; i++)
+-    if (XOR (islower (i), ISLOWER (i))
+-       || toupper (i) != TOUPPER (i))
+-      return 2;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest$ac_exeext
+-if { (ac_try="$ac_link"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_link") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+-  { (case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_try") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; }; then
+-  :
+-else
+-  echo "$as_me: program exited with status $ac_status" >&5
+-echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-( exit $ac_status )
+-ac_cv_header_stdc=no
+-fi
+-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+-fi
+-
+-
+-fi
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_header_stdc" >&5
+-echo "${ECHO_T}$ac_cv_header_stdc" >&6; }
+-if test $ac_cv_header_stdc = yes; then
+-
+-cat >>confdefs.h <<\_ACEOF
+-#define STDC_HEADERS 1
+-_ACEOF
+-
+-fi
+-
+-# On IRIX 5.3, sys/types and inttypes.h are conflicting.
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-for ac_header in sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h \
+-                 inttypes.h stdint.h unistd.h
+-do
+-as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+-{ echo "$as_me:$LINENO: checking for $ac_header" >&5
+-echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6; }
+-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-$ac_includes_default
+-
+-#include <$ac_header>
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-        test -z "$ac_c_werror_flag" ||
+-        test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  eval "$as_ac_Header=yes"
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-       eval "$as_ac_Header=no"
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-fi
+-ac_res=`eval echo '${'$as_ac_Header'}'`
+-              { echo "$as_me:$LINENO: result: $ac_res" >&5
+-echo "${ECHO_T}$ac_res" >&6; }
+-if test `eval echo '${'$as_ac_Header'}'` = yes; then
+-  cat >>confdefs.h <<_ACEOF
+-#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+-_ACEOF
+-
+-fi
+-
+-done
+-
+-
+-{ echo "$as_me:$LINENO: checking for long double" >&5
+-echo $ECHO_N "checking for long double... $ECHO_C" >&6; }
+-if test "${ac_cv_type_long_double+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-$ac_includes_default
+-typedef long double ac__type_new_;
+-int
+-main ()
+-{
+-if ((ac__type_new_ *) 0)
+-  return 0;
+-if (sizeof (ac__type_new_))
+-  return 0;
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-        test -z "$ac_c_werror_flag" ||
+-        test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_cv_type_long_double=yes
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-       ac_cv_type_long_double=no
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_type_long_double" >&5
+-echo "${ECHO_T}$ac_cv_type_long_double" >&6; }
+-
+-# The cast to long int works around a bug in the HP C Compiler
+-# version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
+-# declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
+-# This bug is HP SR number 8606223364.
+-{ echo "$as_me:$LINENO: checking size of long double" >&5
+-echo $ECHO_N "checking size of long double... $ECHO_C" >&6; }
+-if test "${ac_cv_sizeof_long_double+set}" = set; then
+-  echo $ECHO_N "(cached) $ECHO_C" >&6
+-else
+-  if test "$cross_compiling" = yes; then
+-  # Depending upon the size, compute the lo and hi bounds.
+-cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-$ac_includes_default
+-   typedef long double ac__type_sizeof_;
+-int
+-main ()
+-{
+-static int test_array [1 - 2 * !(((long int) (sizeof (ac__type_sizeof_))) >= 0)];
+-test_array [0] = 0
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-        test -z "$ac_c_werror_flag" ||
+-        test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_lo=0 ac_mid=0
+-  while :; do
+-    cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-$ac_includes_default
+-   typedef long double ac__type_sizeof_;
+-int
+-main ()
+-{
+-static int test_array [1 - 2 * !(((long int) (sizeof (ac__type_sizeof_))) <= $ac_mid)];
+-test_array [0] = 0
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-        test -z "$ac_c_werror_flag" ||
+-        test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_hi=$ac_mid; break
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-       ac_lo=`expr $ac_mid + 1`
+-                       if test $ac_lo -le $ac_mid; then
+-                         ac_lo= ac_hi=
+-                         break
+-                       fi
+-                       ac_mid=`expr 2 '*' $ac_mid + 1`
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-  done
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-       cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-$ac_includes_default
+-   typedef long double ac__type_sizeof_;
+-int
+-main ()
+-{
+-static int test_array [1 - 2 * !(((long int) (sizeof (ac__type_sizeof_))) < 0)];
+-test_array [0] = 0
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-        test -z "$ac_c_werror_flag" ||
+-        test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_hi=-1 ac_mid=-1
+-  while :; do
+-    cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-$ac_includes_default
+-   typedef long double ac__type_sizeof_;
+-int
+-main ()
+-{
+-static int test_array [1 - 2 * !(((long int) (sizeof (ac__type_sizeof_))) >= $ac_mid)];
+-test_array [0] = 0
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-        test -z "$ac_c_werror_flag" ||
+-        test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_lo=$ac_mid; break
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-       ac_hi=`expr '(' $ac_mid ')' - 1`
+-                       if test $ac_mid -le $ac_hi; then
+-                         ac_lo= ac_hi=
+-                         break
+-                       fi
+-                       ac_mid=`expr 2 '*' $ac_mid`
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-  done
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-       ac_lo= ac_hi=
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-# Binary search between lo and hi bounds.
+-while test "x$ac_lo" != "x$ac_hi"; do
+-  ac_mid=`expr '(' $ac_hi - $ac_lo ')' / 2 + $ac_lo`
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-$ac_includes_default
+-   typedef long double ac__type_sizeof_;
+-int
+-main ()
+-{
+-static int test_array [1 - 2 * !(((long int) (sizeof (ac__type_sizeof_))) <= $ac_mid)];
+-test_array [0] = 0
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest.$ac_objext
+-if { (ac_try="$ac_compile"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_compile") 2>conftest.er1
+-  ac_status=$?
+-  grep -v '^ *+' conftest.er1 >conftest.err
+-  rm -f conftest.er1
+-  cat conftest.err >&5
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && {
+-        test -z "$ac_c_werror_flag" ||
+-        test ! -s conftest.err
+-       } && test -s conftest.$ac_objext; then
+-  ac_hi=$ac_mid
+-else
+-  echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-       ac_lo=`expr '(' $ac_mid ')' + 1`
+-fi
+-
+-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+-done
+-case $ac_lo in
+-?*) ac_cv_sizeof_long_double=$ac_lo;;
+-'') if test "$ac_cv_type_long_double" = yes; then
+-     { { echo "$as_me:$LINENO: error: cannot compute sizeof (long double)
+-See \`config.log' for more details." >&5
+-echo "$as_me: error: cannot compute sizeof (long double)
+-See \`config.log' for more details." >&2;}
+-   { (exit 77); exit 77; }; }
+-   else
+-     ac_cv_sizeof_long_double=0
+-   fi ;;
+-esac
+-else
+-  cat >conftest.$ac_ext <<_ACEOF
+-/* confdefs.h.  */
+-_ACEOF
+-cat confdefs.h >>conftest.$ac_ext
+-cat >>conftest.$ac_ext <<_ACEOF
+-/* end confdefs.h.  */
+-$ac_includes_default
+-   typedef long double ac__type_sizeof_;
+-static long int longval () { return (long int) (sizeof (ac__type_sizeof_)); }
+-static unsigned long int ulongval () { return (long int) (sizeof (ac__type_sizeof_)); }
+-#include <stdio.h>
+-#include <stdlib.h>
+-int
+-main ()
+-{
+-
+-  FILE *f = fopen ("conftest.val", "w");
+-  if (! f)
+-    return 1;
+-  if (((long int) (sizeof (ac__type_sizeof_))) < 0)
+-    {
+-      long int i = longval ();
+-      if (i != ((long int) (sizeof (ac__type_sizeof_))))
+-       return 1;
+-      fprintf (f, "%ld\n", i);
+-    }
+-  else
+-    {
+-      unsigned long int i = ulongval ();
+-      if (i != ((long int) (sizeof (ac__type_sizeof_))))
+-       return 1;
+-      fprintf (f, "%lu\n", i);
+-    }
+-  return ferror (f) || fclose (f) != 0;
+-
+-  ;
+-  return 0;
+-}
+-_ACEOF
+-rm -f conftest$ac_exeext
+-if { (ac_try="$ac_link"
+-case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_link") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+-  { (case "(($ac_try" in
+-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+-  *) ac_try_echo=$ac_try;;
+-esac
+-eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+-  (eval "$ac_try") 2>&5
+-  ac_status=$?
+-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+-  (exit $ac_status); }; }; then
+-  ac_cv_sizeof_long_double=`cat conftest.val`
+-else
+-  echo "$as_me: program exited with status $ac_status" >&5
+-echo "$as_me: failed program was:" >&5
+-sed 's/^/| /' conftest.$ac_ext >&5
+-
+-( exit $ac_status )
+-if test "$ac_cv_type_long_double" = yes; then
+-     { { echo "$as_me:$LINENO: error: cannot compute sizeof (long double)
+-See \`config.log' for more details." >&5
+-echo "$as_me: error: cannot compute sizeof (long double)
+-See \`config.log' for more details." >&2;}
+-   { (exit 77); exit 77; }; }
+-   else
+-     ac_cv_sizeof_long_double=0
+-   fi
+-fi
+-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+-fi
+-rm -f conftest.val
+-fi
+-{ echo "$as_me:$LINENO: result: $ac_cv_sizeof_long_double" >&5
+-echo "${ECHO_T}$ac_cv_sizeof_long_double" >&6; }
+-
+-
+-
+-cat >>confdefs.h <<_ACEOF
+-#define SIZEOF_LONG_DOUBLE $ac_cv_sizeof_long_double
+-_ACEOF
+-
+-
+-sizeof_long_double=$ac_cv_sizeof_long_double
++#AC_CHECK_SIZEOF(long double, 0)
++#sizeof_long_double=$ac_cv_sizeof_long_double
+
+
+ ### End of automated tests.
+@@ -9301,8 +8453,6 @@ LIBGD!$LIBGD$ac_delim
+ have_libaudit!$have_libaudit$ac_delim
+ have_libcap!$have_libcap$ac_delim
+ have_selinux!$have_selinux$ac_delim
+-GREP!$GREP$ac_delim
+-EGREP!$EGREP$ac_delim
+ sizeof_long_double!$sizeof_long_double$ac_delim
+ libc_cv_gcc_unwind_find_fde!$libc_cv_gcc_unwind_find_fde$ac_delim
+ uname_sysname!$uname_sysname$ac_delim
+@@ -9335,7 +8485,7 @@ LIBOBJS!$LIBOBJS$ac_delim
+ LTLIBOBJS!$LTLIBOBJS$ac_delim
+ _ACEOF
+
+-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 54; then
++  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 52; then
+    break
+  elif $ac_last_try; then
+    { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
+diff --git a/configure.in b/configure.in
+index 4a2b546..a8da9ff 100644
+--- a/configure.in
++++ b/configure.in
+@@ -602,7 +602,7 @@ changequote([,])dnl
+
+ # Find what sysdep directories exist.
+ sysnames_add_ons=
+-sysnames=
++sysnames="sysdeps/nacl "
+ for b in $base ''; do
+  for m0 in $mach ''; do
+    for v in /$vendor ''; do
+@@ -2055,8 +2055,8 @@ fi
+ AC_SUBST(have_selinux)
+
+ dnl check for the size of 'long double'.
+-AC_CHECK_SIZEOF(long double, 0)
+-sizeof_long_double=$ac_cv_sizeof_long_double
++#AC_CHECK_SIZEOF(long double, 0)
++#sizeof_long_double=$ac_cv_sizeof_long_double
+ AC_SUBST(sizeof_long_double)
+
+ ### End of automated tests.
+diff --git a/csu/libc-start.c b/csu/libc-start.c
+index a14ed71..7c046e3 100644
+--- a/csu/libc-start.c
++++ b/csu/libc-start.c
+@@ -125,6 +125,7 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
+ #  endif
+  _dl_aux_init (auxvec);
+ # endif
++#if 0
+ # ifdef DL_SYSDEP_OSCHECK
+  if (!__libc_multiple_libcs)
+    {
+@@ -133,6 +134,7 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
+      DL_SYSDEP_OSCHECK (__libc_fatal);
+    }
+ # endif
++#endif
+
+  /* Initialize the thread library at least a bit since the libgcc
+     functions are using thread functions if these are available and
+diff --git a/csu/libc-tls.c b/csu/libc-tls.c
+index 0d240cc..8de3f8e 100644
+--- a/csu/libc-tls.c
++++ b/csu/libc-tls.c
+@@ -106,6 +106,13 @@ init_static_tls (size_t memsz, size_t align)
+  GL(dl_tls_static_nelem) = GL(dl_tls_max_dtv_idx);
+ }
+
++void *__tls_template_start;
++void *__tls_template_tdata_end;
++void *__tls_template_end;
++
++__asm__(".global __gnacl_tls_init; __gnacl_tls_init = 0x1a40 ");
++int __gnacl_tls_init(void const *buf, size_t size);
++
+ void
+ __libc_setup_tls (size_t tcbsize, size_t tcbalign)
+ {
+@@ -118,6 +125,7 @@ __libc_setup_tls (size_t tcbsize, size_t tcbalign)
+  size_t tcb_offset;
+  ElfW(Phdr) *phdr;
+
++#if 0
+  /* Look through the TLS segment if there is any.  */
+  if (_dl_phdr != NULL)
+    for (phdr = _dl_phdr; phdr < &_dl_phdr[_dl_phnum]; ++phdr)
+@@ -132,6 +140,11 @@ __libc_setup_tls (size_t tcbsize, size_t tcbalign)
+           max_align = phdr->p_align;
+         break;
+       }
++#endif
++  initimage = (void *) &__tls_template_start;
++  memsz = (size_t) &__tls_template_end - (size_t) &__tls_template_start;
++  filesz = (size_t) &__tls_template_tdata_end - (size_t) &__tls_template_start;
++  align = 4;
+
+  /* We have to set up the TCB block which also (possibly) contains
+     'errno'.  Therefore we avoid 'malloc' which might touch 'errno'.
+@@ -185,8 +198,14 @@ __libc_setup_tls (size_t tcbsize, size_t tcbalign)
+ #if TLS_TCB_AT_TP
+  INSTALL_DTV ((char *) tlsblock + tcb_offset, static_dtv);
+
+-  const char *lossage = TLS_INIT_TP ((char *) tlsblock + tcb_offset, 0);
++  //const char *lossage = TLS_INIT_TP ((char *) tlsblock + tcb_offset, 0);
++  __gnacl_tls_init (tlsblock + tcb_offset, 100);
++  tcbhead_t *head = (void *) tlsblock + tcb_offset;
++  head->tcb = head;
++  head->self = head;
++  const char *lossage = NULL;
+ #elif TLS_DTV_AT_TP
++# error "not supported"
+  INSTALL_DTV (tlsblock, static_dtv);
+  const char *lossage = TLS_INIT_TP (tlsblock, 0);
+ #else
+diff --git a/elf/dl-support.c b/elf/dl-support.c
+index 6bd573e..e278c1d 100644
+--- a/elf/dl-support.c
++++ b/elf/dl-support.c
+@@ -289,6 +289,7 @@ _dl_non_dynamic_init (void)
+    _dl_platformlen = strlen (_dl_platform);
+
+  /* Scan for a program header telling us the stack is nonexecutable.  */
++#if 0
+  if (_dl_phdr != NULL)
+    for (uint_fast16_t i = 0; i < _dl_phnum; ++i)
+      if (_dl_phdr[i].p_type == PT_GNU_STACK)
+@@ -296,6 +297,7 @@ _dl_non_dynamic_init (void)
+         _dl_stack_flags = _dl_phdr[i].p_flags;
+         break;
+       }
++#endif
+ }
+
+
+diff --git a/elf_i386.x b/elf_i386.x
+new file mode 100644
+index 0000000..1efd8a4
+--- /dev/null
++++ b/elf_i386.x
+@@ -0,0 +1,216 @@
++/* Default linker script, for normal executables */
++OUTPUT_FORMAT("elf32-nacl", "elf32-nacl",
++             "elf32-nacl")
++/* OUTPUT_FORMAT("elf32-i386", "elf32-i386", */
++/*           "elf32-i386") */
++OUTPUT_ARCH(i386)
++ENTRY(_start)
++/* SEARCH_DIR("/usr/i486-linux-gnu/lib32"); SEARCH_DIR("/usr/local/lib32"); SEARCH_DIR("/lib32"); SEARCH_DIR("/usr/lib32"); SEARCH_DIR("/usr/i486-linux-gnu/lib"); SEARCH_DIR("/usr/local/lib"); SEARCH_DIR("/lib"); SEARCH_DIR("/usr/lib"); */
++PHDRS
++{
++  headers PT_PHDR FILEHDR PHDRS ;  /* put the headers in a non-loadable seg */
++  segtext    PT_LOAD FLAGS(5) ;       /* read + execute */
++  segrodata  PT_LOAD FLAGS(4) ;       /* read */
++  segdata    PT_LOAD FLAGS(6) ;       /* read + write */
++  /* TODO: do we need a stack? */
++}
++SECTIONS
++{
++  /* Read-only sections, merged into text segment: */
++  PROVIDE (__executable_start = 0x10000); . = 0x10000;
++  .interp         : { *(.interp) }
++  .note.gnu.build-id : { *(.note.gnu.build-id) }
++  .hash           : { *(.hash) }
++  .gnu.hash       : { *(.gnu.hash) }
++  .dynsym         : { *(.dynsym) }
++  .dynstr         : { *(.dynstr) }
++  .gnu.version    : { *(.gnu.version) }
++  .gnu.version_d  : { *(.gnu.version_d) }
++  .gnu.version_r  : { *(.gnu.version_r) }
++  .rel.init       : { *(.rel.init) }
++  .rela.init      : { *(.rela.init) }
++  .rel.text       : { *(.rel.text .rel.text.* .rel.gnu.linkonce.t.*) }
++  .rela.text      : { *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*) }
++  .rel.fini       : { *(.rel.fini) }
++  .rela.fini      : { *(.rela.fini) }
++  .rel.rodata     : { *(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*) }
++  .rela.rodata    : { *(.rela.rodata .rela.rodata.* .rela.gnu.linkonce.r.*) }
++  .rel.data.rel.ro   : { *(.rel.data.rel.ro* .rel.gnu.linkonce.d.rel.ro.*) }
++  .rela.data.rel.ro   : { *(.rela.data.rel.ro* .rela.gnu.linkonce.d.rel.ro.*) }
++  .rel.data       : { *(.rel.data .rel.data.* .rel.gnu.linkonce.d.*) }
++  .rela.data      : { *(.rela.data .rela.data.* .rela.gnu.linkonce.d.*) }
++  .rel.tdata     : { *(.rel.tdata .rel.tdata.* .rel.gnu.linkonce.td.*) }
++  .rela.tdata    : { *(.rela.tdata .rela.tdata.* .rela.gnu.linkonce.td.*) }
++  .rel.tbss      : { *(.rel.tbss .rel.tbss.* .rel.gnu.linkonce.tb.*) }
++  .rela.tbss     : { *(.rela.tbss .rela.tbss.* .rela.gnu.linkonce.tb.*) }
++  .rel.ctors      : { *(.rel.ctors) }
++  .rela.ctors     : { *(.rela.ctors) }
++  .rel.dtors      : { *(.rel.dtors) }
++  .rela.dtors     : { *(.rela.dtors) }
++  .rel.got        : { *(.rel.got) }
++  .rela.got       : { *(.rela.got) }
++  .rel.bss        : { *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*) }
++  .rela.bss       : { *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*) }
++  .rel.plt        : { *(.rel.plt) }
++  .rela.plt       : { *(.rela.plt) }
++  .init           :
++  {
++    KEEP (*(.init))
++  } :segtext =0x90909090
++  .plt            : { *(.plt) }
++  .text           : SUBALIGN(32)
++  {
++    *(.text .stub .text.* .gnu.linkonce.t.*)
++    KEEP (*(.text.*personality*))
++    /* .gnu.warning sections are handled specially by elf32.em.  */
++    *(.gnu.warning)
++  } =0x90909090
++  .fini           : SUBALIGN(32)
++  {
++    KEEP (*(.fini))
++    KEEP (*(__libc_freeres_fn))
++  } =0x90909090
++  PROVIDE (__etext = .);
++  PROVIDE (_etext = .);
++  PROVIDE (etext = .);
++  . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
++  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) } :segrodata
++  .rodata1        : { *(.rodata1) }
++  .eh_frame_hdr : { *(.eh_frame_hdr) }
++  .eh_frame       : ONLY_IF_RO { KEEP (*(.eh_frame)) }
++  .gcc_except_table   : ONLY_IF_RO { *(.gcc_except_table .gcc_except_table.*) }
++  /* Adjust the address for the data segment.  We want to adjust up to
++     the same address within the page on the next page up.  */
++  . = ALIGN (CONSTANT (MAXPAGESIZE)) - ((CONSTANT (MAXPAGESIZE) - .) & (CONSTANT (MAXPAGESIZE) - 1)); . = DATA_SEGMENT_ALIGN (CONSTANT (MAXPAGESIZE), CONSTANT (COMMONPAGESIZE));
++  /* Exception handling  */
++  .eh_frame       : ONLY_IF_RW { KEEP (*(.eh_frame)) }
++  .gcc_except_table   : ONLY_IF_RW { *(.gcc_except_table .gcc_except_table.*) }
++  /* Thread Local Storage sections  */
++  .tdata         : {
++    PROVIDE (__tls_template_start = .);
++    *(.tdata .tdata.* .gnu.linkonce.td.*)
++    PROVIDE (__tls_template_tdata_end = .);
++  }
++  .tbss                  : { *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon) }
++  PROVIDE (__tls_template_end = .);
++  .preinit_array     :
++  {
++    PROVIDE_HIDDEN (__preinit_array_start = .);
++    KEEP (*(.preinit_array))
++    PROVIDE_HIDDEN (__preinit_array_end = .);
++  } :segdata
++  .init_array     :
++  {
++     PROVIDE_HIDDEN (__init_array_start = .);
++     KEEP (*(SORT(.init_array.*)))
++     KEEP (*(.init_array))
++     PROVIDE_HIDDEN (__init_array_end = .);
++  }
++  .fini_array     :
++  {
++    PROVIDE_HIDDEN (__fini_array_start = .);
++    KEEP (*(.fini_array))
++    KEEP (*(SORT(.fini_array.*)))
++    PROVIDE_HIDDEN (__fini_array_end = .);
++  }
++  .ctors          :
++  {
++    /* gcc uses crtbegin.o to find the start of
++       the constructors, so we make sure it is
++       first.  Because this is a wildcard, it
++       doesn't matter if the user does not
++       actually link against crtbegin.o; the
++       linker won't look for a file to match a
++       wildcard.  The wildcard also means that it
++       doesn't matter which directory crtbegin.o
++       is in.  */
++    KEEP (*crtbegin.o(.ctors))
++    KEEP (*crtbegin?.o(.ctors))
++    /* We don't want to include the .ctor section from
++       the crtend.o file until after the sorted ctors.
++       The .ctor section from the crtend file contains the
++       end of ctors marker and it must be last */
++    KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
++    KEEP (*(SORT(.ctors.*)))
++    KEEP (*(.ctors))
++  }
++  .dtors          :
++  {
++    KEEP (*crtbegin.o(.dtors))
++    KEEP (*crtbegin?.o(.dtors))
++    KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
++    KEEP (*(SORT(.dtors.*)))
++    KEEP (*(.dtors))
++  }
++  .jcr            : { KEEP (*(.jcr)) }
++  .data.rel.ro : { *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro* .gnu.linkonce.d.rel.ro.*) }
++  .dynamic        : { *(.dynamic) }
++  .got            : { *(.got) }
++  . = DATA_SEGMENT_RELRO_END (12, .);
++  .got.plt        : { *(.got.plt) }
++  . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
++  .data           :
++  {
++    *(.data .data.* .gnu.linkonce.d.*)
++    KEEP (*(.gnu.linkonce.d.*personality*))
++    SORT(CONSTRUCTORS)
++  }
++  .data1          : { *(.data1) }
++  _edata = .; PROVIDE (edata = .);
++  __bss_start = .;
++  .bss            :
++  {
++   *(.dynbss)
++   *(.bss .bss.* .gnu.linkonce.b.*)
++   *(COMMON)
++   /* Align here to ensure that the .bss section occupies space up to
++      _end.  Align after .bss to ensure correct alignment even if the
++      .bss section disappears because there are no input sections.
++      FIXME: Why do we need it? When there is no .bss section, we don't
++      pad the .data section.  */
++   . = ALIGN(. != 0 ? 32 / 8 : 1);
++  }
++  . = ALIGN(32 / 8);
++  . = ALIGN(32 / 8);
++  _end = .; PROVIDE (end = .);
++  . = DATA_SEGMENT_END (.);
++  /* Stabs debugging sections.  */
++  .stab          0 : { *(.stab) }
++  .stabstr       0 : { *(.stabstr) }
++  .stab.excl     0 : { *(.stab.excl) }
++  .stab.exclstr  0 : { *(.stab.exclstr) }
++  .stab.index    0 : { *(.stab.index) }
++  .stab.indexstr 0 : { *(.stab.indexstr) }
++  .comment       0 : { *(.comment) }
++  /* DWARF debug sections.
++     Symbols in the DWARF debugging sections are relative to the beginning
++     of the section so we begin them at 0.  */
++  /* DWARF 1 */
++  .debug          0 : { *(.debug) }
++  .line           0 : { *(.line) }
++  /* GNU DWARF 1 extensions */
++  .debug_srcinfo  0 : { *(.debug_srcinfo) }
++  .debug_sfnames  0 : { *(.debug_sfnames) }
++  /* DWARF 1.1 and DWARF 2 */
++  .debug_aranges  0 : { *(.debug_aranges) }
++  .debug_pubnames 0 : { *(.debug_pubnames) }
++  /* DWARF 2 */
++  .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
++  .debug_abbrev   0 : { *(.debug_abbrev) }
++  .debug_line     0 : { *(.debug_line) }
++  .debug_frame    0 : { *(.debug_frame) }
++  .debug_str      0 : { *(.debug_str) }
++  .debug_loc      0 : { *(.debug_loc) }
++  .debug_macinfo  0 : { *(.debug_macinfo) }
++  /* SGI/MIPS DWARF 2 extensions */
++  .debug_weaknames 0 : { *(.debug_weaknames) }
++  .debug_funcnames 0 : { *(.debug_funcnames) }
++  .debug_typenames 0 : { *(.debug_typenames) }
++  .debug_varnames  0 : { *(.debug_varnames) }
++  /* DWARF 3 */
++  .debug_pubtypes 0 : { *(.debug_pubtypes) }
++  .debug_ranges   0 : { *(.debug_ranges) }
++  .gnu.attributes 0 : { KEEP (*(.gnu.attributes)) }
++  /DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) }
++  /DISCARD/ : { *(.note.ABI-tag) }
++}
+diff --git a/hellow.c b/hellow.c
+new file mode 100644
+index 0000000..cc230a4
+--- /dev/null
++++ b/hellow.c
+@@ -0,0 +1,9 @@
++
++#include <stdio.h>
++
++int main()
++{
++  write(1, "Hello (via write())\n", 20);
++  printf("Hello world (%s)\n", "via printf()");
++  return 0;
++}
+diff --git a/libidn/idn-stub.c b/libidn/idn-stub.c
+index 3c69bbc..c2944b1 100644
+--- a/libidn/idn-stub.c
++++ b/libidn/idn-stub.c
+@@ -23,7 +23,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <dlfcn.h>
+-#include <gnu/lib-names.h>
++//#include <gnu/lib-names.h>
+ #include <bits/libc-lock.h>
+
+ /* Get specification for idna_to_ascii_lz. */
+@@ -48,7 +48,7 @@ load_dso (void)
+  /* Retest in case some other thread arrived here at the same time.  */
+  if (h == NULL)
+    {
+-      h = __libc_dlopen (LIBCIDN_SO);
++      h = NULL; // __libc_dlopen (LIBCIDN_SO);
+
+      if (h == NULL)
+       h = (void *) 1l;
+diff --git a/make-example.sh b/make-example.sh
+new file mode 100755
+index 0000000..0bd9d06
+--- /dev/null
++++ b/make-example.sh
+@@ -0,0 +1,7 @@
++#!/bin/bash
++
++BUILDDIR=build
++../tools_bin/linux/sdk/nacl-sdk/bin/nacl-gcc \
++    -B$BUILDDIR/csu/ -L$BUILDDIR -static -Wl,-T,elf_i386.x \
++    -g hellow.c -o hellow \
++    -Wl,-print-map > hellow.map
+diff --git a/misc/vm86.c b/misc/vm86.c
+new file mode 100644
+index 0000000..7bee874
+--- /dev/null
++++ b/misc/vm86.c
+@@ -0,0 +1,10 @@
++
++#include <errno.h>
++#include <sys/vm86.h>
++
++int vm86 (unsigned long int __subfunction,
++         struct vm86plus_struct *__info)
++{
++  errno = ENOSYS;
++  return -1;
++}
+diff --git a/myconfig.sh b/myconfig.sh
+new file mode 100755
+index 0000000..a7e3b2a
+--- /dev/null
++++ b/myconfig.sh
+@@ -0,0 +1,11 @@
++#!/bin/bash
++
++set -e
++
++mkdir -p build
++cd build
++../configure --prefix=/usr --host=i486-linux-gnu \
++    CC="`pwd`/../../tools_bin/linux/sdk/nacl-sdk/bin/nacl-gcc" \
++    CFLAGS="-march=i486 -pipe -fstrict-aliasing -O2 -g -mno-tls-direct-seg-refs" \
++    --with-headers=`pwd`/../kernel-headers \
++    --disable-shared
+diff --git a/nptl/sysdeps/unix/sysv/linux/i386/lowlevellock.h b/nptl/sysdeps/unix/sysv/linux/i386/lowlevellock.h
+index d53559c..3792b58 100644
+--- a/nptl/sysdeps/unix/sysv/linux/i386/lowlevellock.h
++++ b/nptl/sysdeps/unix/sysv/linux/i386/lowlevellock.h
+@@ -236,7 +236,7 @@ LLL_STUB_UNWIND_INFO_END
+   value is zero.  In case the operation failed, the cmpxchg instruction
+   has loaded the current value of the memory work which is guaranteed
+   to be nonzero.  */
+-#if defined NOT_IN_libc || defined UP
++#if defined NOT_IN_libc || defined UP || 1
+ # define __lll_trylock_asm LOCK_INSTR "cmpxchgl %2, %1"
+ #else
+ # define __lll_trylock_asm "cmpl $0, %%gs:%P5\n\t" \
+@@ -274,7 +274,7 @@ LLL_STUB_UNWIND_INFO_END
+                      : "memory");                                           \
+     ret; })
+
+-#if defined NOT_IN_libc || defined UP
++#if defined NOT_IN_libc || defined UP || 1
+ # define __lll_lock_asm_start LOCK_INSTR "cmpxchgl %1, %2\n\t"
+ #else
+ # define __lll_lock_asm_start "cmpl $0, %%gs:%P6\n\t"                        \
+@@ -443,7 +443,7 @@ LLL_STUB_UNWIND_INFO_END
+                      : "memory");                                           \
+     result; })
+
+-#if defined NOT_IN_libc || defined UP
++#if defined NOT_IN_libc || defined UP || 1
+ # define __lll_unlock_asm LOCK_INSTR "subl $1, %0\n\t"
+ #else
+ # define __lll_unlock_asm "cmpl $0, %%gs:%P3\n\t"                            \
+diff --git a/sysdeps/i386/elf/start.S b/sysdeps/i386/elf/start.S
+index d2275a3..930a86f 100644
+--- a/sysdeps/i386/elf/start.S
++++ b/sysdeps/i386/elf/start.S
+@@ -82,6 +82,7 @@ _start:
+          which grow downwards).  */
+       pushl %esp
+
++       movl $0, %edx
+       pushl %edx              /* Push address of the shared library
+                                  termination function.  */
+
+diff --git a/sysdeps/i386/i486/bits/atomic.h b/sysdeps/i386/i486/bits/atomic.h
+index 21eea71..e6c4696 100644
+--- a/sysdeps/i386/i486/bits/atomic.h
++++ b/sysdeps/i386/i486/bits/atomic.h
+@@ -107,6 +107,14 @@ typedef uintmax_t uatomic_max_t;
+                        "i" (offsetof (tcbhead_t, multiple_threads)));       \
+     ret; })
+
++#if 1
++#define __arch_c_compare_and_exchange_val_32_acq(mem, newval, oldval) \
++  ({ __typeof (*mem) ret;                                                    \
++     __asm __volatile (LOCK_PREFIX "cmpxchgl %2, %1"                         \
++                      : "=a" (ret), "=m" (*mem)                              \
++                      : "r" (newval), "m" (*mem), "0" (oldval));             \
++     ret; })
++#else
+ #define __arch_c_compare_and_exchange_val_32_acq(mem, newval, oldval) \
+  ({ __typeof (*mem) ret;                                                    \
+     __asm __volatile ("cmpl $0, %%gs:%P5\n\t"                                \
+@@ -117,6 +125,7 @@ typedef uintmax_t uatomic_max_t;
+                      : "r" (newval), "m" (*mem), "0" (oldval),              \
+                        "i" (offsetof (tcbhead_t, multiple_threads)));       \
+     ret; })
++#endif
+
+ /* XXX We do not really need 64-bit compare-and-exchange.  At least
+   not in the moment.  Using it would mean causing portability
+@@ -255,8 +264,13 @@ typedef uintmax_t uatomic_max_t;
+  __arch_exchange_and_add_body (LOCK_PREFIX, __arch, mem, value)
+ #endif
+
++#if 1
++#define __arch_exchange_and_add_cprefix \
++  "lock\n"
++#else
+ #define __arch_exchange_and_add_cprefix \
+  "cmpl $0, %%gs:%P4\n\tje 0f\n\tlock\n0:\t"
++#endif
+
+ #define catomic_exchange_and_add(mem, value) \
+  __arch_exchange_and_add_body (__arch_exchange_and_add_cprefix, __arch_c,    \
+@@ -300,8 +314,9 @@ typedef uintmax_t uatomic_max_t;
+ #define atomic_add(mem, value) \
+  __arch_add_body (LOCK_PREFIX, __arch, mem, value)
+
+-#define __arch_add_cprefix \
+-  "cmpl $0, %%gs:%P3\n\tje 0f\n\tlock\n0:\t"
++/* #define __arch_add_cprefix \ */
++/*   "cmpl $0, %%gs:%P3\n\tje 0f\n\tlock\n0:\t" */
++#define __arch_add_cprefix LOCK_PREFIX
+
+ #define catomic_add(mem, value) \
+  __arch_add_body (__arch_add_cprefix, __arch_c, mem, value)
+@@ -376,8 +391,9 @@ typedef uintmax_t uatomic_max_t;
+
+ #define atomic_increment(mem) __arch_increment_body (LOCK_PREFIX, __arch, mem)
+
+-#define __arch_increment_cprefix \
+-  "cmpl $0, %%gs:%P2\n\tje 0f\n\tlock\n0:\t"
++/* #define __arch_increment_cprefix \ */
++/*   "cmpl $0, %%gs:%P2\n\tje 0f\n\tlock\n0:\t" */
++#define __arch_increment_cprefix LOCK_PREFIX
+
+ #define catomic_increment(mem) \
+  __arch_increment_body (__arch_increment_cprefix, __arch_c, mem)
+@@ -433,8 +449,9 @@ typedef uintmax_t uatomic_max_t;
+
+ #define atomic_decrement(mem) __arch_decrement_body (LOCK_PREFIX, __arch, mem)
+
+-#define __arch_decrement_cprefix \
+-  "cmpl $0, %%gs:%P2\n\tje 0f\n\tlock\n0:\t"
++/* #define __arch_decrement_cprefix \ */
++/*   "cmpl $0, %%gs:%P2\n\tje 0f\n\tlock\n0:\t" */
++#define __arch_decrement_cprefix LOCK_PREFIX
+
+ #define catomic_decrement(mem) \
+  __arch_decrement_body (__arch_decrement_cprefix, __arch_c, mem)
+@@ -542,7 +559,8 @@ typedef uintmax_t uatomic_max_t;
+
+ #define atomic_or(mem, mask) __arch_or_body (LOCK_PREFIX, mem, mask)
+
+-#define __arch_or_cprefix \
+-  "cmpl $0, %%gs:%P3\n\tje 0f\n\tlock\n0:\t"
++/* #define __arch_or_cprefix \ */
++/*   "cmpl $0, %%gs:%P3\n\tje 0f\n\tlock\n0:\t" */
++#define __arch_or_cprefix LOCK_PREFIX
+
+ #define catomic_or(mem, mask) __arch_or_body (__arch_or_cprefix, mem, mask)
+diff --git a/sysdeps/nacl/brk.c b/sysdeps/nacl/brk.c
+new file mode 100644
+index 0000000..96437ee
+--- /dev/null
++++ b/sysdeps/nacl/brk.c
+@@ -0,0 +1,18 @@
++
++#include <errno.h>
++#include <unistd.h>
++#include <sysdep.h>
++
++void *__curbrk = 0;
++weak_alias (__curbrk, ___brk_addr)
++
++__asm__(".global __NaClSysBrk; __NaClSysBrk = 0x1280");
++
++void *__NaClSysBrk(void *addr);
++
++int __brk (void *addr)
++{
++  __curbrk = __NaClSysBrk(addr);
++  return 0;
++}
++weak_alias (__brk, brk)
+diff --git a/sysdeps/nacl/write.c b/sysdeps/nacl/write.c
+new file mode 100644
+index 0000000..3e7c894
+--- /dev/null
++++ b/sysdeps/nacl/write.c
+@@ -0,0 +1,19 @@
++
++#include <errno.h>
++#include <unistd.h>
++#include <sysdep.h>
++
++__asm__(".global __gnacl_write; __gnacl_write = 0x11a0 ");
++
++int __gnacl_write(int desc, void const *buf, size_t count);
++
++int __write(int desc, void const *buf, size_t count)
++{
++  int result = __gnacl_write(desc, buf, count);
++  if (result < 0)
++    errno = -result;
++  return result;
++}
++weak_alias (__write, write)
++strong_alias (__write, __libc_write)
++strong_alias (__write, __write_nocancel)
+diff --git a/sysdeps/unix/syscalls.list b/sysdeps/unix/syscalls.list
+index 04ed63c..48ef960 100644
+--- a/sysdeps/unix/syscalls.list
++++ b/sysdeps/unix/syscalls.list
+@@ -62,5 +62,4 @@ umask         -       umask           Ei:i    __umask         umask
+ uname          -       uname           i:p     __uname         uname
+ unlink         -       unlink          i:s     __unlink        unlink
+ utimes         -       utimes          i:sp    __utimes        utimes
+-write          -       write           Ci:ibn  __libc_write    __write write
+ writev         -       writev          Ci:ipi  __writev        writev
+diff --git a/sysdeps/unix/sysv/linux/dl-sysdep.c b/sysdeps/unix/sysv/linux/dl-sysdep.c
+index 08ae9aa..346d90c 100644
+--- a/sysdeps/unix/sysv/linux/dl-sysdep.c
++++ b/sysdeps/unix/sysv/linux/dl-sysdep.c
+@@ -65,6 +65,7 @@ int
+ attribute_hidden
+ _dl_discover_osversion (void)
+ {
++#if 0
+ #if (defined NEED_DL_SYSINFO || defined NEED_DL_SYSINFO_DSO) && defined SHARED
+  if (GLRO(dl_sysinfo_map) != NULL)
+    {
+@@ -151,4 +152,6 @@ _dl_discover_osversion (void)
+    version <<= 8 * (3 - parts);
+
+  return version;
++#endif
++  return 0;
+ }
+diff --git a/sysdeps/unix/sysv/linux/i386/clone.S b/sysdeps/unix/sysv/linux/i386/clone.S
+index f73a4b5..812e85e 100644
+--- a/sysdeps/unix/sysv/linux/i386/clone.S
++++ b/sysdeps/unix/sysv/linux/i386/clone.S
+@@ -50,19 +50,19 @@ ENTRY (BP_SYM (__clone))
+       /* Sanity check arguments.  */
+       movl    $-EINVAL,%eax
+       movl    FUNC(%esp),%ecx         /* no NULL function pointers */
+-#ifdef PIC
++/*#ifdef PIC
+       jecxz   SYSCALL_ERROR_LABEL
+-#else
++#else*/
+       testl   %ecx,%ecx
+       jz      SYSCALL_ERROR_LABEL
+-#endif
++/*#endif*/
+       movl    STACK(%esp),%ecx        /* no NULL stack pointers */
+-#ifdef PIC
++/*#ifdef PIC
+       jecxz   SYSCALL_ERROR_LABEL
+-#else
++#else*/
+       testl   %ecx,%ecx
+       jz      SYSCALL_ERROR_LABEL
+-#endif
++/*#endif*/
+
+       /* Insert the argument onto the new stack.  Make sure the new
+          thread is started with an alignment of (mod 16).  */
+

@@ -1,0 +1,37 @@
+<html>
+  <!-- Issue 45 from the Native Client security contest -->
+  <head>
+    <title> Native Client Security Contest -- Issue 45 </title>
+  </head>
+  <script>
+    var server;
+    var timeout;
+    var PostInit = function() {
+      server = document.getElementById('nacl_server');
+      if (server.__moduleReady == undefined) {
+        timeout = setTimeout(PostInit, 100);
+        return;
+      }
+      var buttonid = document.getElementById("mybutton");
+      buttonid.disabled = null;
+    }
+    var ClearTimeout = function() {
+      clearTimeout(timeout);
+    }
+    var boom = function() {
+      var shared_memory = server.__shmFactory(0xdead);
+      shared_memory.read(0x80000000, 0x80000004);
+    }
+  </script>
+  <body onload="PostInit();" onunload="ClearTimeout();">
+    <button type="button" id="mybutton" disabled="true"
+      onclick="boom();" />boom</button>
+    <embed type="application/x-nacl-srpc" id="nacl_server"
+            width="0" height="0" src="srpc_nrd_server.nexe" />
+    <p>
+      <b>Note:</b> For the purposes of contest issue #45, the actual expected
+      result when clicking the "Boom" button is a browser that continues to
+      function properly.
+    </p>
+  </body>
+</html>

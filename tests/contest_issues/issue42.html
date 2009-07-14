@@ -1,0 +1,41 @@
+<html>
+  <!-- Issue 42 from the Native Client security contest -->
+  <head>
+    <title>Native Client Security Contest -- Issue 42</title>
+  </head>
+  <script type="application/x-javascript">
+    var server;
+    var timeout;
+    var PostInit = function() {
+      server = document.getElementById('nacl_server');
+      if (server.__moduleReady == undefined) {
+        timeout = setTimeout(PostInit, 100);
+        return;
+      }
+      var buttonid = document.getElementById("mybutton");
+      buttonid.disabled = null;
+    }
+    var ClearTimeout = function() {
+      clearTimeout(timeout);
+    }
+    var SocketAddressNaClToBrowser = function() {
+      var socket_address2 = server.start_server();
+      var con_sock = socket_address2.connect();
+      alert('about to boom!');
+      var retval = con_sock.getmsg(-1);
+    }
+  </script>
+  <body onload="PostInit();" onunload="ClearTimeout();">
+    <embed type="application/x-nacl-srpc" id="nacl_server"
+           width="0" height="0" src="srpc_nrd_server.nexe" />
+           <button type="button" id="mybutton" disabled="true"
+             onclick="SocketAddressNaClToBrowser();">
+      Crash me
+    </button>
+    <p>
+      <b>Note:</b> For the purposes of contest issue #42, the actual expected
+      result when clicking the "Crash me" button is a browser that continues
+      to operate properly.
+    </p>
+  </body>
+</html>

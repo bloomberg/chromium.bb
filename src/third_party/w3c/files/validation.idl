@@ -1,0 +1,125 @@
+/*
+ * Copyright (c) 2004 World Wide Web Consortium,
+ *
+ * (Massachusetts Institute of Technology, European Research Consortium for
+ * Informatics and Mathematics, Keio University). All Rights Reserved. This
+ * work is distributed under the W3C(r) Software License [1] in the hope that
+ * it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
+ */
+
+// File: http://www.w3.org/TR/2004/REC-DOM-Level-3-Val-20040127/validation.idl
+
+#ifndef _VALIDATION_IDL_
+#define _VALIDATION_IDL_
+
+#include "dom.idl"
+
+#pragma prefix "dom.w3c.org"
+module validation
+{
+
+  typedef dom::DOMString DOMString;
+  typedef dom::DOMStringList DOMStringList;
+  typedef dom::Node Node;
+  typedef dom::NameList NameList;
+  typedef dom::Attr Attr;
+  typedef dom::DOMConfiguration DOMConfiguration;
+
+  exception ExceptionVAL {
+    unsigned short   code;
+  };
+  // ExceptionVALCode
+  const unsigned short      NO_SCHEMA_AVAILABLE_ERR        = 71;
+
+
+  interface NodeEditVAL {
+
+    // validationType
+    const unsigned short      VAL_WF                         = 1;
+    const unsigned short      VAL_NS_WF                      = 2;
+    const unsigned short      VAL_INCOMPLETE                 = 3;
+    const unsigned short      VAL_SCHEMA                     = 4;
+
+
+    // validationState
+    const unsigned short      VAL_TRUE                       = 5;
+    const unsigned short      VAL_FALSE                      = 6;
+    const unsigned short      VAL_UNKNOWN                    = 7;
+
+    readonly attribute DOMString       defaultValue;
+    readonly attribute DOMStringList   enumeratedValues;
+    unsigned short     canInsertBefore(in Node newChild,
+                                       in Node refChild);
+    unsigned short     canRemoveChild(in Node oldChild);
+    unsigned short     canReplaceChild(in Node newChild,
+                                       in Node oldChild);
+    unsigned short     canAppendChild(in Node newChild);
+    unsigned short     nodeValidity(in unsigned short valType);
+  };
+
+  interface ElementEditVAL : NodeEditVAL {
+
+    // ContentTypeVAL
+    const unsigned short      VAL_EMPTY_CONTENTTYPE          = 1;
+    const unsigned short      VAL_ANY_CONTENTTYPE            = 2;
+    const unsigned short      VAL_MIXED_CONTENTTYPE          = 3;
+    const unsigned short      VAL_ELEMENTS_CONTENTTYPE       = 4;
+    const unsigned short      VAL_SIMPLE_CONTENTTYPE         = 5;
+
+    readonly attribute NameList        allowedChildren;
+    readonly attribute NameList        allowedFirstChildren;
+    readonly attribute NameList        allowedParents;
+    readonly attribute NameList        allowedNextSiblings;
+    readonly attribute NameList        allowedPreviousSiblings;
+    readonly attribute NameList        allowedAttributes;
+    readonly attribute NameList        requiredAttributes;
+    readonly attribute unsigned short  contentType;
+    unsigned short     canSetTextContent(in DOMString possibleTextContent);
+    unsigned short     canSetAttribute(in DOMString attrname,
+                                       in DOMString attrval);
+    unsigned short     canSetAttributeNode(in Attr attrNode);
+    unsigned short     canSetAttributeNS(in DOMString namespaceURI,
+                                         in DOMString qualifiedName,
+                                         in DOMString value);
+    unsigned short     canRemoveAttribute(in DOMString attrname);
+    unsigned short     canRemoveAttributeNS(in DOMString namespaceURI,
+                                            in DOMString localName);
+    unsigned short     canRemoveAttributeNode(in Node attrNode);
+    unsigned short     isElementDefined(in DOMString name);
+    unsigned short     isElementDefinedNS(in DOMString namespaceURI,
+                                          in DOMString name);
+  };
+
+  interface CharacterDataEditVAL : NodeEditVAL {
+    unsigned short     isWhitespaceOnly();
+    unsigned short     canSetData(in DOMString arg);
+    unsigned short     canAppendData(in DOMString arg);
+    unsigned short     canReplaceData(in unsigned long offset,
+                                      in unsigned long count,
+                                      in DOMString arg)
+                                        raises(dom::DOMException);
+    unsigned short     canInsertData(in unsigned long offset,
+                                     in DOMString arg)
+                                        raises(dom::DOMException);
+    unsigned short     canDeleteData(in unsigned long offset,
+                                     in unsigned long count)
+                                        raises(dom::DOMException);
+  };
+
+  interface DocumentEditVAL : NodeEditVAL {
+             attribute boolean         continuousValidityChecking;
+                                        // raises(dom::DOMException,
+                                        //        ExceptionVAL,
+                                        //        dom::DOMException) on setting
+
+    readonly attribute DOMConfiguration domConfig;
+    NameList           getDefinedElements(in DOMString namespaceURI);
+    unsigned short     validateDocument();
+  };
+};
+
+#endif // _VALIDATION_IDL_
+

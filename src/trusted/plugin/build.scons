@@ -1,0 +1,174 @@
+# -*- python -*-
+# Copyright 2008, Google Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Import('env')
+
+# Currently, this is only defined for x86, so only compile if x86.
+if env['TARGET_ARCHITECTURE'] != 'x86':
+  Return()
+
+if env['TARGET_SUBARCH'] != '32':
+  Return()
+
+# TODO(sehr): there is an  unreferenced file ldt_unittest.cc in this directory
+
+# NOTE(robertm): currently needed for env.ComponentObject magic below
+env.Prepend(
+    CPPPATH=['${SOURCE_ROOT}/native_client/src/third_party/npapi/files/include']
+)
+
+# NOTE(robertm): needed for a bunch of includes from X11/Intrinsic.h
+env.Prepend(
+    CPPPATH=['${SOURCE_ROOT}/third_party/libxt/include']
+)
+
+# TODO: move this to EXTRA_LIBS
+env.Append(
+    LIBS = [
+        'nonnacl_util',
+        'nonnacl_srpc',
+        'nrd_xfer',
+        'google_nacl_npruntime',
+        'google_nacl_imc_c',
+        'platform',
+        'gio',
+        'expiration',
+    ],
+)
+
+if not env.Bit('mac'):
+  env['COMPONENT_STATIC'] = False
+
+
+if env.Bit('linux'):
+    env.Append(
+        CCFLAGS=['-fPIC', '-Wno-long-long',],
+        CPPDEFINES = ['XP_UNIX', 'MOZ_X11'],
+        LIBS = ['Xt', 'X11'],
+    )
+
+
+if env.Bit('mac'):
+    env.Append(
+        CCFLAGS=['-Wno-long-long',
+                 # warning: 'FSMakeFSSpec' is deprecated
+                 '-Wno-deprecated',
+                 '-Wno-deprecated-declarations'],
+        CPPDEFINES = [
+            'XP_MACOSX',
+            'XP_UNIX',
+            ['TARGET_API_MAC_CARBON', '1'],
+            'NO_X11',
+            'USE_SYSTEM_CONSOLE',
+        ],
+        FRAMEWORKS = ['Carbon'],
+        # TODO(jrg): it's a little awkward to, when you want a bundle:
+        #  1) add -bundle to your LINKFLAGS
+        #  2) create a "program" (which shows up in all_programs target)
+        #  3) create a bundle out of it, specifying the bundle extension
+        # Ideally that all happens inside a CompleteBundlePseudoBuilder().
+        LINKFLAGS = ['-bundle', '-framework', 'Foundation']
+    )
+
+
+if env.Bit('windows'):
+    env.Append(
+        CCFLAGS = ['/EHsc',],
+        CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
+        LIBS = ['gdi32', 'user32', ],
+    )
+    env.Tool('atlmfc_vc80')
+
+
+nacl_npplugin_inputs = [
+    # TODO: we should put a scons file in src/third_party_mod/nacl_plugin
+    #       which exports a library which is then linked in.
+    #       Currently this results inlink time symbol clashes
+    env.ComponentObject('np_entry',
+                        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
+                        'np_entry.cc'),
+    env.ComponentObject('npn_gate',
+                        '${MAIN_DIR}/src/third_party_mod/npapi_plugin/' +
+                        'npn_gate.cc'),
+    'npp_gate.cc',
+    'npp_launcher.cc',
+    # SRPC support
+    'srpc/srpc.cc',
+    'srpc/npapi_native.cc',
+    'srpc/plugin.cc',
+    'srpc/ret_array.cc',
+    'srpc/connected_socket.cc',
+    'srpc/multimedia_socket.cc',
+    'srpc/shared_memory.cc',
+    'srpc/socket_address.cc',
+    'srpc/srpc_client.cc',
+    'srpc/service_runtime_interface.cc',
+    'srpc/srt_socket.cc',
+    'srpc/browser_interface.cc',
+    'srpc/portable_handle.cc',
+    'srpc/desc_based_handle.cc',
+    'srpc/video.cc',
+    'srpc/closure.cc',
+    'srpc/method_map.cc',
+    # generic URL-origin / same-domain handling
+    'origin.cc',
+]
+
+if env['TARGET_PLATFORM'] == 'WINDOWS':
+  nacl_npplugin_inputs += [
+      'nacl_plugin.def',
+      env.RES('nacl_plugin.rc'),
+  ]
+
+npGoogleNaClPlugin = 'npGoogleNaClPlugin'
+
+if not env.Bit('mac'):
+  plugin = env.ComponentLibrary(npGoogleNaClPlugin, nacl_npplugin_inputs,
+                             no_import_lib = True)
+  # we need this to build the plugin, so register it here
+  env.AddPluginPrerequisite([plugin[0]])
+else:
+  REZ = '/Developer/Tools/Rez'
+  env.Command(target='npGoogleNaClPlugin.rsrc',
+              source='npGoogleNaClPlugin.r',
+              action=[Action(REZ + ' -o ${TARGET} ${SOURCE} -useDF')])
+  exe = env.ComponentProgram(npGoogleNaClPlugin,
+                             nacl_npplugin_inputs,
+                             no_import_lib=True)
+  # Bundle pattern can be found in
+  # site_scons/site_tools/target_platform_mac.py
+  bundle_name = '${STAGING_DIR}/' + npGoogleNaClPlugin + '.bundle'
+  env.Bundle(bundle_name,
+             BUNDLE_EXE = exe[0],
+             BUNDLE_PKGINFO_FILENAME = 0,
+             BUNDLE_RESOURCES = 'npGoogleNaClPlugin.rsrc')
+  # we need this to build the plugin, so register it here
+  env.AddPluginPrerequisite([bundle_name])

@@ -1,0 +1,266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Native Client: Debugging Tips</title>
+<link href="stylesheet.css" type="text/css" rel="stylesheet"></link>
+</head>
+
+<body>
+
+<div id="toplink">
+<a href="../README.html">Back to README</a>
+</div>
+
+<h1>Debugging Tips</h1>
+
+<p>
+This page describes strategies you can use to debug your modules,
+concentrating on techniques that don't use a debugger.
+Although a debugger exists for Linux
+(as of the April 23 release),
+no Native Client debugger is available for Mac or Windows.
+</p>
+
+<p>
+<b>Note:</b>
+We're actively working on improving the debuggability of Native Client modules.
+If you'd like to help &mdash;
+by porting a debugger to Mac or Windows, for example &mdash;
+please volunteer!
+You can contact us on the
+<a href="http://groups.google.com/group/native-client-discuss">Native Client
+Discuss group</a>.
+</p>
+
+
+<h3>
+Contents:
+</h3>
+
+<ul>
+<li> <a href="#standalone">Design your module to run standalone</a>
+</li>
+<li> <a href="#compile">Catch errors at compile time</a>
+</li>
+<li> <a href="#printf">Use printf and assert if necessary</a>
+     <ul>
+     <li> <a href="#print-examples">Examples</a>
+     <li> <a href="#launchbrowser">Launching the browser from the command line</a>
+     </li>
+     <li> <a href="#output">Platform-specific output locations</a>
+     </li>
+     </ul>
+</li>
+<li> <a href="#gdb">Use nacl-gdb (Linux only)</a> </li>
+</ul>
+
+<h2><a name="standalone" id="standalone"> </a> Design your module to run standalone </h2>
+
+<p>
+If your module can run both as a standalone Linux or Mac application
+<em>and</em> within Native Client,
+then you can use a debugger such as GDB, KDbg, or Xcode
+to debug the standalone form of your application.
+</p>
+
+<p>
+<strong>Note:</strong>
+Building standalone applications is not supported on Windows.
+</p>
+
+<p>
+For examples of creating a module that also works standalone,
+see the <code>earth</code>, <code>life</code>, <code>tone</code>,
+and <code>voronoi</code> examples under <code>native_client/tests</code>.
+</p>
+
+<h2><a name="compile"> </a> Catch errors at compile time </h2>
+
+<p>
+It's easier to fix bugs you find at compile time
+than those you find at runtime.
+When you compile your module,
+use <code>gcc</code> flags such as
+<code>-Werror</code> and <code>-Wall</code>
+to help ensure that your code is as clean as possible.
+For example:
+</p>
+
+<pre class="platform-all">
+<kbd>nacl-g++ earth.cc <b>-Wall -Werror</b> -O3 -mfpmath=sse -msse -fomit-frame-pointer -lpthread -lm -o earth_release.nexe</kbd>
+</pre>
+
+<h2> <a name="printf"> </a> Use printf and assert if necessary</h2>
+
+<p>
+If a bug doesn't appear in the standalone app version of a module,
+you might have to use
+<code>printf</code> and <code>assert</code>
+to debug your module when it runs in Native Client.
+</p>
+
+<p>
+<b>Note:</b>
+Using <code>printf</code> can be useful on Linux and Mac,
+but it's more difficult on Windows.
+For the latest Windows testing tips, see the wiki page
+<a href="http://code.google.com/p/nativeclient/wiki/DebuggingModulesOnWindows">DebuggingModulesOnWindows</a>.
+</p>
+
+<p>
+Some notes on using
+<code>printf</code> and <code>assert</code>:
+</p>
+
+<ul>
+<li> On Linux and Mac, if you
+     <a href="#launchbrowser">launch the browser from the command line</a>,
+     you can see the output in the window where you entered the command.
+     Otherwise, the output goes to a
+     <a href="#output">platform-specific location</a>.
+     </li>
+<li> We recommend that you call <code>printf</code> from only one thread.
+     </li>
+<li> <code>assert</code> does not generate core dumps.
+     </li>
+<li> Alongside your <code>printf</code> and <code>assert</code> output,
+     you might see debugging output from other processes &mdash;
+     the plug-in and <code>sel_ldr</code>.
+</ul>
+
+
+<h3> <a name="print-examples"></a> Examples </h3>
+
+<p>
+Here's an example of using <code>printf</code>:
+</p>
+
+<pre>
+#include &lt;stdio.h>
+  ...
+  printf("Multimedia system failed to initialize!  errno: %d\n", errno);
+</pre>
+
+<p>
+Here's an example of using <code>assert</code>:
+</p>
+
+<pre>
+#include &lt;assert.h>
+
+int foo(int x) {
+  assert(x != 0);
+  ...
+}
+</pre>
+
+<h3> <a name="launchbrowser"></a>Launching the browser from the command line</h3>
+
+<p>
+On Linux and Mac, if you launch your browser from the command line,
+the output of <code>printf</code> and <code>assert</code> goes
+to the window you used to enter the command.
+Make sure the window has a large scroll buffer,
+so you don't lose output.
+Better yet, use the GNU Screen program
+or an Emacs shell,
+so you can easily search the output.
+</p>
+
+<blockquote>
+<table summary="platform-specific instructions for launching Firefox from the command line">
+<tr align="left">
+<th>Platform</th> <th>How to launch Firefox from the command line</th>
+</tr>
+<tr>
+  <td valign="top">Linux</td>
+  <td> <code>/usr/bin/firefox2</code> </td>
+</tr>
+<tr>
+  <td valign="top">Mac</td>
+  <td> <code>/Applications/Firefox.app/Contents/MacOS/firefox-bin </code></td>
+</tr>
+<!--
+<tr>
+  <td valign="top">Windows</td>
+  <td>
+  From Cygwin:
+  <code>/cygdrive/c/Program\ Files/Mozilla\ Firefox/firefox.exe</code>
+  <br>
+  From cmd:
+  <code>"C:\Program Files\Mozilla Firefox\firefox.exe"</code>
+  </td>
+</tr>
+-->
+</table>
+</blockquote>
+
+
+<h3> <a name="output"></a>Platform-specific output locations</h3>
+
+<p>
+If you launch the browser using a menu, button, or icon
+(rather than from the
+<a href="#launchbrowser">command line</a>)
+the output of <code>printf</code> or <code>assert</code> goes to a
+location that depends on the platform you're using.
+</p>
+
+<blockquote>
+<table summary="platform-specific browser output locations">
+<tr align="left">
+<th>Platform</th> <th>Default output location</th>
+</tr>
+<tr>
+<td>Linux</td> <td> <code>$HOME/.xsession-errors</code> </td>
+</tr>
+<tr>
+<td>Mac</td> <td><code>/var/log/system.log</code></td>
+</tr>
+<!--
+<tr>
+<td>Windows</td> <td> <span class="comment">[PENDING: ?]</span> </td>
+</tr>
+-->
+</table>
+</blockquote>
+
+
+<h2> <a name="gdb"> </a> Use nacl-gdb (Linux only)</h2>
+
+<p>
+The Linux <code>nacl-gdb</code> tool is
+a version of GDB that can deal with Native Client's
+memory and address space conventions.
+For details,
+see the
+<a href="nacl-gdb.html"><code>nacl-gdb</code> page</a>.
+</p>
+
+<p>
+Mac and Windows don't have Native Client ports of GDB
+or any other debuggers.
+Debuggers need to be ported to Native Client
+because Native Client modules' use of
+segmented memory protection confuses
+the kernel exception handler,
+which in turn interferes with handling breakpoints.
+Also,
+the segmented structure of the Native Client address space
+interferes with symbol resolution.
+<!--
+For details of changes, see the
+<a href="http://nativeclient.googlecode.com/svn/data/docs_tarball/nacl/googleclient/native_client/tools/patches/gdb-6.8.patch">GDB patch file</a>. -->
+</p>
+
+<p id="license">
+Except as otherwise
+<a href="http://code.google.com/policies.html#restrictions">noted</a>,
+the content of this page is licensed under a
+<a href="http://creativecommons.org/licenses/by/2.5/">Creative Commons
+Attribution 2.5 license</a>.
+</p>
+
+</body>
+</html>

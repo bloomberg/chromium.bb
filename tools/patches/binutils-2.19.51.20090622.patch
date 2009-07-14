@@ -1,0 +1,1887 @@
+diff -uNr binutils-2.19.51.20090622.orig/bfd/Makefile.am binutils-2.19.51.20090622/bfd/Makefile.am
+--- binutils-2.19.51.20090622.orig/bfd/Makefile.am	2009-06-16 15:41:07.000000000 +0200
++++ binutils-2.19.51.20090622/bfd/Makefile.am	2009-06-28 18:54:27.000000000 +0200
+@@ -293,6 +293,7 @@
+ 	elf32-moxie.lo \
+ 	elf32-msp430.lo \
+ 	elf32-mt.lo \
++	elf32-nacl.lo \
+ 	elf32-openrisc.lo \
+ 	elf32-or32.lo \
+ 	elf32-pj.lo \
+@@ -476,6 +477,7 @@
+ 	elf32-moxie.c \
+ 	elf32-msp430.c \
+ 	elf32-mt.c \
++	elf32-nacl.c \
+ 	elf32-openrisc.c \
+ 	elf32-or32.c \
+ 	elf32-pj.c \
+@@ -2590,6 +2592,20 @@
+   $(INCDIR)/hashtab.h \
+   elf-bfd.h \
+   elf32-target.h
++elf32-nacl.lo: \
++  elf32-i386.c \
++  elf32-nacl.c \
++  $(INCDIR)/bfdlink.h \
++  $(INCDIR)/elf/common.h \
++  $(INCDIR)/elf/external.h \
++  $(INCDIR)/elf/internal.h \
++  $(INCDIR)/elf/i386.h \
++  $(INCDIR)/elf/reloc-macros.h \
++  $(INCDIR)/filenames.h \
++  $(INCDIR)/hashtab.h \
++  elf-bfd.h \
++  elf-vxworks.h \
++  elf32-target.h
+ elf32-openrisc.lo: \
+   elf32-openrisc.c \
+   $(INCDIR)/bfdlink.h \
+diff -uNr binutils-2.19.51.20090622.orig/bfd/Makefile.in binutils-2.19.51.20090622/bfd/Makefile.in
+--- binutils-2.19.51.20090622.orig/bfd/Makefile.in	2009-06-16 15:41:07.000000000 +0200
++++ binutils-2.19.51.20090622/bfd/Makefile.in	2009-06-28 17:16:42.000000000 +0200
+@@ -564,6 +564,7 @@
+ 	elf32-moxie.lo \
+ 	elf32-msp430.lo \
+ 	elf32-mt.lo \
++	elf32-nacl.lo \
+ 	elf32-openrisc.lo \
+ 	elf32-or32.lo \
+ 	elf32-pj.lo \
+@@ -747,6 +748,7 @@
+ 	elf32-moxie.c \
+ 	elf32-msp430.c \
+ 	elf32-mt.c \
++	elf32-nacl.c \
+ 	elf32-openrisc.c \
+ 	elf32-or32.c \
+ 	elf32-pj.c \
+@@ -3191,6 +3193,19 @@
+   $(INCDIR)/hashtab.h \
+   elf-bfd.h \
+   elf32-target.h
++elf32-nacl.lo: \
++  elf32-nacl.c \
++  $(INCDIR)/bfdlink.h \
++  $(INCDIR)/elf/common.h \
++  $(INCDIR)/elf/external.h \
++  $(INCDIR)/elf/internal.h \
++  $(INCDIR)/elf/i386.h \
++  $(INCDIR)/elf/reloc-macros.h \
++  $(INCDIR)/filenames.h \
++  $(INCDIR)/hashtab.h \
++  elf-bfd.h \
++  elf-vxworks.h \
++  elf32-target.h
+ elf32-openrisc.lo: \
+   elf32-openrisc.c \
+   $(INCDIR)/bfdlink.h \
+diff -uNr binutils-2.19.51.20090622.orig/bfd/config.bfd binutils-2.19.51.20090622/bfd/config.bfd
+--- binutils-2.19.51.20090622.orig/bfd/config.bfd	2009-06-18 04:11:02.000000000 +0200
++++ binutils-2.19.51.20090622/bfd/config.bfd	2009-06-28 17:16:42.000000000 +0200
+@@ -602,6 +602,11 @@
+     targ_selvecs="i386linux_vec i386pei_vec"
+     targ64_selvecs=bfd_elf64_x86_64_vec
+     ;;
++  i[3-7]86-*-nacl*)
++    targ_defvec=bfd_elf32_nacl_vec
++    targ_selvecs="bfd_elf32_i386_vec i386linux_vec i386pei_vec mach_o_le_vec mach_o_be_vec mach_o_fat_vec"
++    targ_archs="bfd_i386_arch bfd_powerpc_arch"
++    ;;
+ #ifdef BFD64
+   x86_64-*-darwin*)
+     targ_defvec=mach_o_le_vec
+diff -uNr binutils-2.19.51.20090622.orig/bfd/configure binutils-2.19.51.20090622/bfd/configure
+--- binutils-2.19.51.20090622.orig/bfd/configure	2009-06-16 15:41:08.000000000 +0200
++++ binutils-2.19.51.20090622/bfd/configure	2009-06-28 17:16:42.000000000 +0200
+@@ -21047,6 +21047,7 @@
+     bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
+     bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
+     bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
++    bfd_elf32_nacl_vec)		tb="$tb elf32-nacl.lo elf-vxworks.lo elf32.lo $elf" ;;
+     bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
+     bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
+     bfd_elf32_ntradbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
+diff -uNr binutils-2.19.51.20090622.orig/bfd/configure.in binutils-2.19.51.20090622/bfd/configure.in
+--- binutils-2.19.51.20090622.orig/bfd/configure.in	2009-06-16 15:41:09.000000000 +0200
++++ binutils-2.19.51.20090622/bfd/configure.in	2009-06-28 17:16:42.000000000 +0200
+@@ -744,6 +744,7 @@
+     bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
+     bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
+     bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
++    bfd_elf32_nacl_vec)		tb="$tb elf32-nacl.lo elf-vxworks.lo elf32.lo $elf" ;;
+     bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
+     bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
+     bfd_elf32_ntradbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
+diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090622/bfd/elf32-i386.c
+--- binutils-2.19.51.20090622.orig/bfd/elf32-i386.c	2009-06-20 02:43:21.000000000 +0200
++++ binutils-2.19.51.20090622/bfd/elf32-i386.c	2009-06-28 18:52:12.000000000 +0200
+@@ -34,6 +34,10 @@
+ 
+ #include "elf/i386.h"
+ 
++#ifdef ELF32_NACL_C
++#include "elf/nacl.h"
++#endif
++
+ static reloc_howto_type elf_howto_table[]=
+ {
+   HOWTO(R_386_NONE, 0, 0, 0, FALSE, 0, complain_overflow_bitfield,
+@@ -523,32 +527,89 @@
+ 
+ /* The size in bytes of an entry in the procedure linkage table.  */
+ 
++#ifdef ELF32_NACL_C
++#define PLT_ENTRY_SIZE 64
++#else
+ #define PLT_ENTRY_SIZE 16
++#endif
+ 
+ /* The first entry in an absolute procedure linkage table looks like
+    this.  See the SVR4 ABI i386 supplement to see how this works.
+    Will be padded to PLT_ENTRY_SIZE with htab->plt0_pad_byte.  */
+ 
++#ifdef ELF32_NACL_C
++static const bfd_byte elf_i386_plt0_entry[18] =
++{
++  0xff, 0x35,	    /* pushl contents of address */
++#define elf_i386_plt0_entry_offset1 2
++  0, 0, 0, 0,	    /* replaced with address of .got + 4.  */
++  0xb9,             /* movl address, %ecx */
++#define elf_i386_plt0_entry_offset2 7
++  0, 0, 0, 0,       /* replaced with address of .got + 8.  */
++  0x8b, 0x09,       /* mov (%ecx), %ecx */
++  0x83, 0xe1, 0xe0, /* andl %ecx, NACLMASK */
++  0xff, 0xe1	       /* jmp *%ecx */
++};
++#else
+ static const bfd_byte elf_i386_plt0_entry[12] =
+ {
+   0xff, 0x35,	/* pushl contents of address */
++#define elf_i386_plt0_entry_offset1 2
+   0, 0, 0, 0,	/* replaced with address of .got + 4.  */
+   0xff, 0x25,	/* jmp indirect */
++#define elf_i386_plt0_entry_offset2 8
+   0, 0, 0, 0	/* replaced with address of .got + 8.  */
+ };
++#endif
+ 
+ /* Subsequent entries in an absolute procedure linkage table look like
+    this.  */
+ 
++#ifdef ELF32_NACL_C
++static const bfd_byte elf_i386_plt_entry[PLT_ENTRY_SIZE] =
++{
++  0xb9,			    /* movl address, %ecx */
++#define elf_i386_plt_entry_offset1 1
++  0, 0, 0, 0,		    /* replaced with address of this symbol in .got.  */
++  0x8b, 0x09,		    /* mov (%ecx), %ecx */
++  0x83, 0xe1, 0xe0,	    /* andl %ecx, NACLMASK */
++  0xff, 0xe1,		    /* jmp *%ecx */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++#define elf_i386_plt_entry_offset2 32
++  0x68,			    /* pushl immediate */
++#define elf_i386_plt_entry_offset3 33
++  0, 0, 0, 0,		    /* replaced with offset into relocation table.  */
++  0xe9,			    /* jmp relative */
++#define elf_i386_plt_entry_offset4 38
++  0, 0, 0, 0,		    /* replaced with offset to start of .plt.  */
++#define elf_i386_plt_entry_offset5 42
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4		    /* fill with hlt instructions. */
++};
++#else
+ static const bfd_byte elf_i386_plt_entry[PLT_ENTRY_SIZE] =
+ {
+   0xff, 0x25,	/* jmp indirect */
++#define elf_i386_plt_entry_offset1 2
+   0, 0, 0, 0,	/* replaced with address of this symbol in .got.  */
++#define elf_i386_plt_entry_offset2 6
+   0x68,		/* pushl immediate */
++#define elf_i386_plt_entry_offset3 7
+   0, 0, 0, 0,	/* replaced with offset into relocation table.  */
+   0xe9,		/* jmp relative */
++#define elf_i386_plt_entry_offset4 12
+   0, 0, 0, 0	/* replaced with offset to start of .plt.  */
++#define elf_i386_plt_entry_offset5 16
+ };
++#endif
+ 
+ /* The first entry in a PIC procedure linkage table look like this.
+    Will be padded to PLT_ENTRY_SIZE with htab->plt0_pad_byte.  */
+@@ -561,6 +622,30 @@
+ 
+ /* Subsequent entries in a PIC procedure linkage table look like this.  */
+ 
++#ifdef ELF32_NACL_C
++static const bfd_byte elf_i386_pic_plt_entry[PLT_ENTRY_SIZE] =
++{
++  0x8b, 0x8b,		    /* movl offset(%ebx), %ecx */
++  0, 0, 0, 0,		    /* replaced with offset of this symbol in .got.*/
++  0x83, 0xe1, 0xe0,	    /* andl %ecx, NACLMASK */
++  0xff, 0xe1,		    /* jmp *%ecx */
++  0x68,			    /* pushl immediate */
++  0, 0, 0, 0,		    /* replaced with offset into relocation table.  */
++  0xe9,			    /* jmp relative */
++  0, 0, 0, 0,		    /* replaced with offset to start of .plt.  */
++  0xf4, 0xf4, 0xf4,	    /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4    /* fill with hlt instructions. */
++};
++#else
+ static const bfd_byte elf_i386_pic_plt_entry[PLT_ENTRY_SIZE] =
+ {
+   0xff, 0xa3,	/* jmp *offset(%ebx) */
+@@ -570,6 +655,7 @@
+   0xe9,		/* jmp relative */
+   0, 0, 0, 0	/* replaced with offset to start of .plt.  */
+ };
++#endif
+ 
+ /* On VxWorks, the .rel.plt.unloaded section has absolute relocations
+    for the PLTResolve stub and then for each PLT entry.  */
+@@ -822,7 +908,11 @@
+   ret->sym_cache.abfd = NULL;
+   ret->is_vxworks = 0;
+   ret->srelplt2 = NULL;
++#ifdef ELF32_NACL_C
++  ret->plt0_pad_byte = 0xf4;
++#else
+   ret->plt0_pad_byte = 0;
++#endif  
+   ret->tls_module_base = NULL;
+ 
+   ret->loc_hash_table = htab_try_create (1024,
+@@ -875,6 +965,11 @@
+       || (!info->shared && !htab->srelbss))
+     abort ();
+ 
++#ifdef ELF32_NACL_C
++  if (!bfd_set_section_alignment(dynobj, htab->elf.splt, 5))
++    return FALSE;
++#endif
++
+   if (htab->is_vxworks
+       && !elf_vxworks_create_dynamic_sections (dynobj, info,
+ 					       &htab->srelplt2))
+@@ -4154,16 +4249,20 @@
+ 	  memcpy (plt->contents + h->plt.offset, elf_i386_pic_plt_entry,
+ 		  PLT_ENTRY_SIZE);
+ 	  bfd_put_32 (output_bfd, got_offset,
+-		      plt->contents + h->plt.offset + 2);
++		      (plt->contents + h->plt.offset
++		       + elf_i386_plt_entry_offset1));
+ 	}
+ 
+       /* Don't fill PLT entry for static executables.  */
+       if (plt == htab->elf.splt)
+ 	{
+ 	  bfd_put_32 (output_bfd, plt_index * sizeof (Elf32_External_Rel),
+-		      plt->contents + h->plt.offset + 7);
+-	  bfd_put_32 (output_bfd, - (h->plt.offset + PLT_ENTRY_SIZE),
+-		      plt->contents + h->plt.offset + 12);
++		      (plt->contents + h->plt.offset
++		       + elf_i386_plt_entry_offset3));
++	  bfd_put_32 (output_bfd,
++		      - (h->plt.offset + elf_i386_plt_entry_offset5),
++		      (plt->contents + h->plt.offset
++		       + elf_i386_plt_entry_offset4));
+ 	}
+ 
+       /* Fill in the entry in the global offset table.  */
+@@ -4171,7 +4270,7 @@
+ 		  (plt->output_section->vma
+ 		   + plt->output_offset
+ 		   + h->plt.offset
+-		   + 6),
++		   + elf_i386_plt_entry_offset2),
+ 		  gotplt->contents + got_offset);
+ 
+       /* Fill in the entry in the .rel.plt section.  */
+@@ -4454,12 +4553,12 @@
+ 			  (htab->elf.sgotplt->output_section->vma
+ 			   + htab->elf.sgotplt->output_offset
+ 			   + 4),
+-			  htab->elf.splt->contents + 2);
++			  htab->elf.splt->contents + elf_i386_plt0_entry_offset1);
+ 	      bfd_put_32 (output_bfd,
+ 			  (htab->elf.sgotplt->output_section->vma
+ 			   + htab->elf.sgotplt->output_offset
+ 			   + 8),
+-			  htab->elf.splt->contents + 8);
++			  htab->elf.splt->contents + elf_i386_plt0_entry_offset2);
+ 
+ 	      if (htab->is_vxworks)
+ 		{
+@@ -4587,8 +4686,16 @@
+   return TRUE;
+ }
+ 
++#ifdef ELF32_NACL_C
++#define TARGET_LITTLE_SYM		bfd_elf32_nacl_vec
++#define TARGET_LITTLE_NAME		"elf32-nacl"
++/* NativeClient defines its own ABI.*/
++#undef ELF_OSABI
++#define ELF_OSABI ELFOSABI_NACL
++#else
+ #define TARGET_LITTLE_SYM		bfd_elf32_i386_vec
+ #define TARGET_LITTLE_NAME		"elf32-i386"
++#endif
+ #define ELF_ARCH			bfd_arch_i386
+ #define ELF_MACHINE_CODE		EM_386
+ #define ELF_MAXPAGESIZE			0x1000
+@@ -4636,6 +4743,63 @@
+ #undef	elf_backend_post_process_headers
+ #define	elf_backend_post_process_headers	_bfd_elf_set_osabi
+ 
++#ifdef ELF32_NACL_C
++#define bfd_elf32_bfd_merge_private_bfd_data \
++  elf32_nacl_merge_private_bfd_data
++
++static unsigned long previous_ibfd_e_flags = (unsigned long) EF_NACL_ALIGN_LIB;
++static unsigned char previous_ibfd_abiversion = 0;
++
++static bfd_boolean
++elf32_nacl_merge_private_bfd_data (bfd *ibfd,
++                                   bfd *obfd)
++{
++  unsigned long ibfd_e_flags;
++  unsigned char ibfd_abiversion;
++
++  ibfd_e_flags = elf_elfheader (ibfd)->e_flags & EF_NACL_ALIGN_MASK;
++  if ((ibfd_e_flags != EF_NACL_ALIGN_LIB) &&
++      (previous_ibfd_e_flags != EF_NACL_ALIGN_LIB) &&
++      (ibfd_e_flags != previous_ibfd_e_flags)) {
++    (*_bfd_error_handler)
++    (_("%B: linking files with incompatible alignments"), ibfd);
++    bfd_set_error (bfd_error_bad_value);
++    return FALSE;
++  }
++
++  ibfd_abiversion = elf_elfheader (ibfd)->e_ident[EI_ABIVERSION];
++  if (ibfd_abiversion != 0 &&
++      previous_ibfd_abiversion != 0 &&
++      ibfd_abiversion != previous_ibfd_abiversion) {
++    (*_bfd_error_handler)
++    (_("%B: linking files with incompatible abi version"), ibfd);
++    bfd_set_error (bfd_error_bad_value);
++    return FALSE;
++  }
++
++  previous_ibfd_e_flags = ibfd_e_flags;
++  elf_elfheader (obfd)->e_flags |= previous_ibfd_e_flags;
++
++  previous_ibfd_abiversion = ibfd_abiversion;
++  elf_elfheader (obfd)->e_ident[EI_ABIVERSION] = previous_ibfd_abiversion;
++
++  return TRUE;
++}
++
++#define elf_backend_final_write_processing \
++  elf32_nacl_backend_final_write_processing
++
++static void
++elf32_nacl_backend_final_write_processing (bfd *abfd,
++                                           bfd_boolean linker ATTRIBUTE_UNUSED)
++{
++  elf_elfheader (abfd)->e_ident[EI_OSABI] = ELFOSABI_NACL;
++  elf_elfheader (abfd)->e_ident[EI_ABIVERSION] = EF_NACL_ABIVERSION;
++  elf_elfheader (abfd)->e_flags |= previous_ibfd_e_flags;
++}
++
++#include "elf32-target.h"
++#else
+ #include "elf32-target.h"
+ 
+ /* FreeBSD support.  */
+@@ -4725,3 +4889,4 @@
+ #define elf32_bed				elf32_i386_vxworks_bed
+ 
+ #include "elf32-target.h"
++#endif
+diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-nacl.c binutils-2.19.51.20090622/bfd/elf32-nacl.c
+--- binutils-2.19.51.20090622.orig/bfd/elf32-nacl.c	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.19.51.20090622/bfd/elf32-nacl.c	2009-06-28 18:53:52.000000000 +0200
+@@ -0,0 +1,2 @@
++#define ELF32_NACL_C
++#include "elf32-i386.c"
+diff -uNr binutils-2.19.51.20090622.orig/bfd/targets.c binutils-2.19.51.20090622/bfd/targets.c
+--- binutils-2.19.51.20090622.orig/bfd/targets.c	2009-06-05 11:19:44.000000000 +0200
++++ binutils-2.19.51.20090622/bfd/targets.c	2009-06-28 17:16:42.000000000 +0200
+@@ -629,6 +629,7 @@
+ extern const bfd_target bfd_elf32_mn10300_vec;
+ extern const bfd_target bfd_elf32_mt_vec;
+ extern const bfd_target bfd_elf32_msp430_vec;
++extern const bfd_target bfd_elf32_nacl_vec;
+ extern const bfd_target bfd_elf32_nbigmips_vec;
+ extern const bfd_target bfd_elf32_nlittlemips_vec;
+ extern const bfd_target bfd_elf32_ntradbigmips_vec;
+diff -uNr binutils-2.19.51.20090622.orig/binutils/readelf.c binutils-2.19.51.20090622/binutils/readelf.c
+--- binutils-2.19.51.20090622.orig/binutils/readelf.c	2009-06-22 10:46:13.000000000 +0200
++++ binutils-2.19.51.20090622/binutils/readelf.c	2009-06-28 17:16:42.000000000 +0200
+@@ -2434,6 +2434,7 @@
+     case ELFOSABI_AROS:		return "AROS";
+     case ELFOSABI_STANDALONE:	return _("Standalone App");
+     case ELFOSABI_ARM:		return "ARM";
++    case ELFOSABI_NACL:		return "NativeClient";
+     default:
+       snprintf (buff, sizeof (buff), _("<unknown: %x>"), osabi);
+       return buff;
+diff -uNr binutils-2.19.51.20090622.orig/config.sub binutils-2.19.51.20090622/config.sub
+--- binutils-2.19.51.20090622.orig/config.sub	2009-06-03 01:00:59.000000000 +0200
++++ binutils-2.19.51.20090622/config.sub	2009-06-28 17:16:42.000000000 +0200
+@@ -311,6 +311,10 @@
+ 	i*86 | x86_64)
+ 	  basic_machine=$basic_machine-pc
+ 	  ;;
++	nacl*)
++	  basic_machine=i686-pc
++	  os=-nacl
++	  ;;
+ 	# Object if more than one company name word.
+ 	*-*-*)
+ 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
+@@ -1295,6 +1299,9 @@
+ 			;;
+ 		esac
+ 		;;
++	-nacl*)
++		os=-nacl
++		;;
+ 	-nto-qnx*)
+ 		;;
+ 	-nto*)
+diff -uNr binutils-2.19.51.20090622.orig/gas/as.c binutils-2.19.51.20090622/gas/as.c
+--- binutils-2.19.51.20090622.orig/gas/as.c	2009-06-22 19:56:00.000000000 +0200
++++ binutils-2.19.51.20090622/gas/as.c	2009-06-28 17:16:42.000000000 +0200
+@@ -434,7 +434,7 @@
+       OPTION_AL,
+       OPTION_HASH_TABLE_SIZE,
+       OPTION_REDUCE_MEMORY_OVERHEADS,
+-      OPTION_WARN_FATAL
++      OPTION_WARN_FATAL,
+     /* When you add options here, check that they do
+        not collide with OPTION_MD_BASE.  See as.h.  */
+     };
+diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.20090622/gas/config/tc-i386.c
+--- binutils-2.19.51.20090622.orig/gas/config/tc-i386.c	2009-06-22 19:56:01.000000000 +0200
++++ binutils-2.19.51.20090622/gas/config/tc-i386.c	2009-06-28 19:32:23.000000000 +0200
+@@ -33,6 +33,9 @@
+ #include "dwarf2dbg.h"
+ #include "dw2gencfi.h"
+ #include "elf/x86-64.h"
++#ifdef TC_NACL_C
++#include "elf/nacl.h"
++#endif
+ #include "opcodes/i386-init.h"
+ 
+ #ifndef REGISTER_WARNINGS
+@@ -178,6 +181,7 @@
+ #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
+ static void handle_large_common (int small ATTRIBUTE_UNUSED);
+ #endif
++static void nativeclient_symbol_init (void);
+ 
+ static const char *default_arch = DEFAULT_ARCH;
+ 
+@@ -454,6 +458,14 @@
+ /* The dwarf2 data alignment, adjusted for 32 or 64 bit.  */
+ int x86_cie_data_alignment;
+ 
++/* NativeClient support */
++
++/* Default alignment.  0=OFF */
++int nacl_alignment = NACL_ALIGN_POW2;
++
++/* Use library mode.  0=OFF */
++int nacl_library_mode = 0;
++
+ /* Interface to relax_segment.
+    There are 3 major relax states for 386 jump insns because the
+    different types of jumps add different sizes to frags when we're
+@@ -2013,6 +2025,34 @@
+   else
+     as_fatal (_("Unknown architecture"));
+ }
++
++void
++nativeclient_symbol_init ()
++{
++  symbolS *symbolP;
++  int entry_align;
++
++  /*
++   * A symbol conveying the setting of nacl_alignment to assembler writers.
++   */
++  symbolP = symbol_new ("NACLALIGN", absolute_section,
++			(valueT) nacl_alignment, &zero_address_frag);
++  symbol_table_insert (symbolP);
++
++  /*
++   * A symbol conveying the function entry alignment.  This differs from
++   * NACLALIGN in library mode.
++   */
++  if (nacl_library_mode) {
++    entry_align = 5;
++  }
++  else {
++    entry_align = nacl_alignment;
++  }
++  symbolP = symbol_new ("NACLENTRYALIGN", absolute_section,
++			(valueT) entry_align, &zero_address_frag);
++  symbol_table_insert (symbolP);
++}
+ 
+ void
+ md_begin ()
+@@ -2130,7 +2170,11 @@
+ #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
+   if (IS_ELF)
+     {
++#ifdef TC_NACL_C
++      record_alignment (text_section, nacl_alignment);
++#else
+       record_alignment (text_section, 2);
++#endif
+       record_alignment (data_section, 2);
+       record_alignment (bss_section, 2);
+     }
+@@ -2146,6 +2190,8 @@
+       x86_dwarf2_return_column = 8;
+       x86_cie_data_alignment = -4;
+     }
++
++  nativeclient_symbol_init();
+ }
+ 
+ void
+@@ -5428,19 +5474,96 @@
+ }
+ 
+ static void
++insert_sandbox_code (void)
++{
++  char* p;
++  int align_mask = (1 << nacl_alignment) - 1;
++
++  if (getenv("NACL_DEBUG_ALIGN")) {
++    p = frag_more (12);
++    p[0] = 0xF7; p[1] = 0xC0 + i.rm.regmem;
++    p[2] = align_mask; p[3] = p[4] = p[5] = 0x00; // TEST reg, align_mask
++    p[6] = 0x74; p[7] = 0x04; // JZ +4
++    p[8] = 0xCC; // INT3
++    p[9] = 0x0F; p[10] = 0x1F; p[11] = 0x00; // NOP
++  }
++  else {
++    p = frag_more (3);
++    p[0] = 0x83; // AND instruction.
++    p[1] = (0xe0 + i.rm.regmem); // mod = 11, reg = 100,  rm = i.rm.regmem;
++#ifdef TC_NACL_C
++    p[2] = 0xff & ~align_mask;
++#else
++    p[2] = 0xff;
++#endif
++  }
++}
++
++
++static int
++frag_is_a_call (void)
++{
++  if (i.tm.base_opcode == 0xe8) {
++    // direct calls
++    return 1;
++  }
++  else if (i.tm.base_opcode == 0xff) {
++    // possibly indirect calls
++    return (i.rm.mode == 3) && (i.rm.reg == 2);
++  }
++  else {
++    return 0;
++  }
++}
++
++
++static void
+ output_insn (void)
+ {
+   fragS *insn_start_frag;
+   offsetT insn_start_off;
+ 
++  // DCS -- New code for NativeClient.
++  // Frag_align_code sets the alignment on the current fragment and may
++  // create a new one.  Because of this we remember the current fragment
++  // before calling frag_align_code.
++  insn_start_frag = frag_now;
++
++  if (nacl_alignment > 0) {
++    frag_align_code(0, 0);
++#ifdef DCS
++    // TODO(sehr): this code seems unnecessary.  Remove it.
++    // Really ugly stuff to avoid splitting call and its subsequent alignment
++    // across two fragments.
++    if (frag_is_a_call() &&
++        obstack_room(&frchain_now->frch_obstack) < (unsigned)((1<<(nacl_alignment+1))-1)) {
++      fragS *temp_frag = frag_now;
++      frag_align_code(nacl_alignment + 1, 0);
++      temp_frag->fr_offset = 0;
++      temp_frag->fr_subtype = 0;
++    }
++#endif /* DCS */
++  }
++
+   /* Tie dwarf2 debug info to the address at the start of the insn.
+      We can't do this after the insn has been output as the current
+      frag may have been closed off.  eg. by frag_var.  */
+   dwarf2_emit_insn (0);
+ 
+-  insn_start_frag = frag_now;
+   insn_start_off = frag_now_fix ();
+ 
++  if (nacl_alignment > 0) {
++    if (!strcmp(i.tm.name, "naclcall")) {
++      insert_sandbox_code();
++    }
++    else if (!strcmp(i.tm.name, "nacljmp")) {
++      insert_sandbox_code();
++    }
++    else if (!strcmp(i.tm.name, "naclret")) {
++      insert_sandbox_code();
++    }
++  }
++
+   /* Output jumps.  */
+   if (i.tm.opcode_modifier.jump)
+     output_branch ();
+@@ -5568,10 +5691,18 @@
+ 	}
+ 
+       if (i.disp_operands)
++#ifdef TC_NACL_C
++	output_disp (frag_now, insn_start_off);
++#else
+ 	output_disp (insn_start_frag, insn_start_off);
++#endif
+ 
+       if (i.imm_operands)
++#ifdef TC_NACL_C
++	output_imm (frag_now, insn_start_off);
++#else
+ 	output_imm (insn_start_frag, insn_start_off);
++#endif
+     }
+ 
+ #ifdef DEBUG386
+@@ -5580,6 +5711,74 @@
+       pi ("" /*line*/, &i);
+     }
+ #endif /* DEBUG386  */
++  /*
++   * We want to make sure no instruction straddles a (1 << nacl_alignment)
++   * boundary.  We do this by setting the fragment alignment to
++   * (1 << nacl_alignment), but allowing no more than the size of the
++   * instruction as fill.
++   */
++  if (nacl_alignment > 0) {
++    int align_base;
++    int call_align;
++    int instrsize = (int) frag_now_fix();
++
++    /*
++     * "library mode" enables compatible library builds for either 16 or
++     * 32 byte alignment.  Using the strictest alignment requirement for
++     * instructions makes them 0mod16 aligned.  Calls need to end a 32 byte
++     * region.
++     */
++    if (nacl_library_mode) {
++      align_base = 4;
++      call_align = 5;
++    }
++    else {
++      align_base = nacl_alignment;
++      call_align = nacl_alignment;
++    }
++
++    switch (instrsize) {
++      case 0:
++        // We get zero size for jump instructions.  Go to their biggest.
++        insn_start_frag->fr_offset = align_base;
++        insn_start_frag->fr_subtype = 5;
++        break;
++
++      case 1:
++        if ((i.tm.base_opcode == 0xf3) || (i.tm.base_opcode == 0xf2) ||
++            (i.tm.base_opcode == 0xf0)) {
++          // rep and lock refixes are treated as separate instructions.
++          // I don't know any other patch but to force an alignment to 0,
++          // i.e., waste as many bytes as it takes.
++          insn_start_frag->fr_offset = align_base;
++          insn_start_frag->fr_subtype = 0;
++        }
++        else {
++          // Don't align other one-byte instructions.
++          insn_start_frag->fr_offset = 0;
++          insn_start_frag->fr_subtype = 0;
++        }
++        break;
++
++      default:
++        // Don't use more than size-1 bytes to pad.
++        insn_start_frag->fr_offset = align_base;
++        insn_start_frag->fr_subtype = instrsize-1;
++        break;
++    }
++
++
++    /*
++     * Calls need to fall at the end of a (1 << call_align) region.  We
++     * make sure there are no instructions after the call until the next
++     * alignment.  During writing of the object we swap the nops before the
++     * instruction.
++     */
++    if (frag_is_a_call()) {
++      frag_now->is_call = 1;
++      frag_align_code(call_align,0);
++    }
++  }
+ }
+ 
+ /* Return the size of the displacement operand N.  */
+@@ -7585,6 +7784,8 @@
+ #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
+ #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
+ #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
++#define OPTION_NACL_ALIGN (OPTION_MD_BASE + 12)
++#define OPTION_NACL_LIBRARY_MODE (OPTION_MD_BASE + 13)
+ 
+ struct option md_longopts[] =
+ {
+@@ -7603,6 +7804,8 @@
+   {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
+   {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
+   {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
++  {"nacl-align", required_argument, NULL, OPTION_NACL_ALIGN},
++  {"nacl-library-mode", no_argument, NULL, OPTION_NACL_LIBRARY_MODE},
+   {NULL, no_argument, NULL, 0}
+ };
+ size_t md_longopts_size = sizeof (md_longopts);
+@@ -7808,6 +8011,20 @@
+ 	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
+       break;
+ 
++    case OPTION_NACL_ALIGN:
++      {
++        nacl_alignment = atoi (optarg);
++        if (nacl_alignment < 0)
++          as_fatal (_("--nacl-align needs a non-negative argument"));
++        break;
++      }
++
++    case OPTION_NACL_LIBRARY_MODE:
++      {
++        nacl_library_mode = 1;
++        break;
++      }
++
+     default:
+       return 0;
+     }
+@@ -8434,4 +8651,19 @@
+       bss_section = saved_bss_section;
+     }
+ }
++#ifdef TC_NACL_C
++void nacl_elf_final_processing(void)
++{
++  elf_elfheader (stdoutput)->e_ident[EI_OSABI] = ELFOSABI_NACL;
++  elf_elfheader (stdoutput)->e_ident[EI_ABIVERSION] = EF_NACL_ABIVERSION;
++
++  elf_elfheader (stdoutput)->e_flags &= ~EF_NACL_ALIGN_MASK;
++  if (nacl_library_mode)
++    elf_elfheader (stdoutput)->e_flags |= EF_NACL_ALIGN_LIB;
++  else if (nacl_alignment == 4)
++    elf_elfheader (stdoutput)->e_flags |= EF_NACL_ALIGN_16;
++  else if (nacl_alignment == 5)
++    elf_elfheader (stdoutput)->e_flags |= EF_NACL_ALIGN_32;
++}
++#endif
+ #endif /* OBJ_ELF || OBJ_MAYBE_ELF */
+diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.h binutils-2.19.51.20090622/gas/config/tc-i386.h
+--- binutils-2.19.51.20090622.orig/gas/config/tc-i386.h	2009-06-14 03:39:46.000000000 +0200
++++ binutils-2.19.51.20090622/gas/config/tc-i386.h	2009-06-28 19:14:51.000000000 +0200
+@@ -109,6 +109,7 @@
+ #if (defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)) && !defined (LEX_AT)
+ #define TC_PARSE_CONS_EXPRESSION(EXP, NBYTES) x86_cons (EXP, NBYTES)
+ extern void x86_cons (expressionS *, int);
++
+ #endif
+ 
+ #define TC_CONS_FIX_NEW(FRAG,OFF,LEN,EXP) x86_cons_fix_new(FRAG, OFF, LEN, EXP)
+@@ -294,4 +295,12 @@
+ /* X_add_symbol:X_op_symbol (Intel mode only) */
+ #define O_full_ptr O_md2
+ 
++/* NativeClient specific additions. */
++
++/* log2 of the instruction alignment */
++extern int nacl_alignment;
++
++/* library mode: 16-byte alignment, calls end 32-byte chunks. */
++extern int nacl_library_mode;
++
+ #endif /* TC_I386 */
+diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-nacl.c binutils-2.19.51.20090622/gas/config/tc-nacl.c
+--- binutils-2.19.51.20090622.orig/gas/config/tc-nacl.c	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.19.51.20090622/gas/config/tc-nacl.c	2009-06-28 19:33:01.000000000 +0200
+@@ -0,0 +1,2 @@
++#define TC_NACL_C
++#include "tc-i386.c"
+diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-nacl.h binutils-2.19.51.20090622/gas/config/tc-nacl.h
+--- binutils-2.19.51.20090622.orig/gas/config/tc-nacl.h	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.19.51.20090622/gas/config/tc-nacl.h	2009-06-28 19:22:09.000000000 +0200
+@@ -0,0 +1,34 @@
++/* tc-nacl.h -- Header file for tc-nacl.c
++   Copyright 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
++   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
++   Free Software Foundation, Inc.
++
++   This file is part of GAS, the GNU Assembler.
++
++   GAS is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 3, or (at your option)
++   any later version.
++
++   GAS is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with GAS; see the file COPYING.  If not, write to the Free
++   Software Foundation, 51 Franklin Street - Fifth Floor, Boston, MA
++   02110-1301, USA.  */
++
++#ifndef TC_NACL
++#define TC_NACL 1
++
++#include "tc-i386.h"
++
++#undef ELF_TARGET_FORMAT
++#define ELF_TARGET_FORMAT "elf32-nacl"
++
++#define elf_tc_final_processing nacl_elf_final_processing
++extern void nacl_elf_final_processing PARAMS ((void));
++
++#endif /* TC_NACL */
+diff -uNr binutils-2.19.51.20090622.orig/gas/configure.tgt binutils-2.19.51.20090622/gas/configure.tgt
+--- binutils-2.19.51.20090622.orig/gas/configure.tgt	2009-06-18 04:11:03.000000000 +0200
++++ binutils-2.19.51.20090622/gas/configure.tgt	2009-06-28 17:16:42.000000000 +0200
+@@ -58,6 +58,7 @@
+   mips*el)		cpu_type=mips endian=little ;;
+   mips*)		cpu_type=mips endian=big ;;
+   mt)                   cpu_type=mt endian=big ;;
++  nacl*)		cpu_type=nacl arch=i386 ;;
+   or32*)		cpu_type=or32 endian=big ;;
+   pjl*)			cpu_type=pj endian=little ;;
+   pj*)			cpu_type=pj endian=big ;;
+@@ -201,6 +202,7 @@
+   i386-*-linux*coff*)			fmt=coff em=linux ;;
+   i386-*-linux-*)			fmt=elf em=linux ;;
+   i386-*-lynxos*)			fmt=elf em=lynx ;;
++  i386-*-nacl*)			fmt=elf em=linux cpu_type=nacl;;
+   i386-*-sysv[45]*)			fmt=elf ;;
+   i386-*-solaris*)			fmt=elf em=solaris ;;
+   i386-*-freebsdaout*)			fmt=aout em=386bsd ;;
+diff -uNr binutils-2.19.51.20090622.orig/gas/frags.c binutils-2.19.51.20090622/gas/frags.c
+--- binutils-2.19.51.20090622.orig/gas/frags.c	2009-06-22 19:56:00.000000000 +0200
++++ binutils-2.19.51.20090622/gas/frags.c	2009-06-28 17:16:42.000000000 +0200
+@@ -35,6 +35,7 @@
+   zero_address_frag.fr_type = rs_fill;
+   bss_address_frag.fr_type = rs_fill;
+ }
++
+ 
+ /* Check that we're not trying to assemble into a section that can't
+    allocate frags (currently, this is only possible in the absolute
+@@ -69,6 +70,16 @@
+   (void) obstack_alloc (ob, 0);
+   oalign = obstack_alignment_mask (ob);
+   obstack_alignment_mask (ob) = 0;
++  {
++    /* If there isn't adequate space for a frag plus its contents plus the
++     * alignment contents in the current chunk, force the allocation of a new
++     * chunk. */
++
++    int space = obstack_room (ob);
++    if (space < SIZEOF_STRUCT_FRAG + (1 <<(nacl_alignment + 2))) {
++      (void) obstack_alloc (ob, space-1);
++    }
++  }
+   ptr = obstack_alloc (ob, SIZEOF_STRUCT_FRAG);
+   obstack_alignment_mask (ob) = oalign;
+   memset (ptr, 0, SIZEOF_STRUCT_FRAG);
+diff -uNr binutils-2.19.51.20090622.orig/gas/frags.h binutils-2.19.51.20090622/gas/frags.h
+--- binutils-2.19.51.20090622.orig/gas/frags.h	2007-07-03 13:01:03.000000000 +0200
++++ binutils-2.19.51.20090622/gas/frags.h	2009-06-28 17:16:42.000000000 +0200
+@@ -77,10 +77,22 @@
+   unsigned int has_code:1;
+   unsigned int insn_addr:6;
+ 
++  /* NativeClient support:
++   * Set if this fragment contains a call in a native client assembly.  These
++   * need to end an alignment unit.
++   */
++  unsigned int is_call:1;
++
+   /* What state is my tail in? */
+   relax_stateT fr_type;
+   relax_substateT fr_subtype;
+ 
++  /* NativeClient support:
++   * If this fragment contains a call, we will need to tweak the fixup to
++   * reflect the padding to put the call at the end of the fragment.
++   */
++  fixS *nacl_fixup;
++
+ #ifdef USING_CGEN
+   /* Don't include this unless using CGEN to keep frag size down.  */
+   struct {
+diff -uNr binutils-2.19.51.20090622.orig/gas/write.c binutils-2.19.51.20090622/gas/write.c
+--- binutils-2.19.51.20090622.orig/gas/write.c	2009-06-22 19:56:00.000000000 +0200
++++ binutils-2.19.51.20090622/gas/write.c	2009-06-28 17:16:42.000000000 +0200
+@@ -158,6 +158,8 @@
+ 
+   fixP = obstack_alloc (&notes, sizeof (fixS));
+ 
++  frag->nacl_fixup = fixP;
++
+   fixP->fx_frag = frag;
+   fixP->fx_where = where;
+   fixP->fx_size = size;
+@@ -422,6 +424,38 @@
+ }
+ 
+ static void
++move_call_insn_to_end(fragS *fragP, fragS *next ATTRIBUTE_UNUSED)
++{
++  if (fragP->fr_offset != 0) {
++    // fragP->fr_fix is the start of the fixup code (i.e. nops).
++    int i;
++    unsigned char *tmp = alloca(fragP->fr_fix);
++    memcpy(tmp, fragP->fr_literal, fragP->fr_fix);
++    for (i = 0; i < fragP->fr_var; i++) {
++      fragP->fr_literal[i] = fragP->fr_literal[fragP->fr_fix+i];
++    }
++    for (i = 0; i< fragP->fr_fix; i++) {
++      fragP->fr_literal[fragP->fr_var+i] = tmp[i];
++    }
++    // TODO(sehr): this code should be obsolete.  Remove it.
++    // If it was a direct call, there's a fixup for the target address.
++    // This needs to corrected to point to the new location of the
++    // constant after we moved the nops.
++    // If there is no fixup, but this is a call, then it is an indirect
++    // call, and we need to put in the fixups for the sandbox code.
++    if (fragP->nacl_fixup) {
++      fragP->nacl_fixup->fx_where += fragP->fr_var;
++    }
++    else if (getenv("NACL_CONTROL_ENFORCE_RANGE")) {
++      symbolS* and_mask = symbol_find_or_make("__nacl_and_mask");
++      symbolS* exec_start = symbol_find_or_make("__executable_start");
++      fix_new (fragP, 2+fragP->fr_var, 4, and_mask, 0, 0, BFD_RELOC_32);
++      fix_new (fragP, 8+fragP->fr_var, 4, exec_start, 0, 0, BFD_RELOC_32);
++    }
++  }
++}
++
++static void
+ cvt_frag_to_fill (segT sec ATTRIBUTE_UNUSED, fragS *fragP)
+ {
+   switch (fragP->fr_type)
+@@ -445,6 +479,10 @@
+ 			(long) fragP->fr_offset);
+ 	  fragP->fr_offset = 0;
+ 	}
++
++      if (fragP->is_call && (nacl_alignment > 0)) {
++        move_call_insn_to_end(fragP, NULL);
++      }
+       fragP->fr_type = rs_fill;
+       break;
+ 
+@@ -1174,6 +1212,8 @@
+     {
+       int j;
+       int fx_size, slack;
++      /* NativeClient change here to handle moving calls. */
++      int limitsize;
+       offsetT loc;
+ 
+       if (fixp->fx_done)
+@@ -1184,7 +1224,10 @@
+       if (slack > 0)
+ 	fx_size = fx_size > slack ? fx_size - slack : 0;
+       loc = fixp->fx_where + fx_size;
+-      if (slack >= 0 && loc > fixp->fx_frag->fr_fix)
++      limitsize = (fixp->fx_frag->is_call ?
++                   (fixp->fx_frag->fr_fix + fixp->fx_frag->fr_var) :
++                   fixp->fx_frag->fr_fix);
++      if (slack >= 0 && loc > limitsize)
+ 	as_bad_where (fixp->fx_file, fixp->fx_line,
+ 		      _("internal error: fixup not contained within frag"));
+ 
+diff -uNr binutils-2.19.51.20090622.orig/include/elf/common.h binutils-2.19.51.20090622/include/elf/common.h
+--- binutils-2.19.51.20090622.orig/include/elf/common.h	2009-05-27 19:05:53.000000000 +0200
++++ binutils-2.19.51.20090622/include/elf/common.h	2009-06-28 17:16:42.000000000 +0200
+@@ -75,6 +75,7 @@
+ #define ELFOSABI_NSK	     14	/* Hewlett-Packard Non-Stop Kernel */
+ #define ELFOSABI_AROS	     15	/* AROS */
+ #define ELFOSABI_ARM	     97	/* ARM */
++#define ELFOSABI_NACL	    123	/* x86 NativeClient */
+ #define ELFOSABI_STANDALONE 255	/* Standalone (embedded) application */
+ 
+ #define EI_ABIVERSION	8	/* ABI version */
+diff -uNr binutils-2.19.51.20090622.orig/include/elf/nacl.h binutils-2.19.51.20090622/include/elf/nacl.h
+--- binutils-2.19.51.20090622.orig/include/elf/nacl.h	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.19.51.20090622/include/elf/nacl.h	2009-06-28 17:16:42.000000000 +0200
+@@ -0,0 +1,33 @@
++/* ix86 ELF support for BFD.
++   Copyright 1998, 1999, 2000, 2002, 2004, 2005, 2006
++   Free Software Foundation, Inc.
++
++   This file is part of BFD, the Binary File Descriptor library.
++
++   This program is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2 of the License, or
++   (at your option) any later version.
++
++   This program is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program; if not, write to the Free Software Foundation,
++   Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA.  */
++
++#ifndef _ELF_NACL_H
++#define _ELF_NACL_H
++
++/* e_flags settings for NativeClient. */
++#define EF_NACL_ALIGN_MASK  0x300000	/* bits indicating alignment */
++#define EF_NACL_ALIGN_16    0x100000	/* aligned zero mod 16 */
++#define EF_NACL_ALIGN_32    0x200000	/* aligned zero mod 32 */ 
++#define EF_NACL_ALIGN_LIB   0x000000	/* aligned to pass either way */
++
++/* ABI version number -- increment when ABI changes are incompatible. */
++#define EF_NACL_ABIVERSION  5
++
++#endif
+diff -uNr binutils-2.19.51.20090622.orig/ld/Makefile.am binutils-2.19.51.20090622/ld/Makefile.am
+--- binutils-2.19.51.20090622.orig/ld/Makefile.am	2009-06-04 08:57:56.000000000 +0200
++++ binutils-2.19.51.20090622/ld/Makefile.am	2009-06-28 17:16:42.000000000 +0200
+@@ -213,6 +213,7 @@
+ 	eelf_i386_fbsd.o \
+ 	eelf_i386_ldso.o \
+ 	eelf_i386_vxworks.o \
++	eelf_nacl.o \
+ 	eelf_s390.o \
+ 	egld960.o \
+ 	egld960coff.o \
+@@ -1027,6 +1028,9 @@
+ eelf_i386.c: $(srcdir)/emulparams/elf_i386.sh \
+   $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} elf_i386 "$(tdir_elf_i386)"
++eelf_nacl.c: $(srcdir)/emulparams/elf_nacl.sh \
++  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
++	${GENSCRIPTS} elf_nacl "$(tdir_elf_nacl)"
+ eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
+   $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} elf_x86_64 "$(tdir_elf_x86_64)"
+diff -uNr binutils-2.19.51.20090622.orig/ld/Makefile.in binutils-2.19.51.20090622/ld/Makefile.in
+--- binutils-2.19.51.20090622.orig/ld/Makefile.in	2009-06-04 08:57:56.000000000 +0200
++++ binutils-2.19.51.20090622/ld/Makefile.in	2009-06-28 17:16:42.000000000 +0200
+@@ -478,6 +478,7 @@
+ 	eelf_i386_fbsd.o \
+ 	eelf_i386_ldso.o \
+ 	eelf_i386_vxworks.o \
++	eelf_nacl.o \
+ 	eelf_s390.o \
+ 	egld960.o \
+ 	egld960coff.o \
+@@ -1874,6 +1875,9 @@
+ eelf_i386.c: $(srcdir)/emulparams/elf_i386.sh \
+   $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} elf_i386 "$(tdir_elf_i386)"
++eelf_nacl.c: $(srcdir)/emulparams/elf_nacl.sh \
++  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
++	${GENSCRIPTS} elf_nacl "$(tdir_elf_nacl)"
+ eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
+   $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} elf_x86_64 "$(tdir_elf_x86_64)"
+diff -uNr binutils-2.19.51.20090622.orig/ld/configure.tgt binutils-2.19.51.20090622/ld/configure.tgt
+--- binutils-2.19.51.20090622.orig/ld/configure.tgt	2009-06-18 04:11:03.000000000 +0200
++++ binutils-2.19.51.20090622/ld/configure.tgt	2009-06-28 17:16:42.000000000 +0200
+@@ -230,6 +230,7 @@
+ 			targ_extra_ofiles="deffilep.o pe-dll.o" ;;
+ i[3-7]86-*-netbsd*)	targ_emul=i386nbsd
+ 			targ_extra_emuls=elf_i386 ;;
++i[3-7]86-*-nacl*)	targ_emul=elf_nacl ;;
+ x86_64-*-netbsd*)	targ_emul=elf_x86_64
+ 			targ_extra_emuls="elf_i386 i386nbsd"
+ 			tdir_elf_i386=`echo ${targ_alias} | \
+diff -uNr binutils-2.19.51.20090622.orig/ld/emulparams/elf_nacl.sh binutils-2.19.51.20090622/ld/emulparams/elf_nacl.sh
+--- binutils-2.19.51.20090622.orig/ld/emulparams/elf_nacl.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.19.51.20090622/ld/emulparams/elf_nacl.sh	2009-06-28 17:16:42.000000000 +0200
+@@ -0,0 +1,13 @@
++SCRIPT_NAME=naclelf
++OUTPUT_FORMAT="elf32-nacl"
++TEXT_START_ADDR=0x00020000
++MAXPAGESIZE="CONSTANT (MAXPAGESIZE)"
++COMMONPAGESIZE="CONSTANT (COMMONPAGESIZE)"
++ARCH=i386
++MACHINE=
++NOP=0x90909090
++TEMPLATE_NAME=elf32
++GENERATE_SHLIB_SCRIPT=yes
++GENERATE_PIE_SCRIPT=yes
++NO_SMALL_DATA=yes
++SEPARATE_GOTPLT=12
+diff -uNr binutils-2.19.51.20090622.orig/ld/ldexp.c binutils-2.19.51.20090622/ld/ldexp.c
+--- binutils-2.19.51.20090622.orig/ld/ldexp.c	2008-09-25 04:34:00.000000000 +0200
++++ binutils-2.19.51.20090622/ld/ldexp.c	2009-06-28 17:16:42.000000000 +0200
+@@ -46,6 +46,8 @@
+ static void exp_fold_tree_1 (etree_type *);
+ static void exp_fold_tree_no_dot (etree_type *);
+ static bfd_vma align_n (bfd_vma, bfd_vma);
++static bfd_vma ceilp2 (bfd_vma);
++static bfd_vma nacl_mask (bfd_vma);
+ 
+ segment_type *segments;
+ 
+@@ -272,6 +274,20 @@
+ 	    expld.result.valid_p = FALSE;
+ 	  break;
+ 
++	case CEILP2:
++	  if (expld.phase != lang_first_phase_enum)
++	    expld.result.value = ceilp2 (expld.result.value);
++	  else
++	    expld.result.valid_p = FALSE;
++	  break;
++
++	case NACL_MASK:
++	  if (expld.phase != lang_first_phase_enum)
++	    expld.result.value = nacl_mask (expld.result.value);
++	  else
++	    expld.result.valid_p = FALSE;
++	  break;
++
+ 	default:
+ 	  FAIL ();
+ 	  break;
+@@ -1161,3 +1177,27 @@
+   value = (value + align - 1) / align;
+   return value * align;
+ }
++
++static bfd_vma
++ceilp2 (bfd_vma value)
++{
++  value |= (value >> 1);
++  value |= (value >> 2);
++  value |= (value >> 4);
++  value |= (value >> 8);
++  value |= (value >> 16);
++  return value + 1;
++}
++
++static bfd_vma
++nacl_mask (bfd_vma value)
++{
++  char* str = getenv ("NACL_CONTROL_ENFORCE_ALIGN");
++  if (str) {
++    int nacl_alignment = atoi (str);
++    return (value - 1) & ~((1 << nacl_alignment) - 1);
++  }
++  else {
++    return value - 1;
++  }
++}
+diff -uNr binutils-2.19.51.20090622.orig/ld/ldgram.y binutils-2.19.51.20090622/ld/ldgram.y
+--- binutils-2.19.51.20090622.orig/ld/ldgram.y	2009-03-02 18:27:35.000000000 +0100
++++ binutils-2.19.51.20090622/ld/ldgram.y	2009-06-28 17:16:42.000000000 +0200
+@@ -135,7 +135,7 @@
+ %token NOLOAD DSECT COPY INFO OVERLAY
+ %token DEFINED TARGET_K SEARCH_DIR MAP ENTRY
+ %token <integer> NEXT
+-%token SIZEOF ALIGNOF ADDR LOADADDR MAX_K MIN_K
++%token SIZEOF ALIGNOF ADDR LOADADDR MAX_K MIN_K CEILP2 NACL_MASK
+ %token STARTUP HLL SYSLIB FLOAT NOFLOAT NOCROSSREFS
+ %token ORIGIN FILL
+ %token LENGTH CREATE_OBJECT_SYMBOLS INPUT GROUP OUTPUT CONSTRUCTORS
+@@ -892,6 +892,10 @@
+ 			{ $$ = exp_binop (MAX_K, $3, $5 ); }
+ 	|	MIN_K '(' exp ',' exp ')'
+ 			{ $$ = exp_binop (MIN_K, $3, $5 ); }
++	|	CEILP2 '(' exp ')'
++			{ $$ = exp_unop (CEILP2, $3); }
++        |	NACL_MASK '(' exp ')'
++			{ $$ = exp_unop (NACL_MASK, $3); }
+ 	|	ASSERT_K '(' exp ',' NAME ')'
+ 			{ $$ = exp_assert ($3, $5); }
+ 	|	ORIGIN '(' NAME ')'
+diff -uNr binutils-2.19.51.20090622.orig/ld/ldlex.l binutils-2.19.51.20090622/ld/ldlex.l
+--- binutils-2.19.51.20090622.orig/ld/ldlex.l	2009-03-02 18:27:35.000000000 +0100
++++ binutils-2.19.51.20090622/ld/ldlex.l	2009-06-28 17:16:42.000000000 +0200
+@@ -254,6 +254,8 @@
+ <EXPRESSION,BOTH,SCRIPT>"ALIGNOF"	{ RTOKEN(ALIGNOF); }
+ <EXPRESSION,BOTH>"MAX"			{ RTOKEN(MAX_K); }
+ <EXPRESSION,BOTH>"MIN"			{ RTOKEN(MIN_K); }
++<EXPRESSION,BOTH>"CEILP2"		{ RTOKEN(CEILP2); }
++<EXPRESSION,BOTH>"NACL_MASK"		{ RTOKEN(NACL_MASK);}
+ <EXPRESSION,BOTH,SCRIPT>"ASSERT"	{ RTOKEN(ASSERT_K); }
+ <BOTH,SCRIPT>"ENTRY"			{ RTOKEN(ENTRY);}
+ <BOTH,SCRIPT,MRI>"EXTERN"		{ RTOKEN(EXTERN);}
+diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19.51.20090622/ld/scripttempl/naclelf.sc
+--- binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.19.51.20090622/ld/scripttempl/naclelf.sc	2009-06-28 17:16:42.000000000 +0200
+@@ -0,0 +1,552 @@
++#
++# Unusual variables checked by this code:
++#	NOP - four byte opcode for no-op (defaults to 0)
++#	NO_SMALL_DATA - no .sbss/.sbss2/.sdata/.sdata2 sections if not
++#		empty.
++#	SMALL_DATA_CTOR - .ctors contains small data.
++#	SMALL_DATA_DTOR - .dtors contains small data.
++#	DATA_ADDR - if end-of-text-plus-one-page isn't right for data start
++#	INITIAL_READONLY_SECTIONS - at start of text segment
++#	OTHER_READONLY_SECTIONS - other than .text .init .rodata ...
++#		(e.g., .PARISC.milli)
++#	OTHER_TEXT_SECTIONS - these get put in .text when relocating
++#	OTHER_READWRITE_SECTIONS - other than .data .bss .ctors .sdata ...
++#		(e.g., .PARISC.global)
++#	OTHER_RELRO_SECTIONS - other than .data.rel.ro ...
++#		(e.g. PPC32 .fixup, .got[12])
++#	OTHER_BSS_SECTIONS - other than .bss .sbss ...
++#	ATTRS_SECTIONS - at the end
++#	OTHER_SECTIONS - at the end
++#	EXECUTABLE_SYMBOLS - symbols that must be defined for an
++#		executable (e.g., _DYNAMIC_LINK)
++#       TEXT_START_ADDR - the first byte of the text segment, after any
++#               headers.
++#       TEXT_BASE_ADDRESS - the first byte of the text segment.
++#	TEXT_START_SYMBOLS - symbols that appear at the start of the
++#		.text section.
++#	DATA_START_SYMBOLS - symbols that appear at the start of the
++#		.data section.
++#	DATA_END_SYMBOLS - symbols that appear at the end of the
++#		writeable data sections.
++#	OTHER_GOT_SYMBOLS - symbols defined just before .got.
++#	OTHER_GOT_SECTIONS - sections just after .got.
++#	OTHER_SDATA_SECTIONS - sections just after .sdata.
++#	OTHER_BSS_SYMBOLS - symbols that appear at the start of the
++#		.bss section besides __bss_start.
++#	DATA_PLT - .plt should be in data segment, not text segment.
++#	PLT_BEFORE_GOT - .plt just before .got when .plt is in data segement.
++#	BSS_PLT - .plt should be in bss segment
++#	TEXT_DYNAMIC - .dynamic in text segment, not data segment.
++#	EMBEDDED - whether this is for an embedded system. 
++#	SHLIB_TEXT_START_ADDR - if set, add to SIZEOF_HEADERS to set
++#		start address of shared library.
++#	INPUT_FILES - INPUT command of files to always include
++#	WRITABLE_RODATA - if set, the .rodata section should be writable
++#	INIT_START, INIT_END -  statements just before and just after
++# 	combination of .init sections.
++#	FINI_START, FINI_END - statements just before and just after
++# 	combination of .fini sections.
++#	STACK_ADDR - start of a .stack section.
++#	OTHER_SYMBOLS - symbols to place right at the end of the script.
++#	ETEXT_NAME - name of a symbol for the end of the text section,
++#		normally etext.
++#	SEPARATE_GOTPLT - if set, .got.plt should be separate output section,
++#		so that .got can be in the RELRO area.  It should be set to
++#		the number of bytes in the beginning of .got.plt which can be
++#		in the RELRO area as well.
++#	USER_LABEL_PREFIX - prefix to add to user-visible symbols.
++#
++# When adding sections, do note that the names of some sections are used
++# when specifying the start address of the next.
++#
++
++#  Many sections come in three flavours.  There is the 'real' section,
++#  like ".data".  Then there are the per-procedure or per-variable
++#  sections, generated by -ffunction-sections and -fdata-sections in GCC,
++#  and useful for --gc-sections, which for a variable "foo" might be
++#  ".data.foo".  Then there are the linkonce sections, for which the linker
++#  eliminates duplicates, which are named like ".gnu.linkonce.d.foo".
++#  The exact correspondences are:
++#
++#  Section	Linkonce section
++#  .text	.gnu.linkonce.t.foo
++#  .rodata	.gnu.linkonce.r.foo
++#  .data	.gnu.linkonce.d.foo
++#  .bss		.gnu.linkonce.b.foo
++#  .sdata	.gnu.linkonce.s.foo
++#  .sbss	.gnu.linkonce.sb.foo
++#  .sdata2	.gnu.linkonce.s2.foo
++#  .sbss2	.gnu.linkonce.sb2.foo
++#  .debug_info	.gnu.linkonce.wi.foo
++#  .tdata	.gnu.linkonce.td.foo
++#  .tbss	.gnu.linkonce.tb.foo
++#  .lrodata	.gnu.linkonce.lr.foo
++#  .ldata	.gnu.linkonce.l.foo
++#  .lbss	.gnu.linkonce.lb.foo
++#
++#  Each of these can also have corresponding .rel.* and .rela.* sections.
++
++test -z "$ENTRY" && ENTRY=_start
++test -z "${BIG_OUTPUT_FORMAT}" && BIG_OUTPUT_FORMAT=${OUTPUT_FORMAT}
++test -z "${LITTLE_OUTPUT_FORMAT}" && LITTLE_OUTPUT_FORMAT=${OUTPUT_FORMAT}
++if [ -z "$MACHINE" ]; then OUTPUT_ARCH=${ARCH}; else OUTPUT_ARCH=${ARCH}:${MACHINE}; fi
++test -z "${ELFSIZE}" && ELFSIZE=32
++test -z "${ALIGNMENT}" && ALIGNMENT="${ELFSIZE} / 8"
++test "$LD_FLAG" = "N" && DATA_ADDR=.
++test -z "${ETEXT_NAME}" && ETEXT_NAME=etext
++test -n "$CREATE_SHLIB$CREATE_PIE" && test -n "$SHLIB_DATA_ADDR" && COMMONPAGESIZE=""
++test -z "$CREATE_SHLIB$CREATE_PIE" && test -n "$DATA_ADDR" && COMMONPAGESIZE=""
++test -n "$RELRO_NOW" && unset SEPARATE_GOTPLT
++test -z "$ATTRS_SECTIONS" && ATTRS_SECTIONS=".gnu.attributes 0 : { KEEP (*(.gnu.attributes)) }"
++DATA_SEGMENT_ALIGN="ALIGN(${SEGMENT_SIZE}) + (. & (${MAXPAGESIZE} - 1))"
++DATA_SEGMENT_RELRO_END=""
++DATA_SEGMENT_END=""
++if test -n "${COMMONPAGESIZE}"; then
++  DATA_SEGMENT_ALIGN="ALIGN (${SEGMENT_SIZE}) - ((${MAXPAGESIZE} - .) & (${MAXPAGESIZE} - 1)); . = DATA_SEGMENT_ALIGN (${MAXPAGESIZE}, ${COMMONPAGESIZE})"
++  DATA_SEGMENT_END=". = DATA_SEGMENT_END (.);"
++  DATA_SEGMENT_RELRO_END=". = DATA_SEGMENT_RELRO_END (${SEPARATE_GOTPLT-0}, .);"
++fi
++if test -z "${INITIAL_READONLY_SECTIONS}${CREATE_SHLIB}"; then
++  INITIAL_READONLY_SECTIONS=".interp       ${RELOCATING-0} : { *(.interp) }"
++fi
++if test -z "$PLT"; then
++  PLT=".plt          ${RELOCATING-0} : { *(.plt) }"
++fi
++test -n "${DATA_PLT-${BSS_PLT-text}}" && TEXT_PLT=yes
++if test -z "$GOT"; then
++  if test -z "$SEPARATE_GOTPLT"; then
++    GOT=".got          ${RELOCATING-0} : { *(.got.plt) *(.got) }"
++  else
++    GOT=".got          ${RELOCATING-0} : { *(.got) }"
++    GOTPLT=".got.plt      ${RELOCATING-0} : { *(.got.plt) }"
++  fi
++fi
++DYNAMIC=".dynamic      ${RELOCATING-0} : { *(.dynamic) }"
++RODATA=".rodata       ${RELOCATING-0} : { *(.rodata${RELOCATING+ .rodata.* .gnu.linkonce.r.*}) }"
++DATARELRO=".data.rel.ro : { *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro* .gnu.linkonce.d.rel.ro.*) }"
++DISCARDED="/DISCARD/ : { *(.note.GNU-stack) *(.gnu_debuglink) }"
++if test -z "${NO_SMALL_DATA}"; then
++  SBSS=".sbss         ${RELOCATING-0} :
++  {
++    ${RELOCATING+${SBSS_START_SYMBOLS}}
++    ${CREATE_SHLIB+*(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)}
++    *(.dynsbss)
++    *(.sbss${RELOCATING+ .sbss.* .gnu.linkonce.sb.*})
++    *(.scommon)
++    ${RELOCATING+${SBSS_END_SYMBOLS}}
++  }"
++  SBSS2=".sbss2        ${RELOCATING-0} : { *(.sbss2${RELOCATING+ .sbss2.* .gnu.linkonce.sb2.*}) }"
++  SDATA="/* We want the small data sections together, so single-instruction offsets
++     can access them all, and initialized data all before uninitialized, so
++     we can shorten the on-disk segment size.  */
++  .sdata        ${RELOCATING-0} : 
++  {
++    ${RELOCATING+${SDATA_START_SYMBOLS}}
++    ${CREATE_SHLIB+*(.sdata2 .sdata2.* .gnu.linkonce.s2.*)}
++    *(.sdata${RELOCATING+ .sdata.* .gnu.linkonce.s.*})
++  }"
++  SDATA2=".sdata2       ${RELOCATING-0} :
++  {
++    ${RELOCATING+${SDATA2_START_SYMBOLS}}
++    *(.sdata2${RELOCATING+ .sdata2.* .gnu.linkonce.s2.*})
++  }"
++  REL_SDATA=".rel.sdata    ${RELOCATING-0} : { *(.rel.sdata${RELOCATING+ .rel.sdata.* .rel.gnu.linkonce.s.*}) }
++  .rela.sdata   ${RELOCATING-0} : { *(.rela.sdata${RELOCATING+ .rela.sdata.* .rela.gnu.linkonce.s.*}) }"
++  REL_SBSS=".rel.sbss     ${RELOCATING-0} : { *(.rel.sbss${RELOCATING+ .rel.sbss.* .rel.gnu.linkonce.sb.*}) }
++  .rela.sbss    ${RELOCATING-0} : { *(.rela.sbss${RELOCATING+ .rela.sbss.* .rela.gnu.linkonce.sb.*}) }"
++  REL_SDATA2=".rel.sdata2   ${RELOCATING-0} : { *(.rel.sdata2${RELOCATING+ .rel.sdata2.* .rel.gnu.linkonce.s2.*}) }
++  .rela.sdata2  ${RELOCATING-0} : { *(.rela.sdata2${RELOCATING+ .rela.sdata2.* .rela.gnu.linkonce.s2.*}) }"
++  REL_SBSS2=".rel.sbss2    ${RELOCATING-0} : { *(.rel.sbss2${RELOCATING+ .rel.sbss2.* .rel.gnu.linkonce.sb2.*}) }
++  .rela.sbss2   ${RELOCATING-0} : { *(.rela.sbss2${RELOCATING+ .rela.sbss2.* .rela.gnu.linkonce.sb2.*}) }"
++else
++  NO_SMALL_DATA=" "
++fi
++if test -z "${DATA_GOT}"; then
++  if test -n "${NO_SMALL_DATA}"; then
++    DATA_GOT=" "
++  fi
++fi
++if test -z "${SDATA_GOT}"; then
++  if test -z "${NO_SMALL_DATA}"; then
++    SDATA_GOT=" "
++  fi
++fi
++test -n "$SEPARATE_GOTPLT" && SEPARATE_GOTPLT=" "
++test "${LARGE_SECTIONS}" = "yes" && REL_LARGE="
++  .rel.ldata    ${RELOCATING-0} : { *(.rel.ldata${RELOCATING+ .rel.ldata.* .rel.gnu.linkonce.l.*}) }
++  .rela.ldata   ${RELOCATING-0} : { *(.rela.ldata${RELOCATING+ .rela.ldata.* .rela.gnu.linkonce.l.*}) }
++  .rel.lbss     ${RELOCATING-0} : { *(.rel.lbss${RELOCATING+ .rel.lbss.* .rel.gnu.linkonce.lb.*}) }
++  .rela.lbss    ${RELOCATING-0} : { *(.rela.lbss${RELOCATING+ .rela.lbss.* .rela.gnu.linkonce.lb.*}) }
++  .rel.lrodata  ${RELOCATING-0} : { *(.rel.lrodata${RELOCATING+ .rel.lrodata.* .rel.gnu.linkonce.lr.*}) }
++  .rela.lrodata ${RELOCATING-0} : { *(.rela.lrodata${RELOCATING+ .rela.lrodata.* .rela.gnu.linkonce.lr.*}) }"
++test "${LARGE_SECTIONS}" = "yes" && OTHER_BSS_SECTIONS="
++  ${OTHER_BSS_SECTIONS}
++  .lbss ${RELOCATING-0} :
++  {
++    *(.dynlbss)
++    *(.lbss${RELOCATING+ .lbss.* .gnu.linkonce.lb.*})
++    *(LARGE_COMMON)
++  }"
++test "${LARGE_SECTIONS}" = "yes" && LARGE_SECTIONS="
++  .lrodata ${RELOCATING-0} ${RELOCATING+ALIGN(${MAXPAGESIZE}) + (. & (${MAXPAGESIZE} - 1))} :
++  {
++    *(.lrodata${RELOCATING+ .lrodata.* .gnu.linkonce.lr.*})
++  }
++  .ldata ${RELOCATING-0} ${RELOCATING+ALIGN(${MAXPAGESIZE}) + (. & (${MAXPAGESIZE} - 1))} :
++  {
++    *(.ldata${RELOCATING+ .ldata.* .gnu.linkonce.l.*})
++    ${RELOCATING+. = ALIGN(. != 0 ? ${ALIGNMENT} : 1);}
++  }"
++CTOR=".ctors        ${CONSTRUCTING-0} : 
++  {
++    ${CONSTRUCTING+${CTOR_START}}
++    /* gcc uses crtbegin.o to find the start of
++       the constructors, so we make sure it is
++       first.  Because this is a wildcard, it
++       doesn't matter if the user does not
++       actually link against crtbegin.o; the
++       linker won't look for a file to match a
++       wildcard.  The wildcard also means that it
++       doesn't matter which directory crtbegin.o
++       is in.  */
++
++    KEEP (*crtbegin.o(.ctors))
++    KEEP (*crtbegin?.o(.ctors))
++
++    /* We don't want to include the .ctor section from
++       the crtend.o file until after the sorted ctors.
++       The .ctor section from the crtend file contains the
++       end of ctors marker and it must be last */
++
++    KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o $OTHER_EXCLUDE_FILES) .ctors))
++    KEEP (*(SORT(.ctors.*)))
++    KEEP (*(.ctors))
++    ${CONSTRUCTING+${CTOR_END}}
++  }"
++DTOR=".dtors        ${CONSTRUCTING-0} :
++  {
++    ${CONSTRUCTING+${DTOR_START}}
++    KEEP (*crtbegin.o(.dtors))
++    KEEP (*crtbegin?.o(.dtors))
++    KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o $OTHER_EXCLUDE_FILES) .dtors))
++    KEEP (*(SORT(.dtors.*)))
++    KEEP (*(.dtors))
++    ${CONSTRUCTING+${DTOR_END}}
++  }"
++STACK="  .stack        ${RELOCATING-0}${RELOCATING+${STACK_ADDR}} :
++  {
++    ${RELOCATING+_stack = .;}
++    *(.stack)
++  }"
++
++# if this is for an embedded system (or nacl), don't add SIZEOF_HEADERS.
++if [ -z "$EMBEDDED" ]; then
++   test -z "${TEXT_BASE_ADDRESS}" && TEXT_BASE_ADDRESS="${TEXT_START_ADDR}"
++else
++   test -z "${TEXT_BASE_ADDRESS}" && TEXT_BASE_ADDRESS="${TEXT_START_ADDR}"
++fi
++
++cat <<EOF
++OUTPUT_FORMAT("${OUTPUT_FORMAT}", "${BIG_OUTPUT_FORMAT}",
++	      "${LITTLE_OUTPUT_FORMAT}")
++OUTPUT_ARCH(${OUTPUT_ARCH})
++ENTRY(${ENTRY})
++
++${RELOCATING+${LIB_SEARCH_DIRS}}
++${RELOCATING+${EXECUTABLE_SYMBOLS}}
++${RELOCATING+${INPUT_FILES}}
++${RELOCATING- /* For some reason, the Solaris linker makes bad executables
++  if gld -r is used and the intermediate file has sections starting
++  at non-zero addresses.  Could be a Solaris ld bug, could be a GNU ld
++  bug.  But for now assigning the zero vmas works.  */}
++
++PHDRS
++{
++  headers PT_PHDR FILEHDR PHDRS ;  /* put the headers in a non-loadable seg */
++  text    PT_LOAD FLAGS(5) ;       /* read + execute */
++  rodata  PT_LOAD FLAGS(4) ;       /* read */
++  data    PT_LOAD FLAGS(6) ;       /* read + write */
++  /* TODO(sehr): do we need a stack? */
++}
++
++SECTIONS
++{
++  /* Read-only sections, merged into text segment: */
++  ${CREATE_SHLIB-${CREATE_PIE-${RELOCATING+PROVIDE (__executable_start = ${TEXT_START_ADDR}); . = ${TEXT_BASE_ADDRESS};}}}
++  ${CREATE_SHLIB+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR:-0} + SIZEOF_HEADERS;}}
++  ${CREATE_PIE+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR:-0} + SIZEOF_HEADERS;}}
++  ${INITIAL_READONLY_SECTIONS}
++  .note.gnu.build-id : { *(.note.gnu.build-id) }
++  ${TEXT_DYNAMIC+${DYNAMIC}}
++  .hash         ${RELOCATING-0} : { *(.hash) }
++  .gnu.hash     ${RELOCATING-0} : { *(.gnu.hash) }
++  .dynsym       ${RELOCATING-0} : { *(.dynsym) }
++  .dynstr       ${RELOCATING-0} : { *(.dynstr) }
++  .gnu.version  ${RELOCATING-0} : { *(.gnu.version) }
++  .gnu.version_d ${RELOCATING-0}: { *(.gnu.version_d) }
++  .gnu.version_r ${RELOCATING-0}: { *(.gnu.version_r) }
++
++EOF
++if [ "x$COMBRELOC" = x ]; then
++  COMBRELOCCAT=cat
++else
++  COMBRELOCCAT="cat > $COMBRELOC"
++fi
++eval $COMBRELOCCAT <<EOF
++  .rel.init     ${RELOCATING-0} : { *(.rel.init) }
++  .rela.init    ${RELOCATING-0} : { *(.rela.init) }
++  .rel.text     ${RELOCATING-0} : { *(.rel.text${RELOCATING+ .rel.text.* .rel.gnu.linkonce.t.*}) }
++  .rela.text    ${RELOCATING-0} : { *(.rela.text${RELOCATING+ .rela.text.* .rela.gnu.linkonce.t.*}) }
++  .rel.fini     ${RELOCATING-0} : { *(.rel.fini) }
++  .rela.fini    ${RELOCATING-0} : { *(.rela.fini) }
++  .rel.rodata   ${RELOCATING-0} : { *(.rel.rodata${RELOCATING+ .rel.rodata.* .rel.gnu.linkonce.r.*}) }
++  .rela.rodata  ${RELOCATING-0} : { *(.rela.rodata${RELOCATING+ .rela.rodata.* .rela.gnu.linkonce.r.*}) }
++  ${OTHER_READONLY_RELOC_SECTIONS}
++  .rel.data.rel.ro ${RELOCATING-0} : { *(.rel.data.rel.ro${RELOCATING+* .rel.gnu.linkonce.d.rel.ro.*}) }
++  .rela.data.rel.ro ${RELOCATING-0} : { *(.rela.data.rel.ro${RELOCATING+* .rela.gnu.linkonce.d.rel.ro.*}) }
++  .rel.data     ${RELOCATING-0} : { *(.rel.data${RELOCATING+ .rel.data.* .rel.gnu.linkonce.d.*}) }
++  .rela.data    ${RELOCATING-0} : { *(.rela.data${RELOCATING+ .rela.data.* .rela.gnu.linkonce.d.*}) }
++  .rel.tdata	${RELOCATING-0} : { *(.rel.tdata${RELOCATING+ .rel.tdata.* .rel.gnu.linkonce.td.*}) }
++  .rela.tdata	${RELOCATING-0} : { *(.rela.tdata${RELOCATING+ .rela.tdata.* .rela.gnu.linkonce.td.*}) }
++  .rel.tbss	${RELOCATING-0} : { *(.rel.tbss${RELOCATING+ .rel.tbss.* .rel.gnu.linkonce.tb.*}) }
++  .rela.tbss	${RELOCATING-0} : { *(.rela.tbss${RELOCATING+ .rela.tbss.* .rela.gnu.linkonce.tb.*}) }
++  .rel.ctors    ${RELOCATING-0} : { *(.rel.ctors) }
++  .rela.ctors   ${RELOCATING-0} : { *(.rela.ctors) }
++  .rel.dtors    ${RELOCATING-0} : { *(.rel.dtors) }
++  .rela.dtors   ${RELOCATING-0} : { *(.rela.dtors) }
++  .rel.got      ${RELOCATING-0} : { *(.rel.got) }
++  .rela.got     ${RELOCATING-0} : { *(.rela.got) }
++  ${OTHER_GOT_RELOC_SECTIONS}
++  ${REL_SDATA}
++  ${REL_SBSS}
++  ${REL_SDATA2}
++  ${REL_SBSS2}
++  .rel.bss      ${RELOCATING-0} : { *(.rel.bss${RELOCATING+ .rel.bss.* .rel.gnu.linkonce.b.*}) }
++  .rela.bss     ${RELOCATING-0} : { *(.rela.bss${RELOCATING+ .rela.bss.* .rela.gnu.linkonce.b.*}) }
++  ${REL_LARGE}
++EOF
++if [ -n "$COMBRELOC" ]; then
++cat <<EOF
++  .rel.dyn      ${RELOCATING-0} :
++    {
++EOF
++sed -e '/^[ 	]*[{}][ 	]*$/d;/:[ 	]*$/d;/\.rela\./d;s/^.*: { *\(.*\)}$/      \1/' $COMBRELOC
++cat <<EOF
++    }
++  .rela.dyn     ${RELOCATING-0} :
++    {
++EOF
++sed -e '/^[ 	]*[{}][ 	]*$/d;/:[ 	]*$/d;/\.rel\./d;s/^.*: { *\(.*\)}/      \1/' $COMBRELOC
++cat <<EOF
++    }
++EOF
++fi
++cat <<EOF
++  .rel.plt      ${RELOCATING-0} : { *(.rel.plt) }
++  .rela.plt     ${RELOCATING-0} : { *(.rela.plt) }
++  ${OTHER_PLT_RELOC_SECTIONS}
++
++  .init         ${RELOCATING-0} : 
++  { 
++    ${RELOCATING+${INIT_START}}
++    KEEP (*(.init))
++    ${RELOCATING+${INIT_END}}
++  } :text =${NOP-0}
++
++  ${TEXT_PLT+${PLT}}
++  ${TINY_READONLY_SECTION}
++  .text         ${RELOCATING-0} :
++  {
++    ${RELOCATING+${TEXT_START_SYMBOLS}}
++    *(.text .stub${RELOCATING+ .text.* .gnu.linkonce.t.*})
++    KEEP (*(.text.*personality*))
++    /* .gnu.warning sections are handled specially by elf32.em.  */
++    *(.gnu.warning)
++    ${RELOCATING+${OTHER_TEXT_SECTIONS}}
++  } =${NOP-0}
++  .fini         ${RELOCATING-0} :
++  {
++    ${RELOCATING+${FINI_START}}
++    KEEP (*(.fini))
++    ${RELOCATING+${FINI_END}}
++  } =${NOP-0}
++  ${RELOCATING+PROVIDE (__${ETEXT_NAME} = .);}
++  ${RELOCATING+PROVIDE (_${ETEXT_NAME} = .);}
++  ${RELOCATING+PROVIDE (${ETEXT_NAME} = .);}
++  ${RELOCATING+. = DEFINED (__executable_start) ? 
++                     ALIGN(CEILP2(. - __executable_start)) : .;}
++  ${RELOCATING+PROVIDE (__nacl_and_mask =
++                          DEFINED (__executable_start) ?
++                            NACL_MASK (. - __executable_start) : 0xffffffff);}
++  ${RELOCATING+. = ALIGN(${MAXPAGESIZE});} /* nacl wants page alignment */
++  ${WRITABLE_RODATA-${RODATA}} :rodata
++  .rodata1      ${RELOCATING-0} : { *(.rodata1) }
++  .nacl_rpc_methods : { *(.nacl_rpc_methods) }
++  ${CREATE_SHLIB-${SDATA2}}
++  ${CREATE_SHLIB-${SBSS2}}
++  ${OTHER_READONLY_SECTIONS}
++  .eh_frame_hdr : { *(.eh_frame_hdr) }
++  .eh_frame     ${RELOCATING-0} : ONLY_IF_RO { KEEP (*(.eh_frame)) }
++  .gcc_except_table ${RELOCATING-0} : ONLY_IF_RO { *(.gcc_except_table .gcc_except_table.*) }
++
++  /* Adjust the address for the data segment.  We want to adjust up to
++     the same address within the page on the next page up.  */
++  ${CREATE_SHLIB-${CREATE_PIE-${RELOCATING+. = ${DATA_ADDR-${DATA_SEGMENT_ALIGN}};}}}
++  ${CREATE_SHLIB+${RELOCATING+. = ${SHLIB_DATA_ADDR-${DATA_SEGMENT_ALIGN}};}}
++  ${CREATE_PIE+${RELOCATING+. = ${SHLIB_DATA_ADDR-${DATA_SEGMENT_ALIGN}};}}
++
++  /* Exception handling  */
++  .eh_frame     ${RELOCATING-0} : ONLY_IF_RW { KEEP (*(.eh_frame)) }
++  .gcc_except_table ${RELOCATING-0} : ONLY_IF_RW { *(.gcc_except_table .gcc_except_table.*) }
++
++  /* Thread Local Storage sections  */
++  .tdata	${RELOCATING-0} : {
++    ${RELOCATING+PROVIDE (__tls_template_start = .);}
++    *(.tdata${RELOCATING+ .tdata.* .gnu.linkonce.td.*})
++    ${RELOCATING+PROVIDE (__tls_template_tdata_end = .);}
++  }
++  .tbss		${RELOCATING-0} : { *(.tbss${RELOCATING+ .tbss.* .gnu.linkonce.tb.*})${RELOCATING+ *(.tcommon)} }
++  /* The total size of the TLS template area must be a multiple of 32 */
++  /* . does not advance for tbss because it is not loaded. */
++  ${RELOCATING+PROVIDE (__tls_template_end =
++                           __tls_template_start +
++                           (((. + SIZEOF(.tbss)) - __tls_template_start + 31) &
++                            ~(31))
++                          );}
++
++  .preinit_array   ${RELOCATING-0} :
++  {
++    ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__preinit_array_start = .);}}
++    KEEP (*(.preinit_array))
++    ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__preinit_array_end = .);}}
++  }
++  .init_array   ${RELOCATING-0} :
++  {
++     ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__init_array_start = .);}}
++     KEEP (*(SORT(.init_array.*)))
++     KEEP (*(.init_array))
++     ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__init_array_end = .);}}
++  }
++  .fini_array   ${RELOCATING-0} :
++  {
++    ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__fini_array_start = .);}}
++    KEEP (*(.fini_array))
++    KEEP (*(SORT(.fini_array.*)))
++    ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__fini_array_end = .);}}
++  }
++  ${SMALL_DATA_CTOR-${RELOCATING+${CTOR}}}
++  ${SMALL_DATA_DTOR-${RELOCATING+${DTOR}}}
++  .jcr          ${RELOCATING-0} : { KEEP (*(.jcr)) }
++
++  ${RELOCATING+${DATARELRO}}
++  ${OTHER_RELRO_SECTIONS}
++  ${TEXT_DYNAMIC-${DYNAMIC}}
++  ${DATA_GOT+${RELRO_NOW+${GOT}}}
++  ${DATA_GOT+${RELRO_NOW+${GOTPLT}}}
++  ${DATA_GOT+${RELRO_NOW-${SEPARATE_GOTPLT+${GOT}}}}
++  ${RELOCATING+${DATA_SEGMENT_RELRO_END}}
++  ${DATA_GOT+${RELRO_NOW-${SEPARATE_GOTPLT-${GOT}}}}
++  ${DATA_GOT+${RELRO_NOW-${GOTPLT}}}
++
++  ${DATA_PLT+${PLT_BEFORE_GOT-${PLT}}}
++
++  ${RELOCATING+. = ALIGN(${MAXPAGESIZE});} /* nacl wants page alignment */
++  .data         ${RELOCATING-0} :
++  {
++    ${RELOCATING+${DATA_START_SYMBOLS}}
++    *(.data${RELOCATING+ .data.* .gnu.linkonce.d.*})
++    ${RELOCATING+KEEP (*(.gnu.linkonce.d.*personality*))}
++    ${CONSTRUCTING+SORT(CONSTRUCTORS)}
++  } :data
++  .data1        ${RELOCATING-0} : { *(.data1) }
++  ${WRITABLE_RODATA+${RODATA}}
++  ${OTHER_READWRITE_SECTIONS}
++  ${SMALL_DATA_CTOR+${RELOCATING+${CTOR}}}
++  ${SMALL_DATA_DTOR+${RELOCATING+${DTOR}}}
++  ${DATA_PLT+${PLT_BEFORE_GOT+${PLT}}}
++  ${SDATA_GOT+${RELOCATING+${OTHER_GOT_SYMBOLS}}}
++  ${SDATA_GOT+${GOT}}
++  ${SDATA_GOT+${OTHER_GOT_SECTIONS}}
++  ${SDATA}
++  ${OTHER_SDATA_SECTIONS}
++  ${RELOCATING+${DATA_END_SYMBOLS-${USER_LABEL_PREFIX}_edata = .; PROVIDE (${USER_LABEL_PREFIX}edata = .);}}
++  ${RELOCATING+__bss_start = .;}
++  ${RELOCATING+${OTHER_BSS_SYMBOLS}}
++  ${SBSS}
++  ${BSS_PLT+${PLT}}
++  .bss          ${RELOCATING-0} :
++  {
++   *(.dynbss)
++   *(.bss${RELOCATING+ .bss.* .gnu.linkonce.b.*})
++   *(COMMON)
++   /* Align here to ensure that the .bss section occupies space up to
++      _end.  Align after .bss to ensure correct alignment even if the
++      .bss section disappears because there are no input sections.
++      FIXME: Why do we need it? When there is no .bss section, we don't
++      pad the .data section.  */
++   ${RELOCATING+. = ALIGN(. != 0 ? ${ALIGNMENT} : 1);}
++  }
++  ${OTHER_BSS_SECTIONS}
++  ${RELOCATING+${OTHER_BSS_END_SYMBOLS}}
++  ${RELOCATING+. = ALIGN(${ALIGNMENT});}
++  ${LARGE_SECTIONS}
++  ${RELOCATING+. = ALIGN(${ALIGNMENT});}
++  ${RELOCATING+${OTHER_END_SYMBOLS}}
++  ${RELOCATING+${END_SYMBOLS-${USER_LABEL_PREFIX}_end = .; PROVIDE (${USER_LABEL_PREFIX}end = .);}}
++  ${RELOCATING+${DATA_SEGMENT_END}}
++
++  /* Stabs debugging sections.  */
++  .stab          0 : { *(.stab) }
++  .stabstr       0 : { *(.stabstr) }
++  .stab.excl     0 : { *(.stab.excl) }
++  .stab.exclstr  0 : { *(.stab.exclstr) }
++  .stab.index    0 : { *(.stab.index) }
++  .stab.indexstr 0 : { *(.stab.indexstr) }
++
++  .comment       0 : { *(.comment) }
++
++  /* DWARF debug sections.
++     Symbols in the DWARF debugging sections are relative to the beginning
++     of the section so we begin them at 0.  */
++
++  /* DWARF 1 */
++  .debug          0 : { *(.debug) }
++  .line           0 : { *(.line) }
++
++  /* GNU DWARF 1 extensions */
++  .debug_srcinfo  0 : { *(.debug_srcinfo) }
++  .debug_sfnames  0 : { *(.debug_sfnames) }
++
++  /* DWARF 1.1 and DWARF 2 */
++  .debug_aranges  0 : { *(.debug_aranges) }
++  .debug_pubnames 0 : { *(.debug_pubnames) }
++
++  /* DWARF 2 */
++  .debug_info     0 : { *(.debug_info${RELOCATING+ .gnu.linkonce.wi.*}) }
++  .debug_abbrev   0 : { *(.debug_abbrev) }
++  .debug_line     0 : { *(.debug_line) }
++  .debug_frame    0 : { *(.debug_frame) }
++  .debug_str      0 : { *(.debug_str) }
++  .debug_loc      0 : { *(.debug_loc) }
++  .debug_macinfo  0 : { *(.debug_macinfo) }
++
++  /* SGI/MIPS DWARF 2 extensions */
++  .debug_weaknames 0 : { *(.debug_weaknames) }
++  .debug_funcnames 0 : { *(.debug_funcnames) }
++  .debug_typenames 0 : { *(.debug_typenames) }
++  .debug_varnames  0 : { *(.debug_varnames) }
++
++  /* DWARF 3 */
++  .debug_pubtypes 0 : { *(.debug_pubtypes) }
++  .debug_ranges   0 : { *(.debug_ranges) }
++
++  ${TINY_DATA_SECTION}
++  ${TINY_BSS_SECTION}
++
++  ${STACK_ADDR+${STACK}}
++  ${ATTRS_SECTIONS}
++  ${OTHER_SECTIONS}
++  ${RELOCATING+${OTHER_SYMBOLS}}
++  ${RELOCATING+${DISCARDED}}
++}
++EOF
+diff -uNr binutils-2.19.51.20090622.orig/opcodes/i386-opc.tbl binutils-2.19.51.20090622/opcodes/i386-opc.tbl
+--- binutils-2.19.51.20090622.orig/opcodes/i386-opc.tbl	2009-05-22 17:57:25.000000000 +0200
++++ binutils-2.19.51.20090622/opcodes/i386-opc.tbl	2009-06-28 17:16:42.000000000 +0200
+@@ -209,6 +209,12 @@
+ or, 2, 0xc, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
+ or, 2, 0x80, 0x1, 1, 0, W|Modrm|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
+ 
++// Native client support instructions.
++nacland, 2, 0x81, 0x4, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Imm32, Reg32 }
++naclor, 2, 0x81, 0x1, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Imm32, Reg32 }
++naclcall, 1, 0xff, 0x2, 1, 0, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
++nacljmp, 1, 0xff, 0x4, 1, 0, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
++
+ xor, 2, 0x30, None, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Reg8|Reg16|Reg32|Reg64, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
+ xor, 2, 0x83, 0x6, 1, 0, Modrm|No_bSuf|No_sSuf|No_ldSuf, { Imm8S, Reg16|Reg32|Reg64|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
+ xor, 2, 0x34, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
+diff -uNr binutils-2.19.51.20090622.orig/opcodes/i386-tbl.h binutils-2.19.51.20090622/opcodes/i386-tbl.h
+--- binutils-2.19.51.20090622.orig/opcodes/i386-tbl.h	2009-05-22 17:57:25.000000000 +0200
++++ binutils-2.19.51.20090622/opcodes/i386-tbl.h	2009-06-28 17:16:42.000000000 +0200
+@@ -1457,6 +1457,48 @@
+       { { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+ 	  1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 
+ 	  0, 0, 1, 0, 0 } } } },
++  { "nacland", 2, 0x81, 0x4, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
++    { 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } },
++      { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
++  { "naclor", 2, 0x81, 0x1, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
++    { 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } },
++      { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
++  { "naclcall", 1, 0xff, 0x2, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
++    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 
++      1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
++  { "nacljmp", 1, 0xff, 0x4, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
++    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 
++      1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
+   { "xor", 2, 0x30, None, 1,
+     { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },

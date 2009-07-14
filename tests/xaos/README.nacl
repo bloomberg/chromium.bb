@@ -1,0 +1,18 @@
+Experimental Native Client XaoS Demo
+
+* Builds on Linux, requiring standard tools such as make, autotools,
+  and wget
+* Runs in the browser on Linux, Mac, and Windows
+
+This is an experimental version of XaoS for Native Client. XaoS
+is open-source and depends on GSL, which is also open source.
+For more information see:
+
+  http://www.gnu.org/software/gsl/
+  http://xaos.sourceforge.net/index.php
+
+To build and run XaoS simply run
+
+  ./xaos_tool.sh all
+
+and follow the instructions printed at the end.

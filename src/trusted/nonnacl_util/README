@@ -1,0 +1,4 @@
+This directory provides a platform independent library for
+starting a sel_ldr sandbox for a given native client module.
+We offer a C++ and C interface.
+This is used for example by the npapi plugin.

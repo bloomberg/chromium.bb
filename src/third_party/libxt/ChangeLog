@@ -1,0 +1,167 @@
+2006-05-12  Adam Jackson  <ajax@freedesktop.org>
+
+	* configure.ac:
+	Bump to 1.0.2
+
+2006-04-30  Matthieu Herrb <matthieu.herrb@laas.fr>
+
+	* src/Makefile.am
+	Fix ERRORDB definition for the case where ${prefix} != /usr
+
+2006-04-26  Adam Jackson  <ajax@freedesktop.org>
+
+	* configure.ac:
+	Bump to 1.0.1
+
+2006-02-12  Alan Coopersmith  <alan.coopersmith@sun.com>
+
+	* man/Makefile.am: 
+	Bug #5628 <https://bugs.freedesktop.org/show_bug.cgi?id=5628>
+	Shadow pages not created correctly when MANDIR & MANSUFFIX don't match.
+
+2005-12-14  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* configure.ac:
+	Update package version number for final X11R7 release candidate.
+
+2005-12-10  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* configure.ac:
+	Add configure option to install makestrs and its manpage.
+
+	* util/Makefile.am:
+	Add makestrs man page.
+
+2005-12-07  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* configure.ac:
+	* xt.pc.in:
+	Add configure option to set the build's app-default dir, and put
+	the result in the xt.pc file for applications to use.
+
+2005-12-06  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* man/Makefile.am:
+	Change *man_SOURCES ==> *man_PRE to fix autotools warnings.
+
+2005-12-03  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* configure.ac:
+	Update package version number for X11R7 RC3 release.
+
+2005-12-02  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* configure.ac:
+	* src/Makefile.am:
+	Add check and cflags for malloc(0) returning NULL.
+
+2005-11-19  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* xt.pc.in:
+	Update pkgconfig files to separate library build-time dependencies
+	from application build-time dependencies.
+
+2005-11-09  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* configure.ac:
+	Update package version number for X11R7 RC2 release.
+
+2005-11-01  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* configure.ac:
+	Update pkgcheck dependencies to work with separate build roots.
+
+2005-10-18  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* configure.ac:
+	Update package version number for RC1 release.
+
+2005-10-18  Kevin E. Martin  <kem-at-freedesktop-dot-org>
+
+	* src/Makefile.am:
+	Use $(INSTALL) instead of $(install_sh_DATA) for creating
+	directories.
+
+2005-10-17  Adam Jackson  <ajax@freedesktop.org>
+
+	* src/Makefile.am:
+	Split the 'install -d' over multiple lines so certain lame versions
+	of autotools don't flip out.
+
+2005-10-17  Alan Coopersmith  <alan.coopersmith@sun.com>
+
+	* src/Makefile.am:
+	* configure.ac:
+	Add --with-xfile-search-path=<path> and default setting to match
+	monolith XFileSearchPathDefault in Imake (including extra directories
+	used in Debian section of linux.cf.)
+	
+2005-10-11  Alan Coopersmith  <alan.coopersmith@sun.com>
+
+	* man/Makefile.am: 
+	* configure.ac:
+	Set up cpp pre-processing of man pages
+	Add shadow man pages for man pages that document multiple functions.
+
+2005-09-20  Alan Coopersmith  <alan.coopersmith@sun.com>
+
+	* configure.ac: 
+	Add checks for poll & snprintf & define old Imake names if found
+	Enable XKB usage in Xt unless --disable-xkb is specified
+	Set STRINGSABIOPTIONS for building StringDefs files on Solaris, SCO,
+	and SVR4 systems.
+
+2005-08-01  Keith Packard  <keithp@keithp.com>
+
+	* Makefile.am:
+	* src/Makefile.am:
+	Move building of StringDefs files to src and
+	fix them so that parallel make works right.
+
+2005-07-08  Keith Packard  <keithp@keithp.com>
+
+	* .cvsignore:
+	* include/.cvsignore:
+	* include/X11/.cvsignore:
+	* man/.cvsignore:
+	* src/.cvsignore:
+	* util/.cvsignore:
+	Add .cvsignore files
+
+2005-06-10  Alexander Gottwald  <ago at freedesktop dot org>
+
+	* src/Makefile.am:
+	Add -no-undefined to linker command to build shared library on cygwin too
+ 
+2005-06-10  Alexander Gottwald  <ago at freedesktop dot org>
+
+	* Makefile.am:
+	ensure $(buildir)/src and $(builddir)/include/X11 exist before installing
+	generated files there
+
+2005-05-24  Alexander Gottwald  <ago at freedesktop dot org>
+
+	* Makefile.am:
+	separation of source and build directories
+
+2005-05-22  Alan Coopersmith  <alan.coopersmith@sun.com>
+
+	* man/Makefile.am: Convert man pages to long file names
+
+2005-05-21  Alan Coopersmith  <alan.coopersmith@sun.com>
+
+	* configure.ac: Check for <alloca.h> and define INCLUDE_ALLOCA_H
+	if found, since <Xalloca.h> requires it.
+
+2005-05-21  Alan Coopersmith  <alan.coopersmith@sun.com>
+
+	* Makefile.am ($(BUILT_FILES)): Use $(install_sh_DATA) instead of
+	"install" for better portability.  Remove duplicate installation lines.
+
+	* src/Makefile.am: Add AM_CFLAGS to pass through XT_CFLAGS & X11_CFLAGS
+
+2005-05-18    <ssp@aware-of-vacuity.boston.redhat.com>
+
+	* src/Makefile.am (INCLUDES): Also include include/X11
+
+

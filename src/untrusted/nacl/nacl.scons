@@ -1,0 +1,127 @@
+# Copyright 2008, Google Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Import('env')
+
+# we have some empty source files
+env.FilterOut(CCFLAGS=['-pedantic'])
+
+# TODO: move this to common env
+if env.Bit('host_windows'):
+  env.Replace(
+# This is needed because Windows builds are case-insensitive.
+# Without this we use nacl-as, which doesn't handle include directives, etc.
+    ASCOM = '$CCCOM',
+  )
+else:
+  env.Replace(
+# This is needed because Windows builds are case-insensitive.
+# Without this we use nacl-as, which doesn't handle include directives, etc.
+    ASFLAGS = '$CCFLAGS',
+  )
+
+# Sources are split into essentially one function per file to be in
+# alignment with the linker, which resolves symbols by including entire
+# object files.  Placing multiple definitions in one file may result in
+# object code bloat or possibly multiple definitions.
+
+sources = [
+    'av_wait.c',
+    'close.c',
+    'dup.c',
+    'execve.c',
+    '_execve.c',
+    'fork.c',
+    'fstat.c',
+    'getdents.c',
+    'gettimeofday.c',
+    'imc_accept.c',
+    'imc_connect.c',
+    'imc_makeboundsock.c',
+    'imc_mem_obj_create.c',
+    'imc_recvmsg.c',
+    'imc_sendmsg.c',
+    'imc_socketpair.c',
+    'isatty.c',
+    'kill.c',
+    'link.c',
+    'lock.c',
+    'lseek.c',
+    'mmap.c',
+    'munmap.c',
+    'open.c',
+    'pipe.c',
+    'read.c',
+    'sbrk.c',
+    'sched_yield.c',
+    'srpc_init.c',
+    'srpc_wait.c',
+    'stacktrace.c',
+    'stat.c',
+    'sysconf.c',
+    'times.c',
+    'tls.c',
+    'unlink.c',
+    'wait.c',
+    'write.c',
+    # Assembly source files
+    'nacl_clock.S',
+    'nacl_close.S',
+    'nacl_exit.S',
+    'nacl_fstat.S',
+    'nacl_getdents.S',
+    'nacl_getpid.S',
+    'nacl_gettimeofday.S',
+    'nacl_imc_accept.S',
+    'nacl_imc_connect.S',
+    'nacl_imc_makeboundsock.S',
+    'nacl_imc_mem_obj_create.S',
+    'nacl_imc_recvmsg.S',
+    'nacl_imc_sendmsg.S',
+    'nacl_imc_socketpair.S',
+    'nacl_lseek.S',
+    'nacl_mmap.S',
+    'nacl_multimedia.S',
+    'nacl_null.S',
+    'nacl_open.S',
+    'nacl_read.S',
+    'nacl_sched_yield.S',
+    'nacl_srpc_get_fd.S',
+    'nacl_stat.S',
+    'nacl_sysbrk.S',
+    'nacl_sysconf.S',
+    'nacl_tls.S',
+    'nacl_unmap.S',
+    'nacl_write.S',
+]
+
+env.ComponentLibrary('libnacl', sources)
+
+env.AddLibraryToSdk(['libnacl'])

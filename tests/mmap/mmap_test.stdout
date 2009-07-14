@@ -1,0 +1,10 @@
+test1
+mmap done
+munmap good
+test2
+munmap returned -1
+munmap good (failed as expected)
+test3
+res = 0xffffffff
+mmap okay
+All tests PASSED

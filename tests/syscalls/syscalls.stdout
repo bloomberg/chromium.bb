@@ -1,0 +1,6 @@
+TEST PASSED: test_open: all
+TEST PASSED: test_close: all
+TEST PASSED: test_read: all
+TEST PASSED: test_write: all
+TEST PASSED: test_lseek: all
+All tests PASSED

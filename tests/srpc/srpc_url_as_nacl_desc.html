@@ -1,0 +1,112 @@
+<html>
+  <!-- Copyright 2008 Google Inc.  All rights reserved. -->
+  <!--
+    -- Much of this file is cribbed from srpc_nrd_xfer and
+    -- mandel_nav.
+    -->
+  <head>
+    <style type="text/css">
+      pre.notrun { background-color: skyblue }
+      pre.pass { background-color: lime }
+      pre.fail { background-color: red }
+    </style>
+    <script type="application/x-javascript">
+      <!--
+var plugin = 0;
+var startupTimeout;
+var logElt;
+
+var GeneralLog = function(str) {
+  logElt.textContent += str + '\n';
+}
+
+var FileLoadCallback = function(again, expect_fail) {
+  this.onload = function(nacl_desc) {
+    GeneralLog('onload callback');
+    var msg = plugin.cat(nacl_desc, 4096);
+    GeneralLog('cat returned, converting to string');
+    var str = '';
+    var len = msg.length;
+    var byte;
+    for (var i = 0; i < len && (byte = msg[i]) != 0; i++) {
+      str += String.fromCharCode(byte);
+    }
+    GeneralLog(str);
+
+    if (again) {  // this is a gross hack
+      var url = 'http://www.google.com/robots.txt';
+      // url = 'index.html';  // uncomment to test the test case.
+      GeneralLog('Loading URL ' + url);
+      GeneralLog('Expect same origin policy violation popup');
+      plugin.__urlAsNaClDesc(url,
+                             new FileLoadCallback(0, 1));
+    } else {
+      if (expect_fail) {
+        logElt.className = 'fail';
+        window.alert('Test failed.');
+      } else {
+        logElt.className = 'pass';
+      }
+    }
+  }
+  this.onfail = function(object) {
+    GeneralLog('onfail callback invoked, ' + object);
+    if (expect_fail) {
+      logElt.className = 'pass';
+      window.alert('Test passed -- cross-domain fetch failed: ' + object);
+    } else {
+      logElt.className = 'fail';
+      window.alert('Test failed: ' + object);
+    }
+  }
+}
+
+var PostLoadInit = function() {
+  if (1 == plugin.__moduleReady) {
+    clearTimeout(startupTimeout);
+
+    // start of payload
+    var url = 'srpc_url_as_nacl_desc_success.html';
+    GeneralLog('Loading URL ' + url);
+    plugin.__urlAsNaClDesc(url,
+                           new FileLoadCallback(1, 0));
+    // end of payload
+  } else {
+    if (plugin.__moduleReady == undefined) {
+      logElt.className = 'fail';
+      alert('The Native Client plugin was unable to load');
+      return;
+    }
+    startupTimeout = setTimeout(PostLoadInit, 100);
+  }
+}
+
+var Init = function() {
+  // window.alert('hello world');
+  plugin = document.getElementById('nacl');
+  logElt = document.getElementById('GeneralOutput');
+  GeneralLog('loading module');
+  PostLoadInit();
+}
+        -->
+    </script>
+    <title>SRPC Open URL as NaCl Descriptor Test</title>
+  </head>
+  <body onload="Init();">
+    <h1>SRPC Open URL as NaCl Descriptor Test</h1>
+
+    <h2> Output logs </h2> <p>
+      <table border=5 cellpadding=5%>
+        <tr>
+          <td> <b> General test output </b> </td>
+        </tr>
+        <tr>
+          <td valign=top><pre id='GeneralOutput'></pre></td>
+        </tr>
+      </table>
+      <embed type="application/x-nacl-srpc" id="nacl" width="0" height="0"
+              src="cat.nexe">
+      </embed>
+  </body>
+</html>
+

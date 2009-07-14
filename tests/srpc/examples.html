@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2009 Google Inc.  All rights reserved. -->
+  <head>
+    <title> Browser Test Page </title>
+    <script type="text/javascript">
+// test_table descriptor consists of a number of rows.
+// Each row contains a two element array.
+// The first element is a "class" of test, which becomes a column heading.
+// The second element is a list of test descriptors.
+// Each test descriptor is a two element array containing a description and a
+// link.
+var test_table_descriptor = [
+  [ 'Examples',
+    [ [ 'SRPC hello world example', 'srpc_hw.html' ],
+      [ 'Spinning earth', 'earth.html' ],
+      [ 'Interactive life simulation', 'life.html' ],
+      [ 'Animated Voronoi diagram', 'voronoi.html' ],
+      [ 'Three demos on one page', 'many3.html' ],
+      [ 'Nine demos on one page', 'many9.html' ],
+      [ 'Mandelbrot viewer', 'mandel_nav.html' ] ] ],
+  [ 'Functionality Tests',
+    [ [ 'SRPC plugin properties test', 'srpc_plugin.html' ],
+      [ 'SRPC shared memory API test', 'srpc_shm.html' ],
+      [ 'SRPC resource descriptor transfer test', 'srpc_nrd_xfer.html' ],
+      [ 'URL content as NaCl resource descriptor test',
+        'srpc_url_as_nacl_desc.html' ] ] ],
+  [ 'Performance Tests',
+    [ [ 'Mandelbrot performance (tiled Native Client)', 'mandel_tiled.html' ],
+      [ 'SRPC performance', 'srpcperf.html' ],
+      [ 'Automatic page reloading', 'autoloader.html' ] ] ],
+  [ 'Regression Tests',
+    [ [ 'Security contest submissions', 'contest_issue_index.html' ] ] ]
+];
+
+var buildTable = function() {
+  var num_test_classes = test_table_descriptor.length;
+  var i;
+  var table = '<table border="10" cellpadding="5%"><tr>';
+  // Build the table heading row.
+  for (i = 0; i < num_test_classes; ++i) {
+    var test_class_descriptor = test_table_descriptor[i];
+    var heading = test_class_descriptor[0];
+    table += '<th>' + heading + '</th>';
+  }
+  table += '</tr><tr>';
+  // Build the tests row as a set of nested tables.
+  for (i = 0; i < num_test_classes; ++i) {
+    var test_class_descriptor = test_table_descriptor[i];
+    var test_list = test_class_descriptor[1];
+    var num_tests = test_list.length;
+    var j;
+    table += '<td valign="top"><table>';
+    for (j = 0; j < num_tests; ++j) {
+      var test_descriptor = test_list[j];
+      var test_name = test_descriptor[0];
+      var test_link = test_descriptor[1];
+      table +=
+        '<tr><td>' +
+          '<button type="button" onclick="self.location=\'' + test_link +
+          '\'"> Go </button>&nbsp;' +
+          test_name +
+        '</td></tr>';
+    }
+    table += '</table></td>';
+  }
+  table += '</tr></table>';
+  // Install the table in the div element.
+  var table_div_element = document.getElementById('table_div');
+  table_div_element.innerHTML = table;
+}
+    </script>
+  </head>
+  <body onload="buildTable()">
+    <h1> Native Client Browser Examples and Tests </h1>
+    <div id="table_div"> </div>
+  </body>
+</html>

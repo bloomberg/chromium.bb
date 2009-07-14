@@ -1,0 +1,168 @@
+# -*- python -*-
+# Copyright 2009, Google Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+{
+  'variables': {
+    'conditions': [
+      ['OS=="linux"', {
+        'syscall_handler': [
+          'linux/nacl_syscall_impl.c'
+        ],
+      }],
+      ['OS=="mac"', {
+        'syscall_handler': [
+          'linux/nacl_syscall_impl.c'
+        ],
+      }],
+      ['OS=="win"', {
+        'syscall_handler': [
+          'win/nacl_syscall_impl.c'
+        ],
+        'msvs_cygwin_shell': 0,
+      }],
+    ],
+  },
+  'includes': [
+    '../../../build/common.gypi',
+  ],
+  'target_defaults': {
+  },
+  'targets': [
+    {
+      'target_name': 'sel',
+      'type': 'static_library',
+      'sources': [
+        'dyn_array.c',
+        'nacl_all_modules.c',
+        'nacl_app.c',
+        'nacl_app_thread.c',
+        'nacl_bottom_half.c',
+        'nacl_check.c',
+        'nacl_closure.c',
+        'nacl_globals.c',
+        'nacl_ldt.c',
+        'nacl_memory_object.c',
+        'nacl_switch_to_app.c',
+        'nacl_sync_queue.c',
+        'nacl_syscall_common.c',
+        '<(INTERMEDIATE_DIR)/nacl_syscall_handlers.c',
+        'nacl_syscall_hook.c',
+        'sel_addrspace.c',
+        'sel_ldr.c',
+        'sel_ldr_standard.c',
+        'sel_load_image.c',
+        'sel_mem.c',
+        'sel_rt.c',
+        'sel_util.c',
+        'sel_validate_image.c',
+        'web_worker_stub.c',
+        'arch/x86_32/nacl_switch.S',
+        'arch/x86_32/nacl_syscall.S',
+        'arch/x86_32/springboard.S',
+        'arch/x86_32/tramp.S',
+      ],
+      'sources!': [
+         '<(syscall_handler)',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'sources': [
+            'linux/nacl_ldt.c',
+            'linux/sel_memory.c',
+            'linux/sel_segments.c',
+          ],
+        }],
+        ['OS=="mac"', {
+          'sources': [
+            'osx/nacl_ldt.c',
+            'linux/sel_memory.c',
+            'linux/sel_segments.c',
+          ],
+        }],
+        ['OS=="win"', {
+          'sources': [
+            'win/nacl_ldt.c',
+            'win/sel_memory.c',
+            'win/sel_segments.c',
+          ],
+        }],
+      ],
+      'actions': [
+        {
+          'action_name': 'nacl_syscall_handler',
+          'inputs': [
+            'nacl_syscall_handlers_gen2.py',
+            'nacl_syscall_handlers_gen3.py',
+            '<(syscall_handler)',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'msvs_cygwin_shell': 0,
+            }],
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/nacl_syscall_handlers.c',
+          ],
+          'action':
+             ['python nacl_syscall_handlers_gen3.py -c -f "Video|Audio|Multimedia" < <(syscall_handler) > <(INTERMEDIATE_DIR)/nacl_syscall_handlers.c'],
+        },
+      ],
+    }, {
+      'target_name': 'gio',
+      'type': 'static_library',
+      'sources': [
+        'gio.c',
+        'gio_mem.c',
+        'gprintf.c',
+        'gio_mem_snapshot.c',
+      ],
+    }, {
+      'target_name': 'container',
+      'type': 'static_library',
+      'sources': [
+        'generic_container/container.c',
+      ],
+    }, {
+      'target_name': 'expiration',
+      'type': 'static_library',
+      'sources': [
+        'expiration.c',
+      ],
+    }, {
+      'target_name': 'nacl_xdr',
+      'type': 'static_library',
+      'sources': [
+        'fs/xdr.c',
+        'fs/obj_proxy.c',
+      ],
+    },
+    # TODO(bsy): no tests are built; see build.scons
+  ],
+}

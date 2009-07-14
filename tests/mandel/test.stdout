@@ -1,0 +1,9 @@
+RPC Name                 Input args Output args
+  0 service_discovery               C         
+  1 mandel               dddd       iii       
+  2 __shutdown                                
+mandel RESULTS:   i(0)  i(0)  i(0)
+mandel RESULTS:   i(128)  i(0)  i(0)
+mandel RESULTS:   i(128)  i(0)  i(0)
+mandel RESULTS:   i(128)  i(0)  i(0)
+mandel RESULTS:   i(128)  i(0)  i(0)

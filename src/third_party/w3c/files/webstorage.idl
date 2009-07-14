@@ -1,0 +1,90 @@
+interface Storage {
+  readonly attribute unsigned long length;
+  [IndexGetter] DOMString key(in unsigned long index);
+  [NameGetter] DOMString getItem(in DOMString key);
+  [NameSetter] void setItem(in DOMString key, in DOMString data);
+  [NameDeleter] void removeItem(in DOMString key);
+  void clear();
+};
+
+interface StorageEvent : Event {
+  readonly attribute DOMString key;
+  readonly attribute DOMString oldValue;
+  readonly attribute DOMString newValue;
+  readonly attribute DOMString url;
+  readonly attribute WindowProxy source;
+  readonly attribute Storage storageArea;
+  void initStorageEvent(in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg, in DOMString oldValueArg, in DOMString newValueArg, in DOMString urlArg, in WindowProxy sourceArg, in Storage storageAreaArg);
+  void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg, in DOMString oldValueArg, in DOMString newValueArg, in DOMString urlArg, in WindowProxy sourceArg, in Storage storageAreaArg);
+};
+
+interface Database {
+  void transaction(in SQLTransactionCallback callback, [Optional] in SQLTransactionErrorCallback errorCallback, [Optional] in SQLVoidCallback successCallback);
+  void readTransaction(in SQLTransactionCallback callback, [Optional] in SQLTransactionErrorCallback errorCallback, [Optional] in SQLVoidCallback successCallback);
+
+  readonly attribute DOMString version;
+  void changeVersion(in DOMString oldVersion, in DOMString newVersion, in SQLTransactionCallback callback, in SQLTransactionErrorCallback errorCallback, in SQLVoidCallback successCallback);
+};
+
+[Callback=FunctionOnly, NoInterfaceObject]
+interface SQLVoidCallback {
+  void handleEvent();
+};
+
+[Callback=FunctionOnly, NoInterfaceObject]
+interface SQLTransactionCallback {
+  void handleEvent(in SQLTransaction transaction);
+};
+
+[Callback=FunctionOnly, NoInterfaceObject]
+interface SQLTransactionErrorCallback {
+  void handleEvent(in SQLError error);
+};
+
+typedef sequence<any> ObjectArray;
+
+interface SQLTransaction {
+  void executeSql(in DOMString sqlStatement, [Optional] in ObjectArray arguments, [Optional] in SQLStatementCallback callback, [Optional] in SQLStatementErrorCallback errorCallback);
+};
+
+[Callback=FunctionOnly, NoInterfaceObject]
+interface SQLStatementCallback {
+  void handleEvent(in SQLTransaction transaction, in SQLResultSet resultSet);
+};
+
+[Callback=FunctionOnly, NoInterfaceObject]
+interface SQLStatementErrorCallback {
+  boolean handleEvent(in SQLTransaction transaction, in SQLError error);
+};
+
+interface DatabaseSync {
+  SQLTransactionSync transaction();
+  SQLTransactionSync readTransaction();
+
+  readonly attribute DOMString version;
+  SQLTransactionSync changeVersion(in DOMString oldVersion, in DOMString newVersion);
+};
+
+// typedef sequence<any> ObjectArray;
+
+interface SQLTransactionSync {
+  SQLResultSet executeSql(in DOMString sqlStatement, [Optional] in ObjectArray arguments);
+  void commit();
+};
+
+interface SQLResultSet {
+  readonly attribute long insertId;
+  readonly attribute long rowsAffected;
+  readonly attribute SQLResultSetRowList rows;
+};
+
+interface SQLResultSetRowList {
+  readonly attribute unsigned long length;
+  [IndexGetter] any item(in unsigned long index);
+};
+
+interface SQLError {
+  readonly attribute unsigned long code;
+  readonly attribute DOMString message;
+};
+

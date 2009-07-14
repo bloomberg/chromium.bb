@@ -1,0 +1,1912 @@
+diff -Naur ../PRISTINE/gcc-4.2.2/config/lib-prefix.m4 gcc-4.2.2/config/lib-prefix.m4
+--- ../PRISTINE/gcc-4.2.2/config/lib-prefix.m4	2004-09-22 16:53:59.000000000 -0700
++++ gcc-4.2.2/config/lib-prefix.m4	2009-01-09 17:35:50.549396000 -0800
+@@ -71,7 +71,7 @@
+         if test "X$additional_includedir" = "X/usr/local/include"; then
+           if test -n "$GCC"; then
+             case $host_os in
+-              linux*) haveit=yes;;
++              linux* | nacl*) haveit=yes;;
+             esac
+           fi
+         fi
+@@ -102,7 +102,7 @@
+         if test "X$additional_libdir" = "X/usr/local/lib"; then
+           if test -n "$GCC"; then
+             case $host_os in
+-              linux*) haveit=yes;;
++              linux* | nacl*) haveit=yes;;
+             esac
+           fi
+         fi
+diff -Naur ../PRISTINE/gcc-4.2.2/config.sub gcc-4.2.2/config.sub
+--- ../PRISTINE/gcc-4.2.2/config.sub	2006-10-15 20:27:17.000000000 -0700
++++ gcc-4.2.2/config.sub	2009-01-09 17:35:50.582362000 -0800
+@@ -122,7 +122,7 @@
+ case $maybe_os in
+   nto-qnx* | linux-gnu* | linux-dietlibc | linux-newlib* | linux-uclibc* | \
+   uclinux-uclibc* | uclinux-gnu* | kfreebsd*-gnu* | knetbsd*-gnu* | netbsd*-gnu* | \
+-  storm-chaos* | os2-emx* | rtmk-nova*)
++  storm-chaos* | os2-emx* | rtmk-nova* | nacl*)
+     os=-$maybe_os
+     basic_machine=`echo $1 | sed 's/^\(.*\)-\([^-]*-[^-]*\)$/\1/'`
+     ;;
+@@ -715,6 +715,10 @@
+ 		basic_machine=i370-ibm
+ 		os=-mvs
+ 		;;
++	nacl)
++		basic_machine=i686-pc
++		os=-nacl
++		;;
+ 	ncr3000)
+ 		basic_machine=i486-ncr
+ 		os=-sysv4
+@@ -1219,7 +1223,7 @@
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers*)
++	      | -skyos* | -haiku* | -rdos* | -toppers* | -nacl*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+diff -Naur ../PRISTINE/gcc-4.2.2/configure gcc-4.2.2/configure
+--- ../PRISTINE/gcc-4.2.2/configure	2007-09-14 17:42:24.000000000 -0700
++++ gcc-4.2.2/configure	2009-01-09 17:35:50.594353000 -0800
+@@ -1178,6 +1178,9 @@
+     *-*-freebsd*)
+         # Enable libmudflap by default in FreeBSD.
+ 	;;
++    *-*-nacl*)
++        # Enable libmudflap by default in NativeClient.
++	;;
+     *)
+         # Disable it by default everywhere else.
+ 	noconfigdirs="$noconfigdirs target-libmudflap"
+@@ -1197,6 +1200,8 @@
+ 	;;
+     *-*-darwin* | *-*-aix*)
+ 	;;
++    *-*-nacl*)
++	;;
+     *)
+ 	noconfigdirs="$noconfigdirs target-libgomp"
+ 	;;
+@@ -1638,7 +1643,7 @@
+   ip2k-*-*)
+     noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
+     ;;
+-  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
++  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-nacl*)
+     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+     ;;
+   *-*-lynxos*)
+diff -Naur ../PRISTINE/gcc-4.2.2/configure.in gcc-4.2.2/configure.in
+--- ../PRISTINE/gcc-4.2.2/configure.in	2007-09-14 17:42:24.000000000 -0700
++++ gcc-4.2.2/configure.in	2009-01-09 17:35:50.601341000 -0800
+@@ -338,6 +338,9 @@
+     *-*-freebsd*)
+         # Enable libmudflap by default in FreeBSD.
+ 	;;
++    *-*-nacl*)
++        # Enable libmudflap by default in NativeClient.
++  ;;
+     *)
+         # Disable it by default everywhere else.
+ 	noconfigdirs="$noconfigdirs target-libmudflap"
+@@ -357,6 +360,8 @@
+ 	;;
+     *-*-darwin* | *-*-aix*)
+ 	;;
++    *-*-nacl*)
++	;;
+     *)
+ 	noconfigdirs="$noconfigdirs target-libgomp"
+ 	;;
+@@ -798,7 +803,7 @@
+   ip2k-*-*)
+     noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
+     ;;
+-  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)
++  *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu | *-*-nacl*)
+     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+     ;;
+   *-*-lynxos*)
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/Makefile.in gcc-4.2.2/gcc/Makefile.in
+--- ../PRISTINE/gcc-4.2.2/gcc/Makefile.in	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/Makefile.in	2009-01-09 17:35:50.619330000 -0800
+@@ -1018,7 +1018,7 @@
+  lambda-trans.o	lambda-code.o tree-loop-linear.o tree-ssa-sink.o 	   \
+  tree-vrp.o tree-stdarg.o tree-cfgcleanup.o tree-ssa-reassoc.o		   \
+  tree-ssa-structalias.o tree-object-size.o 				   \
+- rtl-factoring.o
++ rtl-factoring.o ctrl-intg.o
+ 
+ 
+ OBJS-md = $(out_object_file)
+@@ -2635,6 +2635,9 @@
+    $(TREE_H)
+ errors.o : errors.c $(CONFIG_H) $(SYSTEM_H) errors.h $(BCONFIG_H)
+ 
++ctrl-intg.o : ctrl-intg.c $(CONFIG_H) $(SYSTEM_H) $(BCONFIG_H) \
++   $(TREE_H) $(RTL_H) $(TM_H) $(EXPR_H) $(FLAGS_H) $(BASIC_BLOCK_H)
++
+ $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
+    $(RTL_H) $(REGS_H) hard-reg-set.h insn-config.h conditions.h \
+    output.h $(INSN_ATTR_H) $(SYSTEM_H) toplev.h $(TARGET_H) libfuncs.h \
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/cfgrtl.c gcc-4.2.2/gcc/cfgrtl.c
+--- ../PRISTINE/gcc-4.2.2/gcc/cfgrtl.c	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/cfgrtl.c	2009-01-09 17:35:50.635321000 -0800
+@@ -1040,6 +1040,9 @@
+     }
+   else
+     {
++      if ((e->flags & EDGE_FALLTHRU) == 0) {
++        printf("Edge flags were incorrect %x\n", e->flags);
++      }
+       gcc_assert (e->flags & EDGE_FALLTHRU);
+       if (e->src == ENTRY_BLOCK_PTR)
+ 	{
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/crtfastmath.c gcc-4.2.2/gcc/config/i386/crtfastmath.c
+--- ../PRISTINE/gcc-4.2.2/gcc/config/i386/crtfastmath.c	2006-08-26 23:46:38.000000000 -0700
++++ gcc-4.2.2/gcc/config/i386/crtfastmath.c	2009-01-09 17:35:50.642295000 -0800
+@@ -49,6 +49,10 @@
+ #ifndef __x86_64__
+   /* All 64-bit targets have SSE and DAZ; only check them explicitly
+      for 32-bit ones. */
++#ifndef __native_client__
++  /* Native Client does not allow several instructions used here, notably
++     setting model specific registers.  We're going to want to revisit this
++     as a possible syscall */
+   unsigned int eax, ebx, ecx, edx;
+ 
+   /* See if we can use cpuid.  */
+@@ -108,6 +112,7 @@
+ 
+       __builtin_ia32_ldmxcsr (mxcsr);
+     }
++#endif  /* __native_client__ */
+ #else
+   unsigned int mxcsr = __builtin_ia32_stmxcsr ();
+   mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.c gcc-4.2.2/gcc/config/i386/i386.c
+--- ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.c	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/config/i386/i386.c	2009-01-09 17:35:50.664273000 -0800
+@@ -4876,6 +4876,8 @@
+ 	  (*targetm.asm_out.unique_section) (decl, 0);
+ 	  switch_to_section (get_named_section (decl, NULL, 0));
+ 
++          if (flag_control_integrity && !getenv("NONACLRET"))
++            fprintf (asm_out_file, ".p2align %d\n", NACL_ALIGN_POW2);
+ 	  (*targetm.asm_out.globalize_label) (asm_out_file, name);
+ 	  fputs ("\t.hidden\t", asm_out_file);
+ 	  assemble_name (asm_out_file, name);
+@@ -4885,13 +4887,24 @@
+       else
+ 	{
+ 	  switch_to_section (text_section);
++          if (flag_control_integrity && !getenv("NONACLRET"))
++            fprintf (asm_out_file, ".p2align %d\n", NACL_ALIGN_POW2);
+ 	  ASM_OUTPUT_LABEL (asm_out_file, name);
+ 	}
+ 
+-      xops[0] = gen_rtx_REG (SImode, regno);
+-      xops[1] = gen_rtx_MEM (SImode, stack_pointer_rtx);
+-      output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
+-      output_asm_insn ("ret", xops);
++      if (flag_control_integrity && !getenv("NONACLRET"))
++        {
++          xops[0] = gen_rtx_REG (SImode, regno);
++          output_asm_insn ("pop{l}\t%0", xops);
++          output_asm_insn ("nacljmp\t%0", xops);
++        }
++      else
++        {
++          xops[0] = gen_rtx_REG (SImode, regno);
++          xops[1] = gen_rtx_MEM (SImode, stack_pointer_rtx);
++          output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
++          output_asm_insn ("ret", xops);
++        }
+     }
+ 
+   if (NEED_INDICATE_EXEC_STACK)
+@@ -5714,7 +5727,8 @@
+ 	 return address, do explicit add, and jump indirectly to the
+ 	 caller.  */
+ 
+-      if (current_function_pops_args >= 65536)
++      if ((flag_control_integrity && !getenv("NONACLRET")) ||
++          (current_function_pops_args >= 65536))
+ 	{
+ 	  rtx ecx = gen_rtx_REG (SImode, 2);
+ 
+@@ -5723,13 +5737,30 @@
+ 
+ 	  emit_insn (gen_popsi1 (ecx));
+ 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, popc));
+-	  emit_jump_insn (gen_return_indirect_internal (ecx));
++          if (flag_control_integrity && !getenv("NONACLRET")) {
++	    emit_jump_insn (gen_nacl_return_indirect (ecx));
++          }
++          else
++	    emit_jump_insn (gen_return_indirect_internal (ecx));
+ 	}
+       else
+ 	emit_jump_insn (gen_return_pop_internal (popc));
+     }
+   else
+-    emit_jump_insn (gen_return_internal ());
++    {
++      if (flag_control_integrity && !getenv("NONACLRET"))
++        {
++	  rtx ecx = gen_rtx_REG (SImode, 2);
++
++	  /* There is no "pascal" calling convention in 64bit ABI.  */
++	  gcc_assert (!TARGET_64BIT);
++
++	  emit_insn (gen_popsi1 (ecx));
++          emit_jump_insn (gen_nacl_return_indirect (ecx));
++        }
++      else
++        emit_jump_insn (gen_return_internal ());
++    }
+ }
+ 
+ /* Reset from the function's potential modifications.  */
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.md gcc-4.2.2/gcc/config/i386/i386.md
+--- ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.md	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/config/i386/i386.md	2009-02-19 15:08:48.418868000 -0800
+@@ -147,6 +147,11 @@
+    (UNSPEC_SP_TEST		101)
+    (UNSPEC_SP_TLS_SET		102)
+    (UNSPEC_SP_TLS_TEST		103)
++
++   ; NativeClient opcodes
++   (UNSPEC_NACLCALL 104)
++   (UNSPEC_NACLJMP 105)
++   (UNSPEC_NACLRET 106)
+   ])
+ 
+ (define_constants
+@@ -8633,6 +8638,105 @@
+   [(set_attr "type" "alu")
+    (set_attr "mode" "SI")])
+ 
++(define_insn "naclcall"
++  [(unspec [(mem:QI (match_operand:SI 0 "register_operand" "r"))
++	          (match_operand 1 "" "")] UNSPEC_NACLCALL)]
++  "!SIBLING_CALL_P (insn) && !TARGET_64BIT"
++{
++  gcc_assert (flag_control_integrity);
++  return "naclcall\t%0";
++}
++  [(set_attr "type" "call")])
++
++(define_insn "naclsibcall"
++  [(unspec [(mem:QI (match_operand:SI 0 "register_operand" "s,c,d,a"))
++	          (match_operand 1 "" "")] UNSPEC_NACLCALL)]
++  "SIBLING_CALL_P (insn) && !TARGET_64BIT"
++{
++  gcc_assert (flag_control_integrity);
++  return "nacljmp\t%0";
++}
++  [(set_attr "type" "call")])
++
++(define_insn "naclcall_pop"
++  [(unspec [(mem:QI (match_operand:SI 0 "register_operand" "r"))
++	          (match_operand:SI 1 "" "")] UNSPEC_NACLCALL)
++   (set (reg:SI SP_REG) (plus:SI (reg:SI SP_REG)
++			    (match_operand:SI 2 "immediate_operand" "i")))]
++  "!TARGET_64BIT"
++{
++  gcc_assert (flag_control_integrity);
++  if (SIBLING_CALL_P (insn))
++    return "nacljmp\t%0";
++  else
++    return "naclcall\t%0";
++}
++  [(set_attr "type" "call")])
++
++(define_insn "naclcall_value"
++  [(set (match_operand 0 "" "")
++        (unspec [(mem:QI (match_operand:SI 1 "register_operand" "r"))
++	               (match_operand 2 "" "")] UNSPEC_NACLCALL))]
++  "!SIBLING_CALL_P (insn) && !TARGET_64BIT"
++{
++  gcc_assert (flag_control_integrity);
++  return "naclcall\t%1";
++}
++  [(set_attr "type" "callv")])
++
++(define_insn "naclsibcall_value"
++  [(set (match_operand 0 "" "")
++        (unspec [(mem:QI (match_operand:SI 1 "register_operand" "s,c,d,a"))
++	               (match_operand 2 "" "")] UNSPEC_NACLCALL))]
++  "SIBLING_CALL_P (insn) && !TARGET_64BIT"
++{
++  gcc_assert (flag_control_integrity);
++  return "nacljmp\t%1";
++}
++  [(set_attr "type" "callv")])
++
++(define_insn "naclcall_value_pop"
++  [(set (match_operand 0 "" "")
++	      (unspec [(mem:QI (match_operand:SI 1 "register_operand" "r"))
++	               (match_operand:SI 2 "" "")] UNSPEC_NACLCALL))
++   (set (reg:SI SP_REG) (plus:SI (reg:SI SP_REG)
++			    (match_operand:SI 3 "immediate_operand" "i")))]
++  "!TARGET_64BIT"
++{
++  gcc_assert (flag_control_integrity);
++  if (SIBLING_CALL_P (insn))
++    return "nacljmp\t%1";
++  else
++    return "naclcall\t%1";
++}
++  [(set_attr "type" "callv")])
++
++(define_insn "nacljmp_indirect"
++  [(set (pc) (unspec [(match_operand:SI 0 "register_operand" "r")]
++    UNSPEC_NACLJMP))]
++  "!TARGET_64BIT"
++  "nacljmp\t%0"
++  [(set_attr "type" "ibr")
++   (set_attr "length_immediate" "0")])
++
++(define_insn "nacljmp_table"
++  [(set (pc) (unspec [(match_operand:SI 0 "register_operand" "r")]
++    UNSPEC_NACLJMP))
++   (use (label_ref (match_operand 1 "" "")))]
++  "!TARGET_64BIT"
++  "nacljmp\t%0"
++  [(set_attr "type" "ibr")
++   (set_attr "length_immediate" "0")])
++
++(define_insn "nacl_return_indirect"
++  [(unspec [(return) (use (match_operand:SI 0 "register_operand" "r"))]
++    UNSPEC_NACLRET)]
++  "!TARGET_64BIT"
++  "nacljmp\t%0"
++  [(set_attr "type" "ibr")
++   (set_attr "length_immediate" "0")])
++
++
+ (define_insn "*iorsi_3"
+   [(set (reg FLAGS_REG)
+ 	(compare (ior:SI (match_operand:SI 1 "nonimmediate_operand" "%0")
+@@ -13915,7 +14019,7 @@
+ (define_insn "*indirect_jump"
+   [(set (pc) (match_operand:SI 0 "nonimmediate_operand" "rm"))]
+   "!TARGET_64BIT"
+-  "jmp\t%A0"
++  "nacljmp\t%A0"
+   [(set_attr "type" "ibr")
+    (set_attr "length_immediate" "0")])
+ 
+@@ -14254,7 +14358,16 @@
+   if (current_function_pops_args)
+     {
+       rtx popc = GEN_INT (current_function_pops_args);
+-      emit_jump_insn (gen_return_pop_internal (popc));
++      // DCS
++      if (flag_control_integrity && !getenv("NONACLRET"))
++        {
++	  rtx ecx = gen_rtx_REG (SImode, 2);
++	  emit_insn (gen_popsi1 (ecx));
++	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, popc));
++	  emit_jump_insn (gen_nacl_return_indirect (ecx));
++        }
++      else
++        emit_jump_insn (gen_return_pop_internal (popc));
+       DONE;
+     }
+ })
+@@ -14262,9 +14375,14 @@
+ (define_insn "return_internal"
+   [(return)]
+   "reload_completed"
+-  "ret"
+-  [(set_attr "length" "1")
+-   (set_attr "length_immediate" "0")
++  {
++    if (flag_control_integrity && !getenv("NONACLRET"))
++      return "pop{l}\t%%ecx\nnacljmp\t%%ecx";
++    else
++      return "ret";
++    /* USED TO HAVE [(set_attr "length" "1") */
++  }
++  [(set_attr "length_immediate" "0")
+    (set_attr "modrm" "0")])
+ 
+ ;; Used by x86_machine_dependent_reorg to avoid penalty on single byte RET
+@@ -14274,9 +14392,14 @@
+   [(return)
+    (unspec [(const_int 0)] UNSPEC_REP)]
+   "reload_completed"
+-  "rep {;} ret"
+-  [(set_attr "length" "1")
+-   (set_attr "length_immediate" "0")
++  {
++    if (flag_control_integrity && !getenv("NONACLRET"))
++      return "pop{l}\t%%ecx\nnacljmp\t%%ecx";
++    else
++      return "rep {;} ret";
++    /* USED TO HAVE [(set_attr "length" "1") */
++  }
++  [(set_attr "length_immediate" "0")
+    (set_attr "prefix_rep" "1")
+    (set_attr "modrm" "0")])
+ 
+@@ -14284,9 +14407,14 @@
+   [(return)
+    (use (match_operand:SI 0 "const_int_operand" ""))]
+   "reload_completed"
+-  "ret\t%0"
+-  [(set_attr "length" "3")
+-   (set_attr "length_immediate" "2")
++  {
++    if (flag_control_integrity && !getenv("NONACLRET"))
++      return "pop{l}\t%%ecx\nadd{l}\t%%esp,%0\nnacljmp\t%%ecx";
++    else
++      return "ret\t%0";
++      /* USED TO HAVE [(set_attr "length" "3") */
++  }
++  [(set_attr "length_immediate" "2")
+    (set_attr "modrm" "0")])
+ 
+ (define_insn "return_indirect_internal"
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/nacl.h gcc-4.2.2/gcc/config/i386/nacl.h
+--- ../PRISTINE/gcc-4.2.2/gcc/config/i386/nacl.h	1969-12-31 16:00:00.000000000 -0800
++++ gcc-4.2.2/gcc/config/i386/nacl.h	2009-01-09 17:35:50.705234000 -0800
+@@ -0,0 +1,76 @@
++/* Target definitions for GCC for NativeClient using ELF
++   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002
++   Free Software Foundation, Inc.
++
++   Derived from sysv4.h written by Ron Guilmette (rfg@netcom.com).
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify
++it under the terms of the GNU General Public License as published by
++the Free Software Foundation; either version 2, or (at your option)
++any later version.
++
++GCC is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++GNU General Public License for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to
++the Free Software Foundation, 59 Temple Place - Suite 330,
++Boston, MA 02111-1307, USA.  */
++
++/* These definitions modify those in i386elf.h. */
++
++#undef TARGET_VERSION
++#define TARGET_VERSION fprintf (stderr, " (NativeClient)");
++
++/* Pass the NativeClient specific options to the assembler */
++#undef  ASM_SPEC
++#define ASM_SPEC \
++  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} " \
++  "%{fnacl-library-mode:-nacl-library-mode} " \
++  "%{fnacl-align-16:-nacl-align=4} " \
++  "%{fnacl-align-32:-nacl-align=5} " \
++  "%{Ym,*} %{Yd,*} %{Wa,*:%*}"
++
++#undef	LIB_SPEC
++#define LIB_SPEC \
++  "%{pthread:-lpthread} \
++   -lc \
++   -lnacl \
++   %{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}"
++
++/*
++ * Set the linker emulation to be elf_nacl rather than linux.h's default
++ * (elf_i386).
++ */
++#ifdef LINK_EMULATION
++#undef LINK_EMULATION
++#endif
++#define LINK_EMULATION "elf_nacl"
++
++/*
++ * Because of NaCl's use of segment registers, negative offsets from gs: will
++ * not work.  Hence we need to make TLS references explicitly compute the
++ * tls base pointer and then indirect relative to it using the default
++ * segment descriptor (DS).  That is, instead of
++ *    movl gs:i@NTPOFF, %ecx
++ * we use
++ *   movl %gs:0, %eax
++ *   movl i@NTPOFF(%eax), %ecx
++ * There is a slight performance penalty for TLS accesses, but there does not
++ * seem a way around it.
++ */
++#undef TARGET_TLS_DIRECT_SEG_REFS_DEFAULT
++#define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT 0
++
++#undef TARGET_OS_CPP_BUILTINS
++#define TARGET_OS_CPP_BUILTINS()			\
++  do							\
++    {							\
++	LINUX_TARGET_OS_CPP_BUILTINS();			\
++	builtin_define ("__native_client__=1");		\
++  }							\
++  while (0)
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/nacl.opt gcc-4.2.2/gcc/config/nacl.opt
+--- ../PRISTINE/gcc-4.2.2/gcc/config/nacl.opt	1969-12-31 16:00:00.000000000 -0800
++++ gcc-4.2.2/gcc/config/nacl.opt	2009-01-09 17:35:50.717224000 -0800
+@@ -0,0 +1,54 @@
++; Processor-independent options for GNU/Linux.
++;
++; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
++; Contributed by Google
++;
++; This file is part of GCC.
++;
++; GCC is free software; you can redistribute it and/or modify it under
++; the terms of the GNU General Public License as published by the Free
++; Software Foundation; either version 3, or (at your option) any later
++; version.
++;
++; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
++; WARRANTY; without even the implied warranty of MERCHANTABILITY or
++; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++; for more details.
++;
++; You should have received a copy of the GNU General Public License
++; along with GCC; see the file COPYING3.  If not see
++; <http://www.gnu.org/licenses/>.
++
++fcontrol-integrity
++Common Report Var(flag_control_integrity) Init(1)
++Expand indirect call, jmp, and rets
++
++falign-functions
++Common Report Var(align_functions,NACL_ALIGN_BYTES) Init(NACL_ALIGN_BYTES)
++Align the start of functions
++
++falign-functions=
++Common RejectNegative Joined UInteger
++
++falign-jumps
++Common Report Var(align_jumps,NACL_ALIGN_BYTES) Init(NACL_ALIGN_BYTES)
++Align labels which are only reached by jumping
++
++falign-jumps=
++Common RejectNegative Joined UInteger
++
++falign-labels
++Common Report Var(align_labels,NACL_ALIGN_BYTES) Init(NACL_ALIGN_BYTES)
++Align all labels
++
++falign-labels=
++Common RejectNegative Joined UInteger
++
++fnacl-library-mode
++Common Report Var(flag_nacl_library_mode,1) Init(0)
++
++fnacl-align-16
++Common Report Var(flag_nacl_align_pow2,4) Init(NACL_ALIGN_POW2)
++
++fnacl-align-32
++Common Report Var(flag_nacl_align_pow2,5)
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config.gcc gcc-4.2.2/gcc/config.gcc
+--- ../PRISTINE/gcc-4.2.2/gcc/config.gcc	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/config.gcc	2009-01-09 17:35:50.725224000 -0800
+@@ -456,7 +456,20 @@
+ *-*-linux*libc1* | *-*-linux*aout*)
+   # Avoid the generic linux case.
+   ;;
+-*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu)
++*-*-nnacl*)
++  extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
++  extra_options="${extra_options} linux.opt nacl.opt"
++  gas=yes
++  gnu_ld=yes
++  case ${enable_threads} in
++    "" | yes | posix) thread_file='posix' ;;
++  esac
++  tmake_file="t-slibgcc-elf-ver t-linux"
++  tm_defines="${tm_defines} UCLIBC_DEFAULT=0"
++  # Assume that glibc or uClibc are being used and so __cxa_atexit is provided.
++  default_use_cxa_atexit=yes
++  ;;
++*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-nacl*)
+   # Must come before *-*-gnu* (because of *-*-linux-gnu* systems).
+   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+   extra_options="${extra_options} linux.opt"
+@@ -470,6 +483,13 @@
+     *-*-*uclibc*)
+       tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
+       ;;
++    *-*-*uclibc*)
++      tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
++      ;;
++    *-*-nacl*)
++      extra_options="${extra_options} nacl.opt"
++      tm_defines="${tm_defines} UCLIBC_DEFAULT=0"
++      ;;
+     *)
+       tm_defines="${tm_defines} UCLIBC_DEFAULT=0"
+       ;;
+@@ -1087,13 +1107,20 @@
+ 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/i386-coff.h"
+ 	use_fixproto=yes
+ 	;;
+-i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu)
++*-*-nnacl*)
++	# Intel 80386's running NativeClient /*
++	# with ELF format using glibc 2
++	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h"
++	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtfm t-dfprules"
++	;;
++i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | *-*-nacl*)
+ 			# Intel 80386's running GNU/*
+ 			# with ELF format using glibc 2
+ 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h"
+ 	case ${target} in
+ 	i[34567]86-*-knetbsd*-gnu) tm_file="${tm_file} knetbsd-gnu.h i386/knetbsd-gnu.h" ;;
+ 	i[34567]86-*-kfreebsd*-gnu) tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu.h" ;;
++	*-*-nacl*) tm_file="${tm_file} i386/nacl.h" ;;
+ 	esac
+ 	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtfm t-dfprules"
+ 	;;
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/configure gcc-4.2.2/gcc/configure
+--- ../PRISTINE/gcc-4.2.2/gcc/configure	2007-09-23 14:08:04.000000000 -0700
++++ gcc-4.2.2/gcc/configure	2009-01-09 17:35:50.748199000 -0800
+@@ -7035,7 +7035,7 @@
+ 
+   if test x$enablevar = xyes ; then
+     case $target in
+-    powerpc*-*-linux* | i?86*-*-linux*)
++    powerpc*-*-linux* | i?86*-*-linux* | i?86*-*-nacl*)
+       enable_decimal_float=yes
+       ;;
+     *)
+@@ -10803,7 +10803,7 @@
+                 if test "X$additional_includedir" = "X/usr/local/include"; then
+                   if test -n "$GCC"; then
+                     case $host_os in
+-                      linux*) haveit=yes;;
++                      linux* | nacl*) haveit=yes;;
+                     esac
+                   fi
+                 fi
+@@ -10847,7 +10847,7 @@
+                       if test "X$additional_libdir" = "X/usr/local/lib"; then
+                         if test -n "$GCC"; then
+                           case $host_os in
+-                            linux*) haveit=yes;;
++                            linux* | nacl*) haveit=yes;;
+                           esac
+                         fi
+                       fi
+@@ -12388,7 +12388,7 @@
+     # default
+     target_thread_file='single'
+     ;;
+-  aix | dce | gnat | irix | posix | posix95 | rtems | \
++  aix | dce | gnat | irix | nacl | posix | posix95 | rtems | \
+   single | solaris | vxworks | win32 )
+     target_thread_file=${enable_threads}
+     ;;
+@@ -13480,6 +13480,7 @@
+ 	in_tree_ld_is_elf=no
+ 	if (grep 'EMUL = .*elf' ../ld/Makefile \
+ 	    || grep 'EMUL = .*linux' ../ld/Makefile \
++	    || grep 'EMUL = .*nacl' ../ld/Makefile \
+ 	    || grep 'EMUL = .*lynx' ../ld/Makefile) > /dev/null; then
+ 	  in_tree_ld_is_elf=yes
+ 	fi
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/configure.ac gcc-4.2.2/gcc/configure.ac
+--- ../PRISTINE/gcc-4.2.2/gcc/configure.ac	2007-09-23 14:08:04.000000000 -0700
++++ gcc-4.2.2/gcc/configure.ac	2009-01-09 17:35:50.755195000 -0800
+@@ -686,7 +686,7 @@
+ [
+   if test x$enablevar = xyes ; then
+     case $target in
+-    powerpc*-*-linux* | i?86*-*-linux*)
++    powerpc*-*-linux* | i?86*-*-linux* | i?86*-*-nacl*)
+       enable_decimal_float=yes
+       ;;
+     *)
+@@ -1388,7 +1388,7 @@
+     # default
+     target_thread_file='single'
+     ;;
+-  aix | dce | gnat | irix | posix | posix95 | rtems | \
++  aix | dce | gnat | irix | nacl | posix | posix95 | rtems | \
+   single | solaris | vxworks | win32 )
+     target_thread_file=${enable_threads}
+     ;;
+@@ -1946,6 +1946,7 @@
+ 	in_tree_ld_is_elf=no
+ 	if (grep 'EMUL = .*elf' ../ld/Makefile \
+ 	    || grep 'EMUL = .*linux' ../ld/Makefile \
++	    || grep 'EMUL = .*nacl' ../ld/Makefile \
+ 	    || grep 'EMUL = .*lynx' ../ld/Makefile) > /dev/null; then
+ 	  in_tree_ld_is_elf=yes
+ 	fi
+@@ -2368,7 +2369,7 @@
+ 	tls_first_major=2
+ 	tls_first_minor=17
+ 	;;
+-  i[34567]86-*-*)
++  i[34567]86*-*-*)
+     conftest_s='
+ 	.section ".tdata","awT",@progbits
+ foo:	.long	25
+@@ -2791,7 +2792,7 @@
+     ;;
+ 
+ changequote(,)dnl
+-  i[34567]86-*-* | x86_64-*-*)
++  i[34567]86*-*-* | x86_64-*-*)
+ changequote([,])dnl
+     case $target_os in
+       cygwin* | pe | mingw32*)
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/ctrl-intg.c gcc-4.2.2/gcc/ctrl-intg.c
+--- ../PRISTINE/gcc-4.2.2/gcc/ctrl-intg.c	1969-12-31 16:00:00.000000000 -0800
++++ gcc-4.2.2/gcc/ctrl-intg.c	2009-01-09 17:35:50.759182000 -0800
+@@ -0,0 +1,351 @@
++/* Patch RTL to enforce control flow integrity for GCC.
++   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000, 2002, 2003,
++   2004, 2005, 2007
++   Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify it under
++the terms of the GNU General Public License as published by the Free
++Software Foundation; either version 3, or (at your option) any later
++version.
++
++GCC is distributed in the hope that it will be useful, but WITHOUT ANY
++WARRANTY; without even the implied warranty of MERCHANTABILITY or
++FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING3.  If not see
++<http://www.gnu.org/licenses/>.  */
++
++/* This file is compiled twice: once for the generator programs,
++   once for the compiler.  */
++#ifdef GENERATOR_FILE
++#include "bconfig.h"
++#else
++#include "config.h"
++#endif
++
++#include "system.h"
++#include "coretypes.h"
++#include "tm.h"
++#include "rtl.h"
++#include "tree-pass.h"
++#include "expr.h"
++
++/* These headers all define things which are not available in
++   generator programs.  */
++#ifndef GENERATOR_FILE
++#include "tree.h"
++#include "real.h"
++#include "flags.h"
++#include "hard-reg-set.h"
++#include "basic-block.h"
++#endif
++
++static bool
++gate_func (void) {
++  return getenv("NACLSHUTDOWN") == NULL;
++  // return flag_control_integrity;
++}
++
++static void
++process_call_insn(rtx insn) {
++  rtx return_value_expr, call_expr, mem_expr, addr_expr, parallel_expr;
++  rtx sp_size_expr;
++
++  /*
++   * Get the expression to be examined from the instruction.
++   */
++  call_expr = XEXP (insn, 5);
++
++  if (GET_CODE (call_expr) == PARALLEL) {
++    /*
++     * Calls that pop the stack use a PARALLEL containing a CALL and a SET.
++     */
++    parallel_expr = call_expr;
++    sp_size_expr = XEXP (XEXP (XVECEXP (call_expr, 0, 1), 1), 1);
++    call_expr = XVECEXP (call_expr, 0, 0);
++  }
++  else {
++    parallel_expr = NULL_RTX;
++  }
++
++  /*
++   * Get the call expression and return value (if any).
++   */
++  if (GET_CODE (call_expr) == SET) {
++    /*
++     * Functions with return values use a SET instruction wrapper.
++     * Get the call out of the set if needed.
++     */
++    return_value_expr = XEXP (call_expr, 0);
++    call_expr = XEXP (call_expr, 1);
++  }
++  else {
++    return_value_expr = NULL_RTX;
++  }
++
++  /*
++   *  Extract the target address expression of the function.
++   */
++  mem_expr = XEXP (call_expr, 0);
++
++  /*
++   * Get the address expression from the MEM.
++   */
++
++  gcc_assert (GET_CODE (mem_expr) == MEM);
++  addr_expr = XEXP (mem_expr, 0);
++
++  if (GET_CODE (addr_expr) != SYMBOL_REF) {
++    rtx insns_head, call, call_insn;
++    int enable_print;
++
++    {
++      static int calls_converted=0;
++      static int printed=0;
++      char* call_limit = getenv("NONACLCALL");
++      char* name_compare = getenv("NACLBINS");
++      if (name_compare && strcmp(main_input_filename, name_compare) > 0) {
++        if (printed == 0) {
++          fprintf(stderr, "NACL: name test shut off\n");
++          printed = 1;
++        }
++        return;
++      }
++
++      ++calls_converted;
++      enable_print = (call_limit && calls_converted == atoi(call_limit));
++      if (call_limit && calls_converted > atoi(call_limit)) {
++        if (printed == 0) {
++          fprintf(stderr, "NACL: '%s' call limit exceeded\n",
++                  main_input_filename);
++          printed = 1;
++        }
++        return;
++      }
++      /* fprintf(stderr, "NACL: converted call %d\n", calls_converted); */
++    }
++
++    /* DCS -- debugging code */
++    if (return_value_expr && parallel_expr) {
++      if (getenv("NACLDBGBOTH")) return;
++    } else if (return_value_expr) {
++      if (getenv("NACLDBGRET")) return;
++    } else if (parallel_expr) {
++      if (getenv("NACLDBGPAR")) return;
++    } else {
++      if (SIBLING_CALL_P (insn)) {
++        if (getenv("NACLDBGNONE1")) return;
++      } else {
++        char* str = getenv("NACLDBGNONE2");
++        if (str) {
++          FILE* fp = fopen("/home/sehr/NACLDBGCOUNT", "r+");
++          int current_count;
++          fscanf(fp, "%d\n", &current_count);
++            fprintf(stderr, "NACLDEBUGCOUNT = %d \n", current_count);
++          rewind(fp);
++          fprintf(fp, "%d\n", current_count+1);
++          fclose(fp);
++          if (current_count > atoi(str)) {
++            fprintf(stderr, "NACLDEBUGCOUNT %d exceeded %d\n",
++                    current_count, atoi(str));
++            return;
++          }
++        }
++      }
++    }
++
++    start_sequence ();
++
++    if (enable_print) {
++      fprintf(stderr, "Before:\n");
++      print_rtl_single(stderr, insn);
++    }
++
++    /*
++     * Force the called function address to be in a register.
++     */
++    addr_expr = force_reg (GET_MODE (addr_expr), addr_expr);
++
++    /*
++     * Generate the appropriate template for the call
++     */
++    if (return_value_expr && parallel_expr) {
++      call = gen_naclcall_value_pop (return_value_expr, addr_expr,
++                                     XEXP (call_expr, 1), sp_size_expr);
++    } else if (return_value_expr) {
++      if (SIBLING_CALL_P (insn)) {
++        call = gen_naclsibcall_value (return_value_expr,
++                                      addr_expr, XEXP (call_expr, 1));
++      } else {
++        call = gen_naclcall_value (return_value_expr,
++                                   addr_expr, XEXP (call_expr, 1));
++      }
++    } else if (parallel_expr) {
++      call = gen_naclcall_pop (addr_expr, XEXP (call_expr, 1),
++                               sp_size_expr);
++    } else {
++      if (SIBLING_CALL_P (insn)) {
++        call = gen_naclsibcall (addr_expr, XEXP (call_expr, 1));
++      } else {
++        call = gen_naclcall (addr_expr, XEXP (call_expr, 1));
++      }
++    }
++
++    call_insn = emit_call_insn (call);
++
++    CONST_OR_PURE_CALL_P (call_insn) = CONST_OR_PURE_CALL_P (insn);
++    SIBLING_CALL_P (call_insn) = SIBLING_CALL_P (insn);
++
++    insns_head = get_insns ();
++
++    if (enable_print) {
++      fprintf(stderr, "After: (%d, %d) \n", CONST_OR_PURE_CALL_P (call_insn),
++              SIBLING_CALL_P (call_insn));
++      print_rtl(stderr, insns_head);
++    }
++
++    end_sequence ();
++    emit_insn_before (insns_head, insn);
++
++    delete_insn (insn);
++  }
++}
++
++
++static void
++process_jump_insn(rtx insn) {
++  rtx par_expr, set_expr, addr_expr;
++  rtx jmp;
++
++  /*
++   * Get the contained expression.
++   */
++  par_expr = XEXP (insn, 5);
++
++  if (GET_CODE (par_expr) == PARALLEL) {
++    set_expr = XVECEXP (par_expr, 0, 0);
++
++    if (GET_CODE (set_expr) == SET) {
++      addr_expr = XEXP (set_expr, 1);
++
++      if (GET_CODE (addr_expr) == IF_THEN_ELSE) {
++        /*
++         * Ordinary branches uses parallel/set/if_then_else.
++         * Leave them unmodified.
++         */
++      }
++      else {
++        /*
++         * A table indirect jump instruction has parallel/set/other
++         */
++        rtx insns_head, jmp_insn;
++        int enable_print;
++
++        {
++          static int calls_converted=0;
++          static int printed=0;
++          char* name_compare = getenv("NACLBINS");
++          char* call_limit = getenv("NONACLJMP");
++          if (name_compare && strcmp(main_input_filename, name_compare) > 0) {
++            fprintf(stderr, "NACL: name test shut off\n");
++            return;
++          }
++
++          ++calls_converted;
++          enable_print = (call_limit && calls_converted == atoi(call_limit));
++          if (call_limit && calls_converted > atoi(call_limit)) {
++            if (printed == 0) {
++              fprintf(stderr, "NACL: '%s' call limit exceeded\n",
++                      main_input_filename);
++              printed = 1;
++            }
++            return;
++          }
++          /*fprintf(stderr, "NACL: converted branch %d\n", calls_converted);*/
++        }
++
++        start_sequence ();
++
++        if (enable_print) {
++          fprintf(stderr, "Before:\n");
++          print_rtl_single(stderr, insn);
++        }
++        addr_expr = force_reg (GET_MODE (addr_expr), addr_expr);
++        jmp = gen_nacljmp_table (addr_expr,
++                                 XEXP (XEXP (XVECEXP (par_expr, 0, 1), 0), 0));
++        jmp_insn = emit_jump_insn (jmp);
++
++        if (JUMP_LABEL (insn) != NULL_RTX) {
++           JUMP_LABEL (jmp_insn) = JUMP_LABEL (insn);
++           LABEL_NUSES (JUMP_LABEL (insn))++;
++        }
++
++        insns_head = get_insns ();
++        if (enable_print) {
++          fprintf(stderr, "After %p:\n", (void*) JUMP_LABEL (jmp_insn));
++          print_rtl(stderr, insns_head);
++        }
++
++        end_sequence ();
++        emit_insn_before (insns_head, insn);
++
++        delete_insn (insn);
++      }
++    }
++  } else {
++    /*
++     * Other indirect jumps remain to be identified.
++     */
++  }
++}
++
++
++static int
++execute_func (void) {
++  basic_block bb;
++  int save_nnp;
++
++  if (getenv("NACLSHUTDOWN4")) return 0;
++  save_nnp = no_new_pseudos;
++  no_new_pseudos = 0;
++  FOR_EACH_BB (bb) {
++    rtx insn, last;
++
++    if (getenv("NACLSHUTDOWN3")) continue;
++    for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb)); insn != last;
++         insn = NEXT_INSN(insn)) {
++      if (getenv("NACLSHUTDOWN2")) continue;
++      if (JUMP_P (insn)) {
++        if (flag_control_integrity)
++          process_jump_insn (insn);
++      }
++      if (CALL_P (insn)) {
++        if (flag_control_integrity)
++          process_call_insn (insn);
++      }
++    }
++  }
++
++  no_new_pseudos = save_nnp;
++  return 0;
++}
++
++struct tree_opt_pass pass_control_integrity = {
++  "ctrl_intg_insert",
++  gate_func,
++  execute_func,
++  0, /* sub */
++  0, /* next */
++  0, /* static_pass_number */
++  0, /* tv_id */
++  0, /* properties_required */
++  0, /* properties_provided */
++  0, /* properties_destroyed */
++  TODO_dump_func, /* todo_flags_start */
++  TODO_dump_func, /* todo_flags_finish */
++  'r'
++};
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/dwarf2out.c gcc-4.2.2/gcc/dwarf2out.c
+--- ../PRISTINE/gcc-4.2.2/gcc/dwarf2out.c	2007-09-24 02:17:10.000000000 -0700
++++ gcc-4.2.2/gcc/dwarf2out.c	2009-01-09 17:35:50.776173000 -0800
+@@ -1110,8 +1110,16 @@
+ 	    insn = XVECEXP (insn, 0, 0);
+ 	  if (GET_CODE (insn) == SET)
+ 	    insn = SET_SRC (insn);
+-	  gcc_assert (GET_CODE (insn) == CALL);
+-	  dwarf2out_args_size ("", INTVAL (XEXP (insn, 1)));
++    if (GET_CODE (insn) == CALL) {
++	    dwarf2out_args_size ("", INTVAL (XEXP (insn, 1)));
++    }
++    else if ((GET_CODE (insn) == UNSPEC) &&
++                 (XINT (insn, 1) == UNSPEC_NACLCALL)) {
++	    dwarf2out_args_size ("", INTVAL (XVECEXP (insn, 0, 1)));
++    }
++    else {
++	    internal_error ("Not recognized as a call or naclcall");
++    }
+ 	}
+       return;
+     }
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/flow.c gcc-4.2.2/gcc/flow.c
+--- ../PRISTINE/gcc-4.2.2/gcc/flow.c	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/flow.c	2009-01-09 17:35:50.785160000 -0800
+@@ -2305,6 +2305,12 @@
+ 	  if (! call_ok)
+ 	    return 0;
+ 	}
++      else if (GET_CODE (SET_SRC (x)) == UNSPEC &&
++               XINT (SET_SRC (x), 1) == UNSPEC_NACLCALL)
++        {
++	  if (! call_ok)
++	    return 0;
++        }
+ 
+       /* Don't eliminate loads from volatile memory or volatile asms.  */
+       else if (volatile_refs_p (SET_SRC (x)))
+@@ -4777,4 +4783,3 @@
+   TODO_ggc_collect,                     /* todo_flags_finish */
+   'w'                                   /* letter */
+ };
+-
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/gthr-nacl.h gcc-4.2.2/gcc/gthr-nacl.h
+--- ../PRISTINE/gcc-4.2.2/gcc/gthr-nacl.h	1969-12-31 16:00:00.000000000 -0800
++++ gcc-4.2.2/gcc/gthr-nacl.h	2009-01-09 17:35:50.792149000 -0800
+@@ -0,0 +1,553 @@
++/* Threads compatibility routines for libgcc2 and libobjc.  */
++/* Compile this one with gcc.  */
++/* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
++   Free Software Foundation, Inc.
++
++This file is part of GCC.
++
++GCC is free software; you can redistribute it and/or modify it under
++the terms of the GNU General Public License as published by the Free
++Software Foundation; either version 2, or (at your option) any later
++version.
++
++GCC is distributed in the hope that it will be useful, but WITHOUT ANY
++WARRANTY; without even the implied warranty of MERCHANTABILITY or
++FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++for more details.
++
++You should have received a copy of the GNU General Public License
++along with GCC; see the file COPYING.  If not, write to the Free
++Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
++02110-1301, USA.  */
++
++/* As a special exception, if you link this library with other files,
++   some of which are compiled with GCC, to produce an executable,
++   this library does not by itself cause the resulting executable
++   to be covered by the GNU General Public License.
++   This exception does not however invalidate any other reasons why
++   the executable file might be covered by the GNU General Public License.  */
++
++#ifndef GCC_GTHR_POSIX_H
++#define GCC_GTHR_POSIX_H
++
++/* POSIX threads specific definitions.
++   Easy, since the interface is just one-to-one mapping.  */
++
++#define __GTHREADS 1
++
++/* Some implementations of <pthread.h> require this to be defined.  */
++#if !defined(_REENTRANT) && defined(__osf__)
++#define _REENTRANT 1
++#endif
++
++#include <pthread.h>
++#include <unistd.h>
++
++typedef pthread_key_t __gthread_key_t;
++typedef pthread_once_t __gthread_once_t;
++typedef pthread_mutex_t __gthread_mutex_t;
++typedef pthread_mutex_t __gthread_recursive_mutex_t;
++
++#define __GTHREAD_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
++#define __GTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
++#define __GTHREAD_RECURSIVE_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
++
++#if SUPPORTS_WEAK && GTHREAD_USE_WEAK
++# ifndef __gthrw_pragma
++#  define __gthrw_pragma(pragma)
++# endif
++# define __gthrw2(name,name2,type) \
++  static __typeof(type) name __attribute__ ((__weakref__(#name2))); \
++  __gthrw_pragma(weak type)
++# define __gthrw_(name) __gthrw_ ## name
++#else
++# define __gthrw2(name,name2,type)
++# define __gthrw_(name) name
++#endif
++
++/* Typically, __gthrw_foo is a weak reference to symbol foo.  */
++#define __gthrw(name) __gthrw2(__gthrw_ ## name,name,name)
++
++__gthrw(pthread_once)
++__gthrw(pthread_getspecific)
++__gthrw(pthread_setspecific)
++__gthrw(pthread_create)
++__gthrw(pthread_mutex_lock)
++__gthrw(pthread_mutex_trylock)
++__gthrw(pthread_mutex_unlock)
++__gthrw(pthread_mutex_init)
++
++__gthrw(pthread_key_create)
++__gthrw(pthread_key_delete)
++
++
++#if defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)
++/* Objective-C.  */
++__gthrw(pthread_cond_broadcast)
++__gthrw(pthread_cond_destroy)
++__gthrw(pthread_cond_init)
++__gthrw(pthread_cond_signal)
++__gthrw(pthread_cond_wait)
++__gthrw(pthread_exit)
++__gthrw(pthread_mutex_destroy)
++__gthrw(pthread_self)
++#ifdef _POSIX_PRIORITY_SCHEDULING
++#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
++__gthrw(sched_get_priority_max)
++__gthrw(sched_get_priority_min)
++#endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
++#endif /* _POSIX_PRIORITY_SCHEDULING */
++__gthrw(sched_yield)
++__gthrw(pthread_attr_destroy)
++__gthrw(pthread_attr_init)
++__gthrw(pthread_attr_setdetachstate)
++#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
++__gthrw(pthread_getschedparam)
++__gthrw(pthread_setschedparam)
++#endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
++#endif /* _LIBOBJC || _LIBOBJC_WEAK */
++
++static inline int
++__gthread_active_p (void)
++{
++  /*
++   * The threading library is active if a basic thread creation/destruction
++   * primitive is referenced.  Unfortunately we don't have those yet.
++   * TODO(sehr): change to reference a thread creation/destruction function
++   *             when one becomes available.
++   */
++  static void *const __gthread_active_ptr
++    = __extension__ (void *) &__gthrw_(pthread_mutex_lock);
++  return __gthread_active_ptr != 0;
++}
++
++#ifdef _LIBOBJC
++
++/* This is the config.h file in libobjc/ */
++#include <config.h>
++
++#ifdef HAVE_SCHED_H
++# include <sched.h>
++#endif
++
++/* Key structure for maintaining thread specific storage */
++static pthread_key_t _objc_thread_storage;
++static pthread_attr_t _objc_thread_attribs;
++
++/* Thread local storage for a single thread */
++static void *thread_local_storage = NULL;
++
++/* Backend initialization functions */
++
++/* Initialize the threads subsystem.  */
++static inline int
++__gthread_objc_init_thread_system (void)
++{
++  if (__gthread_active_p ())
++    {
++      /* Initialize the thread storage key.  */
++      if (__gthrw_(pthread_key_create) (&_objc_thread_storage, NULL) == 0)
++	{
++	  /* The normal default detach state for threads is
++	   * PTHREAD_CREATE_JOINABLE which causes threads to not die
++	   * when you think they should.  */
++	  if (__gthrw_(pthread_attr_init) (&_objc_thread_attribs) == 0
++	      && __gthrw_(pthread_attr_setdetachstate) (&_objc_thread_attribs,
++					      PTHREAD_CREATE_DETACHED) == 0)
++	    return 0;
++	}
++    }
++
++  return -1;
++}
++
++/* Close the threads subsystem.  */
++static inline int
++__gthread_objc_close_thread_system (void)
++{
++  if (__gthread_active_p ()
++      && __gthrw_(pthread_key_delete) (_objc_thread_storage) == 0
++      && __gthrw_(pthread_attr_destroy) (&_objc_thread_attribs) == 0)
++    return 0;
++
++  return -1;
++}
++
++/* Backend thread functions */
++
++/* Create a new thread of execution.  */
++static inline objc_thread_t
++__gthread_objc_thread_detach (void (*func)(void *), void *arg)
++{
++  objc_thread_t thread_id;
++  pthread_t new_thread_handle;
++
++  if (!__gthread_active_p ())
++    return NULL;
++
++  if (!(__gthrw_(pthread_create) (&new_thread_handle, NULL, (void *) func, arg)))
++    thread_id = (objc_thread_t) new_thread_handle;
++  else
++    thread_id = NULL;
++
++  return thread_id;
++}
++
++/* Set the current thread's priority.  */
++static inline int
++__gthread_objc_thread_set_priority (int priority)
++{
++  if (!__gthread_active_p ())
++    return -1;
++  else
++    {
++#ifdef _POSIX_PRIORITY_SCHEDULING
++#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
++      pthread_t thread_id = __gthrw_(pthread_self) ();
++      int policy;
++      struct sched_param params;
++      int priority_min, priority_max;
++
++      if (__gthrw_(pthread_getschedparam) (thread_id, &policy, &params) == 0)
++	{
++	  if ((priority_max = __gthrw_(sched_get_priority_max) (policy)) == -1)
++	    return -1;
++
++	  if ((priority_min = __gthrw_(sched_get_priority_min) (policy)) == -1)
++	    return -1;
++
++	  if (priority > priority_max)
++	    priority = priority_max;
++	  else if (priority < priority_min)
++	    priority = priority_min;
++	  params.sched_priority = priority;
++
++	  /*
++	   * The solaris 7 and several other man pages incorrectly state that
++	   * this should be a pointer to policy but pthread.h is universally
++	   * at odds with this.
++	   */
++	  if (__gthrw_(pthread_setschedparam) (thread_id, policy, &params) == 0)
++	    return 0;
++	}
++#endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
++#endif /* _POSIX_PRIORITY_SCHEDULING */
++      return -1;
++    }
++}
++
++/* Return the current thread's priority.  */
++static inline int
++__gthread_objc_thread_get_priority (void)
++{
++#ifdef _POSIX_PRIORITY_SCHEDULING
++#ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
++  if (__gthread_active_p ())
++    {
++      int policy;
++      struct sched_param params;
++
++      if (__gthrw_(pthread_getschedparam) (__gthrw_(pthread_self) (), &policy, &params) == 0)
++	return params.sched_priority;
++      else
++	return -1;
++    }
++  else
++#endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
++#endif /* _POSIX_PRIORITY_SCHEDULING */
++    return OBJC_THREAD_INTERACTIVE_PRIORITY;
++}
++
++/* Yield our process time to another thread.  */
++static inline void
++__gthread_objc_thread_yield (void)
++{
++  if (__gthread_active_p ())
++    __gthrw_(sched_yield) ();
++}
++
++/* Terminate the current thread.  */
++static inline int
++__gthread_objc_thread_exit (void)
++{
++  if (__gthread_active_p ())
++    /* exit the thread */
++    __gthrw_(pthread_exit) (&__objc_thread_exit_status);
++
++  /* Failed if we reached here */
++  return -1;
++}
++
++/* Returns an integer value which uniquely describes a thread.  */
++static inline objc_thread_t
++__gthread_objc_thread_id (void)
++{
++  if (__gthread_active_p ())
++    return (objc_thread_t) __gthrw_(pthread_self) ();
++  else
++    return (objc_thread_t) 1;
++}
++
++/* Sets the thread's local storage pointer.  */
++static inline int
++__gthread_objc_thread_set_data (void *value)
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_setspecific) (_objc_thread_storage, value);
++  else
++    {
++      thread_local_storage = value;
++      return 0;
++    }
++}
++
++/* Returns the thread's local storage pointer.  */
++static inline void *
++__gthread_objc_thread_get_data (void)
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_getspecific) (_objc_thread_storage);
++  else
++    return thread_local_storage;
++}
++
++/* Backend mutex functions */
++
++/* Allocate a mutex.  */
++static inline int
++__gthread_objc_mutex_allocate (objc_mutex_t mutex)
++{
++  if (__gthread_active_p ())
++    {
++      mutex->backend = objc_malloc (sizeof (pthread_mutex_t));
++
++      if (__gthrw_(pthread_mutex_init) ((pthread_mutex_t *) mutex->backend, NULL))
++	{
++	  objc_free (mutex->backend);
++	  mutex->backend = NULL;
++	  return -1;
++	}
++    }
++
++  return 0;
++}
++
++/* Deallocate a mutex.  */
++static inline int
++__gthread_objc_mutex_deallocate (objc_mutex_t mutex)
++{
++  if (__gthread_active_p ())
++    {
++      int count;
++
++      /*
++       * Posix Threads specifically require that the thread be unlocked
++       * for __gthrw_(pthread_mutex_destroy) to work.
++       */
++
++      do
++	{
++	  count = __gthrw_(pthread_mutex_unlock) ((pthread_mutex_t *) mutex->backend);
++	  if (count < 0)
++	    return -1;
++	}
++      while (count);
++
++      if (__gthrw_(pthread_mutex_destroy) ((pthread_mutex_t *) mutex->backend))
++	return -1;
++
++      objc_free (mutex->backend);
++      mutex->backend = NULL;
++    }
++  return 0;
++}
++
++/* Grab a lock on a mutex.  */
++static inline int
++__gthread_objc_mutex_lock (objc_mutex_t mutex)
++{
++  if (__gthread_active_p ()
++      && __gthrw_(pthread_mutex_lock) ((pthread_mutex_t *) mutex->backend) != 0)
++    {
++      return -1;
++    }
++
++  return 0;
++}
++
++/* Try to grab a lock on a mutex.  */
++static inline int
++__gthread_objc_mutex_trylock (objc_mutex_t mutex)
++{
++  if (__gthread_active_p ()
++      && __gthrw_(pthread_mutex_trylock) ((pthread_mutex_t *) mutex->backend) != 0)
++    {
++      return -1;
++    }
++
++  return 0;
++}
++
++/* Unlock the mutex */
++static inline int
++__gthread_objc_mutex_unlock (objc_mutex_t mutex)
++{
++  if (__gthread_active_p ()
++      && __gthrw_(pthread_mutex_unlock) ((pthread_mutex_t *) mutex->backend) != 0)
++    {
++      return -1;
++    }
++
++  return 0;
++}
++
++/* Backend condition mutex functions */
++
++/* Allocate a condition.  */
++static inline int
++__gthread_objc_condition_allocate (objc_condition_t condition)
++{
++  if (__gthread_active_p ())
++    {
++      condition->backend = objc_malloc (sizeof (pthread_cond_t));
++
++      if (__gthrw_(pthread_cond_init) ((pthread_cond_t *) condition->backend, NULL))
++	{
++	  objc_free (condition->backend);
++	  condition->backend = NULL;
++	  return -1;
++	}
++    }
++
++  return 0;
++}
++
++/* Deallocate a condition.  */
++static inline int
++__gthread_objc_condition_deallocate (objc_condition_t condition)
++{
++  if (__gthread_active_p ())
++    {
++      if (__gthrw_(pthread_cond_destroy) ((pthread_cond_t *) condition->backend))
++	return -1;
++
++      objc_free (condition->backend);
++      condition->backend = NULL;
++    }
++  return 0;
++}
++
++/* Wait on the condition */
++static inline int
++__gthread_objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex)
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_cond_wait) ((pthread_cond_t *) condition->backend,
++			      (pthread_mutex_t *) mutex->backend);
++  else
++    return 0;
++}
++
++/* Wake up all threads waiting on this condition.  */
++static inline int
++__gthread_objc_condition_broadcast (objc_condition_t condition)
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_cond_broadcast) ((pthread_cond_t *) condition->backend);
++  else
++    return 0;
++}
++
++/* Wake up one thread waiting on this condition.  */
++static inline int
++__gthread_objc_condition_signal (objc_condition_t condition)
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_cond_signal) ((pthread_cond_t *) condition->backend);
++  else
++    return 0;
++}
++
++#else /* _LIBOBJC */
++
++static inline int
++__gthread_once (__gthread_once_t *once, void (*func) (void))
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_once) (once, func);
++  else
++    return -1;
++}
++
++static inline int
++__gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
++{
++  return __gthrw_(pthread_key_create) (key, dtor);
++}
++
++static inline int
++__gthread_key_delete (__gthread_key_t key)
++{
++  return __gthrw_(pthread_key_delete) (key);
++}
++
++static inline void *
++__gthread_getspecific (__gthread_key_t key)
++{
++  return __gthrw_(pthread_getspecific) (key);
++}
++
++static inline int
++__gthread_setspecific (__gthread_key_t key, const void *ptr)
++{
++  return __gthrw_(pthread_setspecific) (key, ptr);
++}
++
++static inline int
++__gthread_mutex_lock (__gthread_mutex_t *mutex)
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_mutex_lock) (mutex);
++  else
++    return 0;
++}
++
++static inline int
++__gthread_mutex_trylock (__gthread_mutex_t *mutex)
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_mutex_trylock) (mutex);
++  else
++    return 0;
++}
++
++static inline int
++__gthread_mutex_unlock (__gthread_mutex_t *mutex)
++{
++  if (__gthread_active_p ())
++    return __gthrw_(pthread_mutex_unlock) (mutex);
++  else
++    return 0;
++}
++
++static inline int
++__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
++{
++  return __gthread_mutex_lock (mutex);
++}
++
++static inline int
++__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
++{
++  return __gthread_mutex_trylock (mutex);
++}
++
++static inline int
++__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
++{
++  return __gthread_mutex_unlock (mutex);
++}
++
++#endif /* _LIBOBJC */
++
++#endif /* ! GCC_GTHR_POSIX_H */
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/opts.c gcc-4.2.2/gcc/opts.c
+--- ../PRISTINE/gcc-4.2.2/gcc/opts.c	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/opts.c	2009-01-09 17:35:50.796156000 -0800
+@@ -517,9 +517,11 @@
+   if (optimize < 2 || optimize_size)
+     {
+       align_loops = 1;
+-      align_jumps = 1;
+-      align_labels = 1;
+-      align_functions = 1;
++      if (!flag_control_integrity) {
++        align_jumps = 1;
++        align_labels = 1;
++        align_functions = 1;
++      }
+ 
+       /* Don't reorder blocks when optimizing for size because extra
+ 	 jump insns may be created; also barrier may create extra padding.
+@@ -634,6 +636,21 @@
+       flag_reorder_blocks_and_partition = 0;
+       flag_reorder_blocks = 1;
+     }
++
++  /* NativeClient: set the alignment based on command line flags. */
++  if (flag_nacl_align_pow2 != NACL_ALIGN_POW2)
++    {
++      align_jumps = (1 << flag_nacl_align_pow2);
++      align_labels = (1 << flag_nacl_align_pow2);
++      align_functions = (1 << flag_nacl_align_pow2);
++    }
++
++  if (flag_nacl_library_mode)
++    {
++      align_jumps = 32;
++      align_labels = 32;
++      align_functions = 32;
++    }
+ }
+ 
+ /* Handle target- and language-independent options.  Return zero to
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/passes.c gcc-4.2.2/gcc/passes.c
+--- ../PRISTINE/gcc-4.2.2/gcc/passes.c	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/passes.c	2009-01-09 17:35:50.802145000 -0800
+@@ -653,6 +653,7 @@
+   NEXT_PASS (pass_split_all_insns);
+   NEXT_PASS (pass_mode_switching);
+   NEXT_PASS (pass_see);
++  NEXT_PASS (pass_control_integrity);
+   NEXT_PASS (pass_recompute_reg_usage);
+   NEXT_PASS (pass_sms);
+   NEXT_PASS (pass_sched);
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/reg-stack.c gcc-4.2.2/gcc/reg-stack.c
+--- ../PRISTINE/gcc-4.2.2/gcc/reg-stack.c	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/reg-stack.c	2009-01-09 17:35:50.809133000 -0800
+@@ -1826,7 +1826,27 @@
+ 		compare_for_stack_reg (insn, regstack, pat_src);
+ 		break;
+ 
++              case UNSPEC_NACLCALL:
++	        {
++	          int count = hard_regno_nregs[REGNO (*dest)][GET_MODE (*dest)];
++	          while (--count >= 0)
++		    {
++		      regstack->reg[++regstack->top] = REGNO (*dest) + count;
++		      SET_HARD_REG_BIT (regstack->reg_set, 
++                                        REGNO (*dest) + count);
++		    }
++	        }
++	        replace_reg (dest, FIRST_STACK_REG);
++                break;
++
++              case UNSPEC_NACLJMP:
++                break;
++
++              case UNSPEC_NACLRET:
++                break;
++
+ 	      default:
++                print_rtl_single (stdout, insn);
+ 		gcc_unreachable ();
+ 	      }
+ 	    break;
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/rtlanal.c gcc-4.2.2/gcc/rtlanal.c
+--- ../PRISTINE/gcc-4.2.2/gcc/rtlanal.c	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/rtlanal.c	2009-01-09 17:35:50.816141000 -0800
+@@ -4706,4 +4706,3 @@
+   x = avoid_constant_pool_reference (x);
+   return GET_CODE (x) == CONST_DOUBLE;
+ }
+-
+diff -Naur ../PRISTINE/gcc-4.2.2/gcc/tree-pass.h gcc-4.2.2/gcc/tree-pass.h
+--- ../PRISTINE/gcc-4.2.2/gcc/tree-pass.h	2007-09-01 08:28:30.000000000 -0700
++++ gcc-4.2.2/gcc/tree-pass.h	2009-01-09 17:35:50.820127000 -0800
+@@ -305,6 +305,8 @@
+ extern struct tree_opt_pass pass_rebuild_cgraph_edges;
+ extern struct tree_opt_pass pass_reset_cc_flags;
+ 
++extern struct tree_opt_pass pass_control_integrity;
++
+ /* IPA Passes */
+ extern struct tree_opt_pass pass_ipa_cp;
+ extern struct tree_opt_pass pass_ipa_inline;
+diff -Naur ../PRISTINE/gcc-4.2.2/libgomp/configure.tgt gcc-4.2.2/libgomp/configure.tgt
+--- ../PRISTINE/gcc-4.2.2/libgomp/configure.tgt	2006-12-02 12:02:00.000000000 -0800
++++ gcc-4.2.2/libgomp/configure.tgt	2009-01-09 17:35:50.824117000 -0800
+@@ -47,7 +47,7 @@
+ 	;;
+ 
+     # Note that bare i386 is not included here.  We need cmpxchg.
+-    i[456]86-*-linux*)
++    i[456]86*-*-linux* | i[456]86*-*-nacl*)
+ 	config_path="linux/x86 linux posix"
+ 	if test -z "$with_arch"; then
+ 	  XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
+diff -Naur ../PRISTINE/gcc-4.2.2/libmudflap/configure gcc-4.2.2/libmudflap/configure
+--- ../PRISTINE/gcc-4.2.2/libmudflap/configure	2006-12-04 03:13:07.000000000 -0800
++++ gcc-4.2.2/libmudflap/configure	2009-01-09 17:35:50.836126000 -0800
+@@ -5398,6 +5398,10 @@
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
++nacl*)
++  lt_cv_deplibs_check_method=pass_all
++  ;;
++
+ netbsd* | knetbsd*-gnu)
+   if echo __ELF__ | $CC -E - | grep __ELF__ > /dev/null; then
+     lt_cv_deplibs_check_method='match_pattern /lib[^/\.]+\.so\.[0-9]+\.[0-9]+$'
+diff -Naur ../PRISTINE/gcc-4.2.2/libssp/configure gcc-4.2.2/libssp/configure
+--- ../PRISTINE/gcc-4.2.2/libssp/configure	2006-10-15 00:42:57.000000000 -0700
++++ gcc-4.2.2/libssp/configure	2009-01-09 17:35:50.849089000 -0800
+@@ -4480,7 +4480,7 @@
+   ;;
+ 
+ # This must be Linux ELF.
+-linux-gnu*)
++linux-gnu* | nacl*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+diff -Naur ../PRISTINE/gcc-4.2.2/libstdc++-v3/configure gcc-4.2.2/libstdc++-v3/configure
+--- ../PRISTINE/gcc-4.2.2/libstdc++-v3/configure	2007-06-28 16:02:05.000000000 -0700
++++ gcc-4.2.2/libstdc++-v3/configure	2009-01-09 17:35:50.964990000 -0800
+@@ -4283,7 +4283,7 @@
+   ;;
+ 
+ # This must be Linux ELF.
+-linux-gnu*)
++linux-gnu* | nc)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -5802,7 +5802,7 @@
+   # Default to "generic".
+   if test $enable_clocale_flag = auto; then
+     case ${target_os} in
+-      linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
++      linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu | nc)
+         enable_clocale_flag=gnu
+         ;;
+       darwin* | freebsd*)
+@@ -6548,7 +6548,7 @@
+   # Default to "new".
+   if test $enable_libstdcxx_allocator_flag = auto; then
+     case ${target_os} in
+-      linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
++      linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu | nc)
+         enable_libstdcxx_allocator_flag=new
+         ;;
+       *)
+@@ -78534,7 +78534,7 @@
+ 	;;
+     esac
+     ;;
+-  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu)
++  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu | *-nacl)
+ 
+ 
+ 
+diff -Naur ../PRISTINE/gcc-4.2.2/ltconfig gcc-4.2.2/ltconfig
+--- ../PRISTINE/gcc-4.2.2/ltconfig	2007-02-14 09:08:35.000000000 -0800
++++ gcc-4.2.2/ltconfig	2009-01-09 17:35:50.975963000 -0800
+@@ -1251,7 +1251,7 @@
+   ;;
+ 
+ # This must be Linux ELF.
+-linux-gnu*)
++linux-gnu* | nacl*)
+   version_type=linux
+   need_lib_prefix=no
+   need_version=no
+diff -Naur ../PRISTINE/gcc-4.2.2/stage_current gcc-4.2.2/stage_current
+--- ../PRISTINE/gcc-4.2.2/stage_current	1969-12-31 16:00:00.000000000 -0800
++++ gcc-4.2.2/stage_current	2009-01-09 17:35:50.978962000 -0800
+@@ -0,0 +1 @@
++stage1
+diff -Naur ../PRISTINE/gcc-4.2.2/stage_final gcc-4.2.2/stage_final
+--- ../PRISTINE/gcc-4.2.2/stage_final	1969-12-31 16:00:00.000000000 -0800
++++ gcc-4.2.2/stage_final	2009-01-09 17:35:50.984952000 -0800
+@@ -0,0 +1 @@
++stage3
+diff -Naur ../PRISTINE/gcc-4.2.2/stage_last gcc-4.2.2/stage_last
+--- ../PRISTINE/gcc-4.2.2/stage_last	1969-12-31 16:00:00.000000000 -0800
++++ gcc-4.2.2/stage_last	2009-01-09 17:35:50.996948000 -0800
+@@ -0,0 +1 @@
++stage1

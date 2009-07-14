@@ -1,0 +1,118 @@
+<HTML>
+<HEAD>
+<TITLE>Quake Demo</TITLE>
+
+<script type="text/javascript">
+<!--
+var nacl_elt;
+
+// Before scripting the loaded module, ensure the Native Client module is loaded.
+var startupTimeout;
+
+var Completion = function(files_array) {
+  var i;
+
+  this.seen = new Array();
+  this.files = files_array;
+  this.num_left = files_array.length;
+
+  for (i = 0; i < this.num_left; ++i) {
+    this.seen[i] = 0;
+  }
+
+  this.done = function(name) {
+    var i;
+
+    for (i = 0; i < this.files.length; ++i) {
+      if (this.seen[i]) {
+        continue;
+      }
+      if (name == this.files[i]) {
+        this.seen[i] = 1;
+        --this.num_left;
+        break;
+      }
+    }
+    return (0 == this.num_left) ? 1 : 0;
+  }
+}
+
+var FileLoadCallback = function(filename, url, completion_pred) {
+  this.filename = filename;
+  this.url = url;
+  this.pred = completion_pred;
+
+  this.onload = function(nacl_desc) {
+    nacl_elt.file(this.filename, nacl_desc, this.pred.done(this.filename));
+  }
+  this.onfail = function(object) {
+    window.alert('Failed to load URL: ' + this.url + ', error ' + object);
+  }
+}
+
+var StartLoad = function(filename, url, comp) {
+  nacl_elt.__urlAsNaClDesc(url,
+                           new FileLoadCallback(filename, url, comp));
+}
+
+var PostLoadInit = function() {
+  if (nacl_elt.__moduleReady == 1) {
+    clearTimeout(startupTimeout);
+    var load_array = new Array('./id1/pak0.pak');
+    var comp = new Completion(load_array);
+    var i;
+    for (i = 0; i < load_array.length; ++i) {
+      StartLoad(load_array[i], load_array[i], comp);
+    }
+    nacl_elt.focus();
+  } else {
+    if (nacl_elt.__moduleReady == undefined) {
+      window.alert('The Native Client plugin was unable to load');
+      return;
+    }
+    startupTimeout = setTimeout(PostLoadInit, 100);
+  }
+}
+
+// Init is called when the document has completed loading.  It downloads the
+// NativeClient modules.
+var Init = function() {
+  // service_url contains the location of the NativeClient module to be
+  // loaded as a service.
+  nacl_elt = document.getElementById('embed1');
+  PostLoadInit();
+}
+
+-->
+</script>
+
+</HEAD>
+<BODY onload="Init();" onunload="" id="bodyId" bgcolor="#333333" >
+<span style="color:CCCCCC">
+ <h1>Native Client Quake Demo</h1>
+ <span style="color:999999">
+  <p>
+     Quake, a classic first person shooter released in 1996 by Id Software.
+     Now open source, this demo is playable in the browser as a Native Client
+     module.
+  </p>
+  <p>
+     Click the game area below to give it keyboard focus, then press the
+     spacebar to activate the game menu.  Select single player (hit return
+     to select) then select new game.  Controls: arrow keys to move, space
+     to jump, control key to fire, numeric keys to select various weapons
+     aquired along the way.  Audio is also supported on systems with audio
+     drivers installed.  Multiplayer mode is not supported.  Loading and
+     saving game progress is not supported.
+  </p>
+ </span>
+</span>
+<center>
+ <embed id="embed1" src="nacl_quake" type="application/x-nacl-srpc" width=800 height=600>
+</center>
+<br>
+
+
+</BODY>
+</HTML>
+

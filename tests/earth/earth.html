@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Earth Demo</title>
+</head>
+
+<body onload="nacllib.waitForModulesAndRunTests();"
+      onunload="nacllib.cleanUp();" >
+
+
+<h1>Earth Demo</h1>
+ <p>
+    Image Credit:
+    NASA Goddard Space Flight Center Image by Reto Stöckli (land surface,
+    shallow water, clouds). Enhancements by Robert Simmon (ocean color,
+    compositing, 3D globes, animation).
+    Data and technical support: MODIS Land Group; MODIS Science Data,
+    Support Team; MODIS Atmosphere Group; MODIS Ocean Group Additional data:
+    USGS EROS Data Center (topography); USGS Terrestrial Remote Sensing
+    Flagstaff Field Center (Antarctica); Defense Meteorological
+    Satellite Program (city lights).
+ </p>
+
+<embed name="nacl_module"
+       id="pluginobj"
+       src="earth.nexe"
+       type="application/x-nacl-srpc"
+       width=512
+       height=512>
+
+<br>
+<button onclick="document.getElementById('pluginobj').start_demo(10000);">
+RESTART ANIMATION
+</button>
+
+<hr>
+<div id=status></div>
+
+<script type="text/javascript" src="nacl_js_lib.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                          document.getElementById("status"),
+                          1000);
+
+nacllib.wait = function() {
+   // NOTE: the plugin auto starts with 300 iters
+   var plugin = document.getElementById("pluginobj");
+
+   var checksum = plugin.frame_checksum();
+   // The checksum is currently the frame number, so we are just
+   // waiting for it to get above some threshold. Once a real checksum
+   // is used we will need to implement a way to specify the exact number
+   // of frames to run, otherwise this code can miss the specific frame
+   // that returns the expected checksum and never stop.
+   if (checksum > 24) {
+      return "";
+   } else {
+     return "waiting for frame 25, current: " + checksum;
+   }
+};
+
+// the testing and waiting mechanisms are identical
+nacllib.test = nacllib.wait;
+
+
+
+//]]>
+</script>
+</body>
+</html>
+

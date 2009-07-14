@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2009 Google Inc.  All rights reserved. -->
+  <head>
+    <title>Native Client Security Contest -- Issue Regression Tests</title>
+    <script type="text/javascript">
+// The table consists of a number of rows, each containing a two-element array.
+// The first element of the array is the issue number from
+// http://code.google.com/p/issues/list
+// The second is the description from that page.
+var test_table = [
+  [ 42,
+    'unhandled exception occurs on line 584 of' +
+    'npapi_plugin/srpc/srpc_client.cc in the' +
+    'function MarshallInput()' ],
+  [ 44, 'Uninitialized vtable may lead to arbitrary code execution' ],
+  [ 45, 'Integer overflow in npapi may crash the browser' ],
+  [ 49, 'SetWindow width, height parameters may crash the browser' ],
+  [ 52, 'Browser Plugin SRPC Stack overflow' ],
+  [ 53, 'SRPC Shared Memory Infoleak / Memory corruption' ],
+  [ 54, 'SRPC Shared Memory Integer Overflow' ],
+  [ 55, 'SRPC Marshalling Integer Overflow Vulnerability' ],
+  [ 57, 'Browser Plugin SRPC Type Confusion Infoleak' ],
+  [ 58, 'Browser Plugin SRPC Type Confusion Memory Corruption Attack' ],
+  [ 62, 'Browser Plugin SRPC SharedMemory Type Confusion Infoleak' ],
+  [ 63, 'Browser Plugin SRPC Input Marshalling Type Confusion Vulnerability' ]
+];
+
+var buildTable = function() {
+  var num_tests = test_table.length;
+  var i;
+  var table = '<table border="10" cellpadding="5%">';
+  // Add the heading row.
+  table += '<tr><th> Issue </th><th> Summary </th><th> Test case </th></tr>'
+  // Build the tests row as a set of nested tables.
+  for (i = 0; i < num_tests; ++i) {
+    var test_descriptor = test_table[i];
+    table += '<tr>';
+    // Add the link to the contest issue page.
+    var issue_number = test_descriptor[0];
+    table +=
+      '<td valign="center">' +
+      '<a href="http://code.google.com/p/nativeclient/issues/detail?id=' +
+      issue_number + '"> <b> ' + issue_number + '</b></a></td>';
+    // Add the description.
+    var description = test_descriptor[1];
+    table +=
+      '<td valign="center">' + description + '</td>';
+    // Add the link to the test case.
+    table +=
+      '<td valign="center">' +
+      '<a href="issue' + issue_number + '.html"> issue' +
+      issue_number + '.html </a></td>';
+    table += '</tr>';
+  }
+  table += '</table>';
+  // Install the table in the div element.
+  var table_div_element = document.getElementById('table_div');
+  table_div_element.innerHTML = table;
+}
+    </script>
+  </head>
+  <body onload="buildTable()">
+    <h1> Native Client Security Contest Regression Tests </h1>
+    <div id="table_div"> </div>
+  </body>
+</html>

@@ -1,0 +1,77 @@
+
+.viewport_div {
+  position: relative;
+  width: 580px;
+  height: 560px;
+/*  background-color: #EEEEEE;*/
+}
+
+.navigation_column {
+  position: relative;
+  float: left;
+}
+
+.navigation {
+  position: absolute;
+  left: 0px;
+  top: 34px;
+  height: 100%;
+  width: 60px;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.pan_and_zoom {
+  position: relative;
+}
+
+.viewport_column {
+  position:relative;
+  float:right;
+}
+
+.controls {
+  position: absolute;
+  top:0px;
+  right: 0px;
+  height: 16px;
+  z-index: 2;
+}
+
+.cycle_colors_cntl {
+  background-color: white;
+  border: solid;
+  border-width: 1px;
+  border-color: black;
+  cursor: pointer;
+}
+
+.viewport {
+  position: relative;
+/*  right: 0px;*/
+  top: 30px;
+  /* width: 500px;
+  height: 500px;*/
+  z-index: 1;
+}
+
+
+
+.cycle_colors_div {
+  position: relative;
+  margin-top: 20px;
+  /*  background-image: url("images/color_wheel.png");*/
+  /*  background-repeat: repeat-y;*/
+  background-color: white;
+  color: black;
+
+}
+
+.nacl_time {
+  position: absolute;
+  left: 90px;
+}
+
+.coords {
+  visibility: hidden;
+}

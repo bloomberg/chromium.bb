@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Stress Test Demo</title>
+</head>
+<body onload="nacllib.waitForModulesAndRunTests();"
+      onunload="nacllib.cleanUp();" >
+
+<h1>Three Native Client Demos, One Page</h1>
+ <p>
+  Life, Voronoi, and Earth as three Native Client processes on one HTML page.
+ </p>
+
+ <embed name="nacl_module" src="life.nexe" type="application/x-nacl-srpc" width=256 height=256 />
+ <embed name="nacl_module" src="voronoi.nexe" type="application/x-nacl-srpc" width=256 height=256 />
+ <embed name="nacl_module" src="earth.nexe" type="application/x-nacl-srpc" width=256 height=256 />
+
+<br>
+
+
+<div id=status></div>
+
+<script type="text/javascript" src="nacl_js_lib.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                          document.getElementById("status"),
+                          50);
+
+nacllib.test = function() { return ""; };
+//]]>
+</script>
+</body>
+</html>

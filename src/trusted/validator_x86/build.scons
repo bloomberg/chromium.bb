@@ -1,0 +1,285 @@
+# -*- python -*-
+# Copyright 2008, Google Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+#     * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+# copyright notice, this list of conditions and the following disclaimer
+# in the documentation and/or other materials provided with the
+# distribution.
+#     * Neither the name of Google Inc. nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+import os
+import sys
+Import('env')
+
+# TODO(robertm): consider adding this to the top level scons files
+env.Append(CPPPATH=['${TARGET_ROOT}'])
+
+# Start by building libary utilities that may be used by other architectures.
+env.ComponentLibrary('nchelper', ['ncfileutil.c'])
+
+# Now build validator for x86
+if env['TARGET_ARCHITECTURE'] != 'x86':
+  Return()
+
+env.ComponentLibrary('ncopcode_utils',
+                     ['ncopcode_desc.c']);
+
+# TODO(bradnelson): clean this up more
+sdl_env = env.Clone()
+sdl_env.Tool('sdl')
+sdl_dll = []
+if env.Bit('windows'):
+  sdl_dll += sdl_env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/SDL.dll')
+  sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib/SDL.dll')
+elif env.Bit('mac'):
+  sdl_dll += sdl_env.Replicate('$TARGET_ROOT/Frameworks',
+                               '$SDL_DIR/SDL.framework')
+  sdl_dll += sdl_env.Replicate('$OBJ_ROOT/Frameworks', '$SDL_DIR/SDL.framework')
+elif env.Bit('linux'):
+  sdl_dll += sdl_env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/libSDL-1.2.so.0')
+  sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib/libSDL-1.2.so.0')
+
+# Make a copy of debug CRT for now.
+# TODO(bradnelson): there should be a better way to generalize this requirement.
+# NOTE: debug builds on windows break without this
+crt = []
+if env.AllBits('windows', 'debug'):
+  for i in ['.', '$STAGING_DIR']:
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
+                         'x86/Microsoft.VC80.DebugCRT')
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+
+# Isolate the environment for ncdecode_table to prevent a cycle.
+env_decode_table = env.Clone()
+# TODO: This should be handled more cleanly, by just building
+#   Testing type programs for coverage. But for the moment, we need sel_ldr
+#   and others to have coverage, so it's easier to gate it off here.
+env_decode_table['COVERAGE_LINKCOM_EXTRAS'] = None
+
+ncdecode_table = env_decode_table.ComponentProgram('ncdecode_table',
+                                                   ['ncdecode_table.c'],)
+env.Requires(ncdecode_table, crt)
+env.Requires(ncdecode_table, sdl_dll)
+
+# Add new x86 table generator.
+ncdecode_tablegen = env_decode_table.ComponentProgram(
+    'ncdecode_tablegen',
+    ['ncdecode_tablegen.c'],
+    EXTRA_LIBS=['ncopcode_utils'])
+
+env.Requires(ncdecode_tablegen, crt)
+env.Requires(ncdecode_tablegen, sdl_dll)
+
+env.ComponentLibrary('ncvalidate', ['nacl_cpuid.c',
+                                    'ncdecode.c',
+                                    'nc_segment.c',
+                                    'nc_inst_iter.c',
+                                    'nc_inst_state.c',
+                                    'nc_inst_trans.c',
+                                    'ncop_exps.c',
+                                    'ncvalidate.c'])
+
+env.ComponentLibrary('ncdis_util', ['ncdis_util.c'])
+
+# NOTE: CODE GENERATION BELOW
+ncv_generated_ncdecode_headers =[
+  '${TARGET_ROOT}/gen/native_client/src/trusted/validator_x86/ncdecodetab.h',
+  '${TARGET_ROOT}/gen/native_client/src/trusted/validator_x86/ncdisasmtab.h'
+  ]
+
+ncv_generated_opcode_headers = [
+  '${TARGET_ROOT}/gen/native_client/src/trusted/validator_x86/nc_opcode_table.h'
+  ]
+
+ncv_generated_headers = (ncv_generated_ncdecode_headers
+                         + ncv_generated_opcode_headers)
+
+env.Command(
+    ncv_generated_headers,
+    # NOTE: work around for scons issue where ComponentProgram()
+    #       returns a obj/node and as a SIDEEFFECT copies node to staging/
+    # NOTE: we run both generators at once, because of the Delete/Mkdir
+    # directory updates done.
+    [ncdecode_table,
+     '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX}',
+     ncdecode_tablegen,
+     '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX}',
+     ],
+    ['echo CODE GENERATION: %s' % str(ncv_generated_headers),
+     Delete('${TARGET_ROOT}/gen/native_client/ncv'),
+     Mkdir('${TARGET_ROOT}/gen/native_client/ncv'),
+     # NOTE: force execution out of staging so that window finds the DLLs
+    '${STAGING_DIR}/${PROGPREFIX}ncdecode_table${PROGSUFFIX} -m%s %s %s' %
+     tuple([env['TARGET_SUBARCH']] + ncv_generated_ncdecode_headers),
+     # NOTE: force execution out of staging so that window finds the DLLs
+    '${STAGING_DIR}/${PROGPREFIX}ncdecode_tablegen${PROGSUFFIX} -m%s %s' %
+     tuple([env['TARGET_SUBARCH']] + ncv_generated_opcode_headers)
+     ])
+
+# ======================================================================
+# Decoder unittests
+if env['TARGET_SUBARCH'] is '32':
+  ncdecode_tests = env.ComponentProgram('ncdecode_tests',
+                                        ['ncdecode_tests.c'],
+                                        EXTRA_LIBS=['ncvalidate', 'ncdis_util'])
+
+  node = env.CommandTestAgainstGoldenOutput(
+      'ncdecode_tests.out',
+      [ncdecode_tests[0]],
+      )
+
+  env.AddNodeToTestSuite(node, ['small_tests'])
+
+# ======================================================================
+ncdis = env.ComponentProgram('ncdis',
+                             ['ncdis.c'],
+                             EXTRA_LIBS=['utils',
+                                         'ncvalidate',
+                                         'ncopcode_utils',
+                                         'nchelper',
+                                         'ncdis_util'])
+
+env.Requires(ncdis, crt)
+env.Requires(ncdis, sdl_dll)
+
+# ======================================================================
+# Valiator unittests
+if env['TARGET_SUBARCH'] is '32':
+  ncval_tests = env.ComponentProgram('ncval_tests',
+                                     ['ncval_tests.c'],
+                                     EXTRA_LIBS=['ncvalidate', 'nchelper'])
+  env.Requires(ncval_tests, crt)
+  env.Requires(ncval_tests, sdl_dll)
+
+  node = env.CommandTestAgainstGoldenOutput(
+      'ncval_tests.out',
+      [ncval_tests[0]],
+      )
+
+  env.AddNodeToTestSuite(node, ['small_tests'])
+
+# ======================================================================
+if env['TARGET_SUBARCH'] is '32':
+  nacl_cpuid = env.ComponentProgram('nacl_cpuid',
+                                    ['nacl_cpuid_test.c'],
+                                    EXTRA_LIBS=['ncvalidate'])
+  env.Requires(nacl_cpuid, crt)
+  env.Requires(nacl_cpuid, sdl_dll)
+
+
+  node = env.CommandTestAgainstGoldenOutput(
+      'nacl_cpuid_test.out',
+      [nacl_cpuid[0]])
+
+  env.AddNodeToTestSuite(node, ['large_tests'])
+
+# ======================================================================
+TEST_IMAGES_NACL=[
+    'fib_array.nexe',
+    'fib_scalar.nexe',
+    'null.nexe',
+    ]
+
+TESTDATA_DIR = 'testdata/' + env['TARGET_SUBARCH'] + '/'
+
+# ======================================================================
+# Decoder vs objdump tests
+# TODO: add tests using the toolchain binaries in the sdk
+if env.Bit('linux') and env['TARGET_SUBARCH'] is '32':
+  for vtest in TEST_IMAGES_NACL:
+    node = env.CommandTestAgainstGoldenOutput(
+        'discmp_' + vtest + ".out",
+        ["${PYTHON}", env.File('discmp.py'), env.File('ncdis'),
+         env.File(TESTDATA_DIR + vtest)],
+        )
+    env.AddNodeToTestSuite(node, ['large_tests'])
+
+# ======================================================================
+# Decoder on sample instruction sequences.
+
+NCDIS_TEST_NAME = 'ncdis_' + env['TARGET_NAME'] + '_test'
+
+ncdis_input_golden = env.File(TESTDATA_DIR + 'ncdis_test.input')
+
+ncdis_test = env.CommandTestAgainstGoldenOutput(
+    NCDIS_TEST_NAME + '.out',
+    [ncdis[0] , '-self_document', '-commands=-'],
+    stdin=ncdis_input_golden,
+    stdout_golden=ncdis_input_golden)
+
+env.AddNodeToTestSuite(ncdis_test, ['small_tests'], NCDIS_TEST_NAME)
+
+# ======================================================================
+# Decoder on sample instruction sequences using new iterator model.
+
+NCDIS_ITER_TEST_NAME = 'ncdis_iter_' + env['TARGET_NAME'] + '_test'
+
+ncdis_iter_input_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.input')
+
+ncdis_iter_test = env.CommandTestAgainstGoldenOutput(
+    NCDIS_ITER_TEST_NAME + '.out',
+    [ncdis[0] , '-use_iter', '-self_document', '-commands=-'],
+    stdin=ncdis_iter_input_golden,
+    stdout_golden=ncdis_iter_input_golden)
+
+env.AddNodeToTestSuite(ncdis_iter_test, ['small_tests'], NCDIS_ITER_TEST_NAME)
+
+# Same as above, but comparing internal representation against golde files.
+
+ncdis_iter_internal_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.internal')
+
+ncdis_internal_test = env.CommandTestAgainstGoldenOutput(
+    NCDIS_ITER_TEST_NAME + "_int.out",
+    [ncdis[0], "-use_iter", "-internal", "-commands=-"],
+    stdin=ncdis_iter_input_golden,
+    stdout_golden=ncdis_iter_internal_golden)
+
+env.AddNodeToTestSuite(ncdis_internal_test,
+                       ['small_tests'],
+                       NCDIS_ITER_TEST_NAME)
+
+# ======================================================================
+ncval = env.ComponentProgram('ncval',
+                             ['ncval.c'],
+                             EXTRA_LIBS=['ncvalidate', 'nchelper'])
+
+env.Requires(ncval, crt)
+env.Requires(ncval, sdl_dll)
+
+
+# ======================================================================
+# Validator tests against real nacl images
+# TODO: add death tests
+# TODO: add tests using binaries produced by nacl.scons files
+# TODO: consider comparing the actual output (not just exit codes)
+# Validate tests
+if env['TARGET_SUBARCH'] is '32':
+  for vtest in TEST_IMAGES_NACL:
+    node = env.CommandTestAgainstGoldenOutput(
+        'validate_' + vtest + ".out",
+        [ncval[0], '-t', env.File(TESTDATA_DIR + vtest)],
+        )
+    env.AddNodeToTestSuite(node, ['large_tests'])

@@ -1,0 +1,7 @@
+RPC Name                 Input args Output args
+  0 service_discovery               C         
+  1 fib                  iii        i         
+  2 __shutdown                                
+fib RESULTS:   i(8)
+fib RESULTS:   i(233)
+fib RESULTS:   i(987)

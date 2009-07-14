@@ -1,0 +1,206 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Platform Details: Linux</title>
+<link href="stylesheet.css" type="text/css" rel="stylesheet"></link>
+</head>
+
+<body>
+
+<div id="toplink">
+<a href="../README.html">Back to README</a>
+</div>
+
+<h1>Platform Details: Linux</h1>
+
+<p>
+Although Native Client modules are platform independent,
+the instructions for installing and building Native Client
+differ a bit between platforms.
+This page has details about the Linux environment.
+</p>
+
+<p>
+For instructions on installing and using Native Client,
+see <a href="getting_started.html">Getting Started</a>.
+That page and others,
+such as <a href="building.html">Building Native Client</a>,
+link to this page as needed.
+</p>
+
+<h3>
+Contents:
+</h3>
+
+<ul>
+<li><a href="#testedconfigs">Tested configurations</a> </li>
+<li> <a href="#run">Running on Linux</a>
+  <ul>
+  <li><a href="#run-python">Getting Python</a> </li>
+  <li><a href="#run-pythonpath">Checking the Python path</a> </li>
+  <li><a href="#run-64bit">64-bit Linux: 32-bit vs. 64-bit browsers</a>
+  </li>
+  </ul></li>
+<li> <a href="#dev">Developing on Linux</a>
+  <ul>
+  <li><a href="#dev-env">Setting up your development environment</a></li>
+  <li><a href="#dev-64bit">64-bit Linux: prep script</a></li>
+  </ul></li>
+</ul>
+
+<h2> <a name="testedconfigs" id="testedconfigs"> </a> Tested configurations </h2>
+<p>
+Native Client has been tested with the following Linux configurations:
+</p>
+
+<ul>
+<li> OS
+  <ul>
+  <li> Ubuntu 8.04 <!-- and soon 8.10 --> (Hardy Heron): 32-bit and 64-bit </li>
+  </ul></li>
+<li> Browser
+  <ul>
+  <li> Firefox 3 </li>
+  </ul> </li>
+<li> Python
+  <ul>
+  <li> 2.4 </li>
+  <li> 2.5 </li>
+  </ul> </li>
+</ul>
+
+
+<h2><a name="run" id="run"> </a> Running on Linux </h2>
+
+<h3><a name="run-python" id="run-python"> </a> Getting Python </h3>
+
+<p>
+On Debian-based distributions such as Ubuntu,
+you can use the following command to get Python 2.4:
+</p>
+
+<pre class="platform-linux">
+<kbd>sudo apt-get install python2.4</kbd>
+</pre>
+
+<p>
+Or use Synaptic (<code>sudo synaptic</code>)
+for a friendlier interface to APT.
+</p>
+
+<p>
+You can also download Python from
+<a href="http://www.python.org/download/">http://www.python.org/download/</a>.
+</p>
+
+<h3><a name="run-pythonpath" id="run-pythonpath"> </a> Checking the Python path </h3>
+
+<p>
+The path to <code>python</code> must have <b>no spaces</b>.
+You can use the <code>which</code> command
+to see the path:
+</p>
+
+<pre class="platform-linux">
+$ <kbd>which python</kbd>
+/usr/bin/python
+</pre>
+
+<h3><a name="run-64bit" id="run-64bit"> </a> 64-bit Linux: 32-bit vs. 64-bit browsers </h3>
+
+<p>
+Native Client works best in 32-bit browsers.
+For instructions on using a 32-bit browser on a 64-bit Linux system, search for
+[<a href="http://www.google.com/search?&amp;q=linux+32-bit+64-bit+browser">linux 32-bit 64-bit browser</a>].
+</p>
+
+<p>
+An alternative is to use
+<a href="http://gwenole.beauchesne.info/en/projects/nspluginwrapper">NSPluginWrapper</a>
+(version 1.1.2 or newer),
+which makes the Native Client plug-in work
+in 64-bit browsers.
+Here's an example of the command you'd use:
+</p>
+
+<pre class="platform-linux">
+<kbd>/usr/bin/nspluginwrapper -i ~/.mozilla/plugins/libnpGoogleNaClPlugin.so</kbd>
+</pre>
+
+<p>
+You might have to rerun that command
+when you install a new version of the plug-in.
+</p>
+
+<p>
+<strong>Note:</strong>
+Avoid NSPluginWrapper if you need to run modules that depend on NPAPI.
+The performance impact of NSPluginWrapper's NPAPI forwarding can be huge.
+</p>
+
+<h2><a name="dev"> </a> Developing on Linux </h2>
+
+<h3><a name="dev-env" id="dev-env"> </a> Setting up your development environment </h3>
+
+<p>
+If you're using a 32-bit system and not building the SDK,
+you shouldn't have to do anything to set up your environment,
+thanks to the software that comes with
+most Linux systems.
+</p>
+
+<p>
+To build the SDK,
+you need <code>texinfo</code>.
+On Debian-based distributions such as Ubuntu,
+you can get <code>texinfo</code>
+with the following command:
+</p>
+
+<pre class="platform-linux">
+<kbd>sudo apt-get install texinfo</kbd>
+</pre>
+
+<p>
+If you're using a 64-bit system,
+you need to run a prep script.
+</p>
+
+<h3><a name="dev-64bit" id="dev-64bit"> </a> 64-bit Linux: prep script </h3>
+
+<p>
+To build on 64-bit Linux, you first need to run the prep script.
+Run this script
+every time you download a new version of Native Client.
+(You could get away with running the script just once,
+but if the script changes,
+you should run it again.)
+Here's how to run the script:
+</p>
+
+<pre class="platform-linux">
+<kbd>cd <em>install_dir</em>/nacl/googleclient/native_client/tools</kbd>
+<kbd>./linux.x86_64.prep.sh</kbd>
+</pre>
+
+<p>
+<b>Note:</b>
+The script is Ubuntu-specific &mdash;
+using <code>apt-get</code> and Ubuntu file locations, for example.
+It might not work
+if you have another distribution of Linux.
+</p>
+
+
+
+<p id="license">
+Except as otherwise
+<a href="http://code.google.com/policies.html#restrictions">noted</a>,
+the content of this page is licensed under a
+<a href="http://creativecommons.org/licenses/by/2.5/">Creative Commons
+Attribution 2.5 license</a>.
+</p>
+
+</body>
+</html>
