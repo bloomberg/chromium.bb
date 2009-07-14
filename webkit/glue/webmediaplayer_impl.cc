@@ -167,6 +167,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
       main_loop_(NULL),
       filter_factory_(factory),
       pipeline_thread_("PipelineThread"),
+      paused_(true),
+      playback_rate_(0.0f),
       client_(client) {
   // Saves the current message loop.
   DCHECK(!main_loop_);
@@ -224,14 +226,14 @@ void WebMediaPlayerImpl::cancelLoad() {
 void WebMediaPlayerImpl::play() {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  // TODO(hclam): We should restore the previous playback rate rather than
-  // having it at 1.0.
-  pipeline_->SetPlaybackRate(1.0f);
+  paused_ = false;
+  pipeline_->SetPlaybackRate(playback_rate_);
 }
 
 void WebMediaPlayerImpl::pause() {
   DCHECK(MessageLoop::current() == main_loop_);
 
+  paused_ = true;
   pipeline_->SetPlaybackRate(0.0f);
 }
 
@@ -257,7 +259,10 @@ void WebMediaPlayerImpl::setEndTime(float seconds) {
 void WebMediaPlayerImpl::setRate(float rate) {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  pipeline_->SetPlaybackRate(rate);
+  playback_rate_ = rate;
+  if (!paused_) {
+    pipeline_->SetPlaybackRate(rate);
+  }
 }
 
 void WebMediaPlayerImpl::setVolume(float volume) {

@@ -252,6 +252,15 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   scoped_ptr<media::PipelineImpl> pipeline_;
   base::Thread pipeline_thread_;
 
+  // Playback state.
+  //
+  // TODO(scherkus): we have these because Pipeline favours the simplicity of a
+  // single "playback rate" over worrying about paused/stopped etc...  It forces
+  // all clients to manage the pause+playback rate externally, but is that
+  // really a bad thing?
+  bool paused_;
+  float playback_rate_;
+
   WebKit::WebMediaPlayerClient* client_;
 
   scoped_refptr<Proxy> proxy_;
