@@ -2825,7 +2825,6 @@ BUG16410 : LayoutTests/fast/workers/worker-messageport-gc.html = FAIL CRASH
 BUG16410 : LayoutTests/fast/workers/worker-messageport.html = FAIL CRASH
 
 // WebKit merge 45685:45738
-BUG16241 : LayoutTests/fast/dom/anchor-toString.html = FAIL
 BUG16410 : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
 BUG16410 : LayoutTests/fast/events/message-channel-gc-2.html = CRASH
 BUG16410 : LayoutTests/fast/events/message-channel-gc-4.html = CRASH
