@@ -489,18 +489,7 @@ HRESULT STDMETHODCALLTYPE StreamOperation::OnObjectAvailable(REFIID riid,
 HRESULT StreamOperation::OpenURL(NPPluginProxy *owning_plugin,
                                  const wchar_t *url,
                                  void *notify_data) {
-  // Validate the URL. If the URL is invalid there is no need to create a new
-  // thread only to have it immediately fail.
   HRESULT hr;
-  URL_COMPONENTS components = { sizeof(URL_COMPONENTS) };
-  if (!InternetCrackUrl(url, 0, 0, &components))
-    return E_INVALIDARG;
-  if (components.nScheme != INTERNET_SCHEME_FILE &&
-      components.nScheme != INTERNET_SCHEME_FTP &&
-      components.nScheme != INTERNET_SCHEME_HTTP &&
-      components.nScheme != INTERNET_SCHEME_HTTPS) {
-    return E_INVALIDARG;
-  }
 
   // The StreamOperation instance is created with a ref-count of zero,
   // so we explicitly attach a CComPtr to the object to boost the count, and
@@ -528,6 +517,18 @@ HRESULT StreamOperation::OpenURL(NPPluginProxy *owning_plugin,
   }
 
   stream_object->SetFullURL(full_path);
+
+  // Validate the URL. If the URL is invalid there is no need to create a new
+  // thread only to have it immediately fail.
+  URL_COMPONENTS components = { sizeof(URL_COMPONENTS) };
+  if (!InternetCrackUrl(full_path, 0, 0, &components))
+    return E_INVALIDARG;
+  if (components.nScheme != INTERNET_SCHEME_FILE &&
+      components.nScheme != INTERNET_SCHEME_FTP &&
+      components.nScheme != INTERNET_SCHEME_HTTP &&
+      components.nScheme != INTERNET_SCHEME_HTTPS) {
+    return E_INVALIDARG;
+  }
 
   // Create an object window on this thread that will be sent messages when
   // something happens on the worker thread.
