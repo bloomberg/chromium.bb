@@ -2632,11 +2632,27 @@
               'variables': {
                 'bundle_id': 'com.google.Chrome',
               },
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/',
+                  'files': ['../third_party/ffmpeg/binaries/chrome/libavcodec.52.dylib',
+                            '../third_party/ffmpeg/binaries/chrome/libavformat.52.dylib',
+                            '../third_party/ffmpeg/binaries/chrome/libavutil.50.dylib'],
+                },
+              ],
             }, {  # else: 'branding!="Chrome"
               'mac_bundle_resources': ['app/theme/chromium/app.icns'],
               'variables': {
                 'bundle_id': 'org.chromium.Chromium',
               },
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/',
+                  'files': ['../third_party/ffmpeg/binaries/chromium/libavcodec.52.dylib',
+                            '../third_party/ffmpeg/binaries/chromium/libavformat.52.dylib',
+                            '../third_party/ffmpeg/binaries/chromium/libavutil.50.dylib'],
+                },
+              ],
             }],
             ['mac_breakpad==1', {
               'variables': {
