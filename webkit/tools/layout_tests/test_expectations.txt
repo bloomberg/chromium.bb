@@ -2860,7 +2860,7 @@ BUG13907 SKIP : LayoutTests/media/audio-data-url.html = FAIL
 
 // WebKit merge 42738:45840
 // New test, needs baseline.
-BUG16690 SKIP MAC LINUX : LayoutTests/fast/text/international/khmer-selection.html = FAIL
+BUG16690 SKIP MAC : LayoutTests/fast/text/international/khmer-selection.html = FAIL
 
 // WebKit merge 42738:45840
 // New tests, need baseline.
