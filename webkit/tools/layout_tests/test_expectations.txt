@@ -2833,18 +2833,6 @@ BUG16675 : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH
 BUG16675 : LayoutTests/fast/images/favicon-as-image.html = CRASH
 BUG16675 : LayoutTests/fast/images/pdf-as-background.html = CRASH
 
-// WebKit merge 42738:45840
-// Canvas-related failures.
-BUG16676 : LayoutTests/fast/canvas/canvas-composite-alpha.html = FAIL
-BUG16676 : LayoutTests/fast/canvas/canvas-invalid-strokestyle.html = FAIL
-BUG16676 : LayoutTests/fast/canvas/canvas-path-with-inf-nan-dimensions.html = FAIL
-BUG16676 : LayoutTests/fast/canvas/canvas-set-properties-with-non-invertible-ctm.html = FAIL
-BUG16676 : LayoutTests/fast/canvas/canvas-stroke-empty-fill.html = FAIL
-BUG16676 : LayoutTests/fast/canvas/canvas-text-baseline.html = FAIL
-BUG16676 : LayoutTests/fast/canvas/canvas-transforms-during-path.html = FAIL
-BUG16676 : LayoutTests/fast/canvas/fill-stroke-clip-reset-path.html = FAIL
-BUG16676 : LayoutTests/fast/canvas/quadraticCurveTo.xml = FAIL
-
 // New test, added in http://trac.webkit.org/changeset/45783
 // audio/3gpp mime type, does not play in Chromium yet.
 BUG13907 SKIP : LayoutTests/media/audio-data-url.html = FAIL
@@ -2875,6 +2863,11 @@ BUG16240 MAC WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html
 
 // Failing due to r20652.
 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL
+
+// Failing approximately starting from 20629
+BUG16754 : LayoutTests/fast/loader/empty-embed-src-attribute.html = CRASH
+BUG16754 : LayoutTests/fast/dom/xmlhttprequest-constructor-in-detached-document.html = CRASH
+BUG16754 : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT
 
 // HTML5 DataGrid bindings have not been implemented for V8 yet.
 BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = TIMEOUT
