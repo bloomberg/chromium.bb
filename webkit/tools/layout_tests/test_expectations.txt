@@ -2881,3 +2881,6 @@ BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-ent
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-quote.html = FAIL
 
 BUG16240 MAC WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
+
+// Failing due to r20652.
+BUG16742 : LayoutTests/media/video-error-abort.html = FAIL
