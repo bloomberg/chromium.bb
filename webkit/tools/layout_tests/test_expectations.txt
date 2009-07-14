@@ -2651,7 +2651,6 @@ BUG12477 : LayoutTests/http/tests/security/drag-over-remote-content-iframe.html 
 BUG12881 WIN LINUX : LayoutTests/fast/forms/isindex-placeholder.html = FAIL
 BUG12881 WIN LINUX : LayoutTests/fast/box-shadow/border-radius-big.html = FAIL
 BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-constraints.html = FAIL
-BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-huge-assert.html = FAIL
 BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-split-inline.html = FAIL
 
 // WebKit 44202:44252 introduced new failures (old tests)
