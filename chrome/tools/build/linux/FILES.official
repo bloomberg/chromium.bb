@@ -1,13 +1,10 @@
 chrome
 chrome.pak
 chrome_sandbox
+installer
 libavcodec.so.52
 libavformat.so.52
 libavutil.so.50
-locales/en-US.pak
-locales/da.pak
-locales/he.pak
-locales/zh-TW.pak
-themes/default.pak
+locales
+themes
 resources
-installer
