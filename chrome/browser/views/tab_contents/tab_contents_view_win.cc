@@ -421,6 +421,11 @@ void TabContentsViewWin::HandleKeyboardEvent(
     }
   }
 
+  if (tab_contents()->delegate() &&
+      tab_contents()->delegate()->HandleKeyboardEvent(event)) {
+    return;
+  }
+
   // Any unhandled keyboard/character messages should be defproced.
   // This allows stuff like Alt+F4, etc to work correctly.
   DefWindowProc(event.os_event.hwnd,

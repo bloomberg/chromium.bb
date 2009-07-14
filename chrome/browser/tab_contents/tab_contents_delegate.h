@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
+#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
 #include "webkit/glue/context_menu.h"
@@ -203,6 +204,13 @@ class TabContentsDelegate {
   // a search engine.
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) {
+  }
+
+  // Allows delegates to handle unhandled keyboard messages coming back from
+  // the renderer.
+  // Returns true if the keyboard message was handled.
+  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+    return false;
   }
 
  protected:

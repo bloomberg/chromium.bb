@@ -299,6 +299,14 @@ bool ExternalTabContainer::ExecuteContextMenuCommand(int command) {
   return true;
 }
 
+bool ExternalTabContainer::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  return ProcessUnhandledKeyStroke(event.os_event.hwnd,
+                                   event.os_event.message,
+                                   event.os_event.wParam,
+                                   event.os_event.lParam);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, NotificationObserver implementation:
 
@@ -392,10 +400,25 @@ void ExternalTabContainer::OnDestroy() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ExternalTabContainer, views::KeystrokeListener implementation:
+// ExternalTabContainer, private:
 
-bool ExternalTabContainer::ProcessKeyStroke(HWND window, UINT message,
-                                            WPARAM wparam, LPARAM lparam) {
+void ExternalTabContainer::Uninitialize(HWND window) {
+  registrar_.RemoveAll();
+  if (tab_contents_) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTERNAL_TAB_CLOSED,
+        Source<NavigationController>(&tab_contents_->controller()),
+        Details<ExternalTabContainer>(this));
+
+    delete tab_contents_;
+    tab_contents_ = NULL;
+  }
+}
+
+bool ExternalTabContainer::ProcessUnhandledKeyStroke(HWND window,
+                                                     UINT message,
+                                                     WPARAM wparam,
+                                                     LPARAM lparam) {
   if (!automation_) {
     return false;
   }
@@ -429,20 +452,4 @@ bool ExternalTabContainer::ProcessKeyStroke(HWND window, UINT message,
   }
 
   return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ExternalTabContainer, private:
-
-void ExternalTabContainer::Uninitialize(HWND window) {
-  registrar_.RemoveAll();
-  if (tab_contents_) {
-    NotificationService::current()->Notify(
-        NotificationType::EXTERNAL_TAB_CLOSED,
-        Source<NavigationController>(&tab_contents_->controller()),
-        Details<ExternalTabContainer>(this));
-
-    delete tab_contents_;
-    tab_contents_ = NULL;
-  }
 }

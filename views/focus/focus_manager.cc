@@ -57,21 +57,6 @@ bool FocusManager::OnKeyDown(HWND window, UINT message, WPARAM wparam,
     return false;
   }
 
-  // First give the registered keystroke handlers a chance a processing
-  // the message
-  // Do some basic checking to try to catch evil listeners that change the list
-  // from under us.
-  KeystrokeListenerList::size_type original_count =
-      keystroke_listeners_.size();
-  for (int i = 0; i < static_cast<int>(keystroke_listeners_.size()); i++) {
-    if (keystroke_listeners_[i]->ProcessKeyStroke(window, message, wparam,
-                                                  lparam)) {
-      return false;
-    }
-  }
-  DCHECK_EQ(original_count, keystroke_listeners_.size())
-      << "KeystrokeListener list modified during notification";
-
   int virtual_key_code = static_cast<int>(wparam);
   int repeat_count = LOWORD(lparam);
   int flags = HIWORD(lparam);
@@ -131,18 +116,6 @@ bool FocusManager::OnKeyDown(HWND window, UINT message, WPARAM wparam,
     // the message further.
     return false;
   }
-  return true;
-}
-
-bool FocusManager::OnKeyUp(HWND window, UINT message, WPARAM wparam,
-                           LPARAM lparam) {
-  for (int i = 0; i < static_cast<int>(keystroke_listeners_.size()); ++i) {
-    if (keystroke_listeners_[i]->ProcessKeyStroke(window, message, wparam,
-                                                  lparam)) {
-      return false;
-    }
-  }
-
   return true;
 }
 #endif
@@ -462,24 +435,6 @@ bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
 void FocusManager::ViewRemoved(View* parent, View* removed) {
   if (focused_view_ && focused_view_ == removed)
     ClearFocus();
-}
-
-void FocusManager::AddKeystrokeListener(KeystrokeListener* listener) {
-  DCHECK(std::find(keystroke_listeners_.begin(), keystroke_listeners_.end(),
-                   listener) == keystroke_listeners_.end())
-                       << "Adding a listener twice.";
-  keystroke_listeners_.push_back(listener);
-}
-
-void FocusManager::RemoveKeystrokeListener(KeystrokeListener* listener) {
-  KeystrokeListenerList::iterator place =
-      std::find(keystroke_listeners_.begin(), keystroke_listeners_.end(),
-                listener);
-  if (place == keystroke_listeners_.end()) {
-    NOTREACHED() << "Removing a listener that isn't registered.";
-    return;
-  }
-  keystroke_listeners_.erase(place);
 }
 
 void FocusManager::AddFocusChangeListener(FocusChangeListener* listener) {

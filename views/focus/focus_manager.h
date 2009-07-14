@@ -128,19 +128,6 @@ class FocusTraversable {
   virtual View* GetFocusTraversableParentView() = 0;
 };
 
-// The KeystrokeListener interface is used by components (such as the
-// ExternalTabContainer class) which need a crack at handling all
-// keystrokes.
-class KeystrokeListener {
- public:
-  // If this returns true, then the component handled the keystroke and ate
-  // it.
-#if defined(OS_WIN)
-  virtual bool ProcessKeyStroke(HWND window, UINT message, WPARAM wparam,
-                                LPARAM lparam) = 0;
-#endif
-};
-
 // This interface should be implemented by classes that want to be notified when
 // the focus is about to change.  See the Add/RemoveFocusChangeListener methods.
 class FocusChangeListener {
@@ -159,10 +146,6 @@ class FocusManager {
                  UINT message,
                  WPARAM wparam,
                  LPARAM lparam);
-  bool OnKeyUp(HWND window,
-               UINT message,
-               WPARAM wparam,
-               LPARAM lparam);
 #endif
 
   // Returns true is the specified is part of the hierarchy of the window
@@ -224,9 +207,6 @@ class FocusManager {
   // that this FocusManager is attached to the parent Widget of.
   void ViewRemoved(View* parent, View* removed);
 
-  void AddKeystrokeListener(KeystrokeListener* listener);
-  void RemoveKeystrokeListener(KeystrokeListener* listener);
-
   // Adds/removes a listener.  The FocusChangeListener is notified every time
   // the focused view is about to change.
   void AddFocusChangeListener(FocusChangeListener* listener);
@@ -279,10 +259,6 @@ class FocusManager {
   typedef std::list<AcceleratorTarget*> AcceleratorTargetList;
   typedef std::map<Accelerator, AcceleratorTargetList> AcceleratorMap;
   AcceleratorMap accelerators_;
-
-  // The list of registered keystroke listeners
-  typedef std::vector<KeystrokeListener*> KeystrokeListenerList;
-  KeystrokeListenerList keystroke_listeners_;
 
   // The list of registered FocusChange listeners.
   typedef std::vector<FocusChangeListener*> FocusChangeListenerList;

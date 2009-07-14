@@ -26,12 +26,6 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
           process_message = focus_manager->OnKeyDown(msg.hwnd, msg.message,
               msg.wParam, msg.lParam);
           break;
-
-        case WM_KEYUP:
-        case WM_SYSKEYUP:
-          process_message = focus_manager->OnKeyUp(msg.hwnd, msg.message,
-              msg.wParam, msg.lParam);
-          break;
       }
     }
   }

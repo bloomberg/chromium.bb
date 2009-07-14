@@ -25,8 +25,7 @@ class RenderViewContextMenuExternalWin;
 // TODO(beng): Should override WidgetWin instead of Widget.
 class ExternalTabContainer : public TabContentsDelegate,
                              public NotificationObserver,
-                             public views::WidgetWin,
-                             public views::KeystrokeListener {
+                             public views::WidgetWin {
  public:
   ExternalTabContainer(AutomationProvider* automation,
       AutomationResourceMessageFilter* filter);
@@ -89,16 +88,14 @@ class ExternalTabContainer : public TabContentsDelegate,
     return true;
   };
 
+  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+
   virtual bool TakeFocus(bool reverse);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-  // Overridden from views::KeystrokeListener:
-  virtual bool ProcessKeyStroke(HWND window, UINT message, WPARAM wparam,
-                                LPARAM lparam);
 
   // Handles the context menu display operation. This allows external
   // hosts to customize the menu.
@@ -118,6 +115,11 @@ class ExternalTabContainer : public TabContentsDelegate,
   // 1. OnFinalMessage
   // 2. In the destructor.
   void Uninitialize(HWND window);
+
+  // Helper function for processing keystokes coming back from the renderer
+  // process.
+  bool ProcessUnhandledKeyStroke(HWND window, UINT message, WPARAM wparam,
+                                 LPARAM lparam);
 
   TabContents* tab_contents_;
   scoped_refptr<AutomationProvider> automation_;
