@@ -925,10 +925,7 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
     WindowOpenDisposition disposition = CURRENT_TAB;
     ActionSpecifiesDisposition(action, &disposition);
 
-    // Give the delegate a chance to change the disposition.  When we do not
-    // have a provisional data source here, it means that we are scrolling to
-    // an anchor in the page.  We don't need to ask the WebViewDelegate about
-    // such navigations.
+    // Give the delegate a chance to change the disposition.
     const WebDataSourceImpl* ds = webframe_->GetProvisionalDataSourceImpl();
     if (ds) {
       GURL url = ds->request().url();
@@ -944,28 +941,24 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
         disposition = d->DispositionForNavigationAction(
             wv, webframe_, ds->request(), webnav_type, disposition, is_redirect);
       }
-
-      if (disposition != IGNORE_ACTION) {
-        if (disposition == CURRENT_TAB) {
-          policy_action = PolicyUse;
-        } else if (disposition == SAVE_TO_DISK) {
-          policy_action = PolicyDownload;
-        } else {
-          GURL referrer = webkit_glue::StringToGURL(
-              request.httpHeaderField("Referer"));
-
-          d->OpenURL(webframe_->GetWebViewImpl(),
-                     webkit_glue::KURLToGURL(request.url()),
-                     referrer,
-                     disposition);
-          policy_action = PolicyIgnore;
-        }
-      } else {
-        policy_action = PolicyIgnore;
-      }
     }
-  } else {
-    policy_action = PolicyIgnore;
+
+    if (disposition == CURRENT_TAB) {
+      policy_action = PolicyUse;
+    } else if (disposition == SAVE_TO_DISK) {
+      policy_action = PolicyDownload;
+    } else {
+      if (disposition != IGNORE_ACTION) {
+        GURL referrer = webkit_glue::StringToGURL(
+            request.httpHeaderField("Referer"));
+
+        d->OpenURL(webframe_->GetWebViewImpl(),
+                   webkit_glue::KURLToGURL(request.url()),
+                   referrer,
+                   disposition);
+      }
+      policy_action = PolicyIgnore;
+    }
   }
 
   (webframe_->frame()->loader()->*function)(policy_action);
