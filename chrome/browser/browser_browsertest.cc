@@ -5,6 +5,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "base/sys_info.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
@@ -97,4 +98,27 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   alert->CloseModalDialog();
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->selected_index());
+}
+
+// Create 34 tabs and verify that a lot of processes have been created. The
+// exact number of processes depends on the amount of memory. Previously we
+// had a hard limit of 31 processes and this test is mainly directed at
+// verifying that we don't crash when we pass this limit.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
+  GURL url(ui_test_utils::GetTestUrl(L".", L"title2.html"));
+
+  // There is one initial tab.
+  for (int ix = 0; ix != 33; ++ix) {
+    browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
+                             true, 0, false, NULL);
+  }
+  EXPECT_EQ(34, browser()->tab_count());
+
+  // See browser\renderer_host\render_process_host.cc for the algorithm to
+  // decide how many processes to create.
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() >= 2048) {
+    EXPECT_GE(RenderProcessHost::size(), 24U);
+  } else {
+    EXPECT_LE(RenderProcessHost::size(), 23U);
+  }
 }

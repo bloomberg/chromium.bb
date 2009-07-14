@@ -44,35 +44,6 @@ class VisibleBrowserTest : public UITest {
   }
 };
 
-// Create 34 tabs and verify that a lot of processes have been created. The
-// exact number of processes depends on the amount of memory. Previously we
-// had a hard limit of 31 processes and this test is mainly directed at
-// verifying that we don't crash when we pass this limit.
-TEST_F(BrowserTest, ThirtyFourTabs) {
-  FilePath test_file(test_data_directory_);
-  test_file = test_file.AppendASCII("title2.html");
-  GURL url(net::FilePathToFileURL(test_file));
-  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
-  // There is one initial tab.
-  for (int ix = 0; ix != 33; ++ix) {
-    EXPECT_TRUE(window->AppendTab(url));
-  }
-  int tab_count = 0;
-  EXPECT_TRUE(window->GetTabCount(&tab_count));
-  EXPECT_EQ(34, tab_count);
-  // Do not test the rest in single process mode.
-  if (in_process_renderer())
-    return;
-  // See browser\renderer_host\render_process_host.cc for the algorithm to
-  // decide how many processes to create.
-  int process_count = GetBrowserProcessCount();
-  if (base::SysInfo::AmountOfPhysicalMemoryMB() >= 2048) {
-    EXPECT_GE(process_count, 24);
-  } else {
-    EXPECT_LE(process_count, 23);
-  }
-}
-
 #if defined(OS_WIN)
 // The browser should quit quickly if it receives a WM_ENDSESSION message.
 TEST_F(BrowserTest, WindowsSessionEnd) {
