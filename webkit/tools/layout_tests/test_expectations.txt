@@ -2861,8 +2861,11 @@ BUG13907 SKIP : LayoutTests/media/audio-data-url.html = FAIL
 
 // WebKit merge 42738:45840
 // New tests, need baseline.
-BUG16678 : LayoutTests/fast/dom/replace-first-child.html = FAIL
-BUG16678 SKIP : LayoutTests/fast/text/international/khmer-selection.html = FAIL
+BUG16690 : LayoutTests/fast/dom/replace-first-child.html = FAIL
+BUG16690 SKIP MAC LINUX : LayoutTests/fast/text/international/khmer-selection.html = FAIL
+
+// WebKit merge 42738:45840
+// New tests, need baseline.
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/base-href-safe3.html = FAIL
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/inline-event-HTML-entities.html = FAIL
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities-control-char.html = FAIL
