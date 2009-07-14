@@ -485,7 +485,7 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
   // Update the current loading state, replacing the icon with a throbber, or
   // vice versa. This will get called repeatedly with the same state during a
   // load, so we need to make sure we're not creating the throbber view over and
-  // over.
+  // over. However, when the page is done, every state change is important.
   if (contents) {
     static NSImage* throbberWaitingImage =
         [nsimage_cache::ImageNamed(@"throbber_waiting.png") retain];
@@ -506,7 +506,7 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
       throbberImage = throbberLoadingImage;
     }
 
-    if (oldState != newState) {
+    if (oldState != newState || newState == kTabDone) {
       NSView* iconView = nil;
       if (newState == kTabDone) {
         iconView = [self favIconImageViewForContents:contents];
