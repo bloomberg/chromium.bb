@@ -15,17 +15,6 @@
 #include "chrome/test/ui/ui_test.h"
 #include "net/url_request/url_request_unittest.h"
 
-#if defined(OS_LINUX)
-#define MAYBE_SaveCompleteHTML DISABLED_SaveCompleteHTML
-#define MAYBE_SaveHTMLOnly DISABLED_SaveHTMLOnly
-// http://crbug.com/15416
-#define MAYBE_FilenameFromPageTitle DISABLED_FilenameFromPageTitle
-#else
-#define MAYBE_SaveCompleteHTML SaveCompleteHTML
-#define MAYBE_SaveHTMLOnly SaveHTMLOnly
-#define MAYBE_FilenameFromPageTitle FilenameFromPageTitle
-#endif
-
 const char* const kTestDir = "save_page";
 
 const char* const kAppendedExtension =
@@ -95,7 +84,7 @@ class SavePageTest : public UITest {
 };
 
 // Flaky on Linux: http://code.google.com/p/chromium/issues/detail?id=14746
-TEST_F(SavePageTest, MAYBE_SaveHTMLOnly) {
+TEST_F(SavePageTest, SaveHTMLOnly) {
   std::string file_name("a.htm");
   FilePath full_file_name = save_dir_.AppendASCII(file_name);
   FilePath dir = save_dir_.AppendASCII("a_files");
@@ -118,7 +107,7 @@ TEST_F(SavePageTest, MAYBE_SaveHTMLOnly) {
 }
 
 // Flaky on Linux: http://code.google.com/p/chromium/issues/detail?id=14746
-TEST_F(SavePageTest, MAYBE_SaveCompleteHTML) {
+TEST_F(SavePageTest, SaveCompleteHTML) {
   std::string file_name = "b.htm";
   FilePath full_file_name = save_dir_.AppendASCII(file_name);
   FilePath dir = save_dir_.AppendASCII("b_files");
@@ -161,7 +150,7 @@ TEST_F(SavePageTest, NoSave) {
   EXPECT_FALSE(WaitForDownloadShelfVisible(browser.get()));
 }
 
-TEST_F(SavePageTest, MAYBE_FilenameFromPageTitle) {
+TEST_F(SavePageTest, FilenameFromPageTitle) {
   std::string file_name = "b.htm";
 
   FilePath full_file_name = download_dir_.AppendASCII(
