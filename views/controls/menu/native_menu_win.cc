@@ -302,7 +302,7 @@ const wchar_t* NativeMenuWin::MenuHostWindow::kMenuHostWindowKey =
 NativeMenuWin::NativeMenuWin(Menu2Model* model, HWND system_menu_for)
     : model_(model),
       menu_(NULL),
-      owner_draw_(false),
+      owner_draw_(l10n_util::NeedOverrideDefaultUIFont(NULL, NULL)),
       system_menu_for_(system_menu_for),
       first_item_index_(0) {
 }
@@ -332,7 +332,7 @@ void NativeMenuWin::CancelMenu() {
 
 void NativeMenuWin::Rebuild() {
   ResetNativeMenu();
-  owner_draw_ = model_->HasIcons();
+  owner_draw_ = model_->HasIcons() || owner_draw_;
   first_item_index_ = model_->GetFirstItemIndex(GetNativeMenu());
   for (int menu_index = first_item_index_;
         menu_index < first_item_index_ + model_->GetItemCount(); ++menu_index) {
