@@ -52,6 +52,7 @@ var g_validJSDOCTypes = {
 var g_unknownTypes = { };
 var g_numErrors = 0;
 var g_o3djsMode = false;
+var g_baseURL;
 
 /**
  * Called automatically by JsDoc Toolkit.
@@ -67,6 +68,7 @@ function publish(symbolSet) {
     o3djs: JSDOC.opt.D.o3djs};
   publish.conf.srcDir = publish.conf.outDir + 'src/';
   publish.conf.htmlDir = JSDOC.opt.D.htmlOutDir;
+  g_baseURL = JSDOC.opt.D.baseURL;
 
   if (publish.conf.o3djs) {
     g_o3djsMode = true;
@@ -178,9 +180,11 @@ function publish(symbolSet) {
 
   var classTree = classTreeTemplate.process(classes);
   IO.saveFile(publish.conf.outDir, 'classtree.html', classTree);
+  IO.saveFile(publish.conf.htmlDir, 'classtree.html', classTree);
 
   var fileList = fileListTemplate.process(symbols);
   IO.saveFile(publish.conf.outDir, 'filelist.html', fileList);
+  IO.saveFile(publish.conf.htmlDir, 'filelist.html', fileList);
 
   var annotated = annotatedTemplate.process(classes);
   IO.saveFile(publish.conf.outDir, 'annotated' + publish.conf.ext, annotated);
@@ -779,4 +783,11 @@ function getQualifiedName(method) {
     return method.memberOf + "." + method.name
   }
   return parent.name + '.' + method.name;
+}
+
+/**
+ * Get the base URL for links.
+ */
+function getBaseURL() {
+  return g_baseURL;
 }

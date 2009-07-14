@@ -137,12 +137,14 @@ def RunNixysa(idl_files, generate, output_dir, nixysa_options):
     idl_files)
 
 
-def RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, prefix, o3djs):
+def RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, prefix, o3djs,
+                    baseURL):
   """Executes the JSDocToolkit."""
   list_filename = MakePath('../scons-out/docs/obj/doclist.conf')
   f = open(list_filename, 'w')
   f.write('{\nD:{\n')
   f.write('prefix: "%s",\n' % prefix)
+  f.write('baseURL: "%s",\n' % baseURL)
   f.write('o3djs: "%s",\n' % o3djs)
   f.write('htmlOutDir: "%s",\n' % html_output_dir.replace('\\', '/'))
   f.write('endMarker: ""\n')
@@ -178,11 +180,12 @@ def BuildJavaScriptForExternsFromIDLs(idl_files, output_dir):
 
 def BuildO3DDocsFromJavaScript(js_files, ezt_output_dir, html_output_dir):
   RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir,
-                  'classo3d_1_1_', '')
+                  'classo3d_1_1_', '', '')
 
 
 def BuildO3DJSDocs(js_files, ezt_output_dir, html_output_dir):
-  RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_0_1_', 'true')
+  RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_0_1_', 'true',
+                  'jsdocs/')
 
 
 def BuildO3DExternsFile(js_files_dir, extra_externs_file, externs_file):
@@ -238,12 +241,14 @@ def main():
 
   docs_js_outpath = MakePath('../scons-out/docs/obj/documentation/apijs')
   externs_js_outpath = MakePath('../scons-out/docs/obj/externs')
-  o3d_docs_ezt_outpath = MakePath('../scons-out/docs/obj/documentation/html')
-  o3d_docs_html_outpath = MakePath('../scons-out/docs/obj/local_html')
+  o3d_docs_ezt_outpath = MakePath(
+      '../scons-out/docs/obj/documentation/reference')
+  o3d_docs_html_outpath = MakePath(
+      '../scons-out/docs/obj/documentation/local_html')
   o3djs_docs_ezt_outpath = MakePath(
-      '../scons-out/docs/obj/documentation/html/jsdocs')
+      '../scons-out/docs/obj/documentation/reference/jsdocs')
   o3djs_docs_html_outpath = MakePath(
-      '../scons-out/docs/obj/local_html/jsdocs')
+      '../scons-out/docs/obj/documentation/local_html/jsdocs')
   o3d_externs_path = MakePath('../scons-out/docs/obj/o3d-externs.js')
   compiled_o3djs_outpath = MakePath(
       '../scons-out/docs/obj/documentation/base.js')
