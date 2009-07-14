@@ -54,10 +54,18 @@ class ExtensionUITest : public ParentTestType {
   }
 
   void TestWithURL(const GURL& url) {
+    const IPC::ExternalTabSettings settings = {
+      NULL,
+      gfx::Rect(),
+      WS_POPUP,
+      false,
+      false
+    };
+
     HWND external_tab_container = NULL;
     HWND tab_wnd = NULL;
-    scoped_refptr<TabProxy> tab(automation()->CreateExternalTab(NULL,
-        gfx::Rect(), WS_POPUP, false, &external_tab_container, &tab_wnd));
+    scoped_refptr<TabProxy> tab(automation()->CreateExternalTab(settings,
+        &external_tab_container, &tab_wnd));
     ASSERT_TRUE(tab != NULL);
     ASSERT_NE(FALSE, ::IsWindow(external_tab_container));
     DoAdditionalPreNavigateSetup(tab.get());

@@ -451,17 +451,6 @@ bool TabProxy::Close(bool wait_until_closed) {
 
 #if defined(OS_WIN)
 // TODO(port): Remove windowsisms.
-bool TabProxy::SetAccelerators(HACCEL accel_table,
-                               int accel_table_entry_count) {
-  if (!is_valid())
-    return false;
-
-  bool succeeded = false;
-  sender_->Send(new AutomationMsg_SetAcceleratorsForTab(
-      0, handle_, accel_table, accel_table_entry_count, &succeeded));
-  return succeeded;
-}
-
 bool TabProxy::ProcessUnhandledAccelerator(const MSG& msg) {
   if (!is_valid())
     return false;

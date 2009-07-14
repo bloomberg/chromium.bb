@@ -11,6 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/format_macros.h"
+#include "base/gfx/native_widget_types.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/tuple.h"
@@ -610,21 +611,6 @@ struct ParamTraits<HCURSOR> {
 };
 
 template <>
-struct ParamTraits<HWND> {
-  typedef HWND param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteIntPtr(reinterpret_cast<intptr_t>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    DCHECK_EQ(sizeof(param_type), sizeof(intptr_t));
-    return m->ReadIntPtr(iter, reinterpret_cast<intptr_t*>(r));
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"0x%X", p));
-  }
-};
-
-template <>
 struct ParamTraits<HACCEL> {
   typedef HACCEL param_type;
   static void Write(Message* m, const param_type& p) {
@@ -697,6 +683,21 @@ struct ParamTraits<gfx::Size> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::wstring* l);
+};
+
+template <>
+struct ParamTraits<gfx::NativeWindow> {
+  typedef gfx::NativeWindow param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteIntPtr(reinterpret_cast<intptr_t>(p));
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    DCHECK_EQ(sizeof(param_type), sizeof(intptr_t));
+    return m->ReadIntPtr(iter, reinterpret_cast<intptr_t*>(r));
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(StringPrintf(L"0x%X", p));
+  }
 };
 
 #if defined(OS_POSIX)

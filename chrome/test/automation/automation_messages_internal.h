@@ -409,25 +409,15 @@ IPC_BEGIN_MESSAGES(Automation)
   //         associated for, as defined in chrome/views/event.h
   IPC_MESSAGE_ROUTED3(AutomationMsg_WindowKeyPress, int, wchar_t, int)
 
-#if defined(OS_WIN)
-  // TODO(port): Port these messages.
-  //
   // This message notifies the AutomationProvider to create a tab which is
   // hosted by an external process.
   // Request:
-  //   HWND - handle to a window acting as a parent/owner for the new tab.
-  //   gfx::Rect - initial dimensions.
-  //   style - window style to be used at the time of cration.
-  //   incognito - use off-the-record profile
-  IPC_SYNC_MESSAGE_ROUTED4_3(AutomationMsg_CreateExternalTab,
-                             HWND /* owner_or_parent*/,
-                             gfx::Rect /* dimensions */,
-                             unsigned int /* style */,
-                             bool /* off-the-record profile */,
-                             HWND,  // Tab container HWND
-                             HWND,  // Tab HWND
-                             int /* Handle to the new tab */)
-#endif  // defined(OS_WIN)
+  //   ExternalTabSettings - settings for external tab
+  IPC_SYNC_MESSAGE_ROUTED1_3(AutomationMsg_CreateExternalTab,
+                             IPC::ExternalTabSettings  /* settings*/,
+                             gfx::NativeWindow  /* Tab container window */,
+                             gfx::NativeWindow  /* Tab window */,
+                             int  /* Handle to the new tab */)
 
   // This message notifies the AutomationProvider to navigate to a specified
   // url in the external tab with given handle. The first parameter is the
@@ -493,21 +483,15 @@ IPC_BEGIN_MESSAGES(Automation)
                              bool)
 
   IPC_MESSAGE_ROUTED1(AutomationMsg_CloseBrowserRequestAsync, int)
+
+  // Unused.
+  // Response:
+  //   None expected
+  IPC_MESSAGE_ROUTED1(AutomationMsg_Unused, int)
+
 #if defined(OS_WIN)
   // TODO(port): Port these messages.
   //
-  // This message sets the keyboard accelarators to be used by an externally
-  // hosted tab. This call is not valid on a regular tab hosted within
-  // Chrome.
-  // Request:
-  //   - int: handle of the tab
-  //   - HACCEL: The accelerator table to be set
-  //   - int: The number of entries in the accelerator table
-  // Response:
-  //   -bool: whether the operation was successful.
-  IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetAcceleratorsForTab, int, HACCEL,
-                             int, bool)
-
   // This message is an outgoing message from Chrome to an external host.
   // It is a request to process a keyboard accelerator.
   // Request:

@@ -999,8 +999,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_HideInterstitialPage,
                         HideInterstitialPage)
 #if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetAcceleratorsForTab,
-                        SetAcceleratorsForTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_ProcessUnhandledAccelerator,
                         ProcessUnhandledAccelerator)
 #endif
@@ -2383,20 +2381,19 @@ void AutomationProvider::CloseBrowserAsync(int browser_handle) {
 
 #if defined(OS_WIN)
 // TODO(port): Remove windowsisms.
-void AutomationProvider::CreateExternalTab(HWND parent,
-                                           const gfx::Rect& dimensions,
-                                           unsigned int style,
-                                           bool incognito,
-                                           HWND* tab_container_window,
-                                           HWND* tab_window,
-                                           int* tab_handle) {
+void AutomationProvider::CreateExternalTab(
+    const IPC::ExternalTabSettings& settings,
+    gfx::NativeWindow* tab_container_window, gfx::NativeWindow* tab_window,
+    int* tab_handle) {
   *tab_handle = 0;
   *tab_container_window = NULL;
   *tab_window = NULL;
   ExternalTabContainer* external_tab_container =
       new ExternalTabContainer(this, automation_resource_message_filter_);
-  Profile* profile = incognito? profile_->GetOffTheRecordProfile() : profile_;
-  external_tab_container->Init(profile, parent, dimensions, style);
+  Profile* profile = settings.is_off_the_record ?
+      profile_->GetOffTheRecordProfile() : profile_;
+  external_tab_container->Init(profile, settings.parent, settings.dimensions,
+      settings.style, settings.load_requests_via_automation);
   TabContents* tab_contents = external_tab_container->tab_contents();
   if (tab_contents) {
     *tab_handle = tab_tracker_->Add(&tab_contents->controller());
@@ -2422,20 +2419,6 @@ void AutomationProvider::NavigateInExternalTab(
 }
 
 #if defined(OS_WIN)
-// TODO(port): remove windowisms.
-void AutomationProvider::SetAcceleratorsForTab(int handle,
-                                               HACCEL accel_table,
-                                               int accel_entry_count,
-                                               bool* status) {
-  *status = false;
-
-  ExternalTabContainer* external_tab = GetExternalTabForHandle(handle);
-  if (external_tab) {
-    external_tab->SetAccelerators(accel_table, accel_entry_count);
-    *status = true;
-  }
-}
-
 void AutomationProvider::ProcessUnhandledAccelerator(
     const IPC::Message& message, int handle, const MSG& msg) {
   ExternalTabContainer* external_tab = GetExternalTabForHandle(handle);

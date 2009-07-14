@@ -27,15 +27,10 @@
 
 static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
 
-// TODO(sanjeevr): The external_accel_table_ and external_accel_entry_count_
-// member variables are now obsolete and we don't use them.
-// We need to remove them.
 ExternalTabContainer::ExternalTabContainer(
     AutomationProvider* automation, AutomationResourceMessageFilter* filter)
     : automation_(automation),
       tab_contents_(NULL),
-      external_accel_table_(NULL),
-      external_accel_entry_count_(0),
       tab_contents_container_(NULL),
       tab_handle_(0),
       ignore_next_load_notification_(false),
@@ -50,11 +45,14 @@ ExternalTabContainer::~ExternalTabContainer() {
 bool ExternalTabContainer::Init(Profile* profile,
                                 HWND parent,
                                 const gfx::Rect& bounds,
-                                DWORD style) {
+                                DWORD style,
+                                bool load_requests_via_automation) {
   if (IsWindow()) {
     NOTREACHED();
     return false;
   }
+
+  load_requests_via_automation_ = load_requests_via_automation;
 
   set_window_style(WS_POPUP);
   views::WidgetWin::Init(NULL, bounds);
@@ -115,12 +113,6 @@ bool ExternalTabContainer::Init(Profile* profile,
   disabled_context_menu_ids_.push_back(
       IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
   return true;
-}
-
-void ExternalTabContainer::SetAccelerators(HACCEL accel_table,
-                                           int accel_table_entry_count) {
-  external_accel_table_ = accel_table;
-  external_accel_entry_count_ = accel_table_entry_count;
 }
 
 void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {

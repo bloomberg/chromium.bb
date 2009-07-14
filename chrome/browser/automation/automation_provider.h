@@ -37,6 +37,7 @@ struct AutomationMsg_Find_Params;
 
 namespace IPC {
 struct Reposition_Params;
+struct ExternalTabSettings;
 }
 
 class LoginHandler;
@@ -289,14 +290,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                             IPC::Message* reply_message);
   void HideInterstitialPage(int tab_handle, bool* success);
 
-// TODO(port): remove windowisms.
-#if defined(OS_WIN)
-  void CreateExternalTab(HWND parent, const gfx::Rect& dimensions,
-                         unsigned int style, bool incognito,
-                         HWND* tab_container_window,
-                         HWND* tab_window,
+  void CreateExternalTab(const IPC::ExternalTabSettings& settings,
+                         gfx::NativeWindow* tab_container_window,
+                         gfx::NativeWindow* tab_window,
                          int* tab_handle);
-#endif  // defined(OS_WIN)
 
   void NavigateInExternalTab(
       int handle, const GURL& url,
@@ -318,12 +315,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
 // TODO(port): remove windowisms.
 #if defined(OS_WIN)
-  // This sets the keyboard accelerators to be used by an externally
-  // hosted tab. This call is not valid on a regular tab hosted within
-  // Chrome.
-  void SetAcceleratorsForTab(int handle, HACCEL accel_table,
-                             int accel_entry_count, bool* status);
-
   void OnTabReposition(int tab_handle,
                        const IPC::Reposition_Params& params);
   void OnForwardContextMenuCommandToChrome(int tab_handle, int command);

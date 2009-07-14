@@ -39,10 +39,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   bool Init(Profile* profile,
             HWND parent,
             const gfx::Rect& bounds,
-            DWORD style);
-
-  // Sets the keyboard accelerators needed by the external host
-  void SetAccelerators(HACCEL accel_table, int accel_table_entry_count);
+            DWORD style,
+            bool load_requests_via_automation);
 
   // This is invoked when the external host reflects back to us a keyboard
   // message it did not process
@@ -126,9 +124,6 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   NotificationRegistrar registrar_;
 
-  // The accelerator table of the external host.
-  HACCEL external_accel_table_;
-  unsigned int external_accel_entry_count_;
   // A view to handle focus cycling
   TabContentsContainer* tab_contents_container_;
 

@@ -496,17 +496,13 @@ bool AutomationProxy::OpenNewBrowserWindow(bool show) {
   return Send(new AutomationMsg_OpenNewBrowserWindow(0, show));
 }
 
-#if defined(OS_WIN)
-// TODO(port): Replace HWNDs.
-scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(HWND parent,
-    const gfx::Rect& dimensions, unsigned int style, bool incognito,
-    HWND* external_tab_container, HWND* tab) {
-  IPC::Message* response = NULL;
+scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(
+    const IPC::ExternalTabSettings& settings,
+    gfx::NativeWindow* external_tab_container,
+    gfx::NativeWindow* tab) {
   int handle = 0;
-
   bool succeeded =
-      Send(new AutomationMsg_CreateExternalTab(0, parent, dimensions, style,
-                                               incognito,
+      Send(new AutomationMsg_CreateExternalTab(0, settings,
                                                external_tab_container,
                                                tab,
                                                &handle));
@@ -514,11 +510,14 @@ scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(HWND parent,
     return NULL;
   }
 
+#if defined(OS_WIN)
   DCHECK(IsWindow(*external_tab_container));
+#else  // defined(OS_WIN)
+  DCHECK(*external_tab_container);
+#endif  // defined(OS_WIN)
   DCHECK(tracker_->GetResource(handle) == NULL);
   return new TabProxy(this, tracker_.get(), handle);
 }
-#endif  // defined(OS_WIN)
 
 template <class T> scoped_refptr<T> AutomationProxy::ProxyObjectFromHandle(
     int handle) {

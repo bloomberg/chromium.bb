@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gfx/rect.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/common/ipc_message_utils.h"
@@ -291,6 +292,47 @@ struct ParamTraits<AutomationURLResponse> {
     LogParam(p.content_length, l);
     l->append(L", ");
     LogParam(p.last_modified, l);
+    l->append(L")");
+  }
+};
+
+struct ExternalTabSettings {
+  gfx::NativeWindow parent;
+  gfx::Rect dimensions;
+  unsigned int style;
+  bool is_off_the_record;
+  bool load_requests_via_automation;
+};
+
+// Traits for ExternalTabSettings structure to pack/unpack.
+template <>
+struct ParamTraits<ExternalTabSettings> {
+  typedef ExternalTabSettings param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.parent);
+    WriteParam(m, p.dimensions);
+    WriteParam(m, p.style);
+    WriteParam(m, p.is_off_the_record);
+    WriteParam(m, p.load_requests_via_automation);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->parent) &&
+           ReadParam(m, iter, &p->dimensions) &&
+           ReadParam(m, iter, &p->style) &&
+           ReadParam(m, iter, &p->is_off_the_record) &&
+           ReadParam(m, iter, &p->load_requests_via_automation);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.parent, l);
+    l->append(L", ");
+    LogParam(p.dimensions, l);
+    l->append(L", ");
+    LogParam(p.style, l);
+    l->append(L", ");
+    LogParam(p.is_off_the_record, l);
+    l->append(L", ");
+    LogParam(p.load_requests_via_automation, l);
     l->append(L")");
   }
 };

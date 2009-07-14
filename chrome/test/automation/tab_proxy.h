@@ -215,11 +215,6 @@ class TabProxy : public AutomationResourceProxy {
 #if defined(OS_WIN)
   // TODO(port): Use something portable.
 
-  // This sets the keyboard accelerators to be used by an externally
-  // hosted tab. This call is not valid on a regular tab hosted within
-  // Chrome.
-  bool SetAccelerators(HACCEL accel_table, int accel_table_entry_count);
-
   // The container of an externally hosted tab calls this to reflect any
   // accelerator keys that it did not process. This gives the tab a chance
   // to handle the keys

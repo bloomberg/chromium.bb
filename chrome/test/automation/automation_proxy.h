@@ -191,16 +191,13 @@ class AutomationProxy : public IPC::Channel::Listener,
   // the tracker.
   void InvalidateHandle(const IPC::Message& message);
 
-#if defined(OS_WIN)
-  // TODO(port): Enable when we can replace HWND.
-
   // Creates a tab that can hosted in an external process. The function
   // returns a TabProxy representing the tab as well as a window handle
   // that can be reparented in another process.
-  scoped_refptr<TabProxy> CreateExternalTab(HWND parent,
-      const gfx::Rect& dimensions, unsigned int style, bool incognito,
-      HWND* external_tab_container, HWND* tab);
-#endif  // defined(OS_WIN)
+  scoped_refptr<TabProxy> CreateExternalTab(
+      const IPC::ExternalTabSettings& settings,
+      gfx::NativeWindow* external_tab_container,
+      gfx::NativeWindow* tab);
 
   int command_execution_timeout_ms() const {
     return static_cast<int>(command_execution_timeout_.InMilliseconds());
