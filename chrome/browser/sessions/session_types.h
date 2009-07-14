@@ -106,7 +106,10 @@ class TabNavigation {
 
 // SessionTab corresponds to a NavigationController.
 struct SessionTab {
-  SessionTab() : tab_visual_index(-1), current_navigation_index(-1) { }
+  SessionTab()
+      : tab_visual_index(-1),
+        current_navigation_index(-1),
+        pinned(false) { }
 
   // Unique id of the window.
   SessionID window_id;
@@ -129,6 +132,9 @@ struct SessionTab {
   // corresponds to TabNavigation.index, not the index in navigations. When done
   // creating though, this is set to the index in navigations.
   int current_navigation_index;
+
+  // True if the tab is pinned.
+  bool pinned;
 
   std::vector<TabNavigation> navigations;
 

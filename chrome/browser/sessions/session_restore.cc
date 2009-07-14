@@ -327,7 +327,8 @@ class SessionRestoreImpl : public NotificationObserver {
           &browser->AddRestoredTab(tab.navigations,
                                    static_cast<int>(i - window.tabs.begin()),
                                    selected_index,
-                                   false)->controller());
+                                   false,
+                                   tab.pinned)->controller());
     }
   }
 
@@ -362,7 +363,8 @@ class SessionRestoreImpl : public NotificationObserver {
   void NotifySessionServiceOfRestoredTabs(Browser* browser, int initial_count) {
     SessionService* session_service = profile_->GetSessionService();
     for (int i = initial_count; i < browser->tab_count(); ++i)
-      session_service->TabRestored(&browser->GetTabContentsAt(i)->controller());
+      session_service->TabRestored(&browser->GetTabContentsAt(i)->controller(),
+                                   browser->tabstrip_model()->IsTabPinned(i));
   }
 
   // The profile to create the sessions for.

@@ -38,8 +38,9 @@ const size_t TabRestoreService::kMaxEntries = 10;
 // The ordering in the file is as follows:
 // . When the user closes a tab a command of type
 //   kCommandSelectedNavigationInTab is written identifying the tab and
-//   the selected index. This is followed by any number of
-//   kCommandUpdateTabNavigation commands (1 per navigation entry).
+//   the selected index, then a kCommandPinnedState command if the tab was
+//   pinned. This is followed by any number of kCommandUpdateTabNavigation
+//   commands (1 per navigation entry).
 // . When the user closes a window a kCommandSelectedNavigationInTab command
 //   is written out and followed by n tab closed sequences (as previoulsy
 //   described).
@@ -49,6 +50,7 @@ static const SessionCommand::id_type kCommandUpdateTabNavigation = 1;
 static const SessionCommand::id_type kCommandRestoredEntry = 2;
 static const SessionCommand::id_type kCommandWindow = 3;
 static const SessionCommand::id_type kCommandSelectedNavigationInTab = 4;
+static const SessionCommand::id_type kCommandPinnedState = 5;
 
 // Number of entries (not commands) before we clobber the file and write
 // everything.
@@ -72,6 +74,9 @@ struct SelectedNavigationInTabPayload {
   SessionID::id_type id;
   int32 index;
 };
+
+// Only written if the tab is pinned.
+typedef bool PinnedStatePayload;
 
 typedef std::map<SessionID::id_type, TabRestoreService::Entry*> IDToEntry;
 
@@ -248,7 +253,8 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
       if (tab_index < 0 || tab_index > tab_browser->tab_count())
         tab_index = tab_browser->tab_count();
       tab_browser->AddRestoredTab(tab->navigations, tab_index,
-                                  tab->current_navigation_index, true);
+                                  tab->current_navigation_index, true,
+                                  tab->pinned);
     }
   } else if (entry->type == WINDOW) {
     const Window* window = static_cast<Window*>(entry);
@@ -259,7 +265,8 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
           browser->AddRestoredTab(tab.navigations, browser->tab_count(),
                                   tab.current_navigation_index,
                                   (static_cast<int>(tab_i) ==
-                                   window->selected_tab_index));
+                                   window->selected_tab_index),
+                                  tab.pinned);
       if (restored_tab)
         restored_tab->controller().LoadIfNecessary();
     }
@@ -360,6 +367,7 @@ void TabRestoreService::PopulateTab(Tab* tab,
     tab->browser_id = browser->session_id().id();
     tab->tabstrip_index =
         browser->tabstrip_model()->GetIndexOfController(controller);
+    tab->pinned = browser->tabstrip_model()->IsTabPinned(tab->tabstrip_index);
   }
 }
 
@@ -445,6 +453,14 @@ void TabRestoreService::ScheduleCommandsForTab(const Tab& tab,
   ScheduleCommand(
       CreateSelectedNavigationInTabCommand(tab.id,
                                            valid_count_before_selected));
+
+  if (tab.pinned) {
+    PinnedStatePayload payload = true;
+    SessionCommand* command =
+        new SessionCommand(kCommandPinnedState, sizeof(payload));
+    memcpy(command->contents(), &payload, sizeof(payload));
+    ScheduleCommand(command);
+  }
 
   // Then write the navigations.
   for (int i = first_index_to_persist, wrote_count = 0;
@@ -636,6 +652,17 @@ void TabRestoreService::CreateEntriesFromCommands(
         break;
       }
 
+      case kCommandPinnedState: {
+        if (!current_tab) {
+          // Should be in a tab when we get this.
+          return;
+        }
+        // NOTE: payload doesn't matter. kCommandPinnedState is only written if
+        // tab is pinned.
+        current_tab->pinned = true;
+        break;
+      }
+
       default:
         // Unknown type, usually indicates corruption of file. Ignore it.
         return;
@@ -744,6 +771,7 @@ bool TabRestoreService::ConvertSessionWindowToWindow(
     if (!session_window->tabs[i]->navigations.empty()) {
       window->tabs.resize(window->tabs.size() + 1);
       Tab& tab = window->tabs.back();
+      tab.pinned = session_window->tabs[i]->pinned;
       tab.navigations.swap(session_window->tabs[i]->navigations);
       tab.current_navigation_index =
           session_window->tabs[i]->current_navigation_index;

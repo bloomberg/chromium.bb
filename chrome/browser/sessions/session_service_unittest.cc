@@ -71,6 +71,40 @@ class SessionServiceTest : public testing::Test {
     helper_.ReadWindows(windows);
   }
 
+  // Configures the session service with one window with one tab and a single
+  // navigation. If |pinned_state| is true or |write_always| is true, the
+  // pinned state of the tab is updated. The session service is then recreated
+  // and the pinned state of the read back tab is returned.
+  bool CreateAndWriteSessionWithOneTab(bool pinned_state, bool write_always) {
+    SessionID tab_id;
+
+    TabNavigation nav1(0, GURL("http://google.com"),
+                       GURL("http://www.referrer.com"),
+                       ASCIIToUTF16("abc"), "def",
+                       PageTransition::QUALIFIER_MASK);
+
+    helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+    UpdateNavigation(window_id, tab_id, nav1, 0, true);
+
+    if (pinned_state || write_always)
+      helper_.service()->SetPinnedState(window_id, tab_id, pinned_state);
+
+    ScopedVector<SessionWindow> windows;
+    ReadWindows(&(windows.get()));
+
+    EXPECT_EQ(1U, windows->size());
+    if (HasFatalFailure())
+      return false;
+    EXPECT_EQ(1U, windows[0]->tabs.size());
+    if (HasFatalFailure())
+      return false;
+
+    SessionTab* tab = windows[0]->tabs[0];
+    helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
+
+    return tab->pinned;
+  }
+
   SessionService* service() { return helper_.service(); }
 
   SessionBackend* backend() { return helper_.backend(); }
@@ -454,4 +488,19 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
   ReadWindows(&(windows.get()));
 
   ASSERT_EQ(0U, windows->size());
+}
+
+// Don't set the pinned state and make sure the pinned value is false.
+TEST_F(SessionServiceTest, PinnedDefaultsToFalse) {
+  EXPECT_FALSE(CreateAndWriteSessionWithOneTab(false, false));
+}
+
+// Explicitly set the pinned state to false and make sure we get back false.
+TEST_F(SessionServiceTest, PinnedFalseWhenSetToFalse) {
+  EXPECT_FALSE(CreateAndWriteSessionWithOneTab(false, true));
+}
+
+// Explicitly set the pinned state to false and make sure we get back true.
+TEST_F(SessionServiceTest, PinnedTrue) {
+  EXPECT_TRUE(CreateAndWriteSessionWithOneTab(true, true));
 }

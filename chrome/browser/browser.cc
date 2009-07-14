@@ -609,18 +609,23 @@ TabContents* Browser::AddRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int tab_index,
     int selected_navigation,
-    bool select) {
+    bool select,
+    bool pin) {
   TabContents* new_tab = new TabContents(profile(), NULL,
                                          MSG_ROUTING_NONE, NULL);
   new_tab->controller().RestoreFromState(navigations, selected_navigation);
 
+  bool really_pin =
+      (pin && tab_index == tabstrip_model()->IndexOfFirstNonPinnedTab());
   tabstrip_model_.InsertTabContentsAt(tab_index, new_tab, select, false);
+  if (really_pin)
+    tabstrip_model_.SetTabPinned(tab_index, true);
   if (select)
     window_->Activate();
   if (profile_->HasSessionService()) {
     SessionService* session_service = profile_->GetSessionService();
     if (session_service)
-      session_service->TabRestored(&new_tab->controller());
+      session_service->TabRestored(&new_tab->controller(), really_pin);
   }
   return new_tab;
 }
@@ -1474,19 +1479,20 @@ void Browser::DuplicateContentsAt(int index) {
   TabContents* contents = GetTabContentsAt(index);
   TabContents* new_contents = NULL;
   DCHECK(contents);
+  bool pinned = false;
 
   if (type_ == TYPE_NORMAL) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
     new_contents = contents->Clone();
-    // If you duplicate a tab that is not selected, we need to make sure to
-    // select the tab being duplicated so that DetermineInsertionIndex returns
-    // the right index (if tab 5 is selected and we right-click tab 1 we want
-    // the new tab to appear in index position 2, not 6).
-    if (tabstrip_model_.selected_index() != index)
-      tabstrip_model_.SelectTabContentsAt(index, true);
-    tabstrip_model_.AddTabContents(new_contents, index + 1, false,
+    // Make sure we force the index, otherwise the duplicate tab may appear at
+    // the wrong location.
+    tabstrip_model_.AddTabContents(new_contents, index + 1, true,
                                    PageTransition::LINK, true);
+    if (tabstrip_model_.IsTabPinned(index)) {
+      pinned = true;
+      tabstrip_model_.SetTabPinned(index + 1, true);
+    }
   } else {
     Browser* browser = NULL;
     if (type_ & TYPE_APP) {
@@ -1514,7 +1520,7 @@ void Browser::DuplicateContentsAt(int index) {
   if (profile_->HasSessionService()) {
     SessionService* session_service = profile_->GetSessionService();
     if (session_service)
-      session_service->TabRestored(&new_contents->controller());
+      session_service->TabRestored(&new_contents->controller(), pinned);
   }
 }
 
@@ -1676,6 +1682,18 @@ void Browser::TabMoved(TabContents* contents,
   DCHECK(from_index >= 0 && to_index >= 0);
   // Notify the history service.
   SyncHistoryWithTabs(std::min(from_index, to_index));
+}
+
+void Browser::TabPinnedStateChanged(TabContents* contents, int index) {
+  if (!profile()->HasSessionService())
+    return;
+  SessionService* session_service = profile()->GetSessionService();
+  if (session_service) {
+    session_service->SetPinnedState(
+        session_id(),
+        GetTabContentsAt(index)->controller().session_id(),
+        tabstrip_model_.IsTabPinned(index));
+  }
 }
 
 void Browser::TabStripEmpty() {
@@ -2399,6 +2417,9 @@ void Browser::SyncHistoryWithTabs(int index) {
       if (contents) {
         session_service->SetTabIndexInWindow(
             session_id(), contents->controller().session_id(), i);
+        session_service->SetPinnedState(session_id(),
+                                        contents->controller().session_id(),
+                                        tabstrip_model_.IsTabPinned(i));
       }
     }
   }

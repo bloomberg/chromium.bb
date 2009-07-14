@@ -234,11 +234,13 @@ class Browser : public TabStripModelDelegate,
   // Add a tab with its session history restored from the SessionRestore
   // system. If select is true, the tab is selected. |tab_index| gives the index
   // to insert the tab at. |selected_navigation| is the index of the
-  // TabNavigation in |navigations| to select.
+  // TabNavigation in |navigations| to select. If |pin| is true and |tab_index|
+  // is the last pinned tab, then the newly created tab is pinned.
   TabContents* AddRestoredTab(const std::vector<TabNavigation>& navigations,
                               int tab_index,
                               int selected_navigation,
-                              bool select);
+                              bool select,
+                              bool pin);
   // Creates a new tab with the already-created TabContents 'new_contents'.
   // The window for the added contents will be reparented correctly when this
   // method returns.  If |disposition| is NEW_POPUP, |pos| should hold the
@@ -451,6 +453,7 @@ class Browser : public TabStripModelDelegate,
                         int from_index,
                         int to_index,
                         bool pinned_state_changed);
+  virtual void TabPinnedStateChanged(TabContents* contents, int index);
   virtual void TabStripEmpty();
 
   // Overridden from TabContentsDelegate:

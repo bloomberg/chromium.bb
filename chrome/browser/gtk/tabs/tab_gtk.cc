@@ -53,12 +53,10 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
     menu_->AppendMenuItemWithLabel(
         TabStripModel::CommandRestoreTab,
         l10n_util::GetStringUTF8(IDS_RESTORE_TAB));
-    if (TabStripModel::IsTabPinningEnabled()) {
-      menu_->AppendSeparator();
-      menu_->AppendCheckMenuItemWithLabel(
-          TabStripModel::CommandTogglePinned,
-          l10n_util::GetStringUTF8(IDS_TAB_CXMENU_PIN_TAB));
-    }
+    menu_->AppendSeparator();
+    menu_->AppendCheckMenuItemWithLabel(
+        TabStripModel::CommandTogglePinned,
+        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_PIN_TAB));
   }
 
   virtual ~ContextMenuController() {}

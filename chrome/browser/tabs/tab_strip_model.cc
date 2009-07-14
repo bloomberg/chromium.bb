@@ -356,17 +356,6 @@ int TabStripModel::IndexOfFirstNonPinnedTab() const {
   return count();
 }
 
-//  static
-bool TabStripModel::IsTabPinningEnabled() {
-  static bool checked = false;
-  static bool enabled = false;
-  if (!checked) {
-    enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableTabPinning);
-  }
-  return enabled;
-}
-
 void TabStripModel::AddTabContents(TabContents* contents,
                                    int index,
                                    bool force_index,

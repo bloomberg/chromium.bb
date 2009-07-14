@@ -415,9 +415,6 @@ class TabStripModel : public NotificationObserver {
   // |count()| if all of the tabs are pinned, and 0 if no tabs are pinned.
   int IndexOfFirstNonPinnedTab() const;
 
-  // Returns true if pinned tabs are enabled in the UI.
-  static bool IsTabPinningEnabled();
-
   // Command level API /////////////////////////////////////////////////////////
 
   // Adds a TabContents at the best position in the TabStripModel given the

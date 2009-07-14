@@ -67,7 +67,8 @@ class TabRestoreService : public BaseSessionService {
         : Entry(TAB),
           current_navigation_index(-1),
           browser_id(0),
-          tabstrip_index(-1) {}
+          tabstrip_index(-1),
+          pinned(false) {}
 
     bool has_browser() const { return browser_id > 0; }
 
@@ -83,6 +84,9 @@ class TabRestoreService : public BaseSessionService {
 
     // Index within the tab strip. May be -1 for an unknown index.
     int tabstrip_index;
+
+    // True if the tab was pinned.
+    bool pinned;
   };
 
   // Represents a previously open window.

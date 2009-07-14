@@ -75,6 +75,11 @@ class SessionService : public BaseSessionService,
                            const SessionID& tab_id,
                            int new_index);
 
+  // Sets the pinned state of the tab.
+  void SetPinnedState(const SessionID& window_id,
+                      const SessionID& tab_id,
+                      bool is_pinned);
+
   // Notification that a tab has been closed.
   //
   // Note: this is invoked from the NavigationController's destructor, which is
@@ -112,7 +117,8 @@ class SessionService : public BaseSessionService,
 
   // Notification that a tab has restored its entries or a closed tab is being
   // reused.
-  void TabRestored(NavigationController* controller);
+  void TabRestored(NavigationController* controller,
+                   bool pinned);
 
   // Sets the index of the selected entry in the navigation controller for the
   // specified tab.
@@ -178,6 +184,9 @@ class SessionService : public BaseSessionService,
 
   SessionCommand* CreateSetWindowTypeCommand(const SessionID& window_id,
                                              Browser::Type type);
+
+  SessionCommand* CreatePinnedStateCommand(const SessionID& tab_id,
+                                           bool is_pinned);
 
   // Callback form the backend for getting the commands from the previous
   // or save file. Converts the commands in SessionWindows and notifies
@@ -253,6 +262,7 @@ class SessionService : public BaseSessionService,
       const SessionID& window_id,
       NavigationController* controller,
       int index_in_window,
+      bool is_pinned,
       std::vector<SessionCommand*>* commands,
       IdToRange* tab_to_available_range);
 

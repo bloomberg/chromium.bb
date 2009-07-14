@@ -55,7 +55,8 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   }
 
   // Adds a window with one tab and url to the profile's session service.
-  void AddWindowWithOneTabToSessionService() {
+  // If |pinned| is true, the tab is marked as pinned in the session service.
+  void AddWindowWithOneTabToSessionService(bool pinned) {
     SessionService* session_service = profile()->GetSessionService();
     SessionID tab_id;
     SessionID window_id;
@@ -63,6 +64,8 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
     session_service->SetTabWindow(window_id, tab_id);
     session_service->SetTabIndexInWindow(window_id, tab_id, 0);
     session_service->SetSelectedTabInWindow(window_id, 0);
+    if (pinned)
+      session_service->SetPinnedState(window_id, tab_id, true);
     NavigationEntry entry;
     entry.set_url(url1_);
     session_service->UpdateTabNavigation(window_id, tab_id, 0, entry);
@@ -70,13 +73,14 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
 
   // Creates a SessionService and assigns it to the Profile. The SessionService
   // is configured with a single window with a single tab pointing at url1_ by
-  // way of AddWindowWithOneTabToSessionService.
-  void CreateSessionServiceWithOneWindow() {
+  // way of AddWindowWithOneTabToSessionService. If |pinned| is true, the
+  // tab is marked as pinned in the session service.
+  void CreateSessionServiceWithOneWindow(bool pinned) {
     // The profile takes ownership of this.
     SessionService* session_service = new SessionService(profile());
     profile()->set_session_service(session_service);
 
-    AddWindowWithOneTabToSessionService();
+    AddWindowWithOneTabToSessionService(pinned);
 
     // Set this, otherwise previous session won't be loaded.
     profile()->set_last_session_exited_cleanly(false);
@@ -101,6 +105,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   TabRestoreService::Entry* entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  EXPECT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_TRUE(url1_ == tab->navigations[0].url());
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
@@ -119,6 +124,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   tab = static_cast<TabRestoreService::Tab*>(entry);
+  EXPECT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_TRUE(url1_ == tab->navigations[0].url());
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
@@ -150,6 +156,42 @@ TEST_F(TabRestoreServiceTest, Restore) {
   TabRestoreService::Entry* entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  EXPECT_FALSE(tab->pinned);
+  ASSERT_EQ(3U, tab->navigations.size());
+  EXPECT_TRUE(url1_ == tab->navigations[0].url());
+  EXPECT_TRUE(url2_ == tab->navigations[1].url());
+  EXPECT_TRUE(url3_ == tab->navigations[2].url());
+  EXPECT_EQ(2, tab->current_navigation_index);
+}
+
+// Tests restoring a single pinned tab.
+TEST_F(TabRestoreServiceTest, RestorePinned) {
+  AddThreeNavigations();
+
+  // Have the service record the tab.
+  service_->CreateHistoricalTab(&controller());
+
+  // One entry should be created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // We have to explicitly mark the tab as pinned as there is no browser for
+  // these tests.
+  TabRestoreService::Entry* entry = service_->entries().front();
+  ASSERT_EQ(TabRestoreService::TAB, entry->type);
+  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  tab->pinned = true;
+
+  // Recreate the service and have it load the tabs.
+  RecreateService();
+
+  // One entry should be created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // And verify the entry.
+  entry = service_->entries().front();
+  ASSERT_EQ(TabRestoreService::TAB, entry->type);
+  tab = static_cast<TabRestoreService::Tab*>(entry);
+  EXPECT_TRUE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_TRUE(url1_ == tab->navigations[0].url());
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
@@ -204,7 +246,7 @@ TEST_F(TabRestoreServiceTest, DontLoadTwice) {
 
 // Makes sure we load the previous session as necessary.
 TEST_F(TabRestoreServiceTest, LoadPreviousSession) {
-  CreateSessionServiceWithOneWindow();
+  CreateSessionServiceWithOneWindow(false);
 
   profile()->GetSessionService()->MoveCurrentSessionToLastSession();
 
@@ -225,7 +267,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSession) {
 
 // Makes sure we don't attempt to load previous sessions after a restore.
 TEST_F(TabRestoreServiceTest, DontLoadAfterRestore) {
-  CreateSessionServiceWithOneWindow();
+  CreateSessionServiceWithOneWindow(false);
 
   profile()->GetSessionService()->MoveCurrentSessionToLastSession();
 
@@ -239,7 +281,7 @@ TEST_F(TabRestoreServiceTest, DontLoadAfterRestore) {
 
 // Makes sure we don't attempt to load previous sessions after a clean exit.
 TEST_F(TabRestoreServiceTest, DontLoadAfterCleanExit) {
-  CreateSessionServiceWithOneWindow();
+  CreateSessionServiceWithOneWindow(false);
 
   profile()->GetSessionService()->MoveCurrentSessionToLastSession();
 
@@ -251,7 +293,7 @@ TEST_F(TabRestoreServiceTest, DontLoadAfterCleanExit) {
 }
 
 TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
-  CreateSessionServiceWithOneWindow();
+  CreateSessionServiceWithOneWindow(false);
 
   profile()->GetSessionService()->MoveCurrentSessionToLastSession();
 
@@ -279,6 +321,46 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
   entry = *(++service_->entries().begin());
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  ASSERT_FALSE(tab->pinned);
+  ASSERT_EQ(3U, tab->navigations.size());
+  EXPECT_EQ(2, tab->current_navigation_index);
+  EXPECT_TRUE(url1_ == tab->navigations[0].url());
+  EXPECT_TRUE(url2_ == tab->navigations[1].url());
+  EXPECT_TRUE(url3_ == tab->navigations[2].url());
+}
+
+// Make sure pinned state is correctly loaded from session service.
+TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
+  CreateSessionServiceWithOneWindow(true);
+
+  profile()->GetSessionService()->MoveCurrentSessionToLastSession();
+
+  AddThreeNavigations();
+
+  service_->CreateHistoricalTab(&controller());
+
+  RecreateService();
+
+  // We should get back two entries, one from the previous session and one from
+  // the tab restore service. The previous session entry should be first.
+  ASSERT_EQ(2U, service_->entries().size());
+  // The first entry should come from the session service.
+  TabRestoreService::Entry* entry = service_->entries().front();
+  ASSERT_EQ(TabRestoreService::WINDOW, entry->type);
+  TabRestoreService::Window* window =
+      static_cast<TabRestoreService::Window*>(entry);
+  ASSERT_EQ(1U, window->tabs.size());
+  EXPECT_EQ(0, window->selected_tab_index);
+  EXPECT_TRUE(window->tabs[0].pinned);
+  ASSERT_EQ(1U, window->tabs[0].navigations.size());
+  EXPECT_EQ(0, window->tabs[0].current_navigation_index);
+  EXPECT_TRUE(url1_ == window->tabs[0].navigations[0].url());
+
+  // Then the closed tab.
+  entry = *(++service_->entries().begin());
+  ASSERT_EQ(TabRestoreService::TAB, entry->type);
+  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  ASSERT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_EQ(2, tab->current_navigation_index);
   EXPECT_TRUE(url1_ == tab->navigations[0].url());
@@ -289,10 +371,10 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
 // Creates TabRestoreService::kMaxEntries + 1 windows in the session service
 // and makes sure we only get back TabRestoreService::kMaxEntries on restore.
 TEST_F(TabRestoreServiceTest, ManyWindowsInSessionService) {
-  CreateSessionServiceWithOneWindow();
+  CreateSessionServiceWithOneWindow(false);
 
   for (size_t i = 0; i < TabRestoreService::kMaxEntries; ++i)
-    AddWindowWithOneTabToSessionService();
+    AddWindowWithOneTabToSessionService(false);
 
   profile()->GetSessionService()->MoveCurrentSessionToLastSession();
 
