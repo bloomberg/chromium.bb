@@ -99,8 +99,8 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
   static const StringPiece downloads_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOWNLOADS_HTML));
-  const std::string full_html = jstemplate_builder::GetTemplateHtml(
-      downloads_html, &localized_strings, "t");
+  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+      downloads_html, &localized_strings);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(full_html.size());

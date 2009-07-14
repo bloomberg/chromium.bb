@@ -371,8 +371,11 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
             IDR_NEW_NEW_TAB_HTML);
   }
 
-  const std::string full_html = jstemplate_builder::GetTemplateHtml(
-      new_tab_html, &localized_strings, "t" /* template root node id */);
+  std::string full_html(new_tab_html.data(), new_tab_html.size());
+  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
+  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
+  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
+  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(full_html.size());
@@ -442,8 +445,8 @@ void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_INCOGNITO_TAB_HTML));
 
-  const std::string full_html = jstemplate_builder::GetTemplateHtml(
-      incognito_tab_html, &localized_strings, "t" /* template root node id */);
+  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+      incognito_tab_html, &localized_strings);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(full_html.size());

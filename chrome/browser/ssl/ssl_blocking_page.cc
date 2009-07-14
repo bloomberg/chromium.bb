@@ -85,7 +85,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SSL_ROAD_BLOCK_HTML));
 
-  return jstemplate_builder::GetTemplateHtml(html, &strings, "template_root");
+  return jstemplate_builder::GetI18nTemplateHtml(html, &strings);
 }
 
 void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {

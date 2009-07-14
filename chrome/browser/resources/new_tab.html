@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html id="t" jsvalues="dir:textdirection;firstview:firstview;bookmarkbarattached:bookmarkbarattached;hasattribution:hasattribution;anim:anim">
+<html i18n-values="dir:textdirection;firstview:firstview;bookmarkbarattached:bookmarkbarattached;hasattribution:hasattribution;anim:anim">
 <!--
  This page is optimized for perceived performance. Our enemies are the time
  taken for the backend to generate our data, and the time taken to parse
@@ -128,7 +128,7 @@ logEvent('log start');
 </script>
 <head>
 <meta charset="utf-8">
-<title jscontent="title"></title>
+<title i18n-content="title"></title>
 <style>
 html {
   height:100%;
@@ -359,7 +359,7 @@ html[hasattribution='false'] .attribution {
 <link id="themecss" rel="stylesheet" href="chrome://theme/css/newtab.css" />
 </head>
 <body onload="updateAttribution(); logEvent('body onload fired');"
-      jsvalues=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+      i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <script>
 // We apply the size class here so that we don't trigger layout animations onload.
 handleWindowResize();
@@ -373,11 +373,11 @@ document.addEventListener('DOMContentLoaded', handleDOMContentLoaded);
   <div id="mostvisitedsection" class="section">
     <div id="mostvisited" style="position:relative;">
       <div>
-        <span class="section-title non-edit-visible" jscontent="mostvisited"></span>
-        <span class="section-title edit-visible" jseval="this.innerHTML = $this.editmodeheading;"></span>
+        <span class="section-title non-edit-visible" i18n-content="mostvisited"></span>
+        <span class="section-title edit-visible" i18n-values=".innerHTML:editmodeheading"></span>
       </div>
       <div id="mostvisitedintro" style="display:none;">
-        <div class="most-visited-text" style="position:absolute;" jseval="this.innerHTML = $this.mostvisitedintro;"></div>
+        <div class="most-visited-text" style="position:absolute;" i18n-values=".innerHTML:mostvisitedintro"></div>
         <table>
           <tr>
             <td><div class="thumbnail">&nbsp;</div></td>
@@ -417,19 +417,19 @@ document.addEventListener('DOMContentLoaded', handleDOMContentLoaded);
        class="manage non-edit-visible"
        onclick="enterEditMode(); return false"
        id="editthumbnails">
-      <span jscontent="editthumbnails"></span></a>
+      <span i18n-content="editthumbnails"></span></a>
     <button type="button" class="edit-visible" onclick="exitEditMode();"
-            jscontent="doneediting"></button>
+            i18n-content="doneediting"></button>
     <button type="button" class="edit-visible" onclick="cancelEdits();"
-            jscontent="cancelediting"></button>
+            i18n-content="cancelediting"></button>
     <a href="#"
        class="manage edit-visible"
        onclick="restoreThumbnails(); return false">
-      <span jscontent="restorethumbnails"></span></a>
+      <span i18n-content="restorethumbnails"></span></a>
     <a href="#"
-       jsvalues="href:showhistoryurl"
+       i18n-values="href:showhistoryurl"
        class="manage non-edit-visible">
-       <span jscontent="showhistory"></span> &raquo;</a>
+       <span i18n-content="showhistory"></span> &raquo;</a>
   </div>
   </td>
   <td valign="top" width="230">
@@ -437,32 +437,34 @@ document.addEventListener('DOMContentLoaded', handleDOMContentLoaded);
         <img src="../../app/theme/%DISTRIBUTION%/product_logo.png"
              width="145" height="52" style="padding-bottom:8px;" />
     </div>
+    <!-- This iframe gets shown in resizeP13N -->
     <iframe id="p13n" frameborder="0" width="100%" scrolling="no" height="0"
-            jsdisplay="p13nsrc" style="display:none;"
-            jsvalues="src:p13nsrc"></iframe>
+            style="display:none"
+            i18n-values="src:p13nsrc"></iframe>
+
     <div id="searches" class="sidebar themed">
-      <div class="section-title" jscontent="searches"></div>
+      <div class="section-title" i18n-content="searches"></div>
       <form onsubmit="chrome.send('searchHistoryPage', [this.search.value]); return false;">
         <input type="text" class="hint"
                name="search"
                style="background-image:url(chrome://favicon/);"
-               jsvalues="placeholder:searchhistory">
+               i18n-values="placeholder:searchhistory">
       </form>
       <div id='searches-entries'></div>
     </div>
 
     <div id="recentlyBookmarked" class="sidebar themed" style="display:none">
-      <span class="section-title" jscontent="bookmarks"></span>
+      <span class="section-title" i18n-content="bookmarks"></span>
       <div id="recentlyBookmarkedContainer"></div>
     </div>
 
     <div id="recentlyClosedTabs" class="sidebar" style="display:none">
-      <div class="section-title" jscontent="recentlyclosed"></div>
+      <div class="section-title" i18n-content="recentlyclosed"></div>
       <div id="recentlyClosedContainer"></div>
     </div>
 
     <div id="attribution" class="sidebar attribution">
-      <span jscontent="attributionintro"></span><br />
+      <span i18n-content="attributionintro"></span><br />
       <img id="attribution-img" />
     </div>
   </td>

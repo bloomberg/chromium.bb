@@ -381,8 +381,8 @@ std::string AboutVersion() {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_ABOUT_VERSION_HTML));
 
-  return jstemplate_builder::GetTemplateHtml(
-      version_html, &localized_strings, "t" /* template root node id */);
+  return jstemplate_builder::GetI18nTemplateHtml(
+      version_html, &localized_strings);
 }
 
 // AboutSource -----------------------------------------------------------------

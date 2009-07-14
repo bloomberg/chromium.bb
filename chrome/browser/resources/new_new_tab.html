@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html id="t" jsvalues="dir:textdirection;firstview:firstview;bookmarkbarattached:bookmarkbarattached;hasattribution:hasattribution;anim:anim">
+<html i18n-values="dir:textdirection;firstview:firstview;bookmarkbarattached:bookmarkbarattached;hasattribution:hasattribution;anim:anim">
 
 <meta charset="utf-8">
-<title jscontent="title"></title>
+<title i18n-content="title"></title>
 <script>
 // Logging info for benchmarking purposes.
 var log = [];
@@ -51,30 +51,30 @@ logEvent('log start');
 <link id="themecss" rel="stylesheet" href="chrome://theme/css/newtab.css">
 </head>
 <body class="loading"
-      jsvalues=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+      i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 
 <div id="main">
 
   <div id="view-toolbar"
       ><input type=checkbox id="thumb-checkbox" checked
-              jsvalues="title:hidethumbnails"
-      ><input type=checkbox id="list-checkbox" jsvalues="title:showlist"
+              i18n-values="title:hidethumbnails"
+      ><input type=checkbox id="list-checkbox" i18n-values="title:showlist"
       ><input type="button" id="option-button"></div>
 
   <div id="option-menu" class="window-menu">
-    <div section="THUMB" show="true" jscontent="showthumbnails"
+    <div section="THUMB" show="true" i18n-content="showthumbnails"
          style="display:none"></div>
-    <div section="THUMB" show="false" jscontent="hidethumbnails"></div>
-    <div section="LIST" show="true" jscontent="showlist"></div>
-    <div section="LIST" show="false" jscontent="hidelist"
+    <div section="THUMB" show="false" i18n-content="hidethumbnails"></div>
+    <div section="LIST" show="true" i18n-content="showlist"></div>
+    <div section="LIST" show="false" i18n-content="hidelist"
          style="display:none"></div>
-    <div section="RECENT" show="true" jscontent="showrecent"
+    <div section="RECENT" show="true" i18n-content="showrecent"
          style="display:none"></div>
-    <div section="RECENT" show="false" jscontent="hiderecent"></div>
+    <div section="RECENT" show="false" i18n-content="hiderecent"></div>
     <div section="TIPS" show="true"
-         jscontent="showtips" style="display:none"></div>
+         i18n-content="showtips" style="display:none"></div>
     <div section="TIPS" show="false"
-         jscontent="hidetips"></div>
+         i18n-content="hidetips"></div>
   </div>
 
   <div id="notification">
@@ -216,12 +216,12 @@ logEvent('log start');
   <div id="lower-sections">
 
     <div id="recent-activities" class="section">
-      <h2 jscontent="recentactivities"></h2>
+      <h2 i18n-content="recentactivities"></h2>
 
       <div class="hbox">
 
         <div id="recent-tabs">
-          <h3 jscontent="recentlyclosed"></h3>
+          <h3 i18n-content="recentlyclosed"></h3>
 
           <div class="item-container">
             <div id="tab-items" jsskip="!processing">
@@ -247,14 +247,14 @@ logEvent('log start');
 
             <div>
               <a href="chrome://history/" class="item nav"
-                  jscontent="viewfullhistory"></a>
+                  i18n-content="viewfullhistory"></a>
             </div>
 
           </div>
         </div>
 
         <div id="downloads">
-          <h3 jscontent="downloads"></h3>
+          <h3 i18n-content="downloads"></h3>
           <div class="item-container">
             <div id="download-items" jsskip="!processing">
               <a class="item" jsselect="$this"
@@ -269,7 +269,7 @@ logEvent('log start');
 
             <div>
               <a href="chrome://downloads/" class="item nav"
-                  jscontent="viewalldownloads"></a>
+                  i18n-content="viewalldownloads"></a>
             </div>
 
           </div>
@@ -280,11 +280,11 @@ logEvent('log start');
     </div><div class="spacer">
 
     </div><div id="tips" class="section">
-      <h2 jscontent="tipsandsuggestions"></h2>
+      <h2 i18n-content="tipsandsuggestions"></h2>
       <div id="tip-items" jsskip="!processing">
         <div class="tips-title item" jsselect="$this"
             jsdisplay="!url"
-            jscontent="localStrings.getString('defaulttipstitle')">
+            i18n-content="defaulttipstitle">
         </div>
         <div class="tips-container item-container">
           <a class="item" jsselect="$this"

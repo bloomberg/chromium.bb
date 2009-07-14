@@ -1,6 +1,7 @@
-<html id="t" jsvalues="dir:textdirection">
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection">
 <head>
-<title jscontent="title"></title>
+<title i18n-content="title"></title>
 <style>
 body {
   margin:10px 8px 10px 8px;
@@ -21,9 +22,9 @@ body {
 </style>
 </head>
 <body>
-<div class="content" jsvalues=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<div class="content" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <img src="../../app/theme/otr_icon_standalone.png" class="icon" />
-  <span jseval="this.innerHTML = $this.content;"></span>
+  <span i18n-values=".innerHTML:content"></span>
 </div>
 </body>
 </html>

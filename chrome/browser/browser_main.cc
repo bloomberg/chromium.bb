@@ -168,11 +168,10 @@ struct LazyDirectoryListerCacher {
                     l10n_util::GetString(IDS_DIRECTORY_LISTING_SIZE));
     value.SetString(L"headerDateModified",
                     l10n_util::GetString(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
-    html_data = jstemplate_builder::GetTemplateHtml(
+    html_data = jstemplate_builder::GetI18nTemplateHtml(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_DIR_HEADER_HTML),
-        &value,
-        "t");
+        &value);
   }
 
   std::string html_data;

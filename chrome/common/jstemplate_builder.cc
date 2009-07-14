@@ -19,15 +19,35 @@ namespace jstemplate_builder {
 std::string GetTemplateHtml(const StringPiece& html_template,
                             const DictionaryValue* json,
                             const StringPiece& template_id) {
-  // fetch and cache the pointer of the jstemplate resource source text.
-  static const StringPiece jstemplate_src(
-    ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_JSTEMPLATE_JS));
+  std::string output(html_template.data(), html_template.size());
+  AppendJsonHtml(json, &output);
+  AppendJsTemplateSourceHtml(&output);
+  AppendJsTemplateProcessHtml(template_id, &output);
+  return output;
+}
 
-  if (jstemplate_src.empty()) {
-    NOTREACHED() << "Unable to get jstemplate src";
-    return std::string();
-  }
+std::string GetI18nTemplateHtml(const StringPiece& html_template,
+                                const DictionaryValue* json) {
+  std::string output(html_template.data(), html_template.size());
+  AppendJsonHtml(json, &output);
+  AppendI18nTemplateSourceHtml(&output);
+  AppendI18nTemplateProcessHtml(&output);
+  return output;
+}
 
+std::string GetTemplatesHtml(const StringPiece& html_template,
+                             const DictionaryValue* json,
+                             const StringPiece& template_id) {
+  std::string output(html_template.data(), html_template.size());
+  AppendI18nTemplateSourceHtml(&output);
+  AppendJsTemplateSourceHtml(&output);
+  AppendJsonHtml(json, &output);
+  AppendI18nTemplateProcessHtml(&output);
+  AppendJsTemplateProcessHtml(template_id, &output);
+  return output;
+}
+
+void AppendJsonHtml(const DictionaryValue* json, std::string* output) {
   // Convert the template data to a json string.
   DCHECK(json) << "must include json data structure";
 
@@ -38,19 +58,59 @@ std::string GetTemplateHtml(const StringPiece& html_template,
   // replace </ with <\/.  The extra \ will be ignored by the JS engine.
   ReplaceSubstringsAfterOffset(&jstext, 0, "</", "<\\/");
 
-  std::string output(html_template.data(), html_template.size());
-  output.append("<script>");
-  output.append(jstemplate_src.data(), jstemplate_src.size());
-  output.append("var tp = document.getElementById('");
-  output.append(template_id.data(), template_id.size());
-  output.append("');");
-  output.append("var templateData = ");
-  output.append(jstext);
-  output.append(";");
-  output.append("jstProcess(new JsEvalContext(templateData), tp);");
-  output.append("</script>");
+  output->append("<script>");
+  output->append("var templateData = ");
+  output->append(jstext);
+  output->append(";");
+  output->append("</script>");
+}
 
-  return output;
+void AppendJsTemplateSourceHtml(std::string* output) {
+  // fetch and cache the pointer of the jstemplate resource source text.
+  static const StringPiece jstemplate_src(ResourceBundle::GetSharedInstance().
+      GetRawDataResource(IDR_JSTEMPLATE_JS));
+
+  if (jstemplate_src.empty()) {
+    NOTREACHED() << "Unable to get jstemplate src";
+    return;
+  }
+
+  output->append("<script>");
+  output->append(jstemplate_src.data(), jstemplate_src.size());
+  output->append("</script>");
+}
+
+void AppendJsTemplateProcessHtml(const StringPiece& template_id,
+                                 std::string* output) {
+  output->append("<script>");
+  output->append("var tp = document.getElementById('");
+  output->append(template_id.data(), template_id.size());
+  output->append("');");
+  output->append("jstProcess(new JsEvalContext(templateData), tp);");
+  output->append("</script>");
+}
+
+void AppendI18nTemplateSourceHtml(std::string* output) {
+  // fetch and cache the pointer of the jstemplate resource source text.
+  static const StringPiece i18n_template_src(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_I18N_TEMPLATE_JS));
+
+  if (i18n_template_src.empty()) {
+    NOTREACHED() << "Unable to get i18n template src";
+    return;
+  }
+
+  output->append("<script>");
+  output->append(i18n_template_src.data(), i18n_template_src.size());
+  output->append("</script>");
+}
+
+void AppendI18nTemplateProcessHtml(std::string* output) {
+  output->append("<script>");
+  output->append("i18nTemplate.process(document.documentElement, ");
+  output->append("templateData);");
+  output->append("</script>");
 }
 
 }  // namespace jstemplate_builder

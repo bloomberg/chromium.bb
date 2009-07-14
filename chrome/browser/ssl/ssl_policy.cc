@@ -293,8 +293,8 @@ void SSLPolicy::ShowErrorPage(SSLCertErrorHandler* handler) {
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_SSL_ERROR_HTML));
 
-  std::string html_text(jstemplate_builder::GetTemplateHtml(html, &strings,
-                                                            "template_root"));
+  std::string html_text(jstemplate_builder::GetI18nTemplateHtml(html,
+                                                                &strings));
 
   TabContents* tab  = handler->GetTabContents();
   int cert_id = CertStore::GetSharedInstance()->StoreCert(

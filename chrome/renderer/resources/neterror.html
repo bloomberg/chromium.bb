@@ -1,9 +1,9 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html id="t" jsvalues="dir:textdirection">
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection">
 <head>
-<title jscontent="title">
+<title i18n-content="title">
 </title>
-<style type="text/css"><!--
+<style>
 body {
  background-color: #fff;
  color: #000;
@@ -56,7 +56,6 @@ a:visited {
   max-width: 30em;
   padding: 1em;
 }
-//-->
 </style>
 <script>
 function toggleDiv(id) {
@@ -66,26 +65,26 @@ function toggleDiv(id) {
 </script>
 </head>
 
-<body>
+<body id="t">
 
-<h1 jscontent="heading"></h1>
+<h1 i18n-content="heading"></h1>
 
 <div id="errorSummary" jsselect="summary">
- <p jseval="this.innerHTML = $this.msg;"></p>
+ <p jsvalues=".innerHTML:msg"></p>
 </div>
 
 <div id="suggestions">
- <h2 jscontent="suggestionsHeading"></h2>
+ <h2 i18n-content="suggestionsHeading"></h2>
  <ul>
   <li jsselect="suggestionsReload">
-    <span jseval="this.innerHTML = $this.msg;"></span>
+    <span jsvalues=".innerHTML:msg"></span>
   </li>
   <li jsselect="suggestionsHomepage">
     <span jscontent="suggestionsHomepageMsg"></span>
     <a jscontent="hostName" jsvalues="href:homePage"></a>
   </li>
   <li jsselect="suggestionsLearnMore">
-    <span jseval="this.innerHTML = $this.msg;"></span>
+    <span jsvalues=".innerHTML:msg"></span>
   </li>
  </ul>
 </div>
@@ -93,11 +92,11 @@ function toggleDiv(id) {
 <div>
  <a href="javascript:void(0);" style="text-decoration:none" onclick="toggleDiv('zipInfo')">
   <img id="plus" src="data:image/png;base64,R0lGODlhDAAMAMQAAAAAzOjp7lVmrezt8Zmlztja4c/R2Gx9te/x9srN1PHz9+7w9Ofp7eHj5/f4+vDx89bZ3t3g5eTn6/P19/v8+/////39/fj4+P///wAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAABgALAAAAAAMAAwAAAVFYEUIZEkSolCt7CocKgsALdnOrGXLdEVdJMdsOHyQJkTigLRAKBQzxWIQIDGugRlD0miQIoXwDEKGCEaGhHqdeKVMJVQIADs=">
-  <span id="errorExpander" jscontent="detailsLink" style="text-decoration:underline"></span>
+  <span id="errorExpander" i18n-content="detailsLink" style="text-decoration:underline"></span>
  </a>
  <div id="zipInfo">
-  <p jscontent="detailsHeading"></p>
-  <div id="details" jscontent="details"></div>
+  <p i18n-content="detailsHeading"></p>
+  <div id="details" i18n-content="details"></div>
  </div>
 </div>
 </body>

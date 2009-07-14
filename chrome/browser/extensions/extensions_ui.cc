@@ -46,8 +46,11 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   static const StringPiece extensions_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_EXTENSIONS_UI_HTML));
-  const std::string full_html = jstemplate_builder::GetTemplateHtml(
-      extensions_html, &localized_strings, "root");
+  std::string full_html(extensions_html.data(), extensions_html.size());
+  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
+  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
+  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
+  jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(full_html.size());
@@ -63,7 +66,7 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
 ///////////////////////////////////////////////////////////////////////////////
 
 ExtensionsDOMHandler::ExtensionsDOMHandler(
-    ExtensionsService* extension_service) 
+    ExtensionsService* extension_service)
     : extensions_service_(extension_service) {
  }
 

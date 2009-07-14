@@ -2775,8 +2775,9 @@ std::string RenderView::GetAltHTMLForTemplate(
     NOTREACHED() << "unable to load template. ID: " << template_resource_id;
     return "";
   }
+
   // "t" is the id of the templates root node.
-  return jstemplate_builder::GetTemplateHtml(
+  return jstemplate_builder::GetTemplatesHtml(
       template_html, &error_strings, "t");
 }
 

@@ -81,8 +81,8 @@ void HistoryUIHTMLSource::StartDataRequest(const std::string& path,
   static const StringPiece history_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_HISTORY_HTML));
-  const std::string full_html = jstemplate_builder::GetTemplateHtml(
-      history_html, &localized_strings, "t");
+  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+      history_html, &localized_strings);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(full_html.size());
@@ -99,7 +99,6 @@ void HistoryUIHTMLSource::StartDataRequest(const std::string& path,
 BrowsingHistoryHandler::BrowsingHistoryHandler()
     : search_text_(),
       remover_(NULL) {
-  
 }
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {

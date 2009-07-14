@@ -186,7 +186,7 @@ each locale. -->
       <message name="IDS_APPMENU_TOOLTIP" desc="The tooltip to show for the browser menu">
         Customize and control <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
       </message>
-      
+
       <message name="IDS_ALTERNATE_NAV_URL_VIEW_LABEL" desc="Label displayed in an infobar when a user searches for a term he may have meant to navigate to.">
         Did you mean to go to <ph name="SITE">$1<ex>http://intranetsite/</ex></ph>?
       </message>
@@ -1524,7 +1524,7 @@ each locale. -->
       <message name="IDS_DISCARD_DOWNLOAD"
                desc="Text for the button used to stop a dangerous download.">
         Discard
-      </message>      
+      </message>
 
       <!-- Download Tab Items -->
       <message name="IDS_DOWNLOAD_LINK_PAUSE"
@@ -1822,7 +1822,7 @@ each locale. -->
         Close find bar
       </message>
 
-      
+
       <!-- Fullscreen mode -->
       <message name="IDS_EXIT_FULLSCREEN_MODE" desc="Clickable message displayed on entering fullscreen mode to tell users how to return to normal mode">
         Exit full screen (<ph name="ACCELERATOR">$1<ex>F11</ex></ph>)
@@ -2254,7 +2254,7 @@ each locale. -->
       <message name="IDS_IMPORT_PROGRESS_STATUS_CANCEL" desc="Button text for import cancellation">
         Stop import
       </message>
-      
+
       <message name="IDS_IMPORT_PROGRESS_STATUS_CANCEL_CONFIRM_OK" desc="Import cancellation confirmation accept button">
         Continue Importing
       </message>
@@ -2273,7 +2273,7 @@ each locale. -->
       <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on dialog">
         Skip Import
       </message>
-       
+
       <!-- Report Bug or Broken Web Site Dialog -->
       <message name="IDS_BUGREPORT_TITLE" desc="Dialog title for bug report dialog">
         Report Bug or Broken Web Site
@@ -2448,7 +2448,7 @@ each locale. -->
       <message name="IDS_LOAD_STATE_READING_RESPONSE">
         Transferring from <ph name="HOST_NAME">$1<ex>www.google.com</ex></ph>...
       </message>
-      
+
       <!-- Tab Context Menu -->
       <message name="IDS_TAB_CXMENU_NEWTAB" desc="The label of the 'New Tab' Tab context menu item.">
         New tab
@@ -2640,13 +2640,13 @@ each locale. -->
       </message>
 
       <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD" desc="When a page fails to load, we provide a suggestion that the user try reloading the page later">
-        &lt;a jsvalues="href:reloadUrl"&gt;Reload&lt;/a&gt; this web page later.
+        &lt;a i18n-values="href:reloadUrl"&gt;Reload&lt;/a&gt; this web page later.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_HOMEPAGE" desc="When a page fails to load, sometimes we provide a suggesting of trying just the hostname of the site.">
         Go to the homepage of the site:
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE" desc="When a web page fails to load, we provide a link to the help center to learn more about the failure.">
-        <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about this problem.
+        <ph name="BEGIN_LINK">&lt;a i18n-values="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about this problem.
       </message>
 
       <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
@@ -2668,13 +2668,13 @@ each locale. -->
         This webpage has a redirect loop.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
-        The webpage at &lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt; might be temporarily down or it may have moved permanently to a new web address.
+        The webpage at &lt;strong i18n-content="failedUrl"&gt;&lt;/strong&gt; might be temporarily down or it may have moved permanently to a new web address.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
-        No webpage was found for the web address: &lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;
+        No webpage was found for the web address: &lt;strong i18n-content="failedUrl"&gt;&lt;/strong&gt;
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
-        The webpage at &lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt; has resulted in
+        The webpage at &lt;strong i18n-content="failedUrl"&gt;&lt;/strong&gt; has resulted in
         too many redirects.  Clearing your cookies for this site may fix the problem.  If
         not, it is possibly a server configuration issue and not a problem with your
         computer.
@@ -2709,7 +2709,7 @@ each locale. -->
       <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
         This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed. Press Reload to resend that data and display this page.
       </message>
-      
+
       <message name="IDS_SAVEAS_ALL_FILES" desc="Save As dialog box default text">
         All Files
       </message>
@@ -2758,7 +2758,7 @@ each locale. -->
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV" desc="The text of the identity section when the page is secured with an EV cert.">
         The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>.
       </message>
-      
+
       <message name="IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY" desc="The default name used when we did not find a principal name.">
         unknown name
       </message>
@@ -2894,7 +2894,7 @@ each locale. -->
       <message name="IDS_HTTP_POST_WARNING_CANCEL" desc="Cancel button for post warning">
         Cancel
       </message>
-      
+
       <!-- Menus -->
       <message name="IDS_MENU_EMPTY_SUBMENU" desc="Used when a submenu has no entries">
         (empty)
@@ -2951,7 +2951,7 @@ each locale. -->
       <message name="IDS_FIRSTRUN_DLG_CANCEL_CONFIRM_EXIT" desc="Exit installation button for cancel confirmation dialog">
         Exit Install
       </message>
-      
+
       <!-- Customize chrome messages -->
       <message name="IDS_FR_CUSTOMIZE_DLG_TITLE" desc="Dialog title for first run customize dialog">
         Customize Your Settings
@@ -3020,7 +3020,7 @@ each locale. -->
       <message name="IDS_HIDE_ICONS_NOT_SUPPORTED" desc="Message to explain we only support uninstall and not hide-icons.">
         To hide access to this program, you need to uninstall it by using\n<ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph> in Control Panel.\n\nWould you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph>?
       </message>
-      
+
       <!-- Options Window -->
       <message name="IDS_OPTIONS_DIALOG_TITLE" desc="The title of the Options dialog box">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Options
@@ -3123,7 +3123,7 @@ each locale. -->
         Clear auto-opening settings
       </message>
 
-      
+
       <message name="IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME" desc="The label of the 'Gears Settings' group">
         Gears:
       </message>
@@ -3137,7 +3137,7 @@ each locale. -->
       <message name="IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON" desc="The label of the 'Manage Certificates' button">
         Manage certificates
       </message>
-      
+
       <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="The title of the 'Passwords' group">
         Passwords:
       </message>
@@ -3621,8 +3621,8 @@ each locale. -->
       <message name="IDS_JS_OUT_OF_MEMORY_PROMPT" desc="Info Bar message to notify JS out of memory">
         Script on the page used too much memory. Reload to enable scripts again.
       </message>
-      
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE" 
+
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE"
                desc="Title of the personal history section">
         Visit history
       </message>
@@ -3651,7 +3651,7 @@ each locale. -->
       <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to remember users decision.">
         Remember my choice for all links of this type.
       </message>
-      
+
       <!-- Debugger -->
       <message name="IDS_DEBUGGER_TITLE_BUSY" desc="V8 Debugger title bar displayed when busy (a command is running)">
         JavaScript Debugger - Busy
@@ -3673,7 +3673,7 @@ each locale. -->
       <message name="IDS_SHIFT_MODIFIER" desc="Shift key shortcut modifier">
         Shift+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
       </message>
-      
+
       <!-- Key names -->
       <message name="IDS_ESC_KEY" desc="Escape key">
         Esc
@@ -3737,7 +3737,7 @@ each locale. -->
       <message name="IDS_DIRECTORY_LISTING_DATE_MODIFIED" desc="When viewing a local directory, this is the text for the column above the last modified dates.">
         Date Modified
       </message>
-      
+
       <!-- Saving Page-->
       <message name="IDS_SAVE_PAGE_DESC_HTML_ONLY" desc="In the Save Page dialog, the description of saving only the HTML of a web page.">
         Web Page, HTML Only
@@ -3757,7 +3757,7 @@ each locale. -->
       <message name="IDS_SAVE_PAGE_PROGRESS" desc="Text string for saving page progress, the number of saved files and total files">
         <ph name="SAVED_FILES">$1<ex>5</ex></ph> / <ph name="TOTAL_FILES">$2<ex>13</ex></ph> files
       </message>
-      
+
       <!-- Report Phishing website -->
       <message name="IDS_PAGE_MENU_REPORT_PHISHING_WEBSITE" desc="The menu label for the menu item that allows the user to report the current page as a phishing website.">
         Report phishing website...
@@ -3769,7 +3769,7 @@ each locale. -->
       <message name="IDS_OPTIONS_LINKDOCTOR_URL" desc="The documentation string of the preference that sets the URL of the link doctor service">
         Service URL:
       </message>
-      
+
       <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
         Use a suggestion service to help complete searches and URLs typed in the address bar
       </message>
@@ -3783,7 +3783,7 @@ each locale. -->
       <message name="IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON" desc="The label of the 'configure fonts' button">
         Change font and language settings
       </message>
-      
+
       <message name="IDS_OPTIONS_CHROME_DICTIONARY_INFO" desc="The documentation string of the 'Spell check dictionary language' section">
         Change the language of the spell-checking dictionary.
       </message>
@@ -3796,7 +3796,7 @@ each locale. -->
       <message name="IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION" desc="The documentation string of the 'Enable auto spell correction' option">
         Correct spelling automatically:
       </message>
-      
+
       <message name="IDS_OPTIONS_RESET" desc="The label of the 'Reset all settings to defaults' button">
         Reset to defaults
       </message>
@@ -3806,7 +3806,7 @@ each locale. -->
       <message name="IDS_OPTIONS_RESET_CANCELLABEL" desc="The label of the Cancel button in the 'Reset Chrome options' confirmation dialog box">
         Don't reset
       </message>
-      
+
       <!-- Can't write to user data directory dialog -->
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_TITLE" desc="Title of dialog that is displayed when we can't create a directory for this user.">
         Failed To Create Data Directory

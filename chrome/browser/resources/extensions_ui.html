@@ -1,8 +1,8 @@
 <!DOCTYPE HTML>
-<html id="root">
+<html>
 <head>
 <meta charset="utf-8">
-<title jscontent="title"></title>
+<title i18n-content="title"></title>
 <script>
 /**
  * This variable structure is here to document the structure that the template
@@ -130,7 +130,7 @@ function sendInspectMessage(viewData) {
 function handleUninstallExtension(node) {
   // Tell the C++ ExtensionDOMHandler to uninstall an extension.
   chrome.send('uninstall', [node.extensionId]);
-  
+
   // Find the div above us with class 'extension' and remove it.
   while (node) {
     if (node.className == 'extension') {
@@ -139,7 +139,7 @@ function handleUninstallExtension(node) {
     }
     node = node.parentNode;
   }
-  
+
   throw new Error("Couldn't find containing extension element.");
 }
 </script>

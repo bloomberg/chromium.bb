@@ -137,7 +137,7 @@ std::string SafeBrowsingBlockingPage::GetHTMLContents() {
     html = rb.GetDataResource(IDR_SAFE_BROWSING_PHISHING_BLOCK);
   }
 
-  return jstemplate_builder::GetTemplateHtml(html, &strings, "template_root");
+  return jstemplate_builder::GetTemplatesHtml(html, &strings, "template_root");
 }
 
 void SafeBrowsingBlockingPage::PopulateStringDictionary(
