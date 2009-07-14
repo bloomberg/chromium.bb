@@ -1361,10 +1361,7 @@ void RenderViewHost::OnMissingPluginStatus(int status) {
     integration_delegate->OnMissingPluginStatus(status);
 }
 
-void RenderViewHost::OnCrashedPlugin(base::ProcessId pid,
-                                     const FilePath& plugin_path) {
-  view()->PluginProcessCrashed(pid);
-
+void RenderViewHost::OnCrashedPlugin(const FilePath& plugin_path) {
   RenderViewHostDelegate::BrowserIntegration* integration_delegate =
       delegate_->GetBrowserIntegrationDelegate();
   if (integration_delegate)

@@ -60,10 +60,8 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void PasteFromSelectionClipboard();
   virtual void ShowingContextMenu(bool showing);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
-  virtual gfx::PluginWindowHandle CreatePluginContainer(
-      base::ProcessId plugin_process_id);
+  virtual gfx::PluginWindowHandle CreatePluginContainer();
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle container);
-  virtual void PluginProcessCrashed(base::ProcessId pid);
 
   gfx::NativeView native_view() const { return view_.get(); }
 
@@ -145,11 +143,6 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   // Helper class that lets us allocate plugin containers and move them.
   GtkPluginContainerManager plugin_container_manager_;
-
-  // A map of plugin process id -> windows related to that process.
-  // Lets us clean up immediately when a plugin process crashes.
-  typedef std::multimap<base::ProcessId, gfx::PluginWindowHandle> PluginPidMap;
-  PluginPidMap plugin_pid_map_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_

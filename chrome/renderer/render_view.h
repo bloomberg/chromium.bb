@@ -325,8 +325,8 @@ class RenderView : public RenderWidget,
   // Called when a plugin is destroyed.
   void PluginDestroyed(WebPluginDelegateProxy* proxy);
 
-  // Called when a plugin has crashed.
-  void PluginCrashed(base::ProcessId pid, const FilePath& plugin_path);
+  // Called when a plugin is crashed.
+  void PluginCrashed(const FilePath& plugin_path);
 
   // Called from JavaScript window.external.AddSearchProvider() to add a
   // keyword for a provider described in the given OpenSearch document.

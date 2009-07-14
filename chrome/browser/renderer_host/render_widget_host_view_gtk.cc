@@ -16,7 +16,6 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/plugin_process_host.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/x11_util.h"
@@ -726,31 +725,11 @@ void RenderWidgetHostViewGtk::ReceivedSelectionText(GtkClipboard* clipboard,
                                                 UTF8ToUTF16(text)));
 }
 
-gfx::PluginWindowHandle RenderWidgetHostViewGtk::CreatePluginContainer(
-    base::ProcessId plugin_process_id) {
-  gfx::PluginWindowHandle handle =
-      plugin_container_manager_.CreatePluginContainer();
-  plugin_pid_map_.insert(std::make_pair(plugin_process_id, handle));
-  return handle;
+gfx::PluginWindowHandle RenderWidgetHostViewGtk::CreatePluginContainer() {
+  return plugin_container_manager_.CreatePluginContainer();
 }
 
 void RenderWidgetHostViewGtk::DestroyPluginContainer(
     gfx::PluginWindowHandle container) {
   plugin_container_manager_.DestroyPluginContainer(container);
-
-  for (PluginPidMap::iterator i = plugin_pid_map_.begin();
-       i != plugin_pid_map_.end(); ++i) {
-    if (i->second == container) {
-      plugin_pid_map_.erase(i);
-      break;
-    }
-  }
-}
-
-void RenderWidgetHostViewGtk::PluginProcessCrashed(base::ProcessId pid) {
-  for (PluginPidMap::iterator i = plugin_pid_map_.find(pid);
-       i != plugin_pid_map_.end() && i->first == pid; ++i) {
-    plugin_container_manager_.DestroyPluginContainer(i->second);
-  }
-  plugin_pid_map_.erase(pid);
 }

@@ -7,7 +7,6 @@
 
 #include <gtk/gtk.h>
 #include <map>
-
 #include "base/gfx/native_widget_types.h"
 
 typedef struct _GtkWidget GtkWidget;

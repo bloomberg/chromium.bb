@@ -8,7 +8,6 @@
 #include <queue>
 #include <vector>
 
-#include "base/process.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
@@ -395,8 +394,7 @@ class RenderWidgetHost : public IPC::Channel::Listener {
   // having to bring in render_messages.h in a header file.
   void OnMsgImeUpdateStatus(int control, const gfx::Rect& caret_rect);
 #if defined(OS_LINUX)
-  void OnMsgCreatePluginContainer(base::ProcessId pid,
-                                  gfx::PluginWindowHandle* container);
+  void OnMsgCreatePluginContainer(gfx::PluginWindowHandle *container);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle container);
 #elif defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);

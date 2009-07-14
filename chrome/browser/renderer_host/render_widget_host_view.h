@@ -159,12 +159,9 @@ class RenderWidgetHostView {
 #endif
 
 #if defined(OS_LINUX)
-  virtual gfx::PluginWindowHandle CreatePluginContainer(
-      base::ProcessId plugin_process_id) = 0;
+  virtual gfx::PluginWindowHandle CreatePluginContainer() = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle container) = 0;
 #endif
-
-  virtual void PluginProcessCrashed(base::ProcessId pid) { }
 
   void set_activatable(bool activatable) {
     activatable_ = activatable;

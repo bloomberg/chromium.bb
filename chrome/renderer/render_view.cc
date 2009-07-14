@@ -255,9 +255,8 @@ void RenderView::PluginDestroyed(WebPluginDelegateProxy* proxy) {
     first_default_plugin_ = NULL;
 }
 
-void RenderView::PluginCrashed(base::ProcessId pid,
-                               const FilePath& plugin_path) {
-  Send(new ViewHostMsg_CrashedPlugin(routing_id_, pid, plugin_path));
+void RenderView::PluginCrashed(const FilePath& plugin_path) {
+  Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path));
 }
 
 
