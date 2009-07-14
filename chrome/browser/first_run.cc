@@ -15,6 +15,8 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 
 namespace {
 
@@ -87,3 +89,26 @@ bool FirstRun::CreateSentinel() {
     return false;
   return file_util::WriteFile(first_run_sentinel, "", 0) != -1;
 }
+
+bool FirstRun::SetShowFirstRunBubblePref() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return false;
+  if (!local_state->IsPrefRegistered(prefs::kShouldShowFirstRunBubble)) {
+    local_state->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
+    local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, true);
+  }
+  return true;
+}
+
+bool FirstRun::SetShowWelcomePagePref() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return false;
+  if (!local_state->IsPrefRegistered(prefs::kShouldShowWelcomePage)) {
+    local_state->RegisterBooleanPref(prefs::kShouldShowWelcomePage, false);
+    local_state->SetBoolean(prefs::kShouldShowWelcomePage, true);
+  }
+  return true;
+}
+

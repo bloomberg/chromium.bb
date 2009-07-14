@@ -16,6 +16,7 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -35,6 +36,11 @@ const int kTopMargin = 1;
 const int kBottomMargin = 1;
 // We draw a border on the top and bottom (but not on left or right).
 const int kBorderThickness = 1;
+
+// Left margin of first run bubble.
+const int kFirstRunBubbleLeftMargin = 20;
+// Task delay (in milliseconds) to show first run bubble.
+const int kFirstRunBubbleTaskDelay = 30;
 
 // Left and right padding/margin.
 // no icon/text  : 4px url_text 4px
@@ -103,7 +109,8 @@ LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
       toolbar_model_(toolbar_model),
       popup_positioner_(popup_positioner),
       disposition_(CURRENT_TAB),
-      transition_(PageTransition::TYPED) {
+      transition_(PageTransition::TYPED),
+      first_run_bubble_(this) {
 }
 
 LocationBarViewGtk::~LocationBarViewGtk() {
@@ -308,7 +315,10 @@ std::wstring LocationBarViewGtk::GetTitle() const {
 }
 
 void LocationBarViewGtk::ShowFirstRunBubble(bool use_OEM_bubble) {
-  NOTIMPLEMENTED();
+  Task* task = first_run_bubble_.NewRunnableMethod(
+      &LocationBarViewGtk::ShowFirstRunBubbleInternal, use_OEM_bubble);
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, task,
+                                          kFirstRunBubbleTaskDelay);
 }
 
 std::wstring LocationBarViewGtk::GetInputString() const {
@@ -490,4 +500,20 @@ void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
                      leading.c_str());
   gtk_label_set_text(GTK_LABEL(tab_to_search_hint_trailing_label_),
                      trailing.c_str());
+}
+
+void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
+  if (!location_entry_.get() || !widget()->window)
+    return;
+
+  gint x, y;
+  gdk_window_get_origin(widget()->window, &x, &y);
+  // The bubble needs to be just below the Omnibox and slightly to the right
+  // of star button, so shift x and y co-ordinates.
+  x += widget()->allocation.x + kFirstRunBubbleLeftMargin;
+  y += widget()->allocation.y + widget()->allocation.height;
+
+  FirstRunBubble::Show(profile_,
+      GTK_WINDOW(gtk_widget_get_toplevel(widget())),
+      gfx::Rect(x, y, 0, 0), use_OEM_bubble);
 }

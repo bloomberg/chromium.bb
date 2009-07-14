@@ -62,6 +62,12 @@ GtkWidget* CreateLabeledControlsGroup(const char* text, ...);
 GtkWidget* CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
                               int top, int bottom, int left, int right);
 
+// Calculates the size of given widget based on the size specified in
+// number of characters/lines (in locale specific resource file) and
+// font metrics.
+bool GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,
+                                int height_lines, int* width, int* height);
+
 // Remove all children from this container.
 void RemoveAllChildren(GtkWidget* container);
 

@@ -329,28 +329,12 @@ void BookmarkManagerGtk::InitWidgets() {
       l10n_util::GetStringUTF8(IDS_BOOKMARK_MANAGER_TITLE).c_str());
 
   // Set the default size of the bookmark manager.
-  // Windows has code to do this that uses ChromeFont; we could share it but
-  // since we don't plan to use it elsewhere it's probably not worth the effort.
-  PangoContext* context = gtk_widget_create_pango_context(window_);
-  PangoFontMetrics* metrics =
-      pango_context_get_metrics(context, window_->style->font_desc,
-                                pango_context_get_language(context));
-  double chars = 0;
-  StringToDouble(WideToUTF8(l10n_util::GetString(
-      IDS_BOOKMARK_MANAGER_DIALOG_WIDTH_CHARS)), &chars);
-  int width =
-      pango_font_metrics_get_approximate_char_width(metrics) *
-      static_cast<int>(chars) / PANGO_SCALE;
-  double lines = 0;
-  StringToDouble(WideToUTF8(l10n_util::GetString(
-      IDS_BOOKMARK_MANAGER_DIALOG_HEIGHT_LINES)), &lines);
-  int height =
-      (pango_font_metrics_get_ascent(metrics) +
-      pango_font_metrics_get_descent(metrics)) *
-      static_cast<int>(lines) / PANGO_SCALE;
+  int width, height;
+  gtk_util::GetWidgetSizeFromResources(window_,
+                                       IDS_BOOKMARK_MANAGER_DIALOG_WIDTH_CHARS,
+                                       IDS_BOOKMARK_MANAGER_DIALOG_HEIGHT_LINES,
+                                       &width, &height);
   gtk_window_set_default_size(GTK_WINDOW(window_), width, height);
-  pango_font_metrics_unref(metrics);
-  g_object_unref(context);
 
   // Build the organize and tools menus.
   organize_ = gtk_menu_item_new_with_label(

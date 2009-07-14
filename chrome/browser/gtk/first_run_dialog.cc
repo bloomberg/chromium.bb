@@ -13,6 +13,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "grit/locale_settings.h"
 
 // static
 bool FirstRunDialog::Show(Profile* profile) {
@@ -35,6 +36,12 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
       GTK_RESPONSE_REJECT,
       NULL);
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
+  int width, height;
+  gtk_util::GetWidgetSizeFromResources(dialog_,
+                                       IDS_FIRSTRUN_DIALOG_WIDTH_CHARS,
+                                       IDS_FIRSTRUN_DIALOG_HEIGHT_LINES,
+                                       &width, &height);
+  gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
   g_signal_connect(G_OBJECT(dialog_), "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
@@ -42,8 +49,6 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
   gtk_box_set_spacing(GTK_BOX(content_area), 18);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, 12);
-  // Force a size on the vbox so the labels wrap.
-  gtk_widget_set_size_request(vbox, 350, -1);
 
 #if defined(GOOGLE_CHROME_BUILD)
   // TODO(port): remove this warning before beta release when we have all the
@@ -148,6 +153,10 @@ void FirstRunDialog::OnDialogResponse(GtkWidget* widget, int response) {
                                           new ProfileWriter(profile_), true);
     }
   }
+
+  // Set preference to show first run bubble and welcome page.
+  FirstRun::SetShowFirstRunBubblePref();
+  FirstRun::SetShowWelcomePagePref();
 
   gtk_widget_destroy(dialog_);
   MessageLoop::current()->Quit();

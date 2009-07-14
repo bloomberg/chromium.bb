@@ -178,6 +178,27 @@ GtkWidget* CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
   return ebox;
 }
 
+bool GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,
+                                int height_lines, int* width, int* height) {
+  PangoContext* context = gtk_widget_create_pango_context(widget);
+  PangoFontMetrics* metrics = pango_context_get_metrics(context,
+      widget->style->font_desc, pango_context_get_language(context));
+  double chars = 0;
+  StringToDouble(l10n_util::GetStringUTF8(width_chars), &chars);
+  *width =
+      pango_font_metrics_get_approximate_char_width(metrics) *
+      static_cast<int>(chars) / PANGO_SCALE;
+  double lines = 0;
+  StringToDouble(l10n_util::GetStringUTF8(height_lines), &lines);
+  *height =
+      (pango_font_metrics_get_ascent(metrics) +
+      pango_font_metrics_get_descent(metrics)) *
+      static_cast<int>(lines) / PANGO_SCALE;
+  pango_font_metrics_unref(metrics);
+  g_object_unref(context);
+  return true;
+}
+
 void RemoveAllChildren(GtkWidget* container) {
   gtk_container_foreach(GTK_CONTAINER(container), RemoveWidget, container);
 }

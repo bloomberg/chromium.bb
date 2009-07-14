@@ -102,6 +102,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Set the keyword text for the "Press tab to search BLAH" hint box.
   void SetKeywordHintLabel(const std::wstring& keyword);
 
+  void ShowFirstRunBubbleInternal(bool use_OEM_bubble);
+
   // The outermost widget we want to be hosted.
   OwnedWidgetGtk hbox_;
 
@@ -140,6 +142,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // The transition type to use for the navigation.
   PageTransition::Type transition_;
+
+  // Used schedule a task for the first run info bubble.
+  ScopedRunnableMethodFactory<LocationBarViewGtk> first_run_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

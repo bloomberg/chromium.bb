@@ -592,17 +592,6 @@ int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
   return observer.import_result();
 }
 
-bool FirstRun::SetShowFirstRunBubblePref() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-  if (!local_state->IsPrefRegistered(prefs::kShouldShowFirstRunBubble)) {
-    local_state->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
-    local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, true);
-  }
-  return true;
-}
-
 bool FirstRun::SetOEMFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
@@ -611,17 +600,6 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
     local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble,
                                      false);
     local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);
-  }
-  return true;
-}
-
-bool FirstRun::SetShowWelcomePagePref() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-  if (!local_state->IsPrefRegistered(prefs::kShouldShowWelcomePage)) {
-    local_state->RegisterBooleanPref(prefs::kShouldShowWelcomePage, false);
-    local_state->SetBoolean(prefs::kShouldShowWelcomePage, true);
   }
   return true;
 }
