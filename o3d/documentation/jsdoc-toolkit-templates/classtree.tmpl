@@ -3,7 +3,7 @@
     <ul>
       {! var allNamespaces = data.filter(function($){return $.isNamespace}).sort(makeSortby("alias")); !}
       <for each="thisClass" in="allNamespaces">
-      <li><a href="/apis/o3d/docs/reference/{+getBaseURL()+}{+getLinkToClassByAlias(thisClass.alias)+}">{+thisClass.name+}</a></li>
+      <li><a href="/apis/o3d/docs/reference/{+getBaseURL()+}{+getLinkToClassByAlias(thisClass.alias)+}">{+hyphenateWord(thisClass.name, 16, '-<br/>')+}</a></li>
       </for>
     </ul>
   </li>
@@ -11,7 +11,7 @@
     <ul>
       {! var allClasses = data.filter(function($){return !$.isNamespace}).sort(makeSortby("alias")); !}
       <for each="thisClass" in="allClasses">
-      <li><a href="/apis/o3d/docs/reference/{+getBaseURL()+}{+getLinkToClassByAlias(thisClass.alias)+}">{+thisClass.name+}</a></li>
+      <li><a href="/apis/o3d/docs/reference/{+getBaseURL()+}{+getLinkToClassByAlias(thisClass.alias)+}">{+hyphenateWord(thisClass.name, 16, '-<br/>')+}</a></li>
       </for>
     </ul>
   </li>

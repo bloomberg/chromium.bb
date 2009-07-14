@@ -52,7 +52,10 @@ var g_validJSDOCTypes = {
 var g_unknownTypes = { };
 var g_numErrors = 0;
 var g_o3djsMode = false;
+var g_outputMode;
 var g_baseURL;
+var g_topURL;
+var g_templates = [];
 
 /**
  * Called automatically by JsDoc Toolkit.
@@ -65,12 +68,14 @@ function publish(symbolSet) {
     templatesDir: JSDOC.opt.t,
     symbolsDir: '',
     prefix: JSDOC.opt.D.prefix,
-    o3djs: JSDOC.opt.D.o3djs};
+    mode: JSDOC.opt.D.mode};
   publish.conf.srcDir = publish.conf.outDir + 'src/';
   publish.conf.htmlDir = JSDOC.opt.D.htmlOutDir;
   g_baseURL = JSDOC.opt.D.baseURL;
+  g_topURL = JSDOC.opt.D.topURL;
+  g_outputMode = JSDOC.opt.D.mode;
 
-  if (publish.conf.o3djs) {
+  if (publish.conf.mode == 'o3djs') {
     g_o3djsMode = true;
   }
 
@@ -112,7 +117,7 @@ function publish(symbolSet) {
     System.exit(1);
   }
 
-  // some ustility filters
+  // some utility filters
   function hasNoParent($) {return ($.memberOf == '')}
   function isaFile($) {return ($.is('FILE'))}
   function isaClass($) {return ($.is('CONSTRUCTOR') || $.isNamespace)}
@@ -131,6 +136,7 @@ function publish(symbolSet) {
 
   // get a list of all the classes in the symbolset
   var classes = symbols.filter(isaClass).sort(makeSortby('alias'));
+  var filteredClasses = [];
 
   // create each of the class pages
   for (var i = 0, l = classes.length; i < l; i++) {
@@ -146,6 +152,9 @@ function publish(symbolSet) {
     }
 
     print('Generating docs for: ' + symbol.alias);
+
+    filteredClasses.push(symbol);
+
     // Comment these lines in to see what data is available to the templates.
     //print('----------------------------------------------------------------');
     //dumpObject(symbol, 5);
@@ -178,7 +187,7 @@ function publish(symbolSet) {
                 output);
   }
 
-  var classTree = classTreeTemplate.process(classes);
+  var classTree = classTreeTemplate.process(filteredClasses);
   IO.saveFile(publish.conf.outDir, 'classtree.html', classTree);
   IO.saveFile(publish.conf.htmlDir, 'classtree.html', classTree);
 
@@ -186,11 +195,11 @@ function publish(symbolSet) {
   IO.saveFile(publish.conf.outDir, 'filelist.html', fileList);
   IO.saveFile(publish.conf.htmlDir, 'filelist.html', fileList);
 
-  var annotated = annotatedTemplate.process(classes);
+  var annotated = annotatedTemplate.process(filteredClasses);
   IO.saveFile(publish.conf.outDir, 'annotated' + publish.conf.ext, annotated);
   IO.saveFile(publish.conf.htmlDir, 'annotated.html', annotated);
 
-  var namespaces = namespacesTemplate.process(classes);
+  var namespaces = namespacesTemplate.process(filteredClasses);
   IO.saveFile(publish.conf.outDir, 'namespaces' + publish.conf.ext, namespaces);
   IO.saveFile(publish.conf.htmlDir, 'namespaces.html', namespaces);
 
@@ -234,8 +243,18 @@ function makeSortby(attribute) {
  * @return {string} contents of file.
  */
 function include(path) {
-  var path = publish.conf.templatesDir + path;
-  return IO.readFile(path);
+  var template = g_templates[path];
+  if (!template) {
+    try {
+      template = new JSDOC.JsPlate(JSDOC.opt.t + path);
+    } catch (e) {
+      generateError('Could not include: ' + path + '\n' + e);
+      template = '';
+    }
+    g_templates[path] = template;
+  }
+  var output = template.process({});
+  return output;
 }
 
 /**
@@ -786,8 +805,71 @@ function getQualifiedName(method) {
 }
 
 /**
- * Get the base URL for links.
+ * Gets the base URL for links.
  */
 function getBaseURL() {
   return g_baseURL;
+}
+
+/**
+ * Gets the top URL for links.
+ */
+function getTopURL() {
+  return g_topURL;
+}
+
+/**
+ * Returns the output mode.
+ * @return {string} The output mode.
+ */
+function getOutputMode() {
+  return g_outputMode;
+}
+
+/**
+ * Returns true if we should write constructor docs.
+ * @param {!Symbol} symbol The symbol that might have a constructor.
+ * @return {boolean} true if we should write a constructor.
+ */
+function shouldWriteConstructor(symbol) {
+  return g_outputMode != 'o3d' &&
+         !symbol.isPrivate &&
+         !symbol.isBuiltin() &&
+         !symbol.isNamespace &&
+         symbol.is('CONSTRUCTOR');
+}
+
+/**
+ * Splits a camelCase word into an array of word parts.
+ * @param {string} word camelCase word.
+ * @return {!Array.<string>} The word split into word parts.
+ */
+function splitCamelCase(word) {
+  var spacesAdded = word.replace(/([A-Z])/g, ' $1');
+  return spacesAdded.split(' ');
+}
+
+/**
+ * Breaks a word at max_length with hyphens. Assumes word is camelCase
+ * @param {string} word Word to break.
+ * @param {number} maxLength word will continue to be split until no part is
+ *     this longer than this if possible.
+ * @param {string} string to use to join split parts.
+ * @return {string} The word split then joined with joinString.
+ */
+function hyphenateWord(word, maxLength, joinString) {
+  var words = splitCamelCase(word);
+  var hyphenated = '';
+  var newWord = '';
+  for (var ii = 0; ii < words.length; ++ii) {
+    var part = words[ii];
+    var temp = newWord + part;
+    if (temp.length > maxLength) {
+      hyphenated += newWord + joinString;
+      newWord = '';
+    }
+    newWord += part;
+  }
+  hyphenated += newWord;
+  return hyphenated;
 }

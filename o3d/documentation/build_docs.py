@@ -39,6 +39,8 @@ import imp
 import types
 import glob
 import subprocess
+import shutil
+
 
 _java_exe = ''
 _script_path = os.path.dirname(os.path.realpath(__file__))
@@ -137,15 +139,16 @@ def RunNixysa(idl_files, generate, output_dir, nixysa_options):
     idl_files)
 
 
-def RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, prefix, o3djs,
-                    baseURL):
+def RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, prefix, mode,
+                    baseURL, topURL):
   """Executes the JSDocToolkit."""
   list_filename = MakePath('../scons-out/docs/obj/doclist.conf')
   f = open(list_filename, 'w')
   f.write('{\nD:{\n')
   f.write('prefix: "%s",\n' % prefix)
   f.write('baseURL: "%s",\n' % baseURL)
-  f.write('o3djs: "%s",\n' % o3djs)
+  f.write('topURL: "%s",\n' % topURL)
+  f.write('mode: "%s",\n' % mode)
   f.write('htmlOutDir: "%s",\n' % html_output_dir.replace('\\', '/'))
   f.write('endMarker: ""\n')
   f.write('},\n')
@@ -180,12 +183,12 @@ def BuildJavaScriptForExternsFromIDLs(idl_files, output_dir):
 
 def BuildO3DDocsFromJavaScript(js_files, ezt_output_dir, html_output_dir):
   RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir,
-                  'classo3d_1_1_', '', '')
+                  'classo3d_1_1_', 'o3d', '', '')
 
 
 def BuildO3DJSDocs(js_files, ezt_output_dir, html_output_dir):
-  RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_0_1_', 'true',
-                  'jsdocs/')
+  RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_0_1_', 'o3djs',
+                  'jsdocs/', '../')
 
 
 def BuildO3DExternsFile(js_files_dir, extra_externs_file, externs_file):
@@ -229,6 +232,19 @@ def BuildCompiledO3DJS(o3djs_files,
     ['-js=%s' % (x, ) for x in o3djs_files]);
 
 
+def CopyStaticFiles(o3d_docs_ezt_outpath, o3d_docs_html_outpath):
+  files = ['stylesheet.css',
+           'tabs.css',
+           'tab_l.gif',
+           'tab_r.gif',
+           'tab_b.gif']
+  for file in files:
+    shutil.copyfile(MakePath('jsdoc-toolkit-templates/static/' + file),
+                    MakePath(os.path.join(o3d_docs_ezt_outpath, file)))
+    shutil.copyfile(MakePath('jsdoc-toolkit-templates/static/' + file),
+                    MakePath(os.path.join(o3d_docs_html_outpath, file)))
+
+
 def main():
   """Builds the O3D API docs and externs and the o3djs docs."""
   global _java_exe
@@ -239,19 +255,16 @@ def main():
   js_list_basepath = os.path.dirname(js_list_filename)
   idl_list_basepath = os.path.dirname(idl_list_filename)
 
-  docs_js_outpath = MakePath('../scons-out/docs/obj/documentation/apijs')
-  externs_js_outpath = MakePath('../scons-out/docs/obj/externs')
-  o3d_docs_ezt_outpath = MakePath(
-      '../scons-out/docs/obj/documentation/reference')
-  o3d_docs_html_outpath = MakePath(
-      '../scons-out/docs/obj/documentation/local_html')
-  o3djs_docs_ezt_outpath = MakePath(
-      '../scons-out/docs/obj/documentation/reference/jsdocs')
-  o3djs_docs_html_outpath = MakePath(
-      '../scons-out/docs/obj/documentation/local_html/jsdocs')
-  o3d_externs_path = MakePath('../scons-out/docs/obj/o3d-externs.js')
-  compiled_o3djs_outpath = MakePath(
-      '../scons-out/docs/obj/documentation/base.js')
+  outpath = '../scons-out/docs/obj/'
+  docs_outpath = '../scons-out/docs/obj/documentation/'
+  docs_js_outpath = MakePath(docs_outpath + 'apijs')
+  externs_js_outpath = MakePath(outpath + '/externs')
+  o3d_docs_ezt_outpath = MakePath(docs_outpath + 'reference')
+  o3d_docs_html_outpath = MakePath(docs_outpath + 'local_html')
+  o3djs_docs_ezt_outpath = MakePath(docs_outpath + 'reference/jsdocs')
+  o3djs_docs_html_outpath = MakePath(docs_outpath + 'local_html/jsdocs')
+  o3d_externs_path = MakePath(outpath + 'o3d-externs.js')
+  compiled_o3djs_outpath = MakePath(docs_outpath + 'base.js')
   externs_path = MakePath('externs/externs.js')
   o3d_extra_externs_path = MakePath('externs/o3d-extra-externs.js')
 
@@ -280,6 +293,7 @@ def main():
                       o3d_externs_path)
   BuildO3DJSDocs(o3djs_files + [o3d_externs_path], o3djs_docs_ezt_outpath,
                  o3djs_docs_html_outpath)
+  CopyStaticFiles(o3d_docs_ezt_outpath, o3d_docs_html_outpath)
   BuildCompiledO3DJS(o3djs_files,
                      externs_path,
                      o3d_externs_path,

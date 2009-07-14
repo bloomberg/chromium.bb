@@ -28,7 +28,7 @@ thisClass = data;
 <if test="thisClass.classDesc">{+sanitizeForEZT(thisClass.classDesc)+}</if>
 <if test="!thisClass.classDesc">{+sanitizeForEZT(thisClass.desc)+}</if>
 
-<if test="thisClass.srcFile.length">
+<if test="getOutputMode() !== 'o3d' && thisClass.srcFile.length">
 <h2>Source</h2>
 <a name="_source" href="http://code.google.com/p/o3d/source/browse/trunk/samples/{+getSourcePath(thisClass)+}">{+getSourcePath(thisClass)+}</a>
 </if>
@@ -48,7 +48,7 @@ thisClass = data;
 <!-- =========== SEE ALSO =========== -->
 
 <!-- ========== CONSTRUCTOR SUMMARY ============== -->
-<if test="!data.isPrivate && !data.isBuiltin() && !data.isNamespace && data.is('CONSTRUCTOR')">
+<if test="shouldWriteConstructor(data)">
   <h2>Constructor</h2>
   <ul>
   <li><a class="el" href="{+data.name+}">{+data.alias+}</a><if test="data.classType != 'Namespace '">{+ makeSignature(data.params) +}</if></li>
@@ -65,10 +65,10 @@ thisClass = data;
     <if test="!method.isPrivate">
         <tr><td><li></li></td>
         <td>
-	<if test="method.isStatic||!method.memberOf">&lt;static&gt; </if>
+        <if test="method.isStatic||!method.memberOf">&lt;Global&gt; </if>
         <if test="method.type.length">{+linkifyTypeSpec(makeName('[Method Summary]', thisClass.alias, method.name), method.type)+}&nbsp;</if>
-	</td>
-	<td><a class="el" href="#{+method.name+}">{+getQualifiedName(method)+}</a>{+makeSignature(method.params)+}</td>
+        </td>
+        <td><a class="el" href="#{+method.name+}">{+getQualifiedName(method)+}</a>{+makeSignature(method.params)+}</td>
         </tr>
     </if>
     </for>
@@ -86,7 +86,7 @@ thisClass = data;
     <if test="!property.isPrivate && !property.isNamespace">
       <tr><td><li></li></td>
       <td>
-      <if test="property.isStatic||!property.memberOf">&lt;static&gt;&nbsp;</if>
+      <if test="property.isStatic||!property.memberOf">&lt;Global&gt;&nbsp;</if>
       {+linkifyTypeSpec(makeName('[Property Summary]', thisClass.alias, property.name), getPropertyType(property))+}
       </td>
       <td><a class="el" href="#{+property.name+}">{+getQualifiedName(property)+}</a></td>
@@ -100,7 +100,7 @@ thisClass = data;
 <!-- =========== END FIELD SUMMARY =========== -->
 
 <!-- ========== CONSTRUCTOR DETAIL ============== -->
-<if test="!data.isPrivate && !data.isBuiltin() && !data.isNamespace && data.is('CONSTRUCTOR')">
+<if test="shouldWriteConstructor(data)">
   <hr/>
   <h2>Constructor</h2>
   <a class="anchor" name="{+data.name+}"></a>

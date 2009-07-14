@@ -20,7 +20,7 @@ This is the complete list of members for
 <table>
 
 <!-- ========== CONSTRUCTOR SUMMARY ============== -->
-<if test="!data.isPrivate && !data.isBuiltin() && !data.isNamespace && data.is('CONSTRUCTOR')">
+<if test="shouldWriteConstructor(data)">
 <tr class="memlist"><td><a class="el" href="{+getLinkToClassByAlias(thisClass.alias)+}#{+data.name+}">{+data.alias+}</a><if test="data.classType != 'Namespace '">{+ makeSignature(data.params) +}</if></td><td><a class="el" href="{+getLinkToClassByAlias(thisClass.memberOf)+}">{+thisClass.memberOf+}</a></td><td></td></tr>
 </if>
 
