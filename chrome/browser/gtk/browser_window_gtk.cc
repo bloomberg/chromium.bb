@@ -270,6 +270,7 @@ gboolean HandleCustomAccelerator(guint keyval, GdkModifierType modifier,
       break;
 
     case GDK_ISO_Left_Tab:
+    case GDK_KP_Tab:
       if ((GDK_CONTROL_MASK | GDK_SHIFT_MASK) == modifier) {
         browser->ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
         return TRUE;
