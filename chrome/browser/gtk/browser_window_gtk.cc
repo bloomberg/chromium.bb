@@ -385,6 +385,11 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   gtk_widget_add_events(GTK_WIDGET(window_), GDK_BUTTON_PRESS_MASK |
                                              GDK_POINTER_MOTION_MASK);
 
+  // Add this window to its own unique window group to allow for
+  // window-to-parent modality.
+  gtk_window_group_add_window(gtk_window_group_new(), window_);
+  g_object_unref(gtk_window_get_group(window_));
+
   SetWindowIcon();
   SetBackgroundColor();
   SetGeometryHints();
