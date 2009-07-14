@@ -225,6 +225,9 @@ bool Channel::ChannelImpl::ProcessConnection() {
   case ERROR_PIPE_CONNECTED:
     waiting_connect_ = false;
     break;
+  case ERROR_NO_DATA:
+    // The pipe is being closed.
+    return false;
   default:
     NOTREACHED();
     return false;
