@@ -482,7 +482,7 @@ TestSuite.prototype.testConsoleLog = function() {
   var index = 0;
 
   var test = this;
-  var assertNext = function(line, message, opt_level, opt_count, opt_substr) {
+  var assertNext = function(line, message, opt_class, opt_count, opt_substr) {
     var elem = messages[index++].toMessageElement();
     var clazz = elem.getAttribute('class');
     var expectation = (opt_count || '') + 'console_test_page.html:' +
@@ -492,25 +492,25 @@ TestSuite.prototype.testConsoleLog = function() {
     } else {
       test.assertEquals(expectation, elem.textContent);
     }
-    if (opt_level) {
-      test.assertContains(clazz, 'console-' + opt_level + '-level');
+    if (opt_class) {
+      test.assertContains(clazz, 'console-' + opt_class);
     }
   };
 
-  assertNext('5', 'log', 'log');
-  assertNext('7', 'debug', 'log');
-  assertNext('9', 'info', 'log');
-  assertNext('11', 'warn', 'warning');
-  assertNext('13', 'error', 'error');
+  assertNext('5', 'log', 'log-level');
+  assertNext('7', 'debug', 'log-level');
+  assertNext('9', 'info', 'log-level');
+  assertNext('11', 'warn', 'warning-level');
+  assertNext('13', 'error', 'error-level');
   assertNext('15', 'Message format number 1, 2 and 3.5');
   assertNext('17', 'Message format for string');
   assertNext('19', 'Object Object');
-  assertNext('22', 'repeated', 'log', 5);
+  assertNext('22', 'repeated', 'log-level', 5);
   assertNext('26', 'count: 1');
   assertNext('26', 'count: 2');
   assertNext('29', 'group', 'group-title');
   index++;
-  assertNext('33', 'timer:', 'log', '', true);
+  assertNext('33', 'timer:', 'log-level', '', true);
 };
 
 
