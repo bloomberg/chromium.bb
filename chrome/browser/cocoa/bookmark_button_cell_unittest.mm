@@ -30,5 +30,26 @@ TEST_F(BookmarkButtonCellTest, SizeForBounds) {
   EXPECT_TRUE(size.width < 200 && size.height < 200);
 }
 
+// Make sure a cell's menu has the cell itself as the delegate.  This
+// is our convention for reusing the context menu across all bookmarks
+// while being unambiguous when used.
+TEST_F(BookmarkButtonCellTest, MenuDelegate) {
+  scoped_nsobject<BookmarkButtonCell> cell([[BookmarkButtonCell alloc]
+                                               initTextCell:@"Testing"]);
+  EXPECT_FALSE([cell.get() menu]);
+
+  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"foo"]);
+  [cell setMenu:menu.get()];
+  EXPECT_TRUE([cell.get() menu]);
+  EXPECT_EQ([[cell.get() menu] delegate], cell.get());
+  [cell setMenu:nil];
+}
+
+// Make sure the default from the base class is overridden
+TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
+  scoped_nsobject<BookmarkButtonCell> cell([[BookmarkButtonCell alloc]
+                                               initTextCell:@"Testing"]);
+  EXPECT_TRUE([cell.get() showsBorderOnlyWhileMouseInside]);
+}
 
 }  // namespace

@@ -13,7 +13,6 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #include "chrome/common/pref_member.h"
 
-@class BookmarkBarView;
 class CommandUpdater;
 class LocationBar;
 class LocationBarViewMac;
@@ -71,7 +70,6 @@ class ToolbarView;
   IBOutlet NSButton* pageButton_;
   IBOutlet NSButton* wrenchButton_;
   IBOutlet NSTextField* locationBar_;
-  IBOutlet BookmarkBarView* bookmarkBarView_;
 }
 
 // Initialize the toolbar and register for command updates. The profile is

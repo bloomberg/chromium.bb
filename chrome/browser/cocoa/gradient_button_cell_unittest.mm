@@ -39,4 +39,25 @@ TEST_F(GradientButtonCellTest, Display) {
   [view_ display];
 }
 
+// Tracking rects
+TEST_F(GradientButtonCellTest, TrackingRects) {
+  GradientButtonCell* cell = [view_ cell];
+  EXPECT_FALSE([cell showsBorderOnlyWhileMouseInside]);
+  EXPECT_FALSE([cell isMouseInside]);
+
+  [cell setShowsBorderOnlyWhileMouseInside:YES];
+  [cell mouseEntered:nil];
+  EXPECT_TRUE([cell isMouseInside]);
+  [cell mouseExited:nil];
+  EXPECT_FALSE([cell isMouseInside]);
+
+  [cell setShowsBorderOnlyWhileMouseInside:NO];
+  EXPECT_FALSE([cell isMouseInside]);
+
+  [cell setShowsBorderOnlyWhileMouseInside:YES];
+  [cell setShowsBorderOnlyWhileMouseInside:YES];
+  [cell setShowsBorderOnlyWhileMouseInside:NO];
+  [cell setShowsBorderOnlyWhileMouseInside:NO];
+}
+
 }  // namespace

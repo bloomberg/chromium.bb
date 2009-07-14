@@ -22,7 +22,7 @@ class ToolbarControllerTest : public testing::Test {
   // |-toolbarViews| method.
   enum {
     kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kStarIndex, kGoIndex,
-    kPageIndex, kWrenchIndex, kLocationIndex, kBookmarkIndex,
+    kPageIndex, kWrenchIndex, kLocationIndex,
   };
 
   ToolbarControllerTest() {

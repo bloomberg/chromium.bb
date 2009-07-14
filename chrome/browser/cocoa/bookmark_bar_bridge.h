@@ -33,6 +33,9 @@ class BookmarkBarBridge : public BookmarkModelObserver {
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
                                  int index);
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int index);
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node);
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,

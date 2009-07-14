@@ -32,10 +32,12 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 
 @implementation FakeBookmarkBarController
 
-- (id)initWithProfile:(Profile*)profile view:(NSView*)view {
+- (id)initWithProfile:(Profile*)profile
+           parentView:(NSView*)parentView
+       webContentView:(NSView*)webContentView {
   if ((self = [super initWithProfile:profile
-                                view:(BookmarkBarView*)view
-                      webContentView:nil
+                          parentView:parentView
+                      webContentView:webContentView
                             delegate:self])) {
     callbacks_.reset([[NSMutableArray alloc] init]);
   }
@@ -76,6 +78,11 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
   [callbacks_ addObject:[NSNumber numberWithInt:6]];
 }
 
+- (void)nodeRemoved:(BookmarkModel*)model
+             parent:(const BookmarkNode*)oldParent index:(int)index {
+  [callbacks_ addObject:[NSNumber numberWithInt:7]];
+}
+
 // Save the request.
 - (void)openBookmarkURL:(const GURL&)url
             disposition:(WindowOpenDisposition)disposition {
@@ -102,12 +109,16 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
   Profile *profile = browser_test_helper_.profile();
   BookmarkModel *model = profile->GetBookmarkModel();
 
-  scoped_nsobject<NSView> view([[NSView alloc]
-                                 initWithFrame:NSMakeRect(0,0,10,10)]);
-  [view.get() setHidden:YES];
+  scoped_nsobject<NSView> parentView([[NSView alloc]
+                                       initWithFrame:NSMakeRect(0,0,100,100)]);
+  scoped_nsobject<NSView> webView([[NSView alloc]
+                                       initWithFrame:NSMakeRect(0,0,100,100)]);
+
   scoped_nsobject<FakeBookmarkBarController>
-    controller([[FakeBookmarkBarController alloc] initWithProfile:profile
-                                                             view:view.get()]);
+    controller([[FakeBookmarkBarController alloc]
+                 initWithProfile:profile
+                      parentView:parentView.get()
+                  webContentView:webView.get()]);
   EXPECT_TRUE(controller.get());
   scoped_ptr<BookmarkBarBridge> bridge(new BookmarkBarBridge(controller.get(),
                                                              model));
@@ -120,11 +131,12 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
   bridge->BookmarkNodeChanged(NULL, NULL);
   bridge->BookmarkNodeFavIconLoaded(NULL, NULL);
   bridge->BookmarkNodeChildrenReordered(NULL, NULL);
+  bridge->BookmarkNodeRemoved(NULL, NULL, 0);
 
-  // 7 calls above plus an initial Loaded() in init routine makes 8
-  EXPECT_TRUE([controller.get()->callbacks_ count] == 8);
+  // 8 calls above plus an initial Loaded() in init routine makes 9
+  EXPECT_TRUE([controller.get()->callbacks_ count] == 9);
 
-  for (int x = 1; x < 8; x++) {
+  for (int x = 1; x < 9; x++) {
     NSNumber *num = [NSNumber numberWithInt:x-1];
     EXPECT_TRUE([[controller.get()->callbacks_ objectAtIndex:x] isEqual:num]);
   }

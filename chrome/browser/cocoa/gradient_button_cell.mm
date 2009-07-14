@@ -8,9 +8,60 @@
 
 @implementation GradientButtonCell
 
+- (id)initTextCell:(NSString*)string {
+  if ((self = [super initTextCell:string])) {
+    shouldTheme_ = YES;
+  }
+  return self;
+}
+
+- (void)setShouldTheme:(BOOL)shouldTheme {
+  shouldTheme_ = shouldTheme;
+}
+
 - (NSBackgroundStyle)interiorBackgroundStyle {
   return [self isHighlighted] ?
       NSBackgroundStyleLowered : NSBackgroundStyleRaised;
+}
+
+- (void)mouseEntered:(NSEvent *)theEvent {
+  isMouseInside_ = YES;
+  [[self controlView] setNeedsDisplay:YES];
+}
+
+- (void)mouseExited:(NSEvent *)theEvent {
+  isMouseInside_ = NO;
+  [[self controlView] setNeedsDisplay:YES];
+}
+
+- (BOOL)isMouseInside {
+  return trackingArea_ && isMouseInside_;
+}
+
+// Since we have our own drawWithFrame:, we need to also have our own
+// logic for determining when the mouse is inside for honoring this
+// request.
+- (void)setShowsBorderOnlyWhileMouseInside:(BOOL)showOnly {
+  [super setShowsBorderOnlyWhileMouseInside:showOnly];
+  if (showOnly) {
+    if (trackingArea_.get()) {
+      [self setShowsBorderOnlyWhileMouseInside:NO];
+    }
+    trackingArea_.reset([[NSTrackingArea alloc]
+                          initWithRect:[[self controlView]
+                                         bounds]
+                               options:(NSTrackingMouseEnteredAndExited |
+                                        NSTrackingActiveInActiveApp)
+                                 owner:self
+                            userInfo:nil]);
+    [[self controlView] addTrackingArea:trackingArea_];
+  } else {
+    if (trackingArea_) {
+      [[self controlView] removeTrackingArea:trackingArea_];
+      trackingArea_.reset(nil);
+      isMouseInside_ = NO;
+    }
+  }
 }
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -50,7 +101,9 @@
 
   // Stroke the borders and appropriate fill gradient. If we're borderless,
   // the only time we want to draw the inner gradient is if we're highlighted.
-  if ([self isBordered] || pressed) {
+  if (([self isBordered] && ![self showsBorderOnlyWhileMouseInside]) ||
+      pressed ||
+      [self isMouseInside]) {
     [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
     [outerPath stroke];
 
@@ -129,8 +182,7 @@
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   GTMTheme* theme = [controlView gtm_theme];
 
-  BOOL shouldTheme = YES;
-  if (shouldTheme) {
+  if (shouldTheme_) {
     BOOL isTemplate = [[self image] isTemplate];
 
     [NSGraphicsContext saveGraphicsState];

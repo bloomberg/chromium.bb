@@ -120,9 +120,15 @@ class PrefObserverBridge : public NotificationObserver {
   // Create a sub-controller for the bookmark bar.
   bookmarkBarController_.reset([[BookmarkBarController alloc]
                                    initWithProfile:profile_
-                                              view:bookmarkBarView_
+                                        parentView:[self view]
                                     webContentView:webContentView_
                                           delegate:bookmarkBarDelegate_]);
+
+  // Add bookmark bar to the view hierarchy.  This also triggers the
+  // nib load.  The bookmark bar is defined (in the nib) to be
+  // bottom-aligned to it's parent view (among other things), so
+  // position and resize properties don't need to be set.
+  [[self view] addSubview:[bookmarkBarController_ view]];
 }
 
 - (LocationBar*)locationBar {
@@ -223,7 +229,7 @@ class PrefObserverBridge : public NotificationObserver {
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
             homeButton_, starButton_, goButton_, pageButton_, wrenchButton_,
-            locationBar_, bookmarkBarView_, nil];
+            locationBar_, nil];
 }
 
 // Moves |rect| to the right by |delta|, keeping the right side fixed by

@@ -2501,6 +2501,7 @@
         # put any pdfs down in the sources block below so pdfsqueeze runs on
         # them.
         'app/nibs/en.lproj/About.xib',
+        'app/nibs/en.lproj/BookmarkBar.xib',
         'app/nibs/en.lproj/BrowserWindow.xib',
         'app/nibs/en.lproj/ClearBrowsingData.xib',
         'app/nibs/en.lproj/DownloadItem.xib',

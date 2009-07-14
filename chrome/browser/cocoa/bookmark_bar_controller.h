@@ -27,7 +27,7 @@ class PrefService;
 
 // A controller for the bookmark bar in the browser window. Handles showing
 // and hiding based on the preference in the given profile.
-@interface BookmarkBarController : NSObject {
+@interface BookmarkBarController : NSViewController {
  @private
   BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the
                                   // top-level Browser object.
@@ -44,10 +44,7 @@ class PrefService;
   // Set when using fullscreen mode.
   BOOL barIsEnabled_;
 
-  // The view of the bookmark bar itself.
-  // Owned by the toolbar view, its parent view.
-  BookmarkBarView* bookmarkBarView_;  // weak
-
+  NSView* parentView_;      // weak; our parent view
   NSView* webContentView_;  // weak; where the web goes
 
   // Bridge from Chrome-style C++ notifications (e.g. derived from
@@ -56,14 +53,15 @@ class PrefService;
 
   // Delegate which can open URLs for us.
   id<BookmarkURLOpener> delegate_;  // weak
+
+  IBOutlet NSMenu* buttonContextMenu_;
 }
 
-// Initializes the controller with the given browser profile and
-// content view.  We use |webContentView| as the view for the bookmark
-// bar view and for geometry management.  |delegate| is used for
-// opening URLs.  |view| is expected to be hidden.
+// Initializes the bookmark bar controller with the given browser
+// profile, parent view (the toolbar), web content view, and delegate.
+// |delegate| is used for opening URLs.
 - (id)initWithProfile:(Profile*)profile
-                 view:(BookmarkBarView*)view
+           parentView:(NSView*)parentView
        webContentView:(NSView*)webContentView
              delegate:(id<BookmarkURLOpener>)delegate;
 
@@ -78,6 +76,14 @@ class PrefService;
 // if needed.  For fullscreen mode.
 - (void)setBookmarkBarEnabled:(BOOL)enabled;
 
+// Actions for opening bookmarks.  From a button, ...
+- (IBAction)openBookmark:(id)sender;
+// ... or from a context menu over the button.
+- (IBAction)openBookmarkInNewForegroundTab:(id)sender;
+- (IBAction)openBookmarkInNewWindow:(id)sender;
+- (IBAction)openBookmarkInIncognitoWindow:(id)sender;
+- (IBAction)deleteBookmark:(id)sender;
+
 @end
 
 // Redirects from BookmarkBarBridge, the C++ object which glues us to
@@ -90,6 +96,8 @@ class PrefService;
         newParent:(const BookmarkNode*)newParent newIndex:(int)newIndex;
 - (void)nodeAdded:(BookmarkModel*)model
            parent:(const BookmarkNode*)oldParent index:(int)index;
+- (void)nodeRemoved:(BookmarkModel*)model
+             parent:(const BookmarkNode*)oldParent index:(int)index;
 - (void)nodeChanged:(BookmarkModel*)model
                node:(const BookmarkNode*)node;
 - (void)nodeFavIconLoaded:(BookmarkModel*)model
@@ -101,12 +109,8 @@ class PrefService;
 
 // These APIs should only be used by unit tests (or used internally).
 @interface BookmarkBarController(TestingAPI)
-// Access to the bookmark bar's view represented by this controller.
-- (NSView*)view;
 // Set the delegate for a unit test.
 - (void)setDelegate:(id<BookmarkURLOpener>)delegate;
-// Action for our bookmark buttons.
-- (void)openBookmark:(id)sender;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

@@ -13,7 +13,13 @@
 // I expect changes for new features (themes, extensions, etc).
 
 @interface BookmarkBarView : BackgroundGradientView {
+ @private
+  IBOutlet NSMenu* barContextualMenu_;
 }
+@end
+
+@interface BookmarkBarView(TestingAPI)
+- (void)setContextMenu:(NSMenu*)menu;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_VIEW_H_

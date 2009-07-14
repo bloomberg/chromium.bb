@@ -14,6 +14,7 @@
 @interface BookmarkURLOpenerPong : NSObject<BookmarkURLOpener> {
  @public
   GURL url_;
+  WindowOpenDisposition disposition_;
 }
 @end
 
@@ -21,6 +22,7 @@
 - (void)openBookmarkURL:(const GURL&)url
             disposition:(WindowOpenDisposition)disposition {
   url_ = url;
+  disposition_ = disposition;
 }
 @end
 
@@ -33,24 +35,21 @@ class BookmarkBarControllerTest : public testing::Test {
  public:
   BookmarkBarControllerTest() {
     NSRect content_frame = NSMakeRect(0, 0, 800, kContentAreaHeight);
-    NSRect bar_frame = NSMakeRect(0, 0, 800, 0);
+    NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     content_area_.reset([[NSView alloc] initWithFrame:content_frame]);
-    bar_view_.reset([[NSView alloc] initWithFrame:bar_frame]);
-    [bar_view_ setHidden:YES];
-    BookmarkBarView *bbv = (BookmarkBarView*)bar_view_.get();
+    parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
+    [parent_view_ setHidden:YES];
     bar_.reset(
         [[BookmarkBarController alloc] initWithProfile:helper_.profile()
-                                                  view:bbv
+                                            parentView:parent_view_.get()
                                         webContentView:content_area_.get()
                                               delegate:nil]);
-    NSView* parent = cocoa_helper_.contentView();
-    [parent addSubview:content_area_.get()];
-    [parent addSubview:[bar_ view]];
+    [bar_ view];  // force loading of the nib
   }
 
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<NSView> content_area_;
-  scoped_nsobject<NSView> bar_view_;
+  scoped_nsobject<NSView> parent_view_;
   BrowserTestHelper helper_;
   scoped_nsobject<BookmarkBarController> bar_;
 };
@@ -59,7 +58,6 @@ TEST_F(BookmarkBarControllerTest, ShowHide) {
   // Assume hidden by default in a new profile.
   EXPECT_FALSE([bar_ isBookmarkBarVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
-  EXPECT_EQ([bar_view_ frame].size.height, 0);
 
   // Show and hide it by toggling.
   [bar_ toggleBookmarkBar];
@@ -67,13 +65,14 @@ TEST_F(BookmarkBarControllerTest, ShowHide) {
   EXPECT_FALSE([[bar_ view] isHidden]);
   NSRect content_frame = [content_area_ frame];
   EXPECT_NE(content_frame.size.height, kContentAreaHeight);
-  EXPECT_GT([bar_view_ frame].size.height, 0);
+  EXPECT_GT([[bar_ view] frame].size.height, 0);
+
   [bar_ toggleBookmarkBar];
   EXPECT_FALSE([bar_ isBookmarkBarVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
   content_frame = [content_area_ frame];
   EXPECT_EQ(content_frame.size.height, kContentAreaHeight);
-  EXPECT_EQ([bar_view_ frame].size.height, 0);
+  EXPECT_EQ([[bar_ view] frame].size.height, 0);
 }
 
 // Confirm openBookmark: forwards the request to the controller's delegate
@@ -88,18 +87,61 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   scoped_nsobject<NSButton> button([[NSButton alloc] init]);
   [button setCell:cell.get()];
   [cell setRepresentedObject:[NSValue valueWithPointer:node.get()]];
-  [bar_ openBookmark:button];
 
+  [bar_ openBookmark:button];
   EXPECT_EQ(pong.get()->url_, node->GetURL());
+  EXPECT_EQ(pong.get()->disposition_, CURRENT_TAB);
+
+  [bar_ setDelegate:nil];
 }
+
+// Confirm opening of bookmarks works from the menus (different
+// dispositions than clicking on the button).
+TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
+  scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
+                                                init]);
+  [bar_ setDelegate:pong.get()];
+
+  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"I_dont_care"]);
+  scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
+                                     initWithTitle:@"still_dont_care"
+                                            action:NULL
+                                     keyEquivalent:@""]);
+  scoped_nsobject<NSButtonCell> cell([[NSButtonCell alloc] init]);
+  [item setMenu:menu.get()];
+  [menu setDelegate:cell];
+
+  const char* urls[] = { "http://walla.walla.ding.dong.com",
+                         "http://i_dont_know.com",
+                         "http://cee.enn.enn.dot.com" };
+  SEL selectors[] = { @selector(openBookmarkInNewForegroundTab:),
+                      @selector(openBookmarkInNewWindow:),
+                      @selector(openBookmarkInIncognitoWindow:) };
+  WindowOpenDisposition dispositions[] = { NEW_FOREGROUND_TAB,
+                                           NEW_WINDOW,
+                                           OFF_THE_RECORD };
+  for (unsigned int i = 0;
+       i < sizeof(dispositions)/sizeof(dispositions[0]);
+       i++) {
+    scoped_ptr<BookmarkNode> node(new BookmarkNode(GURL(urls[i])));
+    [cell setRepresentedObject:[NSValue valueWithPointer:node.get()]];
+    [bar_ performSelector:selectors[i] withObject:item.get()];
+    EXPECT_EQ(pong.get()->url_, node->GetURL());
+    EXPECT_EQ(pong.get()->disposition_, dispositions[i]);
+    [cell setRepresentedObject:nil];
+  }
+}
+
 
 // TODO(jrg): Make sure showing the bookmark bar calls loaded: (to
 // process bookmarks)
 TEST_F(BookmarkBarControllerTest, ShowAndLoad) {
 }
 
-// TODO(jrg): Make sure a cleared bar has no subviews
-TEST_F(BookmarkBarControllerTest, Clear) {
+// TODO(jrg): Make sure adding 1 bookmark adds 1 subview, and removing
+// 1 removes 1 subview.  (We can't test for a simple Clear since there
+// will soon be views in here which aren't bookmarks.)
+TEST_F(BookmarkBarControllerTest, ViewChanges) {
 }
 
 // TODO(jrg): Make sure loaded: does something useful

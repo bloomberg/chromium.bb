@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_nsobject.h"
+
 // Base class for button cells for toolbar and bookmark bar.
 //
 // This is a button cell that handles drawing/highlighting of buttons.
@@ -22,7 +24,19 @@ enum {
 typedef NSInteger ButtonType;
 
 @interface GradientButtonCell : NSButtonCell {
+ @private
+  // Custom drawing means we need to perform our own mouse tracking if
+  // the cell is setShowsBorderOnlyWhileMouseInside:YES.
+  BOOL isMouseInside_;
+  scoped_nsobject<NSTrackingArea> trackingArea_;
+  BOOL shouldTheme_;
 }
+// Turn off theming.  Temporary work-around.
+- (void)setShouldTheme:(BOOL)shouldTheme;
+@end
+
+@interface GradientButtonCell(TestingAPI)
+- (BOOL)isMouseInside;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_CHROMIUM_BUTTON_CELL_H_

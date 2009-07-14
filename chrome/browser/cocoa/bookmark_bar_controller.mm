@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
@@ -22,6 +23,9 @@
 
 namespace {
 
+// TODO(jrg): this is the right proportional height but overlaps the
+// "blue outline" of the omnibox.  Fix.
+
 // Our height, when opened.
 const int kBookmarkBarHeight = 30;
 // How much to adjust our parent view.
@@ -38,33 +42,39 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 @implementation BookmarkBarController
 
 - (id)initWithProfile:(Profile*)profile
-                 view:(BookmarkBarView*)view
+           parentView:(NSView*)parentView
        webContentView:(NSView*)webContentView
              delegate:(id<BookmarkURLOpener>)delegate {
-  if ((self = [super init])) {
+  if ((self = [super initWithNibName:@"BookmarkBar"
+                              bundle:mac_util::MainAppBundle()])) {
     bookmarkModel_ = profile->GetBookmarkModel();
-    bookmarkBarView_ = view;
-    // We default to NOT open, which means height=0.
-    DCHECK([view isHidden]);  // OK to change
-    NSRect frame = [view frame];
-    frame.size.height = 0;
-    [view setFrame:frame];
-
-    // Make sure the nodes stay bottom-aligned.
-    [bookmarkBarView_ setAutoresizingMask:(NSViewWidthSizable |
-                                           NSViewMinYMargin)];
+    preferences_ = profile->GetPrefs();
+    parentView_ = parentView;
     webContentView_ = webContentView;
     delegate_ = delegate;
-    // Be sure to enable the bar before trying to show it...
-    barIsEnabled_ = YES;
-    preferences_ = profile->GetPrefs();
-    if (preferences_->GetBoolean(prefs::kShowBookmarkBar))
-      [self showBookmarkBar:YES immediately:YES];
   }
-  // Don't pass ourself along until our init is done.
-  // Thus, this call is (almost) last.
-  bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
   return self;
+}
+
+- (void)awakeFromNib {
+  // We default to NOT open, which means height=0.
+  DCHECK([[self view] isHidden]);  // Hidden so it's OK to change.
+  NSRect frame = [[self view] frame];
+  frame.size.height = 0;
+  frame.size.width = [parentView_ frame].size.width;
+  [[self view] setFrame:frame];
+
+  // Make sure the nodes stay bottom-aligned.
+  [[self view] setAutoresizingMask:(NSViewWidthSizable |
+                                         NSViewMinYMargin)];
+  // Be sure to enable the bar before trying to show it...
+  barIsEnabled_ = YES;
+  if (preferences_->GetBoolean(prefs::kShowBookmarkBar))
+    [self showBookmarkBar:YES immediately:YES];
+
+  // Don't pass ourself along (as 'self') until our init is completely
+  // done.  Thus, this call is (almost) last.
+  bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
 }
 
 // Show or hide the bar based on the value of |show|. Handles
@@ -76,7 +86,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 - (void)showBookmarkBar:(BOOL)show immediately:(BOOL)immediately {
   if (barIsEnabled_ && (barShouldBeShown_ != show)) {
     contentViewHasOffset_ = show;
-    [bookmarkBarView_ setHidden:show ? NO : YES];
+    [[self view] setHidden:show ? NO : YES];
     barShouldBeShown_ = show;
     if (show) {
       [self loaded:bookmarkModel_];
@@ -97,7 +107,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 // running.  Thus, if you resize the window while the bookmark bar is
 // animating, you'll mess things up.  Fix.
 - (void)applyContentAreaOffset:(BOOL)apply immediately:(BOOL)immediately {
-  if (bookmarkBarView_ == nil) {
+  if ([self view] == nil) {
     // We're too early, but awakeFromNib will call me again.
     return;
   }
@@ -107,9 +117,8 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
   }
 
   // None of these locals are members of the Hall of Justice.
-  NSView* superview = [bookmarkBarView_ superview];
-  NSRect superframe = [superview frame];
-  NSRect frame = [bookmarkBarView_ frame];
+  NSRect superframe = [parentView_ frame];
+  NSRect frame = [[self view] frame];
   NSRect webframe = [webContentView_ frame];
   if (apply) {
     superframe.size.height += kBookmarkBarSuperviewHeightAdjustment;
@@ -128,17 +137,17 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
   // expected.  Fix, or clean out the animators as an option.
   // Odd racing is FAR worse than a lack of an animator.
   if (1 /* immediately */) {
-    [superview setFrame:superframe];
+    [parentView_ setFrame:superframe];
     [webContentView_ setFrame:webframe];
-    [bookmarkBarView_ setFrame:frame];
+    [[self view] setFrame:frame];
   } else {
-    [[superview animator] setFrame:superframe];
+    [[parentView_ animator] setFrame:superframe];
     [[webContentView_ animator] setFrame:webframe];
-    [[bookmarkBarView_ animator] setFrame:frame];
+    [[[self view] animator] setFrame:frame];
   }
 
-  [bookmarkBarView_ setNeedsDisplay:YES];
-  [superview setNeedsDisplay:YES];
+  [[self view] setNeedsDisplay:YES];
+  [parentView_ setNeedsDisplay:YES];
   [webContentView_ setNeedsDisplay:YES];
 }
 
@@ -168,18 +177,57 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
   }
 }
 
-// Delete all items from the bookmark bar.
-- (void)clearBookmarkBar {
-  [bookmarkBarView_ setSubviews:[NSArray array]];
+- (BookmarkNode*)nodeFromMenuItem:(id)menuItem {
+  NSCell* cell = [[menuItem menu] delegate];
+  BookmarkNode* node = static_cast<BookmarkNode*>(
+      [[cell representedObject] pointerValue]);
+  DCHECK(node);
+  return node;
 }
 
-// TODO(jrg): add an openBookmarkInBackground() for ctrl-click which
-// has a different disposition.
-- (void)openBookmark:(id)sender {
-  const BookmarkNode* node = static_cast<const BookmarkNode*>(
-      [[[sender cell] representedObject] pointerValue]);
+- (BookmarkNode*)nodeFromButton:(id)button {
+  NSCell* cell = [button cell];
+  BookmarkNode* node = static_cast<BookmarkNode*>(
+      [[cell representedObject] pointerValue]);
   DCHECK(node);
+  return node;
+}
+
+- (IBAction)openBookmark:(id)sender {
+  BookmarkNode* node = [self nodeFromButton:sender];
   [delegate_ openBookmarkURL:node->GetURL() disposition:CURRENT_TAB];
+}
+
+// As a convention we set the menu's delegate to be the button's cell
+// so we can easily obtain bookmark info.  Convention applied in
+// -[BookmarkButtonCell menu].
+
+- (IBAction)openBookmarkInNewForegroundTab:(id)sender {
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
+  [delegate_ openBookmarkURL:node->GetURL() disposition:NEW_FOREGROUND_TAB];
+}
+
+- (IBAction)openBookmarkInNewWindow:(id)sender {
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
+  [delegate_ openBookmarkURL:node->GetURL() disposition:NEW_WINDOW];
+}
+
+- (IBAction)openBookmarkInIncognitoWindow:(id)sender {
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
+  [delegate_ openBookmarkURL:node->GetURL() disposition:OFF_THE_RECORD];
+}
+
+- (IBAction)deleteBookmark:(id)sender {
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
+  bookmarkModel_->Remove(node->GetParent(),
+                         node->GetParent()->IndexOfChild(node));
+}
+
+// Delete all items from the bookmark bar.  TODO(jrg): once the
+// bookmark bar has other subviews (e.g. "off the side" button/menu,
+// "Other Bookmarks"), etc, this routine will need revisiting.
+- (void)clearBookmarkBar {
+  [[self view] setSubviews:[NSArray array]];
 }
 
 // Return an autoreleased NSCell suitable for a bookmark button.
@@ -190,9 +238,6 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
                          autorelease];
   DCHECK(cell);
   [cell setRepresentedObject:[NSValue valueWithPointer:node]];
-  [cell setButtonType:NSMomentaryPushInButton];
-  [cell setBezelStyle:NSShadowlessSquareBezelStyle];
-  [cell setShowsBorderOnlyWhileMouseInside:YES];
 
   // The favicon may be NULL if we haven't loaded it yet.  Bookmarks
   // (and their icons) are loaded on the IO thread to speed launch.
@@ -204,13 +249,8 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
       [cell setImagePosition:NSImageLeft];
     }
   }
-
   [cell setTitle:title];
-  [cell setControlSize:NSSmallControlSize];
-  [cell setAlignment:NSLeftTextAlignment];
-  [cell setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-  [cell setWraps:NO];
-  [cell setLineBreakMode:NSLineBreakByTruncatingMiddle];
+  [cell setMenu:buttonContextMenu_];
   return cell;
 }
 
@@ -257,7 +297,6 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
     // object.  To honor the assumed semantics, we do nothing with
     // NSButton between alloc/init and setCell:.
     [button setCell:[self cellForBookmarkNode:child frame:frame]];
-    // [button sizeToFit];
 
     if (child->is_folder()) {
       // For now just disable the button if it's a folder.
@@ -275,7 +314,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
       [button setToolTip:tooltip];
     }
     // Finally, add it to the bookmark bar.
-    [bookmarkBarView_ addSubview:button];
+    [[self view] addSubview:button];
   }
 }
 
@@ -309,6 +348,12 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 }
 
 // TODO(jrg): for now this is brute force.
+- (void)nodeRemoved:(BookmarkModel*)model
+             parent:(const BookmarkNode*)oldParent index:(int)index {
+  [self loaded:model];
+}
+
+// TODO(jrg): for now this is brute force.
 - (void)nodeChanged:(BookmarkModel*)model
                node:(const BookmarkNode*)node {
   [self loaded:model];
@@ -318,7 +363,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 // Need a BookmarkNode-->NSCell mapping.
 - (void)nodeFavIconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node {
-  NSArray* views = [bookmarkBarView_ subviews];
+  NSArray* views = [[self view] subviews];
   for (NSButton* button in views) {
     NSButtonCell* cell = [button cell];
     void* pointer = [[cell representedObject] pointerValue];
@@ -338,10 +383,6 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 - (void)nodeChildrenReordered:(BookmarkModel*)model
                          node:(const BookmarkNode*)node {
   [self loaded:model];
-}
-
-- (NSView*)view {
-  return bookmarkBarView_;
 }
 
 - (void)setDelegate:(id<BookmarkURLOpener>)delegate {
