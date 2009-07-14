@@ -209,9 +209,12 @@ class BookmarkBarGtk : public AnimationDelegate,
   // shown. This is owned by the Profile.
   BookmarkModel* model_;
 
-  // Container that has all the individual members of
-  // |current_bookmark_buttons_| as children.
-  OwnedWidgetGtk bookmark_hbox_;
+  // Contains |bookmark_hbox_|. Event box exists to prevent leakage of
+  // background color from the toplevel application window's GDK window.
+  OwnedWidgetGtk event_box_;
+
+  // Used to position all children.
+  GtkWidget* bookmark_hbox_;
 
   // A GtkLabel to display when there are no bookmark buttons to display.
   GtkWidget* instructions_;

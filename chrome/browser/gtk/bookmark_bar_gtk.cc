@@ -75,7 +75,7 @@ BookmarkBarGtk::~BookmarkBarGtk() {
 
   RemoveAllBookmarkButtons();
   bookmark_toolbar_.Destroy();
-  bookmark_hbox_.Destroy();
+  event_box_.Destroy();
 }
 
 void BookmarkBarGtk::SetProfile(Profile* profile) {
@@ -106,7 +106,10 @@ void BookmarkBarGtk::SetPageNavigator(PageNavigator* navigator) {
 }
 
 void BookmarkBarGtk::Init(Profile* profile) {
-  bookmark_hbox_.Own(gtk_hbox_new(FALSE, 0));
+  event_box_.Own(gtk_event_box_new());
+
+  bookmark_hbox_ = gtk_hbox_new(FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(event_box_.get()), bookmark_hbox_);
 
   instructions_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(instructions_), 0, 0,
@@ -118,18 +121,18 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_widget_modify_fg(instructions_label, GTK_STATE_NORMAL,
                        &kInstructionsColor);
   gtk_container_add(GTK_CONTAINER(instructions_), instructions_label);
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_.get()), instructions_,
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), instructions_,
                      FALSE, FALSE, 0);
 
-  gtk_widget_set_app_paintable(bookmark_hbox_.get(), TRUE);
-  g_signal_connect(G_OBJECT(bookmark_hbox_.get()), "expose-event",
+  gtk_widget_set_app_paintable(bookmark_hbox_, TRUE);
+  g_signal_connect(G_OBJECT(bookmark_hbox_), "expose-event",
                    G_CALLBACK(&OnHBoxExpose), this);
 
   bookmark_toolbar_.Own(gtk_toolbar_new());
   gtk_widget_set_app_paintable(bookmark_toolbar_.get(), TRUE);
   g_signal_connect(G_OBJECT(bookmark_toolbar_.get()), "expose-event",
                    G_CALLBACK(&OnToolbarExpose), this);
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_.get()), bookmark_toolbar_.get(),
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), bookmark_toolbar_.get(),
                      TRUE, TRUE, 0);
 
   gtk_drag_dest_set(bookmark_toolbar_.get(), GTK_DEST_DEFAULT_DROP,
@@ -147,28 +150,28 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(bookmark_toolbar_.get(), "button-press-event",
                    G_CALLBACK(&OnButtonPressed), this);
 
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_.get()), gtk_vseparator_new(),
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), gtk_vseparator_new(),
                      FALSE, FALSE, 0);
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
   other_bookmarks_button_ = theme_provider_->BuildChromeButton();
   ConnectFolderButtonEvents(other_bookmarks_button_);
-  gtk_box_pack_start(GTK_BOX(bookmark_hbox_.get()), other_bookmarks_button_,
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_bookmarks_button_,
                      FALSE, FALSE, 0);
 
   // Set the current theme state for all the buttons.
-  gtk_widget_set_size_request(bookmark_hbox_.get(), -1, 0);
+  gtk_widget_set_size_request(event_box_.get(), -1, 0);
 
   slide_animation_.reset(new SlideAnimation(this));
 }
 
 void BookmarkBarGtk::AddBookmarkbarToBox(GtkWidget* box) {
-  gtk_box_pack_start(GTK_BOX(box), bookmark_hbox_.get(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), event_box_.get(), FALSE, FALSE, 0);
 }
 
 void BookmarkBarGtk::Show(bool animate) {
-  gtk_widget_show_all(bookmark_hbox_.get());
+  gtk_widget_show_all(event_box_.get());
   if (animate) {
     slide_animation_->Show();
   } else {
@@ -190,14 +193,14 @@ void BookmarkBarGtk::Hide(bool animate) {
   if (slide_animation_->IsShowing() && animate) {
     slide_animation_->Hide();
   } else {
-    gtk_widget_hide(bookmark_hbox_.get());
+    gtk_widget_hide(event_box_.get());
     slide_animation_->Reset(0);
     AnimationProgressed(slide_animation_.get());
   }
 }
 
 int BookmarkBarGtk::GetHeight() {
-  return bookmark_hbox_->allocation.height;
+  return event_box_->allocation.height;
 }
 
 bool BookmarkBarGtk::IsClosing() {
@@ -345,7 +348,7 @@ bool BookmarkBarGtk::IsAlwaysShown() {
 void BookmarkBarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
-  gtk_widget_set_size_request(bookmark_hbox_.get(), -1,
+  gtk_widget_set_size_request(event_box_.get(), -1,
                               animation->GetCurrentValue() *
                               kBookmarkBarHeight);
 }
@@ -354,7 +357,7 @@ void BookmarkBarGtk::AnimationEnded(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
   if (!slide_animation_->IsShowing())
-    gtk_widget_hide(bookmark_hbox_.get());
+    gtk_widget_hide(event_box_.get());
 }
 
 void BookmarkBarGtk::Observe(NotificationType type,
