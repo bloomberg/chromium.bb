@@ -1,13 +1,12 @@
+avcodec-52.dll
+avformat-52.dll
+avutil-50.dll
 chrome.exe
 chrome.dll
 crash_service.exe
 First Run
 gears.dll
 icudt38.dll
-themes/default.dll
-resources
-rlz.dll
-wow_helper.exe
 locales/ar.dll
 locales/bg.dll
 locales/bn.dll
@@ -58,3 +57,8 @@ locales/uk.dll
 locales/vi.dll
 locales/zh-CN.dll
 locales/zh-TW.dll
+pthreadGC2.dll
+themes/default.dll
+resources
+rlz.dll
+wow_helper.exe
