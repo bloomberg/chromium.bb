@@ -24,10 +24,6 @@ function updateStatus(text) {
 }
 
 function updateBots(text) {
-  // There's a bug with the buildbot output where this quote is in the wrong
-  // place.
-  text = text.replace("'{revision':", "{'revision':");
-
   var results = (new RegExp('(.*)<\/body>', 'g')).exec(text);
   if (!results || results.index < 0) {
     console.log("Error: couldn't find bot JSON");
