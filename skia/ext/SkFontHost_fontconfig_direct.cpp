@@ -115,10 +115,33 @@ bool FontConfigDirect::Match(std::string* result_family,
     FcPatternGetString(pattern, FC_FAMILY, 0, &post_config_family);
 
     FcResult result;
-    FcPattern* match = FcFontMatch(0, pattern, &result);
-    if (!match) {
+    FcFontSet* font_set = FcFontSort(0, pattern, 0, 0, &result);
+    if (!font_set) {
         FcPatternDestroy(pattern);
         return false;
+    }
+
+    // Older versions of fontconfig have a bug where they cannot select
+    // only scalable fonts so we have to manually filter the results.
+    FcPattern* match = NULL;
+    for (int i = 0; i < font_set->nfont; ++i) {
+      FcPattern* current = font_set->fonts[i];
+      FcBool is_scalable;
+
+      if (FcPatternGetBool(current, FC_SCALABLE, 0,
+                           &is_scalable) != FcResultMatch ||
+          !is_scalable) {
+        continue;
+      }
+
+      match = current;
+      break;
+    }
+
+    if (!match) {
+      FcPatternDestroy(pattern);
+      FcFontSetDestroy(font_set);
+      return false;
     }
 
     FcChar8* post_match_family;
@@ -131,14 +154,14 @@ bool FontConfigDirect::Match(std::string* result_family,
     FcPatternDestroy(pattern);
 
     if (!family_names_match && !IsFallbackFontAllowed(family)) {
-        FcPatternDestroy(match);
+        FcFontSetDestroy(font_set);
         return false;
     }
 
     FcChar8* c_filename;
     if (FcPatternGetString(match, FC_FILE, 0, &c_filename) != FcResultMatch) {
-        FcPatternDestroy(match);
-        return NULL;
+        FcFontSetDestroy(font_set);
+        return false;
     }
     const std::string filename((char *) c_filename);
 
@@ -162,8 +185,8 @@ bool FontConfigDirect::Match(std::string* result_family,
 
     FcChar8* c_family;
     if (FcPatternGetString(match, FC_FAMILY, 0, &c_family)) {
-        FcPatternDestroy(match);
-        return NULL;
+        FcFontSetDestroy(font_set);
+        return false;
     }
 
     int resulting_bold;
@@ -195,7 +218,7 @@ bool FontConfigDirect::Match(std::string* result_family,
     if (result_family)
         *result_family = (char *) c_family;
 
-    FcPatternDestroy(match);
+    FcFontSetDestroy(font_set);
 
     return true;
 }

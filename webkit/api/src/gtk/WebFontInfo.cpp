@@ -66,21 +66,34 @@ WebString WebFontInfo::familyForChars(const WebUChar* characters, size_t numChar
     FcDefaultSubstitute(pattern);
 
     FcResult result;
-    FcPattern* match = FcFontMatch(0, pattern, &result);
+    FcFontSet* fontSet = FcFontSort(0, pattern, 0, 0, &result);
     FcPatternDestroy(pattern);
     FcCharSetDestroy(cset);
 
-    if (match) {
+    if (!fontSet)
+        return WebString();
+
+    // Older versions of fontconfig have a bug where they cannot select
+    // only scalable fonts so we have to manually filter the results.
+    for (int i = 0; i < fontSet->nfont; ++i) {
+        FcPattern* current = fontSet->fonts[i];
+        FcBool isScalable;
+
+        if (FcPatternGetBool(current, FC_SCALABLE, 0, &isScalable) != FcResultMatch
+            || !isScalable)
+            continue;
+
         FcChar8* family;
         WebString result;
-        if (FcPatternGetString(match, FC_FAMILY, 0, &family) == FcResultMatch) {
+        if (FcPatternGetString(current, FC_FAMILY, 0, &family) == FcResultMatch) {
             const char* charFamily = reinterpret_cast<char*>(family);
             result = WebString::fromUTF8(charFamily, strlen(charFamily));
         }
-        FcPatternDestroy(match);
+        FcFontSetDestroy(fontSet);
         return result;
     }
 
+    FcFontSetDestroy(fontSet);
     return WebString();
 }
 
