@@ -669,7 +669,7 @@ bool WebViewImpl::AutocompleteHandleKeyEvent(const WebKeyboardEvent& event) {
     return false;
 
   if (autocomplete_popup_->handleKeyEvent(MakePlatformKeyboardEvent(event))) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
       // We need to ignore the next Char event after this otherwise pressing
       // enter when selecting an item in the menu will go to the page.
       if (WebInputEvent::RawKeyDown == event.type)
