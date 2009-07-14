@@ -2728,7 +2728,6 @@ BUG15270 LINUX WIN : LayoutTests/svg/custom/js-update-image-and-display.svg = FA
 BUG15270 LINUX WIN : LayoutTests/svg/custom/js-update-image-and-display2.svg = FAIL
 BUG15270 LINUX WIN : LayoutTests/svg/custom/js-update-image-and-display3.svg = FAIL
 BUG15270 : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
-BUG15270 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = TIMEOUT
 
 // WebKit 45134:45176
 BUG15403 SKIP : LayoutTests/http/tests/security/clipboard/clipboard-file-access.html = FAIL
@@ -2757,15 +2756,11 @@ BUG15425 WIN : LayoutTests/dom/html/level2/html/HTMLElement142.html = PASS CRASH
 // WebKit 45287:45352 New tests
 BUG15649 : LayoutTests/media/video-canvas-source.html = FAIL
 
-// WebKit 45381:45403 New tests
-BUG15710 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom.html = TIMEOUT
-
 // Webkit 45403:45431
 BUG15733 LINUX WIN : LayoutTests/compositing/repaint/content-into-overflow.html = FAIL
 BUG15733 LINUX WIN : LayoutTests/compositing/repaint/overflow-into-content.html = FAIL
 
 // WebKit 45431:45444
-BUG15780 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attributes.html = FAIL TIMEOUT
 
 // WebKit 45460:45473
 BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-null-char.html = FAIL
@@ -2877,3 +2872,8 @@ BUG16240 MAC WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html
 
 // Failing due to r20652.
 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL
+
+// HTML5 DataGrid bindings have not been implemented for V8 yet.
+BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = TIMEOUT
+BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom.html = TIMEOUT
+BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attributes.html = FAIL TIMEOUT
