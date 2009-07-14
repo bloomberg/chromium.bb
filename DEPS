@@ -27,7 +27,7 @@ deps = {
   "src/third_party/icu38":
     "/trunk/deps/third_party/icu38@20192",
 
-  "src/third_party/protobuf/src":
+  "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@154",
 
   # TODO(mark): Remove once this has moved into depot_tools.

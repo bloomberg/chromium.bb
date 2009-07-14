@@ -2108,8 +2108,8 @@
             }],
             ['chromeos==1',{
 	      'dependencies': [
-  		'../third_party/protobuf/protobuf.gyp:protobuf',
-  		'../third_party/protobuf/protobuf.gyp:protoc',
+  		'../third_party/protobuf2/protobuf.gyp:protobuf',
+  		'../third_party/protobuf2/protobuf.gyp:protoc',
  	      ],
 	      'actions': [
  	        { 'action_name': 'my_proto',
@@ -2122,7 +2122,7 @@
     		    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
     		  ],
     		  'dependencies': [
-      		    '../third_party/protobuf/protobuf.gyp:protoc',
+      		    '../third_party/protobuf2/protobuf.gyp:protoc',
     		  ],
 		  'action': [
       		    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
