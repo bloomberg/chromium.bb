@@ -350,6 +350,11 @@ void RenderThread::EnsureWebKitInitialized() {
   WebKit::registerURLSchemeAsLocal(chrome_ui_scheme);
   WebKit::registerURLSchemeAsNoAccess(chrome_ui_scheme);
 
+  // print: pages should be not accessible by normal context.
+  WebString print_ui_scheme(ASCIIToUTF16(chrome::kPrintScheme));
+  WebKit::registerURLSchemeAsLocal(print_ui_scheme);
+  WebKit::registerURLSchemeAsNoAccess(print_ui_scheme);
+
 #if defined(OS_WIN)
   // We don't yet support Gears on non-Windows, so don't tell pages that we do.
   WebKit::registerExtension(extensions_v8::GearsExtension::Get());

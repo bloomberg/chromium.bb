@@ -116,6 +116,8 @@ void RegisterURLRequestChromeJob() {
 
   URLRequest::RegisterProtocolFactory(kChromeURLScheme,
                                       &ChromeURLDataManager::Factory);
+  URLRequest::RegisterProtocolFactory(chrome::kPrintScheme,
+                                      &ChromeURLDataManager::Factory);
 #ifdef CHROME_PERSONALIZATION
   url_util::AddStandardScheme(kPersonalizationScheme);
   URLRequest::RegisterProtocolFactory(kPersonalizationScheme,
@@ -137,9 +139,10 @@ void ChromeURLDataManager::URLToRequest(const GURL& url,
                                         std::string* path) {
 #ifdef CHROME_PERSONALIZATION
   DCHECK(url.SchemeIs(kChromeURLScheme) ||
-         url.SchemeIs(kPersonalizationScheme));
+         url.SchemeIs(kPersonalizationScheme) ||
+         url.SchemeIs(chrome::kPrintScheme));
 #else
-  DCHECK(url.SchemeIs(kChromeURLScheme));
+  DCHECK(url.SchemeIs(kChromeURLScheme) || url.SchemeIs(chrome::kPrintScheme));
 #endif
 
   if (!url.is_valid()) {
@@ -149,13 +152,20 @@ void ChromeURLDataManager::URLToRequest(const GURL& url,
 
   // Our input looks like: chrome://source_name/extra_bits?foo .
   // So the url's "host" is our source, and everything after the host is
-  // the path.
-  source_name->assign(url.host());
+  // the path. For print:url schemes, we assume its always print.
+  if (url.SchemeIs(chrome::kPrintScheme))
+    source_name->assign(chrome::kPrintScheme);
+  else
+    source_name->assign(url.host());
 
   const std::string& spec = url.possibly_invalid_spec();
   const url_parse::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
   int offset = parsed.CountCharactersBefore(url_parse::Parsed::PATH, false);
-  ++offset;  // Skip the slash at the beginning of the path.
+
+  // We need to skip the slash at the beginning of the path for non print urls.
+  if (!url.SchemeIs(chrome::kPrintScheme))
+    ++offset;
+
   if (offset < static_cast<int>(spec.size()))
     path->assign(spec.substr(offset));
 }

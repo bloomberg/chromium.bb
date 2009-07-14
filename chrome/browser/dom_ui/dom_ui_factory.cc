@@ -42,11 +42,14 @@ static bool CreateDOMUI(const GURL& url, TabContents* tab_contents,
     return true;
   }
 
+// TODO(mhm) Make sure this ifdef is removed once print is complete.
+#if !defined(GOOGLE_CHROME_BUILD)
   if (url.SchemeIs(chrome::kPrintScheme)) {
     if (new_ui)
       *new_ui = new PrintUI(tab_contents);
     return true;
   }
+#endif
 
 #ifdef CHROME_PERSONALIZATION
   if (Personalization::NeedsDOMUI(url)) {
@@ -106,7 +109,8 @@ static bool CreateDOMUI(const GURL& url, TabContents* tab_contents,
 bool DOMUIFactory::HasDOMUIScheme(const GURL& url) {
   return url.SchemeIs(chrome::kChromeInternalScheme) ||
          url.SchemeIs(chrome::kChromeUIScheme) ||
-         url.SchemeIs(chrome::kExtensionScheme);
+         url.SchemeIs(chrome::kExtensionScheme) ||
+         url.SchemeIs(chrome::kPrintScheme);
 }
 
 // static

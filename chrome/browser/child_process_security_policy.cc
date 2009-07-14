@@ -232,6 +232,9 @@ void ChildProcessSecurityPolicy::GrantDOMUIBindings(int renderer_id) {
   // DOM UI bindings need the ability to request chrome: URLs.
   state->second->GrantScheme(chrome::kChromeUIScheme);
 
+  // DOM UI bindings need the ability to request print: URLs.
+  state->second->GrantScheme(chrome::kPrintScheme);
+
   // DOM UI pages can contain links to file:// URLs.
   state->second->GrantScheme(chrome::kFileScheme);
 }
