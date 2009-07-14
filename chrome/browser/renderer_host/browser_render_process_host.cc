@@ -578,7 +578,7 @@ void BrowserRenderProcessHost::InitVisitedLinks() {
   DCHECK(r);
 
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    channel_->Send(new ViewMsg_VisitedLink_NewTable(handle_for_process));
+    Send(new ViewMsg_VisitedLink_NewTable(handle_for_process));
   }
 }
 
@@ -613,7 +613,7 @@ void BrowserRenderProcessHost::SendUserScriptsUpdate(
   }
 
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
-    channel_->Send(new ViewMsg_UserScripts_UpdatedScripts(handle_for_process));
+    Send(new ViewMsg_UserScripts_UpdatedScripts(handle_for_process));
   }
 }
 
