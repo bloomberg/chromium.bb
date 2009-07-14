@@ -2162,6 +2162,12 @@ each locale. -->
       <message name="IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON" desc="Passwords page view's 'Remove all' button text">
         Remove All
       </message>
+      <message name="IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS" desc ="Passwords page view's confirmation message before removing all stored passwords">
+        Are you sure you want to remove all passwords?
+      </message>
+      <message name="IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS" desc="Passwords page view's remove all confirmation message box window title">
+        Remove all passwords
+      </message>
       <message name="IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON" desc="Text for passwords page view's button to show a stored password">
         Show password
       </message>
@@ -2175,6 +2181,14 @@ each locale. -->
         Remove All
       </message>
 
+      <!-- Confirm MessageBox Dialog -->
+      <message name="IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL" desc="Confirm MessageBox Dialog's 'Yes' button text">
+        Yes
+      </message>
+      <message name="IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL" desc="Confirm MessageBox Dialog's 'No' button text">
+        No
+      </message>
+      
       <!-- Password Manager -->
       <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
         Save password

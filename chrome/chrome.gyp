@@ -1576,6 +1576,8 @@
         'browser/views/clear_browsing_data.h',
         'browser/views/constrained_window_win.cc',
         'browser/views/constrained_window_win.h',
+        'browser/views/confirm_message_box_dialog.cc',
+        'browser/views/confirm_message_box_dialog.h',
         'browser/views/dialog_stubs_gtk.cc',
         'browser/views/dom_view.cc',
         'browser/views/dom_view.h',
