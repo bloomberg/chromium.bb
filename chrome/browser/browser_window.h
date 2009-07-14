@@ -81,6 +81,9 @@ class BrowserWindow {
   // changed.
   virtual void UpdateDevTools() = 0;
 
+  // Tries to focus docked devtools window (when breakpoint is hit).
+  virtual void FocusDevTools() = 0;
+
   // Update any loading animations running in the window. |should_animate| is
   // true if there are tabs loading and the animations should continue, false
   // if there are no active loads and the animations should end.

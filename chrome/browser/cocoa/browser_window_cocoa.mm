@@ -104,6 +104,10 @@ void BrowserWindowCocoa::UpdateDevTools() {
   NOTIMPLEMENTED();
 }
 
+void BrowserWindowCocoa::FocusDevTools() {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::UpdateLoadingAnimations(bool should_animate) {
   [controller_ updateLoadingAnimations:should_animate ? YES : NO];
 }

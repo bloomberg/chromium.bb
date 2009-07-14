@@ -40,6 +40,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void SelectedTabToolbarSizeChanged(bool is_animating);
   virtual void UpdateTitleBar();
   virtual void UpdateDevTools();
+  virtual void FocusDevTools();
   virtual void UpdateLoadingAnimations(bool should_animate);
   virtual void SetStarredState(bool is_starred);
   virtual gfx::Rect GetNormalBounds() const;

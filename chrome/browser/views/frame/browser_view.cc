@@ -668,6 +668,11 @@ void BrowserView::UpdateDevTools() {
   Layout();
 }
 
+void BrowserView::FocusDevTools() {
+  if (devtools_container_->IsVisible())
+    GetRootView()->FocusView(devtools_container_->GetFocusView());
+}
+
 void BrowserView::UpdateLoadingAnimations(bool should_animate) {
   if (should_animate) {
     if (!loading_animation_timer_.IsRunning()) {

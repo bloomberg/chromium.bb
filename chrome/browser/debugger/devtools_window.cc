@@ -127,8 +127,12 @@ void DevToolsWindow::Show() {
 }
 
 void DevToolsWindow::Activate() {
-  if (!docked_ && !browser_->window()->IsActive()) {
-    browser_->window()->Activate();
+  if (!docked_) {
+    if (!browser_->window()->IsActive()) {
+      browser_->window()->Activate();
+    }
+  } else {
+    inspected_window_->FocusDevTools();
   }
 }
 
