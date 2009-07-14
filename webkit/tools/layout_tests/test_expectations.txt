@@ -2766,9 +2766,6 @@ BUG15733 LINUX WIN : LayoutTests/compositing/repaint/overflow-into-content.html 
 
 // WebKit 45431:45444
 BUG15780 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attributes.html = FAIL TIMEOUT
-BUG10384 MAC : LayoutTests/fast/events/frame-tab-focus.html = CRASH FAIL
-BUG11613 LINUX : LayoutTests/fast/forms/tabbing-input-iframe.html = FAIL
-BUG11613 LINUX : LayoutTests/fast/overflow/scrollRevealButton.html = FAIL
 
 // WebKit 45460:45473
 BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-null-char.html = FAIL
