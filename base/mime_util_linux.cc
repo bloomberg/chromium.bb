@@ -510,6 +510,7 @@ void InitDefaultThemes() {
                  &gtk_theme_name, NULL);
     default_themes[1] = IconTheme::LoadTheme(gtk_theme_name);
     default_themes[2] = IconTheme::LoadTheme("gnome");
+    g_free(gtk_theme_name);
   }
   // hicolor needs to be last per icon theme spec.
   default_themes[3] = IconTheme::LoadTheme("hicolor");
