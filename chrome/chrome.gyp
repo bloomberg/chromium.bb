@@ -2134,6 +2134,7 @@
 		},
  	      ],
  	      'sources': [
+      		'<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
       		'<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
                 'browser/metrics/system_metrics_logger.h',
                 'browser/metrics/system_metrics_logger_impl.cc',
@@ -2141,6 +2142,7 @@
   	      ],
 	      'include_dirs': [
 	        '<(INTERMEDIATE_DIR)',
+	        '<(INTERMEDIATE_DIR)/chrome',
  	      ],
               'sources/': [
                 ['include', 'browser/views/new_browser_window_widget.cc'],
