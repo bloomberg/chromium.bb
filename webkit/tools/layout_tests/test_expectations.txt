@@ -2860,8 +2860,7 @@ BUG16676 : LayoutTests/fast/canvas/quadraticCurveTo.xml = FAIL
 BUG13907 SKIP : LayoutTests/media/audio-data-url.html = FAIL
 
 // WebKit merge 42738:45840
-// New tests, need baseline.
-BUG16690 : LayoutTests/fast/dom/replace-first-child.html = FAIL
+// New test, needs baseline.
 BUG16690 SKIP MAC LINUX : LayoutTests/fast/text/international/khmer-selection.html = FAIL
 
 // WebKit merge 42738:45840
