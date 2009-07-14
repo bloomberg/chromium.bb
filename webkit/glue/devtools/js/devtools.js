@@ -43,8 +43,6 @@ devtools.ToolsAgent = function() {
       goog.bind(this.updateFocusedNode_, this);
   RemoteToolsAgent.FrameNavigate =
       goog.bind(this.frameNavigate_, this);
-  RemoteToolsAgent.AddMessageToConsole =
-      goog.bind(this.addMessageToConsole_, this);
   RemoteToolsAgent.DispatchOnClient =
       goog.bind(this.dispatchOnClient_, this);
   RemoteToolsAgent.SetResourcesPanelEnabled =
@@ -126,21 +124,6 @@ devtools.ToolsAgent.prototype.frameNavigate_ = function(url) {
   WebInspector.reset();
   if (profiles != null) {
     WebInspector.panels['profiles'] = profiles;
-  }
-};
-
-
-/**
- * @param {Object} message Message object to add.
- * @see tools_agent.h
- * @private
- */
-devtools.ToolsAgent.prototype.addMessageToConsole_ = function(message) {
-  var console = WebInspector.console;
-  if (console) {
-    console.addMessage(new WebInspector.ConsoleMessage(
-        message.source, message.level, message.line, message.sourceId,
-        undefined, 1, message.text));
   }
 };
 

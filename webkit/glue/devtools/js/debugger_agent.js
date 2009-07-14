@@ -335,6 +335,7 @@ devtools.DebuggerAgent.prototype.createExceptionMessage_ = function(
     url, line, message) {
   this.currentExceptionMessage_ = new WebInspector.ConsoleMessage(
       WebInspector.ConsoleMessage.MessageSource.JS,
+      WebInspector.ConsoleMessage.MessageType.Log,
       WebInspector.ConsoleMessage.MessageLevel.Error,
       line,
       url,

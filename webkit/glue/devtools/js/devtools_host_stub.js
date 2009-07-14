@@ -21,7 +21,7 @@ RemoteDebuggerAgentStub.prototype.DebugBreak = function() {
 
 
 RemoteDebuggerAgentStub.prototype.GetContextId = function() {
-  RemoteDebuggerAgent.DidGetContextId(3);
+  RemoteDebuggerAgent.SetContextId(3);
 };
 
 
