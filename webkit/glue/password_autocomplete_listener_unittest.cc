@@ -153,7 +153,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
 
   password_delegate->SetValue(std::wstring());
   // Simulate the user typing in the first letter of 'alice', a stored username.
-  listener->OnInlineAutocompleteNeeded(NULL, L"a");
+  listener->OnInlineAutocompleteNeeded(NULL, L"a", false, false);
   // Both the username and password delegates should reflect selection
   // of the stored login.
   EXPECT_EQ(username1_, username_delegate->value());
@@ -166,7 +166,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   EXPECT_TRUE(password_delegate->did_call_on_finish());
 
   // Now the user types the next letter of the same username, 'l'.
-  listener->OnInlineAutocompleteNeeded(NULL, L"al");
+  listener->OnInlineAutocompleteNeeded(NULL, L"al", false, false);
   // Now the fields should have the same value, but the selection should have a
   // different start value.
   EXPECT_EQ(username1_, username_delegate->value());
@@ -186,7 +186,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   // was invoked during OnInlineAutocompleteNeeded.
   username_delegate->ResetTestState();
   password_delegate->ResetTestState();
-  listener->OnInlineAutocompleteNeeded(NULL, L"alf");
+  listener->OnInlineAutocompleteNeeded(NULL, L"alf", false, false);
   EXPECT_FALSE(username_delegate->did_set_selection());
   EXPECT_FALSE(username_delegate->did_set_value());
   EXPECT_FALSE(username_delegate->did_call_on_finish());
@@ -194,7 +194,7 @@ TEST_F(PasswordManagerAutocompleteTests, OnInlineAutocompleteNeeded) {
   EXPECT_FALSE(password_delegate->did_call_on_finish());
 
   // Ok, so now the user removes all the text and enters the letter 'b'.
-  listener->OnInlineAutocompleteNeeded(NULL, L"b");
+  listener->OnInlineAutocompleteNeeded(NULL, L"b", false, false);
   // The username and password fields should match the 'bob' entry.
   EXPECT_EQ(username2_, username_delegate->value());
   EXPECT_EQ(password2_, password_delegate->value());
@@ -220,13 +220,13 @@ TEST_F(PasswordManagerAutocompleteTests, TestWaitUsername) {
   // never modify it when wait_for_username is true; only the user can by
   // typing into (in real life) the HTMLInputElement.
   password_delegate->SetValue(std::wstring());
-  listener->OnInlineAutocompleteNeeded(NULL, L"a");
+  listener->OnInlineAutocompleteNeeded(NULL, L"a", false, false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
-  listener->OnInlineAutocompleteNeeded(NULL, L"al");
+  listener->OnInlineAutocompleteNeeded(NULL, L"al", false, false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
-  listener->OnInlineAutocompleteNeeded(NULL, L"alice");
+  listener->OnInlineAutocompleteNeeded(NULL, L"alice", false, false);
   EXPECT_EQ(empty, username_delegate->value());
   EXPECT_EQ(empty, password_delegate->value());
 

@@ -8,7 +8,10 @@
 #include "webkit/glue/password_autocomplete_listener.h"
 #undef LOG
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "webkit/glue/glue_util.h"
+#include "webkit/glue/webframe_impl.h"
+#include "webkit/glue/webview_impl.h"
 
 namespace webkit_glue {
 
@@ -41,6 +44,19 @@ void HTMLInputDelegate::OnFinishedAutocompleting() {
   element_->dispatchFormControlChangeEvent();
 }
 
+void HTMLInputDelegate::RefreshAutofillPopup(
+    const std::vector<std::wstring>& suggestions,
+    int default_suggestion_index) {
+  WebFrameImpl* webframe =
+      WebFrameImpl::FromFrame(element_->document()->frame());
+  WebViewImpl* webview = webframe->GetWebViewImpl();
+  if (!webview)
+    return;
+
+  int64 node_id = reinterpret_cast<int64>(element_);
+  webview->AutofillSuggestionsForNode(node_id, suggestions, 0);
+}
+
 PasswordAutocompleteListener::PasswordAutocompleteListener(
     HTMLInputDelegate* username_delegate,
     HTMLInputDelegate* password_delegate,
@@ -71,12 +87,24 @@ void PasswordAutocompleteListener::OnBlur(WebCore::HTMLInputElement* element,
 
 void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
     WebCore::HTMLInputElement* element,
-    const std::wstring& user_input) {
+    const std::wstring& user_input,
+    bool backspace_or_delete,
+    bool with_suggestion_popup) {
   // If wait_for_username is true, we only autofill the password when
   // the username field is blurred (i.e not inline) with a matching
   // username string entered.
   if (data_.wait_for_username)
     return;
+
+  if (with_suggestion_popup) {
+    std::vector<std::wstring> suggestions;
+    GetSuggestions(user_input, &suggestions);
+    username_delegate_->RefreshAutofillPopup(suggestions, 0);
+  }
+
+  if (backspace_or_delete)
+    return;  // Don't inline autocomplete when the user deleted something.
+
   // Look for any suitable matches to current field text.
   // TODO(timsteele): The preferred login (in basic_data.values) and
   // additional logins could be bundled into the same data structure
@@ -103,7 +131,7 @@ void PasswordAutocompleteListener::OnInlineAutocompleteNeeded(
 bool PasswordAutocompleteListener::TryToMatch(const std::wstring& input,
                                               const std::wstring& username,
                                               const std::wstring& password) {
-  if (input.compare(0, input.length(), username, 0, input.length()) != 0)
+  if (!StartsWith(username, input, false))
     return false;
 
   // Input matches the username, fill in required values.
@@ -113,6 +141,20 @@ bool PasswordAutocompleteListener::TryToMatch(const std::wstring& input,
   password_delegate_->SetValue(password);
   password_delegate_->OnFinishedAutocompleting();
   return true;
+}
+
+void PasswordAutocompleteListener::GetSuggestions(
+    const std::wstring& input, std::vector<std::wstring>* suggestions) {
+  if (StartsWith(data_.basic_data.values[0], input, false))
+    suggestions->push_back(data_.basic_data.values[0]);
+
+  for (PasswordFormDomManager::LoginCollection::iterator it =
+       data_.additional_logins.begin();
+       it != data_.additional_logins.end();
+       ++it) {
+    if (StartsWith(it->first, input, false))
+      suggestions->push_back(it->first);
+  }
 }
 
 }  // webkit_glue

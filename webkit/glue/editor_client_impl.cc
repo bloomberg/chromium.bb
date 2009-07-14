@@ -73,7 +73,7 @@ EditorClientImpl::EditorClientImpl(WebView* web_view)
     : web_view_(static_cast<WebViewImpl*>(web_view)),
       use_editor_delegate_(false),
       in_redo_(false),
-      backspace_pressed_(false),
+      backspace_or_delete_pressed_(false),
       spell_check_this_field_status_(SPELLCHECK_AUTOMATIC),
 // Don't complain about using "this" in initializer list.
 MSVC_PUSH_DISABLE_WARNING(4355)
@@ -749,7 +749,7 @@ bool EditorClientImpl::Autofill(WebCore::HTMLInputElement* input_element,
 
   if (!requires_caret_at_end) {
     DoAutofill(input_element, form_autofill_only, autofill_on_empty_value,
-               false, backspace_pressed_);
+               false, backspace_or_delete_pressed_);
   } else {
     // We post a task for doing the autofill as the caret position is not set
     // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
@@ -763,7 +763,7 @@ bool EditorClientImpl::Autofill(WebCore::HTMLInputElement* input_element,
                                             form_autofill_only,
                                             autofill_on_empty_value,
                                             true,
-                                            backspace_pressed_));
+                                            backspace_or_delete_pressed_));
   }
   return true;
 }
@@ -797,10 +797,7 @@ void EditorClientImpl::DoAutofill(WebCore::HTMLInputElement* input_element,
     if (form_autofill_only)
       return;
 
-    if (backspace)  // No autocomplete for password on backspace.
-      return;
-
-    listener->OnInlineAutocompleteNeeded(input_element, value);
+    listener->OnInlineAutocompleteNeeded(input_element, value, backspace, true);
     return;
   }
 
@@ -811,6 +808,19 @@ void EditorClientImpl::DoAutofill(WebCore::HTMLInputElement* input_element,
       reinterpret_cast<int64>(input_element));
 }
 
+void EditorClientImpl::OnAutofillSuggestionAccepted(
+    WebCore::HTMLInputElement* text_field) {
+  WebFrameImpl* webframe =
+      WebFrameImpl::FromFrame(text_field->document()->frame());
+  webkit_glue::PasswordAutocompleteListener* listener =
+      webframe->GetPasswordListener(text_field);
+  std::wstring value = webkit_glue::StringToStdWString(text_field->value());
+  // Password listeners need to autocomplete other fields that depend on the
+  // input element with autofill suggestions.
+  if (listener)
+    listener->OnInlineAutocompleteNeeded(text_field, value, false, false);
+}
+
 bool EditorClientImpl::doTextFieldCommandFromEvent(
     WebCore::Element* element,
     WebCore::KeyboardEvent* event) {
@@ -818,7 +828,8 @@ bool EditorClientImpl::doTextFieldCommandFromEvent(
   // find if backspace was pressed from textFieldDidBeginEditing and
   // textDidChangeInTextField as when these methods are called the value of the
   // input element already contains the type character.
-  backspace_pressed_ = (event->keyCode() == WebCore::VKEY_BACK);
+  backspace_or_delete_pressed_ = (event->keyCode() == WebCore::VKEY_BACK) ||
+                                 (event->keyCode() == WebCore::VKEY_DELETE);
 
   // The Mac code appears to use this method as a hook to implement special
   // keyboard commands specific to Safari's auto-fill implementation.  We

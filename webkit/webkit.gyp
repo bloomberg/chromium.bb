@@ -4510,7 +4510,6 @@
         'glue/alt_404_page_resource_fetcher.h',
         'glue/alt_error_page_resource_fetcher.cc',
         'glue/alt_error_page_resource_fetcher.h',
-        'glue/autocomplete_input_listener.h',
         'glue/autofill_form.cc',
         'glue/autofill_form.h',
         'glue/back_forward_list_client_impl.cc',

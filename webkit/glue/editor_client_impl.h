@@ -124,6 +124,13 @@ class EditorClientImpl : public WebCore::EditorClient {
   // otherwise.
   virtual bool ShowFormAutofillForNode(WebCore::Node* node);
 
+  // Notification that the text changed in |text_field| due to acceptance of
+  // a suggestion provided by an autofill popup.  Having a separate callback
+  // in this case is a simple way to break the cycle that would otherwise occur
+  // if textDidChangeInTextField was called.
+  virtual void OnAutofillSuggestionAccepted(
+      WebCore::HTMLInputElement* text_field);
+
  private:
   void ModifySelection(WebCore::Frame* frame,
                        WebCore::KeyboardEvent* event);
@@ -173,7 +180,7 @@ class EditorClientImpl : public WebCore::EditorClient {
   bool ShouldSpellcheckByDefault();
 
   // Whether the last entered key was a backspace.
-  bool backspace_pressed_;
+  bool backspace_or_delete_pressed_;
 
   // This flag is set to false if spell check for this editor is manually
   // turned off. The default setting is SPELLCHECK_AUTOMATIC.

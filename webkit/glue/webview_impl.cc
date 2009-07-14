@@ -182,6 +182,11 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
   // WebCore::PopupMenuClient implementation.
   virtual void valueChanged(unsigned listIndex, bool fireEvents = true) {
     text_field_->setValue(suggestions_[listIndex]);
+    EditorClientImpl* editor =
+        static_cast<EditorClientImpl*>(webview_->page()->editorClient());
+    DCHECK(editor);
+    editor->OnAutofillSuggestionAccepted(
+        static_cast<WebCore::HTMLInputElement*>(text_field_.get()));
   }
 
   virtual WebCore::String itemText(unsigned list_index) const {
