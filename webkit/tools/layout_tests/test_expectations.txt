@@ -2868,6 +2868,7 @@ BUG16742 : LayoutTests/media/video-error-abort.html = FAIL
 BUG16754 : LayoutTests/fast/loader/empty-embed-src-attribute.html = CRASH
 BUG16754 : LayoutTests/fast/dom/xmlhttprequest-constructor-in-detached-document.html = CRASH
 BUG16754 : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT
+BUG16754 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = TIMEOUT
 
 // HTML5 DataGrid bindings have not been implemented for V8 yet.
 BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = TIMEOUT
