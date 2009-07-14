@@ -9,6 +9,7 @@
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
