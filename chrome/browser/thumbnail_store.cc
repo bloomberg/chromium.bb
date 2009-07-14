@@ -178,6 +178,9 @@ void ThumbnailStore::CommitCacheToDB(
   if (!db_)
     return;
 
+  int rv = sqlite3_exec(db_, "BEGIN TRANSACTION", NULL, NULL, NULL);
+  DCHECK(rv == SQLITE_OK) << "Failed to begin transaction";
+
   // Delete old thumbnails.
   if (stale_urls.get()) {
     for (std::vector<GURL>::iterator it = stale_urls->data.begin();
@@ -212,6 +215,9 @@ void ThumbnailStore::CommitCacheToDB(
     else
       it->second.dirty_ = false;
   }
+
+  rv = sqlite3_exec(db_, "COMMIT", NULL, NULL, NULL);
+  DCHECK(rv == SQLITE_OK) << "Failed to commit transaction";
 }
 
 void ThumbnailStore::InitializeFromDB(const FilePath& db_name,
