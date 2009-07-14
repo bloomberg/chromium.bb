@@ -25,15 +25,10 @@
 
 // This include list should contain all _messages.h header files so that they
 // can get *MsgLog function etc. This makes ipc logs much more informative.
-#include "chrome/common/render_messages.h"
-#include "chrome/test/automation/automation_messages.h"
-
-#if defined(OS_WIN)
-// Pulling this file in Mac/Linux causes a lot of binaries to need to bring in
-// WebKit and all the dependencies, which results in a very large number of
-// linker errors.
 #include "chrome/common/plugin_messages.h"
-#endif
+#include "chrome/common/render_messages.h"
+#include "chrome/common/worker_messages.h"
+#include "chrome/test/automation/automation_messages.h"
 
 #if defined(OS_POSIX)
 #include "base/string_util.h"
