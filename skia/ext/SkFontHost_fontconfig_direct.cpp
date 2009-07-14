@@ -134,6 +134,14 @@ bool FontConfigDirect::Match(std::string* result_family,
         continue;
       }
 
+      // fontconfig can also return fonts which are unreadable
+      FcChar8* c_filename;
+      if (FcPatternGetString(current, FC_FILE, 0, &c_filename) != FcResultMatch)
+        continue;
+
+      if (access(reinterpret_cast<char*>(c_filename), R_OK) != 0)
+        continue;
+
       match = current;
       break;
     }

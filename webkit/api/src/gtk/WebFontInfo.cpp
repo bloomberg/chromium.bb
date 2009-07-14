@@ -83,6 +83,14 @@ WebString WebFontInfo::familyForChars(const WebUChar* characters, size_t numChar
             || !isScalable)
             continue;
 
+        // fontconfig can also return fonts which are unreadable
+        FcChar8* cFilename;
+        if (FcPatternGetString(current, FC_FILE, 0, &cFilename) != FcResultMatch)
+            continue;
+
+        if (access(reinterpret_cast<char*>(cFilename), R_OK) != 0)
+            continue;
+
         FcChar8* family;
         WebString result;
         if (FcPatternGetString(current, FC_FAMILY, 0, &family) == FcResultMatch) {

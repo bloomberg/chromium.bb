@@ -33,6 +33,9 @@
 
 #include "../WebString.h"
 
+#include <string.h>
+#include <unistd.h>
+
 namespace WebKit {
 
     class WebFontInfo {
