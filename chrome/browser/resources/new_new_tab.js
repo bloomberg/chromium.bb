@@ -447,11 +447,6 @@ var mostVisited = {
       thumbCheckbox.checked = false;
       listCheckbox.checked = false;
     }
-
-    thumbCheckbox.title = localStrings.getString(
-        shownSections & Section.THUMB ? 'hidethumbnails' : 'showthumbnails');
-    listCheckbox.title = localStrings.getString(
-        shownSections & Section.LIST ? 'hidelist' : 'showlist');
   },
 
   dirty_: false,

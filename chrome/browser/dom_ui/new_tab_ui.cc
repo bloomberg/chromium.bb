@@ -335,7 +335,12 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_NEW_TAB_PIN_THUMBNAIL_TOOLTIP));
   localized_strings.SetString(L"unpinthumbnailtooltip",
       l10n_util::GetString(IDS_NEW_TAB_UNPIN_THUMBNAIL_TOOLTIP));
-
+  localized_strings.SetString(L"showhidethumbnailtooltip",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString(L"showhidelisttooltip",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
+  localized_strings.SetString(L"pagedisplaytooltip",
+      l10n_util::GetString(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
 
   SetFontAndTextDirection(&localized_strings);
 
