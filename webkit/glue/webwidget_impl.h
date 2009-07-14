@@ -59,11 +59,6 @@ class WebWidgetImpl : public WebWidget,
   // WebWidgetImpl
   void Init(WebCore::FramelessScrollView* widget,
             const WebKit::WebRect& bounds);
-  void InitWithItems(WebCore::FramelessScrollView* widget,
-                     const WebKit::WebRect& bounds,
-                     int item_height,
-                     int selected_index,
-                     const std::vector<WebMenuItem>& items);
 
   const WebKit::WebSize& size() const { return size_; }
 

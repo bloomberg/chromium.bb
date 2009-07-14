@@ -72,11 +72,6 @@ class PrintWebViewHelper : public WebViewDelegate {
   virtual void DidScrollRect(WebWidget* webwidget, int dx, int dy,
                              const WebKit::WebRect& clip_rect) {}
   virtual void Show(WebWidget* webwidget, WindowOpenDisposition disposition) {}
-  virtual void ShowAsPopupWithItems(WebWidget* webwidget,
-                                    const WebKit::WebRect& bounds,
-                                    int item_height,
-                                    int selected_index,
-                                    const std::vector<WebMenuItem>& items) {}
   virtual void CloseWidgetSoon(WebWidget* webwidget) {}
   virtual void Focus(WebWidget* webwidget) {}
   virtual void Blur(WebWidget* webwidget) {}

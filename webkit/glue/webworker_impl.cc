@@ -69,11 +69,6 @@ class WorkerWebViewDelegate : public WebViewDelegate {
   virtual void SetWindowRect(WebWidget *webwidget,
                              const WebKit::WebRect &rect) { }
   virtual void Show(WebWidget *webwidget, WindowOpenDisposition disposition) { }
-  virtual void ShowAsPopupWithItems(WebWidget *webwidget,
-                                    const WebKit::WebRect &bounds,
-                                    int item_height,
-                                    int selected_index,
-                                    const std::vector<WebMenuItem> &items) { }
   // Tell the loader to load the data into the 'shadow page' synchronously,
   // so we can grab the resulting Document right after load.
   virtual void DidCreateDataSource(WebFrame* frame, WebKit::WebDataSource* ds) {

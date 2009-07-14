@@ -655,6 +655,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int /* route_id */,
                       gfx::Rect /* initial_pos */)
 
+  // Message to show a popup menu using native cocoa controls (Mac only).
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
+                      ViewHostMsg_ShowPopup_Params)
+
   // This message is sent after ViewHostMsg_ShowView to cause the RenderView
   // to run in a modal fashion until it is closed.
   IPC_SYNC_MESSAGE_ROUTED0_0(ViewHostMsg_RunModal)
@@ -1430,10 +1434,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // by ViewHostMsg_OpenChannelTo*.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_ExtensionCloseChannel,
                        int /* port_id */)
-
-  // Message to show a popup menu using native cocoa controls (Mac only).
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
-                      ViewHostMsg_ShowPopup_Params)
 
   // Sent as a result of a focus change in the renderer (if accessibility is
   // enabled), to notify the browser side that its accessibility focus needs to

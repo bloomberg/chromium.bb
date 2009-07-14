@@ -34,6 +34,7 @@
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webappcachecontext.h"
 #include "webkit/glue/webdropdata.h"
+#include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webpreferences.h"

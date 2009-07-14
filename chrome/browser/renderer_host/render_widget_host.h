@@ -38,6 +38,7 @@ class TransportDIB;
 class WebCursor;
 struct ViewHostMsg_PaintRect_Params;
 struct ViewHostMsg_ScrollRect_Params;
+struct ViewHostMsg_ShowPopup_Params;
 
 // This class manages the browser side of a browser<->renderer HWND connection.
 // The HWND lives in the browser process, and windows events are sent over
@@ -396,7 +397,7 @@ class RenderWidgetHost : public IPC::Channel::Listener {
   void OnMsgCreatePluginContainer(gfx::PluginWindowHandle *container);
   void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle container);
 #elif defined(OS_MACOSX)
-  void OnMsgShowPopup(const IPC::Message& message);
+  void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
   void OnMsgGetScreenInfo(gfx::NativeViewId view,
                           WebKit::WebScreenInfo* results);
   void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);

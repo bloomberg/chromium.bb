@@ -52,6 +52,7 @@ class WebMediaPlayerClient;
 class WebURLRequest;
 class WebURLResponse;
 struct WebPoint;
+struct WebPopupMenuInfo;
 struct WebRect;
 struct WebURLError;
 }
@@ -116,6 +117,14 @@ class WebViewDelegate : virtual public WebWidgetDelegate {
   // This method is called to create a new WebWidget to act as a popup
   // (like a drop-down menu).
   virtual WebWidget* CreatePopupWidget(WebView* webview, bool activatable) {
+    return NULL;
+  }
+
+  // Like CreatePopupWidget, except the actual widget is rendered by the
+  // embedder using the supplied info.
+  virtual WebWidget* CreatePopupWidgetWithInfo(
+      WebView* webview,
+      const WebKit::WebPopupMenuInfo& info) {
     return NULL;
   }
 

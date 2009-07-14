@@ -135,7 +135,7 @@ IPC_DEFINE_MESSAGE_MAP(RenderWidgetHost)
   IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
                       OnMsgDestroyPluginContainer)
 #elif defined(OS_MACOSX)
-  IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ShowPopup, OnMsgShowPopup(msg))
+  IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
   IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
   IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
   IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
@@ -752,6 +752,7 @@ void RenderWidgetHost::OnMsgImeUpdateStatus(int control,
 }
 
 #if defined(OS_LINUX)
+
 void RenderWidgetHost::OnMsgCreatePluginContainer(
     gfx::PluginWindowHandle *container) {
   *container = view_->CreatePluginContainer();
@@ -761,18 +762,15 @@ void RenderWidgetHost::OnMsgDestroyPluginContainer(
     gfx::PluginWindowHandle container) {
   view_->DestroyPluginContainer(container);
 }
-#elif defined(OS_MACOSX)
-void RenderWidgetHost::OnMsgShowPopup(const IPC::Message& message) {
-  void* iter = NULL;
-  ViewHostMsg_ShowPopup_Params validated_params;
-  if (!IPC::ParamTraits<ViewHostMsg_ShowPopup_Params>::Read(&message, &iter,
-                                                            &validated_params))
-    return;
 
-  view_->ShowPopupWithItems(validated_params.bounds,
-                            validated_params.item_height,
-                            validated_params.selected_item,
-                            validated_params.popup_items);
+#elif defined(OS_MACOSX)
+
+void RenderWidgetHost::OnMsgShowPopup(
+    const ViewHostMsg_ShowPopup_Params& params) {
+  view_->ShowPopupWithItems(params.bounds,
+                            params.item_height,
+                            params.selected_item,
+                            params.popup_items);
 }
 
 void RenderWidgetHost::OnMsgGetScreenInfo(gfx::NativeViewId view,
@@ -794,6 +792,7 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
     *results = view_->GetRootWindowRect();
   }
 }
+
 #endif
 
 void RenderWidgetHost::PaintBackingStoreRect(TransportDIB* bitmap,

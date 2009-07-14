@@ -128,15 +128,6 @@ void TestWebViewDelegate::Show(WebWidget* webwidget,
   gtk_widget_show_all(window);
 }
 
-void TestWebViewDelegate::ShowAsPopupWithItems(
-    WebWidget* webwidget,
-    const WebRect& bounds,
-    int item_height,
-    int selected_index,
-    const std::vector<WebMenuItem>& items) {
-  NOTREACHED();
-}
-
 void TestWebViewDelegate::CloseWidgetSoon(WebWidget* webwidget) {
   if (webwidget == shell_->webView()) {
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(

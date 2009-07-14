@@ -81,15 +81,6 @@ void TestWebViewDelegate::Show(WebWidget* webwidget, WindowOpenDisposition) {
   }
 }
 
-void TestWebViewDelegate::ShowAsPopupWithItems(
-    WebWidget* webwidget,
-    const WebRect& bounds,
-    int item_height,
-    int selected_index,
-    const std::vector<WebMenuItem>& items) {
-  NOTREACHED();
-}
-
 void TestWebViewDelegate::CloseWidgetSoon(WebWidget* webwidget) {
   if (webwidget == shell_->webView()) {
     PostMessage(shell_->mainWnd(), WM_CLOSE, 0, 0);

@@ -16,6 +16,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "webkit/api/public/WebCursorInfo.h"
+#include "webkit/api/public/WebPopupMenuInfo.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebSize.h"
@@ -30,6 +31,7 @@
 
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
+using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
@@ -84,6 +86,14 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
                                                         activatable);
   widget->Init(opener_id);  // adds reference
   return widget;
+}
+
+void RenderWidget::ConfigureAsExternalPopupMenu(const WebPopupMenuInfo& info) {
+  popup_params_.reset(new ViewHostMsg_ShowPopup_Params);
+  popup_params_->item_height = info.itemHeight;
+  popup_params_->selected_item = info.selectedIndex;
+  for (size_t i = 0; i < info.items.size(); ++i)
+    popup_params_->popup_items.push_back(WebMenuItem(info.items[i]));
 }
 
 void RenderWidget::Init(int32 opener_id) {
@@ -589,24 +599,15 @@ void RenderWidget::Show(WebWidget* webwidget,
     // NOTE: initial_pos_ may still have its default values at this point, but
     // that's okay.  It'll be ignored if as_popup is false, or the browser
     // process will impose a default position otherwise.
-    render_thread_->Send(new ViewHostMsg_ShowWidget(
-        opener_id_, routing_id_, initial_pos_));
+    if (popup_params_.get()) {
+      popup_params_->bounds = initial_pos_;
+      Send(new ViewHostMsg_ShowPopup(routing_id_, *popup_params_));
+      popup_params_.reset();
+    } else {
+      Send(new ViewHostMsg_ShowWidget(opener_id_, routing_id_, initial_pos_));
+    }
     SetPendingWindowRect(initial_pos_);
   }
-}
-
-void RenderWidget::ShowAsPopupWithItems(WebWidget* webwidget,
-                                        const WebRect& bounds,
-                                        int item_height,
-                                        int selected_index,
-                                        const std::vector<WebMenuItem>& items) {
-  ViewHostMsg_ShowPopup_Params params;
-  params.bounds = bounds;
-  params.item_height = item_height;
-  params.selected_item = selected_index;
-  params.popup_items = items;
-
-  Send(new ViewHostMsg_ShowPopup(routing_id_, params));
 }
 
 void RenderWidget::Focus(WebWidget* webwidget) {

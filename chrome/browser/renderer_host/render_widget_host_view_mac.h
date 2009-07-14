@@ -13,8 +13,8 @@
 #include "base/time.h"
 #include "chrome/browser/cocoa/base_view.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-
 #include "webkit/glue/webcursor.h"
+#include "webkit/glue/webmenuitem.h"
 
 class RenderWidgetHostViewMac;
 class RWHVMEditCommandHelper;

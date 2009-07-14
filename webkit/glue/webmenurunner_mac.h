@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/scoped_nsobject.h"
-#include "webkit/glue/webwidget_delegate.h"
+#include "webkit/glue/webmenuitem.h"
 
 
 // WebMenuRunner ---------------------------------------------------------------

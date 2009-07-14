@@ -23,6 +23,7 @@ class BackingStore;
 class RenderProcessHost;
 class RenderWidgetHost;
 class WebCursor;
+struct WebMenuItem;
 
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its

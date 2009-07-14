@@ -233,6 +233,9 @@ class RenderView : public RenderWidget,
                                  bool user_gesture,
                                  const GURL& creator_url);
   virtual WebWidget* CreatePopupWidget(WebView* webview, bool activatable);
+  virtual WebWidget* CreatePopupWidgetWithInfo(
+      WebView* webview,
+      const WebKit::WebPopupMenuInfo& info);
   virtual WebPluginDelegate* CreatePluginDelegate(
       WebView* webview,
       const GURL& url,

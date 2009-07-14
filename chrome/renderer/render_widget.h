@@ -23,7 +23,12 @@
 #include "webkit/glue/webcursor.h"
 
 class RenderThreadBase;
+struct ViewHostMsg_ShowPopup_Params;
 struct WebPluginGeometry;
+
+namespace WebKit {
+struct WebPopupMenuInfo;
+}
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
@@ -38,6 +43,10 @@ class RenderWidget : public IPC::Channel::Listener,
   static RenderWidget* Create(int32 opener_id,
                               RenderThreadBase* render_thread,
                               bool activatable);
+
+  // Called after Create to configure a RenderWidget to be rendered by the host
+  // as a popup menu with the given data.
+  void ConfigureAsExternalPopupMenu(const WebKit::WebPopupMenuInfo& info);
 
   // The routing ID assigned by the RenderProcess. Will be MSG_ROUTING_NONE if
   // not yet assigned a view ID, in which case, the process MUST NOT send
@@ -63,11 +72,6 @@ class RenderWidget : public IPC::Channel::Listener,
   virtual void DidScrollRect(WebWidget* webwidget, int dx, int dy,
                              const WebKit::WebRect& clip_rect);
   virtual void Show(WebWidget* webwidget, WindowOpenDisposition disposition);
-  virtual void ShowAsPopupWithItems(WebWidget* webwidget,
-                                    const WebKit::WebRect& bounds,
-                                    int item_height,
-                                    int selected_index,
-                                    const std::vector<WebMenuItem>& items);
   virtual void CloseWidgetSoon(WebWidget* webwidget);
   virtual void Focus(WebWidget* webwidget);
   virtual void Blur(WebWidget* webwidget);
@@ -207,6 +211,7 @@ class RenderWidget : public IPC::Channel::Listener,
   // We store the current cursor object so we can avoid spamming SetCursor
   // messages.
   WebCursor current_cursor_;
+
   // The size of the RenderWidget.
   gfx::Size size_;
 
@@ -288,6 +293,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // we track the pending size temporarily.
   int pending_window_rect_count_;
   WebKit::WebRect pending_window_rect_;
+
+  scoped_ptr<ViewHostMsg_ShowPopup_Params> popup_params_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

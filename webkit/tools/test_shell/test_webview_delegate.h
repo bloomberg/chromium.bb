@@ -23,6 +23,10 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#if defined(OS_MACOSX)
+#include "webkit/api/public/WebRect.h"
+#include "webkit/api/public/WebPopupMenuInfo.h"
+#endif
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webwidget_delegate.h"
@@ -82,12 +86,17 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
                                  bool user_gesture,
                                  const GURL& creator_url);
   virtual WebWidget* CreatePopupWidget(WebView* webview, bool activatable);
+#if defined(OS_MACOSX)
+  virtual WebWidget* CreatePopupWidgetWithInfo(
+      WebView* webview,
+      const WebKit::WebPopupMenuInfo& info);
+#endif
   virtual WebPluginDelegate* CreatePluginDelegate(
-    WebView* webview,
-    const GURL& url,
-    const std::string& mime_type,
-    const std::string& clsid,
-    std::string* actual_mime_type);
+      WebView* webview,
+      const GURL& url,
+      const std::string& mime_type,
+      const std::string& clsid,
+      std::string* actual_mime_type);
 #if defined(OS_LINUX)
   virtual gfx::PluginWindowHandle CreatePluginContainer();
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle);
@@ -227,11 +236,6 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   virtual void DidScrollRect(WebWidget* webwidget, int dx, int dy,
                              const WebKit::WebRect& clip_rect);
   virtual void Show(WebWidget* webview, WindowOpenDisposition disposition);
-  virtual void ShowAsPopupWithItems(WebWidget* webwidget,
-                                    const WebKit::WebRect& bounds,
-                                    int item_height,
-                                    int selected_index,
-                                    const std::vector<WebMenuItem>& items);
   virtual void CloseWidgetSoon(WebWidget* webwidget);
   virtual void Focus(WebWidget* webwidget);
   virtual void Blur(WebWidget* webwidget);
@@ -347,7 +351,10 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   // true if we want to enable selection of trailing whitespaces
   bool select_trailing_whitespace_enabled_;
 
+  CapturedContextMenuEvents captured_context_menu_events_;
+
   WebCursor current_cursor_;
+
 #if defined(OS_WIN)
   // Classes needed by drag and drop.
   scoped_refptr<TestDragDelegate> drag_delegate_;
@@ -361,7 +368,10 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   GdkCursorType cursor_type_;
 #endif
 
-  CapturedContextMenuEvents captured_context_menu_events_;
+#if defined(OS_MACOSX)
+  scoped_ptr<WebKit::WebPopupMenuInfo> popup_menu_info_;
+  WebKit::WebRect popup_bounds_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };

@@ -22,6 +22,7 @@ struct WindowFeatures;
 
 namespace WebKit {
 struct WebCursorInfo;
+struct WebPopupMenuInfo;
 }
 
 // Handles window-level notifications from WebCore on behalf of a WebView.
@@ -131,10 +132,7 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
   virtual void popupOpened(WebCore::PopupContainer* popup_container,
                            const WebCore::IntRect& bounds,
                            bool activatable,
-                           bool handle_external);
-  void popupOpenedInternal(WebCore::PopupContainer* popup_container,
-                            const WebCore::IntRect& bounds,
-                            bool activatable);
+                           bool handle_externally);
 
   void SetCursor(const WebKit::WebCursorInfo& cursor);
   void SetCursorForPlugin(const WebKit::WebCursorInfo& cursor);
@@ -144,6 +142,9 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
   virtual PassOwnPtr<WebCore::HTMLParserQuirks> createHTMLParserQuirks() { return 0; }
 
  private:
+  void GetPopupMenuInfo(WebCore::PopupContainer* popup_container,
+                        WebKit::WebPopupMenuInfo* info);
+
   WebViewImpl* webview_;  // weak pointer
   bool toolbars_visible_;
   bool statusbar_visible_;

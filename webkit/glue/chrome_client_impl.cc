@@ -39,6 +39,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebKit.h"
+#include "webkit/api/public/WebPopupMenuInfo.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/src/WrappedResourceRequest.h"
@@ -49,11 +50,16 @@ MSVC_POP_WARNING();
 #include "webkit/glue/webview_impl.h"
 #include "webkit/glue/webwidget_impl.h"
 
+using WebCore::PopupContainer;
+using WebCore::PopupItem;
+
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
+using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 using WebKit::WebURLRequest;
+using WebKit::WebVector;
 using WebKit::WrappedResourceRequest;
 
 // Callback class that's given to the WebViewDelegate during a file choose
@@ -544,65 +550,25 @@ void ChromeClientImpl::runOpenPanel(WebCore::Frame* frame,
   delegate->RunFileChooser(multiple_files, string16(), suggestion, chooser);
 }
 
-void ChromeClientImpl::popupOpened(WebCore::PopupContainer* popup_container,
+void ChromeClientImpl::popupOpened(PopupContainer* popup_container,
                                    const WebCore::IntRect& bounds,
                                    bool activatable,
-                                   bool handle_external) {
-  if (handle_external) {
-    // We're going to handle the popup with native controls by the external
-    // embedder.
-    popupOpenedInternal(popup_container, bounds, activatable);
-    return;
-  }
-
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    WebWidgetImpl* webwidget =
-        static_cast<WebWidgetImpl*>(delegate->CreatePopupWidget(webview_,
-                                                                activatable));
-    webwidget->Init(popup_container, webkit_glue::IntRectToWebRect(bounds));
-  }
-}
-
-void ChromeClientImpl::popupOpenedInternal(
-    WebCore::PopupContainer* popup_container,
-    const WebCore::IntRect& bounds,
-    bool activatable) {
+                                   bool handle_externally) {
   WebViewDelegate* delegate = webview_->delegate();
   if (!delegate)
     return;
 
-  WebWidgetImpl* webwidget =
-      static_cast<WebWidgetImpl*>(delegate->CreatePopupWidget(webview_,
-                                                              activatable));
-  // Convert WebKit types for Chromium.
-  std::vector<WebMenuItem> popup_items;
-  const WTF::Vector<WebCore::PopupItem*>& items = popup_container->popupData();
-  for (int i = 0; i < static_cast<int>(items.size()); ++i) {
-    WebMenuItem menu_item;
-    menu_item.label = webkit_glue::StringToString16(items[i]->label);
-    menu_item.enabled = items[i]->enabled;
-    switch (items[i]->type) {
-      case WebCore::PopupItem::TypeOption:
-        menu_item.type = WebMenuItem::OPTION;
-        break;
-      case WebCore::PopupItem::TypeGroup:
-        menu_item.type = WebMenuItem::GROUP;
-        break;
-      case WebCore::PopupItem::TypeSeparator:
-        menu_item.type = WebMenuItem::SEPARATOR;
-        break;
-      default:
-        NOTIMPLEMENTED();
-    }
-    popup_items.push_back(menu_item);
+  WebWidget* webwidget;
+  if (handle_externally) {
+    WebPopupMenuInfo popup_info;
+    GetPopupMenuInfo(popup_container, &popup_info);
+    webwidget = delegate->CreatePopupWidgetWithInfo(webview_, popup_info);
+  } else {
+    webwidget = delegate->CreatePopupWidget(webview_, activatable);
   }
 
-  webwidget->InitWithItems(popup_container,
-                           webkit_glue::IntRectToWebRect(bounds),
-                           popup_container->menuItemHeight(),
-                           popup_container->selectedIndex(),
-                           popup_items);
+  static_cast<WebWidgetImpl*>(webwidget)->Init(
+      popup_container, webkit_glue::IntRectToWebRect(bounds));
 }
 
 void ChromeClientImpl::SetCursor(const WebCursorInfo& cursor) {
@@ -628,4 +594,37 @@ void ChromeClientImpl::formStateDidChange(const WebCore::Node*) {
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate)
     delegate->OnNavStateChanged(webview_);
+}
+
+void ChromeClientImpl::GetPopupMenuInfo(PopupContainer* popup_container,
+                                        WebPopupMenuInfo* info) {
+  const Vector<PopupItem*>& input_items = popup_container->popupData();
+
+  WebVector<WebPopupMenuInfo::Item> output_items(input_items.size());
+
+  for (size_t i = 0; i < input_items.size(); ++i) {
+    const PopupItem& input_item = *input_items[i];
+    WebPopupMenuInfo::Item& output_item = output_items[i];
+
+    output_item.label = webkit_glue::StringToWebString(input_item.label);
+    output_item.enabled = input_item.enabled;
+
+    switch (input_item.type) {
+      case PopupItem::TypeOption:
+        output_item.type = WebPopupMenuInfo::Item::Option;
+        break;
+      case PopupItem::TypeGroup:
+        output_item.type = WebPopupMenuInfo::Item::Group;
+        break;
+      case PopupItem::TypeSeparator:
+        output_item.type = WebPopupMenuInfo::Item::Separator;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  info->itemHeight = popup_container->menuItemHeight();
+  info->selectedIndex = popup_container->selectedIndex();
+  info->items.swap(output_items);
 }

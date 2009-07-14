@@ -107,6 +107,7 @@ using WebKit::WebDragData;
 using WebKit::WebForm;
 using WebKit::WebHistoryItem;
 using WebKit::WebNavigationType;
+using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 using WebKit::WebScriptSource;
 using WebKit::WebSize;
@@ -1756,6 +1757,15 @@ WebWidget* RenderView::CreatePopupWidget(WebView* webview,
   RenderWidget* widget = RenderWidget::Create(routing_id_,
                                               render_thread_,
                                               activatable);
+  return widget->webwidget();
+}
+
+WebWidget* RenderView::CreatePopupWidgetWithInfo(WebView* webview,
+                                                 const WebPopupMenuInfo& info) {
+  RenderWidget* widget = RenderWidget::Create(routing_id_,
+                                              render_thread_,
+                                              true);
+  widget->ConfigureAsExternalPopupMenu(info);
   return widget->webwidget();
 }
 

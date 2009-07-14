@@ -25,7 +25,7 @@
     menu_.reset([[NSMenu alloc] initWithTitle:@""]);
     [menu_ setAutoenablesItems:NO];
     index_ = -1;
-    for (int i = 0; i < static_cast<int>(items.size()); ++i)
+    for (size_t i = 0; i < items.size(); ++i)
       [self addItem:items[i]];
   }
   return self;

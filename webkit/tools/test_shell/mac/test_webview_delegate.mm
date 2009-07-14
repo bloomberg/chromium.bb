@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "webkit/api/public/WebCursorInfo.h"
-#include "webkit/api/public/WebRect.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webview.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -17,11 +16,20 @@
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebCursorInfo;
+using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 
 // WebViewDelegate -----------------------------------------------------------
 
 TestWebViewDelegate::~TestWebViewDelegate() {
+}
+
+WebWidget* TestWebViewDelegate::CreatePopupWidgetWithInfo(
+    WebView* webview,
+    const WebPopupMenuInfo& info) {
+  WebWidget* webwidget = shell_->CreatePopupWidget(webview);
+  popup_menu_info_.reset(new WebPopupMenuInfo(info));
+  return webwidget;
 }
 
 WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
@@ -62,17 +70,24 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
 
 // WebWidgetDelegate ---------------------------------------------------------
 
-void TestWebViewDelegate::Show(WebWidget* webview,
+void TestWebViewDelegate::Show(WebWidget* webwidget,
                                WindowOpenDisposition disposition) {
-}
+  if (!popup_menu_info_.get())
+    return;
+  if (webwidget != shell_->popup())
+    return;
+  // Display a HTML select menu.
 
-// Display a HTML select menu.
-void TestWebViewDelegate::ShowAsPopupWithItems(
-    WebWidget* webview,
-    const WebRect& bounds,
-    int item_height,
-    int selected_index,
-    const std::vector<WebMenuItem>& items) {
+  std::vector<WebMenuItem> items;
+  for (size_t i = 0; i < popup_menu_info_->items.size(); ++i)
+    items.push_back(popup_menu_info_->items[i]);
+
+  int item_height = popup_menu_info_->itemHeight;
+  int selected_index = popup_menu_info_->selectedIndex;
+  popup_menu_info_.reset();  // No longer needed.
+
+  const WebRect& bounds = popup_bounds_;
+
   // Set up the menu position.
   NSView* web_view = shell_->webViewWnd();
   NSRect view_rect = [web_view bounds];
@@ -146,8 +161,7 @@ void TestWebViewDelegate::SetWindowRect(WebWidget* webwidget,
   if (webwidget == shell_->webView()) {
     // ignored
   } else if (webwidget == shell_->popup()) {
-    // MoveWindow(shell_->popupWnd(),
-    //            rect.x(), rect.y(), rect.width(), rect.height(), FALSE);
+    popup_bounds_ = rect;  // The initial position of the popup.
   }
 }
 
