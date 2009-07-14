@@ -82,6 +82,7 @@
     [overlayWindow_ setTitle:@"overlay"];
     [overlayWindow_ setBackgroundColor:[NSColor clearColor]];
     [overlayWindow_ setOpaque:NO];
+    [overlayWindow_ setDelegate:self];
     NSView *contentView = [overlayWindow_ contentView];
     [contentView addSubview:[self tabStripView]];
     cachedContentView_ = [[self window] contentView];

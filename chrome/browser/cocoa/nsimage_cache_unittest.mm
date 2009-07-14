@@ -28,13 +28,13 @@ class NSImageCacheTest : public testing::Test {
 };
 
 TEST_F(NSImageCacheTest, LookupFound) {
-  EXPECT_TRUE(nsimage_cache::ImageNamed(@"back.pdf") != nil)
+  EXPECT_TRUE(nsimage_cache::ImageNamed(@"back_Template.pdf") != nil)
       << "Failed to find the toolbar image?";
 }
 
 TEST_F(NSImageCacheTest, LookupCached) {
-  EXPECT_EQ(nsimage_cache::ImageNamed(@"back.pdf"),
-            nsimage_cache::ImageNamed(@"back.pdf"))
+  EXPECT_EQ(nsimage_cache::ImageNamed(@"back_Template.pdf"),
+            nsimage_cache::ImageNamed(@"back_Template.pdf"))
     << "Didn't get the same NSImage back?";
 }
 
@@ -44,11 +44,11 @@ TEST_F(NSImageCacheTest, LookupMiss) {
 }
 
 TEST_F(NSImageCacheTest, LookupFoundAndClear) {
-  NSImage *first = nsimage_cache::ImageNamed(@"back.pdf");
+  NSImage *first = nsimage_cache::ImageNamed(@"back_Template.pdf");
   EXPECT_TRUE(first != nil)
       << "Failed to find the toolbar image?";
   nsimage_cache::Clear();
-  EXPECT_NE(first, nsimage_cache::ImageNamed(@"back.pdf"))
+  EXPECT_NE(first, nsimage_cache::ImageNamed(@"back_Template.pdf"))
       << "how'd we get the same image after a cache clear?";
 }
 
