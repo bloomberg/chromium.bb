@@ -1461,12 +1461,16 @@ void RenderView::DocumentElementAvailable(WebFrame* frame) {
         frame, UserScript::DOCUMENT_START);
 }
 
-void RenderView::DidCreateScriptContext(WebFrame* webframe) {
+void RenderView::DidCreateScriptContextForFrame(WebFrame* webframe) {
   EventBindings::HandleContextCreated(webframe);
 }
 
-void RenderView::DidDestroyScriptContext(WebFrame* webframe) {
+void RenderView::DidDestroyScriptContextForFrame(WebFrame* webframe) {
   EventBindings::HandleContextDestroyed(webframe);
+}
+
+void RenderView::DidCreateIsolatedScriptContext(WebFrame* webframe) {
+  EventBindings::HandleContextCreated(webframe);
 }
 
 WindowOpenDisposition RenderView::DispositionForNavigationAction(

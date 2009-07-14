@@ -61,9 +61,15 @@ struct ContextInfo {
   v8::Persistent<v8::Context> context;
   std::string extension_id;  // empty if the context is not an extension
 
+  // If this context is a content script, parent will be the frame that it
+  // was injected in.  This is empty if the context is not a content script.
+  v8::Persistent<v8::Context> parent_context;
+
   ContextInfo(v8::Persistent<v8::Context> context,
-              const std::string& extension_id)
-      : context(context), extension_id(extension_id) {}
+              const std::string& extension_id,
+              v8::Persistent<v8::Context> parent_context)
+      : context(context), extension_id(extension_id),
+        parent_context(parent_context) {}
 };
 typedef std::list< linked_ptr<ContextInfo> > ContextList;
 

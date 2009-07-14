@@ -49,8 +49,18 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   virtual void windowObjectCleared();
   virtual void documentElementAvailable();
 
-  virtual void didCreateScriptContext();
-  virtual void didDestroyScriptContext();
+  // TODO(mpcomplete): remove these when we pick up webkit r45871
+  virtual void didCreateScriptContext() { didCreateScriptContextForFrame(); }
+  virtual void didDestroyScriptContext() { didDestroyScriptContextForFrame(); }
+
+  // A frame's V8 context was created or destroyed.
+  virtual void didCreateScriptContextForFrame();
+  virtual void didDestroyScriptContextForFrame();
+
+  // A context untied to a frame was created (through evaluateInNewContext).
+  // This context is not tied to the lifetime of its frame, and is destroyed
+  // in garbage collection.
+  virtual void didCreateIsolatedScriptContext();
 
   virtual bool hasWebView() const; // mainly for assertions
   virtual bool hasFrameView() const; // ditto

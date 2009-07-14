@@ -231,11 +231,15 @@ class WebViewDelegate : virtual public WebWidgetDelegate {
   // Notifies that a new script context has been created for this frame.
   // This is similar to WindowObjectCleared but only called once per frame
   // context.
-  virtual void DidCreateScriptContext(WebFrame* webframe) {
+  virtual void DidCreateScriptContextForFrame(WebFrame* webframe) {
   }
 
   // Notifies that this frame's script context has been destroyed.
-  virtual void DidDestroyScriptContext(WebFrame* webframe) {
+  virtual void DidDestroyScriptContextForFrame(WebFrame* webframe) {
+  }
+
+  // Notifies that a garbage-collected context was created - content scripts.
+  virtual void DidCreateIsolatedScriptContext(WebFrame* webframe) {
   }
 
   // PolicyDelegate ----------------------------------------------------------

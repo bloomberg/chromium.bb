@@ -118,14 +118,61 @@ RenderThreadBase* EventBindings::GetRenderThread() {
   return render_thread ? render_thread : RenderThread::current();
 }
 
+static void HandleContextDestroyed(ContextList::iterator context_iter) {
+  // Notify the bindings that they're going away.
+  CallFunctionInContext((*context_iter)->context, "dispatchOnUnload", 0, NULL);
+
+  // Remove all pending requests for this context.
+  PendingRequestMap& pending_requests = GetPendingRequestMap();
+  for (PendingRequestMap::iterator it = pending_requests.begin();
+       it != pending_requests.end(); ) {
+    PendingRequestMap::iterator current = it++;
+    if (current->second->context == (*context_iter)->context) {
+      current->second->context.Dispose();
+      current->second->context.Clear();
+      pending_requests.erase(current);
+    }
+  }
+
+  // Unload any content script contexts for this frame.
+  for (ContextList::iterator it = GetContexts().begin();
+       it != GetContexts().end(); ) {
+    ContextList::iterator current = it++;
+    if ((*current)->parent_context == (*context_iter)->context)
+      HandleContextDestroyed(current);
+  }
+
+  // Remove it from our registered contexts.
+  (*context_iter)->context.ClearWeak();
+  (*context_iter)->context.Dispose();
+  (*context_iter)->context.Clear();
+  GetContexts().erase(context_iter);
+}
+
+static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
+                                         void*)
+{
+  for (ContextList::iterator it = GetContexts().begin();
+       it != GetContexts().end(); ++it) {
+    if ((*it)->context == context) {
+      HandleContextDestroyed(it);
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
 void EventBindings::HandleContextCreated(WebFrame* frame) {
   if (!bindings_registered)
     return;
 
   v8::HandleScope handle_scope;
-  v8::Local<v8::Context> context = frame->GetScriptContext();
+  ContextList& contexts = GetContexts();
+  v8::Local<v8::Context> frame_context = frame->GetScriptContext();
+  v8::Local<v8::Context> context = v8::Context::GetCurrent();
   DCHECK(!context.IsEmpty());
-  DCHECK(bindings_utils::FindContext(context) == GetContexts().end());
+  DCHECK(bindings_utils::FindContext(context) == contexts.end());
 
   GURL url = frame->GetView()->GetMainFrame()->GetURL();
   std::string extension_id;
@@ -134,8 +181,19 @@ void EventBindings::HandleContextCreated(WebFrame* frame) {
 
   v8::Persistent<v8::Context> persistent_context =
       v8::Persistent<v8::Context>::New(context);
-  GetContexts().push_back(linked_ptr<ContextInfo>(
-      new ContextInfo(persistent_context, extension_id)));
+  v8::Persistent<v8::Context> parent_context;
+
+  if (frame_context != context) {
+    // The new context doesn't belong to the frame: it's a content script.
+    DCHECK(bindings_utils::FindContext(frame_context) != contexts.end());
+    parent_context = v8::Persistent<v8::Context>::New(frame_context);
+    // Content script contexts can get GCed before their frame goes away, so
+    // set up a GC callback.
+    persistent_context.MakeWeak(NULL, &ContextWeakReferenceCallback);
+  }
+
+  contexts.push_back(linked_ptr<ContextInfo>(
+      new ContextInfo(persistent_context, extension_id, parent_context)));
 
   v8::Handle<v8::Value> argv[1];
   argv[0] = v8::String::New(extension_id.c_str());
@@ -151,28 +209,9 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
   v8::Local<v8::Context> context = frame->GetScriptContext();
   DCHECK(!context.IsEmpty());
 
-  ContextList::iterator it = bindings_utils::FindContext(context);
-  DCHECK(it != GetContexts().end());
-
-  // Notify the bindings that they're going away.
-  CallFunctionInContext(context, "dispatchOnUnload", 0, NULL);
-
-  // Remove all pending requests for this context.
-  PendingRequestMap& pending_requests = GetPendingRequestMap();
-  for (PendingRequestMap::iterator it = pending_requests.begin();
-       it != pending_requests.end(); ) {
-    PendingRequestMap::iterator current = it++;
-    if (current->second->context == context) {
-      current->second->context.Dispose();
-      current->second->context.Clear();
-      pending_requests.erase(current);
-    }
-  }
-
-  // Remove it from our registered contexts.
-  (*it)->context.Dispose();
-  (*it)->context.Clear();
-  GetContexts().erase(it);
+  ContextList::iterator context_iter = bindings_utils::FindContext(context);
+  DCHECK(context_iter != GetContexts().end());
+  ::HandleContextDestroyed(context_iter);
 }
 
 // static
