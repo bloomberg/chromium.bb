@@ -130,7 +130,7 @@ class Texture2DGL : public Texture2D {
 
   // A bitmap used to back the NPOT textures on POT-only hardware, and to back
   // the pixel buffer for Lock().
-  Bitmap backing_bitmap_;
+  Bitmap::Ref backing_bitmap_;
 
   // Bitfield that indicates mip levels that are currently stored in the
   // backing bitmap.
@@ -207,7 +207,7 @@ class TextureCUBEGL : public TextureCUBE {
 
   // A bitmap used to back the NPOT textures on POT-only hardware, and to back
   // the pixel buffer for Lock().
-  Bitmap backing_bitmap_;
+  Bitmap::Ref backing_bitmap_;
 
   // Bitfields that indicates mip levels that are currently stored in the
   // backing bitmap, one per face.

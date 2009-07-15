@@ -269,7 +269,8 @@ Texture2DGL::Texture2DGL(ServiceLocator* service_locator,
       renderer_(static_cast<RendererGL*>(
           service_locator->GetService<Renderer>())),
       gl_texture_(texture),
-      has_levels_(0) {
+      has_levels_(0),
+      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
   DLOG(INFO) << "Texture2DGL Construct from GLint";
   DCHECK_NE(format(), Texture::UNKNOWN_FORMAT);
 }
@@ -331,21 +332,21 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
                                          enable_render_surfaces);
 
   // Setup the backing bitmap.
-  texture->backing_bitmap_.SetFrom(bitmap);
-  if (texture->backing_bitmap_.image_data()) {
+  texture->backing_bitmap_->SetFrom(bitmap);
+  if (texture->backing_bitmap_->image_data()) {
     if (resize_to_pot) {
       texture->has_levels_ = (1 << bitmap->num_mipmaps()) - 1;
     } else {
-      texture->backing_bitmap_.FreeData();
+      texture->backing_bitmap_->FreeData();
     }
   } else {
     // If no backing store was provided to the routine, and the hardware does
     // not support npot textures, allocate a 0-initialized mip-chain here
     // for use during Texture2DGL::Lock.
     if (resize_to_pot) {
-      texture->backing_bitmap_.AllocateData();
-      memset(texture->backing_bitmap_.image_data(), 0,
-             texture->backing_bitmap_.GetTotalSize());
+      texture->backing_bitmap_->AllocateData();
+      memset(texture->backing_bitmap_->image_data(), 0,
+             texture->backing_bitmap_->GetTotalSize());
       texture->has_levels_ = (1 << bitmap->num_mipmaps()) - 1;
     }
   }
@@ -355,14 +356,14 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
 
 void Texture2DGL::UpdateBackedMipLevel(unsigned int level) {
   DCHECK_LT(level, levels());
-  DCHECK(backing_bitmap_.image_data());
-  DCHECK_EQ(backing_bitmap_.width(), width());
-  DCHECK_EQ(backing_bitmap_.height(), height());
-  DCHECK_EQ(backing_bitmap_.format(), format());
+  DCHECK(backing_bitmap_->image_data());
+  DCHECK_EQ(backing_bitmap_->width(), width());
+  DCHECK_EQ(backing_bitmap_->height(), height());
+  DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK(HasLevel(level));
   glBindTexture(GL_TEXTURE_2D, gl_texture_);
   UpdateGLImageFromBitmap(GL_TEXTURE_2D, level, TextureCUBE::FACE_POSITIVE_X,
-                          backing_bitmap_, resize_to_pot_);
+                          *backing_bitmap_.Get(), resize_to_pot_);
 }
 
 Texture2DGL::~Texture2DGL() {
@@ -392,11 +393,11 @@ bool Texture2DGL::Lock(int level, void** data) {
         << "\" is already locked.";
     return false;
   }
-  if (!backing_bitmap_.image_data()) {
+  if (!backing_bitmap_->image_data()) {
     DCHECK_EQ(has_levels_, 0);
-    backing_bitmap_.Allocate(format(), width(), height(), levels(), false);
+    backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
   }
-  *data = backing_bitmap_.GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
+  *data = backing_bitmap_->GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
   if (!HasLevel(level)) {
     // TODO: add some API so we don't have to copy back the data if we
     // will rewrite it all.
@@ -435,7 +436,7 @@ bool Texture2DGL::Unlock(int level) {
   UpdateBackedMipLevel(level);
   locked_levels_ &= ~(1 << level);
   if (!resize_to_pot_ && (locked_levels_ == 0)) {
-    backing_bitmap_.FreeData();
+    backing_bitmap_->FreeData();
     has_levels_ = 0;
   }
   CHECK_GL_ERROR();
@@ -495,7 +496,8 @@ TextureCUBEGL::TextureCUBEGL(ServiceLocator* service_locator,
                   enable_render_surfaces),
       renderer_(static_cast<RendererGL*>(
           service_locator->GetService<Renderer>())),
-      gl_texture_(texture) {
+      gl_texture_(texture),
+      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
   DLOG(INFO) << "TextureCUBEGL Construct";
   for (unsigned int i = 0; i < 6; ++i) {
     has_levels_[i] = 0;
@@ -574,23 +576,23 @@ TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
                                              resize_to_pot,
                                              enable_render_surfaces);
   // Setup the backing bitmap, and upload the data if we have any.
-  texture->backing_bitmap_.SetFrom(bitmap);
-  if (texture->backing_bitmap_.image_data()) {
+  texture->backing_bitmap_->SetFrom(bitmap);
+  if (texture->backing_bitmap_->image_data()) {
     if (resize_to_pot) {
       for (unsigned int face = 0; face < 6; ++face) {
         texture->has_levels_[face] = (1 << bitmap->num_mipmaps()) - 1;
       }
     } else {
-      texture->backing_bitmap_.FreeData();
+      texture->backing_bitmap_->FreeData();
     }
   } else {
     // If no backing store was provided to the routine, and the hardware does
     // not support npot textures, allocate a 0-initialized mip-chain here
     // for use during TextureCUBEGL::Lock.
     if (resize_to_pot) {
-      texture->backing_bitmap_.AllocateData();
-      memset(texture->backing_bitmap_.image_data(), 0,
-             texture->backing_bitmap_.GetTotalSize());
+      texture->backing_bitmap_->AllocateData();
+      memset(texture->backing_bitmap_->image_data(), 0,
+             texture->backing_bitmap_->GetTotalSize());
       for (unsigned int face = 0; face < 6; ++face) {
         texture->has_levels_[face] = (1 << bitmap->num_mipmaps()) - 1;
       }
@@ -604,14 +606,15 @@ TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
 void TextureCUBEGL::UpdateBackedMipLevel(unsigned int level,
                                          TextureCUBE::CubeFace face) {
   DCHECK_LT(level, levels());
-  DCHECK(backing_bitmap_.image_data());
-  DCHECK(backing_bitmap_.is_cubemap());
-  DCHECK_EQ(backing_bitmap_.width(), edge_length());
-  DCHECK_EQ(backing_bitmap_.height(), edge_length());
-  DCHECK_EQ(backing_bitmap_.format(), format());
+  DCHECK(backing_bitmap_->image_data());
+  DCHECK(backing_bitmap_->is_cubemap());
+  DCHECK_EQ(backing_bitmap_->width(), edge_length());
+  DCHECK_EQ(backing_bitmap_->height(), edge_length());
+  DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK(HasLevel(level, face));
   glBindTexture(GL_TEXTURE_2D, gl_texture_);
-  UpdateGLImageFromBitmap(kCubemapFaceList[face], level, face, backing_bitmap_,
+  UpdateGLImageFromBitmap(kCubemapFaceList[face], level, face,
+                          *backing_bitmap_.Get(),
                           resize_to_pot_);
 }
 
@@ -667,14 +670,14 @@ bool TextureCUBEGL::Lock(CubeFace face, int level, void** data) {
         << "\" is already locked.";
     return false;
   }
-  if (!backing_bitmap_.image_data()) {
+  if (!backing_bitmap_->image_data()) {
     for (unsigned int i = 0; i < 6; ++i) {
       DCHECK_EQ(has_levels_[i], 0);
     }
-    backing_bitmap_.Allocate(format(), edge_length(), edge_length(),
+    backing_bitmap_->Allocate(format(), edge_length(), edge_length(),
                              levels(), true);
   }
-  *data = backing_bitmap_.GetMipData(level, face);
+  *data = backing_bitmap_->GetMipData(level, face);
   GLenum gl_target = kCubemapFaceList[face];
   if (!HasLevel(level, face)) {
     // TODO: add some API so we don't have to copy back the data if we
@@ -722,7 +725,7 @@ bool TextureCUBEGL::Unlock(CubeFace face, int level) {
       }
     }
     if (!has_locked_level) {
-      backing_bitmap_.FreeData();
+      backing_bitmap_->FreeData();
       for (unsigned int i = 0; i < 6; ++i) {
         has_levels_[i] = 0;
       }

@@ -229,9 +229,9 @@ Texture2DD3D9::Texture2DD3D9(ServiceLocator* service_locator,
                 bitmap.CheckAlphaIsOne(),
                 resize_to_pot,
                 enable_render_surfaces),
-      d3d_texture_(tex) {
+      d3d_texture_(tex),
+      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
   DCHECK(tex);
-  backing_bitmap_ = Bitmap::Ref(new Bitmap(service_locator));
 }
 
 // Attempts to create a IDirect3DTexture9 with the given specs.  If the creation
@@ -487,8 +487,8 @@ TextureCUBED3D9::TextureCUBED3D9(ServiceLocator* service_locator,
                   bitmap.CheckAlphaIsOne(),
                   resize_to_pot,
                   enable_render_surfaces),
-      d3d_cube_texture_(tex) {
-  backing_bitmap_ = Bitmap::Ref(new Bitmap(service_locator));
+      d3d_cube_texture_(tex),
+      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
 }
 
 // Attempts to create a D3D9 CubeTexture with the given specs.  If creation

@@ -236,7 +236,8 @@ Texture2DCB::Texture2DCB(ServiceLocator* service_locator,
       renderer_(static_cast<RendererCB*>(
                     service_locator->GetService<Renderer>())),
       resource_id_(resource_id),
-      has_levels_(0) {
+      has_levels_(0),
+      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
   DCHECK_NE(format(), Texture::UNKNOWN_FORMAT);
 }
 
@@ -301,12 +302,12 @@ Texture2DCB* Texture2DCB::Create(ServiceLocator* service_locator,
                                          enable_render_surfaces);
 
   // Setup the backing bitmap.
-  texture->backing_bitmap_.SetFrom(bitmap);
-  if (texture->backing_bitmap_.image_data()) {
+  texture->backing_bitmap_->SetFrom(bitmap);
+  if (texture->backing_bitmap_->image_data()) {
     if (resize_to_pot) {
       texture->has_levels_ = (1 << bitmap->num_mipmaps()) - 1;
     } else {
-      texture->backing_bitmap_.FreeData();
+      texture->backing_bitmap_->FreeData();
     }
   }
   return texture;
@@ -327,21 +328,21 @@ bool Texture2DCB::Lock(int level, void** data) {
         << "\" is already locked.";
     return false;
   }
-  if (!backing_bitmap_.image_data()) {
+  if (!backing_bitmap_->image_data()) {
     DCHECK_EQ(has_levels_, 0);
-    backing_bitmap_.Allocate(format(), width(), height(), levels(), false);
+    backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
   }
-  *data = backing_bitmap_.GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
+  *data = backing_bitmap_->GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
   if (!HasLevel(level)) {
     DCHECK(!resize_to_pot_);
-    DCHECK_EQ(backing_bitmap_.width(), width());
-    DCHECK_EQ(backing_bitmap_.height(), height());
-    DCHECK_EQ(backing_bitmap_.format(), format());
-    DCHECK_GT(backing_bitmap_.num_mipmaps(), level);
-    DCHECK(!backing_bitmap_.is_cubemap());
+    DCHECK_EQ(backing_bitmap_->width(), width());
+    DCHECK_EQ(backing_bitmap_->height(), height());
+    DCHECK_EQ(backing_bitmap_->format(), format());
+    DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
+    DCHECK(!backing_bitmap_->is_cubemap());
     CopyBackResourceToBitmap(renderer_, resource_id_, level,
                              TextureCUBE::FACE_POSITIVE_X,
-                             backing_bitmap_);
+                             *backing_bitmap_.Get());
     has_levels_ |= 1 << level;
   }
   locked_levels_ |= 1 << level;
@@ -363,19 +364,19 @@ bool Texture2DCB::Unlock(int level) {
         << "\" is not locked.";
     return false;
   }
-  DCHECK(backing_bitmap_.image_data());
-  DCHECK_EQ(backing_bitmap_.width(), width());
-  DCHECK_EQ(backing_bitmap_.height(), height());
-  DCHECK_EQ(backing_bitmap_.format(), format());
-  DCHECK_GT(backing_bitmap_.num_mipmaps(), level);
-  DCHECK(!backing_bitmap_.is_cubemap());
+  DCHECK(backing_bitmap_->image_data());
+  DCHECK_EQ(backing_bitmap_->width(), width());
+  DCHECK_EQ(backing_bitmap_->height(), height());
+  DCHECK_EQ(backing_bitmap_->format(), format());
+  DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
+  DCHECK(!backing_bitmap_->is_cubemap());
   DCHECK(HasLevel(level));
   UpdateResourceFromBitmap(renderer_, resource_id_, level,
                            TextureCUBE::FACE_POSITIVE_X,
-                           backing_bitmap_, resize_to_pot_);
+                           *backing_bitmap_.Get(), resize_to_pot_);
   locked_levels_ &= ~(1 << level);
   if (!resize_to_pot_ && (locked_levels_ == 0)) {
-    backing_bitmap_.FreeData();
+    backing_bitmap_->FreeData();
     has_levels_ = 0;
   }
   return true;
@@ -407,7 +408,8 @@ TextureCUBECB::TextureCUBECB(ServiceLocator* service_locator,
                   enable_render_surfaces),
       renderer_(static_cast<RendererCB*>(
                     service_locator->GetService<Renderer>())),
-      resource_id_(resource_id) {
+      resource_id_(resource_id),
+      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
   for (unsigned int i = 0; i < 6; ++i) {
     has_levels_[i] = 0;
   }
@@ -474,14 +476,14 @@ TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
                         resize_to_pot, enable_render_surfaces);
 
   // Setup the backing bitmap.
-  texture->backing_bitmap_.SetFrom(bitmap);
-  if (texture->backing_bitmap_.image_data()) {
+  texture->backing_bitmap_->SetFrom(bitmap);
+  if (texture->backing_bitmap_->image_data()) {
     if (resize_to_pot) {
       for (unsigned int face = 0; face < 6; ++face) {
         texture->has_levels_[face] = (1 << bitmap->num_mipmaps()) - 1;
       }
     } else {
-      texture->backing_bitmap_.FreeData();
+      texture->backing_bitmap_->FreeData();
     }
   }
   return texture;
@@ -503,26 +505,26 @@ bool TextureCUBECB::Lock(CubeFace face, int level, void** data) {
         << "\" is already locked.";
     return false;
   }
-  if (!backing_bitmap_.image_data()) {
+  if (!backing_bitmap_->image_data()) {
     for (unsigned int i = 0; i < 6; ++i) {
       DCHECK_EQ(has_levels_[i], 0);
     }
-    backing_bitmap_.Allocate(format(), edge_length(), edge_length(),
+    backing_bitmap_->Allocate(format(), edge_length(), edge_length(),
                              levels(), true);
   }
-  *data = backing_bitmap_.GetMipData(level, face);
+  *data = backing_bitmap_->GetMipData(level, face);
   if (!HasLevel(level, face)) {
     // TODO: add some API so we don't have to copy back the data if we
     // will rewrite it all.
     DCHECK(!resize_to_pot_);
-    DCHECK_EQ(backing_bitmap_.width(), edge_length());
-    DCHECK_EQ(backing_bitmap_.height(), edge_length());
-    DCHECK_EQ(backing_bitmap_.format(), format());
-    DCHECK_GT(backing_bitmap_.num_mipmaps(), level);
-    DCHECK(backing_bitmap_.is_cubemap());
+    DCHECK_EQ(backing_bitmap_->width(), edge_length());
+    DCHECK_EQ(backing_bitmap_->height(), edge_length());
+    DCHECK_EQ(backing_bitmap_->format(), format());
+    DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
+    DCHECK(backing_bitmap_->is_cubemap());
     CopyBackResourceToBitmap(renderer_, resource_id_, level,
                              TextureCUBE::FACE_POSITIVE_X,
-                             backing_bitmap_);
+                             *backing_bitmap_.Get());
     has_levels_[face] |= 1 << level;
   }
   locked_levels_[face] |= 1 << level;
@@ -544,15 +546,15 @@ bool TextureCUBECB::Unlock(CubeFace face, int level) {
         << "\" is not locked.";
     return false;
   }
-  DCHECK(backing_bitmap_.image_data());
-  DCHECK_EQ(backing_bitmap_.width(), edge_length());
-  DCHECK_EQ(backing_bitmap_.height(), edge_length());
-  DCHECK_EQ(backing_bitmap_.format(), format());
-  DCHECK_GT(backing_bitmap_.num_mipmaps(), level);
-  DCHECK(backing_bitmap_.is_cubemap());
+  DCHECK(backing_bitmap_->image_data());
+  DCHECK_EQ(backing_bitmap_->width(), edge_length());
+  DCHECK_EQ(backing_bitmap_->height(), edge_length());
+  DCHECK_EQ(backing_bitmap_->format(), format());
+  DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
+  DCHECK(backing_bitmap_->is_cubemap());
   DCHECK(HasLevel(level, face));
   UpdateResourceFromBitmap(renderer_, resource_id_, level, face,
-                           backing_bitmap_, resize_to_pot_);
+                           *backing_bitmap_.Get(), resize_to_pot_);
   locked_levels_[face] &= ~(1 << level);
   if (!resize_to_pot_) {
     bool has_locked_level = false;
@@ -563,7 +565,7 @@ bool TextureCUBECB::Unlock(CubeFace face, int level) {
       }
     }
     if (!has_locked_level) {
-      backing_bitmap_.FreeData();
+      backing_bitmap_->FreeData();
       for (unsigned int i = 0; i < 6; ++i) {
         has_levels_[i] = 0;
       }

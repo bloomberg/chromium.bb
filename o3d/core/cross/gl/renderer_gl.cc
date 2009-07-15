@@ -1523,13 +1523,13 @@ Texture2D::Ref RendererGL::CreatePlatformSpecificTexture2D(
     bool enable_render_surfaces) {
   DLOG(INFO) << "RendererGL CreateTexture2D";
   MakeCurrentLazy();
-  Bitmap bitmap;
-  bitmap.set_format(format);
-  bitmap.set_width(width);
-  bitmap.set_height(height);
-  bitmap.set_num_mipmaps(levels);
+  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
+  bitmap->set_format(format);
+  bitmap->set_width(width);
+  bitmap->set_height(height);
+  bitmap->set_num_mipmaps(levels);
   return Texture2D::Ref(Texture2DGL::Create(service_locator(),
-                                            &bitmap,
+                                            bitmap,
                                             enable_render_surfaces));
 }
 
@@ -1540,14 +1540,14 @@ TextureCUBE::Ref RendererGL::CreatePlatformSpecificTextureCUBE(
     bool enable_render_surfaces) {
   DLOG(INFO) << "RendererGL CreateTextureCUBE";
   MakeCurrentLazy();
-  Bitmap bitmap;
-  bitmap.set_format(format);
-  bitmap.set_width(edge_length);
-  bitmap.set_height(edge_length);
-  bitmap.set_num_mipmaps(levels);
-  bitmap.set_is_cubemap(true);
+  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
+  bitmap->set_format(format);
+  bitmap->set_width(edge_length);
+  bitmap->set_height(edge_length);
+  bitmap->set_num_mipmaps(levels);
+  bitmap->set_is_cubemap(true);
   return TextureCUBE::Ref(TextureCUBEGL::Create(service_locator(),
-                                                &bitmap,
+                                                bitmap,
                                                 enable_render_surfaces));
 }
 
