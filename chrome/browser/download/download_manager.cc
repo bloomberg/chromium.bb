@@ -127,6 +127,7 @@ DownloadItem::DownloadItem(const DownloadCreateInfo& info)
       is_paused_(false),
       open_when_complete_(false),
       safety_state_(SAFE),
+      auto_opened_(false),
       original_name_(info.original_name),
       render_process_id_(-1),
       request_id_(-1) {
@@ -160,6 +161,7 @@ DownloadItem::DownloadItem(int32 download_id,
       is_paused_(false),
       open_when_complete_(false),
       safety_state_(is_dangerous ? DANGEROUS : SAFE),
+      auto_opened_(false),
       original_name_(original_name),
       render_process_id_(render_process_id),
       request_id_(request_id) {
@@ -829,26 +831,26 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
   if (it != dangerous_finished_.end())
     dangerous_finished_.erase(it);
 
-  // Notify our observers that we are complete (the call to Finished() set the
-  // state to complete but did not notify).
-  download->UpdateObservers();
-
-  // Handle chrome extensions explicitly and skip the shell execute.
-  if (Extension::IsExtension(download->full_path())) {
-    OpenChromeExtension(download->full_path());
-    return;
-  }
-
   // Open the download if the user or user prefs indicate it should be.
   FilePath::StringType extension = download->full_path().Extension();
   // Drop the leading period. (The auto-open list is period-less.)
   if (extension.size() > 0)
     extension = extension.substr(1);
 
-  if (download->open_when_complete() || ShouldOpenFileExtension(extension))
+  // Handle chrome extensions explicitly and skip the shell execute.
+  if (Extension::IsExtension(download->full_path())) {
+    OpenChromeExtension(download->full_path());
+    download->set_auto_opened(true);
+  } else if (download->open_when_complete() ||
+             ShouldOpenFileExtension(extension)) {
     OpenDownloadInShell(download, NULL);
-}
+    download->set_auto_opened(true);
+  }
 
+  // Notify our observers that we are complete (the call to Finished() set the
+  // state to complete but did not notify).
+  download->UpdateObservers();
+}
 // Called on the file thread.  Renames the downloaded file to its original name.
 void DownloadManager::ProceedWithFinishedDangerousDownload(
     int64 download_handle,
@@ -1461,12 +1463,6 @@ void DownloadManager::OnSearchComplete(HistoryService::Handle handle,
 
 void DownloadManager::ShowDownloadInBrowser(const DownloadCreateInfo& info,
                                             DownloadItem* download) {
-  // Extension downloading skips the shelf.  This is a temporary fix until
-  // we can modularize the download system and develop specific extensiona
-  // install UI.
-  if (Extension::IsExtension(info.path))
-    return;
-
   // The 'contents' may no longer exist if the user closed the tab before we get
   // this start completion event. If it does, tell the origin TabContents to
   // display its download shelf.

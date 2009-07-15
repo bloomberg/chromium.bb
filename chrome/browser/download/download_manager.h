@@ -203,6 +203,8 @@ class DownloadItem {
   void set_safety_state(SafetyState safety_state) {
     safety_state_ = safety_state;
   }
+  bool auto_opened() { return auto_opened_; }
+  void set_auto_opened(bool auto_opened) { auto_opened_ = auto_opened; }
   FilePath original_name() const { return original_name_; }
   void set_original_name(const FilePath& name) { original_name_ = name; }
 
@@ -267,6 +269,11 @@ class DownloadItem {
   // Whether the download is considered potentially safe or dangerous
   // (executable files are typically considered dangerous).
   SafetyState safety_state_;
+
+  // Whether the download was auto-opened. We set this rather than using
+  // an observer as it's frequently possible for the download to be auto opened
+  // before the observer is added.
+  bool auto_opened_;
 
   // Dangerous download are given temporary names until the user approves them.
   // This stores their original name.

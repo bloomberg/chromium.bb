@@ -10,10 +10,12 @@
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/theme_provider.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/views/download_shelf_view.h"
@@ -55,7 +57,6 @@ static const int kButtonPadding = 5;  // Pixels.
 // The space on the left and right side of the dangerous download label.
 static const int kLabelPadding = 4;  // Pixels.
 
-static const SkColor kFileNameColor = SkColorSetRGB(87, 108, 149);
 static const SkColor kFileNameDisabledColor = SkColorSetRGB(171, 192, 212);
 static const SkColor kStatusColor = SkColorSetRGB(123, 141, 174);
 
@@ -305,7 +306,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
         views::Label::ALIGN_LEFT);
-    dangerous_download_label_->SetColor(kFileNameColor);
+    dangerous_download_label_->SetColor(GetThemeProvider()->GetColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
     AddChildView(dangerous_download_label_);
     SizeLabelToMinWidth();
   }
@@ -360,6 +362,10 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
       download_->is_paused() ? StopDownloadProgress() : StartDownloadProgress();
       break;
     case DownloadItem::COMPLETE:
+      if (download_->auto_opened()) {
+        parent_->RemoveDownloadView(this);  // This will delete us!
+        return;
+      }
       StopDownloadProgress();
       complete_animation_.reset(new SlideAnimation(this));
       complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
@@ -596,12 +602,14 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
 
     int mirrored_x = MirroredXWithWidthInsideView(
         download_util::kSmallProgressIconSize, kTextWidth);
+    SkColor file_name_color = GetThemeProvider()->GetColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
     if (show_status_text_) {
       int y = box_y_ + kVerticalPadding;
 
       // Draw the file's name.
       canvas->DrawStringInt(filename, font_,
-                            IsEnabled() ? kFileNameColor :
+                            IsEnabled() ? file_name_color :
                                           kFileNameDisabledColor,
                             mirrored_x, y, kTextWidth, font_.height());
 
@@ -614,7 +622,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
 
       // Draw the file's name.
       canvas->DrawStringInt(filename, font_,
-                            IsEnabled() ? kFileNameColor :
+                            IsEnabled() ? file_name_color :
                                           kFileNameDisabledColor,
                             mirrored_x, y, kTextWidth, font_.height());
     }
