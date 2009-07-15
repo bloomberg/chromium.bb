@@ -24,6 +24,9 @@ class OptionsLayoutBuilderGtk {
   void AddOptionGroup(const std::string& title, GtkWidget* content,
                       bool expandable);
 
+  // Adds the given widget to an alignment identing it by |kGroupIndent|.
+  static GtkWidget* IndentWidget(GtkWidget* content);
+
  private:
   // The parent widget
   GtkWidget* page_;

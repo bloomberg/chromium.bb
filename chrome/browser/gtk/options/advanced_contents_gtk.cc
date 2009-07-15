@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/net/dns_global.h"
@@ -459,6 +460,10 @@ class SecuritySection : public OptionsPageBase {
   }
 
  private:
+  // The callback functions for the options widgets.
+  static void OnFontsAndLanguagesButtonClicked(GtkButton *button,
+                                               WebContentSection* section);
+
   // The widget containing the options for this section.
   GtkWidget* page_;
 
@@ -494,8 +499,36 @@ class WebContentSection : public OptionsPageBase {
 WebContentSection::WebContentSection(Profile* profile)
     : OptionsPageBase(profile) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(page_), gtk_label_new("TODO web content options"),
+
+  GtkWidget* fonts_and_languages_label = CreateWrappedLabel(
+      IDS_OPTIONS_FONTSETTINGS_INFO);
+  gtk_misc_set_alignment(GTK_MISC(fonts_and_languages_label), 0, 0);
+  gtk_box_pack_start(GTK_BOX(page_), fonts_and_languages_label,
                      FALSE, FALSE, 0);
+
+  GtkWidget* fonts_and_languages_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(
+          IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON).c_str());
+  g_signal_connect(fonts_and_languages_button, "clicked",
+                   G_CALLBACK(OnFontsAndLanguagesButtonClicked), this);
+  // Stick it in an hbox so it doesn't expand to the whole width.
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_hbox),
+                     fonts_and_languages_button,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page_),
+                     OptionsLayoutBuilderGtk::IndentWidget(button_hbox),
+                     FALSE, FALSE, 0);
+
+  // TODO(mattm): gears options would go here if we supported gears
+}
+
+// static
+void WebContentSection::OnFontsAndLanguagesButtonClicked(
+    GtkButton *button, WebContentSection* section) {
+  ShowFontsLanguagesWindow(GTK_WINDOW(gtk_widget_get_toplevel(section->page_)),
+                           FONTS_ENCODING_PAGE,
+                           section->profile());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
