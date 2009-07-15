@@ -654,7 +654,7 @@ BUG13907 WIN : LayoutTests/media/video-seek-past-end-playing.html = PASS FAIL CR
 BUG13907 WIN : LayoutTests/media/video-size-intrinsic-scale.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-src-remove.html = FAIL
 // These tests are flaky.
-BUG13097 WIN : LayoutTests/media/video-display-toggle.html = FAIL
+BUG16779 BUG13097 WIN : LayoutTests/media/video-display-toggle.html = FAIL TIMEOUT
 BUG13907 WIN : LayoutTests/media/controls-styling.html = FAIL
 // This test is added in WebKit merge 45610:45621
 BUG13907 WIN : LayoutTests/media/controls-after-reload.html = TIMEOUT
@@ -2862,7 +2862,7 @@ BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-
 BUG16240 MAC WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
 
 // Failing due to r20652.
-BUG16742 : LayoutTests/media/video-error-abort.html = FAIL
+BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL
 
 // Failing approximately starting from 20629
 BUG16754 : LayoutTests/fast/loader/empty-embed-src-attribute.html = CRASH
@@ -2873,3 +2873,37 @@ BUG16754 : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT
 BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = TIMEOUT
 BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom.html = TIMEOUT
 BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attributes.html = FAIL TIMEOUT
+
+// Disabling since try bots use Chromium FFmpeg DLLs, which means we can no
+// longer decode WebKit's test clips because they use H.264, AAC, etc.
+BUG16779 : LayoutTests/media/media-startTime.html = FAIL
+BUG16779 : LayoutTests/media/progress-event.html = FAIL
+BUG16779 : LayoutTests/media/remove-from-document.html = FAIL
+BUG16779 : LayoutTests/media/video-append-source.html = FAIL
+BUG16779 : LayoutTests/media/video-aspect-ratio.html = FAIL
+BUG16779 : LayoutTests/media/video-autoplay.html = FAIL
+BUG16779 : LayoutTests/media/video-controls-transformed.html = FAIL
+BUG16779 : LayoutTests/media/video-controls-zoomed.html = FAIL
+BUG16779 : LayoutTests/media/video-controls.html = FAIL
+BUG16779 : LayoutTests/media/video-currentTime.html = FAIL
+BUG16779 : LayoutTests/media/video-dom-autoplay.html = FAIL
+BUG16779 : LayoutTests/media/video-dom-src.html = FAIL
+BUG16779 : LayoutTests/media/video-layer-crash.html = FAIL
+BUG16779 : LayoutTests/media/video-load-networkState.html = FAIL
+BUG16779 : LayoutTests/media/video-load-readyState.html = FAIL
+BUG16779 : LayoutTests/media/video-muted.html = FAIL
+BUG16779 : LayoutTests/media/video-no-autoplay.html = FAIL
+BUG16779 : LayoutTests/media/video-pause-empty-events.html = FAIL
+BUG16779 : LayoutTests/media/video-play-empty-events.html = FAIL
+BUG16779 : LayoutTests/media/video-played-reset.html = FAIL
+BUG16779 : LayoutTests/media/video-seekable.html = FAIL
+BUG16779 : LayoutTests/media/video-seeking.html = FAIL
+BUG16779 : LayoutTests/media/video-size.html = FAIL
+BUG16779 : LayoutTests/media/video-source-add-src.html = FAIL
+BUG16779 : LayoutTests/media/video-source-error.html = FAIL
+BUG16779 : LayoutTests/media/video-src-change.html = FAIL
+BUG16779 : LayoutTests/media/video-src-invalid-remove.html = FAIL
+BUG16779 : LayoutTests/media/video-timeupdate-during-playback.html = FAIL
+BUG16779 : LayoutTests/media/video-transformed.html = FAIL
+BUG16779 : LayoutTests/media/video-volume.html = FAIL
+BUG16779 : LayoutTests/media/video-zoom.html = FAIL
