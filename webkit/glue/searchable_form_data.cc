@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 
 MSVC_PUSH_WARNING_LEVEL(0);
-#include "CSSHelper.h"
 #include "CString.h"
 #include "Document.h"
 #include "DocumentLoader.h"
@@ -121,7 +120,7 @@ void GetFormEncoding(WebCore::HTMLFormElement* form,
 // Returns true if the submit request results in an HTTP URL.
 bool IsHTTPFormSubmit(WebCore::HTMLFormElement* form) {
   WebCore::Frame* frame = form->document()->frame();
-  WebCore::String action = WebCore::parseURL(form->action());
+  WebCore::String action = form->action();
   WebCore::FrameLoader* loader = frame->loader();
   WebCore::KURL url = loader->completeURL(action.isNull() ? "" : action);
   return (url.protocol() == "http");
@@ -336,7 +335,7 @@ SearchableFormData* SearchableFormData::Create(const WebForm& webform) {
   // It's a valid form.
   // Generate the URL and create a new SearchableFormData.
   RefPtr<WebCore::FormData> form_data = WebCore::FormData::create(enc_string);
-  WebCore::String action = WebCore::parseURL(form->action());
+  WebCore::String action = form->action();
   WebCore::FrameLoader* loader = frame->loader();
   WebCore::KURL url = loader->completeURL(action.isNull() ? "" : action);
   url.setQuery(form_data->flattenToString());
