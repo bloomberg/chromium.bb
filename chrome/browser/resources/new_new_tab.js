@@ -321,17 +321,23 @@ var mostVisited = {
   togglePinned: function(el) {
     var index = this.getThumbnailIndex(el);
     var data = mostVisitedData[index];
-    if (data.pinned) {
-      removeClass(el, 'pinned');
-      chrome.send('removePinnedURL', [data.url]);
-    } else {
-      addClass(el, 'pinned');
-      chrome.send('addPinnedURL', [data.url, data.title, String(index)]);
-    }
     data.pinned = !data.pinned;
-    // Update tooltip
-    el.querySelector('.pin').title = localStrings.getString(data.pinned ?
+    if (data.pinned) {
+      chrome.send('addPinnedURL', [data.url, data.title, String(index)]);
+    } else {
+      chrome.send('removePinnedURL', [data.url]);
+    }
+    this.updatePinnedDom_(el, data.pinned);
+  },
+
+  updatePinnedDom_: function(el, pinned) {
+    el.querySelector('.pin').title = localStrings.getString(pinned ?
         'unpinthumbnailtooltip' : 'pinthumbnailtooltip');
+    if (pinned) {
+      addClass(el, 'pinned');
+    } else {
+      removeClass(el, 'pinned');
+    }
   },
 
   getThumbnailIndex: function(el) {
@@ -349,7 +355,8 @@ var mostVisited = {
     chrome.send('addPinnedURL', [sourceData.url, sourceData.title,
                                  String(destinationIndex)]);
     sourceData.pinned = true;
-    addClass(source, 'pinned');
+    this.updatePinnedDom_(source, true);
+
     var destinationData = mostVisitedData[destinationIndex];
     // Only update the destination if it was pinned before.
     if (destinationData.pinned) {
