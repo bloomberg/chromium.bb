@@ -330,12 +330,26 @@ void  NaClPatchMemory(struct NaClPatchInfo  *patch) {
 /*
  * Install a syscall trampoline at target_addr.  NB: Thread-safe.
  */
+
+/* TODO(petr): make this function architecture dependant */
 void  NaClPatchOneTrampoline(struct NaClApp *nap,
                              uintptr_t  target_addr) {
   struct NaClPatchInfo  patch_info;
 
   struct NaClPatch      patch16[1];
   struct NaClPatch      patch32[2];
+
+#if NACL_ARM
+  /*
+   * in ARM we do not need to patch ds, cs sigments.
+   * by default we initialize the target for trampoline code as NaClSyscallSeg,
+   * so there is no point to patch address of NaClSyscallSeg
+   */
+  patch_info.num_abs16 = 0;
+  patch_info.num_rel32 = 0;
+  patch_info.num_abs32 = 0;
+
+#else
 
   patch16[0].target = ((uintptr_t) &NaCl_tramp_cseg_patch) - 2;
   patch16[0].value = nacl_global_cs;
@@ -354,6 +368,8 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
 
   patch_info.abs32 = patch32;
   patch_info.num_abs32 = sizeof patch32/sizeof patch32[0];
+
+#endif /* NACL_ARM */
 
   patch_info.dst = target_addr;
   patch_info.src = (uintptr_t) &NaCl_trampoline_seg_code;
@@ -374,8 +390,14 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
   int         i;
   uintptr_t   addr;
 
-  /* fill trampoline region with HLT */
+/* fill trampoline region with HLT */
+/* TODO(petr): make a architecture dependant functions */
+#if NACL_ARM
+  for (i=0; i < NACL_TRAMPOLINE_SIZE/sizeof(NACL_HALT_OPCODE); i++)
+    ((int *)(nap->mem_start+NACL_TRAMPOLINE_START))[i] = NACL_HALT_OPCODE;
+#else
   memset((void *) nap->mem_start, NACL_HALT_OPCODE, NACL_TRAMPOLINE_END);
+#endif
 
   /*
    * Do not bother to fill in the contents of page 0, since we make it
@@ -422,7 +444,7 @@ void  NaClLoadSpringboard(struct NaClApp  *nap) {
 
   NaClPatchMemory(&patch_info);
 
-  nap->springboard_addr++;  /* skip the hlt */
+  nap->springboard_addr += NACL_HALT_LEN; /* skip the hlt */
 }
 
 void  NaClMemRegionPrinter(void                   *state,

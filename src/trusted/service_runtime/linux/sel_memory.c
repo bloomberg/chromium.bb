@@ -64,27 +64,44 @@ void NaCl_page_free(void     *p,
  * on NaCl app code to ensure that the app code is portable across all
  * host OSes.
  */
-int NaCl_page_alloc(void    **p,
-                    size_t  size) {
-  void *addr;
 
-  addr = mmap(0,
+int NaCl_page_alloc_intern(void   **p,
+                           size_t size) {
+  void *addr;
+  int map_flags = MAP_PRIVATE | MAP_ANONYMOUS;
+
+  if (NULL != *p) {
+    map_flags |= MAP_FIXED;
+  }
+  addr = mmap(*p,
               size,
               PROT_EXEC | PROT_READ | PROT_WRITE,
-              MAP_PRIVATE | MAP_ANONYMOUS,
+              map_flags,
               -1,
               (off_t) 0);
-
-  if (addr == MAP_FAILED) {
+  if (MAP_FAILED == addr) {
     addr = NULL;
   }
-
   if (NULL != addr) {
     *p = addr;
   }
-  return (addr == NULL) ? -ENOMEM : 0;
+  return (NULL == addr) ? -ENOMEM : 0;
 }
 
+int NaCl_page_alloc(void   **p,
+                    size_t size) {
+  void *addr = NULL;
+  int rv;
+  if (0 == (rv = NaCl_page_alloc_intern(&addr, size))) {
+    *p = addr;
+  }
+  return rv;
+}
+
+int NaCl_page_alloc_at_addr(void   *p,
+                            size_t size) {
+  return NaCl_page_alloc_intern(&p, size);
+}
 
 /*
 * This is critical to make the text region non-writable, and the data

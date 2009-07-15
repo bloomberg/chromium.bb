@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@
 
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/nacl_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/nacl_audio_video.h"
 
@@ -45,7 +45,7 @@
 void  NaClAllModulesInit(void) {
   NaClNrdAllModulesInit();
   NaClGlobalModuleInit();  /* various global variables */
-  NaClLdtInit();
+  NaClThreadInit();
 #if defined(HAVE_SDL)
   NaClMultimediaModuleInit();
 #endif
@@ -57,7 +57,7 @@ void NaClAllModulesFini(void) {
 #if defined(HAVE_SDL)
   NaClMultimediaModuleFini();
 #endif
-  NaClLdtFini();
+  NaClThreadFini();
   NaClGlobalModuleFini();
   NaClNrdAllModulesFini();
 }

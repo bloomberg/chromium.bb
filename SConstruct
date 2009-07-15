@@ -287,8 +287,7 @@ def CommandSelLdrTestNacl(env, name, command,
 
   return CommandTestAgainstGoldenOutput(env, name, command, size, **extra)
 
-if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
-  pre_base_env.AddMethod(CommandSelLdrTestNacl)
+pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
 # ----------------------------------------------------------
 TEST_EXTRA_ARGS = ['stdin', 'logout',
@@ -403,6 +402,11 @@ base_env.Append(
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
     LIBS = ['${EXTRA_LIBS}'],
 )
+
+if base_env['TARGET_ARCHITECTURE'] == 'arm':
+  base_env.Append(
+    build_sconscripts = ['src/trusted/validator_arm/build.scons',]
+  )
 
 base_env.Replace(
     NACL_BUILD_FAMILY = 'TRUSTED',
@@ -672,6 +676,8 @@ elif linux_env['BUILD_SUBARCH'] == '64':
     )
 else:
   Banner('Strange platform: %s' % (linux_env['BUILD_NAME']))
+
+# TODO(robert): support for arm builds
 
 (linux_debug_env, linux_optimized_env) = GenerateOptimizationLevels(linux_env)
 

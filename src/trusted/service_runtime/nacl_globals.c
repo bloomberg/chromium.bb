@@ -53,6 +53,7 @@ struct NaClThreadContext    *nacl_sys[LDT_ENTRIES] = {NULL};
 struct NaClMutex            nacl_thread_mu = {NULL};
 struct NaClAppThread        *nacl_thread[LDT_ENTRIES] = {NULL};
 
+/* TODO(petr): these variables architecture specific, needs to be noved */
 uint16_t                    nacl_global_cs = 0;
 uint16_t                    nacl_global_ds = 0;
 
@@ -64,11 +65,13 @@ struct NaClTsdKey           nacl_cur_thread_key;
  */
 uintptr_t                   nacl_global_xlate_base;
 
-
+/* TODO(petr): this function architecture specific, needs to be noved */
 void NaClGlobalModuleInit(void) {
   NaClMutexCtor(&nacl_thread_mu);
+#if !NACL_ARM
   nacl_global_cs = NaClGetCs();
   nacl_global_ds = NaClGetDs();
+#endif
   /* key for TSD */
   if (!NaClTsdKeyCreate(&nacl_cur_thread_key)) {
     NaClLog(LOG_FATAL,

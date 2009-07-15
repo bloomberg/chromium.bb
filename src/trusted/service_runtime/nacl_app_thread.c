@@ -46,6 +46,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_bottom_half.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_ldt.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
@@ -57,7 +58,7 @@ void WINAPI NaClThreadLauncher(void *state) {
   NaClLog(4, "NaClThreadLauncher: entered\n");
   natp = (struct NaClAppThread *) state;
   NaClLog(4, "natp = 0x%08"PRIxPTR"\n", (uintptr_t) natp);
-  NaClLog(4,"eip  = 0x%08"PRIx32"\n", natp->user.eip);
+  NaClLog(4, "eip  = 0x%08"PRIx32"\n", natp->user.eip);
 
   NaClLog(4, "Obtaining thread_num\n");
   /*
@@ -81,7 +82,7 @@ void WINAPI NaClThreadLauncher(void *state) {
   WINDOWS_EXCEPTION_CATCH;
 }
 
-
+/* TODO(petr): this function is architecture specific, requires cleaning */
 int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
                       int                   is_privileged,
@@ -100,12 +101,17 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
           (uintptr_t) &nap->data_seg_sel);
   NaClLog(4, "nap->code_seg_sel = 0x%02x\n", nap->code_seg_sel);
   NaClLog(4, "nap->data_seg_sel = 0x%02x\n", nap->data_seg_sel);
+#if NACL_ARM
+  NaClThreadContextCtor(&natp->user, usr_entry, usr_esp, gs);
+  NaClLog(4, "natp->user.r9: 0x%02x\n", natp->user.r9);
+#else
   NaClThreadContextCtor(&natp->user, usr_entry, usr_esp,
                         nap->data_seg_sel, gs, nap->code_seg_sel);
   NaClLog(4, "natp->user.cs: 0x%02x\n", natp->user.cs);
   NaClLog(4, "natp->user.fs: 0x%02x\n", natp->user.fs);
   NaClLog(4, "natp->user.gs: 0x%02x\n", natp->user.gs);
   NaClLog(4, "natp->user.ss: 0x%02x\n", natp->user.ss);
+#endif
 
   effp = NULL;
 
@@ -141,7 +147,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 
   natp->thread_num = -1;  /* illegal index */
 
-  ldt_ix = gs >> 3;
+  ldt_ix = NaClGetThreadId(natp);
 
   nacl_thread[ldt_ix] = natp;
   nacl_user[ldt_ix] = &natp->user;
@@ -174,7 +180,7 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   (*natp->effp->vtbl->Dtor)(natp->effp);
   free(natp->effp);
   natp->effp = NULL;
-  NaClLdtDeleteSelector(natp->user.gs);
+  NaClFreeThreadIdx(NaClGetThreadId(natp));
   NaClCondVarDtor(&natp->cv);
   NaClMutexDtor(&natp->mu);
 }
@@ -197,10 +203,10 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
    * from its crt code (before main or much of libc can run).  Other
    * threads are spawned with the tdb address and size as a parameter.
    */
-  gs = NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
-                                   0,
-                                   (void *) sys_tdb_base,
-                                   tdb_size);
+  gs = NaClAllocateThreadIdx(NACL_LDT_DESCRIPTOR_DATA,
+                             0,
+                             (void *) sys_tdb_base,
+                             tdb_size);
 
   NaClLog(4, "NaClAppThreadAllocSegCtor: esp 0x%08"PRIxPTR", gs 0x%02x\n",
           usr_esp, gs);

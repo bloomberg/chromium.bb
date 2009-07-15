@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2008, Google Inc.
+# Copyright 2009, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,6 @@
 
 
 Import('env')
-
-# Currently, this is only defined for x86, so only compile if x86.
-if env['TARGET_ARCHITECTURE'] != 'x86':
-   Return()
 
 env.Append(
     LIBS = ['google_nacl_imc'],

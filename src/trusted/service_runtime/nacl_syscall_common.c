@@ -63,6 +63,7 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_ldt.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 
@@ -120,7 +121,7 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
    * created (from some other running thread) we want to be sure that
    * any ldt-based lookups will not reach this dying thread's data.
    */
-  ldt_ix = natp->user.gs >> 3;
+  ldt_ix = NaClGetThreadId(natp);
   nacl_sys[ldt_ix] = NULL;
   nacl_user[ldt_ix] = NULL;
   nacl_thread[ldt_ix] = NULL;
@@ -684,8 +685,16 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
     goto cleanup;
   }
 
+#if NACL_ARM
+  /* TODO(petr): an ARM nacl module gets seg fault in a libc function if "%.*s"
+   * directive is used, probably it is beacuse the SEL is pushed up to
+   * address 1<<28 */
+  NaClLog(4, "In NaClSysWrite(%d, %*s, %"PRIdS")\n",
+          d, (int) count, (char *) sysaddr, count);
+#else
   NaClLog(4, "In NaClSysWrite(%d, %.*s, %"PRIdS")\n",
           d, (int) count, (char *) sysaddr, count);
+#endif
 
   ndp = NaClGetDesc(natp->nap, d);
   if (NULL == ndp) {
@@ -1946,11 +1955,11 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  if (0 == NaClLdtChangeByteSelector(natp->user.gs >> 3,
-                                     NACL_LDT_DESCRIPTOR_DATA,
-                                     0,
-                                     (void *) sysaddr,
-                                     size)) {
+  if (0 == NaClChangeThreadIdx(NaClGetThreadId(natp),
+                               NACL_LDT_DESCRIPTOR_DATA,
+                               0,
+                               (void *) sysaddr,
+                               size)) {
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }

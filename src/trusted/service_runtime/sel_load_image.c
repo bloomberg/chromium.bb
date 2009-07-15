@@ -92,11 +92,20 @@ NaClErrorCode NaClLoadImage(struct Gio     *gp,
   page_pad = NaClRoundPage(nap->text_region_bytes) - nap->text_region_bytes;
   CHECK(page_pad < NACL_PAGESIZE);
 
+/* TODO(petr): provide architecture dependant functions */
+#if NACL_ARM
+  CHECK(!(page_pad % 4));
+  paddr = nap->mem_start + NACL_TRAMPOLINE_END + nap->text_region_bytes;
+  CHECK(!(paddr % 4));
+  for (segnum = 0; segnum < (page_pad / 4); segnum++)
+    ((int *)paddr)[segnum] = NACL_HALT_OPCODE;
+#else
   memset((void *) (nap->mem_start
                    + NACL_TRAMPOLINE_END
                    + nap->text_region_bytes),
          NACL_HALT_OPCODE,
          page_pad);
+#endif
   nap->text_region_bytes += page_pad;
 
   return LOAD_OK;

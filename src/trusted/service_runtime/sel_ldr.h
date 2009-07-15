@@ -81,7 +81,11 @@ extern int using_debug_configuration;
 
 #define NACL_SELF_CHECK         1
 
+#if NACL_ARM
+#define NACL_MAX_ADDR_BITS (26) /* mmap fails for 28 bits */
+#else
 #define NACL_MAX_ADDR_BITS (8 + 20)
+#endif
 /* wp: NACL_MAX_ADDR_BITS < 32, see NaClAppLoadFile */
 #define NACL_DEFAULT_ENTRY_PT   "NaClMain"
 
@@ -106,8 +110,15 @@ extern int using_debug_configuration;
 #define NACL_DEFAULT_ALLOC_MAX  (32 << 20)  /* total brk and mmap allocs */
 #define NACL_DEFAULT_STACK_MAX  (16 << 20)  /* main thread stack */
 
+#if NACL_ARM
+#define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
+#define NACL_HALT_OPCODE        0xe3a0f000  /* mov pc, #0 */
+#define NACL_HALT_LEN           4           /* length of halt instruction */
+#else
 #define NACL_NOOP_OPCODE        0x90
 #define NACL_HALT_OPCODE        0xf4
+#define NACL_HALT_LEN           1           /* length of halt instruction */
+#endif
 
 #define NACL_DATA_SANDBOXING    0
 /*

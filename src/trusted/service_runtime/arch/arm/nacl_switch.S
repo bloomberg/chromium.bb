@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,47 +29,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * NaCl Simple/secure ELF loader (NaCl SEL) memory protection abstractions.
- */
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-#ifndef SERVICE_RUNTIME_SEL_MEMORY_H__
-#define SERVICE_RUNTIME_SEL_MEMORY_H__ 1
+  .text
+  .globl  IDENTIFIER(NaClSwitch)
+IDENTIFIER(NaClSwitch):
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+  /*
+   * This code is executed when switching from the service runtime to a nacl
+   * module. This happens when a main nacl thread is created and starting to
+   * execute the nacle code, or when nacl module is returning from a system
+   * call. This piece of code lives in a service runtime part of address space.
+   * the first four arguments are in register r0-r3
+   *
+   * r0 -- syscall return value
+   * r1 -- new eip (ip)
+   * r2 -- springboard address
+   * r3 -- user NaClThreadContext -- pointer to register values
+   * == stack ==
+   * rest of arguments
+   */
 
-/*
-* We do not use posix_memalign but instead directly attempt to mmap
-* (or VirtualAlloc) memory into aligned addresses, since we want to be
-* able to munmap pages to map in shared memory pages for the NaCl
-* versions of shmat or mmap, esp if SHM_REMAP is used.  Note that the
-* Windows ABI has 4KB pages for operations like page protection, but
-* 64KB allocation granularity (see nacl_config.h), and since we want
-* host-OS indistinguishability, this means we inherit this restriction
-* into our least-common-denominator design.
-*/
-#define MAX_RETRIES     1024
+  /* TODO(petr): clear registers r0,r1,r3, CPSR (status register keeps flags)
+   * and SPSR (saved program status register) which holds CPSR before the
+   * exception occurs. This might be necessary to avoid information leak.
+   * (see bsy)
+   */
+  ldmia r3, {r4, r5, r6, r7, r8, r9, r10, fp, sp}
 
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes);
-
-int   NaCl_page_alloc_at_addr(void *p,
-                              size_t  size);
-
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes);
-
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot);
-
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice);
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /*  SERVICE_RUNTIME_SEL_MEMORY_H__ */
+  bx r2 /* springboard */

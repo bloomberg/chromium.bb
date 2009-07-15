@@ -67,6 +67,8 @@ int NaClArtificialDelay = -1;
 typedef uint64_t tick_t;
 static tick_t get_ticks() {
   tick_t  t = 0;
+/* TODO(petr): add tick support for ARM
+ * architecture specific function, needs to be cleaned */
 #if NACL_WINDOWS
   uint32_t  t_high, t_low;
 
@@ -74,6 +76,8 @@ static tick_t get_ticks() {
   __asm mov t_high, edx;
   __asm mov t_low, eax;
   t = (((tick_t) t_high) << 32) | t_low;
+#elif NACL_ARM
+  /* BUG(petr): not implemented */
 #else
   asm volatile("rdtsc" : "=A" (t));
 #endif

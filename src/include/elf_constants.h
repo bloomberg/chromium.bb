@@ -72,6 +72,13 @@ EXTERN_C_BEGIN
 #define EM_MIPS_RS4_BE  10  /* mips rs4000 big-endian */
 #define EM_LORESERVED   11
 #define EM_HIRESERVED   16
+#define EM_ARM          40  /* arm */
+
+#if NACL_ARM
+#define EM_EXPECTED_BY_NACL EM_ARM
+#else
+#define EM_EXPECTED_BY_NACL EM_386
+#endif
 
 #define EV_NONE         0   /* invalid version */
 #define EV_CURRENT      1   /* current version */
@@ -121,6 +128,9 @@ EXTERN_C_BEGIN
 #define PT_LOOS       0x60000000  /* Environment-specific low */
 #define PT_HIOS       0x6fffffff  /* Environment-specific high */
 #define PT_LOPROC     0x70000000  /* Processor-specific low */
+#if NACL_ARM
+#define PT_ARM_EXIDX  0x70000001  /* Exception unwind tables */
+#endif
 #define PT_HIPROC     0x7fffffff  /* Processor-specific high */
 /*
  * PT_TLS and PT_GNU_STACK are from linux elf.h, for code usage

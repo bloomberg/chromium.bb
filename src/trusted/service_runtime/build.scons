@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2008, Google Inc.
+# Copyright 2009, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,6 @@
 
 
 Import('env')
-
-# Currently, this is only defined for x86, so only compile if x86.
-if env['TARGET_ARCHITECTURE'] != 'x86':
-  Return()
 
 # TODO(robertm): this is necessary for  unittest_main.c which includes
 #                gtest/gtest.h
@@ -99,15 +95,12 @@ ldr_inputs = [
     'dyn_array.c',
     'env_cleanser.c',
     'nacl_all_modules.c',
-    'nacl_app.c',
     'nacl_app_thread.c',
     'nacl_bottom_half.c',
     'nacl_check.c',
     'nacl_closure.c',
     'nacl_globals.c',
-    'nacl_ldt.c',
     'nacl_memory_object.c',
-    'nacl_switch_to_app.c',
     'nacl_sync_queue.c',
     'nacl_syscall_common.c',
     GENERATED + '/nacl_syscall_handlers.c',
@@ -117,16 +110,39 @@ ldr_inputs = [
     'sel_ldr_standard.c',
     'sel_load_image.c',
     'sel_mem.c',
-    'sel_rt.c',
     'sel_util.c',
     'sel_validate_image.c',
     'web_worker_stub.c',
+]
+
+# TODO(petr): move platform and OS specific files:
+# nacl_app.c            nacl_thread.c
+# nacl_switch_to_app.c  sel_rt.c
+# nacl_app.c            nacl_thread_arm.c
+
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  ldr_inputs += [
+    'nacl_app.c',
+    'nacl_ldt.c',
+    'nacl_switch_to_app.c',
+    'sel_rt.c',
+    'nacl_thread_x86.c',
     'arch/x86_32/nacl_switch.S',
     'arch/x86_32/nacl_syscall.S',
     'arch/x86_32/springboard.S',
     'arch/x86_32/tramp.S',
-]
-
+  ]
+elif env['TARGET_ARCHITECTURE'] == 'arm':
+  ldr_inputs += [
+    'linux_arm/nacl_app.c',
+    'linux_arm/nacl_switch_to_app.c',
+    'linux_arm/sel_rt.c',
+    'nacl_thread_arm.c',
+    'arch/arm/nacl_switch.S',
+    'arch/arm/nacl_syscall.S',
+    'arch/arm/springboard.S',
+    'arch/arm/tramp.S',
+  ]
 
 if env.Bit('windows'):
   ldr_inputs += [
@@ -140,12 +156,20 @@ elif env.Bit('mac'):
       'linux/sel_memory.c',
       'linux/sel_segments.c',
   ]
-else:
+elif env.Bit('linux'):
   ldr_inputs += [
-      'linux/nacl_ldt.c',
-      'linux/sel_memory.c',
-      'linux/sel_segments.c',
+        'linux/sel_memory.c',
   ]
+  if env['TARGET_ARCHITECTURE'] == 'x86':
+    ldr_inputs += [
+        'linux/nacl_ldt.c',
+        'linux/sel_segments.c',
+    ]
+  elif env['TARGET_ARCHITECTURE'] == 'arm':
+    ldr_inputs += [
+        'linux_arm/sel_segments.c',
+    ]
+
 # ----------------------------------------------------------
 # SDL hacks
 # NOTE: there are some more sdl hacks in ../SConstruct
@@ -234,6 +258,8 @@ if sdl_mode != 'none':
     env.AddPluginPrerequisite(['$SDL_DIR/lib/libSDL-1.2.so.0'])
 
 if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
+  # TODO(petr): sel_ldr must be placed in upper part of its address space
+  # so there is a place for nacl module in the bottom
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', 'sel_main.c')
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])

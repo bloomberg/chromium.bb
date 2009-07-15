@@ -65,6 +65,23 @@ uint32_t NaClGetEsp(void);
 
 uint32_t NaClGetEbx(void);
 
+/* TODO(petr): split this file into architecture specific ones */
+#if NACL_ARM
+
+struct NaClThreadContext {
+uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, esp, lr, eip;
+          /* 0   4   8   c  10  14   18  1c   20  24   28 */
+};
+
+/*
+ * A sanity check -- should be invoked in some early function, e.g.,
+ * main, or something that main invokes early.
+ */
+#define NACL_THREAD_CHECK do {                    \
+    CHECK(sizeof(struct NaClThreadContext)==44);  \
+  } while (0)
+
+#else
 /*
  * On a context switch through the syscall interface, not all
  * registers are saved.  We assume that C calling convention is used,
@@ -104,14 +121,23 @@ struct NaClThreadContext {
     CHECK(sizeof(struct NaClThreadContext)==36);  \
   } while (0)
 
+#endif /* NACL_ARM */
+
 struct NaClApp;  /* fwd */
 
+#if NACL_ARM
+int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
+                          uintptr_t                 pc,
+                          uintptr_t                 sp,
+                          uint16_t                  r9);
+#else
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           uintptr_t                 eip,
                           uintptr_t                 esp,
                           uint16_t                  des_seg,
                           uint16_t                  gs,
                           uint16_t                  cs);
+#endif
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 

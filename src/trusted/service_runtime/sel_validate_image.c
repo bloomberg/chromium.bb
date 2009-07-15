@@ -51,6 +51,14 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   size_t                  regionsize;
   NaClErrorCode           rcode = LOAD_BAD_FILE;
 
+#if NACL_ARM
+  /*
+   * BUG(petr): not implemented
+   * temporary disable validation to test sel_ldr
+   */
+  return LOAD_OK;
+#endif
+
   memp = nap->mem_start + NACL_TRAMPOLINE_END;
   regionsize = nap->text_region_bytes;
 

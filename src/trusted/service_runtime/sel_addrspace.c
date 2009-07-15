@@ -49,11 +49,29 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
 
   NaClLog(2, "NaClAllocAddrSpace: calling NaCl_page_alloc(*,0x%x)\n",
           (1U << nap->addr_bits));
+/* TODO(petr): provide architecture specific functions for that */
+#if NACL_ARM
+  /* kernel does not allows us to allocate module's address space at 0x0, so we
+   * allocate it at the start of trampoline region
+   */
+  mem = (void *) NACL_TRAMPOLINE_START;
+  if (NaCl_page_alloc_at_addr(mem,
+                        (1U << nap->addr_bits)) != 0) {
+#else
   if (NaCl_page_alloc(&mem,
                       (1U << nap->addr_bits)) != 0) {
+#endif
     NaClLog(2, "NaClAllocAddrSpace: NaCl_page_alloc failed\n");
     return LOAD_NO_MEMORY;
   }
+
+#if NACL_ARM
+  /*
+   * makes sel_ldr think that the module's address space is at 0x0, this allows
+   * us to use the same code as x86
+   */
+  mem = 0x0;
+#endif
   nap->mem_start = (uintptr_t) mem;
   nap->xlate_base = nap->mem_start;
   NaClLog(2, "allocated memory at 0x%08"PRIxPTR"\n", nap->mem_start);
@@ -119,6 +137,15 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    * Since NACL_SYSCALL_START_ADDR is a multiple of the page size, we don't
    * need to round it to be so.
    */
+
+  /*
+   * In ARM implementation kernel does not allow us to mmap address space at
+   * address 0x0, so we mmap it at the start of a trampoline region.
+   * The following code mprotects the region starting from the beginning of nacl
+   * module address space up to the start of a trampoline region. As in ARM, we
+   * do not mmap this region we do not need to mprotect it.
+   */
+#if !NACL_ARM
   NaClLog(3,
           ("NULL detection region start 0x%08"PRIxPTR
            ", size 0x%08x, end 0x%08"PRIxPTR"\n"),
@@ -143,6 +170,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                         " (NULL pointer guard page)\n"));
     return LOAD_MPROTECT_FAIL;
   }
+#endif
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
   /*

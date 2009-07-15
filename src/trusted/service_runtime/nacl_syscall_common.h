@@ -42,7 +42,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 #if defined(HAVE_SDL)
-# include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
+#include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
 #endif
 
 EXTERN_C_BEGIN

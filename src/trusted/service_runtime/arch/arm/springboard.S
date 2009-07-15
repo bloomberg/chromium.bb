@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,47 +29,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * NaCl Simple/secure ELF loader (NaCl SEL) memory protection abstractions.
- */
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 
-#ifndef SERVICE_RUNTIME_SEL_MEMORY_H__
-#define SERVICE_RUNTIME_SEL_MEMORY_H__ 1
+  /*
+   * Assembly code template.  This is linked into the service runtime
+   * but is unused as code -- it is used as data to be patched into
+   * a NaCl app's address space as a "hidden" part of its trampoline
+   * region. This code takes the last slot in trampoline region, and it is
+   * loaded by NaClLoadSpringboard() (sel_ldr.c).
+   */
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+  .globl  IDENTIFIER(NaCl_springboard)
+  .globl  IDENTIFIER(NaCl_springboard_end)
 
-/*
-* We do not use posix_memalign but instead directly attempt to mmap
-* (or VirtualAlloc) memory into aligned addresses, since we want to be
-* able to munmap pages to map in shared memory pages for the NaCl
-* versions of shmat or mmap, esp if SHM_REMAP is used.  Note that the
-* Windows ABI has 4KB pages for operations like page protection, but
-* 64KB allocation granularity (see nacl_config.h), and since we want
-* host-OS indistinguishability, this means we inherit this restriction
-* into our least-common-denominator design.
-*/
-#define MAX_RETRIES     1024
+  /*
+   * NaCl_springboard is used for syscall return and any time we want
+   * to do an upcall into NaCl application.
+   */
 
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes);
+IDENTIFIER(NaCl_springboard):
+  /*
+   * r0 -- syscall return value
+   * r1 -- new pc
+   * == user srack ==
+   * top
+   * =====
+   * arg 1
+   * arg 2
+   * .....
+   * arg N
+   */
 
-int   NaCl_page_alloc_at_addr(void *p,
-                              size_t  size);
+  /*
+   * This instruction guards springboard from unauthorized execution.
+   * Service runtime jumps to the instruction following the NACL_HALT one. If
+   * any other code tries to reach springboard without performing a jump it will
+   * be halted by the NACL_HALT
+   */
+  NACL_HALT
 
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes);
-
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot);
-
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice);
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /*  SERVICE_RUNTIME_SEL_MEMORY_H__ */
+  add sp, #16 /* popping four arguments placed by trampoline code */
+  bx r1
+IDENTIFIER(NaCl_springboard_end):

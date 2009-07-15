@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,47 +29,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * NaCl Simple/secure ELF loader (NaCl SEL) memory protection abstractions.
- */
+#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 
-#ifndef SERVICE_RUNTIME_SEL_MEMORY_H__
-#define SERVICE_RUNTIME_SEL_MEMORY_H__ 1
+/* TODO(petr): platform specific file, must be moved */
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
-/*
-* We do not use posix_memalign but instead directly attempt to mmap
-* (or VirtualAlloc) memory into aligned addresses, since we want to be
-* able to munmap pages to map in shared memory pages for the NaCl
-* versions of shmat or mmap, esp if SHM_REMAP is used.  Note that the
-* Windows ABI has 4KB pages for operations like page protection, but
-* 64KB allocation granularity (see nacl_config.h), and since we want
-* host-OS indistinguishability, this means we inherit this restriction
-* into our least-common-denominator design.
-*/
-#define MAX_RETRIES     1024
-
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes);
-
-int   NaCl_page_alloc_at_addr(void *p,
-                              size_t  size);
-
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes);
-
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot);
-
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice);
-#ifdef __cplusplus
+int NaClThreadInit() {
+  return NaClLdtInit();
 }
-#endif /* __cplusplus */
 
-#endif /*  SERVICE_RUNTIME_SEL_MEMORY_H__ */
+void NaClThreadFini() {
+  NaClLdtFini();
+}
+
+uint16_t NaClAllocateThreadIdx(int type,
+                               int read_exec_only,
+                               void *base_addr,
+                               uint32_t size_in_bytes) {
+  return NaClLdtAllocateByteSelector(type, read_exec_only,
+                                     base_addr, size_in_bytes);
+}
+
+void NaClFreeThreadIdx(uint16_t idx) {
+  NaClLdtDeleteSelector(idx);
+}
+
+uint16_t NaClChangeThreadIdx(int32_t entry_number,
+                             int type,
+                             int read_exec_only,
+                             void* base_addr,
+                             uint32_t size_in_bytes) {
+  return NaClLdtChangeByteSelector(entry_number, type,
+                                   read_exec_only, base_addr,
+                                   size_in_bytes);
+}
+
+int16_t NaClGetThreadId(struct NaClAppThread  *natp) {
+  return natp->user.gs >> 3;
+}

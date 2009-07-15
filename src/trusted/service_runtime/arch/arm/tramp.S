@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,46 +30,38 @@
  */
 
 /*
- * NaCl Simple/secure ELF loader (NaCl SEL) memory protection abstractions.
+ * Trampoline to transfer control from native client module to
+ * sel_ldr's NaClSyscallSeg residing in the service runtime portion of address
+ * space. Trampolines are patched into nacl module's address space in the
+ * trampoline region. They are patched by NaClLoadTrampoline() code (sel_ldr.c).
+ * Each trampoline code segment corresponds to a system call, so the trampoline
+ * region is full of identical trampoline code segments. Service runtime
+ * distinguish which system call is requested using the address of an executed
+ * trampoline (it is saved on stack in NaClSyscallSeg()).
  */
 
-#ifndef SERVICE_RUNTIME_SEL_MEMORY_H__
-#define SERVICE_RUNTIME_SEL_MEMORY_H__ 1
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 
+  .text
+  .globl  IDENTIFIER(NaCl_trampoline_seg_code)
+  .globl  IDENTIFIER(NaCl_trampoline_seg_end)
+
+IDENTIFIER(NaCl_trampoline_seg_code):
 /*
-* We do not use posix_memalign but instead directly attempt to mmap
-* (or VirtualAlloc) memory into aligned addresses, since we want to be
-* able to munmap pages to map in shared memory pages for the NaCl
-* versions of shmat or mmap, esp if SHM_REMAP is used.  Note that the
-* Windows ABI has 4KB pages for operations like page protection, but
-* 64KB allocation granularity (see nacl_config.h), and since we want
-* host-OS indistinguishability, this means we inherit this restriction
-* into our least-common-denominator design.
-*/
-#define MAX_RETRIES     1024
+ * ARM passes parameters to a callee in registers r0-r3. If there are more
+ * than 4 parameters, they are placed on stack.
+ * lr - keeps the return address
+ */
 
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes);
+  push {r0, r1, r2, r3}
+  /* r0 is for alignment in order not to modify  NaClSyscallCSegHook */
+  push {r0, lr}
 
-int   NaCl_page_alloc_at_addr(void *p,
-                              size_t  size);
+  ldr r0, [pc, #4]
+  blx r0
+  pop {pc}
 
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes);
+  .word   NaClSyscallSeg
+IDENTIFIER(NaCl_trampoline_seg_end):
 
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot);
-
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice);
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /*  SERVICE_RUNTIME_SEL_MEMORY_H__ */

@@ -29,42 +29,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+import os
 import sys
-
 Import('env')
 
-# Other unconditional builds will go here.
+env.ComponentLibrary('ncvalidate', ['ncvalidate.c'])
 
-pql_inputs = [];
-
-if env.Bit('windows'):
-  pql_inputs += ['win/nacl_os_qualify.c']
-elif env.Bit('mac'):
-  pql_inputs += ['osx/nacl_os_qualify.c']
-else:
-  pql_inputs += ['linux/nacl_os_qualify.c']
-pql_inputs += ['nacl_cpuwhitelist.c']
-
-vcpuid_env = env.Clone()
-if env.Bit('mac'):
-  vcpuid_env.Append(CCFLAGS = ['-mdynamic-no-pic'])
-if env.Bit('linux'):
-  vcpuid_env.Append(CCFLAGS = ['-msse3'])
-nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'vcpuid.c')
-env.Append(LIBS = ['vcpuid', 'platform_qual_lib', 'ncvalidate'])
-
-
-# ----------------------------------------------------------
-#
-# ----------------------------------------------------------
-env.ComponentLibrary('platform_qual_lib', pql_inputs)
-
-
-# These tests use assembly which seem to make the coverage instrumentation
-# on windows unhappy. Disable them for now on coverage for windows.
-# TODO(bradnelson): figure out a way to get coverage working for these.
-if env.Bit('windows') and env.get('COVERAGE_ENABLED'):
-  Return()
-
-env.ComponentProgram('platform_qual_test', 'platform_qual_test.c')
-env.ComponentProgram('nacl_cpuwhitelist_test', 'nacl_cpuwhitelist_test.c')

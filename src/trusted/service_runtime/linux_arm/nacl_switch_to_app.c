@@ -30,46 +30,52 @@
  */
 
 /*
- * NaCl Simple/secure ELF loader (NaCl SEL) memory protection abstractions.
+ * NaCl Service Runtime, C-level context switch code.
  */
 
-#ifndef SERVICE_RUNTIME_SEL_MEMORY_H__
-#define SERVICE_RUNTIME_SEL_MEMORY_H__ 1
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
+                                   uint32_t             new_eip) {
+  struct NaClApp  *nap;
+  /*
+   * TODO(petr): check if this is needed here
+   * Preserves stack alignment.
+   */
+  natp->sys.esp = (NaClGetSp() & ~0xf) + 4;
+
+  /*
+   * springboard pops 4 words from stack which are the parameters for
+   * syscall. In this case, it is not a syscall so no parameters, but we still
+   * need to adjist the stack
+   */
+  natp->user.esp -= 16;
+
+  nap = natp->nap;
+  NaClSwitch(
+      0, /* nothoing to return */
+      new_eip,
+      NaClSysToUser(nap, nap->springboard_addr),
+      &natp->user,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+}
 
 /*
-* We do not use posix_memalign but instead directly attempt to mmap
-* (or VirtualAlloc) memory into aligned addresses, since we want to be
-* able to munmap pages to map in shared memory pages for the NaCl
-* versions of shmat or mmap, esp if SHM_REMAP is used.  Note that the
-* Windows ABI has 4KB pages for operations like page protection, but
-* 64KB allocation granularity (see nacl_config.h), and since we want
-* host-OS indistinguishability, this means we inherit this restriction
-* into our least-common-denominator design.
-*/
-#define MAX_RETRIES     1024
+ * syscall return
+ */
+NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
+                              uint32_t             new_eip) {
+  struct NaClApp  *nap;
 
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes);
-
-int   NaCl_page_alloc_at_addr(void *p,
-                              size_t  size);
-
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes);
-
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot);
-
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice);
-#ifdef __cplusplus
+  nap = natp->nap;
+  NaClSwitch(
+      natp->sysret,
+      new_eip,
+      NaClSysToUser(nap, nap->springboard_addr),
+      &natp->user,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
-#endif /* __cplusplus */
 
-#endif /*  SERVICE_RUNTIME_SEL_MEMORY_H__ */

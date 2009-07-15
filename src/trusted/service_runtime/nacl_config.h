@@ -110,4 +110,8 @@
 # define IDENTIFIER(n)  n
 #endif
 
+#if NACL_ARM
+#define NACL_HALT mov pc, #0
+#endif
+
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_ */

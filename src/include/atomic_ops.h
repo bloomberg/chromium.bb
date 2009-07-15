@@ -40,8 +40,10 @@
 
 #if NACL_OSX
 #include "native_client/src/include/osx/atomic_ops_osx.h"
-#elif NACL_LINUX
-#include "native_client/src/include/linux/atomic_ops_linux.h"
+#elif NACL_LINUX && !NACL_ARM
+#include "native_client/src/include/linux/x86/atomic_ops.h"
+#elif NACL_LINUX && NACL_ARM
+#include "native_client/src/include/linux/arm/atomic_ops.h"
 #elif NACL_WINDOWS
 #include "native_client/src/include/win/atomic_ops_win32.h"
 #else

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,46 +30,22 @@
  */
 
 /*
- * NaCl Simple/secure ELF loader (NaCl SEL) memory protection abstractions.
+ * NaCl Secure Runtime
  */
+#include <string.h>
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 
-#ifndef SERVICE_RUNTIME_SEL_MEMORY_H__
-#define SERVICE_RUNTIME_SEL_MEMORY_H__ 1
+int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
+                          uintptr_t                 pc,
+                          uintptr_t                 sp,
+                          uint16_t                  r9) {
+  memset(ntcp, 0, sizeof(*ntcp));
+  ntcp->esp = sp;
+  ntcp->eip = pc;
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+  ntcp->r9 = r9;
 
-/*
-* We do not use posix_memalign but instead directly attempt to mmap
-* (or VirtualAlloc) memory into aligned addresses, since we want to be
-* able to munmap pages to map in shared memory pages for the NaCl
-* versions of shmat or mmap, esp if SHM_REMAP is used.  Note that the
-* Windows ABI has 4KB pages for operations like page protection, but
-* 64KB allocation granularity (see nacl_config.h), and since we want
-* host-OS indistinguishability, this means we inherit this restriction
-* into our least-common-denominator design.
-*/
-#define MAX_RETRIES     1024
-
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes);
-
-int   NaCl_page_alloc_at_addr(void *p,
-                              size_t  size);
-
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes);
-
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot);
-
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice);
-#ifdef __cplusplus
+  return 1;
 }
-#endif /* __cplusplus */
 
-#endif /*  SERVICE_RUNTIME_SEL_MEMORY_H__ */

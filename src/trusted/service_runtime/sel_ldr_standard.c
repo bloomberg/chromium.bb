@@ -68,6 +68,15 @@ struct NaClPhdrChecks nacl_phdr_check_data[] = {
   { PT_LOAD, PF_R, PCA_NONE, 0, 0, },
   /* data/bss */
   { PT_LOAD, PF_R|PF_W, PCA_NONE, 0, 0, },
+#if NACL_ARM
+  /* TODO(petr): real arm modules may have different headers,
+   * this table may change */
+  { PT_ARM_EXIDX, PF_R, PCA_NONE, 0, 0, },
+
+  { PT_NOTE, PF_R, PCA_IGNORE, 0, 0, },
+
+  { PT_TLS, PF_R, PCA_NONE, 0, 0, },
+#endif
   /*
    * allow optional GNU stack permission marker, but require that the
    * stack is non-executable.
@@ -297,7 +306,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
     ret = LOAD_NOT_EXEC;
     goto done;
   }
-  if (EM_386 != nap->elf_hdr.e_machine) {
+  if (EM_EXPECTED_BY_NACL != nap->elf_hdr.e_machine) {
     ret = LOAD_BAD_MACHINE;
     goto done;
   }
