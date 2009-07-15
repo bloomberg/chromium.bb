@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_GTK_TABS_TAB_GTK_H_
 #define CHROME_BROWSER_GTK_TABS_TAB_GTK_H_
 
-#include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
@@ -14,8 +13,6 @@
 namespace gfx {
 class Path;
 }
-
-class ThemeProvider;
 
 class TabGtk : public TabRendererGtk,
                public MessageLoopForUI::Observer {
@@ -67,12 +64,9 @@ class TabGtk : public TabRendererGtk,
     // itself should move the window in cases where there's only one
     // non drag-able Tab.
     virtual bool HasAvailableDragActions() const = 0;
-
-    // Returns the theme provider for icons and colors.
-    virtual ThemeProvider* GetThemeProvider() = 0;
   };
 
-  TabGtk(TabDelegate* delegate);
+  explicit TabGtk(TabDelegate* delegate);
   virtual ~TabGtk();
 
   // Access the delegate.

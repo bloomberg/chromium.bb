@@ -108,7 +108,7 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
 // TabGtk, public:
 
 TabGtk::TabGtk(TabDelegate* delegate)
-    : TabRendererGtk(delegate->GetThemeProvider()),
+    : TabRendererGtk(),
       delegate_(delegate),
       closing_(false),
       dragging_(false) {
