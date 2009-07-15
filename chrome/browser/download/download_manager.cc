@@ -833,14 +833,17 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
   // state to complete but did not notify).
   download->UpdateObservers();
 
-  // Open the download if the user or user prefs indicate it should be.
-  FilePath::StringType extension = download->full_path().Extension();
-
   // Handle chrome extensions explicitly and skip the shell execute.
   if (Extension::IsExtension(download->full_path())) {
     OpenChromeExtension(download->full_path());
     return;
   }
+
+  // Open the download if the user or user prefs indicate it should be.
+  FilePath::StringType extension = download->full_path().Extension();
+  // Drop the leading period. (The auto-open list is period-less.)
+  if (extension.size() > 0)
+    extension = extension.substr(1);
 
   if (download->open_when_complete() || ShouldOpenFileExtension(extension))
     OpenDownloadInShell(download, NULL);
