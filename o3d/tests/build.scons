@@ -672,7 +672,7 @@ if env.AnyBits('mac', 'windows'):
 
   # Pull in all pulse related environment variables.
   for k in os.environ:
-    if k.startswith('PULSE_'):
+    if k.startswith('PULSE_') or k == 'BUILD_NUMBER':
       selenium_env['ENV'][k] = os.environ[k]
 
   selenium_env['PREP_SELENIUM_ARCHIVE'] = (
@@ -687,12 +687,14 @@ if env.AnyBits('mac', 'windows'):
     selenium_env['PREP_SELENIUM_ARCHIVE_NAME'] = 'O3Dtests_mac'
     selenium_env['GNU_SETUP_EXTRAS'] = ''
     selenium_env['SETUP_SCRIPTS'] = (
-        'export PYTHONPATH=' + env.Dir('$MAIN_DIR/scripts').abspath)
+        # PYTHONPATH env needed to import python modules used on Buildbot.
+        'export PYTHONPATH=' + os.environ.get('PYTHONPATH', ''))
   else:
     selenium_env['PREP_SELENIUM_ARCHIVE_NAME'] = 'O3Dtests'
     selenium_env['GNU_SETUP_EXTRAS'] = r'..\o3d-internal\third_party\gnu\setup_env.bat && '
+    # PYTHONPATH env needed to import python modules used on Buildbot.
     selenium_env['SETUP_SCRIPTS'] = (
-        'set PYTHONPATH=' + env.Dir('$MAIN_DIR/scripts').abspath)
+         'set PYTHONPATH=' + os.environ.get('PYTHONPATH', ''))
 
   selenium_env['ENV']['DXSDK_DIR'] = os.environ.get('DXSDK_DIR', '')
 

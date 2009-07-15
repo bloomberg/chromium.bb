@@ -185,6 +185,7 @@ class LocalFileHTTPServer(threading.Thread):
     if not self.http_alive.isSet():
       print("No available port found for HTTP server in the range %d to %d."
             % (self.START_PORT, self.END_PORT))
+      self.http_port = 0
 
   @staticmethod
   def StartServer(local_root=None):
@@ -202,9 +203,15 @@ class LocalFileHTTPServer(threading.Thread):
     http_server = LocalFileHTTPServer(local_root)
     http_server.setDaemon(True)
     http_server.start()
+    
+    time_out = 30.0
 
     # Wait till the Selenium RC Server is up
-    http_server.http_alive.wait()
+    print 'Waiting %d seconds for local HTTP server to start.' % (int(time_out))
+    http_server.http_alive.wait(time_out)
+    if not http_server.http_port:
+      print 'Timed out.'
+      return None
 
     print "LocalFileHTTPServer started on port %d" % http_server.http_port
 
@@ -287,6 +294,7 @@ class SeleniumRemoteControl(threading.Thread):
       print("No available port found for Selenium RC Server "
             "in the range %d to %d."
             % (self.START_PORT, self.END_PORT))
+      self.selenium_port = 0
 
   @staticmethod
   def StartServer(verbose, java_path, selenium_server, server_timeout):
@@ -307,11 +315,18 @@ class SeleniumRemoteControl(threading.Thread):
                                             java_path,
                                             selenium_server,
                                             server_timeout)
+
     selenium_server.setDaemon(True)
     selenium_server.start()
 
+    time_out = 30.0
+    
     # Wait till the Selenium RC Server is up
-    selenium_server.selenium_alive.wait()
+    print 'Waiting %d seconds for Selenium RC to start.' % (int(time_out))
+    selenium_server.selenium_alive.wait(time_out)
+    if not selenium_server.selenium_port:
+      print 'Timed out.'
+      return None
 
     print("Selenium RC server started on port %d"
           % selenium_server.selenium_port)
@@ -332,25 +347,34 @@ class SeleniumSession(object):
     runner: a TestRunner() instance
   """
 
-  def __init__(self, verbose, java_path, selenium_server, server_timeout):
+  def __init__(self, verbose, java_path, selenium_server, server_timeout,
+               http_root=None):
     """Initializes a Selenium Session.
 
     Args:
       verbose: boolean verbose flag
       java_path: path to java used to run selenium.
       selenium_server: path to jar containing selenium server.
-      server_timeout: server timeout value, in seconds
+      server_timeout: server timeout value, in seconds.
+      http_root: Serve http pages using this path as the document root.  When 
+      None, use the default.
     """
     # Start up a static file server, to serve the test pages.
-    # Serve from the o3d directory
-    self.http_server = LocalFileHTTPServer.StartServer(
-        TESTING_ROOT + "/../")
 
-    # Start up the Selenium Remote Control Server
-    self.selenium_server = SeleniumRemoteControl.StartServer(verbose,
-                                                             java_path,
-                                                             selenium_server,
-                                                             server_timeout)
+    if not http_root: 
+      # Serve from the o3d directory
+      http_root = TESTING_ROOT + "/../"
+    
+    self.http_server = LocalFileHTTPServer.StartServer(http_root)
+
+    if self.http_server:
+      # Start up the Selenium Remote Control Server
+      self.selenium_server = SeleniumRemoteControl.StartServer(verbose,
+                                                               java_path,
+                                                               selenium_server,
+                                                               server_timeout)
+    if not self.http_server or not self.selenium_server:
+      return
 
     # Set up a testing runner
     self.runner = pulse_testrunner.PulseTestRunner()
@@ -910,6 +934,9 @@ def main(unused_argv):
   selenium_session = SeleniumSession(FLAGS.verbose, FLAGS.java,
                                      FLAGS.selenium_server,
                                      FLAGS.servertimeout)
+  if not selenium_session.http_server or not selenium_session.selenium_server:
+    return 1
+  
   for browser in FLAGS.browser:
     if browser in set(selenium_constants.SELENIUM_BROWSER_SET):
       test_list = []
@@ -951,4 +978,4 @@ def main(unused_argv):
 
 if __name__ == "__main__":
   remaining_argv = FLAGS(sys.argv)
-  main(remaining_argv)
+  sys.exit(main(remaining_argv))
