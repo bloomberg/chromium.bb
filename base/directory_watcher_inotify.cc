@@ -331,18 +331,17 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
   if (event->mask & IN_IGNORED)
     return;
 
-  WatcherSet watchers_to_notify;
-  FilePath changed_path;
+  // In case you want to limit the scope of this lock, it's not sufficient
+  // to just copy things under the lock, and then run the notifications
+  // without holding the lock. DirectoryWatcherImpl's dtor removes its watches,
+  // and to do that obtains the lock. After it finishes removing watches,
+  // it's destroyed. So, if you copy under the lock and notify without the lock,
+  // it's possible you'll copy the DirectoryWatcherImpl which is being
+  // destroyed, then it will destroy itself, and then you'll try to notify it.
+  AutoLock auto_lock(lock_);
 
-  {
-    AutoLock auto_lock(lock_);
-    changed_path = paths_[event->wd];
-    watchers_to_notify.insert(watchers_[event->wd].begin(),
-                              watchers_[event->wd].end());
-  }
-
-  for (WatcherSet::iterator watcher = watchers_to_notify.begin();
-       watcher != watchers_to_notify.end();
+  for (WatcherSet::iterator watcher = watchers_[event->wd].begin();
+       watcher != watchers_[event->wd].end();
        ++watcher) {
     (*watcher)->OnInotifyEvent(event);
   }
@@ -438,16 +437,13 @@ bool DirectoryWatcherImpl::Watch(const FilePath& path,
   if (!file_util::GetInode(path, &inode))
     return false;
 
-  InotifyReader::Watch watch =
-      Singleton<InotifyReader>::get()->AddWatch(path, this);
-  if (watch == InotifyReader::kInvalidWatch)
-    return false;
-
   delegate_ = delegate;
   recursive_ = recursive;
   root_path_ = path;
-  watch_ = watch;
   loop_ = MessageLoop::current();
+  watch_ = Singleton<InotifyReader>::get()->AddWatch(path, this);
+  if (watch_ == InotifyReader::kInvalidWatch)
+    return false;
 
   {
     AutoLock auto_lock(lock_);
@@ -473,4 +469,3 @@ bool DirectoryWatcherImpl::Watch(const FilePath& path,
 DirectoryWatcher::DirectoryWatcher() {
   impl_ = new DirectoryWatcherImpl();
 }
-
