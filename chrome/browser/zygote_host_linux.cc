@@ -47,17 +47,21 @@ ZygoteHost::ZygoteHost() {
     cmd_line.PrependWrapper(prefix);
   }
 
+  const char* sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
+  if (!sandbox_binary)
+    sandbox_binary = kSandboxBinary;
+
   struct stat st;
-  if (stat(kSandboxBinary, &st) == 0) {
-    if (access(kSandboxBinary, X_OK) == 0 &&
+  if (stat(sandbox_binary, &st) == 0) {
+    if (access(sandbox_binary, X_OK) == 0 &&
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {
-      cmd_line.PrependWrapper(ASCIIToWide(kSandboxBinary));
+      cmd_line.PrependWrapper(ASCIIToWide(sandbox_binary));
     } else {
       LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
                     "configured correctly. Rather than run without sandboxing "
                     "I'm aborting now. You need to make sure that "
-                 << kSandboxBinary << " is mode 4755.";
+                 << sandbox_binary << " is mode 4755.";
     }
   }
 

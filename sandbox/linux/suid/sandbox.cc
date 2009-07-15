@@ -224,10 +224,50 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  if (strcmp(argv[1], kChromeBinary)) {
-    fprintf(stderr, "This wrapper can only run %s!\n", kChromeBinary);
+#if defined(DEVELOPMENT_SANDBOX)
+  // On development machines, we need the sandbox to be able to run development
+  // builds of Chrome. Thus, we remove the condition that the path to the
+  // binary has to be fixed. However, we still worry about running arbitary
+  // executables like this so we require that the owner of the binary be the
+  // same as the real UID.
+  const int binary_fd = open(argv[1], O_RDONLY);
+  if (binary_fd < 0) {
+    fprintf(stderr, "Failed to open %s: %s\n", argv[1], strerror(errno));
     return 1;
   }
+
+  struct stat st;
+  if (fstat(binary_fd, &st)) {
+    fprintf(stderr, "Failed to stat %s: %s\n", argv[1], strerror(errno));
+    return 1;
+  }
+
+  if (fcntl(binary_fd, F_SETFD, O_CLOEXEC)) {
+    fprintf(stderr, "Failed to set close-on-exec flag: %s", strerror(errno));
+    return 1;
+  }
+
+  uid_t ruid, euid, suid;
+  getresuid(&ruid, &euid, &suid);
+
+  if (st.st_uid != ruid) {
+    fprintf(stderr, "The development sandbox is refusing to run %s because it "
+                    "isn't owned by the current user (%d)\n", argv[1], ruid);
+    return 1;
+  }
+
+  char proc_fd_buffer[128];
+  snprintf(proc_fd_buffer, sizeof(proc_fd_buffer), "/proc/self/fd/%d", binary_fd);
+  argv[1] = proc_fd_buffer;
+#else
+  // In the release sandbox, we'll only execute a specific path.
+  if (strcmp(argv[1], kChromeBinary)) {
+    fprintf(stderr, "This wrapper can only run %s!\n", kChromeBinary);
+    fprintf(stderr, "If you are developing Chrome, you should read:\n"
+        "http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment\n");
+    return 1;
+  }
+#endif
 
   if (!MoveToNewPIDNamespace())
     return 1;
