@@ -46,8 +46,7 @@ void PrintUIHTMLSource::StartDataRequest(const std::string& path,
                                          int request_id) {
   // Setup a dictionary so that the html page could read the values.
   DictionaryValue localized_strings;
-  localized_strings.SetString(L"title",
-      l10n_util::GetString(IDS_PRINT));
+  localized_strings.SetString(L"title", l10n_util::GetString(IDS_PRINT));
 
   SetFontAndTextDirection(&localized_strings);
 
@@ -55,8 +54,8 @@ void PrintUIHTMLSource::StartDataRequest(const std::string& path,
   static const StringPiece print_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PRINT_TAB_HTML));
-  const std::string full_html = jstemplate_builder::GetTemplateHtml(
-      print_html, &localized_strings, "t");
+  const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
+      print_html, &localized_strings);
 
   // Load the print html page into the tab contents.
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
