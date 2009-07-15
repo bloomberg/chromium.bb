@@ -1565,11 +1565,11 @@ RenderDepthStencilSurface::Ref RendererGL::CreateDepthStencilSurface(
 bool RendererGL::SaveScreen(const String& file_name) {
 #ifdef TESTING
   MakeCurrentLazy();
-  Bitmap bitmap;
-  bitmap.Allocate(Texture::ARGB8, width(), height(), 1, false);
+  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
+  bitmap->Allocate(Texture::ARGB8, width(), height(), 1, false);
   ::glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE,
-                 bitmap.image_data());
-  bool result = bitmap.SaveToPNGFile((file_name + ".png").c_str());
+                 bitmap->image_data());
+  bool result = bitmap->SaveToPNGFile((file_name + ".png").c_str());
   if (!result) {
     O3D_ERROR(service_locator())
         << "Failed to save screen into " << file_name;
