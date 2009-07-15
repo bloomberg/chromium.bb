@@ -65,7 +65,7 @@ void Referrer::DeleteLeastUseful() {
 }
 
 void Referrer::AccrueValue(const base::TimeDelta& delta,
-                           const std::string host) {
+                           const std::string& host) {
   HostNameMap::iterator it = find(host);
   // Be careful that we weren't evicted from this referrer in DeleteLeastUseful.
   if (it != end())

@@ -334,12 +334,12 @@ void ChromeURLRequestContext::Observe(NotificationType type,
                             &ChromeURLRequestContext::OnAcceptLanguageChange,
                             accept_language));
     } else if (*pref_name_in == prefs::kCookieBehavior) {
-      net::CookiePolicy::Type type = net::CookiePolicy::FromInt(
+      net::CookiePolicy::Type policy_type = net::CookiePolicy::FromInt(
           prefs_->GetInteger(prefs::kCookieBehavior));
       g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
           NewRunnableMethod(this,
                             &ChromeURLRequestContext::OnCookiePolicyChange,
-                            type));
+                            policy_type));
     }
   } else if (NotificationType::EXTENSIONS_LOADED == type) {
     ExtensionPaths* new_paths = new ExtensionPaths;
@@ -418,7 +418,7 @@ bool ChromeURLRequestContext::allowSendingCookies(const URLRequest* request)
 }
 
 void ChromeURLRequestContext::OnAcceptLanguageChange(
-    std::string accept_language) {
+    const std::string& accept_language) {
   DCHECK(MessageLoop::current() ==
          ChromeThread::GetMessageLoop(ChromeThread::IO));
   accept_language_ =

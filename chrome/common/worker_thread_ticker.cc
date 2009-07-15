@@ -76,8 +76,9 @@ bool WorkerThreadTicker::Start() {
   AutoLock lock(lock_);
   if (IsRunning())
     return false;
+  if (!timer_thread_.Start())
+    return false;
   is_running_ = true;
-  timer_thread_.Start();
   ScheduleTimerTask();
   return true;
 }

@@ -124,9 +124,9 @@ class URLFetcherProtectManager {
 
   // Registers a new entry in this service. If the entry already exists,
   // just returns it.
-  URLFetcherProtectEntry* Register(std::string id);
+  URLFetcherProtectEntry* Register(const std::string& id);
   // Always registers the entry even when it exists.
-  URLFetcherProtectEntry* Register(std::string id,
+  URLFetcherProtectEntry* Register(const std::string& id,
                                    URLFetcherProtectEntry* entry);
 
  private:

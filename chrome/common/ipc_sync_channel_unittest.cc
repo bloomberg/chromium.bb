@@ -595,7 +595,7 @@ void Multiple(bool server_pump, bool client_pump) {
 
   // A shared worker thread so that server1 and server2 run on one thread.
   base::Thread worker_thread("Multiple");
-  worker_thread.Start();
+  ASSERT_TRUE(worker_thread.Start());
 
   // Server1 sends a sync msg to client1, which blocks the reply until
   // server2 (which runs on the same worker thread as server1) responds
@@ -713,7 +713,7 @@ void QueuedReply(bool server_pump, bool client_pump) {
 
   // A shared worker thread so that server1 and server2 run on one thread.
   base::Thread worker_thread("QueuedReply");
-  worker_thread.Start();
+  ASSERT_TRUE(worker_thread.Start());
 
   WaitableEvent client1_msg_received(false, false);
   WaitableEvent server2_can_reply(false, false);

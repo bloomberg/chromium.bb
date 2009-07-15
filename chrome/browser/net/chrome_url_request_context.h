@@ -86,7 +86,7 @@ private:
                        const NotificationDetails& details);
 
   // Callback for when the accept language changes.
-  void OnAcceptLanguageChange(std::string accept_language);
+  void OnAcceptLanguageChange(const std::string& accept_language);
 
   // Callback for when the cookie policy changes.
   void OnCookiePolicyChange(net::CookiePolicy::Type type);

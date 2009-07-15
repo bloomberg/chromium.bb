@@ -357,7 +357,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
   // message loop will be shut down automatically as the thread goes out of
   // scope.
   base::Thread t("URLFetcher test thread");
-  t.Start();
+  ASSERT_TRUE(t.Start());
   t.message_loop()->PostTask(FROM_HERE, new FetcherWrapperTask(this,
       GURL(server->TestServerPage("defaultresponse"))));
 
@@ -456,7 +456,7 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
   // message loop will be shut down automatically as the thread goes out of
   // scope.
   base::Thread t("URLFetcher test thread");
-  t.Start();
+  ASSERT_TRUE(t.Start());
   t.message_loop()->PostTask(FROM_HERE, new FetcherWrapperTask(this, url));
 
   MessageLoop::current()->Run();

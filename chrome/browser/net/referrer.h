@@ -69,7 +69,7 @@ class Referrer : public HostNameMap {
 
   // Record additional usefulness of having this host name in the list.
   // Value is expressed as positive latency of amount delta.
-  void AccrueValue(const base::TimeDelta& delta, const std::string host);
+  void AccrueValue(const base::TimeDelta& delta, const std::string& host);
 
   // Trim the Referrer, by first diminishing (scaling down) the latency for each
   // ReferredValue.

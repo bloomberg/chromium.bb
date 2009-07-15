@@ -29,7 +29,7 @@ namespace {
 // UTF8 to UTF16. Instead of this after-the-fact adjustment, we should parse it
 // in the correct string format to begin with.
 url_parse::Component UTF8ComponentToWideComponent(
-    string text_utf8,
+    const string& text_utf8,
     const url_parse::Component& component_utf8) {
   if (component_utf8.len == -1)
     return url_parse::Component();
@@ -44,7 +44,8 @@ url_parse::Component UTF8ComponentToWideComponent(
   return component_w;
 }
 
-void UTF8PartsToWideParts(string text_utf8, const url_parse::Parsed& parts_utf8,
+void UTF8PartsToWideParts(const string& text_utf8,
+                          const url_parse::Parsed& parts_utf8,
                           url_parse::Parsed* parts) {
   if (IsStringASCII(text_utf8)) {
     *parts = parts_utf8;

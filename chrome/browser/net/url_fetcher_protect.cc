@@ -144,7 +144,8 @@ URLFetcherProtectManager* URLFetcherProtectManager::GetInstance() {
   return protect_manager_.get();
 }
 
-URLFetcherProtectEntry* URLFetcherProtectManager::Register(std::string id) {
+URLFetcherProtectEntry* URLFetcherProtectManager::Register(
+    const std::string& id) {
   AutoLock lock(lock_);
 
   ProtectService::iterator i = services_.find(id);
@@ -161,7 +162,7 @@ URLFetcherProtectEntry* URLFetcherProtectManager::Register(std::string id) {
 }
 
 URLFetcherProtectEntry* URLFetcherProtectManager::Register(
-    std::string id, URLFetcherProtectEntry* entry) {
+    const std::string& id, URLFetcherProtectEntry* entry) {
   AutoLock lock(lock_);
 
   ProtectService::iterator i = services_.find(id);

@@ -22,13 +22,13 @@ class PageAction {
   } PageActionType;
 
   std::string id() const { return id_; }
-  void set_id(std::string id) { id_ = id; }
+  void set_id(const std::string& id) { id_ = id; }
 
   PageActionType type() const { return type_; }
   void set_type(PageActionType type) { type_ = type; }
 
   std::string extension_id() const { return extension_id_; }
-  void set_extension_id(std::string extension_id) {
+  void set_extension_id(const std::string& extension_id) {
     extension_id_ = extension_id;
   }
 

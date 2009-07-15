@@ -582,7 +582,6 @@ TEST_F(DnsMasterTest, PriorityQueuePushPopTest) {
   EXPECT_TRUE(queue.IsEmpty());
 
   // Then check low priority queue FIFO functionality.
-  queue.IsEmpty();
   queue.Push("a", DnsHostInfo::PAGE_SCAN_MOTIVATED);
   EXPECT_FALSE(queue.IsEmpty());
   queue.Push("b", DnsHostInfo::OMNIBOX_MOTIVATED);
