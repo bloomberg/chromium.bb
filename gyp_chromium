@@ -5,6 +5,7 @@
 
 import glob
 import os
+import shlex
 import sys
 
 print 'Updating projects from gyp files...'
@@ -12,7 +13,6 @@ print 'Updating projects from gyp files...'
 try:
   import gyp
 except ImportError, e:
-  import os.path
   sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), 'pylib'))
   import gyp
 
@@ -22,7 +22,8 @@ if __name__ == '__main__':
   # If we didn't get a file, check an env var, and then fall back to
   # assuming 'src/build/all.gyp'
   if len(args) == 0:
-    args.append(os.environ.get('CHROMIUM_GYP_FILE', 'src/build/all.gyp'))
+    args += shlex.split(os.environ.get('CHROMIUM_GYP_FILE',
+                                       'src/build/all.gyp'))
 
   # Optionally add supplemental .gypi files if present.
   supplements = glob.glob('src/*/supplement.gypi')
