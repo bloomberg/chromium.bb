@@ -308,9 +308,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
   EXPECT_TRUE(result);
 }
 
-// TODO(mpcomplete): reenable this when content script messaging is fixed:
-// http://code.google.com/p/chromium/issues/detail?id=16228.
-#if 0
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ASSERT_TRUE(LoadExtension(
@@ -364,4 +361,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
 }
-#endif

@@ -49,10 +49,6 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   virtual void windowObjectCleared();
   virtual void documentElementAvailable();
 
-  // TODO(mpcomplete): remove these when we pick up webkit r45871
-  virtual void didCreateScriptContext() { didCreateScriptContextForFrame(); }
-  virtual void didDestroyScriptContext() { didDestroyScriptContextForFrame(); }
-
   // A frame's V8 context was created or destroyed.
   virtual void didCreateScriptContextForFrame();
   virtual void didDestroyScriptContextForFrame();
