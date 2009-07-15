@@ -624,8 +624,6 @@ BUG13907 SKIP : LayoutTests/media/audio-constructor-src.html = FAIL
 BUG13907 SKIP : LayoutTests/media/audio-constructor.html = FAIL
 // We don't support MP2 audio so skip this test.
 BUG13907 SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL
-// This test is flaky.
-BUG13907 WIN DEBUG : LayoutTests/media/progress-event-total.html = PASS FAIL
 // This test crashes in debug build not in release build.
 BUG13907 WIN : LayoutTests/media/video-buffered.html = FAIL CRASH
 BUG13907 WIN : LayoutTests/media/video-can-play-type.html = FAIL
@@ -2988,3 +2986,4 @@ BUG16823 MAC : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 // Failures from WebKit merge 45916:45936
 BUG16850 LINUX WIN : LayoutTests/fast/css/rem-dynamic-scaling.html = FAIL
 BUG16850 LINUX WIN : LayoutTests/fast/css/rem-units-on-root.html = FAIL
+BUG16850 WIN : LayoutTests/media/progress-event-total.html = FAIL
