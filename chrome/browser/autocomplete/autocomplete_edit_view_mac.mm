@@ -223,9 +223,7 @@ void AutocompleteEditViewMac::Update(
         // store existing state before anyone tries to setup the new
         // state.  Anyhow, it would look something like this.
 #if 0
-        FocusLocation();
-
-        // Must restore directly to evade model_->has_focus() guard.
+        [[field_ window] makeFirstResponder:field_];
         [[field_ currentEditor] setSelectedRange:state->selection];
 #endif
       }
@@ -295,7 +293,9 @@ void AutocompleteEditViewMac::SetSelectedRange(const NSRange range) {
   if (model_->has_focus()) {
     // TODO(shess): If |model_| thinks we have focus, this should not
     // be necessary.  Try to convert to DCHECK(IsFirstResponder()).
-    FocusLocation();
+    if (![field_ currentEditor]) {
+      [[field_ window] makeFirstResponder:field_];
+    }
 
     // TODO(shess): What if it didn't get first responder, and there is
     // no field editor?  This will do nothing.  Well, at least it won't
@@ -549,13 +549,8 @@ void AutocompleteEditViewMac::AcceptInput(
 }
 
 void AutocompleteEditViewMac::FocusLocation() {
-  // -makeFirstResponder: will select the entire field_.  If we're
-  // already firstResponder, it's likely that we want to retain the
-  // current selection.
-  if (![field_ currentEditor]) {
-    [[field_ window] makeFirstResponder:field_];
-    DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
-  }
+  [[field_ window] makeFirstResponder:field_];
+  DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
 }
 
 @implementation AutocompleteFieldDelegate

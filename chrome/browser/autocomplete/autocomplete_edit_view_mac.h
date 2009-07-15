@@ -100,7 +100,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
 
   void AcceptInput(WindowOpenDisposition disposition, bool for_drop);
 
-  // Helper for LocationBarBridge.
+  // Helper for LocationBarViewMac.  Selects all in |field_|.
   void FocusLocation();
 
  private:
