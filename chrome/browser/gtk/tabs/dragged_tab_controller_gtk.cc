@@ -29,6 +29,14 @@ const int kHorizontalPinnedMoveThreshold = 4;  // pixels
 // How far a drag must pull a tab out of the tabstrip in order to detach it.
 const int kVerticalDetachMagnetism = 15;  // pixels
 
+// Amount, in pixels, from the edge of the tab strip that causes a non-pinned
+// tab to be pinned. See description of pin_timer_ for details.
+const int kHorizontalPinTabOffset = 16;
+
+// Delay, in ms, between when the user drags a tab to the edge of the tab strip
+// and when the tab becomes pinned. See description of pin_timer_ for details.
+const int kPinTabDelay = 300;
+
 }  // namespace
 
 DraggedTabControllerGtk::DraggedTabControllerGtk(TabGtk* source_tab,
@@ -67,6 +75,7 @@ void DraggedTabControllerGtk::Drag() {
     return;
 
   bring_to_front_timer_.Stop();
+  pin_timer_.Stop();
 
   // Before we get to dragging anywhere, ensure that we consider ourselves
   // attached to the source tabstrip.
@@ -288,10 +297,58 @@ void DraggedTabControllerGtk::MoveTab(const gfx::Point& screen_point) {
         attached_model->MoveTabContentsAt(from_index, to_index, true);
       }
     }
+
+    StartPinTimerIfNecessary(screen_point);
   }
 
   // Move the dragged tab. There are no changes to the model if we're detached.
   dragged_tab_->MoveTo(dragged_tab_point);
+}
+
+void DraggedTabControllerGtk::MakeDraggedTabPinned() {
+  MakeDraggedTabPinned(0);
+}
+
+void DraggedTabControllerGtk::MakeDraggedTabPinned(int tab_index) {
+  DCHECK(dragged_tab_.get());
+  DCHECK(!dragged_tab_->is_pinned());
+
+  // Mark the tab as pinned and update the model.
+  dragged_tab_->set_pinned(true);
+  attached_tabstrip_->model()->SetTabPinned(tab_index, true);
+
+  // Reset the hotspot (mouse_offset_) for the dragged tab. Otherwise the
+  // dragged tab may be nowhere near the mouse.
+  mouse_offset_.set_x(TabGtk::GetPinnedWidth() / 2 - 1);
+  InitWindowCreatePoint();
+  dragged_tab_->set_mouse_tab_offset(mouse_offset_);
+
+  // Resize the dragged tab.
+  dragged_tab_->Resize(TabGtk::GetPinnedWidth());
+}
+
+void DraggedTabControllerGtk::StartPinTimerIfNecessary(
+    const gfx::Point& screen_point) {
+  if (dragged_tab_->is_pinned())
+    return;
+
+  TabStripModel* attached_model = attached_tabstrip_->model();
+  int pinned_count = attached_model->IndexOfFirstNonPinnedTab();
+  if (pinned_count > 0)
+    return;
+
+  int index = attached_model->GetIndexOfTabContents(dragged_contents_);
+  if (index != 0)
+    return;
+
+  gfx::Point local_point =
+      ConvertScreenPointToTabStripPoint(attached_tabstrip_, screen_point);
+  if (local_point.x() > kHorizontalPinTabOffset)
+    return;
+
+  pin_timer_.Start(
+      base::TimeDelta::FromMilliseconds(kPinTabDelay), this,
+      &DraggedTabControllerGtk::MakeDraggedTabPinned);
 }
 
 void DraggedTabControllerGtk::AdjustDragPointForPinnedTabs(
@@ -311,16 +368,7 @@ void DraggedTabControllerGtk::AdjustDragPointForPinnedTabs(
     if (local_point.x() <= pinned_threshold) {
       // The mouse was moved below the threshold that triggers the tab to be
       // pinned.
-
-      // Mark the tab as pinned and update the model.
-      dragged_tab_->set_pinned(true);
-      attached_model->SetTabPinned(from_index, true);
-
-      // Resize the dragged tab.
-      mouse_offset_.set_x(TabGtk::GetPinnedWidth() / 2 - 1);
-      InitWindowCreatePoint();
-      dragged_tab_->set_mouse_tab_offset(mouse_offset_);
-      dragged_tab_->Resize(TabGtk::GetPinnedWidth());
+      MakeDraggedTabPinned(from_index);
 
       // The dragged tab point was calculated using the old mouse_offset, which
       // we just reset. Recalculate it.
@@ -632,6 +680,7 @@ bool DraggedTabControllerGtk::EndDragImpl(EndDragType type) {
   if (!dragged_tab_.get())
     return true;
 
+  pin_timer_.Stop();
   bring_to_front_timer_.Stop();
 
   // WARNING: this may be invoked multiple times. In particular, if deletion

@@ -108,6 +108,17 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // Handles moving the Tab within a TabStrip as well as updating the View.
   void MoveTab(const gfx::Point& screen_point);
 
+  // Cover for MakeDraggedTabPinned(0). This is invoked from the pin_timer_.
+  void MakeDraggedTabPinned();
+
+  // Changes the dragged tab from a normal tab to pinned, updating the
+  // necessary state.
+  void MakeDraggedTabPinned(int tab_index);
+
+  // If |screen_point| is along the edge of the tab strip and there are no
+  // pinned tabs in the model, pin_timer_ is started.
+  void StartPinTimerIfNecessary(const gfx::Point& screen_point);
+
   // Invoked from |MoveTab| to adjust |dragged_tab_point|. |screen_point| is
   // the location of the mouse and |from_index| the index the dragged tab is
   // at.
@@ -268,6 +279,12 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // stops moving the mouse for a brief time over a browser window, it is
   // brought to front.
   base::OneShotTimer<DraggedTabControllerGtk> bring_to_front_timer_;
+
+  // Timer used to pin the first tab. When the user drags a tab to the first
+  // tab in the tab strip this timer is started. If the user doesn't move the
+  // mouse, the tab is pinned. This timer invokes MakeDraggedTabPinned when it
+  // fires.
+  base::OneShotTimer<DraggedTabControllerGtk> pin_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DraggedTabControllerGtk);
 };
