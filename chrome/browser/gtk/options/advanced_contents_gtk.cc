@@ -228,7 +228,7 @@ PrivacySection::PrivacySection(Profile* profile)
   g_signal_connect(G_OBJECT(cookie_behavior_combobox_), "changed",
                    G_CALLBACK(OnCookieBehaviorChanged), this);
 
-  GtkWidget* cookie_controls = gtk_util::CreateLabeledControlsGroup(
+  GtkWidget* cookie_controls = gtk_util::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_ACCEPT_LABEL).c_str(),
       cookie_behavior_combobox_,
       NULL);

@@ -7,9 +7,12 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
+#include "base/gfx/gtk_util.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/gtk_util.h"
+#include "grit/chromium_strings.h"
+#include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 
@@ -60,17 +63,20 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
   gtk_label_set_markup(GTK_LABEL(label1), markup);
   g_free(markup);
   gtk_misc_set_alignment(GTK_MISC(label1), 0, .5);
+  gtk_widget_modify_fg(label1, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
   GtkWidget* label2 = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT).c_str());
   gtk_misc_set_alignment(GTK_MISC(label2), 0, .5);
   gtk_label_set_line_wrap(GTK_LABEL(label2), TRUE);
+  gtk_widget_modify_fg(label2, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
   string16 search_engine = GetDefaultSearchEngineName(profile_);
   GtkWidget* label3 = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_QUESTION, search_engine).c_str());
   gtk_misc_set_alignment(GTK_MISC(label3), 0, .5);
   gtk_label_set_line_wrap(GTK_LABEL(label3), TRUE);
+  gtk_widget_modify_fg(label3, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
   GtkWidget* keep_button = gtk_button_new_with_label(
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_OK, search_engine).c_str());
@@ -78,19 +84,33 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_CHANGE).c_str());
 
   content_ = gtk_vbox_new(FALSE, 5);
-  gtk_box_pack_start(GTK_BOX(content_), label1, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(content_), label2, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(content_), label3, TRUE, TRUE, 0);
+  int width, height;
+  gtk_util::GetWidgetSizeFromResources(content_,
+      IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS,
+      IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES,
+      &width, &height);
+  // TODO(estade): for now, don't set the height explicitly. The bubble is way
+  // too large for the text it contains.
+  gtk_widget_set_size_request(content_, width, -1);
+  gtk_widget_set_size_request(label1, width, -1);
+  gtk_widget_set_size_request(label2, width, -1);
+  gtk_widget_set_size_request(label3, width, -1);
+
+  gtk_box_pack_start(GTK_BOX(content_), label1, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(content_), label2, FALSE, FALSE, 0);
+  // Leave an empty line.
+  gtk_box_pack_start(GTK_BOX(content_), gtk_label_new(NULL), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(content_), label3, FALSE, FALSE, 0);
 
   GtkWidget* bottom = gtk_hbox_new(FALSE, 0);
   // We want the buttons on the right, so just use an expanding label to fill
-  // all of the extra space on the right.
-  gtk_box_pack_start(GTK_BOX(bottom), gtk_label_new(""), TRUE, TRUE, 0);
+  // all of the extra space on the left.
+  gtk_box_pack_start(GTK_BOX(bottom), gtk_label_new(NULL), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(bottom), keep_button, FALSE, FALSE,
                      kButtonPadding);
   gtk_box_pack_start(GTK_BOX(bottom), change_button, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(content_), bottom, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(content_), bottom, FALSE, FALSE, 0);
   // We want the focus to start on the keep entry, not on the change button.
   gtk_container_set_focus_child(GTK_CONTAINER(content_), keep_button);
 

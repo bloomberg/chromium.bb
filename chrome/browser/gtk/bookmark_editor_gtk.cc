@@ -141,7 +141,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
                    G_CALLBACK(OnEntryChanged), this);
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
 
-  GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
+  GtkWidget* table = gtk_util::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NAME_LABEL).c_str(),
       name_entry_,
       l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_URL_LABEL).c_str(),

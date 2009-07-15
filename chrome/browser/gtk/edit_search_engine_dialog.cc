@@ -139,7 +139,7 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window) {
         controller_->template_url()->prepopulate_id() == 0);
   }
 
-  GtkWidget* controls = gtk_util::CreateLabeledControlsGroup(
+  GtkWidget* controls = gtk_util::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(
           IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL).c_str(),
       CreateEntryImageHBox(title_entry_, title_image_),

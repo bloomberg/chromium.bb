@@ -138,7 +138,8 @@ guint32 GetGdkEventTime(GdkEvent* event) {
 
 namespace gtk_util {
 
-GtkWidget* CreateLabeledControlsGroup(const char* text, ...) {
+GtkWidget* CreateLabeledControlsGroup(const GdkColor* text_color,
+    const char* text, ...) {
   va_list ap;
   va_start(ap, text);
   GtkWidget* table = gtk_table_new(0, 2, FALSE);
@@ -150,6 +151,9 @@ GtkWidget* CreateLabeledControlsGroup(const char* text, ...) {
     GtkWidget* control = va_arg(ap, GtkWidget*);
     GtkWidget* label = gtk_label_new(text);
     gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+    if (text_color)
+      gtk_widget_modify_fg(label, GTK_STATE_NORMAL, text_color);
+
     gtk_table_attach(GTK_TABLE(table), label,
                  0, 1, row, row + 1,
                  GTK_FILL, GTK_FILL,

@@ -38,9 +38,11 @@ const int kBottomMargin = 1;
 const int kBorderThickness = 1;
 
 // Left margin of first run bubble.
-const int kFirstRunBubbleLeftMargin = 20;
+const int kFirstRunBubbleLeftMargin = 8;
+// Extra vertical spacing for first run bubble.
+const int kFirstRunBubbleTopMargin = 1;
 // Task delay (in milliseconds) to show first run bubble.
-const int kFirstRunBubbleTaskDelay = 30;
+const int kFirstRunBubbleTaskDelay = 200;
 
 // Left and right padding/margin.
 // no icon/text  : 4px url_text 4px
@@ -511,7 +513,8 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
   // The bubble needs to be just below the Omnibox and slightly to the right
   // of star button, so shift x and y co-ordinates.
   x += widget()->allocation.x + kFirstRunBubbleLeftMargin;
-  y += widget()->allocation.y + widget()->allocation.height;
+  y += widget()->allocation.y + widget()->allocation.height +
+       kFirstRunBubbleTopMargin;
 
   FirstRunBubble::Show(profile_,
       GTK_WINDOW(gtk_widget_get_toplevel(widget())),

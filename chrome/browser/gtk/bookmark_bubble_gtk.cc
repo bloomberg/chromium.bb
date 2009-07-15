@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/gfx/gtk_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
@@ -130,6 +131,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
   GtkWidget* label = gtk_label_new(l10n_util::GetStringUTF8(
       newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
                           IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK).c_str());
+  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
   GtkWidget* remove_button = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK).c_str());
   GtkWidget* edit_button = gtk_button_new_with_label(
@@ -164,6 +166,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
   // We use a table to allow the labels to line up with each other, along
   // with the entry and folder combo lining up.
   GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
+      &gfx::kGdkBlack,
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_TITLE_TEXT).c_str(),
       name_entry_,
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_FOLDER_TEXT).c_str(),

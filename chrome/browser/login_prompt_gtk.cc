@@ -70,7 +70,7 @@ class LoginHandlerGtk : public LoginHandler,
     gtk_entry_set_activates_default(GTK_ENTRY(password_entry_), TRUE);
     gtk_entry_set_visibility(GTK_ENTRY(password_entry_), FALSE);
 
-    GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
+    GtkWidget* table = gtk_util::CreateLabeledControlsGroup(NULL,
         l10n_util::GetStringUTF8(IDS_LOGIN_DIALOG_USERNAME_FIELD).c_str(),
         username_entry_,
         l10n_util::GetStringUTF8(IDS_LOGIN_DIALOG_PASSWORD_FIELD).c_str(),
