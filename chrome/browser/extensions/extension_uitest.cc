@@ -86,7 +86,7 @@ class ExtensionUITest : public ParentTestType {
   }
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(ExtensionUITest);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionUITest);
 };
 
 // For tests that only need to check for a single postMessage
@@ -331,9 +331,6 @@ const char* BrowserEventAutomationProxy::event_names_[] = {
   "tab-detached",
   "tab-removed",
 
-  // Page action events.
-  "page-action-executed",
-
   // Bookmark events.
   "bookmark-added",
   "bookmark-removed",
@@ -445,6 +442,10 @@ class BrowserEventExtensionTest
 // ExternalTabMessageLoop is ported.
 #if defined(OS_WIN)
 TEST_F(BrowserEventExtensionTest, RunTest) {
+  // This test loads an HTML file that tries to add listeners to a bunch of
+  // chrome.* events and upon adding a listener it posts the name of the event
+  // to the automation layer, which we'll count to make sure the events work.
+  //
   // The extension for this test does not specify a "key" property in its
   // manifest file.  Therefore, the extension system will automatically assign
   // it an Id.  To make this test consistent and non-flaky, the genetated Id
@@ -456,6 +457,10 @@ TEST_F(BrowserEventExtensionTest, RunTest) {
   BrowserEventAutomationProxy* proxy =
       static_cast<BrowserEventAutomationProxy*>(automation());
 
+  // If this assert hits and the actual size is 0 then you need to look at:
+  // src\chrome\test\data\extensions\uitest\event_sink\test.html and see if
+  // all the events we are attaching to are valid. Also compare the list against
+  // the event_names_ string array above.
   EXPECT_EQ(arraysize(BrowserEventAutomationProxy::event_names_),
             proxy->event_count_.size());
   for (std::map<std::string, int>::iterator i = proxy->event_count_.begin();

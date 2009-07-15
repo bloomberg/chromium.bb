@@ -1,4 +1,5 @@
-HOLA!!!
+HOLA!!! If you dont see the message DONE, then there is an error in the script.
+<br>
 
 <script type="text/javascript">
   // This extension registers for all tab and window events, and whenever one
@@ -45,11 +46,6 @@ HOLA!!!
   });
   chrome.tabs.onRemoved.addListener(function(tabId) {
     portToAutomation.postMessage(chrome.tabs.onRemoved.eventName_);
-  });
-
-  // Page action events.
-  chrome.pageActions.onExecute.addListener(function(info) {
-    portToAutomation.postMessage(chrome.pageActions.onExecute.eventName_);
   });
 
   // Bookmark events.

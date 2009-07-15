@@ -25,6 +25,9 @@ using bindings_utils::ExtensionBase;
 
 namespace {
 
+// A map of extension ID to vector of page action ids.
+typedef std::map< std::string, std::vector<std::string> > PageActionIdMap;
+
 const char kExtensionName[] = "chrome/ExtensionProcessBindings";
 const char* kExtensionDeps[] = {
   BaseJsV8Extension::kName,
@@ -35,10 +38,15 @@ const char* kExtensionDeps[] = {
 
 struct SingletonData {
   std::set<std::string> function_names_;
+  PageActionIdMap page_action_ids_;
 };
 
 static std::set<std::string>* GetFunctionNameSet() {
   return &Singleton<SingletonData>()->function_names_;
+}
+
+static PageActionIdMap* GetPageActionMap() {
+  return &Singleton<SingletonData>()->page_action_ids_;
 }
 
 class ExtensionImpl : public ExtensionBase {
@@ -62,6 +70,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetViews);
     } else if (name->Equals(v8::String::New("GetNextRequestId"))) {
       return v8::FunctionTemplate::New(GetNextRequestId);
+    } else if (name->Equals(v8::String::New("GetCurrentPageActions"))) {
+      return v8::FunctionTemplate::New(GetCurrentPageActions);
     } else if (names->find(*v8::String::AsciiValue(name)) != names->end()) {
       return v8::FunctionTemplate::New(StartRequest, name);
     }
@@ -70,11 +80,15 @@ class ExtensionImpl : public ExtensionBase {
   }
 
  private:
-  static v8::Handle<v8::Value> GetViews(const v8::Arguments& args) {
+  static std::string ExtensionIdFromCurrentContext() {
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
     DCHECK(renderview);
     GURL url = renderview->webview()->GetMainFrame()->GetURL();
-    std::string extension_id = url.host();
+    return url.host();
+  }
+
+  static v8::Handle<v8::Value> GetViews(const v8::Arguments& args) {
+    std::string extension_id = ExtensionIdFromCurrentContext();
 
     ContextList contexts =
         bindings_utils::GetContextsForExtension(extension_id);
@@ -97,7 +111,32 @@ class ExtensionImpl : public ExtensionBase {
     static int next_request_id = 0;
     return v8::Integer::New(next_request_id++);
   }
-  
+
+  static v8::Handle<v8::Value> GetCurrentPageActions(
+      const v8::Arguments& args) {
+    std::string extension_id = ExtensionIdFromCurrentContext();
+    PageActionIdMap* page_action_map =
+        GetPageActionMap();
+    PageActionIdMap::const_iterator it =
+        page_action_map->find(extension_id);
+
+    std::vector<std::string> page_actions;
+    size_t size  = 0;
+    if (it != page_action_map->end()) {
+      page_actions = it->second;
+      size = page_actions.size();
+    }
+
+    v8::Local<v8::Array> page_action_vector = v8::Array::New(size);
+    for (size_t i = 0; i < size; ++i) {
+      std::string page_action_id = page_actions[i];
+      page_action_vector->Set(v8::Integer::New(i),
+                              v8::String::New(page_action_id.c_str()));
+    }
+
+    return page_action_vector;
+  }
+
   // Starts an API request to the browser, with an optional callback.  The
   // callback will be dispatched to EventBindings::HandleResponse.
   static v8::Handle<v8::Value> StartRequest(const v8::Arguments& args) {
@@ -158,4 +197,17 @@ void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
       request->context, "handleResponse", arraysize(argv), argv);
 
   GetPendingRequestMap().erase(request_id);
+}
+
+// static
+void ExtensionProcessBindings::SetPageActions(
+    const std::string& extension_id,
+    const std::vector<std::string>& page_actions) {
+  PageActionIdMap& page_action_map = *GetPageActionMap();
+  if (!page_actions.empty()) {
+    page_action_map[extension_id] = page_actions;
+  } else {
+    if (page_action_map.find(extension_id) != page_action_map.end())
+      page_action_map.erase(extension_id);
+  }
 }

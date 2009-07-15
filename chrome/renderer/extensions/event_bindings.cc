@@ -118,9 +118,13 @@ RenderThreadBase* EventBindings::GetRenderThread() {
   return render_thread ? render_thread : RenderThread::current();
 }
 
-static void HandleContextDestroyed(ContextList::iterator context_iter) {
+static void HandleContextDestroyed(ContextList::iterator context_iter,
+                                   bool callUnload) {
   // Notify the bindings that they're going away.
-  CallFunctionInContext((*context_iter)->context, "dispatchOnUnload", 0, NULL);
+  if (callUnload) {
+    CallFunctionInContext((*context_iter)->context, "dispatchOnUnload", 0,
+                          NULL);
+  }
 
   // Remove all pending requests for this context.
   PendingRequestMap& pending_requests = GetPendingRequestMap();
@@ -139,7 +143,7 @@ static void HandleContextDestroyed(ContextList::iterator context_iter) {
        it != GetContexts().end(); ) {
     ContextList::iterator current = it++;
     if ((*current)->parent_context == (*context_iter)->context)
-      HandleContextDestroyed(current);
+      HandleContextDestroyed(current, callUnload);
   }
 
   // Remove it from our registered contexts.
@@ -155,7 +159,7 @@ static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
   for (ContextList::iterator it = GetContexts().begin();
        it != GetContexts().end(); ++it) {
     if ((*it)->context == context) {
-      HandleContextDestroyed(it);
+      HandleContextDestroyed(it, false);
       return;
     }
   }
@@ -211,7 +215,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
 
   ContextList::iterator context_iter = bindings_utils::FindContext(context);
   DCHECK(context_iter != GetContexts().end());
-  ::HandleContextDestroyed(context_iter);
+  ::HandleContextDestroyed(context_iter, true);
 }
 
 // static

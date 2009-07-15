@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ class RenderThread : public RenderThreadBase,
   // be accessed when running on the render thread itself
   static RenderThread* current();
 
-  // Overridded from RenderThreadBase.
+  // Overridden from RenderThreadBase.
   virtual bool Send(IPC::Message* msg) {
     return ChildThread::Send(msg);
   }
@@ -114,7 +114,7 @@ class RenderThread : public RenderThreadBase,
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
-  // Called by the thread base class
+  // Called by the thread base class.
   virtual void Init();
   virtual void CleanUp();
 
@@ -124,6 +124,8 @@ class RenderThread : public RenderThreadBase,
 
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
+  void OnPageActionsUpdated(const std::string& extension_id,
+                            const std::vector<std::string>& page_actions);
   void OnSetNextPageID(int32 next_page_id);
   void OnCreateNewView(gfx::NativeViewId parent_hwnd,
                        ModalDialogEvent modal_dialog_event,

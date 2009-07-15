@@ -7,6 +7,7 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_BINDINGS_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,10 @@ class ExtensionProcessBindings {
   static void HandleResponse(int request_id, bool success,
                              const std::string& response,
                              const std::string& error);
+
+  // Sets the page action ids for a particular extension.
+  static void SetPageActions(const std::string& extension_id,
+                             const std::vector<std::string>& page_actions);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EXTENSION_PROCESS_BINDINGS_H_

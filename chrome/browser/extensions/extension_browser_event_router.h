@@ -50,6 +50,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // PageActions.
   void PageActionExecuted(Profile* profile,
+                          std::string extension_id,
                           std::string page_action_id,
                           int tab_id,
                           std::string url);

@@ -17,8 +17,7 @@
       "id": "RssPageAction",
       "name": "Subscribe to this feed",
       "icons": [
-         "feed-icon-16x16.png",
-         "feed-icon-16x16-subscribed.png"
+         "feed-icon-16x16.png"
       ]
     }
   ]
