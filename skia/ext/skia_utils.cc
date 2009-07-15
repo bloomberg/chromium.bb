@@ -38,11 +38,10 @@ static inline double calcHue(double temp1, double temp2, double hueVal) {
   return temp1;
 }
 
-SkPMColor HSLToSKColor(U8CPU alpha, HSL hsl) {
+SkColor HSLToSkColor(U8CPU alpha, HSL hsl) {
   double hue = hsl.h;
   double saturation = hsl.s;
   double lightness = hsl.l;
-  double scaleFactor = 256.0;
 
   // If there's no color, we don't care about hue and can do everything based
   // on brightness.
@@ -56,8 +55,7 @@ SkPMColor HSLToSKColor(U8CPU alpha, HSL hsl) {
     else
       light = SkDoubleToFixed(lightness) >> 8;
 
-    unsigned greyValue = SkAlphaMul(light, alpha);
-    return SkColorSetARGB(alpha, greyValue, greyValue, greyValue);
+    return SkColorSetARGB(alpha, light, light, light);
   }
 
   double temp2 = (lightness < 0.5) ?
@@ -70,12 +68,12 @@ SkPMColor HSLToSKColor(U8CPU alpha, HSL hsl) {
   double bh = calcHue(temp1, temp2, hue - 1.0 / 3.0);
 
   return SkColorSetARGB(alpha,
-      SkAlphaMul(static_cast<int>(rh * scaleFactor), alpha),
-      SkAlphaMul(static_cast<int>(gh * scaleFactor), alpha),
-      SkAlphaMul(static_cast<int>(bh * scaleFactor), alpha));
+      static_cast<int>(rh * 255),
+      static_cast<int>(gh * 255),
+      static_cast<int>(bh * 255));
 }
 
-void SkColorToHSL(SkPMColor c, HSL& hsl) {
+void SkColorToHSL(SkColor c, HSL& hsl) {
   double r = SkColorGetR(c) / 255.0;
   double g = SkColorGetG(c) / 255.0;
   double b = SkColorGetB(c) / 255.0;
@@ -119,7 +117,11 @@ void SkColorToHSL(SkPMColor c, HSL& hsl) {
   hsl.l = l;
 }
 
-SkColor HSLShift(HSL hsl, HSL shift) {
+SkColor HSLShift(SkColor color, HSL shift) {
+  HSL hsl;
+  int alpha = SkColorGetA(color);
+  SkColorToHSL(color, hsl);
+
   // Replace the hue with the tint's hue.
   if (shift.h >= 0)
     hsl.h = shift.h;
@@ -134,17 +136,33 @@ SkColor HSLShift(HSL hsl, HSL shift) {
     }
   }
 
-  // Change the lightness.
-  if (shift.l >= 0) {
-    if (shift.l <= 0.5) {
-      hsl.l *= shift.l * 2.0;
-    } else {
-      hsl.l = hsl.l + (1.0 - hsl.l) *
-        ((shift.l - 0.5) * 2.0);
-    }
-  }
+  SkColor result = HSLToSkColor(alpha, hsl);
 
-  return skia::HSLToSKColor(0xff, hsl);
+  // Lightness shifts in the style of popular image editors aren't
+  // actually represented in HSL - the L value does have some effect
+  // on saturation.
+  if (shift.l >= 0) {
+    double r = static_cast<double>SkColorGetR(result);
+    double g = static_cast<double>SkColorGetG(result);
+    double b = static_cast<double>SkColorGetB(result);
+
+    if (shift.l <= 0.5) {
+      r *= (shift.l * 2.0);
+      g *= (shift.l * 2.0);
+      b *= (shift.l * 2.0);
+    } else {
+      r = (r + (255.0 - r) * ((shift.l - 0.5) * 2.0));
+      g = (g + (255.0 - g) * ((shift.l - 0.5) * 2.0));
+      b = (b + (255.0 - b) * ((shift.l - 0.5) * 2.0));
+    }
+
+    return SkColorSetARGB(alpha, 
+                          static_cast<int>(r),
+                          static_cast<int>(g),
+                          static_cast<int>(b));
+  } else {
+    return result;
+  }
 }
 
 

@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkUnPreMultiply.h"
 #include "skia/ext/convolver.h"
 
 namespace skia {
@@ -540,49 +541,9 @@ SkBitmap ImageOperations::CreateHSLShiftedBitmap(const SkBitmap& bitmap,
     SkPMColor* tinted_pixels = shifted.getAddr32(0, y);
 
     for (int x = 0; x < bitmap.width(); x++) {
-      // Convert the color of this pixel to HSL.
-      SkPMColor color = pixels[x];
-      int alpha = SkColorGetA(color);
-      if (alpha != 255) {
-        // We have to normalize the colors as they're pre-multiplied.
-        double r = SkColorGetR(color) / static_cast<double>(alpha);
-        double g = SkColorGetG(color) / static_cast<double>(alpha);
-        double b = SkColorGetB(color) / static_cast<double>(alpha);
-        color = SkColorSetARGB(255,
-                               static_cast<int>(r * 255.0),
-                               static_cast<int>(g * 255.0),
-                               static_cast<int>(b * 255.0));
-      }
-
-      HSL pixel_hsl = { 0, 0, 0 };
-      SkColorToHSL(color, pixel_hsl);
-
-      // Replace the hue with the tint's hue.
-      if (hsl_shift.h >= 0)
-        pixel_hsl.h = hsl_shift.h;
-
-      // Change the saturation.
-      if (hsl_shift.s >= 0) {
-        if (hsl_shift.s <= 0.5) {
-          pixel_hsl.s *= hsl_shift.s * 2.0;
-        } else {
-          pixel_hsl.s = pixel_hsl.s + (1.0 - pixel_hsl.s) *
-              ((hsl_shift.s - 0.5) * 2.0);
-        }
-      }
-
-      // Change the lightness.
-      if (hsl_shift.l >= 0) {
-        if (hsl_shift.l <= 0.5) {
-          pixel_hsl.l *= hsl_shift.l * 2.0;
-        } else {
-          pixel_hsl.l = pixel_hsl.l + (1.0 - pixel_hsl.l) *
-              ((hsl_shift.l - 0.5) * 2.0);
-        }
-      }
-
-      // Convert back to RGB.
-      tinted_pixels[x] = HSLToSKColor(alpha, pixel_hsl);
+      SkColor color = SkUnPreMultiply::PMColorToColor(pixels[x]);
+      SkColor shifted = HSLShift(color, hsl_shift);
+      tinted_pixels[x] = SkPreMultiplyColor(shifted);
     }
   }
 

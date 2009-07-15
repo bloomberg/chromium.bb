@@ -29,12 +29,11 @@ TEST(SkiaUtils, SkColorToHSLGrey) {
 }
 
 TEST(SkiaUtils, HSLToSkColorWithAlpha) {
-  // Premultiplied alpha - this is full red.
-  SkColor red = SkColorSetARGB(128, 128, 0, 0);
+  SkColor red = SkColorSetARGB(128, 255, 0, 0);
 
   skia::HSL hsl = { 0, 1, 0.5 };
 
-  SkColor result = skia::HSLToSKColor(128, hsl);
+  SkColor result = skia::HSLToSkColor(128, hsl);
   EXPECT_EQ(SkColorGetA(red), SkColorGetA(result));
   EXPECT_EQ(SkColorGetR(red), SkColorGetR(result));
   EXPECT_EQ(SkColorGetG(red), SkColorGetG(result));

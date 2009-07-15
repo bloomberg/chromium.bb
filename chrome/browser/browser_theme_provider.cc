@@ -107,7 +107,7 @@ const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
 const skia::HSL BrowserThemeProvider::kDefaultTintButtons = { -1, -1, -1 };
 const skia::HSL BrowserThemeProvider::kDefaultTintFrame = { -1, -1, -1 };
 const skia::HSL BrowserThemeProvider::kDefaultTintFrameInactive =
-    { -1, 0.5f, 0.72f };
+    { -1, -1, 0.75f };
 const skia::HSL BrowserThemeProvider::kDefaultTintFrameIncognito =
     { -1, 0.2f, 0.35f };
 const skia::HSL BrowserThemeProvider::kDefaultTintFrameIncognitoInactive =
@@ -578,22 +578,21 @@ void BrowserThemeProvider::SetTint(const char* key, const skia::HSL& tint) {
 
 void BrowserThemeProvider::GenerateFrameColors() {
   // Generate any secondary frame colors that weren't provided.
-  skia::HSL frame_hsl = { 0, 0, 0 };
-  skia::SkColorToHSL(GetColor(COLOR_FRAME), frame_hsl);
+  SkColor frame = GetColor(COLOR_FRAME);
 
   if (colors_.find(kColorFrame) == colors_.end())
-    colors_[kColorFrame] = HSLShift(frame_hsl, GetTint(TINT_FRAME));
+    colors_[kColorFrame] = HSLShift(frame, GetTint(TINT_FRAME));
   if (colors_.find(kColorFrameInactive) == colors_.end()) {
     colors_[kColorFrameInactive] =
-        HSLShift(frame_hsl, GetTint(TINT_FRAME_INACTIVE));
+        HSLShift(frame, GetTint(TINT_FRAME_INACTIVE));
   }
   if (colors_.find(kColorFrameIncognito) == colors_.end()) {
     colors_[kColorFrameIncognito] =
-        HSLShift(frame_hsl, GetTint(TINT_FRAME_INCOGNITO));
+        HSLShift(frame, GetTint(TINT_FRAME_INCOGNITO));
   }
   if (colors_.find(kColorFrameIncognitoInactive) == colors_.end()) {
     colors_[kColorFrameIncognitoInactive] =
-        HSLShift(frame_hsl, GetTint(TINT_FRAME_INCOGNITO_INACTIVE));
+        HSLShift(frame, GetTint(TINT_FRAME_INCOGNITO_INACTIVE));
   }
 }
 
