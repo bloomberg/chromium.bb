@@ -218,6 +218,19 @@ static bool DropRoot() {
   return true;
 }
 
+static bool SetupChildEnvironment() {
+  // ld.so will have cleared LD_LIBRARY_PATH because we are SUID. However, the
+  // child process might need this so zygote_host_linux.cc saved a copy in
+  // SANDBOX_LD_LIBRARY_PATH.
+  const char* sandbox_ld_library_path = getenv("SANDBOX_LD_LIBRARY_PATH");
+  if (sandbox_ld_library_path) {
+    setenv("LD_LIBRARY_PATH", sandbox_ld_library_path, 1 /* overwrite */);
+    unsetenv("SANDBOX_LD_LIBRARY_PATH");
+  }
+
+  return true;
+}
+
 int main(int argc, char **argv) {
   if (argc == 1) {
     fprintf(stderr, "Usage: %s <renderer process> <args...>\n", argv[0]);
@@ -280,6 +293,8 @@ int main(int argc, char **argv) {
   if (!SpawnChrootHelper())
     return 1;
   if (!DropRoot())
+    return 1;
+  if (!SetupChildEnvironment())
     return 1;
 
   execv(argv[1], &argv[1]);
