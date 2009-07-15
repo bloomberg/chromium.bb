@@ -258,7 +258,7 @@ const wchar_t kCurrentThemeImages[] = L"extensions.theme.images";
 const wchar_t kCurrentThemeColors[] = L"extensions.theme.colors";
 const wchar_t kCurrentThemeTints[] = L"extensions.theme.tints";
 const wchar_t kCurrentThemeDisplayProperties[] =
-    L"extensions.theme.display_properties";
+    L"extensions.theme.properties";
 
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.

@@ -696,11 +696,13 @@ void BrowserThemeProvider::SaveColorData() {
   if (colors_.size()) {
     ColorMap::iterator iter = colors_.begin();
     while (iter != colors_.end()) {
-      SkColor rgb = (*iter).second;
+      SkColor rgba = (*iter).second;
       ListValue* rgb_list = new ListValue();
-      rgb_list->Set(0, Value::CreateIntegerValue(SkColorGetR(rgb)));
-      rgb_list->Set(1, Value::CreateIntegerValue(SkColorGetG(rgb)));
-      rgb_list->Set(2, Value::CreateIntegerValue(SkColorGetB(rgb)));
+      rgb_list->Set(0, Value::CreateIntegerValue(SkColorGetR(rgba)));
+      rgb_list->Set(1, Value::CreateIntegerValue(SkColorGetG(rgba)));
+      rgb_list->Set(2, Value::CreateIntegerValue(SkColorGetB(rgba)));
+      if (SkColorGetA(rgba) != 255)
+        rgb_list->Set(3, Value::CreateRealValue(SkColorGetA(rgba)));
       pref_colors->Set(UTF8ToWide((*iter).first), rgb_list);
       ++iter;
     }
@@ -769,6 +771,8 @@ void BrowserThemeProvider::LoadThemePrefs() {
                  FilePath());
     SetColorData(prefs->GetMutableDictionary(prefs::kCurrentThemeColors));
     SetTintData(prefs->GetMutableDictionary(prefs::kCurrentThemeTints));
+    SetDisplayPropertyData(
+        prefs->GetMutableDictionary(prefs::kCurrentThemeDisplayProperties));
     GenerateFrameColors();
     GenerateFrameImages();
     UserMetrics::RecordAction(L"Themes_loaded", profile_);
