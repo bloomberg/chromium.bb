@@ -133,31 +133,31 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestMainResource) {
 
 // Tests resources panel enabling.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEnableResourcesTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
 }
 
 // Tests resource headers.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceHeaders) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
   RunTest("testResourceHeaders", kDebuggerTestPage);
 }
 
 // Tests profiler panel.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestProfilerTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
 
 // Tests scripts panel showing.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
 // Tests set breakpoint.
 // http://crbug.com/16767
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestSetBreakpoint) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
 }
 
 // Tests eval on call frame.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalCallFrame) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalCallFrame) {
   RunTest("testEvalCallFrame", kEvalTestPage);
 }
 
