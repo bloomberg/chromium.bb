@@ -1,0 +1,280 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Extensions: Hello, World</title>
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<h1>Hello, World</h1>
+
+<p>
+This tutorial walks you through creating a simple extension.
+To complete this tutorial, you must have Windows;
+Linux and Mac don't yet support extensions.
+</p>
+
+<p>
+[PENDING: add a TOC and navigation links to other pages]
+</p>
+
+<h2>Get your browser ready</h2>
+
+<p>
+To develop extensions for Google Chrome, you need to set up your browser:
+</p>
+
+<ol>
+  <li><a href="http://dev.chromium.org/getting-involved/dev-channel">Subscribe
+  to the Dev channel</a> of Google Chrome for Windows.  </li>
+  <li><a href="http://dev.chromium.org/developers/creating-and-using-profiles">Create
+    a separate profile</a> for testing
+    <em>(optional but highly recommended)</em>.
+    Having a testing profile means that you can use Google Chrome
+    (with your default profile)
+    for everyday browsing,
+    even if your extension has horrible bugs.</li>
+</ol>
+
+<h2>Create and load a toolbar extension</h2>
+<p>
+In this section, you'll write a small extension
+that puts a bit of UI into the bottom of the Google Chrome window &mdash;
+the <em>toolbar</em>.
+</p>
+
+<ol>
+  <li>
+    Create a folder somewhere on your computer to contain your extension's code.
+    We'll assume the folder is located at
+    <strong><code>c:\myext</code></strong>,
+    but it can be anywhere.
+  </li>
+  <li>
+    Inside your extension's folder,
+    create a text file called <strong><code>manifest.json</code></strong>,
+    and put this in it:
+<pre>{
+  &quot;name&quot;: &quot;My First Extra&quot;,
+  &quot;version&quot;: &quot;1.0&quot;,
+  &quot;description&quot;: &quot;The first ext* that I made.&quot;,
+  &quot;toolstrips&quot;: [
+    &quot;my_toolstrip.html&quot;
+  ]
+}</pre>
+  </li>
+  <li>
+    In the same folder, create a text file called
+    <strong><code>my_toolstrip.html</code></strong>,
+    and put this in it:
+<pre>&lt;div class=&quot;toolstrip-button&quot;&gt;
+  &lt;span&gt;Hello, World!&lt;/span&gt;
+&lt;/div&gt;</pre>
+  </li>
+  <li> Load the extension:
+    <ol type="a">
+      <li>
+      Change the shortcut that you use to start the browser
+      (or create a new one)
+      so that it has the <code>--enable-extensions</code>
+      and <code>--load-extension</code> flags.
+      For example, if your extension is at <code>c:\myext</code>,
+      your shortcut might look something like this:
+<pre>chrome.exe <span class="newCode">--enable-extensions --load-extension="c:\myext"</span></pre>
+      </li>
+      <li>Exit Google Chrome.
+      If you have a separate profile for testing,
+      you only need to exit the browser instances that use the testing profile. </li>
+      <li>Double-click the shortcut to start the browser.</li>
+    </ol>
+    <p>
+    <b>Note:</b>
+    For details on changing shortcut properties, see
+    <a href="http://dev.chromium.org/developers/creating-and-using-profiles">Creating
+    and Using Profiles</a>.</p>
+  </li>
+</ol>
+
+<p>
+You should see the UI for your extension at the bottom left of the browser, looking something like this:
+</p>
+
+<table>
+    <tbody>
+      <tr>
+        <td align="center" width="33%"><img src="images/hw-1.gif"
+                                        alt="" /></td>
+        <td align="center" width="33%"><img src="images/hw-2.gif"
+                                        alt="" /></td>
+        <td align="center" width="33%"><img src="images/hw-3.gif"
+                                        alt="" /></td>
+      </tr>
+      <tr>
+        <th align="center" width="33%"> default appearance</th>
+        <th align="center" width="33%"> initial onhover appearance</th>
+        <th align="center" width="33%"> final onhover appearance</th>
+      </tr>
+    </tbody>
+</table>
+
+  <p>
+  Your extension's button is automatically styled
+  to look like it belongs in the browser.
+  If you put the cursor over the button,
+  the button gets a nice, rounded edge,
+  just like the buttons in the bookmark bar.
+  After a while, a tooltip comes up, identifying the extension.
+  </p>
+  <p> [PENDING: troubleshooting info should go here.
+  what are symptoms of common typos, including misnamed files?
+  what are the symptoms if you don't have the dev channel?] </p>
+
+<h2>Add code to the extension</h2>
+<p> In this step, you'll make your extension <em>do</em> something besides just look good. </p>
+<ol>
+  <li>
+    <p> Inside your extension's folder,
+    create a text file called <strong><code>hello_world.html</code></strong>,
+    and add the following code to it:</p>
+    <blockquote> <a href="samples/hello_world.txt">CSS
+    and JavaScript code for hello_world</a></blockquote>
+  </li>
+  <li>
+    <p> Edit <code>my_toolstrip.html</code>, so that it has the following code: </p>
+    <pre>&lt;div class=&quot;toolstrip-button&quot;<span class="newCode"> onclick=&quot;window.open('hello_world.html')&quot;</span>&gt;
+  &lt;span&gt;Hello, World!&lt;/span&gt;
+&lt;/div&gt;</pre>
+  </li>
+  <li>
+    Restart the browser to load the new version of the extension.</li>
+  <li>Click the button.
+  A window should come up that displays <code>hello_world.html</code>. </li>
+</ol>
+<p> It should look something like this:</p>
+
+<img src="images/hello_world-page.gif" alt="a window with a grid of images related to HELLO WORLD" />
+
+<p> If you don't see that page,
+try the instructions again,
+following them exactly.
+Don't try loading an HTML file that isn't in the extension's folder &mdash;
+it won't work! </p>
+
+<h2>Debug the extension</h2>
+<p>
+You can use the browser's built-in developer tools
+to view your extension's code,
+display debugging output,
+and debug your extension.
+</p>
+<ol>
+  <li>
+    <p> Edit <code>my_toolstrip.html</code>, so that it has the following code: </p>
+<pre><span class="newCode">&lt;script&gt;
+function helloWorld() {
+  var hwFile = 'hello_world.html';
+  console.log(&quot;in helloWorld()&quot;);
+  window.open(hwFile);
+}
+&lt;/script&gt;</span>
+
+&lt;div class=&quot;toolstrip-button&quot; onclick=&quot;<span class="newCode">helloWorld();</span>&quot;&gt;
+&lt;span&gt;Hello, World!&lt;/span&gt;
+&lt;/div&gt;</pre>
+    <p> The relocated code still has the same effect,
+    but now it has some debugging output,
+    thanks to the call to <code>console.log()</code>.</p>
+  </li>
+  <li>
+  Restart the browser, so that it loads your new version of the extension.
+
+  <div class="note">
+  <b>Tip:</b>
+  If you don't want to restart your browser,
+  you can get an updated version of the extension
+  by opening a new window.
+  The new window will contain the updated extension;
+  old windows will contain the old version.
+  </div>
+  </li>
+  <li>
+  Right-click the <strong>Hello, World!</strong> button
+  (at the bottom left)
+  to bring up the Developer Tools window
+  for this instance of your toolbar button.
+  It should look something like this:
+  <p>
+     <img src="images/devtools-1.gif" alt="" />  </p>
+  </li>
+  <li>
+  Click the <strong>Scripts</strong> button.
+  If necessary, choose <strong>my_toolstrip.html</strong>
+  from the list of scripts.
+  The result should be something like this:
+  <p>
+  <img src="images/devtools-2.gif" alt="" />  </p>
+  </li>
+  <li>
+  Set a debugging breakpoint at the <code>window.open()</code> statement
+  by clicking <strong>5</strong> in the left column:
+  <p>
+  <img src="images/devtools-3.gif" alt="" />  </p>
+  </li>
+  <li>
+  Click the Console button
+  (second from left, at the bottom of the Developer Tools window)
+  so that you can see both the code and the console.
+  <p>
+  <img src="images/devtools-4.gif" alt="" /></p>
+  </li>
+  <li>
+  Back in the main browser window,
+  click the <strong>Hello, World!</strong> button,
+  so that the extension begins executing.
+  You should see the output of <code>console.log()</code>
+  along with the line number,
+  and execution should stop just before
+  the call to <code>window.open()</code>.
+  <p>
+  <img src="images/devtools-5.gif" alt="" />
+  </p>
+
+  <p>
+  The Call Stack area at the right of the tools window shows that
+  the <code>helloWorld()</code> method was called by an anonymous function
+  that was called by <code>onclick</code>.
+  Anywhere in the Call Stack or console that you see a file and line number
+  (for example, &quot;my_toolstrip.html:4&quot;),
+  you can click that text to see the relevant line of code.  </p>
+  </li>
+  <li>
+  In the upper right part of the tools window,
+  scroll down (if necessary) until you can see the local scope variables.
+  This section shows the current values of all variables in the current scope.
+  For example, you can see that <code>hwFile</code> is a local variable
+  that has the value &quot;hello_world.html&quot;.
+  <p>
+  <img src="images/devtools-6.gif" alt="" />  </p>
+  </li>
+  <li>
+  Click the buttons at the upper right of the window
+  to resume execution or to step through the code.
+  Once the call to <code>window.open()</code> returns,
+  the main browser window should open a new tab
+  that displays the contents of <code>hello_world.html</code>.</li>
+</ol>
+<p>
+You now know how to load and debug an extension!</p>
+
+<h2>Summary</h2>
+
+<p>
+[PENDING: Summarize what we did,
+what it means,
+what else we would've done if this were a real extension (e.g. package it),
+and where to find more information.
+Suggest where to go next.]</p>
+
+</body>
+</html>
