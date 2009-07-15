@@ -460,10 +460,6 @@ class SecuritySection : public OptionsPageBase {
   }
 
  private:
-  // The callback functions for the options widgets.
-  static void OnFontsAndLanguagesButtonClicked(GtkButton *button,
-                                               WebContentSection* section);
-
   // The widget containing the options for this section.
   GtkWidget* page_;
 
@@ -490,6 +486,10 @@ class WebContentSection : public OptionsPageBase {
   }
 
  private:
+  // The callback functions for the options widgets.
+  static void OnFontsAndLanguagesButtonClicked(GtkButton *button,
+                                               WebContentSection* section);
+
   // The widget containing the options for this section.
   GtkWidget* page_;
 
