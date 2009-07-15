@@ -304,6 +304,13 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
       "getNodeForId",
       WebDevToolsAgentImpl::JsGetNodeForId);
   devtools_agent_host_->Build();
+
+  v8::HandleScope scope;
+  v8::Context::Scope utility_scope(utility_context_);
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
+  utility_context_->Global()->Set(
+      v8::String::New("InspectorController"),
+      V8DOMWrapper::convertToV8Object(V8ClassIndex::INSPECTORCONTROLLER, ic));
 }
 
 // static

@@ -573,3 +573,13 @@ devtools.Injected.prototype.evaluate = function(expression) {
     return [ e.toString(), true ];
   }
 };
+
+
+/**
+ * Dispatches given method with given args on the host object.
+ * @param {string} method Method name.
+ */
+devtools.Injected.prototype.InspectorController = function(method, var_args) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return InspectorController[method].apply(InspectorController, args);
+};

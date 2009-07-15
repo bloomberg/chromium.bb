@@ -176,8 +176,7 @@ String DebuggerAgentImpl::ExecuteUtilityFunction(
     *exception = WebCore::toWebCoreString(try_catch.Message()->Get());
     return "";
   } else {
-    v8::Handle<v8::String> res_json = v8::Handle<v8::String>::Cast(res_obj);
-    return WebCore::toWebCoreString(res_json);
+    return WebCore::toWebCoreStringWithNullCheck(res_obj);
   }
 }
 

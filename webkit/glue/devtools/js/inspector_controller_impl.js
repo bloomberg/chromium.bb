@@ -52,6 +52,16 @@ devtools.InspectorController.prototype.detach = function() {
 /**
  * {@inheritDoc}.
  */
+devtools.InspectorController.prototype.storeLastActivePanel = function(panel) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.Callback.wrap(undefined),
+      'InspectorController', JSON.stringify(['storeLastActivePanel', panel]));
+};
+
+
+/**
+ * {@inheritDoc}.
+ */
 devtools.InspectorController.prototype.clearMessages = function() {
   RemoteToolsAgent.ClearConsoleMessages();
 };

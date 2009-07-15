@@ -99,6 +99,14 @@ devtools.InspectorController.prototype.detach = function() {
 
 
 /**
+ * Tell host that the active panel has changed.
+ * @param {string} panel Panel name that was last active.
+ */
+devtools.InspectorController.prototype.storeLastActivePanel = function(panel) {
+};
+
+
+/**
  * Clears console message log in the backend.
  */
 devtools.InspectorController.prototype.clearMessages = function() {
