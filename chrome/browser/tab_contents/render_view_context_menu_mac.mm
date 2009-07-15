@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
+#include "base/scoped_nsobject.h"
 
 // Obj-C bridge class that is the target of all items in the context menu.
 // Relies on the tag being set to the command id. Uses |context_| to
@@ -84,26 +85,19 @@ void RenderViewContextMenuMac::AppendMenuItem(int command_id) {
 
 void RenderViewContextMenuMac::AppendMenuItem(int command_id,
                                               const string16& label) {
-  // Create the item and set its target/action to |target_| with the command
-  // as |command_id|. Then add it to the menu at the end.
-  NSMenuItem* item =
-      [[[NSMenuItem alloc] initWithTitle:PrepareLabelForDisplay(label)
-                                  action:@selector(itemSelected:)
-                           keyEquivalent:@""] autorelease];
-  [item setTag:command_id];
-  [item setTarget:target_];
-  [item setEnabled:IsItemCommandEnabled(command_id) ? YES : NO];
-  [insert_menu_ addItem:item];
+  AppendMenuItemWithState(command_id, label, NSOffState);
 }
 
-void RenderViewContextMenuMac::AppendRadioMenuItem(int id,
+void RenderViewContextMenuMac::AppendRadioMenuItem(int command_id,
                                                    const string16& label) {
-  NOTIMPLEMENTED();
-}
+  AppendMenuItemWithState(command_id, label,
+                          ItemIsChecked(command_id) ? NSOnState : NSOffState);
 
-void RenderViewContextMenuMac::AppendCheckboxMenuItem(int id,
+}
+void RenderViewContextMenuMac::AppendCheckboxMenuItem(int command_id,
     const string16& label) {
-  NOTIMPLEMENTED();
+  AppendMenuItemWithState(command_id, label,
+                          ItemIsChecked(command_id) ? NSOnState : NSOffState);
 }
 
 void RenderViewContextMenuMac::AppendSeparator() {
@@ -124,10 +118,10 @@ void RenderViewContextMenuMac::StartSubMenu(int command_id,
   // We don't need to retain the submenu as the context menu already does, but
   // we switch the "insert menu" so subsequent items are added to the submenu
   // and not the main menu. This happens until someone calls FinishSubMenu().
-  NSMenuItem* submenu_item =
-      [[[NSMenuItem alloc] initWithTitle:PrepareLabelForDisplay(label)
-                                  action:nil
-                           keyEquivalent:@""] autorelease];
+  scoped_nsobject<NSMenuItem> submenu_item([[NSMenuItem alloc]
+                              initWithTitle:PrepareLabelForDisplay(label)
+                                     action:nil
+                              keyEquivalent:@""]);
   insert_menu_ = [[[NSMenu alloc] init] autorelease];
   [submenu_item setSubmenu:insert_menu_];
   [menu_ addItem:submenu_item];
@@ -139,3 +133,18 @@ void RenderViewContextMenuMac::FinishSubMenu() {
   DCHECK(insert_menu_ != menu_);
   insert_menu_ = menu_;
 }
+
+void RenderViewContextMenuMac::AppendMenuItemWithState(int command_id,
+                                                       const string16& label,
+                                                       NSCellStateValue state) {
+  scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
+                                    initWithTitle:PrepareLabelForDisplay(label)
+                                           action:@selector(itemSelected:)
+                                    keyEquivalent:@""]);
+  [item setState:state];
+  [item setTag:command_id];
+  [item setTarget:target_];
+  [item setEnabled:IsItemCommandEnabled(command_id) ? YES : NO];
+  [insert_menu_ addItem:item];
+}
+

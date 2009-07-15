@@ -40,6 +40,13 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   static NSString* PrepareLabelForDisplay(const string16& label);
 
  private:
+  // Private helper method used by the implementations of the above methods.
+  // All MenuItems are represented as NSMenuItems no matter what kind they
+  // are (Normal, Radio, Checkbox). All of the above call this method, providing
+  // a useful value for |state| based upon some specific lookup, usually based
+  // on the id.
+  void AppendMenuItemWithState(int id, const string16& label,
+                               NSCellStateValue state);
   NSMenu* menu_;
   NSMenu* insert_menu_;  // weak, where new items are inserted (usually
                          // |menu_| unless there's a submenu in progress).
