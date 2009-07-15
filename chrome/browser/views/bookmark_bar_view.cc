@@ -802,7 +802,8 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
   } else {
     parent_node = root;
   }
-  return bookmark_utils::PerformBookmarkDrop(profile_, data, parent_node, index);
+  return bookmark_utils::PerformBookmarkDrop(profile_, data, parent_node,
+                                            index);
 }
 
 void BookmarkBarView::OnFullscreenToggled(bool fullscreen) {
@@ -932,7 +933,7 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
   const BookmarkNode* node = model_->GetBookmarkBarNode();
   DCHECK(node && model_->other_node());
   // Create a button for each of the children on the bookmark bar.
-  for (int i = 0; i < node->GetChildCount(); ++i)
+  for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
     AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
 
   // This button is normally created too early to get access to the theme
@@ -995,9 +996,10 @@ void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
 
 void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
                                           const BookmarkNode* parent,
-                                          int index) {
+                                          int old_index,
+                                          const BookmarkNode* node) {
   StopThrobbing(true);
-  BookmarkNodeRemovedImpl(model, parent, index);
+  BookmarkNodeRemovedImpl(model, parent, old_index);
   StartThrobbing();
 }
 
@@ -1061,7 +1063,7 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
   }
 
   // Create the new buttons.
-  for (int i = 0; i < node->GetChildCount(); ++i)
+  for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
     AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
 
   Layout();
@@ -1357,8 +1359,9 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
   } else {
     // Make sure node is still valid.
     int index = -1;
+    const BookmarkNode* bb_node = model_->GetBookmarkBarNode();
     for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
-      if (model_->GetBookmarkBarNode()->GetChild(i) == node) {
+      if (bb_node->GetChild(i) == node) {
         index = i;
         break;
       }
@@ -1512,7 +1515,7 @@ int BookmarkBarView::CalculateDropOperation(const DropTargetEvent& event,
         *is_over_other ? model_->other_node() :
                          model_->GetBookmarkBarNode()->GetChild(*index);
     int operation =
-        bookmark_utils::BookmarkDropOperation(profile_,event, data, parent,
+        bookmark_utils::BookmarkDropOperation(profile_, event, data, parent,
                                               parent->GetChildCount());
     if (!operation && !data.has_single_url() &&
         data.GetFirstNode(profile_) == parent) {

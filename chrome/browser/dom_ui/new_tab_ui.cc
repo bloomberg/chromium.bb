@@ -1022,7 +1022,8 @@ class RecentlyBookmarkedHandler : public DOMMessageHandler,
                                  int index);
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
-                                   int index);
+                                   int old_index,
+                                   const BookmarkNode* node);
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node);
 
@@ -1094,7 +1095,8 @@ void RecentlyBookmarkedHandler::BookmarkNodeAdded(BookmarkModel* model,
 
 void RecentlyBookmarkedHandler::BookmarkNodeRemoved(BookmarkModel* model,
                                                     const BookmarkNode* parent,
-                                                    int index) {
+                                                    int old_index,
+                                                    const BookmarkNode* node) {
   SendBookmarksToPage();
 }
 

@@ -237,7 +237,7 @@ void BookmarkBarGtk::BookmarkNodeMoved(BookmarkModel* model,
                                        int old_index,
                                        const BookmarkNode* new_parent,
                                        int new_index) {
-  BookmarkNodeRemoved(model, old_parent, old_index);
+  BookmarkNodeRemoved(model, old_parent, old_index, NULL);
   BookmarkNodeAdded(model, new_parent, new_index);
 }
 
@@ -259,15 +259,16 @@ void BookmarkBarGtk::BookmarkNodeAdded(BookmarkModel* model,
 
 void BookmarkBarGtk::BookmarkNodeRemoved(BookmarkModel* model,
                                          const BookmarkNode* parent,
-                                         int index) {
+                                         int old_index,
+                                         const BookmarkNode* node) {
   if (parent != model_->GetBookmarkBarNode()) {
     // We only care about nodes on the bookmark bar.
     return;
   }
-  DCHECK(index >= 0 && index < GetBookmarkButtonCount());
+  DCHECK(old_index >= 0 && old_index < GetBookmarkButtonCount());
 
   GtkWidget* to_remove = GTK_WIDGET(gtk_toolbar_get_nth_item(
-      GTK_TOOLBAR(bookmark_toolbar_.get()), index));
+      GTK_TOOLBAR(bookmark_toolbar_.get()), old_index));
   gtk_container_remove(GTK_CONTAINER(bookmark_toolbar_.get()),
                        to_remove);
 

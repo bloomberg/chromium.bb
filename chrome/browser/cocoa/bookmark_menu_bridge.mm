@@ -80,6 +80,14 @@ void BookmarkMenuBridge::BookmarkNodeAdded(BookmarkModel* model,
   Loaded(model);
 }
 
+void BookmarkMenuBridge::BookmarkNodeRemoved(BookmarkModel* model,
+                                             const BookmarkNode* parent,
+                                             int old_index,
+                                             const BookmarkNode* node) {
+  // TODO(jrg): this is brute force; perhaps we should be nicer.
+  Loaded(model);
+}
+
 void BookmarkMenuBridge::BookmarkNodeChanged(BookmarkModel* model,
                                              const BookmarkNode* node) {
   // TODO(jrg): this is brute force; perhaps we should be nicer.

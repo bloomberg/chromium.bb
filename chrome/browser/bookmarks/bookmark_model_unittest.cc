@@ -96,9 +96,10 @@ class BookmarkModelTest : public testing::Test, public BookmarkModelObserver {
 
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
-                                   int index) {
+                                   int old_index,
+                                   const BookmarkNode* node) {
     removed_count++;
-    observer_details.Set(parent, NULL, index, -1);
+    observer_details.Set(parent, NULL, old_index, -1);
   }
 
   virtual void BookmarkNodeChanged(BookmarkModel* model,
@@ -639,7 +640,8 @@ class BookmarkModelTestWithProfile : public testing::Test,
                                  int index) {}
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
-                                   int index) {}
+                                   int old_index,
+                                   const BookmarkNode* node) {}
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) {}
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,

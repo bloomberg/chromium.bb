@@ -255,7 +255,8 @@ class BookmarkBarView : public views::View,
   // is removed.
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
-                                   int index);
+                                   int old_index,
+                                   const BookmarkNode* node);
 
   // Implementation for BookmarkNodeRemoved.
   void BookmarkNodeRemovedImpl(BookmarkModel* model,

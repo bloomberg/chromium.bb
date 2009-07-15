@@ -111,7 +111,8 @@ class BookmarkBarGtk : public AnimationDelegate,
                                  int index);
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
-                                   int index);
+                                   int old_index,
+                                   const BookmarkNode* node);
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node);
   // Invoked when a favicon has finished loading.

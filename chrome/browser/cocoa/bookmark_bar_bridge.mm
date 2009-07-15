@@ -46,8 +46,9 @@ void BookmarkBarBridge::BookmarkNodeAdded(BookmarkModel* model,
 
 void BookmarkBarBridge::BookmarkNodeRemoved(BookmarkModel* model,
                                             const BookmarkNode* parent,
-                                            int index) {
-  [controller_ nodeRemoved:model parent:parent index:index];
+                                            int old_index,
+                                            const BookmarkNode* node) {
+  [controller_ nodeRemoved:model parent:parent index:old_index];
 }
 
 void BookmarkBarBridge::BookmarkNodeChanged(BookmarkModel* model,

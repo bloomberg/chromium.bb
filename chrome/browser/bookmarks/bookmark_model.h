@@ -181,16 +181,14 @@ class BookmarkModelObserver {
                                  int index) = 0;
 
   // Invoked when a node has been removed, the item may still be starred though.
-  // TODO(sky): merge these two into one.
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int index) {}
+  // |parent| the parent of the node that was removed.
+  // |old_index| the index of the removed node in |parent| before it was
+  // removed.
+  // |node| is the node that was removed.
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
                                    int old_index,
-                                   const BookmarkNode* node) {
-    BookmarkNodeRemoved(model, parent, old_index);
-  }
+                                   const BookmarkNode* node) = 0;
 
   // Invoked when the title or favicon of a node has changed.
   virtual void BookmarkNodeChanged(BookmarkModel* model,

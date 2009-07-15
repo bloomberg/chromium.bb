@@ -17,7 +17,6 @@ class Browser;
 @class BookmarkBarController;
 
 class BookmarkBarBridge : public BookmarkModelObserver {
-
  public:
   BookmarkBarBridge(BookmarkBarController* controller, BookmarkModel* model);
   virtual ~BookmarkBarBridge();
@@ -35,7 +34,8 @@ class BookmarkBarBridge : public BookmarkModelObserver {
                                  int index);
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
-                                   int index);
+                                   int old_index,
+                                   const BookmarkNode* node);
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node);
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
@@ -50,4 +50,4 @@ class BookmarkBarBridge : public BookmarkModelObserver {
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarBridge);
 };
 
-#endif // CHROME_BROWSER_COCOA_BOOKMARK_BAR_BRIDGE_H_
+#endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_BRIDGE_H_

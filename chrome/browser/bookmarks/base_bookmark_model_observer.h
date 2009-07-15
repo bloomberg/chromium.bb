@@ -35,7 +35,8 @@ class BaseBookmarkModelObserver : public BookmarkModelObserver {
   }
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
-                                   int index) {
+                                   int old_index,
+                                   const BookmarkNode* node) {
     BookmarkModelChanged();
   }
   virtual void BookmarkNodeChanged(BookmarkModel* model,

@@ -212,12 +212,6 @@ void BookmarkManagerGtk::BookmarkNodeAdded(BookmarkModel* model,
 
 void BookmarkManagerGtk::BookmarkNodeRemoved(BookmarkModel* model,
                                              const BookmarkNode* parent,
-                                             int index) {
-  NOTREACHED();
-}
-
-void BookmarkManagerGtk::BookmarkNodeRemoved(BookmarkModel* model,
-                                             const BookmarkNode* parent,
                                              int old_index,
                                              const BookmarkNode* node) {
   if (node->is_folder()) {

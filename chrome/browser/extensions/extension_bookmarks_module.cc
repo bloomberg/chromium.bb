@@ -205,14 +205,6 @@ void ExtensionBookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
 void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
     BookmarkModel* model,
     const BookmarkNode* parent,
-    int index) {
-  // TODO(erikkay) can this version ever be called?
-  NOTREACHED();
-}
-
-void ExtensionBookmarkEventRouter::BookmarkNodeRemoved(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
     int index,
     const BookmarkNode* node) {
   ListValue args;

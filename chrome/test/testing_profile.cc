@@ -53,7 +53,8 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
                                  int index) {}
   virtual void BookmarkNodeRemoved(BookmarkModel* model,
                                    const BookmarkNode* parent,
-                                   int index) {}
+                                   int old_index,
+                                   const BookmarkNode* node) {}
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) {}
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
