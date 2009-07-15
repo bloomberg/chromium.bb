@@ -21,11 +21,10 @@
       'O3D_PLUGIN_MIME_TYPE="<!(python version_info.py --mimetype)"',
     ],
   },
-
   'targets': [
     {
       'target_name': 'npo3dautoplugin',
-      'type': 'shared_library',
+      'type': '<(o3d_main_lib_type)',
       'dependencies': [
         '../../<(jpegdir)/libjpeg.gyp:libjpeg',
         '../../<(pngdir)/libpng.gyp:libpng',
@@ -103,25 +102,21 @@
               'win/update_lock.cc',
               'win/update_lock.h',
             ],
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'AdditionalDependencies': [
-                  'rpcrt4.lib',
-                ],
-              },
+            'link_settings': {
+              'libraries': [
+                '-lrpcrt4.lib',
+              ],
             },
           },
         ],
         ['OS == "win" and renderer == "d3d9"',
           {
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'AdditionalDependencies': [
-                  '"$(DXSDK_DIR)/Lib/x86/DxErr9.lib"',
-                  '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
-                  'd3d9.lib',
-                ],
-              },
+            'link_settings': {
+              'libraries': [
+                '-l"$(DXSDK_DIR)/Lib/x86/DxErr9.lib"',
+                '-l"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
+                '-ld3d9.lib',
+              ],
             },
           },
         ],
@@ -129,6 +124,23 @@
     },
   ],
   'conditions': [
+    ['o3d_in_chrome != 0',
+      {
+        'variables': {
+          'o3d_main_lib_type': 'static_library',
+        },
+        'target_defaults': {
+          'defines': [
+            'O3D_INTERNAL_PLUGIN=1',
+          ],
+        },
+      },
+      {
+        'variables': {
+          'o3d_main_lib_type': 'shared_library',
+        },
+      },
+    ],
     ['OS != "linux"',
       {
         'targets': [

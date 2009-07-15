@@ -553,9 +553,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
         break;  // Ignore this message; we're reentrant.
       }
 
+#if !defined(O3D_INTERNAL_PLUGIN)
       // TODO: Only logging for windows until we figure out the proper
       //            mac way
       if (g_logger) g_logger->UpdateLogging();
+#endif
 
       // If rendering continuously, invalidate the window and force a paint if
       // it is visible. The paint invalidates the renderer and Tick will later

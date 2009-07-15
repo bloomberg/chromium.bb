@@ -18,6 +18,7 @@
     'pngdir': 'third_party/libpng',
     'skiadir': 'third_party/skia/include',
     'zlibdir': 'third_party/zlib',
+    'o3d_in_chrome%': 0,
   },
   'target_defaults': {
     'defines': [
