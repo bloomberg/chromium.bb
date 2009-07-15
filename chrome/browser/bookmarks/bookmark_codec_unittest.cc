@@ -145,6 +145,21 @@ class BookmarkCodecTest : public testing::Test {
 
     return model.release();
   }
+
+  void CheckIDs(const BookmarkNode* node, std::set<int64>* assigned_ids) {
+    DCHECK(node);
+    int64 node_id = node->id();
+    EXPECT_TRUE(assigned_ids->find(node_id) == assigned_ids->end());
+    assigned_ids->insert(node_id);
+    for (int i = 0; i < node->GetChildCount(); ++i)
+      CheckIDs(node->GetChild(i), assigned_ids);
+  }
+
+  void ExpectIDsUnique(BookmarkModel* model) {
+    std::set<int64> assigned_ids;
+    CheckIDs(model->GetBookmarkBarNode(), &assigned_ids);
+    CheckIDs(model->other_node(), &assigned_ids);
+  }
 };
 
 TEST_F(BookmarkCodecTest, ChecksumEncodeDecodeTest) {
@@ -199,6 +214,42 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
       *value.get(), enc_checksum, &dec_checksum, false));
 }
 
+TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
+  scoped_ptr<BookmarkModel> model_to_encode(CreateTestModel3());
+
+  // The test depends on existence of multiple children under bookmark bar, so
+  // make sure that's the case.
+  int bb_child_count = model_to_encode->GetBookmarkBarNode()->GetChildCount();
+  ASSERT_GT(bb_child_count, 1);
+
+  std::string enc_checksum;
+  scoped_ptr<Value> value(EncodeHelper(model_to_encode.get(), &enc_checksum));
+
+  EXPECT_TRUE(value.get() != NULL);
+
+  // Change IDs for all children of bookmark bar to be 1.
+  DictionaryValue* child_value;
+  for (int i = 0; i < bb_child_count; ++i) {
+    GetBookmarksBarChildValue(value.get(), i, &child_value);
+    std::string id;
+    ASSERT_TRUE(child_value->GetString(BookmarkCodec::kIdKey, &id));
+    ASSERT_TRUE(child_value->SetString(BookmarkCodec::kIdKey, "1"));
+  }
+
+  std::string dec_checksum;
+  scoped_ptr<BookmarkModel> decoded_model(DecodeHelper(
+      *value.get(), enc_checksum, &dec_checksum, true));
+
+  ExpectIDsUnique(decoded_model.get());
+
+  // add a few extra nodes to bookmark model and make sure IDs are still uniuqe.
+  const BookmarkNode* bb_node = decoded_model->GetBookmarkBarNode();
+  decoded_model->AddURL(bb_node, 0, L"new url1", GURL(L"http://newurl1.com"));
+  decoded_model->AddURL(bb_node, 0, L"new url2", GURL(L"http://newurl2.com"));
+
+  ExpectIDsUnique(decoded_model.get());
+}
+
 TEST_F(BookmarkCodecTest, PersistIDsTest) {
   scoped_ptr<BookmarkModel> model_to_encode(CreateTestModel3());
   BookmarkCodec encoder;
@@ -229,93 +280,4 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   BookmarkModelTestUtils::AssertModelsEqual(&decoded_model,
                                             &decoded_model2,
                                             true);
-}
-
-class UniqueIDGeneratorTest : public testing::Test {
- protected:
-  void TestMixed(UniqueIDGenerator* gen) {
-    // Few unique numbers.
-    for (int64 i = 1; i <= 5; ++i) {
-      EXPECT_EQ(i, gen->GetUniqueID(i));
-    }
-
-    // All numbers from 1 to 5 should produce numbers 6 to 10.
-    for (int64 i = 1; i <= 5; ++i) {
-      EXPECT_EQ(5 + i, gen->GetUniqueID(i));
-    }
-
-    // 10 should produce 11, then 11 should produce 12, and so on.
-    for (int64 i = 1; i <= 5; ++i) {
-      EXPECT_EQ(10 + i, gen->GetUniqueID(9 + i));
-    }
-
-    // Any numbers between 1 and 15 should produce a new numbers in sequence.
-    EXPECT_EQ(16, gen->GetUniqueID(10));
-    EXPECT_EQ(17, gen->GetUniqueID(2));
-    EXPECT_EQ(18, gen->GetUniqueID(14));
-    EXPECT_EQ(19, gen->GetUniqueID(7));
-    EXPECT_EQ(20, gen->GetUniqueID(4));
-
-    // Numbers not yet generated should work.
-    EXPECT_EQ(100, gen->GetUniqueID(100));
-    EXPECT_EQ(21, gen->GetUniqueID(21));
-    EXPECT_EQ(200, gen->GetUniqueID(200));
-
-    // Now any existing number should produce numbers starting from 201.
-    EXPECT_EQ(201, gen->GetUniqueID(1));
-    EXPECT_EQ(202, gen->GetUniqueID(20));
-    EXPECT_EQ(203, gen->GetUniqueID(21));
-    EXPECT_EQ(204, gen->GetUniqueID(100));
-    EXPECT_EQ(205, gen->GetUniqueID(200));
-  }
-};
-
-TEST_F(UniqueIDGeneratorTest, SerialNumbersTest) {
-  UniqueIDGenerator gen;
-  for (int64 i = 1; i <= 10; ++i) {
-    EXPECT_EQ(i, gen.GetUniqueID(i));
-  }
-}
-
-TEST_F(UniqueIDGeneratorTest, UniqueSortedNumbersTest) {
-  UniqueIDGenerator gen;
-  for (int64 i = 1; i <= 10; i += 2) {
-    EXPECT_EQ(i, gen.GetUniqueID(i));
-  }
-}
-
-TEST_F(UniqueIDGeneratorTest, UniqueUnsortedConsecutiveNumbersTest) {
-  UniqueIDGenerator gen;
-  int numbers[] = {2, 10, 6, 3, 8, 5, 1, 7, 4, 9};
-  for (int64 i = 0; i < ARRAYSIZE(numbers); ++i) {
-    EXPECT_EQ(numbers[i], gen.GetUniqueID(numbers[i]));
-  }
-}
-
-TEST_F(UniqueIDGeneratorTest, UniqueUnsortedNumbersTest) {
-  UniqueIDGenerator gen;
-  int numbers[] = {20, 100, 60, 30, 80, 50, 10, 70, 40, 90};
-  for (int64 i = 0; i < ARRAYSIZE(numbers); ++i) {
-    EXPECT_EQ(numbers[i], gen.GetUniqueID(numbers[i]));
-  }
-}
-
-TEST_F(UniqueIDGeneratorTest, AllDuplicatesTest) {
-  UniqueIDGenerator gen;
-  for (int64 i = 1; i <= 10; ++i) {
-    EXPECT_EQ(i, gen.GetUniqueID(1));
-  }
-}
-
-TEST_F(UniqueIDGeneratorTest, MixedTest) {
-  UniqueIDGenerator gen;
-  TestMixed(&gen);
-}
-
-TEST_F(UniqueIDGeneratorTest, ResetTest) {
-  UniqueIDGenerator gen;
-  for (int64 i = 0; i < 5; ++i) {
-    TestMixed(&gen);
-    gen.Reset();
-  }
 }

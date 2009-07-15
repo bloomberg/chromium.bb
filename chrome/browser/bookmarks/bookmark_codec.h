@@ -9,7 +9,6 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_CODEC_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_CODEC_H_
 
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -21,39 +20,6 @@ class BookmarkNode;
 class DictionaryValue;
 class ListValue;
 class Value;
-
-// Utility class to help assign unique 64-bit IDs.
-class UniqueIDGenerator {
- public:
-  UniqueIDGenerator();
-
-  // Checks whether the given ID can be used as a unique ID or not. If it can,
-  // returns the id itself, otherwise generates a new unique id in a simple way
-  // and returns that.
-  // NOTE that if id is 0, a new unique id is returned.
-  int64 GetUniqueID(int64 id);
-
-  // Resets the ID generator to initial state.
-  void Reset();
-
-  // Returns the current maximum.
-  int64 current_max() const { return current_max_; }
-
- private:
-  // Checks if the given ID is already assigned.
-  bool IsIdAssigned(int64 id) const;
-
-  // Records the given ID as assigned.
-  void RecordId(int64 id);
-
-  // Maximum value we have seen so far.
-  int64 current_max_;
-
-  // All IDs assigned so far.
-  scoped_ptr<std::set<int64> > assigned_ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(UniqueIDGenerator);
-};
 
 // BookmarkCodec is responsible for encoding/decoding bookmarks into JSON
 // values. BookmarkCodec is used by BookmarkService.
@@ -135,6 +101,12 @@ class BookmarkCodec {
   bool DecodeChildren(const ListValue& child_value_list,
                       BookmarkNode* parent);
 
+  // Reassigns bookmark IDs for all nodes.
+  void ReassignIDs(BookmarkNode* bb_node, BookmarkNode* other_node);
+
+  // Helper to recursively reassign IDs.
+  void ReassignIDsHelper(BookmarkNode* node);
+
   // Decodes the supplied node from the supplied value. Child nodes are
   // created appropriately by way of DecodeChildren. If node is NULL a new
   // node is created and added to parent, otherwise node is used.
@@ -161,11 +133,11 @@ class BookmarkCodec {
   void InitializeChecksum();
   void FinalizeChecksum();
 
-  // Unique ID generator used during decoding.
-  UniqueIDGenerator id_generator_;
-
   // Whether or not IDs were reassigned by the codec.
   bool ids_reassigned_;
+
+  // Whether or not IDs were missing for some bookmark nodes during decoding.
+  bool ids_missing_;
 
   // MD5 context used to compute MD5 hash of all bookmark data.
   MD5Context md5_context_;
@@ -173,6 +145,9 @@ class BookmarkCodec {
   // Checksums.
   std::string computed_checksum_;
   std::string stored_checksum_;
+
+  // Maximum ID assigned when decoding data.
+  int64 maximum_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkCodec);
 };

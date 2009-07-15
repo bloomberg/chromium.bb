@@ -4,6 +4,8 @@
 
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -12,59 +14,6 @@
 #include "grit/generated_resources.h"
 
 using base::Time;
-
-UniqueIDGenerator::UniqueIDGenerator() {
-  Reset();
-}
-
-int64 UniqueIDGenerator::GetUniqueID(int64 id) {
-  // If the given ID is already assigned, generate new ID.
-  if (IsIdAssigned(id))
-    id = current_max_ + 1;
-
-  // Record the new ID as assigned.
-  RecordId(id);
-
-  if (id > current_max_)
-    current_max_ = id;
-
-  return id;
-}
-
-bool UniqueIDGenerator::IsIdAssigned(int64 id) const {
-  // If the set is already instantiated, then use the set to determine if the
-  // given ID is assigned. Otherwise use the current maximum to determine if the
-  // given ID is assigned.
-  if (assigned_ids_.get())
-    return assigned_ids_->find(id) != assigned_ids_->end();
-  else
-    return id <= current_max_;
-}
-
-void UniqueIDGenerator::RecordId(int64 id) {
-  // If the set is instantiated, then use the set.
-  if (assigned_ids_.get()) {
-    assigned_ids_->insert(id);
-    return;
-  }
-
-  // The set is not yet instantiated. If the ID is current_max_ + 1, then just
-  // update the current_max_. Otherwise, instantiate the set and add all IDs
-  // from 0 to current_max_ to it.
-  if (id == current_max_ + 1) {
-    ++current_max_;
-    return;
-  }
-  assigned_ids_.reset(new std::set<int64>);
-  for (int64 i = 0; i <= current_max_; ++i)
-    assigned_ids_->insert(i);
-  assigned_ids_->insert(id);
-}
-
-void UniqueIDGenerator::Reset() {
-  current_max_ = 0;
-  assigned_ids_.reset(NULL);
-}
 
 const wchar_t* BookmarkCodec::kRootsKey = L"roots";
 const wchar_t* BookmarkCodec::kRootFolderNameKey = L"bookmark_bar";
@@ -85,7 +34,9 @@ const wchar_t* BookmarkCodec::kTypeFolder = L"folder";
 static const int kCurrentVersion = 1;
 
 BookmarkCodec::BookmarkCodec()
-    : ids_reassigned_(false) {
+    : ids_reassigned_(false),
+      ids_missing_(false),
+      maximum_id_(0) {
 }
 
 Value* BookmarkCodec::Encode(BookmarkModel* model) {
@@ -115,16 +66,17 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
                            BookmarkNode* other_folder_node,
                            int64* max_id,
                            const Value& value) {
-  // TODO(munjal): Instead of paying the price of ID generator in al lcases, we
-  // should only pay the price if we detect the file has changed and do a second
-  // pass to reassign IDs. See issue 16357.
-  id_generator_.Reset();
   ids_reassigned_ = false;
+  ids_missing_ = false;
+  maximum_id_ = 0;
   stored_checksum_.clear();
   InitializeChecksum();
   bool success = DecodeHelper(bb_node, other_folder_node, value);
   FinalizeChecksum();
-  *max_id = id_generator_.current_max() + 1;
+  // If either the checksums differ or some IDs were missing, reassign IDs.
+  if (ids_missing_ || computed_checksum() != stored_checksum())
+    ReassignIDs(bb_node, other_folder_node);
+  *max_id = maximum_id_ + 1;
   return success;
 }
 
@@ -230,17 +182,13 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
                                BookmarkNode* node) {
   std::string id_string;
   int64 id = 0;
-  if (value.GetString(kIdKey, &id_string))
-    if (!StringToInt64(id_string, &id))
-      return false;
-  int64 new_id = id_generator_.GetUniqueID(id);
-  if (new_id != id)
-    ids_reassigned_ = true;
-  id = new_id;
+  if (!value.GetString(kIdKey, &id_string) || !StringToInt64(id_string, &id))
+    ids_missing_ = true;
+
+  maximum_id_ = std::max(maximum_id_, id);
 
   std::wstring title;
-  if (!value.GetString(kNameKey, &title))
-    title = std::wstring();
+  value.GetString(kNameKey, &title);
 
   std::wstring date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))
@@ -283,7 +231,6 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
       node = new BookmarkNode(id, GURL());
     } else {
       // If a new node is not created, explicitly assign ID to the existing one.
-      DCHECK(id != 0);
       node->set_id(id);
     }
 
@@ -304,6 +251,21 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
   node->set_date_added(Time::FromInternalValue(
       StringToInt64(WideToUTF16Hack(date_added_string))));
   return true;
+}
+
+void BookmarkCodec::ReassignIDs(BookmarkNode* bb_node,
+                                BookmarkNode* other_node) {
+  maximum_id_ = 0;
+  ReassignIDsHelper(bb_node);
+  ReassignIDsHelper(other_node);
+  ids_reassigned_ = true;
+}
+
+void BookmarkCodec::ReassignIDsHelper(BookmarkNode* node) {
+  DCHECK(node);
+  node->set_id(++maximum_id_);
+  for (int i = 0; i < node->GetChildCount(); ++i)
+    ReassignIDsHelper(node->GetChild(i));
 }
 
 void BookmarkCodec::UpdateChecksum(const std::string& str) {
