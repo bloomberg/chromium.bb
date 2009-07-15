@@ -1,0 +1,8 @@
+{
+  "description": "Extension which has exactly one item in the shelf",
+  "name": "one_in_shelf",
+  "toolstrips": [
+    "shelf.html"
+  ],
+  "version": "0.1"
+}

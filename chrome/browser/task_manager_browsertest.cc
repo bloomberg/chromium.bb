@@ -6,12 +6,112 @@
 
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TaskManagerBrowserTest : public InProcessBrowserTest {
+namespace {
+
+class ResourceChangeObserver : public TaskManagerModelObserver {
+ public:
+  ResourceChangeObserver(const TaskManagerModel* model,
+                         int target_resource_count)
+      : model_(model),
+        target_resource_count_(target_resource_count) {
+  }
+
+  virtual void OnModelChanged() {
+    OnResourceChange();
+  }
+
+  virtual void OnItemsChanged(int start, int length) {
+    OnResourceChange();
+  }
+
+  virtual void OnItemsAdded(int start, int length) {
+    OnResourceChange();
+  }
+
+  virtual void OnItemsRemoved(int start, int length) {
+    OnResourceChange();
+  }
+
+ private:
+  void OnResourceChange() {
+    if (model_->ResourceCount() == target_resource_count_)
+      MessageLoopForUI::current()->Quit();
+  }
+
+  const TaskManagerModel* model_;
+  const int target_resource_count_;
 };
 
+}  // namespace
+
+class TaskManagerBrowserTest : public ExtensionBrowserTest {
+ public:
+  TaskManagerModel* model() const {
+    return TaskManager::GetInstance()->model();
+  }
+
+  void WaitForResourceChange(int target_count) {
+    if (model()->ResourceCount() == target_count)
+      return;
+    ResourceChangeObserver observer(model(), target_count);
+    model()->AddObserver(&observer);
+    ui_test_utils::RunMessageLoop();
+    model()->RemoveObserver(&observer);
+  }
+};
+
+// Regression test for http://crbug.com/13361
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ShutdownWhileOpen) {
   browser()->window()->ShowTaskManager();
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
+  EXPECT_EQ(0, model()->ResourceCount());
+
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  // Browser and the New Tab Page.
+  EXPECT_EQ(2, model()->ResourceCount());
+
+  // Open a new tab and make sure we notice that.
+  GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
+  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
+                           true, 0, false, NULL);
+  WaitForResourceChange(3);
+
+  // Close the tab and verify that we notice.
+  TabContents* first_tab = browser()->GetTabContentsAt(0);
+  ASSERT_TRUE(first_tab);
+  browser()->CloseTabContents(first_tab);
+  WaitForResourceChange(2);
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
+  EXPECT_EQ(0, model()->ResourceCount());
+
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  // Browser and the New Tab Page.
+  EXPECT_EQ(2, model()->ResourceCount());
+
+  // Loading an extension should result in a new resource being
+  // created for it.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("common").AppendASCII("one_in_shelf")));
+  WaitForResourceChange(3);
+
+  // Make sure we also recognize extensions with just background pages.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
+  WaitForResourceChange(4);
 }

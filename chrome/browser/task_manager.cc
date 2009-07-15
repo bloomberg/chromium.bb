@@ -44,8 +44,7 @@ static int ValueCompare(T value1, T value2) {
 int TaskManagerModel::goats_teleported_ = 0;
 
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
-    : observer_(NULL),
-      ui_loop_(MessageLoop::current()),
+    : ui_loop_(MessageLoop::current()),
       update_state_(IDLE) {
 
   TaskManagerBrowserProcessResourceProvider* browser_provider =
@@ -77,8 +76,12 @@ int TaskManagerModel::ResourceCount() const {
   return resources_.size();
 }
 
-void TaskManagerModel::SetObserver(TaskManagerModelObserver* observer) {
-  observer_ = observer;
+void TaskManagerModel::AddObserver(TaskManagerModelObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void TaskManagerModel::RemoveObserver(TaskManagerModelObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 std::wstring TaskManagerModel::GetResourceTitle(int index) const {
@@ -443,8 +446,8 @@ void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
   }
 
   // Notify the table that the contents have changed for it to redraw.
-  if (observer_)
-    observer_->OnItemsAdded(new_entry_index, 1);
+  FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                    OnItemsAdded(new_entry_index, 1));
 }
 
 void TaskManagerModel::RemoveResource(TaskManager::Resource* resource) {
@@ -496,8 +499,8 @@ void TaskManagerModel::RemoveResource(TaskManager::Resource* resource) {
     displayed_network_usage_map_.erase(net_iter);
 
   // Notify the table that the contents have changed.
-  if (observer_)
-    observer_->OnItemsRemoved(index, 1);
+  FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                    OnItemsRemoved(index, 1));
 }
 
 void TaskManagerModel::Clear() {
@@ -524,8 +527,8 @@ void TaskManagerModel::Clear() {
     current_byte_count_map_.clear();
     displayed_network_usage_map_.clear();
 
-    if (observer_)
-      observer_->OnItemsRemoved(0, size);
+    FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                      OnItemsRemoved(0, size));
   }
 }
 
@@ -571,8 +574,10 @@ void TaskManagerModel::Refresh() {
     // Then we reset the current byte count.
     iter->second = 0;
   }
-  if (!resources_.empty() && observer_)
-    observer_->OnItemsChanged(0, ResourceCount());
+  if (!resources_.empty()) {
+    FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
+                      OnItemsChanged(0, ResourceCount()));
+  }
 
   // Schedule the next update.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,

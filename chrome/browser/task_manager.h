@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
+#include "base/observer_list.h"
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
@@ -156,8 +157,8 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   explicit TaskManagerModel(TaskManager* task_manager);
   ~TaskManagerModel();
 
-  // Set object to be notified on model changes.
-  void SetObserver(TaskManagerModelObserver* observer);
+  void AddObserver(TaskManagerModelObserver* observer);
+  void RemoveObserver(TaskManagerModelObserver* observer);
 
   // Returns number of registered resources.
   int ResourceCount() const;
@@ -322,7 +323,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   // A map that contains the CPU usage (in %) for a process since last refresh.
   CPUUsageMap cpu_usage_map_;
 
-  TaskManagerModelObserver* observer_;
+  ObserverList<TaskManagerModelObserver> observer_list_;
 
   MessageLoop* ui_loop_;
 

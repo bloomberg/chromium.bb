@@ -130,12 +130,19 @@ void ExtensionHost::CreateRenderView(RenderWidgetHostView* host_view) {
   render_view_host_->set_view(host_view);
   render_view_host_->CreateRenderView();
   render_view_host_->NavigateToURL(url_);
+  DCHECK(IsRenderViewLive());
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_PROCESS_CREATED,
+      Source<Profile>(profile_),
+      Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::RecoverCrashedExtension() {
   DCHECK(!IsRenderViewLive());
 #if defined(TOOLKIT_VIEWS)
   if (view_.get()) {
+    // The view should call us back to CreateRenderView, which is the place
+    // where we create the render process and fire notification.
     view_->RecoverCrashedExtension();
   } else {
     CreateRenderView(NULL);
@@ -143,12 +150,6 @@ void ExtensionHost::RecoverCrashedExtension() {
 #else
   CreateRenderView(NULL);
 #endif
-  if (IsRenderViewLive()) {
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PROCESS_RESTORED,
-        Source<Profile>(profile_),
-        Details<ExtensionHost>(this));
-  }
 }
 
 void ExtensionHost::UpdatePreferredWidth(int pref_width) {

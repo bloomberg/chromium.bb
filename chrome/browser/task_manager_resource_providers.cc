@@ -541,13 +541,9 @@ void TaskManagerExtensionProcessResourceProvider::StartUpdating() {
   }
 
   // Register for notifications about extension process changes.
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_CREATED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_DESTROYED,
+  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CREATED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
-                 NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_RESTORED,
                  NotificationService::AllSources());
 }
 
@@ -556,13 +552,9 @@ void TaskManagerExtensionProcessResourceProvider::StopUpdating() {
   updating_ = false;
 
   // Unregister for notifications about extension process changes.
-  registrar_.Remove(this, NotificationType::EXTENSION_HOST_CREATED,
-                    NotificationService::AllSources());
-  registrar_.Remove(this, NotificationType::EXTENSION_HOST_DESTROYED,
+  registrar_.Remove(this, NotificationType::EXTENSION_PROCESS_CREATED,
                     NotificationService::AllSources());
   registrar_.Remove(this, NotificationType::EXTENSION_PROCESS_CRASHED,
-                    NotificationService::AllSources());
-  registrar_.Remove(this, NotificationType::EXTENSION_PROCESS_RESTORED,
                     NotificationService::AllSources());
 
   // Delete all the resources.
@@ -577,11 +569,9 @@ void TaskManagerExtensionProcessResourceProvider::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::EXTENSION_HOST_CREATED:
-    case NotificationType::EXTENSION_PROCESS_RESTORED:
+    case NotificationType::EXTENSION_PROCESS_CREATED:
       AddToTaskManager(Details<ExtensionHost>(details).ptr());
       break;
-    case NotificationType::EXTENSION_HOST_DESTROYED:
     case NotificationType::EXTENSION_PROCESS_CRASHED:
       RemoveFromTaskManager(Details<ExtensionHost>(details).ptr());
       break;

@@ -52,9 +52,12 @@ class TaskManagerTableModel : public views::GroupTableModel,
   explicit TaskManagerTableModel(TaskManagerModel* model)
       : model_(model),
         observer_(NULL) {
-    model->SetObserver(this);
+    model_->AddObserver(this);
   }
-  ~TaskManagerTableModel() {}
+
+  ~TaskManagerTableModel() {
+    model_->RemoveObserver(this);
+  }
 
   // GroupTableModel.
   int RowCount();
@@ -71,7 +74,7 @@ class TaskManagerTableModel : public views::GroupTableModel,
   virtual void OnItemsRemoved(int start, int length);
 
  private:
-  const TaskManagerModel* model_;
+  TaskManagerModel* model_;
   TableModelObserver* observer_;
 };
 

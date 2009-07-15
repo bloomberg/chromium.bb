@@ -231,6 +231,7 @@ TaskManagerGtk* TaskManagerGtk::instance_ = NULL;
 
 TaskManagerGtk::~TaskManagerGtk() {
   task_manager_->OnWindowClosed();
+  model_->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -363,7 +364,7 @@ void TaskManagerGtk::Init() {
   gtk_window_resize(GTK_WINDOW(dialog_), kDefaultWidth, kDefaultHeight);
   gtk_widget_show_all(dialog_);
 
-  model_->SetObserver(this);
+  model_->AddObserver(this);
 }
 
 void TaskManagerGtk::ConnectAccelerators() {

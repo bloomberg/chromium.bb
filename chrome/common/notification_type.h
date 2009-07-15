@@ -600,13 +600,13 @@ class NotificationType {
     // an ExtensionHost*.
     EXTENSION_HOST_DESTROYED,
 
+    // Sent after an extension render process is created and fully functional.
+    // The details are an ExtensionHost*.
+    EXTENSION_PROCESS_CREATED,
+
     // Sent when extension render process crashes. The details are
     // an ExtensionHost*.
     EXTENSION_PROCESS_CRASHED,
-
-    // Sent after an extension render process is restarted after a crash
-    // and is fully functional. The details are an ExtensionHost*.
-    EXTENSION_PROCESS_RESTORED,
 
     // Sent when the contents or order of toolstrips in the shelf model change.
     EXTENSION_SHELF_MODEL_CHANGED,
