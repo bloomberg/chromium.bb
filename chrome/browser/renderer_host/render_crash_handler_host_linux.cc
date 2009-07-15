@@ -6,6 +6,7 @@
 
 #include <dirent.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -199,48 +200,46 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // The length of the regular payload:
   static const unsigned kCrashContextSize =
       sizeof(google_breakpad::ExceptionHandler::CrashContext);
-  static const unsigned kMaxActiveURLSize = 1024;
-  static const unsigned kGuidSize = 32;  // 128 bits = 32 chars in hex.
 
   struct msghdr msg = {0};
-  struct iovec iov;
-  char context[kCrashContextSize + kMaxActiveURLSize + kGuidSize];
+  struct iovec iov[3];
+  char crash_context[kCrashContextSize];
+  char guid[kGuidSize + 1];
+  char crash_url[kMaxActiveURLSize + 1];
   char control[kControlMsgSize];
-  iov.iov_base = context;
-  iov.iov_len = sizeof(context);
-  msg.msg_iov = &iov;
-  msg.msg_iovlen = 1;
+  const ssize_t expected_msg_size = sizeof(crash_context) + sizeof(guid) +
+      sizeof(crash_url);
+
+  iov[0].iov_base = crash_context;
+  iov[0].iov_len = sizeof(crash_context);
+  iov[1].iov_base = guid;
+  iov[1].iov_len = sizeof(guid);
+  iov[2].iov_base = crash_url;
+  iov[2].iov_len = sizeof(crash_url);
+  msg.msg_iov = iov;
+  msg.msg_iovlen = 3;
   msg.msg_control = control;
   msg.msg_controllen = kControlMsgSize;
 
-  const ssize_t n = HANDLE_EINTR(recvmsg(browser_socket_, &msg, 0));
-  if (n < 1) {
+  const ssize_t msg_size = HANDLE_EINTR(recvmsg(browser_socket_, &msg, 0));
+  if (msg_size != expected_msg_size) {
     LOG(ERROR) << "Error reading from death signal socket. Crash dumping"
                << " is disabled."
-               << " n:" << n
+               << " msg_size:" << msg_size
                << " errno:" << errno;
     file_descriptor_watcher_.StopWatchingFileDescriptor();
     return;
   }
 
-  if (n < static_cast<ssize_t>(kCrashContextSize) ||
-      msg.msg_controllen != kControlMsgSize ||
+  if (msg.msg_controllen != kControlMsgSize ||
       msg.msg_flags & ~MSG_TRUNC) {
     LOG(ERROR) << "Received death signal message with the wrong size;"
-               << " n:" << n
                << " msg.msg_controllen:" << msg.msg_controllen
                << " msg.msg_flags:" << msg.msg_flags
                << " kCrashContextSize:" << kCrashContextSize
                << " kControlMsgSize:" << kControlMsgSize;
     return;
   }
-
-  // After the message contents we have the guid.
-  const char* const guid = &context[kCrashContextSize];
-
-  // Anything in the guid after the crash context is the crashing URL.
-  const char* const crash_url = &context[kCrashContextSize + kGuidSize];
-  const unsigned crash_url_len = n - kCrashContextSize - kGuidSize;
 
   // Walk the control payload an extract the file descriptor and validated pid.
   pid_t crashing_pid = -1;
@@ -304,7 +303,7 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   const std::string minidump_filename =
       StringPrintf("/tmp/chromium-renderer-minidump-%016" PRIx64 ".dmp", rand);
   if (!google_breakpad::WriteMinidump(minidump_filename.c_str(),
-                                      crashing_pid, context,
+                                      crashing_pid, crash_context,
                                       kCrashContextSize)) {
     LOG(ERROR) << "Failed to write crash dump for pid " << crashing_pid;
     HANDLE_EINTR(close(signal_fd));
@@ -312,9 +311,10 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   // Send the done signal to the renderer: it can exit now.
   memset(&msg, 0, sizeof(msg));
-  iov.iov_base = const_cast<char*>("\x42");
-  iov.iov_len = 1;
-  msg.msg_iov = &iov;
+  struct iovec done_iov;
+  done_iov.iov_base = const_cast<char*>("\x42");
+  done_iov.iov_len = 1;
+  msg.msg_iov = &done_iov;
   msg.msg_iovlen = 1;
 
   HANDLE_EINTR(sendmsg(signal_fd, &msg, MSG_DONTWAIT | MSG_NOSIGNAL));
@@ -322,8 +322,8 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   UploadCrashDump(minidump_filename.c_str(),
                   "renderer", 8,
-                  crash_url, crash_url_len,
-                  guid, kGuidSize);
+                  crash_url, strlen(crash_url),
+                  guid, strlen(guid));
 }
 
 void RenderCrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {

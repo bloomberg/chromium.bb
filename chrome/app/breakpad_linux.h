@@ -6,6 +6,11 @@
 #define CHROME_APP_BREAKPAD_LINUX_H_
 
 extern void InitCrashReporter();
+
+#if defined(GOOGLE_CHROME_BUILD)
+static const unsigned kMaxActiveURLSize = 1024;
+static const unsigned kGuidSize = 32;  // 128 bits = 32 chars in hex.
+
 extern int UploadCrashDump(const char* filename,
                            const char* process_type,
                            unsigned process_type_length,
@@ -13,5 +18,6 @@ extern int UploadCrashDump(const char* filename,
                            unsigned crash_url_length,
                            const char* guid,
                            unsigned guid_length);
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 #endif  // CHROME_APP_BREAKPAD_LINUX_H_

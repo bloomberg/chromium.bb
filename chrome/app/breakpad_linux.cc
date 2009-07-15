@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/app/breakpad_linux.h"
+
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <string>
 
 #include "base/command_line.h"
@@ -480,6 +483,14 @@ RendererCrashHandler(const void* crash_context, size_t crash_context_size,
   const int fd = (int) context;
   int fds[2];
   socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+  char guid[kGuidSize] = {0};
+  char crash_url[kMaxActiveURLSize + 1] = {0};
+  const unsigned guid_len = std::min(google_update::linux_guid.size(),
+                                     kGuidSize);
+  const unsigned crash_url_len =
+      std::min(child_process_logging::active_url.size(), kMaxActiveURLSize);
+  memcpy(guid, google_update::linux_guid.data(), guid_len);
+  memcpy(crash_url, child_process_logging::active_url.data(), crash_url_len);
 
   // The length of the control message:
   static const unsigned kControlMsgSize = CMSG_SPACE(sizeof(int));
@@ -489,10 +500,10 @@ RendererCrashHandler(const void* crash_context, size_t crash_context_size,
   struct kernel_iovec iov[3];
   iov[0].iov_base = const_cast<void*>(crash_context);
   iov[0].iov_len = crash_context_size;
-  iov[1].iov_base = const_cast<char*>(google_update::linux_guid.data());
-  iov[1].iov_len = google_update::linux_guid.size();
-  iov[2].iov_base = const_cast<char*>(child_process_logging::active_url.data());
-  iov[2].iov_len = child_process_logging::active_url.size();
+  iov[1].iov_base = guid;
+  iov[1].iov_len = kGuidSize + 1;
+  iov[2].iov_base = crash_url;
+  iov[2].iov_len = kMaxActiveURLSize + 1;
 
   msg.msg_iov = iov;
   msg.msg_iovlen = 3;
