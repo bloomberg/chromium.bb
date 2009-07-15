@@ -22,6 +22,7 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
+#include "net/url_request/url_request_unittest.h"
 #include "views/event.h"
 
 class AutomationProxyTest : public UITest {
@@ -867,6 +868,50 @@ TEST_F(ExternalTabTestType, ExternalTabPostMessage) {
     }
   }
 }
+
+TEST_F(ExternalTabTestType, ExternalTabPostMessageTarget) {
+  AutomationProxyForExternalTab* proxy =
+      static_cast<AutomationProxyForExternalTab*>(automation());
+
+  IPC::ExternalTabSettings settings = {
+    NULL,
+    gfx::Rect(),
+    WS_POPUP,
+    false,
+    false
+  };
+  HWND external_tab_container = NULL;
+  HWND tab_wnd = NULL;
+  scoped_refptr<TabProxy> tab(proxy->CreateExternalTab(settings,
+      &external_tab_container, &tab_wnd));
+  EXPECT_TRUE(tab != NULL);
+  EXPECT_NE(FALSE, ::IsWindow(external_tab_container));
+  if (tab != NULL) {
+    const wchar_t kDocRoot[] = L"chrome/test/data/external_tab";
+    scoped_refptr<HTTPTestServer> server(
+        HTTPTestServer::CreateServer(kDocRoot, NULL));
+
+    const char kTestUrl[] = "http://localhost:1337/files/post_message.html";
+    tab->NavigateInExternalTab(GURL(kTestUrl));
+    EXPECT_TRUE(proxy->WaitForNavigationComplete(10000));
+
+    // Post a message to the page, specifying a target.
+    // If the page receives it, it will post the same message right back to us.
+    const char kTestMessage[] = "Hello from gtest";
+    const char kTestOrigin[] = "http://www.external.tab";
+    tab->HandleMessageFromExternalHost(kTestMessage, kTestOrigin,
+        "http://localhost:1337/");
+
+    EXPECT_TRUE(ExternalTabMessageLoop(external_tab_container, 10000));
+    EXPECT_NE(0, proxy->messages_received());
+
+    if (proxy->messages_received()) {
+      EXPECT_EQ(kTestMessage, proxy->message());
+      EXPECT_EQ(GURL(kTestOrigin).GetOrigin(), GURL(proxy->target()));
+    }
+  }
+}
+
 #endif  // defined(OS_WIN)
 
 // TODO(port): Need to port autocomplete_edit_proxy.* first.

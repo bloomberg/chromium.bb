@@ -28,6 +28,15 @@ void ExternalHostBindings::postMessage(
   std::string target;
   if (args.size() >= 2 && args[1].isString()) {
     target = args[1].ToString();
+    if (target.compare("*") != 0) {
+      GURL resolved(target);
+      if (!resolved.is_valid()) {
+        DLOG(WARNING) << "Unable to parse the specified target URL. " << target;
+        result->Set(false);
+        return;
+      }
+      target = resolved.spec();
+    }
   } else {
     target = "*";
   }
@@ -54,13 +63,29 @@ bool ExternalHostBindings::ForwardMessageFromExternalHost(
 
   bool status = false;
 
-  // TODO(tommi): Do the appropriate target check and drop the event if
-  //  the target doesn't match the url of the current document.
-  //  See: http://dev.w3.org/html5/spec/Overview.html#posting-messages
   if (target.compare("*") != 0) {
-    DLOG(WARNING) << "Dropping posted message since the target wasn't '*' "
-                     "and we haven't implemented parsing of the target param";
-    return false;
+    GURL frame_url(frame_->GetURL());
+    GURL frame_origin(frame_url.GetOrigin());
+    GURL target_origin(GURL(target).GetOrigin());
+
+    // We want to compare the origins of the two URLs but first
+    // we need to make sure that we don't compare an invalid one
+    // to a valid one.
+    bool drop = (frame_origin.is_valid() != target_origin.is_valid());
+
+    if (!drop) {
+      if (!frame_origin.is_valid()) {
+        // Both origins are invalid, so compare the URLs as opaque strings.
+        drop = (frame_url.spec().compare(target) != 0);
+      } else {
+        drop = (frame_origin != target_origin);
+      }
+    }
+
+    if (drop) {
+      DLOG(WARNING) << "Dropping posted message.  Origins don't match";
+      return false;
+    }
   }
 
   // Construct an event object, assign the origin to the origin member and
