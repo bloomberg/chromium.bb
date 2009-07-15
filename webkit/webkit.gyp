@@ -14,6 +14,7 @@
       'ENABLE_ICONDATABASE=0',
       'ENABLE_XSLT=1',
       'ENABLE_XPATH=1',
+      'ENABLE_SHARED_WORKERS=0',
       'ENABLE_SVG=1',
       'ENABLE_SVG_ANIMATION=1',
       'ENABLE_SVG_AS_IMAGE=1',
@@ -542,6 +543,7 @@
               '--include', '../third_party/WebKit/WebCore/page',
               '--include', '../third_party/WebKit/WebCore/plugins',
               '--include', '../third_party/WebKit/WebCore/svg',
+              '--include', '../third_party/WebKit/WebCore/workers',
               '--include', '../third_party/WebKit/WebCore/xml',
             ],
           },
@@ -676,16 +678,6 @@
         '../third_party/WebKit/WebCore/storage/StorageArea.cpp',
         '../third_party/WebKit/WebCore/storage/StorageNamespace.cpp',
         
-        # ENABLE_SHARED_WORKES only.
-        '../third_party/WebKit/WebCore/workers/AbstractWorker.idl',
-        '../third_party/WebKit/WebCore/workers/SharedWorker.idl',
-        '../third_party/WebKit/WebCore/workers/AbstractWorker.cpp',
-        '../third_party/WebKit/WebCore/workers/AbstractWorker.h',
-        '../third_party/WebKit/WebCore/workers/SharedWorker.cpp',
-        '../third_party/WebKit/WebCore/workers/SharedWorker.h',
-        '../third_party/WebKit/WebCore/custom/V8AbstractWorkerCustom.cpp',
-        '../third_party/WebKit/WebCore/custom/V8SharedWorkerCustom.cpp',
-
         # Use history/BackForwardListChromium.cpp instead.
         '../third_party/WebKit/WebCore/history/BackForwardList.cpp',
 
