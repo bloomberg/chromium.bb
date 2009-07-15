@@ -351,6 +351,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 }
 
 DownloadItemGtk::~DownloadItemGtk() {
+  icon_consumer_.CancelAllRequests();
   StopDownloadProgress();
   get_download()->RemoveObserver(this);
   g_signal_handlers_disconnect_by_func(parent_shelf_->GetHBox(),
