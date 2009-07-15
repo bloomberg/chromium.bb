@@ -56,58 +56,6 @@ void WebMediaPlayerImpl::Proxy::Repaint() {
   }
 }
 
-void WebMediaPlayerImpl::Proxy::TimeChanged() {
-  render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &WebMediaPlayerImpl::Proxy::TimeChangedTask));
-}
-
-void WebMediaPlayerImpl::Proxy::NetworkStateChanged(
-    WebKit::WebMediaPlayer::NetworkState state) {
-  render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-                        &WebMediaPlayerImpl::Proxy::NetworkStateChangedTask,
-                        state));
-}
-
-void WebMediaPlayerImpl::Proxy::ReadyStateChanged(
-    WebKit::WebMediaPlayer::ReadyState state) {
-  render_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this,
-                        &WebMediaPlayerImpl::Proxy::ReadyStateChangedTask,
-                        state));
-}
-
-void WebMediaPlayerImpl::Proxy::RepaintTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  {
-    AutoLock auto_lock(lock_);
-    --outstanding_repaints_;
-    DCHECK_GE(outstanding_repaints_, 0);
-  }
-  if (webmediaplayer_)
-    webmediaplayer_->Repaint();
-}
-
-void WebMediaPlayerImpl::Proxy::TimeChangedTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_)
-    webmediaplayer_->TimeChanged();
-}
-
-void WebMediaPlayerImpl::Proxy::NetworkStateChangedTask(
-    WebKit::WebMediaPlayer::NetworkState state) {
-  DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_)
-    webmediaplayer_->SetNetworkState(state);
-}
-
-void WebMediaPlayerImpl::Proxy::ReadyStateChangedTask(
-    WebKit::WebMediaPlayer::ReadyState state) {
-  DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_)
-    webmediaplayer_->SetReadyState(state);
-}
-
 void WebMediaPlayerImpl::Proxy::SetVideoRenderer(
     VideoRendererImpl* video_renderer) {
   video_renderer_ = video_renderer;
@@ -134,27 +82,40 @@ void WebMediaPlayerImpl::Proxy::Detach() {
   video_renderer_ = NULL;
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineInitializationCallback(bool success) {
-  if (success) {
-    // Since we have initialized the pipeline, say we have everything.
-    // TODO(hclam): change this to report the correct status. Should also post
-    // a task to call to |webmediaplayer_|.
-    ReadyStateChanged(WebKit::WebMediaPlayer::HaveMetadata);
-    ReadyStateChanged(WebKit::WebMediaPlayer::HaveEnoughData);
-    NetworkStateChanged(WebKit::WebMediaPlayer::Loaded);
-  } else {
-    // TODO(hclam): should use pipeline_->GetError() to determine the state
-    // properly and reports error using MediaError.
-    // WebKit uses FormatError to indicate an error for bogus URL or bad file.
-    // Since we are at the initialization stage we can safely treat every error
-    // as format error. Should post a task to call to |webmediaplayer_|.
-    NetworkStateChanged(WebKit::WebMediaPlayer::FormatError);
+void WebMediaPlayerImpl::Proxy::PipelineInitializationCallback() {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &WebMediaPlayerImpl::Proxy::PipelineInitializationTask));
+}
+
+void WebMediaPlayerImpl::Proxy::PipelineSeekCallback() {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &WebMediaPlayerImpl::Proxy::PipelineSeekTask));
+}
+
+void WebMediaPlayerImpl::Proxy::RepaintTask() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  {
+    AutoLock auto_lock(lock_);
+    --outstanding_repaints_;
+    DCHECK_GE(outstanding_repaints_, 0);
+  }
+  if (webmediaplayer_) {
+    webmediaplayer_->Repaint();
   }
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineSeekCallback(bool success) {
-  if (success)
-    TimeChanged();
+void WebMediaPlayerImpl::Proxy::PipelineInitializationTask() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  if (webmediaplayer_) {
+    webmediaplayer_->OnPipelineInitialize();
+  }
+}
+
+void WebMediaPlayerImpl::Proxy::PipelineSeekTask() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  if (webmediaplayer_) {
+    webmediaplayer_->OnPipelineSeek();
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -393,9 +354,29 @@ void WebMediaPlayerImpl::Repaint() {
   GetClient()->repaint();
 }
 
-void WebMediaPlayerImpl::TimeChanged() {
+void WebMediaPlayerImpl::OnPipelineInitialize() {
   DCHECK(MessageLoop::current() == main_loop_);
-  GetClient()->timeChanged();
+  if (pipeline_->GetError() == media::PIPELINE_OK) {
+    // Since we have initialized the pipeline, say we have everything.
+    // TODO(hclam): change this to report the correct status.
+    SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
+    SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+    SetNetworkState(WebKit::WebMediaPlayer::Loaded);
+  } else {
+    // TODO(hclam): should use pipeline_->GetError() to determine the state
+    // properly and reports error using MediaError.
+    // WebKit uses FormatError to indicate an error for bogus URL or bad file.
+    // Since we are at the initialization stage we can safely treat every error
+    // as format error. Should post a task to call to |webmediaplayer_|.
+    SetNetworkState(WebKit::WebMediaPlayer::FormatError);
+  }
+}
+
+void WebMediaPlayerImpl::OnPipelineSeek() {
+  DCHECK(MessageLoop::current() == main_loop_);
+  if (pipeline_->GetError() == media::PIPELINE_OK) {
+    GetClient()->timeChanged();
+  }
 }
 
 void WebMediaPlayerImpl::SetNetworkState(

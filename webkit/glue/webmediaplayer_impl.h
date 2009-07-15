@@ -93,46 +93,29 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
           WebMediaPlayerImpl* webmediaplayer);
     virtual ~Proxy();
 
-    // Fire a repaint event to WebKit.
+    // Public methods called from the video renderer.
     void Repaint();
-
-    // Report to WebKit that time has changed.
-    void TimeChanged();
-
-    // Report to WebKit that network state has changed.
-    void NetworkStateChanged(WebKit::WebMediaPlayer::NetworkState state);
-
-    // Report the WebKit that ready state has changed.
-    void ReadyStateChanged(WebKit::WebMediaPlayer::ReadyState state);
-
-    // Public methods to be called from video renderer.
     void SetVideoRenderer(VideoRendererImpl* video_renderer);
 
-   private:
-    friend class WebMediaPlayerImpl;
+    // Public methods called from WebMediaPlayerImpl.
+    void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
+    void SetSize(const gfx::Rect& rect);
+    void Detach();
 
+    // Public methods called from the pipeline via callback issued by
+    // WebMediaPlayerImpl.
+    void PipelineInitializationCallback();
+    void PipelineSeekCallback();
+
+   private:
     // Invoke |webmediaplayer_| to perform a repaint.
     void RepaintTask();
 
-    // Invoke |webmediaplayer_| to notify a time change event.
-    void TimeChangedTask();
+    // Notify |webmediaplayer_| that initialization has finished.
+    void PipelineInitializationTask();
 
-    // Saves the internal network state and notify WebKit to pick up the change.
-    void NetworkStateChangedTask(WebKit::WebMediaPlayer::NetworkState state);
-
-    // Saves the internal ready state and notify WebKit to pick the change.
-    void ReadyStateChangedTask(WebKit::WebMediaPlayer::ReadyState state);
-
-    void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
-
-    void SetSize(const gfx::Rect& rect);
-
-    // Detach from |webmediaplayer_|.
-    void Detach();
-
-    void PipelineInitializationCallback(bool success);
-
-    void PipelineSeekCallback(bool success);
+    // Notify |webmediaplayer_| that a seek has finished.
+    void PipelineSeekTask();
 
     // The render message loop where WebKit lives.
     MessageLoop* render_loop_;
@@ -224,13 +207,16 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   void Repaint();
 
-  void TimeChanged();
+  void OnPipelineInitialize();
 
-  void SetNetworkState(WebKit::WebMediaPlayer::NetworkState state);
-
-  void SetReadyState(WebKit::WebMediaPlayer::ReadyState state);
+  void OnPipelineSeek();
 
  private:
+  // Helpers that set the network/ready state and notifies the client if
+  // they've changed.
+  void SetNetworkState(WebKit::WebMediaPlayer::NetworkState state);
+  void SetReadyState(WebKit::WebMediaPlayer::ReadyState state);
+
   // Destroy resources held.
   void Destroy();
 
