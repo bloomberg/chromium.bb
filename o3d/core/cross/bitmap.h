@@ -52,9 +52,20 @@ namespace o3d {
 
 class MemoryReadStream;
 class RawData;
+class Pack;
 
-class Bitmap {
+// Bitmap provides an API for basic image operations on bitmap images,
+// including scale and crop. The contents of bitmap can be created from
+// a RawData object via LoadFromRawData(), and also can be transfered
+// to mip of a Texure2D or a specific face of TextureCUBE via methods
+// in Texture.
+
+class Bitmap : public ParamObject {
  public:
+  typedef SmartPointer<Bitmap> Ref;
+
+  explicit Bitmap(ServiceLocator* service_locator);
+  virtual ~Bitmap() {}
 
   // We will fail to load images that are bigger than 4kx4k to avoid security
   // risks. GPUs don't usually support bigger sizes anyway.
@@ -69,15 +80,6 @@ class Bitmap {
     PNG,
     DDS,
   };
-
-  Bitmap()
-      : image_data_(NULL),
-        format_(Texture::UNKNOWN_FORMAT),
-        width_(0),
-        height_(0),
-        num_mipmaps_(0),
-        is_cubemap_(false) {}
-  ~Bitmap() {}
 
   static bool CheckImageDimensions(unsigned int width, unsigned int height) {
     return width > 0 && height > 0 &&
@@ -234,6 +236,57 @@ class Bitmap {
   // Checks that the alpha channel for the entire bitmap is 1.0
   bool CheckAlphaIsOne() const;
 
+  // Copy pixels from source bitmap. Scales if the width and height of source
+  // and dest do not match.
+  // Parameters:
+  //   source_img: source bitmap which would be drawn.
+  //   source_x: x-coordinate of the starting pixel in the source image.
+  //   source_x: y-coordinate of the starting pixel in the source image.
+  //   source_width: width of the source image to draw.
+  //   source_height: Height of the source image to draw.
+  //   dest_x: x-coordinate of the starting pixel in the dest image.
+  //   dest_y: y-coordinate of the starting pixel in the dest image.
+  //   dest_width: width of the dest image to draw.
+  //   dest_height: height of the dest image to draw.
+  void DrawImage(Bitmap* source_img, int source_x, int source_y,
+                 int source_width, int source_height,
+                 int dest_x, int dest_y,
+                 int dest_width, int dest_height);
+
+  // Crop part of an image from src, scale it to an arbitrary size
+  // and paste in dest image. Utility function for all DrawImage
+  // function in bitmap and textures. Scale operation is based on
+  // bilinear interpolation.
+  // Note: this doesn't work for DXTC, or floating-point images.
+  //
+  // Parameters:
+  //   src: source image which would be copied from.
+  //   src_x: x-coordinate of the starting pixel in the src image.
+  //   src_y: y-coordinate of the starting pixel in the src image.
+  //   src_width: width of the part in src image to be croped.
+  //   src_height: height of the part in src image to be croped.
+  //   src_img_width: width of the src image.
+  //   src_img_height: height of the src image.
+  //   dest: dest image which would be copied to.
+  //   dest_x: x-coordinate of the starting pixel in the dest image.
+  //   dest_y: y-coordinate of the starting pixel in the dest image.
+  //   dest_width: width of the part in dest image to be pasted to.
+  //   dest_height: height of the part in dest image to be pasted to.
+  //   dest_img_width: width of the dest image.
+  //   dest_img_height: height of the src image.
+  //   component: size of each pixel in terms of array element.
+  // Returns:
+  //   true if crop and scale succeeds.
+  static void BilinearInterpolateScale(const uint8* src,
+                                       int src_x, int src_y,
+                                       int src_width, int src_height,
+                                       int src_img_width, int src_img_height,
+                                       uint8* dest,
+                                       int dest_x, int dest_y,
+                                       int dest_width, int dest_height,
+                                       int dest_img_width, int dest_img_height,
+                                       int component);
+
   // Detects the type of image file based on the filename.
   static ImageFileType GetFileTypeFromFilename(const char *filename);
   // Detects the type of image file based on the mime-type.
@@ -320,7 +373,35 @@ class Bitmap {
                     unsigned int dst_width,
                     unsigned int dst_height,
                     unsigned char *dst);
+
+  // adjust start points and boundaries when using DrawImage data
+  // in bitmap and textures.
+  // Parameters:
+  //   src_x: x-coordinate of the starting pixel in the source image.
+  //   src_y: y-coordinate of the starting pixel in the source image.
+  //   src_width: width of the source image to draw.
+  //   src_height: height of the source image to draw.
+  //   src_bmp_width: original width of source bitmap.
+  //   src_bmp_height: original height of source bitmap.
+  //   dest_x: x-coordinate of the starting pixel in the dest image.
+  //   dest_y: y-coordinate of the starting pixel in the dest image.
+  //   dest_width: width of the dest image to draw.
+  //   dest_height: height of the dest image to draw.
+  //   dest_bmp_width: original width of dest bitmap.
+  //   dest_bmp_height: original height of dest bitmap.
+  // Returns:
+  //   false if src or dest rectangle is out of boundaries.
+  static bool AdjustDrawImageBoundary(int* src_x, int* src_y,
+                                      int* src_width, int* src_height,
+                                      int src_bmp_width, int src_bmp_height,
+                                      int* dest_x, int* dest_y,
+                                      int* dest_width, int* dest_height,
+                                      int dest_bmp_width, int dest_bmp_height);
+
  private:
+  friend class IClassManager;
+  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+
   // pointer to the raw bitmap data
   scoped_array<uint8> image_data_;
   // format of the texture this is meant to represent.
@@ -334,6 +415,22 @@ class Bitmap {
   // is this cube-map data
   bool is_cubemap_;
 
+  // utility function used in AdjustDrawImageBoundary.
+  // It adjusts start point and related measures
+  // for a specific dimension.
+  // Parameter:
+  //   src_a: the coordinate which is negative.
+  //   dest_a: same coordinate in the other image.
+  //   src_length: length measure of source image to draw.
+  //   dest_length: length measure of dest image to draw.
+  //   src_bmp_length: length measure of src image.
+  // Returns:
+  //   true if adjust is successful.
+  static bool AdjustDrawImageBoundHelper(int* src_a, int* dest_a,
+                                         int* src_length, int* dest_length,
+                                         int src_bmp_length);
+
+  O3D_DECL_CLASS(Bitmap, ParamObject);
   DISALLOW_COPY_AND_ASSIGN(Bitmap);
 };
 

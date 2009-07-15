@@ -215,6 +215,26 @@ class Pack : public NamedObject {
   Texture* CreateTextureFromRawData(RawData* raw_data,
                                     bool generate_mips);
 
+  // Creates a new Bitmap object of the specified size and format and
+  // reserves the necessary resources for it.
+  // Paramters:
+  //   width: The width of the bitmap in pixel.
+  //   height: The height of the bitmap in pixel.
+  //   format: The format of the bitmap.
+  // Returns:
+  //   A pointer to the bitmap obejct.
+
+  Bitmap* CreateBitmap(int width, int height, Texture::Format format);
+
+  // Creates a new Bitmap object from RawData.
+  // Parameters:
+  //   raw_data: contains the bitmap data in one of the know formats.
+  //   file_type: the format of the bitmap data. If UNKNOW, the file
+  //              type would determined from the extension.
+  // Returns:
+  //   A pointer to the bitmap object.
+  Bitmap* CreateBitmapFromRawData(RawData* raw_data);
+
   // Creates a new Texture2D object of the specified size and format and
   // reserves the necessary resources for it.
   // Parameters:
@@ -404,12 +424,12 @@ class Pack : public NamedObject {
     }
   };
 
-  // Helper method
-  Texture* CreateTextureFromBitmap(Bitmap *bitmap, const String& uri);
-
   IClassManager* class_manager_;
   ObjectManager* object_manager_;
   Renderer* renderer_;
+
+  // helper function
+  Texture* CreateTextureFromBitmap(Bitmap *bitmap, const String& uri);
 
   // The set of objects owned by the pack.  This container contains all of the
   // references that force the lifespan of the contained objects to match

@@ -118,14 +118,14 @@ TEST_F(RendererTest, OffScreen) {
 
 // TODO: add InitAndDestroyGL and InitAndDestroyMock
 TEST_F(RendererTest, Creates2DTextureFromBitmap) {
-  Bitmap bitmap;
-  bitmap.Allocate(Texture::ARGB8, 16, 32, 2, false);
-  memset(bitmap.image_data(), 0x34, bitmap.GetTotalSize());
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  bitmap->Allocate(Texture::ARGB8, 16, 32, 2, false);
+  memset(bitmap->image_data(), 0x34, bitmap->GetTotalSize());
 
   Client client(g_service_locator);
   client.Init();
 
-  Texture::Ref texture = g_renderer->CreateTextureFromBitmap(&bitmap);
+  Texture::Ref texture = g_renderer->CreateTextureFromBitmap(bitmap);
   ASSERT_TRUE(NULL != texture);
   EXPECT_EQ(Texture::ARGB8, texture->format());
   EXPECT_EQ(2, texture->levels());
@@ -137,14 +137,14 @@ TEST_F(RendererTest, Creates2DTextureFromBitmap) {
 }
 
 TEST_F(RendererTest, CreatesCubeTextureFromBitmap) {
-  Bitmap bitmap;
-  bitmap.Allocate(Texture::ARGB8, 16, 16, 2, true);
-  memset(bitmap.image_data(), 0x34, bitmap.GetTotalSize());
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  bitmap->Allocate(Texture::ARGB8, 16, 16, 2, true);
+  memset(bitmap->image_data(), 0x34, bitmap->GetTotalSize());
 
   Client client(g_service_locator);
   client.Init();
 
-  Texture::Ref texture = g_renderer->CreateTextureFromBitmap(&bitmap);
+  Texture::Ref texture = g_renderer->CreateTextureFromBitmap(bitmap);
   ASSERT_TRUE(NULL != texture);
   EXPECT_EQ(Texture::ARGB8, texture->format());
   EXPECT_EQ(2, texture->levels());

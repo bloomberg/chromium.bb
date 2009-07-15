@@ -29,6 +29,7 @@
 
 
 O3D_IDL_SOURCES = [
+  'idl/bitmap.idl',
   'idl/bounding_box.idl',
   'idl/buffer.idl',
   'idl/canvas.idl',

@@ -186,6 +186,25 @@ namespace o3d {
                int source_width,
                float[] values);
 
+  %[
+    Copy pixels from source bitmap to certain mip level.
+    Scales if the width and height of source and dest do not match.
+
+    \param source_img source bitmap which would be drawn.
+    \param source_x x-coordinate of the starting pixel in the source image.
+    \param source_y y-coordinate of the starting pixel in the source image.
+    \param source_width width of the source image to draw.
+    \param source_height Height of the source image to draw.
+    \param dest_x x-coordinate of the starting pixel in the dest image.
+    \param dest_y y-coordinate of the starting pixel in the dest image.
+    \param dest_width width of the dest image.
+    \param dest_height height of the dest image.
+    \param dest_mip on which mip level the sourceImg would be drawn.
+  %]
+  void DrawImage(Bitmap source_img, int source_x, int source_y,
+                 int source_width, int source_height,
+                 int dest_x, int dest_y,
+                 int dest_width, int dest_height, int dest_mip);
 
   [verbatim=cpp_glue] %{
     void SetRectCheck(o3d::Texture2D* self,
@@ -426,6 +445,28 @@ coordinates.
     \return The RenderSurface object.
   %]
   RenderSurface? GetRenderSurface(CubeFace face, int mip_level, Pack pack);
+
+  %[
+    Copy pixels from source bitmap to certain mip level.
+    Scales if the width and height of source and dest do not match.
+
+    \param source_img source bitmap which would be drawn.
+    \param source_x x-coordinate of the starting pixel in the source image.
+    \param source_y y-coordinate of the starting pixel in the source image.
+    \param source_width width of the source image to draw.
+    \param source_height Height of the source image to draw.
+    \param dest_x x-coordinate of the starting pixel in the dest image.
+    \param dest_y y-coordinate of the starting pixel in the dest image.
+    \param dest_width width of the dest image.
+    \param dest_height height of the dest image.
+    \param face on which face the sourceImg would be drawn.
+    \param dest_mip on which mip level the sourceImg would be drawn.
+  %]
+  void DrawImage(Bitmap source_img, int source_x, int source_y,
+                 int source_width, int source_height,
+                 int dest_x, int dest_y,
+                 int dest_width, int dest_height,
+                 CubeFace face, int dest_mip);
 };  // TextureCUBE
 
 }  // namespace o3d

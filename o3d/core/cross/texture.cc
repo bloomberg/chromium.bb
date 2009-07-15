@@ -89,6 +89,82 @@ Texture2D::~Texture2D() {
                                               levels())));
 }
 
+void Texture2D::DrawImage(Bitmap* src_img,
+                          int src_x, int src_y,
+                          int src_width, int src_height,
+                          int dst_x, int dst_y,
+                          int dst_width, int dst_height, int dest_mip) {
+  DCHECK(src_img->image_data());
+
+  int mip_width = std::max(1, width() >> dest_mip);
+  int mip_height = std::max(1, height() >> dest_mip);
+
+  // Clip source and destination rectangles to
+  // source and destination bitmaps.
+  // if src or dest rectangle is out of boundary,
+  // do nothing and return.
+  if (!Bitmap::AdjustDrawImageBoundary(&src_x, &src_y,
+                                       &src_width, &src_height,
+                                       src_img->width(), src_img->height(),
+                                       &dst_x, &dst_y,
+                                       &dst_width, &dst_height,
+                                       mip_width, mip_height))
+    return;
+
+  unsigned int components = 0;
+  // check formats of source and dest images.
+  // format of source and dest should be the same.
+  if (src_img->format() != format()) {
+    O3D_ERROR(service_locator()) << "DrawImage does not support "
+                                 << "different formats.";
+    return;
+  }
+  // if src and dest are in the same size and drawImage is copying
+  // the entire bitmap on dest image, just perform memcpy.
+  if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
+      src_img->width() == mip_width && src_img->height() == mip_height &&
+      src_width == src_img->width() && src_height == src_img->height() &&
+      dst_width == mip_width && dst_height == mip_height) {
+    void* data = NULL;
+    if (!Lock(dest_mip, &data))
+      return;
+
+    uint8* mip_data = static_cast<uint8*>(data);
+    unsigned int size = Bitmap::GetMipChainSize(mip_width, mip_height,
+                                                format(), 1);
+    memcpy(mip_data, src_img->image_data(), size);
+    this->Unlock(dest_mip);
+
+    return;
+  }
+  if (src_img->format() == Texture::XRGB8 ||
+      src_img->format() == Texture::ARGB8) {
+    components = 4;
+  } else {
+    O3D_ERROR(service_locator()) << "DrawImage does not support format: "
+                                 << src_img->format() << " unless src and "
+                                 << "dest images are in the same size and "
+                                 << "copying the entire bitmap";
+    return;
+  }
+
+  void* data = NULL;
+  if (!Lock(dest_mip, &data))
+    return;
+
+  uint8* src_img_data = src_img->image_data();
+  uint8* mip_data = static_cast<uint8*>(data);
+
+  Bitmap::BilinearInterpolateScale(src_img_data, src_x, src_y,
+                                   src_width, src_height,
+                                   src_img->width(), src_img->height(),
+                                   mip_data, dst_x, dst_y,
+                                   dst_width, dst_height,
+                                   mip_width, mip_height, components);
+
+  this->Unlock(dest_mip);
+}
+
 ObjectBase::Ref Texture2D::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref();
 }
@@ -162,6 +238,84 @@ TextureCUBE::~TextureCUBE() {
 
 ObjectBase::Ref TextureCUBE::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref();
+}
+
+void TextureCUBE::DrawImage(Bitmap* src_img,
+                            int src_x, int src_y,
+                            int src_width, int src_height,
+                            int dst_x, int dst_y,
+                            int dst_width, int dst_height,
+                            CubeFace dest_face, int dest_mip) {
+  DCHECK(src_img->image_data());
+
+  int mip_length = std::max(1, edge_length() >> dest_mip);
+
+  // Clip source and destination rectangles to
+  // source and destination bitmaps.
+  // if src or dest rectangle is out of boundary,
+  // do nothing and return true.
+  if (!Bitmap::AdjustDrawImageBoundary(&src_x, &src_y,
+                                       &src_width, &src_height,
+                                       src_img->width(), src_img->height(),
+                                       &dst_x, &dst_y,
+                                       &dst_width, &dst_height,
+                                       mip_length, mip_length))
+    return;
+
+  unsigned int components = 0;
+  // check formats of source and dest images.
+  // format of source and dest should be the same.
+  if (src_img->format() != format()) {
+    O3D_ERROR(service_locator()) << "DrawImage does not support "
+                                 << "different formats.";
+    return;
+  }
+  // if src and dest are in the same size and drawImage is copying
+  // the entire bitmap on dest image, just perform memcpy.
+  if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
+      src_img->width() == mip_length && src_img->height() == mip_length &&
+      src_width == src_img->width() && src_height == src_img->height() &&
+      dst_width == mip_length && dst_height == mip_length) {
+    // get mip data by lock method.
+    void* data = NULL;
+    if (!Lock(dest_face, dest_mip, &data))
+      return;
+
+    uint8* mip_data = static_cast<uint8*>(data);
+    unsigned int size = Bitmap::GetMipChainSize(mip_length, mip_length,
+                                                format(), 1);
+    memcpy(mip_data, src_img->image_data(), size);
+    this->Unlock(dest_face, dest_mip);
+
+    return;
+  }
+  if (src_img->format() == Texture::XRGB8 ||
+      src_img->format() == Texture::ARGB8) {
+    components = 4;
+  } else {
+    O3D_ERROR(service_locator()) << "DrawImage does not support format: "
+                                 << src_img->format() << " unless src and "
+                                 << "dest images are in the same size and "
+                                 << "copying the entire bitmap";
+    return;
+  }
+
+  void* data = NULL;
+  if (!Lock(dest_face, dest_mip, &data)) {
+    return;
+  }
+
+  uint8* src_img_data = src_img->image_data();
+  uint8* mip_data = static_cast<uint8*>(data);
+
+  Bitmap::BilinearInterpolateScale(src_img_data, src_x, src_y,
+                                   src_width, src_height,
+                                   src_img->width(), src_img->height(),
+                                   mip_data, dst_x, dst_y,
+                                   dst_width, dst_height,
+                                   mip_length, mip_length, components);
+
+  this->Unlock(dest_face, dest_mip);
 }
 
 }  // namespace o3d

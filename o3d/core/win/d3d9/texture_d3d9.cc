@@ -231,6 +231,7 @@ Texture2DD3D9::Texture2DD3D9(ServiceLocator* service_locator,
                 enable_render_surfaces),
       d3d_texture_(tex) {
   DCHECK(tex);
+  backing_bitmap_ = Bitmap::Ref(new Bitmap(service_locator));
 }
 
 // Attempts to create a IDirect3DTexture9 with the given specs.  If the creation
@@ -263,8 +264,8 @@ Texture2DD3D9* Texture2DD3D9::Create(ServiceLocator* service_locator,
                                              resize_to_pot,
                                              enable_render_surfaces);
 
-  texture->backing_bitmap_.SetFrom(bitmap);
-  if (texture->backing_bitmap_.image_data()) {
+  texture->backing_bitmap_->SetFrom(bitmap);
+  if (texture->backing_bitmap_->image_data()) {
     for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
       if (!texture->UpdateBackedMipLevel(i)) {
         DLOG(ERROR) << "Failed to upload bitmap to texture.";
@@ -275,12 +276,12 @@ Texture2DD3D9* Texture2DD3D9::Create(ServiceLocator* service_locator,
       mip_height = std::max(1U, mip_height >> 1);
     }
     if (!resize_to_pot)
-      texture->backing_bitmap_.FreeData();
+      texture->backing_bitmap_->FreeData();
   } else {
     if (resize_to_pot) {
-      texture->backing_bitmap_.AllocateData();
-      memset(texture->backing_bitmap_.image_data(), 0,
-             texture->backing_bitmap_.GetTotalSize());
+      texture->backing_bitmap_->AllocateData();
+      memset(texture->backing_bitmap_->image_data(), 0,
+             texture->backing_bitmap_->GetTotalSize());
     }
   }
 
@@ -294,11 +295,11 @@ Texture2DD3D9::~Texture2DD3D9() {
 
 bool Texture2DD3D9::UpdateBackedMipLevel(unsigned int level) {
   DCHECK_LT(level, static_cast<unsigned int>(levels()));
-  DCHECK(backing_bitmap_.image_data());
-  DCHECK_EQ(backing_bitmap_.width(), width());
-  DCHECK_EQ(backing_bitmap_.height(), height());
-  DCHECK_EQ(backing_bitmap_.format(), format());
-  DCHECK_EQ(backing_bitmap_.num_mipmaps(), levels());
+  DCHECK(backing_bitmap_->image_data());
+  DCHECK_EQ(backing_bitmap_->width(), width());
+  DCHECK_EQ(backing_bitmap_->height(), height());
+  DCHECK_EQ(backing_bitmap_->format(), format());
+  DCHECK_EQ(backing_bitmap_->num_mipmaps(), levels());
 
   unsigned int mip_width = std::max(1, width() >> level);
   unsigned int mip_height = std::max(1, height() >> level);
@@ -322,7 +323,7 @@ bool Texture2DD3D9::UpdateBackedMipLevel(unsigned int level) {
   // TODO: check that the returned pitch is what we expect.
 
   const unsigned char *mip_data =
-      backing_bitmap_.GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
+      backing_bitmap_->GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
   if (resize_to_pot_) {
     Bitmap::Scale(mip_width, mip_height, format(), mip_data,
                   rect_width, rect_height,
@@ -393,8 +394,8 @@ bool Texture2DD3D9::Lock(int level, void** texture_data) {
     return false;
   }
   if (resize_to_pot_) {
-    DCHECK(backing_bitmap_.image_data());
-    *texture_data = backing_bitmap_.GetMipData(level,
+    DCHECK(backing_bitmap_->image_data());
+    *texture_data = backing_bitmap_->GetMipData(level,
                                                TextureCUBE::FACE_POSITIVE_X);
     locked_levels_ |= 1 << level;
     return true;
@@ -459,7 +460,7 @@ bool Texture2DD3D9::OnResetDevice() {
     bool resize_to_pot;
     unsigned int mip_width, mip_height;
     return HR(CreateTexture2DD3D9(renderer_d3d9,
-                                  &backing_bitmap_,
+                                  backing_bitmap_,
                                   render_surfaces_enabled(),
                                   &resize_to_pot,
                                   &mip_width,
@@ -487,6 +488,7 @@ TextureCUBED3D9::TextureCUBED3D9(ServiceLocator* service_locator,
                   resize_to_pot,
                   enable_render_surfaces),
       d3d_cube_texture_(tex) {
+  backing_bitmap_ = Bitmap::Ref(new Bitmap(service_locator));
 }
 
 // Attempts to create a D3D9 CubeTexture with the given specs.  If creation
@@ -519,8 +521,8 @@ TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
                                                  resize_to_pot,
                                                  enable_render_surfaces);
 
-  texture->backing_bitmap_.SetFrom(bitmap);
-  if (texture->backing_bitmap_.image_data()) {
+  texture->backing_bitmap_->SetFrom(bitmap);
+  if (texture->backing_bitmap_->image_data()) {
     for (int face = 0; face < 6; ++face) {
       unsigned int mip_edge = edge;
       for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
@@ -533,12 +535,12 @@ TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
       }
     }
     if (!resize_to_pot)
-      texture->backing_bitmap_.FreeData();
+      texture->backing_bitmap_->FreeData();
   } else {
     if (resize_to_pot) {
-      texture->backing_bitmap_.AllocateData();
-      memset(texture->backing_bitmap_.image_data(), 0,
-             texture->backing_bitmap_.GetTotalSize());
+      texture->backing_bitmap_->AllocateData();
+      memset(texture->backing_bitmap_->image_data(), 0,
+             texture->backing_bitmap_->GetTotalSize());
     }
   }
 
@@ -563,12 +565,12 @@ TextureCUBED3D9::~TextureCUBED3D9() {
 bool TextureCUBED3D9::UpdateBackedMipLevel(unsigned int level,
                                            TextureCUBE::CubeFace face) {
   DCHECK_LT(level, static_cast<unsigned int>(levels()));
-  DCHECK(backing_bitmap_.image_data());
-  DCHECK(backing_bitmap_.is_cubemap());
-  DCHECK_EQ(backing_bitmap_.width(), edge_length());
-  DCHECK_EQ(backing_bitmap_.height(), edge_length());
-  DCHECK_EQ(backing_bitmap_.format(), format());
-  DCHECK_EQ(backing_bitmap_.num_mipmaps(), levels());
+  DCHECK(backing_bitmap_->image_data());
+  DCHECK(backing_bitmap_->is_cubemap());
+  DCHECK_EQ(backing_bitmap_->width(), edge_length());
+  DCHECK_EQ(backing_bitmap_->height(), edge_length());
+  DCHECK_EQ(backing_bitmap_->format(), format());
+  DCHECK_EQ(backing_bitmap_->num_mipmaps(), levels());
 
   unsigned int mip_edge = std::max(1, edge_length() >> level);
   unsigned int rect_edge = mip_edge;
@@ -590,7 +592,7 @@ bool TextureCUBED3D9::UpdateBackedMipLevel(unsigned int level,
   DCHECK(out_rect.pBits);
   // TODO: check that the returned pitch is what we expect.
 
-  const unsigned char *mip_data = backing_bitmap_.GetMipData(level, face);
+  const unsigned char *mip_data = backing_bitmap_->GetMipData(level, face);
   if (resize_to_pot_) {
     Bitmap::Scale(mip_edge, mip_edge, format(), mip_data,
                   rect_edge, rect_edge,
@@ -664,8 +666,8 @@ bool TextureCUBED3D9::Lock(CubeFace face, int level, void** texture_data) {
     return false;
   }
   if (resize_to_pot_) {
-    DCHECK(backing_bitmap_.image_data());
-    *texture_data = backing_bitmap_.GetMipData(level, face);
+    DCHECK(backing_bitmap_->image_data());
+    *texture_data = backing_bitmap_->GetMipData(level, face);
     locked_levels_[face] |= 1 << level;
     return true;
   } else {
@@ -731,7 +733,7 @@ bool TextureCUBED3D9::OnResetDevice() {
     bool resize_to_pot;
     unsigned int mip_edge;
     return HR(CreateTextureCUBED3D9(renderer_d3d9,
-                                    &backing_bitmap_,
+                                    backing_bitmap_,
                                     render_surfaces_enabled(),
                                     &resize_to_pot,
                                     &mip_edge,

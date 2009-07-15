@@ -116,6 +116,7 @@ typedef ObjectBase[] ObjectArray;
     Note: You may omit the 'o3d.'.
 
     \param type_name name of Class to create. Valid type names are:
+        \li o3d.Bitmap
         \li o3d.Canvas
         \li o3d.CanvasLinearGradient
         \li o3d.CanvasPaint
@@ -306,6 +307,25 @@ typedef ObjectBase[] ObjectArray;
   %]
   Texture? CreateTextureFromRawData(RawData raw_data,
                                     bool generate_mips);
+
+  %[
+    Create a new Bitmap object from RawData.
+
+    \param raw_data contains the bitmap data in one of the know formats.
+    \return the new bitmap object.
+  %]
+  Bitmap? CreateBitmapFromRawData(RawData raw_data);
+
+  %[
+    Create a new Bitmap object of the specified size and format and
+    reserves the necessary resources for it.
+
+    \param width The width of the bitmap in pixel.
+    \param height The height of the bitmap in pixel.
+    \param format The format of the bitmap.
+    \return the new bitmap obejct.
+  %]
+  Bitmap? CreateBitmap(int width, int height, Texture::Format format);
 };  // Pack
 
 }  // namespace o3d

@@ -37,9 +37,10 @@
 // The precompiled header must appear before anything else.
 #include "core/cross/precompile.h"
 
-#include <cstring>
-#include <sys/stat.h>
 #include "core/cross/bitmap.h"
+#include <cstring>
+#include <cmath>
+#include <sys/stat.h>
 #include "utils/cross/file_path_utils.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -51,7 +52,22 @@ using file_util::OpenFile;
 using file_util::CloseFile;
 using file_util::GetFileSize;
 
+namespace {
+static const double kEpsilon = 0.0001;
+}  // anonymous namespace.
+
 namespace o3d {
+
+  O3D_DEFN_CLASS(Bitmap, ParamObject);
+
+Bitmap::Bitmap(ServiceLocator* service_locator)
+    : ParamObject(service_locator),
+      image_data_(NULL),
+      format_(Texture::UNKNOWN_FORMAT),
+      width_(0),
+      height_(0),
+      num_mipmaps_(0),
+      is_cubemap_(false) {}
 
 // Gets the size of the buffer containing a an image, given its width, height
 // and format.
@@ -261,6 +277,178 @@ bool Bitmap::LoadFromRawData(RawData *raw_data,
   return LoadFromStream(&stream, filename, file_type, generate_mipmaps);
 }
 
+void Bitmap::DrawImage(Bitmap* src_img,
+                       int src_x, int src_y,
+                       int src_width, int src_height,
+                       int dst_x, int dst_y,
+                       int dst_width, int dst_height) {
+  DCHECK(src_img->image_data());
+  DCHECK(image_data());
+
+  // Clip source and destination rectangles to
+  // source and destination bitmaps.
+  // if src or dest rectangle is out of boundary,
+  // do nothing and return.
+  if (!AdjustDrawImageBoundary(&src_x, &src_y,
+                               &src_width, &src_height,
+                               src_img->width_, src_img->height_,
+                               &dst_x, &dst_y,
+                               &dst_width, &dst_height,
+                               width_, height_))
+    return;
+
+  unsigned int components = 0;
+  // check formats of source and dest images.
+  // format of source and dest should be the same.
+  if (src_img->format_ != format_) {
+    O3D_ERROR(service_locator()) << "DrawImage does not support "
+                                 << "different formats.";
+    return;
+  }
+  // if src and dest are in the same size and drawImage is copying
+  // the entire bitmap on dest image, just perform memcpy.
+  if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
+      src_img->width_ == width_ && src_img->height_ == height_ &&
+      src_width == src_img->width_ && src_height == src_img->height_ &&
+      dst_width == width_ && dst_height == height_) {
+    memcpy(image_data(), src_img->image_data(), GetTotalSize());
+    return;
+  }
+
+  // if drawImage is not copying the whole bitmap, we need to check
+  // the format. currently only support XRGB8 and ARGB8
+  if (src_img->format_ == Texture::XRGB8 ||
+      src_img->format_ == Texture::ARGB8) {
+    components = 4;
+  } else {
+    O3D_ERROR(service_locator()) << "DrawImage does not support format: "
+                                 << src_img->format_ << " unless src and "
+                                 << "dest images are in the same size and "
+                                 << "copying the entire bitmap";
+    return;
+  }
+
+  unsigned char* src_img_data = src_img->image_data();
+  unsigned char* dst_img_data = image_data();
+
+  // crop part of image from src img, scale it in
+  // bilinear interpolation fashion, and paste it
+  // on dst img.
+  BilinearInterpolateScale(src_img_data, src_x, src_y,
+                           src_width, src_height,
+                           src_img->width_, src_img->height_,
+                           dst_img_data, dst_x, dst_y,
+                           dst_width, dst_height,
+                           width_, height_, components);
+}
+
+// static utility function used by DrawImage in bitmap and textures.
+// in this function, positions are converted to 4th-quadrant, which
+// means origin locates left-up corner.
+void Bitmap::BilinearInterpolateScale(const uint8* src_img_data,
+                                      int src_x, int src_y,
+                                      int src_width, int src_height,
+                                      int src_img_width, int src_img_height,
+                                      uint8* dest_img_data,
+                                      int dest_x, int dest_y,
+                                      int dest_width, int dest_height,
+                                      int dest_img_width, int dest_img_height,
+                                      int components) {
+  for (int i = 0; i < std::abs(dest_width); i++) {
+    // x is the iterator of dest_width in dest_img.
+    // change x to negative if dest_width is negative.
+    int x = i;
+    if (dest_width < 0)
+      x = -i;
+
+    // calculate corresponding coordinate in src_img.
+    double base_x = i * (std::abs(src_width) - 1) /
+                    static_cast<double>(std::abs(dest_width) - 1);
+    // base_floor_x is the iterator of src_width in src_img.
+    // change base_x to negative if src_width is negative.
+    if (src_width < 0)
+      base_x = -base_x;
+    int base_floor_x = static_cast<int>(std::floor(base_x));
+
+    for (int j = 0; j < std::abs(dest_height); j++) {
+      // y is the iterator of dest_height in dest_img.
+      // change y to negative if dest_height is negative.
+      int y = j;
+      if (dest_height < 0)
+        y = -j;
+
+      // calculate coresponding coordinate in src_img.
+      double base_y = j * (std::abs(src_height) - 1) /
+                      static_cast<double>(std::abs(dest_height) - 1);
+      // change base_y to negative if src_height is negative.
+      if (src_height < 0)
+        base_y = -base_y;
+      int base_floor_y = static_cast<int>(std::floor(base_y));
+
+      for (unsigned int c = 0; c < components; c++) {
+        // if base_x and base_y are integers, which means this point
+        // exists in src_img, just copy the original values.
+        if (base_x - base_floor_x < kEpsilon &&
+            base_y - base_floor_y < kEpsilon) {
+          dest_img_data[((dest_img_height - (y + dest_y) - 1) *
+                        dest_img_width + dest_x + x) * components + c] =
+          src_img_data[((src_img_height - (base_floor_y + src_y) - 1) *
+                       src_img_width + src_x + base_floor_x) * components + c];
+          continue;
+        }
+
+        // get four nearest neighbors of point (base_x, base_y) from src img.
+        uint8 src_neighbor_11, src_neighbor_21,
+              src_neighbor_12, src_neighbor_22;
+        src_neighbor_11 = src_img_data[((src_img_height - (base_floor_y +
+                                       src_y) - 1) * src_img_width + src_x +
+                                       base_floor_x) * components + c];
+        // if base_x exists in src img. set src_neighbor_21 to src_neighbor_11
+        // so the interpolation result would remain src_neighbor_11.
+        if (base_x - base_floor_x < kEpsilon)
+          src_neighbor_21 = src_neighbor_11;
+        else
+          src_neighbor_21 = src_img_data[((src_img_height - (base_floor_y +
+                                         src_y) - 1) * src_img_width + src_x +
+                                         base_floor_x + 1) * components + c];
+        // if base_y exists in src img. set src_neighbor_12 to src_neighbor_11
+        // so the interpolation result would remain src_neighbor_11.
+        if (base_y - base_floor_y < kEpsilon)
+          src_neighbor_12 = src_neighbor_11;
+        else
+          src_neighbor_12 = src_img_data[((src_img_height - (base_floor_y +
+                                         src_y) - 2) * src_img_width + src_x +
+                                         base_floor_x) * components + c];
+
+        if (base_x - base_floor_x < kEpsilon)
+          src_neighbor_22 = src_neighbor_21;
+        else if (base_y - base_floor_y < kEpsilon)
+          src_neighbor_22 = src_neighbor_12;
+        else
+          src_neighbor_22 = src_img_data[((src_img_height - (base_floor_y +
+                                         src_y) - 2) * src_img_width + src_x +
+                                         base_floor_x + 1) * components + c];
+
+        // calculate interpolated value.
+        double interpolatedValue = (1 - (base_y - base_floor_y)) *
+                                   ((base_x - base_floor_x) *
+                                   src_neighbor_21 +
+                                   (1 - (base_x - base_floor_x)) *
+                                   src_neighbor_11) +
+                                   (base_y - base_floor_y) *
+                                   ((base_x - base_floor_x) *
+                                   src_neighbor_22 +
+                                   (1 - (base_x - base_floor_x)) *
+                                   src_neighbor_12);
+
+        // assign the nearest integer of interpolatedValue to dest_img_data.
+        dest_img_data[((dest_img_height - (y + dest_y) - 1) * dest_img_width +
+                        dest_x + x) * components + c] =
+        static_cast<uint8>(interpolatedValue + 0.5);
+      }
+    }
+  }
+}
 
 Bitmap::ImageFileType Bitmap::GetFileTypeFromFilename(const char *filename) {
   // Convert the filename to lower case for matching.
@@ -574,6 +762,105 @@ bool Bitmap::Scale(unsigned int src_width,
   return true;
 }
 
+// Adjust boundaries when using DrawImage function in bitmap or texture.
+bool Bitmap::AdjustDrawImageBoundary(int* src_x, int* src_y,
+                                     int* src_width, int* src_height,
+                                     int src_bmp_width, int src_bmp_height,
+                                     int* dest_x, int* dest_y,
+                                     int* dest_width, int* dest_height,
+                                     int dest_bmp_width, int dest_bmp_height) {
+  // if src or dest rectangle is out of boundaries, do nothing.
+  if ((*src_x < 0 && *src_x + *src_width <= 0) ||
+      (*src_y < 0 && *src_y + *src_height <= 0) ||
+      (*dest_x < 0 && *dest_x + *dest_width <= 0) ||
+      (*dest_y < 0 && *dest_y + *dest_height <= 0) ||
+      (*src_x >= src_bmp_width &&
+       *src_x + *src_width >= src_bmp_width - 1) ||
+      (*src_y >= src_bmp_height &&
+       *src_y + *src_height >= src_bmp_height - 1) ||
+      (*dest_x >= dest_bmp_width &&
+       *dest_x + *dest_width >= dest_bmp_width - 1) ||
+      (*dest_y >= dest_bmp_height &&
+       *dest_y + *dest_height >= dest_bmp_height - 1))
+    return false;
+
+  // if start points are negative.
+  // check whether src_x is negative.
+  if (!AdjustDrawImageBoundHelper(src_x, dest_x,
+                                  src_width, dest_width, src_bmp_width))
+    return false;
+  // check whether dest_x is negative.
+  if (!AdjustDrawImageBoundHelper(dest_x, src_x,
+                                  dest_width, src_width, dest_bmp_width))
+    return false;
+  // check whether src_y is negative.
+  if (!AdjustDrawImageBoundHelper(src_y, dest_y,
+                                  src_height, dest_height, src_bmp_height))
+    return false;
+  // check whether dest_y is negative.
+  if (!AdjustDrawImageBoundHelper(dest_y, src_y,
+                                  dest_height, src_height, dest_bmp_height))
+    return false;
+
+  // check any width or height becomes negative after adjustment.
+  if (*src_width == 0 || *src_height == 0 ||
+      *dest_width == 0 || *dest_height == 0) {
+    return false;
+  }
+
+  return true;
+}
+
+// utility function called in AdjustDrawImageBoundary.
+// help to adjust a specific dimension,
+// if start point or ending point is out of boundary.
+bool Bitmap::AdjustDrawImageBoundHelper(int* src_a, int* dest_a,
+                                        int* src_length, int* dest_length,
+                                        int src_bmp_length) {
+  if (*src_length == 0 || *dest_length == 0)
+    return false;
+
+  // check if start point is out of boundary.
+  // if src_a < 0, src_length must be positive.
+  if (*src_a < 0) {
+    int src_length_delta = 0 - *src_a;
+    *dest_a = *dest_a + (*dest_length) * src_length_delta / (*src_length);
+    *dest_length = *dest_length - (*dest_length) *
+                   src_length_delta / (*src_length);
+    *src_length = *src_length - src_length_delta;
+    *src_a = 0;
+  }
+  // if src_a >= src_bmp_width, src_length must be negative.
+  if (*src_a >= src_bmp_length) {
+    int src_length_delta = *src_a - (src_bmp_length - 1);
+    *dest_a = *dest_a - (*dest_length) * src_length_delta / (*src_length);
+    *dest_length = *dest_length - (*dest_length) *
+                   src_length_delta / *src_length;
+    *src_length = *src_length - src_length_delta;
+    *src_a = src_bmp_length - 1;
+  }
+
+  if (*src_length == 0 || *dest_length == 0)
+    return false;
+  // check whether start point + related length is out of boundary.
+  // if src_a + src_length > src_bmp_length, src_length must be positive.
+  if (*src_a + *src_length > src_bmp_length) {
+    int src_length_delta = *src_length - (src_bmp_length - *src_a);
+    *dest_length = *dest_length - (*dest_length) *
+                   src_length_delta / (*src_length);
+    *src_length = *src_length - src_length_delta;
+  }
+  // if src_a + src_length < -1, src_length must be negative.
+  if (*src_a + *src_length < -1) {
+    int src_length_delta = 0 - (*src_a + *src_length);
+    *dest_length = *dest_length + (*dest_length) *
+                   src_length_delta / (*src_length);
+    *src_length = *src_length + src_length_delta;
+  }
+
+  return true;
+}
+
 // Checks that all the alpha values are 1.0
 bool Bitmap::CheckAlphaIsOne() const {
   if (!image_data())
@@ -680,6 +967,10 @@ bool Bitmap::CheckAlphaIsOne() const {
       return false;
   }
   return true;
+}
+
+ObjectBase::Ref Bitmap::Create(ServiceLocator* service_locator) {
+  return ObjectBase::Ref(new Bitmap(service_locator));
 }
 
 }  // namespace o3d

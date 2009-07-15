@@ -118,6 +118,7 @@ samples = [
   '2d.html',
   'animated-scene.html',
   'animation.html',
+  'bitmap-draw-image.html',
   'billboards.html',
   'canvas-texturedraw.html',
   'canvas.html',

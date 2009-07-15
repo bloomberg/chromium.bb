@@ -41,6 +41,7 @@
 namespace o3d {
 
 class Pack;
+class Bitmap;
 
 // An abstract class for 2D textures that defines the interface for getting
 // the dimensions of the texture and number of mipmap levels.
@@ -95,6 +96,24 @@ class Texture2D : public Texture {
   // Returns:
   //  Reference to the RenderSurface object.
   virtual RenderSurface::Ref GetRenderSurface(int mip_level, Pack* pack) = 0;
+
+  // Copy pixels from source bitmap to certain mip level.
+  // Scales if the width and height of source and dest do not match.
+  // Parameters:
+  //   source_img: source bitmap which would be drawn.
+  //   source_x: x-coordinate of the starting pixel in the source image.
+  //   source_y: y-coordinate of the starting pixel in the source image.
+  //   source_width: width of the source image to draw.
+  //   source_height: Height of the source image to draw.
+  //   dest_x: x-coordinate of the starting pixel in the dest image.
+  //   dest_y: y-coordinate of the starting pixel in the dest image.
+  //   dest_width: width of the dest image.
+  //   dest_height: height of the dest image.
+  //   dest_mip: on which mip level the sourceImg would be drawn.
+  void DrawImage(Bitmap* source_img, int source_x, int source_y,
+                 int source_width, int source_height,
+                 int dest_x, int dest_y,
+                 int dest_width, int dest_height, int dest_mip);
 
  protected:
   // Returns true if the mip-map level has been locked.
@@ -207,6 +226,25 @@ class TextureCUBE : public Texture {
   virtual RenderSurface::Ref GetRenderSurface(CubeFace face,
                                               int level,
                                               Pack* pack) = 0;
+
+  // Copy pixels from source bitmap to certain mip level.
+  // Scales if the width and height of source and dest do not match.
+  // Parameters:
+  //   source_img: source bitmap which would be drawn.
+  //   source_x: x-coordinate of the starting pixel in the source image.
+  //   source_y: y-coordinate of the starting pixel in the source image.
+  //   source_width: width of the source image to draw.
+  //   source_height: Height of the source image to draw.
+  //   dest_x: x-coordinate of the starting pixel in the dest image.
+  //   dest_y: y-coordinate of the starting pixel in the dest image.
+  //   dest_width: width of the dest image.
+  //   dest_height: height of the dest image.
+  //   face: on which face the sourceImg would be drawn.
+  //   dest_mip: on which mip level the sourceImg would be drawn.
+  void DrawImage(Bitmap* source_img, int source_x, int source_y,
+                 int source_width, int source_height,
+                 int dest_x, int dest_y, int dest_width,
+                 int dest_height, CubeFace face, int dest_mip);
 
  protected:
   // Returns true if the mip-map level has been locked.

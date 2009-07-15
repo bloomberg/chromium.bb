@@ -140,6 +140,7 @@ ClassManager::ClassManager(ServiceLocator* service_locator)
   AddTypedClass<WorldViewProjectionInverseTransposeParamMatrix4>();
 
   // Other Objects.
+  AddTypedClass<Bitmap>();
   AddTypedClass<Canvas>();
   AddTypedClass<CanvasLinearGradient>();
   AddTypedClass<CanvasPaint>();

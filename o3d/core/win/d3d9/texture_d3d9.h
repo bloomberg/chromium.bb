@@ -110,7 +110,7 @@ class Texture2DD3D9 : public Texture2D {
   CComPtr<IDirect3DTexture9> d3d_texture_;
 
   // A bitmap used to back the NPOT textures on POT-only hardware.
-  Bitmap backing_bitmap_;
+  Bitmap::Ref backing_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(Texture2DD3D9);
 };
@@ -178,7 +178,7 @@ class TextureCUBED3D9 : public TextureCUBE {
   CComPtr<IDirect3DCubeTexture9> d3d_cube_texture_;
 
   // A bitmap used to back the NPOT textures on POT-only hardware.
-  Bitmap backing_bitmap_;
+  Bitmap::Ref backing_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureCUBED3D9);
 };

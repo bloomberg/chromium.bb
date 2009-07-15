@@ -135,14 +135,14 @@ Texture* Pack::CreateTextureFromFile(const String& uri,
 
   // TODO: Add support for volume texture when we have code to load
   //                  them
-  Bitmap bitmap;
-  if (!bitmap.LoadFromFile(filepath, file_type, generate_mipmaps)) {
+  Bitmap::Ref bitmap(new Bitmap(service_locator()));
+  if (!bitmap->LoadFromFile(filepath, file_type, generate_mipmaps)) {
     O3D_ERROR(service_locator())
         << "Failed to load bitmap file \"" << uri << "\"";
     return NULL;
   }
 
-  return CreateTextureFromBitmap(&bitmap, uri);
+  return CreateTextureFromBitmap(bitmap, uri);
 }
 
 // Creates a Texture object from a file in the current render context format.
@@ -198,7 +198,6 @@ Texture* Pack::CreateTextureFromBitmap(Bitmap *bitmap, const String& uri) {
   return texture.Get();
 }
 
-
 // Creates a Texture object from RawData and allocates
 // the necessary resources for it.
 Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
@@ -213,14 +212,53 @@ Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
   DLOG(INFO) << "CreateTextureFromRawData(uri='" << uri << "')";
 
 
-  Bitmap bitmap;
-  if (!bitmap.LoadFromRawData(raw_data, Bitmap::UNKNOWN, generate_mips)) {
+  Bitmap::Ref bitmap(new Bitmap(service_locator()));
+  if (!bitmap->LoadFromRawData(raw_data, Bitmap::UNKNOWN, generate_mips)) {
     O3D_ERROR(service_locator())
         << "Failed to load bitmap from raw data \"" << uri << "\"";
     return NULL;
   }
 
-  return CreateTextureFromBitmap(&bitmap, uri);
+  return CreateTextureFromBitmap(bitmap, uri);
+}
+
+// Create a bitmap object.
+Bitmap* Pack::CreateBitmap(int width, int height,
+                           Texture::Format format) {
+  DCHECK(Bitmap::CheckImageDimensions(width, height));
+
+  Bitmap::Ref bitmap(new Bitmap(service_locator()));
+  if (bitmap.IsNull()) {
+    O3D_ERROR(service_locator())
+        << "Failed to create bitmap object.";
+    return NULL;
+  }
+  bitmap->Allocate(format, width, height, 1, false);
+  if (!bitmap->image_data()) {
+    O3D_ERROR(service_locator())
+        << "Failed to allocate memory for bitmap.";
+    return NULL;
+  }
+  RegisterObject(bitmap);
+  return bitmap.Get();
+}
+
+// Create a new bitmap object from rawdata.
+Bitmap* Pack::CreateBitmapFromRawData(RawData* raw_data) {
+  Bitmap::Ref bitmap(new Bitmap(service_locator()));
+  if (bitmap.IsNull()) {
+    O3D_ERROR(service_locator())
+        << "Failed to create bitmap object.";
+    return NULL;
+  }
+  if (!bitmap->LoadFromRawData(raw_data, Bitmap::UNKNOWN,
+                               false)) {
+    O3D_ERROR(service_locator())
+        << "Failed to load bitmap from raw data.";
+    return NULL;
+  }
+  RegisterObject(bitmap);
+  return bitmap.Get();
 }
 
 // Creates a Texture2D object and allocates the necessary resources for it.

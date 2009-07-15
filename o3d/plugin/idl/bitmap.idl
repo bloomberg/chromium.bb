@@ -1,0 +1,92 @@
+/*
+ * Copyright 2009, Google Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+namespace o3d {
+
+%[
+Bitmap provides an interface for basic image operations on bitmap,
+including scale and crop. The contents of bitmap can be created from
+RawData via pack.createBitmapFromRawData(), and also can be transfered 
+to mip of a Texure2D or a specific face of TextureCUBE via methods
+in Texture.
+%]
+
+[nocpp, include="core/cross/bitmap.h"]
+class Bitmap : ParamObject {
+  %[
+  enum ImageFileType {
+    \li UNKNOWN, Image type unknown.
+    \li TGA, image in TGA format.
+    \li JPEG, image in JPEG format.
+    \li PNG, image in PNG format.
+    \li DDS, image in DDS format.
+  };
+  %]
+  enum ImageFileType {
+    UNKNOWN,
+    TGA,
+    JPEG,
+    PNG,
+    DDS
+  };
+
+  %[
+    Copy pixels from source bitmap. Scales if the width and height of source
+    and dest do not match.
+    \param source_img source bitmap which would be drawn.
+    \param source_x x-coordinate of the starting pixel in the source image.
+    \param source_y y-coordinate of the starting pixel in the source image.
+    \param source_width width of the source image to draw.
+    \param source_height Height of the source image to draw.
+    \param dest_x x-coordinate of the starting pixel in the dest image.
+    \param dest_y y-coordinate of the starting pixel in the dest image.
+    \param dest_width width of the dest image to draw.
+    \param dest_height height of the dest image to draw.
+  %]
+  void DrawImage(Bitmap source_img, int source_x, int source_y, 
+                 int source_width, int source_height, 
+                 int dest_x, int dest_y, 
+                 int dest_width, int dest_height);
+
+  %[
+    The width of the bitmap (read only).
+  %]
+  [getter] int width_;
+
+  %[
+    The height of the bitmap (read only).
+  %]
+  [getter] int height_;
+
+};  // Bitmap
+
+}  // namespace o3d

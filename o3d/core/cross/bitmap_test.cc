@@ -358,30 +358,30 @@ TEST_F(BitmapTest, LoadTGAFile24bit) {
   // Load the texture object from a file.
   String filename = *g_program_path + "/bitmap_test/tga-256x256-24bit.tga";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::TGA, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::XRGB8, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, ktga256x256_24bit_BGRX));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::TGA, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::XRGB8, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, ktga256x256_24bit_BGRX));
 }
 
 // Loads a 32 bit TGA file, checks it against the known data.
 TEST_F(BitmapTest, LoadTGAFile32bit) {
   String filename = *g_program_path + "/bitmap_test/tga-256x256-32bit.tga";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::TGA, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::ARGB8, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, ktga256x256_32bit_BGRA));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::TGA, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::ARGB8, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, ktga256x256_32bit_BGRA));
 }
 
 // Tries to load a 5kx5k TGA file, which should fail.
@@ -391,48 +391,48 @@ TEST_F(BitmapTest, LoadTGAFileTooLarge) {
   // but bails before reading the actual image bytes.
   String filename = *g_program_path + "/bitmap_test/5kx5k.tga";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_FALSE(bitmap.LoadFromFile(filepath, Bitmap::TGA, false));
-  EXPECT_TRUE(bitmap.image_data() == NULL);
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_FALSE(bitmap->LoadFromFile(filepath, Bitmap::TGA, false));
+  EXPECT_TRUE(bitmap->image_data() == NULL);
 }
 
 // Loads a JPEG file, checks it against the known data.
 TEST_F(BitmapTest, LoadJPEGFile) {
   String filename = *g_program_path + "/bitmap_test/jpeg-256x256.jpg";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::JPEG, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::XRGB8, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kjpg256x256_BGRX));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::JPEG, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::XRGB8, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kjpg256x256_BGRX));
 }
 
 // Tries to load a 5kx5k JPEG file, which should fail.
 TEST_F(BitmapTest, LoadJPEGFileTooLarge) {
   String filename = *g_program_path + "/bitmap_test/5kx5k.jpg";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_FALSE(bitmap.LoadFromFile(filepath, Bitmap::JPEG, false));
-  EXPECT_TRUE(bitmap.image_data() == NULL);
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_FALSE(bitmap->LoadFromFile(filepath, Bitmap::JPEG, false));
+  EXPECT_TRUE(bitmap->image_data() == NULL);
 }
 
 // Loads a 24 bit PNG file, checks it against the known data.
 TEST_F(BitmapTest, LoadPNGFile24bit) {
   String filename = *g_program_path + "/bitmap_test/png-256x256-24bit.png";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::PNG, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::XRGB8, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kpng256x256_24bit_BGRX));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::PNG, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::XRGB8, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kpng256x256_24bit_BGRX));
 }
 
 // Loads a 24 bit interlaced PNG file, checks it against the known data.
@@ -440,29 +440,29 @@ TEST_F(BitmapTest, LoadPNGFile24bitInterlaced) {
   String filename = *g_program_path +
                     "/bitmap_test/png-256x256-24bit-interlaced.png";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::PNG, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::XRGB8, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kpng256x256_24bit_interlaced_BGRX));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::PNG, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::XRGB8, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kpng256x256_24bit_interlaced_BGRX));
 }
 
 TEST_F(BitmapTest, LoadPNGFile32bit) {
   String filename = *g_program_path + "/bitmap_test/png-256x256-32bit.png";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::PNG, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::ARGB8, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kpng256x256_32bit_BGRA));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::PNG, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::ARGB8, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kpng256x256_32bit_BGRA));
 }
 
 // Loads a palettized PNG file, checks it against the known data.
@@ -470,15 +470,15 @@ TEST_F(BitmapTest, LoadPNGFile8bitPalette) {
   String filename = *g_program_path +
                     "/bitmap_test/png-256x256-8bit-palette.png";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::PNG, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::XRGB8, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kpng256x256_8bit_palette_BGRX));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::PNG, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::XRGB8, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kpng256x256_8bit_palette_BGRX));
 }
 
 // Loads a palettized PNG file, checks it against the known data.
@@ -486,15 +486,15 @@ TEST_F(BitmapTest, LoadPNGFile4bitPalette) {
   String filename = *g_program_path +
                     "/bitmap_test/png-20x14-4bit-palette.png";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::PNG, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::XRGB8, bitmap.format());
-  EXPECT_EQ(20, bitmap.width());
-  EXPECT_EQ(14, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kpng20x14_4bit_palette_BGRX));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::PNG, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::XRGB8, bitmap->format());
+  EXPECT_EQ(20, bitmap->width());
+  EXPECT_EQ(14, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kpng20x14_4bit_palette_BGRX));
 }
 
 
@@ -502,9 +502,9 @@ TEST_F(BitmapTest, LoadPNGFile4bitPalette) {
 TEST_F(BitmapTest, LoadPNGFileTooLarge) {
   String filename = *g_program_path + "/bitmap_test/5kx5k.png";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_FALSE(bitmap.LoadFromFile(filepath, Bitmap::PNG, false));
-  EXPECT_TRUE(bitmap.image_data() == NULL);
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_FALSE(bitmap->LoadFromFile(filepath, Bitmap::PNG, false));
+  EXPECT_TRUE(bitmap->image_data() == NULL);
 }
 
 // NOTE: Having trouble recognising the alpha channel in a PNG
@@ -514,14 +514,14 @@ TEST_F(BitmapTest, LoadPNGFile8bitPaletteAlpha) {
   String filename = *g_program_path +
       "/bitmap_test/png-256x256-8bit-palette-alpha.png";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::PNG, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::ARGB8, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::PNG, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::ARGB8, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
 }
 */
 
@@ -529,15 +529,15 @@ TEST_F(BitmapTest, LoadPNGFile8bitPaletteAlpha) {
 TEST_F(BitmapTest, LoadDDSFileDXT1) {
   String filename = *g_program_path + "/bitmap_test/dds-dxt1-256x256.dds";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::DDS, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::DXT1, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kdxt1_256x256));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::DDS, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::DXT1, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kdxt1_256x256));
 }
 
 // Loads a DXT1 DDS file with alpha, checks the format.
@@ -545,15 +545,15 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Alpha) {
   String filename = *g_program_path +
       "/bitmap_test/dds-dxt1-256x256-alpha.dds";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::DDS, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::DXT1, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kdxt1_256x256_alpha));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::DDS, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::DXT1, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kdxt1_256x256_alpha));
 }
 
 // Loads a DXT1 DDS file with mipmaps, checks the format.
@@ -561,18 +561,18 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Mipmap) {
   String filename = *g_program_path +
       "/bitmap_test/dds-dxt1-256x256-mipmap.dds";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::DDS, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::DXT1, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(9, bitmap.num_mipmaps());
-  for (unsigned int i = 0; i < bitmap.num_mipmaps(); ++i) {
-    EXPECT_TRUE(bitmap.GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::DDS, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::DXT1, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(9, bitmap->num_mipmaps());
+  for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
+    EXPECT_TRUE(bitmap->GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
   }
-  EXPECT_TRUE(TestBitmapData(bitmap, kdxt1_256x256_mipmap));
+  EXPECT_TRUE(TestBitmapData(*bitmap, kdxt1_256x256_mipmap));
 }
 
 // Loads a DXT3 DDS file, checks the format.
@@ -580,15 +580,15 @@ TEST_F(BitmapTest, LoadDDSFileDXT3) {
   String filename = *g_program_path +
       "/bitmap_test/dds-dxt3-256x256-alpha.dds";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::DDS, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::DXT3, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kdxt3_256x256_alpha));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::DDS, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::DXT3, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kdxt3_256x256_alpha));
 }
 
 // Loads a DXT3 DDS file with mipmaps, checks the format.
@@ -596,18 +596,18 @@ TEST_F(BitmapTest, LoadDDSFileDXT3Mipmap) {
   String filename = *g_program_path +
       "/bitmap_test/dds-dxt3-256x256-mipmap.dds";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::DDS, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::DXT3, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(9, bitmap.num_mipmaps());
-  for (unsigned int i = 0; i < bitmap.num_mipmaps(); ++i) {
-    EXPECT_TRUE(bitmap.GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::DDS, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::DXT3, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(9, bitmap->num_mipmaps());
+  for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
+    EXPECT_TRUE(bitmap->GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
   }
-  EXPECT_TRUE(TestBitmapData(bitmap, kdxt3_256x256_mipmap));
+  EXPECT_TRUE(TestBitmapData(*bitmap, kdxt3_256x256_mipmap));
 }
 
 // Loads a DXT5 DDS file, checks the format.
@@ -615,15 +615,15 @@ TEST_F(BitmapTest, LoadDDSFileDXT5) {
   String filename = *g_program_path +
       "/bitmap_test/dds-dxt5-256x256-alpha.dds";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::DDS, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::DXT5, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(1, bitmap.num_mipmaps());
-  EXPECT_TRUE(TestBitmapData(bitmap, kdxt5_256x256_alpha));
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::DDS, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::DXT5, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_TRUE(TestBitmapData(*bitmap, kdxt5_256x256_alpha));
 }
 
 // Loads a DXT5 DDS file with mipmaps, checks the format.
@@ -631,18 +631,18 @@ TEST_F(BitmapTest, LoadDDSFileDXT5Mipmap) {
   String filename = *g_program_path +
       "/bitmap_test/dds-dxt5-256x256-mipmap.dds";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_TRUE(bitmap.LoadFromFile(filepath, Bitmap::DDS, false));
-  EXPECT_TRUE(bitmap.image_data() != NULL);
-  EXPECT_FALSE(bitmap.is_cubemap());
-  EXPECT_EQ(Texture::DXT5, bitmap.format());
-  EXPECT_EQ(256, bitmap.width());
-  EXPECT_EQ(256, bitmap.height());
-  EXPECT_EQ(9, bitmap.num_mipmaps());
-  for (unsigned int i = 0; i < bitmap.num_mipmaps(); ++i) {
-    EXPECT_TRUE(bitmap.GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap->LoadFromFile(filepath, Bitmap::DDS, false));
+  EXPECT_TRUE(bitmap->image_data() != NULL);
+  EXPECT_FALSE(bitmap->is_cubemap());
+  EXPECT_EQ(Texture::DXT5, bitmap->format());
+  EXPECT_EQ(256, bitmap->width());
+  EXPECT_EQ(256, bitmap->height());
+  EXPECT_EQ(9, bitmap->num_mipmaps());
+  for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
+    EXPECT_TRUE(bitmap->GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
   }
-  EXPECT_TRUE(TestBitmapData(bitmap, kdxt5_256x256_mipmap));
+  EXPECT_TRUE(TestBitmapData(*bitmap, kdxt5_256x256_mipmap));
 }
 
 // Tries to load a 5kx5k DDS file, which should fail.
@@ -652,9 +652,9 @@ TEST_F(BitmapTest, LoadDDSFileTooLarge) {
   // but bails before reading the actual image bytes.
   String filename = *g_program_path + "/bitmap_test/5kx5k.dds";
   FilePath filepath = UTF8ToFilePath(filename);
-  Bitmap bitmap;
-  EXPECT_FALSE(bitmap.LoadFromFile(filepath, Bitmap::DDS, false));
-  EXPECT_TRUE(bitmap.image_data() == NULL);
+  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
+  EXPECT_FALSE(bitmap->LoadFromFile(filepath, Bitmap::DDS, false));
+  EXPECT_TRUE(bitmap->image_data() == NULL);
 }
 
 
@@ -852,6 +852,423 @@ TEST_F(BitmapTest, ScaleUpToPOT) {
   memcpy(data.get(), kScaleUPDataNPOT, src_size);
   Bitmap::ScaleUpToPOT(kWidth, kHeight, format, data.get(), data.get());
   EXPECT_EQ(0, memcmp(data.get(), kScaleUPDataPOT, dst_size));
+}
+
+static unsigned char kpng_8x4_drawImage[128] = {
+  // Raw dest image used in drawimage test.
+  0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
+  0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x3a, 0x74, 0xe8, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x20, 0x40, 0x80, 0xff, 0x22, 0x44, 0x88, 0xff,
+  0x24, 0x48, 0x90, 0xff, 0x26, 0x4c, 0x98, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x2a, 0x54, 0xa8, 0xff,
+  0x2c, 0x58, 0xb0, 0xff, 0x2e, 0x5c, 0xb8, 0xff,
+  0x10, 0x20, 0x40, 0xff, 0x12, 0x24, 0x48, 0xff,
+  0x14, 0x28, 0x50, 0xff, 0x16, 0x2c, 0x58, 0xff,
+  0x18, 0x30, 0x60, 0xff, 0x1a, 0x34, 0x68, 0xff,
+  0x1c, 0x38, 0x70, 0xff, 0x1e, 0x3c, 0x78, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x02, 0x04, 0x08, 0xff,
+  0x04, 0x08, 0x10, 0xff, 0x06, 0x0c, 0x18, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x0a, 0x14, 0x28, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_top_left[128] = {
+  // expected result of drawimage on top left corner of dest image.
+  0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
+  0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x3a, 0x74, 0xe8, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x2c, 0x2c, 0x2c, 0xff, 0x2d, 0x2d, 0x2d, 0xff,
+  0x2e, 0x2e, 0x2e, 0xff, 0x26, 0x4c, 0x98, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x2a, 0x54, 0xa8, 0xff,
+  0x2c, 0x58, 0xb0, 0xff, 0x2e, 0x5c, 0xb8, 0xff,
+  0x28, 0x28, 0x28, 0xff, 0x29, 0x29, 0x29, 0xff,
+  0x2a, 0x2a, 0x2a, 0xff, 0x16, 0x2c, 0x58, 0xff,
+  0x18, 0x30, 0x60, 0xff, 0x1a, 0x34, 0x68, 0xff,
+  0x1c, 0x38, 0x70, 0xff, 0x1e, 0x3c, 0x78, 0xff,
+  0x24, 0x24, 0x24, 0xff, 0x25, 0x25, 0x25, 0xff,
+  0x26, 0x26, 0x26, 0xff, 0x06, 0x0c, 0x18, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x0a, 0x14, 0x28, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_top[128] = {
+  // expected result of drawimage on top bound of dest image.
+  0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
+  0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x3a, 0x74, 0xe8, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x20, 0x40, 0x80, 0xff, 0x22, 0x44, 0x88, 0xff,
+  0x24, 0x48, 0x90, 0xff, 0x26, 0x4c, 0x98, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x2a, 0x54, 0xa8, 0xff,
+  0x2c, 0x58, 0xb0, 0xff, 0x2e, 0x5c, 0xb8, 0xff,
+  0x10, 0x20, 0x40, 0xff, 0x12, 0x24, 0x48, 0xff,
+  0x2b, 0x2b, 0x2b, 0xff, 0x2c, 0x2c, 0x2c, 0xff,
+  0x2d, 0x2d, 0x2d, 0xff, 0x2e, 0x2e, 0x2e, 0xff,
+  0x1c, 0x38, 0x70, 0xff, 0x1e, 0x3c, 0x78, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x02, 0x04, 0x08, 0xff,
+  0x27, 0x27, 0x27, 0xff, 0x28, 0x28, 0x28, 0xff,
+  0x29, 0x29, 0x29, 0xff, 0x2a, 0x2a, 0x2a, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_top_right[128] = {
+  // expected result of drawimage on top right corner of dest image.
+  0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
+  0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x3a, 0x74, 0xe8, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x20, 0x40, 0x80, 0xff, 0x22, 0x44, 0x88, 0xff,
+  0x24, 0x48, 0x90, 0xff, 0x26, 0x4c, 0x98, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x2b, 0x2b, 0x2b, 0xff,
+  0x2c, 0x2c, 0x2c, 0xff, 0x2d, 0x2d, 0x2d, 0xff,
+  0x10, 0x20, 0x40, 0xff, 0x12, 0x24, 0x48, 0xff,
+  0x14, 0x28, 0x50, 0xff, 0x16, 0x2c, 0x58, 0xff,
+  0x18, 0x30, 0x60, 0xff, 0x27, 0x27, 0x27, 0xff,
+  0x28, 0x28, 0x28, 0xff, 0x29, 0x29, 0x29, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x02, 0x04, 0x08, 0xff,
+  0x04, 0x08, 0x10, 0xff, 0x06, 0x0c, 0x18, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x23, 0x23, 0x23, 0xff,
+  0x24, 0x24, 0x24, 0xff, 0x25, 0x25, 0x25, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_right[128] = {
+  // expected result of drawimage on right bound of dest image.
+  0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
+  0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x2b, 0x2b, 0x2b, 0xff,
+  0x2c, 0x2c, 0x2c, 0xff, 0x2d, 0x2d, 0x2d, 0xff,
+  0x20, 0x40, 0x80, 0xff, 0x22, 0x44, 0x88, 0xff,
+  0x24, 0x48, 0x90, 0xff, 0x26, 0x4c, 0x98, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x27, 0x27, 0x27, 0xff,
+  0x28, 0x28, 0x28, 0xff, 0x29, 0x29, 0x29, 0xff,
+  0x10, 0x20, 0x40, 0xff, 0x12, 0x24, 0x48, 0xff,
+  0x14, 0x28, 0x50, 0xff, 0x16, 0x2c, 0x58, 0xff,
+  0x18, 0x30, 0x60, 0xff, 0x23, 0x23, 0x23, 0xff,
+  0x24, 0x24, 0x24, 0xff, 0x25, 0x25, 0x25, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x02, 0x04, 0x08, 0xff,
+  0x04, 0x08, 0x10, 0xff, 0x06, 0x0c, 0x18, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x1f, 0x1f, 0x1f, 0xff,
+  0x20, 0x20, 0x20, 0xff, 0x21, 0x21, 0x21, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_bottom_right[128] = {
+  // expected result of drawimage on bottom right corner of dest image.
+  0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
+  0x34, 0x68, 0xd0, 0xff, 0x36, 0x6c, 0xd8, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x27, 0x27, 0x27, 0xff,
+  0x28, 0x28, 0x28, 0xff, 0x29, 0x29, 0x29, 0xff,
+  0x20, 0x40, 0x80, 0xff, 0x22, 0x44, 0x88, 0xff,
+  0x24, 0x48, 0x90, 0xff, 0x26, 0x4c, 0x98, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x23, 0x23, 0x23, 0xff,
+  0x24, 0x24, 0x24, 0xff, 0x25, 0x25, 0x25, 0xff,
+  0x10, 0x20, 0x40, 0xff, 0x12, 0x24, 0x48, 0xff,
+  0x14, 0x28, 0x50, 0xff, 0x16, 0x2c, 0x58, 0xff,
+  0x18, 0x30, 0x60, 0xff, 0x1f, 0x1f, 0x1f, 0xff,
+  0x20, 0x20, 0x20, 0xff, 0x21, 0x21, 0x21, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x02, 0x04, 0x08, 0xff,
+  0x04, 0x08, 0x10, 0xff, 0x06, 0x0c, 0x18, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x0a, 0x14, 0x28, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_bottom[128] = {
+  // expected result of drawimage on bottom bound of dest image.
+  0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
+  0x27, 0x27, 0x27, 0xff, 0x28, 0x28, 0x28, 0xff,
+  0x29, 0x29, 0x29, 0xff, 0x2a, 0x2a, 0x2a, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x20, 0x40, 0x80, 0xff, 0x22, 0x44, 0x88, 0xff,
+  0x23, 0x23, 0x23, 0xff, 0x24, 0x24, 0x24, 0xff,
+  0x25, 0x25, 0x25, 0xff, 0x26, 0x26, 0x26, 0xff,
+  0x2c, 0x58, 0xb0, 0xff, 0x2e, 0x5c, 0xb8, 0xff,
+  0x10, 0x20, 0x40, 0xff, 0x12, 0x24, 0x48, 0xff,
+  0x1f, 0x1f, 0x1f, 0xff, 0x20, 0x20, 0x20, 0xff,
+  0x21, 0x21, 0x21, 0xff, 0x22, 0x22, 0x22, 0xff,
+  0x1c, 0x38, 0x70, 0xff, 0x1e, 0x3c, 0x78, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x02, 0x04, 0x08, 0xff,
+  0x04, 0x08, 0x10, 0xff, 0x06, 0x0c, 0x18, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x0a, 0x14, 0x28, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_bottom_left[128] = {
+  // expected result of drawimage on bottom left corner of dest image.
+  0x28, 0x28, 0x28, 0xff, 0x29, 0x29, 0x29, 0xff,
+  0x2a, 0x2a, 0x2a, 0xff, 0x36, 0x6c, 0xd8, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x3a, 0x74, 0xe8, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x24, 0x24, 0x24, 0xff, 0x25, 0x25, 0x25, 0xff,
+  0x26, 0x26, 0x26, 0xff, 0x26, 0x4c, 0x98, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x2a, 0x54, 0xa8, 0xff,
+  0x2c, 0x58, 0xb0, 0xff, 0x2e, 0x5c, 0xb8, 0xff,
+  0x20, 0x20, 0x20, 0xff, 0x21, 0x21, 0x21, 0xff,
+  0x22, 0x22, 0x22, 0xff, 0x16, 0x2c, 0x58, 0xff,
+  0x18, 0x30, 0x60, 0xff, 0x1a, 0x34, 0x68, 0xff,
+  0x1c, 0x38, 0x70, 0xff, 0x1e, 0x3c, 0x78, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x02, 0x04, 0x08, 0xff,
+  0x04, 0x08, 0x10, 0xff, 0x06, 0x0c, 0x18, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x0a, 0x14, 0x28, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_left[128] = {
+  // expected result of drawimage on left bound of dest image.
+  0x2c, 0x2c, 0x2c, 0xff, 0x2d, 0x2d, 0x2d, 0xff,
+  0x2e, 0x2e, 0x2e, 0xff, 0x36, 0x6c, 0xd8, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x3a, 0x74, 0xe8, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x28, 0x28, 0x28, 0xff, 0x29, 0x29, 0x29, 0xff,
+  0x2a, 0x2a, 0x2a, 0xff, 0x26, 0x4c, 0x98, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x2a, 0x54, 0xa8, 0xff,
+  0x2c, 0x58, 0xb0, 0xff, 0x2e, 0x5c, 0xb8, 0xff,
+  0x24, 0x24, 0x24, 0xff, 0x25, 0x25, 0x25, 0xff,
+  0x26, 0x26, 0x26, 0xff, 0x16, 0x2c, 0x58, 0xff,
+  0x18, 0x30, 0x60, 0xff, 0x1a, 0x34, 0x68, 0xff,
+  0x1c, 0x38, 0x70, 0xff, 0x1e, 0x3c, 0x78, 0xff,
+  0x20, 0x20, 0x20, 0xff, 0x21, 0x21, 0x21, 0xff,
+  0x22, 0x22, 0x22, 0xff, 0x06, 0x0c, 0x18, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x0a, 0x14, 0x28, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_scale_up[128] = {
+  // expected result of scale up from 2x2 to 8x4.
+  0x3f, 0x3f, 0x3f, 0xff, 0x48, 0x48, 0x48, 0xff,
+  0x51, 0x51, 0x51, 0xff, 0x5a, 0x5a, 0x5a, 0xff,
+  0x64, 0x64, 0x64, 0xff, 0x6d, 0x6d, 0x6d, 0xff,
+  0x76, 0x76, 0x76, 0xff, 0x7f, 0x7f, 0x7f, 0xff,
+  0x2a, 0x2a, 0x2a, 0xff, 0x32, 0x32, 0x32, 0xff,
+  0x39, 0x39, 0x39, 0xff, 0x41, 0x41, 0x41, 0xff,
+  0x48, 0x48, 0x48, 0xff, 0x50, 0x50, 0x50, 0xff,
+  0x57, 0x57, 0x57, 0xff, 0x5f, 0x5f, 0x5f, 0xff,
+  0x15, 0x15, 0x15, 0xff, 0x1b, 0x1b, 0x1b, 0xff,
+  0x21, 0x21, 0x21, 0xff, 0x27, 0x27, 0x27, 0xff,
+  0x2d, 0x2d, 0x2d, 0xff, 0x33, 0x33, 0x33, 0xff,
+  0x39, 0x39, 0x39, 0xff, 0x3f, 0x3f, 0x3f, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x04, 0x04, 0x04, 0xff,
+  0x09, 0x09, 0x09, 0xff, 0x0d, 0x0d, 0x0d, 0xff,
+  0x12, 0x12, 0x12, 0xff, 0x16, 0x16, 0x16, 0xff,
+  0x1b, 0x1b, 0x1b, 0xff, 0x1f, 0x1f, 0x1f, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_scale_down[128] = {
+  // expected result of scale down from 8x8 to 4x4.
+  0xa8, 0xa8, 0xa8, 0xff, 0xaf, 0xaf, 0xaf, 0xff,
+  0xb6, 0xb6, 0xb6, 0xff, 0xbd, 0xbd, 0xbd, 0xff,
+  0x38, 0x70, 0xe0, 0xff, 0x3a, 0x74, 0xe8, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x70, 0x70, 0x70, 0xff, 0x77, 0x77, 0x77, 0xff,
+  0x7e, 0x7e, 0x7e, 0xff, 0x85, 0x85, 0x85, 0xff,
+  0x28, 0x50, 0xa0, 0xff, 0x2a, 0x54, 0xa8, 0xff,
+  0x2c, 0x58, 0xb0, 0xff, 0x2e, 0x5c, 0xb8, 0xff,
+  0x38, 0x38, 0x38, 0xff, 0x3f, 0x3f, 0x3f, 0xff,
+  0x46, 0x46, 0x46, 0xff, 0x4d, 0x4d, 0x4d, 0xff,
+  0x18, 0x30, 0x60, 0xff, 0x1a, 0x34, 0x68, 0xff,
+  0x1c, 0x38, 0x70, 0xff, 0x1e, 0x3c, 0x78, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x07, 0x07, 0x07, 0xff,
+  0x0e, 0x0e, 0x0e, 0xff, 0x15, 0x15, 0x15, 0xff,
+  0x08, 0x10, 0x20, 0xff, 0x0a, 0x14, 0x28, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_scale_out[128] = {
+  // expected result of scale src image larger than dest image.
+  0x63, 0x63, 0x63, 0xff, 0x65, 0x65, 0x65, 0xff,
+  0x67, 0x67, 0x67, 0xff, 0x69, 0x69, 0x69, 0xff,
+  0x6c, 0x6c, 0x6c, 0xff, 0x6e, 0x6e, 0x6e, 0xff,
+  0x70, 0x70, 0x70, 0xff, 0x72, 0x72, 0x72, 0xff,
+  0x53, 0x53, 0x53, 0xff, 0x55, 0x55, 0x55, 0xff,
+  0x57, 0x57, 0x57, 0xff, 0x59, 0x59, 0x59, 0xff,
+  0x5c, 0x5c, 0x5c, 0xff, 0x5e, 0x5e, 0x5e, 0xff,
+  0x60, 0x60, 0x60, 0xff, 0x62, 0x62, 0x62, 0xff,
+  0x43, 0x43, 0x43, 0xff, 0x45, 0x45, 0x45, 0xff,
+  0x47, 0x47, 0x47, 0xff, 0x49, 0x49, 0x49, 0xff,
+  0x4c, 0x4c, 0x4c, 0xff, 0x4e, 0x4e, 0x4e, 0xff,
+  0x50, 0x50, 0x50, 0xff, 0x52, 0x52, 0x52, 0xff,
+  0x33, 0x33, 0x33, 0xff, 0x35, 0x35, 0x35, 0xff,
+  0x37, 0x37, 0x37, 0xff, 0x39, 0x39, 0x39, 0xff,
+  0x3c, 0x3c, 0x3c, 0xff, 0x3e, 0x3e, 0x3e, 0xff,
+  0x40, 0x40, 0x40, 0xff, 0x42, 0x42, 0x42, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_flip[128] = {
+  // expected result of flip src image.
+  0x30, 0x60, 0xc0, 0xff, 0x32, 0x64, 0xc8, 0xff,
+  0x22, 0x22, 0x22, 0xff, 0x21, 0x21, 0x21, 0xff,
+  0x20, 0x20, 0x20, 0xff, 0x1f, 0x1f, 0x1f, 0xff,
+  0x3c, 0x78, 0xf0, 0xff, 0x3e, 0x7c, 0xf8, 0xff,
+  0x20, 0x40, 0x80, 0xff, 0x22, 0x44, 0x88, 0xff,
+  0x26, 0x26, 0x26, 0xff, 0x25, 0x25, 0x25, 0xff,
+  0x24, 0x24, 0x24, 0xff, 0x23, 0x23, 0x23, 0xff,
+  0x2c, 0x58, 0xb0, 0xff, 0x2e, 0x5c, 0xb8, 0xff,
+  0x10, 0x20, 0x40, 0xff, 0x12, 0x24, 0x48, 0xff,
+  0x2a, 0x2a, 0x2a, 0xff, 0x29, 0x29, 0x29, 0xff,
+  0x28, 0x28, 0x28, 0xff, 0x27, 0x27, 0x27, 0xff,
+  0x1c, 0x38, 0x70, 0xff, 0x1e, 0x3c, 0x78, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x02, 0x04, 0x08, 0xff,
+  0x2e, 0x2e, 0x2e, 0xff, 0x2d, 0x2d, 0x2d, 0xff,
+  0x2c, 0x2c, 0x2c, 0xff, 0x2b, 0x2b, 0x2b, 0xff,
+  0x0c, 0x18, 0x30, 0xff, 0x0e, 0x1c, 0x38, 0xff,
+};
+
+static unsigned char kpng_8x4_drawImage_argb8[128] = {
+  // expected result of drawimage with rgb8 format.
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xca, 0xca, 0xca, 0x3e, 0xd7, 0xd7, 0xd7, 0x9a,
+  0x00, 0x00, 0x00, 0xee, 0x00, 0x00, 0x00, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff,
+  0x00, 0x00, 0x00, 0x00, 0xca, 0xca, 0xca, 0x3e,
+  0xe6, 0xe6, 0xe6, 0xdc, 0xfc, 0xfc, 0xfc, 0xfe,
+  0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff,
+  0xca, 0xca, 0xca, 0x3e, 0xe6, 0xe6, 0xe6, 0xdc,
+  0xfe, 0xfe, 0xfe, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff,
+  0xc7, 0xc7, 0xc7, 0x83, 0xf4, 0xf4, 0xf4, 0xfb,
+  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+  0x00, 0x00, 0x00, 0xeb, 0x00, 0x00, 0x00, 0xff,
+  0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0xff,
+};
+
+// DrawImage from another bitmap on different positions,
+// compare with expected results.
+TEST_F(BitmapTest, DrawImage) {
+  // path of dest image.
+  String fname_dst = *g_program_path +
+                     "/bitmap_test/png-8x4-24bit-drawimage-dest.png";
+
+  // load three src bitmaps in different sizes from files.
+  String filename_2x2_src = *g_program_path +
+      "/bitmap_test/png-2x2-24bit-drawimage-src.png";
+  Bitmap::Ref bitmap_2x2_src(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_2x2_src->LoadFromFile(UTF8ToFilePath(filename_2x2_src),
+                                           Bitmap::PNG, false));
+
+  String filename_4x4_src = *g_program_path +
+      "/bitmap_test/png-4x4-24bit-drawimage-src.png";
+  Bitmap::Ref bitmap_4x4_src(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_4x4_src->LoadFromFile(UTF8ToFilePath(filename_4x4_src),
+                                           Bitmap::PNG, false));
+
+  String filename_8x8_src = *g_program_path +
+      "/bitmap_test/png-8x8-24bit-drawimage-src.png";
+  Bitmap::Ref bitmap_8x8_src(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_8x8_src->LoadFromFile(UTF8ToFilePath(filename_8x8_src),
+                                           Bitmap::PNG, false));
+
+  // test draw image on top left boundary.
+  Bitmap::Ref bitmap_dest_top_left(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_top_left->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                                 Bitmap::PNG, false));
+  // test whether the raw image is loaded correctly or not.
+  EXPECT_TRUE(bitmap_dest_top_left->image_data() != NULL);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_top_left, kpng_8x4_drawImage));
+  bitmap_dest_top_left->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, -1, -1, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_top_left,
+                             kpng_8x4_drawImage_top_left));
+
+  // test draw image on top boundary.
+  Bitmap::Ref bitmap_dest_top(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_top->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                            Bitmap::PNG, false));
+  bitmap_dest_top->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, 2, -2, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_top, kpng_8x4_drawImage_top));
+
+  // test draw image on top right boundary.
+  Bitmap::Ref bitmap_dest_top_right(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_top_right->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                                  Bitmap::PNG, false));
+  bitmap_dest_top_right->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, 5, -1, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_top_right,
+                              kpng_8x4_drawImage_top_right));
+
+  // test draw image on right boundary.
+  Bitmap::Ref bitmap_dest_right(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_right->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                              Bitmap::PNG, false));
+  bitmap_dest_right->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, 5, 0, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_right, kpng_8x4_drawImage_right));
+
+  // test draw image on bottom right boundary.
+  Bitmap::Ref bitmap_dest_bottom_right(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_bottom_right->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                                     Bitmap::PNG, false));
+  bitmap_dest_bottom_right->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, 5, 1, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_bottom_right,
+                             kpng_8x4_drawImage_bottom_right));
+
+  // test draw image on bottom boundary.
+  Bitmap::Ref bitmap_dest_bottom(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_bottom->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                               Bitmap::PNG, false));
+  bitmap_dest_bottom->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, 2, 1, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_bottom, kpng_8x4_drawImage_bottom));
+
+  // test draw image on bottom left boundary.
+  Bitmap::Ref bitmap_dest_bottom_left(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_bottom_left->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                                    Bitmap::PNG, false));
+  bitmap_dest_bottom_left->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, -1, 1, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_bottom_left,
+                             kpng_8x4_drawImage_bottom_left));
+
+  // test draw image on left boundary.
+  Bitmap::Ref bitmap_dest_left(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_left->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                             Bitmap::PNG, false));
+  bitmap_dest_left->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, -1, 0, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_left, kpng_8x4_drawImage_left));
+
+  // test scale up.
+  Bitmap::Ref bitmap_dest_scale_up(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_scale_up->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                             Bitmap::PNG, false));
+  bitmap_dest_scale_up->DrawImage(bitmap_2x2_src, 0, 0, 2, 2, 0, 0, 8, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_scale_up,
+                             kpng_8x4_drawImage_scale_up));
+
+  // test scale down.
+  Bitmap::Ref bitmap_dest_scale_down(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_scale_down->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                             Bitmap::PNG, false));
+  bitmap_dest_scale_down->DrawImage(bitmap_8x8_src, 0, 0, 8, 8, 0, 0, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_scale_down,
+                             kpng_8x4_drawImage_scale_down));
+
+  // test scale up to a large size.
+  Bitmap::Ref bitmap_dest_scale_out(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_scale_out->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                             Bitmap::PNG, false));
+  bitmap_dest_scale_out->DrawImage(bitmap_8x8_src, 0, 0, 8, 8, -2, -4, 12, 12);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_scale_out,
+                             kpng_8x4_drawImage_scale_out));
+
+  // test flip an image on both x and y cooridnates.
+  Bitmap::Ref bitmap_dest_flip(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_flip->LoadFromFile(UTF8ToFilePath(fname_dst),
+                                             Bitmap::PNG, false));
+  bitmap_dest_flip->DrawImage(bitmap_4x4_src, 0, 0, 4, 4, 5, 3, -4, -4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_flip, kpng_8x4_drawImage_flip));
+
+  // test draw image on argb8 format.
+  String fname_dst_argb8 = *g_program_path +
+                           "/bitmap_test/" +
+                           "png-8x4-24bit-drawimage-argb8-dest.png";
+  Bitmap::Ref bitmap_dest_argb8(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_dest_argb8->LoadFromFile(UTF8ToFilePath(fname_dst_argb8),
+                                              Bitmap::PNG, false));
+  String fname_src_argb8 = *g_program_path +
+                           "/bitmap_test/" +
+                           "png-4x4-24bit-drawimage-argb8-src.png";
+  Bitmap::Ref bitmap_src_argb8(new Bitmap(g_service_locator));
+  EXPECT_TRUE(bitmap_src_argb8->LoadFromFile(UTF8ToFilePath(fname_src_argb8),
+                                              Bitmap::PNG, false));
+  bitmap_dest_argb8->DrawImage(bitmap_src_argb8, 0, 0, 4, 4, 0, 0, 4, 4);
+  EXPECT_TRUE(TestBitmapData(*bitmap_dest_argb8, kpng_8x4_drawImage_argb8));
 }
 
 }  // namespace
