@@ -10,6 +10,7 @@
 
 #include "app/gfx/canvas_paint.h"
 #include "base/gfx/gtk_util.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
@@ -43,7 +44,7 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
                              const gfx::Point& mouse_tab_offset,
                              const gfx::Size& contents_size)
     : backing_store_(NULL),
-      renderer_(new TabRendererGtk),
+      renderer_(new TabRendererGtk(datasource->profile()->GetThemeProvider())),
       attached_(false),
       mouse_tab_offset_(mouse_tab_offset),
       attached_tab_size_(TabRendererGtk::GetMinimumSelectedSize()),

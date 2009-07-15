@@ -14,6 +14,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -51,42 +52,38 @@ const int kCloseButtonHorzFuzz = 5;
 
 SkBitmap* crashed_fav_icon = NULL;
 
-TabRendererGtk::LoadingAnimation::Data loading_animation_data;
+}  // namespace
 
-// Loads the loading animation images and data.
-void InitializeLoadingAnimationData(
-    ResourceBundle* rb, TabRendererGtk::LoadingAnimation::Data* data) {
+TabRendererGtk::LoadingAnimation::Data::Data(ThemeProvider* theme_provider) {
   // The loading animation image is a strip of states. Each state must be
   // square, so the height must divide the width evenly.
-  data->loading_animation_frames = rb->GetBitmapNamed(IDR_THROBBER);
-  DCHECK(data->loading_animation_frames);
-  DCHECK_EQ(data->loading_animation_frames->width() %
-            data->loading_animation_frames->height(), 0);
-  data->loading_animation_frame_count =
-      data->loading_animation_frames->width() /
-      data->loading_animation_frames->height();
+  loading_animation_frames = theme_provider->GetBitmapNamed(IDR_THROBBER);
+  DCHECK(loading_animation_frames);
+  DCHECK_EQ(loading_animation_frames->width() %
+            loading_animation_frames->height(), 0);
+  loading_animation_frame_count =
+      loading_animation_frames->width() /
+      loading_animation_frames->height();
 
-  data->waiting_animation_frames =
-      rb->GetBitmapNamed(IDR_THROBBER_WAITING);
-  DCHECK(data->waiting_animation_frames);
-  DCHECK_EQ(data->waiting_animation_frames->width() %
-            data->waiting_animation_frames->height(), 0);
-  data->waiting_animation_frame_count =
-      data->waiting_animation_frames->width() /
-      data->waiting_animation_frames->height();
+  waiting_animation_frames =
+      theme_provider->GetBitmapNamed(IDR_THROBBER_WAITING);
+  DCHECK(waiting_animation_frames);
+  DCHECK_EQ(waiting_animation_frames->width() %
+            waiting_animation_frames->height(), 0);
+  waiting_animation_frame_count =
+      waiting_animation_frames->width() /
+      waiting_animation_frames->height();
 
-  data->waiting_to_loading_frame_count_ratio =
-      data->waiting_animation_frame_count /
-      data->loading_animation_frame_count;
+  waiting_to_loading_frame_count_ratio =
+      waiting_animation_frame_count /
+      loading_animation_frame_count;
   // TODO(beng): eventually remove this when we have a proper themeing system.
   //             themes not supporting IDR_THROBBER_WAITING are causing this
   //             value to be 0 which causes DIV0 crashes. The value of 5
   //             matches the current bitmaps in our source.
-  if (data->waiting_to_loading_frame_count_ratio == 0)
-    data->waiting_to_loading_frame_count_ratio = 5;
+  if (waiting_to_loading_frame_count_ratio == 0)
+    waiting_to_loading_frame_count_ratio = 5;
 }
-
-}  // namespace
 
 bool TabRendererGtk::initialized_ = false;
 TabRendererGtk::TabImage TabRendererGtk::tab_active_ = {0};
@@ -104,8 +101,15 @@ int TabRendererGtk::pinned_tab_pref_width_ = 0;
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk::LoadingAnimation, public:
 //
-TabRendererGtk::LoadingAnimation::LoadingAnimation(const Data* data)
-    : data_(data), animation_state_(ANIMATION_NONE), animation_frame_(0) {
+TabRendererGtk::LoadingAnimation::LoadingAnimation(
+    ThemeProvider* theme_provider)
+    : data_(new Data(theme_provider)),
+      theme_provider_(theme_provider),
+      animation_state_(ANIMATION_NONE),
+      animation_frame_(0) {
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 }
 
 void TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
@@ -131,6 +135,14 @@ void TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
   } else {
     animation_frame_ = 0;
   }
+}
+
+void TabRendererGtk::LoadingAnimation::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+  data_.reset(new Data(theme_provider_));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -175,12 +187,12 @@ class TabRendererGtk::FavIconCrashAnimation : public Animation,
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk, public:
 
-TabRendererGtk::TabRendererGtk()
+TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
     : showing_icon_(false),
       showing_close_button_(false),
       fav_icon_hiding_offset_(0),
       should_display_crashed_favicon_(false),
-      loading_animation_(&loading_animation_data) {
+      loading_animation_(theme_provider) {
   InitResources();
 
   data_.pinned = false;
@@ -794,8 +806,6 @@ void TabRendererGtk::InitResources() {
   gfx::Font base_font = rb.GetFont(ResourceBundle::BaseFont);
   title_font_ = new gfx::Font(gfx::Font::CreateFont(base_font.FontName(), 10));
   title_font_height_ = title_font_->height();
-
-  InitializeLoadingAnimationData(&rb, &loading_animation_data);
 
   crashed_fav_icon = rb.GetBitmapNamed(IDR_SAD_FAVICON);
 
