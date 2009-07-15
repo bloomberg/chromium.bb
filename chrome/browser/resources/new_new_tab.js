@@ -91,6 +91,11 @@ function mostVisitedPages(data) {
 
 function downloadsList(data) {
   logEvent('received downloads');
+
+  // We should only show complete downloads.
+  data = data.filter(function(d) {
+    return d.state == 'COMPLETE';
+  });
   data.length = Math.min(data.length, 5);
   processData('#download-items', data);
 }
