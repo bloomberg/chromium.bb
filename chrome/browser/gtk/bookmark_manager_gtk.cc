@@ -328,11 +328,6 @@ void BookmarkManagerGtk::InitWidgets() {
   gtk_window_set_title(GTK_WINDOW(window_),
       l10n_util::GetStringUTF8(IDS_BOOKMARK_MANAGER_TITLE).c_str());
 
-  // Add this window to its own unique window group to allow for
-  // window-to-parent modality.
-  gtk_window_group_add_window(gtk_window_group_new(), GTK_WINDOW(window_));
-  g_object_unref(gtk_window_get_group(GTK_WINDOW(window_)));
-
   // Set the default size of the bookmark manager.
   int width, height;
   gtk_util::GetWidgetSizeFromResources(window_,
