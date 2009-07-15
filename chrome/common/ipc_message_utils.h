@@ -179,8 +179,10 @@ struct ParamTraits<long> {
   }
 };
 
-#if defined(OS_LINUX)
-// unsigned long is used for serializing X window ids.
+#if defined(OS_LINUX) || defined(OS_WIN)
+// On Linux, unsigned long is used for serializing X window ids.
+// On Windows, it's used for serializing process ids.
+// On Mac, it conflicts with some other definition.
 template <>
 struct ParamTraits<unsigned long> {
   typedef unsigned long param_type;

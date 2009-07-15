@@ -525,7 +525,7 @@ class RenderViewHost : public RenderWidgetHost,
 
   void OnUserMetricsRecordAction(const std::wstring& action);
   void OnMissingPluginStatus(int status);
-  void OnCrashedPlugin(const FilePath& plugin_path);
+  void OnCrashedPlugin(base::ProcessId pid, const FilePath& plugin_path);
   void OnMessageReceived(IPC::Message* msg) { }
 
   void OnReceivedSavableResourceLinksForCurrentPage(
