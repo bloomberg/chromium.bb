@@ -674,3 +674,20 @@ std::wstring FormatNumber(int64 number) {
   return std::wstring(buffer, static_cast<std::wstring::size_type>(length));
 #endif  // defined(WCHAR_T_IS_UTF32)
 }
+
+// Although this function isn't specific to ICU, we implemented it here so
+// that chrome.exe won't pull it in.  Moving this function to string_util.cc
+// causes chrome.exe to grow by 400k because of more ICU being pulled in.
+TrimPositions TrimWhitespaceUTF8(const std::string& input,
+                                 TrimPositions positions,
+                                 std::string* output) {
+  // This implementation is not so fast since it converts the text encoding
+  // twice. Please feel free to file a bug if this function hurts the
+  // performance of Chrome.
+  DCHECK(IsStringUTF8(input));
+  std::wstring input_wide = UTF8ToWide(input);
+  std::wstring output_wide;
+  TrimPositions result = TrimWhitespace(input_wide, positions, &output_wide);
+  *output = WideToUTF8(output_wide);
+  return result;
+}
