@@ -12,8 +12,7 @@
 class MediaLeakTest : public TestShellTest {
 };
 
-// <video> and <audio> tags only work stably on Windows.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 
 // This test is to be executed in test_shell_tests so we can capture memory
 // leak analysis in automated runs.
