@@ -26,6 +26,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   // Provides tests access to the max page ID currently used for this process.
   int max_page_id() const { return max_page_id_; }
 
+  // Provides test access to how many times a bad message has been received.
+  int bad_msg_count() const { return bad_msg_count_; }
+
   // RenderProcessHost implementation (public portion).
   virtual bool Init();
   virtual int GetNextRoutingID();
@@ -57,6 +60,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
   TransportDIB* transport_dib_;
+  int bad_msg_count_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

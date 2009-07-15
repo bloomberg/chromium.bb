@@ -6,7 +6,8 @@
 
 MockRenderProcessHost::MockRenderProcessHost(Profile* profile)
     : RenderProcessHost(profile),
-      transport_dib_(NULL) {
+      transport_dib_(NULL),
+      bad_msg_count_(0) {
   static int prev_pid = 0;
   SetProcessID(++prev_pid);
 }
@@ -40,6 +41,7 @@ bool MockRenderProcessHost::WaitForPaintMsg(int render_widget_id,
 }
 
 void MockRenderProcessHost::ReceivedBadMessage(uint16 msg_type) {
+  ++bad_msg_count_;
 }
 
 void MockRenderProcessHost::WidgetRestored() {

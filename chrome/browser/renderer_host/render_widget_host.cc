@@ -117,31 +117,39 @@ void RenderWidgetHost::Shutdown() {
   Destroy();
 }
 
-IPC_DEFINE_MESSAGE_MAP(RenderWidgetHost)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnMsgRenderViewReady)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_PaintRect, OnMsgPaintRect)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_ScrollRect, OnMsgScrollRect)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateStatus, OnMsgImeUpdateStatus)
+void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
+  bool msg_is_ok = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(RenderWidgetHost, msg, msg_is_ok)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnMsgRenderViewReady)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PaintRect, OnMsgPaintRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ScrollRect, OnMsgScrollRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateStatus, OnMsgImeUpdateStatus)
 #if defined(OS_LINUX)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
-                      OnMsgCreatePluginContainer)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
-                      OnMsgDestroyPluginContainer)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
+                        OnMsgCreatePluginContainer)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
+                        OnMsgDestroyPluginContainer)
 #elif defined(OS_MACOSX)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
 #endif
-  IPC_MESSAGE_UNHANDLED_ERROR()
-IPC_END_MESSAGE_MAP()
+    IPC_MESSAGE_UNHANDLED_ERROR()
+  IPC_END_MESSAGE_MAP_EX()
+
+  if (!msg_is_ok) {
+    // The message de-serialization failed. Kill the renderer process.
+    process()->ReceivedBadMessage(msg.type());
+  }
+}
 
 bool RenderWidgetHost::Send(IPC::Message* msg) {
   return process_->Send(msg);

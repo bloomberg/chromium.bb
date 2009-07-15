@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/common/render_messages.h"
 
 class RenderViewHostTest : public RenderViewHostTestHarness {
 };
@@ -15,3 +16,32 @@ TEST_F(RenderViewHostTest, FilterAbout) {
   ASSERT_TRUE(controller().GetActiveEntry());
   EXPECT_EQ(GURL("about:blank"), controller().GetActiveEntry()->url());
 }
+
+// The test that follow trigger DCHECKS in debug build.
+#if defined(NDEBUG)
+
+// Test that when we fail to de-serialize a message, RenderViewHost calls the
+// ReceivedBadMessage() handler.
+TEST_F(RenderViewHostTest, BadMessageHandlerRenderViewHost) {
+  EXPECT_EQ(0, process()->bad_msg_count());
+  // craft an incorrect ViewHostMsg_UpdateTargetURL message. The real one has
+  // two payload items but the one we construct has none.
+  IPC::Message message(0, ViewHostMsg_UpdateTargetURL::ID,
+                       IPC::Message::PRIORITY_NORMAL);
+  rvh()->TestOnMessageReceived(message);
+  EXPECT_EQ(1, process()->bad_msg_count());
+}
+
+// Test that when we fail to de-serialize a message, RenderWidgetHost calls the
+// ReceivedBadMessage() handler.
+TEST_F(RenderViewHostTest, BadMessageHandlerRenderWidgetHost) {
+  EXPECT_EQ(0, process()->bad_msg_count());
+  // craft an incorrect ViewHostMsg_PaintRect message. The real one has
+  // one payload item but the one we construct has none.
+  IPC::Message message(0, ViewHostMsg_PaintRect::ID,
+                       IPC::Message::PRIORITY_NORMAL);
+  rvh()->TestOnMessageReceived(message);
+  EXPECT_EQ(1, process()->bad_msg_count());
+}
+
+#endif  // NDEBUG
