@@ -34,6 +34,7 @@ generator_default_variables = {
     'RULE_INPUT_EXT': '$(InputExt)',
     'RULE_INPUT_NAME': '$(InputFileName)',
     'RULE_INPUT_PATH': '$(InputPath)',
+    'CONFIGURATION_NAME': '$(ConfigurationName)',
 }
 
 # The msvs specific sections that hold paths

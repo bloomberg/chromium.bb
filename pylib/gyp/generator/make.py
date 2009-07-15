@@ -49,6 +49,7 @@ generator_default_variables = {
   # These appear unused -- ???
   'RULE_INPUT_EXT': 'XXXEXT$(suffix $^)',
   'RULE_INPUT_NAME': 'XXXNAME$(notdir $(basename $^)0',
+  'CONFIGURATION_NAME': '$(BUILDTYPE)',
 }
 
 # Tell GYP how to process the input for us.

@@ -21,6 +21,7 @@ generator_default_variables = {
     'RULE_INPUT_EXT': '${SOURCE.suffix}',
     'RULE_INPUT_NAME': '${SOURCE.file}',
     'RULE_INPUT_PATH': '${SOURCE}',
+    'CONFIGURATION_NAME': '${CONFIG_NAME}',
 }
 
 # Tell GYP how to process the input for us.
