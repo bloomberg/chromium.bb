@@ -11,7 +11,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "net/base/host_resolver_unittest.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 
 namespace {
@@ -21,10 +21,10 @@ class TemplateURLScraperTest : public InProcessBrowserTest {
   }
 
  protected:
-  virtual void ConfigureHostMapper(net::RuleBasedHostMapper* host_mapper) {
-    InProcessBrowserTest::ConfigureHostMapper(host_mapper);
+  virtual void ConfigureHostResolverProc(net::RuleBasedHostResolverProc* proc) {
+    InProcessBrowserTest::ConfigureHostResolverProc(proc);
     // We use foo.com in our tests.
-    host_mapper->AddRule("*.foo.com", "localhost");
+    proc->AddRule("*.foo.com", "localhost");
   }
 
  private:

@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
-#include "net/base/host_resolver_unittest.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/client_socket.h"
@@ -224,14 +224,16 @@ int TestSocketRequest::completion_count = 0;
 class TCPClientSocketPoolTest : public testing::Test {
  protected:
   TCPClientSocketPoolTest()
-      : pool_(new TCPClientSocketPool(kMaxSocketsPerGroup,
-                                      new HostResolver,
-                                      &client_socket_factory_)) {}
+      : host_resolver_(new MockHostResolver),
+        pool_(new TCPClientSocketPool(kMaxSocketsPerGroup,
+                                      host_resolver_,
+                                      &client_socket_factory_)) {
+    // We enable caching on the mock host-resolver (it is off by default),
+    // because some of the tests in this file expect it.
+    host_resolver_->Reset(NULL, 100, 60000);
+  }
 
   virtual void SetUp() {
-    RuleBasedHostMapper *host_mapper = new RuleBasedHostMapper();
-    host_mapper->AddRule("*", "127.0.0.1");
-    scoped_host_mapper_.Init(host_mapper);
     TestSocketRequest::completion_count = 0;
   }
 
@@ -241,7 +243,7 @@ class TCPClientSocketPoolTest : public testing::Test {
     MessageLoop::current()->RunAllPending();
   }
 
-  ScopedHostMapper scoped_host_mapper_;
+  scoped_refptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
   scoped_refptr<ClientSocketPool> pool_;
   std::vector<TestSocketRequest*> request_order_;
@@ -264,9 +266,7 @@ TEST_F(TCPClientSocketPoolTest, Basic) {
 }
 
 TEST_F(TCPClientSocketPoolTest, InitHostResolutionFailure) {
-  RuleBasedHostMapper* host_mapper = new RuleBasedHostMapper;
-  host_mapper->AddSimulatedFailure("unresolvable.host.name");
-  ScopedHostMapper scoped_host_mapper(host_mapper);
+  host_resolver_->rules()->AddSimulatedFailure("unresolvable.host.name");
   TestSocketRequest req(pool_.get(), &request_order_);
   HostResolver::RequestInfo info("unresolvable.host.name", 80);
   EXPECT_EQ(ERR_IO_PENDING, req.handle.Init("a", info, 5, &req));

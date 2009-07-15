@@ -28,15 +28,17 @@
 #include "chrome/common/mac_app_names.h"
 #endif
 #include "chrome/test/testing_browser_process.h"
-#include "net/base/host_resolver_unittest.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 
 // In many cases it may be not obvious that a test makes a real DNS lookup.
 // We generally don't want to rely on external DNS servers for our tests,
-// so this mapper catches external queries.
-class WarningHostMapper : public net::HostMapper {
+// so this host resolver procedure catches external queries.
+class WarningHostResolverProc : public net::HostResolverProc {
  public:
-  virtual std::string Map(const std::string& host) {
+  WarningHostResolverProc() : HostResolverProc(NULL) {}
+
+  virtual int Resolve(const std::string& host, net::AddressList* addrlist) {
     const char* kLocalHostNames[] = {"localhost", "127.0.0.1"};
     bool local = false;
 
@@ -51,11 +53,11 @@ class WarningHostMapper : public net::HostMapper {
     }
 
     // Make the test fail so it's harder to ignore.
-    // If you really need to make real DNS query, use net::RuleBasedHostMapper
-    // and its AllowDirectLookup method.
+    // If you really need to make real DNS query, use
+    // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
     EXPECT_TRUE(local) << "Making external DNS lookup of " << host;
 
-    return MapUsingPrevious(host);
+    return ResolveUsingPrevious(host, addrlist);
   }
 };
 
@@ -71,8 +73,8 @@ class ChromeTestSuite : public TestSuite {
 
     TestSuite::Initialize();
 
-    host_mapper_ = new WarningHostMapper();
-    scoped_host_mapper_.Init(host_mapper_.get());
+    host_resolver_proc_ = new WarningHostResolverProc();
+    scoped_host_resolver_proc_.Init(host_resolver_proc_.get());
 
     chrome::RegisterPathProvider();
     app::RegisterPathProvider();
@@ -140,8 +142,8 @@ class ChromeTestSuite : public TestSuite {
 
   StatsTable* stats_table_;
   ScopedOleInitializer ole_initializer_;
-  scoped_refptr<WarningHostMapper> host_mapper_;
-  net::ScopedHostMapper scoped_host_mapper_;
+  scoped_refptr<WarningHostResolverProc> host_resolver_proc_;
+  net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
 };
 
 #endif  // CHROME_TEST_UNIT_CHROME_TEST_SUITE_H_

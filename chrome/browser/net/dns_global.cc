@@ -476,11 +476,7 @@ static void DiscardAllPrefetchState() {
 net::HostResolver* GetGlobalHostResolver() {
   // Called from UI thread.
   if (!global_host_resolver) {
-    static const size_t kMaxHostCacheEntries = 100;
-    static const size_t kHostCacheExpirationSeconds = 60;  // 1 minute.
-
-    global_host_resolver = new net::HostResolver(
-        kMaxHostCacheEntries, kHostCacheExpirationSeconds * 1000);
+    global_host_resolver = net::CreateSystemHostResolver();
   }
   return global_host_resolver;
 }

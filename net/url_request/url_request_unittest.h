@@ -43,7 +43,7 @@ using base::TimeDelta;
 class TestURLRequestContext : public URLRequestContext {
  public:
   TestURLRequestContext() {
-    host_resolver_ = new net::HostResolver;
+    host_resolver_ = net::CreateSystemHostResolver();
     proxy_service_ = net::ProxyService::CreateNull();
     http_transaction_factory_ =
         net::HttpNetworkLayer::CreateFactory(host_resolver_,
@@ -51,7 +51,7 @@ class TestURLRequestContext : public URLRequestContext {
   }
 
   explicit TestURLRequestContext(const std::string& proxy) {
-    host_resolver_ = new net::HostResolver;
+    host_resolver_ = net::CreateSystemHostResolver();
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules.ParseFromString(proxy);
     proxy_service_ = net::ProxyService::CreateFixed(proxy_config);

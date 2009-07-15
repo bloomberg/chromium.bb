@@ -26,7 +26,7 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
-#include "net/base/host_resolver_unittest.h"
+#include "net/base/mock_host_resolver.h"
 #include "sandbox/src/dep.h"
 
 extern int BrowserMain(const MainFunctionParams&);
@@ -140,10 +140,11 @@ void InProcessBrowserTest::SetUp() {
   params.ui_task =
       NewRunnableMethod(this, &InProcessBrowserTest::RunTestOnMainThreadLoop);
 
-  scoped_refptr<net::RuleBasedHostMapper> host_mapper(
-      new net::RuleBasedHostMapper());
-  ConfigureHostMapper(host_mapper.get());
-  net::ScopedHostMapper scoped_host_mapper(host_mapper.get());
+  scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_proc(
+      new net::RuleBasedHostResolverProc(NULL));
+  ConfigureHostResolverProc(host_resolver_proc);
+  net::ScopedDefaultHostResolverProc scoped_host_resolver_proc(
+      host_resolver_proc);
   BrowserMain(params);
 }
 
@@ -241,12 +242,12 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   MessageLoopForUI::current()->Quit();
 }
 
-void InProcessBrowserTest::ConfigureHostMapper(
-    net::RuleBasedHostMapper* host_mapper) {
-  host_mapper->AllowDirectLookup("*.google.com");
+void InProcessBrowserTest::ConfigureHostResolverProc(
+    net::RuleBasedHostResolverProc* host_resolver_proc) {
+  host_resolver_proc->AllowDirectLookup("*.google.com");
   // See http://en.wikipedia.org/wiki/Web_Proxy_Autodiscovery_Protocol
   // We don't want the test code to use it.
-  host_mapper->AddSimulatedFailure("wpad");
+  host_resolver_proc->AddSimulatedFailure("wpad");
 }
 
 void InProcessBrowserTest::TimedOut() {

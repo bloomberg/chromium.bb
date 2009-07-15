@@ -11,7 +11,7 @@
 class Browser;
 class Profile;
 namespace net {
-class RuleBasedHostMapper;
+class RuleBasedHostResolverProc;
 }
 
 // Base class for tests wanting to bring up a browser in the unit test process.
@@ -66,10 +66,10 @@ class InProcessBrowserTest : public testing::Test {
   // main thread before the browser is torn down.
   virtual void CleanUpOnMainThread() {}
 
-  // Allows subclasses to configure the host mapper. By default this blocks
-  // requests to google.com as Chrome pings that on startup and we don't want to
-  // do that during testing.
-  virtual void ConfigureHostMapper(net::RuleBasedHostMapper* host_mapper);
+  // Allows subclasses to configure the host resolver procedure. By default
+  // this blocks requests to google.com as Chrome pings that on startup and we
+  // don't want to do that during testing.
+  virtual void ConfigureHostResolverProc(net::RuleBasedHostResolverProc* proc);
 
   // Invoked when a test is not finishing in a timely manner.
   void TimedOut();

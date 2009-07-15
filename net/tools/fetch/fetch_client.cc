@@ -127,7 +127,9 @@ int main(int argc, char**argv) {
   // Do work here.
   MessageLoop loop;
 
-  scoped_refptr<net::HostResolver> host_resolver(new net::HostResolver);
+  scoped_refptr<net::HostResolver> host_resolver(
+      net::CreateSystemHostResolver());
+
   scoped_ptr<net::ProxyService> proxy_service(net::ProxyService::CreateNull());
   net::HttpTransactionFactory* factory = NULL;
   if (use_cache) {

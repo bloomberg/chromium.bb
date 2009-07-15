@@ -45,7 +45,7 @@ void TestShellRequestContext::Init(
   //  issues.
   no_proxy = true;
 #endif
-  host_resolver_ = new net::HostResolver();
+  host_resolver_ = net::CreateSystemHostResolver();
   proxy_service_ = net::ProxyService::Create(no_proxy ? &proxy_config : NULL,
                                              false, NULL, NULL);
 

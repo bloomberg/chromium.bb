@@ -4,21 +4,21 @@
 
 #include "chrome/browser/browser.h"
 #include "chrome/test/in_process_browser_test.h"
-#include "net/base/host_resolver_unittest.h"
+#include "net/base/mock_host_resolver.h"
 
 class BrowserTest : public InProcessBrowserTest {
  public:
   BrowserTest() {
-    host_mapper_ = new net::RuleBasedHostMapper();
+    host_resolver_proc_ = new net::RuleBasedHostResolverProc(NULL);
     // Avoid making external DNS lookups. In this test we don't need this
     // to succeed.
-    host_mapper_->AddSimulatedFailure("*.google.com");
-    scoped_host_mapper_.Init(host_mapper_.get());
+    host_resolver_proc_->AddSimulatedFailure("*.google.com");
+    scoped_host_resolver_proc_.Init(host_resolver_proc_.get());
   }
 
  private:
-  scoped_refptr<net::RuleBasedHostMapper> host_mapper_;
-  net::ScopedHostMapper scoped_host_mapper_;
+  scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_proc_;
+  net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
 };
 
 /*
@@ -38,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   // Now try opening another tab in the popup browser.
   popup_browser->AddTabWithURL(GURL("about:blank"), GURL(),
                                PageTransition::TYPED, true, -1, NULL);
-  
+
   // The popup should still only have one tab.
   EXPECT_EQ(1, popup_browser->tab_count());
 
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   // Now try opening another tab in the app browser.
   app_browser->AddTabWithURL(GURL("about:blank"), GURL(),
                              PageTransition::TYPED, true, -1, NULL);
-  
+
   // The popup should still only have one tab.
   EXPECT_EQ(1, app_browser->tab_count());
 
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   // Now try opening another tab in the app popup browser.
   app_popup_browser->AddTabWithURL(GURL("about:blank"), GURL(),
                                    PageTransition::TYPED, true, -1, NULL);
-  
+
   // The popup should still only have one tab.
   EXPECT_EQ(1, app_popup_browser->tab_count());
 
