@@ -1417,7 +1417,7 @@ gfx::Rect TabStripGtk::GetDropBounds(int drop_index,
     center_x = last_tab->x() + last_tab->width() + (kTabHOffset / 2);
   }
 
-  // TODO(jhawkins): Handle RTL layout.
+  center_x = gtk_util::MirroredXCoordinate(tabstrip_.get(), center_x);
 
   // Determine the screen bounds.
   gfx::Point drop_loc(center_x - drop_indicator_width / 2,

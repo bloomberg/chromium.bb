@@ -370,6 +370,13 @@ int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
   return widget->allocation.width - bounds.x() - bounds.width();
 }
 
+int MirroredXCoordinate(GtkWidget* widget, int x) {
+  if (l10n_util::GetTextDirection() != l10n_util::RIGHT_TO_LEFT) {
+    return widget->allocation.width - x;
+  }
+  return x;
+}
+
 bool WidgetContainsCursor(GtkWidget* widget) {
   gint x = 0;
   gint y = 0;

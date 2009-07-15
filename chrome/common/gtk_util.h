@@ -117,6 +117,10 @@ void SetButtonTriggersNavigation(GtkWidget* button);
 // the original value is returned unchanged.
 int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds);
 
+// Returns the mirrored x value for the point |x| if the layout is RTL;
+// otherwise, the original value is returned unchanged.
+int MirroredXCoordinate(GtkWidget* widget, int x);
+
 // Returns true if the pointer is currently inside the widget.
 bool WidgetContainsCursor(GtkWidget* widget);
 
