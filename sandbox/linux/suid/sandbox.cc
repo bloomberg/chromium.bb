@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-#if defined(DEVELOPMENT_SANDBOX)
+#if defined(CHROME_DEVEL_SANDBOX)
   // On development machines, we need the sandbox to be able to run development
   // builds of Chrome. Thus, we remove the condition that the path to the
   // binary has to be fixed. However, we still worry about running arbitary
