@@ -1088,6 +1088,10 @@ bool TabStripGtk::HasAvailableDragActions() const {
   return model_->delegate()->GetDragActions() != 0;
 }
 
+ThemeProvider* TabStripGtk::GetThemeProvider() {
+  return theme_provider_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, MessageLoop::Observer implementation:
 

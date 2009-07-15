@@ -14,6 +14,8 @@
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
 #include "base/string16.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -34,9 +36,12 @@ class TabRendererGtk : public AnimationDelegate {
     ANIMATION_LOADING
   };
 
-  class LoadingAnimation {
+  class LoadingAnimation : public NotificationObserver {
    public:
     struct Data {
+      explicit Data(ThemeProvider* theme_provider);
+      Data(int loading, int waiting, int waiting_to_loading);
+
       SkBitmap* waiting_animation_frames;
       SkBitmap* loading_animation_frames;
       int loading_animation_frame_count;
@@ -44,7 +49,10 @@ class TabRendererGtk : public AnimationDelegate {
       int waiting_to_loading_frame_count_ratio;
     };
 
-    explicit LoadingAnimation(const Data* data);
+    explicit LoadingAnimation(ThemeProvider* theme_provider);
+
+    // Used in unit tests to inject specific data.
+    explicit LoadingAnimation(const LoadingAnimation::Data& data);
 
     // Advance the loading animation to the next frame, or hide the animation if
     // the tab isn't loading.
@@ -60,8 +68,19 @@ class TabRendererGtk : public AnimationDelegate {
       return data_->loading_animation_frames;
     }
 
+    // Provide NotificationObserver implementation.
+    virtual void Observe(NotificationType type,
+                         const NotificationSource& source,
+                         const NotificationDetails& details);
+
    private:
-    const Data* const data_;
+    scoped_ptr<Data> data_;
+
+    // Used to listen for theme change notifications.
+    NotificationRegistrar registrar_;
+
+    // Gives us our throbber images.
+    ThemeProvider* theme_provider_;
 
     // Current state of the animation.
     AnimationState animation_state_;
@@ -72,7 +91,7 @@ class TabRendererGtk : public AnimationDelegate {
     DISALLOW_COPY_AND_ASSIGN(LoadingAnimation);
   };
 
-  TabRendererGtk();
+  explicit TabRendererGtk(ThemeProvider* theme_provider);
   virtual ~TabRendererGtk();
 
   // TabContents. If only the loading state was updated, the loading_only flag

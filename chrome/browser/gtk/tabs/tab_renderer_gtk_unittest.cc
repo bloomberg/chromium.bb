@@ -14,23 +14,20 @@ const int kTestLoadingAnimationFrameCount = 10;
 const int kTestWaitingAnimationFrameCount = 40;
 const int kTestWaitingToLoadingFrameCountRatio = 4;
 
-const LoadingAnimation::Data kMockAnimationData = {
-  NULL,  // waiting_animation_frames
-  NULL,  // loading_animation_frames
-  kTestLoadingAnimationFrameCount,
-  kTestWaitingAnimationFrameCount,
-  kTestWaitingToLoadingFrameCountRatio,
-};
+const LoadingAnimation::Data kMockAnimationData =
+    LoadingAnimation::Data(kTestLoadingAnimationFrameCount,
+                           kTestWaitingAnimationFrameCount,
+                           kTestWaitingToLoadingFrameCountRatio);
 
 TEST(LoadingAnimationTest, InitialState) {
-  LoadingAnimation loading_animation(&kMockAnimationData);
+  LoadingAnimation loading_animation(kMockAnimationData);
   EXPECT_EQ(TabRendererGtk::ANIMATION_NONE,
             loading_animation.animation_state());
   EXPECT_EQ(0, loading_animation.animation_frame());
 }
 
 TEST(LoadingAnimationTest, AdvanceWaitingFrames) {
-  LoadingAnimation loading_animation(&kMockAnimationData);
+  LoadingAnimation loading_animation(kMockAnimationData);
   loading_animation.ValidateLoadingAnimation(TabRendererGtk::ANIMATION_WAITING);
   EXPECT_EQ(TabRendererGtk::ANIMATION_WAITING,
             loading_animation.animation_state());
@@ -57,7 +54,7 @@ TEST(LoadingAnimationTest, AdvanceWaitingFrames) {
 }
 
 TEST(LoadingAnimationTest, AdvanceFromWaitingToLoading) {
-  LoadingAnimation loading_animation(&kMockAnimationData);
+  LoadingAnimation loading_animation(kMockAnimationData);
   for (int i = 0; i < 2 * kTestWaitingToLoadingFrameCountRatio; ++i) {
     loading_animation.ValidateLoadingAnimation(
         TabRendererGtk::ANIMATION_WAITING);
