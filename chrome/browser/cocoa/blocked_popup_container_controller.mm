@@ -101,7 +101,7 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
       addObserver:self
          selector:@selector(showMenu:)
              name:NSPopUpButtonCellWillPopUpNotification
-           object:nil];
+           object:[popupButton_ cell]];
 
   // Create the close box and position at the left of the view.
   NSRect closeFrame = NSMakeRect(startFrame.size.width - kCloseBoxSize,
