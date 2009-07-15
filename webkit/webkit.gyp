@@ -671,8 +671,10 @@
 
         # A few things can't be excluded by patterns.  List them individually.
         
-        # Do not build StorageArea for Chromium. We have our own implementation.
+        # Do not build StorageArea or StorageNamespace for Chromium. We (will)
+        # have our own implementation.
         '../third_party/WebKit/WebCore/storage/StorageArea.cpp',
+        '../third_party/WebKit/WebCore/storage/StorageNamespace.cpp',
         
         # ENABLE_SHARED_WORKES only.
         '../third_party/WebKit/WebCore/workers/AbstractWorker.idl',
