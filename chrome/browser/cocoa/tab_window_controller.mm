@@ -24,6 +24,12 @@
     tabFrame.size.height = NSHeight([tabStripView_ frame]);
     [tabStripView_ setFrame:tabFrame];
     [[[[self window] contentView] superview] addSubview:tabStripView_];
+  } else {
+    // No tabstrip so remove the tabContentArea offset.
+    NSRect tabFrame = [tabContentArea_ frame];
+    NSRect contentFrame = [[[self window] contentView] frame];
+    tabFrame.size.height = contentFrame.size.height;
+    [tabContentArea_ setFrame:tabFrame];
   }
 }
 

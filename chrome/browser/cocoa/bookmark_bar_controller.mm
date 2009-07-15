@@ -122,9 +122,15 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
   NSRect webframe = [webContentView_ frame];
   if (apply) {
     superframe.size.height += kBookmarkBarSuperviewHeightAdjustment;
-    superframe.origin.y -= kBookmarkBarSuperviewHeightAdjustment;
+    // TODO(jrg): y=0 if we add the bookmark bar before the parent
+    // view (toolbar) is placed in the view hierarchy.  A different
+    // CL, where the bookmark bar is extracted from the toolbar nib,
+    // may fix this awkwardness.
+    if (superframe.origin.y > 0) {
+      superframe.origin.y -= kBookmarkBarSuperviewHeightAdjustment;
+      webframe.size.height -= kBookmarkBarWebframeHeightAdjustment;
+    }
     frame.size.height += kBookmarkBarHeight;
-    webframe.size.height -= kBookmarkBarWebframeHeightAdjustment;
   } else {
     superframe.size.height -= kBookmarkBarSuperviewHeightAdjustment;
     superframe.origin.y += kBookmarkBarSuperviewHeightAdjustment;

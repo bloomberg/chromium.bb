@@ -74,6 +74,23 @@ TEST_F(ToolbarControllerTest, AwakeFromNibCreatesBMBController) {
   EXPECT_TRUE([bar_ bookmarkBarController]);
 }
 
+// Make sure a "titlebar only" toolbar works
+TEST_F(ToolbarControllerTest, TitlebarOnly) {
+  NSView* view = [bar_ view];
+  EXPECT_TRUE([bar_ bookmarkBarController]);
+
+  [bar_ setHasToolbar:NO];
+  EXPECT_NE(view, [bar_ view]);
+  EXPECT_FALSE([bar_ bookmarkBarController]);
+
+  [bar_ setHasToolbar:YES];
+  EXPECT_EQ(view, [bar_ view]);
+  EXPECT_TRUE([bar_ bookmarkBarController]);
+
+  // Leave it off to make sure that's fine
+  [bar_ setHasToolbar:NO];
+}
+
 
 // Make some changes to the enabled state of a few of the buttons and ensure
 // that we're still in sync.

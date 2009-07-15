@@ -31,6 +31,7 @@ class TabContents;
 class TabStripModelObserverBridge;
 @class TabStripView;
 @class ToolbarController;
+@class TitlebarController;
 
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
@@ -51,6 +52,7 @@ class TabStripModelObserverBridge;
   scoped_ptr<TabStripModelObserverBridge> tabObserver_;
   scoped_ptr<BrowserWindowCocoa> windowShim_;
   scoped_nsobject<ToolbarController> toolbarController_;
+  scoped_nsobject<TitlebarController> titlebarController_;
   scoped_nsobject<TabStripController> tabStripController_;
   scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   scoped_ptr<StatusBubble> statusBubble_;

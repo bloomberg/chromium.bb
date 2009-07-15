@@ -86,6 +86,7 @@ class PrefObserverBridge : public NotificationObserver {
     profile_ = profile;
     bookmarkBarDelegate_ = delegate;
     webContentView_ = webContentView;
+    hasToolbar_ = YES;
 
     // Register for notifications about state changes for the toolbar buttons
     commandObserver_.reset(new CommandObserverBridge(self, commands));
@@ -96,6 +97,14 @@ class PrefObserverBridge : public NotificationObserver {
     commandObserver_->ObserveCommand(IDC_STAR);
   }
   return self;
+}
+
+- (void)dealloc {
+  // Make sure any code in the base class which assumes [self view] is
+  // the "parent" view continues to work.
+  hasToolbar_ = YES;
+
+  [super dealloc];
 }
 
 // Called after the view is done loading and the outlets have been hooked up.
@@ -204,7 +213,31 @@ class PrefObserverBridge : public NotificationObserver {
   [goButton_ setTag:tag];
 }
 
+- (void)setHasToolbar:(BOOL)toolbar {
+  [self view];  // force nib loading
+  hasToolbar_ = toolbar;
+
+  // App mode allows turning off the location bar as well.
+  // TODO(???): add more code here when implementing app mode to allow
+  // turning off both toolbar AND location bar.
+
+  // TODO(jrg): add mode code to make the location bar NOT editable
+  // when in a pop-up.
+}
+
+- (NSView*)view {
+  if (hasToolbar_)
+    return [super view];
+  return locationBar_;
+}
+
 - (BookmarkBarController*)bookmarkBarController {
+  // Browser has a FEATURE_BOOKMARKBAR but it is ignored by Safari
+  // when using window.open(); the logic seems to be "if no toolbar,
+  // no bookmark bar".
+  // TODO(jrg): investigate non-Mac Chrome behavior and possibly expand this.
+  if (hasToolbar_ == NO)
+    return nil;
   return bookmarkBarController_.get();
 }
 

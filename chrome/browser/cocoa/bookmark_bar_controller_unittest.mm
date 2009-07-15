@@ -59,6 +59,12 @@ TEST_F(BookmarkBarControllerTest, ShowHide) {
   EXPECT_FALSE([bar_ isBookmarkBarVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
 
+  // Awkwardness to look like we've been installed.
+  [parent_view_ addSubview:[bar_ view]];
+  NSRect frame = [[[bar_ view] superview] frame];
+  frame.origin.y = 100;
+  [[[bar_ view] superview] setFrame:frame];
+
   // Show and hide it by toggling.
   [bar_ toggleBookmarkBar];
   EXPECT_TRUE([bar_ isBookmarkBarVisible]);

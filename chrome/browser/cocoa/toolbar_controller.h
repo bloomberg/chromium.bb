@@ -54,6 +54,7 @@ class ToolbarView;
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
   BooleanPrefMember showHomeButton_;
   BooleanPrefMember showPageOptionButtons_;
+  BOOL hasToolbar_;  // if NO, we only have the location bar.
 
   IBOutlet NSMenu* pageMenu_;
   IBOutlet NSMenu* wrenchMenu_;
@@ -105,6 +106,11 @@ class ToolbarView;
 // Called to update the loading state. Handles updating the go/stop button
 // state.
 - (void)setIsLoading:(BOOL)isLoading;
+
+// Allow turning off the toolbar (but we keep the location bar
+// around).  This changes the behavior of other methods, like
+// [self view].
+- (void)setHasToolbar:(BOOL)toolbar;
 
 // Return the bookmark bar controller.
 - (BookmarkBarController*)bookmarkBarController;
