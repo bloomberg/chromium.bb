@@ -232,6 +232,9 @@ class SandboxIPCProcess : public WebKitClient {
     }
 
     SendRendererReply(fds, reply, result_fd);
+
+    if (result_fd >= 0)
+      close(result_fd);
   }
 
   void HandleGetFontFamilyForChars(int fd, Pickle& pickle, void* iter,
