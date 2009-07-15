@@ -259,8 +259,10 @@ class Rebaseliner(object):
     """
 
     platform_name = self._options.buildbot_platform_dir_basename
-    if not self._platform == 'win':
-      platform_name += '-' + self._platform
+    if self._platform == 'mac':
+      platform_name += '-mac5'
+    elif self._platform == 'linux':
+      platform_name += '-linux'
     logging.debug('Buildbot platform dir name: "%s"', platform_name)
 
     url_base = '%s/%s/' % (self._options.archive_url, platform_name)
