@@ -14,6 +14,10 @@ class OptionsUtil {
   // Resets all prefs to their default values.
   static void ResetToDefaults(Profile* profile);
 
+  // Try to make the the crash stats consent and the metrics upload
+  // permission match |enabled|, returns the actual enabled setting.
+  static bool ResolveMetricsReportingEnabled(bool enabled);
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(OptionsUtil);
 };
 

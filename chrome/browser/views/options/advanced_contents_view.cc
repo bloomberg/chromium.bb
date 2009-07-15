@@ -23,8 +23,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/gears_integration.h"
-#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/options_util.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_dialogs.h"
@@ -35,7 +35,6 @@
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -744,28 +743,7 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
 void PrivacySection::ResolveMetricsReportingEnabled() {
   bool enabled = reporting_enabled_checkbox_->checked();
 
-  GoogleUpdateSettings::SetCollectStatsConsent(enabled);
-  bool update_pref = GoogleUpdateSettings::GetCollectStatsConsent();
-
-  if (enabled != update_pref) {
-    DLOG(INFO) <<
-        "GENERAL SECTION: Unable to set crash report status to " <<
-        enabled;
-  }
-
-  // Only change the pref if GoogleUpdateSettings::GetCollectStatsConsent
-  // succeeds.
-  enabled = update_pref;
-
-  MetricsService* metrics = g_browser_process->metrics_service();
-  DCHECK(metrics);
-  if (metrics) {
-    metrics->SetUserPermitsUpload(enabled);
-    if (enabled)
-      metrics->Start();
-    else
-      metrics->Stop();
-  }
+  enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
 
   reporting_enabled_checkbox_->SetChecked(enabled);
 }

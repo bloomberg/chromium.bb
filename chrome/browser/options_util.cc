@@ -6,8 +6,10 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/installer/util/google_update_settings.h"
 
 // static
 void OptionsUtil::ResetToDefaults(Profile* profile) {
@@ -62,4 +64,32 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
   };
   for (size_t i = 0; i < arraysize(kLocalStatePrefs); ++i)
     local_state->ClearPref(kLocalStatePrefs[i]);
+}
+
+// static
+bool OptionsUtil::ResolveMetricsReportingEnabled(bool enabled) {
+  GoogleUpdateSettings::SetCollectStatsConsent(enabled);
+  bool update_pref = GoogleUpdateSettings::GetCollectStatsConsent();
+
+  if (enabled != update_pref) {
+    DLOG(INFO) <<
+        "OptionsUtil: Unable to set crash report status to " <<
+        enabled;
+  }
+
+  // Only change the pref if GoogleUpdateSettings::GetCollectStatsConsent
+  // succeeds.
+  enabled = update_pref;
+
+  MetricsService* metrics = g_browser_process->metrics_service();
+  DCHECK(metrics);
+  if (metrics) {
+    metrics->SetUserPermitsUpload(enabled);
+    if (enabled)
+      metrics->Start();
+    else
+      metrics->Stop();
+  }
+
+  return enabled;
 }

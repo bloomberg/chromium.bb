@@ -12,12 +12,12 @@
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/options_page_base.h"
+#include "chrome/browser/options_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -115,6 +115,14 @@ class PrivacySection : public OptionsPageBase {
   // Overridden from OptionsPageBase.
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
+  // Try to make the the crash stats consent and the metrics upload
+  // permission match the |reporting_enabled_checkbox_|.
+  void ResolveMetricsReportingEnabled();
+
+  // Inform the user that the browser must be restarted for changes to take
+  // effect.
+  void ShowRestartMessageBox() const;
+
   // The callback functions for the options widgets.
   static void OnLearnMoreLinkClicked(GtkButton *button,
                                      PrivacySection* privacy_section);
@@ -139,7 +147,9 @@ class PrivacySection : public OptionsPageBase {
   GtkWidget* enable_suggest_checkbox_;
   GtkWidget* enable_dns_prefetching_checkbox_;
   GtkWidget* enable_safe_browsing_checkbox_;
+#if defined(GOOGLE_CHROME_BUILD)
   GtkWidget* reporting_enabled_checkbox_;
+#endif
   GtkWidget* cookie_behavior_combobox_;
 
   // Preferences for this section:
@@ -207,12 +217,14 @@ PrivacySection::PrivacySection(Profile* profile)
   g_signal_connect(enable_safe_browsing_checkbox_, "clicked",
                    G_CALLBACK(OnSafeBrowsingChange), this);
 
+#if defined(GOOGLE_CHROME_BUILD)
   reporting_enabled_checkbox_ = CreateCheckButtonWithWrappedLabel(
       IDS_OPTIONS_ENABLE_LOGGING);
   gtk_box_pack_start(GTK_BOX(page_), reporting_enabled_checkbox_,
                      FALSE, FALSE, 0);
   g_signal_connect(reporting_enabled_checkbox_, "clicked",
                    G_CALLBACK(OnLoggingChange), this);
+#endif
 
   cookie_behavior_combobox_ = gtk_combo_box_new_text();
   gtk_combo_box_append_text(
@@ -334,10 +346,18 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
       L"Options_MetricsReportingCheckbox_Enable" :
       L"Options_MetricsReportingCheckbox_Disable",
       privacy_section->profile()->GetPrefs());
-  // TODO(mattm): ResolveMetricsReportingEnabled?
-  // TODO(mattm): show browser must be restarted message?
+  // Prevent us from being called again by ResolveMetricsReportingEnabled
+  // resetting the checkbox if there was a problem.
+  g_signal_handlers_block_by_func(widget,
+                                  reinterpret_cast<gpointer>(OnLoggingChange),
+                                  privacy_section);
+  privacy_section->ResolveMetricsReportingEnabled();
+  if (enabled == gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+    privacy_section->ShowRestartMessageBox();
+  g_signal_handlers_unblock_by_func(widget,
+                                    reinterpret_cast<gpointer>(OnLoggingChange),
+                                    privacy_section);
   privacy_section->enable_metrics_recording_.SetValue(enabled);
-  GoogleUpdateSettings::SetCollectStatsConsent(enabled);
 }
 
 // static
@@ -384,17 +404,46 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
         GTK_TOGGLE_BUTTON(enable_safe_browsing_checkbox_),
         safe_browsing_.GetValue());
   }
+#if defined(GOOGLE_CHROME_BUILD)
   if (!pref_name || *pref_name == prefs::kMetricsReportingEnabled) {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(reporting_enabled_checkbox_),
                                  enable_metrics_recording_.GetValue());
-    // TODO(mattm): ResolveMetricsReportingEnabled()?
+    ResolveMetricsReportingEnabled();
   }
+#endif
   if (!pref_name || *pref_name == prefs::kCookieBehavior) {
     gtk_combo_box_set_active(
         GTK_COMBO_BOX(cookie_behavior_combobox_),
         net::CookiePolicy::FromInt(cookie_behavior_.GetValue()));
   }
   initializing_ = false;
+}
+
+void PrivacySection::ResolveMetricsReportingEnabled() {
+#if defined(GOOGLE_CHROME_BUILD)
+  bool enabled = gtk_toggle_button_get_active(
+      GTK_TOGGLE_BUTTON(reporting_enabled_checkbox_));
+
+  enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(reporting_enabled_checkbox_),
+                               enabled);
+#endif
+}
+
+void PrivacySection::ShowRestartMessageBox() const {
+  GtkWidget* dialog = gtk_message_dialog_new(
+      GTK_WINDOW(gtk_widget_get_toplevel(page_)),
+      static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL),
+      GTK_MESSAGE_INFO,
+      GTK_BUTTONS_OK,
+      "%s",
+      l10n_util::GetStringUTF8(IDS_OPTIONS_RESTART_REQUIRED).c_str());
+  gtk_window_set_title(GTK_WINDOW(dialog),
+      l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
+  g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy),
+                           dialog);
+  gtk_widget_show_all(dialog);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
