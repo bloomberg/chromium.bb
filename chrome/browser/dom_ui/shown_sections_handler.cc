@@ -19,8 +19,8 @@ void ShownSectionsHandler::RegisterMessages() {
 void ShownSectionsHandler::HandleGetShownSections(const Value* value) {
   const int mode = dom_ui_->GetProfile()->GetPrefs()->
       GetInteger(prefs::kNTPShownSections);
-  FundamentalValue* mode_value = new FundamentalValue(mode);
-  dom_ui_->CallJavascriptFunction(L"onShownSections", *mode_value);
+  FundamentalValue mode_value(mode);
+  dom_ui_->CallJavascriptFunction(L"onShownSections", mode_value);
 }
 
 void ShownSectionsHandler::HandleSetShownSections(const Value* value) {

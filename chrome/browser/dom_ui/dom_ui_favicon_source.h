@@ -20,6 +20,7 @@ class Profile;
 class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
  public:
   explicit DOMUIFavIconSource(Profile* profile);
+  virtual ~DOMUIFavIconSource() { }
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
