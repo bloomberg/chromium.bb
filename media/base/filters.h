@@ -53,8 +53,6 @@ enum FilterType {
   FILTER_VIDEO_RENDERER
 };
 
-// Used for completing asynchronous methods.
-typedef Callback0::Type FilterCallback;
 
 class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
  public:
@@ -96,14 +94,9 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
   // method if they need to respond to this call.
   virtual void SetPlaybackRate(float playback_rate) {}
 
-  // Carry out any actions required to seek to the given time, executing the
-  // callback upon completion.
-  virtual void Seek(base::TimeDelta time, FilterCallback* callback) {
-    scoped_ptr<FilterCallback> seek_callback(callback);
-    if (seek_callback.get()) {
-      seek_callback->Run();
-    }
-  }
+  // The pipeline is seeking to the specified time.  Filters may implement
+  // this method if they need to respond to this call.
+  virtual void Seek(base::TimeDelta time) {}
 
  protected:
   // Only allow scoped_refptr<> to delete filters.
@@ -135,9 +128,8 @@ class DataSource : public MediaFilter {
 
   static const size_t kReadError = static_cast<size_t>(-1);
 
-  // Initialize a DataSource for the given URL, executing the callback upon
-  // completion.
-  virtual void Initialize(const std::string& url, FilterCallback* callback) = 0;
+  // Initializes this filter, returns true if successful, false otherwise.
+  virtual bool Initialize(const std::string& url) = 0;
 
   // Returns the MediaFormat for this filter.
   virtual const MediaFormat& media_format() = 0;
@@ -174,10 +166,8 @@ class Demuxer : public MediaFilter {
             mime_type == mime_type::kApplicationOctetStream);
   }
 
-  // Initialize a Demuxer with the given DataSource, executing the callback upon
-  // completion.
-  virtual void Initialize(DataSource* data_source,
-                          FilterCallback* callback) = 0;
+  // Initializes this filter, returns true if successful, false otherwise.
+  virtual bool Initialize(DataSource* data_source) = 0;
 
   // Returns the number of streams available
   virtual size_t GetNumberOfStreams() = 0;
@@ -233,9 +223,8 @@ class VideoDecoder : public MediaFilter {
     return mime_type::kMajorTypeVideo;
   }
 
-  // Initialize a VideoDecoder with the given DemuxerStream, executing the
-  // callback upon completion.
-  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback) = 0;
+  // Initializes this filter, returns true if successful, false otherwise.
+  virtual bool Initialize(DemuxerStream* demuxer_stream) = 0;
 
   // Returns the MediaFormat for this filter.
   virtual const MediaFormat& media_format() = 0;
@@ -257,9 +246,8 @@ class AudioDecoder : public MediaFilter {
     return mime_type::kMajorTypeAudio;
   }
 
-  // Initialize a AudioDecoder with the given DemuxerStream, executing the
-  // callback upon completion.
-  virtual void Initialize(DemuxerStream* stream, FilterCallback* callback) = 0;
+  // Initializes this filter, returns true if successful, false otherwise.
+  virtual bool Initialize(DemuxerStream* demuxer_stream) = 0;
 
   // Returns the MediaFormat for this filter.
   virtual const MediaFormat& media_format() = 0;
@@ -281,9 +269,8 @@ class VideoRenderer : public MediaFilter {
     return mime_type::kMajorTypeVideo;
   }
 
-  // Initialize a VideoRenderer with the given VideoDecoder, executing the
-  // callback upon completion.
-  virtual void Initialize(VideoDecoder* decoder, FilterCallback* callback) = 0;
+  // Initializes this filter, returns true if successful, false otherwise.
+  virtual bool Initialize(VideoDecoder* decoder) = 0;
 };
 
 
@@ -297,9 +284,8 @@ class AudioRenderer : public MediaFilter {
     return mime_type::kMajorTypeAudio;
   }
 
-  // Initialize a AudioRenderer with the given AudioDecoder, executing the
-  // callback upon completion.
-  virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback) = 0;
+  // Initializes this filter, returns true if successful, false otherwise.
+  virtual bool Initialize(AudioDecoder* decoder) = 0;
 
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;

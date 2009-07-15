@@ -24,6 +24,11 @@ namespace media {
 
 class FilterHost {
  public:
+  // Filters must call this method to indicate that their initialization is
+  // complete.  They may call this from within their Initialize() method or may
+  // choose call it after processing some data.
+  virtual void InitializationComplete() = 0;
+
   // Stops execution of the pipeline due to a fatal error.  Do not call this
   // method with PIPELINE_OK or PIPELINE_STOPPING (used internally by pipeline).
   virtual void Error(PipelineError error) = 0;

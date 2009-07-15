@@ -32,10 +32,10 @@ class AudioRendererBase : public AudioRenderer {
   // MediaFilter implementation.
   virtual void Stop();
 
-  virtual void Seek(base::TimeDelta time, FilterCallback* callback);
+  virtual void Seek(base::TimeDelta time);
 
   // AudioRenderer implementation.
-  virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback);
+  virtual bool Initialize(AudioDecoder* decoder);
 
  protected:
   // The default maximum size of the queue.
@@ -115,9 +115,6 @@ class AudioRendererBase : public AudioRenderer {
   // Audio time at end of last call to FillBuffer().
   // TODO(ralphl): Update this value after seeking.
   base::TimeDelta last_fill_buffer_time_;
-
-  // Filter callbacks.
-  scoped_ptr<FilterCallback> initialize_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererBase);
 };
