@@ -563,6 +563,18 @@ void ProfileImpl::InitExtensions() {
       false);
 
   extensions_service_->Init();
+
+  // Load any extensions specified with --load-extension.
+  if (command_line->HasSwitch(switches::kLoadExtension)) {
+    std::wstring path_string =
+        command_line->GetSwitchValue(switches::kLoadExtension);
+    FilePath path = FilePath::FromWStringHack(path_string);
+    extensions_service_->LoadExtension(path);
+
+    // Tell UserScriptMaser to watch this extension's directory for changes so
+    // you can live edit content scripts during development.
+    user_script_master_->AddWatchedPath(path);
+  }
 }
 
 void ProfileImpl::InitWebResources() {

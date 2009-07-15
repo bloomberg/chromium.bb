@@ -23,7 +23,6 @@
 // - http://*/*
 // - http://*/foo*
 // - https://*.google.com/foo*bar
-// - chrome://foo/bar
 // - file://monkey*
 // - http://127.0.0.1/*
 //
@@ -33,6 +32,7 @@
 // - http://foo.*.bar/baz -- * must be first component
 // - http:/bar -- scheme separator not found
 // - foo://* -- invalid scheme
+// - chrome:// -- we don't support chrome internal URLs
 //
 // Design rationale:
 // * We need to be able to tell users what 'sites' a given URLPattern will
@@ -42,8 +42,7 @@
 //   patterns to URLPatterns as possible. Greasemonkey @include patterns are
 //   simple globs, so this won't be perfect.
 // * Although we would like to support any scheme, it isn't clear what to tell
-//   users about URLPatterns that affect data or javascript URLs, and saying
-//   something useful about chrome-extension URLs is more work, so those are
+//   users about URLPatterns that affect data or javascript URLs, so those are
 //   left out for now.
 //
 // From a 2008-ish crawl of userscripts.org, the following patterns were found
@@ -70,6 +69,10 @@
 // than the original glob, which is probably better than nothing.
 class URLPattern {
  public:
+  // Returns true if the specified scheme can be used in URL patterns, and false
+  // otherwise.
+  static bool IsValidScheme(const std::string& scheme);
+
   URLPattern() : match_subdomains_(false) {}
 
   // Initializes this instance by parsing the provided string. On failure, the

@@ -34,7 +34,6 @@ class Profile;
 class ResourceDispatcherHost;
 class SkBitmap;
 class SiteInstance;
-class UserScriptMaster;
 
 typedef std::vector<Extension*> ExtensionList;
 

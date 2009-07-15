@@ -15,12 +15,12 @@ static const char* kValidSchemes[] = {
   chrome::kHttpsScheme,
   chrome::kFileScheme,
   chrome::kFtpScheme,
-  chrome::kChromeUIScheme,
 };
 
 static const char kPathSeparator[] = "/";
 
-static bool IsValidScheme(const std::string& scheme) {
+// static
+bool URLPattern::IsValidScheme(const std::string& scheme) {
   for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
     if (scheme == kValidSchemes[i])
       return true;

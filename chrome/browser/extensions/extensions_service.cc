@@ -430,6 +430,7 @@ void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
   for (ExtensionList::iterator iter = new_extensions->begin();
        iter != new_extensions->end(); ++iter) {
     if (extensions_enabled() || (*iter)->IsTheme() ||
+        (*iter)->location() == Extension::LOAD ||
         (*iter)->location() == Extension::EXTERNAL_REGISTRY) {
       Extension* old = GetExtensionById((*iter)->id());
       if (old) {

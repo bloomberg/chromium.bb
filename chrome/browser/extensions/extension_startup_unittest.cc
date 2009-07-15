@@ -71,6 +71,11 @@ class ExtensionStartupTestBase
       file_util::CopyFile(src_dir.AppendASCII("script2.js"),
                           user_scripts_dir_.AppendASCII("script2.user.js"));
     }
+
+    if (!load_extension_.value().empty()) {
+      command_line->AppendSwitchWithValue(switches::kLoadExtension,
+                                          load_extension_.ToWStringHack());
+    }
   }
 
   // NotificationObserver
@@ -91,11 +96,65 @@ class ExtensionStartupTestBase
     file_util::Delete(extensions_dir_, true);
   }
 
+  void WaitForServicesToStart(int num_expected_extensions,
+                              bool expect_extensions_enabled) {
+    ExtensionsService* service = browser()->profile()->GetExtensionsService();
+    if (!service->is_ready()) {
+      registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+                     NotificationService::AllSources());
+      ui_test_utils::RunMessageLoop();
+      registrar_.Remove(this, NotificationType::EXTENSIONS_READY,
+                        NotificationService::AllSources());
+    }
+
+    ASSERT_EQ(static_cast<uint32>(num_expected_extensions),
+              service->extensions()->size());
+    ASSERT_EQ(expect_extensions_enabled, service->extensions_enabled());
+
+    UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
+    if (!master->ScriptsReady()) {
+      // Wait for UserScriptMaster to finish its scan.
+      registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
+                     NotificationService::AllSources());
+      ui_test_utils::RunMessageLoop();
+      registrar_.Remove(this, NotificationType::USER_SCRIPTS_UPDATED,
+                        NotificationService::AllSources());
+    }
+    ASSERT_TRUE(master->ScriptsReady());
+  }
+
+  void TestInjection(bool expect_css, bool expect_script) {
+    // Load a page affected by the content script and test to see the effect.
+    FilePath test_file;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_file);
+    test_file = test_file.AppendASCII("extensions")
+                         .AppendASCII("test_file.html");
+
+    ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
+
+    bool result = false;
+    ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        L"window.domAutomationController.send("
+        L"document.defaultView.getComputedStyle(document.body, null)."
+        L"getPropertyValue('background-color') == 'rgb(245, 245, 220)')",
+        &result);
+    EXPECT_EQ(expect_css, result);
+
+    result = false;
+    ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        browser()->GetSelectedTabContents()->render_view_host(), L"",
+        L"window.domAutomationController.send(document.title == 'Modified')",
+        &result);
+    EXPECT_EQ(expect_script, result);
+  }
+
   FilePath preferences_file_;
   FilePath extensions_dir_;
   FilePath user_scripts_dir_;
   bool enable_extensions_;
   bool enable_user_scripts_;
+  FilePath load_extension_;
   NotificationRegistrar registrar_;
 };
 
@@ -112,58 +171,36 @@ class ExtensionsStartupTest : public ExtensionStartupTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  if (!service->is_ready()) {
-    registrar_.Add(this, NotificationType::EXTENSIONS_READY,
-                   NotificationService::AllSources());
-    ui_test_utils::RunMessageLoop();
-    registrar_.Remove(this, NotificationType::EXTENSIONS_READY,
-                      NotificationService::AllSources());
+  WaitForServicesToStart(3, true);
+  TestInjection(true, true);
+}
+
+
+// ExtensionsLoadTest
+// Ensures that we can startup the browser with --load-extension and see them
+// run.
+
+class ExtensionsLoadTest : public ExtensionStartupTestBase {
+ public:
+  ExtensionsLoadTest() {
+    PathService::Get(chrome::DIR_TEST_DATA, &load_extension_);
+    load_extension_ = load_extension_
+        .AppendASCII("extensions")
+        .AppendASCII("good")
+        .AppendASCII("Extensions")
+        .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+        .AppendASCII("1.0.0.0");
   }
-  ASSERT_EQ(3u, service->extensions()->size());
-  ASSERT_TRUE(service->extensions_enabled());
+};
 
-  UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
-  if (!master->ScriptsReady()) {
-    // Wait for UserScriptMaster to finish its scan.
-    registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
-                   NotificationService::AllSources());
-    ui_test_utils::RunMessageLoop();
-    registrar_.Remove(this, NotificationType::USER_SCRIPTS_UPDATED,
-                      NotificationService::AllSources());
-  }
-  ASSERT_TRUE(master->ScriptsReady());
-
-  FilePath test_file;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_file);
-  test_file = test_file.AppendASCII("extensions")
-                       .AppendASCII("test_file.html");
-
-  // Now we should be able to load a page affected by the content script and see
-  // the effect.
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
-
-  // Test that the content script ran.
-  bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.domAutomationController.send("
-      L"document.defaultView.getComputedStyle(document.body, null)."
-      L"getPropertyValue('background-color') == 'rgb(245, 245, 220)')",
-      &result);
-  EXPECT_TRUE(result);
-
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.domAutomationController.send(document.title == 'Modified')",
-      &result);
-  EXPECT_TRUE(result);
+IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
+  WaitForServicesToStart(1, false);
+  TestInjection(true, true);
 }
 
 
 // ExtensionsStartupUserScriptTest
-// Tests that we can startup with --enable-user-scripts and run user sripts and
+// Tests that we can startup with --enable-user-scripts and run user scripts and
 // see them do basic things.
 
 class ExtensionsStartupUserScriptTest : public ExtensionStartupTestBase {
@@ -174,31 +211,20 @@ class ExtensionsStartupUserScriptTest : public ExtensionStartupTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionsStartupUserScriptTest, Test) {
-  UserScriptMaster* master = browser()->profile()->GetUserScriptMaster();
-  if (!master->ScriptsReady()) {
-    // Wait for UserScriptMaster to finish its scan.
-    registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
-                   NotificationService::AllSources());
-    ui_test_utils::RunMessageLoop();
-    registrar_.Remove(this, NotificationType::USER_SCRIPTS_UPDATED,
-                      NotificationService::AllSources());
-  }
-  ASSERT_TRUE(master->ScriptsReady());
+  WaitForServicesToStart(0, false);
+  TestInjection(false, true);
+}
 
-  FilePath test_file;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_file);
-  test_file = test_file.AppendASCII("extensions")
-                       .AppendASCII("test_file.html");
+// Ensure we don't inject into chrome:// URLs
+IN_PROC_BROWSER_TEST_F(ExtensionsStartupUserScriptTest, NoInjectIntoChrome) {
+  WaitForServicesToStart(0, false);
 
-  // Now we should be able to load a page affected by the content script and see
-  // the effect.
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
 
-  // Test that the user script ran.
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title == 'Modified')",
       &result);
-  EXPECT_TRUE(result);
+  EXPECT_FALSE(result);
 }

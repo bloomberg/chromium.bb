@@ -16,6 +16,7 @@ TEST(URLPatternTest, ParseInvalid) {
     "http://foo.*.bar/baz",  // must be first component
     "http:/bar",  // scheme separator not found
     "foo://*",  // invalid scheme
+    "chrome://*/*",  // we don't support internal chrome URLs
   };
 
   for (size_t i = 0; i < arraysize(kInvalidPatterns); ++i) {
@@ -65,19 +66,6 @@ TEST(URLPatternTest, Match3) {
   EXPECT_TRUE(pattern.MatchesUrl(
       GURL("http://monkey.images.google.com/foooobar")));
   EXPECT_FALSE(pattern.MatchesUrl(GURL("http://yahoo.com/foobar")));
-}
-
-// odd schemes and normalization
-TEST(URLPatternTest, Match4) {
-  URLPattern pattern;
-  EXPECT_TRUE(pattern.Parse("chrome://thinger/*"));
-  EXPECT_EQ("chrome", pattern.scheme());
-  EXPECT_EQ("thinger", pattern.host());
-  EXPECT_FALSE(pattern.match_subdomains());
-  EXPECT_EQ("/*", pattern.path());
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://thinger/foobar")));
-  EXPECT_TRUE(pattern.MatchesUrl(GURL("CHROME://thinger/")));
-  EXPECT_FALSE(pattern.MatchesUrl(GURL("http://thinger/")));
 }
 
 // glob escaping

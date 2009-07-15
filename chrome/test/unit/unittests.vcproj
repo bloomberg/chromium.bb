@@ -942,10 +942,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\renderer\extensions\greasemonkey_api_unittest.cc"
-				>
-			</File>
-			<File
 				RelativePath="..\..\renderer\extensions\json_schema_unittest.cc"
 				>
 			</File>

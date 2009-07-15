@@ -36,13 +36,8 @@ UserScriptSlave::UserScriptSlave()
     : shared_memory_(NULL),
       script_deleter_(&scripts_),
       user_script_start_line_(0) {
-  // TODO: Only windows supports resources and only windows supports user
-  // scrips, so only load the Greasemonkey API on windows.  Fix this when
-  // better cross platofrm support is available.
-#if defined(OS_WIN)
   api_js_ = ResourceBundle::GetSharedInstance().GetRawDataResource(
                 IDR_GREASEMONKEY_API_JS);
-#endif
 
   // Count the number of lines that will be injected before the user script.
   StringPiece::size_type pos = 0;
@@ -114,6 +109,10 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
 
 bool UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
+  // Don't bother if this is not a URL we inject script into.
+  if (!URLPattern::IsValidScheme(frame->GetURL().scheme()))
+    return true;
+
   PerfTimer timer;
   int num_matched = 0;
 

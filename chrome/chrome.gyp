@@ -3748,7 +3748,6 @@
         'common/zip_unittest.cc',
         'renderer/audio_message_filter_unittest.cc',
         'renderer/extensions/extension_api_client_unittest.cc',
-        'renderer/extensions/greasemonkey_api_unittest.cc',
         'renderer/extensions/json_schema_unittest.cc',
         'renderer/net/render_dns_master_unittest.cc',
         'renderer/net/render_dns_queue_unittest.cc',
