@@ -12,6 +12,8 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_member.h"
 
 class BackForwardButtonGtk;
@@ -99,10 +101,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Create a menu for the toolbar given the icon id and tooltip.  Returns the
   // widget created.
-  GtkWidget* BuildToolbarMenuButton(
-      int icon_id,
-      const std::string& localized_tooltip,
-      OwnedWidgetGtk* owner);
+  GtkWidget* BuildToolbarMenuButton(const std::string& localized_tooltip,
+                                    OwnedWidgetGtk* owner);
 
   // Connect signals for dragging a url onto the home button.
   void SetUpDragForHomeButton();
@@ -174,6 +174,11 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   scoped_ptr<GoButtonGtk> go_;
   OwnedWidgetGtk page_menu_button_, app_menu_button_;
 
+  // Keep a pointer to the menu button images because we change them when
+  // the theme changes.
+  GtkWidget* page_menu_image_;
+  GtkWidget* app_menu_image_;
+
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
 
@@ -191,6 +196,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // The event state the last time we observed a button release event.
   int last_release_event_flags_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToolbarGtk);
 };

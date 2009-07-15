@@ -128,7 +128,7 @@ void GtkThemeProvider::LoadThemePrefs() {
 void GtkThemeProvider::NotifyThemeChanged() {
   BrowserThemeProvider::NotifyThemeChanged();
 
-  // Notify all constructored GtkChromeButtons of their new rendering mode:
+  // Notify all GtkChromeButtons of their new rendering mode:
   for (std::vector<GtkWidget*>::iterator it = chrome_buttons_.begin();
        it != chrome_buttons_.end(); ++it) {
     gtk_chrome_button_set_use_gtk_rendering(

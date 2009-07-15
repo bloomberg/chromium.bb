@@ -31,6 +31,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_details.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -75,6 +76,10 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
   browser_->command_updater()->AddCommandObserver(IDC_STAR, this);
+
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 
   InitNineBox();
 }
@@ -155,9 +160,12 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   // Group the menu buttons together in an hbox.
   GtkWidget* menus_hbox_ = gtk_hbox_new(FALSE, 0);
-  GtkWidget* page_menu = BuildToolbarMenuButton(IDR_MENU_PAGE,
+  GtkWidget* page_menu = BuildToolbarMenuButton(
       l10n_util::GetStringUTF8(IDS_PAGEMENU_TOOLTIP),
       &page_menu_button_);
+  page_menu_image_ = gtk_image_new_from_pixbuf(
+      theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_PAGE));
+  gtk_container_add(GTK_CONTAINER(page_menu), page_menu_image_);
   page_menu_.reset(new MenuGtk(this, GetStandardPageMenu(), accel_group_));
   g_signal_connect(page_menu_->widget(), "motion-notify-event",
                    G_CALLBACK(OnPageAppMenuMouseMotion), this);
@@ -165,10 +173,13 @@ void BrowserToolbarGtk::Init(Profile* profile,
                    G_CALLBACK(OnPageAppMenuMoveCurrent), this);
   gtk_box_pack_start(GTK_BOX(menus_hbox_), page_menu, FALSE, FALSE, 0);
 
-  GtkWidget* chrome_menu = BuildToolbarMenuButton(IDR_MENU_CHROME,
+  GtkWidget* chrome_menu = BuildToolbarMenuButton(
       l10n_util::GetStringFUTF8(IDS_APPMENU_TOOLTIP,
           WideToUTF16(l10n_util::GetString(IDS_PRODUCT_NAME))),
       &app_menu_button_);
+  app_menu_image_ = gtk_image_new_from_pixbuf(
+      theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
+  gtk_container_add(GTK_CONTAINER(chrome_menu), app_menu_image_);
   app_menu_.reset(new MenuGtk(this, GetStandardAppMenu(), accel_group_));
   g_signal_connect(app_menu_->widget(), "motion-notify-event",
                    G_CALLBACK(OnPageAppMenuMouseMotion), this);
@@ -272,6 +283,14 @@ void BrowserToolbarGtk::Observe(NotificationType type,
         gtk_widget_hide(home_->widget());
       }
     }
+  } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    // Update the menu button images.
+    gtk_image_set_from_pixbuf(GTK_IMAGE(page_menu_image_),
+        theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_PAGE));
+    gtk_image_set_from_pixbuf(GTK_IMAGE(app_menu_image_),
+        theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
+  } else {
+    NOTREACHED();
   }
 }
 
@@ -342,19 +361,15 @@ ToolbarStarToggleGtk* BrowserToolbarGtk::BuildStarButton(
 }
 
 GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
-    int icon_id,
     const std::string& localized_tooltip,
     OwnedWidgetGtk* owner) {
   GtkWidget* button = theme_provider_->BuildChromeButton();
   owner->Own(button);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   // TODO(erg): This was under conditional for gtk, but after playing around
   // with not having it under conditional, I actually think this is correct
   // instead. Investigate more later.
   gtk_container_set_border_width(GTK_CONTAINER(button), 2);
-  gtk_container_add(GTK_CONTAINER(button),
-                    gtk_image_new_from_pixbuf(rb.GetPixbufNamed(icon_id)));
 
   gtk_widget_set_tooltip_text(button, localized_tooltip.c_str());
   g_signal_connect(button, "button-press-event",
