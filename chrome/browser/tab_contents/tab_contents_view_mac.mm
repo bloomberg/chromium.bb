@@ -8,6 +8,7 @@
 #include "chrome/browser/browser.h" // TODO(beng): this dependency is awful.
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/cocoa/sad_tab_view.h"
+#import "chrome/browser/cocoa/web_drop_target.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
@@ -23,6 +24,9 @@
 @interface TabContentsViewCocoa (Private)
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w;
 - (void)processKeyboardEvent:(NSEvent*)event;
+- (TabContents*)tabContents;
+- (void)registerDragTypes;
+- (void)setIsDropTarget:(BOOL)isTarget;
 @end
 
 // static
@@ -156,6 +160,23 @@ NSPasteboard* TabContentsViewMac::FillDragData(
 }
 
 void TabContentsViewMac::StartDragging(const WebDropData& drop_data) {
+  // We are only allowed to call dragImage:... from inside mouseDragged:, which
+  // we will never be (we're called back async), but it seems that the mouse
+  // event is still always the proper left mouse drag, so everything works out
+  // in the end. However, we occasionally get spurrious "start drag" messages
+  // from the back-end when we shouldn't. If we go through with the drag, Cocoa
+  // asserts in a bad way. Just bail for now until we can figure out the root of
+  // why we're getting the messages.
+  // TODO(pinkerton): http://crbug.com/16811
+  NSEvent* currentEvent = [NSApp currentEvent];
+  if ([currentEvent type] != NSLeftMouseDragged) {
+    LOG(INFO) << "Spurious StartDragging() message";
+    RenderViewHost* rvh = tab_contents()->render_view_host();
+    if (rvh)
+      rvh->DragSourceSystemDragEnded();
+    return;
+  }
+
   // Create an image to use for the drag.
   // TODO(pinkerton): Generate the proper image. This one will do in a pinch.
   NSImage* dragImage = nsimage_cache::ImageNamed(@"nav.pdf");
@@ -166,7 +187,6 @@ void TabContentsViewMac::StartDragging(const WebDropData& drop_data) {
   // source will get notified when the drag completes (success or failure) so
   // it can tell the render view host the drag is done. Windows does this with
   // a nested event loop, we get called back.
-  NSEvent* currentEvent = [NSApp currentEvent];
   NSPoint mousePoint = [currentEvent locationInWindow];
   mousePoint = [cocoa_view_ convertPoint:mousePoint fromView:nil];
   [cocoa_view_ dragImage:dragImage
@@ -238,7 +258,7 @@ void TabContentsViewMac::RestoreFocus() {
   // TODO(avi): Could we be restoring a view that's no longer in the key view
   // chain?
   if (latent_focus_view_.get()) {
-    [[cocoa_view_.get() window] makeFirstResponder:latent_focus_view_.get()];
+    [[cocoa_view_ window] makeFirstResponder:latent_focus_view_.get()];
     latent_focus_view_.reset();
   } else {
     // TODO(shess): If location-bar gets focus by default, this will
@@ -250,7 +270,7 @@ void TabContentsViewMac::RestoreFocus() {
 }
 
 void TabContentsViewMac::UpdateDragCursor(bool is_drop_target) {
-  NOTIMPLEMENTED();
+  [cocoa_view_ setIsDropTarget:is_drop_target ? YES : NO];
 }
 
 void TabContentsViewMac::GotFocus() {
@@ -330,13 +350,34 @@ void TabContentsViewMac::Observe(NotificationType type,
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w {
   self = [super initWithFrame:NSZeroRect];
   if (self != nil) {
-    TabContentsView_ = w;
+    tabContentsView_ = w;
+    dropTarget_.reset(
+        [[WebDropTarget alloc] initWithTabContents:[self tabContents]]);
+    [self registerDragTypes];
   }
   return self;
 }
 
+- (void)dealloc {
+  // This probably isn't strictly necessary, but can't hurt.
+  [self unregisterDraggedTypes];
+  [super dealloc];
+}
+
+// Registers for the view for the appropriate drag types.
+// TODO(pinkerton): register for file drags.
+- (void)registerDragTypes {
+  NSArray* types = [NSArray arrayWithObjects:NSStringPboardType,
+      NSHTMLPboardType, NSURLPboardType, nil];
+  [self registerForDraggedTypes:types];
+}
+
+- (void)setIsDropTarget:(BOOL)isTarget {
+  [dropTarget_ setIsDropTarget:isTarget];
+}
+
 - (TabContents*)tabContents {
-  return TabContentsView_->tab_contents();
+  return tabContentsView_->tab_contents();
 }
 
 - (void)processKeyboardEvent:(NSEvent*)event {
@@ -404,33 +445,19 @@ void TabContentsViewMac::Observe(NotificationType type,
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
-  TabContents* tabContents = [self tabContents];
-  if (tabContents->showing_interstitial_page()) {
-    // TODO(pinkerton): hook up dropping only urls
-    return NSDragOperationNone;
-  }
-
-  // TODO(pinkerton): Fill this in when we're tracking drags w/in the content.
-  // Fill out a WebDropData from pasteboard
-  // Convert event point to gfx::Point
-  // Pass to tabContents->render_view_host()->DragTargetDragEnter(...)
-
-  return NSDragOperationCopy;
+  return [dropTarget_ draggingEntered:sender view:self];
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {
-  // TODO(pinkerton): Fill this in when we're tracking drags w/in the content.
+  [dropTarget_ draggingExited:sender];
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  // TODO(pinkerton): Fill this in when we're tracking drags w/in the content.
-  return NSDragOperationCopy;
+  return [dropTarget_ draggingUpdated:sender view:self];
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-  // TODO(pinkerton): Fill this in when we're tracking drags w/in the content.
-  // Reject all drops until then.
-  return NO;
+  return [dropTarget_ performDragOperation:sender view:self];
 }
 
 // Tons of stuff goes here, where we grab events going on in Cocoaland and send

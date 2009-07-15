@@ -17,12 +17,13 @@
 class FindBarMac;
 @class SadTabView;
 class TabContentsViewMac;
+@class WebDropTarget;
 
 @interface TabContentsViewCocoa : BaseView {
  @private
-  TabContentsViewMac* TabContentsView_;  // WEAK; owns us
+  TabContentsViewMac* tabContentsView_;  // WEAK; owns us
+  scoped_nsobject<WebDropTarget> dropTarget_;
 }
-
 @end
 
 // Mac-specific implementation of the TabContentsView. It owns an NSView that
