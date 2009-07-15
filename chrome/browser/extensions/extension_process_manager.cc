@@ -9,9 +9,11 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/render_messages.h"
 
 static void CreateBackgroundHosts(
     ExtensionProcessManager* manager, const ExtensionList* extensions) {
@@ -33,6 +35,10 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_HOST_DESTROYED,
                  Source<Profile>(profile));
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
+                 NotificationService::AllSources());
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
@@ -78,6 +84,39 @@ ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
   return host;
 }
 
+void ExtensionProcessManager::RegisterExtensionProcess(
+    std::string extension_id, int process_id) {
+  ProcessIDMap::const_iterator it = process_ids_.find(extension_id);
+  if (it != process_ids_.end() && (*it).second == process_id)
+    return;
+
+  process_ids_[extension_id] = process_id;
+
+  ExtensionsService* extension_service =
+      browsing_instance_->profile()->GetExtensionsService();
+
+  std::vector<std::string> page_action_ids;
+  Extension* extension = extension_service->GetExtensionById(extension_id);
+  for (PageActionMap::const_iterator i = extension->page_actions().begin();
+       i != extension->page_actions().end(); ++i) {
+    page_action_ids.push_back(i->first);
+  }
+
+  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
+  rph->Send(new ViewMsg_Extension_UpdatePageActions(extension_id,
+                                                    page_action_ids));
+}
+
+void ExtensionProcessManager::UnregisterExtensionProcess(int process_id) {
+  ProcessIDMap::iterator it = process_ids_.begin();
+  while (it != process_ids_.end()) {
+    if (it->second == process_id)
+      process_ids_.erase(it++);
+    else
+      ++it;
+  }
+}
+
 SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {
   return browsing_instance_->GetSiteInstanceForURL(url);
 }
@@ -119,6 +158,13 @@ void ExtensionProcessManager::Observe(NotificationType type,
       ExtensionHost* host = Details<ExtensionHost>(details).ptr();
       all_hosts_.erase(host);
       background_hosts_.erase(host);
+      break;
+    }
+
+    case NotificationType::RENDERER_PROCESS_TERMINATED:
+    case NotificationType::RENDERER_PROCESS_CLOSED: {
+      RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
+      UnregisterExtensionProcess(host->pid());
       break;
     }
 

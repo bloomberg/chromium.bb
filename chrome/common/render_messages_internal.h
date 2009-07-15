@@ -562,6 +562,12 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetFunctionNames,
                        std::vector<std::string>)
 
+  // Tell the renderer process all known page action ids for a particular
+  // extension.
+  IPC_MESSAGE_CONTROL2(ViewMsg_Extension_UpdatePageActions,
+                       std::string /* extension_id */,
+                       std::vector<std::string> /* page_action_ids */)
+
   // Changes the text direction of a selected input field.
   // * direction (int)
   //   Represents the new text direction.

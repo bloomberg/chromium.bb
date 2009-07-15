@@ -30,6 +30,7 @@ var chrome = chrome || {};
   native function GetTabLanguage();
   native function EnablePageAction();
   native function DisablePageAction();
+  native function GetCurrentPageActions();
   native function GetBookmarks();
   native function GetBookmarkChildren();
   native function GetBookmarkTree();
@@ -397,9 +398,16 @@ var chrome = chrome || {};
     }
   ];
 
-  // Sends ({pageActionId, tabId, tabUrl}).
-  chrome.pageActions.onExecute =
-       new chrome.Event("page-action-executed");
+  // Page action events send (pageActionId, {tabId, tabUrl}).
+  function setupPageActionEvents(extensionId) {
+    var pageActions = GetCurrentPageActions();
+    var eventName = "";
+    for (var i = 0; i < pageActions.length; ++i) {
+      eventName = extensionId + "/" + pageActions[i];
+      // Setup events for each extension_id/page_action_id string we find.
+      chrome.pageActions[pageActions[i]] = new chrome.Event(eventName);
+    }
+  }
 
   //----------------------------------------------------------------------------
   // Bookmarks
@@ -548,6 +556,8 @@ var chrome = chrome || {};
     // TODO(mpcomplete): self.onConnect is deprecated.  Remove it at 1.0.
     // http://code.google.com/p/chromium/issues/detail?id=16356
     chrome.self.onConnect = new chrome.Event("channel-connect:" + extensionId);
+
+    setupPageActionEvents(extensionId);
   });
 
   chrome.self.getViews = function() {
