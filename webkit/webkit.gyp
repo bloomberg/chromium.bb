@@ -585,15 +585,12 @@
         'extensions/v8/profiler_extension.h',
         'extensions/v8/benchmarking_extension.cc',
         'extensions/v8/benchmarking_extension.h',
-        'port/bindings/v8/RGBColor.cpp',
-        'port/bindings/v8/RGBColor.h',
         'port/bindings/v8/NPV8Object.cpp',
         'port/bindings/v8/NPV8Object.h',
         'port/bindings/v8/V8NPUtils.cpp',
         'port/bindings/v8/V8NPUtils.h',
         'port/bindings/v8/V8NPObject.cpp',
         'port/bindings/v8/V8NPObject.h',
-
 
         # For WebCoreSystemInterface, Mac-only.
         '../third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.m',
