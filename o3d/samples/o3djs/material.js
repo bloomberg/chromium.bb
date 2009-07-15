@@ -396,7 +396,7 @@ o3djs.material.createCheckerMaterial = function(pack,
                                                 opt_transparent,
                                                 opt_checkSize) {
   opt_color1 = opt_color1 || [0.4, 0.5, 0.5, 1];
-  opt_color2 = opt_color2 || [0.4, 0.8, 0.8, 1];
+  opt_color2 = opt_color2 || [0.6, 0.8, 0.8, 1];
   opt_checkSize = opt_checkSize || 10;
 
   var effect = o3djs.effect.createCheckerEffect(pack);

@@ -171,9 +171,9 @@ function initStep3(texture, exception) {
   sphereMaterial.getParam('specularFactor').value = 0.4;
 
   // The material for the ground.
-  var checkerMaterial = o3djs.material.createMaterialFromFile(
-      g_pack, 'shaders/green-blue-checker.shader',
-      g_viewInfo.performanceDrawList);
+  var checkerMaterial = o3djs.material.createCheckerMaterial(
+      g_pack,
+      g_viewInfo);
 
   // Make a material to use for the shadow. A standard constant shader will
   // be fine.
