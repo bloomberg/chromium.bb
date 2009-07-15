@@ -1117,8 +1117,13 @@ var dnd = {
     if (this.canDropOnElement(dropTarget)) {
       dropTarget.style.zIndex = 1;
       mostVisited.swapPosition(this.dragItem, dropTarget);
-      mostVisited.invalidate();
-      mostVisited.layout();
+      // The timeout below is to allow WebKit to see that we turned off
+      // pointer-event before moving the thumbnails so that we can get out of
+      // hover mode.
+      window.setTimeout(function() {
+        mostVisited.invalidate();
+        mostVisited.layout();
+      }, 10);
       e.preventDefault();
       if (this.dragEndTimer) {
         window.clearTimeout(this.dragEndTimer);
