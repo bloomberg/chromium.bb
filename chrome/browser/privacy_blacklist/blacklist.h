@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
@@ -55,6 +54,23 @@ class Blacklist {
   // Key used to access data attached to URLRequest objects.
   static const void* const kRequestDataKey;
 
+  // Takes a string an returns the matching attribute, 0 if none matches.
+  static unsigned int String2Attribute(const std::string&);
+
+  // Blacklist entries come from a provider, defined by a name and source URL.
+  class Provider {
+   public:
+    Provider() {}
+    Provider(const char* name, const char* url) : name_(name), url_(url) {}
+    const std::string& name() const { return name_; }
+    const std::string& url() const { return url_; }
+    void set_name(const std::string& name) { name_ = name; }
+    void set_url(const std::string& url) { url_ = url; }
+   private:
+    std::string name_;
+    std::string url_;
+  };
+
   // A single blacklist entry which is returned when a URL matches one of
   // the patterns. Entry objects are owned by the Blacklist that stores them.
   class Entry {
@@ -64,6 +80,9 @@ class Blacklist {
 
     // Bitfield of filter-attributes matching the pattern.
     unsigned int attributes() const { return attributes_; }
+
+    // Provider of this blacklist entry, used for assigning blame ;)
+    const Provider* provider() const { return provider_; }
 
     // Returns true if the given type matches one of the types for which
     // the filter-attributes of this pattern apply. This needs only to be
@@ -76,14 +95,28 @@ class Blacklist {
     bool IsBlocked(const GURL&) const;
 
    private:
-    Entry(const std::string& pattern, unsigned int attributes);
+    // Construct with given pattern.
+    explicit Entry(const std::string& pattern, const Provider* provider);
+
+    void AddAttributes(unsigned int attributes);
     void AddType(const std::string& type);
+
+    // Merge the attributes and types of the given entry with this one.
+    void Merge(const Entry& entry);
+
+    // Swap the given vector content for the type vector for quick loading.
+    void SwapTypes(std::vector<std::string>* types);
 
     std::string pattern_;
     unsigned int attributes_;
-    scoped_ptr< std::vector<std::string> > types_;
+    std::vector<std::string> types_;
 
-    friend class Blacklist;  // Only Blacklist can create an entry.
+    // Points to the provider of this entry, the providers are all
+    // owned by the blacklist.
+    const Provider* provider_;
+
+    friend class Blacklist;
+    friend class BlacklistIO;
   };
 
   // When a request matches a Blacklist rule but the rule must be applied
@@ -123,7 +156,9 @@ class Blacklist {
 
  private:
   std::vector<Entry*> blacklist_;
+  std::vector<Provider*> providers_;
 
+  FRIEND_TEST(BlacklistTest, Generic);
   DISALLOW_COPY_AND_ASSIGN(Blacklist);
 };
 

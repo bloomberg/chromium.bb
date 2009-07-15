@@ -1,0 +1,19 @@
+[Chromium::PrivacyBlacklist]
+|Name: Sample
+|URL: http://www.google.com Text here is ignored
+|Icon: Unsupported feature !!!!!
+
+# Default match attributes (matches everything)
+@ => kBlockByType(application/x-shockwave-flash), kDontPersistCookies
+
+# Affect an entire site
+@poor-security-site.com => kBlockUnsecure
+
+# Affect subdomains of an entire site
+@.ad-serving-place.com => kDontSendCookies, kDontStoreCookies
+
+# Affect site files under a subfolder
+www.site.com/anonymous/folder/@ => kDontSendUserAgent, kDontSendReferrer
+
+# Affect a specific URL
+www.site.com/bad/url => kBlockAll
