@@ -668,11 +668,11 @@ class MinidumpWriter {
              i++) {
           CpuInfoEntry* entry = &cpu_info_table[i];
           if (entry->found)
-            goto popline;
+            continue;
           if (!strncmp(line, entry->info_name, strlen(entry->info_name))) {
             const char* value = strchr(line, ':');
             if (!value)
-              goto popline;
+              continue;
 
             // the above strncmp only matches the prefix, it might be the wrong
             // line. i.e. we matched "model name" instead of "model".
@@ -685,7 +685,7 @@ class MinidumpWriter {
               }
             }
             if (space_ptr != value)
-              goto popline;
+              continue;
 
             sscanf(++value, " %d", &(entry->value));
             entry->found = true;
