@@ -32,7 +32,7 @@ deps = {
 
   # TODO(mark): Remove once this has moved into depot_tools.
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@547",
+    "http://gyp.googlecode.com/svn/trunk@549",
 
   "src/v8":
     "http://v8.googlecode.com/svn/branches/1.2@2476",
@@ -131,7 +131,7 @@ hooks = [
   {
     # A change to a .gyp, .gypi, or to GYP itself shound run the generator.
     "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]",
-    "action": ["python", "src/tools/gyp/gyp_dogfood", "src/build/all.gyp"],
+    "action": ["python", "src/tools/gyp/gyp_chromium"],
   },
 ]
 
