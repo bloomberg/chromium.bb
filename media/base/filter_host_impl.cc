@@ -6,10 +6,6 @@
 
 namespace media {
 
-void FilterHostImpl::InitializationComplete() {
-  pipeline_internal_->InitializationComplete(this);
-}
-
 void FilterHostImpl::Error(PipelineError error) {
   pipeline_internal_->Error(error);
 }

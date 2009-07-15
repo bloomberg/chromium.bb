@@ -38,7 +38,7 @@ void AudioRendererBase::Stop() {
   stopped_ = true;
 }
 
-void AudioRendererBase::Seek(base::TimeDelta time) {
+void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {
   AutoLock auto_lock(lock_);
   last_fill_buffer_time_ = base::TimeDelta();
 
@@ -53,9 +53,12 @@ void AudioRendererBase::Seek(base::TimeDelta time) {
   }
 }
 
-bool AudioRendererBase::Initialize(AudioDecoder* decoder) {
+void AudioRendererBase::Initialize(AudioDecoder* decoder,
+                                   FilterCallback* callback) {
   DCHECK(decoder);
+  DCHECK(callback);
   decoder_ = decoder;
+  initialize_callback_.reset(callback);
 
   // Schedule our initial reads.
   for (size_t i = 0; i < max_queue_size_; ++i) {
@@ -63,7 +66,11 @@ bool AudioRendererBase::Initialize(AudioDecoder* decoder) {
   }
 
   // Defer initialization until all scheduled reads have completed.
-  return OnInitialize(decoder_->media_format());
+  if (!OnInitialize(decoder_->media_format())) {
+    host()->Error(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    initialize_callback_->Run();
+    initialize_callback_.reset();
+  }
 }
 
 void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
@@ -92,8 +99,9 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
       host()->Error(PIPELINE_ERROR_NO_DATA);
     } else {
       initialized_ = true;
-      host()->InitializationComplete();
     }
+    initialize_callback_->Run();
+    initialize_callback_.reset();
   }
 }
 
