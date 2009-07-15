@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESS_MANAGER_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESS_MANAGER_H_
 
-#include <map>
 #include <set>
-#include <string>
 
 #include "base/ref_counted.h"
 #include "chrome/common/notification_registrar.h"
@@ -45,13 +43,6 @@ class ExtensionProcessManager : public NotificationObserver {
   // Returns the SiteInstance that the given URL belongs to.
   SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
-  // Register an extension process by |extension_id| and specifying which
-  // |process_id| it belongs to.
-  void RegisterExtensionProcess(std::string extension_id, int process_id);
-
-  // Unregister an extension process with specified |process_id|.
-  void UnregisterExtensionProcess(int process_id);
-
   // NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -77,10 +68,6 @@ class ExtensionProcessManager : public NotificationObserver {
   // The BrowsingInstance shared by all extensions in this profile.  This
   // controls process grouping.
   scoped_refptr<BrowsingInstance> browsing_instance_;
-
-  // A map of extension ID to the render_process_id that the extension lives in.
-  typedef std::map<std::string, int> ProcessIDMap;
-  ProcessIDMap process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
 };

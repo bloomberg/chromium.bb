@@ -329,7 +329,6 @@ void ExtensionBrowserEventRouter::TabChangedAt(TabContents* contents,
 void ExtensionBrowserEventRouter::TabStripEmpty() { }
 
 void ExtensionBrowserEventRouter::PageActionExecuted(Profile* profile,
-                                                     std::string extension_id,
                                                      std::string page_action_id,
                                                      int tab_id,
                                                      std::string url) {
@@ -347,6 +346,5 @@ void ExtensionBrowserEventRouter::PageActionExecuted(Profile* profile,
   std::string json_args;
   JSONWriter::Write(&args, false, &json_args);
 
-  std::string event_name = extension_id + std::string("/") + page_action_id;
-  DispatchEvent(profile, event_name.c_str(), json_args);
+  DispatchEvent(profile, events::kOnPageActionExecuted, json_args);
 }

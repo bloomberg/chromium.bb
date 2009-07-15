@@ -1277,8 +1277,7 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
     const views::MouseEvent& event) {
   // Our PageAction icon was clicked on, notify proper authorities.
   ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
-      profile_, page_action_->extension_id(), page_action_->id(),
-      current_tab_id_, current_url_.spec());
+      profile_, page_action_->id(), current_tab_id_, current_url_.spec());
   return true;
 }
 

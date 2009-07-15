@@ -9,6 +9,7 @@
 
 namespace extension_event_names {
 
+extern const char kOnPageActionExecuted[];
 extern const char kOnTabAttached[];
 extern const char kOnTabCreated[];
 extern const char kOnTabDetached[];

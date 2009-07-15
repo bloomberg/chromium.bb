@@ -6,6 +6,7 @@
 
 namespace extension_event_names {
 
+const char kOnPageActionExecuted[] = "page-action-executed";
 const char kOnTabAttached[] = "tab-attached";
 const char kOnTabCreated[] = "tab-created";
 const char kOnTabDetached[] = "tab-detached";

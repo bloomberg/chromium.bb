@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,12 +214,6 @@ void RenderThread::OnSetExtensionFunctionNames(
   ExtensionProcessBindings::SetFunctionNames(names);
 }
 
-void RenderThread::OnPageActionsUpdated(
-    const std::string& extension_id,
-    const std::vector<std::string>& page_actions) {
-  ExtensionProcessBindings::SetPageActions(extension_id, page_actions);
-}
-
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   // App cache messages are handled by a delegate.
   if (app_cache_dispatcher_->OnMessageReceived(msg))
@@ -248,8 +242,6 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnSetExtensionFunctionNames)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache,
                         OnPurgePluginListCache)
-    IPC_MESSAGE_HANDLER(ViewMsg_Extension_UpdatePageActions,
-                        OnPageActionsUpdated)
   IPC_END_MESSAGE_MAP()
 }
 

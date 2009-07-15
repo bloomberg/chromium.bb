@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profile.h"
@@ -189,11 +188,6 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
 
   // Ensure the message service is initialized.
   ExtensionMessageService::GetInstance(profile()->GetRequestContext())->Init();
-
-  // Notify the ExtensionProcessManager that the view was created.
-  ExtensionProcessManager* epm = profile()->GetExtensionProcessManager();
-  epm->RegisterExtensionProcess(extension_id(),
-                                render_view_host->process()->pid());
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
