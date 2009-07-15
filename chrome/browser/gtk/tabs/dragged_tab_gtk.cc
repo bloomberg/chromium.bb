@@ -86,7 +86,6 @@ void DraggedTabGtk::Attach(int selected_width) {
 void DraggedTabGtk::Resize(int width) {
   attached_tab_size_.set_width(width);
   ResizeContainer();
-  Update();
 }
 
 void DraggedTabGtk::set_pinned(bool pinned) {
@@ -192,7 +191,6 @@ void DraggedTabGtk::ResizeContainer() {
   gtk_window_resize(GTK_WINDOW(container_),
                     ScaleValue(size.width()), ScaleValue(size.height()));
   Layout();
-  Update();
 }
 
 int DraggedTabGtk::ScaleValue(int value) {
