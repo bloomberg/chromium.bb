@@ -221,7 +221,9 @@ static bool DropRoot() {
 static bool SetupChildEnvironment() {
   // ld.so will have cleared LD_LIBRARY_PATH because we are SUID. However, the
   // child process might need this so zygote_host_linux.cc saved a copy in
-  // SANDBOX_LD_LIBRARY_PATH.
+  // SANDBOX_LD_LIBRARY_PATH. This is safe because we have dropped root by this
+  // point, so we can only exec a binary with the permissions of the user who
+  // ran us in the first place.
   const char* sandbox_ld_library_path = getenv("SANDBOX_LD_LIBRARY_PATH");
   if (sandbox_ld_library_path) {
     setenv("LD_LIBRARY_PATH", sandbox_ld_library_path, 1 /* overwrite */);
