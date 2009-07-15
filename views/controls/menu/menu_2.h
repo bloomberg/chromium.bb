@@ -6,7 +6,9 @@
 #define CONTROLS_MENU_VIEWS_MENU_2_H_
 
 #include "base/gfx/native_widget_types.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "views/controls/menu/menu_wrapper.h"
 
 namespace gfx {
 class Point;
@@ -17,7 +19,6 @@ namespace views {
 
 class Accelerator;
 class Menu2;
-class MenuWrapper;
 
 // The Menu2Model is an interface implemented by an object that provides the
 // content of a menu.
@@ -142,7 +143,7 @@ class Menu2 {
   Menu2Model* model_;
 
   // The object that actually implements the menu.
-  MenuWrapper* wrapper_;
+  scoped_ptr<MenuWrapper> wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(Menu2);
 };
