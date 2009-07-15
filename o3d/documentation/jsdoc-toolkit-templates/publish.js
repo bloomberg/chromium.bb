@@ -124,7 +124,7 @@ function publishInternal(symbolSet) {
   try {
     var templatesDir = publish.conf.templatesDir;
     var classTemplate = new JSDOC.JsPlate(templatesDir + 'class.tmpl');
-    var exportsTemplate = new JSDOC.JsPlate(templatesDir + 'exports.tmpl');
+    //var exportsTemplate = new JSDOC.JsPlate(templatesDir + 'exports.tmpl');
     var membersTemplate = new JSDOC.JsPlate(templatesDir + 'members.tmpl');
     var classTreeTemplate = new JSDOC.JsPlate(templatesDir + 'classtree.tmpl');
     var fileListTemplate = new JSDOC.JsPlate(templatesDir + 'filelist.tmpl');
@@ -232,8 +232,8 @@ function publishInternal(symbolSet) {
   IO.saveFile(publish.conf.outDir, 'namespaces' + publish.conf.ext, namespaces);
   IO.saveFile(publish.conf.htmlDir, 'namespaces.html', namespaces);
 
-  var exports = exportsTemplate.process(symbols);
-  IO.saveFile(publish.conf.outDir, 'exports.js', fileList);
+  //var exports = exportsTemplate.process(symbols);
+  //IO.saveFile(publish.conf.outDir, 'exports.js', fileList);
 }
 
 /**
