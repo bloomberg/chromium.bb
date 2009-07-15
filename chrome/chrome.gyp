@@ -41,6 +41,17 @@
       #                non win specific section.
       'browser/task_manager_browsertest.cc',
     ],
+    # TODO(jcampan): move these vars to views.gyp.
+    'views_unit_tests_sources': [
+      '../views/view_unittest.cc',
+    ],
+    'views_unit_tests_sources_win_specific': [
+      # TODO(jcampan): make the following tests work on Linux.
+      '../views/controls/label_unittest.cc',
+      '../views/controls/table/table_view_unittest.cc',
+      '../views/focus/focus_manager_unittest.cc',
+      '../views/grid_layout_unittest.cc',
+    ]    
   },
   'includes': [
     '../build/common.gypi',
@@ -3759,12 +3770,6 @@
         'test/v8_unit_test.h',
         '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
 
-        '../views/controls/label_unittest.cc',
-        '../views/controls/table/table_view_unittest.cc',
-        '../views/focus/focus_manager_unittest.cc',
-        '../views/grid_layout_unittest.cc',
-        '../views/view_unittest.cc',
-
         'tools/build/win/precompiled_wtl.h',
         'tools/build/win/precompiled_wtl.cc',
       ],
@@ -3789,6 +3794,17 @@
           'dependencies': [
             '../views/views.gyp:views',
           ],
+	  'sources': [
+            '<@(views_unit_tests_sources)',
+	  ],
+	  # We must use 'sources/' instead of 'source!' as there is a
+	  # target-default 'sources/' including gtk_unittest and 'source/' takes
+	  # precedence over 'sources!'.
+          'sources/': [
+             ['exclude', 'browser/gtk/bookmark_editor_gtk_unittest\\.cc$'],	
+             ['exclude', 'browser/gtk/go_button_gtk_unittest\\.cc$'],	
+             ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
+	  ],
         }],
         ['OS=="mac"', {
            # The test fetches resources which means Mac need the app bundle to
@@ -3841,6 +3857,9 @@
           'sources': [
             'app/chrome_dll.rc',
             'test/data/resource.rc',
+
+            '<@(views_unit_tests_sources)',
+            '<@(views_unit_tests_sources_win_specific)',
 
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in
@@ -3903,11 +3922,6 @@
             'common/net/url_util_unittest.cc',
             'test/browser_with_test_window_test.cc',
             'test/browser_with_test_window_test.h',
-            '../views/controls/label_unittest.cc',
-            '../views/controls/table/table_view_unittest.cc',
-            '../views/focus/focus_manager_unittest.cc',
-            '../views/grid_layout_unittest.cc',
-            '../views/view_unittest.cc',
           ],
         }],
       ],
@@ -4289,7 +4303,6 @@
             # browser_tests_sources is defined in 'variables' at the top of the
             # file.
             '<@(browser_tests_sources)',
-
           ],
           'conditions': [
             ['OS=="linux"', {

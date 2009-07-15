@@ -266,11 +266,8 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     // An unparanted RootView does not have a FocusManager.
     if (focus_manager)
       focus_manager->ViewRemoved(parent, child);
-#if defined(OS_WIN)
+
     ViewStorage::GetSharedInstance()->ViewRemoved(parent, child);
-#else
-    NOTIMPLEMENTED();
-#endif
   }
 }
 
@@ -943,7 +940,10 @@ void RootView::SetActiveCursor(gfx::NativeCursor cursor) {
     previous_cursor_ = NULL;
   }
 #elif defined(OS_LINUX)
-  gdk_window_set_cursor(GetWidget()->GetNativeView()->window, cursor);
+  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  if (!native_view)
+    return;
+  gdk_window_set_cursor(native_view->window, cursor);
   if (cursor)
     gdk_cursor_destroy(cursor);
 #endif

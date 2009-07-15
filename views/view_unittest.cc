@@ -21,7 +21,11 @@
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
+#if defined(OS_WIN)
 #include "views/widget/widget_win.h"
+#elif defined(OS_LINUX)
+#include "views/widget/widget_gtk.h"
+#endif
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
@@ -32,11 +36,23 @@ namespace {
 class ViewTest : public testing::Test {
  public:
   ViewTest() {
+#if defined(OS_WIN)
     OleInitialize(NULL);
+#endif
   }
 
   ~ViewTest() {
+#if defined(OS_WIN)
     OleUninitialize();
+#endif
+  }
+
+  Widget* CreateWidget() {
+#if defined(OS_WIN)
+    return new WidgetWin();
+#elif defined(OS_LINUX)
+    return new WidgetGtk(WidgetGtk::TYPE_WINDOW);
+#endif
   }
 
  private:
@@ -123,8 +139,7 @@ class TestView : public View {
     child_added_ = false;
     child_removed_ = false;
     last_mouse_event_type_ = 0;
-    location_.x = 0;
-    location_.y = 0;
+    location_.SetPoint(0, 0);
     last_clip_.setEmpty();
     accelerator_count_map_.clear();
   }
@@ -151,7 +166,7 @@ class TestView : public View {
 
   // MouseEvent
   int last_mouse_event_type_;
-  CPoint location_;
+  gfx::Point location_;
 
   // Painting
   SkRect last_clip_;
@@ -278,22 +293,19 @@ TEST_F(ViewTest, AddRemoveNotifications) {
 
 bool TestView::OnMousePressed(const MouseEvent& event) {
   last_mouse_event_type_ = event.GetType();
-  location_.x = event.x();
-  location_.y = event.y();
+  location_.SetPoint(event.x(), event.y());
   return true;
 }
 
 bool TestView::OnMouseDragged(const MouseEvent& event) {
   last_mouse_event_type_ = event.GetType();
-  location_.x = event.x();
-  location_.y = event.y();
+  location_.SetPoint(event.x(), event.y());
   return true;
 }
 
 void TestView::OnMouseReleased(const MouseEvent& event, bool canceled) {
   last_mouse_event_type_ = event.GetType();
-  location_.x = event.x();
-  location_.y = event.y();
+  location_.SetPoint(event.x(), event.y());
 }
 
 TEST_F(ViewTest, MouseEvent) {
@@ -303,11 +315,14 @@ TEST_F(ViewTest, MouseEvent) {
   TestView* v2 = new TestView();
   v2->SetBounds (100, 100, 100, 100);
 
-  views::WidgetWin window;
-  window.set_delete_on_destroy(false);
-  window.set_window_style(WS_OVERLAPPEDWINDOW);
-  window.Init(NULL, gfx::Rect(50, 50, 650, 650));
-  RootView* root = window.GetRootView();
+  scoped_ptr<Widget> window(CreateWidget());
+#if defined(OS_WIN)
+  WidgetWin* window_win = static_cast<WidgetWin*>(window.get());
+  window_win->set_delete_on_destroy(false);
+  window_win->set_window_style(WS_OVERLAPPEDWINDOW);
+  window_win->Init(NULL, gfx::Rect(50, 50, 650, 650));
+#endif
+  RootView* root = window->GetRootView();
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
@@ -321,8 +336,8 @@ TEST_F(ViewTest, MouseEvent) {
                      Event::EF_LEFT_BUTTON_DOWN);
   root->OnMousePressed(pressed);
   EXPECT_EQ(v2->last_mouse_event_type_, Event::ET_MOUSE_PRESSED);
-  EXPECT_EQ(v2->location_.x, 10);
-  EXPECT_EQ(v2->location_.y, 20);
+  EXPECT_EQ(v2->location_.x(), 10);
+  EXPECT_EQ(v2->location_.y(), 20);
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_mouse_event_type_, 0);
 
@@ -335,8 +350,8 @@ TEST_F(ViewTest, MouseEvent) {
                      Event::EF_LEFT_BUTTON_DOWN);
   root->OnMouseDragged(dragged);
   EXPECT_EQ(v2->last_mouse_event_type_, Event::ET_MOUSE_DRAGGED);
-  EXPECT_EQ(v2->location_.x, -50);
-  EXPECT_EQ(v2->location_.y, -60);
+  EXPECT_EQ(v2->location_.x(), -50);
+  EXPECT_EQ(v2->location_.y(), -60);
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_mouse_event_type_, 0);
 
@@ -346,12 +361,12 @@ TEST_F(ViewTest, MouseEvent) {
   MouseEvent released(Event::ET_MOUSE_RELEASED, 0, 0, 0);
   root->OnMouseDragged(released);
   EXPECT_EQ(v2->last_mouse_event_type_, Event::ET_MOUSE_RELEASED);
-  EXPECT_EQ(v2->location_.x, -100);
-  EXPECT_EQ(v2->location_.y, -100);
+  EXPECT_EQ(v2->location_.x(), -100);
+  EXPECT_EQ(v2->location_.y(), -100);
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_mouse_event_type_, 0);
 
-  window.CloseNow();
+  window->CloseNow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -440,7 +455,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
 
 TEST_F(ViewTest, RemoveNotification) {
   views::ViewStorage* vs = views::ViewStorage::GetSharedInstance();
-  views::WidgetWin* window = new views::WidgetWin;
+  views::Widget* window = CreateWidget();
   views::RootView* root_view = window->GetRootView();
 
   View* v1 = new View;
@@ -567,8 +582,8 @@ gfx::Point ConvertPointToView(views::View* view, const gfx::Point& p) {
 }
 
 TEST_F(ViewTest, HitTestMasks) {
-  views::WidgetWin window;
-  views::RootView* root_view = window.GetRootView();
+  scoped_ptr<views::Widget> window(CreateWidget());
+  views::RootView* root_view = window->GetRootView();
   root_view->SetBounds(0, 0, 500, 500);
 
   gfx::Rect v1_bounds = gfx::Rect(0, 0, 100, 100);
@@ -646,8 +661,10 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
 
   Clipboard clipboard;
 
-  WidgetWin* window = new WidgetWin;
-  window->Init(NULL, gfx::Rect(0, 0, 100, 100));
+  Widget* window = CreateWidget();
+#if defined(OS_WIN)
+  static_cast<WidgetWin*>(window)->Init(NULL, gfx::Rect(0, 0, 100, 100));
+#endif
   RootView* root_view = window->GetRootView();
 
   Textfield* normal = new Textfield();
@@ -943,6 +960,7 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
 }
 #endif
 
+#if defined(OS_WIN)
 ////////////////////////////////////////////////////////////////////////////////
 // Dialogs' default button
 ////////////////////////////////////////////////////////////////////////////////
@@ -952,10 +970,10 @@ class TestDialogView : public views::View,
                        public views::ButtonListener {
  public:
   TestDialogView()
-      : last_pressed_button_(NULL),
-        button1_(NULL),
+      : button1_(NULL),
         button2_(NULL),
         checkbox_(NULL),
+        last_pressed_button_(NULL),
         canceled_(false),
         oked_(false) {
   }
@@ -1006,7 +1024,6 @@ class TestDialogView : public views::View,
   bool canceled_;
   bool oked_;
 };
-
 
 class DefaultButtonTest : public ViewTest {
  public:
@@ -1127,3 +1144,4 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
   EXPECT_FALSE(dialog_view_->button2_->is_default());
   SimularePressingEnterAndCheckDefaultButton(CANCEL);
 }
+#endif
