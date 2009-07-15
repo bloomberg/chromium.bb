@@ -26,6 +26,8 @@ namespace {
 const int kToolbarImageWidth = 64;
 const int kToolbarImageHeight = 128;
 
+const skia::HSL kExactColor = { -1, -1, -1 };
+
 }  // namespace
 
 // static
@@ -185,18 +187,23 @@ void GtkThemeProvider::LoadGtkValues() {
                       kDefaultTintButtons);
   SetThemeTintFromGtk(kTintFrame, &style->bg[GTK_STATE_SELECTED],
                       kDefaultTintFrame);
-  SetThemeTintFromGtk(kTintFrameInactive,
-                      &style->bg[GTK_STATE_SELECTED],
-                      kDefaultTintFrameInactive);
   SetThemeTintFromGtk(kTintFrameIncognito,
                       &style->bg[GTK_STATE_SELECTED],
                       kDefaultTintFrameIncognito);
-  SetThemeTintFromGtk(kTintFrameIncognitoInactive,
-                      &style->bg[GTK_STATE_SELECTED],
-                      kDefaultTintFrameIncognitoInactive);
   SetThemeTintFromGtk(kTintBackgroundTab,
                       &style->bg[GTK_STATE_SELECTED],
                       kDefaultTintBackgroundTab);
+
+  // The inactive color/tint is special: We *must* use the exact insensitive
+  // color for all inactive windows, otherwise we end up neon pink half the
+  // time.
+  SetThemeColorFromGtk(kColorFrameInactive, &style->bg[GTK_STATE_INSENSITIVE]);
+  SetThemeTintFromGtk(kTintFrameInactive,
+                      &style->bg[GTK_STATE_INSENSITIVE],
+                      kExactColor);
+  SetThemeTintFromGtk(kTintFrameIncognitoInactive,
+                      &style->bg[GTK_STATE_INSENSITIVE],
+                      kExactColor);
 
   GenerateFrameColors();
   GenerateFrameImages();
