@@ -547,4 +547,8 @@ const wchar_t kRendererCrashDump[] = L"renderer-crash-dumping";
 // Enables the new Tabstrip on Windows.
 const wchar_t kEnableTabtastic2[] = L"enable-tabtastic2";
 
+// Number of tabs to pin on startup. This is not use if session restore is
+// enabled.
+const wchar_t kPinnedTabCount[] = L"pinned-tab-count";
+
 }  // namespace switches

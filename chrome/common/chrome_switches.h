@@ -209,6 +209,8 @@ extern const wchar_t kRendererCrashDump[];
 
 extern const wchar_t kEnableTabtastic2[];
 
+extern const wchar_t kPinnedTabCount[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

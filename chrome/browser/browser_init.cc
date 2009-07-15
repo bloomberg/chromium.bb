@@ -436,7 +436,7 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
         browser = BrowserList::GetLastActive();
       OpenURLsInBrowser(browser, process_startup, urls_to_open);
     }
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     // TODO(port): Remove ifdef when the Linux splash page is not needed.
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
     // This can mess up UI tests, so only do it when UI tests aren't running.
@@ -549,12 +549,21 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
     bool process_startup,
     const std::vector<GURL>& urls) {
   DCHECK(!urls.empty());
+  int pin_count = 0;
+  if (!browser) {
+    std::wstring pin_count_string =
+        command_line_.GetSwitchValue(switches::kPinnedTabCount);
+    if (!pin_count_string.empty())
+      pin_count = StringToInt(WideToUTF16Hack(pin_count_string));
+  }
   if (!browser || browser->type() != Browser::TYPE_NORMAL)
     browser = Browser::Create(profile_);
 
   for (size_t i = 0; i < urls.size(); ++i) {
     TabContents* tab = browser->AddTabWithURL(
         urls[i], GURL(), PageTransition::START_PAGE, (i == 0), -1, false, NULL);
+    if (i < static_cast<size_t>(pin_count))
+      browser->tabstrip_model()->SetTabPinned(browser->tab_count() - 1, true);
     if (i == 0 && process_startup)
       AddCrashedInfoBarIfNecessary(tab);
   }
@@ -568,6 +577,11 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
 
 void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     TabContents* tab) {
+#if defined(OS_CHROMEOS)
+  // Because of how chrome os currently shuts down chrome always appears to
+  // crash. For the time being we're working around that here.
+  return;
+#else
   // Assume that if the user is launching incognito they were previously
   // running incognito so that we have nothing to restore from.
   if (!profile_->DidLastSessionExitCleanly() &&
@@ -577,6 +591,7 @@ void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     // it is closed.
     tab->AddInfoBar(new SessionCrashedInfoBarDelegate(tab));
   }
+#endif
 }
 
 std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
