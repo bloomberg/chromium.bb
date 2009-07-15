@@ -371,7 +371,7 @@ int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
 }
 
 int MirroredXCoordinate(GtkWidget* widget, int x) {
-  if (l10n_util::GetTextDirection() != l10n_util::RIGHT_TO_LEFT) {
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
     return widget->allocation.width - x;
   }
   return x;
