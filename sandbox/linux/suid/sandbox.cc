@@ -25,7 +25,16 @@
 #define CLONE_NEWPID 0x20000000
 #endif
 
-static const char kChromeBinary[] = "/opt/google/chrome/chrome";
+#if !defined(LINUX_SANDBOX_CHROME_PATH) && \
+    !defined(CHROME_DEVEL_SANDBOX)
+#error LINUX_SANDBOX_CHROME_PATH must be defined to be the location of the \
+       Chrome binary, or CHROME_DEVEL_SANDBOX must be defined
+#endif
+
+#if defined(LINUX_SANDBOX_CHROME_PATH)
+static const char kChromeBinary[] = LINUX_SANDBOX_CHROME_PATH;
+#endif
+
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
 
 // These are the magic byte values which the sandboxed process uses to request

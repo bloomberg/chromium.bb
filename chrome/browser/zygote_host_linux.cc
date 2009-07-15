@@ -22,13 +22,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 
-// Previously we just looked for the binary next to the Chromium binary. But
-// this breaks people who do a build-all.
-// NOTE packagers: change this.
-
-// static const char kSandboxBinary[] = "/opt/google/chrome/chrome-sandbox";
-static const char kSandboxBinary[] = "/false";
-
 ZygoteHost::ZygoteHost() {
   std::wstring chrome_path;
   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
@@ -51,15 +44,21 @@ ZygoteHost::ZygoteHost() {
 
   const char* sandbox_binary = NULL;
   struct stat st;
+
+  // In Chromium branded builds, developers can set an environment variable to
+  // use the development sandbox. See
+  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
   if (stat("/proc/self/exe", &st) == 0 &&
       st.st_uid == getuid()) {
     sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
   }
 
+#if defined(LINUX_SANDBOX_PATH)
   if (!sandbox_binary)
-    sandbox_binary = kSandboxBinary;
+    sandbox_binary = LINUX_SANDBOX_PATH;
+#endif
 
-  if (stat(sandbox_binary, &st) == 0) {
+  if (sandbox_binary && stat(sandbox_binary, &st) == 0) {
     if (access(sandbox_binary, X_OK) == 0 &&
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {

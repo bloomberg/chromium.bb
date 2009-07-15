@@ -1858,6 +1858,11 @@
                 'app/breakpad_linux.h',
               ],
             }],
+            ['linux_sandbox_path != ""', {
+              'defines': [
+                'LINUX_SANDBOX_PATH="<(linux_sandbox_path)"',
+              ],
+            }],
           ],
         }],
         ['OS=="linux" and toolkit_views==0', {
