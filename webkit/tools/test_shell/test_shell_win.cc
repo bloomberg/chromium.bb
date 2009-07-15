@@ -287,9 +287,8 @@ std::string TestShell::RewriteLocalUrl(const std::string& url) {
     PathService::Get(base::DIR_EXE, &replace_url);
     file_util::UpOneDirectory(&replace_url);
     file_util::UpOneDirectory(&replace_url);
-    file_util::AppendToPath(&replace_url, L"webkit");
-    file_util::AppendToPath(&replace_url, L"data");
-    file_util::AppendToPath(&replace_url, L"layout_tests");
+    file_util::AppendToPath(&replace_url, L"third_party");
+    file_util::AppendToPath(&replace_url, L"WebKit");
     file_util::AppendToPath(&replace_url, L"LayoutTests");
     replace_url.push_back(FilePath::kSeparators[0]);
     new_url = std::string("file:///") +
