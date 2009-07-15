@@ -2984,3 +2984,7 @@ BUG16823 MAC : LayoutTests/editing/style/font-family-with-space.html = FAIL
 BUG16823 MAC : LayoutTests/editing/style/non-inheritable-styles.html = FAIL
 BUG16823 MAC : LayoutTests/editing/style/smoosh-styles-003.html = FAIL
 BUG16823 MAC : LayoutTests/fast/lists/drag-into-marker.html = FAIL
+
+// Failures from WebKit merge 45916:45936
+BUG16850 LINUX WIN : LayoutTests/fast/css/rem-dynamic-scaling.html = FAIL
+BUG16850 LINUX WIN : LayoutTests/fast/css/rem-units-on-root.html = FAIL
