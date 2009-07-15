@@ -25,7 +25,9 @@
 // Previously we just looked for the binary next to the Chromium binary. But
 // this breaks people who do a build-all.
 // NOTE packagers: change this.
-static const char kSandboxBinary[] = "/opt/google/chrome/chrome-sandbox";
+
+// static const char kSandboxBinary[] = "/opt/google/chrome/chrome-sandbox";
+static const char kSandboxBinary[] = "/false";
 
 ZygoteHost::ZygoteHost() {
   std::wstring chrome_path;
@@ -47,11 +49,16 @@ ZygoteHost::ZygoteHost() {
     cmd_line.PrependWrapper(prefix);
   }
 
-  const char* sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
+  const char* sandbox_binary = NULL;
+  struct stat st;
+  if (stat("/proc/self/exe", &st) == 0 &&
+      st.st_uid == getuid()) {
+    sandbox_binary = getenv("CHROME_DEVEL_SANDBOX");
+  }
+
   if (!sandbox_binary)
     sandbox_binary = kSandboxBinary;
 
-  struct stat st;
   if (stat(sandbox_binary, &st) == 0) {
     if (access(sandbox_binary, X_OK) == 0 &&
         (st.st_mode & S_ISUID) &&

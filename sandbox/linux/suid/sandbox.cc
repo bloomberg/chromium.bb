@@ -256,6 +256,12 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  if ((S_ISUID | S_ISGID) & st.st_mode) {
+    fprintf(stderr, "The development sandbox is refusing to run %s because it "
+                    "is SUID or SGID\n", argv[1]);
+    return 1;
+  }
+
   char proc_fd_buffer[128];
   snprintf(proc_fd_buffer, sizeof(proc_fd_buffer), "/proc/self/fd/%d", binary_fd);
   argv[1] = proc_fd_buffer;
