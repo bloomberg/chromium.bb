@@ -1486,3 +1486,4 @@ void DownloadManager::ShowDownloadInBrowser(const DownloadCreateInfo& info,
 void DownloadManager::ClearLastDownloadPath() {
   last_download_path_ = FilePath();
 }
+
