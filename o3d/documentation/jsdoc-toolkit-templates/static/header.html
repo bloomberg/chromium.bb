@@ -10,9 +10,11 @@
 [#]    <link href="/css/semantic_headers.css" rel="stylesheet" type="text/css" />
 [#]    <link href="{+getTopURL()+}stylesheet.css" rel="stylesheet" type="text/css">
 [#]    <link href="{+getTopURL()+}tabs.css" rel="stylesheet" type="text/css">
+[#]    <link href="{+getTopURL()+}prettify.css" rel="stylesheet" type="text/css">
+[#]    <script type="text/javascript" src="{+getTopURL()+}prettify.js"></script>
 [#]  </head>
 [#]
-[#]  <body class="gc-documentation">
+[#]  <body class="gc-documentation" onload="prettyPrint()">
 [#]
 [#]    [define content_section]#gc-pagecontent[end]
 [#]    [define navigation_section]#gc-toc[end]

@@ -39,6 +39,7 @@ Import('O3D_JS_SOURCES')
 env.Replace(
     JSDOC_DIR = '$SCONSTRUCT_DIR/documentation',
     JSDOC_EZT_TEMPLATE_DIR = '$JSDOC_DIR/jsdoc-toolkit-templates/',
+    JSDOC_EXTERNS_DIR = '$JSDOC_DIR/externs/',
     PYTHONPATH = ['$NIXYSA_DIR',
                   '$GFLAGS_DIR/python',
                   '$PLY_DIR']
@@ -66,4 +67,12 @@ env.JSDocs('base.js', LOCAL_JS_SOURCES + LOCAL_IDL_SOURCES +
             '$JSDOC_EZT_TEMPLATE_DIR/namespaces.tmpl',
             '$JSDOC_EZT_TEMPLATE_DIR/publish.js',
             '$JSDOC_EZT_TEMPLATE_DIR/static/header.html',
-            '$JSDOC_EZT_TEMPLATE_DIR/static/footer.html'])
+            '$JSDOC_EZT_TEMPLATE_DIR/static/footer.html',
+            '$JSDOC_EZT_TEMPLATE_DIR/static/stylesheet.css',
+            '$JSDOC_EZT_TEMPLATE_DIR/static/tabs.css',
+            '$JSDOC_EZT_TEMPLATE_DIR/static/tab_l.gif',
+            '$JSDOC_EZT_TEMPLATE_DIR/static/tab_r.gif',
+            '$JSDOC_EZT_TEMPLATE_DIR/static/tab_b.gif',
+            '$JSDOC_EXTERNS_DIR/externs.js',
+            '$JSDOC_EXTERNS_DIR/o3d-extra-externs.js',
+            '$JSDOC_DIR/build_docs.py'])

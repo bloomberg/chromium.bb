@@ -171,7 +171,7 @@ def RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, prefix, mode,
 
 
 def BuildJavaScriptForDocsFromIDLs(idl_files, output_dir):
-  RunNixysa(idl_files, 'jsheader', output_dir, [])
+  RunNixysa(idl_files, 'jsheader', output_dir, ['--properties-equal-undefined'])
 
 
 def BuildJavaScriptForExternsFromIDLs(idl_files, output_dir):
@@ -212,18 +212,20 @@ def BuildCompiledO3DJS(o3djs_files,
     MakePath('JSCompiler_deploy.jar'),
     '--property_renaming', 'OFF',
     '--variable_renaming', 'LOCAL',
+    '--remove_dead_assignments', 'false',
+    '--remove_dead_code', 'false',
+    '--remove_unused_vars', 'false',
+    '--remove_unused_prototype_props', 'false',
+    #'--check_missing_return', 'true',
+    #
+    '--collapse_variable_declarations', 'false',
+    '--disable_function_inline', 'true',
+    #'--disable_convert_to_dotted_properties', 'true',
+    #'--inline_functions', 'false',
     # TODO(gman): Remove the flags below once the compiled js actually works.
     #'--pretty_print',
-    #'--inline_functions', 'False',
-    #'--remove_dead_code', 'False',
-    #'--remove_unused_vars', 'False',
-    #'--remove_unused_prototype_props', 'False',
-    #'--collapse_variable_declarations', 'False',
-    #'--collapse_variable_declarations', 'OFF',
-    #'--disable_function_inline', 'True',
-    #'--print_input_delimiter', 'True',
-    #'--remove_dead_assignments', 'False',
-    #'--strip_whitespace_and_comments_only', 'True',
+    #'--print_input_delimiter', 'true',
+    #'--strip_whitespace_and_comments_only', 'true',
     ##'--logging_level', '',
     '--strict',
     '--externs=%s' % externs_path,
@@ -234,6 +236,8 @@ def BuildCompiledO3DJS(o3djs_files,
 
 def CopyStaticFiles(o3d_docs_ezt_outpath, o3d_docs_html_outpath):
   files = ['stylesheet.css',
+           'prettify.css',
+           'prettify.js',
            'tabs.css',
            'tab_l.gif',
            'tab_r.gif',

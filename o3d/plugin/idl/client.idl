@@ -183,7 +183,6 @@ class Client {
   [const, noreturndocs] ObjectArray GetObjectsByClassName(String class_name);
 
   %[
-    \var RenderMode,
     \li RENDERMODE_CONTINUOUS,  Draw as often as possible up to refresh rate.
     \li RENDERMODE_ON_DEMAND,   Draw once then only when the OS requests it
          (like uncovering part of a window.)
@@ -530,7 +529,7 @@ class Client {
   [userglue_getter, getter] ObjectBaseArray objects_;
 
   %[
-    Clears the error returned by GetLastError.
+    Clears the error returned in lastError.
   %]
   void ClearLastError();
 

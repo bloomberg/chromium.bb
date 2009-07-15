@@ -222,6 +222,14 @@ TD.tiny{
 #doxygen-ref CAPTION {
   font-weight: bold;
 }
+#doxygen-ref .contents .summary {
+  line-height: 1em;
+}
+#doxygen-ref .contents .summary TD {
+}
+#doxygen-ref .contents .summary .type {
+  text-align: right;
+}
 .memdoc {
   padding-left: 30px;
 }

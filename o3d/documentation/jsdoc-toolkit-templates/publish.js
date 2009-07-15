@@ -36,6 +36,7 @@
 
 
 var g_symbolSet;  // so we can look stuff up below.
+var g_symbolArray;
 var g_filePrefix;
 var g_skipRE;
 var g_validJSDOCTypes = {
@@ -62,6 +63,23 @@ var g_templates = [];
  * @param {SymbolSet} symbolSet Set of all symbols in all files.
  */
 function publish(symbolSet) {
+  try {
+    publishInternal(symbolSet);
+  } catch (e) {
+    generateError(e);
+  }
+
+  if (g_numErrors > 0) {
+    print('Num Errors: ' + g_numErrors);
+    System.exit(1);
+  }
+}
+
+/**
+ * Called by us to catch errors.
+ * @param {SymbolSet} symbolSet Set of all symbols in all files.
+ */
+function publishInternal(symbolSet) {
   publish.conf = {  // trailing slash expected for dirs
     ext: '.ezt',
     outDir: JSDOC.opt.d,
@@ -106,6 +124,7 @@ function publish(symbolSet) {
   try {
     var templatesDir = publish.conf.templatesDir;
     var classTemplate = new JSDOC.JsPlate(templatesDir + 'class.tmpl');
+    var exportsTemplate = new JSDOC.JsPlate(templatesDir + 'exports.tmpl');
     var membersTemplate = new JSDOC.JsPlate(templatesDir + 'members.tmpl');
     var classTreeTemplate = new JSDOC.JsPlate(templatesDir + 'classtree.tmpl');
     var fileListTemplate = new JSDOC.JsPlate(templatesDir + 'filelist.tmpl');
@@ -124,6 +143,7 @@ function publish(symbolSet) {
 
   // get an array version of the symbolset, useful for filtering
   var symbols = symbolSet.toArray();
+  g_symbolArray = symbols;
 
   // create the hilited source code files
   if (false) {
@@ -133,6 +153,13 @@ function publish(symbolSet) {
       makeSrcFile(file, publish.conf.srcDir);
     }
   }
+
+  // Comment this lines in to see all symbol information.
+  //for (var ii = 0; ii < symbols.length; ++ii) {
+  //  var symbol = symbols[ii];
+  //  print('------[' + symbol.name + ']-------------------------------------');
+  //  dumpObject(symbol, 5);
+  //}
 
   // get a list of all the classes in the symbolset
   var classes = symbols.filter(isaClass).sort(makeSortby('alias'));
@@ -156,8 +183,10 @@ function publish(symbolSet) {
     filteredClasses.push(symbol);
 
     // Comment these lines in to see what data is available to the templates.
-    //print('----------------------------------------------------------------');
-    //dumpObject(symbol, 5);
+    //if (symbol.name == 'Client' || symbol.name == 'particles') {
+    //  print('------[' + symbol.name + ']-----------------------------------');
+    //  dumpObject(symbol, 5);
+    //}
 
     // <a href='symbol.source'>symbol.filename</a>
     symbol.source = symbol.srcFile;    // This is used as a link to the source
@@ -203,10 +232,8 @@ function publish(symbolSet) {
   IO.saveFile(publish.conf.outDir, 'namespaces' + publish.conf.ext, namespaces);
   IO.saveFile(publish.conf.htmlDir, 'namespaces.html', namespaces);
 
-  if (g_numErrors > 0) {
-    print('Num Errors: ' + g_numErrors);
-    System.exit(1);
-  }
+  var exports = exportsTemplate.process(symbols);
+  IO.saveFile(publish.conf.outDir, 'exports.js', fileList);
 }
 
 /**
@@ -458,6 +485,7 @@ function getPropertyType(property) {
  * @return {string} Sanitized string.
  */
 function sanitizeForEZT(str) {
+  str = str.replace(/<pre>/g, '<pre class="prettyprint">');
   return str.replace(/\[/g, '[[]').replace(/\n\n/g, '<br/><br/>');
 }
 
@@ -769,6 +797,65 @@ function linkifyTypeSpecForReturn(place, str) {
 }
 
 /**
+ * Check if a symbol is an enum.
+ * @param {!Symbol} symbol Symbol to check.
+ * @return {boolean} true if symbol is an enum
+ */
+function isEnum(symbol) {
+  if (symbol.isStatic && !symbol.isNamespace) {
+    if (symbol.comment && symbol.comment.tagTexts) {
+      for (var ii = 0; ii < symbol.comment.tagTexts.length; ++ii) {
+        var tag = symbol.comment.tagTexts[ii];
+        if (startsWith(tag.toString(), 'enum')) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Gets the public properties of a symbol.
+ * @param {!Symbol} symbol The symbol to get properties from.
+ * @return {!Array.<!Symbol>} The public properties of the symbol.
+ */
+function getPublicProperties(symbol) {
+  var publicProperties = [];
+  for (var ii = 0; ii < symbol.properties.length; ++ii) {
+    var property = symbol.properties[ii];
+    if (!property.isPrivate && !property.isNamespace && !isEnum(property)) {
+      publicProperties.push(property);
+    }
+  }
+  return publicProperties;
+}
+
+/**
+ * Gets the public types of a symbol.
+ * @param {!Symbol} symbol The symbol to get properties from.
+ * @return {!Array.<!Symbol>} The public types of the symbol.
+ */
+function getPublicTypes(symbol) {
+  var publicTypes = [];
+  for (var ii = 0; ii < symbol.properties.length; ++ii) {
+    var type = symbol.properties[ii];
+    if (!type.isPrivate && !type.isNamespace && isEnum(type)) {
+      publicTypes.push(type);
+    }
+  }
+  for (var ii = 0; ii < g_symbolArray.length; ++ii) {
+    var type = g_symbolArray[ii];
+    if (type.memberOf == symbol.alias &&
+        !type.isPrivate &&
+        type.is('CONSTRUCTOR')) {
+      publicTypes.push(type);
+    }
+  }
+  return publicTypes;
+}
+
+/**
  * Gets a symbol for a type.
  * This is here mostly for debugging so you can insert a print before or after
  * each call to g_symbolSet.getSymbol.
@@ -791,17 +878,37 @@ function getSourcePath(symbol) {
 }
 
 /**
+ * Gets the name of the parent of a symbol.
+ * @param {!Symbol} symbol The symbol to get the parent of
+ * @return {string} The parent's name.
+ */
+function getParentName(symbol) {
+  var parent = getSymbol(symbol.memberOf);
+  return parent.isNamespace ? symbol.memberOf : parent.name;
+}
+
+/**
  * Gets a qualified name. Used for members. For namespaces will return the fully
  * qualified name. For objects will return just ObjectName.method
  * @param {!Symbol} method The method or property to get a qualified name for.
  * @return {string} The qualified name for the method or property.
  */
 function getQualifiedName(method) {
-  var parent = getSymbol(method.memberOf);
+  return getParentName(method) + '.' + method.name;
+}
+
+/**
+ * Gets a Documentation name. For members of a namespace returns the fully
+ * qualified name. For members of a class returns ClassName.name
+ * @param {!Symbol} parent Symbol that we are making docs for.
+ * @param {!Symbol} child Method or property of parent to get doc name for.
+ * @return {string} Doc name for child.
+ */
+function getDocName(parent, child) {
   if (parent.isNamespace) {
-    return method.memberOf + "." + method.name
+    return child.memberOf + "." + child.name;
   }
-  return parent.name + '.' + method.name;
+  return parent.name + "." + child.name;
 }
 
 /**

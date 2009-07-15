@@ -55,20 +55,49 @@ thisClass = data;
   </ul>
 </if>
 
+<!-- ========== PUBLIC TYPES =========== -->
+{! var ownTypes = getPublicTypes(data).sort(makeSortby("name"));
+   var justEnums = [];
+   for (var ot = 0; ot < ownTypes.length; ++ot) {
+     if (isEnum(ownTypes[ot])) {
+       justEnums.push(ownTypes[ot]);
+     }
+   }
+!}
+<if test="ownTypes.length">
+  <h2>Public Types</h2>
+  <table class="summary">
+  <for each="property" in="ownTypes">
+    <tr>
+    <td>
+      <if test="isEnum(property)">
+        enum <a class="el" href="#{+property.name+}">{+property.name+}</a>
+      </if>
+      <if test="!isEnum(property)">
+        {+linkifySingleType(makeName('[Type Summary]'), property.memberOf+'.'+property.name)+}
+      </if>
+    </td>
+    <td>{+linkifySingleType(makeName('[Type Summary inherit]'), getParentName(property))+}</td>
+    </tr>
+  </for>
+  </table>
+</if>
+
+
 <!-- ========== METHOD SUMMARY =========== -->
 <if test="thisClass.methods.length">
   {! var ownMethods = data.methods.sort(makeSortby("name")); !}
   <if test="ownMethods.length">
     <h2>Public Member Functions</h2>
-    <table>
+    <table class="summary">
     <for each="method" in="ownMethods">
     <if test="!method.isPrivate">
-        <tr><td><li></li></td>
-        <td>
-        <if test="method.isStatic||!method.memberOf">&lt;Global&gt; </if>
+        <tr>
+        <td class="type">
         <if test="method.type.length">{+linkifyTypeSpec(makeName('[Method Summary]', thisClass.alias, method.name), method.type)+}&nbsp;</if>
         </td>
-        <td><a class="el" href="#{+method.name+}">{+getQualifiedName(method)+}</a>{+makeSignature(method.params)+}</td>
+        <td><a class="el" href="#{+method.name+}">{+method.name+}</a>{+makeSignature(method.params)+}</td>
+        <td>{+linkifySingleType(makeName('[Method Summary inherit]'), getParentName(method))+}</td>
         </tr>
     </if>
     </for>
@@ -77,24 +106,21 @@ thisClass = data;
 </if>
 
 <!-- =========== FIELD SUMMARY =========== -->
-<if test="data.properties.length">
-  {! var ownProperties = data.properties.sort(makeSortby("name")); !}
-  <if test="ownProperties.length">
-    <h2>Public Properties</h2>
-    <table>
-    <for each="property" in="ownProperties">
-    <if test="!property.isPrivate && !property.isNamespace">
-      <tr><td><li></li></td>
-      <td>
-      <if test="property.isStatic||!property.memberOf">&lt;Global&gt;&nbsp;</if>
-      {+linkifyTypeSpec(makeName('[Property Summary]', thisClass.alias, property.name), getPropertyType(property))+}
-      </td>
-      <td><a class="el" href="#{+property.name+}">{+getQualifiedName(property)+}</a></td>
-      </tr>
-    </if>
-    </for>
-    </table>
-  </if>
+{! var ownProperties = getPublicProperties(data).sort(makeSortby("name")); !}
+<if test="ownProperties.length">
+  <h2>Public Properties</h2>
+  <table class="summary">
+  <for each="property" in="ownProperties">
+    <tr>
+    <td class="type">
+    <if test="property.isStatic||!property.memberOf">&lt;Global&gt;&nbsp;</if>
+    {+linkifyTypeSpec(makeName('[Property Summary]', thisClass.alias, property.name), getPropertyType(property))+}
+    </td>
+    <td><a class="el" href="#{+property.name+}">{+property.name+}</a></td>
+    <td>{+linkifySingleType(makeName('[Prop Summary inherit]'), getParentName(property))+}</td>
+    </tr>
+  </for>
+  </table>
 </if>
 
 <!-- =========== END FIELD SUMMARY =========== -->
@@ -162,6 +188,45 @@ thisClass = data;
   </div>
 </if>
 
+
+<!-- =========== TYPES DETAIL ============== -->
+
+<if test="defined(justEnums) && justEnums.length">
+  <hr/>
+  <h2>Public Types Documentation</h2>
+  <for each="property" in="justEnums">
+    <a class="anchor" name="{+property.name+}"></a>
+    <div class="memitem">
+    <div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">{+isEnum(property)?'enum ':''+}{+property.memberOf+"."+property.name+}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="memdoc">
+    <p/>
+    {+sanitizeForEZT(property.desc)+}
+    </div>
+
+    <if test="property.see.length">
+      <dl compact><td><b>See Also:</b></dt>
+      <dd><ul>
+      <for each="seeAlso" in="property.see">
+        <li>
+        {+linkifyTypeSpec(makeName('[Property See Also]', thisClass.alias), seeAlso)+}
+        </li>
+      </for>
+      </ul></dd>
+      </dl>
+    </if>
+
+    </div>
+  </for>
+</if>
+
+
 <!-- =========== METHOD DETAIL ============== -->
 <if test="defined(ownMethods) && ownMethods.length">
   <hr/>
@@ -172,11 +237,11 @@ thisClass = data;
     <div class="memitem">
     <div class="memproto">
       <table class="memname">
-        {! var tempInherited = member.memberOf == thisClass.alias ? "" : "[[]inherited]"; !}
+        {! var tempInherited = member.memberOf == thisClass.alias ? "" : ("[[]inherited from <a class=\"el\" href=\"" + getLinkToClassByAlias(member.memberOf) + "\">" + member.memberOf + "</a>]"); !}
         <if test="member.params && member.params.length">
         {!
          var tempCSS = "memname";
-         var tempName = linkifyTypeSpecForReturn(makeName('[Method Detail]', thisClass.alias, member.name), member.type)+" "+getQualifiedName(member);
+         var tempName = linkifyTypeSpecForReturn(makeName('[Method Detail]', thisClass.alias, member.name), member.type)+" "+getDocName(data, member);
          var tempParen = "(";
          var tempEnd = member.params.length > 1 ? "" : ")"
         !}
@@ -187,7 +252,7 @@ thisClass = data;
           <td class="paramtype">{+linkifyTypeSpec(makeName('[Param Detail]', thisClass.alias, member.name, param.name), param.type)+}</td>
           <td class="paramname"><em>{+param.name+}</em></td>
           <td><if test="$param_last">)</if></td>
-          <td><if test="$param_last">{+tempInherited+}</if></td>
+          <td><code><if test="$param_last">{+tempInherited+}</if></code></td>
         </tr>
         {!
           tempCSS = "paramkey";
@@ -198,7 +263,7 @@ thisClass = data;
         </if>
         <if test="!member.params || member.params.length == 0">
         <tr>
-          <td class="memname">{+member.memberOf+"."+member.name+}</td>
+          <td class="memname">{+getDocName(data, member)+}</td>
           <td>(</td>
           <td class="paramtype"></td>
           <td class="paramname"></td>
@@ -254,13 +319,14 @@ thisClass = data;
   <hr/>
   <h2>Member Property Documentation</h2>
   <for each="property" in="ownProperties">
-  <if test="!property.isPrivate && !property.isNamespace">
     <a class="anchor" name="{+property.name+}"></a>
     <div class="memitem">
     <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">{+linkifyTypeSpec(makeName('[Property Detail]', thisClass.alias, property.name), getPropertyType(property))+} {+getQualifiedName(property)+}</td>
+          <td class="memname">{+linkifyTypeSpec(makeName('[Property Detail]', thisClass.alias, property.name), getPropertyType(property))+} {+getDocName(data, property)+}
+        {+ (property.memberOf == thisClass.alias) ? "" : ("[[]inherited from <a class=\"el\" href=\"" + getLinkToClassByAlias(property.memberOf) + "\">" + property.memberOf + "</a>]") +}
+        </td>
         </tr>
       </table>
     </div>
@@ -283,7 +349,6 @@ thisClass = data;
     </if>
 
     </div>
-  </if>
   </for>
 </if>
 
