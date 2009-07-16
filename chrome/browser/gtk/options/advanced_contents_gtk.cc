@@ -6,8 +6,10 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/path_service.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
@@ -61,17 +64,177 @@ class DownloadSection : public OptionsPageBase {
   }
 
  private:
+  // Overridden from OptionsPageBase.
+  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+
+  // Callbacks for the widgets.
+  static void OnDownloadLocationChanged(GtkFileChooser* widget,
+                                        DownloadSection* section);
+  static void OnDownloadAskForSaveLocationChanged(GtkWidget* widget,
+                                                  DownloadSection* section);
+  static void OnResetFileHandlersClicked(GtkButton *button,
+                                         DownloadSection* section);
+
+  // The widgets for the download options.
+  GtkWidget* download_location_button_;
+  GtkWidget* download_ask_for_save_location_checkbox_;
+  GtkWidget* reset_file_handlers_label_;
+  GtkWidget* reset_file_handlers_button_;
+
   // The widget containing the options for this section.
   GtkWidget* page_;
+
+  // Pref members.
+  StringPrefMember default_download_location_;
+  BooleanPrefMember ask_for_save_location_;
+  StringPrefMember auto_open_files_;
+
+  // Flag to ignore gtk callbacks while we are loading prefs, to avoid
+  // then turning around and saving them again.
+  bool initializing_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadSection);
 };
 
 DownloadSection::DownloadSection(Profile* profile)
-    : OptionsPageBase(profile) {
+    : OptionsPageBase(profile), initializing_(true) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(page_), gtk_label_new("TODO download options"),
+
+  // Download location options.
+  download_location_button_ = gtk_file_chooser_button_new(
+      // TODO(mattm): There doesn't seem to be a reasonable localized string for
+      // the chooser title?  (Though no other file choosers have a title either,
+      // bug 16890.)
+      "",
+      GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+  g_signal_connect(download_location_button_, "selection-changed",
+                   G_CALLBACK(OnDownloadLocationChanged), this);
+  // Add the default download path to the list of shortcuts in the selector.
+  FilePath default_download_path;
+  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                        &default_download_path)) {
+    NOTREACHED();
+  } else {
+    if (!gtk_file_chooser_add_shortcut_folder(
+        GTK_FILE_CHOOSER(download_location_button_),
+        default_download_path.value().c_str(),
+        NULL)) {
+      NOTREACHED();
+    }
+  }
+
+  GtkWidget* download_location_control = gtk_util::CreateLabeledControlsGroup(
+      NULL,
+      l10n_util::GetStringUTF8(
+          IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE).c_str(),
+      download_location_button_,
+      NULL);
+  gtk_box_pack_start(GTK_BOX(page_), download_location_control,
                      FALSE, FALSE, 0);
+
+  download_ask_for_save_location_checkbox_ = CreateCheckButtonWithWrappedLabel(
+      IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION);
+  gtk_box_pack_start(GTK_BOX(page_), download_ask_for_save_location_checkbox_,
+                     FALSE, FALSE, 0);
+  g_signal_connect(download_ask_for_save_location_checkbox_, "clicked",
+                   G_CALLBACK(OnDownloadAskForSaveLocationChanged), this);
+
+  // Option for resetting file handlers.
+  reset_file_handlers_label_ = CreateWrappedLabel(
+      IDS_OPTIONS_AUTOOPENFILETYPES_INFO);
+  gtk_misc_set_alignment(GTK_MISC(reset_file_handlers_label_), 0, 0);
+  gtk_box_pack_start(GTK_BOX(page_), reset_file_handlers_label_,
+                     FALSE, FALSE, 0);
+
+  reset_file_handlers_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(
+          IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT).c_str());
+  g_signal_connect(reset_file_handlers_button_, "clicked",
+                   G_CALLBACK(OnResetFileHandlersClicked), this);
+  // Stick it in an hbox so it doesn't expand to the whole width.
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_hbox),
+                     reset_file_handlers_button_,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page_),
+                     OptionsLayoutBuilderGtk::IndentWidget(button_hbox),
+                     FALSE, FALSE, 0);
+
+  // Init prefs watchers.
+  default_download_location_.Init(prefs::kDownloadDefaultDirectory,
+                                  profile->GetPrefs(), this);
+  ask_for_save_location_.Init(prefs::kPromptForDownload,
+                              profile->GetPrefs(), this);
+  auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, profile->GetPrefs(),
+                        this);
+
+  NotifyPrefChanged(NULL);
+}
+
+void DownloadSection::NotifyPrefChanged(const std::wstring* pref_name) {
+  initializing_ = true;
+  if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
+    gtk_file_chooser_set_current_folder(
+        GTK_FILE_CHOOSER(download_location_button_),
+        FilePath::FromWStringHack(
+            default_download_location_.GetValue()).value().c_str());
+  }
+
+  if (!pref_name || *pref_name == prefs::kPromptForDownload) {
+    gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(download_ask_for_save_location_checkbox_),
+        ask_for_save_location_.GetValue());
+  }
+
+  if (!pref_name || *pref_name == prefs::kDownloadExtensionsToOpen) {
+    bool enabled =
+        profile()->GetDownloadManager()->HasAutoOpenFileTypesRegistered();
+    gtk_widget_set_sensitive(reset_file_handlers_label_, enabled);
+    gtk_widget_set_sensitive(reset_file_handlers_button_, enabled);
+  }
+  initializing_ = false;
+}
+
+// static
+void DownloadSection::OnDownloadLocationChanged(GtkFileChooser* widget,
+                                                DownloadSection* section) {
+  if (section->initializing_)
+    return;
+
+  gchar* folder = gtk_file_chooser_get_filename(widget);
+  FilePath path(folder);
+  g_free(folder);
+  // Gtk seems to call this signal multiple times, so we only set the pref and
+  // metric if something actually changed.
+  if (path.ToWStringHack() != section->default_download_location_.GetValue()) {
+    section->default_download_location_.SetValue(path.ToWStringHack());
+    section->UserMetricsRecordAction(L"Options_SetDownloadDirectory",
+                                     section->profile()->GetPrefs());
+  }
+}
+
+// static
+void DownloadSection::OnDownloadAskForSaveLocationChanged(
+    GtkWidget* widget, DownloadSection* section) {
+  if (section->initializing_)
+    return;
+  bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  if (enabled) {
+    section->UserMetricsRecordAction(L"Options_AskForSaveLocation_Enable",
+                                     section->profile()->GetPrefs());
+  } else {
+    section->UserMetricsRecordAction(L"Options_AskForSaveLocation_Disable",
+                                     section->profile()->GetPrefs());
+  }
+  section->ask_for_save_location_.SetValue(enabled);
+}
+
+// static
+void DownloadSection::OnResetFileHandlersClicked(GtkButton *button,
+                                                 DownloadSection* section) {
+  section->profile()->GetDownloadManager()->ResetAutoOpenFiles();
+  section->UserMetricsRecordAction(L"Options_ResetAutoOpenFiles",
+                                   section->profile()->GetPrefs());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
