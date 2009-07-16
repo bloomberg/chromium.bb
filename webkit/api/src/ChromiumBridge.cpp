@@ -33,7 +33,6 @@
 
 #include <googleurl/src/url_util.h>
 
-#include "FileSystem.h"
 #include "WebClipboard.h"
 #include "WebData.h"
 #include "WebImage.h"
@@ -420,37 +419,5 @@ bool ChromiumBridge::isLinkVisited(WebCore::LinkHash visitedLinkHash)
 {
     return webKitClient()->isLinkVisited(visitedLinkHash);
 }
-
-// HTML5 DB -------------------------------------------------------------------
-
-#if ENABLE(DATABASE)
-PlatformFileHandle ChromiumBridge::databaseOpenFile(const String& fileName, int desiredFlags)
-{
-    // FIXME: un-stub when the code on the browser process side is submitted
-    //return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags);
-    return invalidPlatformFileHandle;
-}
-
-bool ChromiumBridge::databaseDeleteFile(const String& fileName)
-{
-    // FIXME: un-stub when the code on the browser process side is submitted
-    //return webKitClient()->databaseDeleteFile(WebString(fileName));
-    return false;
-}
-
-long ChromiumBridge::databaseGetFileAttributes(const String& fileName)
-{
-    // FIXME: un-stub when the code on the browser process side is submitted
-    //return webKitClient()->databaseGetFileAttributes(WebString(fileName));
-    return 0L;
-}
-
-long long ChromiumBridge::databaseGetFileSize(const String& fileName)
-{
-    // FIXME: un-stub when the code on the browser process side is submitted
-    //return webKitClient()->databaseGetFileSize(WebString(fileName));
-    return 0LL;
-}
-#endif
 
 } // namespace WebCore
