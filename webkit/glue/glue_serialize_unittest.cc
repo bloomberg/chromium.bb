@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/pickle.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/api/public/WebHTTPBody.h"
@@ -158,6 +159,44 @@ TEST_F(GlueSerializeTest, HistoryItemSerializeTest) {
   ASSERT_FALSE(item.isNull());
   ASSERT_FALSE(deserialized_item.isNull());
   HistoryItemExpectEqual(item, deserialized_item);
+}
+
+// Checks that broken messages don't take out our process.
+TEST_F(GlueSerializeTest, BadMessagesTest) {
+  {
+    Pickle p;
+    // Version 1
+    p.WriteInt(1);
+    // Empty strings.
+    for (int i = 0; i < 6; ++i)
+      p.WriteInt(-1);
+    // Bad real number.
+    p.WriteInt(-1);
+    std::string s(static_cast<const char*>(p.data()), p.size());
+    HistoryItemFromString(s);
+  }
+  {
+    double d = 0;
+    Pickle p;
+    // Version 1
+    p.WriteInt(1);
+    // Empty strings.
+    for (int i = 0; i < 6; ++i)
+      p.WriteInt(-1);
+    // More misc fields.
+    p.WriteData(reinterpret_cast<const char*>(&d), sizeof(d));
+    p.WriteInt(1);
+    p.WriteInt(1);
+    p.WriteInt(0);
+    p.WriteInt(0);
+    p.WriteInt(-1);
+    p.WriteInt(0);
+    // WebForm
+    p.WriteInt(1);
+    p.WriteInt(WebHTTPBody::Element::TypeData);
+    std::string s(static_cast<const char*>(p.data()), p.size());
+    HistoryItemFromString(s);
+  }
 }
 
 

@@ -62,7 +62,7 @@ inline void WriteData(const void* data, int length, SerializeObject* obj) {
 
 inline void ReadData(const SerializeObject* obj, const void** data,
                      int* length) {
-  const char* tmp;
+  const char* tmp = NULL;
   obj->pickle.ReadData(&obj->iter, &tmp, length);
   *data = tmp;
 }
@@ -102,9 +102,12 @@ inline void WriteReal(double data, SerializeObject* obj) {
 
 inline double ReadReal(const SerializeObject* obj) {
   const void* tmp;
-  int length;
+  int length = 0;
   ReadData(obj, &tmp, &length);
-  return *static_cast<const double*>(tmp);
+  if (length > 0 && length >= sizeof(0.0))
+    return *static_cast<const double*>(tmp);
+  else
+    return 0.0;
 }
 
 inline void WriteBoolean(bool data, SerializeObject* obj) {
@@ -112,7 +115,7 @@ inline void WriteBoolean(bool data, SerializeObject* obj) {
 }
 
 inline bool ReadBoolean(const SerializeObject* obj) {
-  bool tmp;
+  bool tmp = false;
   obj->pickle.ReadBool(&obj->iter, &tmp);
   return tmp;
 }
@@ -232,9 +235,10 @@ static WebHTTPBody ReadFormData(const SerializeObject* obj) {
     int type = ReadInteger(obj);
     if (type == WebHTTPBody::Element::TypeData) {
       const void* data;
-      int length;
+      int length = -1;
       ReadData(obj, &data, &length);
-      http_body.appendData(WebData(static_cast<const char*>(data), length));
+      if (length >= 0)
+        http_body.appendData(WebData(static_cast<const char*>(data), length));
     } else {
       http_body.appendFile(ReadString(obj));
     }
