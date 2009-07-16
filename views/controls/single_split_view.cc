@@ -35,13 +35,20 @@ SingleSplitView::SingleSplitView(View* leading,
 void SingleSplitView::DidChangeBounds(const gfx::Rect& previous,
                                       const gfx::Rect& current) {
   if (resize_leading_on_bounds_change_) {
-    if (is_horizontal_)
-      divider_offset_ += current.width() - previous.width();
-    else
-      divider_offset_ += current.height() - previous.height();
+    // We do not update divider_offset_ on minimize (to zero) and on restore
+    // (to largest value). As a result we get back to the original value upon
+    // window restore.
+    bool is_minimize_or_restore =
+        previous.height() == 0 || current.height() == 0;
+    if (!is_minimize_or_restore) {
+      if (is_horizontal_)
+        divider_offset_ += current.width() - previous.width();
+      else
+        divider_offset_ += current.height() - previous.height();
 
-    if (divider_offset_ < 0)
-      divider_offset_ = kDividerSize;
+      if (divider_offset_ < 0)
+        divider_offset_ = kDividerSize;
+    }
   }
   View::DidChangeBounds(previous, current);
 }
@@ -56,7 +63,10 @@ void SingleSplitView::Layout() {
   if (!leading->IsVisible() && !trailing->IsVisible())
     return;
 
-  if (!trailing->IsVisible()) {
+  if (width() == 0 || height() == 0) {
+    // We are most likely minimized - do not touch divider offset.
+    return;
+  } else if (!trailing->IsVisible()) {
     leading->SetBounds(0, 0, width(), height());
   } else if (!leading->IsVisible()) {
     trailing->SetBounds(0, 0, width(), height());
