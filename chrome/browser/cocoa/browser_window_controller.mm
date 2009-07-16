@@ -206,6 +206,10 @@ willPositionSheet:(NSWindow*)sheet
   // Under certain testing configurations we may not actually own the browser.
   if (ownsBrowser_ == NO)
     browser_.release();
+  // Since |window_| outlives our obj-c shutdown sequence, clear out the
+  // delegate so nothing tries to call us back in the meantime as part of
+  // window destruction.
+  [window_ setDelegate:nil];
   [super dealloc];
 }
 
