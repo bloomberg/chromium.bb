@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "app/gfx/canvas_paint.h"
+#include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -166,12 +167,14 @@ void DraggedTabGtk::Layout() {
     gfx::Size prefsize = GetPreferredSize();
     renderer_->SetBounds(gfx::Rect(0, 0, prefsize.width(), prefsize.height()));
   } else {
-    // TODO(jhawkins): RTL layout.
+    int left = 0;
+    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      left = GetPreferredSize().width() - attached_tab_size_.width();
 
     // The renderer_'s width should be attached_tab_size_.width() in both LTR
     // and RTL locales. Wrong width will cause the wrong positioning of the tab
     // view in dragging. Please refer to http://crbug.com/6223 for details.
-    renderer_->SetBounds(gfx::Rect(0, 0, attached_tab_size_.width(),
+    renderer_->SetBounds(gfx::Rect(left, 0, attached_tab_size_.width(),
                          attached_tab_size_.height()));
   }
 }
