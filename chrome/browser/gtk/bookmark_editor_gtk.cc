@@ -152,7 +152,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
 
   if (show_tree_) {
     GtkTreeIter selected_iter;
-    int64 selected_id = node_ ? node_->GetParent()->id() : 0;
+    int64 selected_id = parent_ ? parent_->id() : 0;
     tree_store_ = bookmark_utils::MakeFolderTreeStore();
     bookmark_utils::AddToTreeStore(bb_model_, selected_id,
                                    tree_store_, &selected_iter);
