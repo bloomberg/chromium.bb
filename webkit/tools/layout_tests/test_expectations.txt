@@ -381,7 +381,7 @@ BUG1124548 : LayoutTests/editing/execCommand/copy-without-selection.html = FAIL
 // Works fine when run stand-alone.  Not needed for Beta.
 // Also skipped by Apple on Windows, due to intermittent failure
 // (rdar://5313536)
-BUG10270 WIN LINUX : LayoutTests/fast/dom/frame-loading-via-document-write.html = TIMEOUT FAIL
+BUG10270 WIN : LayoutTests/fast/dom/frame-loading-via-document-write.html = TIMEOUT FAIL
 
 // WebKit's CSS counters are somewhat broken, thus expected results are failures
 // Our high-precision timers make these tests flakey.
@@ -534,7 +534,7 @@ BUG742182 BUG845388 LINUX WIN : LayoutTests/editing/selection/designmode-no-care
 BUG742182 BUG845388 BUG960092 LINUX WIN : LayoutTests/editing/selection/move-begin-end.html = FAIL
 
 // The end result looks right, but the event messages differ.
-BUG845400 : LayoutTests/editing/pasteboard/paste-xml.xhtml = FAIL
+BUG845400 LINUX WIN : LayoutTests/editing/pasteboard/paste-xml.xhtml = FAIL
 
 // Directionality of mixed-direction text in selected choice should
 // match that in the <select> option lists.
@@ -636,12 +636,9 @@ BUG13907 WIN : LayoutTests/media/video-currentTime-set2.html = PASS FAIL CRASH T
 // This test is flaky.
 BUG13907 WIN DEBUG : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
 // This test crashes in debug build.
-BUG13907 WIN : LayoutTests/media/video-document-types.html = FAIL CRASH
 BUG13907 WIN : LayoutTests/media/video-loop.html = FAIL CRASH
 // This test is flaky.
 BUG13907 WIN : LayoutTests/media/video-play-pause-events.html = FAIL CRASH
-// This test is flaky too.
-BUG13907 WIN : LayoutTests/media/video-play-pause-exception.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-played-collapse.html = FAIL
 // This test crashes in debug build.
 BUG13907 WIN : LayoutTests/media/video-played.html = FAIL CRASH
@@ -1234,8 +1231,6 @@ BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = FAIL
 BUG15907 LINUX : LayoutTests/plugins/mouse-events.html = FAIL
 
 // Depends on plugin support.
-BUG10351 MAC : LayoutTests/fast/dom/Window/Plug-ins.html = FAIL
-BUG10351 MAC : LayoutTests/fast/js/navigator-mimeTypes-length.html = FAIL
 BUG10351 MAC : LayoutTests/accessibility/plugin.html = FAIL CRASH
 BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 BUG10351 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL PASS
@@ -1258,7 +1253,6 @@ BUG10351 MAC : LayoutTests/plugins/netscape-dom-access.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/netscape-get-property-return-value.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/netscape-identifier-conversion.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/netscape-invoke-default.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/plugin-javascript-access.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/plugin-remove-subframe.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/return-error-from-new-stream-doesnt-invoke-destroy-stream.html = TIMEOUT
 BUG10351 MAC : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = FAIL
@@ -2762,7 +2756,6 @@ BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-null-char.html 
 // WebKit 45473:45487
 BUG15873 WIN LINUX : LayoutTests/fast/box-shadow/transform-fringing.html = FAIL
 BUG15873 WIN LINUX : LayoutTests/fast/transforms/shadows.html = FAIL
-BUG15873 WIN : LayoutTests/fast/canvas/translate-text.html = FAIL
 BUG15873 WIN : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 BUG15873 WIN : LayoutTests/fast/text/stroking-decorations.html = FAIL
 
@@ -2779,22 +2772,14 @@ BUG16162 : LayoutTests/fast/loader/subframe-navigate-during-main-frame-load.html
 
 // WebKit merge 45635:45640
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/anchor-url-dom-write-location-inline-event-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/base-href-control-char.html = FAIL
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/base-href-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/base-href-scheme-relative.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/base-href.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/embed-tag-control-char.html = FAIL
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/embed-tag-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/embed-tag.html = FAIL
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/link-onclick-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/object-embed-tag-control-char.html = FAIL
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/object-embed-tag-null-char.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/object-embed-tag.html = FAIL
-BUG16237 : LayoutTests/http/tests/security/xssAuditor/object-tag.html = FAIL
 BUG16237 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-null-char.html = FAIL
 
 // WebKit merge 45652:45659
-BUG16289 MAC WIN : LayoutTests/fast/forms/slider-mouse-events.html = FAIL
+BUG16289 WIN : LayoutTests/fast/forms/slider-mouse-events.html = FAIL
 
 // WebKit merge 45659:45664
 BUG16355 WIN : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = TIMEOUT
@@ -2808,21 +2793,14 @@ BUG16410 : LayoutTests/fast/workers/worker-messageport.html = FAIL CRASH
 
 // WebKit merge 45685:45738
 BUG16410 : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
-BUG16410 : LayoutTests/fast/events/message-channel-gc-2.html = CRASH
-BUG16410 : LayoutTests/fast/events/message-channel-gc-4.html = CRASH
-BUG16410 : LayoutTests/fast/events/message-channel-listener-circular-ownership.html = CRASH
-BUG16410 : LayoutTests/fast/events/message-port-constructor-for-deleted-document.html = CRASH
-BUG16410 : LayoutTests/fast/events/message-port-deleted-frame.html = CRASH
-BUG16639 : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
 BUG16652 : LayoutTests/fast/replaced/embed-display-none.html = PASS CRASH
 
 // WebKit tests regressions 20529:20532
-BUG16675 : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
-BUG16675 : LayoutTests/fast/loader/loadInProgress.html = FAIL
-BUG16675 : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL
-BUG16675 : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH
-BUG16675 : LayoutTests/fast/images/favicon-as-image.html = CRASH
-BUG16675 : LayoutTests/fast/images/pdf-as-background.html = CRASH
+BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
+BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = FAIL
+BUG16675 MAC : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH
+BUG16675 MAC : LayoutTests/fast/images/favicon-as-image.html = CRASH
+BUG16675 MAC : LayoutTests/fast/images/pdf-as-background.html = CRASH
 
 // New test, added in http://trac.webkit.org/changeset/45783
 // audio/3gpp mime type, does not play in Chromium yet.
@@ -2834,22 +2812,7 @@ BUG16690 SKIP MAC : LayoutTests/fast/text/international/khmer-selection.html = F
 
 // WebKit merge 42738:45840
 // New tests, need baseline.
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/base-href-safe3.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/inline-event-HTML-entities.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities-control-char.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities-named.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities-null-char.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-control-char.html = FAIL
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-null-char.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/link-onclick-entities.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-entities.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-src-redirect-safe.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-double-quote.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-entities.html = FAIL
-BUG16678 : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-quote.html = FAIL
-
 BUG16240 MAC WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
 
 // Failing due to r20652.
@@ -2857,8 +2820,6 @@ BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL
 
 // Failing approximately starting from 20629
 BUG16754 : LayoutTests/fast/loader/empty-embed-src-attribute.html = CRASH
-BUG16754 : LayoutTests/fast/dom/xmlhttprequest-constructor-in-detached-document.html = CRASH
-BUG16754 : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT
 
 // HTML5 DataGrid bindings have not been implemented for V8 yet.
 BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = TIMEOUT
@@ -2995,3 +2956,6 @@ BUG16878 LINUX WIN : LayoutTests/fast/runin/001.html = FAIL
 BUG16878 LINUX WIN : LayoutTests/fast/runin/generated.html = FAIL
 BUG16878 LINUX WIN : LayoutTests/fast/text/shadow-translucent-fill.html = FAIL
 BUG16878 WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
+
+// Failure from WebKit merge 45958:45975
+BUG16924 WIN : LayoutTests/media/video-source-type-params.html = FAIL CRASH
