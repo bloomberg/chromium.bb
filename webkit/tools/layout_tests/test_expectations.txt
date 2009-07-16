@@ -2807,6 +2807,7 @@ BUG16639 : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
 BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = FAIL
+BUG16675 MAC : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL
 BUG16675 MAC : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH
 BUG16675 MAC : LayoutTests/fast/images/favicon-as-image.html = CRASH
 BUG16675 MAC : LayoutTests/fast/images/pdf-as-background.html = CRASH
