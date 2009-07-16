@@ -8,6 +8,15 @@
 
 @implementation GradientButtonCell
 
+// For nib instantiations
+- (id)initWithCoder:(NSCoder*)decoder {
+  if ((self = [super initWithCoder:decoder])) {
+    shouldTheme_ = YES;
+  }
+  return self;
+}
+
+// For programmatic instantiations
 - (id)initTextCell:(NSString*)string {
   if ((self = [super initTextCell:string])) {
     shouldTheme_ = YES;
