@@ -41,21 +41,21 @@ const char kTabNotFoundError[] = "No tab with id: *.";
 const char kNoSelectedTabError[] = "No selected tab";
 const char kInvalidUrlError[] = "Invalid url: \"*\".";
 
-const char kGetWindowFunction[] = "GetWindow";
-const char kGetCurrentWindowFunction[] = "GetCurrentWindow";
-const char kGetLastFocusedWindowFunction[] = "GetLastFocusedWindow";
-const char kGetAllWindowsFunction[] = "GetAllWindows";
-const char kCreateWindowFunction[] = "CreateWindow";
-const char kUpdateWindowFunction[] = "UpdateWindow";
-const char kRemoveWindowFunction[] = "RemoveWindow";
+const char kGetWindowFunction[] = "windows.get";
+const char kGetCurrentWindowFunction[] = "windows.getCurrent";
+const char kGetLastFocusedWindowFunction[] = "windows.getLastFocused";
+const char kGetAllWindowsFunction[] = "windows.getAll";
+const char kCreateWindowFunction[] = "windows.create";
+const char kUpdateWindowFunction[] = "windows.update";
+const char kRemoveWindowFunction[] = "windows.remove";
 
-const char kGetTabFunction[] = "GetTab";
-const char kGetSelectedTabFunction[] = "GetSelectedTab";
-const char kGetAllTabsInWindowFunction[] = "GetAllTabsInWindow";
-const char kCreateTabFunction[] = "CreateTab";
-const char kUpdateTabFunction[] = "UpdateTab";
-const char kMoveTabFunction[] = "MoveTab";
-const char kRemoveTabFunction[] = "RemoveTab";
-const char kDetectTabLanguageFunction[] = "DetectTabLanguage";
+const char kGetTabFunction[] = "tabs.get";
+const char kGetSelectedTabFunction[] = "tabs.getSelected";
+const char kGetAllTabsInWindowFunction[] = "tabs.getAllInWindow";
+const char kCreateTabFunction[] = "tabs.create";
+const char kUpdateTabFunction[] = "tabs.update";
+const char kMoveTabFunction[] = "tabs.move";
+const char kRemoveTabFunction[] = "tabs.remove";
+const char kDetectTabLanguageFunction[] = "tabs.detectLanguage";
 
 }  // namespace extension_tabs_module_constants

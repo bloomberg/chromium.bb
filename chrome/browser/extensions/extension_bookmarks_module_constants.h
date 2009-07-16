@@ -44,6 +44,7 @@ extern const char kGetBookmarkChildrenFunction[];
 extern const char kGetBookmarkTreeFunction[];
 extern const char kSearchBookmarksFunction[];
 extern const char kRemoveBookmarkFunction[];
+extern const char kRemoveBookmarkTreeFunction[];
 extern const char kCreateBookmarkFunction[];
 extern const char kMoveBookmarkFunction[];
 extern const char kSetBookmarkTitleFunction[];

@@ -64,16 +64,14 @@ class ExtensionImpl : public ExtensionBase {
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) {
-    std::set<std::string>* names = GetFunctionNameSet();
-
     if (name->Equals(v8::String::New("GetViews"))) {
       return v8::FunctionTemplate::New(GetViews);
     } else if (name->Equals(v8::String::New("GetNextRequestId"))) {
       return v8::FunctionTemplate::New(GetNextRequestId);
     } else if (name->Equals(v8::String::New("GetCurrentPageActions"))) {
       return v8::FunctionTemplate::New(GetCurrentPageActions);
-    } else if (names->find(*v8::String::AsciiValue(name)) != names->end()) {
-      return v8::FunctionTemplate::New(StartRequest, name);
+    } else if (name->Equals(v8::String::New("StartRequest"))) {
+      return v8::FunctionTemplate::New(StartRequest);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -146,14 +144,19 @@ class ExtensionImpl : public ExtensionBase {
     if (!renderview)
       return v8::Undefined();
 
-    if (args.Length() != 3 || !args[0]->IsString() || !args[1]->IsInt32() ||
-        !args[2]->IsBoolean())
+    if (args.Length() != 4 || !args[0]->IsString() || !args[1]->IsString() || 
+        !args[2]->IsInt32() || !args[3]->IsBoolean())
       return v8::Undefined();
 
-    std::string name = *v8::String::AsciiValue(args.Data());
-    std::string json_args = *v8::String::Utf8Value(args[0]);
-    int request_id = args[1]->Int32Value();
-    bool has_callback = args[2]->BooleanValue();
+    std::string name = *v8::String::AsciiValue(args[0]);
+    if (GetFunctionNameSet()->find(name) == GetFunctionNameSet()->end()) {
+      NOTREACHED() << "Unexpected function " << name;
+      return v8::Undefined();
+    }
+
+    std::string json_args = *v8::String::Utf8Value(args[1]);
+    int request_id = args[2]->Int32Value();
+    bool has_callback = args[3]->BooleanValue();
 
     v8::Persistent<v8::Context> current_context =
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());

@@ -162,7 +162,7 @@ void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
 void ExtensionBrowserEventRouter::TabInsertedAt(TabContents* contents,
                                                 int index,
                                                 bool foreground) {
-  // If tab is new, send tab-created event.
+  // If tab is new, send created event.
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   if (tab_entries_.find(tab_id) == tab_entries_.end()) {
     tab_entries_[tab_id] = TabEntry(contents);

@@ -130,7 +130,7 @@ TEST_F(SimpleApiCallExtensionTest, RunTest) {
       reinterpret_cast<DictionaryValue*>(message_value.get());
   std::string result;
   message_dict->GetString(keys::kAutomationNameKey, &result);
-  EXPECT_EQ(result, "RemoveTab");
+  EXPECT_EQ(result, "tabs.remove");
 
   result = "";
   message_dict->GetString(keys::kAutomationArgsKey, &result);
@@ -224,7 +224,7 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
                                          &has_callback));
 
     if (messages_received_ == 1) {
-      EXPECT_EQ(function_name, "GetLastFocusedWindow");
+      EXPECT_EQ(function_name, "windows.getLastFocused");
       EXPECT_GE(request_id, 0);
       EXPECT_TRUE(has_callback);
 
@@ -241,7 +241,7 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
           keys::kAutomationOrigin,
           keys::kAutomationResponseTarget);
     } else if (messages_received_ == 2) {
-      EXPECT_EQ(function_name, "RemoveTab");
+      EXPECT_EQ(function_name, "tabs.remove");
       EXPECT_FALSE(has_callback);
 
       std::string args;
@@ -318,25 +318,25 @@ class BrowserEventAutomationProxy : public MultiMessageAutomationProxy {
 
 const char* BrowserEventAutomationProxy::event_names_[] = {
   // Window events.
-  "window-created",
-  "window-removed",
-  "window-focus-changed",
+  "windows.onCreated",
+  "windows.onRemoved",
+  "windows.onFocusChanged",
 
   // Tab events.
-  "tab-created",
-  "tab-updated",
-  "tab-moved",
-  "tab-selection-changed",
-  "tab-attached",
-  "tab-detached",
-  "tab-removed",
+  "tabs.onCreated",
+  "tabs.onUpdated",
+  "tabs.onMoved",
+  "tabs.onSelectionChanged",
+  "tabs.onAttached",
+  "tabs.onDetached",
+  "tabs.onRemoved",
 
   // Bookmark events.
-  "bookmark-added",
-  "bookmark-removed",
-  "bookmark-changed",
-  "bookmark-moved",
-  "bookmark-children-reordered",
+  "bookmarks.onAdded",
+  "bookmarks.onRemoved",
+  "bookmarks.onChanged",
+  "bookmarks.onMoved",
+  "bookmarks.onChildrenReordered",
 };
 
 void BrowserEventAutomationProxy::HandleMessageFromChrome() {
@@ -361,7 +361,7 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
 
     std::string name;
     message_dict->GetString(keys::kAutomationNameKey, &name);
-    ASSERT_STREQ(name.c_str(), "GetCurrentWindow");
+    ASSERT_STREQ(name.c_str(), "windows.getCurrent");
 
     // Send an OpenChannelToExtension message to chrome. Note: the JSON
     // reader expects quoted property keys.  See the comment in

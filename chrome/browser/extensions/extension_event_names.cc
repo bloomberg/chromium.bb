@@ -6,16 +6,16 @@
 
 namespace extension_event_names {
 
-const char kOnTabAttached[] = "tab-attached";
-const char kOnTabCreated[] = "tab-created";
-const char kOnTabDetached[] = "tab-detached";
-const char kOnTabMoved[] = "tab-moved";
-const char kOnTabRemoved[] = "tab-removed";
-const char kOnTabSelectionChanged[] = "tab-selection-changed";
-const char kOnTabUpdated[] = "tab-updated";
-const char kOnWindowCreated[] = "window-created";
-const char kOnWindowFocusedChanged[] = "window-focus-changed";
-const char kOnWindowRemoved[] = "window-removed";
+const char kOnTabAttached[] = "tabs.onAttached";
+const char kOnTabCreated[] = "tabs.onCreated";
+const char kOnTabDetached[] = "tabs.onDetached";
+const char kOnTabMoved[] = "tabs.onMoved";
+const char kOnTabRemoved[] = "tabs.onRemoved";
+const char kOnTabSelectionChanged[] = "tabs.onSelectionChanged";
+const char kOnTabUpdated[] = "tabs.onUpdated";
+const char kOnWindowCreated[] = "windows.onCreated";
+const char kOnWindowFocusedChanged[] = "windows.onFocusChanged";
+const char kOnWindowRemoved[] = "windows.onRemoved";
 
 }  // namespace extension_event_names
 

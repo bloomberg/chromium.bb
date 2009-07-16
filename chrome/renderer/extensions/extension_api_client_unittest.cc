@@ -120,7 +120,7 @@ TEST_F(ExtensionAPIClientTest, GetWindow) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.windows.get(2, function(){})",
-               "GetWindow", "2");
+               "windows.get", "2");
 }
 
 TEST_F(ExtensionAPIClientTest, GetCurentWindow) {
@@ -135,7 +135,7 @@ TEST_F(ExtensionAPIClientTest, GetCurentWindow) {
                "Expected 'function' but got 'string'.");
 
   ExpectJsPass("chrome.windows.getCurrent(function(){})",
-               "GetCurrentWindow", "null");
+               "windows.getCurrent", "null");
 }
 
 TEST_F(ExtensionAPIClientTest, GetLastFocusedWindow) {
@@ -150,7 +150,7 @@ TEST_F(ExtensionAPIClientTest, GetLastFocusedWindow) {
                "Expected 'function' but got 'string'.");
 
   ExpectJsPass("chrome.windows.getLastFocused(function(){})",
-               "GetLastFocusedWindow", "null");
+               "windows.getLastFocused", "null");
 }
 
 TEST_F(ExtensionAPIClientTest, GetAllWindows) {
@@ -162,13 +162,13 @@ TEST_F(ExtensionAPIClientTest, GetAllWindows) {
                "Expected 'boolean' but got 'integer'.");
 
   ExpectJsPass("chrome.windows.getAll(true, function(){})",
-               "GetAllWindows", "true");
+               "windows.getAll", "true");
 
   ExpectJsPass("chrome.windows.getAll(null, function(){})",
-               "GetAllWindows", "null");
+               "windows.getAll", "null");
 
   ExpectJsPass("chrome.windows.getAll(undefined, function(){})",
-               "GetAllWindows", "null");
+               "windows.getAll", "null");
 }
 
 TEST_F(ExtensionAPIClientTest, CreateWindow) {
@@ -198,7 +198,7 @@ TEST_F(ExtensionAPIClientTest, CreateWindow) {
                "  width:100,"
                "  height:200"
                "})",
-               "CreateWindow",
+               "windows.create",
                "{\"url\":\"http://www.google.com/\","
                "\"left\":0,"
                "\"top\":10,"
@@ -229,7 +229,7 @@ TEST_F(ExtensionAPIClientTest, UpdateWindow) {
                "  width:100,"
                "  height:200"
                "})",
-               "UpdateWindow",
+               "windows.update",
                "[42,"
                "{\"width\":100,"
                "\"height\":200}]");
@@ -248,10 +248,10 @@ TEST_F(ExtensionAPIClientTest, RemoveWindow) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.windows.remove(2, function(){})",
-               "RemoveWindow", "2");
+               "windows.remove", "2");
 
   ExpectJsPass("chrome.windows.remove(2)",
-               "RemoveWindow", "2");
+               "windows.remove", "2");
 }
 
 // Tab API tests
@@ -272,7 +272,7 @@ TEST_F(ExtensionAPIClientTest, GetTab) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.tabs.get(2, function(){})",
-               "GetTab", "2");
+               "tabs.get", "2");
 }
 
 #if defined(OS_WIN)
@@ -289,7 +289,7 @@ TEST_F(ExtensionAPIClientTest, DetectTabLanguage) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.tabs.detectLanguage(null, function(){})",
-               "DetectTabLanguage", "null");
+               "tabs.detectLanguage", "null");
 }
 #endif
 
@@ -309,10 +309,10 @@ TEST_F(ExtensionAPIClientTest, GetSelectedTab) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.tabs.getSelected(2, function(){})",
-               "GetSelectedTab", "2");
+               "tabs.getSelected", "2");
 
   ExpectJsPass("chrome.tabs.getSelected(null, function(){})",
-               "GetSelectedTab", "null");
+               "tabs.getSelected", "null");
 }
 
 
@@ -332,10 +332,10 @@ TEST_F(ExtensionAPIClientTest, GetAllTabsInWindow) {
                "Expected 'integer' but got 'string'.");
 
   ExpectJsPass("chrome.tabs.getAllInWindow(32, function(){})",
-               "GetAllTabsInWindow", "32");
+               "tabs.getAllInWindow", "32");
 
   ExpectJsPass("chrome.tabs.getAllInWindow(undefined, function(){})",
-               "GetAllTabsInWindow", "null");
+               "tabs.getAllInWindow", "null");
 }
 
 TEST_F(ExtensionAPIClientTest, CreateTab) {
@@ -355,7 +355,7 @@ TEST_F(ExtensionAPIClientTest, CreateTab) {
                "  index: 2,"
                "  windowId:4"
                "})",
-               "CreateTab",
+               "tabs.create",
                "{\"url\":\"http://www.google.com/\","
                "\"selected\":true,"
                "\"index\":2,"
@@ -376,7 +376,7 @@ TEST_F(ExtensionAPIClientTest, UpdateTab) {
                "  url:'http://www.google.com/',"
                "  selected:true"
                "})",
-               "UpdateTab",
+               "tabs.update",
                "[42,"
                "{\"url\":\"http://www.google.com/\","
                "\"selected\":true}]");
@@ -396,7 +396,7 @@ TEST_F(ExtensionAPIClientTest, MoveTab) {
                "  index:3,"
                "  windowId:21"
                "})",
-               "MoveTab",
+               "tabs.move",
                "[42,"
                "{\"index\":3,"
                "\"windowId\":21}]");
@@ -416,10 +416,10 @@ TEST_F(ExtensionAPIClientTest, RemoveTab) {
                "Expected 'function' but got 'integer'.");
 
   ExpectJsPass("chrome.tabs.remove(2, function(){})",
-               "RemoveTab", "2");
+               "tabs.remove", "2");
 
   ExpectJsPass("chrome.tabs.remove(2)",
-               "RemoveTab", "2");
+               "tabs.remove", "2");
 }
 
 // Bookmark API tests
@@ -434,16 +434,16 @@ TEST_F(ExtensionAPIClientTest, CreateBookmark) {
 
   ExpectJsPass(
       "chrome.bookmarks.create({parentId:0, title:'x'}, function(){})",
-      "CreateBookmark",
+      "bookmarks.create",
       "{\"parentId\":0,\"title\":\"x\"}");
 }
 
 TEST_F(ExtensionAPIClientTest, GetBookmarks) {
   ExpectJsPass("chrome.bookmarks.get(0, function(){});",
-               "GetBookmarks",
+               "bookmarks.get",
                "0");
   ExpectJsPass("chrome.bookmarks.get([0,1,2,3], function(){});",
-               "GetBookmarks",
+               "bookmarks.get",
                "[0,1,2,3]");
   ExpectJsFail("chrome.bookmarks.get(null, function(){});",
                "Uncaught Error: Parameter 0 is required.");
@@ -458,43 +458,43 @@ TEST_F(ExtensionAPIClientTest, GetBookmarks) {
 
 TEST_F(ExtensionAPIClientTest, GetBookmarkChildren) {
   ExpectJsPass("chrome.bookmarks.getChildren(42, function(){});",
-               "GetBookmarkChildren",
+               "bookmarks.getChildren",
                "42");
 }
 
 TEST_F(ExtensionAPIClientTest, GetBookmarkTree) {
   ExpectJsPass("chrome.bookmarks.getTree(function(){});",
-               "GetBookmarkTree",
+               "bookmarks.getTree",
                "null");
 }
 
 TEST_F(ExtensionAPIClientTest, SearchBookmarks) {
   ExpectJsPass("chrome.bookmarks.search('hello',function(){});",
-               "SearchBookmarks",
+               "bookmarks.search",
                "\"hello\"");
 }
 
 TEST_F(ExtensionAPIClientTest, RemoveBookmark) {
   ExpectJsPass("chrome.bookmarks.remove(42);",
-               "RemoveBookmark",
+               "bookmarks.remove",
                "[42,false]");
 }
 
 TEST_F(ExtensionAPIClientTest, RemoveBookmarkTree) {
   ExpectJsPass("chrome.bookmarks.removeTree(42);",
-               "RemoveBookmark",
+               "bookmarks.removeTree",
                "[42,true]");
 }
 
 TEST_F(ExtensionAPIClientTest, MoveBookmark) {
   ExpectJsPass("chrome.bookmarks.move(42,{parentId:1,index:0});",
-               "MoveBookmark",
+               "bookmarks.move",
                "[42,{\"parentId\":1,\"index\":0}]");
 }
 
 TEST_F(ExtensionAPIClientTest, SetBookmarkTitle) {
   ExpectJsPass("chrome.bookmarks.update(42,{title:'x'});",
-               "SetBookmarkTitle",
+               "bookmarks.update",
                "[42,{\"title\":\"x\"}]");
 }
 
@@ -502,19 +502,19 @@ TEST_F(ExtensionAPIClientTest, EnablePageAction) {
   // Basic old-school enablePageAction call.
   ExpectJsPass("chrome.pageActions.enableForTab("
                "\"dummy\", {tabId: 0, url: \"http://foo/\"});",
-               "EnablePageAction",
+               "pageActions.enableForTab",
                "[\"dummy\",{\"tabId\":0,\"url\":\"http://foo/\"}]");
   // Try both optional parameters (title and iconId).
   ExpectJsPass("chrome.pageActions.enableForTab("
                "\"dummy\", {tabId: 0, url: \"http://foo/\","
                            "title: \"a\", iconId: 0});",
-               "EnablePageAction",
+               "pageActions.enableForTab",
                "[\"dummy\",{\"tabId\":0,\"url\":\"http://foo/\","
                            "\"title\":\"a\",\"iconId\":0}]");
 
   // Now try disablePageAction.
   ExpectJsPass("chrome.pageActions.disableForTab("
                "\"dummy\", {tabId: 0, url: \"http://foo/\"});",
-               "DisablePageAction",
+               "pageActions.disableForTab",
                "[\"dummy\",{\"tabId\":0,\"url\":\"http://foo/\"}]");
 }

@@ -27,19 +27,20 @@ const char kInvalidIndexError[] = "Index out of bounds.";
 const char kInvalidUrlError[] = "Invalid URL.";
 const char kModifySpecialError[] = "Can't modify the root bookmark folders.";
 
-const char kOnBookmarkAdded[] = "bookmark-added";
-const char kOnBookmarkRemoved[] = "bookmark-removed";
-const char kOnBookmarkChanged[] = "bookmark-changed";
-const char kOnBookmarkMoved[] = "bookmark-moved";
-const char kOnBookmarkChildrenReordered[] = "bookmark-children-reordered";
+const char kOnBookmarkAdded[] = "bookmarks.onAdded";
+const char kOnBookmarkRemoved[] = "bookmarks.onRemoved";
+const char kOnBookmarkChanged[] = "bookmarks.onChanged";
+const char kOnBookmarkMoved[] = "bookmarks.onMoved";
+const char kOnBookmarkChildrenReordered[] = "bookmarks.onChildrenReordered";
 
-const char kGetBookmarksFunction[] = "GetBookmarks";
-const char kGetBookmarkChildrenFunction[] = "GetBookmarkChildren";
-const char kGetBookmarkTreeFunction[] = "GetBookmarkTree";
-const char kSearchBookmarksFunction[] = "SearchBookmarks";
-const char kRemoveBookmarkFunction[] = "RemoveBookmark";
-const char kCreateBookmarkFunction[] = "CreateBookmark";
-const char kMoveBookmarkFunction[] = "MoveBookmark";
-const char kSetBookmarkTitleFunction[] = "SetBookmarkTitle";
+const char kGetBookmarksFunction[] = "bookmarks.get";
+const char kGetBookmarkChildrenFunction[] = "bookmarks.getChildren";
+const char kGetBookmarkTreeFunction[] = "bookmarks.getTree";
+const char kSearchBookmarksFunction[] = "bookmarks.search";
+const char kRemoveBookmarkFunction[] = "bookmarks.remove";
+const char kRemoveBookmarkTreeFunction[] = "bookmarks.removeTree";
+const char kCreateBookmarkFunction[] = "bookmarks.create";
+const char kMoveBookmarkFunction[] = "bookmarks.move";
+const char kSetBookmarkTitleFunction[] = "bookmarks.update";
 
 }  // namespace extension_bookmarks_module_constants

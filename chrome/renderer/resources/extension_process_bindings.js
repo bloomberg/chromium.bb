@@ -12,33 +12,10 @@
 
 var chrome = chrome || {};
 (function() {
-  native function GetViews();
-  native function GetWindow();
-  native function GetCurrentWindow();
-  native function GetLastFocusedWindow();
-  native function CreateWindow();
-  native function UpdateWindow();
-  native function RemoveWindow();
-  native function GetAllWindows();
-  native function GetTab();
-  native function GetSelectedTab();
-  native function GetAllTabsInWindow();
-  native function CreateTab();
-  native function UpdateTab();
-  native function MoveTab();
-  native function RemoveTab();
-  native function DetectTabLanguage();
-  native function EnablePageAction();
-  native function DisablePageAction();
+  native function StartRequest();
   native function GetCurrentPageActions();
-  native function GetBookmarks();
-  native function GetBookmarkChildren();
-  native function GetBookmarkTree();
-  native function SearchBookmarks();
-  native function RemoveBookmark();
-  native function CreateBookmark();
-  native function MoveBookmark();
-  native function SetBookmarkTitle();
+  native function GetViews();
+  native function GetCurrentPageActions();
   native function GetChromeHidden();
   native function GetNextRequestId();
 
@@ -103,7 +80,7 @@ var chrome = chrome || {};
   };
 
   // Send an API request and optionally register a callback.
-  function sendRequest(request, args, callback) {
+  function sendRequest(functionName, args, callback) {
     // JSON.stringify doesn't support a root object which is undefined.
     if (args === undefined)
       args = null;
@@ -114,7 +91,7 @@ var chrome = chrome || {};
       hasCallback = true;
       callbacks[requestId] = callback;
     }
-    request(sargs, requestId, hasCallback);
+    StartRequest(functionName, sargs, requestId, hasCallback);
   }
 
   //----------------------------------------------------------------------------
@@ -124,7 +101,7 @@ var chrome = chrome || {};
 
   chrome.windows.get = function(windowId, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetWindow, windowId, callback);
+    sendRequest("windows.get", windowId, callback);
   };
 
   chrome.windows.get.params = [
@@ -134,7 +111,7 @@ var chrome = chrome || {};
 
   chrome.windows.getCurrent = function(callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetCurrentWindow, null, callback);
+    sendRequest("windows.getCurrent", null, callback);
   };
 
   chrome.windows.getCurrent.params = [
@@ -143,7 +120,7 @@ var chrome = chrome || {};
 
   chrome.windows.getLastFocused = function(callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetLastFocusedWindow, null, callback);
+    sendRequest("windows.getLastFocused", null, callback);
   };
 
   chrome.windows.getLastFocused.params = [
@@ -152,7 +129,7 @@ var chrome = chrome || {};
 
   chrome.windows.getAll = function(populate, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetAllWindows, populate, callback);
+    sendRequest("windows.getAll", populate, callback);
   };
 
   chrome.windows.getAll.params = [
@@ -162,7 +139,7 @@ var chrome = chrome || {};
 
   chrome.windows.create = function(createData, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(CreateWindow, createData, callback);
+    sendRequest("windows.create", createData, callback);
   };
   chrome.windows.create.params = [
     {
@@ -181,7 +158,7 @@ var chrome = chrome || {};
 
   chrome.windows.update = function(windowId, updateData, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(UpdateWindow, [windowId, updateData], callback);
+    sendRequest("windows.update", [windowId, updateData], callback);
   };
   chrome.windows.update.params = [
     chrome.types.pInt,
@@ -199,7 +176,7 @@ var chrome = chrome || {};
 
   chrome.windows.remove = function(windowId, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(RemoveWindow, windowId, callback);
+    sendRequest("windows.remove", windowId, callback);
   };
 
   chrome.windows.remove.params = [
@@ -209,17 +186,17 @@ var chrome = chrome || {};
 
   // sends (windowId).
   // *WILL* be followed by tab-attached AND then tab-selection-changed.
-  chrome.windows.onCreated = new chrome.Event("window-created");
+  chrome.windows.onCreated = new chrome.Event("windows.onCreated");
 
   // sends (windowId).
   // *WILL* be preceded by sequences of tab-removed AND then
   // tab-selection-changed -- one for each tab that was contained in the window
   // that closed
-  chrome.windows.onRemoved = new chrome.Event("window-removed");
+  chrome.windows.onRemoved = new chrome.Event("windows.onRemoved");
 
   // sends (windowId).
   chrome.windows.onFocusChanged =
-        new chrome.Event("window-focus-changed");
+        new chrome.Event("windows.onFocusChanged");
 
   //----------------------------------------------------------------------------
 
@@ -228,7 +205,7 @@ var chrome = chrome || {};
 
   chrome.tabs.get = function(tabId, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetTab, tabId, callback);
+    sendRequest("tabs.get", tabId, callback);
   };
 
   chrome.tabs.get.params = [
@@ -238,7 +215,7 @@ var chrome = chrome || {};
 
   chrome.tabs.getSelected = function(windowId, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetSelectedTab, windowId, callback);
+    sendRequest("tabs.getSelected", windowId, callback);
   };
 
   chrome.tabs.getSelected.params = [
@@ -248,7 +225,7 @@ var chrome = chrome || {};
 
   chrome.tabs.getAllInWindow = function(windowId, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetAllTabsInWindow, windowId, callback);
+    sendRequest("tabs.getAllInWindow", windowId, callback);
   };
 
   chrome.tabs.getAllInWindow.params = [
@@ -258,7 +235,7 @@ var chrome = chrome || {};
 
   chrome.tabs.create = function(tab, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(CreateTab, tab, callback);
+    sendRequest("tabs.create", tab, callback);
   };
 
   chrome.tabs.create.params = [
@@ -276,7 +253,7 @@ var chrome = chrome || {};
 
   chrome.tabs.update = function(tabId, updates, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(UpdateTab, [tabId, updates], callback);
+    sendRequest("tabs.update", [tabId, updates], callback);
   };
 
   chrome.tabs.update.params = [
@@ -293,7 +270,7 @@ var chrome = chrome || {};
 
   chrome.tabs.move = function(tabId, moveProps, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(MoveTab, [tabId, moveProps], callback);
+    sendRequest("tabs.move", [tabId, moveProps], callback);
   };
 
   chrome.tabs.move.params = [
@@ -310,7 +287,7 @@ var chrome = chrome || {};
 
   chrome.tabs.remove = function(tabId, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(RemoveTab, tabId, callback);
+    sendRequest("tabs.remove", tabId, callback);
   };
 
   chrome.tabs.remove.params = [
@@ -320,7 +297,7 @@ var chrome = chrome || {};
 
   chrome.tabs.detectLanguage = function(tabId, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(DetectTabLanguage, tabId, callback);
+    sendRequest("tabs.detectLanguage", tabId, callback);
   };
 
   chrome.tabs.detectLanguage.params = [
@@ -331,31 +308,31 @@ var chrome = chrome || {};
   // Sends ({Tab}).
   // Will *NOT* be followed by tab-attached - it is implied.
   // *MAY* be followed by tab-selection-changed.
-  chrome.tabs.onCreated = new chrome.Event("tab-created");
+  chrome.tabs.onCreated = new chrome.Event("tabs.onCreated");
 
   // Sends (tabId, {ChangedProps}).
-  chrome.tabs.onUpdated = new chrome.Event("tab-updated");
+  chrome.tabs.onUpdated = new chrome.Event("tabs.onUpdated");
 
   // Sends (tabId, {windowId, fromIndex, toIndex}).
   // Tabs can only "move" within a window.
-  chrome.tabs.onMoved = new chrome.Event("tab-moved");
+  chrome.tabs.onMoved = new chrome.Event("tabs.onMoved");
 
   // Sends (tabId, {windowId}).
   chrome.tabs.onSelectionChanged =
-       new chrome.Event("tab-selection-changed");
+       new chrome.Event("tabs.onSelectionChanged");
 
   // Sends (tabId, {newWindowId, newPosition}).
   // *MAY* be followed by tab-selection-changed.
-  chrome.tabs.onAttached = new chrome.Event("tab-attached");
+  chrome.tabs.onAttached = new chrome.Event("tabs.onAttached");
 
   // Sends (tabId, {oldWindowId, oldPosition}).
   // *WILL* be followed by tab-selection-changed.
-  chrome.tabs.onDetached = new chrome.Event("tab-detached");
+  chrome.tabs.onDetached = new chrome.Event("tabs.onDetached");
 
   // Sends (tabId).
   // *WILL* be followed by tab-selection-changed.
   // Will *NOT* be followed or preceded by tab-detached.
-  chrome.tabs.onRemoved = new chrome.Event("tab-removed");
+  chrome.tabs.onRemoved = new chrome.Event("tabs.onRemoved");
 
   //----------------------------------------------------------------------------
 
@@ -364,7 +341,7 @@ var chrome = chrome || {};
 
   chrome.pageActions.enableForTab = function(pageActionId, action) {
     validate(arguments, arguments.callee.params);
-    sendRequest(EnablePageAction, [pageActionId, action]);
+    sendRequest("pageActions.enableForTab", [pageActionId, action]);
   }
 
   chrome.pageActions.enableForTab.params = [
@@ -383,7 +360,7 @@ var chrome = chrome || {};
 
   chrome.pageActions.disableForTab = function(pageActionId, action) {
     validate(arguments, arguments.callee.params);
-    sendRequest(DisablePageAction, [pageActionId, action]);
+    sendRequest("pageActions.disableForTab", [pageActionId, action]);
   }
 
   chrome.pageActions.disableForTab.params = [
@@ -415,7 +392,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.get = function(ids, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetBookmarks, ids, callback);
+    sendRequest("bookmarks.get", ids, callback);
   };
 
   chrome.bookmarks.get.params = [
@@ -425,7 +402,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.getChildren = function(id, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetBookmarkChildren, id, callback);
+    sendRequest("bookmarks.getChildren", id, callback);
   };
 
   chrome.bookmarks.getChildren.params = [
@@ -435,7 +412,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.getTree = function(callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetBookmarkTree, null, callback);
+    sendRequest("bookmarks.getTree", null, callback);
   };
 
   // TODO(erikkay): allow it to take an optional id as a starting point
@@ -446,7 +423,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.search = function(query, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(SearchBookmarks, query, callback);
+    sendRequest("bookmarks.search", query, callback);
   };
 
   chrome.bookmarks.search.params = [
@@ -456,7 +433,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.remove = function(id, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(RemoveBookmark, [id, false], callback);
+    sendRequest("bookmarks.remove", [id, false], callback);
   };
 
   chrome.bookmarks.remove.params = [
@@ -466,7 +443,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.removeTree = function(id, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(RemoveBookmark, [id, true], callback);
+    sendRequest("bookmarks.removeTree", [id, true], callback);
   };
 
   chrome.bookmarks.removeTree.params = [
@@ -476,7 +453,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.create = function(bookmark, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(CreateBookmark, bookmark, callback);
+    sendRequest("bookmarks.create", bookmark, callback);
   };
 
   chrome.bookmarks.create.params = [
@@ -494,7 +471,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.move = function(id, destination, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(MoveBookmark, [id, destination], callback);
+    sendRequest("bookmarks.move", [id, destination], callback);
   };
 
   chrome.bookmarks.move.params = [
@@ -511,7 +488,7 @@ var chrome = chrome || {};
 
   chrome.bookmarks.update = function(id, changes, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(SetBookmarkTitle, [id, changes], callback);
+    sendRequest("bookmarks.update", [id, changes], callback);
   };
 
   chrome.bookmarks.update.params = [
@@ -529,21 +506,21 @@ var chrome = chrome || {};
 
   // Sends (id, {title, url, parentId, index, dateAdded, dateGroupModified})
   // date values are milliseconds since the UTC epoch.
-  chrome.bookmarks.onAdded = new chrome.Event("bookmark-added");
+  chrome.bookmarks.onAdded = new chrome.Event("bookmarks.onAdded");
 
   // Sends (id, {parentId, index})
-  chrome.bookmarks.onRemoved = new chrome.Event("bookmark-removed");
+  chrome.bookmarks.onRemoved = new chrome.Event("bookmarks.onRemoved");
 
   // Sends (id, object) where object has list of properties that have changed.
   // Currently, this only ever includes 'title'.
-  chrome.bookmarks.onChanged = new chrome.Event("bookmark-changed");
+  chrome.bookmarks.onChanged = new chrome.Event("bookmarks.onChanged");
 
   // Sends (id, {parentId, index, oldParentId, oldIndex})
-  chrome.bookmarks.onMoved = new chrome.Event("bookmark-moved");
+  chrome.bookmarks.onMoved = new chrome.Event("bookmarks.onMoved");
 
   // Sends (id, [childrenIds])
   chrome.bookmarks.onChildrenReordered =
-      new chrome.Event("bookmark-children-reordered");
+      new chrome.Event("bookmarks.onChildrenReordered");
 
 
   //----------------------------------------------------------------------------

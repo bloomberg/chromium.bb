@@ -119,6 +119,8 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<SearchBookmarksFunction>;
   factories_[bookmarks::kRemoveBookmarkFunction] =
       &NewExtensionFunction<RemoveBookmarkFunction>;
+  factories_[bookmarks::kRemoveBookmarkTreeFunction] =
+    &NewExtensionFunction<RemoveBookmarkFunction>;
   factories_[bookmarks::kCreateBookmarkFunction] =
       &NewExtensionFunction<CreateBookmarkFunction>;
   factories_[bookmarks::kMoveBookmarkFunction] =
