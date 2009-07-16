@@ -4,6 +4,8 @@
 
 #include "chrome/browser/icon_loader.h"
 
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gio/gio.h>
 #include <gtk/gtk.h>
 
 #include "base/file_util.h"
@@ -16,16 +18,38 @@
 #include "base/string_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-void IconLoader::ReadIcon() {
-  int size = 48;
-  if (icon_size_ == NORMAL)
-    size = 32;
-  else if (icon_size_ == SMALL)
-    size = 16;
+static int SizeToInt(IconLoader::IconSize size) {
+  int pixels = 48;
+  if (size == IconLoader::NORMAL)
+    pixels = 32;
+  else if (size == IconLoader::SMALL)
+    pixels = 16;
 
-  FilePath filename = mime_util::GetMimeIcon(group_, size);
-  GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file_at_size(filename.value().c_str(),
-                                                       size, size, NULL);
+  return pixels;
+}
+
+void IconLoader::ReadIcon() {
+  int size = SizeToInt(icon_size_);
+  filename_ = mime_util::GetMimeIcon(group_, size);
+  file_util::ReadFileToString(filename_, &icon_data_);
+  target_message_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &IconLoader::ParseIcon));
+}
+
+void IconLoader::ParseIcon() {
+  int size = SizeToInt(icon_size_);
+
+  // It would be more convenient to use gdk_pixbuf_new_from_stream_at_scale
+  // but that is only available after 2.14.
+  GdkPixbufLoader* loader = gdk_pixbuf_loader_new();
+  gdk_pixbuf_loader_set_size(loader, size, size);
+  gdk_pixbuf_loader_write(loader,
+                          reinterpret_cast<const guchar*>(icon_data_.data()),
+                          icon_data_.length(), NULL);
+  gdk_pixbuf_loader_close(loader, NULL);
+  // We don't own a reference, we rely on the loader's ref.
+  GdkPixbuf* pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+
   if (pixbuf) {
     guchar* pixels = gdk_pixbuf_get_pixels(pixbuf);
     int width = gdk_pixbuf_get_width(pixbuf);
@@ -46,12 +70,12 @@ void IconLoader::ReadIcon() {
                                                          width, height);
       free(BGRA_pixels);
     }
-
-    g_object_unref(pixbuf);
   } else {
-    LOG(WARNING) << "Unsupported file type or load error: " << filename.value();
+    LOG(WARNING) << "Unsupported file type or load error: " <<
+                    filename_.value();
   }
 
-  target_message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &IconLoader::NotifyDelegate));
+  g_object_unref(loader);
+
+  NotifyDelegate();
 }
