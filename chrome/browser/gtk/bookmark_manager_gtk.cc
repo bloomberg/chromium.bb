@@ -138,7 +138,7 @@ void BookmarkManagerGtk::SelectInTree(const BookmarkNode* node, bool expand) {
   // Expand the left tree view to |node| if |node| is a folder, or to the parent
   // folder of |node| if it is a URL.
   GtkTreeIter iter = { 0, };
-  int id = node->is_folder() ? node->id() : node->GetParent()->id();
+  int64 id = node->is_folder() ? node->id() : node->GetParent()->id();
   if (RecursiveFind(GTK_TREE_MODEL(left_store_), &iter, id)) {
     GtkTreePath* path = gtk_tree_model_get_path(GTK_TREE_MODEL(left_store_),
                         &iter);
@@ -436,7 +436,8 @@ GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
 
 GtkWidget* BookmarkManagerGtk::MakeRightPane() {
   right_store_ = gtk_list_store_new(RIGHT_PANE_NUM,
-      GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
+      GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+      G_TYPE_INT64);
 
   title_column_ = gtk_tree_view_column_new();
   gtk_tree_view_column_set_title(title_column_,
@@ -611,21 +612,21 @@ void BookmarkManagerGtk::BuildRightStore() {
     AddNodeToRightStore(i);
 }
 
-int BookmarkManagerGtk::GetRowIDAt(GtkTreeModel* model, GtkTreeIter* iter) {
+int64 BookmarkManagerGtk::GetRowIDAt(GtkTreeModel* model, GtkTreeIter* iter) {
   bool left = model == GTK_TREE_MODEL(left_store_);
   GValue value = { 0, };
   if (left)
     gtk_tree_model_get_value(model, iter, bookmark_utils::ITEM_ID, &value);
   else
     gtk_tree_model_get_value(model, iter, RIGHT_PANE_ID, &value);
-  int id = g_value_get_int(&value);
+  int64 id = g_value_get_int64(&value);
   g_value_unset(&value);
   return id;
 }
 
 const BookmarkNode* BookmarkManagerGtk::GetNodeAt(GtkTreeModel* model,
                                                   GtkTreeIter* iter) {
-  int id = GetRowIDAt(model, iter);
+  int64 id = GetRowIDAt(model, iter);
   if (id > 0)
     return model_->GetNodeByID(id);
   else
@@ -750,7 +751,7 @@ void BookmarkManagerGtk::SendDelayedMousedown() {
 }
 
 bool BookmarkManagerGtk::RecursiveFind(GtkTreeModel* model, GtkTreeIter* iter,
-                                       int target) {
+                                       int64 target) {
   GValue value = { 0, };
   bool left = model == GTK_TREE_MODEL(left_store_);
   if (left) {
@@ -764,7 +765,7 @@ bool BookmarkManagerGtk::RecursiveFind(GtkTreeModel* model, GtkTreeIter* iter,
     gtk_tree_model_get_value(model, iter, RIGHT_PANE_ID, &value);
   }
 
-  int id = g_value_get_int(&value);
+  int64 id = g_value_get_int(&value);
   g_value_unset(&value);
 
   if (id == target) {

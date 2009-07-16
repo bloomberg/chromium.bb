@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "app/table_model_observer.h"
+#include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -86,7 +87,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   void BuildRightStore();
 
   // Get the ID of the item at |iter|.
-  int GetRowIDAt(GtkTreeModel* model, GtkTreeIter* iter);
+  int64 GetRowIDAt(GtkTreeModel* model, GtkTreeIter* iter);
 
   // Get the node from |model| at |iter|. If the item is not a node, return
   // NULL.
@@ -140,7 +141,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // Tries to find the node with id |target_id|. If found, returns true and set
   // |iter| to point to the entry. If you pass a |iter| with stamp of 0, then it
   // will be treated as the first row of |model|.
-  bool RecursiveFind(GtkTreeModel* model, GtkTreeIter* iter, int target_id);
+  bool RecursiveFind(GtkTreeModel* model, GtkTreeIter* iter, int64 target_id);
 
   // Search helpers.
   void PerformSearch();
