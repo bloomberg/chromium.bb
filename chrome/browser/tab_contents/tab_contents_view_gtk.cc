@@ -631,8 +631,12 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
   // mouse events. Technically it's the mouse motion event and not the mouse
   // down event that causes the drag, but there's no reliable way to know
   // *which* motion event initiated the drag, so this will have to do.
+  // TODO(estade): This can sometimes be very far off, e.g. if the user clicks
+  // and holds and doesn't start dragging for a long time. I doubt it matters
+  // much, but we should probably look into the possibility of getting the
+  // initiating event from webkit.
   gtk_drag_begin(GetContentNativeView(), list, GDK_ACTION_COPY,
-                 last_mouse_down_.button,
+                 1,  // Drags are always initiated by the left button.
                  reinterpret_cast<GdkEvent*>(&last_mouse_down_));
   // The drag adds a ref; let it own the list.
   gtk_target_list_unref(list);
