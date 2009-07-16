@@ -128,8 +128,12 @@ void SetupLayoutForMatch(PangoLayout* layout,
     AutocompleteMatch::ACMatchClassifications classifications,
     const GdkColor* base_color,
     const std::string& prefix_text) {
+
+  // We can have a prefix, or insert additional characters while processing the
+  // classifications.  We need to take this in to account when we translate the
+  // wide offsets in the classification into text_utf8 byte offsets.
+  size_t additional_offset = prefix_text.size();  // Length in utf-8 bytes.
   std::string text_utf8 = prefix_text + WideToUTF8(text);
-  pango_layout_set_text(layout, text_utf8.data(), text_utf8.size());
 
   PangoAttrList* attrs = pango_attr_list_new();
 
@@ -148,7 +152,7 @@ void SetupLayoutForMatch(PangoLayout* layout,
   // portion correctly, we just don't need to compute the end offset.
   for (ACMatchClassifications::const_iterator i = classifications.begin();
        i != classifications.end(); ++i) {
-    size_t offset = GetUTF8Offset(text, i->offset) + prefix_text.size();
+    size_t offset = GetUTF8Offset(text, i->offset) + additional_offset;
 
     // TODO(deanm): All the colors should probably blend based on whether this
     // result is selected or not.  This would include the green URLs.  Right
@@ -158,8 +162,13 @@ void SetupLayoutForMatch(PangoLayout* layout,
     // special case that is not very common, but we should figure out and
     // support it.
     const GdkColor* color = base_color;
-    if (i->style & ACMatchClassification::URL)
-        color = &kURLTextColor;
+    if (i->style & ACMatchClassification::URL) {
+      color = &kURLTextColor;
+      // Insert a left to right embedding to make sure that URLs are shown LTR.
+      std::string lre(kLRE);
+      text_utf8.insert(offset, lre);
+      additional_offset += lre.size();
+    }
 
     PangoAttribute* fg_attr = pango_attr_foreground_new(
         color->red, color->green, color->blue);
@@ -174,6 +183,7 @@ void SetupLayoutForMatch(PangoLayout* layout,
     pango_attr_list_insert(attrs, weight_attr);  // Ownership taken.
   }
 
+  pango_layout_set_text(layout, text_utf8.data(), text_utf8.size());
   pango_layout_set_attributes(layout, attrs);  // Ref taken.
   pango_attr_list_unref(attrs);
 }
@@ -460,7 +470,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
 
     // Note: We force to URL to LTR for all text directions.
     SetupLayoutForMatch(layout_, match.contents, match.contents_class,
-                        &kContentTextColor, std::string(kLRE));
+                        &kContentTextColor, std::string());
 
     int actual_content_width, actual_content_height;
     pango_layout_get_size(layout_,
