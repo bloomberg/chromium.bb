@@ -152,6 +152,9 @@ class Skin : public NamedObject {
   // Update the highest influences and highest matrix index.
   void UpdateInfo() const;
 
+  // Frees all the influences and matrices.
+  void FreeAll();
+
   // The vertex influences.
   InfluencesArray influences_array_;
 

@@ -578,6 +578,7 @@ bool Skin::LoadFromBinaryData(MemoryReadStream *stream) {
   while (!stream->EndOfStream()) {
     // Make sure stream has a uint32 to read (for num_influences)
     if (stream->GetRemainingByteCount() < sizeof(uint32)) {
+      FreeAll();  // We have to call this before O3D_ERROR.
       O3D_ERROR(service_locator()) << "unexpected end of skin data";
       return false;
     }
@@ -588,6 +589,7 @@ bool Skin::LoadFromBinaryData(MemoryReadStream *stream) {
     const size_t kInfluenceSize = sizeof(uint32) + sizeof(float);
     size_t data_size = num_influences * kInfluenceSize;
     if (stream->GetRemainingByteCount() < data_size) {
+      FreeAll();  // We have to call this before O3D_ERROR.
       O3D_ERROR(service_locator()) << "unexpected end of skin data";
       return false;
     }
@@ -606,6 +608,12 @@ bool Skin::LoadFromBinaryData(MemoryReadStream *stream) {
   }
 
   return true;
+}
+
+void Skin::FreeAll() {
+  influences_array_.clear();
+  inverse_bind_pose_matrices_.clear();
+  info_valid_ = false;
 }
 
 bool Skin::Set(o3d::RawData *raw_data) {

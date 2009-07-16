@@ -414,6 +414,9 @@ class Curve : public Function {
     }
   }
 
+  // Removes all the keys.
+  void FreeAll();
+
   // What to do for inputs before the first key
   Infinity pre_infinity_;
 

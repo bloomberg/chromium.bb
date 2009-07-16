@@ -726,6 +726,7 @@ bool Curve::LoadFromBinaryData(MemoryReadStream *stream) {
     switch (key_type) {
       case CurveKey::TYPE_STEP: {
         if (available_bytes < kStepDataSize) {
+          FreeAll();  // This must be called before O3D_ERROR.
           O3D_ERROR(service_locator()) << "unexpected end of curve data";
           return false;
         }
@@ -738,6 +739,7 @@ bool Curve::LoadFromBinaryData(MemoryReadStream *stream) {
       }
       case CurveKey::TYPE_LINEAR: {
         if (available_bytes < kLinearDataSize) {
+          FreeAll();  // This must be called before O3D_ERROR.
           O3D_ERROR(service_locator()) << "unexpected end of curve data";
           return false;
         }
@@ -750,6 +752,7 @@ bool Curve::LoadFromBinaryData(MemoryReadStream *stream) {
       }
       case CurveKey::TYPE_BEZIER: {
         if (available_bytes < kBezierDataSize) {
+          FreeAll();  // This must be called before O3D_ERROR.
           O3D_ERROR(service_locator()) << "unexpected end of curve data";
           return false;
         }
@@ -765,12 +768,19 @@ bool Curve::LoadFromBinaryData(MemoryReadStream *stream) {
         break;
       }
       default: {
+        FreeAll();  // This must be called before O3D_ERROR.
         O3D_ERROR(service_locator()) << "invalid curve data";
         return false;  // unknown key type
       }
     }
   }
   return true;
+}
+
+void Curve::FreeAll() {
+  while (!keys_.empty()) {
+    keys_[0]->Destroy();
+  }
 }
 
 bool Curve::Set(o3d::RawData *raw_data) {
