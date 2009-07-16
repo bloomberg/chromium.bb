@@ -2993,4 +2993,5 @@ BUG16878 LINUX MAC : LayoutTests/fast/js/instanceof-operator.html = CRASH FAIL
 BUG16878 LINUX WIN : LayoutTests/fast/css/attribute-selector-dynamic.xml = FAIL
 BUG16878 LINUX WIN : LayoutTests/fast/runin/001.html = FAIL
 BUG16878 LINUX WIN : LayoutTests/fast/runin/generated.html = FAIL
-BUG16878 LINUX : LayoutTests/fast/text/shadow-translucent-fill.html = FAIL
+BUG16878 LINUX WIN : LayoutTests/fast/text/shadow-translucent-fill.html = FAIL
+BUG16878 WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
