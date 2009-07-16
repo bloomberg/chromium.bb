@@ -26,7 +26,7 @@ namespace {
 // like TLD, the UI language/default encoding of a client, etc). In that case,
 // this should be pulled out of here and moved somewhere in base because there
 // can be other use cases.
-std::string DetectEncoding(const char*input, size_t len) {
+std::string DetectEncoding(const char* input, size_t len) {
   if (IsStringASCII(std::string(input, len)))
     return std::string();
   UErrorCode status = U_ZERO_ERROR;
