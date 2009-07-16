@@ -23,18 +23,18 @@ void RendererMainPlatformDelegate::PlatformUninitialize() {
 }
 
 bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  // We have no sandbox.
-  // http://code.google.com/p/chromium/issues/detail?id=8081
+  // The sandbox is started in the zygote process: zygote_main_linux.cc
+  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
   return true;
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  // We have no sandbox.
-  // http://code.google.com/p/chromium/issues/detail?id=8081
+  // The sandbox is started in the zygote process: zygote_main_linux.cc
+  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
   return true;
 }
 
 void RendererMainPlatformDelegate::RunSandboxTests() {
-  // We have no sandbox.
-  // http://code.google.com/p/chromium/issues/detail?id=8081
+  // The sandbox is started in the zygote process: zygote_main_linux.cc
+  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
 }
