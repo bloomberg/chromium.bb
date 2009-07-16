@@ -391,13 +391,12 @@ bool ChromeURLRequestContext::interceptCookie(const URLRequest* request,
   const URLRequest::UserData* d =
       request->GetUserData((void*)&Blacklist::kRequestDataKey);
   if (d) {
-    const Blacklist::Entry* entry =
-        static_cast<const Blacklist::RequestData*>(d)->entry();
-    if (entry->attributes() & Blacklist::kDontStoreCookies) {
+    const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
+    if (match->attributes() & Blacklist::kDontStoreCookies) {
       cookie->clear();
       return false;
     }
-    if (entry->attributes() & Blacklist::kDontPersistCookies) {
+    if (match->attributes() & Blacklist::kDontPersistCookies) {
       *cookie = Blacklist::StripCookieExpiry(*cookie);
     }
   }
@@ -409,9 +408,8 @@ bool ChromeURLRequestContext::allowSendingCookies(const URLRequest* request)
   const URLRequest::UserData* d =
       request->GetUserData((void*)&Blacklist::kRequestDataKey);
   if (d) {
-    const Blacklist::Entry* entry =
-      static_cast<const Blacklist::RequestData*>(d)->entry();
-    if (entry->attributes() & Blacklist::kDontSendCookies)
+    const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
+    if (match->attributes() & Blacklist::kDontSendCookies)
       return false;
   }
   return true;

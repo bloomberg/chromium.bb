@@ -119,17 +119,29 @@ class Blacklist {
     friend class BlacklistIO;
   };
 
-  // When a request matches a Blacklist rule but the rule must be applied
-  // after the request has started, we tag it with this user data to
-  // avoid doing lookups more than once per request. The Entry is owned
-  // be the blacklist, so this indirection makes sure that it does not
-  // get destroyed by the Blacklist.
-  class RequestData : public URLRequest::UserData {
+  // A request may match one or more Blacklist rules. The Match class packages
+  // all the matching entries behind a single interface with access to the
+  // underlying set of entries so that we can display provider information.
+  // Often a match must be applied after a URLRequest has started, so it gets
+  // tagged with the Match object to avoid doing lookups more than once per
+  // request.
+  class Match : public URLRequest::UserData {
    public:
-    explicit RequestData(const Entry* entry) : entry_(entry) {}
-    const Entry* entry() const { return entry_; }
+    // Functions that return combined results from all entries.
+    unsigned int attributes() const { return attributes_; }
+    bool MatchType(const std::string&) const;
+    bool IsBlocked(const GURL&) const;
+
+    // Access to individual entries, mostly for display/logging purposes.
+    const std::vector<const Entry*>& entries() const { return entries_; }
+
    private:
-    const Entry* const entry_;
+    Match();
+    void AddEntry(const Entry* entry);
+    std::vector<const Entry*> entries_;
+    unsigned int attributes_;  // Precomputed ORed attributes of entries.
+
+    friend class Blacklist;  // Only blacklist constructs and sets these.
   };
 
   // Constructs a Blacklist given the filename of the persistent version.
@@ -144,9 +156,10 @@ class Blacklist {
   // Destructor.
   ~Blacklist();
 
-  // Returns a pointer to the Blacklist-owned entry which matches the given
-  // URL. If no matching Entry is found, returns null.
-  const Entry* findMatch(const GURL&) const;
+  // Returns a pointer to a Match structure holding all matching entries.
+  // If no matching Entry is found, returns null. Ownership belongs to the
+  // caller.
+  Match* findMatch(const GURL&) const;
 
   // Helper to remove cookies from a header.
   static std::string StripCookies(const std::string&);
@@ -155,11 +168,17 @@ class Blacklist {
   static std::string StripCookieExpiry(const std::string&);
 
  private:
+  // Matches a pattern to a core URL which is host/path with all the other
+  // optional parts (scheme, user, password, port) stripped away. Used only
+  // internally but made static so that access can be given to tests.
+  static bool Matches(const std::string& pattern, const std::string& url);
+
   std::vector<Entry*> blacklist_;
   std::vector<Provider*> providers_;
 
   FRIEND_TEST(BlacklistTest, Generic);
+  FRIEND_TEST(BlacklistTest, PatternMatch);
   DISALLOW_COPY_AND_ASSIGN(Blacklist);
 };
 
-#endif
+#endif  // CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_H_

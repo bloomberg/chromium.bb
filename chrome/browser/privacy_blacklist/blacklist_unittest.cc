@@ -60,9 +60,55 @@ TEST(BlacklistTest, Generic) {
   EXPECT_EQ("Sample", blacklist.providers_.front()->name());
   EXPECT_EQ("http://www.google.com", blacklist.providers_.front()->url());
 
-  // Empty blacklist should not match any URL.
+  // No match for chrome, about or empty URLs.
   EXPECT_FALSE(blacklist.findMatch(GURL()));
-  EXPECT_FALSE(blacklist.findMatch(GURL("http://www.google.com")));
+  EXPECT_FALSE(blacklist.findMatch(GURL("chrome://new-tab")));
+  EXPECT_FALSE(blacklist.findMatch(GURL("about:blank")));
+
+  // Expected rule matches.
+  Blacklist::Match* match;
+  match = blacklist.findMatch(GURL("http://www.google.com"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
+              match->attributes());
+    EXPECT_EQ(1U, match->entries().size());
+  }
+
+  match = blacklist.findMatch(GURL("http://www.site.com/bad/url"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(Blacklist::kBlockAll|
+              Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
+              match->attributes());
+    EXPECT_EQ(2U, match->entries().size());
+  }
+
+  match = blacklist.findMatch(GURL("http://www.site.com/anonymous"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
+              match->attributes());
+    EXPECT_EQ(1U, match->entries().size());
+  }
+
+  match = blacklist.findMatch(GURL("http://www.site.com/anonymous/folder"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
+      match->attributes());
+    EXPECT_EQ(1U, match->entries().size());
+  }
+
+  match = blacklist.findMatch(
+      GURL("http://www.site.com/anonymous/folder/subfolder"));
+  EXPECT_TRUE(match);
+  if (match) {
+    EXPECT_EQ(Blacklist::kDontSendUserAgent|Blacklist::kDontSendReferrer|
+              Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
+              match->attributes());
+    EXPECT_EQ(2U, match->entries().size());
+  }
 
   // StripCookieExpiry Tests
   std::string cookie1(
@@ -74,17 +120,25 @@ TEST(BlacklistTest, Generic) {
   std::string cookie3(
     "PREF=ID=14a549990453e42a:TM=1245183232:LM=1245183232:S=Occ7khRVIEE36Ao5;"
     " expires=Thu, 17-Jun-2011 02:13:52 GMT; path=/; domain=.google.com");
+  std::string cookie4("E=MC^2; path=relative;  expires=never;");
+  std::string cookie5("E=MC^2; path=relative;");
 
   // No expiry, should be equal to itself after stripping.
-  EXPECT_TRUE(cookie2 == Blacklist::StripCookieExpiry(cookie2));
+  EXPECT_EQ(cookie2, Blacklist::StripCookieExpiry(cookie2));
+  EXPECT_EQ(cookie5, Blacklist::StripCookieExpiry(cookie5));
 
   // Expiry, should be equal to non-expiry version after stripping.
-  EXPECT_TRUE(cookie2 == Blacklist::StripCookieExpiry(cookie1));
+  EXPECT_EQ(cookie2, Blacklist::StripCookieExpiry(cookie1));
+  EXPECT_EQ(cookie5, Blacklist::StripCookieExpiry(cookie4));
+
+  // Same cookie other than expiry should be same after stripping.
+  EXPECT_EQ(Blacklist::StripCookieExpiry(cookie2),
+            Blacklist::StripCookieExpiry(cookie3));
 
   // Edge cases.
-  EXPECT_TRUE(std::string() == Blacklist::StripCookieExpiry(std::string()));
-  EXPECT_TRUE(Blacklist::StripCookieExpiry(cookie2) ==
-              Blacklist::StripCookieExpiry(cookie3));
+  std::string invalid("#$%^&*()_+");
+  EXPECT_EQ(invalid, Blacklist::StripCookieExpiry(invalid));
+  EXPECT_EQ(std::string(), Blacklist::StripCookieExpiry(std::string()));
 
   // StripCookies Test. Note that "\r\n" line terminators are used
   // because the underlying net util uniformizes those when stripping
@@ -104,4 +158,53 @@ TEST(BlacklistTest, Generic) {
   EXPECT_TRUE(header1 == Blacklist::StripCookies(header1));
   EXPECT_TRUE(header2 == Blacklist::StripCookies(header2));
   EXPECT_TRUE(header4 == Blacklist::StripCookies(header3));
+}
+
+TEST(BlacklistTest, PatternMatch) {
+  // @ matches all but empty strings.
+  EXPECT_TRUE(Blacklist::Matches("@", "foo.com"));
+  EXPECT_TRUE(Blacklist::Matches("@", "path"));
+  EXPECT_TRUE(Blacklist::Matches("@", "foo.com/path"));
+  EXPECT_TRUE(Blacklist::Matches("@", "x"));
+  EXPECT_FALSE(Blacklist::Matches("@", ""));
+  EXPECT_FALSE(Blacklist::Matches("@", std::string()));
+
+  // Prefix match.
+  EXPECT_TRUE(Blacklist::Matches("prefix@", "prefix.com"));
+  EXPECT_TRUE(Blacklist::Matches("prefix@", "prefix.com/path"));
+  EXPECT_TRUE(Blacklist::Matches("prefix@", "prefix/path"));
+  EXPECT_TRUE(Blacklist::Matches("prefix@", "prefix/prefix"));
+  EXPECT_FALSE(Blacklist::Matches("prefix@", "prefix"));
+  EXPECT_FALSE(Blacklist::Matches("prefix@", "Xprefix"));
+  EXPECT_FALSE(Blacklist::Matches("prefix@", "Y.Xprefix"));
+  EXPECT_FALSE(Blacklist::Matches("prefix@", "Y/Xprefix"));
+
+  // Postfix match.
+  EXPECT_TRUE(Blacklist::Matches("@postfix", "something.postfix"));
+  EXPECT_TRUE(Blacklist::Matches("@postfix", "something/postfix"));
+  EXPECT_TRUE(Blacklist::Matches("@postfix", "foo.com/something/postfix"));
+  EXPECT_FALSE(Blacklist::Matches("@postfix", "postfix"));
+  EXPECT_FALSE(Blacklist::Matches("@postfix", "postfixZ"));
+  EXPECT_FALSE(Blacklist::Matches("@postfix", "postfixZ.Y"));
+
+  // Infix matches.
+  EXPECT_TRUE(Blacklist::Matches("@evil@", "www.evil.com"));
+  EXPECT_TRUE(Blacklist::Matches("@evil@", "www.evil.com/whatever"));
+  EXPECT_TRUE(Blacklist::Matches("@evil@", "www.whatever.com/evilpath"));
+  EXPECT_TRUE(Blacklist::Matches("@evil@", "www.evil.whatever.com"));
+  EXPECT_FALSE(Blacklist::Matches("@evil@", "evil"));
+  EXPECT_FALSE(Blacklist::Matches("@evil@", "evil/"));
+  EXPECT_FALSE(Blacklist::Matches("@evil@", "/evil"));
+
+  // Outfix matches.
+  EXPECT_TRUE(Blacklist::Matches("really@bad", "really/bad"));
+  EXPECT_TRUE(Blacklist::Matches("really@bad", "really.com/bad"));
+  EXPECT_TRUE(Blacklist::Matches("really@bad", "really.com/path/bad"));
+  EXPECT_TRUE(Blacklist::Matches("really@bad", "really.evil.com/path/bad"));
+  EXPECT_FALSE(Blacklist::Matches("really@bad", "really.bad.com"));
+  EXPECT_FALSE(Blacklist::Matches("really@bad", "reallybad"));
+  EXPECT_FALSE(Blacklist::Matches("really@bad", ".reallybad"));
+  EXPECT_FALSE(Blacklist::Matches("really@bad", "reallybad."));
+  EXPECT_FALSE(Blacklist::Matches("really@bad", "really.bad."));
+  EXPECT_FALSE(Blacklist::Matches("really@bad", ".really.bad"));
 }

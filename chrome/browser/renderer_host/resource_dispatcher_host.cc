@@ -358,10 +358,11 @@ void ResourceDispatcherHost::BeginRequest(
   }
 
   // Note that context can still be NULL here when running unit tests.
-  const Blacklist::Entry* entry = context && context->blacklist() ?
+  Blacklist::Match* match = context && context->blacklist() ?
       context->blacklist()->findMatch(request_data.url) : NULL;
-  if (entry && entry->IsBlocked(request_data.url)) {
+  if (match && match->IsBlocked(request_data.url)) {
     // TODO(idanan): Send a ResourceResponse to replace the blocked resource.
+    delete match;
     return;
   }
 
@@ -392,14 +393,13 @@ void ResourceDispatcherHost::BeginRequest(
 
   // Construct the request.
   URLRequest* request = new URLRequest(request_data.url, this);
-  if (entry && entry->attributes()) {
-    request->SetUserData((void*)&Blacklist::kRequestDataKey,
-                         new Blacklist::RequestData(entry));
+  if (match) {
+    request->SetUserData((void*)&Blacklist::kRequestDataKey, match);
   }
   request->set_method(request_data.method);
   request->set_first_party_for_cookies(request_data.first_party_for_cookies);
 
-  if (!entry || !(entry->attributes() & Blacklist::kDontSendReferrer))
+  if (!match || !(match->attributes() & Blacklist::kDontSendReferrer))
     request->set_referrer(request_data.referrer.spec());
 
   request->SetExtraRequestHeaders(request_data.headers);

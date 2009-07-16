@@ -18,6 +18,7 @@
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/file_system_accessor.h"
@@ -424,8 +425,22 @@ void ResourceMessageFilter::OnSetCookie(const GURL& url,
                                         const std::string& cookie) {
   URLRequestContext* context = url.SchemeIs(chrome::kExtensionScheme) ?
       extensions_request_context_.get() : request_context_.get();
-  if (context->cookie_policy()->CanSetCookie(url, first_party_for_cookies))
-    context->cookie_store()->SetCookie(url, cookie);
+  if (context->cookie_policy()->CanSetCookie(url, first_party_for_cookies)) {
+    if (context->blacklist()) {
+      Blacklist::Match* match = context->blacklist()->findMatch(url);
+      if (match) {
+        if (match->attributes() & Blacklist::kDontPersistCookies) {
+          context->cookie_store()->SetCookie(url,
+              Blacklist::StripCookieExpiry(cookie));
+        } else if (!(match->attributes() & Blacklist::kDontStoreCookies)) {
+          context->cookie_store()->SetCookie(url, cookie);
+        }
+        delete match;
+      }
+    } else {
+      context->cookie_store()->SetCookie(url, cookie);
+    }
+  }
 }
 
 void ResourceMessageFilter::OnGetCookies(const GURL& url,
