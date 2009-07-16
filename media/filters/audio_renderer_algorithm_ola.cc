@@ -7,7 +7,6 @@
 #include <cmath>
 
 #include "media/base/buffers.h"
-#include "media/base/data_buffer.h"
 
 namespace media {
 
@@ -24,21 +23,20 @@ AudioRendererAlgorithmOLA::AudioRendererAlgorithmOLA()
 AudioRendererAlgorithmOLA::~AudioRendererAlgorithmOLA() {
 }
 
-size_t AudioRendererAlgorithmOLA::FillBuffer(DataBuffer* buffer_out) {
+size_t AudioRendererAlgorithmOLA::FillBuffer(uint8* dest, size_t length) {
   if (IsQueueEmpty())
     return 0;
   if (playback_rate() == 0.0f)
     return 0;
 
-  // Grab info from |buffer_out| and handle the simple case of normal playback.
-  size_t dest_remaining = buffer_out->GetDataSize();
-  uint8* dest = buffer_out->GetWritableData();
   size_t dest_written = 0;
+
+  // Handle the simple case of normal playback.
   if (playback_rate() == 1.0f) {
-    if (QueueSize() < dest_remaining)
+    if (QueueSize() < length)
       dest_written = CopyFromInput(dest, QueueSize());
     else
-      dest_written = CopyFromInput(dest, dest_remaining);
+      dest_written = CopyFromInput(dest, length);
     AdvanceInputPosition(dest_written);
     return dest_written;
   }
@@ -46,7 +44,7 @@ size_t AudioRendererAlgorithmOLA::FillBuffer(DataBuffer* buffer_out) {
   // For other playback rates, OLA with crossfade!
   // TODO(kylep): Limit the rates to reasonable values. We may want to do this
   // on the UI side or in set_playback_rate().
-  while (dest_remaining >= output_step_ + crossfade_size_) {
+  while (length >= output_step_ + crossfade_size_) {
     // If we don't have enough data to completely finish this loop, quit.
     if (QueueSize() < window_size_)
       break;
@@ -56,7 +54,7 @@ size_t AudioRendererAlgorithmOLA::FillBuffer(DataBuffer* buffer_out) {
     // our tally of remaing requested.
     size_t copied = CopyFromInput(dest, output_step_ + crossfade_size_);
     dest_written += copied;
-    dest_remaining -= copied;
+    length -= copied;
 
     // Advance pointers for crossfade.
     dest += output_step_;

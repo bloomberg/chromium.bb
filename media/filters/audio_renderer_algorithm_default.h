@@ -14,15 +14,13 @@
 
 namespace media {
 
-class DataBuffer;
-
 class AudioRendererAlgorithmDefault : public AudioRendererAlgorithmBase {
  public:
   AudioRendererAlgorithmDefault();
   virtual ~AudioRendererAlgorithmDefault();
 
   // AudioRendererAlgorithmBase implementation
-  virtual size_t FillBuffer(DataBuffer* buffer_out);
+  virtual size_t FillBuffer(uint8* dest, size_t length);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithmDefault);

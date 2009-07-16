@@ -16,15 +16,13 @@
 
 namespace media {
 
-class DataBuffer;
-
 class AudioRendererAlgorithmOLA : public AudioRendererAlgorithmBase {
  public:
   AudioRendererAlgorithmOLA();
   virtual ~AudioRendererAlgorithmOLA();
 
   // AudioRendererAlgorithmBase implementation
-  virtual size_t FillBuffer(DataBuffer* buffer_out);
+  virtual size_t FillBuffer(uint8* dest, size_t length);
 
   virtual void set_playback_rate(float new_rate);
 

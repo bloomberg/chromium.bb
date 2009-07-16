@@ -33,7 +33,6 @@
 namespace media {
 
 class Buffer;
-class DataBuffer;
 
 class AudioRendererAlgorithmBase {
  public:
@@ -50,10 +49,10 @@ class AudioRendererAlgorithmBase {
                           float initial_playback_rate,
                           RequestReadCallback* callback);
 
-  // Implement this strategy method in derived classes. Fills |buffer_out| with
-  // possibly scaled data from our |queue_|. |buffer_out| must be initialized
-  // and have a datasize. Returns the number of bytes copied into |buffer_out|.
-  virtual size_t FillBuffer(DataBuffer* buffer_out) = 0;
+  // Implement this strategy method in derived classes. Tries to fill |length|
+  // bytes of |dest| with possibly scaled data from our |queue_|. Returns the
+  // number of bytes copied into |dest|.
+  virtual size_t FillBuffer(uint8* dest, size_t length) = 0;
 
   // Clears |queue_|.
   virtual void FlushBuffers();
