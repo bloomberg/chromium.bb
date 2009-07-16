@@ -30,6 +30,8 @@ import urllib
 import webbrowser
 import zipfile
 
+import google.path_utils
+
 from layout_package import path_utils
 from layout_package import platform_utils_linux
 from layout_package import platform_utils_mac
@@ -359,6 +361,10 @@ class Rebaseliner(object):
         logging.debug('  Expected file full path: "%s"', expected_fullpath)
 
         data = zip_file.read(archive_test_name)
+
+        # Create the new baseline directory if it doesn't already exist.
+        google.path_utils.MaybeMakeDirectory(os.path.dirname(expected_fullpath))
+
         f = open(expected_fullpath, 'wb')
         f.write(data)
         f.close()
@@ -412,20 +418,29 @@ class Rebaseliner(object):
       False otherwise.
     """
 
+    if not filename:
+      return False
+
     status_output = RunShell(['svn', 'status', filename], False)
     output = status_output.upper()
     if output.startswith('A') or output.startswith('M'):
       logging.info('  File already added to SVN: "%s"', filename)
       return True
 
+    if output.find('IS NOT A WORKING COPY') >= 0:
+      parent_dir = os.path.split(filename)[0]
+      logging.info('  File is not a working copy, add its parent: "%s"',
+                   parent_dir)
+      return self._SvnAdd(parent_dir)
+
     add_output = RunShell(['svn', 'add', filename], True)
     output = add_output.upper().rstrip()
-    if output.startswith('A') and output.endswith(filename.upper()):
+    if output.startswith('A') and output.find(filename.upper()) >= 0:
       logging.info('  Added new file: "%s"', filename)
       return True
 
     if (not status_output) and (add_output.upper().find(
-        'ALREADY UNDER VERSION CONTROL')):
+        'ALREADY UNDER VERSION CONTROL') >= 0):
       logging.info('  File already under SVN and has no change: "%s"', filename)
       return True
 
