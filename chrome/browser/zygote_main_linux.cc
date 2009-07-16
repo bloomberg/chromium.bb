@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/signal.h>
 #include <sys/prctl.h>
+#include <sys/wait.h>
 
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
@@ -219,6 +220,9 @@ static bool MaybeEnterChroot() {
       LOG(ERROR) << "Failed to write to chroot pipe: " << errno;
       return false;
     }
+
+    // We need to reap the chroot helper process in any event:
+    wait(NULL);
 
     char reply;
     if (HANDLE_EINTR(read(fd, &reply, 1)) != 1) {
