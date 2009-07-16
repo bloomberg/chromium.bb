@@ -33,7 +33,7 @@ class PasswordStoreMacTest : public testing::Test {
         kSecProtocolTypeHTTP, NULL, 0, NULL, "20000101000000Z",
         "", "", true },
       // De-facto negative item, type one.
-      {kSecAuthenticationTypeHTMLForm, "dont.remember.com",
+      { kSecAuthenticationTypeHTMLForm, "dont.remember.com",
         kSecProtocolTypeHTTP, NULL, 0, NULL, "20000101000000Z",
         "Password Not Stored", "", false },
       // De-facto negative item, type two.
@@ -55,8 +55,8 @@ class PasswordStoreMacTest : public testing::Test {
         "abc", "123", false },
     };
 
-    // Save one slot for use by AddInternetPassword.
-    unsigned int capacity = arraysize(test_data) + 1;
+    // Save some extra slots for use by AddInternetPassword.
+    unsigned int capacity = arraysize(test_data) + 3;
     keychain_ = new MockKeychain(capacity);
 
     for (unsigned int i = 0; i < arraysize(test_data); ++i) {
@@ -485,7 +485,8 @@ TEST_F(PasswordStoreMacTest, TestKeychainAdd) {
   owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
 
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
-    PasswordForm* in_form = CreatePasswordFormFromData(test_data[i].data);
+    scoped_ptr<PasswordForm> in_form(
+        CreatePasswordFormFromData(test_data[i].data));
     bool add_succeeded = owned_keychain_adapter.AddPassword(*in_form);
     EXPECT_EQ(test_data[i].should_succeed, add_succeeded);
     if (add_succeeded) {
@@ -498,7 +499,6 @@ TEST_F(PasswordStoreMacTest, TestKeychainAdd) {
       EXPECT_EQ(out_form->username_value, in_form->username_value);
       EXPECT_EQ(out_form->password_value, in_form->password_value);
     }
-    delete in_form;
   }
 
   // Test that adding duplicate item updates the existing item.
@@ -508,7 +508,7 @@ TEST_F(PasswordStoreMacTest, TestKeychainAdd) {
       "http://some.domain.com/insecure.html", NULL,
       NULL, NULL, NULL, L"joe_user", L"updated_password", false, false, 0
     };
-    PasswordForm* update_form = CreatePasswordFormFromData(data);
+    scoped_ptr<PasswordForm> update_form(CreatePasswordFormFromData(data));
     MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
     EXPECT_TRUE(keychain_adapter.AddPassword(*update_form));
     SecKeychainItemRef keychain_item = reinterpret_cast<SecKeychainItemRef>(2);
@@ -517,7 +517,6 @@ TEST_F(PasswordStoreMacTest, TestKeychainAdd) {
                                                                 keychain_item,
                                                                 &stored_form);
     EXPECT_EQ(update_form->password_value, stored_form.password_value);
-    delete update_form;
   }
 }
 
@@ -818,4 +817,38 @@ TEST_F(PasswordStoreMacTest, TestPasswordBulkLookup) {
 
   STLDeleteElements(&database_forms);
   STLDeleteElements(&merged_forms);
+}
+
+TEST_F(PasswordStoreMacTest, TestPasswordGetAll) {
+  MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_);
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
+
+  // Add a few passwords of various types so that we own some.
+  PasswordFormData owned_password_data[] = {
+    { PasswordForm::SCHEME_HTML, "http://web.site.com/",
+      "http://web.site.com/path/to/page.html", NULL, NULL, NULL, NULL,
+      L"anonymous", L"knock-knock", false, false, 0 },
+    { PasswordForm::SCHEME_BASIC, "http://a.site.com:2222/therealm",
+      "http://a.site.com:2222/", NULL, NULL, NULL, NULL,
+      L"username", L"password", false, false, 0 },
+    { PasswordForm::SCHEME_DIGEST, "https://digest.site.com/differentrealm",
+      "https://digest.site.com/secure.html", NULL, NULL, NULL, NULL,
+      L"testname", L"testpass", false, false, 0 },
+  };
+  for (unsigned int i = 0; i < arraysize(owned_password_data); ++i) {
+    scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(
+        owned_password_data[i]));
+    owned_keychain_adapter.AddPassword(*form);
+  }
+
+  std::vector<PasswordForm*> all_passwords =
+      keychain_adapter.GetAllPasswordFormPasswords();
+  EXPECT_EQ(8 + arraysize(owned_password_data), all_passwords.size());
+  STLDeleteElements(&all_passwords);
+
+  std::vector<PasswordForm*> owned_passwords =
+      owned_keychain_adapter.GetAllPasswordFormPasswords();
+  EXPECT_EQ(arraysize(owned_password_data), owned_passwords.size());
+  STLDeleteElements(&owned_passwords);
 }

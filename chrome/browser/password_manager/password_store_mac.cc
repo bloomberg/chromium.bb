@@ -472,13 +472,7 @@ std::vector<PasswordForm*>
       MatchingKeychainItems(query_form.signon_realm, query_form.scheme,
                             NULL, NULL);
 
-  std::vector<PasswordForm*> keychain_forms =
-      CreateFormsFromKeychainItems(keychain_items);
-  for (std::vector<SecKeychainItemRef>::iterator i = keychain_items.begin();
-       i != keychain_items.end(); ++i) {
-    keychain_->Free(*i);
-  }
-  return keychain_forms;
+  return ConvertKeychainItemsToForms(&keychain_items);
 }
 
 std::vector<PasswordForm*>
@@ -489,13 +483,7 @@ std::vector<PasswordForm*>
       MatchingKeychainItems(query_form.signon_realm, query_form.scheme,
                             NULL, username.c_str());
 
-  std::vector<PasswordForm*> keychain_forms =
-      CreateFormsFromKeychainItems(keychain_items);
-  for (std::vector<SecKeychainItemRef>::iterator i = keychain_items.begin();
-       i != keychain_items.end(); ++i) {
-    keychain_->Free(*i);
-  }
-  return keychain_forms;
+  return ConvertKeychainItemsToForms(&keychain_items);
 }
 
 PasswordForm* MacKeychainPasswordFormAdapter::PasswordExactlyMatchingForm(
@@ -510,6 +498,26 @@ PasswordForm* MacKeychainPasswordFormAdapter::PasswordExactlyMatchingForm(
     return form;
   }
   return NULL;
+}
+
+std::vector<PasswordForm*>
+    MacKeychainPasswordFormAdapter::GetAllPasswordFormPasswords() {
+  SecAuthenticationType supported_auth_types[] = {
+    kSecAuthenticationTypeHTMLForm,
+    kSecAuthenticationTypeHTTPBasic,
+    kSecAuthenticationTypeHTTPDigest,
+  };
+  OSType creator = finds_only_owned_ ? kChromeKeychainCreatorCode : 0;
+
+  std::vector<SecKeychainItemRef> matches;
+  for (unsigned int i = 0; i < arraysize(supported_auth_types); ++i) {
+    KeychainSearch keychain_search(*keychain_);
+    keychain_search.Init(NULL, 0, kSecProtocolTypeAny, supported_auth_types[i],
+                         NULL, NULL, NULL, creator);
+    keychain_search.FindMatchingItems(&matches);
+  }
+
+  return ConvertKeychainItemsToForms(&matches);
 }
 
 bool MacKeychainPasswordFormAdapter::AddPassword(const PasswordForm& form) {
@@ -570,17 +578,19 @@ void MacKeychainPasswordFormAdapter::SetFindsOnlyOwnedItems(
 }
 
 std::vector<PasswordForm*>
-    MacKeychainPasswordFormAdapter::CreateFormsFromKeychainItems(
-        const std::vector<SecKeychainItemRef>& items) {
+    MacKeychainPasswordFormAdapter::ConvertKeychainItemsToForms(
+        std::vector<SecKeychainItemRef>* items) {
   std::vector<PasswordForm*> keychain_forms;
-  for (std::vector<SecKeychainItemRef>::const_iterator i = items.begin();
-       i != items.end(); ++i) {
+  for (std::vector<SecKeychainItemRef>::const_iterator i = items->begin();
+       i != items->end(); ++i) {
     PasswordForm* form = new PasswordForm();
     if (internal_keychain_helpers::FillPasswordFormFromKeychainItem(*keychain_,
                                                                     *i, form)) {
       keychain_forms.push_back(form);
     }
+    keychain_->Free(*i);
   }
+  items->clear();
   return keychain_forms;
 }
 
@@ -750,7 +760,18 @@ void PasswordStoreMac::RemoveLoginImpl(const PasswordForm& form) {
 
 void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
     const base::Time& delete_begin, const base::Time& delete_end) {
-  NOTIMPLEMENTED();
+  login_metadata_db_->RemoveLoginsCreatedBetween(delete_begin, delete_end);
+
+  // We can't delete from the Keychain by date because we may be sharing items
+  // with database entries that weren't in the delete range. Instead, we find
+  // all the Keychain items we own but aren't using any more and delete those.
+  std::vector<PasswordForm*> orphan_keychain_forms = GetUnusedKeychainForms();
+  // This is inefficient, since we have to re-look-up each keychain item one at
+  // a time to delete it even though the search step already had a list of
+  // Keychain item references. If this turns out to be noticeably slow we'll
+  // need to rearchitect to allow the search and deletion steps to share.
+  RemoveKeychainForms(orphan_keychain_forms);
+  STLDeleteElements(&orphan_keychain_forms);
 }
 
 void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
@@ -838,10 +859,41 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
   return has_match;
 }
 
+std::vector<PasswordForm*> PasswordStoreMac::GetUnusedKeychainForms() {
+  std::vector<PasswordForm*> database_forms;
+  login_metadata_db_->GetAllLogins(&database_forms, false);
+  
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_.get());
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
+  std::vector<PasswordForm*> owned_keychain_forms =
+      owned_keychain_adapter.GetAllPasswordFormPasswords();
+  
+  // Run a merge; anything left in owned_keychain_forms when we are done no
+  // longer has a matching database entry.
+  std::vector<PasswordForm*> merged_forms;
+  internal_keychain_helpers::MergePasswordForms(&owned_keychain_forms,
+                                                &database_forms,
+                                                &merged_forms);
+  STLDeleteElements(&merged_forms);
+  STLDeleteElements(&database_forms);
+
+  return owned_keychain_forms;
+}
+
 void PasswordStoreMac::RemoveDatabaseForms(
     const std::vector<PasswordForm*>& forms) {
   for (std::vector<PasswordForm*>::const_iterator i = forms.begin();
        i != forms.end(); ++i) {
     login_metadata_db_->RemoveLogin(**i);
+  }
+}
+
+void PasswordStoreMac::RemoveKeychainForms(
+    const std::vector<PasswordForm*>& forms) {
+  MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_.get());
+  owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
+  for (std::vector<PasswordForm*>::const_iterator i = forms.begin();
+       i != forms.end(); ++i) {
+    owned_keychain_adapter.RemovePassword(**i);
   }
 }

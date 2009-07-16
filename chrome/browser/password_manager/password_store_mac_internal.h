@@ -40,6 +40,9 @@ class MacKeychainPasswordFormAdapter {
   webkit_glue::PasswordForm* PasswordExactlyMatchingForm(
       const webkit_glue::PasswordForm& query_form);
 
+  // Returns all keychain items of types corresponding to password forms.
+  std::vector<webkit_glue::PasswordForm*> GetAllPasswordFormPasswords();
+
   // Creates a new keychain entry from |form|, or updates the password of an
   // existing keychain entry if there is a collision. Returns true if a keychain
   // entry was successfully added/updated.
@@ -54,10 +57,11 @@ class MacKeychainPasswordFormAdapter {
   void SetFindsOnlyOwnedItems(bool finds_only_owned);
 
  private:
-  // Returns PasswordForms constructed from the given Keychain items.
+  // Returns PasswordForms constructed from the given Keychain items, calling
+  // MacKeychain::Free on all of the keychain items and clearing the vector.
   // Caller is responsible for deleting the returned forms.
-  std::vector<webkit_glue::PasswordForm*> CreateFormsFromKeychainItems(
-      const std::vector<SecKeychainItemRef>& items);
+  std::vector<webkit_glue::PasswordForm*> ConvertKeychainItemsToForms(
+      std::vector<SecKeychainItemRef>* items);
 
   // Searches |keychain| for the specific keychain entry that corresponds to the
   // given form, and returns it (or NULL if no match is found). The caller is

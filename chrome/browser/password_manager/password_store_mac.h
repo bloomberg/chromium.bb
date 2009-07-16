@@ -13,6 +13,11 @@
 class LoginDatabaseMac;
 class MacKeychain;
 
+// Implements PasswordStore on top of the OS X Keychain, with an internal
+// database for extra metadata. For an overview of the interactions with the
+// Keychain, as well as the rationale for some of the behaviors, see the
+// Keychain integration design doc:
+// http://dev.chromium.org/developers/design-documents/os-x-password-manager-keychain-integration
 class PasswordStoreMac : public PasswordStore {
  public:
   // Takes ownership of |keychain| and |login_db|, both of which must be
@@ -41,8 +46,17 @@ class PasswordStoreMac : public PasswordStore {
   bool DatabaseHasFormMatchingKeychainForm(
       const webkit_glue::PasswordForm& form);
 
+  // Returns all the Keychain entries that we own but no longer have
+  // corresponding metadata for in our database.
+  // Caller is responsible for deleting the forms.
+  std::vector<webkit_glue::PasswordForm*> GetUnusedKeychainForms();
+
   // Removes the given forms from the database.
   void RemoveDatabaseForms(
+      const std::vector<webkit_glue::PasswordForm*>& forms);
+
+  // Removes the given forms from the Keychain.
+  void RemoveKeychainForms(
       const std::vector<webkit_glue::PasswordForm*>& forms);
 
   scoped_ptr<MacKeychain> keychain_;
