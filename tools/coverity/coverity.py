@@ -19,6 +19,9 @@ Usage examples:
 
 For a full list of options, pass the '--help' switch.
 
+See http://support.microsoft.com/kb/308569 for running this script as a
+Scheduled Task on Windows XP.
+
 """
 
 import optparse
@@ -44,10 +47,15 @@ COVERITY_INTERMEDIATE_DIR = 'C:\\coverity\\cvbuild\\cr_int'
 
 COVERITY_DATABASE_DIR = 'C:\\coverity\\cvbuild\\db'
 
-COVERITY_ANALYZE_OPTIONS = ('--all --enable-single-virtual '
+COVERITY_ANALYZE_OPTIONS = ('--cxx --security --concurrency '
+                            '--enable ATOMICITY '
+                            '--enable MISSING_LOCK '
+                            '--enable DELETE_VOID '
+                            '--checker-option PASS_BY_VALUE:size_threshold:16 '
+                            '--checker-option '
+                            'USE_AFTER_FREE:allow_simple_use:false '
                             '--enable-constraint-fpp '
-                            '--enable-callgraph-metrics '
-                            '--checker-option PASS_BY_VALUE:size_threshold:16')
+                            '--enable-callgraph-metrics')
 
 COVERITY_PRODUCT = 'Chromium'
 
