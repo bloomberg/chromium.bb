@@ -47,4 +47,10 @@ class DownloadShelf;
 // Resizes the download shelf based on the state of the content area.
 - (void)resizeDownloadShelf;
 
+// Remove a download, possibly via clearing browser data.
+- (void)remove:(DownloadItemController*)download;
+
+// Notification that we are closing and should release our downloads.
+- (void)exiting;
+
 @end

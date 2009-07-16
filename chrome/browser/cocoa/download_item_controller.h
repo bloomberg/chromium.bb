@@ -9,6 +9,7 @@
 class BaseDownloadItemModel;
 class DownloadItemMac;
 class DownloadShelfContextMenuMac;
+@class DownloadShelfController;
 
 // A controller class that manages one download item.
 
@@ -21,14 +22,21 @@ class DownloadShelfContextMenuMac;
 
   scoped_ptr<DownloadItemMac> bridge_;
   scoped_ptr<DownloadShelfContextMenuMac> menuBridge_;
+
+  // Weak pointer to the shelf that owns us.
+  DownloadShelfController* shelf_;
 };
 
 // Takes ownership of |downloadModel|.
 - (id)initWithFrame:(NSRect)frameRect
-              model:(BaseDownloadItemModel*)downloadModel;
+              model:(BaseDownloadItemModel*)downloadModel
+              shelf:(DownloadShelfController*)shelf;
 
 // Updates the UI and menu state from |downloadModel|.
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel;
+
+// Remove ourself from the download UI.
+- (void)remove;
 
 // Context menu handlers.
 - (IBAction)handleOpen:(id)sender;

@@ -203,6 +203,8 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)dealloc {
   browser_->CloseAllTabs();
+  [downloadShelfController_ exiting];
+
   // Under certain testing configurations we may not actually own the browser.
   if (ownsBrowser_ == NO)
     browser_.release();

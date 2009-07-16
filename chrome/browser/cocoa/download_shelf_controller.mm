@@ -109,6 +109,25 @@ const int kDownloadItemPadding = 10;
   [[self view] setFrame:barFrame];
 }
 
+- (void)remove:(DownloadItemController*)download {
+  // Look for the download in our controller array and remove it. This will
+  // explicity release it so that it removes itself as an Observer of the
+  // DownloadItem. We don't want to wait for autorelease since the DownloadItem
+  // we are observing will likely be gone by then.
+  [[download view] removeFromSuperview];
+  [downloadItemControllers_ removeObject:download];
+
+  // Check to see if we have any downloads remaining and if not, hide the shelf.
+  if (![downloadItemControllers_ count])
+    [self showDownloadShelf:NO];
+}
+
+// We need to explicitly release our download controllers here since they need
+// to remove themselves as observers before the remaining shutdown happens.
+- (void)exiting {
+  downloadItemControllers_.reset();
+}
+
 // Show or hide the bar based on the value of |enable|. Handles animating the
 // resize of the content view.
 - (void)showDownloadShelf:(BOOL)enable {
@@ -174,7 +193,9 @@ const int kDownloadItemPadding = 10;
   NSRect position = NSMakeRect(startX, kDownloadItemBorderPadding,
                                kDownloadItemWidth, kDownloadItemHeight);
   scoped_nsobject<DownloadItemController> controller(
-      [[DownloadItemController alloc] initWithFrame:position model:model]);
+      [[DownloadItemController alloc] initWithFrame:position
+                                              model:model
+                                              shelf:self]);
   [downloadItemControllers_ addObject:controller.get()];
 
   [[self view] addSubview:[controller.get() view]];

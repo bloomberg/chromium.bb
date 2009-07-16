@@ -22,5 +22,16 @@ DownloadItemMac::~DownloadItemMac() {
 void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
   DCHECK_EQ(download, download_model_->download());
 
-  [item_controller_ setStateFromDownload:download_model_.get()];
+  switch (download_model_->download()->state()) {
+    case DownloadItem::REMOVING:
+      [item_controller_ remove];  // We're deleted now!
+      break;
+    case DownloadItem::IN_PROGRESS:
+    case DownloadItem::CANCELLED:
+    case DownloadItem::COMPLETE:
+      [item_controller_ setStateFromDownload:download_model_.get()];
+      break;
+    default:
+        NOTREACHED();
+  }
 }

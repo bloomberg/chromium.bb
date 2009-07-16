@@ -33,12 +33,15 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 @implementation DownloadItemController
 
 - (id)initWithFrame:(NSRect)frameRect
-              model:(BaseDownloadItemModel*)downloadModel {
+              model:(BaseDownloadItemModel*)downloadModel
+              shelf:(DownloadShelfController*)shelf {
   if ((self = [super initWithNibName:@"DownloadItem"
                               bundle:mac_util::MainAppBundle()])) {
     // Must be called before [self view], so that bridge_ is set in awakeFromNib
     bridge_.reset(new DownloadItemMac(downloadModel, self));
     menuBridge_.reset(new DownloadShelfContextMenuMac(downloadModel));
+
+    shelf_ = shelf;
 
     [[self view] setFrame:frameRect];
   }
@@ -82,6 +85,11 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   }
 
   // TODO(thakis): Set status_text as status label.
+}
+
+- (void)remove {
+  // We are deleted after this!
+  [shelf_ remove:self];
 }
 
 // Sets the enabled and checked state of a particular menu item for this
