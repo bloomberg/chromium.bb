@@ -60,10 +60,10 @@ void BlacklistStoreOutput::StoreEntry(const std::string& pattern,
 }
 
 uint32 BlacklistStoreInput::ReadUInt() {
-  char buf[sizeof(uint32)];
-  if (fread(buf, 1, sizeof(uint32), file_) != sizeof(uint32))
+  uint32 buf;
+  if (fread(&buf, 1, sizeof(uint32), file_) != sizeof(uint32))
     return 0;
-  return *reinterpret_cast<uint32*>(buf);
+  return buf;
 }
 
 std::string BlacklistStoreInput::ReadString() {
