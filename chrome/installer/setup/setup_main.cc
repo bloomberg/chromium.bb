@@ -491,11 +491,7 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
                                     int& exit_code) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (cmd_line.HasSwitch(installer_util::switches::kUpdateSetupExe)) {
-    // First to handle situation where the current process hangs or crashes,
-    // we pre-emptively set a flag in registry to get full installer next time.
     installer_util::InstallStatus status = installer_util::SETUP_PATCH_FAILED;
-    dist->UpdateDiffInstallStatus(system_install, true, status);
-
     // If --update-setup-exe command line option is given, we apply the given
     // patch to current exe, and store the resulting binary in the path
     // specified by --new-setup-exe. But we need to first unpack the file
@@ -551,9 +547,6 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
         }
       }
     }
-
-    // If the current patching worked reset the flag set in the registry
-    dist->UpdateDiffInstallStatus(system_install, true, status);
 
     exit_code = dist->GetInstallReturnCode(status);
     if (exit_code) {
