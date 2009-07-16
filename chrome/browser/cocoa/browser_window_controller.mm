@@ -90,6 +90,9 @@ const int kWindowGradientHeight = 24;
 willPositionSheet:(NSWindow*)sheet
        usingRect:(NSRect)defaultSheetRect;
 
+// Assign a theme to the window.
+- (void)setTheme;
+
 // Theme up the window.
 - (void)applyTheme;
 @end
@@ -130,7 +133,7 @@ willPositionSheet:(NSWindow*)sheet
     if ([window_ respondsToSelector:@selector(setBottomCornerRounded:)])
       [window_ setBottomCornerRounded:NO];
 
-    [self applyTheme];
+    [self setTheme];
 
     // Register ourselves for frame changed notifications from the
     // tabContentArea.
@@ -270,18 +273,12 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowDidBecomeMain:(NSNotification*)notification {
   BrowserList::SetLastActive(browser_.get());
   [self saveWindowPositionIfNeeded];
-  NSColor* color = [theme_ backgroundPatternColorForStyle:GTMThemeStyleWindow
-                                                    state:YES];
-  [[self window] setBackgroundColor:color];
+  [self applyTheme];
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
-  NSColor* color = [theme_ backgroundPatternColorForStyle:GTMThemeStyleWindow
-                                                    state:NO];
-  [[self window] setBackgroundColor:color];
+  [self applyTheme];
 }
-
-
 
 // Called when the user clicks the zoom button (or selects it from the Window
 // menu). Zoom to the appropriate size based on the content. Make sure we
@@ -771,6 +768,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)userChangedTheme {
+  [self setTheme];
   [self applyTheme];
 }
 
@@ -957,7 +955,7 @@ willPositionSheet:(NSWindow*)sheet
   return [toolbarController_ customFieldEditorForObject:obj];
 }
 
-- (void)applyTheme {
+- (void)setTheme {
   ThemeProvider* theme_provider = browser_->profile()->GetThemeProvider();
   if (theme_provider) {
     GTMTheme *theme = [GTMTheme themeWithBrowserThemeProvider:
@@ -965,6 +963,13 @@ willPositionSheet:(NSWindow*)sheet
                           isOffTheRecord:browser_->profile()->IsOffTheRecord()];
     theme_.reset([theme retain]);
   }
+}
+
+- (void)applyTheme {
+  NSColor* color =
+      [theme_ backgroundPatternColorForStyle:GTMThemeStyleWindow
+                                       state:[[self window] isMainWindow]];
+  [[self window] setBackgroundColor:color];
 }
 
 @end
