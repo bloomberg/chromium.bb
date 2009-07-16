@@ -22,6 +22,7 @@ class WebDevToolsClientDelegate {
   virtual void CloseWindow() = 0;
   virtual void DockWindow() = 0;
   virtual void UndockWindow() = 0;
+  virtual void ToggleInspectElementMode(bool enabled) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebDevToolsClientDelegate);

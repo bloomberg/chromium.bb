@@ -418,6 +418,10 @@ class RenderViewHost : public RenderWidgetHost,
   void SignalModalDialogEvent();
   void ResetModalDialogEvent();
 
+  void set_in_inspect_element_mode(bool enabled) {
+    in_inspect_element_mode_ = enabled;
+  }
+
  protected:
   // RenderWidgetHost protected overrides.
   virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event);
@@ -522,6 +526,7 @@ class RenderViewHost : public RenderWidgetHost,
   void OnCloseDevToolsWindow();
   void OnDockDevToolsWindow();
   void OnUndockDevToolsWindow();
+  void OnToggleInspectElementMode(bool enabled);
 
   void OnUserMetricsRecordAction(const std::wstring& action);
   void OnMissingPluginStatus(int status);
@@ -617,6 +622,11 @@ class RenderViewHost : public RenderWidgetHost,
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;
+
+  // DevTools triggers this mode when user chooses inspect lens tool.
+  // While in this mode, mouse click is converted into InspectElement
+  // command.
+  bool in_inspect_element_mode_;
 
   NotificationRegistrar registrar_;
 

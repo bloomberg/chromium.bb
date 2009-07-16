@@ -42,6 +42,7 @@ class DevToolsClient : public WebDevToolsClientDelegate {
   virtual void CloseWindow();
   virtual void DockWindow();
   virtual void UndockWindow();
+  virtual void ToggleInspectElementMode(bool enabled);
 
  private:
   void OnRpcMessage(const std::string& class_name,

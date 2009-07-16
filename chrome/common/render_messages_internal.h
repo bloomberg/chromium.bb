@@ -1138,6 +1138,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Detaches dev tools window that is inspecting current render_view_host.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_UndockDevToolsWindow)
 
+  // Detaches dev tools window that is inspecting current render_view_host.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ToggleInspectElementMode,
+                      bool /* enabled */)
+
   // Send back a string to be recorded by UserMetrics.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UserMetricsRecordAction,
                       std::wstring /* action */)

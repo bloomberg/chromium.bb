@@ -226,6 +226,8 @@ RemoteToolsAgentStub.prototype.ExecuteUtilityFunction = function(callId,
       } catch (e) {
         result = [ e.toString(), true ];
       }
+    } else if (functionName == 'InspectorController') {
+      // do nothing;
     } else {
       alert('Unexpected utility function:' + functionName);
     }

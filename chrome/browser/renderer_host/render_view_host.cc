@@ -109,7 +109,8 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       run_modal_reply_msg_(NULL),
       is_waiting_for_unload_ack_(false),
       are_javascript_messages_suppressed_(false),
-      sudden_termination_allowed_(false) {
+      sudden_termination_allowed_(false),
+      in_inspect_element_mode_(false) {
   DCHECK(instance_);
   DCHECK(delegate_);
   if (modal_dialog_event == NULL)
@@ -781,6 +782,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnDockDevToolsWindow);
     IPC_MESSAGE_HANDLER(ViewHostMsg_UndockDevToolsWindow,
                         OnUndockDevToolsWindow);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ToggleInspectElementMode,
+                        OnToggleInspectElementMode);
     IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                         OnUserMetricsRecordAction)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus);
@@ -1328,6 +1331,10 @@ void RenderViewHost::OnUndockDevToolsWindow() {
   DevToolsManager::GetInstance()->UndockWindow(this);
 }
 
+void RenderViewHost::OnToggleInspectElementMode(bool enabled) {
+  DevToolsManager::GetInstance()->ToggleInspectElementMode(this, enabled);
+}
+
 void RenderViewHost::OnUserMetricsRecordAction(const std::wstring& action) {
   UserMetrics::RecordComputedAction(action.c_str(), process()->profile());
 }
@@ -1481,6 +1488,14 @@ gfx::Rect RenderViewHost::GetRootWindowResizerRect() const {
 
 void RenderViewHost::ForwardMouseEvent(
     const WebKit::WebMouseEvent& mouse_event) {
+  if (in_inspect_element_mode_ &&
+      mouse_event.type == WebInputEvent::MouseDown) {
+    in_inspect_element_mode_ = false;
+    DevToolsManager::GetInstance()->InspectElement(this, mouse_event.x,
+        mouse_event.y);
+    return;
+  }
+
   // We make a copy of the mouse event because
   // RenderWidgetHost::ForwardMouseEvent will delete |mouse_event|.
   WebKit::WebMouseEvent event_copy(mouse_event);

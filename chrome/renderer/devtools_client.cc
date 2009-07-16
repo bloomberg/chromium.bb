@@ -67,6 +67,12 @@ void DevToolsClient::UndockWindow() {
       render_view_->routing_id()));
 }
 
+void DevToolsClient::ToggleInspectElementMode(bool enabled) {
+  render_view_->Send(new ViewHostMsg_ToggleInspectElementMode(
+      render_view_->routing_id(), enabled));
+}
+
+
 void DevToolsClient::OnRpcMessage(const std::string& class_name,
                                   const std::string& method_name,
                                   const std::string& raw_msg) {

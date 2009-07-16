@@ -20,7 +20,7 @@ goog.inherits(devtools.InspectorControllerImpl,
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.platform = function() {
+devtools.InspectorControllerImpl.prototype.platform = function() {
   return DevToolsHost.getPlatform();
 };
 
@@ -28,7 +28,7 @@ devtools.InspectorController.prototype.platform = function() {
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.closeWindow = function() {
+devtools.InspectorControllerImpl.prototype.closeWindow = function() {
   DevToolsHost.closeWindow();
 };
 
@@ -36,7 +36,7 @@ devtools.InspectorController.prototype.closeWindow = function() {
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.attach = function() {
+devtools.InspectorControllerImpl.prototype.attach = function() {
   DevToolsHost.dockWindow();
 };
 
@@ -44,7 +44,7 @@ devtools.InspectorController.prototype.attach = function() {
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.detach = function() {
+devtools.InspectorControllerImpl.prototype.detach = function() {
   DevToolsHost.undockWindow();
 };
 
@@ -52,7 +52,7 @@ devtools.InspectorController.prototype.detach = function() {
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.storeLastActivePanel = function(panel) {
+devtools.InspectorControllerImpl.prototype.storeLastActivePanel = function(panel) {
   RemoteToolsAgent.ExecuteUtilityFunction(
       devtools.Callback.wrap(undefined),
       'InspectorController', JSON.stringify(['storeLastActivePanel', panel]));
@@ -62,7 +62,7 @@ devtools.InspectorController.prototype.storeLastActivePanel = function(panel) {
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.clearMessages = function() {
+devtools.InspectorControllerImpl.prototype.clearMessages = function() {
   RemoteToolsAgent.ClearConsoleMessages();
 };
 
@@ -78,8 +78,17 @@ devtools.InspectorControllerImpl.prototype.hiddenPanels = function() {
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.search = function(sourceRow, query) {
+devtools.InspectorControllerImpl.prototype.search = function(sourceRow, query) {
   return DevToolsHost.search(sourceRow, query);
+};
+
+
+/**
+ * {@inheritDoc}.
+ */
+devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
+  devtools.InspectorController.prototype.toggleNodeSearch.call(this);
+  DevToolsHost.toggleInspectElementMode(this.searchingForNode());
 };
 
 
@@ -133,7 +142,7 @@ devtools.InspectorControllerImpl.prototype.inspectedWindow = function() {
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.enableResourceTracking =
+devtools.InspectorControllerImpl.prototype.enableResourceTracking =
     function(always) {
   devtools.tools.setResourceTrackingEnabled(true, always);
 }
@@ -142,7 +151,7 @@ devtools.InspectorController.prototype.enableResourceTracking =
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorController.prototype.disableResourceTracking =
+devtools.InspectorControllerImpl.prototype.disableResourceTracking =
     function(always) {
   devtools.tools.setResourceTrackingEnabled(false, always);
 };
@@ -173,7 +182,7 @@ devtools.InspectorControllerImpl.prototype.removeBreakpoint = function(
 };
 
 
-devtools.InspectorController.prototype.pauseInDebugger = function() {
+devtools.InspectorControllerImpl.prototype.pauseInDebugger = function() {
   devtools.tools.getDebuggerAgent().pauseExecution();
 };
 
