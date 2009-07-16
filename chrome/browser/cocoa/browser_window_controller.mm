@@ -892,18 +892,13 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)saveWindowPositionToPrefs:(PrefService*)prefs {
-  // Window placements are stored relative to the work area bounds,
-  // not the monitor bounds.
-  NSRect workFrame = [[[self window] screen] visibleFrame];
+  // Window positions are stored relative to the origin of the primary monitor.
+  NSRect monitorFrame = [[[NSScreen screens] objectAtIndex:0] frame];
 
   // Start with the window's frame, which is in virtual coordinates.
-  // Subtract the origin of the visibleFrame to get the window frame
-  // relative to the work area.
-  gfx::Rect bounds(NSRectToCGRect([[self window] frame]));
-  bounds.Offset(-workFrame.origin.x, -workFrame.origin.y);
-
   // Do some y twiddling to flip the coordinate system.
-  bounds.set_y(workFrame.size.height - bounds.y() - bounds.height());
+  gfx::Rect bounds(NSRectToCGRect([[self window] frame]));
+  bounds.set_y(monitorFrame.size.height - bounds.y() - bounds.height());
 
   DictionaryValue* windowPreferences = prefs->GetMutableDictionary(
       browser_->GetWindowPlacementKey().c_str());
