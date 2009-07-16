@@ -18,6 +18,7 @@
 #include "base/global_descriptors_posix.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/string_util.h"
 #include "breakpad/linux/directory_reader.h"
 #include "breakpad/linux/exception_handler.h"
 #include "breakpad/linux/linux_libc_support.h"
@@ -552,6 +553,8 @@ void InitCrashReporter() {
     // dir. Instead, we set a command line flag for these processes.
     if (!parsed_command_line.HasSwitch(switches::kRendererCrashDump))
       return;
+    google_update::linux_guid = WideToASCII(
+        parsed_command_line.GetSwitchValue(switches::kRendererCrashDump));
     EnableRendererCrashDumping();
   }
 }

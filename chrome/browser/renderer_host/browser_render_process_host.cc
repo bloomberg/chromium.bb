@@ -125,6 +125,15 @@ class RendererMainThread : public base::Thread {
 };
 
 
+#if defined(OS_LINUX)
+// This is defined in chrome/browser/google_update_settings_linux.cc, it's the
+// static string containing the user's unique GUID. We send this in the crash
+// report.
+namespace google_update {
+extern std::string linux_guid;
+}
+#endif
+
 // Size of the buffer after which individual link updates deemed not warranted
 // and the overall update should be used instead.
 static const unsigned kVisitedLinkBufferThreshold = 50;
@@ -392,7 +401,8 @@ bool BrowserRenderProcessHost::Init() {
 
 #if defined(OS_LINUX)
   if (GoogleUpdateSettings::GetCollectStatsConsent())
-    cmd_line.AppendSwitch(switches::kRendererCrashDump);
+    cmd_line.AppendSwitchWithValue(switches::kRendererCrashDump,
+                                   ASCIIToWide(google_update::linux_guid));
 #endif
 
   cmd_line.AppendSwitchWithValue(switches::kProcessType,
