@@ -634,13 +634,14 @@ class FindInPageNotificationObserver : public NotificationObserver {
         if (find_details->active_match_ordinal() > -1)
           active_match_ordinal_ = find_details->active_match_ordinal();
         if (find_details->final_update()) {
-          DCHECK(reply_message_ != NULL);
-
-          AutomationMsg_FindInPage::WriteReplyParams(reply_message_,
-              active_match_ordinal_, find_details->number_of_matches());
-
-          automation_->Send(reply_message_);
-          reply_message_ = NULL;
+          if (reply_message_ != NULL) {
+            AutomationMsg_FindInPage::WriteReplyParams(reply_message_,
+                active_match_ordinal_, find_details->number_of_matches());
+            automation_->Send(reply_message_);
+            reply_message_ = NULL;
+          } else {
+            DLOG(WARNING) << "Multiple final Find messages observed.";
+          }
         } else {
           DLOG(INFO) << "Ignoring, since we only care about the final message";
         }
