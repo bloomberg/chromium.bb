@@ -58,17 +58,15 @@ void TabContentsContainerGtk::Init() {
                    G_CALLBACK(OnFixedSizeAllocate), this);
   gtk_container_add(GTK_CONTAINER(floating_.get()), fixed_);
 
-  gtk_floating_container_add_floating(GTK_FLOATING_CONTAINER(floating_.get()),
-                                      status_bubble_->widget());
-  g_signal_connect(floating_.get(), "set-floating-position",
-                   G_CALLBACK(OnSetFloatingPosition), this);
+  if (status_bubble_) {
+    gtk_floating_container_add_floating(GTK_FLOATING_CONTAINER(floating_.get()),
+                                        status_bubble_->widget());
+    g_signal_connect(floating_.get(), "set-floating-position",
+                     G_CALLBACK(OnSetFloatingPosition), this);
+  }
 
   gtk_widget_show(fixed_);
   gtk_widget_show(floating_.get());
-}
-
-void TabContentsContainerGtk::AddContainerToBox(GtkWidget* box) {
-  gtk_box_pack_start(GTK_BOX(box), floating_.get(), TRUE, TRUE, 0);
 }
 
 void TabContentsContainerGtk::SetTabContents(TabContents* tab_contents) {

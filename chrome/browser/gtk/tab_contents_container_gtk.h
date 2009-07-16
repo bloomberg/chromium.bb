@@ -24,9 +24,6 @@ class TabContentsContainerGtk : public NotificationObserver {
 
   void Init();
 
-  // Inserts our GtkWidget* hierarchy into a GtkBox managed by our owner.
-  void AddContainerToBox(GtkWidget* widget);
-
   // Make the specified tab visible.
   void SetTabContents(TabContents* tab_contents);
   TabContents* GetTabContents() const { return tab_contents_; }
@@ -38,6 +35,8 @@ class TabContentsContainerGtk : public NotificationObserver {
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  GtkWidget* widget() { return floating_.get(); }
 
  private:
   // Add or remove observers for events that we care about.

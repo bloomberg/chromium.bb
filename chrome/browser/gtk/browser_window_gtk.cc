@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/gtk/about_chrome_dialog.h"
@@ -587,7 +588,8 @@ void BrowserWindowGtk::UpdateTitleBar() {
 }
 
 void BrowserWindowGtk::UpdateDevTools() {
-  NOTIMPLEMENTED();
+  UpdateDevToolsForContents(
+      browser_->tabstrip_model()->GetSelectedTabContents());
 }
 
 void BrowserWindowGtk::FocusDevTools() {
@@ -836,6 +838,7 @@ void BrowserWindowGtk::TabDetachedAt(TabContents* contents, int index) {
   if (index == browser_->tabstrip_model()->selected_index())
     infobar_container_->ChangeTabContents(NULL);
   contents_container_->DetachTabContents(contents);
+  UpdateDevToolsForContents(NULL);
 }
 
 // TODO(estade): this function should probably be unforked from the BrowserView
@@ -854,6 +857,7 @@ void BrowserWindowGtk::TabSelectedAt(TabContents* old_contents,
   // TabContents.
   infobar_container_->ChangeTabContents(new_contents);
   contents_container_->SetTabContents(new_contents);
+  UpdateDevToolsForContents(new_contents);
 
   new_contents->DidBecomeSelected();
   // TODO(estade): after we manage browser activation, add a check to make sure
@@ -897,6 +901,29 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
     bookmark_bar_->Show(animate);
   } else {
     bookmark_bar_->Hide(animate);
+  }
+}
+
+void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
+  TabContents* old_devtools = devtools_container_->GetTabContents();
+  if (old_devtools)
+    devtools_container_->DetachTabContents(old_devtools);
+
+  TabContents* devtools_contents = contents ?
+      DevToolsWindow::GetDevToolsContents(contents) : NULL;
+  devtools_container_->SetTabContents(devtools_contents);
+  if (devtools_contents) {
+    // TabContentsViewGtk::WasShown is not called when tab contents is shown by
+    // anything other than user selecting a Tab.
+    // See TabContentsViewWin::OnWindowPosChanged for reference on how it should
+    // be implemented.
+    devtools_contents->ShowContents();
+  }
+
+  if (devtools_contents) {
+    gtk_widget_show(devtools_container_->widget());
+  } else {
+    gtk_widget_hide(devtools_container_->widget());
   }
 }
 
@@ -1095,8 +1122,17 @@ void BrowserWindowGtk::InitWidgets() {
   status_bubble_.reset(new StatusBubbleGtk(browser_->profile()));
 
   contents_container_.reset(new TabContentsContainerGtk(status_bubble_.get()));
-  contents_container_->AddContainerToBox(render_area_vbox_);
+  devtools_container_.reset(new TabContentsContainerGtk(NULL));
+  contents_split_ = gtk_vpaned_new();
+  gtk_paned_pack1(GTK_PANED(contents_split_), contents_container_->widget(),
+                  TRUE, TRUE);
+  gtk_paned_pack2(GTK_PANED(contents_split_), devtools_container_->widget(),
+                  FALSE, TRUE);
+  gtk_box_pack_start(GTK_BOX(render_area_vbox_), contents_split_, TRUE, TRUE,
+                     0);
+  gtk_paned_set_position(GTK_PANED(contents_split_), 400);
   gtk_widget_show_all(render_area_vbox_);
+  gtk_widget_hide(devtools_container_->widget());
 
 #if defined(OS_CHROMEOS)
   if (browser_->type() == Browser::TYPE_POPUP) {

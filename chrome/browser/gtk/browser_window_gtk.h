@@ -119,6 +119,8 @@ class BrowserWindowGtk : public BrowserWindow,
   // Accessor for the tab strip.
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }
 
+  void UpdateDevToolsForContents(TabContents* contents);
+
   void UpdateUIForContents(TabContents* contents);
 
   void OnBoundsChanged(const gfx::Rect& bounds);
@@ -283,6 +285,13 @@ class BrowserWindowGtk : public BrowserWindow,
   // (along with associated infobars, shelves, and other things that are part
   // of the content area).
   scoped_ptr<TabContentsContainerGtk> contents_container_;
+
+  // A container that manages the GtkWidget*s of developer tools for the
+  // selected tab contents.
+  scoped_ptr<TabContentsContainerGtk> devtools_container_;
+
+  // Split pane containing the contents_container_ and the devtools_container_.
+  GtkWidget* contents_split_;
 
   // The tab strip.  Always non-NULL.
   scoped_ptr<TabStripGtk> tabstrip_;
