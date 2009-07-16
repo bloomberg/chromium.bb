@@ -374,7 +374,7 @@ class TestRunner:
         tests_by_dir[directory] = []
 
       if self._expectations.HasModifier(test_file, test_expectations.SLOW):
-        timeout = 10 * int(options.time_out_ms)
+        timeout = str(10 * int(options.time_out_ms))
       else:
         timeout = self._options.time_out_ms
 
