@@ -8,7 +8,6 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="18"/>
 			<integer value="74"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
@@ -45,7 +44,7 @@
 				<nil key="NSViewClass"/>
 				<string key="NSWindowContentMaxSize">{3.40282e+38, 3.40282e+38}</string>
 				<object class="NSView" key="NSWindowView" id="408649839">
-					<reference key="NSNextResponder"/>
+					<nil key="NSNextResponder"/>
 					<int key="NSvFlags">256</int>
 					<object class="NSMutableArray" key="NSSubviews">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1333,13 +1332,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 											<object class="NSButton" id="105783425">
 												<reference key="NSNextResponder" ref="712581699"/>
 												<int key="NSvFlags">268</int>
-												<string key="NSFrame">{{164, 129}, {171, 32}}</string>
+												<string key="NSFrame">{{165, 127}, {192, 32}}</string>
 												<reference key="NSSuperview" ref="712581699"/>
 												<bool key="NSEnabled">YES</bool>
 												<object class="NSButtonCell" key="NSCell" id="34650228">
-													<int key="NSCellFlags">-1543373312</int>
+													<int key="NSCellFlags">-2080244224</int>
 													<int key="NSCellFlags2">134217728</int>
-													<string key="NSContents">Reset Default Theme</string>
+													<string key="NSContents">Reset To Default Theme</string>
 													<reference key="NSSupport" ref="445696277"/>
 													<reference key="NSControlView" ref="105783425"/>
 													<int key="NSButtonFlags">-2038021889</int>
@@ -1809,7 +1808,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 					</object>
 					<string key="NSFrameSize">{559, 515}</string>
-					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
@@ -2382,10 +2380,6 @@ aWVuY2Ug4oCUIHlvdSBtYXkgb3B0aW9uYWxseSBkaXNhYmxlIHRoZXNlIHNlcnZpY2VzLg</string>
 				<bool key="NSClearsFilterPredicateOnInsertion">YES</bool>
 			</object>
 			<object class="NSUserDefaultsController" id="650617813">
-				<object class="NSMutableArray" key="NSDeclaredKeys">
-					<bool key="EncodedWithXMLCoder">YES</bool>
-					<string>GTMThemeBackgroundColor</string>
-				</object>
 				<bool key="NSSharedInstance">YES</bool>
 			</object>
 		</object>
@@ -2957,6 +2951,14 @@ aWVuY2Ug4oCUIHlvdSBtYXkgb3B0aW9uYWxseSBkaXNhYmxlIHRoZXNlIHNlcnZpY2VzLg</string>
 					</object>
 					<int key="connectionID">452</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">resetTheme:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="105783425"/>
+					</object>
+					<int key="connectionID">453</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3068,10 +3070,10 @@ aWVuY2Ug4oCUIHlvdSBtYXkgb3B0aW9uYWxseSBkaXNhYmxlIHRoZXNlIHNlcnZpY2VzLg</string>
 							<reference ref="885386403"/>
 							<reference ref="987908490"/>
 							<reference ref="921350969"/>
-							<reference ref="105783425"/>
 							<reference ref="724521011"/>
 							<reference ref="121830840"/>
 							<reference ref="478423989"/>
+							<reference ref="105783425"/>
 						</object>
 						<reference key="parent" ref="614928174"/>
 					</object>
@@ -4461,7 +4463,7 @@ aWVuY2Ug4oCUIHlvdSBtYXkgb3B0aW9uYWxseSBkaXNhYmxlIHRoZXNlIHNlcnZpY2VzLg</string>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">452</int>
+			<int key="maxID">453</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

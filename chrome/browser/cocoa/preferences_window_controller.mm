@@ -635,7 +635,7 @@ const int kDisabledIndex = 1;
 // Called to reset the theming info back to the defaults.
 - (IBAction)resetTheme:(id)sender {
   [self recordUserAction:L"Options_ThemesReset"];
-  NOTIMPLEMENTED();
+  profile_->ClearTheme();
 }
 
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value {
