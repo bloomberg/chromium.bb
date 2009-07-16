@@ -435,11 +435,45 @@ void TabContentsViewMac::Observe(NotificationType type,
 // Called when a drag initiated in our view ends. We need to make sure that
 // we tell WebCore so that it can go about processing things as normal.
 - (void)draggedImage:(NSImage*)anImage
-             endedAt:(NSPoint)aPoint
+             endedAt:(NSPoint)screenPoint
            operation:(NSDragOperation)operation {
   RenderViewHost* rvh = [self tabContents]->render_view_host();
-  if (rvh)
+  if (rvh) {
     rvh->DragSourceSystemDragEnded();
+
+    // Convert |screenPoint| to view coordinates and flip it.
+    NSPoint localPoint = [self convertPointFromBase:screenPoint];
+    NSRect viewFrame = [self frame];
+    localPoint.y = viewFrame.size.height - localPoint.y;
+    // Flip |screenPoint|.
+    NSRect screenFrame = [[[self window] screen] frame];
+    screenPoint.y = screenFrame.size.height - screenPoint.y;
+
+    if (operation != NSDragOperationNone)
+      rvh->DragSourceEndedAt(localPoint.x, localPoint.y,
+                             screenPoint.x, screenPoint.y);
+    else
+      rvh->DragSourceCancelledAt(localPoint.x, localPoint.y,
+                                 screenPoint.x, screenPoint.y);
+  }
+}
+
+// Called when a drag initiated in our view moves. We need to tell WebCore
+// so it can update anything watching for drag events.
+- (void)draggedImage:(NSImage*)draggedImage movedTo:(NSPoint)screenPoint {
+  RenderViewHost* rvh = [self tabContents]->render_view_host();
+  if (rvh) {
+    // Convert |screenPoint| to view coordinates and flip it.
+    NSPoint localPoint = [self convertPointFromBase:screenPoint];
+    NSRect viewFrame = [self frame];
+    localPoint.y = viewFrame.size.height - localPoint.y;
+    // Flip |screenPoint|.
+    NSRect screenFrame = [[[self window] screen] frame];
+    screenPoint.y = screenFrame.size.height - screenPoint.y;
+
+    rvh->DragSourceMovedTo(localPoint.x, localPoint.y,
+                           screenPoint.x, screenPoint.y);
+  }
 }
 
 // NSDraggingDestination methods
