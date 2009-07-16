@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/defaults.h"
 #if defined(OS_WIN)  // TODO(port)
 #include "chrome/browser/extensions/extension_creator.h"
 #endif
@@ -513,6 +514,7 @@ bool BrowserInit::LaunchWithProfile::OpenStartupURLs(
         return false;
 
       if (!profile_->DidLastSessionExitCleanly() &&
+          !browser_defaults::kRestoreAfterCrash &&
           !command_line_.HasSwitch(switches::kRestoreLastSession)) {
         // The last session crashed. It's possible automatically loading the
         // page will trigger another crash, locking the user out of chrome.
@@ -564,7 +566,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
         urls[i], GURL(), PageTransition::START_PAGE, (i == 0), -1, false, NULL);
     if (i < static_cast<size_t>(pin_count))
       browser->tabstrip_model()->SetTabPinned(browser->tab_count() - 1, true);
-    if (i == 0 && process_startup)
+    if (i == 0 && process_startup && !browser_defaults::kSuppressCrashInfoBar)
       AddCrashedInfoBarIfNecessary(tab);
   }
   browser->window()->Show();
@@ -577,11 +579,6 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
 
 void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     TabContents* tab) {
-#if defined(OS_CHROMEOS)
-  // Because of how chrome os currently shuts down chrome always appears to
-  // crash. For the time being we're working around that here.
-  return;
-#else
   // Assume that if the user is launching incognito they were previously
   // running incognito so that we have nothing to restore from.
   if (!profile_->DidLastSessionExitCleanly() &&
@@ -591,7 +588,6 @@ void BrowserInit::LaunchWithProfile::AddCrashedInfoBarIfNecessary(
     // it is closed.
     tab->AddInfoBar(new SessionCrashedInfoBarDelegate(tab));
   }
-#endif
 }
 
 std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(

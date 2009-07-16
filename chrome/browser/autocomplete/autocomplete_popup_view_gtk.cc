@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -248,8 +249,9 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
   // TODO(deanm): We might want to eventually follow what Windows does and
   // plumb a gfx::Font through.  This is because popup windows have a
   // different font size, although we could just derive that font here.
-  // For now, force the font size to 10pt.
-  gfx::Font font = gfx::Font::CreateFont(gfx::Font().FontName(), 10);
+  // For now, force the font size.
+  gfx::Font font = gfx::Font::CreateFont(
+      gfx::Font().FontName(), browser_defaults::kAutocompletePopupFontSize);
   PangoFontDescription* pfd = PangoFontFromGfxFont(font);
   pango_layout_set_font_description(layout_, pfd);
   pango_font_description_free(pfd);

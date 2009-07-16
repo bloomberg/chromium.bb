@@ -16,6 +16,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
@@ -120,8 +121,11 @@ void AutocompleteEditViewGtk::Init() {
   tag_table_ = gtk_text_tag_table_new();
   text_buffer_ = gtk_text_buffer_new(tag_table_);
   text_view_ = gtk_text_view_new_with_buffer(text_buffer_);
-  // Until we switch to vector graphics, force the font size.
-  gtk_util::ForceFontSizePixels(text_view_, 13.4); // 13.4px == 10pt @ 96dpi
+  if (browser_defaults::kForceAutocompleteEditFontSize) {
+    // Until we switch to vector graphics, force the font size.
+    gtk_util::ForceFontSizePixels(text_view_, 13.4); // 13.4px == 10pt @ 96dpi
+  }
+
   // Override the background color for now.  http://crbug.com/12195
   gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
       &LocationBarViewGtk::kBackgroundColorByLevel[scheme_security_level_]);

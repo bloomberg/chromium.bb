@@ -851,6 +851,8 @@
         'browser/command_updater.h',
         'browser/cross_site_request_manager.cc',
         'browser/cross_site_request_manager.h',
+        'browser/defaults.cc',
+        'browser/defaults.h',
         'browser/dock_info_gtk.cc',
         'browser/dock_info_win.cc',
         'browser/dock_info.cc',

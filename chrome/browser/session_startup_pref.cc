@@ -5,14 +5,43 @@
 #include "chrome/browser/session_startup_pref.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#include "base/string_util.h"
+
+namespace {
+
+// For historical reasons the enum and value registered in the prefs don't line
+// up. These are the values registered in prefs.
+const int kPrefValueDefault = 0;
+const int kPrefValueLast = 1;
+const int kPrefValueURLs = 4;
+
+// Converts a SessionStartupPref::Type to an integer written to prefs.
+int TypeToPrefValue(SessionStartupPref::Type type) {
+  switch(type) {
+    case SessionStartupPref::LAST:   return kPrefValueLast;
+    case SessionStartupPref::URLS:   return kPrefValueURLs;
+    default:                         return kPrefValueDefault;
+  }
+}
+
+// Converts an integer pref value to a SessionStartupPref::Type.
+SessionStartupPref::Type PrefValueToType(int pref_value) {
+  switch (pref_value) {
+    case kPrefValueLast:  return SessionStartupPref::LAST;
+    case kPrefValueURLs:  return SessionStartupPref::URLS;
+    default:              return SessionStartupPref::DEFAULT;
+  }
+}
+
+}  // namespace
 
 // static
 void SessionStartupPref::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kRestoreOnStartup, 0);
+  prefs->RegisterIntegerPref(prefs::kRestoreOnStartup,
+      TypeToPrefValue(browser_defaults::kDefaultSessionStartupType));
   prefs->RegisterListPref(prefs::kURLsToRestoreOnStartup);
 }
 
@@ -28,20 +57,7 @@ void SessionStartupPref::SetStartupPref(
 void SessionStartupPref::SetStartupPref(PrefService* prefs,
                                         const SessionStartupPref& pref) {
   DCHECK(prefs);
-  int type = 0;
-  switch(pref.type) {
-    case LAST:
-      type = 1;
-      break;
-
-    case URLS:
-      type = 4;
-      break;
-
-    default:
-      break;
-  }
-  prefs->SetInteger(prefs::kRestoreOnStartup, type);
+  prefs->SetInteger(prefs::kRestoreOnStartup, TypeToPrefValue(pref.type));
 
   // Always save the URLs, that way the UI can remain consistent even if the
   // user changes the startup type pref.
@@ -65,22 +81,11 @@ SessionStartupPref SessionStartupPref::GetStartupPref(Profile* profile) {
 // static
 SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   DCHECK(prefs);
-  SessionStartupPref pref;
-  switch (prefs->GetInteger(prefs::kRestoreOnStartup)) {
-    case 1: {
-      pref.type = LAST;
-      break;
-    }
+  SessionStartupPref pref(
+      PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
 
-    case 4: {
-      pref.type = URLS;
-      break;
-    }
-
-    // default case or bogus type are treated as not doing anything special
-    // on startup.
-  }
-
+  // Always load the urls, even if the pref type isn't URLS. This way the
+  // preferenes panels can show the user their last choice.
   ListValue* url_pref_list = prefs->GetMutableList(
       prefs::kURLsToRestoreOnStartup);
   DCHECK(url_pref_list);
