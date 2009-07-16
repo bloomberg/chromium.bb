@@ -5,8 +5,6 @@
 #ifndef WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
 #define WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
 
-#include "webkit/api/public/WebNavigationPolicy.h"
-
 enum WindowOpenDisposition {
   SUPPRESS_OPEN,
   CURRENT_TAB,
@@ -20,11 +18,5 @@ enum WindowOpenDisposition {
   OFF_THE_RECORD,
   IGNORE_ACTION
 };
-
-// Conversion functions:
-WindowOpenDisposition NavigationPolicyToDisposition(
-    WebKit::WebNavigationPolicy policy);
-//WebKit::WebNavigationPolicy DispositionToNavigationPolicy(
-//    WindowOpenDisposition disposition);
 
 #endif  // WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_

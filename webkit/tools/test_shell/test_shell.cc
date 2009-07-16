@@ -43,11 +43,11 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
+#include "webkit/glue/webwidget.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 
-using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebURLRequest;
@@ -112,7 +112,6 @@ TestShell::TestShell()
       is_modal_(false),
       dump_stats_table_on_exit_(false) {
     delegate_ = new TestWebViewDelegate(this);
-    popup_delegate_ = new TestWebViewDelegate(this);
     layout_test_controller_.reset(new LayoutTestController(this));
     event_sending_controller_.reset(new EventSendingController(this));
     text_input_controller_.reset(new TextInputController(this));
@@ -248,13 +247,13 @@ void TestShell::Dump(TestShell* shell) {
 // static
 std::string TestShell::DumpImage(WebView* view,
     const std::wstring& file_name, const std::string& pixel_hash) {
-  view->layout();
-  const WebSize& size = view->size();
+  view->Layout();
+  const WebSize& size = view->GetSize();
 
   skia::PlatformCanvas canvas;
   if (!canvas.initialize(size.width, size.height, true))
     return std::string();
-  view->paint(&canvas, WebRect(0, 0, size.width, size.height));
+  view->Paint(&canvas, WebRect(0, 0, size.width, size.height));
 
   skia::BitmapPlatformDevice& device =
       static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
@@ -435,8 +434,8 @@ bool TestShell::RemoveWindowFromList(gfx::NativeWindow window) {
   return false;
 }
 
-void TestShell::Show(WebNavigationPolicy policy) {
-  delegate_->show(policy);
+void TestShell::Show(WebView* webview, WindowOpenDisposition disposition) {
+  delegate_->Show(webview, disposition);
 }
 
 void TestShell::BindJSObjectsToWindow(WebFrame* frame) {
@@ -591,13 +590,13 @@ void TestShell::SetFocus(WebWidgetHost* host, bool enable) {
     if (enable) {
       if (m_focusedWidgetHost != host) {
         if (m_focusedWidgetHost)
-            m_focusedWidgetHost->webwidget()->setFocus(false);
-        host->webwidget()->setFocus(enable);
+            m_focusedWidgetHost->webwidget()->SetFocus(false);
+        host->webwidget()->SetFocus(enable);
         m_focusedWidgetHost = host;
       }
     } else {
       if (m_focusedWidgetHost == host) {
-        host->webwidget()->setFocus(enable);
+        host->webwidget()->SetFocus(enable);
         m_focusedWidgetHost = NULL;
       }
     }

@@ -35,8 +35,8 @@
 #include "webkit/glue/webview.h"
 
 #if defined(OS_WIN)
-// RenderView is a diamond-shaped hierarchy, with WebWidgetClient at the root.
-// VS warns when we inherit the WebWidgetClient method implementations from
+// RenderView is a diamond-shaped hierarchy, with WebWidgetDelegate at the root.
+// VS warns when we inherit the WebWidgetDelegate method implementations from
 // RenderWidget.  It's safe to ignore that warning.
 #pragma warning(disable: 4250)
 #endif
@@ -202,7 +202,7 @@ class RenderView : public RenderWidget,
   virtual void DidChangeLocationWithinPageForFrame(WebView* webview,
                                                    WebFrame* frame,
                                                    bool is_new_navigation);
-  virtual void DidContentsSizeChange(WebKit::WebWidget* webwidget,
+  virtual void DidContentsSizeChange(WebWidget* webwidget,
                                      int new_width,
                                      int new_height);
 
@@ -222,21 +222,19 @@ class RenderView : public RenderWidget,
   virtual void DidDestroyScriptContextForFrame(WebFrame* webframe);
   virtual void DidCreateIsolatedScriptContext(WebFrame* webframe);
 
-  virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
+  virtual WindowOpenDisposition DispositionForNavigationAction(
       WebView* webview,
       WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
-      WebKit::WebNavigationPolicy default_policy,
+      WindowOpenDisposition disposition,
       bool is_redirect);
 
   virtual WebView* CreateWebView(WebView* webview,
                                  bool user_gesture,
                                  const GURL& creator_url);
-  virtual WebKit::WebWidget* CreatePopupWidget(
-      WebView* webview,
-      bool activatable);
-  virtual WebKit::WebWidget* CreatePopupWidgetWithInfo(
+  virtual WebWidget* CreatePopupWidget(WebView* webview, bool activatable);
+  virtual WebWidget* CreatePopupWidgetWithInfo(
       WebView* webview,
       const WebKit::WebPopupMenuInfo& info);
   virtual WebPluginDelegate* CreatePluginDelegate(
@@ -251,7 +249,7 @@ class RenderView : public RenderWidget,
   virtual void OnMissingPluginStatus(WebPluginDelegate* delegate, int status);
   virtual void OpenURL(WebView* webview, const GURL& url,
                        const GURL& referrer,
-                       WebKit::WebNavigationPolicy policy);
+                       WindowOpenDisposition disposition);
   virtual void DidDownloadImage(int id,
                                 const GURL& image_url,
                                 bool errored,
@@ -303,7 +301,6 @@ class RenderView : public RenderWidget,
                                          const WebKit::WebRect& selection);
   virtual bool WasOpenedByUserGesture() const;
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
-  virtual void DidMovePlugin(const WebPluginGeometry& move);
   virtual void SpellCheck(const std::wstring& word, int* misspell_location,
                           int* misspell_length);
   virtual std::wstring GetAutoCorrectWord(const std::wstring& word);
@@ -316,11 +313,11 @@ class RenderView : public RenderWidget,
   virtual void DidSerializeDataForFrame(const GURL& frame_url,
       const std::string& data, PageSavingSerializationStatus status);
 
-  // WebKit::WebWidgetClient
+  // WebWidgetDelegate
   // Most methods are handled by RenderWidget.
-  virtual void show(WebKit::WebNavigationPolicy policy);
-  virtual void closeWidgetSoon();
-  virtual void runModal();
+  virtual void Show(WebWidget* webwidget, WindowOpenDisposition disposition);
+  virtual void CloseWidgetSoon(WebWidget* webwidget);
+  virtual void RunModal(WebWidget* webwidget);
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderView();

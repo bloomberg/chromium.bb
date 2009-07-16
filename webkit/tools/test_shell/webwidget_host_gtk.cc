@@ -15,9 +15,9 @@
 #include "webkit/api/public/gtk/WebInputEventFactory.h"
 #include "webkit/api/public/x11/WebScreenInfoFactory.h"
 #include "webkit/api/public/WebInputEvent.h"
-#include "webkit/api/public/WebPopupMenu.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/glue/webwidget.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_x11.h"
 
@@ -25,11 +25,9 @@ using WebKit::WebInputEventFactory;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
-using WebKit::WebPopupMenu;
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;
 using WebKit::WebSize;
-using WebKit::WebWidgetClient;
 
 namespace {
 
@@ -161,8 +159,9 @@ class WebWidgetHostGtkWidget {
   static gboolean HandleKeyPress(GtkWidget* widget,
                                  GdkEventKey* event,
                                  WebWidgetHost* host) {
-    host->webwidget()->handleInputEvent(
-        WebInputEventFactory::keyboardEvent(event));
+    const WebKeyboardEvent& wke = WebInputEventFactory::keyboardEvent(event);
+    host->webwidget()->HandleInputEvent(&wke);
+
     return FALSE;
   }
 
@@ -190,7 +189,7 @@ class WebWidgetHostGtkWidget {
     // Ignore focus calls in layout test mode so that tests don't mess with each
     // other's focus when running in parallel.
     if (!TestShell::layout_test_mode())
-      host->webwidget()->setFocus(true);
+      host->webwidget()->SetFocus(true);
     return FALSE;
   }
 
@@ -201,7 +200,7 @@ class WebWidgetHostGtkWidget {
     // Ignore focus calls in layout test mode so that tests don't mess with each
     // other's focus when running in parallel.
     if (!TestShell::layout_test_mode())
-      host->webwidget()->setFocus(false);
+      host->webwidget()->SetFocus(false);
     return FALSE;
   }
 
@@ -209,8 +208,8 @@ class WebWidgetHostGtkWidget {
   static gboolean HandleButtonPress(GtkWidget* widget,
                                     GdkEventButton* event,
                                     WebWidgetHost* host) {
-    host->webwidget()->handleInputEvent(
-        WebInputEventFactory::mouseEvent(event));
+    const WebMouseEvent& wme = WebInputEventFactory::mouseEvent(event);
+    host->webwidget()->HandleInputEvent(&wme);
     return FALSE;
   }
 
@@ -225,8 +224,8 @@ class WebWidgetHostGtkWidget {
   static gboolean HandleMotionNotify(GtkWidget* widget,
                                      GdkEventMotion* event,
                                      WebWidgetHost* host) {
-    host->webwidget()->handleInputEvent(
-        WebInputEventFactory::mouseEvent(event));
+    const WebMouseEvent& wme = WebInputEventFactory::mouseEvent(event);
+    host->webwidget()->HandleInputEvent(&wme);
     return FALSE;
   }
 
@@ -234,8 +233,9 @@ class WebWidgetHostGtkWidget {
   static gboolean HandleScroll(GtkWidget* widget,
                                GdkEventScroll* event,
                                WebWidgetHost* host) {
-    host->webwidget()->handleInputEvent(
-        WebInputEventFactory::mouseWheelEvent(event));
+    const WebMouseWheelEvent& wmwe =
+        WebInputEventFactory::mouseWheelEvent(event);
+    host->webwidget()->HandleInputEvent(&wmwe);
     return FALSE;
   }
 
@@ -253,10 +253,10 @@ gfx::NativeView WebWidgetHost::CreateWidget(
 
 // static
 WebWidgetHost* WebWidgetHost::Create(GtkWidget* parent_view,
-                                     WebWidgetClient* client) {
+                                     WebWidgetDelegate* delegate) {
   WebWidgetHost* host = new WebWidgetHost();
   host->view_ = CreateWidget(parent_view, host);
-  host->webwidget_ = WebPopupMenu::create(client);
+  host->webwidget_ = WebWidget::Create(delegate);
   // We manage our own double buffering because we need to be able to update
   // the expose area in an ExposeEvent within the lifetime of the event handler.
   gtk_widget_set_double_buffered(GTK_WIDGET(host->view_), false);
@@ -295,14 +295,14 @@ WebWidgetHost::WebWidgetHost()
 }
 
 WebWidgetHost::~WebWidgetHost() {
-  webwidget_->close();
+  webwidget_->Close();
 }
 
 void WebWidgetHost::Resize(const gfx::Size &newsize) {
   // The pixel buffer backing us is now the wrong size
   canvas_.reset();
 
-  webwidget_->resize(newsize);
+  webwidget_->Resize(gfx::Size(newsize.width(), newsize.height()));
 }
 
 void WebWidgetHost::Paint() {
@@ -323,7 +323,7 @@ void WebWidgetHost::Paint() {
   }
 
   // This may result in more invalidation
-  webwidget_->layout();
+  webwidget_->Layout();
 
   // Paint the canvas if necessary.  Allow painting to generate extra rects the
   // first time we call it.  This is necessary because some WebCore rendering
@@ -381,7 +381,7 @@ void WebWidgetHost::ResetScrollRect() {
 
 void WebWidgetHost::PaintRect(const gfx::Rect& rect) {
   set_painting(true);
-  webwidget_->paint(canvas_.get(), rect);
+  webwidget_->Paint(canvas_.get(), rect);
   set_painting(false);
 }
 

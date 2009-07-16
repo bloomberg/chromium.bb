@@ -32,8 +32,6 @@
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
-using WebKit::WebWidget;
-
 namespace {
 
 // Convert a FilePath into an FcChar* (used by fontconfig).
@@ -469,7 +467,7 @@ void TestShell::DestroyWindow(gfx::NativeWindow windowHandle) {
 WebWidget* TestShell::CreatePopupWidget(WebView* webview) {
   GtkWidget* popupwindow = gtk_window_new(GTK_WINDOW_POPUP);
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
-  WebWidgetHost* host = WebWidgetHost::Create(vbox, popup_delegate_);
+  WebWidgetHost* host = WebWidgetHost::Create(vbox, delegate_);
   gtk_container_add(GTK_CONTAINER(popupwindow), vbox);
   m_popupHost = host;
 

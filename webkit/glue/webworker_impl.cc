@@ -34,9 +34,6 @@
 #include "webkit/glue/webworker_impl.h"
 
 using WebKit::WebCursorInfo;
-using WebKit::WebNavigationPolicy;
-using WebKit::WebRect;
-using WebKit::WebScreenInfo;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebWorker;
@@ -49,33 +46,39 @@ using WebKit::WebWorkerClient;
 class WorkerWebViewDelegate : public WebViewDelegate {
  public:
   WorkerWebViewDelegate() {}
-
-  virtual void didInvalidateRect(const WebRect&) {}
-  virtual void didScrollRect(int dx, int dy, const WebRect& clipRect) {}
-  virtual void didFocus() {}
-  virtual void didBlur() {}
-  virtual void didChangeCursor(const WebCursorInfo&) {}
-  virtual void closeWidgetSoon() {}
-  virtual void show(WebNavigationPolicy) {}
-  virtual void runModal() {}
-  virtual WebRect windowRect() { return WebRect(); }
-  virtual void setWindowRect(const WebRect&) {}
-  virtual WebRect windowResizerRect() { return WebRect(); }
-  virtual WebRect rootWindowRect() { return WebRect(); }
-  virtual WebScreenInfo screenInfo() { return WebScreenInfo(); }
-
+  virtual void Blur(WebWidget *webwidget) { }
+  virtual void CloseWidgetSoon(WebWidget *webwidget) { }
+  virtual void DidInvalidateRect(WebWidget *webwidget,
+                                 const WebKit::WebRect &rect) { }
+  virtual void DidMove(WebWidget *webwidget, const WebPluginGeometry &move) { }
+  virtual void DidScrollRect(WebWidget *webwidget, int dx, int dy,
+                             const WebKit::WebRect &clip_rect) { }
+  virtual void Focus(WebWidget *webwidget) { }
+  virtual void GetRootWindowRect(WebWidget *webwidget,
+                                 WebKit::WebRect *rect) { }
+  virtual void GetRootWindowResizerRect(WebWidget *webwidget,
+                                        WebKit::WebRect *rect) { }
+  virtual WebKit::WebScreenInfo GetScreenInfo(WebWidget *webwidget) {
+    WebKit::WebScreenInfo info;
+    return info;
+  }
+  virtual void GetWindowRect(WebWidget *webwidget, WebKit::WebRect *rect) { }
+  virtual bool IsHidden(WebWidget *webwidget) { return true; }
+  virtual void RunModal(WebWidget *webwidget) { }
+  virtual void SetCursor(WebWidget *webwidget, const WebCursorInfo &cursor) { }
+  virtual void SetWindowRect(WebWidget *webwidget,
+                             const WebKit::WebRect &rect) { }
+  virtual void Show(WebWidget *webwidget, WindowOpenDisposition disposition) { }
   // Tell the loader to load the data into the 'shadow page' synchronously,
   // so we can grab the resulting Document right after load.
   virtual void DidCreateDataSource(WebFrame* frame, WebKit::WebDataSource* ds) {
     static_cast<WebDataSourceImpl*>(ds)->setDeferMainResourceDataLoad(false);
   }
-
   // Lazy allocate and leak this instance.
   static WorkerWebViewDelegate* worker_delegate() {
     static WorkerWebViewDelegate* worker_delegate = new WorkerWebViewDelegate();
     return worker_delegate;
   }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(WorkerWebViewDelegate);
 };
@@ -113,7 +116,7 @@ WebWorkerImpl::WebWorkerImpl(WebWorkerClient* client)
 }
 
 WebWorkerImpl::~WebWorkerImpl() {
-  web_view_->close();
+  web_view_->Close();
 }
 
 void WebWorkerImpl::PostMessageToWorkerContextTask(

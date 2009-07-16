@@ -73,7 +73,6 @@ using base::TimeDelta;
 
 using WebKit::WebData;
 using WebKit::WebNavigationType;
-using WebKit::WebNavigationPolicy;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;
@@ -96,7 +95,7 @@ WebFrameLoaderClient::WebFrameLoaderClient(WebFrameImpl* frame) :
     postpone_loading_data_(false),
     has_representation_(false),
     sent_initial_response_to_plugin_(false),
-    next_navigation_policy_(WebKit::WebNavigationPolicyIgnore) {
+    next_window_open_disposition_(IGNORE_ACTION) {
 }
 
 WebFrameLoaderClient::~WebFrameLoaderClient() {
@@ -811,15 +810,15 @@ Frame* WebFrameLoaderClient::dispatchCreatePage() {
 
   // Make sure that we have a valid disposition.  This should have been set in
   // the preceeding call to dispatchDecidePolicyForNewWindowAction.
-  DCHECK(next_navigation_policy_ != WebKit::WebNavigationPolicyIgnore);
-  WebNavigationPolicy policy = next_navigation_policy_;
-  next_navigation_policy_ = WebKit::WebNavigationPolicyIgnore;
+  DCHECK(next_window_open_disposition_ != IGNORE_ACTION);
+  WindowOpenDisposition disp = next_window_open_disposition_;
+  next_window_open_disposition_ = IGNORE_ACTION;
 
   // createWindow can return NULL (e.g., popup blocker denies the window).
   if (!new_page)
     return NULL;
 
-  WebViewImpl::FromPage(new_page)->set_initial_navigation_policy(policy);
+  WebViewImpl::FromPage(new_page)->set_window_open_disposition(disp);
   return new_page->mainFrame();
 }
 
@@ -827,7 +826,7 @@ void WebFrameLoaderClient::dispatchShow() {
   WebViewImpl* webview = webframe_->GetWebViewImpl();
   WebViewDelegate* d = webview->delegate();
   if (d)
-    d->show(webview->initial_navigation_policy());
+    d->Show(webview, webview->window_open_disposition());
 }
 
 static bool TreatAsAttachment(const ResourceResponse& response) {
@@ -897,12 +896,12 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNewWindowAction(
     const WebCore::ResourceRequest& request,
     PassRefPtr<WebCore::FormState> form_state,
     const WebCore::String& frame_name) {
-  WebNavigationPolicy navigation_policy;
-  if (!ActionSpecifiesNavigationPolicy(action, &navigation_policy))
-    navigation_policy = WebKit::WebNavigationPolicyNewForegroundTab;
+  WindowOpenDisposition disposition;
+  if (!ActionSpecifiesDisposition(action, &disposition))
+    disposition = NEW_FOREGROUND_TAB;
 
   PolicyAction policy_action;
-  if (navigation_policy == WebKit::WebNavigationPolicyDownload) {
+  if (disposition == SAVE_TO_DISK) {
     policy_action = PolicyDownload;
   } else {
     policy_action = PolicyUse;
@@ -911,7 +910,7 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNewWindowAction(
     // unfortunate that WebCore does not provide us with any context when
     // creating or showing the new window that would allow us to avoid having
     // to keep this state.
-    next_navigation_policy_ = navigation_policy;
+    next_window_open_disposition_ = disposition;
   }
   (webframe_->frame()->loader()->*function)(policy_action);
 }
@@ -930,42 +929,40 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
   // The NULL check here is to fix a crash that seems strange
   // (see - https://bugs.webkit.org/show_bug.cgi?id=23554).
   if (d && !request.url().isNull()) {
-    WebNavigationPolicy navigation_policy =
-        WebKit::WebNavigationPolicyCurrentTab;
-    ActionSpecifiesNavigationPolicy(action, &navigation_policy);
+    WindowOpenDisposition disposition = CURRENT_TAB;
+    ActionSpecifiesDisposition(action, &disposition);
 
-    // Give the delegate a chance to change the navigation policy.
+    // Give the delegate a chance to change the disposition.
     const WebDataSourceImpl* ds = webframe_->GetProvisionalDataSourceImpl();
     if (ds) {
       GURL url = ds->request().url();
       if (url.SchemeIs(webkit_glue::kBackForwardNavigationScheme)) {
         HandleBackForwardNavigation(url);
-        navigation_policy = WebKit::WebNavigationPolicyIgnore;
+        disposition = IGNORE_ACTION;
       } else {
         bool is_redirect = ds->HasRedirectChain();
 
         WebNavigationType webnav_type =
             WebDataSourceImpl::NavigationTypeToWebNavigationType(action.type());
 
-        navigation_policy = d->PolicyForNavigationAction(
-            wv, webframe_, ds->request(), webnav_type, navigation_policy,
-            is_redirect);
+        disposition = d->DispositionForNavigationAction(
+            wv, webframe_, ds->request(), webnav_type, disposition, is_redirect);
       }
     }
 
-    if (navigation_policy == WebKit::WebNavigationPolicyCurrentTab) {
+    if (disposition == CURRENT_TAB) {
       policy_action = PolicyUse;
-    } else if (navigation_policy == WebKit::WebNavigationPolicyDownload) {
+    } else if (disposition == SAVE_TO_DISK) {
       policy_action = PolicyDownload;
     } else {
-      if (navigation_policy != WebKit::WebNavigationPolicyIgnore) {
+      if (disposition != IGNORE_ACTION) {
         GURL referrer = webkit_glue::StringToGURL(
             request.httpHeaderField("Referer"));
 
         d->OpenURL(webframe_->GetWebViewImpl(),
                    webkit_glue::KURLToGURL(request.url()),
                    referrer,
-                   navigation_policy);
+                   disposition);
       }
       policy_action = PolicyIgnore;
     }
@@ -1478,9 +1475,9 @@ String WebFrameLoaderClient::overrideMediaType() const {
   return rv;
 }
 
-bool WebFrameLoaderClient::ActionSpecifiesNavigationPolicy(
+bool WebFrameLoaderClient::ActionSpecifiesDisposition(
     const WebCore::NavigationAction& action,
-    WebNavigationPolicy* policy) {
+    WindowOpenDisposition* disposition) {
   if ((action.type() != NavigationTypeLinkClicked) ||
       !action.event()->isMouseEvent())
     return false;
@@ -1496,20 +1493,11 @@ bool WebFrameLoaderClient::ActionSpecifiesNavigationPolicy(
   if (!new_tab_modifier && !shift && !alt)
     return false;
 
-  DCHECK(policy);
-  if (new_tab_modifier) {
-    if (shift) {
-      *policy = WebKit::WebNavigationPolicyNewForegroundTab;
-    } else {
-      *policy = WebKit::WebNavigationPolicyNewBackgroundTab;
-    }
-  } else {
-    if (shift) {
-      *policy = WebKit::WebNavigationPolicyNewWindow;
-    } else {
-      *policy = WebKit::WebNavigationPolicyDownload;
-    }
-  }
+  DCHECK(disposition);
+  if (new_tab_modifier)
+    *disposition = shift ? NEW_FOREGROUND_TAB : NEW_BACKGROUND_TAB;
+  else
+    *disposition = shift ? NEW_WINDOW : SAVE_TO_DISK;
   return true;
 }
 

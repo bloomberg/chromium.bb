@@ -162,7 +162,7 @@ static void invalidateNodeBoundingRect(WebViewImpl* web_view) {
   const WebSize& size = web_view->size();
   WebRect damaged_rect(0, 0, size.width, size.height);
   if (web_view->GetDelegate())
-    web_view->GetDelegate()->didInvalidateRect(damaged_rect);
+    web_view->GetDelegate()->DidInvalidateRect(web_view, damaged_rect);
 }
 
 void WebInspectorClient::highlight(Node* node) {

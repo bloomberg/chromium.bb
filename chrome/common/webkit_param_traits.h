@@ -25,12 +25,10 @@
 
 #include "chrome/common/ipc_message_utils.h"
 #include "webkit/api/public/WebCache.h"
-#include "webkit/api/public/WebCompositionCommand.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebFindOptions.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebScreenInfo.h"
-#include "webkit/api/public/WebTextDirection.h"
 
 namespace IPC {
 
@@ -93,24 +91,6 @@ struct ParamTraits<WebKit::WebScreenInfo> {
     l->append(L", ");
     LogParam(p.availableRect, l);
     l->append(L")");
-  }
-};
-
-template <>
-struct ParamTraits<WebKit::WebCompositionCommand> {
-  typedef WebKit::WebCompositionCommand param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    LogParam(static_cast<int>(p), l);
   }
 };
 
@@ -281,24 +261,6 @@ struct ParamTraits<WebKit::WebCache::ResourceTypeStats> {
     LogParam(p.xslStyleSheets, l);
     LogParam(p.fonts, l);
     l->append(L"</WebCoreStats>");
-  }
-};
-
-template <>
-struct ParamTraits<WebKit::WebTextDirection> {
-  typedef WebKit::WebTextDirection param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p));
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = static_cast<param_type>(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    LogParam(static_cast<int>(p), l);
   }
 };
 

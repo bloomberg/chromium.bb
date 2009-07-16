@@ -56,11 +56,11 @@ TEST_F(ContextMenuCapturing, ContextMenuCapturing) {
   mouse_event.globalY = 250;
 
   WebView* webview = test_shell_->webView();
-  webview->handleInputEvent(mouse_event);
+  webview->HandleInputEvent(&mouse_event);
 
   // Now simulate the corresponding up event which should display the menu
   mouse_event.type = WebInputEvent::MouseUp;
-  webview->handleInputEvent(mouse_event);
+  webview->HandleInputEvent(&mouse_event);
 
   EXPECT_EQ(1U, test_delegate->captured_context_menu_events().size());
 }

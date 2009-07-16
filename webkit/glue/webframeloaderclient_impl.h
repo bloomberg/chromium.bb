@@ -5,13 +5,18 @@
 #ifndef WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H__
 #define WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H__
 
+#include "base/compiler_specific.h"
+
+MSVC_PUSH_WARNING_LEVEL(0);
 #include "FrameLoaderClient.h"
 #include <wtf/RefPtr.h>
+MSVC_POP_WARNING();
 
+#include "build/build_config.h"
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebNavigationPolicy.h"
 #include "webkit/glue/webview_delegate.h"
+#include "webkit/glue/window_open_disposition.h"
 
 namespace WebCore {
 class Frame;
@@ -212,11 +217,11 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
  private:
   void makeDocumentView();
 
-  // Given a NavigationAction, determine the associated WebNavigationPolicy.
-  // For example, a middle click means "open in background tab".
-  static bool ActionSpecifiesNavigationPolicy(
+  // Given a NavigationAction, determine the associated window opening
+  // disposition.  For example, a middle click means "open in background tab".
+  static bool ActionSpecifiesDisposition(
       const WebCore::NavigationAction& action,
-      WebKit::WebNavigationPolicy* policy);
+      WindowOpenDisposition* disposition);
 
   // Returns a valid GURL if we have an alt 404 server URL.
   GURL GetAlt404PageUrl(WebCore::DocumentLoader* loader);
@@ -259,8 +264,8 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   // which specifies that the plugin should be ready to accept data.
   bool sent_initial_response_to_plugin_;
 
-  // The navigation policy to use for the next call to dispatchCreatePage.
-  WebKit::WebNavigationPolicy next_navigation_policy_;
+  // The disposition to use for the next call to dispatchCreatePage.
+  WindowOpenDisposition next_window_open_disposition_;
 };
 
 #endif  // #ifndef WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H__

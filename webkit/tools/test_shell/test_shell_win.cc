@@ -36,8 +36,6 @@
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 
-using WebKit::WebWidget;
-
 #define MAX_LOADSTRING 100
 
 #define BUTTON_WIDTH 72
@@ -459,7 +457,7 @@ void TestShell::InteractiveSetFocus(WebWidgetHost* host, bool enable) {
 
 WebWidget* TestShell::CreatePopupWidget(WebView* webview) {
   DCHECK(!m_popupHost);
-  m_popupHost = WebWidgetHost::Create(NULL, popup_delegate_.get());
+  m_popupHost = WebWidgetHost::Create(NULL, delegate_.get());
   ShowWindow(popupWnd(), SW_SHOW);
 
   return m_popupHost->webwidget();

@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- *
+ * 
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -31,16 +31,12 @@
 #ifndef WebWidget_h
 #define WebWidget_h
 
-#include "WebCanvas.h"
+#error "This header file is still a work in progress; do not include!"
+
 #include "WebCommon.h"
-#include "WebCompositionCommand.h"
 #include "WebTextDirection.h"
 
 namespace WebKit {
-    class WebInputEvent;
-    class WebString;
-    struct WebRect;
-    struct WebSize;
 
     class WebWidget {
     public:
@@ -67,7 +63,7 @@ namespace WebKit {
 
         // Called to inform the WebWidget of an input event.  Returns true if
         // the event has been processed, false otherwise.
-        virtual bool handleInputEvent(const WebInputEvent&) = 0;
+        virtual void handleInputEvent(const WebInputEvent&) = 0;
 
         // Called to inform the WebWidget that mouse capture was lost.
         virtual void mouseCaptureLost() = 0;

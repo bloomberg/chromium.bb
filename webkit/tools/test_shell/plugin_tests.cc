@@ -161,7 +161,7 @@ TEST_F(PluginTest, DeleteFrameDuringEvent) {
   input.x = 50;
   input.y = 50;
   input.type = WebKit::WebInputEvent::MouseUp;
-  test_shell_->webView()->handleInputEvent(input);
+  test_shell_->webView()->HandleInputEvent(&input);
 
   // No crash means we passed.
 }

@@ -49,27 +49,9 @@ class WebViewDelegate;
 
 class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
  public:
-  // WebWidget methods:
-  virtual void close();
-  virtual WebKit::WebSize size() { return size_; }
-  virtual void resize(const WebKit::WebSize& new_size);
-  virtual void layout();
-  virtual void paint(WebKit::WebCanvas* canvas,
-                     const WebKit::WebRect& rect);
-  virtual bool handleInputEvent(const WebKit::WebInputEvent& input_event);
-  virtual void mouseCaptureLost();
-  virtual void setFocus(bool enable);
-  virtual bool handleCompositionEvent(WebKit::WebCompositionCommand command,
-                                      int cursor_position,
-                                      int target_start,
-                                      int target_end,
-                                      const WebKit::WebString& text);
-  virtual bool queryCompositionStatus(bool* enabled,
-                                      WebKit::WebRect* caret_rect);
-  virtual void setTextDirection(WebKit::WebTextDirection direction);
-
-  // WebView methods:
+  // WebView
   virtual bool ShouldClose();
+  virtual void Close();
   virtual WebViewDelegate* GetDelegate();
   virtual void SetDelegate(WebViewDelegate*);
   virtual void SetUseEditorDelegate(bool value);
@@ -80,7 +62,22 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual WebFrame* GetFrameWithName(const std::wstring& name);
   virtual WebFrame* GetPreviousFrameBefore(WebFrame* frame, bool wrap);
   virtual WebFrame* GetNextFrameAfter(WebFrame* frame, bool wrap);
+  virtual void Resize(const WebKit::WebSize& new_size);
+  virtual WebKit::WebSize GetSize() { return size(); }
+  virtual void Layout();
+  virtual void Paint(skia::PlatformCanvas* canvas, const WebKit::WebRect& rect);
+  virtual bool HandleInputEvent(const WebKit::WebInputEvent* input_event);
+  virtual void MouseCaptureLost();
+  virtual void SetFocus(bool enable);
   virtual void ClearFocusedNode();
+  virtual bool ImeSetComposition(int string_type,
+                                 int cursor_position,
+                                 int target_start,
+                                 int target_end,
+                                 const std::wstring& ime_string);
+  virtual bool ImeUpdateStatus(bool* enable_ime,
+                               WebKit::WebRect* caret_rect);
+  virtual void SetTextDirection(WebTextDirection direction);
   virtual void StopLoading();
   virtual void SetBackForwardListSize(int size);
   virtual void SetInitialFocus(bool reverse);
@@ -132,6 +129,8 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual bool GetIsTransparent() const;
 
   // WebViewImpl
+
+  const WebKit::WebSize& size() const { return size_; }
 
   const WebKit::WebPoint& last_mouse_down_point() const {
       return last_mouse_down_point_;
@@ -197,11 +196,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   }
 
   // Set the disposition for how this webview is to be initially shown.
-  void set_initial_navigation_policy(WebKit::WebNavigationPolicy policy) {
-    initial_navigation_policy_ = policy;
+  void set_window_open_disposition(WindowOpenDisposition disp) {
+    window_open_disposition_ = disp;
   }
-  WebKit::WebNavigationPolicy initial_navigation_policy() const {
-    return initial_navigation_policy_;
+  WindowOpenDisposition window_open_disposition() const {
+    return window_open_disposition_;
   }
 
   // Start a system drag and drop operation.
@@ -304,8 +303,8 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   // this behavior by setting this flag if the keyDown was handled.
   bool suppress_next_keypress_event_;
 
-  // The policy for how this webview is to be initially shown.
-  WebKit::WebNavigationPolicy initial_navigation_policy_;
+  // The disposition for how this webview is to be initially shown.
+  WindowOpenDisposition window_open_disposition_;
 
   // Represents whether or not this object should process incoming IME events.
   bool ime_accept_events_;

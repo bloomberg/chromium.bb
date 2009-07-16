@@ -11,13 +11,14 @@
 #include "base/scoped_ptr.h"
 #include "skia/ext/platform_canvas.h"
 
+class WebWidget;
+class WebWidgetDelegate;
+
 namespace gfx {
 class Size;
 }
 
 namespace WebKit {
-class WebWidget;
-class WebWidgetClient;
 struct WebScreenInfo;
 }
 
@@ -36,14 +37,14 @@ class WebWidgetHost {
   // The newly created window should be resized after it is created, using the
   // MoveWindow (or equivalent) function.
   static WebWidgetHost* Create(gfx::NativeView parent_view,
-                               WebKit::WebWidgetClient* client);
+                               WebWidgetDelegate* delegate);
 
 #if defined(OS_MACOSX)
   static void HandleEvent(gfx::NativeView view, NSEvent* event);
 #endif
 
   gfx::NativeView view_handle() const { return view_; }
-  WebKit::WebWidget* webwidget() const { return webwidget_; }
+  WebWidget* webwidget() const { return webwidget_; }
 
   void DidInvalidateRect(const gfx::Rect& rect);
   void DidScrollRect(int dx, int dy, const gfx::Rect& clip_rect);
@@ -114,7 +115,7 @@ class WebWidgetHost {
   }
 
   gfx::NativeView view_;
-  WebKit::WebWidget* webwidget_;
+  WebWidget* webwidget_;
   scoped_ptr<skia::PlatformCanvas> canvas_;
 
   // specifies the portion of the webwidget that needs painting

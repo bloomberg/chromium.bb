@@ -93,9 +93,7 @@ public:
       return m_webViewHost.get() ? m_webViewHost->webview() : NULL;
     }
     WebViewHost* webViewHost() { return m_webViewHost.get(); }
-    WebKit::WebWidget* popup() {
-      return m_popupHost ? m_popupHost->webwidget() : NULL;
-    }
+    WebWidget* popup() { return m_popupHost ? m_popupHost->webwidget() : NULL; }
     WebWidgetHost* popupHost() { return m_popupHost; }
 
     // Called by the LayoutTestController to signal test completion.
@@ -104,7 +102,7 @@ public:
     // Called to block the calling thread until TestFinished is called.
     void WaitTestFinished();
 
-    void Show(WebKit::WebNavigationPolicy policy);
+    void Show(WebView* webview, WindowOpenDisposition disposition);
 
     // We use this to avoid relying on Windows focus during layout test mode.
     void SetFocus(WebWidgetHost* host, bool enable);
@@ -113,7 +111,6 @@ public:
       return layout_test_controller_.get();
     }
     TestWebViewDelegate* delegate() { return delegate_.get(); }
-    TestWebViewDelegate* popup_delegate() { return popup_delegate_.get(); }
     TestNavigationController* navigation_controller() {
       return navigation_controller_.get();
     }
@@ -178,7 +175,7 @@ public:
     // Implements CreateWebView for TestWebViewDelegate, which in turn
     // is called as a WebViewDelegate.
     WebView* CreateWebView(WebView* webview);
-    WebKit::WebWidget* CreatePopupWidget(WebView* webview);
+    WebWidget* CreatePopupWidget(WebView* webview);
     void ClosePopup();
 
 #if defined(OS_WIN)
@@ -325,7 +322,6 @@ private:
     scoped_ptr<TestNavigationController> navigation_controller_;
 
     scoped_refptr<TestWebViewDelegate> delegate_;
-    scoped_refptr<TestWebViewDelegate> popup_delegate_;
 
     const TestParams* test_params_;
 

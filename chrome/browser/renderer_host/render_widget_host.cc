@@ -17,6 +17,7 @@
 #include "chrome/common/render_messages.h"
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
+#include "webkit/glue/webtextdirection.h"
 
 #if defined(OS_WIN)
 #include "base/gfx/gdi_util.h"
@@ -36,7 +37,6 @@ using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
-using WebKit::WebTextDirection;
 
 #if defined (OS_MACOSX)
 using WebKit::WebScreenInfo;
@@ -72,7 +72,7 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       in_get_backing_store_(false),
       view_being_painted_(false),
       text_direction_updated_(false),
-      text_direction_(WebKit::WebTextDirectionLeftToRight),
+      text_direction_(WEB_TEXT_DIRECTION_LTR),
       text_direction_canceled_(false) {
   if (routing_id_ == MSG_ROUTING_NONE)
     routing_id_ = process_->GetNextRoutingID();
@@ -452,7 +452,8 @@ void RenderWidgetHost::CancelUpdateTextDirection() {
 void RenderWidgetHost::NotifyTextDirection() {
   if (text_direction_updated_) {
     if (!text_direction_canceled_)
-      Send(new ViewMsg_SetTextDirection(routing_id(), text_direction_));
+      Send(new ViewMsg_SetTextDirection(routing_id(),
+                                        static_cast<int>(text_direction_)));
     text_direction_updated_ = false;
     text_direction_canceled_ = false;
   }
@@ -462,26 +463,22 @@ void RenderWidgetHost::ImeSetInputMode(bool activate) {
   Send(new ViewMsg_ImeSetInputMode(routing_id(), activate));
 }
 
-void RenderWidgetHost::ImeSetComposition(const string16& ime_string,
+void RenderWidgetHost::ImeSetComposition(const std::wstring& ime_string,
                                          int cursor_position,
                                          int target_start,
                                          int target_end) {
-  Send(new ViewMsg_ImeSetComposition(routing_id(),
-                                     WebKit::WebCompositionCommandSet,
-                                     cursor_position, target_start, target_end,
-                                     ime_string));
+  Send(new ViewMsg_ImeSetComposition(routing_id(), 0, cursor_position,
+                                     target_start, target_end, ime_string));
 }
 
-void RenderWidgetHost::ImeConfirmComposition(const string16& ime_string) {
-  Send(new ViewMsg_ImeSetComposition(routing_id(),
-                                     WebKit::WebCompositionCommandConfirm,
-                                     -1, -1, -1, ime_string));
+void RenderWidgetHost::ImeConfirmComposition(const std::wstring& ime_string) {
+  Send(new ViewMsg_ImeSetComposition(routing_id(), 1, -1, -1, -1, ime_string));
 }
 
 void RenderWidgetHost::ImeCancelComposition() {
-  Send(new ViewMsg_ImeSetComposition(routing_id(),
-                                     WebKit::WebCompositionCommandDiscard,
-                                     -1, -1, -1, string16()));
+  std::wstring empty_string;
+  Send(new ViewMsg_ImeSetComposition(routing_id(), -1, -1, -1, -1,
+                                     empty_string));
 }
 
 gfx::Rect RenderWidgetHost::GetRootWindowResizerRect() const {

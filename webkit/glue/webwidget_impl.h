@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBPOPUPMENU_IMPL_H_
-#define WEBKIT_GLUE_WEBPOPUPMENU_IMPL_H_
+#ifndef WEBKIT_GLUE_WEBWIDGET_IMPL_H__
+#define WEBKIT_GLUE_WEBWIDGET_IMPL_H__
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "webkit/api/public/WebPoint.h"
-#include "webkit/api/public/WebPopupMenu.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/glue/webwidget.h"
 
 #include "FramelessScrollViewClient.h"
 
@@ -31,36 +31,39 @@ struct WebRect;
 }
 
 struct MenuItem;
+class WebWidgetDelegate;
 
-class WebPopupMenuImpl : public WebKit::WebPopupMenu,
-                         public WebCore::FramelessScrollViewClient,
-                         public base::RefCounted<WebPopupMenuImpl> {
+class WebWidgetImpl : public WebWidget,
+                      public WebCore::FramelessScrollViewClient,
+                      public base::RefCounted<WebWidgetImpl> {
  public:
   // WebWidget
-  virtual void close();
-  virtual WebKit::WebSize size() { return size_; }
-  virtual void resize(const WebKit::WebSize& new_size);
-  virtual void layout();
-  virtual void paint(WebKit::WebCanvas* canvas,
+  virtual void Close();
+  virtual void Resize(const WebKit::WebSize& new_size);
+  virtual WebKit::WebSize GetSize() { return size(); }
+  virtual void Layout();
+  virtual void Paint(skia::PlatformCanvas* canvas,
                      const WebKit::WebRect& rect);
-  virtual bool handleInputEvent(const WebKit::WebInputEvent& input_event);
-  virtual void mouseCaptureLost();
-  virtual void setFocus(bool enable);
-  virtual bool handleCompositionEvent(WebKit::WebCompositionCommand command,
-                                      int cursor_position,
-                                      int target_start,
-                                      int target_end,
-                                      const WebKit::WebString& text);
-  virtual bool queryCompositionStatus(bool* enabled,
-                                      WebKit::WebRect* caret_rect);
-  virtual void setTextDirection(WebKit::WebTextDirection direction);
+  virtual bool HandleInputEvent(const WebKit::WebInputEvent* input_event);
+  virtual void MouseCaptureLost();
+  virtual void SetFocus(bool enable);
+  virtual bool ImeSetComposition(int string_type,
+                                 int cursor_position,
+                                 int target_start,
+                                 int target_end,
+                                 const std::wstring& ime_string);
+  virtual bool ImeUpdateStatus(bool* enable_ime,
+                               WebKit::WebRect* caret_rect);
+  virtual void SetTextDirection(WebTextDirection direction);
 
-  // WebPopupMenuImpl
+  // WebWidgetImpl
   void Init(WebCore::FramelessScrollView* widget,
             const WebKit::WebRect& bounds);
 
-  WebKit::WebWidgetClient* client() {
-    return client_;
+  const WebKit::WebSize& size() const { return size_; }
+
+  WebWidgetDelegate* delegate() {
+    return delegate_;
   }
 
   void MouseMove(const WebKit::WebMouseEvent& mouse_event);
@@ -72,11 +75,11 @@ class WebPopupMenuImpl : public WebKit::WebPopupMenu,
   bool KeyEvent(const WebKit::WebKeyboardEvent& key_event);
 
  protected:
-  friend class WebKit::WebPopupMenu;  // For WebPopupMenu::create
-  friend class base::RefCounted<WebPopupMenuImpl>;
+  friend class WebWidget;  // So WebWidget::Create can call our constructor
+  friend class base::RefCounted<WebWidgetImpl>;
 
-  WebPopupMenuImpl(WebKit::WebWidgetClient* client);
-  ~WebPopupMenuImpl();
+  WebWidgetImpl(WebWidgetDelegate* delegate);
+  ~WebWidgetImpl();
 
   // WebCore::HostWindow methods:
   virtual void repaint(const WebCore::IntRect&,
@@ -95,7 +98,7 @@ class WebPopupMenuImpl : public WebKit::WebPopupMenu,
   // WebCore::FramelessScrollViewClient methods:
   virtual void popupClosed(WebCore::FramelessScrollView* popup_view);
 
-  WebKit::WebWidgetClient* client_;
+  WebWidgetDelegate* delegate_;
   WebKit::WebSize size_;
 
   WebKit::WebPoint last_mouse_position_;
@@ -105,7 +108,7 @@ class WebPopupMenuImpl : public WebKit::WebPopupMenu,
   WebCore::FramelessScrollView* widget_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebPopupMenuImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebWidgetImpl);
 };
 
-#endif  // WEBKIT_GLUE_WEBPOPUPMENU_IMPL_H_
+#endif  // WEBKIT_GLUE_WEBWIDGET_IMPL_H__

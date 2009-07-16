@@ -371,11 +371,11 @@ IPC_BEGIN_MESSAGES(View)
   // * ime_string (std::wstring)
   //   Represents the string retrieved from IME (Input Method Editor)
   IPC_MESSAGE_ROUTED5(ViewMsg_ImeSetComposition,
-                      WebKit::WebCompositionCommand, /* command */
+                      int, /* string_type */
                       int, /* cursor_position */
                       int, /* target_start */
                       int, /* target_end */
-                      string16 /* ime_string */ )
+                      std::wstring /* ime_string */ )
 
   // This passes a set of webkit preferences down to the renderer.
   IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences, WebPreferences)
@@ -568,9 +568,16 @@ IPC_BEGIN_MESSAGES(View)
                        std::string /* extension_id */,
                        std::vector<std::string> /* page_action_ids */)
 
-  // Changes the text direction of the currently selected input field (if any).
+  // Changes the text direction of a selected input field.
+  // * direction (int)
+  //   Represents the new text direction.
+  //   Its possible values are listed below:
+  //     Value                      New Text Direction
+  //     WEB_TEXT_DIRECTION_DEFAULT NaturalWritingDirection ("inherit")
+  //     WEB_TEXT_DIRECTION_LTR     LeftToRightWritingDirection ("rtl")
+  //     WEB_TEXT_DIRECTION_RTL     RightToLeftWritingDirection ("ltr")
   IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
-                      WebKit::WebTextDirection /* direction */)
+                      int /* direction */)
 
   // Tells the renderer to clear the focused node (if any).
   IPC_MESSAGE_ROUTED0(ViewMsg_ClearFocusedNode)

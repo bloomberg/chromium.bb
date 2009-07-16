@@ -248,7 +248,7 @@ void EventSendingController::mouseDown(
   if (result)  // Could be NULL if invoked asynchronously.
     result->SetNull();
 
-  webview()->layout();
+  webview()->Layout();
 
   int button_number = GetButtonNumberFromSingleArg(args);
   DCHECK(button_number != -1);
@@ -270,7 +270,7 @@ void EventSendingController::mouseDown(
   pressed_button_ = button_type;
   InitMouseEvent(WebInputEvent::MouseDown, button_type,
                  last_mouse_pos_, &event);
-  webview()->handleInputEvent(event);
+  webview()->HandleInputEvent(&event);
 }
 
 void EventSendingController::mouseUp(
@@ -278,7 +278,7 @@ void EventSendingController::mouseUp(
   if (result)  // Could be NULL if invoked asynchronously.
     result->SetNull();
 
-  webview()->layout();
+  webview()->Layout();
 
   int button_number = GetButtonNumberFromSingleArg(args);
   DCHECK(button_number != -1);
@@ -303,7 +303,7 @@ void EventSendingController::mouseUp(
 }
 
 /* static */ void EventSendingController::DoMouseUp(const WebMouseEvent& e) {
-  webview()->handleInputEvent(e);
+  webview()->HandleInputEvent(&e);
   pressed_button_ = WebMouseEvent::ButtonNone;
 
   // If we're in a drag operation, complete it.
@@ -329,7 +329,7 @@ void EventSendingController::mouseMoveTo(
   result->SetNull();
 
   if (args.size() >= 2 && args[0].isNumber() && args[1].isNumber()) {
-    webview()->layout();
+    webview()->Layout();
 
     WebMouseEvent event;
     last_mouse_pos_.SetPoint(args[0].ToInt32(), args[1].ToInt32());
@@ -347,7 +347,7 @@ void EventSendingController::mouseMoveTo(
 
 // static
 void EventSendingController::DoMouseMove(const WebMouseEvent& e) {
-  webview()->handleInputEvent(e);
+  webview()->HandleInputEvent(&e);
 
   if (pressed_button_ != WebMouseEvent::ButtonNone &&
       !current_drag_data.isNull()) {
@@ -428,20 +428,20 @@ void EventSendingController::keyDown(
     event_up.type = WebInputEvent::KeyUp;
     // EventSendingController.m forces a layout here, with at least one
     // test (fast\forms\focus-control-to-page.html) relying on this.
-    webview()->layout();
+    webview()->Layout();
 
-    webview()->handleInputEvent(event_down);
+    webview()->HandleInputEvent(&event_down);
 
 #if defined(OS_WIN)
     if (generate_char) {
       WebKeyboardEvent event_char = event_down;
       event_char.type = WebInputEvent::Char;
       event_char.keyIdentifier[0] = '\0';
-      webview()->handleInputEvent(event_char);
+      webview()->HandleInputEvent(&event_char);
     }
 #endif
 
-    webview()->handleInputEvent(event_up);
+    webview()->HandleInputEvent(&event_up);
   }
 }
 
@@ -460,11 +460,12 @@ void EventSendingController::dispatchMessage(
     if (msg == WM_DEADCHAR || msg == WM_SYSDEADCHAR)
       return;
 
-    webview()->layout();
+    webview()->Layout();
 
     unsigned long lparam = static_cast<unsigned long>(args[2].ToDouble());
-    webview()->handleInputEvent(WebInputEventFactory::keyboardEvent(
-        NULL, msg, args[1].ToInt32(), lparam));
+    const WebKeyboardEvent& key_event = WebInputEventFactory::keyboardEvent(
+        NULL, msg, args[1].ToInt32(), lparam);
+    webview()->HandleInputEvent(&key_event);
   } else {
     NOTREACHED() << L"Wrong number of arguments";
   }
@@ -542,7 +543,7 @@ void EventSendingController::contextClick(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  webview()->layout();
+  webview()->Layout();
 
   if (GetCurrentEventTimeSec() - last_click_time_sec >= 1) {
     click_count = 1;
@@ -556,11 +557,11 @@ void EventSendingController::contextClick(
   pressed_button_ = WebMouseEvent::ButtonRight;
   InitMouseEvent(WebInputEvent::MouseDown, WebMouseEvent::ButtonRight,
                  last_mouse_pos_, &event);
-  webview()->handleInputEvent(event);
+  webview()->HandleInputEvent(&event);
 
   InitMouseEvent(WebInputEvent::MouseUp, WebMouseEvent::ButtonRight,
                  last_mouse_pos_, &event);
-  webview()->handleInputEvent(event);
+  webview()->HandleInputEvent(&event);
 
   pressed_button_ = WebMouseEvent::ButtonNone;
 }

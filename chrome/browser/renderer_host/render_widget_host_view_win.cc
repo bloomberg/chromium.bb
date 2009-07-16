@@ -42,7 +42,6 @@ using base::TimeTicks;
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
-using WebKit::WebTextDirection;
 
 namespace {
 
@@ -113,7 +112,6 @@ static bool IsRTLKeyboardLayoutInstalled() {
 //   If only a control key and a right-shift key are down.
 // * WEB_TEXT_DIRECTION_LTR
 //   If only a control key and a left-shift key are down.
-
 static bool GetNewTextDirection(WebTextDirection* direction) {
   uint8_t keystate[256];
   if (!GetKeyboardState(&keystate[0]))
@@ -133,10 +131,10 @@ static bool GetNewTextDirection(WebTextDirection* direction) {
 
   if (keystate[VK_RSHIFT] & kKeyDownMask) {
     keystate[VK_RSHIFT] = 0;
-    *direction = WebKit::WebTextDirectionRightToLeft;
+    *direction = WEB_TEXT_DIRECTION_RTL;
   } else if (keystate[VK_LSHIFT] & kKeyDownMask) {
     keystate[VK_LSHIFT] = 0;
-    *direction = WebKit::WebTextDirectionLeftToRight;
+    *direction = WEB_TEXT_DIRECTION_LTR;
   } else {
     return false;
   }
@@ -943,7 +941,7 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   ImeComposition composition;
   if (ime_input_.GetResult(m_hWnd, lparam, &composition)) {
     Send(new ViewMsg_ImeSetComposition(render_widget_host_->routing_id(),
-                                       WebKit::WebCompositionCommandConfirm,
+                                       1,
                                        composition.cursor_position,
                                        composition.target_start,
                                        composition.target_end,
@@ -958,7 +956,7 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
   // composition and send it to a renderer process.
   if (ime_input_.GetComposition(m_hWnd, lparam, &composition)) {
     Send(new ViewMsg_ImeSetComposition(render_widget_host_->routing_id(),
-                                       WebKit::WebCompositionCommandSet,
+                                       0,
                                        composition.cursor_position,
                                        composition.target_start,
                                        composition.target_end,
@@ -979,8 +977,7 @@ LRESULT RenderWidgetHostViewWin::OnImeEndComposition(
     // of the renderer process.
     std::wstring empty_string;
     Send(new ViewMsg_ImeSetComposition(render_widget_host_->routing_id(),
-                                       WebKit::WebCompositionCommandDiscard,
-                                       -1, -1, -1, empty_string));
+                                       -1, -1, -1, -1, empty_string));
     ime_input_.ResetComposition(m_hWnd);
   }
   ime_input_.DestroyImeWindow(m_hWnd);

@@ -29,10 +29,9 @@
 #include <vector>
 
 #include "base/gfx/native_widget_types.h"
-#include "webkit/api/public/WebNavigationPolicy.h"
 #include "webkit/api/public/WebNavigationType.h"
-#include "webkit/api/public/WebWidgetClient.h"
 #include "webkit/glue/context_menu.h"
+#include "webkit/glue/webwidget_delegate.h"
 
 namespace webkit_glue {
 class WebMediaPlayerDelegate;
@@ -52,13 +51,13 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebURLRequest;
 class WebURLResponse;
-class WebWidget;
 struct WebPoint;
 struct WebPopupMenuInfo;
 struct WebRect;
 struct WebURLError;
 }
 
+struct WebPreferences;
 class FilePath;
 class SkBitmap;
 class WebDevToolsAgentDelegate;
@@ -66,8 +65,7 @@ class WebFrame;
 class WebMediaPlayerDelegate;
 class WebPluginDelegate;
 class WebView;
-struct WebPluginGeometry;
-struct WebPreferences;
+class WebWidget;
 
 enum NavigationGesture {
   NavigationGestureUser,    // User initiated navigation/load. This is not
@@ -98,8 +96,8 @@ class WebFileChooserCallback {
 
 
 // Inheritance here is somewhat weird, but since a WebView is a WebWidget,
-// it makes sense that a WebViewDelegate is a WebWidgetClient.
-class WebViewDelegate : virtual public WebKit::WebWidgetClient {
+// it makes sense that a WebViewDelegate is a WebWidgetDelegate.
+class WebViewDelegate : virtual public WebWidgetDelegate {
  public:
   // WebView additions -------------------------------------------------------
 
@@ -118,15 +116,13 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
 
   // This method is called to create a new WebWidget to act as a popup
   // (like a drop-down menu).
-  virtual WebKit::WebWidget* CreatePopupWidget(
-      WebView* webview,
-      bool activatable) {
+  virtual WebWidget* CreatePopupWidget(WebView* webview, bool activatable) {
     return NULL;
   }
 
   // Like CreatePopupWidget, except the actual widget is rendered by the
   // embedder using the supplied info.
-  virtual WebKit::WebWidget* CreatePopupWidgetWithInfo(
+  virtual WebWidget* CreatePopupWidgetWithInfo(
       WebView* webview,
       const WebKit::WebPopupMenuInfo& info) {
     return NULL;
@@ -168,7 +164,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // This method is called to open a URL in the specified manner.
   virtual void OpenURL(WebView* webview, const GURL& url,
                        const GURL& referrer,
-                       WebKit::WebNavigationPolicy policy) {
+                       WindowOpenDisposition disposition) {
   }
 
   // Notifies how many matches have been found so far, for a given request_id.
@@ -199,12 +195,6 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // input AccessibilityObject and send it through IPC for handling on the
   // browser side.
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj) {
-  }
-
-  // Keeps track of the necessary window move for a plugin window that resulted
-  // from a scroll operation.  That way, all plugin windows can be moved at the
-  // same time as each other and the page.
-  virtual void DidMovePlugin(const WebPluginGeometry& move) {
   }
 
   // FrameLoaderClient -------------------------------------------------------
@@ -258,20 +248,20 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // proposed navigation. It will be called before loading starts, and
   // on every redirect.
   //
-  // default_policy specifies what should normally happen for this
+  // disposition specifies what should normally happen for this
   // navigation (open in current tab, start a new tab, start a new
-  // window, etc).  This method can return an altered policy, and
+  // window, etc).  This method can return an altered disposition, and
   // take any additional separate action it wants to.
   //
   // is_redirect is true if this is a redirect rather than user action.
-  virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
+  virtual WindowOpenDisposition DispositionForNavigationAction(
       WebView* webview,
       WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
-      WebKit::WebNavigationPolicy default_policy,
+      WindowOpenDisposition disposition,
       bool is_redirect) {
-    return default_policy;
+    return disposition;
   }
 
   // FrameLoadDelegate -------------------------------------------------------
@@ -535,8 +525,8 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
                                          const std::wstring& value) {
   }
 
-  virtual void DidContentsSizeChange(WebKit::WebWidget* webwidget,
-                                     int new_width, int new_height) {
+  virtual void DidContentsSizeChange(WebWidget* webwidget, int new_width,
+                                     int new_height) {
   }
 
   // UIDelegate --------------------------------------------------------------
