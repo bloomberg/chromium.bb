@@ -290,34 +290,49 @@ TEST_F(PasswordStoreMacTest, TestKeychainToFormTranslation) {
 TEST_F(PasswordStoreMacTest, TestKeychainSearch) {
   struct TestDataAndExpectation {
     const PasswordFormData data;
-    const size_t expected_matches;
+    const size_t expected_fill_matches;
+    const size_t expected_merge_matches;
   };
   // Most fields are left blank because we don't care about them for searching.
   TestDataAndExpectation test_data[] = {
     // An HTML form we've seen.
     { { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 2 },
+        NULL, NULL, NULL, NULL, NULL, L"joe_user", NULL, false, false, 0 },
+      2, 2 },
+    { { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
+        NULL, NULL, NULL, NULL, NULL, L"wrong_user", NULL, false, false, 0 },
+      2, 0 },
     // An HTML form we haven't seen
     { { PasswordForm::SCHEME_HTML, "http://www.unseendomain.com/",
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 0 },
+        NULL, NULL, NULL, NULL, NULL, L"joe_user", NULL, false, false, 0 },
+      0, 0 },
     // Basic auth that should match.
     { { PasswordForm::SCHEME_BASIC, "http://some.domain.com:4567/low_security",
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 1 },
+        NULL, NULL, NULL, NULL, NULL, L"basic_auth_user", NULL, false, false,
+        0 },
+      1, 1 },
     // Basic auth with the wrong port.
     { { PasswordForm::SCHEME_BASIC, "http://some.domain.com:1111/low_security",
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 0 },
+        NULL, NULL, NULL, NULL, NULL, L"basic_auth_user", NULL, false, false,
+        0 },
+      0, 0 },
     // Digest auth we've saved under https, visited with http.
     { { PasswordForm::SCHEME_DIGEST, "http://some.domain.com/high_security",
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 0 },
+        NULL, NULL, NULL, NULL, NULL, L"digest_auth_user", NULL, false, false,
+        0 },
+      0, 0 },
     // Digest auth that should match.
     { { PasswordForm::SCHEME_DIGEST, "https://some.domain.com/high_security",
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, true, 0 }, 1 },
+        NULL, NULL, NULL, NULL, NULL, L"wrong_user", NULL, false, true, 0 },
+      1, 0 },
     // Digest auth with the wrong domain.
     { { PasswordForm::SCHEME_DIGEST, "https://some.domain.com/other_domain",
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, true, 0 }, 0 },
+        NULL, NULL, NULL, NULL, NULL, L"digest_auth_user", NULL, false, true,
+        0 },
+      0, 0 },
     // Garbage forms should have no matches.
     { { PasswordForm::SCHEME_HTML, "foo/bar/baz",
-        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 0 },
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, 0 }, 0, 0 },
   };
 
   MacKeychainPasswordFormAdapter keychain_adapter(keychain_);
@@ -326,14 +341,21 @@ TEST_F(PasswordStoreMacTest, TestKeychainSearch) {
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     scoped_ptr<PasswordForm> query_form(
         CreatePasswordFormFromData(test_data[i].data));
+
+    // Check matches treating the form as a fill target.
     std::vector<PasswordForm*> matching_items =
-        keychain_adapter.PasswordsMatchingForm(*query_form);
-    EXPECT_EQ(test_data[i].expected_matches, matching_items.size());
+        keychain_adapter.PasswordsFillingForm(*query_form);
+    EXPECT_EQ(test_data[i].expected_fill_matches, matching_items.size());
+    STLDeleteElements(&matching_items);
+
+    // Check matches teating the form as a merging target.
+    matching_items = keychain_adapter.PasswordsMergeableWithForm(*query_form);
+    EXPECT_EQ(test_data[i].expected_merge_matches, matching_items.size());
     STLDeleteElements(&matching_items);
 
     // None of the pre-seeded items are owned by us, so none should match an
     // owned-passwords-only search.
-    matching_items = owned_keychain_adapter.PasswordsMatchingForm(*query_form);
+    matching_items = owned_keychain_adapter.PasswordsFillingForm(*query_form);
     EXPECT_EQ(0U, matching_items.size());
     STLDeleteElements(&matching_items);
   }
@@ -522,7 +544,7 @@ TEST_F(PasswordStoreMacTest, TestKeychainRemove) {
   PasswordForm* add_form = CreatePasswordFormFromData(test_data[0].data);
   EXPECT_TRUE(owned_keychain_adapter.AddPassword(*add_form));
   delete add_form;
-  
+
   for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(
         test_data[i].data));
@@ -687,7 +709,7 @@ TEST_F(PasswordStoreMacTest, TestFormMerge) {
   test_data[DATABASE_INPUT][current_test].push_back(&db_user_3_with_path);
   test_data[MERGE_OUTPUT][current_test].push_back(&merged_user_1);
   test_data[MERGE_OUTPUT][current_test].push_back(&merged_user_1_with_db_path);
-  test_data[MERGE_OUTPUT][current_test].push_back(&keychain_user_2);
+  test_data[KEYCHAIN_OUTPUT][current_test].push_back(&keychain_user_2);
   test_data[DATABASE_OUTPUT][current_test].push_back(&db_user_3_with_path);
 
   // Test a merge where Chrome has a blacklist entry, and the keychain has
@@ -701,7 +723,7 @@ TEST_F(PasswordStoreMacTest, TestFormMerge) {
   // subpath, and we want access to the password on other paths.
   test_data[MERGE_OUTPUT][current_test].push_back(
       &database_blacklist_with_path);
-  test_data[MERGE_OUTPUT][current_test].push_back(&keychain_user_1);
+  test_data[KEYCHAIN_OUTPUT][current_test].push_back(&keychain_user_1);
 
   // Test a merge where Chrome has an account, and Keychain has a blacklist
   // (from another browser) and the Chrome password data.
@@ -753,4 +775,47 @@ TEST_F(PasswordStoreMacTest, TestFormMerge) {
     STLDeleteElements(&database_forms);
     STLDeleteElements(&merged_forms);
   }
+}
+
+TEST_F(PasswordStoreMacTest, TestPasswordBulkLookup) {
+  PasswordFormData db_data[] = {
+    { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
+      "http://some.domain.com/", "http://some.domain.com/action.cgi",
+      L"submit", L"username", L"password", L"joe_user", L"",
+      true, false, 1212121212 },
+    { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
+      "http://some.domain.com/page.html",
+      "http://some.domain.com/handlepage.cgi",
+      L"submit", L"username", L"password", L"joe_user", L"",
+      true, false, 1234567890 },
+    { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
+      "http://some.domain.com/page.html",
+      "http://some.domain.com/handlepage.cgi",
+      L"submit", L"username", L"password", L"second-account", L"",
+      true, false, 1240000000 },
+    { PasswordForm::SCHEME_HTML, "http://dont.remember.com/",
+      "http://dont.remember.com/",
+      "http://dont.remember.com/handlepage.cgi",
+      L"submit", L"username", L"password", L"joe_user", L"",
+      true, false, 1240000000 },
+    { PasswordForm::SCHEME_HTML, "http://some.domain.com/",
+      "http://some.domain.com/path.html", "http://some.domain.com/action.cgi",
+      L"submit", L"username", L"password", NULL, NULL,
+      true, false, 1212121212 },
+  };
+  std::vector<PasswordForm*> database_forms;
+  for (unsigned int i = 0; i < ARRAYSIZE_UNSAFE(db_data); ++i) {
+    database_forms.push_back(CreatePasswordFormFromData(db_data[i]));
+  }
+  std::vector<PasswordForm*> merged_forms =
+      internal_keychain_helpers::GetPasswordsForForms(*keychain_,
+                                                      &database_forms);
+  EXPECT_EQ(2U, database_forms.size());
+  ASSERT_EQ(3U, merged_forms.size());
+  EXPECT_EQ(std::wstring(L"sekrit"), merged_forms[0]->password_value);
+  EXPECT_EQ(std::wstring(L"sekrit"), merged_forms[1]->password_value);
+  EXPECT_EQ(true, merged_forms[2]->blacklisted_by_user);
+
+  STLDeleteElements(&database_forms);
+  STLDeleteElements(&merged_forms);
 }

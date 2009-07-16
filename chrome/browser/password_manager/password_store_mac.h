@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_MAC_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_MAC_H_
 
+#include <vector>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/password_manager/password_store.h"
 
@@ -37,7 +39,11 @@ class PasswordStoreMac : public PasswordStore {
   // Returns true if our database contains a form that exactly matches the given
   // keychain form.
   bool DatabaseHasFormMatchingKeychainForm(
-    const webkit_glue::PasswordForm& form);
+      const webkit_glue::PasswordForm& form);
+
+  // Removes the given forms from the database.
+  void RemoveDatabaseForms(
+      const std::vector<webkit_glue::PasswordForm*>& forms);
 
   scoped_ptr<MacKeychain> keychain_;
   scoped_ptr<LoginDatabaseMac> login_metadata_db_;

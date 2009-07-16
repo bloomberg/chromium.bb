@@ -20,11 +20,17 @@ class MacKeychainPasswordFormAdapter {
   // Creates an adapter for |keychain|. This class does not take ownership of
   // |keychain|, so the caller must make sure that the keychain outlives the
   // created object.
-  explicit MacKeychainPasswordFormAdapter(MacKeychain* keychain);
+  explicit MacKeychainPasswordFormAdapter(const MacKeychain* keychain);
 
   // Returns PasswordForms for each keychain entry that could be used to fill
   // |form|. Caller is responsible for deleting the returned forms.
-  std::vector<webkit_glue::PasswordForm*> PasswordsMatchingForm(
+  std::vector<webkit_glue::PasswordForm*> PasswordsFillingForm(
+      const webkit_glue::PasswordForm& query_form);
+
+  // Returns PasswordForms for each keychain entry that could be merged with
+  // |form|. Differs from PasswordsFillingForm in that the username must match.
+  // Caller is responsible for deleting the returned forms.
+  std::vector<webkit_glue::PasswordForm*> PasswordsMergeableWithForm(
       const webkit_glue::PasswordForm& query_form);
 
   // Returns the PasswordForm for the Keychain entry that matches |form| on all
@@ -52,12 +58,6 @@ class MacKeychainPasswordFormAdapter {
   // Caller is responsible for deleting the returned forms.
   std::vector<webkit_glue::PasswordForm*> CreateFormsFromKeychainItems(
       const std::vector<SecKeychainItemRef>& items);
-
-  // Searches |keychain| for all items usable for the given form, and returns
-  // them. The caller is responsible for calling MacKeychain::Free on the
-  // returned items.
-  std::vector<SecKeychainItemRef> KeychainItemsForFillingForm(
-      const webkit_glue::PasswordForm& form);
 
   // Searches |keychain| for the specific keychain entry that corresponds to the
   // given form, and returns it (or NULL if no match is found). The caller is
@@ -97,7 +97,7 @@ class MacKeychainPasswordFormAdapter {
   bool SetKeychainItemCreatorCode(const SecKeychainItemRef& keychain_item,
                                   OSType creator_code);
 
-  MacKeychain* keychain_;
+  const MacKeychain* keychain_;
 
   // If true, Keychain searches are restricted to items created by Chrome.
   bool finds_only_owned_;
@@ -133,14 +133,19 @@ bool FormsMatchForMerge(const webkit_glue::PasswordForm& form_a,
 //
 // On return, database_forms and keychain_forms will have only unused
 // entries; for database_forms that means entries for which no corresponding
-// password can be found (and which aren't blacklist entries), but for
-// keychain_forms it's only entries we explicitly choose not to use (e.g.,
-// blacklist entries from other browsers). Keychain entries that we have no
-// database matches for will still end up in merged_forms, since they have
-// enough information to be used as imported passwords.
+// password can be found (and which aren't blacklist entries), and for
+// keychain_forms it's entries that weren't merged into at least one database
+// form.
 void MergePasswordForms(std::vector<webkit_glue::PasswordForm*>* keychain_forms,
                         std::vector<webkit_glue::PasswordForm*>* database_forms,
                         std::vector<webkit_glue::PasswordForm*>* merged_forms);
+
+// Fills in the passwords for as many of the forms in |database_forms| as
+// possible using entries from |keychain| and returns them. On return,
+// |database_forms| will contain only the forms for which no password was found.
+std::vector<webkit_glue::PasswordForm*> GetPasswordsForForms(
+    const MacKeychain& keychain,
+    std::vector<webkit_glue::PasswordForm*>* database_forms);
 
 }  // internal_keychain_helpers
 
