@@ -18,6 +18,7 @@ class ExtensionDOMUI
 
   // DOMUI
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual void RenderViewReused(RenderViewHost* render_view_host);
   virtual void ProcessDOMUIMessage(const std::string& message,
                                    const std::string& content,
                                    int request_id,

@@ -564,6 +564,9 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
 
     return pending_render_view_host_;
   } else {
+    if (pending_dom_ui_.get() && render_view_host_->IsRenderViewLive())
+      pending_dom_ui_->RenderViewReused(render_view_host_);
+
     // The renderer can exit view source mode when any error or cancellation
     // happen. We must overwrite to recover the mode.
     if (entry.IsViewSourceMode()) {

@@ -131,6 +131,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
       browser()->GetSelectedTabContents()->render_view_host(), L"",
       L"testTabsAPI()", &result);
   EXPECT_TRUE(result);
+
+  // There was a bug where we would crash if we navigated to a page in the same
+  // extension because no new render view was getting created, so we would not
+  // do some setup.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
+  result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"testTabsAPI()", &result);
+  EXPECT_TRUE(result);
 }
 
 // Tests that we can load page actions in the Omnibox.

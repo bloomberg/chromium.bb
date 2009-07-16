@@ -18,6 +18,12 @@ void ExtensionDOMUI::RenderViewCreated(RenderViewHost* render_view_host) {
                                       tab_contents()->GetURL()));
 }
 
+void ExtensionDOMUI::RenderViewReused(RenderViewHost* render_view_host) {
+  extension_function_dispatcher_.reset(
+      new ExtensionFunctionDispatcher(render_view_host, this,
+                                      tab_contents()->GetURL()));
+}
+
 void ExtensionDOMUI::ProcessDOMUIMessage(const std::string& message,
                                          const std::string& content,
                                          int request_id,

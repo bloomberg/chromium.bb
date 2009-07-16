@@ -29,7 +29,15 @@ class DOMUI {
   explicit DOMUI(TabContents* contents);
   virtual ~DOMUI();
 
+  // Called by RenderViewHost when the RenderView is first created. This is
+  // *not* called for every page load because in some cases
+  // RenderViewHostManager will reuse RenderView instances. In those cases,
+  // RenderViewReused will be called instead.
   virtual void RenderViewCreated(RenderViewHost* render_view_host) {}
+
+  // Called by RenderViewHostManager when a RenderView is reused to display a
+  // page.
+  virtual void RenderViewReused(RenderViewHost* render_view_host) {}
 
   // Called from DOMUIContents.
   virtual void ProcessDOMUIMessage(const std::string& message,
