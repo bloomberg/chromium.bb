@@ -38,7 +38,8 @@ class SimpleDataSource : public media::DataSource,
   virtual void Stop();
 
   // DataSource implementation.
-  virtual bool Initialize(const std::string& url);
+  virtual void Initialize(const std::string& url,
+                          media::FilterCallback* callback);
   virtual const media::MediaFormat& media_format();
   virtual size_t Read(uint8* data, size_t size);
   virtual bool GetPosition(int64* position_out);
@@ -103,6 +104,9 @@ class SimpleDataSource : public media::DataSource,
 
   // Used for accessing |state_|.
   Lock lock_;
+
+  // Filter callbacks.
+  scoped_ptr<media::FilterCallback> initialize_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDataSource);
 };

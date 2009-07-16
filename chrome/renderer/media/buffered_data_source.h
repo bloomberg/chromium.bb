@@ -204,7 +204,8 @@ class BufferedDataSource : public media::DataSource {
         webkit_glue::MediaResourceLoaderBridgeFactory*>(
         message_loop, bridge_factory);
   }
-  virtual bool Initialize(const std::string& url);
+  virtual void Initialize(const std::string& url,
+                          media::FilterCallback* callback);
 
   // media::MediaFilter implementation.
   virtual void Stop();
@@ -260,6 +261,9 @@ class BufferedDataSource : public media::DataSource {
 
   // The message loop of the pipeline thread.
   MessageLoop* pipeline_loop_;
+
+  // Filter callbacks.
+  scoped_ptr<media::FilterCallback> initialize_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };

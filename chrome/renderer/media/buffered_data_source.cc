@@ -532,14 +532,20 @@ void BufferedDataSource::Stop() {
     resource_loader->Stop();
 }
 
-bool BufferedDataSource::Initialize(const std::string& url) {
+void BufferedDataSource::Initialize(const std::string& url,
+                                    media::FilterCallback* callback) {
+  DCHECK(callback);
+  initialize_callback_.reset(callback);
+
   // Save the url.
   url_ = GURL(url);
 
   // Make sure we support the scheme of the URL.
   if (!IsSchemeSupported(url_)) {
     host()->Error(media::PIPELINE_ERROR_NETWORK);
-    return false;
+    initialize_callback_->Run();
+    initialize_callback_.reset();
+    return;
   }
 
   media_format_.SetAsString(media::MediaFormat::kMimeType,
@@ -562,16 +568,19 @@ bool BufferedDataSource::Initialize(const std::string& url) {
   }
 
   // Use the local reference to start the request.
-  if (resource_loader) {
-    if (net::ERR_IO_PENDING != resource_loader->Start(
-            NewCallback(this, &BufferedDataSource::InitialRequestStarted))) {
-      host()->Error(media::PIPELINE_ERROR_NETWORK);
-      return false;
-    }
-    return true;
+  if (!resource_loader) {
+    host()->Error(media::PIPELINE_ERROR_NETWORK);
+    initialize_callback_->Run();
+    initialize_callback_.reset();
+    return;
   }
-  host()->Error(media::PIPELINE_ERROR_NETWORK);
-  return false;
+
+  if (net::ERR_IO_PENDING != resource_loader->Start(
+          NewCallback(this, &BufferedDataSource::InitialRequestStarted))) {
+    host()->Error(media::PIPELINE_ERROR_NETWORK);
+    initialize_callback_->Run();
+    initialize_callback_.reset();
+  }
 }
 
 size_t BufferedDataSource::Read(uint8* data, size_t size) {
@@ -688,7 +697,7 @@ void BufferedDataSource::InitialRequestStarted(int error) {
 }
 
 void BufferedDataSource::OnInitialRequestStarted(int error) {
-  // Acquiring a lock should not be needed because stopped_ is only written
+  // Acquiring a lock should not be needed because |stopped_| is only written
   // on pipeline thread and we are on pipeline thread but just to be safe.
   AutoLock auto_lock(lock_);
   if (!stopped_) {
@@ -699,11 +708,12 @@ void BufferedDataSource::OnInitialRequestStarted(int error) {
         // TODO(hclam): report the amount of bytes buffered accurately.
         host()->SetBufferedBytes(total_bytes_);
       }
-      host()->InitializationComplete();
     } else {
       host()->Error(media::PIPELINE_ERROR_NETWORK);
     }
   }
+  initialize_callback_->Run();
+  initialize_callback_.reset();
 }
 
 const media::MediaFormat& BufferedDataSource::media_format() {

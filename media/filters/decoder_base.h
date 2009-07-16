@@ -33,16 +33,18 @@ class DecoderBase : public Decoder {
         NewRunnableMethod(this, &DecoderBase::StopTask));
   }
 
-  virtual void Seek(base::TimeDelta time) {
+  virtual void Seek(base::TimeDelta time,
+                    FilterCallback* callback) {
     this->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &DecoderBase::SeekTask, time));
+        NewRunnableMethod(this, &DecoderBase::SeekTask, time, callback));
   }
 
   // Decoder implementation.
-  virtual bool Initialize(DemuxerStream* demuxer_stream) {
+  virtual void Initialize(DemuxerStream* demuxer_stream,
+                          FilterCallback* callback) {
     this->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &DecoderBase::InitializeTask, demuxer_stream));
-    return true;
+        NewRunnableMethod(this, &DecoderBase::InitializeTask, demuxer_stream,
+                          callback));
   }
 
   virtual const MediaFormat& media_format() { return media_format_; }
@@ -127,8 +129,9 @@ class DecoderBase : public Decoder {
     state_ = STOPPED;
   }
 
-  void SeekTask(base::TimeDelta time) {
+  void SeekTask(base::TimeDelta time, FilterCallback* callback) {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    scoped_ptr<FilterCallback> c(callback);
 
     // Delegate to the subclass first.
     OnSeek(time);
@@ -139,24 +142,30 @@ class DecoderBase : public Decoder {
     // Turn on the seeking flag so that we can discard buffers until a
     // discontinuous buffer is received.
     seeking_ = true;
+
+    // For now, signal that we're done seeking.
+    // TODO(scherkus): implement asynchronous seeking for decoder_base.h
+    callback->Run();
   }
 
-  void InitializeTask(DemuxerStream* demuxer_stream) {
+  void InitializeTask(DemuxerStream* demuxer_stream, FilterCallback* callback) {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
     DCHECK(state_ == UNINITIALIZED);
     DCHECK(!demuxer_stream_);
+    scoped_ptr<FilterCallback> c(callback);
     demuxer_stream_ = demuxer_stream;
 
     // Delegate to subclass first.
     if (!OnInitialize(demuxer_stream_)) {
       this->host()->Error(PIPELINE_ERROR_DECODE);
+      callback->Run();
       return;
     }
 
     // TODO(scherkus): subclass shouldn't mutate superclass media format.
     DCHECK(!media_format_.empty()) << "Subclass did not set media_format_";
     state_ = INITIALIZED;
-    this->host()->InitializationComplete();
+    callback->Run();
   }
 
   void ReadTask(ReadCallback* read_callback) {

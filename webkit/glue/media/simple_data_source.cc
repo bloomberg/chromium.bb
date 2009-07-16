@@ -55,22 +55,26 @@ void SimpleDataSource::Stop() {
       NewRunnableMethod(this, &SimpleDataSource::CancelTask));
 }
 
-bool SimpleDataSource::Initialize(const std::string& url) {
+void SimpleDataSource::Initialize(const std::string& url,
+                                  media::FilterCallback* callback) {
   AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, UNINITIALIZED);
+  DCHECK(callback);
   state_ = INITIALIZING;
+  initialize_callback_.reset(callback);
 
   // Validate the URL.
   SetURL(GURL(url));
   if (!url_.is_valid() || !IsSchemeSupported(url_)) {
     host()->Error(media::PIPELINE_ERROR_NETWORK);
-    return false;
+    initialize_callback_->Run();
+    initialize_callback_.reset();
+    return;
   }
 
   // Post a task to the render thread to start loading the resource.
   render_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &SimpleDataSource::StartTask));
-  return true;
 }
 
 const media::MediaFormat& SimpleDataSource::media_format() {
@@ -144,16 +148,17 @@ void SimpleDataSource::OnCompletedRequest(const URLRequestStatus& status,
   if (size_ == -1) {
     size_ = data_.length();
   }
-  if (!status.is_success()) {
-    host()->Error(media::PIPELINE_ERROR_NETWORK);
-    return;
-  }
 
   // We're initialized!
-  state_ = INITIALIZED;
-  host()->SetTotalBytes(size_);
-  host()->SetBufferedBytes(size_);
-  host()->InitializationComplete();
+  if (status.is_success()) {
+    state_ = INITIALIZED;
+    host()->SetTotalBytes(size_);
+    host()->SetBufferedBytes(size_);
+  } else {
+    host()->Error(media::PIPELINE_ERROR_NETWORK);
+  }
+  initialize_callback_->Run();
+  initialize_callback_.reset();
 }
 
 std::string SimpleDataSource::GetURLForDebugging() {
