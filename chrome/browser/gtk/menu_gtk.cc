@@ -271,7 +271,7 @@ void MenuGtk::MenuPositionFunc(GtkMenu* menu,
 
   bool start_align =
     !!g_object_get_data(G_OBJECT(widget), "left-align-popup");
-  if (gtk_widget_get_direction(GTK_WIDGET(menu)) == GTK_TEXT_DIR_RTL)
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
     start_align = !start_align;
 
   if (!start_align)

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/nine_box.h"
 
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
@@ -94,7 +95,7 @@ void NineBox::RenderToWidget(GtkWidget* dst) const {
     cairo_translate(cr, dst->allocation.x, dst->allocation.y);
   }
 
-  if (gtk_widget_get_direction(dst) == GTK_TEXT_DIR_RTL) {
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
     cairo_translate(cr, dst_width, 0.0f);
     cairo_scale(cr, -1.0f, 1.0f);
   }

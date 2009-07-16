@@ -310,22 +310,29 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
 }
 
 gfx::Rect BrowserToolbarGtk::GetPopupBounds() const {
-  GtkWidget* star = star_->widget();
-  GtkWidget* go = go_->widget();
+  GtkWidget* left;
+  GtkWidget* right;
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+    left = go_->widget();
+    right = star_->widget();
+  } else {
+    left = star_->widget();
+    right = go_->widget();
+  }
 
   // TODO(deanm): The go and star buttons probably share the same window,
   // so this could be optimized to only one origin request.
-  gint go_x, go_y;
-  gdk_window_get_origin(go->window, &go_x, &go_y);
-  go_x += go->allocation.x + go->allocation.width;  // Right edge.
+  gint right_x;
+  gdk_window_get_origin(right->window, &right_x, NULL);
+  right_x += right->allocation.x + right->allocation.width;
 
-  gint star_x, star_y;
-  gdk_window_get_origin(star->window, &star_x, &star_y);
-  star_x += star->allocation.x;  // Left edge.
-  star_y += star->allocation.y + star->allocation.height;  // Bottom edge.
+  gint left_x, left_y;
+  gdk_window_get_origin(left->window, &left_x, &left_y);
+  left_x += left->allocation.x;
+  left_y += left->allocation.y + left->allocation.height;  // Bottom edge.
 
-  return gfx::Rect(star_x + kPopupLeftRightMargin, star_y + kPopupTopMargin,
-                   go_x - star_x - (2 * kPopupLeftRightMargin), 0);
+  return gfx::Rect(left_x + kPopupLeftRightMargin, left_y + kPopupTopMargin,
+                   right_x - left_x - (2 * kPopupLeftRightMargin), 0);
 }
 
 // BrowserToolbarGtk, private --------------------------------------------------

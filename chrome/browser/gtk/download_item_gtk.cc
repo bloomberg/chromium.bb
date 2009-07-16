@@ -692,7 +692,7 @@ void DownloadItemGtk::OnShelfResized(GtkWidget *widget,
   bool out_of_bounds =
       item->hbox_->allocation.x + item->hbox_->allocation.width >
       item->bounding_widget_->allocation.x;
-  if (gtk_widget_get_direction(widget) == GTK_TEXT_DIR_RTL)
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
     out_of_bounds = !out_of_bounds;
 
   if (out_of_bounds)

@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "app/gfx/font.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/gfx/gtk_util.h"
@@ -60,6 +61,9 @@ const int kRightPadding = 3;
 // content to push the description off.  Limit the content to a percentage of
 // the total width.
 const float kContentWidthPercentage = 0.7;
+
+// UTF-8 Left-to-right embedding.
+const char* kLRE = "\xe2\x80\xaa";
 
 // TODO(deanm): We should put this on gfx::Font so it can be shared.
 // Returns a new pango font, free with pango_font_description_free().
@@ -120,10 +124,10 @@ size_t GetUTF8Offset(const std::wstring& wide_text, size_t wide_text_offset) {
 }
 
 void SetupLayoutForMatch(PangoLayout* layout,
-      const std::wstring& text,
-      AutocompleteMatch::ACMatchClassifications classifications,
-      const GdkColor* base_color,
-      const std::string& prefix_text) {
+    const std::wstring& text,
+    AutocompleteMatch::ACMatchClassifications classifications,
+    const GdkColor* base_color,
+    const std::string& prefix_text) {
   std::string text_utf8 = prefix_text + WideToUTF8(text);
   pango_layout_set_text(layout, text_utf8.data(), text_utf8.size());
 
@@ -176,6 +180,7 @@ void SetupLayoutForMatch(PangoLayout* layout,
 
 GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected) {
   // TODO(deanm): These would be better as pixmaps someday.
+  // TODO(estade): Do we want to flip these for RTL?  (Windows doesn't).
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   static GdkPixbuf* o2_globe = rb.GetPixbufNamed(IDR_O2_GLOBE);
   static GdkPixbuf* o2_globe_s = rb.GetPixbufNamed(IDR_O2_GLOBE_SELECTED_DARK);
@@ -244,6 +249,8 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
   // were a real widget we should handle changing directions, but we're not
   // doing RTL or anything yet, so it shouldn't be important now.
   layout_ = gtk_widget_create_pango_layout(window_, NULL);
+  // We don't want the layout of search results depending on their language.
+  pango_layout_set_auto_dir(layout_, FALSE);
   // We always ellipsize when drawing our text runs.
   pango_layout_set_ellipsize(layout_, PANGO_ELLIPSIZE_END);
   // TODO(deanm): We might want to eventually follow what Windows does and
@@ -386,6 +393,7 @@ gboolean AutocompletePopupViewGtk::HandleButtonRelease(GtkWidget* widget,
 
 gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
                                                 GdkEventExpose* event) {
+  bool ltr = (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
   const AutocompleteResult& result = model_->result();
 
   gfx::Rect window_rect = GetWindowRect(event->window);
@@ -435,9 +443,11 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
                          line_rect.width(), line_rect.height());
     }
 
-    // Draw the icon for this result time.
+    int icon_start_x = ltr ? kIconLeftPadding :
+        line_rect.width() - kIconLeftPadding - kIconWidth;
+    // Draw the icon for this result.
     DrawFullPixbuf(drawable, gc, IconForMatch(match, is_selected),
-                   kIconLeftPadding, line_rect.y() + kIconTopPadding);
+                   icon_start_x, line_rect.y() + kIconTopPadding);
 
     // Draw the results text vertically centered in the results space.
     // First draw the contents / url, but don't let it take up the whole width
@@ -448,8 +458,9 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
         text_width * kContentWidthPercentage : text_width;
     pango_layout_set_width(layout_, allocated_content_width * PANGO_SCALE);
 
+    // Note: We force to URL to LTR for all text directions.
     SetupLayoutForMatch(layout_, match.contents, match.contents_class,
-                        &kContentTextColor, std::string());
+                        &kContentTextColor, std::string(kLRE));
 
     int actual_content_width, actual_content_height;
     pango_layout_get_size(layout_,
@@ -463,8 +474,8 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
         line_rect.y() + ((kHeightPerResult - actual_content_height) / 2));
 
     gdk_draw_layout(drawable, gc,
-                    kIconAreaWidth, content_y,
-                    layout_);
+                    ltr ? kIconAreaWidth : text_width - actual_content_width,
+                    content_y, layout_);
 
     if (has_description) {
       pango_layout_set_width(layout_,
@@ -473,10 +484,13 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
                           is_selected ? &kDescriptionSelectedTextColor :
                               &kDescriptionTextColor,
                           std::string(" - "));
-
+      gint actual_description_width;
+      pango_layout_get_size(layout_, &actual_description_width, NULL);
       gdk_draw_layout(drawable, gc,
-                      kIconAreaWidth + actual_content_width, content_y,
-                      layout_);
+                      ltr ? kIconAreaWidth + actual_content_width :
+                          text_width - actual_content_width -
+                          actual_description_width / PANGO_SCALE,
+                      content_y, layout_);
     }
   }
 
