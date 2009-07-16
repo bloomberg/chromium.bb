@@ -598,10 +598,16 @@ void TabRenderer::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(tab_id);
 
+  // If the theme is providing a custom background image, then its top edge
+  // should be at the top of the tab. Otherwise, we assume that the background
+  // image is a composited foreground + frame image.
+  int bg_offset_y = GetThemeProvider()->HasCustomImage(tab_id) ?
+      0 : background_offset_.y();
+
   // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
   // tab.
   SkBitmap tab_l = skia::ImageOperations::CreateTiledBitmap(
-      *tab_bg, offset, background_offset_.y(),
+      *tab_bg, offset, bg_offset_y,
       tab_active.l_width, height());
   SkBitmap theme_l = skia::ImageOperations::CreateMaskedBitmap(
       tab_l, *tab_alpha.image_l);
@@ -613,7 +619,7 @@ void TabRenderer::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // Draw right edge.  Again, don't draw over the toolbar.
   SkBitmap tab_r = skia::ImageOperations::CreateTiledBitmap(
       *tab_bg,
-      offset + width() - tab_active.r_width, background_offset_.y(),
+      offset + width() - tab_active.r_width, bg_offset_y,
       tab_active.r_width, height());
   SkBitmap theme_r = skia::ImageOperations::CreateMaskedBitmap(
       tab_r, *tab_alpha.image_r);
@@ -626,7 +632,7 @@ void TabRenderer::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // by incrementing by kDropShadowHeight, since it's a simple rectangle.  And
   // again, don't draw over the toolbar.
   canvas->TileImageInt(*tab_bg,
-     offset + tab_active.l_width, background_offset_.y() + kDropShadowHeight,
+     offset + tab_active.l_width, bg_offset_y + kDropShadowHeight,
      tab_active.l_width, kDropShadowHeight,
      width() - tab_active.l_width - tab_active.r_width,
      height() - kDropShadowHeight - kToolbarOverlap);
