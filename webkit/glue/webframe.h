@@ -143,6 +143,13 @@ class WebFrame {
   virtual void ExecuteScriptInNewContext(
       const WebKit::WebScriptSource* sources, int num_sources) = 0;
 
+  // Executes JavaScript in a new world associated with the web frame. The
+  // script gets its own global scope and its own prototypes for intrinsic
+  // JavaScript objects (String, Array, and so-on). It also gets its own
+  // wrappers for all DOM nodes and DOM constructors.
+  virtual void ExecuteScriptInNewWorld(
+      const WebKit::WebScriptSource* sources, int num_sources) = 0;
+
   // Inserts the given CSS styles at the beginning of the document.
   virtual bool InsertCSSStyles(const std::string& css) = 0;
 

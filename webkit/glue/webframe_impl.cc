@@ -1604,10 +1604,21 @@ void WebFrameImpl::ExecuteScriptInNewContext(
         sources_in[i].startLine));
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kIsolatedWorld))
-    frame_->script()->evaluateInNewWorld(sources);
-  else
-    frame_->script()->evaluateInNewContext(sources);
+  frame_->script()->evaluateInNewContext(sources);
+}
+
+void WebFrameImpl::ExecuteScriptInNewWorld(
+    const WebScriptSource* sources_in, int num_sources) {
+  Vector<WebCore::ScriptSourceCode> sources;
+
+  for (int i = 0; i < num_sources; ++i) {
+    sources.append(WebCore::ScriptSourceCode(
+        webkit_glue::WebStringToString(sources_in[i].code),
+        webkit_glue::WebURLToKURL(sources_in[i].url),
+        sources_in[i].startLine));
+  }
+
+  frame_->script()->evaluateInNewWorld(sources);
 }
 
 std::wstring WebFrameImpl::GetName() {

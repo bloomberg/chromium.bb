@@ -160,7 +160,7 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
                 StringPrintf(kInitExtension, script->extension_id().c_str()))));
       }
 
-      frame->ExecuteScriptInNewContext(&sources.front(), sources.size());
+      frame->ExecuteScriptInNewWorld(&sources.front(), sources.size());
     }
   }
 

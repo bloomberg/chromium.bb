@@ -145,6 +145,13 @@ namespace WebKit {
         virtual void executeScriptInNewContext(const WebScriptSource* sources,
                                                unsigned numSources) = 0;
 
+        // Executes JavaScript in a new world associated with the web frame.
+        // The script gets its own global scope and its own prototypes for
+        // intrinsic JavaScript objects (String, Array, and so-on). It also
+        // gets its own wrappers for all DOM nodes and DOM constructors.
+        virtual void executeScriptInNewWorld(const WebScriptSource* sources,
+                                             unsigned numSources) = 0;
+
         // Logs to the console associated with this frame.
         virtual void addMessageToConsole(const WebConsoleMessage&) = 0;
 

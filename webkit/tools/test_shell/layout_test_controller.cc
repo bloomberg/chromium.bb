@@ -351,7 +351,7 @@ class WorkItemIsolatedWorldScript : public LayoutTestController::WorkItem {
   WorkItemIsolatedWorldScript(const string& script) : script_(script) {}
   bool Run(TestShell* shell) {
     WebScriptSource source(WebString::fromUTF8(script_));
-    shell->webView()->GetMainFrame()->ExecuteScriptInNewContext(&source, 1);
+    shell->webView()->GetMainFrame()->ExecuteScriptInNewWorld(&source, 1);
     return false;
   }
  private:
