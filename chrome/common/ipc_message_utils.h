@@ -1233,9 +1233,10 @@ class MessageWithTuple : public Message {
 
   static bool Read(const Message* msg, Param* p) {
     void* iter = NULL;
-    bool rv = ReadParam(msg, &iter, p);
-    DCHECK(rv) << "Error deserializing message " << msg->type();
-    return rv;
+    if (ReadParam(msg, &iter, p))
+      return true;
+    NOTREACHED() << "Error deserializing message " << msg->type();
+    return false;
   }
 
   // Generic dispatcher.  Should cover most cases.
