@@ -14,14 +14,17 @@ namespace media {
 class BufferQueueTest : public testing::Test {
  protected:
   BufferQueueTest() {
-    buffer1 = new DataBuffer();
-    data1 = buffer1->GetWritableData(kDataSize);
+    buffer1 = new DataBuffer(kDataSize);
+    buffer1->SetDataSize(kDataSize);
+    data1 = buffer1->GetWritableData();
 
-    buffer2 = new DataBuffer();
-    data2 = buffer2->GetWritableData(kNewDataSize);
+    buffer2 = new DataBuffer(kNewDataSize);
+    buffer2->SetDataSize(kNewDataSize);
+    data2 = buffer2->GetWritableData();
 
-    bufferBig = new DataBuffer();
-    dataBig = bufferBig->GetWritableData(2 * (kDataSize + kNewDataSize));
+    bufferBig = new DataBuffer(2 * (kDataSize + kNewDataSize));
+    bufferBig->SetDataSize(2 * (kDataSize + kNewDataSize));
+    dataBig = bufferBig->GetWritableData();
 
     memcpy(data1, kData, kDataSize);
     memcpy(data2, kNewData, kNewDataSize);

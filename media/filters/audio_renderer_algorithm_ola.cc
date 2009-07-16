@@ -32,7 +32,7 @@ size_t AudioRendererAlgorithmOLA::FillBuffer(DataBuffer* buffer_out) {
 
   // Grab info from |buffer_out| and handle the simple case of normal playback.
   size_t dest_remaining = buffer_out->GetDataSize();
-  uint8* dest = buffer_out->GetWritableData(dest_remaining);
+  uint8* dest = buffer_out->GetWritableData();
   size_t dest_written = 0;
   if (playback_rate() == 1.0f) {
     if (QueueSize() < dest_remaining)

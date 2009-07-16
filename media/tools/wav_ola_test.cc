@@ -49,10 +49,10 @@ class Dummy {
   }
 
   void ReadDataForAlg() {
-    scoped_refptr<DataBuffer> b(new DataBuffer());
-    uint8* buf = b->GetWritableData(window_size_);
+    scoped_refptr<DataBuffer> buffer(new DataBuffer(window_size_));
+    uint8* buf = buffer->GetWritableData();
     if (fread(buf, 1, window_size_, input_) > 0) {
-      ola_->EnqueueBuffer(b.get());
+      ola_->EnqueueBuffer(buffer.get());
     }
   }
 
@@ -136,8 +136,8 @@ int main(int argc, const char** argv) {
   }
 
   // Create buffer to be filled by |ola|.
-  scoped_refptr<DataBuffer> buffer(new DataBuffer());
-  uint8* buf = buffer->GetWritableData(window_size);
+  scoped_refptr<DataBuffer> buffer(new DataBuffer(window_size));
+  const uint8* buf = buffer->GetData();
 
   // Keep track of bytes written to disk and bytes copied to |b|.
   size_t bytes_written = 0;

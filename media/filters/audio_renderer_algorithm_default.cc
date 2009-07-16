@@ -24,7 +24,7 @@ size_t AudioRendererAlgorithmDefault::FillBuffer(DataBuffer* buffer_out) {
 
   if (playback_rate() == 1.0f) {
     size_t dest_length = buffer_out->GetDataSize();
-    uint8* dest = buffer_out->GetWritableData(dest_length);
+    uint8* dest = buffer_out->GetWritableData();
 
     // If we don't have enough data, copy what we have.
     if (QueueSize() < dest_length)
@@ -36,7 +36,7 @@ size_t AudioRendererAlgorithmDefault::FillBuffer(DataBuffer* buffer_out) {
     // Mute (we will write to the whole buffer, so set |dest_written| to the
     // requested size).
     dest_written = buffer_out->GetDataSize();
-    memset(buffer_out->GetWritableData(dest_written), 0, dest_written);
+    memset(buffer_out->GetWritableData(), 0, dest_written);
 
     // Calculate the number of bytes we "used".
     size_t scaled_dest_length =
