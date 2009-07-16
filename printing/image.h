@@ -11,10 +11,11 @@
 #include "base/basictypes.h"
 #include "base/gfx/size.h"
 #include "base/logging.h"
+#include "printing/native_metafile.h"
 
 namespace printing {
 
-// Lightweight raw-bitmap management. The image, once initialized, is immuable.
+// Lightweight raw-bitmap management. The image, once initialized, is immutable.
 // The main purpose is testing image contents.
 class Image {
  public:
@@ -23,12 +24,22 @@ class Image {
   // If image loading fails size().IsEmpty() will be true.
   explicit Image(const std::wstring& filename);
 
+  // Creates the image from the metafile.  Deduces bounds based on bounds in
+  // metafile.  If loading fails size().IsEmpty() will be true.
+  explicit Image(const NativeMetafile& metafile);
+
+  // Copy constructor.
+  explicit Image(const Image& image);
+
   const gfx::Size& size() const {
     return size_;
   }
 
+  // Return a checksum of the image (MD5 over the internal data structure).
+  std::string checksum() const;
+
   // Save image as PNG.
-  bool SaveToPng(const std::wstring& filename);
+  bool SaveToPng(const std::wstring& filename) const;
 
   // Returns % of pixels different
   double PercentageDifferent(const Image& rhs) const;
@@ -50,9 +61,15 @@ class Image {
   }
 
  private:
+  // Construct from metafile.  This is kept internal since it's ambiguous what
+  // kind of data is used (png, bmp, metafile etc).
+  Image(const void* data, size_t size);
+
   bool LoadPng(const std::string& compressed);
 
   bool LoadMetafile(const std::string& data);
+
+  bool LoadMetafile(const NativeMetafile& metafile);
 
   // Pixel dimensions of the image.
   gfx::Size size_;
@@ -67,7 +84,8 @@ class Image {
   // Flag to signal if the comparison functions should ignore the alpha channel.
   const bool ignore_alpha_;  // Currently always true.
 
-  DISALLOW_EVIL_CONSTRUCTORS(Image);
+  // Prevent operator= (this function has no implementation)
+  Image& operator=(const Image& image);
 };
 
 }  // namespace printing

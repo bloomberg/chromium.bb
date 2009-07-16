@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/shared_memory.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/render_view_test.h"
 #include "net/base/net_errors.h"
+#include "printing/image.h"
+#include "printing/native_metafile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/api/public/WebURLError.h"
 
@@ -363,6 +366,45 @@ TEST_F(RenderViewTest, PrintWithJavascript) {
 #endif
 }
 
+TEST_F(RenderViewTest, PrintWithIframe) {
+#if defined(OS_WIN)
+  // Document that populates an iframe..
+  const char html[] =
+      "<html><body>Lorem Ipsum:"
+      "<iframe name=\"sub1\" id=\"sub1\"></iframe><script>"
+      "  document.write(frames['sub1'].name);"
+      "  frames['sub1'].document.write("
+      "      '<p>Cras tempus ante eu felis semper luctus!</p>');"
+      "</script></body></html>";
+
+  LoadHTML(html);
+
+  // Find the frame and set it as the focused one.  This should mean that that
+  // the printout should only contain the contents of that frame.
+  WebFrame* sub1_frame = view_->webview()->GetFrameWithName(L"sub1");
+  ASSERT_TRUE(sub1_frame);
+  view_->webview()->SetFocusedFrame(sub1_frame);
+  ASSERT_NE(view_->webview()->GetFocusedFrame(),
+            view_->webview()->GetMainFrame());
+
+  // Initiate printing.
+  view_->OnPrintPages();
+
+  // Verify output through MockPrinter.
+  const MockPrinter* printer(render_thread_.printer());
+  ASSERT_EQ(1, printer->GetPrintedPages());
+  const printing::Image& image1(printer->GetPrintedPage(0)->image());
+
+  // TODO(sverrir): Figure out a way to improve this test to actually print
+  // only the content of the iframe.  Currently image1 will contain the full
+  // page.
+  EXPECT_NE(0, image1.size().width());
+  EXPECT_NE(0, image1.size().height());
+#else
+  NOTIMPLEMENTED();
+#endif
+}
+
 // Tests if we can print a page and verify its results.
 // This test prints HTML pages into a pseudo printer and check their outputs,
 // i.e. a simplified version of the PrintingLayoutTextTest UI test.
@@ -430,14 +472,6 @@ TEST_F(RenderViewTest, PrintLayoutTest) {
     EXPECT_TRUE(render_thread_.printer()->GetBitmapChecksum(0, &bitmap_actual));
     if (kTestPages[i].checksum)
       EXPECT_EQ(kTestPages[i].checksum, bitmap_actual);
-
-    // Retrieve the bitmap data from the pseudo printer.
-    // TODO(hbono): implement a function which retrieves an expected result
-    // from a file and compares it with this bitmap data.
-    const void* bitmap_data;
-    size_t bitmap_size;
-    EXPECT_TRUE(render_thread_.printer()->GetBitmap(0, &bitmap_data,
-                                                    &bitmap_size));
 
     if (baseline) {
       // Save the source data and the bitmap data into temporary files to

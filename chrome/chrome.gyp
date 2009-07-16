@@ -3221,8 +3221,6 @@
         'renderer/mock_keyboard_driver_win.h',
         'renderer/mock_printer.cc',
         'renderer/mock_printer.h',
-        'renderer/mock_printer_driver_win.cc',
-        'renderer/mock_printer_driver_win.h',
         'renderer/mock_render_process.h',
         'renderer/mock_render_thread.cc',
         'renderer/mock_render_thread.h',

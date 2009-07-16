@@ -451,8 +451,14 @@ void RenderView::SendThumbnail() {
 
 void RenderView::OnPrintPages() {
   DCHECK(webview());
-  if (webview())
-    Print(webview()->GetMainFrame(), false);
+  if (webview()) {
+    // If the user has selected text in the currently focused frame we print
+    // only that frame (this makes print selection work for multiple frames).
+    if (webview()->GetFocusedFrame()->HasSelection())
+      Print(webview()->GetFocusedFrame(), false);
+    else
+      Print(webview()->GetMainFrame(), false);
+  }
 }
 
 void RenderView::OnPrintingDone(int document_cookie, bool success) {
@@ -2309,7 +2315,11 @@ void RenderView::SetInputMethodState(bool enabled) {
 }
 
 void RenderView::ScriptedPrint(WebFrame* frame) {
-  Print(frame, true);
+  DCHECK(webview());
+  if (webview()) {
+    // Print the full page - not just the frame the javascript is running from.
+    Print(webview()->GetMainFrame(), true);
+  }
 }
 
 void RenderView::UserMetricsRecordAction(const std::wstring& action) {

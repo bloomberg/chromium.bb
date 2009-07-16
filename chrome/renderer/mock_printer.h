@@ -11,10 +11,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-
-#if defined(OS_WIN)
-#include "chrome/renderer/mock_printer_driver_win.h"
-#endif
+#include "printing/image.h"
 
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPages_Params;
@@ -26,49 +23,30 @@ struct ViewHostMsg_DidPrintPage_Params;
 // a smart pointer of this object (i.e. scoped_refptr<>).
 class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
  public:
-  MockPrinterPage()
-      : width_(0),
-        height_(0),
-        source_size_(0),
-        bitmap_size_(0) {
-  }
-
-  MockPrinterPage(int width,
-                  int height,
-                  const void* source_data,
+  MockPrinterPage(const void* source_data,
                   size_t source_size,
-                  const void* bitmap_data,
-                  size_t bitmap_size)
-      : width_(width),
-        height_(height),
-        source_size_(source_size),
-        bitmap_size_(bitmap_size) {
-    // Create copies of the source data and the bitmap data.
+                  const printing::Image& image)
+        : source_size_(source_size),
+          image_(image) {
+    // Create copies of the source data
     source_data_.reset(new uint8[source_size]);
     if (source_data_.get())
       memcpy(source_data_.get(), source_data, source_size);
-    bitmap_data_.reset(new uint8[bitmap_size]);
-    if (bitmap_data_.get())
-      memcpy(bitmap_data_.get(), bitmap_data, bitmap_size);
   }
 
   ~MockPrinterPage() {
   }
 
-  int width() { return width_; }
-  int height() { return height_; }
-  const uint8* source_data() { return source_data_.get(); }
-  const size_t source_size() { return source_size_; }
-  const uint8* bitmap_data() { return bitmap_data_.get(); }
-  const size_t bitmap_size() { return bitmap_size_; }
+  int width() const { return image_.size().width(); }
+  int height() const { return image_.size().height(); }
+  const uint8* source_data() const { return source_data_.get(); }
+  const size_t source_size() const { return source_size_; }
+  const printing::Image& image() const { return image_; }
 
  private:
-  int width_;
-  int height_;
   size_t source_size_;
   scoped_array<uint8> source_data_;
-  size_t bitmap_size_;
-  scoped_array<uint8> bitmap_data_;
+  printing::Image image_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrinterPage);
 };
@@ -108,9 +86,13 @@ class MockPrinter {
   // Functions that retrieve the output pages.
   Status GetPrinterStatus() const { return printer_status_; }
   int GetPrintedPages() const;
+
+  // Get a pointer to the printed page, returns NULL if pageno has not been
+  // printed.  The pointer is for read only view and should not be deleted.
+  const MockPrinterPage* GetPrintedPage(size_t pageno) const;
+
   int GetWidth(size_t page) const;
   int GetHeight(size_t page) const;
-  bool GetSourceChecksum(size_t page, std::string* checksum) const;
   bool GetBitmapChecksum(size_t page, std::string* checksum) const;
   bool GetSource(size_t page, const void** data, size_t* size) const;
   bool GetBitmap(size_t page, const void** data, size_t* size) const;
@@ -148,10 +130,6 @@ class MockPrinter {
   int number_pages_;
   int page_number_;
   std::vector<scoped_refptr<MockPrinterPage> > pages_;
-
-#if defined(OS_WIN)
-  MockPrinterDriverWin driver_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(MockPrinter);
 };

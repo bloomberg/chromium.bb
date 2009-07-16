@@ -5,9 +5,7 @@
 #include "chrome/renderer/mock_printer.h"
 
 #include "base/file_util.h"
-#include "base/gfx/png_encoder.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/shared_memory.h"
 #include "chrome/common/ipc_message_utils.h"
 #include "chrome/common/render_messages.h"
@@ -116,8 +114,12 @@ void MockPrinter::PrintPage(const ViewHostMsg_DidPrintPage_Params& params) {
   base::SharedMemory emf_data(params.metafile_data_handle, true,
                               GetCurrentProcess());
   emf_data.Map(params.data_size);
-  MockPrinterPage* page_data = driver_.LoadSource(emf_data.memory(),
-                                                  params.data_size);
+  printing::NativeMetafile metafile;
+  metafile.CreateFromData(emf_data.memory(), params.data_size);
+  printing::Image image(metafile);
+  MockPrinterPage* page_data = new MockPrinterPage(emf_data.memory(),
+                                                   params.data_size,
+                                                   image);
   if (!page_data) {
     printer_status_ = PRINTER_ERROR;
     return;
@@ -140,6 +142,13 @@ int MockPrinter::GetPrintedPages() const {
   return page_number_;
 }
 
+const MockPrinterPage* MockPrinter::GetPrintedPage(size_t pageno) const {
+  if (pages_.size() > pageno)
+    return pages_[pageno];
+  else
+    return NULL;
+}
+
 int MockPrinter::GetWidth(size_t page) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return -1;
@@ -152,27 +161,10 @@ int MockPrinter::GetHeight(size_t page) const {
   return pages_[page]->height();
 }
 
-bool MockPrinter::GetSourceChecksum(size_t page, std::string* checksum) const {
-  if (printer_status_ != PRINTER_READY || page >= pages_.size())
-    return false;
-  return GetChecksum(pages_[page]->source_data(), pages_[page]->source_size(),
-                     checksum);
-}
-
 bool MockPrinter::GetBitmapChecksum(size_t page, std::string* checksum) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
-  return GetChecksum(pages_[page]->bitmap_data(), pages_[page]->bitmap_size(),
-                     checksum);
-}
-
-bool MockPrinter::GetBitmap(size_t page,
-                            const void** data,
-                            size_t* size) const {
-  if (printer_status_ != PRINTER_READY || page >= pages_.size())
-    return false;
-  *data = pages_[page]->bitmap_data();
-  *size = pages_[page]->bitmap_size();
+  *checksum = pages_[page]->image().checksum();
   return true;
 }
 
@@ -191,17 +183,8 @@ bool MockPrinter::SaveBitmap(size_t page,
                              const std::wstring& filename) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
-  int width = pages_[page]->width();
-  int height = pages_[page]->height();
-  int row_byte_width = width * 4;
-  const uint8* bitmap_data = pages_[page]->bitmap_data();
-  std::vector<unsigned char> compressed;
-  PNGEncoder::Encode(bitmap_data,
-                     PNGEncoder::FORMAT_BGRA, width, height,
-                     row_byte_width, true, &compressed);
-  file_util::WriteFile(filename,
-                       reinterpret_cast<char*>(&*compressed.begin()),
-                       compressed.size());
+
+  pages_[page]->image().SaveToPng(filename);
   return true;
 }
 
@@ -209,11 +192,3 @@ int MockPrinter::CreateDocumentCookie() {
   return ++current_document_cookie_;
 }
 
-bool MockPrinter::GetChecksum(const void* data,
-                              size_t size,
-                              std::string* checksum) const {
-  MD5Digest digest;
-  MD5Sum(data, size, &digest);
-  checksum->assign(HexEncode(&digest, sizeof(digest)));
-  return true;
-}

@@ -8,15 +8,59 @@
 #include "base/gfx/png_decoder.h"
 #include "base/gfx/png_encoder.h"
 #include "base/gfx/rect.h"
+#include "base/md5.h"
 #include "base/string_util.h"
-#include "printing/native_metafile.h"
 #include "skia/ext/platform_device.h"
 
 #if defined(OS_WIN)
 #include "base/gfx/gdi_util.h"  // EMF support
 #endif
 
-printing::Image::Image(const std::wstring& filename) : ignore_alpha_(true) {
+namespace {
+
+// A simple class which temporarily overrides system settings.
+// The bitmap image rendered via the PlayEnhMetaFile() function depends on
+// some system settings.
+// As a workaround for such dependency, this class saves the system settings
+// and changes them. This class also restore the saved settings in its
+// destructor.
+class DisableFontSmoothing {
+ public:
+  explicit DisableFontSmoothing(bool disable) : enable_again_(false) {
+    if (disable) {
+#if defined(OS_WIN)
+      BOOL enabled;
+      if (SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &enabled, 0) &&
+          enabled) {
+        if (SystemParametersInfo(SPI_SETFONTSMOOTHING, FALSE, NULL, 0))
+          enable_again_ = true;
+      }
+#endif
+    }
+  }
+
+  ~DisableFontSmoothing() {
+    if (enable_again_) {
+#if defined(OS_WIN)
+      BOOL result = SystemParametersInfo(SPI_SETFONTSMOOTHING, TRUE, NULL, 0);
+      DCHECK(result);
+#endif
+    }
+  }
+
+ private:
+  bool enable_again_;
+
+  DISALLOW_EVIL_CONSTRUCTORS(DisableFontSmoothing);
+};
+
+}  // namespace
+
+namespace printing {
+
+Image::Image(const std::wstring& filename)
+    : row_length_(0),
+      ignore_alpha_(true) {
   std::string data;
   file_util::ReadFileToString(filename, &data);
   std::wstring ext = file_util::GetFileExtensionFromPath(filename);
@@ -35,7 +79,26 @@ printing::Image::Image(const std::wstring& filename) : ignore_alpha_(true) {
   }
 }
 
-bool printing::Image::SaveToPng(const std::wstring& filename) {
+Image::Image(const NativeMetafile& metafile)
+    : row_length_(0),
+      ignore_alpha_(true) {
+  LoadMetafile(metafile);
+}
+
+Image::Image(const Image& image)
+    : size_(image.size_),
+      row_length_(image.row_length_),
+      data_(image.data_),
+      ignore_alpha_(image.ignore_alpha_) {
+}
+
+std::string Image::checksum() const {
+  MD5Digest digest;
+  MD5Sum(&data_[0], data_.size(), &digest);
+  return HexEncode(&digest, sizeof(digest));
+}
+
+bool Image::SaveToPng(const std::wstring& filename) const {
   DCHECK(!data_.empty());
   std::vector<unsigned char> compressed;
   bool success = PNGEncoder::Encode(&*data_.begin(),
@@ -56,7 +119,7 @@ bool printing::Image::SaveToPng(const std::wstring& filename) {
   return success;
 }
 
-double printing::Image::PercentageDifferent(const Image& rhs) const {
+double Image::PercentageDifferent(const Image& rhs) const {
   if (size_.width() == 0 || size_.height() == 0 ||
     rhs.size_.width() == 0 || rhs.size_.height() == 0)
     return 100.;
@@ -113,7 +176,7 @@ double printing::Image::PercentageDifferent(const Image& rhs) const {
   return static_cast<double>(pixels_different) / total_pixels * 100.;
 }
 
-bool printing::Image::LoadPng(const std::string& compressed) {
+bool Image::LoadPng(const std::string& compressed) {
   int w;
   int h;
   bool success = PNGDecoder::Decode(
@@ -124,39 +187,54 @@ bool printing::Image::LoadPng(const std::string& compressed) {
   return success;
 }
 
-bool printing::Image::LoadMetafile(const std::string& data) {
+bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
 #if defined(OS_WIN)
-  printing::NativeMetafile metafile;
+  NativeMetafile metafile;
   metafile.CreateFromData(data.data(), data.size());
-  gfx::Rect rect(metafile.GetBounds());
-  // Create a temporary HDC and bitmap to retrieve the rendered data.
-  HDC hdc = CreateCompatibleDC(NULL);
-  BITMAPV4HEADER hdr;
-  DCHECK_EQ(rect.x(), 0);
-  DCHECK_EQ(rect.y(), 0);
-  DCHECK_GT(rect.width(), 0);
-  DCHECK_GT(rect.height(), 0);
-  size_ = rect.size();
-  gfx::CreateBitmapV4Header(rect.width(), rect.height(), &hdr);
-  void* bits;
-  HBITMAP bitmap = CreateDIBSection(hdc,
-                                    reinterpret_cast<BITMAPINFO*>(&hdr), 0,
-                                    &bits, NULL, 0);
-  DCHECK(bitmap);
-  DCHECK(SelectObject(hdc, bitmap));
-  skia::PlatformDevice::InitializeDC(hdc);
-  bool success = metafile.Playback(hdc, NULL);
-  row_length_ = size_.width() * sizeof(uint32);
-  size_t bytes = row_length_ * size_.height();
-  DCHECK(bytes);
-  data_.resize(bytes);
-  memcpy(&*data_.begin(), bits, bytes);
-  DeleteDC(hdc);
-  DeleteObject(bitmap);
-  return success;
+  return LoadMetafile(metafile);
 #else
   NOTIMPLEMENTED();
   return false;
 #endif
 }
+
+bool Image::LoadMetafile(const NativeMetafile& metafile) {
+#if defined(OS_WIN)
+  gfx::Rect rect(metafile.GetBounds());
+  DisableFontSmoothing disable_in_this_scope(true);
+  // Create a temporary HDC and bitmap to retrieve the rendered data.
+  HDC hdc = CreateCompatibleDC(NULL);
+  BITMAPV4HEADER hdr;
+  DCHECK_EQ(rect.x(), 0);
+  DCHECK_EQ(rect.y(), 0);
+  DCHECK_GE(rect.width(), 0);  // Metafile could be empty.
+  DCHECK_GE(rect.height(), 0);
+  if (rect.width() > 0 && rect.height() > 0) {
+    size_ = rect.size();
+    gfx::CreateBitmapV4Header(rect.width(), rect.height(), &hdr);
+    void* bits;
+    HBITMAP bitmap = CreateDIBSection(hdc,
+                                      reinterpret_cast<BITMAPINFO*>(&hdr), 0,
+                                      &bits, NULL, 0);
+    DCHECK(bitmap);
+    DCHECK(SelectObject(hdc, bitmap));
+    skia::PlatformDevice::InitializeDC(hdc);
+    bool success = metafile.Playback(hdc, NULL);
+    row_length_ = size_.width() * sizeof(uint32);
+    size_t bytes = row_length_ * size_.height();
+    DCHECK(bytes);
+    data_.resize(bytes);
+    memcpy(&*data_.begin(), bits, bytes);
+    DeleteDC(hdc);
+    DeleteObject(bitmap);
+    return success;
+  }
+#else
+  NOTIMPLEMENTED();
+#endif
+
+  return false;
+}
+
+}  // namespace printing
