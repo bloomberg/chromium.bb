@@ -306,8 +306,6 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
         views::Label::ALIGN_LEFT);
-    dangerous_download_label_->SetColor(GetThemeProvider()->GetColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
     AddChildView(dangerous_download_label_);
     SizeLabelToMinWidth();
   }
