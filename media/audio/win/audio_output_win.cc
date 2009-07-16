@@ -88,8 +88,17 @@ namespace {
 
 // The next 3 constants are some sensible limits to prevent integer overflow
 // at this layer.
-// TODO(cpu): Some day expand the support and API to more than stereo.
-const int kMaxChannels = 2;
+// Up to 6 channels can be passed to the driver.
+// This should work, given the right drivers, but graceful error handling is
+// needed.
+// In theory 7.1 could also be supported, but it has not been tested.
+// The 192 Khz constant is the frequency of quicktime lossless audio codec.
+// MP4 is limited to 96 Khz, and mp3 is limited to 48 Khz.
+// OGG vorbis was initially limited to 96 Khz, but recent tools are unlimited.
+// 192 Khz is also the limit on most PC audio hardware.  The minimum is 100 Hz.
+// Humans range is 20 to 20000 Hz.  Below 20 can be felt (woofer).
+
+const int kMaxChannels = 6;
 const int kMaxSampleRate = 192000;
 const int kMaxBitsPerSample = 64;
 
