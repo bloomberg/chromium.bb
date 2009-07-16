@@ -21,6 +21,7 @@
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/process_watcher.h"
 
 ZygoteHost::ZygoteHost() {
   std::wstring chrome_path;
@@ -43,6 +44,7 @@ ZygoteHost::ZygoteHost() {
   }
 
   const char* sandbox_binary = NULL;
+  bool sandbox_was_used = false;
   struct stat st;
 
   // In Chromium branded builds, developers can set an environment variable to
@@ -70,6 +72,7 @@ ZygoteHost::ZygoteHost() {
       const char* ld_library_path = getenv("LD_LIBRARY_PATH");
       if (ld_library_path)
         setenv("SANDBOX_LD_LIBRARY_PATH", ld_library_path, 1 /* overwrite */);
+      sandbox_was_used = true;
     } else {
       LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
                     "configured correctly. Rather than run without sandboxing "
@@ -86,6 +89,12 @@ ZygoteHost::ZygoteHost() {
   base::ProcessHandle process;
   base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
   CHECK(process != -1) << "Failed to launch zygote process";
+
+  if (sandbox_was_used) {
+    // The sandbox binary will fork one or more times before running the zygote
+    // process. Thus, we need to reap the child.
+    ProcessWatcher::EnsureProcessTerminated(process);
+  }
 
   close(fds[1]);
   control_fd_ = fds[0];
