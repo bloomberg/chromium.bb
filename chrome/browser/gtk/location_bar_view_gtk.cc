@@ -389,19 +389,23 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   // window, set a clip to make sure that we don't draw outside.
   gdk_gc_set_clip_rectangle(gc, &inner_rect);
 
-  // Draw our 1px border.  TODO(deanm): Maybe this would be cleaner as an
-  // overdrawn stroked rect with a clip to the allocation?
-  gdk_gc_set_rgb_fg_color(gc, &kBorderColor);
-  gdk_draw_rectangle(drawable, gc, TRUE,
-                     inner_rect.x,
-                     inner_rect.y,
-                     inner_rect.width,
-                     kBorderThickness);
-  gdk_draw_rectangle(drawable, gc, TRUE,
-                     inner_rect.x,
-                     inner_rect.y + inner_rect.height - kBorderThickness,
-                     inner_rect.width,
-                     kBorderThickness);
+  // If we're not using GTK theming, draw our own border.
+  if (!profile_ ||
+      !GtkThemeProvider::GetFrom(profile_)->UseGtkTheme()) {
+    // Draw our 1px border.  TODO(deanm): Maybe this would be cleaner as an
+    // overdrawn stroked rect with a clip to the allocation?
+    gdk_gc_set_rgb_fg_color(gc, &kBorderColor);
+    gdk_draw_rectangle(drawable, gc, TRUE,
+                       inner_rect.x,
+                       inner_rect.y,
+                       inner_rect.width,
+                       kBorderThickness);
+    gdk_draw_rectangle(drawable, gc, TRUE,
+                       inner_rect.x,
+                       inner_rect.y + inner_rect.height - kBorderThickness,
+                       inner_rect.width,
+                       kBorderThickness);
+  }
 
   // Draw the background within the border.
   gdk_gc_set_rgb_fg_color(gc,

@@ -114,6 +114,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Gtk callback for the "expose-event" signal.
   static gboolean OnToolbarExpose(GtkWidget* widget, GdkEventExpose* e,
                                   BrowserToolbarGtk* toolbar);
+  static gboolean OnLocationHboxExpose(GtkWidget* omnibox_hbox,
+                                       GdkEventExpose* e,
+                                       BrowserToolbarGtk* toolbar);
 
   // Gtk callback for the "clicked" signal.
   static void OnButtonClick(GtkWidget* button, BrowserToolbarGtk* toolbar);

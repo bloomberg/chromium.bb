@@ -9,16 +9,24 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/gtk/custom_button.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class BrowserToolbarGtk;
+class GtkThemeProvider;
 class GURL;
 
 // Displays the bookmark star button, which toggles between two images.
-class ToolbarStarToggleGtk {
+class ToolbarStarToggleGtk : public NotificationObserver {
  public:
-  ToolbarStarToggleGtk(BrowserToolbarGtk* host);
+  explicit ToolbarStarToggleGtk(BrowserToolbarGtk* host);
   ~ToolbarStarToggleGtk();
+
+  // Provide NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // If the bubble isn't showing, shows it above the star button.
   void ShowStarBubble(const GURL& url, bool newly_bookmarked);
@@ -28,9 +36,16 @@ class ToolbarStarToggleGtk {
   GtkWidget* widget() const { return widget_.get(); }
 
  private:
+  // Updates the properties of |widget_| when we would need to change its
+  // state.
+  void UpdateGTKButton();
+
   // Callback for expose, used to draw the custom graphics.
   static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e,
                            ToolbarStarToggleGtk* obj);
+
+  // Used to listen for theme change notifications.
+  NotificationRegistrar registrar_;
 
   // The browser toolbar hosting this widget, for getting the current profile.
   BrowserToolbarGtk* host_;
@@ -40,6 +55,8 @@ class ToolbarStarToggleGtk {
 
   // Whether we show the yellow star.
   bool is_starred_;
+
+  GtkThemeProvider* theme_provider_;
 
   CustomDrawButtonBase unstarred_;
   CustomDrawButtonBase starred_;

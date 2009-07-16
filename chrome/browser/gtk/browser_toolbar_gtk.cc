@@ -145,18 +145,20 @@ void BrowserToolbarGtk::Init(Profile* profile,
   SetUpDragForHomeButton();
 
   // Group the start, omnibox, and go button into an hbox.
-  GtkWidget* omnibox_hbox_ = gtk_hbox_new(FALSE, 0);
+  GtkWidget* location_hbox = gtk_hbox_new(FALSE, 0);
   star_.reset(BuildStarButton(l10n_util::GetStringUTF8(IDS_TOOLTIP_STAR)));
-  gtk_box_pack_start(GTK_BOX(omnibox_hbox_), star_->widget(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(location_hbox), star_->widget(), FALSE, FALSE, 0);
 
   location_bar_->Init();
-  gtk_box_pack_start(GTK_BOX(omnibox_hbox_), location_bar_->widget(), TRUE,
+  gtk_box_pack_start(GTK_BOX(location_hbox), location_bar_->widget(), TRUE,
                      TRUE, 0);
 
   go_.reset(new GoButtonGtk(location_bar_.get(), browser_));
-  gtk_box_pack_start(GTK_BOX(omnibox_hbox_), go_->widget(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(location_hbox), go_->widget(), FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(toolbar_), omnibox_hbox_, TRUE, TRUE, 0);
+  g_signal_connect(location_hbox, "expose-event",
+                   G_CALLBACK(OnLocationHboxExpose), this);
+  gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE, 0);
 
   // Group the menu buttons together in an hbox.
   GtkWidget* menus_hbox_ = gtk_hbox_new(FALSE, 0);
@@ -438,6 +440,44 @@ gboolean BrowserToolbarGtk::OnToolbarExpose(GtkWidget* widget,
   cairo_destroy(cr);
 
   return FALSE;  // Allow subwidgets to paint.
+}
+
+// static
+gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
+                                                 GdkEventExpose* e,
+                                                 BrowserToolbarGtk* toolbar) {
+  if (toolbar->theme_provider_->UseGtkTheme()) {
+    // To get the proper look surrounding the location bar, we fake out the
+    // theme engine into drawing a button. We fake out GTK by constructing a
+    // box that's from the top left corner of the bookmark button to the bottom
+    // right of the go button and fill it with a button's box (or the opposite
+    // if in RTL mode).
+    GtkWidget* star = toolbar->star_->widget();
+    GtkWidget* left = NULL;
+    GtkWidget* right = NULL;
+    if (gtk_widget_get_direction(star) ==
+        GTK_TEXT_DIR_LTR) {
+      left = toolbar->star_->widget();
+      right = toolbar->go_->widget();
+    } else {
+      left = toolbar->go_->widget();
+      right = toolbar->star_->widget();
+    }
+
+    gint x = left->allocation.x;
+    gint y = left->allocation.y;
+    gint width = (right->allocation.x - left->allocation.x) +
+                 right->allocation.width;
+    gint height = (right->allocation.y - left->allocation.y) +
+                  right->allocation.height;
+
+    gtk_paint_box(star->style, location_hbox->window,
+                  GTK_STATE_NORMAL, GTK_SHADOW_OUT, NULL,
+                  location_hbox, "button",
+                  x, y, width, height);
+  }
+
+  return FALSE;
 }
 
 // static

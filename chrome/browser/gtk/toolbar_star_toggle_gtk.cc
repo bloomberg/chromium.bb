@@ -10,16 +10,16 @@
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
 
 ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
     : host_(host),
       widget_(gtk_button_new()),
       is_starred_(false),
-      unstarred_(GtkThemeProvider::GetFrom(host->profile()),
-                 IDR_STAR, IDR_STAR_P, IDR_STAR_H, IDR_STAR_D),
-      starred_(GtkThemeProvider::GetFrom(host->profile()),
-               IDR_STARRED, IDR_STARRED_P, IDR_STARRED_H, 0) {
+      theme_provider_(GtkThemeProvider::GetFrom(host->profile())),
+      unstarred_(theme_provider_, IDR_STAR, IDR_STAR_P, IDR_STAR_H, IDR_STAR_D),
+      starred_(theme_provider_, IDR_STARRED, IDR_STARRED_P, IDR_STARRED_H, 0) {
   gtk_widget_set_size_request(widget_.get(),
                              gdk_pixbuf_get_width(unstarred_.pixbufs(0)),
                              gdk_pixbuf_get_height(unstarred_.pixbufs(0)));
@@ -27,13 +27,29 @@ ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
   gtk_widget_set_app_paintable(widget_.get(), TRUE);
   // We effectively double-buffer by virtue of having only one image...
   gtk_widget_set_double_buffered(widget_.get(), FALSE);
+
   g_signal_connect(G_OBJECT(widget_.get()), "expose-event",
                    G_CALLBACK(OnExpose), this);
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
+
+  theme_provider_->InitThemesFor(this);
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 }
 
 ToolbarStarToggleGtk::~ToolbarStarToggleGtk() {
   widget_.Destroy();
+}
+
+void ToolbarStarToggleGtk::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
+
+  GtkThemeProvider* provider = static_cast<GtkThemeProvider*>(
+      Source<GtkThemeProvider>(source).ptr());
+  DCHECK(provider == theme_provider_);
+  UpdateGTKButton();
 }
 
 void ToolbarStarToggleGtk::ShowStarBubble(const GURL& url,
@@ -56,14 +72,46 @@ void ToolbarStarToggleGtk::ShowStarBubble(const GURL& url,
 void ToolbarStarToggleGtk::SetStarred(bool starred) {
   is_starred_ = starred;
   gtk_widget_queue_draw(widget_.get());
+  UpdateGTKButton();
 }
 
 // static
 gboolean ToolbarStarToggleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
                                         ToolbarStarToggleGtk* button) {
-  if (button->is_starred_) {
-    return button->starred_.OnExpose(widget, e);
+  if (button->theme_provider_->UseGtkTheme()) {
+    return FALSE;
   } else {
-    return button->unstarred_.OnExpose(widget, e);
+    if (button->is_starred_) {
+      return button->starred_.OnExpose(widget, e);
+    } else {
+      return button->unstarred_.OnExpose(widget, e);
+    }
+  }
+}
+
+void ToolbarStarToggleGtk::UpdateGTKButton() {
+  if (theme_provider_->UseGtkTheme()) {
+    GdkPixbuf* pixbuf = NULL;
+    if (is_starred_) {
+      pixbuf = theme_provider_->GetPixbufNamed(IDR_STARRED_NOBORDER);
+    } else {
+      pixbuf = theme_provider_->GetPixbufNamed(IDR_STAR_NOBORDER);
+    }
+
+    gtk_button_set_image(
+        GTK_BUTTON(widget_.get()),
+        gtk_image_new_from_pixbuf(pixbuf));
+
+    gtk_widget_set_size_request(widget_.get(), -1, -1);
+    gtk_widget_set_app_paintable(widget_.get(), FALSE);
+    gtk_widget_set_double_buffered(widget_.get(), TRUE);
+  } else {
+    gtk_widget_set_size_request(widget_.get(),
+                                gdk_pixbuf_get_width(unstarred_.pixbufs(0)),
+                                gdk_pixbuf_get_height(unstarred_.pixbufs(0)));
+
+    gtk_widget_set_app_paintable(widget_.get(), TRUE);
+    // We effectively double-buffer by virtue of having only one image...
+    gtk_widget_set_double_buffered(widget_.get(), FALSE);
   }
 }

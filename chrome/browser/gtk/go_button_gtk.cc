@@ -9,9 +9,10 @@
 #include "base/message_loop.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -23,10 +24,10 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
       intended_mode_(MODE_GO),
       visible_mode_(MODE_GO),
       state_(BS_NORMAL),
-      go_(browser ? GtkThemeProvider::GetFrom(browser->profile()) : NULL,
-          IDR_GO, IDR_GO_P, IDR_GO_H, 0),
-      stop_(browser ? GtkThemeProvider::GetFrom(browser->profile()) : NULL,
-            IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0),
+      theme_provider_(browser ?
+                      GtkThemeProvider::GetFrom(browser->profile()) : NULL),
+      go_(theme_provider_, IDR_GO, IDR_GO_P, IDR_GO_H, 0),
+      stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0),
       widget_(gtk_button_new()) {
   gtk_widget_set_size_request(widget_.get(),
                               gdk_pixbuf_get_width(go_.pixbufs(0)),
@@ -47,6 +48,13 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
 
   SetTooltip();
+
+  if (theme_provider_) {
+    theme_provider_->InitThemesFor(this);
+    registrar_.Add(this,
+                   NotificationType::BROWSER_THEME_CHANGED,
+                   NotificationService::AllSources());
+  }
 }
 
 GoButtonGtk::~GoButtonGtk() {
@@ -65,7 +73,19 @@ void GoButtonGtk::ChangeMode(Mode mode, bool force) {
     gtk_widget_queue_draw(widget_.get());
     SetTooltip();
     visible_mode_ = mode;
+
+    UpdateThemeButtons();
   }
+}
+
+void GoButtonGtk::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
+
+  GtkThemeProvider* provider = static_cast<GtkThemeProvider*>(
+      Source<GtkThemeProvider>(source).ptr());
+  DCHECK(provider == theme_provider_);
+  UpdateThemeButtons();
 }
 
 Task* GoButtonGtk::CreateButtonTimerTask() {
@@ -81,10 +101,14 @@ void GoButtonGtk::OnButtonTimer() {
 gboolean GoButtonGtk::OnExpose(GtkWidget* widget,
                                GdkEventExpose* e,
                                GoButtonGtk* button) {
-  if (button->visible_mode_ == MODE_GO) {
-    return button->go_.OnExpose(widget, e);
+  if (button->theme_provider_->UseGtkTheme()) {
+    return FALSE;
   } else {
-    return button->stop_.OnExpose(widget, e);
+    if (button->visible_mode_ == MODE_GO) {
+      return button->go_.OnExpose(widget, e);
+    } else {
+      return button->stop_.OnExpose(widget, e);
+    }
   }
 }
 
@@ -171,5 +195,33 @@ void GoButtonGtk::SetTooltip() {
   } else {
     gtk_widget_set_tooltip_text(
         widget_.get(), l10n_util::GetStringUTF8(IDS_TOOLTIP_STOP).c_str());
+  }
+}
+
+void GoButtonGtk::UpdateThemeButtons() {
+  if (theme_provider_->UseGtkTheme()) {
+    // TODO(erg): Waiting for Glen to make a version of these that don't have a
+    // button border on it.
+    if (intended_mode_ == MODE_GO) {
+      gtk_button_set_image(
+          GTK_BUTTON(widget_.get()),
+          gtk_image_new_from_stock(GTK_STOCK_MEDIA_PLAY, GTK_ICON_SIZE_BUTTON));
+    } else {
+      gtk_button_set_image(
+          GTK_BUTTON(widget_.get()),
+          gtk_image_new_from_stock(GTK_STOCK_STOP, GTK_ICON_SIZE_BUTTON));
+    }
+
+    gtk_widget_set_size_request(widget_.get(), -1, -1);
+    gtk_widget_set_app_paintable(widget_.get(), FALSE);
+    gtk_widget_set_double_buffered(widget_.get(), TRUE);
+  } else {
+    gtk_widget_set_size_request(widget_.get(),
+                                gdk_pixbuf_get_width(go_.pixbufs(0)),
+                                gdk_pixbuf_get_height(go_.pixbufs(0)));
+
+    gtk_widget_set_app_paintable(widget_.get(), TRUE);
+    // We effectively double-buffer by virtue of having only one image...
+    gtk_widget_set_double_buffered(widget_.get(), FALSE);
   }
 }

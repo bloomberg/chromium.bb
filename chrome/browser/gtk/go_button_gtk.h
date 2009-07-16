@@ -10,13 +10,16 @@
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "chrome/browser/gtk/custom_button.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class Browser;
+class GtkThemeProvider;
 class LocationBarViewGtk;
 class Task;
 
-class GoButtonGtk {
+class GoButtonGtk : public NotificationObserver {
  public:
   enum Mode { MODE_GO = 0, MODE_STOP };
   enum ButtonState { BS_NORMAL = 0, BS_HOT };
@@ -30,6 +33,11 @@ class GoButtonGtk {
   // Ask for a specified button state.  If |force| is true this will be applied
   // immediately.
   void ChangeMode(Mode mode, bool force);
+
+  // Provide NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   friend class GoButtonGtkPeer;
@@ -47,6 +55,10 @@ class GoButtonGtk {
   Task* CreateButtonTimerTask();
   void OnButtonTimer();
   void SetTooltip();
+  void UpdateThemeButtons();
+
+  // Used to listen for theme change notifications.
+  NotificationRegistrar registrar_;
 
   LocationBarViewGtk* const location_bar_;
 
@@ -65,6 +77,8 @@ class GoButtonGtk {
   Mode visible_mode_;
 
   ButtonState state_;
+
+  GtkThemeProvider* theme_provider_;
 
   CustomDrawButtonBase go_;
   CustomDrawButtonBase stop_;

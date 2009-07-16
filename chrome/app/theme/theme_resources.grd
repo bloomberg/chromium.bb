@@ -43,10 +43,12 @@
       <include name="IDR_RELOAD_H" file="reload_h.png" type="BINDATA" />
       <include name="IDR_RELOAD_P" file="reload_p.png" type="BINDATA" />
       <include name="IDR_STAR" file="star.png" type="BINDATA" />
+      <include name="IDR_STAR_NOBORDER" file="star_noborder.png" type="BINDATA" />
       <include name="IDR_STAR_D" file="star_d.png" type="BINDATA" />
       <include name="IDR_STAR_H" file="star_h.png" type="BINDATA" />
       <include name="IDR_STAR_P" file="star_p.png" type="BINDATA" />
       <include name="IDR_STARRED" file="starred.png" type="BINDATA" />
+      <include name="IDR_STARRED_NOBORDER" file="starred_noborder.png" type="BINDATA" />
       <include name="IDR_STARRED_H" file="starred_h.png" type="BINDATA" />
       <include name="IDR_STARRED_P" file="starred_p.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
