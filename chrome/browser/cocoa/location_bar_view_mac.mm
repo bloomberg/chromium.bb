@@ -15,7 +15,7 @@
 // TODO(shess): This code is mostly copied from the gtk
 // implementation.  Make sure it's all appropriate and flesh it out.
 
-LocationBarViewMac::LocationBarViewMac(NSTextField* field,
+LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
                                        CommandUpdater* command_updater,
                                        ToolbarModel* toolbar_model,
                                        Profile* profile)

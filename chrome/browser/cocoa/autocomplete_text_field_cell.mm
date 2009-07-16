@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/location_bar_cell.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 const NSInteger kBaselineOffset = 2;
 
-@implementation LocationBarCell
+@implementation AutocompleteTextFieldCell
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
@@ -28,7 +28,7 @@ const NSInteger kBaselineOffset = 2;
   [stroke set];
   NSFrameRectWithWidthUsingOperation(frame, 1.0, NSCompositeSourceOver);
 
-  // Draw the location bar shadow.
+  // Draw the shadow.
   [[NSColor colorWithCalibratedWhite:0.0 alpha:0.05] setFill];
   NSRectFillUsingOperation(shadowFrame, NSCompositeSourceOver);
 

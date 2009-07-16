@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/toolbar_controller.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
@@ -32,7 +32,7 @@ bool ClipboardContainsText(NSPasteboard* pb, NSString* cmp) {
 
 } // namespace
 
-class LocationBarFieldEditorTest : public PlatformTest {
+class AutocompleteTextFieldEditorTest : public PlatformTest {
  public:
   virtual void SetUp() {
     PlatformTest::SetUp();
@@ -54,15 +54,15 @@ class LocationBarFieldEditorTest : public PlatformTest {
     NSPasteboard *pb_;
 };
 
-TEST_F(LocationBarFieldEditorTest, CutCopyTest) {
+TEST_F(AutocompleteTextFieldEditorTest, CutCopyTest) {
   // Make sure pasteboard is empty before we start.
   ASSERT_EQ(NumTypesOnPasteboard(clipboard()), 0);
 
   NSString* test_string_1 = @"astring";
   NSString* test_string_2 = @"another string";
 
-  scoped_nsobject<LocationBarFieldEditor> field_editor(
-      [[LocationBarFieldEditor alloc] init]);
+  scoped_nsobject<AutocompleteTextFieldEditor> field_editor(
+      [[AutocompleteTextFieldEditor alloc] init]);
   [field_editor.get() setRichText:YES];
 
   // Put some text on the clipboard.

@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/location_bar.h"
 
+@class AutocompleteTextField;
 class CommandUpdater;
 class ToolbarModel;
 
@@ -23,7 +24,7 @@ class LocationBarViewMac : public AutocompleteEditController,
                            public LocationBar,
                            public LocationBarTesting {
  public:
-  LocationBarViewMac(NSTextField* field,
+  LocationBarViewMac(AutocompleteTextField* field,
                      CommandUpdater* command_updater,
                      ToolbarModel* toolbar_model,
                      Profile* profile);

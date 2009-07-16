@@ -4,9 +4,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-// A cell that draws the location bar, for now all it does is shift
-// the text down so it is vertically centered.
+// A cell that draws the autocomplete field.
 
-@interface LocationBarCell : NSTextFieldCell {
+@interface AutocompleteTextFieldCell : NSTextFieldCell {
 }
 @end

@@ -7,6 +7,8 @@
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
+#import "chrome/browser/cocoa/autocomplete_text_field.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
@@ -20,30 +22,6 @@
 // Names of images in the bundle for the star icon (normal and 'starred').
 static NSString* const kStarImageName = @"star_Template.pdf";
 static NSString* const kStarredImageName = @"starred.pdf";
-
-@implementation LocationBarFieldEditor
-- (void)copy:(id)sender {
-  NSPasteboard* pb = [NSPasteboard generalPasteboard];
-  [self performCopy:pb];
-}
-
-- (void)cut:(id)sender {
-  NSPasteboard* pb = [NSPasteboard generalPasteboard];
-  [self performCut:pb];
-}
-
-- (void)performCopy:(NSPasteboard*)pb {
-  [pb declareTypes:[NSArray array] owner:nil];
-  [self writeSelectionToPasteboard:pb types:
-      [NSArray arrayWithObject:NSStringPboardType]];
-}
-
-- (void)performCut:(NSPasteboard*)pb {
-  [self performCopy:pb];
-  [self delete:nil];
-}
-
-@end
 
 @interface ToolbarController(Private)
 - (void)initCommandStatus:(CommandUpdater*)commands;
@@ -245,15 +223,16 @@ class PrefObserverBridge : public NotificationObserver {
   if (obj == locationBar_) {
     // Lazilly construct Field editor, Cocoa UI code always runs on the
     // same thread, so there shoudn't be a race condition here.
-    if (locationBarFieldEditor_.get() == nil) {
-      locationBarFieldEditor_.reset([[LocationBarFieldEditor alloc] init]);
+    if (autocompleteTextFieldEditor_.get() == nil) {
+      autocompleteTextFieldEditor_.reset(
+          [[AutocompleteTextFieldEditor alloc] init]);
     }
 
     // This needs to be called every time, otherwise notifications
     // aren't sent correctly.
-    DCHECK(locationBarFieldEditor_.get());
-    [locationBarFieldEditor_.get() setFieldEditor:YES];
-    return locationBarFieldEditor_.get();
+    DCHECK(autocompleteTextFieldEditor_.get());
+    [autocompleteTextFieldEditor_.get() setFieldEditor:YES];
+    return autocompleteTextFieldEditor_.get();
   }
   return nil;
 }

@@ -13,6 +13,8 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #include "chrome/common/pref_member.h"
 
+@class AutocompleteTextField;
+@class AutocompleteTextFieldEditor;
 class CommandUpdater;
 class LocationBar;
 class LocationBarViewMac;
@@ -23,15 +25,6 @@ class Profile;
 class TabContents;
 class ToolbarModel;
 class ToolbarView;
-
-// Field editor used for the location bar.
-@interface LocationBarFieldEditor : NSTextView
-// Copy contents of the TextView to the designated clipboard as plain text.
-- (void)performCopy:(NSPasteboard*)pb;
-
-// Same as above, note that this calls through to performCopy.
-- (void)performCut:(NSPasteboard*)pb;
-@end
 
 // A controller for the toolbar in the browser window. Manages
 // updating the state for location bar and back/fwd/reload/go buttons.
@@ -45,7 +38,7 @@ class ToolbarView;
   Profile* profile_;  // weak, one per window
   scoped_ptr<CommandObserverBridge> commandObserver_;
   scoped_ptr<LocationBarViewMac> locationBarView_;
-  scoped_nsobject<LocationBarFieldEditor> locationBarFieldEditor_;  // strong
+  scoped_nsobject<AutocompleteTextFieldEditor> autocompleteTextFieldEditor_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
   id<BookmarkURLOpener> bookmarkBarDelegate_;  // weak
   NSView* webContentView_;  // weak; where the web goes
@@ -70,7 +63,7 @@ class ToolbarView;
   IBOutlet NSButton* goButton_;
   IBOutlet NSButton* pageButton_;
   IBOutlet NSButton* wrenchButton_;
-  IBOutlet NSTextField* locationBar_;
+  IBOutlet AutocompleteTextField* locationBar_;
 }
 
 // Initialize the toolbar and register for command updates. The profile is

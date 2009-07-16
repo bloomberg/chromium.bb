@@ -8,6 +8,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
+#include "chrome/browser/cocoa/autocomplete_text_field.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
@@ -125,12 +126,16 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 - (void)windowDidResignKey:(NSNotification*)notification;
 @end
 
+// TODO(shess): AutocompletePopupViewMac doesn't really need an
+// NSTextField.  It wants to know where the position the popup, what
+// font to use, and it also needs to be able to attach the popup to
+// the window |field_| is in.
 AutocompleteEditViewMac::AutocompleteEditViewMac(
     AutocompleteEditController* controller,
     ToolbarModel* toolbar_model,
     Profile* profile,
     CommandUpdater* command_updater,
-    NSTextField* field)
+    AutocompleteTextField* field)
     : model_(new AutocompleteEditModel(this, controller, profile)),
       popup_view_(new AutocompletePopupViewMac(this, model_.get(), profile,
                                                field)),
@@ -522,9 +527,9 @@ void AutocompleteEditViewMac::OnWillBeginEditing() {
   // We should only arrive here when the field is focussed.
   DCHECK([field_ currentEditor]);
 
-  // TODO(shess): Having the control key depressed changes the desired
-  // TLD for autocomplete, which changes the results.  Not sure if we
-  // can detect that without subclassing NSTextField.
+  // TODO(shess): Detect control-key situation.  Since this code is
+  // called on first edit, not on receipt of focus, it may be that we
+  // cannot correctly handle this without refactoring.
   const bool controlDown = false;
   model_->OnSetFocus(controlDown);
 

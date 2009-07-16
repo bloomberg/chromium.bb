@@ -5,19 +5,25 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/location_bar_cell.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class LocationBarCellTest : public testing::Test {
+// TODO(shess): Make a sensible distinction between
+// AutocompleteTextField unittesting and AutocompleteTextFieldCell
+// unittesting - or, since AutocompleteTextFieldCell doesn't really
+// have independent existence, just put tests for both in
+// autocomplete_text_field_unittest.mm.
+
+class AutocompleteTextFieldCellTest : public testing::Test {
  public:
-  LocationBarCellTest() {
+  AutocompleteTextFieldCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
     view_.reset([[NSTextField alloc] initWithFrame:frame]);
-    scoped_nsobject<LocationBarCell> cell(
-        [[LocationBarCell alloc] initTextCell:@"Testing"]);
+    scoped_nsobject<AutocompleteTextFieldCell> cell(
+        [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
     [view_ setCell:cell.get()];
     [cocoa_helper_.contentView() addSubview:view_.get()];
   }
@@ -28,14 +34,14 @@ class LocationBarCellTest : public testing::Test {
 
 // Test adding/removing from the view hierarchy, mostly to ensure nothing
 // leaks or crashes.
-TEST_F(LocationBarCellTest, AddRemove) {
+TEST_F(AutocompleteTextFieldCellTest, AddRemove) {
   EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
   [view_.get() removeFromSuperview];
   EXPECT_FALSE([view_ superview]);
 }
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(LocationBarCellTest, Display) {
+TEST_F(AutocompleteTextFieldCellTest, Display) {
   [view_ display];
 }
 

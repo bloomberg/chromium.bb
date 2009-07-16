@@ -20,12 +20,13 @@ class AutocompleteEditController;
 @class AutocompleteEditHelper;
 class AutocompleteEditModel;
 class AutocompletePopupViewMac;
+@class AutocompleteTextField;
 class CommandUpdater;
 class Profile;
 class TabContents;
 class ToolbarModel;
 
-// Implements AutocompleteEditView on an NSTextField.
+// Implements AutocompleteEditView on an AutocompleteTextField.
 
 class AutocompleteEditViewMac : public AutocompleteEditView {
  public:
@@ -33,7 +34,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
                           ToolbarModel* toolbar_model,
                           Profile* profile,
                           CommandUpdater* command_updater,
-                          NSTextField* field);
+                          AutocompleteTextField* field);
   virtual ~AutocompleteEditViewMac();
 
   // Implement the AutocompleteEditView interface.
@@ -140,7 +141,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   // edit, such as invoking the keyword editor.
   CommandUpdater* command_updater_;
 
-  NSTextField* field_;  // owned by tab controller
+  AutocompleteTextField* field_;  // owned by tab controller
 
   // Objective-C object to bridge field_ delegate calls to C++.
   scoped_nsobject<AutocompleteEditHelper> edit_helper_;
