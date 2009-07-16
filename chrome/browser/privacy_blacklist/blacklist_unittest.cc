@@ -73,6 +73,7 @@ TEST(BlacklistTest, Generic) {
     EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
               match->attributes());
     EXPECT_EQ(1U, match->entries().size());
+    delete match;
   }
 
   match = blacklist.findMatch(GURL("http://www.site.com/bad/url"));
@@ -82,6 +83,7 @@ TEST(BlacklistTest, Generic) {
               Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
               match->attributes());
     EXPECT_EQ(2U, match->entries().size());
+    delete match;
   }
 
   match = blacklist.findMatch(GURL("http://www.site.com/anonymous"));
@@ -90,6 +92,7 @@ TEST(BlacklistTest, Generic) {
     EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
               match->attributes());
     EXPECT_EQ(1U, match->entries().size());
+    delete match;
   }
 
   match = blacklist.findMatch(GURL("http://www.site.com/anonymous/folder"));
@@ -98,6 +101,7 @@ TEST(BlacklistTest, Generic) {
     EXPECT_EQ(Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
       match->attributes());
     EXPECT_EQ(1U, match->entries().size());
+    delete match;
   }
 
   match = blacklist.findMatch(
@@ -108,6 +112,7 @@ TEST(BlacklistTest, Generic) {
               Blacklist::kBlockByType|Blacklist::kDontPersistCookies,
               match->attributes());
     EXPECT_EQ(2U, match->entries().size());
+    delete match;
   }
 
   // StripCookieExpiry Tests
