@@ -116,12 +116,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 }
 
 void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
-  // We just received an accelerator key that we had sent to external host
-  // back. Since the external host was not interested in handling this, we
-  // need to dispatch this message as if we had just peeked this out. (we
-  // also need to call TranslateMessage to generate a WM_CHAR if needed).
-  TranslateMessage(&msg);
-  DispatchMessage(&msg);
+  DefWindowProc(msg.hwnd, msg.message, msg.wParam, msg.lParam);
 }
 
 void ExternalTabContainer::FocusThroughTabTraversal(bool reverse) {
