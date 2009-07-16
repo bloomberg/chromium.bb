@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -284,7 +283,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "stress-js-execution.html",
     "use-machine-stack.html",
     "worker-close.html",
-    "worker-constructor.html",
+    //"worker-constructor.html",
     "worker-context-gc.html",
     "worker-event-listener.html",
     "worker-gc.html",
@@ -312,7 +311,7 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "text-encoding.html",
     "worker-importScripts.html",
-    "worker-redirect.html",
+    //"worker-redirect.html",
   };
 
   FilePath http_test_dir;
