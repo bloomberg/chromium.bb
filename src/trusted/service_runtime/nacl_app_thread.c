@@ -180,7 +180,13 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   (*natp->effp->vtbl->Dtor)(natp->effp);
   free(natp->effp);
   natp->effp = NULL;
-  NaClFreeThreadIdx(NaClGetThreadId(natp));
+  /* BUG(petr): NaClFreeThreadIdx expects the value of a raw gs but not a
+   * threadIdx as in x86 implementation threadIdx == (gs >> 3).
+   *
+   * TODO(petr): fix NaClFreeThreadIdx invocation to make it architecture
+   * independent.
+   */
+  NaClFreeThreadIdx(natp->user.gs);
   NaClCondVarDtor(&natp->cv);
   NaClMutexDtor(&natp->mu);
 }
