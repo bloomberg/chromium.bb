@@ -31,7 +31,7 @@ import google.path_utils
 import layout_package.platform_utils
 
 import common
-
+import valgrind_test
 
 class TestNotFound(Exception): pass
 
@@ -107,8 +107,8 @@ class ChromeTests:
     # since this path is used for string matching, make sure it's always
     # an absolute Windows-style path
     self._source_dir = utility.GetAbsolutePath(self._source_dir)
-    valgrind_test = os.path.join(script_dir, "valgrind_test.py")
-    self._command_preamble = ["python", valgrind_test,
+    valgrind_test_script = os.path.join(script_dir, "valgrind_test.py")
+    self._command_preamble = [valgrind_test_script,
                               "--source_dir=%s" % (self._source_dir)]
 
   def _DefaultCommand(self, module, exe=None, valgrind_test_args=None):
@@ -140,7 +140,9 @@ class ChromeTests:
 
     cmd = list(self._command_preamble)
     for directory in self._data_dirs:
-      suppression_file = os.path.join(directory, "suppressions.txt")
+      tool_name = self._options.valgrind_tool
+      suppression_file = os.path.join(directory,
+          "%s/suppressions.txt" % tool_name)
       if os.path.exists(suppression_file):
         cmd.append("--suppressions=%s" % suppression_file)
       # Platform specific suppression
@@ -149,25 +151,14 @@ class ChromeTests:
         'linux2': 'linux'
       }[sys.platform]
       suppression_file_platform = \
-          os.path.join(directory, 'suppressions_%s.txt' % suppression_platform)
+          os.path.join(directory,
+              '%s/suppressions_%s.txt' % (tool_name, suppression_platform))
       if os.path.exists(suppression_file_platform):
         cmd.append("--suppressions=%s" % suppression_file_platform)
 
-    if self._options.baseline:
-      cmd.append("--baseline")
-    if self._options.verbose:
-      cmd.append("--verbose")
-    if self._options.show_all_leaks:
-      cmd.append("--show_all_leaks")
-    if self._options.track_origins:
-      cmd.append("--track_origins")
-    if self._options.generate_dsym:
-      cmd.append("--generate_dsym")
-    if self._options.generate_suppressions:
-      cmd.append("--generate_suppressions")
-    if self._options.custom_valgrind_command:
-      cmd.append("--custom_valgrind_command=%s"
-                 % self._options.custom_valgrind_command)
+    cmd.append("--tool=%s" % self._options.valgrind_tool)
+    if self._options.valgrind_tool_flags:
+      cmd += self._options.valgrind_tool_flags.split(" ")
     if valgrind_test_args != None:
       for arg in valgrind_test_args:
         cmd.append(arg)
@@ -193,7 +184,11 @@ class ChromeTests:
                          'linux2': 'linux'}[sys.platform]
       gtest_filter_files = [
           os.path.join(directory, name + ".gtest.txt"),
-          os.path.join(directory, name + ".gtest_%s.txt" % platform_suffix)]
+          os.path.join(directory, name + ".gtest-%s.txt" % \
+              self._options.valgrind_tool),
+          os.path.join(directory, name + ".gtest_%s.txt" % platform_suffix),
+          os.path.join(directory, name + ".gtest-%s_%s.txt" % \
+              (self._options.valgrind_tool, platform_suffix))]
       for filename in gtest_filter_files:
         if os.path.exists(filename):
           logging.info("reading gtest filters from %s" % filename)
@@ -221,7 +216,7 @@ class ChromeTests:
     if cmd_args:
       cmd.extend(["--"])
       cmd.extend(cmd_args)
-    return common.RunSubprocess(cmd, 0)
+    return valgrind_test.RunTool(cmd)
 
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
@@ -324,8 +319,7 @@ class ChromeTests:
     # Now run script_cmd with the wrapper in cmd
     cmd.extend(["--"])
     cmd.extend(script_cmd)
-    ret = common.RunSubprocess(cmd, 0)
-    return ret
+    return valgrind_test.RunTool(cmd)
 
   def TestLayout(self):
     # A "chunk file" is maintained in the local directory so that each test
@@ -387,20 +381,10 @@ def _main(_):
                     help="additional arguments to --gtest_filter")
   parser.add_option("-v", "--verbose", action="store_true", default=False,
                     help="verbose output - enable debug log messages")
-  parser.add_option("", "--show_all_leaks", action="store_true",
-                    default=False,
-                    help="also show even less blatant leaks")
-  parser.add_option("", "--track_origins", action="store_true",
-                    default=False,
-                    help="Show whence uninit bytes came.  30% slower.")
-  parser.add_option("", "--generate_dsym", action="store_true",
-                    default=False,
-                    help="Generate .dSYM file on Mac if needed. Slow!")
-  parser.add_option("", "--generate_suppressions", action="store_true",
-                    default=False,
-                    help="Skip analysis and generate suppressions")
-  parser.add_option("", "--custom_valgrind_command",
-                    help="Use custom valgrind command and options")
+  parser.add_option("", "--tool", dest="valgrind_tool", default="memcheck",
+                    help="specify a valgrind tool to run the tests under")
+  parser.add_option("", "--tool_flags", dest="valgrind_tool_flags", default="",
+                    help="specify custom flags for the selected valgrind tool")
   # My machine can do about 120 layout tests/hour in release mode.
   # Let's do 30 minutes worth per run.
   # The CPU is mostly idle, so perhaps we can raise this when

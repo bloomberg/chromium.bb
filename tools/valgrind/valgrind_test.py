@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# purify_test.py
+# valgrind_test.py
 
 '''Runs an exe through Valgrind and puts the intermediate files in a
 directory.
@@ -22,13 +22,12 @@ import tempfile
 
 import common
 
-import valgrind_analyze
+import memcheck_analyze
+import tsan_analyze
 
 import google.logging_utils
 
-rmtree = shutil.rmtree
-
-class Valgrind(object):
+class ValgrindTool(object):
 
   """Abstract class for running Valgrind.
 
@@ -44,6 +43,10 @@ class Valgrind(object):
       shutil.rmtree(self.TMP_DIR)
     os.mkdir(self.TMP_DIR)
 
+  def ToolName(self):
+    raise RuntimeError, "This method should be implemented " \
+                        "in the tool-specific subclass"
+
   def CreateOptionParser(self):
     self._parser = optparse.OptionParser("usage: %prog [options] <program to "
                                          "test>")
@@ -53,218 +56,81 @@ class Valgrind(object):
     self._parser.add_option("", "--source_dir",
                             help="path to top of source tree for this build"
                                  "(used to normalize source paths in baseline)")
-    self._parser.add_option("", "--suppressions", default=[],
-                            action="append",
-                            help="path to a valgrind suppression file")
     self._parser.add_option("", "--gtest_filter", default="",
                             help="which test case to run")
     self._parser.add_option("", "--gtest_print_time", action="store_true",
                             default=False,
                             help="show how long each test takes")
+    self._parser.add_option("", "--indirect", action="store_true",
+                            default=False,
+                            help="set BROWSER_WRAPPER rather than "
+                                 "running valgrind directly")
+    self._parser.add_option("-v", "--verbose", action="store_true",
+                            default=False,
+                            help="verbose output - enable debug log messages")
     self._parser.add_option("", "--trace_children", action="store_true",
                             default=False,
                             help="also trace child processes")
-    self._parser.add_option("", "--indirect", action="store_true",
+    self._parser.add_option("", "--gen_suppressions", action="store_true",
+                            dest="generate_suppressions", default=False,
+                            help="skip analysis and generate suppressions")
+    self._parser.add_option("", "--num-callers",
+                            dest="num_callers", default=30,
+                            help="number of callers to show in stack traces")
+    self._parser.add_option("", "--nocleanup_on_exit", action="store_true",
                             default=False,
-                            help="set BROWSER_WRAPPER rather than running valgrind directly")
-    self._parser.add_option("", "--show_all_leaks", action="store_true",
-                            default=False,
-                            help="also show less blatant leaks")
-    self._parser.add_option("", "--track_origins", action="store_true",
-                            default=False,
-                            help="Show whence uninit bytes came.  30% slower.")
-    self._parser.add_option("", "--generate_dsym", action="store_true",
-                            default=False,
-                            help="Generate .dSYM file on Mac if needed. Slow!")
-    self._parser.add_option("", "--generate_suppressions", action="store_true",
-                            default=False,
-                            help="Skip analysis and generate suppressions")
-    self._parser.add_option("", "--custom_valgrind_command",
-                            help="Use custom valgrind command and options")
-    self._parser.add_option("-v", "--verbose", action="store_true", default=False,
-                    help="verbose output - enable debug log messages")
+                            help="don't delete directory with logs on exit")
+    self.ExtendOptionParser(self._parser)
     self._parser.description = __doc__
 
-  def ParseArgv(self):
+  def ExtendOptionParser(self, parser):
+    if sys.platform == 'darwin':
+      parser.add_option("", "--generate_dsym", action="store_true",
+                            default=False,
+                            help="Generate .dSYM file on Mac if needed. Slow!")
+
+  def ParseArgv(self, args):
     self.CreateOptionParser()
-    self._options, self._args = self._parser.parse_args()
+
+    # self._tool_flags will store those tool flags which we don't parse
+    # manually in this script.
+    self._tool_flags = []
+    known_args = []
+
+    """ We assume that the first argument not starting with "-" is a program name
+    and all the following flags should be passed to the program.
+    TODO(timurrrr): customize optparse instead
+    """
+    while len(args) > 0 and args[0][:1] == "-":
+      arg = args[0]
+      if (arg == "--"):
+        break
+      if self._parser.has_option(arg.split("=")[0]):
+        known_args += [arg]
+      else:
+        self._tool_flags += [arg]
+      args = args[1:]
+
+    if len(args) > 0:
+      known_args += args
+
+    self._options, self._args = self._parser.parse_args(known_args)
+
     self._timeout = int(self._options.timeout)
-    self._suppressions = self._options.suppressions
+    self._num_callers = int(self._options.num_callers)
     self._generate_suppressions = self._options.generate_suppressions
+    self._suppressions = self._options.suppressions
     self._source_dir = self._options.source_dir
+    self._nocleanup_on_exit = self._options.nocleanup_on_exit
     if self._options.gtest_filter != "":
       self._args.append("--gtest_filter=%s" % self._options.gtest_filter)
     if self._options.gtest_print_time:
       self._args.append("--gtest_print_time");
-    if self._options.verbose:
-      google.logging_utils.config_root(logging.DEBUG)
-    else:
-      google.logging_utils.config_root()
 
     return True
 
-  def Setup(self):
-    return self.ParseArgv()
-
-  def PrepareForTest(self):
-    """Perform necessary tasks prior to executing the test."""
-    pass
-
-  def ValgrindCommand(self):
-    """Get the valgrind command to run."""
-    raise RuntimeError, "Never use Valgrind directly. Always subclass and " \
-                        "implement ValgrindCommand() at least"
-
-  def Execute(self):
-    ''' Execute the app to be tested after successful instrumentation.
-    Full execution command-line provided by subclassers via proc.'''
-    logging.info("starting execution...")
-
-    proc = self.ValgrindCommand()
-    os.putenv("G_SLICE", "always-malloc")
-    logging.info("export G_SLICE=always-malloc");
-    os.putenv("NSS_DISABLE_ARENA_FREE_LIST", "1")
-    logging.info("export NSS_DISABLE_ARENA_FREE_LIST=1");
-
-    common.RunSubprocess(proc, self._timeout)
-
-    # Always return true, even if running the subprocess failed. We depend on
-    # Analyze to determine if the run was valid. (This behaviour copied from
-    # the purify_test.py script.)
-    return True
-
-  def Analyze(self):
-    # Glob all the files in the "valgrind.tmp" directory
-    filenames = glob.glob(self.TMP_DIR + "/valgrind.*")
-    # TODO(dkegel): use new xml suppressions feature when it lands
-    if self._generate_suppressions:
-      # Just concatenate all the output files.  Lame...
-      for filename in filenames:
-        print "## %s" % filename
-        f = file(filename)
-        while True:
-          line = f.readline()
-          if len(line) == 0:
-            break
-          print line, # comma means don't add newline
-        f.close()
-      return 0
-    analyzer = valgrind_analyze.ValgrindAnalyze(self._source_dir, filenames, self._options.show_all_leaks)
-    return analyzer.Report()
-
-  def Cleanup(self):
-    # Right now, we can cleanup by deleting our temporary directory. Other
-    # cleanup is still a TODO?
-    shutil.rmtree(self.TMP_DIR)
-    return True
-
-  def RunTestsAndAnalyze(self):
-    self.PrepareForTest()
-    self.Execute()
-
-    retcode = self.Analyze()
-    if retcode:
-      logging.error("Analyze failed.")
-      return retcode
-    logging.info("Execution and analysis completed successfully.")
-    return 0
-
-  def Main(self):
-    '''Call this to run through the whole process: Setup, Execute, Analyze'''
-    start = datetime.datetime.now()
-    retcode = -1
-    if self.Setup():
-      retcode = self.RunTestsAndAnalyze()
-      self.Cleanup()
-    else:
-      logging.error("Setup failed")
-    end = datetime.datetime.now()
-    seconds = (end - start).seconds
-    hours = seconds / 3600
-    seconds = seconds % 3600
-    minutes = seconds / 60
-    seconds = seconds % 60
-    logging.info("elapsed time: %02d:%02d:%02d" % (hours, minutes, seconds))
-    return retcode
-
-
-class ValgrindLinux(Valgrind):
-
-  """Valgrind on Linux."""
-
-  def __init__(self):
-    Valgrind.__init__(self)
-
-  def ValgrindCommand(self):
-    """Get the valgrind command to run."""
-    # note that self._args begins with the exe to be run
-
-    if self._options.custom_valgrind_command:
-      # take the full valgrind command from --custom_valgrind_command
-      proc = self._options.custom_valgrind_command.split()
-    else:
-      # construct the valgrind command
-      proc = ["valgrind", "--smc-check=all", "--leak-check=full",
-              "--num-callers=50"]
-
-      if self._options.show_all_leaks:
-        proc += ["--show-reachable=yes"];
-
-      if self._options.track_origins:
-        proc += ["--track-origins=yes"];
-
-      if self._options.trace_children:
-        proc += ["--trace-children=yes"];
-
-      # Either generate suppressions or load them.
-      # TODO(dkegel): enhance valgrind to support generating
-      # suppressions in xml mode.  See
-      # http://bugs.kde.org/show_bug.cgi?id=191189
-      if self._generate_suppressions:
-        proc += ["--gen-suppressions=all"]
-      else:
-        proc += ["--xml=yes"]
-
-      suppression_count = 0
-      for suppression_file in self._suppressions:
-        if os.path.exists(suppression_file):
-          suppression_count += 1
-          proc += ["--suppressions=%s" % suppression_file]
-
-      if not suppression_count:
-        logging.warning("WARNING: NOT USING SUPPRESSIONS!")
-
-      proc += ["--log-file=" + self.TMP_DIR + "/valgrind.%p"]
-
-    # The Valgrind command is constructed.
-
-    if self._options.indirect:
-      # The program being run invokes Python or something else
-      # that can't stand to be valgrinded, and also invokes
-      # the Chrome browser.  Set an environment variable to
-      # tell the program to prefix the Chrome commandline
-      # with a magic wrapper.  Build the magic wrapper here.
-      (fd, indirect_fname) = tempfile.mkstemp(dir=self.TMP_DIR, prefix="browser_wrapper.", text=True)
-      f = os.fdopen(fd, "w");
-      f.write("#!/bin/sh\n")
-      f.write(" ".join(proc))
-      f.write(' "$@"\n')
-      f.close()
-      os.chmod(indirect_fname, stat.S_IRUSR|stat.S_IXUSR)
-      os.putenv("BROWSER_WRAPPER", indirect_fname)
-      logging.info('export BROWSER_WRAPPER=' + indirect_fname);
-      proc = []
-
-    proc += self._args
-    return proc
-
-
-class ValgrindMac(ValgrindLinux):
-
-  """Valgrind on Mac OS X.
-  Same as Linux, but currently needs one extra step to run dsymutil.
-  This will go away once we update our valgrind.
-  """
+  def Setup(self, args):
+    return self.ParseArgv(args)
 
   def PrepareForTest(self):
     """Runs dsymutil if needed.
@@ -280,6 +146,8 @@ class ValgrindMac(ValgrindLinux):
     it looks like a fake_dsym.  A non-fake dsym that already exists is assumed
     to be up-to-date.
     """
+    if sys.platform != 'darwin':
+      return
 
     test_command = self._args[0]
     dsym_bundle = self._args[0] + '.dSYM'
@@ -328,15 +196,265 @@ class ValgrindMac(ValgrindLinux):
                      "not be shown.  Either tell xcode to generate .dSYM "
                      "file, or use --generate_dsym option to this tool.")
 
+  def ValgrindCommand(self):
+    """Get the valgrind command to run."""
+    # Note that self._args begins with the exe to be run.
+    tool_name = self.ToolName()
+
+    # Construct the valgrind command.
+    proc = ["valgrind",
+            "--tool=%s" % tool_name,
+            "--smc-check=all",
+            "--num-callers=%i" % self._num_callers]
+
+    if self._options.trace_children:
+      proc += ["--trace-children=yes"];
+
+    proc += self.ToolSpecificFlags()
+    proc += self._tool_flags
+
+    if self._generate_suppressions:
+      proc += ["--gen-suppressions=all"]
+
+    suppression_count = 0
+    for suppression_file in self._suppressions:
+      if os.path.exists(suppression_file):
+        suppression_count += 1
+        proc += ["--suppressions=%s" % suppression_file]
+
+    if not suppression_count:
+      logging.warning("WARNING: NOT USING SUPPRESSIONS!")
+
+    proc += ["--log-file=" + self.TMP_DIR + ("/%s." % tool_name) + "%p"]
+
+    # The Valgrind command is constructed.
+
+    if self._options.indirect:
+      self.CreateBrowserWrapper(" ".join(proc))
+      proc = []
+    proc += self._args
+    return proc
+
+  def ToolSpecificFlags(self):
+    return []
+
+  def Execute(self):
+    ''' Execute the app to be tested after successful instrumentation.
+    Full execution command-line provided by subclassers via proc.'''
+    logging.info("starting execution...")
+
+    proc = self.ValgrindCommand()
+    os.putenv("G_SLICE", "always-malloc")
+    logging.info("export G_SLICE=always-malloc");
+    os.putenv("NSS_DISABLE_ARENA_FREE_LIST", "1")
+    logging.info("export NSS_DISABLE_ARENA_FREE_LIST=1");
+
+    common.RunSubprocess(proc, self._timeout)
+
+    # Always return true, even if running the subprocess failed. We depend on
+    # Analyze to determine if the run was valid. (This behaviour copied from
+    # the purify_test.py script.)
+    return True
+
+  def Analyze(self):
+    raise RuntimeError, "This method should be implemented " \
+                        "in the tool-specific subclass"
+
+  def Cleanup(self):
+    # Right now, we can cleanup by deleting our temporary directory. Other
+    # cleanup is still a TODO?
+    if not self._nocleanup_on_exit:
+      shutil.rmtree(self.TMP_DIR, ignore_errors=True)
+    return True
+
+  def RunTestsAndAnalyze(self):
+    self.PrepareForTest()
+    self.Execute()
+
+    retcode = self.Analyze()
+    if retcode:
+      logging.error("Analyze failed.")
+      return retcode
+    logging.info("Execution and analysis completed successfully.")
+    return 0
+
+  def CreateBrowserWrapper(self, command):
+    """The program being run invokes Python or something else
+    that can't stand to be valgrinded, and also invokes
+    the Chrome browser.  Set an environment variable to
+    tell the program to prefix the Chrome commandline
+    with a magic wrapper.  Build the magic wrapper here.
+    """
+    (fd, indirect_fname) = tempfile.mkstemp(dir=self.TMP_DIR, prefix="browser_wrapper.", text=True)
+    f = os.fdopen(fd, "w");
+    f.write("#!/bin/sh\n")
+    f.write(command)
+    f.write(' "$@"\n')
+    f.close()
+    os.chmod(indirect_fname, stat.S_IRUSR|stat.S_IXUSR)
+    os.putenv("BROWSER_WRAPPER", indirect_fname)
+    logging.info('export BROWSER_WRAPPER=' + indirect_fname);
+
+  def Main(self, args):
+    '''Call this to run through the whole process: Setup, Execute, Analyze'''
+    start = datetime.datetime.now()
+    retcode = -1
+    if self.Setup(args):
+      retcode = self.RunTestsAndAnalyze()
+      self.Cleanup()
+    else:
+      logging.error("Setup failed")
+    end = datetime.datetime.now()
+    seconds = (end - start).seconds
+    hours = seconds / 3600
+    seconds = seconds % 3600
+    minutes = seconds / 60
+    seconds = seconds % 60
+    logging.info("elapsed time: %02d:%02d:%02d" % (hours, minutes, seconds))
+    return retcode
+
+# TODO(timurrrr): Split into a separate file.
+class Memcheck(ValgrindTool):
+  """Memcheck"""
+
+  def __init__(self):
+    ValgrindTool.__init__(self)
+
+  def ToolName(self):
+    return "memcheck"
+
+  def ExtendOptionParser(self, parser):
+    ValgrindTool.ExtendOptionParser(self, parser)
+    parser.add_option("", "--suppressions", default=[],
+                      action="append",
+                      help="path to a valgrind suppression file")
+    parser.add_option("", "--show_all_leaks", action="store_true",
+                      default=False,
+                      help="also show less blatant leaks")
+    parser.add_option("", "--track_origins", action="store_true",
+                      default=False,
+                      help="Show whence uninitialized bytes came. 30% slower.")
+
+  def ToolSpecificFlags(self):
+    ret = ["--leak-check=full"]
+
+    if self._options.show_all_leaks:
+      ret += ["--show-reachable=yes"];
+
+    if self._options.track_origins:
+      ret += ["--track-origins=yes"];
+
+    """Either generate suppressions or load them.
+    TODO(dkegel): enhance valgrind to support generating
+    suppressions in xml mode.  See
+    http://bugs.kde.org/show_bug.cgi?id=191189
+    """
+    if self._generate_suppressions:
+      ret += ["--gen-suppressions=all"]
+    else:
+      ret += ["--xml=yes"]
+
+    return ret
+
+  def Analyze(self):
+    # Glob all the files in the "valgrind.tmp" directory
+    filenames = glob.glob(self.TMP_DIR + "/memcheck.*")
+
+    # TODO(dkegel): use new xml suppressions feature when it lands
+    if self._generate_suppressions:
+      # Just concatenate all the output files.  Lame...
+      for filename in filenames:
+        print "## %s" % filename
+        f = file(filename)
+        while True:
+          line = f.readline()
+          if len(line) == 0:
+            break
+          print line, # comma means don't add newline
+        f.close()
+      return 0
+    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks)
+    return analyzer.Report()
+
+class ThreadSanitizer(ValgrindTool):
+  """ThreadSanitizer"""
+
+  def __init__(self):
+    ValgrindTool.__init__(self)
+
+  def ToolName(self):
+    return "tsan"
+
+  def ExtendOptionParser(self, parser):
+    ValgrindTool.ExtendOptionParser(self, parser)
+    parser.add_option("", "--suppressions", default=[],
+                      action="append",
+                      help="path to a valgrind suppression file")
+    parser.add_option("", "--pure-happens-before", default="yes",
+                      dest="pure_happens_before",
+                      help="Less false reports, more missed races")
+    parser.add_option("", "--announce-threads", default="yes",
+                      dest="announce_threads",
+                      help="Show the the stack traces of thread creation")
+
+  def EvalBoolFlag(self, flag_value):
+    if (flag_value in ["1", "true", "yes"]):
+      return True
+    elif (flag_value in ["0", "false", "no"]):
+      return False
+    raise RuntimeError, "Can't parse flag value (%s)" % flag_value
+
+  def ToolSpecificFlags(self):
+    ret = ["--ignore=%s" % \
+           os.path.join(self._source_dir,
+                        "tools", "valgrind", "tsan", "ignores.txt")]
+    ret += ["--file-prefix-to-cut=%s/" % self._source_dir]
+
+    if self.EvalBoolFlag(self._options.pure_happens_before):
+      ret += ["--pure-happens-before=yes"];
+
+    if self.EvalBoolFlag(self._options.announce_threads):
+      ret += ["--announce-threads"]
+
+    return ret
+
+  def Analyze(self):
+    filenames = glob.glob(self.TMP_DIR + "/tsan.*")
+    analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames)
+    return analyzer.Report()
+
+
+class ToolFactory:
+  def Create(self, tool_name):
+    if tool_name == "memcheck":
+      return Memcheck()
+    if tool_name == "tsan":
+      if sys.platform != 'linux2':
+        logging.info("WARNING: ThreadSanitizer is not working yet on Mac")
+      return ThreadSanitizer()
+    raise RuntimeError, "Unknown tool" \
+                        "(tool=%s, platform=%s)" % \
+                        (tool_name, sys.platform)
+
+def RunTool(argv):
+  # TODO(timurrrr): customize optparse instead
+  tool_name = "memcheck"
+  args = argv[1:]
+  for arg in args:
+    if arg.startswith("--tool="):
+      tool_name = arg[7:]
+      args.remove(arg)
+      break
+
+  tool = ToolFactory().Create(tool_name)
+  return tool.Main(args)
+
 if __name__ == "__main__":
-  if sys.platform == 'darwin': # Mac
-    valgrind = ValgrindMac()
-    retcode = valgrind.Main()
-    sys.exit(retcode)
-  elif sys.platform == 'linux2': # Linux
-    valgrind = ValgrindLinux()
-    retcode = valgrind.Main()
-    sys.exit(retcode)
+  if sys.argv.count("-v") > 0 or sys.argv.count("--verbose") > 0:
+    google.logging_utils.config_root(logging.DEBUG)
   else:
-    logging.error("Unknown platform: %s" % sys.platform)
-    sys.exit(1)
+    google.logging_utils.config_root()
+  # TODO(timurrrr): valgrind tools may use -v/--verbose as well
+
+  ret = RunTool(sys.argv)
+  sys.exit(ret)

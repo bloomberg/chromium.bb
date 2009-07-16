@@ -1,0 +1,39 @@
+# This file lists the functions, object files and source files
+# which should be ignored (i.e. not instrumented) by ThreadSanitizer.
+
+obj:*/ld-2*
+obj:*/libpthread-*
+
+fun:clone
+fun:fork
+fun:pthread_*
+fun:__lll_mutex_unlock_wake
+fun:__cxa_atexit
+fun:__new_exitfn
+
+src:*ts_valgrind_intercepts.c
+
+# Chromium-specific
+fun:*_ZN4base6subtle*
+
+
+# dark magic with 'errno' here.
+#fun:sys_ptrace_detach
+#fun:sys_ptrace
+#fun:sys_stat
+fun:sys_*
+
+# ignore libc's printf functions
+fun:_IO_*
+fun:vfprintf
+fun:fwrite
+fun:fflush
+
+
+# 32-bit version of std::string
+# There is something very strange inside this function.
+# Looks like they write zero to a global variable which
+# value is already zero. I.e. the race is benign.
+# Global var is _ZNSs4_Rep20_S_empty_rep_storageE
+fun:*_M_mutateEjjj
+

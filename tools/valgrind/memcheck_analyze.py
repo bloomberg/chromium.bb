@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# valgrind_analyze.py
+# memcheck_analyze.py
 
 ''' Given a valgrind XML file, parses errors and uniques them.'''
 
@@ -176,7 +176,7 @@ class ValgrindError:
   def __eq__(self, rhs):
     return self.UniqueString() == rhs
 
-class ValgrindAnalyze:
+class MemcheckAnalyze:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
   unique them and output the results.'''
 
@@ -192,6 +192,7 @@ class ValgrindAnalyze:
     self._errors = set()
     badfiles = set()
     start = time.time()
+    self._parse_failed = False
     for file in files:
       # Wait up to three minutes for valgrind to finish writing all files,
       # but after that, just skip incomplete files and warn.
@@ -217,6 +218,7 @@ class ValgrindAnalyze:
                 getTextOf(raw_error, "kind") != "Leak_PossiblyLost"):
               self._errors.add(ValgrindError(source_dir, raw_error))
         except ExpatError, e:
+          self._parse_failed = True
           logging.warn("could not parse %s: %s" % (file, e))
           lineno = e.lineno - 1
           context_lines = 5
@@ -237,6 +239,10 @@ class ValgrindAnalyze:
       logging.warn("valgrind didn't finish writing %d files?!" % len(badfiles))
 
   def Report(self):
+    if self._parse_failed:
+      logging.error("FAIL! Couldn't parse Valgrind output file")
+      return -2
+
     if self._errors:
       logging.error("FAIL! There were %s errors: " % len(self._errors))
 
@@ -249,7 +255,7 @@ class ValgrindAnalyze:
     return 0
 
 def _main():
-  '''For testing only. The ValgrindAnalyze class should be imported instead.'''
+  '''For testing only. The MemcheckAnalyze class should be imported instead.'''
   retcode = 0
   parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
   parser.add_option("", "--source_dir",
@@ -261,7 +267,7 @@ def _main():
     parser.error("no filename specified")
   filenames = args
 
-  analyzer = ValgrindAnalyze(options.source_dir, filenames)
+  analyzer = MemcheckAnalyze(options.source_dir, filenames)
   retcode = analyzer.Report()
 
   sys.exit(retcode)
