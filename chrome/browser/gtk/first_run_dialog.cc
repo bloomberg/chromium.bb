@@ -155,13 +155,18 @@ void FirstRunDialog::OnDialogResponse(GtkWidget* widget, int response) {
           importer_host_->GetSourceProfileInfoAt(
           gtk_combo_box_get_active(GTK_COMBO_BOX(import_profile_)));
       int items = SEARCH_ENGINES + HISTORY + FAVORITES + HOME_PAGE + PASSWORDS;
-      // TODO(port): Call StartImportingWithUI here instead and launch
-      // a new process that does the actual import.
-      importer_host_->StartImportSettings(source_profile, profile_, items,
-                                          new ProfileWriter(profile_), true);
+      // TODO(port): Should we do the actual import in a new process like
+      // Windows?
+      StartImportingWithUI(GTK_WINDOW(dialog_), items, importer_host_.get(),
+                           source_profile, profile_, this, true);
+    } else {
+      // We are done, so close Window.
+      FirstRunDone();
     }
   }
+}
 
+void FirstRunDialog::FirstRunDone() {
   // Set preference to show first run bubble and welcome page.
   FirstRun::SetShowFirstRunBubblePref();
   FirstRun::SetShowWelcomePagePref();

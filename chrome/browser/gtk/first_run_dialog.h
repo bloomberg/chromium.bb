@@ -8,10 +8,18 @@
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer.h"
 
-class FirstRunDialog {
+class FirstRunDialog : public ImportObserver {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
   static bool Show(Profile* profile);
+
+  // Overridden methods from ImportObserver.
+  virtual void ImportCanceled() {
+    FirstRunDone();
+  }
+  virtual void ImportComplete() {
+    FirstRunDone();
+  }
 
  private:
   FirstRunDialog(Profile* profile, int& response);
@@ -23,6 +31,11 @@ class FirstRunDialog {
     user_data->OnDialogResponse(widget, response);
   }
   void OnDialogResponse(GtkWidget* widget, int response);
+
+  // This method closes the first run window and quits the message loop so that
+  // the Chrome startup can continue. This should be called when all the
+  // first run tasks are done.
+  void FirstRunDone();
 
   // First Run UI Dialog
   GtkWidget* dialog_;
