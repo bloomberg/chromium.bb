@@ -61,7 +61,8 @@ void BlacklistStoreOutput::StoreEntry(const std::string& pattern,
 
 uint32 BlacklistStoreInput::ReadUInt() {
   char buf[sizeof(uint32)];
-  fread(buf, 1, sizeof(uint32), file_);
+  if (fread(buf, 1, sizeof(uint32), file_) != sizeof(uint32))
+    return 0;
   return *reinterpret_cast<uint32*>(buf);
 }
 
@@ -74,13 +75,13 @@ std::string BlacklistStoreInput::ReadString() {
   }
 
   char buf[8192];
-  fread(buf, 1, size, file_);
+  if (fread(buf, 1, size, file_) != size)
+    return std::string();
   return std::string(buf, size);
 }
 
 BlacklistStoreInput::BlacklistStoreInput(FILE* file) : file_(file) {
-  char buf[sizeof(cookie)];
-  fread(buf, 1, sizeof(cookie), file_);
+  fseek(file_, sizeof(cookie), SEEK_CUR);
 }
 
 BlacklistStoreInput::~BlacklistStoreInput() {
