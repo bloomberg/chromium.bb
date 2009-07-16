@@ -632,6 +632,7 @@ o3djs.util.toAbsoluteUri = function(uri) {
 
 /**
  * The script URIs.
+ * @private
  * @type {!Array.<string>}
  */
 o3djs.util.scriptUris_ = [];
@@ -669,6 +670,7 @@ o3djs.util.isScriptUri = function(uri) {
  * Concatenate the text of all the script tags in the document and invokes
  * the callback when complete. This function is asynchronous if any of the
  * script tags reference JavaScript through a URI.
+ * @private
  * @return {string} The script tag text.
  */
 o3djs.util.getScriptTagText_ = function() {

@@ -40,6 +40,7 @@ import types
 import glob
 import subprocess
 import shutil
+import re
 
 
 _java_exe = ''
@@ -140,7 +141,7 @@ def RunNixysa(idl_files, generate, output_dir, nixysa_options):
 
 
 def RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, prefix, mode,
-                    baseURL, topURL):
+                    baseURL, topURL, exports_file):
   """Executes the JSDocToolkit."""
   list_filename = MakePath('../scons-out/docs/obj/doclist.conf')
   f = open(list_filename, 'w')
@@ -150,6 +151,7 @@ def RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, prefix, mode,
   f.write('topURL: "%s",\n' % topURL)
   f.write('mode: "%s",\n' % mode)
   f.write('htmlOutDir: "%s",\n' % html_output_dir.replace('\\', '/'))
+  f.write('exportsFile: "%s",\n' % exports_file.replace('\\', '/'))
   f.write('endMarker: ""\n')
   f.write('},\n')
   f.write('_: [\n')
@@ -170,6 +172,10 @@ def RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, prefix, mode,
     '-c=' + list_filename])
 
 
+def DeleteOldDocs(docs_js_outpath):
+  shutil.rmtree(docs_js_outpath);
+
+
 def BuildJavaScriptForDocsFromIDLs(idl_files, output_dir):
   RunNixysa(idl_files, 'jsheader', output_dir, ['--properties-equal-undefined'])
 
@@ -183,12 +189,12 @@ def BuildJavaScriptForExternsFromIDLs(idl_files, output_dir):
 
 def BuildO3DDocsFromJavaScript(js_files, ezt_output_dir, html_output_dir):
   RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir,
-                  'classo3d_1_1_', 'o3d', '', '')
+                  'classo3d_1_1_', 'o3d', '', '', '')
 
 
-def BuildO3DJSDocs(js_files, ezt_output_dir, html_output_dir):
+def BuildO3DJSDocs(js_files, ezt_output_dir, html_output_dir, exports_file):
   RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_0_1_', 'o3djs',
-                  'jsdocs/', '../')
+                  'jsdocs/', '../', exports_file)
 
 
 def BuildO3DExternsFile(js_files_dir, extra_externs_file, externs_file):
@@ -209,7 +215,7 @@ def BuildCompiledO3DJS(o3djs_files,
   Execute([
     _java_exe,
     '-jar',
-    MakePath('JSCompiler_deploy.jar'),
+    MakePath('../../o3d-internal/jscomp/JSCompiler_deploy.jar'),
     '--property_renaming', 'OFF',
     '--variable_renaming', 'LOCAL',
     '--remove_dead_assignments', 'false',
@@ -220,10 +226,11 @@ def BuildCompiledO3DJS(o3djs_files,
     #
     '--collapse_variable_declarations', 'false',
     '--disable_function_inline', 'true',
+    '--noextract_prototype_member_decl', 'true',
     #'--disable_convert_to_dotted_properties', 'true',
     #'--inline_functions', 'false',
     # TODO(gman): Remove the flags below once the compiled js actually works.
-    #'--pretty_print',
+    '--pretty_print',
     #'--print_input_delimiter', 'true',
     #'--strip_whitespace_and_comments_only', 'true',
     ##'--logging_level', '',
@@ -232,6 +239,16 @@ def BuildCompiledO3DJS(o3djs_files,
     ('--externs=%s' % o3d_externs_js_path),
     ('--js_output_file=%s' % compiled_o3djs_outpath)] +
     ['-js=%s' % (x, ) for x in o3djs_files]);
+
+  # strip out goog.exportSymbol and o3djs.require stuff
+  file = open(compiled_o3djs_outpath, 'r')
+  contents = file.read()
+  file.close()
+  contents = re.sub(r'goog.exportSymbol\([^\)]*\);\n', '', contents)
+  contents = re.sub(r'o3djs.require\([^\)]*\);\n', '', contents)
+  file = open(compiled_o3djs_outpath, 'w')
+  file.write(contents)
+  file.close()
 
 
 def CopyStaticFiles(o3d_docs_ezt_outpath, o3d_docs_html_outpath):
@@ -268,6 +285,7 @@ def main():
   o3djs_docs_ezt_outpath = MakePath(docs_outpath + 'reference/jsdocs')
   o3djs_docs_html_outpath = MakePath(docs_outpath + 'local_html/jsdocs')
   o3d_externs_path = MakePath(outpath + 'o3d-externs.js')
+  o3djs_exports_path = MakePath(outpath + 'o3d-exports.js')
   compiled_o3djs_outpath = MakePath(docs_outpath + 'base.js')
   externs_path = MakePath('externs/externs.js')
   o3d_extra_externs_path = MakePath('externs/o3d-extra-externs.js')
@@ -288,6 +306,7 @@ def main():
                        os.path.splitext(os.path.basename(f))[0] + '.js')
                    for f in GlobalsDict['O3D_IDL_SOURCES']]
 
+  DeleteOldDocs(MakePath(docs_outpath))
   BuildJavaScriptForDocsFromIDLs(idl_files, docs_js_outpath)
   BuildO3DDocsFromJavaScript([o3d_extra_externs_path] + docs_js_files,
                              o3d_docs_ezt_outpath, o3d_docs_html_outpath)
@@ -296,9 +315,9 @@ def main():
                       o3d_extra_externs_path,
                       o3d_externs_path)
   BuildO3DJSDocs(o3djs_files + [o3d_externs_path], o3djs_docs_ezt_outpath,
-                 o3djs_docs_html_outpath)
+                 o3djs_docs_html_outpath, o3djs_exports_path)
   CopyStaticFiles(o3d_docs_ezt_outpath, o3d_docs_html_outpath)
-  BuildCompiledO3DJS(o3djs_files,
+  BuildCompiledO3DJS(o3djs_files + [o3djs_exports_path],
                      externs_path,
                      o3d_externs_path,
                      compiled_o3djs_outpath)

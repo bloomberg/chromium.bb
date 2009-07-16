@@ -85,6 +85,7 @@ function publishInternal(symbolSet) {
     outDir: JSDOC.opt.d,
     templatesDir: JSDOC.opt.t,
     symbolsDir: '',
+    exportsFile: JSDOC.opt.D.exportsFile,
     prefix: JSDOC.opt.D.prefix,
     mode: JSDOC.opt.D.mode};
   publish.conf.srcDir = publish.conf.outDir + 'src/';
@@ -93,12 +94,19 @@ function publishInternal(symbolSet) {
   g_topURL = JSDOC.opt.D.topURL;
   g_outputMode = JSDOC.opt.D.mode;
 
+  for (var key in publish.conf) {
+    print ("publish.conf." + key + ": " + publish.conf[key])
+  }
+
   if (publish.conf.mode == 'o3djs') {
     g_o3djsMode = true;
   }
 
   // In o3djs mode, don't generate docs for these.
   g_skipRE = new RegExp('^(o3d$|o3d\\.|Vectormath)');
+
+  // Symbols we should always skip.
+  var alwaysSkipRE = new RegExp('^(_global_|VectorMath|Aos)');
 
   // is source output is suppressed, just display the links to the source file
   if (JSDOC.opt.s && defined(Link) && Link.prototype._makeSrcLink) {
@@ -124,7 +132,7 @@ function publishInternal(symbolSet) {
   try {
     var templatesDir = publish.conf.templatesDir;
     var classTemplate = new JSDOC.JsPlate(templatesDir + 'class.tmpl');
-    //var exportsTemplate = new JSDOC.JsPlate(templatesDir + 'exports.tmpl');
+    var exportsTemplate = new JSDOC.JsPlate(templatesDir + 'exports.tmpl');
     var membersTemplate = new JSDOC.JsPlate(templatesDir + 'members.tmpl');
     var classTreeTemplate = new JSDOC.JsPlate(templatesDir + 'classtree.tmpl');
     var fileListTemplate = new JSDOC.JsPlate(templatesDir + 'filelist.tmpl');
@@ -164,6 +172,7 @@ function publishInternal(symbolSet) {
   // get a list of all the classes in the symbolset
   var classes = symbols.filter(isaClass).sort(makeSortby('alias'));
   var filteredClasses = [];
+  var exports = '';
 
   // create each of the class pages
   for (var i = 0, l = classes.length; i < l; i++) {
@@ -173,7 +182,8 @@ function publishInternal(symbolSet) {
     symbol.events = symbol.getEvents();   // 1 order matters
     symbol.methods = symbol.getMethods(); // 2
 
-    if (g_o3djsMode && g_skipRE.test(symbol.alias)) {
+    if ((g_o3djsMode && g_skipRE.test(symbol.alias)) ||
+        alwaysSkipRE.test(symbol.alias)) {
       print('Skipping docs for  : ' + symbol.alias);
       continue;
     }
@@ -214,6 +224,10 @@ function publishInternal(symbolSet) {
                 (publish.conf.prefix + symbol.alias +
                  '_members.html').toLowerCase(),
                 output);
+
+    if (publish.conf.exportsFile) {
+      exports += exportsTemplate.process(symbol);
+    }
   }
 
   var classTree = classTreeTemplate.process(filteredClasses);
@@ -232,8 +246,16 @@ function publishInternal(symbolSet) {
   IO.saveFile(publish.conf.outDir, 'namespaces' + publish.conf.ext, namespaces);
   IO.saveFile(publish.conf.htmlDir, 'namespaces.html', namespaces);
 
-  //var exports = exportsTemplate.process(symbols);
-  //IO.saveFile(publish.conf.outDir, 'exports.js', fileList);
+  if (publish.conf.exportsFile) {
+    print("Writing exports: " + publish.conf.exportsFile);
+    var blankLineRE = /\n *\n/gm;
+    while (blankLineRE.test(exports)) {
+      exports = exports.replace(blankLineRE, '\n');
+    }
+    var parts = publish.conf.exportsFile.replace('\\', '/').
+                match(/(.*?)\/([^\/]+)$/);
+    IO.saveFile(parts[1], parts[2], exports);
+  }
 }
 
 /**
@@ -909,6 +931,21 @@ function getDocName(parent, child) {
     return child.memberOf + "." + child.name;
   }
   return parent.name + "." + child.name;
+}
+
+/**
+ * Gets a symbol name for export. If the method or property is static returns
+ * "Namespace.Class.method". If not returns "Namespace.Class.prototype.method".
+ * @param {!Symbol} symbol Symbol to get name for.
+ * @return {string} Name of symbol.
+ */
+function getSymbolNameForExport(symbol) {
+  if (!symbol.memberOf) {
+    return symbol.name;
+  }
+  return symbol.memberOf +
+         ((symbol.isStatic || symbol.isNamespace) ? '.' : '.prototype.') +
+         symbol.name;
 }
 
 /**

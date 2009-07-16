@@ -167,34 +167,47 @@ o3djs.canvas.CanvasInfo = function(pack, root, viewInfo) {
    */
   this.root = root;
 
-  // Create the Effect object shared by all CanvasQuad instances.
-  this.effect = this.pack.createObject('Effect');
-  this.effect.loadFromFXString(o3djs.canvas.FX_STRING);
+  /**
+   * The Effect object shared by all CanvasQuad instances.
+   * @type {!o3d.Effect}
+   */
+  this.effect_ = this.pack.createObject('Effect');
+  this.effect_.loadFromFXString(o3djs.canvas.FX_STRING);
 
-  // Create two materials:  One used for canvases with transparent content
-  // and one for opaque canvases.
-  this.transparentMaterial = this.pack.createObject('Material');
-  this.opaqueMaterial = this.pack.createObject('Material');
+  /**
+   * Material for canvases with transparent content
+   * @type {!o3d.Material}
+   */
+  this.transparentMaterial_ = this.pack.createObject('Material');
 
-  this.transparentMaterial.effect = this.effect;
-  this.opaqueMaterial.effect = this.effect;
+  /**
+   * Material for canvases with opaque content.
+   * @type {!o3d.Material}
+   */
+  this.opaqueMaterial_ = this.pack.createObject('Material');
 
-  this.transparentMaterial.drawList = viewInfo.zOrderedDrawList;
-  this.opaqueMaterial.drawList = viewInfo.performanceDrawList;
+  this.transparentMaterial_.effect = this.effect_;
+  this.opaqueMaterial_.effect = this.effect_;
 
-  // Create a state object to handle the transparency blending mode
-  // for transparent canvas quads.
-  // The canvas bitmap already multiplies the color values by alpha.  In order
-  // to avoid a black halo around text drawn on a transparent background we
-  // need to set the blending mode as follows.
-  this.transparentState = this.pack.createObject('State');
-  this.transparentState.getStateParam('AlphaBlendEnable').value = true;
-  this.transparentState.getStateParam('SourceBlendFunction').value =
+  this.transparentMaterial_.drawList = viewInfo.zOrderedDrawList;
+  this.opaqueMaterial_.drawList = viewInfo.performanceDrawList;
+
+  /**
+   * State object to handle the transparency blending mode
+   * for transparent canvas quads.
+   * The canvas bitmap already multiplies the color values by alpha.  In order
+   * to avoid a black halo around text drawn on a transparent background we
+   * need to set the blending mode as follows.
+   * @type {!o3d.State}
+   */
+  this.transparentState_ = this.pack.createObject('State');
+  this.transparentState_.getStateParam('AlphaBlendEnable').value = true;
+  this.transparentState_.getStateParam('SourceBlendFunction').value =
       o3djs.base.o3d.State.BLENDFUNC_ONE;
-  this.transparentState.getStateParam('DestinationBlendFunction').value =
+  this.transparentState_.getStateParam('DestinationBlendFunction').value =
       o3djs.base.o3d.State.BLENDFUNC_INVERSE_SOURCE_ALPHA;
 
-  this.transparentMaterial.state = this.transparentState;
+  this.transparentMaterial_.state = this.transparentState_;
 
   // Create 2d plane shapes. createPlane makes an XZ plane by default
   // so we pass in matrix to rotate it to an XY plane. We could do
@@ -206,7 +219,7 @@ o3djs.canvas.CanvasInfo = function(pack, root, viewInfo) {
    */
   this.transparentQuadShape = o3djs.primitives.createPlane(
       this.pack,
-      this.transparentMaterial,
+      this.transparentMaterial_,
       1,
       1,
       1,
@@ -222,7 +235,7 @@ o3djs.canvas.CanvasInfo = function(pack, root, viewInfo) {
    */
   this.opaqueQuadShape = o3djs.primitives.createPlane(
       this.pack,
-      this.opaqueMaterial,
+      this.opaqueMaterial_,
       1,
       1,
       1,
@@ -261,6 +274,10 @@ o3djs.canvas.CanvasQuad = function(canvasInfo,
                                    height,
                                    transparent,
                                    opt_parent) {
+  /**
+   * The CanvasInfo managing this CanvasQuad
+   * @type {!o3djs.canvas.CanvasInfo}
+   */
   this.canvasInfo = canvasInfo;
   var parentTransform = opt_parent || canvasInfo.root;
 

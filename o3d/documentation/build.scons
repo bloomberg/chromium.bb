@@ -55,24 +55,23 @@ DOCSGEN_ARGS = ['$JSDOC_DIR/build_docs.py $JAVA_EXE']
 
 env["BUILDERS"]["JSDocs"] = Builder(action=env.Python(DOCSGEN_ARGS))
 
-# index.ezt is a file that the jsdoctoolkit happens to build.
-# Putting it in jsdocs means that will be our target dir for the rest
-# of the files.
-env.JSDocs('base.js', LOCAL_JS_SOURCES + LOCAL_IDL_SOURCES +
-           ['$JSDOC_EZT_TEMPLATE_DIR/annotated.tmpl',
-            '$JSDOC_EZT_TEMPLATE_DIR/class.tmpl',
-            '$JSDOC_EZT_TEMPLATE_DIR/classtree.tmpl',
-            '$JSDOC_EZT_TEMPLATE_DIR/filelist.tmpl',
-            '$JSDOC_EZT_TEMPLATE_DIR/members.tmpl',
-            '$JSDOC_EZT_TEMPLATE_DIR/namespaces.tmpl',
-            '$JSDOC_EZT_TEMPLATE_DIR/publish.js',
-            '$JSDOC_EZT_TEMPLATE_DIR/static/header.html',
-            '$JSDOC_EZT_TEMPLATE_DIR/static/footer.html',
-            '$JSDOC_EZT_TEMPLATE_DIR/static/stylesheet.css',
-            '$JSDOC_EZT_TEMPLATE_DIR/static/tabs.css',
-            '$JSDOC_EZT_TEMPLATE_DIR/static/tab_l.gif',
-            '$JSDOC_EZT_TEMPLATE_DIR/static/tab_r.gif',
-            '$JSDOC_EZT_TEMPLATE_DIR/static/tab_b.gif',
-            '$JSDOC_EXTERNS_DIR/externs.js',
-            '$JSDOC_EXTERNS_DIR/o3d-extra-externs.js',
-            '$JSDOC_DIR/build_docs.py'])
+JSCOMP_PATH = "$SCONSTRUCT_DIR/../o3d-internal/jscomp/JSCompiler_deploy.jar"
+if os.path.exists(env.subst(JSCOMP_PATH)):
+  env.JSDocs('base.js', LOCAL_JS_SOURCES + LOCAL_IDL_SOURCES +
+             ['$JSDOC_EZT_TEMPLATE_DIR/annotated.tmpl',
+              '$JSDOC_EZT_TEMPLATE_DIR/class.tmpl',
+              '$JSDOC_EZT_TEMPLATE_DIR/classtree.tmpl',
+              '$JSDOC_EZT_TEMPLATE_DIR/filelist.tmpl',
+              '$JSDOC_EZT_TEMPLATE_DIR/members.tmpl',
+              '$JSDOC_EZT_TEMPLATE_DIR/namespaces.tmpl',
+              '$JSDOC_EZT_TEMPLATE_DIR/publish.js',
+              '$JSDOC_EZT_TEMPLATE_DIR/static/header.html',
+              '$JSDOC_EZT_TEMPLATE_DIR/static/footer.html',
+              '$JSDOC_EZT_TEMPLATE_DIR/static/stylesheet.css',
+              '$JSDOC_EZT_TEMPLATE_DIR/static/tabs.css',
+              '$JSDOC_EZT_TEMPLATE_DIR/static/tab_l.gif',
+              '$JSDOC_EZT_TEMPLATE_DIR/static/tab_r.gif',
+              '$JSDOC_EZT_TEMPLATE_DIR/static/tab_b.gif',
+              '$JSDOC_EXTERNS_DIR/externs.js',
+              '$JSDOC_EXTERNS_DIR/o3d-extra-externs.js',
+              '$JSDOC_DIR/build_docs.py'])
