@@ -88,8 +88,8 @@ class MoveTabFunction : public SyncExtensionFunction {
 class RemoveTabFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
 };
-class GetTabLanguageFunction : public AsyncExtensionFunction,
-                               public NotificationObserver {
+class DetectTabLanguageFunction : public AsyncExtensionFunction,
+                                  public NotificationObserver {
   virtual bool RunImpl();
 
  private:

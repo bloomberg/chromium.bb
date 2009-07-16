@@ -27,7 +27,7 @@ var chrome = chrome || {};
   native function UpdateTab();
   native function MoveTab();
   native function RemoveTab();
-  native function GetTabLanguage();
+  native function DetectTabLanguage();
   native function EnablePageAction();
   native function DisablePageAction();
   native function GetCurrentPageActions();
@@ -318,12 +318,12 @@ var chrome = chrome || {};
     chrome.types.optFun
   ];
 
-  chrome.tabs.getLanguage = function(tabId, callback) {
+  chrome.tabs.detectLanguage = function(tabId, callback) {
     validate(arguments, arguments.callee.params);
-    sendRequest(GetTabLanguage, tabId, callback);
+    sendRequest(DetectTabLanguage, tabId, callback);
   };
 
-  chrome.tabs.getLanguage.params = [
+  chrome.tabs.detectLanguage.params = [
     chrome.types.optPInt,
     chrome.types.optFun
   ];

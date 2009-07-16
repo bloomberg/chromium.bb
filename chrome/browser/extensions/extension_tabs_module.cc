@@ -615,7 +615,7 @@ bool RemoveTabFunction::RunImpl() {
   return true;
 }
 
-bool GetTabLanguageFunction::RunImpl() {
+bool DetectTabLanguageFunction::RunImpl() {
   int tab_id = 0;
   Browser* browser = NULL;
   TabContents* contents = NULL;
@@ -651,9 +651,9 @@ bool GetTabLanguageFunction::RunImpl() {
   return true;
 }
 
-void GetTabLanguageFunction::Observe(NotificationType type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void DetectTabLanguageFunction::Observe(NotificationType type,
+                                        const NotificationSource& source,
+                                        const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_LANGUAGE_DETERMINED);
   std::string language(*Details<std::string>(details).ptr());
   result_.reset(Value::CreateStringValue(language.c_str()));

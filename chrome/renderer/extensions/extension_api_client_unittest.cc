@@ -276,20 +276,20 @@ TEST_F(ExtensionAPIClientTest, GetTab) {
 }
 
 #if defined(OS_WIN)
-TEST_F(ExtensionAPIClientTest, GetTabLanguage) {
-  ExpectJsFail("chrome.tabs.getLanguage(32, function(){}, 20);",
+TEST_F(ExtensionAPIClientTest, DetectTabLanguage) {
+  ExpectJsFail("chrome.tabs.detectLanguage(32, function(){}, 20);",
                "Uncaught Error: Too many arguments.");
 
-  ExpectJsFail("chrome.tabs.getLanguage('abc', function(){});",
+  ExpectJsFail("chrome.tabs.detectLanguage('abc', function(){});",
                "Uncaught Error: Invalid value for argument 0. "
                "Expected 'integer' but got 'string'.");
 
-  ExpectJsFail("chrome.tabs.getLanguage(1, 1);",
+  ExpectJsFail("chrome.tabs.detectLanguage(1, 1);",
                "Uncaught Error: Invalid value for argument 1. "
                "Expected 'function' but got 'integer'.");
 
-  ExpectJsPass("chrome.tabs.getLanguage(null, function(){})",
-               "GetTabLanguage", "null");
+  ExpectJsPass("chrome.tabs.detectLanguage(null, function(){})",
+               "DetectTabLanguage", "null");
 }
 #endif
 

@@ -56,6 +56,6 @@ const char kCreateTabFunction[] = "CreateTab";
 const char kUpdateTabFunction[] = "UpdateTab";
 const char kMoveTabFunction[] = "MoveTab";
 const char kRemoveTabFunction[] = "RemoveTab";
-const char kGetTabLanguageFunction[] = "GetTabLanguage";
+const char kDetectTabLanguageFunction[] = "DetectTabLanguage";
 
 }  // namespace extension_tabs_module_constants

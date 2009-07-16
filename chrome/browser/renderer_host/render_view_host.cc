@@ -1074,9 +1074,10 @@ void RenderViewHost::OnDeterminePageTextReply(
 #if defined(OS_WIN) // Only for windows.
     int num_languages = 0;
     bool is_reliable = false;
-    const char* language_char = LanguageName(DetectLanguageOfUnicodeText(
-        page_text.c_str(), true, &is_reliable, &num_languages, NULL));
-    std::string language(language_char);
+    const char* language_iso_code = LanguageCodeISO639_1(
+        DetectLanguageOfUnicodeText(page_text.c_str(), true, &is_reliable,
+                                    &num_languages, NULL));
+    std::string language(language_iso_code);
     NotificationService::current()->Notify(
         NotificationType::TAB_LANGUAGE_DETERMINED,
         Source<RenderViewHost>(this),
