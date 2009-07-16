@@ -13,6 +13,7 @@
 #include "printing/native_metafile.h"
 #include "printing/units.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURL.h"
@@ -24,6 +25,8 @@
 #endif
 
 using WebKit::WebConsoleMessage;
+using WebKit::WebRect;
+using WebKit::WebScreenInfo;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
 
@@ -62,9 +65,9 @@ class PrepareFrameAndViewForPrint {
     print_layout_size.set_height(static_cast<int>(
         static_cast<double>(print_layout_size.height()) * 1.25));
 
-    prev_view_size_ = web_view->GetSize();
+    prev_view_size_ = web_view->size();
 
-    web_view->Resize(print_layout_size);
+    web_view->resize(print_layout_size);
 
     expected_pages_count_ = frame->PrintBegin(print_canvas_size_);
   }
@@ -79,7 +82,7 @@ class PrepareFrameAndViewForPrint {
 
   ~PrepareFrameAndViewForPrint() {
     frame_->PrintEnd();
-    web_view_->Resize(prev_view_size_);
+    web_view_->resize(prev_view_size_);
   }
 
  private:
@@ -230,7 +233,7 @@ void PrintWebViewHelper::DidFinishPrinting(bool success) {
   }
 
   if (print_web_view_.get()) {
-    print_web_view_->Close();
+    print_web_view_->close();
     print_web_view_.release();  // Close deletes object.
     print_pages_params_.reset();
   }
@@ -411,24 +414,28 @@ int32 PrintWebViewHelper::routing_id() {
   return render_view_->routing_id();
 }
 
+WebRect PrintWebViewHelper::windowRect() {
+  NOTREACHED();
+  return WebRect();
+}
+
+WebRect PrintWebViewHelper::windowResizerRect() {
+  NOTREACHED();
+  return WebRect();
+}
+
+WebRect PrintWebViewHelper::rootWindowRect() {
+  NOTREACHED();
+  return WebRect();
+}
+
+WebScreenInfo PrintWebViewHelper::screenInfo() {
+  NOTREACHED();
+  return WebScreenInfo();
+}
+
 void PrintWebViewHelper::DidStopLoading(WebView* webview) {
   DCHECK(print_pages_params_.get() != NULL);
   DCHECK_EQ(webview, print_web_view_.get());
   PrintPages(*print_pages_params_.get(), print_web_view_->GetMainFrame());
-}
-
-void PrintWebViewHelper::GetWindowRect(WebWidget* webwidget,
-                                       WebKit::WebRect* rect) {
-  NOTREACHED();
-}
-
-WebKit::WebScreenInfo PrintWebViewHelper::GetScreenInfo(WebWidget* webwidget) {
-  WebKit::WebScreenInfo info;
-  NOTREACHED();
-  return info;
-}
-
-bool PrintWebViewHelper::IsHidden(WebWidget* webwidget) {
-  NOTREACHED();
-  return true;
 }

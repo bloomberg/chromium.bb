@@ -46,9 +46,9 @@ MSVC_POP_WARNING();
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webpopupmenu_impl.h"
 #include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
-#include "webkit/glue/webwidget_impl.h"
 
 using WebCore::PopupContainer;
 using WebCore::PopupItem;
@@ -56,10 +56,12 @@ using WebCore::PopupItem;
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
+using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 using WebKit::WebURLRequest;
 using WebKit::WebVector;
+using WebKit::WebWidget;
 using WebKit::WrappedResourceRequest;
 
 // Callback class that's given to the WebViewDelegate during a file choose
@@ -110,16 +112,15 @@ void ChromeClientImpl::chromeDestroyed() {
 void ChromeClientImpl::setWindowRect(const WebCore::FloatRect& r) {
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate) {
-    WebCore::IntRect ir(r);
-    delegate->SetWindowRect(webview_,
-                            gfx::Rect(ir.x(), ir.y(), ir.width(), ir.height()));
+    delegate->setWindowRect(
+        webkit_glue::IntRectToWebRect(WebCore::IntRect(r)));
   }
 }
 
 WebCore::FloatRect ChromeClientImpl::windowRect() {
   WebRect rect;
   if (webview_->delegate()) {
-    webview_->delegate()->GetRootWindowRect(webview_, &rect);
+    rect = webview_->delegate()->rootWindowRect();
   } else {
     // These numbers will be fairly wrong. The window's x/y coordinates will
     // be the top left corner of the screen and the size will be the content
@@ -127,10 +128,7 @@ WebCore::FloatRect ChromeClientImpl::windowRect() {
     rect.width = webview_->size().width;
     rect.height = webview_->size().height;
   }
-  return WebCore::FloatRect(static_cast<float>(rect.x),
-                            static_cast<float>(rect.y),
-                            static_cast<float>(rect.width),
-                            static_cast<float>(rect.height));
+  return WebCore::FloatRect(webkit_glue::WebRectToIntRect(rect));
 }
 
 WebCore::FloatRect ChromeClientImpl::pageRect() {
@@ -154,7 +152,7 @@ float ChromeClientImpl::scaleFactor() {
 void ChromeClientImpl::focus() {
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate)
-    delegate->Focus(webview_);
+    delegate->didFocus();
 
   // If accessibility is enabled, we should notify assistive technology that the
   // active AccessibilityObject changed.
@@ -182,7 +180,7 @@ void ChromeClientImpl::focus() {
 void ChromeClientImpl::unfocus() {
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate)
-    delegate->Blur(webview_);
+    delegate->didBlur();
 }
 
 bool ChromeClientImpl::canTakeFocus(WebCore::FocusDirection) {
@@ -257,13 +255,13 @@ void ChromeClientImpl::show() {
         !resizable_ ||
         !delegate->WasOpenedByUserGesture();
 
-    WindowOpenDisposition disposition = NEW_FOREGROUND_TAB;
+    WebNavigationPolicy policy = WebKit::WebNavigationPolicyNewForegroundTab;
     if (as_popup)
-      disposition = NEW_POPUP;
+      policy = WebKit::WebNavigationPolicyNewPopup;
     if (CurrentEventShouldCauseBackgroundTab(WebViewImpl::current_input_event()))
-      disposition = NEW_BACKGROUND_TAB;
+      policy = WebKit::WebNavigationPolicyNewBackgroundTab;
 
-    delegate->Show(webview_, disposition);
+    delegate->show(policy);
   }
 }
 
@@ -274,7 +272,7 @@ bool ChromeClientImpl::canRunModal() {
 void ChromeClientImpl::runModal() {
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate)
-    delegate->RunModal(webview_);
+    delegate->runModal();
 }
 
 void ChromeClientImpl::setToolbarsVisible(bool value) {
@@ -357,7 +355,7 @@ void ChromeClientImpl::closeWindowSoon() {
 
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate)
-    delegate->CloseWidgetSoon(webview_);
+    delegate->closeWidgetSoon();
 }
 
 // Although a WebCore::Frame is passed in, we don't actually use it, since we
@@ -434,9 +432,8 @@ bool ChromeClientImpl::tabsToLinks() const {
 WebCore::IntRect ChromeClientImpl::windowResizerRect() const {
   WebCore::IntRect result;
   if (webview_->delegate()) {
-    WebRect resizer_rect;
-    webview_->delegate()->GetRootWindowResizerRect(webview_, &resizer_rect);
-    result = webkit_glue::WebRectToIntRect(resizer_rect);
+    result = webkit_glue::WebRectToIntRect(
+        webview_->delegate()->windowResizerRect());
   }
   return result;
 }
@@ -449,8 +446,7 @@ void ChromeClientImpl::repaint(
     return;
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate)
-    delegate->DidInvalidateRect(webview_,
-                                webkit_glue::IntRectToWebRect(paint_rect));
+    delegate->didInvalidateRect(webkit_glue::IntRectToWebRect(paint_rect));
 }
 
 void ChromeClientImpl::scroll(
@@ -460,8 +456,8 @@ void ChromeClientImpl::scroll(
   if (delegate) {
     int dx = scroll_delta.width();
     int dy = scroll_delta.height();
-    delegate->DidScrollRect(webview_, dx, dy,
-                            webkit_glue::IntRectToWebRect(clip_rect));
+    delegate->didScrollRect(
+        dx, dy, webkit_glue::IntRectToWebRect(clip_rect));
   }
 }
 
@@ -477,8 +473,7 @@ WebCore::IntRect ChromeClientImpl::windowToScreen(
 
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate) {
-    WebRect window_rect;
-    delegate->GetWindowRect(webview_, &window_rect);
+    WebRect window_rect = delegate->windowRect();
     screen_rect.move(window_rect.x, window_rect.y);
   }
 
@@ -567,7 +562,7 @@ void ChromeClientImpl::popupOpened(PopupContainer* popup_container,
     webwidget = delegate->CreatePopupWidget(webview_, activatable);
   }
 
-  static_cast<WebWidgetImpl*>(webwidget)->Init(
+  static_cast<WebPopupMenuImpl*>(webwidget)->Init(
       popup_container, webkit_glue::IntRectToWebRect(bounds));
 }
 
@@ -579,7 +574,7 @@ void ChromeClientImpl::SetCursor(const WebCursorInfo& cursor) {
 
   WebViewDelegate* delegate = webview_->delegate();
   if (delegate)
-    delegate->SetCursor(webview_, cursor);
+    delegate->didChangeCursor(cursor);
 }
 
 void ChromeClientImpl::SetCursorForPlugin(const WebCursorInfo& cursor) {

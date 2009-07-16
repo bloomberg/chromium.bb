@@ -17,7 +17,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/property_bag.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "webkit/glue/webtextdirection.h"
+#include "webkit/api/public/WebTextDirection.h"
 
 namespace gfx {
 class Rect;
@@ -280,7 +280,7 @@ class RenderWidgetHost : public IPC::Channel::Listener {
   // NotifyTextDirection(). (We may receive keydown events even after we
   // canceled updating the text direction because of auto-repeat.)
   // Note: we cannot undo this change for compatibility with Firefox and IE.
-  void UpdateTextDirection(WebTextDirection direction);
+  void UpdateTextDirection(WebKit::WebTextDirection direction);
   void CancelUpdateTextDirection();
   void NotifyTextDirection();
 
@@ -307,7 +307,7 @@ class RenderWidgetHost : public IPC::Channel::Listener {
   //   (on Windows);
   // * when it receives a "preedit_changed" signal of GtkIMContext (on Linux);
   // * when markedText of NSTextInput is called (on Mac).
-  void ImeSetComposition(const std::wstring& ime_string,
+  void ImeSetComposition(const string16& ime_string,
                          int cursor_position,
                          int target_start,
                          int target_end);
@@ -318,7 +318,7 @@ class RenderWidgetHost : public IPC::Channel::Listener {
   //   (on Windows);
   // * when it receives a "commit" signal of GtkIMContext (on Linux);
   // * when insertText of NSTextInput is called (on Mac).
-  void ImeConfirmComposition(const std::wstring& ime_string);
+  void ImeConfirmComposition(const string16& ime_string);
 
   // Cancels an ongoing composition.
   void ImeCancelComposition();
@@ -507,7 +507,7 @@ class RenderWidgetHost : public IPC::Channel::Listener {
 
   // Set when we update the text direction of the selected input element.
   bool text_direction_updated_;
-  WebTextDirection text_direction_;
+  WebKit::WebTextDirection text_direction_;
 
   // Set when we cancel updating the text direction.
   // This flag also ignores succeeding update requests until we call

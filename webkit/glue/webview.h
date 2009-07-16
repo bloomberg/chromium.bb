@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "webkit/glue/webwidget.h"
+#include "webkit/api/public/WebWidget.h"
 
 namespace WebKit {
 class WebDragData;
@@ -42,7 +42,7 @@ class WebViewDelegate;
 //  user interface elements in those windows, monitoring the progress of loads,
 //  monitoring URL changes, and making determinations about how content of
 //  certain types should be handled.
-class WebView : public WebWidget {
+class WebView : public WebKit::WebWidget {
  public:
   WebView() {}
   virtual ~WebView() {}

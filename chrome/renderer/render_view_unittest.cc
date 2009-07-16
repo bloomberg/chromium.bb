@@ -10,7 +10,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/api/public/WebURLError.h"
 
+using WebKit::WebCompositionCommand;
+using WebKit::WebTextDirection;
 using WebKit::WebURLError;
+
+static WebCompositionCommand ToCompositionCommand(int string_type) {
+  switch (string_type) {
+    default:
+      NOTREACHED();
+    case -1:
+      return WebKit::WebCompositionCommandDiscard;
+    case 0:
+      return WebKit::WebCompositionCommandSet;
+    case 1:
+      return WebKit::WebCompositionCommandConfirm;
+  }
+}
 
 TEST_F(RenderViewTest, OnLoadAlternateHTMLText) {
   // Test a new navigation.
@@ -210,11 +225,12 @@ TEST_F(RenderViewTest, ImeComposition) {
         break;
 
       case IME_SETCOMPOSITION:
-        view_->OnImeSetComposition(ime_message->string_type,
-                                   ime_message->cursor_position,
-                                   ime_message->target_start,
-                                   ime_message->target_end,
-                                   ime_message->ime_string);
+        view_->OnImeSetComposition(
+            ToCompositionCommand(ime_message->string_type),
+            ime_message->cursor_position,
+            ime_message->target_start,
+            ime_message->target_end,
+            WideToUTF16Hack(ime_message->ime_string));
         break;
     }
 
@@ -257,8 +273,8 @@ TEST_F(RenderViewTest, OnSetTextDirection) {
     WebTextDirection direction;
     const wchar_t* expected_result;
   } kTextDirection[] = {
-    {WEB_TEXT_DIRECTION_RTL, L"\x000A" L"rtl,rtl"},
-    {WEB_TEXT_DIRECTION_LTR, L"\x000A" L"ltr,ltr"},
+    { WebKit::WebTextDirectionRightToLeft, L"\x000A" L"rtl,rtl" },
+    { WebKit::WebTextDirectionLeftToRight, L"\x000A" L"ltr,ltr" },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTextDirection); ++i) {
     // Set the text direction of the <textarea> element.

@@ -34,7 +34,7 @@ WebViewHost* WebViewHost::Create(NSView* parent_view,
   [host->view_ release];
 
   host->webwidget_ = WebView::Create(delegate, prefs);
-  host->webwidget_->Resize(WebSize(content_rect.size.width,
+  host->webwidget_->resize(WebSize(content_rect.size.width,
                                    content_rect.size.height));
 
   return host;

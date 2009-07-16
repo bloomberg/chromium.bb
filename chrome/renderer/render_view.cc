@@ -106,6 +106,7 @@ using WebKit::WebDataSource;
 using WebKit::WebDragData;
 using WebKit::WebForm;
 using WebKit::WebHistoryItem;
+using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
@@ -116,9 +117,10 @@ using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
+using WebKit::WebVector;
+using WebKit::WebWidget;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
-using WebKit::WebVector;
 
 //-----------------------------------------------------------------------------
 
@@ -560,13 +562,13 @@ bool RenderView::CaptureThumbnail(WebView* view,
   double begin = time_util::GetHighResolutionTimeNow();
 #endif
 
-  view->Layout();
-  const WebSize& size = view->GetSize();
+  view->layout();
+  const WebSize& size = view->size();
 
   skia::PlatformCanvas canvas;
   if (!canvas.initialize(size.width, size.height, true))
     return false;
-  view->Paint(&canvas, WebRect(0, 0, size.width, size.height));
+  view->paint(&canvas, WebRect(0, 0, size.width, size.height));
 
   skia::BitmapPlatformDevice& device =
       static_cast<skia::BitmapPlatformDevice&>(canvas.getTopPlatformDevice());
@@ -1474,12 +1476,12 @@ void RenderView::DidCreateIsolatedScriptContext(WebFrame* webframe) {
   EventBindings::HandleContextCreated(webframe);
 }
 
-WindowOpenDisposition RenderView::DispositionForNavigationAction(
+WebNavigationPolicy RenderView::PolicyForNavigationAction(
     WebView* webview,
     WebFrame* frame,
     const WebURLRequest& request,
     WebNavigationType type,
-    WindowOpenDisposition disposition,
+    WebNavigationPolicy default_policy,
     bool is_redirect) {
   // A content initiated navigation may have originated from a link-click,
   // script, drag-n-drop operation, etc.
@@ -1496,8 +1498,9 @@ WindowOpenDisposition RenderView::DispositionForNavigationAction(
   // to, for example, opening a new window).
   // But we sometimes navigate to about:blank to clear a tab, and we want to
   // still allow that.
-  if (disposition == CURRENT_TAB && is_content_initiated &&
-      frame->GetParent() == NULL && !url.SchemeIs(chrome::kAboutScheme)) {
+  if (default_policy == WebKit::WebNavigationPolicyCurrentTab &&
+      is_content_initiated && frame->GetParent() == NULL &&
+      !url.SchemeIs(chrome::kAboutScheme)) {
     // When we received such unsolicited navigations, we sometimes want to
     // punt them up to the browser to handle.
     if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
@@ -1505,8 +1508,8 @@ WindowOpenDisposition RenderView::DispositionForNavigationAction(
         frame->GetInViewSourceMode() ||
         url.SchemeIs(chrome::kViewSourceScheme) ||
         url.SchemeIs(chrome::kPrintScheme)) {
-      OpenURL(webview, url, GURL(), disposition);
-      return IGNORE_ACTION;  // Suppress the load here.
+      OpenURL(webview, url, GURL(), default_policy);
+      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
 
@@ -1535,16 +1538,16 @@ WindowOpenDisposition RenderView::DispositionForNavigationAction(
       // Must not have issued the request from this page.
       is_content_initiated &&
       // Must be targeted at the current tab.
-      disposition == CURRENT_TAB &&
+      default_policy == WebKit::WebNavigationPolicyCurrentTab &&
       // Must be a JavaScript navigation, which appears as "other".
       type == WebKit::WebNavigationTypeOther;
   if (is_fork) {
     // Open the URL via the browser, not via WebKit.
-    OpenURL(webview, url, GURL(), disposition);
-    return IGNORE_ACTION;
+    OpenURL(webview, url, GURL(), default_policy);
+    return WebKit::WebNavigationPolicyIgnore;
   }
 
-  return disposition;
+  return default_policy;
 }
 
 void RenderView::RunJavaScriptAlert(WebFrame* webframe,
@@ -1884,8 +1887,9 @@ WebWorker* RenderView::CreateWebWorker(WebWorkerClient* client) {
 
 void RenderView::OpenURL(WebView* webview, const GURL& url,
                          const GURL& referrer,
-                         WindowOpenDisposition disposition) {
-  Send(new ViewHostMsg_OpenURL(routing_id_, url, referrer, disposition));
+                         WebNavigationPolicy policy) {
+  Send(new ViewHostMsg_OpenURL(
+      routing_id_, url, referrer, NavigationPolicyToDisposition(policy)));
 }
 
 void RenderView::DidContentsSizeChange(WebWidget* webwidget,
@@ -1918,7 +1922,7 @@ void RenderView::DidContentsSizeChange(WebWidget* webwidget,
 // This method provides us with the information about how to display the newly
 // created RenderView (i.e., as a constrained popup or as a new tab).
 //
-void RenderView::Show(WebWidget* webwidget, WindowOpenDisposition disposition) {
+void RenderView::show(WebNavigationPolicy policy) {
   DCHECK(!did_show_) << "received extraneous Show call";
   DCHECK(opener_id_ != MSG_ROUTING_NONE);
 
@@ -1929,17 +1933,18 @@ void RenderView::Show(WebWidget* webwidget, WindowOpenDisposition disposition) {
   // NOTE: initial_pos_ may still have its default values at this point, but
   // that's okay.  It'll be ignored if disposition is not NEW_POPUP, or the
   // browser process will impose a default position otherwise.
-  Send(new ViewHostMsg_ShowView(opener_id_, routing_id_, disposition,
-      initial_pos_, opened_by_user_gesture_, creator_url_));
+  Send(new ViewHostMsg_ShowView(opener_id_, routing_id_,
+      NavigationPolicyToDisposition(policy), initial_pos_,
+      opened_by_user_gesture_, creator_url_));
   SetPendingWindowRect(initial_pos_);
 }
 
-void RenderView::CloseWidgetSoon(WebWidget* webwidget) {
+void RenderView::closeWidgetSoon() {
   if (!popup_notification_visible_)
-    RenderWidget::CloseWidgetSoon(webwidget);
+    RenderWidget::closeWidgetSoon();
 }
 
-void RenderView::RunModal(WebWidget* webwidget) {
+void RenderView::runModal() {
   DCHECK(did_show_) << "should already have shown the view";
 
   IPC::SyncMessage* msg = new ViewHostMsg_RunModal(routing_id_);
@@ -2732,7 +2737,7 @@ void RenderView::OnThemeChanged() {
 #if defined(OS_WIN)
   gfx::NativeTheme::instance()->CloseHandles();
   gfx::Rect view_rect(0, 0, size_.width(), size_.height());
-  DidInvalidateRect(webwidget_, view_rect);
+  didInvalidateRect(view_rect);
 #else  // defined(OS_WIN)
   // TODO(port): we don't support theming on non-Windows platforms yet
   NOTIMPLEMENTED();
@@ -3016,6 +3021,10 @@ void RenderView::FocusAccessibilityObject(
   // TODO(port): accessibility not yet implemented
   NOTIMPLEMENTED();
 #endif
+}
+
+void RenderView::DidMovePlugin(const WebPluginGeometry& move) {
+  SchedulePluginMove(move);
 }
 
 void RenderView::SendPasswordForms(WebFrame* frame) {

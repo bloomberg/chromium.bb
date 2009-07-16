@@ -9,11 +9,11 @@
 #include "base/win_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebInputEvent.h"
+#include "webkit/api/public/WebPopupMenu.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/win/WebInputEventFactory.h"
 #include "webkit/api/public/win/WebScreenInfoFactory.h"
-#include "webkit/glue/webwidget.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebInputEvent;
@@ -21,15 +21,18 @@ using WebKit::WebInputEventFactory;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
+using WebKit::WebPopupMenu;
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;
 using WebKit::WebSize;
+using WebKit::WebWidget;
+using WebKit::WebWidgetClient;
 
 static const wchar_t kWindowClassName[] = L"WebWidgetHost";
 
 /*static*/
 WebWidgetHost* WebWidgetHost::Create(HWND parent_view,
-                                     WebWidgetDelegate* delegate) {
+                                     WebWidgetClient* client) {
   WebWidgetHost* host = new WebWidgetHost();
 
   static bool registered_class = false;
@@ -51,7 +54,7 @@ WebWidgetHost* WebWidgetHost::Create(HWND parent_view,
                                parent_view, NULL, GetModuleHandle(NULL), NULL);
   win_util::SetWindowUserData(host->view_, host);
 
-  host->webwidget_ = WebWidget::Create(delegate);
+  host->webwidget_ = WebPopupMenu::create(client);
 
   return host;
 }
@@ -198,7 +201,7 @@ WebWidgetHost::~WebWidgetHost() {
 
   TrackMouseLeave(false);
 
-  webwidget_->Close();
+  webwidget_->close();
 }
 
 bool WebWidgetHost::WndProc(UINT message, WPARAM wparam, LPARAM lparam) {
@@ -232,7 +235,7 @@ void WebWidgetHost::Paint() {
   }
 
   // This may result in more invalidation
-  webwidget_->Layout();
+  webwidget_->layout();
 
   // Scroll the canvas if necessary
   scroll_rect_ = client_rect.Intersect(scroll_rect_);
@@ -282,7 +285,7 @@ void WebWidgetHost::Resize(LPARAM lparam) {
   // Force an entire re-paint.  TODO(darin): Maybe reuse this memory buffer.
   DiscardBackingStore();
 
-  webwidget_->Resize(WebSize(LOWORD(lparam), HIWORD(lparam)));
+  webwidget_->resize(WebSize(LOWORD(lparam), HIWORD(lparam)));
 }
 
 void WebWidgetHost::MouseEvent(UINT message, WPARAM wparam, LPARAM lparam) {
@@ -308,30 +311,30 @@ void WebWidgetHost::MouseEvent(UINT message, WPARAM wparam, LPARAM lparam) {
         ReleaseCapture();
       break;
   }
-  webwidget_->HandleInputEvent(&event);
+  webwidget_->handleInputEvent(event);
 }
 
 void WebWidgetHost::WheelEvent(WPARAM wparam, LPARAM lparam) {
   const WebMouseWheelEvent& event = WebInputEventFactory::mouseWheelEvent(
       view_, WM_MOUSEWHEEL, wparam, lparam);
-  webwidget_->HandleInputEvent(&event);
+  webwidget_->handleInputEvent(event);
 }
 
 void WebWidgetHost::KeyEvent(UINT message, WPARAM wparam, LPARAM lparam) {
   const WebKeyboardEvent& event = WebInputEventFactory::keyboardEvent(
       view_, message, wparam, lparam);
-  webwidget_->HandleInputEvent(&event);
+  webwidget_->handleInputEvent(event);
 }
 
 void WebWidgetHost::CaptureLostEvent() {
-  webwidget_->MouseCaptureLost();
+  webwidget_->mouseCaptureLost();
 }
 
 void WebWidgetHost::SetFocus(bool enable) {
   // Ignore focus calls in layout test mode so that tests don't mess with each
   // other's focus when running in parallel.
   if (!TestShell::layout_test_mode())
-    webwidget_->SetFocus(enable);
+    webwidget_->setFocus(enable);
 }
 
 void WebWidgetHost::TrackMouseLeave(bool track) {
@@ -364,6 +367,6 @@ void WebWidgetHost::PaintRect(const gfx::Rect& rect) {
   DCHECK(canvas_.get());
 
   set_painting(true);
-  webwidget_->Paint(canvas_.get(), rect);
+  webwidget_->paint(canvas_.get(), rect);
   set_painting(false);
 }

@@ -33,7 +33,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
-#include "webkit/glue/webwidget.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/tools/test_shell/mac/test_shell_webview.h"
 #include "webkit/tools/test_shell/resource.h"
@@ -43,6 +42,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #import "mac/DumpRenderTreePasteboard.h"
+
+using WebKit::WebWidget;
 
 #define MAX_LOADSTRING 100
 
@@ -458,7 +459,7 @@ void TestShell::DestroyWindow(gfx::NativeWindow windowHandle) {
 
 WebWidget* TestShell::CreatePopupWidget(WebView* webview) {
   DCHECK(!m_popupHost);
-  m_popupHost = WebWidgetHost::Create(webViewWnd(), delegate_.get());
+  m_popupHost = WebWidgetHost::Create(webViewWnd(), popup_delegate_.get());
 
   return m_popupHost->webwidget();
 }

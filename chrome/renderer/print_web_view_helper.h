@@ -66,29 +66,20 @@ class PrintWebViewHelper : public WebViewDelegate {
   int32 routing_id();
 
   // WebViewDeletegate
+  virtual void didInvalidateRect(const WebKit::WebRect&) {}
+  virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect) {}
+  virtual void didFocus() {}
+  virtual void didBlur() {}
+  virtual void didChangeCursor(const WebKit::WebCursorInfo&) {}
+  virtual void closeWidgetSoon() {}
+  virtual void show(WebKit::WebNavigationPolicy) {}
+  virtual void runModal() {}
+  virtual WebKit::WebRect windowRect();
+  virtual void setWindowRect(const WebKit::WebRect&) {}
+  virtual WebKit::WebRect windowResizerRect();
+  virtual WebKit::WebRect rootWindowRect();
+  virtual WebKit::WebScreenInfo screenInfo();
   virtual void DidStopLoading(WebView* webview);
-  virtual void DidInvalidateRect(WebWidget* webwidget,
-                                 const WebKit::WebRect& rect) {}
-  virtual void DidScrollRect(WebWidget* webwidget, int dx, int dy,
-                             const WebKit::WebRect& clip_rect) {}
-  virtual void Show(WebWidget* webwidget, WindowOpenDisposition disposition) {}
-  virtual void CloseWidgetSoon(WebWidget* webwidget) {}
-  virtual void Focus(WebWidget* webwidget) {}
-  virtual void Blur(WebWidget* webwidget) {}
-  virtual void SetCursor(WebWidget* webwidget,
-                         const WebKit::WebCursorInfo& cursor) {}
-  virtual void GetWindowRect(WebWidget* webwidget, WebKit::WebRect* rect);
-  virtual void SetWindowRect(WebWidget* webwidget,
-                             const WebKit::WebRect& rect) {}
-  virtual void GetRootWindowRect(WebWidget* webwidget, WebKit::WebRect* rect) {}
-  virtual void GetRootWindowResizerRect(WebWidget* webwidget,
-                                        WebKit::WebRect* rect) {}
-  virtual void DidMove(WebWidget* webwidget, const WebPluginGeometry& move) {}
-  virtual void RunModal(WebWidget* webwidget) {}
-  virtual void AddRef() {}
-  virtual void Release() {}
-  virtual bool IsHidden(WebWidget* webwidget);
-  virtual WebKit::WebScreenInfo GetScreenInfo(WebWidget* webwidget);
 
  private:
   RenderView* render_view_;

@@ -299,7 +299,7 @@ class RenderWidgetHostViewGtkWidget {
   static void InputMethodCommit(GtkIMContext* im_context,
                                 gchar* text,
                                 RenderWidgetHostViewGtk* host_view) {
-    std::wstring im_text = UTF8ToWide(text);
+    const string16& im_text = UTF8ToUTF16(text);
     if (!host_view->im_is_composing_cjk_text_ && im_text.length() == 1) {
       // Send a Char event when we input a composed character without IMEs so
       // that this event is to be dispatched to onkeypress() handlers,
@@ -344,7 +344,7 @@ class RenderWidgetHostViewGtkWidget {
     gtk_im_context_get_preedit_string(im_context, &preedit_text, NULL,
                                       &cursor_position);
     host_view->GetRenderWidgetHost()->ImeSetComposition(
-        UTF8ToWide(preedit_text), cursor_position, -1, -1);
+        UTF8ToUTF16(preedit_text), cursor_position, -1, -1);
     g_free(preedit_text);
   }
 

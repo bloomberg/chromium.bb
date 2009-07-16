@@ -32,6 +32,7 @@
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebCursorInfo;
+using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
 
 namespace {
@@ -119,26 +120,24 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
   gtk_widget_destroy(dialog);
 }
 
-void TestWebViewDelegate::Show(WebWidget* webwidget,
-                               WindowOpenDisposition disposition) {
-  WebWidgetHost* host = GetHostForWidget(webwidget);
+void TestWebViewDelegate::show(WebNavigationPolicy policy) {
+  WebWidgetHost* host = GetWidgetHost();
   GtkWidget* drawing_area = host->view_handle();
   GtkWidget* window =
       gtk_widget_get_parent(gtk_widget_get_parent(drawing_area));
   gtk_widget_show_all(window);
 }
 
-void TestWebViewDelegate::CloseWidgetSoon(WebWidget* webwidget) {
-  if (webwidget == shell_->webView()) {
+void TestWebViewDelegate::closeWidgetSoon() {
+  if (this == shell_->delegate()) {
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
         &gtk_widget_destroy, GTK_WIDGET(shell_->mainWnd())));
-  } else if (webwidget == shell_->popup()) {
+  } else if (this == shell_->popup_delegate()) {
     shell_->ClosePopup();
   }
 }
 
-void TestWebViewDelegate::SetCursor(WebWidget* webwidget,
-                                    const WebCursorInfo& cursor_info) {
+void TestWebViewDelegate::didChangeCursor(const WebCursorInfo& cursor_info) {
   current_cursor_.InitFromCursorInfo(cursor_info);
   GdkCursorType cursor_type = current_cursor_.GetCursorType();
   GdkCursor* gdk_cursor;
@@ -165,10 +164,8 @@ void TestWebViewDelegate::SetCursor(WebWidget* webwidget,
     gdk_cursor_unref(gdk_cursor);
 }
 
-void TestWebViewDelegate::GetWindowRect(WebWidget* webwidget,
-                                        WebRect* out_rect) {
-  DCHECK(out_rect);
-  WebWidgetHost* host = GetHostForWidget(webwidget);
+WebRect TestWebViewDelegate::windowRect() {
+  WebWidgetHost* host = GetWidgetHost();
   GtkWidget* drawing_area = host->view_handle();
   GtkWidget* vbox = gtk_widget_get_parent(drawing_area);
   GtkWidget* window = gtk_widget_get_parent(vbox);
@@ -178,17 +175,16 @@ void TestWebViewDelegate::GetWindowRect(WebWidget* webwidget,
   x += vbox->allocation.x + drawing_area->allocation.x;
   y += vbox->allocation.y + drawing_area->allocation.y;
 
-  *out_rect = WebRect(x, y,
-                      drawing_area->allocation.width,
-                      drawing_area->allocation.height);
+  return WebRect(x, y,
+                 drawing_area->allocation.width,
+                 drawing_area->allocation.height);
 }
 
-void TestWebViewDelegate::SetWindowRect(WebWidget* webwidget,
-                                        const WebRect& rect) {
-  if (webwidget == shell_->webView()) {
+void TestWebViewDelegate::setWindowRect(const WebRect& rect) {
+  if (this == shell_->delegate()) {
     // ignored
-  } else if (webwidget == shell_->popup()) {
-    WebWidgetHost* host = GetHostForWidget(webwidget);
+  } else if (this == shell_->popup_delegate()) {
+    WebWidgetHost* host = GetWidgetHost();
     GtkWidget* drawing_area = host->view_handle();
     GtkWidget* window =
         gtk_widget_get_parent(gtk_widget_get_parent(drawing_area));
@@ -197,9 +193,8 @@ void TestWebViewDelegate::SetWindowRect(WebWidget* webwidget,
   }
 }
 
-void TestWebViewDelegate::GetRootWindowRect(WebWidget* webwidget,
-                                            WebRect* out_rect) {
-  if (WebWidgetHost* host = GetHostForWidget(webwidget)) {
+WebRect TestWebViewDelegate::rootWindowRect() {
+  if (WebWidgetHost* host = GetWidgetHost()) {
     // We are being asked for the x/y and width/height of the entire browser
     // window.  This means the x/y is the distance from the corner of the
     // screen, and the width/height is the size of the entire browser window.
@@ -210,25 +205,24 @@ void TestWebViewDelegate::GetRootWindowRect(WebWidget* webwidget,
     gint x, y, width, height;
     gtk_window_get_position(GTK_WINDOW(window), &x, &y);
     gtk_window_get_size(GTK_WINDOW(window), &width, &height);
-    *out_rect = WebRect(x, y, width, height);
+    return WebRect(x, y, width, height);
   }
+  return WebRect();
 }
 
-void TestWebViewDelegate::GetRootWindowResizerRect(WebWidget* webwidget,
-                                                   WebRect* out_rect) {
+WebRect TestWebViewDelegate::windowResizerRect() {
   // Not necessary on Linux.
-  *out_rect = WebRect();
+  return WebRect();
 }
 
-void TestWebViewDelegate::DidMove(WebWidget* webwidget,
-                                  const WebPluginGeometry& move) {
-  WebWidgetHost* host = GetHostForWidget(webwidget);
+void TestWebViewDelegate::DidMovePlugin(const WebPluginGeometry& move) {
+  WebWidgetHost* host = GetWidgetHost();
   GtkPluginContainerManager* plugin_container_manager =
       static_cast<WebViewHost*>(host)->plugin_container_manager();
   plugin_container_manager->MovePluginContainer(move);
 }
 
-void TestWebViewDelegate::RunModal(WebWidget* webwidget) {
+void TestWebViewDelegate::runModal() {
   NOTIMPLEMENTED();
 }
 

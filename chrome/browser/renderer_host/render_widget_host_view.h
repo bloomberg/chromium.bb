@@ -9,7 +9,6 @@
 #include "base/shared_memory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webplugin.h"
-#include "webkit/glue/webwidget_delegate.h"
 
 namespace gfx {
 class Rect;
