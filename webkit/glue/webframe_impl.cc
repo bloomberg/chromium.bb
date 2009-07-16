@@ -76,6 +76,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "HTMLFormElement.h"  // need this before Document.h
 #include "Chrome.h"
 #include "ChromeClientChromium.h"
+#include "ClipboardUtilitiesChromium.h"
 #include "Console.h"
 #include "Document.h"
 #include "DocumentFragment.h"  // Only needed for ReplaceSelectionCommand.h :(
@@ -1387,7 +1388,12 @@ std::string WebFrameImpl::GetSelection(bool as_html) {
     String markup = WebCore::createMarkup(range.get(), 0);
     return webkit_glue::StringToStdString(markup);
   } else {
-    return webkit_glue::StringToStdString(range->text());
+    String text = range->text();
+#if defined(OS_WIN)
+    WebCore::replaceNewlinesWithWindowsStyleNewlines(text);
+#endif
+    WebCore::replaceNBSPWithSpace(text);
+    return webkit_glue::StringToStdString(text);
   }
 }
 
