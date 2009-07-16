@@ -101,7 +101,7 @@ void GoButtonGtk::OnButtonTimer() {
 gboolean GoButtonGtk::OnExpose(GtkWidget* widget,
                                GdkEventExpose* e,
                                GoButtonGtk* button) {
-  if (button->theme_provider_->UseGtkTheme()) {
+  if (button->theme_provider_ && button->theme_provider_->UseGtkTheme()) {
     return FALSE;
   } else {
     if (button->visible_mode_ == MODE_GO) {
@@ -199,7 +199,7 @@ void GoButtonGtk::SetTooltip() {
 }
 
 void GoButtonGtk::UpdateThemeButtons() {
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_provider_ && theme_provider_->UseGtkTheme()) {
     // TODO(erg): Waiting for Glen to make a version of these that don't have a
     // button border on it.
     if (intended_mode_ == MODE_GO) {
