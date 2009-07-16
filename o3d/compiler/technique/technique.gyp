@@ -12,8 +12,16 @@
   ],
   'targets': [
     {
-      'target_name': 'parser_generator',
-      'type': 'none',
+      'target_name': 'technique',
+      'type': 'static_library',
+      'dependencies': [
+        '../../../<(antlrdir)/antlr.gyp:antlr3c',
+        '../../../base/base.gyp:base',
+        '../../core/core.gyp:o3dCore',
+      ],
+      'include_dirs': [
+        '<(technique_out_dir)',
+      ],
       'rules': [
         {
           'rule_name': 'technique_parser',
@@ -27,6 +35,7 @@
             '<(technique_out_dir)/<(RULE_INPUT_ROOT)Parser.c',
             '<(technique_out_dir)/<(RULE_INPUT_ROOT)Parser.h',
           ],
+          'process_outputs_as_sources': 1,
           'action': [
             'java',
             '-cp', '../../../<(antlrdir)/lib/antlr-3.1.1.jar',
@@ -38,30 +47,6 @@
       ],
       'sources': [
         'Technique.g3pl',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(technique_out_dir)',
-        ],
-      },
-    },
-    {
-      'target_name': 'technique',
-      'type': 'static_library',
-      'dependencies': [
-        'parser_generator',
-        '../../../<(antlrdir)/antlr.gyp:antlr3c',
-        '../../../base/base.gyp:base',
-        '../../core/core.gyp:o3dCore',
-      ],
-      'include_dirs': [
-        '<(technique_out_dir)',
-      ],
-      'sources': [
-        '<(technique_out_dir)/TechniqueLexer.c',
-        '<(technique_out_dir)/TechniqueLexer.h',
-        '<(technique_out_dir)/TechniqueParser.c',
-        '<(technique_out_dir)/TechniqueParser.h',
         'technique_error.cc',
         'technique_error.h',
         'technique_parser.cc',
@@ -69,15 +54,16 @@
         'technique_structures.cc',
         'technique_structures.h',
       ],
-      'msvs_settings': {
-        'VCCLCompilerTool': {
-          'CompileAs': '2',
-        },
-      },
+      'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': [
           '<(technique_out_dir)',
         ],
+      },
+      'msvs_settings': {
+        'VCCLCompilerTool': {
+          'CompileAs': '2',
+        },
       },
     },
   ],

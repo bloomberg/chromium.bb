@@ -385,7 +385,7 @@ void Bitmap::BilinearInterpolateScale(const uint8* src_img_data,
         base_y = -base_y;
       int base_floor_y = static_cast<int>(std::floor(base_y));
 
-      for (unsigned int c = 0; c < components; c++) {
+      for (int c = 0; c < components; c++) {
         // if base_x and base_y are integers, which means this point
         // exists in src_img, just copy the original values.
         if (base_x - base_floor_x < kEpsilon &&
