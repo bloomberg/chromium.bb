@@ -16,8 +16,10 @@
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebCursorInfo;
+using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
+using WebKit::WebWidget;
 
 // WebViewDelegate -----------------------------------------------------------
 
@@ -38,7 +40,7 @@ WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     const std::string& mime_type,
     const std::string& clsid,
     std::string* actual_mime_type) {
-  WebWidgetHost *host = GetHostForWidget(webview);
+  WebWidgetHost *host = GetWidgetHost();
   if (!host)
     return NULL;
   gfx::NativeView view = host->view_handle();
@@ -56,6 +58,10 @@ WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     return WebPluginDelegateImpl::Create(info.path, mime_type, view);
 }
 
+void TestWebViewDelegate::DidMovePlugin(const WebPluginGeometry& move) {
+  // TODO(port): add me once plugins work.
+}
+
 void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
   NSString *text =
       [NSString stringWithUTF8String:WideToUTF8(message).c_str()];
@@ -70,11 +76,10 @@ void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
 
 // WebWidgetDelegate ---------------------------------------------------------
 
-void TestWebViewDelegate::Show(WebWidget* webwidget,
-                               WindowOpenDisposition disposition) {
+void TestWebViewDelegate::show(WebNavigationPolicy policy) {
   if (!popup_menu_info_.get())
     return;
-  if (webwidget != shell_->popup())
+  if (this != shell_->popup_delegate())
     return;
   // Display a HTML select menu.
 
@@ -125,8 +130,8 @@ void TestWebViewDelegate::Show(WebWidget* webwidget,
   }
 }
 
-void TestWebViewDelegate::CloseWidgetSoon(WebWidget* webwidget) {
-  if (webwidget == shell_->webView()) {
+void TestWebViewDelegate::closeWidgetSoon() {
+  if (this == shell_->delegate()) {
     NSWindow *win = shell_->mainWnd();
     // Tell Cocoa to close the window, which will let the window's delegate
     // handle getting rid of the shell. |shell_| will still be alive for a short
@@ -134,54 +139,50 @@ void TestWebViewDelegate::CloseWidgetSoon(WebWidget* webwidget) {
     // to the event loop), so we should make sure we don't leave it dangling.
     [win performClose:nil];
     shell_ = NULL;
-  } else if (webwidget == shell_->popup()) {
+  } else if (this == shell_->popup_delegate()) {
     shell_->ClosePopup();
   }
 }
 
-void TestWebViewDelegate::SetCursor(WebWidget* webwidget,
-                                    const WebCursorInfo& cursor_info) {
+void TestWebViewDelegate::didChangeCursor(const WebCursorInfo& cursor_info) {
   NSCursor* ns_cursor = WebCursor(cursor_info).GetCursor();
   [ns_cursor set];
 }
 
-void TestWebViewDelegate::GetWindowRect(WebWidget* webwidget,
-                                        WebRect* out_rect) {
-  DCHECK(out_rect);
-  if (WebWidgetHost* host = GetHostForWidget(webwidget)) {
+WebRect TestWebViewDelegate::windowRect() {
+  if (WebWidgetHost* host = GetWidgetHost()) {
     NSView *view = host->view_handle();
     NSRect rect = [view frame];
-    *out_rect = gfx::Rect(NSRectToCGRect(rect));
+    return gfx::Rect(NSRectToCGRect(rect));
   }
+  return WebRect();
 }
 
-void TestWebViewDelegate::SetWindowRect(WebWidget* webwidget,
-                                        const WebRect& rect) {
+void TestWebViewDelegate::setWindowRect(const WebRect& rect) {
   // TODO: Mac window movement
-  if (webwidget == shell_->webView()) {
+  if (this == shell_->delegate()) {
     // ignored
-  } else if (webwidget == shell_->popup()) {
+  } else if (this == shell_->popup_delegate()) {
     popup_bounds_ = rect;  // The initial position of the popup.
   }
 }
 
-void TestWebViewDelegate::GetRootWindowRect(WebWidget* webwidget,
-                                            WebRect* out_rect) {
-  if (WebWidgetHost* host = GetHostForWidget(webwidget)) {
+WebRect TestWebViewDelegate::rootWindowRect() {
+  if (WebWidgetHost* host = GetWidgetHost()) {
     NSView *view = host->view_handle();
     NSRect rect = [[[view window] contentView] frame];
-    *out_rect = gfx::Rect(NSRectToCGRect(rect));
+    return gfx::Rect(NSRectToCGRect(rect));
   }
+  return WebRect();
 }
 
 @interface NSWindow(OSInternals)
 - (NSRect)_growBoxRect;
 @end
 
-void TestWebViewDelegate::GetRootWindowResizerRect(WebWidget* webwidget,
-                                                   WebRect* out_rect) {
+WebRect TestWebViewDelegate::windowResizerRect() {
   NSRect resize_rect = NSMakeRect(0, 0, 0, 0);
-  WebWidgetHost* host = GetHostForWidget(webwidget);
+  WebWidgetHost* host = GetWidgetHost();
   // To match the WebKit screen shots, we need the resize area to overlap
   // the scroll arrows, so in layout test mode, we don't return a real rect.
   if (!(shell_->layout_test_mode()) && host) {
@@ -199,15 +200,10 @@ void TestWebViewDelegate::GetRootWindowResizerRect(WebWidget* webwidget,
         [view frame].size.height - resize_rect.origin.y -
         resize_rect.size.height;
   }
-  *out_rect = gfx::Rect(NSRectToCGRect(resize_rect));
+  return gfx::Rect(NSRectToCGRect(resize_rect));
 }
 
-void TestWebViewDelegate::DidMove(WebWidget* webwidget,
-                                  const WebPluginGeometry& move) {
-  // TODO(port): add me once plugins work.
-}
-
-void TestWebViewDelegate::RunModal(WebWidget* webwidget) {
+void TestWebViewDelegate::runModal() {
   NOTIMPLEMENTED();
 }
 

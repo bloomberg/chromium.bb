@@ -91,6 +91,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/context_menu_client_impl.h"
 #include "webkit/glue/dom_operations.h"
@@ -105,12 +106,12 @@ MSVC_POP_WARNING();
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webpopupmenu_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webdevtoolsagent.h"
 #include "webkit/glue/webdevtoolsclient.h"
 #include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
-#include "webkit/glue/webwidget_impl.h"
 
 // Get rid of WTF's pow define so we can use std::pow.
 #undef pow
@@ -118,6 +119,10 @@ MSVC_POP_WARNING();
 
 using namespace WebCore;
 
+using WebKit::WebCanvas;
+using WebKit::WebCompositionCommand;
+using WebKit::WebCompositionCommandConfirm;
+using WebKit::WebCompositionCommandDiscard;
 using WebKit::WebDragData;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
@@ -126,6 +131,11 @@ using WebKit::WebMouseWheelEvent;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
+using WebKit::WebString;
+using WebKit::WebTextDirection;
+using WebKit::WebTextDirectionDefault;
+using WebKit::WebTextDirectionLeftToRight;
+using WebKit::WebTextDirectionRightToLeft;
 
 using webkit_glue::ImageResourceFetcher;
 
@@ -374,7 +384,7 @@ WebViewImpl::WebViewImpl()
       doing_drag_and_drop_(false),
       ignore_input_events_(false),
       suppress_next_keypress_event_(false),
-      window_open_disposition_(IGNORE_ACTION),
+      initial_navigation_policy_(WebKit::WebNavigationPolicyIgnore),
       ime_accept_events_(true),
       drag_target_dispatch_(false),
       drag_identity_(0),
@@ -532,7 +542,7 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
   if (!main_frame() || !main_frame()->frameview())
     return;
 
-  MouseCaptureLost();
+  mouseCaptureLost();
   main_frame()->frame()->eventHandler()->handleMouseReleaseEvent(
       MakePlatformMouseEvent(main_frame()->frameview(), event));
 
@@ -915,20 +925,9 @@ WebViewImpl* WebViewImpl::FromPage(WebCore::Page* page) {
   return WebFrameImpl::FromFrame(page->mainFrame())->GetWebViewImpl();
 }
 
-// WebView --------------------------------------------------------------------
+// WebWidget ------------------------------------------------------------------
 
-bool WebViewImpl::ShouldClose() {
-  // TODO(creis): This should really cause a recursive depth-first walk of all
-  // frames in the tree, calling each frame's onbeforeunload.  At the moment,
-  // we're consistent with Safari 3.1, not IE/FF.
-  Frame* frame = page_->focusController()->focusedOrMainFrame();
-  if (!frame)
-    return true;
-
-  return frame->shouldClose();
-}
-
-void WebViewImpl::Close() {
+void WebViewImpl::close() {
   if (page_.get()) {
     // Initiate shutdown for the entire frameset.  This will cause a lot of
     // notifications to be sent.
@@ -946,6 +945,310 @@ void WebViewImpl::Close() {
   delegate_ = NULL;
 
   Release();  // Balances AddRef from WebView::Create
+}
+
+void WebViewImpl::resize(const WebSize& new_size) {
+  if (size_ == new_size)
+    return;
+  size_ = new_size;
+
+  if (main_frame()->frameview()) {
+    main_frame()->frameview()->resize(size_.width, size_.height);
+    main_frame()->frame()->eventHandler()->sendResizeEvent();
+  }
+
+  if (delegate_) {
+    WebRect damaged_rect(0, 0, size_.width, size_.height);
+    delegate_->didInvalidateRect(damaged_rect);
+  }
+}
+
+void WebViewImpl::layout() {
+  WebFrameImpl* webframe = main_frame();
+  if (webframe) {
+    // In order for our child HWNDs (NativeWindowWidgets) to update properly,
+    // they need to be told that we are updating the screen.  The problem is
+    // that the native widgets need to recalculate their clip region and not
+    // overlap any of our non-native widgets.  To force the resizing, call
+    // setFrameRect().  This will be a quick operation for most frames, but
+    // the NativeWindowWidgets will update a proper clipping region.
+    FrameView* view = webframe->frameview();
+    if (view)
+      view->setFrameRect(view->frameRect());
+
+    // setFrameRect may have the side-effect of causing existing page
+    // layout to be invalidated, so layout needs to be called last.
+
+    webframe->Layout();
+  }
+}
+
+void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect) {
+  WebFrameImpl* webframe = main_frame();
+  if (webframe)
+    webframe->Paint(canvas, rect);
+}
+
+// TODO(eseidel): g_current_input_event should be removed once
+// ChromeClient:show() can get the current-event information from WebCore.
+/* static */
+const WebInputEvent* WebViewImpl::g_current_input_event = NULL;
+
+bool WebViewImpl::handleInputEvent(const WebInputEvent& input_event) {
+  // If we've started a drag and drop operation, ignore input events until
+  // we're done.
+  if (doing_drag_and_drop_)
+    return true;
+
+  if (ignore_input_events_)
+    return true;
+
+  // TODO(eseidel): Remove g_current_input_event.
+  // This only exists to allow ChromeClient::show() to know which mouse button
+  // triggered a window.open event.
+  // Safari must perform a similar hack, ours is in our WebKit glue layer
+  // theirs is in the application.  This should go when WebCore can be fixed
+  // to pass more event information to ChromeClient::show()
+  g_current_input_event = &input_event;
+
+  bool handled = true;
+
+  // TODO(jcampan): WebKit seems to always return false on mouse events
+  // processing methods. For now we'll assume it has processed them (as we are
+  // only interested in whether keyboard events are processed).
+  switch (input_event.type) {
+    case WebInputEvent::MouseMove:
+      MouseMove(*static_cast<const WebMouseEvent*>(&input_event));
+      break;
+
+    case WebInputEvent::MouseLeave:
+      MouseLeave(*static_cast<const WebMouseEvent*>(&input_event));
+      break;
+
+    case WebInputEvent::MouseWheel:
+      MouseWheel(*static_cast<const WebMouseWheelEvent*>(&input_event));
+      break;
+
+    case WebInputEvent::MouseDown:
+      MouseDown(*static_cast<const WebMouseEvent*>(&input_event));
+      break;
+
+    case WebInputEvent::MouseUp:
+      MouseUp(*static_cast<const WebMouseEvent*>(&input_event));
+      break;
+
+    case WebInputEvent::RawKeyDown:
+    case WebInputEvent::KeyDown:
+    case WebInputEvent::KeyUp:
+      handled = KeyEvent(*static_cast<const WebKeyboardEvent*>(&input_event));
+      break;
+
+    case WebInputEvent::Char:
+      handled = CharEvent(*static_cast<const WebKeyboardEvent*>(&input_event));
+      break;
+    default:
+      handled = false;
+  }
+
+  g_current_input_event = NULL;
+
+  return handled;
+}
+
+void WebViewImpl::mouseCaptureLost() {
+}
+
+void WebViewImpl::setFocus(bool enable) {
+  page_->focusController()->setFocused(enable);
+  if (enable) {
+    // Note that we don't call setActive() when disabled as this cause extra
+    // focus/blur events to be dispatched.
+    page_->focusController()->setActive(true);
+    ime_accept_events_ = true;
+  } else {
+    HideAutoCompletePopup();
+
+    // Clear focus on the currently focused frame if any.
+    if (!page_.get())
+      return;
+
+    Frame* frame = page_->mainFrame();
+    if (!frame)
+      return;
+
+    RefPtr<Frame> focused_frame = page_->focusController()->focusedFrame();
+    if (focused_frame.get()) {
+      // Finish an ongoing composition to delete the composition node.
+      Editor* editor = focused_frame->editor();
+      if (editor && editor->hasComposition())
+        editor->confirmComposition();
+      ime_accept_events_ = false;
+    }
+  }
+}
+
+bool WebViewImpl::handleCompositionEvent(WebCompositionCommand command,
+                                         int cursor_position,
+                                         int target_start,
+                                         int target_end,
+                                         const WebString& ime_string) {
+  Frame* focused = GetFocusedWebCoreFrame();
+  if (!focused || !ime_accept_events_) {
+    return false;
+  }
+  Editor* editor = focused->editor();
+  if (!editor)
+    return false;
+  if (!editor->canEdit()) {
+    // The input focus has been moved to another WebWidget object.
+    // We should use this |editor| object only to complete the ongoing
+    // composition.
+    if (!editor->hasComposition())
+      return false;
+  }
+
+  // We should verify the parent node of this IME composition node are
+  // editable because JavaScript may delete a parent node of the composition
+  // node. In this case, WebKit crashes while deleting texts from the parent
+  // node, which doesn't exist any longer.
+  PassRefPtr<Range> range = editor->compositionRange();
+  if (range) {
+    const Node* node = range->startPosition().node();
+    if (!node || !node->isContentEditable())
+      return false;
+  }
+
+  if (command == WebCompositionCommandDiscard) {
+    // A browser process sent an IPC message which does not contain a valid
+    // string, which means an ongoing composition has been canceled.
+    // If the ongoing composition has been canceled, replace the ongoing
+    // composition string with an empty string and complete it.
+    WebCore::String empty_string;
+    WTF::Vector<WebCore::CompositionUnderline> empty_underlines;
+    editor->setComposition(empty_string, empty_underlines, 0, 0);
+  } else {
+    // A browser process sent an IPC message which contains a string to be
+    // displayed in this Editor object.
+    // To display the given string, set the given string to the
+    // m_compositionNode member of this Editor object and display it.
+    if (target_start < 0)
+      target_start = 0;
+    if (target_end < 0)
+      target_end = static_cast<int>(ime_string.length());
+    WebCore::String composition_string(
+        webkit_glue::WebStringToString(ime_string));
+    // Create custom underlines.
+    // To emphasize the selection, the selected region uses a solid black
+    // for its underline while other regions uses a pale gray for theirs.
+    WTF::Vector<WebCore::CompositionUnderline> underlines(3);
+    underlines[0].startOffset = 0;
+    underlines[0].endOffset = target_start;
+    underlines[0].thick = true;
+    underlines[0].color.setRGB(0xd3, 0xd3, 0xd3);
+    underlines[1].startOffset = target_start;
+    underlines[1].endOffset = target_end;
+    underlines[1].thick = true;
+    underlines[1].color.setRGB(0x00, 0x00, 0x00);
+    underlines[2].startOffset = target_end;
+    underlines[2].endOffset = static_cast<int>(ime_string.length());
+    underlines[2].thick = true;
+    underlines[2].color.setRGB(0xd3, 0xd3, 0xd3);
+    // When we use custom underlines, WebKit ("InlineTextBox.cpp" Line 282)
+    // prevents from writing a text in between 'selectionStart' and
+    // 'selectionEnd' somehow.
+    // Therefore, we use the 'cursor_position' for these arguments so that
+    // there are not any characters in the above region.
+    editor->setComposition(composition_string, underlines,
+                           cursor_position, cursor_position);
+    // The given string is a result string, which means the ongoing
+    // composition has been completed. I have to call the
+    // Editor::confirmCompletion() and complete this composition.
+    if (command == WebCompositionCommandConfirm)
+      editor->confirmComposition();
+  }
+
+  return editor->hasComposition();
+}
+
+bool WebViewImpl::queryCompositionStatus(bool* enable_ime,
+                                         WebRect* caret_rect) {
+  // Store whether the selected node needs IME and the caret rectangle.
+  // This process consists of the following four steps:
+  //  1. Retrieve the selection controller of the focused frame;
+  //  2. Retrieve the caret rectangle from the controller;
+  //  3. Convert the rectangle, which is relative to the parent view, to the
+  //     one relative to the client window, and;
+  //  4. Store the converted rectangle.
+  const Frame* focused = GetFocusedWebCoreFrame();
+  if (!focused)
+    return false;
+
+  const Editor* editor = focused->editor();
+  if (!editor || !editor->canEdit())
+    return false;
+
+  SelectionController* controller = focused->selection();
+  if (!controller)
+    return false;
+
+  const Node* node = controller->start().node();
+  if (!node)
+    return false;
+
+  *enable_ime = node->shouldUseInputMethod() &&
+      !controller->isInPasswordField();
+  const FrameView* view = node->document()->view();
+  if (!view)
+    return false;
+
+  *caret_rect = webkit_glue::IntRectToWebRect(
+      view->contentsToWindow(controller->absoluteCaretBounds()));
+  return true;
+}
+
+void WebViewImpl::setTextDirection(WebTextDirection direction) {
+  // The Editor::setBaseWritingDirection() function checks if we can change
+  // the text direction of the selected node and updates its DOM "dir"
+  // attribute and its CSS "direction" property.
+  // So, we just call the function as Safari does.
+  const Frame* focused = GetFocusedWebCoreFrame();
+  if (!focused)
+    return;
+
+  Editor* editor = focused->editor();
+  if (!editor || !editor->canEdit())
+    return;
+
+  switch (direction) {
+    case WebTextDirectionDefault:
+      editor->setBaseWritingDirection(WebCore::NaturalWritingDirection);
+      break;
+
+    case WebTextDirectionLeftToRight:
+      editor->setBaseWritingDirection(WebCore::LeftToRightWritingDirection);
+      break;
+
+    case WebTextDirectionRightToLeft:
+      editor->setBaseWritingDirection(WebCore::RightToLeftWritingDirection);
+      break;
+
+    default:
+      NOTIMPLEMENTED();
+      break;
+  }
+}
+
+// WebView --------------------------------------------------------------------
+
+bool WebViewImpl::ShouldClose() {
+  // TODO(creis): This should really cause a recursive depth-first walk of all
+  // frames in the tree, calling each frame's onbeforeunload.  At the moment,
+  // we're consistent with Safari 3.1, not IE/FF.
+  Frame* frame = page_->focusController()->focusedOrMainFrame();
+  if (!frame)
+    return true;
+
+  return frame->shouldClose();
 }
 
 WebViewDelegate* WebViewImpl::GetDelegate() {
@@ -998,117 +1301,6 @@ WebFrame* WebViewImpl::GetNextFrameAfter(WebFrame* frame, bool wrap) {
   return next ? WebFrameImpl::FromFrame(next) : NULL;
 }
 
-void WebViewImpl::Resize(const WebSize& new_size) {
-  if (size_ == new_size)
-    return;
-  size_ = new_size;
-
-  if (main_frame()->frameview()) {
-    main_frame()->frameview()->resize(size_.width, size_.height);
-    main_frame()->frame()->eventHandler()->sendResizeEvent();
-  }
-
-  if (delegate_) {
-    WebRect damaged_rect(0, 0, size_.width, size_.height);
-    delegate_->DidInvalidateRect(this, damaged_rect);
-  }
-}
-
-void WebViewImpl::Layout() {
-  WebFrameImpl* webframe = main_frame();
-  if (webframe) {
-    // In order for our child HWNDs (NativeWindowWidgets) to update properly,
-    // they need to be told that we are updating the screen.  The problem is
-    // that the native widgets need to recalculate their clip region and not
-    // overlap any of our non-native widgets.  To force the resizing, call
-    // setFrameRect().  This will be a quick operation for most frames, but
-    // the NativeWindowWidgets will update a proper clipping region.
-    FrameView* view = webframe->frameview();
-    if (view)
-      view->setFrameRect(view->frameRect());
-
-    // setFrameRect may have the side-effect of causing existing page
-    // layout to be invalidated, so layout needs to be called last.
-
-    webframe->Layout();
-  }
-}
-
-void WebViewImpl::Paint(skia::PlatformCanvas* canvas, const WebRect& rect) {
-  WebFrameImpl* webframe = main_frame();
-  if (webframe)
-    webframe->Paint(canvas, rect);
-}
-
-// TODO(eseidel): g_current_input_event should be removed once
-// ChromeClient:show() can get the current-event information from WebCore.
-/* static */
-const WebInputEvent* WebViewImpl::g_current_input_event = NULL;
-
-bool WebViewImpl::HandleInputEvent(const WebInputEvent* input_event) {
-  // If we've started a drag and drop operation, ignore input events until
-  // we're done.
-  if (doing_drag_and_drop_)
-    return true;
-
-  if (ignore_input_events_)
-    return true;
-
-  // TODO(eseidel): Remove g_current_input_event.
-  // This only exists to allow ChromeClient::show() to know which mouse button
-  // triggered a window.open event.
-  // Safari must perform a similar hack, ours is in our WebKit glue layer
-  // theirs is in the application.  This should go when WebCore can be fixed
-  // to pass more event information to ChromeClient::show()
-  g_current_input_event = input_event;
-
-  bool handled = true;
-
-  // TODO(jcampan): WebKit seems to always return false on mouse events
-  // processing methods. For now we'll assume it has processed them (as we are
-  // only interested in whether keyboard events are processed).
-  switch (input_event->type) {
-    case WebInputEvent::MouseMove:
-      MouseMove(*static_cast<const WebMouseEvent*>(input_event));
-      break;
-
-    case WebInputEvent::MouseLeave:
-      MouseLeave(*static_cast<const WebMouseEvent*>(input_event));
-      break;
-
-    case WebInputEvent::MouseWheel:
-      MouseWheel(*static_cast<const WebMouseWheelEvent*>(input_event));
-      break;
-
-    case WebInputEvent::MouseDown:
-      MouseDown(*static_cast<const WebMouseEvent*>(input_event));
-      break;
-
-    case WebInputEvent::MouseUp:
-      MouseUp(*static_cast<const WebMouseEvent*>(input_event));
-      break;
-
-    case WebInputEvent::RawKeyDown:
-    case WebInputEvent::KeyDown:
-    case WebInputEvent::KeyUp:
-      handled = KeyEvent(*static_cast<const WebKeyboardEvent*>(input_event));
-      break;
-
-    case WebInputEvent::Char:
-      handled = CharEvent(*static_cast<const WebKeyboardEvent*>(input_event));
-      break;
-    default:
-      handled = false;
-  }
-
-  g_current_input_event = NULL;
-
-  return handled;
-}
-
-void WebViewImpl::MouseCaptureLost() {
-}
-
 // TODO(darin): these navigation methods should be killed
 
 void WebViewImpl::StopLoading() {
@@ -1149,185 +1341,6 @@ void WebViewImpl::ClearFocusedNode() {
     // Clear the selection.
     SelectionController* selection = frame->selection();
     selection->clear();
-  }
-}
-
-void WebViewImpl::SetFocus(bool enable) {
-  page_->focusController()->setFocused(enable);
-  if (enable) {
-    // Note that we don't call setActive() when disabled as this cause extra
-    // focus/blur events to be dispatched.
-    page_->focusController()->setActive(true);
-    ime_accept_events_ = true;
-  } else {
-    HideAutoCompletePopup();
-
-    // Clear focus on the currently focused frame if any.
-    if (!page_.get())
-      return;
-
-    Frame* frame = page_->mainFrame();
-    if (!frame)
-      return;
-
-    RefPtr<Frame> focused_frame = page_->focusController()->focusedFrame();
-    if (focused_frame.get()) {
-      // Finish an ongoing composition to delete the composition node.
-      Editor* editor = focused_frame->editor();
-      if (editor && editor->hasComposition())
-        editor->confirmComposition();
-      ime_accept_events_ = false;
-    }
-  }
-}
-
-bool WebViewImpl::ImeSetComposition(int string_type,
-                                    int cursor_position,
-                                    int target_start,
-                                    int target_end,
-                                    const std::wstring& ime_string) {
-  Frame* focused = GetFocusedWebCoreFrame();
-  if (!focused || !ime_accept_events_) {
-    return false;
-  }
-  Editor* editor = focused->editor();
-  if (!editor)
-    return false;
-  if (!editor->canEdit()) {
-    // The input focus has been moved to another WebWidget object.
-    // We should use this |editor| object only to complete the ongoing
-    // composition.
-    if (!editor->hasComposition())
-      return false;
-  }
-
-  // We should verify the parent node of this IME composition node are
-  // editable because JavaScript may delete a parent node of the composition
-  // node. In this case, WebKit crashes while deleting texts from the parent
-  // node, which doesn't exist any longer.
-  PassRefPtr<Range> range = editor->compositionRange();
-  if (range) {
-    const Node* node = range->startPosition().node();
-    if (!node || !node->isContentEditable())
-      return false;
-  }
-
-  if (string_type == -1) {
-    // A browser process sent an IPC message which does not contain a valid
-    // string, which means an ongoing composition has been canceled.
-    // If the ongoing composition has been canceled, replace the ongoing
-    // composition string with an empty string and complete it.
-    WebCore::String empty_string;
-    WTF::Vector<WebCore::CompositionUnderline> empty_underlines;
-    editor->setComposition(empty_string, empty_underlines, 0, 0);
-  } else {
-    // A browser process sent an IPC message which contains a string to be
-    // displayed in this Editor object.
-    // To display the given string, set the given string to the
-    // m_compositionNode member of this Editor object and display it.
-    if (target_start < 0) target_start = 0;
-    if (target_end < 0) target_end = static_cast<int>(ime_string.length());
-    WebCore::String composition_string(
-        webkit_glue::StdWStringToString(ime_string));
-    // Create custom underlines.
-    // To emphasize the selection, the selected region uses a solid black
-    // for its underline while other regions uses a pale gray for theirs.
-    WTF::Vector<WebCore::CompositionUnderline> underlines(3);
-    underlines[0].startOffset = 0;
-    underlines[0].endOffset = target_start;
-    underlines[0].thick = true;
-    underlines[0].color.setRGB(0xd3, 0xd3, 0xd3);
-    underlines[1].startOffset = target_start;
-    underlines[1].endOffset = target_end;
-    underlines[1].thick = true;
-    underlines[1].color.setRGB(0x00, 0x00, 0x00);
-    underlines[2].startOffset = target_end;
-    underlines[2].endOffset = static_cast<int>(ime_string.length());
-    underlines[2].thick = true;
-    underlines[2].color.setRGB(0xd3, 0xd3, 0xd3);
-    // When we use custom underlines, WebKit ("InlineTextBox.cpp" Line 282)
-    // prevents from writing a text in between 'selectionStart' and
-    // 'selectionEnd' somehow.
-    // Therefore, we use the 'cursor_position' for these arguments so that
-    // there are not any characters in the above region.
-    editor->setComposition(composition_string, underlines,
-                           cursor_position, cursor_position);
-    // The given string is a result string, which means the ongoing
-    // composition has been completed. I have to call the
-    // Editor::confirmCompletion() and complete this composition.
-    if (string_type == 1) {
-      editor->confirmComposition();
-    }
-  }
-
-  return editor->hasComposition();
-}
-
-bool WebViewImpl::ImeUpdateStatus(bool* enable_ime,
-                                  WebRect* caret_rect) {
-  // Store whether the selected node needs IME and the caret rectangle.
-  // This process consists of the following four steps:
-  //  1. Retrieve the selection controller of the focused frame;
-  //  2. Retrieve the caret rectangle from the controller;
-  //  3. Convert the rectangle, which is relative to the parent view, to the
-  //     one relative to the client window, and;
-  //  4. Store the converted rectangle.
-  const Frame* focused = GetFocusedWebCoreFrame();
-  if (!focused)
-    return false;
-
-  const Editor* editor = focused->editor();
-  if (!editor || !editor->canEdit())
-    return false;
-
-  SelectionController* controller = focused->selection();
-  if (!controller)
-    return false;
-
-  const Node* node = controller->start().node();
-  if (!node)
-    return false;
-
-  *enable_ime = node->shouldUseInputMethod() &&
-      !controller->isInPasswordField();
-  const FrameView* view = node->document()->view();
-  if (!view)
-    return false;
-
-  *caret_rect = webkit_glue::IntRectToWebRect(
-      view->contentsToWindow(controller->absoluteCaretBounds()));
-  return true;
-}
-
-void WebViewImpl::SetTextDirection(WebTextDirection direction) {
-  // The Editor::setBaseWritingDirection() function checks if we can change
-  // the text direction of the selected node and updates its DOM "dir"
-  // attribute and its CSS "direction" property.
-  // So, we just call the function as Safari does.
-  const Frame* focused = GetFocusedWebCoreFrame();
-  if (!focused)
-    return;
-
-  Editor* editor = focused->editor();
-  if (!editor || !editor->canEdit())
-    return;
-
-  switch (direction) {
-    case WEB_TEXT_DIRECTION_DEFAULT:
-      editor->setBaseWritingDirection(WebCore::NaturalWritingDirection);
-      break;
-
-    case WEB_TEXT_DIRECTION_LTR:
-      editor->setBaseWritingDirection(WebCore::LeftToRightWritingDirection);
-      break;
-
-    case WEB_TEXT_DIRECTION_RTL:
-      editor->setBaseWritingDirection(WebCore::RightToLeftWritingDirection);
-      break;
-
-    default:
-      NOTIMPLEMENTED();
-      break;
   }
 }
 
@@ -1866,10 +1879,10 @@ void WebViewImpl::RefreshAutofillPopup() {
   IntRect new_bounds = autocomplete_popup_->boundsRect();
   // Let's resize the backing window if necessary.
   if (old_bounds != new_bounds) {
-    WebWidgetImpl* web_widget =
-        static_cast<WebWidgetImpl*>(autocomplete_popup_->client());
-    web_widget->delegate()->SetWindowRect(
-        web_widget, webkit_glue::IntRectToWebRect(new_bounds));
+    WebPopupMenuImpl* popup_menu =
+        static_cast<WebPopupMenuImpl*>(autocomplete_popup_->client());
+    popup_menu->client()->setWindowRect(
+        webkit_glue::IntRectToWebRect(new_bounds));
   }
 }
 

@@ -56,6 +56,7 @@ using WebKit::WebDataSource;
 using WebKit::WebDragData;
 using WebKit::WebHistoryItem;
 using WebKit::WebNavigationType;
+using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
@@ -63,6 +64,7 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
+using WebKit::WebWidget;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
 
@@ -161,13 +163,11 @@ WebWorker* TestWebViewDelegate::CreateWebWorker(WebWorkerClient* client) {
 
 void TestWebViewDelegate::OpenURL(WebView* webview, const GURL& url,
                                   const GURL& referrer,
-                                  WindowOpenDisposition disposition) {
-  DCHECK_NE(disposition, CURRENT_TAB);  // No code for this
-  if (disposition == SUPPRESS_OPEN)
-    return;
+                                  WebNavigationPolicy policy) {
+  DCHECK_NE(policy, WebKit::WebNavigationPolicyCurrentTab);
   TestShell* shell = NULL;
   if (TestShell::CreateNewWindow(UTF8ToWide(url.spec()), &shell))
-    shell->Show(shell->webView(), disposition);
+    shell->Show(policy);
 }
 
 void TestWebViewDelegate::DidStartLoading(WebView* webview) {
@@ -182,14 +182,14 @@ void TestWebViewDelegate::WindowObjectCleared(WebFrame* webframe) {
   shell_->BindJSObjectsToWindow(webframe);
 }
 
-WindowOpenDisposition TestWebViewDelegate::DispositionForNavigationAction(
+WebNavigationPolicy TestWebViewDelegate::PolicyForNavigationAction(
     WebView* webview,
     WebFrame* frame,
     const WebURLRequest& request,
     WebNavigationType type,
-    WindowOpenDisposition disposition,
+    WebNavigationPolicy default_policy,
     bool is_redirect) {
-  WindowOpenDisposition result;
+  WebNavigationPolicy result;
   if (policy_delegate_enabled_) {
     std::wstring frame_name = frame->GetName();
     std::string url_description;
@@ -201,12 +201,15 @@ WindowOpenDisposition TestWebViewDelegate::DispositionForNavigationAction(
     }
     printf("Policy delegate: attempt to load %s with navigation type '%s'\n",
            url_description.c_str(), WebNavigationTypeToString(type));
-    result = policy_delegate_is_permissive_ ? CURRENT_TAB : IGNORE_ACTION;
+    if (policy_delegate_is_permissive_) {
+      result = WebKit::WebNavigationPolicyCurrentTab;
+    } else {
+      result = WebKit::WebNavigationPolicyIgnore;
+    }
     if (policy_delegate_should_notify_done_)
       shell_->layout_test_controller()->PolicyDelegateDone();
   } else {
-    result = WebViewDelegate::DispositionForNavigationAction(
-        webview, frame, request, type, disposition, is_redirect);
+    result = default_policy;
   }
   return result;
 }
@@ -744,34 +747,29 @@ void TestWebViewDelegate::SetUserStyleSheetLocation(const GURL& location) {
 
 // WebWidgetDelegate ---------------------------------------------------------
 
-void TestWebViewDelegate::DidInvalidateRect(WebWidget* webwidget,
-                                            const WebRect& rect) {
-  if (WebWidgetHost* host = GetHostForWidget(webwidget))
+void TestWebViewDelegate::didInvalidateRect(const WebRect& rect) {
+  if (WebWidgetHost* host = GetWidgetHost())
     host->DidInvalidateRect(rect);
 }
 
-void TestWebViewDelegate::DidScrollRect(WebWidget* webwidget, int dx, int dy,
+void TestWebViewDelegate::didScrollRect(int dx, int dy,
                                         const WebRect& clip_rect) {
-  if (WebWidgetHost* host = GetHostForWidget(webwidget))
+  if (WebWidgetHost* host = GetWidgetHost())
     host->DidScrollRect(dx, dy, clip_rect);
 }
 
-void TestWebViewDelegate::Focus(WebWidget* webwidget) {
-  if (WebWidgetHost* host = GetHostForWidget(webwidget))
+void TestWebViewDelegate::didFocus() {
+  if (WebWidgetHost* host = GetWidgetHost())
     shell_->SetFocus(host, true);
 }
 
-void TestWebViewDelegate::Blur(WebWidget* webwidget) {
-  if (WebWidgetHost* host = GetHostForWidget(webwidget))
+void TestWebViewDelegate::didBlur() {
+  if (WebWidgetHost* host = GetWidgetHost())
     shell_->SetFocus(host, false);
 }
 
-bool TestWebViewDelegate::IsHidden(WebWidget* webwidget) {
-  return false;
-}
-
-WebScreenInfo TestWebViewDelegate::GetScreenInfo(WebWidget* webwidget) {
-  if (WebWidgetHost* host = GetHostForWidget(webwidget))
+WebScreenInfo TestWebViewDelegate::screenInfo() {
+  if (WebWidgetHost* host = GetWidgetHost())
     return host->GetScreenInfo();
 
   return WebScreenInfo();
@@ -835,10 +833,10 @@ void TestWebViewDelegate::LocationChangeDone(WebFrame* frame) {
   }
 }
 
-WebWidgetHost* TestWebViewDelegate::GetHostForWidget(WebWidget* webwidget) {
-  if (webwidget == shell_->webView())
+WebWidgetHost* TestWebViewDelegate::GetWidgetHost() {
+  if (this == shell_->delegate())
     return shell_->webViewHost();
-  if (webwidget == shell_->popup())
+  if (this == shell_->popup_delegate())
     return shell_->popupHost();
   return NULL;
 }

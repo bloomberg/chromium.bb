@@ -29,7 +29,6 @@
 #endif
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webview_delegate.h"
-#include "webkit/glue/webwidget_delegate.h"
 #if defined(OS_WIN)
 #include "webkit/tools/test_shell/drag_delegate.h"
 #include "webkit/tools/test_shell/drop_delegate.h"
@@ -85,9 +84,11 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   virtual WebView* CreateWebView(WebView* webview,
                                  bool user_gesture,
                                  const GURL& creator_url);
-  virtual WebWidget* CreatePopupWidget(WebView* webview, bool activatable);
+  virtual WebKit::WebWidget* CreatePopupWidget(
+      WebView* webview,
+      bool activatable);
 #if defined(OS_MACOSX)
-  virtual WebWidget* CreatePopupWidgetWithInfo(
+  virtual WebKit::WebWidget* CreatePopupWidgetWithInfo(
       WebView* webview,
       const WebKit::WebPopupMenuInfo& info);
 #endif
@@ -107,7 +108,8 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   virtual void OpenURL(WebView* webview,
                        const GURL& url,
                        const GURL& referrer,
-                       WindowOpenDisposition disposition);
+                       WebKit::WebNavigationPolicy policy);
+  virtual void DidMovePlugin(const WebPluginGeometry& move);
   virtual void RunJavaScriptAlert(WebFrame* webframe,
                                   const std::wstring& message);
   virtual bool RunJavaScriptConfirm(WebFrame* webframe,
@@ -219,38 +221,32 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   virtual void DidStopLoading(WebView* webview);
 
   virtual void WindowObjectCleared(WebFrame* webframe);
-  virtual WindowOpenDisposition DispositionForNavigationAction(
+  virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
     WebView* webview,
     WebFrame* frame,
     const WebKit::WebURLRequest& request,
     WebKit::WebNavigationType type,
-    WindowOpenDisposition disposition,
+    WebKit::WebNavigationPolicy default_policy,
     bool is_redirect);
   virtual void NavigateBackForwardSoon(int offset);
   virtual int GetHistoryBackListCount();
   virtual int GetHistoryForwardListCount();
 
-  // WebWidgetDelegate
-  virtual void DidInvalidateRect(WebWidget* webwidget,
-                                 const WebKit::WebRect& rect);
-  virtual void DidScrollRect(WebWidget* webwidget, int dx, int dy,
+  // WebWidgetClient
+  virtual void didInvalidateRect(const WebKit::WebRect& rect);
+  virtual void didScrollRect(int dx, int dy,
                              const WebKit::WebRect& clip_rect);
-  virtual void Show(WebWidget* webview, WindowOpenDisposition disposition);
-  virtual void CloseWidgetSoon(WebWidget* webwidget);
-  virtual void Focus(WebWidget* webwidget);
-  virtual void Blur(WebWidget* webwidget);
-  virtual void SetCursor(WebWidget* webwidget,
-                         const WebKit::WebCursorInfo& cursor);
-  virtual void GetWindowRect(WebWidget* webwidget, WebKit::WebRect* rect);
-  virtual void SetWindowRect(WebWidget* webwidget,
-                             const WebKit::WebRect& rect);
-  virtual void GetRootWindowRect(WebWidget *, WebKit::WebRect *);
-  virtual void GetRootWindowResizerRect(WebWidget* webwidget,
-                                        WebKit::WebRect* rect);
-  virtual void DidMove(WebWidget* webwidget, const WebPluginGeometry& move);
-  virtual void RunModal(WebWidget* webwidget);
-  virtual bool IsHidden(WebWidget* webwidget);
-  virtual WebKit::WebScreenInfo GetScreenInfo(WebWidget* webwidget);
+  virtual void didFocus();
+  virtual void didBlur();
+  virtual void didChangeCursor(const WebKit::WebCursorInfo& cursor);
+  virtual void closeWidgetSoon();
+  virtual void show(WebKit::WebNavigationPolicy policy);
+  virtual void runModal();
+  virtual WebKit::WebRect windowRect();
+  virtual void setWindowRect(const WebKit::WebRect& rect);
+  virtual WebKit::WebRect rootWindowRect();
+  virtual WebKit::WebRect windowResizerRect();
+  virtual WebKit::WebScreenInfo screenInfo();
 
   void SetSmartInsertDeleteEnabled(bool enabled);
   void SetSelectTrailingWhitespaceEnabled(bool enabled);
@@ -305,7 +301,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   // test.
   void LocationChangeDone(WebFrame*);
 
-  WebWidgetHost* GetHostForWidget(WebWidget* webwidget);
+  WebWidgetHost* GetWidgetHost();
 
   void UpdateForCommittedLoad(WebFrame* webframe, bool is_new_navigation);
   void UpdateURL(WebFrame* frame);

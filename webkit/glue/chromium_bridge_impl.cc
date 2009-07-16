@@ -47,6 +47,7 @@
 #endif
 
 using WebKit::WebCursorInfo;
+using WebKit::WebWidgetClient;
 
 namespace {
 
@@ -73,11 +74,11 @@ ChromeClientImpl* ToChromeClient(WebCore::Widget* widget) {
   return static_cast<ChromeClientImpl*>(page->chrome()->client());
 }
 
-WebViewImpl* ToWebView(WebCore::Widget* widget) {
+WebWidgetClient* ToWebWidgetClient(WebCore::Widget* widget) {
   ChromeClientImpl* chrome_client = ToChromeClient(widget);
-  if (!chrome_client)
+  if (!chrome_client || !chrome_client->webview())
     return NULL;
-  return chrome_client->webview();
+  return chrome_client->webview()->delegate();
 }
 
 WebCore::IntRect ToIntRect(const WebKit::WebRect& input) {
@@ -95,14 +96,10 @@ void ChromiumBridge::notifyJSOutOfMemory(Frame* frame) {
     return;
 
   // Dispatch to the delegate of the view that owns the frame.
-  WebFrame* webframe = WebFrameImpl::FromFrame(frame);
-  WebView* webview = webframe->GetView();
-  if (!webview)
+  WebViewImpl* webview = WebFrameImpl::FromFrame(frame)->GetWebViewImpl();
+  if (!webview || !webview->delegate())
     return;
-  WebViewDelegate* delegate = webview->GetDelegate();
-  if (!delegate)
-    return;
-  delegate->JSOutOfMemory();
+  webview->delegate()->JSOutOfMemory();
 }
 
 // Plugin ---------------------------------------------------------------------
@@ -138,38 +135,38 @@ String ChromiumBridge::uiResourceProtocol() {
 // Screen ---------------------------------------------------------------------
 
 int ChromiumBridge::screenDepth(Widget* widget) {
-  WebViewImpl* view = ToWebView(widget);
-  if (!view || !view->delegate())
-    return NULL;
-  return view->delegate()->GetScreenInfo(view).depth;
+  WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
+    return 0;
+  return client->screenInfo().depth;
 }
 
 int ChromiumBridge::screenDepthPerComponent(Widget* widget) {
-  WebViewImpl* view = ToWebView(widget);
-  if (!view || !view->delegate())
-    return NULL;
-  return view->delegate()->GetScreenInfo(view).depthPerComponent;
+  WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
+    return 0;
+  return client->screenInfo().depthPerComponent;
 }
 
 bool ChromiumBridge::screenIsMonochrome(Widget* widget) {
-  WebViewImpl* view = ToWebView(widget);
-  if (!view || !view->delegate())
-    return NULL;
-  return view->delegate()->GetScreenInfo(view).isMonochrome;
+  WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
+    return false;
+  return client->screenInfo().isMonochrome;
 }
 
 IntRect ChromiumBridge::screenRect(Widget* widget) {
-  WebViewImpl* view = ToWebView(widget);
-  if (!view || !view->delegate())
+  WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
     return IntRect();
-  return ToIntRect(view->delegate()->GetScreenInfo(view).rect);
+  return ToIntRect(client->screenInfo().rect);
 }
 
 IntRect ChromiumBridge::screenAvailableRect(Widget* widget) {
-  WebViewImpl* view = ToWebView(widget);
-  if (!view || !view->delegate())
+  WebWidgetClient* client = ToWebWidgetClient(widget);
+  if (!client)
     return IntRect();
-  return ToIntRect(view->delegate()->GetScreenInfo(view).availableRect);
+  return ToIntRect(client->screenInfo().availableRect);
 }
 
 // Widget ---------------------------------------------------------------------

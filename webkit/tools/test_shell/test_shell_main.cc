@@ -215,7 +215,7 @@ int main(int argc, char* argv[]) {
       WebKit::registerExtension(extensions_v8::PlaybackExtension::Get());
     }
 
-    shell->Show(shell->webView(), NEW_WINDOW);
+    shell->Show(WebKit::WebNavigationPolicyNewWindow);
 
     if (parsed_command_line.HasSwitch(test_shell::kDumpStatsTable))
       shell->DumpStatsTableOnExit();

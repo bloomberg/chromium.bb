@@ -21,7 +21,7 @@ std::wstring TestShellTest::GetTestURL(const FilePath& test_case_path,
 void TestShellTest::SetUp() {
   // Make a test shell for use by the test.
   CreateEmptyWindow();
-  test_shell_->Show(test_shell_->webView(), NEW_WINDOW);
+  test_shell_->Show(WebKit::WebNavigationPolicyNewWindow);
 
   // Point data_dir_ to the root of the test case dir
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_dir_));

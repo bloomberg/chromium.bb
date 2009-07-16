@@ -740,7 +740,7 @@ void WebPluginImpl::setFrameRect(const WebCore::IntRect& rect) {
     move.rects_valid = true;
     move.visible = widget_->isVisible();
 
-    webview->delegate()->DidMove(webview, move);
+    webview->delegate()->DidMovePlugin(move);
   }
 
   // Notify the plugin that its parameters have changed.
@@ -1435,5 +1435,5 @@ void WebPluginImpl::UpdateVisibility() {
   move.rects_valid = false;
   move.visible = widget_->isVisible();
 
-  webview->delegate()->DidMove(webview, move);
+  webview->delegate()->DidMovePlugin(move);
 }

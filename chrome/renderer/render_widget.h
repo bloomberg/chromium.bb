@@ -17,9 +17,10 @@
 #include "chrome/renderer/render_process.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
+#include "webkit/api/public/WebCompositionCommand.h"
 #include "webkit/api/public/WebRect.h"
-#include "webkit/glue/webwidget_delegate.h"
+#include "webkit/api/public/WebTextDirection.h"
+#include "webkit/api/public/WebWidgetClient.h"
 #include "webkit/glue/webcursor.h"
 
 class RenderThreadBase;
@@ -34,7 +35,7 @@ struct WebPopupMenuInfo;
 // a RenderWidgetHost, the latter of which lives in a different process.
 class RenderWidget : public IPC::Channel::Listener,
                      public IPC::Message::Sender,
-                     virtual public WebWidgetDelegate,
+                     virtual public WebKit::WebWidgetClient,
                      public base::RefCounted<RenderWidget> {
  public:
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
@@ -56,7 +57,7 @@ class RenderWidget : public IPC::Channel::Listener,
   }
 
   // May return NULL when the window is closing.
-  WebWidget* webwidget() const {
+  WebKit::WebWidget* webwidget() const {
     return webwidget_;
   }
 
@@ -66,27 +67,24 @@ class RenderWidget : public IPC::Channel::Listener,
   // IPC::Message::Sender
   virtual bool Send(IPC::Message* msg);
 
-  // WebWidgetDelegate
-  virtual void DidInvalidateRect(WebWidget* webwidget,
-                                 const WebKit::WebRect& rect);
-  virtual void DidScrollRect(WebWidget* webwidget, int dx, int dy,
-                             const WebKit::WebRect& clip_rect);
-  virtual void Show(WebWidget* webwidget, WindowOpenDisposition disposition);
-  virtual void CloseWidgetSoon(WebWidget* webwidget);
-  virtual void Focus(WebWidget* webwidget);
-  virtual void Blur(WebWidget* webwidget);
-  virtual void SetCursor(WebWidget* webwidget,
-                         const WebKit::WebCursorInfo& cursor);
-  virtual void GetWindowRect(WebWidget* webwidget, WebKit::WebRect* rect);
-  virtual void SetWindowRect(WebWidget* webwidget,
-                             const WebKit::WebRect& rect);
-  virtual void GetRootWindowRect(WebWidget* webwidget, WebKit::WebRect* rect);
-  virtual void GetRootWindowResizerRect(WebWidget* webwidget,
-                                        WebKit::WebRect* rect);
-  virtual void DidMove(WebWidget* webwidget, const WebPluginGeometry& move);
-  virtual void RunModal(WebWidget* webwidget) {}
-  virtual bool IsHidden(WebWidget* webwidget) { return is_hidden_; }
-  virtual WebKit::WebScreenInfo GetScreenInfo(WebWidget* webwidget);
+  // WebKit::WebWidgetClient
+  virtual void didInvalidateRect(const WebKit::WebRect&);
+  virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect);
+  virtual void didFocus();
+  virtual void didBlur();
+  virtual void didChangeCursor(const WebKit::WebCursorInfo&);
+  virtual void closeWidgetSoon();
+  virtual void show(WebKit::WebNavigationPolicy);
+  virtual void runModal() {}
+  virtual WebKit::WebRect windowRect();
+  virtual void setWindowRect(const WebKit::WebRect&);
+  virtual WebKit::WebRect windowResizerRect();
+  virtual WebKit::WebRect rootWindowRect();
+  virtual WebKit::WebScreenInfo screenInfo();
+
+  // Called when a plugin is moved.  These events are queued up and sent with
+  // the next paint or scroll message to the host.
+  void SchedulePluginMove(const WebPluginGeometry& move);
 
   // Invalidates entire widget rect to generate a full repaint.
   void GenerateFullRepaint();
@@ -138,11 +136,12 @@ class RenderWidget : public IPC::Channel::Listener,
   void OnMouseCaptureLost();
   void OnSetFocus(bool enable);
   void OnImeSetInputMode(bool is_active);
-  void OnImeSetComposition(int string_type, int cursor_position,
+  void OnImeSetComposition(WebKit::WebCompositionCommand command,
+                           int cursor_position,
                            int target_start, int target_end,
-                           const std::wstring& ime_string);
+                           const string16& ime_string);
   void OnMsgRepaint(const gfx::Size& size_to_paint);
-  void OnSetTextDirection(int direction);
+  void OnSetTextDirection(WebKit::WebTextDirection direction);
 
   // Override point to notify that a paint has happened. This fires after the
   // browser side has updated the screen for a newly painted region.
@@ -188,7 +187,7 @@ class RenderWidget : public IPC::Channel::Listener,
   int32 routing_id_;
 
   // We are responsible for destroying this object via its Close method.
-  WebWidget* webwidget_;
+  WebKit::WebWidget* webwidget_;
 
   // Set to the ID of the view that initiated creating this view, if any. When
   // the view was initiated by the browser (the common case), this will be
