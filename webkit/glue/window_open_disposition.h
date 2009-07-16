@@ -21,10 +21,8 @@ enum WindowOpenDisposition {
   IGNORE_ACTION
 };
 
-// Conversion functions:
+// Conversion function:
 WindowOpenDisposition NavigationPolicyToDisposition(
     WebKit::WebNavigationPolicy policy);
-//WebKit::WebNavigationPolicy DispositionToNavigationPolicy(
-//    WindowOpenDisposition disposition);
 
 #endif  // WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
