@@ -205,7 +205,8 @@ class ValgrindTool(object):
     proc = ["valgrind",
             "--tool=%s" % tool_name,
             "--smc-check=all",
-            "--num-callers=%i" % self._num_callers]
+            "--num-callers=%i" % self._num_callers,
+            "--demangle=no"]
 
     if self._options.trace_children:
       proc += ["--trace-children=yes"];

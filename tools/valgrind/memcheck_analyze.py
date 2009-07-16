@@ -10,6 +10,7 @@
 import logging
 import optparse
 import os
+import subprocess
 import sys
 import time
 from xml.dom.minidom import parse
@@ -139,13 +140,25 @@ class ValgrindError:
         frames = None
 
   def __str__(self):
-    ''' Pretty print the type and backtrace(s) of this specific error.'''
+    ''' Pretty print the type and backtrace(s) of this specific error,
+        including suppression (which is just a mangled backtrace).'''
     output = self._kind + "\n"
     for backtrace in self._backtraces:
       output += backtrace[0] + "\n"
+      filter = subprocess.Popen("c++filt", stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                close_fds=True)
+      buf = ""
       for frame in backtrace[1]:
-        output += ("  " + (frame[FUNCTION_NAME] or frame[INSTRUCTION_POINTER]) +
-                   " (")
+        buf +=  (frame[FUNCTION_NAME] or frame[INSTRUCTION_POINTER]) + "\n"
+      (stdoutbuf, stderrbuf) = filter.communicate(buf.encode('latin-1'))
+      demangled_names = stdoutbuf.split("\n")
+
+      i = 0
+      for frame in backtrace[1]:
+        output += ("  " + demangled_names[i] + " (")
+        i = i + 1
 
         if frame[SRC_FILE_DIR] != "":
           output += (frame[SRC_FILE_DIR] + "/" + frame[SRC_FILE_NAME] + ":" +
@@ -153,6 +166,10 @@ class ValgrindError:
         else:
           output += frame[OBJECT_FILE]
         output += ")\n"
+
+      output += "Suppression:\n"
+      for frame in backtrace[1]:
+        output += "  fun:" + (frame[FUNCTION_NAME] or "*") + "\n"
 
     return output
 
@@ -216,7 +233,8 @@ class MemcheckAnalyze:
             # Ignore "possible" leaks for now by default.
             if (show_all_leaks or
                 getTextOf(raw_error, "kind") != "Leak_PossiblyLost"):
-              self._errors.add(ValgrindError(source_dir, raw_error))
+              error = ValgrindError(source_dir, raw_error)
+              self._errors.add(error)
         except ExpatError, e:
           self._parse_failed = True
           logging.warn("could not parse %s: %s" % (file, e))
