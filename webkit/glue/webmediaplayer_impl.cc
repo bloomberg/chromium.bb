@@ -298,7 +298,7 @@ float WebMediaPlayerImpl::duration() const {
 float WebMediaPlayerImpl::currentTime() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  return static_cast<float>(pipeline_->GetTime().InSecondsF());
+  return static_cast<float>(pipeline_->GetCurrentTime().InSecondsF());
 }
 
 int WebMediaPlayerImpl::dataRate() const {

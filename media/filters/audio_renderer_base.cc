@@ -67,7 +67,7 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
 
   // Defer initialization until all scheduled reads have completed.
   if (!OnInitialize(decoder_->media_format())) {
-    host()->Error(PIPELINE_ERROR_INITIALIZATION_FAILED);
+    host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
     initialize_callback_->Run();
     initialize_callback_.reset();
   }
@@ -96,7 +96,7 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
     if (queue_.empty()) {
       // If we say we have initialized but buffer queue is empty, raise an
       // error.
-      host()->Error(PIPELINE_ERROR_NO_DATA);
+      host()->SetError(PIPELINE_ERROR_NO_DATA);
     } else {
       initialized_ = true;
     }

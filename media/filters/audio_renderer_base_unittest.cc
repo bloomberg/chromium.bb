@@ -89,7 +89,7 @@ TEST_F(AudioRendererBaseTest, Initialize_Failed) {
       .WillOnce(Return(false));
 
   // We expect to receive an error.
-  EXPECT_CALL(host_, Error(PIPELINE_ERROR_INITIALIZATION_FAILED));
+  EXPECT_CALL(host_, SetError(PIPELINE_ERROR_INITIALIZATION_FAILED));
 
   // We expect our callback to be executed.
   EXPECT_CALL(callback_, OnFilterCallback());

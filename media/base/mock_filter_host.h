@@ -28,7 +28,7 @@ class MockFilterHost : public FilterHost {
 
   // FilterHost implementation.
   MOCK_METHOD0(InitializationComplete, void());
-  MOCK_METHOD1(Error, void(PipelineError error));
+  MOCK_METHOD1(SetError, void(PipelineError error));
   MOCK_CONST_METHOD0(GetTime, base::TimeDelta());
   MOCK_METHOD1(SetTime, void(base::TimeDelta time));
   MOCK_METHOD1(SetDuration, void(base::TimeDelta duration));

@@ -16,7 +16,7 @@ namespace media {
 class FilterHostImpl : public FilterHost {
  public:
   // FilterHost interface.
-  virtual void Error(PipelineError error);
+  virtual void SetError(PipelineError error);
   virtual base::TimeDelta GetTime() const;
   virtual void SetTime(base::TimeDelta time);
   virtual void SetDuration(base::TimeDelta duration);

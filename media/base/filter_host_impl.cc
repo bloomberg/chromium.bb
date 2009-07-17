@@ -6,12 +6,12 @@
 
 namespace media {
 
-void FilterHostImpl::Error(PipelineError error) {
-  pipeline_internal_->Error(error);
+void FilterHostImpl::SetError(PipelineError error) {
+  pipeline_internal_->SetError(error);
 }
 
 base::TimeDelta FilterHostImpl::GetTime() const {
-  return pipeline()->GetTime();
+  return pipeline()->GetCurrentTime();
 }
 
 void FilterHostImpl::SetTime(base::TimeDelta time) {

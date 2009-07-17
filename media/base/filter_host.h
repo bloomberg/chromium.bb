@@ -26,7 +26,7 @@ class FilterHost {
  public:
   // Stops execution of the pipeline due to a fatal error.  Do not call this
   // method with PIPELINE_OK or PIPELINE_STOPPING (used internally by pipeline).
-  virtual void Error(PipelineError error) = 0;
+  virtual void SetError(PipelineError error) = 0;
 
   // Gets the current time in microseconds.
   virtual base::TimeDelta GetTime() const = 0;

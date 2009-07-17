@@ -542,7 +542,7 @@ void BufferedDataSource::Initialize(const std::string& url,
 
   // Make sure we support the scheme of the URL.
   if (!IsSchemeSupported(url_)) {
-    host()->Error(media::PIPELINE_ERROR_NETWORK);
+    host()->SetError(media::PIPELINE_ERROR_NETWORK);
     initialize_callback_->Run();
     initialize_callback_.reset();
     return;
@@ -569,7 +569,7 @@ void BufferedDataSource::Initialize(const std::string& url,
 
   // Use the local reference to start the request.
   if (!resource_loader) {
-    host()->Error(media::PIPELINE_ERROR_NETWORK);
+    host()->SetError(media::PIPELINE_ERROR_NETWORK);
     initialize_callback_->Run();
     initialize_callback_.reset();
     return;
@@ -577,7 +577,7 @@ void BufferedDataSource::Initialize(const std::string& url,
 
   if (net::ERR_IO_PENDING != resource_loader->Start(
           NewCallback(this, &BufferedDataSource::InitialRequestStarted))) {
-    host()->Error(media::PIPELINE_ERROR_NETWORK);
+    host()->SetError(media::PIPELINE_ERROR_NETWORK);
     initialize_callback_->Run();
     initialize_callback_.reset();
   }
@@ -680,7 +680,7 @@ bool BufferedDataSource::IsSeekable() {
 void BufferedDataSource::HandleError(media::PipelineError error) {
   AutoLock auto_lock(lock_);
   if (!stopped_) {
-    host()->Error(error);
+    host()->SetError(error);
   }
 }
 
@@ -709,7 +709,7 @@ void BufferedDataSource::OnInitialRequestStarted(int error) {
         host()->SetBufferedBytes(total_bytes_);
       }
     } else {
-      host()->Error(media::PIPELINE_ERROR_NETWORK);
+      host()->SetError(media::PIPELINE_ERROR_NETWORK);
     }
   }
   initialize_callback_->Run();

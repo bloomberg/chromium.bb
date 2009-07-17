@@ -157,7 +157,7 @@ class DecoderBase : public Decoder {
 
     // Delegate to subclass first.
     if (!OnInitialize(demuxer_stream_)) {
-      this->host()->Error(PIPELINE_ERROR_DECODE);
+      this->host()->SetError(PIPELINE_ERROR_DECODE);
       callback->Run();
       return;
     }
