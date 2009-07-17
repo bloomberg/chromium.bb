@@ -12,6 +12,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include <string>
 #include <vector>
 
 #include "base/eintr_wrapper.h"
@@ -202,13 +203,14 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
       sizeof(google_breakpad::ExceptionHandler::CrashContext);
 
   struct msghdr msg = {0};
-  struct iovec iov[3];
+  struct iovec iov[4];
   char crash_context[kCrashContextSize];
   char guid[kGuidSize + 1];
   char crash_url[kMaxActiveURLSize + 1];
+  char distro[kDistroSize + 1];
   char control[kControlMsgSize];
   const ssize_t expected_msg_size = sizeof(crash_context) + sizeof(guid) +
-      sizeof(crash_url);
+      sizeof(crash_url) + sizeof(distro);
 
   iov[0].iov_base = crash_context;
   iov[0].iov_len = sizeof(crash_context);
@@ -216,8 +218,10 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   iov[1].iov_len = sizeof(guid);
   iov[2].iov_base = crash_url;
   iov[2].iov_len = sizeof(crash_url);
+  iov[3].iov_base = distro;
+  iov[3].iov_len = sizeof(distro);
   msg.msg_iov = iov;
-  msg.msg_iovlen = 3;
+  msg.msg_iovlen = 4;
   msg.msg_control = control;
   msg.msg_controllen = kControlMsgSize;
 
@@ -251,7 +255,7 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     if (hdr->cmsg_type == SCM_RIGHTS) {
       const unsigned len = hdr->cmsg_len -
           (((uint8_t*)CMSG_DATA(hdr)) - (uint8_t*)hdr);
-      DCHECK(len % sizeof(int) == 0);
+      DCHECK_EQ(len % sizeof(int), 0u);
       const unsigned num_fds = len / sizeof(int);
       if (num_fds > 1 || num_fds == 0) {
         // A nasty renderer could try and send us too many descriptors and
@@ -320,10 +324,17 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   HANDLE_EINTR(sendmsg(signal_fd, &msg, MSG_DONTWAIT | MSG_NOSIGNAL));
   HANDLE_EINTR(close(signal_fd));
 
-  UploadCrashDump(minidump_filename.c_str(),
-                  "renderer", 8,
-                  crash_url, strlen(crash_url),
-                  guid, strlen(guid));
+  BreakpadInfo info;
+  info.filename = minidump_filename.c_str();
+  info.process_type = "renderer";
+  info.process_type_length = 8;
+  info.crash_url = crash_url;
+  info.crash_url_length = strlen(crash_url);
+  info.guid = guid;
+  info.guid_length = strlen(guid);
+  info.distro = distro;
+  info.distro_length = strlen(distro);
+  UploadCrashDump(info);
 }
 
 void RenderCrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {

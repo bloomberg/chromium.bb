@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 
+#include <map>
 #include <string>
 
 #include "base/process.h"

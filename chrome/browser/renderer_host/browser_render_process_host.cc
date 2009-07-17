@@ -10,11 +10,14 @@
 #include "build/build_config.h"
 
 #include <algorithm>
+#include <limits>
+#include <vector>
+
+#if defined(OS_POSIX)
+#include <utility>  // for pair<>
+#endif
 
 #include "app/app_switches.h"
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 #include "base/command_line.h"
 #include "base/field_trial.h"
 #include "base/linked_ptr.h"
@@ -54,29 +57,17 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/generated_resources.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#include "chrome/browser/sandbox_policy.h"
+#elif defined(OS_LINUX)
+#include "base/linux_util.h"
 #include "chrome/browser/zygote_host_linux.h"
 #include "chrome/browser/renderer_host/render_crash_handler_host_linux.h"
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #endif
 
 using WebKit::WebCache;
-
-#if defined(OS_WIN)
-
-// TODO(port): see comment by the only usage of RenderViewHost in this file.
-#include "chrome/browser/renderer_host/render_view_host.h"
-
-
-// Once the above TODO is finished, then this block is all Windows-specific
-// files.
-#include "base/win_util.h"
-#include "chrome/browser/sandbox_policy.h"
-#include "sandbox/src/sandbox.h"
-#elif defined(OS_POSIX)
-// TODO(port): Remove temporary scaffolding after porting the above headers.
-#include "chrome/common/temp_scaffolding_stubs.h"
-#endif
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -401,7 +392,8 @@ bool BrowserRenderProcessHost::Init() {
 #if defined(OS_LINUX)
   if (GoogleUpdateSettings::GetCollectStatsConsent())
     cmd_line.AppendSwitchWithValue(switches::kRendererCrashDump,
-                                   ASCIIToWide(google_update::linux_guid));
+                                   ASCIIToWide(google_update::linux_guid +
+                                               "," + base::GetLinuxDistro()));
 #endif
 
   cmd_line.AppendSwitchWithValue(switches::kProcessType,
@@ -451,7 +443,7 @@ bool BrowserRenderProcessHost::Init() {
       process = Singleton<ZygoteHost>()->ForkRenderer(cmd_line.argv(), mapping);
       zygote_child_ = true;
     } else {
-#endif
+#endif  // defined(OS_LINUX)
       // NOTE: This code is duplicated with plugin_process_host.cc, but
       // there's not a good place to de-duplicate it.
       base::file_handle_mapping_vector fds_to_map;
@@ -467,13 +459,13 @@ bool BrowserRenderProcessHost::Init() {
       const int sandbox_fd =
           Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
       fds_to_map.push_back(std::make_pair(sandbox_fd, kSandboxIPCChannel + 3));
-#endif
+#endif  // defined(OS_LINUX)
       base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
       zygote_child_ = false;
 #if defined(OS_LINUX)
     }
-#endif
-#endif
+#endif  // defined(OS_LINUX)
+#endif  // defined(OS_WIN)
 
     if (!process) {
       channel_.reset();
@@ -527,7 +519,7 @@ void BrowserRenderProcessHost::ReceivedBadMessage(uint16 msg_type) {
 
 void BrowserRenderProcessHost::WidgetRestored() {
   // Verify we were properly backgrounded.
-  DCHECK(backgrounded_ == (visible_widgets_ == 0));
+  DCHECK_EQ(backgrounded_, (visible_widgets_ == 0));
   visible_widgets_++;
   visited_link_updater_->Update(this);
   SetBackgrounded(false);
@@ -538,9 +530,9 @@ void BrowserRenderProcessHost::WidgetHidden() {
   if (backgrounded_)
     return;
 
-  DCHECK(backgrounded_ == (visible_widgets_ == 0));
+  DCHECK_EQ(backgrounded_, (visible_widgets_ == 0));
   visible_widgets_--;
-  DCHECK(visible_widgets_ >= 0);
+  DCHECK_GE(visible_widgets_, 0);
   if (visible_widgets_ == 0) {
     DCHECK(!backgrounded_);
     SetBackgrounded(true);
@@ -918,7 +910,7 @@ void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
     // which causes random crashes in the browser process. Our hack for now
     // is to not invoke the SetPriorityClass API if the dll is loaded.
     should_set_backgrounded = (GetModuleHandle(L"cbstext.dll") == NULL);
-#endif // OS_WIN
+#endif  // OS_WIN
 
     if (should_set_backgrounded) {
       bool rv = process_.SetProcessBackgrounded(backgrounded);
