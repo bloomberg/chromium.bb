@@ -137,11 +137,10 @@ class View : public AcceleratorTarget {
   // This is the function subclasses should use whenever they need to obtain
   // the bounds of one of their child views (for example, when implementing
   // View::Layout()).
-  // TODO(beng): Convert |bounds_| to a gfx::Rect.
-  gfx::Rect bounds() const { return bounds_; }
+  const gfx::Rect& bounds() const { return bounds_; }
 
   // Get the size of the View.
-  gfx::Size size() const { return bounds_.size(); }
+  const gfx::Size& size() const { return bounds_.size(); }
 
   // Return the bounds of the View, relative to the parent. If
   // |settings| is IGNORE_MIRRORING_TRANSFORMATION, the function returns the
@@ -422,7 +421,7 @@ class View : public AcceleratorTarget {
   // Get the number of child Views.
   int GetChildViewCount() const;
 
-  // Get the child View at the specified point.
+  // Returns the deepest descendant that contains the specified point.
   virtual View* GetViewForPoint(const gfx::Point& point);
 
   // Get the Widget that hosts this View, if any.
