@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,20 +48,6 @@ namespace nacl {
 
 class VideoMap;
 
-class StreamBuffer {
- public:
-  explicit StreamBuffer(NPStream* stream);
-  ~StreamBuffer() { free(buffer_); }
-  NPStream* get_stream() { return stream_id_; }
-  int32_t write(int32_t offset, int32_t len, void *buf);
-  int32_t size() { return current_size_; }
-  void* get_buffer() { return buffer_; }
- private:
-  void *buffer_;
-  int32_t current_size_;
-  NPStream *stream_id_;
-};
-
 class SRPC_Plugin : public NPInstance, public PortablePluginInterface {
  public:
   explicit SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[]);
@@ -77,12 +63,6 @@ class SRPC_Plugin : public NPInstance, public PortablePluginInterface {
                     NPStream* stream,
                     NPBool seekable,
                     uint16_t* stype);
-  int32_t WriteReady(NPStream* stream);
-  int32_t Write(NPStream* stream,
-                int32 offset,
-                int32 len,
-                void* buf);
-
   void StreamAsFile(NPStream* stream, const char* filename);
   NPError DestroyStream(NPStream *stream, NPError reason);
   void URLNotify(const char* url, NPReason reason, void* notify_data);

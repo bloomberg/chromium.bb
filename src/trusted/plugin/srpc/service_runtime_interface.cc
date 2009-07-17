@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,6 @@
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/multimedia_socket.h"
 #include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
-#include "native_client/src/trusted/plugin/srpc/shared_memory.h"
 #include "native_client/src/trusted/plugin/srpc/socket_address.h"
 #include "native_client/src/trusted/plugin/srpc/srt_socket.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
@@ -68,12 +67,47 @@ ServiceRuntimeInterface::ServiceRuntimeInterface(
     multimedia_channel_(NULL),
     subprocess_(NULL) {
 }
-
-bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
-                                                int32_t size) {
+bool ServiceRuntimeInterface::Start(const char* nacl_file) {
   // TODO(sehr): this should use the new
   // SelLdrLauncher::OpenSrpcChannels interface, which should be free
   // of resource leaks.
+
+  // The arguments we want to pass to the service runtime are
+  // "-P 5" sets the default SRPC channel to be over descriptor 5.  The 5 needs
+  //      to match the 5 in the Launcher invocation below.
+  // "-X 5" causes the service runtime to create a bound socket and socket
+  //      address at descriptors 3 and 4.  The socket address is transferred as
+  //      the first IMC message on descriptor 5.  This is used when connecting
+  //      to socket addresses.
+  // "-d" (not default) invokes the service runtime in debug mode.
+  // const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
+  const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
+  // TODO(sehr): remove -P support and default channels.
+  const int kSelLdrArgLength = sizeof(kSelLdrArgs) / sizeof(kSelLdrArgs[0]);
+
+  // NB: number_alive is intentionally modified only when
+  // SRPC_PLUGIN_DEBUG is enabled.
+  dprintf(("ServiceRuntimeInterface::ServiceRuntimeInterface(%p, %p, %s, %d)\n",
+           static_cast<void *>(this),
+           static_cast<void *>(plugin()),
+           nacl_file,
+           ++number_alive_counter));
+
+  subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
+  if(NULL == subprocess_) {
+    return false;
+  }
+  if (!subprocess_->Start(const_cast<char*>(nacl_file),
+                          5,
+                          kSelLdrArgLength,
+                          kSelLdrArgs,
+                          0,
+                          NULL)) {
+    delete subprocess_;
+    subprocess_ = NULL;
+    return false;
+  }
+
   // Channel5 was opened to communicate with the sel_ldr instance.
   // Get the first IMC message and create a socket address from it.
   NaClHandle channel5 = subprocess_->channel();
@@ -153,35 +187,9 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
   dprintf(("invoking set_origin\n"));
   if (!runtime_channel_->SetOrigin(plugin_->nacl_module_origin())) {
     dprintf(("ServiceRuntimeInterface::Start: "
-            "set_orign RPC failed.\n"));
+      "set_orign RPC failed.\n"));
     // BUG: leaking raw_channel and runtime_channel_.
     return false;
-  }
-
-  if (buffer != NULL) {
-    // We now have an open communication channel to the sel_ldr process,
-    // so we can send the nexe bits over
-    SharedMemoryInitializer init_info(plugin_interface_, plugin_, size);
-    ScriptableHandle<SharedMemory> *shared_memory =
-      ScriptableHandle<SharedMemory>::New(&init_info);
-
-    SharedMemory *real_shared_memory =
-      static_cast<SharedMemory*>(shared_memory->get_handle());
-    // TODO(gregoryd): another option is to export a Write() function
-    // from SharedMemory
-    memcpy(real_shared_memory->buffer(), buffer, size);
-
-
-    if (!runtime_channel_->LoadModule(real_shared_memory->desc())) {
-      dprintf(("ServiceRuntimeInterface::Start failed to send nexe\n"));
-      shared_memory->Unref();
-      // TODO(gregoryd): close communication channels
-      delete subprocess_;
-      subprocess_ = NULL;
-      return false;
-    }
-
-    shared_memory->Unref();
   }
 
   // start the module.  otherwise we cannot connect for multimedia
@@ -251,71 +259,6 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
             "InitializeModuleMultimedia failed.\n"));
     return false;
   }
-  return true;
-}
-
-bool ServiceRuntimeInterface::Start(const char* nacl_file) {
-  // The arguments we want to pass to the service runtime are
-  // "-P 5" sets the default SRPC channel to be over descriptor 5.  The 5 needs
-  //      to match the 5 in the Launcher invocation below.
-  // "-X 5" causes the service runtime to create a bound socket and socket
-  //      address at descriptors 3 and 4.  The socket address is transferred as
-  //      the first IMC message on descriptor 5.  This is used when connecting
-  //      to socket addresses.
-  // "-d" (not default) invokes the service runtime in debug mode.
-  // const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
-  const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
-  // TODO(sehr): remove -P support and default channels.
-  const int kSelLdrArgLength = sizeof(kSelLdrArgs) / sizeof(kSelLdrArgs[0]);
-
-  // NB: number_alive is intentionally modified only when
-  // SRPC_PLUGIN_DEBUG is enabled.
-  dprintf(("ServiceRuntimeInterface::ServiceRuntimeInterface(%p, %p, %s, %d)\n",
-           static_cast<void *>(this),
-           static_cast<void *>(plugin()),
-           nacl_file,
-           ++number_alive_counter));
-
-  subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
-  if (NULL == subprocess_) {
-    return false;
-  }
-  if (!subprocess_->Start(const_cast<char*>(nacl_file),
-                          5,
-                          kSelLdrArgLength,
-                          kSelLdrArgs,
-                          0,
-                          NULL)) {
-    delete subprocess_;
-    subprocess_ = NULL;
-    return false;
-  }
-
-  // TODO(gregoryd) - this should deal with buffer and size correctly
-  // - do we need to send the load command from here?
-  if (!InitCommunication(NULL, 0)) {
-    return false;
-  }
-
-  dprintf(("ServiceRuntimeInterface::Start was successful\n"));
-  return true;
-}
-
-bool ServiceRuntimeInterface::Start(const void* buffer, int32_t size) {
-  subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
-  if (NULL == subprocess_) {
-    return false;
-  }
-  if (!subprocess_->Start(5)) {
-      delete subprocess_;
-      subprocess_ = NULL;
-      return false;
-  }
-
-  if (!InitCommunication(buffer, size)) {
-    return false;
-  }
-
   dprintf(("ServiceRuntimeInterface::Start was successful\n"));
   return true;
 }

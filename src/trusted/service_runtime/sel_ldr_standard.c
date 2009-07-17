@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -472,12 +472,6 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   struct NaClAppThread  *natp;
   uintptr_t             esp;
 
-  /*
-  * Set an exception handler so Windows won't show a message box if
-  * an exception occurs
-  */
-  WINDOWS_EXCEPTION_TRY;
-
   retval = 0;  /* fail */
   CHECK(argc > 0);
   CHECK(NULL != argv);
@@ -578,7 +572,6 @@ cleanup:
   free(argv_len);
   free(envv_len);
 
-  WINDOWS_EXCEPTION_CATCH;
   return retval;
 }
 

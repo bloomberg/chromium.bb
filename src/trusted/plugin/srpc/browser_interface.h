@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,12 +35,12 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_BROWSER_INTERFACE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_BROWSER_INTERFACE_H_
 
-#include "native_client/src/include/portability.h"
 
 #include <stdio.h>
 #include <map>
 #include <string>
 #include "native_client/src/include/base/basictypes.h"
+
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
 namespace nacl_srpc {
@@ -83,14 +83,8 @@ class PortablePluginInterface {
   static bool CheckExecutableVersion(nacl_srpc::PluginIdentifier instance,
                                      const char *filename);
 
-  static bool CheckExecutableVersion(nacl_srpc::PluginIdentifier instance,
-                                     const void* buffer,
-                                     int32_t size);
   void InitializeIdentifiers();
   virtual ~PortablePluginInterface() {}
- private:
-  static bool CheckExecutableVersionCommon(nacl_srpc::PluginIdentifier instance,
-                                           const char *version);
  public:
   static int kConnectIdent;
   static int kHeightIdent;
@@ -119,7 +113,7 @@ class PortablePluginInterface {
   static int kHrefIdent;
  private:
   static bool identifiers_initialized;
-  static uint8_t const kInvalidAbiVersion;
+
 };
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_BROWSER_INTERFACE_H_

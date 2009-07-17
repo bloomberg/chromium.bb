@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,16 +65,6 @@ class NPInstance {
   // pathname form like like "MachintoshHD:private:..." to the plugin, the NaCl
   // plugin converts it to the POSIX form before calling StreamAsFile().
   virtual void StreamAsFile(NPStream* stream, const char* filename) = 0;
-
-  // Processes NPP_WriteReady invocation from the browser.
-  virtual int32_t WriteReady(NPStream* stream) = 0;
-
-  // Processes NPP_Write invocation from the browser.
-  virtual int32_t Write(NPStream* stream,
-                        int32_t offset,
-                        int32_t len,
-                        void* buf) = 0;
-
   // Processes NPP_DestroyStream() invocation from the browser.
   virtual NPError DestroyStream(NPStream *stream, NPError reason) = 0;
   // Processes NPP_URLNotify() invocation from the browser.

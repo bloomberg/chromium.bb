@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,34 +63,8 @@ static int32_t stringToInt32(char *src) {
   return strtol(buf, static_cast<char **>(NULL), 10);
 }
 
-StreamBuffer::StreamBuffer(NPStream* stream): buffer_(NULL),
-                                              current_size_(0),
-                                              stream_id_(stream) {
-  size_t rounded_size = NaClRoundAllocPage(stream->end);
-  buffer_ = malloc(rounded_size);
-  if (NULL != buffer_) {
-    current_size_ = rounded_size;
-  }
-}
-
-int32_t StreamBuffer::write(int32_t offset, int32_t len, void *buf) {
-  int32_t new_max_size = offset + len;
-
-  if (new_max_size > current_size_) {
-    void* old_buffer = buffer_;
-    buffer_ = realloc(buffer_, new_max_size);
-    if (NULL == buffer_) {
-      buffer_ = old_buffer;
-      return 0;
-    }
-  }
-  memcpy(reinterpret_cast<char*>(buffer_) + offset, buf, len);
-  return len;
-}
-
 SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
-    : npp_(npp),
-      plugin_(NULL) {
+  : npp_(npp), plugin_(NULL) {
   dprintf(("SRPC_Plugin::SRPC_Plugin(%p, %d)\n",
            static_cast<void *>(this), argc));
   InitializeIdentifiers();
@@ -181,11 +155,13 @@ NPError SRPC_Plugin::Destroy(NPSavedData **save) {
 // passed a semi-custom window descriptor (some is platform-neutral, some not)
 // as documented in the NPAPI documentation.
 NPError SRPC_Plugin::SetWindow(NPWindow *window) {
-  NPError ret = NPERR_GENERIC_ERROR;
+  NPError ret;
   dprintf(("SRPC_Plugin::SetWindow(%p, %p)\n", static_cast<void *>(this),
            static_cast<void *>(window)));
-  if (video_ && video_->SetWindow(window)) {
-      ret = NPERR_NO_ERROR;
+  if (video_) {
+    ret = video_->SetWindow(window);
+  } else {
+    ret = NPERR_GENERIC_ERROR;
   }
   return ret;
 }
@@ -239,57 +215,9 @@ NPError SRPC_Plugin::NewStream(NPMIMEType type,
   dprintf(("SRPC_Plugin::NewStream(%p, %s, %p, %d)\n",
            static_cast<void *>(this), type, static_cast<void *>(stream),
            seekable));
-#ifdef CHROME_BUILD
-  // When running as a built-in plugin in Chrome we cannot access the
-  // file system, therefore we use normal streams to get the data.
-  *stype = NP_NORMAL;
-#else
+
   *stype = NP_ASFILEONLY;
-#endif
   return NPERR_NO_ERROR;
-}
-
-int32_t SRPC_Plugin::WriteReady(NPStream* stream) {
-  return 32 * 1024;
-}
-
-int32_t SRPC_Plugin::Write(NPStream* stream,
-                           int32_t offset,
-                           int32_t len,
-                           void* buf) {
-  StreamBuffer *stream_buffer;
-  if (NULL == stream->pdata) {
-    stream_buffer = new StreamBuffer(stream);
-    stream->pdata = reinterpret_cast<void*>(stream_buffer);
-  } else {
-    stream_buffer = reinterpret_cast<StreamBuffer*>(stream->pdata);
-  }
-
-  int32_t written = stream_buffer->write(offset, len, buf);
-  if (NULL == stream->notifyData) {
-    // Closures are handled in URLNotify (this is the only way to know
-    // the stream is completed since not all streams have a valid "end" value
-    // Here we handle only the default, src=...  streams (statically obtained)
-    if (stream->end == offset + len) {
-      // Stream downloaded - go ahead
-      dprintf(("default run\n"));
-      nacl_srpc::Plugin *real_plugin =
-        static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
-      real_plugin->set_nacl_module_origin(nacl::UrlToOrigin(stream->url));
-      real_plugin->Load(stream_buffer->get_buffer(), stream_buffer->size());
-
-      delete(stream_buffer);
-      stream->pdata = NULL;
-    }
-  } else {
-    nacl_srpc::Closure *closure
-      = static_cast<nacl_srpc::Closure *>(stream->notifyData);
-    // NPStream is deleted before URLNotify is called, so we need to keep
-    // the buffer
-    closure->set_buffer(stream_buffer);
-  }
-
-  return written;
 }
 
 void SRPC_Plugin::StreamAsFile(NPStream *stream,
@@ -332,15 +260,6 @@ void SRPC_Plugin::URLNotify(const char *url,
 
   if (NPRES_DONE == reason) {
     dprintf(("URLNotify: '%s', rsn NPRES_DONE (%d)\n", url, reason));
-    StreamBuffer *stream_buffer = closure->buffer();
-    if (stream_buffer) {
-      // NPStream is not valid here since DestroyStream was called earlier
-      closure->Run(url,
-                   stream_buffer->get_buffer(),
-                   stream_buffer->size());
-      delete(stream_buffer);
-      closure->set_buffer(NULL);
-    }
   } else {
     dprintf(("Unable to open: '%s' rsn %d\n", url, reason));
     if (NULL != closure) {

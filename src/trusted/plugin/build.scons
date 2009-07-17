@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2009, Google Inc.
+# Copyright 2008, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -143,21 +143,16 @@ nacl_npplugin_inputs = [
 ]
 
 if env['TARGET_PLATFORM'] == 'WINDOWS':
-  if not env.Bit('chrome'):
-    nacl_npplugin_inputs += [
-        'nacl_plugin.def',
-        env.RES('nacl_plugin.rc'),
-    ]
+  nacl_npplugin_inputs += [
+      'nacl_plugin.def',
+      env.RES('nacl_plugin.rc'),
+  ]
 
 npGoogleNaClPlugin = 'npGoogleNaClPlugin'
 
 if not env.Bit('mac'):
-  if not env.Bit('chrome'):
-    plugin = env.ComponentLibrary(npGoogleNaClPlugin, nacl_npplugin_inputs,
-                                  no_import_lib = True)
-  else:
-    plugin = env.ComponentLibrary(npGoogleNaClPlugin, nacl_npplugin_inputs,
-                                  COMPONENT_STATIC=True)
+  plugin = env.ComponentLibrary(npGoogleNaClPlugin, nacl_npplugin_inputs,
+                             no_import_lib = True)
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite([plugin[0]])
 else:

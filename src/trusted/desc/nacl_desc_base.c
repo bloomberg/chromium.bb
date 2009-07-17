@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,6 @@
 #include "native_client/src/trusted/platform/nacl_log.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
 
-#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
@@ -389,74 +388,4 @@ int NaClDescGetValueNotImplemented(struct NaClDesc          *vself,
           "GetValue method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
-}
-
-int NaClDescMapDescriptor(struct NaClDesc *desc,
-                          struct NaClDescEffector *effector,
-                          void** addr,
-                          size_t* size) {
-  struct nacl_abi_stat st;
-  size_t rounded_size = 0;
-  const int kMaxTries = 10;
-  int tries = 0;
-  void* map_addr = NULL;
-  int rval;
-
-  *addr = NULL;
-  *size = 0;
-
-  rval = desc->vtbl->Fstat(desc,
-                           effector,
-                           &st);
-  if (0 != rval) {
-    /* Failed to get the size - return failure. */
-    return rval;
-  }
-
-  /*
-  *When probing by VirtualAlloc/mmap, use the same granularity
-  * as the Map virtual function (64KB).
-  */
-  rounded_size = NaClRoundAllocPage(st.nacl_abi_st_size);
-
-  /* Find an address range to map the object into. */
-  do {
-    ++tries;
-#if NACL_WINDOWS
-    map_addr = VirtualAlloc(NULL, rounded_size, MEM_RESERVE, PAGE_READWRITE);
-    if (NULL == map_addr ||!VirtualFree(map_addr, 0, MEM_RELEASE)) {
-      continue;
-    }
-#else
-    map_addr = mmap(NULL,
-                    rounded_size,
-                    PROT_READ | PROT_WRITE,
-                    MAP_SHARED | MAP_ANONYMOUS,
-                    0,
-                    0);
-    if (MAP_FAILED == map_addr || munmap(map_addr, rounded_size)) {
-      map_addr = NULL;
-      continue;
-    }
-#endif
-    rval = desc->vtbl->Map(desc,
-                           effector,
-                           map_addr,
-                           rounded_size,
-                           NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                           NACL_ABI_MAP_SHARED,
-                           0);
-    if (!NaClIsNegErrno(rval)) {
-      map_addr = (void*) rval;
-      break;
-    }
-  } while (NULL == map_addr && tries < kMaxTries);
-
-  if (NULL == map_addr) {
-    return 1;
-  }
-
-  *addr = map_addr;
-  *size = rounded_size;
-  return 0;
 }

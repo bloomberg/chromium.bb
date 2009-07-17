@@ -1,4 +1,4 @@
-# Copyright 2009, Google Inc.
+# Copyright 2008, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -71,28 +71,33 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
-    'dependencies': [
-      '../../shared/srpc/srpc.gyp:nonnacl_srpc',
-      '../desc/desc.gyp:nrd_xfer',
-      '../../shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-      '../platform/platform.gyp:platform',
-      '../service_runtime/service_runtime.gyp:gio',
-      '../service_runtime/service_runtime.gyp:expiration',
-      ],
   },
   'targets': [
     {
       'target_name': 'npGoogleNaClPlugin',
       'type': 'shared_library',
+      'dependencies': [
+        '../nonnacl_util/nonnacl_util.gyp:*',
+        '../../shared/srpc/srpc.gyp:*',
+        '../desc/desc.gyp:*',
+        '../../shared/npruntime/npruntime.gyp:*',
+        '../../shared/imc/imc.gyp:*',
+        '../platform/platform.gyp:*',
+        # add gio.lib and expiration.lib when we have gyp files for them
+      ],
       'link_settings': {
         'libraries': [  # TODO(gregoryd): this is windows-only, fix
           '<@(common_libraries)',
+          '-lnonnacl_util.lib',
+          '-lnonnacl_srpc.lib',
+          '-lnrd_xfer.lib',
+          '-lgoogle_nacl_npruntime.lib',
+          '-llibgoogle_nacl_imc_c.lib',
+          '-lplatform.lib',
+          '-lgio.lib',
+          '-lexpiration.lib',
         ],
       },
-      'dependencies': [
-        '../nonnacl_util/nonnacl_util.gyp:nonnacl_util',
-        '../../shared/npruntime/npruntime.gyp:google_nacl_npruntime',
-      ],
       'sources': [
         '<@(common_sources)',
       ],
@@ -109,6 +114,7 @@
           'VCLinkerTool': {
             'AdditionalLibraryDirectories': [
               '$(OutDir)/lib',
+              '$(OutDir)/../../scons-out/dbg-win-x86-32/lib',
             ],
             #['<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib'],
           },
@@ -118,17 +124,13 @@
     },
     {
       # static library for linking with Chrome
-      'target_name': 'npGoogleNaClPluginChrome',
+      'target_name': 'npGoogleNaClPlugin2',
       'type': 'static_library',
       'defines': [
         'CHROME_BUILD',
       ],
-      'dependencies': [
-        '../nonnacl_util/nonnacl_util_chrome.gyp:nonnacl_util_chrome',
-      ],
       'sources': [
         '<@(common_sources)',
-        'nacl_entry_points.cc',
       ],
       'conditions': [
         ['OS=="win"', {

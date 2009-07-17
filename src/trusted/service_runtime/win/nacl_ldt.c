@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ static NTSETLDT set_ldt_entries;
 static struct NaClMutex nacl_ldt_mutex;
 
 int NaClLdtInitPlatformSpecific() {
-  HMODULE hmod = GetModuleHandleA("ntdll.dll");
+  HMODULE hmod = GetModuleHandle("ntdll.dll");
   /*
    * query_information_process is used to examine LDT entries to find a free
    * selector, etc.

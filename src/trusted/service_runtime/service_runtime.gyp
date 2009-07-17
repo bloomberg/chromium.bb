@@ -73,7 +73,6 @@
         'nacl_sync_queue.c',
         'nacl_syscall_common.c',
         'nacl_syscall_hook.c',
-        'nacl_thread_x86.c',
         'sel_addrspace.c',
         'sel_ldr.c',
         'sel_ldr_standard.c',

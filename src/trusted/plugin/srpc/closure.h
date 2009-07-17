@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,14 +33,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_
 
-#include <string>
-
 #include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
-
-namespace nacl {
-  class StreamBuffer;
-}
 
 namespace nacl_srpc {
 
@@ -53,39 +47,36 @@ namespace nacl_srpc {
  */
 class Closure {
  public:
-  Closure(Plugin* plugin, std::string url) :
+   Closure(Plugin* plugin, std::string url) :
     plugin_(plugin), url_(url) {}
-  virtual ~Closure() {}
+  virtual ~Closure() {};
   virtual void Run(NPStream *stream, const char *fname) = 0;
-  virtual void Run(const char *url, const void* buffer, int32_t size) = 0;
   bool StartDownload();
-  void set_buffer(nacl::StreamBuffer* buffer) { buffer_ = buffer; }
-  nacl::StreamBuffer* buffer() { return buffer_; }
- protected:
+protected:
   Plugin* plugin() { return plugin_; }
- private:
+private:
   Plugin* plugin_;
   std::string url_;
-  nacl::StreamBuffer *buffer_;
 };
 
 class LoadNaClAppNotify : public Closure {
- public:
+public:
   LoadNaClAppNotify(Plugin *plugin, std::string url);
   virtual ~LoadNaClAppNotify();
   virtual void Run(NPStream* stream, const char* fname);
-  virtual void Run(const char *url, const void* buffer, int32_t size);
+
 };
 
 class UrlAsNaClDescNotify : public Closure {
- public:
+public:
   UrlAsNaClDescNotify(Plugin *plugin, std::string url, void *callback_obj);
   virtual ~UrlAsNaClDescNotify();
   virtual void Run(NPStream *stream, const char *fname);
-  virtual void Run(const char *url, const void* buffer, int32_t size);
- private:
+
+private:
   NPObject* np_callback_;
 };
+
 }
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_

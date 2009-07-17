@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -68,7 +68,6 @@ class ServiceRuntimeInterface {
   ~ServiceRuntimeInterface();
 
   bool Start(const char* nacl_file);
-  bool Start(const void* buffer, int32_t size);
   bool Kill();
   bool LogAtServiceRuntime(int severity, std::string msg);
   ScriptableHandle<ConnectedSocket>* default_socket() const;
@@ -76,8 +75,8 @@ class ServiceRuntimeInterface {
                                                     NaClHandle channel);
   Plugin* plugin() const { return plugin_; }
   bool Shutdown();
- private:
-  bool InitCommunication(const void* buffer, int32_t size);
+
+
  private:
   PortablePluginInterface* plugin_interface_;
   ScriptableHandle<ConnectedSocket>* default_socket_;

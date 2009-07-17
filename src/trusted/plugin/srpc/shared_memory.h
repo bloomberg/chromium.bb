@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -76,13 +76,12 @@ class SharedMemory : public DescBasedHandle {
 
   void LoadMethods();
   static int number_alive() { return number_alive_counter; }
-  void* buffer() { return map_addr_; }
 
 
  private:
   static void SignalHandler(int value);
 
-  // registered functions
+  //registered functions
   static bool RpcRead(void* obj, SrpcParams* params);
   static bool RpcWrite(void* obj, SrpcParams* params);
 

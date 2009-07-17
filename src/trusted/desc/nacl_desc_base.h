@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -554,11 +554,6 @@ int NaClDescSemWaitNotImplemented(struct NaClDesc         *vself,
                                   struct NaClDescEffector *effp);
 int NaClDescGetValueNotImplemented(struct NaClDesc          *vself,
                                    struct NaClDescEffector  *effp);
-
-int NaClDescMapDescriptor(struct NaClDesc *desc,
-                          struct NaClDescEffector *effector,
-                          void** addr,
-                          size_t* size);
 
 EXTERN_C_END
 
