@@ -183,9 +183,6 @@ class BrowserWindowGtk : public BrowserWindow,
   // resize it.
   void SetGeometryHints();
 
-  // Set up the window icon (potentially used in window border or alt-tab list).
-  void SetWindowIcon();
-
   // Connect to signals on |window_|.
   void ConnectHandlersToSignals();
 

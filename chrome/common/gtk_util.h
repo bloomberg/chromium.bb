@@ -124,6 +124,10 @@ int MirroredXCoordinate(GtkWidget* widget, int x);
 // Returns true if the pointer is currently inside the widget.
 bool WidgetContainsCursor(GtkWidget* widget);
 
+// Sets the icon of |window| to the product icon (potentially used in window
+// border or alt-tab list).
+void SetWindowIcon(GtkWindow* window);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

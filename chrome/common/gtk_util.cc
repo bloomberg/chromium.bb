@@ -10,8 +10,10 @@
 #include <cstdarg>
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
@@ -393,6 +395,15 @@ bool WidgetContainsCursor(GtkWidget* widget) {
   gfx::Rect widget_allocation(0, 0, widget->allocation.width,
                               widget->allocation.height);
   return widget_allocation.Contains(x, y);
+}
+
+void SetWindowIcon(GtkWindow* window) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  GList* icon_list = NULL;
+  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_ICON_32));
+  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
+  gtk_window_set_icon_list(window, icon_list);
+  g_list_free(icon_list);
 }
 
 }  // namespace gtk_util

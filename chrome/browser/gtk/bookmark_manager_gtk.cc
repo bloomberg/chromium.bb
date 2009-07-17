@@ -302,6 +302,7 @@ BookmarkManagerGtk::BookmarkManagerGtk(Profile* profile)
       delaying_mousedown_(false),
       sending_delayed_mousedown_(false) {
   InitWidgets();
+  gtk_util::SetWindowIcon(GTK_WINDOW(window_));
   g_signal_connect(window_, "destroy",
                    G_CALLBACK(OnWindowDestroy), this);
 
