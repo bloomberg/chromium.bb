@@ -766,7 +766,7 @@ bool BookmarkManagerGtk::RecursiveFind(GtkTreeModel* model, GtkTreeIter* iter,
     gtk_tree_model_get_value(model, iter, RIGHT_PANE_ID, &value);
   }
 
-  int64 id = g_value_get_int(&value);
+  int64 id = g_value_get_int64(&value);
   g_value_unset(&value);
 
   if (id == target) {
