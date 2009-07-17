@@ -123,6 +123,7 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
 }
 
 void FirstRunDialog::OnDialogResponse(GtkWidget* widget, int response) {
+  bool import_started = false;
   gtk_widget_hide_all(dialog_);
   response_ = response;
 
@@ -159,11 +160,11 @@ void FirstRunDialog::OnDialogResponse(GtkWidget* widget, int response) {
       // Windows?
       StartImportingWithUI(GTK_WINDOW(dialog_), items, importer_host_.get(),
                            source_profile, profile_, this, true);
-    } else {
-      // We are done, so close Window.
-      FirstRunDone();
+      import_started = true;
     }
   }
+  if (!import_started)
+    FirstRunDone();
 }
 
 void FirstRunDialog::FirstRunDone() {
