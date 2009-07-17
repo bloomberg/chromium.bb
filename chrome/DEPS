@@ -29,4 +29,7 @@ include_rules = [
 
   # On Linux, we include some breakpad headers
   "+breakpad/linux",
+
+  # On Linux, the zygote needs to access sandbox headers
+  "+sandbox/linux"
 ]
