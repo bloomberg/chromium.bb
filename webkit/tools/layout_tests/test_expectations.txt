@@ -2969,3 +2969,8 @@ BUG16878 WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
 
 // Failure from WebKit merge 45958:45975
 BUG16924 WIN : LayoutTests/media/video-source-type-params.html = FAIL CRASH
+
+// Failure from WebKit merge 45985:45998
+BUG16962 LINUX WIN : LayoutTests/fast/css/nested-floating-relative-position-percentages.html = FAIL
+BUG16962 LINUX WIN : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
+BUG16962 MAC : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
