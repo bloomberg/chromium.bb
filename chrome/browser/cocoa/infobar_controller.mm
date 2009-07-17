@@ -118,8 +118,8 @@
 
   // Create the attributed string for the main message text.
   NSMutableAttributedString* infoText =
-      [[NSMutableAttributedString alloc]
-        initWithString:base::SysWideToNSString(message)];
+      [[[NSMutableAttributedString alloc]
+         initWithString:base::SysWideToNSString(message)] autorelease];
   [infoText addAttributes:linkAttributes
                     range:NSMakeRange(0, [infoText length])];
 
