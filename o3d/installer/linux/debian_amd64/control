@@ -8,6 +8,8 @@ Standards-Version: 3.7.2
 Package: google-o3d
 Architecture: amd64
 Depends: ia32-libs, libc6-i386, lib32stdc++6, lib32gcc1, lib32z1, nspluginwrapper
+Conflicts: o3d-plugin
+Replaces: o3d-plugin
 Description: Google O3D Plugin
  O3D is an open-source web API for creating rich, interactive 3D applications in
  the browser.
