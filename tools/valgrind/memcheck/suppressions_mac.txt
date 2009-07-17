@@ -345,3 +345,32 @@
    fun:thread_start
 }
 
+{
+  # Temporary suppression until crbug.com/17002 is fixed
+  bug_17002
+  Memcheck:Leak
+  fun:malloc_zone_calloc
+  fun:_internal_class_createInstanceFromZone
+  fun:NSAllocateObject
+  fun:+[NSObject alloc]
+  fun:-[LinkInfoBarController addAdditionalControls]
+  fun:-[InfoBarController awakeFromNib]
+  fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
+  fun:-[NSNib instantiateNibWithExternalNameTable:]
+  fun:-[NSNib instantiateNibWithOwner:topLevelObjects:]
+  fun:-[NSViewController loadView]
+  fun:-[NSViewController view]
+  fun:-[InfoBarContainerController(PrivateMethods) addInfoBar:]
+  fun:_ZN12_GLOBAL__N_156InfoBarContainerControllerTest_AddAndRemoveInfoBars_Test8TestBodyEv
+  fun:_ZN7testing4Test3RunEv
+  fun:_ZN7testing8internal12TestInfoImpl3RunEv
+  fun:_ZN7testing8internal12TestInfoImpl7RunTestEPNS_8TestInfoE
+  fun:_ZNK7testing8internal4ListIPNS_8TestInfoEE7ForEachIPFvS3_EEEvT_
+  fun:_ZN7testing8TestCase3RunEv
+  fun:_ZN7testing8TestCase11RunTestCaseEPS0_
+  fun:_ZNK7testing8internal4ListIPNS_8TestCaseEE7ForEachIPFvS3_EEEvT_
+  fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+  fun:_ZN7testing8UnitTest3RunEv
+  fun:_ZN9TestSuite3RunEv
+  fun:main
+}
