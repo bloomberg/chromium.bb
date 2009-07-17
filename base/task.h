@@ -503,6 +503,13 @@ inline CancelableTask* NewRunnableFunction(Function function,
 //   CallbackRunner<Tuple2<int, string> >* callback =
 //       NewCallback(obj, &Object::DoStuff);
 //   callback->RunWithParams(MakeTuple(5, string("hello")));
+//
+// There is also a 0-args version that returns a value.  Example:
+//   int Object::GetNextInt();
+//   CallbackWithReturnValue<int>::Type* callback =
+//       NewCallbackWithReturnValue(obj, &Object::GetNextInt);
+//   int next_int = callback->Run();
+//   delete callback;
 
 // Base for all Callbacks that handles storage of the pointers.
 template <class T, typename Method>
@@ -665,5 +672,35 @@ class UnboundMethod {
   Method m_;
   Params p_;
 };
+
+// Return value implementation with no args.
+template <typename ReturnValue>
+struct CallbackWithReturnValue {
+  class Type {
+   public:
+    virtual ReturnValue Run() = 0;
+  };
+};
+
+template <class T, typename Method, typename ReturnValue>
+class CallbackWithReturnValueImpl
+    : public CallbackStorage<T, Method>,
+      public CallbackWithReturnValue<ReturnValue>::Type {
+ public:
+  CallbackWithReturnValueImpl(T* obj, Method meth)
+      : CallbackStorage<T, Method>(obj, meth) { }
+
+  virtual ReturnValue Run() {
+    return (this->obj_->*(this->meth_))();
+  }
+};
+
+template <class T, typename ReturnValue>
+typename CallbackWithReturnValue<ReturnValue>::Type*
+NewCallbackWithReturnValue(T* object, ReturnValue (T::*method)()) {
+  return new CallbackWithReturnValueImpl<T, ReturnValue (T::*)(), ReturnValue>(
+      object, method);
+}
+
 
 #endif  // BASE_TASK_H_
