@@ -307,7 +307,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
+TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "text-encoding.html",
     "worker-importScripts.html",
