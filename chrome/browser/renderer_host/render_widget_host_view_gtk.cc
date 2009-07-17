@@ -101,7 +101,6 @@ class RenderWidgetHostViewGtkWidget {
 
   static gboolean ExposeEvent(GtkWidget* widget, GdkEventExpose* expose,
                               RenderWidgetHostViewGtk* host_view) {
-    NOTIMPLEMENTED() << " paint " << expose->area.width << " " << expose->area.height;
     const gfx::Rect damage_rect(expose->area);
     host_view->Paint(damage_rect);
     return FALSE;
