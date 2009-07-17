@@ -453,7 +453,7 @@ static ExprNode* AppendOpcodeBaseRegister(
   assert(state->opcode->num_operands > 1);
   reg_index = state->opcode->operands[0].kind - OpcodeBaseMinus0;
   assert(reg_index >= 0 && reg_index < 8);
-  DEBUG(printf("Translate opcode base register %"PRIdS"\n", reg_index));
+  DEBUG(printf("Translate opcode base register %d\n", reg_index));
   return AppendRegisterKind(state, ExtractRegKind(state, operand),
                             GetRexBRegister(state, reg_index));
 }
