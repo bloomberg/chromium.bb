@@ -13,6 +13,8 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
+#include "base/base_switches.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/gfx/gdi_util.h"
 #include "base/gfx/png_encoder.h"
@@ -795,6 +797,9 @@ int MessageBox(HWND hwnd,
                const std::wstring& text,
                const std::wstring& caption,
                UINT flags) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoMessageBox))
+    return IDOK;
+
   UINT actual_flags = flags;
   if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
     actual_flags |= MB_RIGHT | MB_RTLREADING;
