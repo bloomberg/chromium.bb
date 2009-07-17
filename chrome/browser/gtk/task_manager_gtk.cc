@@ -342,8 +342,6 @@ void TaskManagerGtk::Init() {
                                GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
   g_signal_connect(G_OBJECT(treeview_), "button-press-event",
                    G_CALLBACK(OnButtonPressEvent), this);
-  g_signal_connect(G_OBJECT(treeview_), "button-release-event",
-                   G_CALLBACK(OnButtonReleaseEvent), this);
   gtk_widget_add_events(treeview_,
                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
 
@@ -555,8 +553,8 @@ gboolean TaskManagerGtk::OnButtonReleaseEvent(GtkWidget* widget,
                                               GdkEventButton* event,
                                               TaskManagerGtk* task_manager) {
   // We don't want to open the context menu in the treeview.
-  if (widget == task_manager->treeview_)
-    return TRUE;
+  if (gtk_util::WidgetContainsCursor(task_manager->treeview_))
+    return FALSE;
 
   if (event->button == 3)
     task_manager->ShowContextMenu();
