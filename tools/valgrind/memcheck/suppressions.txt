@@ -905,6 +905,17 @@
    fun:_ZN7Browser14OpenCurrentURLEv
 }
 {
+   # 1 in 40 runs?  Handle both leaks with one suppression.
+   # Anonymous namespaces are encoded differently on mac and linux,
+   # hence the wildcard.
+   bug_16625
+   Memcheck:Leak
+   fun:_ZN16ChildProcessHost13CreateChannelEv
+   fun:_ZN18UtilityProcessHost12StartProcessERK8FilePath
+   fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
+   fun:*UtilityProcessHostTest_ExtensionUnpacker_Test8TestBodyEv
+}
+{
    # 1 in 20 runs?
    bug_16908
    Memcheck:Leak
