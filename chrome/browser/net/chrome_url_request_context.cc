@@ -271,8 +271,10 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
   // Set up Accept-Language and Accept-Charset header values
   accept_language_ = net::HttpUtil::GenerateAcceptLanguageHeader(
       WideToASCII(prefs_->GetString(prefs::kAcceptLanguages)));
-  accept_charset_ = net::HttpUtil::GenerateAcceptCharsetHeader(
-      WideToASCII(prefs_->GetString(prefs::kDefaultCharset)));
+  std::string default_charset =
+      WideToASCII(prefs_->GetString(prefs::kDefaultCharset));
+  accept_charset_ =
+      net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
 
   // At this point, we don't know the charset of the referring page
   // where a url request originates from. This is used to get a suggested
@@ -286,7 +288,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
   // have an *arguably* better default charset for interpreting a raw 8bit
   // C-D header field.  It means the native OS codepage fallback in
   // net_util::GetSuggestedFilename is unlikely to be taken.
-  referrer_charset_ = accept_charset_;
+  referrer_charset_ = default_charset;
 
   cookie_policy_.SetType(net::CookiePolicy::FromInt(
       prefs_->GetInteger(prefs::kCookieBehavior)));
@@ -309,6 +311,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
 
   prefs_->AddPrefObserver(prefs::kAcceptLanguages, this);
   prefs_->AddPrefObserver(prefs::kCookieBehavior, this);
+  prefs_->AddPrefObserver(prefs::kDefaultCharset, this);
 
   if (!is_off_the_record_) {
     registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
@@ -340,6 +343,13 @@ void ChromeURLRequestContext::Observe(NotificationType type,
           NewRunnableMethod(this,
                             &ChromeURLRequestContext::OnCookiePolicyChange,
                             policy_type));
+    } else if (*pref_name_in == prefs::kDefaultCharset) {
+      std::string default_charset =
+          WideToASCII(prefs->GetString(prefs::kDefaultCharset));
+      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+          NewRunnableMethod(this,
+                            &ChromeURLRequestContext::OnDefaultCharsetChange,
+                            default_charset));
     }
   } else if (NotificationType::EXTENSIONS_LOADED == type) {
     ExtensionPaths* new_paths = new ExtensionPaths;
@@ -367,6 +377,7 @@ void ChromeURLRequestContext::CleanupOnUIThread() {
   // Unregister for pref notifications.
   prefs_->RemovePrefObserver(prefs::kAcceptLanguages, this);
   prefs_->RemovePrefObserver(prefs::kCookieBehavior, this);
+  prefs_->RemovePrefObserver(prefs::kDefaultCharset, this);
   prefs_ = NULL;
 
   registrar_.RemoveAll();
@@ -428,6 +439,15 @@ void ChromeURLRequestContext::OnCookiePolicyChange(
   DCHECK(MessageLoop::current() ==
          ChromeThread::GetMessageLoop(ChromeThread::IO));
   cookie_policy_.SetType(type);
+}
+
+void ChromeURLRequestContext::OnDefaultCharsetChange(
+    const std::string& default_charset) {
+  DCHECK(MessageLoop::current() ==
+         ChromeThread::GetMessageLoop(ChromeThread::IO));
+  referrer_charset_ = default_charset;
+  accept_charset_ =
+      net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
 }
 
 void ChromeURLRequestContext::OnNewExtensions(ExtensionPaths* new_paths) {

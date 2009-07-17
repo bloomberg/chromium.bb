@@ -91,6 +91,9 @@ private:
   // Callback for when the cookie policy changes.
   void OnCookiePolicyChange(net::CookiePolicy::Type type);
 
+  // Callback for when the default charset changes.
+  void OnDefaultCharsetChange(const std::string& default_charset);
+
   // Callback for when new extensions are loaded.
   void OnNewExtensions(ExtensionPaths* new_paths);
 
