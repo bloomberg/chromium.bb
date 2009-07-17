@@ -77,7 +77,7 @@ URLRequestNewFtpJob::~URLRequestNewFtpJob() {
 // static
 URLRequestJob* URLRequestNewFtpJob::Factory(URLRequest* request,
                                             const std::string& scheme) {
-  DCHECK(scheme == "ftp");
+  DCHECK_EQ(scheme, "ftp");
 
   if (request->url().has_port() &&
       !net::IsPortAllowedByFtp(request->url().IntPort()))
@@ -200,47 +200,21 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
   while (getline(iss, line)) {
     struct net::ListState state;
     struct net::ListResult result;
-    base::Time::Exploded et;
     std::replace(line.begin(), line.end(), '\r', '\0');
     net::LineType line_type = ParseFTPLine(line.c_str(), &state, &result);
     switch (line_type) {
       case net::FTP_TYPE_DIRECTORY:
-        // TODO(ibrar): There is some problem in ParseFTPLine function or
-        // in conversion between tm and base::Time::Exploded.
-        // It returns wrong date/time (Differnce is 1 day and 17 Hours).
-        memset(&et, 0, sizeof(base::Time::Exploded));
-        et.second = result.fe_time.tm_sec;
-        et.minute = result.fe_time.tm_min;
-        et.hour = result.fe_time.tm_hour;
-        et.day_of_month = result.fe_time.tm_mday;
-        et.month = result.fe_time.tm_mon + 1;
-        et.year = result.fe_time.tm_year + 1900;
-        et.day_of_week = result.fe_time.tm_wday;
-
         file_entry.append(net::GetDirectoryListingEntry(
             RawByteSequenceToFilename(result.fe_fname, encoding_),
-            result.fe_fname, true, 0, base::Time::FromLocalExploded(et)));
+            result.fe_fname, true, 0,
+            base::Time::FromLocalExploded(result.fe_time)));
         break;
       case net::FTP_TYPE_FILE:
-        // TODO(ibrar): There should be a way to create a Time object based
-        // on "tm" structure. This will remove bunch of line of code to convert
-        // tm to Time object.
-        memset(&et, 0, sizeof(base::Time::Exploded));
-        et.second = result.fe_time.tm_sec;
-        et.minute = result.fe_time.tm_min;
-        et.hour = result.fe_time.tm_hour;
-        et.day_of_month = result.fe_time.tm_mday;
-        et.month = result.fe_time.tm_mon + 1;
-        et.year = result.fe_time.tm_year + 1900;
-        et.day_of_week = result.fe_time.tm_wday;
-        // TODO(ibrar): There is some problem in ParseFTPLine function or
-        // in conversion between tm and base::Time::Exploded.
-        // It returns wrong date/time (Differnce is 1 day and 17 Hours).
         if (StringToInt64(result.fe_size, &file_size))
           file_entry.append(net::GetDirectoryListingEntry(
               RawByteSequenceToFilename(result.fe_fname, encoding_),
               result.fe_fname, false, file_size,
-              base::Time::FromLocalExploded(et)));
+              base::Time::FromLocalExploded(result.fe_time)));
         break;
       case net::FTP_TYPE_SYMLINK:
       case net::FTP_TYPE_JUNK:

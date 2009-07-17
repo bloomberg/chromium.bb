@@ -41,13 +41,10 @@
 
 #include "net/ftp/ftp_directory_parser.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#include "build/build_config.h"
 #include "base/basictypes.h"
 #include "base/string_util.h"
+
+using base::Time;
 
 // #undef anything you don't want to support
 #define SUPPORT_LSL   // /bin/ls -l and dozens of variations therof
@@ -58,18 +55,6 @@
 #define SUPPORT_CMS   // IBM VM/CMS,VM/ESA (z/VM and LISTING forms)
 #define SUPPORT_OS2   // IBM TCP/IP for OS/2 - FTP Server
 #define SUPPORT_W16   // win16 hosts: SuperTCP or NetManage Chameleon
-
-// Implement the Unix gmtime_r() function for Windows.
-#if defined(OS_WIN)
-static struct tm *gmtime_r(const time_t *timer, struct tm *result) {
-  errno_t error = gmtime_s(result, timer);
-  if (error) {
-    errno = error;
-    return NULL;
-  }
-  return result;
-}
-#endif
 
 namespace net {
 
@@ -168,10 +153,9 @@ LineType ParseFTPLine(const char *line,
               while (pos < linelen && isdigit(line[pos]))
                 pos++;
               if (pos < linelen && line[pos] == ',') {
-                uint64 seconds = 0;
-                seconds = StringToInt64(p + 1);
-                time_t tim = static_cast<time_t>(seconds);
-                gmtime_r(&tim, &result->fe_time);
+                uint64 seconds = StringToInt64(p + 1);
+                Time t = Time::FromTimeT(seconds);
+                t.LocalExplode(&(result->fe_time));
               }
             }
           } else if (*p == 's') {
@@ -461,7 +445,7 @@ LineType ParseFTPLine(const char *line,
           tbuf[2] = tolower(p[2]);
           month_num = 0;
           for (pos = 0; pos < (12*3); pos += 3) {
-            if (tbuf[0] == month_names[pos+0] &&
+            if (tbuf[0] == month_names[pos + 0] &&
                 tbuf[1] == month_names[pos + 1] &&
                 tbuf[2] == month_names[pos + 2])
               break;
@@ -469,18 +453,17 @@ LineType ParseFTPLine(const char *line,
           }
           if (month_num >= 12)
             month_num = 0;
-          result->fe_time.tm_mon  = month_num;
-          result->fe_time.tm_mday = StringToInt(tokens[2]);
-          result->fe_time.tm_year = StringToInt(p + 4);
-          // NSPR wants year as XXXX
+          result->fe_time.month  = month_num + 1;
+          result->fe_time.day_of_month = StringToInt(tokens[2]);
+          result->fe_time.year = StringToInt(p + 4);
 
           p = tokens[3] + 2;
           if (*p == ':')
             p++;
           if (p[2] == ':')
-            result->fe_time.tm_sec = StringToInt(p + 3);
-          result->fe_time.tm_hour = StringToInt(tokens[3]);
-          result->fe_time.tm_min = StringToInt(p);
+            result->fe_time.second = StringToInt(p + 3);
+          result->fe_time.hour = StringToInt(tokens[3]);
+          result->fe_time.minute = StringToInt(p);
           return result->fe_type;
         }  // if (isdigit(*tokens[1]))
         return FTP_TYPE_JUNK;  // junk
@@ -587,22 +570,23 @@ LineType ParseFTPLine(const char *line,
 
         p = tokens[tokmarker+4];
         if (toklen[tokmarker+4] == 10) {  // newstyle: YYYY-MM-DD format
-          result->fe_time.tm_year = StringToInt(p + 0) - 1900;
-          result->fe_time.tm_mon  = StringToInt(p + 5) - 1;
-          result->fe_time.tm_mday = StringToInt(p + 8);
+          result->fe_time.year = StringToInt(p + 0);
+          result->fe_time.month  = StringToInt(p + 5);
+          result->fe_time.day_of_month = StringToInt(p + 8);
         } else {  // oldstyle: [M]M/DD/YY format
-            pos = toklen[tokmarker + 4];
-            result->fe_time.tm_mon  = StringToInt(p) - 1;
-            result->fe_time.tm_mday = StringToInt((p + pos)-5);
-            result->fe_time.tm_year = StringToInt((p + pos)-2);
-            if (result->fe_time.tm_year < 70)
-              result->fe_time.tm_year += 100;
+          pos = toklen[tokmarker + 4];
+          result->fe_time.month  = StringToInt(p);
+          result->fe_time.day_of_month = StringToInt((p + pos)-5);
+          result->fe_time.year = StringToInt((p + pos)-2);
+          if (result->fe_time.year < 70)
+            result->fe_time.year += 100;
+          result->fe_time.year += 1900;
         }
         p = tokens[tokmarker + 5];
         pos = toklen[tokmarker + 5];
-        result->fe_time.tm_hour = StringToInt(p);
-        result->fe_time.tm_min = StringToInt((p + pos) - 5);
-        result->fe_time.tm_sec = StringToInt((p + pos) - 2);
+        result->fe_time.hour = StringToInt(p);
+        result->fe_time.minute = StringToInt((p + pos) - 5);
+        result->fe_time.second = StringToInt((p + pos) - 2);
 
         result->fe_cinfs = 1;
         result->fe_fname = tokens[0];
@@ -705,19 +689,23 @@ LineType ParseFTPLine(const char *line,
             }
         }
 
-        result->fe_time.tm_mon = StringToInt(tokens[0]+0);
-        if (result->fe_time.tm_mon != 0) {
-          result->fe_time.tm_mon--;
-          result->fe_time.tm_mday = StringToInt(tokens[0]+3);
-          result->fe_time.tm_year = StringToInt(tokens[0]+6);
-          if (result->fe_time.tm_year < 80)
-            result->fe_time.tm_year += 100;
+        result->fe_time.month = StringToInt(tokens[0] + 0);
+        if (result->fe_time.month != 0) {
+          result->fe_time.day_of_month = StringToInt(tokens[0] + 3);
+          result->fe_time.year = StringToInt(tokens[0] + 6);
+          // if year has only two digits then assume that
+          //   00-79 is 2000-2079
+          //   80-99 is 1980-1999
+          if (result->fe_time.year < 80)
+            result->fe_time.year += 2000;
+          else if (result->fe_time.year < 100)
+            result->fe_time.year += 1900;
         }
 
-        result->fe_time.tm_hour = StringToInt(tokens[1]+0);
-        result->fe_time.tm_min = StringToInt(tokens[1]+3);
-        if ((tokens[1][5]) == 'P' && result->fe_time.tm_hour < 12)
-          result->fe_time.tm_hour += 12;
+        result->fe_time.hour = StringToInt(tokens[1]+0);
+        result->fe_time.minute = StringToInt(tokens[1]+3);
+        if ((tokens[1][5]) == 'P' && result->fe_time.hour < 12)
+          result->fe_time.hour += 12;
 
         // the caller should do this (if dropping "." and ".." is desired)
         // if (result->fe_type == FTP_TYPE_DIRECTORY && result->fe_fname[0]
@@ -805,13 +793,14 @@ LineType ParseFTPLine(const char *line,
           result->fe_size[pos] = '\0';
         }
 
-        result->fe_time.tm_mon = StringToInt(&p[35-18]) - 1;
-        result->fe_time.tm_mday = StringToInt(&p[38-18]);
-        result->fe_time.tm_year = StringToInt(&p[41-18]);
-        if (result->fe_time.tm_year < 80)
-          result->fe_time.tm_year += 100;
-        result->fe_time.tm_hour = StringToInt(&p[46-18]);
-        result->fe_time.tm_min = StringToInt(&p[49-18]);
+        result->fe_time.month = StringToInt(&p[35-18]);
+        result->fe_time.day_of_month = StringToInt(&p[38 - 18]);
+        result->fe_time.year = StringToInt(&p[41 - 18]);
+        if (result->fe_time.year < 80)
+          result->fe_time.year += 100;
+        result->fe_time.year += 1900;
+        result->fe_time.hour = StringToInt(&p[46 - 18]);
+        result->fe_time.minute = StringToInt(&p[49 - 18]);
 
         // The caller should do this (if dropping "." and ".." is desired)
         // if (result->fe_type == FTP_TYPE_DIRECTORY &&
@@ -968,33 +957,31 @@ LineType ParseFTPLine(const char *line,
           result->fe_size[pos] = '\0';
         }
 
-        result->fe_time.tm_mon = month_num;
-        result->fe_time.tm_mday = StringToInt(tokens[tokmarker+2]);
-        if (result->fe_time.tm_mday == 0)
-          result->fe_time.tm_mday++;
+        result->fe_time.month = month_num + 1;
+        result->fe_time.day_of_month = StringToInt(tokens[tokmarker+2]);
+        if (result->fe_time.day_of_month == 0)
+          result->fe_time.day_of_month++;
 
         p = tokens[tokmarker+3];
         pos = (unsigned int)StringToInt(p);
         if (p[1] == ':')  // one digit hour
           p--;
         if (p[2] != ':') {  // year
-          result->fe_time.tm_year = pos;
+          result->fe_time.year = pos;
         } else {
-            result->fe_time.tm_hour = pos;
-            result->fe_time.tm_min = StringToInt(p+3);
+            result->fe_time.hour = pos;
+            result->fe_time.minute = StringToInt(p+3);
             if (p[5] == ':')
-              result->fe_time.tm_sec = StringToInt(p+6);
-
-            if (!state->now_time) {
-              time_t now = time(NULL);
-              state->now_time = now * 1000000;
-              gmtime_r(&now, &state->now_tm);
+              result->fe_time.second = StringToInt(p+6);
+            if (!state->now_tm_valid) {
+              Time t = Time::Now();
+              t.LocalExplode(&(state->now_tm));
+              state->now_tm_valid = 1;
             }
-
-            result->fe_time.tm_year = state->now_tm.tm_year;
-            if ( (( state->now_tm.tm_mon << 5) + state->now_tm.tm_mday) <
-              ((result->fe_time.tm_mon << 5) + result->fe_time.tm_mday) )
-              result->fe_time.tm_year--;
+            result->fe_time.year = state->now_tm.year;
+            if (((state->now_tm.month << 5) + state->now_tm.day_of_month) <
+                ((result->fe_time.month << 5) + result->fe_time.day_of_month))
+              result->fe_time.year--;
         }  // time/year
 
         result->fe_fname = tokens[tokmarker+4];
@@ -1130,29 +1117,29 @@ LineType ParseFTPLine(const char *line,
           tbuf[0] = toupper(p[0]);
           tbuf[1] = tolower(p[1]);
           tbuf[2] = tolower(p[2]);
-          for (pos = 0; pos < (12*3); pos+=3) {
-            if (tbuf[0] == month_names[pos+0] &&
-              tbuf[1] == month_names[pos+1] &&
-              tbuf[2] == month_names[pos+2]) {
-              result->fe_time.tm_mon = pos/3;
-              result->fe_time.tm_mday = StringToInt(tokens[3]);
-              result->fe_time.tm_year = StringToInt(tokens[4]) - 1900;
+          for (pos = 0; pos < (12 * 3); pos += 3) {
+            if (tbuf[0] == month_names[pos + 0] &&
+                tbuf[1] == month_names[pos + 1] &&
+                tbuf[2] == month_names[pos + 2]) {
+              result->fe_time.month = pos / 3 + 1;
+              result->fe_time.day_of_month = StringToInt(tokens[3]);
+              result->fe_time.year = StringToInt(tokens[4]);
               break;
             }
           }
           pos = 5;  // Chameleon toknum of date field
         } else {
-          result->fe_time.tm_mon = StringToInt(p+0)-1;
-          result->fe_time.tm_mday = StringToInt(p+3);
-          result->fe_time.tm_year = StringToInt(p+6);
-          if (result->fe_time.tm_year < 80)  // SuperTCP
-            result->fe_time.tm_year += 100;
-
+          result->fe_time.month = StringToInt(p + 0);
+          result->fe_time.day_of_month = StringToInt(p + 3);
+          result->fe_time.year = StringToInt(p+6);
+          if (result->fe_time.year < 80)  // SuperTCP
+            result->fe_time.year += 100;
+          result->fe_time.year += 1900;
           pos = 3;  // SuperTCP toknum of date field
         }
 
-        result->fe_time.tm_hour = StringToInt(tokens[pos]);
-        result->fe_time.tm_min = StringToInt(&(tokens[pos][toklen[pos]-2]));
+        result->fe_time.hour = StringToInt(tokens[pos]);
+        result->fe_time.minute = StringToInt(&(tokens[pos][toklen[pos]-2]));
 
         // the caller should do this (if dropping "." and ".." is desired)
         // if (result->fe_type == FTP_TYPE_DIRECTORY &&
@@ -1332,7 +1319,7 @@ LineType ParseFTPLine(const char *line,
                   && isalpha(*p) && isalpha(p[1]) && isalpha(p[2])) {
                   pos = StringToInt(tokens[pos]);
                   if (pos > 0 && pos <= 31) {
-                    result->fe_time.tm_mday = pos;
+                    result->fe_time.day_of_month = pos;
                     month_num = 1;
                     for (pos = 0; pos < (12*3); pos += 3) {
                       if (p[0] == month_names[pos + 0] &&
@@ -1342,34 +1329,34 @@ LineType ParseFTPLine(const char *line,
                       month_num++;
                     }
                     if (month_num > 12)
-                      result->fe_time.tm_mday = 0;
+                      result->fe_time.day_of_month = 0;
                     else
-                      result->fe_time.tm_mon = month_num - 1;
+                      result->fe_time.month = month_num;
                   }
                 }
-                if (result->fe_time.tm_mday) {
+                if (result->fe_time.day_of_month) {
                   tokmarker += 3;  // skip mday/mon/yrtime (to find " -> ")
                   p = tokens[tokmarker];
 
                   pos = StringToInt(p);
                   if (pos > 24) {
-                    result->fe_time.tm_year = pos - 1900;
+                    result->fe_time.year = pos;
                   } else {
                     if (p[1] == ':')
                       p--;
-                    result->fe_time.tm_hour = pos;
-                    result->fe_time.tm_min = StringToInt(p + 3);
-                    if (!state->now_time) {
-                      time_t now = time(NULL);
-                      state->now_time = now * 1000000;
-                      gmtime_r(&now, &state->now_tm);
+                    result->fe_time.hour = pos;
+                    result->fe_time.minute = StringToInt(p + 3);
+                    if (!state->now_tm_valid) {
+                      Time t = Time::Now();
+                      t.LocalExplode(&(state->now_tm));
+                      state->now_tm_valid = 1;
                     }
-                    result->fe_time.tm_year = state->now_tm.tm_year;
-                    if ((( state->now_tm.tm_mon << 4) +
-                        state->now_tm.tm_mday) <
-                        ((result->fe_time.tm_mon << 4) +
-                        result->fe_time.tm_mday))
-                      result->fe_time.tm_year--;
+                    result->fe_time.year = state->now_tm.year;
+                    if (((state->now_tm.month << 4) +
+                        state->now_tm.day_of_month) <
+                        ((result->fe_time.month << 4) +
+                        result->fe_time.day_of_month))
+                      result->fe_time.year--;
                   }  // got year or time
                 }  // got month/mday
             }  // may have year or time
