@@ -651,6 +651,7 @@ BUG13907 WIN : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRA
 BUG13907 WIN : LayoutTests/media/video-seek-past-end-playing.html = PASS FAIL CRASH TIMEOUT
 BUG13907 WIN : LayoutTests/media/video-size-intrinsic-scale.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-src-remove.html = FAIL
+BUG13907 WIN : LayoutTests/media/video-src.html = PASS CRASH
 // These tests are flaky.
 BUG16779 BUG13097 WIN : LayoutTests/media/video-display-toggle.html = FAIL TIMEOUT
 BUG13907 WIN : LayoutTests/media/controls-styling.html = FAIL
@@ -2826,7 +2827,7 @@ BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-null-char.
 BUG16240 MAC WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
 
 // Failing due to r20652.
-BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL
+BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL CRASH
 
 // Failing approximately starting from 20629
 BUG16754 : LayoutTests/fast/loader/empty-embed-src-attribute.html = CRASH
