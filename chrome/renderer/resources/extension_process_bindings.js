@@ -15,7 +15,6 @@ var chrome = chrome || {};
   native function StartRequest();
   native function GetCurrentPageActions();
   native function GetViews();
-  native function GetCurrentPageActions();
   native function GetChromeHidden();
   native function GetNextRequestId();
 
