@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright 2008, Google Inc.
+# Copyright 2009, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -413,6 +413,12 @@ def CheckFile(filename, report):
           warnings[info] = items
     return errors, warnings
 
+def HasGypFileCorrespondingToSconsFile(sconsfile, list):
+  scons_root = os.path.dirname(sconsfile)
+  for name in list:
+    if name.startswith(scons_root) and name.endswith('.gyp'):
+      return True
+  return False
 
 def main(argv):
   num_error = 0
@@ -425,6 +431,13 @@ def main(argv):
       print 'hyphen in:', filename
       num_error += 1
       continue
+
+    # Verify that gyp files are updated together with scons files.
+    # We probably won't have any gyp files for the untrusted code.
+    if filename.endswith('.scons') and -1 == filename.find('untrusted'):
+      if not HasGypFileCorrespondingToSconsFile(filename, argv):
+        print 'please update the gyp file relevant for ', filename
+        num_error += 1
 
     errors, warnings = CheckFile(filename, True)
     if errors:

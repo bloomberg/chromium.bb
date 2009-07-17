@@ -33,11 +33,11 @@
  * ncdis.c - disassemble using NaCl decoder.
  * Mostly for testing.
  */
+#include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
-#include <errno.h>
 
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/shared/utils/flags.h"
@@ -194,21 +194,26 @@ static void ResetFlags() {
   }
 }
 
-/*
- * Attempts to parse a hexidecimal value corresponding to the
- * value of a byte, as a command line argument. Returns true iff able
- * to parse and set the corresponding found hexidecimal byte.
- */
-Bool GrokHexByte(const char* name,
-                 const char* arg,
-                 uint8_t* flag) {
-  uint32_t value = 0;
-  Bool result = GrokUint32HexFlag(name, arg, &value);
-  if (result && value >= 256) {
-    Fatal("Flag %s specifies illegal hexidecimal byte value %u\n", name, value);
+/* Returns true if all characters in the string are zero. */
+static Bool IsZero(const char* arg) {
+  while (*arg) {
+    if ('0' != *arg) {
+      return FALSE;
+    }
+    ++arg;
   }
-  *flag = (uint8_t) value;
-  return result;
+  return TRUE;
+}
+
+uint8_t HexToByte(const char* hex_value) {
+  unsigned long value = strtoul(hex_value, NULL, 16);
+  /* Verify that arg is all zeros when zero is returned. Otherwise,
+   * assume that the zero value was due to an error.
+   */
+  if (0L == value && !IsZero(hex_value)) {
+    Fatal("-i option specifies illegal hex value '%s'\n", hex_value);
+  }
+  return (uint8_t) value;
 }
 
 /* Recognizes flags in argv, processes them, and then removes them.
@@ -216,23 +221,39 @@ Bool GrokHexByte(const char* name,
  */
 int GrokFlags(int argc, const char *argv[]) {
   int i;
-  uint8_t decode_byte;
   int new_argc;
+  char* hex_instruction;
   if (argc == 0) return 0;
   exec_name = argv[0];
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
-    if (GrokBoolFlag("-not_nc", argv[i], &FLAGS_not_nc) ||
-        GrokUint32HexFlag("-pc", argv[i], &FLAGS_decode_pc) ||
-        GrokCstringFlag("-commands", argv[i], &FLAGS_commands) ||
-        GrokBoolFlag("-self_document", argv[i], &FLAGS_self_document) ||
-        GrokBoolFlag("-use_iter", argv[i], &FLAGS_use_iter) ||
-        GrokBoolFlag("-internal", argv[i], &FLAGS_internal)) {
-    } else if (GrokHexByte("-b", argv[i], &decode_byte)) {
-      FLAGS_decode_instruction[FLAGS_decode_instruction_size++] = decode_byte;
-      if (FLAGS_decode_instruction_size >= MAX_BYTES_PER_X86_INSTRUCTION) {
-        Fatal("-b option specified more than %u times\n",
-              MAX_BYTES_PER_X86_INSTRUCTION);
+    const char* arg = argv[i];
+    if (GrokBoolFlag("-not_nc", arg, &FLAGS_not_nc) ||
+        GrokUint32HexFlag("-pc", arg, &FLAGS_decode_pc) ||
+        GrokCstringFlag("-commands", arg, &FLAGS_commands) ||
+        GrokBoolFlag("-self_document", arg, &FLAGS_self_document) ||
+        GrokBoolFlag("-use_iter", arg, &FLAGS_use_iter) ||
+        GrokBoolFlag("-internal", arg, &FLAGS_internal)) {
+      continue;
+    }
+    if (GrokCstringFlag("-i", arg, &hex_instruction)) {
+      int i = 0;
+      char buffer[3];
+      buffer[2] = '\0';
+      char* buf = &(hex_instruction[0]);
+      while (*buf) {
+        buffer[i++] = *(buf++);
+        if (i == 2) {
+          uint8_t byte = HexToByte(buffer);
+          FLAGS_decode_instruction[FLAGS_decode_instruction_size++] = byte;
+          if (FLAGS_decode_instruction_size >= MAX_BYTES_PER_X86_INSTRUCTION) {
+            Fatal("-i=%s specifies too long of a hex value\n", hex_instruction);
+          }
+          i = 0;
+        }
+      }
+      if (i != 0) {
+        Fatal("-i=%s doesn't specify a sequence of bytes\n", hex_instruction);
       }
     } else {
       argv[new_argc++] = argv[i];

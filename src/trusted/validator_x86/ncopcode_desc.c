@@ -63,7 +63,8 @@ static const char* const g_OpcodeFlagName[OpcodeFlagEnumSize] = {
   "AddressSize_v",
   "AddressSize_o",
   "OperandSizeDefaultIs64",
-  "OpcodeOF"
+  "OperandSizeForce64",
+  /* "OpcodeOF" */
 };
 
 const char* OpcodeFlagName(const OpcodeFlagEnum flag) {
@@ -87,6 +88,7 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "Gw_Operand",
   "Gv_Operand",
   "Go_Operand",
+  "G_OpcodeBase",
   "I_Operand",
   "Ib_Operand",
   "Iw_Operand",
@@ -193,6 +195,7 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "RegR15",
   "RegRESP",
   "RegREAX",
+  "RegREIP",
   "RegGP7",
   "OpcodeBaseMinus0",
   "OpcodeBaseMinus1",
@@ -225,6 +228,8 @@ static const char* const g_OperandFlagName[OperandFlagEnumSize] = {
   "OpSet",
   "OpImplicit",
   "OperandExtendsOpcode",
+  "OperandNear",
+  "OperandRelative",
 };
 
 const char* OperandFlagName(const OperandFlagEnum flag) {
@@ -243,13 +248,35 @@ static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
   "And",
   "Arpl",
   "Bound",
+  "Call",
   "Cmp",
   "Daa",
   "Das",
   "Dec",
   "Imul",
+  "Hlt",
   "Inc",
+  "Jb",
+  "Jbe",
+  "Jcxz",
+  "Jg",
+  "Jge",
+  "Jl",
+  "Jle",
+  "Jmp",
+  "Jnb",
+  "Jnbe",
+  "Jno",
+  "Jnp",
+  "Jns",
+  "Jnz",
+  "Jo",
+  "Jp",
+  "Js",
+  "Jz",
+  "Mov",
   "Movsxd",
+  "Nop",
   "Or",
   "Pop",
   "Popa",
@@ -257,8 +284,10 @@ static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
   "Push",
   "Pusha",
   "Pushad",
+  "Ret",
   "Sbb",
   "Sub",
+  "Test",
   "Xor",
 };
 

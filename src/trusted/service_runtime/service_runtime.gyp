@@ -67,13 +67,13 @@
         'nacl_check.c',
         'nacl_closure.c',
         'nacl_globals.c',
-        'nacl_ldt.c',
+        'nacl_ldt_common.c',
         'nacl_memory_object.c',
         'nacl_switch_to_app.c',
         'nacl_sync_queue.c',
         'nacl_syscall_common.c',
-        '<(INTERMEDIATE_DIR)/nacl_syscall_handlers.c',
         'nacl_syscall_hook.c',
+        'nacl_thread_x86.c',
         'sel_addrspace.c',
         'sel_ldr.c',
         'sel_ldr_standard.c',
@@ -112,6 +112,24 @@
             'win/sel_memory.c',
             'win/sel_segments.c',
           ],
+          'rules': [
+            {
+              'rule_name': 'cygwin_assembler',
+              'msvs_cygwin_shell': 0,
+              'extension': 'S',
+              'inputs': [
+                '..\\..\\third_party\\gnu_binutils\\files\\as.exe',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj',
+              ],
+              'action':
+                # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
+                ['cl /E /I..\..\..\.. /DNACL_BLOCK_SHIFT=5 /DNACL_WINDOWS=1 <(RULE_INPUT_PATH) | <@(_inputs) -defsym @feat.00=1 -o <(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
+              'message': 'Building assembly file <(RULE_INPUT_PATH)',
+              'process_outputs_as_sources': 1,
+            },
+          ],
         }],
       ],
       'actions': [
@@ -131,7 +149,10 @@
             '<(INTERMEDIATE_DIR)/nacl_syscall_handlers.c',
           ],
           'action':
-             ['python nacl_syscall_handlers_gen3.py -c -f "Video|Audio|Multimedia" < <(syscall_handler) > <(INTERMEDIATE_DIR)/nacl_syscall_handlers.c'],
+             # TODO(gregoryd): find out how to generate a file in such a location that can be found in both NaCl and Chrome builds.
+             ['python nacl_syscall_handlers_gen3.py -c -f "Video|Audio|Multimedia" < <(syscall_handler) > <@(_outputs)'],
+          'process_outputs_as_sources': 1,
+          'message': 'Creating nacl_syscall_handlers.c',
         },
       ],
     }, {

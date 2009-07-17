@@ -90,12 +90,16 @@ static void NcInstStateInit(NcInstIter* iter, NcInstState* state) {
 static int ExtractOperandSize(NcInstState* state) {
   if (NACL_TARGET_SUBARCH == 64) {
     if ((state->rexprefix && state->rexprefix & 0x8) ||
-        (state->opcode->flags & InstFlag(OperandSizeDefaultIs64))) {
+        (state->opcode->flags & InstFlag(OperandSizeForce64))) {
       return 8;
     }
   }
   if (state->prefix_mask & kPrefixDATA16) {
     return 2;
+  }
+  if (NACL_TARGET_SUBARCH == 64 &&
+      (state->opcode->flags & InstFlag(OperandSizeDefaultIs64))) {
+    return 8;
   }
   return 4;
 }
@@ -287,8 +291,7 @@ static Opcode* ConsumeOpcodeBytes(NcInstState* state) {
  */
 static Bool ConsumeAndCheckOperandSize(NcInstState* state) {
   state->operand_size = ExtractOperandSize(state);
-  DEBUG(printf("operand size = %"PRIu8", address size = %"PRIu8"\n",
-               state->operand_size, state->address_size));
+  DEBUG(printf("operand size = %"PRIu8"\n", state->operand_size));
   if (state->opcode->flags &
       (InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
        InstFlag(OperandSize_o))) {
@@ -321,6 +324,7 @@ static Bool ConsumeAndCheckOperandSize(NcInstState* state) {
 
 static Bool ConsumeAndCheckAddressSize(NcInstState* state) {
   state->address_size = ExtractAddressSize(state);
+  DEBUG(printf("Address size = %"PRIu8"\n", state->address_size));
   if (state->opcode->flags &
       (InstFlag(AddressSize_w) | InstFlag(AddressSize_v) |
        InstFlag(AddressSize_o))) {
@@ -373,6 +377,10 @@ static Bool ConsumeModRm(NcInstState* state) {
       return FALSE;
     }
     state->modrm = state->mpc[state->length++];
+    state->num_disp_bytes = 0;
+    state->first_disp_byte = 0;
+    state->sib = 0;
+    state->has_sib = FALSE;
     DEBUG(printf("consume modrm = %02"PRIx8"\n", state->modrm));
 
     /* Consume the remaining opcode value in the mod/rm byte
@@ -561,6 +569,21 @@ static Bool ValidatePrefixFlags(NcInstState* state) {
   return TRUE;
 }
 
+static void ClearOpcodeState(NcInstState* state, uint8_t opcode_length,
+                             Bool is_nacl_legal) {
+  state->length = opcode_length;
+  state->is_nacl_legal = is_nacl_legal;
+  state->modrm = 0;
+  state->has_sib = FALSE;
+  state->sib = 0;
+  state->num_disp_bytes = 0;
+  state->first_disp_byte = 0;
+  state->num_imm_bytes = 0;
+  state->first_imm_byte = 0;
+  state->operand_size = 32;
+  state->address_size = 32;
+}
+
 /* Given the current location of the (relative) pc of the given instruction
  * iterator, update the given state to hold the (found) matched opcode
  * (instruction) pattern. If no matching pattern exists, set the state
@@ -588,9 +611,8 @@ void DecodeInstruction(
     opcode_length = state->length;
     is_nacl_legal = state->is_nacl_legal;
     while (cand_opcodes != NULL) {
+      ClearOpcodeState(state, opcode_length, is_nacl_legal);
       state->opcode = cand_opcodes;
-      state->length = opcode_length;
-      state->is_nacl_legal = is_nacl_legal;
       DEBUG(printf("try opcode pattern:\n"));
       DEBUG(PrintOpcode(stdout, state->opcode));
       if (ConsumeAndCheckOperandSize(state) &&
@@ -604,7 +626,6 @@ void DecodeInstruction(
         break;
       } else {
         /* match failed, try next candidate pattern. */
-        state->opcode = NULL;
         cand_opcodes = cand_opcodes->next_rule;
       }
     }
@@ -617,22 +638,12 @@ void DecodeInstruction(
     DEBUG(printf("no instruction found, converting to undefined\n"));
 
     /* Can't figure out instruction, give up. */
+    ClearOpcodeState(state, opcode_length, is_nacl_legal);
     state->opcode = &g_Undefined_Opcode;
-    state->length = opcode_length;
-    state->is_nacl_legal = is_nacl_legal;
     if (state->length == 0 && state->length < state->length_limit) {
       /* Make sure we eat at least one byte. */
       ++state->length;
     }
-    state->modrm = 0;
-    state->has_sib = FALSE;
-    state->sib = 0;
-    state->num_disp_bytes = 0;
-    state->first_disp_byte = 0;
-    state->num_imm_bytes = 0;
-    state->first_imm_byte = 0;
-    state->operand_size = 32;
-    state->address_size = 32;
   }
   /* Update nacl legal flag based on opcode information. */
   if (state->is_nacl_legal) {

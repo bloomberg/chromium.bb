@@ -9,10 +9,10 @@
 # documenting in the sense that the input matches the output.
 #
 # Note: Useful command line options are:
+#   -i=XXXXXXXX
+#           Specifies a (even length) hexidecimal value defined the sequence
+#           of bytess that defines the instruction to translate.
 #
-#   -b=XX   Specifies a (one byte) hexidecimal value, defining a byte in
-#           the sequence of bytes (defining the instruction to translate).
-#           This option may be repeated up to 15 times.
 #   -pc=XXXXXXXX
 #           Specifies the value of the program counter, when it is pointing
 #           to the instruction to be decoded. In not specified, the program
@@ -20,9 +20,9 @@
 #
 # Note: This file tests x86-32 instructions when -use_iter is specified.
 
--b=00 -b=00                                    #00000000: 00 00                                        add %ds[%al], %al
--b=00 -b=c0                                    #00000000: 00 c0                                        add %al, %al
--b=01 -b=c0                                    #00000000: 01 c0                                        add %eax, %eax
--b=03 -b=18                                    #00000000: 03 18                                        add %ebx, %ds[%eax]
--b=03 -b=1d -b=20 -b=00 -b=00 -b=00            #00000000: 03 1d 20 00 00 00                            add %ebx, 0x20
--b=02 -b=04 -b=00                              #00000000: 02 04 00                                     add %al, %ds[%eax+%eax*1]
+-i=0000                                        #00000000: 00 00                                        add %ds[%al], %al
+-i=00c0                                        #00000000: 00 c0                                        add %al, %al
+-i=01c0                                        #00000000: 01 c0                                        add %eax, %eax
+-i=0318                                        #00000000: 03 18                                        add %ebx, %ds[%eax]
+-i=031d20000000                                #00000000: 03 1d 20 00 00 00                            add %ebx, 0x20
+-i=020400                                      #00000000: 02 04 00                                     add %al, %ds[%eax+%eax*1]

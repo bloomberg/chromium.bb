@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@
 #include <string>
 
 #include "native_client/src/shared/imc/nacl_imc.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+struct NaClSrpcChannel;
 
 namespace nacl {
 
@@ -59,7 +59,14 @@ struct SelLdrLauncher {
              const char* sel_ldr_argv[],
              int application_argc,
              const char* application_argv[]);
-
+#ifdef CHROME_BUILD
+  // Launch sel_ldr process in Chrome by sending a message
+  // to the browser process.
+  bool Start(int imc_fd);
+#else
+  // Should never be called when not running in Chrome.
+  bool Start(int imc_fd) { return false; }
+#endif
   // OpenSrpcChannels essentially is a triple Ctor for the three
   // NaClSrpcChannel objects; if it returns true (success), all were
   // constructed; if it returns false, none were constructed (and thus

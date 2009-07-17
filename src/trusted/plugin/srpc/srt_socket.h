@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ class SrtSocket {
   bool HardShutdown();
   bool SetOrigin(std::string origin);
   bool StartModule(int *load_status);
+  bool LoadModule(NaClSrpcImcDescType desc);
   bool Log(int severity, std::string msg);
 
   ConnectedSocket *connected_socket() const {
@@ -62,6 +63,7 @@ class SrtSocket {
   static int kSetOriginIdent;
   static int kStartModuleIdent;
   static int kLogIdent;
+  static int kLoadModule;
  private:
   ScriptableHandle<ConnectedSocket> *connected_socket_;
   PortablePluginInterface *plugin_interface_;

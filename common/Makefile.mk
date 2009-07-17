@@ -133,7 +133,7 @@ endif
 ifeq ($(shell uname -s), Darwin)
   PLATFORM ?= mac
   FRAMEWORKS_DIR ?= /Library/Frameworks
-  SDL_FRAMEWORK_DIR ?= $(NATIVE_CLIENT)/src/third_party/sdl/osx/v1_2_13
+  SDL_FRAMEWORK_DIR ?= $(NATIVE_CLIENT)/../third_party/sdl/osx/v1_2_13
   PLATFORM_SDL := -I$(SDL_FRAMEWORK_DIR)/SDL.framework/Headers
   PLATFORM_SDL += $(NATIVE_CLIENT)/common/SDLApplication.m
   PLATFORM_SDL += -F$(SDL_FRAMEWORK_DIR)
@@ -142,7 +142,7 @@ else
   ENVIRON := $(shell uname -o)
   ifeq (Linux,$(findstring Linux,$(ENVIRON)))
     PLATFORM ?= linux
-    SDL_FRAMEWORK_DIR ?= $(NATIVE_CLIENT)/src/third_party/sdl/linux/v1_2_13
+    SDL_FRAMEWORK_DIR ?= $(NATIVE_CLIENT)/../third_party/sdl/linux/v1_2_13
     PLATFORM_SDL := -I$(SDL_FRAMEWORK_DIR)/include
     PLATFORM_SDL += -L$(SDL_FRAMEWORK_DIR)/lib
     PLATFORM_SDL += -lSDLmain -lSDL
@@ -150,7 +150,7 @@ else
     ifeq (Cygwin,$(ENVIRON))
       PLATFORM ?= win
       PATH+= :$(NACL_BIN_PATH)
-      SDL_FRAMEWORK_DIR ?= $(NATIVE_CLIENT)/src/third_party/sdl/win/v1_2_13
+      SDL_FRAMEWORK_DIR ?= $(NATIVE_CLIENT)/../third_party/sdl/win/v1_2_13
       NACL_BIN_PATH := \
           $(NATIVE_CLIENT)/src/third_party/nacl_sdk/windows/sdk/nacl-sdk/bin
       PLATFORM_SDL := -I$(SDL_FRAMEWORK_DIR)/include

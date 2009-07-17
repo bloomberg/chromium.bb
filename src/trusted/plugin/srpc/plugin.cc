@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -135,7 +135,6 @@ bool Plugin::ShmFactory(void *obj, SrpcParams *params) {
   params->Output(0)->u.oval =
       static_cast<BrowserScriptableObject*>(shared_memory);
   return true;
-
 }
 
 bool Plugin::UrlAsNaClDesc(void *obj, SrpcParams *params) {
@@ -253,7 +252,6 @@ bool Plugin::SetWidthProperty(void *obj, SrpcParams *params) {
 
 
 bool Plugin::Init(struct PortableHandleInitializer* init_info) {
-
   dprintf(("Plugin::Init()\n"));
 
   if (!PortableHandle::Init(init_info)) {
@@ -346,26 +344,34 @@ void Plugin::set_local_url(const char* name) {
 
 // Create a new service node from a downloaded service.
 bool Plugin::Load() {
-  dprintf(("Plugin::Load(%s)\n", local_url_));
+  return Load(NULL, 0);
+}
+
+bool Plugin::Load(const void* buffer, int32_t size) {
+  if (NULL == buffer) {
+    dprintf(("Plugin::Load(%s)\n", local_url_));
+  } else {
+    dprintf(("Plugin::Load(%p, %d)\n", buffer, size));
+  }
 
   // If the page origin where the EMBED/OBJECT tag occurs is not in
   // the whitelist, refuse to load.  If the NaCl module's origin is
   // not in the whitelist, also refuse to load.
   if (!origin_valid_ || !nacl::OriginIsInWhitelist(nacl_module_origin())) {
     printf("Load failed: NaCl module did not come from a whitelisted"
-           " source.\nSee nacl_plugin/origin.cc for the list.");
+      " source.\nSee nacl_plugin/origin.cc for the list.");
     const char *message = "Load failed: NaCl module did not"
-                          " come from a whitelisted source.\\n"
-                          "See nacl_plugin/origin.cc for the list');";
+      " come from a whitelisted source.\\n"
+      "See nacl_plugin/origin.cc for the list');";
     PortablePluginInterface::Alert(
-        GetPortablePluginInterface()->GetPluginIdentifier(),
-        message,
-        strlen(message));
+      GetPortablePluginInterface()->GetPluginIdentifier(),
+      message,
+      strlen(message));
     return false;
   }
   // Catch any bad accesses, etc., while loading.
   nacl_srpc::ScopedCatchSignals sigcatcher(
-      (nacl_srpc::ScopedCatchSignals::SigHandlerType) SignalHandler);
+    (nacl_srpc::ScopedCatchSignals::SigHandlerType) SignalHandler);
   if (PLUGIN_SETJMP(loader_env, 1)) {
     return false;
   }
@@ -374,8 +380,14 @@ bool Plugin::Load() {
 
   // check ABI version compatibility
   PortablePluginInterface *plugin_interface = GetPortablePluginInterface();
-  bool success = PortablePluginInterface::CheckExecutableVersion(
-      plugin_interface->GetPluginIdentifier(), local_url_);
+  bool success = false;
+  if (NULL == buffer) {
+    success = PortablePluginInterface::CheckExecutableVersion(
+        plugin_interface->GetPluginIdentifier(), local_url_);
+  } else {
+    success = PortablePluginInterface::CheckExecutableVersion(
+        plugin_interface->GetPluginIdentifier(), buffer, size);
+  }
   if (!success) {
     dprintf(("Load: FAILED due to possible ABI version mismatch\n"));
     return false;
@@ -383,12 +395,18 @@ bool Plugin::Load() {
   // Load a file via a forked sel_ldr process.
   service_runtime_interface_ =
     new(std::nothrow) ServiceRuntimeInterface(GetPortablePluginInterface(),
-                                              this);
+    this);
   if (NULL == service_runtime_interface_) {
     dprintf((" ServiceRuntimeInterface Ctor failed\n"));
     return false;
   }
-  if (!service_runtime_interface_->Start(local_url_)) {
+  bool service_runtime_started = false;
+  if (NULL == buffer) {
+    service_runtime_started = service_runtime_interface_->Start(local_url_);
+  } else {
+    service_runtime_started = service_runtime_interface_->Start(buffer, size);
+  }
+  if (!service_runtime_started) {
     dprintf(("  Load: FAILED to start service runtime"));
     return false;
   }

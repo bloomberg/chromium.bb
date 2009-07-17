@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,11 +43,11 @@
 #include <string>
 
 #include "native_client/src/include/base/basictypes.h"
+#include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
-
 
 bool PortablePluginInterface::identifiers_initialized = false;
 int PortablePluginInterface::kConnectIdent;
@@ -72,6 +72,8 @@ int PortablePluginInterface::kValueOfIdent;
 int PortablePluginInterface::kVideoUpdateModeIdent;
 int PortablePluginInterface::kWidthIdent;
 int PortablePluginInterface::kWriteIdent;
+
+uint8_t const PortablePluginInterface::kInvalidAbiVersion = UINT8_MAX;
 
 // TODO(gregoryd): make sure that calls to AddMethodToMap use the same strings
 // move the strings to a header file.
@@ -107,7 +109,7 @@ void PortablePluginInterface::InitializeIdentifiers() {
 
 
 int PortablePluginInterface::GetStrIdentifierCallback(const char *method_name) {
-  return (int)NPN_GetStringIdentifier(method_name);
+  return reinterpret_cast<int>(NPN_GetStringIdentifier(method_name));
 }
 
 
@@ -203,7 +205,7 @@ void PortablePluginInterface::BrowserRelease(void* ptr) {
 
 const char* PortablePluginInterface::IdentToString(int ident) {
   if (NPN_IdentifierIsString((NPIdentifier)ident)) {
-    return (char*) NPN_UTF8FromIdentifier((NPIdentifier)ident);
+    return reinterpret_cast<char*>(NPN_UTF8FromIdentifier((NPIdentifier)ident));
   } else {
     static char buf[10];
     SNPRINTF(buf,
@@ -214,16 +216,65 @@ const char* PortablePluginInterface::IdentToString(int ident) {
   }
 }
 
+bool PortablePluginInterface::CheckExecutableVersionCommon(
+    nacl_srpc::PluginIdentifier instance,
+    const char *version) {
+  if ((NULL != version) && (EF_NACL_ABIVERSION == *version)) {
+    return true;
+  }
+  char alert[256];
+  if (NULL == version) {
+    SNPRINTF(alert,
+      sizeof alert,
+      "alert('Load failed: Unknown error\\n');");
+  } else {
+    SNPRINTF(alert,
+      sizeof alert,
+      "alert('Load failed: ABI version mismatch: expected %d, got %d\\n');",
+      EF_NACL_ABIVERSION,
+      *version);
+  }
+  Alert(instance, alert, sizeof(alert));
+  return false;
+}
 
+// TODO(gregoryd): consider refactoring and moving the code to service_runtime
 bool PortablePluginInterface::CheckExecutableVersion(
     nacl_srpc::PluginIdentifier instance,
     const char *filename) {
-  // TODO(gregoryd): This function is here since the original implementation is
-  // in npp_launcher.cc that is not included in non-NPAPI plugins. It should
-  // be moved to a shared file.
-  return nacl::CheckExecutableVersion(instance, filename);
+  FILE *f;
+  uint8_t nacl_abi_version = kInvalidAbiVersion;
+  // initialize it, since the compiler does not know that the variable
+  // will not be used unless it is set by the fread.
+
+  f = fopen(filename, "rb");
+  if (NULL != f) {
+    if (0 == fseek(f, EI_ABIVERSION, SEEK_SET)) {
+      if (1 == fread(&nacl_abi_version, 1, 1, f)) {
+        fclose(f);
+        return CheckExecutableVersionCommon(
+            instance,
+            reinterpret_cast<char*>(&nacl_abi_version));
+      }
+    }
+    fclose(f);
+  }
+  char alert[256];
+  SNPRINTF(alert,
+      sizeof alert,
+      "alert('Load failed: Generic file error\\n');");
+  Alert(instance, alert, sizeof(alert));
+  return false;
 }
 
+bool PortablePluginInterface::CheckExecutableVersion(
+    nacl_srpc::PluginIdentifier instance,
+    const void* buffer,
+    int32_t size) {
+  const char *nacl_abi_version =
+    reinterpret_cast<const char*>(buffer) + EI_ABIVERSION;
+  return CheckExecutableVersionCommon(instance, nacl_abi_version);
+}
 
 char *PortablePluginInterface::MemAllocStrdup(const char *str) {
   int lenz = strlen(str) + 1;

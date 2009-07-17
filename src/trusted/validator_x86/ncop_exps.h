@@ -55,8 +55,10 @@ typedef enum {
    * opcode. Has one kid, which is the root of the translated operand.
    */
   OperandReference,
-  /* A constant. Value is the value of the constant. */
+  /* A constant (up to 32 bits). Value is the value of the constant. */
   ExprConstant,
+  /* A 64-bit constant, which has two children that are 32-bit constants. */
+  ExprConstant64,
   /* A segment address. */
   ExprSegmentAddress,
   /* A memory offset. Value is zero. Has four kids: base, index,
@@ -92,6 +94,8 @@ typedef enum {
   ExprHexConstant,
   /* Defines that the constant is an integer instead of a hex value. */
   ExprIntconstant,
+  /* Defines an implicit argument that shouldn't be printed. */
+  ExprImplicit,
   /* Special marker used to define the number of ExprNodeFlags. */
   ExprNodeFlagEnumSize
 } ExprNodeFlagEnum;
@@ -139,6 +143,15 @@ int ExprNodeWidth(ExprNodeVector* vector, int node);
  * given (zero based) kid of the node.
  */
 int GetExprNodeKidIndex(ExprNodeVector* vector, int node, int kid);
+
+/* Given the index of a 64-bit constant, returns the corresponding constant. */
+uint64_t GetExprConstant64(ExprNodeVector* vector, int index);
+
+/* Given a 64-bit constant, return the corresponding two 32-bit constants to
+ * Use. Note: The lower 32 bits are put in val1, and the upper 32 bits are
+ * put in val2.
+ */
+void SplitExprConstant64(uint64_t val, uint32_t* val1, uint32_t* val2);
 
 /* Print out the contents of the given vector of nodes to the given file. */
 void PrintExprNodeVector(FILE* file, ExprNodeVector* vector);

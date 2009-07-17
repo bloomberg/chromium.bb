@@ -174,8 +174,30 @@ AlwaysBuild(n)
 
 
 # ----------------------------------------------------------
-# Define the build and target platforms, and encode into scons-out directory.
-
+# Define the build and target platforms, and use them to define the path
+# for the scons-out directory (aka TARGET_ROOT)
+#.
+# We have "build" and "target" platforms for the non nacl environments
+# which govern service runtime, validator, etc.
+#
+# "build" means the  platform the code is running on
+# "target" means the platform the validatir is checking for.
+# Typically they are the same but testing it useful to have flexibility.
+#
+# Various variables in the scons environment are related to this, e.g.
+#
+# BUILD_ARCH: (arm, x86)
+# BUILD_SUBARCH: (32, 64)
+#
+# The settings can be controlled using scons command line variables:
+#
+#
+# buildplatform=: controls the build platform
+# targetplatform=: controls the target platform
+# platform=: controls both
+#
+# This dictionary is used to translate from a platform name to a
+# (arch, subarch) pair
 AVAILABLE_PLATFORMS = {
     'x86-32' : { 'arch' : 'x86' , 'subarch' : '32' },
     'x86-64' : { 'arch' : 'x86' , 'subarch' : '64' },
@@ -203,22 +225,20 @@ def DecodePlatform(platform):
   assert 0
 
 BUILD_NAME = GetPlatform('buildplatform')
-pre_base_env.Replace(BUILD_NAME = BUILD_NAME)
 pre_base_env.Replace(BUILD_ARCHITECTURE = DecodePlatform(BUILD_NAME)['arch'])
 pre_base_env.Replace(BUILD_SUBARCH = DecodePlatform(BUILD_NAME)['subarch'])
 
 TARGET_NAME = GetPlatform('targetplatform')
-pre_base_env.Replace(TARGET_NAME = TARGET_NAME)
 pre_base_env.Replace(TARGET_ARCHITECTURE = DecodePlatform(TARGET_NAME)['arch'])
 pre_base_env.Replace(TARGET_SUBARCH = DecodePlatform(TARGET_NAME)['subarch'])
 
+# Determine where the object files go
 if BUILD_NAME == TARGET_NAME:
-  pre_base_env.Replace(
-      TARGET_ROOT = "${DESTINATION_ROOT}/${BUILD_TYPE}-${TARGET_NAME}")
+  TARGET_ROOT = '${DESTINATION_ROOT}/${BUILD_TYPE}-%s' % TARGET_NAME
 else:
-  pre_base_env.Replace(
-      TARGET_ROOT = "${DESTINATION_ROOT}/" +
-      "${BUILD_TYPE}-${BUILD_NAME}-to-${TARGET_NAME}")
+  TARGET_ROOT = '${DESTINATION_ROOT}/${BUILD_TYPE}-%s-to-%s' % (BUILD_NAME,
+                                                                TARGET_NAME)
+pre_base_env.Replace(TARGET_ROOT = TARGET_ROOT)
 
 # ----------------------------------------------------------
 EXTRA_ENV = [('XAUTHORITY', None),
@@ -259,6 +279,7 @@ def DemoSelLdrNacl(env,
   return node
 
 if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
+  # arm support would likely require some emulation magic
   pre_base_env.AddMethod(DemoSelLdrNacl)
 
 # ----------------------------------------------------------
@@ -363,6 +384,19 @@ if ARGUMENTS.get('pp', 0):
   pre_base_env.Append(PRINT_CMD_LINE_FUNC = CommandPrettyPrinter)
 
 # ----------------------------------------------------------
+DeclareBit('chrome',
+           'Build the plugin as a static library to be linked with Chrome')
+pre_base_env.SetBitFromOption('chrome', False)
+if pre_base_env.Bit('chrome'):
+  pre_base_env.Append(
+    CPPDEFINES = [
+        ['CHROME_BUILD', 1],
+    ],
+  )
+  # To build for Chrome sdl=none must be used
+  ARGUMENTS['sdl'] = 'none'
+
+# ----------------------------------------------------------
 base_env = pre_base_env.Clone()
 base_env.Append(
   BUILD_SUBTYPE = '',
@@ -379,7 +413,6 @@ base_env.Append(
         'src/trusted/plugin/build.scons',
         'src/trusted/sandbox/build.scons',
         'src/trusted/platform/build.scons',
-        'src/trusted/validator_x86/build.scons',
         'tests/python_version/build.scons',
         'tests/tools/build.scons',
     ],
@@ -391,7 +424,7 @@ base_env.Append(
         ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
         ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
     ],
-    CPPPATH = ['$SOURCE_ROOT'],
+    CPPPATH = ['${SOURCE_ROOT}'],
 
     EXTRA_CFLAGS = [],
     EXTRA_CCFLAGS = [],
@@ -403,17 +436,26 @@ base_env.Append(
     LIBS = ['${EXTRA_LIBS}'],
 )
 
+
 if base_env['TARGET_ARCHITECTURE'] == 'arm':
   base_env.Append(
-    build_sconscripts = ['src/trusted/validator_arm/build.scons',]
-  )
+      BUILD_SCONSCRIPTS = ['src/trusted/validator_arm/build.scons',]
+      )
+
+elif base_env['TARGET_ARCHITECTURE'] == 'x86':
+  base_env.Append(
+      BUILD_SCONSCRIPTS = ['src/trusted/validator_x86/build.scons',]
+      )
+else:
+  Banner("unknown TARGET_ARCHITECTURE %s" % base_env['TARGET_ARCHITECTURE'])
+
 
 base_env.Replace(
     NACL_BUILD_FAMILY = 'TRUSTED',
 
-    SDL_HERMETIC_LINUX_DIR='$MAIN_DIR/../third_party/sdl/linux/v1_2_13',
-    SDL_HERMETIC_MAC_DIR='$MAIN_DIR/../third_party/sdl/osx/v1_2_13',
-    SDL_HERMETIC_WINDOWS_DIR='$MAIN_DIR/../third_party/sdl/win/v1_2_13',
+    SDL_HERMETIC_LINUX_DIR='${MAIN_DIR}/../third_party/sdl/linux/v1_2_13',
+    SDL_HERMETIC_MAC_DIR='${MAIN_DIR}/../third_party/sdl/osx/v1_2_13',
+    SDL_HERMETIC_WINDOWS_DIR='${MAIN_DIR}/../third_party/sdl/win/v1_2_13',
 )
 
 # Add optional scons files if present in the directory tree.
@@ -443,7 +485,7 @@ Common tasks:
 * smoke test:         scons --mode=nacl,opt-linux -k pp=1 smoke_tests
 * build the plugin:   scons --mode=opt-linux npGoogleNaClPlugin
 * another way to build the plugin: scons --mode=opt-linux src/trusted/plugin
-* install the plugin: scons firefox_install
+* install the plugin: scons --verbose firefox_install
 * sel_ldr:            scons --mode=opt-linux sel_ldr
 * install pre-built plugin: scons firefox_install --prebuilt
 
@@ -662,20 +704,33 @@ linux_env.Prepend(
     LINKFLAGS = ['-m32', '-L/usr/lib32'],
 )
 
-if linux_env['BUILD_SUBARCH'] == '32':
-  linux_env.Prepend(
-    ASFLAGS = ['-m32', ],
-    CCFLAGS = ['-m32', ],
-    LINKFLAGS = ['-m32', '-L/usr/lib32'],
-    )
-elif linux_env['BUILD_SUBARCH'] == '64':
-  linux_env.Prepend(
-    ASFLAGS = ['-m64', ],
-    CCFLAGS = ['-m64', ],
-    LINKFLAGS = ['-m64', '-L/usr/lib64'],
-    )
+if linux_env['BUILD_ARCHITECTURE'] == 'x86':
+  if linux_env['BUILD_SUBARCH'] == '32':
+    linux_env.Prepend(
+        ASFLAGS = ['-m32', ],
+        CCFLAGS = ['-m32', ],
+        LINKFLAGS = ['-m32', '-L/usr/lib32'],
+        )
+
+  else:
+    assert linux_env['BUILD_SUBARCH'] == '64'
+    linux_env.Prepend(
+        ASFLAGS = ['-m64', ],
+        CCFLAGS = ['-m64', ],
+        LINKFLAGS = ['-m64', '-L/usr/lib64'],
+        )
+elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
+  linux_env.Replace(CC=os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
+                    CXX=os.getenv('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
+                    LD=os.getenv('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
+                    ASFLAGS=[],
+                    CCFLAGS=[],
+                    LINKFLAGS=ARGUMENTS.get('ARM_LINKFLAGS', ''),
+                    )
+  # NOTE(pmarch): eliminate the need for this
+  linux_env.Append(CPPDEFINES=['NACL_ARM'])
 else:
-  Banner('Strange platform: %s' % (linux_env['BUILD_NAME']))
+  Banner('Strange platform: %s' % BUILD_NAME)
 
 # TODO(robert): support for arm builds
 
@@ -940,11 +995,9 @@ RELEVANT_CONFIG = ['NACL_BUILD_FAMILY',
                    'BUILD_TYPE_DESCRIPTION',
                    ]
 
-MAYBE_RELEVANT_CONFIG = ['BUILD_NAME',
-                         'BUILD_OS',
+MAYBE_RELEVANT_CONFIG = ['BUILD_OS',
                          'BUILD_ARCHITECTURE',
                          'BUILD_SUBARCH',
-                         'TARGET_NAME',
                          'TARGET_OS',
                          'TARGET_ARCHITECTURE',
                          'TARGET_SUBARCH',

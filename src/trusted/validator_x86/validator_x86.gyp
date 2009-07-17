@@ -31,10 +31,6 @@
   'includes': [
     '../../../build/common.gypi',
   ],
-  'target_defaults': {
-    # TODO(gregoryd): add a way to get the architecture dynamically
-    'defines': ['NACL_TARGET_SUBARCH=32',]
-  },
   'targets': [
     {
       'target_name': 'ncdecode_table',

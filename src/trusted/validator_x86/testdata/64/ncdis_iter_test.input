@@ -9,10 +9,10 @@
 # documenting in the sense that the input matches the output.
 #
 # Note: Useful command line options are:
+#   -i=XXXXXXXX
+#           Specifies a (even length) hexidecimal value defined the sequence
+#           of bytess that defines the instruction to translate.
 #
-#   -b=XX   Specifies a (one byte) hexidecimal value, defining a byte in
-#           the sequence of bytes (defining the instruction to translate).
-#           This option may be repeated up to 15 times.
 #   -pc=XXXXXXXX
 #           Specifies the value of the program counter, when it is pointing
 #           to the instruction to be decoded. In not specified, the program
@@ -20,11 +20,27 @@
 #
 # Note: This file tests x86-64 instructions when -use_iter is specified.
 
--b=00 -b=c0                             #0000000000000000: 00 c0                                        add %al, %al
--b=01 -b=c0                             #0000000000000000: 01 c0                                        add %eax, %eax
--b=41 -b=01 -b=c3                       #0000000000000000: 41 01 c3                                     add %r11d, %eax
--b=44 -b=01 -b=d8                       #0000000000000000: 44 01 d8                                     add %eax, %r11d
--b=48 -b=01 -b=c3                       #0000000000000000: 48 01 c3                                     add %rbx, %rax
--b=67 -b=03 -b=18                       #0000000000000000: 67 03 18                                     add %ebx, [%eax]
--b=67 -b=02 -b=04 -b=00                 #0000000000000000: 67 02 04 00                                  add %al, [%rax+%rax*1]
+-i=00c0                                  #0000000000000000: 00 c0                                        add %al, %al
+-i=01c0                                  #0000000000000000: 01 c0                                        add %eax, %eax
+-i=4101c3                                #0000000000000000: 41 01 c3                                     add %r11d, %eax
+-i=4401d8                                #0000000000000000: 44 01 d8                                     add %eax, %r11d
+-i=4801c3                                #0000000000000000: 48 01 c3                                     add %rbx, %rax
+-i=670318                                #0000000000000000: 67 03 18                                     add %ebx, [%eax]
+-i=67020400                              #0000000000000000: 67 02 04 00                                  add %al, [%rax+%rax*1]
+-i=4883EC08                              #0000000000000000: 48 83 ec 08                                  sub %rsp, 0x8
+-i=e883000000 -pc=4003d4                 #00000000004003d4: e8 83 00 00 00                               call 0x40045c
+-pc=4003de -i=e87d050000                 #00000000004003de: e8 7d 05 00 00                               call 0x400960
+-i=c3                                    #0000000000000000: c3                                           ret
+-i=ff35ea0d2000                          #0000000000000000: ff 35 ea 0d 20 00                            push 0x200dea
+-i=ff25ec0d2000                          #0000000000000000: ff 25 ec 0d 20 00                            jmp 0x200dec
+-i=0F1F4000                              #0000000000000000: 0f 1f 40 00                                  nop %eax, [%eax]
+-i=6800000000                            #0000000000000000: 68 00 00 00 00                               push 0x0
+-pc=400403 -i=E9E0FFFFFF                 #0000000000400403: e9 e0 ff ff ff                               jmp 0x4003e8
+-i=4989D1                                #0000000000000000: 49 89 d1                                     mov %r9, %rdx
+-i=5E                                    #0000000000000000: 5e                                           pop %rsi
+-i=49C7C0C0084000                        #0000000000000000: 49 c7 c0 c0 08 40 00                         mov %r8, 0x4008c0
+-i=F4                                    #0000000000000000: f4                                           hlt
+-i=488B05610D2000                        #0000000000000000: 48 8b 05 61 0d 20 00                         mov %rax, 0x200d61
+-i=4885C0                                #0000000000000000: 48 85 c0                                     test %rax, %rax
+-pc=40046a -i=7402                       #000000000040046a: 74 02                                        jz 0x40046e
 

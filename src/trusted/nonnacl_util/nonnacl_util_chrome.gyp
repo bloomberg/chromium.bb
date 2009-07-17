@@ -33,36 +33,18 @@
   ],
   'targets': [
     {
-      'target_name': 'nonnacl_util',
+      'target_name': 'nonnacl_util_chrome',
       'type': 'static_library',
+      'defines': [
+        'CHROME_BUILD',
+      ],
+      'include_dirs': [
+        '../../../../third_party/skia/include/config',
+      ],
       'sources': [
         '<@(common_sources)',
+        'sel_ldr_launcher_chrome.cc',
       ],
     },
-    {
-      'target_name': 'nonnacl_util_c',
-      'type': 'static_library',
-      'sources': [
-        '<@(common_sources)',
-        'sel_ldr_launcher_c.cc',
-        'sel_ldr_launcher_c.h',
-      ],
-    }
   ]
 }
-
-# TODO:
-# if env.Bit('linux'):
-#     env.Append(
-#         CCFLAGS=['-fPIC'],
-#     )
-#if env.Bit('mac'):
-#    # there are some issue with compiling ".mm" files
-#    env.FilterOut(CCFLAGS=['-pedantic'])
-#if env.Bit('windows'):
-#    env.Append(
-#        CCFLAGS = ['/EHsc'],
-#        CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
-#    )
-#    env.Tool('atlmfc_vc80')
-#

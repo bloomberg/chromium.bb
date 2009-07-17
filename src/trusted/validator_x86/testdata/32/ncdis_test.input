@@ -9,10 +9,10 @@
 # documenting in the sense that the input matches the output.
 #
 # Note: Useful command line options are:
+#   -i=XXXXXXXX
+#           Specifies a (even length) hexidecimal value defined the sequence
+#           of bytess that defines the instruction to translate.
 #
-#   -b=XX   Specifies a (one byte) hexidecimal value, defining a byte in
-#           the sequence of bytes (defining the instruction to translate).
-#           This option may be repeated up to 15 times.
 #   -pc=XXXXXXXX
 #           Specifies the value of the program counter, when it is pointing
 #           to the instruction to be decoded. In not specified, the program
@@ -20,48 +20,48 @@
 #
 # Note: This file tests x86-32 instructions.
 
--b=55                                                       # 0:	55                  	push %ebp
--b=8d -b=74 -b=26 -b=00                                     # 0:	8d 74 26 00         	lea %esi, 0x0[%esi]
--pc=80483f8 -b=e8 -b=ff -b=fe -b=ff -b=ff                   # 80483f8:	e8 ff fe ff ff      	call 0x80482fc
+-i=55                                                       # 0:	55                  	push %ebp
+-i=8d742600                                                 # 0:	8d 74 26 00         	lea %esi, 0x0[%esi]
+-pc=80483f8 -i=e8fffeffff                                   # 80483f8:	e8 ff fe ff ff      	call 0x80482fc
 
 # Check move immediates (b8-bf).
--b=b8 -b=88 -b=77 -b=66 -b=55                               # 0:	b8 88 77 66 55      	mov %eax, 0x55667788
--b=b9 -b=88 -b=77 -b=66 -b=55                               # 0:	b9 88 77 66 55      	mov %ecx, 0x55667788
--b=ba -b=88 -b=77 -b=66 -b=55                               # 0:	ba 88 77 66 55      	mov %edx, 0x55667788
--b=bb -b=88 -b=77 -b=66 -b=55                               # 0:	bb 88 77 66 55      	mov %ebx, 0x55667788
--b=bc -b=88 -b=77 -b=66 -b=55                               # 0:	bc 88 77 66 55      	mov %esp, 0x55667788
--b=bd -b=88 -b=77 -b=66 -b=55                               # 0:	bd 88 77 66 55      	mov %ebp, 0x55667788
--b=be -b=88 -b=77 -b=66 -b=55                               # 0:	be 88 77 66 55      	mov %esi, 0x55667788
--b=bf -b=88 -b=77 -b=66 -b=55                               # 0:	bf 88 77 66 55      	mov %edi, 0x55667788
+-i=b888776655                                               # 0:	b8 88 77 66 55      	mov %eax, 0x55667788
+-i=b988776655                                               # 0:	b9 88 77 66 55      	mov %ecx, 0x55667788
+-i=ba88776655                                               # 0:	ba 88 77 66 55      	mov %edx, 0x55667788
+-i=bb88776655                                               # 0:	bb 88 77 66 55      	mov %ebx, 0x55667788
+-i=bc88776655                                               # 0:	bc 88 77 66 55      	mov %esp, 0x55667788
+-i=bd88776655                                               # 0:	bd 88 77 66 55      	mov %ebp, 0x55667788
+-i=be88776655                                               # 0:	be 88 77 66 55      	mov %esi, 0x55667788
+-i=bf88776655                                               # 0:	bf 88 77 66 55      	mov %edi, 0x55667788
 
--b=66 -b=b8 -b=88 -b=77                                     # 0:	66 b8 88 77         	mov %eax, 0x7788
--b=66 -b=b9 -b=88 -b=77                                     # 0:	66 b9 88 77         	mov %ecx, 0x7788
--b=66 -b=ba -b=88 -b=77                                     # 0:	66 ba 88 77         	mov %edx, 0x7788
--b=66 -b=bb -b=88 -b=77                                     # 0:	66 bb 88 77         	mov %ebx, 0x7788
--b=66 -b=bc -b=88 -b=77                                     # 0:	66 bc 88 77         	mov %esp, 0x7788
--b=66 -b=bd -b=88 -b=77                                     # 0:	66 bd 88 77         	mov %ebp, 0x7788
--b=66 -b=be -b=88 -b=77                                     # 0:	66 be 88 77         	mov %esi, 0x7788
--b=66 -b=bf -b=88 -b=77                                     # 0:	66 bf 88 77         	mov %edi, 0x7788
+-i=66b88877                                                 # 0:	66 b8 88 77         	mov %eax, 0x7788
+-i=66b98877                                                 # 0:	66 b9 88 77         	mov %ecx, 0x7788
+-i=66ba8877                                                 # 0:	66 ba 88 77         	mov %edx, 0x7788
+-i=66bb8877                                                 # 0:	66 bb 88 77         	mov %ebx, 0x7788
+-i=66bc8877                                                 # 0:	66 bc 88 77         	mov %esp, 0x7788
+-i=66bd8877                                                 # 0:	66 bd 88 77         	mov %ebp, 0x7788
+-i=66be8877                                                 # 0:	66 be 88 77         	mov %esi, 0x7788
+-i=66bf8877                                                 # 0:	66 bf 88 77         	mov %edi, 0x7788
 
--b=67 -b=b8 -b=88 -b=77 -b=66 -b=55                         # 0:	67 b8 88 77 66 55   	mov %eax, 0x55667788
--b=67 -b=bf -b=88 -b=77 -b=66 -b=55                         # 0:	67 bf 88 77 66 55   	mov %edi, 0x55667788
+-i=67b888776655                                             # 0:	67 b8 88 77 66 55   	mov %eax, 0x55667788
+-i=67bf88776655                                             # 0:	67 bf 88 77 66 55   	mov %edi, 0x55667788
 
 # Check direct moves on 32-bit constant addresses.
--b=a0 -b=44 -b=33 -b=22 -b=11                               # 0:	a0 44 33 22 11      	mov %al, [0x11223344]
+-i=a044332211                                               # 0:	a0 44 33 22 11      	mov %al, [0x11223344]
 # Note: The following entry should use %ax instead of %eax
--b=66 -b=a1 -b=44 -b=33 -b=22 -b=11                         # 0:	66 a1 44 33 22 11   	mov %eax, [0x11223344]
--b=a1 -b=44 -b=33 -b=22 -b=11                               # 0:	a1 44 33 22 11      	mov %eax, [0x11223344]
--b=a2 -b=44 -b=33 -b=22 -b=11                               # 0:	a2 44 33 22 11      	mov [0x11223344], %al
+-i=66a144332211                                             # 0:	66 a1 44 33 22 11   	mov %eax, [0x11223344]
+-i=a144332211                                               # 0:	a1 44 33 22 11      	mov %eax, [0x11223344]
+-i=a244332211                                               # 0:	a2 44 33 22 11      	mov [0x11223344], %al
 # Note: The following entry should use %ax instead of %eax
--b=66 -b=a3 -b=44 -b=33 -b=22 -b=11                         # 0:	66 a3 44 33 22 11   	mov [0x11223344], %eax
--b=a3 -b=44 -b=33 -b=22 -b=11                               # 0:	a3 44 33 22 11      	mov [0x11223344], %eax
+-i=66a344332211                                             # 0:	66 a3 44 33 22 11   	mov [0x11223344], %eax
+-i=a344332211                                               # 0:	a3 44 33 22 11      	mov [0x11223344], %eax
 
 # The following don't print out the right syntax for matched instructions,
 # and is intended to show the difference between the -use_iter=true and
 # -use_iter=false cases.
--b=00 -b=00                                    # 0:	00 00               	add [%eax], %eax
--b=00 -b=c0                                    # 0:	00 c0               	add %eax, %eax
--b=01 -b=c0                                    # 0:	01 c0               	add %eax, %eax
--b=03 -b=18                                    # 0:	03 18               	add %ebx, [%eax]
--b=03 -b=1d -b=20 -b=00 -b=00 -b=00            # 0:	03 1d 20 00 00 00   	add %ebx, [0x20]
--b=02 -b=04 -b=00                              # 0:	02 04 00            	add %eax, [%eax + %eax]
+-i=0000                                                     # 0:	00 00               	add [%eax], %eax
+-i=00c0                                                     # 0:	00 c0               	add %eax, %eax
+-i=01c0                                                     # 0:	01 c0               	add %eax, %eax
+-i=0318                                                     # 0:	03 18               	add %ebx, [%eax]
+-i=031d20000000                                             # 0:	03 1d 20 00 00 00   	add %ebx, [0x20]
+-i=020400                                                   # 0:	02 04 00            	add %eax, [%eax + %eax]

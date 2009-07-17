@@ -123,7 +123,7 @@ ldr_inputs = [
 if env['TARGET_ARCHITECTURE'] == 'x86':
   ldr_inputs += [
     'nacl_app.c',
-    'nacl_ldt.c',
+    'nacl_ldt_common.c',
     'nacl_switch_to_app.c',
     'sel_rt.c',
     'nacl_thread_x86.c',

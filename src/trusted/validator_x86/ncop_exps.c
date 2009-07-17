@@ -52,32 +52,30 @@
 #define DEBUG(s) do { if (0) { s; } } while(0)
 #endif
 
+typedef struct {
+  /* The name of the expression operator. */
+  const char* const name;
+  /* The rank (i.e. number of children) the expression operator has. */
+  const int rank;
+} ExprNodeKindDescriptor;
+
 /* The print names of valid ExprNodeKind values. */
-static const char* const g_ExprNodeKindName[ExprNodeKindEnumSize] = {
-  "UndefinedExp",
-  "ExprRegister",
-  "OperandReference",
-  "ExprConstant",
-  "ExprSegmentAddress",
-  "ExprMemOffset",
+static const ExprNodeKindDescriptor g_ExprNodeKindDesc[ExprNodeKindEnumSize] = {
+  {"UndefinedExp", 0},
+  {"ExprRegister", 0},
+  {"OperandReference", 1},
+  {"ExprConstant", 0},
+  {"ExprConstant64", 2},
+  { "ExprSegmentAddress", 2},
+  { "ExprMemOffset", 4}
 };
 
 const char* ExprNodeKindName(ExprNodeKind kind) {
-  return g_ExprNodeKindName[kind];
+  return g_ExprNodeKindDesc[kind].name;
 }
 
-/* The number of kids each valid ExprNodeKind has. */
-static const int g_ExprNodeKindRank[ExprNodeKindEnumSize] = {
-  0,
-  0,
-  1,
-  0,
-  2,
-  4
-};
-
 int ExprNodeKindRank(ExprNodeKind kind) {
-  return g_ExprNodeKindRank[kind];
+  return g_ExprNodeKindDesc[kind].rank;
 }
 
 /* The print names of valid ExprNodeFlagEnum values. */
@@ -90,6 +88,7 @@ static const char* const g_ExprNodeFlagName[ExprNodeFlagEnumSize] = {
   "ExprSize64",
   "EpxrHexConstant",
   "ExprIntConstant",
+  "ExprImplicit",
 };
 
 const char* ExprNodeFlagName(ExprNodeFlagEnum flag) {
@@ -155,6 +154,21 @@ static void PrintDisassembledConst(FILE* file, ExprNode* node) {
   }
 }
 
+/* Print out the given (64-bit constant) expression node to the given file. */
+static void PrintDisassembledConst64(
+    FILE* file, ExprNodeVector* vector, int index) {
+  ExprNode* node;
+  uint64_t value;
+  node = &vector->node[index];
+  assert(node->kind == ExprConstant64);
+  value = GetExprConstant64(vector, index);
+  if (node->flags & ExprFlag(ExprHexConstant)) {
+    fprintf(file, "0x%"PRIx64, value);
+  } else {
+    fprintf(file, "%"PRId64, (int64_t) value);
+  }
+}
+
 /* Print out the disassembled representation of the given register
  * to the given file.
  */
@@ -178,15 +192,18 @@ void PrintExprNodeVector(FILE* file, ExprNodeVector* vector) {
             ExprNodeKindName(node->kind),
             ExprNodeKindRank(node->kind));
     switch (node->kind) {
-    case ExprRegister:
-      PrintDisassembledReg(file, node);
-      break;
-    case ExprConstant:
-      PrintDisassembledConst(file, node);
-      break;
-    default:
-      fprintf(file, "%"PRIu32, node->value);
-      break;
+      case ExprRegister:
+        PrintDisassembledReg(file, node);
+        break;
+      case ExprConstant:
+        PrintDisassembledConst(file, node);
+        break;
+      case ExprConstant64:
+        PrintDisassembledConst64(file, vector, i);
+        break;
+      default:
+        fprintf(file, "%"PRIu32, node->value);
+        break;
     }
     fprintf(file, ", ");
     if (node->flags == 0) {
@@ -273,21 +290,24 @@ static int PrintDisassembledExp(FILE* file,
   assert(index < vector->number_expr_nodes);
   node = &vector->node[index];
   switch (node->kind) {
-  default:
-    fprintf(file, "undefined");
-    return index + 1;
-  case ExprRegister:
-    PrintDisassembledReg(file, node);
-    return index + 1;
-  case OperandReference:
-    return PrintDisassembledExp(file, vector, index+1);
-  case ExprConstant:
-    PrintDisassembledConst(file, node);
-    return index + 1;
-  case ExprSegmentAddress:
-    return PrintDisassembledSegmentAddr(file, vector, index);
-  case ExprMemOffset:
-    return PrintDisassembledMemOffset(file, vector, index);
+    default:
+      fprintf(file, "undefined");
+      return index + 1;
+    case ExprRegister:
+      PrintDisassembledReg(file, node);
+      return index + 1;
+    case OperandReference:
+      return PrintDisassembledExp(file, vector, index + 1);
+    case ExprConstant:
+      PrintDisassembledConst(file, node);
+      return index + 1;
+    case ExprConstant64:
+      PrintDisassembledConst64(file, vector, index);
+      return index + 3;
+    case ExprSegmentAddress:
+      return PrintDisassembledSegmentAddr(file, vector, index);
+    case ExprMemOffset:
+      return PrintDisassembledMemOffset(file, vector, index);
   }
 }
 
@@ -302,13 +322,18 @@ static void PrintDisassembled(FILE* file,
   ExprNodeVector* vector = NcInstStateNodeVector(state);
   PrintLower(file, (char*) InstMnemonicName(opcode->name));
   while (tree_index < vector->number_expr_nodes) {
-    if (is_first) {
-      putc(' ', file);
-      is_first = FALSE;
+    if (vector->node[tree_index].kind != OperandReference ||
+        (0 == (vector->node[tree_index].flags & ExprFlag(ExprImplicit)))) {
+      if (is_first) {
+        putc(' ', file);
+        is_first = FALSE;
+      } else {
+        fprintf(file, ", ");
+      }
+      tree_index = PrintDisassembledExp(file, vector, tree_index);
     } else {
-      fprintf(file, ", ");
+      tree_index += ExprNodeWidth(vector, tree_index);
     }
-    tree_index = PrintDisassembledExp(file, vector, tree_index);
   }
 }
 
@@ -355,4 +380,15 @@ int GetExprNodeKidIndex(ExprNodeVector* vector, int node, int kid) {
     node += ExprNodeWidth(vector, node);
   }
   return node;
+}
+
+uint64_t GetExprConstant64(ExprNodeVector* vector, int index) {
+  assert(vector->node[index].kind == ExprConstant64);
+  return (uint64_t) vector->node[index+1].value |
+      (((uint64_t) vector->node[index+2].value) << 32);
+}
+
+void SplitExprConstant64(uint64_t val, uint32_t* val1, uint32_t* val2) {
+  *val1 = (uint32_t) (val & 0xFFFFFFFF);
+  *val2 = (uint32_t) (val >> 32);
 }

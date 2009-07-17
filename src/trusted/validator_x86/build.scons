@@ -219,8 +219,9 @@ if env.Bit('linux') and env['TARGET_SUBARCH'] is '32':
 
 # ======================================================================
 # Decoder on sample instruction sequences.
+TARGET_ARCH_NAME =  env['TARGET_ARCHITECTURE'] + '_' + env['TARGET_SUBARCH']
 
-NCDIS_TEST_NAME = 'ncdis_' + env['TARGET_NAME'] + '_test'
+NCDIS_TEST_NAME = 'ncdis_' + TARGET_ARCH_NAME + '_test'
 
 ncdis_input_golden = env.File(TESTDATA_DIR + 'ncdis_test.input')
 
@@ -235,7 +236,7 @@ env.AddNodeToTestSuite(ncdis_test, ['small_tests'], NCDIS_TEST_NAME)
 # ======================================================================
 # Decoder on sample instruction sequences using new iterator model.
 
-NCDIS_ITER_TEST_NAME = 'ncdis_iter_' + env['TARGET_NAME'] + '_test'
+NCDIS_ITER_TEST_NAME = 'ncdis_iter_' + TARGET_ARCH_NAME + '_test'
 
 ncdis_iter_input_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.input')
 

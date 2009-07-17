@@ -28,9 +28,8 @@ by specifying an input file with instructions to decode. Options are:
    -not_nc
         Don't apply native client rules to the elf file. Allows the
         disassembly of non-native client compliant executables.
-   -b=XX
-        Specify an instruction byte to decode (may be repeated for
-        multiple byte instructions).
+   -i=XX...
+        Specify an instruction to decode (may be up to 15 bytes long).
    -pc=XXXX
         By default, the instruction specified by the -b option is
         assumed to be at address zero. This option lets you specify
@@ -59,6 +58,6 @@ by specifying an input file with instructions to decode. Options are:
         well. Only applicable when -use_iter is specified.
 
 *To run some sample tests, one can run:
-   > ncdis -use_iter -self_document -commands=testdata/32/ncdis_iter_test.input
+   > ncdis -self_document -commands=testdata/32/ncdis_iter_test.input
 or
-   > ncdis -use_iter -self_document -commands=testdata/32/ncdis_iter_test.input
+   > ncdis -use_iter -self_document -commands=testdata/64/ncdis_iter_test.input

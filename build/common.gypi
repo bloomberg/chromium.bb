@@ -83,6 +83,8 @@
     'include_dirs': [
       '../..',
     ],
+    # TODO(gregoryd): add a way to get the architecture dynamically
+    'defines': ['NACL_TARGET_SUBARCH=32',],
     'conditions': [
       ['branding=="Chrome"', {
         'defines': ['GOOGLE_CHROME_BUILD'],

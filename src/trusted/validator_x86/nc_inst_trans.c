@@ -443,6 +443,21 @@ static int GetGenRmRegister(NcInstState* state) {
   return GetRexBRegister(state, modrm_rm(state->modrm));
 }
 
+/* Get the register index from the difference of the opcode, and
+ * its opcode base.
+ */
+static ExprNode* AppendOpcodeBaseRegister(
+    NcInstState* state, Operand* operand) {
+  /* Note: Difference held as first operand (by convention). */
+  int reg_index;
+  assert(state->opcode->num_operands > 1);
+  reg_index = state->opcode->operands[0].kind - OpcodeBaseMinus0;
+  assert(reg_index >= 0 && reg_index < 8);
+  DEBUG(printf("Translate opcode base register %"PRIdS"\n", reg_index));
+  return AppendRegisterKind(state, ExtractRegKind(state, operand),
+                            GetRexBRegister(state, reg_index));
+}
+
 /* Model the extraction of a displacement value and the associated flags. */
 typedef struct {
   uint32_t value;
@@ -456,12 +471,24 @@ static void InitializeDisplacement(uint32_t value, ExprNodeFlags flags,
 }
 
 /* Extract the binary value from the specified bytes of the instruction. */
-uint32_t ExtractBinaryValue(NcInstState* state, int start_byte, int num_bytes) {
+uint32_t ExtractUnsignedBinaryValue(NcInstState* state,
+                                    int start_byte, int num_bytes) {
   int i;
   uint32_t value = 0;
   for (i = 0; i < num_bytes; ++i) {
     uint8_t byte = state->mpc[start_byte + i];
     value += (byte << (i * 8));
+  }
+  return value;
+}
+
+int32_t ExtractSignedBinaryValue(NcInstState* state,
+                                 int start_byte, int num_bytes) {
+  int i;
+  int32_t value = 0;
+  for (i = 0; i < num_bytes; ++i) {
+    uint8_t byte = state->mpc[start_byte + i];
+    value |= (byte << (i * 8));
   }
   return value;
 }
@@ -473,9 +500,9 @@ uint32_t ExtractBinaryValue(NcInstState* state, int start_byte, int num_bytes) {
 static void ExtractDisplacement(NcInstState* state,
                                 Displacement* displacement) {
   /* First compute the displacement value. */
-  displacement->value = ExtractBinaryValue(state,
-                                           state->first_disp_byte,
-                                           state->num_disp_bytes);
+  displacement->value = ExtractUnsignedBinaryValue(state,
+                                                   state->first_disp_byte,
+                                                   state->num_disp_bytes);
 
   /* Now compute any appropriate flags to be associated with the value. */
   displacement->flags = ExprFlag(ExprHexConstant);
@@ -505,6 +532,20 @@ static ExprNode* AppendDisplacement(NcInstState* state) {
                         displacement.flags, &state->nodes);
 }
 
+/* Get the binary value denoted by the immediate bytes of the state. */
+static uint32_t ExtractUnsignedImmediate(NcInstState* state) {
+  return ExtractUnsignedBinaryValue(state,
+                                    state->first_imm_byte,
+                                    state->num_imm_bytes);
+}
+
+/* Get the binary value denoted by the immediate bytes of the state. */
+static int32_t ExtractSignedImmediate(NcInstState* state) {
+  return ExtractSignedBinaryValue(state,
+                                  state->first_imm_byte,
+                                  state->num_imm_bytes);
+}
+
 /* Append the immediate value of the given instruction state onto
  * The vector of expression nodes. Returns the appended immediate value.
  */
@@ -514,9 +555,7 @@ static ExprNode* AppendImmediate(NcInstState* state) {
   /* First compute the immediate value. */
   uint32_t value;
   DEBUG(printf("append immediate\n"));
-  value = ExtractBinaryValue(state,
-                             state->first_imm_byte,
-                             state->num_imm_bytes);
+  value = ExtractUnsignedImmediate(state);
 
   /* Now compute any appropriate flags to be associated with the immediate
    * value.
@@ -538,6 +577,56 @@ static ExprNode* AppendImmediate(NcInstState* state) {
 
   /* Append the generated immediate value onto the vector. */
   return AppendExprNode(ExprConstant, (int32_t) value, flags,  &state->nodes);
+}
+
+/* Compute the (relative) immediate value defined by the difference
+ * between the PC and the immedaite value of the instruction.
+ */
+static ExprNode* AppendRelativeImmediate(NcInstState* state) {
+  PcNumber next_pc = (PcNumber) state->vpc + state->length;
+  PcNumber val = (PcNumber) ExtractSignedImmediate(state);
+
+  DEBUG(printf("append relative immediate\n"));
+
+  /* Sign extend value */
+  switch (state->num_imm_bytes) {
+    case 1:
+      val = next_pc + (int8_t) val;
+      break;
+    case 2:
+      val = next_pc + (int16_t) val;
+      break;
+    case 4:
+      val = next_pc + (int32_t) val;
+      break;
+    default:
+      assert(0);
+      break;
+  }
+
+  /* Append the generated immediate value onto the vector. */
+  if (NACL_TARGET_SUBARCH == 64) {
+    uint32_t val1;
+    uint32_t val2;
+    SplitExprConstant64(val, &val1, &val2);
+    if (val2 == 0) {
+      return AppendExprNode(ExprConstant, val1, ExprFlag(ExprHexConstant),
+                            &state->nodes);
+    } else {
+      ExprNode* node = AppendExprNode(ExprConstant64,
+                                      0,
+                                      ExprFlag(ExprHexConstant),
+                                      &state->nodes);
+      AppendExprNode(ExprConstant, val1,
+                     ExprFlag(ExprHexConstant), &state->nodes);
+      AppendExprNode(ExprConstant, val2,
+                     ExprFlag(ExprHexConstant), &state->nodes);
+      return node;
+    }
+  } else {
+    return AppendExprNode(ExprConstant, val, ExprFlag(ExprHexConstant),
+                          &state->nodes);
+  }
 }
 
 /* Append a memory offset for the given memory offset defined by
@@ -756,13 +845,23 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Gv_Operand:
     case Go_Operand:
       return AppendOperandRegister(state, operand, GetGenRegRegister(state));
-      break;
+    case G_OpcodeBase:
+      return AppendOpcodeBaseRegister(state, operand);
     case I_Operand:
     case Ib_Operand:
     case Iw_Operand:
     case Iv_Operand:
     case Io_Operand:
       return AppendImmediate(state);
+    case J_Operand:
+    case Jb_Operand:
+    case Jw_Operand:
+    case Jv_Operand:
+    case Jo_Operand:
+      /* TODO(karl) use operand flags OperandNear and OperandRelative to decide
+       * how to process the J operand (see Intel manual for call statement).
+       */
+      return AppendRelativeImmediate(state);
     case RegUnknown:
     case RegAL:
     case RegBL:
@@ -859,6 +958,9 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
           return AppendRegister(RegRAX, &state->nodes);
       }
       break;
+    case RegREIP:
+      return AppendRegister(state->address_size == 64 ? RegRIP : RegEIP,
+                            &state->nodes);
       /* TODO(karl) fill in the rest of the possibilities of type
        * OperandKind, or remove them if not needed.
        */
@@ -893,8 +995,12 @@ void BuildExprNodeVector(struct NcInstState* state) {
     for (i = 0; i < state->opcode->num_operands; i++) {
       Operand* op = &state->opcode->operands[i];
       if (0 == (op->flags & OpFlag(OperandExtendsOpcode))) {
+        ExprNode* n;
         DEBUG(printf("translating operand %d:\n", i));
-        AppendExprNode(OperandReference, i, 0, &state->nodes);
+        n = AppendExprNode(OperandReference, i, 0, &state->nodes);
+        if (op->flags & OpFlag(OpImplicit)) {
+          n->flags |= ExprFlag(ExprImplicit);
+        }
         AddOperandSetUse(AppendOperand(state, op), op);
         DEBUG(PrintExprNodeVector(stdout, &state->nodes));
       }

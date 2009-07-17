@@ -48,13 +48,35 @@ typedef enum {
   InstAnd,
   InstArpl,
   InstBound,
+  InstCall,
   InstCmp,
   InstDaa,
   InstDas,
   InstDec,
+  InstHlt,
   InstImul,
   InstInc,
+  InstJb,
+  InstJbe,
+  InstJcxz,
+  InstJg,
+  InstJge,
+  InstJl,
+  InstJle,
+  InstJmp,
+  InstJnb,
+  InstJnbe,
+  InstJno,
+  InstJnp,
+  InstJns,
+  InstJnz,
+  InstJo,
+  InstJp,
+  InstJs,
+  InstJz,
+  InstMov,
   InstMovsxd,
+  InstNop,
   InstOr,
   InstPop,
   InstPopa,
@@ -62,8 +84,10 @@ typedef enum {
   InstPush,
   InstPusha,
   InstPushad,
+  InstRet,
   InstSbb,
   InstSub,
+  InstTest,
   InstXor,
   /* TODO(karl) Add missing instructions. */
   InstMnemonicEnumSize /* Special marker denoting size */
@@ -194,8 +218,11 @@ typedef enum {
   /* Operand size defaults to size 64 in 64-bit mode. */
   OperandSizeDefaultIs64,
 
+  /* Operand size must be 64 in 64-bit mode. */
+  OperandSizeForce64,
+
   /* Must parse opcode prefix OF as part of instruction. */
-  OpcodeOF,
+  /* OpcodeOF, */
 
   /* Special marker denoting the number of opcode flags. */
   OpcodeFlagEnumSize,
@@ -295,6 +322,11 @@ typedef enum {
    * Intel's notation is r64.
    */
   Go_Operand,
+
+  /* Models registers using the difference in the opcode base, from the opcode
+   * value.
+   */
+  G_OpcodeBase,
 
   /* Note: The instruction decoder may count on the fact that the I_Operand
    * values are contiguous, in the order specified.
@@ -525,6 +557,8 @@ typedef enum {
   RegRESP,
   /* Use AX, EAX, or RAX, based on operand size. */
   RegREAX,
+  /* Use EIP or RIP, based on address size - EIP in 32-bits, RIP in 64-bits. */
+  RegREIP,
 
   /* One of the eight general purpose registers, less the stack pointer, based
    * on operand size.
@@ -582,6 +616,10 @@ typedef enum {
    * OpcodeInModRm, OpcodePlusR, and OpcodePlusI.
    */
   OperandExtendsOpcode,
+  /* When jump address, the jump is near (rather than far). */
+  OperandNear,
+  /* When jump address, the jump is relative (rather than absolute. */
+  OperandRelative,
   /* Special marker denoting the number of operand flags. */
   OperandFlagEnumSize
 } OperandFlagEnum;
