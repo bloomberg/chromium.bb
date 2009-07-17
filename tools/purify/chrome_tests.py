@@ -354,8 +354,8 @@ class ChromeTests:
     # may get skipped in the current cycle. For more discussion on this issue,
     # see http://codereview.chromium.org/149600.
 
-    # Break UI tests into 30 slices so we have about 30 minutes per run.
-    batch_count = 30
+    # Break UI tests into 16 slices so we have about 30-40 minutes per run.
+    batch_count = 16
     batch_index = 0
     batch_index_file = os.path.join(os.environ["TEMP"],
                                     "purify_ui_batch_index.txt")
