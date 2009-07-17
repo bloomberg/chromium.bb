@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 
 namespace {
 
@@ -16,17 +17,25 @@ const char cookie[] = "GCPBL100";
 }
 
 void BlacklistStoreOutput::WriteUInt(uint32 i) {
-  fwrite(reinterpret_cast<char*>(&i), 1, sizeof(uint32), file_);
+  if (fwrite(reinterpret_cast<char*>(&i), 1, sizeof(uint32), file_) !=
+      sizeof(uint32)) {
+    LOG(ERROR) << "fwrite failed to write uint32";
+  }
 }
 
 void BlacklistStoreOutput::WriteString(const std::string& s) {
   uint32 n = s.size();
-  fwrite(reinterpret_cast<char*>(&n), 1, sizeof(uint32), file_);
-  fwrite(s.c_str(), 1, s.size(), file_);
+  if (fwrite(reinterpret_cast<char*>(&n), 1, sizeof(uint32), file_) !=
+      sizeof(uint32)) {
+    LOG(ERROR) << "fwrite failed to write string size";
+  }
+  if (fwrite(s.c_str(), 1, s.size(), file_) != s.size())
+    LOG(ERROR) << "fwrite failed to write string data";
 }
 
 BlacklistStoreOutput::BlacklistStoreOutput(FILE* file) : file_(file) {
-  fwrite(cookie, 1, sizeof(cookie), file_);
+  if (fwrite(cookie, 1, sizeof(cookie), file_) != sizeof(cookie))
+    LOG(ERROR) << "fwrite failed to write cookie";
 }
 
 BlacklistStoreOutput::~BlacklistStoreOutput() {
