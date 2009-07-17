@@ -265,7 +265,8 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsAddSourceToFrame(
   if (source_string.isEmpty() || exception_catcher.HasCaught()) {
     return v8::Undefined();
   }
-  Node* node = V8DOMWrapper::convertDOMWrapperToNode<Node>(args[2]);
+  v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
+  Node* node = V8DOMWrapper::convertDOMWrapperToNode<Node>(wrapper);
   if (!node || !node->attached()) {
     return v8::Undefined();
   }
@@ -284,7 +285,8 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsAddResourceSourceToFrame(
   if (mime_type.isEmpty()) {
     return v8::Undefined();
   }
-  Node* node = V8DOMWrapper::convertDOMWrapperToNode<Node>(args[2]);
+  v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(args[2]);
+  Node* node = V8DOMWrapper::convertDOMWrapperToNode<Node>(wrapper);
   WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
       v8::External::Cast(*args.Data())->Value());
   client->AddResourceSourceToFrame(resource_id, mime_type, node);
