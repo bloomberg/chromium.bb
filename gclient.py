@@ -92,6 +92,7 @@ subcommands:
    cleanup
    config
    diff
+   export
    revert
    status
    sync
@@ -187,6 +188,9 @@ Examples:
       use 'svn diff -x -b' to suppress whitespace-only differences
   gclient diff -- -r HEAD -x -b
       diff versus the latest version of each module
+""",
+    "export":
+    """Wrapper for svn export for all managed directories
 """,
     "revert":
     """Revert every file in every managed directory in the client view.
@@ -720,6 +724,7 @@ class SCMWrapper(object):
 
     commands = {
           'cleanup':  self.cleanup,
+          'export':   self.export,
           'update':   self.update,
           'revert':   self.revert,
           'status':   self.status,
@@ -742,6 +747,18 @@ class SCMWrapper(object):
     # NOTE: This function does not currently modify file_list.
     command = ['diff']
     command.extend(args)
+    RunSVN(command, os.path.join(self._root_dir, self.relpath))
+
+  def export(self, options, args, file_list):
+    assert len(args) == 1
+    export_path = os.path.abspath(os.path.join(args[0], self.relpath))
+    try:
+      os.makedirs(export_path)
+    except OSError:
+      pass
+    assert os.path.exists(export_path)
+    command = ['export', '--force', '.']
+    command.append(export_path)
     RunSVN(command, os.path.join(self._root_dir, self.relpath))
 
   def update(self, options, args, file_list):
@@ -928,7 +945,7 @@ class GClient(object):
   """Object that represent a gclient checkout."""
 
   supported_commands = [
-    'cleanup', 'diff', 'revert', 'status', 'update', 'runhooks'
+    'cleanup', 'diff', 'export', 'revert', 'status', 'update', 'runhooks'
   ]
 
   def __init__(self, root_dir, options):
@@ -1525,6 +1542,25 @@ def DoConfig(options, args):
   client.SaveConfig()
 
 
+def DoExport(options, args):
+  """Handle the export subcommand.
+  
+  Raises:
+    Error: on usage error
+  """
+  if len(args) != 1:
+    raise Error("Need directory name")
+  client = GClient.LoadCurrentConfig(options)
+
+  if not client:
+    raise Error("client not configured; see 'gclient config'")
+
+  if options.verbose:
+    # Print out the .gclient file.  This is longer than if we just printed the
+    # client dict, but more legible, and it might contain helpful comments.
+    print(client.ConfigContent())
+  return client.RunOnDeps('export', args)
+
 def DoHelp(options, args):
   """Handle the help subcommand giving help for another subcommand.
 
@@ -1653,6 +1689,7 @@ gclient_command_map = {
   "cleanup": DoCleanup,
   "config": DoConfig,
   "diff": DoDiff,
+  "export": DoExport,
   "help": DoHelp,
   "status": DoStatus,
   "sync": DoUpdate,

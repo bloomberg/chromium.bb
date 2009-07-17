@@ -107,8 +107,9 @@ class GclientTestCase(GClientBaseTestCase):
 class GClientCommandsTestCase(GClientBaseTestCase):
   def testCommands(self):
     known_commands = [gclient.DoCleanup, gclient.DoConfig, gclient.DoDiff,
-                      gclient.DoHelp, gclient.DoStatus, gclient.DoUpdate,
-                      gclient.DoRevert, gclient.DoRunHooks, gclient.DoRevInfo]
+                      gclient.DoExport, gclient.DoHelp, gclient.DoStatus,
+		      gclient.DoUpdate, gclient.DoRevert, gclient.DoRunHooks,
+		      gclient.DoRevInfo]
     for (k,v) in gclient.gclient_command_map.iteritems():
       # If it fails, you need to add a test case for the new command.
       self.assert_(v in known_commands)
@@ -286,6 +287,18 @@ class TestDoDiff(GenericCommandTestCase):
     self.BadClient(gclient.DoDiff)
   def testVerbose(self):
     self.Verbose('diff', gclient.DoDiff)
+
+
+class TestDoExport(GenericCommandTestCase):
+  def testBasic(self):
+    self.args = ['dir']
+    self.ReturnValue('export', gclient.DoExport, 0)
+  def testError(self):
+    self.args = ['dir']
+    self.ReturnValue('export', gclient.DoExport, 42)
+  def testBadClient(self):
+    self.args = ['dir']
+    self.BadClient(gclient.DoExport)
 
 
 class TestDoRevert(GenericCommandTestCase):
@@ -1004,8 +1017,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 
   def testDir(self):
     members = [
-      'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'relpath',
-      'revert', 'scm_name', 'status', 'update', 'url',
+      'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'export',
+      'relpath', 'revert', 'scm_name', 'status', 'update', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
