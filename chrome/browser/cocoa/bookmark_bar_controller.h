@@ -46,6 +46,7 @@ class PrefService;
 
   NSView* parentView_;      // weak; our parent view
   NSView* webContentView_;  // weak; where the web goes
+  NSView* infoBarsView_;    // weak; where the infobars go
 
   // Bridge from Chrome-style C++ notifications (e.g. derived from
   // BookmarkModelObserver)
@@ -60,9 +61,12 @@ class PrefService;
 // Initializes the bookmark bar controller with the given browser
 // profile, parent view (the toolbar), web content view, and delegate.
 // |delegate| is used for opening URLs.
+// TODO(rohitrao, jrg): The bookmark bar shouldn't know about the
+// infoBarsView or the webContentView.
 - (id)initWithProfile:(Profile*)profile
            parentView:(NSView*)parentView
        webContentView:(NSView*)webContentView
+         infoBarsView:(NSView*)infoBarsView
              delegate:(id<BookmarkURLOpener>)delegate;
 
 // Returns whether or not the bookmark bar is visible.

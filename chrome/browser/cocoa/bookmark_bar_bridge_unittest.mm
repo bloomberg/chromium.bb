@@ -34,10 +34,12 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 
 - (id)initWithProfile:(Profile*)profile
            parentView:(NSView*)parentView
-       webContentView:(NSView*)webContentView {
+       webContentView:(NSView*)webContentView
+         infoBarsView:(NSView*)infoBarsView {
   if ((self = [super initWithProfile:profile
                           parentView:parentView
                       webContentView:webContentView
+                        infoBarsView:infoBarsView
                             delegate:self])) {
     callbacks_.reset([[NSMutableArray alloc] init]);
   }
@@ -113,12 +115,15 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
                                        initWithFrame:NSMakeRect(0,0,100,100)]);
   scoped_nsobject<NSView> webView([[NSView alloc]
                                        initWithFrame:NSMakeRect(0,0,100,100)]);
+  scoped_nsobject<NSView> infoBarsView(
+      [[NSView alloc] initWithFrame:NSMakeRect(0,0,100,100)]);
 
   scoped_nsobject<FakeBookmarkBarController>
     controller([[FakeBookmarkBarController alloc]
                  initWithProfile:profile
                       parentView:parentView.get()
-                  webContentView:webView.get()]);
+                  webContentView:webView.get()
+                    infoBarsView:infoBarsView.get()]);
   EXPECT_TRUE(controller.get());
   scoped_ptr<BookmarkBarBridge> bridge(new BookmarkBarBridge(controller.get(),
                                                              model));

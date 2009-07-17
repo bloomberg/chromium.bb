@@ -42,6 +42,7 @@ class ToolbarView;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
   id<BookmarkURLOpener> bookmarkBarDelegate_;  // weak
   NSView* webContentView_;  // weak; where the web goes
+  NSView* infoBarsView_;     // weak; where the infobars go
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
@@ -72,6 +73,7 @@ class ToolbarView;
            commands:(CommandUpdater*)commands
             profile:(Profile*)profile
      webContentView:(NSView*)webContentView
+       infoBarsView:(NSView*)infoBarsView
    bookmarkDelegate:(id<BookmarkURLOpener>)delegate;
 
 // Get the C++ bridge object representing the location bar for this tab.

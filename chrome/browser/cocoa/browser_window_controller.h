@@ -23,6 +23,7 @@ class BrowserWindow;
 class BrowserWindowCocoa;
 @class DownloadShelfController;
 @class FindBarCocoaController;
+@class InfoBarContainerController;
 class LocationBar;
 class StatusBubble;
 class TabContents;
@@ -55,6 +56,7 @@ class TabStripModelObserverBridge;
   scoped_nsobject<TitlebarController> titlebarController_;
   scoped_nsobject<TabStripController> tabStripController_;
   scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
+  scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   scoped_ptr<StatusBubble> statusBubble_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
   scoped_nsobject<GTMTheme> theme_;
@@ -121,6 +123,10 @@ class TabStripModelObserverBridge;
 
 // Returns fullscreen state.
 - (BOOL)isFullscreen;
+
+// Sent when the infobar view has been resized and other content needs
+// to be shifted around it.
+- (void)infoBarResized:(float)newHeight;
 
 // The user changed the theme.
 - (void)userChangedTheme;

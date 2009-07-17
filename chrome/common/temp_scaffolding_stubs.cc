@@ -35,7 +35,6 @@
 #include "views/controls/single_split_view.h"
 #endif
 
-class InfoBar;
 class TabContents;
 
 //--------------------------------------------------------------------------
@@ -244,23 +243,6 @@ MemoryDetails::MemoryDetails() {
 void MemoryDetails::StartFetch() {
   NOTIMPLEMENTED();
 }
-
-#if defined(OS_MACOSX)
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-InfoBar* AlertInfoBarDelegate::CreateInfoBar() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-#endif
 
 // This should prompt the user if she wants to allow more than one concurrent
 // download per tab. Until this is in place, always allow multiple downloads.

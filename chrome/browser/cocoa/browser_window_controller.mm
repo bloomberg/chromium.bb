@@ -24,6 +24,7 @@
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
 #import "chrome/browser/cocoa/fullscreen_window.h"
+#import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/status_bubble_mac.h"
 #import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
@@ -64,6 +65,7 @@ const int kWindowGradientHeight = 24;
 
 @interface BrowserWindowController(Private)
 
+- (void)positionInfoBar;
 - (void)positionToolbar;
 - (void)removeToolbar;
 - (void)installIncognitoBadge;
@@ -135,14 +137,6 @@ willPositionSheet:(NSWindow*)sheet
 
     [self setTheme];
 
-    // Register ourselves for frame changed notifications from the
-    // tabContentArea.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(tabContentAreaFrameChanged:)
-               name:nil
-             object:[self tabContentArea]];
-
     // Get the most appropriate size for the window, then enforce the
     // minimum width and height. The window shim will handle flipping
     // the coordinates for us so we can use it to save some code.
@@ -169,6 +163,14 @@ willPositionSheet:(NSWindow*)sheet
     // Puts the incognito badge on the window frame, if necessary.
     [self installIncognitoBadge];
 
+    // Create the infobar container view, so we can pass it to the
+    // ToolbarController, but do not position the view until after the
+    // toolbar is in place, as positionToolbar will move the tab content area.
+    infoBarContainerController_.reset(
+        [[InfoBarContainerController alloc]
+          initWithTabStripModel:(browser_->tabstrip_model())
+          browserWindowController:self]);
+
     // Create a controller for the toolbar, giving it the toolbar model object
     // and the toolbar view from the nib. The controller will handle
     // registering for the appropriate command state changes from the back-end.
@@ -177,9 +179,24 @@ willPositionSheet:(NSWindow*)sheet
                                     commands:browser->command_updater()
                                      profile:browser->profile()
                               webContentView:[self tabContentArea]
+                                infoBarsView:[infoBarContainerController_ view]
                             bookmarkDelegate:self]);
     [self positionToolbar];
     [self fixWindowGradient];
+
+    // Put the infobar container view into the window above the
+    // tabcontentarea.  There are no infobars when starting up, so its
+    // initial height is 0.
+    [self positionInfoBar];
+
+    // Register ourselves for frame changed notifications from the
+    // tabContentArea.  This has to come after all of the resizing and
+    // positioning above.
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(tabContentAreaFrameChanged:)
+               name:nil
+             object:[self tabContentArea]];
 
     // Create the bridge for the status bubble.
     statusBubble_.reset(new StatusBubbleMac([self window]));
@@ -212,6 +229,8 @@ willPositionSheet:(NSWindow*)sheet
   // delegate so nothing tries to call us back in the meantime as part of
   // window destruction.
   [window_ setDelegate:nil];
+
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -751,7 +770,6 @@ willPositionSheet:(NSWindow*)sheet
   // TabContents.
 #if 0
 // TODO(pinkerton):Update as more things become window-specific
-  infobar_container_->ChangeTabContents(new_contents);
   contents_container_->SetTabContents(new_contents);
 #endif
 
@@ -778,6 +796,22 @@ willPositionSheet:(NSWindow*)sheet
   [self applyTheme];
 }
 
+// TODO(rohitrao, jrg): Move this logic out of BrowserWindowController?
+- (void)infoBarResized:(float)newHeight {
+  // The top edge of the infobar is fixed.
+  NSView* infoBarView = [infoBarContainerController_ view];
+  NSRect infoBarFrame = [infoBarView frame];
+  int maxY = NSMaxY(infoBarFrame);
+  int minY = maxY - newHeight;
+
+  [infoBarView setFrame:NSMakeRect(infoBarFrame.origin.x, minY,
+                                   infoBarFrame.size.width, newHeight)];
+
+  NSRect contentFrame = [[self tabContentArea] frame];
+  contentFrame.size.height = minY - contentFrame.origin.y;
+  [[self tabContentArea] setFrame:contentFrame];
+}
+
 - (GTMTheme *)gtm_themeForWindow:(NSWindow*)window {
   return theme_ ? theme_ : [GTMTheme defaultTheme];
 }
@@ -785,6 +819,16 @@ willPositionSheet:(NSWindow*)sheet
 @end
 
 @implementation BrowserWindowController (Private)
+
+// TODO(rohitrao, jrg): Move this logic out of BrowserWindowController?
+- (void)positionInfoBar {
+  NSView* infoBarView = [infoBarContainerController_ view];
+  NSRect infoBarFrame = [[self tabContentArea] frame];
+  infoBarFrame.origin.y = NSMaxY(infoBarFrame);
+  infoBarFrame.size.height = 0;
+  [infoBarView setFrame:infoBarFrame];
+  [[[self window] contentView] addSubview:infoBarView];
+}
 
 // If |add| is YES:
 // Position |toolbarView_| below the tab strip, but not as a

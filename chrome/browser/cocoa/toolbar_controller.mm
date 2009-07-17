@@ -55,6 +55,7 @@ class PrefObserverBridge : public NotificationObserver {
            commands:(CommandUpdater*)commands
             profile:(Profile*)profile
      webContentView:(NSView*)webContentView
+       infoBarsView:(NSView*)infoBarsView
    bookmarkDelegate:(id<BookmarkURLOpener>)delegate {
   DCHECK(model && commands && profile);
   if ((self = [super initWithNibName:@"Toolbar"
@@ -64,6 +65,7 @@ class PrefObserverBridge : public NotificationObserver {
     profile_ = profile;
     bookmarkBarDelegate_ = delegate;
     webContentView_ = webContentView;
+    infoBarsView_ = infoBarsView;
     hasToolbar_ = YES;
 
     // Register for notifications about state changes for the toolbar buttons
@@ -109,6 +111,7 @@ class PrefObserverBridge : public NotificationObserver {
                                    initWithProfile:profile_
                                         parentView:[self view]
                                     webContentView:webContentView_
+                                      infoBarsView:infoBarsView_
                                           delegate:bookmarkBarDelegate_]);
 
   // Add bookmark bar to the view hierarchy.  This also triggers the

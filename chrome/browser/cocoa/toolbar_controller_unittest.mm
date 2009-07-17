@@ -37,6 +37,7 @@ class ToolbarControllerTest : public testing::Test {
                                         commands:browser->command_updater()
                                          profile:helper_.profile()
                                   webContentView:nil
+                                    infoBarsView:nil
                                 bookmarkDelegate:nil]);
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [cocoa_helper_.window() contentView];

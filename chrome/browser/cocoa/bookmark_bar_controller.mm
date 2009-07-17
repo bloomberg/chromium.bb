@@ -44,6 +44,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 - (id)initWithProfile:(Profile*)profile
            parentView:(NSView*)parentView
        webContentView:(NSView*)webContentView
+         infoBarsView:(NSView*)infoBarsView
              delegate:(id<BookmarkURLOpener>)delegate {
   if ((self = [super initWithNibName:@"BookmarkBar"
                               bundle:mac_util::MainAppBundle()])) {
@@ -51,6 +52,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
     preferences_ = profile->GetPrefs();
     parentView_ = parentView;
     webContentView_ = webContentView;
+    infoBarsView_ = infoBarsView;
     delegate_ = delegate;
   }
   return self;
@@ -120,6 +122,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
   NSRect superframe = [parentView_ frame];
   NSRect frame = [[self view] frame];
   NSRect webframe = [webContentView_ frame];
+  NSRect infoframe = [infoBarsView_ frame];
   if (apply) {
     superframe.size.height += kBookmarkBarSuperviewHeightAdjustment;
     // TODO(jrg): y=0 if we add the bookmark bar before the parent
@@ -131,11 +134,13 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
       webframe.size.height -= kBookmarkBarWebframeHeightAdjustment;
     }
     frame.size.height += kBookmarkBarHeight;
+    infoframe.origin.y -= kBookmarkBarWebframeHeightAdjustment;
   } else {
     superframe.size.height -= kBookmarkBarSuperviewHeightAdjustment;
     superframe.origin.y += kBookmarkBarSuperviewHeightAdjustment;
     frame.size.height -= kBookmarkBarHeight;
     webframe.size.height += kBookmarkBarWebframeHeightAdjustment;
+    infoframe.origin.y += kBookmarkBarWebframeHeightAdjustment;
   }
 
   // TODO(jrg): Animators can be a little fussy.  Setting these three
@@ -145,16 +150,19 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
   if (1 /* immediately */) {
     [parentView_ setFrame:superframe];
     [webContentView_ setFrame:webframe];
+    [infoBarsView_ setFrame:infoframe];
     [[self view] setFrame:frame];
   } else {
     [[parentView_ animator] setFrame:superframe];
     [[webContentView_ animator] setFrame:webframe];
+    [[infoBarsView_ animator] setFrame:infoframe];
     [[[self view] animator] setFrame:frame];
   }
 
   [[self view] setNeedsDisplay:YES];
   [parentView_ setNeedsDisplay:YES];
   [webContentView_ setNeedsDisplay:YES];
+  [infoBarsView_ setNeedsDisplay:YES];
 }
 
 - (BOOL)isBookmarkBarVisible {

@@ -30,25 +30,32 @@
 namespace {
 
 static const int kContentAreaHeight = 500;
+static const int kInfoBarViewHeight = 30;
 
 class BookmarkBarControllerTest : public testing::Test {
  public:
   BookmarkBarControllerTest() {
     NSRect content_frame = NSMakeRect(0, 0, 800, kContentAreaHeight);
+    // |infobar_frame| is set to be directly above |content_frame|.
+    NSRect infobar_frame = NSMakeRect(0, kContentAreaHeight,
+                                      800, kInfoBarViewHeight);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     content_area_.reset([[NSView alloc] initWithFrame:content_frame]);
+    infobar_view_.reset([[NSView alloc] initWithFrame:infobar_frame]);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
     [parent_view_ setHidden:YES];
     bar_.reset(
         [[BookmarkBarController alloc] initWithProfile:helper_.profile()
                                             parentView:parent_view_.get()
                                         webContentView:content_area_.get()
+                                          infoBarsView:infobar_view_.get()
                                               delegate:nil]);
     [bar_ view];  // force loading of the nib
   }
 
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<NSView> content_area_;
+  scoped_nsobject<NSView> infobar_view_;
   scoped_nsobject<NSView> parent_view_;
   BrowserTestHelper helper_;
   scoped_nsobject<BookmarkBarController> bar_;
@@ -70,14 +77,20 @@ TEST_F(BookmarkBarControllerTest, ShowHide) {
   EXPECT_TRUE([bar_ isBookmarkBarVisible]);
   EXPECT_FALSE([[bar_ view] isHidden]);
   NSRect content_frame = [content_area_ frame];
+  NSRect infobar_frame = [infobar_view_ frame];
   EXPECT_NE(content_frame.size.height, kContentAreaHeight);
+  EXPECT_EQ(NSMaxY(content_frame), NSMinY(infobar_frame));
+  EXPECT_EQ(kInfoBarViewHeight, infobar_frame.size.height);
   EXPECT_GT([[bar_ view] frame].size.height, 0);
 
   [bar_ toggleBookmarkBar];
   EXPECT_FALSE([bar_ isBookmarkBarVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
   content_frame = [content_area_ frame];
+  infobar_frame = [infobar_view_ frame];
   EXPECT_EQ(content_frame.size.height, kContentAreaHeight);
+  EXPECT_EQ(NSMaxY(content_frame), NSMinY(infobar_frame));
+  EXPECT_EQ(kInfoBarViewHeight, infobar_frame.size.height);
   EXPECT_EQ([[bar_ view] frame].size.height, 0);
 }
 
