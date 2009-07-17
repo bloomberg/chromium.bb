@@ -521,11 +521,13 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
         'dummy_executable': ('VCLinkerTool', '$(IntDir)\\', '.junk'),
     }
     output_file_props = output_file_map.get(spec['type'])
-    if output_file_props:
-      vc_tool, out_path, suffix = output_file_props
-      product_name = (
-          out_path + spec.get('product_name', '$(ProjectName)') + suffix)
-      _ToolAppend(tools, vc_tool, 'OutputFile', product_name,
+    if output_file_props and spec.get('msvs_auto_output_file', 1):
+      vc_tool, out_dir, suffix = output_file_props
+      out_dir = spec.get('msvs_product_directory', out_dir)
+      out_file = os.path.join(out_dir,
+                              spec.get('product_name',
+                                       '$(ProjectName)') + suffix)
+      _ToolAppend(tools, vc_tool, 'OutputFile', out_file,
                   only_if_unset=True)
 
     # Add defines.
