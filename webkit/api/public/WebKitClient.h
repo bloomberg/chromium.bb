@@ -32,6 +32,7 @@
 #define WebKitClient_h
 
 #include "WebCommon.h"
+#include "WebLocalizedString.h"
 
 namespace WebKit {
     class WebClipboard;
@@ -61,6 +62,11 @@ namespace WebKit {
         virtual WebThemeEngine* themeEngine() = 0;
 
 
+        // File ----------------------------------------------------------------
+
+        virtual bool getFileSize(const WebString& path, long long& result) = 0;
+
+
         // History -------------------------------------------------------------
 
         // Returns the hash for the given canonicalized URL for use in visited
@@ -81,10 +87,6 @@ namespace WebKit {
 
         // A suggestion to prefetch IP information for the given hostname.
         virtual void prefetchHostName(const WebString&) = 0;
-
-        // File ----------------------------------------------------------------
-
-        virtual bool getFileSize(const WebString& path, long long& result) = 0;
 
         // Returns a new WebURLLoader instance.
         virtual WebURLLoader* createURLLoader() = 0;
@@ -112,6 +114,11 @@ namespace WebKit {
 
         // Returns a blob of data corresponding to the named resource.
         virtual WebData loadResource(const char* name) = 0;
+
+        // Returns a localized string resource (with an optional numeric
+        // parameter value).
+        virtual WebString queryLocalizedString(WebLocalizedString::Name) = 0;
+        virtual WebString queryLocalizedString(WebLocalizedString::Name, int numericValue) = 0;
 
 
         // Sudden Termination --------------------------------------------------

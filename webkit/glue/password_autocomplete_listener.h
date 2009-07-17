@@ -8,17 +8,13 @@
 #ifndef WEBKIT_GLUE_PASSWORD_AUTOCOMPLETE_LISTENER_H_
 #define WEBKIT_GLUE_PASSWORD_AUTOCOMPLETE_LISTENER_H_
 
-#include "config.h"
-
-#include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
-#include "HTMLInputElement.h"
-MSVC_POP_WARNING();
-
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "webkit/glue/password_form_dom_manager.h"
+
+namespace WebCore {
+class HTMLInputElement;
+}
 
 namespace webkit_glue {
 

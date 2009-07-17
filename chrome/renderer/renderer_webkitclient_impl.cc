@@ -41,6 +41,18 @@ WebKit::WebSandboxSupport* RendererWebKitClientImpl::sandboxSupport() {
 #endif
 }
 
+bool RendererWebKitClientImpl::getFileSize(const WebString& path,
+                                           long long& result) {
+  if (RenderThread::current()->Send(new ViewHostMsg_GetFileSize(
+      FilePath(webkit_glue::WebStringToFilePathString(path)),
+      &result))) {
+    return result >= 0;
+  } else {
+    result = -1;
+    return false;
+  }
+}
+
 unsigned long long RendererWebKitClientImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
@@ -74,18 +86,6 @@ void RendererWebKitClientImpl::prefetchHostName(const WebString& hostname) {
     std::string hostname_utf8;
     UTF16ToUTF8(hostname.data(), hostname.length(), &hostname_utf8);
     DnsPrefetchCString(hostname_utf8.data(), hostname_utf8.length());
-  }
-}
-
-bool RendererWebKitClientImpl::getFileSize(const WebString& path,
-                                           long long& result) {
-  if (RenderThread::current()->Send(new ViewHostMsg_GetFileSize(
-      FilePath(webkit_glue::WebStringToFilePathString(path)),
-      &result))) {
-    return result >= 0;
-  } else {
-    result = -1;
-    return false;
   }
 }
 

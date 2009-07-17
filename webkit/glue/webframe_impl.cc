@@ -95,6 +95,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "GraphicsContext.h"
 #include "HTMLCollection.h"
 #include "HTMLHeadElement.h"
+#include "HTMLInputElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLLinkElement.h"
 #include "HTMLNames.h"

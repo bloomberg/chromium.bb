@@ -28,6 +28,10 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual void traceEventBegin(const char* name, void* id, const char* extra);
   virtual void traceEventEnd(const char* name, void* id, const char* extra);
   virtual WebKit::WebData loadResource(const char* name);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name);
+  virtual WebKit::WebString queryLocalizedString(
+      WebKit::WebLocalizedString::Name name, int numeric_value);
   virtual double currentTime();
   virtual void setSharedTimerFiredFunction(void (*func)());
   virtual void setSharedTimerFireTime(double fireTime);

@@ -71,6 +71,11 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     return NULL;
   }
 
+  virtual bool getFileSize(const WebKit::WebString& path, long long& result) {
+    return file_util::GetFileSize(
+        FilePath(webkit_glue::WebStringToFilePathString(path)), &result);
+  }
+
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
                                              size_t length) {
     return 0;
@@ -95,11 +100,6 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
   virtual void prefetchHostName(const WebKit::WebString&) {
-  }
-
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result) {
-    return file_util::GetFileSize(
-        FilePath(webkit_glue::WebStringToFilePathString(path)), &result);
   }
 
   virtual WebKit::WebData loadResource(const char* name) {

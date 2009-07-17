@@ -30,6 +30,7 @@ using WebKit::WebClipboard;
 using WebKit::WebData;
 using WebKit::WebFontInfo;
 using WebKit::WebKitClient;
+using WebKit::WebLocalizedString;
 using WebKit::WebMimeRegistry;
 using WebKit::WebPluginInfo;
 using WebKit::WebPluginListBuilder;
@@ -106,6 +107,10 @@ class SandboxIPCProcess : public WebKitClient {
   virtual WebSandboxSupport* sandboxSupport() { return NULL; }
   virtual WebThemeEngine* themeEngine() { return NULL; }
 
+  virtual bool getFileSize(const WebString& path, long long& result) {
+    return false;
+  }
+
   virtual unsigned long long visitedLinkHash(const char*, size_t) { return 0; }
   virtual bool isLinkVisited(unsigned long long) { return false; }
 
@@ -113,10 +118,6 @@ class SandboxIPCProcess : public WebKitClient {
   virtual WebString cookies(const WebURL&, const WebURL&) { return WebString(); }
 
   virtual void prefetchHostName(const WebString&) { }
-
-  virtual bool getFileSize(const WebString& path, long long& result) {
-    return false;
-  }
 
   virtual WebURLLoader* createURLLoader() { return NULL; }
 
@@ -129,6 +130,12 @@ class SandboxIPCProcess : public WebKitClient {
   virtual void traceEventEnd(const char* name, void*, const char*) { }
 
   virtual WebData loadResource(const char*) { return WebData(); }
+  virtual WebString queryLocalizedString(WebLocalizedString::Name) {
+    return WebString();
+  }
+  virtual WebString queryLocalizedString(WebLocalizedString::Name, int) {
+    return WebString();
+  }
 
   virtual void suddenTerminationChanged(bool) { }
 

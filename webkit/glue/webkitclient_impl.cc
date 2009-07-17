@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/trace_event.h"
 #include "grit/webkit_resources.h"
+#include "grit/webkit_strings.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebPluginListBuilder.h"
 #include "webkit/api/public/WebString.h"
@@ -17,11 +18,65 @@
 #include "webkit/glue/weburlloader_impl.h"
 
 using WebKit::WebData;
+using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
+using WebKit::WebString;
 using WebKit::WebThemeEngine;
 using WebKit::WebURLLoader;
 
 namespace webkit_glue {
+
+static int ToMessageID(WebLocalizedString::Name name) {
+  switch (name) {
+    case WebLocalizedString::SubmitButtonDefaultLabel:
+      return IDS_FORM_SUBMIT_LABEL;
+    case WebLocalizedString::InputElementAltText:
+      return IDS_FORM_INPUT_ALT;
+    case WebLocalizedString::ResetButtonDefaultLabel:
+      return IDS_FORM_RESET_LABEL;
+    case WebLocalizedString::FileButtonChooseFileLabel:
+      return IDS_FORM_FILE_BUTTON_LABEL;
+    case WebLocalizedString::FileButtonNoFileSelectedLabel:
+      return IDS_FORM_FILE_NO_FILE_LABEL;
+    case WebLocalizedString::MultipleFileUploadText:
+      return IDS_FORM_FILE_MULTIPLE_UPLOAD;
+    case WebLocalizedString::SearchableIndexIntroduction:
+      return IDS_SEARCHABLE_INDEX_INTRO;
+    case WebLocalizedString::SearchMenuNoRecentSearchesText:
+      return IDS_RECENT_SEARCHES_NONE;
+    case WebLocalizedString::SearchMenuRecentSearchesText:
+      return IDS_RECENT_SEARCHES;
+    case WebLocalizedString::SearchMenuClearRecentSearchesText:
+      return IDS_RECENT_SEARCHES_CLEAR;
+    case WebLocalizedString::AXWebAreaText:
+      return IDS_AX_ROLE_WEB_AREA;
+    case WebLocalizedString::AXLinkText:
+      return IDS_AX_ROLE_LINK;
+    case WebLocalizedString::AXListMarkerText:
+      return IDS_AX_ROLE_LIST_MARKER;
+    case WebLocalizedString::AXImageMapText:
+      return IDS_AX_ROLE_IMAGE_MAP;
+    case WebLocalizedString::AXHeadingText:
+      return IDS_AX_ROLE_HEADING;
+    case WebLocalizedString::AXButtonActionVerb:
+      return IDS_AX_BUTTON_ACTION_VERB;
+    case WebLocalizedString::AXRadioButtonActionVerb:
+      return IDS_AX_RADIO_BUTTON_ACTION_VERB;
+    case WebLocalizedString::AXTextFieldActionVerb:
+      return IDS_AX_TEXT_FIELD_ACTION_VERB;
+    case WebLocalizedString::AXCheckedCheckBoxActionVerb:
+      return IDS_AX_CHECKED_CHECK_BOX_ACTION_VERB;
+    case WebLocalizedString::AXUncheckedCheckBoxActionVerb:
+      return IDS_AX_UNCHECKED_CHECK_BOX_ACTION_VERB;
+    case WebLocalizedString::AXLinkActionVerb:
+      return IDS_AX_LINK_ACTION_VERB;
+    case WebLocalizedString::KeygenMenuHighGradeKeySize:
+      return IDS_KEYGEN_HIGH_GRADE_KEY;
+    case WebLocalizedString::KeygenMenuMediumGradeKeySize:
+      return IDS_KEYGEN_MED_GRADE_KEY;
+  }
+  return -1;
+}
 
 WebKitClientImpl::WebKitClientImpl()
     : main_loop_(MessageLoop::current()),
@@ -123,6 +178,24 @@ WebData WebKitClientImpl::loadResource(const char* name) {
   }
   NOTREACHED() << "Unknown image resource " << name;
   return WebData();
+}
+
+WebString WebKitClientImpl::queryLocalizedString(
+    WebLocalizedString::Name name) {
+  int message_id = ToMessageID(name);
+  if (message_id < 0)
+    return WebString();
+  return GetLocalizedString(message_id);
+}
+
+WebString WebKitClientImpl::queryLocalizedString(
+    WebLocalizedString::Name name, int numeric_value) {
+  int message_id = ToMessageID(name);
+  if (message_id < 0)
+    return WebString();
+  return ReplaceStringPlaceholders(GetLocalizedString(message_id),
+                                   IntToString16(numeric_value),
+                                   NULL);
 }
 
 double WebKitClientImpl::currentTime() {

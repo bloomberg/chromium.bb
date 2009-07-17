@@ -24,6 +24,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
+  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual unsigned long long visitedLinkHash(
       const char* canonicalURL, size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
@@ -33,7 +34,6 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebString cookies(
       const WebKit::WebURL& url, const WebKit::WebURL& first_party_for_cookies);
   virtual void prefetchHostName(const WebKit::WebString&);
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual WebKit::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);
 

@@ -5,11 +5,15 @@
 // This file provides the implementaiton of the password manager's autocomplete
 // component.
 
-#include "webkit/glue/password_autocomplete_listener.h"
+#include "config.h"
+
+#include "HTMLInputElement.h"
 #undef LOG
+
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "webkit/glue/glue_util.h"
+#include "webkit/glue/password_autocomplete_listener.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview_impl.h"
 
