@@ -103,6 +103,14 @@ class InfoBubbleGtk {
   }
   gboolean HandleDestroy();
 
+  static gboolean HandleFocusOutThunk(GtkWidget* widget,
+                                      GdkEventButton* event,
+                                      gpointer userdata) {
+    return reinterpret_cast<InfoBubbleGtk*>(userdata)->
+        HandleFocusOut(event);
+  }
+  gboolean HandleFocusOut(GdkEventButton* event);
+
   // The caller supplied delegate, can be NULL.
   InfoBubbleGtkDelegate* delegate_;
 

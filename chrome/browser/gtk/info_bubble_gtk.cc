@@ -192,6 +192,8 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
                    G_CALLBACK(&HandleButtonPressThunk), this);
   g_signal_connect(window_, "destroy",
                    G_CALLBACK(&HandleDestroyThunk), this);
+  g_signal_connect(window_, "focus-out-event",
+                   G_CALLBACK(&HandleFocusOutThunk), this);
 
   gtk_widget_show_all(window_);
   // Make sure our window has focus, is brought to the top, etc.
@@ -246,5 +248,10 @@ gboolean InfoBubbleGtk::HandleDestroy() {
   // destroy the widget manually, or the window was closed via X.  This will
   // delete the InfoBubbleGtk object.
   delete this;
+  return FALSE;  // Propagate.
+}
+
+gboolean InfoBubbleGtk::HandleFocusOut(GdkEventButton* event) {
+  Close();
   return FALSE;  // Propagate.
 }
