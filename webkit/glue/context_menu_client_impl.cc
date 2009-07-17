@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,8 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "FrameLoader.h"
 #include "FrameView.h"
 #include "HitTestResult.h"
+#include "HTMLMediaElement.h"
+#include "HTMLNames.h"
 #include "KURL.h"
 #include "Widget.h"
 MSVC_POP_WARNING();
@@ -161,18 +163,51 @@ WebCore::PlatformMenuDescription
 
   ContextNode node;
 
-  // Links, Images and Image-Links take preference over all else.
+  // Links, Images, Media tags, and Image/Media-Links take preference over
+  // all else.
   WebCore::KURL link_url = r.absoluteLinkURL();
   if (!link_url.isEmpty()) {
     node.type |= ContextNode::LINK;
   }
-  WebCore::KURL image_url = r.absoluteImageURL();
-  if (!image_url.isEmpty()) {
+
+  WebCore::KURL src_url;
+
+  ContextMenuMediaParams media_params;
+
+  if (!r.absoluteImageURL().isEmpty()) {
+    src_url = r.absoluteImageURL();
     node.type |= ContextNode::IMAGE;
+  } else if (!r.absoluteMediaURL().isEmpty()) {
+    src_url = r.absoluteMediaURL();
+          
+    // We know that if absoluteMediaURL() is not empty, then this is a media
+    // element.
+    WebCore::HTMLMediaElement* media_element =
+        static_cast<WebCore::HTMLMediaElement*>(r.innerNonSharedNode());
+    if (media_element->hasTagName(WebCore::HTMLNames::videoTag)) {
+      node.type |= ContextNode::VIDEO;
+    } else if (media_element->hasTagName(WebCore::HTMLNames::audioTag)) {
+      node.type |= ContextNode::AUDIO;
+    }
+
+    media_params.playback_rate = media_element->playbackRate();
+
+    if (media_element->paused()) {
+      media_params.player_state |= ContextMenuMediaParams::PLAYER_PAUSED;
+    }
+    if (media_element->muted()) {
+      media_params.player_state |= ContextMenuMediaParams::PLAYER_MUTED;
+    }
+    if (media_element->loop()) {
+      media_params.player_state |= ContextMenuMediaParams::PLAYER_LOOP;
+    }
+    if (media_element->supportsSave()) {
+      media_params.player_state |= ContextMenuMediaParams::PLAYER_CAN_SAVE;
+    }
   }
 
-  // If it's not a link, an image or an image link, show a selection menu or a
-  // more generic page menu.
+  // If it's not a link, an image, a media element, or an image/media link,
+  // show a selection menu or a more generic page menu.
   std::wstring selection_text_string;
   std::wstring misspelled_word_string;
   GURL frame_url;
@@ -246,9 +281,10 @@ WebCore::PlatformMenuDescription
                        menu_point.x(),
                        menu_point.y(),
                        webkit_glue::KURLToGURL(link_url),
-                       webkit_glue::KURLToGURL(image_url),
+                       webkit_glue::KURLToGURL(src_url),
                        page_url,
                        frame_url,
+                       media_params,
                        selection_text_string,
                        misspelled_word_string,
                        edit_flags,

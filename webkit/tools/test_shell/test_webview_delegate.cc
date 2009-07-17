@@ -570,19 +570,21 @@ void TestWebViewDelegate::StartDragging(WebView* webview,
   webview->DragSourceSystemDragEnded();
 }
 
-void TestWebViewDelegate::ShowContextMenu(WebView* webview,
-                                          ContextNode node,
-                                          int x,
-                                          int y,
-                                          const GURL& link_url,
-                                          const GURL& image_url,
-                                          const GURL& page_url,
-                                          const GURL& frame_url,
-                                          const std::wstring& selection_text,
-                                          const std::wstring& misspelled_word,
-                                          int edit_flags,
-                                          const std::string& security_info,
-                                          const std::string& frame_charset) {
+void TestWebViewDelegate::ShowContextMenu(
+    WebView* webview,
+    ContextNode node,
+    int x,
+    int y,
+    const GURL& link_url,
+    const GURL& image_url,
+    const GURL& page_url,
+    const GURL& frame_url,
+    const ContextMenuMediaParams& media_params,
+    const std::wstring& selection_text,
+    const std::wstring& misspelled_word,
+    int edit_flags,
+    const std::string& security_info,
+    const std::string& frame_charset) {
   CapturedContextMenuEvent context(node, x, y);
   captured_context_menu_events_.push_back(context);
 }

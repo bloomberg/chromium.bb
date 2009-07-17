@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class RenderViewContextMenu {
   void Init();
 
  protected:
-  void InitMenu(ContextNode node);
+  void InitMenu(ContextNode node, ContextMenuMediaParams media_params);
 
   // Functions to be implemented by platform-specific subclasses ---------------
 
@@ -76,6 +76,9 @@ class RenderViewContextMenu {
   void AppendDeveloperItems();
   void AppendLinkItems();
   void AppendImageItems();
+  void AppendAudioItems(ContextMenuMediaParams media_params);
+  void AppendVideoItems(ContextMenuMediaParams media_params);
+  void AppendMediaItems(ContextMenuMediaParams media_params);
   void AppendPageItems();
   void AppendFrameItems();
   void AppendCopyItem();

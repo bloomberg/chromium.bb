@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -820,6 +820,20 @@ struct ParamTraits<ViewHostMsg_FrameNavigate_Params> {
 };
 
 template <>
+struct ParamTraits<ContextMenuMediaParams> {
+  typedef ContextMenuMediaParams param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.player_state);
+    WriteParam(m, p.playback_rate);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->player_state) &&
+      ReadParam(m, iter, &p->playback_rate);
+  }
+};
+
+template <>
 struct ParamTraits<ContextMenuParams> {
   typedef ContextMenuParams param_type;
   static void Write(Message* m, const param_type& p) {
@@ -828,9 +842,10 @@ struct ParamTraits<ContextMenuParams> {
     WriteParam(m, p.y);
     WriteParam(m, p.link_url);
     WriteParam(m, p.unfiltered_link_url);
-    WriteParam(m, p.image_url);
+    WriteParam(m, p.src_url);
     WriteParam(m, p.page_url);
     WriteParam(m, p.frame_url);
+    WriteParam(m, p.media_params);
     WriteParam(m, p.selection_text);
     WriteParam(m, p.misspelled_word);
     WriteParam(m, p.dictionary_suggestions);
@@ -846,9 +861,10 @@ struct ParamTraits<ContextMenuParams> {
       ReadParam(m, iter, &p->y) &&
       ReadParam(m, iter, &p->link_url) &&
       ReadParam(m, iter, &p->unfiltered_link_url) &&
-      ReadParam(m, iter, &p->image_url) &&
+      ReadParam(m, iter, &p->src_url) &&
       ReadParam(m, iter, &p->page_url) &&
       ReadParam(m, iter, &p->frame_url) &&
+      ReadParam(m, iter, &p->media_params) &&
       ReadParam(m, iter, &p->selection_text) &&
       ReadParam(m, iter, &p->misspelled_word) &&
       ReadParam(m, iter, &p->dictionary_suggestions) &&

@@ -66,6 +66,8 @@ namespace WebKit {
         virtual void cancelLoad();
         virtual void play();
         virtual void pause();
+        virtual bool supportsFullscreen() const;
+        virtual bool supportsSave() const;
         virtual WebCore::IntSize naturalSize() const;
         virtual bool hasVideo() const;
         virtual void setVisible(bool);

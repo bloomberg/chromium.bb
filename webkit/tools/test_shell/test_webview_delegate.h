@@ -35,6 +35,7 @@
 #endif
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 
+struct ContextMenuMediaParams;
 struct WebPreferences;
 class GURL;
 class TestShell;
@@ -136,6 +137,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
                                const GURL& image_url,
                                const GURL& page_url,
                                const GURL& frame_url,
+                               const ContextMenuMediaParams& media_params,
                                const std::wstring& selection_text,
                                const std::wstring& misspelled_word,
                                int edit_flags,

@@ -201,6 +201,20 @@ bool WebMediaPlayerClientImpl::paused() const
     return false;
 }
 
+bool WebMediaPlayerClientImpl::supportsFullscreen() const
+{
+    if (m_webMediaPlayer.get())
+        return m_webMediaPlayer->supportsFullscreen();
+    return false;
+}
+
+bool WebMediaPlayerClientImpl::supportsSave() const
+{
+    if (m_webMediaPlayer.get())
+        return m_webMediaPlayer->supportsSave();
+    return false;
+}
+
 void WebMediaPlayerClientImpl::setVolume(float volume)
 {
     if (m_webMediaPlayer.get())

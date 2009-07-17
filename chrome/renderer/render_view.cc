@@ -1977,9 +1977,10 @@ void RenderView::ShowContextMenu(WebView* webview,
                                  int x,
                                  int y,
                                  const GURL& link_url,
-                                 const GURL& image_url,
+                                 const GURL& src_url,
                                  const GURL& page_url,
                                  const GURL& frame_url,
+                                 const ContextMenuMediaParams& media_params,
                                  const std::wstring& selection_text,
                                  const std::wstring& misspelled_word,
                                  int edit_flags,
@@ -1989,11 +1990,12 @@ void RenderView::ShowContextMenu(WebView* webview,
   params.node = node;
   params.x = x;
   params.y = y;
-  params.image_url = image_url;
+  params.src_url = src_url;
   params.link_url = link_url;
   params.unfiltered_link_url = link_url;
   params.page_url = page_url;
   params.frame_url = frame_url;
+  params.media_params = media_params;
   params.selection_text = selection_text;
   params.misspelled_word = misspelled_word;
   params.spellcheck_enabled =

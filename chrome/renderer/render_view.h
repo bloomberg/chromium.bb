@@ -53,6 +53,7 @@ class WebFrame;
 class WebPluginDelegate;
 class WebPluginDelegateProxy;
 class WebDevToolsAgentDelegate;
+struct ContextMenuMediaParams;
 struct ThumbnailScore;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_UploadFile_Params;
@@ -264,9 +265,10 @@ class RenderView : public RenderWidget,
                                int x,
                                int y,
                                const GURL& link_url,
-                               const GURL& image_url,
+                               const GURL& src_url,
                                const GURL& page_url,
                                const GURL& frame_url,
+                               const ContextMenuMediaParams& media_params,
                                const std::wstring& selection_text,
                                const std::wstring& misspelled_word,
                                int edit_flags,

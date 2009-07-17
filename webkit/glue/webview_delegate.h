@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,8 @@ class WebFrame;
 class WebMediaPlayerDelegate;
 class WebPluginDelegate;
 class WebView;
+class WebWidget;
+struct ContextMenuMediaParams;
 struct WebPluginGeometry;
 struct WebPreferences;
 
@@ -623,6 +625,8 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // clicked on
   // @param page_url The URL of the page the mouse right clicked on
   // @param frame_url The URL of the subframe the mouse right clicked on
+  // @param media_params Extra attributed needed by the context menu for 
+  // media elements.
   // @param selection_text The raw text of the selection that the mouse right
   // clicked on
   // @param misspelled_word The editable (possibily) misspelled word
@@ -639,6 +643,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
                                const GURL& image_url,
                                const GURL& page_url,
                                const GURL& frame_url,
+                               const ContextMenuMediaParams& media_params,
                                const std::wstring& selection_text,
                                const std::wstring& misspelled_word,
                                int edit_flags,

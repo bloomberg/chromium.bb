@@ -392,6 +392,67 @@ each locale. -->
         Open &amp;image in new tab
       </message>
 
+      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_MENU" desc="The text label of the Playback Rate submenu">
+        &amp;Playback Rate
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW" desc="The text label of the 0.5x Speed Playback Rate menu item. The slowest of 5 options.">
+        &amp;Slow (0.5x)
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL" desc="The text label of the Normal Speed Playback Rate menu item. The default rate of 5 options.">
+        &amp;Normal (1.0x)
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST" desc="The text label of the 1.25x Sped Up Playback Rate menu item. The 3rd fastest of 5 options.">
+        &amp;Fast (1.25x)
+      </message>      
+      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER" desc="The text label of the 1.5x Sped Up Playback Rate menu item. The 2nd fastest of 5 options.">
+        F&amp;aster (1.5x)
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME" desc="The text label of the 2.0x Sped Up Playback Rate menu item.  The fastest of 5 options.">
+        D&amp;ouble Time (2.0x)
+      </message>
+
+      <message name="IDS_CONTENT_CONTEXT_LOOP" desc="The name of the Loop command for audio and video playback in the content area context menu">
+        &amp;Loop
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_PLAY" desc="The name of the Play command for audio and video playback in the content area context menu">
+        &amp;Play
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_PAUSE" desc="The name of the Pause command for audio and video playback in the content area context menu">
+        &amp;Pause
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_MUTE" desc="The name of the Mute command for audio and video playback in the content area context menu">
+        &amp;Mute
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="The name of the Unmute command for audio and video playback in the content area context menu">
+        Un&amp;mute
+      </message>
+      
+      <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="The name of the Fullscreen command for the video element in the content area context menu">
+        &amp;Fullscreen
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="The name of the Copy Sceenshot As command the video element in the content area context menu">
+        Save &amp;Screenshot...
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
+        Sa&amp;ve video as...
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="The name of the Copy Video Location command in the content area context menu">
+        C&amp;opy video URL
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="The name of the Open Video in New Tab command in the content area context menu">
+        &amp;Open video in new tab
+      </message>
+
+      <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="The name of the Save Audio As command in the content area context menu">
+        Sa&amp;ve audio as...
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="The name of the Copy Audio Location command in the content area context menu">
+        C&amp;opy audio URL
+      </message>
+      <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
+        &amp;Open audio in new tab
+      </message>
+      
       <message name="IDS_CONTENT_CONTEXT_UNDO" desc="The name of the Undo command in the content area context menu">
         &amp;Undo
       </message>

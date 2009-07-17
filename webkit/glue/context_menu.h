@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,12 @@ struct ContextNode {
 
     // A misspelled word is selected
     MISSPELLED_WORD = 0x40,
+
+    // A video node is selected
+    VIDEO = 0x80,
+
+    // A video node is selected
+    AUDIO = 0x100,
   };
 
   enum Capability {
@@ -53,6 +59,35 @@ struct ContextNode {
   int32 type;
   ContextNode() : type(NONE) {}
   explicit ContextNode(int32 t) : type(t) {}
+};
+
+// Parameters structure used in ContextMenuParams with attributes needed to
+// render the context menu for media elements.
+//
+// TODO(ajwong): Add support for multiple audio tracks and subtitles.
+struct ContextMenuMediaParams {
+  // Values for the bitfield representing the state of the media player.
+  // If the state is in ERROR, most media controls should disable
+  // themselves.
+  enum PlayerState {
+    PLAYER_NO_STATE = 0x0,
+    PLAYER_ERROR = 0x1,
+    PLAYER_PAUSED = 0x2,
+    PLAYER_MUTED = 0x4,
+    PLAYER_LOOP = 0x8,
+    PLAYER_CAN_SAVE = 0x10,
+  };
+
+  // A bitfield representing the current state of the player, such as
+  // playing, muted, etc.
+  int32 player_state;
+
+  // The current playback rate for this media element.
+  double playback_rate;
+
+  ContextMenuMediaParams()
+      : player_state(PLAYER_NO_STATE), playback_rate(1.0f) {
+  }
 };
 
 // Parameters structure for ViewHostMsg_ContextMenu.
@@ -78,8 +113,10 @@ struct ContextMenuParams {
   // this field in the frontend process.
   GURL unfiltered_link_url;
 
-  // This is the URL of the image the context menu was invoked on.
-  GURL image_url;
+  // This is the source URL for the element that the context menu was
+  // invoked on.  Example of elements with source URLs are img, audio, and
+  // video.
+  GURL src_url;
 
   // This is the URL of the top level page that the context menu was invoked
   // on.
@@ -87,6 +124,10 @@ struct ContextMenuParams {
 
   // This is the URL of the subframe that the context menu was invoked on.
   GURL frame_url;
+
+  // These are the parameters for the media element that the context menu
+  // was invoked on.
+  ContextMenuMediaParams media_params;
 
   // This is the text of the selection that the context menu was invoked on.
   std::wstring selection_text;

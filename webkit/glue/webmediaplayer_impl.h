@@ -156,6 +156,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // Playback controls.
   virtual void play();
   virtual void pause();
+  virtual bool supportsFullscreen() const;
+  virtual bool supportsSave() const;
   virtual void seek(float seconds);
   virtual void setEndTime(float seconds);
   virtual void setRate(float rate);

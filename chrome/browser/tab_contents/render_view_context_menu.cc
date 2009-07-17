@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,15 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
+// Constants for the standard playback rates provided by the context
+// menu. If another rate is reported, it will be considered unknown and
+// no rate will be selected in the submenu.
+static const double kSlowPlaybackRate = 0.5f;
+static const double kNormalPlaybackRate = 1.0f;
+static const double kFastPlaybackRate = 1.25f;
+static const double kFasterPlaybackRate = 1.50f;
+static const double kDoubleTimePlaybackRate = 2.0f;
+
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,
     const ContextMenuParams& params)
@@ -42,11 +51,12 @@ RenderViewContextMenu::~RenderViewContextMenu() {
 // Menu construction functions -------------------------------------------------
 
 void RenderViewContextMenu::Init() {
-  InitMenu(params_.node);
+  InitMenu(params_.node, params_.media_params);
   DoInit();
 }
 
-void RenderViewContextMenu::InitMenu(ContextNode node) {
+void RenderViewContextMenu::InitMenu(ContextNode node,
+                                     ContextMenuMediaParams media_params) {
   if (node.type & ContextNode::PAGE)
     AppendPageItems();
   if (node.type & ContextNode::FRAME)
@@ -58,6 +68,18 @@ void RenderViewContextMenu::InitMenu(ContextNode node) {
     if (node.type & ContextNode::LINK)
       AppendSeparator();
     AppendImageItems();
+  }
+
+  if (node.type & ContextNode::VIDEO) {
+    if (node.type & ContextNode::LINK)
+      AppendSeparator();
+    AppendVideoItems(media_params);
+  }
+
+  if (node.type & ContextNode::AUDIO) {
+    if (node.type & ContextNode::LINK)
+      AppendSeparator();
+    AppendAudioItems(media_params);
   }
 
   if (node.type & ContextNode::EDITABLE)
@@ -96,6 +118,58 @@ void RenderViewContextMenu::AppendImageItems() {
   AppendMenuItem(IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
   AppendMenuItem(IDS_CONTENT_CONTEXT_COPYIMAGE);
   AppendMenuItem(IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
+}
+
+void RenderViewContextMenu::AppendAudioItems(
+    ContextMenuMediaParams media_params) {
+  AppendMediaItems(media_params);
+  AppendSeparator();
+  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
+  AppendMenuItem(IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
+  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
+}
+
+void RenderViewContextMenu::AppendVideoItems(
+    ContextMenuMediaParams media_params) {
+  AppendMediaItems(media_params);
+  AppendMenuItem(IDS_CONTENT_CONTEXT_FULLSCREEN);
+  AppendSeparator();
+  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
+  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS);
+  AppendMenuItem(IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
+  AppendMenuItem(IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
+}
+
+void RenderViewContextMenu::AppendMediaItems(
+    ContextMenuMediaParams media_params) {
+  if (media_params.player_state & ContextMenuMediaParams::PLAYER_PAUSED) {
+    AppendMenuItem(IDS_CONTENT_CONTEXT_PLAY);
+  } else {
+    AppendMenuItem(IDS_CONTENT_CONTEXT_PAUSE);
+  }
+
+  if (media_params.player_state & ContextMenuMediaParams::PLAYER_MUTED) {
+    AppendMenuItem(IDS_CONTENT_CONTEXT_UNMUTE);
+  } else {
+    AppendMenuItem(IDS_CONTENT_CONTEXT_MUTE);
+  }
+
+  AppendCheckboxMenuItem(IDS_CONTENT_CONTEXT_LOOP,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_LOOP));
+
+  StartSubMenu(IDS_CONTENT_CONTEXT_PLAYBACKRATE_MENU,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_MENU));
+  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW));
+  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL));
+  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST));
+  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER));
+  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME));
+  FinishSubMenu();
 }
 
 void RenderViewContextMenu::AppendPageItems() {
@@ -246,20 +320,58 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
              URLRequest::IsHandledURL(params_.link_url);
 
     case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
-      return params_.image_url.is_valid() &&
-             URLRequest::IsHandledURL(params_.image_url);
+      return params_.src_url.is_valid() &&
+             URLRequest::IsHandledURL(params_.src_url);
 
     case IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB:
       // The images shown in the most visited thumbnails do not currently open
       // in a new tab as they should. Disabling this context menu option for
       // now, as a quick hack, before we resolve this issue (Issue = 2608).
       // TODO (sidchat): Enable this option once this issue is resolved.
-      if (params_.image_url.scheme() == chrome::kChromeUIScheme)
+      if (params_.src_url.scheme() == chrome::kChromeUIScheme)
         return false;
       return true;
 
+    case IDS_CONTENT_CONTEXT_FULLSCREEN:
+      // TODO(ajwong): Enable fullsceren after we actually implement this.
+      return false;
+
+    // Media control commands should all be disabled if the player is in an
+    // error state.
+    case IDS_CONTENT_CONTEXT_PLAY:
+    case IDS_CONTENT_CONTEXT_PAUSE:
+    case IDS_CONTENT_CONTEXT_MUTE:
+    case IDS_CONTENT_CONTEXT_UNMUTE:
+    case IDS_CONTENT_CONTEXT_LOOP:
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_MENU:
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW:
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL:
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST:
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER:
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME:
+      return (params_.media_params.player_state &
+              ContextMenuMediaParams::PLAYER_ERROR) == 0;
+
+    case IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS:
+      // TODO(ajwong): Enable save screenshot after we actually implement
+      // this.
+      return false;
+
+    case IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION:
+    case IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION:
     case IDS_CONTENT_CONTEXT_COPYIMAGELOCATION:
-      return params_.image_url.is_valid();
+      return params_.src_url.is_valid();
+
+    case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
+    case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
+      return (params_.media_params.player_state &
+              ContextMenuMediaParams::PLAYER_CAN_SAVE) &&
+             params_.src_url.is_valid() &&
+             URLRequest::IsHandledURL(params_.src_url);
+
+    case IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB:
+    case IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB:
+      return true;
 
     case IDS_CONTENT_CONTEXT_SAVEPAGEAS:
       return SavePackage::IsSavableURL(source_tab_contents_->GetURL());
@@ -324,6 +436,29 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
 }
 
 bool RenderViewContextMenu::ItemIsChecked(int id) const {
+  // Select the correct playback rate.
+  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW) {
+    return params_.media_params.playback_rate == kSlowPlaybackRate;
+  }
+  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL) {
+    return params_.media_params.playback_rate == kNormalPlaybackRate;
+  }
+  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST) {
+    return params_.media_params.playback_rate == kFastPlaybackRate;
+  }
+  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER) {
+    return params_.media_params.playback_rate == kFasterPlaybackRate;
+  }
+  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME) {
+    return params_.media_params.playback_rate == kDoubleTimePlaybackRate;
+  }
+
+  // See if the video is set to looping.
+  if (id == IDS_CONTENT_CONTEXT_LOOP) {
+    return (params_.media_params.player_state &
+            ContextMenuMediaParams::PLAYER_LOOP) != 0;
+  }
+ 
   // Check box for 'Check the Spelling of this field'.
   if (id == IDC_CHECK_SPELLING_OF_THIS_FIELD) {
     return (params_.spellcheck_enabled &&
@@ -371,13 +506,15 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       OpenURL(params_.link_url, OFF_THE_RECORD, PageTransition::LINK);
       break;
 
+    case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
+    case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
     case IDS_CONTENT_CONTEXT_SAVEIMAGEAS:
     case IDS_CONTENT_CONTEXT_SAVELINKAS: {
       const GURL& referrer =
           params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
       const GURL& url =
           (id == IDS_CONTENT_CONTEXT_SAVELINKAS ? params_.link_url :
-                                                  params_.image_url);
+                                                  params_.src_url);
       DownloadManager* dlm = profile_->GetDownloadManager();
       dlm->DownloadUrl(url, referrer, params_.frame_charset,
                        source_tab_contents_);
@@ -388,16 +525,20 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       WriteURLToClipboard(params_.unfiltered_link_url);
       break;
 
+    case IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION:
+    case IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION:
     case IDS_CONTENT_CONTEXT_COPYIMAGELOCATION:
-      WriteURLToClipboard(params_.image_url);
+      WriteURLToClipboard(params_.src_url);
       break;
 
     case IDS_CONTENT_CONTEXT_COPYIMAGE:
       CopyImageAt(params_.x, params_.y);
       break;
 
+    case IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB:
+    case IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB:
     case IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB:
-      OpenURL(params_.image_url, NEW_BACKGROUND_TAB, PageTransition::LINK);
+      OpenURL(params_.src_url, NEW_BACKGROUND_TAB, PageTransition::LINK);
       break;
 
     case IDS_CONTENT_CONTEXT_BACK:
@@ -632,8 +773,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
       source_tab_contents_->render_view_host(), x, y);
 }
 
-void RenderViewContextMenu::WriteTextToClipboard(
-    const string16& text) {
+void RenderViewContextMenu::WriteTextToClipboard(const string16& text) {
   Clipboard* clipboard = g_browser_process->clipboard();
 
   if (!clipboard)

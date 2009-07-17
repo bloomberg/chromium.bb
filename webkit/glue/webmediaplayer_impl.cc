@@ -198,6 +198,16 @@ void WebMediaPlayerImpl::pause() {
   pipeline_->SetPlaybackRate(0.0f);
 }
 
+bool WebMediaPlayerImpl::supportsFullscreen() const {
+  DCHECK(MessageLoop::current() == main_loop_);
+  return true;
+}
+
+bool WebMediaPlayerImpl::supportsSave() const {
+  DCHECK(MessageLoop::current() == main_loop_);
+  return true;
+}
+
 void WebMediaPlayerImpl::seek(float seconds) {
   DCHECK(MessageLoop::current() == main_loop_);
 
