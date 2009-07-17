@@ -688,7 +688,7 @@ class CallbackWithReturnValueImpl
       public CallbackWithReturnValue<ReturnValue>::Type {
  public:
   CallbackWithReturnValueImpl(T* obj, Method meth)
-      : CallbackStorage<T, Method>(obj, meth) { }
+      : CallbackStorage<T, Method>(obj, meth) {}
 
   virtual ReturnValue Run() {
     return (this->obj_->*(this->meth_))();
