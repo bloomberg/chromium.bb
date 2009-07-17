@@ -99,8 +99,9 @@ static gboolean gtk_chrome_button_expose(GtkWidget* widget,
     if (paint_state == GTK_STATE_PRELIGHT || paint_state == GTK_STATE_ACTIVE) {
       (*GTK_WIDGET_CLASS(gtk_chrome_button_parent_class)->expose_event)
           (widget, event);
-    } else {
-      // Otherwise, we're still responsible for rendering our children.
+    } else if (gtk_bin_get_child(GTK_BIN(widget))) {
+      // Otherwise, we're still responsible for rendering our children if we
+      // have any.
       gtk_container_propagate_expose(GTK_CONTAINER(widget),
                                      gtk_bin_get_child(GTK_BIN(widget)),
                                      event);
