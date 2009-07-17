@@ -55,14 +55,8 @@ IPC_BEGIN_MESSAGES(WorkerHost)
                       int  /* line_number */,
                       string16  /* source_url*/)
 
-  IPC_MESSAGE_ROUTED7(WorkerHostMsg_PostConsoleMessageToWorkerObject,
-                      int  /* destination */,
-                      int  /* source */,
-                      int  /* type */,
-                      int  /* level */,
-                      string16  /* message */,
-                      int  /* line_number */,
-                      string16  /* source_url */)
+  IPC_MESSAGE_ROUTED1(WorkerHostMsg_PostConsoleMessageToWorkerObject,
+                      WorkerHostMsg_PostConsoleMessageToWorkerObject_Params)
 
   IPC_MESSAGE_ROUTED1(WorkerHostMsg_ConfirmMessageFromWorkerObject,
                       bool /* bool has_pending_activity */)

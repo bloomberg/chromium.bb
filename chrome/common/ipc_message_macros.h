@@ -95,8 +95,6 @@
 #undef IPC_MESSAGE_ROUTED3
 #undef IPC_MESSAGE_ROUTED4
 #undef IPC_MESSAGE_ROUTED5
-#undef IPC_MESSAGE_ROUTED6
-#undef IPC_MESSAGE_ROUTED7
 #undef IPC_SYNC_MESSAGE_CONTROL0_0
 #undef IPC_SYNC_MESSAGE_CONTROL0_1
 #undef IPC_SYNC_MESSAGE_CONTROL0_2
@@ -188,12 +186,6 @@
   msg_class##__ID,
 
 #define IPC_MESSAGE_ROUTED5(msg_class, type1, type2, type3, type4, type5) \
-  msg_class##__ID,
-
-#define IPC_MESSAGE_ROUTED6(msg_class, type1, type2, type3, type4, type5, type6) \
-  msg_class##__ID,
-
-#define IPC_MESSAGE_ROUTED7(msg_class, type1, type2, type3, type4, type5, type6, type7) \
   msg_class##__ID,
 
 #define IPC_SYNC_MESSAGE_CONTROL0_0(msg_class) \
@@ -466,12 +458,6 @@ LogFunction g_log_function_mapping[LastMsgIndex];
 #define IPC_MESSAGE_ROUTED5(msg_class, type1, type2, type3, type4, type5) \
   IPC_MESSAGE_LOG(msg_class)
 
-#define IPC_MESSAGE_ROUTED6(msg_class, type1, type2, type3, type4, type5, type6) \
-  IPC_MESSAGE_LOG(msg_class)
-
-#define IPC_MESSAGE_ROUTED7(msg_class, type1, type2, type3, type4, type5, type6, type7) \
-  IPC_MESSAGE_LOG(msg_class)
-
 #define IPC_SYNC_MESSAGE_CONTROL0_0(msg_class) \
   IPC_MESSAGE_LOG(msg_class)
 
@@ -718,37 +704,6 @@ LogFunction g_log_function_mapping[LastMsgIndex];
               const type3& arg3, const type4& arg4, const type5& arg5) \
         : IPC::MessageWithTuple< Tuple5<type1, type2, type3, type4, type5> >( \
             routing_id, ID, MakeRefTuple(arg1, arg2, arg3, arg4, arg5)) {} \
-  };
-
-#define IPC_MESSAGE_ROUTED6(msg_class, type1, type2, type3, type4, type5, \
-                            type6)                                      \
-  class msg_class :                                                     \
-      public IPC::MessageWithTuple< Tuple6<type1, type2, type3, type4, type5, \
-                                           type6> > {                   \
- public:                                                                \
-    enum { ID = msg_class##__ID };                                      \
-    msg_class(int32 routing_id, const type1& arg1, const type2& arg2,   \
-              const type3& arg3, const type4& arg4, const type5& arg5,  \
-              const type6& arg6)                                        \
-      : IPC::MessageWithTuple< Tuple6<type1, type2, type3, type4, type5, \
-      type6> >(                                                         \
-          routing_id, ID, MakeRefTuple(arg1, arg2, arg3, arg4, arg5, arg6)) {} \
-  };
-
-#define IPC_MESSAGE_ROUTED7(msg_class, type1, type2, type3, type4, type5, \
-                            type6, type7)                               \
-  class msg_class :                                                     \
-      public IPC::MessageWithTuple< Tuple7<type1, type2, type3, type4, type5, \
-                                           type6, type7> > {            \
- public:                                                                \
-    enum { ID = msg_class##__ID };                                      \
-    msg_class(int32 routing_id, const type1& arg1, const type2& arg2,   \
-              const type3& arg3, const type4& arg4, const type5& arg5,  \
-              const type6& arg6, const type7& arg7)                     \
-      : IPC::MessageWithTuple< Tuple7<type1, type2, type3, type4, type5, \
-      type6, type7> >(                                                  \
-          routing_id, ID, MakeRefTuple(arg1, arg2, arg3, arg4, arg5,    \
-                                       arg6, arg7)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL0_0(msg_class) \

@@ -14,6 +14,7 @@
 class ChildThread;
 class GURL;
 class RenderView;
+struct WorkerHostMsg_PostConsoleMessageToWorkerObject_Params;
 
 // This class provides an implementation of WebWorker that the renderer provides
 // to the glue.  This class converts function calls to IPC messages that are
@@ -43,6 +44,9 @@ class WebWorkerProxy : public WebKit::WebWorker,
   bool Send(IPC::Message* message);
 
   void OnDedicatedWorkerCreated();
+  void OnPostConsoleMessageToWorkerObject(
+      const WorkerHostMsg_PostConsoleMessageToWorkerObject_Params& params);
+
   void Disconnect();
 
   // The routing id used to reach WebWorkerClientProxy in the worker process.

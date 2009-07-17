@@ -113,9 +113,8 @@ void WebWorkerProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(WorkerHostMsg_PostExceptionToWorkerObject,
                         client_,
                         WebWorkerClient::postExceptionToWorkerObject)
-    IPC_MESSAGE_FORWARD(WorkerHostMsg_PostConsoleMessageToWorkerObject,
-                        client_,
-                        WebWorkerClient::postConsoleMessageToWorkerObject)
+    IPC_MESSAGE_HANDLER(WorkerHostMsg_PostConsoleMessageToWorkerObject,
+                        OnPostConsoleMessageToWorkerObject)
     IPC_MESSAGE_FORWARD(WorkerHostMsg_ConfirmMessageFromWorkerObject,
                         client_,
                         WebWorkerClient::confirmMessageFromWorkerObject)
@@ -137,3 +136,11 @@ void WebWorkerProxy::OnDedicatedWorkerCreated() {
     Send(queued_messages[i]);
   }
 }
+
+void WebWorkerProxy::OnPostConsoleMessageToWorkerObject(
+      const WorkerHostMsg_PostConsoleMessageToWorkerObject_Params& params) {
+  client_->postConsoleMessageToWorkerObject(params.destination_identifier,
+      params.source_identifier, params.message_type, params.message_level,
+      params.message, params.line_number, params.source_url);
+}
+

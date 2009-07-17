@@ -98,9 +98,15 @@ void WebWorkerClientProxy::postConsoleMessageToWorkerObject(
     const WebString& message,
     int line_number,
     const WebString& source_url) {
-  Send(new WorkerHostMsg_PostConsoleMessageToWorkerObject(
-      route_id_, destination, source, type, level,
-      message, line_number, source_url));
+  WorkerHostMsg_PostConsoleMessageToWorkerObject_Params params;
+  params.destination_identifier = destination;
+  params.source_identifier = source;
+  params.message_type = type;
+  params.message_level = level;
+  params.message = message;
+  params.line_number = line_number;
+  params.source_url = source_url;
+  Send(new WorkerHostMsg_PostConsoleMessageToWorkerObject(route_id_, params));
 }
 
 void WebWorkerClientProxy::confirmMessageFromWorkerObject(
