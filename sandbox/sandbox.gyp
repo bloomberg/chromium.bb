@@ -25,6 +25,9 @@
           'sources': [
             'linux/suid/sandbox.cc',
           ],
+          'include_dirs': [
+            '..',
+          ],
         }
       ],
     }],

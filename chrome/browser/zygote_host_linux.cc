@@ -22,6 +22,29 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 
+#include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
+
+static void SaveSUIDUnsafeEnvironmentVariables() {
+  // The ELF loader will clear many environment variables so we save them to
+  // different names here so that the SUID sandbox can resolve them for the
+  // renderer.
+
+  for (unsigned i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
+    const char* const envvar = kSUIDUnsafeEnvironmentVariables[i];
+    char* const saved_envvar = SandboxSavedEnvironmentVariable(envvar);
+    if (!saved_envvar)
+      continue;
+
+    const char* const value = getenv(envvar);
+    if (value)
+      setenv(saved_envvar, value, 1 /* overwrite */);
+    else
+      unsetenv(saved_envvar);
+
+    free(saved_envvar);
+  }
+}
+
 ZygoteHost::ZygoteHost() {
   std::wstring chrome_path;
   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
@@ -64,12 +87,7 @@ ZygoteHost::ZygoteHost() {
         (st.st_mode & S_IXOTH)) {
       cmd_line.PrependWrapper(ASCIIToWide(sandbox_binary));
 
-      // SUID binaries clear LD_LIBRARY_PATH. However, the sandbox binary needs
-      // to run its child processes with the correct LD_LIBRARY_PATH so we save
-      // a copy here:
-      const char* ld_library_path = getenv("LD_LIBRARY_PATH");
-      if (ld_library_path)
-        setenv("SANDBOX_LD_LIBRARY_PATH", ld_library_path, 1 /* overwrite */);
+      SaveSUIDUnsafeEnvironmentVariables();
     } else {
       LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
                     "configured correctly. Rather than run without sandboxing "

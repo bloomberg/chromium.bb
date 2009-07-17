@@ -21,6 +21,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
+
 #if !defined(CLONE_NEWPID)
 #define CLONE_NEWPID 0x20000000
 #endif
@@ -228,15 +230,25 @@ static bool DropRoot() {
 }
 
 static bool SetupChildEnvironment() {
-  // ld.so will have cleared LD_LIBRARY_PATH because we are SUID. However, the
-  // child process might need this so zygote_host_linux.cc saved a copy in
-  // SANDBOX_LD_LIBRARY_PATH. This is safe because we have dropped root by this
+  // ld.so may have cleared several environment variables because we are SUID.
+  // However, the child process might need them so zygote_host_linux.cc saves a
+  // copy in SANDBOX_$x. This is safe because we have dropped root by this
   // point, so we can only exec a binary with the permissions of the user who
   // ran us in the first place.
-  const char* sandbox_ld_library_path = getenv("SANDBOX_LD_LIBRARY_PATH");
-  if (sandbox_ld_library_path) {
-    setenv("LD_LIBRARY_PATH", sandbox_ld_library_path, 1 /* overwrite */);
-    unsetenv("SANDBOX_LD_LIBRARY_PATH");
+
+  for (unsigned i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
+    const char* const envvar = kSUIDUnsafeEnvironmentVariables[i];
+    char* const saved_envvar = SandboxSavedEnvironmentVariable(envvar);
+    if (!saved_envvar)
+      return false;
+
+    const char* const value = getenv(saved_envvar);
+    if (value) {
+      setenv(envvar, value, 1 /* overwrite */);
+      unsetenv(saved_envvar);
+    }
+
+    free(saved_envvar);
   }
 
   return true;
