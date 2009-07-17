@@ -441,7 +441,8 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     // TODO(port): Remove ifdef when the Linux splash page is not needed.
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
     // This can mess up UI tests, so only do it when UI tests aren't running.
-    if (!parsed_command_line.HasSwitch(switches::kHomePage)) {
+    if (!parsed_command_line.HasSwitch(switches::kHomePage) &&
+        GetURLsFromCommandLine(profile_).empty()) {
       Browser* browser = BrowserList::GetLastActive();
       // Only show the splash page if it isn't already showing.
       bool open_splash = true;
