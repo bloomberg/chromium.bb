@@ -20,6 +20,18 @@ bool PlatformSupportsLanguage(const std::string& current_language) {
   return false;
 }
 
+void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
+  spellcheck_languages->clear();
+}
+
+bool SpellCheckerProvidesPanel() {
+  return false;
+}
+
+bool SpellCheckerPanelVisible() {
+  return false;
+}
+
 void Init() {
 }
 

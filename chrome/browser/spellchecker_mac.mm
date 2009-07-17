@@ -20,8 +20,8 @@ const unsigned int kShortLanguageCodeSize = 2;
 
 // A private utility function to convert hunspell language codes to os x
 // language codes.
-NSString* ConvertLanguageCodeToMac(const std::string& lang_code) {
-  NSString* whole_code = base::SysUTF8ToNSString(lang_code);
+NSString* ConvertLanguageCodeToMac(const std::string& hunspell_lang_code) {
+  NSString* whole_code = base::SysUTF8ToNSString(hunspell_lang_code);
 
   if ([whole_code length] > kShortLanguageCodeSize) {
     NSString* lang_code = [whole_code
@@ -53,14 +53,48 @@ NSString* ConvertLanguageCodeToMac(const std::string& lang_code) {
     return whole_code;
   }
 }
+
+std::string ConvertLanguageCodeFromMac(NSString* lang_code) {
+  // TODO(pwicks):figure out what to do about Multilingual
+  // Guards for strange cases.
+  if ([lang_code isEqualToString:@"en"]) return std::string("en-US");
+  if ([lang_code isEqualToString:@"pt"]) return std::string("pt-PT");
+
+  if ([lang_code length] > kShortLanguageCodeSize &&
+      [lang_code characterAtIndex:kShortLanguageCodeSize] == '_') {
+    return base::SysNSStringToUTF8([NSString stringWithFormat:@"%@-%@",
+                [lang_code substringToIndex:kShortLanguageCodeSize],
+                [lang_code substringFromIndex:(kShortLanguageCodeSize + 1)]]);
+  }
+  return base::SysNSStringToUTF8(lang_code);
+}
+
 } // namespace
 
 namespace SpellCheckerPlatform {
+void GetAvailableLanguages(std::vector<std::string>* spellcheck_languages) {
+  NSArray* availableLanguages = [[NSSpellChecker sharedSpellChecker]
+                        availableLanguages];
+  for (NSString* lang_code in availableLanguages) {
+    spellcheck_languages->push_back(
+              ConvertLanguageCodeFromMac(lang_code));
+  }
+}
 
 bool SpellCheckerAvailable() {
   // If this file was compiled, then we know that we are on OS X 10.5 at least
   // and can safely return true here.
   return true;
+}
+
+bool SpellCheckerProvidesPanel() {
+  // OS X has a Spelling Panel, so we can return true here.
+  return true;
+}
+
+bool SpellCheckerPanelVisible() {
+  return [[[NSSpellChecker sharedSpellChecker] spellingPanel]
+            isVisible] ? true : false;
 }
 
 void Init() {

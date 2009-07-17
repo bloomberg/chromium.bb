@@ -172,8 +172,13 @@ int SpellChecker::GetSpellCheckLanguages(
   // Now scan through the list of accept languages, and find possible mappings
   // from this list to the existing list of spell check languages.
   std::vector<std::string> accept_languages;
-  SplitString(WideToASCII(accept_languages_pref.GetValue()), ',',
-              &accept_languages);
+
+  if (SpellCheckerPlatform::SpellCheckerAvailable()) {
+    SpellCheckerPlatform::GetAvailableLanguages(&accept_languages);
+  } else {
+    SplitString(WideToASCII(accept_languages_pref.GetValue()), ',',
+                &accept_languages);
+  }
   for (std::vector<std::string>::const_iterator i = accept_languages.begin();
        i != accept_languages.end(); ++i) {
     std::string language = GetCorrespondingSpellCheckLanguage(*i);
