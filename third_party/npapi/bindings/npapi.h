@@ -446,7 +446,7 @@ typedef enum {
     NPPVpluginWantsAllNetworkStreams = 18,
 
     /* Checks to see if the plug-in would like the browser to load the "src" attribute. */
-    NPPVpluginCancelSrcStream = 20,
+    NPPVpluginCancelSrcStream = 20
 // END MODIFICATIONS
 #ifdef XP_MACOSX
   /* Used for negotiating drawing models */
