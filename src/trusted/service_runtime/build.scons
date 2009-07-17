@@ -115,18 +115,15 @@ ldr_inputs = [
     'web_worker_stub.c',
 ]
 
-# TODO(petr): move platform and OS specific files:
-# nacl_app.c            nacl_thread.c
-# nacl_switch_to_app.c  sel_rt.c
-# nacl_app.c            nacl_thread_arm.c
+# TODO(petr): fix TARGET_ARCHITECTURE => BUILD_ARCH
 
 if env['TARGET_ARCHITECTURE'] == 'x86':
   ldr_inputs += [
-    'nacl_app.c',
-    'nacl_ldt_common.c',
-    'nacl_switch_to_app.c',
-    'sel_rt.c',
-    'nacl_thread_x86.c',
+    'arch/x86/nacl_app.c',
+    'arch/x86/nacl_ldt.c',
+    'arch/x86/nacl_switch_to_app.c',
+    'arch/x86/sel_rt.c',
+    'arch/x86/nacl_thread.c',
     'arch/x86_32/nacl_switch.S',
     'arch/x86_32/nacl_syscall.S',
     'arch/x86_32/springboard.S',
@@ -134,10 +131,10 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
   ]
 elif env['TARGET_ARCHITECTURE'] == 'arm':
   ldr_inputs += [
-    'linux_arm/nacl_app.c',
-    'linux_arm/nacl_switch_to_app.c',
-    'linux_arm/sel_rt.c',
-    'nacl_thread_arm.c',
+    'arch/arm/nacl_app.c',
+    'arch/arm/nacl_switch_to_app.c',
+    'arch/arm/sel_rt.c',
+    'arch/arm/nacl_thread.c',
     'arch/arm/nacl_switch.S',
     'arch/arm/nacl_syscall.S',
     'arch/arm/springboard.S',
@@ -146,28 +143,28 @@ elif env['TARGET_ARCHITECTURE'] == 'arm':
 
 if env.Bit('windows'):
   ldr_inputs += [
-      'win/nacl_ldt.c',
-      'win/sel_memory.c',
-      'win/sel_segments.c',
+    'win/nacl_ldt.c',
+    'win/sel_memory.c',
+    'win/sel_segments.c',
   ]
 elif env.Bit('mac'):
   ldr_inputs += [
-      'osx/nacl_ldt.c',
-      'linux/sel_memory.c',
-      'linux/sel_segments.c',
+    'osx/nacl_ldt.c',
+    'linux/sel_memory.c',
+    'linux/x86/sel_segments.c',
   ]
 elif env.Bit('linux'):
   ldr_inputs += [
-        'linux/sel_memory.c',
+    'linux/sel_memory.c',
   ]
   if env['TARGET_ARCHITECTURE'] == 'x86':
     ldr_inputs += [
-        'linux/nacl_ldt.c',
-        'linux/sel_segments.c',
+      'linux/x86/nacl_ldt.c',
+      'linux/x86/sel_segments.c',
     ]
   elif env['TARGET_ARCHITECTURE'] == 'arm':
     ldr_inputs += [
-        'linux_arm/sel_segments.c',
+      'linux/arm/sel_segments.c',
     ]
 
 # ----------------------------------------------------------

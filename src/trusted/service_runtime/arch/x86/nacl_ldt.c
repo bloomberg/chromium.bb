@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2008, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,50 +29,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+/*
+ * NaCl local descriptor table (LDT) management - common for all platforms
+ */
 
-/* TODO(petr): platform specific file, must be moved */
+#include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
 
-int NaClThreadInit() {
-  int i;
+/* TODO(gregoryd): These need to come from a header file. */
+extern int NaClLdtInitPlatformSpecific();
+extern int NaClLdtFiniPlatformSpecific();
 
-  for (i=1; i<LDT_ENTRIES; i++)
-    nacl_user[i] = 0;
+
+int NaClLdtInit() {
+  if (!NaClLdtInitPlatformSpecific()) {
+    return 0;
+  }
+  /* Allocate the last LDT entry to force LDT grow to its maximum size */
+  if (!NaClLdtAllocateSelector(LDT_ENTRIES - 1, 0,
+    NACL_LDT_DESCRIPTOR_DATA, 0, 0, 0)) {
+      return 0;
+  }
+  return 1;
 }
 
-void NaClThreadFini() {
-}
 
-uint16_t NaClAllocateThreadIdx(int type,
-                               int read_exec_only,
-                               void *base_addr,
-                               uint32_t size_in_bytes) {
-  int i;
-
-  for (i=1; i<LDT_ENTRIES; i++)
-    if (!nacl_user[i]) return i;
-
-  /* no more free entries */
-  return 0;
-}
-
-void NaClFreeThreadIdx(uint16_t id) {
-  if (id < LDT_ENTRIES)
-    nacl_user[id] = 0;
-}
-
-uint16_t NaClChangeThreadIdx(int32_t entry_number,
-                             int type,
-                             int read_exec_only,
-                             void* base_addr,
-                             uint32_t size_in_bytes) {
-  /* BUG(petr): not implemented */
-  return 0;
-}
-
-/* TODO(petr): change Id to Idx */
-int16_t NaClGetThreadId(struct NaClAppThread  *natp) {
-  return natp->user.r9;
+void NaClLdtFini() {
+  NaClLdtFiniPlatformSpecific();
 }
 

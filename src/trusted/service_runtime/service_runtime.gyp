@@ -61,15 +61,12 @@
       'sources': [
         'dyn_array.c',
         'nacl_all_modules.c',
-        'nacl_app.c',
         'nacl_app_thread.c',
         'nacl_bottom_half.c',
         'nacl_check.c',
         'nacl_closure.c',
         'nacl_globals.c',
-        'nacl_ldt_common.c',
         'nacl_memory_object.c',
-        'nacl_switch_to_app.c',
         'nacl_sync_queue.c',
         'nacl_syscall_common.c',
         'nacl_syscall_hook.c',
@@ -78,31 +75,67 @@
         'sel_ldr_standard.c',
         'sel_load_image.c',
         'sel_mem.c',
-        'sel_rt.c',
         'sel_util.c',
         'sel_validate_image.c',
         'web_worker_stub.c',
-        'arch/x86_32/nacl_switch.S',
-        'arch/x86_32/nacl_syscall.S',
-        'arch/x86_32/springboard.S',
-        'arch/x86_32/tramp.S',
       ],
       'sources!': [
          '<(syscall_handler)',
       ],
       'conditions': [
+        # TODO(petr):
+        # * introduce build_arch, build_subarch, target_subarch in the same way
+        #   as BUILD_ARCH and TARGET_ARCH in scons (see SConstruct fror details).
+        # * rename ia32 to x86_32, ia64 to x86_64 as in scons
+        # * introduce buildplatform, targetplatform, platform flags in gyp
+        ['target_arch=="ia32"', {
+          'sources': [
+            'arch/x86/nacl_app.c',
+            'arch/x86/nacl_ldt.c',
+            'arch/x86/nacl_switch_to_app.c',
+            'arch/x86/sel_rt.c',
+            'arch/x86/nacl_thread.c',
+            'arch/x86_32/nacl_switch.S',
+            'arch/x86_32/nacl_syscall.S',
+            'arch/x86_32/springboard.S',
+            'arch/x86_32/tramp.S',
+          ],
+        }],
+        ['target_arch=="arm"', {
+          'sources': [
+            'arch/arm/nacl_app.c',
+            'arch/arm/nacl_switch_to_app.c',
+            'arch/arm/sel_rt.c',
+            'arch/arm/nacl_thread.c',
+            'arch/arm/nacl_switch.S',
+            'arch/arm/nacl_syscall.S',
+            'arch/arm/springboard.S',
+            'arch/arm/tramp.S',
+          ],
+        }],
         ['OS=="linux"', {
           'sources': [
-            'linux/nacl_ldt.c',
             'linux/sel_memory.c',
-            'linux/sel_segments.c',
+          ],
+          'conditions': [
+            ['target_arch=="ia32"': {
+              'sources': [
+                'linux/x86/nacl_ldt.c',
+                'linux/x86/sel_segments.c',
+              ],
+            }],
+            ['target_arch=="arm"': {
+              'soruces': [
+                'linux/arm/sel_segments.c',
+              ],
+            }],
           ],
         }],
         ['OS=="mac"', {
           'sources': [
             'osx/nacl_ldt.c',
             'linux/sel_memory.c',
-            'linux/sel_segments.c',
+            'linux/x86/sel_segments.c',
           ],
         }],
         ['OS=="win"', {

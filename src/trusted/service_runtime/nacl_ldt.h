@@ -39,6 +39,15 @@
 
 EXTERN_C_BEGIN
 
+/* TODO(petr): move this to LINUX specific header file */
+#if NACL_LINUX
+/*
+ * The modify_ldt system call is used to get and set the local descriptor
+ * table.
+ */
+extern int modify_ldt(int func, void* ptr, unsigned long bytecount);
+#endif
+
 /*
  * Module initialization and finalization.
  */

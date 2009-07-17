@@ -107,3 +107,4 @@ NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
       natp->user.esp,
       (uint32_t) natp->user.ss);
 }
+

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,53 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * NaCl Service Runtime, C-level context switch code.
- */
+#include <stdint.h>
 
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/sel_rt.h"
-#include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
+uint32_t NaClGetSp(void) {
+  uint32_t sp;
 
-NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
-                                   uint32_t             new_eip) {
-  struct NaClApp  *nap;
-  /*
-   * TODO(petr): check if this is needed here
-   * Preserves stack alignment.
-   */
-  natp->sys.esp = (NaClGetSp() & ~0xf) + 4;
+  asm("mov %0, %%sp" : "=r" (sp));
 
-  /*
-   * springboard pops 4 words from stack which are the parameters for
-   * syscall. In this case, it is not a syscall so no parameters, but we still
-   * need to adjist the stack
-   */
-  natp->user.esp -= 16;
-
-  nap = natp->nap;
-  NaClSwitch(
-      0, /* nothoing to return */
-      new_eip,
-      NaClSysToUser(nap, nap->springboard_addr),
-      &natp->user,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-}
-
-/*
- * syscall return
- */
-NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
-                              uint32_t             new_eip) {
-  struct NaClApp  *nap;
-
-  nap = natp->nap;
-  NaClSwitch(
-      natp->sysret,
-      new_eip,
-      NaClSysToUser(nap, nap->springboard_addr),
-      &natp->user,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  return sp;
 }
 

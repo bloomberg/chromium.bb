@@ -68,6 +68,8 @@ uint32_t NaClGetEbx(void);
 /* TODO(petr): split this file into architecture specific ones */
 #if NACL_ARM
 
+uint32_t NaClGetSp(void);
+
 struct NaClThreadContext {
 uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, esp, lr, eip;
           /* 0   4   8   c  10  14   18  1c   20  24   28 */
@@ -125,6 +127,7 @@ struct NaClThreadContext {
 
 struct NaClApp;  /* fwd */
 
+/* TODO(petr): split into two architecture dependant files */
 #if NACL_ARM
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           uintptr_t                 pc,

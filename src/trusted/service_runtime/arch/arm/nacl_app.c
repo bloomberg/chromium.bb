@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
+#include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 
@@ -45,16 +46,6 @@ NaClErrorCode NaClAppPrepareToLaunch(struct NaClApp     *nap,
                                      int                in_desc,
                                      int                out_desc,
                                      int                err_desc) {
-  uintptr_t           code_start;
-  size_t              code_bytes;
-  size_t              code_pages;
-
-  uintptr_t           data_start;
-  size_t              data_pages;
-
-  uint16_t            cs;
-  uint16_t            des_seg;
-
   int                 i;
   struct NaClHostDesc *nhdp;
 
@@ -90,7 +81,8 @@ NaClErrorCode NaClAppPrepareToLaunch(struct NaClApp     *nap,
     NaClSetDesc(nap, i, (struct NaClDesc *) NaClDescIoDescMake(nhdp));
   }
   retval = LOAD_OK;
-done:
+
   NaClXMutexUnlock(&nap->mu);
   return retval;
 }
+

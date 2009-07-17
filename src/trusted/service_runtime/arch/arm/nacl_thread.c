@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,18 +29,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * TODO(petr): this code can be merged with sel_rt.c
- * NaCl Runtime.
- */
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 
-#include <stdint.h>
 
-uint32_t NaClGetSp(void) {
-  uint32_t sp;
+int NaClThreadInit() {
+  int i;
 
-  asm("mov %0, %%sp" : "=r" (sp));
+  for (i = 1; i < LDT_ENTRIES; i++)
+    nacl_user[i] = 0;
+}
 
-  return sp;
+
+void NaClThreadFini() {
+}
+
+
+uint16_t NaClAllocateThreadIdx(int type,
+                               int read_exec_only,
+                               void *base_addr,
+                               uint32_t size_in_bytes) {
+  int i;
+
+  for (i = 1; i < LDT_ENTRIES; i++)
+    if (!nacl_user[i]) return i;
+
+  /* no more free entries */
+  return 0;
+}
+
+
+void NaClFreeThreadIdx(uint16_t id) {
+  if (id < LDT_ENTRIES)
+    nacl_user[id] = 0;
+}
+
+
+uint16_t NaClChangeThreadIdx(int32_t entry_number,
+                             int type,
+                             int read_exec_only,
+                             void* base_addr,
+                             uint32_t size_in_bytes) {
+  /* BUG(petr): not implemented */
+  return 0;
+}
+
+
+int16_t NaClGetThreadId(struct NaClAppThread  *natp) {
+  return natp->user.r9;
 }
 

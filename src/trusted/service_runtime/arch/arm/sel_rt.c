@@ -29,41 +29,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
-#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+/*
+ * NaCl Secure Runtime
+ */
+#include <string.h>
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 
-/* TODO(petr): platform specific file, must be moved */
 
-int NaClThreadInit() {
-  return NaClLdtInit();
+int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
+                          uintptr_t                 pc,
+                          uintptr_t                 sp,
+                          uint16_t                  r9) {
+  memset(ntcp, 0, sizeof(*ntcp));
+  ntcp->esp = sp;
+  ntcp->eip = pc;
+
+  ntcp->r9 = r9;
+
+  return 1;
 }
 
-void NaClThreadFini() {
-  NaClLdtFini();
-}
-
-uint16_t NaClAllocateThreadIdx(int type,
-                               int read_exec_only,
-                               void *base_addr,
-                               uint32_t size_in_bytes) {
-  return NaClLdtAllocateByteSelector(type, read_exec_only,
-                                     base_addr, size_in_bytes);
-}
-
-void NaClFreeThreadIdx(uint16_t idx) {
-  NaClLdtDeleteSelector(idx);
-}
-
-uint16_t NaClChangeThreadIdx(int32_t entry_number,
-                             int type,
-                             int read_exec_only,
-                             void* base_addr,
-                             uint32_t size_in_bytes) {
-  return NaClLdtChangeByteSelector(entry_number, type,
-                                   read_exec_only, base_addr,
-                                   size_in_bytes);
-}
-
-int16_t NaClGetThreadId(struct NaClAppThread  *natp) {
-  return natp->user.gs >> 3;
-}

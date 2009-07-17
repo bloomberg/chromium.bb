@@ -30,30 +30,43 @@
  */
 
 /*
- * NaCl local descriptor table (LDT) management - common for all platforms
+ * NaCl Service Runtime, C-level context switch code.
  */
 
-#include "native_client/src/include/nacl_platform.h"
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 
-/* TODO(gregoryd): These need to come from a header file. */
-extern int NaClLdtInitPlatformSpecific();
-extern int NaClLdtFiniPlatformSpecific();
+NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
+                                   uint32_t             new_eip) {
+  natp->sys.esp = (NaClGetSp() & ~0xf) + 4;
 
+  /*
+   * springboard pops 4 words from stack which are the parameters for
+   * syscall. In this case, it is not a syscall so no parameters, but we still
+   * need to adjust the stack
+   */
+  natp->user.esp -= 16;
 
-int NaClLdtInit() {
-  if (!NaClLdtInitPlatformSpecific()) {
-    return 0;
-  }
-  /* Allocate the last LDT entry to force LDT grow to its maximum size */
-  if (!NaClLdtAllocateSelector(LDT_ENTRIES - 1, 0,
-    NACL_LDT_DESCRIPTOR_DATA, 0, 0, 0)) {
-      return 0;
-  }
-  return 1;
+  NaClSwitch(
+      0, /* nothing to return */
+      new_eip,
+      NaClSysToUser(natp->nap, natp->nap->springboard_addr),
+      (uint32_t)&natp->user,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
-
-void NaClLdtFini() {
-  NaClLdtFiniPlatformSpecific();
+/*
+ * syscall return
+ */
+NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
+                              uint32_t             new_eip) {
+  NaClSwitch(
+      natp->sysret,
+      new_eip,
+      NaClSysToUser(natp->nap, natp->nap->springboard_addr),
+      (uint32_t)&natp->user,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
+

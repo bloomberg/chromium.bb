@@ -34,22 +34,11 @@
  */
 
 #include <asm/ldt.h>
-#include <errno.h>
 #include <stdio.h>
 
 #include "native_client/src/trusted/platform/nacl_sync.h"
 #include "native_client/src/trusted/service_runtime/nacl_ldt.h"
 
-/*
- * The modify_ldt system call is used to get and set the local descriptor
- * table.
- */
-extern int modify_ldt(int func, void* ptr, unsigned long bytecount);
-
-/*
- * A static helper for finding unused LDT entry.
- */
-static int NaClFindUnusedEntryNumber();
 
 /* struct LdtEntry is a structure that is laid out exactly as the segment
  * descriptors described in the Intel reference manuals.  This is needed
@@ -88,6 +77,30 @@ int NaClLdtInitPlatformSpecific() {
 
 void NaClLdtFiniPlatformSpecific() {
   NaClMutexDtor(&nacl_ldt_mutex);
+}
+
+/*
+ * Find a free selector.  Always invoked while holding nacl_ldt_mutex.
+ */
+static int NaClFindUnusedEntryNumber() {
+  int size = sizeof(struct LdtEntry) * LDT_ENTRIES;
+  struct LdtEntry *entries = malloc(size);
+  int i;
+
+  int retval = modify_ldt(0, entries, size);
+
+  if (-1 != retval) {
+    retval = -1;  /* In case we don't find any free entry */
+    for (i = 0; i < LDT_ENTRIES; ++i) {
+    if (!entries[i].present) {
+      retval = i;
+      break;
+      }
+    }
+  }
+
+  free(entries);
+  return retval;
 }
 
 /*
@@ -292,26 +305,3 @@ void NaClLdtDeleteSelector(uint16_t selector) {
   NaClMutexUnlock(&nacl_ldt_mutex);
 }
 
-/*
- * Find a free selector.  Always invoked while holding nacl_ldt_mutex.
- */
-static int NaClFindUnusedEntryNumber() {
-  int size = sizeof(struct LdtEntry) * LDT_ENTRIES;
-  struct LdtEntry *entries = malloc(size);
-  int i;
-
-  int retval = modify_ldt(0, entries, size);
-
-  if (-1 != retval) {
-    retval = -1;  /* In case we don't find any free entry */
-    for (i = 0; i < LDT_ENTRIES; ++i) {
-    if (!entries[i].present) {
-      retval = i;
-      break;
-      }
-    }
-  }
-
-  free(entries);
-  return retval;
-}
