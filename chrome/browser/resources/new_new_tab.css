@@ -525,7 +525,8 @@ html[dir='rtl'] #view-toolbar {
   background-image: url(chrome://theme/newtab_thumb_off);
 }
 
-#thumb-checkbox:hover {
+#thumb-checkbox:hover,
+#thumb-checkbox:focus {
   background-image: url(chrome://theme/newtab_thumb_off_h);
 }
 
@@ -537,7 +538,8 @@ html[dir='rtl'] #view-toolbar {
   background-image: url(chrome://theme/newtab_thumb_on);
 }
 
-#thumb-checkbox:checked:hover {
+#thumb-checkbox:checked:hover,
+#thumb-checkbox:checked:focus {
   background-image: url(chrome://theme/newtab_thumb_on_h);
 }
 
@@ -549,7 +551,8 @@ html[dir='rtl'] #view-toolbar {
   background-image: url(chrome://theme/newtab_list_off);
 }
 
-#list-checkbox:hover {
+#list-checkbox:hover,
+#list-checkbox:focus {
   background-image: url(chrome://theme/newtab_list_off_h);
 }
 
@@ -561,7 +564,8 @@ html[dir='rtl'] #view-toolbar {
   background-image: url(chrome://theme/newtab_list_on);
 }
 
-#list-checkbox:checked:hover {
+#list-checkbox:checked:hover,
+#list-checkbox:checked:focus {
   background-image: url(chrome://theme/newtab_list_on_h);
 }
 
@@ -573,7 +577,8 @@ html[dir='rtl'] #view-toolbar {
   background-image: url(chrome://theme/newtab_option);
 }
 
-#option-button:hover {
+#option-button:hover,
+#option-button:focus {
   background-image: url(chrome://theme/newtab_option_h);
 }
 
