@@ -932,16 +932,9 @@ void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext context,
   skia::PlatformDevice& device = canvas.getTopPlatformDevice();
   device.drawToHDC(context, plugin_rect_.x(), plugin_rect_.y(), NULL);
 #elif defined(OS_LINUX)
-  // Though conceptually we've been handed a cairo_surface_t* and we
-  // could've just hooked up the canvas to draw directly onto it, our
-  // canvas implementation currently uses cairo as a dumb pixel buffer
-  // and would have done the following copy anyway.
-  // TODO(evanm): revisit when we have printing hooked up, as that might
-  // change our usage of cairo.
-  skia::PlatformDevice& device = canvas.getTopPlatformDevice();
-  cairo_t* cairo = cairo_create(context);
-  cairo_surface_t* source_surface = device.beginPlatformPaint();
-  cairo_set_source_surface(cairo, source_surface, plugin_rect_.x(), plugin_rect_.y());
+  cairo_t* cairo = canvas.getTopPlatformDevice().beginPlatformPaint();
+  cairo_set_source_surface(cairo, cairo_get_target(context),
+                           plugin_rect_.x(), plugin_rect_.y());
   cairo_paint(cairo);
   // We have no endPlatformPaint() on the Linux PlatformDevice.
   // The cairo_t* is owned by the device.
