@@ -295,15 +295,6 @@ class TabRendererGtk : public AnimationDelegate {
   static SkColor selected_title_color_;
   static SkColor unselected_title_color_;
 
-  // Preferred width of pinned tabs.
-  static int pinned_tab_pref_width_;
-
-  // When a non-pinned tab is pinned the width of the tab animates. If the
-  // width of a pinned tab is >= pinned_tab_renderer_as_tab_width then the
-  // tab is rendered as a normal tab. This is done to avoid having the title
-  // immediately disappear when transitioning a tab from normal to pinned.
-  static int pinned_tab_renderer_as_tab_width_;
-
   // The GtkDrawingArea we draw the tab on.
   OwnedWidgetGtk tab_;
 

@@ -30,10 +30,13 @@ const int kFavIconTitleSpacing = 4;
 const int kTitleCloseButtonSpacing = 5;
 const int kStandardTitleWidth = 175;
 const int kDropShadowOffset = 2;
-// Value added to pinned_tab_pref_width_ to get
-// pinned_tab_renderer_as_tab_width_. See description of
-// pinned_tab_renderer_as_tab_width_ for details.
-const int kPinnedTabRendererAsNonPinnedWidth = 30;
+// Preferred width of pinned tabs.
+const int kPinnedTabWidth = 56;
+// When a non-pinned tab is pinned the width of the tab animates. If the width
+// of a pinned tab is >= kPinnedTabRendererAsTabWidth then the tab is rendered
+// as a normal tab. This is done to avoid having the title immediately
+// disappear when transitioning a tab from normal to pinned.
+const int kPinnedTabRendererAsTabWidth = kPinnedTabWidth + 30;
 
 // How long the hover state takes.
 const int kHoverDurationMs = 90;
@@ -104,8 +107,6 @@ int TabRendererGtk::close_button_width_ = 0;
 int TabRendererGtk::close_button_height_ = 0;
 SkColor TabRendererGtk::selected_title_color_ = SK_ColorBLACK;
 SkColor TabRendererGtk::unselected_title_color_ = SkColorSetRGB(64, 64, 64);
-int TabRendererGtk::pinned_tab_renderer_as_tab_width_ = 0;
-int TabRendererGtk::pinned_tab_pref_width_ = 0;
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk::LoadingAnimation, public:
@@ -319,7 +320,7 @@ gfx::Size TabRendererGtk::GetStandardSize() {
 
 // static
 int TabRendererGtk::GetPinnedWidth() {
-  return pinned_tab_pref_width_;
+  return kPinnedTabWidth;
 }
 
 // static
@@ -351,10 +352,6 @@ void TabRendererGtk::LoadTabImages() {
 
   close_button_width_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->width();
   close_button_height_ = rb.GetBitmapNamed(IDR_TAB_CLOSE)->height();
-
-  pinned_tab_pref_width_ = kLeftPadding + kFavIconSize + kRightPadding;
-  pinned_tab_renderer_as_tab_width_ = pinned_tab_pref_width_ +
-      kPinnedTabRendererAsNonPinnedWidth;
 }
 
 // static
@@ -442,7 +439,7 @@ void TabRendererGtk::Paint(gfx::Canvas* canvas) {
     Layout();
 
   PaintTabBackground(canvas);
-  if (!is_pinned() || width() > pinned_tab_renderer_as_tab_width_)
+  if (!is_pinned() || width() > kPinnedTabRendererAsTabWidth)
     PaintTitle(canvas);
 
   if (show_icon)
@@ -478,6 +475,8 @@ void TabRendererGtk::Layout() {
     int favicon_top = kTopPadding + (content_height - kFavIconSize) / 2;
     favicon_bounds_.SetRect(local_bounds.x(), favicon_top,
                             kFavIconSize, kFavIconSize);
+    if (is_pinned() && bounds_.width() < kPinnedTabRendererAsTabWidth)
+      favicon_bounds_.set_x((bounds_.width() - kFavIconSize) / 2);
   } else {
     favicon_bounds_.SetRect(local_bounds.x(), local_bounds.y(), 0, 0);
   }
@@ -495,7 +494,7 @@ void TabRendererGtk::Layout() {
     close_button_bounds_.SetRect(0, 0, 0, 0);
   }
 
-  if (!is_pinned() || width() >= pinned_tab_renderer_as_tab_width_) {
+  if (!is_pinned() || width() >= kPinnedTabRendererAsTabWidth) {
     // Size the Title text to fill the remaining space.
     int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
     int title_top = kTopPadding + (content_height - title_font_height_) / 2;
