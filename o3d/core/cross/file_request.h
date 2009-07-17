@@ -42,6 +42,7 @@
 #include "core/cross/callback.h"
 #include "core/cross/object_base.h"
 #include "core/cross/pack.h"
+#include "import/cross/raw_data.h"
 
 namespace o3d {
 
@@ -54,7 +55,8 @@ class FileRequest : public ObjectBase {
   enum Type {
     TYPE_INVALID,
     TYPE_TEXTURE,
-    TYPE_MAX = TYPE_TEXTURE,
+    TYPE_RAWDATA,
+    TYPE_MAX = TYPE_RAWDATA,
   };
 
   enum ReadyState {  // These are copied from XMLHttpRequest.
@@ -81,6 +83,9 @@ class FileRequest : public ObjectBase {
         ::tolower);
     if (type == "texture") {
       return TYPE_TEXTURE;
+    }
+    if (type == "rawdata") {
+      return TYPE_RAWDATA;
     }
     return TYPE_INVALID;
   }
@@ -109,6 +114,9 @@ class FileRequest : public ObjectBase {
   Texture *texture() const {
     return texture_.Get();
   }
+  RawData *data() const {
+    return data_.Get();
+  }
   bool generate_mipmaps() const { return generate_mipmaps_; }
   void set_generate_mipmaps(bool value) {
     generate_mipmaps_ = value;
@@ -116,6 +124,10 @@ class FileRequest : public ObjectBase {
   void set_texture(Texture *texture) {
     CHECK(type_ == TYPE_TEXTURE);
     texture_ = Texture::Ref(texture);
+  }
+  void set_data(RawData *data) {
+    CHECK(type_ == TYPE_RAWDATA);
+    data_ = RawData::Ref(data);
   }
   bool done() const {
     return done_;
@@ -153,6 +165,7 @@ class FileRequest : public ObjectBase {
   String uri_;
   Type type_;
   Texture::Ref texture_;  // Only used on a successful texture load.
+  RawData::Ref data_;  // Only used on a successful RawData load.
   bool generate_mipmaps_;
   bool done_;  // Set after completion/failure to indicate success_ is valid.
   bool success_;  // Set after completion/failure to indicate which it is.

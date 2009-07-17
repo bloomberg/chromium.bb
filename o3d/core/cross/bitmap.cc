@@ -219,40 +219,39 @@ bool Bitmap::LoadFromStream(MemoryReadStream *stream,
 bool Bitmap::LoadFromFile(const FilePath &filepath,
                           ImageFileType file_type,
                           bool generate_mipmaps) {
-  // Open the file
+  // Open the file.
+  bool result = false;
   String filename = FilePathToUTF8(filepath);
   FILE *file = OpenFile(filepath, "rb");
 
   if (!file) {
     DLOG(ERROR) << "bitmap file not found \"" << filename << "\"";
-    return false;
-  }
+  } else {
+    // Determine the file's length
+    int64 file_size64;
+    if (!GetFileSize(filepath, &file_size64)) {
+      DLOG(ERROR) << "error getting bitmap file size \"" << filename << "\"";
+    } else {
+      if (file_size64 > 0xffffffffLL) {
+        DLOG(ERROR) << "bitmap file is too large \"" << filename << "\"";
+      } else {
+        size_t file_length = static_cast<size_t>(file_size64);
 
-  // Determine the file's length
-  int64 file_size64;
-  if (!GetFileSize(filepath, &file_size64)) {
-    DLOG(ERROR) << "error getting bitmap file size \"" << filename << "\"";
+        // Load the compressed image data into memory
+        MemoryBuffer<uint8> file_contents(file_length);
+        uint8 *p = file_contents;
+        if (fread(p, file_length, 1, file) != 1) {
+          DLOG(ERROR) << "error reading bitmap file \"" << filename << "\"";
+        } else {
+          // And create the bitmap from a memory stream
+          MemoryReadStream stream(file_contents, file_length);
+          result = LoadFromStream(&stream, filename, file_type,
+                                  generate_mipmaps);
+        }
+      }
+    }
     CloseFile(file);
-    return false;
   }
-  if (file_size64 > 0xffffffffLL) {
-    DLOG(ERROR) << "bitmap file is too large \"" << filename << "\"";
-    return false;
-  }
-  size_t file_length = static_cast<size_t>(file_size64);
-
-  // Load the compressed image data into memory
-  MemoryBuffer<uint8> file_contents(file_length);
-  uint8 *p = file_contents;
-  if (fread(p, file_length, 1, file) != 1) {
-    DLOG(ERROR) << "error reading bitmap file \"" << filename << "\"";
-    return false;
-  }
-
-  // And create the bitmap from a memory stream
-  MemoryReadStream stream(file_contents, file_length);
-  bool result = LoadFromStream(&stream, filename, file_type, generate_mipmaps);
-  CloseFile(file);
 
   return result;
 }

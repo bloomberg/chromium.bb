@@ -46,6 +46,8 @@
 #include "core/cross/param.h"
 #include "core/cross/types.h"
 
+class FilePath;
+
 namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,6 +59,10 @@ class RawData : public ParamObject {
                              const String &uri,
                              const void *data,
                              size_t length);
+
+  static RawData::Ref CreateFromFile(ServiceLocator* service_locator,
+                                     const String &uri,
+                                     const String& filename);
 
   virtual ~RawData();
 
@@ -94,6 +100,7 @@ class RawData : public ParamObject {
   mutable scoped_array<uint8> data_;
   size_t length_;
   FilePath temp_filepath_;
+  bool allow_string_value_;
 
   // Deletes temp file if it exists
   void DeleteTempFile();
@@ -102,6 +109,8 @@ class RawData : public ParamObject {
           const String &uri,
           const void *data,
           size_t length);
+
+  bool SetFromFile(const String& filename);
 
   friend class IClassManager;
   friend class Pack;

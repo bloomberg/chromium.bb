@@ -41,6 +41,7 @@
 #include "core/cross/file_request.h"
 #include "core/cross/pack.h"
 #include "core/cross/texture.h"
+#include "import/cross/raw_data.h"
 
 namespace glue {
 namespace namespace_o3d {
@@ -49,6 +50,7 @@ namespace class_FileRequest {
 using _o3d::PluginObject;
 using o3d::Bitmap;
 using o3d::Pack;
+using o3d::RawData;
 using o3d::Texture;
 
 // StreamManager::FinishedCallback
@@ -124,6 +126,69 @@ class LoadTextureURLCallback : public StreamManager::FinishedCallback {
   }
 };
 
+// StreamManager::FinishedCallback
+// implementation that imports the file as a RawData once downloaded. When the
+// download completes, LoadRawDataURLCallback::Run() will be called, which will
+// parse and load the downloaded file.  After that load is complete,
+// onreadystatechange will be run to notify the user.
+class LoadRawDataURLCallback : public StreamManager::FinishedCallback {
+ public:
+  // Creates a new LoadRawDataURLCallback.
+  static LoadRawDataURLCallback *Create(FileRequest *request) {
+    return new LoadRawDataURLCallback(request);
+  }
+
+  virtual ~LoadRawDataURLCallback() {
+    // If the file request was interrupted (for example we moved to a new page
+    // before the file transfer was completed) then we tell the FileRequest
+    // object that the request failed.  It's important to call this here since
+    // set_success() will release the pack reference that the FileRequest holds
+    // which will allow the pack to be garbage collected.
+    if (!request_->done()) {
+      request_->set_success(false);
+    }
+  }
+
+  // Loads the RawData file, calls the JS callback to pass back the RawData
+  // object.
+  virtual void Run(DownloadStream*,
+                   bool success,
+                   const std::string &filename,
+                   const std::string &mime_type) {
+    RawData::Ref data;
+    if (success) {
+      o3d::ErrorCollector error_collector(request_->service_locator());
+      request_->set_ready_state(FileRequest::STATE_LOADED);
+      data = RawData::Ref(RawData::CreateFromFile(request_->service_locator(),
+                                                  request_->uri(),
+                                                  filename));
+      if (data) {
+        request_->set_data(data);
+      } else {
+        success = false;
+      }
+      request_->set_error(error_collector.errors());
+    } else {
+      // No error is passed in from the stream but we MUST have an error
+      // for the request to work on the javascript side.
+      request_->set_error("Could not download: " + request_->uri());
+    }
+    request_->set_success(success);
+    // Since the standard codes only go far enough to tell us that the download
+    // succeeded, we set the success [and implicitly the done] flags to give the
+    // rest of the story.
+    if (request_->onreadystatechange())
+      request_->onreadystatechange()->Run();
+  }
+
+ private:
+  FileRequest::Ref request_;
+
+  explicit LoadRawDataURLCallback(FileRequest *request)
+      : request_(request) {
+  }
+};
+
 // Sets up the parameters required for all FileRequests.
 void userglue_method_open(void *plugin_data,
                           FileRequest *request,
@@ -182,6 +247,9 @@ void userglue_method_send(void *plugin_data,
   switch (request->type()) {
   case FileRequest::TYPE_TEXTURE:
     callback = LoadTextureURLCallback::Create(request);
+    break;
+  case FileRequest::TYPE_RAWDATA:
+    callback = LoadRawDataURLCallback::Create(request);
     break;
   default:
     CHECK(false);

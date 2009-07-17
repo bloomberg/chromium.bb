@@ -35,6 +35,9 @@
 
 #include "import/cross/raw_data.h"
 #include "base/file_util.h"
+#include "utils/cross/file_path_utils.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 
 #ifdef OS_MACOSX
 #include <CoreFoundation/CoreFoundation.h>
@@ -43,6 +46,10 @@
 #ifdef OS_WIN
 #include <rpc.h>
 #endif
+
+using file_util::OpenFile;
+using file_util::CloseFile;
+using file_util::GetFileSize;
 
 namespace o3d {
 
@@ -59,7 +66,7 @@ RawData::RawData(ServiceLocator* service_locator,
                  const String &uri,
                  const void *data,
                  size_t length)
-    : ParamObject(service_locator), uri_(uri) {
+    : ParamObject(service_locator), uri_(uri), allow_string_value_(true) {
   // make private copy of data
   data_.reset(new uint8[length]);
   length_ = length;
@@ -74,10 +81,61 @@ RawData::Ref RawData::Create(ServiceLocator* service_locator,
   return RawData::Ref(new RawData(service_locator, uri, data, length));
 }
 
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+RawData::Ref RawData::CreateFromFile(ServiceLocator* service_locator,
+                                     const String &uri,
+                                     const String& filename) {
+  RawData::Ref data(Create(service_locator, uri, NULL, 0));
+  if (!data->SetFromFile(filename)) {
+    data.Reset();
+  }
+
+  return data;
+}
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 RawData::~RawData() {
   Discard();
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+bool RawData::SetFromFile(const String& filename) {
+  // We can't allow general string files to be downloaded from anywhere
+  // as that would override the security measures that have been added to
+  // XMLHttpRequest over the years. Images and other binary datas are okay.
+  // because RawData can only be passed to stuff that understands specific
+  // formats.
+  allow_string_value_ = false;
+  FilePath filepath = UTF8ToFilePath(filename);
+  FILE *file = OpenFile(filepath, "rb");
+  bool result = false;
+  if (!file) {
+    DLOG(ERROR) << "file not found \"" << filename << "\"";
+  } else {
+    // Determine the file's length
+    int64 file_size64;
+    if (!GetFileSize(filepath, &file_size64)) {
+      DLOG(ERROR) << "error getting file size \"" << filename << "\"";
+    } else {
+      if (file_size64 > 0xffffffffLL) {
+        DLOG(ERROR) << "file is too large \"" << filename << "\"";
+      } else {
+        size_t file_length = static_cast<size_t>(file_size64);
+
+        // Load the file data into memory
+        data_.reset(new uint8[file_length]);
+        length_ = file_length;
+        if (fread(data_.get(), file_length, 1, file) != 1) {
+          DLOG(ERROR) << "error reading file \"" << filename << "\"";
+        } else {
+          result = true;
+        }
+      }
+    }
+    CloseFile(file);
+  }
+
+  return result;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -195,12 +253,23 @@ String RawData::StringValue() const {
   // .json, .xml, .ini, .csv, .php, .js, .html, .css .xsl, .dae, etc.) So,
   // instead we validate the string is valid UTF-8 AND that there are no NULLs
   // in the string.
-  size_t length;
-  const char* utf8 = GetValidUTF8(*this, &length);
-  if (!utf8) {
-    O3D_ERROR(service_locator()) << "RawData is not valid UTF-8 string";
+
+  // We can't allow general string files to be downloaded from anywhere
+  // as that would override the security measures that have been added to
+  // XMLHttpRequest over the years. Images and other binary datas are okay.
+  // because RawData can only be passed to stuff that understands specific
+  // formats.
+  if (!allow_string_value_) {
+    O3D_ERROR(service_locator())
+        << "You can only get a stringValue from RawDatas inside archives.";
   } else {
-    return String (utf8, length);
+    size_t length;
+    const char* utf8 = GetValidUTF8(*this, &length);
+    if (!utf8) {
+      O3D_ERROR(service_locator()) << "RawData is not valid UTF-8 string";
+    } else {
+      return String (utf8, length);
+    }
   }
   return String();
 }

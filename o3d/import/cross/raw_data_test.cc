@@ -34,14 +34,42 @@
 
 #include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
+#include "utils/cross/file_path_utils.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "core/cross/error.h"
+#include "core/cross/error_status.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/raw_data.h"
 
+using file_util::OpenFile;
+using file_util::CloseFile;
+using file_util::GetFileSize;
+
 namespace o3d {
+
+namespace {
+
+// Checks if an error has occured on the client then clears the error.
+bool CheckErrorExists(IErrorStatus* error_status) {
+  bool have_error = !error_status->GetLastError().empty();
+  error_status->ClearLastError();
+  return have_error;
+}
+
+}  // anonymous namespace
 
 // Test fixture for RawData testing.
 class RawDataTest : public testing::Test {
+ protected:
+  RawDataTest()
+      : error_status_(g_service_locator) {
+  }
+
+  IErrorStatus* error_status() { return &error_status_; }
+
+ private:
+  ErrorStatus error_status_;
 };
 
 // Test RawData
@@ -73,6 +101,52 @@ TEST_F(RawDataTest, Basic) {
 
   // Check that the uri is correct
   ASSERT_EQ(raw_data->uri(), uri);
+}
+
+TEST_F(RawDataTest, CreateFromFile) {
+  String uri("test_filename");
+  String filename = *g_program_path + "/bitmap_test/tga-256x256-24bit.tga";
+  RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
+                                             uri,
+                                             filename);
+  ASSERT_FALSE(ref.IsNull());
+  FilePath filepath = UTF8ToFilePath(filename);
+  FILE *file = OpenFile(filepath, "rb");
+  ASSERT_TRUE(file != NULL);
+  int64 file_size64;
+  ASSERT_TRUE(GetFileSize(filepath, &file_size64));
+  size_t file_length = static_cast<size_t>(file_size64);
+  ASSERT_TRUE(file_length > 0);
+  scoped_array<uint8> data(new uint8[file_length]);
+  ASSERT_EQ(fread(data.get(), file_length, 1, file), 1);
+  CloseFile(file);
+
+  ASSERT_EQ(file_length, ref->GetLength());
+  ASSERT_EQ(0, memcmp(ref->GetData(), data.get(), file_length));
+}
+
+TEST_F(RawDataTest, CreateFromFileFail) {
+  String uri("test_filename");
+  String filename = *g_program_path + "/bitmap_test/non-existent-file.foo";
+  RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
+                                             uri,
+                                             filename);
+  ASSERT_TRUE(ref.IsNull());
+}
+
+TEST_F(RawDataTest, CreateFromFileStringValue) {
+  String uri("test_filename");
+  String filename = *g_program_path + "/unittest_data/fur.fx";
+  RawData::Ref ref = RawData::CreateFromFile(g_service_locator,
+                                             uri,
+                                             filename);
+  ASSERT_FALSE(ref.IsNull());
+  EXPECT_TRUE(ref->GetLength() > 0);
+  EXPECT_FALSE(CheckErrorExists(error_status()));
+  // We should NOT be able to get a string value from an individually
+  // loaded RawData.
+  EXPECT_TRUE(ref->StringValue().empty());
+  EXPECT_TRUE(CheckErrorExists(error_status()));
 }
 
 namespace {

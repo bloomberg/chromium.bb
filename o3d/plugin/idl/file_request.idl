@@ -76,6 +76,13 @@ namespace o3d {
     texture.
   %]
   [getter=texture] Texture? texture;
+
+  %[
+    On completion of successful RawData file loads, this holds the loaded
+    RawData.
+  %]
+  [getter=data] RawData? data;
+
   %[
     Whether or not to generate mip-maps on textures that are loaded (default:
     true). Mip-maps are not generated for DXTC textures. DDS files can contain

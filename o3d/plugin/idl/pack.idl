@@ -270,8 +270,11 @@ typedef ObjectBase[] ObjectArray;
   [userglue_getter, getter] ObjectBaseArray objects_;
 
   %[
-    Creates a FileRequest to be used to asynchronously load a Texture.
-    \param type Must be "TEXTURE"
+    Creates a FileRequest to be used to asynchronously load a Texture or
+    RawData. Note: Loading a "TEXTURE" is deprecated. The recommended way to
+    load a texture is to load a RawData, use that to create Bitmap, Massage
+    the Bitmap to your liking the use that to create a Texture.
+    \param type Must be "TEXTURE" or "RAWDATA"
     \return a FileRequest
   %]
   [noccp, userglue] FileRequest? CreateFileRequest(String type);

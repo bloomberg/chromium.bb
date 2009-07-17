@@ -32,8 +32,8 @@
 
 // This file declares the glue for FileRequest actions.
 
-#ifndef EXPERIMENTAL_O3D_O3DPLUGIN_AUTOGEN_O3D_GLUE_ASYNC_LOADING_H_
-#define EXPERIMENTAL_O3D_O3DPLUGIN_AUTOGEN_O3D_GLUE_ASYNC_LOADING_H_
+#ifndef O3D_PLUGIN_CROSS_ASYNC_LOADING_H_
+#define O3D_PLUGIN_CROSS_ASYNC_LOADING_H_
 
 #include "core/cross/callback.h"
 #include "core/cross/types.h"
@@ -64,4 +64,4 @@ void userglue_method_send(void *plugin_data,
 }  // namespace namespace_o3d
 }  // namespace glue
 
-#endif  // EXPERIMENTAL_O3D_O3DPLUGIN_AUTOGEN_O3D_GLUE_ASYNC_LOADING_H_
+#endif  // O3D_PLUGIN_CROSS_ASYNC_LOADING_H_
