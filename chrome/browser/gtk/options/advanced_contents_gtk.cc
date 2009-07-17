@@ -4,9 +4,14 @@
 
 #include "chrome/browser/gtk/options/advanced_contents_gtk.h"
 
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/linux_util.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
@@ -28,6 +33,9 @@
 #include "net/base/cookie_policy.h"
 
 namespace {
+
+// Command used to configure the gconf proxy settings.
+const char kProxyConfigBinary[] = "gnome-network-preferences";
 
 // The pixel width we wrap labels at.
 // TODO(evanm): make the labels wrap at the appropriate width.
@@ -250,6 +258,10 @@ class NetworkSection : public OptionsPageBase {
   }
 
  private:
+  // The callback functions for invoking the proxy config dialog.
+  static void OnChangeProxiesButtonClicked(GtkButton *button,
+                                           NetworkSection* section);
+
   // The widget containing the options for this section.
   GtkWidget* page_;
 
@@ -259,9 +271,47 @@ class NetworkSection : public OptionsPageBase {
 NetworkSection::NetworkSection(Profile* profile)
     : OptionsPageBase(profile) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(page_), gtk_label_new("TODO network options"),
+
+  GtkWidget* proxy_description_label = CreateWrappedLabel(
+      IDS_OPTIONS_PROXIES_LABEL);
+  gtk_misc_set_alignment(GTK_MISC(proxy_description_label), 0, 0);
+  gtk_box_pack_start(GTK_BOX(page_), proxy_description_label,
+                     FALSE, FALSE, 0);
+
+  GtkWidget* change_proxies_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(
+          IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON).c_str());
+  g_signal_connect(change_proxies_button, "clicked",
+                   G_CALLBACK(OnChangeProxiesButtonClicked), this);
+  // Stick it in an hbox so it doesn't expand to the whole width.
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_hbox),
+                     change_proxies_button,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page_),
+                     OptionsLayoutBuilderGtk::IndentWidget(button_hbox),
                      FALSE, FALSE, 0);
 }
+
+// static
+void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
+                                                  NetworkSection* section) {
+  section->UserMetricsRecordAction(L"Options_ChangeProxies", NULL);
+
+  if (base::UseGnomeForSettings()) {
+    std::vector<std::string> argv;
+    argv.push_back(kProxyConfigBinary);
+    if (!base::LaunchApp(CommandLine(argv), false, false, NULL)) {
+      LOG(ERROR) << "OpenProxyConfigDialogTask failed";
+      return;
+    }
+  } else {
+    BrowserList::GetLastActive()->
+        OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
+                GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PrivacySection
