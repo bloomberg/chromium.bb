@@ -59,7 +59,6 @@ const char Extension::kManifestFilename[] = "manifest.json";
 // A list of all the keys allowed by themes.
 static const wchar_t* kValidThemeKeys[] = {
   keys::kDescription,
-  keys::kIconPath,
   keys::kName,
   keys::kPublicKey,
   keys::kSignature,
@@ -74,6 +73,8 @@ const char* Extension::kExtensionRegistryPath =
 
 // first 16 bytes of SHA256 hashed public key.
 const size_t Extension::kIdSize = 16;
+
+const int Extension::kKnownIconSizes[] = { 128 };
 
 Extension::~Extension() {
   for (PageActionMap::iterator i = page_actions_.begin();
@@ -286,8 +287,8 @@ PageAction* Extension::LoadPageActionHelper(
 
   ListValue* icons;
   // Read the page action |icons|.
-  if (!page_action->HasKey(keys::kIconPaths) ||
-      !page_action->GetList(keys::kIconPaths, &icons) ||
+  if (!page_action->HasKey(keys::kPageActionIcons) ||
+      !page_action->GetList(keys::kPageActionIcons, &icons) ||
       icons->GetSize() == 0) {
     *error = ExtensionErrorUtils::FormatErrorMessage(
         errors::kInvalidPageActionIconPaths, IntToString(definition_index));
@@ -542,7 +543,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     return false;
   }
 
-  // Initialize description (optional).
+  // Initialize description (if present).
   if (source.HasKey(keys::kDescription)) {
     if (!source.GetString(keys::kDescription, &description_)) {
       *error = errors::kInvalidDescription;
@@ -566,7 +567,29 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
   }
 
-  // Initialize themes.
+  // Initialize icons (if present).
+  if (source.HasKey(keys::kIcons)) {
+    DictionaryValue* icons_value = NULL;
+    if (!source.GetDictionary(keys::kIcons, &icons_value)) {
+      *error = errors::kInvalidIcons;
+      return false;
+    }
+
+    for (size_t i = 0; i < arraysize(kKnownIconSizes); ++i) {
+      std::wstring key = ASCIIToWide(IntToString(kKnownIconSizes[i]));
+      if (icons_value->HasKey(key)) {
+        std::string icon_path;
+        if (!icons_value->GetString(key, &icon_path)) {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              errors::kInvalidIconPath, WideToASCII(key));
+          return false;
+        }
+        icons_[kKnownIconSizes[i]] = icon_path;
+      }
+    }
+  }
+
+  // Initialize themes (if present).
   is_theme_ = false;
   if (source.HasKey(keys::kTheme)) {
     // Themes cannot contain extension keys.
@@ -828,6 +851,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
 std::set<FilePath> Extension::GetBrowserImages() {
   std::set<FilePath> image_paths;
 
+  // extension icons
+  for (std::map<int, std::string>::iterator iter = icons_.begin();
+       iter != icons_.end(); ++iter) {
+    image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
+  }
+
+  // theme images
   DictionaryValue* theme_images = GetThemeImages();
   if (theme_images) {
     for (DictionaryValue::key_iterator it = theme_images->begin_keys();
@@ -839,6 +869,7 @@ std::set<FilePath> Extension::GetBrowserImages() {
     }
   }
 
+  // page action icons
   for (PageActionMap::const_iterator it = page_actions().begin();
        it != page_actions().end(); ++it) {
     const std::vector<FilePath>& icon_paths = it->second->icon_paths();

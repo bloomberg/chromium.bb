@@ -75,6 +75,21 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_EQ(errors::kInvalidDescription, error);
 
+  // Test invalid icons
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value->SetInteger(keys::kIcons, 42);
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_EQ(errors::kInvalidIcons, error);
+
+  // Test invalid icon paths
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  DictionaryValue* icons = NULL;
+  input_value->GetDictionary(keys::kIcons, &icons);
+  ASSERT_FALSE(NULL == icons);
+  icons->SetInteger(ASCIIToWide(IntToString(128)), 42);
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(MatchPattern(error, errors::kInvalidIconPath));
+
   // Test invalid user scripts list
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   input_value->SetInteger(keys::kContentScripts, 42);
@@ -271,7 +286,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ListValue* icons = new ListValue;
   icons->Set(0, Value::CreateStringValue(img1));
   icons->Set(1, Value::CreateStringValue(img2));
-  input.Set(keys::kIconPaths, icons);
+  input.Set(keys::kPageActionIcons, icons);
 
   // Parse the page action and read back the values from the object.
   page_action.reset(extension.LoadPageActionHelper(&input, 0, &error_msg));
@@ -321,7 +336,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // Then remove the icon paths key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
-  copy->Remove(keys::kIconPaths, NULL);
+  copy->Remove(keys::kPageActionIcons, NULL);
   page_action.reset(extension.LoadPageActionHelper(copy.get(), 0, &error_msg));
   ASSERT_TRUE(NULL == page_action.get());
   ASSERT_TRUE(MatchPattern(error_msg.c_str(),

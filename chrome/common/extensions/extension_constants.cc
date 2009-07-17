@@ -10,13 +10,13 @@ const wchar_t* kBackground = L"background_page";
 const wchar_t* kContentScripts = L"content_scripts";
 const wchar_t* kCss = L"css";
 const wchar_t* kDescription = L"description";
-const wchar_t* kIconPath = L"icon";
-const wchar_t* kIconPaths = L"icons";
+const wchar_t* kIcons = L"icons";
 const wchar_t* kJs = L"js";
 const wchar_t* kMatches = L"matches";
 const wchar_t* kName = L"name";
 const wchar_t* kPageActionId = L"id";
 const wchar_t* kPageActions = L"page_actions";
+const wchar_t* kPageActionIcons = L"icons";
 const wchar_t* kPermissions = L"permissions";
 const wchar_t* kPlugins = L"plugins";
 const wchar_t* kPluginsPath = L"path";
@@ -58,6 +58,10 @@ const char* kInvalidCssList =
     "Required value 'content_scripts[*].css is invalid.";
 const char* kInvalidDescription =
     "Invalid value for 'description'.";
+const char* kInvalidIcons =
+    "Invalid value for 'icons'.";
+const char* kInvalidIconPath =
+    "Invalid value for 'icons[\"*\"]'.";
 const char* kInvalidJs =
     "Invalid value for 'content_scripts[*].js[*]'.";
 const char* kInvalidJsList =

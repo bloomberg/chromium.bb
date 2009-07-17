@@ -11,13 +11,13 @@ namespace extension_manifest_keys {
   extern const wchar_t* kContentScripts;
   extern const wchar_t* kCss;
   extern const wchar_t* kDescription;
-  extern const wchar_t* kIconPath;
-  extern const wchar_t* kIconPaths;
+  extern const wchar_t* kIcons;
   extern const wchar_t* kJs;
   extern const wchar_t* kMatches;
   extern const wchar_t* kName;
   extern const wchar_t* kPageActionId;
   extern const wchar_t* kPageActions;
+  extern const wchar_t* kPageActionIcons;
   extern const wchar_t* kPermissions;
   extern const wchar_t* kPlugins;
   extern const wchar_t* kPluginsPath;
@@ -52,6 +52,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidCss;
   extern const char* kInvalidCssList;
   extern const char* kInvalidDescription;
+  extern const char* kInvalidIcons;
+  extern const char* kInvalidIconPath;
   extern const char* kInvalidJs;
   extern const char* kInvalidJsList;
   extern const char* kInvalidKey;

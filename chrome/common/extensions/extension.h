@@ -45,6 +45,9 @@ class Extension {
     NEW_INSTALL
   };
 
+  // Icon sizes used by the extension system.
+  static const int kKnownIconSizes[];
+
   // An NPAPI plugin included in the extension.
   struct PluginInfo {
     FilePath path;  // Path to the plugin.
@@ -147,6 +150,7 @@ class Extension {
   const std::vector<std::string>& toolstrips() const { return toolstrips_; }
   const std::vector<URLPattern>& permissions() const { return permissions_; }
   const GURL& update_url() const { return update_url_; }
+  const std::map<int, std::string>& icons() { return icons_; }
 
   // Retrieves a page action by |id|.
   const PageAction* GetPageAction(std::string id) const;
@@ -257,6 +261,9 @@ class Extension {
 
   // The sites this extension has permission to talk to (using XHR, etc).
   std::vector<URLPattern> permissions_;
+
+  // The paths to the icons the extension contains mapped by their width.
+  std::map<int, std::string> icons_;
 
   // URL for fetching an update manifest
   GURL update_url_;

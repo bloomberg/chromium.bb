@@ -718,6 +718,17 @@ Extension* ExtensionsServiceBackend::LoadExtension(
 
   extension->set_location(location);
 
+  // Validate icons exist.
+  for (std::map<int, std::string>::const_iterator iter =
+       extension->icons().begin(); iter != extension->icons().end(); ++iter) {
+    if (!file_util::PathExists(extension->GetResourcePath(iter->second))) {
+      ReportExtensionLoadError(extension_path,
+          StringPrintf("Could not load extension icon '%s'.",
+          iter->second.c_str()));
+      return false;
+    }
+  }
+
   // Theme resource validation.
   if (extension->IsTheme()) {
     DictionaryValue* images_value = extension->GetThemeImages();
