@@ -807,7 +807,9 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
     pixel_threshold = "10"
     use_colorfactor = False
     use_downsample = False
-
+    use_edge = True
+    edge_threshold = "5"
+    
     # Find out if the test specified any options relating to perceptual diff
     # that will override the defaults.
     for opt in test_options:
@@ -828,6 +830,10 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
       elif (opt.startswith("downsample")):
         downsample_factor = selenium_utilities.GetArgument(opt)
         use_downsample = True
+      elif (opt.startswith("pdiff_edge_ignore_off")):
+        use_edge = False
+      elif (opt.startswith("pdiff_edge_threshold")):
+        edge_threshold = selenium_utilities.GetArgument(opt)
 
     # Check if file exists
     if os.path.exists(generated_file):
@@ -852,7 +858,9 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
         arguments += ["-colorfactor", colorfactor]
       if use_downsample:
         arguments += ["-downsample", downsample_factor]
-
+      if use_edge:
+        arguments += ["-ignoreEdges", edge_threshold]
+        
       # Print the perceptual diff command line so we can debug easier.
       if verbose:
         print " ".join(arguments)

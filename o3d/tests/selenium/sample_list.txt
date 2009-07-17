@@ -60,72 +60,78 @@
 #       noticeable at the lower resolution. Be careful with using this parameter
 #       as it may mask other problems.
 #
+#   pdiff_edge_ignore_off : Turn off edge detection function in pdiff. 
+#       By default, it's on with a default edge detect threshold 5.
+#
+#   pdiff_edge_threshold(0 to 7) : Set edge detect threshold in pdiff.
+#       This threshold indicates the max number of neighbors the pixel can
+#       have to be considered as edge. 0 means only ignore scattered pixels.
 # NOTE! ----------------------------------------------------------------------
 #
 # Read the sample guidelines
 # http://wiki.corp.google.com/twiki/bin/view/Main/ClientThreeDSampleGuidelines
 #
 #
-medium  2d                                screenshot pdiff_threshold(41200)
+medium  2d                                screenshot pdiff_threshold(200)
 medium  animation
 large   animated-scene                    screenshot timeout(45000) pdiff_threshold(200)
-large   beachdemo/beachdemo               screenshot timeout(120000) pdiff_threshold(1900) pdiff_threshold_mac(2100) downsample(1) except(*iexplore, *googlechrome)
-medium  billboards                        screenshot pdiff_threshold(2000)
-medium  bitmap-draw-image                 screenshot pdiff_threshold(300)
-medium  canvas                            screenshot pdiff_threshold(4700) pdiff_threshold_mac(14600)
-medium  canvas-fonts                      screenshot pdiff_threshold(1100) pdiff_threshold_mac(21900)
+large   beachdemo/beachdemo               screenshot timeout(120000) pdiff_threshold(200) pdiff_threshold_mac(2100) downsample(1) except(*iexplore, *googlechrome)
+medium  billboards                        screenshot pdiff_threshold(200)
+medium  bitmap-draw-image                 screenshot pdiff_threshold(200)
+medium  canvas                            screenshot pdiff_threshold(200) pdiff_threshold_mac(14600)
+medium  canvas-fonts                      screenshot pdiff_threshold(200) pdiff_threshold_mac(21900)
 medium  canvas-texturedraw
-medium  checkers                          screenshot pdiff_threshold(1100)
+medium  checkers                          screenshot pdiff_threshold(200)
 medium  convolution                       screenshot pdiff_threshold(200)
-medium  culling                           screenshot pdiff_threshold(1000) downsample(1)
-medium  debugging                         screenshot pdiff_threshold(2000) pdiff_threshold_mac(3000)
+medium  culling                           screenshot pdiff_threshold(200) downsample(1)
+medium  debugging                         screenshot pdiff_threshold(200) pdiff_threshold_mac(3000)
 medium  displayfps
-small   generate-texture                  screenshot pdiff_threshold(30000) except(*iexplore)
-medium  hellocube                         screenshot pdiff_threshold(1000)
-medium  hellocube-colors                  screenshot pdiff_threshold(1000)
-medium  helloworld                        screenshot pdiff_threshold(900)
-medium  hud-2d-overlay                    screenshot pdiff_threshold(11300) pdiff_threshold_win(39800)
-medium  instance-override                 screenshot pdiff_threshold(10500)
-medium  instancing                        screenshot pdiff_threshold(14300)
+small   generate-texture                  screenshot pdiff_threshold(200) except(*iexplore)
+medium  hellocube                         screenshot pdiff_threshold(200)
+medium  hellocube-colors                  screenshot pdiff_threshold(200)
+medium  helloworld                        screenshot pdiff_threshold(200)
+medium  hud-2d-overlay                    screenshot pdiff_threshold(200) pdiff_threshold_win(200)
+medium  instance-override                 screenshot pdiff_threshold(200)
+medium  instancing                        screenshot pdiff_threshold(200)
 medium  juggler                           screenshot downsample(1)
 medium  julia                             screenshot
-small   multiple-views                    screenshot pdiff_threshold(1900)
-medium  old-school-shadows                screenshot pdiff_threshold(2000)
-medium  particles                         screenshot pdiff_threshold(35500)
-medium  primitives                        screenshot pdiff_threshold(17200) pdiff_threshold_mac(20000) colorfactor(.7)
-medium  procedural-texture                screenshot pdiff_threshold(1300)
-medium  render-targets                    screenshot pdiff_threshold(1400)
-medium  scatter-chart                     screenshot pdiff_threshold(10100) pdiff_threshold_mac(10600)
+small   multiple-views                    screenshot pdiff_threshold(200)
+medium  old-school-shadows                screenshot pdiff_threshold(200)
+medium  particles                         screenshot pdiff_threshold(200)
+medium  primitives                        screenshot pdiff_threshold(200) pdiff_threshold_mac(20000) colorfactor(.7)
+medium  procedural-texture                screenshot pdiff_threshold(200)
+medium  render-targets                    screenshot pdiff_threshold(200)
+medium  scatter-chart                     screenshot pdiff_threshold(200) pdiff_threshold_mac(10600)
 medium  simple                            screenshot client(g_simple.client)
-medium  simpletexture                     screenshot pdiff_threshold(5100)
-medium  skinning                          screenshot pdiff_threshold(500)
+medium  simpletexture                     screenshot pdiff_threshold(200)
+medium  skinning                          screenshot pdiff_threshold(200)
 medium  sobel                             screenshot pdiff_threshold(1400)
-medium  stencil_example                   screenshot(0) screenshot(100) screenshot(7777) pdiff_threshold(4800) pdiff_threshold_win(20800)
-medium  shadow-map                        screenshot pdiff_threshold(10000)
-small   texturesamplers                   screenshot pdiff_threshold(32200) pdiff_threshold_win(37100)
-medium  tutorial-primitive                screenshot pdiff_threshold(1200) pdiff_threshold_mac(10400)
-large   vertex-shader                     screenshot timeout(45000) pdiff_threshold(1400)  except(*iexplore)
-medium  vertex-shader-animation           screenshot pdiff_threshold(5100)
-medium  zsorting                          screenshot pdiff_threshold(39500)
+medium  stencil_example                   screenshot(0) screenshot(100) screenshot(7777) pdiff_threshold(200) pdiff_threshold_win(200)
+medium  shadow-map                        screenshot pdiff_threshold(200)
+small   texturesamplers                   screenshot pdiff_threshold(200) pdiff_threshold_win(200)
+medium  tutorial-primitive                screenshot pdiff_threshold(200) pdiff_threshold_mac(10400)
+large   vertex-shader                     screenshot timeout(45000) pdiff_threshold(200)  except(*iexplore)
+medium  vertex-shader-animation           screenshot pdiff_threshold(200)
+medium  zsorting                          screenshot pdiff_threshold(200)
 # box2d-3d works in browsers but for some reason times out on some configs
 #large   box2d-3d/box2d-3d                timeout(45000) except(*googlechrome)
 large   simpleviewer/simpleviewer         screenshot pdiff_threshold(100)
 large   trends/trends                     timeout(30000)
-medium  GoogleIO-2009/step09ex            screenshot pdiff_threshold(1900)
-large   GoogleIO-2009/step14ex            screenshot pdiff_threshold(8000) timeout(45000)
+medium  GoogleIO-2009/step09ex            screenshot pdiff_threshold(200)
+large   GoogleIO-2009/step14ex            screenshot pdiff_threshold(200) timeout(45000)
 
 # -- tests below this line are tests for which there is a python
 #    function to custom run the test. As such, only the 'except' and
 #    pdiff_threshold options have any meaning
 
-small   TestSampleErrorTextureSmall       pdiff_threshold(2200)
-small   TestSampleHelloCube_TexturesSmall pdiff_threshold(5900)
+small   TestSampleErrorTextureSmall       pdiff_threshold(200)
+small   TestSampleHelloCube_TexturesSmall pdiff_threshold(300)
 small   TestSampleRefreshPageLoad_Small
-medium  TestSampleCustomCamera            pdiff_threshold(900) pdiff_threshold_win(5700)
+medium  TestSampleCustomCamera            pdiff_threshold(200) pdiff_threshold_win(200)
 medium  TestSamplePicking
 medium  TestSampleRenderMode
-medium  TestSampleRotateModel             pdiff_threshold(900)
-medium  TestSampleShader_Test             pdiff_threshold(5800) pdiff_threshold_win(26000)
+medium  TestSampleRotateModel             pdiff_threshold(200)
+medium  TestSampleShader_Test             pdiff_threshold(200) pdiff_threshold_win(200)
 large   TestSampleMultipleClientsLarge
 large   TestSamplePingPongLarge
 # This test currently fails on IE as it considers localhost: to be a trusted
