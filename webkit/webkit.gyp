@@ -557,7 +557,6 @@
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
-        'port/bindings/v8',
         '<@(webcore_include_dirs)',
       ],
       'sources': [
@@ -587,12 +586,6 @@
         'extensions/v8/profiler_extension.h',
         'extensions/v8/benchmarking_extension.cc',
         'extensions/v8/benchmarking_extension.h',
-        'port/bindings/v8/NPV8Object.cpp',
-        'port/bindings/v8/NPV8Object.h',
-        'port/bindings/v8/V8NPUtils.cpp',
-        'port/bindings/v8/V8NPUtils.h',
-        'port/bindings/v8/V8NPObject.cpp',
-        'port/bindings/v8/V8NPObject.h',
 
         # For WebCoreSystemInterface, Mac-only.
         '../third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.m',
@@ -716,20 +709,11 @@
         '../third_party/WebKit/WebCore/platform/graphics/RenderLayerBacking.cpp',
         '../third_party/WebKit/WebCore/platform/graphics/RenderLayerCompositor.cpp',
 
-        # Temporary exclusion to avoid needing a 2-sided commit.
-        # TODO(ajwong): Delete after we roll-down the WebCore.gypi update.
-        '../third_party/WebKit/WebCore/bindings/v8/NPV8Object.cpp',
-        '../third_party/WebKit/WebCore/bindings/v8/NPV8Object.h',
-        '../third_party/WebKit/WebCore/bindings/v8/V8NPUtils.cpp',
-        '../third_party/WebKit/WebCore/bindings/v8/V8NPUtils.h',
-        '../third_party/WebKit/WebCore/bindings/v8/V8NPObject.cpp',
-        '../third_party/WebKit/WebCore/bindings/v8/V8NPObject.h',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
-          'port/bindings/v8',
           '<@(webcore_include_dirs)',
         ],
         'mac_framework_dirs': [
