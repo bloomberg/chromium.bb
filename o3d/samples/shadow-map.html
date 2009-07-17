@@ -513,7 +513,8 @@ function moveLight(delta) {
   float4 pixelShaderFunction(PixelShaderInput input): COLOR {
     // Pixels in the shadowmap store the pixel depth from the light's
     // perspective in normalized device coordinates.
-    return float4(input.depth.x / input.depth.y);
+    float t = input.depth.x / input.depth.y;
+    return float4(t, t, t, 1);
   }
 
   // #o3d VertexShaderEntryPoint vertexShaderFunction
