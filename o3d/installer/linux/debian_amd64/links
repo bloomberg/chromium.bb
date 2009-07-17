@@ -1,3 +1,10 @@
 /opt/google/o3d/libCgGL.so /usr/lib32/libCgGL.so
 /opt/google/o3d/libCg.so /usr/lib32/libCg.so
 /opt/google/o3d/libGLEW.so.1.5 /usr/lib32/libGLEW.so.1.5
+/opt/google/o3d/libnpo3dautoplugin.so /usr/lib/iceape/plugins/libnpo3dautoplugin.so
+/opt/google/o3d/libnpo3dautoplugin.so /usr/lib/iceweasel/plugins/libnpo3dautoplugin.so
+/opt/google/o3d/libnpo3dautoplugin.so /usr/lib/mozilla/plugins/libnpo3dautoplugin.so
+/opt/google/o3d/libnpo3dautoplugin.so /usr/lib/firefox/plugins/libnpo3dautoplugin.so
+/opt/google/o3d/libnpo3dautoplugin.so /usr/lib/midbrowser/plugins/libnpo3dautoplugin.so
+/opt/google/o3d/libnpo3dautoplugin.so /usr/lib/xulrunner/plugins/libnpo3dautoplugin.so
+/opt/google/o3d/libnpo3dautoplugin.so /usr/lib/xulrunner-addons/plugins/libnpo3dautoplugin.so

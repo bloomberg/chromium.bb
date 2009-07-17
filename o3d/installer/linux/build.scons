@@ -127,7 +127,6 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
 
   BuildDebianPackage(["debian_amd64/changelog",
                       "debian_amd64/control",
-                      "debian_amd64/dirs",
                       "debian_amd64/google-o3d.install",
                       "debian_amd64/links",
                       "debian_amd64/postinst",
