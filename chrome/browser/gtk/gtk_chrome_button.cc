@@ -117,9 +117,12 @@ static gboolean gtk_chrome_button_expose(GtkWidget* widget,
     if (nine_box)
       nine_box->RenderToWidget(widget);
 
-    gtk_container_propagate_expose(GTK_CONTAINER(widget),
-                                   gtk_bin_get_child(GTK_BIN(widget)),
-                                   event);
+    // If we have a child widget, draw it.
+    if (gtk_bin_get_child(GTK_BIN(widget))) {
+      gtk_container_propagate_expose(GTK_CONTAINER(widget),
+                                     gtk_bin_get_child(GTK_BIN(widget)),
+                                     event);
+    }
   }
 
   return TRUE;  // Don't propagate, we are the default handler.
