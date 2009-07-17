@@ -74,7 +74,7 @@ static int CloneChrootHelperProcess() {
 
   if (pid == 0) {
     // We create a temp directory for our chroot. Nobody should ever write into
-    // it, so it's root:root 0555.
+    // it, so it's root:root mode 000.
     char kTempDirectoryTemplate[] = "/tmp/chrome-sandbox-chroot-XXXXXX";
     const char* temp_dir = mkdtemp(kTempDirectoryTemplate);
     if (!temp_dir)
