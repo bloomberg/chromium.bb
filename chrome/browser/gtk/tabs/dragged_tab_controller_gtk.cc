@@ -266,7 +266,7 @@ void DraggedTabControllerGtk::MoveTab(const gfx::Point& screen_point) {
   if (attached_tabstrip_) {
     TabStripModel* attached_model = attached_tabstrip_->model();
     int from_index = attached_model->GetIndexOfTabContents(dragged_contents_);
-    AdjustDragPointForPinnedTabs(screen_point, from_index, &dragged_tab_point);
+    AdjustDragPointForPinnedTabs(screen_point, &from_index, &dragged_tab_point);
 
     // Determine the horizontal move threshold. This is dependent on the width
     // of tabs. The smaller the tabs compared to the standard size, the smaller
@@ -353,7 +353,7 @@ void DraggedTabControllerGtk::StartPinTimerIfNecessary(
 
 void DraggedTabControllerGtk::AdjustDragPointForPinnedTabs(
     const gfx::Point& screen_point,
-    int from_index,
+    int* from_index,
     gfx::Point* dragged_tab_point) {
   TabStripModel* attached_model = attached_tabstrip_->model();
   int pinned_count = attached_model->IndexOfFirstNonPinnedTab();
@@ -368,7 +368,7 @@ void DraggedTabControllerGtk::AdjustDragPointForPinnedTabs(
     if (local_point.x() <= pinned_threshold) {
       // The mouse was moved below the threshold that triggers the tab to be
       // pinned.
-      MakeDraggedTabPinned(from_index);
+      MakeDraggedTabPinned(*from_index);
 
       // The dragged tab point was calculated using the old mouse_offset, which
       // we just reset. Recalculate it.
@@ -386,7 +386,12 @@ void DraggedTabControllerGtk::AdjustDragPointForPinnedTabs(
     // The mouse has moved past the point that triggers the tab to be unpinned.
     // Update the dragged tab and model accordingly.
     dragged_tab_->set_pinned(false);
-    attached_model->SetTabPinned(from_index, false);
+    attached_model->SetTabPinned(*from_index, false);
+
+    // Changing the tabs pinned state may have forced it to move (as can happen
+    // if the user rapidly drags a pinned tab past other pinned tabs). Update
+    // the from_index.
+    *from_index = attached_model->GetIndexOfTabContents(dragged_contents_);
 
     dragged_tab_->Resize(dragged_tab_->tab_width());
   }
@@ -574,7 +579,8 @@ int DraggedTabControllerGtk::GetPinnedThreshold() {
   }
   gfx::Rect last_pinned_bounds =
       attached_tabstrip_->GetIdealBounds(pinned_count - 1);
-  return last_pinned_bounds.x() + TabGtk::GetPinnedWidth() / 2;
+  return last_pinned_bounds.x() + TabStripGtk::pinned_to_non_pinned_gap_ +
+         TabGtk::GetPinnedWidth() / 2;
 }
 
 gfx::Rect DraggedTabControllerGtk::GetDraggedTabTabStripBounds(

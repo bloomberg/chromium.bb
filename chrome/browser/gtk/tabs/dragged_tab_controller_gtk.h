@@ -128,7 +128,7 @@ class DraggedTabControllerGtk : public NotificationObserver,
   // pinned threshold, the dragged tab is not allowed to go before the first
   // non-pinned tab and the dragged tab (and model) are marked as non-pinned.
   void AdjustDragPointForPinnedTabs(const gfx::Point& screen_point,
-                                    int from_index,
+                                    int* from_index,
                                     gfx::Point* dragged_tab_point);
 
   // Returns the compatible TabStrip that is under the specified point (screen

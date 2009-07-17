@@ -55,8 +55,8 @@ const int kTabStripAnimationVSlop = 40;
 
 const int kHorizontalMoveThreshold = 16;  // pixels
 
-// The horizontal offset from one tab to the next,
-// which results in overlapping tabs.
+// The horizontal offset from one tab to the next, which results in overlapping
+// tabs.
 const int kTabHOffset = -16;
 
 // A linux specific menu item for toggling window decorations.
@@ -653,6 +653,9 @@ class PinAndMoveAnimation : public TabStripGtk::TabAnimation {
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, public:
+
+// static
+const int TabStripGtk::pinned_to_non_pinned_gap_ = 3;
 
 TabStripGtk::TabStripGtk(TabStripModel* model)
     : current_unselected_width_(TabGtk::GetStandardSize().width()),
@@ -1341,6 +1344,10 @@ void TabStripGtk::GetDesiredTabWidths(int tab_count,
 }
 
 int TabStripGtk::GetTabHOffset(int tab_index) {
+  if (tab_index < GetTabCount() && GetTabAt(tab_index - 1)->is_pinned() &&
+      !GetTabAt(tab_index)->is_pinned()) {
+    return pinned_to_non_pinned_gap_ + kTabHOffset;
+  }
   return kTabHOffset;
 }
 

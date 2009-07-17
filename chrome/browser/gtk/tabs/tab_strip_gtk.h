@@ -132,6 +132,9 @@ class TabStripGtk : public TabStripModelObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Horizontal gap between pinned and non-pinned tabs.
+  static const int pinned_to_non_pinned_gap_;
+
  private:
   friend class DraggedTabControllerGtk;
   friend class InsertTabAnimation;
