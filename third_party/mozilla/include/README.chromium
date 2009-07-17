@@ -34,4 +34,11 @@ nspluginroot.h
 
 The following files come from mozilla/camino and are not part of the Gecko SDK:
 
+NSPasteboard+Utils.h/m
+NSScreen+Utils.h/m
+NSString+Utils.h/m
+NSURL+Utils.h/m
 NSWorkspace+Utils.h/m
+
+NSURL+Utils.m was modified to use non-deprecated Cocoa APIs to allow compilation
+on future versions of Mac OS X.

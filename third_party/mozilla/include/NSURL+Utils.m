@@ -79,7 +79,14 @@
         long size;
         
         size = GetMaxResourceSize(urlResHandle);
-        ret = [NSURL URLWithString:[NSString stringWithCString:(char *)*urlResHandle length:size]];
+// Begin Google Modified
+//        ret = [NSURL URLWithString:[NSString stringWithCString:(char *)*urlResHandle length:size]];
+        NSString *urlString = [[[NSString alloc] initWithBytes:(void *)*urlResHandle
+                                                        length:size
+                                                      encoding:NSMacOSRomanStringEncoding]  // best guess here
+                               autorelease];
+        ret = [NSURL URLWithString:urlString];
+// End Google Modified
       }
       
       CloseResFile(resRef);
@@ -108,7 +115,13 @@
   // Is this really an IE .url file?
   if (inFile) {
     NSCharacterSet *newlines = [NSCharacterSet characterSetWithCharactersInString:@"\r\n"];
-    NSScanner *scanner = [NSScanner scannerWithString:[NSString stringWithContentsOfFile:inFile]];
+    // Begin Google Modified
+//    NSScanner *scanner = [NSScanner scannerWithString:[NSString stringWithContentsOfFile:inFile]];
+    NSString *fileString = [NSString stringWithContentsOfFile:inFile
+                                                     encoding:NSWindowsCP1252StringEncoding  // best guess here
+                                                        error:nil];
+    NSScanner *scanner = [NSScanner scannerWithString:fileString];
+    // End Google Modified
     [scanner scanUpToString:@"[InternetShortcut]" intoString:nil];
     
     if ([scanner scanString:@"[InternetShortcut]" intoString:nil]) {
