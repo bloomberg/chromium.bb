@@ -108,7 +108,7 @@ void AppendI18nTemplateSourceHtml(std::string* output) {
 
 void AppendI18nTemplateProcessHtml(std::string* output) {
   output->append("<script>");
-  output->append("i18nTemplate.process(document.documentElement, ");
+  output->append("i18nTemplate.process(document, ");
   output->append("templateData);");
   output->append("</script>");
 }
