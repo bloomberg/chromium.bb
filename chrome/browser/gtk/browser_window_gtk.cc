@@ -52,6 +52,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -213,6 +214,7 @@ const struct AcceleratorMapping {
   { GDK_r, IDC_RELOAD, GDK_CONTROL_MASK },
   { GDK_F5, IDC_RELOAD, GdkModifierType(0) },
   { GDK_F5, IDC_RELOAD, GDK_CONTROL_MASK },
+  { GDK_F5, IDC_RELOAD, GDK_SHIFT_MASK },
   { XF86XK_Reload, IDC_RELOAD, GdkModifierType(0) },
   { XF86XK_Refresh, IDC_RELOAD, GdkModifierType(0) },
 
@@ -386,7 +388,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   gtk_widget_add_events(GTK_WIDGET(window_), GDK_BUTTON_PRESS_MASK |
                                              GDK_POINTER_MOTION_MASK);
 
-  SetWindowIcon();
+  gtk_util::SetWindowIcon(window_);
   SetBackgroundColor();
   SetGeometryHints();
   ConnectHandlersToSignals();
@@ -1035,15 +1037,6 @@ void BrowserWindowGtk::SetGeometryHints() {
   // position on the window and we intentionally *don't* do that.  We tested
   // many programs and none of them restored their position on Linux.
   gtk_window_resize(window_, bounds.width(), bounds.height());
-}
-
-void BrowserWindowGtk::SetWindowIcon() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  GList* icon_list = NULL;
-  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_ICON_32));
-  icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
-  gtk_window_set_icon_list(window_, icon_list);
-  g_list_free(icon_list);
 }
 
 void BrowserWindowGtk::ConnectHandlersToSignals() {
