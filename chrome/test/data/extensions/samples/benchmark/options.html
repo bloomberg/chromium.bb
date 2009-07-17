@@ -1,9 +1,9 @@
 <head>
   <title>Page Benchmark Options</title>
-  <script src="jst/util.js" type="text/javascript"></script> 
-  <script src="jst/jsevalcontext.js" type="text/javascript"></script> 
-  <script src="jst/jstemplate.js" type="text/javascript"></script> 
-  <script src="jst/jstemplate_example.js" type="text/javascript"></script> 
+  <script src="jst/util.js" type="text/javascript"></script>
+  <script src="jst/jsevalcontext.js" type="text/javascript"></script>
+  <script src="jst/jstemplate.js" type="text/javascript"></script>
+  <script src="jst/jstemplate_example.js" type="text/javascript"></script>
 
 <style>
 body {
@@ -64,11 +64,10 @@ table.list:not([class*='filtered']) tr:nth-child(odd) td:not([class*='filtered']
 
 table.list th {
   padding: 0 0.5em;
-  vertical-align: top;
+  vertical-align: bottom;
   font-weight: bold;
   color: #315d94;
   color: black;
-  white-space: nowrap;
   text-align: center;
 }
 
@@ -127,10 +126,17 @@ Array.stddev = function(array) {
 function computeResults(data) {
   for (var i = 0; i < data.data.length; i++) {
     var obj = data.data[i];
-    obj.mean = Array.avg(data.data[i].results);
-    obj.stddev = Array.stddev(data.data[i].results);
-    obj.min = Array.min(data.data[i].results);
-    obj.max = Array.max(data.data[i].results);
+    var resultList = obj.totalResults;
+    obj.mean = Array.avg(resultList);
+    obj.stddev = Array.stddev(resultList);
+    obj.min = Array.min(resultList);
+    obj.max = Array.max(resultList);
+    obj.readbps = (obj.bytesRead * 8 / obj.totalTime).toFixed(2);
+    obj.writebps = (obj.bytesWritten * 8 / obj.totalTime).toFixed(2);
+    obj.readKB = (obj.bytesRead / 1024).toFixed(0);
+    obj.writeKB = (obj.bytesWritten / 1024).toFixed(0);
+    obj.paintMean = Array.avg(obj.paintResults);
+    obj.docLoadMean = Array.avg(obj.docLoadResults);
   }
 
   // Find the biggest sample for our bar graph.
@@ -158,6 +164,7 @@ function jsinit() {
   document.getElementById("iterations").value = extension.iterations;
   document.getElementById("clearconns").checked = extension.clearConnections;
   document.getElementById("clearcache").checked = extension.clearCache;
+  document.getElementById("testurl").value = extension.testUrl;
 }
 
 function getWidth(mean, max_width) {
@@ -175,6 +182,19 @@ function config() {
     extension.clearConnections = clearConnections;
     extension.clearCache = clearCache;
   }
+}
+
+// Set the url in the benchmark url box.
+function setUrl(url) {
+  document.getElementById("testurl").value = url;
+}
+
+// Start the benchmark.
+function run() {
+  var extension = window.opener;
+  var testUrl = document.getElementById("testurl").value;
+  extension.testUrl = testUrl;
+  extension.run();
 }
 
 // Clear the results
@@ -197,7 +217,9 @@ function clearResults() {
 <input type="button" value="Clear Results" onclick="clearResults();">
 Clear Connections?<input id="clearconns" type="checkbox">
 Clear Cache?<input id="clearcache" type="checkbox">
-<input type="button" value="OK" onclick="config();">
+<input type="button" value="OK" onclick="config();"><P>
+URL to load <input type="text" id="testurl" size=100 value="http://www.google.com/"></input>
+<input type="button" value="Run" onclick="run();"><P>
 <p>
 
 <h1>Results</h1>
@@ -205,20 +227,32 @@ Clear Cache?<input id="clearcache" type="checkbox">
 <table class="list" width="100%">
   <tr>
   <th width=30%>url</th>
-  <th width=50>avg</th>
+  <th width=50>doc load mean</th>
+  <th width=50>paint mean</th>
+  <th width=50>total mean</th>
   <th width=50>stddev</th>
   <th width=50>min</th>
   <th width=50>max</th>
+  <th width=50>Read KB</th>
+  <th width=50>Write KB</th>
+  <th width=50>Read KBps</th>
+  <th width=50>Write KBps</th>
   <th samples</th>
   </tr>
 
   <tr id="t" jsselect="data">
   <td class="url" jseval="$width = getWidth($this.mean, 600)"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="url"></a></div></td>
+  <td class="avg" jscontent="docLoadMean"></td>
+  <td class="avg" jscontent="paintMean"></td>
   <td class="avg" jscontent="mean"></td>
   <td class="avg" jscontent="stddev"></td>
   <td class="avg" jscontent="min"></td>
   <td class="avg" jscontent="max"></td>
-  <td class="data"><span jsselect="results"><span jscontent="$this"></span>,</span> </td>
+  <td class="avg" jscontent="readKB"></td>
+  <td class="avg" jscontent="writeKB"></td>
+  <td class="avg" jscontent="readbps"></td>
+  <td class="avg" jscontent="writebps"></td>
+  <td class="data"><span jsselect="totalResults"><span jscontent="$this"></span>,</span> </td>
   </tr>
 </table>
 

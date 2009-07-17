@@ -12,11 +12,6 @@
 </style>
 
 <script>
-var optionsForm;
-function show_options() {
-  optionsForm = window.open("options.html", "optionswindow");
-}
-
 // Round a number to the 1's place.
 function formatNumber(str) {
   str += '';
@@ -39,6 +34,26 @@ window.clearConnections = true;
 window.clearCache = true;
 window.results = {};
 window.results.data = new Array();
+window.testUrl = "";
+window.windowId = 0;
+
+var optionsForm = 0;
+function show_options() {
+  // This functionality is a bit fragile, probably due to the extension API.
+  // If we open the window from within the getSelected() callback, then the
+  // window opens in a new window rather than a new tab (is that a bug?).
+  // If we open the window before we call getSelected(), then the selected
+  // tab URL will be NULL, because the page won't have loaded yet, but it will
+  // be the selected tab.  So, we do this weird thing where we first call
+  // get selected, knowing that it is asynchronous.  Then we open the window,
+  // and finally when the callback occurs for getSelected, the window will
+  // be created and we can use it.
+  chrome.tabs.getSelected(windowId, function(tab) {
+    window.testUrl = tab.url;
+    optionsForm.setUrl(window.testUrl);
+  });
+  optionsForm = window.open("options.html", "optionswindow");
+}
 
 function Benchmark() {
   var runCount_ = 0;
@@ -47,6 +62,8 @@ function Benchmark() {
   var lastWin_;
   var me_ = this;
   var current_;
+  var initialReadBytes_;
+  var initialWriteBytes_;
 
   // Start a test run
   this.start = function(url) {
@@ -55,6 +72,8 @@ function Benchmark() {
       return;
     }
 
+    console.log("Starting test for url: " + url);
+
     runCount_ = window.iterations;
     count_ = 0;
     totalTime_ = 0;
@@ -62,7 +81,11 @@ function Benchmark() {
 
     current_ = {};
     current_.url = url;
-    current_.results = new Array();
+    current_.docLoadResults = new Array();  // times to docload
+    current_.paintResults = new Array();    // times to paint
+    current_.totalResults = new Array();    // times to complete load
+    initialReadBytes = chrome.benchmarking.counter("tcp.read_bytes");
+    initialWriteBytes = chrome.benchmarking.counter("tcp.write_bytes");
 
     me_.runPage();
   }
@@ -76,6 +99,13 @@ function Benchmark() {
   this.finish = function() {
     lastWin_.close();
     lastWin_ = 0;
+
+    // Record some more stats.
+    current_.bytesRead = chrome.benchmarking.counter("tcp.read_bytes") -
+                          initialReadBytes;
+    current_.bytesWritten = chrome.benchmarking.counter("tcp.write_bytes") -
+                            initialWriteBytes;
+    current_.totalTime = totalTime_;
 
     // push the result
     window.results.data.push(current_);
@@ -98,10 +128,10 @@ function Benchmark() {
   // Run a single page in the benchmark
   this.runPage = function() {
     if (window.clearCache) {
-      chromium.benchmarking.clearCache();
+      chrome.benchmarking.clearCache();
     }
     if (window.clearConnections) {
-      chromium.benchmarking.closeConnections();
+      chrome.benchmarking.closeConnections();
     }
 
     if (lastWin_) {
@@ -113,13 +143,20 @@ function Benchmark() {
 
   // Called when a page finishes loading.
   this.pageFinished = function(csi) {
-    var t = Math.round((csi.finishLoadTime - csi.startLoadTime) * 1000.0);
+    var docLoadTime =
+        Math.round((csi.finishDocumentLoadTime - csi.startLoadTime) * 1000.0);
+    var paintTime =
+        Math.round((csi.firstPaintTime - csi.startLoadTime) * 1000.0);
+    var totalTime =
+        Math.round((csi.finishLoadTime - csi.startLoadTime) * 1000.0);
 
     // Record the result
-    current_.results.push(t);
+    current_.docLoadResults.push(docLoadTime);
+    current_.paintResults.push(paintTime);
+    current_.totalResults.push(totalTime);
 
     // For our toolbar counters
-    totalTime_ += t;
+    totalTime_ += totalTime;
     count_++;
 
     if (--runCount_ > 0) {
@@ -148,28 +185,29 @@ chrome.self.onConnect.addListener(function(port) {
 
 function run() {
   show_options();
-  var urls = document.getElementById("url").value.split(",");
+  var urls = testUrl.split(",");
   for (var i = 0; i < urls.length; i++) {
     var benchmark = new Benchmark();
     benchmarks[urls[i]] = benchmark;
     benchmark.start(urls[i]);  // XXXMB - move to constructor
   }
 }
+
+// Run at startup
+chrome.windows.getCurrent(function(currentWindow) {
+  window.windowId = currentWindow.id;
+});
 </script>
 
-<style> 
+<style>
 #result {
   color: green;
   text-align: center;
   vertical-align: center;
 }
-</style> 
+</style>
 
 <div id="bench">
 <img src="stopwatch.jpg" height="25" width="25" align=top onclick="show_options()">
-<input type="text" id="url" value="http://www.google.com/"></input>
-<div class="toolstrip-button"> 
-<span id="run" class="open" onclick="run()">Go</span> 
-</div> 
-<span id="result"></span> 
+<span id="result"></span>
 </div>

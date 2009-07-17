@@ -10,7 +10,8 @@ var benchmarkExtensionPort = chrome.extension.connect();
 var benchmarkExtensionUrl = window.location.toString();
 
 function sendTimesToExtension() {
-  var times = window.chromium.GetLoadTimes();
+  var times = window.chrome.loadTimes();
+
   if (times.finishLoadTime != 0) {
     benchmarkExtensionPort.postMessage({message: "load", url: benchmarkExtensionUrl, values: times});
   } else {
