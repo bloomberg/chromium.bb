@@ -147,8 +147,15 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker> {
   static std::string GetCorrespondingSpellCheckLanguage(
       const std::string& language);
 
-  // Path to the spellchecker file.
-  FilePath bdict_file_name_;
+  // Start the dictionary download process in the file thread. On completion,
+  // this function calls on set_file_is_downloading() in the IO thread to notify
+  // that download has completed. This function has to be called in the IO
+  // thread.
+  void StartDictionaryDownloadInFileThread(const FilePath& file_name);
+
+  // The given path to the directory whether SpellChecker first tries to
+  // download the spellcheck bdic dictionary file.
+  FilePath given_dictionary_directory_;
 
   // Path to the custom dictionary file.
   FilePath custom_dictionary_file_name_;
@@ -167,6 +174,9 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker> {
   // attempted initialiation, we won't retry to avoid failure loops.
   bool tried_to_init_;
 
+  // The language that this spellchecker works in.
+  std::string language_;
+
 #ifndef NDEBUG
   // This object must only be used on the same thread. However, it is normally
   // created on the UI thread. This checks calls to SpellCheckWord and the
@@ -177,9 +187,8 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker> {
   MessageLoop* worker_loop_;
 #endif
 
-  // Flag indicating whether we've tried to download dictionary files. If we've
-  // already attempted download, we won't retry to avoid failure loops.
-  bool tried_to_download_;
+  // Flag indicating whether we tried to download the dictionary file.
+  bool tried_to_download_dictionary_file_;
 
   // File Thread Message Loop.
   MessageLoop* file_loop_;

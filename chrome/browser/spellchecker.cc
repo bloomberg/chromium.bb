@@ -77,6 +77,15 @@ static const struct {
   {"tr", "tr-TR"},
 };
 
+// Get the fallback folder (currently chrome::DIR_USER_DATA) where the
+// dictionary is downloaded in case of system-wide installations.
+FilePath GetFallbackDictionaryDownloadDirectory() {
+  FilePath dict_dir_userdata;
+  PathService::Get(chrome::DIR_USER_DATA, &dict_dir_userdata);
+  dict_dir_userdata = dict_dir_userdata.AppendASCII("Dictionaries");
+  return dict_dir_userdata;
+}
+
 }
 
 void SpellChecker::SpellCheckLanguages(std::vector<std::string>* languages) {
@@ -248,6 +257,7 @@ class UIProxyForIOTask : public Task {
 // This object downloads the dictionary files asynchronously by first
 // fetching it to memory using URL fetcher and then writing it to
 // disk using file_util::WriteFile.
+
 class SpellChecker::DictionaryDownloadController
     : public URLFetcher::Delegate,
       public base::RefCountedThreadSafe<DictionaryDownloadController> {
@@ -281,8 +291,8 @@ class SpellChecker::DictionaryDownloadController
 
  private:
   // The file has been downloaded in memory - need to write it down to file.
-  bool SaveBufferToFile(const std::string& data) {
-    FilePath file_to_write = dic_zip_file_path_.Append(file_name_);
+  bool SaveBufferToFile(const std::string& data,
+                        FilePath file_to_write) {
     int num_bytes = data.length();
     return file_util::WriteFile(file_to_write, data.data(), num_bytes) ==
         num_bytes;
@@ -296,11 +306,22 @@ class SpellChecker::DictionaryDownloadController
                                   const ResponseCookies& cookies,
                                   const std::string& data) {
     DCHECK(source);
-    bool save_success = false;
     if ((response_code / 100) == 2 ||
         response_code == 401 ||
         response_code == 407) {
-      save_success = SaveBufferToFile(data);
+      FilePath file_to_write = dic_zip_file_path_.Append(file_name_);
+      if (!SaveBufferToFile(data, file_to_write)) {
+        // Try saving it to user data/Dictionaries, which almost surely has
+        // write permission. If even this fails, there is nothing to be done.
+        FilePath user_data_dir = GetFallbackDictionaryDownloadDirectory();
+
+        // Create the directory if it does not exist.
+        if (!file_util::PathExists(user_data_dir))
+          file_util::CreateDirectory(user_data_dir);
+
+        file_to_write = user_data_dir.Append(file_name_);
+        SaveBufferToFile(data, file_to_write);
+      }
     }  // Unsuccessful save is taken care of in SpellChecker::Initialize().
 
     // Set Flag that dictionary is not downloading anymore.
@@ -391,12 +412,14 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
                            const std::string& language,
                            URLRequestContext* request_context,
                            const FilePath& custom_dictionary_file_name)
-    : custom_dictionary_file_name_(custom_dictionary_file_name),
+    : given_dictionary_directory_(dict_dir),
+      custom_dictionary_file_name_(custom_dictionary_file_name),
       tried_to_init_(false),
+      language_(language),
 #ifndef NDEBUG
       worker_loop_(NULL),
 #endif
-      tried_to_download_(false),
+      tried_to_download_dictionary_file_(false),
       file_loop_(NULL),
       url_request_context_(request_context),
       dic_is_downloading_(false),
@@ -422,9 +445,6 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
   if (file_thread)
     file_loop_ = file_thread->message_loop();
 
-  // Get the path to the spellcheck file.
-  bdict_file_name_ = GetVersionedFileName(language, dict_dir);
-
   // Get the path to the custom dictionary file.
   if (custom_dictionary_file_name_.empty()) {
     FilePath personal_file_directory;
@@ -448,6 +468,17 @@ SpellChecker::~SpellChecker() {
 #endif
 }
 
+void SpellChecker::StartDictionaryDownloadInFileThread(
+    const FilePath& file_name) {
+  Task* dic_task = dic_download_state_changer_factory_.NewRunnableMethod(
+      &SpellChecker::set_file_is_downloading, false);
+  ddc_dic_ = new DictionaryDownloadController(dic_task, file_name,
+      url_request_context_, ui_loop_);
+  set_file_is_downloading(true);
+  file_loop_->PostTask(FROM_HERE, NewRunnableMethod(ddc_dic_.get(),
+      &DictionaryDownloadController::StartDownload));
+}
+
 // Initialize SpellChecker. In this method, if the dicitonary is not present
 // in the local disk, it is fetched asynchronously.
 // TODO(sidchat): After dictionary is downloaded, initialize hunspell in
@@ -465,28 +496,52 @@ bool SpellChecker::Initialize() {
 
   StatsScope<StatsCounterTimer> timer(chrome::Counters::spellcheck_init());
 
-  bool dic_exists = file_util::PathExists(bdict_file_name_);
-  if (!dic_exists) {
-    if (file_loop_ && !tried_to_download_ && url_request_context_) {
-      Task* dic_task = dic_download_state_changer_factory_.NewRunnableMethod(
-          &SpellChecker::set_file_is_downloading, false);
-      ddc_dic_ = new DictionaryDownloadController(dic_task, bdict_file_name_,
-          url_request_context_, ui_loop_);
-      set_file_is_downloading(true);
-      file_loop_->PostTask(FROM_HERE, NewRunnableMethod(ddc_dic_.get(),
-          &DictionaryDownloadController::StartDownload));
+  // The default place whether the spellcheck dictionary can reside is
+  // chrome::DIR_APP_DICTIONARIES. However, for systemwide installations,
+  // this directory may not have permissions for download. In that case, the
+  // alternate directory for download is chrome::DIR_USER_DATA. We have to check
+  // for the spellcheck dictionaries in both the directories. If not found in
+  // either one, it has to be downloaded in either of the two.
+  // TODO(sidchat): Some sort of UI to warn users that spellchecker is not
+  // working at all (due to failed dictionary download)?
+
+  // File name for downloading in DIR_APP_DICTIONARIES.
+  FilePath dictionary_file_name_app = GetVersionedFileName(language_,
+      given_dictionary_directory_);
+
+  // Filename for downloading in the fallback dictionary download directory,
+  // DIR_USER_DATA.
+  FilePath dict_dir_userdata = GetFallbackDictionaryDownloadDirectory();
+  FilePath dictionary_file_name_usr = GetVersionedFileName(language_,
+      dict_dir_userdata);
+
+  // Check in both the directories to see whether the spellcheck dictionary
+  // already resides in one of these.
+  FilePath bdic_file_name;
+  if (file_util::PathExists(dictionary_file_name_app)) {
+    bdic_file_name = dictionary_file_name_app;
+  } else if (file_util::PathExists(dictionary_file_name_usr)) {
+    bdic_file_name = dictionary_file_name_usr;
+  } else {
+    // Download the dictionary file.
+    if (file_loop_ && url_request_context_) {
+      if (!tried_to_download_dictionary_file_) {
+        StartDictionaryDownloadInFileThread(dictionary_file_name_app);
+        tried_to_download_dictionary_file_ = true;
+        return false;
+      } else {  // There is no dictionary even after trying to download it.
+        // Stop trying to download the dictionary in this session.
+        tried_to_init_ = true;
+        return false;
+      }
     }
   }
 
-  if (!dic_exists && !tried_to_download_) {
-    tried_to_download_ = true;
-    return false;
-  }
-
-  // Control has come so far - both files probably exist.
+  // Control has come so far - the BDIC dictionary file probably exists. Now try
+  // to initialize hunspell using the available bdic dictionary file.
   TimeTicks begin_time = TimeTicks::Now();
   bdict_file_.reset(new file_util::MemoryMappedFile());
-  if (bdict_file_->Initialize(bdict_file_name_)) {
+  if (bdict_file_->Initialize(bdic_file_name)) {
     hunspell_.reset(new Hunspell(bdict_file_->data(), bdict_file_->length()));
     AddCustomWordsToHunspell();
   }
