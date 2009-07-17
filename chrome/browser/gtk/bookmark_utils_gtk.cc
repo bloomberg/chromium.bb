@@ -192,7 +192,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                                guint target_type,
                                Profile* profile) {
   switch (target_type) {
-    case GtkDndUtil::X_CHROME_BOOKMARK_ITEM: {
+    case GtkDndUtil::CHROME_BOOKMARK_ITEM: {
       BookmarkDragData data(nodes);
       Pickle pickle;
       data.WriteToPickle(profile, &pickle);
@@ -203,7 +203,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
                              pickle.size());
       break;
     }
-    case GtkDndUtil::X_CHROME_TEXT_URI_LIST: {
+    case GtkDndUtil::TEXT_URI_LIST: {
       gchar** uris = reinterpret_cast<gchar**>(malloc(sizeof(gchar*) *
                                                (nodes.size() + 1)));
       for (size_t i = 0; i < nodes.size(); ++i) {
@@ -243,7 +243,7 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
     }
 
     switch (target_type) {
-      case GtkDndUtil::X_CHROME_BOOKMARK_ITEM: {
+      case GtkDndUtil::CHROME_BOOKMARK_ITEM: {
         *dnd_success = TRUE;
         Pickle pickle(reinterpret_cast<char*>(selection_data->data),
                       selection_data->length);
@@ -258,6 +258,19 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
   }
 
   return std::vector<const BookmarkNode*>();
+}
+
+bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
+    BookmarkModel* model, const BookmarkNode* parent, int idx) {
+  Pickle data(reinterpret_cast<char*>(selection_data->data),
+              selection_data->length);
+  void* iter = NULL;
+  std::string title_utf8, url_utf8;
+  bool rv = data.ReadString(&iter, &title_utf8);
+  rv = rv && data.ReadString(&iter, &url_utf8);
+  if (rv)
+    model->AddURL(parent, idx, UTF8ToWide(title_utf8), GURL(url_utf8));
+  return rv;
 }
 
 }  // namespace bookmark_utils

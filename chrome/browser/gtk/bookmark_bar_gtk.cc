@@ -138,7 +138,8 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_drag_dest_set(bookmark_toolbar_.get(), GTK_DEST_DEFAULT_DROP,
                     NULL, 0, GDK_ACTION_MOVE);
   GtkDndUtil::SetDestTargetListFromCodeMask(bookmark_toolbar_.get(),
-                                            GtkDndUtil::X_CHROME_BOOKMARK_ITEM);
+                                            GtkDndUtil::CHROME_BOOKMARK_ITEM |
+                                            GtkDndUtil::CHROME_NAMED_URL);
   g_signal_connect(bookmark_toolbar_.get(), "drag-motion",
                    G_CALLBACK(&OnToolbarDragMotion), this);
   g_signal_connect(bookmark_toolbar_.get(), "drag-leave",
@@ -384,9 +385,10 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
   // The tool item is also a source for dragging
   gtk_drag_source_set(button, GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_MOVE);
-  GtkDndUtil::SetSourceTargetListFromCodeMask(
-      button, GtkDndUtil::X_CHROME_BOOKMARK_ITEM |
-              GtkDndUtil::X_CHROME_TEXT_URI_LIST);
+  int target_mask = GtkDndUtil::CHROME_BOOKMARK_ITEM;
+  if (node->is_url())
+    target_mask |= GtkDndUtil::TEXT_URI_LIST;
+  GtkDndUtil::SetSourceTargetListFromCodeMask(button, target_mask);
   g_signal_connect(G_OBJECT(button), "drag-begin",
                    G_CALLBACK(&OnButtonDragBegin), this);
   g_signal_connect(G_OBJECT(button), "drag-end",
@@ -428,7 +430,8 @@ GtkToolItem* BookmarkBarGtk::CreateBookmarkToolItem(const BookmarkNode* node) {
 void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
   gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_ALL, NULL, 0, GDK_ACTION_MOVE);
   GtkDndUtil::SetDestTargetListFromCodeMask(widget,
-                                            GtkDndUtil::X_CHROME_BOOKMARK_ITEM);
+                                            GtkDndUtil::CHROME_BOOKMARK_ITEM |
+                                            GtkDndUtil::CHROME_NAMED_URL);
   g_signal_connect(widget, "drag-data-received",
                    G_CALLBACK(&OnFolderDragReceived), this);
 
@@ -645,17 +648,26 @@ void BookmarkBarGtk::OnFolderDragReceived(GtkWidget* widget,
 
   const BookmarkNode* dest_node = bar->GetNodeForToolButton(widget);
   DCHECK(dest_node->is_folder());
-  std::vector<const BookmarkNode*> nodes =
-      bookmark_utils::GetNodesFromSelection(context, selection_data,
-                                            target_type,
-                                            bar->profile_,
-                                            &delete_selection_data,
-                                            &dnd_success);
-  DCHECK(!nodes.empty());
 
-  for (std::vector<const BookmarkNode*>::iterator it = nodes.begin();
-       it != nodes.end(); ++it) {
-    bar->model_->Move(*it, dest_node, dest_node->GetChildCount());
+  if (target_type == GtkDndUtil::CHROME_BOOKMARK_ITEM) {
+    std::vector<const BookmarkNode*> nodes =
+        bookmark_utils::GetNodesFromSelection(context, selection_data,
+                                              target_type,
+                                              bar->profile_,
+                                              &delete_selection_data,
+                                              &dnd_success);
+    DCHECK(!nodes.empty());
+    DCHECK(dnd_success);
+
+    for (std::vector<const BookmarkNode*>::iterator it = nodes.begin();
+         it != nodes.end(); ++it) {
+      bar->model_->Move(*it, dest_node, dest_node->GetChildCount());
+    }
+  } else if (target_type == GtkDndUtil::CHROME_NAMED_URL) {
+    dnd_success = bookmark_utils::CreateNewBookmarkFromNamedUrl(
+        selection_data, bar->model_, dest_node, dest_node->GetChildCount());
+  } else {
+    NOTREACHED();
   }
 
   gtk_drag_finish(context, dnd_success, delete_selection_data, time);
@@ -742,7 +754,7 @@ gboolean BookmarkBarGtk::OnToolbarDragDrop(
   if (context->targets) {
     GdkAtom target_type =
         GDK_POINTER_TO_ATOM(g_list_nth_data(
-            context->targets, GtkDndUtil::X_CHROME_BOOKMARK_ITEM));
+            context->targets, GtkDndUtil::CHROME_BOOKMARK_ITEM));
     gtk_drag_get_data(widget, context, target_type, time);
 
     is_valid_drop_site = TRUE;
@@ -761,19 +773,27 @@ void BookmarkBarGtk::OnToolbarDragReceived(GtkWidget* widget,
   gboolean dnd_success = FALSE;
   gboolean delete_selection_data = FALSE;
 
-  std::vector<const BookmarkNode*> nodes =
-      bookmark_utils::GetNodesFromSelection(context, selection_data,
-                                            target_type,
-                                            bar->profile_,
-                                            &delete_selection_data,
-                                            &dnd_success);
-  DCHECK(!nodes.empty());
   gint index = gtk_toolbar_get_drop_index(
       GTK_TOOLBAR(bar->bookmark_toolbar_.get()), x, y);
-  for (std::vector<const BookmarkNode*>::iterator it = nodes.begin();
-       it != nodes.end(); ++it) {
-    bar->model_->Move(*it, bar->model_->GetBookmarkBarNode(), index);
-    index = bar->model_->GetBookmarkBarNode()->IndexOfChild(*it) + 1;
+
+  if (target_type == GtkDndUtil::CHROME_BOOKMARK_ITEM) {
+    std::vector<const BookmarkNode*> nodes =
+        bookmark_utils::GetNodesFromSelection(context, selection_data,
+                                              target_type,
+                                              bar->profile_,
+                                              &delete_selection_data,
+                                              &dnd_success);
+    DCHECK(!nodes.empty());
+    for (std::vector<const BookmarkNode*>::iterator it = nodes.begin();
+         it != nodes.end(); ++it) {
+      bar->model_->Move(*it, bar->model_->GetBookmarkBarNode(), index);
+      index = bar->model_->GetBookmarkBarNode()->IndexOfChild(*it) + 1;
+    }
+  } else if (target_type == GtkDndUtil::CHROME_NAMED_URL) {
+    dnd_success = bookmark_utils::CreateNewBookmarkFromNamedUrl(
+        selection_data, bar->model_, bar->model_->GetBookmarkBarNode(), index);
+  } else {
+    NOTREACHED();
   }
 
   gtk_drag_finish(context, dnd_success, delete_selection_data, time);

@@ -6,33 +6,49 @@
 
 #include "base/logging.h"
 
+namespace {
+
+void AddApplicationTarget(GtkTargetList* targets, int code_mask, int target) {
+  if (code_mask & target) {
+    gtk_target_list_add(targets, GtkDndUtil::GetAtomForTarget(target),
+                        GTK_TARGET_SAME_APP, target);
+  }
+}
+
+}  // namespace
+
 // static
 GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
   switch (target) {
-    case X_CHROME_TAB:
+    case CHROME_TAB:
       static GdkAtom tab_atom = gdk_atom_intern(
           const_cast<char*>("application/x-chrome-tab"), false);
       return tab_atom;
 
-    case X_CHROME_TEXT_HTML:
+    case TEXT_HTML:
       static GdkAtom html_atom = gdk_atom_intern(
           const_cast<char*>("text/html"), false);
       return html_atom;
 
-    case X_CHROME_BOOKMARK_ITEM:
+    case CHROME_BOOKMARK_ITEM:
       static GdkAtom bookmark_atom = gdk_atom_intern(
           const_cast<char*>("application/x-chrome-bookmark-item"), false);
       return bookmark_atom;
 
-    case X_CHROME_TEXT_PLAIN:
+    case TEXT_PLAIN:
       static GdkAtom text_atom = gdk_atom_intern(
           const_cast<char*>("text/plain"), false);
       return text_atom;
 
-    case X_CHROME_TEXT_URI_LIST:
+    case TEXT_URI_LIST:
       static GdkAtom uris_atom = gdk_atom_intern(
           const_cast<char*>("text/uri-list"), false);
       return uris_atom;
+
+    case CHROME_NAMED_URL:
+      static GdkAtom named_url = gdk_atom_intern(
+          const_cast<char*>("application/x-chrome-named-url"), false);
+      return named_url;
 
     default:
       NOTREACHED();
@@ -45,26 +61,18 @@ GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
 GtkTargetList* GtkDndUtil::GetTargetListFromCodeMask(int code_mask) {
   GtkTargetList* targets = gtk_target_list_new(NULL, 0);
 
-  if (code_mask & X_CHROME_TAB) {
-    gtk_target_list_add(targets, GetAtomForTarget(X_CHROME_TAB),
-                        GTK_TARGET_SAME_APP, X_CHROME_TAB);
-  }
+  if (code_mask & TEXT_PLAIN)
+    gtk_target_list_add_text_targets(targets, TEXT_PLAIN);
 
-  if (code_mask & X_CHROME_TEXT_PLAIN)
-    gtk_target_list_add_text_targets(targets, X_CHROME_TEXT_PLAIN);
+  if (code_mask & TEXT_URI_LIST)
+    gtk_target_list_add_uri_targets(targets, TEXT_URI_LIST);
 
-  if (code_mask & X_CHROME_TEXT_URI_LIST)
-    gtk_target_list_add_uri_targets(targets, X_CHROME_TEXT_URI_LIST);
+  if (code_mask & TEXT_HTML)
+    gtk_target_list_add(targets, GetAtomForTarget(TEXT_PLAIN), 0, TEXT_HTML);
 
-  if (code_mask & X_CHROME_TEXT_HTML) {
-    gtk_target_list_add(targets, GetAtomForTarget(X_CHROME_TEXT_PLAIN),
-                        0, X_CHROME_TEXT_HTML);
-  }
-
-  if (code_mask & X_CHROME_BOOKMARK_ITEM) {
-    gtk_target_list_add(targets, GetAtomForTarget(X_CHROME_BOOKMARK_ITEM),
-                        GTK_TARGET_SAME_APP, X_CHROME_BOOKMARK_ITEM);
-  }
+  AddApplicationTarget(targets, code_mask, CHROME_TAB);
+  AddApplicationTarget(targets, code_mask, CHROME_BOOKMARK_ITEM);
+  AddApplicationTarget(targets, code_mask, CHROME_NAMED_URL);
 
   return targets;
 }

@@ -184,9 +184,9 @@ class WebDragDest {
       is_drop_target_ = false;
 
       static int supported_targets[] = {
-        GtkDndUtil::X_CHROME_TEXT_PLAIN,
-        GtkDndUtil::X_CHROME_TEXT_URI_LIST,
-        GtkDndUtil::X_CHROME_TEXT_HTML,
+        GtkDndUtil::TEXT_PLAIN,
+        GtkDndUtil::TEXT_URI_LIST,
+        GtkDndUtil::TEXT_HTML,
         // TODO(estade): support image drags?
       };
 
@@ -226,7 +226,7 @@ class WebDragDest {
       // If the source can't provide us with valid data for a requested target,
       // data->data will be NULL.
       if (data->target ==
-          GtkDndUtil::GetAtomForTarget(GtkDndUtil::X_CHROME_TEXT_PLAIN)) {
+          GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_PLAIN)) {
         guchar* text = gtk_selection_data_get_text(data);
         if (text) {
           drop_data_->plain_text = UTF8ToUTF16(std::string(
@@ -234,7 +234,7 @@ class WebDragDest {
           g_free(text);
         }
       } else if (data->target ==
-          GtkDndUtil::GetAtomForTarget(GtkDndUtil::X_CHROME_TEXT_URI_LIST)) {
+          GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_URI_LIST)) {
         gchar** uris = gtk_selection_data_get_uris(data);
         if (uris) {
           for (gchar** uri_iter = uris; *uri_iter; uri_iter++) {
@@ -247,7 +247,7 @@ class WebDragDest {
           g_strfreev(uris);
         }
       } else if (data->target ==
-          GtkDndUtil::GetAtomForTarget(GtkDndUtil::X_CHROME_TEXT_HTML)) {
+          GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_HTML)) {
         // TODO(estade): Can the html have a non-UTF8 encoding?
         drop_data_->text_html = UTF8ToUTF16(std::string(
             reinterpret_cast<char*>(data->data), data->length));
@@ -603,13 +603,15 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
   int targets_mask = 0;
 
   if (!drop_data.plain_text.empty())
-    targets_mask |= GtkDndUtil::X_CHROME_TEXT_PLAIN;
-  if (drop_data.url.is_valid())
-    targets_mask |= GtkDndUtil::X_CHROME_TEXT_URI_LIST;
+    targets_mask |= GtkDndUtil::TEXT_PLAIN;
+  if (drop_data.url.is_valid()) {
+    targets_mask |= GtkDndUtil::TEXT_URI_LIST;
+    targets_mask |= GtkDndUtil::CHROME_NAMED_URL;
+  }
   if (!drop_data.text_html.empty())
-    targets_mask |= GtkDndUtil::X_CHROME_TEXT_HTML;
+    targets_mask |= GtkDndUtil::TEXT_HTML;
   if (!drop_data.file_contents.empty())
-    targets_mask |= GtkDndUtil::X_CHROME_WEBDROP_FILE_CONTENTS;
+    targets_mask |= GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS;
 
   if (targets_mask == 0) {
     NOTIMPLEMENTED();
@@ -620,11 +622,11 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
   drop_data_.reset(new WebDropData(drop_data));
 
   GtkTargetList* list = GtkDndUtil::GetTargetListFromCodeMask(targets_mask);
-  if (targets_mask & GtkDndUtil::X_CHROME_WEBDROP_FILE_CONTENTS) {
+  if (targets_mask & GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS) {
     drag_file_mime_type_ = gdk_atom_intern(
         mime_util::GetDataMimeType(drop_data.file_contents).c_str(), FALSE);
     gtk_target_list_add(list, drag_file_mime_type_,
-                        0, GtkDndUtil::X_CHROME_WEBDROP_FILE_CONTENTS);
+                        0, GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS);
   }
 
   // If we don't pass an event, GDK won't know what event time to start grabbing
@@ -648,35 +650,48 @@ void TabContentsViewGtk::OnDragDataGet(
     GdkDragContext* context, GtkSelectionData* selection_data,
     guint target_type, guint time, TabContentsViewGtk* view) {
   const int bits_per_byte = 8;
-  // We must make this initialization here or gcc complains about jumping past
+  // We must make these initializations here or gcc complains about jumping past
   // it in the switch statement.
   std::string utf8_text;
+  Pickle pickle;
 
   switch (target_type) {
-    case GtkDndUtil::X_CHROME_TEXT_PLAIN:
+    case GtkDndUtil::TEXT_PLAIN:
       utf8_text = UTF16ToUTF8(view->drop_data_->plain_text);
       gtk_selection_data_set_text(selection_data, utf8_text.c_str(),
                                   utf8_text.length());
       break;
-    case GtkDndUtil::X_CHROME_TEXT_URI_LIST:
+
+    case GtkDndUtil::TEXT_URI_LIST:
       gchar* uri_array[2];
       uri_array[0] = strdup(view->drop_data_->url.spec().c_str());
       uri_array[1] = NULL;
       gtk_selection_data_set_uris(selection_data, uri_array);
       free(uri_array[0]);
       break;
-    case GtkDndUtil::X_CHROME_TEXT_HTML:
+
+    case GtkDndUtil::TEXT_HTML:
       // TODO(estade): change relative links to be absolute using
       // |html_base_url|.
       utf8_text = UTF16ToUTF8(view->drop_data_->text_html);
       gtk_selection_data_set(selection_data,
-          GtkDndUtil::GetAtomForTarget(GtkDndUtil::X_CHROME_TEXT_HTML),
+          GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_HTML),
           bits_per_byte,
           reinterpret_cast<const guchar*>(utf8_text.c_str()),
           utf8_text.length());
       break;
 
-    case GtkDndUtil::X_CHROME_WEBDROP_FILE_CONTENTS:
+    case GtkDndUtil::CHROME_NAMED_URL:
+      pickle.WriteString(UTF16ToUTF8(view->drop_data_->url_title));
+      pickle.WriteString(view->drop_data_->url.spec());
+      gtk_selection_data_set(selection_data,
+          GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
+          bits_per_byte,
+          reinterpret_cast<const guchar*>(pickle.data()),
+          pickle.size());
+      break;
+
+    case GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS:
       gtk_selection_data_set(selection_data,
           view->drag_file_mime_type_, bits_per_byte,
           reinterpret_cast<const guchar*>(

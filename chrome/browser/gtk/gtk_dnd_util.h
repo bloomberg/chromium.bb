@@ -11,20 +11,24 @@ class GtkDndUtil {
  public:
   // Registry of all internal int codes for drag and drop.
   enum {
-    X_CHROME_TAB = 1 << 0,
-    X_CHROME_TEXT_PLAIN = 1 << 1,
-    X_CHROME_TEXT_URI_LIST = 1 << 2,
-    X_CHROME_TEXT_HTML = 1 << 3,
-    X_CHROME_BOOKMARK_ITEM = 1 << 4,
-    X_CHROME_WEBDROP_FILE_CONTENTS = 1 << 5,
+    // Intra-application types.
+    CHROME_TAB = 1 << 0,
+    CHROME_BOOKMARK_ITEM = 1 << 1,
+    CHROME_WEBDROP_FILE_CONTENTS = 1 << 2,
+    CHROME_NAMED_URL = 1 << 3,
+
+    // Standard types.
+    TEXT_PLAIN = 1 << 4,
+    TEXT_URI_LIST = 1 << 5,
+    TEXT_HTML = 1 << 6,
   };
 
   // Get the atom for a given target (of the above enum type). Will return NULL
-  // for non-custom targets, such as X_CHROME_TEXT_PLAIN.
+  // for non-custom targets, such as CHROME_TEXT_PLAIN.
   static GdkAtom GetAtomForTarget(int target);
 
   // Creates a target list from the given mask. The mask should be an OR of
-  // X_CHROME_* values. The target list is returned with ref count 1; the caller
+  // CHROME_* values. The target list is returned with ref count 1; the caller
   // is responsible for unreffing it when it is no longer needed.
   // Since the MIME type for WEBDROP_FILE_CONTENTS depends on the file's
   // contents, that flag is ignored by this function. It is the responsibility

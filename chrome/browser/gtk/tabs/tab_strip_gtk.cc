@@ -699,8 +699,8 @@ void TabStripGtk::Init() {
                     static_cast<GdkDragAction>(
                         GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK));
   GtkDndUtil::SetDestTargetListFromCodeMask(tabstrip_.get(),
-                                            GtkDndUtil::X_CHROME_TEXT_URI_LIST |
-                                            GtkDndUtil::X_CHROME_TEXT_PLAIN);
+                                            GtkDndUtil::TEXT_URI_LIST |
+                                            GtkDndUtil::TEXT_PLAIN);
 
   g_signal_connect(G_OBJECT(tabstrip_.get()), "expose-event",
                    G_CALLBACK(OnExpose), this);
@@ -1856,7 +1856,7 @@ gboolean TabStripGtk::OnDragDataReceived(GtkWidget* widget,
   bool success = false;
 
   // TODO(jhawkins): Parse URI lists.
-  if (info == GtkDndUtil::X_CHROME_TEXT_PLAIN) {
+  if (info == GtkDndUtil::TEXT_PLAIN) {
     success = tabstrip->CompleteDrop(data->data);
   }
 

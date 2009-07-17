@@ -118,7 +118,7 @@ TabGtk::TabGtk(TabDelegate* delegate)
   gtk_drag_source_set(event_box_, GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_MOVE);
   GtkDndUtil::SetSourceTargetListFromCodeMask(event_box_,
-                                              GtkDndUtil::X_CHROME_TAB);
+                                              GtkDndUtil::CHROME_TAB);
   g_signal_connect(G_OBJECT(event_box_), "button-press-event",
                    G_CALLBACK(OnMousePress), this);
   g_signal_connect(G_OBJECT(event_box_), "button-release-event",

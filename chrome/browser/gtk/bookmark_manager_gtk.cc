@@ -417,7 +417,7 @@ GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
   gtk_drag_dest_set(left_tree_view_, GTK_DEST_DEFAULT_DROP,
                     NULL, 0, GDK_ACTION_MOVE);
   GtkDndUtil::SetDestTargetListFromCodeMask(left_tree_view_,
-                                            GtkDndUtil::X_CHROME_BOOKMARK_ITEM);
+                                            GtkDndUtil::CHROME_BOOKMARK_ITEM);
 
   g_signal_connect(left_tree_view_, "drag-data-received",
                    G_CALLBACK(&OnLeftTreeViewDragReceived), this);
@@ -487,8 +487,8 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
                       GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_MOVE);
   GtkDndUtil::SetSourceTargetListFromCodeMask(
-      right_tree_view_, GtkDndUtil::X_CHROME_BOOKMARK_ITEM |
-                        GtkDndUtil::X_CHROME_TEXT_URI_LIST);
+      right_tree_view_, GtkDndUtil::CHROME_BOOKMARK_ITEM |
+                        GtkDndUtil::TEXT_URI_LIST);
 
   // We connect to drag dest signals, but we don't actually enable the widget
   // as a drag destination unless it corresponds to the contents of a folder.
@@ -581,7 +581,7 @@ void BookmarkManagerGtk::BuildRightStore() {
     gtk_drag_dest_set(right_tree_view_, GTK_DEST_DEFAULT_ALL, NULL, 0,
                       GDK_ACTION_MOVE);
     GtkDndUtil::SetDestTargetListFromCodeMask(right_tree_view_,
-                                              GtkDndUtil::X_CHROME_BOOKMARK_ITEM);
+                                              GtkDndUtil::CHROME_BOOKMARK_ITEM);
   } else {
     SaveColumnConfiguration();
     gtk_tree_view_column_set_visible(path_column_, TRUE);
@@ -1132,8 +1132,8 @@ gboolean BookmarkManagerGtk::OnRightTreeViewMotion(GtkWidget* tree_view,
       bm->mousedown_event_.x, bm->mousedown_event_.y, event->x, event->y)) {
     bm->delaying_mousedown_ = false;
     GtkTargetList* targets = GtkDndUtil::GetTargetListFromCodeMask(
-        GtkDndUtil::X_CHROME_BOOKMARK_ITEM |
-        GtkDndUtil::X_CHROME_TEXT_URI_LIST);
+        GtkDndUtil::CHROME_BOOKMARK_ITEM |
+        GtkDndUtil::TEXT_URI_LIST);
     gtk_drag_begin(tree_view, targets, GDK_ACTION_MOVE,
                    1, reinterpret_cast<GdkEvent*>(event));
     // The drag adds a ref; let it own the list.

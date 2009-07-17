@@ -75,6 +75,14 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
     gboolean* delete_selection_data,
     gboolean* dnd_success);
 
+// Unpickle a new bookmark of the CHROME_NAMED_URL drag type, and put it in
+// the appropriate location in the model.
+bool CreateNewBookmarkFromNamedUrl(
+    GtkSelectionData* selection_data,
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int idx);
+
 }  // namespace bookmark_utils
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_UTILS_GTK_H_
