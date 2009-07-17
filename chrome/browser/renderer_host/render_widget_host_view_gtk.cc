@@ -38,6 +38,7 @@ class RenderWidgetHostViewGtkWidget {
     GtkWidget* widget = gtk_fixed_new();
     gtk_fixed_set_has_window(GTK_FIXED(widget), TRUE);
     gtk_widget_set_double_buffered(widget, FALSE);
+    gtk_widget_set_redraw_on_allocate(widget, FALSE);
 #if defined(NDEBUG)
     gtk_widget_modify_bg(widget, GTK_STATE_NORMAL, &gfx::kGdkWhite);
 #else
@@ -72,8 +73,10 @@ class RenderWidgetHostViewGtkWidget {
                      G_CALLBACK(ButtonPressReleaseEvent), host_view);
     g_signal_connect(widget, "motion-notify-event",
                      G_CALLBACK(MouseMoveEvent), host_view);
-    g_signal_connect(widget, "scroll-event",
-                     G_CALLBACK(MouseScrollEvent), host_view);
+    // Connect after so that we are called after the handler installed by the
+    // TabContentsView which handles zoom events.
+    g_signal_connect_after(widget, "scroll-event",
+                           G_CALLBACK(MouseScrollEvent), host_view);
 
     // Create a GtkIMContext instance and attach its signal handlers.
     host_view->im_context_ = gtk_im_multicontext_new();
@@ -98,6 +101,7 @@ class RenderWidgetHostViewGtkWidget {
 
   static gboolean ExposeEvent(GtkWidget* widget, GdkEventExpose* expose,
                               RenderWidgetHostViewGtk* host_view) {
+    NOTIMPLEMENTED() << " paint " << expose->area.width << " " << expose->area.height;
     const gfx::Rect damage_rect(expose->area);
     host_view->Paint(damage_rect);
     return FALSE;
@@ -291,6 +295,16 @@ class RenderWidgetHostViewGtkWidget {
 
   static gboolean MouseScrollEvent(GtkWidget* widget, GdkEventScroll* event,
                                    RenderWidgetHostViewGtk* host_view) {
+    // If the user is holding shift, translate it into a horizontal scroll. We
+    // don't care what other modifiers the user may be holding (zooming is
+    // handled at the TabContentsView level).
+    if (event->state & GDK_SHIFT_MASK) {
+      if (event->direction == GDK_SCROLL_UP)
+        event->direction = GDK_SCROLL_LEFT;
+      else if (event->direction == GDK_SCROLL_DOWN)
+        event->direction = GDK_SCROLL_RIGHT;
+    }
+
     host_view->GetRenderWidgetHost()->ForwardWheelEvent(
         WebInputEventFactory::mouseWheelEvent(event));
     return FALSE;
