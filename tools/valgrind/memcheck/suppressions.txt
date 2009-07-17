@@ -634,6 +634,13 @@
    fun:_ZN13TabStripModel19InsertTabContentsAtEiP11TabContentsbb
 }
 {
+   bug_15762
+   Memcheck:Cond
+   fun:Q_ZN7testing8internal11CmpHelperEQIjjEENS_15AssertionResultEPKcS4_RKT_RKT0_
+   ...
+   fun:_ZN39ImageOperations_CreateMaskedBitmap_Test8TestBodyEv
+}
+{
    # very common in ui tests
    bug_16089
    Memcheck:Leak
