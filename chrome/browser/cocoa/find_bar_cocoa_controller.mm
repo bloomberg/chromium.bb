@@ -96,6 +96,25 @@
   }
 }
 
+// NSControl delegate method
+- (BOOL)control:(NSControl*)control
+    textView:(NSTextView*)textView
+    doCommandBySelector:(SEL)command {
+  if (command == @selector(insertNewline:)) {
+    NSEvent* event = [NSApp currentEvent];
+
+    if ([event modifierFlags] & NSShiftKeyMask)
+      [previousButton_ performClick:nil];
+    else {
+      [nextButton_ performClick:nil];
+    }
+
+    return YES;
+  }
+
+  return NO;
+}
+
 // Methods from FindBar
 - (void)showFindBar {
   [[self view] setHidden:NO];
