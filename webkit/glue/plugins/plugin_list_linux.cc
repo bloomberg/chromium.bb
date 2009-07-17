@@ -15,12 +15,29 @@ void PluginList::PlatformInit() {
 }
 
 void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
-  // For now, just look in the plugins/ under the exe directory.
-  // TODO(port): this is not correct.  Rather than getting halfway there,
-  // this is a one-off and its replacement should follow Firefox exactly.
+  // Mozilla code to reference:
+  // http://mxr.mozilla.org/firefox/ident?i=NS_APP_PLUGINS_DIR_LIST
+  // and tens of accompanying files (mxr is very helpful).
+  // This code carefully matches their behavior for compat reasons.
+
+  // 1) MOZ_PLUGIN_PATH env variable.
+  const char* moz_plugin_path = getenv("MOZ_PLUGIN_PATH");
+  if (moz_plugin_path)
+    plugin_dirs->push_back(FilePath(moz_plugin_path));
+
+  // 2) NS_USER_PLUGINS_DIR: ~/.mozilla/plugins.
+  // TODO(evanm): should we do anything here?
+
+  // 3) NS_APP_PLUGINS_DIR: the binary dir + "plugins/".
   FilePath dir;
   PathService::Get(base::DIR_EXE, &dir);
   plugin_dirs->push_back(dir.Append("plugins"));
+
+  // 4) NS_SYSTEM_PLUGINS_DIR:
+  // TODO(evanm): when we support 64-bit platforms, we'll need to fix this
+  // to be conditional.
+  COMPILE_ASSERT(sizeof(int)==4, fix_system_lib_path);
+  plugin_dirs->push_back(FilePath("/usr/lib/mozilla/plugins"));
 }
 
 void PluginList::LoadPluginsFromDir(const FilePath& path) {
