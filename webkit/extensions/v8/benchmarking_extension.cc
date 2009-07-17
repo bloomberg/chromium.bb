@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "Cache.h"
+#include "base/stats_table.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -15,20 +16,25 @@ class BenchmarkingWrapper : public v8::Extension {
  public:
   BenchmarkingWrapper() :
       v8::Extension(kBenchmarkingExtensionName,
-        "if (typeof(chromium) == 'undefined') {"
-        "  chromium = {};"
+        "if (typeof(chrome) == 'undefined') {"
+        "  chrome = {};"
         "};"
-        "if (typeof(chromium.benchmarking) == 'undefined') {"
-        "  chromium.benchmarking = {};"
+        "if (typeof(chrome.benchmarking) == 'undefined') {"
+        "  chrome.benchmarking = {};"
         "};"
-        "chromium.benchmarking.clearCache = function() {"
+        "chrome.benchmarking.clearCache = function() {"
         "  native function ClearCache();"
         "  ClearCache();"
         "};"
-        "chromium.benchmarking.closeConnections = function() {"
+        "chrome.benchmarking.closeConnections = function() {"
         "  native function CloseConnections();"
         "  CloseConnections();"
-        "};") {}
+        "};"
+        "chrome.benchmarking.counter = function(name) {"
+        "  native function GetCounter();"
+        "  return GetCounter(name);"
+        "};"
+        ) {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) {
@@ -36,6 +42,8 @@ class BenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(CloseConnections);
     } else if (name->Equals(v8::String::New("ClearCache"))) {
       return v8::FunctionTemplate::New(ClearCache);
+    } else if (name->Equals(v8::String::New("GetCounter"))) {
+      return v8::FunctionTemplate::New(GetCounter);
     }
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -53,6 +61,20 @@ class BenchmarkingWrapper : public v8::Extension {
     WebCore::cache()->setDisabled(true);
     WebCore::cache()->setDisabled(false);
     return v8::Undefined();
+  }
+
+  static v8::Handle<v8::Value> GetCounter(const v8::Arguments& args) {
+    if (!args.Length() || !args[0]->IsString())
+      return v8::Undefined();
+
+    // Extract the name argument
+    char name[256];
+    name[0] = 'c';
+    name[1] = ':';
+    args[0]->ToString()->WriteAscii(&name[2], 0, sizeof(name) - 3);
+
+    int counter = StatsTable::current()->GetCounterValue(name);
+    return v8::Integer::New(counter);
   }
 };
 
