@@ -15,11 +15,21 @@ To complete this tutorial, you must have Windows;
 Linux and Mac don't yet support extensions.
 </p>
 
+<h4> Contents </h4>
+
+<ul>
+  <li> <a href="#browser">Get your browser ready</a> </li>
+  <li> <a href="#load">Create and load an extension</a> </li>
+  <li> <a href="#code">Add code to the extension</a> </li>
+  <li> <a href="#debug">Debug the extension</a> </li>
+  <li> <a href="#summary">Summary</a> </li>
+</ul>
+
 <p>
-[PENDING: add a TOC and navigation links to other pages]
+[PENDING: automate the TOC; add navigation links to other pages]
 </p>
 
-<h2>Get your browser ready</h2>
+<h2 id="browser">Get your browser ready</h2>
 
 <p>
 To develop extensions for Google Chrome, you need to set up your browser:
@@ -37,11 +47,12 @@ To develop extensions for Google Chrome, you need to set up your browser:
     even if your extension has horrible bugs.</li>
 </ol>
 
-<h2>Create and load a toolbar extension</h2>
+<h2 id="load">Create and load an extension</h2>
 <p>
-In this section, you'll write a small extension
-that puts a bit of UI into the bottom of the Google Chrome window &mdash;
-the <em>toolbar</em>.
+In this section, you'll write a <em>toolstrip</em> &mdash;
+an extension
+that puts a bit of UI into the <em>toolbar</em>
+at the bottom of the Google Chrome window.
 </p>
 
 <ol>
@@ -56,9 +67,9 @@ the <em>toolbar</em>.
     create a text file called <strong><code>manifest.json</code></strong>,
     and put this in it:
 <pre>{
-  &quot;name&quot;: &quot;My First Extra&quot;,
+  &quot;name&quot;: &quot;My First Extension&quot;,
   &quot;version&quot;: &quot;1.0&quot;,
-  &quot;description&quot;: &quot;The first ext* that I made.&quot;,
+  &quot;description&quot;: &quot;The first extension that I made.&quot;,
   &quot;toolstrips&quot;: [
     &quot;my_toolstrip.html&quot;
   ]
@@ -130,7 +141,7 @@ You should see the UI for your extension at the bottom left of the browser, look
   what are symptoms of common typos, including misnamed files?
   what are the symptoms if you don't have the dev channel?] </p>
 
-<h2>Add code to the extension</h2>
+<h2 id="code">Add code to the extension</h2>
 <p> In this step, you'll make your extension <em>do</em> something besides just look good. </p>
 <ol>
   <li>
@@ -161,7 +172,7 @@ following them exactly.
 Don't try loading an HTML file that isn't in the extension's folder &mdash;
 it won't work! </p>
 
-<h2>Debug the extension</h2>
+<h2 id="debug">Debug the extension</h2>
 <p>
 You can use the browser's built-in developer tools
 to view your extension's code,
@@ -189,6 +200,10 @@ function helloWorld() {
   <li>
   Restart the browser, so that it loads your new version of the extension.
 
+<!--
+This might be confusing.
+Maybe we should instead cover location.reload() later,
+after we've shown the console.
   <div class="note">
   <b>Tip:</b>
   If you don't want to restart your browser,
@@ -197,15 +212,23 @@ function helloWorld() {
   The new window will contain the updated extension;
   old windows will contain the old version.
   </div>
+-->
   </li>
   <li>
   Right-click the <strong>Hello, World!</strong> button
   (at the bottom left)
   to bring up the Developer Tools window
-  for this instance of your toolbar button.
-  It should look something like this:
+  for this instance of your toolstrip.
+  The window should look something like this:
   <p>
      <img src="images/devtools-1.gif" alt="" />  </p>
+<!--
+Possibly we should recommend starting the Dev Tools
+using chrome://extensions, rather than right-click.
+However, that adds some stuff (such as id)
+that might be confusing.
+-->
+
   </li>
   <li>
   Click the <strong>Scripts</strong> button.
@@ -267,7 +290,7 @@ function helloWorld() {
 <p>
 You now know how to load and debug an extension!</p>
 
-<h2>Summary</h2>
+<h2 id="summary">Summary</h2>
 
 <p>
 [PENDING: Summarize what we did,
