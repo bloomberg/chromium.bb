@@ -1,0 +1,33 @@
+{! thisClass = data; !}
+// ========== CLASS ===========
+goog.exportSymbol('{+getSymbolNameForExport(data)+}', {+getSymbolNameForExport(data)+});
+// ========== PUBLIC TYPES ===========
+{! var ownTypes = getPublicTypes(data).sort(makeSortby("name")); !}
+<if test="ownTypes.length">
+  <for each="property" in="ownTypes">
+    <if test="isEnum(property)">
+goog.exportSymbol('{+getSymbolNameForExport(property)+}', {+getSymbolNameForExport(property)+});
+    </if>
+  </for>
+</if>
+
+// ========== METHODS ===========
+<if test="thisClass.methods.length">
+  {! var ownMethods = data.methods.sort(makeSortby("name")); !}
+  <if test="ownMethods.length">
+    <for each="method" in="ownMethods">
+    <if test="!method.isPrivate">
+goog.exportSymbol('{+getSymbolNameForExport(method)+}', {+getSymbolNameForExport(method)+});
+    </if>
+    </for>
+  </if>
+</if>
+
+//- =========== PROPERTIES ===========
+{! var ownProperties = getPublicProperties(data).sort(makeSortby("name")); !}
+<if test="ownProperties.length">
+  <for each="property" in="ownProperties">
+goog.exportSymbol('{+getSymbolNameForExport(property)+}', {+getSymbolNameForExport(property)+});
+  </for>
+</if>
+
