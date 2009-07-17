@@ -321,13 +321,16 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
 
 //=============================================================================
 - (BOOL)loadSymbolInfo:(void *)base offset:(uint32_t)offset {
+  BOOL loadedStabs = [self loadSTABSSymbolInfo:base offset:offset];
+
   NSMutableDictionary *archSections = [sectionData_ objectForKey:architecture_];
+  BOOL loadedDWARF = NO;
   if ([archSections objectForKey:@"__DWARF__debug_info"]) {
     // Treat this this as debug information
-    return [self loadDWARFSymbolInfo:base offset:offset];
+    loadedDWARF = [self loadDWARFSymbolInfo:base offset:offset];
   }
 
-  return [self loadSTABSSymbolInfo:base offset:offset];
+  return loadedDWARF || loadedStabs;
 }
 
 //=============================================================================
@@ -342,11 +345,15 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
   section *dbgInfoSection = [[archSections objectForKey:@"__DWARF__debug_info"] sectionPointer];
   uint32_t debugInfoSize = SwapLongIfNeeded(dbgInfoSection->size);
 
-  // i think this will break if run on a big-endian machine
+#if __BIG_ENDIAN__
+  dwarf2reader::ByteReader byte_reader(swap ?
+                                       dwarf2reader::ENDIANNESS_LITTLE :
+                                       dwarf2reader::ENDIANNESS_BIG);
+#elif __LITTLE_ENDIAN__
   dwarf2reader::ByteReader byte_reader(swap ?
                                        dwarf2reader::ENDIANNESS_BIG :
                                        dwarf2reader::ENDIANNESS_LITTLE);
-
+#endif
   uint64_t dbgOffset = 0;
 
   dwarf2reader::SectionMap* oneArchitectureSectionMap = [self getSectionMapForArchitecture:architecture_];
