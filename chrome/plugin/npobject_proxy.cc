@@ -110,6 +110,9 @@ void NPObjectProxy::OnChannelError() {
 
 bool NPObjectProxy::NPHasMethod(NPObject *obj,
                                 NPIdentifier name) {
+  if (obj == NULL)
+    return false;
+
   bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
 
@@ -147,6 +150,9 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
                                     const NPVariant *args,
                                     uint32_t arg_count,
                                     NPVariant *np_result) {
+  if (obj == NULL)
+    return false;
+
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
     return obj->_class->invoke(obj, name, args, arg_count, np_result);
@@ -205,6 +211,9 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
 
 bool NPObjectProxy::NPHasProperty(NPObject *obj,
                                   NPIdentifier name) {
+  if (obj == NULL)
+    return false;
+
   bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
@@ -267,6 +276,9 @@ bool NPObjectProxy::NPGetProperty(NPObject *obj,
 bool NPObjectProxy::NPSetProperty(NPObject *obj,
                                   NPIdentifier name,
                                   const NPVariant *value) {
+  if (obj == NULL)
+    return false;
+
   bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
@@ -291,6 +303,9 @@ bool NPObjectProxy::NPSetProperty(NPObject *obj,
 
 bool NPObjectProxy::NPRemoveProperty(NPObject *obj,
                                      NPIdentifier name) {
+  if (obj == NULL)
+    return false;
+
   bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
@@ -310,6 +325,9 @@ bool NPObjectProxy::NPRemoveProperty(NPObject *obj,
 }
 
 void NPObjectProxy::NPPInvalidate(NPObject *obj) {
+  if (obj == NULL)
+    return;
+
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
     obj->_class->invalidate(obj);
@@ -324,6 +342,9 @@ void NPObjectProxy::NPPInvalidate(NPObject *obj) {
 bool NPObjectProxy::NPNEnumerate(NPObject *obj,
                                  NPIdentifier **value,
                                  uint32_t *count) {
+  if (obj == NULL)
+    return false;
+
   bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
@@ -352,6 +373,9 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
                                  const NPVariant *args,
                                  uint32_t arg_count,
                                  NPVariant *np_result) {
+  if (obj == NULL)
+    return false;
+
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
     return obj->_class->construct(obj, args, arg_count, np_result);
