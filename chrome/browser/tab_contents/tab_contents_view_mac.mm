@@ -185,10 +185,11 @@ void TabContentsViewMac::StartDragging(const WebDropData& drop_data) {
 
   // Tell the view to start a drag using |cocoa_view_| as the drag source. The
   // source will get notified when the drag completes (success or failure) so
-  // it can tell the render view host the drag is done. Windows does this with
-  // a nested event loop, we get called back.
+  // it can tell the render view host the drag is done. The drag invokes a
+  // nested event loop, but we need to continue processing events.
   NSPoint mousePoint = [currentEvent locationInWindow];
   mousePoint = [cocoa_view_ convertPoint:mousePoint fromView:nil];
+  MessageLoop::current()->SetNestableTasksAllowed(true);
   [cocoa_view_ dragImage:dragImage
                       at:mousePoint
                   offset:NSZeroSize
@@ -196,6 +197,7 @@ void TabContentsViewMac::StartDragging(const WebDropData& drop_data) {
               pasteboard:pasteboard
                   source:cocoa_view_
                slideBack:YES];
+  MessageLoop::current()->SetNestableTasksAllowed(false);
 }
 
 void TabContentsViewMac::OnContentsDestroy() {

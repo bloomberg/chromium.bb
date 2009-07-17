@@ -967,7 +967,7 @@ WebMouseEvent WebInputEventFactory::mouseEvent(NSEvent* event, NSView* view)
 
     NSPoint location = [NSEvent mouseLocation];  // global coordinates
     result.globalX = location.x;
-    result.globalY = location.y;
+    result.globalY = [[[view window] screen] frame].size.height - location.y;
 
     NSPoint windowLocal = [event locationInWindow];
     location = [view convertPoint:windowLocal fromView:nil];
