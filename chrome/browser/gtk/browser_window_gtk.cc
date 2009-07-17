@@ -36,6 +36,7 @@
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
+#include "chrome/browser/gtk/extension_shelf_gtk.h"
 #include "chrome/browser/gtk/find_bar_gtk.h"
 #include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -647,10 +648,11 @@ void BrowserWindowGtk::SetFullscreen(bool fullscreen) {
   UpdateCustomFrame();
 
   if (fullscreen) {
-    // These three balanced by ShowSupportedWindowFeatures().
+    // These four balanced by ShowSupportedWindowFeatures().
     toolbar_->Hide();
     tabstrip_->Hide();
     bookmark_bar_->Hide(false);
+    extension_shelf_->Hide();
 
     gtk_window_fullscreen(window_);
   } else {
@@ -906,6 +908,10 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
   }
 }
 
+void BrowserWindowGtk::MaybeShowExtensionShelf() {
+  extension_shelf_->Show();
+}
+
 void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
   TabContents* old_devtools = devtools_container_->GetTabContents();
   if (old_devtools)
@@ -1100,6 +1106,11 @@ void BrowserWindowGtk::InitWidgets() {
   bookmark_bar_.reset(new BookmarkBarGtk(browser_->profile(), browser_.get(),
                                          this));
   bookmark_bar_->AddBookmarkbarToBox(content_vbox_);
+
+  extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
+                                               browser_.get()));
+  extension_shelf_->AddShelfToBox(content_vbox_);
+  MaybeShowExtensionShelf();
 
   // This vbox surrounds the render area: find bar, info bars and render view.
   // The reason is that this area as a whole needs to be grouped in its own
@@ -1400,6 +1411,9 @@ void BrowserWindowGtk::ShowSupportedWindowFeatures() {
 
   if (IsBookmarkBarSupported())
     MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
+
+  if (IsExtensionShelfSupported())
+    MaybeShowExtensionShelf();
 }
 
 void BrowserWindowGtk::HideUnsupportedWindowFeatures() {
@@ -1411,6 +1425,9 @@ void BrowserWindowGtk::HideUnsupportedWindowFeatures() {
 
   if (!IsBookmarkBarSupported())
     bookmark_bar_->Hide(false);
+
+  if (!IsExtensionShelfSupported())
+    extension_shelf_->Hide();
 }
 
 bool BrowserWindowGtk::IsTabStripSupported() {
@@ -1424,6 +1441,10 @@ bool BrowserWindowGtk::IsToolbarSupported() {
 
 bool BrowserWindowGtk::IsBookmarkBarSupported() {
   return browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
+}
+
+bool BrowserWindowGtk::IsExtensionShelfSupported() {
+  return browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF);
 }
 
 bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {

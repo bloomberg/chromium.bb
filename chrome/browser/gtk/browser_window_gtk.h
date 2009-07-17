@@ -25,6 +25,7 @@ class BrowserTitlebar;
 class BrowserToolbarGtk;
 class CustomDrawButton;
 class DownloadShelfGtk;
+class ExtensionShelfGtk;
 class FindBarGtk;
 class InfoBarContainerGtk;
 class LocationBar;
@@ -179,6 +180,9 @@ class BrowserWindowGtk : public BrowserWindow,
   // Show or hide the bookmark bar.
   void MaybeShowBookmarkBar(TabContents* contents, bool animate);
 
+  // Show or hide the extension shelf.
+  void MaybeShowExtensionShelf();
+
   // Sets the default size for the window and the the way the user is allowed to
   // resize it.
   void SetGeometryHints();
@@ -251,6 +255,7 @@ class BrowserWindowGtk : public BrowserWindow,
   bool IsTabStripSupported();
   bool IsToolbarSupported();
   bool IsBookmarkBarSupported();
+  bool IsExtensionShelfSupported();
 
   // Checks to see if the mouse pointer at |x|, |y| is over the border of the
   // custom frame (a spot that should trigger a window resize). Returns true if
@@ -274,6 +279,9 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // The object that manages the bookmark bar.
   scoped_ptr<BookmarkBarGtk> bookmark_bar_;
+
+  // The object that manages the extension shelf.
+  scoped_ptr<ExtensionShelfGtk> extension_shelf_;
 
   // The status bubble manager.  Always non-NULL.
   scoped_ptr<StatusBubbleGtk> status_bubble_;

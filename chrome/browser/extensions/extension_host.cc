@@ -108,6 +108,8 @@ void ExtensionHost::CreateView(Browser* browser) {
   // We own |view_|, so don't auto delete when it's removed from the view
   // hierarchy.
   view_->SetParentOwned(false);
+#elif defined(OS_LINUX)
+  // FIXME(phajdan.jr): Add extension view for GTK.
 #else
   // TODO(port)
   NOTREACHED();
