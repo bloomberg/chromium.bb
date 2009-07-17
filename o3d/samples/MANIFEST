@@ -283,6 +283,7 @@ shaders/texture-only.shader
 shaders/toon.shader
 shaders/vertex-color.shader
 shaders/yuv2rgb.shader
+shadow-map.html
 simpleviewer/assets/cube.o3dtgz
 simpleviewer/simpleviewer.html
 trends/assets/clouds.jpg

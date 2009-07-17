@@ -263,6 +263,25 @@ o3djs.debug.VertexInfo.prototype.Offset = {
 };
 
 /**
+ * Computes the number of vertices in this vertex info.
+ * @return {number} The number of vertices.
+ */
+o3djs.debug.VertexInfo.prototype.numVertices = function() {
+  return this.vertices.length / 3;
+};
+
+
+/**
+ * Given the number of a vertex returns the index in the array where
+ * the coordinates of that vertex vertexIndex.
+ * @param {number} vertexNumber The vertex number.
+ * @return {number} The index where that vertex begins.
+ */
+o3djs.debug.VertexInfo.prototype.vertexIndex = function(vertexNumber) {
+  return vertexNumber * 3;
+}
+
+/**
  * Adds a vertex.
  * @param {number} positionX The x position of the vertex.
  * @param {number} positionY The y position of the vertex.
@@ -298,6 +317,7 @@ o3djs.debug.VertexInfo.prototype.createShape = function(
                                      this.indices);
 };
 
+
 /**
  * Reorients the vertex positions of this vertexInfo by the
  * given matrix. In other words it multiplies each vertex by the
@@ -306,10 +326,6 @@ o3djs.debug.VertexInfo.prototype.createShape = function(
  */
 o3djs.debug.VertexInfo.prototype.reorient = function(matrix) {
   var math = o3djs.math;
-  // Assume if it has a length it's not a Matrix4
-  if (matrix.length) {
-    matrix = math.matrix4.copy(matrix);
-  }
   var numVerts = this.numVertices();
   for (var v = 0; v < numVerts; ++v) {
     var index = this.vertexIndex(v);
