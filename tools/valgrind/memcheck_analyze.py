@@ -145,9 +145,10 @@ class ValgrindError:
     output = self._kind + "\n"
     for backtrace in self._backtraces:
       output += backtrace[0] + "\n"
-      filter = subprocess.Popen("c++filt", stdin=subprocess.PIPE,
+      filter = subprocess.Popen("c++filt -n", stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT,
+                                shell=True,
                                 close_fds=True)
       buf = ""
       for frame in backtrace[1]:
