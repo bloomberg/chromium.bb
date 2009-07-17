@@ -697,8 +697,8 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
 
   void* iter = NULL;
   int type = 0;
-  bool r = message.ReadInt(&iter, &type);
-  DCHECK(r);
+  if (!message.ReadInt(&iter, &type) || (type < WebInputEvent::Undefined))
+    process()->ReceivedBadMessage(message.type());
 
   if (type == WebInputEvent::MouseMove) {
     mouse_move_pending_ = false;
@@ -720,8 +720,8 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
                  << type << "). Ignoring event.";
     } else {
       bool processed = false;
-      r = message.ReadBool(&iter, &processed);
-      DCHECK(r);
+      if (!message.ReadBool(&iter, &processed))
+        process()->ReceivedBadMessage(message.type());
 
       KeyQueue::value_type front_item = key_queue_.front();
       key_queue_.pop();
@@ -739,7 +739,7 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
 
 void RenderWidgetHost::OnMsgFocus() {
   // Only the user can focus a RenderWidgetHost.
-  NOTREACHED();
+  process()->ReceivedBadMessage(ViewHostMsg_Focus__ID);
 }
 
 void RenderWidgetHost::OnMsgBlur() {

@@ -44,4 +44,17 @@ TEST_F(RenderViewHostTest, BadMessageHandlerRenderWidgetHost) {
   EXPECT_EQ(1, process()->bad_msg_count());
 }
 
+// Test that OnMsgInputEventAck() detects bad messages.
+TEST_F(RenderViewHostTest, BadMessageHandlerInputEventAck) {
+  EXPECT_EQ(0, process()->bad_msg_count());
+  // ViewHostMsg_HandleInputEvent_ACK is defined taking 0 params but
+  // the code actually expects it to have at least one int para, this this
+  // bogus message will not fail at de-serialization but should fail in
+  // OnMsgInputEventAck() processing.
+  IPC::Message message(0, ViewHostMsg_HandleInputEvent_ACK::ID,
+                       IPC::Message::PRIORITY_NORMAL);
+  rvh()->TestOnMessageReceived(message);
+  EXPECT_EQ(1, process()->bad_msg_count());
+}
+
 #endif  // NDEBUG
