@@ -49,14 +49,18 @@ void ThumbnailStore::Init(const FilePath& db_name,
 
   // Get the list of most visited URLs and redirect information from the
   // HistoryService.
-  timer_.Start(base::TimeDelta::FromMinutes(30), this,
-      &ThumbnailStore::UpdateURLData);
+  seconds_to_next_update_ = kInitialUpdateIntervalSecs;
   UpdateURLData();
+
+  // Register to get notified when the history is cleared.
+  registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
+                 Source<Profile>(profile));
 }
 
 bool ThumbnailStore::SetPageThumbnail(const GURL& url,
                                       const SkBitmap& thumbnail,
-                                      const ThumbnailScore& score) {
+                                      const ThumbnailScore& score,
+                                      bool fetch_redirects) {
   if (!cache_.get())
     return false;
 
@@ -85,6 +89,12 @@ bool ThumbnailStore::SetPageThumbnail(const GURL& url,
 
   // Update the cache_ with the new thumbnail.
   (*cache_)[url] = CacheEntry(jpeg_data, score, true);
+
+  // Get redirects for this URL.
+  if (fetch_redirects) {
+    hs_->QueryRedirectsTo(url, &consumer_,
+        NewCallback(this, &ThumbnailStore::OnRedirectsForURLAvailable));
+  }
 
   return true;
 }
@@ -122,6 +132,47 @@ bool ThumbnailStore::GetPageThumbnail(
   return true;
 }
 
+void ThumbnailStore::OnRedirectsForURLAvailable(
+    HistoryService::Handle handle,
+    GURL url,
+    bool success,
+    history::RedirectList* redirects) {
+  if (!success)
+    return;
+
+  if (redirects->empty()) {
+    (*redirect_urls_)[url] = new RefCountedVector<GURL>;
+  } else {
+    const GURL start_url = redirects->back();
+    std::reverse(redirects->begin(), redirects->end() - 1);
+    *(redirects->end() - 1) = url;
+    (*redirect_urls_)[start_url] = new RefCountedVector<GURL>(*redirects);
+  }
+}
+
+void ThumbnailStore::Observe(NotificationType type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
+  if (type.value != NotificationType::HISTORY_URLS_DELETED) {
+    NOTREACHED();
+    return;
+  }
+
+  Details<history::URLsDeletedDetails> url_details(details);
+  // If all history was cleared, clear all of our data and reset the update
+  // timer.
+  if (url_details->all_history) {
+    most_visited_urls_.reset();
+    redirect_urls_.reset();
+    cache_.reset();
+
+    timer_.Stop();
+    seconds_to_next_update_ = kInitialUpdateIntervalSecs;
+    timer_.Start(base::TimeDelta::FromSeconds(seconds_to_next_update_), this,
+        &ThumbnailStore::UpdateURLData);
+  }
+}
+
 void ThumbnailStore::UpdateURLData() {
   int result_count = ThumbnailStore::kMaxCacheSize + url_blacklist_->GetSize();
   hs_->QueryTopURLsAndRedirects(result_count, &consumer_,
@@ -136,16 +187,24 @@ void ThumbnailStore::OnURLDataAvailable(std::vector<GURL>* urls,
   most_visited_urls_.reset(new std::vector<GURL>(*urls));
   redirect_urls_.reset(new history::RedirectMap(*redirects));
   CleanCacheData();
+
+  // Schedule the next update.
+  if (seconds_to_next_update_ < kMaxUpdateIntervalSecs)
+    seconds_to_next_update_ *= 2;
+  timer_.Start(base::TimeDelta::FromSeconds(seconds_to_next_update_), this,
+      &ThumbnailStore::UpdateURLData);
 }
 
 void ThumbnailStore::CleanCacheData() {
   if (!cache_.get())
     return;
 
+  scoped_refptr<RefCountedVector<GURL> > urls_to_delete =
+      new RefCountedVector<GURL>;
+
   // For each URL in the cache, search the RedirectMap for the originating URL.
   // If this URL is blacklisted or not in the most visited list, delete the
   // thumbnail data for it from the cache and from disk in the background.
-  scoped_refptr<RefCountedVector<GURL> > old_urls = new RefCountedVector<GURL>;
   for (Cache::iterator cache_it = cache_->begin();
        cache_it != cache_->end();) {
     const GURL* url = NULL;
@@ -160,21 +219,20 @@ void ThumbnailStore::CleanCacheData() {
     }
 
     if (url == NULL || IsURLBlacklisted(*url) || !IsPopular(*url)) {
-      old_urls->data.push_back(cache_it->first);
+      urls_to_delete->data.push_back(cache_it->first);
       cache_->erase(cache_it++);
     } else {
-      cache_it++;
+      ++cache_it;
     }
   }
 
-  if (old_urls->data.size()) {
-    g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &ThumbnailStore::CommitCacheToDB, old_urls));
-  }
+  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &ThumbnailStore::CommitCacheToDB,
+                        urls_to_delete));
 }
 
 void ThumbnailStore::CommitCacheToDB(
-    scoped_refptr<RefCountedVector<GURL> > stale_urls) const {
+    scoped_refptr<RefCountedVector<GURL> > urls_to_delete) const {
   if (!db_)
     return;
 
@@ -182,9 +240,9 @@ void ThumbnailStore::CommitCacheToDB(
   DCHECK(rv == SQLITE_OK) << "Failed to begin transaction";
 
   // Delete old thumbnails.
-  if (stale_urls.get()) {
-    for (std::vector<GURL>::iterator it = stale_urls->data.begin();
-        it != stale_urls->data.end(); ++it) {
+  if (urls_to_delete.get()) {
+    for (std::vector<GURL>::iterator it = urls_to_delete->data.begin();
+        it != urls_to_delete->data.end(); ++it) {
       SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
           "DELETE FROM thumbnails WHERE url=?");
       statement->bind_string(0, it->spec());

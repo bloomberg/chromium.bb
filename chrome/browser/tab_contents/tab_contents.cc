@@ -1889,7 +1889,8 @@ void TabContents::UpdateThumbnail(const GURL& url,
   // Tell History about this thumbnail
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kThumbnailStore)) {
     if (!profile()->IsOffTheRecord())
-      profile()->GetThumbnailStore()->SetPageThumbnail(url, bitmap, score);
+      profile()->GetThumbnailStore()->SetPageThumbnail(url, bitmap,
+                                                       score, true);
   } else {
     HistoryService* hs;
     if (!profile()->IsOffTheRecord() &&

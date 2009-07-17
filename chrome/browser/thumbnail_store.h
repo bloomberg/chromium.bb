@@ -16,6 +16,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/url_database.h"  // For DBCloseScoper
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/sqlite_compiled_statement.h"
@@ -34,7 +35,8 @@ class Time;
 
 // This storage interface provides storage for the thumbnails used
 // by the new_tab_ui.
-class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore> {
+class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
+                       public NotificationObserver {
  public:
   ThumbnailStore();
   ~ThumbnailStore();
@@ -46,7 +48,8 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore> {
   // Stores the given thumbnail and score with the associated url in the cache.
   bool SetPageThumbnail(const GURL& url,
                         const SkBitmap& thumbnail,
-                        const ThumbnailScore& score);
+                        const ThumbnailScore& score,
+                        bool fetch_redirects);  // for debugging
 
   // Sets *data to point to the thumbnail for the given url.
   // Returns false if no thumbnail available.
@@ -76,6 +79,11 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore> {
   // Data structure used to store thumbnail data in memory.
   typedef std::map<GURL, CacheEntry> Cache;
 
+  // NotificationObserver implementation
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Most visited URLs and their redirect lists -------------------------------
 
   // Query the HistoryService for the most visited URLs and the most recent
@@ -86,6 +94,15 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore> {
   // The callback for UpdateURLData.
   void OnURLDataAvailable(std::vector<GURL>* urls,
                           history::RedirectMap* redirects);
+
+  // The callback for the redirects request to the HistoryService made in
+  // SetPageThumbnail. If we have a redirect chain A -> B -> C, this function
+  // will be called with url=C and redirects = {B -> A}.  This information gets
+  // inserted into the RedirectMap as A => {B -> C}.
+  void OnRedirectsForURLAvailable(HistoryService::Handle handle,
+                                  GURL url,
+                                  bool success,
+                                  history::RedirectList* redirects);
 
   // Remove stale data --------------------------------------------------------
 
@@ -113,7 +130,7 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore> {
   // Delete each URL in the given vector from the DB and write all dirty
   // cache entries to the DB.
   void CommitCacheToDB(
-      scoped_refptr<RefCountedVector<GURL> > stale_urls) const;
+      scoped_refptr<RefCountedVector<GURL> > urls_to_delete) const;
 
   // Decide whether to store data ---------------------------------------------
 
@@ -155,12 +172,17 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore> {
   scoped_ptr<history::RedirectMap> redirect_urls_;
 
   // Timer on which UpdateURLData runs.
-  base::RepeatingTimer<ThumbnailStore> timer_;
+  base::OneShotTimer<ThumbnailStore> timer_;
+  int seconds_to_next_update_;
 
   // Consumer for queries to the HistoryService.
   CancelableRequestConsumer consumer_;
 
-  static const unsigned int kMaxCacheSize = 45;
+  NotificationRegistrar registrar_;
+
+  static const unsigned int kMaxCacheSize = 24;
+  static const int64 kInitialUpdateIntervalSecs = 20;
+  static const int64 kMaxUpdateIntervalSecs = 3600;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailStore);
 };

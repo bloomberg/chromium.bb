@@ -145,8 +145,8 @@ TEST_F(ThumbnailStoreTest, UpdateThumbnail) {
   // store_ google_ with a low score, then weewar_ with a higher score
   // and check that weewar_ overwrote google_.
 
-  EXPECT_TRUE(store_->SetPageThumbnail(url_, *google_, score_));
-  EXPECT_TRUE(store_->SetPageThumbnail(url_, *weewar_, score2));
+  EXPECT_TRUE(store_->SetPageThumbnail(url_, *google_, score_, false));
+  EXPECT_TRUE(store_->SetPageThumbnail(url_, *weewar_, score2, false));
 
   EXPECT_TRUE(store_->GetPageThumbnail(url_, &read_image));
   EXPECT_EQ(read_image->data.size(), jpeg_weewar_->data.size());
@@ -165,7 +165,7 @@ TEST_F(ThumbnailStoreTest, RetrieveFromCache) {
 
   // Store a thumbnail into the cache and retrieve it.
 
-  EXPECT_TRUE(store_->SetPageThumbnail(url_, *google_, score_));
+  EXPECT_TRUE(store_->SetPageThumbnail(url_, *google_, score_, false));
   EXPECT_TRUE(store_->GetPageThumbnail(url_, &read_image));
   EXPECT_TRUE(score_.Equals((*store_->cache_)[url_].score_));
   EXPECT_TRUE(read_image->data.size() == jpeg_google_->data.size());
@@ -176,7 +176,7 @@ TEST_F(ThumbnailStoreTest, RetrieveFromCache) {
 }
 
 TEST_F(ThumbnailStoreTest, RetrieveFromDisk) {
-  EXPECT_TRUE(store_->SetPageThumbnail(url_, *google_, score_));
+  EXPECT_TRUE(store_->SetPageThumbnail(url_, *google_, score_, false));
 
   // Write the thumbnail to disk and retrieve it.
 
@@ -216,7 +216,8 @@ TEST_F(ThumbnailStoreTest, FollowRedirects) {
 
   store_->most_visited_urls_->push_back(my_url);
 
-  EXPECT_TRUE(store_->SetPageThumbnail(GURL("google.com"), *google_, score_));
+  EXPECT_TRUE(store_->SetPageThumbnail(GURL("google.com"), *google_, score_,
+                                       false));
   EXPECT_TRUE(store_->GetPageThumbnail(my_url, &read_image));
 
   read_image->Release();
