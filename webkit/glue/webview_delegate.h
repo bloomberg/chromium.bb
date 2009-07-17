@@ -66,7 +66,6 @@ class WebFrame;
 class WebMediaPlayerDelegate;
 class WebPluginDelegate;
 class WebView;
-class WebWidget;
 struct ContextMenuMediaParams;
 struct WebPluginGeometry;
 struct WebPreferences;
