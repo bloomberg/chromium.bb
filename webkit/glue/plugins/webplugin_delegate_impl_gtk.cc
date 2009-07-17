@@ -557,7 +557,6 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
                   draw_rect.width(), draw_rect.height());
   cairo_clip(context);
   cairo_paint(context);
-  cairo_destroy(context);
 
 #ifdef DEBUG_RECTANGLES
   // Draw some debugging rectangles.
