@@ -117,12 +117,25 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
     return;
 
   // TODO(avi): the TabContents object uses this method to size the newly
-  // created widget to the correct size. At the time of this call, we're not yet
-  // in the view hierarchy so |size| ends up being 0x0. However, this works for
-  // us because we're using the Cocoa view struture and resizer flags to fix
-  // things up as soon as the view gets added to the hierarchy. Figure out if we
-  // want to keep this flow or switch back to the flow Windows uses which sets
-  // the size upon creation. http://crbug.com/8285.
+  // created widget to the correct size. For that instance, we're not yet in the
+  // view hierarchy so |size| ends up being 0x0. However, this works for us
+  // because we're using the Cocoa view struture and resizer flags to fix things
+  // up as soon as the view gets added to the hierarchy. Figure out if we want
+  // to keep this flow or switch back to the flow Windows uses which sets the
+  // size upon creation. <http://crbug.com/8285>. However, if the size is not
+  // 0x0, this is a valid request.
+  if (size.IsEmpty())
+    return;
+
+  // Do conversions to upper-left origin, as "set size" means keep the
+  // upper-left corner pinned. If the new size is valid, this is a popup whose
+  // superview is another RenderWidgetHostViewCocoa, but even if it's directly
+  // in a TabContentsViewCocoa, they're both BaseViews.
+  gfx::Rect rect =
+      [(BaseView*)[cocoa_view_ superview] NSRectToRect:[cocoa_view_ frame]];
+  rect.set_width(size.width());
+  rect.set_height(size.height());
+  [cocoa_view_ setFrame:[(BaseView*)[cocoa_view_ superview] RectToNSRect:rect]];
 }
 
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
