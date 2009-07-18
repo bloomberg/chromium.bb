@@ -573,11 +573,13 @@ DnsPrefetcherInit::DnsPrefetcherInit(PrefService* user_prefs,
   // First option is to disable prefetching completely.
   int disabled_prefetch = trial_->AppendGroup("_disabled_prefetch",
                                               kProbabilityPerGroup);
-  // Set parallel prefetch limit to 4 instead of default 8.
-  int parallel_4_prefetch = trial_->AppendGroup("_parallel_4_prefetch",
-                                                kProbabilityPerGroup);
-  // Set congestion detection at 500ms, rather than the 1 second default.
+  // Set congestion detection at 250, 500, or 750ms, rather than the 1 second
+  // default.
+  int max_250ms_prefetch = trial_->AppendGroup("_max_250ms_queue_prefetch",
+                                               kProbabilityPerGroup);
   int max_500ms_prefetch = trial_->AppendGroup("_max_500ms_queue_prefetch",
+                                               kProbabilityPerGroup);
+  int max_750ms_prefetch = trial_->AppendGroup("_max_750ms_queue_prefetch",
                                                kProbabilityPerGroup);
   // Set congestion detection at 2 seconds instead of the 1 second default.
   int max_2s_prefetch = trial_->AppendGroup("_max_2s_queue_prefetch",
@@ -593,10 +595,12 @@ DnsPrefetcherInit::DnsPrefetcherInit(PrefService* user_prefs,
 
     int max_queueing_delay_ms = kMaxQueueingDelayMs;
 
-    if (trial_->group() == parallel_4_prefetch)
-      max_concurrent = 4;
+    if (trial_->group() == max_250ms_prefetch)
+      max_queueing_delay_ms = 250;
     else if (trial_->group() == max_500ms_prefetch)
       max_queueing_delay_ms = 500;
+    else if (trial_->group() == max_750ms_prefetch)
+      max_queueing_delay_ms = 750;
     else if (trial_->group() == max_2s_prefetch)
       max_queueing_delay_ms = 2000;
 
