@@ -199,8 +199,6 @@ class SinkStreamSet {
   // stream or file.  The serialized format may be re-read by initializing a
   // SourceStreamSet with a buffer containing the data.
   bool CopyTo(SinkStream* combined_stream);
-  bool CopyToFile(FILE* file);
-  bool CopyToFileDescriptor(int file_descriptor);
 
   // Writes the streams of |set| into the corresponding streams of |this|.
   // Stream zero first has some metadata written to it.  |set| becomes retired.

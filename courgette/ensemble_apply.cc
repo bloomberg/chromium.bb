@@ -351,9 +351,9 @@ Status ApplyEnsemblePatch(SourceStream* base,
   return C_OK;
 }
 
-Status ApplyEnsemblePatch(const wchar_t* old_file_name,
-                          const wchar_t* patch_file_name,
-                          const wchar_t* new_file_name) {
+Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
+                          const FilePath::CharType* patch_file_name,
+                          const FilePath::CharType* new_file_name) {
   Status status;
 
   // First read enough of the patch file to validate the header is well-formed.
@@ -403,7 +403,7 @@ Status ApplyEnsemblePatch(const wchar_t* old_file_name,
           new_sink_stream.Length());
   if (written == -1)
     return C_WRITE_OPEN_ERROR;
-  if (written != new_sink_stream.Length())
+  if (static_cast<size_t>(written) != new_sink_stream.Length())
     return C_WRITE_ERROR;
 
   return C_OK;

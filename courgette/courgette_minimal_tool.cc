@@ -33,7 +33,11 @@ void Problem(const char* message) {
   exit(1);
 }
 
+#if defined(OS_WIN)
 int wmain(int argc, const wchar_t* argv[]) {
+#else
+int main(int argc, const char* argv[]) {
+#endif
   if (argc != 4)
     UsageProblem("bad args");
 

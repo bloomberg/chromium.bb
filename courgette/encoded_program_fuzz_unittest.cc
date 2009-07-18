@@ -30,8 +30,8 @@ class DecodeFuzzTest : public testing::Test {
  private:
   virtual void SetUp() {
     PathService::Get(base::DIR_SOURCE_ROOT, &testdata_dir_);
-    testdata_dir_ = testdata_dir_.Append(L"courgette");
-    testdata_dir_ = testdata_dir_.Append(L"testdata");
+    testdata_dir_ = testdata_dir_.AppendASCII("courgette");
+    testdata_dir_ = testdata_dir_.AppendASCII("testdata");
   }
 
   virtual void TearDown() { }
@@ -188,10 +188,10 @@ void DecodeFuzzTest::FuzzBits(const std::string& base_buffer,
     }
 
     if (index > 60) {                     // Beyond the origin addresses ...
-      EXPECT_NE(0, changed_byte_count);   //   ... we expect some difference.
+      EXPECT_NE(0U, changed_byte_count);   //   ... we expect some difference.
     }
     // Currently all changes are smaller than this number:
-    EXPECT_GE(45000u, changed_byte_count);
+    EXPECT_GE(45000U, changed_byte_count);
   }
 }
 

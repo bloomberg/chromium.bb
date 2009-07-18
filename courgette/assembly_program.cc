@@ -85,8 +85,8 @@ class InstructionWithLabel : public Instruction {
 }  // namespace
 
 AssemblyProgram::AssemblyProgram()
-  : image_base_(0),
-    byte_instruction_cache_(NULL) {
+  : byte_instruction_cache_(NULL),
+    image_base_(0) {
 }
 
 static void DeleteContainedLabels(const RVAToLabel& labels) {
@@ -209,9 +209,9 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
   int used = 0;
 
   for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
-    size_t index = p->second->index_;
+    int index = p->second->index_;
     if (index != Label::kNoIndex) {
-      while (index >= available.size())
+      while (static_cast<size_t>(index) >= available.size())
         available.push_back(true);
       available.at(index) = false;
       ++used;
@@ -244,7 +244,6 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
   // label?
   //
   int fill_backward_count = 0;
-  int backward_refs = 0;
   prev = 0;
   for (RVAToLabel::reverse_iterator p = labels->rbegin();
        p != labels->rend();

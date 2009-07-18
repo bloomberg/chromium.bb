@@ -4,6 +4,8 @@
 
 #include "courgette/streams.h"
 
+#include <vector>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(StreamsTest, SimpleWriteRead) {
@@ -22,7 +24,7 @@ TEST(StreamsTest, SimpleWriteRead) {
   bool can_read = source.ReadVarint32(&value);
   EXPECT_EQ(true, can_read);
   EXPECT_EQ(kValue1, value);
-  EXPECT_EQ(0, source.Remaining());
+  EXPECT_EQ(0U, source.Remaining());
 }
 
 TEST(StreamsTest, SimpleWriteRead2) {
@@ -40,7 +42,7 @@ TEST(StreamsTest, SimpleWriteRead2) {
   bool can_read = source.Read(text, 5);
   EXPECT_EQ(true, can_read);
   EXPECT_EQ(0, memcmp("Hello", text, 5));
-  EXPECT_EQ(0, source.Remaining());
+  EXPECT_EQ(0U, source.Remaining());
 }
 
 TEST(StreamsTest, StreamSetWriteRead) {
@@ -66,8 +68,8 @@ TEST(StreamsTest, StreamSetWriteRead) {
   bool can_read = in.stream(3)->ReadVarint32(&value);
   EXPECT_EQ(true, can_read);
   EXPECT_EQ(kValue1, value);
-  EXPECT_EQ(0, in.stream(3)->Remaining());
-  EXPECT_EQ(0, in.stream(2)->Remaining());
+  EXPECT_EQ(0U, in.stream(3)->Remaining());
+  EXPECT_EQ(0U, in.stream(2)->Remaining());
 }
 
 TEST(StreamsTest, StreamSetWriteRead2) {
@@ -109,7 +111,7 @@ TEST(StreamsTest, StreamSetWriteRead2) {
   }
 
   for (size_t i = 0;  i < kNumberOfStreams;  ++i) {
-    EXPECT_EQ(0, in.stream(i)->Remaining());
+    EXPECT_EQ(0U, in.stream(i)->Remaining());
   }
 }
 
@@ -141,6 +143,7 @@ TEST(StreamsTest, SignedVarint32) {
     int written_value = values[i];
     int32 datum;
     bool can_read = in.ReadVarint32Signed(&datum);
+    EXPECT_EQ(true, can_read);
     EXPECT_EQ(written_value, datum);
   }
 
@@ -187,14 +190,14 @@ TEST(StreamsTest, StreamSetReadWrite) {
 
   uint32 datum;
   EXPECT_EQ(true, subset1.stream(3)->ReadVarint32(&datum));
-  EXPECT_EQ(30000, datum);
+  EXPECT_EQ(30000U, datum);
   EXPECT_EQ(true, subset1.stream(5)->ReadVarint32(&datum));
-  EXPECT_EQ(50000, datum);
+  EXPECT_EQ(50000U, datum);
   EXPECT_EQ(true, subset1.Empty());
 
   EXPECT_EQ(true, subset2.stream(2)->ReadVarint32(&datum));
-  EXPECT_EQ(20000, datum);
+  EXPECT_EQ(20000U, datum);
   EXPECT_EQ(true, subset2.stream(6)->ReadVarint32(&datum));
-  EXPECT_EQ(60000, datum);
+  EXPECT_EQ(60000U, datum);
   EXPECT_EQ(true, subset2.Empty());
 }

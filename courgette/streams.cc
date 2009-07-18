@@ -18,7 +18,6 @@
 
 #include "courgette/streams.h"
 
-#include <io.h>
 #include <memory.h>
 
 #include "base/basictypes.h"
@@ -255,7 +254,7 @@ bool SourceStreamSet::Init(const void* source, size_t byte_count) {
   }
 
   // Remaining bytes should add up to sum of lengths.
-  if (end - finger != accumulated_length)
+  if (static_cast<size_t>(end - finger) != accumulated_length)
     return false;
 
   accumulated_length = finger - start;
@@ -331,27 +330,6 @@ bool SinkStreamSet::CopyTo(SinkStream *combined_stream) {
   combined_stream->Append(&header);
   for (size_t i = 0; i < count_; ++i) {
     combined_stream->Append(stream(i));
-  }
-  return true;
-}
-
-namespace {
-bool Write(int file_descriptor, SinkStream* sink) {
-  size_t length = sink->Length();
-  const void *buffer = sink->Buffer();
-  int bytes_written = _write(file_descriptor, buffer, length);
-  return bytes_written == length;
-}
-}
-
-bool SinkStreamSet::CopyToFileDescriptor(int file_descriptor) {
-  SinkStream header;
-  CopyHeaderTo(&header);
-  if (!Write(file_descriptor, &header))
-    return false;
-  for (size_t i = 0; i < count_; ++i) {
-    if (!Write(file_descriptor, stream(i)))
-      return false;
   }
   return true;
 }

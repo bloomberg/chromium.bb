@@ -208,7 +208,7 @@ class LabelInfo {
                              // output. The pair (is_model_, debug_index_) is
                              // unique.
 
-  uint32 refs_;              // Number of times this Label is referenced.
+  int refs_;                 // Number of times this Label is referenced.
 
   LabelInfo* assignment_;    // Label from other program corresponding to this.
 
@@ -403,10 +403,14 @@ class Shingle {
                        OwningSet* owning_set) {
     std::pair<OwningSet::iterator, bool> pair =
         owning_set->insert(Shingle(trace, position));
-    // pair.first is the newly inserted Shingle or the previouly inserted one
-    // that looks the same according to the comparator.
-    pair.first->add_position(position);
-    return &*pair.first;
+    // pair.first iterator 'points' to the newly inserted Shingle or the
+    // previouly inserted one that looks the same according to the comparator.
+
+    // const_cast required because key is const.  We modify the Shingle
+    // extensively but not in a way that affects InterningLess.
+    Shingle* shingle = const_cast<Shingle*>(&*pair.first);
+    shingle->add_position(position);
+    return shingle;
   }
 
   LabelInfo* at(size_t i) const { return trace_[exemplar_position_ + i]; }
@@ -957,7 +961,8 @@ class AssignmentProblem {
     for (Shingle::OwningSet::iterator p = shingle_instances_.begin();
          p != shingle_instances_.end();
          ++p) {
-      Reclassify(&*p);
+      // GCC's set<T>::iterator::operator *() returns a const object.
+      Reclassify(const_cast<Shingle*>(&*p));
     }
   }
 
@@ -1035,8 +1040,6 @@ class AssignmentProblem {
   void AddPatternToLabelQueue(const ShinglePattern* pattern, int sign) {
     // For each possible assignment in this pattern, update the potential
     // contributions to the LabelInfo queues.
-    size_t model_histogram_size = pattern->model_histogram_.size();
-    size_t program_histogram_size = pattern->program_histogram_.size();
 
     // We want to find for each symbol (LabelInfo) the maximum contribution that
     // could be achieved by making shingle-wise assignments between shingles in
@@ -1053,7 +1056,7 @@ class AssignmentProblem {
     // assignments are blocked by previous incompatible assignments.  We want to
     // avoid a combinatorial search, so we ignore the blocking.
 
-    const int kUnwieldy = 5;
+    const size_t kUnwieldy = 5;
 
     typedef std::map<LabelInfo*, int> LabelToScore;
     typedef std::map<LabelInfo*, LabelToScore > ScoreSet;

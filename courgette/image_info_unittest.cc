@@ -64,7 +64,7 @@ void ImageInfoTest::TestExe() const {
   EXPECT_EQ(file1.length(), info->length());
 
   ExpectExecutable(info.get());
-  EXPECT_EQ(449536, info->size_of_code());
+  EXPECT_EQ(449536U, info->size_of_code());
   EXPECT_EQ(SectionName(info->RVAToSection(0x00401234 - 0x00400000)),
             std::string(".text"));
 
@@ -97,7 +97,7 @@ void ImageInfoTest::TestResourceDll() const {
 
   EXPECT_TRUE(info->ok());
   EXPECT_FALSE(info->has_text_section());
-  EXPECT_EQ(0u, info->size_of_code());
+  EXPECT_EQ(0U, info->size_of_code());
 }
 
 TEST_F(ImageInfoTest, All) {

@@ -45,7 +45,11 @@ void Problem(const char* format, ...) {
 }
 
 std::string ReadOrFail(const std::wstring& file_name, const char* kind) {
+#if defined(OS_WIN)
   FilePath file_path(file_name);
+#else
+  FilePath file_path(WideToASCII(file_name));
+#endif
   std::string buffer;
   if (!file_util::ReadFileToString(file_path, &buffer))
     Problem("Can't read %s file.", kind);
@@ -54,14 +58,18 @@ std::string ReadOrFail(const std::wstring& file_name, const char* kind) {
 
 void WriteSinkToFile(const courgette::SinkStream *sink,
                      const std::wstring& output_file) {
+#if defined(OS_WIN)
   FilePath output_path(output_file);
+#else
+  FilePath output_path(WideToASCII(output_file));
+#endif
   int count =
       file_util::WriteFile(output_path,
                            reinterpret_cast<const char*>(sink->Buffer()),
                            sink->Length());
   if (count == -1)
-    Problem("Cant write output.");
-  if (count != sink->Length())
+    Problem("Can't write output.");
+  if (static_cast<size_t>(count) != sink->Length())
     Problem("Incomplete write.");
 }
 
@@ -330,6 +338,11 @@ void ApplyBSDiffPatch(const std::wstring& old_file,
   WriteSinkToFile(&new_stream, new_file);
 }
 
+bool WideStringToInt(const std::wstring& str, int *output) {
+  string16 copy(str.begin(), str.end());
+  return StringToInt(copy, output);
+}
+
 int main(int argc, const char* argv[]) {
   base::AtExitManager at_exit_manager;
   CommandLine::Init(argc, argv);
@@ -352,7 +365,7 @@ int main(int argc, const char* argv[]) {
   int repeat_count = 1;
   std::wstring repeat_switch = command_line.GetSwitchValue(L"repeat");
   if (!repeat_switch.empty())
-    if (!StringToInt(repeat_switch, &repeat_count))
+    if (!WideStringToInt(repeat_switch, &repeat_count))
       repeat_count = 1;
 
   if (cmd_dis + cmd_asm + cmd_disadj + cmd_make_patch + cmd_apply_patch +

@@ -54,7 +54,18 @@ class EncodedProgram {
   bool AssembleTo(SinkStream *buffer);
 
  private:
-  enum OP;    // Binary assembly language operations.
+  // Binary assembly language operations.
+  enum OP {
+    ORIGIN,    // ORIGIN <rva> - set address for subsequent assembly.
+    COPY,      // COPY <count> <bytes> - copy bytes to output.
+    COPY1,     // COPY1 <byte> - same as COPY 1 <byte>.
+    REL32,     // REL32 <index> - emit rel32 encoded reference to address at
+               // address table offset <index>
+    ABS32,     // ABS32 <index> - emit abs32 encoded reference to address at
+               // address table offset <index>
+    MAKE_BASE_RELOCATION_TABLE,  // Emit base relocation table blocks.
+    OP_LAST
+  };
 
   void DebuggingSummary();
   void GenerateBaseRelocations(SinkStream *buffer);
@@ -80,4 +91,4 @@ class EncodedProgram {
 };
 
 }  // namespace courgette
-#endif  // COURGETTE_ENCODED_FORMAT_H_
+#endif  // COURGETTE_ENCODED_PROGRAM_H_

@@ -76,7 +76,7 @@ void EncodeDecodeTest::TestExe(const char* file_name) const {
   const void* buffer = sink.Buffer();
   size_t length = sink.Length();
 
-  EXPECT_EQ(971850, length);
+  EXPECT_EQ(971850U, length);
 
   courgette::SourceStreamSet sources;
   bool can_get_source_streams = sources.Init(buffer, length);

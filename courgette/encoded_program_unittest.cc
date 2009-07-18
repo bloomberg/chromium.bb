@@ -53,7 +53,7 @@ TEST(EncodedProgramTest, Test) {
   const void* assembled_buffer = assembled.Buffer();
   size_t assembled_length = assembled.Length();
 
-  EXPECT_EQ(8, assembled_length);
+  EXPECT_EQ(8U, assembled_length);
 
   static const uint8 golden[] = {
     0x04, 0x00, 0x90, 0x00,  // ABS32 to base + 4

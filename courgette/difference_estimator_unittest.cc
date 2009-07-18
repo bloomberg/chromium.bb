@@ -21,7 +21,7 @@ TEST(DifferenceEstimatorTest, TestSame) {
       difference_estimator.MakeBase(Region(kString1, sizeof(kString1)));
   DifferenceEstimator::Subject* subject =
       difference_estimator.MakeSubject(Region(kString2, sizeof(kString2)));
-  EXPECT_EQ(0, difference_estimator.Measure(base, subject));
+  EXPECT_EQ(0U, difference_estimator.Measure(base, subject));
 }
 
 TEST(DifferenceEstimatorTest, TestDifferent) {
@@ -32,7 +32,7 @@ TEST(DifferenceEstimatorTest, TestDifferent) {
       difference_estimator.MakeBase(Region(kString1, sizeof(kString1)));
   DifferenceEstimator::Subject* subject =
       difference_estimator.MakeSubject(Region(kString2, sizeof(kString2)));
-  EXPECT_EQ(10, difference_estimator.Measure(base, subject));
+  EXPECT_EQ(10U, difference_estimator.Measure(base, subject));
 }
 
 TEST(DifferenceEstimatorTest, TestDifferentSuperstring) {
@@ -43,7 +43,7 @@ TEST(DifferenceEstimatorTest, TestDifferentSuperstring) {
       difference_estimator.MakeBase(Region(kString1, sizeof(kString1)-1));
   DifferenceEstimator::Subject* subject =
       difference_estimator.MakeSubject(Region(kString2, sizeof(kString2)-1));
-  EXPECT_EQ(1, difference_estimator.Measure(base, subject));
+  EXPECT_EQ(1U, difference_estimator.Measure(base, subject));
 }
 
 TEST(DifferenceEstimatorTest, TestDifferentSubstring) {
@@ -54,5 +54,5 @@ TEST(DifferenceEstimatorTest, TestDifferentSubstring) {
       difference_estimator.MakeBase(Region(kString1, sizeof(kString1)-1));
   DifferenceEstimator::Subject* subject =
       difference_estimator.MakeSubject(Region(kString2, sizeof(kString2)-1));
-  EXPECT_EQ(1, difference_estimator.Measure(base, subject));
+  EXPECT_EQ(1U, difference_estimator.Measure(base, subject));
 }

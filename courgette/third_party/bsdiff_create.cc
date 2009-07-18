@@ -232,7 +232,6 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   int diff_bytes_length = 0;
   int diff_bytes_nonzero = 0;
   int extra_bytes_length = 0;
-  int eblen = 0;
 
   // The patch format is a sequence of triples <copy,extra,seek> where 'copy' is
   // the number of bytes to copy from the old file (possibly with mistakes),

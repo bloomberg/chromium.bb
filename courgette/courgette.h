@@ -5,6 +5,10 @@
 #ifndef COURGETTE_COURGETTE_H_
 #define COURGETTE_COURGETTE_H_
 
+#include <stddef.h>   // Required to define size_t on GCC
+
+#include "base/file_path.h"
+
 namespace courgette {
 
 // Status codes for Courgette APIs.
@@ -44,8 +48,6 @@ enum Status {
   C_DISASSEMBLY_FAILED = 25,      //
   C_ASSEMBLY_FAILED = 26,         //
   C_ADJUSTMENT_FAILED = 27,       //
-
-
 };
 
 class SinkStream;
@@ -67,9 +69,10 @@ Status ApplyEnsemblePatch(SourceStream* old, SourceStream* patch,
 // Returns C_OK unless something went wrong.
 // This function first validates that the patch file has a proper header, so the
 // function can be used to 'try' a patch.
-Status ApplyEnsemblePatch(const wchar_t* old_file_name,
-                          const wchar_t* patch_file_name,
-                          const wchar_t* new_file_name);
+
+Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
+                          const FilePath::CharType* patch_file_name,
+                          const FilePath::CharType* new_file_name);
 
 // Generates a patch that will transform the bytes in |old| into the bytes in
 // |target|.

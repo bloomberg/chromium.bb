@@ -30,20 +30,6 @@ const int kStreamOriginAddresses = kStreamMisc;
 
 const int kStreamLimit = 9;
 
-// Binary assembly language operations.
-enum EncodedProgram::OP {
-  ORIGIN,    // ORIGIN <rva> - set address for subsequent assembly.
-  COPY,      // COPY <count> <bytes> - copy bytes to output.
-  COPY1,     // COPY1 <byte> - same as COPY 1 <byte>.
-  REL32,     // REL32 <index> - emit rel32 encoded reference to address at
-             // address table offset <index>
-  ABS32,     // ABS32 <index> - emit abs32 encoded reference to address at
-             // address table offset <index>
-  MAKE_BASE_RELOCATION_TABLE,  // Emit base relocation table blocks.
-  OP_LAST
-};
-
-
 // Constructor is here rather than in the header.  Although the constructor
 // appears to do nothing it is fact quite large because of the implict calls to
 // field constructors.  Ditto for the destructor.
@@ -499,31 +485,37 @@ bool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
 // RelocBlock has the layout of a block of relocations in the base relocation
 // table file format.
 //
-class RelocBlock {
- public:
+struct RelocBlockPOD {
   uint32 page_rva;
   uint32 block_size;
   uint16 relocs[4096];  // Allow up to one relocation per byte of a 4k page.
+};
 
-  RelocBlock() : page_rva(~0), block_size(8) {}
+COMPILE_ASSERT(offsetof(RelocBlockPOD, relocs) == 8, reloc_block_header_size);
+
+class RelocBlock {
+ public:
+  RelocBlock() {
+    pod.page_rva = ~0;
+    pod.block_size = 8;
+  }
 
   void Add(uint16 item) {
-    relocs[(block_size-8)/2] = item;
-    block_size += 2;
+    pod.relocs[(pod.block_size-8)/2] = item;
+    pod.block_size += 2;
   }
 
   void Flush(SinkStream* buffer) {
-    if (block_size != 8) {
-      if (block_size % 4 != 0) {  // Pad to make size multiple of 4 bytes.
+    if (pod.block_size != 8) {
+      if (pod.block_size % 4 != 0) {  // Pad to make size multiple of 4 bytes.
         Add(0);
       }
-      buffer->Write(this, block_size);
-      block_size = 8;
+      buffer->Write(&pod, pod.block_size);
+      pod.block_size = 8;
     }
   }
+  RelocBlockPOD pod;
 };
-
-COMPILE_ASSERT(offsetof(RelocBlock, relocs) == 8, reloc_block_header_size);
 
 void EncodedProgram::GenerateBaseRelocations(SinkStream* buffer) {
   std::sort(abs32_relocs_.begin(), abs32_relocs_.end());
@@ -533,9 +525,9 @@ void EncodedProgram::GenerateBaseRelocations(SinkStream* buffer) {
   for (size_t i = 0;  i < abs32_relocs_.size();  ++i) {
     uint32 rva = abs32_relocs_[i];
     uint32 page_rva = rva & ~0xFFF;
-    if (page_rva != block.page_rva) {
+    if (page_rva != block.pod.page_rva) {
       block.Flush(buffer);
-      block.page_rva = page_rva;
+      block.pod.page_rva = page_rva;
     }
     block.Add(0x3000 | (rva & 0xFFF));
   }
