@@ -20,8 +20,6 @@
   NSBundle* bundle = mac_util::MainAppBundle();
   NSString* nibpath = [bundle pathForResource:@"PageInfo" ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    pageInfo_.reset(new PageInfoWindowMac(self));
-
     // Load the image refs.
     NSImage* img = [[NSImage alloc] initByReferencingFile:
                     [bundle pathForResource:@"pageinfo_good" ofType:@"png"]];
@@ -49,8 +47,8 @@
   [super dealloc];
 }
 
-- (PageInfoWindow*)pageInfo {
-  return pageInfo_.get();
+- (void)setPageInfo:(PageInfoWindowMac*)pageInfo {
+  pageInfo_.reset(pageInfo);
 }
 
 - (NSImage*)goodImg {

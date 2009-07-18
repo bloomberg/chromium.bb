@@ -7,7 +7,6 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 
-class PageInfoWindow;
 class PageInfoWindowMac;
 
 // This NSWindowController subclass implements the Cocoa window for
@@ -44,8 +43,8 @@ class PageInfoWindowMac;
 @property(readwrite, copy) NSString* historyMsg;
 @property(readwrite) BOOL enableCertButton;
 
-// Returns the bridge between Cocoa and Chromium.
-- (PageInfoWindow*)pageInfo;
+// Sets the bridge between Cocoa and Chromium.
+- (void)setPageInfo:(PageInfoWindowMac*)pageInfo;
 
 // Returns the good and bad image refs.
 - (NSImage*)goodImg;
