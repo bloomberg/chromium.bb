@@ -2973,3 +2973,6 @@ BUG16962 MAC : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
 
 // New test from WebKit merge 45998:46050
 BUG17144 LINUX WIN : LayoutTests/fast/css/positioned-overflow-scroll.html = FAIL
+
+// New test from WebKit merge 46050:46087
+BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
