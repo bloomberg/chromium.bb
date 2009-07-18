@@ -941,3 +941,41 @@
    fun:_Znwj
    fun:*UtilityProcessHostTest_ExtensionUnpacker_Test8TestBodyEv
 }
+{
+   bug_17184
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN7WebCore10StringImplnwEj
+   fun:_ZN7WebCore10StringImpl5adoptERN3WTF6VectorItLj0EEE
+   fun:_ZN7WebCore12createMarkupEPKNS_5RangeEPN3WTF6VectorIPNS_4NodeELj0EEENS_23EAnnotateForInterchangeEb
+   fun:_ZN7WebCore10Pasteboard14writeSelectionEPNS_5RangeEbPNS_5FrameE
+}
+{
+   bug_17185
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
+   ...
+   fun:_ZN7WebCore10Pasteboard14writeSelectionEPNS_5RangeEbPNS_5FrameE
+}
+{
+   bug_17187
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
+   fun:_ZN7WebCore10StringImpl6createEPKtj
+   fun:_ZN6WebKit9WebString6assignEPKtj
+   fun:_ZN20MockWebClipboardImpl10writeImageERKN6WebKit8WebImageERKNS0_6WebURLERKNS0_9WebStringE
+   fun:_ZN7WebCore14ChromiumBridge19clipboardWriteImageEPK15NativeImageSkiaRKNS_4KURLERKNS_6StringE
+   fun:_ZN7WebCore10Pasteboard10writeImageEPNS_4NodeERKNS_4KURLERKNS_6StringE
+}
+{
+   # Only in test shell
+   bug_17188
+   Memcheck:Addr4
+   fun:_ZN9TestShell10ClosePopupEv
+   fun:_ZN12_GLOBAL__N_119MainWindowLostFocusEP10_GtkWidgetP14_GdkEventFocusP9TestShell
+}
