@@ -228,9 +228,6 @@ class TCPClientSocketPoolTest : public testing::Test {
         pool_(new TCPClientSocketPool(kMaxSocketsPerGroup,
                                       host_resolver_,
                                       &client_socket_factory_)) {
-    // We enable caching on the mock host-resolver (it is off by default),
-    // because some of the tests in this file expect it.
-    host_resolver_->Reset(NULL, 100, 60000);
   }
 
   virtual void SetUp() {
@@ -281,8 +278,9 @@ TEST_F(TCPClientSocketPoolTest, InitConnectionFailure) {
   EXPECT_EQ(ERR_IO_PENDING,
             req.handle.Init("a", info, 5, &req));
   EXPECT_EQ(ERR_CONNECTION_FAILED, req.WaitForResult());
-  // HostCache caches it, so MockFailingClientSocket will cause Init() to
-  // synchronously fail.
+
+  // Make the host resolutions complete synchronously this time.
+  host_resolver_->set_synchronous_mode(true);
   EXPECT_EQ(ERR_CONNECTION_FAILED,
             req.handle.Init("a", info, 5, &req));
 }
@@ -301,7 +299,10 @@ TEST_F(TCPClientSocketPoolTest, PendingRequests) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, reqs[0]->WaitForResult());
 
-  // Rest of them finish synchronously, since they're in the HostCache.
+  // Make all subsequent host resolutions complete synchronously.
+  host_resolver_->set_synchronous_mode(true);
+
+  // Rest of them finish synchronously.
   for (int i = 1; i < kMaxSocketsPerGroup; ++i) {
     rv = reqs[i]->handle.Init("a", info, 5, reqs[i].get());
     EXPECT_EQ(OK, rv);
@@ -362,7 +363,10 @@ TEST_F(TCPClientSocketPoolTest, PendingRequests_NoKeepAlive) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, reqs[0]->WaitForResult());
 
-  // Rest of them finish synchronously, since they're in the HostCache.
+  // Make all subsequent host resolutions complete synchronously.
+  host_resolver_->set_synchronous_mode(true);
+
+  // Rest of them finish synchronously.
   for (int i = 1; i < kMaxSocketsPerGroup; ++i) {
     rv = reqs[i]->handle.Init("a", info, 5, reqs[i].get());
     EXPECT_EQ(OK, rv);
@@ -444,13 +448,15 @@ TEST_F(TCPClientSocketPoolTest, ConnectCancelConnect) {
   TestCompletionCallback callback2;
   EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", info, 5, &callback2));
 
+  host_resolver_->set_synchronous_mode(true);
   // At this point, handle has two ConnectingSockets out for it.  Due to the
-  // host cache, the host resolution for both will return in the same loop of
-  // the MessageLoop.  The client socket is a pending socket, so the Connect()
-  // will asynchronously complete on the next loop of the MessageLoop.  That
-  // means that the first ConnectingSocket will enter OnIOComplete, and then the
-  // second one will.  If the first one is not cancelled, it will advance the
-  // load state, and then the second one will crash.
+  // setting the mock resolver into synchronous mode, the host resolution for
+  // both will return in the same loop of the MessageLoop.  The client socket
+  // is a pending socket, so the Connect() will asynchronously complete on the
+  // next loop of the MessageLoop.  That means that the first
+  // ConnectingSocket will enter OnIOComplete, and then the second one will.
+  // If the first one is not cancelled, it will advance the load state, and
+  // then the second one will crash.
 
   EXPECT_EQ(OK, callback2.WaitForResult());
   EXPECT_FALSE(callback.have_result());
@@ -472,7 +478,10 @@ TEST_F(TCPClientSocketPoolTest, CancelRequest) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, reqs[0]->WaitForResult());
 
-  // Rest of them finish synchronously, since they're in the HostCache.
+  // Make all subsequent host resolutions complete synchronously.
+  host_resolver_->set_synchronous_mode(true);
+
+  // Rest of them finish synchronously.
   for (int i = 1; i < kMaxSocketsPerGroup; ++i) {
     rv = reqs[i]->handle.Init("a", info, 5, reqs[i].get());
     EXPECT_EQ(OK, rv);
@@ -529,7 +538,7 @@ TEST_F(TCPClientSocketPoolTest, CancelRequest) {
 
 class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
  public:
-  RequestSocketCallback(ClientSocketHandle* handle)
+  explicit RequestSocketCallback(ClientSocketHandle* handle)
       : handle_(handle),
         within_callback_(false) {}
 
@@ -562,6 +571,10 @@ TEST_F(TCPClientSocketPoolTest, RequestTwice) {
   int rv = handle.Init(
       "a", HostResolver::RequestInfo("www.google.com", 80), 0, &callback);
   ASSERT_EQ(ERR_IO_PENDING, rv);
+
+  // The callback is going to request "www.google.com". We want it to complete
+  // synchronously this time.
+  host_resolver_->set_synchronous_mode(true);
 
   EXPECT_EQ(OK, callback.WaitForResult());
 

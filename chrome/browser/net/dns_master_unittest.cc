@@ -132,8 +132,6 @@ TimeDelta BlockingDnsLookup(net::HostResolver* resolver,
 // First test to be sure the OS is caching lookups, which is the whole premise
 // of DNS prefetching.
 TEST_F(DnsMasterTest, OsCachesLookupsTest) {
-  // Make sure caching is disabled in the mock host resolver.
-  host_resolver_->Reset(NULL, 0, 0);
   host_resolver_->rules()->AllowDirectLookup("*.google.com");
 
   const Time start = Time::Now();
@@ -243,7 +241,7 @@ TEST_F(DnsMasterTest, BenefitLookupTest) {
 TEST_F(DnsMasterTest, ShutdownWhenResolutionIsPendingTest) {
   scoped_refptr<net::WaitingHostResolverProc> resolver_proc =
       new net::WaitingHostResolverProc(NULL);
-  host_resolver_->Reset(resolver_proc, 0, 0);
+  host_resolver_->Reset(resolver_proc);
 
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
       MessageLoop::current(), default_max_queueing_delay_,
