@@ -58,9 +58,6 @@ class TestingProfile : public Profile {
   virtual FilePath GetPath() {
     return path_;
   }
-  virtual FilePath GetCachePath() {
-    return path_;
-  }
   // Sets whether we're off the record. Default is false.
   void set_off_the_record(bool off_the_record) {
     off_the_record_ = off_the_record;
