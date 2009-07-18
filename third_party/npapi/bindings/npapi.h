@@ -435,19 +435,7 @@ typedef enum {
    * NPN_MemAlloc() to allocate memory for the string data. Introduced
    * in Mozilla 1.8b2 (NPAPI minor version 15).
    */
-  NPPVformValue = 16,
-
-// BEGIN MODIFICATIONS (copied from WebKit/WebCore/bridge/npapi.h)
-    NPPVpluginUrlRequestsDisplayedBool = 17, /* Not implemented in WebKit */
-
-    /* Checks if the plugin is interested in receiving the http body of
-     * failed http requests (http status != 200).
-     */
-    NPPVpluginWantsAllNetworkStreams = 18,
-
-    /* Checks to see if the plug-in would like the browser to load the "src" attribute. */
-    NPPVpluginCancelSrcStream = 20
-// END MODIFICATIONS
+  NPPVformValue = 16
 #ifdef XP_MACOSX
   /* Used for negotiating drawing models */
   , NPPVpluginDrawingModel = 1000
@@ -499,13 +487,6 @@ typedef enum {
   NPNVGtk12 = 1,
   NPNVGtk2
 } NPNToolkitType;
-
-// BEGIN MODIFICATIONS (copied from WebKit/WebCore/bridge/npapi.h)
-typedef enum {
-   NPNURLVCookie = 501,
-   NPNURLVProxy
-} NPNURLVariable;
-// END MODIFICATIONS
 
 /*
  * The type of a NPWindow - it specifies the type of the data structure
@@ -565,16 +546,6 @@ typedef NPNSMenu NPMenu;
 typedef void * NPMenu;
 #endif
 // END GOOGLE MODIFICATIONS
-
-// BEGIN MODIFICATIONS (copied from WebKit/WebCore/bridge/npapi.h)
-typedef enum {
-    NPCoordinateSpacePlugin = 1,
-    NPCoordinateSpaceWindow,
-    NPCoordinateSpaceFlippedWindow,
-    NPCoordinateSpaceScreen,
-    NPCoordinateSpaceFlippedScreen
-} NPCoordinateSpace;
-// END MODIFICATIONS
 
 #ifdef XP_MACOSX
 typedef EventRecord	NPEvent;
