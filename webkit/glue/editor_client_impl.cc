@@ -118,6 +118,8 @@ bool EditorClientImpl::isSelectTrailingWhitespaceEnabled() {
 }
 
 bool EditorClientImpl::ShouldSpellcheckByDefault() {
+  // Spellcheck should be enabled for all editable areas (such as textareas,
+  // contentEditable regions, and designMode docs), except text inputs.
   const WebCore::Frame* frame = web_view_->GetFocusedWebCoreFrame();
   if (!frame)
     return false;
@@ -133,12 +135,8 @@ bool EditorClientImpl::ShouldSpellcheckByDefault() {
   const WebCore::RenderObject* renderer = node->renderer();
   if (!renderer)
     return false;
-  // We should also retrieve the contenteditable attribute of this element to
-  // determine if this element needs spell-checking.
-  const WebCore::EUserModify user_modify = renderer->style()->userModify();
-  return (renderer->isTextArea() && editor->canEdit()) ||
-         user_modify == WebCore::READ_WRITE ||
-         user_modify == WebCore::READ_WRITE_PLAINTEXT_ONLY;
+
+  return (!renderer->isTextField() && editor->canEdit());
 }
 
 bool EditorClientImpl::isContinuousSpellCheckingEnabled() {
