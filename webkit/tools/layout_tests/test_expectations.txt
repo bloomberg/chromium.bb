@@ -638,10 +638,7 @@ BUG13907 WIN DEBUG : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
 // This test crashes in debug build.
 BUG13907 WIN : LayoutTests/media/video-document-types.html = FAIL CRASH
 BUG13907 WIN : LayoutTests/media/video-loop.html = FAIL CRASH
-// This test is flaky.
-BUG13907 WIN : LayoutTests/media/video-play-pause-events.html = FAIL CRASH
 // This test is flaky too.	
-BUG13907 WIN : LayoutTests/media/video-play-pause-exception.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-played-collapse.html = FAIL
 // This test crashes in debug build.
 BUG13907 WIN : LayoutTests/media/video-played.html = FAIL CRASH
@@ -2967,9 +2964,6 @@ BUG16878 LINUX WIN : LayoutTests/fast/runin/001.html = FAIL
 BUG16878 LINUX WIN : LayoutTests/fast/runin/generated.html = FAIL
 BUG16878 LINUX WIN : LayoutTests/fast/text/shadow-translucent-fill.html = FAIL
 BUG16878 WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
-
-// Failure from WebKit merge 45958:45975
-BUG16924 WIN : LayoutTests/media/video-source-type-params.html = FAIL CRASH
 
 // Failure from WebKit merge 45985:45998
 BUG16962 LINUX WIN : LayoutTests/fast/css/nested-floating-relative-position-percentages.html = FAIL
