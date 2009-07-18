@@ -56,12 +56,19 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
 
   // Strings used by themes to identify miscellaneous numerical properties.
   static const char* kDisplayPropertyNTPAlignment;
+  static const char* kDisplayPropertyNTPTiling;
 
   // Strings used in alignment properties.
   static const char* kAlignmentTop;
   static const char* kAlignmentBottom;
   static const char* kAlignmentLeft;
   static const char* kAlignmentRight;
+
+  // Strings used in tiling properties.
+  static const char* kTilingNoRepeat;
+  static const char* kTilingRepeatX;
+  static const char* kTilingRepeatY;
+  static const char* kTilingRepeat;
 
   // Default colors.
   static const SkColor kDefaultColorFrame;
@@ -115,7 +122,8 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
     TINT_FRAME_INCOGNITO,
     TINT_FRAME_INCOGNITO_INACTIVE,
     TINT_BACKGROUND_TAB,
-    NTP_BACKGROUND_ALIGNMENT
+    NTP_BACKGROUND_ALIGNMENT,
+    NTP_BACKGROUND_TILING
   };
 
   // A bitfield mask for alignments.
@@ -127,7 +135,15 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
     ALIGN_BOTTOM = 0x8,
   } AlignmentMasks;
 
-  virtual void Init(Profile* profile);
+  // Background tiling choices.
+  enum {
+    NO_REPEAT = 0,
+    REPEAT_X = 1,
+    REPEAT_Y = 2,
+    REPEAT = 3
+  } Tiling;
+
+  void Init(Profile* profile);
 
   // ThemeProvider implementation.
   virtual SkBitmap* GetBitmapNamed(int id);
@@ -160,6 +176,13 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Parse alignments from something like "top left" into a bitfield of
   // AlignmentMasks
   static int StringToAlignment(const std::string &alignment);
+
+  // Convert a tiling value into a string like "no-repeat". Public
+  // so that it can be used to generate CSS values. Takes a Tiling.
+  static std::string TilingToString(int tiling);
+
+  // Parse tiling values from something like "no-repeat" into a Tiling value.
+  static int StringToTiling(const std::string &tiling);
 
  protected:
   // Sets an individual color value.

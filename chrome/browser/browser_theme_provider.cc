@@ -64,12 +64,20 @@ const char* BrowserThemeProvider::kTintBackgroundTab = "background_tab";
 // Strings used by themes to identify miscellaneous numerical properties.
 const char* BrowserThemeProvider::kDisplayPropertyNTPAlignment =
     "ntp_background_alignment";
+const char* BrowserThemeProvider::kDisplayPropertyNTPTiling =
+    "ntp_background_repeat";
 
 // Strings used in alignment properties.
 const char* BrowserThemeProvider::kAlignmentTop = "top";
 const char* BrowserThemeProvider::kAlignmentBottom = "bottom";
 const char* BrowserThemeProvider::kAlignmentLeft = "left";
 const char* BrowserThemeProvider::kAlignmentRight = "right";
+
+// Strings used in background tiling repetition properties.
+const char* BrowserThemeProvider::kTilingNoRepeat = "no-repeat";
+const char* BrowserThemeProvider::kTilingRepeatX = "repeat-x";
+const char* BrowserThemeProvider::kTilingRepeatY = "repeat-y";
+const char* BrowserThemeProvider::kTilingRepeat = "repeat";
 
 // Default colors.
 const SkColor BrowserThemeProvider::kDefaultColorFrame =
@@ -118,6 +126,8 @@ const skia::HSL BrowserThemeProvider::kDefaultTintBackgroundTab =
 // Default display properties.
 static const int kDefaultDisplayPropertyNTPAlignment =
     BrowserThemeProvider::ALIGN_BOTTOM;
+static const int kDefaultDisplayPropertyNTPTiling =
+    BrowserThemeProvider::NO_REPEAT;
 
 // The image resources that will be tinted by the 'button' tint value.
 static const int kToolbarButtonIDs[] = {
@@ -262,6 +272,14 @@ bool BrowserThemeProvider::GetDisplayProperty(int id, int* result) {
         *result = display_properties_[kDisplayPropertyNTPAlignment];
       } else {
         *result = kDefaultDisplayPropertyNTPAlignment;
+      }
+      return true;
+    case NTP_BACKGROUND_TILING:
+      if (display_properties_.find(kDisplayPropertyNTPTiling) !=
+          display_properties_.end()) {
+        *result = display_properties_[kDisplayPropertyNTPTiling];
+      } else {
+        *result = kDefaultDisplayPropertyNTPTiling;
       }
       return true;
     default:
@@ -507,13 +525,19 @@ void BrowserThemeProvider::SetDisplayPropertyData(
 
   DictionaryValue::key_iterator iter = display_properties_value->begin_keys();
   while (iter != display_properties_value->end_keys()) {
-    // New tab page alignment.
+    // New tab page alignment and background tiling.
     if (base::strcasecmp(WideToUTF8(*iter).c_str(),
         kDisplayPropertyNTPAlignment) == 0) {
       std::string val;
       if (display_properties_value->GetString(*iter, &val))
         display_properties_[kDisplayPropertyNTPAlignment] =
             StringToAlignment(val);
+    } else if (base::strcasecmp(WideToUTF8(*iter).c_str(),
+               kDisplayPropertyNTPTiling) == 0) {
+      std::string val;
+      if (display_properties_value->GetString(*iter, &val))
+        display_properties_[kDisplayPropertyNTPTiling] =
+            StringToTiling(val);
     }
     ++iter;
   }
@@ -566,6 +590,33 @@ std::string BrowserThemeProvider::AlignmentToString(int alignment) {
     return horizontal_string;
   else
     return vertical_string;
+}
+
+// static
+int BrowserThemeProvider::StringToTiling(const std::string &tiling) {
+  const char* component = tiling.c_str();
+
+  if (base::strcasecmp(component, kTilingRepeatX) == 0)
+    return BrowserThemeProvider::REPEAT_X;
+  else if (base::strcasecmp(component, kTilingRepeatY) == 0)
+    return BrowserThemeProvider::REPEAT_Y;
+  else if (base::strcasecmp(component, kTilingRepeat) == 0)
+    return BrowserThemeProvider::REPEAT;
+  // NO_REPEAT is the default choice.
+  return BrowserThemeProvider::NO_REPEAT;
+}
+
+// static
+std::string BrowserThemeProvider::TilingToString(int tiling) {
+  // Convert from a TilingProperty back into a string.
+  if (tiling == BrowserThemeProvider::REPEAT_X)
+    return kTilingRepeatX;
+  else if (tiling == BrowserThemeProvider::REPEAT_Y)
+    return kTilingRepeatY;
+  else if (tiling == BrowserThemeProvider::REPEAT)
+    return kTilingRepeat;
+  else
+    return kTilingNoRepeat;
 }
 
 void BrowserThemeProvider::SetColor(const char* key, const SkColor& color) {
@@ -741,6 +792,11 @@ void BrowserThemeProvider::SaveDisplayPropertyData() {
                            kDisplayPropertyNTPAlignment) == 0) {
         pref_display_properties->
             SetString(UTF8ToWide((*iter).first), AlignmentToString(
+                (*iter).second));
+      } else if (base::strcasecmp((*iter).first.c_str(),
+                                  kDisplayPropertyNTPTiling) == 0) {
+        pref_display_properties->
+            SetString(UTF8ToWide((*iter).first), TilingToString(
                 (*iter).second));
       }
       ++iter;

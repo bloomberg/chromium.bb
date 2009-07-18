@@ -562,20 +562,22 @@ void BookmarkBarView::Paint(gfx::Canvas* canvas) {
         tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND),
         0, 0, width(), height());
 
-    int alignment;
-    if (tp->GetDisplayProperty(BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT,
-                               &alignment)) {
-      if (alignment & BrowserThemeProvider::ALIGN_TOP) {
-        SkBitmap* ntp_background = tp->GetBitmapNamed(IDR_THEME_NTP_BACKGROUND);
+    if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+      int tiling = BrowserThemeProvider::NO_REPEAT;
+      tp->GetDisplayProperty(BrowserThemeProvider::NTP_BACKGROUND_TILING,
+                             &tiling);
+      int alignment;
+      if (tp->GetDisplayProperty(BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT,
+                                 &alignment)) {
+        SkBitmap* ntp_background = tp->GetBitmapNamed(
+            IDR_THEME_NTP_BACKGROUND);
 
-        if (alignment & BrowserThemeProvider::ALIGN_LEFT) {
-          canvas->DrawBitmapInt(*ntp_background, 0, 0);
-        } else if (alignment & BrowserThemeProvider::ALIGN_RIGHT) {
-          canvas->DrawBitmapInt(*ntp_background, width() -
-                                ntp_background->width(), 0);
+        if (alignment & BrowserThemeProvider::ALIGN_TOP) {
+          PaintThemeBackgroundTopAligned(
+              canvas, ntp_background, tiling, alignment);
         } else {
-          canvas->DrawBitmapInt(*ntp_background, width() / 2-
-                                ntp_background->width() / 2, 0);
+          PaintThemeBackgroundBottomAligned(
+              canvas, ntp_background, tiling, alignment);
         }
       }
     }
@@ -632,6 +634,117 @@ void BookmarkBarView::Paint(gfx::Canvas* canvas) {
         + bounds.x(), bounds.y(), 0, 0, width(), height());
     canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
                         0, height() - 1, width(), 1);
+  }
+}
+
+void BookmarkBarView::PaintThemeBackgroundTopAligned(gfx::Canvas* canvas,
+    SkBitmap* ntp_background, int tiling, int alignment) {
+
+  if (alignment & BrowserThemeProvider::ALIGN_LEFT) {
+    if (tiling == BrowserThemeProvider::REPEAT)
+      canvas->TileImageInt(*ntp_background, 0, 0, width(), height());
+    else if (tiling == BrowserThemeProvider::REPEAT_X)
+      canvas->TileImageInt(*ntp_background, 0, 0, width(),
+                           ntp_background->height());
+    else
+      canvas->TileImageInt(*ntp_background, 0, 0,
+          ntp_background->width(), ntp_background->height());
+
+  } else if (alignment & BrowserThemeProvider::ALIGN_RIGHT) {
+    int x_pos = width() % ntp_background->width() - ntp_background->width();
+    if (tiling == BrowserThemeProvider::REPEAT)
+      canvas->TileImageInt(*ntp_background, x_pos, 0,
+          width() + ntp_background->width(), height());
+    else if (tiling == BrowserThemeProvider::REPEAT_X)
+      canvas->TileImageInt(*ntp_background, x_pos,
+          0, width() + ntp_background->width(), ntp_background->height());
+    else
+      canvas->TileImageInt(*ntp_background, width() - ntp_background->width(),
+          0, ntp_background->width(), ntp_background->height());
+
+  } else {  // ALIGN == CENTER
+    int x_pos = width() > ntp_background->width() ?
+        ((width() / 2 - ntp_background->width() / 2) %
+        ntp_background->width()) - ntp_background->width() :
+        width() / 2 - ntp_background->width() / 2;
+    if (tiling == BrowserThemeProvider::REPEAT)
+      canvas->TileImageInt(*ntp_background, x_pos, 0,
+                           width() + ntp_background->width(), height());
+    else if (tiling == BrowserThemeProvider::REPEAT_X)
+      canvas->TileImageInt(*ntp_background, x_pos, 0,
+                           width() + ntp_background->width(),
+                           ntp_background->height());
+    else
+      canvas->TileImageInt(*ntp_background,
+          width() / 2 - ntp_background->width() / 2,
+          0, ntp_background->width(), ntp_background->height());
+  }
+}
+
+void BookmarkBarView::PaintThemeBackgroundBottomAligned(gfx::Canvas* canvas,
+    SkBitmap* ntp_background, int tiling, int alignment) {
+  int browser_height = GetParent()->GetBounds(
+      views::View::APPLY_MIRRORING_TRANSFORMATION).height();
+  int border_width = 5;
+  int y_pos = ((tiling == BrowserThemeProvider::REPEAT_X) ||
+               (tiling == BrowserThemeProvider::NO_REPEAT)) ?
+      browser_height - ntp_background->height() - height() - border_width :
+      browser_height % ntp_background->height() - height() - border_width -
+          ntp_background->height();
+
+  if (alignment & BrowserThemeProvider::ALIGN_LEFT) {
+    if (tiling == BrowserThemeProvider::REPEAT)
+      canvas->TileImageInt(*ntp_background, 0, y_pos, width(),
+          2 * height() + ntp_background->height() + 5);
+    else if (tiling == BrowserThemeProvider::REPEAT_X)
+      canvas->TileImageInt(*ntp_background, 0, y_pos, width(),
+          ntp_background->height());
+    else if (tiling == BrowserThemeProvider::REPEAT_Y)
+      canvas->TileImageInt(*ntp_background, 0, y_pos,
+          ntp_background->width(),
+          2 * height() + ntp_background->height() + 5);
+    else
+      canvas->TileImageInt(*ntp_background, 0, y_pos, ntp_background->width(),
+          ntp_background->height());
+
+  } else if (alignment & BrowserThemeProvider::ALIGN_RIGHT) {
+    int x_pos = width() % ntp_background->width() - ntp_background->width();
+    if (tiling == BrowserThemeProvider::REPEAT)
+      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
+          width() + ntp_background->width(),
+          2 * height() + ntp_background->height() + 5);
+    else if (tiling == BrowserThemeProvider::REPEAT_X)
+      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
+          width() + ntp_background->width(), ntp_background->height());
+    else if (tiling == BrowserThemeProvider::REPEAT_Y)
+      canvas->TileImageInt(*ntp_background, width() - ntp_background->width(),
+          y_pos, ntp_background->width(),
+          2 * height() + ntp_background->height() + 5);
+    else
+      canvas->TileImageInt(*ntp_background, width() - ntp_background->width(),
+          y_pos, ntp_background->width(), ntp_background->height());
+
+  } else {  // ALIGN == CENTER
+    int x_pos = width() > ntp_background->width() ?
+        ((width() / 2 - ntp_background->width() / 2) %
+        ntp_background->width()) - ntp_background->width() :
+        width() / 2 - ntp_background->width() / 2;
+    if (tiling == BrowserThemeProvider::REPEAT)
+      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
+          width() + ntp_background->width(),
+          2 * height() + ntp_background->height() + 5);
+    else if (tiling == BrowserThemeProvider::REPEAT_X)
+      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
+          width() + ntp_background->width(), ntp_background->height());
+    else if (tiling == BrowserThemeProvider::REPEAT_Y)
+      canvas->TileImageInt(*ntp_background,
+          width() / 2 - ntp_background->width() / 2,
+          y_pos, ntp_background->width(),
+          2 * height() + ntp_background->height() + 5);
+    else
+      canvas->TileImageInt(*ntp_background,
+          width() / 2 - ntp_background->width() / 2,
+          y_pos, ntp_background->width(), ntp_background->height());
   }
 }
 

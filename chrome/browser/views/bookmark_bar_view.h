@@ -180,6 +180,12 @@ class BookmarkBarView : public views::View,
   class ButtonSeparatorView;
   struct DropInfo;
 
+  // Paint the theme background with the proper alignment.
+  void PaintThemeBackgroundTopAligned(gfx::Canvas* canvas,
+      SkBitmap* ntp_background, int tiling, int alignment);
+  void PaintThemeBackgroundBottomAligned(gfx::Canvas* canvas,
+      SkBitmap* ntp_background, int tiling, int alignment);
+
   // Task that invokes ShowDropFolderForNode when run. ShowFolderDropMenuTask
   // deletes itself once run.
   class ShowFolderDropMenuTask : public Task {

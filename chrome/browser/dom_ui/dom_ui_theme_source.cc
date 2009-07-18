@@ -102,6 +102,9 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
 
   // Generate the replacements.
   std::vector<string16> subst;
+  // A second list of replacements, each of which must be in $$x format,
+  // where x is a digit from 1-9.
+  std::vector<string16> subst2;
 
   // Cache-buster for background.
   subst.push_back(UTF8ToUTF16(IntToString(static_cast<int>(
@@ -117,6 +120,8 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   subst.push_back(SkColorToRGBAString(color_section_text));
   subst.push_back(SkColorToRGBAString(color_section_link));
 
+  subst2.push_back(UTF8ToUTF16(GetNewTabBackgroundTilingCSS()));
+
   // Get our template.
   static const StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -126,11 +131,13 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   string16 format_string = ASCIIToUTF16(new_tab_theme_css.as_string());
   const std::string css_string = UTF16ToASCII(ReplaceStringPlaceholders(
       format_string, subst, NULL));
+  const std::string css_string2 =  UTF16ToASCII(ReplaceStringPlaceholders(
+      ASCIIToUTF16(css_string), subst2, NULL));
 
   // Convert to a format appropriate for sending.
   scoped_refptr<RefCountedBytes> css_bytes(new RefCountedBytes);
-  css_bytes->data.resize(css_string.size());
-  std::copy(css_string.begin(), css_string.end(), css_bytes->data.begin());
+  css_bytes->data.resize(css_string2.size());
+  std::copy(css_string2.begin(), css_string2.end(), css_bytes->data.begin());
 
   // Send.
   SendResponse(request_id, css_bytes);
@@ -171,7 +178,15 @@ std::string DOMUIThemeSource::GetNewTabBackgroundCSS(bool bar_attached) {
       return "0% " + IntToString(-offset) + "px";
     else if (alignment & BrowserThemeProvider::ALIGN_RIGHT)
       return "100% " + IntToString(-offset) + "px";
-    return IntToString(-offset) + "px";
+    return "center " + IntToString(-offset) + "px";
   }
   return BrowserThemeProvider::AlignmentToString(alignment);
 }
+
+std::string DOMUIThemeSource::GetNewTabBackgroundTilingCSS() {
+  int repeat_mode;
+  profile_->GetThemeProvider()->GetDisplayProperty(
+      BrowserThemeProvider::NTP_BACKGROUND_TILING, &repeat_mode);
+  return BrowserThemeProvider::TilingToString(repeat_mode);
+}
+

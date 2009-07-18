@@ -35,6 +35,10 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
   // states when the bar is attached or detached.
   std::string GetNewTabBackgroundCSS(bool bar_attached);
 
+  // How the background image on the new tab page should be tiled (see tiling
+  // masks in browser_theme_provider.h).
+  std::string GetNewTabBackgroundTilingCSS();
+
   Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(DOMUIThemeSource);
 };
