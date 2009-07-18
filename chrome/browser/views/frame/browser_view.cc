@@ -969,14 +969,6 @@ void BrowserView::TabContentsFocused(TabContents* tab_contents) {
   contents_container_->TabContentsFocused(tab_contents);
 }
 
-void BrowserView::ShowPageInfo(gfx::NativeView parent,
-                               Profile* profile,
-                               const GURL& url,
-                               const NavigationEntry::SSLStatus& ssl,
-                               bool show_history) {
-  browser::ShowPageInfo(parent, profile, url, ssl, show_history);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, BrowserWindowTesting implementation:
 

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_BROWSER_WINDOW_H_
 
 #include "base/gfx/native_widget_types.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 
 class Browser;
 class BrowserWindowTesting;
@@ -220,16 +219,6 @@ class BrowserWindow {
   // Notification that |tab_contents| got the focus through user action (click
   // on the page).
   virtual void TabContentsFocused(TabContents* tab_contents) = 0;
-
-  // Shows the page info using the specified information.
-  // |url| is the url of the page/frame the info applies to, |ssl| is the SSL
-  // information for that page/frame.  If |show_history| is true, a section
-  // showing how many times that URL has been visited is added to the page info.
-  virtual void ShowPageInfo(gfx::NativeView parent,
-                            Profile* profile,
-                            const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
-                            bool show_history) = 0;
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);

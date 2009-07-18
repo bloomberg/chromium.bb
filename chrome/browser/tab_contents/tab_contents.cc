@@ -751,16 +751,6 @@ void TabContents::CreateShortcut() {
   render_view_host()->GetApplicationInfo(pending_install_.page_id);
 }
 
-void TabContents::ShowPageInfo(const GURL& url,
-                               const NavigationEntry::SSLStatus& ssl,
-                               bool show_history) {
-  if (!delegate_)
-    return;
-
-  delegate_->ShowPageInfo(GetContentNativeView(), profile(), url, ssl,
-                          show_history);
-}
-
 #if defined(OS_WIN) || defined(OS_LINUX)
 ConstrainedWindow* TabContents::CreateConstrainedDialog(
       ConstrainedWindowDelegate* delegate) {

@@ -26,7 +26,6 @@
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
 #include "chrome/common/gears_api.h"
@@ -327,11 +326,6 @@ class TabContents : public PageNavigator,
 
   // Tell Gears to create a shortcut for the current page.
   void CreateShortcut();
-
-  // Shows the page info.
-  void ShowPageInfo(const GURL& url,
-                    const NavigationEntry::SSLStatus& ssl,
-                    bool show_history);
 
   // Window management ---------------------------------------------------------
 

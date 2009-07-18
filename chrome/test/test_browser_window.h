@@ -73,11 +73,6 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void UserChangedTheme() {}
   virtual int GetExtraRenderViewHeight() const { return 0; }
   virtual void TabContentsFocused(TabContents* tab_contents) { }
-  virtual void ShowPageInfo(gfx::NativeView parent,
-                            Profile* profile,
-                            const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
-                            bool show_history) { }
 
  protected:
   virtual void DestroyBrowser() {}

@@ -8,8 +8,6 @@
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
-
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
@@ -206,17 +204,6 @@ class TabContentsDelegate {
   // a search engine.
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) {
-  }
-
-  // Shows the page info using the specified information.
-  // |url| is the url of the page/frame the info applies to, |ssl| is the SSL
-  // information for that page/frame.  If |show_history| is true, a section
-  // showing how many times that URL has been visited is added to the page info.
-  virtual void ShowPageInfo(gfx::NativeView parent,
-                            Profile* profile,
-                            const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
-                            bool show_history) {
   }
 
   // Allows delegates to handle unhandled keyboard messages coming back from
