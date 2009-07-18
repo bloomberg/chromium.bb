@@ -3993,6 +3993,7 @@
         'chrome',
         'chrome_resources',
         'chrome_strings',
+        'debugger',
         'test_support_common',
         'test_support_ui',
         '../base/base.gyp:base',
