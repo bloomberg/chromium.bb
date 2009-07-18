@@ -229,19 +229,24 @@ std::vector<std::wstring> CppVariant::ToStringVector() const {
         length = static_cast<int>(NPVARIANT_TO_DOUBLE(length_value));
       else if (NPVARIANT_IS_INT32(length_value))
         length = NPVARIANT_TO_INT32(length_value);
+      NPN_ReleaseVariantValue(&length_value);
+
       // For sanity, only allow 100 items.
-	  length = std::min(100, length);
+      length = std::min(100, length);
       for (int i = 0; i < length; ++i) {
         // Get each of the items.
         std::string index = StringPrintf("%d", i);
         NPIdentifier index_id = NPN_GetStringIdentifier(index.c_str());
         if (NPN_HasProperty(NULL, np_value, index_id)) {
           NPVariant index_value;
-          if (NPN_GetProperty(NULL, np_value, index_id, &index_value) &&
-              NPVARIANT_IS_STRING(index_value)) {
-            std::string string(NPVARIANT_TO_STRING(index_value).UTF8Characters,
-                               NPVARIANT_TO_STRING(index_value).UTF8Length);
-            wstring_vector.push_back(UTF8ToWide(string));
+          if (NPN_GetProperty(NULL, np_value, index_id, &index_value)) {
+            if (NPVARIANT_IS_STRING(index_value)) {
+              std::string string(
+                  NPVARIANT_TO_STRING(index_value).UTF8Characters,
+                  NPVARIANT_TO_STRING(index_value).UTF8Length);
+              wstring_vector.push_back(UTF8ToWide(string));
+            }
+            NPN_ReleaseVariantValue(&index_value);
           }
         }
       }
