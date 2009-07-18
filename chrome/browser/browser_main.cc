@@ -18,6 +18,7 @@
 #include "base/process_util.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "base/system_monitor.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
@@ -568,8 +569,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
     return FirstRun::ImportNow(profile, parsed_command_line);
 
   // When another process is running, use it instead of starting us.
-  if (process_singleton.NotifyOtherProcess())
+  if (process_singleton.NotifyOtherProcess()) {
+#if defined(OS_LINUX)
+    printf("%s\n", base::SysWideToNativeMB(
+               l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
+#endif
     return ResultCodes::NORMAL_EXIT;
+  }
 
   // Do the tasks if chrome has been upgraded while it was last running.
   if (!already_running && DoUpgradeTasks(parsed_command_line)) {

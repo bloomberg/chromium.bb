@@ -4068,6 +4068,10 @@ each locale. -->
         rgba($1, $2, $3, $4)
       </message>
 
+      <message name="IDS_USED_EXISTING_BROWSER" desc="Linux-specific message printed to console when the app is ran a second time, causing a new window to show rather than starting up a new browser.">
+        Created new window in existing browser session.
+      </message>
+
     </messages>
   </release>
 </grit>
