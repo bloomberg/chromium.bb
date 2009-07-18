@@ -8,7 +8,7 @@ body {
 }
 
 #main {
-  background: url(chrome://theme/product_logo) no-repeat 0 0px;
+  background: url(chrome://theme/product_logo) no-repeat 0 8px;
   position: relative;
   margin: 0 auto;
   width: 940px;
