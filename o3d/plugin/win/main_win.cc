@@ -891,6 +891,10 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
     DCHECK(obj->GetPluginHWnd());
     DCHECK(obj->GetFullscreenHWnd());
     DCHECK(obj->GetPluginHWnd() == hWnd);
+    
+    // Exit full screen if the plugin window is being modified.
+    obj->CancelFullscreenDisplay();
+    
     return NPERR_NO_ERROR;
   }
   DCHECK(!obj->GetPluginHWnd());
