@@ -139,7 +139,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
   if (!pipeline_thread_.Start()) {
     NOTREACHED() << "Could not start PipelineThread";
   } else {
-    pipeline_.reset(new media::PipelineImpl(pipeline_thread_.message_loop()));
+    pipeline_ = new media::PipelineImpl(pipeline_thread_.message_loop());
   }
 
   // Also we want to be notified of |main_loop_| destruction.

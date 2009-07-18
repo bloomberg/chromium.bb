@@ -49,7 +49,7 @@ Movie::~Movie() {
 }
 
 bool Movie::IsOpen() {
-  return pipeline_.get() != NULL;
+  return pipeline_ != NULL;
 }
 
 void Movie::SetFrameBuffer(HBITMAP hbmp, HWND hwnd) {
@@ -59,7 +59,7 @@ void Movie::SetFrameBuffer(HBITMAP hbmp, HWND hwnd) {
 
 bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
   // Close previous movie.
-  if (pipeline_.get()) {
+  if (pipeline_) {
     Close();
   }
 
@@ -81,10 +81,10 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
 
   thread_.reset(new base::Thread("PipelineThread"));
   thread_->Start();
-  pipeline_.reset(new PipelineImpl(thread_->message_loop()));
+  pipeline_ = new PipelineImpl(thread_->message_loop());
 
   // Create and start our pipeline.
-  pipeline_->Start(factories.get(), WideToUTF8(std::wstring(url)), NULL);
+  pipeline_->Start(factories, WideToUTF8(std::wstring(url)), NULL);
   while (true) {
     PlatformThread::Sleep(100);
     if (pipeline_->IsInitialized())
@@ -98,7 +98,7 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
 
 void Movie::Play(float rate) {
   // Begin playback.
-  if (pipeline_.get())
+  if (pipeline_)
     pipeline_->SetPlaybackRate(enable_pause_ ? 0.0f : rate);
   if (rate > 0.0f)
     play_rate_ = rate;
@@ -112,7 +112,7 @@ float Movie::GetPlayRate() {
 // Get movie duration in seconds.
 float Movie::GetDuration() {
   float duration = 0.f;
-  if (pipeline_.get())
+  if (pipeline_)
     duration = (pipeline_->GetDuration()).InMicroseconds() / 1000000.0f;
   return duration;
 }
@@ -120,7 +120,7 @@ float Movie::GetDuration() {
 // Get current movie position in seconds.
 float Movie::GetPosition() {
   float position = 0.f;
-  if (pipeline_.get())
+  if (pipeline_)
     position = (pipeline_->GetCurrentTime()).InMicroseconds() / 1000000.0f;
   return position;
 }
@@ -129,7 +129,7 @@ float Movie::GetPosition() {
 void Movie::SetPosition(float position) {
   int64 us = static_cast<int64>(position * 1000000);
   base::TimeDelta time = base::TimeDelta::FromMicroseconds(us);
-  if (pipeline_.get())
+  if (pipeline_)
     pipeline_->Seek(time, NULL);
 }
 
@@ -195,10 +195,10 @@ bool Movie::GetOpenMpEnable() {
 
 // Teardown.
 void Movie::Close() {
-  if (pipeline_.get()) {
+  if (pipeline_) {
     pipeline_->Stop(NULL);
     thread_->Stop();
-    pipeline_.reset();
+    pipeline_ = NULL;
     thread_.reset();
   }
 }

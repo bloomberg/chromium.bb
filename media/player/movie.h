@@ -90,7 +90,7 @@ class Movie : public Singleton<Movie> {
   Movie();
   virtual ~Movie();
 
-  scoped_ptr<PipelineImpl> pipeline_;
+  scoped_refptr<PipelineImpl> pipeline_;
   scoped_ptr<base::Thread> thread_;
 
   bool enable_audio_;

@@ -237,7 +237,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   scoped_refptr<media::FilterFactoryCollection> filter_factory_;
 
   // The actual pipeline and the thread it runs on.
-  scoped_ptr<media::PipelineImpl> pipeline_;
+  scoped_refptr<media::PipelineImpl> pipeline_;
   base::Thread pipeline_thread_;
 
   // Playback state.
