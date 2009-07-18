@@ -353,6 +353,7 @@ void MetricsService::RegisterPrefs(PrefService* local_state) {
 // static
 void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
   local_state->SetBoolean(prefs::kStabilityExitedCleanly, true);
+  local_state->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
 
   local_state->SetInteger(prefs::kStabilityIncompleteSessionEndCount, 0);
   local_state->SetInteger(prefs::kStabilityBreakpadRegistrationSuccess, 0);
@@ -370,6 +371,8 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
   local_state->SetInteger(prefs::kSecurityRendererOnSboxDesktop, 0);
   local_state->SetInteger(prefs::kSecurityRendererOnDefaultDesktop, 0);
 
+  local_state->SetString(prefs::kStabilityLaunchTimeSec, L"0");
+  local_state->SetString(prefs::kStabilityLastTimestampSec, L"0");
   local_state->SetString(prefs::kStabilityUptimeSec, L"0");
 
   local_state->ClearPref(prefs::kStabilityPluginStats);
@@ -676,9 +679,9 @@ void MetricsService::InitializeMetricsState() {
 
   if (!pref->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
     IncrementPrefValue(prefs::kStabilityIncompleteSessionEndCount);
+    // This is marked false when we get a WM_ENDSESSION.
+    pref->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
   }
-  // This is marked false when we get a WM_ENDSESSION.
-  pref->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
 
   int64 last_start_time = pref->GetInt64(prefs::kStabilityLaunchTimeSec);
   int64 last_end_time = pref->GetInt64(prefs::kStabilityLastTimestampSec);
