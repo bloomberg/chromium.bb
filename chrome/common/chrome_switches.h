@@ -211,6 +211,10 @@ extern const wchar_t kEnableTabtastic2[];
 
 extern const wchar_t kPinnedTabCount[];
 
+extern const wchar_t kEnableLocalStorage[];
+
+extern const wchar_t kEnableSessionStorage[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_
