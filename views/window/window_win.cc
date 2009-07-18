@@ -4,6 +4,7 @@
 
 #include "views/window/window_win.h"
 
+#include <dwmapi.h>
 #include <shellapi.h>
 
 #include "app/gfx/canvas_paint.h"
@@ -189,40 +190,24 @@ static BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
 }  // namespace
 
 void WindowWin::FrameTypeChanged() {
-  // If we're not on Aero Glass, we don't care about doing any of the DWM stuff.
-  // Just tell the NCV to update and leave it there.
-  if (!win_util::ShouldUseVistaFrame()) {
-    non_client_view_->UpdateFrame();
-    return;
-  }
-
-  // The window may try to paint in SetUseNativeFrame, and as a result it can
-  // get into a state where it is very unhappy with itself - rendering black
-  // behind the entire client area. This is because for some reason the
-  // SkPorterDuff::kClear_mode erase done in the RootView thinks the window is
-  // still opaque. So, to work around this we hide the window as soon as we can
-  // (now), saving off its placement so it can be properly restored once
-  // everything has settled down.
-  WINDOWPLACEMENT saved_window_placement;
-  saved_window_placement.length = sizeof(WINDOWPLACEMENT);
-  GetWindowPlacement(GetNativeView(), &saved_window_placement);
-  Hide();
-
-  // Important step: restore the window first, since our hiding hack doesn't
-  // work for maximized windows! We tell the frame not to allow itself to be
-  // made visible though, which removes the brief flicker.
-  ++force_hidden_count_;
-  ::ShowWindow(GetNativeView(), SW_RESTORE);
-  --force_hidden_count_;
-
-  // We respond to this in response to WM_DWMCOMPOSITIONCHANGED since that is
-  // the only thing we care about - we don't actually respond to WM_THEMECHANGED
-  // messages.
+  // Update the non-client view with the correct frame view for the active frame
+  // type.
   non_client_view_->UpdateFrame();
 
-  // Now that we've updated the frame, we'll want to restore our saved placement
-  // since the display should have settled down and we can be properly rendered.
-  SetWindowPlacement(GetNativeView(), &saved_window_placement);
+  // We need to toggle the rendering policy of the DWM/glass frame as we change
+  // from opaque to glass. The logic of these values seems inverted to me, but
+  // it works, so I'm not going to complain.
+  DWMNCRENDERINGPOLICY policy =
+      non_client_view_->UseNativeFrame() ? DWMNCRP_ENABLED
+                                         : DWMNCRP_DISABLED;
+  DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
+                        &policy, sizeof(DWMNCRENDERINGPOLICY));
+
+  // Send a frame change notification, since the non-client metrics have
+  // changed.
+  SetWindowPos(NULL, 0, 0, 0, 0,
+               SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER |
+                   SWP_NOOWNERZORDER | SWP_NOACTIVATE);
 
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
   // to notify our children too, since we can have MDI child windows who need to
@@ -595,7 +580,17 @@ void WindowWin::OnDestroy() {
 
 LRESULT WindowWin::OnDwmCompositionChanged(UINT msg, WPARAM w_param,
                                            LPARAM l_param) {
+  // For some reason, we need to hide the window while we're changing the frame
+  // type only when we're changing it in response to WM_DWMCOMPOSITIONCHANGED.
+  // If we don't, the client area will be filled with black. I'm suspecting
+  // something skia-ey.
+  // Frame type toggling caused by the user (e.g. switching theme) doesn't seem
+  // to have this requirement.
+  WINDOWPLACEMENT wp = {0};
+  GetWindowPlacement(GetNativeWindow(), &wp);
+  Hide();
   FrameTypeChanged();
+  SetWindowPlacement(GetNativeWindow(), &wp);
   return 0;
 }
 

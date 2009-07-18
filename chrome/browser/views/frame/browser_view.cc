@@ -956,8 +956,6 @@ void BrowserView::ContinueDraggingDetachedTab(const gfx::Rect& tab_bounds) {
 
 void BrowserView::UserChangedTheme() {
   frame_->GetWindow()->FrameTypeChanged();
-  GetRootView()->ThemeChanged();
-  GetRootView()->SchedulePaint();
 }
 
 int BrowserView::GetExtraRenderViewHeight() const {

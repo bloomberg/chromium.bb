@@ -174,16 +174,6 @@ LRESULT BrowserFrameWin::OnNCActivate(BOOL active) {
   if (browser_view_->ActivateAppModalDialog())
     return TRUE;
 
-  // Perform first time initialization of the DWM frame insets, only if we're
-  // using the native frame.
-  if (GetNonClientView()->UseNativeFrame() && !frame_initialized_) {
-    if (browser_view_->IsBrowserTypeNormal()) {
-      ::SetWindowPos(GetNativeView(), NULL, 0, 0, 0, 0,
-                     SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
-      UpdateDWMFrame();
-    }
-    frame_initialized_ = true;
-  }
   browser_view_->ActivationChanged(!!active);
   return WindowWin::OnNCActivate(active);
 }
@@ -234,8 +224,6 @@ LRESULT BrowserFrameWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
   client_rect->left += border_thickness;
   client_rect->right -= border_thickness;
   client_rect->bottom -= border_thickness;
-
-  UpdateDWMFrame();
 
   // We'd like to return WVR_REDRAW in some cases here, but because we almost
   // always have nonclient area (except in fullscreen mode, where it doesn't
@@ -296,6 +284,8 @@ void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
     GetNonClientView()->SchedulePaint();
   }
 
+  UpdateDWMFrame();
+
   // Let the default window procedure handle - IMPORTANT!
   WindowWin::OnWindowPosChanged(window_pos);
 }
@@ -348,6 +338,14 @@ void BrowserFrameWin::UpdateDWMFrame() {
   if (!browser_view_->IsFullscreen()) {
     margins.cyTopHeight =
         GetBoundsForTabStrip(browser_view_->tabstrip()).bottom();
+  }
+
+  // If DWM is supported, we may still not want to use the DWM frame if we're in
+  // opaque mode (e.g. showing a theme). In this case we want to reset the DWM
+  // frame extending.
+  if (!GetNonClientView()->UseNativeFrame()) {
+    margins.cxLeftWidth = margins.cxRightWidth = margins.cyTopHeight =
+        margins.cyBottomHeight = 0;
   }
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
 }
