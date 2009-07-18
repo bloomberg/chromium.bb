@@ -9,7 +9,6 @@
       'ENABLE_DATABASE=1',
       'ENABLE_DATAGRID=1',
       'ENABLE_DASHBOARD_SUPPORT=0',
-      'ENABLE_DOM_STORAGE=1',
       'ENABLE_JAVASCRIPT_DEBUGGER=0',
       'ENABLE_JSC_MULTIPLE_THREADS=0',
       'ENABLE_ICONDATABASE=0',
@@ -595,6 +594,9 @@
         # Exclude JSC custom bindings.
         ['exclude', '/third_party/WebKit/WebCore/bindings/js'],
 
+        # Don't build bindings for storage.
+        ['exclude', '/third_party/WebKit/WebCore/storage/Storage[^/]*\\.idl$'],
+
         # SVG_FILTERS only.
         ['exclude', '/third_party/WebKit/WebCore/svg/SVG(FE|Filter)[^/]*\\.idl$'],
 
@@ -616,6 +618,9 @@
         ['exclude', '/third_party/WebKit/WebCore/(platform|svg)/graphics/filters/'],
         ['exclude', '/third_party/WebKit/WebCore/svg/Filter[^/]*\\.cpp$'],
         ['exclude', '/third_party/WebKit/WebCore/svg/SVG(FE|Filter)[^/]*\\.cpp$'],
+
+        # Exclude some, but not all, of storage.
+        ['exclude', '/third_party/WebKit/WebCore/storage/(Local|Session)Storage[^/]*\\.cpp$'],
 
         # Exclude PluginDebug.cpp since it doesn't compile properly without the
         # correct npapi.h inclusion (http://crbug.com/17127
@@ -666,7 +671,9 @@
 
         # A few things can't be excluded by patterns.  List them individually.
         
-        # Don't build StorageNamespace.  We have our own implementation.
+        # Do not build StorageArea or StorageNamespace for Chromium. We (will)
+        # have our own implementation.
+        '../third_party/WebKit/WebCore/storage/StorageArea.cpp',
         '../third_party/WebKit/WebCore/storage/StorageNamespace.cpp',
         
         # Use history/BackForwardListChromium.cpp instead.
@@ -1036,8 +1043,6 @@
         'api/src/LocalizedStrings.cpp',
         'api/src/MediaPlayerPrivateChromium.cpp',
         'api/src/ResourceHandle.cpp',
-        'api/src/StorageNamespaceProxy.cpp',
-        'api/src/StorageNamespaceProxy.h',
         'api/src/TemporaryGlue.h',
         'api/src/WebCache.cpp',
         'api/src/WebCString.cpp',
