@@ -1563,6 +1563,7 @@ BUG10389 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = F
 BUG10389 WIN LINUX : LayoutTests/fast/repaint/create-layer-repaint.html = FAIL
 BUG10389 WIN LINUX : LayoutTests/fast/repaint/reflection-redraw.html = FAIL
 BUG10389 WIN LINUX : LayoutTests/fast/repaint/opacity-change-on-overflow-float.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/background-misaligned.html = FAIL
 
 // Linux pixeltest failure: Failing to rotate the form control
 BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
@@ -2969,3 +2970,6 @@ BUG16878 WIN : LayoutTests/fast/css/shadow-multiple.html = FAIL
 BUG16962 LINUX WIN : LayoutTests/fast/css/nested-floating-relative-position-percentages.html = FAIL
 BUG16962 LINUX WIN : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
 BUG16962 MAC : LayoutTests/fast/forms/get-file-upload.html = TIMEOUT
+
+// New test from WebKit merge 45998:46050
+BUG17144 LINUX WIN : LayoutTests/fast/css/positioned-overflow-scroll.html = FAIL

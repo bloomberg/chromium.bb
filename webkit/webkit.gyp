@@ -621,6 +621,11 @@
 
         # Exclude some, but not all, of storage.
         ['exclude', '/third_party/WebKit/WebCore/storage/(Local|Session)Storage[^/]*\\.cpp$'],
+
+        # Exclude PluginDebug.cpp since it doesn't compile properly without the
+        # correct npapi.h inclusion (http://crbug.com/17127
+        ['exclude', '/third_party/WebKit/WebCore/plugins/PluginDebug.cpp'],
+        ['exclude', '/third_party/WebKit/WebCore/plugins/PluginDebug.h'],
       ],
       'sources!': [
         # Custom bindings in bindings/v8/custom exist for these.
