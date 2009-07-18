@@ -6,9 +6,8 @@
 #define CHROME_TEST_TESTING_PROFILE_H_
 
 #include "base/base_paths.h"
-#include "base/file_path.h"
-#include "base/path_service.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -57,6 +56,9 @@ class TestingProfile : public Profile {
   void CreateThemeProvider();
 
   virtual FilePath GetPath() {
+    return path_;
+  }
+  virtual FilePath GetCachePath() {
     return path_;
   }
   // Sets whether we're off the record. Default is false.
