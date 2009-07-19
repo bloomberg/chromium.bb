@@ -152,19 +152,29 @@ bool FontConfigDirect::Match(std::string* result_family,
       return false;
     }
 
-    FcChar8* post_match_family;
-    FcPatternGetString(match, FC_FAMILY, 0, &post_match_family);
-    const bool family_names_match =
-        family.empty() ?
-        true :
-        strcasecmp((char *)post_config_family, (char *)post_match_family) == 0;
-
-    FcPatternDestroy(pattern);
-
-    if (!family_names_match && !IsFallbackFontAllowed(family)) {
+    if (!IsFallbackFontAllowed(family)) {
+      bool family_names_match = false;
+      for (int id = 0; id < 255; ++id) {
+        FcChar8* post_match_family;
+        if (FcPatternGetString(match, FC_FAMILY, id, &post_match_family) !=
+            FcResultMatch)
+          break;
+        family_names_match =
+          family.empty() ?
+          true :
+          strcasecmp((char *)post_config_family,
+                     (char *)post_match_family) == 0;
+        if (family_names_match)
+          break;
+      }
+      if (!family.empty() && !family_names_match) {
+        FcPatternDestroy(pattern);
         FcFontSetDestroy(font_set);
         return false;
+      }
     }
+
+    FcPatternDestroy(pattern);
 
     FcChar8* c_filename;
     if (FcPatternGetString(match, FC_FILE, 0, &c_filename) != FcResultMatch) {
