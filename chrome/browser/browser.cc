@@ -1988,6 +1988,14 @@ void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
   window()->ConfirmAddSearchProvider(template_url, profile);
 }
 
+void Browser::ShowPageInfo(gfx::NativeView parent,
+                           Profile* profile,
+                           const GURL& url,
+                           const NavigationEntry::SSLStatus& ssl,
+                           bool show_history) {
+  window()->ShowPageInfo(parent, profile, url, ssl, show_history);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SelectFileDialog::Listener implementation:
 

@@ -5,45 +5,48 @@
 #ifndef CHROME_BROWSER_COCOA_PAGE_INFO_WINDOW_MAC_H_
 #define CHROME_BROWSER_COCOA_PAGE_INFO_WINDOW_MAC_H_
 
-#include "chrome/browser/history/history.h"
+#include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_window.h"
 
-class CancelableRequestConsumerBase;
 class Profile;
 @class PageInfoWindowController;
 
-namespace base {
-class Time;
-}
-
-class PageInfoWindowMac : public PageInfoWindow {
+class PageInfoWindowMac : public PageInfoModel::PageInfoModelObserver {
  public:
-  PageInfoWindowMac(PageInfoWindowController* controller);
   virtual ~PageInfoWindowMac();
 
-  // This is the main initializer that creates the window.
-  virtual void Init(Profile* profile,
-                    const GURL& url,
-                    const NavigationEntry::SSLStatus& ssl,
-                    NavigationEntry::PageType page_type,
-                    bool show_history,
-                    gfx::NativeView parent);
-
-  virtual void Show();
+  // Creates and shows the page info.
+  static void ShowPageInfo(gfx::NativeView parent,
+                           Profile* profile,
+                           const GURL& url,
+                           const NavigationEntry::SSLStatus& ssl,
+                           bool show_history);
 
   // Shows various information for the specified certificate in a new dialog.
   // The argument is ignored here and we use the |cert_id_| member that was
   // passed to us in Init().
   virtual void ShowCertDialog(int);
 
- private:
-  void OnGotVisitCountToHost(HistoryService::Handle handle,
-                             bool found_visits,
-                             int count,
-                             base::Time first_visit);
+  // PageInfoModelObserver implementation.
+  virtual void ModelChanged();
 
-  CancelableRequestConsumer request_consumer_;  // Used for getting visit count.
+ private:
+  PageInfoWindowMac(PageInfoWindowController* controller,
+                    Profile* profile,
+                    const GURL& url,
+                    const NavigationEntry::SSLStatus& ssl,
+                    bool show_history);
+
+  void LayoutSections();
+
+  void Show();
+
   PageInfoWindowController* controller_;  // WEAK, owns us.
+
+  PageInfoModel model_;
+
+  // The certificate ID for the page, 0 if the page is not over HTTPS.
+  int cert_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoWindowMac);
 };

@@ -458,7 +458,7 @@ bool RenderViewContextMenu::ItemIsChecked(int id) const {
     return (params_.media_params.player_state &
             ContextMenuMediaParams::PLAYER_LOOP) != 0;
   }
- 
+
   // Check box for 'Check the Spelling of this field'.
   if (id == IDC_CHECK_SPELLING_OF_THIS_FIELD) {
     return (params_.spellcheck_enabled &&
@@ -571,18 +571,10 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_VIEWPAGEINFO: {
-#if defined(OS_WIN) || defined(OS_MACOSX)
       NavigationEntry* nav_entry =
           source_tab_contents_->controller().GetActiveEntry();
-      PageInfoWindow::CreatePageInfo(
-          profile_,
-          nav_entry,
-          source_tab_contents_->GetContentNativeView(),
-          PageInfoWindow::SECURITY);
-#else
-     // TODO(port): port PageInfoWindow.
-     NOTIMPLEMENTED() << "IDS_CONTENT_CONTEXT_VIEWPAGEINFO";
-#endif
+      source_tab_contents_->ShowPageInfo(nav_entry->url(), nav_entry->ssl(),
+                                         true);
       break;
     }
 
@@ -626,17 +618,8 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
         ssl.set_cert_status(cert_status);
         ssl.set_security_bits(security_bits);
       }
-#if defined(OS_WIN) || defined(OS_MACOSX)
-      PageInfoWindow::CreateFrameInfo(
-          profile_,
-          params_.frame_url,
-          ssl,
-          source_tab_contents_->GetContentNativeView(),
-          PageInfoWindow::SECURITY);
-#else
-      // TODO(port): port PageInfoWindow.
-      NOTIMPLEMENTED() << "IDS_CONTENT_CONTEXT_VIEWFRAMEINFO";
-#endif
+      source_tab_contents_->ShowPageInfo(params_.frame_url, ssl,
+                                         false);  // Don't show the history.
       break;
     }
 

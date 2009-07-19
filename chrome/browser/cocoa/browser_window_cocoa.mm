@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
+#include "chrome/browser/cocoa/page_info_window_mac.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/common/notification_service.h"
@@ -266,6 +267,14 @@ int BrowserWindowCocoa::GetExtraRenderViewHeight() const {
 
 void BrowserWindowCocoa::TabContentsFocused(TabContents* tab_contents) {
   NOTIMPLEMENTED();
+}
+
+void BrowserWindowCocoa::ShowPageInfo(gfx::NativeView parent,
+                                      Profile* profile,
+                                      const GURL& url,
+                                      const NavigationEntry::SSLStatus& ssl,
+                                      bool show_history) {
+  PageInfoWindowMac::ShowPageInfo(parent, profile, url, ssl, show_history);
 }
 
 void BrowserWindowCocoa::Observe(NotificationType type,

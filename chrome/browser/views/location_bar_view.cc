@@ -1109,17 +1109,13 @@ void LocationBarView::SecurityImageView::SetImageShown(Image image) {
 
 bool LocationBarView::SecurityImageView::OnMousePressed(
     const views::MouseEvent& event) {
-  NavigationEntry* nav_entry =
-      BrowserList::GetLastActive()->GetSelectedTabContents()->
-          controller().GetActiveEntry();
+  TabContents* tab = BrowserList::GetLastActive()->GetSelectedTabContents();
+  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
     return true;
   }
-  PageInfoWindow::CreatePageInfo(profile_,
-                                 nav_entry,
-                                 GetRootView()->GetWidget()->GetNativeView(),
-                                 PageInfoWindow::SECURITY);
+  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
   return true;
 }
 

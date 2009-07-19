@@ -496,6 +496,11 @@ class Browser : public TabStripModelDelegate,
   virtual void OnStartDownload(DownloadItem* download);
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);
+  virtual void ShowPageInfo(gfx::NativeView parent,
+                            Profile* profile,
+                            const GURL& url,
+                            const NavigationEntry::SSLStatus& ssl,
+                            bool show_history);
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);

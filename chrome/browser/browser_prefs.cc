@@ -16,7 +16,7 @@
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
-#include "chrome/browser/page_info_window.h"
+#include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
@@ -49,7 +49,7 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
   browser_shutdown::RegisterPrefs(local_state);
   chrome_browser_net::RegisterPrefs(local_state);
   bookmark_utils::RegisterPrefs(local_state);
-  PageInfoWindow::RegisterPrefs(local_state);
+  PageInfoModel::RegisterPrefs(local_state);
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
   BrowserView::RegisterBrowserViewPrefs(local_state);
   TaskManager::RegisterPrefs(local_state);
