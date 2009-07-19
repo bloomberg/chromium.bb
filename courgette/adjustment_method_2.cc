@@ -673,7 +673,7 @@ ShinglePattern::Index::Index(const Shingle* instance) {
 
   for (size_t i = 0; i < Shingle::kWidth; ++i) {
     LabelInfo* info = instance->at(i);
-    uint32 kind;
+    uint32 kind = 0;
     int code = -1;
     size_t j = 0;
     for ( ; j < i; ++j) {
