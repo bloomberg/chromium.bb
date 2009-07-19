@@ -8,6 +8,7 @@
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
 
+class Profile;
 class ResourceBundle;
 
 namespace views {
@@ -18,6 +19,7 @@ class DefaultThemeProvider : public ThemeProvider {
   virtual ~DefaultThemeProvider() { };
 
   // Overridden from ThemeProvider.
+  virtual void Init(Profile* profile);
   virtual SkBitmap* GetBitmapNamed(int id);
   virtual SkColor GetColor(int id);
   virtual bool GetDisplayProperty(int id, int* result);

@@ -12,6 +12,9 @@
 
 namespace views {
 
+void DefaultThemeProvider::Init(Profile* profile) {
+}
+
 SkBitmap* DefaultThemeProvider::GetBitmapNamed(int id) {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
 }
