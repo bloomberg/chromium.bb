@@ -20,6 +20,7 @@ class NSImage;
 #endif  // __OBJC__
 #endif  // OS_*
 
+class Profile;
 class SkBitmap;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -34,6 +35,9 @@ class SkBitmap;
 class ThemeProvider {
  public:
   virtual ~ThemeProvider();
+
+  // Initialize the provider with the passed in profile.
+  virtual void Init(Profile* profile) = 0;
 
   // Get the bitmap specified by |id|. An implementation of ThemeProvider should
   // have its own source of ids (e.g. an enum, or external resource bundle).

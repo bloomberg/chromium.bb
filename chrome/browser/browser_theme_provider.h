@@ -143,9 +143,8 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
     REPEAT = 3
   } Tiling;
 
-  void Init(Profile* profile);
-
   // ThemeProvider implementation.
+  virtual void Init(Profile* profile);
   virtual SkBitmap* GetBitmapNamed(int id);
   virtual SkColor GetColor(int id);
   virtual bool GetDisplayProperty(int id, int* result);
