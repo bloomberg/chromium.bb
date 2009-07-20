@@ -438,14 +438,6 @@
    fun:_ZN19TestWebViewDelegate24UpdateSelectionClipboardEb
 }
 {
-   # skia memory leak?  See http://crbug.com/9757
-   bug_9757
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN10SkFontHost12FindTypefaceEPK10SkTypefacePKcNS0_5StyleE
-   fun:_ZN10SkTypeface6CreateEPKcNS_5StyleE
-}
-{
    # see http://crbug.com/10737
    bug_10737
    Memcheck:Leak
