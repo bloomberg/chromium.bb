@@ -21,6 +21,7 @@ class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupViewMac;
 @class AutocompleteTextField;
+class Clipboard;
 class CommandUpdater;
 class Profile;
 class TabContents;
@@ -99,10 +100,17 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   // visual state (such as closing the popup).
   void OnDidResignKey();
 
+  // Called when the user attempts to paste into |field_|.
+  void OnPaste();
+
   void AcceptInput(WindowOpenDisposition disposition, bool for_drop);
 
   // Helper for LocationBarViewMac.  Selects all in |field_|.
   void FocusLocation();
+
+  // Helper to get appropriate contents from |clipboard|.  Returns
+  // empty string if no appropriate data is found on |clipboard|.
+  static std::wstring GetClipboardText(Clipboard* clipboard);
 
  private:
   // Returns the field's currently selected range.  Only valid if the

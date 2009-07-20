@@ -4,10 +4,13 @@
 
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 
+#include "base/clipboard.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/cocoa/autocomplete_text_field.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
@@ -548,6 +551,34 @@ void AutocompleteEditViewMac::OnDidResignKey() {
   ClosePopup();
 }
 
+void AutocompleteEditViewMac::OnPaste() {
+  // This code currently expects |field_| to be focussed.
+  DCHECK([field_ currentEditor]);
+
+  std::wstring text = GetClipboardText(g_browser_process->clipboard());
+  if (text.empty()) {
+    return;
+  }
+
+  // If this paste will be replacing all the text, record that, so we
+  // can do different behaviors in such a case.
+  const NSRange allRange = NSMakeRange(0, [[field_ stringValue] length]);
+  const NSRange selectedRange = GetSelectedRange();
+  if (NSEqualRanges(allRange, selectedRange)) {
+    model_->on_paste_replacing_all();
+  }
+
+  // Force a Paste operation to trigger the text_changed code in
+  // OnAfterPossibleChange(), even if identical contents are pasted into the
+  // text box.
+  text_before_change_.clear();
+
+  NSString* s = base::SysWideToNSString(text);
+  [[field_ currentEditor] replaceCharactersInRange:selectedRange withString:s];
+
+  OnAfterPossibleChange();
+}
+
 void AutocompleteEditViewMac::AcceptInput(
     WindowOpenDisposition disposition, bool for_drop) {
   model_->AcceptInput(disposition, for_drop);
@@ -556,6 +587,46 @@ void AutocompleteEditViewMac::AcceptInput(
 void AutocompleteEditViewMac::FocusLocation() {
   [[field_ window] makeFirstResponder:field_];
   DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
+}
+
+// TODO(shess): Copied from autocomplete_edit_view_win.cc.  Could this
+// be pushed into the model?
+std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
+  // autocomplete_edit_view_win.cc assumes this can never happen, we
+  // will too.
+  DCHECK(clipboard);
+
+  if (clipboard->IsFormatAvailable(Clipboard::GetPlainTextWFormatType())) {
+    string16 text16;
+    clipboard->ReadText(&text16);
+
+    // Note: Unlike in the find popup and textfield view, here we completely
+    // remove whitespace strings containing newlines.  We assume users are
+    // most likely pasting in URLs that may have been split into multiple
+    // lines in terminals, email programs, etc., and so linebreaks indicate
+    // completely bogus whitespace that would just cause the input to be
+    // invalid.
+    return CollapseWhitespace(UTF16ToWide(text16), true);
+  }
+
+  // Try bookmark format.
+  //
+  // It is tempting to try bookmark format first, but the URL we get out of a
+  // bookmark has been cannonicalized via GURL.  This means if a user copies
+  // and pastes from the URL bar to itself, the text will get fixed up and
+  // cannonicalized, which is not what the user expects.  By pasting in this
+  // order, we are sure to paste what the user copied.
+  if (clipboard->IsFormatAvailable(Clipboard::GetUrlWFormatType())) {
+    std::string url_str;
+    clipboard->ReadBookmark(NULL, &url_str);
+    // pass resulting url string through GURL to normalize
+    GURL url(url_str);
+    if (url.is_valid()) {
+      return UTF8ToWide(url.spec());
+    }
+  }
+
+  return std::wstring();
 }
 
 @implementation AutocompleteFieldDelegate
@@ -626,6 +697,13 @@ void AutocompleteEditViewMac::FocusLocation() {
 
   // TODO(shess): Figure out where the selection belongs.  On GTK,
   // it's set to the start of the text.
+}
+
+- (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor {
+  edit_view_->OnPaste();
+
+  // Caller shouldn't also paste.
+  return NO;
 }
 
 // Signal that we've lost focus when the window resigns key.

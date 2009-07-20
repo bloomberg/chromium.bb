@@ -3621,6 +3621,7 @@
         'app/keystone_glue.m',
         'app/keystone_glue_unittest.mm',
         # All unittests in browser, common, and renderer.
+        'browser/autocomplete/autocomplete_edit_view_mac_unittest.mm',
         'browser/autocomplete/autocomplete_unittest.cc',
         'browser/autocomplete/autocomplete_popup_view_mac_unittest.mm',
         'browser/autocomplete/history_contents_provider_unittest.cc',

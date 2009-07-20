@@ -17,4 +17,12 @@
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
 }
 
+- (BOOL)textShouldPaste:(NSText*)fieldEditor {
+  id delegate = [self delegate];
+  if ([delegate respondsToSelector:@selector(control:textShouldPaste:)]) {
+    return [delegate control:self textShouldPaste:fieldEditor];
+  }
+  return YES;
+}
+
 @end

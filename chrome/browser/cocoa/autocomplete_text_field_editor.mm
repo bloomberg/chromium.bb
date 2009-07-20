@@ -30,4 +30,19 @@
   [self delete:nil];
 }
 
+- (BOOL)shouldPaste {
+  id delegate = [self delegate];
+  if (![delegate respondsToSelector:@selector(textShouldPaste:)] ||
+      [delegate textShouldPaste:self]) {
+    return YES;
+  }
+  return NO;
+}
+
+- (void)paste:(id)sender {
+  if ([self shouldPaste]) {
+    [super paste:sender];
+  }
+}
+
 @end

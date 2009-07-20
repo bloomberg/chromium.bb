@@ -10,6 +10,14 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+@interface AutocompleteTextFieldTestDelegate : NSObject {
+  BOOL textShouldPaste_;
+  BOOL receivedTextShouldPaste_;
+}
+- initWithTextShouldPaste:(BOOL)flag;
+- (BOOL)receivedTextShouldPaste;
+@end
+
 namespace {
 
 class AutocompleteTextFieldTest : public testing::Test {
@@ -43,4 +51,46 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
 }
 
+// Test that -textShouldPaste: properly queries the delegate.
+TEST_F(AutocompleteTextFieldTest, TextShouldPaste) {
+  EXPECT_TRUE(![field_ delegate]);
+  EXPECT_TRUE([field_ textShouldPaste:nil]);
+
+  scoped_nsobject<AutocompleteTextFieldTestDelegate> shouldPaste(
+      [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:YES]);
+  [field_ setDelegate:shouldPaste];
+  EXPECT_FALSE([shouldPaste receivedTextShouldPaste]);
+  EXPECT_TRUE([field_ textShouldPaste:nil]);
+  EXPECT_TRUE([shouldPaste receivedTextShouldPaste]);
+
+  scoped_nsobject<AutocompleteTextFieldTestDelegate> shouldNotPaste(
+      [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:NO]);
+  [field_ setDelegate:shouldNotPaste];
+  EXPECT_FALSE([shouldNotPaste receivedTextShouldPaste]);
+  EXPECT_FALSE([field_ textShouldPaste:nil]);
+  EXPECT_TRUE([shouldNotPaste receivedTextShouldPaste]);
+}
+
 }  // namespace
+
+@implementation AutocompleteTextFieldTestDelegate
+
+- initWithTextShouldPaste:(BOOL)flag {
+  self = [super init];
+  if (self) {
+    textShouldPaste_ = flag;
+    receivedTextShouldPaste_ = NO;
+  }
+  return self;
+}
+
+- (BOOL)receivedTextShouldPaste {
+  return receivedTextShouldPaste_;
+}
+
+- (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor {
+  receivedTextShouldPaste_ = YES;
+  return textShouldPaste_;
+}
+
+@end
