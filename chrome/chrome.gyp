@@ -2171,41 +2171,42 @@
               ],
             }],
             ['chromeos==1',{
-	      'dependencies': [
-  		'../third_party/protobuf2/protobuf.gyp:protobuf',
-  		'../third_party/protobuf2/protobuf.gyp:protoc',
- 	      ],
-	      'actions': [
- 	        { 'action_name': 'my_proto',
-    		  'inputs': [
-      		    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-      		    'browser/metrics/system_metrics.proto',
-    		  ],
-		  'outputs': [
-      		    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
-    		    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
-    		  ],
-    		  'dependencies': [
-      		    '../third_party/protobuf2/protobuf.gyp:protoc',
-    		  ],
-		  'action': [
-      		    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-      		    'browser/metrics/system_metrics.proto',
-		    '--cpp_out=<(INTERMEDIATE_DIR)/chrome',
-    		  ],
-		},
- 	      ],
- 	      'sources': [
-      		'<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
-      		'<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
+              'dependencies': [
+                  '../third_party/protobuf2/protobuf.gyp:protobuf',
+                  '../third_party/protobuf2/protobuf.gyp:protoc',
+               ],
+              'actions': [
+                {
+                  'action_name': 'my_proto',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+                    'browser/metrics/system_metrics.proto',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
+                    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
+                  ],
+                  'dependencies': [
+                    '../third_party/protobuf2/protobuf.gyp:protoc',
+                  ],
+                  'action': [
+                    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+                    'browser/metrics/system_metrics.proto',
+                    '--cpp_out=<(INTERMEDIATE_DIR)/chrome',
+                  ],
+                },
+              ],
+              'sources': [
+                '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
+                '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
                 'browser/metrics/system_metrics_logger.h',
                 'browser/metrics/system_metrics_logger_impl.cc',
                 'browser/metrics/system_metrics_logger_impl.h',
-  	      ],
-	      'include_dirs': [
-	        '<(INTERMEDIATE_DIR)',
-	        '<(INTERMEDIATE_DIR)/chrome',
- 	      ],
+              ],
+              'include_dirs': [
+                '<(INTERMEDIATE_DIR)',
+                '<(INTERMEDIATE_DIR)/chrome',
+              ],
               'sources/': [
                 ['include', 'browser/views/new_browser_window_widget.cc'],
                 ['include', 'browser/views/new_browser_window_widget.h'],
@@ -2605,24 +2606,24 @@
       'mac_bundle_resources': [
         # put any pdfs down in the sources block below so pdfsqueeze runs on
         # them.
-        'app/nibs/en.lproj/About.xib',
-        'app/nibs/en.lproj/BookmarkBar.xib',
-        'app/nibs/en.lproj/BrowserWindow.xib',
-        'app/nibs/en.lproj/ClearBrowsingData.xib',
-        'app/nibs/en.lproj/DownloadItem.xib',
-        'app/nibs/en.lproj/DownloadShelf.xib',
-        'app/nibs/en.lproj/FindBar.xib',
-        'app/nibs/en.lproj/FirstRunDialog.xib',
-        'app/nibs/en.lproj/HungRendererDialog.xib',
-        'app/nibs/en.lproj/InfoBar.xib',
-        'app/nibs/en.lproj/InfoBarContainer.xib',
-        'app/nibs/en.lproj/MainMenu.xib',
-        'app/nibs/en.lproj/PageInfo.xib',
-        'app/nibs/en.lproj/Preferences.xib',
-        'app/nibs/en.lproj/SaveAccessoryView.xib',
-        'app/nibs/en.lproj/TabContents.xib',
-        'app/nibs/en.lproj/TabView.xib',
-        'app/nibs/en.lproj/Toolbar.xib',
+        'app/nibs/About.xib',
+        'app/nibs/BookmarkBar.xib',
+        'app/nibs/BrowserWindow.xib',
+        'app/nibs/ClearBrowsingData.xib',
+        'app/nibs/DownloadItem.xib',
+        'app/nibs/DownloadShelf.xib',
+        'app/nibs/FindBar.xib',
+        'app/nibs/FirstRunDialog.xib',
+        'app/nibs/HungRendererDialog.xib',
+        'app/nibs/InfoBar.xib',
+        'app/nibs/InfoBarContainer.xib',
+        'app/nibs/MainMenu.xib',
+        'app/nibs/PageInfo.xib',
+        'app/nibs/Preferences.xib',
+        'app/nibs/SaveAccessoryView.xib',
+        'app/nibs/TabContents.xib',
+        'app/nibs/TabView.xib',
+        'app/nibs/Toolbar.xib',
         'app/theme/back_Template.pdf',
         'app/theme/close_bar.pdf',
         'app/theme/close_bar_h.pdf',
@@ -2849,10 +2850,10 @@
           ],
         }],
         ['OS=="mac"', {
-          # Mac addes an action to modify the Info.plist to meet our needs
-          # (see the script for why this is done).
           'actions': [
             {
+              # Mac addes an action to modify the Info.plist to meet our needs
+              # (see the script for why this is done).
               'action_name': 'tweak_app_infoplist',
               # We don't list any inputs or outputs because we always want
               # the script to run.  Why?  Because it does thinks like record
@@ -2864,6 +2865,33 @@
                          '-b<(mac_breakpad)',
                          '-k<(mac_keystone)',
                          '<(branding)'],
+            },
+            {
+              # TODO(tvl): delete this after it has been in a week or so since
+              # it will migrate bots/developers to the new layout instead of
+              # them getting errors with stale xib in the old dir.
+              'action_name': 'remove_stale_nibs',
+              'inputs': [],
+              'outputs': [],
+              'action': ['rm', '-rf',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/About.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/BookmarkBar.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/BrowserWindow.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/ClearBrowsingData.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/DownloadItem.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/DownloadShelf.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/FindBar.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/FirstRunDialog.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/HungRendererDialog.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/InfoBar.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/InfoBarContainer.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/MainMenu.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/PageInfo.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/Preferences.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/SaveAccessoryView.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/TabContents.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/TabView.nib',
+                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/Toolbar.nib'],
             },
           ],
         }],
@@ -3845,17 +3873,17 @@
           'dependencies': [
             '../views/views.gyp:views',
           ],
-	  'sources': [
+          'sources': [
             '<@(views_unit_tests_sources)',
-	  ],
-	  # We must use 'sources/' instead of 'source!' as there is a
-	  # target-default 'sources/' including gtk_unittest and 'source/' takes
-	  # precedence over 'sources!'.
+          ],
+          # We must use 'sources/' instead of 'source!' as there is a
+          # target-default 'sources/' including gtk_unittest and 'source/' takes
+          # precedence over 'sources!'.
           'sources/': [
-             ['exclude', 'browser/gtk/bookmark_editor_gtk_unittest\\.cc$'],	
-             ['exclude', 'browser/gtk/go_button_gtk_unittest\\.cc$'],	
+             ['exclude', 'browser/gtk/bookmark_editor_gtk_unittest\\.cc$'],
+             ['exclude', 'browser/gtk/go_button_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
-	  ],
+          ],
         }],
         ['OS=="mac"', {
            # The test fetches resources which means Mac need the app bundle to
@@ -4512,7 +4540,7 @@
                 'imagehlp.dll',
                 'psapi.dll',
                 'urlmon.dll',
-		'imm32.dll',
+                'imm32.dll',
               ],
               'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
               'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
