@@ -47,7 +47,7 @@ Contents
   <ul>
   <li> <a href="#options-loader">--loader</a> </li>
   </ul> </li>
-<li> <a href="#commands">Commands</a> </li>
+<li> <a href="#commands">Commands</a>
   <ul>
   <li> <a href="#switch-mode">Temporarily switching modes</a> </li>
   <li> <a href="#commands-set">Setting sel_ldr arguments</a> </li>
@@ -78,7 +78,7 @@ You can tell which mode <code>nacl-gdb</code> is in
 by looking at the prompt.
 </p>
 
-<table>
+<table summary="nacl-gdb prompts and modes">
   <tr>
     <th> Prompt </th>
     <th> Mode </th>
@@ -114,7 +114,7 @@ To run <code>nacl-gdb</code>, you should have the following:
     <code>nacl-gdb</code>.
     The tools directory is here:
     <blockquote>
-<code><em>install_dir</em>/nacl/googleclient/third_party/nacl_sdk/linux/sdk/nacl-sdk/bin</code>
+<code><em>install_dir</em>/src/third_party/nacl_sdk/linux/sdk/nacl-sdk/bin</code>
     </blockquote>
   </li>
   <li>
@@ -122,7 +122,7 @@ To run <code>nacl-gdb</code>, you should have the following:
     For example, here's how to compile the hello_world example
     with debugging symbols:
 <pre class="platform-linux">
-$ <kbd>cd <em>install_dir</em>/nacl/googleclient/native_client/tests/hello_world</kbd>
+$ <kbd>cd <em>install_dir</em>/src/native_client/tests/hello_world</kbd>
 $ <kbd>nacl-gcc -g -o hello_world.nexe hello_world.c</kbd>
 </pre>
   </li>
@@ -142,7 +142,7 @@ GNU gdb 6.8-nacl-beta1
 (nc-gdb) <kbd>break hello_world</kbd>
 Breakpoint 1 at 0x202c6: file hello_world.c, line 39.
 (nc-gdb) <kbd>run</kbd>
-Starting program: /whatever/nacl/googleclient/native_client/tests/hello_world/hello_world.nexe
+Starting program: /whatever/src/native_client/tests/hello_world/hello_world.nexe
 [Thread debugging using libthread_db enabled]
 [New Thread 0xf7fdd6c0 (LWP 17377)]
 [New Thread 0xf7ffbbb0 (LWP 17380)]
@@ -167,7 +167,7 @@ Breakpoint 1, hello_world () at hello_world.c:39
 (nc-gdb) <kbd><em>&lt;Enter></em></kbd>
 0x000202db      39        printf("Hello, World!\n");
 1: x/i $pc
-0x202db &lt;hello_world+27>:       call   0x204e0 <puts>
+0x202db &lt;hello_world+27>:       call   0x204e0 &lt;puts>
 (nc-gdb) <kbd>continue</kbd>
 Continuing.
 Hello, World!
@@ -199,7 +199,7 @@ $ <kbd>nacl-gcc -g -o my_prog.nexe my_prog.c</kbd>
 (nc-gdb) <kbd>b hello_world</kbd>
 Breakpoint 1 at 0x202c0
 (nc-gdb) <kbd>r</kbd>
-Starting program: /.../nacl/googleclient/native_client/scons-out/nacl/staging/hello_world.nexe
+Starting program: /.../src/native_client/scons-out/nacl/staging/hello_world.nexe
 [Thread debugging using libthread_db enabled]
 [New Thread 0xf7fdd6c0 (LWP 2872)]
 [New Thread 0xf7ffbbb0 (LWP 2943)]
@@ -325,6 +325,7 @@ show nacl native-client-path -- Show the path of the nacl program
 <p>
 Two commands let you temporarily switch modes
 and execute a command:
+</p>
 
 <dl>
 <dt> <code>nacl apply-runtime <em>command [args...]</em></code> </dt>
@@ -335,7 +336,7 @@ and execute a command:
 <dd>
   Apply a command as if you were at a <code>(nc-gdb)</code> prompt
 </dd>
-</p>
+</dl>
 
 <p>
 These commands are useful for tasks such as
@@ -357,7 +358,7 @@ Breakpoint 1 at 0x804a5c5: file service_runtime/sel_main.c, line 185.
 Num     Type           Disp Enb Address       What
 1       breakpoint     keep y   sr:0x0804a5c5 service_runtime/sel_main.c:185
 (nc-gdb) <kbd>run</kbd>
-Starting program: /whatever/nacl/googleclient/native_client/tests/hello_world/hello_world.nexe
+Starting program: /whatever/src/native_client/tests/hello_world/hello_world.nexe
 [Thread debugging using libthread_db enabled]
 [New Thread 0xf7fdd6c0 (LWP 12522)]
 nacl [Switching to Thread 0xf7fdd6c0 (LWP 12522)]

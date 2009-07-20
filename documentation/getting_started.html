@@ -210,7 +210,7 @@ Linux or Mac:
 </p>
 
 <pre class="platform-linux-mac">
-<kbd>cd <em>install_dir</em>/nacl/googleclient/native_client/tests/earth</kbd>
+<kbd>cd <em>install_dir</em>/src/native_client/tests/earth</kbd>
 </pre>
 
 <p>
@@ -218,7 +218,7 @@ Windows:
 </p>
 
 <pre class="platform-windows">
-<kbd>cd <em>install_dir</em>\nacl\googleclient\native_client\tests\earth</kbd>
+<kbd>cd <em>install_dir</em>\src\native_client\tests\earth</kbd>
 </pre>
 </li>
 
@@ -287,7 +287,7 @@ Linux or Mac:
 </p>
 
 <pre class="platform-linux-mac">
-<kbd>cd <em>install_dir</em>/nacl/googleclient/native_client</kbd>
+<kbd>cd <em>install_dir</em>/src/native_client</kbd>
 </pre>
 
 <p>
@@ -295,7 +295,7 @@ Windows:
 </p>
 
 <pre class="platform-windows">
-<kbd>cd <em>install_dir</em>\nacl\googleclient\native_client</kbd>
+<kbd>cd <em>install_dir</em>\src\native_client</kbd>
 </pre>
 </li>
 
@@ -304,7 +304,7 @@ Windows:
 Bookmark this page,
 both <a href="http://nativeclient.googlecode.com/svn/data/docs_tarball/nacl/googleclient/native_client/documentation/getting_started.html">online</a>
 and in your Native Client distribution
-(<code><em>install_dir</em>/nacl/googleclient/native_client/documentation/getting_started.html</code>).
+(<code><em>install_dir</em>/src/native_client/documentation/getting_started.html</code>).
 The bookmarks will make it easier for you to get back to these instructions
 after restarting your browser.
 Consider printing out this page, as well,
@@ -394,8 +394,7 @@ Launch Firefox and return to this page.
 </p>
 </li>
 
-<a name="httpd"> </a>
-<li>
+<li id="httpd">
 <p>
 Start up a local HTTP server,
 if one isn't already running on your computer.
@@ -420,14 +419,14 @@ or emptying the cache.
 
 <p>Linux:</p>
 <pre class="platform-linux">
-<kbd>cd <em>install_dir</em>/nacl/googleclient/native_client</kbd>
+<kbd>cd <em>install_dir</em>/src/native_client</kbd>
 <kbd>/usr/bin/python2.5 tools/httpd.py</kbd>
 </pre>
 
 <p>Mac:</p>
 
 <pre class="platform-mac">
-<kbd>cd <em>install_dir</em>/nacl/googleclient/native_client</kbd>
+<kbd>cd <em>install_dir</em>/src/native_client</kbd>
 <kbd>python tools/httpd.py</kbd>
 </pre>
 
@@ -436,7 +435,7 @@ Windows:
 </p>
 
 <pre class="platform-windows">
-<kbd>cd <em>install_dir</em>\nacl\googleclient\native_client</kbd>
+<kbd>cd <em>install_dir</em>\src\native_client</kbd>
 <kbd>python tools\httpd.py</kbd>
 </pre>
 
@@ -456,8 +455,7 @@ see the <a href="http://code.google.com/p/nativeclient/wiki/FAQ">FAQ</a>.
 </p>
 </li>
 
-<a name="browsertestpage"> </a>
-<li>
+<li id="browsertestpage">
 <p>
 In Firefox, visit the browser test page
 (<code>native_client/scons-out/nacl/staging/examples.html</code>),
@@ -552,7 +550,7 @@ In a terminal window, go to the earth demo's directory:
 </p>
 
 <pre class="platform-linux-mac">
-<kbd>cd <em>install_dir</em>/nacl/googleclient/native_client/tests/earth</kbd>
+<kbd>cd <em>install_dir</em>/src/native_client/tests/earth</kbd>
 </pre>
 </li>
 
@@ -616,7 +614,7 @@ because the Makefile refers to binaries in the current directory.
 The Python script, on the other hand,
 refers to binaries
 that are in the <code>scons-out/nacl/staging</code> directory
-(which is under <code>nacl/googleclient/native_client</code>).
+(which is under <code>src/native_client</code>).
 The binaries under <code>scons-out</code>
 are prebuilt for you,
 but you can always rebuild using SCons,
@@ -641,8 +639,8 @@ Please try these:
 <li> Build Quake and XaoS for Native Client;
      run them.
      For instructions, see the <code>README.nacl</code> files under
-     <code>nacl/googleclient/native_client/tests/quake</code> and
-     <code>nacl/googleclient/native_client/tests/xaos</code>.</li>
+     <code>src/native_client/tests/quake</code> and
+     <code>src/native_client/tests/xaos</code>.</li>
 <li> Browse the <a href="../README.html">documentation</a>, including the
      <a href="nacl_paper.pdf">Native Client paper</a> [PDF].</li>
 <li> Browse the project site,

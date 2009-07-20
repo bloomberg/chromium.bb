@@ -17,7 +17,7 @@
 
  <p>
  The Native Client SDK is under
- <code>nacl/googleclient/third_party/nacl_sdk/<em>platform</em>/sdk/nacl-sdk</code>,
+ <code>src/third_party/nacl_sdk/<em>platform</em>/sdk/nacl-sdk</code>,
  where <code><em>platform</em></code> is
  <code>linux</code>,
  <code>mac</code>, or

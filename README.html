@@ -1,10 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <!-- NOTE: Follow the steps in documentation/getting_started.html. -->
 <!--       Also see http://code.google.com/p/nativeclient.         -->
 <!--                                                               -->
 <!-- The latest version of this file is viewable online at:        -->
-<!-- http://nativeclient.googlecode.com/svn/trunk/nacl/googleclient/native_client/README.html                                                      -->
+<!-- http://nativeclient.googlecode.com/svn/trunk/src/native_client/README.html -->
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -29,7 +29,6 @@ Search Native Client webpages
 </div>
 </form>
 <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
-<script>_IG_AdjustIFrameHeight();</script>
 </div>
 <!-- end: CSE gadget -->
 
@@ -108,7 +107,6 @@ You can get Native Client in two ways:
      Once you have the source code,
      build it as described in
      <a href="./documentation/getting_started.html">Getting Started</a>.
-     <span class="comment">[PENDING: Getting Started hasn't been updated yet. Next on my list!]</span>
      </li>
 <li> <a href="http://code.google.com/p/nativeclient/wiki/Downloads?tm=2">Download a tarball</a>
      that includes pre-built binaries for Linux, Mac, or Windows.
@@ -126,10 +124,10 @@ The following table describes major files and directories that you'll see
 in your working copy of the SVN repository,
 including some directories that don't exist until you've built Native Client.
 Paths are relative to the
-<code>nacl/googleclient/native_client</code> directory.
+<code>src/native_client</code> directory.
 </p>
 
-<table>
+<table summary="major files and directories">
   <tbody>
     <tr>
       <th>File or directory</th>
@@ -137,7 +135,7 @@ Paths are relative to the
     </tr>
     <tr>
       <td><pre class="listing">
-<a href="../VERSION">../VERSION</a>
+<!-- a href="VERSION" -->VERSION<!-- /a --> <span class="comment">[PENDING: this file is currently AWOL] </span>
 <a href="COPYING">COPYING</a>
 <a href="NOTICE">NOTICE</a>
 README.html <em>(this file)</em>

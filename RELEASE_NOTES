@@ -1,12 +1,15 @@
 RELEASE NOTES
 Native Client Release 0.2
-Updated: 17 June 2009
+Updated: 20 July 2009
 
 This file documents issues known at the time of the release, with an
 emphasis on security-related issues (and possibly some neglected
 robustness or functionality issues). For the full version/release
-number of this release, refer to nacl/googleclient/VERSION. For an
-introduction to Native Client, see README.html in this directory.
+number of this release, refer to src/VERSION. For an introduction to
+Native Client, see README.html in this directory.
+
+[PENDING: VERSION went missing when we simplified the directory
+structure in mid-July. It should return shortly.]
 
 CHANGES SINCE THE PREVIOUS RELEASE
 
