@@ -1280,6 +1280,30 @@ devtools.CallFrame.getVariablesInScopeAsync = function(callFrame, callback) {
 
 
 /**
+ * 'Static' expanded properties container shared among callframes.
+ */
+devtools.CallFrame.expandedProperties_ = {};
+
+
+/**
+ * Overrides _expandedProperties accessor for auto-expand.
+ */
+devtools.CallFrame.prototype.__defineGetter__('_expandedProperties',
+    function() {
+  return devtools.CallFrame.expandedProperties_;
+});
+
+
+/**
+ * Overrides _expandedProperties accessor for auto-expand.
+ */
+devtools.CallFrame.prototype.__defineSetter__('_expandedProperties',
+    function(newValue) {
+  devtools.CallFrame.expandedProperties_ = newValue;
+});
+
+
+/**
  * JSON based commands sent to v8 debugger.
  * @param {string} command Name of the command to execute.
  * @param {Object} opt_arguments Command-specific arguments map.

@@ -613,10 +613,6 @@ WebInspector.ScopeChainSidebarPane.prototype.update = function(callFrame) {
       return;
   }
 
-  if (!callFrame._expandedProperties) {
-    callFrame._expandedProperties = {};
-  }
-
   var scopeChain = callFrame.scopeChain;
   var ScopeType = devtools.DebuggerAgent.ScopeType;
   for (var i = 0; i < scopeChain.length; ++i) {
