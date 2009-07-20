@@ -46,9 +46,11 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
+#include "chrome/browser/importer/importer.h"
 
 using base::Time;
 

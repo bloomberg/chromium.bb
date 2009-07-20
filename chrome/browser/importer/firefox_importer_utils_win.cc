@@ -6,6 +6,7 @@
 
 #include <shlobj.h>
 
+#include "base/file_util.h"
 #include "base/registry.h"
 
 namespace {

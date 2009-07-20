@@ -5,6 +5,7 @@
 #include "chrome/browser/views/importer_lock_view.h"
 
 #include "app/l10n_util.h"
+#include "base/message_loop.h"
 #include "chrome/browser/importer/importer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

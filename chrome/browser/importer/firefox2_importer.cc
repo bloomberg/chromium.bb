@@ -7,7 +7,9 @@
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
@@ -18,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
+#include "webkit/glue/password_form.h"
 
 using base::Time;
 using webkit_glue::PasswordForm;

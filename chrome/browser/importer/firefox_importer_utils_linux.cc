@@ -4,6 +4,8 @@
 
 #include "chrome/browser/importer/firefox_importer_utils.h"
 
+#include "base/file_util.h"
+
 FilePath GetProfilesINI() {
   FilePath ini_file;
   // The default location of the profile folder containing user data is

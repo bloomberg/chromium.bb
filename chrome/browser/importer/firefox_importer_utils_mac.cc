@@ -4,6 +4,7 @@
 
 #include "chrome/browser/importer/firefox_importer_utils.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 
 FilePath GetProfilesINI() {

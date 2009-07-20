@@ -14,6 +14,7 @@
 #endif
 #include "base/file_util.h"
 #include "base/gfx/png_encoder.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
@@ -28,6 +29,9 @@
 #include "chrome/browser/importer/ie_importer.h"
 #endif
 #include "chrome/browser/importer/toolbar_importer.h"
+#if defined(OS_WIN)
+#include "chrome/browser/password_manager/ie7_password.h"
+#endif
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/shell_integration.h"
@@ -38,6 +42,7 @@
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
 #include "webkit/glue/image_decoder.h"
+#include "webkit/glue/password_form.h"
 
 // TODO(port): Port these files.
 #if defined(OS_WIN)
@@ -370,6 +375,34 @@ bool ProfileWriter::DoesBookmarkExist(
 }
 
 // Importer.
+
+Importer::Importer()
+    : main_loop_(MessageLoop::current()),
+      delagate_loop_(NULL),
+      importer_host_(NULL),
+      cancelled_(false),
+      import_to_bookmark_bar_(false) {
+}
+
+void Importer::NotifyItemStarted(ImportItem item) {
+  main_loop_->PostTask(FROM_HERE, NewRunnableMethod(importer_host_,
+      &ImporterHost::ImportItemStarted, item));
+}
+
+void Importer::NotifyItemEnded(ImportItem item) {
+  main_loop_->PostTask(FROM_HERE, NewRunnableMethod(importer_host_,
+      &ImporterHost::ImportItemEnded, item));
+}
+
+void Importer::NotifyStarted() {
+  main_loop_->PostTask(FROM_HERE, NewRunnableMethod(importer_host_,
+      &ImporterHost::ImportStarted));
+}
+
+void Importer::NotifyEnded() {
+  main_loop_->PostTask(FROM_HERE,
+      NewRunnableMethod(importer_host_, &ImporterHost::ImportEnded));
+}
 
 // static
 bool Importer::ReencodeFavicon(const unsigned char* src_data, size_t src_len,

@@ -27,6 +27,7 @@
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "webkit/glue/password_form.h"
 
 using base::Time;
 using webkit_glue::PasswordForm;

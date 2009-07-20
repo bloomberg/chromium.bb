@@ -42,15 +42,16 @@
 #ifndef CHROME_BROWSER_IMPORTER_MORK_READER_H__
 #define CHROME_BROWSER_IMPORTER_MORK_READER_H__
 
-#include <map>
-#include <iostream>
+#include <iosfwd>
 #include <fstream>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/stack_container.h"
-#include "chrome/browser/importer/importer.h"
+
+class MessageLoop;
+class ProfileWriter;
 
 // The nsMorkReader object allows a consumer to read in a mork-format
 // file and enumerate the rows that it contains.  It does not provide

@@ -5,24 +5,28 @@
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_H_
 
-#include <set>
+#include <string>
 #include <vector>
 
 #include "build/build_config.h"
 
 #include "base/basictypes.h"
-#include "base/message_loop.h"
+#include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/history/history_types.h"
-#if defined(OS_WIN)
-#include "chrome/browser/password_manager/ie7_password.h"
-#endif
 #include "chrome/browser/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/password_form.h"
+
+class MessageLoop;
+class TemplateURL;
+
+struct IE7PasswordInfo;
+
+namespace webkit_glue {
+struct PasswordForm;
+}
 
 // An enumeration of the type of browsers that we support to import
 // settings and data from them.
@@ -351,38 +355,21 @@ class Importer : public base::RefCounted<Importer> {
   bool cancelled() const { return cancelled_; }
 
  protected:
-  Importer()
-      : main_loop_(MessageLoop::current()),
-        delagate_loop_(NULL),
-        importer_host_(NULL),
-        cancelled_(false),
-        import_to_bookmark_bar_(false) {}
+  Importer();
 
   // Notifies the coordinator that the collection of data for the specified
   // item has begun.
-  void NotifyItemStarted(ImportItem item) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(importer_host_,
-        &ImporterHost::ImportItemStarted, item));
-  }
+  void NotifyItemStarted(ImportItem item);
 
   // Notifies the coordinator that the collection of data for the specified
   // item has completed.
-  void NotifyItemEnded(ImportItem item) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(importer_host_,
-        &ImporterHost::ImportItemEnded, item));
-  }
+  void NotifyItemEnded(ImportItem item);
 
   // Notifies the coordinator that the import operation has begun.
-  void NotifyStarted() {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(importer_host_,
-        &ImporterHost::ImportStarted));
-  }
+  void NotifyStarted();
 
   // Notifies the coordinator that the entire import operation has completed.
-  void NotifyEnded() {
-    main_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(importer_host_, &ImporterHost::ImportEnded));
-  }
+  void NotifyEnded();
 
   // Given raw image data, decodes the icon, re-sampling to the correct size as
   // necessary, and re-encodes as PNG data in the given output vector. Returns

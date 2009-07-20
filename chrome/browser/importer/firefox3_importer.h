@@ -11,8 +11,9 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/common/sqlite_utils.h"
 #include "googleurl/src/gurl.h"
+
+struct sqlite3;
 
 // Importer for Mozilla Firefox 3.
 // Firefox 3 stores its persistent information in a new system called places.

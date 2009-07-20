@@ -14,6 +14,7 @@
 #include "base/lock.h"
 #include "base/observer_list.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -154,54 +155,6 @@ class BookmarkNode : public TreeNode<BookmarkNode> {
   base::Time date_group_modified_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
-};
-
-// BookmarkModelObserver ------------------------------------------------------
-
-// Observer for the BookmarkModel.
-//
-class BookmarkModelObserver {
- public:
-  // Invoked when the model has finished loading.
-  virtual void Loaded(BookmarkModel* model) = 0;
-
-  // Invoked from the destructor of the BookmarkModel.
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) { }
-
-  // Invoked when a node has moved.
-  virtual void BookmarkNodeMoved(BookmarkModel* model,
-                                 const BookmarkNode* old_parent,
-                                 int old_index,
-                                 const BookmarkNode* new_parent,
-                                 int new_index) = 0;
-
-  // Invoked when a node has been added.
-  virtual void BookmarkNodeAdded(BookmarkModel* model,
-                                 const BookmarkNode* parent,
-                                 int index) = 0;
-
-  // Invoked when a node has been removed, the item may still be starred though.
-  // |parent| the parent of the node that was removed.
-  // |old_index| the index of the removed node in |parent| before it was
-  // removed.
-  // |node| is the node that was removed.
-  virtual void BookmarkNodeRemoved(BookmarkModel* model,
-                                   const BookmarkNode* parent,
-                                   int old_index,
-                                   const BookmarkNode* node) = 0;
-
-  // Invoked when the title or favicon of a node has changed.
-  virtual void BookmarkNodeChanged(BookmarkModel* model,
-                                   const BookmarkNode* node) = 0;
-
-  // Invoked when a favicon has finished loading.
-  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
-                                         const BookmarkNode* node) = 0;
-
-  // Invoked when the children (just direct children, not descendants) of
-  // |node| have been reordered in some way, such as sorted.
-  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
-                                             const BookmarkNode* node) = 0;
 };
 
 // BookmarkModel --------------------------------------------------------------

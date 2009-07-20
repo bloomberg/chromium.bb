@@ -6,14 +6,17 @@
 
 #include <algorithm>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/base64.h"
+#include "webkit/glue/password_form.h"
 
 using webkit_glue::PasswordForm;
 

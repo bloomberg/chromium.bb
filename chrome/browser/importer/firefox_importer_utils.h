@@ -5,15 +5,20 @@
 #ifndef CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UTILS_H_
 #define CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UTILS_H_
 
-#include "base/basictypes.h"
-#include "base/file_util.h"
-#include "base/native_library.h"
-#include "base/values.h"
-#include "build/build_config.h"
-#include "webkit/glue/password_form.h"
+#include <vector>
 
+#include "base/basictypes.h"
+#include "base/file_path.h"
+#include "base/native_library.h"
+#include "build/build_config.h"
+
+class DictionaryValue;
 class GURL;
 class TemplateURL;
+
+namespace webkit_glue {
+struct PasswordForm;
+}
 
 #if defined(OS_WIN)
 // Detects which version of Firefox is installed from registry. Returns its
