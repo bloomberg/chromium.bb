@@ -19,13 +19,21 @@ class InfoBarDelegate;
   InfoBarDelegate* delegate_;  // weak
   IBOutlet NSImageView* image_;
   IBOutlet NSTextField* label_;
+  IBOutlet NSButton* okButton_;
+  IBOutlet NSButton* cancelButton_;
   IBOutlet NSButton* closeButton_;
 };
 
 // Initializes a new InfoBarController.
 - (id)initWithDelegate:(InfoBarDelegate*)delegate;
 
-// Dismisses the infobar without taking any action.
+// Called when someone clicks on the ok or cancel buttons.  Subclasses
+// must override if they do not hide the buttons.
+- (void)ok:(id)sender;
+- (void)cancel:(id)sender;
+
+// Called when someone clicks on the close button.  Dismisses the
+// infobar without taking any action.
 - (IBAction)dismiss:(id)sender;
 
 // Subclasses can override this method to add additional controls to

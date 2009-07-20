@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/logging.h"  // for NOTREACHED()
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cocoa/infobar.h"
@@ -47,6 +48,18 @@
   [self addAdditionalControls];
 }
 
+// Called when someone clicks on the ok button.
+- (void)ok:(id)sender {
+  // Subclasses must override this method if they do not hide the ok button.
+  NOTREACHED();
+}
+
+// Called when someone clicks on the cancel button.
+- (void)cancel:(id)sender {
+  // Subclasses must override this method if they do not hide the cancel button.
+  NOTREACHED();
+}
+
 // Called when someone clicks on the close button.
 - (void)dismiss:(id)sender {
   [self closeInfoBar];
@@ -81,6 +94,10 @@
   AlertInfoBarDelegate* delegate = delegate_->AsAlertInfoBarDelegate();
   [label_ setStringValue:base::SysWideToNSString(
         delegate->GetMessageText())];
+
+  // Remove the ok and cancel buttons, since they are not needed.
+  [okButton_ removeFromSuperview];
+  [cancelButton_ removeFromSuperview];
 }
 
 @end
@@ -149,6 +166,10 @@
   [label_ setAllowsEditingTextAttributes: YES];
   [label_ setSelectable: YES];
   [label_ setAttributedStringValue:infoText];
+
+  // Remove the ok and cancel buttons, since they are not needed.
+  [okButton_ removeFromSuperview];
+  [cancelButton_ removeFromSuperview];
 }
 
 // Called when someone clicks on the link in the infobar.  This method
@@ -186,75 +207,67 @@
 // required and position them to the left of the close button.
 - (void)addAdditionalControls {
   ConfirmInfoBarDelegate* delegate = delegate_->AsConfirmInfoBarDelegate();
+  int visibleButtons = delegate->GetButtons();
   [label_ setStringValue:base::SysWideToNSString(delegate->GetMessageText())];
 
-  int visibleButtons = delegate->GetButtons();
-  NSButton *okButton = nil;
-  NSButton *cancelButton = nil;
+  // Save the margins between the buttons, so we can keep them constant.
+  float cancelMargin =
+      NSMinX([closeButton_ frame]) - NSMaxX([cancelButton_ frame]);
+  float okMargin = NSMinX([cancelButton_ frame]) - NSMaxX([okButton_ frame]);
+  float labelMargin = NSMinX([okButton_ frame]) - NSMaxX([label_ frame]);
 
-  // Create the OK button if needed.
-  if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK) {
-    okButton = [[[NSButton alloc] initWithFrame:NSZeroRect] autorelease];
-    [okButton setBezelStyle:NSRoundedBezelStyle];
-    [okButton setTitle:base::SysWideToNSString(
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK))];
-    [okButton sizeToFit];
-    [okButton setAutoresizingMask:NSViewMinXMargin];
-    [okButton setTarget:self];
-    [okButton setAction:@selector(ok:)];
-  }
-
-  // Create the cancel button if needed.
+  // Create and position the cancel button if needed.  Otherwise, hide it.
   if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-    cancelButton = [[[NSButton alloc] initWithFrame:NSZeroRect] autorelease];
-    [cancelButton setBezelStyle:NSRoundedBezelStyle];
-    [cancelButton setTitle:base::SysWideToNSString(
+    [cancelButton_ setTitle:base::SysWideToNSString(
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL))];
-    [cancelButton sizeToFit];
-    [cancelButton setAutoresizingMask:NSViewMinXMargin];
-    [cancelButton setTarget:self];
-    [cancelButton setAction:@selector(cancel:)];
-  }
+    [cancelButton_ sizeToFit];
 
-  // Position the cancel button, if it exists.
-  int cancelWidth = 0;
-  if (cancelButton) {
-    NSRect cancelFrame = [cancelButton frame];
-    cancelWidth = cancelFrame.size.width + 10;
+    NSRect cancelFrame = [cancelButton_ frame];
+    float cancelWidth = cancelFrame.size.width + cancelMargin;
 
-    // Position the cancel button to the left of the close button.  A 10px
-    // margin is already built into cancelWidth.
+    // Position the cancel button to the left of the close button.
+    // The appropriate margin is already built into cancelWidth.
     cancelFrame.origin.x = NSMinX([closeButton_ frame]) - cancelWidth;
-    cancelFrame.origin.y = 0;
-    [cancelButton setFrame:cancelFrame];
-    [[self view] addSubview:cancelButton];
+    [cancelButton_ setFrame:cancelFrame];
 
     // Resize the label box to extend all the way to the cancel button,
-    // minus a 10px argin.
-    NSRect labelFrame = [label_ frame];
-    labelFrame.size.width = NSMinX(cancelFrame) - 10 - NSMinX(labelFrame);
-    [label_ setFrame:labelFrame];
+    // minus the saved margin, but only if we're not also adding an OK button.
+    if (!(visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK)) {
+      NSRect labelFrame = [label_ frame];
+      labelFrame.size.width =
+          NSMinX(cancelFrame) - NSMinX(labelFrame) - labelMargin;
+      [label_ setFrame:labelFrame];
+    }
+  } else {
+    [cancelButton_ removeFromSuperview];
   }
 
-  // Position the OK button, if it exists.
-  if (okButton) {
-    NSRect okFrame = [okButton frame];
-    int okWidth = okFrame.size.width + 10;
+  // Create and position the OK button if needed.  Otherwise, hide it.
+  if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK) {
+    [okButton_ setTitle:base::SysWideToNSString(
+          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK))];
+    [okButton_ sizeToFit];
 
-    // Position the OK button to the left of the close button as
-    // well.  If a cancel button is present, |cancelWidth| will be positive.
-    // In either case, a 10px margin is built into okWidth.
-    okFrame.origin.x =
-        NSMinX([closeButton_ frame]) - cancelWidth - okWidth;
-    okFrame.origin.y = 0;
-    [okButton setFrame:okFrame];
-    [[self view] addSubview:okButton];
+    NSRect okFrame = [okButton_ frame];
+    int okWidth = okFrame.size.width + okMargin;
+
+    // Position the OK button to the left of the cancel button, if
+    // present.  Otherwise, position it relative to the close button.
+    float relativeX = (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) ?
+        NSMinX([cancelButton_ frame]) :
+        NSMinX([closeButton_ frame]);
+
+    // The appropriate margin is already built into okWidth.
+    okFrame.origin.x = relativeX - okWidth;
+    [okButton_ setFrame:okFrame];
 
     // Resize the label box to extend all the way to the OK button,
-    // minus a 10px argin.
+    // minus the saved margin.
     NSRect labelFrame = [label_ frame];
-    labelFrame.size.width = NSMinX(okFrame) - 10 - NSMinX(labelFrame);
+    labelFrame.size.width = NSMinX(okFrame) - NSMinX(labelFrame) - labelMargin;
     [label_ setFrame:labelFrame];
+  } else {
+    [okButton_ removeFromSuperview];
   }
 }
 
