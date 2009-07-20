@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(dumi): expose V8Proxy::processConsoleMessages() through
+// a function in WebKit.h and remove the next 2 includes
+// http://code.google.com/p/chromium/issues/detail?id=17300
+#include "config.h"
 #include "V8Proxy.h"
 #undef LOG
 
