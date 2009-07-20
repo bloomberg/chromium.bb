@@ -96,6 +96,19 @@ struct NaClThreadContext {
    */
 };
 
+/*
+ * A sanity check -- should be invoked in some early function, e.g.,
+ * main, or something that main invokes early.
+ */
+/* TODO(petr): move this to platform-specific file,
+ * should be done together with splitting sel_ldr.c
+ *
+ * clean this macro
+ */
+#define NACL_THREAD_CHECK do {                    \
+    CHECK(sizeof(struct NaClThreadContext) == 36);  \
+  } while (0)
+
 struct NaClApp;  /* fwd */
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
