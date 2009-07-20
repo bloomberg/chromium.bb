@@ -102,8 +102,10 @@ WebImage& WebImage::operator=(const PassRefPtr<Image>& image)
 
 void WebImage::assign(CGImageRef imageRef)
 {
+    // Make sure to retain the imageRef first incase m_imageRef == imageRef.
+    CGImageRetain(imageRef);
     CGImageRelease(m_imageRef);
-    CGImageRetain(m_imageRef = imageRef);
+    m_imageRef = imageRef;
 }
 
 } // namespace WebKit

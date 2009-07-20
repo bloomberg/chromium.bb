@@ -74,7 +74,8 @@ void WebURLRequest::reset()
 
 void WebURLRequest::assign(const WebURLRequest& r)
 {
-    assign(r.m_private ? new WebURLRequestPrivateImpl(r.m_private) : 0);
+    if (&r != this)
+        assign(r.m_private ? new WebURLRequestPrivateImpl(r.m_private) : 0);
 }
 
 WebURL WebURLRequest::url() const
@@ -227,6 +228,8 @@ const ResourceRequest& WebURLRequest::toResourceRequest() const
 
 void WebURLRequest::assign(WebURLRequestPrivate* p)
 {
+    // Subclasses may call this directly so a self-assignment check is needed
+    // here as well as in the public assign method.
     if (m_private == p)
         return;
     if (m_private)

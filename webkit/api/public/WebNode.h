@@ -32,6 +32,12 @@
 #define WebNode_h
 
 #include "WebCommon.h"
+#include "WebString.h"
+
+#if WEBKIT_IMPLEMENTATION
+namespace WebCore { class Node; }
+namespace WTF { template <typename T> class PassRefPtr; }
+#endif
 
 namespace WebKit {
     class WebNodePrivate;
@@ -53,7 +59,14 @@ namespace WebKit {
         WEBKIT_API WebNode parentNode() const;
         WEBKIT_API WebString nodeName() const;
 
+#if WEBKIT_IMPLEMENTATION
+        WebNode(const WTF::PassRefPtr<WebCore::Node>&);
+        WebNode& operator=(const WTF::PassRefPtr<WebCore::Node>&);
+        operator WTF::PassRefPtr<WebCore::Node>() const;
+#endif
+
     private:
+        void assign(WebNodePrivate*);
         WebNodePrivate* m_private;
     };
 
