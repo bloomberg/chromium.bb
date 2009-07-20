@@ -37,6 +37,7 @@
 
 #include <stdio.h>
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
+#include "native_client/src/shared/utils/types.h"
 
 /* Defines the set of known (opcode) instructions. */
 typedef enum {
@@ -74,6 +75,7 @@ typedef enum {
   InstJp,
   InstJs,
   InstJz,
+  InstLeave,
   InstMov,
   InstMovsxd,
   InstNop,
@@ -104,7 +106,7 @@ typedef enum {
   Prefix0F,
   PrefixF20F,
   PrefixF30F,
-  Prefix66OF,
+  Prefix660F,
   Prefix0F0F,
   Prefix0F38,
   Prefix660F38,
@@ -159,10 +161,10 @@ typedef enum {
   /* Defines the size of the immediate value that must follow the opcode.
    * Intel's notation is ib, iw, id, and io.
    */
-  OpcodeIb,
-  OpcodeIw,
-  OpcodeIv,
-  OpcodeIo,
+  OpcodeHasImmed,
+  OpcodeHasImmed_b,
+  OpcodeHasImmed_w,
+  OpcodeHasImmed_v,
 
   /* Defines a register code, from 0 through 7, added to the hexadecimal byte
    * associated with the instruction, based on the operand size.
@@ -291,7 +293,7 @@ typedef enum {
   Ev_Operand,
 
   /* Models a 64-bit general-purpose register or memory
-   * operand. Intel's notation is r/64.
+   * operand. Intel's notation is r/m64.
    */
   Eo_Operand,
 
@@ -346,9 +348,6 @@ typedef enum {
   /* An immediate 32-bit value. Intel's notation is imm32. */
   Iv_Operand,
 
-  /* An immediate 64-bit value. Intel's notation is imm64. */
-  Io_Operand,
-
   /* Note: The instruction decoder may count on the fact that the J_Operand
    * values are contiguous, in the order specified.
    */
@@ -372,11 +371,6 @@ typedef enum {
    * Intel's notation is rel32.
    */
   Jv_Operand,
-
-  /* A relative address that is 64 bits long (operand size).
-   * Intel's notation is rel64.
-   */
-  Jo_Operand,
 
   /* Note: The instruction decoder may count on the fact that the M_Operand
    * values are contiguous, in the order specified.
@@ -559,6 +553,8 @@ typedef enum {
   RegREAX,
   /* Use EIP or RIP, based on address size - EIP in 32-bits, RIP in 64-bits. */
   RegREIP,
+  /* Use EBP or RBP, based on 32/64 bit model. */
+  RegREBP,
 
   /* One of the eight general purpose registers, less the stack pointer, based
    * on operand size.
@@ -620,6 +616,10 @@ typedef enum {
   OperandNear,
   /* When jump address, the jump is relative (rather than absolute. */
   OperandRelative,
+  /* When defined, uses address size to compute r/mXX value instead of
+   * operand size.
+   */
+  OperandUsesAddressSize,
   /* Special marker denoting the number of operand flags. */
   OperandFlagEnumSize
 } OperandFlagEnum;
@@ -643,7 +643,7 @@ typedef struct Operand {
 
 
 /* Maximum number of operands in an x86 instruction (implicit and explicit). */
-#define MAX_NUM_OPERANDS 3
+#define MAX_NUM_OPERANDS 4
 
 /* Metadata about an instruction, defining a pattern. Note: Since the same
  * sequence of opcode bytes may define more than one pattern (depending on
@@ -686,5 +686,18 @@ void PrintOpcode(FILE* f,  Opcode* opcode);
  * the lookahead.
  */
 void PrintOpcodeTablegen(FILE* f, int index, Opcode* opcode, int lookahead);
+
+/* Prints out the given opcode structure to the given file. If index >= 0,
+ * print out a comment, with the value of index, before the printed opcode
+ * structure. Lookahead is used to convert the next_rule pointer into
+ * a symbolic reference using the name "g_Opcodes", plus the index defined by
+ * the lookahead. Argument as_array_element is true if the element is
+ * assumed to be in an array static initializer. If argument simplify is
+ * true, then the element is for documentation purposes only (as a single
+ * element), and simplify the output to only contain (user-readable)
+ * useful information.
+ */
+void PrintOpcodeTableDriver(FILE* f, Bool as_array_element, Bool simplify,
+                            int index, Opcode* opcode, int lookahead);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H_ */

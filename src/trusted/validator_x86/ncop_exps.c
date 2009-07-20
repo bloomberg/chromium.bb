@@ -86,8 +86,10 @@ static const char* const g_ExprNodeFlagName[ExprNodeFlagEnumSize] = {
   "ExprSize16",
   "ExprSize32",
   "ExprSize64",
-  "EpxrHexConstant",
-  "ExprIntConstant",
+  "EpxrUnsignedHex",
+  "ExprSignedHex",
+  "ExprUnsignedInt",
+  "ExprSignedInt",
   "ExprImplicit",
 };
 
@@ -132,25 +134,35 @@ static void PrintLower(FILE* file, char* str) {
   }
 }
 
+/* Return the sign (extended) integer in the given expr node. */
+static int32_t GetSignExtendedValue(ExprNode* node) {
+  if (node->flags & ExprFlag(ExprSize8)) {
+    return (int8_t) node->value;
+  } else if (node->flags & ExprFlag(ExprSize16)) {
+    return (int16_t) node->value;
+  } else {
+    return (int32_t) node->value;
+  }
+}
+
 /* Print out the given (constant) expression node to the given file. */
 static void PrintDisassembledConst(FILE* file, ExprNode* node) {
   assert(node->kind == ExprConstant);
-  if (node->flags & ExprFlag(ExprHexConstant)) {
-    if (node->flags & ExprFlag(ExprSize8)) {
-      fprintf(file, "0x%"PRIx8, (uint8_t) node->value);
-    } else if (node->flags & ExprFlag(ExprSize16)) {
-      fprintf(file, "0x%"PRIx16, (uint16_t) node->value);
+  if (node->flags & ExprFlag(ExprUnsignedHex)) {
+    fprintf(file, "0x%"PRIx32, node->value);
+  } else if (node->flags & ExprFlag(ExprSignedHex)) {
+    int32_t value = GetSignExtendedValue(node);
+    if (value < 0) {
+      value = -value;
+      fprintf(file, "-0x%"PRIx32, value);
     } else {
-      fprintf(file, "0x%"PRIx32, node->value);
+      fprintf(file, "0x%"PRIx32, value);
     }
+  } else if (node->flags & ExprFlag(ExprUnsignedInt)) {
+    fprintf(file, "%"PRIu32, node->value);
   } else {
-    if (node->flags & ExprFlag(ExprSize8)) {
-      fprintf(file, "%"PRId8, (int8_t) node->value);
-    } else if (node->flags & ExprFlag(ExprSize16)) {
-      fprintf(file, "%"PRId16, (int16_t) node->value);
-    } else {
-      fprintf(file, "%"PRId32, (int32_t) node->value);
-    }
+    /* Assume ExprSignedInt. */
+    fprintf(file, "%"PRId32, (int32_t) GetSignExtendedValue(node));
   }
 }
 
@@ -162,8 +174,18 @@ static void PrintDisassembledConst64(
   node = &vector->node[index];
   assert(node->kind == ExprConstant64);
   value = GetExprConstant64(vector, index);
-  if (node->flags & ExprFlag(ExprHexConstant)) {
+  if (node->flags & ExprFlag(ExprSignedHex)) {
     fprintf(file, "0x%"PRIx64, value);
+  } else if (node->flags & ExprFlag(ExprSignedHex)) {
+    int64_t val = (int64_t) value;
+    if (val < 0) {
+      val = -val;
+      fprintf(file, "-0x%"PRIx64, val);
+    } else {
+      fprintf(file, "0x%"PRIx64, val);
+    }
+  } else if (node->flags & ExprFlag(ExprUnsignedInt)) {
+    fprintf(file, "%"PRIu64, value);
   } else {
     fprintf(file, "%"PRId64, (int64_t) value);
   }
@@ -245,18 +267,19 @@ static int PrintDisassembledMemOffset(FILE* file,
   fprintf(file,"[");
   if (r1 != RegUnknown) {
     PrintDisassembledRegKind(file, r1);
-    if (r2 != RegUnknown || disp != 0) {
-      fprintf(file, "+");
-    }
   }
   if (r2 != RegUnknown) {
-    PrintDisassembledRegKind(file, r2);
-    fprintf(file, "*%d", scale);
-    if (disp != 0) {
+    if (r1 != RegUnknown) {
       fprintf(file, "+");
     }
+    PrintDisassembledRegKind(file, r2);
+    fprintf(file, "*%d", scale);
   }
   if (disp != 0) {
+    if ((r1 != RegUnknown || r2 != RegUnknown) &&
+        !IsExprNegativeConstant(vector, disp_index)) {
+      fprintf(file, "+");
+    }
     /* Recurse to handle print using format flags. */
     PrintDisassembledExp(file, vector, disp_index);
   }
@@ -391,4 +414,32 @@ uint64_t GetExprConstant64(ExprNodeVector* vector, int index) {
 void SplitExprConstant64(uint64_t val, uint32_t* val1, uint32_t* val2) {
   *val1 = (uint32_t) (val & 0xFFFFFFFF);
   *val2 = (uint32_t) (val >> 32);
+}
+
+Bool IsExprNegativeConstant(ExprNodeVector* vector, int index) {
+  ExprNode* node = &vector->node[index];
+  switch (node->kind) {
+    case ExprConstant:
+      if (node->flags & ExprFlag(ExprUnsignedHex) ||
+          node->flags & ExprFlag(ExprUnsignedInt)) {
+        return FALSE;
+      } else {
+        /* Assume signed value. */
+        return GetSignExtendedValue(node) < 0;
+      }
+      break;
+    case ExprConstant64:
+      if (node->flags & ExprFlag(ExprUnsignedHex) ||
+          node->flags & ExprFlag(ExprUnsignedInt)) {
+        return FALSE;
+      } else {
+        /* Assume signed value. */
+        int64_t value = (int64_t) GetExprConstant64(vector, index);
+        return value < 0;
+      }
+      break;
+    default:
+      break;
+  }
+  return FALSE;
 }

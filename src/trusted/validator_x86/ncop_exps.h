@@ -90,10 +90,17 @@ typedef enum {
   ExprSize32,
   /* Defines that the size of the data is 8 bytes. */
   ExprSize64,
-  /* Defines that the constant is a hex value instead of an integer. */
-  ExprHexConstant,
-  /* Defines that the constant is an integer instead of a hex value. */
-  ExprIntconstant,
+  /* Defines that the constant is an unsigned hex value instead of an integer.
+   */
+  ExprUnsignedHex,
+  /* Defines that the constant is a signed hexidecimal value instead of
+   * an integer.
+   */
+  ExprSignedHex,
+  /* Defines that the constant is an unsigned integer instead of a hex value. */
+  ExprUnsignedInt,
+  /* Defines that the constant is a signed integer instead of a hex value. */
+  ExprSignedInt,
   /* Defines an implicit argument that shouldn't be printed. */
   ExprImplicit,
   /* Special marker used to define the number of ExprNodeFlags. */
@@ -152,6 +159,9 @@ uint64_t GetExprConstant64(ExprNodeVector* vector, int index);
  * put in val2.
  */
 void SplitExprConstant64(uint64_t val, uint32_t* val1, uint32_t* val2);
+
+/* Returns true if the index points to a constant that is negative. */
+Bool IsExprNegativeConstant(ExprNodeVector* vector, int index);
 
 /* Print out the contents of the given vector of nodes to the given file. */
 void PrintExprNodeVector(FILE* file, ExprNodeVector* vector);

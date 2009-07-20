@@ -238,6 +238,17 @@ typedef enum {
   RegSize64
 } RegKind;
 
+static const char* const g_RegKindName[4] = {
+  "RegSize8",
+  "RegSize16",
+  "RegSize32",
+  "RegSize64"
+};
+
+const char* RegKindName(RegKind kind) {
+  return g_RegKindName[kind];
+}
+
 static OperandKind LookupRegister(RegKind kind, int reg_index) {
   if (32 == NACL_TARGET_SUBARCH && kind == RegSize64) {
     FatallyLost("Architecture doesn't define 64 bit registers");
@@ -354,7 +365,7 @@ static ExprNode* AppendRegister(OperandKind r, ExprNodeVector* vector) {
 static ExprNode* AppendRegisterKind(NcInstState* state,
                                     RegKind kind, int reg_index) {
   DEBUG(printf("AppendRegisterKind(%d, %d) = %s\n",
-               (int) kind, reg_index, OperandKindName(kind)));
+               (int) kind, reg_index, RegKindName(kind)));
   return AppendRegister(LookupRegister(kind, reg_index), &state->nodes);
 }
 
@@ -364,10 +375,19 @@ static ExprNode* AppendRegisterKind(NcInstState* state,
  */
 static RegKind ExtractRegKind(NcInstState* state,
                               Operand* operand) {
-  /* TODO(karl) Is it necessary to have an operand override. */
-  if (operand->kind >= Gb_Operand && operand->kind <= Go_Operand) {
+  if (operand->flags & OpFlag(OperandUsesAddressSize)) {
+    if (state->address_size == 16) {
+      return RegSize16;
+    } else if (state->address_size == 64) {
+      return RegSize64;
+    } else {
+      return RegSize32;
+    }
+  } else if (operand->kind >= Gb_Operand && operand->kind <= Go_Operand) {
     return (RegKind) operand->kind - Gb_Operand;
   } else if (state->opcode->flags & InstFlag(OperandSize_b)) {
+    return RegSize8;
+  } else if (state->operand_size == 1) {
     return RegSize8;
   } else if (state->operand_size == 4) {
     return RegSize32;
@@ -493,6 +513,24 @@ int32_t ExtractSignedBinaryValue(NcInstState* state,
   return value;
 }
 
+/* Given the number of bytes for a literal constant, return the corresponding
+ * expr node flags that represent the value of the parsed bytes.
+ */
+static ExprNodeFlags GetExprSizeFlagForBytes(uint8_t num_bytes) {
+  switch (num_bytes) {
+    case 1:
+      return ExprFlag(ExprSize8);
+      break;
+    case 2:
+      return ExprFlag(ExprSize16);
+      break;
+    case 4:
+      return ExprFlag(ExprSize32);
+    default:
+      return 0;
+  }
+}
+
 /* Given the corresponding instruction state, return the
  * corresponding displacement value, and any expression node
  * flags that should be associated with the displacement value.
@@ -505,19 +543,8 @@ static void ExtractDisplacement(NcInstState* state,
                                                    state->num_disp_bytes);
 
   /* Now compute any appropriate flags to be associated with the value. */
-  displacement->flags = ExprFlag(ExprHexConstant);
-  switch (state->num_disp_bytes) {
-    case 1:
-      displacement->flags |= ExprFlag(ExprSize8);
-      break;
-    case 2:
-      displacement->flags |= ExprFlag(ExprSize16);
-      break;
-    case 4:
-      displacement->flags |= ExprFlag(ExprSize32);
-    default:
-      break;
-  }
+  displacement->flags =
+      ExprFlag(ExprSignedHex) | GetExprSizeFlagForBytes(state->num_disp_bytes);
 }
 
 /* Append the displacement value of the given instruction state
@@ -560,20 +587,8 @@ static ExprNode* AppendImmediate(NcInstState* state) {
   /* Now compute any appropriate flags to be associated with the immediate
    * value.
    */
-  flags = ExprFlag(ExprHexConstant);
-  switch (state->num_imm_bytes) {
-    case 1:
-      flags |= ExprFlag(ExprSize8);
-      break;
-    case 2:
-      flags |= ExprFlag(ExprSize16);
-      break;
-    case 4:
-      flags |= ExprFlag(ExprSize32);
-      break;
-    default:
-      break;
-  }
+  flags =
+      ExprFlag(ExprUnsignedHex) | GetExprSizeFlagForBytes(state->num_imm_bytes);
 
   /* Append the generated immediate value onto the vector. */
   return AppendExprNode(ExprConstant, (int32_t) value, flags,  &state->nodes);
@@ -610,21 +625,21 @@ static ExprNode* AppendRelativeImmediate(NcInstState* state) {
     uint32_t val2;
     SplitExprConstant64(val, &val1, &val2);
     if (val2 == 0) {
-      return AppendExprNode(ExprConstant, val1, ExprFlag(ExprHexConstant),
+      return AppendExprNode(ExprConstant, val1, ExprFlag(ExprUnsignedHex),
                             &state->nodes);
     } else {
       ExprNode* node = AppendExprNode(ExprConstant64,
                                       0,
-                                      ExprFlag(ExprHexConstant),
+                                      ExprFlag(ExprUnsignedHex),
                                       &state->nodes);
       AppendExprNode(ExprConstant, val1,
-                     ExprFlag(ExprHexConstant), &state->nodes);
+                     ExprFlag(ExprUnsignedHex), &state->nodes);
       AppendExprNode(ExprConstant, val2,
-                     ExprFlag(ExprHexConstant), &state->nodes);
+                     ExprFlag(ExprUnsignedHex), &state->nodes);
       return node;
     }
   } else {
-    return AppendExprNode(ExprConstant, val, ExprFlag(ExprHexConstant),
+    return AppendExprNode(ExprConstant, val, ExprFlag(ExprUnsignedHex),
                           &state->nodes);
   }
 }
@@ -787,7 +802,7 @@ static ExprNode* AppendMod01EffectiveAddress(
  */
 static ExprNode* AppendMod10EffectiveAddress(
     NcInstState* state, Operand* operand) {
-  DEBUG(printf("Translate modrm(%02x).mod == 01\n", state->modrm));
+  DEBUG(printf("Translate modrm(%02x).mod == 10\n", state->modrm));
   if (4 == modrm_rm(state->modrm)) {
     return AppendSib(state);
   } else {
@@ -807,10 +822,10 @@ static ExprNode* AppendMod10EffectiveAddress(
  */
 static ExprNode* AppendMod11EffectiveAddress(
     NcInstState* state, Operand* operand) {
-  DEBUG(printf("Translate modrm(%02x).mod == 01\n", state->modrm));
+  DEBUG(printf("Translate modrm(%02x).mod == 11\n", state->modrm));
   return AppendOperandRegister(state,
-                           operand,
-                           GetGenRmRegister(state));
+                               operand,
+                               GetGenRmRegister(state));
 }
 
 /* Given the corresponding operand of the opcode associated with the
@@ -851,13 +866,11 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Ib_Operand:
     case Iw_Operand:
     case Iv_Operand:
-    case Io_Operand:
       return AppendImmediate(state);
     case J_Operand:
     case Jb_Operand:
     case Jw_Operand:
     case Jv_Operand:
-    case Jo_Operand:
       /* TODO(karl) use operand flags OperandNear and OperandRelative to decide
        * how to process the J operand (see Intel manual for call statement).
        */
@@ -960,6 +973,9 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
       break;
     case RegREIP:
       return AppendRegister(state->address_size == 64 ? RegRIP : RegEIP,
+                            &state->nodes);
+    case RegREBP:
+      return AppendRegister(state->address_size == 64 ? RegRBP : RegEBP,
                             &state->nodes);
       /* TODO(karl) fill in the rest of the possibilities of type
        * OperandKind, or remove them if not needed.

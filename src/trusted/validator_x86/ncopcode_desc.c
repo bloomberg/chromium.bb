@@ -44,10 +44,10 @@ static const char* const g_OpcodeFlagName[OpcodeFlagEnumSize] = {
   "OpcodeHasNoRexR",
   "OpcodeInModRm",
   "OpcodeUsesModRm",
-  "OpcodeIb",
-  "OpcodeIw",
-  "OpcodeIv",
-  "OpcodeIo",
+  "OpcodeHasImmed",
+  "OpcodeHasImmed_b",
+  "OpcodeHasImmed_w",
+  "OpcodeHasImmed_v",
   "OpcodePlusR",
   "OpcodePlusI",
   "OpcodeRex",
@@ -93,12 +93,10 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "Ib_Operand",
   "Iw_Operand",
   "Iv_Operand",
-  "Io_Operand",
   "J_Operand",
   "Jb_Operand",
   "Jw_Operand",
   "Jv_Operand",
-  "Jo_Operand",
   "M_Operand",
   "Mb_Operand",
   "Mw_Operand",
@@ -196,6 +194,7 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "RegRESP",
   "RegREAX",
   "RegREIP",
+  "RegREBP",
   "RegGP7",
   "OpcodeBaseMinus0",
   "OpcodeBaseMinus1",
@@ -230,6 +229,7 @@ static const char* const g_OperandFlagName[OperandFlagEnumSize] = {
   "OperandExtendsOpcode",
   "OperandNear",
   "OperandRelative",
+  "OperandUsesAddressSize",
 };
 
 const char* OperandFlagName(const OperandFlagEnum flag) {
@@ -274,6 +274,7 @@ static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
   "Jp",
   "Js",
   "Jz",
+  "Leave",
   "Mov",
   "Movsxd",
   "Nop",
@@ -303,7 +304,7 @@ static const char* const g_OpcodePrefixName[OpcodePrefixEnumSize] = {
   "Prefix0F",
   "PrefixF20F",
   "PrefixF30F",
-  "Prefix66OF",
+  "Prefix660F",
   "Prefix0F0F",
   "Prefix0F38",
   "Prefix660F38",
@@ -339,9 +340,21 @@ void PrintOperand(FILE* f, Operand* operand) {
   fprintf(f, " },\n");
 }
 
-void PrintOpcodeTablegen(FILE* f, int index, Opcode* opcode, int lookahead) {
+/* Prints out the given opcode structure to the given file. If index >= 0,
+ * print out a comment, with the value of index, before the printed opcode
+ * structure. Lookahead is used to convert the next_rule pointer into
+ * a symbolic reference using the name "g_Opcodes", plus the index defined by
+ * the lookahead. Argument as_array_element is true if the element is
+ * assumed to be in an array static initializer. If argument simplify is
+ * true, then the element is for documentation purposes only (as a single
+ * element), and simplify the output to only contain (user-readable)
+ * useful information.
+ */
+void PrintOpcodeTableDriver(FILE* f, Bool as_array_element,
+                            Bool simplify, int index,
+                            Opcode* opcode, int lookahead) {
   int i;
-  if (index >= 0) {
+  if (!simplify && index >= 0) {
     fprintf(f, "  /* %d */\n", index);
   }
   fprintf(f, "  { 0x%02x,\n", opcode->opcode);
@@ -366,17 +379,31 @@ void PrintOpcodeTablegen(FILE* f, int index, Opcode* opcode, int lookahead) {
   fprintf(f, "    Inst%s,\n", InstMnemonicName(opcode->name));
   fprintf(f, "    %u, {\n", opcode->num_operands);
   for (i = 0; i < MAX_NUM_OPERANDS; ++i) {
-    PrintOperand(f, opcode->operands + i);
+    if (!simplify || i < opcode->num_operands) {
+      PrintOperand(f, opcode->operands + i);
+    }
   }
-  fprintf(f, "    },\n");
-  if (index < 0 || NULL == opcode->next_rule) {
-    fprintf(f, "    NULL\n");
+  if (simplify) {
+    fprintf(f, "  } };\n");
   } else {
-    fprintf(f, "    g_Opcodes + %d\n", lookahead);
+    fprintf(f, "    },\n");
+    if (index < 0 || NULL == opcode->next_rule) {
+      fprintf(f, "    NULL\n");
+    } else {
+      fprintf(f, "    g_Opcodes + %d\n", lookahead);
+    }
+    if (as_array_element) {
+      fprintf(f, "  }%s\n", index < 0 ? ";" : ",");
+    } else {
+      fprintf(f, "  };\n");
+    }
   }
-  fprintf(f, "  }%s\n", index < 0 ? ";" : ",");
+}
+
+void PrintOpcodeTablegen(FILE* f, int index, Opcode* opcode, int lookahead) {
+  PrintOpcodeTableDriver(f, TRUE, FALSE, index, opcode, lookahead);
 }
 
 void PrintOpcode(FILE* f, Opcode* opcode) {
-  PrintOpcodeTablegen(f, -1, opcode, 0);
+  PrintOpcodeTableDriver(f, FALSE, TRUE, -1, opcode, 0);
 }

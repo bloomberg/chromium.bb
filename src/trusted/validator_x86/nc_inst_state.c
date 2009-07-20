@@ -88,6 +88,9 @@ static void NcInstStateInit(NcInstIter* iter, NcInstState* state) {
  * instruction of the given state.
  */
 static int ExtractOperandSize(NcInstState* state) {
+  if (state->opcode->flags & InstFlag(OperandSize_b)) {
+    return 1;
+  }
   if (NACL_TARGET_SUBARCH == 64) {
     if ((state->rexprefix && state->rexprefix & 0x8) ||
         (state->opcode->flags & InstFlag(OperandSizeForce64))) {
@@ -169,120 +172,120 @@ static Bool ConsumePrefixBytes(NcInstState* state) {
   return TRUE;
 }
 
-/* Assuming we have matched the byte sequence OF 38, consume the corresponding
- * following (instruction) opcode byte, returning the possible list of
- * patterns that may match (or NULL if no such patterns).
+/* Structure holding the results of consuming the opcode bytes of the
+ * instruction.
  */
-static Opcode* Consume0F38XXOpcodeBytes(NcInstState* state) {
+typedef struct {
+  /* The (last) byte of the matched opcode. */
+  uint8_t opcode_byte;
+  /* The most specific prefix that the opcode bytes can match
+   * (or OpcodePrefixEnumSize if no such patterns exist).
+   */
+  OpcodePrefix matched_prefix;
+} OpcodePrefixDescriptor;
+
+/* Assuming we have matched the byte sequence OF 38, consume the corresponding
+ * following (instruction) opcode byte, returning the most specific prefix the
+ * patterns can match (or OpcodePrefixEnumSize if no such patterns exist);
+ */
+static void Consume0F38XXOpcodeBytes(NcInstState* state,
+                                     OpcodePrefixDescriptor* desc) {
   /* Fail if there are no more bytes. Otherwise, read the next
    * byte.
    */
-  uint8_t opcode_byte;
-  if (state->length >= state->length_limit) return NULL;
-  opcode_byte = state->mpc[state->length++];
+  if (state->length >= state->length_limit) {
+    desc->matched_prefix = OpcodePrefixEnumSize;
+    return;
+  }
 
-  /* TODO(karl) figure out if we need to encode prefix bytes,
-   * or if the opcode flags do the same thing.
-   */
+  desc->opcode_byte = state->mpc[state->length++];
   if (state->prefix_mask & kPrefixDATA16) {
-    return g_OpcodeTable[Prefix660F38][opcode_byte];
+    desc->matched_prefix = Prefix660F38;
   } else if (state->prefix_mask & kPrefixREPNE) {
-    return g_OpcodeTable[PrefixF20F38][opcode_byte];
+    desc->matched_prefix = PrefixF20F38;
   } else if ((state->prefix_mask & ~kPrefixREX) == 0) {
-    return g_OpcodeTable[Prefix0F38][opcode_byte];
+    desc->matched_prefix = Prefix0F38;
   } else {
     /* Other prefixes like F3 cause an undefined instruction error. */
-    return NULL;
+    desc->matched_prefix = OpcodePrefixEnumSize;
   }
-  /* NOT REACHED */
-  return NULL;
 }
 
 /* Assuming we have matched the byte sequence OF 3A, consume the corresponding
- * following (instruction) opcode byte, returning the possible list of
- * patterns that may match (or NULL if no such patterns).
+ * following (instruction) opcode byte, returning the most specific prefix the
+ * patterns can match (or OpcodePrefixEnumSize if no such patterns exist).
  */
-static Opcode* Consume0F3AXXOpcodeBytes(NcInstState* state) {
+static void Consume0F3AXXOpcodeBytes(NcInstState* state,
+                                     OpcodePrefixDescriptor* desc) {
   /* Fail if there are no more bytes. Otherwise, read the next
-   * byte.
+   * byte and choose appropriate prefix.
    */
-  uint8_t opcode_byte;
-  if (state->length >= state->length_limit) return NULL;
-  opcode_byte = state->mpc[state->length++];
+  if (state->length >= state->length_limit) {
+    desc->matched_prefix = OpcodePrefixEnumSize;
+    return;
+  }
 
-  /* TODO(karl) figure out if we need to encode prefix bytes,
-   * or if the opcode flags do the same thing.
-   */
+  desc->opcode_byte = state->mpc[state->length++];
   if (state->prefix_mask & kPrefixDATA16) {
-    return g_OpcodeTable[Prefix660F3A][opcode_byte];
+    desc->matched_prefix = Prefix660F3A;
   } else if ((state->prefix_mask & ~kPrefixREX) == 0) {
-    return g_OpcodeTable[Prefix0F3A][opcode_byte];
+    desc->matched_prefix = Prefix0F3A;
   } else {
     /* Other prefixes like F3 cause an undefined instruction error. */
-    return NULL;
+    desc->matched_prefix = OpcodePrefixEnumSize;
   }
-  /* NOT REACHED */
-  return NULL;
 }
 
 /* Assuming we have matched byte OF, consume the corresponding
- * following (instruction) opcode byte, returning the possible list of
- * patterns that may match (or NULL if no such pattern).
+ * following (instruction) opcode byte, returning the most specific
+ * prefix the patterns can match (or OpcodePrefixEnumSize if no such
+ * patterns exist).
  */
-static Opcode* Consume0FXXOpcodeBytes(NcInstState* state, uint8_t opcode_byte) {
-  /* TODO(karl) figure out if we need to encode prefix bytes,
-   * or if the opcode flags do the same thing.
-   */
+static void Consume0FXXOpcodeBytes(NcInstState* state,
+                                   OpcodePrefixDescriptor* desc) {
   if (state->prefix_mask & kPrefixDATA16) {
-    return g_OpcodeTable[Prefix66OF][opcode_byte];
+    desc->matched_prefix = Prefix660F;
   } else if (state->prefix_mask & kPrefixREPNE) {
-    return g_OpcodeTable[PrefixF20F][opcode_byte];
+    desc->matched_prefix = PrefixF20F;
   } else if (state->prefix_mask & kPrefixREP) {
-    return g_OpcodeTable[PrefixF30F][opcode_byte];
+    desc->matched_prefix = PrefixF30F;
   } else {
-    return g_OpcodeTable[Prefix0F][opcode_byte];
+    desc->matched_prefix = Prefix0F;
   }
-  /* NOT REACHED */
-  return NULL;
 }
 
-/* Consume the sequence of bytes corresponding to the 1-3 byte opcode.
- * Return the list of opcode (instruction) patterns that apply to
- * the matched instruction bytes (or NULL if no such patterns).
+/* Consume the opcode bytes, and return the most specific prefix pattern
+ * the opcode bytes can match (or OpcodePrefixEnumSize if no such pattern
+ * exists).
  */
-static Opcode* ConsumeOpcodeBytes(NcInstState* state) {
-  uint8_t opcode_byte;
-  Opcode* cand_opcodes;
+static void ConsumeOpcodeBytes(NcInstState* state,
+                               OpcodePrefixDescriptor* desc) {
+
+  /* Initialize descriptor to the fail state. */
+  desc->opcode_byte = 0x0;
+  desc->matched_prefix = OpcodePrefixEnumSize;
 
   /* Be sure that we don't exceed the segment length. */
-  if (state->length >= state->length_limit) return NULL;
+  if (state->length >= state->length_limit) return;
 
-  /* Record the opcode(s) we matched. */
-  opcode_byte = state->mpc[state->length++];
-  if (opcode_byte == 0x0F) {
-    uint8_t opcode_byte2;
-    if (state->length >= state->length_limit) return NULL;
-    opcode_byte2 = state->mpc[state->length++];
-    switch (opcode_byte2) {
+  desc->opcode_byte = state->mpc[state->length++];
+  if (desc->opcode_byte == 0x0F) {
+    if (state->length >= state->length_limit) return;
+    desc->opcode_byte = state->mpc[state->length++];
+    switch (desc->opcode_byte) {
     case 0x38:
-      cand_opcodes = Consume0F38XXOpcodeBytes(state);
+      Consume0F38XXOpcodeBytes(state, desc);
       break;
     case 0x3a:
-      cand_opcodes = Consume0F3AXXOpcodeBytes(state);
+      Consume0F3AXXOpcodeBytes(state, desc);
       break;
     default:
-      cand_opcodes = Consume0FXXOpcodeBytes(state, opcode_byte2);
+      Consume0FXXOpcodeBytes(state, desc);
       break;
     }
   } else {
-    cand_opcodes = g_OpcodeTable[NoPrefix][opcode_byte];
+    desc->matched_prefix = NoPrefix;
   }
-  state->opcode = cand_opcodes;
-  if (NULL != cand_opcodes) {
-    DEBUG(printf("opcode pattern:\n"));
-    DEBUG(PrintOpcode(stdout, state->opcode));
-  }
-  return cand_opcodes;
 }
 
 /* Compute the operand and address sizes for the instruction. Then, verify
@@ -369,8 +372,7 @@ static Bool ConsumeModRm(NcInstState* state) {
    * a Mod/Rm byte is needed, and that reading it will not walk
    * past the end of the code segment.
    */
-  if (state->opcode->flags &
-      (InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeInModRm))) {
+  if (InstructionRequiresModRm(state)) {
     /* Has modrm byte. */
     if (state->length >= state->length_limit) {
       DEBUG(printf("Can't read mod/rm, no more bytes!\n"));
@@ -431,7 +433,7 @@ static Bool ConsumeSib(NcInstState* state) {
     }
     /* Read the SIB byte and record. */
     state->sib = state->mpc[state->length++];
-    DEBUG(printf("sib = %02"PRId8"\n", state->sib));
+    DEBUG(printf("sib = %02"PRIx8"\n", state->sib));
     if (sib_base(state->sib) == 0x05 && modrm_mod(state->modrm) > 2) {
       DEBUG(printf("Sib byte implies modrm.mod field <= 2, match fails\n"));
       return FALSE;
@@ -441,22 +443,23 @@ static Bool ConsumeSib(NcInstState* state) {
 }
 
 static int GetNumDispBytes(NcInstState* state) {
-  if (16 == state->address_size) {
-    /* Corresponding to table 2-1 of the Intel manual. */
-    switch (modrm_mod(state->modrm)) {
-      case 0x0:
-        if (modrm_rm(state->modrm) == 0x06) {
-          return 2;  /* disp16 */
-        }
-        break;
-      case 0x1:
-        return 1;    /* disp8 */
-      case 0x2:
-        return 2;    /* disp16 */
-      default:
-        break;
+  if (InstructionRequiresModRm(state)) {
+    if (16 == state->address_size) {
+      /* Corresponding to table 2-1 of the Intel manual. */
+      switch (modrm_mod(state->modrm)) {
+        case 0x0:
+          if (modrm_rm(state->modrm) == 0x06) {
+            return 32;  /* disp16 */
+          }
+          break;
+        case 0x1:
+          return 1;    /* disp8 */
+        case 0x2:
+          return 2;    /* disp16 */
+        default:
+          break;
       }
-  } else {
+    } else {
       /* Note: in 64-bit mode, 64-bit addressing is treated the same as 32-bit
        * addressing. Hence, this section covers the 32-bit addressing.
        */
@@ -464,6 +467,8 @@ static int GetNumDispBytes(NcInstState* state) {
         case 0x0:
           if (modrm_rm(state->modrm) == 0x05) {
             return 4;  /* disp32 */
+          } else if (state->has_sib && sib_base(state->sib) == 0x5) {
+            return 4;
           }
           break;
         case 0x1:
@@ -473,6 +478,7 @@ static int GetNumDispBytes(NcInstState* state) {
         default:
           break;
       }
+    }
   }
   return 0;
 }
@@ -503,14 +509,15 @@ static Bool ConsumeDispBytes(NcInstState* state) {
 
 /* Returns the number of immediate bytes to parse. */
 static int GetNumImmediateBytes(NcInstState* state) {
-  if (state->opcode->flags & InstFlag(OpcodeIv)) {
+  if (state->opcode->flags & InstFlag(OpcodeHasImmed)) {
+    return state->operand_size;
+  }
+  if (state->opcode->flags & InstFlag(OpcodeHasImmed_v)) {
     return 4;
-  } else if (state->opcode->flags & InstFlag(OpcodeIb)) {
+  } else if (state->opcode->flags & InstFlag(OpcodeHasImmed_b)) {
     return 1;
-  } else if (state->opcode->flags & InstFlag(OpcodeIw)) {
+  } else if (state->opcode->flags & InstFlag(OpcodeHasImmed_w)) {
     return 2;
-  } else if (state->opcode->flags & InstFlag(OpcodeIo)) {
-    return 8;
   } else {
     return 0;
   }
@@ -584,6 +591,32 @@ static void ClearOpcodeState(NcInstState* state, uint8_t opcode_length,
   state->address_size = 32;
 }
 
+/*
+ * Given the opcode prefix descriptor, return the list of candidate opcodes to
+ * try and match against the byte stream in the given state. Before returning,
+ * this function automatically advances the opcode prefix descriptor to describe
+ * the next list to use if the returned list doesn't provide any matches.
+ */
+Opcode* GetNextOpcodeCandidates(NcInstState* state,
+                                OpcodePrefixDescriptor* desc) {
+  Opcode* cand_opcodes = g_OpcodeTable[desc->matched_prefix][desc->opcode_byte];
+  switch (desc->matched_prefix) {
+    case Prefix660F:
+      desc->matched_prefix = Prefix0F;
+      break;
+    case Prefix660F38:
+      desc->matched_prefix = Prefix0F38;
+      break;
+    case Prefix660F3A:
+      desc->matched_prefix = Prefix0F3A;
+      break;
+    default:
+      desc->matched_prefix = OpcodePrefixEnumSize;
+      break;
+  }
+  return cand_opcodes;
+}
+
 /* Given the current location of the (relative) pc of the given instruction
  * iterator, update the given state to hold the (found) matched opcode
  * (instruction) pattern. If no matching pattern exists, set the state
@@ -604,29 +637,40 @@ void DecodeInstruction(
    */
   NcInstStateInit(iter, state);
   if (ConsumePrefixBytes(state)) {
-    cand_opcodes = ConsumeOpcodeBytes(state);
-    /* Try matching all possible candidates, in the order they are specified.
-     * Quit when the first pattern is matched.
-     */
+    OpcodePrefixDescriptor prefix_desc;
+    Bool continue_loop = TRUE;
+    ConsumeOpcodeBytes(state, &prefix_desc);
     opcode_length = state->length;
     is_nacl_legal = state->is_nacl_legal;
-    while (cand_opcodes != NULL) {
-      ClearOpcodeState(state, opcode_length, is_nacl_legal);
-      state->opcode = cand_opcodes;
-      DEBUG(printf("try opcode pattern:\n"));
-      DEBUG(PrintOpcode(stdout, state->opcode));
-      if (ConsumeAndCheckOperandSize(state) &&
-          ConsumeAndCheckAddressSize(state) &&
-          ConsumeModRm(state) &&
-          ConsumeSib(state) &&
-          ConsumeDispBytes(state) &&
-          ConsumeImmediateBytes(state) &&
-          ValidatePrefixFlags(state)) {
-        /* found a match, exit loop. */
-        break;
+    while (continue_loop) {
+      /* Try matching all possible candidates, in the order they are specified
+       * (from the most specific prefix match, to the least specific prefix
+       * match). Quit when the first pattern is matched.
+       */
+      if (prefix_desc.matched_prefix == OpcodePrefixEnumSize) {
+        continue_loop = FALSE;
       } else {
-        /* match failed, try next candidate pattern. */
-        cand_opcodes = cand_opcodes->next_rule;
+        cand_opcodes = GetNextOpcodeCandidates(state, &prefix_desc);
+        while (cand_opcodes != NULL) {
+          ClearOpcodeState(state, opcode_length, is_nacl_legal);
+          state->opcode = cand_opcodes;
+          DEBUG(printf("try opcode pattern:\n"));
+          DEBUG(PrintOpcode(stdout, state->opcode));
+          if (ConsumeAndCheckOperandSize(state) &&
+              ConsumeAndCheckAddressSize(state) &&
+              ConsumeModRm(state) &&
+              ConsumeSib(state) &&
+              ConsumeDispBytes(state) &&
+              ConsumeImmediateBytes(state) &&
+              ValidatePrefixFlags(state)) {
+            /* found a match, exit loop. */
+            continue_loop = FALSE;
+            break;
+          } else {
+            /* match failed, try next candidate pattern. */
+            cand_opcodes = cand_opcodes->next_rule;
+          }
+        }
       }
     }
   }
