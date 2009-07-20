@@ -115,9 +115,7 @@ ldr_inputs = [
     'web_worker_stub.c',
 ]
 
-# TODO(petr): fix TARGET_ARCHITECTURE => BUILD_ARCH
-
-if env['TARGET_ARCHITECTURE'] == 'x86':
+if env['BUILD_ARCHITECTURE'] == 'x86':
   ldr_inputs += [
     'arch/x86/nacl_app.c',
     'arch/x86/nacl_ldt.c',
@@ -129,7 +127,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
     'arch/x86_32/springboard.S',
     'arch/x86_32/tramp.S',
   ]
-elif env['TARGET_ARCHITECTURE'] == 'arm':
+elif env['BUILD_ARCHITECTURE'] == 'arm':
   ldr_inputs += [
     'arch/arm/nacl_app.c',
     'arch/arm/nacl_switch_to_app.c',
@@ -157,12 +155,12 @@ elif env.Bit('linux'):
   ldr_inputs += [
     'linux/sel_memory.c',
   ]
-  if env['TARGET_ARCHITECTURE'] == 'x86':
+  if env['BUILD_ARCHITECTURE'] == 'x86':
     ldr_inputs += [
       'linux/x86/nacl_ldt.c',
       'linux/x86/sel_segments.c',
     ]
-  elif env['TARGET_ARCHITECTURE'] == 'arm':
+  elif env['BUILD_ARCHITECTURE'] == 'arm':
     ldr_inputs += [
       'linux/arm/sel_segments.c',
     ]
