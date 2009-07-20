@@ -12,3 +12,9 @@ body.attached #toolbar {
     cursor: default; /* overriden */
     padding-left: 0;
 }
+
+
+/* Chrome theme overrides */
+#toolbar {
+    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(242, 247, 253)), to(rgb(223, 234, 248)));
+}
