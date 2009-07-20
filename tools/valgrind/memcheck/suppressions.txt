@@ -929,7 +929,7 @@
    # Anonymous namespaces requires wildcard to match on both mac and linux
    bug_17129
    Memcheck:Leak
-   fun:_Znwj
+   fun:_Znw*
    fun:*UtilityProcessHostTest_ExtensionUnpacker_Test8TestBodyEv
 }
 {
