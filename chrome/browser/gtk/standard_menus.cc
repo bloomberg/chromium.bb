@@ -41,8 +41,12 @@ struct MenuCreateMaterial developer_menu_materials[] = {
 };
 
 struct MenuCreateMaterial standard_page_menu_materials[] = {
-  { MENU_NORMAL, IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS },
-  { MENU_SEPARATOR },
+  // The Create App Shortcuts menu item hasn't been implemented yet.
+  // Remove it until it is.
+  // http://code.google.com/p/chromium/issues/detail?id=17251
+  // { MENU_NORMAL, IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS },
+  // { MENU_SEPARATOR },
+
   { MENU_NORMAL, IDC_CUT, IDS_CUT, 0, NULL, GDK_x, GDK_CONTROL_MASK, true },
   { MENU_NORMAL, IDC_COPY, IDS_COPY, 0, NULL, GDK_c, GDK_CONTROL_MASK, true },
   { MENU_NORMAL, IDC_PASTE, IDS_PASTE, 0, NULL, GDK_v, GDK_CONTROL_MASK, true },
@@ -61,8 +65,12 @@ struct MenuCreateMaterial standard_page_menu_materials[] = {
   { MENU_SEPARATOR },
   { MENU_NORMAL, IDC_DEVELOPER_MENU, IDS_DEVELOPER_MENU, 0,
     developer_menu_materials },
-  { MENU_SEPARATOR },
-  { MENU_NORMAL, IDC_REPORT_BUG, IDS_REPORT_BUG },
+
+  // The Report Bug menu hasn't been implemented yet.  Remove it until it is.
+  // http://code.google.com/p/chromium/issues/detail?id=11600
+  // { MENU_SEPARATOR },
+  // { MENU_NORMAL, IDC_REPORT_BUG, IDS_REPORT_BUG },
+
   { MENU_END }
 };
 
