@@ -1034,3 +1034,26 @@ WebInspector.Console.prototype._formatobject = function(object, elem) {
   }
   elem.appendChild(section.element);
 };
+
+
+/** Pending WebKit upstream by apavlov). Fixes iframe vs drag problem. */
+(function() {
+  var originalDragStart = WebInspector.elementDragStart;
+  WebInspector.elementDragStart = function(element) {
+    var glassPane = document.createElement("div");
+    glassPane.style.cssText =
+        'position:absolute;width:100%;height:100%;opacity:0;z-index:1';
+    glassPane.id = 'glass-pane-for-drag';
+    element.parentElement.appendChild(glassPane);
+
+    originalDragStart.apply(this, arguments);
+  };
+
+  var originalDragEnd = WebInspector.elementDragEnd;
+  WebInspector.elementDragEnd = function() {
+    originalDragEnd.apply(this, arguments);
+
+    var glassPane = document.getElementById('glass-pane-for-drag');
+    glassPane.parentElement.removeChild(glassPane);
+  };
+})();
