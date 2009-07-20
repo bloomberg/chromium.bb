@@ -34,6 +34,11 @@ namespace o3d {
 %[
   This param operation applies a scaling to its input matrix.
   It can be used, for example, to supply the local matrix of a transform.
+
+  @o3dparameter inputMatrix ParamMatrix4 The input matrix.
+  @o3dparameter scale ParamFloat3 The scale.
+  @o3dparameter outputMatrix ParamMatrix4 The result of scaling the input matrix
+      by the translation.
 %]
 [nocpp, include="core/cross/matrix4_scale.h"]
 class Matrix4Scale : ParamObject {

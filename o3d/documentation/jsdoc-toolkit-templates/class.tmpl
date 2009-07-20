@@ -83,7 +83,6 @@ thisClass = data;
   </table>
 </if>
 
-
 <!-- ========== METHOD SUMMARY =========== -->
 <if test="thisClass.methods.length">
   {! var ownMethods = data.methods.sort(makeSortby("name")); !}
@@ -105,7 +104,7 @@ thisClass = data;
   </if>
 </if>
 
-<!-- =========== FIELD SUMMARY =========== -->
+<!-- =========== PROPERTY SUMMARY =========== -->
 {! var ownProperties = getPublicProperties(data).sort(makeSortby("name")); !}
 <if test="ownProperties.length">
   <h2>Public Properties</h2>
@@ -123,7 +122,22 @@ thisClass = data;
   </table>
 </if>
 
-<!-- =========== END FIELD SUMMARY =========== -->
+<!-- ========== PARAMETER SUMMARY =========== -->
+{! var ownParameters = getParameters(data); !}
+<if test="ownParameters.length">
+  <h2>Parameters</h2>
+  <table class="summary">
+  <for each="param" in="ownParameters">
+    <tr>
+    <td class="type">
+    {+linkifyTypeSpec(makeName('[Param Summary]', thisClass.alias, param.name), param.type)+}
+    </td>
+    <td><a class="el" href="#param_{+param.name+}">{+param.name+}</a></td>
+    <td>{+linkifySingleType(makeName('[Param Summary inherit]'), param.parent)+}</td>
+    </tr>
+  </for>
+  </table>
+</if>
 
 <!-- ========== CONSTRUCTOR DETAIL ============== -->
 <if test="shouldWriteConstructor(data)">
@@ -347,6 +361,33 @@ thisClass = data;
       </ul></dd>
       </dl>
     </if>
+
+    </div>
+  </for>
+</if>
+
+<!-- =========== PARAMETER DETAIL ============== -->
+
+<if test="defined(ownParameters) && ownParameters.length">
+  <hr/>
+  <h2>Parameter Documentation</h2>
+  <for each="param" in="ownParameters">
+    <a class="anchor" name="param_{+param.name+}"></a>
+    <div class="memitem">
+    <div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">{+linkifyTypeSpec(makeName('[Param Detail]', thisClass.alias, param.name), param.type)+} {+param.name+}
+        {+ (param.parent == thisClass.alias) ? "" : ("[[]inherited from " + linkifySingleType(makeName('[Param Details inherit]'), param.parent) + "]") +}
+        </td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="memdoc">
+    <p/>
+    {+sanitizeForEZT(param.desc)+}
+    </div>
 
     </div>
   </for>

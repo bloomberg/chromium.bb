@@ -32,9 +32,13 @@
 namespace o3d {
 
 %[
-  RenderNode is the base of all RenderNodes in the render graph. All
-  RenderNodes have o3d.priority, o3d.active parameters.
+  RenderNode is the base of all RenderNodes in the render graph.
   RenderNodes are rendered in order of priority.
+
+  @o3dparameter priority ParamFloat The priority of this render node. Lower
+      priorities are rendered first.
+  @o3dparameter active ParamBoolean If true this node is processed. If false
+      it is not.
 %]
 [nocpp, include="core/cross/render_node.h"]
   class RenderNode : ParamObject {

@@ -35,6 +35,14 @@ typedef DrawElement[] DrawElementArray;
 
 %[
   An Element manages DrawElements for classes inherited from Element.
+
+  @o3dparameter material ParamMaterial The Material used by this Element.
+  @o3dparameter boundingBox ParamBoundingBox The BoundingBox used by this
+      Element for culling.
+  @o3dparameter zSortPoint ParamFloat3 The point to sort by when rendering this
+      Element in a z ordered DrawPass.
+  @o3dparameter cull ParamBoolean Whether or not to attempt to cull this
+     element based on whether or not its bounding box is in the view frustum.
 %]
 [nocpp, include="core/cross/element.h"] class Element : ParamObject {
 

@@ -35,6 +35,8 @@ namespace o3d {
   A StateSet is a render node that sets render states of all of its
   children. You can make this a parent of a part of the render graph to set
   render states in a more global way.
+
+  @o3dparameter state ParamState The State the defines what states to set.
 %]
 [nocpp, include="core/cross/state_set.h"] class StateSet
     : RenderNode {

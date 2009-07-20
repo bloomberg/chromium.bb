@@ -37,7 +37,17 @@ typedef Shape[] ShapeArray;
   The Transform defines parent child relationship and a localMatrix..
   A Transform can have one or no parents and
   an arbitrary number of children.
-%]
+
+  @o3dparameter localMatrix ParamMatrix4 The local matrix for this transform.
+  @o3dparameter worldMatrix ParamMatrix4 The world matrix of this transform.
+  @o3dparameter visible ParamBoolean Whether or not this transform and all its
+      children are visible.
+  @o3dparameter boundingBox ParamBoundingBox The bounding box for this transform
+      and all its children.
+  @o3dparameter cull ParamBoolean Whether or not to attempt to cull this
+     transform and all its children based on whether or not its bounding box
+     is in the view frustum.
+ %]
 [nocpp, include="core/cross/transform.h"] class Transform
    : ParamObject {
   %[

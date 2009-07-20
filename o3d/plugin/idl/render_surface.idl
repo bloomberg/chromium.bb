@@ -34,6 +34,13 @@ namespace o3d {
 %[
   A RenderSurfaceBase is the base for RenderSurface and
   RenderDepthStencilSurface.
+
+  @o3dparameter width ParamInteger The width of this RenderSurface.
+      [Read Only]
+  @o3dparameter height ParamInteger The height of this RenderSurface.
+      [Read Only]
+  @o3dparameter texture ParamTexture The texture of this RenderSurface.
+      [Read Only]
 %]
 [nocpp, include="core/cross/render_surface.h"] class RenderSurfaceBase
     : ParamObject {

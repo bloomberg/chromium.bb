@@ -35,6 +35,12 @@ namespace o3d {
   This param operation applies a rotation to its input matrix. The
   rotation is specified in terms of an angle and an axis of rotation.
   It can be used, for example, to supply the local matrix of a transform.
+
+  @o3dparameter inputMatrix ParamMatrix4 The input matrix.
+  @o3dparameter axis ParamFloat3 The axis of rotation.
+  @o3dparameter angle ParamFloat The amount of rotation.
+  @o3dparameter outputMatrix ParamMatrix4 The result of rotating the input
+     matrix by the specified rotation.
 %]
 [nocpp, include="core/cross/matrix4_axis_rotation.h"]
 class Matrix4AxisRotation : ParamObject {

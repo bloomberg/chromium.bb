@@ -76,6 +76,9 @@ namespace o3d {
       return tex2D(texSampler0, input.texcoord).rrrr;
     }
     \endcode
+
+    @o3dparameter levels ParamInteger The number of mip levels in this texture.
+        [Read Only]
   %]
   enum Format {
     UNKNOWN_FORMAT,
@@ -109,6 +112,11 @@ namespace o3d {
 %[
   A class for 2D textures that defines the interface for getting
   the dimensions of the texture, its memory format and number of mipmap levels.
+
+  @o3dparameter width ParamInteger The width of this texture in pixels.
+      [Read Only]
+  @o3dparameter height ParamInteger The height of this texture in pixels.
+      [Read Only]
 %]
 [include="core/cross/texture.h"] class Texture2D : Texture {
   %[
@@ -407,9 +415,12 @@ namespace o3d {
 
 
 %[
-TextureCUBE is a class for textures used for cube mapping.  A cube texture
-stores bitmaps for the 6 faces of a cube and is addressed via three texture
-coordinates.
+  TextureCUBE is a class for textures used for cube mapping.  A cube texture
+  stores bitmaps for the 6 faces of a cube and is addressed via three texture
+  coordinates.
+
+  @o3dparameter edgeLength ParamInteger The length of any edge of this texture.
+      [Read Only]
 %]
 [include="core/cross/texture.h"] class TextureCUBE : Texture {
   %[

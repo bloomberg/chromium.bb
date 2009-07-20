@@ -34,6 +34,9 @@ namespace o3d {
 %[
   A Primitive is a type of Element that is made from a list of points,
   lines or triangles that use a single material.
+
+  @o3dparameter streamBank ParamStreamBank The StreamBank used by this
+      Primitive.
 %]
 [nocpp, include="core/cross/primitive.h"]
 class Primitive : Element {

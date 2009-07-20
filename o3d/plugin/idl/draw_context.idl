@@ -36,6 +36,10 @@ namespace o3d {
   It contains two 4-by-4 matrix params, view and
   projection. These correspond to the viewing and projection transformation
   matrices.
+
+  @o3dparameter view ParamMatrix4 The view matrix for this DrawContext.
+  @o3dparameter projection ParamMatrix4 The projection matrix for this
+      DrawContext.
 %]
 
 [nocpp, include="core/cross/draw_context.h"] class DrawContext

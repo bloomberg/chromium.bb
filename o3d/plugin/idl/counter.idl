@@ -39,6 +39,14 @@ typedef NumberArray[] NumberArrayArray;
   counter. You can set where it starts counting from and where it stops counting
   at, whether or not it is running or paused and how it loops or does not loop.
   You can also give it callbacks to call at specific count values.
+
+  @o3dparameter running ParamBoolean Whether or not this counter is running.
+  @o3dparameter forward ParamBoolean The direction this counter is counting.
+  @o3dparameter start ParamFloat The start value for this counter.
+  @o3dparameter end ParamFloat The end value for this counter
+  @o3dparameter countMode ParamInteger The counting mode for this counter.
+  @o3dparameter count ParamFloat The current count for this counter.
+  @o3dparameter multiplier ParamFloat The time multiplier for this counter.
 %]
 [nocpp, include="core/cross/counter.h"] class Counter
     : ParamObject {

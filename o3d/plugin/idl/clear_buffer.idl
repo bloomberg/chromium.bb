@@ -34,6 +34,16 @@ namespace o3d {
 %[
   A ClearBuffer is a render node that clears the color buffer, zbuffer and/or
   stencil buffer of the current render target.
+
+  @o3dparameter clearColor ParamFloat4 The color to clear to.
+  @o3dparameter clearColorFloat ParamBoolean True to clear the color of the
+      current render target.
+  @o3dparameter clearColor ParamFloat The depth value to clear to (0.0 to 1.0).
+  @o3dparameter clearColorFloat ParamBoolean True to clear the depth of the
+      current render target.
+  @o3dparameter clearColor ParamInteger The stencil value to clear to.
+  @o3dparameter clearColorFloat ParamBoolean True to clear the stencil of the
+      current render target.
 %]
 
 [nocpp, include="core/cross/clear_buffer.h"] class ClearBuffer

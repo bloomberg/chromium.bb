@@ -45,6 +45,38 @@ import re
 
 _java_exe = ''
 _script_path = os.path.dirname(os.path.realpath(__file__))
+_js_copyright = """
+/*
+ * Copyright 2009, Google Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+"""
 
 GlobalsDict = { }
 
@@ -202,9 +234,23 @@ def BuildO3DExternsFile(js_files_dir, extra_externs_file, externs_file):
   filenames = (glob.glob(os.path.join(js_files_dir, '*.js')) +
                [extra_externs_file])
   for filename in filenames:
+    print "-----", filename
     infile = open(filename, 'r')
-    outfile.write(infile.read())
+    lines = infile.readlines()
     infile.close()
+    filtered = []
+    skipping = False
+    # strip out @o3dparameter stuff
+    for line in lines:
+      if skipping:
+        if line.startswith('* @') or line.startswith(' */'):
+          skipping = False
+      if not skipping:
+        if line.startswith(' * @o3dparameter'):
+          skipping = True
+      if not skipping:
+        filtered.append(line)
+    outfile.write(''.join(filtered))
   outfile.close()
 
 
@@ -218,36 +264,24 @@ def BuildCompiledO3DJS(o3djs_files,
     MakePath('../../o3d-internal/jscomp/JSCompiler_deploy.jar'),
     '--property_renaming', 'OFF',
     '--variable_renaming', 'LOCAL',
-    '--remove_dead_assignments', 'false',
-    '--remove_dead_code', 'false',
-    '--remove_unused_vars', 'false',
-    '--remove_unused_prototype_props', 'false',
-    #'--check_missing_return', 'true',
-    #
-    '--collapse_variable_declarations', 'false',
-    '--disable_function_inline', 'true',
-    '--noextract_prototype_member_decl', 'true',
-    #'--disable_convert_to_dotted_properties', 'true',
-    #'--inline_functions', 'false',
-    # TODO(gman): Remove the flags below once the compiled js actually works.
-    '--pretty_print',
-    #'--print_input_delimiter', 'true',
-    #'--strip_whitespace_and_comments_only', 'true',
-    ##'--logging_level', '',
     '--strict',
     '--externs=%s' % externs_path,
     ('--externs=%s' % o3d_externs_js_path),
     ('--js_output_file=%s' % compiled_o3djs_outpath)] +
     ['-js=%s' % (x, ) for x in o3djs_files]);
 
-  # strip out goog.exportSymbol and o3djs.require stuff
+  # strip out goog.exportSymbol and move o3djs.require to end
   file = open(compiled_o3djs_outpath, 'r')
   contents = file.read()
   file.close()
   contents = re.sub(r'goog.exportSymbol\([^\)]*\);\n', '', contents)
-  contents = re.sub(r'o3djs.require\([^\)]*\);\n', '', contents)
+  requires = set(re.findall(r'o3djs.require\([^\)]*\);', contents))
+  contents = re.sub(r'o3djs.require\([^\)]*\);', '', contents)
   file = open(compiled_o3djs_outpath, 'w')
+  file.write(_js_copyright)
   file.write(contents)
+  file.write('\n')
+  file.write('\n'.join(requires))
   file.close()
 
 

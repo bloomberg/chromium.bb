@@ -33,6 +33,9 @@ namespace o3d {
 
 %[
   A DrawPass renders a DrawList.
+
+  @o3dparameter drawList ParamDrawList The DrawList used by this DrawPass.
+  @o3dparameter sortMethod ParamInteger The method of sorting this DrawPass.
 %]
 [nocpp, include="core/cross/draw_pass.h"] class DrawPass
     : RenderNode {

@@ -37,6 +37,10 @@ namespace o3d {
   The parameters needed on a Material will vary depending its Effect.
   Note that a material MUST have its drawList set in order for objects using it
   to render.
+
+  @o3dparameter state ParamState The State used by this material.
+  @o3dparameter effect ParamEffect The Effect used by this material.
+  @o3dparameter drawList ParamDrawList The the DrawList used by this material.
 %]
 [nocpp, include="core/cross/material.h"] class Material : ParamObject {
 

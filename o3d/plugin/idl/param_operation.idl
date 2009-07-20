@@ -33,6 +33,11 @@ namespace o3d {
 
 %[
   A Param operation that takes 2 floats to produce a Float2.
+
+  @o3dparameter input0 ParamFloat The first float.
+  @o3dparameter input1 ParamFloat The second float.
+  @o3dparameter output ParamFloat2 The Float2 that is the combination of input0
+      and input1.
 %]
 [nocpp, include="core/cross/param_operation.h"]
 class ParamOp2FloatsToFloat2 : ParamObject {
@@ -54,6 +59,12 @@ class ParamOp2FloatsToFloat2 : ParamObject {
 
 %[
   A Param operation that takes 3 floats to produce a Float3.
+
+  @o3dparameter input0 ParamFloat The first float.
+  @o3dparameter input1 ParamFloat The second float.
+  @o3dparameter input2 ParamFloat The third float.
+  @o3dparameter output ParamFloat3 The Float3 that is the combination of input0,
+      input1, and input2.
 %]
 [nocpp, include="core/cross/param_operation.h"]
 class ParamOp3FloatsToFloat3 : ParamObject {
@@ -80,6 +91,13 @@ class ParamOp3FloatsToFloat3 : ParamObject {
 
 %[
   A Param operation that takes 4 floats to produce a Float4.
+
+  @o3dparameter input0 ParamFloat The first float.
+  @o3dparameter input1 ParamFloat The second float.
+  @o3dparameter input2 ParamFloat The third float.
+  @o3dparameter input3 ParamFloat The fourth float.
+  @o3dparameter output ParamFloat4 The Float4 that is the combination of input0,
+      input1, input2, and input3.
 %]
 [nocpp, include="core/cross/param_operation.h"]
 class ParamOp4FloatsToFloat4 : ParamObject {
@@ -111,6 +129,31 @@ class ParamOp4FloatsToFloat4 : ParamObject {
 
 %[
   A Param operation that takes 16 floats to produce a Matrix4.
+
+  @o3dparameter input0 ParamFloat The 1st float.
+  @o3dparameter input1 ParamFloat The 2nd float.
+  @o3dparameter input2 ParamFloat The 3rd float.
+  @o3dparameter input3 ParamFloat The 4th float.
+  @o3dparameter input4 ParamFloat The 5th float.
+  @o3dparameter input5 ParamFloat The 6th float.
+  @o3dparameter input6 ParamFloat The 7th float.
+  @o3dparameter input7 ParamFloat The 8th float.
+  @o3dparameter input8 ParamFloat The 9th float.
+  @o3dparameter input9 ParamFloat The 10th float.
+  @o3dparameter input10 ParamFloat The 11th float.
+  @o3dparameter input11 ParamFloat The 12th float.
+  @o3dparameter input12 ParamFloat The 13th float.
+  @o3dparameter input13 ParamFloat The 14th float.
+  @o3dparameter input14 ParamFloat The 15th float.
+  @o3dparameter input15 ParamFloat The 16th float.
+  @o3dparameter output ParamMatrix4 The Matrix4 that is the combination of
+      the inputs in the following order
+      <pre>
+      [[input0, input1, input2, input3],
+       [input4, input5, input6, input7],
+       [input8, input9, input10, input11],
+       [input12, input13, input14, input15]]
+      </pre>
 %]
 [nocpp, include="core/cross/param_operation.h"]
 class ParamOp16FloatsToMatrix4 : ParamObject {
@@ -206,6 +249,17 @@ class ParamOp16FloatsToMatrix4 : ParamObject {
   and z axes, and three scaling factors.  The resulting transformation scales
   first, then then rotates around the z-axis, then the y-axis, then the x-axis,
   then translates.
+
+  @o3dparameter translateX ParamFloat The x component of the translation.
+  @o3dparameter translateY ParamFloat The y component of the translation.
+  @o3dparameter translateZ ParamFloat The z component of the translation.
+  @o3dparameter rotateX ParamFloat The x component of the rotation.
+  @o3dparameter rotateY ParamFloat The y component of the rotation.
+  @o3dparameter rotateZ ParamFloat The z component of the rotation.
+  @o3dparameter scaleX ParamFloat The x component of the scale.
+  @o3dparameter scaleY ParamFloat The y component of the scale.
+  @o3dparameter scaleZ ParamFloat The z component of the scale.
+  @o3dparameter output ParamMatrix4 The matrix described by the components.
 %]
 [nocpp, include="core/cross/param_operation.h"]
 class TRSToMatrix4 : ParamObject {

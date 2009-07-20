@@ -39,6 +39,9 @@ namespace o3d {
   \sa Element
   \sa Material
   \sa Effect
+
+  @o3dparameter material ParamMaterial The material used to render this
+      the Element that owns this DrawElement.
 %]
 [nocpp, include="core/cross/material.h"] class DrawElement
     : ParamObject {

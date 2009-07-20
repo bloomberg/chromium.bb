@@ -35,6 +35,11 @@ namespace o3d {
   This param operation composes (multiplies) a local matrix with an input
   matrix. It can be used, for example, to supply the local matrix of a
   transform.
+
+  @o3dparameter inputMatrix ParamMatrix4 The input matrix.
+  @o3dparameter localMatrix ParamMatrix4 The local matrix.
+  @o3dparameter outputMatrix ParamMatrix4 The result of multiplying the input
+      matrix by the local matrix.
 %]
 [nocpp, include="core/cross/matrix4_composition.h"]
 class Matrix4Composition : ParamObject {

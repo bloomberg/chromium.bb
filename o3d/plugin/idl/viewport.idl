@@ -39,6 +39,9 @@ namespace o3d {
   range is represented by an array in the format [min Z, max Z]. The depth range
   provides the mapping of the clip space coordinates into normalized z buffer
   coordinates.
+
+  @o3dparameter viewport ParamFloat4 The viewport setting.
+  @o3dparameter depthRange ParamFloat2 The depth range setting.
 %]
 [nocpp, include="core/cross/viewport.h"] class Viewport
     : RenderNode {

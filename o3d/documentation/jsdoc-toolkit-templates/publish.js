@@ -57,6 +57,7 @@ var g_outputMode;
 var g_baseURL;
 var g_topURL;
 var g_templates = [];
+var g_o3dPropertyRE = /^(\w+)\s+(\w+)\s+/;
 
 /**
  * Called automatically by JsDoc Toolkit.
@@ -501,6 +502,40 @@ function getPropertyType(property) {
 }
 
 /**
+ * Gets the parameters for a class.
+ * Parameters are an o3d specific thing. We have to look for tags that
+ * start with @o3dparameter
+ * @param {!Symbol} symbol
+ */
+function getParameters(symbol) {
+  var params = [];
+  if (symbol.inheritsFrom.length) {
+    params = getParameters(getSymbol(symbol.inheritsFrom[0]));
+  }
+
+  var tags = symbol.comment.getTag('o3dparameter');
+  for (var ii = 0; ii < tags.length; ++ii) {
+    var tag = tags[ii];
+    var tagString = tag.toString();
+    var parts = tagString.match(g_o3dPropertyRE);
+    if (!parts) {
+      generateError('Malformed o3dparameter specification for ' + symbol.alias +
+                    ' : "' + tag + '"');
+    } else {
+      var descString = tagString.substr(parts[0].length);
+      var param = {
+        name: parts[1],
+        type: 'o3d.' + parts[2],
+        desc: descString,
+        parent: symbol.alias,
+      };
+      params.push(param);
+    }
+  }
+  return params;
+}
+
+/**
  * Converts [ to [[] for ezt files.
  * Also converts '\n\n' to <br/></br>
  * @param {string} str to sanitize.
@@ -906,7 +941,7 @@ function getSourcePath(symbol) {
  */
 function getParentName(symbol) {
   var parent = getSymbol(symbol.memberOf);
-  return parent.isNamespace ? symbol.memberOf : parent.name;
+  return parent.isNamespace ? symbol.memberOf : parent.alias;
 }
 
 /**

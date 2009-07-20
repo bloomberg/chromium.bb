@@ -37,6 +37,9 @@ namespace o3d {
   transform graph from the transform it's pointing at and for each DrawElement
   it finds who's matertial matches one of its registered DrawLists it adds that
   DrawElement to that DrawList.
+
+  @o3dparameter transform ParamTransform The root transform to start traversing
+      by this TreeTraveral.
 %]
 [nocpp, include="core/cross/tree_traversal.h"] class TreeTraversal
    : RenderNode {

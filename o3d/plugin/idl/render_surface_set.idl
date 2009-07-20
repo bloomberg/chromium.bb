@@ -40,6 +40,10 @@ namespace o3d {
   1)  If both a color and depth surface is bound, then they must be of matching
       dimensions.
   2)  At least one of render_surface and render_depth_surface must non-null.
+
+  @o3dparameter renderSurface ParamRenderSurface The render surface to set.
+  @o3dparameter renderDepthStencilSurface ParamRenderDepthStencilSurface The
+      depth stencil render surface to set.
 %]
 [nocpp, include="core/cross/render_surface_set.h"]
 class RenderSurfaceSet : RenderNode {

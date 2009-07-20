@@ -63,6 +63,11 @@ class Function : NamedObject {
 
 %[
   A FunctionEval evaluates a Function through parameters.
+
+  @o3dparameter input ParamFloat The input to the function.
+  @o3dparameter functionObject ParamFunction The function to apply the input to.
+  @o3dparameter output ParamFloat The result of applying the input to the
+      function.
 %]
 [nocpp, include="core/cross/function.h"]
 class FunctionEval : ParamObject {
