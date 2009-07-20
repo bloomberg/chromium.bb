@@ -286,6 +286,13 @@ void BrowserToolbarGtk::Observe(NotificationType type,
       }
     }
   } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    // Update the spacing around the menu buttons
+    int border = theme_provider_->UseGtkTheme() ? 0 : 2;
+    gtk_container_set_border_width(
+        GTK_CONTAINER(page_menu_button_.get()), border);
+    gtk_container_set_border_width(
+        GTK_CONTAINER(app_menu_button_.get()), border);
+
     // Update the menu button images.
     gtk_image_set_from_pixbuf(GTK_IMAGE(page_menu_image_),
         theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_PAGE));
@@ -374,11 +381,6 @@ GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
     OwnedWidgetGtk* owner) {
   GtkWidget* button = theme_provider_->BuildChromeButton();
   owner->Own(button);
-
-  // TODO(erg): This was under conditional for gtk, but after playing around
-  // with not having it under conditional, I actually think this is correct
-  // instead. Investigate more later.
-  gtk_container_set_border_width(GTK_CONTAINER(button), 2);
 
   gtk_widget_set_tooltip_text(button, localized_tooltip.c_str());
   g_signal_connect(button, "button-press-event",
