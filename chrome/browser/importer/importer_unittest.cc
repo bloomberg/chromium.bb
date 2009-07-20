@@ -15,12 +15,15 @@
 
 #include "app/win_util.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "webkit/glue/password_form.h"
 
 using webkit_glue::PasswordForm;
 
