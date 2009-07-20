@@ -378,7 +378,6 @@ std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
 
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  browser_(browser),
-       full_screen_(false),
 #if defined(OS_CHROMEOS)
        drag_active_(false),
        panel_controller_(NULL),
@@ -647,26 +646,17 @@ bool BrowserWindowGtk::IsMaximized() const {
 }
 
 void BrowserWindowGtk::SetFullscreen(bool fullscreen) {
-  full_screen_ = fullscreen;
-  UpdateCustomFrame();
-
+  // gtk_window_(un)fullscreen asks the window manager to toggle the EWMH
+  // for fullscreen windows.  Not all window managers support this.
   if (fullscreen) {
-    // These four balanced by ShowSupportedWindowFeatures().
-    toolbar_->Hide();
-    tabstrip_->Hide();
-    bookmark_bar_->Hide(false);
-    extension_shelf_->Hide();
-
     gtk_window_fullscreen(window_);
   } else {
-    ShowSupportedWindowFeatures();
-
     gtk_window_unfullscreen(window_);
   }
 }
 
 bool BrowserWindowGtk::IsFullscreen() const {
-  return full_screen_;
+  return (state_ & GDK_WINDOW_STATE_FULLSCREEN);
 }
 
 LocationBar* BrowserWindowGtk::GetLocationBar() const {
@@ -896,7 +886,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
                                             bool animate) {
   // Don't change the visibility state when the browser is full screen or if
   // the bookmark bar isn't supported.
-  if (full_screen_ || !IsBookmarkBarSupported())
+  if (IsFullscreen() || !IsBookmarkBarSupported())
     return;
 
   bool show_bar = false;
@@ -970,7 +960,25 @@ void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
 }
 
 void BrowserWindowGtk::OnStateChanged(GdkWindowState state) {
+  // If we care about more than full screen changes, we should pass through
+  // |changed_mask| from GdkEventWindowState.
+  bool fullscreen_state_changed = (state_ & GDK_WINDOW_STATE_FULLSCREEN) !=
+      (state & GDK_WINDOW_STATE_FULLSCREEN);
+
   state_ = state;
+
+  if (fullscreen_state_changed) {
+    if (state & GDK_WINDOW_STATE_FULLSCREEN) {
+      UpdateCustomFrame();
+      toolbar_->Hide();
+      tabstrip_->Hide();
+      bookmark_bar_->Hide(false);
+      extension_shelf_->Hide();
+    } else {
+      UpdateCustomFrame();
+      ShowSupportedWindowFeatures();
+    }
+  }
 
   UpdateWindowShape(bounds_.width(), bounds_.height());
   SaveWindowPosition();
@@ -1217,7 +1225,7 @@ void BrowserWindowGtk::OnSizeChanged(int width, int height) {
 }
 
 void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
-  if (use_custom_frame_.GetValue() && !full_screen_ && !IsMaximized()) {
+  if (use_custom_frame_.GetValue() && !IsFullscreen() && !IsMaximized()) {
     // Make the top corners rounded.  We set a mask that includes most of the
     // window except for a few pixels in the top two corners.
     GdkRectangle top_rect = { 3, 0, width - 6, 1 };
@@ -1263,13 +1271,18 @@ void BrowserWindowGtk::ConnectAccelerators() {
 }
 
 void BrowserWindowGtk::UpdateCustomFrame() {
-  bool enable = use_custom_frame_.GetValue() && !full_screen_;
-  gtk_window_set_decorated(window_, !enable);
+  bool enable = use_custom_frame_.GetValue() && !IsFullscreen();
+  gtk_window_set_decorated(window_, !use_custom_frame_.GetValue());
   titlebar_->UpdateCustomFrame(enable);
   UpdateWindowShape(bounds_.width(), bounds_.height());
 }
 
 void BrowserWindowGtk::SaveWindowPosition() {
+  // Don't save the window position if it's in full screen mode because we
+  // don't want to restart the browser in full screen mode.
+  if (IsFullscreen())
+    return;
+
   // Browser::SaveWindowPlacement is used for session restore.
   if (browser_->ShouldSaveWindowPlacement())
     browser_->SaveWindowPlacement(bounds_, IsMaximized());

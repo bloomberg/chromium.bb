@@ -272,10 +272,6 @@ class BrowserWindowGtk : public BrowserWindow,
   gfx::Rect bounds_;
   GdkWindowState state_;
 
-  // Whether we are full screen. Since IsFullscreen() gets called before
-  // OnStateChanged(), we can't rely on |state_| & GDK_WINDOW_STATE_FULLSCREEN.
-  bool full_screen_;
-
   // The container for the titlebar + tab strip.
   scoped_ptr<BrowserTitlebar> titlebar_;
 
