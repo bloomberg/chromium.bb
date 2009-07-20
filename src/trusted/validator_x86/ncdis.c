@@ -239,8 +239,8 @@ int GrokFlags(int argc, const char *argv[]) {
     if (GrokCstringFlag("-i", arg, &hex_instruction)) {
       int i = 0;
       char buffer[3];
-      buffer[2] = '\0';
       char* buf = &(hex_instruction[0]);
+      buffer[2] = '\0';
       while (*buf) {
         buffer[i++] = *(buf++);
         if (i == 2) {

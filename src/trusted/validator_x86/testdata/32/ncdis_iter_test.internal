@@ -6,10 +6,7 @@
     2, {
       { E_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) | OpFlag(OpSet) },
       { G_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) },
-      { Unknown_Operand, 0 },
-    },
-    NULL
-  };
+  } };
 ExprNodeVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprSegmentAddress[2] , 0, ExprSet | ExprUsed },
@@ -30,10 +27,7 @@ ExprNodeVector[10] = {
     2, {
       { E_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) | OpFlag(OpSet) },
       { G_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) },
-      { Unknown_Operand, 0 },
-    },
-    NULL
-  };
+  } };
 ExprNodeVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
@@ -48,10 +42,7 @@ ExprNodeVector[4] = {
     2, {
       { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
       { G_Operand, OpFlag(OpUse) },
-      { Unknown_Operand, 0 },
-    },
-    NULL
-  };
+  } };
 ExprNodeVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
@@ -66,10 +57,7 @@ ExprNodeVector[4] = {
     2, {
       { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
       { E_Operand, OpFlag(OpUse) },
-      { Unknown_Operand, 0 },
-    },
-    NULL
-  };
+  } };
 ExprNodeVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprSize32 },
@@ -90,15 +78,12 @@ ExprNodeVector[10] = {
     2, {
       { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
       { E_Operand, OpFlag(OpUse) },
-      { Unknown_Operand, 0 },
-    },
-    NULL
-  };
+  } };
 ExprNodeVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %ebx, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x20, ExprUsed | ExprSize32 | EpxrHexConstant },
+  { ExprConstant[0] , 0x20, ExprUsed | ExprSize32 | ExprSignedHex },
 };
 00000000: 02 04 00                                     add %al, %ds[%eax+%eax*1]
   { 0x02,
@@ -108,10 +93,7 @@ ExprNodeVector[4] = {
     2, {
       { G_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) | OpFlag(OpSet) },
       { E_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) },
-      { Unknown_Operand, 0 },
-    },
-    NULL
-  };
+  } };
 ExprNodeVector[10] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
