@@ -5,7 +5,6 @@
 {
   'variables': {
     'chromium_code': 1,
-    'nacl_scons_dir': '../../third_party/native_client/googleclient/native_client/scons-out',
   },
   'includes': [
     'common.gypi',
@@ -19,7 +18,6 @@
           'google_nacl_imc',
           'google_nacl_imc_c',
         ],
-        'nacl_lib_dir': '<(nacl_scons_dir)/<(CONFIGURATION)-<(OS)/lib',
         'nacl_output_dir': '<(SHARED_INTERMEDIATE_DIR)/nacl_libs',
       },
       'actions': [
@@ -34,7 +32,7 @@
             'dummy_file_that_never_gets_built_so_scons_always_runs',
           ],
           'action': [
-            'C:/Python24/python.exe',
+            'python',
             '<@(_inputs)',
             '--output="<(nacl_output_dir)"',
             '--configuration="<(CONFIGURATION)"',
@@ -43,13 +41,13 @@
           ],
         },
       ],
-      'all_dependent_settings': {
+      'direct_dependent_settings': {
         'include_dirs': [
           '<(nacldir)',
         ],
         'libraries': [
-          '-l<(nacl_output_dir)/google_nacl_imc<(LIBRARY_SUFFIX)',
-          '-l<(nacl_output_dir)/google_nacl_imc_c<(LIBRARY_SUFFIX)',
+          '<(nacl_output_dir)/google_nacl_imc<(LIBRARY_SUFFIX)',
+          '<(nacl_output_dir)/google_nacl_imc_c<(LIBRARY_SUFFIX)',
         ],
       },
     },
