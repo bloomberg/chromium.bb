@@ -219,6 +219,9 @@ WebInspector.loaded = function() {
 
   Preferences.ignoreWhitespace = false;
   oldLoaded.call(this);
+  if (InspectorController.platform().indexOf('mac') == 0) {
+    document.getElementById('dock-status-bar-item').addStyleClass('hidden');
+  }
 
   DevToolsHost.loaded();
 };
