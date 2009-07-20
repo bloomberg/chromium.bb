@@ -105,7 +105,7 @@ class TabContentsDelegate {
 
   // Check whether this contents is inside a window dedicated to running a web
   // application.
-  virtual bool IsApplication() { return false; }
+  virtual bool IsApplication() const { return false; }
 
   // Detach the given tab and convert it to a "webapp" view.  The tab must be
   // a TabContents with a valid WebApp set.
