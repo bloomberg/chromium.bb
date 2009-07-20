@@ -49,16 +49,17 @@ int PasswordStoreDefault::GetLogins(const PasswordForm& form,
   return CreateNewRequestForQuery(web_data_handle, consumer);
 }
 
-int PasswordStoreDefault::GetAllLogins(PasswordStoreConsumer* consumer) {
+int PasswordStoreDefault::GetAutofillableLogins(
+    PasswordStoreConsumer* consumer) {
   WebDataService::Handle web_data_handle =
-      web_data_service_->GetAllLogins(this);
+      web_data_service_->GetAutofillableLogins(this);
   return CreateNewRequestForQuery(web_data_handle, consumer);
 }
 
-int PasswordStoreDefault::GetAllAutofillableLogins(
+int PasswordStoreDefault::GetBlacklistLogins(
     PasswordStoreConsumer* consumer) {
   WebDataService::Handle web_data_handle =
-      web_data_service_->GetAllAutofillableLogins(this);
+      web_data_service_->GetBlacklistLogins(this);
   return CreateNewRequestForQuery(web_data_handle, consumer);
 }
 
@@ -97,11 +98,12 @@ void PasswordStoreDefault::GetLoginsImpl(
   NOTREACHED();
 }
 
-void PasswordStoreDefault::GetAllLoginsImpl(GetLoginsRequest* request) {
+void PasswordStoreDefault::GetAutofillableLoginsImpl(
+    GetLoginsRequest* request) {
   NOTREACHED();
 }
 
-void PasswordStoreDefault::GetAllAutofillableLoginsImpl(
+void PasswordStoreDefault::GetBlacklistLoginsImpl(
     GetLoginsRequest* request) {
   NOTREACHED();
 }

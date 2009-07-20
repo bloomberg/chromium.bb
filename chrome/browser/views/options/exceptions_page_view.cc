@@ -41,7 +41,7 @@ int ExceptionsTableModel::CompareValues(int row1, int row2,
 
 void ExceptionsTableModel::GetAllExceptionsForProfile() {
   DCHECK(!pending_login_query_);
-  pending_login_query_ = password_store()->GetAllLogins(this);
+  pending_login_query_ = password_store()->GetBlacklistLogins(this);
 }
 
 void ExceptionsTableModel::OnPasswordStoreRequestDone(
@@ -53,10 +53,8 @@ void ExceptionsTableModel::OnPasswordStoreRequestDone(
   std::wstring languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   for (size_t i = 0; i < result.size(); ++i) {
-    if (result[i]->blacklisted_by_user) {
-      saved_signons_.push_back(new PasswordRow(
-          gfx::SortedDisplayURL(result[i]->origin, languages), result[i]));
-    }
+    saved_signons_.push_back(new PasswordRow(
+        gfx::SortedDisplayURL(result[i]->origin, languages), result[i]));
   }
   if (observer_)
     observer_->OnModelChanged();

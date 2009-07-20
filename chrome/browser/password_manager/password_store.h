@@ -58,16 +58,16 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   virtual int GetLogins(const webkit_glue::PasswordForm& form,
                         PasswordStoreConsumer* consumer);
 
-  // Gets the complete list of PasswordForms and returns a handle so the async
-  // request can be tracked. Implement the PasswordStoreConsumer interface to
-  // be notified on completion.
-  virtual int GetAllLogins(PasswordStoreConsumer* consumer);
-
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable--and returns a handle so the async request can be
   // tracked. Implement the PasswordStoreConsumer interface to be notified
   // on completion.
-  virtual int GetAllAutofillableLogins(PasswordStoreConsumer* consumer);
+  virtual int GetAutofillableLogins(PasswordStoreConsumer* consumer);
+
+  // Gets the complete list of PasswordForms that are blacklist entries, and
+  // returns a handle so the async request can be tracked. Implement the
+  // PasswordStoreConsumer interface to be notified on completion.
+  virtual int GetBlacklistLogins(PasswordStoreConsumer* consumer);
 
   // Cancels a previous Get*Logins query (async)
   virtual void CancelLoginsQuery(int handle);
@@ -108,10 +108,10 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
                                               const base::Time& delete_end) = 0;
   virtual void GetLoginsImpl(GetLoginsRequest* request,
                              const webkit_glue::PasswordForm& form) = 0;
-  // Finds all PasswordForms, and notifies the consumer.
-  virtual void GetAllLoginsImpl(GetLoginsRequest* request) = 0;
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
-  virtual void GetAllAutofillableLoginsImpl(GetLoginsRequest* request) = 0;
+  virtual void GetAutofillableLoginsImpl(GetLoginsRequest* request) = 0;
+  // Finds all blacklist PasswordForms, and notifies the consumer.
+  virtual void GetBlacklistLoginsImpl(GetLoginsRequest* request) = 0;
 
   // Notifies the consumer that a Get*Logins() request is complete.
   void NotifyConsumer(GetLoginsRequest* request,

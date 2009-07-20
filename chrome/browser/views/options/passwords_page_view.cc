@@ -105,7 +105,7 @@ void PasswordsTableModel::SetObserver(TableModelObserver* observer) {
 
 void PasswordsTableModel::GetAllSavedLoginsForProfile() {
   DCHECK(!pending_login_query_);
-  pending_login_query_ = password_store()->GetAllAutofillableLogins(this);
+  pending_login_query_ = password_store()->GetAutofillableLogins(this);
 }
 
 void PasswordsTableModel::OnPasswordStoreRequestDone(

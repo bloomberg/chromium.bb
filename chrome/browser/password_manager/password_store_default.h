@@ -36,8 +36,8 @@ class PasswordStoreDefault : public PasswordStore,
                                           const base::Time& delete_end);
   virtual int GetLogins(const webkit_glue::PasswordForm& form,
                         PasswordStoreConsumer* consumer);
-  virtual int GetAllLogins(PasswordStoreConsumer* consumer);
-  virtual int GetAllAutofillableLogins(PasswordStoreConsumer* consumer);
+  virtual int GetAutofillableLogins(PasswordStoreConsumer* consumer);
+  virtual int GetBlacklistLogins(PasswordStoreConsumer* consumer);
   virtual void CancelLoginsQuery(int handle);
 
  protected:
@@ -49,8 +49,8 @@ class PasswordStoreDefault : public PasswordStore,
                                       const base::Time& delete_end);
   void GetLoginsImpl(GetLoginsRequest* request,
                      const webkit_glue::PasswordForm& form);
-  void GetAllLoginsImpl(GetLoginsRequest* request);
-  void GetAllAutofillableLoginsImpl(GetLoginsRequest* request);
+  void GetAutofillableLoginsImpl(GetLoginsRequest* request);
+  void GetBlacklistLoginsImpl(GetLoginsRequest* request);
 
   // Called when a WebDataService method finishes.
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,

@@ -804,24 +804,15 @@ void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
   NotifyConsumer(request, merged_forms);
 }
 
-void PasswordStoreMac::GetAllLoginsImpl(GetLoginsRequest* request) {
+void PasswordStoreMac::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
   std::vector<PasswordForm*> database_forms;
-  login_metadata_db_->GetAllLogins(&database_forms, true);
-
-  std::vector<PasswordForm*> merged_forms =
-      internal_keychain_helpers::GetPasswordsForForms(*keychain_,
-                                                      &database_forms);
-
-  // Clean up any orphaned database entries.
-  RemoveDatabaseForms(database_forms);
-  STLDeleteElements(&database_forms);
-
-  NotifyConsumer(request, merged_forms);
+  login_metadata_db_->GetBlacklistLogins(&database_forms);
+  NotifyConsumer(request, database_forms);
 }
 
-void PasswordStoreMac::GetAllAutofillableLoginsImpl(GetLoginsRequest* request) {
+void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
   std::vector<PasswordForm*> database_forms;
-  login_metadata_db_->GetAllLogins(&database_forms, false);
+  login_metadata_db_->GetAutofillableLogins(&database_forms);
   
   std::vector<PasswordForm*> merged_forms =
       internal_keychain_helpers::GetPasswordsForForms(*keychain_,
@@ -861,7 +852,7 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
 
 std::vector<PasswordForm*> PasswordStoreMac::GetUnusedKeychainForms() {
   std::vector<PasswordForm*> database_forms;
-  login_metadata_db_->GetAllLogins(&database_forms, false);
+  login_metadata_db_->GetAutofillableLogins(&database_forms);
   
   MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_.get());
   owned_keychain_adapter.SetFindsOnlyOwnedItems(true);

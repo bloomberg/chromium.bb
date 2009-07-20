@@ -50,12 +50,14 @@ class LoginDatabase {
   bool GetLogins(const webkit_glue::PasswordForm& form,
                  std::vector<webkit_glue::PasswordForm*>* forms) const;
 
-  // Loads the complete list of password forms into the specified vector |forms|
-  // if include_blacklisted is true, otherwise only loads those which are
-  // actually autofillable; i.e haven't been blacklisted by the user selecting
-  // the 'Never for this site' button.
-  bool GetAllLogins(std::vector<webkit_glue::PasswordForm*>* forms,
-                    bool include_blacklisted) const;
+  // Loads the complete list of autofillable password forms (i.e., not blacklist
+  // entries) into |forms|.
+  bool GetAutofillableLogins(
+      std::vector<webkit_glue::PasswordForm*>* forms) const;
+
+  // Loads the complete list of blacklist forms into |forms|.
+  bool GetBlacklistLogins(
+      std::vector<webkit_glue::PasswordForm*>* forms) const;
 
  protected:
   // Returns an encrypted version of plain_text.
@@ -70,9 +72,14 @@ class LoginDatabase {
 
  private:
   // Fills |form| from the values in the given statement (which is assumed to
-  // be of the form used by GetLogins/GetAllLogins).
+  // be of the form used by the Get*Logins methods).
   void InitPasswordFormFromStatement(webkit_glue::PasswordForm* form,
                                      SQLStatement* s) const;
+
+  // Loads all logins whose blacklist setting matches |blacklisted| into
+  // |forms|.
+  bool GetAllLoginsWithBlacklistSetting(
+      bool blacklisted, std::vector<webkit_glue::PasswordForm*>* forms) const;
 
   sqlite3* db_;
   MetaTableHelper meta_table_;

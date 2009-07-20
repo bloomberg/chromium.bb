@@ -362,23 +362,24 @@ WebDataService::Handle WebDataService::GetLogins(
   return request->GetHandle();
 }
 
-WebDataService::Handle WebDataService::GetAllAutofillableLogins(
+WebDataService::Handle WebDataService::GetAutofillableLogins(
     WebDataServiceConsumer* consumer) {
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
   RegisterRequest(request);
   ScheduleTask(NewRunnableMethod(this,
-                                 &WebDataService::GetAllAutofillableLoginsImpl,
+                                 &WebDataService::GetAutofillableLoginsImpl,
                                  request));
   return request->GetHandle();
 }
 
-WebDataService::Handle WebDataService::GetAllLogins(
-                                       WebDataServiceConsumer* consumer) {
+WebDataService::Handle WebDataService::GetBlacklistLogins(
+    WebDataServiceConsumer* consumer) {
   WebDataRequest* request =
       new WebDataRequest(this, GetNextRequestHandle(), consumer);
   RegisterRequest(request);
-  ScheduleTask(NewRunnableMethod(this, &WebDataService::GetAllLoginsImpl,
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::GetBlacklistLoginsImpl,
                                  request));
   return request->GetHandle();
 }
@@ -536,7 +537,7 @@ void WebDataService::GetLoginsImpl(GenericRequest<PasswordForm>* request) {
   request->RequestComplete();
 }
 
-void WebDataService::GetAllAutofillableLoginsImpl(WebDataRequest* request) {
+void WebDataService::GetAutofillableLoginsImpl(WebDataRequest* request) {
   if (db_ && !request->IsCancelled()) {
     std::vector<PasswordForm*> forms;
     db_->GetAllLogins(&forms, false);
@@ -546,12 +547,22 @@ void WebDataService::GetAllAutofillableLoginsImpl(WebDataRequest* request) {
   request->RequestComplete();
 }
 
-void WebDataService::GetAllLoginsImpl(WebDataRequest* request) {
+void WebDataService::GetBlacklistLoginsImpl(WebDataRequest* request) {
   if (db_ && !request->IsCancelled()) {
-    std::vector<PasswordForm*> forms;
-    db_->GetAllLogins(&forms, true);
+    std::vector<PasswordForm*> all_forms;
+    db_->GetAllLogins(&all_forms, true);
+    std::vector<PasswordForm*> blacklist_forms;
+    for (std::vector<PasswordForm*>::iterator i = all_forms.begin();
+         i != all_forms.end(); ++i) {
+      scoped_ptr<PasswordForm> form(*i);
+      if (form->blacklisted_by_user) {
+        blacklist_forms.push_back(form.release());
+      }
+    }
+    all_forms.clear();
     request->SetResult(
-        new WDResult<std::vector<PasswordForm*> >(PASSWORD_RESULT, forms));
+        new WDResult<std::vector<PasswordForm*> >(PASSWORD_RESULT,
+                                                  blacklist_forms));
   }
   request->RequestComplete();
 }

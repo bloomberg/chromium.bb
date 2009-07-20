@@ -296,8 +296,18 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
   return result == SQLITE_DONE;
 }
 
-bool LoginDatabase::GetAllLogins(std::vector<PasswordForm*>* forms,
-                                 bool include_blacklisted) const {
+bool LoginDatabase::GetAutofillableLogins(
+    std::vector<PasswordForm*>* forms) const {
+  return GetAllLoginsWithBlacklistSetting(false, forms);
+}
+
+bool LoginDatabase::GetBlacklistLogins(
+    std::vector<PasswordForm*>* forms) const {
+  return GetAllLoginsWithBlacklistSetting(true, forms);
+}
+
+bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
+    bool blacklisted, std::vector<PasswordForm*>* forms) const {
   DCHECK(forms);
   SQLStatement s;
   // You *must* change LoginTableColumns if this query changes.
@@ -305,15 +315,15 @@ bool LoginDatabase::GetAllLogins(std::vector<PasswordForm*>* forms,
                      "username_element, username_value, "
                      "password_element, password_value, "
                      "submit_element, signon_realm, ssl_valid, preferred, "
-                     "date_created, blacklisted_by_user, scheme FROM logins ";
-  if (!include_blacklisted)
-    stmt.append("WHERE blacklisted_by_user == 0 ");
-  stmt.append("ORDER BY origin_url");
+                     "date_created, blacklisted_by_user, scheme FROM logins "
+                     "WHERE blacklisted_by_user == ? "
+                     "ORDER BY origin_url";
 
   if (s.prepare(db_, stmt.c_str()) != SQLITE_OK) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
+  s.bind_int(0, blacklisted ? 1 : 0);
 
   int result;
   while ((result = s.step()) == SQLITE_ROW) {

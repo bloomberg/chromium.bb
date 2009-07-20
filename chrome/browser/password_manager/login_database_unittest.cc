@@ -56,7 +56,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 
   // Example password form.
@@ -75,7 +75,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // Add it and make sure it is there.
   EXPECT_TRUE(db->AddLogin(form));
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   delete result[0];
   result.clear();
@@ -118,7 +118,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // Let's imagine the user logs into the secure site.
   EXPECT_TRUE(db->AddLogin(form4));
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
   delete result[0];
   delete result[1];
@@ -132,7 +132,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // The user chose to forget the original but not the new.
   EXPECT_TRUE(db->RemoveLogin(form));
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   delete result[0];
   result.clear();
@@ -168,7 +168,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   delete result[0];
   result.clear();
   // Only one record.
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   // Password element was updated.
 #if defined(OS_MACOSX)
@@ -184,7 +184,7 @@ TEST_F(LoginDatabaseTest, Logins) {
 
   // Make sure everything can disappear.
   EXPECT_TRUE(db->RemoveLogin(form4));
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 }
 
@@ -220,7 +220,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 
   base::Time now = base::Time::Now();
@@ -234,7 +234,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   EXPECT_TRUE(AddTimestampedLogin(db.get(), "4", L"foo4", now + one_day));
 
   // Verify inserts worked.
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(4U, result.size());
   ClearResults(&result);
 
@@ -242,7 +242,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   db->RemoveLoginsCreatedBetween(now, base::Time());
 
   // Should have deleted half of what we inserted.
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(2U, result.size());
   ClearResults(&result);
 
@@ -250,7 +250,7 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   db->RemoveLoginsCreatedBetween(base::Time(), base::Time());
 
   // Verify nothing is left.
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
 }
 
@@ -263,7 +263,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  EXPECT_TRUE(db->GetBlacklistLogins(&result));
   ASSERT_EQ(0U, result.size());
 
   // Save a form as blacklisted.
@@ -281,7 +281,7 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   EXPECT_TRUE(db->AddLogin(form));
 
   // Get all non-blacklisted logins (should be none).
-  EXPECT_TRUE(db->GetAllLogins(&result, false));
+  EXPECT_TRUE(db->GetAutofillableLogins(&result));
   ASSERT_EQ(0U, result.size());
 
   // GetLogins should give the blacklisted result.
@@ -289,8 +289,8 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   EXPECT_EQ(1U, result.size());
   ClearResults(&result);
 
-  // So should GetAll including blacklisted.
-  EXPECT_TRUE(db->GetAllLogins(&result, true));
+  // So should GetAllBlacklistedLogins.
+  EXPECT_TRUE(db->GetBlacklistLogins(&result));
   EXPECT_EQ(1U, result.size());
   ClearResults(&result);
 }

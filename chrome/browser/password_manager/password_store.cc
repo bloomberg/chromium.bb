@@ -58,19 +58,20 @@ int PasswordStore::GetLogins(const PasswordForm& form,
   return handle;
 }
 
-int PasswordStore::GetAllLogins(PasswordStoreConsumer* consumer) {
+int PasswordStore::GetAutofillableLogins(PasswordStoreConsumer* consumer) {
   int handle = GetNewRequestHandle();
   GetLoginsRequest* request = new GetLoginsRequest(consumer, handle);
-  ScheduleTask(NewRunnableMethod(this, &PasswordStore::GetAllLoginsImpl,
+  ScheduleTask(NewRunnableMethod(this,
+                                 &PasswordStore::GetAutofillableLoginsImpl,
                                  request));
   return handle;
 }
 
-int PasswordStore::GetAllAutofillableLogins(PasswordStoreConsumer* consumer) {
+int PasswordStore::GetBlacklistLogins(PasswordStoreConsumer* consumer) {
   int handle = GetNewRequestHandle();
   GetLoginsRequest* request = new GetLoginsRequest(consumer, handle);
   ScheduleTask(NewRunnableMethod(this,
-                                 &PasswordStore::GetAllAutofillableLoginsImpl,
+                                 &PasswordStore::GetBlacklistLoginsImpl,
                                  request));
   return handle;
 }

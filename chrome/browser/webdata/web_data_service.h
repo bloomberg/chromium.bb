@@ -340,13 +340,13 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   // |consumer| will be notified when the request is done. The result is of
   // type WDResult<std::vector<PasswordForm*>>.
   // The result will be null on failure.  The |consumer| owns all PasswordForms.
-  Handle GetAllAutofillableLogins(WebDataServiceConsumer* consumer);
+  Handle GetAutofillableLogins(WebDataServiceConsumer* consumer);
 
-  // Gets the complete list of password forms.
+  // Gets the complete list of password forms that have been blacklisted.
   // |consumer| will be notified when the request is done. The result is of
   // type WDResult<std::vector<PasswordForm*>>.
   // The result will be null on failure. The |consumer| owns all PasswordForm's.
-  Handle GetAllLogins(WebDataServiceConsumer* consumer);
+  Handle GetBlacklistLogins(WebDataServiceConsumer* consumer);
 
 #if defined(OS_WIN)
   // Adds |info| to the list of imported passwords from ie7/ie8.
@@ -450,8 +450,8 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   void RemoveLoginsCreatedBetweenImpl(
       GenericRequest2<base::Time, base::Time>* request);
   void GetLoginsImpl(GenericRequest<webkit_glue::PasswordForm>* request);
-  void GetAllAutofillableLoginsImpl(WebDataRequest* request);
-  void GetAllLoginsImpl(WebDataRequest* request);
+  void GetAutofillableLoginsImpl(WebDataRequest* request);
+  void GetBlacklistLoginsImpl(WebDataRequest* request);
 #if defined(OS_WIN)
   void AddIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request);
   void RemoveIE7LoginImpl(GenericRequest<IE7PasswordInfo>* request);
