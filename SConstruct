@@ -711,7 +711,9 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                     CXX=os.getenv('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
                     LD=os.getenv('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
                     ASFLAGS=[],
-                    CCFLAGS=[],
+                    LIBPATH=['${LIB_DIR}',
+                             os.getenv('ARM_LIB_DIR', '').split()],
+                    CCFLAGS=['-march=armv6'],
                     LINKFLAGS=ARGUMENTS.get('ARM_LINKFLAGS', ''),
                     )
   # NOTE(pmarch): eliminate the need for this
