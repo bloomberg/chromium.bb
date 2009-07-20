@@ -194,14 +194,18 @@ void WindowWin::FrameTypeChanged() {
   // type.
   non_client_view_->UpdateFrame();
 
-  // We need to toggle the rendering policy of the DWM/glass frame as we change
-  // from opaque to glass. The logic of these values seems inverted to me, but
-  // it works, so I'm not going to complain.
-  DWMNCRENDERINGPOLICY policy =
-      non_client_view_->UseNativeFrame() ? DWMNCRP_ENABLED
-                                         : DWMNCRP_DISABLED;
-  DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
-                        &policy, sizeof(DWMNCRENDERINGPOLICY));
+  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+    // We need to toggle the rendering policy of the DWM/glass frame as we
+    // change from opaque to glass. "Non client rendering enabled" means that
+    // the DWM's glass non-client rendering is enabled, which is why
+    // DWMNCRP_ENABLED is used for the native frame case. _DISABLED means the
+    // DWM doesn't render glass, and so is used in the custom frame case.
+    DWMNCRENDERINGPOLICY policy =
+        non_client_view_->UseNativeFrame() ? DWMNCRP_ENABLED
+                                           : DWMNCRP_DISABLED;
+    DwmSetWindowAttribute(GetNativeView(), DWMWA_NCRENDERING_POLICY,
+                          &policy, sizeof(DWMNCRENDERINGPOLICY));
+  }
 
   // Send a frame change notification, since the non-client metrics have
   // changed.
