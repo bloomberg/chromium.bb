@@ -1,0 +1,51 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
+
+#include "chrome/browser/views/panels/panel_scroller_header.h"
+
+#include "app/gfx/canvas.h"
+#include "app/gfx/font.h"
+#include "app/resource_bundle.h"
+#include "base/string_util.h"
+#include "chrome/browser/views/panels/panel_scroller.h"
+
+PanelScrollerHeader::PanelScrollerHeader(PanelScroller* scroller)
+    : views::View(),
+      scroller_(scroller) {
+}
+
+PanelScrollerHeader::~PanelScrollerHeader() {
+}
+
+bool PanelScrollerHeader::OnMousePressed(const views::MouseEvent& event) {
+  return false;
+}
+
+bool PanelScrollerHeader::OnMouseDragged(const views::MouseEvent& event) {
+  return false;
+}
+
+void PanelScrollerHeader::OnMouseReleased(const views::MouseEvent& event,
+                                          bool canceled) {
+  scroller_->HeaderClicked(this);
+}
+
+gfx::Size PanelScrollerHeader::GetPreferredSize() {
+  return gfx::Size(size().width(), 18);
+}
+
+void PanelScrollerHeader::Paint(gfx::Canvas* canvas) {
+  // TODO(brettw) fill this out with real styling.
+  canvas->FillRectInt(0xFFFFFFFF, 0, 0, size().width(), size().height());
+  canvas->DrawLineInt(0xFFE6E6E6, 0, size().height() - 1,
+                      size().width(), size().height() - 1);
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Font font =
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
+  int font_top = 1;
+  canvas->DrawStringInt(UTF16ToWideHack(title_), font, 0xFF000000, 3, font_top,
+                        size().width(), size().height() - font_top);
+
+}
