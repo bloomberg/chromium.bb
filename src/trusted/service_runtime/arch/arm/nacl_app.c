@@ -37,7 +37,7 @@
 
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/sel_rt.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
 
 /*
  * Allocate ldt for app, without creating the main thread.

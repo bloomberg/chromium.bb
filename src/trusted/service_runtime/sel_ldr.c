@@ -61,7 +61,11 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
-#include "native_client/src/trusted/service_runtime/sel_rt.h"
+#if NACL_ARM
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
+#else
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
+#endif
 
 #include "native_client/src/trusted/service_runtime/springboard.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"

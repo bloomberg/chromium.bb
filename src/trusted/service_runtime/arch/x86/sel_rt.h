@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,8 @@
  * NaCl Secure Runtime
  */
 
-#ifndef __SEL_RT_H__
-#define __SEL_RT_H__    1
+#ifndef __ARCH_X86_SEL_RT_H__
+#define __ARCH_X86_SEL_RT_H__    1
 
 #include "native_client/src/include/portability.h"
 
@@ -65,29 +65,10 @@ uint32_t NaClGetEsp(void);
 
 uint32_t NaClGetEbx(void);
 
-/* TODO(petr): split this file into architecture specific ones */
-#if NACL_ARM
-
-uint32_t NaClGetSp(void);
-
-struct NaClThreadContext {
-uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, esp, lr, eip;
-          /* 0   4   8   c  10  14   18  1c   20  24   28 */
-};
-
-/*
- * A sanity check -- should be invoked in some early function, e.g.,
- * main, or something that main invokes early.
- */
-#define NACL_THREAD_CHECK do {                    \
-    CHECK(sizeof(struct NaClThreadContext)==44);  \
-  } while (0)
-
-#else
 /*
  * On a context switch through the syscall interface, not all
  * registers are saved.  We assume that C calling convention is used,
- * so %ecx and %edx are caller-saved and the NaCl service runtime do
+ * so %ecx and %edx are caller-saved and the NaCl service runtime does
  * not have to bother saving them; %eax (or %edx:%eax pair) should
  * have the return value, so its old value is also not saved.  (We
  * should, however, ensure that there is not an accidental covert
@@ -115,33 +96,16 @@ struct NaClThreadContext {
    */
 };
 
-/*
- * A sanity check -- should be invoked in some early function, e.g.,
- * main, or something that main invokes early.
- */
-#define NACL_THREAD_CHECK do {                    \
-    CHECK(sizeof(struct NaClThreadContext)==36);  \
-  } while (0)
-
-#endif /* NACL_ARM */
-
 struct NaClApp;  /* fwd */
 
-/* TODO(petr): split into two architecture dependant files */
-#if NACL_ARM
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          uintptr_t                 pc,
-                          uintptr_t                 sp,
-                          uint16_t                  r9);
-#else
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           uintptr_t                 eip,
                           uintptr_t                 esp,
                           uint16_t                  des_seg,
                           uint16_t                  gs,
                           uint16_t                  cs);
-#endif
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
-#endif
+#endif /* __ARCH_X86_SEL_RT_H__ */
+

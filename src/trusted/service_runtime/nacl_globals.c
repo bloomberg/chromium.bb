@@ -44,7 +44,11 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 /* LDT_ENTRIES */
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/sel_rt.h"
+#if NACL_ARM
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
+#else
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
+#endif
 
 
 struct NaClThreadContext    *nacl_user[LDT_ENTRIES] = {NULL};

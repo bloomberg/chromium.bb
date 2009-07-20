@@ -30,93 +30,40 @@
  */
 
 /*
- * NaCl Runtime.
+ * NaCl Secure Runtime
  */
 
+#ifndef __ARCH_ARM_SEL_RT_H__
+#define __ARCH_ARM_SEL_RT_H__    1
+
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
 
+uint32_t NaClGetSp(void);
 
-uint16_t NaClGetCs(void) {
-  uint16_t seg1;
+struct NaClThreadContext {
+uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, esp, lr, eip;
+          /* 0   4   8   c  10  14   18  1c   20  24   28 */
+};
 
-  __asm mov seg1, cs;
-  return seg1;
-}
+/*
+ * A sanity check -- should be invoked in some early function, e.g.,
+ * main, or something that main invokes early.
+ */
+/* TODO(petr): move this to platform-specific file,
+ * should be done together with splitting sel_ldr.c
+ */
+#define NACL_THREAD_CHECK do {                    \
+    CHECK(sizeof(struct NaClThreadContext) == 44);  \
+  } while (0)
 
-/* there is no SetCS -- this is done via far jumps/calls */
+struct NaClApp;  /* fwd */
 
-uint16_t NaClGetDs(void) {
-  uint16_t seg1;
+int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
+                          uintptr_t                 pc,
+                          uintptr_t                 sp,
+                          uint16_t                  r9);
 
-  __asm mov seg1, ds;
-  return seg1;
-}
+void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
+#endif /* __ARCH_ARM_SEL_RT_H__ */
 
-void NaClSetDs(uint16_t  seg1) {
-  __asm mov ds, seg1;
-}
-
-
-uint16_t NaClGetEs(void) {
-  uint16_t seg1;
-
-  __asm mov seg1, es;
-  return seg1;
-}
-
-
-void NaClSetEs(uint16_t  seg1) {
-  __asm mov es, seg1;
-}
-
-
-uint16_t NaClGetFs(void) {
-  uint16_t seg1;
-
-  __asm mov seg1, fs;
-  return seg1;
-}
-
-
-void NaClSetFs(uint16_t  seg1) {
-  __asm mov fs, seg1;
-}
-
-
-uint16_t NaClGetGs(void) {
-  uint16_t seg1;
-
-  __asm mov seg1, gs;
-  return seg1;
-}
-
-
-void NaClSetGs(uint16_t seg1) {
-  __asm mov gs, seg1;
-}
-
-
-uint16_t NaClGetSs(void) {
-  uint16_t seg1;
-
-  __asm mov seg1, ss;
-  return seg1;
-}
-
-
-uint32_t NaClGetEsp(void) {
-  uint32_t stack_ptr;
-
-  _asm mov stack_ptr, esp;
-  return stack_ptr;
-}
-
-
-uint32_t NaClGetEbx(void) {
-  uint32_t result;
-
-  _asm mov result, ebx;
-  return result;
-}

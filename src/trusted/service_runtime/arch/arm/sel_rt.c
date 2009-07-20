@@ -32,8 +32,8 @@
 /*
  * NaCl Secure Runtime
  */
-#include <string.h>
-#include "native_client/src/trusted/service_runtime/sel_rt.h"
+#include "native_client/src/include/portability_string.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
 
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
