@@ -269,7 +269,12 @@ class BrowserWindowGtk : public BrowserWindow,
 
   NotificationRegistrar registrar_;
 
+  // The position and size of the current window.
   gfx::Rect bounds_;
+
+  // The position and size of the non-maximized, non-fullscreen window.
+  gfx::Rect restored_bounds_;
+
   GdkWindowState state_;
 
   // The container for the titlebar + tab strip.

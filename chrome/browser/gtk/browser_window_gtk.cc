@@ -956,6 +956,8 @@ void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
     OnSizeChanged(bounds.width(), bounds.height());
 
   bounds_ = bounds;
+  if (!IsFullscreen() && !IsMaximized())
+    restored_bounds_ = bounds;
   SaveWindowPosition();
 }
 
@@ -1278,14 +1280,9 @@ void BrowserWindowGtk::UpdateCustomFrame() {
 }
 
 void BrowserWindowGtk::SaveWindowPosition() {
-  // Don't save the window position if it's in full screen mode because we
-  // don't want to restart the browser in full screen mode.
-  if (IsFullscreen())
-    return;
-
   // Browser::SaveWindowPlacement is used for session restore.
   if (browser_->ShouldSaveWindowPlacement())
-    browser_->SaveWindowPlacement(bounds_, IsMaximized());
+    browser_->SaveWindowPlacement(restored_bounds_, IsMaximized());
 
   // We also need to save the placement for startup.
   // This is a web of calls between views and delegates on Windows, but the
@@ -1300,10 +1297,10 @@ void BrowserWindowGtk::SaveWindowPosition() {
   // Note that we store left/top for consistency with Windows, but that we
   // *don't* obey them; we only use them for computing width/height.  See
   // comments in SetGeometryHints().
-  window_preferences->SetInteger(L"left", bounds_.x());
-  window_preferences->SetInteger(L"top", bounds_.y());
-  window_preferences->SetInteger(L"right", bounds_.right());
-  window_preferences->SetInteger(L"bottom", bounds_.bottom());
+  window_preferences->SetInteger(L"left", restored_bounds_.x());
+  window_preferences->SetInteger(L"top", restored_bounds_.y());
+  window_preferences->SetInteger(L"right", restored_bounds_.right());
+  window_preferences->SetInteger(L"bottom", restored_bounds_.bottom());
   window_preferences->SetBoolean(L"maximized", IsMaximized());
 }
 
