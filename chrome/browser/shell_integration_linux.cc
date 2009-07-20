@@ -4,7 +4,11 @@
 
 #include "chrome/browser/shell_integration.h"
 
+#include <fcntl.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <vector>
 
@@ -28,12 +32,26 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   argv.push_back("default-web-browser");
   argv.push_back(DESKTOP_APP_NAME);
 
-  int success_code;
-  base::ProcessHandle handle;
-  base::file_handle_mapping_vector no_files;
-  if (!base::LaunchApp(argv, no_files, false, &handle))
+  // xdg-settings internally runs xdg-mime, which uses mv to move newly-created
+  // files on top of originals after making changes to them. In the event that
+  // the original files are owned by another user (e.g. root, which can happen
+  // if they are updated within sudo), mv will prompt the user to confirm if
+  // standard input is a terminal (otherwise it just does it). So make sure it's
+  // not, to avoid locking everything up waiting for mv.
+  int devnull = open("/dev/null", O_RDONLY);
+  if (devnull < 0)
     return false;
+  base::file_handle_mapping_vector no_stdin;
+  no_stdin.push_back(std::make_pair(devnull, STDIN_FILENO));
 
+  base::ProcessHandle handle;
+  if (!base::LaunchApp(argv, no_stdin, false, &handle)) {
+    close(devnull);
+    return false;
+  }
+  close(devnull);
+
+  int success_code;
   base::WaitForExitCode(handle, &success_code);
   return success_code == EXIT_SUCCESS;
 }
