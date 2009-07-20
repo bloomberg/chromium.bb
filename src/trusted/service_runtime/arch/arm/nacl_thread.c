@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
+#include "native_client/src/trusted/service_runtime/nacl_assert.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 
@@ -59,23 +61,27 @@ uint16_t NaClAllocateThreadIdx(int type,
 }
 
 
-void NaClFreeThreadIdx(uint16_t id) {
-  if (id < LDT_ENTRIES)
-    nacl_user[id] = 0;
+void NaClFreeThreadIdx(struct NaClAppThread *natp) {
+  uint16_t idx = natp->user.r9;
+
+  if (idx < LDT_ENTRIES)
+    nacl_user[idx] = 0;
+  else ASSERT(0);
 }
 
 
-uint16_t NaClChangeThreadIdx(int32_t entry_number,
+uint16_t NaClChangeThreadIdx(struct NaClAppThread *natp,
                              int type,
                              int read_exec_only,
                              void* base_addr,
                              uint32_t size_in_bytes) {
   /* BUG(petr): not implemented */
+  ASSERT(0);
   return 0;
 }
 
 
-int16_t NaClGetThreadId(struct NaClAppThread  *natp) {
+int16_t NaClGetThreadIdx(struct NaClAppThread *natp) {
   return natp->user.r9;
 }
 

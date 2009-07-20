@@ -102,9 +102,13 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   NaClLog(4, "nap->code_seg_sel = 0x%02x\n", nap->code_seg_sel);
   NaClLog(4, "nap->data_seg_sel = 0x%02x\n", nap->data_seg_sel);
 #if NACL_ARM
+  /* TODO(petr): generalize NaClThreadContextCtor to make it platform
+   * independant
+   */
   NaClThreadContextCtor(&natp->user, usr_entry, usr_esp, gs);
   NaClLog(4, "natp->user.r9: 0x%02x\n", natp->user.r9);
 #else
+  /* TODO(petr): create platform dependant functions for logging */
   NaClThreadContextCtor(&natp->user, usr_entry, usr_esp,
                         nap->data_seg_sel, gs, nap->code_seg_sel);
   NaClLog(4, "natp->user.cs: 0x%02x\n", natp->user.cs);
@@ -147,7 +151,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 
   natp->thread_num = -1;  /* illegal index */
 
-  ldt_ix = NaClGetThreadId(natp);
+  ldt_ix = NaClGetThreadIdx(natp);
 
   nacl_thread[ldt_ix] = natp;
   nacl_user[ldt_ix] = &natp->user;
@@ -180,13 +184,7 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   (*natp->effp->vtbl->Dtor)(natp->effp);
   free(natp->effp);
   natp->effp = NULL;
-  /* BUG(petr): NaClFreeThreadIdx expects the value of a raw gs but not a
-   * threadIdx as in x86 implementation threadIdx == (gs >> 3).
-   *
-   * TODO(petr): fix NaClFreeThreadIdx invocation to make it architecture
-   * independent.
-   */
-  NaClFreeThreadIdx(natp->user.gs);
+  NaClFreeThreadIdx(natp);
   NaClCondVarDtor(&natp->cv);
   NaClMutexDtor(&natp->mu);
 }

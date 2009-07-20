@@ -52,23 +52,25 @@ uint16_t NaClAllocateThreadIdx(int type,
 }
 
 
-void NaClFreeThreadIdx(uint16_t idx) {
-  NaClLdtDeleteSelector(idx);
+void NaClFreeThreadIdx(struct NaClAppThread *natp) {
+  NaClLdtDeleteSelector(natp->user.gs);
 }
 
 
-uint16_t NaClChangeThreadIdx(int32_t entry_number,
+uint16_t NaClChangeThreadIdx(struct NaClAppThread *natp,
                              int type,
                              int read_exec_only,
                              void* base_addr,
                              uint32_t size_in_bytes) {
-  return NaClLdtChangeByteSelector(entry_number, type,
-                                   read_exec_only, base_addr,
+  return NaClLdtChangeByteSelector(natp->user.gs >> 3,
+                                   type,
+                                   read_exec_only,
+                                   base_addr,
                                    size_in_bytes);
 }
 
 
-int16_t NaClGetThreadId(struct NaClAppThread  *natp) {
+int16_t NaClGetThreadIdx(struct NaClAppThread *natp) {
   return natp->user.gs >> 3;
 }
 

@@ -43,15 +43,15 @@ uint16_t NaClAllocateThreadIdx(int type,
                                void *base_addr,
                                uint32_t size_in_bytes);
 
-void NaClFreeThreadIdx(uint16_t idx);
+void NaClFreeThreadIdx(struct NaClAppThread *natp);
 
-uint16_t NaClChangeThreadIdx(int32_t entry_number,
+uint16_t NaClChangeThreadIdx(struct NaClAppThread *natp,
                              int type,
                              int read_exec_only,
                              void* base_addr,
                              uint32_t size_in_bytes);
 
-uint16_t NaClGetThreadId(struct NaClAppThread  *natp);
+uint16_t NaClGetThreadIdx(struct NaClAppThread *natp);
 
 #endif /* SERVICE_RUNTIME_NACL_THREAD_H__ */
 

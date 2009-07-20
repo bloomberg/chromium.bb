@@ -121,7 +121,7 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
    * created (from some other running thread) we want to be sure that
    * any ldt-based lookups will not reach this dying thread's data.
    */
-  ldt_ix = NaClGetThreadId(natp);
+  ldt_ix = NaClGetThreadIdx(natp);
   nacl_sys[ldt_ix] = NULL;
   nacl_user[ldt_ix] = NULL;
   nacl_thread[ldt_ix] = NULL;
@@ -1955,7 +1955,7 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  if (0 == NaClChangeThreadIdx(NaClGetThreadId(natp),
+  if (0 == NaClChangeThreadIdx(natp,
                                NACL_LDT_DESCRIPTOR_DATA,
                                0,
                                (void *) sysaddr,
