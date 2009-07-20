@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
@@ -217,6 +218,10 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
+    return NULL;
+  }
+
+  virtual ExtensionMessageService* GetExtensionMessageService() {
     return NULL;
   }
 
@@ -499,6 +504,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       &ProfileImpl::EnsureSessionServiceCreated);
 
   extension_process_manager_.reset(new ExtensionProcessManager(this));
+  extension_message_service_ = new ExtensionMessageService(this);
 
   PrefService* prefs = GetPrefs();
   prefs->AddPrefObserver(prefs::kSpellCheckDictionary, this);
@@ -663,6 +669,8 @@ ProfileImpl::~ProfileImpl() {
   history_service_ = NULL;
   bookmark_bar_model_.reset();
 
+  extension_message_service_->ProfileDestroyed();
+
   MarkAsCleanShutdown();
 }
 
@@ -713,6 +721,10 @@ UserScriptMaster* ProfileImpl::GetUserScriptMaster() {
 
 ExtensionProcessManager* ProfileImpl::GetExtensionProcessManager() {
   return extension_process_manager_.get();
+}
+
+ExtensionMessageService* ProfileImpl::GetExtensionMessageService() {
+  return extension_message_service_.get();
 }
 
 SSLHostState* ProfileImpl::GetSSLHostState() {

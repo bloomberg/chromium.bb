@@ -17,6 +17,7 @@ var chrome = chrome || {};
   native function GetViews();
   native function GetChromeHidden();
   native function GetNextRequestId();
+  native function OpenChannelToTab();
 
   if (!chrome)
     chrome = {};
@@ -304,6 +305,17 @@ var chrome = chrome || {};
     chrome.types.optFun
   ];
 
+  chrome.tabs.connect = function(tabId, opt_name) {
+    validate(arguments, arguments.callee.params);
+    var portId = OpenChannelToTab(tabId, chrome.extension.id_, opt_name || "");
+    return chromeHidden.Port.createPort(portId, opt_name);
+  };
+
+  chrome.tabs.connect.params = [
+    chrome.types.pInt,
+    chrome.types.optStr
+  ];
+
   // Sends ({Tab}).
   // Will *NOT* be followed by tab-attached - it is implied.
   // *MAY* be followed by tab-selection-changed.
@@ -531,7 +543,7 @@ var chrome = chrome || {};
     chrome.extension = new chrome.Extension(extensionId);
     // TODO(mpcomplete): self.onConnect is deprecated.  Remove it at 1.0.
     // http://code.google.com/p/chromium/issues/detail?id=16356
-    chrome.self.onConnect = new chrome.Event("channel-connect:" + extensionId);
+    chrome.self.onConnect = chrome.extension.onConnect;
 
     setupPageActionEvents(extensionId);
   });

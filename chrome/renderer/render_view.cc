@@ -38,6 +38,7 @@
 #include "chrome/renderer/devtools_client.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "chrome/renderer/media/buffered_data_source.h"
@@ -415,6 +416,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnPopupNotificationVisibilityChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_ExtensionResponse, OnExtensionResponse)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtensionMessageInvoke,
+                        OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedNode, OnClearFocusedNode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableIntrinsicWidthChangedMode,
@@ -1471,7 +1474,7 @@ void RenderView::DocumentElementAvailable(WebFrame* frame) {
 }
 
 void RenderView::DidCreateScriptContextForFrame(WebFrame* webframe) {
-  EventBindings::HandleContextCreated(webframe);
+  EventBindings::HandleContextCreated(webframe, false);
 }
 
 void RenderView::DidDestroyScriptContextForFrame(WebFrame* webframe) {
@@ -1479,7 +1482,7 @@ void RenderView::DidDestroyScriptContextForFrame(WebFrame* webframe) {
 }
 
 void RenderView::DidCreateIsolatedScriptContext(WebFrame* webframe) {
-  EventBindings::HandleContextCreated(webframe);
+  EventBindings::HandleContextCreated(webframe, true);
 }
 
 WebNavigationPolicy RenderView::PolicyForNavigationAction(
@@ -2853,6 +2856,11 @@ void RenderView::OnExtensionResponse(int request_id,
                                      const std::string& error) {
   ExtensionProcessBindings::HandleResponse(
       request_id, success, response, error);
+}
+
+void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
+                                          const ListValue& args) {
+  RendererExtensionBindings::Invoke(function_name, args, this);
 }
 
 // Dump all load time histograms.

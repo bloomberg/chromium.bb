@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "chrome/common/ipc_message.h"
 
 class AutomationProvider;
@@ -66,7 +67,7 @@ class ExtensionPortContainer : public IPC::Message::Sender {
   AutomationProvider* automation_;
 
   // The extension message service.
-  ExtensionMessageService* service_;
+  scoped_refptr<ExtensionMessageService> service_;
 
   // Our assigned port id.
   int port_id_;

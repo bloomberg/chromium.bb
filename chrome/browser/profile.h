@@ -31,6 +31,7 @@ class ChromeURLRequestContext;
 class DownloadManager;
 class Extension;
 class ExtensionProcessManager;
+class ExtensionMessageService;
 class ExtensionsService;
 class HistoryService;
 class NavigationController;
@@ -131,6 +132,10 @@ class Profile {
   // Retrieves a pointer to the ExtensionProcessManager associated with this
   // profile.  The instance is created at startup.
   virtual ExtensionProcessManager* GetExtensionProcessManager() = 0;
+
+  // Retrieves a pointer to the ExtensionMessageService associated with this
+  // profile.  The instance is created at startup.
+  virtual ExtensionMessageService* GetExtensionMessageService() = 0;
 
   // Retrieves a pointer to the SSLHostState associated with this profile.
   // The SSLHostState is lazily created the first time that this method is
@@ -335,6 +340,7 @@ class ProfileImpl : public Profile,
   virtual net::ForceTLSState* GetForceTLSState();
   virtual ExtensionsService* GetExtensionsService();
   virtual ExtensionProcessManager* GetExtensionProcessManager();
+  virtual ExtensionMessageService* GetExtensionMessageService();
   virtual HistoryService* GetHistoryService(ServiceAccessType sat);
   virtual WebDataService* GetWebDataService(ServiceAccessType sat);
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
@@ -413,6 +419,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<ExtensionsService> extensions_service_;
   scoped_refptr<UserScriptMaster> user_script_master_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
+  scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<SSLHostState> ssl_host_state_;
   scoped_ptr<net::ForceTLSState> force_tls_state_;
   scoped_ptr<PrefService> prefs_;

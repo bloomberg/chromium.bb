@@ -86,6 +86,9 @@ class TestingProfile : public Profile {
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
     return NULL;
   }
+  virtual ExtensionMessageService* GetExtensionMessageService() {
+    return NULL;
+  }
   virtual SSLHostState* GetSSLHostState() {
     return NULL;
   }

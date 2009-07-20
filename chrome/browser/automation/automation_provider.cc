@@ -2730,8 +2730,10 @@ bool AutomationProvider::InterceptBrowserEventMessageFromExternalHost(
     return false;
   }
 
-  ExtensionMessageService::GetInstance(profile()->GetRequestContext())->
-      DispatchEventToRenderers(event_name.c_str(), json_args);
+  if (profile()->GetExtensionMessageService()) {
+    profile()->GetExtensionMessageService()->
+        DispatchEventToRenderers(event_name.c_str(), json_args);
+  }
 
   return true;
 }

@@ -400,7 +400,7 @@ void RenderThread::EnsureWebKitInitialized() {
 
 void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
                                             const ListValue& args) {
-  RendererExtensionBindings::Invoke(function_name, args);
+  RendererExtensionBindings::Invoke(function_name, args, NULL);
 }
 
 void RenderThread::OnPurgePluginListCache() {

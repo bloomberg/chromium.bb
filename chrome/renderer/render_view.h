@@ -47,6 +47,7 @@ class DevToolsAgent;
 class DevToolsClient;
 class FilePath;
 class GURL;
+class ListValue;
 class NavigationState;
 class PrintWebViewHelper;
 class WebFrame;
@@ -543,6 +544,9 @@ class RenderView : public RenderWidget,
       const webkit_glue::WebAccessibility::InParams& in_params,
       webkit_glue::WebAccessibility::OutParams* out_params);
   void OnClearAccessibilityInfo(int acc_obj_id, bool clear_all);
+
+  void OnExtensionMessageInvoke(const std::string& function_name,
+                                const ListValue& args);
 
   void OnMoveOrResizeStarted();
 

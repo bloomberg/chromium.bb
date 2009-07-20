@@ -68,6 +68,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetViews);
     } else if (name->Equals(v8::String::New("GetNextRequestId"))) {
       return v8::FunctionTemplate::New(GetNextRequestId);
+    } else if (name->Equals(v8::String::New("OpenChannelToTab"))) {
+      return v8::FunctionTemplate::New(OpenChannelToTab);
     } else if (name->Equals(v8::String::New("GetCurrentPageActions"))) {
       return v8::FunctionTemplate::New(GetCurrentPageActions);
     } else if (name->Equals(v8::String::New("StartRequest"))) {
@@ -108,6 +110,28 @@ class ExtensionImpl : public ExtensionBase {
   static v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args) {
     static int next_request_id = 0;
     return v8::Integer::New(next_request_id++);
+  }
+
+  // Creates a new messaging channel to the tab with the given ID.
+  static v8::Handle<v8::Value> OpenChannelToTab(const v8::Arguments& args) {
+    // Get the current RenderView so that we can send a routed IPC message from
+    // the correct source.
+    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+    if (!renderview)
+      return v8::Undefined();
+
+    if (args.Length() >= 3 && args[0]->IsInt32() && args[1]->IsString() &&
+        args[2]->IsString()) {
+      int tab_id = args[0]->Int32Value();
+      std::string extension_id = *v8::String::Utf8Value(args[1]->ToString());
+      std::string channel_name = *v8::String::Utf8Value(args[2]->ToString());
+      int port_id = -1;
+      renderview->Send(new ViewHostMsg_OpenChannelToTab(
+          renderview->routing_id(), tab_id, extension_id, channel_name,
+          &port_id));
+      return v8::Integer::New(port_id);
+    }
+    return v8::Undefined();
   }
 
   static v8::Handle<v8::Value> GetCurrentPageActions(

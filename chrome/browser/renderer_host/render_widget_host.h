@@ -115,7 +115,8 @@ struct ViewHostMsg_ShowPopup_Params;
 // anything else. When the view is live, these messages are forwarded to it by
 // the RenderWidgetHost's IPC message map.
 //
-class RenderWidgetHost : public IPC::Channel::Listener {
+class RenderWidgetHost : public IPC::Channel::Listener,
+                         public IPC::Channel::Sender {
  public:
   // An interface that gets called whenever a paint occurs.
   // Used in performance tests.

@@ -65,11 +65,16 @@ struct ContextInfo {
   // was injected in.  This is empty if the context is not a content script.
   v8::Persistent<v8::Context> parent_context;
 
+  // The RenderView that this context belongs to.  This is not guaranteed to be
+  // a valid pointer, and is used for comparisons only.  Do not dereference.
+  RenderView* render_view;
+
   ContextInfo(v8::Persistent<v8::Context> context,
               const std::string& extension_id,
-              v8::Persistent<v8::Context> parent_context)
+              v8::Persistent<v8::Context> parent_context,
+              RenderView* render_view)
       : context(context), extension_id(extension_id),
-        parent_context(parent_context) {}
+        parent_context(parent_context), render_view(render_view) {}
 };
 typedef std::list< linked_ptr<ContextInfo> > ContextList;
 

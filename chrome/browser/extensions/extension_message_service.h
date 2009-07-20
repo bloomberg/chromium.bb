@@ -11,36 +11,40 @@
 
 #include "base/linked_ptr.h"
 #include "base/lock.h"
+#include "base/ref_counted.h"
 #include "chrome/common/ipc_message.h"
 #include "chrome/common/notification_registrar.h"
 
 class MessageLoop;
+class Profile;
 class RenderProcessHost;
 class ResourceMessageFilter;
 class URLRequestContext;
 
 // This class manages message and event passing between renderer processes.
-// It maintains a list of processes that are listening to events (including
-// messaging events), as well as a set of open channels.
-// 
+// It maintains a list of processes that are listening to events and a set of
+// open channels.
+//
 // Messaging works this way:
 // - An extension-owned script context (like a toolstrip or a content script)
-// adds an event listener to the "onConnect" event.  We keep track here of a
-// list of "listeners" that registered interest in receiving extension
-// messages.
-// - Another context calls "connect()" to open a channel to every listener
-// owned by the same extension.  This is a broadcast event, so every listener
-// will get notified.
+// adds an event listener to the "onConnect" event.
+// - Another context calls "extension.connect()" to open a channel to the
+// extension process, or an extension context calls "tabs.connect(tabId)" to
+// open a channel to the content scripts for the given tab.  The EMS notifies
+// the target process/tab, which then calls the onConnect event in every
+// context owned by the connecting extension in that process/tab.
 // - Once the channel is established, either side can call postMessage to send
 // a message to the opposite side of the channel, which may have multiple
 // listeners.
 //
 // Terminology:
-// channel: connection between two ports (one side of which can have multiple
-// listeners)
-// port: one or more IPC::Message::Sender interfaces through which we
-// communicate to process(es).  These are generally RenderProcessHosts.
-class ExtensionMessageService : public NotificationObserver {
+// channel: connection between two ports
+// port: an IPC::Message::Sender interface and an optional routing_id (in the
+// case that the port is a tab).  The Sender is usually either a
+// RenderProcessHost or a RenderViewHost.
+class ExtensionMessageService :
+    public base::RefCountedThreadSafe<ExtensionMessageService>,
+    public NotificationObserver {
  public:
   // Javascript function name constants.
   static const char kDispatchOnConnect[];
@@ -49,16 +53,18 @@ class ExtensionMessageService : public NotificationObserver {
   static const char kDispatchEvent[];
   static const char kDispatchError[];
 
-  // Returns the message service for the given context.  Messages can only
-  // be sent within a single context.
-  static ExtensionMessageService* GetInstance(URLRequestContext* context);
-
-  ExtensionMessageService();
+  // A messaging channel.  Note that the opening port can be the same as the
+  // receiver, if an extension toolstrip wants to talk to its tab (for example).
+  struct MessageChannel;
+  struct MessagePort;
 
   // --- UI thread only:
 
-  // UI-thread specific initialization.  Does nothing if called more than once.
-  void Init();
+  ExtensionMessageService(Profile* profile);
+  ~ExtensionMessageService();
+
+  // Notification that our owning profile is going away.
+  void ProfileDestroyed();
 
   // Add or remove |render_process_pid| as a listener for |event_name|.
   void AddEventListener(std::string event_name, int render_process_id);
@@ -83,11 +89,6 @@ class ExtensionMessageService : public NotificationObserver {
                                        const std::string& extension_id,
                                        IPC::Message::Sender* source);
 
-  // NotificationObserver interface.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
-
   // --- IO thread only:
 
   // Given an extension's ID, opens a channel between the given renderer "port"
@@ -99,18 +100,16 @@ class ExtensionMessageService : public NotificationObserver {
   int OpenChannelToExtension(int routing_id, const std::string& extension_id,
                              const std::string& channel_name,
                              ResourceMessageFilter* source);
-  
- private:
-  // A messaging channel.  Since messages are broadcast, the channel can have
-  // multiple processes listening for messages.  Note that the opening port
-  // can also be among the receivers, if an extension toolstrip wants to talk
-  // to its tab (for example).
-  struct MessageChannel {
-    typedef std::set<IPC::Message::Sender*> Ports;
-    Ports opener;  // only 1 opener, but we use a set to simplify logic
-    Ports receivers;
-  };
 
+  // Same as above, but opens a channel to the tab with the given ID.  Messages
+  // are restricted to that tab, so if there are multiple tabs in that process,
+  // only the targeted tab will receive messages.
+  int OpenChannelToTab(int routing_id, int tab_id, 
+                       const std::string& extension_id,
+                       const std::string& channel_name,
+                       ResourceMessageFilter* source);
+
+ private:
   // A map of channel ID to its channel object.
   typedef std::map<int, linked_ptr<MessageChannel> > MessageChannelMap;
 
@@ -127,15 +126,30 @@ class ExtensionMessageService : public NotificationObserver {
 
   // Handles channel creation and notifies the destinations that a channel was
   // opened.
-  void OpenChannelOnUIThread(int source_routing_id,
-      int source_port_id, int source_process_id,
-      const std::string& extension_id, const std::string& channel_name);
+  void OpenChannelToExtensionOnUIThread(
+    int source_process_id, int source_routing_id, int receiver_port_id,
+    const std::string& extension_id, const std::string& channel_name);
+
+  void OpenChannelToTabOnUIThread(
+    int source_process_id, int source_routing_id, int receiver_port_id,
+    int tab_id, const std::string& extension_id,
+    const std::string& channel_name);
 
   // Common between OpenChannelOnUIThread and OpenAutomationChannelToExtension.
   void OpenChannelOnUIThreadImpl(
-    int source_routing_id, int source_port_id, int source_process_id,
-    IPC::Message::Sender* source, const std::string& extension_id,
-    const std::string& channel_name);
+    IPC::Message::Sender* source, int source_process_id, int source_routing_id,
+    const MessagePort& receiver, int receiver_port_id,
+    const std::string& extension_id, const std::string& channel_name);
+
+  // NotificationObserver interface.
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details);
+
+  // An IPC sender that might be in our list of channels has closed.
+  void OnSenderClosed(IPC::Message::Sender* sender);
+
+  Profile* profile_;
 
   NotificationRegistrar registrar_;
 
@@ -147,9 +161,6 @@ class ExtensionMessageService : public NotificationObserver {
   ListenerMap listeners_;
 
   // --- UI or IO thread:
-
-  // True if Init has been called.
-  bool initialized_;
 
   // For generating unique channel IDs.
   int next_port_id_;

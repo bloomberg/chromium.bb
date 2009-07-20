@@ -963,17 +963,22 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
 
 void BrowserRenderProcessHost::OnExtensionAddListener(
     const std::string& event_name) {
-  ExtensionMessageService::GetInstance(profile()->GetRequestContext())->
-      AddEventListener(event_name, pid());
+  if (profile()->GetExtensionMessageService()) {
+    profile()->GetExtensionMessageService()->AddEventListener(event_name,
+                                                              pid());
+  }
 }
 
 void BrowserRenderProcessHost::OnExtensionRemoveListener(
     const std::string& event_name) {
-  ExtensionMessageService::GetInstance(profile()->GetRequestContext())->
-      RemoveEventListener(event_name, pid());
+  if (profile()->GetExtensionMessageService()) {
+    profile()->GetExtensionMessageService()->RemoveEventListener(event_name,
+                                                                 pid());
+  }
 }
 
 void BrowserRenderProcessHost::OnExtensionCloseChannel(int port_id) {
-  ExtensionMessageService::GetInstance(profile()->GetRequestContext())->
-      CloseChannel(port_id);
+  if (profile()->GetExtensionMessageService()) {
+    profile()->GetExtensionMessageService()->CloseChannel(port_id);
+  }
 }

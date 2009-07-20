@@ -154,8 +154,9 @@ v8::Extension* RendererExtensionBindings::Get() {
 }
 
 void RendererExtensionBindings::Invoke(const std::string& function_name,
-                                       const ListValue& args) {
+                                       const ListValue& args,
+                                       RenderView* renderview) {
   v8::HandleScope handle_scope;
   std::vector< v8::Handle<v8::Value> > argv = ListValueToV8(args);
-  EventBindings::CallFunction(function_name, argv.size(), &argv[0]);
+  EventBindings::CallFunction(function_name, argv.size(), &argv[0], renderview);
 }

@@ -14,6 +14,8 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/renderer_resources.h"
+#include "webkit/api/public/WebDataSource.h"
+#include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/webframe.h"
 
 using bindings_utils::CallFunctionInContext;
@@ -29,6 +31,7 @@ namespace {
 
 // Keep a local cache of RenderThread so that we can mock it out for unit tests.
 static RenderThreadBase* render_thread = NULL;
+static bool in_unit_tests = false;
 
 // Set to true if these bindings are registered.  Will be false when extensions
 // are disabled.
@@ -111,6 +114,7 @@ v8::Extension* EventBindings::Get() {
 // static
 void EventBindings::SetRenderThread(RenderThreadBase* thread) {
   render_thread = thread;
+  in_unit_tests = true;
 }
 
 // static
@@ -150,12 +154,17 @@ static void HandleContextDestroyed(ContextList::iterator context_iter,
   (*context_iter)->context.ClearWeak();
   (*context_iter)->context.Dispose();
   (*context_iter)->context.Clear();
+
+  if (!(*context_iter)->parent_context.IsEmpty()) {
+    (*context_iter)->parent_context.Dispose();
+    (*context_iter)->parent_context.Clear();
+  }
+
   GetContexts().erase(context_iter);
 }
 
 static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
-                                         void*)
-{
+                                         void*) {
   for (ContextList::iterator it = GetContexts().begin();
        it != GetContexts().end(); ++it) {
     if ((*it)->context == context) {
@@ -167,7 +176,7 @@ static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
   NOTREACHED();
 }
 
-void EventBindings::HandleContextCreated(WebFrame* frame) {
+void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   if (!bindings_registered)
     return;
 
@@ -178,26 +187,46 @@ void EventBindings::HandleContextCreated(WebFrame* frame) {
   DCHECK(!context.IsEmpty());
   DCHECK(bindings_utils::FindContext(context) == contexts.end());
 
-  GURL url = frame->GetView()->GetMainFrame()->GetURL();
+  // Figure out the URL for the toplevel frame.  If the top frame is loading,
+  // use its provisional URL, since we get this notification before commit.
+  WebFrame* main_frame = frame->GetView()->GetMainFrame();
+  WebKit::WebDataSource* ds = main_frame->GetProvisionalDataSource();
+  if (!ds)
+    ds = main_frame->GetDataSource();
+  GURL url = ds->request().url();
   std::string extension_id;
-  if (url.SchemeIs(chrome::kExtensionScheme))
+  if (url.SchemeIs(chrome::kExtensionScheme)) {
     extension_id = url.host();
+  } else if (!content_script) {
+    // This context is a regular non-extension web page.  Ignore it.  We only
+    // care about content scripts and extension frames.
+    // (Unless we're in unit tests, in which case we don't care what the URL
+    // is).
+    DCHECK(frame_context == context);
+    if (!in_unit_tests)
+      return;
+  }
 
   v8::Persistent<v8::Context> persistent_context =
       v8::Persistent<v8::Context>::New(context);
   v8::Persistent<v8::Context> parent_context;
 
-  if (frame_context != context) {
-    // The new context doesn't belong to the frame: it's a content script.
-    DCHECK(bindings_utils::FindContext(frame_context) != contexts.end());
+  if (content_script) {
+    DCHECK(frame_context != context);
+
     parent_context = v8::Persistent<v8::Context>::New(frame_context);
     // Content script contexts can get GCed before their frame goes away, so
     // set up a GC callback.
     persistent_context.MakeWeak(NULL, &ContextWeakReferenceCallback);
   }
 
+  RenderView* render_view = NULL;
+  if (frame->GetView() && frame->GetView()->GetDelegate())
+    render_view = static_cast<RenderView*>(frame->GetView()->GetDelegate());
+
   contexts.push_back(linked_ptr<ContextInfo>(
-      new ContextInfo(persistent_context, extension_id, parent_context)));
+      new ContextInfo(persistent_context, extension_id, parent_context,
+                      render_view)));
 
   v8::Handle<v8::Value> argv[1];
   argv[0] = v8::String::New(extension_id.c_str());
@@ -214,15 +243,18 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
   DCHECK(!context.IsEmpty());
 
   ContextList::iterator context_iter = bindings_utils::FindContext(context);
-  DCHECK(context_iter != GetContexts().end());
-  ::HandleContextDestroyed(context_iter, true);
+  if (context_iter != GetContexts().end())
+    ::HandleContextDestroyed(context_iter, true);
 }
 
 // static
 void EventBindings::CallFunction(const std::string& function_name,
-                                 int argc, v8::Handle<v8::Value>* argv) {
+                                 int argc, v8::Handle<v8::Value>* argv,
+                                 RenderView* render_view) {
   for (ContextList::iterator it = GetContexts().begin();
        it != GetContexts().end(); ++it) {
+    if (render_view && render_view != (*it)->render_view)
+      continue;
     CallFunctionInContext((*it)->context, function_name, argc, argv);
   }
 }

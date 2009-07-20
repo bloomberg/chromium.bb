@@ -147,6 +147,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       request_context_(profile->GetRequestContext()),
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
+      extensions_message_service_(profile->GetExtensionMessageService()),
       profile_(profile),
       render_widget_helper_(render_widget_helper),
       audio_renderer_host_(audio_renderer_host),
@@ -334,6 +335,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
                           OnOpenChannelToExtension)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToTab,
+                          OnOpenChannelToTab)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CloseIdleConnections,
                           OnCloseIdleConnections)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode,
@@ -901,8 +904,23 @@ void ResourceMessageFilter::OnFreeTransportDIB(
 void ResourceMessageFilter::OnOpenChannelToExtension(
     int routing_id, const std::string& extension_id,
     const std::string& channel_name, int* port_id) {
-  *port_id = ExtensionMessageService::GetInstance(request_context_.get())->
-      OpenChannelToExtension(routing_id, extension_id, channel_name, this);
+  if (extensions_message_service_.get()) {
+    *port_id = extensions_message_service_->
+        OpenChannelToExtension(routing_id, extension_id, channel_name, this);
+  } else {
+    *port_id = -1;
+  }
+}
+
+void ResourceMessageFilter::OnOpenChannelToTab(
+    int routing_id, int tab_id, const std::string& extension_id,
+    const std::string& channel_name, int* port_id) {
+  if (extensions_message_service_.get()) {
+    *port_id = extensions_message_service_->
+        OpenChannelToTab(routing_id, tab_id, extension_id, channel_name, this);
+  } else {
+    *port_id = -1;
+  }
 }
 
 bool ResourceMessageFilter::CheckBenchmarkingEnabled() {

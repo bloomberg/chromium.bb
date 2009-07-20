@@ -552,11 +552,14 @@ IPC_BEGIN_MESSAGES(View)
                       std::string /* response */,
                       std::string /* error */)
 
-  // Call a javascript function in every registered context in this process.
+  // This message is optionally routed.  If used as a control message, it
+  // will call a javascript function in every registered context in the
+  // target process.  If routed, it will be restricted to the contexts that
+  // are part of the target RenderView.
   // |args| is a list of primitive Value types that are passed to the function.
-  IPC_MESSAGE_CONTROL2(ViewMsg_ExtensionMessageInvoke,
-                       std::string /* function_name */,
-                       ListValue /* args */)
+  IPC_MESSAGE_ROUTED2(ViewMsg_ExtensionMessageInvoke,
+                      std::string /* function_name */,
+                      ListValue /* args */)
 
   // Tell the renderer process all known extension function names.
   IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetFunctionNames,
@@ -1428,11 +1431,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::string /* channel_name */,
                               int /* port_id */)
 
-  // Get a port handle to the given tab's process.  The handle can be used for
-  // sending messages to the extension.
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_OpenChannelToTab,
+  // Get a port handle to the given tab.  The handle can be used for sending
+  // messages to the extension.
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_OpenChannelToTab,
                               int /* routing_id */,
                               int /* tab_id */,
+                              std::string /* extension_id */,
+                              std::string /* channel_name */,
                               int /* port_id */)
 
   // Send a message to an extension process.  The handle is the value returned

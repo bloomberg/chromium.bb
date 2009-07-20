@@ -189,13 +189,10 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     ALLOW_THIS_IN_INITIALIZER_LIST(peer_(new Peer(this))) {
   all_instances()->insert(this);
 
-  // Ensure the message service is initialized.
-  ExtensionMessageService::GetInstance(profile()->GetRequestContext())->Init();
-
   // Notify the ExtensionProcessManager that the view was created.
   ExtensionProcessManager* epm = profile()->GetExtensionProcessManager();
   epm->RegisterExtensionProcess(extension_id(),
-                              render_view_host->process()->pid());
+                                render_view_host->process()->pid());
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {

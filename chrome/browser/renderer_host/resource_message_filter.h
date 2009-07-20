@@ -33,6 +33,7 @@ class AppCacheDispatcherHost;
 class AudioRendererHost;
 class Clipboard;
 class DOMStorageDispatcherHost;
+class ExtensionMessageService;
 class Profile;
 class RenderWidgetHelper;
 class SpellChecker;
@@ -220,6 +221,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   void OnOpenChannelToExtension(int routing_id, const std::string& extension_id,
                                 const std::string& channel_name, int* port_id);
+  void OnOpenChannelToTab(int routing_id, int tab_id,
+                          const std::string& extension_id,
+                          const std::string& channel_name, int* port_id);
 
   void OnCloseIdleConnections();
   void OnSetCacheMode(bool enabled);
@@ -279,7 +283,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // A request context specific for media resources.
   scoped_refptr<URLRequestContext> media_request_context_;
 
+  // A request context that holds a cookie store for chrome-extension URLs.
   scoped_refptr<URLRequestContext> extensions_request_context_;
+
+  // Used for routing extension messages.
+  scoped_refptr<ExtensionMessageService> extensions_message_service_;
 
   // A pointer to the profile associated with this filter.
   //

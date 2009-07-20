@@ -10,7 +10,7 @@
 #include <string>
 
 class ListValue;
-class RenderThreadBase;
+class RenderView;
 
 // This class adds extension-related javascript bindings to a renderer.  It is
 // used by both web renderers and extension processes.
@@ -23,7 +23,8 @@ class RendererExtensionBindings {
   static v8::Extension* Get();
 
   // Call the given javascript function with the specified arguments.
-  static void Invoke(const std::string& function_name, const ListValue& args);
+  static void Invoke(const std::string& function_name, const ListValue& args,
+                     RenderView* renderview);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_RENDERER_EXTENSION_BINDINGS_H_

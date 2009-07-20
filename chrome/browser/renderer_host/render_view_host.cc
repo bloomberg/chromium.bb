@@ -1555,9 +1555,10 @@ void RenderViewHost::SendExtensionResponse(int request_id, bool success,
 
 void RenderViewHost::OnExtensionPostMessage(
     int port_id, const std::string& message) {
-  URLRequestContext* context = process()->profile()->GetRequestContext();
-  ExtensionMessageService::GetInstance(context)->
-      PostMessageFromRenderer(port_id, message);
+  if (process()->profile()->GetExtensionMessageService()) {
+    process()->profile()->GetExtensionMessageService()->
+        PostMessageFromRenderer(port_id, message);
+  }
 }
 
 void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {

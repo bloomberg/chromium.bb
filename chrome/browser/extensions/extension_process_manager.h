@@ -21,6 +21,7 @@ class ExtensionView;
 #endif
 class GURL;
 class Profile;
+class RenderProcessHost;
 class SiteInstance;
 
 // Manages dynamic state of running Chromium extensions.  There is one instance
@@ -45,12 +46,16 @@ class ExtensionProcessManager : public NotificationObserver {
   // Returns the SiteInstance that the given URL belongs to.
   SiteInstance* GetSiteInstanceForURL(const GURL& url);
 
-  // Register an extension process by |extension_id| and specifying which
+  // Registers an extension process by |extension_id| and specifying which
   // |process_id| it belongs to.
-  void RegisterExtensionProcess(std::string extension_id, int process_id);
+  void RegisterExtensionProcess(const std::string& extension_id,
+                                int process_id);
 
-  // Unregister an extension process with specified |process_id|.
+  // Unregisters an extension process with specified |process_id|.
   void UnregisterExtensionProcess(int process_id);
+
+  // Returns the process that the extension with the given ID is running in.
+  RenderProcessHost* GetExtensionProcess(const std::string& extension_id);
 
   // NotificationObserver:
   virtual void Observe(NotificationType type,

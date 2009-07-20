@@ -85,8 +85,10 @@ ExtensionBrowserEventRouter* ExtensionBrowserEventRouter::GetInstance() {
 static void DispatchEvent(Profile* profile,
                           const char* event_name,
                           const std::string json_args) {
-  ExtensionMessageService::GetInstance(profile->GetRequestContext())->
-      DispatchEventToRenderers(event_name, json_args);
+  if (profile->GetExtensionMessageService()) {
+    profile->GetExtensionMessageService()->
+        DispatchEventToRenderers(event_name, json_args);
+  }
 }
 
 static void DispatchSimpleBrowserEvent(Profile* profile,

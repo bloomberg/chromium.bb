@@ -25,8 +25,7 @@ ExtensionPortContainer::ExtensionPortContainer(AutomationProvider* automation,
                                                int tab_handle) :
     automation_(automation), service_(NULL), port_id_(-1),
     tab_handle_(tab_handle) {
-  URLRequestContext* context = automation_->profile()->GetRequestContext();
-  service_ = ExtensionMessageService::GetInstance(context);
+  service_ = automation_->profile()->GetExtensionMessageService();;
   DCHECK(service_);
 }
 

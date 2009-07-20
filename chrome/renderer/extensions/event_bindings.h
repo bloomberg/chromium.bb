@@ -10,6 +10,7 @@
 #include <string>
 
 class RenderThreadBase;
+class RenderView;
 class WebFrame;
 
 // This class deals with the javascript bindings related to Event objects.
@@ -23,14 +24,16 @@ class EventBindings {
   static RenderThreadBase* GetRenderThread();
 
   // Handle a script context coming / going away.
-  static void HandleContextCreated(WebFrame* frame);
+  static void HandleContextCreated(WebFrame* frame, bool content_script);
   static void HandleContextDestroyed(WebFrame* frame);
 
-  // Calls the given function in each registered context which is listening
-  // for events.  See comments on bindings_utils::CallFunctionInContext for
-  // more details.
+  // Calls the given function in each registered context which is listening for
+  // events.  If render_view is non-NULL, only call the function in contexts
+  // belonging to that view.  See comments on
+  // bindings_utils::CallFunctionInContext for more details.
   static void CallFunction(const std::string& function_name, int argc,
-                           v8::Handle<v8::Value>* argv);
+                           v8::Handle<v8::Value>* argv,
+                           RenderView* render_view);
 };
 
 #endif  // CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_

@@ -85,7 +85,7 @@ ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
 }
 
 void ExtensionProcessManager::RegisterExtensionProcess(
-    std::string extension_id, int process_id) {
+    const std::string& extension_id, int process_id) {
   ProcessIDMap::const_iterator it = process_ids_.find(extension_id);
   if (it != process_ids_.end() && (*it).second == process_id)
     return;
@@ -115,6 +115,17 @@ void ExtensionProcessManager::UnregisterExtensionProcess(int process_id) {
     else
       ++it;
   }
+}
+
+RenderProcessHost* ExtensionProcessManager::GetExtensionProcess(
+    const std::string& extension_id) {
+  ProcessIDMap::const_iterator it = process_ids_.find(extension_id);
+  if (it == process_ids_.end())
+    return NULL;
+
+  RenderProcessHost* rph = RenderProcessHost::FromID(it->second);
+  DCHECK(rph) << "We should have unregistered this host.";
+  return rph;
 }
 
 SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {

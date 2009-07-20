@@ -160,7 +160,10 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
                 StringPrintf(kInitExtension, script->extension_id().c_str()))));
       }
 
-      frame->ExecuteScriptInNewWorld(&sources.front(), sources.size());
+      // TODO(abarth): switch back to NewWorld when V8IsolatedWorld is fixed.
+      // https://bugs.webkit.org/show_bug.cgi?id=27397
+      frame->ExecuteScriptInNewContext(&sources.front(), sources.size());
+      // frame->ExecuteScriptInNewWorld(&sources.front(), sources.size());
     }
   }
 
