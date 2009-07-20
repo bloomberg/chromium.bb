@@ -43,7 +43,8 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     return process.communicate()[0].strip()
 
-  def BuildDebianPackage(debian_files, package_files, output_dir=None):
+  def BuildDebianPackage(debian_files, package_files, output_dir=None,
+      force_version=None):
     """Creates build rules to build a Debian package from the specified sources.
 
     Args:
@@ -58,6 +59,11 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
           The second element is the file source.
       output_dir: An optional directory to place the files in. If omitted, the
           current output directory is used.
+      force_version: Optional. Forces the version of the package to start with
+          this version string if specified. If the last entry in the changelog
+          is not for a version that starts with this then a dummy entry is
+          generated with this version and a ~prerelease suffix (so that the
+          final version will compare as greater).
 
     Return:
       A list of the (two) targets.
@@ -82,6 +88,14 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
         + changelog_file)
     arch = OutputFromShellCommand("awk '/^Architecture:/ { print $2; }' "
         + control_file)
+    add_dummy_changelog_entry = False
+    if force_version != None and not version.startswith(force_version):
+      print('Warning: no entry in ' + changelog_file + ' for version ' +
+          force_version + ' (last is ' + version +'). A dummy entry will be ' +
+          'generated. Remember to add the real changelog entry before ' +
+          'releasing.');
+      version = force_version + '~prerelease'
+      add_dummy_changelog_entry = True
     package_file_name = package + "_" + version + "_" + arch
     # Path to the outputs, minus extension.
     if output_dir != None:
@@ -105,18 +119,29 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
     for file in debian_files:
       copied_debian_files_paths.append(os.path.join(deb_build_tree, "debian",
           os.path.basename(file)))
-    env.Command(copied_debian_files_paths, debian_files,
+    copy_commands = [
         """dir=$$(dirname $TARGET) && \
            rm -Rf $$dir && \
            mkdir -p $$dir && \
-           cp $SOURCES $$dir""")
+           cp $SOURCES $$dir"""
+    ]
+    if add_dummy_changelog_entry:
+      copy_commands += [
+          """debchange -c $$(dirname $TARGET)/changelog --newversion """ +
+             version + """ --distribution UNRELEASED """ +
+             """'Developer preview build.'"""
+      ]
+    env.Command(copied_debian_files_paths, debian_files, copy_commands)
     env.Depends(targets, copied_debian_files_paths)
     # TODO(tschmelcher): Change this to sign the package for Google builds once
     # we start putting out Linux releases.
+    # Must explicitly specify -a because otherwise cross-builds won't work.
+    # Must explicitly specify -D because -a disables it.
+    # Must explicitly specify fakeroot because old dpkg tools don't assume that.
     env.Command(targets, None,
         """dir=$OBJ_ROOT/installer/linux/""" + deb_build_tree + """ && \
            cd $$dir && \
-           dpkg-buildpackage -b -uc -aamd64 -D -rfakeroot && \
+           dpkg-buildpackage -b -uc -a""" + arch + """ -D -rfakeroot && \
            cd $$OLDPWD && \
            mv $$dir/../""" + package_file_name + """.deb \
                $$(dirname $TARGET) && \
@@ -139,7 +164,8 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
                       ("libCg.so", '$ARTIFACTS_DIR/libCg.so'),
                       ("libCgGL.so", '$ARTIFACTS_DIR/libCgGL.so')
                      ],
-                     output_dir='$ARTIFACTS_DIR')
+                     output_dir='$ARTIFACTS_DIR',
+                     force_version=env.get('O3D_PLUGIN_VERSION'))
 
   # TODO(tschmelcher): Also build an i386 deb.
 
