@@ -9,6 +9,7 @@ import google.path_utils
 import difflib
 import errno
 import os
+import platform_utils
 import re
 import subprocess
 import sys
@@ -176,12 +177,15 @@ class FailureFinder(object):
                exclude_known_failures,
                test_regex,
                output_dir,
+               max_failures,
                verbose):
     self.build = build
-    self.platform = builder_name
+    # TODO(gwilson): add full url-encoding for the platform.
+    self.platform = builder_name.replace(" ", "%20")
     self.exclude_known_failures = exclude_known_failures
     self.test_regex = test_regex
     self.output_dir = output_dir
+    self.max_failures = max_failures
     self.verbose = verbose
     self.fyi_builder = False
     self._flaky_test_cache = {}
@@ -221,7 +225,7 @@ class FailureFinder(object):
     The list returned contains Failure class objects.
     """
     if self.verbose:
-      print 'Fetching failures from buildbot...'
+      print "Fetching failures from buildbot..."
 
     content = self._ScrapeBuilderOutput()
     matches = self._FindMatchesInBuilderOutput(content)
@@ -232,11 +236,13 @@ class FailureFinder(object):
     failures = []
 
     for match in matches:
-      if not self.test_regex or match[0].find(self.test_regex) > -1:
+      if (len(failures) < self.max_failures and
+          (not self.test_regex or match[0].find(self.test_regex) > -1)):
         failure = self._CreateFailureFromMatch(match)
         if self.verbose:
           print failure.test_path
         failures.append(failure)
+
     return failures
 
   def _ScrapeBuilderOutput(self):

@@ -2,9 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
+
 from failure import Failure
 
 CHROMIUM_BUG_URL = "http://crbug.com/"
+
+def ExtractFirstValue(string, regex):
+  m = re.search(regex, string)
+  if m and m.group(1):
+    return m.group(1)
+  return None
 
 # TODO(gwilson): Refactor HTML generation into a HTML templating system like
 # Django templates.

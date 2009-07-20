@@ -19,11 +19,13 @@ DEFAULT_BUILDER = "Webkit"
 def main(options, args):
 
   # TODO(gwilson): Add a check that verifies the given platform exists.
+
   finder = failure_finder.FailureFinder(options.build_number,
                                         options.platform_builder,
                                         (not options.include_expected),
                                         options.test_regex,
                                         options.output_dir,
+                                        int(options.max_failures),
                                         options.verbose)
   failure_list = finder.GetFailures()
 
@@ -61,6 +63,9 @@ if __name__ == "__main__":
   option_parser.add_option("-o", "--output-dir",
                            default = ".",
                            help = "Output files to given directory")
+  option_parser.add_option("-m", "--max-failures",
+                           default = 100,
+                           help = "Limit the maximum number of failures")
   options, args = option_parser.parse_args()
   main(options, args)
 
