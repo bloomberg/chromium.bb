@@ -36,7 +36,7 @@ const int kBookmarkBarWebframeHeightAdjustment = 25;
 // Magic numbers from Cole
 const CGFloat kDefaultBookmarkWidth = 150.0;
 const CGFloat kBookmarkVerticalPadding = 2.0;
-const CGFloat kBookmarkHorizontalPadding = 8.0;
+const CGFloat kBookmarkHorizontalPadding = 1.0;
 };
 
 @implementation BookmarkBarController
@@ -53,6 +53,7 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
     parentView_ = parentView;
     webContentView_ = webContentView;
     infoBarsView_ = infoBarsView;
+    buttons_.reset([[NSMutableArray alloc] init]);
     delegate_ = delegate;
   }
   return self;
@@ -237,16 +238,15 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
                          node->GetParent()->IndexOfChild(node));
 }
 
-// Delete all items from the bookmark bar.  TODO(jrg): once the
-// bookmark bar has other subviews (e.g. "off the side" button/menu,
-// "Other Bookmarks"), etc, this routine will need revisiting.
+// Delete all bookmarks from the bookmark bar.
 - (void)clearBookmarkBar {
-  [[self view] setSubviews:[NSArray array]];
+  [buttons_ makeObjectsPerformSelector:@selector(removeFromSuperview)];
+  [buttons_ removeAllObjects];
 }
 
 // Return an autoreleased NSCell suitable for a bookmark button.
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
-- (NSCell *)cellForBookmarkNode:(const BookmarkNode*)node frame:(NSRect)frame {
+- (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node {
   NSString* title = base::SysWideToNSString(node->GetTitle());
   NSButtonCell *cell = [[[BookmarkButtonCell alloc] initTextCell:nil]
                          autorelease];
@@ -268,20 +268,57 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
   return cell;
 }
 
-// TODO(jrg): accomodation for bookmarks less than minimum width in
-// size (like Windows)?
-- (NSRect)frameForBookmarkAtIndex:(int)index {
+// Return an appropriate width for the given bookmark button cell.
+// The "+1" is needed because, sometimes, Cocoa is off by one.
+// Example: for a bookmark named "Moma" or "SFGate", it is one pixel
+// too small.  For a bookmark named "SFGateFooWoo", it is just fine.
+- (CGFloat)widthForBookmarkButtonCell:(NSCell*)cell {
+  CGFloat desired = [cell cellSize].width + 1;
+  return std::min(desired, kDefaultBookmarkWidth);
+}
+
+// Returns a frame appropriate for the given bookmark cell, suitable
+// for creating an NSButton that will contain it.  |xOffset| is the X
+// offset for the frame; it is increased to be an appropriate X offset
+// for the next button.
+- (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell
+                                 xOffset:(int*)xOffset {
   NSRect bounds = [[self view] bounds];
   // TODO: be smarter about this; the animator delays the right height
   if (bounds.size.height == 0)
     bounds.size.height = kBookmarkBarHeight;
-
   NSRect frame = NSInsetRect(bounds,
                              kBookmarkHorizontalPadding,
                              kBookmarkVerticalPadding);
-  frame.origin.x += (kDefaultBookmarkWidth * index);
-  frame.size.width = kDefaultBookmarkWidth;
+  frame.size.width = [self widthForBookmarkButtonCell:cell];
+
+  // Add an X offset based on what we've already done
+  frame.origin.x += *xOffset;
+
+  // And up the X offset for next time.
+  *xOffset = NSMaxX(frame);
+
   return frame;
+}
+
+// A bookmark button's contents changed.  Check for growth
+// (e.g. increase the width up to the maximum).  If we grew, move
+// other bookmark buttons over.
+- (void)checkForBookmarkButtonGrowth:(NSButton*)button {
+  NSRect frame = [button frame];
+  CGFloat desiredSize = [self widthForBookmarkButtonCell:[button cell]];
+  CGFloat delta = desiredSize - frame.size.width;
+  if (delta) {
+    frame.size.width = desiredSize;
+    [button setFrame:frame];
+    for (NSButton* each_button in buttons_.get()) {
+      NSRect each_frame = [each_button frame];
+      if (each_frame.origin.x > frame.origin.x) {
+        each_frame.origin.x += delta;
+        [each_button setFrame:each_frame];
+      }
+    }
+  }
 }
 
 // Add all items from the given model to our bookmark bar.
@@ -291,26 +328,27 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 //    screen
 //  - ...
 //
-// TODO(jrg): contextual menu (e.g. Open In New Tab) for each button
-// in this function)
-//
 // TODO(jrg): write a "build bar" so there is a nice spot for things
 // like the contextual menu which is invoked when not over a
 // bookmark.  On Safari that menu has a "new folder" option.
 - (void)addNodesToBar:(const BookmarkNode*)node {
+  int x_offset = 0;
   for (int i = 0; i < node->GetChildCount(); i++) {
     const BookmarkNode* child = node->GetChild(i);
 
-    NSRect frame = [self frameForBookmarkAtIndex:i];
+    NSCell* cell = [self cellForBookmarkNode:child];
+    NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:&x_offset];
     NSButton* button = [[[NSButton alloc] initWithFrame:frame]
                          autorelease];
     DCHECK(button);
+    [buttons_ addObject:button];
+
     // [NSButton setCell:] warns to NOT use setCell: other than in the
     // initializer of a control.  However, we are using a basic
     // NSButton whose initializer does not take an NSCell as an
     // object.  To honor the assumed semantics, we do nothing with
     // NSButton between alloc/init and setCell:.
-    [button setCell:[self cellForBookmarkNode:child frame:frame]];
+    [button setCell:cell];
 
     if (child->is_folder()) {
       // For now just disable the button if it's a folder.
@@ -375,10 +413,15 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 
 // TODO(jrg): linear searching is bad.
 // Need a BookmarkNode-->NSCell mapping.
+//
+// TODO(jrg): if the bookmark bar is open on launch, we see the
+// buttons all placed, then "scooted over" as the favicons load.  If
+// this looks bad I may need to change widthForBookmarkButtonCell to
+// add space for an image even if not there on the assumption that
+// favicons will eventually load.
 - (void)nodeFavIconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node {
-  NSArray* views = [[self view] subviews];
-  for (NSButton* button in views) {
+  for (NSButton* button in buttons_.get()) {
     NSButtonCell* cell = [button cell];
     void* pointer = [[cell representedObject] pointerValue];
     const BookmarkNode* cellnode = static_cast<const BookmarkNode*>(pointer);
@@ -387,6 +430,10 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
       if (image) {
         [cell setImage:image];
         [cell setImagePosition:NSImageLeft];
+        // Adding an image means we might need more room for the
+        // bookmark.  Test for it by growing the button (if needed)
+        // and shifting everything else over.
+        [self checkForBookmarkButtonGrowth:button];
       }
       return;
     }
@@ -401,6 +448,10 @@ const CGFloat kBookmarkHorizontalPadding = 8.0;
 
 - (void)setDelegate:(id<BookmarkURLOpener>)delegate {
   delegate_ = delegate;
+}
+
+- (NSArray*)buttons {
+  return buttons_.get();
 }
 
 @end

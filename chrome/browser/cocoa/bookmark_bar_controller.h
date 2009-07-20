@@ -40,6 +40,9 @@ class PrefService;
   BOOL contentViewHasOffset_;
   BOOL barShouldBeShown_;
 
+  // Our bookmark buttons, ordered from L-->R.
+  scoped_nsobject<NSMutableArray> buttons_;
+
   // If the bar is disabled, we hide it and ignore show/hide commands.
   // Set when using fullscreen mode.
   BOOL barIsEnabled_;
@@ -115,6 +118,10 @@ class PrefService;
 @interface BookmarkBarController(TestingAPI)
 // Set the delegate for a unit test.
 - (void)setDelegate:(id<BookmarkURLOpener>)delegate;
+- (void)clearBookmarkBar;
+- (NSArray*)buttons;
+- (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
+- (void)checkForBookmarkButtonGrowth:(NSButton*)button;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

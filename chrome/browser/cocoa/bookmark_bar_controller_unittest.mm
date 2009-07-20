@@ -27,6 +27,29 @@
 @end
 
 
+// NSCell that is pre-provided with a desired size that becomes the
+// return value for -(NSSize)cellSize:.
+@interface CellWithDesiredSize : NSCell {
+ @private
+  NSSize cellSize_;
+}
+@property(readonly) NSSize cellSize;
+@end
+
+@implementation CellWithDesiredSize
+
+@synthesize cellSize = cellSize_;
+
+- (id)initTextCell:(NSString*)string desiredSize:(NSSize)size {
+  if ((self = [super initTextCell:string])) {
+    cellSize_ = size;
+  }
+  return self;
+}
+
+@end
+
+
 namespace {
 
 static const int kContentAreaHeight = 500;
@@ -51,6 +74,15 @@ class BookmarkBarControllerTest : public testing::Test {
                                           infoBarsView:infobar_view_.get()
                                               delegate:nil]);
     [bar_ view];  // force loading of the nib
+
+    // Awkwardness to look like we've been installed.
+    [parent_view_ addSubview:[bar_ view]];
+    NSRect frame = [[[bar_ view] superview] frame];
+    frame.origin.y = 100;
+    [[[bar_ view] superview] setFrame:frame];
+
+    // make sure it's open so certain things aren't no-ops
+    [bar_ toggleBookmarkBar];
   }
 
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
@@ -62,15 +94,14 @@ class BookmarkBarControllerTest : public testing::Test {
 };
 
 TEST_F(BookmarkBarControllerTest, ShowHide) {
-  // Assume hidden by default in a new profile.
+  // The test class opens the bar by default since many actions are
+  // no-ops with it closed.  Set back to closed as a baseline.
+  if ([bar_ isBookmarkBarVisible])
+    [bar_ toggleBookmarkBar];
+
+  // Start hidden.
   EXPECT_FALSE([bar_ isBookmarkBarVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
-
-  // Awkwardness to look like we've been installed.
-  [parent_view_ addSubview:[bar_ view]];
-  NSRect frame = [[[bar_ view] superview] frame];
-  frame.origin.y = 100;
-  [[[bar_ view] superview] setFrame:frame];
 
   // Show and hide it by toggling.
   [bar_ toggleBookmarkBar];
@@ -151,31 +182,112 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
   }
 }
 
+TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+  unsigned int initial_subview_count = [[[bar_ view] subviews] count];
+
+  // Make sure a redundant call doesn't choke
+  [bar_ clearBookmarkBar];
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+  EXPECT_EQ(initial_subview_count, [[[bar_ view] subviews] count]);
+
+  GURL gurl1("http://superfriends.hall-of-justice.edu");
+  std::wstring title1(L"Protectors of the Universe");
+  model->SetURLStarred(gurl1, title1, true);
+  EXPECT_EQ(1U, [[bar_ buttons] count]);
+  EXPECT_EQ(1+initial_subview_count, [[[bar_ view] subviews] count]);
+
+  GURL gurl2("http://legion-of-doom.gov");
+  std::wstring title2(L"Bad doodz");
+  model->SetURLStarred(gurl2, title2, true);
+  EXPECT_EQ(2U, [[bar_ buttons] count]);
+  EXPECT_EQ(2+initial_subview_count, [[[bar_ view] subviews] count]);
+
+  for (int i = 0; i < 3; i++) {
+    // is_starred=false --> remove the bookmark
+    model->SetURLStarred(gurl2, title2, false);
+    EXPECT_EQ(1U, [[bar_ buttons] count]);
+    EXPECT_EQ(1+initial_subview_count, [[[bar_ view] subviews] count]);
+
+    // and bring it back
+    model->SetURLStarred(gurl2, title2, true);
+    EXPECT_EQ(2U, [[bar_ buttons] count]);
+    EXPECT_EQ(2+initial_subview_count, [[[bar_ view] subviews] count]);
+  }
+
+  [bar_ clearBookmarkBar];
+  EXPECT_EQ(0U, [[bar_ buttons] count]);
+  EXPECT_EQ(initial_subview_count, [[[bar_ view] subviews] count]);
+
+  // Explicit test of loaded: since this is a convenient spot
+  [bar_ loaded:model];
+  EXPECT_EQ(2U, [[bar_ buttons] count]);
+  EXPECT_EQ(2+initial_subview_count, [[[bar_ view] subviews] count]);
+}
+
+// Make sure that each button we add marches to the right and does not
+// overlap with the previous one.
+TEST_F(BookmarkBarControllerTest, TestButtonMarch) {
+  scoped_nsobject<NSMutableArray> cells([[NSMutableArray alloc] init]);
+
+  CGFloat widths[] = { 10, 10, 100, 10, 500, 500, 80000, 60000, 1, 345 };
+  for (unsigned int i = 0; i < arraysize(widths); i++) {
+    NSCell* cell = [[CellWithDesiredSize alloc]
+                     initTextCell:@"foo"
+                      desiredSize:NSMakeSize(widths[i], 30)];
+    [cells addObject:cell];
+    [cell release];
+  }
+
+  int x_offset = 0;
+  CGFloat x_end = x_offset;  // end of the previous button
+  for (unsigned int i = 0; i < arraysize(widths); i++) {
+    NSRect r = [bar_ frameForBookmarkButtonFromCell:[cells objectAtIndex:i]
+                                            xOffset:&x_offset];
+    EXPECT_GE(r.origin.x, x_end);
+    x_end = NSMaxX(r);
+  }
+}
+
+TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  GURL gurl1("http://www.google.com");
+  std::wstring title1(L"x");
+  model->SetURLStarred(gurl1, title1, true);
+
+  GURL gurl2("http://www.google.com/blah");
+  std::wstring title2(L"y");
+  model->SetURLStarred(gurl2, title2, true);
+
+  EXPECT_EQ(2U, [[bar_ buttons] count]);
+  CGFloat width_1 = [[[bar_ buttons] objectAtIndex:0] frame].size.width;
+  CGFloat x_2 = [[[bar_ buttons] objectAtIndex:1] frame].origin.x;
+
+  NSButton* first = [[bar_ buttons] objectAtIndex:0];
+  [[first cell] setTitle:@"This is a really big title; watch out mom!"];
+  [bar_ checkForBookmarkButtonGrowth:first];
+
+  // Make sure the 1st button is now wider, the 2nd one is moved over,
+  // and they don't overlap.
+  NSRect frame_1 = [[[bar_ buttons] objectAtIndex:0] frame];
+  NSRect frame_2 = [[[bar_ buttons] objectAtIndex:1] frame];
+  EXPECT_GT(frame_1.size.width, width_1);
+  EXPECT_GT(frame_2.origin.x, x_2);
+  EXPECT_GE(frame_2.origin.x, frame_1.origin.x + frame_1.size.width);
+}
+
+// TODO(jrg): write a test to confirm that nodeFavIconLoaded calls
+// checkForBookmarkButtonGrowth:.
 
 // TODO(jrg): Make sure showing the bookmark bar calls loaded: (to
 // process bookmarks)
 TEST_F(BookmarkBarControllerTest, ShowAndLoad) {
 }
 
-// TODO(jrg): Make sure adding 1 bookmark adds 1 subview, and removing
-// 1 removes 1 subview.  (We can't test for a simple Clear since there
-// will soon be views in here which aren't bookmarks.)
-TEST_F(BookmarkBarControllerTest, ViewChanges) {
-}
-
-// TODO(jrg): Make sure loaded: does something useful
-TEST_F(BookmarkBarControllerTest, Loaded) {
-  // Clear; make sure no views
-  // Call loaded:
-  // Make sure subviews
-}
-
 // TODO(jrg): Test cellForBookmarkNode:
 TEST_F(BookmarkBarControllerTest, Cell) {
-}
-
-// TODO(jrg): Test frameForBookmarkAtIndex
-TEST_F(BookmarkBarControllerTest, FrameAtIndex) {
 }
 
 TEST_F(BookmarkBarControllerTest, Contents) {
