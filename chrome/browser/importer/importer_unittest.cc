@@ -22,6 +22,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "webkit/glue/password_form.h"
 
