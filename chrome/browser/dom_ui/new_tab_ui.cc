@@ -1076,8 +1076,7 @@ void RecentlyBookmarkedHandler::SendBookmarksToPage() {
     DictionaryValue* entry_value = new DictionaryValue;
     SetURLTitleAndDirection(entry_value,
                             WideToUTF16(node->GetTitle()), node->GetURL());
-    entry_value->SetInteger(L"time",
-                            static_cast<int>(node->date_added().ToTimeT()));
+    entry_value->SetReal(L"time", node->date_added().ToDoubleT());
     list_value.Append(entry_value);
   }
   dom_ui_->CallJavascriptFunction(L"recentlyBookmarked", list_value);
@@ -1261,6 +1260,7 @@ bool RecentlyClosedTabsHandler::TabToValue(
   SetURLTitleAndDirection(dictionary, current_navigation.title(),
                           current_navigation.url());
   dictionary->SetString(L"type", L"tab");
+  dictionary->SetReal(L"timestamp", tab.timestamp.ToDoubleT());
   return true;
 }
 
@@ -1286,6 +1286,7 @@ bool RecentlyClosedTabsHandler::WindowToValue(
   }
 
   dictionary->SetString(L"type", L"window");
+  dictionary->SetReal(L"timestamp", window.timestamp.ToDoubleT());
   dictionary->Set(L"tabs", tab_values);
   return true;
 }

@@ -9,6 +9,24 @@
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+
+
+// Create subclass that overrides TimeNow so that we can control the time used
+// for closed tabs and windows.
+class TabRestoreTimeFactory : public TabRestoreService::TimeFactory {
+ public:
+  TabRestoreTimeFactory() : time_(base::Time::Now()) {}
+
+  virtual ~TabRestoreTimeFactory() {}
+
+  virtual base::Time TimeNow() {
+    return time_;
+  }
+
+ private:
+  base::Time time_;
+};
+
 class TabRestoreServiceTest : public RenderViewHostTestHarness {
  public:
   TabRestoreServiceTest() {
@@ -24,10 +42,12 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   // testing::Test overrides
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
-    service_ = new TabRestoreService(profile());
+    time_factory_ = new TabRestoreTimeFactory();
+    service_ = new TabRestoreService(profile(), time_factory_);
   }
   virtual void TearDown() {
     service_ = NULL;
+    delete time_factory_;
     RenderViewHostTestHarness::TearDown();
   }
 
@@ -50,7 +70,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
     // Must set service to null first so that it is destroyed before the new
     // one is created.
     service_ = NULL;
-    service_ = new TabRestoreService(profile());
+    service_ = new TabRestoreService(profile(), time_factory_);
     service_->LoadTabsFromLastSession();
   }
 
@@ -90,6 +110,7 @@ class TabRestoreServiceTest : public RenderViewHostTestHarness {
   GURL url2_;
   GURL url3_;
   scoped_refptr<TabRestoreService> service_;
+  TabRestoreTimeFactory* time_factory_;
 };
 
 TEST_F(TabRestoreServiceTest, Basic) {
@@ -111,6 +132,8 @@ TEST_F(TabRestoreServiceTest, Basic) {
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
   EXPECT_EQ(2, tab->current_navigation_index);
+  EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
+            tab->timestamp.ToInternalValue());
 
   NavigateToIndex(1);
 
@@ -130,6 +153,8 @@ TEST_F(TabRestoreServiceTest, Basic) {
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
   EXPECT_EQ(1, tab->current_navigation_index);
+  EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
+            tab->timestamp.ToInternalValue());
 }
 
 // Make sure TabRestoreService doesn't create an entry for a tab with no
@@ -162,6 +187,8 @@ TEST_F(TabRestoreServiceTest, Restore) {
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
   EXPECT_EQ(2, tab->current_navigation_index);
+  EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
+            tab->timestamp.ToInternalValue());
 }
 
 // Tests restoring a single pinned tab.
@@ -223,6 +250,8 @@ TEST_F(TabRestoreServiceTest, DontPersistPostData) {
       static_cast<const TabRestoreService::Tab*>(restored_entry);
   // There should be 3 navs.
   ASSERT_EQ(3U, restored_tab->navigations.size());
+  EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
+            restored_tab->timestamp.ToInternalValue());
 }
 
 // Make sure we don't persist entries to disk that have post data. This
@@ -259,9 +288,11 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSession) {
   TabRestoreService::Window* window =
       static_cast<TabRestoreService::Window*>(entry2);
   ASSERT_EQ(1U, window->tabs.size());
+  EXPECT_EQ(0, window->timestamp.ToInternalValue());
   EXPECT_EQ(0, window->selected_tab_index);
   ASSERT_EQ(1U, window->tabs[0].navigations.size());
   EXPECT_EQ(0, window->tabs[0].current_navigation_index);
+  EXPECT_EQ(0, window->tabs[0].timestamp.ToInternalValue());
   EXPECT_TRUE(url1_ == window->tabs[0].navigations[0].url());
 }
 
@@ -313,8 +344,10 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
       static_cast<TabRestoreService::Window*>(entry);
   ASSERT_EQ(1U, window->tabs.size());
   EXPECT_EQ(0, window->selected_tab_index);
+  EXPECT_EQ(0, window->timestamp.ToInternalValue());
   ASSERT_EQ(1U, window->tabs[0].navigations.size());
   EXPECT_EQ(0, window->tabs[0].current_navigation_index);
+  EXPECT_EQ(0, window->tabs[0].timestamp.ToInternalValue());
   EXPECT_TRUE(url1_ == window->tabs[0].navigations[0].url());
 
   // Then the closed tab.
@@ -324,6 +357,8 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
   ASSERT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_EQ(2, tab->current_navigation_index);
+  EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
+            tab->timestamp.ToInternalValue());
   EXPECT_TRUE(url1_ == tab->navigations[0].url());
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
@@ -395,7 +430,45 @@ TEST_F(TabRestoreServiceTest, ManyWindowsInSessionService) {
       static_cast<TabRestoreService::Window*>(entry);
   ASSERT_EQ(1U, window->tabs.size());
   EXPECT_EQ(0, window->selected_tab_index);
+  EXPECT_EQ(0, window->timestamp.ToInternalValue());
   ASSERT_EQ(1U, window->tabs[0].navigations.size());
   EXPECT_EQ(0, window->tabs[0].current_navigation_index);
+  EXPECT_EQ(0, window->tabs[0].timestamp.ToInternalValue());
   EXPECT_TRUE(url1_ == window->tabs[0].navigations[0].url());
 }
+
+// Makes sure we restore the time stamp correctly.
+TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
+  base::Time tab_timestamp(base::Time::FromInternalValue(123456789));
+
+  AddThreeNavigations();
+
+  // Have the service record the tab.
+  service_->CreateHistoricalTab(&controller());
+
+  // Make sure an entry was created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // Make sure the entry matches.
+  TabRestoreService::Entry* entry = service_->entries().front();
+  ASSERT_EQ(TabRestoreService::TAB, entry->type);
+  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  tab->timestamp = tab_timestamp;
+
+  // Set this, otherwise previous session won't be loaded.
+  profile()->set_last_session_exited_cleanly(false);
+
+  RecreateService();
+
+  // One entry should be created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // And verify the entry.
+  TabRestoreService::Entry* restored_entry = service_->entries().front();
+  ASSERT_EQ(TabRestoreService::TAB, restored_entry->type);
+  TabRestoreService::Tab* restored_tab =
+      static_cast<TabRestoreService::Tab*>(restored_entry);
+  EXPECT_EQ(tab_timestamp.ToInternalValue(),
+            restored_tab->timestamp.ToInternalValue());
+}
+
