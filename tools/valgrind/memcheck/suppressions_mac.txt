@@ -327,3 +327,13 @@
    fun:_pthread_start
    fun:thread_start
 }
+{
+  bug_17297
+  Memcheck:Leak
+  fun:malloc
+  ...
+  fun:+[NSColor keyboardFocusIndicatorColor]
+  fun:+[NSColor colorWithCatalogName:colorName:]
+  fun:+[NSCatalogColor newWithCoder:zone:]
+  fun:-[NSColor initWithCoder:]
+}
