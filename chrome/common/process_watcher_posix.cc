@@ -30,8 +30,9 @@ static bool IsChildDead(pid_t child) {
 // If the child doesn't exit within a couple of seconds, kill it.
 class BackgroundReaper : public PlatformThread::Delegate {
  public:
-  explicit BackgroundReaper(pid_t child)
-      : child_(child) {
+  explicit BackgroundReaper(pid_t child, unsigned timeout)
+      : child_(child),
+        timeout_(timeout) {
   }
 
   void ThreadMain() {
@@ -40,11 +41,21 @@ class BackgroundReaper : public PlatformThread::Delegate {
   }
 
   void WaitForChildToDie() {
+    // Wait forever case.
+    if (timeout_ == 0) {
+      pid_t r = waitpid(child_, NULL, 0);
+      if (r != child_) {
+        LOG(ERROR) << "While waiting for " << child_
+                   << " to terminate, we got the following result: " << r;
+      }
+      return;
+    }
+
     // There's no good way to wait for a specific child to exit in a timed
     // fashion. (No kqueue on Linux), so we just loop and sleep.
 
-    // Waits 0.5 * 4 = 2 seconds.
-    for (unsigned i = 0; i < 4; ++i) {
+    // Wait for 2 * timeout_ 500 milliseconds intervals.
+    for (unsigned i = 0; i < 2 * timeout_; ++i) {
       PlatformThread::Sleep(500);  // 0.5 seconds
       if (IsChildDead(child_))
         return;
@@ -62,6 +73,9 @@ class BackgroundReaper : public PlatformThread::Delegate {
 
  private:
   const pid_t child_;
+  // Number of seconds to wait, if 0 then wait forever and do not attempt to
+  // kill |child_|.
+  const unsigned timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundReaper);
 };
@@ -72,6 +86,17 @@ void ProcessWatcher::EnsureProcessTerminated(base::ProcessHandle process) {
   if (IsChildDead(process))
     return;
 
-  BackgroundReaper* reaper = new BackgroundReaper(process);
+  const unsigned timeout = 2;  // seconds
+  BackgroundReaper* reaper = new BackgroundReaper(process, timeout);
+  PlatformThread::CreateNonJoinable(0, reaper);
+}
+
+// static
+void ProcessWatcher::EnsureProcessGetsReaped(base::ProcessHandle process) {
+  // If the child is already dead, then there's nothing to do
+  if (IsChildDead(process))
+    return;
+
+  BackgroundReaper* reaper = new BackgroundReaper(process, 0);
   PlatformThread::CreateNonJoinable(0, reaper);
 }

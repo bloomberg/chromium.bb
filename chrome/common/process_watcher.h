@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_PROCESS_WATCHER_H_
 #define CHROME_COMMON_PROCESS_WATCHER_H_
 
+#include "build/build_config.h"
+
 #include "base/basictypes.h"
 #include "base/process_util.h"
 
@@ -24,6 +26,12 @@ class ProcessWatcher {
   // and SYNCHRONIZE permissions.
   //
   static void EnsureProcessTerminated(base::ProcessHandle process_handle);
+
+#if defined(OS_POSIX)
+  // The nicer version of EnsureProcessTerminated() that is patient and will
+  // wait for |process_handle| to finish and then reap it.
+  static void EnsureProcessGetsReaped(base::ProcessHandle process_handle);
+#endif
 
  private:
   // Do not instantiate this class.
