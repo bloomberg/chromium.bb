@@ -13,6 +13,9 @@
       ['OS!="win"', {'sources/': [['exclude', '/win/']]}],
     ],
   },
+  'variables': {
+    'use_system_ffmpeg%': 0,
+  },
   'targets': [
     {
       'variables': {
@@ -194,14 +197,22 @@
           },
           'dependencies': ['../../build/win/system.gyp:cygwin'],
         }], ['OS=="linux"', {
-          'variables': {
-            'source_files': [
-              'binaries/<(branding_dir)/libavcodec.so.52',
-              'binaries/<(branding_dir)/libavformat.so.52',
-              'binaries/<(branding_dir)/libavutil.so.50',
-            ],
-          },
-        }], ['OS=="mac"', {
+          'conditions': [
+            ['use_system_ffmpeg==0', {
+              'variables': {
+                'source_files': [
+                  'binaries/<(branding_dir)/libavcodec.so.52',
+                  'binaries/<(branding_dir)/libavformat.so.52',
+                  'binaries/<(branding_dir)/libavutil.so.50',
+                ],
+              },
+            }, {
+              'variables': {
+                'source_files': []
+              },
+            }],
+          ]},
+        ], ['OS=="mac"', {
               'variables': {
                 'source_files': [
                   'binaries/<(branding_dir)/libavcodec.52.dylib',
