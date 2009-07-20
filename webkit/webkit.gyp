@@ -626,6 +626,9 @@
         # correct npapi.h inclusion (http://crbug.com/17127
         ['exclude', '/third_party/WebKit/WebCore/plugins/PluginDebug.cpp'],
         ['exclude', '/third_party/WebKit/WebCore/plugins/PluginDebug.h'],
+
+        # Exclude some DB-related files.
+        ['exclude', '/third_party/WebKit/WebCore/platform/sql/SQLiteFileSystem.cpp'],
       ],
       'sources!': [
         # Custom bindings in bindings/v8/custom exist for these.
