@@ -542,7 +542,6 @@ void BrowserView::RegisterBrowserViewPrefs(PrefService* prefs) {
                              kDefaultPluginMessageResponseTimeout);
   prefs->RegisterIntegerPref(prefs::kHungPluginDetectFrequency,
                              kDefaultHungPluginDetectFrequency);
-  prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
 }
 
 void BrowserView::AttachBrowserBubble(BrowserBubble* bubble) {

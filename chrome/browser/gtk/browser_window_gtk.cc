@@ -70,6 +70,9 @@ namespace {
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
 
+// Default offset of the contents splitter in pixels.
+const int kDefaultContentsSplitOffset = 400;
+
 const char* kBrowserWindowKey = "__BROWSER_WINDOW_GTK__";
 
 // The frame border is only visible in restored mode and is hardcoded to 4 px
@@ -937,9 +940,15 @@ void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
     devtools_contents->ShowContents();
   }
 
-  if (devtools_contents) {
+  bool should_show = old_devtools == NULL && devtools_contents != NULL;
+  bool should_hide = old_devtools != NULL && devtools_contents == NULL;
+  if (should_show) {
     gtk_widget_show(devtools_container_->widget());
-  } else {
+  } else if (should_hide) {
+    // Store split offset when hiding devtools window only.
+    gint divider_offset = gtk_paned_get_position(GTK_PANED(contents_split_));
+    g_browser_process->local_state()->SetInteger(
+        prefs::kDevToolsSplitLocation, divider_offset);
     gtk_widget_hide(devtools_container_->widget());
   }
 }
@@ -1143,7 +1152,14 @@ void BrowserWindowGtk::InitWidgets() {
                   FALSE, TRUE);
   gtk_box_pack_start(GTK_BOX(render_area_vbox_), contents_split_, TRUE, TRUE,
                      0);
-  gtk_paned_set_position(GTK_PANED(contents_split_), 400);
+  // Restore split offset.
+  int split_offset = g_browser_process->local_state()->GetInteger(
+      prefs::kDevToolsSplitLocation);
+  if (split_offset == -1) {
+    // Initial load, set to default value.
+    split_offset = kDefaultContentsSplitOffset;
+  }
+  gtk_paned_set_position(GTK_PANED(contents_split_), split_offset);
   gtk_widget_show_all(render_area_vbox_);
   gtk_widget_hide(devtools_container_->widget());
 
