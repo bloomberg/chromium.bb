@@ -38,32 +38,33 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   return success_code == EXIT_SUCCESS;
 }
 
-static std::string getDefaultBrowser() {
+static bool GetDefaultBrowser(std::string* result) {
   std::vector<std::string> argv;
   argv.push_back("xdg-settings");
   argv.push_back("get");
   argv.push_back("default-web-browser");
-  std::string output;
-  base::GetAppOutput(CommandLine(argv), &output);
-  // If GetAppOutput() fails, we'll return the empty string.
-  return output;
+  return base::GetAppOutput(CommandLine(argv), result);
 }
 
 bool ShellIntegration::IsDefaultBrowser() {
-  std::string browser = getDefaultBrowser();
+  std::string browser;
+  if (!GetDefaultBrowser(&browser)) {
+    // If GetDefaultBrowser() fails, we assume xdg-settings does not work for
+    // some reason, and that we should pretend we're the default browser to
+    // avoid giving repeated prompts to set ourselves as the default browser.
+    // TODO: Really, being the default browser should be a ternary query: yes,
+    // no, and "don't know" so that the UI can reflect this more accurately.
+    return true;
+  }
   // Allow for an optional newline at the end.
   if (browser.length() > 0 && browser[browser.length() - 1] == '\n')
     browser.resize(browser.length() - 1);
-  if (!browser.length()) {
-    // We don't know what the default browser is; chances are, we can't
-    // set it either. So, check to see if we were run in the wrapper
-    // and pretend that we are the default unless we were run from it,
-    // to avoid warning that we aren't the default when it's useless.
-    return !getenv("CHROME_WRAPPER");
-  }
   return !browser.compare(DESKTOP_APP_NAME);
 }
 
 bool ShellIntegration::IsFirefoxDefaultBrowser() {
-  return getDefaultBrowser().find("irefox") != std::string::npos;
+  std::string browser;
+  // We don't care about the return value here.
+  GetDefaultBrowser(&browser);
+  return browser.find("irefox") != std::string::npos;
 }
