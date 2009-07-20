@@ -192,7 +192,10 @@ function debugPrint(text) {
   var console = WebInspector.console;
   if (console) {
     console.addMessage(new WebInspector.ConsoleMessage(
-        '', undefined, 1, '', undefined, 1, text));
+        WebInspector.ConsoleMessage.MessageSource.JS,
+        WebInspector.ConsoleMessage.MessageType.Log,
+        WebInspector.ConsoleMessage.MessageLevel.Log,
+        1, 'chrome://devtools/<internal>', undefined, -1, text));
   } else {
     alert(text);
   }
