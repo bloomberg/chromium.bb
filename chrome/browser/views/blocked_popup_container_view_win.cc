@@ -361,7 +361,8 @@ void BlockedPopupContainerViewWin::SetPosition() {
       // is always a safe value for x-axis.
       x = 0;
     }
-    SetWindowPos(HWND_TOP, x, real_y, size.width(), real_height, 0);
+    SetWindowPos(HWND_TOP, x, real_y, size.width(), real_height,
+                 SWP_SHOWWINDOW);
     container_view_->SchedulePaint();
   } else {
     SetWindowPos(HWND_TOP, 0, 0, 0, 0,
