@@ -836,9 +836,9 @@ FcVStackPopAndDestroy (FcConfigParse *parse)
     switch (vstack->tag) {
     case FcVStackNone:
 	break;
-    case FcVStackString:
     case FcVStackFamily:
 	break;
+    case FcVStackString:
     case FcVStackField:
     case FcVStackConstant:
     case FcVStackGlob:
