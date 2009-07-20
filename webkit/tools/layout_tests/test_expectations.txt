@@ -979,9 +979,6 @@ BUG10307 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-group-03-t.svg = FAIL
 
 BUG10308 LINUX : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-cx-prop.html = CRASH PASS
 
-// WebKit Merge 38950:39000 failures:
-BUG10309 LINUX : LayoutTests/svg/custom/js-late-gradient-and-object-creation.svg = FAIL
-
 // Linux pixeltest failure: slightly different shade of composited
 // alpha in bottom group.
 BUG10310 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-opacity-01-b.svg = FAIL
@@ -1647,10 +1644,6 @@ BUG10403 LINUX : LayoutTests/http/tests/local/stylesheet-and-script-load-order-h
 BUG10403 LINUX : LayoutTests/svg/custom/animate-path-morphing.svg = FAIL PASS
 BUG10403 LINUX : LayoutTests/svg/custom/circular-marker-reference-1.svg = FAIL PASS
 BUG10403 LINUX : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
-
-// This never worked on Linux, but were in the past incorrectly rebaselined.
-// Text pattern fills/strokes not working.
-BUG10404 LINUX : LayoutTests/svg/custom/js-late-pattern-and-object-creation.svg = FAIL
 
 // might need to be rebaselined in win, 'DRAFT' rendering incorrect before
 BUG10405 WIN : LayoutTests/svg/custom/struct-use-09-b.svg = FAIL
