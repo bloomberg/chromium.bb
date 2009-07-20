@@ -162,8 +162,8 @@ class Browser : public TabStripModelDelegate,
   // Gets the FavIcon of the page in the selected tab.
   SkBitmap GetCurrentPageIcon() const;
 
-  // Gets the title of the page in the selected tab.
-  string16 GetCurrentPageTitle() const;
+  // Gets the title of the window based on the selected tab's title.
+  string16 GetWindowTitleForCurrentTab() const;
 
   // Prepares a title string for display (removes embedded newlines, etc).
   static void FormatTitleForDisplay(string16* title);

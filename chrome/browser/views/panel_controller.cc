@@ -95,8 +95,8 @@ PanelController::PanelController(BrowserWindowGtk* browser_window)
 }
 
 void PanelController::UpdateTitleBar() {
-  title_content_->title_label()->SetText(
-      UTF16ToWideHack(browser_window_->browser()->GetCurrentPageTitle()));
+  title_content_->title_label()->SetText(UTF16ToWideHack(
+      browser_window_->browser()->GetWindowTitleForCurrentTab()));
 }
 
 bool PanelController::TitleMousePressed(const views::MouseEvent& event) {

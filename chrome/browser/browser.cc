@@ -431,12 +431,12 @@ SkBitmap Browser::GetCurrentPageIcon() const {
   return contents ? contents->GetFavIcon() : SkBitmap();
 }
 
-string16 Browser::GetCurrentPageTitle() const {
+string16 Browser::GetWindowTitleForCurrentTab() const {
   TabContents* contents = tabstrip_model_.GetSelectedTabContents();
   string16 title;
 
-  // |contents| can be NULL because GetCurrentPageTitle is called by the window
-  // during the window's creation (before tabs have been added).
+  // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the
+  // window during the window's creation (before tabs have been added).
   if (contents) {
     title = contents->GetTitle();
     FormatTitleForDisplay(&title);

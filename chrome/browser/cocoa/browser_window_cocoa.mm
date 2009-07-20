@@ -92,7 +92,7 @@ void BrowserWindowCocoa::SelectedTabToolbarSizeChanged(bool is_animating) {
 
 void BrowserWindowCocoa::UpdateTitleBar() {
   NSString* newTitle =
-      base::SysUTF16ToNSString(browser_->GetCurrentPageTitle());
+      base::SysUTF16ToNSString(browser_->GetWindowTitleForCurrentTab());
 
   // Window menu
   [NSApp changeWindowsItem:window_ title:newTitle filename:NO];

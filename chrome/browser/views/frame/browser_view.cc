@@ -1127,7 +1127,7 @@ bool BrowserView::IsModal() const {
 }
 
 std::wstring BrowserView::GetWindowTitle() const {
-  return UTF16ToWideHack(browser_->GetCurrentPageTitle());
+  return UTF16ToWideHack(browser_->GetWindowTitleForCurrentTab());
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {
