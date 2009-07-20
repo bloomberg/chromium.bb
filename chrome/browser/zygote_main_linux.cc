@@ -21,10 +21,13 @@
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/process_watcher.h"
+#include "chrome/common/sandbox_methods_linux.h"
 
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 
 // http://code.google.com/p/chromium/wiki/LinuxZygote
+
+static const int kMagicSandboxIPCDescriptor = 5;
 
 // This is the object which implements the zygote. The ZygoteMain function,
 // which is called from ChromeMain, at the the bottom and simple constructs one
@@ -196,6 +199,87 @@ class Zygote {
   }
 };
 
+// Patched dynamic symbol wrapper functions...
+namespace sandbox_wrapper {
+
+void do_localtime(time_t input, struct tm* output) {
+  Pickle request;
+  request.WriteInt(LinuxSandbox::METHOD_LOCALTIME);
+  request.WriteString(
+      std::string(reinterpret_cast<char*>(&input), sizeof(input)));
+
+  uint8_t reply_buf[512];
+  const ssize_t r = base::SendRecvMsg(
+      kMagicSandboxIPCDescriptor, reply_buf, sizeof(reply_buf), NULL, request);
+  if (r == -1) {
+    memset(output, 0, sizeof(struct tm));
+    return;
+  }
+
+  Pickle reply(reinterpret_cast<char*>(reply_buf), r);
+  void* iter = NULL;
+  std::string result;
+  if (!reply.ReadString(&iter, &result) ||
+      result.size() != sizeof(struct tm)) {
+    memset(output, 0, sizeof(struct tm));
+    return;
+  }
+
+  memcpy(output, result.data(), sizeof(struct tm));
+}
+
+struct tm* localtime(const time_t* timep) {
+  static struct tm time_struct;
+  do_localtime(*timep, &time_struct);
+  return &time_struct;
+}
+
+struct tm* localtime_r(const time_t* timep, struct tm* result) {
+  do_localtime(*timep, result);
+  return result;
+}
+
+}  // namespace sandbox_wrapper
+
+/* On IA-32, function calls which need to be resolved by the dynamic linker are
+ * directed to the producure linking table (PLT). Each PLT entry contains code
+ * which jumps (indirectly) via the global offset table (GOT):
+ *   Dump of assembler code for function f@plt:
+ *   0x0804830c <f@plt+0>:   jmp    *0x804a004  # GOT indirect jump
+ *   0x08048312 <f@plt+6>:   push   $0x8
+ *   0x08048317 <f@plt+11>:  jmp    0x80482ec <_init+48>
+ *
+ * At the beginning of a process's lifetime, the GOT entry jumps back to
+ * <f@plt+6> end then enters the dynamic linker. Once the symbol has been
+ * resolved, the GOT entry is patched so that future calls go directly to the
+ * resolved function.
+ *
+ * This macro finds the PLT entry for a given symbol, |symbol|, and reads the
+ * GOT entry address from the first instruction. It then patches that address
+ * with the address of a replacement function, |replacement|.
+ */
+#define PATCH_GLOBAL_OFFSET_TABLE(symbol, replacement) \
+       /* First, get the current instruction pointer since the PLT address */ \
+       /* is IP relative */ \
+  asm ("call 0f\n" \
+       "0: pop %%ecx\n" \
+       /* Move the IP relative address of the PLT entry into EAX */ \
+       "mov $" #symbol "@plt,%%eax\n" \
+       /* Add EAX to ECX to get an absolute entry */ \
+       "add %%eax,%%ecx\n" \
+       /* The value in ECX was relative to the add instruction, however, */ \
+       /* the IP value was that of the pop. The pop and mov take 6 */ \
+       /* bytes, so adding 6 gets us the correct address for the PLT. The */ \
+       /* first instruction at the PLT is FF 25 <abs address>, so we skip 2 */ \
+       /* bytes to get to the address. 6 + 2 = 8: */ \
+       "movl 8(%%ecx),%%ecx\n" \
+       /* Now ECX contains the address of the GOT entry, we poke our */ \
+       /* replacement function in there: */ \
+       "movl %0,(%%ecx)\n" \
+       :  /* no output */ \
+       :  "r" (replacement) \
+       : "memory", "%eax", "%ecx");
+
 static bool MaybeEnterChroot() {
   const char* const sandbox_fd_string = getenv("SBX_D");
   if (sandbox_fd_string) {
@@ -212,6 +296,9 @@ static bool MaybeEnterChroot() {
     // Before entering the sandbox, "prime" any systems that need to open
     // files and cache the results or the descriptors.
     base::RandUint64();
+
+    PATCH_GLOBAL_OFFSET_TABLE(localtime, sandbox_wrapper::localtime);
+    PATCH_GLOBAL_OFFSET_TABLE(localtime_r, sandbox_wrapper::localtime_r);
 
     static const char kChrootMe = 'C';
     static const char kChrootMeSuccess = 'O';
@@ -235,7 +322,6 @@ static bool MaybeEnterChroot() {
       return false;
     }
 
-    static const int kMagicSandboxIPCDescriptor = 5;
     SkiaFontConfigUseIPCImplementation(kMagicSandboxIPCDescriptor);
 
     // Previously, we required that the binary be non-readable. This causes the

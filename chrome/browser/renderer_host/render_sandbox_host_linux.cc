@@ -9,6 +9,7 @@
 #include <sys/uio.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
+#include <time.h>
 
 #include "base/eintr_wrapper.h"
 #include "base/process_util.h"
@@ -176,6 +177,8 @@ class SandboxIPCProcess : public WebKitClient {
       HandleFontOpenRequest(fd, pickle, iter, fds);
     } else if (kind == LinuxSandbox::METHOD_GET_FONT_FAMILY_FOR_CHARS) {
       HandleGetFontFamilyForChars(fd, pickle, iter, fds);
+    } else if (kind == LinuxSandbox::METHOD_LOCALTIME) {
+      HandleLocaltime(fd, pickle, iter, fds);
     }
 
   error:
@@ -278,6 +281,29 @@ class SandboxIPCProcess : public WebKitClient {
 
     Pickle reply;
     reply.WriteString(family_utf8);
+    SendRendererReply(fds, reply, -1);
+  }
+
+  void HandleLocaltime(int fd, Pickle& pickle, void* iter,
+                       std::vector<int>& fds) {
+    // The other side of this call is in zygote_main_linux.cc
+
+    std::string time_string;
+    if (!pickle.ReadString(&iter, &time_string) ||
+        time_string.size() != sizeof(time_t)) {
+      return;
+    }
+
+    time_t time;
+    memcpy(&time, time_string.data(), sizeof(time));
+    struct tm expanded_time;
+    localtime_r(&time, &expanded_time);
+
+    const std::string result_string(reinterpret_cast<char*>(&expanded_time),
+                                    sizeof(expanded_time));
+
+    Pickle reply;
+    reply.WriteString(result_string);
     SendRendererReply(fds, reply, -1);
   }
 
