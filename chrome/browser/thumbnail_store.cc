@@ -30,7 +30,8 @@ ThumbnailStore::ThumbnailStore()
 }
 
 ThumbnailStore::~ThumbnailStore() {
-  CommitCacheToDB(NULL);
+  // Ensure that shutdown was called.
+  DCHECK(hs_ == NULL);
 }
 
 void ThumbnailStore::Init(const FilePath& db_name,
@@ -132,6 +133,26 @@ bool ThumbnailStore::GetPageThumbnail(
   return true;
 }
 
+void ThumbnailStore::Shutdown() {
+  // We must release our reference to the HistoryService here to prevent
+  // shutdown issues. Please refer to the comment in HistoryService::Cleanup
+  // for details.
+  hs_ = NULL;
+
+  // The source of notifications is the Profile. We may outlive the Profile so
+  // we unregister for notifications here.
+  registrar_.RemoveAll();
+
+  // Stop the timer to ensure that UpdateURLData is not called during shutdown.
+  timer_.Stop();
+
+  // Write the cache to disk.  This will schedule the disk operations to be run
+  // on the file_thread.  Note that Join() does not need to be called with the
+  // file_thread because when the disk operation is scheduled, it will hold a
+  // reference to |this| keeping this object alive.
+  CleanCacheData();
+}
+
 void ThumbnailStore::OnRedirectsForURLAvailable(
     HistoryService::Handle handle,
     GURL url,
@@ -201,13 +222,15 @@ void ThumbnailStore::CleanCacheData() {
 
   scoped_refptr<RefCountedVector<GURL> > urls_to_delete =
       new RefCountedVector<GURL>;
+  Cache* data_to_save = new Cache;  // CommitCacheToDB will delete this
 
-  // For each URL in the cache, search the RedirectMap for the originating URL.
-  // If this URL is blacklisted or not in the most visited list, delete the
-  // thumbnail data for it from the cache and from disk in the background.
+  // Iterate the cache, storing urls to be deleted and dirty cache entries to
+  // be written to disk.
   for (Cache::iterator cache_it = cache_->begin();
        cache_it != cache_->end();) {
     const GURL* url = NULL;
+    // For each URL in the cache, search the RedirectMap for the originating
+    // URL.
     for (history::RedirectMap::iterator it = redirect_urls_->begin();
          it != redirect_urls_->end(); ++it) {
       if (cache_it->first == it->first ||
@@ -218,21 +241,33 @@ void ThumbnailStore::CleanCacheData() {
       }
     }
 
+    // If this URL is blacklisted or not in the most visited list, mark it for
+    // deletion. Otherwise, if the cache entry is dirty, mark it to be written
+    // to disk.
     if (url == NULL || IsURLBlacklisted(*url) || !IsPopular(*url)) {
+      // Note that we don't check whether the cache entry is dirty or not. If
+      // it is not dirty, then the thumbnail exists on disk and must be
+      // deleted. If it is dirty, it may exist on disk so we delete it anyways.
       urls_to_delete->data.push_back(cache_it->first);
       cache_->erase(cache_it++);
     } else {
+      if (cache_it->second.dirty_) {
+        data_to_save->insert(*cache_it);
+        cache_it->second.dirty_ = false;
+      }
       ++cache_it;
     }
   }
 
   g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this, &ThumbnailStore::CommitCacheToDB,
-                        urls_to_delete));
+                        urls_to_delete, data_to_save));
 }
 
 void ThumbnailStore::CommitCacheToDB(
-    scoped_refptr<RefCountedVector<GURL> > urls_to_delete) const {
+    scoped_refptr<RefCountedVector<GURL> > urls_to_delete,
+    Cache* data) const {
+  scoped_ptr<Cache> data_to_save(data);
   if (!db_)
     return;
 
@@ -252,26 +287,24 @@ void ThumbnailStore::CommitCacheToDB(
   }
 
   // Update cached thumbnails.
-  for (Cache::iterator it = cache_->begin(); it != cache_->end(); ++it) {
-    if (!it->second.dirty_)
-      continue;
-
-    SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
-        "INSERT OR REPLACE INTO thumbnails "
-        "(url, boring_score, good_clipping, at_top, time_taken, data) "
-        "VALUES (?,?,?,?,?,?)");
-    statement->bind_string(0, it->first.spec());
-    statement->bind_double(1, it->second.score_.boring_score);
-    statement->bind_bool(2, it->second.score_.good_clipping);
-    statement->bind_bool(3, it->second.score_.at_top);
-    statement->bind_int64(4, it->second.score_.time_at_snapshot.
-                             ToInternalValue());
-    statement->bind_blob(5, &it->second.data_->data[0],
-                         static_cast<int>(it->second.data_->data.size()));
-    if (statement->step() != SQLITE_DONE)
-      DLOG(WARNING) << "Unable to insert thumbnail for URL";
-    else
-      it->second.dirty_ = false;
+  if (data_to_save.get()) {
+    for (Cache::iterator it = data_to_save->begin();
+         it != data_to_save->end(); ++it) {
+      SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
+          "INSERT OR REPLACE INTO thumbnails "
+          "(url, boring_score, good_clipping, at_top, time_taken, data) "
+          "VALUES (?,?,?,?,?,?)");
+      statement->bind_string(0, it->first.spec());
+      statement->bind_double(1, it->second.score_.boring_score);
+      statement->bind_bool(2, it->second.score_.good_clipping);
+      statement->bind_bool(3, it->second.score_.at_top);
+      statement->bind_int64(4, it->second.score_.time_at_snapshot.
+                                  ToInternalValue());
+      statement->bind_blob(5, &it->second.data_->data[0],
+                           static_cast<int>(it->second.data_->data.size()));
+      if (statement->step() != SQLITE_DONE)
+        DLOG(WARNING) << "Unable to insert thumbnail for URL";
+    }
   }
 
   rv = sqlite3_exec(db_, "COMMIT", NULL, NULL, NULL);

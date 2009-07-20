@@ -604,6 +604,12 @@ ProfileImpl::~ProfileImpl() {
   // The theme provider provides bitmaps to whoever wants them.
   theme_provider_ = NULL;
 
+  // The ThumbnailStore saves thumbnails used by the NTP.  Call Shutdown to
+  // save any new thumbnails to disk and release its reference to the
+  // HistoryService.
+  if (thumbnail_store_.get())
+    thumbnail_store_->Shutdown();
+
   // Remove pref observers.
   PrefService* prefs = GetPrefs();
   prefs->RemovePrefObserver(prefs::kSpellCheckDictionary, this);

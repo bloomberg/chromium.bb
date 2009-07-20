@@ -55,6 +55,10 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   // Returns false if no thumbnail available.
   bool GetPageThumbnail(const GURL& url, RefCountedBytes** data);
 
+  // This is called when the browser is shutting down to write all dirty cache
+  // entries to disk.
+  void Shutdown();
+
  private:
   FRIEND_TEST(ThumbnailStoreTest, RetrieveFromCache);
   FRIEND_TEST(ThumbnailStoreTest, RetrieveFromDisk);
@@ -106,9 +110,10 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
 
   // Remove stale data --------------------------------------------------------
 
-  // Remove entries from the in memory thumbnail cache and redirect lists
-  // cache that have been blacklisted or are not in the top kMaxCacheSize
-  // visited sites.
+  // Remove entries from the in memory thumbnail cache cache that have been
+  // blacklisted or are not in the top kMaxCacheSize visited sites.  Call
+  // CommitCacheToDB on the file_thread to remove these entries from disk and
+  // to also write new entries to disk.
   void CleanCacheData();
 
   // Disk operations ----------------------------------------------------------
@@ -130,7 +135,8 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   // Delete each URL in the given vector from the DB and write all dirty
   // cache entries to the DB.
   void CommitCacheToDB(
-      scoped_refptr<RefCountedVector<GURL> > urls_to_delete) const;
+      scoped_refptr<RefCountedVector<GURL> > urls_to_delete,
+      Cache* data) const;
 
   // Decide whether to store data ---------------------------------------------
 
@@ -178,10 +184,11 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   // Consumer for queries to the HistoryService.
   CancelableRequestConsumer consumer_;
 
+  // Registrar to get notified when the history is cleared.
   NotificationRegistrar registrar_;
 
   static const unsigned int kMaxCacheSize = 24;
-  static const int64 kInitialUpdateIntervalSecs = 20;
+  static const int64 kInitialUpdateIntervalSecs = 180;
   static const int64 kMaxUpdateIntervalSecs = 3600;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailStore);

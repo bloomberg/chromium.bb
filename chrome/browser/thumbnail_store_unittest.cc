@@ -181,7 +181,8 @@ TEST_F(ThumbnailStoreTest, RetrieveFromDisk) {
   // Write the thumbnail to disk and retrieve it.
 
   store_->InitializeFromDB(db_name_, NULL);
-  store_->CommitCacheToDB(NULL);  // Write to the DB (dirty bit sould be set)
+  // Write to the DB (dirty bit sould be set)
+  store_->CommitCacheToDB(NULL, new ThumbnailStore::Cache(*store_->cache_));
   store_->cache_->clear();        // Clear it from the cache.
 
   // Read from the DB.
