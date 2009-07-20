@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
 #include "app/l10n_util.h"
 
 #include "app/app_paths.h"
@@ -18,7 +16,12 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "build/build_config.h"
 #include "unicode/uscript.h"
+
+#if defined(TOOLKIT_GTK)
+#include <gtk/gtk.h>
+#endif
 
 // TODO(playmobil): remove this undef once SkPostConfig.h is fixed.
 // skia/include/corecg/SkPostConfig.h #defines strcasecmp() so we can't use
@@ -510,8 +513,14 @@ string16 ToLower(const string16& string) {
 // the UI locale of Chrome.
 TextDirection GetTextDirection() {
   if (g_text_direction == UNKNOWN_DIRECTION) {
+#if defined(TOOLKIT_GTK)
+    GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
+    g_text_direction =
+        (gtk_dir == GTK_TEXT_DIR_LTR) ? LEFT_TO_RIGHT : RIGHT_TO_LEFT;
+#else
     const Locale& locale = Locale::getDefault();
     g_text_direction = GetTextDirectionForLocale(locale.getName());
+#endif
   }
   return g_text_direction;
 }
