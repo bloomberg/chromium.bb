@@ -66,8 +66,8 @@ const int kWindowGradientHeight = 24;
 @interface BrowserWindowController(Private)
 
 - (void)positionInfoBar;
-- (void)positionToolbar;
-- (void)removeToolbar;
+- (void)positionBar;  // toolbar or URL bar
+- (void)removeBar;    // toolbar or URL bar
 - (void)installIncognitoBadge;
 
 // Leopard's gradient heuristic gets confused by our tabs and makes the title
@@ -181,7 +181,12 @@ willPositionSheet:(NSWindow*)sheet
                               webContentView:[self tabContentArea]
                                 infoBarsView:[infoBarContainerController_ view]
                             bookmarkDelegate:self]);
-    [self positionToolbar];
+    // If we are a pop-up, we have a titlebar and no toolbar.
+    if (!browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) &&
+        browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR)) {
+      [toolbarController_ setHasToolbar:NO];
+    }
+    [self positionBar];
     [self fixWindowGradient];
 
     // Put the infobar container view into the window above the
@@ -678,14 +683,14 @@ willPositionSheet:(NSWindow*)sheet
     // preference.
     [[toolbarController_ bookmarkBarController] setBookmarkBarEnabled:NO];
     // Make room for more content area.
-    [self removeToolbar];
+    [self removeBar];
     // Hide the menubar, and allow it to un-hide when moving the mouse
     // to the top of the screen.  Does this eliminate the need for an
     // info bubble describing how to exit fullscreen mode?
     SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
   } else {
     SetSystemUIMode(kUIModeNormal, 0);
-    [self positionToolbar];
+    [self positionBar];
     [[toolbarController_ bookmarkBarController] setBookmarkBarEnabled:YES];
   }
 }
@@ -831,46 +836,47 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 // If |add| is YES:
-// Position |toolbarView_| below the tab strip, but not as a
-// sibling. The toolbar is part of the window's contentView, mainly
+// Position |barView| below the tab strip, but not as a sibling. The
+// toolbar or titlebar is part of the window's contentView, mainly
 // because we want the opacity during drags to be the same as the web
 // content.  This can be used for either the initial add or a
 // reposition.
 // If |add| is NO:
-// Remove the toolbar from it's parent view (the window's content view).
-// Called when going fullscreen and we need to minimize UI.
-- (void)positionOrRemoveToolbar:(BOOL)add {
+// Remove the toolbar or titlebar from it's parent view (the window's
+// content view).  Called when going fullscreen and we need to
+// minimize UI.
+- (void)positionOrRemoveBar:(BOOL)add {
+  NSView* barView = [toolbarController_ view];
+  NSRect barFrame = [barView frame];
   NSView* contentView = [self tabContentArea];
   NSRect contentFrame = [contentView frame];
-  NSView* toolbarView = [toolbarController_ view];
-  NSRect toolbarFrame = [toolbarView frame];
 
   // Shrink or grow the content area by the height of the toolbar.
   if (add)
-    contentFrame.size.height -= toolbarFrame.size.height;
+    contentFrame.size.height -= barFrame.size.height;
   else
-    contentFrame.size.height += toolbarFrame.size.height;
+    contentFrame.size.height += barFrame.size.height;
   [contentView setFrame:contentFrame];
 
   if (add) {
     // Move the toolbar above the content area, within the window's content view
     // (as opposed to the tab strip, which is a sibling).
-    toolbarFrame.origin.y = NSMaxY(contentFrame);
-    toolbarFrame.origin.x = 0;
-    toolbarFrame.size.width = contentFrame.size.width;
-    [toolbarView setFrame:toolbarFrame];
-    [[[self window] contentView] addSubview:toolbarView];
+    barFrame.origin.y = NSMaxY(contentFrame);
+    barFrame.origin.x = 0;
+    barFrame.size.width = contentFrame.size.width;
+    [barView setFrame:barFrame];
+    [[[self window] contentView] addSubview:barView];
   } else {
-    [toolbarView removeFromSuperview];
+    [barView removeFromSuperview];
   }
 }
 
-- (void)positionToolbar {
-  [self positionOrRemoveToolbar:YES];
+- (void)positionBar {
+  [self positionOrRemoveBar:YES];
 }
 
-- (void)removeToolbar {
-  [self positionOrRemoveToolbar:NO];
+- (void)removeBar {
+  [self positionOrRemoveBar:NO];
 }
 
 // If the browser is in incognito mode, install the image view to decorate
