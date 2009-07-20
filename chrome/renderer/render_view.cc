@@ -2810,14 +2810,6 @@ std::string RenderView::GetAltHTMLForTemplate(
       template_html, &error_strings, "t");
 }
 
-MessageLoop* RenderView::GetMessageLoopForIO() {
-  // Assume that we have only one RenderThread in the process and the owner loop
-  // of RenderThread is an IO message loop.
-  if (RenderThread::current())
-    return RenderThread::current()->owner_loop();
-  return NULL;
-}
-
 void RenderView::OnMoveOrResizeStarted() {
   if (webview())
     webview()->HideAutofillPopup();

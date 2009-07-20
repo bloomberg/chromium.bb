@@ -9,14 +9,14 @@
 
 ChildProcess* ChildProcess::child_process_;
 
-ChildProcess::ChildProcess(ChildThread* child_thread)
-    : child_thread_(child_thread),
-      ref_count_(0),
-      shutdown_event_(true, false) {
+ChildProcess::ChildProcess()
+    : ref_count_(0),
+      shutdown_event_(true, false),
+      io_thread_("Chrome_ChildIOThread") {
   DCHECK(!child_process_);
   child_process_ = this;
-  if (child_thread_.get())  // null in unittests.
-    child_thread_->Run();
+
+  io_thread_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
 }
 
 ChildProcess::~ChildProcess() {
@@ -28,28 +28,25 @@ ChildProcess::~ChildProcess() {
   // notice shutdown before the render process begins waiting for them to exit.
   shutdown_event_.Signal();
 
-  if (child_thread_.get())
-    child_thread_->Stop();
-
   child_process_ = NULL;
 }
 
 void ChildProcess::AddRefProcess() {
-  DCHECK(!child_thread_.get() ||  // null in unittests.
-         MessageLoop::current() == child_thread_->message_loop());
+  DCHECK(!main_thread_.get() ||  // null in unittests.
+         MessageLoop::current() == main_thread_->message_loop());
   ref_count_++;
 }
 
 void ChildProcess::ReleaseProcess() {
-  DCHECK(!child_thread_.get() ||  // null in unittests.
-         MessageLoop::current() == child_thread_->message_loop());
+  DCHECK(!main_thread_.get() ||  // null in unittests.
+         MessageLoop::current() == main_thread_->message_loop());
   DCHECK(ref_count_);
   DCHECK(child_process_);
   if (--ref_count_)
     return;
 
-  if (child_thread_.get())  // null in unittests.
-    child_thread_->OnProcessFinalRelease();
+  if (main_thread_.get())  // null in unittests.
+    main_thread_->OnProcessFinalRelease();
 }
 
 base::WaitableEvent* ChildProcess::GetShutDownEvent() {

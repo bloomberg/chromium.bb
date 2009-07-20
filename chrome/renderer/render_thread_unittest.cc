@@ -18,7 +18,8 @@ class RenderThreadTest : public testing::Test {
   virtual void SetUp() {
     // Need a MODE_SERVER to make MODE_CLIENTs (like a RenderThread) happy.
     channel_ = new IPC::Channel(kThreadName, IPC::Channel::MODE_SERVER, NULL);
-    mock_process_.reset(new MockProcess(new RenderThread(kThreadName)));
+    mock_process_.reset(new MockProcess());
+    mock_process_->set_main_thread(new RenderThread(kThreadName));
   }
 
   virtual void TearDown() {
@@ -34,15 +35,13 @@ class RenderThreadTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForIO message_loop_;
+  MessageLoop message_loop_;
   scoped_ptr<MockProcess> mock_process_;
   IPC::Channel *channel_;
 };
 
 TEST_F(RenderThreadTest, TestGlobal) {
-  // Can't reach the RenderThread object on other threads, since it's not
-  // thread-safe!
-  ASSERT_FALSE(RenderThread::current());
+  ASSERT_TRUE(RenderThread::current());
 }
 
 TEST_F(RenderThreadTest, TestVisitedMsg) {
@@ -55,7 +54,7 @@ TEST_F(RenderThreadTest, TestVisitedMsg) {
   ASSERT_TRUE(msg);
   // Message goes nowhere, but this confirms Init() has happened.
   // Unusually (?), RenderThread() Start()s itself in it's constructor.
-  mock_process_->child_thread()->Send(msg);
+  mock_process_->main_thread()->Send(msg);
 
   // No need to delete msg; per Message::Send() documentation, "The
   // implementor takes ownership of the given Message regardless of

@@ -21,11 +21,7 @@ class TransportDIB;
 // each renderer.
 class RenderProcess : public ChildProcess {
  public:
-  // This constructor grabs the channel name from the command line arguments.
   RenderProcess();
-  // This constructor uses the given channel name.
-  RenderProcess(const std::string& channel_name);
-
   ~RenderProcess();
 
   // Get a canvas suitable for drawing and transporting to the browser
@@ -52,14 +48,10 @@ class RenderProcess : public ChildProcess {
     return static_cast<RenderProcess*>(ChildProcess::current());
   }
 
- protected:
-  friend class RenderThread;
   // Just like in_process_plugins(), but called before RenderProcess is created.
   static bool InProcessPlugins();
 
  private:
-  void Init();
-
   // Look in the shared memory cache for a suitable object to reuse.
   //   result: (output) the memory found
   //   size: the resulting memory will be >= this size, in bytes

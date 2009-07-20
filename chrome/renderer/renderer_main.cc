@@ -22,6 +22,7 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/render_process.h"
+#include "chrome/renderer/render_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -84,8 +85,11 @@ int RendererMain(const MainFunctionParams& parameters) {
   StatsScope<StatsCounterTimer>
       startup_timer(chrome::Counters::renderer_main());
 
-  // The main thread of the renderer services IO.
-  MessageLoopForIO main_message_loop;
+  // The main message loop of the renderer services doesn't have IO or UI tasks,
+  // unless in-process-plugins is used.
+  MessageLoop main_message_loop(RenderProcess::InProcessPlugins() ?
+              MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT);
+
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_RendererMain").c_str());
 
@@ -116,6 +120,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   {
     RenderProcess render_process;
+    render_process.set_main_thread(new RenderThread());
     bool run_loop = true;
     if (!no_sandbox) {
       run_loop = platform.EnableSandbox();

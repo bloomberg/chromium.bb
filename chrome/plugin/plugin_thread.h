@@ -16,8 +16,6 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
-class NotificationService;
-
 // The PluginThread class represents a background thread where plugin instances
 // live.  Communication occurs between WebPluginDelegateProxy in the renderer
 // process and WebPluginDelegateStub in this thread through IPC messages.
@@ -32,17 +30,11 @@ class PluginThread : public ChildThread {
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
-  // Thread implementation:
-  virtual void Init();
-  virtual void CleanUp();
-
   // Callback for when a channel has been created.
   void OnCreateChannel(
       int process_id,
       bool off_the_record);
   void OnPluginMessage(const std::vector<uint8> &data);
-
-  scoped_ptr<NotificationService> notification_service_;
 
   // The plugin module which is preloaded in Init
   base::NativeLibrary preloaded_plugin_module_;
