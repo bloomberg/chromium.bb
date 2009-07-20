@@ -494,7 +494,11 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
         _ToolAppend(tools, tool, setting, settings[setting])
 
     # Add in includes.
-    include_dirs = c.get('include_dirs', [])
+    # TODO(bradnelson): include_dirs should really be flexible enough not to
+    #                   require this sort of thing.
+    include_dirs = (
+        c.get('include_dirs', []) +
+        c.get('msvs_system_include_dirs', []))
     resource_include_dirs = c.get('resource_include_dirs', include_dirs)
     include_dirs = [_FixPath(i) for i in include_dirs]
     resource_include_dirs = [_FixPath(i) for i in resource_include_dirs]
