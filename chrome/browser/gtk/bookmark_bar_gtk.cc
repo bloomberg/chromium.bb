@@ -47,6 +47,25 @@ const int kInstructionsPadding = 6;
 // Color of the instructional text.
 const GdkColor kInstructionsColor = GDK_COLOR_RGB(128, 128, 142);
 
+void SetToolBarStyle() {
+  static bool style_was_set = false;
+
+  if (style_was_set)
+    return;
+  style_was_set = true;
+
+  gtk_rc_parse_string(
+      "style \"chrome-bookmark-toolbar\" {"
+      "  xthickness = 0\n"
+      "  ythickness = 0\n"
+      "  GtkWidget::focus-padding = 0\n"
+      "  GtkContainer::border-width = 0\n"
+      "  GtkToolBar::internal-padding = 0\n"
+      "  GtkToolBar::shadow-type = GTK_SHADOW_NONE\n"
+      "}\n"
+      "widget \"*chrome-bookmark-toolbar\" style \"chrome-bookmark-toolbar\"");
+}
+
 }  // namespace
 
 BookmarkBarGtk::BookmarkBarGtk(Profile* profile, Browser* browser,
@@ -129,6 +148,8 @@ void BookmarkBarGtk::Init(Profile* profile) {
                    G_CALLBACK(&OnHBoxExpose), this);
 
   bookmark_toolbar_.Own(gtk_toolbar_new());
+  SetToolBarStyle();
+  gtk_widget_set_name(bookmark_toolbar_.get(), "chrome-bookmark-toolbar");
   gtk_widget_set_app_paintable(bookmark_toolbar_.get(), TRUE);
   g_signal_connect(G_OBJECT(bookmark_toolbar_.get()), "expose-event",
                    G_CALLBACK(&OnToolbarExpose), this);
