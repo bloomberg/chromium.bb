@@ -72,7 +72,7 @@
 # http://wiki.corp.google.com/twiki/bin/view/Main/ClientThreeDSampleGuidelines
 #
 #
-medium  2d                                screenshot pdiff_threshold(200)
+medium  2d                                screenshot pdiff_threshold(200) colorfactor(0.8)
 medium  animation
 large   animated-scene                    screenshot timeout(45000) pdiff_threshold(200)
 large   beachdemo/beachdemo               screenshot timeout(120000) pdiff_threshold(200) pdiff_threshold_mac(2100) downsample(1) except(*iexplore, *googlechrome)
@@ -108,11 +108,11 @@ medium  skinning                          screenshot pdiff_threshold(200)
 medium  sobel                             screenshot pdiff_threshold(1400)
 medium  stencil_example                   screenshot(0) screenshot(100) screenshot(7777) pdiff_threshold(200) pdiff_threshold_win(200)
 medium  shadow-map                        screenshot pdiff_threshold(200)
-small   texturesamplers                   screenshot pdiff_threshold(200) pdiff_threshold_win(200)
+small   texturesamplers                   screenshot pdiff_threshold_win(1200) pdiff_threshold_mac(32200)
 medium  tutorial-primitive                screenshot pdiff_threshold(200) pdiff_threshold_mac(10400)
 large   vertex-shader                     screenshot timeout(45000) pdiff_threshold(200)  except(*iexplore)
 medium  vertex-shader-animation           screenshot pdiff_threshold(200)
-medium  zsorting                          screenshot pdiff_threshold(200)
+medium  zsorting                          screenshot pdiff_threshold_win(200) pdiff_threshold_mac(39500)
 # box2d-3d works in browsers but for some reason times out on some configs
 #large   box2d-3d/box2d-3d                timeout(45000) except(*googlechrome)
 large   simpleviewer/simpleviewer         screenshot pdiff_threshold(100)
