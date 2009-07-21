@@ -2978,3 +2978,10 @@ BUG13907 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 BUG17321 LINUX WIN : LayoutTests/fast/loader/non-html-load-event.html = FAIL
 BUG17321 MAC : LayoutTests/fast/loader/non-html-load-event.html = CRASH FAIL
 
+// Tests that regressed from WebKit merge (got rebaselined upstream)
+BUG17326 : LayoutTests/editing/execCommand/4641880-2.html = FAIL
+BUG17326 : LayoutTests/editing/execCommand/4916541.html = FAIL
+BUG17326 : LayoutTests/editing/execCommand/5138441.html = FAIL
+BUG17326 : LayoutTests/editing/execCommand/5481523.html = FAIL
+BUG17326 : LayoutTests/editing/execCommand/indent-selection.html = FAIL
+
