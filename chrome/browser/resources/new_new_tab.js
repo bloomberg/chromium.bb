@@ -94,29 +94,82 @@ function downloadsList(data) {
 
   // We should only show complete downloads.
   data = data.filter(function(d) {
+    d.type = 'download';
+    d.timestamp = d.started;
     return d.state == 'COMPLETE';
   });
-  data.length = Math.min(data.length, 5);
-  processData('#download-items', data);
+
+  gotRecentItems(data, 'download');
 }
 
 function recentlyClosedTabs(data) {
   logEvent('received recently closed tabs');
-  data.length = Math.min(data.length, 5);
-  processData('#tab-items', data);
+
+  // We handle timestamp 0 as now
+  data.forEach(function(d) {
+    if (d.timestamp == 0) {
+      d.timestamp = Date.now();
+    }
+  });
+
+  gotRecentItems(data);
+}
+
+var recentItems = [];
+var recentItemKeys = {};
+
+function getRecentItemKey(d) {
+  // type == window does not have a URL
+  return d.type + (d.url || d.sessionId) + d.timestamp;
+}
+
+function gotRecentItems(data) {
+  // Add new items
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    var key = getRecentItemKey(d);
+    if (!(key in recentItemKeys)) {
+      recentItems.push(d);
+      recentItemKeys[key] = true;
+    }
+  }
+
+  recentItems.sort(function(d1, d2) {
+    return d2.timestamp - d1.timestamp;
+  });
+
+  renderRecentItems();
+}
+
+function renderRecentItems() {
+  // When tips are shown we only show 10 items
+  var desiredCount = shownSections & Section.TIPS ? 10 : 20;
+  desiredCount -= 2; // Show all downloads and all history uses two rows.
+
+  processData('#recent-activities > .item-container',
+              recentItems.slice(0, desiredCount));
 }
 
 function onShownSections(mask) {
   logEvent('received shown sections');
   if (mask != shownSections) {
+    var oldShownSections = shownSections;
+    shownSections = mask;
 
     // Only invalidate most visited if needed.
-    if ((mask & Section.THUMB) != (shownSections & Section.THUMB) ||
-        (mask & Section.LIST) != (shownSections & Section.LIST)) {
+    if ((mask & Section.THUMB) != (oldShownSections & Section.THUMB) ||
+        (mask & Section.LIST) != (oldShownSections & Section.LIST)) {
       mostVisited.invalidate();
     }
 
-    shownSections = mask;
+    if ((mask & Section.RECENT) != (oldShownSections & Section.RECENT)) {
+      notifyLowerSectionForChange(Section.RECENT);
+    }
+
+    if ((mask & Section.TIPS) != (oldShownSections & Section.TIPS)) {
+      notifyLowerSectionForChange(Section.TIPS);
+    }
+
     mostVisited.updateDisplayMode();
     layoutLowerSections();
     updateOptionMenu();
@@ -136,10 +189,6 @@ function tips(data) {
   processData('#tip-items', data);
 }
 
-// This global variable is used to skip parts of the DOM tree for the global
-// jst processing done by the i18n.
-var processing = false;
-
 function processData(selector, data) {
   var output = document.querySelector(selector);
 
@@ -152,9 +201,7 @@ function processData(selector, data) {
   } else {
     var d0 = Date.now();
     var input = new JsEvalContext(data);
-    processing = true;
     jstProcess(input, output);
-    processing = false;
     logEvent('processData: ' + selector + ', ' + (Date.now() - d0));
   }
 }
@@ -272,7 +319,7 @@ function showSection(section) {
       shownSections &= ~Section.THUMB;
       mostVisited.invalidate();
     } else {
-      notifyLowerSectionForChange(section, false);
+      notifyLowerSectionForChange(section);
       layoutLowerSections();
     }
 
@@ -290,8 +337,8 @@ function hideSection(section) {
       mostVisited.invalidate();
     }
 
-    if (section & Section.RECENT|| section & Section.TIPS) {
-      notifyLowerSectionForChange(section, true);
+    if (section & Section.RECENT || section & Section.TIPS) {
+      notifyLowerSectionForChange(section);
       layoutLowerSections();
     }
 
@@ -301,15 +348,14 @@ function hideSection(section) {
   }
 }
 
-function notifyLowerSectionForChange(section, large) {
+function notifyLowerSectionForChange(section) {
   // Notify recent and tips if they need to display more data.
   if (section == Section.RECENT || section == Section.TIPS) {
-    // we are hiding one of them so if the other one is visible it is now
-    // {@code large}.
     if (shownSections & Section.RECENT) {
-      recentChangedSize(large);
-    } else if (shownSections & Section.TIPS) {
-      tipsChangedSize(large);
+      recentChangedSize(!(shownSections & Section.TIPS));
+    }
+    if (shownSections & Section.TIPS) {
+      tipsChangedSize(!(shownSections & Section.RECENT));
     }
   }
 }
@@ -563,7 +609,13 @@ var mostVisited = {
 };
 
 function recentChangedSize(large) {
-  // TODO(arv): Implement
+  if (large) {
+    addClass($('recent-activities'), 'large');
+  } else {
+    removeClass($('recent-activities'), 'large');
+  }
+
+  renderRecentItems();
 }
 
 function tipsChangedSize(large) {
@@ -924,9 +976,6 @@ function handleIfEnterKey(f) {
   };
 }
 
-$('downloads').addEventListener('click', maybeOpenFile);
-$('downloads').addEventListener('keydown', handleIfEnterKey(maybeOpenFile));
-
 function maybeOpenFile(e) {
   var el = findAncestor(e.target, function(el) {
     return el.fileId !== undefined;
@@ -936,10 +985,6 @@ function maybeOpenFile(e) {
     e.preventDefault();
   }
 }
-
-var recentTabs = $('recent-tabs');
-recentTabs.addEventListener('click', maybeReopenTab);
-recentTabs.addEventListener('keydown', handleIfEnterKey(maybeReopenTab));
 
 function maybeReopenTab(e) {
   var el = findAncestor(e.target, function(el) {
@@ -951,18 +996,29 @@ function maybeReopenTab(e) {
   }
 }
 
-recentTabs.addEventListener('mouseover', maybeShowWindowMenu);
-recentTabs.addEventListener('focus', maybeShowWindowMenu, true);
-
-
 function maybeShowWindowMenu(e) {
-  var el = findAncestor(e.target, function(el) {
+  var f = function(el) {
     return el.tabItems !== undefined;
-  });
-  if (el) {
+  };
+  var el = findAncestor(e.target, f);
+  var relatedEl = findAncestor(e.relatedTarget, f);
+  if (el && el != relatedEl) {
     windowMenu.show(e, el, el.tabItems);
   }
 }
+
+
+var recentActivitiesElement = $('recent-activities');
+recentActivitiesElement.addEventListener('click', maybeOpenFile);
+recentActivitiesElement.addEventListener('keydown',
+                                         handleIfEnterKey(maybeOpenFile));
+
+recentActivitiesElement.addEventListener('click', maybeReopenTab);
+recentActivitiesElement.addEventListener('keydown',
+                                         handleIfEnterKey(maybeReopenTab));
+
+recentActivitiesElement.addEventListener('mouseover', maybeShowWindowMenu);
+recentActivitiesElement.addEventListener('focus', maybeShowWindowMenu, true);
 
 /**
  * This object represents a window/tooltip representing a closed window. It is
@@ -972,13 +1028,11 @@ function maybeShowWindowMenu(e) {
  * @constructor
  */
 function WindowMenu(menuEl) {
+  // TODO(arv): Rename WindowTooltip and make it behave even more like a
+  // tooltip.
   this.menuEl = menuEl;
-  var self = this;
   this.boundHide_ = bind(this.hide, this);
-  menuEl.onmouseover = function() {
-    clearTimeout(self.timer);
-  };
-  menuEl.onmouseout = this.boundHide_;
+  this.boundHandleMouseOut_ = bind(this.handleMouseOut, this);
 }
 
 WindowMenu.prototype = {
@@ -993,18 +1047,37 @@ WindowMenu.prototype = {
     var rtl = document.documentElement.dir == 'rtl';
 
     this.menuEl.style.display = 'block';
-    this.menuEl.style.left = (rtl ?
-        rect.left + bodyRect.left + rect.width - this.menuEl.offsetWidth :
-        rect.left + bodyRect.left) + 'px';
-    this.menuEl.style.top = rect.top + bodyRect.top + rect.height + 'px';
+    // When focused show below, like a drop down menu.
+    if (e.type == 'focus') {
+      this.menuEl.style.left = (rtl ?
+          rect.left + bodyRect.left + rect.width - this.menuEl.offsetWidth :
+          rect.left + bodyRect.left) + 'px';
+      this.menuEl.style.top = rect.top + bodyRect.top + rect.height + 'px';
+    } else {
+      this.menuEl.style.left = bodyRect.left + (rtl ?
+          e.clientX - this.menuEl.offsetWidth :
+          e.clientX) + 'px';
+      this.menuEl.style.top = e.clientY + bodyRect.top + 'px';
+    }
 
     if (e.type == 'focus') {
       linkEl.onblur = this.boundHide_;
     } else { // mouseover
-      linkEl.onmouseout = this.boundHide_;
+      linkEl.onmouseout = this.boundHandleMouseOut_;
     }
   },
-  hide: function() {
+  handleMouseOut: function(e) {
+    // Don't hide when move to another item in the link.
+    var f = function(el) {
+      return el.tabItems !== undefined;
+    };
+    var el = findAncestor(e.target, f);
+    var relatedEl = findAncestor(e.relatedTarget, f);
+    if (el && el != relatedEl) {
+      this.hide();
+    }
+  },
+  hide: function(e) {
     // Delay before hiding.
     var self = this;
     this.timer = setTimeout(function() {

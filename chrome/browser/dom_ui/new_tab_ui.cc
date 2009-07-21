@@ -1218,12 +1218,13 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
   const TabRestoreService::Entries& entries = service->entries();
   ListValue list_value;
   int added_count = 0;
+  const int max_count = NewTabUI::UseOldNewTabPage() ? 3 : 6;
 
   // We filter the list of recently closed to only show 'interesting' entries,
   // where an interesting entry is either a closed window or a closed tab
   // whose selected navigation is not the new tab ui.
   for (TabRestoreService::Entries::const_iterator it = entries.begin();
-       it != entries.end() && added_count < 3; ++it) {
+       it != entries.end() && added_count < max_count; ++it) {
     TabRestoreService::Entry* entry = *it;
     DictionaryValue* value = new DictionaryValue();
     if ((entry->type == TabRestoreService::TAB &&

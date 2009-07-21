@@ -356,11 +356,11 @@ html[dir=rtl] .thumbnail-container > .title > div {
   white-space: nowrap;
   text-overflow: ellipsis;
   border: 1px solid hsl(213, 65%, 92%);
-  padding-bottom: 5px;
   overflow: hidden;
-  min-height: 198px; /* height of 6 items plus the header */
+  min-height: 151px; /* height of 5 items plus the header */
   vertical-align: top;
   margin: 0;
+  margin-bottom: 10px;
 }
 
 .section > h2 {
@@ -410,7 +410,6 @@ html[dir='rtl'] .item {
 }
 
 .window {
-  position: relative;
   overflow: visible; /* We use visible so that the menu can be a child and shown
                         on :hover. To get this to work we have to set visibility
                         to visible which unfortunately breaks the ellipsis for t
@@ -422,7 +421,7 @@ html[dir='rtl'] .item {
   position: absolute;
   display: none;
   border: 1px solid #999;
-  -webkit-box-shadow: 5px 5px 10px hsla(0, 0%, 0%, .3);
+  -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
   background-color: hsla(213, 0%, 100%, .95);
   width: 157px;
   left: 0;
@@ -432,15 +431,24 @@ html[dir='rtl'] .item {
   cursor: default;
 }
 
+/* Made to look like a tooltip using vista/win7 look and feel.
+   TODO(arv): Replace with -webkit-appearance once issue 17371 is fixed
+ */
+#window-menu {
+  pointer-events: none;
+  border: 1px solid rgb(118,118,118);
+  -webkit-border-radius: 3px;
+  padding: 0px 3px;
+  background: -webkit-gradient(linear, left top, left bottom,
+                               from(white),
+                               to(rgb(228,229,240)));
+  width: auto;
+  max-width: 300px;
+}
+
 .hbox {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
-}
-
-#recent-tabs,
-#downloads {
-  -webkit-box-flex: 1;
-  width: 50%;
 }
 
 .section h3 {
@@ -462,12 +470,22 @@ html[dir='rtl'] .item {
 
 .item.nav:after {
   content: '\00bb'; /* raque gets flipped automatically in rtl */
-  font-size: 120%;
+  font-size: 115%;
   -webkit-padding-start: 2px;
 }
 
 #recent-activities {
   -webkit-transition: width .15s, opacity .15s;
+}
+
+#recent-activities > .item-container {
+  -webkit-column-count: 2;
+  -webkit-column-gap: 20px;
+  height: 120px;
+}
+
+#recent-activities.large > .item-container {
+  -webkit-column-count: 4;
 }
 
 .section {

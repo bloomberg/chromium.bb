@@ -84,7 +84,7 @@ logEvent('log start');
     <span><span class="link" tabindex="0"></span></span>
   </div>
 
-  <div id="most-visited" jsskip="true">
+  <div id="most-visited">
     <a class="thumbnail-container filler" tabindex="1" id="t0">
       <div class="edit-mode-border">
         <div class="edit-bar">
@@ -220,70 +220,44 @@ logEvent('log start');
     <div id="recent-activities" class="section">
       <h2 i18n-content="recentactivities"></h2>
 
-      <div class="hbox">
-
-        <div id="recent-tabs">
-          <h3 i18n-content="recentlyclosed"></h3>
-
-          <div class="item-container">
-            <div id="tab-items" jsskip="!processing">
-              <div jsselect="$this">
-                <a class="item"
-                    jsdisplay="type == 'tab'"
-                    jsvalues="href:url;
-                        .xtitle:title;
-                        .style.backgroundImage:'url(&quot;chrome://favicon/' +
-                            url + '&quot;)';
-                        dir:direction;
-                        .sessionId:sessionId"
-                    jscontent="title"></a>
-                <div jsdisplay="type == 'window'"
-                    class="item link window"
-                    jsvalues=".sessionId:sessionId;
-                              .tabItems:tabs"
-                    tabindex="0">
-                  <span jscontent="formatTabsText($this.tabs.length)"></span>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <a href="chrome://history/" class="item nav"
-                  i18n-content="viewfullhistory"></a>
-            </div>
-
+      <div class="item-container">
+        <div jsselect="$this">
+          <a class="item"
+              jsdisplay="type == 'tab'"
+              jsvalues="href:url;
+                  .xtitle:title;
+                  .style.backgroundImage:'url(&quot;chrome://favicon/' +
+                      url + '&quot;)';
+                  dir:direction;
+                  .sessionId:sessionId"
+              jscontent="title"></a>
+          <div jsdisplay="type == 'window'"
+              class="item link window"
+              jsvalues=".sessionId:sessionId;
+                        .tabItems:tabs"
+              tabindex="0">
+            <span jscontent="formatTabsText($this.tabs.length)"></span>
           </div>
+          <a class="item"
+              jsdisplay="type == 'download'"
+              jsvalues="href:file_path;title:url;
+                  .style.backgroundImage:
+                      'url(chrome://theme/downloads_favicon)';
+                  dir:direction;
+                  .fileId:id"
+              jscontent="file_name"></a>
         </div>
-
-        <div id="downloads">
-          <h3 i18n-content="downloads"></h3>
-          <div class="item-container">
-            <div id="download-items" jsskip="!processing">
-              <a class="item" jsselect="$this"
-                 jsdisplay="state != 'CANCELLED'"
-                 jsvalues="href:file_path;title:url;
-                     .style.backgroundImage:'url(&quot;chrome://fileicon/' +
-                         file_path + '&quot;)';
-                     dir:direction;
-                     .fileId:id"
-                 jscontent="file_name"></a>
-            </div>
-
-            <div>
-              <a href="chrome://downloads/" class="item nav"
-                  i18n-content="viewalldownloads"></a>
-            </div>
-
-          </div>
-        </div>
-
+        <a href="chrome://history/" class="item nav"
+            i18n-content="viewfullhistory"></a>
+        <a href="chrome://downloads/" class="item nav"
+            i18n-content="viewalldownloads"></a>
       </div>
 
     </div><div class="spacer">
 
     </div><div id="tips" class="section">
       <h2 i18n-content="tipsandsuggestions"></h2>
-      <div id="tip-items" jsskip="!processing">
+      <div id="tip-items">
         <div class="tips-title item" jsselect="$this"
             jsdisplay="!url"
             i18n-content="defaulttipstitle">
@@ -300,12 +274,11 @@ logEvent('log start');
 
 </div> <!-- main -->
 
-<div jsskip="true">
+<div>
   <div class="window-menu" id="window-menu">
     <span class="item" jsselect="$this"
         jsvalues=".style.backgroundImage:'url(&quot;chrome://favicon/' + url +
             '&quot;)';
-            .xtitle:title;
             dir:direction;"
         jscontent="title"></span>
   </div>
