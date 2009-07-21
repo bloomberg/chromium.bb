@@ -272,10 +272,6 @@ void ChannelProxy::RemoveFilter(MessageFilter* filter) {
       context_.get(), &Context::OnRemoveFilter, filter));
 }
 
-void ChannelProxy::ClearIPCMessageLoop() {
-  context()->ClearIPCMessageLoop();
-}
-
 #if defined(OS_POSIX)
 // See the TODO regarding lazy initialization of the channel in
 // ChannelProxy::Init().

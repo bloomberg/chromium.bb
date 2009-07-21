@@ -17,7 +17,7 @@ class RenderProcessTest : public testing::Test {
   virtual void SetUp() {
     // Need a MODE_SERVER to make MODE_CLIENTs (like a RenderThread) happy.
     channel_ = new IPC::Channel(kThreadName, IPC::Channel::MODE_SERVER, NULL);
-    render_process_.reset(new RenderProcess());
+    render_process_.reset(new RenderProcess(kThreadName));
   }
 
   virtual void TearDown() {

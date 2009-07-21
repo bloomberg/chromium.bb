@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/thread.h"
 #include "chrome/common/child_thread.h"
 
 class GURL;
@@ -29,6 +30,10 @@ class UtilityThread : public ChildThread {
 
   // IPC messages for web resource service.
   void OnUnpackWebResource(const std::string& resource_data);
+
+  // Called by the thread base class
+  virtual void Init();
+  virtual void CleanUp();
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThread);
 };

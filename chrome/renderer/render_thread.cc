@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/plugin/npobject_util.h"
 // TODO(port)
@@ -54,10 +55,54 @@
 using WebKit::WebCache;
 using WebKit::WebString;
 
-namespace {
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
+
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
     base::LINKER_INITIALIZED);
+
+//-----------------------------------------------------------------------------
+// Methods below are only called on the owner's thread:
+
+// When we run plugins in process, we actually run them on the render thread,
+// which means that we need to make the render thread pump UI events.
+RenderThread::RenderThread()
+    : ChildThread(
+          base::Thread::Options(RenderProcess::InProcessPlugins() ?
+              MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT, kV8StackSize)),
+      plugin_refresh_allowed_(true) {
+}
+
+RenderThread::RenderThread(const std::string& channel_name)
+    : ChildThread(
+          base::Thread::Options(RenderProcess::InProcessPlugins() ?
+              MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT, kV8StackSize)),
+      plugin_refresh_allowed_(true) {
+  SetChannelName(channel_name);
+}
+
+RenderThread::~RenderThread() {
+}
+
+RenderThread* RenderThread::current() {
+  return lazy_tls.Pointer()->Get();
+}
+
+void RenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  channel()->AddFilter(filter);
+}
+
+void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
+  channel()->RemoveFilter(filter);
+}
+
+void RenderThread::Resolve(const char* name, size_t length) {
+  return dns_master_->Resolve(name, length);
+}
+
+void RenderThread::SendHistograms(int sequence_number) {
+  return histogram_snapshots_->SendHistograms(sequence_number);
+}
+
 static WebAppCacheContext* CreateAppCacheContextForRenderer() {
   return new AppCacheContextImpl(RenderThread::current());
 }
@@ -83,18 +128,6 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
   }
 };
 #endif
-}  // namespace
-
-// When we run plugins in process, we actually run them on the render thread,
-// which means that we need to make the render thread pump UI events.
-RenderThread::RenderThread() {
-  Init();
-}
-
-RenderThread::RenderThread(const std::string& channel_name)
-    : ChildThread(channel_name) {
-  Init();
-}
 
 void RenderThread::Init() {
   lazy_tls.Pointer()->Set(this);
@@ -105,7 +138,8 @@ void RenderThread::Init() {
     CoInitialize(0);
 #endif
 
-  plugin_refresh_allowed_ = true;
+  ChildThread::Init();
+  notification_service_.reset(new NotificationService);
   cache_stats_factory_.reset(
       new ScopedRunnableMethodFactory<RenderThread>(this));
 
@@ -124,13 +158,24 @@ void RenderThread::Init() {
 #endif
 }
 
-RenderThread::~RenderThread() {
+void RenderThread::CleanUp() {
   // Shutdown in reverse of the initialization order.
   RemoveFilter(devtools_agent_filter_.get());
+  devtools_agent_filter_ = NULL;
   WebAppCacheContext::SetFactory(NULL);
-  if (webkit_client_.get())
-    WebKit::shutdown();
+  app_cache_dispatcher_.reset();
+  histogram_snapshots_.reset();
+  dns_master_.reset();
+  user_script_slave_.reset();
+  visited_link_slave_.reset();
 
+  if (webkit_client_.get()) {
+    WebKit::shutdown();
+    webkit_client_.reset();
+  }
+
+  notification_service_.reset();
+  ChildThread::CleanUp();
   lazy_tls.Pointer()->Set(NULL);
 
   // TODO(port)
@@ -141,26 +186,6 @@ RenderThread::~RenderThread() {
   if (RenderProcess::InProcessPlugins())
     CoUninitialize();
 #endif
-}
-
-RenderThread* RenderThread::current() {
-  return lazy_tls.Pointer()->Get();
-}
-
-void RenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  channel()->AddFilter(filter);
-}
-
-void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
-  channel()->RemoveFilter(filter);
-}
-
-void RenderThread::Resolve(const char* name, size_t length) {
-  return dns_master_->Resolve(name, length);
-}
-
-void RenderThread::SendHistograms(int sequence_number) {
-  return histogram_snapshots_->SendHistograms(sequence_number);
 }
 
 void RenderThread::OnUpdateVisitedLinks(base::SharedMemoryHandle table) {
@@ -249,6 +274,8 @@ void RenderThread::OnCreateNewView(gfx::NativeViewId parent_hwnd,
       true, false);
 #endif
 
+  // TODO(darin): once we have a RenderThread per RenderView, this will need to
+  // change to assert that we are not creating more than one view.
   RenderView::Create(
       this, parent_hwnd, waitable_event, MSG_ROUTING_NONE, renderer_prefs,
       webkit_prefs, new SharedRenderViewCounter(0), view_id);
