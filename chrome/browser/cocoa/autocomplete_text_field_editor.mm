@@ -45,4 +45,17 @@
   }
 }
 
+// We have rich text, but it shouldn't be modified by the user, so
+// don't update the font panel.  In theory, -setUsesFontPanel: should
+// accomplish this, but that gets called frequently with YES when
+// NSTextField and NSTextView synchronize their contents.  That is
+// probably unavoidable because in most cases having rich text in the
+// field you probably would expect it to update the font panel.
+- (void)updateFontPanel {
+}
+
+// No ruler bar, so don't update any of that state, either.
+- (void)updateRuler {
+}
+
 @end
