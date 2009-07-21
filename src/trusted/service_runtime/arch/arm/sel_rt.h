@@ -45,17 +45,6 @@ uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, esp, lr, eip;
           /* 0   4   8   c  10  14   18  1c   20  24   28 */
 };
 
-/*
- * A sanity check -- should be invoked in some early function, e.g.,
- * main, or something that main invokes early.
- */
-/* TODO(petr): move this to platform-specific file,
- * should be done together with splitting sel_ldr.c
- */
-#define NACL_THREAD_CHECK do {                    \
-    CHECK(sizeof(struct NaClThreadContext) == 44);  \
-  } while (0)
-
 struct NaClApp;  /* fwd */
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,

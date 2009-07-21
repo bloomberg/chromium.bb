@@ -95,6 +95,7 @@
             'arch/x86/nacl_switch_to_app.c',
             'arch/x86/sel_rt.c',
             'arch/x86/nacl_thread.c',
+            'arch/x86/sel_ldr_x86.c',
             'arch/x86_32/nacl_switch.S',
             'arch/x86_32/nacl_syscall.S',
             'arch/x86_32/springboard.S',
@@ -107,6 +108,7 @@
             'arch/arm/nacl_switch_to_app.c',
             'arch/arm/sel_rt.c',
             'arch/arm/nacl_thread.c',
+            'arch/arm/sel_ldr_arm.c',
             'arch/arm/nacl_switch.S',
             'arch/arm/nacl_syscall.S',
             'arch/arm/springboard.S',
@@ -118,13 +120,13 @@
             'linux/sel_memory.c',
           ],
           'conditions': [
-            ['target_arch=="ia32"': {
+            ['target_arch=="ia32"', {
               'sources': [
                 'linux/x86/nacl_ldt.c',
                 'linux/x86/sel_segments.c',
               ],
             }],
-            ['target_arch=="arm"': {
+            ['target_arch=="arm"', {
               'soruces': [
                 'linux/arm/sel_segments.c',
               ],

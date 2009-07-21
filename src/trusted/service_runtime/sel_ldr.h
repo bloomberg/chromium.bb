@@ -601,4 +601,36 @@ void NaClWaitForModuleStartStatusCall(struct NaClApp *nap);
 
 EXTERN_C_END
 
+void NaClThreadStartupCheck();
+
+void NaClFillTrampolineRegion(struct NaClApp *nap);
+
+void NaClPatchOneTrampoline(struct NaClApp *nap,
+                            uintptr_t target_addr);
+/*
+ * target is an absolute address in the source region.  the patch code
+ * will figure out the corresponding address in the destination region
+ * and modify as appropriate.  this makes it easier to specify, since
+ * the target is typically the address of some symbol from the source
+ * template.
+ */
+struct NaClPatch {
+  uint32_t            target;
+  uint32_t            value;
+};
+
+struct NaClPatchInfo {
+  uintptr_t           dst;
+  uintptr_t           src;
+  size_t              nbytes;
+  uintptr_t           *rel32;
+  size_t              num_rel32;
+  struct NaClPatch    *abs32;
+  size_t              num_abs32;
+  struct NaClPatch    *abs16;
+  size_t              num_abs16;
+};
+
+void NaClApplyPatchToMemory(struct NaClPatchInfo *patch);
+
 #endif
