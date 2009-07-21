@@ -41,6 +41,7 @@
 #include "chrome/browser/gtk/go_button_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
+#include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/gtk/infobar_container_gtk.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
 #include "chrome/browser/gtk/nine_box.h"
@@ -817,7 +818,10 @@ void BrowserWindowGtk::Observe(NotificationType type,
         break;
 
       const GdkWindow* active_window = Details<const GdkWindow>(details).ptr();
-      bool is_active = (GTK_WIDGET(window_)->window == active_window);
+      const GtkWindow* info_bubble_toplevel =
+          InfoBubbleGtk::GetToplevelForInfoBubble(active_window);
+      bool is_active = (GTK_WIDGET(window_)->window == active_window ||
+                       window_ == info_bubble_toplevel);
       bool changed = (is_active != is_active_);
       is_active_ = is_active;
       if (changed) {

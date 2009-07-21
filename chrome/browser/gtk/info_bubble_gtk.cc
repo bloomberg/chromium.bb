@@ -12,6 +12,7 @@
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
+#include "chrome/common/notification_service.h"
 
 namespace {
 
@@ -32,6 +33,8 @@ const int kRightMargin = kCornerSize + 6;
 
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
+
+const gchar* kInfoBubbleToplevelKey = "__INFO_BUBBLE_TOPLEVEL__";
 
 // A small convenience since GdkPoint is a POD without a constructor.
 GdkPoint MakeGdkPoint(gint x, gint y) {
@@ -133,7 +136,6 @@ InfoBubbleGtk::InfoBubbleGtk()
       accel_group_(gtk_accel_group_new()),
       screen_x_(0),
       screen_y_(0) {
-
 }
 
 InfoBubbleGtk::~InfoBubbleGtk() {
@@ -192,8 +194,11 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
                    G_CALLBACK(&HandleButtonPressThunk), this);
   g_signal_connect(window_, "destroy",
                    G_CALLBACK(&HandleDestroyThunk), this);
-  g_signal_connect(window_, "focus-out-event",
-                   G_CALLBACK(&HandleFocusOutThunk), this);
+
+  // Set some data which helps the browser know whether it should appear
+  // active.
+  g_object_set_data(G_OBJECT(window_->window), kInfoBubbleToplevelKey,
+                    transient_toplevel);
 
   gtk_widget_show_all(window_);
   // Make sure our window has focus, is brought to the top, etc.
@@ -205,6 +210,30 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
   // keystrokes from your window manager, prevent you from interacting with
   // other applications, etc.
   gtk_grab_add(window_);
+
+  registrar_.Add(this, NotificationType::ACTIVE_WINDOW_CHANGED,
+                 NotificationService::AllSources());
+}
+
+void InfoBubbleGtk::Observe(NotificationType type,
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+  DCHECK(type.value == NotificationType::ACTIVE_WINDOW_CHANGED);
+
+  // If we are no longer the active toplevel for whatever reason (whether
+  // another toplevel gained focus or our browser did), close.
+  if (window_->window != Details<const GdkWindow>(details).ptr())
+    Close();
+}
+
+// static
+GtkWindow* InfoBubbleGtk::GetToplevelForInfoBubble(
+    const GdkWindow* bubble_window){
+  if (!bubble_window)
+    return NULL;
+
+  return reinterpret_cast<GtkWindow*>(
+      g_object_get_data(G_OBJECT(bubble_window), kInfoBubbleToplevelKey));
 }
 
 void InfoBubbleGtk::Close(bool closed_by_escape) {
@@ -248,10 +277,5 @@ gboolean InfoBubbleGtk::HandleDestroy() {
   // destroy the widget manually, or the window was closed via X.  This will
   // delete the InfoBubbleGtk object.
   delete this;
-  return FALSE;  // Propagate.
-}
-
-gboolean InfoBubbleGtk::HandleFocusOut(GdkEventButton* event) {
-  Close();
   return FALSE;  // Propagate.
 }

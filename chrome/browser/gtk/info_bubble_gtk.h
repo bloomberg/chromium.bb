@@ -16,6 +16,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "chrome/common/notification_registrar.h"
 
 class InfoBubbleGtk;
 namespace gfx {
@@ -33,7 +34,7 @@ class InfoBubbleGtkDelegate {
   // where it ever returns false, so we always allow you to close via escape.
 };
 
-class InfoBubbleGtk {
+class InfoBubbleGtk : public NotificationObserver {
  public:
   // Show an InfoBubble, pointing at the area |rect| (in screen coordinates).
   // An infobubble will try to fit on the screen, so it can point to any edge
@@ -47,6 +48,16 @@ class InfoBubbleGtk {
   // Close the bubble if it's open.  This will delete the widgets and object,
   // so you shouldn't hold a InfoBubbleGtk pointer after calling Close().
   void Close() { Close(false); }
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // This returns the toplevel GtkWindow that is the transient parent of
+  // |bubble_window|, or NULL if |bubble_window| isn't the GdkWindow
+  // for an InfoBubbleGtk.
+  static GtkWindow* GetToplevelForInfoBubble(const GdkWindow* bubble_window);
 
  private:
   InfoBubbleGtk();
@@ -103,14 +114,6 @@ class InfoBubbleGtk {
   }
   gboolean HandleDestroy();
 
-  static gboolean HandleFocusOutThunk(GtkWidget* widget,
-                                      GdkEventButton* event,
-                                      gpointer userdata) {
-    return reinterpret_cast<InfoBubbleGtk*>(userdata)->
-        HandleFocusOut(event);
-  }
-  gboolean HandleFocusOut(GdkEventButton* event);
-
   // The caller supplied delegate, can be NULL.
   InfoBubbleGtkDelegate* delegate_;
 
@@ -124,6 +127,8 @@ class InfoBubbleGtk {
   // Where we want our window to be positioned on the screen.
   int screen_x_;
   int screen_y_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBubbleGtk);
 };
