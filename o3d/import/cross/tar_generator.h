@@ -66,9 +66,8 @@ class TarGenerator {
   virtual ~TarGenerator() { Finalize(); }
 
   // Call AddFile() for each file entry, followed by calls to AddFileBytes()
-  // for the file's data
-  virtual void AddFile(const String &file_name,
-                       size_t file_size);
+  // for the file's data. Returns true on success.
+  virtual bool AddFile(const String &file_name, size_t file_size);
 
   // Call to "push" bytes to be processed - our client will get called back
   // with the byte stream, with files rounded up to the nearest block size
@@ -79,15 +78,28 @@ class TarGenerator {
   virtual void Finalize();
 
  private:
-  void AddEntry(const String &file_name,
+  // Returns true on success.
+  bool AddEntry(const String &file_name,
                 size_t file_size,
                 bool is_directory);
 
-  void AddDirectory(const String &file_name);
-  void AddDirectoryEntryIfNeeded(const String &file_name);
+  // Returns true on success.
+  bool AddDirectory(const String &file_name);
+
+  // Returns true on success.
+  bool AddDirectoryEntryIfNeeded(const String &file_name);
 
   // Checksum for each header
   void ComputeCheckSum(uint8 *header);
+
+  // Writes a head block.
+  void WriteHeader(const String& filename,
+                   size_t file_size,
+                   char type,
+                   int mode,
+                   int user_id,
+                   int group_id,
+                   int mod_time);
 
   // flushes buffered file data to the client callback
   // if |flush_padding_zeroes| is |true| then flush a complete block

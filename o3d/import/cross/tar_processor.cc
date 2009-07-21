@@ -37,6 +37,9 @@
 
 namespace o3d {
 
+static const int kFileSizeOffset         = 124;
+static const int kLinkFlagOffset         = 156;
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
   // Keep processing the byte-stream until we've consumed all we're given
@@ -60,26 +63,40 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
       bytes_to_consume -= bytes_to_read;
 
       if (header_bytes_read_ == TAR_HEADER_SIZE) {
-        const char *filename = (const char *)header_;
-
-        // The tar format stupidly represents size_teger values as
-        // octal strings!!
+        // The tar format stupidly represents size_t values as octal strings!!
         size_t file_size = 0;
-        sscanf(header_ + 124, "%o", &file_size);
+        sscanf(header_ + kFileSizeOffset, "%o", &file_size);
 
-        // Only callback client if this is a "real" header
-        // (filename is not NULL)
-        // Extra zero-padding can be added by the gzip compression
-        // (at end of archive), so ignore these ones.
-        //
-        // Also, ignore entries for directories (which have zero size)
-        if (header_[0] != 0 && file_size > 0) {
-          ArchiveFileInfo info(filename, file_size);
-          callback_client_->ReceiveFileHeader(info);
-        } else if (header_[0] == 0) {
-          // If filename is NULL due to zero-padding then file size
-          // should also be NULL
-          assert(file_size == 0);
+        // Check if it's a long filename
+        char type = header_[kLinkFlagOffset];
+        if (type == 'L') {
+          getting_filename_ = true;
+          // We should pick some size that's too large.
+          if (file_size > 1024) {
+            return -1;
+          }
+        } else {
+          getting_filename_ = false;
+          const char *filename = (const char *)header_;
+          if (!file_name_.empty()) {
+            filename = file_name_.c_str();
+          }
+
+          // Only callback client if this is a "real" header
+          // (filename is not NULL)
+          // Extra zero-padding can be added by the gzip compression
+          // (at end of archive), so ignore these ones.
+          //
+          // Also, ignore entries for directories (which have zero size)
+          if (header_[0] != 0 && file_size > 0) {
+            ArchiveFileInfo info(filename, file_size);
+            callback_client_->ReceiveFileHeader(info);
+          } else if (header_[0] == 0) {
+            // If filename is NULL due to zero-padding then file size
+            // should also be NULL
+            // TODO(gman): Won't this crash the plugin if I make a bad tar?
+            assert(file_size == 0);
+          }
         }
 
         // Round filesize up to nearest block size
@@ -89,6 +106,9 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
         // Our client doesn't want to be bothered with the block padding,
         // so only send him the actual file bytes
         client_file_bytes_to_read_ = file_size;
+
+        // Clear the file_name_ so we don't use it next time.
+        file_name_.clear();
       }
     }
 
@@ -105,9 +125,17 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
         size_t client_bytes_this_time =
             std::min(bytes_to_consume, client_file_bytes_to_read_);
 
-        if (!callback_client_->ReceiveFileData(&client_read_stream,
-                                               client_bytes_this_time)) {
-          return -1;
+        if (getting_filename_) {
+          String name_piece(
+              client_read_stream.GetDirectMemoryPointerAs<const char>(),
+              client_bytes_this_time);
+          client_read_stream.Skip(client_bytes_this_time);
+          file_name_ += name_piece;
+        } else {
+          if (!callback_client_->ReceiveFileData(&client_read_stream,
+                                                 client_bytes_this_time)) {
+            return -1;
+          }
         }
 
         client_file_bytes_to_read_ -= client_bytes_this_time;

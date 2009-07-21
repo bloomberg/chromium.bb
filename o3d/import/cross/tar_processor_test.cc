@@ -42,17 +42,22 @@ class TarProcessorTest : public testing::Test {
 
 // We verify that the tar file contains exactly these filenames
 static const char *kFilename1 = "test/file1";
-static const char *kFilename2 = "test/file2";
-static const char *kFilename3 = "test/file3";
+static const char *kFilename2 =
+    "test/file1ThisIsAFilenameLongerThen100Chars"
+    "ThisIsAFilenameLongerThen100Chars"
+    "ThisIsAFilenameLongerThen100CharsThisIsAFilenameLongerThen100Chars";
+static const char *kFilename3 = "test/file2";
+static const char *kFilename4 = "test/file3";
 
 // With each file having these exact contents
-#define kFileContents1 "the cat in the hat\n"
-#define kFileContents2 "abracadabra\n"
-#define kFileContents3 "I think therefore I am\n"
 
 // we should receive these (and exactly these bytes in this order)
 static const char *kConcatenatedContents =
-    kFileContents1  kFileContents2  kFileContents3;
+  "the cat in the hat\n"       // file 1 contents.
+  "this file has a long name"  // file 2 contents.
+  "abracadabra\n"              // file 3 contents.
+  "I think therefore I am\n"   // file 4 contents.
+  "";                          // end
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class TarTestClient : public ArchiveCallbackClient {
@@ -84,6 +89,9 @@ void TarTestClient::ReceiveFileHeader(const ArchiveFileInfo &file_info) {
       break;
     case 2:
       EXPECT_TRUE(!strcmp(kFilename3, file_info.GetFileName().c_str()));
+      break;
+    case 3:
+      EXPECT_TRUE(!strcmp(kFilename4, file_info.GetFileName().c_str()));
       break;
   }
 

@@ -41,7 +41,7 @@ using std::string;
 
 namespace o3d {
 
-const int kMaxFilenameSize        = 100;
+const int kMaxFilenameSizeOldFormat = 100;
 
 const int kFileNameOffset         = 0;
 const int kFileModeOffset         = 100;
@@ -54,36 +54,48 @@ const int kLinkFlagOffset         = 156;
 const int kMagicOffset            = 257;
 const int kUserNameOffset         = 265;
 const int kGroupNameOffset        = 297;
+// This is the name GNU Tar puts in a header block if the block is really
+// a long filename block.
+static const char* kLongLink = "././@LongLink";
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void TarGenerator::AddFile(const String &file_name, size_t file_size) {
-  AddDirectoryEntryIfNeeded(file_name);
-  AddEntry(file_name, file_size, false);
+bool TarGenerator::AddFile(const String &file_name, size_t file_size) {
+  if (!AddDirectoryEntryIfNeeded(file_name)) {
+    return false;
+  }
+  return AddEntry(file_name, file_size, false);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void TarGenerator::AddDirectory(const String &file_name) {
-  AddEntry(file_name, 0, true);
+bool TarGenerator::AddDirectory(const String &file_name) {
+  return AddEntry(file_name, 0, true);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // We keep a map so we add a particular directory entry only once
-void TarGenerator::AddDirectoryEntryIfNeeded(const String &file_name) {
+bool TarGenerator::AddDirectoryEntryIfNeeded(const String &file_name) {
   string::size_type index = file_name.find_last_of('/');
 
   if (index != string::npos) {
     String dir_name = file_name.substr(0, index + 1);  // keep the '/' at end
     if (!directory_map_[dir_name]) {
       directory_map_[dir_name] = true;
-      AddDirectory(dir_name);
+      return AddDirectory(dir_name);
     }
   }
+  return true;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void TarGenerator::AddEntry(const String &file_name,
-                            size_t file_size,
-                            bool is_directory) {
+
+
+void TarGenerator::WriteHeader(const String& file_name,
+                               size_t file_size,
+                               char type,
+                               int mode,
+                               int user_id,
+                               int group_id,
+                               int mod_time) {
   // first write out last data block from last file (if any)
   FlushDataBuffer(true);
 
@@ -95,32 +107,31 @@ void TarGenerator::AddEntry(const String &file_name,
   char *p = reinterpret_cast<char*>(h);
 
   // File name
-  strncpy(p, file_name.c_str(), kMaxFilenameSize - 1);
+  strncpy(p, file_name.c_str(), kMaxFilenameSizeOldFormat - 1);
 
   // File mode
-  ::snprintf(p + kFileModeOffset, 8, "%07o", is_directory ? 0755 : 0644);
+  ::snprintf(p + kFileModeOffset, 8, "%07o", mode);
 
   // UserID
-  ::snprintf(p + kUserIDOffset, 8, "%07o", 0765);
+  ::snprintf(p + kUserIDOffset, 8, "%07o", user_id);
 
   // GroupID
-  ::snprintf(p + kGroupIDOffset, 8, "%07o", 0204);
+  ::snprintf(p + kGroupIDOffset, 8, "%07o", group_id);
 
   // File size
   ::snprintf(p + kFileSizeOffset, 12, "%011o", file_size);
 
   // Modification time
   // TODO: write the correct current time here...
-  ::snprintf(p + kModifyTimeOffset, 12, "%07o", 011131753141);
+  ::snprintf(p + kModifyTimeOffset, 12, "%07o", mod_time);
 
   // Initialize Header checksum so check sum can be computed
   // by ComputeCheckSum() which will fill in the value here
   ::memset(p + kHeaderCheckSumOffset, 32, 8);
 
-  // We only support ordinary files and directories, which is fine
-  // for our use case
-  int link_flag = is_directory ? '5' : '0';
-  p[kLinkFlagOffset] = link_flag;
+  // We only support ordinary files,directories and long filename blogs, which
+  // is fine for our use case
+  p[kLinkFlagOffset] = type;
 
   // Magic offset
   ::snprintf(p + kMagicOffset, 8, "ustar  ");
@@ -131,7 +142,6 @@ void TarGenerator::AddEntry(const String &file_name,
   // Group name
   ::snprintf(p + kGroupNameOffset, 32, "staff");
 
-
   // This has to be done at the end
   ComputeCheckSum(header);
 
@@ -139,6 +149,37 @@ void TarGenerator::AddEntry(const String &file_name,
     MemoryReadStream stream(header, TAR_HEADER_SIZE);
     callback_client_->ProcessBytes(&stream, TAR_HEADER_SIZE);
   }
+}
+
+
+bool TarGenerator::AddEntry(const String &file_name,
+                            size_t file_size,
+                            bool is_directory) {
+  // If filename is longer 99 chars, use the GNU format to write out a longer
+  // filename.
+  if (file_name.size() >= kMaxFilenameSizeOldFormat) {
+    WriteHeader(kLongLink,
+                file_name.size(),
+                'L',
+                0,
+                0,
+                0,
+                0);
+
+    MemoryReadStream stream(
+        reinterpret_cast<const uint8*>(file_name.c_str()), file_name.size());
+    AddFileBytes(&stream, file_name.size());
+  }
+
+  WriteHeader(file_name,
+              file_size,
+              is_directory ? '5' : '0',
+              is_directory ? 0755 : 0644,
+              0765,
+              0204,
+              011131753141);
+
+  return true;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
