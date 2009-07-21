@@ -2715,13 +2715,13 @@ each locale. -->
       </message>
 
       <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD" desc="When a page fails to load, we provide a suggestion that the user try reloading the page later">
-        &lt;a i18n-values="href:reloadUrl"&gt;Reload&lt;/a&gt; this web page later.
+        &lt;a jsvalues="href:reloadUrl"&gt;Reload&lt;/a&gt; this web page later.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_HOMEPAGE" desc="When a page fails to load, sometimes we provide a suggesting of trying just the hostname of the site.">
         Go to the homepage of the site:
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE" desc="When a web page fails to load, we provide a link to the help center to learn more about the failure.">
-        <ph name="BEGIN_LINK">&lt;a i18n-values="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about this problem.
+        <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about this problem.
       </message>
 
       <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
@@ -2743,13 +2743,13 @@ each locale. -->
         This webpage has a redirect loop.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
-        The webpage at &lt;strong i18n-content="failedUrl"&gt;&lt;/strong&gt; might be temporarily down or it may have moved permanently to a new web address.
+        The webpage at &lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt; might be temporarily down or it may have moved permanently to a new web address.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
-        No webpage was found for the web address: &lt;strong i18n-content="failedUrl"&gt;&lt;/strong&gt;
+        No webpage was found for the web address: &lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
-        The webpage at &lt;strong i18n-content="failedUrl"&gt;&lt;/strong&gt; has resulted in
+        The webpage at &lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt; has resulted in
         too many redirects.  Clearing your cookies for this site may fix the problem.  If
         not, it is possibly a server configuration issue and not a problem with your
         computer.

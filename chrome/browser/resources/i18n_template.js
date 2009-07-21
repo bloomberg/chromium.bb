@@ -56,6 +56,11 @@ var i18nTemplate = (function() {
             }
             if (object) {
               object[path] = value;
+              // In case we set innerHTML (ignoring others) we need to
+              // recursively check the content
+              if (path == 'innerHTML') {
+                process(element, obj);
+              }
             }
           } else {
             element.setAttribute(propName, value);
@@ -71,21 +76,23 @@ var i18nTemplate = (function() {
   }
   var selector = '[' + attributeNames.join('],[') + ']';
 
-  return {
-    /**
-     * Processes a DOM tree with the {@code obj} map.
-     */
-    process: function(node, obj) {
-      var elements = node.querySelectorAll(selector);
-      for (var element, i = 0; element = elements[i]; i++) {
-        for (var j = 0; j < attributeNames.length; j++) {
-          var name = attributeNames[j];
-          var att = element.getAttribute(name);
-          if (att != null) {
-            handlers[name](element, att, obj);
-          }
+  /**
+   * Processes a DOM tree with the {@code obj} map.
+   */
+  function process(node, obj) {
+    var elements = node.querySelectorAll(selector);
+    for (var element, i = 0; element = elements[i]; i++) {
+      for (var j = 0; j < attributeNames.length; j++) {
+        var name = attributeNames[j];
+        var att = element.getAttribute(name);
+        if (att != null) {
+          handlers[name](element, att, obj);
         }
       }
     }
+  }
+
+  return {
+    process: process
   };
 })();
