@@ -520,24 +520,13 @@ window.onunload = uninit;
 keyIsDown = new Array();
 
 document.onkeydown = function(e) {
-  var keycode;
-  if (window.event) {
-    keycode = window.event.keyCode;
-  } else if (e) {
-    keycode = e.which;
-  }
-  keyIsDown[keycode] = true;
+  var keyChar = o3djs.event.getEventKeyChar(e);
+  keyIsDown[keyChar] = true;
 }
 
 document.onkeyup = function(e) {
-  var keycode;
-  if (window.event) {
-    keycode = window.event.keyCode;
-  } else if (e) {
-    keycode = e.which;
-  }
-  keyIsDown[keycode] = false;
-
+  var keyChar = o3djs.event.getEventKeyChar(e);
+  keyIsDown[keyChar] = false;
 }
 
 
