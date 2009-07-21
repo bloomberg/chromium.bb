@@ -38,6 +38,11 @@ const int kPinnedTabWidth = 56;
 // disappear when transitioning a tab from normal to pinned.
 const int kPinnedTabRendererAsTabWidth = kPinnedTabWidth + 30;
 
+// The tab images are designed to overlap the toolbar by 1 pixel. For now we
+// don't actually overlap the toolbar, so this is used to know how many pixels
+// at the bottom of the tab images are to be ignored.
+const int kToolbarOverlap = 1;
+
 // How long the hover state takes.
 const int kHoverDurationMs = 90;
 
@@ -300,7 +305,7 @@ gfx::Size TabRendererGtk::GetMinimumUnselectedSize() {
   minimum_size.set_width(kLeftPadding + kRightPadding);
   // Since we use bitmap images, the real minimum height of the image is
   // defined most accurately by the height of the end cap images.
-  minimum_size.set_height(tab_active_.image_l->height());
+  minimum_size.set_height(tab_active_.image_l->height() - kToolbarOverlap);
   return minimum_size;
 }
 
@@ -642,31 +647,25 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // Draw left edge.
   SkBitmap tab_l = skia::ImageOperations::CreateTiledBitmap(
       *tab_bg, offset, offset_y,
-      tab_active_.l_width, height());
+      tab_active_.l_width, height() + kToolbarOverlap);
   SkBitmap theme_l = skia::ImageOperations::CreateMaskedBitmap(
       tab_l, *tab_alpha.image_l);
-  canvas->DrawBitmapInt(theme_l,
-      0, 0, theme_l.width(), theme_l.height() - 1,
-      0, 0, theme_l.width(), theme_l.height() - 1,
-      false);
+  canvas->DrawBitmapInt(theme_l, 0, 0);
 
   // Draw right edge.
   SkBitmap tab_r = skia::ImageOperations::CreateTiledBitmap(
       *tab_bg,
       offset + width() - tab_active_.r_width, offset_y,
-      tab_active_.r_width, height());
+      tab_active_.r_width, height() + kToolbarOverlap);
   SkBitmap theme_r = skia::ImageOperations::CreateMaskedBitmap(
       tab_r, *tab_alpha.image_r);
-  canvas->DrawBitmapInt(theme_r,
-      0, 0, theme_r.width(), theme_r.height() - 1,
-      width() - theme_r.width(), 0, theme_r.width(), theme_r.height() - 1,
-      false);
+  canvas->DrawBitmapInt(theme_r, width() - theme_r.width(), 0);
 
   // Draw center.
   canvas->TileImageInt(*tab_bg,
       offset + tab_active_.l_width, kDropShadowOffset + offset_y,
       tab_active_.l_width, 2,
-      width() - tab_active_.l_width - tab_active_.r_width, height() - 3);
+      width() - tab_active_.l_width - tab_active_.r_width, height() - 2);
 
   canvas->DrawBitmapInt(*tab_inactive_.image_l, 0, 0);
   canvas->TileImageInt(*tab_inactive_.image_c, tab_inactive_.l_width, 0,
@@ -682,7 +681,7 @@ void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
 
   // Draw left edge.
   SkBitmap tab_l = skia::ImageOperations::CreateTiledBitmap(
-      *tab_bg, offset, 0, tab_active_.l_width, height());
+      *tab_bg, offset, 0, tab_active_.l_width, height() + kToolbarOverlap);
   SkBitmap theme_l = skia::ImageOperations::CreateMaskedBitmap(
       tab_l, *tab_alpha.image_l);
   canvas->DrawBitmapInt(theme_l, 0, 0);
@@ -691,7 +690,7 @@ void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
   SkBitmap tab_r = skia::ImageOperations::CreateTiledBitmap(
       *tab_bg,
       offset + width() - tab_active_.r_width, 0,
-      tab_active_.r_width, height());
+      tab_active_.r_width, height() + kToolbarOverlap);
   SkBitmap theme_r = skia::ImageOperations::CreateMaskedBitmap(
       tab_r, *tab_alpha.image_r);
   canvas->DrawBitmapInt(theme_r, width() - tab_active_.r_width, 0);
