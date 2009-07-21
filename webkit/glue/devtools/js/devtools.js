@@ -222,9 +222,22 @@ WebInspector.loaded = function() {
 
   Preferences.ignoreWhitespace = false;
   oldLoaded.call(this);
+
+  // Hide dock button on Mac OS.
+  // TODO(pfeldman): remove once Mac OS docking is implemented.
   if (InspectorController.platform().indexOf('mac') == 0) {
     document.getElementById('dock-status-bar-item').addStyleClass('hidden');
   }
+
+  // Mute refresh action.
+  document.addEventListener("keydown", function(event) {
+    if (event.keyIdentifier == 'F5') {
+      event.preventDefault();
+    } else if (event.keyIdentifier == 'U+0052' /* 'R' */ &&
+        (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+    }
+  }, true);
 
   DevToolsHost.loaded();
 };
