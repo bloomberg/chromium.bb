@@ -817,9 +817,9 @@ void TabRendererGtk::InitResources() {
   LoadTabImages();
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  // Force the font size to 10pt.
+  // Force the font size to 8pt.
   gfx::Font base_font = rb.GetFont(ResourceBundle::BaseFont);
-  title_font_ = new gfx::Font(gfx::Font::CreateFont(base_font.FontName(), 10));
+  title_font_ = new gfx::Font(gfx::Font::CreateFont(base_font.FontName(), 8));
   title_font_height_ = title_font_->height();
 
   crashed_fav_icon = rb.GetBitmapNamed(IDR_SAD_FAVICON);
