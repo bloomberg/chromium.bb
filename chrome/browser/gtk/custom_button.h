@@ -40,6 +40,7 @@ class CustomDrawButtonBase : public NotificationObserver {
   gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e);
 
   void set_paint_override(int state) { paint_override_ = state; }
+  int paint_override() const { return paint_override_; }
 
   // Provide NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -135,11 +136,10 @@ class CustomDrawButton : public NotificationObserver {
 
   CustomDrawButtonBase button_base_;
 
+  GtkThemeProvider* theme_provider_;
+
   // The stock icon name.
   const char* gtk_stock_name_;
-
-  // Whether we have an expose signal handler we may need to remove.
-  bool has_expose_signal_handler_;
 
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;

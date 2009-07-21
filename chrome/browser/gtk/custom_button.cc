@@ -9,6 +9,7 @@
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/gfx/gtk_util.h"
+#include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
@@ -94,8 +95,8 @@ void CustomDrawButtonBase::Observe(NotificationType type,
 CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
     int highlight_id, int depressed_id, const char* stock_id)
     : button_base_(NULL, normal_id, active_id, highlight_id, depressed_id),
-      gtk_stock_name_(stock_id),
-      has_expose_signal_handler_(false) {
+      theme_provider_(NULL),
+      gtk_stock_name_(stock_id) {
   Init();
 
   // Initialize the theme stuff with no theme_provider.
@@ -107,8 +108,8 @@ CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
     const char* stock_id)
     : button_base_(theme_provider, normal_id, active_id, highlight_id,
                    depressed_id),
-      gtk_stock_name_(stock_id),
-      has_expose_signal_handler_(false) {
+      theme_provider_(theme_provider),
+      gtk_stock_name_(stock_id) {
   Init();
 
   theme_provider->InitThemesFor(this);
@@ -122,8 +123,10 @@ CustomDrawButton::~CustomDrawButton() {
 }
 
 void CustomDrawButton::Init() {
-  widget_.Own(gtk_button_new());
+  widget_.Own(gtk_chrome_button_new());
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
+  g_signal_connect(G_OBJECT(widget_.get()), "expose-event",
+                   G_CALLBACK(OnCustomExpose), this);
 }
 
 void CustomDrawButton::Observe(NotificationType type,
@@ -137,11 +140,13 @@ void CustomDrawButton::Observe(NotificationType type,
 
 void CustomDrawButton::SetPaintOverride(GtkStateType state) {
   button_base_.set_paint_override(state);
+  gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(widget_.get()), state);
   gtk_widget_queue_draw(widget_.get());
 }
 
 void CustomDrawButton::UnsetPaintOverride() {
   button_base_.set_paint_override(-1);
+  gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(widget_.get()));
   gtk_widget_queue_draw(widget_.get());
 }
 
@@ -149,7 +154,12 @@ void CustomDrawButton::UnsetPaintOverride() {
 gboolean CustomDrawButton::OnCustomExpose(GtkWidget* widget,
                                           GdkEventExpose* e,
                                           CustomDrawButton* button) {
-  return button->button_base_.OnExpose(widget, e);
+  if (button->theme_provider_ && button->theme_provider_->UseGtkTheme() ) {
+    // Continue processing this expose event.
+    return FALSE;
+  } else {
+    return button->button_base_.OnExpose(widget, e);
+  }
 }
 
 // static
@@ -161,17 +171,15 @@ CustomDrawButton* CustomDrawButton::CloseButton() {
 }
 
 void CustomDrawButton::SetBrowserTheme(GtkThemeProvider* theme_provider) {
-  if (theme_provider && theme_provider->UseGtkTheme() && gtk_stock_name_) {
+  bool use_gtk = theme_provider && theme_provider->UseGtkTheme();
+
+  if (use_gtk && gtk_stock_name_) {
     gtk_button_set_image(
         GTK_BUTTON(widget_.get()),
         gtk_image_new_from_stock(gtk_stock_name_, GTK_ICON_SIZE_BUTTON));
     gtk_widget_set_size_request(widget_.get(), -1, -1);
     gtk_widget_set_app_paintable(widget_.get(), FALSE);
     gtk_widget_set_double_buffered(widget_.get(), TRUE);
-
-    if (has_expose_signal_handler_)
-      gtk_signal_disconnect_by_data(GTK_OBJECT(widget_.get()), this);
-    has_expose_signal_handler_ = false;
   } else {
     gtk_widget_set_size_request(widget_.get(),
                                 gdk_pixbuf_get_width(button_base_.pixbufs(0)),
@@ -180,8 +188,8 @@ void CustomDrawButton::SetBrowserTheme(GtkThemeProvider* theme_provider) {
     gtk_widget_set_app_paintable(widget_.get(), TRUE);
     // We effectively double-buffer by virtue of having only one image...
     gtk_widget_set_double_buffered(widget_.get(), FALSE);
-    g_signal_connect(G_OBJECT(widget_.get()), "expose-event",
-                     G_CALLBACK(OnCustomExpose), this);
-    has_expose_signal_handler_ = true;
   }
+
+  gtk_chrome_button_set_use_gtk_rendering(
+      GTK_CHROME_BUTTON(widget_.get()), use_gtk);
 }
