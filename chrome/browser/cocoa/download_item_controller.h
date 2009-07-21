@@ -7,6 +7,7 @@
 #include "base/scoped_ptr.h"
 
 class BaseDownloadItemModel;
+@class DownloadItemCell;
 class DownloadItemMac;
 class DownloadShelfContextMenuMac;
 @class DownloadShelfController;
@@ -15,10 +16,13 @@ class DownloadShelfContextMenuMac;
 
 @interface DownloadItemController : NSViewController {
  @private
-  IBOutlet NSPopUpButton* popupButton_;
+  IBOutlet NSButton* progressView_;
+  IBOutlet DownloadItemCell* cell_;
 
   IBOutlet NSMenu* activeDownloadMenu_;
   IBOutlet NSMenu* completeDownloadMenu_;
+
+  NSMenu* currentMenu_;  // points to one of the two menus above
 
   scoped_ptr<DownloadItemMac> bridge_;
   scoped_ptr<DownloadShelfContextMenuMac> menuBridge_;
@@ -37,6 +41,9 @@ class DownloadShelfContextMenuMac;
 
 // Remove ourself from the download UI.
 - (void)remove;
+
+// Download item button clicked
+- (IBAction)handleButtonClick:(id)sender;
 
 // Context menu handlers.
 - (IBAction)handleOpen:(id)sender;

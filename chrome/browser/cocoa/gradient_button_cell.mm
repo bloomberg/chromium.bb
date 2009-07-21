@@ -89,6 +89,76 @@
   }
 }
 
+- (void)drawBorderAndFillForTheme:(GTMTheme*)theme
+                      controlView:(NSView*)controlView
+                        outerPath:(NSBezierPath*)outerPath
+                        innerPath:(NSBezierPath*)innerPath
+            showHighlightGradient:(BOOL)showHighlightGradient
+              showClickedGradient:(BOOL)showClickedGradient
+                           active:(BOOL)active
+                        cellFrame:(NSRect)cellFrame {
+  [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
+  [outerPath stroke];
+
+  NSImage* backgroundImage =
+      [theme backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES];
+
+  if (backgroundImage) {
+    NSColor* patternColor = [NSColor colorWithPatternImage:backgroundImage];
+    [patternColor set];
+    // Set the phase to match window.
+    NSRect trueRect = [controlView convertRectToBase:cellFrame];
+    [[NSGraphicsContext currentContext]
+        setPatternPhase:NSMakePoint(NSMinX(trueRect), NSMaxY(trueRect))];
+    [innerPath fill];
+  } else {
+    if (showClickedGradient) {
+      NSGradient* gradient =
+          [theme gradientForStyle:GTMThemeStyleToolBarButtonPressed
+                            state:active];
+      [gradient drawInBezierPath:innerPath angle:90.0];
+    }
+  }
+
+  if (!showClickedGradient && showHighlightGradient) {
+    [NSGraphicsContext saveGraphicsState];
+    [innerPath addClip];
+
+    // Draw the inner glow.
+    [innerPath setLineWidth:2];
+    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] setStroke];
+    [innerPath stroke];
+
+    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] setStroke];
+    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2] setFill];
+
+    // Draw the top inner highlight.
+    NSAffineTransform* highlightTransform = [NSAffineTransform transform];
+    [highlightTransform translateXBy:1 yBy:1];
+    scoped_nsobject<NSBezierPath> highlightPath([innerPath copy]);
+    [highlightPath transformUsingAffineTransform:highlightTransform];
+
+    [highlightPath stroke];
+
+    NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.666];
+    NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.333];
+    scoped_nsobject<NSBezierPath> gradient([[NSGradient alloc]
+        initWithColorsAndLocations:startColor, 0.33, endColor, 1.0, nil]);
+
+    [gradient drawInBezierPath:innerPath angle:90.0];
+
+    [NSGraphicsContext restoreGraphicsState];
+  }
+
+  NSColor* stroke = [theme strokeColorForStyle:GTMThemeStyleToolBarButton
+                                         state:active];
+  [stroke setStroke];
+
+  [innerPath setLineWidth:1];
+  [innerPath stroke];
+}
+
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Constants from Cole.  Will kConstant them once the feedback loop
   // is complete.
@@ -129,65 +199,15 @@
   if (([self isBordered] && ![self showsBorderOnlyWhileMouseInside]) ||
       pressed ||
       [self isMouseInside]) {
-    [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
-    [outerPath stroke];
 
-    NSImage* backgroundImage =
-        [theme backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES];
-
-    if (backgroundImage) {
-      NSColor* patternColor = [NSColor colorWithPatternImage:backgroundImage];
-      [patternColor set];
-      // Set the phase to match window.
-      NSRect trueRect = [controlView convertRectToBase:cellFrame];
-      [[NSGraphicsContext currentContext]
-          setPatternPhase:NSMakePoint(NSMinX(trueRect), NSMaxY(trueRect))];
-      [innerPath fill];
-    } else {
-      if (pressed) {
-        NSGradient* gradient =
-            [theme gradientForStyle:GTMThemeStyleToolBarButtonPressed
-                              state:active];
-        [gradient drawInBezierPath:innerPath angle:90.0];
-      }
-    }
-
-    if (!pressed) {
-      [NSGraphicsContext saveGraphicsState];
-      [innerPath addClip];
-
-      // Draw the inner glow.
-      [innerPath setLineWidth:2];
-      [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] setStroke];
-      [innerPath stroke];
-
-      [[NSColor colorWithCalibratedWhite:1.0 alpha:0.9] setStroke];
-      [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2] setFill];
-
-      // Draw the top inner highlight.
-      NSAffineTransform* highlightTransform = [NSAffineTransform transform];
-      [highlightTransform translateXBy:1 yBy:1];
-      scoped_nsobject<NSBezierPath> highlightPath([innerPath copy]);
-      [highlightPath transformUsingAffineTransform:highlightTransform];
-
-      [highlightPath stroke];
-
-      NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.666];
-      NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.333];
-      scoped_nsobject<NSBezierPath> gradient([[NSGradient alloc]
-          initWithColorsAndLocations:startColor, 0.33, endColor, 1.0, nil]);
-
-      [gradient drawInBezierPath:innerPath angle:90.0];
-
-      [NSGraphicsContext restoreGraphicsState];
-    }
-
-    NSColor* stroke = [theme strokeColorForStyle:GTMThemeStyleToolBarButton
-                                           state:active];
-    [stroke setStroke];
-
-    [innerPath setLineWidth:1];
-    [innerPath stroke];
+    [self drawBorderAndFillForTheme:theme
+                        controlView:controlView
+                          outerPath:outerPath
+                          innerPath:innerPath
+              showHighlightGradient:YES
+                showClickedGradient:pressed
+                             active:active
+                          cellFrame:cellFrame];
   }
 
   // If this is the left side of a segmented button, draw a slight shadow.

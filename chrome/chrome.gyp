@@ -776,6 +776,8 @@
         'browser/cocoa/command_observer_bridge.mm',
         'browser/cocoa/custom_home_pages_model.h',
         'browser/cocoa/custom_home_pages_model.mm',
+        'browser/cocoa/download_item_cell.h',
+        'browser/cocoa/download_item_cell.mm',
         'browser/cocoa/download_item_controller.h',
         'browser/cocoa/download_item_controller.mm',
         'browser/cocoa/download_item_mac.h',

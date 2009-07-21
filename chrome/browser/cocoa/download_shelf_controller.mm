@@ -17,19 +17,20 @@
 
 namespace {
 
-// TODO(thakis): These are all temporary until there's a download item view.
-
 // Border padding of a download item.
-const int kDownloadItemBorderPadding = 4;
+const int kDownloadItemBorderPadding = 3;
 
-// Width of a download item.
+// Width of a download item, must match width in DownloadItem.xib.
 const int kDownloadItemWidth = 200;
 
-// Height of a download item.
-const int kDownloadItemHeight = 32;
+// Height of a download item, must match height in DownloadItem.xib.
+const int kDownloadItemHeight = 34;
 
 // Horizontal padding between two download items.
 const int kDownloadItemPadding = 10;
+
+// Duration for the open-new-leftmost-item animation, in seconds.
+const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 
 }  // namespace
 
@@ -69,7 +70,7 @@ const int kDownloadItemPadding = 10;
   [paragraphStyle.get() setAlignment:NSRightTextAlignment];
 
   NSDictionary* linkAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
-      self, NSLinkAttributeName,
+      @"", NSLinkAttributeName,
       [NSCursor pointingHandCursor], NSCursorAttributeName,
       paragraphStyle.get(), NSParagraphStyleAttributeName,
       nil];
@@ -191,17 +192,21 @@ const int kDownloadItemPadding = 10;
 }
 
 - (void)addDownloadItem:(BaseDownloadItemModel*)model {
-  // TODO(thakis): we need to delete these at some point. There's no explicit
-  // mass delete on windows, figure out where they do it.
-
   // TODO(thakis): RTL support?
   // (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-  int startX = kDownloadItemBorderPadding +
-               (kDownloadItemWidth + kDownloadItemPadding) *
-               [downloadItemControllers_ count];
+  // Shift all existing items to the right
+  for (DownloadItemController* itemController in downloadItemControllers_.get()) {
+    NSRect frame = [[itemController view] frame];
+    frame.origin.x += kDownloadItemWidth + kDownloadItemPadding;
+    [[[itemController view] animator] setFrame:frame];
+  }
 
+  // Insert new item at the left
+  int startX = kDownloadItemBorderPadding;
+
+  // Start at width 0...
   NSRect position = NSMakeRect(startX, kDownloadItemBorderPadding,
-                               kDownloadItemWidth, kDownloadItemHeight);
+                               0, kDownloadItemHeight);
   scoped_nsobject<DownloadItemController> controller(
       [[DownloadItemController alloc] initWithFrame:position
                                               model:model
@@ -209,6 +214,15 @@ const int kDownloadItemPadding = 10;
   [downloadItemControllers_ addObject:controller.get()];
 
   [[self view] addSubview:[controller.get() view]];
+
+  // ...then animate in
+  NSRect frame = [[controller.get() view] frame];
+  frame.size.width = kDownloadItemWidth;
+
+  [NSAnimationContext beginGrouping];
+  [[NSAnimationContext currentContext] setDuration:kDownloadItemOpenDuration];
+  [[[controller.get() view] animator] setFrame:frame];
+  [NSAnimationContext endGrouping];
 }
 
 @end

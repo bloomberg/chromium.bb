@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="10"/>
+			<integer value="1" id="9"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -84,7 +84,7 @@
 									<object class="NSTextView" id="550190606">
 										<reference key="NSNextResponder" ref="581923208"/>
 										<int key="NSvFlags">2322</int>
-										<string key="NSFrameSize">{182, 45}</string>
+										<string key="NSFrameSize">{182, 31}</string>
 										<reference key="NSSuperview" ref="581923208"/>
 										<object class="NSTextContainer" key="NSTextContainer" id="526453298">
 											<object class="NSLayoutManager" key="NSLayoutManager">
@@ -273,14 +273,14 @@
 														<int key="NSColorSpace">1</int>
 														<bytes key="NSRGB">MCAwIDEAA</bytes>
 													</object>
-													<integer value="1"/>
+													<reference ref="9"/>
 												</object>
 											</object>
 											<nil key="NSDefaultParagraphStyle"/>
 										</object>
 										<int key="NSTVFlags">6</int>
 										<string key="NSMaxSize">{463, 1e+07}</string>
-										<string key="NSMinize">{63, 45}</string>
+										<string key="NSMinize">{63, 31}</string>
 										<nil key="NSDelegate"/>
 									</object>
 								</object>

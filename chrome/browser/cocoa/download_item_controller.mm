@@ -4,12 +4,13 @@
 
 #import "chrome/browser/cocoa/download_item_controller.h"
 
-#include "app/l10n_util.h"
 #include "base/mac_util.h"
-#include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/download_item_cell.h"
 #include "chrome/browser/cocoa/download_item_mac.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/download/download_util.h"
+
 
 // A class for the chromium-side part of the download shelf context menu.
 
@@ -59,37 +60,33 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
   // Set correct popup menu.
   if (downloadModel->download()->state() == DownloadItem::COMPLETE)
-    [popupButton_ setMenu:completeDownloadMenu_];
+    currentMenu_ = completeDownloadMenu_;
   else
-    [popupButton_ setMenu:activeDownloadMenu_];
+    currentMenu_ = activeDownloadMenu_;
 
-  // Set name and icon of download.
-  FilePath downloadPath = downloadModel->download()->GetFileName();
-
-  // TODO(thakis): use filename eliding like gtk/windows versions.
-  NSString* titleString = base::SysWideToNSString(downloadPath.ToWStringHack());
-  [[popupButton_ itemAtIndex:0] setTitle:titleString];
-
-  // TODO(paulg): Use IconManager for loading icons on the file thread
-  // (crbug.com/16226).
-  NSString* extension = base::SysUTF8ToNSString(downloadPath.Extension());
-  [[popupButton_ itemAtIndex:0] setImage:
-      [[NSWorkspace sharedWorkspace] iconForFileType:extension]];
-
-  // Set status text.
-  std::wstring statusText = downloadModel->GetStatusText();
-  // Remove the status text label.
-  if (statusText.empty()) {
-    // TODO(thakis): Once there is a status label, hide it here.
-    return;
-  }
-
-  // TODO(thakis): Set status_text as status label.
+  [progressView_ setMenu:currentMenu_];  // for context menu
+  [cell_ setStateFromDownload:downloadModel];
 }
 
 - (void)remove {
   // We are deleted after this!
   [shelf_ remove:self];
+}
+
+- (IBAction)handleButtonClick:(id)sender {
+  if ([cell_ isButtonPartPressed]) {
+    DownloadItem* download = bridge_->download_model()->download();
+    if (download->state() == DownloadItem::IN_PROGRESS) {
+      download->set_open_when_complete(!download->open_when_complete());
+    } else if (download->state() == DownloadItem::COMPLETE) {
+      download_util::OpenDownload(download);
+    }
+  } else {
+    // TODO(thakis): Align menu nicely with left view edge
+    [NSMenu popUpContextMenu:currentMenu_
+               withEvent:[NSApp currentEvent]
+                 forView:progressView_];
+  }
 }
 
 // Sets the enabled and checked state of a particular menu item for this

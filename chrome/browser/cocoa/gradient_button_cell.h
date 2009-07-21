@@ -9,12 +9,15 @@
 
 #include "base/scoped_nsobject.h"
 
+@class GTMTheme;
+
 // Base class for button cells for toolbar and bookmark bar.
 //
 // This is a button cell that handles drawing/highlighting of buttons.
 // The appearance is determined by setting the cell's tag (not the
 // view's) to one of the constants below (ButtonType).
 
+// Set this as the cell's tag.
 enum {
   kLeftButtonType = -1,
   kLeftButtonWithShadowType = -2,
@@ -36,6 +39,15 @@ typedef NSInteger ButtonType;
 
 // Turn off theming.  Temporary work-around.
 - (void)setShouldTheme:(BOOL)shouldTheme;
+
+- (void)drawBorderAndFillForTheme:(GTMTheme*)theme
+                      controlView:(NSView*)controlView
+                        outerPath:(NSBezierPath*)outerPath
+                        innerPath:(NSBezierPath*)innerPath
+            showHighlightGradient:(BOOL)showHighlightGradient
+              showClickedGradient:(BOOL)showClickedGradient
+                           active:(BOOL)active
+                        cellFrame:(NSRect)cellFrame;
 
 // An image to underlay beneath the existing image; not themed. May be nil.
 - (NSImage*)underlayImage;
