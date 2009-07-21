@@ -838,6 +838,7 @@ nacl_extra_sdk_env = pre_base_env.Clone(
 nacl_extra_sdk_env.Append(
     BUILD_SCONSCRIPTS = [
       ####  ALPHABETICALLY SORTED ####
+      'src/include/nacl/nacl.scons',
       'src/shared/imc/nacl.scons',
       'src/shared/npruntime/nacl.scons',
       'src/shared/srpc/nacl.scons',

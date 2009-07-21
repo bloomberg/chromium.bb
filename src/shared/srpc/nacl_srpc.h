@@ -43,6 +43,7 @@
  */
 
 #include <stdarg.h>
+#include <stdio.h>
 
 /*
  * TODO(sehr) break this file into separate files for sdk and service_runtime
@@ -50,6 +51,7 @@
  */
 #ifdef __native_client__
 #  include <stdint.h>
+#  include <nacl/nacl_inttypes.h>
 #  include <sys/types.h>
 #  include <sys/nacl_imc_api.h>
 #  include <pthread.h>
@@ -87,7 +89,6 @@ typedef int NaClSrpcImcDescType;
  */
 typedef struct NaClDesc* NaClSrpcImcDescType;
 #endif
-#include <stdio.h>
 
 EXTERN_C_BEGIN
 
@@ -269,7 +270,7 @@ typedef struct NaClSrpcArg NaClSrpcArg;
  */
 #define STRINGZ_TO_SRPCARG(val, arg) do { \
     (arg).tag = NACL_SRPC_ARG_TYPE_STRING; \
-    (arg).u.sval = (val); } while(0)
+    (arg).u.sval = (val); } while (0)
 
 /**
  * The maximum number of arguments per SRPC routine.
