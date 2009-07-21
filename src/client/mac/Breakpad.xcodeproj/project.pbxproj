@@ -88,6 +88,7 @@
 		F93DE33F0F82C66B00608B94 /* string_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53820ECCE635009BE4BA /* string_utilities.cc */; };
 		F93DE3410F82C68300608B94 /* exception_handler_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = F93DE3400F82C68300608B94 /* exception_handler_test.cc */; };
 		F945849E0F280E3C009A47BF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F945849C0F280E3C009A47BF /* Localizable.strings */; };
+		F9B630A0100FF96B00D0F4AC /* goArrow.png in Resources */ = {isa = PBXBuildFile; fileRef = F9B6309F100FF96B00D0F4AC /* goArrow.png */; };
 		F9C44DB20EF07288003AEBAA /* Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C44DAC0EF07288003AEBAA /* Controller.m */; };
 		F9C44DB30EF07288003AEBAA /* crashduringload in Resources */ = {isa = PBXBuildFile; fileRef = F9C44DAD0EF07288003AEBAA /* crashduringload */; };
 		F9C44DB40EF07288003AEBAA /* crashInMain in Resources */ = {isa = PBXBuildFile; fileRef = F9C44DAE0EF07288003AEBAA /* crashInMain */; };
@@ -288,6 +289,7 @@
 		F93DE3400F82C68300608B94 /* exception_handler_test.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = exception_handler_test.cc; path = handler/exception_handler_test.cc; sourceTree = "<group>"; };
 		F945849D0F280E3C009A47BF /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = sender/English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F945859D0F78241E009A47BF /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Framework/Info.plist; sourceTree = "<group>"; };
+		F9B6309F100FF96B00D0F4AC /* goArrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = goArrow.png; path = sender/goArrow.png; sourceTree = "<group>"; };
 		F9C44DA50EF060A8003AEBAA /* BreakpadTest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BreakpadTest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9C44DAC0EF07288003AEBAA /* Controller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Controller.m; path = testapp/Controller.m; sourceTree = "<group>"; };
 		F9C44DAD0EF07288003AEBAA /* crashduringload */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; name = crashduringload; path = testapp/crashduringload; sourceTree = "<group>"; };
@@ -535,6 +537,7 @@
 		F92C56A60ECE04B6009BE4BA /* sender */ = {
 			isa = PBXGroup;
 			children = (
+				F9B6309F100FF96B00D0F4AC /* goArrow.png */,
 				F92C56A70ECE04C5009BE4BA /* crash_report_sender.h */,
 				F92C56A80ECE04C5009BE4BA /* crash_report_sender.m */,
 				F945849C0F280E3C009A47BF /* Localizable.strings */,
@@ -813,6 +816,7 @@
 				4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */,
 				33880C800F9E097100817F82 /* InfoPlist.strings in Resources */,
 				3329D4ED0FA16D820007BBC5 /* Breakpad.nib in Resources */,
+				F9B630A0100FF96B00D0F4AC /* goArrow.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

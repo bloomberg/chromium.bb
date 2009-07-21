@@ -409,7 +409,6 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   NSString *timeout = [parameters objectForKey:@BREAKPAD_CONFIRM_TIMEOUT];
   NSArray  *logFilePaths = [parameters objectForKey:@BREAKPAD_LOGFILES];
   NSString *logFileTailSize = [parameters objectForKey:@BREAKPAD_LOGFILE_UPLOAD_SIZE];
-  NSString *reportEmail = [parameters objectForKey:@BREAKPAD_EMAIL];
   NSString *requestUserText =
                 [parameters objectForKey:@BREAKPAD_REQUEST_COMMENTS];
   NSString *requestEmail = [parameters objectForKey:@BREAKPAD_REQUEST_EMAIL];
@@ -451,7 +450,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
     vendor = @"Vendor not specified";
   }
 
-  // Normalize the values
+  // Normalize the values.
   if (skipConfirm) {
     skipConfirm = [skipConfirm uppercaseString];
 
@@ -504,7 +503,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
         [resourcePath stringByAppendingPathComponent:@"Inspector"];
   }
 
-  // Verify that there is an Inspector tool
+  // Verify that there is an Inspector tool.
   if (![[NSFileManager defaultManager] fileExistsAtPath:inspectorPathString]) {
     DEBUGLOG(stderr, "Cannot find Inspector tool\n");
     return false;
@@ -517,7 +516,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
     reporterPathString = [[NSBundle bundleWithPath:reporterPathString] executablePath];
   }
 
-  // Verify that there is a Reporter application
+  // Verify that there is a Reporter application.
   if (![[NSFileManager defaultManager]
              fileExistsAtPath:reporterPathString]) {
     DEBUGLOG(stderr, "Cannot find Reporter tool\n");
@@ -588,11 +587,6 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
     }
   }
 
-  if (reportEmail) {
-    dictionary.SetKeyValue(BREAKPAD_EMAIL,
-                           [reportEmail UTF8String]);
-  }
-
   if (serverParameters) {
     // For each key-value pair, call BreakpadAddUploadParameter()
     NSEnumerator *keyEnumerator = [serverParameters keyEnumerator];
@@ -633,7 +627,9 @@ void        Breakpad::RemoveKeyValue(NSString *key) {
 
 //=============================================================================
 void        Breakpad::GenerateAndSendReport() {
+  config_params_->SetKeyValue(BREAKPAD_ON_DEMAND, "YES");
   HandleException(0, 0, 0, mach_thread_self()); 
+  config_params_->SetKeyValue(BREAKPAD_ON_DEMAND, "NO");
 }
 
 //=============================================================================
