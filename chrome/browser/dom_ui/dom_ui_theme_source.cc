@@ -148,7 +148,11 @@ void DOMUIThemeSource::SendThemeBitmap(int request_id, int resource_id) {
   DCHECK(tp);
 
   SkBitmap* image = tp->GetBitmapNamed(resource_id);
-  DCHECK(image);
+  if (!image || image->empty()) {
+    SendResponse(request_id, NULL);
+    return;
+  }
+
   std::vector<unsigned char> png_bytes;
   PNGEncoder::EncodeBGRASkBitmap(*image, false, &png_bytes);
 
