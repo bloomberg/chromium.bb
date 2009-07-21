@@ -601,4 +601,30 @@ void NaClWaitForModuleStartStatusCall(struct NaClApp *nap);
 
 EXTERN_C_END
 
+void NaClThreadStartupCheck();
+
+void NaClFillTrampolineRegion(struct NaClApp *nap);
+
+void NaClPatchOneTrampoline(struct NaClApp *nap,
+                            uintptr_t target_addr);
+
+struct NaClPatch {
+  uint32_t            target;
+  uint32_t            value;
+};
+
+struct NaClPatchInfo {
+  uintptr_t           dst;
+  uintptr_t           src;
+  size_t              nbytes;
+  uintptr_t           *rel32;
+  size_t              num_rel32;
+  struct NaClPatch    *abs32;
+  size_t              num_abs32;
+  struct NaClPatch    *abs16;
+  size_t              num_abs16;
+};
+
+void NaClPatchMemory(struct NaClPatchInfo *patch);
+
 #endif

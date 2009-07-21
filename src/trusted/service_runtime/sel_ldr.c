@@ -32,48 +32,28 @@
 /*
  * NaCl Simple/secure ELF loader (NaCl SEL).
  */
-#include "native_client/src/include/portability_io.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_cleanup.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
-#include "native_client/src/trusted/desc/nacl_desc_io.h"
-#include "native_client/src/trusted/desc/nrd_xfer.h"
-#include "native_client/src/trusted/desc/nrd_xfer_effector.h"
-
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
-
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_asm_symbols.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
-
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
+/* TODO(petr): try to avoid NACL_ARM directive */
 #if NACL_ARM
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
 #else
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
 #endif
-
 #include "native_client/src/trusted/service_runtime/springboard.h"
-#include "native_client/src/trusted/service_runtime/tramp.h"
 
-#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 
 int NaClAppCtor(struct NaClApp  *nap) {
-  NACL_THREAD_CHECK;
+  NaClThreadStartupCheck();
 
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 
@@ -286,22 +266,6 @@ void  NaClStore16(uintptr_t addr,
  * the target is typically the address of some symbol from the source
  * template.
  */
-struct NaClPatch {
-  uint32_t        target, value;
-};
-
-struct NaClPatchInfo {
-  uintptr_t           dst;
-  uintptr_t           src;
-  size_t              nbytes;
-  uintptr_t           *rel32;
-  size_t              num_rel32;
-  struct NaClPatch    *abs32;
-  size_t              num_abs32;
-  struct NaClPatch    *abs16;
-  size_t              num_abs16;
-};
-
 void  NaClPatchMemory(struct NaClPatchInfo  *patch) {
   size_t    i;
   size_t    offset;
@@ -331,57 +295,6 @@ void  NaClPatchMemory(struct NaClPatchInfo  *patch) {
   }
 }
 
-/*
- * Install a syscall trampoline at target_addr.  NB: Thread-safe.
- */
-
-/* TODO(petr): make this function architecture dependant */
-void  NaClPatchOneTrampoline(struct NaClApp *nap,
-                             uintptr_t  target_addr) {
-  struct NaClPatchInfo  patch_info;
-
-  struct NaClPatch      patch16[1];
-  struct NaClPatch      patch32[2];
-
-#if NACL_ARM
-  /*
-   * in ARM we do not need to patch ds, cs sigments.
-   * by default we initialize the target for trampoline code as NaClSyscallSeg,
-   * so there is no point to patch address of NaClSyscallSeg
-   */
-  patch_info.num_abs16 = 0;
-  patch_info.num_rel32 = 0;
-  patch_info.num_abs32 = 0;
-
-#else
-
-  patch16[0].target = ((uintptr_t) &NaCl_tramp_cseg_patch) - 2;
-  patch16[0].value = nacl_global_cs;
-
-  patch_info.abs16 = patch16;
-  patch_info.num_abs16 = sizeof patch16/sizeof patch16[0];
-
-  patch_info.rel32 = 0;
-  patch_info.num_rel32 = 0;
-
-  patch32[0].target = ((uintptr_t) &NaCl_tramp_cseg_patch) - 6;
-  patch32[0].value = (uintptr_t) NaClSyscallSeg;
-
-  patch32[1].target = ((uintptr_t) &NaCl_tramp_dseg_patch) - 4;
-  patch32[1].value = nacl_global_ds;  /* opens the data sandbox */
-
-  patch_info.abs32 = patch32;
-  patch_info.num_abs32 = sizeof patch32/sizeof patch32[0];
-
-#endif /* NACL_ARM */
-
-  patch_info.dst = target_addr;
-  patch_info.src = (uintptr_t) &NaCl_trampoline_seg_code;
-  patch_info.nbytes = ((uintptr_t) &NaCl_trampoline_seg_end
-                       - (uintptr_t) &NaCl_trampoline_seg_code);
-
-  NaClPatchMemory(&patch_info);
-}
 
 /*
  * Install syscall trampolines at all possible well-formed entry
@@ -394,14 +307,7 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
   int         i;
   uintptr_t   addr;
 
-/* fill trampoline region with HLT */
-/* TODO(petr): make a architecture dependant functions */
-#if NACL_ARM
-  for (i=0; i < NACL_TRAMPOLINE_SIZE/sizeof(NACL_HALT_OPCODE); i++)
-    ((int *)(nap->mem_start+NACL_TRAMPOLINE_START))[i] = NACL_HALT_OPCODE;
-#else
-  memset((void *) nap->mem_start, NACL_HALT_OPCODE, NACL_TRAMPOLINE_END);
-#endif
+  NaClFillTrampolineRegion(nap);
 
   /*
    * Do not bother to fill in the contents of page 0, since we make it

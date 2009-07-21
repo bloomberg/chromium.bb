@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,30 +29,53 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "native_client/src/trusted/service_runtime/nacl_assert.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/tramp.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
+
+
 /*
- * NaCl Secure Runtime
+ * A sanity check -- should be invoked in some early function, e.g.,
+ * main, or something that main invokes early.
  */
+void NaClThreadStartupCheck() {
+  ASSERT(sizeof(struct NaClThreadContext) == 44);
+}
 
-#ifndef __ARCH_ARM_SEL_RT_H__
-#define __ARCH_ARM_SEL_RT_H__    1
 
-#include "native_client/src/include/portability.h"
+/*
+ * Install a syscall trampoline at target_addr.  NB: Thread-safe.
+ */
+void  NaClPatchOneTrampoline(struct NaClApp *nap,
+                             uintptr_t  target_addr) {
+  struct NaClPatchInfo  patch_info;
 
-uint32_t NaClGetSp(void);
+  struct NaClPatch      patch16[1];
+  struct NaClPatch      patch32[2];
 
-struct NaClThreadContext {
-uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, esp, lr, eip;
-          /* 0   4   8   c  10  14   18  1c   20  24   28 */
-};
+  /*
+   * in ARM we do not need to patch ds, cs sigments.
+   * by default we initialize the target for trampoline code as NaClSyscallSeg,
+   * so there is no point to patch address of NaClSyscallSeg
+   */
+  patch_info.num_abs16 = 0;
+  patch_info.num_rel32 = 0;
+  patch_info.num_abs32 = 0;
 
-struct NaClApp;  /* fwd */
+  patch_info.dst = target_addr;
+  patch_info.src = (uintptr_t) &NaCl_trampoline_seg_code;
+  patch_info.nbytes = ((uintptr_t) &NaCl_trampoline_seg_end
+                       - (uintptr_t) &NaCl_trampoline_seg_code);
 
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          uintptr_t                 pc,
-                          uintptr_t                 sp,
-                          uint16_t                  r9);
+  NaClPatchMemory(&patch_info);
+}
 
-void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
-#endif /* __ARCH_ARM_SEL_RT_H__ */
+void NaClFillTrampolineRegion(struct NaClApp *nap) {
+  int i;
+
+  for (i=0; i < NACL_TRAMPOLINE_SIZE/sizeof(NACL_HALT_OPCODE); i++)
+    ((int *)(nap->mem_start+NACL_TRAMPOLINE_START))[i] = NACL_HALT_OPCODE;
+}
 
