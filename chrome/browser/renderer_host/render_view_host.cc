@@ -231,9 +231,9 @@ bool RenderViewHost::IsRenderViewLive() const {
   return process()->HasConnection() && renderer_initialized_;
 }
 
-void RenderViewHost::SetRendererPrefs(
-    const RendererPreferences& renderer_prefs) {
-  Send(new ViewMsg_SetRendererPrefs(routing_id(), renderer_prefs));
+void RenderViewHost::SyncRendererPrefs() {
+  Send(new ViewMsg_SetRendererPrefs(routing_id(),
+                                    delegate_->GetRendererPrefs()));
 }
 
 void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {

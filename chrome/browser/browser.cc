@@ -202,8 +202,6 @@ Browser::Browser(Type type, Profile* profile)
   // Trim browser memory on idle for low & medium memory models.
   if (g_browser_process->memory_model() < BrowserProcess::HIGH_MEMORY_MODEL)
     idle_task_->Start();
-
-  renderer_preferences_.can_accept_load_drops = (this->type() == TYPE_NORMAL);
 }
 
 Browser::~Browser() {
@@ -348,12 +346,14 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
   Browser* browser = Browser::CreateForApp(app_name, profile, false);
   browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, true, -1,
                          false, NULL);
-  browser->GetSelectedTabContents()->render_view_host()->SetRendererPrefs(
-      browser->GetSelectedTabContents()->delegate()->GetRendererPrefs());
+
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
+  tab_contents->render_view_host()->SyncRendererPrefs();
   browser->window()->Show();
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
-  browser->GetSelectedTabContents()->view()->SetInitialFocus();
+  tab_contents->view()->SetInitialFocus();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1898,8 +1898,9 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   DetachContents(contents);
   Browser* browser = Browser::CreateForApp(app_name, profile_, false);
   browser->tabstrip_model()->AppendTabContents(contents, true);
-  browser->GetSelectedTabContents()->render_view_host()->SetRendererPrefs(
-      browser->GetSelectedTabContents()->delegate()->GetRendererPrefs());
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
+  tab_contents->render_view_host()->SyncRendererPrefs();
   browser->window()->Show();
 }
 

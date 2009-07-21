@@ -284,6 +284,8 @@ TabContents::TabContents(Profile* profile,
   // Keep a global copy of the previous search string (if any).
   static string16 global_last_search = string16();
   last_search_prepopulate_text_ = &global_last_search;
+
+  view_->InitRendererPrefs(&renderer_preferences_);
 }
 
 TabContents::~TabContents() {
@@ -1722,10 +1724,7 @@ RenderViewHostDelegate::Autofill* TabContents::GetAutofillDelegate() {
 }
 
 RendererPreferences TabContents::GetRendererPrefs() const {
-  if (delegate())
-    return delegate()->GetRendererPrefs();
-  else
-    return RendererPreferences();
+  return renderer_preferences_;
 }
 
 TabContents* TabContents::GetAsTabContents() {

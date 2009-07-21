@@ -34,6 +34,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_action.h"
 #include "chrome/common/property_bag.h"
+#include "chrome/common/renderer_preferences.h"
 #include "net/base/load_states.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webpreferences.h"
@@ -570,6 +571,10 @@ class TabContents : public PageNavigator,
     return blocked_popups_;
   }
 
+  RendererPreferences* GetMutableRendererPrefs() {
+    return &renderer_preferences_;
+  }
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -1083,6 +1088,9 @@ class TabContents : public PageNavigator,
   // True if the user has decided to block future javascript messages. This is
   // reset on navigations to false on navigations.
   bool suppress_javascript_messages_;
+
+  // Settings that get passed to the renderer process.
+  RendererPreferences renderer_preferences_;
 
   // ---------------------------------------------------------------------------
 

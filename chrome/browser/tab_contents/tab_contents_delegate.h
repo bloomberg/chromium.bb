@@ -12,7 +12,6 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/page_transition_types.h"
-#include "chrome/common/renderer_preferences.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -199,9 +198,6 @@ class TabContentsDelegate {
     return false;
   }
 
-  // Returns the renderer's current preferences settings.
-  RendererPreferences GetRendererPrefs() const { return renderer_preferences_; }
-
   // Shows a confirmation UI that the specified |template_url| is to be added as
   // a search engine.
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
@@ -227,7 +223,6 @@ class TabContentsDelegate {
 
  protected:
   ~TabContentsDelegate() {}
-  RendererPreferences renderer_preferences_;
 
 };
 

@@ -2629,6 +2629,9 @@ void RenderView::OnEnableIntrinsicWidthChangedMode() {
 
 void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   renderer_preferences_ = renderer_prefs;
+
+  // TODO(derat): Pass |renderer_preferences_.should_antialias_text|, |hinting|,
+  // and |subpixel_rendering| through to Skia.
 }
 
 void RenderView::OnUpdateBackForwardListCount(int back_list_count,

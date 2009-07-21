@@ -1487,9 +1487,29 @@ struct ParamTraits<RendererPreferences> {
   typedef RendererPreferences param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.can_accept_load_drops);
+    WriteParam(m, p.should_antialias_text);
+    WriteParam(m, static_cast<int>(p.hinting));
+    WriteParam(m, static_cast<int>(p.subpixel_rendering));
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->can_accept_load_drops);
+    if (!ReadParam(m, iter, &p->can_accept_load_drops))
+      return false;
+    if (!ReadParam(m, iter, &p->should_antialias_text))
+      return false;
+
+    int hinting = 0;
+    if (!ReadParam(m, iter, &hinting))
+      return false;
+    p->hinting = static_cast<RendererPreferencesHintingEnum>(hinting);
+
+    int subpixel_rendering = 0;
+    if (!ReadParam(m, iter, &subpixel_rendering))
+      return false;
+    p->subpixel_rendering =
+        static_cast<RendererPreferencesSubpixelRenderingEnum>(
+            subpixel_rendering);
+
+    return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<RendererPreferences>");

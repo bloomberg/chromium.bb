@@ -103,7 +103,9 @@ class RenderViewHost : public RenderWidgetHost,
   // because it is overridden by TestRenderViewHost.
   virtual bool IsRenderViewLive() const;
 
-  void SetRendererPrefs(const RendererPreferences& renderer_prefs);
+  // Send the renderer process the current preferences supplied by the
+  // RenderViewHostDelegate.
+  void SyncRendererPrefs();
 
   // Sends the given navigation message. Use this rather than sending it
   // yourself since this does the internal bookkeeping described below. This

@@ -546,6 +546,55 @@ gfx::NativeWindow TabContentsViewGtk::GetTopLevelNativeWindow() const {
   return window ? GTK_WINDOW(window) : NULL;
 }
 
+void TabContentsViewGtk::InitRendererPrefs(RendererPreferences* prefs) {
+  GtkSettings* gtk_settings = gtk_settings_get_default();
+
+  gint antialias = 0;
+  gint hinting = 0;
+  gchar* hint_style = NULL;
+  gchar* rgba_style = NULL;
+  g_object_get(gtk_settings,
+               "gtk-xft-antialias", &antialias,
+               "gtk-xft-hinting", &hinting,
+               "gtk-xft-hintstyle", &hint_style,
+               "gtk-xft-rgba", &rgba_style,
+               NULL);
+
+  // g_object_get() doesn't tell us whether the properties were present or not,
+  // but if they aren't (because gnome-settings-daemon isn't running), we'll get
+  // NULL values for the strings.
+  if (hint_style && rgba_style) {
+    prefs->should_antialias_text = antialias;
+
+    if (hinting == 0 || strcmp(hint_style, "hintnone") == 0) {
+      prefs->hinting = RENDERER_PREFERENCES_HINTING_NONE;
+    } else if (strcmp(hint_style, "hintslight") == 0) {
+      prefs->hinting = RENDERER_PREFERENCES_HINTING_SLIGHT;
+    } else if (strcmp(hint_style, "hintmedium") == 0) {
+      prefs->hinting = RENDERER_PREFERENCES_HINTING_MEDIUM;
+    } else if (strcmp(hint_style, "hintfull") == 0) {
+      prefs->hinting = RENDERER_PREFERENCES_HINTING_FULL;
+    }
+
+    if (strcmp(rgba_style, "none") == 0) {
+      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE;
+    } else if (strcmp(rgba_style, "rgb") == 0) {
+      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB;
+    } else if (strcmp(rgba_style, "bgr") == 0) {
+      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR;
+    } else if (strcmp(rgba_style, "vrgb") == 0) {
+      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB;
+    } else if (strcmp(rgba_style, "vbgr") == 0) {
+      prefs->subpixel_rendering = RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR;
+    }
+  }
+
+  if (hint_style)
+    g_free(hint_style);
+  if (rgba_style)
+    g_free(rgba_style);
+}
+
 void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   // This is used for positioning the download shelf arrow animation,
   // as well as sizing some other widgets in Windows.  In GTK the size is
