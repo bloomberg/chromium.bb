@@ -90,9 +90,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Whether we should be using gtk rendering.
   bool use_gtk_;
 
-  // A GtkWidget that exists only so we can look at its properties (and take
-  // its colors).
+  // GtkWidgets that exist only so we can look at their properties (and take
+  // their colors).
   GtkWidget* fake_window_;
+  GtkWidget* fake_label_;
 
   // A list of all GtkChromeButton instances. We hold on to these to notify
   // them of theme changes.
