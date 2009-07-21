@@ -178,8 +178,7 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data) {
   if (!drop_data.plain_text.empty())
     data->SetString(drop_data.plain_text);
 
-  drag_source_ = new WebDragSource(GetNativeView(),
-                                   tab_contents()->render_view_host());
+  drag_source_ = new WebDragSource(GetNativeView(), tab_contents());
 
   DWORD effects;
 

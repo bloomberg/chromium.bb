@@ -1588,9 +1588,12 @@ void WebViewImpl::DragSourceMovedTo(
 }
 
 void WebViewImpl::DragSourceSystemDragEnded() {
-  page_->dragController()->dragEnded();
-  DCHECK(doing_drag_and_drop_);
-  doing_drag_and_drop_ = false;
+  // It's possible for us to get this callback while not doing a drag if
+  // it's from a previous page that got unloaded.
+  if (doing_drag_and_drop_) {
+    page_->dragController()->dragEnded();
+    doing_drag_and_drop_ = false;
+  }
 }
 
 bool WebViewImpl::DragTargetDragEnter(

@@ -8,6 +8,8 @@
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 // TODO(port): Port this file.
 #if defined(OS_WIN)
@@ -17,6 +19,7 @@
 #endif
 
 class RenderViewHost;
+class TabContents;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -27,11 +30,17 @@ class RenderViewHost;
 //  on their system. This object tells Windows whether or not the drag should
 //  continue, and supplies the appropriate cursors.
 //
-class WebDragSource : public BaseDragSource {
+class WebDragSource : public BaseDragSource,
+                      public NotificationObserver {
  public:
-  // Create a new DragSource for a given HWND and RenderViewHost.
-  WebDragSource(gfx::NativeWindow source_wnd, RenderViewHost* render_view_host);
+  // Create a new DragSource for a given HWND and TabContents.
+  WebDragSource(gfx::NativeWindow source_wnd, TabContents* tab_contents);
   virtual ~WebDragSource() { }
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  protected:
   // BaseDragSource
@@ -50,6 +59,8 @@ class WebDragSource : public BaseDragSource {
   // drop events that it needs to know about (such as when a drag operation it
   // initiated terminates).
   RenderViewHost* render_view_host_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDragSource);
 };

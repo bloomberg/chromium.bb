@@ -11,6 +11,9 @@
 #include "chrome/browser/tab_contents/web_drag_source.h"
 
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/notification_service.h"
 
 namespace {
 
@@ -33,13 +36,20 @@ static void GetCursorPositions(gfx::NativeWindow wnd, gfx::Point* client,
 // WebDragSource, public:
 
 WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
-                             RenderViewHost* render_view_host)
+                             TabContents* tab_contents)
     : BaseDragSource(),
       source_wnd_(source_wnd),
-      render_view_host_(render_view_host) {
+      render_view_host_(tab_contents->render_view_host()) {
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_SWAPPED,
+                 Source<TabContents>(tab_contents));
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_DISCONNECTED,
+                 Source<TabContents>(tab_contents));
 }
 
 void WebDragSource::OnDragSourceCancel() {
+  if (!render_view_host_)
+    return;
+
   gfx::Point client;
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
@@ -48,6 +58,9 @@ void WebDragSource::OnDragSourceCancel() {
 }
 
 void WebDragSource::OnDragSourceDrop() {
+  if (!render_view_host_)
+    return;
+
   gfx::Point client;
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
@@ -56,9 +69,24 @@ void WebDragSource::OnDragSourceDrop() {
 }
 
 void WebDragSource::OnDragSourceMove() {
+  if (!render_view_host_)
+    return;
+
   gfx::Point client;
   gfx::Point screen;
   GetCursorPositions(source_wnd_, &client, &screen);
   render_view_host_->DragSourceMovedTo(client.x(), client.y(),
                                        screen.x(), screen.y());
+}
+
+void WebDragSource::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  if (NotificationType::TAB_CONTENTS_SWAPPED == type) {
+    // When the tab contents get swapped, our render view host goes away.
+    // That's OK, we can continue the drag, we just can't send messages back to
+    // our drag source.
+    render_view_host_ = NULL;
+  } else if (NotificationType::TAB_CONTENTS_DISCONNECTED) {
+    NOTREACHED();
+  }
 }
