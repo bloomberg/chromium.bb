@@ -211,19 +211,6 @@ TEST_F(MetricsTest, TimingSample) {
   // Should be precisely one sample in there
   EXPECT_EQ(1, data.count);
 
-  // Disable flaky tests on build server, unfortunately this reduces coverage
-  // too, but it seems preferrable to breaking the build on a regular basis.
-#ifndef BUILD_SERVER_BUILD
-  // Let's hope the scheduler doesn't leave us hanging more than 10 ms.
-  EXPECT_GT(40, data.sum);
-  // The sleep above seems to often terminate early on the build server,
-  // I've observed captured times down to 18 ms, which is strange.
-  // TODO: figure out whether the timer is broken or whether
-  //    sleep is breaking its promise, or whether e.g. we're getting different
-  //    walltimes on different CPUs due to BIOS bugs on the build server
-  EXPECT_LT(15, data.sum);
-#endif
-
   // again, this time with a non-unity count
   {
     TimingSample sample(&foo, 2);
@@ -236,14 +223,6 @@ TEST_F(MetricsTest, TimingSample) {
 
   // Should be precisely two samples in there
   EXPECT_EQ(2, data.count);
-
-  // Disable flaky tests on build server, unfortunately this reduces coverage
-  // too, but it seems preferrable to breaking the build on a regular basis.
-#ifndef BUILD_SERVER_BUILD
-  // Let's hope the scheduler doesn't leave us hanging more than 10 ms.
-  EXPECT_GT(40, data.sum);
-  EXPECT_LT(15, data.sum);
-#endif
 
   // now with zero count
   {
