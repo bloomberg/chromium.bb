@@ -71,6 +71,12 @@ SUBSTRING : webcore::frameloader::didreceiveresponse___webcore::resourceloader::
 # 10978
 PREFIX : webcore::renderobject::localtoabsolute___webcore::layoutstate::layoutstate___webcore::renderview::pushlayoutstate___webcore::frameview::layout
 
+# 17366
+wtf::refptr<webcore::node>::operator=___webcore::frameview::scrolltoanchor___webcore::frameview::maintainscrollpositionatanchor___webcore::frameloader::gotoanchor
+
+# 17367
+wtf::hashtable<webcore::string,webcore::string,wtf::identityextractor<webcore::string>,webcore::stringhash,wtf::hashtraits<webcore::string>,wtf::hashtraits<webcore::string> >::add<webcore::string,webcore::string,wtf::identityhashtranslator<webcore::string,webcore::string,webcore::stringhash> >___webcore::frameloader::dispatchwillsendrequest___webcore::frameloader::willsendrequest___webcore::resourceloader::willsendrequest___webcore::mainresourceloader::willsendrequest___webcore::mainresourceloader::loadnow
+
 # 8033
 SUBSTRING : windowdragresponsetask::run___messageloop::runtask___messageloop::dowork
 
