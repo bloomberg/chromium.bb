@@ -5,57 +5,45 @@
 #import "chrome/browser/cocoa/download_shelf_view.h"
 
 #include "base/scoped_nsobject.h"
+#import "third_party/GTM/AppKit/GTMTheme.h"
 
 @implementation DownloadShelfView
 
+- (NSColor*)strokeColor {
+  return [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBar
+                                         state:[[self window] isKeyWindow]];
+}
+
 - (void)drawRect:(NSRect)rect {
-  rect = [self bounds];
+  BOOL isKey = [[self window] isKeyWindow];
 
-  // TODO(thakis): Once this has its final look, it also needs an
-  // "inactive" state.
+  GTMTheme *theme = [self gtm_theme];
 
-#if 0
-  // Grey Finder/iCal-like bottom bar with dark gradient, dark/light lines
-  NSColor* start =
-      [NSColor colorWithCalibratedWhite: 0.75 alpha:1.0];
-  NSColor* end = [NSColor colorWithCalibratedWhite:0.59 alpha:1.0];
-  scoped_nsobject<NSGradient> gradient(
-      [[NSGradient alloc] initWithStartingColor:start endingColor:end]);
-  [gradient drawInRect:[self bounds] angle:270.0];
+  NSImage *backgroundImage = [theme backgroundImageForStyle:GTMThemeStyleToolBar
+                                               state:GTMThemeStateActiveWindow];
+  if (backgroundImage) {
+    [[NSGraphicsContext currentContext] setPatternPhase:NSZeroPoint];
+    NSColor *color = [NSColor colorWithPatternImage:backgroundImage];
+    [color set];
+    NSRectFill([self bounds]);
+  } else {
+    NSGradient *gradient = [theme gradientForStyle:GTMThemeStyleToolBar
+                                             state:isKey];
+    NSPoint startPoint = [self convertPointFromBase:NSMakePoint(0, 0)];
+    NSPoint endPoint = [self convertPointFromBase:
+        NSMakePoint(0, [self frame].size.height)];
 
+    [gradient drawFromPoint:startPoint
+                    toPoint:endPoint
+                    options:NSGradientDrawsBeforeStartingLocation |
+                            NSGradientDrawsAfterEndingLocation];
+  }
+
+  // Draw top stroke
+  [[self strokeColor] set];
   NSRect borderRect, contentRect;
-  NSDivideRect(rect, &borderRect, &contentRect, 1, NSMaxYEdge);
-  [[NSColor colorWithDeviceWhite:0.25 alpha:1.0] set];
+  NSDivideRect([self bounds], &borderRect, &contentRect, 1, NSMaxYEdge);
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
-
-  NSDivideRect(contentRect, &borderRect, &contentRect, 1, NSMaxYEdge);
-  [[NSColor colorWithDeviceWhite:0.85 alpha:1.0] set];
-  NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
-#else
-  // Glossy two-color bar with only light line at top (Mail.app/HitList-style)
-  // Doesn't mesh with the matte look of the toolbar.
-
-  NSRect topRect, bottomRect;
-  NSDivideRect(rect, &topRect, &bottomRect, rect.size.height/2, NSMaxYEdge);
-
-  // 1px line at top
-  NSRect borderRect, contentRect;
-  NSDivideRect(topRect, &borderRect, &contentRect, 1, NSMaxYEdge);
-  [[NSColor colorWithDeviceWhite:0.69 alpha:1.0] set];
-  NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
-
-  // Gradient for upper half
-  NSColor* start =
-      [NSColor colorWithCalibratedWhite: 1.0 alpha:1.0];
-  NSColor* end = [NSColor colorWithCalibratedWhite:0.94 alpha:1.0];
-  scoped_nsobject<NSGradient> gradient(
-      [[NSGradient alloc] initWithStartingColor:start endingColor:end]);
-  [gradient drawInRect:contentRect angle:270.0];
-
-  // Fill lower half with solid color
-  [[NSColor colorWithDeviceWhite:0.9 alpha:1.0] set];
-  NSRectFillUsingOperation(bottomRect, NSCompositeSourceOver);
-#endif
 }
 
 @end
