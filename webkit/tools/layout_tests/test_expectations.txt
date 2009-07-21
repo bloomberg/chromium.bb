@@ -2972,7 +2972,7 @@ BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
 
 // New tests from WebKit merge 46087:46125
 BUG17255 LINUX WIN : LayoutTests/fast/box-shadow/spread.html = FAIL
-BUG17287 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
+BUG13907 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 
 // New test from WebKit merge 46126:46141 (crashes on mac).
 BUG17321 LINUX WIN : LayoutTests/fast/loader/non-html-load-event.html = FAIL
