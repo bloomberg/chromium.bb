@@ -623,6 +623,10 @@ class SecuritySection : public OptionsPageBase {
   }
 
  private:
+  // The callback functions for the options widgets.
+  static void OnManageCertificatesClicked(GtkButton* button,
+                                          SecuritySection* section);
+
   // The widget containing the options for this section.
   GtkWidget* page_;
 
@@ -632,8 +636,36 @@ class SecuritySection : public OptionsPageBase {
 SecuritySection::SecuritySection(Profile* profile)
     : OptionsPageBase(profile) {
   page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(page_), gtk_label_new("TODO security options"),
+
+  GtkWidget* manage_certificates_label = CreateWrappedLabel(
+      IDS_OPTIONS_CERTIFICATES_LABEL);
+  gtk_misc_set_alignment(GTK_MISC(manage_certificates_label), 0, 0);
+  gtk_box_pack_start(GTK_BOX(page_), manage_certificates_label,
                      FALSE, FALSE, 0);
+
+  // TODO(mattm): change this to a button to launch the system certificate
+  // manager, when one exists.
+  GtkWidget* manage_certificates_link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON).c_str());
+  // Stick it in an hbox so it doesn't expand to the whole width.
+  GtkWidget* manage_certificates_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(manage_certificates_hbox),
+                     manage_certificates_link, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page_), OptionsLayoutBuilderGtk::IndentWidget(
+                         manage_certificates_hbox),
+                     FALSE, FALSE, 0);
+  g_signal_connect(manage_certificates_link, "clicked",
+                   G_CALLBACK(OnManageCertificatesClicked), this);
+
+  // TODO(mattm): add SSLConfigService options when that is ported to Linux
+}
+
+// static
+void SecuritySection::OnManageCertificatesClicked(GtkButton* button,
+                                                  SecuritySection* section) {
+  BrowserList::GetLastActive()->
+      OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_CERTIFICATES_CONFIG_URL)),
+              GURL(), NEW_WINDOW, PageTransition::LINK);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -543,6 +543,11 @@
       <message name="IDS_CHROMIUM_PROJECT_URL" translateable="false">
         http://code.google.com/chromium/?hl=[GRITLANGCODE]
       </message>
+
+      <!-- The URL for Linux ssl certificate configuration help. -->
+      <message name="IDS_LINUX_CERTIFICATES_CONFIG_URL" translateable="false">
+        http://code.google.com/p/chromium/wiki/LinuxCertManagement
+      </message>
     </messages>
   </release>
 </grit>
