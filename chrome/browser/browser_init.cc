@@ -437,7 +437,7 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
         browser = BrowserList::GetLastActive();
       OpenURLsInBrowser(browser, process_startup, urls_to_open);
     }
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_VIEWS)
     // TODO(port): Remove ifdef when the Linux splash page is not needed.
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
     // This can mess up UI tests, so only do it when UI tests aren't running.

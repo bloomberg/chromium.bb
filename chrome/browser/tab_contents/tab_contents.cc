@@ -757,8 +757,7 @@ void TabContents::ShowPageInfo(const GURL& url,
   if (!delegate_)
     return;
 
-  delegate_->ShowPageInfo(GetContentNativeView(), profile(), url, ssl,
-                          show_history);
+  delegate_->ShowPageInfo(profile(), url, ssl, show_history);
 }
 
 #if defined(OS_WIN) || defined(OS_LINUX)

@@ -102,7 +102,7 @@ void EditSearchEngine(gfx::NativeWindow parent,
 // |url| is the url of the page/frame the info applies to, |ssl| is the SSL
 // information for that page/frame.  If |show_history| is true, a section
 // showing how many times that URL has been visited is added to the page info.
-void ShowPageInfo(gfx::NativeView parent,
+void ShowPageInfo(gfx::NativeWindow parent,
                   Profile* profile,
                   const GURL& url,
                   const NavigationEntry::SSLStatus& ssl,

@@ -2080,6 +2080,7 @@
                 ['include', '^browser/views/info_bubble.h'],
                 ['include', '^browser/views/location_bar_view.cc'],
                 ['include', '^browser/views/location_bar_view.h'],
+                ['include', '^browser/views/page_info_window_view.cc'],
                 # Not necessary unless you're trying to build ChromeOS+views.
                 #['include', '^browser/views/panels/panel_scroller.cc'],
                 #['include', '^browser/views/panels/panel_scroller.h'],
@@ -2155,13 +2156,8 @@
                 ['include', '^browser/gtk/keyword_editor_view.h'],
                 ['include', '^browser/gtk/list_store_favicon_loader.cc'],
                 ['include', '^browser/gtk/list_store_favicon_loader.h'],
-                ['include', '^browser/gtk/options'],
-                ['include', '^browser/gtk/options/general_page_gtk.cc'],
-                ['include', '^browser/gtk/options/general_page_gtk.h'],
                 ['include', '^browser/gtk/menu_gtk.cc'],
                 ['include', '^browser/gtk/menu_gtk.h'],
-                ['include', '^browser/gtk/sad_tab_gtk.cc'],
-                ['include', '^browser/gtk/sad_tab_gtk.h'],
 
                 # Other excluded stuff.
                 ['exclude', '^browser/browser_theme_provider_gtk.cc'],

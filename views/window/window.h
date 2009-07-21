@@ -25,6 +25,8 @@ class Window {
   virtual ~Window() {}
 
   // Creates an instance of an object implementing this interface.
+  // TODO(beng): create a version of this function that takes a NativeView, for
+  //             constrained windows.
   static Window* CreateChromeWindow(gfx::NativeWindow parent,
                                     const gfx::Rect& bounds,
                                     WindowDelegate* window_delegate);

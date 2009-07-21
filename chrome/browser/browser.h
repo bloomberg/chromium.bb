@@ -496,8 +496,7 @@ class Browser : public TabStripModelDelegate,
   virtual void OnStartDownload(DownloadItem* download);
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);
-  virtual void ShowPageInfo(gfx::NativeView parent,
-                            Profile* profile,
+  virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);

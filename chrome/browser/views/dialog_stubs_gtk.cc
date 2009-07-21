@@ -6,6 +6,8 @@
 // browser_dialogs.h that are currently unimplemented in GTK-views.
 
 #include "base/logging.h"
+#include "chrome/browser/fonts_languages_window.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/browser/views/browser_dialogs.h"
 
 namespace browser {
@@ -99,3 +101,14 @@ void ShowPageInfo(gfx::NativeView parent,
 }
 
 }  // namespace browser
+
+void ShowOptionsWindow(OptionsPage page,
+                       OptionsGroup highlight_group,
+                       Profile* profile) {
+  NOTIMPLEMENTED();
+}
+void ShowFontsLanguagesWindow(gfx::NativeWindow window,
+                              FontsLanguagesPage page,
+                              Profile* profile) {
+  NOTIMPLEMENTED();
+}

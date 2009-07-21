@@ -225,8 +225,7 @@ class BrowserWindow {
   // |url| is the url of the page/frame the info applies to, |ssl| is the SSL
   // information for that page/frame.  If |show_history| is true, a section
   // showing how many times that URL has been visited is added to the page info.
-  virtual void ShowPageInfo(gfx::NativeView parent,
-                            Profile* profile,
+  virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history) = 0;

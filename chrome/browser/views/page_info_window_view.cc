@@ -51,7 +51,7 @@ class PageInfoWindowView : public views::View,
                            public views::ButtonListener,
                            public PageInfoModel::PageInfoModelObserver {
  public:
-  PageInfoWindowView(gfx::NativeView parent,
+  PageInfoWindowView(gfx::NativeWindow parent,
                      Profile* profile,
                      const GURL& url,
                      const NavigationEntry::SSLStatus& ssl,
@@ -59,7 +59,7 @@ class PageInfoWindowView : public views::View,
   virtual ~PageInfoWindowView();
 
   // This is the main initializer that creates the window.
-  virtual void Init(gfx::NativeView parent);
+  virtual void Init(gfx::NativeWindow parent);
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize();
@@ -153,7 +153,7 @@ int PageInfoWindowView::opened_window_count_ = 0;
 ////////////////////////////////////////////////////////////////////////////////
 // PageInfoWindowViews
 
-PageInfoWindowView::PageInfoWindowView(gfx::NativeView parent,
+PageInfoWindowView::PageInfoWindowView(gfx::NativeWindow parent,
                                        Profile* profile,
                                        const GURL& url,
                                        const NavigationEntry::SSLStatus& ssl,
@@ -169,11 +169,13 @@ PageInfoWindowView::~PageInfoWindowView() {
   opened_window_count_--;
 }
 
-void PageInfoWindowView::Init(gfx::NativeView parent) {
+void PageInfoWindowView::Init(gfx::NativeWindow parent) {
+#if defined(OS_WIN)
   DWORD sys_color = ::GetSysColor(COLOR_3DFACE);
   SkColor color = SkColorSetRGB(GetRValue(sys_color), GetGValue(sys_color),
                                 GetBValue(sys_color));
   set_background(views::Background::CreateSolidBackground(color));
+#endif
 
   LayoutSections();
 
@@ -288,9 +290,13 @@ void PageInfoWindowView::ButtonPressed(views::Button* sender) {
 void PageInfoWindowView::CalculateWindowBounds(gfx::Rect* bounds) {
   const int kDefaultOffset = 15;
 
+#if defined(OS_WIN)
   gfx::Rect monitor_bounds(win_util::GetMonitorBoundsForRect(*bounds));
   if (monitor_bounds.IsEmpty())
     return;
+#else
+  gfx::Rect monitor_bounds(0, 0, 1024, 768);
+#endif
 
   // If necessary, move the window so it is visible on the screen.
   gfx::Rect adjusted_bounds = bounds->AdjustToFit(monitor_bounds);
@@ -372,8 +378,12 @@ Section::Section(const std::wstring& title,
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(title_label_);
 
+#if defined(OS_WIN)
   separator_ = new views::Separator();
   AddChildView(separator_);
+#else
+  NOTIMPLEMENTED();
+#endif
 
   status_image_ = new views::ImageView();
   status_image_->SetImage(state ? good_state_icon_ : bad_state_icon_);
@@ -426,9 +436,13 @@ void Section::Layout() {
   gfx::Size size = title_label_->GetPreferredSize();
   title_label_->SetBounds(x, y, size.width(), size.height());
   x += size.width() + kHGapTitleToSeparator;
+#if defined(OS_WIN)
   separator_->SetBounds(x + kHExtraSeparatorPadding, y,
                         width() - x - 2 * kHExtraSeparatorPadding,
                         size.height());
+#else
+  NOTIMPLEMENTED();
+#endif
 
   // Then the image, head-line and description.
   x = kHGapToBorder;
@@ -454,7 +468,7 @@ void Section::Layout() {
 
 namespace browser {
 
-void ShowPageInfo(gfx::NativeView parent,
+void ShowPageInfo(gfx::NativeWindow parent,
                   Profile* profile,
                   const GURL& url,
                   const NavigationEntry::SSLStatus& ssl,
