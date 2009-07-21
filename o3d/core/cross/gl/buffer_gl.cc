@@ -57,6 +57,8 @@ GLenum BufferAccessModeToGLenum(Buffer::AccessMode access_mode) {
       return GL_WRITE_ONLY_ARB;
     case Buffer::READ_WRITE:
       return GL_READ_WRITE_ARB;
+    case Buffer::NONE:
+      break;
   }
   DCHECK(false);
   return GL_READ_WRITE_ARB;

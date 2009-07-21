@@ -55,13 +55,13 @@ namespace o3d {
 class MemoryReadStream {
  public:
   MemoryReadStream(const uint8 *memory, size_t n)
-      : memory_(memory), length_(n), read_index_(0) {}
+      : memory_(memory), read_index_(0), length_(n) {}
 
   // Explicit copy constructor
   MemoryReadStream(const MemoryReadStream &stream)
       : memory_(stream.memory_),
-        length_(stream.length_),
-        read_index_(stream.read_index_) {}
+        read_index_(stream.read_index_),
+        length_(stream.length_) {}
 
   virtual ~MemoryReadStream() {}
 
@@ -179,13 +179,13 @@ class MemoryWriteStream {
   MemoryWriteStream() : memory_(NULL), write_index_(0), length_(0) {}
 
   MemoryWriteStream(uint8 *memory, size_t n)
-      : memory_(memory), length_(n), write_index_(0) {}
+      : memory_(memory), write_index_(0), length_(n) {}
 
   // Explicit copy constructor
   MemoryWriteStream(const MemoryWriteStream &stream)
       : memory_(stream.memory_),
-        length_(stream.length_),
-        write_index_(stream.write_index_) {}
+        write_index_(stream.write_index_),
+        length_(stream.length_) {}
 
   virtual ~MemoryWriteStream() {}
 

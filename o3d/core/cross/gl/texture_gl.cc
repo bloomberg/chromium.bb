@@ -135,6 +135,8 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
         return 0;
       }
     }
+    case Texture::UNKNOWN_FORMAT:
+      break;
   }
   // failed to find a matching format
   LOG(ERROR) << "Unrecognized Texture format type.";
@@ -269,8 +271,8 @@ Texture2DGL::Texture2DGL(ServiceLocator* service_locator,
       renderer_(static_cast<RendererGL*>(
           service_locator->GetService<Renderer>())),
       gl_texture_(texture),
-      has_levels_(0),
-      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
+      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))),
+      has_levels_(0) {
   DLOG(INFO) << "Texture2DGL Construct from GLint";
   DCHECK_NE(format(), Texture::UNKNOWN_FORMAT);
 }
@@ -355,10 +357,10 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
 }
 
 void Texture2DGL::UpdateBackedMipLevel(unsigned int level) {
-  DCHECK_LT(level, levels());
+  DCHECK_LT(static_cast<int>(level), levels());
   DCHECK(backing_bitmap_->image_data());
-  DCHECK_EQ(backing_bitmap_->width(), width());
-  DCHECK_EQ(backing_bitmap_->height(), height());
+  DCHECK_EQ(backing_bitmap_->width(), static_cast<unsigned int>(width()));
+  DCHECK_EQ(backing_bitmap_->height(), static_cast<unsigned int>(height()));
   DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK(HasLevel(level));
   glBindTexture(GL_TEXTURE_2D, gl_texture_);
@@ -394,7 +396,7 @@ bool Texture2DGL::Lock(int level, void** data) {
     return false;
   }
   if (!backing_bitmap_->image_data()) {
-    DCHECK_EQ(has_levels_, 0);
+    DCHECK_EQ(has_levels_, 0u);
     backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
   }
   *data = backing_bitmap_->GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
@@ -605,11 +607,12 @@ TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
 
 void TextureCUBEGL::UpdateBackedMipLevel(unsigned int level,
                                          TextureCUBE::CubeFace face) {
-  DCHECK_LT(level, levels());
+  DCHECK_LT(static_cast<int>(level), levels());
   DCHECK(backing_bitmap_->image_data());
   DCHECK(backing_bitmap_->is_cubemap());
-  DCHECK_EQ(backing_bitmap_->width(), edge_length());
-  DCHECK_EQ(backing_bitmap_->height(), edge_length());
+  DCHECK_EQ(backing_bitmap_->width(), static_cast<unsigned int>(edge_length()));
+  DCHECK_EQ(backing_bitmap_->height(),
+            static_cast<unsigned int>(edge_length()));
   DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK(HasLevel(level, face));
   glBindTexture(GL_TEXTURE_2D, gl_texture_);
@@ -672,7 +675,7 @@ bool TextureCUBEGL::Lock(CubeFace face, int level, void** data) {
   }
   if (!backing_bitmap_->image_data()) {
     for (unsigned int i = 0; i < 6; ++i) {
-      DCHECK_EQ(has_levels_[i], 0);
+      DCHECK_EQ(has_levels_[i], 0u);
     }
     backing_bitmap_->Allocate(format(), edge_length(), edge_length(),
                              levels(), true);

@@ -168,8 +168,8 @@ Texture* Pack::CreateTextureFromBitmap(Bitmap *bitmap, const String& uri) {
     return NULL;
   }
 
-  if (bitmap->width() > Texture::MAX_DIMENSION ||
-      bitmap->height() > Texture::MAX_DIMENSION) {
+  if (bitmap->width() > static_cast<unsigned int>(Texture::MAX_DIMENSION) ||
+      bitmap->height() > static_cast<unsigned int>(Texture::MAX_DIMENSION)) {
     O3D_ERROR(service_locator())
         << "Texture (uri='" << uri
         << "', size="  << bitmap->width() << "x" << bitmap->height()
@@ -281,8 +281,8 @@ Texture2D* Pack::CreateTexture2D(int width,
   }
 
   if (enable_render_surfaces) {
-    if (Bitmap::GetPOTSize(width) != width ||
-        Bitmap::GetPOTSize(height) != height) {
+    if (Bitmap::GetPOTSize(width) != static_cast<unsigned int>(width) ||
+        Bitmap::GetPOTSize(height) != static_cast<unsigned int>(height)) {
       O3D_ERROR(service_locator()) <<
           "Textures with RenderSurfaces enabled must have power-of-two "
           "dimensions.";
@@ -322,7 +322,8 @@ TextureCUBE* Pack::CreateTextureCUBE(int edge_length,
 
 
   if (enable_render_surfaces) {
-    if (Bitmap::GetPOTSize(edge_length) != edge_length) {
+    if (Bitmap::GetPOTSize(edge_length) !=
+        static_cast<unsigned int>(edge_length)) {
       O3D_ERROR(service_locator()) <<
           "Textures with RenderSurfaces enabled must have power-of-two "
           "dimensions.";
@@ -358,8 +359,8 @@ RenderDepthStencilSurface* Pack::CreateDepthStencilSurface(int width,
     return NULL;
   }
 
-  if (Bitmap::GetPOTSize(width) != width ||
-      Bitmap::GetPOTSize(height) != height) {
+  if (Bitmap::GetPOTSize(width) != static_cast<unsigned int>(width) ||
+      Bitmap::GetPOTSize(height) != static_cast<unsigned int>(height)) {
     O3D_ERROR(service_locator()) <<
         "Depth-stencil RenderSurfaces must have power-of-two dimensions.";
     return NULL;

@@ -78,7 +78,7 @@ ElementArray Shape::GetElements() const {
 
 void Shape::SetElements(const ElementArray& elements) {
   elements_.resize(elements.size());
-  for (int i = 0; i != elements.size(); ++i) {
+  for (unsigned int i = 0; i != elements.size(); ++i) {
     elements_[i] = Element::Ref(elements[i]);
   }
 }

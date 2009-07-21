@@ -67,7 +67,8 @@ bool ReportMetrics(MetricsAggregatorPosix *aggregator,
   Formatter formatter(PRODUCT_NAME_STRING, interval);
   aggregator->FormatMetrics(&formatter);
 
-  return UploadMetrics(extra_url_data, user_agent, formatter.output());
+  DLOG(INFO) << "formatter.output() = " << formatter.output();
+  return UploadMetrics(extra_url_data, user_agent, formatter.output().c_str());
 }
 
 }  // namespace

@@ -119,7 +119,8 @@ void TarGenerator::WriteHeader(const String& file_name,
   ::snprintf(p + kGroupIDOffset, 8, "%07o", group_id);
 
   // File size
-  ::snprintf(p + kFileSizeOffset, 12, "%011o", file_size);
+  ::snprintf(p + kFileSizeOffset, 12, "%011o",
+             static_cast<unsigned int>(file_size));
 
   // Modification time
   // TODO: write the correct current time here...
@@ -189,7 +190,7 @@ void TarGenerator::ComputeCheckSum(uint8 *header) {
     checksum += header[i];
   }
   snprintf(reinterpret_cast<char*>(header + kHeaderCheckSumOffset),
-           8, "%06o\0\0", checksum);
+           8, "%06o%c%c", checksum, 0, 0);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -74,15 +74,13 @@ class TarGzTestClient : public StreamProcessor {
 
   // Checks that the data from the reference tar.gz file matches the tar.gz
   // stream we just ge5nerated
-  void            Validate(uint8 *reference_data) {
+  uint8* compressed_data() {
     uint8 *received_data = compressed_data_;
+    return received_data;
+  }
 
-    // on Windows the platform field is different than our reference file
-    received_data[9] = 3;  // Force platform in header to 'UNIX'.
-
-    EXPECT_EQ(0, memcmp(reference_data,
-                        received_data,
-                        compressed_data_.GetLength()));
+  size_t compressed_data_length() {
+    return compressed_data_.GetLength();
   }
 
 #if defined(GENERATE_GOLDEN)
@@ -155,7 +153,15 @@ TEST_F(TarGzGeneratorTest, GenerateTarGz) {
 
 #endif
 
-  test_client.Validate(targz_data);
+  uint8 *received_data = test_client.compressed_data();
+
+  // The platform header in our reference file is set to UNIX, so
+  // force received data to match for all platforms.
+  received_data[9] = 3;
+
+  EXPECT_EQ(0, memcmp(targz_data,
+                      received_data,
+                      test_client.compressed_data_length()));
 
   free(targz_data);
   free(image_data);

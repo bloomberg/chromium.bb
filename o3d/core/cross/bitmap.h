@@ -407,9 +407,9 @@ class Bitmap : public ParamObject {
   // format of the texture this is meant to represent.
   Texture::Format format_;
   // width of the bitmap in pixels.
-  unsigned int width_;
+  int width_;
   // height of the bitmap in pixels.
-  unsigned int height_;
+  int height_;
   // number of mipmap levels in this texture.
   unsigned int num_mipmaps_;
   // is this cube-map data

@@ -53,19 +53,19 @@ FUDaeTextureFilterFunction::FilterFunction LookupFilterFunction(
     const char* name;
     FUDaeTextureFilterFunction::FilterFunction func;
   } functions[] = {
-    "None", FUDaeTextureFilterFunction::NONE,
-    "Linear", FUDaeTextureFilterFunction::LINEAR,
-    "Point", FUDaeTextureFilterFunction::NEAREST,  // DX
-    "Nearest", FUDaeTextureFilterFunction::NEAREST,  // GL
-    "LinearMipmapLinear", FUDaeTextureFilterFunction::LINEAR_MIPMAP_LINEAR,
-    "LinearMipmapNearest", FUDaeTextureFilterFunction::LINEAR_MIPMAP_NEAREST,
-    "NearestMipmapNearest", FUDaeTextureFilterFunction::LINEAR_MIPMAP_NEAREST,
-    "NearestMipmapLinear", FUDaeTextureFilterFunction::NEAREST_MIPMAP_LINEAR,
+    {"None", FUDaeTextureFilterFunction::NONE},
+    {"Linear", FUDaeTextureFilterFunction::LINEAR},
+    {"Point", FUDaeTextureFilterFunction::NEAREST},  // DX
+    {"Nearest", FUDaeTextureFilterFunction::NEAREST},  // GL
+    {"LinearMipmapLinear", FUDaeTextureFilterFunction::LINEAR_MIPMAP_LINEAR},
+    {"LinearMipmapNearest", FUDaeTextureFilterFunction::LINEAR_MIPMAP_NEAREST},
+    {"NearestMipmapNearest", FUDaeTextureFilterFunction::LINEAR_MIPMAP_NEAREST},
+    {"NearestMipmapLinear", FUDaeTextureFilterFunction::NEAREST_MIPMAP_LINEAR},
     // TODO: Once FCollada supports the COLLADA v1.5 spec,
     // turn this on.
     // "Anisotropic", FUDaeTextureFilterFunction::ANISOTROPIC,
   };
-  for (int i = 0; i < sizeof(functions) / sizeof(functions[0]); ++i) {
+  for (size_t i = 0; i < sizeof(functions) / sizeof(functions[0]); ++i) {
     if (!base::strcasecmp(functions[i].name, name)) {
       return functions[i].func;
     }
@@ -80,19 +80,19 @@ FUDaeTextureWrapMode::WrapMode LookupWrapMode(const char* name) {
     const char* name;
     FUDaeTextureWrapMode::WrapMode mode;
   } modes[] = {
-    "None", FUDaeTextureWrapMode::NONE,
+    {"None", FUDaeTextureWrapMode::NONE},
     // DX-style names:
-    "Wrap", FUDaeTextureWrapMode::WRAP,
-    "Mirror", FUDaeTextureWrapMode::MIRROR,
-    "Clamp", FUDaeTextureWrapMode::CLAMP,
-    "Border", FUDaeTextureWrapMode::BORDER,
+    {"Wrap", FUDaeTextureWrapMode::WRAP},
+    {"Mirror", FUDaeTextureWrapMode::MIRROR},
+    {"Clamp", FUDaeTextureWrapMode::CLAMP},
+    {"Border", FUDaeTextureWrapMode::BORDER},
     // GL-style names:
-    "Repeat", FUDaeTextureWrapMode::WRAP,
-    "MirroredRepeat", FUDaeTextureWrapMode::MIRROR,
-    "ClampToEdge", FUDaeTextureWrapMode::CLAMP,
-    "ClampToBorder", FUDaeTextureWrapMode::BORDER,
+    {"Repeat", FUDaeTextureWrapMode::WRAP},
+    {"MirroredRepeat", FUDaeTextureWrapMode::MIRROR},
+    {"ClampToEdge", FUDaeTextureWrapMode::CLAMP},
+    {"ClampToBorder", FUDaeTextureWrapMode::BORDER},
   };
-  for (int i = 0; i < sizeof(modes) / sizeof(modes[0]); ++i) {
+  for (size_t i = 0; i < sizeof(modes) / sizeof(modes[0]); ++i) {
     if (!base::strcasecmp(modes[i].name, name)) {
       return modes[i].mode;
     }

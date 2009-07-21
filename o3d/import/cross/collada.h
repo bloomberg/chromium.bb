@@ -132,8 +132,8 @@ class Collada {
   struct Options {
     Options()
         : generate_mipmaps(true),
-          condition_document(false),
           keep_original_data(false),
+          condition_document(false),
           up_axis(0.0f, 0.0f, 0.0f),
           base_path(FilePath::kCurrentDirectory) {}
     // Whether or not to generate mip-maps on the textures we load.

@@ -35,7 +35,7 @@
 #ifndef O3D_STATSREPORT_FORMATTER_H__
 #define O3D_STATSREPORT_FORMATTER_H__
 
-#include <strstream>
+#include <sstream>
 #include "base/basictypes.h"
 #include "metrics.h"
 
@@ -63,13 +63,13 @@ class Formatter {
 
   // Terminates the output string and returns it.
   // It is an error to add metrics after output() is called.
-  const char *output() {
+  const std::string output() {
     output_ << std::ends;
     return output_.str();
   }
 
  private:
-  mutable std::strstream output_;
+  mutable std::ostringstream output_;
 
   DISALLOW_COPY_AND_ASSIGN(Formatter);
 };

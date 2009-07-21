@@ -250,7 +250,7 @@ void PrimitiveGL::Render(Renderer* renderer,
     }
   }
   if (draw) {
-    DCHECK_NE(gl_primitive_type, GL_NONE);
+    DCHECK_NE(gl_primitive_type, static_cast<unsigned int>(GL_NONE));
     renderer->AddPrimitivesRendered(number_primitives_);
     if (indexed())
       glDrawElements(gl_primitive_type,

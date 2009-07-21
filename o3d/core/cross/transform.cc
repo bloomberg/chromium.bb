@@ -320,7 +320,7 @@ ShapeArray Transform::GetShapes() const {
 
 void Transform::SetShapes(const ShapeArray& shapes) {
   shape_array_.resize(shapes.size());
-  for (int i = 0; i != shapes.size(); ++i) {
+  for (unsigned int i = 0; i != shapes.size(); ++i) {
     shape_array_[i] = Shape::Ref(shapes[i]);
   }
 }

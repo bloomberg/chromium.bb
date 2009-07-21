@@ -50,5 +50,5 @@ TEST(Formatter, Format) {
                "&integer1:i=3000"
                "&boolean1:b=t"
                "&boolean2:b=f",
-               formatter.output());
+               formatter.output().c_str());
 }

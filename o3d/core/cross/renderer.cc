@@ -93,10 +93,7 @@ bool IsSupportedTextureFormat(Texture::Format format,
 }  // anonymous namespace
 
 Renderer::Renderer(ServiceLocator* service_locator)
-    : service_locator_(service_locator),
-      service_(service_locator, this),
-      features_(service_locator),
-      supports_npot_(false),
+    : supports_npot_(false),
       clear_client_(true),
       need_to_render_(true),
       current_render_surface_(NULL),
@@ -108,12 +105,15 @@ Renderer::Renderer(ServiceLocator* service_locator)
       draw_elements_culled_(0),
       draw_elements_rendered_(0),
       primitives_rendered_(0),
+      viewport_(0.0f, 0.0f, 1.0f, 1.0f),
+      depth_range_(0.0f, 1.0f),
+      service_locator_(service_locator),
+      service_(service_locator, this),
+      features_(service_locator),
       width_(0),
       height_(0),
       render_width_(0),
       render_height_(0),
-      viewport_(0.0f, 0.0f, 1.0f, 1.0f),
-      depth_range_(0.0f, 1.0f),
       dest_x_offset_(0),
       dest_y_offset_(0) {
 }
@@ -391,7 +391,7 @@ void Renderer::SetInitialStates() {
        it != state_handler_map_.end(); ++it) {
     StateHandler *state_handler = it->second;
     ParamVector& param_stack = state_param_stacks_[state_handler->index()];
-    DCHECK_EQ(param_stack.size(), 1);
+    DCHECK_EQ(param_stack.size(), 1u);
     state_handler->SetState(this, param_stack[0]);
   }
 }
@@ -539,7 +539,7 @@ void Renderer::AddDefaultStates() {
 }
 
 void Renderer::RemoveDefaultStates() {
-  DCHECK_EQ(state_stack_.size(), 1);
+  DCHECK_EQ(state_stack_.size(), 1u);
   DCHECK(state_stack_[0] == default_state_);
   state_stack_.clear();
   const NamedParamRefMap& param_map = default_state_->params();
@@ -551,7 +551,7 @@ void Renderer::RemoveDefaultStates() {
     const StateHandler* state_handler = GetStateHandler(param);
     DCHECK(state_handler);
     ParamVector& param_stack = state_param_stacks_[state_handler->index()];
-    DCHECK_EQ(param_stack.size(), 1);
+    DCHECK_EQ(param_stack.size(), 1u);
     DCHECK(param_stack[0] == param);
     param_stack.clear();
   }

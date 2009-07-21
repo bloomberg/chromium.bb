@@ -96,8 +96,8 @@ void Texture2D::DrawImage(Bitmap* src_img,
                           int dst_width, int dst_height, int dest_mip) {
   DCHECK(src_img->image_data());
 
-  int mip_width = std::max(1, width() >> dest_mip);
-  int mip_height = std::max(1, height() >> dest_mip);
+  unsigned int mip_width = std::max(1, width() >> dest_mip);
+  unsigned int mip_height = std::max(1, height() >> dest_mip);
 
   // Clip source and destination rectangles to
   // source and destination bitmaps.
@@ -123,8 +123,10 @@ void Texture2D::DrawImage(Bitmap* src_img,
   // the entire bitmap on dest image, just perform memcpy.
   if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
       src_img->width() == mip_width && src_img->height() == mip_height &&
-      src_width == src_img->width() && src_height == src_img->height() &&
-      dst_width == mip_width && dst_height == mip_height) {
+      static_cast<unsigned int>(src_width) == src_img->width() && 
+      static_cast<unsigned int>(src_height) == src_img->height() &&
+      static_cast<unsigned int>(dst_width) == mip_width &&
+      static_cast<unsigned int>(dst_height) == mip_height) {
     void* data = NULL;
     if (!Lock(dest_mip, &data))
       return;
@@ -248,7 +250,7 @@ void TextureCUBE::DrawImage(Bitmap* src_img,
                             CubeFace dest_face, int dest_mip) {
   DCHECK(src_img->image_data());
 
-  int mip_length = std::max(1, edge_length() >> dest_mip);
+  unsigned int mip_length = std::max(1, edge_length() >> dest_mip);
 
   // Clip source and destination rectangles to
   // source and destination bitmaps.
@@ -274,8 +276,10 @@ void TextureCUBE::DrawImage(Bitmap* src_img,
   // the entire bitmap on dest image, just perform memcpy.
   if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
       src_img->width() == mip_length && src_img->height() == mip_length &&
-      src_width == src_img->width() && src_height == src_img->height() &&
-      dst_width == mip_length && dst_height == mip_length) {
+      static_cast<unsigned int>(src_width) == src_img->width() &&
+      static_cast<unsigned int>(src_height) == src_img->height() &&
+      static_cast<unsigned int>(dst_width) == mip_length &&
+      static_cast<unsigned int>(dst_height) == mip_length) {
     // get mip data by lock method.
     void* data = NULL;
     if (!Lock(dest_face, dest_mip, &data))

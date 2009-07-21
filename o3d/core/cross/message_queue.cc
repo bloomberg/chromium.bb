@@ -296,7 +296,7 @@ bool MessageQueue::ReceiveMessageFromSocket(nacl::Handle socket,
 #endif
 
   // Valid messages must always contain at least the ID of the message
-  if (message_length >= sizeof(*message_id)) {
+  if (message_length >= static_cast<int>(sizeof(*message_id))) {
     // Check if the incoming message requires more space than we have
     // currently allocated.
     if (header->flags & nacl::kMessageTruncated) {

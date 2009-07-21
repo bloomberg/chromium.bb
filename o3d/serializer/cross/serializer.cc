@@ -297,7 +297,7 @@ class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
     writer_->BeginCompacting();
     writer_->OpenArray();
     const ElementRefArray& elements = shape->GetElementRefs();
-    for (int i = 0; i != elements.size(); ++i) {
+    for (ElementRefArray::size_type i = 0; i != elements.size(); ++i) {
       Serialize(writer_, elements[i].Get());
     }
     writer_->CloseArray();
@@ -312,7 +312,8 @@ class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
     writer_->OpenArray();
     const Skin::MatrixArray& inverse_bind_pose_matrices =
         skin->inverse_bind_pose_matrices();
-    for (int i = 0; i != inverse_bind_pose_matrices.size(); ++i) {
+    for (Skin::MatrixArray::size_type i = 0;
+         i != inverse_bind_pose_matrices.size(); ++i) {
       const Matrix4& matrix = inverse_bind_pose_matrices[i];
       Serialize(writer_, matrix);
     }
@@ -327,7 +328,7 @@ class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
     writer_->BeginCompacting();
     writer_->OpenArray();
     const ShapeRefArray& shape_array = transform->GetShapeRefs();
-    for (int i = 0; i != shape_array.size(); ++i) {
+    for (ShapeRefArray::size_type i = 0; i != shape_array.size(); ++i) {
       Serialize(writer_, shape_array[i]);
     }
     writer_->CloseArray();
@@ -427,7 +428,8 @@ class CustomVisitor : public VisitorBase<CustomVisitor> {
     writer_->OpenArray();
     const StreamParamVector& vertex_stream_params =
         skin_eval->vertex_stream_params();
-    for (int i = 0; i != vertex_stream_params.size(); ++i) {
+    for (StreamParamVector::size_type i = 0;
+         i != vertex_stream_params.size(); ++i) {
       const Stream& stream = vertex_stream_params[i]->stream();
       writer_->OpenObject();
       writer_->WritePropertyName("stream");
@@ -452,7 +454,8 @@ class CustomVisitor : public VisitorBase<CustomVisitor> {
     writer_->OpenArray();
     const StreamParamVector& vertex_stream_params =
         stream_bank->vertex_stream_params();
-    for (int i = 0; i != vertex_stream_params.size(); ++i) {
+    for (StreamParamVector::size_type i = 0;
+         i != vertex_stream_params.size(); ++i) {
       const Stream& stream = vertex_stream_params[i]->stream();
       writer_->OpenObject();
       writer_->WritePropertyName("stream");
@@ -757,7 +760,8 @@ void Serializer::SerializePack(Pack* pack) {
   std::vector<const ObjectBase::Class*> classes =
       class_manager_->GetAllClasses();
 
-  for (int i = 0; i != classes.size(); ++i) {
+  for (std::vector<const ObjectBase::Class*>::size_type i = 0;
+       i != classes.size(); ++i) {
     const ObjectBase::Class* current_class = classes[i];
     if (!ObjectBase::ClassIsA(current_class, Param::GetApparentClass())) {
       std::vector<ObjectBase*> objects_of_class;
@@ -771,7 +775,8 @@ void Serializer::SerializePack(Pack* pack) {
       if (objects_of_class.size() != 0) {
         writer_->WritePropertyName(current_class->name());
         writer_->OpenArray();
-        for (int j = 0; j != objects_of_class.size(); ++j) {
+        for (std::vector<ObjectBase*>::size_type j = 0;
+             j != objects_of_class.size(); ++j) {
           writer_->OpenObject();
           SerializeObject(objects_of_class[j]);
           writer_->CloseObject();

@@ -55,7 +55,7 @@ static inline int Log2Floor(unsigned int n) {
       log += shift;
     }
   }
-  DCHECK_EQ(value, 1);
+  DCHECK_EQ(value, 1u);
   return log;
 }
 

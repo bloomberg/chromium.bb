@@ -326,7 +326,6 @@ class EffectParamArraySamplerHandlerGL : public EffectParamHandlerGL {
         for (int i = 0; i < size; ++i) {
           Param* untyped_element = param->GetUntypedParam(i);
           if (untyped_element->IsA(ParamSampler::GetApparentClass())) {
-            CGparameter cg_element = cgGetArrayParameter(cg_param, i);
             ParamSampler* element = down_cast<ParamSampler*>(untyped_element);
             SamplerGL* sampler_gl = down_cast<SamplerGL*>(element->value());
             if (!sampler_gl) {
@@ -457,6 +456,8 @@ static EffectParamHandlerGL::Ref GetHandlerFromParamAndCgType(
       case CG_SAMPLERCUBE:
         handler = EffectParamHandlerGL::Ref(
             new EffectParamArraySamplerHandlerGL(param_param_array));
+        break;
+      default:
         break;
     }
   } else if (param->IsA(ParamMatrix4::GetApparentClass())) {

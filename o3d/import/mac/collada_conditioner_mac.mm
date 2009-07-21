@@ -99,7 +99,7 @@ bool ColladaConditioner::PreprocessShaderFile(const FilePath& in_filename,
   NSPipe *pipe = [NSPipe pipe];
   [task setStandardOutput:pipe];
   [task launch];
-  NSData *data = [[pipe fileHandleForReading] readDataToEndOfFile];
+  [[pipe fileHandleForReading] readDataToEndOfFile];
   return true;
 }
 }  // end namespace o3d

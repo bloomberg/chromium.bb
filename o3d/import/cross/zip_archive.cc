@@ -863,7 +863,7 @@ bool ZipArchive::GetTempFileFromFile(const string &filename,
 
 #else
     // get just the final path component
-    int pos = filename.rfind('/');
+    string::size_type pos = filename.rfind('/');
     if (pos != string::npos) {
       // TODO : need to get "proper" temp dir for user
       // TODO : need to append GUID to filename

@@ -48,10 +48,10 @@ const char *Skin::kSerializationID = "SKIN";
 
 Skin::Skin(ServiceLocator* service_locator)
     : NamedObject(service_locator),
-      weak_pointer_manager_(this),
       highest_matrix_index_(0),
       highest_influences_(0),
-      info_valid_(false) {
+      info_valid_(false),
+      weak_pointer_manager_(this) {
 }
 
 const Skin::Influences* Skin::GetVertexInfluences(unsigned vertex_index) const {
@@ -114,12 +114,12 @@ ObjectBase::Ref Skin::Create(ServiceLocator* service_locator) {
 }
 
 SkinEval::StreamInfo::StreamInfo()
-    : data_(NULL),
-      buffer_(NULL),
-      values_(NULL),
-      stride_(0),
-      compute_function_(NULL),
-      copy_function_(NULL) {
+  : compute_function_(NULL),
+    copy_function_(NULL),
+    data_(NULL),
+    buffer_(NULL),
+    values_(NULL),
+    stride_(0) {
 }
 
 namespace {

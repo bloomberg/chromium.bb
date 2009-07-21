@@ -176,7 +176,7 @@ static void FlipDXTCImage(unsigned int width,
                           unsigned char *data) {
   DCHECK(Bitmap::CheckImageDimensions(width, height));
   // Height must be a power-of-two.
-  DCHECK_EQ(height & (height - 1), 0);
+  DCHECK_EQ(height & (height - 1), 0u);
   FlipBlockFunction full_block_function = NULL;
   FlipBlockFunction half_block_function = NULL;
   unsigned int block_bytes = 0;
@@ -341,7 +341,7 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
 
   // The size of the buffer needed to hold four-component per pixel
   // image data, including MIPMaps
-  int components_per_pixel = 0;
+  unsigned int components_per_pixel = 0;
   bool add_filler_alpha = false;
   bool rgb_to_bgr = false;
 
@@ -478,10 +478,10 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
       unsigned char *data = image_data.get() + face_size * face;
       // convert to four components per pixel if necessary
       if (add_filler_alpha) {
-        DCHECK_EQ(components_per_pixel, 3);
+        DCHECK_EQ(components_per_pixel, 3u);
         XYZToXYZA(data, pixel_count);
       } else {
-        DCHECK_EQ(components_per_pixel, 4);
+        DCHECK_EQ(components_per_pixel, 4u);
       }
       if (rgb_to_bgr)
         RGBAToBGRA(data, pixel_count);

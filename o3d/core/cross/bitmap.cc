@@ -615,7 +615,7 @@ static void FilterTexel(unsigned int x,
   }
   for (unsigned int c = 0; c < components; ++c) {
     uint64 value = accum[c] / (src_height * src_width);
-    DCHECK_LE(value, 255);
+    DCHECK_LE(value, 255u);
     dst_data[(y * dst_width + x) * components + c] =
         static_cast<unsigned char>(value);
   }

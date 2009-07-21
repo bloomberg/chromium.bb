@@ -528,19 +528,19 @@ RendererGL* RendererGL::CreateDefault(ServiceLocator* service_locator) {
 RendererGL::RendererGL(ServiceLocator* service_locator)
     : Renderer(service_locator),
       semantic_manager_(service_locator),
-#ifdef OS_MACOSX
-      mac_agl_context_(0),
-      mac_cgl_context_(0),
-#endif
 #ifdef OS_WIN
       gl_context_(NULL),
 #endif
+      fullscreen_(0),
 #ifdef OS_LINUX
       display_(NULL),
       window_(0),
       context_(0),
 #endif
-      fullscreen_(0),
+#ifdef OS_MACOSX
+      mac_agl_context_(0),
+      mac_cgl_context_(0),
+#endif
       render_surface_framebuffer_(0),
       cg_context_(NULL),
       alpha_function_ref_changed_(true),

@@ -64,7 +64,7 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
 
       if (header_bytes_read_ == TAR_HEADER_SIZE) {
         // The tar format stupidly represents size_t values as octal strings!!
-        size_t file_size = 0;
+        unsigned int file_size = 0u;
         sscanf(header_ + kFileSizeOffset, "%o", &file_size);
 
         // Check if it's a long filename

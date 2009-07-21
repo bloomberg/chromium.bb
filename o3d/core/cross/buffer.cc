@@ -100,11 +100,11 @@ static FieldCreator g_creators[] = {
 Buffer::Buffer(ServiceLocator* service_locator)
     : NamedObject(service_locator),
       features_(service_locator->GetService<Features>()),
-      access_mode_(NONE),
       field_change_count_(0),
       total_components_(0),
       stride_(0),
       num_elements_(0),
+      access_mode_(NONE),
       lock_count_(0) {
 }
 
@@ -474,7 +474,7 @@ bool Buffer::Set(o3d::RawData *raw_data,
     // Lock before reading in all the fields to avoid locking/unlocking
     // for each field which would be slower
     o3d::BufferLockHelper helper(this);
-    void *buffer_data = helper.GetData(o3d::Buffer::WRITE_ONLY);
+    helper.GetData(o3d::Buffer::WRITE_ONLY);
 
     // Read each field
     for (int32 ff = 0; ff < num_fields; ++ff) {

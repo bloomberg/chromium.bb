@@ -165,10 +165,10 @@ Collada::Collada(Pack* pack, const Options& options)
       dummy_effect_(NULL),
       dummy_material_(NULL),
       instance_root_(NULL),
+      collada_zip_archive_(NULL),
       cull_enabled_(false),
       cull_front_(false),
       front_cw_(false),
-      collada_zip_archive_(NULL),
       unique_filename_counter_(0) {
 }
 
@@ -508,7 +508,7 @@ bool Collada::BuildFloatAnimation(ParamFloat* result,
       curve->set_pre_infinity(ConvertInfinity(fcd_curve->GetPreInfinity()));
       curve->set_post_infinity(ConvertInfinity(fcd_curve->GetPostInfinity()));
 
-      for (int i = 0; i != fcd_curve->GetKeyCount(); ++i) {
+      for (unsigned int i = 0; i != fcd_curve->GetKeyCount(); ++i) {
         FCDAnimationKey* fcd_key = fcd_curve->GetKey(i);
         switch (fcd_key->interpolation) {
           case FUDaeInterpolation::STEP:
@@ -1512,6 +1512,9 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
               return NULL;
             }
           }
+          default:
+            // do nothing
+            break;
         }
       }
       if (!copied) {
@@ -1600,6 +1603,9 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
                                         source_stream.semantic_index());
             break;
           }
+          default:
+            // do nothing
+            break;
         }
       }
       if (!copied) {
@@ -2414,6 +2420,9 @@ void Collada::AddRenderState(FCDEffectPassState* pass_state, State* state) {
               << "FRONT_AND_BACK culling is unsupported";
           break;
         }
+        case FUDaePassStateFaceType::INVALID:
+          O3D_ERROR(service_locator_) << "INVALID culling type";
+          break;
       }
       UpdateCullingState(state);
       break;
@@ -2605,6 +2614,9 @@ void Collada::AddRenderState(FCDEffectPassState* pass_state, State* state) {
       SetBoolState(state, State::kStencilEnableParamName, value);
       break;
     }
+    default:
+      // do nothing
+      break;
   }
 }
 
@@ -2783,7 +2795,6 @@ void Collada::SetParamsFromMaterial(FCDMaterial* material,
       LOG_ASSERT(p);
       String param_name(p->GetReference());
       // Check for an effect binding
-      FCDEffect* effect = material->GetEffect();
       FCDEffectProfileFX* profile_fx = FindProfileFX(material->GetEffect());
       if (profile_fx) {
         FCDEffectTechnique* technique = profile_fx->GetTechnique(0);

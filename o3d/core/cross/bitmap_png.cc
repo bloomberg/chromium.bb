@@ -199,7 +199,7 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
   // Turn on interlace handling.  REQURIED if you are not using
   // png_read_image().  To see how to handle interlacing passes,
   // see the png_read_row() method below:
-  int png_number_passes = png_set_interlace_handling(png_ptr);
+  png_set_interlace_handling(png_ptr);
 
   // Execute any setup steps for each Transform, i.e. to gamma correct and
   // add the background to the palette and update info structure.  REQUIRED
@@ -299,7 +299,7 @@ bool Bitmap::SaveToPNGFile(const char* filename) {
   }
 
   scoped_array<png_bytep> row_pointers(new png_bytep[height_]);
-  for (unsigned int i = 0; i < height_; ++i) {
+  for (int i = 0; i < height_; ++i) {
     row_pointers[height_-1-i] = image_data_.get() + i * width_ * 4;
   }
 

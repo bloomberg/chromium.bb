@@ -71,7 +71,7 @@ static bool ReportMetrics(const char* extra_url_data,
     formatter.AddMetric(*it);
   DLOG(INFO) << "formatter.output() = " << formatter.output();
   return stats_uploader->UploadMetrics(extra_url_data, user_agent,
-                                       formatter.output());
+                                       formatter.output().c_str());
 }
 
 void ResetPersistentMetrics(CRegKey *key) {

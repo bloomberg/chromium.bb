@@ -396,7 +396,7 @@ bool RawData::GetTempFilePathFromURI(const String &uri,
   String filename;
 
   // try to retain the original file suffix (.jpg, etc.)
-  int dot_position = uri.rfind('.');
+  std::string::size_type dot_position = uri.rfind('.');
   if (dot_position != std::string::npos) {
     filename = uuid_string + uri.substr(dot_position);
   } else {

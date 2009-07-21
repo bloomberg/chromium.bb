@@ -47,8 +47,8 @@ namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GzCompressor::GzCompressor(StreamProcessor *callback_client)
-    : callback_client_(callback_client),
-      stream_is_closed_(false) {
+    : stream_is_closed_(false),
+      callback_client_(callback_client) {
   strm_.zalloc = Z_NULL;
   strm_.zfree = Z_NULL;
   strm_.opaque = Z_NULL;

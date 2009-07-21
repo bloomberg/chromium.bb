@@ -143,7 +143,7 @@ class StreamBank : public NamedObject {
     }
 
     virtual void OnAfterUnbindInput(Param* old_source) {
-      master_->number_binds_;
+      --master_->number_binds_;
     }
 
    private:

@@ -50,7 +50,7 @@ class RayIntersectionInfo;
 class BoundingBox {
  public:
   // Constructs an uninitialized BoundingBox marking it as non valid.
-  BoundingBox()  : min_extent_(0, 0, 0), max_extent_(0, 0, 0), valid_(false) { }
+  BoundingBox()  : valid_(false), min_extent_(0, 0, 0), max_extent_(0, 0, 0) { }
 
   // Constructs a BoundingBox.
   // Parameters:

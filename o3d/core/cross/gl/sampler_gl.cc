@@ -96,6 +96,8 @@ unsigned int GLMinFilter(Sampler::FilterType o3d_filter,
       else if (mip_filter == Sampler::LINEAR)
         return GL_LINEAR_MIPMAP_LINEAR;
   }
+  DCHECK(false);
+  return GL_NONE;
 }
 
 unsigned int GLMagFilter(Sampler::FilterType o3d_filter) {

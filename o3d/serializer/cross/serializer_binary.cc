@@ -105,9 +105,6 @@ void SerializeBuffer(const Buffer &buffer, MemoryBuffer<uint8> *output) {
   // Write out the number of elements
   stream.WriteLittleEndianUInt32(num_elements);
 
-  // Make note of stream position at end of header
-  size_t data_start_position = stream.GetStreamPosition();
-
   // Write out the data for each field
   // Write out the specification for the fields
   for (size_t i = 0; i < num_fields; ++i) {
