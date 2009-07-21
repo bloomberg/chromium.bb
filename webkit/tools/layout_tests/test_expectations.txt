@@ -2986,4 +2986,4 @@ BUG17326 : LayoutTests/editing/execCommand/5481523.html = FAIL
 BUG17326 : LayoutTests/editing/execCommand/indent-selection.html = FAIL
 
 BUG17332 WIN : LayoutTests/editing/execCommand/19087.html = CRASH
-BUG17332 WIN : LayoutTests/editing/execCommand/19653-1.html = CRASH
+BUG17332 WIN : LayoutTests/editing/execCommand/19653-1.html = CRASH FAIL
