@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
+#import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
@@ -19,8 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 
-// Names of images in the bundle for the star icon (normal and 'starred').
-static NSString* const kStarImageName = @"star_Template.pdf";
+// Name of image in the bundle for the yellow of the star icon.
 static NSString* const kStarredImageName = @"starred.pdf";
 
 @interface ToolbarController(Private)
@@ -169,16 +169,11 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)setStarredState:(BOOL)isStarred {
-  NSString* starImageName = kStarImageName;
-  BOOL isTemplate = YES;
-  if (isStarred) {
-    starImageName = kStarredImageName;
-    isTemplate = NO;
-  }
-  NSImage* starImage = nsimage_cache::ImageNamed(starImageName);
-  if (isTemplate)
-    [starImage setTemplate:YES];
-  [starButton_ setImage:starImage];
+  NSImage* starImage = nil;
+  if (isStarred)
+    starImage = nsimage_cache::ImageNamed(kStarredImageName);
+
+  [(GradientButtonCell*)[starButton_ cell] setUnderlayImage:starImage];
 }
 
 - (void)setIsLoading:(BOOL)isLoading {

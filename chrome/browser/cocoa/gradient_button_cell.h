@@ -30,9 +30,17 @@ typedef NSInteger ButtonType;
   BOOL isMouseInside_;
   scoped_nsobject<NSTrackingArea> trackingArea_;
   BOOL shouldTheme_;
+
+  scoped_nsobject<NSImage> underlayImage_;
 }
+
 // Turn off theming.  Temporary work-around.
 - (void)setShouldTheme:(BOOL)shouldTheme;
+
+// An image to underlay beneath the existing image; not themed. May be nil.
+- (NSImage*)underlayImage;
+- (void)setUnderlayImage:(NSImage*)image;
+
 @end
 
 @interface GradientButtonCell(TestingAPI)

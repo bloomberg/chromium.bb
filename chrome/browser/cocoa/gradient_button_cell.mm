@@ -6,6 +6,12 @@
 #import "third_party/GTM/AppKit/GTMTheme.h"
 #import "base/scoped_nsobject.h"
 
+@interface GradientButtonCell (Private)
+- (void)drawUnderlayImageWithFrame:(NSRect)cellFrame
+                            inView:(NSView*)controlView;
+@end
+
+
 @implementation GradientButtonCell
 
 // For nib instantiations
@@ -26,6 +32,16 @@
 
 - (void)setShouldTheme:(BOOL)shouldTheme {
   shouldTheme_ = shouldTheme;
+}
+
+- (NSImage*)underlayImage {
+  return underlayImage_;
+}
+
+- (void)setUnderlayImage:(NSImage*)image {
+  underlayImage_.reset([image retain]);
+
+  [[self controlView] setNeedsDisplay:YES];
 }
 
 - (NSBackgroundStyle)interiorBackgroundStyle {
@@ -207,6 +223,8 @@
       [shadow set];
     }
 
+    [self drawUnderlayImageWithFrame:cellFrame inView:controlView];
+
     CGContextBeginTransparencyLayer(context, 0);
     NSRect imageRect = NSZeroRect;
     imageRect.size = [[self image] size];
@@ -225,10 +243,25 @@
     CGContextEndTransparencyLayer(context);
     [NSGraphicsContext restoreGraphicsState];
   } else {
+    [self drawUnderlayImageWithFrame:cellFrame inView:controlView];
+
     // NSCell draws these uncentered for some reason, probably because of the
     // of control in the xib
     [super drawInteriorWithFrame:NSOffsetRect(cellFrame, 0, 1)
                           inView:controlView];
+  }
+}
+
+- (void)drawUnderlayImageWithFrame:(NSRect)cellFrame
+                            inView:(NSView*)controlView {
+  if (underlayImage_) {
+    NSRect imageRect = NSZeroRect;
+    imageRect.size = [underlayImage_ size];
+    [underlayImage_ setFlipped:[controlView isFlipped]];
+    [underlayImage_ drawInRect:[self imageRectForBounds:cellFrame]
+                      fromRect:imageRect
+                     operation:NSCompositeSourceOver
+                      fraction:[self isEnabled] ? 1.0 : 0.5];
   }
 }
 
