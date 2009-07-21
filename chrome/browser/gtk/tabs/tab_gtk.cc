@@ -175,7 +175,12 @@ gboolean TabGtk::OnMousePress(GtkWidget* widget, GdkEventButton* event,
 // static
 gboolean TabGtk::OnMouseRelease(GtkWidget* widget, GdkEventButton* event,
                                 TabGtk* tab) {
-  if (event->button == 2) {
+  // Middle mouse up means close the tab, but only if the mouse is over it
+  // (like a button).
+  if (event->button == 2 &&
+      event->x >= 0 && event->y >= 0 &&
+      event->x < widget->allocation.width &&
+      event->y < widget->allocation.height) {
     tab->delegate_->CloseTab(tab);
   }
 
