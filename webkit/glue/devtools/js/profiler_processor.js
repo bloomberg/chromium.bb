@@ -179,6 +179,12 @@ devtools.profiler.Processor = function() {
   this.startedProfileProcessing_ = null;
 
   /**
+   * Callback that is called periodically to display processing status.
+   * @type {function()}
+   */
+  this.profileProcessingStatus_ = null;
+
+  /**
    * Callback that is called when a profile has been processed and is ready
    * to be shown.
    * @type {function(devtools.profiler.ProfileView)}
@@ -202,6 +208,12 @@ devtools.profiler.Processor = function() {
    * @type {number}
    */
   this.profileId_ = 1;
+
+  /**
+   * Counter for processed ticks.
+   * @type {number}
+   */
+  this.ticksCount_ = 0;
 };
 goog.inherits(devtools.profiler.Processor, devtools.profiler.LogReader);
 
@@ -230,8 +242,9 @@ devtools.profiler.Processor.prototype.skipDispatch = function(dispatch) {
  *     processing callback.
  */
 devtools.profiler.Processor.prototype.setCallbacks = function(
-    started, finished) {
+    started, processing, finished) {
   this.startedProfileProcessing_ = started;
+  this.profileProcessingStatus_ = processing;
   this.finishedProfileProcessing_ = finished;
 };
 
@@ -265,6 +278,7 @@ devtools.profiler.Processor.prototype.setNewProfileCallback = function(
 
 devtools.profiler.Processor.prototype.processProfiler_ = function(
     state, params) {
+  var processingInterval = null;
   switch (state) {
     case 'resume':
       if (this.currentProfile_ == null) {
@@ -276,10 +290,18 @@ devtools.profiler.Processor.prototype.processProfiler_ = function(
         if (this.startedProfileProcessing_) {
           this.startedProfileProcessing_();
         }
+        this.ticksCount_ = 0;
+        var self = this;
+        if (this.profileProcessingStatus_) {
+          processingInterval = window.setInterval(
+              function() { self.profileProcessingStatus_(self.ticksCount_); },
+              1000);
+        }
       }
       break;
     case 'pause':
       if (this.currentProfile_ != null) {
+        window.clearInterval(processingInterval);
         if (this.finishedProfileProcessing_) {
           this.finishedProfileProcessing_(this.createProfileForView());
         }
@@ -326,6 +348,7 @@ devtools.profiler.Processor.prototype.processTick_ = function(
   // see the comment for devtools.profiler.Processor.PROGRAM_ENTRY
   stack.push(devtools.profiler.Processor.PROGRAM_ENTRY_STR);
   this.currentProfile_.recordTick(this.processStack(pc, stack));
+  this.ticksCount_++;
 };
 
 

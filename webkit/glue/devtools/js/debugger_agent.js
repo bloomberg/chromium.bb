@@ -500,16 +500,27 @@ devtools.DebuggerAgent.prototype.resolveScope = function(scope, callback) {
 devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
   // A temporary icon indicating that the profile is being processed.
   var processingIcon = new WebInspector.SidebarTreeElement(
-      "profile-sidebar-tree-item", "Processing...", "", null, false);
+      'profile-sidebar-tree-item', 'Processing...', '', null, false);
   var profilesSidebar = WebInspector.panels.profiles.sidebarTree;
 
   this.profilerProcessor_.setCallbacks(
       function onProfileProcessingStarted() {
+        // Set visually empty string. Subtitle hiding is done via styles
+        // manipulation which doesn't play well with dynamic append / removal.
+        processingIcon.subtitle = ' ';
         profilesSidebar.appendChild(processingIcon);
+      },
+      function onProfileProcessingStatus(ticksCount) {
+        processingIcon.subtitle = ticksCount + ' ticks processed';
       },
       function onProfileProcessingFinished(profile) {
         profilesSidebar.removeChild(processingIcon);
         WebInspector.addProfile(profile);
+        // If no profile is currently shown, show the new one.
+        var profilesPanel = WebInspector.panels.profiles;
+        if (!profilesPanel.visibleView) {
+          profilesPanel.showProfile(profile);
+        }
       }
   );
 };
