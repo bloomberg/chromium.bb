@@ -26,12 +26,7 @@ static const int kPreviewWidth = 256;
 static const int kPreviewHeight = 512;
 
 // Implementation of SelectFileDialog that shows a Gtk common dialog for
-// choosing a file or folder.
-// This acts as a modal dialog. Ideally we want to only act modally for the
-// parent window and allow other toplevel chrome windows to still function while
-// the dialog is showing, but we need the GtkWindowGroup or something similar to
-// get that, and that API is only available in more recent versions of GTK.
-// TODO(port): fix modality: crbug.com/8727
+// choosing a file or folder. This acts as a modal dialog.
 class SelectFileDialogImpl : public SelectFileDialog {
  public:
   explicit SelectFileDialogImpl(Listener* listener);
@@ -208,7 +203,13 @@ void SelectFileDialogImpl::SelectFile(
   gtk_file_chooser_set_preview_widget(GTK_FILE_CHOOSER(dialog), preview_);
 
   params_map_[dialog] = params;
+
+  // Set window-to-parent modality by adding the dialog to the same window
+  // group as the parent.
+  gtk_window_group_add_window(gtk_window_get_group(owning_window),
+                              GTK_WINDOW(dialog));
   gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
+
   gtk_widget_show_all(dialog);
 }
 

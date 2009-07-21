@@ -209,6 +209,13 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
   // of the info bubble.  We don't use an X grab since that would steal
   // keystrokes from your window manager, prevent you from interacting with
   // other applications, etc.
+  //
+  // Before adding the grab, we need to ensure that the bubble is added
+  // to the window group of the top level window. This ensures that the
+  // grab only affects the current browser window, and not all the open
+  // browser windows in the application.
+  gtk_window_group_add_window(gtk_window_get_group(transient_toplevel),
+                              GTK_WINDOW(window_));
   gtk_grab_add(window_);
 
   registrar_.Add(this, NotificationType::ACTIVE_WINDOW_CHANGED,

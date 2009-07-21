@@ -873,8 +873,13 @@ void RenderWidgetHostViewGtk::InitAsPopup(
   // and webkit will manage our destruction.
   if (activatable()) {
     // Grab all input for the app. If a click lands outside the bounds of the
-    // popup, WebKit will notice and destroy us.
+    // popup, WebKit will notice and destroy us. Before doing this we need
+    // to ensure that the the popup is added to the browser's window group,
+    // to allow for the grabs to work correctly.
+    gtk_window_group_add_window(gtk_window_get_group(
+        GTK_WINDOW(gtk_widget_get_toplevel(parent_))), GTK_WINDOW(popup));
     gtk_grab_add(view_.get());
+
     // Now grab all of X's input.
     gdk_pointer_grab(
         parent_->window,
