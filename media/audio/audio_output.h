@@ -91,7 +91,9 @@ class AudioOutputStream {
 
   // Starts playing audio and generating AudioSourceCallback::OnMoreData().
   // Since implementor of AudioOutputStream may have internal buffers, right
-  // after calling this method initial buffers are fetched.
+  // after calling this method initial buffers are fetched. User of this
+  // object should prepare |AudioOutputStream::GetNumBuffers()| before calling
+  // AudioOutputStream::Start().
   //
   // The output stream does not take ownership of this callback.
   virtual void Start(AudioSourceCallback* callback) = 0;
@@ -111,6 +113,11 @@ class AudioOutputStream {
   // Close the stream. This also generates AudioSourceCallback::OnClose().
   // After calling this method, the object should not be used anymore.
   virtual void Close() = 0;
+
+  // Gets the number of internal buffers used in this output stream. This
+  // method is useful for providing information about how user of this object
+  // should prepare initial buffers before calling AudioOutputStream::Start().
+  virtual size_t GetNumBuffers() = 0;
 
  protected:
   virtual ~AudioOutputStream() {}
@@ -156,6 +163,11 @@ class AudioManager {
   // Un-muting returns the volume to the previous level.
   virtual void MuteAll() = 0;
   virtual void UnMuteAll() = 0;
+
+  // For testing purposes only. Returns the internal buffer of the last
+  // AUDIO_MOCK AudioOutputStream closed. Returns NULL if none closed yet.
+  // The buffer size is the same as passed to AudioOutputStream::Open().
+  virtual const void* GetLastMockBuffer() = 0;
 
   // Get AudioManager singleton.
   // TODO(cpu): Define threading requirements for interacting with AudioManager.
