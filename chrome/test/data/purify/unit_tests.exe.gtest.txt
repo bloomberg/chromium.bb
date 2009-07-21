@@ -22,3 +22,6 @@ ExtensionsServiceTest.InstallExtension
 
 # issue 15276
 CompactLangDetTest.*
+
+# issue 17370
+FirefoxImporterTest.Firefox3NSS3Decryptor
