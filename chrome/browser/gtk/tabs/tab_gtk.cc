@@ -113,7 +113,6 @@ TabGtk::TabGtk(TabDelegate* delegate)
       closing_(false),
       dragging_(false) {
   event_box_ = gtk_event_box_new();
-  g_object_ref(event_box_);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
   gtk_drag_source_set(event_box_, GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_MOVE);
@@ -150,8 +149,6 @@ TabGtk::~TabGtk() {
     // Invoke this so that we hide the highlight.
     ContextMenuClosed();
   }
-
-  gtk_widget_destroy(event_box_);
 }
 
 // static

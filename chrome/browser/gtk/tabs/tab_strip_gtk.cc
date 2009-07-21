@@ -829,7 +829,10 @@ void TabStripGtk::DestroyDraggedSourceTab(TabGtk* tab) {
   }
 
   gtk_container_remove(GTK_CONTAINER(tabstrip_.get()), tab->widget());
-  delete tab;
+  // If we delete the dragged source tab here, the gtk drag-n-drop API won't
+  // get a change to clean up and remove any references it's added to the tab
+  // widget, so we'll leak the widget.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, tab);
 
   // Force a layout here, because if we've just quickly drag detached a Tab,
   // the stopping of the active animation above may have left the TabStrip in a

@@ -622,18 +622,6 @@
    fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhj
 }
 {
-   # very common in ui tests
-   bug_12863
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   ...
-   fun:gtk_event_box_new
-   fun:_ZN6TabGtkC1EPNS_11TabDelegateE
-   fun:_ZN11TabStripGtk13TabInsertedAtEP11TabContentsib
-   fun:_ZN13TabStripModel19InsertTabContentsAtEiP11TabContentsbb
-}
-{
    bug_15762
    Memcheck:Cond
    fun:_ZN7testing8internal11CmpHelperEQIjjEENS_15AssertionResultEPKcS4_RKT_RKT0_
