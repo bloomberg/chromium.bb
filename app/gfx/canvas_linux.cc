@@ -102,6 +102,10 @@ void Canvas::DrawStringInt(const std::wstring& text,
   cairo_t* cr = beginPlatformPaint();
   PangoLayout* layout = pango_cairo_create_layout(cr);
 
+  // Callers of DrawStringInt handle RTL layout themselves, so tell pango to not
+  // scope out RTL characters.
+  pango_layout_set_auto_dir(layout, FALSE);
+
   cairo_set_source_rgb(cr,
                        SkColorGetR(color) / 255.0,
                        SkColorGetG(color) / 255.0,
