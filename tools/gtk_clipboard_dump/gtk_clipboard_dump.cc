@@ -11,9 +11,17 @@ namespace {
 void PrintClipboardContents(GtkClipboard* clip) {
   GdkAtom* targets;
   int num_targets = 0;
-  gtk_clipboard_wait_for_targets(clip, &targets, &num_targets);
 
-  printf("Available targets:\n---------------\n");
+  // This call is bugged, the cache it checks is often stale; see
+  // <http://bugzilla.gnome.org/show_bug.cgi?id=557315>.
+  // gtk_clipboard_wait_for_targets(clip, &targets, &num_targets);
+
+  GtkSelectionData* target_data =
+      gtk_clipboard_wait_for_contents(clip,
+                                      gdk_atom_intern("TARGETS", false));
+  gtk_selection_data_get_targets(target_data, &targets, &num_targets);
+
+  printf("%d available targets:\n---------------\n", num_targets);
 
   for (int i = 0; i < num_targets; i++) {
     printf("  [format: %s", gdk_atom_name(targets[i]));
@@ -41,6 +49,15 @@ void PrintClipboardContents(GtkClipboard* clip) {
     }
     printf("\n\n");
   }
+
+  if (num_targets <= 0) {
+    printf("No targets advertised. Text is: ");
+    gchar* text = gtk_clipboard_wait_for_text(clip);
+    printf("%s\n", text ? text : "NULL");
+    g_free(text);
+  }
+
+  g_free(targets);
 }
 
 }

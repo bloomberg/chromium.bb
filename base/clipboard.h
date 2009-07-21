@@ -40,7 +40,7 @@ class Clipboard {
     CBF_FILES,
     CBF_WEBKIT,
     CBF_BITMAP,
-    CBF_SMBITMAP // bitmap from shared memory
+    CBF_SMBITMAP  // bitmap from shared memory
   };
 
   // ObjectMap is a map from ObjectType to associated data.
