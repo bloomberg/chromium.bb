@@ -55,6 +55,7 @@ var g_client;
 var g_pack;
 var g_viewInfo;
 var g_finished = false;  // for selenium testing
+var g_samplers = [];
 
 /**
  * Creates the client area.
@@ -160,6 +161,7 @@ function initStep2(clientElements) {
     samplerParam.value = sampler;
     sampler.addressModeU = g_o3d.Sampler.CLAMP;
     sampler.addressModeV = g_o3d.Sampler.CLAMP;
+    g_samplers[s] = sampler;
 
     // Create a texture.
     {
@@ -269,8 +271,20 @@ function initStep2(clientElements) {
       sampler.texture = texture;
     }
   }
+  window.o3d_prepForSelenium = prepForSelenium;
   window.g_finished = true;  // for selenium testing.
 }
+
+// Turn off all filtering in the samplers to get consistent testing
+// results.
+function prepForSelenium() {
+  for (var i = 0; i < g_samplers.length; i++) {
+    g_samplers[i].magFilter = g_o3d.Sampler.POINT;
+    g_samplers[i].minFilter = g_o3d.Sampler.POINT;
+    g_samplers[i].mipFilter = g_o3d.Sampler.NONE;
+  }
+}
+
 
 </script>
 </head>

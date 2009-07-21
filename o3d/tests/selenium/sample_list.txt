@@ -72,7 +72,7 @@
 # http://wiki.corp.google.com/twiki/bin/view/Main/ClientThreeDSampleGuidelines
 #
 #
-medium  2d                                screenshot pdiff_threshold(200) colorfactor(0.8)
+medium  2d                                screenshot pdiff_threshold(200) pdiff_threshold_mac(41200) colorfactor(0.8)
 medium  animation
 large   animated-scene                    screenshot timeout(45000) pdiff_threshold(200)
 large   beachdemo/beachdemo               screenshot timeout(120000) pdiff_threshold(200) pdiff_threshold_mac(2100) downsample(1) except(*iexplore, *googlechrome)
