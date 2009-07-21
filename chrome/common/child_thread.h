@@ -19,6 +19,8 @@ class ChildThread : public IPC::Channel::Listener,
  public:
   // Creates the thread.
   ChildThread();
+  // Used for single-process mode.
+  ChildThread(const std::string channel_name);
   virtual ~ChildThread();
 
   // IPC::Message::Sender implementation:
@@ -40,9 +42,6 @@ class ChildThread : public IPC::Channel::Listener,
  protected:
   friend class ChildProcess;
 
-  // Overrides the channel name.  Used for --single-process mode.
-  void SetChannelName(const std::string& name) { channel_name_ = name; }
-
   // Called when the process refcount is 0.
   void OnProcessFinalRelease();
 
@@ -51,6 +50,8 @@ class ChildThread : public IPC::Channel::Listener,
   IPC::SyncChannel* channel() { return channel_.get(); }
 
  private:
+  void Init();
+
   // IPC::Channel::Listener implementation:
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();

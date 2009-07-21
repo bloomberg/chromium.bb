@@ -40,11 +40,11 @@ class RenderThreadTest : public testing::Test {
   IPC::Channel *channel_;
 };
 
-TEST_F(RenderThreadTest, DISABLED_TestGlobal) {
+TEST_F(RenderThreadTest, TestGlobal) {
   ASSERT_TRUE(RenderThread::current());
 }
 
-TEST_F(RenderThreadTest, DISABLED_TestVisitedMsg) {
+TEST_F(RenderThreadTest, TestVisitedMsg) {
 #if defined(OS_WIN)
   IPC::Message* msg = new ViewMsg_VisitedLink_NewTable(NULL);
 #elif defined(OS_POSIX)

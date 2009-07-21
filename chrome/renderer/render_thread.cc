@@ -87,14 +87,12 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
 
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
-RenderThread::RenderThread()
-    : plugin_refresh_allowed_(true) {
+RenderThread::RenderThread() {
   Init();
 }
 
 RenderThread::RenderThread(const std::string& channel_name)
-    : plugin_refresh_allowed_(true) {
-  SetChannelName(channel_name);
+    : ChildThread(channel_name) {
   Init();
 }
 
@@ -107,6 +105,7 @@ void RenderThread::Init() {
     CoInitialize(0);
 #endif
 
+  plugin_refresh_allowed_ = true;
   cache_stats_factory_.reset(
       new ScopedRunnableMethodFactory<RenderThread>(this));
 

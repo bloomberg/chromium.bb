@@ -14,13 +14,21 @@
 #include "webkit/glue/webkit_glue.h"
 
 
-ChildThread::ChildThread()
-    : check_with_browser_before_shutdown_(false),
-      message_loop_(MessageLoop::current()) {
+ChildThread::ChildThread() {
   channel_name_ = WideToASCII(
       CommandLine::ForCurrentProcess()->GetSwitchValue(
           switches::kProcessChannelID));
+  Init();
+}
 
+ChildThread::ChildThread(const std::string channel_name)
+    : channel_name_(channel_name) {
+  Init();
+}
+
+void ChildThread::Init() {
+  check_with_browser_before_shutdown_ = false;
+  message_loop_ = MessageLoop::current();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserAgent)) {
     webkit_glue::SetUserAgent(WideToUTF8(
         CommandLine::ForCurrentProcess()->GetSwitchValue(
