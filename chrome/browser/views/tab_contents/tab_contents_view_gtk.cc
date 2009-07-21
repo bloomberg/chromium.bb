@@ -96,6 +96,10 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
+  // Just deleting the object doesn't destroy the GtkWidget. We need to do that
+  // manually, and synchronously, since subsequent signal handlers may expect
+  // to locate this object.
+  CloseNow();
 }
 
 void TabContentsViewGtk::CreateView() {

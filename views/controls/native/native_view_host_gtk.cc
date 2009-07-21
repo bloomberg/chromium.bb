@@ -87,8 +87,13 @@ void NativeViewHostGtk::RemovedFromWidget() {
   WidgetGtk* parent_widget = GetHostWidget();
   gtk_widget_hide(host_->native_view());
   if (parent_widget) {
-    gtk_container_remove(GTK_CONTAINER(parent_widget->window_contents()),
-                         host_->native_view());
+    // We can be called after the contents widget has been destroyed, e.g. any
+    // NativeViewHost not removed from the view hierarchy before the window is
+    // closed.
+    if (GTK_IS_CONTAINER(parent_widget->window_contents())) {
+      gtk_container_remove(GTK_CONTAINER(parent_widget->window_contents()),
+                           host_->native_view());
+    }
   }
 }
 
