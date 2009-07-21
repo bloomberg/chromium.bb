@@ -122,12 +122,24 @@ RenderThreadBase* EventBindings::GetRenderThread() {
   return render_thread ? render_thread : RenderThread::current();
 }
 
+static void DeferredUnload(v8::Persistent<v8::Context> context) {
+  v8::HandleScope handle_scope;
+  CallFunctionInContext(context, "dispatchOnUnload", 0, NULL);
+  context.Dispose();
+  context.Clear();
+}
+
 static void HandleContextDestroyed(ContextList::iterator context_iter,
-                                   bool callUnload) {
+                                   bool in_gc) {
   // Notify the bindings that they're going away.
-  if (callUnload) {
-    CallFunctionInContext((*context_iter)->context, "dispatchOnUnload", 0,
-                          NULL);
+  if (in_gc) {
+    // We shouldn't call back into javascript during a garbage collect.  Do it
+    // later.  We'll hang onto the context until this DeferredUnload is called.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableFunction(
+        DeferredUnload, (*context_iter)->context));
+  } else {
+    CallFunctionInContext((*context_iter)->context, "dispatchOnUnload",
+                          0, NULL);
   }
 
   // Remove all pending requests for this context.
@@ -147,17 +159,19 @@ static void HandleContextDestroyed(ContextList::iterator context_iter,
        it != GetContexts().end(); ) {
     ContextList::iterator current = it++;
     if ((*current)->parent_context == (*context_iter)->context)
-      HandleContextDestroyed(current, callUnload);
+      HandleContextDestroyed(current, in_gc);
   }
-
-  // Remove it from our registered contexts.
-  (*context_iter)->context.ClearWeak();
-  (*context_iter)->context.Dispose();
-  (*context_iter)->context.Clear();
 
   if (!(*context_iter)->parent_context.IsEmpty()) {
     (*context_iter)->parent_context.Dispose();
     (*context_iter)->parent_context.Clear();
+  }
+
+  // Remove it from our registered contexts.
+  (*context_iter)->context.ClearWeak();
+  if (!in_gc) {
+    (*context_iter)->context.Dispose();
+    (*context_iter)->context.Clear();
   }
 
   GetContexts().erase(context_iter);
@@ -168,7 +182,7 @@ static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
   for (ContextList::iterator it = GetContexts().begin();
        it != GetContexts().end(); ++it) {
     if ((*it)->context == context) {
-      HandleContextDestroyed(it, false);
+      HandleContextDestroyed(it, true);
       return;
     }
   }
@@ -244,7 +258,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
 
   ContextList::iterator context_iter = bindings_utils::FindContext(context);
   if (context_iter != GetContexts().end())
-    ::HandleContextDestroyed(context_iter, true);
+    ::HandleContextDestroyed(context_iter, false);
 }
 
 // static
