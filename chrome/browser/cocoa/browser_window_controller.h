@@ -136,6 +136,9 @@ class TabStripModelObserverBridge;
 // "chrome/app/chrome_dll_resource.h" file.
 - (void)executeCommand:(int)command;
 
+// Delegate method for the status bubble to query about its vertical offset.
+- (float)verticalOffsetForStatusBubble;
+
 @end
 
 

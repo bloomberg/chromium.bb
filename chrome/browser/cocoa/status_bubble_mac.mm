@@ -56,11 +56,13 @@ enum BubbleStyle {
 - (NSFont*)font;
 @end
 
-StatusBubbleMac::StatusBubbleMac(NSWindow* parent)
+StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
     : parent_(parent),
+      delegate_(delegate),
       window_(nil),
       status_text_(nil),
-      url_text_(nil) {
+      url_text_(nil),
+      is_download_shelf_visible_(false) {
 }
 
 StatusBubbleMac::~StatusBubbleMac() {
@@ -180,16 +182,22 @@ void StatusBubbleMac::MouseMoved() {
 
     offset_ = offset;
     window_frame.origin.y -= offset;
-    [window_ setFrame:window_frame display:YES];
   } else {
     offset_ = 0;
     [[window_ contentView] setStyle:STYLE_STANDARD];
-    [window_ setFrame:window_frame display:YES];
   }
+
+  // |delegate_| can be nil during unit tests.
+  if (is_download_shelf_visible_) {
+    if ([delegate_ respondsToSelector:@selector(verticalOffsetForStatusBubble)])
+      window_frame.origin.y += [delegate_ verticalOffsetForStatusBubble];
+  }
+
+  [window_ setFrame:window_frame display:YES];
 }
 
 void StatusBubbleMac::UpdateDownloadShelfVisibility(bool visible) {
-  NOTIMPLEMENTED();
+  is_download_shelf_visible_ = visible;
 }
 
 void StatusBubbleMac::Create() {

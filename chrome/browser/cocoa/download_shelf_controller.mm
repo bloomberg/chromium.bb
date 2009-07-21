@@ -177,7 +177,17 @@ const int kDownloadItemPadding = 10;
 }
 
 - (void)hide:(id)sender {
-  [self showDownloadShelf:NO];
+  // If |sender| isn't nil, then we're being closed from the UI by the user and
+  // we need to tell our shelf implementation to close. Otherwise, we're being
+  // closed programmatically by our shelf implementation.
+  if (sender)
+    bridge_->Close();
+  else
+    [self showDownloadShelf:NO];
+}
+
+- (float)height {
+  return shelfHeight_;
 }
 
 - (void)addDownloadItem:(BaseDownloadItemModel*)model {

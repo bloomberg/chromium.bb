@@ -204,7 +204,7 @@ willPositionSheet:(NSWindow*)sheet
              object:[self tabContentArea]];
 
     // Create the bridge for the status bubble.
-    statusBubble_.reset(new StatusBubbleMac([self window]));
+    statusBubble_.reset(new StatusBubbleMac([self window], self));
 
 #if 0
     // Move all buttons down two pixels for visual balance.
@@ -438,6 +438,18 @@ willPositionSheet:(NSWindow*)sheet
 - (void)executeCommand:(int)command {
   if (browser_->command_updater()->IsCommandEnabled(command))
     browser_->ExecuteCommand(command);
+}
+
+// StatusBubble delegate method: tell the status bubble how far above the bottom
+// of the window it should position itself.
+- (float)verticalOffsetForStatusBubble {
+  float offset = 0.0;
+
+  // Don't create a download shelf if there isn't one.
+  if (downloadShelfController_.get() && [[self downloadShelf] isVisible])
+    offset += [[self downloadShelf] height];
+
+  return offset;
 }
 
 - (LocationBar*)locationBar {

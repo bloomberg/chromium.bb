@@ -16,7 +16,7 @@ class StatusBubbleMacTest;
 
 class StatusBubbleMac : public StatusBubble {
  public:
-  StatusBubbleMac(NSWindow* parent);
+  StatusBubbleMac(NSWindow* parent, id delegate);
   virtual ~StatusBubbleMac();
 
   // StatusBubble implementation.
@@ -41,6 +41,9 @@ class StatusBubbleMac : public StatusBubble {
   // The window we attach ourselves to.
   NSWindow* parent_;  // WEAK
 
+  // The object that we query about our vertical offset for positioning.
+  id delegate_;  // WEAK
+
   // The window we own.
   NSWindow* window_;
 
@@ -52,6 +55,16 @@ class StatusBubbleMac : public StatusBubble {
 
   // How vertically offset the bubble is from its root position.
   int offset_;
+
+  // Is the download shelf visible.
+  bool is_download_shelf_visible_;
 };
+
+// Delegate interface that allows the StatusBubble to query its delegate about
+// the vertical offset (if any) that should be applied to the StatusBubble's
+// position.
+@interface NSObject(StatusBubbleDelegate)
+- (float)verticalOffsetForStatusBubble;
+@end
 
 #endif  // #ifndef CHROME_BROWSER_COCOA_STATUS_BUBBLE_MAC_H_

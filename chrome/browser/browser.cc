@@ -1875,7 +1875,8 @@ void Browser::UpdateTargetURL(TabContents* source, const GURL& url) {
 }
 
 void Browser::UpdateDownloadShelfVisibility(bool visible) {
-  GetStatusBubble()->UpdateDownloadShelfVisibility(visible);
+  if (GetStatusBubble())
+    GetStatusBubble()->UpdateDownloadShelfVisibility(visible);
 }
 
 void Browser::ContentsZoomChange(bool zoom_in) {
@@ -2410,7 +2411,7 @@ void Browser::RemoveScheduledUpdatesFor(TabContents* contents) {
 // Browser, Getters for UI (private):
 
 StatusBubble* Browser::GetStatusBubble() {
-  return window_->GetStatusBubble();
+  return window_ ? window_->GetStatusBubble() : NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

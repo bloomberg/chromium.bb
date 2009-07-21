@@ -4,6 +4,7 @@
 
 #include "chrome/browser/cocoa/download_shelf_mac.h"
 
+#include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #include "chrome/browser/cocoa/download_item_mac.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -31,8 +32,10 @@ bool DownloadShelfMac::IsClosing() const {
 
 void DownloadShelfMac::Show() {
   [shelf_controller_ show:nil];
+  browser_->UpdateDownloadShelfVisibility(true);
 }
 
 void DownloadShelfMac::Close() {
   [shelf_controller_ hide:nil];
+  browser_->UpdateDownloadShelfVisibility(false);
 }

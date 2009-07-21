@@ -15,7 +15,7 @@ class StatusBubbleMacTest : public testing::Test {
  public:
   StatusBubbleMacTest() {
     NSWindow* window = cocoa_helper_.window();
-    bubble_.reset(new StatusBubbleMac(window));
+    bubble_.reset(new StatusBubbleMac(window, nil));
     EXPECT_TRUE(bubble_.get());
     EXPECT_FALSE(bubble_->window_);  // lazily creates window
   }
@@ -87,11 +87,11 @@ TEST_F(StatusBubbleMacTest, MouseMove) {
 TEST_F(StatusBubbleMacTest, Delete) {
   NSWindow* window = cocoa_helper_.window();
   // Create and delete immediately.
-  StatusBubbleMac* bubble = new StatusBubbleMac(window);
+  StatusBubbleMac* bubble = new StatusBubbleMac(window, nil);
   delete bubble;
 
   // Create then delete while visible.
-  bubble = new StatusBubbleMac(window);
+  bubble = new StatusBubbleMac(window, nil);
   bubble->SetStatus(L"showing");
   delete bubble;
 }

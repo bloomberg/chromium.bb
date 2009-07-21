@@ -25,7 +25,7 @@ class DownloadItemMac;
 class DownloadShelfMac : public DownloadShelf {
  public:
   explicit DownloadShelfMac(Browser* browser,
-      DownloadShelfController* controller);
+                            DownloadShelfController* controller);
 
   // DownloadShelf implementation.
   virtual void AddDownload(BaseDownloadItemModel* download_model);

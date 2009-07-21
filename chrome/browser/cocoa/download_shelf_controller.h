@@ -28,7 +28,7 @@ class DownloadShelf;
 
   scoped_ptr<DownloadShelf> bridge_;
   NSView* contentArea_;
-  int shelfHeight_;
+  float shelfHeight_;
 
   // The download items we have added to our shelf.
   scoped_nsobject<NSMutableArray> downloadItemControllers_;
@@ -40,6 +40,8 @@ class DownloadShelf;
 - (BOOL)isVisible;
 
 - (IBAction)show:(id)sender;
+
+// Run when the user clicks the close button on the right side of the shelf.
 - (IBAction)hide:(id)sender;
 
 - (void)addDownloadItem:(BaseDownloadItemModel*)model;
@@ -52,5 +54,8 @@ class DownloadShelf;
 
 // Notification that we are closing and should release our downloads.
 - (void)exiting;
+
+// Return the height of the download shelf.
+- (float)height;
 
 @end
