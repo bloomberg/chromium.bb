@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -74,8 +75,14 @@ void BlockedPopupContainerViewGtk::ShowView() {
 void BlockedPopupContainerViewGtk::UpdateLabel() {
   size_t blocked_popups = model_->GetBlockedPopupCount();
 
-  gtk_button_set_label(
-      GTK_BUTTON(menu_button_),
+  GtkWidget* label = gtk_bin_get_child(GTK_BIN(menu_button_));
+  if (!label) {
+    label = gtk_label_new("");
+    gtk_container_add(GTK_CONTAINER(menu_button_), label);
+  }
+
+  gtk_label_set_text(
+      GTK_LABEL(label),
       (blocked_popups > 0) ?
       l10n_util::GetStringFUTF8(IDS_POPUPS_BLOCKED_COUNT,
                                 UintToString16(blocked_popups)).c_str() :
@@ -90,6 +97,31 @@ void BlockedPopupContainerViewGtk::HideView() {
 void BlockedPopupContainerViewGtk::Destroy() {
   ContainingView()->RemoveBlockedPopupView(this);
   delete this;
+}
+
+void BlockedPopupContainerViewGtk::Observe(NotificationType type,
+                                           const NotificationSource& source,
+                                           const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+
+  // Make sure the label exists (so we can change its colors).
+  UpdateLabel();
+
+  // Update the label's colors.
+  GtkWidget* label = gtk_bin_get_child(GTK_BIN(menu_button_));
+  if (theme_provider_->UseGtkTheme()) {
+    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, NULL);
+    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, NULL);
+    gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, NULL);
+  } else {
+    GdkColor color = theme_provider_->GetGdkColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &color);
+    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &color);
+    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, &color);
+    gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, &color);
+  }
 }
 
 bool BlockedPopupContainerViewGtk::IsCommandEnabled(int command_id) const {
@@ -126,6 +158,11 @@ BlockedPopupContainerViewGtk::BlockedPopupContainerViewGtk(
       theme_provider_(GtkThemeProvider::GetFrom(container->profile())),
       close_button_(CustomDrawButton::CloseButton()) {
   Init();
+
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
 }
 
 void BlockedPopupContainerViewGtk::Init() {

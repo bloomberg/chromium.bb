@@ -11,12 +11,15 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class BlockedPopupContainerInternalView;
 class CustomDrawButton;
 class GtkThemeProvider;
 class MenuGtk;
+class NotificationObserver;
 class PrefService;
 class Profile;
 class TabContents;
@@ -29,6 +32,7 @@ class ImageButton;
 
 // The GTK blocked popup container notification.
 class BlockedPopupContainerViewGtk : public BlockedPopupContainerView,
+                                     public NotificationObserver,
                                      public MenuGtk::Delegate {
  public:
   virtual ~BlockedPopupContainerViewGtk();
@@ -50,6 +54,11 @@ class BlockedPopupContainerViewGtk : public BlockedPopupContainerView,
   virtual void UpdateLabel();
   virtual void HideView();
   virtual void Destroy();
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Overridden from MenuGtk::Delegate:
   virtual bool IsCommandEnabled(int command_id) const;
@@ -75,6 +84,8 @@ class BlockedPopupContainerViewGtk : public BlockedPopupContainerView,
   // Draws |container_| with a custom background.
   static gboolean OnContainerExpose(GtkWidget* widget, GdkEventExpose* event,
                                     BlockedPopupContainerViewGtk* container);
+
+  NotificationRegistrar registrar_;
 
   // Our model; calling the shots.
   BlockedPopupContainer* model_;
