@@ -8,13 +8,14 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/views/panels/panel_container.h"
+#include "base/string_util.h"
+#include "chrome/browser/views/panels/panel_scroller_container.h"
 #include "chrome/browser/views/panels/panel_scroller_header.h"
 #include "views/widget/widget_gtk.h"
 
 struct PanelScroller::Panel {
   PanelScrollerHeader* header;
-  PanelContainer* container;
+  PanelScrollerContainer* container;
 };
 
 PanelScroller::PanelScroller()
@@ -31,31 +32,31 @@ PanelScroller::PanelScroller()
   Panel* panel = new Panel;
   panel->header = new PanelScrollerHeader(this);
   panel->header->set_title(ASCIIToUTF16("Email"));
-  panel->container = new PanelContainer(this, new views::View());
+  panel->container = new PanelScrollerContainer(this, new views::View());
   panels_.push_back(panel);
 
   panel = new Panel;
   panel->header = new PanelScrollerHeader(this);
   panel->header->set_title(ASCIIToUTF16("Chat"));
-  panel->container = new PanelContainer(this, new views::View());
+  panel->container = new PanelScrollerContainer(this, new views::View());
   panels_.push_back(panel);
 
   panel = new Panel;
   panel->header = new PanelScrollerHeader(this);
   panel->header->set_title(ASCIIToUTF16("Calendar"));
-  panel->container = new PanelContainer(this, new views::View());
+  panel->container = new PanelScrollerContainer(this, new views::View());
   panels_.push_back(panel);
 
   panel = new Panel;
   panel->header = new PanelScrollerHeader(this);
   panel->header->set_title(ASCIIToUTF16("Recent searches"));
-  panel->container = new PanelContainer(this, new views::View());
+  panel->container = new PanelScrollerContainer(this, new views::View());
   panels_.push_back(panel);
 
   panel = new Panel;
   panel->header = new PanelScrollerHeader(this);
   panel->header->set_title(ASCIIToUTF16("Pony news"));
-  panel->container = new PanelContainer(this, new views::View());
+  panel->container = new PanelScrollerContainer(this, new views::View());
   panels_.push_back(panel);
 
   // Add the containers first since they're on the bottom.

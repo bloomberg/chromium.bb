@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "views/view.h"
 
-class PanelContainer;
 class PanelScrollerHeader;
 
 class PanelScroller : public views::View, public AnimationDelegate {

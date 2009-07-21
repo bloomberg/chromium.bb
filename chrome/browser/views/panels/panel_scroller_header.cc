@@ -19,7 +19,7 @@ PanelScrollerHeader::~PanelScrollerHeader() {
 }
 
 bool PanelScrollerHeader::OnMousePressed(const views::MouseEvent& event) {
-  return false;
+  return true;
 }
 
 bool PanelScrollerHeader::OnMouseDragged(const views::MouseEvent& event) {
