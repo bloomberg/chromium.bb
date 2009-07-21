@@ -18,8 +18,10 @@ void XDGOpen(const FilePath& path) {
   argv.push_back("xdg-open");
   argv.push_back(path.value());
   base::file_handle_mapping_vector no_files;
+  base::environment_vector env;
+  env.push_back(std::make_pair("GTK_PATH", getenv("CHROMIUM_SAVED_GTK_PATH")));
   base::ProcessHandle handle;
-  if (base::LaunchApp(argv, no_files, false, &handle))
+  if (base::LaunchApp(argv, env, no_files, false, &handle))
     ProcessWatcher::EnsureProcessGetsReaped(handle);
 }
 
