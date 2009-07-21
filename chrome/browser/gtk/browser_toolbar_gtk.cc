@@ -15,6 +15,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/gtk/back_forward_button_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
@@ -92,6 +94,33 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
   page_menu_button_.Destroy();
   app_menu_button_.Destroy();
   g_object_unref(accel_group_);
+}
+
+// Construct an "encodings" menu based on profile settings.
+static MenuGtk* BuildEncodingsMenu(Profile* profile,
+                                   MenuGtk::Delegate* delegate) {
+  EncodingMenuController controller;
+  EncodingMenuController::EncodingMenuItemList items;
+  controller.GetEncodingMenuItems(profile, &items);
+
+  MenuGtk* menu = new MenuGtk(delegate, false);
+  GSList* radio_group = NULL;
+  for (EncodingMenuController::EncodingMenuItemList::const_iterator i =
+           items.begin();
+       i != items.end(); ++i) {
+    if (i == items.begin()) {
+      menu->AppendCheckMenuItemWithLabel(i->first, WideToUTF8(i->second));
+    } else if (i->first == 0) {
+      menu->AppendSeparator();
+    } else {
+      GtkWidget* item =
+          gtk_radio_menu_item_new_with_label(radio_group,
+                                             WideToUTF8(i->second).c_str());
+      radio_group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+      menu->AppendMenuItem(i->first, item);
+    }
+  }
+  return menu;
 }
 
 void BrowserToolbarGtk::Init(Profile* profile,
@@ -168,7 +197,10 @@ void BrowserToolbarGtk::Init(Profile* profile,
   page_menu_image_ = gtk_image_new_from_pixbuf(
       theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_PAGE));
   gtk_container_add(GTK_CONTAINER(page_menu), page_menu_image_);
-  page_menu_.reset(new MenuGtk(this, GetStandardPageMenu(), accel_group_));
+
+  encodings_menu_.reset(BuildEncodingsMenu(profile, this));
+  page_menu_.reset(new MenuGtk(this, GetStandardPageMenu(encodings_menu_.get()),
+                               accel_group_));
   g_signal_connect(page_menu_->widget(), "motion-notify-event",
                    G_CALLBACK(OnPageAppMenuMouseMotion), this);
   g_signal_connect(page_menu_->widget(), "move-current",
@@ -254,9 +286,18 @@ bool BrowserToolbarGtk::IsCommandEnabled(int command_id) const {
 bool BrowserToolbarGtk::IsItemChecked(int id) const {
   if (!profile_)
     return false;
-  if (id == IDC_SHOW_BOOKMARK_BAR)
+
+  EncodingMenuController controller;
+  if (id == IDC_SHOW_BOOKMARK_BAR) {
     return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
-  // TODO(port): Fix this when we get some items that want checking!
+  } else if (controller.DoesCommandBelongToEncodingMenu(id)) {
+    TabContents* tab_contents = browser_->GetSelectedTabContents();
+    if (tab_contents) {
+      return controller.IsItemChecked(profile_, tab_contents->encoding(),
+                                      id);
+    }
+  }
+
   return false;
 }
 

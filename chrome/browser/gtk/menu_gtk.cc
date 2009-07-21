@@ -50,14 +50,14 @@ void MenuGtk::AppendMenuItemWithLabel(int command_id,
   std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item =
       gtk_menu_item_new_with_mnemonic(converted_label.c_str());
-  AddMenuItemWithId(menu_item, command_id);
+  AppendMenuItem(command_id, menu_item);
 }
 
 void MenuGtk::AppendMenuItemWithIcon(int command_id,
                                      const std::string& label,
                                      const SkBitmap& icon) {
   GtkWidget* menu_item = BuildMenuItemWithImage(label, icon);
-  AddMenuItemWithId(menu_item, command_id);
+  AppendMenuItem(command_id, menu_item);
 }
 
 void MenuGtk::AppendCheckMenuItemWithLabel(int command_id,
@@ -65,11 +65,22 @@ void MenuGtk::AppendCheckMenuItemWithLabel(int command_id,
   std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item =
       gtk_check_menu_item_new_with_mnemonic(converted_label.c_str());
-  AddMenuItemWithId(menu_item, command_id);
+  AppendMenuItem(command_id, menu_item);
 }
 
 void MenuGtk::AppendSeparator() {
   GtkWidget* menu_item = gtk_separator_menu_item_new();
+  gtk_widget_show(menu_item);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_.get()), menu_item);
+}
+
+void MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
+  g_object_set_data(G_OBJECT(menu_item), "menu-id",
+                    reinterpret_cast<void*>(command_id));
+
+  g_signal_connect(G_OBJECT(menu_item), "activate",
+                   G_CALLBACK(OnMenuItemActivated), this);
+
   gtk_widget_show(menu_item);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_.get()), menu_item);
 }
@@ -147,6 +158,9 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
       GtkWidget* submenu = gtk_menu_new();
       BuildMenuIn(submenu, menu_data->submenu, accel_group);
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), submenu);
+    } else if (menu_data->custom_submenu) {
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
+                                menu_data->custom_submenu->menu_.get());
     }
 
     if (accel_group && menu_data->accel_key) {
@@ -202,19 +216,8 @@ void MenuGtk::BuildMenuFromDelegate() {
       menu_item = gtk_menu_item_new_with_label(delegate_->GetLabel(i).c_str());
     }
 
-    AddMenuItemWithId(menu_item, i);
+    AppendMenuItem(i, menu_item);
   }
-}
-
-void MenuGtk::AddMenuItemWithId(GtkWidget* menu_item, int id) {
-  g_object_set_data(G_OBJECT(menu_item), "menu-id",
-                    reinterpret_cast<void*>(id));
-
-  g_signal_connect(G_OBJECT(menu_item), "activate",
-                   G_CALLBACK(OnMenuItemActivatedById), this);
-
-  gtk_widget_show(menu_item);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu_.get()), menu_item);
 }
 
 // static
@@ -225,19 +228,15 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
     const MenuCreateMaterial* data =
         reinterpret_cast<const MenuCreateMaterial*>(
             g_object_get_data(G_OBJECT(menuitem), "menu-data"));
-    // The menu item can still be activated by hotkeys even if it is disabled.
-    if (menu->delegate_->IsCommandEnabled(data->id))
-      menu->delegate_->ExecuteCommand(data->id);
-  }
-}
 
-// static
-void MenuGtk::OnMenuItemActivatedById(GtkMenuItem* menuitem, MenuGtk* menu) {
-  // We receive activation messages when highlighting a menu that has a
-  // submenu. Ignore them.
-  if (!gtk_menu_item_get_submenu(menuitem)) {
-    int id = reinterpret_cast<int>(
-        g_object_get_data(G_OBJECT(menuitem), "menu-id"));
+    int id;
+    if (data) {
+      id = data->id;
+    } else {
+      id = reinterpret_cast<int>(g_object_get_data(G_OBJECT(menuitem),
+                                                   "menu-id"));
+    }
+
     // The menu item can still be activated by hotkeys even if it is disabled.
     if (menu->delegate_->IsCommandEnabled(id))
       menu->delegate_->ExecuteCommand(id);
@@ -319,26 +318,22 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
 
     // gtk_check_menu_item_set_active() will send the activate signal. Touching
     // the underlying "active" property will also call the "activate" handler
-    // for this menu item. So we prevent the correct activate handler from
+    // for this menu item. So we prevent the "activate" handler from
     // being called while we set the checkbox.
-    if (data) {
-      g_signal_handlers_block_by_func(
-          item, reinterpret_cast<void*>(OnMenuItemActivated), userdata);
-    } else {
-      g_signal_handlers_block_by_func(
-          item, reinterpret_cast<void*>(OnMenuItemActivatedById), userdata);
-    }
+    g_signal_handlers_block_matched(
+        item, G_SIGNAL_MATCH_FUNC,
+        0, 0, NULL,
+        reinterpret_cast<void*>(OnMenuItemActivated),
+        NULL);
 
     gtk_check_menu_item_set_active(
         item, menu->delegate_->IsItemChecked(id));
 
-    if (data) {
-      g_signal_handlers_unblock_by_func(
-          item, reinterpret_cast<void*>(OnMenuItemActivated), userdata);
-    } else {
-      g_signal_handlers_unblock_by_func(
-          item, reinterpret_cast<void*>(OnMenuItemActivatedById), userdata);
-    }
+    g_signal_handlers_unblock_matched(
+        item, G_SIGNAL_MATCH_FUNC,
+        0, 0, NULL,
+        reinterpret_cast<void*>(OnMenuItemActivated),
+        NULL);
   }
 
   if (GTK_IS_MENU_ITEM(widget)) {

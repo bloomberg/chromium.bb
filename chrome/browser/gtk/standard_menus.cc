@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/encoding_menu_controller.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -22,11 +23,6 @@ struct MenuCreateMaterial zoom_menu_materials[] = {
     GDK_KP_0, GDK_CONTROL_MASK },
   { MENU_NORMAL, IDC_ZOOM_MINUS, IDS_ZOOM_MINUS, 0, NULL,
     GDK_KP_Subtract, GDK_CONTROL_MASK },
-  { MENU_END }
-};
-
-struct MenuCreateMaterial encoding_menu_materials[] = {
-  { MENU_CHECKBOX, IDC_ENCODING_AUTO_DETECT, IDS_ENCODING_AUTO_DETECT },
   { MENU_END }
 };
 
@@ -60,8 +56,8 @@ struct MenuCreateMaterial standard_page_menu_materials[] = {
   //{ MENU_NORMAL, IDC_PRINT, IDS_PRINT, 0, NULL, GDK_p, GDK_CONTROL_MASK },
   { MENU_SEPARATOR },
   { MENU_NORMAL, IDC_ZOOM_MENU, IDS_ZOOM_MENU, 0, zoom_menu_materials },
-  { MENU_NORMAL, IDC_ENCODING_MENU, IDS_ENCODING_MENU, 0,
-    encoding_menu_materials },
+  // The encoding menu submenu is filled in by code below.
+  { MENU_NORMAL, IDC_ENCODING_MENU, IDS_ENCODING_MENU },
   { MENU_SEPARATOR },
   { MENU_NORMAL, IDC_DEVELOPER_MENU, IDS_DEVELOPER_MENU, 0,
     developer_menu_materials },
@@ -105,9 +101,20 @@ struct MenuCreateMaterial standard_app_menu_materials[] = {
   { MENU_NORMAL, IDC_EXIT, IDS_EXIT, 0, NULL, GDK_q, GDK_CONTROL_MASK },
   { MENU_END }
 };
+
 }  // namespace
 
-const MenuCreateMaterial* GetStandardPageMenu() {
+
+const MenuCreateMaterial* GetStandardPageMenu(MenuGtk* encodings_menu) {
+  // Find the encoding menu and attach this menu.
+  for (MenuCreateMaterial* entry = standard_page_menu_materials;
+       entry->type != MENU_END; ++entry) {
+    if (entry->id == IDC_ENCODING_MENU) {
+      entry->custom_submenu = encodings_menu;
+      break;
+    }
+  }
+
   return standard_page_menu_materials;
 }
 

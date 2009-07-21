@@ -62,6 +62,7 @@ class MenuGtk {
                               const SkBitmap& icon);
   void AppendCheckMenuItemWithLabel(int command_id, const std::string& label);
   void AppendSeparator();
+  void AppendMenuItem(int command_id, GtkWidget* menu_item);
 
   // Displays the menu. |timestamp| is the time of activation. The popup is
   // statically positioned at |widget|.
@@ -109,17 +110,8 @@ class MenuGtk {
   // recursive and does not support sub-menus.
   void BuildMenuFromDelegate();
 
-  // Helper method that sets properties on a GtkMenuItem and then adds it to
-  // our internal |menu_|.
-  void AddMenuItemWithId(GtkWidget* menu_item, int id);
-
-  // Callback for when a menu item is clicked. Used when the menu is created
-  // via a MenuCreateMaterial.
+  // Callback for when a menu item is clicked.
   static void OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu);
-
-  // Callback for when a menu item is clicked. Used when the menu is created
-  // via |delegate_|.
-  static void OnMenuItemActivatedById(GtkMenuItem* menuitem, MenuGtk* menu);
 
   // Sets the check mark and enabled/disabled state on our menu items.
   static void SetMenuItemInfo(GtkWidget* widget, void* raw_menu);

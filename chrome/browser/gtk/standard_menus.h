@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GTK_STANDARD_MENUS_H_
 
 class Menu;
+class MenuGtk;
 class Profile;
 
 enum MenuItemType {
@@ -46,10 +47,14 @@ struct MenuCreateMaterial {
   // the same key combination may be handled by GTK. Windows handles this in
   // toolbar_view.cc::GetAcceleratorInfo().
   bool only_show;
+
+  // If non-NULL, specifies a custom submenu to be used.
+  // The menu lifetime must at least match this menu's lifetime.
+  MenuGtk* custom_submenu;
 };
 
 // Returns the menu construction data structure for the page menu.
-const MenuCreateMaterial* GetStandardPageMenu();
+const MenuCreateMaterial* GetStandardPageMenu(MenuGtk* encodings_menu);
 
 // Returns the menu construction data structure for the app menu.
 const MenuCreateMaterial* GetStandardAppMenu();
