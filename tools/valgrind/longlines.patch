@@ -1,0 +1,11 @@
+--- /data/dkegel/valgrind-10414-vex-1906/coregrind/m_errormgr.c	2009-07-08 15:49:30.000000000 -0700
++++ coregrind/m_errormgr.c	2009-07-08 17:17:36.000000000 -0700
+@@ -942,7 +942,7 @@
+ */
+ static void load_one_suppressions_file ( Char* filename )
+ {
+-#  define N_BUF 200
++#  define N_BUF 2000
+    SysRes sres;
+    Int    fd, i, j, lineno = 0;
+    Bool   eof;

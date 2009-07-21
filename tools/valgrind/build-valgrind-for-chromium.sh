@@ -1,4 +1,8 @@
 #!/bin/sh
+# Script to build valgrind for use with chromium
+
+THISDIR=`dirname $0`
+THISDIR=`cd $THISDIR && /bin/pwd`
 set -x
 set -e
 
@@ -14,18 +18,18 @@ svn update -r '{2009-07-15}'
 cd ..
 
 # Work around bug https://bugs.kde.org/show_bug.cgi?id=162848
-# fork() not handled properly
-wget "https://bugs.kde.org/attachment.cgi?id=35150"
-patch -p0 < "attachment.cgi?id=35150"
+# "fork() not handled properly"
+#wget -O fork.patch "https://bugs.kde.org/attachment.cgi?id=35150"
+patch -p0 < "$THISDIR"/fork.patch
 
 # Work around bug https://bugs.kde.org/show_bug.cgi?id=186796
-# long suppressions truncated
-wget "https://bugs.kde.org/attachment.cgi?id=35174"
-patch -p0 < "attachment.cgi?id=35174"
+# "long suppressions truncated"
+#wget -O longlines.patch "https://bugs.kde.org/attachment.cgi?id=35174"
+patch -p0 < "$THISDIR"/longlines.patch
 
 sh autogen.sh
 ./configure --prefix=/usr/local/valgrind-20090715
-make
+make -j4
 sudo make install
 cd /usr
 test -f bin/valgrind && sudo mv bin/valgrind bin/valgrind.orig

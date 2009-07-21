@@ -1,0 +1,109 @@
+Index: coregrind/m_main.c
+===================================================================
+--- coregrind/m_main.c	(revision 10399)
++++ coregrind/m_main.c	(working copy)
+@@ -755,15 +755,26 @@
+    If logging to file or a socket, write details of parent PID and
+    command line args, to help people trying to interpret the
+    results of a run which encompasses multiple processes. */
+-static void print_preamble(Bool logging_to_fd, const char* toolname)
++
++// TODO(timurrrr): we add a non-static declaration of this function since
++// we need it in coregrind/m_libcproc.c
++// Should we move it to some header file?
++void print_preamble(Bool logging_to_fd, const char* toolname);
++
++void print_preamble(Bool logging_to_fd, const char* toolname)
+ {
+    HChar* xpre  = VG_(clo_xml) ? "  <line>" : "";
+    HChar* xpost = VG_(clo_xml) ? "</line>" : "";
+    Int    i;
++   static const char* last_toolname = NULL;
+ 
+    vg_assert( VG_(args_for_client) );
+    vg_assert( VG_(args_for_valgrind) );
++   // This way you may pass toolname == NULL provided the first invocation
++   // with toolname != NULL takes place in valgrind_main().
++   toolname = (toolname == NULL ? last_toolname : toolname);
+    vg_assert( toolname );
++   last_toolname = toolname;
+ 
+    if (VG_(clo_xml)) {
+       VG_(message)(Vg_UserMsg, "<?xml version=\"1.0\"?>");
+Index: coregrind/m_libcproc.c
+===================================================================
+--- coregrind/m_libcproc.c	(revision 10399)
++++ coregrind/m_libcproc.c	(working copy)
+@@ -33,9 +33,12 @@
+ #include "pub_core_vkiscnums.h"
+ #include "pub_core_libcbase.h"
+ #include "pub_core_libcassert.h"
++#include "pub_core_libcfile.h"
+ #include "pub_core_libcprint.h"
+ #include "pub_core_libcproc.h"
+ #include "pub_core_libcsignal.h"
++#include "pub_core_tooliface.h"
++#include "pub_core_options.h"
+ #include "pub_core_seqmatch.h"
+ #include "pub_core_mallocfree.h"
+ #include "pub_core_syscall.h"
+@@ -703,10 +706,59 @@
+          (*atforks[i].parent)(tid);
+ }
+ 
++// Defined in m_main.c
++void print_preamble(Bool logging_to_fd, const char* toolname);
++
++// If --log-file=ABC%pXYZ is specified, we'd like to have separate log files
++// for each forked child.
++// If %p is present in the --log-file option, this function creates
++// a new log file and redirects the child's output to it.
++static void open_new_logfile_for_forked_child(void)
++{
++   SysRes sres;
++   Int tmp_log_fd = -1;
++   Char *logfilename, *clo_log_name;
++
++   clo_log_name = VG_(clo_log_name);
++   if (clo_log_name == NULL || !VG_(strstr)(clo_log_name, "%p")) {
++      // Don't create new log streams unless --log-file=ABC%pXYZ is specified.
++      return;
++   }
++
++   logfilename = VG_(expand_file_name)("--log-file", clo_log_name);
++   sres = VG_(open) (logfilename,
++                    VKI_O_CREAT | VKI_O_WRONLY | VKI_O_TRUNC,
++                    VKI_S_IRUSR | VKI_S_IWUSR);
++   if (!sr_isError(sres)) {
++      tmp_log_fd = sr_Res(sres);
++      // Move log_fd into the safe range,
++      // so it doesn't conflict with any app fds.
++      tmp_log_fd = VG_(fcntl) (tmp_log_fd, VKI_F_DUPFD, VG_(fd_hard_limit));
++      if (tmp_log_fd >= 0) {
++         VG_(clo_log_fd) = tmp_log_fd;
++         VG_(fcntl) (VG_(clo_log_fd), VKI_F_SETFD, VKI_FD_CLOEXEC);
++      } else {
++         VG_(message) (Vg_UserMsg,
++                       "valgrind: failed to move logfile fd into safe range, "
++                       "using stderr");
++         VG_(clo_log_fd) = 2;    // stderr
++      }
++   } else {
++      VG_(message) (Vg_UserMsg,
++                    "Can't create log file '%s' (%s); giving up!",
++                    logfilename, VG_(strerror) (sr_Err(sres)));
++      VG_(core_panic)("Error creating log file for child process");
++   }
++
++   print_preamble(False, NULL);
++}
++
+ void VG_(do_atfork_child)(ThreadId tid)
+ {
+    Int i;
+ 
++   open_new_logfile_for_forked_child();
++
+    for (i = 0; i < n_atfork; i++)
+       if (atforks[i].child != NULL)
+          (*atforks[i].child)(tid);
