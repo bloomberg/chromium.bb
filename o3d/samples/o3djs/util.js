@@ -853,7 +853,11 @@ o3djs.util.makeClients = function(callback,
         for (var cc = 0; cc < clientElements.length; ++cc) {
           var element = clientElements[cc];
           o3d = element.o3d;
-          if (!o3d) {
+          var ready = o3d &&
+              element.client &&
+              element.client.rendererInitStatus >
+                  o3djs.util.rendererInitStatus.UNINITIALIZED;
+          if (!ready) {
             if (chromeWorkaround) {
               if (element.style.width != '100%') {
                 element.style.width = '100%';
