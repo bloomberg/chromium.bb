@@ -1,20 +1,21 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_TABBED_PANE_H_
 #define VIEWS_CONTROLS_TABBED_PANE_H_
 
-#include "views/controls/native_control.h"
+#include "views/view.h"
 
 namespace views {
+
+class NativeTabbedPaneWrapper;
 
 // The TabbedPane class is a view that shows tabs.  When the user clicks on a
 // tab, the associated view is displayed.
 // TODO (jcampan): implement GetPreferredSize().
-class WidgetWin;
 
-class TabbedPane : public NativeControl {
+class TabbedPane : public View {
  public:
   TabbedPane();
   virtual ~TabbedPane();
@@ -27,6 +28,15 @@ class TabbedPane : public NativeControl {
     virtual void TabSelectedAt(int index) = 0;
   };
   void SetListener(Listener* listener);
+
+  // Returns the number of tabs.
+  int GetTabCount();
+
+  // Returns the index of the selected tab.
+  int GetSelectedTabIndex();
+
+  // Returns the contents of the selected tab.
+  View* GetSelectedTab();
 
   // Adds a new tab at the end of this TabbedPane with the specified |title|.
   // |contents| is the view displayed when the tab is selected and is owned by
@@ -51,44 +61,32 @@ class TabbedPane : public NativeControl {
   // Selects the tab at the specified |index|, which must be valid.
   void SelectTabAt(int index);
 
-  // Selects the tab containing the specified |contents|, which must be valid.
-  void SelectTabForContents(const View* contents);
+  Listener* listener() const { return listener_; }
 
-  // Returns the number of tabs.
-  int GetTabCount();
-
-  virtual HWND CreateNativeControl(HWND parent_container);
-  virtual LRESULT OnNotify(int w_param, LPNMHDR l_param);
-
+  // View overrides:
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  virtual std::string GetClassName() const;
   virtual void Layout();
+  virtual void Focus();
 
-  virtual RootView* GetContentsRootView();
-  virtual FocusTraversable* GetFocusTraversable();
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
+ protected:
+  // The object that actually implements the tabbed-pane.
+  // Protected for tests access.
+  NativeTabbedPaneWrapper* native_tabbed_pane_;
 
  private:
-  // Changes the contents view to the view associated with the tab at |index|.
-  void DoSelectTabAt(int index);
+  // The tabbed-pane's class name.
+  static const char kViewClassName[];
 
-  // Returns the index of the tab containing the specified |contents|.
-  int GetIndexForContents(const View* contents) const;
-
-  void ResizeContents(HWND tab_control);
-
-  HWND tab_control_;
-
-  // The views associated with the different tabs.
-  std::vector<View*> tab_views_;
-
-  // The window displayed in the tab.
-  WidgetWin* content_window_;
+  // Creates the native wrapper.
+  void CreateWrapper();
 
   // The listener we notify about tab selection changes.
   Listener* listener_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TabbedPane);
+  DISALLOW_COPY_AND_ASSIGN(TabbedPane);
 };
 
 }  // namespace views
 
-#endif  // #define VIEWS_CONTROLS_TABBED_PANE_H_
+#endif  // VIEWS_CONTROLS_TABBED_PANE_H_

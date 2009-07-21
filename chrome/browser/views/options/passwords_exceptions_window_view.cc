@@ -8,6 +8,7 @@
 #include "chrome/browser/views/options/passwords_page_view.h"
 #include "chrome/browser/views/options/exceptions_page_view.h"
 #include "grit/generated_resources.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 
 // static
 PasswordsExceptionsWindowView* PasswordsExceptionsWindowView::instance_ = NULL;

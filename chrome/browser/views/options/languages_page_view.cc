@@ -33,7 +33,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "unicode/uloc.h"
 #include "views/controls/button/radio_button.h"
-#include "views/controls/tabbed_pane.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/table/table_view.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"

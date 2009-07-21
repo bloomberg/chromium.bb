@@ -21,8 +21,10 @@
 #include "views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
+#include "views/controls/native_control.h"
 #include "views/controls/scroll_view.h"
-#include "views/controls/tabbed_pane.h"
+#include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/widget/accelerator_handler.h"
 #include "views/widget/root_view.h"
@@ -273,7 +275,7 @@ class FocusTraversalTest : public FocusManagerTest {
     View* view = GetContentsView()->GetViewByID(id);
     if (view)
       return view;
-    view = style_tab_->GetContentsRootView()->GetViewByID(id);
+    view = style_tab_->GetSelectedTab()->GetViewByID(id);
     if (view)
       return view;
     view = search_border_view_->GetContentsRootView()->GetViewByID(id);
@@ -744,8 +746,8 @@ class TestCombobox : public Combobox, public Combobox::Model {
 class TestTabbedPane : public TabbedPane {
  public:
   TestTabbedPane() { }
-  virtual HWND TestGetNativeControlHWND() {
-    return GetNativeControlHWND();
+  virtual HWND TestGetNativeComponent() {
+    return native_tabbed_pane_->GetTestingHandle();
   }
 };
 
@@ -785,7 +787,7 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
   ::SendMessage(combobox->TestGetNativeComponent(), WM_SETFOCUS, NULL, NULL);
   EXPECT_EQ(combobox, GetFocusManager()->GetFocusedView());
 
-  ::SendMessage(tabbed_pane->TestGetNativeControlHWND(), WM_SETFOCUS,
+  ::SendMessage(tabbed_pane->TestGetNativeComponent(), WM_SETFOCUS,
                 NULL, NULL);
   EXPECT_EQ(tabbed_pane, GetFocusManager()->GetFocusedView());
 

@@ -15,6 +15,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/window/window.h"
 
 // static

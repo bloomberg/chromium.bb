@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/tabbed_pane.h"
+#include "views/controls/tabbed_pane/native_tabbed_pane_win.h"
 
 #include <vssym32.h>
 
@@ -13,9 +13,7 @@
 #include "base/gfx/native_theme.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "skia/ext/skia_utils_win.h"
-#include "third_party/skia/include/core/SkColor.h"
-#include "views/background.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/fill_layout.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
@@ -45,29 +43,37 @@ class TabBackground : public Background {
   }
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(TabBackground);
+  DISALLOW_COPY_AND_ASSIGN(TabBackground);
 };
 
-TabbedPane::TabbedPane() : content_window_(NULL), listener_(NULL) {
+////////////////////////////////////////////////////////////////////////////////
+// NativeTabbedPaneWin, public:
+
+NativeTabbedPaneWin::NativeTabbedPaneWin(TabbedPane* tabbed_pane)
+    : NativeControlWin(),
+      tabbed_pane_(tabbed_pane),
+      content_window_(NULL) {
+  // Associates the actual HWND with the tabbed-pane so the tabbed-pane is
+  // the one considered as having the focus (not the wrapper) when the HWND is
+  // focused directly (with a click for example).
+  set_focus_view(tabbed_pane);
 }
 
-TabbedPane::~TabbedPane() {
+NativeTabbedPaneWin::~NativeTabbedPaneWin() {
   // We own the tab views, let's delete them.
   STLDeleteContainerPointers(tab_views_.begin(), tab_views_.end());
 }
 
-void TabbedPane::SetListener(Listener* listener) {
-  listener_ = listener;
-}
+////////////////////////////////////////////////////////////////////////////////
+// NativeTabbedPaneWin, NativeTabbedPaneWrapper implementation:
 
-void TabbedPane::AddTab(const std::wstring& title, View* contents) {
+void NativeTabbedPaneWin::AddTab(const std::wstring& title, View* contents) {
   AddTabAtIndex(static_cast<int>(tab_views_.size()), title, contents, true);
 }
 
-void TabbedPane::AddTabAtIndex(int index,
-                               const std::wstring& title,
-                               View* contents,
-                               bool select_if_first_tab) {
+void NativeTabbedPaneWin::AddTabAtIndex(int index, const std::wstring& title,
+                                        View* contents,
+                                        bool select_if_first_tab) {
   DCHECK(index <= static_cast<int>(tab_views_.size()));
   contents->SetParentOwned(false);
   tab_views_.insert(tab_views_.begin() + index, contents);
@@ -82,12 +88,11 @@ void TabbedPane::AddTabAtIndex(int index,
   }
 
   tcitem.pszText = const_cast<wchar_t*>(title.c_str());
-  int result = TabCtrl_InsertItem(tab_control_, index, &tcitem);
+  int result = TabCtrl_InsertItem(native_view(), index, &tcitem);
   DCHECK(result != -1);
 
-  if (!contents->background()) {
+  if (!contents->background())
     contents->set_background(new TabBackground);
-  }
 
   if (tab_views_.size() == 1 && select_if_first_tab) {
     // If this is the only tab displayed, make sure the contents is set.
@@ -95,10 +100,10 @@ void TabbedPane::AddTabAtIndex(int index,
   }
 
   // The newly added tab may have made the contents window smaller.
-  ResizeContents(tab_control_);
+  ResizeContents();
 }
 
-View* TabbedPane::RemoveTabAtIndex(int index) {
+View* NativeTabbedPaneWin::RemoveTabAtIndex(int index) {
   int tab_count = static_cast<int>(tab_views_.size());
   DCHECK(index >= 0 && index < tab_count);
 
@@ -114,10 +119,10 @@ View* TabbedPane::RemoveTabAtIndex(int index) {
       content_window_->GetRootView()->RemoveAllChildViews(false);
     }
   }
-  TabCtrl_DeleteItem(tab_control_, index);
+  TabCtrl_DeleteItem(native_view(), index);
 
   // The removed tab may have made the contents window bigger.
-  ResizeContents(tab_control_);
+  ResizeContents();
 
   std::vector<View*>::iterator iter = tab_views_.begin() + index;
   View* removed_tab = *iter;
@@ -126,21 +131,41 @@ View* TabbedPane::RemoveTabAtIndex(int index) {
   return removed_tab;
 }
 
-void TabbedPane::SelectTabAt(int index) {
+void NativeTabbedPaneWin::SelectTabAt(int index) {
   DCHECK((index >= 0) && (index < static_cast<int>(tab_views_.size())));
-  TabCtrl_SetCurSel(tab_control_, index);
+  TabCtrl_SetCurSel(native_view(), index);
   DoSelectTabAt(index);
 }
 
-void TabbedPane::SelectTabForContents(const View* contents) {
-  SelectTabAt(GetIndexForContents(contents));
+int NativeTabbedPaneWin::GetTabCount() {
+  return TabCtrl_GetItemCount(native_view());
 }
 
-int TabbedPane::GetTabCount() {
-  return TabCtrl_GetItemCount(tab_control_);
+int NativeTabbedPaneWin::GetSelectedTabIndex() {
+  return TabCtrl_GetCurSel(native_view());
 }
 
-HWND TabbedPane::CreateNativeControl(HWND parent_container) {
+View* NativeTabbedPaneWin::GetSelectedTab() {
+  return content_window_->GetRootView()->GetChildViewAt(0);
+}
+
+View* NativeTabbedPaneWin::GetView() {
+  return this;
+}
+
+void NativeTabbedPaneWin::SetFocus() {
+  // Focus the associated HWND.
+  Focus();
+}
+
+gfx::NativeView NativeTabbedPaneWin::GetTestingHandle() const {
+  return native_view();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeTabbedPaneWin, NativeControlWin override:
+
+void NativeTabbedPaneWin::CreateNativeControl() {
   // Create the tab control.
   //
   // Note that we don't follow the common convention for NativeControl
@@ -159,27 +184,27 @@ HWND TabbedPane::CreateNativeControl(HWND parent_container) {
   // contents will use an RTL layout correctly (by virtue of the mirroring
   // infrastructure in views doing the right thing with each View we put
   // in the tab).
-  tab_control_ = ::CreateWindowEx(0,
-                                  WC_TABCONTROL,
-                                  L"",
-                                  WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
-                                  0, 0, width(), height(),
-                                  parent_container, NULL, NULL, NULL);
+  HWND tab_control = ::CreateWindowEx(0,
+                                      WC_TABCONTROL,
+                                      L"",
+                                      WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+                                      0, 0, width(), height(),
+                                      GetWidget()->GetNativeView(), NULL, NULL,
+                                      NULL);
 
   HFONT font = ResourceBundle::GetSharedInstance().
       GetFont(ResourceBundle::BaseFont).hfont();
-  SendMessage(tab_control_, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
+  SendMessage(tab_control, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
 
   // Create the view container which is a child of the TabControl.
   content_window_ = new WidgetWin();
-  content_window_->Init(tab_control_, gfx::Rect());
+  content_window_->Init(tab_control, gfx::Rect());
 
   // Explicitly setting the WS_EX_LAYOUTRTL property for the HWND (see above
   // for a thorough explanation regarding why we waited until |content_window_|
   // if created before we set this property for the tabbed pane's HWND).
-  if (UILayoutIsRightToLeft()) {
-    l10n_util::HWNDSetRTLLayout(tab_control_);
-  }
+  if (UILayoutIsRightToLeft())
+    l10n_util::HWNDSetRTLLayout(tab_control);
 
   RootView* root_view = content_window_->GetRootView();
   root_view->SetLayoutManager(new FillLayout());
@@ -189,21 +214,53 @@ HWND TabbedPane::CreateNativeControl(HWND parent_container) {
   root_view->set_background(Background::CreateSolidBackground(color));
 
   content_window_->SetFocusTraversableParentView(this);
-  ResizeContents(tab_control_);
-  return tab_control_;
+  ResizeContents();
+
+  NativeControlCreated(tab_control);
 }
 
-LRESULT TabbedPane::OnNotify(int w_param, LPNMHDR l_param) {
-  if (static_cast<LPNMHDR>(l_param)->code == TCN_SELCHANGE) {
-    int selected_tab = TabCtrl_GetCurSel(tab_control_);
+bool NativeTabbedPaneWin::ProcessMessage(UINT message,
+                                         WPARAM w_param,
+                                         LPARAM l_param,
+                                         LRESULT* result) {
+  if (message == WM_NOTIFY &&
+      reinterpret_cast<LPNMHDR>(l_param)->code == TCN_SELCHANGE) {
+    int selected_tab = TabCtrl_GetCurSel(native_view());
     DCHECK(selected_tab != -1);
     DoSelectTabAt(selected_tab);
     return TRUE;
   }
-  return FALSE;
+  return NativeControlWin::ProcessMessage(message, w_param, l_param, result);
 }
 
-void TabbedPane::DoSelectTabAt(int index) {
+////////////////////////////////////////////////////////////////////////////////
+// View override:
+
+void NativeTabbedPaneWin::Layout() {
+  NativeControlWin::Layout();
+  ResizeContents();
+}
+
+FocusTraversable* NativeTabbedPaneWin::GetFocusTraversable() {
+  return content_window_;
+}
+
+void NativeTabbedPaneWin::ViewHierarchyChanged(bool is_add,
+                                               View *parent,
+                                               View *child) {
+  NativeControlWin::ViewHierarchyChanged(is_add, parent, child);
+
+  if (is_add && (child == this) && content_window_) {
+    // We have been added to a view hierarchy, update the FocusTraversable
+    // parent.
+    content_window_->SetFocusTraversableParent(GetRootView());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeTabbedPaneWin, private:
+
+void NativeTabbedPaneWin::DoSelectTabAt(int index) {
   RootView* content_root = content_window_->GetRootView();
 
   // Clear the focus if the focused view was on the tab.
@@ -216,49 +273,28 @@ void TabbedPane::DoSelectTabAt(int index) {
   content_root->RemoveAllChildViews(false);
   content_root->AddChildView(tab_views_[index]);
   content_root->Layout();
-  if (listener_)
-    listener_->TabSelectedAt(index);
+
+  if (tabbed_pane_->listener())
+    tabbed_pane_->listener()->TabSelectedAt(index);
 }
 
-int TabbedPane::GetIndexForContents(const View* contents) const {
-  std::vector<View*>::const_iterator i =
-      std::find(tab_views_.begin(), tab_views_.end(), contents);
-  DCHECK(i != tab_views_.end());
-  return static_cast<int>(i - tab_views_.begin());
-}
-
-void TabbedPane::Layout() {
-  NativeControl::Layout();
-  ResizeContents(GetNativeControlHWND());
-}
-
-RootView* TabbedPane::GetContentsRootView() {
-  return content_window_->GetRootView();
-}
-
-FocusTraversable* TabbedPane::GetFocusTraversable() {
-  return content_window_;
-}
-
-void TabbedPane::ViewHierarchyChanged(bool is_add, View *parent, View *child) {
-  NativeControl::ViewHierarchyChanged(is_add, parent, child);
-
-  if (is_add && (child == this) && content_window_) {
-    // We have been added to a view hierarchy, update the FocusTraversable
-    // parent.
-    content_window_->SetFocusTraversableParent(GetRootView());
-  }
-}
-
-void TabbedPane::ResizeContents(HWND tab_control) {
-  DCHECK(tab_control);
+void NativeTabbedPaneWin::ResizeContents() {
   CRect content_bounds;
-  if (!GetClientRect(tab_control, &content_bounds))
+  if (!GetClientRect(native_view(), &content_bounds))
     return;
-  TabCtrl_AdjustRect(tab_control, FALSE, &content_bounds);
+  TabCtrl_AdjustRect(native_view(), FALSE, &content_bounds);
   content_window_->MoveWindow(content_bounds.left, content_bounds.top,
                               content_bounds.Width(), content_bounds.Height(),
                               TRUE);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeTabbedPaneWrapper, public:
+
+// static
+NativeTabbedPaneWrapper* NativeTabbedPaneWrapper::CreateNativeWrapper(
+    TabbedPane* tabbed_pane) {
+  return new NativeTabbedPaneWin(tabbed_pane);
 }
 
 }  // namespace views

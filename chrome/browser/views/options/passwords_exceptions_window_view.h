@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_PASSWORDS_EXCEPTIONS_WINDOW_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_PASSWORDS_EXCEPTIONS_WINDOW_VIEW_H_
 
-#include "views/controls/tabbed_pane.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 class Profile;
 class PasswordsPageView;
 class ExceptionsPageView;
+
+namespace views {
+class TabbedPane;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PasswordsExceptionsWindowView

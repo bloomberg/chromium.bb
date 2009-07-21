@@ -21,7 +21,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "views/controls/tabbed_pane.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
@@ -220,9 +220,7 @@ void OptionsWindowView::Init() {
 }
 
 OptionsPageView* OptionsWindowView::GetCurrentOptionsPageView() const {
-  views::RootView* contents_root_view = tabs_->GetContentsRootView();
-  DCHECK(contents_root_view->GetChildViewCount() == 1);
-  return static_cast<OptionsPageView*>(contents_root_view->GetChildViewAt(0));
+  return static_cast<OptionsPageView*>(tabs_->GetSelectedTab());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

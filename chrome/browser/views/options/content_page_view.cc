@@ -24,6 +24,7 @@
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget.h"
+#include "views/window/window.h"
 
 namespace {
 

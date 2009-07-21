@@ -6,14 +6,16 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_FONTS_LANGUAGES_WINDOW_VIEW_H_
 
 #include "chrome/browser/fonts_languages_window.h"
-#include "views/controls/tabbed_pane.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
-#include "views/window/window.h"
 
 class Profile;
 class FontsPageView;
 class LanguagesPageView;
+
+namespace views {
+class TabbedPane;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // FontsLanguagesWindowView
@@ -65,7 +67,7 @@ class FontsLanguagesWindowView : public views::View,
   // The Profile associated with these options.
   Profile* profile_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(FontsLanguagesWindowView);
+  DISALLOW_COPY_AND_ASSIGN(FontsLanguagesWindowView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_FONTS_LANGUAGES_WINDOW_VIEW_H_
