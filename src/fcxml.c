@@ -2099,10 +2099,10 @@ FcEndElement(void *userData, const XML_Char *name)
 		break;
 	    }
 	    FcMemAlloc (FC_MEM_STRING, 1000);
-	    rc = GetWindowsDirectory (data, 800);
+	    rc = GetSystemWindowsDirectory (data, 800);
 	    if (rc == 0 || rc > 800)
 	    {
-		FcConfigMessage (parse, FcSevereError, "GetWindowsDirectory failed");
+		FcConfigMessage (parse, FcSevereError, "GetSystemWindowsDirectory failed");
 		FcStrFree (data);
 		break;
 	    }
@@ -2142,7 +2142,7 @@ FcEndElement(void *userData, const XML_Char *name)
 	    rc = GetTempPath (800, data);
 	    if (rc == 0 || rc > 800)
 	    {
-		FcConfigMessage (parse, FcSevereError, "GetWindowsDirectory failed");
+		FcConfigMessage (parse, FcSevereError, "GetTempPath failed");
 		FcStrFree (data);
 		break;
 	    }
