@@ -9,6 +9,7 @@
 
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/common/owned_widget_gtk.h"
 
 #include "skia/ext/skia_utils.h"
 
@@ -93,7 +94,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // GtkWidgets that exist only so we can look at their properties (and take
   // their colors).
   GtkWidget* fake_window_;
-  GtkWidget* fake_label_;
+  OwnedWidgetGtk fake_label_;
 
   // A list of all GtkChromeButton instances. We hold on to these to notify
   // them of theme changes.

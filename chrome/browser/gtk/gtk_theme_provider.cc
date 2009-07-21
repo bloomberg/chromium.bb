@@ -37,8 +37,9 @@ GtkThemeProvider* GtkThemeProvider::GetFrom(Profile* profile) {
 
 GtkThemeProvider::GtkThemeProvider()
     : BrowserThemeProvider(),
-      fake_window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
-      fake_label_(gtk_label_new("")) {
+      fake_window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)) {
+  fake_label_.Own(gtk_label_new(""));
+
   // Only realized widgets receive style-set notifications, which we need to
   // broadcast new theme images and colors.
   gtk_widget_realize(fake_window_);
@@ -48,7 +49,7 @@ GtkThemeProvider::GtkThemeProvider()
 GtkThemeProvider::~GtkThemeProvider() {
   profile()->GetPrefs()->RemovePrefObserver(prefs::kUsesSystemTheme, this);
   gtk_widget_destroy(fake_window_);
-  gtk_widget_destroy(fake_label_);
+  fake_label_.Destroy();
 
   // Disconnect from the destroy signal of any redisual widgets in
   // |chrome_buttons_|.
@@ -168,7 +169,7 @@ void GtkThemeProvider::OnStyleSet(GtkWidget* widget,
 
 void GtkThemeProvider::LoadGtkValues() {
   GtkStyle* window_style = gtk_rc_get_style(fake_window_);
-  GtkStyle* label_style = gtk_rc_get_style(fake_label_);
+  GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
 
   SetThemeColorFromGtk(kColorFrame, &window_style->bg[GTK_STATE_SELECTED]);
   // Skip COLOR_FRAME_INACTIVE and the incognito colors, as they will be
