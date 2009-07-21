@@ -8,9 +8,9 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1"/>
-			<integer value="4"/>
 			<integer value="18"/>
+			<integer value="4"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -301,14 +301,6 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">commandDispatch:</string>
 						<reference key="source" ref="1003"/>
-						<reference key="destination" ref="6422781"/>
-					</object>
-					<int key="connectionID">32</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">commandDispatch:</string>
-						<reference key="source" ref="1003"/>
 						<reference key="destination" ref="115646576"/>
 					</object>
 					<int key="connectionID">33</int>
@@ -341,14 +333,6 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">commandDispatch:</string>
 						<reference key="source" ref="1003"/>
-						<reference key="destination" ref="926809071"/>
-					</object>
-					<int key="connectionID">37</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">commandDispatch:</string>
-						<reference key="source" ref="1003"/>
 						<reference key="destination" ref="90793013"/>
 					</object>
 					<int key="connectionID">38</int>
@@ -368,22 +352,6 @@
 						<reference key="destination" ref="23014313"/>
 					</object>
 					<int key="connectionID">40</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">commandDispatch:</string>
-						<reference key="source" ref="1003"/>
-						<reference key="destination" ref="182996500"/>
-					</object>
-					<int key="connectionID">44</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">commandDispatch:</string>
-						<reference key="source" ref="1003"/>
-						<reference key="destination" ref="527115352"/>
-					</object>
-					<int key="connectionID">46</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
@@ -440,6 +408,38 @@
 						<reference key="destination" ref="908072523"/>
 					</object>
 					<int key="connectionID">55</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">editBookmark:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="182996500"/>
+					</object>
+					<int key="connectionID">56</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openAllBookmarks:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="6422781"/>
+					</object>
+					<int key="connectionID">57</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">addPage:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="527115352"/>
+					</object>
+					<int key="connectionID">58</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">addPage:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="926809071"/>
+					</object>
+					<int key="connectionID">59</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -735,7 +735,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">55</int>
+			<int key="maxID">59</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -755,7 +755,10 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addPage:</string>
 							<string>deleteBookmark:</string>
+							<string>editBookmark:</string>
+							<string>openAllBookmarks:</string>
 							<string>openBookmark:</string>
 							<string>openBookmarkInIncognitoWindow:</string>
 							<string>openBookmarkInNewForegroundTab:</string>
@@ -763,6 +766,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -848,7 +854,7 @@
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
-		<string key="IBDocument.LastKnownRelativeProjectPath">../../../chrome.xcodeproj</string>
+		<string key="IBDocument.LastKnownRelativeProjectPath">../../chrome.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 	</data>
 </archive>

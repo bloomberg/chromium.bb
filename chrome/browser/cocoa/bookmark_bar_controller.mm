@@ -4,6 +4,7 @@
 
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -11,6 +12,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
+#import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -48,8 +50,8 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
              delegate:(id<BookmarkURLOpener>)delegate {
   if ((self = [super initWithNibName:@"BookmarkBar"
                               bundle:mac_util::MainAppBundle()])) {
+    profile_ = profile;
     bookmarkModel_ = profile->GetBookmarkModel();
-    preferences_ = profile->GetPrefs();
     parentView_ = parentView;
     webContentView_ = webContentView;
     infoBarsView_ = infoBarsView;
@@ -72,7 +74,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
                                          NSViewMinYMargin)];
   // Be sure to enable the bar before trying to show it...
   barIsEnabled_ = YES;
-  if (preferences_->GetBoolean(prefs::kShowBookmarkBar))
+  if (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
     [self showBookmarkBar:YES immediately:YES];
 
   // Don't pass ourself along (as 'self') until our init is completely
@@ -181,7 +183,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   if (enabled) {
     // Enabling the bar; set enabled then show if needed.
     barIsEnabled_ = YES;
-    if (preferences_->GetBoolean(prefs::kShowBookmarkBar))
+    if (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
       [self showBookmarkBar:YES immediately:YES];
   } else {
     // Disabling the bar; hide if visible.
@@ -232,10 +234,56 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   [delegate_ openBookmarkURL:node->GetURL() disposition:OFF_THE_RECORD];
 }
 
+- (IBAction)editBookmark:(id)sender {
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
+  // There is no real need to jump to a platform-common routine at
+  // this point (which just jumps back to objc) other than consistency
+  // across platforms.
+  //
+  // TODO(jrg): identify when we NO_TREE.  I can see it in the code
+  // for the other platforms but can't find a way to trigger it in the
+  // UI.
+  BookmarkEditor::Show([[[self view] window] contentView],
+                       profile_,
+                       node->GetParent(),
+                       node,
+                       BookmarkEditor::SHOW_TREE,
+                       nil);
+}
+
 - (IBAction)deleteBookmark:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
   bookmarkModel_->Remove(node->GetParent(),
                          node->GetParent()->IndexOfChild(node));
+}
+
+- (void)openBookmarkNodesRecursive:(BookmarkNode*)node {
+  for (int i = 0; i < node->GetChildCount(); i++) {
+    BookmarkNode* child = node->GetChild(i);
+    if (child->is_url())
+      [delegate_ openBookmarkURL:child->GetURL()
+                     disposition:NEW_BACKGROUND_TAB];
+    else
+      [self openBookmarkNodesRecursive:child];
+  }
+}
+
+- (IBAction)openAllBookmarks:(id)sender {
+  // TODO(jrg):
+  // Is there an easier way to get a non-const root node for the bookmark bar?
+  // I can't iterate over them unless it's non-const.
+
+  BookmarkNode* node = (BookmarkNode*)bookmarkModel_->GetBookmarkBarNode();
+  [self openBookmarkNodesRecursive:node];
+}
+
+- (IBAction)addPage:(id)sender {
+  BookmarkEditor::Show([[[self view] window] contentView],
+                       profile_,
+                       bookmarkModel_->GetBookmarkBarNode(),
+                       nil,
+                       BookmarkEditor::SHOW_TREE,
+                       nil);
 }
 
 // Delete all bookmarks from the bookmark bar.

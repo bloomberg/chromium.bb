@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -13,16 +14,20 @@
 // Pretend BookmarkURLOpener delegate to keep track of requests
 @interface BookmarkURLOpenerPong : NSObject<BookmarkURLOpener> {
  @public
-  GURL url_;
-  WindowOpenDisposition disposition_;
+  std::vector<GURL> urls_;
+  std::vector<WindowOpenDisposition> dispositions_;
 }
 @end
 
 @implementation BookmarkURLOpenerPong
 - (void)openBookmarkURL:(const GURL&)url
             disposition:(WindowOpenDisposition)disposition {
-  url_ = url;
-  disposition_ = disposition;
+  urls_.push_back(url);
+  dispositions_.push_back(disposition);
+}
+- (void)clear {
+  urls_.clear();
+  dispositions_.clear();
 }
 @end
 
@@ -83,7 +88,31 @@ class BookmarkBarControllerTest : public testing::Test {
 
     // make sure it's open so certain things aren't no-ops
     [bar_ toggleBookmarkBar];
+
+    // Create a menu/item to act like a sender
+    menu_.reset([[NSMenu alloc] initWithTitle:@"I_dont_care"]);
+    menu_item_.reset([[NSMenuItem alloc]
+                       initWithTitle:@"still_dont_care"
+                              action:NULL
+                       keyEquivalent:@""]);
+    cell_.reset([[NSButtonCell alloc] init]);
+    [menu_item_ setMenu:menu_.get()];
+    [menu_ setDelegate:cell_.get()];
   }
+
+  // Return a menu item that points to the right URL.
+  NSMenuItem* ItemForBookmarkBarMenu(GURL& gurl) {
+    node_.reset(new BookmarkNode(gurl));
+    [cell_ setRepresentedObject:[NSValue valueWithPointer:node_.get()]];
+    return menu_item_;
+  }
+
+  // Does NOT take ownership of node.
+  NSMenuItem* ItemForBookmarkBarMenu(const BookmarkNode* node) {
+    [cell_ setRepresentedObject:[NSValue valueWithPointer:node]];
+    return menu_item_;
+  }
+
 
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<NSView> content_area_;
@@ -91,6 +120,10 @@ class BookmarkBarControllerTest : public testing::Test {
   scoped_nsobject<NSView> parent_view_;
   BrowserTestHelper helper_;
   scoped_nsobject<BookmarkBarController> bar_;
+  scoped_nsobject<NSMenu> menu_;
+  scoped_nsobject<NSMenuItem> menu_item_;
+  scoped_nsobject<NSButtonCell> cell_;
+  scoped_ptr<BookmarkNode> node_;
 };
 
 TEST_F(BookmarkBarControllerTest, ShowHide) {
@@ -139,8 +172,8 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   [cell setRepresentedObject:[NSValue valueWithPointer:node.get()]];
 
   [bar_ openBookmark:button];
-  EXPECT_EQ(pong.get()->url_, node->GetURL());
-  EXPECT_EQ(pong.get()->disposition_, CURRENT_TAB);
+  EXPECT_EQ(pong.get()->urls_[0], node->GetURL());
+  EXPECT_EQ(pong.get()->dispositions_[0], CURRENT_TAB);
 
   [bar_ setDelegate:nil];
 }
@@ -151,15 +184,6 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
   scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
                                                 init]);
   [bar_ setDelegate:pong.get()];
-
-  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"I_dont_care"]);
-  scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
-                                     initWithTitle:@"still_dont_care"
-                                            action:NULL
-                                     keyEquivalent:@""]);
-  scoped_nsobject<NSButtonCell> cell([[NSButtonCell alloc] init]);
-  [item setMenu:menu.get()];
-  [menu setDelegate:cell];
 
   const char* urls[] = { "http://walla.walla.ding.dong.com",
                          "http://i_dont_know.com",
@@ -173,13 +197,14 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
   for (unsigned int i = 0;
        i < sizeof(dispositions)/sizeof(dispositions[0]);
        i++) {
-    scoped_ptr<BookmarkNode> node(new BookmarkNode(GURL(urls[i])));
-    [cell setRepresentedObject:[NSValue valueWithPointer:node.get()]];
-    [bar_ performSelector:selectors[i] withObject:item.get()];
-    EXPECT_EQ(pong.get()->url_, node->GetURL());
-    EXPECT_EQ(pong.get()->disposition_, dispositions[i]);
-    [cell setRepresentedObject:nil];
+    GURL gurl(urls[i]);
+    [bar_ performSelector:selectors[i]
+               withObject:ItemForBookmarkBarMenu(gurl)];
+    EXPECT_EQ(pong.get()->urls_[0], gurl);
+    EXPECT_EQ(pong.get()->dispositions_[0], dispositions[i]);
+    [pong clear];
   }
+  [bar_ setDelegate:nil];
 }
 
 TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
@@ -278,6 +303,69 @@ TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
   EXPECT_GE(frame_2.origin.x, frame_1.origin.x + frame_1.size.width);
 }
 
+TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  const char* urls[] = { "https://secret.url.com",
+                         "http://super.duper.web.site.for.doodz.gov",
+                         "http://www.foo-bar-baz.com/" };
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  for (unsigned int i = 0; i < arraysize(urls); i++) {
+    model->AddURL(parent, parent->GetChildCount(),
+                  L"title", GURL(urls[i]));
+  }
+  EXPECT_EQ(3, parent->GetChildCount());
+  const BookmarkNode* middle_node = parent->GetChild(1);
+
+  NSMenuItem* item = ItemForBookmarkBarMenu(middle_node);
+  [bar_ deleteBookmark:item];
+  EXPECT_EQ(2, parent->GetChildCount());
+  EXPECT_EQ(parent->GetChild(0)->GetURL(), GURL(urls[0]));
+  // node 2 moved into spot 1
+  EXPECT_EQ(parent->GetChild(1)->GetURL(), GURL(urls[2]));
+}
+
+TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
+  scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
+                                                init]);
+  [bar_ setDelegate:pong.get()];
+
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  // { one, { two-one, two-two }, three }
+  model->AddURL(parent, parent->GetChildCount(),
+                L"title", GURL("http://one.com"));
+  const BookmarkNode* folder = model->AddGroup(parent,
+                                               parent->GetChildCount(),
+                                               L"group");
+  model->AddURL(folder, folder->GetChildCount(),
+                L"title", GURL("http://two-one.com"));
+  model->AddURL(folder, folder->GetChildCount(),
+                L"title", GURL("http://two-two.com"));
+  model->AddURL(parent, parent->GetChildCount(),
+                L"title", GURL("https://three.com"));
+  [bar_ openAllBookmarks:nil];
+
+  EXPECT_EQ(pong.get()->urls_.size(), 4U);
+  EXPECT_EQ(pong.get()->dispositions_.size(), 4U);
+
+  // I can't use EXPECT_EQ() here since the macro can't expand
+  // properly (no way to print the value of an iterator).
+  std::vector<GURL>::iterator i;
+  std::vector<GURL>::iterator begin = pong.get()->urls_.begin();
+  std::vector<GURL>::iterator end = pong.get()->urls_.end();
+  i = find(begin, end, GURL("http://two-one.com"));
+  EXPECT_FALSE(i == end);
+  i = find(begin, end, GURL("https://three.com"));
+  EXPECT_FALSE(i == end);
+  i = find(begin, end, GURL("https://will-not-be-found.com"));
+  EXPECT_TRUE(i == end);
+
+  EXPECT_EQ(pong.get()->dispositions_[3], NEW_BACKGROUND_TAB);
+
+  [bar_ setDelegate:nil];
+}
+
 // TODO(jrg): write a test to confirm that nodeFavIconLoaded calls
 // checkForBookmarkButtonGrowth:.
 
@@ -299,5 +387,10 @@ TEST_F(BookmarkBarControllerTest, Contents) {
 TEST_F(BookmarkBarControllerTest, Display) {
   [[bar_ view] display];
 }
+
+// Cannot test these methods since they simply call a single static
+// method, BookmarkEditor::Show(), which is impossible to mock.
+// editBookmark:, addPage:
+
 
 }  // namespace

@@ -51,7 +51,7 @@
       '../views/controls/table/table_view_unittest.cc',
       '../views/focus/focus_manager_unittest.cc',
       '../views/grid_layout_unittest.cc',
-    ]    
+    ]
   },
   'includes': [
     '../build/common.gypi',
@@ -758,6 +758,8 @@
         'browser/cocoa/bookmark_bar_view.mm',
         'browser/cocoa/bookmark_button_cell.h',
         'browser/cocoa/bookmark_button_cell.mm',
+        'browser/cocoa/bookmark_editor_controller.h',
+        'browser/cocoa/bookmark_editor_controller.mm',
         'browser/cocoa/bookmark_menu_bridge.h',
         'browser/cocoa/bookmark_menu_bridge.mm',
         'browser/cocoa/bookmark_menu_cocoa_controller.h',
@@ -2608,6 +2610,7 @@
         # them.
         'app/nibs/About.xib',
         'app/nibs/BookmarkBar.xib',
+        'app/nibs/BookmarkEditor.xib',
         'app/nibs/BrowserWindow.xib',
         'app/nibs/ClearBrowsingData.xib',
         'app/nibs/DownloadItem.xib',
@@ -3662,6 +3665,7 @@
         'browser/cocoa/bookmark_bar_controller_unittest.mm',
         'browser/cocoa/bookmark_bar_view_unittest.mm',
         'browser/cocoa/bookmark_button_cell_unittest.mm',
+        'browser/cocoa/bookmark_editor_controller_unittest.mm',
         'browser/cocoa/bookmark_menu_bridge_unittest.mm',
         'browser/cocoa/bookmark_menu_cocoa_controller_unittest.mm',
         'browser/cocoa/browser_window_cocoa_unittest.mm',

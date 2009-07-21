@@ -29,9 +29,9 @@ class PrefService;
 // and hiding based on the preference in the given profile.
 @interface BookmarkBarController : NSViewController {
  @private
+  Profile* profile_;              // weak
   BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the
                                   // top-level Browser object.
-  PrefService* preferences_;      // (ditto)
 
   // Currently these two are always the same when not in fullscreen
   // mode, but they mean slightly different things.
@@ -83,13 +83,20 @@ class PrefService;
 // if needed.  For fullscreen mode.
 - (void)setBookmarkBarEnabled:(BOOL)enabled;
 
-// Actions for opening bookmarks.  From a button, ...
+// Actions for manipulating bookmarks.
+// From a button, ...
 - (IBAction)openBookmark:(id)sender;
-// ... or from a context menu over the button.
+// From a context menu over the button, ...
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender;
 - (IBAction)openBookmarkInNewWindow:(id)sender;
 - (IBAction)openBookmarkInIncognitoWindow:(id)sender;
+- (IBAction)editBookmark:(id)sender;
 - (IBAction)deleteBookmark:(id)sender;
+// From a context menu over the bar, ...
+- (IBAction)openAllBookmarks:(id)sender;
+// Or from a context menu over either the bar or a button.
+- (IBAction)addPage:(id)sender;
+
 
 @end
 
