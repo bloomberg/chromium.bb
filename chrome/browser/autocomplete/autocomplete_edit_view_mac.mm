@@ -579,6 +579,10 @@ void AutocompleteEditViewMac::OnPaste() {
   OnAfterPossibleChange();
 }
 
+void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
+  model_->OnControlKeyChanged(pressed);
+}
+
 void AutocompleteEditViewMac::AcceptInput(
     WindowOpenDisposition disposition, bool for_drop) {
   model_->AcceptInput(disposition, for_drop);
@@ -671,6 +675,16 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
     return YES;
   }
 
+  // When the user does Control-Enter, the existing content has "www."
+  // prepended and ".com" appended.  |model_| should already have
+  // received notification when the Control key was depressed, but it
+  // is safe to tell it twice.
+  if (cmd == @selector(insertLineBreak:)) {
+    edit_view_->OnControlKeyChanged(true);
+    edit_view_->AcceptInput(CURRENT_TAB, false);
+    return YES;
+  }
+
   // Capture the state before the operation changes the content.
   // TODO(shess): Determine if this is always redundent WRT the call
   // in -controlTextDidChange:.
@@ -699,6 +713,8 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
   // it's set to the start of the text.
 }
 
+// AutocompleteTextField/Editor adds a delegate method which allows us
+// to intercept and handle -paste: calls.
 - (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor {
   edit_view_->OnPaste();
 
@@ -709,6 +725,19 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 // Signal that we've lost focus when the window resigns key.
 - (void)windowDidResignKey:(NSNotification*)notification {
   edit_view_->OnDidResignKey();
+}
+
+// AutocompleteTextField adds a delegate method which allows us to
+// track -flagsChanged: calls.
+//
+// When the user types Control-Enter, the existing content has "www."
+// prepended and ".com" appended.  This calls down to
+// AutocompleteEditModel::OnControlKeyChanged() so that it can change
+// the popup to reflect this.  See autocomplete_edit.cc
+// OnControlKeyChanged() and OnAfterPossibleChange().
+- (void)control:(NSControl*)control flagsChanged:(NSEvent*)theEvent {
+  BOOL controlFlag = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
+  edit_view_->OnControlKeyChanged(controlFlag);
 }
 
 @end

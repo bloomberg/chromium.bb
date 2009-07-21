@@ -18,6 +18,9 @@
 // edited.  See AutocompleteTextFieldEditor implementation.
 - (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor;
 
+// Let the delegate track -flagsChanged: events.
+- (void)control:(NSControl*)control flagsChanged:(NSEvent*)theEvent;
+
 @end
 
 @interface AutocompleteTextField : NSTextField {

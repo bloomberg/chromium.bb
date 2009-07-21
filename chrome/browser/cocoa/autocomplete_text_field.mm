@@ -25,4 +25,12 @@
   return YES;
 }
 
+- (void)flagsChanged:(NSEvent*)theEvent {
+  id delegate = [self delegate];
+  if ([delegate respondsToSelector:@selector(control:flagsChanged:)]) {
+    [delegate control:self flagsChanged:theEvent];
+  }
+  [super flagsChanged:theEvent];
+}
+
 @end

@@ -7,15 +7,18 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface AutocompleteTextFieldTestDelegate : NSObject {
   BOOL textShouldPaste_;
   BOOL receivedTextShouldPaste_;
+  BOOL receivedFlagsChanged_;
 }
 - initWithTextShouldPaste:(BOOL)flag;
 - (BOOL)receivedTextShouldPaste;
+- (BOOL)receivedFlagsChanged;
 @end
 
 namespace {
@@ -71,6 +74,47 @@ TEST_F(AutocompleteTextFieldTest, TextShouldPaste) {
   EXPECT_TRUE([shouldNotPaste receivedTextShouldPaste]);
 }
 
+// Test that -control:flagsChanged: properly reaches the delegate.
+TEST_F(AutocompleteTextFieldTest, FlagsChanged) {
+  EXPECT_TRUE(![field_ delegate]);
+
+  // This shouldn't crash, at least.
+  [field_ flagsChanged:nil];
+
+  scoped_nsobject<AutocompleteTextFieldTestDelegate> delegate(
+      [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:NO]);
+  [field_ setDelegate:delegate];
+  EXPECT_FALSE([delegate receivedFlagsChanged]);
+  [field_ flagsChanged:nil];
+  EXPECT_TRUE([delegate receivedFlagsChanged]);
+}
+
+// Test that -control:flagsChanged: properly reaches the delegate when
+// the -flagsChanged: message goes to the editor.  In that case it is
+// forwarded via the responder chain.
+TEST_F(AutocompleteTextFieldTest, FieldEditorFlagsChanged) {
+  EXPECT_TRUE(![field_ delegate]);
+
+  scoped_nsobject<AutocompleteTextFieldTestDelegate> delegate(
+      [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:NO]);
+
+  // Setup a field editor for |field_|.
+  scoped_nsobject<AutocompleteTextFieldEditor> editor(
+      [[AutocompleteTextFieldEditor alloc] init]);
+  [field_ setDelegate:delegate];
+
+  [editor setFieldEditor:YES];
+  [[field_ cell] setUpFieldEditorAttributes:editor];
+  [[field_ cell] editWithFrame:[field_ bounds]
+                        inView:field_
+                        editor:editor
+                      delegate:[field_ delegate]
+                         event:nil];
+  EXPECT_FALSE([delegate receivedFlagsChanged]);
+  [editor flagsChanged:nil];
+  EXPECT_TRUE([delegate receivedFlagsChanged]);
+}
+
 }  // namespace
 
 @implementation AutocompleteTextFieldTestDelegate
@@ -80,6 +124,7 @@ TEST_F(AutocompleteTextFieldTest, TextShouldPaste) {
   if (self) {
     textShouldPaste_ = flag;
     receivedTextShouldPaste_ = NO;
+    receivedFlagsChanged_ = NO;
   }
   return self;
 }
@@ -88,9 +133,17 @@ TEST_F(AutocompleteTextFieldTest, TextShouldPaste) {
   return receivedTextShouldPaste_;
 }
 
+- (BOOL)receivedFlagsChanged {
+  return receivedFlagsChanged_;
+}
+
 - (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor {
   receivedTextShouldPaste_ = YES;
   return textShouldPaste_;
+}
+
+- (void)control:(id)control flagsChanged:(NSEvent*)theEvent {
+  receivedFlagsChanged_ = YES;
 }
 
 @end

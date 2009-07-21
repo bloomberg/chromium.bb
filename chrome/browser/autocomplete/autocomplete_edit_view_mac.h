@@ -86,8 +86,11 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
 
   // Helper functions for use from AutocompleteEditHelper Objective-C
   // class.
-  void OnUpOrDownKeyPressed(bool up, bool by_page);
+
+  // Trivial wrappers forwarding to |model_| methods.
+  void OnControlKeyChanged(bool pressed);
   void OnEscapeKeyPressed();
+  void OnUpOrDownKeyPressed(bool up, bool by_page);
 
   // Called when editing begins in the field, and before the results
   // of any editing are communicated to |model_|.
