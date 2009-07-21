@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/gfx/native_widget_types.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "chrome/common/render_messages.h"
@@ -16,6 +17,8 @@
 #include "webkit/glue/webcursor.h"
 
 class RenderWidgetHost;
+// A conveience wrapper class for GtkIMContext;
+class RenderWidgetHostViewGtkIMContext;
 
 typedef struct _GtkClipboard GtkClipboard;
 typedef struct _GtkSelectionData GtkSelectionData;
@@ -116,32 +119,12 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // stay open.
   bool is_popup_first_mouse_release_;
 
-  // The GtkIMContext object.
-  // In terms of the DOM event specification Appendix A
-  //   <http://www.w3.org/TR/DOM-Level-3-Events/keyset.html>,
-  // GTK uses a GtkIMContext object for the following two purposes:
-  //  1. Composing Latin characters (A.1.2), and;
-  //  2. Composing CJK characters with an IME (A.1.3).
-  // Many JavaScript pages assume composed Latin characters are dispatched to
-  // their onkeypress() handlers but not dispatched CJK characters composed
-  // with an IME. To emulate this behavior, we should monitor the status of
-  // this GtkIMContext object and prevent sending Char events when a
-  // GtkIMContext object sends a "commit" signal with the CJK characters
-  // composed by an IME.
-  GtkIMContext* im_context_;
+  // Whether or not this widget was focused before shadowed by another widget.
+  // Used in OnGrabNotify() handler to track the focused state correctly.
+  bool was_focused_before_grab_;
 
-  // Whether or not the above GtkIMContext is composing a CJK text with an IME.
-  // The GtkIMContext object sends a "preedit_start" before it starts composing
-  // a CJK text and a "preedit_end" signal after it finishes composing it.
-  // On the other hand, the GtkIMContext object doesn't send them when
-  // composing Latin texts. So, we monitor the above signals to check whether
-  // or not the GtkIMContext object is composing a CJK text.
-  bool im_is_composing_cjk_text_;
-
-  // Represents the current modifier-key state.
-  // This state is used when GtkIMContext signal handlers create Char events
-  // because they don't use the GdkEventKey objects and cannot get the state.
-  int im_modifier_state_;
+  // A conveience wrapper object for GtkIMContext;
+  scoped_ptr<RenderWidgetHostViewGtkIMContext> im_context_;
 
   // Helper class that lets us allocate plugin containers and move them.
   GtkPluginContainerManager plugin_container_manager_;
