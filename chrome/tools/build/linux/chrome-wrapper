@@ -7,7 +7,7 @@
 # Running Chromium via this script makes it possible to set Chromium as the
 # default browser directly out of a compile, without needing to package it.
 
-DESKTOP="chromium-browser"
+DESKTOP="chromium-devel"
 TITLE="Chromium"
 
 # Check to see if there is a desktop file of the given name
@@ -44,6 +44,7 @@ EOF
 
 # Let the wrapped binary know that it has been run through the wrapper
 export CHROME_WRAPPER="`readlink -f "$0"`"
+export CHROME_DESKTOP="$DESKTOP.desktop"
 
 HERE="`dirname "$CHROME_WRAPPER"`"
 

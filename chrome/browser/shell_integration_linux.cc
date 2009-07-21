@@ -14,11 +14,22 @@
 
 #include "base/process_util.h"
 
+static const char* GetDesktopName() {
 #if defined(GOOGLE_CHROME_BUILD)
-#define DESKTOP_APP_NAME "google-chrome.desktop"
+  return "google-chrome.desktop";
 #else  // CHROMIUM_BUILD
-#define DESKTOP_APP_NAME "chromium-browser.desktop"
+  static const char* name = NULL;
+  if (!name) {
+    // Allow $CHROME_DESKTOP to override the built-in value, so that development
+    // versions can set themselves as the default without interfering with
+    // non-official, packaged versions using the built-in value.
+    name = getenv("CHROME_DESKTOP");
+    if (!name)
+      name = "chromium-browser.desktop";
+  }
+  return name;
 #endif
+}
 
 // We delegate the difficult of setting the default browser in Linux desktop
 // environments to a new xdg utility, xdg-settings. We'll have to include a copy
@@ -30,7 +41,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   argv.push_back("xdg-settings");
   argv.push_back("set");
   argv.push_back("default-web-browser");
-  argv.push_back(DESKTOP_APP_NAME);
+  argv.push_back(GetDesktopName());
 
   // xdg-settings internally runs xdg-mime, which uses mv to move newly-created
   // files on top of originals after making changes to them. In the event that
@@ -77,7 +88,7 @@ bool ShellIntegration::IsDefaultBrowser() {
   // Allow for an optional newline at the end.
   if (browser.length() > 0 && browser[browser.length() - 1] == '\n')
     browser.resize(browser.length() - 1);
-  return !browser.compare(DESKTOP_APP_NAME);
+  return !browser.compare(GetDesktopName());
 }
 
 bool ShellIntegration::IsFirefoxDefaultBrowser() {
