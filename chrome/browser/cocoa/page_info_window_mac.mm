@@ -18,8 +18,7 @@
 #include "net/base/cert_status_flags.h"
 #include "net/base/x509_certificate.h"
 
-void PageInfoWindowMac::ShowPageInfo(gfx::NativeView parent,
-                                     Profile* profile,
+void PageInfoWindowMac::ShowPageInfo(Profile* profile,
                                      const GURL& url,
                                      const NavigationEntry::SSLStatus& ssl,
                                      bool show_history) {

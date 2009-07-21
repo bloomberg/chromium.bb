@@ -16,8 +16,7 @@ class PageInfoWindowMac : public PageInfoModel::PageInfoModelObserver {
   virtual ~PageInfoWindowMac();
 
   // Creates and shows the page info.
-  static void ShowPageInfo(gfx::NativeView parent,
-                           Profile* profile,
+  static void ShowPageInfo(Profile* profile,
                            const GURL& url,
                            const NavigationEntry::SSLStatus& ssl,
                            bool show_history);

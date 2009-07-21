@@ -269,12 +269,11 @@ void BrowserWindowCocoa::TabContentsFocused(TabContents* tab_contents) {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::ShowPageInfo(gfx::NativeView parent,
-                                      Profile* profile,
+void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
                                       const GURL& url,
                                       const NavigationEntry::SSLStatus& ssl,
                                       bool show_history) {
-  PageInfoWindowMac::ShowPageInfo(parent, profile, url, ssl, show_history);
+  PageInfoWindowMac::ShowPageInfo(profile, url, ssl, show_history);
 }
 
 void BrowserWindowCocoa::Observe(NotificationType type,

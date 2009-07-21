@@ -780,8 +780,7 @@ void BrowserWindowGtk::TabContentsFocused(TabContents* tab_contents) {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::ShowPageInfo(gfx::NativeView parent,
-                                    Profile* profile,
+void BrowserWindowGtk::ShowPageInfo(Profile* profile,
                                     const GURL& url,
                                     const NavigationEntry::SSLStatus& ssl,
                                     bool show_history) {

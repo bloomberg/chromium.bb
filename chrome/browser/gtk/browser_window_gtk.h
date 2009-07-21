@@ -103,8 +103,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void UserChangedTheme();
   virtual int GetExtraRenderViewHeight() const;
   virtual void TabContentsFocused(TabContents* tab_contents);
-  virtual void ShowPageInfo(gfx::NativeView parent,
-                            Profile* profile,
+  virtual void ShowPageInfo(Profile* profile,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
