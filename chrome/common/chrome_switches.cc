@@ -551,4 +551,10 @@ const wchar_t kEnableTabtastic2[] = L"enable-tabtastic2";
 // enabled.
 const wchar_t kPinnedTabCount[] = L"pinned-tab-count";
 
+// Enable local storage.  Still buggy.
+const wchar_t kEnableLocalStorage[] = L"enable-local-storage";
+
+// Enable session storage.  Still buggy.
+const wchar_t kEnableSessionStorage[] = L"enable-session-storage";
+
 }  // namespace switches

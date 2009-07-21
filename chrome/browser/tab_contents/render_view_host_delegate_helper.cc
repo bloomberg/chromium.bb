@@ -176,6 +176,10 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kEnableRemoteFonts);
     web_prefs.xss_auditor_enabled =
         command_line.HasSwitch(switches::kEnableXSSAuditor);
+    web_prefs.local_storage_enabled =
+      command_line.HasSwitch(switches::kEnableLocalStorage);
+    web_prefs.session_storage_enabled =
+      command_line.HasSwitch(switches::kEnableSessionStorage);
   }
 
   web_prefs.uses_universal_detector =
