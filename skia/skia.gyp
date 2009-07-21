@@ -188,8 +188,6 @@
         '../third_party/skia/src/core/SkBitmapSampler.cpp',
         '../third_party/skia/src/core/SkBitmapSampler.h',
         '../third_party/skia/src/core/SkBitmapSamplerTemplate.h',
-        '../third_party/skia/src/core/SkBitmapShader.cpp',
-        '../third_party/skia/src/core/SkBitmapShader.h',
         '../third_party/skia/src/core/SkBitmapShader16BilerpTemplate.h',
         '../third_party/skia/src/core/SkBitmapShaderTemplate.h',
         '../third_party/skia/src/core/SkBitmap_scroll.cpp',
@@ -593,10 +591,16 @@
             'ext/SkFontHost_fontconfig.cpp',
             'ext/SkFontHost_fontconfig_direct.cpp',
             'ext/SkFontHost_fontconfig_ipc.cpp',
+            '../third_party/skia/src/core/SkBlitter_ARGB32_Subpixel.cpp',
+            '../third_party/skia/src/ports/SkFontHost_FreeType_Subpixel.cpp',
+            '../third_party/skia/src/core/SkFontHost.cpp',
           ],
           'export_dependent_settings': [
             '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
             '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz_interface',
+          ],
+          'defines': [
+            'SK_BUILD_SUBPIXEL',
           ],
         }],
         [ 'OS == "mac"', {
