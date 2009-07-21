@@ -60,16 +60,16 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   decoder_ = decoder;
   initialize_callback_.reset(callback);
 
-  // Schedule our initial reads.
-  for (size_t i = 0; i < max_queue_size_; ++i) {
-    ScheduleRead();
-  }
-
   // Defer initialization until all scheduled reads have completed.
   if (!OnInitialize(decoder_->media_format())) {
     host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
     initialize_callback_->Run();
     initialize_callback_.reset();
+  }
+
+  // Schedule our initial reads.
+  for (size_t i = 0; i < max_queue_size_; ++i) {
+    ScheduleRead();
   }
 }
 
