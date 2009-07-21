@@ -54,7 +54,7 @@
                     'linux/internal/common/apt.include',
                     'linux/internal/common/desktop.template',
                     'linux/internal/common/default-app.template',
-                    'linux/internal/common/default-app-patch.template',
+                    'linux/internal/common/default-app-block.template',
                     'linux/internal/common/google-chrome/google-chrome.info',
                     'linux/internal/common/installer.include',
                     'linux/internal/common/postinst.include',
