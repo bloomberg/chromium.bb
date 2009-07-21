@@ -182,7 +182,7 @@ NSTimeInterval kHideStatusDuration = 0.3;
   if ([theEvent trackingArea] == trackingAreaButton_.get())
     mousePosition_ = kDownloadItemMouseOverButtonPart;
   else if ([theEvent trackingArea] == trackingAreaDropdown_.get())
-    mousePosition_ = kDownloadItemMouseOverButtonPart;
+    mousePosition_ = kDownloadItemMouseOverDropdownPart;
   [[self controlView] setNeedsDisplay:YES];
 }
 
@@ -207,12 +207,12 @@ NSTimeInterval kHideStatusDuration = 0.3;
 }
 
 - (BOOL)isMouseOverDropdownPart {
-  return mousePosition_ == kDownloadItemMouseOverButtonPart;
+  return mousePosition_ == kDownloadItemMouseOverDropdownPart;
 }
 
 - (BOOL)isDropdownPartPressed {
   return [self isHighlighted]
-      && mousePosition_ == kDownloadItemMouseOverButtonPart;
+      && mousePosition_ == kDownloadItemMouseOverDropdownPart;
 }
 
 - (NSBezierPath*)leftRoundedPath:(CGFloat)radius inRect:(NSRect)rect {
