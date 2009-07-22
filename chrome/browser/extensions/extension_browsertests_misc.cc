@@ -279,6 +279,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeed) {
   EXPECT_STREQ("Not a valid feed", error.c_str());
 }
 
+// TODO(mpcomplete): reenable these tests.
+#if 0
+
 // Tests that message passing between extensions and tabs works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
   ASSERT_TRUE(LoadExtension(
@@ -373,3 +376,4 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
 }
+#endif
