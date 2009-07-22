@@ -558,6 +558,12 @@ gboolean BookmarkBarGtk::OnButtonReleased(GtkWidget* sender,
     return FALSE;
   }
 
+  // Don't take any action if the user releases outside the button.
+  if (event->x < 0 || event->y < 0 || event->x >= sender->allocation.width ||
+      event->y >= sender->allocation.height) {
+    return FALSE;
+  }
+
   const BookmarkNode* node = bar->GetNodeForToolButton(sender);
   DCHECK(node);
   DCHECK(bar->page_navigator_);
