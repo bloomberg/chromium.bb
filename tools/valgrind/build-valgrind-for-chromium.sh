@@ -8,8 +8,17 @@ set -e
 
 if ld --version | grep gold
 then
-  echo "Cannot build valgrind with gold.  Please switch to normal /usr/bin/ld, rerun this script, then switch back to gold."
-  exit 1
+  # build/install-build-deps leaves original ld around, try using that
+  if test -x /usr/bin/ld.orig
+  then
+    echo "Using /usr/bin/ld.orig instead of gold to link valgrind"
+    mkdir $THISDIR/override_ld
+    ln -s /usr/bin/ld.orig $THISDIR/override_ld/ld
+    PATH="$THISDIR/override_ld:$PATH"
+  else
+    echo "Cannot build valgrind with gold.  Please switch to normal /usr/bin/ld, rerun this script, then switch back to gold."
+    exit 1
+  fi
 fi
 
 # Check out latest version that following patches known to apply against
@@ -44,6 +53,8 @@ else
   echo built valgrind fails smoke test
   exit 1
 fi
+
+test -d $THISDIR/override_ld && rm -rf $THISDIR/override_ld
 
 sudo make install
 cd /usr
