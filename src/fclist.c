@@ -350,7 +350,10 @@ FcGetDefaultObjectLangIndex (FcPattern *font, FcObject object)
 	    if (value.type == FcTypeString)
 	    {
 		FcLangResult res = FcLangCompare (value.u.s, lang);
-		if (res == FcLangEqual || (res == FcLangDifferentCountry && idx < 0))
+		if (res == FcLangEqual)
+		    return i;
+
+		if (res == FcLangDifferentCountry && idx < 0)
 		    idx = i;
 	    }
 	}
