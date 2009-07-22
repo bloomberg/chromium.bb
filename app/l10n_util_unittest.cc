@@ -97,7 +97,7 @@ void SetICUDefaultLocale(const std::string& locale_string) {
 // The meaning of that API, on the Mac, is "the locale used by Cocoa's main
 // nib file", which clearly can't be stubbed by a test app that doesn't use
 // Cocoa.
-TEST_F(L10nUtilTest, DISABLED_GetAppLocale) {
+TEST_F(L10nUtilTest, GetAppLocale) {
   // Use a temporary locale dir so we don't have to actually build the locale
   // dlls for this test.
   FilePath orig_locale_dir;
@@ -148,6 +148,29 @@ TEST_F(L10nUtilTest, DISABLED_GetAppLocale) {
   SetICUDefaultLocale("xx");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
 
+  SetICUDefaultLocale("es-MX");
+  EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(L""));
+
+  SetICUDefaultLocale("es-AR");
+  EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(L""));
+
+  SetICUDefaultLocale("es-ES");
+  EXPECT_EQ("es", l10n_util::GetApplicationLocale(L""));
+
+  SetICUDefaultLocale("es");
+  EXPECT_EQ("es", l10n_util::GetApplicationLocale(L""));
+
+  SetICUDefaultLocale("zh-HK");
+  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(L""));
+
+  SetICUDefaultLocale("zh-MK");
+  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(L""));
+
+  SetICUDefaultLocale("zh-SG");
+  EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(L""));
+
+#if defined(OS_WIN)
+  // We don't allow user prefs for locale on linux/mac.
   SetICUDefaultLocale("en-US");
   EXPECT_EQ("fr", l10n_util::GetApplicationLocale(L"fr"));
   EXPECT_EQ("fr", l10n_util::GetApplicationLocale(L"fr-CA"));
@@ -163,33 +186,15 @@ TEST_F(L10nUtilTest, DISABLED_GetAppLocale) {
   EXPECT_EQ("es", l10n_util::GetApplicationLocale(L"es-ES"));
   EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(L"es-AR"));
 
-  SetICUDefaultLocale("es-MX");
-  EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(L""));
-
   SetICUDefaultLocale("es-AR");
-  EXPECT_EQ("es-419", l10n_util::GetApplicationLocale(L""));
   EXPECT_EQ("es", l10n_util::GetApplicationLocale(L"es"));
 
-  SetICUDefaultLocale("es-ES");
-  EXPECT_EQ("es", l10n_util::GetApplicationLocale(L""));
-
-  SetICUDefaultLocale("es");
-  EXPECT_EQ("es", l10n_util::GetApplicationLocale(L""));
-
   SetICUDefaultLocale("zh-HK");
-  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(L""));
   EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(L"zh-CN"));
-
-  SetICUDefaultLocale("zh-MK");
-  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(L""));
-
-  SetICUDefaultLocale("zh-SG");
-  EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(L""));
 
   SetICUDefaultLocale("he");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L"en"));
 
-#if defined(OS_WIN)
   // Oriya should be blocked unless OS is Vista or newer.
   if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
     SetICUDefaultLocale("or");
@@ -202,7 +207,7 @@ TEST_F(L10nUtilTest, DISABLED_GetAppLocale) {
     SetICUDefaultLocale("en-GB");
     EXPECT_EQ("or", l10n_util::GetApplicationLocale(L"or"));
   }
-#endif
+#endif  // defined(OS_WIN)
 
   // Clean up.
   PathService::Override(app::DIR_LOCALES, orig_locale_dir.ToWStringHack());
@@ -210,7 +215,7 @@ TEST_F(L10nUtilTest, DISABLED_GetAppLocale) {
   UErrorCode error_code = U_ZERO_ERROR;
   Locale::setDefault(locale, error_code);
 }
-#endif
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   std::vector<StringWrapper*> strings;
