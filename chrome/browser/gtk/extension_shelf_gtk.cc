@@ -108,8 +108,13 @@ void ExtensionShelfGtk::InitBackground() {
 }
 
 void ExtensionShelfGtk::AdjustHeight() {
-  int target_height = model_->empty() ? 0 : event_box_->requisition.height;
-  gtk_widget_set_size_request(event_box_.get(), -1, target_height);
+  if (model_->empty()) {
+    Hide();
+  } else {
+    gtk_widget_set_size_request(event_box_.get(), -1,
+                                event_box_->requisition.height);
+    Show();
+  }
 }
 
 // static
