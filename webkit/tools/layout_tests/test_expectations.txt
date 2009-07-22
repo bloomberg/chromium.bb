@@ -2829,7 +2829,7 @@ BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attribut
 // longer decode WebKit's test clips because they use H.264, AAC, etc.
 BUG16779 : LayoutTests/media/media-startTime.html = FAIL
 BUG16779 : LayoutTests/media/progress-event.html = FAIL
-BUG16779 : LayoutTests/media/remove-from-document.html = FAIL
+BUG16779 : LayoutTests/media/remove-from-document.html = FAIL CRASH
 BUG16779 : LayoutTests/media/video-append-source.html = FAIL
 BUG16779 : LayoutTests/media/video-aspect-ratio.html = FAIL
 BUG16779 : LayoutTests/media/video-autoplay.html = FAIL
@@ -2854,7 +2854,7 @@ BUG16779 : LayoutTests/media/video-source-add-src.html = FAIL
 BUG16779 : LayoutTests/media/video-source-error.html = FAIL
 BUG16779 : LayoutTests/media/video-src-change.html = FAIL CRASH
 BUG16779 : LayoutTests/media/video-src-invalid-remove.html = FAIL
-BUG16779 : LayoutTests/media/video-timeupdate-during-playback.html = FAIL
+BUG16779 : LayoutTests/media/video-timeupdate-during-playback.html = FAIL CRASH
 BUG16779 : LayoutTests/media/video-transformed.html = FAIL
 BUG16779 : LayoutTests/media/video-volume.html = FAIL
 BUG16779 : LayoutTests/media/video-zoom.html = FAIL
