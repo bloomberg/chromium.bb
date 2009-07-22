@@ -151,8 +151,22 @@
       # of the static libraries currently have circular dependencies among
       # generated headers.
       'target_name': 'chrome_strings',
-      'type': 'none',
       'msvs_guid': 'D9DDAF60-663F-49CC-90DC-3D08CC3D1B28',
+      'conditions': [
+        ['OS=="win"', {
+          # HACK(nsylvain): We want to enforce a fake dependency on
+          # intaller_util_string.  install_util depends on both
+          # chrome_strings and installer_util_strings, but for some reasons
+          # Incredibuild does not enforce it (most likely a bug). By changing
+          # the type and making sure we depend on installer_util_strings, it
+          # will always get built before installer_util.
+          'type': 'dummy_executable',
+          'dependencies': ['../build/win/system.gyp:cygwin',
+                           'installer/installer.gyp:installer_util_strings',],
+        }, {
+          'type': 'none',
+        }],
+      ],
       'rules': [
         {
           'rule_name': 'grit',
@@ -197,11 +211,6 @@
           '<(grit_out_dir)',
         ],
       },
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': ['../build/win/system.gyp:cygwin'],
-        }],
-      ],
     },
     {
       # theme_resources also generates a .cc file, so it can't use the rules above.
