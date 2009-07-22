@@ -85,6 +85,10 @@ gfx::Rect TestRenderWidgetHostView::GetWindowRect() {
 gfx::Rect TestRenderWidgetHostView::GetRootWindowRect() {
   return gfx::Rect();
 }
+
+void TestRenderWidgetHostView::SetActive(bool active) {
+  // <viettrungluu@gmail.com>: Do I need to do anything here?
+}
 #endif
 
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {

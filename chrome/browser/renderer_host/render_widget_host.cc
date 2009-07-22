@@ -488,6 +488,10 @@ gfx::Rect RenderWidgetHost::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }
 
+void RenderWidgetHost::SetActive(bool active) {
+  Send(new ViewMsg_SetActive(routing_id(), active));
+}
+
 void RenderWidgetHost::Destroy() {
   NotificationService::current()->Notify(
       NotificationType::RENDER_WIDGET_HOST_DESTROYED,

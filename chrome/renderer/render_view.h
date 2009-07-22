@@ -380,7 +380,6 @@ class RenderView : public RenderWidget,
   // RenderWidget override.
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect);
-
   // RenderWidget override
   virtual void DidPaint();
 
@@ -586,6 +585,10 @@ class RenderView : public RenderWidget,
   // Handle message to make the RenderView transparent and render it on top of
   // a custom background.
   void OnSetBackground(const SkBitmap& background);
+
+  // Activate/deactivate the RenderView (i.e., set its controls' tint
+  // accordingly, etc.).
+  void OnSetActive(bool active);
 
   // Attempt to upload the file that we are trying to process if any.
   // Reset the pending file upload data if the form was successfully

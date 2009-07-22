@@ -328,6 +328,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // And to also expose it to the RenderWidgetHostView.
   virtual gfx::Rect GetRootWindowResizerRect() const;
 
+  // Sets the active state (i.e., control tints).
+  virtual void SetActive(bool active);
+
  protected:
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(

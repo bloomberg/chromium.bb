@@ -1796,6 +1796,17 @@ bool WebViewImpl::GetIsTransparent() const {
   return is_transparent_;
 }
 
+void WebViewImpl::SetActive(bool active) {
+  if (page() && page()->focusController())
+    page()->focusController()->setActive(active);
+}
+
+bool WebViewImpl::IsActive() {
+  return (page() && page()->focusController())
+      ? page()->focusController()->isActive()
+      : false;
+}
+
 void WebViewImpl::DidCommitLoad(bool* is_new_navigation) {
   if (is_new_navigation)
     *is_new_navigation = observed_new_navigation_;

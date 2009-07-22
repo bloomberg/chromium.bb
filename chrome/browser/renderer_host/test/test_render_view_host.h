@@ -79,6 +79,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
                                   const std::vector<WebMenuItem>& items) {}
   virtual gfx::Rect GetWindowRect();
   virtual gfx::Rect GetRootWindowRect();
+  virtual void SetActive(bool active);
 #endif
 
 #if defined(OS_LINUX)

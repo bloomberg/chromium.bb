@@ -594,6 +594,11 @@ IPC_BEGIN_MESSAGES(View)
   // width.
   IPC_MESSAGE_ROUTED0(ViewMsg_EnableIntrinsicWidthChangedMode)
 
+  // Activate/deactivate the RenderView (i.e., set its controls' tint
+  // accordingly, etc.).
+  IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
+                      bool /* active */)
+
   //---------------------------------------------------------------------------
   // Utility process messages:
   // These are messages from the browser to the utility process.  They're here

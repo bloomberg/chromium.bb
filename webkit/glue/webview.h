@@ -230,6 +230,12 @@ class WebView : public WebKit::WebWidget {
   virtual void SetIsTransparent(bool is_transparent) = 0;
   virtual bool GetIsTransparent() const = 0;
 
+  // Updates the WebView's active state (i.e., control tints).
+  virtual void SetActive(bool active) = 0;
+
+  // Gets the WebView's active state (i.e., state of control tints).
+  virtual bool IsActive() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebView);
 };

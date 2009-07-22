@@ -381,6 +381,11 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
   return NSRectToRect(bounds, [[cocoa_view_ window] screen]);
 }
 
+void RenderWidgetHostViewMac::SetActive(bool active) {
+  if (render_widget_host_)
+    render_widget_host_->SetActive(active);
+}
+
 
 // RenderWidgetHostViewCocoa ---------------------------------------------------
 

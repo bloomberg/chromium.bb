@@ -423,6 +423,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnableIntrinsicWidthChangedMode,
                         OnEnableIntrinsicWidthChangedMode)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -2843,6 +2844,11 @@ void RenderView::OnSetBackground(const SkBitmap& background) {
     webview()->SetIsTransparent(!background.empty());
 
   SetBackground(background);
+}
+
+void RenderView::OnSetActive(bool active) {
+  if (webview())
+    webview()->SetActive(active);
 }
 
 void RenderView::SendExtensionRequest(const std::string& name,

@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -309,6 +310,28 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowDidResignMain:(NSNotification*)notification {
   [self applyTheme];
 }
+
+// Called when we are activated (when we gain focus).
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  // We need to activate the controls (in the "WebView"). To do this, get the
+  // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
+  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      rwhv->SetActive(true);
+  }
+}
+
+// Called when we are deactivated (when we lose focus).
+- (void)windowDidResignKey:(NSNotification*)notification {
+  // We need to deactivate the controls (in the "WebView"). To do this, get the
+  // selected TabContents's RenderWidgetHostView and tell it to deactivate.
+  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      rwhv->SetActive(false);
+  }
+}
+
+
 
 // Called when the user clicks the zoom button (or selects it from the Window
 // menu). Zoom to the appropriate size based on the content. Make sure we

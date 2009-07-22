@@ -155,6 +155,9 @@ class RenderWidgetHostView {
 
   // Get the view's window's position on the screen.
   virtual gfx::Rect GetRootWindowRect() = 0;
+
+  // Set the view's active state (i.e., tint state of controls).
+  virtual void SetActive(bool active) = 0;
 #endif
 
 #if defined(OS_LINUX)
