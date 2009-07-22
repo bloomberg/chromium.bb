@@ -129,7 +129,8 @@ static void DeferredUnload(v8::Persistent<v8::Context> context) {
   context.Clear();
 }
 
-static void UnregisterContext(ContextList::iterator context_iter, bool in_gc) {
+static void HandleContextDestroyed(ContextList::iterator context_iter,
+                                   bool in_gc) {
   // Notify the bindings that they're going away.
   if (in_gc) {
     // We shouldn't call back into javascript during a garbage collect.  Do it
@@ -153,6 +154,14 @@ static void UnregisterContext(ContextList::iterator context_iter, bool in_gc) {
     }
   }
 
+  // Unload any content script contexts for this frame.
+  for (ContextList::iterator it = GetContexts().begin();
+       it != GetContexts().end(); ) {
+    ContextList::iterator current = it++;
+    if ((*current)->parent_context == (*context_iter)->context)
+      HandleContextDestroyed(current, in_gc);
+  }
+
   if (!(*context_iter)->parent_context.IsEmpty()) {
     (*context_iter)->parent_context.Dispose();
     (*context_iter)->parent_context.Clear();
@@ -170,11 +179,10 @@ static void UnregisterContext(ContextList::iterator context_iter, bool in_gc) {
 
 static void ContextWeakReferenceCallback(v8::Persistent<v8::Value> context,
                                          void*) {
-  // This should only get called for content script contexts.
   for (ContextList::iterator it = GetContexts().begin();
        it != GetContexts().end(); ++it) {
     if ((*it)->context == context) {
-      UnregisterContext(it, true);
+      HandleContextDestroyed(it, true);
       return;
     }
   }
@@ -250,16 +258,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
 
   ContextList::iterator context_iter = bindings_utils::FindContext(context);
   if (context_iter != GetContexts().end())
-    UnregisterContext(context_iter, false);
-
-  // Unload any content script contexts for this frame.  Note that the frame
-  // itself might not be registered, but can still be a parent context.
-  for (ContextList::iterator it = GetContexts().begin();
-       it != GetContexts().end(); ) {
-    ContextList::iterator current = it++;
-    if ((*current)->parent_context == context)
-      UnregisterContext(current, false);
-  }
+    ::HandleContextDestroyed(context_iter, false);
 }
 
 // static

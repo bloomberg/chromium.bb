@@ -29,9 +29,3 @@ win.testPostMessageFromTab = function() {
   });
   console.log('posted message');
 }
-
-// TODO(mpcomplete): Remove this when bug is fixed.
-// See http://code.google.com/p/chromium/issues/detail?id=17410.
-function foo() {
-}
-win.onunload = foo;

@@ -324,6 +324,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
 }
 
 // Tests that message passing between extensions and content scripts works.
+#if 0
+// TODO(mpcomplete): re-enable this
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
