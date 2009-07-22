@@ -1110,6 +1110,8 @@ BUG16018 : LayoutTests/fast/dom/HTMLDocument/hasFocus.html = FAIL
 // Accessibility is off in the browser, and accessibility is not a priority
 // for the current release.
 BUG10322 : LayoutTests/accessibility = FAIL
+BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
+
 // Border radius not anti-aliased.
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10322 WIN : LayoutTests/fast/borders/fieldsetBorderRadius.html = FAIL
@@ -1634,10 +1636,6 @@ BUG10399 WIN LINUX : LayoutTests/fast/repaint/transform-disable-layoutstate.html
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10401 : LayoutTests/plugins/npruntime.html = TIMEOUT FAIL
 
-// Expectations for this test changed upstream. We should fix this test, but
-// it doesn't need to block the current release
-BUG10402 WIN LINUX : LayoutTests/fast/events/init-events.html = FAIL
-
 // Merge 39894:39913 - new test.
 // New test. We should fix it, but it doesn't need to block the current release
 BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
@@ -1757,9 +1755,6 @@ BUG10424 LINUX : LayoutTests/fast/clip/009.html = CRASH PASS
 BUG10424 LINUX : LayoutTests/fast/clip/013.html = CRASH PASS
 BUG10424 LINUX : LayoutTests/fast/clip/015.html = CRASH PASS
 BUG10424 LINUX : LayoutTests/fast/canvas/unclosed-canvas-4.html = CRASH PASS
-
-// Regression from r9839.
-BUG10425 LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-column.html = FAIL
 
 // Regressions from WebKit merge 40875:41017
 BUG10426 LINUX : LayoutTests/fast/css-generated-content/beforeAfter-interdocument.html = FAIL
@@ -1927,7 +1922,6 @@ BUG10458 LINUX : LayoutTests/editing/inserting/6633727.html = FAIL
 BUG10458 LINUX : LayoutTests/fast/block/float/overlapping-floats-with-overflow-hidden.html = FAIL
 BUG10458 MAC LINUX : LayoutTests/fast/dom/java-applet-calls.html = FAIL
 // Just need rebaseline
-BUG10458 LINUX : LayoutTests/fast/forms/negativeLineHeight.html = FAIL
 BUG10458 LINUX : LayoutTests/fast/forms/textarea-width.html = FAIL
 BUG10458 LINUX : LayoutTests/fast/parser/comment-in-textarea.html = FAIL
 
@@ -2349,7 +2343,6 @@ BUG11613 LINUX : LayoutTests/fast/dom/HTMLTextAreaElement/reset-textarea.html = 
 BUG11613 LINUX : LayoutTests/fast/dynamic/008.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/form-element-geometry.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/linebox-overflow-in-textarea-padding.html = FAIL
-BUG11613 LINUX : LayoutTests/fast/forms/textAreaLineHeight.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/textarea-align.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/textarea-scroll-height.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/textarea-setinnerhtml.html = FAIL
@@ -2803,7 +2796,7 @@ BUG16639 DEBUG : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
 BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = FAIL
-BUG16675 MAC : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL
+BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL
 BUG16675 MAC : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH
 BUG16675 MAC : LayoutTests/fast/images/favicon-as-image.html = CRASH
 BUG16675 MAC : LayoutTests/fast/images/pdf-as-background.html = CRASH
@@ -2979,7 +2972,7 @@ BUG17255 LINUX WIN : LayoutTests/fast/box-shadow/spread.html = FAIL
 BUG13907 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 
 // New test from WebKit merge 46126:46141 (crashes on mac).
-BUG17321 LINUX WIN : LayoutTests/fast/loader/non-html-load-event.html = FAIL
+BUG17321 LINUX : LayoutTests/fast/loader/non-html-load-event.html = FAIL
 BUG17321 MAC : LayoutTests/fast/loader/non-html-load-event.html = CRASH FAIL
 
 BUG17332 WIN DEBUG : LayoutTests/editing/execCommand/19087.html = CRASH
