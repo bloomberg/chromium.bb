@@ -10,21 +10,31 @@
 #include "webkit/tools/test_shell/test_shell_test.h"
 
 class MediaLeakTest : public TestShellTest {
+ public:
+  void RunTest(const char* file) {
+    FilePath media_file;
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &media_file));
+    media_file = media_file.Append(FILE_PATH_LITERAL("webkit"))
+                           .Append(FILE_PATH_LITERAL("data"))
+                           .Append(FILE_PATH_LITERAL("media"))
+                           .Append(FILE_PATH_LITERAL(file));
+    test_shell_->LoadURL(media_file.ToWStringHack().c_str());
+    test_shell_->WaitTestFinished();
+  }
 };
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 
-// This test is to be executed in test_shell_tests so we can capture memory
-// leak analysis in automated runs.
+// This test plays a Theora video file for 1 second. It tries to expose
+// memory leaks during a normal playback.
 TEST_F(MediaLeakTest, VideoBear) {
-  FilePath media_file;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &media_file));
-  media_file = media_file.Append(FILE_PATH_LITERAL("webkit"))
-                         .Append(FILE_PATH_LITERAL("data"))
-                         .Append(FILE_PATH_LITERAL("media"))
-                         .Append(FILE_PATH_LITERAL("bear.html"));
-  test_shell_->LoadURL(media_file.ToWStringHack().c_str());
-  test_shell_->WaitTestFinished();
+  RunTest("bear.html");
+}
+
+// This test loads a Theora video file and unloads it many times. It tries
+// to expose memory leaks in the glue layer with WebKit.
+TEST_F(MediaLeakTest, ManyVideoBear) {
+  RunTest("manybear.html");
 }
 
 #endif
