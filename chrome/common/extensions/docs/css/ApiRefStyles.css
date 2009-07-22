@@ -1,10 +1,10 @@
-.todo {
-  color: red;
-}
-
 body {
   font-family:Arial, Helvetica, sans-serif;
   font-size: 13px;
+}
+
+.todo {
+  color: red;
 }
 
 h2,h3 {
@@ -88,60 +88,4 @@ p#classSummary {
 
 .hidden {
   display: none;
-}
-
-#container {
-  height:auto !important;
-  margin:0;
-  max-width:1160px;
-  min-height:100%;
-  padding:0;
-  position:relative;
-}
-
-#pageHeader {
-  margin:9px 0 12px;
-  padding:7px 0 0;
-}
-
-#pageTitle {
-}
-
-#pageContent {
-}
-
-#leftNav {
-  clear:left;
-  padding:0.5em 0 140px !important;
-  display:block;
-  float:left;
-  margin:0;
-  width:171px;
-}
-
-#leftNav ul {
-  line-height:120%;
-  margin:0;
-  padding:0.6em 0 0;
-}
-
-#leftNav ul li {
-  list-style-image:none;
-  list-style-position:outside;
-  list-style-type:none;
-  margin:0;
-  padding:0.2em 0 0.2em 1em;
-}
-
-#mainColumn {
-  border-left:3px solid #E5ECF9;
-  padding-left:24px;
-  display:block;
-  float:none;
-  margin:0 0 0 171px;
-  position:relative;
-  width:auto;
-}
-
-#pageFooter {
 }

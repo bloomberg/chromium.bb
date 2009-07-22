@@ -1,75 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-/*
- * This file defines the extensions api functions, events and types. It is
- * json-structured list of api "modules". Each module has
- *
- *    namespace: "<apiname>", // i.e. "windows" which becomes visible to
- *                            // extensions as chrome.windows.
- *
- *    types: [],              // a list of json schemas which define "types"
- *                            // that are common to that module. i.e. "Tab" or
- *                            // "BookmarkTreeNode".
- *
- *    functions: [],          // a list of json schemas which define the 
- *                            // functions in the current module. i.e.
- *                            // chrome.tabs.getCurrent().
- *
- *    events: [],             // a list of json schemas which define the events
- *                            // which this module defines. i.e.
- *                            // chrome.windows.onCreated.
- *
- *    --Functions Schemas--
- *    Each function schema is required to have a 
- *      
- *       name: "<function name>"
- *       type: "function"
- *       description: "..." // this appears in the docs.
- *       parameters: []
- * 
- *    |parameters| is a list of json schemas which define the list of parameters
- *    this function requires and will be validated against. Each parameter
- *    should define a "name" property, and "description" property, both of which
- *    will appear in the docs. The final parameter may be a type: "function"
- *    which is expected to be the callback for this call. That parameter, should
- *    itself be named ("name": "callback"), have a "parameters" member that
- *    is a list of the json schemas that define the types that the callback
- *    sends. Callback parameters should also have "name" and "description"
- *    properties.
- *
- *    --Event Schemas--
- *    Each event schema is also a type: "function" schema that is named. It's
- *    structure is the same as the callback functions for module Functions.
- *    It should have a "name", "description", and a "parameters" describing
- *    the set of arguments it sends.
- *
- *    --Referenced Types--
- *    The "types": [] list may contain a list of types that are common to the
- *    current api module. Each type should have an "id" member ("id": "Tab").
- *    These types can be referenced from a schema with "$ref": "<idName>".
- *    i.e. 
- *  
- *        ...
- *        type: "function",
- *        parameters: [
- *          {$ref: "BookmarkTreeNode", name: "node"}
- *        ]
- *
- *    WARNING: Do not use these referenced types in module function parameters.
- *    They are not yet properly validated. They are currently safe to use in
- *    callback parameters and event parameters.
- *   
- *    TODO(rafaelw): Validate callback arguments in debug and unittests
- *    TODO(rafaelw): Validate event arguments in debug and unittests
- *    TODO(rafaelw): Support $ref for json_schema validation.
- */
-
 [
-  /**
-   * chrome.windows
-   */
   {
     namespace: "windows",
     types: [],
@@ -184,27 +113,9 @@
       }
     ]
   },
-
-  /**
-   * chrome.tabs
-   */
   {
     namespace: "tabs",
-    types: [
-    {
-      id: "Tab",
-      type: "object",
-      properties: {
-        id: {type: "integer", minimum: 0},
-        index: {type: "integer", minimum: 0},
-        windowId: {type: "integer", minimum: 0},
-        selected: {type: "boolean"},
-        url: {type: "string"},
-        title: {type: "string", optional: true},
-        favIconUrl: {type: "string", optional: true}
-      }
-    }
-    ],
+    types: [],
     functions: [
       {
         name: "get",
@@ -212,13 +123,7 @@
         description: "",
         parameters: [
           {type: "integer", name: "tabId", minimum: 0},
-          {
-            type: "function",
-            name: "callback",
-            parameters: [
-              {name: "tab", $ref: "Tab"}
-            ]
-          }
+          {type: "function", name: "callback"}
         ]
       },
       {
@@ -227,13 +132,7 @@
         description: "",
         parameters: [
           {type: "integer", name: "windowId", minimum: 0, optional: true},
-          {
-            type: "function", 
-            name: "callback",
-            parameters: [
-              {name: "tab", $ref: "Tab"}
-            ]
-          }
+          {type: "function", name: "callback"}
         ]
       },
       {
@@ -260,14 +159,7 @@
               selected: {type: "boolean", optional: true}
             }
           },
-          {
-            type: "function",
-            name: "callback",
-            optional: true, 
-            parameters: [
-              {name: "tab", $ref: "Tab"}
-            ]
-          }
+          {type: "function", name: "callback", optional: true}
         ]
       },
       {
@@ -284,7 +176,7 @@
               selected: {type: "boolean", optional: true}
             }
           },
-          {type: "function", name: "callback", optional: true, parameters: []}
+          {type: "function", name: "callback", optional: true}
         ]
       },
       {
@@ -301,7 +193,7 @@
               index: {type: "integer", minimum: 0}
             }
           },
-          {type: "function", name: "callback", optional: true, parameters: []}
+          {type: "function", name: "callback", optional: true}
         ]
       },
       {
@@ -310,7 +202,7 @@
         description: "",
         parameters: [
           {type: "integer", name: "tabId", minimum: 0, optional: true},
-          {type: "function", name: "callback", optional: true, parameters: []}
+          {type: "function", name: "callback", optional: true}
         ]
       },
       {
@@ -319,13 +211,7 @@
         description: "detect language of tab.",
         parameters: [
           {type: "integer", name: "tabId", minimum: 0, optional: true},
-          {
-            type: "function",
-            name: "callback",
-            parameters: [
-              {type: "string", name: "language"}
-            ]
-          }
+          {type: "function", name: "callback"}
         ]
       }
     ],
@@ -335,7 +221,7 @@
         type: "function",
         description: "",
         parameters: [
-          {$ref: "Tab", name: "tab"}
+          {type: "Object", name: "Tab"}
         ]
       },
       {
@@ -344,15 +230,7 @@
         description: "",
         parameters: [
           {type: "integer", name: "tabId", minimum: 0},
-          {
-            type: "object",
-            name: "ChangedProps",
-            properties: {
-              tabId: {type: "integer", name: "tabId", minimum: 0},
-              status: {type: "string"},
-              url: {type: "string", optional: true}
-            }
-          }
+          {type: "Object", name: "ChangedProps"}
         ]
       },
       {
@@ -361,15 +239,7 @@
         description: "",
         parameters: [
           {type: "integer", name: "tabId", minimum: 0},
-          {
-            type: "object",
-            name: "MoveInfo",
-            properties: {
-              windowId: {type: "integer", minimum: 0},
-              fromIndex: {type: "integer", minimum: 0},
-              toIndex: {type: "integer", minimum: 0}
-            }
-          }
+          {type: "Object", name: "MoveInfo"}
         ]
       },
       {
@@ -378,12 +248,7 @@
         description: "",
         parameters: [
           {type: "integer", name: "tabId", minimum: 0},
-          {
-            type: "object", name: "SelectInfo",
-            properties: {
-              windowId: {type: "integer", minimum: 0},
-            }
-          }
+          {type: "Object", name: "SelectionInfo"}
         ]
       },
       {
@@ -392,14 +257,7 @@
         description: "",
         parameters: [
           {type: "integer", name: "tabId", minimum: 0},
-          {
-            type: "object",
-            name: "AttachInfo",
-            properties: {
-              newWindowId: {type: "integer", minimum: 0},
-              newPosition: {type: "integer", minimum: 0}
-            }
-          }
+          {type: "Object", name: "AttachInfo"}
         ]
       },
       {
@@ -408,14 +266,7 @@
         description: "",
         parameters: [
           {type: "integer", name: "tabId", minimum: 0},
-          {
-            type: "object",
-            name: "DetachInfo",
-            properties: {
-              oldWindowId: {type: "integer", minimum: 0},
-              oldPosition: {type: "integer", minimum: 0}
-            }
-          }
+          {type: "Object", name: "DetachInfo"}
         ]
       },
       {
@@ -428,10 +279,6 @@
       }
     ]
   },
-
-  /**
-   * chrome.pageActions
-   */
   {
     namespace: "pageActions",
     types: [],
@@ -476,10 +323,6 @@
     events: [
     ]
   },
-
-  /**
-   * chrome.bookmarks
-   */
   {
     namespace: "bookmarks",
     types: [],
@@ -585,7 +428,7 @@
         parameters: [
           {type: "integer", name: "id", minimum: 0},
           {
-            type: "object",
+            type: "Object",
             name: "bookmark",
           }
         ]
@@ -597,7 +440,7 @@
         parameters: [
           {type: "integer", name: "id", minimum: 0},
           {
-            type: "object",
+            type: "Object",
             name: "RemoveInfo",
           }
         ]
@@ -609,7 +452,7 @@
         parameters: [
           {type: "integer", name: "id", minimum: 0},
           {
-            type: "object",
+            type: "Object",
             name: "ChangeInfo",
           }
         ]
@@ -621,7 +464,7 @@
         parameters: [
           {type: "integer", name: "id", minimum: 0},
           {
-            type: "object",
+            type: "Object",
             name: "MoveInfo",
           }
         ]
@@ -633,7 +476,7 @@
         parameters: [
           {type: "integer", name: "id", minimum: 0},
           {
-            type: "object",
+            type: "Object",
             name: "childIds",
           }
         ]

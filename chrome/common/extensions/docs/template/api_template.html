@@ -1,273 +1,168 @@
-  <div id="container">
-  <a name="top"> </a>
+    <!-- BREADCRUMB -->
+    <!-- TODO: Fix these hrefs -->
+    <div id="breadcrumbs"><a href="../index.html">Chrome Extensions</a> &gt;
+    <a href="./index.html">Reference</a> &gt;
+    <a href="chrome-api-index.html">chrome.* API</a></div>
 
     <!-- API HEADER -->
-    <div id="pageHeader">
-      <!-- BREADCRUMB -->
-      <!-- TODO: Fix these hrefs -->
-      <div id="breadcrumbs">
-        <a href="../index.html">Chrome Extensions</a> &gt;
-        <a href="./index.html">Reference</a> &gt;
-        <a href="chrome-api-index.html">chrome.* API</a>
-      </div>
-      <div id="pageTitle">
-        <h1 jscontent="namespace">chrome.apiname</h1>
-      </div>
-    </div> <!-- /pageHeader -->
-          
-    <div id="pageContent"> 
-      <!-- SIDENAV -->
-      <div id="leftNav">
-        <ul>
-          <li> Overview </li>
-          <li> Programmer's Guide
-            <ul>
-              <li> Getting Started </li>
-              <li> ... </li>
-            </ul>
-          </li>
-          <li> Reference 
-            <ul>
-              <li> chrome.* APIs
-                <ul>
-                  <li jsselect="apiModules">
-                    <a jscontent="name" jsvalues=".href:module + '.html'">Foo</a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    
-      <div id="mainColumn">
-        <!-- TABLE OF CONTENTS -->
-        <div id="toc">
-          <p>Contents</p>
+    <h1 jscontent="namespace">chrome.apiname</h1>
+
+    <!-- TABLE OF CONTENTS -->
+    <div id="toc">
+      <p>Contents</p>
+      <ol>
+        <li>
+          <a href="#overview">Description</a>
           <ol>
-            <li>
-              <a href="#overview">Description</a>
-              <ol>
-                <li><a href="#overview-properties">Properties</a></li>
-                <li><a href="#overview-examples">Examples</a></li>
-              </ol>
-            </li>
-            <li>
-              <a href="#methods">Methods</a>    
-              <ol>
-                <li jsselect="functions">
-                  <a jscontent="name"
-                     jsvalues=".href:'#method-' + name"
-                     href="#method-anchor">methodName</a>
-                </li>
-              </ol>
-            </li>
-            <li>
-              <a href="#events">Events</a>
-              <ol>
-                <li jsselect="events">
-                  <a jscontent="name"
-                     jsvalues=".href:'#event-' + name"
-                     href="#event-anchor">eventName</a>
-                </li>
-              </ol>
-            </li>
-            <!-- TODO: What do we do about structs/types? -->
-            <li>
-              <a href="#structs">TODO: Structs</a>
-              <ol>
-                <li><a href="#struct-BookmarkTreeNode"></a></li>
-              </ol>
+            <li><a href="#overview-properties">Properties</a></li>
+            <li><a href="#overview-examples">Examples</a></li>
+          </ol>
+        </li>
+        <li>
+          <a href="#methods">Methods</a>    
+          <ol>
+            <li jsselect="functions">
+              <a jscontent="name"
+                 jsvalues=".href:'#method-' + name"
+                 href="#method-anchor">methodName</a>
             </li>
           </ol>
-          [PENDING: links to all h2s and h3s should go here -- would it be possible
-          to link to overview h3s, as well? if so, how should we create their
-          anchor/id values?]
-        </div>  
-        <!-- /TABLE OF CONTENTS -->
+        </li>
+        <li>
+          <a href="#events">Events</a>
+          <ol>
+            <li jsselect="events">
+              <a jscontent="name"
+                 jsvalues=".href:'#event-' + name"
+                 href="#event-anchor">eventName</a>
+            </li>
+          </ol>
+        </li>
+        <!-- TODO: What do we do about structs/types? -->
+        <li>
+          <a href="#structs">TODO: Structs</a>
+          <ol>
+            <li><a href="#struct-BookmarkTreeNode"></a></li>
+          </ol>
+        </li>
+      </ol>
+      [PENDING: links to all h2s and h3s should go here -- would it be possible
+      to link to overview h3s, as well? if so, how should we create their
+      anchor/id values?]
+    </div>  
+    <!-- /TABLE OF CONTENTS -->
 
 
-        <!-- OVERVIEW PLACEHOLDER -- THIS GET REPLACED AUTHORED CONTENT -->
-        <div id="overview"></div>
+    <!-- OVERVIEW PLACEHOLDER -- THIS GET REPLACED AUTHORED CONTENT -->
+    <div id="overview"></div>
 
 
-        <!-- METHODS -->
-        <div class="apiGroup" id="methods">
-          <a name="#methods"></a>
-          <h2>Methods</h2>
+    <!-- METHODS -->
+    <div class="apiGroup" id="methods">
+      <a name="#methods"></a>
+      <h2>Methods</h2>
 
-          <!-- iterates over all functions -->
-          <div class="apiItem" jsselect="functions">
-            <a jsvalues=".name:'method-' + name"></a> <!-- method-anchor -->
-            <h3 jscontent="name">method name</h3>
+      <!-- iterates over all functions -->
+      <div class="apiItem" jsselect="functions">
+        <a jsvalues=".name:'method-' + name"></a> <!-- method-anchor -->
+        <h3 jscontent="name">method name</h3>
 
-            <div class="summary">void
+        <div class="summary">void
+            <!-- Note: intentionally longer 80 columns -->
+            <span jscontent="fullName">chrome.module.methodName</span>(<span jsselect="parameters" jsvalues="class:optional ? 'optional' : ''"><span jsdisplay="$index">, </span><span jscontent="typeName"></span>
+                <var><span jscontent="name"></span></var></span>)</div>
+
+        <div class="description">
+          <p class="todo" jsdisplay="!description">Undocumented.</p>
+          <p jsdisplay="description" jsvalues=".innerHTML:description">
+            A description from the json schema def of the function goes here.
+          </p>
+
+          <!-- PARAMETERS -->
+          <h4>Parameters</h4>
+          <dl>
+            <div jsselect="parameters">
+              <dt>
                 <!-- Note: intentionally longer 80 columns -->
-                <span jscontent="fullName">chrome.module.methodName</span>(<span jsselect="parameters" jsvalues="class:optional ? 'optional' : ''"><span jsdisplay="$index">, </span><span jscontent="typeName"></span>
-                    <var><span jscontent="name"></span></var></span>)</div>
-
-            <div class="description">
-              <p class="todo" jsdisplay="!description">Undocumented.</p>
-              <p jsdisplay="description" jsvalues=".innerHTML:description">
-                A description from the json schema def of the function goes here.
-              </p>
-
-              <!-- PARAMETERS -->
-              <h4>Parameters</h4>
-              <dl>
-                <div jsselect="parameters">
-                  <dt>
-                    <!-- Note: intentionally longer 80 columns -->
-                    <var jscontent="name">paramName</var><em>
-                        (<span class="optional" jsdisplay="optional">optional </span><span jscontent="typeName">paramType</span>)</em>
-                  </dt>
-                  <dd class="todo" jsdisplay="!$this.description">
-                    Undocumented.
-                  </dd>
-                  <dd jsdisplay="$this.description"
-                      jsvalues=".innerHTML:$this.description">
-                    Description of this parameter from the json schema.
-                  </dd>
-                  
-                  <!-- OBJECT PROPERTIES -->
-                  <dd jsdisplay="_propertyList">
-                    <dl>
-                      <div jsselect="_propertyList">
-                        <dt>
-                          <!-- Note: intentionally longer 80 columns -->
-                          <var jscontent="name">paramName</var><em>
-                              (<span class="optional" jsdisplay="optional">optional </span><span jscontent="typeName">paramType</span>)</em>
-                        </dt>
-                        <dd class="todo" jsdisplay="!$this.description">
-                          Undocumented.
-                        </dd>
-                        <dd jsdisplay="$this.description"
-                            jsvalues=".innerHTML:$this.description">
-                          Description of this parameter from the json schema.
-                        </dd>
-                      </div>
-                    </dl>
-                  </dd>
-                </div>
-              </dl>
-
-              <!-- CALLBACK -->	
-              <div jsdisplay="callbackParameters">
-                <h4>Callback function</h4>
-                <p>
-                  If you specify the <em>callback</em> parameter,
-                  it should specify a function that looks like this:
-                </p>
-                
-                <!-- Note: intentionally longer 80 columns -->
-                <pre>function(<span jscontent="callbackSignature">Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
-                <dl>
-                  <div jsselect="callbackParameters">
-                    <dt>
-                      <!-- Note: intentionally longer 80 columns -->
-                      <var jscontent="name">paramName</var><em>
-                          (<span jscontent="typeName">paramType</span>)</em>
-                    </dt>
-                    <dd class="todo" jsdisplay="!$this.description">
-                      Undocumented.
-                    </dd>
-                    <dd jsdisplay="$this.description"
-                        jsvalues=".innerHTML:$this.description">
-                      Description of this parameter from the json schema.
-                    </dd>
-                    <!-- OBJECT PROPERTIES -->
-                    <dd jsdisplay="_propertyList">
-                      <dl>
-                        <div jsselect="_propertyList">
-                          <dt>
-                            <!-- Note: intentionally longer 80 columns -->
-                            <var jscontent="name">paramName</var><em>
-                                (<span class="optional" jsdisplay="optional">optional </span><span jscontent="typeName">paramType</span>)</em>
-                          </dt>
-                          <dd class="todo" jsdisplay="!$this.description">
-                            Undocumented.
-                          </dd>
-                          <dd jsdisplay="$this.description"
-                              jsvalues=".innerHTML:$this.description">
-                            Description of this parameter from the json schema.
-                          </dd>
-                        </div>
-                      </dl>
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-            </div> <!-- /description -->
-
-          </div>  <!-- /apiItem -->
-
-        </div>  <!-- /apiGroup -->
-
-        <!-- EVENTS -->
-        <div class="apiGroup" id="events">
-          <a name="#events"></a>
-          <h2 id="events">Events</h2>
-
-          <!-- iterates over all events -->
-          <div jsselect="events" class="apiItem" jsselect="functions">
-            <a jsvalues=".name:'event-' + name"></a>
-            <h3 jscontent="name">event name</h3>
-
-            <div class="summary">
-              <!-- Note: intentionally longer 80 columns -->
-              <span class="subdued">chrome.bookmarks.</span><span jscontent="name">onEvent</span><span class="subdued">.addListener</span>(function(<span jscontent="callSignature">Type param1, Type param2</span>) <span class="subdued">{...}</span>);
+                <var jscontent="name">paramName</var><em>
+                    (<span class="optional" jsdisplay="optional">optional </span><span jscontent="typeName">paramType</span>)</em>
+              </dt>
+              <dd class="todo" jsdisplay="!$this.description">Undocumented.</dd>
+              <dd jsdisplay="$this.description" jsvalues=".innerHTML:$this.description">
+                Description of this parameter from the json schema.
+              </dd>
             </div>
+          </dl>
 
-            <div class="description">
-              <p class="todo" jsdisplay="!description">Undocumented.</p>
-              <p jsdisplay="description" jsvalues=".innerHTML:description">
-                A description from the json schema def of the event goes here.
-              </p>
+          <!-- CALLBACK -->	
+          <div jsdisplay="callbackParameters">
+            <h4>Callback function</h4>
+            <p>
+              If you specify the <em>callback</em> parameter,
+              it should specify a function that looks like this:
+            </p>
+            
+            <!-- Note: intentionally longer 80 columns -->
+            <pre>function(<span jscontent="callbackSignature">Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
+            <dl>
+              <div jsselect="callbackParameters">
+                <dt>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <var jscontent="name">paramName</var><em>
+                      (<span jscontent="typeName">paramType</span>)</em>
+                </dt>
+                <dd class="todo" jsdisplay="!$this.description">Undocumented.</dd>
+                <dd jsdisplay="$this.description" jsvalues=".innerHTML:$this.description">
+                  Description of this parameter from the json schema.
+                </dd>
+              </div>
+            </dl>
+          </div>
 
-              <!-- PARAMETERS -->
-              <h4>Parameters</h4>
-              <dl>
-                <div jsselect="parameters">
-                  <dt>
-                    <!-- Note: intentionally longer 80 columns -->
-                    <var jscontent="name">paramName</var><em> (<span jscontent="typeName">paramType</span>)</em>
-                  </dt>
-                  <dd class="todo" jsdisplay="!$this.description">Undocumented.</dd>
-                  <dd jsdisplay="$this.description" jsvalues=".innerHTML:$this.description">
-                    Description of this parameter from the json schema.
-                  </dd>
-                  
-                  <!-- OBJECT PROPERTIES -->
-                  <dd jsdisplay="_propertyList">
-                    <dl>
-                      <div jsselect="_propertyList">
-                        <dt>
-                          <!-- Note: intentionally longer 80 columns -->
-                          <var jscontent="name">paramName</var><em>
-                              (<span class="optional" jsdisplay="optional">optional </span><span jscontent="typeName">paramType</span>)</em>
-                        </dt>
-                        <dd class="todo" jsdisplay="!$this.description">
-                          Undocumented.
-                        </dd>
-                        <dd jsdisplay="$this.description"
-                            jsvalues=".innerHTML:$this.description">
-                          Description of this parameter from the json schema.
-                        </dd>
-                      </div>
-                    </dl>
-                  </dd>
-                </div>
-              </dl>
+        </div> <!-- /description -->
 
-            </div> <!-- /decription -->
+      </div>  <!-- /apiItem -->
 
-          </div> <!-- /apiItem -->
+    </div>  <!-- /apiGroup -->
 
-        </div> <!-- /apiGroup -->
-      </div> <!-- /mainColumn -->
-    </div> <!-- /pageContent -->
-    <div id="pageFooter" -->
-      TBD: copyright/license goes here
-    </div> <!-- /pageFooter -->
-  </div> <!-- /container -->
+    <!-- EVENTS -->
+    <div class="apiGroup" id="events">
+      <a name="#events"></a>
+      <h2 id="events">Events</h2>
+
+      <!-- iterates over all events -->
+      <div jsselect="events" class="apiItem" jsselect="functions">
+        <a jsvalues=".name:'event-' + name"></a>
+        <h3 jscontent="name">event name</h3>
+
+        <div class="summary">
+          <!-- Note: intentionally longer 80 columns -->
+          <span class="subdued">chrome.bookmarks.</span><span jscontent="name">onEvent</span><span class="subdued">.addListener</span>(function(<span jscontent="callSignature">Type param1, Type param2</span>) <span class="subdued">{...}</span>);
+        </div>
+
+        <div class="description">
+          <p class="todo" jsdisplay="!description">Undocumented.</p>
+          <p jsdisplay="description" jsvalues=".innerHTML:description">
+            A description from the json schema def of the event goes here.
+          </p>
+
+          <!-- PARAMETERS -->
+          <h4>Parameters</h4>
+          <dl>
+            <div jsselect="parameters">
+              <dt>
+                <!-- Note: intentionally longer 80 columns -->
+                <var jscontent="name">paramName</var><em> (<span jscontent="typeName">paramType</span>)</em>
+              </dt>
+              <dd class="todo" jsdisplay="!$this.description">Undocumented.</dd>
+              <dd jsdisplay="$this.description" jsvalues=".innerHTML:$this.description">
+                Description of this parameter from the json schema.
+              </dd>
+            </div>
+          </dl>
+
+        </div> <!-- /decription -->
+
+      </div> <!-- /apiItem -->
+
+    </div> <!-- /apiGroup -->
