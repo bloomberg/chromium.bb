@@ -764,17 +764,6 @@
    fun:_ZN10RenderView15OnDownloadImageEiRK4GURLi
 }
 {
-   bug_16153
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   ...
-   fun:gtk_window_add_accel_group
-   fun:_ZN16BrowserWindowGtk19ConnectAcceleratorsEv
-   fun:_ZN16BrowserWindowGtkC1EP7Browser
-   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
-}
-{
    bug_16156
    Memcheck:Leak
    ...
