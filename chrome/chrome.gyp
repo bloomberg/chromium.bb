@@ -2706,6 +2706,40 @@
       },
       'conditions': [
         ['OS=="linux"', {
+          'actions': [
+            {
+              'action_name': 'manpage',
+              'conditions': [
+                [ 'branding == "Chrome"', {
+                  'variables': {
+                    'name': 'Google Chrome',
+                    'filename': 'google-chrome',
+                  },
+                }, { # else branding!="Chrome"
+                  'variables': {
+                    'name': 'Chromium',
+                    'filename': 'chromium-browser',
+                  },
+                }],
+              ],
+              'inputs': [
+                'tools/build/linux/sed.sh',
+                'app/resources/manpage.1.in',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/<(filename).1',
+              ],
+              'action': [
+                'tools/build/linux/sed.sh',
+                'app/resources/manpage.1.in',
+                '<@(_outputs)',
+                '-e', 's/@@NAME@@/<(name)/',
+                '-e', 's/@@FILENAME@@/<(filename)/',
+              ],
+              'message': 'Generating manpage'
+            },
+          ],
+
           'conditions': [
             # All Chrome builds have breakpad symbols, but only process the
             # symbols from official builds.
