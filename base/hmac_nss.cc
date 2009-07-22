@@ -56,7 +56,7 @@ bool HMAC::Init(const unsigned char *key, int key_length) {
     return false;
   }
 
-  if (plat_->slot_.get() || plat_->slot_.get()) {
+  if (plat_->slot_.get()) {
     // Init must not be called more than twice on the same HMAC object.
     NOTREACHED();
     return false;
