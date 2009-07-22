@@ -203,7 +203,8 @@ class Zygote {
 // Patched dynamic symbol wrapper functions...
 namespace sandbox_wrapper {
 
-void do_localtime(time_t input, struct tm* output) {
+void do_localtime(time_t input, struct tm* output, char* timezone_out,
+                  size_t timezone_out_len) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_LOCALTIME);
   request.WriteString(
@@ -219,24 +220,34 @@ void do_localtime(time_t input, struct tm* output) {
 
   Pickle reply(reinterpret_cast<char*>(reply_buf), r);
   void* iter = NULL;
-  std::string result;
+  std::string result, timezone;
   if (!reply.ReadString(&iter, &result) ||
+      !reply.ReadString(&iter, &timezone) ||
       result.size() != sizeof(struct tm)) {
     memset(output, 0, sizeof(struct tm));
     return;
   }
 
   memcpy(output, result.data(), sizeof(struct tm));
+  if (timezone_out_len) {
+    const size_t copy_len = std::min(timezone_out_len - 1, timezone.size());
+    memcpy(timezone_out, timezone.data(), copy_len);
+    timezone_out[copy_len] = 0;
+    output->tm_zone = timezone_out;
+  } else {
+    output->tm_zone = NULL;
+  }
 }
 
 struct tm* localtime(const time_t* timep) {
   static struct tm time_struct;
-  do_localtime(*timep, &time_struct);
+  static char timezone_string[64];
+  do_localtime(*timep, &time_struct, timezone_string, sizeof(timezone_string));
   return &time_struct;
 }
 
 struct tm* localtime_r(const time_t* timep, struct tm* result) {
-  do_localtime(*timep, result);
+  do_localtime(*timep, result, NULL, 0);
   return result;
 }
 

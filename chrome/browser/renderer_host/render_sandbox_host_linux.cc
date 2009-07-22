@@ -296,14 +296,16 @@ class SandboxIPCProcess : public WebKitClient {
 
     time_t time;
     memcpy(&time, time_string.data(), sizeof(time));
-    struct tm expanded_time;
-    localtime_r(&time, &expanded_time);
+    // We use localtime here because we need the tm_zone field to be filled
+    // out. Since we are a single-threaded process, this is safe.
+    const struct tm* expanded_time = localtime(&time);
 
-    const std::string result_string(reinterpret_cast<char*>(&expanded_time),
-                                    sizeof(expanded_time));
+    const std::string result_string(
+        reinterpret_cast<const char*>(expanded_time), sizeof(struct tm));
 
     Pickle reply;
     reply.WriteString(result_string);
+    reply.WriteString(expanded_time->tm_zone);
     SendRendererReply(fds, reply, -1);
   }
 
