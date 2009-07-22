@@ -1,6 +1,6 @@
-diff -uNr gcc-4.4.0.orig/config/lib-prefix.m4 gcc-4.4.0/config/lib-prefix.m4
---- gcc-4.4.0.orig/config/lib-prefix.m4	2004-09-23 01:53:59.000000000 +0200
-+++ gcc-4.4.0/config/lib-prefix.m4	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/config/lib-prefix.m4 gcc-4.4.1/config/lib-prefix.m4
+--- gcc-4.4.1.orig/config/lib-prefix.m4	2004-09-23 01:53:59.000000000 +0200
++++ gcc-4.4.1/config/lib-prefix.m4	2009-06-24 00:57:00.000000000 +0200
 @@ -71,7 +71,7 @@
          if test "X$additional_includedir" = "X/usr/local/include"; then
            if test -n "$GCC"; then
@@ -19,9 +19,9 @@ diff -uNr gcc-4.4.0.orig/config/lib-prefix.m4 gcc-4.4.0/config/lib-prefix.m4
              esac
            fi
          fi
-diff -uNr gcc-4.4.0.orig/config.sub gcc-4.4.0/config.sub
---- gcc-4.4.0.orig/config.sub	2008-12-18 04:27:27.000000000 +0100
-+++ gcc-4.4.0/config.sub	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/config.sub gcc-4.4.1/config.sub
+--- gcc-4.4.1.orig/config.sub	2008-12-18 04:27:27.000000000 +0100
++++ gcc-4.4.1/config.sub	2009-06-24 00:57:00.000000000 +0200
 @@ -122,7 +122,7 @@
  case $maybe_os in
    nto-qnx* | linux-gnu* | linux-dietlibc | linux-newlib* | linux-uclibc* | \
@@ -51,9 +51,9 @@ diff -uNr gcc-4.4.0.orig/config.sub gcc-4.4.0/config.sub
  	# Remember, each alternative MUST END IN *, to match a version number.
  		;;
  	-qnx*)
-diff -uNr gcc-4.4.0.orig/configure gcc-4.4.0/configure
---- gcc-4.4.0.orig/configure	2009-04-21 11:08:08.000000000 +0200
-+++ gcc-4.4.0/configure	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/configure gcc-4.4.1/configure
+--- gcc-4.4.1.orig/configure	2009-04-21 11:08:08.000000000 +0200
++++ gcc-4.4.1/configure	2009-06-24 00:57:00.000000000 +0200
 @@ -2179,6 +2179,9 @@
      *-*-freebsd*)
          # Enable libmudflap by default in FreeBSD.
@@ -82,9 +82,9 @@ diff -uNr gcc-4.4.0.orig/configure gcc-4.4.0/configure
      noconfigdirs="$noconfigdirs target-newlib target-libgloss"
      ;;
    *-*-lynxos*)
-diff -uNr gcc-4.4.0.orig/configure.ac gcc-4.4.0/configure.ac
---- gcc-4.4.0.orig/configure.ac	2009-04-14 10:57:33.000000000 +0200
-+++ gcc-4.4.0/configure.ac	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/configure.ac gcc-4.4.1/configure.ac
+--- gcc-4.4.1.orig/configure.ac	2009-04-14 10:57:33.000000000 +0200
++++ gcc-4.4.1/configure.ac	2009-06-24 00:57:00.000000000 +0200
 @@ -414,6 +414,9 @@
      *-*-freebsd*)
          # Enable libmudflap by default in FreeBSD.
@@ -113,9 +113,9 @@ diff -uNr gcc-4.4.0.orig/configure.ac gcc-4.4.0/configure.ac
      noconfigdirs="$noconfigdirs target-newlib target-libgloss"
      ;;
    *-*-lynxos*)
-diff -uNr gcc-4.4.0.orig/gcc/Makefile.in gcc-4.4.0/gcc/Makefile.in
---- gcc-4.4.0.orig/gcc/Makefile.in	2009-03-25 13:00:32.000000000 +0100
-+++ gcc-4.4.0/gcc/Makefile.in	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/Makefile.in gcc-4.4.1/gcc/Makefile.in
+--- gcc-4.4.1.orig/gcc/Makefile.in	2009-03-25 13:00:32.000000000 +0100
++++ gcc-4.4.1/gcc/Makefile.in	2009-06-24 00:57:00.000000000 +0200
 @@ -1076,6 +1076,7 @@
  	coverage.o \
  	cse.o \
@@ -133,9 +133,9 @@ diff -uNr gcc-4.4.0.orig/gcc/Makefile.in gcc-4.4.0/gcc/Makefile.in
  dce.o : dce.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
     $(TREE_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) $(DF_H) cselib.h \
     $(DBGCNT_H) dce.h $(TIMEVAR_H) tree-pass.h $(DBGCNT_H) $(TM_P_H)
-diff -uNr gcc-4.4.0.orig/gcc/cfgrtl.c gcc-4.4.0/gcc/cfgrtl.c
---- gcc-4.4.0.orig/gcc/cfgrtl.c	2008-12-12 22:16:09.000000000 +0100
-+++ gcc-4.4.0/gcc/cfgrtl.c	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/cfgrtl.c gcc-4.4.1/gcc/cfgrtl.c
+--- gcc-4.4.1.orig/gcc/cfgrtl.c	2008-12-12 22:16:09.000000000 +0100
++++ gcc-4.4.1/gcc/cfgrtl.c	2009-06-24 00:57:00.000000000 +0200
 @@ -1054,6 +1054,9 @@
      }
    else
@@ -146,9 +146,9 @@ diff -uNr gcc-4.4.0.orig/gcc/cfgrtl.c gcc-4.4.0/gcc/cfgrtl.c
        gcc_assert (e->flags & EDGE_FALLTHRU);
        if (e->src == ENTRY_BLOCK_PTR)
  	{
-diff -uNr gcc-4.4.0.orig/gcc/config/i386/crtfastmath.c gcc-4.4.0/gcc/config/i386/crtfastmath.c
---- gcc-4.4.0.orig/gcc/config/i386/crtfastmath.c	2009-04-10 01:23:07.000000000 +0200
-+++ gcc-4.4.0/gcc/config/i386/crtfastmath.c	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/config/i386/crtfastmath.c gcc-4.4.1/gcc/config/i386/crtfastmath.c
+--- gcc-4.4.1.orig/gcc/config/i386/crtfastmath.c	2009-04-10 01:23:07.000000000 +0200
++++ gcc-4.4.1/gcc/config/i386/crtfastmath.c	2009-06-24 00:57:00.000000000 +0200
 @@ -27,8 +27,13 @@
  #ifndef __x86_64__
  /* All 64-bit targets have SSE and DAZ;
@@ -182,9 +182,9 @@ diff -uNr gcc-4.4.0.orig/gcc/config/i386/crtfastmath.c gcc-4.4.0/gcc/config/i386
  #else
    unsigned int mxcsr = __builtin_ia32_stmxcsr ();
    mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
-diff -uNr gcc-4.4.0.orig/gcc/config/i386/i386.c gcc-4.4.0/gcc/config/i386/i386.c
---- gcc-4.4.0.orig/gcc/config/i386/i386.c	2009-04-14 22:27:30.000000000 +0200
-+++ gcc-4.4.0/gcc/config/i386/i386.c	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.c
+--- gcc-4.4.1.orig/gcc/config/i386/i386.c	2009-04-14 22:27:30.000000000 +0200
++++ gcc-4.4.1/gcc/config/i386/i386.c	2009-06-24 00:57:00.000000000 +0200
 @@ -7368,6 +7368,8 @@
  	  (*targetm.asm_out.unique_section) (decl, 0);
  	  switch_to_section (get_named_section (decl, NULL, 0));
@@ -266,9 +266,9 @@ diff -uNr gcc-4.4.0.orig/gcc/config/i386/i386.c gcc-4.4.0/gcc/config/i386/i386.c
  }
  
  /* Reset from the function's potential modifications.  */
-diff -uNr gcc-4.4.0.orig/gcc/config/i386/i386.md gcc-4.4.0/gcc/config/i386/i386.md
---- gcc-4.4.0.orig/gcc/config/i386/i386.md	2009-03-17 19:55:40.000000000 +0100
-+++ gcc-4.4.0/gcc/config/i386/i386.md	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386.md
+--- gcc-4.4.1.orig/gcc/config/i386/i386.md	2009-03-17 19:55:40.000000000 +0100
++++ gcc-4.4.1/gcc/config/i386/i386.md	2009-06-24 00:57:00.000000000 +0200
 @@ -154,6 +154,11 @@
     (UNSPEC_SP_TLS_SET		102)
     (UNSPEC_SP_TLS_TEST		103)
@@ -466,9 +466,9 @@ diff -uNr gcc-4.4.0.orig/gcc/config/i386/i386.md gcc-4.4.0/gcc/config/i386/i386.
     (set_attr "modrm" "0")])
  
  (define_insn "return_indirect_internal"
-diff -uNr gcc-4.4.0.orig/gcc/config/i386/nacl.h gcc-4.4.0/gcc/config/i386/nacl.h
---- gcc-4.4.0.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-4.4.0/gcc/config/i386/nacl.h	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/config/i386/nacl.h gcc-4.4.1/gcc/config/i386/nacl.h
+--- gcc-4.4.1.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.4.1/gcc/config/i386/nacl.h	2009-06-24 00:57:00.000000000 +0200
 @@ -0,0 +1,75 @@
 +/* Target definitions for GCC for NativeClient using ELF
 +   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002
@@ -545,9 +545,9 @@ diff -uNr gcc-4.4.0.orig/gcc/config/i386/nacl.h gcc-4.4.0/gcc/config/i386/nacl.h
 +	builtin_define ("__native_client__=1");		\
 +  }							\
 +  while (0)
-diff -uNr gcc-4.4.0.orig/gcc/config/nacl.opt gcc-4.4.0/gcc/config/nacl.opt
---- gcc-4.4.0.orig/gcc/config/nacl.opt	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-4.4.0/gcc/config/nacl.opt	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/config/nacl.opt gcc-4.4.1/gcc/config/nacl.opt
+--- gcc-4.4.1.orig/gcc/config/nacl.opt	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.4.1/gcc/config/nacl.opt	2009-06-24 00:57:00.000000000 +0200
 @@ -0,0 +1,54 @@
 +; Processor-independent options for GNU/Linux.
 +;
@@ -603,9 +603,9 @@ diff -uNr gcc-4.4.0.orig/gcc/config/nacl.opt gcc-4.4.0/gcc/config/nacl.opt
 +
 +fnacl-align-32
 +Common Report Var(flag_nacl_align_pow2,5)
-diff -uNr gcc-4.4.0.orig/gcc/config.gcc gcc-4.4.0/gcc/config.gcc
---- gcc-4.4.0.orig/gcc/config.gcc	2009-04-17 13:58:41.000000000 +0200
-+++ gcc-4.4.0/gcc/config.gcc	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/config.gcc gcc-4.4.1/gcc/config.gcc
+--- gcc-4.4.1.orig/gcc/config.gcc	2009-04-17 13:58:41.000000000 +0200
++++ gcc-4.4.1/gcc/config.gcc	2009-06-24 00:57:00.000000000 +0200
 @@ -482,7 +482,20 @@
    esac
    fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
@@ -662,9 +662,9 @@ diff -uNr gcc-4.4.0.orig/gcc/config.gcc gcc-4.4.0/gcc/config.gcc
  	esac
  	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
  	;;
-diff -uNr gcc-4.4.0.orig/gcc/configure gcc-4.4.0/gcc/configure
---- gcc-4.4.0.orig/gcc/configure	2009-03-24 18:46:03.000000000 +0100
-+++ gcc-4.4.0/gcc/configure	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/configure gcc-4.4.1/gcc/configure
+--- gcc-4.4.1.orig/gcc/configure	2009-03-24 18:46:03.000000000 +0100
++++ gcc-4.4.1/gcc/configure	2009-06-24 00:57:00.000000000 +0200
 @@ -7835,7 +7835,7 @@
  else
  
@@ -709,9 +709,9 @@ diff -uNr gcc-4.4.0.orig/gcc/configure gcc-4.4.0/gcc/configure
  	    || grep 'EMUL = .*lynx' ../ld/Makefile) > /dev/null; then
  	  in_tree_ld_is_elf=yes
  	fi
-diff -uNr gcc-4.4.0.orig/gcc/configure.ac gcc-4.4.0/gcc/configure.ac
---- gcc-4.4.0.orig/gcc/configure.ac	2009-03-24 18:46:03.000000000 +0100
-+++ gcc-4.4.0/gcc/configure.ac	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/configure.ac gcc-4.4.1/gcc/configure.ac
+--- gcc-4.4.1.orig/gcc/configure.ac	2009-03-24 18:46:03.000000000 +0100
++++ gcc-4.4.1/gcc/configure.ac	2009-06-24 00:57:00.000000000 +0200
 @@ -605,7 +605,7 @@
  ],
  [
@@ -756,9 +756,9 @@ diff -uNr gcc-4.4.0.orig/gcc/configure.ac gcc-4.4.0/gcc/configure.ac
  changequote([,])dnl
      case $target_os in
        cygwin* | pe | mingw32*)
-diff -uNr gcc-4.4.0.orig/gcc/ctrl-intg.c gcc-4.4.0/gcc/ctrl-intg.c
---- gcc-4.4.0.orig/gcc/ctrl-intg.c	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-4.4.0/gcc/ctrl-intg.c	2009-06-24 01:01:46.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/ctrl-intg.c gcc-4.4.1/gcc/ctrl-intg.c
+--- gcc-4.4.1.orig/gcc/ctrl-intg.c	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.4.1/gcc/ctrl-intg.c	2009-06-24 01:01:46.000000000 +0200
 @@ -0,0 +1,355 @@
 +/* Patch RTL to enforce control flow integrity for GCC.
 +   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000, 2002, 2003,
@@ -1115,9 +1115,9 @@ diff -uNr gcc-4.4.0.orig/gcc/ctrl-intg.c gcc-4.4.0/gcc/ctrl-intg.c
 +    TODO_dump_func, /* todo_flags_finish */
 +  }
 +};
-diff -uNr gcc-4.4.0.orig/gcc/dwarf2out.c gcc-4.4.0/gcc/dwarf2out.c
---- gcc-4.4.0.orig/gcc/dwarf2out.c	2009-03-24 00:21:38.000000000 +0100
-+++ gcc-4.4.0/gcc/dwarf2out.c	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/dwarf2out.c gcc-4.4.1/gcc/dwarf2out.c
+--- gcc-4.4.1.orig/gcc/dwarf2out.c	2009-03-24 00:21:38.000000000 +0100
++++ gcc-4.4.1/gcc/dwarf2out.c	2009-06-24 00:57:00.000000000 +0200
 @@ -1414,8 +1414,16 @@
  	    insn = XVECEXP (insn, 0, 0);
  	  if (GET_CODE (insn) == SET)
@@ -1137,9 +1137,9 @@ diff -uNr gcc-4.4.0.orig/gcc/dwarf2out.c gcc-4.4.0/gcc/dwarf2out.c
  	}
        return;
      }
-diff -uNr gcc-4.4.0.orig/gcc/emit-rtl.c gcc-4.4.0/gcc/emit-rtl.c
---- gcc-4.4.0.orig/gcc/emit-rtl.c	2009-03-04 02:57:29.000000000 +0100
-+++ gcc-4.4.0/gcc/emit-rtl.c	2009-06-24 01:00:11.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/emit-rtl.c gcc-4.4.1/gcc/emit-rtl.c
+--- gcc-4.4.1.orig/gcc/emit-rtl.c	2009-03-04 02:57:29.000000000 +0100
++++ gcc-4.4.1/gcc/emit-rtl.c	2009-06-24 01:00:11.000000000 +0200
 @@ -852,6 +852,10 @@
      return -subreg_lowpart_offset (inner_mode, outer_mode);
  }
@@ -1160,9 +1160,9 @@ diff -uNr gcc-4.4.0.orig/gcc/emit-rtl.c gcc-4.4.0/gcc/emit-rtl.c
  
    /* If a virtual register with bigger mode alignment is generated,
       increase stack alignment estimation because it might be spilled
-diff -uNr gcc-4.4.0.orig/gcc/final.c gcc-4.4.0/gcc/final.c
---- gcc-4.4.0.orig/gcc/final.c	2008-12-10 09:46:40.000000000 +0100
-+++ gcc-4.4.0/gcc/final.c	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/final.c gcc-4.4.1/gcc/final.c
+--- gcc-4.4.1.orig/gcc/final.c	2008-12-10 09:46:40.000000000 +0100
++++ gcc-4.4.1/gcc/final.c	2009-06-24 00:57:00.000000000 +0200
 @@ -1755,7 +1755,8 @@
    gcc_assert (CALL_P (insn));
    x = PATTERN (insn);
@@ -1173,9 +1173,9 @@ diff -uNr gcc-4.4.0.orig/gcc/final.c gcc-4.4.0/gcc/final.c
      {
        switch (GET_CODE (x))
  	{
-diff -uNr gcc-4.4.0.orig/gcc/gthr-nacl.h gcc-4.4.0/gcc/gthr-nacl.h
---- gcc-4.4.0.orig/gcc/gthr-nacl.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-4.4.0/gcc/gthr-nacl.h	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/gthr-nacl.h gcc-4.4.1/gcc/gthr-nacl.h
+--- gcc-4.4.1.orig/gcc/gthr-nacl.h	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.4.1/gcc/gthr-nacl.h	2009-06-24 00:57:00.000000000 +0200
 @@ -0,0 +1,553 @@
 +/* Threads compatibility routines for libgcc2 and libobjc.  */
 +/* Compile this one with gcc.  */
@@ -1730,9 +1730,9 @@ diff -uNr gcc-4.4.0.orig/gcc/gthr-nacl.h gcc-4.4.0/gcc/gthr-nacl.h
 +#endif /* _LIBOBJC */
 +
 +#endif /* ! GCC_GTHR_POSIX_H */
-diff -uNr gcc-4.4.0.orig/gcc/opts.c gcc-4.4.0/gcc/opts.c
---- gcc-4.4.0.orig/gcc/opts.c	2009-03-28 18:28:45.000000000 +0100
-+++ gcc-4.4.0/gcc/opts.c	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/opts.c gcc-4.4.1/gcc/opts.c
+--- gcc-4.4.1.orig/gcc/opts.c	2009-03-28 18:28:45.000000000 +0100
++++ gcc-4.4.1/gcc/opts.c	2009-06-24 00:57:00.000000000 +0200
 @@ -941,9 +941,12 @@
    /* Just -O1/-O0 optimizations.  */
    opt1_max = (optimize <= 1);
@@ -1771,9 +1771,9 @@ diff -uNr gcc-4.4.0.orig/gcc/opts.c gcc-4.4.0/gcc/opts.c
    /* Save the current optimization options if this is the first call.  */
    if (first_time_p)
      {
-diff -uNr gcc-4.4.0.orig/gcc/passes.c gcc-4.4.0/gcc/passes.c
---- gcc-4.4.0.orig/gcc/passes.c	2009-02-20 16:20:38.000000000 +0100
-+++ gcc-4.4.0/gcc/passes.c	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/passes.c gcc-4.4.1/gcc/passes.c
+--- gcc-4.4.1.orig/gcc/passes.c	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.1/gcc/passes.c	2009-06-24 00:57:00.000000000 +0200
 @@ -764,6 +764,7 @@
        NEXT_PASS (pass_stack_ptr_mod);
        NEXT_PASS (pass_mode_switching);
@@ -1782,9 +1782,9 @@ diff -uNr gcc-4.4.0.orig/gcc/passes.c gcc-4.4.0/gcc/passes.c
        NEXT_PASS (pass_match_asm_constraints);
        NEXT_PASS (pass_sms);
        NEXT_PASS (pass_sched);
-diff -uNr gcc-4.4.0.orig/gcc/reg-stack.c gcc-4.4.0/gcc/reg-stack.c
---- gcc-4.4.0.orig/gcc/reg-stack.c	2009-02-20 16:20:38.000000000 +0100
-+++ gcc-4.4.0/gcc/reg-stack.c	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/reg-stack.c gcc-4.4.1/gcc/reg-stack.c
+--- gcc-4.4.1.orig/gcc/reg-stack.c	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.1/gcc/reg-stack.c	2009-06-24 00:57:00.000000000 +0200
 @@ -1864,6 +1864,25 @@
  		compare_for_stack_reg (insn, regstack, pat_src);
  		break;
@@ -1811,9 +1811,9 @@ diff -uNr gcc-4.4.0.orig/gcc/reg-stack.c gcc-4.4.0/gcc/reg-stack.c
  	      default:
  		gcc_unreachable ();
  	      }
-diff -uNr gcc-4.4.0.orig/gcc/tree-pass.h gcc-4.4.0/gcc/tree-pass.h
---- gcc-4.4.0.orig/gcc/tree-pass.h	2009-02-20 16:20:38.000000000 +0100
-+++ gcc-4.4.0/gcc/tree-pass.h	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/gcc/tree-pass.h gcc-4.4.1/gcc/tree-pass.h
+--- gcc-4.4.1.orig/gcc/tree-pass.h	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.1/gcc/tree-pass.h	2009-06-24 00:57:00.000000000 +0200
 @@ -389,6 +389,8 @@
  extern struct gimple_opt_pass pass_build_cgraph_edges;
  extern struct gimple_opt_pass pass_reset_cc_flags;
@@ -1823,9 +1823,9 @@ diff -uNr gcc-4.4.0.orig/gcc/tree-pass.h gcc-4.4.0/gcc/tree-pass.h
  /* IPA Passes */
  extern struct ipa_opt_pass pass_ipa_inline;
  extern struct ipa_opt_pass pass_ipa_cp;
-diff -uNr gcc-4.4.0.orig/libgcc/config.host gcc-4.4.0/libgcc/config.host
---- gcc-4.4.0.orig/libgcc/config.host	2009-04-17 13:58:41.000000000 +0200
-+++ gcc-4.4.0/libgcc/config.host	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/libgcc/config.host gcc-4.4.1/libgcc/config.host
+--- gcc-4.4.1.orig/libgcc/config.host	2009-04-17 13:58:41.000000000 +0200
++++ gcc-4.4.1/libgcc/config.host	2009-06-24 00:57:00.000000000 +0200
 @@ -149,7 +149,7 @@
    # machine-specific sections may refine and add to this
    # configuration.
@@ -1844,9 +1844,9 @@ diff -uNr gcc-4.4.0.orig/libgcc/config.host gcc-4.4.0/libgcc/config.host
  	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
  	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
  	;;
-diff -uNr gcc-4.4.0.orig/libgomp/configure.tgt gcc-4.4.0/libgomp/configure.tgt
---- gcc-4.4.0.orig/libgomp/configure.tgt	2008-09-19 22:27:11.000000000 +0200
-+++ gcc-4.4.0/libgomp/configure.tgt	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/libgomp/configure.tgt gcc-4.4.1/libgomp/configure.tgt
+--- gcc-4.4.1.orig/libgomp/configure.tgt	2008-09-19 22:27:11.000000000 +0200
++++ gcc-4.4.1/libgomp/configure.tgt	2009-06-24 00:57:00.000000000 +0200
 @@ -48,7 +48,7 @@
  	;;
  
@@ -1856,9 +1856,9 @@ diff -uNr gcc-4.4.0.orig/libgomp/configure.tgt gcc-4.4.0/libgomp/configure.tgt
  	config_path="linux/x86 linux posix"
  	case " ${CC} ${CFLAGS} " in
  	  *" -m64 "*)
-diff -uNr gcc-4.4.0.orig/libmudflap/configure gcc-4.4.0/libmudflap/configure
---- gcc-4.4.0.orig/libmudflap/configure	2009-03-01 18:49:31.000000000 +0100
-+++ gcc-4.4.0/libmudflap/configure	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/libmudflap/configure gcc-4.4.1/libmudflap/configure
+--- gcc-4.4.1.orig/libmudflap/configure	2009-03-01 18:49:31.000000000 +0100
++++ gcc-4.4.1/libmudflap/configure	2009-06-24 00:57:00.000000000 +0200
 @@ -6225,7 +6225,7 @@
    ;;
  
@@ -1868,9 +1868,9 @@ diff -uNr gcc-4.4.0.orig/libmudflap/configure gcc-4.4.0/libmudflap/configure
    lt_cv_deplibs_check_method=pass_all
    ;;
  
-diff -uNr gcc-4.4.0.orig/libssp/configure gcc-4.4.0/libssp/configure
---- gcc-4.4.0.orig/libssp/configure	2009-03-01 18:49:31.000000000 +0100
-+++ gcc-4.4.0/libssp/configure	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/libssp/configure gcc-4.4.1/libssp/configure
+--- gcc-4.4.1.orig/libssp/configure	2009-03-01 18:49:31.000000000 +0100
++++ gcc-4.4.1/libssp/configure	2009-06-24 00:57:00.000000000 +0200
 @@ -5199,7 +5199,7 @@
    ;;
  
@@ -1880,9 +1880,9 @@ diff -uNr gcc-4.4.0.orig/libssp/configure gcc-4.4.0/libssp/configure
    lt_cv_deplibs_check_method=pass_all
    ;;
  
-diff -uNr gcc-4.4.0.orig/libstdc++-v3/configure gcc-4.4.0/libstdc++-v3/configure
---- gcc-4.4.0.orig/libstdc++-v3/configure	2009-03-01 18:49:31.000000000 +0100
-+++ gcc-4.4.0/libstdc++-v3/configure	2009-06-24 00:57:00.000000000 +0200
+diff -uNr gcc-4.4.1.orig/libstdc++-v3/configure gcc-4.4.1/libstdc++-v3/configure
+--- gcc-4.4.1.orig/libstdc++-v3/configure	2009-03-01 18:49:31.000000000 +0100
++++ gcc-4.4.1/libstdc++-v3/configure	2009-06-24 00:57:00.000000000 +0200
 @@ -4989,7 +4989,7 @@
    fi
    ;;
