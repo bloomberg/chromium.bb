@@ -40,6 +40,9 @@ const int kTitleWidth = 200;
 const int kTitleHeight = 24;
 const int kTitlePad = 8;
 const int kButtonPad = 8;
+const SkColor kTitleBackground = 0xFFDDDDDD;
+const SkColor kActiveText = SK_ColorBLACK;
+const SkColor kInactiveText = 0xFF666666;
 
 static bool resources_initialized;
 static void InitializeResources() {
@@ -172,6 +175,14 @@ bool PanelController::OnPanelClientEvent(
   return panel_controller->PanelClientEvent(event);
 }
 
+void PanelController::OnFocusIn() {
+  title_content_->OnFocusIn();
+}
+
+void PanelController::OnFocusOut() {
+  title_content_->OnFocusOut();
+}
+
 bool PanelController::PanelClientEvent(GdkEventClient* event) {
   TabOverviewTypes::Message msg;
   TabOverviewTypes::instance()->DecodeMessage(*event, &msg);
@@ -203,6 +214,7 @@ PanelController::TitleContentView::TitleContentView(
 
   title_label_ = new views::Label(std::wstring(), *title_font);
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label_->SetColor(kInactiveText);
   AddChildView(title_label_);
 
   set_background(views::Background::CreateSolidBackground(0xdd, 0xdd, 0xdd, 1));
@@ -234,5 +246,15 @@ void PanelController::TitleContentView::OnMouseReleased(
 bool PanelController::TitleContentView::OnMouseDragged(
     const views::MouseEvent& event) {
   return panel_controller_->TitleMouseDragged(event);
+}
+
+void PanelController::TitleContentView::OnFocusIn() {
+  title_label_->SetColor(kActiveText);
+  title_label_->SchedulePaint();
+}
+
+void PanelController::TitleContentView::OnFocusOut() {
+  title_label_->SetColor(kInactiveText);
+  title_label_->SchedulePaint();
 }
 

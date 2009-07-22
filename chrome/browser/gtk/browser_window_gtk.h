@@ -242,6 +242,14 @@ class BrowserWindowGtk : public BrowserWindow,
   static void MainWindowMapped(GtkWidget* widget, BrowserWindowGtk* window);
   static void MainWindowUnMapped(GtkWidget* widget, BrowserWindowGtk* window);
 
+  // Tracks focus state of browser.
+  static gboolean OnFocusIn(GtkWidget* widget,
+                            GdkEventFocus* event,
+                            BrowserWindowGtk* browser);
+  static gboolean OnFocusOut(GtkWidget* widget,
+                             GdkEventFocus* event,
+                             BrowserWindowGtk* browser);
+
   // A small shim for browser_->ExecuteCommand.
   void ExecuteBrowserCommand(int id);
 

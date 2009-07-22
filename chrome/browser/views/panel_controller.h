@@ -29,6 +29,8 @@ class PanelController : public views::ButtonListener {
   void TitleMouseReleased(const views::MouseEvent& event, bool canceled);
   bool TitleMouseDragged(const views::MouseEvent& event);
   bool PanelClientEvent(GdkEventClient* event);
+  void OnFocusIn();
+  void OnFocusOut();
 
   void UpdateTitleBar();
   void Close();
@@ -44,6 +46,8 @@ class PanelController : public views::ButtonListener {
     virtual bool OnMousePressed(const views::MouseEvent& event);
     virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
     virtual bool OnMouseDragged(const views::MouseEvent& event);
+    void OnFocusIn();
+    void OnFocusOut();
 
     views::Label* title_label() { return title_label_; }
     views::ImageButton* close_button() { return close_button_; }

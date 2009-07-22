@@ -344,11 +344,6 @@ gboolean OnKeyPress(GtkWindow* window, GdkEventKey* event, Browser* browser) {
   }
 }
 
-gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event, Browser* browser) {
-  BrowserList::SetLastActive(browser);
-  return FALSE;
-}
-
 GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
   switch (edge) {
     case GDK_WINDOW_EDGE_NORTH_WEST:
@@ -1101,7 +1096,9 @@ void BrowserWindowGtk::ConnectHandlersToSignals() {
   g_signal_connect(window_, "button-press-event",
                    G_CALLBACK(OnButtonPressEvent), this);
   g_signal_connect(window_, "focus-in-event",
-                   G_CALLBACK(OnFocusIn), browser_.get());
+                   G_CALLBACK(OnFocusIn), this);
+  g_signal_connect(window_, "focus-out-event",
+                   G_CALLBACK(OnFocusOut), this);
 }
 
 void BrowserWindowGtk::InitWidgets() {
@@ -1438,6 +1435,31 @@ void BrowserWindowGtk::MainWindowUnMapped(GtkWidget* widget,
   // Unmap the X Window ID.
   XID xid = x11_util::GetX11WindowFromGtkWidget(widget);
   BrowserWindowGtk::xid_map_.erase(xid);
+}
+
+// static
+gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
+                                     GdkEventFocus* event,
+                                     BrowserWindowGtk* browser) {
+  BrowserList::SetLastActive(browser->browser_.get());
+#if defined(OS_CHROMEOS)
+  if (browser->panel_controller_) {
+    browser->panel_controller_->OnFocusIn();
+  }
+#endif
+  return FALSE;
+}
+
+// static
+gboolean BrowserWindowGtk::OnFocusOut(GtkWidget* widget,
+                                      GdkEventFocus* event,
+                                      BrowserWindowGtk* browser) {
+#if defined(OS_CHROMEOS)
+  if (browser->panel_controller_) {
+    browser->panel_controller_->OnFocusOut();
+  }
+#endif
+  return FALSE;
 }
 
 void BrowserWindowGtk::ExecuteBrowserCommand(int id) {
