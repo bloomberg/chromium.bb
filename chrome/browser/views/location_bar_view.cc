@@ -420,9 +420,9 @@ void LocationBarView::DoLayout(const bool force_layout) {
 
   if (max_edit_width < 0)
     return;
-  const int text_width = TextDisplayWidth();
+  const int available_width = AvailableWidth(max_edit_width);
   bool needs_layout = force_layout;
-  needs_layout |= AdjustHints(text_width, max_edit_width);
+  needs_layout |= AdjustHints(available_width);
 
   if (!needs_layout)
     return;
@@ -461,13 +461,13 @@ void LocationBarView::DoLayout(const bool force_layout) {
   gfx::Rect location_bounds(kEntryPadding, location_y, entry_width,
                             location_height);
   if (selected_keyword_view_.IsVisible()) {
-    LayoutView(true, &selected_keyword_view_, text_width, max_edit_width,
+    LayoutView(true, &selected_keyword_view_, available_width,
                &location_bounds);
   } else if (keyword_hint_view_.IsVisible()) {
-    LayoutView(false, &keyword_hint_view_, text_width, max_edit_width,
+    LayoutView(false, &keyword_hint_view_, available_width,
                &location_bounds);
   } else if (type_to_search_view_.IsVisible()) {
-    LayoutView(false, &type_to_search_view_, text_width, max_edit_width,
+    LayoutView(false, &type_to_search_view_, available_width,
                &location_bounds);
   }
 
@@ -483,32 +483,32 @@ int LocationBarView::TopMargin() const {
   return std::min(kVertMargin, height());
 }
 
-int LocationBarView::TextDisplayWidth() {
+int LocationBarView::AvailableWidth(int location_bar_width) {
 #if defined(OS_WIN)
-  POINT last_char_position =
-      location_entry_->PosFromChar(location_entry_->GetTextLength());
-  POINT scroll_position;
-  location_entry_->GetScrollPos(&scroll_position);
-  const int position_x = last_char_position.x + scroll_position.x;
-  return UILayoutIsRightToLeft() ? width() - position_x : position_x;
+  // Use font_.GetStringWidth() instead of
+  // PosFromChar(location_entry_->GetTextLength()) because PosFromChar() is
+  // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
+  // PosFromChar(i) might return 0 when i is greater than 1.
+  return std::max(
+      location_bar_width - font_.GetStringWidth(location_entry_->GetText()), 0);
 #else
   NOTIMPLEMENTED();
-  return 0;
+  return location_bar_width;
 #endif
 }
 
-bool LocationBarView::UsePref(int pref_width, int text_width, int max_width) {
-  return (pref_width + kInnerPadding + text_width <= max_width);
+bool LocationBarView::UsePref(int pref_width, int available_width) {
+  return (pref_width + kInnerPadding <= available_width);
 }
 
-bool LocationBarView::NeedsResize(View* view, int text_width, int max_width) {
+bool LocationBarView::NeedsResize(View* view, int available_width) {
   gfx::Size size = view->GetPreferredSize();
-  if (!UsePref(size.width(), text_width, max_width))
+  if (!UsePref(size.width(), available_width))
     size = view->GetMinimumSize();
   return (view->width() != size.width());
 }
 
-bool LocationBarView::AdjustHints(int text_width, int max_width) {
+bool LocationBarView::AdjustHints(int available_width) {
   const std::wstring keyword(location_entry_->model()->keyword());
   const bool is_keyword_hint(location_entry_->model()->is_keyword_hint());
   const bool show_selected_keyword = !keyword.empty() && !is_keyword_hint;
@@ -519,7 +519,7 @@ bool LocationBarView::AdjustHints(int text_width, int max_width) {
   if (show_search_hint) {
     // Only show type to search if all the text fits.
     gfx::Size view_pref = type_to_search_view_.GetPreferredSize();
-    show_search_hint = UsePref(view_pref.width(), text_width, max_width);
+    show_search_hint = UsePref(view_pref.width(), available_width);
   }
 
   // NOTE: This isn't just one big || statement as ToggleVisibility MUST be
@@ -534,24 +534,25 @@ bool LocationBarView::AdjustHints(int text_width, int max_width) {
       needs_layout = true;
       selected_keyword_view_.SetKeyword(keyword);
     }
-    needs_layout |= NeedsResize(&selected_keyword_view_, text_width, max_width);
+    needs_layout |= NeedsResize(&selected_keyword_view_, available_width);
   } else if (show_keyword_hint) {
     if (keyword_hint_view_.keyword() != keyword) {
       needs_layout = true;
       keyword_hint_view_.SetKeyword(keyword);
     }
-    needs_layout |= NeedsResize(&keyword_hint_view_, text_width, max_width);
+    needs_layout |= NeedsResize(&keyword_hint_view_, available_width);
   }
 
   return needs_layout;
 }
 
-void LocationBarView::LayoutView(bool leading, views::View* view,
-                                 int text_width, int max_width,
+void LocationBarView::LayoutView(bool leading,
+                                 views::View* view,
+                                 int available_width,
                                  gfx::Rect* bounds) {
   DCHECK(view && bounds);
   gfx::Size view_size = view->GetPreferredSize();
-  if (!UsePref(view_size.width(), text_width, max_width))
+  if (!UsePref(view_size.width(), available_width))
     view_size = view->GetMinimumSize();
   if (view_size.width() + kInnerPadding < bounds->width()) {
     view->SetVisible(true);

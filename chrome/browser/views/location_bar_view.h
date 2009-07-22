@@ -383,30 +383,32 @@ class LocationBarView : public LocationBar,
   // Returns the height in pixels of the margin at the top of the bar.
   int TopMargin() const;
 
-  // Returns the width in pixels of the contents of the edit.
-  int TextDisplayWidth();
+  // Returns the amount of horizontal space (in pixels) out of
+  // |location_bar_width| that is not taken up by the actual text in
+  // location_entry_.
+  int AvailableWidth(int location_bar_width);
 
-  // Returns true if the preferred size should be used for a view whose width
-  // is pref_width, the width of the text in the edit is text_width, and
-  // max_width is the maximum width of the edit. If this returns false, the
+  // Returns whether the |available_width| is large enough to contain a view
+  // with preferred width |pref_width| at its preferred size. If this returns
+  // true, the preferred size should be used. If this returns false, the
   // minimum size of the view should be used.
-  bool UsePref(int pref_width, int text_width, int max_width);
+  bool UsePref(int pref_width, int available_width);
 
   // Returns true if the view needs to be resized. This determines whether the
   // min or pref should be used, and returns true if the view is not at that
   // size.
-  bool NeedsResize(View* view, int text_width, int max_width);
+  bool NeedsResize(View* view, int available_width);
 
   // Adjusts the keyword hint, selected keyword and type to search views
   // based on the contents of the edit. Returns true if something changed that
   // necessitates a layout.
-  bool AdjustHints(int text_width, int max_width);
+  bool AdjustHints(int available_width);
 
   // If View fits in the specified region, it is made visible and the
   // bounds are adjusted appropriately. If the View does not fit, it is
   // made invisible.
-  void LayoutView(bool leading, views::View* view, int text_width,
-                  int max_width, gfx::Rect* bounds);
+  void LayoutView(bool leading, views::View* view, int available_width,
+                  gfx::Rect* bounds);
 
   // Sets the security icon to display.  Note that no repaint is done.
   void SetSecurityIcon(ToolbarModel::Icon icon);
