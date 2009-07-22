@@ -187,69 +187,40 @@ typedef struct _FcMatcher {
 static const FcMatcher _FcMatchers [] = {
     { FC_FOUNDRY_OBJECT,	FcCompareString,	0, 0 },
 #define MATCH_FOUNDRY	    0
-#define MATCH_FOUNDRY_INDEX 0
-    
     { FC_CHARSET_OBJECT,	FcCompareCharSet,	1, 1 },
 #define MATCH_CHARSET	    1
-#define MATCH_CHARSET_INDEX 1
-    
     { FC_FAMILY_OBJECT,    	FcCompareFamily,	2, 4 },
 #define MATCH_FAMILY	    2
-#define MATCH_FAMILY_STRONG_INDEX   2
-#define MATCH_FAMILY_WEAK_INDEX	    4
-    
     { FC_LANG_OBJECT,		FcCompareLang,	3, 3 },
 #define MATCH_LANG	    3
 #define MATCH_LANG_INDEX    3
-    
     { FC_SPACING_OBJECT,	FcCompareNumber,	5, 5 },
 #define MATCH_SPACING	    4
-#define MATCH_SPACING_INDEX 5
-    
     { FC_PIXEL_SIZE_OBJECT,	FcCompareSize,	6, 6 },
 #define MATCH_PIXEL_SIZE    5
-#define MATCH_PIXEL_SIZE_INDEX	6
-    
     { FC_STYLE_OBJECT,		FcCompareString,	7, 7 },
 #define MATCH_STYLE	    6
-#define MATCH_STYLE_INDEX   7
-    
     { FC_SLANT_OBJECT,		FcCompareNumber,	8, 8 },
 #define MATCH_SLANT	    7
-#define MATCH_SLANT_INDEX   8
-    
     { FC_WEIGHT_OBJECT,		FcCompareNumber,	9, 9 },
 #define MATCH_WEIGHT	    8
-#define MATCH_WEIGHT_INDEX  9
-    
     { FC_WIDTH_OBJECT,		FcCompareNumber,	10, 10 },
 #define MATCH_WIDTH	    9
-#define MATCH_WIDTH_INDEX   10
-    
     { FC_DECORATIVE_OBJECT,	FcCompareBool,		11, 11 },
 #define MATCH_DECORATIVE	10
-#define MATCH_DECORATIVE_INDEX	11
-
     { FC_ANTIALIAS_OBJECT,	FcCompareBool,		12, 12 },
 #define MATCH_ANTIALIAS		    11
-#define MATCH_ANTIALIAS_INDEX	    12
-    
     { FC_RASTERIZER_OBJECT,	FcCompareString,	13, 13 },
 #define MATCH_RASTERIZER	    12
-#define MATCH_RASTERIZER_INDEX	    13
-
     { FC_OUTLINE_OBJECT,	FcCompareBool,		14, 14 },
 #define MATCH_OUTLINE		    13
-#define MATCH_OUTLINE_INDEX	    14
-
     { FC_FONTVERSION_OBJECT,	FcCompareNumber,	15, 15 },
 #define MATCH_FONTVERSION	    14
-#define MATCH_FONTVERSION_INDEX	    15
 };
 
 #define NUM_MATCH_VALUES    16
 
-static FcMatcher*
+static const FcMatcher*
 FcObjectToMatcher (FcObject object)
 {
     int 	i;
@@ -305,7 +276,7 @@ FcCompareValueList (FcObject	 object,
     FcValueListPtr  v1, v2;
     double    	    v, best, bestStrong, bestWeak;
     int		    j;
-    FcMatcher       *match = FcObjectToMatcher(object);
+    const FcMatcher *match = FcObjectToMatcher(object);
 
     if (!match)
     {
