@@ -548,6 +548,12 @@
       <message name="IDS_LINUX_CERTIFICATES_CONFIG_URL" translateable="false">
         http://code.google.com/p/chromium/wiki/LinuxCertManagement
       </message>
+
+      <!-- The URL for Linux proxy configuration help when not running under -->
+      <!-- a supported desktop environment. -->
+      <message name="IDS_LINUX_PROXY_CONFIG_URL" translateable="false">
+        http://code.google.com/p/chromium/wiki/LinuxProxyConfig
+      </message>
     </messages>
   </release>
 </grit>
