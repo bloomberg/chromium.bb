@@ -90,6 +90,9 @@ void ExtensionProcessManager::RegisterExtensionProcess(
   if (it != process_ids_.end() && (*it).second == process_id)
     return;
 
+  // Extension ids should get removed from the map before the process ids get
+  // reused from a dead renderer.
+  DCHECK(it == process_ids_.end());
   process_ids_[extension_id] = process_id;
 
   ExtensionsService* extension_service =
