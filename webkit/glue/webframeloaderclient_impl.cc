@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,6 @@ MSVC_POP_WARNING();
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/searchable_form_data.h"
-#include "webkit/glue/webappcachecontext.h"
 #include "webkit/glue/webdatasource_impl.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
