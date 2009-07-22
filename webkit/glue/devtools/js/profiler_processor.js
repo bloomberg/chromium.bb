@@ -127,6 +127,14 @@ devtools.profiler.JsProfile.JS_NATIVE_FUNC_RE = /\ native\ \w+\.js:\d+$/;
  */
 devtools.profiler.JsProfile.JS_NATIVE_SCRIPT_RE = /^Script:\ native/;
 
+/**
+ * RegExp that filters out devtools functions. See inject.js and
+ * inject_dispatch.js.
+ * @type {RegExp}
+ */
+devtools.profiler.JsProfile.JS_DEVTOOLS_FUNC_RE =
+    /^\w+:\ devtools(\$\$|\.Injected)/;
+
 
 /**
  * @override
@@ -135,7 +143,8 @@ devtools.profiler.JsProfile.prototype.skipThisFunction = function(name) {
   return !devtools.profiler.JsProfile.JS_FUNC_RE.test(name) ||
       // To profile V8's natives comment out two lines below and '||' above.
       devtools.profiler.JsProfile.JS_NATIVE_FUNC_RE.test(name) ||
-      devtools.profiler.JsProfile.JS_NATIVE_SCRIPT_RE.test(name);
+      devtools.profiler.JsProfile.JS_NATIVE_SCRIPT_RE.test(name) ||
+      devtools.profiler.JsProfile.JS_DEVTOOLS_FUNC_RE.test(name);
 };
 
 
