@@ -3,6 +3,10 @@ body {
   font-size: 13px;
 }
 
+.todo {
+  color: red;
+}
+
 h2,h3 {
   margin-top: 2em;
 }

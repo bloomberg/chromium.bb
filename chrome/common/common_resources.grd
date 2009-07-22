@@ -11,6 +11,7 @@
     <includes>
       <include name="IDR_JSTEMPLATE_JS" file="..\third_party\jstemplate\jstemplate_compiled.js" type="BINDATA" />
       <include name="IDR_I18N_TEMPLATE_JS" file="..\browser\resources\i18n_template.js" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON" file="extensions\api\extension_api.json" type="BINDATA" />
     </includes>
   </release>
 </grit>

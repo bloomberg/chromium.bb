@@ -348,38 +348,3 @@ chrome.JSONSchemaValidator.prototype.addError = function(path, key,
     message: chrome.JSONSchemaValidator.formatError(key, replacements)
   });
 };
-
-// Set up chrome.types with some commonly used types...
-(function() {
-  function extend(base, ext) {
-    var result = {};
-    for (var p in base)
-      result[p] = base[p];
-    for (var p in ext)
-      result[p] = ext[p];
-    return result;
-  }
-
-  var types = {};
-  types.opt = {optional: true};
-  types.bool = {type: "boolean"};
-  types.int = {type: "integer"};
-  types.str = {type: "string"};
-  types.fun = {type: "function"};
-  types.pInt = extend(types.int, {minimum: 0});
-  types.optBool = extend(types.bool, types.opt);
-  types.optInt = extend(types.int, types.opt);
-  types.optStr = extend(types.str, types.opt);
-  types.optFun = extend(types.fun, types.opt);
-  types.optPInt = extend(types.pInt, types.opt);
-  types.singleOrListOf = function(type) {
-    return {
-      choice: [
-        type,
-        { type: "array",  item: type,  minItems: 1 }
-      ]
-    };
-  };
-
-  chrome.types = types;
-})();

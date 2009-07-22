@@ -9,9 +9,8 @@
  * 
  * - To have available via XHR (relative path):
  *   1) API_TEMPLATE which is the main template for the api pages.
- *   2) A file located at SCHEMA_PATH + |apiName| + SCHEMA_EXTENSION
- *      which is shared with the extension system and defines the methods and 
- *      events contained in one api.
+ *   2) A file located at SCHEMA which is shared with the extension system and
+ *      defines the methods and events contained in one api.
  *   3) An |apiName| + OVERVIEW_EXTENSION file which contains static authored
  *      content that is inserted into the "overview" slot in the API_TEMPLATE.
  *
@@ -23,8 +22,7 @@
  */
  
 var API_TEMPLATE = "../template/api_template.html";
-var SCHEMA_PATH = "../../api/";
-var SCHEMA_EXTENSION = ".json";
+var SCHEMA = "../../api/extension_api.json";
 var OVERVIEW_EXTENSION = "_overview.html";
 var REQUEST_TIMEOUT = 2000;
 
@@ -34,24 +32,25 @@ Array.prototype.each = function(f) {
   }
 }
 
+// name of the api this reference page is describing. i.e. "bookmarks", "tabs".
+var apiName;
+
 window.onload = function() {
   // Determine api module being rendered. Expect ".../<apiName>.html"
   var pathParts = document.location.href.split(/\/|\./);
-  var apiName = pathParts[pathParts.length - 2];
-  var apiOverviewName = apiName + OVERVIEW_EXTENSION;
-  var apiSchemaName = SCHEMA_PATH + apiName + SCHEMA_EXTENSION;
+  apiName = pathParts[pathParts.length - 2];
   
   // Fetch the api template and insert into the <body>.
   fetchContent(API_TEMPLATE, function(templateContent) {
     document.getElementsByTagName("body")[0].innerHTML = templateContent;
 
     // Fetch the overview and insert into the "overview" <div>.
-    fetchContent(apiOverviewName, function(overviewContent) {
+    fetchContent(apiName + OVERVIEW_EXTENSION, function(overviewContent) {
       document.getElementById("overview").innerHTML = overviewContent;
 
       // Now the page is composed with the authored content, we fetch the schema
       // and populate the templates.
-      fetchContent(apiSchemaName, renderTemplate);	
+      fetchContent(SCHEMA, renderTemplate);	
     });
   });	
 }
@@ -96,12 +95,19 @@ function fetchContent(url, onSuccess) {
 }
 
 /**
- * Parses the content in |module| to json, adds any additional required values,
- * renders to html via JSTemplate, and unhides the <body>.
+ * Parses the content in |schema| to json, find appropriate api, adds any
+ * additional required values, renders to html via JSTemplate, and unhides the
+ * <body>.
  * This uses the root <html> element (the entire document) as the template.
  */
-function renderTemplate(module) {
-  var apiDefinition = JSON.parse(module);
+function renderTemplate(schema) {
+  var apiDefinition;
+  
+  JSON.parse(schema).each(function(module) {
+    if (module.namespace == apiName)
+      apiDefinition = module;
+  });
+  
   preprocessApi(apiDefinition);
 
   // Render to template
@@ -119,15 +125,56 @@ function renderTemplate(module) {
  */
 function preprocessApi(schema) {
   schema.functions.each(function(f) {
-    f.fullName = schema.namespace + "." + f.name;
-    if (f.callbackParameters) {
-      f.callbackSignature = generateSignatureString(f.callbackParameters);
+    f.fullName = "chrome." + schema.namespace + "." + f.name;
+    assignTypeNames(f);
+
+    // Look for a callback that defines parameters.
+    if (f.parameters.length > 0) {
+      var lastParam = f.parameters[f.parameters.length - 1];
+      if (lastParam.type == "function" && lastParam.parameters) {
+        assignTypeNames(lastParam);        
+        f.callbackParameters = lastParam.parameters;
+        f.callbackSignature = generateSignatureString(lastParam.parameters);
+      }
     }
   });
     
   schema.events.each(function(e) {
+    assignTypeNames(e);    
     e.callSignature = generateSignatureString(e.parameters);
   });
+}
+
+/**
+ * Assigns a typeName(param) to each of the parameters of |f|.
+ */
+function assignTypeNames(f) {
+  f.parameters.each(function(p) {
+    p.typeName = typeName(p);
+  });
+}
+
+/**
+ * Generates a short text summary of the |schema| type
+ */
+function typeName(schema) {
+  if (schema.$ref)
+    return schema.$ref;
+
+  if (schema.choice) {
+    var typeNames = [];
+    schema.choice.each(function(c) {
+      typeNames.push(typeName(c));
+    });
+    
+    return typeNames.join(" or ");
+  }
+  
+  if (schema.type == "array") {
+    return "array of " + typeName(schema.item);
+  }
+  
+  return schema.type;
 }
 
 /** 
@@ -137,7 +184,7 @@ function preprocessApi(schema) {
 function generateSignatureString(parameters) {
   var retval = [];
   parameters.each(function(param, i) {
-    retval.push(param.type + " " + (param.type ? param.type : param["$ref"]));
+    retval.push(param.typeName + " " + param.name);
   });
   
   return retval.join(", ");	

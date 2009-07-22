@@ -12,6 +12,7 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/js_only_v8_extensions.h"
 #include "chrome/renderer/render_view.h"
+#include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
 #include "webkit/glue/webframe.h"
 
@@ -64,7 +65,9 @@ class ExtensionImpl : public ExtensionBase {
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) {
-    if (name->Equals(v8::String::New("GetViews"))) {
+    if (name->Equals(v8::String::New("GetExtensionAPIDefinition"))) {
+      return v8::FunctionTemplate::New(GetExtensionAPIDefinition);
+    } else if (name->Equals(v8::String::New("GetViews"))) {
       return v8::FunctionTemplate::New(GetViews);
     } else if (name->Equals(v8::String::New("GetNextRequestId"))) {
       return v8::FunctionTemplate::New(GetNextRequestId);
@@ -85,6 +88,11 @@ class ExtensionImpl : public ExtensionBase {
     DCHECK(renderview);
     GURL url = renderview->webview()->GetMainFrame()->GetURL();
     return url.host();
+  }
+
+  static v8::Handle<v8::Value> GetExtensionAPIDefinition(
+      const v8::Arguments& args) {
+    return v8::String::New(GetStringResource<IDR_EXTENSION_API_JSON>());
   }
 
   static v8::Handle<v8::Value> GetViews(const v8::Arguments& args) {

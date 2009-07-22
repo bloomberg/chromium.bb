@@ -12,6 +12,7 @@
 
 var chrome = chrome || {};
 (function() {
+  native function GetExtensionAPIDefinition();
   native function StartRequest();
   native function GetCurrentPageActions();
   native function GetViews();
@@ -93,298 +94,71 @@ var chrome = chrome || {};
     }
     StartRequest(functionName, sargs, requestId, hasCallback);
   }
+  
+  // Read api definitions and setup api functions in the chrome namespace.
+  // TODO(rafaelw): Consider defining a json schema for an api definition
+  //   and validating either here, in a unit_test or both.
+  // TODO(rafaelw): Handle synchronous functions.
+  // TOOD(rafaelw): Consider providing some convenient override points
+  //   for api functions that wish to insert themselves into the call. 
+  var apiDefinitions = JSON.parse(GetExtensionAPIDefinition());
 
-  //----------------------------------------------------------------------------
-
-  // Windows.
-  chrome.windows = {};
-
-  chrome.windows.get = function(windowId, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("windows.get", windowId, callback);
-  };
-
-  chrome.windows.get.params = [
-    chrome.types.pInt,
-    chrome.types.fun
-  ];
-
-  chrome.windows.getCurrent = function(callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("windows.getCurrent", null, callback);
-  };
-
-  chrome.windows.getCurrent.params = [
-    chrome.types.fun
-  ];
-
-  chrome.windows.getLastFocused = function(callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("windows.getLastFocused", null, callback);
-  };
-
-  chrome.windows.getLastFocused.params = [
-    chrome.types.fun
-  ];
-
-  chrome.windows.getAll = function(populate, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("windows.getAll", populate, callback);
-  };
-
-  chrome.windows.getAll.params = [
-    chrome.types.optBool,
-    chrome.types.fun
-  ];
-
-  chrome.windows.create = function(createData, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("windows.create", createData, callback);
-  };
-  chrome.windows.create.params = [
-    {
-      type: "object",
-      properties: {
-        url: chrome.types.optStr,
-        left: chrome.types.optInt,
-        top: chrome.types.optInt,
-        width: chrome.types.optPInt,
-        height: chrome.types.optPInt
-      },
-      optional: true
-    },
-    chrome.types.optFun
-  ];
-
-  chrome.windows.update = function(windowId, updateData, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("windows.update", [windowId, updateData], callback);
-  };
-  chrome.windows.update.params = [
-    chrome.types.pInt,
-    {
-      type: "object",
-      properties: {
-        left: chrome.types.optInt,
-        top: chrome.types.optInt,
-        width: chrome.types.optPInt,
-        height: chrome.types.optPInt
-      },
-    },
-    chrome.types.optFun
-  ];
-
-  chrome.windows.remove = function(windowId, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("windows.remove", windowId, callback);
-  };
-
-  chrome.windows.remove.params = [
-    chrome.types.pInt,
-    chrome.types.optFun
-  ];
-
-  // sends (windowId).
-  // *WILL* be followed by tab-attached AND then tab-selection-changed.
-  chrome.windows.onCreated = new chrome.Event("windows.onCreated");
-
-  // sends (windowId).
-  // *WILL* be preceded by sequences of tab-removed AND then
-  // tab-selection-changed -- one for each tab that was contained in the window
-  // that closed
-  chrome.windows.onRemoved = new chrome.Event("windows.onRemoved");
-
-  // sends (windowId).
-  chrome.windows.onFocusChanged =
-        new chrome.Event("windows.onFocusChanged");
-
-  //----------------------------------------------------------------------------
-
-  // Tabs
-  chrome.tabs = {};
-
-  chrome.tabs.get = function(tabId, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("tabs.get", tabId, callback);
-  };
-
-  chrome.tabs.get.params = [
-    chrome.types.pInt,
-    chrome.types.fun
-  ];
-
-  chrome.tabs.getSelected = function(windowId, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("tabs.getSelected", windowId, callback);
-  };
-
-  chrome.tabs.getSelected.params = [
-    chrome.types.optPInt,
-    chrome.types.fun
-  ];
-
-  chrome.tabs.getAllInWindow = function(windowId, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("tabs.getAllInWindow", windowId, callback);
-  };
-
-  chrome.tabs.getAllInWindow.params = [
-    chrome.types.optPInt,
-    chrome.types.fun
-  ];
-
-  chrome.tabs.create = function(tab, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("tabs.create", tab, callback);
-  };
-
-  chrome.tabs.create.params = [
-    {
-      type: "object",
-      properties: {
-        windowId: chrome.types.optPInt,
-        index: chrome.types.optPInt,
-        url: chrome.types.optStr,
-        selected: chrome.types.optBool
-      }
-    },
-    chrome.types.optFun
-  ];
-
-  chrome.tabs.update = function(tabId, updates, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("tabs.update", [tabId, updates], callback);
-  };
-
-  chrome.tabs.update.params = [
-    chrome.types.pInt,
-    {
-      type: "object",
-      properties: {
-        url: chrome.types.optStr,
-        selected: chrome.types.optBool
-      }
-    },
-    chrome.types.optFun
-  ];
-
-  chrome.tabs.move = function(tabId, moveProps, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("tabs.move", [tabId, moveProps], callback);
-  };
-
-  chrome.tabs.move.params = [
-    chrome.types.pInt,
-    {
-      type: "object",
-      properties: {
-        windowId: chrome.types.optPInt,
-        index: chrome.types.pInt
-      }
-    },
-    chrome.types.optFun
-  ];
-
-  chrome.tabs.remove = function(tabId, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("tabs.remove", tabId, callback);
-  };
-
-  chrome.tabs.remove.params = [
-    chrome.types.pInt,
-    chrome.types.optFun
-  ];
-
-  chrome.tabs.detectLanguage = function(tabId, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("tabs.detectLanguage", tabId, callback);
-  };
-
-  chrome.tabs.detectLanguage.params = [
-    chrome.types.optPInt,
-    chrome.types.optFun
-  ];
-
-  chrome.tabs.connect = function(tabId, opt_name) {
-    validate(arguments, arguments.callee.params);
-    var portId = OpenChannelToTab(tabId, chrome.extension.id_, opt_name || "");
-    return chromeHidden.Port.createPort(portId, opt_name);
-  };
-
-  chrome.tabs.connect.params = [
-    chrome.types.pInt,
-    chrome.types.optStr
-  ];
-
-  // Sends ({Tab}).
-  // Will *NOT* be followed by tab-attached - it is implied.
-  // *MAY* be followed by tab-selection-changed.
-  chrome.tabs.onCreated = new chrome.Event("tabs.onCreated");
-
-  // Sends (tabId, {ChangedProps}).
-  chrome.tabs.onUpdated = new chrome.Event("tabs.onUpdated");
-
-  // Sends (tabId, {windowId, fromIndex, toIndex}).
-  // Tabs can only "move" within a window.
-  chrome.tabs.onMoved = new chrome.Event("tabs.onMoved");
-
-  // Sends (tabId, {windowId}).
-  chrome.tabs.onSelectionChanged =
-       new chrome.Event("tabs.onSelectionChanged");
-
-  // Sends (tabId, {newWindowId, newPosition}).
-  // *MAY* be followed by tab-selection-changed.
-  chrome.tabs.onAttached = new chrome.Event("tabs.onAttached");
-
-  // Sends (tabId, {oldWindowId, oldPosition}).
-  // *WILL* be followed by tab-selection-changed.
-  chrome.tabs.onDetached = new chrome.Event("tabs.onDetached");
-
-  // Sends (tabId).
-  // *WILL* be followed by tab-selection-changed.
-  // Will *NOT* be followed or preceded by tab-detached.
-  chrome.tabs.onRemoved = new chrome.Event("tabs.onRemoved");
-
-  //----------------------------------------------------------------------------
-
-  // PageActions.
-  chrome.pageActions = {};
-
-  chrome.pageActions.enableForTab = function(pageActionId, action) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("pageActions.enableForTab", [pageActionId, action]);
+  // Using forEach for convenience, and to bind |module|s & |apiDefs|s via
+  // closures.
+  function forEach(a, f) {
+    for (var i = 0; i < a.length; i++) {
+      f(a[i], i);
+    }
   }
 
-  chrome.pageActions.enableForTab.params = [
-    chrome.types.str,
-    {
-      type: "object",
-      properties: {
-        tabId: chrome.types.pInt,
-        url: chrome.types.str,
-        title: chrome.types.optStr,
-        iconId: chrome.types.optPInt,
-      },
-      optional: false
-    }
-  ];
+  forEach(apiDefinitions, function(apiDef) {
+    var module = {};
+    chrome[apiDef.namespace] = module;
+    
+    // Setup Functions.
+    forEach(apiDef.functions, function(functionDef) {
+      var paramSchemas = functionDef.parameters;
+      
+      module[functionDef.name] = function() {
+        validate(arguments, paramSchemas);
+        
+        var functionName = apiDef.namespace + "." + functionDef.name;
+        var args = null;
+        var callback = null;
+        var argCount = arguments.length;
+        
+        // Look for callback param.
+        if (paramSchemas.length > 0 &&
+            arguments.length == paramSchemas.length &&
+            paramSchemas[paramSchemas.length - 1].type == "function") {
+          callback = arguments[paramSchemas.length - 1];
+          --argCount;
+        }
+        
+        // Calls with one argument expect singular argument. Calls with multiple
+        // expect a list.
+        if (argCount == 1)
+          args = arguments[0];
+        if (argCount > 1) {
+          args = [];
+          for (var k = 0; k < argCount; k++) {
+            args[k] = arguments[k];
+          }
+        }
+        
+        // Make the request.
+        sendRequest(functionName, args, callback);        
+      }
+    });
+    
+    // Setup Events
+    forEach(apiDef.events, function(eventDef) {
+      var eventName = apiDef.namespace + "." + eventDef.name;
+      module[eventDef.name] = new chrome.Event(eventName);
+    });
+  });
 
-  chrome.pageActions.disableForTab = function(pageActionId, action) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("pageActions.disableForTab", [pageActionId, action]);
-  }
-
-  chrome.pageActions.disableForTab.params = [
-    chrome.types.str,
-    {
-      type: "object",
-      properties: {
-        tabId: chrome.types.pInt,
-        url: chrome.types.str
-      },
-      optional: false
-    }
-  ];
+  // --- Setup additional api's not currently handled in common/extensions/api
 
   // Page action events send (pageActionId, {tabId, tabUrl}).
   function setupPageActionEvents(extensionId) {
@@ -397,59 +171,20 @@ var chrome = chrome || {};
     }
   }
 
-  //----------------------------------------------------------------------------
-  // Bookmarks
-  chrome.bookmarks = {};
-
-  chrome.bookmarks.get = function(ids, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.get", ids, callback);
-  };
-
-  chrome.bookmarks.get.params = [
-    chrome.types.singleOrListOf(chrome.types.pInt),
-    chrome.types.fun
-  ];
-
-  chrome.bookmarks.getChildren = function(id, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.getChildren", id, callback);
-  };
-
-  chrome.bookmarks.getChildren.params = [
-    chrome.types.pInt,
-    chrome.types.fun
-  ];
-
-  chrome.bookmarks.getTree = function(callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.getTree", null, callback);
-  };
-
-  // TODO(erikkay): allow it to take an optional id as a starting point
-  // BUG=13727
-  chrome.bookmarks.getTree.params = [
-    chrome.types.fun
-  ];
-
-  chrome.bookmarks.search = function(query, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.search", query, callback);
-  };
-
-  chrome.bookmarks.search.params = [
-    chrome.types.str,
-    chrome.types.fun
-  ];
-
+  // Bookmarks custom parameter handling.
   chrome.bookmarks.remove = function(id, callback) {
     validate(arguments, arguments.callee.params);
     sendRequest("bookmarks.remove", [id, false], callback);
   };
 
   chrome.bookmarks.remove.params = [
-    chrome.types.singleOrListOf(chrome.types.pInt),
-    chrome.types.optFun
+    {
+      choice : [
+        {type: "integer", minimum: 0},
+        {type: "array", item: {type: "integer", minimum: 0}, minItems: 1}
+      ] 
+    },
+    {type: "function", optional: true}
   ];
 
   chrome.bookmarks.removeTree = function(id, callback) {
@@ -458,85 +193,23 @@ var chrome = chrome || {};
   };
 
   chrome.bookmarks.removeTree.params = [
-    chrome.types.pInt,
-    chrome.types.optFun
+    {type: "integer", minimum: 0},
+    {type: "function", optional: true}
   ];
 
-  chrome.bookmarks.create = function(bookmark, callback) {
+  // Tabs connect()
+  chrome.tabs.connect = function(tabId, opt_name) {
     validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.create", bookmark, callback);
+    var portId = OpenChannelToTab(tabId, chrome.extension.id_, opt_name || "");
+    return chromeHidden.Port.createPort(portId, opt_name);
   };
 
-  chrome.bookmarks.create.params = [
-    {
-      type: "object",
-      properties: {
-        parentId: chrome.types.optPInt,
-        index: chrome.types.optPInt,
-        title: chrome.types.optStr,
-        url: chrome.types.optStr,
-      }
-    },
-    chrome.types.optFun
+  chrome.tabs.connect.params = [
+    {type: "integer", optional: true, minimum: 0},
+    {type: "string", optional: true}
   ];
 
-  chrome.bookmarks.move = function(id, destination, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.move", [id, destination], callback);
-  };
-
-  chrome.bookmarks.move.params = [
-    chrome.types.pInt,
-    {
-      type: "object",
-      properties: {
-        parentId: chrome.types.optPInt,
-        index: chrome.types.optPInt
-      }
-    },
-    chrome.types.optFun
-  ];
-
-  chrome.bookmarks.update = function(id, changes, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.update", [id, changes], callback);
-  };
-
-  chrome.bookmarks.update.params = [
-    chrome.types.pInt,
-    {
-      type: "object",
-      properties: {
-        title: chrome.types.optStr
-      }
-    },
-    chrome.types.optFun
-  ];
-
-  // bookmark events
-
-  // Sends (id, {title, url, parentId, index, dateAdded, dateGroupModified})
-  // date values are milliseconds since the UTC epoch.
-  chrome.bookmarks.onAdded = new chrome.Event("bookmarks.onAdded");
-
-  // Sends (id, {parentId, index})
-  chrome.bookmarks.onRemoved = new chrome.Event("bookmarks.onRemoved");
-
-  // Sends (id, object) where object has list of properties that have changed.
-  // Currently, this only ever includes 'title'.
-  chrome.bookmarks.onChanged = new chrome.Event("bookmarks.onChanged");
-
-  // Sends (id, {parentId, index, oldParentId, oldIndex})
-  chrome.bookmarks.onMoved = new chrome.Event("bookmarks.onMoved");
-
-  // Sends (id, [childrenIds])
-  chrome.bookmarks.onChildrenReordered =
-      new chrome.Event("bookmarks.onChildrenReordered");
-
-
-  //----------------------------------------------------------------------------
-
-  // Self.
+  // chrome.self / chrome.extension.
   chrome.self = chrome.self || {};
 
   chromeHidden.onLoad.addListener(function (extensionId) {
