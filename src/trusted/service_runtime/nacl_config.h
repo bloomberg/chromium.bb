@@ -114,4 +114,10 @@
 #define NACL_HALT mov pc, #0
 #endif
 
+#if NACL_BUILD_SUBARCH == 64
+# define NACL_CALL_STEP               0x10
+#else
+# define NACL_CALL_STEP               0xc
+#endif
+
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_ */

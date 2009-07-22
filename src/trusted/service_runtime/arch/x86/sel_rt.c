@@ -74,8 +74,8 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->ebx = 0;
   ntcp->esi = 0;
   ntcp->edi = 0;
-  ntcp->ebp = 0;
-  ntcp->esp = esp;
+  ntcp->frame_ptr = 0;
+  ntcp->stack_ptr = esp;
   ntcp->eip = eip;
 
   ntcp->cs = nap->code_seg_sel;
@@ -93,4 +93,3 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
   return 1;
 }
-

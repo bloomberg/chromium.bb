@@ -88,19 +88,23 @@ uint32_t NaClGetEbx(void);
  *
  * We assume that the following is packed.  This is true for gcc and
  * msvc for x86, but we will include a check that sizeof(struct
- * NaClThreadContext) == 9*4 == 36 bytes.
+ * NaClThreadContext) == 9*4 == 36 bytes. (32-bit mode)
  */
 struct NaClThreadContext {
-  uint32_t    ebx, esi, edi, ebp, esp;  /* ecx, edx, eax, eflags not saved */
-  /*          0    4    8    c    10 */
+  uint32_t    ebx, esi, edi;  /* ecx, edx, eax, eflags not saved */
+  /*          0    4    8 */
+  uintptr_t   frame_ptr, stack_ptr;
+  /*          c          10 */
+  /* 64-bit   10         18 (there is a padding at 0xc - 0x10) */
   uint32_t    eip;  /* return addr */
   /*          14 */
+  /* 64-bit   20 */
   uint16_t    cs, ds, es, fs, gs, ss;
   /*          18  1a  1c  1e  20  22 */
+  /* 64-bit   24  26  28  2a  2c  2e */
   /*
    * gs is our TLS base in the app; on the host side it's either fs or gs.
    */
 };
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__ */
-

@@ -59,13 +59,13 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * to %esp, then pushes the thread ID (LDT index) onto the stack as
    * argument to NaClSyscallCSegHook.  See nacl_syscall.S.
    */
-  natp->sys.esp = (NaClGetEsp() & ~0xf) + 4;
+  natp->sys.stack_ptr = (NaClGetEsp() & ~0xf) + 4;
 
   nap = natp->nap;
 
   NaClSwitch(
       new_eip,
-      natp->user.ebp,
+      natp->user.frame_ptr,
       natp->user.edi,
       natp->user.esi,
       natp->user.ebx,
@@ -77,7 +77,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
       /* rest popped by NaCl_springboard */
       (uint32_t) natp->user.ds,
       0,  /* %eax not used to return */
-      natp->user.esp,
+      natp->user.stack_ptr,
       (uint32_t) natp->user.ss);
 }
 
@@ -92,7 +92,7 @@ NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
   nap = natp->nap;
   NaClSwitch(
       new_eip,
-      natp->user.ebp,
+      natp->user.frame_ptr,
       natp->user.edi,
       natp->user.esi,
       natp->user.ebx,
@@ -104,7 +104,6 @@ NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
       /* rest popped by NaCl_springboard */
       (uint32_t) natp->user.ds,
       natp->sysret,
-      natp->user.esp,
+      natp->user.stack_ptr,
       (uint32_t) natp->user.ss);
 }
-
