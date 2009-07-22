@@ -194,7 +194,11 @@ void AudioRendererImpl::OnStateChanged(AudioOutputStream::State state,
 
   switch (state) {
     case AudioOutputStream::STATE_ERROR:
-      host()->SetError(media::PIPELINE_ERROR_AUDIO_HARDWARE);
+      // We receive this error if we counter an hardware error on the browser
+      // side. We can proceed with ignoring the audio stream.
+      // TODO(hclam): We need more handling of these kind of error. For example
+      // re-try creating the audio output stream on the browser side or fail
+      // nicely and report to demuxer that the whole audio stream is discarded.
       break;
     // TODO(hclam): handle these events.
     case AudioOutputStream::STATE_STARTED:

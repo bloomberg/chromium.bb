@@ -50,10 +50,8 @@ class MediaTest : public UITest {
 // <video> and <audio> only works stably on Windows.
 #if defined(OS_WIN)
 
-// TODO(hclam): The following test is disabled because it contains audio and
-// this test doesn't work with audio device.
-TEST_F(MediaTest, DISABLED_VideoBearH264) {
-  PlayVideo("bear.mp4");
+TEST_F(MediaTest, VideoBearTheora) {
+  PlayVideo("bear.ogv");
 }
 
 TEST_F(MediaTest, VideoBearSilentTheora) {
