@@ -646,7 +646,6 @@ devtools.DebuggerAgent.prototype.handleDebuggerOutput_ = function(output) {
     throw e;
   }
 
-
   if (msg.getType() == 'event') {
     if (msg.getEvent() == 'break') {
       this.handleBreakEvent_(msg);
@@ -1261,8 +1260,12 @@ devtools.CallFrame.doEvalInCallFrame =
         'disable_break': false
       },
       function(response) {
-        var body = response.getBody();
-        callback(devtools.DebuggerAgent.formatObjectReference_(body));
+        if (response.isSuccess()) {
+          callback(devtools.DebuggerAgent.formatObjectReference_(
+              response.getBody()), false /* exception */);
+        } else {
+          callback(response.getMessage(), true /* exception */);
+        }
       });
 };
 
@@ -1368,8 +1371,7 @@ devtools.DebugCommand.prototype.toJSONProtocol = function() {
  * @constructor
  */
 devtools.DebuggerMessage = function(msg) {
-  var jsExpression = '[' + msg + '][0]';
-  this.packet_ = eval(jsExpression);
+  this.packet_ = JSON.parse(msg);
   this.refs_ = [];
   if (this.packet_.refs) {
     for (var i = 0; i < this.packet_.refs.length; i++) {
