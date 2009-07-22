@@ -1167,7 +1167,8 @@ var dnd = {
   handleDragStart: function(e) {
     var thumbnail = mostVisited.getItem(e.target);
     if (thumbnail) {
-      e.dataTransfer.setData('text/uri-list', mostVisited.getHref(thumbnail));
+      // Don't set data since HTML5 does not allow setting the name for
+      // url-list. Instead, we just rely on the dragging of link behavior.
       this.dragItem = thumbnail;
       addClass(this.dragItem, 'dragging');
       this.dragItem.style.zIndex = 2;
