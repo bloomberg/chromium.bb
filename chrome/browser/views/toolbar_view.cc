@@ -351,9 +351,19 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 // ToolbarView, views::Button::ButtonListener implementation:
 
 void ToolbarView::ButtonPressed(views::Button* sender) {
+  int id = sender->tag();
+  switch (id) {
+    case IDC_BACK:
+    case IDC_FORWARD:
+    case IDC_RELOAD:
+      // Forcibly reset the location bar, since otherwise it won't discard any
+      // ongoing user edits, since it doesn't realize this is a user-initiated
+      // action.
+      location_bar_->Revert();
+      break;
+  }
   browser_->ExecuteCommandWithDisposition(
-      sender->tag(),
-      event_utils::DispositionFromEventFlags(sender->mouse_event_flags()));
+      id, event_utils::DispositionFromEventFlags(sender->mouse_event_flags()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
