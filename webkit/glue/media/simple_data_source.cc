@@ -36,7 +36,6 @@ SimpleDataSource::SimpleDataSource(
     : render_loop_(render_loop),
       bridge_factory_(bridge_factory),
       size_(-1),
-      position_(0),
       state_(UNINITIALIZED) {
   DCHECK(render_loop);
 }
@@ -81,24 +80,20 @@ const media::MediaFormat& SimpleDataSource::media_format() {
   return media_format_;
 }
 
-size_t SimpleDataSource::Read(uint8* data, size_t size) {
+void SimpleDataSource::Read(int64 position,
+                            size_t size,
+                            uint8* data,
+                            ReadCallback* read_callback) {
   DCHECK_GE(size_, 0);
-  size_t copied = std::min(size, static_cast<size_t>(size_ - position_));
-  memcpy(data, data_.c_str() + position_, copied);
-  position_ += copied;
-  return copied;
-}
-
-bool SimpleDataSource::GetPosition(int64* position_out) {
-  *position_out = position_;
-  return true;
-}
-
-bool SimpleDataSource::SetPosition(int64 position) {
-  if (position < 0 || position > size_)
-    return false;
-  position_ = position;
-  return true;
+  if (position >= size_) {
+    read_callback->RunWithParams(Tuple1<size_t>(0));
+    delete read_callback;
+  } else {
+    size_t copied = std::min(size, static_cast<size_t>(size_ - position));
+    memcpy(data, data_.c_str() + position, copied);
+    read_callback->RunWithParams(Tuple1<size_t>(copied));
+    delete read_callback;
+  }
 }
 
 bool SimpleDataSource::GetSize(int64* size_out) {

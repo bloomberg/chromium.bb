@@ -41,7 +41,6 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
-#include "chrome/renderer/media/buffered_data_source.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
@@ -74,6 +73,7 @@
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_serializer.h"
 #include "webkit/glue/image_decoder.h"
+#include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -1859,8 +1859,8 @@ WebKit::WebMediaPlayer* RenderView::CreateWebMediaPlayer(
   if (!cmd_line->HasSwitch(switches::kSimpleDataSource)) {
     // Add the chrome specific media data source.
     factory->AddFactory(
-        BufferedDataSource::CreateFactory(MessageLoop::current(),
-                                          bridge_factory));
+        webkit_glue::BufferedDataSource::CreateFactory(MessageLoop::current(),
+                                                       bridge_factory));
   } else {
     factory->AddFactory(
         webkit_glue::SimpleDataSource::CreateFactory(MessageLoop::current(),

@@ -35,6 +35,7 @@
         '../../../media/media.gyp:media',
         '../../../net/net.gyp:net',
         '../../../skia/skia.gyp:skia',
+        '../../../testing/gmock.gyp:gmock',
         '../../../testing/gtest.gyp:gtest',
         '../../../third_party/npapi/npapi.gyp:npapi',
         '../../webkit.gyp:glue',
@@ -449,6 +450,7 @@
       'dependencies': [
         'test_shell_common',
         '../../../skia/skia.gyp:skia',
+        '../../../testing/gmock.gyp:gmock',
         '../../../testing/gtest.gyp:gtest',
       ],
       'sources': [
@@ -467,8 +469,12 @@
         '../../glue/dom_serializer_unittest.cc',
         '../../glue/glue_serialize_unittest.cc',
         '../../glue/iframe_redirect_unittest.cc',
+        '../../glue/media/buffered_data_source_unittest.cc',
         '../../glue/media/media_resource_loader_bridge_factory_unittest.cc',
+        '../../glue/media/mock_media_resource_loader_bridge_factory.h',
+        '../../glue/media/simple_data_source_unittest.cc',
         '../../glue/mimetype_unittest.cc',
+        '../../glue/mock_resource_loader_bridge.h',
         '../../glue/multipart_response_delegate_unittest.cc',
         '../../glue/password_autocomplete_listener_unittest.cc',
         '../../glue/regular_expression_unittest.cc',

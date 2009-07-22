@@ -41,9 +41,8 @@ class SimpleDataSource : public media::DataSource,
   virtual void Initialize(const std::string& url,
                           media::FilterCallback* callback);
   virtual const media::MediaFormat& media_format();
-  virtual size_t Read(uint8* data, size_t size);
-  virtual bool GetPosition(int64* position_out);
-  virtual bool SetPosition(int64 position);
+  virtual void Read(int64 position, size_t size,
+                    uint8* data, ReadCallback* read_callback);
   virtual bool GetSize(int64* size_out);
   virtual bool IsSeekable();
 
@@ -91,7 +90,6 @@ class SimpleDataSource : public media::DataSource,
   GURL url_;
   std::string data_;
   int64 size_;
-  int64 position_;
 
   // Simple state tracking variable.
   enum State {

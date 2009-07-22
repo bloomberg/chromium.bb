@@ -29,6 +29,7 @@
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/glue_serialize.h"
+#include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/webappcachecontext.h"
@@ -148,8 +149,9 @@ WebKit::WebMediaPlayer* TestWebViewDelegate::CreateWebMediaPlayer(
           base::GetCurrentProcId(),
           WebAppCacheContext::kNoAppCacheContextId,
           0);
-  factory->AddFactory(webkit_glue::SimpleDataSource::CreateFactory(
+  factory->AddFactory(webkit_glue::BufferedDataSource::CreateFactory(
       MessageLoop::current(), bridge_factory));
+  // TODO(hclam): Use command line switch to determine which data source to use.
   return new webkit_glue::WebMediaPlayerImpl(client, factory);
 }
 

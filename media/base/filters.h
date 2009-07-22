@@ -123,6 +123,9 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
 
 class DataSource : public MediaFilter {
  public:
+  typedef Callback1<size_t>::Type ReadCallback;
+  static const size_t kReadError = static_cast<size_t>(-1);
+
   static const FilterType filter_type() {
     return FILTER_DATA_SOURCE;
   }
@@ -133,8 +136,6 @@ class DataSource : public MediaFilter {
             mime_type == mime_type::kURL);
   }
 
-  static const size_t kReadError = static_cast<size_t>(-1);
-
   // Initialize a DataSource for the given URL, executing the callback upon
   // completion.
   virtual void Initialize(const std::string& url, FilterCallback* callback) = 0;
@@ -142,16 +143,13 @@ class DataSource : public MediaFilter {
   // Returns the MediaFormat for this filter.
   virtual const MediaFormat& media_format() = 0;
 
-  // Read the given amount of bytes into data, returns the number of bytes read
-  // if successful, kReadError otherwise.
-  virtual size_t Read(uint8* data, size_t size) = 0;
-
-  // Returns true and the current file position for this file, false if the
-  // file position could not be retrieved.
-  virtual bool GetPosition(int64* position_out) = 0;
-
-  // Returns true if the file position could be set, false otherwise.
-  virtual bool SetPosition(int64 position) = 0;
+  // Reads |size| bytes from |position| into |data|. And when the read is done
+  // or failed, |read_callback| is called with the number of bytes read or
+  // kReadError in case of error.
+  // TODO(hclam): should change |size| to int! It makes the code so messy
+  // with size_t and int all over the place..
+  virtual void Read(int64 position, size_t size,
+                    uint8* data, ReadCallback* read_callback) = 0;
 
   // Returns true and the file size, false if the file size could not be
   // retrieved.

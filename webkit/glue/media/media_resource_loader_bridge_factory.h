@@ -38,6 +38,11 @@ class MediaResourceLoaderBridgeFactory {
       int64 first_byte_position,
       int64 last_byte_position);
 
+ protected:
+  // An empty constructor only used by inherited classes.
+  MediaResourceLoaderBridgeFactory() {
+  }
+
  private:
   FRIEND_TEST(MediaResourceLoaderBridgeFactoryTest, GenerateHeaders);
 
