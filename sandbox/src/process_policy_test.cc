@@ -99,7 +99,7 @@ SBOX_TESTS_COMMAND int Process_RunApp(int argc, wchar_t **argv) {
   if (argc != 1) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
-  if ((NULL != argv) && (NULL == argv[0])) {
+  if ((NULL == argv) || (NULL == argv[0])) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
   std::wstring path = MakeFullPathToSystem32(argv[0]);
@@ -163,7 +163,7 @@ SBOX_TESTS_COMMAND int Process_GetChildProcessToken(int argc, wchar_t **argv) {
   if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  if ((NULL != argv) && (NULL == argv[0]))
+  if ((NULL == argv) || (NULL == argv[0]))
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
   std::wstring path = MakeFullPathToSystem32(argv[0]);

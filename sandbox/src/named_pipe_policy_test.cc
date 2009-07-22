@@ -15,7 +15,7 @@ SBOX_TESTS_COMMAND int NamedPipe_Create(int argc, wchar_t **argv) {
   if (argc != 1) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
-  if ((NULL != argv) && (NULL == argv[0])) {
+  if ((NULL == argv) || (NULL == argv[0])) {
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
   }
 
