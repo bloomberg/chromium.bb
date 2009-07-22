@@ -818,8 +818,6 @@
         'browser/cocoa/infobar_text_field.mm',
         'browser/cocoa/location_bar_view_mac.h',
         'browser/cocoa/location_bar_view_mac.mm',
-        'browser/cocoa/menu_localizer.h',
-        'browser/cocoa/menu_localizer.mm',
         'browser/cocoa/nsimage_cache.h',
         'browser/cocoa/nsimage_cache.mm',
         'browser/cocoa/page_info_window_controller.h',
@@ -863,6 +861,8 @@
         'browser/cocoa/toolbar_controller.mm',
         'browser/cocoa/toolbar_view.h',
         'browser/cocoa/toolbar_view.mm',
+        'browser/cocoa/ui_localizer.h',
+        'browser/cocoa/ui_localizer.mm',
         'browser/cocoa/web_drop_target.h',
         'browser/cocoa/web_drop_target.mm',
         'browser/command_updater.cc',
@@ -1954,6 +1954,24 @@
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
             ],
           },
+          'actions': [
+            # This block of actions are used to extract the localization data
+            # from xib files and generate a localizer out of it.
+            {
+              'action_name': 'process_mainmenu_xib',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(DEPTH)/build/mac/generate_localizer',
+                'app/nibs/MainMenu.xib'
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/xib_localizers/main_menu_localizer.h',
+                '<(INTERMEDIATE_DIR)/xib_localizers/main_menu_localizer.mm',
+              ],
+              'action': ['<@(_inputs)', '<@(_outputs)'],
+            },
+            # TODO(tvl): add other xibs
+          ],
         }],
         ['OS=="win"', {
           'defines': [
@@ -3103,12 +3121,7 @@
               'conditions': [
                 ['OS=="mac"', {
                   'outputs': [
-                    # TODO(port): We can't simply emit the strings file without
-                    # the nibs too, or the app fails to launch in this language.
-                    # Currently, this is only for ui_tests, which won't work on
-                    # the Mac anyway, so temporarily disable until we have the
-                    # full strategy figured out. This goes for he and zh below.
-                    # '<(INTERMEDIATE_DIR)/repack/da.lproj/locale.pak',
+                    '<(INTERMEDIATE_DIR)/repack/da.lproj/locale.pak',
                   ],
                 }, {  # else: OS!="mac"
                   'outputs': [
@@ -3187,7 +3200,7 @@
               'conditions': [
                 ['OS=="mac"', {
                   'outputs': [
-                    # '<(INTERMEDIATE_DIR)/repack/he.lproj/locale.pak',
+                    '<(INTERMEDIATE_DIR)/repack/he.lproj/locale.pak',
                   ],
                 }, {  # else: OS!="mac"
                   'outputs': [
@@ -3226,7 +3239,7 @@
               'conditions': [
                 ['OS=="mac"', {
                   'outputs': [
-                    # '<(INTERMEDIATE_DIR)/repack/zh.lproj/locale.pak',
+                    '<(INTERMEDIATE_DIR)/repack/zh.lproj/locale.pak',
                   ],
                 }, {  # else: OS!="mac"
                   'outputs': [
@@ -3707,6 +3720,7 @@
         'browser/cocoa/toolbar_button_cell_unittest.mm',
         'browser/cocoa/toolbar_controller_unittest.mm',
         'browser/cocoa/toolbar_view_unittest.mm',
+        'browser/cocoa/ui_localizer_unittest.mm',
         'browser/cocoa/web_drop_target_unittest.mm',
         'browser/command_updater_unittest.cc',
         'browser/debugger/devtools_manager_unittest.cc',

@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/ui_localizer.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "base/scoped_nsobject.h"
@@ -70,12 +71,8 @@ void RenderViewContextMenuMac::DoInit() {
 // and middle-truncate?
 NSString* RenderViewContextMenuMac::PrepareLabelForDisplay(
     const string16& label) {
-  // Strip out any "&"'s that are windows accelerators and we don't use.
-  NSMutableString* title =
-    [NSMutableString stringWithString:base::SysUTF16ToNSString(label)];
+  NSString* title = ui_localizer::FixUpWindowsStyleLabel(label);
   DCHECK(title);
-  NSRange range = NSMakeRange(0, [title length]);
-  [title replaceOccurrencesOfString:@"&" withString:@"" options:0 range:range];
   return title ? title : @"";
 }
 
