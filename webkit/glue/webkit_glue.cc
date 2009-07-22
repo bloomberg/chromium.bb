@@ -294,14 +294,15 @@ Singleton<UserAgentState> g_user_agent;
 std::string BuildOSCpuInfo() {
   std::string os_cpu;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   int32 os_major_version = 0;
   int32 os_minor_version = 0;
   int32 os_bugfix_version = 0;
   base::SysInfo::OperatingSystemVersionNumbers(&os_major_version,
                                                &os_minor_version,
                                                &os_bugfix_version);
-#else
+#endif
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   // Should work on any Posix system.
   struct utsname unixinfo;
   uname(&unixinfo);
@@ -324,6 +325,12 @@ std::string BuildOSCpuInfo() {
       os_minor_version
 #elif defined(OS_MACOSX)
       "Intel Mac OS X %d_%d_%d",
+      os_major_version,
+      os_minor_version,
+      os_bugfix_version
+#elif defined(OS_CHROMEOS)
+      "CrOS %s %d.%d.%d",
+      cputype.c_str(),  // e.g. i686
       os_major_version,
       os_minor_version,
       os_bugfix_version
