@@ -223,7 +223,7 @@ ExprNodeVector[0] = {
 0000000000000000: 68 00 00 00 00                               push 0x0
   { 0x68,
     NACLi_386,
-    InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v),
+    InstFlag(OpcodeHasImmed_v) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
     InstPush,
     2, {
       { RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
@@ -461,7 +461,7 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 8, ExprSize8 },
   { ExprConstant[0] , 0x6013a0, ExprSize32 | ExprSignedHex },
 };
-0000000000000000: 89 7d fc                                     mov [%ebp-0x4], %edi
+0000000000000000: 89 7d fc                                     mov [%rbp-0x4], %edi
   { 0x89,
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
@@ -473,14 +473,14 @@ ExprNodeVector[8] = {
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
-  { ExprRegister[0] , %ebp, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , -0x4, ExprSize8 | ExprSignedHex },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %edi, ExprUsed | ExprSize32 },
 };
-0000000000000000: 3b 45 fc                                     cmp %eax, [%ebp-0x4]
+0000000000000000: 3b 45 fc                                     cmp %eax, [%rbp-0x4]
   { 0x3b,
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
@@ -494,12 +494,12 @@ ExprNodeVector[8] = {
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprUsed },
-  { ExprRegister[0] , %ebp, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , -0x4, ExprSize8 | ExprSignedHex },
 };
-0000000000000000: 83 7d f8 08                                  cmp [%ebp-0x8], 0x8
+0000000000000000: 83 7d f8 08                                  cmp [%rbp-0x8], 0x8
   { 0x83,
     NACLi_386L,
     InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_v),
@@ -512,14 +512,14 @@ ExprNodeVector[8] = {
 ExprNodeVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
-  { ExprRegister[0] , %ebp, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , -0x8, ExprSize8 | ExprSignedHex },
   { OperandReference[1] , 2, 0 },
   { ExprConstant[0] , 0x8, ExprUsed | ExprSize8 | EpxrUnsignedHex },
 };
-0000000000000000: 8b 45 fc                                     mov %eax, [%ebp-0x4]
+0000000000000000: 8b 45 fc                                     mov %eax, [%rbp-0x4]
   { 0x8b,
     NACLi_386,
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
@@ -533,7 +533,7 @@ ExprNodeVector[8] = {
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprMemOffset[4] , 0, ExprSet },
-  { ExprRegister[0] , %ebp, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %rbp, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , -0x4, ExprSize8 | ExprSignedHex },

@@ -1,4 +1,4 @@
-00000000: 00 00                                        add %ds[%al], %al
+00000000: 00 00                                        add %ds[%eax], %al
   { 0x00,
     NACLi_386L,
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
@@ -12,7 +12,7 @@ ExprNodeVector[10] = {
   { ExprSegmentAddress[2] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %ds, ExprUsed | ExprSize16 },
   { ExprMemOffset[4] , 0, 0 },
-  { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },

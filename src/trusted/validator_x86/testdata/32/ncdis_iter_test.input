@@ -20,7 +20,7 @@
 #
 # Note: This file tests x86-32 instructions when -use_iter is specified.
 
--i=0000                                        #00000000: 00 00                                        add %ds[%al], %al
+-i=0000                                        #00000000: 00 00                                        add %ds[%eax], %al
 -i=00c0                                        #00000000: 00 c0                                        add %al, %al
 -i=01c0                                        #00000000: 01 c0                                        add %eax, %eax
 -i=0318                                        #00000000: 03 18                                        add %ebx, %ds[%eax]

@@ -555,7 +555,7 @@ static void InitializeOpcodeTables() {
 
 /* Define binary operation XX+00 to XX+05, for the binary operators
  * add, or, adc, sbb, and, sub, xor, and cmp. Base is the value XX.
- * Name is the nae of the operation. Extra flags are any additional
+ * Name is the name of the operation. Extra flags are any additional
  * flags that are true to a specific binary operator, rather than
  * all binary operators.
  */
@@ -819,8 +819,9 @@ static void DefineGroup1OpcodesInModRm() {
 }
 
 static void DefinePrefixBytes() {
-  EncodePrefixName(0x26, "kPrefixSEGSS");
+  EncodePrefixName(0x26, "kPrefixSEGES");
   EncodePrefixName(0x2e, "kPrefixSEGCS");
+  EncodePrefixName(0x36, "kPrefixSEGSS");
   EncodePrefixName(0x3e, "kPrefixSEGDS");
   EncodePrefixName(0x64, "kPrefixSEGFS");
   EncodePrefixName(0x65, "kPrefixSEGGS");
@@ -887,6 +888,8 @@ static void DefineOneByteOpcodes() {
   DefineOperand(RegDS, OpFlag(OpUse));
 
   DefineOpcode(0x1f, NACLi_ILLEGAL, InstFlag(Opcode32Only), InstPop);
+  DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS, OpFlag(OpSet));
 
   BuildBinaryOps_00_05(0x20, NACLi_386L, InstAnd, InstFlag(OpcodeLockable));
 
@@ -952,7 +955,6 @@ static void DefineOneByteOpcodes() {
       InstBound);
   DefineOperand(G_Operand, OpFlag(OpUse));
   DefineOperand(E_Operand, OpFlag(OpUse));
-  DefineOperand(E_Operand, OpFlag(OpUse));
   */
 
   DefineOpcode(0x63, NACLi_SYSTEM,
@@ -976,7 +978,8 @@ static void DefineOneByteOpcodes() {
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0x68, NACLi_386,
-               InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed),
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_v) |
+               InstFlag(OperandSizeDefaultIs64),
                InstPush);
   DefineOperand(RegRESP, OpFlag(OpImplicit) | OpFlag(OpUse) | OpFlag(OpSet));
   DefineOperand(I_Operand, OpFlag(OpUse));
@@ -1009,6 +1012,44 @@ static void DefineOneByteOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  DefineOpcode(0x6a, NACLi_386,
+               InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed),
+               InstPush);
+  DefineOperand(RegRESP, OpFlag(OpImplicit) | OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  /* TODO(karl) Figure out how the two and three argument versions are
+   * differentiated (two argument form not described)?
+   */
+  DefineOpcode(0x6b, NACLi_386,
+               InstFlag(OperandSize_w) | InstFlag(OpcodeUsesModRm) |
+               InstFlag(OpcodeHasImmed),
+               InstImul);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0x6b, NACLi_386,
+               InstFlag(OperandSize_v) | InstFlag(OpcodeUsesModRm) |
+               InstFlag(OpcodeHasImmed),
+               InstImul);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0x6b, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW) |
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_v),
+               InstImul);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  /* 0x6c 0x6d 0x6e 0x6f ? */
+
+  DefineJump8Opcode(0x70, InstJo);
+  DefineJump8Opcode(0x71, InstJno);
   DefineJump8Opcode(0x72, InstJb);
   DefineJump8Opcode(0x73, InstJnb);
   DefineJump8Opcode(0x74, InstJz);
@@ -1017,9 +1058,17 @@ static void DefineOneByteOpcodes() {
   DefineJump8Opcode(0x77, InstJnbe);
   DefineJump8Opcode(0x78, InstJs);
   DefineJump8Opcode(0x79, InstJns);
+  DefineJump8Opcode(0x7a, InstJp);
+  DefineJump8Opcode(0x7b, InstJnp);
+  DefineJump8Opcode(0x7c, InstJl);
+  DefineJump8Opcode(0x7d, InstJge);
+  DefineJump8Opcode(0x7e, InstJle);
+  DefineJump8Opcode(0x7f, InstJg);
 
   /* For the moment, show some examples of Opcodes in Mod/Rm. */
   DefineGroup1OpcodesInModRm();
+
+  /* 0x82 */
 
   DefineOpcode(0x84, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
@@ -1041,6 +1090,8 @@ static void DefineOneByteOpcodes() {
                InstTest);
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
+
+  /* 0x86 0x87 */
 
   DefineOpcode(0x88, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
@@ -1097,6 +1148,8 @@ static void DefineOneByteOpcodes() {
                InstMov);
   DefineOperand(E_Operand, OpFlag(OpSet));
 
+  /* 0x8d */
+
   /* TODO(karl) what is SReg (first argument) in 0x8e*/
   DefineOpcode(0x8e, NACLi_ILLEGAL,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w),
@@ -1110,7 +1163,12 @@ static void DefineOneByteOpcodes() {
                InstMov);
   DefineOperand(E_Operand, OpFlag(OpSet));
 
+  /* 0x8f */
+
   DefineOpcode(0x90, NACLi_386R, 0, InstNop);
+
+  /* 0x91 0x82 0x93 0x94 0x95 0x96 0x97 0x98 0x99
+     0x9a 0x9b 0x9c 0x9d 0x9e 0x9f */
 
   DefineOpcode(0xA8, NACLi_386,
                InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed),

@@ -50,9 +50,7 @@
 -i=B800000000                            #0000000000000000: b8 00 00 00 00                               mov %eax, 0x0
 -i=BF20106000                            #0000000000000000: bf 20 10 60 00                               mov %edi, 0x601020
 -i=488b04c5a0136000                      #0000000000000000: 48 8b 04 c5 a0 13 60 00                      mov %rax, [%rax*8+0x6013a0]
-
-# The following instructions are wrong in that they get ebp instead of rdp, and I don't know why.
--i=897DFC                                #0000000000000000: 89 7d fc                                     mov [%ebp-0x4], %edi
--i=3B45FC                                #0000000000000000: 3b 45 fc                                     cmp %eax, [%ebp-0x4]
--i=837DF808                              #0000000000000000: 83 7d f8 08                                  cmp [%ebp-0x8], 0x8
--i=8B45FC                                #0000000000000000: 8b 45 fc                                     mov %eax, [%ebp-0x4]
+-i=897DFC                                #0000000000000000: 89 7d fc                                     mov [%rbp-0x4], %edi
+-i=3B45FC                                #0000000000000000: 3b 45 fc                                     cmp %eax, [%rbp-0x4]
+-i=837DF808                              #0000000000000000: 83 7d f8 08                                  cmp [%rbp-0x8], 0x8
+-i=8B45FC                                #0000000000000000: 8b 45 fc                                     mov %eax, [%rbp-0x4]

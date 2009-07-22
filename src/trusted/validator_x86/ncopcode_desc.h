@@ -616,10 +616,6 @@ typedef enum {
   OperandNear,
   /* When jump address, the jump is relative (rather than absolute. */
   OperandRelative,
-  /* When defined, uses address size to compute r/mXX value instead of
-   * operand size.
-   */
-  OperandUsesAddressSize,
   /* Special marker denoting the number of operand flags. */
   OperandFlagEnumSize
 } OperandFlagEnum;

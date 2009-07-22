@@ -229,7 +229,6 @@ static const char* const g_OperandFlagName[OperandFlagEnumSize] = {
   "OperandExtendsOpcode",
   "OperandNear",
   "OperandRelative",
-  "OperandUsesAddressSize",
 };
 
 const char* OperandFlagName(const OperandFlagEnum flag) {

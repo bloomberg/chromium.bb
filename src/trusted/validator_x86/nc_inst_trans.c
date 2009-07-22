@@ -373,17 +373,9 @@ static ExprNode* AppendRegisterKind(NcInstState* state,
  * given state, return what kind of register should be used, based
  * on the operand size.
  */
-static RegKind ExtractRegKind(NcInstState* state,
-                              Operand* operand) {
-  if (operand->flags & OpFlag(OperandUsesAddressSize)) {
-    if (state->address_size == 16) {
-      return RegSize16;
-    } else if (state->address_size == 64) {
-      return RegSize64;
-    } else {
-      return RegSize32;
-    }
-  } else if (operand->kind >= Gb_Operand && operand->kind <= Go_Operand) {
+static RegKind ExtractOperandRegKind(NcInstState* state,
+                                     Operand* operand) {
+  if (operand->kind >= Gb_Operand && operand->kind <= Go_Operand) {
     return (RegKind) operand->kind - Gb_Operand;
   } else if (state->opcode->flags & InstFlag(OperandSize_b)) {
     return RegSize8;
@@ -400,6 +392,21 @@ static RegKind ExtractRegKind(NcInstState* state,
   }
 }
 
+/* Given an address of the corresponding opcode instruction of the
+ * given state, return what kind of register should be used, based
+ * on the operand size.
+ */
+static RegKind ExtractAddressRegKind(NcInstState* state,
+                                     Operand* operand) {
+  if (state->address_size == 16) {
+    return RegSize16;
+  } else if (state->address_size == 64) {
+    return RegSize64;
+  } else {
+    return RegSize32;
+  }
+}
+
 /* Given we want to translate an operand (of the form G_Operand),
  * for the given register index, generate the corresponding register
  * expression, and append it to the vector of expression nodes.
@@ -409,7 +416,7 @@ static ExprNode* AppendOperandRegister(
     NcInstState* state, Operand* operand, int reg_index) {
   DEBUG(printf("Translate register %d\n", reg_index));
   return AppendRegisterKind(state,
-                            ExtractRegKind(state, operand),
+                            ExtractOperandRegKind(state, operand),
                             reg_index);
 }
 
@@ -474,7 +481,7 @@ static ExprNode* AppendOpcodeBaseRegister(
   reg_index = state->opcode->operands[0].kind - OpcodeBaseMinus0;
   assert(reg_index >= 0 && reg_index < 8);
   DEBUG(printf("Translate opcode base register %d\n", reg_index));
-  return AppendRegisterKind(state, ExtractRegKind(state, operand),
+  return AppendRegisterKind(state, ExtractOperandRegKind(state, operand),
                             GetRexBRegister(state, reg_index));
 }
 
@@ -760,8 +767,9 @@ static ExprNode* AppendMod00EffectiveAddress(
       Displacement displacement;
       InitializeDisplacement(0, ExprFlag(ExprSize8), &displacement);
       return AppendMemoryOffset(state,
-                                LookupRegister(ExtractRegKind(state, operand),
-                                               GetGenRmRegister(state)),
+                                LookupRegister(
+                                    ExtractAddressRegKind(state, operand),
+                                    GetGenRmRegister(state)),
                                 RegUnknown,
                                 1,
                                 &displacement);
@@ -786,8 +794,9 @@ static ExprNode* AppendMod01EffectiveAddress(
     Displacement displacement;
     ExtractDisplacement(state, &displacement);
     return AppendMemoryOffset(state,
-                              LookupRegister(ExtractRegKind(state, operand),
-                                             GetGenRmRegister(state)),
+                              LookupRegister(
+                                  ExtractAddressRegKind(state, operand),
+                                  GetGenRmRegister(state)),
                               RegUnknown,
                               1,
                               &displacement);
@@ -807,8 +816,9 @@ static ExprNode* AppendMod10EffectiveAddress(
     return AppendSib(state);
   } else {
     Displacement displacement;
-    OperandKind base = LookupRegister(ExtractRegKind(state, operand),
-                                    GetGenRmRegister(state));
+    OperandKind base =
+        LookupRegister(ExtractAddressRegKind(state, operand),
+                       GetGenRmRegister(state));
     ExtractDisplacement(state, &displacement);
     return AppendMemoryOffset(state, base, RegUnknown, 1, &displacement);
   }
