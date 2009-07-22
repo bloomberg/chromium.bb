@@ -344,6 +344,10 @@ class ChromeTests:
                              multi=True)
 
   def TestUI(self):
+    # If --gtest_filter is set, then we need to ignore the batch index.
+    if self._options.gtest_filter:
+      return self.TestUIAll()
+
     # Similar to layout test, we run a slice of UI tests with each run.
     # This is achieved by using --batch-count (total number of slices) and
     # --batch-index (current slice index) command line switches of UI tests.
