@@ -118,6 +118,12 @@ static int ExtractAddressSize(NcInstState* state) {
   }
 }
 
+/* Manual implies only 4 bytes is allowed, but I have found up to 6.
+ * Why don't we allow any number, so long as (1) There is room for
+ * at least one opcode byte, and (2) we don't exceed the max bytes.
+ */
+static const int kMaximumPrefixBytes = MAX_BYTES_PER_X86_INSTRUCTION - 1;
+
 /* Match any prefix bytes that can be associated with the instruction
  * currently being matched.
  */
@@ -127,7 +133,7 @@ static Bool ConsumePrefixBytes(NcInstState* state) {
   uint32_t prefix_form;
   int lock_index = -1;
   int rex_index = -1;
-  for (i = 0; i < kMaxPrefixBytes; ++i) {
+  for (i = 0; i < kMaximumPrefixBytes; ++i) {
     /* Quit early if no more bytes in segment. */
     if (state->length >= state->length_limit) break;
 

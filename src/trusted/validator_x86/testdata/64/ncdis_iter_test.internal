@@ -550,3 +550,13 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , -0x4, ExprSize8 | ExprSignedHex },
 };
+0000000000000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
+  { 0x1f,
+    NACLi_386,
+    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    InstNop,
+    1, {
+      { Opcode0, OpFlag(OperandExtendsOpcode) },
+  } };
+ExprNodeVector[0] = {
+};
