@@ -182,11 +182,6 @@ class AudioRendererHostTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };
 
-// Audio output stream only works stably on windows. Also there's no mock
-// audio output streams for mac and linux.
-// TODO(hclam): make these tests work on mac and linux.
-#if defined(OS_WIN)
-
 TEST_F(AudioRendererHostTest, MockStreamDataConversation) {
   scoped_ptr<AudioRendererHost::IPCAudioSource> source(CreateMockStream());
 
@@ -226,4 +221,3 @@ TEST_F(AudioRendererHostTest, MockStreamDataConversation) {
   source->Close();
 }
 
-#endif
