@@ -32,6 +32,12 @@ Array.prototype.each = function(f) {
   }
 }
 
+Object.prototype.extends = function(obj) {
+  for (var k in obj) {
+    this[k] = obj[k];
+  }
+}
+
 // name of the api this reference page is describing. i.e. "bookmarks", "tabs".
 var apiName;
 
@@ -100,15 +106,21 @@ function fetchContent(url, onSuccess) {
  * <body>.
  * This uses the root <html> element (the entire document) as the template.
  */
-function renderTemplate(schema) {
+function renderTemplate(schemaContent) {
   var apiDefinition;
+  var schema = JSON.parse(schemaContent);
   
-  JSON.parse(schema).each(function(module) {
+  schema.each(function(module) {
     if (module.namespace == apiName)
       apiDefinition = module;
   });
   
-  preprocessApi(apiDefinition);
+  types = {};
+  apiDefinition.types.each(function(t) {
+    types[t.id] = t;
+  });
+  
+  preprocessApi(apiDefinition, schema, types);
 
   // Render to template
   var input = new JsEvalContext(apiDefinition);
@@ -120,36 +132,91 @@ function renderTemplate(schema) {
 }
 
 /**
- * Augment the |schema| with additional values that are required by the
- * template.
+ * Augment the |module| with additional values that are required by the
+ * template. |schema| is the full schema (including all modules). |types| is an
+ * array of typeId -> typeSchema.
  */
-function preprocessApi(schema) {
-  schema.functions.each(function(f) {
-    f.fullName = "chrome." + schema.namespace + "." + f.name;
-    assignTypeNames(f);
+function preprocessApi(module, schema, types) {
+  module.functions.each(function(f) {
+    f.fullName = "chrome." + module.namespace + "." + f.name;
+    linkTypeReferences(f.parameters, types);
+    assignTypeNames(f.parameters);
 
     // Look for a callback that defines parameters.
     if (f.parameters.length > 0) {
       var lastParam = f.parameters[f.parameters.length - 1];
       if (lastParam.type == "function" && lastParam.parameters) {
-        assignTypeNames(lastParam);        
+        linkTypeReferences(lastParam.parameters, types);
+        assignTypeNames(lastParam.parameters);        
         f.callbackParameters = lastParam.parameters;
         f.callbackSignature = generateSignatureString(lastParam.parameters);
+        f.callbackParameters.each(function(p) {
+          addPropertyListIfObject(p);
+        });
       }
     }
-  });
     
-  schema.events.each(function(e) {
-    assignTypeNames(e);    
-    e.callSignature = generateSignatureString(e.parameters);
+    // Setup any type: "object" pameters to have an array of params (rather than 
+    // named properties).
+    f.parameters.each(function(param) {
+      addPropertyListIfObject(param);
+    });
   });
+  
+  module.events.each(function(e) {
+    linkTypeReferences(e.parameters, types);
+    assignTypeNames(e.parameters);    
+    e.callSignature = generateSignatureString(e.parameters);
+    e.parameters.each(function(p) {
+      addPropertyListIfObject(p);
+    });
+  });
+
+  // Add a list of modules for the master TOC.
+  module.apiModules = [];
+  schema.each(function(s) {
+    var m = {};
+    m.module = s.namespace;
+    m.name = s.namespace.substring(0, 1).toUpperCase() +
+             s.namespace.substring(1);
+    module.apiModules.push(m);
+  });
+  module.apiModules.sort(function(a, b) { return a.name > b.name; }); 
 }
 
-/**
- * Assigns a typeName(param) to each of the parameters of |f|.
+/*
+ * For function, callback and event parameters, we want to document the
+ * properties of any "object" type. This takes an param, and if it is an
+ * "object" type, creates a "_parameterList" property in the form as
+ * |parameters| list used by the template.
  */
-function assignTypeNames(f) {
-  f.parameters.each(function(p) {
+function addPropertyListIfObject(object) {
+  if (object.type != "object" || !object.properties)
+    return;
+
+  var propertyList = [];
+  for (var p in object.properties) {
+    var prop = object.properties[p];
+    prop.name = p;
+    propertyList.push(prop);
+  }
+  assignTypeNames(propertyList);
+  object._propertyList = propertyList;
+}
+
+function linkTypeReferences(parameters, types) {
+  parameters.each(function(p) {
+    if (p.$ref) {
+      p.extends(types[p.$ref]);
+    }
+  });
+} 
+
+/**
+ * Assigns a typeName(param) to each of the |parameters|.
+ */
+function assignTypeNames(parameters) {
+  parameters.each(function(p) {
     p.typeName = typeName(p);
   });
 }
@@ -158,9 +225,6 @@ function assignTypeNames(f) {
  * Generates a short text summary of the |schema| type
  */
 function typeName(schema) {
-  if (schema.$ref)
-    return schema.$ref;
-
   if (schema.choice) {
     var typeNames = [];
     schema.choice.each(function(c) {
