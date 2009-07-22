@@ -212,6 +212,21 @@ class AutocompleteEditViewGtk : public AutocompleteEditView {
                      GtkTextIter* location,
                      GtkTextMark* mark);
 
+  // Actual implementation of SelectAll(), but also provides control over
+  // whether the PRIMARY selection is set to the selected text (in SelectAll(),
+  // it isn't, but we want set the selection when the user clicks in the entry).
+  void SelectAllInternal(bool reversed, bool update_primary_selection);
+
+  // Get ready to update |text_buffer_|'s highlighting without making changes to
+  // the PRIMARY selection.  Removes the clipboard from |text_buffer_| and
+  // blocks the "mark-set" signal handler.
+  void StartUpdatingHighlightedText();
+
+  // Finish updating |text_buffer_|'s highlighting such that future changes will
+  // automatically update the PRIMARY selection.  Undoes
+  // StartUpdatingHighlightedText()'s changes.
+  void FinishUpdatingHighlightedText();
+
   // Get the character indices of the current selection.  This honors
   // direction, cp_max is the insertion point, and cp_min is the bound.
   CharRange GetSelection();
@@ -230,7 +245,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView {
   // Internally invoked whenever the text changes in some way.
   void TextChanged();
 
-  // Save 'selected_text' as the PRIMARY X selection.
+  // Save |selected_text| as the PRIMARY X selection.
   void SavePrimarySelection(const std::string& selected_text);
 
   // The widget we expose, used for vertically centering the real text edit,
@@ -274,9 +289,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView {
   // it, we pass this string to SavePrimarySelection()).
   std::string selected_text_;
 
-  // Has the current value of 'selected_text_' been saved as the PRIMARY
+  // Has the current value of |selected_text_| been saved as the PRIMARY
   // selection?
   bool selection_saved_;
+
+  // ID of the signal handler for "mark-set" on |text_buffer_|.
+  gulong mark_set_handler_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };

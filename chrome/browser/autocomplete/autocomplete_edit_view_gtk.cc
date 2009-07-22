@@ -85,7 +85,8 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       command_updater_(command_updater),
       popup_window_mode_(false),  // TODO(deanm)
       scheme_security_level_(ToolbarModel::NORMAL),
-      selection_saved_(false) {
+      selection_saved_(false),
+      mark_set_handler_id_(0) {
   model_->set_popup_model(popup_view_->GetModel());
 }
 
@@ -177,8 +178,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleViewSizeRequestThunk), this);
   g_signal_connect(text_view_, "populate-popup",
                    G_CALLBACK(&HandlePopulatePopupThunk), this);
-  g_signal_connect(text_buffer_, "mark-set",
-                   G_CALLBACK(&HandleMarkSetThunk), this);
+  mark_set_handler_id_ = g_signal_connect(
+      text_buffer_, "mark-set", G_CALLBACK(&HandleMarkSetThunk), this);
 }
 
 void AutocompleteEditViewGtk::SetFocus() {
@@ -303,8 +304,9 @@ void AutocompleteEditViewGtk::SetForcedQuery() {
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
     gtk_text_buffer_get_iter_at_offset(text_buffer_, &start, 1);
-    gtk_text_buffer_place_cursor(text_buffer_, &start);
+    StartUpdatingHighlightedText();
     gtk_text_buffer_select_range(text_buffer_, &start, &end);
+    FinishUpdatingHighlightedText();
   }
 }
 
@@ -314,14 +316,12 @@ bool AutocompleteEditViewGtk::IsSelectAll() {
 }
 
 void AutocompleteEditViewGtk::SelectAll(bool reversed) {
-  GtkTextIter start, end;
-  if (reversed) {
-    gtk_text_buffer_get_bounds(text_buffer_, &end, &start);
-  } else {
-    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
-  }
-  gtk_text_buffer_place_cursor(text_buffer_, &start);
-  gtk_text_buffer_select_range(text_buffer_, &start, &end);
+  // SelectAll() is invoked as a side effect of other actions (e.g.  switching
+  // tabs or hitting Escape) in autocomplete_edit.cc, so we don't update the
+  // PRIMARY selection here.
+  // TODO(derat): But this is also called by LocationBarView::FocusLocation() --
+  // should the X selection be updated when the user hits Ctrl-L?
+  SelectAllInternal(reversed, false);
 }
 
 void AutocompleteEditViewGtk::RevertAll() {
@@ -359,17 +359,7 @@ bool AutocompleteEditViewGtk::OnInlineAutocompleteTextMaybeChanged(
   if (display_text == GetText())
     return false;
 
-  // We need to get the clipboard while it's attached to the toplevel.  The
-  // easiest thing to do is just to lazily pull the clipboard here.
-  GtkClipboard* clipboard =
-      gtk_widget_get_clipboard(text_view_, GDK_SELECTION_PRIMARY);
-  DCHECK(clipboard);
-  if (!clipboard)
-    return true;
-
-  // Remove the PRIMARY clipboard to avoid having "clipboard helpers" like
-  // klipper and glipper race with / remove our inline autocomplete selection.
-  gtk_text_buffer_remove_selection_clipboard(text_buffer_, clipboard);
+  StartUpdatingHighlightedText();
   SetWindowTextAndCaretPos(display_text, 0);
 
   // Select the part of the text that was inline autocompleted.
@@ -378,10 +368,8 @@ bool AutocompleteEditViewGtk::OnInlineAutocompleteTextMaybeChanged(
   gtk_text_buffer_get_iter_at_offset(text_buffer_, &insert, user_text_length);
   gtk_text_buffer_select_range(text_buffer_, &insert, &bound);
 
+  FinishUpdatingHighlightedText();
   TextChanged();
-  // Put the PRIMARY clipboard back, so that selection still somewhat works.
-  gtk_text_buffer_add_selection_clipboard(text_buffer_, clipboard);
-
   return true;
 }
 
@@ -531,8 +519,9 @@ gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
   GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(text_view_);
   klass->button_press_event(text_view_, event);
 
-  // Select the full input when we get focus.
-  SelectAll(false);
+  // Select the full input and update the PRIMARY selection when we get focus.
+  SelectAllInternal(false, true);
+
   // So we told the buffer where the cursor should be, but make sure to tell
   // the view so it can scroll it to be visible if needed.
   // NOTE: This function doesn't seem to like a count of 0, looking at the
@@ -570,7 +559,7 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
   else if (step != GTK_MOVEMENT_DISPLAY_LINES)
     return;  // Propagate into GtkTextView
   model_->OnUpOrDownKeyPressed(move_amount);
-  // move-cursor doesn't use a signal accumulaqtor on the return value (it
+  // move-cursor doesn't use a signal accumulator on the return value (it
   // just ignores then), so we have to stop the propagation.
   g_signal_stop_emission_by_name(text_view_, "move-cursor");
 }
@@ -658,6 +647,43 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
     SavePrimarySelection(selected_text_);
     selection_saved_ = true;
   }
+}
+
+void AutocompleteEditViewGtk::SelectAllInternal(bool reversed,
+                                                bool update_primary_selection) {
+  GtkTextIter start, end;
+  if (reversed) {
+    gtk_text_buffer_get_bounds(text_buffer_, &end, &start);
+  } else {
+    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+  }
+  if (!update_primary_selection)
+    StartUpdatingHighlightedText();
+  gtk_text_buffer_select_range(text_buffer_, &start, &end);
+  if (!update_primary_selection)
+    FinishUpdatingHighlightedText();
+}
+
+void AutocompleteEditViewGtk::StartUpdatingHighlightedText() {
+  if (GTK_WIDGET_REALIZED(text_view_)) {
+    GtkClipboard* clipboard =
+        gtk_widget_get_clipboard(text_view_, GDK_SELECTION_PRIMARY);
+    DCHECK(clipboard);
+    if (clipboard)
+      gtk_text_buffer_remove_selection_clipboard(text_buffer_, clipboard);
+  }
+  g_signal_handler_block(text_buffer_, mark_set_handler_id_);
+}
+
+void AutocompleteEditViewGtk::FinishUpdatingHighlightedText() {
+  if (GTK_WIDGET_REALIZED(text_view_)) {
+    GtkClipboard* clipboard =
+        gtk_widget_get_clipboard(text_view_, GDK_SELECTION_PRIMARY);
+    DCHECK(clipboard);
+    if (clipboard)
+      gtk_text_buffer_add_selection_clipboard(text_buffer_, clipboard);
+  }
+  g_signal_handler_unblock(text_buffer_, mark_set_handler_id_);
 }
 
 AutocompleteEditViewGtk::CharRange AutocompleteEditViewGtk::GetSelection() {
