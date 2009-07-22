@@ -117,7 +117,8 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
   virtual void mouseDidMoveOverElement(const WebCore::HitTestResult& result,
                                        unsigned modifierFlags);
 
-  virtual void setToolTip(const WebCore::String& tooltip_text);
+  virtual void setToolTip(const WebCore::String& tooltip_text,
+                          WebCore::TextDirection dir);
 
   virtual void print(WebCore::Frame*);
 

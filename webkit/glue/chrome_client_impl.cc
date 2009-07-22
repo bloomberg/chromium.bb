@@ -9,6 +9,7 @@
 MSVC_PUSH_WARNING_LEVEL(0);
 #include "AccessibilityObject.h"
 #include "AXObjectCache.h"
+#include "CharacterNames.h"
 #include "Console.h"
 #include "Cursor.h"
 #include "Document.h"
@@ -507,10 +508,20 @@ void ChromeClientImpl::mouseDidMoveOverElement(
   }
 }
 
-void ChromeClientImpl::setToolTip(const WebCore::String& tooltip_text) {
+void ChromeClientImpl::setToolTip(const WebCore::String& tooltip_text,
+                                  WebCore::TextDirection dir) {
   if (webview_->delegate()) {
     std::wstring tooltip_text_as_wstring =
       webkit_glue::StringToStdWString(tooltip_text);
+    if (dir == WebCore::LTR) {
+      // Force the tooltip to have LTR directionality.
+      tooltip_text_as_wstring.insert(0, 1, WebCore::leftToRightEmbed);
+      tooltip_text_as_wstring.push_back(WebCore::popDirectionalFormatting);
+    } else {
+      // Force the tooltip to have RTL directionality.
+      tooltip_text_as_wstring.insert(0, 1, WebCore::rightToLeftEmbed);
+      tooltip_text_as_wstring.push_back(WebCore::popDirectionalFormatting);
+    }
     webview_->delegate()->SetTooltipText(webview_, tooltip_text_as_wstring);
   }
 }
