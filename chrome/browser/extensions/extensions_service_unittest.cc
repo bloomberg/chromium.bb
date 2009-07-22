@@ -1329,17 +1329,16 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   // The extension should also be gone from the install directory.
   ASSERT_FALSE(file_util::PathExists(install_path));
 
-  // This shouldn't work if extensions are disabled.
+  // It should still work if extensions are disabled (disableness doesn't
+  // apply to externally registered extensions).
   SetExtensionsEnabled(false);
 
   pref_provider->UpdateOrAddExtension(good_crx, "1.0", source_path);
   service_->CheckForExternalUpdates();
   loop_.RunAllPending();
 
-  ASSERT_EQ(0u, loaded_.size());
-  ASSERT_EQ(1u, GetErrors().size());
-  ASSERT_TRUE(GetErrors()[0].find("Extensions are not enabled") !=
-              std::string::npos);
+  ASSERT_EQ(1u, loaded_.size());
+  ASSERT_EQ(0u, GetErrors().size());
 }
 
 TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {

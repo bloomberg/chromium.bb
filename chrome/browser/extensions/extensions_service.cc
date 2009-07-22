@@ -79,6 +79,9 @@ const char* kSignatureVerificationFailed = "Signature verification failed";
 const char* kSignatureVerificationInitFailed =
     "Signature verification initialization failed. This is most likely "
     "caused by a public key in the wrong format (should encode algorithm).";
+
+const char* kGalleryHost = "www.google.com";
+const char* kGalleryPath = "/chrome/";
 }
 
 // This class coordinates an extension unpack task which is run in a separate
@@ -91,10 +94,10 @@ class ExtensionsServiceBackend::UnpackerClient
                  const FilePath& extension_path,
                  const std::string& public_key,
                  const std::string& expected_id,
-                 bool silent)
+                 bool silent, bool from_gallery)
     : backend_(backend), extension_path_(extension_path),
       public_key_(public_key), expected_id_(expected_id), got_response_(false),
-      silent_(silent) {
+      silent_(silent), from_gallery_(from_gallery) {
   }
 
   // Starts the unpack task.  We call back to the backend when the task is done,
@@ -171,7 +174,8 @@ class ExtensionsServiceBackend::UnpackerClient
     FilePath extension_dir = temp_extension_path_.DirName().AppendASCII(
         ExtensionsServiceBackend::kTempExtensionName);
     backend_->OnExtensionUnpacked(extension_path_, extension_dir,
-                                  expected_id_, manifest, images, silent_);
+                                  expected_id_, manifest, images, silent_,
+                                  from_gallery_);
     Cleanup();
   }
 
@@ -218,6 +222,10 @@ class ExtensionsServiceBackend::UnpackerClient
 
   // True if the install should be done with no confirmation dialog.
   bool silent_;
+
+  // True if the install is from the gallery (and therefore should not get an
+  // alert UI if it turns out to also be a theme).
+  bool from_gallery_;
 };
 
 ExtensionsService::ExtensionsService(Profile* profile,
@@ -285,9 +293,16 @@ void ExtensionsService::Init() {
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
+  InstallExtension(extension_path, GURL());
+}
+
+void ExtensionsService::InstallExtension(const FilePath& extension_path,
+                                         const GURL& url) {
+  bool from_gallery = url.host() == kGalleryHost &&
+                      StartsWithASCII(url.path(), kGalleryPath, false);
+
   backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::InstallExtension,
-      extension_path,
+      &ExtensionsServiceBackend::InstallExtension, extension_path, from_gallery,
       scoped_refptr<ExtensionsService>(this)));
 }
 
@@ -940,13 +955,14 @@ bool ExtensionsServiceBackend::SetCurrentVersion(const FilePath& dest_dir,
 }
 
 void ExtensionsServiceBackend::InstallExtension(
-    const FilePath& extension_path, scoped_refptr<ExtensionsService> frontend) {
+    const FilePath& extension_path, bool from_gallery,
+    scoped_refptr<ExtensionsService> frontend) {
   LOG(INFO) << "Installing extension " << extension_path.value();
 
   frontend_ = frontend;
   alert_on_error_ = true;
 
-  InstallOrUpdateExtension(extension_path, std::string(), false);
+  InstallOrUpdateExtension(extension_path, from_gallery, std::string(), false);
 }
 
 void ExtensionsServiceBackend::UpdateExtension(const std::string& id,
@@ -957,18 +973,19 @@ void ExtensionsServiceBackend::UpdateExtension(const std::string& id,
   frontend_ = frontend;
   alert_on_error_ = alert_on_error;
 
-  InstallOrUpdateExtension(extension_path, id, true);
+  InstallOrUpdateExtension(extension_path, false, id, true);
 }
 
 void ExtensionsServiceBackend::InstallOrUpdateExtension(
-    const FilePath& extension_path, const std::string& expected_id,
-    bool silent) {
+    const FilePath& extension_path, bool from_gallery,
+    const std::string& expected_id, bool silent) {
   std::string actual_public_key;
   if (!ValidateSignature(extension_path, &actual_public_key))
     return;  // Failures reported within ValidateSignature().
 
   UnpackerClient* client = new UnpackerClient(
-      this, extension_path, actual_public_key, expected_id, silent);
+      this, extension_path, actual_public_key, expected_id, silent,
+      from_gallery);
   client->Start();
 }
 
@@ -1067,7 +1084,7 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
     const std::string expected_id,
     const DictionaryValue& manifest,
     const std::vector< Tuple2<SkBitmap, FilePath> >& images,
-    bool silent) {
+    bool silent, bool from_gallery) {
   Extension extension;
   std::string error;
   if (!extension.InitFromValue(manifest,
@@ -1084,7 +1101,7 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
   // installed.
   if (!extensions_enabled_ &&
       !extension.IsTheme() &&
-      location != Extension::EXTERNAL_REGISTRY) {
+      !Extension::IsExternalLocation(location)) {
     ReportExtensionInstallError(extension_path,
         "Extensions are not enabled. Add --enable-extensions to the "
         "command-line to enable extensions.\n\n"
@@ -1095,12 +1112,23 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
 
   // TODO(extensions): Make better extensions UI. http://crbug.com/12116
 
-  // We don't show the install dialog for themes, updates, or external
-  // extensions.
-  if (!extension.IsTheme() && !silent && frontend_->show_extensions_prompts()) {
+  // We don't show the dialog for a few special cases:
+  // - themes from the gallery
+  // - externally registered extensions
+  // - during tests (!frontend->show_extension_prompts()) and updates (silent).
+  bool show_dialog = true;
+  if (extension.IsTheme() && from_gallery)
+    show_dialog = false;
+
+  if (Extension::IsExternalLocation(location))
+    show_dialog = false;
+
+  if (silent || !frontend_->show_extensions_prompts())
+    show_dialog = false;
+
+  if (show_dialog) {
 #if defined(OS_WIN)
-    if (!Extension::IsExternalLocation(location) &&
-        win_util::MessageBox(GetForegroundWindow(),
+    if (!win_util::MessageBox(GetForegroundWindow(),
             L"Are you sure you want to install this extension?\n\n"
             L"This is a temporary message and it will be removed when "
             L"extensions UI is finalized.",
@@ -1300,7 +1328,7 @@ void ExtensionsServiceBackend::CheckVersionAndInstallExtension(
     const std::string& id, const Version* extension_version,
     const FilePath& extension_path) {
   if (ShouldInstall(id, extension_version))
-    InstallOrUpdateExtension(FilePath(extension_path), id, false);
+    InstallOrUpdateExtension(FilePath(extension_path), false, id, false);
 }
 
 bool ExtensionsServiceBackend::LookupExternalExtension(

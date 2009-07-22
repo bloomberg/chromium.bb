@@ -448,7 +448,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                            gfx::NativeView parent_window);
 
   // Opens downloaded Chrome extension file (*.crx).
-  void OpenChromeExtension(const FilePath& full_path);
+  void OpenChromeExtension(const FilePath& full_path, const GURL& download_url);
 
   // Shutdown the download manager.  This call is needed only after Init.
   void Shutdown();

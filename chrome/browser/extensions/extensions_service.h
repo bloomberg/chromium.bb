@@ -121,6 +121,10 @@ class ExtensionsService
   // immediately loaded.
   void InstallExtension(const FilePath& extension_path);
 
+  // XXX Hack: This is a temporary nasty hack to get theme installation working
+  // without a dialog. Will be fixed by making ExtensionsService more modular.
+  void InstallExtension(const FilePath& extension_path, const GURL& url);
+
   // Updates a currently-installed extension with the contents from
   // |extension_path|. The |alert_on_error| parameter controls whether the
   // user will be notified in the event of failure. If |callback| is non-null,
@@ -296,7 +300,7 @@ class ExtensionsServiceBackend
   // Install the extension file at |extension_path|. Errors are reported through
   // ExtensionErrorReporter. OnExtensionInstalled is called in the frontend on
   // success.
-  void InstallExtension(const FilePath& extension_path,
+  void InstallExtension(const FilePath& extension_path, bool from_gallery,
                         scoped_refptr<ExtensionsService> frontend);
 
   // Similar to InstallExtension, but |extension_path| must be an updated
@@ -358,6 +362,7 @@ class ExtensionsServiceBackend
   // number is greater than the current installed version. If |silent| is true,
   // the confirmation dialog will not pop up.
   void InstallOrUpdateExtension(const FilePath& extension_path,
+                                bool from_gallery,
                                 const std::string& expected_id, bool silent);
 
   // Validates the signature of the extension in |extension_path|. Returns true
@@ -376,7 +381,8 @@ class ExtensionsServiceBackend
       const std::string expected_id,
       const DictionaryValue& manifest,
       const std::vector< Tuple2<SkBitmap, FilePath> >& images,
-      bool silent);
+      bool silent,
+      bool from_gallery);
 
   // Notify the frontend that there was an error loading an extension.
   void ReportExtensionLoadError(const FilePath& extension_path,
