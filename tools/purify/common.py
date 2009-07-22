@@ -38,7 +38,9 @@ import time
 import google.logging_utils
 
 # hard-coded location of Rational files and directories
-RATIONAL_PATH = os.path.join("C:\\", "Program Files", "Rational")
+PROGRAMFILES_PATH = os.environ.get('PROGRAMFILES',
+                                   os.path.join("C:\\", "Program Files"))
+RATIONAL_PATH = os.path.join(PROGRAMFILES_PATH, "Rational")
 COMMON_PATH = os.path.join(RATIONAL_PATH, "common")
 PPLUS_PATH = os.path.join(RATIONAL_PATH, "PurifyPlus")
 PURIFY_PATH = os.path.join(COMMON_PATH, "purify.exe")
