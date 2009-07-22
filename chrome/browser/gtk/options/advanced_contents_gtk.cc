@@ -17,6 +17,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/options/cookies_view.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/options_page_base.h"
@@ -360,6 +361,8 @@ class PrivacySection : public OptionsPageBase {
                               PrivacySection* options_window);
   static void OnCookieBehaviorChanged(GtkComboBox* combo_box,
                                       PrivacySection* privacy_section);
+  static void OnShowCookiesButtonClicked(GtkButton *button,
+                                         PrivacySection* privacy_section);
 
   // The widget containing the options for this section.
   GtkWidget* page_;
@@ -448,6 +451,16 @@ PrivacySection::PrivacySection(Profile* profile)
                    G_CALLBACK(OnLoggingChange), this);
 #endif
 
+  GtkWidget* cookie_description_label = gtk_label_new(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_ACCEPT_LABEL).c_str());
+  gtk_misc_set_alignment(GTK_MISC(cookie_description_label), 0, 0);
+  gtk_box_pack_start(GTK_BOX(page_), cookie_description_label, FALSE, FALSE, 0);
+
+  GtkWidget* cookie_controls = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(page_),
+                     OptionsLayoutBuilderGtk::IndentWidget(cookie_controls),
+                     FALSE, FALSE, 0);
+
   cookie_behavior_combobox_ = gtk_combo_box_new_text();
   gtk_combo_box_append_text(
       GTK_COMBO_BOX(cookie_behavior_combobox_),
@@ -461,17 +474,18 @@ PrivacySection::PrivacySection(Profile* profile)
       l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_BLOCK_ALL_COOKIES).c_str());
   g_signal_connect(G_OBJECT(cookie_behavior_combobox_), "changed",
                    G_CALLBACK(OnCookieBehaviorChanged), this);
-
-  GtkWidget* cookie_controls = gtk_util::CreateLabeledControlsGroup(NULL,
-      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_ACCEPT_LABEL).c_str(),
-      cookie_behavior_combobox_,
-      NULL);
-  gtk_box_pack_start(GTK_BOX(page_), cookie_controls, FALSE, FALSE, 0);
-
-  // TODO(mattm): show cookies button
-  gtk_box_pack_start(GTK_BOX(page_),
-                     gtk_label_new("TODO rest of the privacy options"),
+  gtk_box_pack_start(GTK_BOX(cookie_controls), cookie_behavior_combobox_,
                      FALSE, FALSE, 0);
+
+  GtkWidget* show_cookies_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_SHOWCOOKIES).c_str());
+  g_signal_connect(show_cookies_button, "clicked",
+                   G_CALLBACK(OnShowCookiesButtonClicked), this);
+  // Stick it in an hbox so it doesn't expand to the whole width.
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_hbox), show_cookies_button,
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(cookie_controls), button_hbox, FALSE, FALSE, 0);
 
   // Init member prefs so we can update the controls if prefs change.
   alternate_error_pages_.Init(prefs::kAlternateErrorPagesEnabled,
@@ -602,6 +616,13 @@ void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
   privacy_section->UserMetricsRecordAction(
       kUserMetrics[cookie_policy], privacy_section->profile()->GetPrefs());
   privacy_section->cookie_behavior_.SetValue(cookie_policy);
+}
+
+// static
+void PrivacySection::OnShowCookiesButtonClicked(
+    GtkButton *button, PrivacySection* privacy_section) {
+  privacy_section->UserMetricsRecordAction(L"Options_ShowCookies", NULL);
+  CookiesView::Show(privacy_section->profile());
 }
 
 void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
