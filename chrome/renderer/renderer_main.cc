@@ -29,6 +29,12 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
+#if defined(OS_POSIX)
+#include <signal.h>
+
+static void SigUSR1Handler(int signal) { }
+#endif
+
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
 static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
@@ -51,15 +57,21 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
     title += L" renderer";  // makes attaching to process easier
     ::MessageBox(NULL, message.c_str(), title.c_str(),
                  MB_OK | MB_SETFOREGROUND);
-#elif defined(OS_MACOSX)
+#elif defined(OS_POSIX)
     // TODO(playmobil): In the long term, overriding this flag doesn't seem
     // right, either use our own flag or open a dialog we can use.
     // This is just to ease debugging in the interim.
     LOG(WARNING) << "Renderer ("
                  << getpid()
                  << ") paused waiting for debugger to attach @ pid";
+    // Install a signal handler so that pause can be woken.
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = SigUSR1Handler;
+    sigaction(SIGUSR1, &sa, NULL);
+
     pause();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_POSIX)
   }
 }
 
