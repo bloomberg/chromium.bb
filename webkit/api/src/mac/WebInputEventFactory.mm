@@ -1111,20 +1111,23 @@ WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(NSEvent* event, NSView*
 
     // Wheel ticks are supposed to be raw, unaccelerated values, one per physical
     // mouse wheel notch. The delta event is perfect for this (being a good
-    // "specific edge case" as mentioned above). For trackpads, unfortunately, we
-    // don't have anything better.
-
-    result.wheelTicksY =
-        CGEventGetIntegerValueField(cgEvent, kCGScrollWheelEventDeltaAxis1);
-    result.wheelTicksX =
-        CGEventGetIntegerValueField(cgEvent, kCGScrollWheelEventDeltaAxis2);
+    // "specific edge case" as mentioned above). Trackpads, unfortunately, do
+    // event chunking, and sending mousewheel events with 0 ticks causes some
+    // websites to malfunction. Therefore, for all continuous input devices we use
+    // the point delta data instead, since we cannot distinguish trackpad data
+    // from data from any other continuous device.
 
     if (CGEventGetIntegerValueField(cgEvent, kCGScrollWheelEventIsContinuous)) {
-        result.deltaY =
+        result.wheelTicksY = result.deltaY =
             CGEventGetIntegerValueField(cgEvent, kCGScrollWheelEventPointDeltaAxis1);
-        result.deltaX =
+        result.wheelTicksX = result.deltaX =
             CGEventGetIntegerValueField(cgEvent, kCGScrollWheelEventPointDeltaAxis2);
     } else {
+        result.wheelTicksY =
+            CGEventGetIntegerValueField(cgEvent, kCGScrollWheelEventDeltaAxis1);
+        result.wheelTicksX =
+            CGEventGetIntegerValueField(cgEvent, kCGScrollWheelEventDeltaAxis2);
+
         // Convert wheel delta amount to a number of pixels to scroll.
         static const double scrollbarPixelsPerCocoaTick = 40.0;
 
