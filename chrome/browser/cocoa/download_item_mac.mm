@@ -4,8 +4,10 @@
 
 #include "chrome/browser/cocoa/download_item_mac.h"
 
+#include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/download_item_controller.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "skia/ext/skia_utils_mac.h"
 
 // DownloadItemMac -------------------------------------------------------------
 
@@ -17,6 +19,7 @@ DownloadItemMac::DownloadItemMac(BaseDownloadItemModel* download_model,
 
 DownloadItemMac::~DownloadItemMac() {
   download_model_->download()->RemoveObserver(this);
+  icon_consumer_.CancelAllRequests();
 }
 
 void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
@@ -34,4 +37,35 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
     default:
         NOTREACHED();
   }
+}
+
+void DownloadItemMac::LoadIcon() {
+  IconManager* icon_manager = g_browser_process->icon_manager();
+  if (!icon_manager) {
+    NOTREACHED();
+    return;
+  }
+
+  // We may already have this particular image cached.
+  FilePath file = download_model_->download()->full_path();
+  SkBitmap* icon_bitmap = icon_manager->LookupIcon(file, IconLoader::SMALL);
+  if (icon_bitmap) {
+    NSImage* icon = gfx::SkBitmapToNSImage(*icon_bitmap);
+    [item_controller_ setIcon:icon];
+    return;
+  }
+
+  // The icon isn't cached, load it asynchronously.
+  icon_manager->LoadIcon(file, IconLoader::NORMAL, &icon_consumer_,
+                         NewCallback(this,
+                                     &DownloadItemMac::OnExtractIconComplete));
+}
+
+void DownloadItemMac::OnExtractIconComplete(IconManager::Handle handle,
+                                            SkBitmap* icon_bitmap) {
+  if (!icon_bitmap)
+    return;
+
+  NSImage* icon = gfx::SkBitmapToNSImage(*icon_bitmap);
+  [item_controller_ setIcon:icon];
 }

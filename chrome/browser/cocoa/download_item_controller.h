@@ -42,6 +42,9 @@ class DownloadShelfContextMenuMac;
 // Remove ourself from the download UI.
 - (void)remove;
 
+// Asynchronous icon loading callback.
+- (void)setIcon:(NSImage*)icon;
+
 // Download item button clicked
 - (IBAction)handleButtonClick:(id)sender;
 

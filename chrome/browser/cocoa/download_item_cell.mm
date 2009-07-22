@@ -102,7 +102,7 @@ NSTimeInterval kHideStatusDuration = 0.3;
   return self;
 }
 
-// For programmatic instantiations
+// For programmatic instantiations.
 - (id)initTextCell:(NSString *)string {
   if ((self = [super initTextCell:string])) {
     [self setInitialState];
@@ -118,14 +118,8 @@ NSTimeInterval kHideStatusDuration = 0.3;
 }
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel {
-  // Set name and icon of download.
+  // Set the name of the download.
   downloadPath_ = downloadModel->download()->GetFileName();
-
-  // TODO(paulg): Use IconManager for loading icons on the file thread
-  // (crbug.com/16226).
-  NSString* extension = base::SysUTF8ToNSString(downloadPath_.Extension());
-  NSImage* icon = [[NSWorkspace sharedWorkspace] iconForFileType:extension];
-  [self setImage:icon];
 
   std::wstring statusText = downloadModel->GetStatusText();
   if (statusText.empty()) {

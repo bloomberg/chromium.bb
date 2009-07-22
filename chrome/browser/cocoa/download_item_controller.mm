@@ -51,6 +51,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)awakeFromNib {
   [self setStateFromDownload:bridge_->download_model()];
+  bridge_->LoadIcon();
 }
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel {
@@ -58,7 +59,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   // (gratituous use of animation, special handling of dangerous downloads)
   // that we don't currently do.
 
-  // Set correct popup menu.
+  // Set the correct popup menu.
   if (downloadModel->download()->state() == DownloadItem::COMPLETE)
     currentMenu_ = completeDownloadMenu_;
   else
@@ -66,6 +67,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
   [progressView_ setMenu:currentMenu_];  // for context menu
   [cell_ setStateFromDownload:downloadModel];
+}
+
+- (void)setIcon:(NSImage*)icon {
+  [cell_ setImage:icon];
 }
 
 - (void)remove {
