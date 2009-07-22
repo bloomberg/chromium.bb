@@ -92,7 +92,7 @@ deps_os = {
   "unix": {
     # Linux, really.
     "src/third_party/xdg-utils":
-      "/trunk/deps/third_party/xdg-utils@20073",
+      "/trunk/deps/third_party/xdg-utils@21243",
   },
 }
 

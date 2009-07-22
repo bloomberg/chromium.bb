@@ -67,33 +67,34 @@ bool ShellIntegration::SetAsDefaultBrowser() {
   return success_code == EXIT_SUCCESS;
 }
 
-static bool GetDefaultBrowser(std::string* result) {
+bool ShellIntegration::IsDefaultBrowser() {
+  std::vector<std::string> argv;
+  argv.push_back("xdg-settings");
+  argv.push_back("check");
+  argv.push_back("default-web-browser");
+  argv.push_back(GetDesktopName());
+
+  std::string reply;
+  if (!base::GetAppOutput(CommandLine(argv), &reply)) {
+    // If xdg-settings fails, we assume that we should pretend we're the default
+    // browser to avoid giving repeated prompts to set ourselves as the default.
+    // TODO(mdm): Really, being the default browser should be a ternary query:
+    // yes, no, and "don't know" so the UI can reflect this more accurately.
+    return true;
+  }
+
+  // Allow any reply that starts with "yes".
+  return reply.find("yes") == 0;
+}
+
+bool ShellIntegration::IsFirefoxDefaultBrowser() {
   std::vector<std::string> argv;
   argv.push_back("xdg-settings");
   argv.push_back("get");
   argv.push_back("default-web-browser");
-  return base::GetAppOutput(CommandLine(argv), result);
-}
 
-bool ShellIntegration::IsDefaultBrowser() {
-  std::string browser;
-  if (!GetDefaultBrowser(&browser)) {
-    // If GetDefaultBrowser() fails, we assume xdg-settings does not work for
-    // some reason, and that we should pretend we're the default browser to
-    // avoid giving repeated prompts to set ourselves as the default browser.
-    // TODO: Really, being the default browser should be a ternary query: yes,
-    // no, and "don't know" so that the UI can reflect this more accurately.
-    return true;
-  }
-  // Allow for an optional newline at the end.
-  if (browser.length() > 0 && browser[browser.length() - 1] == '\n')
-    browser.resize(browser.length() - 1);
-  return !browser.compare(GetDesktopName());
-}
-
-bool ShellIntegration::IsFirefoxDefaultBrowser() {
   std::string browser;
   // We don't care about the return value here.
-  GetDefaultBrowser(&browser);
+  base::GetAppOutput(CommandLine(argv), &browser);
   return browser.find("irefox") != std::string::npos;
 }
