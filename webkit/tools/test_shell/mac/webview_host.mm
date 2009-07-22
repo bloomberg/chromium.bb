@@ -7,9 +7,9 @@
 #include "webkit/tools/test_shell/webview_host.h"
 #include "webkit/tools/test_shell/mac/test_shell_webview.h"
 
-#include "base/gfx/platform_canvas.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
+#include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/glue/webview.h"
 

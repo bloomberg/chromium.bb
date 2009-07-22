@@ -14,13 +14,13 @@
 #ifndef WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
 #define WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
 
-#include "base/gfx/platform_canvas.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
 #include "media/base/buffers.h"
 #include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
+#include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebMediaPlayer.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 

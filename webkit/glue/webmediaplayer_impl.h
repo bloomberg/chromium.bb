@@ -55,7 +55,6 @@
 
 #include <vector>
 
-#include "base/gfx/platform_canvas.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
 #include "base/lock.h"
@@ -63,6 +62,7 @@
 #include "base/ref_counted.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline_impl.h"
+#include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebMediaPlayer.h"
 #include "webkit/api/public/WebMediaPlayerClient.h"
 
