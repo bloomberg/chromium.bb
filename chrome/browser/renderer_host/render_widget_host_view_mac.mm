@@ -434,6 +434,22 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
 }
 
 - (void)scrollWheel:(NSEvent *)theEvent {
+  // On Windows, popups are implemented with a popup window style, so that when
+  // an event comes in that would "cancel" it, it receives the OnCancelMode
+  // message and can kill itself. Alas, on the Mac, views cannot capture events
+  // outside of themselves.  While a click outside a popup kills it, that's just
+  // a defocusing of the text field in WebCore and our editor client kills the
+  // popup. But a scroll wheel event outside a popup must kill it.
+  //
+  // Thus this lovely case of filicide. If this view can be the key view, it is
+  // not a popup. Therefore, if it has any children, they are popups that need
+  // to be canceled.
+  if (canBeKeyView_) {
+    for (NSView* subview in [self subviews]) {
+      ((RenderWidgetHostViewCocoa*)subview)->renderWidgetHostView_->KillSelf();
+    }
+  }
+
   const WebMouseWheelEvent& event =
       WebInputEventFactory::mouseWheelEvent(theEvent, self);
   if (renderWidgetHostView_->render_widget_host_)
