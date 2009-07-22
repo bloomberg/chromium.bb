@@ -176,6 +176,12 @@ class TabStripGtk : public TabStripModelObserver,
     // screen.
     void SetContainerShapeMask();
 
+    // Creates the container widget.
+    void CreateContainer();
+
+    // Destroys the container widget.
+    void DestroyContainer();
+
     // Index of the tab to drop on. If drop_before is true, the drop should
     // occur between the tab at drop_index - 1 and drop_index.
     // WARNING: if drop_before is true it is possible this will == tab_count,

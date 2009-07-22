@@ -1471,26 +1471,19 @@ void TabStripGtk::UpdateDropIndex(GdkDragContext* context, gint x, gint y) {
 }
 
 void TabStripGtk::SetDropIndex(int index, bool drop_before) {
-  if (index == -1) {
-    if (drop_info_.get())
-      gtk_widget_hide(drop_info_->container);
-    return;
-  }
-
-  if (drop_info_.get() && !GTK_WIDGET_VISIBLE(drop_info_->container))
-    gtk_widget_show(drop_info_->container);
-
-  if (drop_info_.get() && drop_info_->drop_index == index &&
-      drop_info_->drop_before == drop_before) {
-    return;
-  }
-
   bool is_beneath;
   gfx::Rect drop_bounds = GetDropBounds(index, drop_before, &is_beneath);
 
   if (!drop_info_.get()) {
     drop_info_.reset(new DropInfo(index, drop_before, !is_beneath));
   } else {
+    if (!GTK_IS_WIDGET(drop_info_->container)) {
+      drop_info_->CreateContainer();
+    } else if (drop_info_->drop_index == index &&
+               drop_info_->drop_before == drop_before) {
+      return;
+    }
+
     drop_info_->drop_index = index;
     drop_info_->drop_before = drop_before;
     if (is_beneath == drop_info_->point_down) {
@@ -1549,22 +1542,12 @@ TabStripGtk::DropInfo::DropInfo(int drop_index, bool drop_before,
     : drop_index(drop_index),
       drop_before(drop_before),
       point_down(point_down) {
-  container = gtk_window_new(GTK_WINDOW_POPUP);
-  SetContainerColorMap();
-  gtk_widget_set_app_paintable(container, TRUE);
-  g_signal_connect(G_OBJECT(container), "expose-event",
-                   G_CALLBACK(OnExposeEvent), this);
-  gtk_widget_add_events(container, GDK_STRUCTURE_MASK);
-  gtk_window_move(GTK_WINDOW(container), 0, 0);
-  gtk_window_resize(GTK_WINDOW(container),
-                    drop_indicator_width, drop_indicator_height);
-  gtk_widget_show_all(container);
-
+  CreateContainer();
   drop_arrow = GetDropArrowImage(point_down);
 }
 
 TabStripGtk::DropInfo::~DropInfo() {
-  gtk_widget_destroy(container);
+  DestroyContainer();
 }
 
 // static
@@ -1642,6 +1625,24 @@ void TabStripGtk::DropInfo::SetContainerShapeMask() {
   // Set the shape mask.
   gdk_window_shape_combine_mask(container->window, pixmap, 0, 0);
   g_object_unref(pixmap);
+}
+
+void TabStripGtk::DropInfo::CreateContainer() {
+  container = gtk_window_new(GTK_WINDOW_POPUP);
+  SetContainerColorMap();
+  gtk_widget_set_app_paintable(container, TRUE);
+  g_signal_connect(G_OBJECT(container), "expose-event",
+                   G_CALLBACK(OnExposeEvent), this);
+  gtk_widget_add_events(container, GDK_STRUCTURE_MASK);
+  gtk_window_move(GTK_WINDOW(container), 0, 0);
+  gtk_window_resize(GTK_WINDOW(container),
+                    drop_indicator_width, drop_indicator_height);
+  gtk_widget_show_all(container);
+}
+
+void TabStripGtk::DropInfo::DestroyContainer() {
+  if (GTK_IS_WIDGET(container))
+    gtk_widget_destroy(container);
 }
 
 // Called from:
@@ -1852,7 +1853,7 @@ gboolean TabStripGtk::OnDragDrop(GtkWidget* widget, GdkDragContext* context,
 gboolean TabStripGtk::OnDragLeave(GtkWidget* widget, GdkDragContext* context,
                                   guint time, TabStripGtk* tabstrip) {
   // Destroy the drop indicator.
-  tabstrip->drop_info_.reset();
+  tabstrip->drop_info_->DestroyContainer();
   return FALSE;
 }
 
