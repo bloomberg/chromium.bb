@@ -8,7 +8,7 @@ set -e
 
 if ld --version | grep gold
 then
-  echo cannot build valgrind with gold
+  echo "Cannot build valgrind with gold.  Please switch to normal /usr/bin/ld, rerun this script, then switch back to gold."
   exit 1
 fi
 
