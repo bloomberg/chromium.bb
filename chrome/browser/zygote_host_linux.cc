@@ -64,6 +64,9 @@ ZygoteHost::ZygoteHost() {
         browser_command_line.GetSwitchValue(switches::kZygoteCmdPrefix);
     cmd_line.PrependWrapper(prefix);
   }
+  if (browser_command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
+    cmd_line.AppendSwitch(switches::kAllowSandboxDebugging);
+  }
 
   const char* sandbox_binary = NULL;
   struct stat st;

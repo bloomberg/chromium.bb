@@ -215,6 +215,8 @@ extern const wchar_t kEnableLocalStorage[];
 
 extern const wchar_t kEnableSessionStorage[];
 
+extern const wchar_t kAllowSandboxDebugging[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

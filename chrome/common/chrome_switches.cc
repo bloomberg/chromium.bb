@@ -557,4 +557,7 @@ const wchar_t kEnableLocalStorage[] = L"enable-local-storage";
 // Enable session storage.  Still buggy.
 const wchar_t kEnableSessionStorage[] = L"enable-session-storage";
 
+// Allows debugging of sandboxed processes (see zygote_main_linux.cc).
+const wchar_t kAllowSandboxDebugging[] = L"allow-sandbox-debugging";
+
 }  // namespace switches

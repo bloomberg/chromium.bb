@@ -19,6 +19,7 @@
 
 #include "chrome/browser/zygote_host_linux.h"
 #include "chrome/common/chrome_descriptors.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/sandbox_methods_linux.h"
@@ -337,10 +338,17 @@ static bool MaybeEnterChroot() {
     // However, now that we have a zygote model, only the (trusted) zygote
     // exists at this point and we can set the non-dumpable flag which is
     // inherited by all our renderer children.
-    prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);
-    if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0)) {
-      LOG(ERROR) << "Failed to set non-dumpable flag";
-      return false;
+    //
+    // Note: a non-dumpable process can't be debugged. To debug sandbox-related
+    // issues, one can specify --allow-sandbox-debugging to let the process be
+    // dumpable.
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (!command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
+      prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);
+      if (prctl(PR_GET_DUMPABLE, 0, 0, 0, 0)) {
+        LOG(ERROR) << "Failed to set non-dumpable flag";
+        return false;
+      }
     }
   } else {
     SkiaFontConfigUseDirectImplementation();
