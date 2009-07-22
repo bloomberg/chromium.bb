@@ -36,19 +36,9 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__ 1
 
-#include "native_client/src/include/nacl_base.h"
-
-#include "native_client/src/trusted/desc/nacl_desc_effector.h"
-#include "native_client/src/trusted/platform/nacl_sync.h"
 #include "native_client/src/trusted/platform/nacl_threads.h"
-
 #include "native_client/src/trusted/service_runtime/nacl_bottom_half.h"
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#if NACL_ARM
-#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
-#else
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
-#endif
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 
 EXTERN_C_BEGIN

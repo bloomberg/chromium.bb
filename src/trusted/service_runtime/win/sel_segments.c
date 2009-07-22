@@ -34,7 +34,7 @@
  */
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 
 uint16_t NaClGetCs(void) {

@@ -40,6 +40,8 @@ int NaClThreadInit() {
 
   for (i = 1; i < LDT_ENTRIES; i++)
     nacl_user[i] = 0;
+
+  return 1;
 }
 
 

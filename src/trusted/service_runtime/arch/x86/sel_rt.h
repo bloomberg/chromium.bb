@@ -96,16 +96,5 @@ struct NaClThreadContext {
    */
 };
 
-struct NaClApp;  /* fwd */
-
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          uintptr_t                 eip,
-                          uintptr_t                 esp,
-                          uint16_t                  des_seg,
-                          uint16_t                  gs,
-                          uint16_t                  cs);
-
-void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
-
 #endif /* __ARCH_X86_SEL_RT_H__ */
 

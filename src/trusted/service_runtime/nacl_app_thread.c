@@ -32,24 +32,12 @@
 /*
  * NaCl Server Runtime user thread state.
  */
-#include <stdlib.h>
-#include <string.h>
-
-#include "native_client/src/include/nacl_platform.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
-
-#include "native_client/src/trusted/platform/nacl_log.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
-
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_bottom_half.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_ldt.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
-#include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 
 void WINAPI NaClThreadLauncher(void *state) {
@@ -82,7 +70,6 @@ void WINAPI NaClThreadLauncher(void *state) {
   WINDOWS_EXCEPTION_CATCH;
 }
 
-/* TODO(petr): this function is architecture specific, requires cleaning */
 int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
                       int                   is_privileged,
@@ -95,27 +82,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 
   NaClLog(4, "natp = 0x%08"PRIxPTR"\n", (uintptr_t) natp);
   NaClLog(4, "nap = 0x%08"PRIxPTR"\n", (uintptr_t) nap);
-  NaClLog(4, "&nap->code_seg_sel = 0x%08"PRIxPTR"\n",
-          (uintptr_t) &nap->code_seg_sel);
-  NaClLog(4, "&nap->data_seg_sel = 0x%08"PRIxPTR"\n",
-          (uintptr_t) &nap->data_seg_sel);
-  NaClLog(4, "nap->code_seg_sel = 0x%02x\n", nap->code_seg_sel);
-  NaClLog(4, "nap->data_seg_sel = 0x%02x\n", nap->data_seg_sel);
-#if NACL_ARM
-  /* TODO(petr): generalize NaClThreadContextCtor to make it platform
-   * independant
-   */
-  NaClThreadContextCtor(&natp->user, usr_entry, usr_esp, gs);
-  NaClLog(4, "natp->user.r9: 0x%02x\n", natp->user.r9);
-#else
-  /* TODO(petr): create platform dependant functions for logging */
-  NaClThreadContextCtor(&natp->user, usr_entry, usr_esp,
-                        nap->data_seg_sel, gs, nap->code_seg_sel);
-  NaClLog(4, "natp->user.cs: 0x%02x\n", natp->user.cs);
-  NaClLog(4, "natp->user.fs: 0x%02x\n", natp->user.fs);
-  NaClLog(4, "natp->user.gs: 0x%02x\n", natp->user.gs);
-  NaClLog(4, "natp->user.ss: 0x%02x\n", natp->user.ss);
-#endif
+
+  NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_esp, gs);
 
   effp = NULL;
 
@@ -254,3 +222,4 @@ int NaClAppThreadDecRef(struct NaClAppThread *natp) {
   }
   return refcount;
 }
+

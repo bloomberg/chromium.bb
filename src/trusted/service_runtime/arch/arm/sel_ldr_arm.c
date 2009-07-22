@@ -51,9 +51,6 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
                              uintptr_t  target_addr) {
   struct NaClPatchInfo  patch_info;
 
-  struct NaClPatch      patch16[1];
-  struct NaClPatch      patch32[2];
-
   /*
    * in ARM we do not need to patch ds, cs sigments.
    * by default we initialize the target for trampoline code as NaClSyscallSeg,
@@ -75,7 +72,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
 void NaClFillTrampolineRegion(struct NaClApp *nap) {
   int i;
 
-  for (i=0; i < NACL_TRAMPOLINE_SIZE/sizeof(NACL_HALT_OPCODE); i++)
+  for (i = 0; i < NACL_TRAMPOLINE_SIZE/sizeof(NACL_HALT_OPCODE); i++)
     ((int *)(nap->mem_start+NACL_TRAMPOLINE_START))[i] = NACL_HALT_OPCODE;
 }
 

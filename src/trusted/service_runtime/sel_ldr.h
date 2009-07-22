@@ -71,6 +71,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
+#include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 EXTERN_C_BEGIN
 
@@ -632,5 +633,13 @@ struct NaClPatchInfo {
 };
 
 void NaClApplyPatchToMemory(struct NaClPatchInfo *patch);
+
+int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
+                          struct NaClApp            *nap,
+                          uintptr_t                 eip,
+                          uintptr_t                 esp,
+                          uint16_t                  gs);
+
+void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
 #endif

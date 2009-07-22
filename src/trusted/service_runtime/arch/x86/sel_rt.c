@@ -34,14 +34,21 @@
  */
 
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
+#include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
 
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
+                          struct NaClApp            *nap,
                           uintptr_t                 eip,
                           uintptr_t                 esp,
-                          uint16_t                  des_seg,
-                          uint16_t                  gs,
-                          uint16_t                  cs) {
+                          uint16_t                  gs) {
+  NaClLog(4, "&nap->code_seg_sel = 0x%08"PRIxPTR"\n",
+          (uintptr_t) &nap->code_seg_sel);
+  NaClLog(4, "&nap->data_seg_sel = 0x%08"PRIxPTR"\n",
+          (uintptr_t) &nap->data_seg_sel);
+  NaClLog(4, "nap->code_seg_sel = 0x%02x\n", nap->code_seg_sel);
+  NaClLog(4, "nap->data_seg_sel = 0x%02x\n", nap->data_seg_sel);
+
   /*
    * initialize registers to appropriate values.  most registers just
    * get zero, but for the segment register we allocate segment
@@ -54,13 +61,18 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->esp = esp;
   ntcp->eip = eip;
 
-  ntcp->cs = cs;
-  ntcp->ds = des_seg;
+  ntcp->cs = nap->code_seg_sel;
+  ntcp->ds = nap->data_seg_sel;
 
-  ntcp->es = des_seg;
+  ntcp->es = nap->data_seg_sel;
   ntcp->fs = 0;  /* windows use this for TLS and SEH; linux does not */
   ntcp->gs = gs;
-  ntcp->ss = des_seg;
+  ntcp->ss = nap->data_seg_sel;
+
+  NaClLog(4, "user.cs: 0x%02x\n", ntcp->cs);
+  NaClLog(4, "user.fs: 0x%02x\n", ntcp->fs);
+  NaClLog(4, "user.gs: 0x%02x\n", ntcp->gs);
+  NaClLog(4, "user.ss: 0x%02x\n", ntcp->ss);
 
   return 1;
 }

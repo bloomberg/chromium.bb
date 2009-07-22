@@ -34,17 +34,25 @@
  */
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
+#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
+                          struct NaClApp            *nap,
                           uintptr_t                 pc,
                           uintptr_t                 sp,
                           uint16_t                  r9) {
+  UNREFERENCED_PARAMETER(nap);
+
   memset(ntcp, 0, sizeof(*ntcp));
   ntcp->esp = sp;
   ntcp->eip = pc;
-
   ntcp->r9 = r9;
+
+  NaClLog(4, "user.sp: 0x%08x\n", ntcp->esp);
+  NaClLog(4, "user.pc: 0x%08x\n", ntcp->eip);
+  NaClLog(4, "user.r9: 0x%08x\n", ntcp->r9);
 
   return 1;
 }
