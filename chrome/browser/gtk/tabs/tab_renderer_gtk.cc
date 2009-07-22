@@ -502,7 +502,9 @@ void TabRendererGtk::Layout() {
   if (!is_pinned() || width() >= kPinnedTabRendererAsTabWidth) {
     // Size the Title text to fill the remaining space.
     int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
-    int title_top = kTopPadding + (content_height - title_font_height_) / 2;
+    // Center the mean line of the text in the content area.
+    int title_top = kTopPadding +
+        (content_height - title_font_->baseline()) / 2;
 
     // If the user has big fonts, the title will appear rendered too far down
     // on the y-axis if we use the regular top padding, so we need to adjust it
