@@ -182,6 +182,8 @@
       'msvs_guid': 'FA39524D-3067-4141-888D-28A86C66F2B9',
       'dependencies': [
         'test_shell_common',
+        'npapi_layout_test_plugin',
+        '../../../tools/image_diff/image_diff.gyp:image_diff',
       ],
       'sources': [
         'test_shell_main.cc',
@@ -205,6 +207,7 @@
       },
       'conditions': [
         ['OS=="win"', {
+          'dependencies': ['test_worker'],
           'resource_include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
@@ -249,7 +252,7 @@
         }],
         ['OS=="mac"', {
           'product_name': 'TestShell',
-          'dependencies': ['layout_test_helper'],
+          'dependencies': ['layout_test_helper', 'test_worker'],
           'variables': {
             'repack_path': '../../../tools/data_pack/repack.py',
           },
