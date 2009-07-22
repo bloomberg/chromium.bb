@@ -39,7 +39,7 @@
 
 EXTERN_C_BEGIN
 
-/* TODO(petr): move this to LINUX specific header file */
+/* TODO(petr): this should go to linux/x86 */
 #if NACL_LINUX
 /*
  * The modify_ldt system call is used to get and set the local descriptor
@@ -107,3 +107,4 @@ void NaClLdtPrintSelector(uint16_t selector);
 EXTERN_C_END
 
 #endif
+

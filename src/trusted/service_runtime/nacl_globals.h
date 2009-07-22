@@ -66,9 +66,6 @@ extern struct NaClAppThread     *nacl_thread[LDT_ENTRIES];
 void  NaClGlobalModuleInit(void);
 void  NaClGlobalModuleFini(void);
 
-extern uint16_t nacl_global_cs;
-extern uint16_t nacl_global_ds;
-
 /* hack for gdb */
 extern uintptr_t nacl_global_xlate_base;
 

@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SEL_RT_H__
-#define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SEL_RT_H__ 1
+#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_SEL_RT_H__
+#define NATIVE_CLIENT_SERVICE_RUNTIME_SEL_RT_H__ 1
 
 #if NACL_ARM
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
@@ -38,5 +38,5 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
 #endif
 
-#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SEL_RT_H__ */
+#endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_SEL_RT_H__ */
 

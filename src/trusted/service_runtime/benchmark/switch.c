@@ -51,7 +51,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscalls.h"
 
 extern struct NaClThreadContext *nacl_user[LDT_ENTRIES];

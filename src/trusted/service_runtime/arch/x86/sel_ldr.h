@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,52 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Test code for NaCl local descriptor table (LDT) managment
- */
-#include <stdio.h>
-#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
+#ifndef SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__
+#define SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ 1
 
-#if defined (HAVE_SDL)
-#include <SDL.h>
-#endif
+#define NACL_MAX_ADDR_BITS (8 + 20)
+#define NACL_NOOP_OPCODE        0x90
+#define NACL_HALT_OPCODE        0xf4
+#define NACL_HALT_LEN           1           /* length of halt instruction */
 
-int main(int argc, char* argv[]) {
-  uint16_t a, b, c, d, e;
-  /* Initialize LDT services. */
-  NaClLdtInit();
+#endif /* SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ */
 
-  /* Data, not read only */
-  a = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA, 0, 0, 0x000ff);
-  printf("a = %0x\n", a);
-  NaClLdtPrintSelector(a);
-
-  /* Data, read only */
-  b = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA, 1, 0, 0x000ff);
-  printf("b = %0x\n", b);
-  NaClLdtPrintSelector(b);
-
-  /* Data, read only */
-  c = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA, 1, 0, 0x000ff);
-  printf("c = %0x\n", c);
-  NaClLdtPrintSelector(c);
-
-  /* Delete b */
-  NaClLdtDeleteSelector(b);
-  printf("b (after deletion) = %0x\n", b);
-  NaClLdtPrintSelector(b);
-
-  /* Since there is only one thread, d should grab slot previously holding b */
-  d = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA, 1, 0, 0x000ff);
-  printf("d = %0x\n", d);
-  NaClLdtPrintSelector(d);
-
-  /* Code selector */
-  e = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_CODE, 1, 0, 0x000ff);
-  printf("e (code) = %0x\n", e);
-  NaClLdtPrintSelector(e);
-
-  /* Shut down LDT services. */
-  NaClLdtFini();
-  return 0;
-}

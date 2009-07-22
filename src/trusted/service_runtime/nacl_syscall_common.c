@@ -32,64 +32,23 @@
 /*
  * NaCl service run-time, non-platform specific system call helper routines.
  */
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
-
-#include "native_client/src/include/nacl_platform.h"
-#include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
-
-#include "native_client/src/shared/imc/nacl_imc_c.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
-#include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_dir.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
-#include "native_client/src/trusted/desc/nacl_desc_imc_bound_desc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
 #include "native_client/src/trusted/desc/nacl_desc_semaphore.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
-
-#include "native_client/src/trusted/platform/nacl_global_secure_random.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/nacl_secure_random.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
-
-#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
-
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
-
-#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
-#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-
-#if NACL_WINDOWS
-# include "native_client/src/trusted/service_runtime/win/nacl_syscall_inl.h"
-#elif NACL_LINUX || NACL_OSX
-# include "native_client/src/trusted/service_runtime/linux/nacl_syscall_inl.h"
-#else
-# error "what target platform are you on?"
-#endif
-
-#if defined(HAVE_SDL)
-# include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
-# include "native_client/src/trusted/service_runtime/nacl_bottom_half.h"
-#endif
 
 
 static INLINE size_t  size_min(size_t a, size_t b) {
@@ -1956,7 +1915,6 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
   }
 
   if (0 == NaClChangeThreadIdx(natp,
-                               NACL_LDT_DESCRIPTOR_DATA,
                                0,
                                (void *) sysaddr,
                                size)) {

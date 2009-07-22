@@ -37,6 +37,23 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
 
 
+uint16_t  nacl_global_cs = 0;
+uint16_t  nacl_global_ds = 0;
+
+
+void NaClInitGlobals() {
+  nacl_global_cs = NaClGetCs();
+  nacl_global_ds = NaClGetDs();
+}
+
+uint16_t NaClGetGlobalDs() {
+  return nacl_global_ds;
+}
+
+uint16_t NaClGetGlobalCs() {
+  return nacl_global_cs;
+}
+
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
                           uintptr_t                 eip,

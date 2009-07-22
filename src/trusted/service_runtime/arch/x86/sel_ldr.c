@@ -29,14 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <string.h>
-#include "native_client/src/trusted/service_runtime/nacl_assert.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
-#include "native_client/src/trusted/service_runtime/tramp.h"
-#include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/include/portability_string.h"
+#include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_asm_symbols.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/tramp.h"
 
 
 /*
@@ -44,7 +41,7 @@
  * main, or something that main invokes early.
  */
 void NaClThreadStartupCheck() {
-  ASSERT(sizeof(struct NaClThreadContext) == 36);
+  CHECK(sizeof(struct NaClThreadContext) == 36);
 }
 
 
@@ -59,7 +56,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   struct NaClPatch      patch32[2];
 
   patch16[0].target = ((uintptr_t) &NaCl_tramp_cseg_patch) - 2;
-  patch16[0].value = nacl_global_cs;
+  patch16[0].value = NaClGetGlobalCs();
 
   patch_info.abs16 = patch16;
   patch_info.num_abs16 = sizeof patch16/sizeof patch16[0];
@@ -71,7 +68,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   patch32[0].value = (uintptr_t) NaClSyscallSeg;
 
   patch32[1].target = ((uintptr_t) &NaCl_tramp_dseg_patch) - 4;
-  patch32[1].value = nacl_global_ds;  /* opens the data sandbox */
+  patch32[1].value = NaClGetGlobalDs();  /* opens the data sandbox */
 
   patch_info.abs32 = patch32;
   patch_info.num_abs32 = sizeof patch32/sizeof patch32[0];
@@ -84,8 +81,31 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   NaClApplyPatchToMemory(&patch_info);
 }
 
+static void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
+  CHECK(!(size % NACL_HALT_LEN));
+  memset(start, NACL_HALT_OPCODE, size);
+}
 
 void NaClFillTrampolineRegion(struct NaClApp *nap) {
-  memset((void *) nap->mem_start, NACL_HALT_OPCODE, NACL_TRAMPOLINE_END);
+  NaClFillMemoryRegionWithHalt((void *) nap->mem_start, NACL_TRAMPOLINE_END);
+}
+
+
+/*
+ * fill from text_region_bytes to end of that page with halt
+ * instruction, which is one byte in size.
+ */
+void NaClFillEndOfTextRegion(struct NaClApp *nap) {
+  size_t page_pad;
+
+  page_pad = NaClRoundPage(nap->text_region_bytes) - nap->text_region_bytes;
+  CHECK(page_pad < NACL_PAGESIZE);
+
+  NaClFillMemoryRegionWithHalt((void *) (nap->mem_start +
+                                         NACL_TRAMPOLINE_END +
+                                         nap->text_region_bytes),
+                                         page_pad);
+
+  nap->text_region_bytes += page_pad;
 }
 

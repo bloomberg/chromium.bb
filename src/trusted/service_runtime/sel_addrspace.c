@@ -32,46 +32,28 @@
 /* NaCl Simple/secure ELF loader (NaCl SEL).
  */
 
-#include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
-
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 
 
 NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
   void        *mem;
+  int         rv;
   uintptr_t   hole_start;
   size_t      hole_size;
   uintptr_t   stack_start;
 
   NaClLog(2, "NaClAllocAddrSpace: calling NaCl_page_alloc(*,0x%x)\n",
           (1U << nap->addr_bits));
-/* TODO(petr): provide architecture specific functions for that */
-#if NACL_ARM
-  /* kernel does not allows us to allocate module's address space at 0x0, so we
-   * allocate it at the start of trampoline region
-   */
-  mem = (void *) NACL_TRAMPOLINE_START;
-  if (NaCl_page_alloc_at_addr(mem,
-                        (1U << nap->addr_bits)) != 0) {
-#else
-  if (NaCl_page_alloc(&mem,
-                      (1U << nap->addr_bits)) != 0) {
-#endif
-    NaClLog(2, "NaClAllocAddrSpace: NaCl_page_alloc failed\n");
-    return LOAD_NO_MEMORY;
-  }
 
-#if NACL_ARM
-  /*
-   * makes sel_ldr think that the module's address space is at 0x0, this allows
-   * us to use the same code as x86
-   */
-  mem = 0x0;
-#endif
+  rv = NaClAllocateSpace(&mem, 1U << nap->addr_bits);
+  if (rv != LOAD_OK) return rv;
+
   nap->mem_start = (uintptr_t) mem;
   nap->xlate_base = nap->mem_start;
   NaClLog(2, "allocated memory at 0x%08"PRIxPTR"\n", nap->mem_start);
@@ -145,6 +127,9 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    * module address space up to the start of a trampoline region. As in ARM, we
    * do not mmap this region we do not need to mprotect it.
    */
+/* TODO(petr): provide helper function to factor this piece out
+ * generalize function so it can be called for each region
+ */
 #if !NACL_ARM
   NaClLog(3,
           ("NULL detection region start 0x%08"PRIxPTR

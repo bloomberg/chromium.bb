@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/trusted/service_runtime/nacl_assert.h"
+#include "native_client/src/trusted/service_runtime/nacl_check.h"
+#include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
-#include "native_client/src/trusted/service_runtime/nacl_globals.h"
 
 
 /*
@@ -40,7 +40,7 @@
  * main, or something that main invokes early.
  */
 void NaClThreadStartupCheck() {
-  ASSERT(sizeof(struct NaClThreadContext) == 44);
+  CHECK(sizeof(struct NaClThreadContext) == 44);
 }
 
 
@@ -52,7 +52,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   struct NaClPatchInfo  patch_info;
 
   /*
-   * in ARM we do not need to patch ds, cs sigments.
+   * in ARM we do not need to patch ds, cs segments.
    * by default we initialize the target for trampoline code as NaClSyscallSeg,
    * so there is no point to patch address of NaClSyscallSeg
    */
@@ -69,10 +69,41 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
 }
 
 
-void NaClFillTrampolineRegion(struct NaClApp *nap) {
+static void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
+  uint32_t *inst = (uint32_t *) start;
   int i;
 
-  for (i = 0; i < NACL_TRAMPOLINE_SIZE/sizeof(NACL_HALT_OPCODE); i++)
-    ((int *)(nap->mem_start+NACL_TRAMPOLINE_START))[i] = NACL_HALT_OPCODE;
+  CHECK(!(size % NACL_HALT_LEN));
+  /* check that the region start is 4 bytes alligned */
+  CHECK(!((uint32_t)start % NACL_HALT_LEN));
+
+  for (i = 0; i < (size / NACL_HALT_LEN); i++)
+    inst[i] = NACL_HALT_OPCODE;
+}
+
+
+void NaClFillTrampolineRegion(struct NaClApp *nap) {
+  NaClFillMemoryRegionWithHalt((void *) nap->mem_start +
+                               NACL_TRAMPOLINE_START,
+                               NACL_TRAMPOLINE_SIZE);
+}
+
+
+/*
+ * fill from text_region_bytes to end of that page with halt
+ * instruction, which is one byte in size.
+ */
+void NaClFillEndOfTextRegion(struct NaClApp *nap) {
+  size_t page_pad;
+
+  page_pad = NaClRoundPage(nap->text_region_bytes) - nap->text_region_bytes;
+  CHECK(page_pad < NACL_PAGESIZE);
+
+  NaClFillMemoryRegionWithHalt((void *) nap->mem_start +
+                               NACL_TRAMPOLINE_END +
+                               nap->text_region_bytes,
+                               page_pad);
+
+  nap->text_region_bytes += page_pad;
 }
 

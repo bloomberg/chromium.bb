@@ -36,9 +36,18 @@
 #ifndef __SEL_ADDRSPACE_H__
 #define __SEL_ADDRSPACE_H__ 1
 
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
+
+struct NaClApp; /* fwd */
 
 NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap);
+
+/*
+ * Apply memory protection to memory regions.
+ */
 NaClErrorCode NaClMemoryProtection(struct NaClApp *nap);
+
+int NaClAllocateSpace(void **mem, size_t size);
 
 #endif

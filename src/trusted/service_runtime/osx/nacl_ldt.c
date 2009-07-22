@@ -39,7 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "native_client/src/trusted/platform/nacl_sync.h"
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
 
 /* OSX specific */
 #include <architecture/i386/desc.h>  /* ldt_desc, etc */

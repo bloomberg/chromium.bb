@@ -36,7 +36,6 @@
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 
 
@@ -175,8 +174,7 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
    * from its crt code (before main or much of libc can run).  Other
    * threads are spawned with the tdb address and size as a parameter.
    */
-  gs = NaClAllocateThreadIdx(NACL_LDT_DESCRIPTOR_DATA,
-                             0,
+  gs = NaClAllocateThreadIdx(0,
                              (void *) sys_tdb_base,
                              tdb_size);
 

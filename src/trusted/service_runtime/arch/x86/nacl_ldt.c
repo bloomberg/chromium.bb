@@ -34,7 +34,7 @@
  */
 
 #include "native_client/src/include/nacl_platform.h"
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
 
 /* TODO(gregoryd): These need to come from a header file. */
 extern int NaClLdtInitPlatformSpecific();

@@ -33,10 +33,16 @@
  * NaCl Secure Runtime
  */
 
-#ifndef __ARCH_X86_SEL_RT_H__
-#define __ARCH_X86_SEL_RT_H__    1
+#ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__
+#define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__ 1
 
 #include "native_client/src/include/portability.h"
+
+void NaClInitGlobals();
+
+uint16_t NaClGetGlobalCs(void);
+
+uint16_t NaClGetGlobalDs(void);
 
 uint16_t NaClGetCs(void);
 /* setting CS is done using an lcall */
@@ -96,5 +102,5 @@ struct NaClThreadContext {
    */
 };
 
-#endif /* __ARCH_X86_SEL_RT_H__ */
+#endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_SEL_RT_H__ */
 

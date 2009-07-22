@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 
 
@@ -43,12 +43,13 @@ void NaClThreadFini() {
 }
 
 
-uint16_t NaClAllocateThreadIdx(int type,
-                               int read_exec_only,
+uint16_t NaClAllocateThreadIdx(int read_exec_only,
                                void *base_addr,
                                uint32_t size_in_bytes) {
-  return NaClLdtAllocateByteSelector(type, read_exec_only,
-                                     base_addr, size_in_bytes);
+  return NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
+                                     read_exec_only,
+                                     base_addr,
+                                     size_in_bytes);
 }
 
 
@@ -58,12 +59,11 @@ void NaClFreeThreadIdx(struct NaClAppThread *natp) {
 
 
 uint16_t NaClChangeThreadIdx(struct NaClAppThread *natp,
-                             int type,
                              int read_exec_only,
                              void* base_addr,
                              uint32_t size_in_bytes) {
   return NaClLdtChangeByteSelector(natp->user.gs >> 3,
-                                   type,
+                                   NACL_LDT_DESCRIPTOR_DATA,
                                    read_exec_only,
                                    base_addr,
                                    size_in_bytes);

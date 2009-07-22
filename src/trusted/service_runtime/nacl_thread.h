@@ -38,15 +38,13 @@ int NaClThreadInit();
 
 void NaClThreadFini();
 
-uint16_t NaClAllocateThreadIdx(int type,
-                               int read_exec_only,
+uint16_t NaClAllocateThreadIdx(int read_exec_only,
                                void *base_addr,
                                uint32_t size_in_bytes);
 
 void NaClFreeThreadIdx(struct NaClAppThread *natp);
 
 uint16_t NaClChangeThreadIdx(struct NaClAppThread *natp,
-                             int type,
                              int read_exec_only,
                              void* base_addr,
                              uint32_t size_in_bytes);

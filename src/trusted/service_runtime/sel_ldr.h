@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,25 +53,20 @@
 #ifndef SERVICE_RUNTIME_SEL_LDR_H__
 #define SERVICE_RUNTIME_SEL_LDR_H__ 1
 
-/* TODO(bsy): could some of these includes be removed? */
-#include "native_client/src/include/nacl_base.h"
-#include "native_client/src/include/nacl_platform.h"
-#include "native_client/src/include/portability.h"
-
-#include "native_client/src/shared/imc/nacl_imc_c.h"
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/platform/nacl_threads.h"
 #include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/nacl_sync.h"
-
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
-#include "native_client/src/trusted/service_runtime/gio.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
+#if NACL_ARM
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
+#else
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
+#endif
+
 
 EXTERN_C_BEGIN
 
@@ -82,11 +77,6 @@ extern int using_debug_configuration;
 
 #define NACL_SELF_CHECK         1
 
-#if NACL_ARM
-#define NACL_MAX_ADDR_BITS (26) /* mmap fails for 28 bits */
-#else
-#define NACL_MAX_ADDR_BITS (8 + 20)
-#endif
 /* wp: NACL_MAX_ADDR_BITS < 32, see NaClAppLoadFile */
 #define NACL_DEFAULT_ENTRY_PT   "NaClMain"
 
@@ -110,16 +100,6 @@ extern int using_debug_configuration;
 
 #define NACL_DEFAULT_ALLOC_MAX  (32 << 20)  /* total brk and mmap allocs */
 #define NACL_DEFAULT_STACK_MAX  (16 << 20)  /* main thread stack */
-
-#if NACL_ARM
-#define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
-#define NACL_HALT_OPCODE        0xe3a0f000  /* mov pc, #0 */
-#define NACL_HALT_LEN           4           /* length of halt instruction */
-#else
-#define NACL_NOOP_OPCODE        0x90
-#define NACL_HALT_OPCODE        0xf4
-#define NACL_HALT_LEN           1           /* length of halt instruction */
-#endif
 
 #define NACL_DATA_SANDBOXING    0
 /*
@@ -600,11 +580,11 @@ void NaClDumpServiceAddressTo(struct NaClApp  *nap,
 
 void NaClWaitForModuleStartStatusCall(struct NaClApp *nap);
 
-EXTERN_C_END
-
 void NaClThreadStartupCheck();
 
 void NaClFillTrampolineRegion(struct NaClApp *nap);
+
+void NaClFillEndOfTextRegion(struct NaClApp *nap);
 
 void NaClPatchOneTrampoline(struct NaClApp *nap,
                             uintptr_t target_addr);
@@ -641,5 +621,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           uint16_t                  gs);
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
+
+EXTERN_C_END
 
 #endif

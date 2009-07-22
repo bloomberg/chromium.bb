@@ -37,7 +37,7 @@
 #include <stdio.h>
 
 #include "native_client/src/trusted/platform/nacl_sync.h"
-#include "native_client/src/trusted/service_runtime/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
 
 
 /* struct LdtEntry is a structure that is laid out exactly as the segment

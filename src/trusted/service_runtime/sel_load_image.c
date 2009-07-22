@@ -33,15 +33,8 @@
  * NaCl Simple/secure ELF loader (NaCl SEL).
  */
 
-#include <string.h>
-
-#include "native_client/src/include/nacl_elf.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/sel_util.h"
-#include "native_client/src/trusted/service_runtime/tramp.h"
+
 
 NaClErrorCode NaClLoadImage(struct Gio     *gp,
                             struct NaClApp *nap) {
@@ -49,7 +42,6 @@ NaClErrorCode NaClLoadImage(struct Gio     *gp,
   Elf32_Phdr                          *php;
   uintptr_t                           paddr;
   uintptr_t                           end_vaddr;
-  size_t                              page_pad;
 
   for (segnum = 0; segnum < nap->elf_hdr.e_phnum; ++segnum) {
     php = &nap->phdrs[segnum];
@@ -85,28 +77,8 @@ NaClErrorCode NaClLoadImage(struct Gio     *gp,
     /* region from p_filesz to p_memsz should already be zero filled */
   }
 
-  /*
-   * fill from text_region_bytes to end of that page with halt
-   * instruction, which is one byte in size.
-   */
-  page_pad = NaClRoundPage(nap->text_region_bytes) - nap->text_region_bytes;
-  CHECK(page_pad < NACL_PAGESIZE);
-
-/* TODO(petr): provide architecture dependant functions */
-#if NACL_ARM
-  CHECK(!(page_pad % 4));
-  paddr = nap->mem_start + NACL_TRAMPOLINE_END + nap->text_region_bytes;
-  CHECK(!(paddr % 4));
-  for (segnum = 0; segnum < (page_pad / 4); segnum++)
-    ((int *)paddr)[segnum] = NACL_HALT_OPCODE;
-#else
-  memset((void *) (nap->mem_start
-                   + NACL_TRAMPOLINE_END
-                   + nap->text_region_bytes),
-         NACL_HALT_OPCODE,
-         page_pad);
-#endif
-  nap->text_region_bytes += page_pad;
+  NaClFillEndOfTextRegion(nap);
 
   return LOAD_OK;
 }
+

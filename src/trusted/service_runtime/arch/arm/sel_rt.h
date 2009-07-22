@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,10 +33,12 @@
  * NaCl Secure Runtime
  */
 
-#ifndef __ARCH_ARM_SEL_RT_H__
-#define __ARCH_ARM_SEL_RT_H__    1
+#ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H__
+#define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H__ 1
 
 #include "native_client/src/include/portability.h"
+
+void NaClInitGlobals();
 
 uint32_t NaClGetSp(void);
 
@@ -45,5 +47,5 @@ uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, esp, lr, eip;
           /* 0   4   8   c  10  14   18  1c   20  24   28 */
 };
 
-#endif /* __ARCH_ARM_SEL_RT_H__ */
+#endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H___ */
 

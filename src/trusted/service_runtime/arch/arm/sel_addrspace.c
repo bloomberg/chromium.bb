@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,52 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Test code for NaCl local descriptor table (LDT) managment
- */
-#include <stdio.h>
-#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/nacl_check.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_memory.h"
 
-#if defined (HAVE_SDL)
-#include <SDL.h>
-#endif
 
-int main(int argc, char* argv[]) {
-  uint16_t a, b, c, d, e;
-  /* Initialize LDT services. */
-  NaClLdtInit();
+int NaClAllocateSpace(void **mem, size_t size) {
+  CHECK(mem);
 
-  /* Data, not read only */
-  a = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA, 0, 0, 0x000ff);
-  printf("a = %0x\n", a);
-  NaClLdtPrintSelector(a);
+  *mem = (void *) NACL_TRAMPOLINE_START;
+  if (NaCl_page_alloc_at_addr(mem, size) != 0) {
+    NaClLog(2,
+        "NaClAlloccaterSpace: NaCl_page_alloc_at_addr 0x%08"PRIxPTR" failed\n",
+        (uintptr_t) *mem);
+    return LOAD_NO_MEMORY;
+  }
 
-  /* Data, read only */
-  b = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA, 1, 0, 0x000ff);
-  printf("b = %0x\n", b);
-  NaClLdtPrintSelector(b);
+  /*
+   * makes sel_ldr think that the module's address space is at 0x0, this where
+   * it should be
+   */
+  *mem = 0x0;
 
-  /* Data, read only */
-  c = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA, 1, 0, 0x000ff);
-  printf("c = %0x\n", c);
-  NaClLdtPrintSelector(c);
-
-  /* Delete b */
-  NaClLdtDeleteSelector(b);
-  printf("b (after deletion) = %0x\n", b);
-  NaClLdtPrintSelector(b);
-
-  /* Since there is only one thread, d should grab slot previously holding b */
-  d = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_DATA, 1, 0, 0x000ff);
-  printf("d = %0x\n", d);
-  NaClLdtPrintSelector(d);
-
-  /* Code selector */
-  e = NaClLdtAllocatePageSelector(NACL_LDT_DESCRIPTOR_CODE, 1, 0, 0x000ff);
-  printf("e (code) = %0x\n", e);
-  NaClLdtPrintSelector(e);
-
-  /* Shut down LDT services. */
-  NaClLdtFini();
-  return 0;
+  return LOAD_OK;
 }
+

@@ -38,6 +38,10 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
+void NaClInitGlobals() {
+}
+
+
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
                           uintptr_t                 pc,
