@@ -626,14 +626,11 @@ each locale. -->
       <message name="IDS_VIEW_SOURCE" desc="The text label of the View Page Source menu item">
         View s&amp;ource
       </message>
-      <message name="IDS_DEBUGGER" desc="The text label of the JavaScript debugger menu item">
-        Debug JavaScript
-      </message>
       <message name="IDS_REPORT_BUG" desc="The text label of the Report Bug menu item">
         &amp;Report bug or broken website...
       </message>
-      <message name="IDS_JS_CONSOLE" desc="The text the menu to show the JS console">
-        &amp;JavaScript console
+      <message name="IDS_DEV_TOOLS" desc="The text label of the Developer Tools menu item">
+        &amp;Developer Tools
       </message>
       <message name="IDS_TASK_MANAGER" desc="The text label of the Task Manager menu item">
         &amp;Task manager
@@ -3737,17 +3734,6 @@ each locale. -->
       </message>
       <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to remember users decision.">
         Remember my choice for all links of this type.
-      </message>
-
-      <!-- Debugger -->
-      <message name="IDS_DEBUGGER_TITLE_BUSY" desc="V8 Debugger title bar displayed when busy (a command is running)">
-        JavaScript Debugger - Busy
-      </message>
-      <message name="IDS_DEBUGGER_TITLE_BREAK" desc="V8 Debugger title bar displayed when ready and stopped at a breakpoint">
-        JavaScript Debugger - Break
-      </message>
-      <message name="IDS_DEBUGGER_TITLE_RUNNING" desc="V8 Debugger title bar displayed when ready and the page is running">
-        JavaScript Debugger - Running
       </message>
 
       <!-- Shortcut Modifiers -->

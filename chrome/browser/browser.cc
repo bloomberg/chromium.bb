@@ -1075,7 +1075,7 @@ void Browser::OpenCreateShortcutsDialog() {
 #endif
 }
 
-void Browser::ToggleJavaScriptConsole() {
+void Browser::ToggleDevToolsWindow() {
   UserMetrics::RecordAction(L"ShowJSConsole", profile_);
   DevToolsManager::GetInstance()->ToggleDevToolsWindow(
       GetSelectedTabContents()->render_view_host());
@@ -1358,7 +1358,7 @@ void Browser::ExecuteCommandWithDisposition(
     // Show various bits of UI
     case IDC_OPEN_FILE:             OpenFile();                    break;
     case IDC_CREATE_SHORTCUTS:      OpenCreateShortcutsDialog();   break;
-    case IDC_JS_CONSOLE:            ToggleJavaScriptConsole();     break;
+    case IDC_DEV_TOOLS:             ToggleDevToolsWindow();        break;
     case IDC_TASK_MANAGER:          OpenTaskManager();             break;
     case IDC_SELECT_PROFILE:        OpenSelectProfileDialog();     break;
     case IDC_NEW_PROFILE:           OpenNewProfileDialog();        break;
@@ -2150,7 +2150,7 @@ void Browser::InitCommandState() {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_OPEN_FILE, true);
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
-  command_updater_.UpdateCommandEnabled(IDC_JS_CONSOLE, true);
+  command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS, true);
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);

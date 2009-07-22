@@ -424,7 +424,7 @@ bool AutomatedUITest::Home() {
 }
 
 bool AutomatedUITest::JavaScriptConsole() {
-  return RunCommandAsync(IDC_JS_CONSOLE);
+  return RunCommandAsync(IDC_DEV_TOOLS);
 }
 
 bool AutomatedUITest::OpenAboutDialog() {
