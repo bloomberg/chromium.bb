@@ -389,14 +389,19 @@ function onrender(renderEvent) {
       [0, 0, 0],  // target
       [0, 1, 0]); // up
 
-  // Rotate/Scale the selected icon.
-  var icon = g_icons[g_selectedIndex];
-  icon.transform.identity();
-  icon.transform.translate(
-      634 + 6 + 64, 17 + g_selectedIndex * 140 + 5 + 64, -1);
-  icon.transform.rotateZ(g_clock * -1);
-  var scale = Math.sin(g_clock * 15) * 0.1 + 0.7;
-  icon.transform.scale(scale, scale, 1);
+  for (var i = 0; i < g_icons.length; i++) {
+    var icon = g_icons[i];
+    icon.transform.identity();
+    icon.transform.translate(
+        634 + 6 + 64, 17 + i * 140 + 5 + 64, -1);
+    if (i == g_selectedIndex) {
+      icon.transform.rotateZ(g_clock * -1);
+      var scale = Math.sin(g_clock * 15) * 0.1 + 0.7;
+      icon.transform.scale(scale, scale, 1);
+    } else {
+      icon.transform.scale(0.8, 0.8, 0);
+    }
+  }
 
   // Adjust the gauges
   for (var ii = 0; ii < 3; ++ii) {
