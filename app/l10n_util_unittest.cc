@@ -97,7 +97,7 @@ void SetICUDefaultLocale(const std::string& locale_string) {
 // The meaning of that API, on the Mac, is "the locale used by Cocoa's main
 // nib file", which clearly can't be stubbed by a test app that doesn't use
 // Cocoa.
-TEST_F(L10nUtilTest, GetAppLocale) {
+TEST_F(L10nUtilTest, DISABLED_GetAppLocale) {
   // Use a temporary locale dir so we don't have to actually build the locale
   // dlls for this test.
   FilePath orig_locale_dir;
