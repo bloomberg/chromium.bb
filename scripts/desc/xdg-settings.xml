@@ -33,6 +33,7 @@
       <command>xdg-settings</command>
       <group choice="req">
         <arg choice="plain"><option><replaceable>get</replaceable></option></arg>
+        <arg choice="plain"><option><replaceable>check</replaceable></option></arg>
         <arg choice="plain"><option><replaceable>set</replaceable></option></arg>
       </group>
       <group choice="req">
@@ -151,16 +152,24 @@
   <refsect1 id="examples">
     <title>Examples</title>
     <para>
+      Get the desktop file name of the current default web browser
       <programlisting>
         xdg-settings get default-web-browser
       </programlisting>
-      Gets the desktop file name of the current default web browser
     </para>
     <para>
+      Check whether the default web browser is firefox.desktop, which can be
+      false even if "get default-web-browser" says that is the current value
+      (if only some of the underlying settings actually reflect that value)
+      <programlisting>
+        xdg-settings check default-web-browser firefox.desktop
+      </programlisting>
+    </para>
+    <para>
+      Set the default web browser to google-chrome.desktop
       <programlisting>
         xdg-settings set default-web-browser google-chrome.desktop
       </programlisting>
-      Sets the default web browser to google-chrome.desktop
     </para>
   </refsect1>
 </refentry>

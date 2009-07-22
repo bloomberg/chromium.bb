@@ -39,7 +39,7 @@ xdg-settings - get various settings from the desktop environment
 
 Synopsis
 
-xdg-settings { get | set } {property} [value]
+xdg-settings { get | check | set } {property} [value]
 
 xdg-settings { --help | --list | --manual | --version }
 
@@ -81,15 +81,22 @@ failure. The following failure codes can be returned:
 
 Examples
 
+Get the desktop file name of the current default web browser
+
         xdg-settings get default-web-browser
 
 
-Gets the desktop file name of the current default web browser
+Check whether the default web browser is firefox.desktop, which can be false
+even if "get default-web-browser" says that is the current value (if only some
+of the underlying settings actually reflect that value)
+
+        xdg-settings check default-web-browser firefox.desktop
+
+
+Set the default web browser to google-chrome.desktop
 
         xdg-settings set default-web-browser google-chrome.desktop
 
-
-Sets the default web browser to google-chrome.desktop
 
 _MANUALPAGE
 }
@@ -101,7 +108,7 @@ xdg-settings - get various settings from the desktop environment
 
 Synopsis
 
-xdg-settings { get | set } {property} [value]
+xdg-settings { get | check | set } {property} [value]
 
 xdg-settings { --help | --list | --manual | --version }
 
@@ -388,6 +395,21 @@ get_browser_mime()
     xdg-mime query default text/html
 }
 
+set_browser_mime()
+{
+    orig="`get_browser_mime`"
+    # Fixing the local desktop file can actually change the default browser all
+    # by itself, so we fix it only after querying to find the current default
+    fix_local_desktop_file "$1" || return
+    mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+    xdg-mime default "$1" text/html || return
+    if [ x"`get_browser_mime`" != x"$1" ]; then
+        # Put back the original value
+        xdg-mime default "$orig" text/html
+        exit_failure_operation_failed
+    fi
+}
+
 parse_binary_or_desktop()
 {
     binary="`echo "$binary" | first_word`"
@@ -404,18 +426,14 @@ parse_binary_or_desktop()
     exit_failure_operation_failed
 }
 
-set_browser_mime()
+resolve_kde_browser()
 {
-    orig="`get_browser_mime`"
-    # Fixing the local desktop file can actually change the default browser all
-    # by itself, so we fix it only after querying to find the current default
-    fix_local_desktop_file "$1" || return
-    mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/applications"
-    xdg-mime default "$1" text/html || return
-    if [ x"`get_browser_mime`" != x"$1" ]; then
-        # Put back the original value
-        xdg-mime default "$orig" text/html
-        exit_failure_operation_failed
+    echo "$browser" | grep -q '^!'
+    if [ $? -ne 0 ]; then
+        echo "$browser"
+    else
+        binary="${browser#!}"
+        parse_binary_or_desktop
     fi
 }
 
@@ -423,17 +441,30 @@ get_browser_kde()
 {
     browser="`kreadconfig --file kdeglobals --group General --key BrowserApplication`"
     if [ x"$browser" = x ]; then
-        # No default browser; KDE will probably use the MIME type text/html
+        # No explicit default browser; KDE will use the MIME type text/html
         get_browser_mime
     else
-        echo $browser | grep '^!' > /dev/null 2>&1
-        if [ $? -ne 0 ]; then
-            echo "$browser"
-            exit_success
-        fi
-        binary="${browser#!}"
-        parse_binary_or_desktop
+        resolve_kde_browser
     fi
+}
+
+check_browser_kde()
+{
+    browser="`kreadconfig --file kdeglobals --group General --key BrowserApplication`"
+    browser="`resolve_kde_browser`"
+    # Because KDE will use the handler for MIME type text/html if this value
+    # is empty, we allow either the empty string or a match to $1 here
+    if [ x"$browser" != x -a x"$browser" != x"$1" ]; then
+        echo no
+        exit_success
+    fi
+    browser="`get_browser_mime`"
+    if [ x"$browser" != x"$1" ]; then
+        echo no
+        exit_success
+    fi
+    echo yes
+    exit_success
 }
 
 set_browser_kde()
@@ -503,6 +534,32 @@ get_browser_gnome()
     fi
 }
 
+check_browser_gnome()
+{
+    binary="`gconftool-2 --get /desktop/gnome/applications/browser/exec`"
+    browser="`parse_binary_or_desktop`"
+    if [ x"$browser" != x"$1" ]; then
+        echo no
+        exit_success
+    fi
+    # Check HTTP and HTTPS, but not about: and unknown:
+    for protocol in http https; do
+        binary="`gconftool-2 --get /desktop/gnome/url-handlers/$protocol/command | first_word`"
+        browser="`parse_binary_or_desktop`"
+        if [ x"$browser" != x"$1" ]; then
+            echo no
+            exit_success
+        fi
+    done
+    browser="`get_browser_mime`"
+    if [ x"$browser" != x"$1" ]; then
+        echo no
+        exit_success
+    fi
+    echo yes
+    exit_success
+}
+
 set_browser_gnome()
 {
     command="`desktop_file_to_command "$1"`"
@@ -541,6 +598,17 @@ get_browser_xfce()
         return
     done
     exit_failure_operation_failed
+}
+
+check_browser_xfce()
+{
+    browser="`get_browser_xfce`"
+    if [ x"$browser" != x"$1" ]; then
+        echo no
+        exit_success
+    fi
+    echo yes
+    exit_success
 }
 
 check_xfce_desktop_file()
@@ -628,6 +696,17 @@ dispatch_specific()
             exit_failure_syntax
             ;;
         esac
+    elif [ x"$op" = x"check" ]; then
+        case "$parm" in
+          default-web-browser)
+            check_desktop_filename "$1"
+            check_browser_$DE "$1"
+            ;;
+
+          *)
+            exit_failure_syntax
+            ;;
+        esac
     else # set
         [ $# -eq 1 ] || exit_failure_syntax "unexpected/missing argument"
         case "$parm" in
@@ -681,12 +760,15 @@ fi
 
 [ x"$1" != x ] || exit_failure_syntax "no operation given"
 [ x"$2" != x ] || exit_failure_syntax "no parameter name given"
+[ x"$1" = x"get" -o x"$3" != x ] || exit_failure_syntax "no parameter value given"
 
 op="$1"
 parm="$2"
 shift 2
 
-[ x"$op" = x"get" -o x"$op" = x"set" ] || exit_failure_syntax "invalid operation"
+if [ x"$op" != x"get" -a x"$op" != x"check" -a x"$op" != x"set" ]; then
+  exit_failure_syntax "invalid operation"
+fi
 
 detectDE
 
