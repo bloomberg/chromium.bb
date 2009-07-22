@@ -78,3 +78,33 @@ NSString* LocalizedStringForKeyFromMapList(NSString* key,
 }
 
 }  // namespace ui_localizer
+
+@interface GTMUILocalizer (PrivateAdditions)
+- (void)localizedObjects;
+@end
+
+@implementation GTMUILocalizer (PrivateAdditions)
+- (void)localizedObjects {
+  // The ivars are private, so this method lets us trigger the localization
+  // from -[ChromeUILocalizer awakeFromNib].
+  [self localizeObject:owner_ recursively:YES];
+  [self localizeObject:otherObjectToLocalize_ recursively:YES];
+  [self localizeObject:yetAnotherObjectToLocalize_ recursively:YES];
+}
+ @end
+
+@implementation ChromeUILocalizer
+- (void)awakeFromNib {
+  // The GTM base is bundle based, since don't need the bundle, use this
+  // override to bypass the bundle lookup and directly do the localization
+  // calls.
+  [self localizedObjects];
+}
+#ifndef NDEBUG
+// Catch anyone that uses this directly.
+- (NSString *)localizedStringForString:(NSString *)string {
+  LOG(FATAL) << "Don't use ChromeUILocalizer directly.";
+  return @"Don't use ChromeUILocalizer directly.";
+}
+#endif
+@end

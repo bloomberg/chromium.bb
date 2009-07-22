@@ -27,13 +27,12 @@ localizer_template_h = \
 #ifndef %(class_name)s_LOCALIZER_H_
 #define %(class_name)s_LOCALIZER_H_
 
-#import "third_party/GTM/AppKit/GTMUILocalizer.h"
+#import "chrome/browser/cocoa/ui_localizer.h"
 
-// A subclass of GTMUILocalizer that handles localizes based on resource
+// A subclass of ChromeUILocalizer that handles localization based on resource
 // constants.
 
-@interface %(class_name)sLocalizer : GTMUILocalizer {
-}
+@interface %(class_name)sLocalizer : ChromeUILocalizer
 @end
 
 #endif  // %(class_name)s_LOCALIZER_H_
@@ -49,7 +48,6 @@ localizer_template_mm = \
 
 #import "%(header_name)s"
 
-#import "chrome/browser/cocoa/ui_localizer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
