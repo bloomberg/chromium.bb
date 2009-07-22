@@ -636,7 +636,7 @@ BUG13907 WIN : LayoutTests/media/video-currentTime-set2.html = PASS FAIL CRASH T
 // This test is flaky.
 BUG13907 WIN DEBUG : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
 // This test crashes in debug build.
-BUG13907 WIN : LayoutTests/media/video-document-types.html = FAIL CRASH
+BUG13907 WIN DEBUG : LayoutTests/media/video-document-types.html = FAIL CRASH
 BUG13907 WIN : LayoutTests/media/video-loop.html = FAIL CRASH
 // This test is flaky too.	
 BUG13907 WIN : LayoutTests/media/video-played-collapse.html = FAIL
@@ -2793,12 +2793,12 @@ BUG16410 : LayoutTests/fast/workers/worker-messageport.html = FAIL CRASH
 // WebKit merge 45685:45738
 BUG16410 : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
 BUG16652 : LayoutTests/fast/replaced/embed-display-none.html = PASS CRASH
-BUG16410 : LayoutTests/fast/events/message-channel-gc-2.html = CRASH	
-BUG16410 : LayoutTests/fast/events/message-channel-gc-4.html = CRASH	
-BUG16410 : LayoutTests/fast/events/message-channel-listener-circular-ownership.html = CRASH	
-BUG16410 : LayoutTests/fast/events/message-port-constructor-for-deleted-document.html = CRASH	
-BUG16410 : LayoutTests/fast/events/message-port-deleted-frame.html = CRASH	
-BUG16639 : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
+BUG16410 DEBUG : LayoutTests/fast/events/message-channel-gc-2.html = CRASH	
+BUG16410 DEBUG : LayoutTests/fast/events/message-channel-gc-4.html = CRASH	
+BUG16410 DEBUG : LayoutTests/fast/events/message-channel-listener-circular-ownership.html = CRASH	
+BUG16410 DEBUG : LayoutTests/fast/events/message-port-constructor-for-deleted-document.html = CRASH	
+BUG16410 DEBUG : LayoutTests/fast/events/message-port-deleted-frame.html = CRASH	
+BUG16639 DEBUG : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
 
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
@@ -2982,7 +2982,7 @@ BUG13907 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 BUG17321 LINUX WIN : LayoutTests/fast/loader/non-html-load-event.html = FAIL
 BUG17321 MAC : LayoutTests/fast/loader/non-html-load-event.html = CRASH FAIL
 
-BUG17332 WIN : LayoutTests/editing/execCommand/19087.html = CRASH
+BUG17332 WIN DEBUG : LayoutTests/editing/execCommand/19087.html = CRASH
 BUG17332 WIN : LayoutTests/editing/execCommand/19653-1.html = CRASH FAIL
 
 // Test failures from WebKit merge r46143:46194
