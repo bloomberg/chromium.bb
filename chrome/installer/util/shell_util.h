@@ -177,7 +177,7 @@ class ShellUtil {
   //               as default only for the current user.
   // chrome_exe: The chrome.exe path to register as default browser.
   static bool MakeChromeDefault(int shell_change,
-                                const std::wstring chrome_exe);
+                                const std::wstring& chrome_exe);
 
   // Remove Chrome shortcut from Desktop.
   // If shell_change is CURRENT_USER, the shortcut is removed from the

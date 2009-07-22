@@ -184,29 +184,31 @@ class RegistryEntry {
 
  private:
   // Create a object that represent default value of a key
-  RegistryEntry(const std::wstring& key_path, const std::wstring& value) :
-                _key_path(key_path), _name(L""), _value(value),
-                _is_string(true) {
+  RegistryEntry(const std::wstring& key_path, const std::wstring& value)
+      : _key_path(key_path), _name(),
+        _is_string(true), _value(value), _int_value(0) {
   }
 
   // Create a object that represent a key of type REG_SZ
   RegistryEntry(const std::wstring& key_path, const std::wstring& name,
-                const std::wstring& value) : _key_path(key_path),
-                _name(name), _value(value), _is_string(true) {
+                const std::wstring& value)
+      : _key_path(key_path), _name(name),
+        _is_string(true), _value(value), _int_value(0) {
   }
 
   // Create a object that represent a key of integer type
   RegistryEntry(const std::wstring& key_path, const std::wstring& name,
-                DWORD value) : _key_path(key_path),
-                _name(name), _int_value(value), _is_string(false) {
+                DWORD value)
+      : _key_path(key_path), _name(name),
+        _is_string(false), _value(), _int_value(value) {
   }
 
-  bool _is_string;         // true if current registry entry is of type REG_SZ
   std::wstring _key_path;  // key path for the registry entry
   std::wstring _name;      // name of the registry entry
+  bool _is_string;         // true if current registry entry is of type REG_SZ
   std::wstring _value;     // string value (useful if _is_string = true)
   DWORD _int_value;        // integer value (useful if _is_string = false)
-}; // class RegistryEntry
+};  // class RegistryEntry
 
 
 // This method checks if Chrome is already registered on the local machine.
@@ -586,7 +588,7 @@ bool ShellUtil::CreateChromeQuickLaunchShortcut(const std::wstring& chrome_exe,
 }
 
 bool ShellUtil::MakeChromeDefault(int shell_change,
-                                  const std::wstring chrome_exe) {
+                                  const std::wstring& chrome_exe) {
   bool ret = true;
   // First use the new "recommended" way on Vista to make Chrome default
   // browser.
