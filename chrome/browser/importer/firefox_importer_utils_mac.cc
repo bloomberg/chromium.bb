@@ -5,7 +5,6 @@
 #include "chrome/browser/importer/firefox_importer_utils.h"
 
 #include "base/file_util.h"
-#include "base/logging.h"
 
 FilePath GetProfilesINI() {
   FilePath ini_file;
@@ -21,18 +20,4 @@ FilePath GetProfilesINI() {
     return ini_file;
 
   return FilePath();
-}
-
-// static
-const wchar_t NSSDecryptor::kNSS3Library[] = L"libnss3.dylib";
-const wchar_t NSSDecryptor::kSoftokn3Library[] = L"libsoftokn3.dylib";
-const wchar_t NSSDecryptor::kPLDS4Library[] = L"libplds4.dylib";
-const wchar_t NSSDecryptor::kNSPR4Library[] = L"libnspr4.dylib";
-
-bool NSSDecryptor::Init(const std::wstring& dll_path,
-                        const std::wstring& db_path) {
-  // TODO(port): Load the NSS libraries and call InitNSS()
-  // http://code.google.com/p/chromium/issues/detail?id=15455
-  NOTIMPLEMENTED();
-  return false;
 }

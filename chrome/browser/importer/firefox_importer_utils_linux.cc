@@ -19,23 +19,3 @@ FilePath GetProfilesINI() {
 
   return FilePath();
 }
-
-// static
-const wchar_t NSSDecryptor::kNSS3Library[] = L"libnss3.so";
-const wchar_t NSSDecryptor::kSoftokn3Library[] = L"libsoftokn3.so";
-const wchar_t NSSDecryptor::kPLDS4Library[] = L"libplds4.so";
-const wchar_t NSSDecryptor::kNSPR4Library[] = L"libnspr4.so";
-
-bool NSSDecryptor::Init(const std::wstring& dll_path,
-                        const std::wstring& db_path) {
-  nss3_dll_ = base::LoadNativeLibrary(
-      FilePath::FromWStringHack(kNSS3Library));
-  if (nss3_dll_ == NULL)
-    return false;
-  base::NativeLibrary plds4_lib = base::LoadNativeLibrary(
-      FilePath::FromWStringHack(kPLDS4Library));
-  base::NativeLibrary nspr4_lib = base::LoadNativeLibrary(
-      FilePath::FromWStringHack(kNSPR4Library));
-
-  return InitNSS(db_path, plds4_lib, nspr4_lib);
-}

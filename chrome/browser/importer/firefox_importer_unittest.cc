@@ -10,6 +10,7 @@
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
+#include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/file_test_utils.h"
 
