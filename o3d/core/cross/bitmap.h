@@ -256,7 +256,7 @@ class Bitmap : public ParamObject {
   // Crop part of an image from src, scale it to an arbitrary size
   // and paste in dest image. Utility function for all DrawImage
   // function in bitmap and textures. Scale operation is based on
-  // bilinear interpolation.
+  // Lanczos resampling.
   // Note: this doesn't work for DXTC, or floating-point images.
   //
   // Parameters:
@@ -277,15 +277,15 @@ class Bitmap : public ParamObject {
   //   component: size of each pixel in terms of array element.
   // Returns:
   //   true if crop and scale succeeds.
-  static void BilinearInterpolateScale(const uint8* src,
-                                       int src_x, int src_y,
-                                       int src_width, int src_height,
-                                       int src_img_width, int src_img_height,
-                                       uint8* dest,
-                                       int dest_x, int dest_y,
-                                       int dest_width, int dest_height,
-                                       int dest_img_width, int dest_img_height,
-                                       int component);
+  static void LanczosScale(const uint8* src,
+                           int src_x, int src_y,
+                           int src_width, int src_height,
+                           int src_img_width, int src_img_height,
+                           uint8* dest,
+                           int dest_x, int dest_y,
+                           int dest_width, int dest_height,
+                           int dest_img_width, int dest_img_height,
+                           int component);
 
   // Detects the type of image file based on the filename.
   static ImageFileType GetFileTypeFromFilename(const char *filename);
@@ -429,6 +429,36 @@ class Bitmap : public ParamObject {
   static bool AdjustDrawImageBoundHelper(int* src_a, int* dest_a,
                                          int* src_length, int* dest_length,
                                          int src_bmp_length);
+
+  // utility function for LanczosScale function.
+  // Given an image, It can scale the image in one dimension to the new
+  // length using a Lanczos3 windowsed-sinc filter. This filter has
+  // fairly large support, in choosing it we favor quality over speed.
+  // In parameters we assume the current dimension we are scaling is
+  // width, but by changing the parameter, we can easily using this
+  // function on height as well.
+  // Parameter:
+  //   src: source image which would be copied from.
+  //   src_x: x-coordinate of the starting pixel in the source image.
+  //   src_y: y-coordinate of the starting pixel in the source image.
+  //   width: width of the part in src image to be croped.
+  //   height: height of the part in src image to be croped.
+  //   src_bmp_width: original width of source bitmap.
+  //   src_bmp_height: original height of source bitmap.
+  //   dest: dest image which would be copied to.
+  //   dest_x: x-coordinate of the starting pixel in the dest image.
+  //   dest_y: y-coordinate of the starting pixel in the dest image.
+  //   dest_bmp_width: original width of dest bitmap.
+  //   dest_bmp_height: original height of dest bitmap.
+  //   isWidth: which dimension we are working on.
+  //   components: size of each pixel in terms of array element.
+  static void LanczosResize1D(const uint8* src, int src_x, int src_y,
+                              int width, int height,
+                              int src_bmp_width, int src_bmp_height,
+                              uint8* dest, int dest_x, int dest_y,
+                              int nwidth,
+                              int dest_bmp_width, int dest_bmp_height,
+                              bool isWidth, int components);
 
   O3D_DECL_CLASS(Bitmap, ParamObject);
   DISALLOW_COPY_AND_ASSIGN(Bitmap);

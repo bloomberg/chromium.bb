@@ -54,6 +54,19 @@ using file_util::GetFileSize;
 
 namespace {
 static const double kEpsilon = 0.0001;
+static const double kPi = 3.14159265358979;
+static const int kFilterSize = 3;
+
+// utility function, round double numbers into 0 to 255 integers.
+uint8 Safe8Round(double f) {
+  f += 0.5;
+  if (f < 0.0) {
+    return 0;
+  } else if (!(f < 255.0)) {
+    return 255;
+  }
+  return static_cast<uint8>(f);
+}
 }  // anonymous namespace.
 
 namespace o3d {
@@ -333,117 +346,147 @@ void Bitmap::DrawImage(Bitmap* src_img,
   // crop part of image from src img, scale it in
   // bilinear interpolation fashion, and paste it
   // on dst img.
-  BilinearInterpolateScale(src_img_data, src_x, src_y,
-                           src_width, src_height,
-                           src_img->width_, src_img->height_,
-                           dst_img_data, dst_x, dst_y,
-                           dst_width, dst_height,
-                           width_, height_, components);
+  LanczosScale(src_img_data, src_x, src_y,
+               src_width, src_height,
+               src_img->width_, src_img->height_,
+               dst_img_data, dst_x, dst_y,
+               dst_width, dst_height,
+               width_, height_, components);
 }
 
-// static utility function used by DrawImage in bitmap and textures.
-// in this function, positions are converted to 4th-quadrant, which
-// means origin locates left-up corner.
-void Bitmap::BilinearInterpolateScale(const uint8* src_img_data,
-                                      int src_x, int src_y,
-                                      int src_width, int src_height,
-                                      int src_img_width, int src_img_height,
-                                      uint8* dest_img_data,
-                                      int dest_x, int dest_y,
-                                      int dest_width, int dest_height,
-                                      int dest_img_width, int dest_img_height,
-                                      int components) {
-  for (int i = 0; i < std::abs(dest_width); i++) {
-    // x is the iterator of dest_width in dest_img.
-    // change x to negative if dest_width is negative.
+void Bitmap::LanczosScale(const uint8* src,
+                          int src_x, int src_y,
+                          int src_width, int src_height,
+                          int src_img_width, int src_img_height,
+                          uint8* dest,
+                          int dest_x, int dest_y,
+                          int dest_width, int dest_height,
+                          int dest_img_width, int dest_img_height,
+                          int components) {
+  // Scale the image horizontally to a temp buffer.
+  int temp_img_width = abs(dest_width);
+  int temp_img_height = abs(src_height);
+  int temp_width = dest_width;
+  int temp_height = src_height;
+  int temp_x = 0, temp_y = 0;
+  if (temp_width < 0)
+    temp_x = abs(temp_width) - 1;
+  if (temp_height < 0)
+    temp_y = abs(temp_height) - 1;
+
+  scoped_array<uint8> temp(new uint8[temp_img_width *
+                                     temp_img_height * components]);
+
+  LanczosResize1D(src, src_x, src_y, src_width, src_height,
+                  src_img_width, src_img_height,
+                  temp.get(), temp_x, temp_y, temp_width,
+                  temp_img_width, temp_img_height, true, components);
+
+  // Scale the temp buffer vertically to get the final result.
+  LanczosResize1D(temp.get(), temp_x, temp_y, temp_height, temp_width,
+                  temp_img_width, temp_img_height,
+                  dest, dest_x, dest_y, dest_height,
+                  dest_img_width, dest_img_height, false, components);
+}
+
+void Bitmap::LanczosResize1D(const uint8* src, int src_x, int src_y,
+                             int width, int height,
+                             int src_bmp_width, int src_bmp_height,
+                             uint8* out, int dest_x, int dest_y,
+                             int nwidth,
+                             int dest_bmp_width, int dest_bmp_height,
+                             bool isWidth, int components) {
+  // calculate scale factor and init the weight array for lanczos filter.
+  float scale = fabs(static_cast<float>(width) / nwidth);
+  float support = kFilterSize * scale;
+  scoped_array<float> weight(new float[static_cast<int>(support * 2) + 4]);
+  // we assume width is the dimension we are scaling, and height stays
+  // the same.
+  for (int i = 0; i < abs(nwidth); ++i) {
+    // center is the corresponding coordinate of i in original img.
+    float center = (i + 0.5) * scale;
+    // boundary of weight array in original img.
+    int xmin = static_cast<int>(floor(center - support));
+    if (xmin < 0) xmin = 0;
+    int xmax = static_cast<int>(ceil(center + support));
+    if (xmax >= abs(width)) xmax = abs(width) - 1;
+
+    // fill up weight array by lanczos filter.
+    float wsum = 0.0;
+    for (int ox = xmin; ox <= xmax; ++ox) {
+      float wtemp;
+      float dx = ox + 0.5 - center;
+      // lanczos filter
+      if (dx <= -kFilterSize || dx >= kFilterSize) {
+        wtemp = 0.0;
+      } else if (dx == 0.0) {
+        wtemp = 1.0;
+      } else {
+        wtemp = kFilterSize * sin(kPi * dx) * sin(kPi / kFilterSize * dx) /
+                (kPi * kPi * dx * dx);
+      }
+
+      weight[ox - xmin] = wtemp;
+      wsum += wtemp;
+    }
+    int wcount = xmax - xmin + 1;
+
+    // Normalize the weights.
+    if (fabs(wsum) > kEpsilon) {
+      for (int k = 0; k < wcount; ++k) {
+        weight[k] /= wsum;
+      }
+    }
+    // Now that we've computed the filter weights for this x-position
+    // of the image, we can apply that filter to all pixels in that
+    // column.
+    // calculate coordinate in new img.
     int x = i;
-    if (dest_width < 0)
-      x = -i;
+    if (nwidth < 0)
+      x = -1 * x;
+    // lower bound of coordinate in original img.
+    if (width < 0)
+      xmin = -1 * xmin;
+    for (int j = 0; j < abs(height); ++j) {
+      // coordinate in height, same in src and dest img.
+      int base_y = j;
+      if (height < 0)
+        base_y = -1 * base_y;
+      // TODO(yux): fix the vertical flip problem and merge this if-else
+      // statement coz at that time, there would be no need to check
+      // which measure we are scaling.
+      if (isWidth) {
+        const uint8* inrow = src + ((src_bmp_height - (src_y + base_y) - 1) *
+                             src_bmp_width + src_x + xmin) * components;
+        uint8* outpix = out + ((dest_bmp_height - (dest_y + base_y) - 1) *
+                        dest_bmp_width + dest_x + x) * components;
+        int step = components;
+        if (width < 0)
+          step = -1 * step;
+        for (int b = 0; b < components; ++b) {
+          float sum = 0.0;
+          for (int k = 0, xk = b; k < wcount; ++k, xk += step)
+            sum += weight[k] * inrow[xk];
 
-    // calculate corresponding coordinate in src_img.
-    double base_x = i * (std::abs(src_width) - 1) /
-                    static_cast<double>(std::abs(dest_width) - 1);
-    // base_floor_x is the iterator of src_width in src_img.
-    // change base_x to negative if src_width is negative.
-    if (src_width < 0)
-      base_x = -base_x;
-    int base_floor_x = static_cast<int>(std::floor(base_x));
-
-    for (int j = 0; j < std::abs(dest_height); j++) {
-      // y is the iterator of dest_height in dest_img.
-      // change y to negative if dest_height is negative.
-      int y = j;
-      if (dest_height < 0)
-        y = -j;
-
-      // calculate coresponding coordinate in src_img.
-      double base_y = j * (std::abs(src_height) - 1) /
-                      static_cast<double>(std::abs(dest_height) - 1);
-      // change base_y to negative if src_height is negative.
-      if (src_height < 0)
-        base_y = -base_y;
-      int base_floor_y = static_cast<int>(std::floor(base_y));
-
-      for (int c = 0; c < components; c++) {
-        // if base_x and base_y are integers, which means this point
-        // exists in src_img, just copy the original values.
-        if (base_x - base_floor_x < kEpsilon &&
-            base_y - base_floor_y < kEpsilon) {
-          dest_img_data[((dest_img_height - (y + dest_y) - 1) *
-                        dest_img_width + dest_x + x) * components + c] =
-          src_img_data[((src_img_height - (base_floor_y + src_y) - 1) *
-                       src_img_width + src_x + base_floor_x) * components + c];
-          continue;
+          outpix[b] = Safe8Round(sum);
         }
+      } else {
+        const uint8* inrow = src + (src_x + base_y + (src_bmp_height -
+                             (src_y + xmin) - 1) * src_bmp_width) *
+                             components;
+        uint8* outpix = out + (dest_x + base_y + (dest_bmp_height -
+                        (dest_y + x) - 1) * dest_bmp_width) * components;
 
-        // get four nearest neighbors of point (base_x, base_y) from src img.
-        uint8 src_neighbor_11, src_neighbor_21,
-              src_neighbor_12, src_neighbor_22;
-        src_neighbor_11 = src_img_data[((src_img_height - (base_floor_y +
-                                       src_y) - 1) * src_img_width + src_x +
-                                       base_floor_x) * components + c];
-        // if base_x exists in src img. set src_neighbor_21 to src_neighbor_11
-        // so the interpolation result would remain src_neighbor_11.
-        if (base_x - base_floor_x < kEpsilon)
-          src_neighbor_21 = src_neighbor_11;
-        else
-          src_neighbor_21 = src_img_data[((src_img_height - (base_floor_y +
-                                         src_y) - 1) * src_img_width + src_x +
-                                         base_floor_x + 1) * components + c];
-        // if base_y exists in src img. set src_neighbor_12 to src_neighbor_11
-        // so the interpolation result would remain src_neighbor_11.
-        if (base_y - base_floor_y < kEpsilon)
-          src_neighbor_12 = src_neighbor_11;
-        else
-          src_neighbor_12 = src_img_data[((src_img_height - (base_floor_y +
-                                         src_y) - 2) * src_img_width + src_x +
-                                         base_floor_x) * components + c];
+        int step = src_bmp_width * components;
+        if (width < 0)
+          step = -1 * step;
+        for (int b = 0; b < components; ++b) {
+          float sum = 0.0;
+          for (int k = 0, xk = b; k < wcount; ++k, xk -= step)
+            sum += weight[k] * inrow[xk];
 
-        if (base_x - base_floor_x < kEpsilon)
-          src_neighbor_22 = src_neighbor_21;
-        else if (base_y - base_floor_y < kEpsilon)
-          src_neighbor_22 = src_neighbor_12;
-        else
-          src_neighbor_22 = src_img_data[((src_img_height - (base_floor_y +
-                                         src_y) - 2) * src_img_width + src_x +
-                                         base_floor_x + 1) * components + c];
-
-        // calculate interpolated value.
-        double interpolatedValue = (1 - (base_y - base_floor_y)) *
-                                   ((base_x - base_floor_x) *
-                                   src_neighbor_21 +
-                                   (1 - (base_x - base_floor_x)) *
-                                   src_neighbor_11) +
-                                   (base_y - base_floor_y) *
-                                   ((base_x - base_floor_x) *
-                                   src_neighbor_22 +
-                                   (1 - (base_x - base_floor_x)) *
-                                   src_neighbor_12);
-
-        // assign the nearest integer of interpolatedValue to dest_img_data.
-        dest_img_data[((dest_img_height - (y + dest_y) - 1) * dest_img_width +
-                        dest_x + x) * components + c] =
-        static_cast<uint8>(interpolatedValue + 0.5);
+          outpix[b] = Safe8Round(sum);
+        }
       }
     }
   }

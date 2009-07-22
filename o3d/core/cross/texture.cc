@@ -123,7 +123,7 @@ void Texture2D::DrawImage(Bitmap* src_img,
   // the entire bitmap on dest image, just perform memcpy.
   if (src_x == 0 && src_y == 0 && dst_x == 0 && dst_y == 0 &&
       src_img->width() == mip_width && src_img->height() == mip_height &&
-      static_cast<unsigned int>(src_width) == src_img->width() && 
+      static_cast<unsigned int>(src_width) == src_img->width() &&
       static_cast<unsigned int>(src_height) == src_img->height() &&
       static_cast<unsigned int>(dst_width) == mip_width &&
       static_cast<unsigned int>(dst_height) == mip_height) {
@@ -157,12 +157,12 @@ void Texture2D::DrawImage(Bitmap* src_img,
   uint8* src_img_data = src_img->image_data();
   uint8* mip_data = static_cast<uint8*>(data);
 
-  Bitmap::BilinearInterpolateScale(src_img_data, src_x, src_y,
-                                   src_width, src_height,
-                                   src_img->width(), src_img->height(),
-                                   mip_data, dst_x, dst_y,
-                                   dst_width, dst_height,
-                                   mip_width, mip_height, components);
+  Bitmap::LanczosScale(src_img_data, src_x, src_y,
+                       src_width, src_height,
+                       src_img->width(), src_img->height(),
+                       mip_data, dst_x, dst_y,
+                       dst_width, dst_height,
+                       mip_width, mip_height, components);
 
   this->Unlock(dest_mip);
 }
@@ -312,12 +312,12 @@ void TextureCUBE::DrawImage(Bitmap* src_img,
   uint8* src_img_data = src_img->image_data();
   uint8* mip_data = static_cast<uint8*>(data);
 
-  Bitmap::BilinearInterpolateScale(src_img_data, src_x, src_y,
-                                   src_width, src_height,
-                                   src_img->width(), src_img->height(),
-                                   mip_data, dst_x, dst_y,
-                                   dst_width, dst_height,
-                                   mip_length, mip_length, components);
+  Bitmap::LanczosScale(src_img_data, src_x, src_y,
+                       src_width, src_height,
+                       src_img->width(), src_img->height(),
+                       mip_data, dst_x, dst_y,
+                       dst_width, dst_height,
+                       mip_length, mip_length, components);
 
   this->Unlock(dest_face, dest_mip);
 }
