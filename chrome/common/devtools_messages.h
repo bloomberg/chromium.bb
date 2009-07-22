@@ -6,6 +6,6 @@
 #define CHROME_COMMON_DEVTOOLS_MESSAGES_H_
 
 #define MESSAGES_INTERNAL_FILE "chrome/common/devtools_messages_internal.h"
-#include "chrome/common/ipc_message_macros.h"
+#include "ipc/ipc_message_macros.h"
 
 #endif  // CHROME_COMMON_DEVTOOLS_MESSAGES_H_

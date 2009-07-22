@@ -5,12 +5,12 @@
 #ifndef CHROME_COMMON_CHROME_DESCRIPTORS_H_
 #define CHROME_COMMON_CHROME_DESCRIPTORS_H_
 
+#include "ipc/ipc_descriptors.h"
 // This is a list of global descriptor keys to be used with the
 // base::GlobalDescriptors object (see base/global_descriptors_posix.h)
 enum {
-  kPrimaryIPCChannel = 0,
-  kCrashDumpSignal = 1,
-  kSandboxIPCChannel = 2,  // http://code.google.com/p/chromium/LinuxSandboxIPC
+  kCrashDumpSignal = kPrimaryIPCChannel + 1,
+  kSandboxIPCChannel = kPrimaryIPCChannel + 2,  // http://code.google.com/p/chromium/LinuxSandboxIPC
 };
 
 #endif  // CHROME_COMMON_CHROME_DESCRIPTORS_H_

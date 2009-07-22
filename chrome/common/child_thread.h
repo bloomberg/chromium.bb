@@ -8,9 +8,9 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
-#include "chrome/common/ipc_sync_channel.h"
 #include "chrome/common/message_router.h"
 #include "chrome/common/resource_dispatcher.h"
+#include "ipc/ipc_sync_channel.h"
 
 // Child processes's background thread should derive from this class.
 class ChildThread : public IPC::Channel::Listener,

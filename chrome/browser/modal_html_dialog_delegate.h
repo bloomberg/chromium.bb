@@ -9,8 +9,8 @@
 
 #include "base/gfx/size.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
-#include "chrome/common/ipc_message.h"
 #include "chrome/common/notification_registrar.h"
+#include "ipc/ipc_message.h"
 
 // This class can only be used on the UI thread.
 class ModalHtmlDialogDelegate

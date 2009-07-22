@@ -20,8 +20,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
-#include "chrome/common/ipc_logging.h"
 #include "chrome/common/notification_service.h"
+#include "ipc/ipc_logging.h"
 #include "sandbox/src/sandbox.h"
 #include "webkit/glue/plugins/plugin_list.h"
 

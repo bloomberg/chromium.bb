@@ -25,10 +25,10 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
-#include "chrome/common/ipc_message.h"
-#include "chrome/common/ipc_channel.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/test/automation/automation_constants.h"
+#include "ipc/ipc_message.h"
+#include "ipc/ipc_channel.h"
 #if defined(OS_WIN)
 #include "views/event.h"
 #endif  // defined(OS_WIN)

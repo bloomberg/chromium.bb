@@ -19,12 +19,12 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/worker_host/worker_service.h"
-#include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/worker_messages.h"
+#include "ipc/ipc_descriptors.h"
 #include "net/base/registry_controlled_domain.h"
 
 #if defined(OS_WIN)

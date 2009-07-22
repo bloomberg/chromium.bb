@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/ref_counted.h"
-#include "chrome/common/ipc_channel.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_channel.h"
 
 namespace base {
 class WaitableEvent;

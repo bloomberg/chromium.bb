@@ -6,7 +6,7 @@
 #define CHROME_COMMON_APP_CACHE_APP_CACHE_DISPATCHER_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/ipc_message.h"
+#include "ipc/ipc_message.h"
 
 // Dispatches app cache related messages sent to a child process from the
 // main browser process. There is one instance per child process. Messages

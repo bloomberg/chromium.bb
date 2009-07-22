@@ -12,8 +12,8 @@
 #include "base/linked_ptr.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
-#include "chrome/common/ipc_message.h"
 #include "chrome/common/notification_registrar.h"
+#include "ipc/ipc_message.h"
 
 class MessageLoop;
 class Profile;

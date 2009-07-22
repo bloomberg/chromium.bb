@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/common/ipc_message.h"
-#include "chrome/common/ipc_message_utils.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_message.h"
+#include "ipc/ipc_message_utils.h"
 
 // The purpose of this class is to act as a serializable version of
 // AutocompleteMatch. The reason for this class is because we don't want to

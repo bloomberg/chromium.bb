@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/ipc_channel.h"
+#include "ipc/ipc_channel.h"
 
 class NotificationType;
 

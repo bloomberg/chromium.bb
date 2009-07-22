@@ -11,8 +11,9 @@
 #include "base/gfx/rect.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/security_style.h"
-#include "chrome/common/ipc_message_utils.h"
+#include "chrome/common/common_param_traits.h"
 #include "chrome/test/automation/automation_constants.h"
+#include "ipc/ipc_message_utils.h"
 
 struct AutomationMsg_Find_Params {
   // Unused value, which exists only for backwards compat.
@@ -341,6 +342,6 @@ struct ParamTraits<ExternalTabSettings> {
 
 #define MESSAGES_INTERNAL_FILE \
     "chrome/test/automation/automation_messages_internal.h"
-#include "chrome/common/ipc_message_macros.h"
+#include "ipc/ipc_message_macros.h"
 
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_MESSAGES_H__

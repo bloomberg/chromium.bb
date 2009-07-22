@@ -6,10 +6,10 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
-#include "chrome/common/ipc_message.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/test_notification_tracker.h"
+#include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class RenderViewHostManagerTest : public RenderViewHostTestHarness {

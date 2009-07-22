@@ -7,8 +7,8 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/shared_memory.h"
-#include "chrome/common/ipc_message_utils.h"
 #include "chrome/common/render_messages.h"
+#include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockPrinter::MockPrinter()

@@ -7,7 +7,7 @@
 #include "chrome/common/plugin_messages.h"
 
 #if defined(OS_POSIX)
-#include "chrome/common/ipc_channel_posix.h"
+#include "ipc/ipc_channel_posix.h"
 #endif
 
 // A simple MessageFilter that will ignore all messages and respond to sync

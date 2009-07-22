@@ -34,14 +34,14 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/ipc_channel_handle.h"
+#include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_descriptors.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -56,7 +56,7 @@
 #endif
 
 #if defined(OS_POSIX)
-#include "chrome/common/ipc_channel_posix.h"
+#include "ipc/ipc_channel_posix.h"
 #endif
 
 #if defined(OS_LINUX)

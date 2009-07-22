@@ -9,8 +9,8 @@
 #include "base/shared_memory.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
-#include "chrome/common/ipc_logging.h"
 #include "chrome/common/render_messages.h"
+#include "ipc/ipc_logging.h"
 
 namespace {
 

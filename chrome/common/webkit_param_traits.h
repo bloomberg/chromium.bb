@@ -23,7 +23,7 @@
 #ifndef CHROME_COMMON_WEBKIT_PARAM_TRAITS_H_
 #define CHROME_COMMON_WEBKIT_PARAM_TRAITS_H_
 
-#include "chrome/common/ipc_message_utils.h"
+#include "ipc/ipc_message_utils.h"
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebCompositionCommand.h"
 #include "webkit/api/public/WebConsoleMessage.h"

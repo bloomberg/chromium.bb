@@ -24,11 +24,11 @@
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/ipc_channel.h"
-#include "chrome/common/ipc_message_utils.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/render_view.h"
+#include "ipc/ipc_channel.h"
+#include "ipc/ipc_message_utils.h"
 #include "media/base/media.h"
 #include "webkit/glue/webkit_glue.h"
 

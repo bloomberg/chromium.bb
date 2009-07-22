@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include "chrome/common/ipc_channel_proxy.h"
+#include "ipc/ipc_channel_proxy.h"
 
 class WebDevToolsAgent;
 

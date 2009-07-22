@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/string16.h"
-#include "chrome/common/ipc_message_macros.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_message_macros.h"
 
 
 //-----------------------------------------------------------------------------

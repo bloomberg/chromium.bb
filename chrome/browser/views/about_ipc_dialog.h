@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_VIEWS_ABOUT_IPC_DIALOG_H_
 
 #include "base/singleton.h"
-#include "chrome/common/ipc_logging.h"
+#include "ipc/ipc_logging.h"
 #include "views/controls/button/button.h"
 #include "views/controls/table/table_view.h"
 #include "views/window/dialog_delegate.h"

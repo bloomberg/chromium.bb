@@ -5,7 +5,7 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
-#include "chrome/common/ipc_message_macros.h"
+#include "ipc/ipc_message_macros.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(OS_POSIX)

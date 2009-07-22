@@ -8,10 +8,10 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "chrome/common/ipc_message.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
+#include "ipc/ipc_message.h"
 
 template <class T> class Source;
 

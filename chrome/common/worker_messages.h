@@ -11,7 +11,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/ipc_message_utils.h"
+#include "chrome/common/common_param_traits.h"
+#include "ipc/ipc_message_utils.h"
 
 // Parameters structure for WorkerHostMsg_PostConsoleMessageToWorkerObject,
 // which has too many data parameters to be reasonably put in a predefined
@@ -75,6 +76,6 @@ struct ParamTraits<WorkerHostMsg_PostConsoleMessageToWorkerObject_Params> {
 }  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE "chrome/common/worker_messages_internal.h"
-#include "chrome/common/ipc_message_macros.h"
+#include "ipc/ipc_message_macros.h"
 
 #endif  // CHROME_COMMON_WORKER_MESSAGES_H_

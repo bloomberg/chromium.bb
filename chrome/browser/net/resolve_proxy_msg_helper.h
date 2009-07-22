@@ -8,9 +8,9 @@
 #include <deque>
 #include <string>
 
-#include "chrome/common/ipc_message.h"
-#include "net/base/completion_callback.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_message.h"
+#include "net/base/completion_callback.h"
 #include "net/proxy/proxy_service.h"
 
 // This class holds the common logic used to respond to the messages:

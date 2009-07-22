@@ -11,7 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/common/child_process_host.h"
-#include "chrome/common/ipc_channel.h"
+#include "ipc/ipc_channel.h"
 
 class CommandLine;
 class DictionaryValue;

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/common/ipc_channel.h"
+#include "ipc/ipc_channel.h"
 #include "webkit/api/public/WebWorker.h"
 
 class ChildThread;

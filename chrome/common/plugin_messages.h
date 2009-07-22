@@ -16,9 +16,10 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
 #include "base/basictypes.h"
-#include "chrome/common/ipc_message_utils.h"
+#include "chrome/common/common_param_traits.h"
 #include "chrome/common/webkit_param_traits.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_message_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/glue/npruntime_util.h"
@@ -408,6 +409,6 @@ struct ParamTraits<NPVariant_Param> {
 
 
 #define MESSAGES_INTERNAL_FILE "chrome/common/plugin_messages_internal.h"
-#include "chrome/common/ipc_message_macros.h"
+#include "ipc/ipc_message_macros.h"
 
 #endif  // CHROME_COMMON_PLUGIN_MESSAGES_H__

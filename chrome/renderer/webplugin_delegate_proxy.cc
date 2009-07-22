@@ -41,7 +41,7 @@
 #include "webkit/glue/webview.h"
 
 #if defined(OS_POSIX)
-#include "chrome/common/ipc_channel_posix.h"
+#include "ipc/ipc_channel_posix.h"
 #endif
 
 #if defined(OS_MACOSX)

@@ -8,7 +8,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/common/ipc_message.h"
+#include "ipc/ipc_message.h"
 
 AppModalDialog::AppModalDialog(TabContents* tab_contents,
                                const std::wstring& title,

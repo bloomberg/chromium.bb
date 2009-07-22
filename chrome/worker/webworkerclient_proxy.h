@@ -6,8 +6,8 @@
 #define CHROME_WORKER_WEBWORKERCLIENT_PROXY_H_
 
 #include "base/basictypes.h"
-#include "chrome/common/ipc_channel.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_channel.h"
 #include "webkit/api/public/WebWorkerClient.h"
 
 namespace WebKit {

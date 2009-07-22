@@ -9,7 +9,7 @@
 
 #include "base/lock.h"
 #include "base/platform_thread.h"
-#include "chrome/common/ipc_channel_proxy.h"
+#include "ipc/ipc_channel_proxy.h"
 
 class URLRequestAutomationJob;
 class MessageLoop;

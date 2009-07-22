@@ -4,9 +4,9 @@
 
 #include "base/histogram.h"
 #include "base/message_loop.h"
-#include "chrome/common/ipc_logging.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/audio_message_filter.h"
+#include "ipc/ipc_logging.h"
 
 namespace {
 

@@ -12,7 +12,7 @@
 
 #include "base/id_map.h"
 #include "base/shared_memory.h"
-#include "chrome/common/ipc_channel_proxy.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_output.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

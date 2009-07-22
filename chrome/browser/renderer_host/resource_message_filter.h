@@ -19,10 +19,10 @@
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/ipc_channel_proxy.h"
 #include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/transport_dib.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "webkit/api/public/WebCache.h"
 
 #if defined(OS_WIN)

@@ -25,8 +25,8 @@
 #include "breakpad/linux/linux_libc_support.h"
 #include "breakpad/linux/linux_syscall_support.h"
 #include "breakpad/linux/memory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_descriptors.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 static const char kUploadURL[] =

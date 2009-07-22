@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
 
 #include "base/ref_counted.h"
-#include "chrome/common/ipc_message.h"
+#include "ipc/ipc_message.h"
 
 class WebKitContext;
 class WebKitThread;

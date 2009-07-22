@@ -72,6 +72,10 @@ void InitChromeLogging(const CommandLine& command_line,
   DCHECK(!chrome_logging_initialized_) <<
     "Attempted to initialize logging when it was already initialized.";
 
+#if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
+  IPC::Logging::SetLoggerFunctions(g_log_function_mapping);
+#endif
+
   // only use OutputDebugString in debug mode
 #ifdef NDEBUG
   bool enable_logging = false;

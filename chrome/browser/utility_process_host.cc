@@ -18,7 +18,7 @@
 #include "chrome/browser/sandbox_policy.h"
 #elif defined(OS_POSIX)
 #include "base/global_descriptors_posix.h"
-#include "chrome/common/chrome_descriptors.h"
+#include "ipc/ipc_descriptors.h"
 #endif
 
 UtilityProcessHost::UtilityProcessHost(ResourceDispatcherHost* rdh,

@@ -13,12 +13,12 @@
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
-#include "chrome/common/chrome_descriptors.h"
 #include "chrome/test/automation/automation_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
+#include "ipc/ipc_descriptors.h"
 #if defined(OS_WIN)
 // TODO(port): Enable when dialog_delegate is ported.
 #include "views/window/dialog_delegate.h"

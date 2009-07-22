@@ -6,7 +6,7 @@
 #define CHROME_COMMON_APP_CACHE_APP_CACHE_DISPATCHER_HOST_H_
 
 #include "base/id_map.h"
-#include "chrome/common/ipc_message.h"
+#include "ipc/ipc_message.h"
 #include "webkit/glue/webappcachecontext.h"
 
 class GURL;

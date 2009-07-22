@@ -70,7 +70,7 @@
       'filepath': 'media|Media|^third_party/ffmpeg/',
     },
     'ipc': {
-      'filepath': 'chrome/common/ipc.*',
+      'filepath': 'ipc/ipc.*',
     },
     'linux-sandboxing': {
       'filepath': 'sandbox/linux/.*',

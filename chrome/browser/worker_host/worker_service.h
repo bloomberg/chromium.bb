@@ -10,9 +10,9 @@
 #include "base/basictypes.h"
 #include "base/singleton.h"
 #include "chrome/browser/worker_host/worker_process_host.h"
-#include "chrome/common/ipc_message.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_message.h"
 
 
 class MessageLoop;

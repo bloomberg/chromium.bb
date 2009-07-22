@@ -16,10 +16,10 @@
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/timer.h"
-#include "chrome/common/ipc_message.h"
 #include "chrome/common/chrome_plugin_api.h"
 #include "chrome/common/transport_dib.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_message.h"
 #include "webkit/glue/webplugin.h"
 
 namespace base {
