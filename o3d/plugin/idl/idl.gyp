@@ -7,7 +7,7 @@
     '../../build/common.gypi',
   ],
   'variables': {
-    'chromium_code': 1,
+    'chromium_code': 0,
     'idl_out_dir': '<(SHARED_INTERMEDIATE_DIR)/idl_glue',
     'static_glue_dir': '../../../third_party/nixysa/files/static_glue/npapi',
     'idl_files': [
@@ -87,8 +87,6 @@
           'outputs': [
             '<(idl_out_dir)/<(RULE_INPUT_ROOT)_glue.cc',
             '<(idl_out_dir)/<(RULE_INPUT_ROOT)_glue.h',
-            '<(idl_out_dir)/globals_glue.cc',
-            '<(idl_out_dir)/globals_glue.h',
             '<(idl_out_dir)/hash',
             '<(idl_out_dir)/parsetab.py',
             '<(idl_out_dir)/parsetab.pyc',
@@ -142,6 +140,16 @@
           {
             'defines': [
               'OS_WINDOWS',
+            ],
+          },
+        ],
+        ['OS=="mac"',
+          {
+            'include_dirs': [
+              '../mac',
+            ],
+            'defines': [
+              'XP_MACOSX',
             ],
           },
         ],

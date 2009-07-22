@@ -41,7 +41,6 @@ gflags.DEFINE_boolean('mimetype', False,
 gflags.DEFINE_boolean('version', False,
                       'Print out the plugin version and exit.')
 
-
 def GetDotVersion(version):
   return '%d.%d.%d.%d' % version
 
@@ -51,7 +50,7 @@ def GetCommaVersion(version):
 def DoReplace(in_filename, out_filename, replacements):
   '''Replace the version number in the given filename with the replacements.'''
   if not os.path.exists(in_filename):
-    raise Exception(r'''Input template file %s doesn't exist.''' % file)
+    raise Exception(r'''Input template file %s doesn't exist.''' % in_filename)
   input_file = open(in_filename, 'r')
   input = input_file.read()
   input_file.close()

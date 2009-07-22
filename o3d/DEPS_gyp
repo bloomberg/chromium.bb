@@ -3,7 +3,7 @@ vars = {
     "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "28",
   "chromium_rev": "19644",
-  "o3d_code_rev": "95",
+  "o3d_code_rev": "97",
 }
 
 deps = {
@@ -53,6 +53,9 @@ deps = {
 
   "third_party/skia":
     "http://skia.googlecode.com/svn/trunk@239",
+
+  "third_party/libevent":
+    Var("chromium_trunk") + "/src/third_party/libevent@" + Var("chromium_rev"),
 
   "third_party/boost":
     Var("chromium_trunk") + "/src/third_party/boost@" + Var("chromium_rev"),

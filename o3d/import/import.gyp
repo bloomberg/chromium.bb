@@ -88,9 +88,6 @@
     {
       'target_name': 'o3dImportTest',
       'type': 'none',
-      'dependencies': [
-        'o3dImport',
-      ],
       'direct_dependent_settings': {
         'sources': [
           'cross/tar_generator_test.cc',

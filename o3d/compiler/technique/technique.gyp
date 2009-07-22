@@ -65,6 +65,9 @@
           'CompileAs': '2',
         },
       },
+      'xcode_settings': {
+        'OTHER_CFLAGS': ['-x', 'c++'],
+      },
     },
   ],
 }

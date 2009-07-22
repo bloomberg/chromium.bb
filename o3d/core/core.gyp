@@ -21,6 +21,14 @@
           ],
         }
       ],
+      ['renderer == "gl"',
+        {
+          'include_dirs': [
+            '../../<(glewdir)/include',
+            '../../<(cgdir)/include',
+          ],
+        }
+      ],
     ],
   },
   'includes': [
@@ -35,7 +43,6 @@
         '../../<(pngdir)/libpng.gyp:libpng',
         '../../<(zlibdir)/zlib.gyp:zlib',
         '../../skia/skia.gyp:skia',
-        '../build/nacl.gyp:build_nacl',
       ],
       'sources': [
         'cross/bitmap.cc',
@@ -344,10 +351,6 @@
     {
       'target_name': 'o3dCoreTest',
       'type': 'none',
-      'dependencies': [
-        'o3dCore',
-        'o3dCorePlatform',
-      ],
       'direct_dependent_settings': {
         'sources': [
           'cross/bitmap_test.cc',

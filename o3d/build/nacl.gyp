@@ -14,10 +14,6 @@
       'target_name': 'build_nacl',
       'type': 'none',
       'variables': {
-        'nacl_libs': [
-          'google_nacl_imc',
-          'google_nacl_imc_c',
-        ],
         'nacl_output_dir': '<(SHARED_INTERMEDIATE_DIR)/nacl_libs',
       },
       'actions': [
@@ -37,7 +33,8 @@
             '--output="<(nacl_output_dir)"',
             '--configuration="<(CONFIGURATION)"',
             '--platform=<(OS)',
-            '<@(nacl_libs)',
+            'google_nacl_imc',
+            'google_nacl_imc_c',
           ],
         },
       ],
