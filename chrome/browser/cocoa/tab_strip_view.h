@@ -10,6 +10,8 @@
 // A view class that handles rendering the tab strip
 
 @interface TabStripView : NSView {
+ @private
+  NSTimeInterval lastMouseUp_;
 }
 @end
 

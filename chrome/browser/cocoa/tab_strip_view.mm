@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cocoa/tab_strip_view.h"
+#import "chrome/browser/cocoa/tab_strip_view.h"
+
+#include "base/logging.h"
 
 @implementation TabStripView
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    // Nothing yet to do here...
+    // Set lastMouseUp_ = -1000.0 so that timestamp-lastMouseUp_ is big unless
+    // lastMouseUp_ has been reset.
+    lastMouseUp_ = -1000.0;
   }
   return self;
 }
@@ -23,17 +27,47 @@
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
 }
 
-// Called to determine where in our view hierarchy the click should go. We
-// want clicks to go to our children (tabs, new tab button, etc), but no click
-// should ever go to this view. In fact, returning this view breaks things
-// such as the window buttons and double-clicking the title bar since the
-// window manager believes there is a view that wants the mouse event. If the
-// superclass impl says the click should go here, just cheat and return nil.
-- (NSView*)hitTest:(NSPoint)point {
-  NSView* hit = [super hitTest:point];
-  if ([hit isEqual:self]) 
-      hit = nil;
-  return hit;
+// We accept first mouse so clicks onto close/zoom/miniaturize buttons and
+// title bar double-clicks are properly detected even when the window is in the
+// background.
+- (BOOL)acceptsFirstMouse:(NSEvent*)event {
+  return YES;
+}
+
+// Trap double-clicks and make them miniaturize the browser window.
+- (void)mouseUp:(NSEvent*)event {
+  NSInteger clickCount = [event clickCount];
+  NSTimeInterval timestamp = [event timestamp];
+
+  // Double-clicks on Zoom/Close/Mininiaturize buttons shouldn't cause
+  // miniaturization. For those, we miss the first click but get the second
+  // (with clickCount == 2!). We thus check that we got a first click shortly
+  // before (measured up-to-up) a double-click. Cocoa doesn't have a documented
+  // way of getting the proper interval (= (double-click-threshold) +
+  // (drag-threshold); the former is Carbon GetDblTime()/60.0 or
+  // com.apple.mouse.doubleClickThreshold [undocumented]). So we hard-code
+  // "short" as 0.8 seconds. (Measuring up-to-up isn't enough to properly
+  // detect double-clicks, but we're actually using Cocoa for that.)
+  if (clickCount == 2 && (timestamp - lastMouseUp_) < 0.8) {
+    // We use an undocumented method in Cocoa; if it doesn't exist, default to
+    // YES. If it ever goes away, we can do (using an undocumented pref. key):
+    //   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    //   if (![defaults objectForKey:@"AppleMiniaturizeOnDoubleClick"]
+    //       || [defaults boolForKey:@"AppleMiniaturizeOnDoubleClick"])
+    //     [[self window] performMiniaturize:self];
+    DCHECK([NSWindow
+        respondsToSelector:@selector(_shouldMiniaturizeOnDoubleClick)]);
+    if (![NSWindow
+            respondsToSelector:@selector(_shouldMiniaturizeOnDoubleClick)]
+        || [NSWindow
+            performSelector:@selector(_shouldMiniaturizeOnDoubleClick)])
+      [[self window] performMiniaturize:self];
+  } else {
+    [super mouseUp:event];
+  }
+
+  // If clickCount is 0, the drag threshold was passed.
+  lastMouseUp_ = (clickCount == 1) ? timestamp : -1000.0;
 }
 
 @end
