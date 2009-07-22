@@ -178,7 +178,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
 };
-0000000000000000: ff 35 ea 0d 20 00                            push 0x200dea
+0000000000000000: ff 35 ea 0d 20 00                            push [%rip+0x200dea]
   { 0xff,
     NACLi_386,
     InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeDefaultIs64),
@@ -188,13 +188,17 @@ ExprNodeVector[4] = {
       { RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit) },
       { E_Operand, OpFlag(OpSet) },
   } };
-ExprNodeVector[4] = {
+ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x200dea, ExprSet | ExprSize32 | ExprSignedHex },
+  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x200dea, ExprSize32 | ExprSignedHex },
 };
-0000000000000000: ff 25 ec 0d 20 00                            jmp 0x200dec
+0000000000000000: ff 25 ec 0d 20 00                            jmp [%rip+0x200dec]
   { 0xff,
     NACLi_INDIRECT,
     InstFlag(OpcodeInModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | InstFlag(OperandSizeForce64),
@@ -204,11 +208,15 @@ ExprNodeVector[4] = {
       { RegRIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
       { E_Operand, OpFlag(OpUse) | OpFlag(OperandNear) },
   } };
-ExprNodeVector[4] = {
+ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x200dec, ExprUsed | ExprSize32 | ExprSignedHex },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x200dec, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 0f 1f 40 00                                  nop
   { 0x1f,
@@ -306,7 +314,7 @@ ExprNodeVector[4] = {
   } };
 ExprNodeVector[0] = {
 };
-0000000000000000: 48 8b 05 61 0d 20 00                         mov %rax, 0x200d61
+0000000000000000: 48 8b 05 61 0d 20 00                         mov %rax, [%rip+0x200d61]
   { 0x8b,
     NACLi_386,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
@@ -315,11 +323,15 @@ ExprNodeVector[0] = {
       { G_Operand, OpFlag(OpUse) },
       { E_Operand, OpFlag(OpSet) },
   } };
-ExprNodeVector[4] = {
+ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x200d61, ExprSet | ExprSize32 | ExprSignedHex },
+  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x200d61, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 48 85 c0                                     test %rax, %rax
   { 0x85,

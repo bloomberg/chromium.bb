@@ -762,7 +762,17 @@ static ExprNode* AppendMod00EffectiveAddress(
     case 4:
       return AppendSib(state);
     case 5:
-      return AppendDisplacement(state);
+      if (NACL_TARGET_SUBARCH == 64) {
+        Displacement displacement;
+        ExtractDisplacement(state, &displacement);
+        return AppendMemoryOffset(state,
+                                  RegRIP,
+                                  RegUnknown,
+                                  1,
+                                  &displacement);
+      } else {
+        return AppendDisplacement(state);
+      }
     default: {
       Displacement displacement;
       InitializeDisplacement(0, ExprFlag(ExprSize8), &displacement);
