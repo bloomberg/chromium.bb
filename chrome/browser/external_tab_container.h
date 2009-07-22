@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/automation/automation_resource_message_filter.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -103,6 +104,14 @@ class ExternalTabContainer : public TabContentsDelegate,
   // parameter.
   virtual bool ExecuteContextMenuCommand(int command);
 
+  // Show a dialog with HTML content. |delegate| contains a pointer to the
+  // delegate who knows how to display the dialog (which file URL and JSON
+  // string input to use during initialization). |parent_window| is the window
+  // that should be parent of the dialog, or NULL for the default.
+  virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
+                              gfx::NativeWindow parent_window);
+
+
  protected:
   // Overridden from views::WidgetWin:
   virtual void OnDestroy();
@@ -144,6 +153,9 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // If all the url requests for this tab are to be loaded via automation.
   bool load_requests_via_automation_;
+
+  // Scoped browser object for this ExternalTabContainer instance.
+  scoped_ptr<Browser> browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

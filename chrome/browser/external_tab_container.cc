@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "chrome/browser/automation/automation_provider.h"
-#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
@@ -294,6 +294,17 @@ bool ExternalTabContainer::HandleKeyboardEvent(
                                    event.os_event.lParam);
 }
 
+void ExternalTabContainer::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
+                                          gfx::NativeWindow parent_window) {
+  if (!browser_.get()) {
+    browser_.reset(Browser::CreateForPopup(tab_contents_->profile()));
+  }
+
+  gfx::NativeWindow parent = parent_window ? parent_window
+                                           : GetParent();
+  browser_->window()->ShowHTMLDialog(delegate, parent);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, NotificationObserver implementation:
 
@@ -384,6 +395,9 @@ void ExternalTabContainer::Observe(NotificationType type,
 void ExternalTabContainer::OnDestroy() {
   Uninitialize(GetNativeView());
   WidgetWin::OnDestroy();
+  if (browser_.get()) {
+    ::DestroyWindow(browser_->window()->GetNativeHandle());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
