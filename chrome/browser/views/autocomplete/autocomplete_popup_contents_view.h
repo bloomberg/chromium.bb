@@ -94,18 +94,6 @@ class AutocompletePopupContentsView : public views::View,
   // Makes the contents of the canvas slightly transparent.
   void MakeCanvasTransparent(gfx::Canvas* canvas);
 
-  // Starts sizing the popup to its new target size.
-  void StartSizing();
-
-  // Calculate the start and target bounds of the popup for an animation.
-  void CalculateAnimationFrameBounds();
-
-  // Gets the ideal bounds to display the number of result rows.
-  gfx::Rect GetTargetBounds() const;
-
-  // Returns true if the popup needs to grow larger to show |result_rows_|.
-  bool IsGrowingLarger() const;
-
 #if defined(OS_WIN)
   // The popup that contains this view.
   scoped_ptr<AutocompletePopupWin> popup_;
@@ -124,20 +112,11 @@ class AutocompletePopupContentsView : public views::View,
   // by the edit that created us.
   gfx::Font result_font_;
 
-  // See discussion in UpdatePopupAppearance.
-  ScopedRunnableMethodFactory<AutocompletePopupContentsView>
-      size_initiator_factory_;
-
   // The popup sizes vertically using an animation when the popup is getting
   // shorter (not larger, that makes it look "slow").
   SlideAnimation size_animation_;
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
-
-  // The number of rows required by the result set. This can differ from the
-  // number of child views, as we retain rows after they are removed from the
-  // model so we can animate the popup and still have the removed rows painted.
-  size_t result_rows_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupContentsView);
 };

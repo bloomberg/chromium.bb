@@ -617,18 +617,13 @@ void AutocompleteResult::Validate() const {
 const int AutocompleteController::kNoItemSelected = -1;
 
 namespace {
-// The amount of time we'll wait after a provider returns before updating,
-// in order to coalesce results.
-const int kResultCoalesceMs = 100;
-
 // The maximum time we'll allow the results to go without updating to the
 // latest set.
 const int kResultUpdateMaxDelayMs = 300;
 };
 
 AutocompleteController::AutocompleteController(Profile* profile)
-    : update_pending_(false),
-      done_(true) {
+    : done_(true) {
   providers_.push_back(new SearchProvider(this, profile));
   providers_.push_back(new HistoryURLProvider(this, profile));
   providers_.push_back(new KeywordProvider(this, profile));
@@ -672,11 +667,10 @@ void AutocompleteController::Start(const std::wstring& text,
   const bool minimal_changes = (input_.text() == old_input_text) &&
       (input_.synchronous_only() == old_synchronous_only);
 
-  // If we're starting a brand new query, stop caring about any old query.
-  if (!minimal_changes && !done_) {
-    update_pending_ = false;
-    coalesce_timer_.Stop();
-  }
+  // If we're starting a brand new query, send the previous results to the
+  // observers.
+  if (!minimal_changes && !done_)
+    CommitResult();
 
   // Start the new query.
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
@@ -696,11 +690,9 @@ void AutocompleteController::Stop(bool clear_result) {
   }
 
   done_ = true;
-  update_pending_ = false;
   if (clear_result)
     result_.Reset();
   latest_result_.CopyFrom(result_);
-  coalesce_timer_.Stop();
   max_delay_timer_.Stop();
 }
 
@@ -711,8 +703,7 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
 
   // Notify observers of this change immediately, so the UI feels responsive to
   // the user's action.
-  if (update_pending_)
-    CommitResult();
+  CommitResult();
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
@@ -772,23 +763,13 @@ void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
         Details<const AutocompleteResult>(&latest_result_));
   }
 
-  if (done_) {
+  if (done_ || (latest_result_.size() >= result_.size()))
     CommitResult();
-  } else if (!update_pending_) {
-    // Coalesce the results for the next kPopupCoalesceMs milliseconds.
-    update_pending_ = true;
-    coalesce_timer_.Stop();
-    coalesce_timer_.Start(TimeDelta::FromMilliseconds(kResultCoalesceMs), this,
-                          &AutocompleteController::CommitResult);
-  }
 }
 
 void AutocompleteController::CommitResult() {
   // The max update interval timer either needs to be reset (if more updates
-  // are to come) or stopped (when we're done with the query).  The coalesce
-  // timer should always just be stopped.
-  update_pending_ = false;
-  coalesce_timer_.Stop();
+  // are to come) or stopped (when we're done with the query).
   if (done_)
     max_delay_timer_.Stop();
   else

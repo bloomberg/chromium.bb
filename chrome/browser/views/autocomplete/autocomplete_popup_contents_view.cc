@@ -402,18 +402,16 @@ SkColor AutocompleteResultView::GetTextColor() const {
 
 SkBitmap* AutocompleteResultView::GetIcon() const {
   bool selected = model_->IsSelectedIndex(model_index_);
+  if (match_.starred)
+    return selected ? icon_star_selected_ : icon_star_;
   switch (match_.type) {
     case AutocompleteMatch::URL_WHAT_YOU_TYPED:
     case AutocompleteMatch::HISTORY_URL:
     case AutocompleteMatch::NAVSUGGEST:
-      if (match_.starred)
-        return selected ? icon_star_selected_ : icon_star_;
       return selected ? icon_url_selected_ : icon_url_;
     case AutocompleteMatch::HISTORY_TITLE:
     case AutocompleteMatch::HISTORY_BODY:
     case AutocompleteMatch::HISTORY_KEYWORD:
-      if (match_.starred)
-        return selected ? icon_star_selected_ : icon_star_;
       return selected ? icon_history_selected_ : icon_history_;
     case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatch::SEARCH_HISTORY:
@@ -424,9 +422,8 @@ SkBitmap* AutocompleteResultView::GetIcon() const {
       return selected ? icon_more_selected_ : icon_more_;
     default:
       NOTREACHED();
-      break;
+      return NULL;
   }
-  return NULL;
 }
 
 int AutocompleteResultView::DrawString(
@@ -521,9 +518,8 @@ int AutocompleteResultView::DrawStringFragment(
 }
 
 gfx::Font AutocompleteResultView::GetFragmentFont(int style) const {
-  if (style & ACMatchClassification::MATCH)
-    return font_.DeriveFont(0, gfx::Font::BOLD);
-  return font_;
+  return (style & ACMatchClassification::MATCH) ?
+      font_.DeriveFont(0, gfx::Font::BOLD) : font_;
 }
 
 SkColor AutocompleteResultView::GetFragmentTextColor(int style) const {
@@ -670,23 +666,24 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
       edit_view_(edit_view),
       popup_positioner_(popup_positioner),
       result_font_(font.DeriveFont(kEditFontAdjust)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(size_initiator_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)),
-      result_rows_(0) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
   set_border(new PopupBorder);
 }
 
 gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
-  if (size_animation_.IsAnimating()) {
-    gfx::Rect current_frame_bounds = start_bounds_;
-    int total_height_delta = target_bounds_.height() - start_bounds_.height();
-    int current_height_delta = static_cast<int>(
-        size_animation_.GetCurrentValue() * total_height_delta);
-    current_frame_bounds.set_height(
-        start_bounds_.height() + current_height_delta);
-    return current_frame_bounds;
-  }
-  return GetTargetBounds();
+  if (!size_animation_.IsAnimating())
+    return target_bounds_;
+
+  gfx::Rect current_frame_bounds = start_bounds_;
+  int total_height_delta = target_bounds_.height() - start_bounds_.height();
+  // Round |current_height_delta| instead of truncating so we won't leave single
+  // white pixels at the bottom of the popup as long when animating very small
+  // height differences.
+  int current_height_delta = static_cast<int>(
+      size_animation_.GetCurrentValue() * total_height_delta - 0.5);
+  current_frame_bounds.set_height(
+      current_frame_bounds.height() + current_height_delta);
+  return current_frame_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -701,11 +698,9 @@ void AutocompletePopupContentsView::InvalidateLine(size_t line) {
 }
 
 void AutocompletePopupContentsView::UpdatePopupAppearance() {
-  result_rows_ = model_->result().size();
   if (model_->result().empty()) {
     // No matches, close any existing popup.
     if (popup_->IsWindow()) {
-      size_initiator_factory_.RevokeAll();
       size_animation_.Stop();
       popup_->Hide();
     }
@@ -714,40 +709,52 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
 
   // Update the match cached by each row, in the process of doing so make sure
   // we have enough row views.
-  int child_view_count = GetChildViewCount();
-  for (size_t i = 0; i < result_rows_; ++i) {
-    AutocompleteResultView* result_view = NULL;
-    if (i >= static_cast<size_t>(child_view_count)) {
+  int total_child_height = 0;
+  size_t child_view_count = GetChildViewCount();
+  for (size_t i = 0; i < model_->result().size(); ++i) {
+    AutocompleteResultView* result_view;
+    if (i >= child_view_count) {
       result_view = new AutocompleteResultView(this, i, result_font_);
       AddChildView(result_view);
     } else {
       result_view = static_cast<AutocompleteResultView*>(GetChildViewAt(i));
     }
     result_view->set_match(GetMatchAtIndex(i));
+    total_child_height += result_view->GetPreferredSize().height();
   }
 
-  if (popup_->IsVisible() && !IsGrowingLarger()) {
-    // When we're going to shrink, defer any size change activity for a short
-    // time. This is because as the user types characters, synchronous results
-    // for the new string come back immediately which causes the popup to shrink
-    // down for a few hundred ms until async results hit which causes the popup
-    // to flicker vertically.
-    size_initiator_factory_.RevokeAll();
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        size_initiator_factory_.NewRunnableMethod(
-        &AutocompletePopupContentsView::StartSizing), 300);
-  } else if (popup_->IsWindow()) {
-    // If we're growing larger or being shown for the first time, we don't use
-    // an animation since this makes the results popping in feel less
-    // instantaneous.
-    size_initiator_factory_.RevokeAll();
-    target_bounds_ = GetTargetBounds();
-    start_bounds_ = target_bounds_;
-    popup_->Show();
-  } else {
-    // If we've never been shown, we need to actually create the window, too.
+  // Calculate desired bounds.
+  gfx::Rect new_target_bounds = popup_positioner_->GetPopupBounds();
+  new_target_bounds.set_height(total_child_height);
+  gfx::Insets insets;
+  border()->GetInsets(&insets);
+  new_target_bounds.Inset(-insets.left(), -insets.top(), -insets.right(),
+                          -insets.bottom());
+
+  // If we're animating and our target height changes, reset the animation.
+  // NOTE: If we just reset blindly on _every_ update, then when the user types
+  // rapidly we could get "stuck" trying repeatedly to animate shrinking by the
+  // last few pixels to get to one visible result.
+  if (new_target_bounds.height() != target_bounds_.height())
+    size_animation_.Reset();
+  target_bounds_ = new_target_bounds;
+
+  if (!popup_->IsWindow()) {
+    // If we've never been shown, we need to create the window.
     popup_->Init(edit_view_, this);
+  } else {
+    // Animate the popup shrinking, but don't animate growing larger (or
+    // appearing for the first time) since that would make the popup feel less
+    // responsive.
+    GetWidget()->GetBounds(&start_bounds_, true);
+    if (popup_->IsVisible() &&
+        (target_bounds_.height() < start_bounds_.height()))
+      size_animation_.Show();
+    else
+      start_bounds_ = target_bounds_;
+    popup_->Show();
   }
+
   SchedulePaint();
 }
 
@@ -926,39 +933,4 @@ void AutocompletePopupContentsView::MakeCanvasTransparent(
   paint.setStyle(SkPaint::kFill_Style);
   canvas->FillRectInt(0, 0, canvas->getDevice()->width(),
                       canvas->getDevice()->height(), paint);
-}
-
-void AutocompletePopupContentsView::StartSizing() {
-  CalculateAnimationFrameBounds();
-  if (start_bounds_ != target_bounds_) {
-    size_animation_.Reset(0.0);
-    size_animation_.Show();
-  } else {
-    popup_->Show();
-  }
-}
-
-void AutocompletePopupContentsView::CalculateAnimationFrameBounds() {
-  GetWidget()->GetBounds(&start_bounds_, true);
-  target_bounds_ = GetTargetBounds();
-}
-
-gfx::Rect AutocompletePopupContentsView::GetTargetBounds() const {
-  gfx::Insets insets;
-  border()->GetInsets(&insets);
-  gfx::Rect target_bounds = popup_positioner_->GetPopupBounds();
-  int height = 0;
-  for (size_t i = 0; i < result_rows_; ++i)
-    height += GetChildViewAt(i)->GetPreferredSize().height();
-  target_bounds.set_height(height);
-  target_bounds.Inset(-insets.left(), -insets.top(), -insets.right(),
-                      -insets.bottom());
-  return target_bounds;
-}
-
-bool AutocompletePopupContentsView::IsGrowingLarger() const {
-  gfx::Rect current_bounds;
-  GetWidget()->GetBounds(&current_bounds, true);
-  gfx::Rect target_bounds = GetTargetBounds();
-  return current_bounds.height() < target_bounds.height();
 }

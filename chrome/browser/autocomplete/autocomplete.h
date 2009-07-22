@@ -707,7 +707,6 @@ class AutocompleteController : public ACProviderListener {
   explicit AutocompleteController(const ACProviders& providers)
       : providers_(providers),
         history_contents_provider_(NULL),
-        update_pending_(false),
         done_(true) {
   }
 #endif
@@ -804,22 +803,13 @@ class AutocompleteController : public ACProviderListener {
 
   // The latest result available from the autocomplete providers.  This may be
   // different than result_ if we've gotten results from our providers that we
-  // haven't yet shown the user.  If more matches may be coming, we'll wait to
-  // display these in hopes of minimizing flicker in GUI observers; see
-  // |coalesce_timer_|.
+  // haven't yet shown the user.  If there aren't yet as many matches as in
+  // |result|, we'll wait to display these in hopes of minimizing flicker in GUI
+  // observers.
   AutocompleteResult latest_result_;
-
-  // True when there are newer results in |latest_result_| than in |result_| and
-  // observers have not been notified about them.
-  bool update_pending_;
 
   // True if a query is not currently running.
   bool done_;
-
-  // Timer that tracks how long it's been since the last provider update we
-  // received.  Instead of notifying about each update immediately, we batch
-  // updates into groups.
-  base::OneShotTimer<AutocompleteController> coalesce_timer_;
 
   // Timer that tracks how long it's been since the last time we updated the
   // onscreen results.  This is used to ensure that observers update somewhat
