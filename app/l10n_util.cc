@@ -233,6 +233,11 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   PathService::Get(app::DIR_LOCALES, &locale_path);
   std::string resolved_locale;
 
+  // We only use --lang and the app pref on Windows.  On Linux/Mac, we only
+  // look at the LC_*/LANG environment variables.  We do, however, pass --lang
+  // to renderer and plugin processes so they know what language the parent
+  // process decided to use.
+#if defined(OS_WIN)
   // First, check to see if there's a --lang flag.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   const std::string& lang_arg = WideToASCII(
@@ -248,6 +253,7 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
                               locale_path, &resolved_locale))
       return resolved_locale;
   }
+#endif
 
   // Next, try the system locale.
   const std::string system_locale = GetSystemLocale();

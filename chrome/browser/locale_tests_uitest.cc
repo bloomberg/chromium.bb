@@ -4,24 +4,61 @@
 
 #include "chrome/test/ui/ui_test.h"
 
-class LocaleTestsDa : public UITest {
+#include "build/build_config.h"
+
+class LocaleTestsBase : public UITest {
  public:
-  LocaleTestsDa() : UITest() {
+  LocaleTestsBase() : UITest(), old_lc_all_(NULL) {
+  }
+
+ protected:
+  void RestoreLcAllEnvironment() {
+#if defined(OS_LINUX)
+    if (old_lc_all_) {
+      setenv("LC_ALL", old_lc_all_, 1);
+    } else {
+      unsetenv("LC_ALL");
+    }
+#endif
+  };
+
+  const char* old_lc_all_;
+};
+
+
+class LocaleTestsDa : public LocaleTestsBase {
+ public:
+  LocaleTestsDa() : LocaleTestsBase() {
     launch_arguments_.AppendSwitchWithValue(L"lang", L"da");
+
+    // Linux doesn't use --lang, it only uses environment variables to set the
+    // language.
+#if defined(OS_LINUX)
+    old_lc_all_ = getenv("LC_ALL");
+    setenv("LC_ALL", "da_DK.UTF-8", 1);
+#endif
   }
 };
 
-class LocaleTestsHe : public UITest {
+class LocaleTestsHe : public LocaleTestsBase {
  public:
-  LocaleTestsHe() : UITest() {
+  LocaleTestsHe() : LocaleTestsBase() {
     launch_arguments_.AppendSwitchWithValue(L"lang", L"he");
+#if defined(OS_LINUX)
+    old_lc_all_ = getenv("LC_ALL");
+    setenv("LC_ALL", "he_IL.UTF-8", 1);
+#endif
   }
 };
 
-class LocaleTestsZhTw : public UITest {
+class LocaleTestsZhTw : public LocaleTestsBase {
  public:
-  LocaleTestsZhTw() : UITest() {
+  LocaleTestsZhTw() : LocaleTestsBase() {
     launch_arguments_.AppendSwitchWithValue(L"lang", L"zh-TW");
+#if defined(OS_LINUX)
+    old_lc_all_ = getenv("LC_ALL");
+    setenv("LC_ALL", "zh_TW.UTF-8", 1);
+#endif
   }
 };
 
@@ -30,13 +67,16 @@ class LocaleTestsZhTw : public UITest {
 // See bug 9758.
 TEST_F(LocaleTestsDa, TestStart) {
   // Just making sure we can start/shutdown cleanly.
+  RestoreLcAllEnvironment();
 }
 
 TEST_F(LocaleTestsHe, TestStart) {
   // Just making sure we can start/shutdown cleanly.
+  RestoreLcAllEnvironment();
 }
 
 TEST_F(LocaleTestsZhTw, TestStart) {
   // Just making sure we can start/shutdown cleanly.
+  RestoreLcAllEnvironment();
 }
 #endif
