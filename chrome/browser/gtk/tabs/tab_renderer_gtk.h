@@ -268,8 +268,12 @@ class TabRendererGtk : public AnimationDelegate {
                                             TabRendererGtk* tab);
 
   // expose-event handler that redraws the tab.
-  static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e,
-                           TabRendererGtk* tab);
+  static gboolean OnExposeEvent(GtkWidget* widget, GdkEventExpose* event,
+                                TabRendererGtk* tab);
+
+  // size-allocate handler used to update the current bounds of the tab.
+  static void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation,
+                             TabRendererGtk* tab);
 
   // TODO(jhawkins): Move to TabResources.
   static void InitResources();

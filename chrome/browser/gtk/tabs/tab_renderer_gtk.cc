@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"
 
+#include <algorithm>
+
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/favicon_size.h"
 #include "app/l10n_util.h"
@@ -223,7 +225,9 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
   tab_.Own(gtk_fixed_new());
   gtk_widget_set_app_paintable(tab_.get(), TRUE);
   g_signal_connect(G_OBJECT(tab_.get()), "expose-event",
-                   G_CALLBACK(OnExpose), this);
+                   G_CALLBACK(OnExposeEvent), this);
+  g_signal_connect(G_OBJECT(tab_.get()), "size-allocate",
+                   G_CALLBACK(OnSizeAllocate), this);
   close_button_.reset(MakeCloseButton());
   gtk_widget_show(tab_.get());
 
@@ -371,8 +375,6 @@ void TabRendererGtk::SetUnselectedTitleColor(SkColor color) {
 
 void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
   gtk_widget_set_size_request(tab_.get(), bounds.width(), bounds.height());
-  bounds_ = bounds;
-  Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -793,12 +795,28 @@ gboolean TabRendererGtk::OnCloseButtonMouseRelease(GtkWidget* widget,
 }
 
 // static
-gboolean TabRendererGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event,
-                                  TabRendererGtk* tab) {
+gboolean TabRendererGtk::OnExposeEvent(GtkWidget* widget, GdkEventExpose* event,
+                                       TabRendererGtk* tab) {
   tab->PaintTab(event);
   gtk_container_propagate_expose(GTK_CONTAINER(tab->tab_.get()),
                                  tab->close_button_->widget(), event);
   return TRUE;
+}
+
+// static
+void TabRendererGtk::OnSizeAllocate(GtkWidget* widget,
+                                    GtkAllocation* allocation,
+                                    TabRendererGtk* tab) {
+  gfx::Rect bounds = gfx::Rect(allocation->x, allocation->y,
+                               allocation->width, allocation->height);
+
+  // Nothing to do if the bounds are the same.  If we don't catch this, we'll
+  // get an infinite loop of size-allocate signals.
+  if (tab->bounds_ == bounds)
+    return;
+
+  tab->bounds_ = bounds;
+  tab->Layout();
 }
 
 void TabRendererGtk::OnMouseEntered() {
