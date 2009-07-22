@@ -63,7 +63,7 @@ class UtilityProcessHost : public ChildProcessHost {
 
   UtilityProcessHost(ResourceDispatcherHost* rdh, Client* client,
                      MessageLoop* client_loop);
-  ~UtilityProcessHost();
+  virtual ~UtilityProcessHost();
 
   // Start a process to unpack the extension at the given path.  The process
   // will be given access to the directory subtree that the extension file is

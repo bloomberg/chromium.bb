@@ -904,13 +904,6 @@
    fun:_ZN7WebCore5Frame4initEv
 }
 {
-   # Anonymous namespaces requires wildcard to match on both mac and linux
-   bug_17129
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*UtilityProcessHostTest_ExtensionUnpacker_Test8TestBodyEv
-}
-{
    bug_17184
    Memcheck:Leak
    fun:malloc
