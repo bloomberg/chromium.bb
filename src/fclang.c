@@ -551,27 +551,20 @@ bail0:
 FcBool
 FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls)
 {
-    int		i, bit;
-    FcChar32	bits;
+    int		i;
     FcBool	first = FcTrue;
 
-    for (i = 0; i < NUM_LANG_SET_MAP; i++)
-    {
-	if ((bits = ls->map[i]))
-	{
-	    for (bit = 0; bit <= 31; bit++)
-		if (bits & (1 << bit))
-		{
-		    int id = (i << 5) | bit;
-		    if (!first)
-			if (!FcStrBufChar (buf, '|'))
-			    return FcFalse;
-		    if (!FcStrBufString (buf, fcLangCharSets[id].lang))
+    for (i = 0; i < NUM_LANG_CHAR_SET; i++)
+	if (FcLangSetBitGet (ls, i))
+	    {
+		if (!first)
+		    if (!FcStrBufChar (buf, '|'))
 			return FcFalse;
-		    first = FcFalse;
-		}
-	}
-    }
+		if (!FcStrBufString (buf, fcLangCharSets[i].lang))
+		    return FcFalse;
+		first = FcFalse;
+	    }
+
     if (ls->extra)
     {
 	FcStrList   *list = FcStrListCreate (ls->extra);
