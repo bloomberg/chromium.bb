@@ -610,8 +610,6 @@ void NPN_InvalidateRect(NPP id, NPRect *invalidRect) {
         ::InvalidateRect(plugin->window_handle(), &rect, FALSE);
         return;
       }
-#elif defined(OS_LINUX)
-      NOTIMPLEMENTED();
 #endif
       gfx::Rect rect(invalidRect->left,
                      invalidRect->top,

@@ -372,6 +372,9 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
 #elif defined(OS_MACOSX)
   if (!windowless_context_.get())
     return;
+#elif defined(OS_LINUX)
+  if (!windowless_canvas_.get())
+    return;
 #endif
 
   // Clear the damaged area so that if the plugin doesn't paint there we won't
@@ -415,8 +418,20 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   delegate_->Paint(windowless_context_, rect);
   CGContextRestoreGState(windowless_context_);
 #else
-  // TODO(port): windowless painting.
-  NOTIMPLEMENTED();
+  cairo_t* cairo =
+      windowless_canvas_->getTopPlatformDevice().beginPlatformPaint();
+  cairo_save(cairo);
+  cairo_rectangle(cairo, rect.x(), rect.y(), rect.width(), rect.height());
+  cairo_clip(cairo);
+  if (background_canvas_.get()) {
+    cairo_t *background =
+        background_canvas_->getTopPlatformDevice().beginPlatformPaint();
+    cairo_set_source_surface(cairo, cairo_get_target(background), 0, 0);
+    cairo_paint(cairo);
+  }
+  cairo_translate(cairo, -delegate_->GetRect().x(), -delegate_->GetRect().y());
+  delegate_->Paint(cairo, offset_rect);
+  cairo_restore(cairo);
 #endif
 }
 
@@ -558,13 +573,21 @@ void WebPluginProxy::SetWindowlessBuffer(
 }
 #elif defined (OS_LINUX)
 void WebPluginProxy::UpdateTransform() {
-  NOTIMPLEMENTED();
 }
 
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
     const TransportDIB::Handle& background_buffer) {
-  NOTIMPLEMENTED();
+  int width = delegate_->GetRect().width();
+  int height = delegate_->GetRect().height();
+  windowless_dib_.reset(TransportDIB::Map(windowless_buffer));
+  windowless_canvas_.reset(windowless_dib_->GetPlatformCanvas(width, height));
+  background_dib_.reset(TransportDIB::Map(background_buffer));
+  if (background_dib_.get()) {
+    background_canvas_.reset(background_dib_->GetPlatformCanvas(width, height));
+  } else {
+    background_canvas_.reset();
+  }
 }
 #endif
 

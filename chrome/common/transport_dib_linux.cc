@@ -69,7 +69,7 @@ TransportDIB* TransportDIB::Map(Handle shmkey) {
   if (shmctl(shmkey, IPC_STAT, &shmst) == -1)
     return NULL;
 
-  void* address = shmat(shmkey, NULL /* desired address */, SHM_RDONLY);
+  void* address = shmat(shmkey, NULL /* desired address */, 0 /* flags */);
   if (address == kInvalidAddress)
     return NULL;
 

@@ -374,7 +374,8 @@ void WebPluginDelegateImpl::EnsurePixmapAtLeastSize(int width, int height) {
   // |sys_visual| is owned by gdk; we shouldn't free it.
   GdkVisual* sys_visual = gdk_visual_get_system();
   pixmap_ = gdk_pixmap_new(NULL,  // use width/height/depth params
-                           width, height, sys_visual->depth);
+                           std::max(1, width), std::max(1, height),
+                           sys_visual->depth);
   GdkColormap* colormap = gdk_colormap_new(gdk_visual_get_system(),
                                            FALSE);
   gdk_drawable_set_colormap(GDK_DRAWABLE(pixmap_), colormap);
@@ -383,17 +384,15 @@ void WebPluginDelegateImpl::EnsurePixmapAtLeastSize(int width, int height) {
 #ifdef DEBUG_RECTANGLES
 namespace {
 
-// Draw a rectangle on a Cairo surface.
+// Draw a rectangle on a Cairo context.
 // Useful for debugging various rectangles involved in drawing plugins.
-void DrawDebugRectangle(cairo_surface_t* surface,
+void DrawDebugRectangle(cairo_t* cairo,
                         const gfx::Rect& rect,
                         float r, float g, float b) {
-  cairo_t* cairo = cairo_create(surface);
   cairo_set_source_rgba(cairo, r, g, b, 0.5);
   cairo_rectangle(cairo, rect.x(), rect.y(),
                   rect.width(), rect.height());
   cairo_stroke(cairo);
-  cairo_destroy(cairo);
 }
 
 }  // namespace
@@ -526,8 +525,11 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   // Copy the current image into the pixmap, so the plugin can draw over
   // this background.
   cairo_t* cairo = gdk_cairo_create(pixmap_);
+  double surface_x = -offset_x;
+  double surface_y = -offset_y;
+  cairo_user_to_device(context, &surface_x, &surface_y);
   cairo_set_source_surface(cairo, cairo_get_target(context),
-                           offset_x, offset_y);
+                           -surface_x, -surface_y);
   cairo_rectangle(cairo, draw_rect.x() + offset_x, draw_rect.y() + offset_y,
                   draw_rect.width(), draw_rect.height());
   cairo_clip(cairo);
@@ -551,6 +553,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   NPError err = instance()->NPP_HandleEvent(&np_event);
   DCHECK_EQ(err, NPERR_NO_ERROR);
 
+  cairo_save(context);
   // Now copy the rendered image pixmap back into the drawing buffer.
   gdk_cairo_set_source_pixmap(context, pixmap_, -offset_x, -offset_y);
   cairo_rectangle(context, draw_rect.x(), draw_rect.y(),
@@ -565,6 +568,7 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   // Drawing rect = red.
   DrawDebugRectangle(context, draw_rect, 1, 0, 0);
 #endif
+  cairo_restore(context);
 }
 
 void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {

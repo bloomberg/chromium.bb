@@ -182,6 +182,11 @@ class WebPluginProxy : public WebPlugin {
   scoped_ptr<TransportDIB> background_dib_;
   scoped_cftyperef<CGContextRef> windowless_context_;
   scoped_cftyperef<CGContextRef> background_context_;
+#elif defined(OS_LINUX)
+  scoped_ptr<TransportDIB> windowless_dib_;
+  scoped_ptr<TransportDIB> background_dib_;
+  scoped_ptr<skia::PlatformCanvas> windowless_canvas_;
+  scoped_ptr<skia::PlatformCanvas> background_canvas_;
 #endif
 
   ScopedRunnableMethodFactory<WebPluginProxy> runnable_method_factory_;
