@@ -7,6 +7,7 @@
 '''
 
 
+import sys
 import xml.sax
 import xml.sax.handler
 
@@ -28,6 +29,8 @@ class XtbContentHandler(xml.sax.handler.ContentHandler):
     self.current_structure = []
     # Set to the language ID when we see the <translationbundle> node.
     self.language = ''
+    # Keep track of the if block we're inside.  We can't nest ifs.
+    self.if_expr = None
 
   def startElement(self, name, attrs):
     if name == 'translation':
@@ -39,13 +42,27 @@ class XtbContentHandler(xml.sax.handler.ContentHandler):
       self.current_structure.append((True, attrs.getValue('name')))
     elif name == 'translationbundle':
       self.language = attrs.getValue('lang')
+    elif name == 'if':
+      assert self.if_expr is None, "Can't nest <if> in xtb files"
+      self.if_expr = attrs.getValue('expr')
 
   def endElement(self, name):
     if name == 'translation':
       assert self.current_id != 0
-      self.callback(self.current_id, self.current_structure)
+
+      # If we're in an if block, only call the callback (add the translation)
+      # if the expression is True.
+      should_run_callback = True
+      if self.if_expr:
+        should_run_callback = eval(self.if_expr, {}, {'os': sys.platform})
+      if should_run_callback:
+        self.callback(self.current_id, self.current_structure)
+
       self.current_id = 0
       self.current_structure = []
+    elif name == 'if':
+      assert self.if_expr is not None
+      self.if_expr = None
 
   def characters(self, content):
     if self.current_id != 0:
