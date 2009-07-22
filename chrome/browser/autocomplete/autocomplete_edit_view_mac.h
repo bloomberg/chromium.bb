@@ -87,6 +87,9 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   // Helper functions for use from AutocompleteEditHelper Objective-C
   // class.
 
+  // Returns true if |popup_view_| is open.
+  bool IsPopupOpen() const;
+
   // Trivial wrappers forwarding to |model_| methods.
   void OnControlKeyChanged(bool pressed);
   void OnEscapeKeyPressed();

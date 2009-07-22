@@ -579,6 +579,10 @@ void AutocompleteEditViewMac::OnPaste() {
   OnAfterPossibleChange();
 }
 
+bool AutocompleteEditViewMac::IsPopupOpen() const {
+  return popup_view_->IsOpen();
+}
+
 void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
   model_->OnControlKeyChanged(pressed);
 }
@@ -645,14 +649,17 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 
 - (BOOL)control:(NSControl*)control
        textView:(NSTextView*)textView doCommandBySelector:(SEL)cmd {
-  if (cmd == @selector(moveDown:)) {
-    edit_view_->OnUpOrDownKeyPressed(false, false);
-    return YES;
-  }
-  
-  if (cmd == @selector(moveUp:)) {
-    edit_view_->OnUpOrDownKeyPressed(true, false);
-    return YES;
+  // Don't intercept up/down-arrow if the popup isn't open.
+  if (edit_view_->IsPopupOpen()) {
+    if (cmd == @selector(moveDown:)) {
+      edit_view_->OnUpOrDownKeyPressed(false, false);
+      return YES;
+    }
+
+    if (cmd == @selector(moveUp:)) {
+      edit_view_->OnUpOrDownKeyPressed(true, false);
+      return YES;
+    }
   }
   
   if (cmd == @selector(scrollPageDown:)) {
