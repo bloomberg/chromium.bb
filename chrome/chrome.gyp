@@ -3835,7 +3835,6 @@
         'common/notification_service_unittest.cc',
         'common/pref_member_unittest.cc',
         'common/pref_service_unittest.cc',
-        'common/process_watcher_unittest.cc',
         'common/property_bag_unittest.cc',
         'common/resource_dispatcher_unittest.cc',
         'common/time_format_unittest.cc',
