@@ -647,7 +647,11 @@ BUG13907 WIN : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRA
 // This test crashes in debug build.
 BUG13907 WIN : LayoutTests/media/video-seek-past-end-playing.html = PASS FAIL CRASH TIMEOUT
 BUG13907 WIN : LayoutTests/media/video-size-intrinsic-scale.html = FAIL
+BUG13907 WIN : LayoutTests/media/video-source-type-params.html = PASS CRASH
+BUG13907 WIN : LayoutTests/media/video-source.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src-remove.html = FAIL
+BUG13907 WIN : LayoutTests/media/video-src-set.html = PASS CRASH
+BUG13907 WIN : LayoutTests/media/video-src-source.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src.html = PASS CRASH
 // These tests are flaky.
 BUG16779 BUG13097 WIN : LayoutTests/media/video-display-toggle.html = FAIL TIMEOUT
