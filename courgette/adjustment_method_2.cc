@@ -1248,7 +1248,7 @@ class AssignmentProblem {
 
 class Adjuster : public AdjustmentMethod {
  public:
-  Adjuster() {}
+  Adjuster() : prog_(NULL), model_(NULL) {}
   ~Adjuster() {}
 
   bool Adjust(const AssemblyProgram& model, AssemblyProgram* program) {

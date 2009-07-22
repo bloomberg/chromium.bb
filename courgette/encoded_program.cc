@@ -33,7 +33,7 @@ const int kStreamLimit = 9;
 // Constructor is here rather than in the header.  Although the constructor
 // appears to do nothing it is fact quite large because of the implict calls to
 // field constructors.  Ditto for the destructor.
-EncodedProgram::EncodedProgram() {}
+EncodedProgram::EncodedProgram() : image_base_(0) {}
 EncodedProgram::~EncodedProgram() {}
 
 // Serializes a vector of integral values using Varint32 coding.

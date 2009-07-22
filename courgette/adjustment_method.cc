@@ -219,7 +219,9 @@ class AssignmentProblem {
   AssignmentProblem(const Trace& model,
                     const Trace& problem)
       : m_trace_(model),
-        p_trace_(problem) {
+        p_trace_(problem),
+        m_root_(NULL),
+        p_root_(NULL) {
   }
 
   ~AssignmentProblem() {
@@ -579,7 +581,10 @@ class AssignmentProblem {
 
 class GraphAdjuster : public AdjustmentMethod {
  public:
-  GraphAdjuster() {}
+  GraphAdjuster()
+      : prog_(NULL),
+        model_(NULL),
+        debug_label_index_gen_(0) {}
   ~GraphAdjuster() {}
 
   bool Adjust(const AssemblyProgram& model, AssemblyProgram* program) {

@@ -51,4 +51,6 @@ int main(int argc, const char* argv[]) {
     if (status == courgette::C_WRITE_ERROR) Problem("Can't write to file.");
     Problem("patch failed.");
   }
+
+  return 0;
 }

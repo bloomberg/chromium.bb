@@ -26,8 +26,26 @@ std::string SectionName(const Section* section) {
 
 PEInfo::PEInfo()
   : failure_reason_("uninitialized"),
-    start_(0), end_(0), length_(0),
-    is_PE32_plus_(0), file_length_(0), has_text_section_(false) {
+    start_(0),
+    end_(0),
+    length_(0),
+    is_PE32_plus_(false),
+    file_length_(0),
+    optional_header_(NULL),
+    size_of_optional_header_(0),
+    offset_of_data_directories_(0),
+    machine_type_(0),
+    number_of_sections_(0),
+    sections_(NULL),
+    has_text_section_(false),
+    size_of_code_(0),
+    size_of_initialized_data_(0),
+    size_of_uninitialized_data_(0),
+    base_of_code_(0),
+    base_of_data_(0),
+    image_base_(0),
+    size_of_image_(0),
+    number_of_data_directories_(0) {
 }
 
 void PEInfo::Init(const void* start, size_t length) {
