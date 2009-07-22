@@ -2988,3 +2988,6 @@ BUG17398 LINUX : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/css/pseudo-cache-stale.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/forms/input-appearance-height.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
+
+// Test failure from WebKit merge 46141:46143
+BUG17326 LINUX WIN : LayoutTests/editing/execCommand/5138441.html = FAIL
