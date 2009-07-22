@@ -600,7 +600,7 @@
             '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz_interface',
           ],
           'defines': [
-            'SK_SUPPORT_LCDTEXT',
+            'SK_BUILD_SUBPIXEL',
           ],
         }],
         [ 'OS == "mac"', {
