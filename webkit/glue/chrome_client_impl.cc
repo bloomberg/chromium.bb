@@ -152,28 +152,28 @@ float ChromeClientImpl::scaleFactor() {
 
 void ChromeClientImpl::focus() {
   WebViewDelegate* delegate = webview_->delegate();
-  if (delegate)
+  if (delegate) {
     delegate->didFocus();
 
-  // If accessibility is enabled, we should notify assistive technology that the
-  // active AccessibilityObject changed.
-  WebCore::Document* doc = webview_->GetFocusedWebCoreFrame()->document();
+    // If accessibility is enabled, we should notify assistive technology that
+    // the active AccessibilityObject changed.
+    WebCore::Document* doc = webview_->GetFocusedWebCoreFrame()->document();
 
-  if (doc && doc->axObjectCache()->accessibilityEnabled()) {
-    WebCore::Node* focused_node = webview_->GetFocusedNode();
+    if (doc && doc->axObjectCache()->accessibilityEnabled()) {
+      WebCore::Node* focused_node = webview_->GetFocusedNode();
 
-    if (!focused_node) {
-      // Could not retrieve focused Node.
-      return;
-    }
+      if (!focused_node) {
+        // Could not retrieve focused Node.
+        return;
+      }
 
-    // Retrieve the focused AccessibilityObject.
-    WebCore::AccessibilityObject* focused_acc_obj =
-        doc->axObjectCache()->getOrCreate(focused_node->renderer());
+      // Retrieve the focused AccessibilityObject.
+      WebCore::AccessibilityObject* focused_acc_obj =
+          doc->axObjectCache()->getOrCreate(focused_node->renderer());
 
-    // Alert assistive technology that focus changed.
-    if (focused_acc_obj) {
-      delegate->FocusAccessibilityObject(focused_acc_obj);
+      // Alert assistive technology that focus changed.
+      if (focused_acc_obj)
+        delegate->FocusAccessibilityObject(focused_acc_obj);
     }
   }
 }
