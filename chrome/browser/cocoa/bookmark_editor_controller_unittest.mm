@@ -17,8 +17,6 @@ class BookmarkEditorControllerTest : public testing::Test {
   scoped_nsobject<BookmarkEditorController> bar_;
 };
 
-// Lots TODO here.
-
 TEST_F(BookmarkEditorControllerTest, NoNodeNoTree) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();

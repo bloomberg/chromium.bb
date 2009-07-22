@@ -13,6 +13,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
+#import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -194,11 +195,13 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   }
 }
 
+// Return nil if menuItem has no delegate.
 - (BookmarkNode*)nodeFromMenuItem:(id)menuItem {
   NSCell* cell = [[menuItem menu] delegate];
+  if (!cell)
+    return nil;
   BookmarkNode* node = static_cast<BookmarkNode*>(
       [[cell representedObject] pointerValue]);
-  DCHECK(node);
   return node;
 }
 
@@ -236,6 +239,15 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 - (IBAction)editBookmark:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
+
+  // TODO(jrg): on windows, folder "buttons" use the bar's context
+  // menu (but with extra items enabled, like Rename).  For now we do
+  // a cheat and redirect so we have the functionality available.
+  if (node->is_folder()) {
+    [self addOrRenameFolder:sender];
+    return;
+  }
+
   // There is no real need to jump to a platform-common routine at
   // this point (which just jumps back to objc) other than consistency
   // across platforms.
@@ -284,6 +296,22 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
                        nil,
                        BookmarkEditor::SHOW_TREE,
                        nil);
+}
+
+// Might be from the context menu over the bar OR over a button.
+- (IBAction)addOrRenameFolder:(id)sender {
+  // node is NULL if we were invoked from the bar, and that's fine.
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
+  BookmarkNameFolderController* controller =
+    [[BookmarkNameFolderController alloc]
+      initWithParentWindow:[[self view] window]
+                   profile:profile_
+                      node:node];
+  [controller runModal];
+
+  // runModal will run the window as a sheet.  The
+  // BookmarkNameFolderController will release itself when the sheet
+  // ends.
 }
 
 // Delete all bookmarks from the bookmark bar.

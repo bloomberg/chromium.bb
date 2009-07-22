@@ -96,6 +96,7 @@ class PrefService;
 - (IBAction)openAllBookmarks:(id)sender;
 // Or from a context menu over either the bar or a button.
 - (IBAction)addPage:(id)sender;
+- (IBAction)addOrRenameFolder:(id)sender;
 
 
 @end
