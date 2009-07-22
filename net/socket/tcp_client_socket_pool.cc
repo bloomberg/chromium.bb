@@ -132,11 +132,12 @@ ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(
 }
 
 TCPClientSocketPool::TCPClientSocketPool(
+    int max_sockets,
     int max_sockets_per_group,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory)
     : base_(new ClientSocketPoolBase(
-        max_sockets_per_group,
+        max_sockets, max_sockets_per_group,
         new TCPConnectJobFactory(client_socket_factory, host_resolver))) {}
 
 TCPClientSocketPool::~TCPClientSocketPool() {}
