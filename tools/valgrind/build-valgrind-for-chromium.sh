@@ -6,6 +6,12 @@ THISDIR=`cd $THISDIR && /bin/pwd`
 set -x
 set -e
 
+if ld --version | grep gold
+then
+  echo cannot build valgrind with gold
+  exit 1
+fi
+
 # Check out latest version that following patches known to apply against
 rm -rf valgrind-20090715
 svn co -r '{2009-07-15}' svn://svn.valgrind.org/valgrind/trunk valgrind-20090715
@@ -19,7 +25,7 @@ cd ..
 
 # Work around bug https://bugs.kde.org/show_bug.cgi?id=162848
 # "fork() not handled properly"
-#wget -O fork.patch "https://bugs.kde.org/attachment.cgi?id=35150"
+#wget -O fork.patch "https://bugs.kde.org/attachment.cgi?id=35510"
 patch -p0 < "$THISDIR"/fork.patch
 
 # Work around bug https://bugs.kde.org/show_bug.cgi?id=186796
@@ -30,6 +36,15 @@ patch -p0 < "$THISDIR"/longlines.patch
 sh autogen.sh
 ./configure --prefix=/usr/local/valgrind-20090715
 make -j4
+
+if ./vg-in-place /bin/true
+then
+  echo built valgrind passes smoke test, good
+else
+  echo built valgrind fails smoke test
+  exit 1
+fi
+
 sudo make install
 cd /usr
 test -f bin/valgrind && sudo mv bin/valgrind bin/valgrind.orig

@@ -1,3 +1,28 @@
+Index: coregrind/m_syswrap/syswrap-generic.c
+===================================================================
+--- coregrind/m_syswrap/syswrap-generic.c	(revision 10399)
++++ coregrind/m_syswrap/syswrap-generic.c	(working copy)
+@@ -2558,6 +2558,15 @@
+ 
+    } else {
+       path = (Char*)ARG1;
++      if (VG_(clo_xml)) {
++        VG_(message)(Vg_UserMsg, "");
++        VG_(message)(Vg_UserMsg, "<execv/>");
++        VG_(message)(Vg_UserMsg, "");
++        VG_(message)(Vg_UserMsg, "</valgrindoutput>");
++        VG_(message)(Vg_UserMsg, "");
++      } else {
++        VG_(message)(Vg_UserMsg, "execv called - the tool will now quit");
++      }
+    }
+ 
+    // Set up the child's environment.
+@@ -4093,4 +4102,3 @@
+ /*--------------------------------------------------------------------*/
+ /*--- end                                                          ---*/
+ /*--------------------------------------------------------------------*/
+-
 Index: coregrind/m_main.c
 ===================================================================
 --- coregrind/m_main.c	(revision 10399)
