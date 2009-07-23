@@ -3614,6 +3614,14 @@ each locale. -->
          desc="Tooltip text for the button that shows the menu that hides and shows different sections on the new tab page.">
         Change page layout
       </message>
+      <message name="IDS_NEW_TAB_FIRST_RUN_NOTIFICATION"
+         desc="Notification text to show in the banner at the top of the new tab page when the user first sees it.">
+        Over time, the area below will show your eight most visited sites.
+      </message>
+      <message name="IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION"
+         desc="Action text for link that closes the first run notification.">
+        Close
+      </message>
 
       <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">

@@ -202,15 +202,22 @@ class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
   static void set_first_view(bool first_view) { first_view_ = first_view; }
   static bool first_view() { return first_view_; }
 
+  // Setters and getters for first_run.
+  static void set_first_run(bool first_run) { first_run_ = first_run; }
+  static bool first_run() { return first_run_; }
+
  private:
   // In case a file path to the new tab page was provided this tries to load
   // the file and returns the file content if successful. This returns an empty
   // string in case of failure.
   static std::string GetCustomNewTabPageFromCommandLine();
 
-  // Whether this is the is the first viewing of the new tab page and
+  // Whether this is the first viewing of the new tab page and
   // we think it is the user's startup page.
   static bool first_view_;
+
+  // Whether this is the first run.
+  static bool first_run_;
 
   // The user's profile.
   Profile* profile_;
@@ -219,6 +226,8 @@ class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 bool NewTabHTMLSource::first_view_ = true;
+
+bool NewTabHTMLSource::first_run_ = true;
 
 NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
     : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
@@ -341,6 +350,10 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
   localized_strings.SetString(L"pagedisplaytooltip",
       l10n_util::GetString(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
+  localized_strings.SetString(L"firstrunnotification",
+      l10n_util::GetString(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
+  localized_strings.SetString(L"closefirstrunnotification",
+      l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
 
   SetFontAndTextDirection(&localized_strings);
 
@@ -797,7 +810,13 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
     most_visited_urls_.push_back(url);
   }
 
-  dom_ui_->CallJavascriptFunction(L"mostVisitedPages", pages_value);
+  // If we found no pages we treat this as the first run.
+  FundamentalValue first_run(NewTabHTMLSource::first_run() &&
+                             pages_value.GetSize() == 0);
+  // but first_run should only be true once.
+  NewTabHTMLSource::set_first_run(false);
+
+  dom_ui_->CallJavascriptFunction(L"mostVisitedPages", pages_value, first_run);
 }
 
 void MostVisitedHandler::Observe(NotificationType type,

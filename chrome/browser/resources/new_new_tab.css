@@ -81,17 +81,15 @@ html[anim='false'] *,
 }
 
 .filler .thumbnail-wrapper {
-  visibility: inherit;
-  border: 1px solid hsl(0, 0%, 90%);
-  background-color: hsl(0, 0%, 95%);
-  -webkit-border-radius: 2px;
-  display: block;
+  visibility: visible;
+  border: 3px solid hsl(213, 60%, 92%);
 }
 
 .filler .thumbnail {
-  visibility: visible;
-  border-color: hsl(0, 0%, 90%);
-  background-color: hsl(0, 0%, 95%);
+  visibility: inherit;
+  border: 1px solid white;
+  padding: 0;
+  background-color: hsl(213, 60%, 92%);
 }
 
 .edit-bar {
@@ -302,16 +300,24 @@ html[dir=rtl] .thumbnail-container > .title > div {
 #notification {
   position: relative;
   background-color: hsl(52, 100%, 80%);
-  -webkit-border-radius: 4px;
-  padding: 8px 16px;
+  -webkit-border-radius: 6px;
+  padding: 7px 15px;
   white-space: nowrap;
   display: table;
   margin: 10px auto;
   font-weight: bold;
   opacity: 0;
-  visibility: hidden;
-  -webkit-transition: opacity 1s;
+  -webkit-transition: opacity .15s;
+  pointer-events: none;
   z-index: 1;
+}
+
+#notification.first-run {
+  padding: 5px 13px; /* subtract the border witdh */
+  border: 2px solid hsl(213, 55%, 75%);
+  background-color: hsl(213, 63%, 93%);
+  -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
+  font-weight: normal;
 }
 
 #notification > * {
@@ -321,10 +327,10 @@ html[dir=rtl] .thumbnail-container > .title > div {
   text-overflow: ellipsis;
 }
 
-#notification:hover,
 #notification.show {
   opacity: 1;
-  visibility: inherit;
+  pointer-events: all;
+  -webkit-transition: opacity 1s;
 }
 
 #notification .link {
@@ -359,7 +365,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
   -webkit-border-radius: 4px;
   white-space: nowrap;
   text-overflow: ellipsis;
-  border: 1px solid hsl(213, 65%, 92%);
+  border: 1px solid hsl(213, 63%, 93%);
   overflow: hidden;
   min-height: 151px; /* height of 5 items plus the header */
   vertical-align: top;

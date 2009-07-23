@@ -70,7 +70,7 @@ var mostVisitedData = [];
 var gotMostVisited = false;
 var gotShownSections = false;
 
-function mostVisitedPages(data) {
+function mostVisitedPages(data, firstRun) {
   logEvent('received most visited pages');
 
   // We append the class name with the "filler" so that we can style fillers
@@ -87,6 +87,11 @@ function mostVisitedPages(data) {
 
   gotMostVisited = true;
   onDataLoaded();
+
+  // Only show the first run notification if first run.
+  if (firstRun) {
+    showFirstRunNotification();
+  }
 }
 
 function downloadsList(data) {
@@ -801,28 +806,58 @@ function afterTransition(f) {
 
 // Notification
 
-function showNotification(text, actionText, f) {
+
+var notificationTimeout;
+
+function showNotification(text, actionText, opt_f) {
   var notificationElement = $('notification');
+
+  function show() {
+    window.clearTimeout(notificationTimeout);
+    addClass(notificationElement, 'show');
+  }
+
+  function delayedHide() {
+    notificationTimeout = window.setTimeout(hideNotification, 10000);
+  }
+
+  function doAction() {
+    if (opt_f) {
+      opt_f();
+    }
+    hideNotification();
+  }
+
+  // Remove any possible first-run trails.
+  removeClass(notification, 'first-run');
+
   var actionLink = notificationElement.querySelector('.link');
   notificationElement.firstElementChild.textContent = text;
-
   actionLink.textContent = actionText;
-  actionLink.onclick = function() {
-    f();
-    removeClass(notificationElement, 'show');
-    // Since we have a :hover rule to not hide the notification banner when the
-    // mouse is over we need force it to hide. We remove the hide class after
-    // a short timeout to allow the banner to be shown again.
-    addClass(notificationElement, 'hide');
-    afterTransition(function() {
-      removeClass(notificationElement, 'hide');
-    })
-  };
-  addClass(notificationElement, 'show');
-  window.setTimeout(function() {
-    removeClass(notificationElement, 'show');
-  }, 10000);
+
+  actionLink.onclick = doAction;
+  actionLink.onkeydown = handleIfEnterKey(doAction);
+  notificationElement.onmouseover = show;
+  notificationElement.onmouseout = delayedHide;
+  actionLink.onfocus = show;
+  actionLink.onblur = delayedHide;
+
+  show();
+  delayedHide();
 }
+
+function hideNotification() {
+  var notificationElement = $('notification');
+  removeClass(notificationElement, 'show');
+}
+
+function showFirstRunNotification() {
+  showNotification(localStrings.getString('firstrunnotification'),
+                   localStrings.getString('closefirstrunnotification'));
+  var notificationElement = $('notification');
+  addClass(notification, 'first-run');
+}
+
 
 /**
  * This handles the option menu.
