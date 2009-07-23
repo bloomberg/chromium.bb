@@ -155,6 +155,9 @@ class TabRenderer : public views::View,
   // Close Button.
   views::ImageButton* close_button_;
 
+  // The current color of the close button.
+  SkColor close_button_color_;
+
   // Hover animation.
   scoped_ptr<SlideAnimation> hover_animation_;
 
