@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-#include <list>
 #include <windows.h>
 #include <commctrl.h>
 #include "base/command_line.h"
@@ -33,88 +31,54 @@ TestShellPlatformDelegate::~TestShellPlatformDelegate() {
 void TestShellPlatformDelegate::PreflightArgs(int *argc, char ***argv) {
 }
 
+// This test approximates whether you have the Windows XP theme selected by
+// inspecting a couple of metrics. It does not catch all cases, but it does
+// pick up on classic vs xp, and normal vs large fonts. Something it misses
+// is changes to the color scheme (which will infact cause pixel test
+// failures).
+//
+// ** Expected dependencies **
+// + Theme: Windows XP
+// + Color scheme: Default (blue)
+// + Font size: Normal
+// + Font smoothing: off (minor impact).
+//
+static bool HasLayoutTestThemeDependenciesWin() {
+  // This metric will be 17 when font size is "Normal". The size of drop-down
+  // menus depends on it.
+  if (::GetSystemMetrics(SM_CXVSCROLL) != 17)
+    return false;
 
-
-// This test approximates whether you are running the default themes for
-// your platform by inspecting a couple of metrics.
-// It does not catch all cases, but it does pick up on classic vs xp,
-// and normal vs large fonts. Something it misses is changes to the color
-// scheme (which will infact cause pixel test failures).
-bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {
-  std::list<std::string> errors;
-
-  OSVERSIONINFOEX osvi;
-  ::ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-  ::GetVersionEx((OSVERSIONINFO *)&osvi);
-
-  // default to XP metrics, override if on Vista
-  int requiredVScrollSize = 17;
-  int requiredFontSize = -11; // 8 pt
-  const WCHAR *requiredFont = L"Tahoma";
-  bool isVista = false;
-  if (osvi.dwMajorVersion == 6
-      && osvi.dwMinorVersion == 0
-      && osvi.wProductType == VER_NT_WORKSTATION) {
-    requiredFont = L"Segoe UI";
-    requiredFontSize = -12; // 9 pt
-    isVista = true;
-  } else if (osvi.dwMajorVersion == 5
-             && osvi.dwMinorVersion == 1
-             && osvi.wProductType == VER_NT_WORKSTATION) {
-    // XP;
-  } else {
-    errors.push_back("Unsupported Operating System version "
-                     "(must use XP or Vista)");
-  }
-
-  // on both XP and Vista, this metric will be 17 when font size is "Normal".
-  // The size of drop-down menus depends on it.
-  int vScrollSize = ::GetSystemMetrics(SM_CXVSCROLL);
-  if (vScrollSize != requiredVScrollSize) {
-    errors.push_back("Must use normal size fonts (96 dpi)");
-  }
-
-  // font smoothing (including ClearType) must be disabled
-  BOOL bFontSmoothing;
-  SystemParametersInfo(SPI_GETFONTSMOOTHING, (UINT)0,
-                       (PVOID)&bFontSmoothing, (UINT)0);
-  if (bFontSmoothing) {
-    errors.push_back("Font smoothing (ClearType) must be disabled");
-  }
-
-  // Check that we're using the default system fonts
+  // Check that the system fonts RenderThemeWin relies on are Tahoma 11 pt.
   NONCLIENTMETRICS metrics;
   win_util::GetNonClientMetrics(&metrics);
   LOGFONTW* system_fonts[] =
   { &metrics.lfStatusFont, &metrics.lfMenuFont, &metrics.lfSmCaptionFont };
 
   for (size_t i = 0; i < arraysize(system_fonts); ++i) {
-    if (system_fonts[i]->lfHeight != requiredFontSize ||
-        wcscmp(requiredFont, system_fonts[i]->lfFaceName)) {
-      if (isVista)
-        errors.push_back("Must use either the Aero or Basic theme");
-      else
-        errors.push_back("Must use the default XP theme (Luna)");
-      break;
-    }
+    if (system_fonts[i]->lfHeight != -11 ||
+        0 != wcscmp(L"Tahoma", system_fonts[i]->lfFaceName))
+      return false;
   }
+  return true;
+}
 
-  if (!errors.empty()) {
-    fprintf(stderr, "%s",
-      "##################################################################\n"
-      "## Layout test system dependencies check failed.\n"
-      "##\n");
-    for (std::list<std::string>::iterator it = errors.begin();
-         it != errors.end();
-         ++it) {
-      fprintf(stderr, "## %s\n", it->c_str());
-    }
-    fprintf(stderr, "%s",
-      "##\n"
-      "##################################################################\n");
+bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {
+  bool has_deps = HasLayoutTestThemeDependenciesWin();
+  if (!has_deps) {
+    fprintf(stderr,
+            "\n"
+            "###############################################################\n"
+            "## Layout test system dependencies check failed.\n"
+            "## Some layout tests may fail due to unexpected theme.\n"
+            "##\n"
+            "## To fix, go to Display Properties -> Appearance, and select:\n"
+            "##  + Windows and buttons: Windows XP style\n"
+            "##  + Color scheme: Default (blue)\n"
+            "##  + Font size: Normal\n"
+            "###############################################################\n");
   }
-  return errors.empty();
+  return has_deps;
 }
 
 void TestShellPlatformDelegate::SuppressErrorReporting() {
