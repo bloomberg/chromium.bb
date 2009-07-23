@@ -366,21 +366,21 @@ gdb: BUILD/stamp-gdb
 nc_threads: ALWAYS
 	cd .. && \
 	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/nacl-sdk \
-	 MODE=nacl_extra_sdk install_libpthread
+	 MODE=nacl_extra_sdk install_libpthread --verbose
 
 # The copy of the header files first is a hack.
 # TODO(sehr): fix the missing dependencies in the SDK library build.
 nacl_libraries: ALWAYS
 	cd .. && \
 	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/nacl-sdk \
-	 MODE=nacl_extra_sdk extra_sdk_update_header \
+	 MODE=nacl_extra_sdk extra_sdk_update_header --verbose \
 	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/nacl-sdk \
-	 MODE=nacl_extra_sdk extra_sdk_update
+	 MODE=nacl_extra_sdk extra_sdk_update --verbose
 
 sdk_minimal_test: ALWAYS
 	cd .. && \
 	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/nacl-sdk \
-	 MODE=nacl sdk_minimal_test
+	 MODE=nacl sdk_minimal_test --verbose
 
 
 ##################################################################
