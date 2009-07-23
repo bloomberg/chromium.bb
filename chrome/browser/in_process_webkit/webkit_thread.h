@@ -35,6 +35,15 @@ class WebKitThread {
     return webkit_thread_->message_loop();
   }
 
+  // Called from the IO thread.  Notifies us that it's no longer safe to post
+  // tasks to the IO thread.
+  void Shutdown();
+
+  // Post a task to the IO thread if we haven't yet been told to shut down.
+  // Only call from the WebKit thread.
+  bool PostIOThreadTask(const tracked_objects::Location& from_here,
+                        Task* task);
+
  private:
   // Must be private so that we can carefully control its lifetime.
   class InternalWebKitThread : public ChromeThread {
@@ -57,6 +66,11 @@ class WebKitThread {
   // Pointer to the actual WebKitThread.  NULL if not yet started.  Only modify
   // from the IO thread while the WebKit thread is not running.
   scoped_ptr<InternalWebKitThread> webkit_thread_;
+
+  // A pointer to the IO message loop.  This is nulled out when Shutdown() is
+  // called.  Only access under the io_message_loop_lock_.
+  MessageLoop* io_message_loop_;
+  Lock io_message_loop_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitThread);
 };

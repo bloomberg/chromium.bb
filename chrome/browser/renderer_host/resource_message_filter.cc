@@ -169,6 +169,9 @@ ResourceMessageFilter::~ResourceMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
+  // Tell the DOM Storage dispatcher host to stop sending messages via us.
+  dom_storage_dispatcher_host_->Shutdown();
+
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
       NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
@@ -244,7 +247,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
                                                 message, this, &msg_is_ok) ||
                  app_cache_dispatcher_host_->OnMessageReceived(
                                                  message, &msg_is_ok) ||
-                 dom_storage_dispatcher_host_->OnMessageReceived(message) ||
+                 dom_storage_dispatcher_host_->OnMessageReceived(
+                                                   message, &msg_is_ok) ||
                  audio_renderer_host_->OnMessageReceived(message, &msg_is_ok);
 
   if (!handled) {

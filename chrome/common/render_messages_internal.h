@@ -1472,6 +1472,77 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_SetCacheMode,
                        bool /* enabled */)
 
+  // There's one LocalStorage namespace per profile and one SessionStorage
+  // namespace per tab.  This will find or create the proper namespace.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DOMStorageNamespaceId,
+                              bool /* is_local_storage */,
+                              int64 /* new_namespace_id */)
+
+  // Used by SessionStorage to clone a namespace per the spec.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DOMStorageCloneNamespaceId,
+                              int64 /* namespace_id to clone */,
+                              int64 /* new_namespace_id */)
+
+  // Explicitly drop a reference to a namespace.  This is done implicitly
+  // for all namespaces owned by a renderer process when it dies.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_DOMStorageDerefNamespaceId,
+                       int64 /* namespace_id */)
+
+  // Get the storage area id for a particular origin within a namespace.
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageStorageAreaId,
+                              int64 /* namespace_id */,
+                              string16 /* origin */,
+                              int64 /* storage_area_id */)
+
+  // Lock a particular origin (per the DOM Storage spec).
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_DOMStorageLock,
+                              int64 /* storage_area_id */,
+                              bool /* invalidate_cache */,
+                              size_t /* bytes_left_in_quota */)
+
+  // Release the lock on a particular storage area.  This should happen
+  // whenever we exit a script region, do something synchronous, or
+  // explicitly drop the lock via navigator.releaseLock().
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_DOMStorageUnlock,
+                       int64 /* storage_area_id */)
+
+  // Get the length of a storage area.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DOMStorageLength,
+                              int64 /* storage_area_id */,
+                              unsigned /* length */)
+
+  // Get a the ith key within a storage area.
+  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_DOMStorageKey,
+                              int64 /* storage_area_id */,
+                              unsigned /* index */,
+                              bool /* key_exception */,
+                              string16 /* key */)
+
+  // Get a value based on a key from a storage area.
+  // TODO(jorlow): Convert value + value_is_null over to a NullableString16
+  //               once http://crbug.com/17343 is completed.
+  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_DOMStorageGetItem,
+                              int64 /* storage_area_id */,
+                              string16 /* key */,
+                              string16 /* value */,
+                              bool /* value_is_null */)
+
+  // Set a value that's associated with a key in a storage area.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_DOMStorageSetItem,
+                       int64 /* storage_area_id */,
+                       string16 /* key */,
+                       string16 /* value */)
+
+  // Remove the value associated with a key in a storage area.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_DOMStorageRemoveItem,
+                       int64 /* storage_area_id */,
+                       string16 /* key */)
+
+  // Clear the storage area.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DOMStorageClear,
+                              int64 /* storage_area_id */,
+                              size_t /* bytes_left_in_quota */)
+
   // Get file size in bytes. Set result to -1 if failed to get the file size.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,
                               FilePath /* path */,
