@@ -637,6 +637,7 @@ BUG13907 WIN : LayoutTests/media/video-currentTime-set2.html = PASS FAIL CRASH T
 BUG13907 WIN DEBUG : LayoutTests/media/video-dom-autobuffer.html = PASS FAIL
 // This test crashes in debug build.
 BUG13907 WIN DEBUG : LayoutTests/media/video-document-types.html = FAIL CRASH
+BUG13907 WIN RELEASE : LayoutTests/media/video-document-types.html = PASS FAIL
 BUG13907 WIN : LayoutTests/media/video-loop.html = FAIL CRASH
 // This test is flaky too.	
 BUG13907 WIN : LayoutTests/media/video-played-collapse.html = FAIL
@@ -2741,8 +2742,9 @@ BUG10384 MAC : LayoutTests/fast/events/frame-tab-focus.html = CRASH FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/tabbing-input-iframe.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/overflow/scrollRevealButton.html = FAIL
 
-// WebKit 45460:45473
+// WebKit 45460:45473 and r46250 (these are all related)
 BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-null-char.html = FAIL
+BUG15837 : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null-char.html = FAIL
 
 // WebKit 45473:45487
 BUG15873 WIN LINUX : LayoutTests/fast/box-shadow/transform-fringing.html = FAIL
@@ -2990,7 +2992,7 @@ BUG17509 LINUX : LayoutTests/fast/loader/local-CSS-from-local.html = FAIL
 BUG17509 LINUX : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL TIMEOUT
 BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 
+// Caused by http://trac.webkit.org/changeset/46259
+BUG17589 WIN LINUX : LayoutTests/fast/forms/select-popup-pagekeys.html = FAIL
+
 // These need new baselines for the merge r46229:46269.
-BUG_DARIN WIN LINUX : LayoutTests/fast/forms/select-popup-pagekeys.html = FAIL
-BUG_DARIN WIN LINUX MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null-char.html = FAIL
-BUG_DARIN WIN RELEASE : LayoutTests/media/video-document-types.html = FAIL
