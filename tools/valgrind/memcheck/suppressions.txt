@@ -746,8 +746,6 @@
    fun:_Znwj
    fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
    fun:_ZN11ChildThread4InitEv
-   fun:_ZN11ChildThreadC2Ev
-   fun:_ZN12RenderThreadC1Ev
 }
 {
    bug_16129
