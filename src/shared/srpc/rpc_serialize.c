@@ -34,8 +34,8 @@
  * NaCl simple RPC over IMC mechanism.
  */
 
-#include "nacl_srpc.h"
-#include "nacl_srpc_internal.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,6 +43,7 @@
 #include <sys/types.h>
 #ifdef __native_client__
 #include <inttypes.h>
+#include <nacl/nacl_inttypes.h>
 #else
 #include "native_client/src/include/portability.h"
 #endif

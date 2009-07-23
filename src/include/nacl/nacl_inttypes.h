@@ -30,25 +30,62 @@
  */
 
 
-#ifndef NATIVE_CLIENT_SRC_INCLUDE_NACL_NACL_INTTYPES_H_
-#define NATIVE_CLIENT_SRC_INCLUDE_NACL_NACL_INTTYPES_H_ 1
+/*
+ * We do not want an include guard on this file, as this file needs to define
+ * PRI*32 the last time and may be included through multiple paths.
+ */
 
 /*
  * printf macros for size_t, in the style of inttypes.h.  This is
  * needed since the gcc and newlib header files don't have definitions
  * for size_t.
  */
-#if defined(__STRICT_ANSI__)
-# define  __PRIS_PREFIX
-#else
-# define  __PRIS_PREFIX "z"
+#ifndef NACL__PRIS_PREFIX
+# if defined(__STRICT_ANSI__)
+#  define  NACL__PRIS_PREFIX "l"
+# else
+#  define  NACL__PRIS_PREFIX "z"
+# endif
 #endif
 
-#define PRIdS __PRIS_PREFIX "d"
-#define PRIiS __PRIS_PREFIX "i"
-#define PRIoS __PRIS_PREFIX "o"
-#define PRIuS __PRIS_PREFIX "u"
-#define PRIxS __PRIS_PREFIX "x"
-#define PRIXS __PRIS_PREFIX "X"
+#define PRIdS NACL__PRIS_PREFIX "d"
+#define PRIiS NACL__PRIS_PREFIX "i"
+#define PRIoS NACL__PRIS_PREFIX "o"
+#define PRIuS NACL__PRIS_PREFIX "u"
+#define PRIxS NACL__PRIS_PREFIX "x"
+#define PRIXS NACL__PRIS_PREFIX "X"
 
-#endif  /* NATIVE_CLIENT_SRC_INCLUDE_NACL_NACL_INTTYPES_H_ */
+/*
+ * Newlib stdint.h defines int32_t as unsigned long int for nacl, while
+ * newlib inttypes.h seems to think that int32_t is unsigned int.
+ */
+
+#ifdef PRId32
+#undef PRId32
+#endif
+#define PRId32 "ld"
+
+#ifdef PRIi32
+#undef PRIi32
+#endif
+#define PRIi32 "li"
+
+#ifdef PRIo32
+#undef PRIo32
+#endif
+#define PRIo32 "lo"
+
+#ifdef PRIu32
+#undef PRIu32
+#endif
+#define PRIu32 "lu"
+
+#ifdef PRIx32
+#undef PRIx32
+#endif
+#define PRIx32 "lx"
+
+#ifdef PRIX32
+#undef PRIX32
+#endif
+#define PRIX32 "lX"

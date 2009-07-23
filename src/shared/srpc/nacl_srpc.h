@@ -51,7 +51,6 @@
  */
 #ifdef __native_client__
 #  include <stdint.h>
-#  include <nacl/nacl_inttypes.h>
 #  include <sys/types.h>
 #  include <sys/nacl_imc_api.h>
 #  include <pthread.h>
