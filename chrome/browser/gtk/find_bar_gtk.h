@@ -17,6 +17,7 @@ class Browser;
 class BrowserWindowGtk;
 class CustomDrawButton;
 class FindBarController;
+class GtkThemeProvider;
 class NineBox;
 class SlideAnimatorGtk;
 class TabContentsContainerGtk;
@@ -115,6 +116,9 @@ class FindBarGtk : public FindBar,
 
   Browser* browser_;
   BrowserWindowGtk* window_;
+
+  // Provides colors and information about GTK.
+  GtkThemeProvider* theme_provider_;
 
   // GtkFixed containing the find bar widgets.
   OwnedWidgetGtk fixed_;

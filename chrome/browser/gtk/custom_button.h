@@ -118,13 +118,13 @@ class CustomDrawButton : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Returns a standard close button.
-  static CustomDrawButton* CloseButton();
+  // Returns a standard close button. Pass a |theme_provider| to use Gtk icons
+  // in Gtk rendering mode.
+  static CustomDrawButton* CloseButton(GtkThemeProvider* theme_provider);
 
  private:
-  // Sets the button to themed or not. Buttons that don't take a theme_provider
-  // can safely pass in NULL.
-  void SetBrowserTheme(GtkThemeProvider* theme_provider);
+  // Sets the button to themed or not.
+  void SetBrowserTheme();
 
   // Callback for custom button expose, used to draw the custom graphics.
   static gboolean OnCustomExpose(GtkWidget* widget,
@@ -136,6 +136,7 @@ class CustomDrawButton : public NotificationObserver {
 
   CustomDrawButtonBase button_base_;
 
+  // Our theme provider.
   GtkThemeProvider* theme_provider_;
 
   // The stock icon name.

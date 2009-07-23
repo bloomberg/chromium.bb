@@ -14,6 +14,7 @@
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
@@ -85,6 +86,7 @@ const NineBox* GetDialogBorder() {
 FindBarGtk::FindBarGtk(Browser* browser)
     : browser_(browser),
       window_(static_cast<BrowserWindowGtk*>(browser->window())),
+      theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
       container_shaped_(false),
       ignore_changed_signal_(false) {
   InitWidgets();
@@ -154,7 +156,7 @@ void FindBarGtk::InitWidgets() {
   gtk_fixed_put(GTK_FIXED(widget()), slide_widget(), 0, 0);
   gtk_widget_set_size_request(widget(), -1, 0);
 
-  close_button_.reset(CustomDrawButton::CloseButton());
+  close_button_.reset(CustomDrawButton::CloseButton(NULL));
   gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
                                kCloseButtonPaddingLeft);
   g_signal_connect(G_OBJECT(close_button_->widget()), "clicked",

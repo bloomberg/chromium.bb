@@ -88,7 +88,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   gtk_container_add(GTK_CONTAINER(shelf_.get()), vbox);
 
   // Create and pack the close button.
-  close_button_.reset(CustomDrawButton::CloseButton());
+  close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
   gtk_util::CenterWidgetInHBox(hbox_.get(), close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnButtonClick), this);

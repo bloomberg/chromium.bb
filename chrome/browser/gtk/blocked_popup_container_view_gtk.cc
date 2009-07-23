@@ -156,7 +156,7 @@ BlockedPopupContainerViewGtk::BlockedPopupContainerViewGtk(
     BlockedPopupContainer* container)
     : model_(container),
       theme_provider_(GtkThemeProvider::GetFrom(container->profile())),
-      close_button_(CustomDrawButton::CloseButton()) {
+      close_button_(CustomDrawButton::CloseButton(theme_provider_)) {
   Init();
 
   registrar_.Add(this,

@@ -100,7 +100,7 @@ CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
   Init();
 
   // Initialize the theme stuff with no theme_provider.
-  SetBrowserTheme(NULL);
+  SetBrowserTheme();
 }
 
 CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
@@ -112,7 +112,7 @@ CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
       gtk_stock_name_(stock_id) {
   Init();
 
-  theme_provider->InitThemesFor(this);
+  theme_provider_->InitThemesFor(this);
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -132,10 +132,7 @@ void CustomDrawButton::Init() {
 void CustomDrawButton::Observe(NotificationType type,
     const NotificationSource& source, const NotificationDetails& details) {
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
-
-  GtkThemeProvider* provider = static_cast<GtkThemeProvider*>(
-      Source<GtkThemeProvider>(source).ptr());
-  SetBrowserTheme(provider);
+  SetBrowserTheme();
 }
 
 void CustomDrawButton::SetPaintOverride(GtkStateType state) {
@@ -154,7 +151,7 @@ void CustomDrawButton::UnsetPaintOverride() {
 gboolean CustomDrawButton::OnCustomExpose(GtkWidget* widget,
                                           GdkEventExpose* e,
                                           CustomDrawButton* button) {
-  if (button->theme_provider_ && button->theme_provider_->UseGtkTheme() ) {
+  if (button->theme_provider_ && button->theme_provider_->UseGtkTheme()) {
     // Continue processing this expose event.
     return FALSE;
   } else {
@@ -163,20 +160,21 @@ gboolean CustomDrawButton::OnCustomExpose(GtkWidget* widget,
 }
 
 // static
-CustomDrawButton* CustomDrawButton::CloseButton() {
-  CustomDrawButton* button =
-      new CustomDrawButton(IDR_CLOSE_BAR, IDR_CLOSE_BAR_P,
-                           IDR_CLOSE_BAR_H, 0, NULL);
+CustomDrawButton* CustomDrawButton::CloseButton(
+    GtkThemeProvider* theme_provider) {
+  CustomDrawButton* button = new CustomDrawButton(
+      theme_provider, IDR_CLOSE_BAR, IDR_CLOSE_BAR_P,
+      IDR_CLOSE_BAR_H, 0, GTK_STOCK_CLOSE);
   return button;
 }
 
-void CustomDrawButton::SetBrowserTheme(GtkThemeProvider* theme_provider) {
-  bool use_gtk = theme_provider && theme_provider->UseGtkTheme();
+void CustomDrawButton::SetBrowserTheme() {
+  bool use_gtk = theme_provider_ && theme_provider_->UseGtkTheme();
 
   if (use_gtk && gtk_stock_name_) {
     gtk_button_set_image(
         GTK_BUTTON(widget_.get()),
-        gtk_image_new_from_stock(gtk_stock_name_, GTK_ICON_SIZE_BUTTON));
+        gtk_image_new_from_stock(gtk_stock_name_, GTK_ICON_SIZE_SMALL_TOOLBAR));
     gtk_widget_set_size_request(widget_.get(), -1, -1);
     gtk_widget_set_app_paintable(widget_.get(), FALSE);
     gtk_widget_set_double_buffered(widget_.get(), TRUE);
