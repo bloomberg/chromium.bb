@@ -40,6 +40,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/string_util.h"
 #include "converter/cross/converter.h"
 #include "utils/cross/file_path_utils.h"
 
@@ -86,7 +87,9 @@ int CrossMain(int argc, char**argv) {
         << "--no-condition\n"
         << "    Stops the converter from conditioning shaders.\n"
         << "--base-path=<path>\n"
-        << "    Sets the base path for finding textures and other external\n"
+        << "    Sets the path to remove from URIs of external files\n"
+        << "--asset-paths=<comma separted list of paths>\n"
+        << "    Sets the paths for finding textures and other external\n"
         << "    files.\n"
         << "--up-axis=x,y,z\n"
         << "    Converts the file to have this up axis.\n"
@@ -107,6 +110,13 @@ int CrossMain(int argc, char**argv) {
   if (command_line->HasSwitch(L"base-path")) {
     options.base_path = o3d::WideToFilePath(
         command_line->GetSwitchValue(L"base-path"));
+  }
+  if (command_line->HasSwitch(L"asset-paths")) {
+    std::vector<std::wstring> paths;
+    SplitString(command_line->GetSwitchValue(L"asset-paths"), ',', &paths);
+    for (size_t ii = 0; ii < paths.size(); ++ii) {
+      options.file_paths.push_back(o3d::WideToFilePath(paths[ii]));
+    }
   }
   if (command_line->HasSwitch(L"up-axis")) {
     wstring up_axis_string = command_line->GetSwitchValue(L"up-axis");

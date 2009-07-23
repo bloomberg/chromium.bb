@@ -158,4 +158,57 @@ bool GetRelativePathIfPossible(const FilePath& base_dir,
   }
 }
 
+namespace {  // anonymous namespace.
+
+// Tries to find a file path_to_find in path_to_search. Will start with
+// base name and progressively try each higher path. Example:
+//
+// FindFile('this/that', 'foo/bar/baf.txt');
+//
+// Looks for:
+//   this/that/foo/bar/baf.txt
+//   this/that/bar/baf.txt
+//   this/that/baf.txt
+bool FindFileHelper(const FilePath& path_to_search,
+                    const FilePath& path_to_find,
+                    FilePath* found_path) {
+  std::vector<FilePath::StringType> parts;
+  file_util::PathComponents(path_to_find, &parts);
+
+  for (size_t ii = 0; ii < parts.size(); ++ii) {
+    // build a path from parts.
+    FilePath path(path_to_search);
+    for (size_t jj = ii; jj < parts.size(); ++jj) {
+      path = path.Append(parts[jj]);
+    }
+    if (file_util::PathExists(path)) {
+      *found_path = path;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+}  // anonymous namespace
+
+bool FindFile(const std::vector<FilePath>& paths_to_search,
+              const FilePath& path_to_find,
+              FilePath* found_path) {
+  if (file_util::PathExists(path_to_find)) {
+    *found_path = path_to_find;
+    return true;
+  }
+
+  for (size_t ii = 0; ii < paths_to_search.size(); ++ii) {
+    FilePath absolute_path(paths_to_search[ii]);
+    o3d::AbsolutePath(&absolute_path);
+
+    if (FindFileHelper(absolute_path, path_to_find, found_path)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // end namespace o3d

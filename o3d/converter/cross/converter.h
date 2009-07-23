@@ -38,8 +38,10 @@
 #ifndef O3D_CONVERTER_CROSS_CONVERTER_H_
 #define O3D_CONVERTER_CROSS_CONVERTER_H_
 
+#include <vector>
 #include "base/file_path.h"
 #include "core/cross/types.h"
+#include "utils/cross/file_path_utils.h"
 
 namespace o3d {
 namespace converter {
@@ -54,6 +56,9 @@ struct Options {
         keep_filters(false),
         keep_materials(false) {
   }
+
+  // A list of paths to search for assets..
+  std::vector<FilePath> file_paths;
 
   // The path to the "base" of the model path, from which all paths
   // are made relative.  Defaults to the current directory.

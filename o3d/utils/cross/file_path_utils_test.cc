@@ -40,6 +40,26 @@
 
 namespace o3d {
 
+namespace {  // anonymous namespace
+
+bool FilePathsEqual(const FilePath& path_1, const FilePath path_2) {
+  const FilePath::StringType& p1(path_1.value());
+  const FilePath::StringType& p2(path_2.value());
+  if (p1.size() == p2.size()) {
+    for (size_t ii = 0; ii < p1.size(); ++ii) {
+      if (p1[ii] != p2[ii]) {
+        if (!FilePath::IsSeparator(p1[ii]) || !FilePath::IsSeparator(p2[ii])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
+}  // anonymous namespace
+
 class FilePathUtilsTest : public testing::Test {
 };
 
@@ -180,4 +200,36 @@ TEST_F(FilePathUtilsTest, RelativePathsRelativeInputs) {
   EXPECT_STREQ(expected_result.value().c_str(), result.value().c_str());
   EXPECT_TRUE(is_relative);
 }
+
+TEST_F(FilePathUtilsTest, FindFile) {
+  String folder_name_1(*g_program_path + "/unittest_data");
+  String folder_name_2(*g_program_path + "/bitmap_test");
+  FilePath folder_path_1 = UTF8ToFilePath(folder_name_1);
+  FilePath folder_path_2 = UTF8ToFilePath(folder_name_2);
+  String file_name_1("fur.fx");
+  String file_name_2("someplace/somewhere/tga-256x256-32bit.tga");
+  FilePath file_path_1 = UTF8ToFilePath(file_name_1);
+  FilePath file_path_2 = UTF8ToFilePath(file_name_2);
+  FilePath out_path;
+
+  FilePath expected_path_1(folder_path_1);
+  expected_path_1 = expected_path_1.Append(file_path_1);
+  FilePath expected_path_2(folder_path_2);
+  expected_path_2 =
+      expected_path_2.Append(UTF8ToFilePath("tga-256x256-32bit.tga"));
+
+  std::vector<FilePath> paths;
+  EXPECT_FALSE(FindFile(paths, file_path_1, &out_path));
+  EXPECT_FALSE(FindFile(paths, file_path_2, &out_path));
+  paths.push_back(folder_path_1);
+  EXPECT_TRUE(FindFile(paths, file_path_1, &out_path));
+  EXPECT_FALSE(FindFile(paths, file_path_2, &out_path));
+  EXPECT_TRUE(FilePathsEqual(out_path, expected_path_1));
+  paths.push_back(folder_path_2);
+  EXPECT_TRUE(FindFile(paths, file_path_1, &out_path));
+  EXPECT_TRUE(FilePathsEqual(out_path, expected_path_1));
+  EXPECT_TRUE(FindFile(paths, file_path_2, &out_path));
+  EXPECT_TRUE(FilePathsEqual(out_path, expected_path_2));
+}
+
 }  // namespace o3d

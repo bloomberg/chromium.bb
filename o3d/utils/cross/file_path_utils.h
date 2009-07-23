@@ -37,9 +37,9 @@
 #define O3D_UTILS_CROSS_FILE_PATH_UTILS_H_
 
 #include <string>
+#include <vector>
+#include "base/file_path.h"
 #include "core/cross/types.h"
-
-class FilePath;
 
 namespace o3d {
 // TODO: Go through the process to add these to FilePath
@@ -66,6 +66,23 @@ bool AbsolutePath(FilePath* abs_path);
 bool GetRelativePathIfPossible(const FilePath& base_dir,
                                const FilePath& candidate,
                                FilePath *result);
+
+// Tries to find a file path_to_find in paths_to_search. Will start with
+// base name and progressively try each higher path. Example:
+//
+// FindFile(['this/that', 'there'], 'foo/bar/baf.txt');
+//
+// Looks for:
+//   foo/bar/baf.txt
+//   this/that/foo/bar/baf.txt
+//   this/that/bar/baf.txt
+//   this/that/baf.txt
+//   there/foo/bar/baf.txt
+//   there/bar/baf.txt
+//   there/baf.txt
+bool FindFile(const std::vector<FilePath>& paths_to_search,
+              const FilePath& path_to_find,
+              FilePath* found_path);
 
 }  // namespace o3d
 

@@ -41,6 +41,7 @@
 #include "base/file_path.h"
 #include "core/cross/param.h"
 #include "core/cross/types.h"
+#include "utils/cross/file_path_utils.h"
 
 class FCDocument;
 class FCDAnimated;
@@ -127,6 +128,31 @@ class NodeInstance {
   std::vector<NodeInstance *> children_;
 };
 
+class ColladaDataMap {
+ public:
+   // Adds a data to a filepath. Note, it is an error to associate more than one
+   // data to the same filepath.
+   bool AddData(const FilePath& file_path,
+                const std::string& data,
+                ServiceLocator* service_locator);
+
+   // Access to the filenames of the original data for texture and
+   // sound assets imported when ImportFile was called.  These will
+   // only return results after an import if the keep_original_data
+   // option was set to true when the Collada object was created.
+   std::vector<FilePath> GetOriginalDataFilenames() const;
+   const std::string& GetOriginalData(const FilePath& filename) const;
+
+   // Clears the map.
+   void Clear();
+
+ private:
+  // A map containing the original data (still in original format)
+  // used to create the textures, sounds, etc., indexed by filename.
+  typedef std::map<FilePath, std::string> OriginalDataMap;
+  OriginalDataMap original_data_;
+};
+
 class Collada {
  public:
   struct Options {
@@ -153,6 +179,9 @@ class Collada {
     // The base path to use for determining the relative paths for
     // asset URIs.
     FilePath base_path;
+
+    // A List of paths to search for files in.
+    std::vector<FilePath> file_paths;
   };
 
   // Collada Param Names.
@@ -215,15 +244,12 @@ class Collada {
   bool ImportFile(const FilePath& filename, Transform* parent,
                   ParamFloat* animation_input);
 
-  // Access to the filenames of the original data for texture and
-  // sound assets imported when ImportFile was called.  These will
-  // only return results after an import if the keep_original_data
-  // option was set to true when the Collada object was created.
-  std::vector<FilePath> GetOriginalDataFilenames() const;
-  const std::string& GetOriginalData(const FilePath& filename) const;
-
   // Init the Collada Importer.
   static void Init(ServiceLocator* service_locator);
+
+  const ColladaDataMap& original_data_map() const {
+    return original_data_map_;
+  }
 
  private:
   // Imports the given ZIP file into the given pack.
@@ -429,11 +455,6 @@ class Collada {
   // A map of the Textures created by the importer, indexed by filename.
   std::map<const std::wstring, Texture*> textures_;
 
-  // A map containing the original data (still in original format)
-  // used to create the textures, sounds, etc., indexed by filename.
-  typedef std::map<FilePath, std::string> OriginalDataMap;
-  OriginalDataMap original_data_;
-
   // A map of the Effects created by the importer, indexed by DAE id.
   std::map<const std::string, Effect*> effects_;
 
@@ -453,7 +474,11 @@ class Collada {
   // determining the relative paths to other files.
   FilePath base_path_;
 
+  // Original data by FilePath
+  ColladaDataMap original_data_map_;
+
   ColladaZipArchive *collada_zip_archive_;
+
   // Some temporaries used by the state importer
   bool cull_enabled_;
   bool cull_front_;

@@ -126,6 +126,44 @@ Matrix4 FMMatrix44ToMatrix4(const FMMatrix44& fmmatrix44) {
 }
 }  // anonymous namespace
 
+void ColladaDataMap::Clear() {
+  original_data_.clear();
+}
+
+bool ColladaDataMap::AddData(const FilePath& file_path,
+                             const std::string& data,
+                             ServiceLocator* service_locator) {
+  std::pair<OriginalDataMap::iterator, bool> result =
+      original_data_.insert(std::pair<FilePath, std::string>(file_path, data));
+  if (!result.second) {
+    O3D_ERROR(service_locator)
+        << "Attempt to map 2 resources to the same file path:"
+        << FilePathToUTF8(file_path).c_str();
+  }
+  return result.second;
+}
+
+std::vector<FilePath> ColladaDataMap::GetOriginalDataFilenames() const {
+  std::vector<FilePath> result;
+  for (OriginalDataMap::const_iterator iter = original_data_.begin();
+       iter != original_data_.end();
+       ++iter) {
+    result.push_back(iter->first);
+  }
+  return result;
+}
+
+const std::string& ColladaDataMap::GetOriginalData(
+    const FilePath& filename) const {
+  static const std::string empty;
+  OriginalDataMap::const_iterator entry = original_data_.find(filename);
+  if (entry != original_data_.end()) {
+    return entry->second;
+  } else {
+    return empty;
+  }
+}
+
 // Import the given COLLADA file or ZIP file into the given scene.
 // This is the external interface to o3d.
 bool Collada::Import(Pack* pack,
@@ -178,7 +216,7 @@ Collada::~Collada() {
 
 void Collada::ClearData() {
   textures_.clear();
-  original_data_.clear();
+  original_data_map_.Clear();
   effects_.clear();
   shapes_.clear();
   skinned_shapes_.clear();
@@ -192,26 +230,6 @@ void Collada::ClearData() {
   instance_root_ = NULL;
   base_path_ = FilePath(FilePath::kCurrentDirectory);
   unique_filename_counter_ = 0;
-}
-
-std::vector<FilePath> Collada::GetOriginalDataFilenames() const {
-  std::vector<FilePath> result;
-  for (OriginalDataMap::const_iterator iter = original_data_.begin();
-       iter != original_data_.end();
-       ++iter) {
-    result.push_back(iter->first);
-  }
-  return result;
-}
-
-const std::string& Collada::GetOriginalData(const FilePath& filename) const {
-  static const std::string empty;
-  OriginalDataMap::const_iterator entry = original_data_.find(filename);
-  if (entry != original_data_.end()) {
-    return entry->second;
-  } else {
-    return empty;
-  }
 }
 
 // Import the given COLLADA file or ZIP file under the given parent node.
@@ -1660,6 +1678,11 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
       GetRelativePathIfPossible(base_path_, uri, &uri);
     }
 
+    if (!FindFile(options_.file_paths, file_path, &file_path)) {
+      O3D_ERROR(service_locator_) << "Could not find file: " << filename;
+      return NULL;
+    }
+
     tex = Texture::Ref(
         pack_->CreateTextureFromFile(FilePathToUTF8(uri),
                                      file_path,
@@ -1674,7 +1697,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
       // Cache the original data by URI so we can recover it later.
       std::string contents;
       file_util::ReadFileToString(file_path, &contents);
-      original_data_[uri] = contents;
+      original_data_map_.AddData(uri, contents, service_locator_);
     }
 
     if (tempfile.size() > 0) ZipArchive::DeleteFile(tempfile);
@@ -1984,7 +2007,10 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
           }
         } else {
           FilePath temp_path = file_path;
-          GetRelativePathIfPossible(base_path_, temp_path, &temp_path);
+          if (!FindFile(options_.file_paths, temp_path, &temp_path)) {
+            O3D_ERROR(service_locator_) << "Could not find file: " << path;
+            return NULL;
+          }
           file_util::ReadFileToString(temp_path, &effect_string);
         }
       }
@@ -2007,7 +2033,7 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
       }
       if (options_.keep_original_data) {
         // Cache the original data by URI so we can recover it later.
-        original_data_[file_path] = effect_string;
+        original_data_map_.AddData(file_path, effect_string, service_locator_);
       }
     }
   } else {
@@ -2076,7 +2102,8 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
               }
               if (options_.keep_original_data) {
                 // Cache the original data by URI so we can recover it later.
-                original_data_[file_path] = effect_string;
+                original_data_map_.AddData(file_path, effect_string,
+                                           service_locator_);
               }
             }
           }
