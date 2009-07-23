@@ -83,7 +83,8 @@ static const CGFloat kToolbarMaxHeight = 128;
   // that here.  This doesn't completely eliminate the overlap, but it
   // works well enough.
   NSRect hitRect = NSInsetRect(frame, frame.size.height / 3.0f, 0);
-  if (NSPointInRect(viewPoint, [closeButton_ frame])) return closeButton_;
+  if (![closeButton_ isHidden])
+    if (NSPointInRect(viewPoint, [closeButton_ frame])) return closeButton_;
   if (NSPointInRect(aPoint, hitRect)) return self;
   return nil;
 }

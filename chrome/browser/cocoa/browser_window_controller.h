@@ -144,6 +144,10 @@ class TabStripModelObserverBridge;
 
 @interface BrowserWindowController(TestingAPI)
 
+// Put the incognito badge on the browser and adjust the tab strip
+// accordingly.
+- (void)installIncognitoBadge;
+
 // Allows us to initWithBrowser withOUT taking ownership of the browser.
 - (id)initWithBrowser:(Browser*)browser takeOwnership:(BOOL)ownIt;
 

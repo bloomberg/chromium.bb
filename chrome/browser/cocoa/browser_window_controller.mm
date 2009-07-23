@@ -69,7 +69,6 @@ const int kWindowGradientHeight = 24;
 - (void)positionInfoBar;
 - (void)positionBar;  // toolbar or URL bar
 - (void)removeBar;    // toolbar or URL bar
-- (void)installIncognitoBadge;
 
 // Leopard's gradient heuristic gets confused by our tabs and makes the title
 // gradient jump when creating a tab that is less than a tab width from the
@@ -933,7 +932,7 @@ willPositionSheet:(NSWindow*)sheet
   scoped_nsobject<NSImage> incognitoImage(
       [[NSImage alloc] initWithContentsOfFile:incognitoPath]);
   const NSSize imageSize = [incognitoImage size];
-  const NSRect tabFrame = [[self tabStripView] frame];
+  NSRect tabFrame = [[self tabStripView] frame];
   NSRect incognitoFrame = tabFrame;
   incognitoFrame.origin.x = NSMaxX(incognitoFrame) - imageSize.width -
                               kOffset;
@@ -948,6 +947,11 @@ willPositionSheet:(NSWindow*)sheet
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:2.0];
   [incognitoView setShadow:shadow];
+
+  // Shrink the tab strip's width so there's no overlap and install the
+  // view.
+  tabFrame.size.width -= incognitoFrame.size.width + kOffset;
+  [[self tabStripView] setFrame:tabFrame];
   [[[[self window] contentView] superview] addSubview:incognitoView.get()];
 }
 

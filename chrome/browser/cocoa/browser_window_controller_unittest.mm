@@ -12,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/test/testing_browser_process.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface BrowserWindowController (ExposedForTesting)
@@ -109,5 +110,26 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
   [controller_ toggleBookmarkBar];
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);
 }
+
+#if 0
+// TODO(jrg): This crashes trying to create the BookmarkBarController, adding
+// an observer to the BookmarkModel.
+TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
+  scoped_ptr<TestingProfile> incognito_profile(new TestingProfile());
+  incognito_profile->set_off_the_record(true);
+  scoped_ptr<Browser> browser(new Browser(Browser::TYPE_NORMAL,
+                                          incognito_profile.get()));
+  controller_.reset([[BrowserWindowController alloc]
+                              initWithBrowser:browser.get()
+                                takeOwnership:NO]);
+
+  NSRect tabFrame = [[controller_ tabStripView] frame];
+  [controller_ installIncognitoBadge];
+  NSRect newTabFrame = [[controller_ tabStripView] frame];
+  EXPECT_GT(tabFrame.size.width, newTabFrame.size.width);
+
+  controller_.release();
+}
+#endif
 
 /* TODO(???): test other methods of BrowserWindowController */

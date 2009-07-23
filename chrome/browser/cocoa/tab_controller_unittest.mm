@@ -200,4 +200,55 @@ TEST_F(TabControllerTest, UserSelection) {
   [[controller view] removeFromSuperview];
 }
 
+TEST_F(TabControllerTest, IconCapacity) {
+  NSWindow* window = cocoa_helper_.window();
+  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  [[window contentView] addSubview:[controller view]];
+  int cap = [controller iconCapacity];
+  EXPECT_GE(cap, 1);
+
+  NSRect frame = [[controller view] frame];
+  frame.size.width += 500;
+  [[controller view] setFrame:frame];
+  int newcap = [controller iconCapacity];
+  EXPECT_GT(newcap, cap);
+}
+
+TEST_F(TabControllerTest, ShouldShowIcon) {
+  NSWindow* window = cocoa_helper_.window();
+  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  [[window contentView] addSubview:[controller view]];
+  int cap = [controller iconCapacity];
+  EXPECT_GT(cap, 0);
+
+  // Tab is minimum width, both icon and close box should be hidden.
+  NSRect frame = [[controller view] frame];
+  frame.size.width = [TabController minTabWidth];
+  [[controller view] setFrame:frame];
+  EXPECT_FALSE([controller shouldShowIcon]);
+  EXPECT_FALSE([controller shouldShowCloseBox]);
+
+  // Tab is at selected minimum width. Since it's selected, the close box
+  // should be visible.
+  [controller setSelected:YES];
+  frame = [[controller view] frame];
+  frame.size.width = [TabController minSelectedTabWidth];
+  [[controller view] setFrame:frame];
+  EXPECT_FALSE([controller shouldShowIcon]);
+  EXPECT_TRUE([controller shouldShowCloseBox]);
+
+  // Test expanding the tab to max width and ensure the icon and close box
+  // get put back, even when de-selected.
+  frame.size.width = [TabController maxTabWidth];
+  [[controller view] setFrame:frame];
+  EXPECT_TRUE([controller shouldShowIcon]);
+  EXPECT_TRUE([controller shouldShowCloseBox]);
+  [controller setSelected:NO];
+  EXPECT_TRUE([controller shouldShowIcon]);
+  EXPECT_TRUE([controller shouldShowCloseBox]);
+
+  cap = [controller iconCapacity];
+  EXPECT_GT(cap, 0);
+}
+
 }  // namespace

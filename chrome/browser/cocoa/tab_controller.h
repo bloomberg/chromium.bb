@@ -37,6 +37,8 @@ enum TabLoadingState {
   IBOutlet NSButton* backgroundButton_;
   IBOutlet NSView* iconView_;
   IBOutlet NSMenu* contextMenu_;
+  IBOutlet NSButton* closeButton_;
+
   BOOL selected_;
   TabLoadingState loadingState_;
   id<TabControllerTarget> target_;  // weak, where actions are sent
@@ -49,9 +51,12 @@ enum TabLoadingState {
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) SEL action;
 
-// Minimum and maximum allowable tab width.
+// Minimum and maximum allowable tab width. The minimum width does not show
+// the icon or the close box. The selected tab always has at least a close box
+// so it has a different minimum width.
 + (float)minTabWidth;
 + (float)maxTabWidth;
++ (float)minSelectedTabWidth;
 
 // The view associated with this controller, pre-casted as a TabView
 - (TabView *)tabView;
@@ -72,6 +77,9 @@ enum TabLoadingState {
 
 @interface TabController(TestingAPI)
 - (NSString *)toolTip;
+- (int)iconCapacity;
+- (BOOL)shouldShowIcon;
+- (BOOL)shouldShowCloseBox;
 @end  // TabController(TestingAPI)
 
 #endif  // CHROME_BROWSER_COCOA_TAB_CONTROLLER_H_

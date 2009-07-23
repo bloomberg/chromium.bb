@@ -206,24 +206,30 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
   const float kNewTabButtonOffset = 8.0;
   const float kMaxTabWidth = [TabController maxTabWidth];
   const float kMinTabWidth = [TabController minTabWidth];
+  const float kMinSelectedTabWidth = [TabController minSelectedTabWidth];
 
   NSRect enclosingRect = NSZeroRect;
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:0.2];
 
-  BOOL visible = [[tabView_ window] isVisible];
+  // Compute the base width of tabs given how much size we have available.
   float availableWidth =
-      NSWidth([tabView_ frame]) - NSWidth([newTabButton_ frame]);
-  float offset = kIndentLeavingSpaceForControls;
+      NSWidth([tabView_ frame]) - NSWidth([newTabButton_ frame]) -
+      kNewTabButtonOffset - kIndentLeavingSpaceForControls;
+  // Add back in the amount we "get back" from the tabs overlapping.
+  availableWidth += [tabContentsArray_ count] * kTabOverlap;
   const float baseTabWidth =
-      MAX(MIN((availableWidth - offset) / [tabContentsArray_ count],
+      MAX(MIN(availableWidth / [tabContentsArray_ count],
               kMaxTabWidth),
           kMinTabWidth);
 
   CGFloat minX = NSMinX(placeholderFrame_);
+  BOOL visible = [[tabView_ window] isVisible];
 
+  float offset = kIndentLeavingSpaceForControls;
   NSUInteger i = 0;
   NSInteger gap = -1;
+  NSView* previousTab = nil;
   for (TabController* tab in tabArray_.get()) {
     BOOL isPlaceholder = [[tab view] isEqual:placeholderTab_];
     NSRect tabFrame = [[tab view] frame];
@@ -269,10 +275,14 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
         [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
       }
 
-      id frameTarget = visible ? [[tab view] animator] : [tab view];
-      tabFrame.size.width = [tab selected] ? kMaxTabWidth : baseTabWidth;
+      // Set the width. Selected tabs are slightly wider when things get
+      // really small and thus we enforce a different minimum width.
+      tabFrame.size.width =
+          [tab selected] ? MAX(baseTabWidth, kMinSelectedTabWidth) :
+                           baseTabWidth;
 
       // Check the frame by identifier to avoid redundant calls to animator.
+      id frameTarget = visible ? [[tab view] animator] : [tab view];
       NSValue *identifier = [NSValue valueWithPointer:[tab view]];
       NSValue *oldTargetValue = [targetFrames_ objectForKey:identifier];
       if (!oldTargetValue ||
@@ -284,10 +294,20 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
       enclosingRect = NSUnionRect(tabFrame, enclosingRect);
     }
 
-    if (offset < availableWidth) {
-      offset += NSWidth(tabFrame);
-      offset -= kTabOverlap;
+    // Ensure the current tab is "below" the tab before it in z-order so that
+    // all the tab overlaps are consistent. The selected tab is always the
+    // frontmost, but it's already been made frontmost when the tab was selected
+    // so we don't need to do anything about it here. It will get put back into
+    // place when another tab is selected.
+    if (![tab selected]) {
+      [tabView_ addSubview:[tab view]
+                positioned:NSWindowBelow
+                relativeTo:previousTab];
     }
+    previousTab = [tab view];
+
+    offset += NSWidth(tabFrame);
+    offset -= kTabOverlap;
     i++;
   }
 

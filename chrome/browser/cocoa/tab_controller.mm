@@ -8,13 +8,21 @@
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/tab_view.h"
 
+@interface TabController(Private)
+- (void)updateVisibility;
+@end
+
 @implementation TabController
 
 @synthesize loadingState = loadingState_;
 @synthesize target = target_;
 @synthesize action = action_;
 
-+ (float)minTabWidth { return 64.0; }
+// The min widths match the windows values and are sums of left + right
+// padding, of which we have no comparable constants (we draw using paths, not
+// images). The selected tab width includes the close box width.
++ (float)minTabWidth { return 31; }
++ (float)minSelectedTabWidth { return 47; }
 + (float)maxTabWidth { return 220.0; }
 
 - (TabView*)tabView {
@@ -24,11 +32,17 @@
 - (id)init {
   self = [super initWithNibName:@"TabView" bundle:mac_util::MainAppBundle()];
   if (self != nil) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(viewResized:)
+               name:NSViewFrameDidChangeNotification
+             object:[self view]];
   }
   return self;
 }
 
 - (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -38,6 +52,7 @@
 - (void)internalSetSelected:(BOOL)selected {
   selected_ = selected;
   [(TabView *)[self view] setState:selected];
+  [self updateVisibility];
   [[self view] setNeedsDisplay:YES];
 }
 
@@ -101,6 +116,52 @@
 
 - (NSString *)toolTip {
   return [backgroundButton_ toolTip];
+}
+
+// Return a rough approximation of the number of icons we could fit in the
+// tab. We never actually do this, but it's a helpful guide for determining
+// how much space we have available.
+- (int)iconCapacity {
+  float width = NSWidth([[self view] frame]);
+  float leftPadding = NSMinX([iconView_ frame]);
+  float rightPadding = width - NSMaxX([closeButton_ frame]);
+  float iconWidth = NSWidth([iconView_ frame]);
+
+  width -= leftPadding + rightPadding;
+  return width / iconWidth;
+}
+
+// Returns YES if we should show the icon. When tabs get too small, we clip
+// the favicon before the close box for selected tabs, and prefer the favicon
+// for unselected tabs.
+// TODO(pinkerton): don't show the icon if there's no image data (eg, NTP).
+- (BOOL)shouldShowIcon {
+  int iconCapacity = [self iconCapacity];
+  if ([self selected])
+    return iconCapacity >= 2;
+  return iconCapacity >= 1;
+}
+
+// Returns YES if we should be showing the close box. The selected tab always
+// shows the close box.
+- (BOOL)shouldShowCloseBox {
+  return [self selected] || [self iconCapacity] >= 3;
+}
+
+// Call to update the visibility of certain subviews, such as the icon or
+// close box, based on criteria like if the tab is selected and the current
+// tab width.
+- (void)updateVisibility {
+  [iconView_ setHidden:[self shouldShowIcon] ? NO : YES];
+  [closeButton_ setHidden:[self shouldShowCloseBox] ? NO : YES];
+}
+
+// Called when our view is resized. If it gets too small, start by hiding
+// the close box and only show it if tab is selected. Eventually, hide the
+// icon as well. We know that this is for our view because we only registered
+// for notifications from our specific view.
+- (void)viewResized:(NSNotification*)info {
+  [self updateVisibility];
 }
 
 @end
