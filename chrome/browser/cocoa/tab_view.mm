@@ -23,6 +23,7 @@ static const CGFloat kToolbarMaxHeight = 128;
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    chromeIsVisible_ = YES;
     [self setShowsDivider:NO];
     // TODO(alcor): register for theming, either here or the cell
     // [self gtm_registerForThemeNotifications];
@@ -374,6 +375,7 @@ static const double kDragStartDistance = 3.0;
     [draggedController_ layoutTabs];
   }
   [sourceController_ removePlaceholder];
+  chromeIsVisible_ = YES;
 }
 
 - (void)otherMouseUp:(NSEvent*)theEvent {

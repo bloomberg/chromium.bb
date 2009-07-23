@@ -102,6 +102,8 @@
     [overlayWindow_ release];
     overlayWindow_ = nil;
     cachedContentView_ = nil;
+  } else {
+    NOTREACHED();
   }
 }
 
