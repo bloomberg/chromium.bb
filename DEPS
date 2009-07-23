@@ -5,6 +5,8 @@ deps = {
     "http://src.chromium.org/svn/trunk/src/site_scons",
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@267",
+  "third_party":
+    "http://nativeclient.googlecode.com/svn/trunk/src/third_party",
 }
 
 hooks = [
