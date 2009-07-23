@@ -28,8 +28,20 @@ class CookiesView : public TableModelObserver {
   // Initialize the dialog contents and layout.
   void Init();
 
+  // Helper for initializing cookie details table.
+  void InitCookieDetailRow(int row, int label_id, GtkWidget** display_label);
+
   // Set sensitivity of buttons based on selection and filter state.
   void EnableControls();
+
+  // Set sensitivity of cookie details.
+  void SetCookieDetailsSensitivity(gboolean enabled);
+
+  // Show the details of the currently selected cookie.
+  void PopulateCookieDetails();
+
+  // Reset the cookie details display.
+  void ClearCookieDetails();
 
   // Remove any cookies that are currently selected.
   void RemoveSelectedCookies();
@@ -85,6 +97,18 @@ class CookiesView : public TableModelObserver {
   GtkListStore* list_store_;
   GtkTreeModel* list_sort_;
   GtkTreeSelection* selection_;
+
+  // The cookie details widgets.
+  GtkStyle* label_style_;
+  GtkStyle* dialog_style_;
+  GtkWidget* cookie_details_table_;
+  GtkWidget* cookie_name_entry_;
+  GtkWidget* cookie_content_entry_;
+  GtkWidget* cookie_domain_entry_;
+  GtkWidget* cookie_path_entry_;
+  GtkWidget* cookie_send_for_entry_;
+  GtkWidget* cookie_created_entry_;
+  GtkWidget* cookie_expires_entry_;
 
   // The profile.
   Profile* profile_;

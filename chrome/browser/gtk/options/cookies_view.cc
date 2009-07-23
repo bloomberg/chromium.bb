@@ -8,6 +8,7 @@
 #include "base/gfx/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/time_format.h"
 #include "chrome/browser/cookies_table_model.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
@@ -17,7 +18,7 @@ namespace {
 
 // Initial size for dialog.
 const int kDialogDefaultWidth = 450;
-const int kDialogDefaultHeight = 450;
+const int kDialogDefaultHeight = 550;
 
 // Delay after entering filter text before filtering occurs.
 const int kSearchFilterDelayMs = 500;
@@ -160,11 +161,8 @@ void CookiesView::Init() {
 
   GtkWidget* description_label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_COOKIES_INFO_LABEL).c_str());
-  GtkWidget* description_label_alignment = gtk_alignment_new(
-      0.0, 0.5, 0.0, 0.0);
-  gtk_container_add(GTK_CONTAINER(description_label_alignment),
-                    description_label);
-  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), description_label_alignment,
+  gtk_misc_set_alignment(GTK_MISC(description_label), 0, 0.5);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), description_label,
                      FALSE, FALSE, 0);
 
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
@@ -218,6 +216,35 @@ void CookiesView::Init() {
   g_signal_connect(G_OBJECT(selection_), "changed",
                    G_CALLBACK(OnSelectionChanged), this);
 
+  // Cookie details.
+  GtkWidget* details_frame = gtk_frame_new(NULL);
+  gtk_frame_set_shadow_type(GTK_FRAME(details_frame), GTK_SHADOW_ETCHED_IN);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), details_frame,
+                     FALSE, FALSE, 0);
+  cookie_details_table_ = gtk_table_new(7, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(details_frame), cookie_details_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(cookie_details_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  // Realize a label so that its style gets initialized.
+  gtk_widget_realize(description_label);
+  gtk_widget_realize(dialog_);
+  label_style_ = gtk_widget_get_style(description_label);
+  dialog_style_ = gtk_widget_get_style(dialog_);
+
+  InitCookieDetailRow(0, IDS_COOKIES_COOKIE_NAME_LABEL, &cookie_name_entry_);
+  InitCookieDetailRow(1, IDS_COOKIES_COOKIE_CONTENT_LABEL,
+                      &cookie_content_entry_);
+  InitCookieDetailRow(2, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
+                      &cookie_domain_entry_);
+  InitCookieDetailRow(3, IDS_COOKIES_COOKIE_PATH_LABEL, &cookie_path_entry_);
+  InitCookieDetailRow(4, IDS_COOKIES_COOKIE_SENDFOR_LABEL,
+                      &cookie_send_for_entry_);
+  InitCookieDetailRow(5, IDS_COOKIES_COOKIE_CREATED_LABEL,
+                      &cookie_created_entry_);
+  InitCookieDetailRow(6, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
+                      &cookie_expires_entry_);
+
   // Initialize model.
   cookies_table_model_.reset(new CookiesTableModel(profile_));
   cookies_table_model_->SetObserver(this);
@@ -228,14 +255,108 @@ void CookiesView::Init() {
   gtk_widget_show_all(dialog_);
 }
 
+void CookiesView::InitCookieDetailRow(int row, int label_id,
+                                      GtkWidget** entry) {
+  GtkWidget* name_label = gtk_label_new(
+      l10n_util::GetStringUTF8(label_id).c_str());
+  gtk_misc_set_alignment(GTK_MISC(name_label), 1, 0.5);
+  gtk_table_attach(GTK_TABLE(cookie_details_table_), name_label,
+                   0, 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
+
+  *entry = gtk_entry_new();
+  gtk_widget_modify_fg(*entry, GTK_STATE_NORMAL,
+                       &label_style_->fg[GTK_STATE_NORMAL]);
+  gtk_widget_modify_fg(*entry, GTK_STATE_INSENSITIVE,
+                       &label_style_->fg[GTK_STATE_INSENSITIVE]);
+  // GTK_NO_WINDOW widgets like GtkLabel don't draw their own background, so we
+  // combine the normal or insensitive fg of the label style with the normal
+  // background of the window style to achieve the "normal label" and
+  // "insensitive label" colors.
+  gtk_widget_modify_base(*entry, GTK_STATE_NORMAL,
+                         &dialog_style_->bg[GTK_STATE_NORMAL]);
+  gtk_widget_modify_base(*entry, GTK_STATE_INSENSITIVE,
+                         &dialog_style_->bg[GTK_STATE_NORMAL]);
+
+  gtk_entry_set_editable(GTK_ENTRY(*entry), FALSE);
+  gtk_entry_set_has_frame(GTK_ENTRY(*entry), FALSE);
+  gtk_table_attach_defaults(GTK_TABLE(cookie_details_table_), *entry,
+                            1, 2, row, row + 1);
+}
+
 void CookiesView::EnableControls() {
-  gtk_widget_set_sensitive(
-      remove_button_, gtk_tree_selection_count_selected_rows(selection_) > 0);
+  int num_selected = gtk_tree_selection_count_selected_rows(selection_);
+  gtk_widget_set_sensitive(remove_button_, num_selected > 0);
   gtk_widget_set_sensitive(
       remove_all_button_, cookies_table_model_->RowCount() > 0);
 
   const gchar* filter_text = gtk_entry_get_text(GTK_ENTRY(filter_entry_));
   gtk_widget_set_sensitive(filter_clear_button_, filter_text && *filter_text);
+
+  if (num_selected == 1)
+    PopulateCookieDetails();
+  else
+    ClearCookieDetails();
+}
+
+void CookiesView::SetCookieDetailsSensitivity(gboolean enabled) {
+  gtk_widget_set_sensitive(cookie_name_entry_, enabled);
+  gtk_widget_set_sensitive(cookie_content_entry_, enabled);
+  gtk_widget_set_sensitive(cookie_domain_entry_, enabled);
+  gtk_widget_set_sensitive(cookie_path_entry_, enabled);
+  gtk_widget_set_sensitive(cookie_send_for_entry_, enabled);
+  gtk_widget_set_sensitive(cookie_created_entry_, enabled);
+  gtk_widget_set_sensitive(cookie_expires_entry_, enabled);
+}
+
+void CookiesView::PopulateCookieDetails() {
+  GList* list = gtk_tree_selection_get_selected_rows(selection_, NULL);
+  if (!list) {
+    NOTREACHED();
+    return;
+  }
+  int selected_index = GetTreeSortChildRowNumForPath(
+        list_sort_, static_cast<GtkTreePath*>(list->data));
+  g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+  g_list_free(list);
+
+  const std::string& domain = cookies_table_model_->GetDomainAt(selected_index);
+  const net::CookieMonster::CanonicalCookie& cookie =
+      cookies_table_model_->GetCookieAt(selected_index);
+  gtk_entry_set_text(GTK_ENTRY(cookie_name_entry_), cookie.Name().c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_content_entry_), cookie.Value().c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_domain_entry_), domain.c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_path_entry_), cookie.Path().c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_created_entry_),
+                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                         cookie.CreationDate())).c_str());
+  if (cookie.DoesExpire()) {
+    gtk_entry_set_text(GTK_ENTRY(cookie_expires_entry_),
+                       WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                           cookie.ExpiryDate())).c_str());
+  } else {
+    gtk_entry_set_text(GTK_ENTRY(cookie_expires_entry_),
+                       l10n_util::GetStringUTF8(
+                           IDS_COOKIES_COOKIE_EXPIRES_SESSION).c_str());
+  }
+  gtk_entry_set_text(
+      GTK_ENTRY(cookie_send_for_entry_),
+      l10n_util::GetStringUTF8(cookie.IsSecure() ?
+                               IDS_COOKIES_COOKIE_SENDFOR_SECURE :
+                               IDS_COOKIES_COOKIE_SENDFOR_ANY).c_str());
+  SetCookieDetailsSensitivity(TRUE);
+}
+
+void CookiesView::ClearCookieDetails() {
+  std::string no_cookie =
+      l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_NONESELECTED);
+  gtk_entry_set_text(GTK_ENTRY(cookie_name_entry_), no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_content_entry_), no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_domain_entry_), no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_path_entry_), no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_created_entry_), no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_expires_entry_), no_cookie.c_str());
+  gtk_entry_set_text(GTK_ENTRY(cookie_send_for_entry_), no_cookie.c_str());
+  SetCookieDetailsSensitivity(FALSE);
 }
 
 void CookiesView::RemoveSelectedCookies() {
