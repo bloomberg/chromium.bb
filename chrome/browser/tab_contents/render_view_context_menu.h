@@ -25,7 +25,7 @@ class RenderViewContextMenu {
   void Init();
 
  protected:
-  void InitMenu(ContextNode node, ContextMenuMediaParams media_params);
+  void InitMenu(ContextNodeType node, ContextMenuMediaParams media_params);
 
   // Functions to be implemented by platform-specific subclasses ---------------
 
@@ -100,6 +100,8 @@ class RenderViewContextMenu {
   // Writes the specified text/url to the system clipboard
   void WriteTextToClipboard(const string16& text);
   void WriteURLToClipboard(const GURL& url);
+
+  void MediaPlayerActionAt(int x, int y, const MediaPlayerAction& action);
 
   bool IsDevCommandEnabled(int id) const;
 

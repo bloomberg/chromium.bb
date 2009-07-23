@@ -12,7 +12,7 @@
 
 // The type of node that the user may perform a contextual action on
 // in the WebView.
-struct ContextNode {
+struct ContextNodeType {
   enum TypeBit {
     // No node is selected
     NONE = 0x0,
@@ -57,8 +57,8 @@ struct ContextNode {
   };
 
   int32 type;
-  ContextNode() : type(NONE) {}
-  explicit ContextNode(int32 t) : type(t) {}
+  ContextNodeType() : type(NONE) {}
+  explicit ContextNodeType(int32 t) : type(t) {}
 };
 
 // Parameters structure used in ContextMenuParams with attributes needed to
@@ -67,15 +67,15 @@ struct ContextNode {
 // TODO(ajwong): Add support for multiple audio tracks and subtitles.
 struct ContextMenuMediaParams {
   // Values for the bitfield representing the state of the media player.
-  // If the state is in ERROR, most media controls should disable
+  // If the state is IN_ERROR, most media controls should disable
   // themselves.
-  enum PlayerState {
-    PLAYER_NO_STATE = 0x0,
-    PLAYER_ERROR = 0x1,
-    PLAYER_PAUSED = 0x2,
-    PLAYER_MUTED = 0x4,
-    PLAYER_LOOP = 0x8,
-    PLAYER_CAN_SAVE = 0x10,
+  enum PlayerStateBit {
+    NO_STATE = 0x0,
+    IN_ERROR = 0x1,
+    PAUSED = 0x2,
+    MUTED = 0x4,
+    LOOP = 0x8,
+    CAN_SAVE = 0x10,
   };
 
   // A bitfield representing the current state of the player, such as
@@ -86,7 +86,7 @@ struct ContextMenuMediaParams {
   double playback_rate;
 
   ContextMenuMediaParams()
-      : player_state(PLAYER_NO_STATE), playback_rate(1.0f) {
+      : player_state(NO_STATE), playback_rate(1.0f) {
   }
 };
 
@@ -98,7 +98,7 @@ struct ContextMenuMediaParams {
 //              could be used for more contextual actions.
 struct ContextMenuParams {
   // This is the type of Context Node that the context menu was invoked on.
-  ContextNode node;
+  ContextNodeType node_type;
 
   // These values represent the coordinates of the mouse when the context menu
   // was invoked.  Coords are relative to the associated RenderView's origin.
@@ -155,6 +155,30 @@ struct ContextMenuParams {
 
   // The character encoding of the frame on which the menu is invoked.
   std::string frame_charset;
+};
+
+struct MediaPlayerAction {
+  enum CommandTypeBit {
+    NONE = 0x0,
+    PLAY = 0x1,
+    PAUSE = 0x2,
+    MUTE = 0x4,
+    UNMUTE = 0x8,
+    LOOP = 0x10,
+    NO_LOOP = 0x20,
+    SET_PLAYBACK_RATE = 0x40,
+  };
+
+  // A bitfield representing the actions that the context menu should execute
+  // on the originating node.
+  int32 command;
+
+  // The new playback rate to set if the action is SET_PLAYBACK_RATE.
+  double playback_rate;
+
+  MediaPlayerAction() : command(NONE), playback_rate(1.0f) {}
+  explicit MediaPlayerAction(int c) : command(c), playback_rate(1.0f) {}
+  MediaPlayerAction(int c, double rate) : command(c), playback_rate(rate) {}
 };
 
 #endif  // WEBKIT_GLUE_CONTEXT_NODE_TYPES_H__

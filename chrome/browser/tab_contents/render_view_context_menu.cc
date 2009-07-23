@@ -51,44 +51,44 @@ RenderViewContextMenu::~RenderViewContextMenu() {
 // Menu construction functions -------------------------------------------------
 
 void RenderViewContextMenu::Init() {
-  InitMenu(params_.node, params_.media_params);
+  InitMenu(params_.node_type, params_.media_params);
   DoInit();
 }
 
-void RenderViewContextMenu::InitMenu(ContextNode node,
+void RenderViewContextMenu::InitMenu(ContextNodeType node_type,
                                      ContextMenuMediaParams media_params) {
-  if (node.type & ContextNode::PAGE)
+  if (node_type.type & ContextNodeType::PAGE)
     AppendPageItems();
-  if (node.type & ContextNode::FRAME)
+  if (node_type.type & ContextNodeType::FRAME)
     AppendFrameItems();
-  if (node.type & ContextNode::LINK)
+  if (node_type.type & ContextNodeType::LINK)
     AppendLinkItems();
 
-  if (node.type & ContextNode::IMAGE) {
-    if (node.type & ContextNode::LINK)
+  if (node_type.type & ContextNodeType::IMAGE) {
+    if (node_type.type & ContextNodeType::LINK)
       AppendSeparator();
     AppendImageItems();
   }
 
-  if (node.type & ContextNode::VIDEO) {
-    if (node.type & ContextNode::LINK)
+  if (node_type.type & ContextNodeType::VIDEO) {
+    if (node_type.type & ContextNodeType::LINK)
       AppendSeparator();
     AppendVideoItems(media_params);
   }
 
-  if (node.type & ContextNode::AUDIO) {
-    if (node.type & ContextNode::LINK)
+  if (node_type.type & ContextNodeType::AUDIO) {
+    if (node_type.type & ContextNodeType::LINK)
       AppendSeparator();
     AppendAudioItems(media_params);
   }
 
-  if (node.type & ContextNode::EDITABLE)
+  if (node_type.type & ContextNodeType::EDITABLE)
     AppendEditableItems();
-  else if (node.type & ContextNode::SELECTION ||
-           node.type & ContextNode::LINK)
+  else if (node_type.type & ContextNodeType::SELECTION ||
+           node_type.type & ContextNodeType::LINK)
     AppendCopyItem();
 
-  if (node.type & ContextNode::SELECTION)
+  if (node_type.type & ContextNodeType::SELECTION)
     AppendSearchProvider();
   AppendSeparator();
   AppendDeveloperItems();
@@ -132,23 +132,21 @@ void RenderViewContextMenu::AppendAudioItems(
 void RenderViewContextMenu::AppendVideoItems(
     ContextMenuMediaParams media_params) {
   AppendMediaItems(media_params);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_FULLSCREEN);
   AppendSeparator();
   AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
-  AppendMenuItem(IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS);
   AppendMenuItem(IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
   AppendMenuItem(IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
 }
 
 void RenderViewContextMenu::AppendMediaItems(
     ContextMenuMediaParams media_params) {
-  if (media_params.player_state & ContextMenuMediaParams::PLAYER_PAUSED) {
+  if (media_params.player_state & ContextMenuMediaParams::PAUSED) {
     AppendMenuItem(IDS_CONTENT_CONTEXT_PLAY);
   } else {
     AppendMenuItem(IDS_CONTENT_CONTEXT_PAUSE);
   }
 
-  if (media_params.player_state & ContextMenuMediaParams::PLAYER_MUTED) {
+  if (media_params.player_state & ContextMenuMediaParams::MUTED) {
     AppendMenuItem(IDS_CONTENT_CONTEXT_UNMUTE);
   } else {
     AppendMenuItem(IDS_CONTENT_CONTEXT_MUTE);
@@ -350,7 +348,7 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER:
     case IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME:
       return (params_.media_params.player_state &
-              ContextMenuMediaParams::PLAYER_ERROR) == 0;
+              ContextMenuMediaParams::IN_ERROR) == 0;
 
     case IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS:
       // TODO(ajwong): Enable save screenshot after we actually implement
@@ -365,7 +363,7 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
     case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
       return (params_.media_params.player_state &
-              ContextMenuMediaParams::PLAYER_CAN_SAVE) &&
+              ContextMenuMediaParams::CAN_SAVE) &&
              params_.src_url.is_valid() &&
              URLRequest::IsHandledURL(params_.src_url);
 
@@ -381,25 +379,25 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
       return params_.frame_url.is_valid();
 
     case IDS_CONTENT_CONTEXT_UNDO:
-      return !!(params_.edit_flags & ContextNode::CAN_UNDO);
+      return !!(params_.edit_flags & ContextNodeType::CAN_UNDO);
 
     case IDS_CONTENT_CONTEXT_REDO:
-      return !!(params_.edit_flags & ContextNode::CAN_REDO);
+      return !!(params_.edit_flags & ContextNodeType::CAN_REDO);
 
     case IDS_CONTENT_CONTEXT_CUT:
-      return !!(params_.edit_flags & ContextNode::CAN_CUT);
+      return !!(params_.edit_flags & ContextNodeType::CAN_CUT);
 
     case IDS_CONTENT_CONTEXT_COPY:
-      return !!(params_.edit_flags & ContextNode::CAN_COPY);
+      return !!(params_.edit_flags & ContextNodeType::CAN_COPY);
 
     case IDS_CONTENT_CONTEXT_PASTE:
-      return !!(params_.edit_flags & ContextNode::CAN_PASTE);
+      return !!(params_.edit_flags & ContextNodeType::CAN_PASTE);
 
     case IDS_CONTENT_CONTEXT_DELETE:
-      return !!(params_.edit_flags & ContextNode::CAN_DELETE);
+      return !!(params_.edit_flags & ContextNodeType::CAN_DELETE);
 
     case IDS_CONTENT_CONTEXT_SELECTALL:
-      return !!(params_.edit_flags & ContextNode::CAN_SELECT_ALL);
+      return !!(params_.edit_flags & ContextNodeType::CAN_SELECT_ALL);
 
     case IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       return !profile_->IsOffTheRecord() && params_.link_url.is_valid();
@@ -456,7 +454,7 @@ bool RenderViewContextMenu::ItemIsChecked(int id) const {
   // See if the video is set to looping.
   if (id == IDS_CONTENT_CONTEXT_LOOP) {
     return (params_.media_params.player_state &
-            ContextMenuMediaParams::PLAYER_LOOP) != 0;
+            ContextMenuMediaParams::LOOP) != 0;
   }
 
   // Check box for 'Check the Spelling of this field'.
@@ -539,6 +537,82 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
     case IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB:
     case IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB:
       OpenURL(params_.src_url, NEW_BACKGROUND_TAB, PageTransition::LINK);
+      break;
+
+    case IDS_CONTENT_CONTEXT_PLAY:
+      MediaPlayerActionAt(params_.x,
+                          params_.y,
+                          MediaPlayerAction(MediaPlayerAction::PLAY));
+      break;
+
+    case IDS_CONTENT_CONTEXT_PAUSE:
+      MediaPlayerActionAt(params_.x,
+                          params_.y,
+                          MediaPlayerAction(MediaPlayerAction::PAUSE));
+      break;
+
+    case IDS_CONTENT_CONTEXT_MUTE:
+      MediaPlayerActionAt(params_.x,
+                        params_.y,
+                        MediaPlayerAction(MediaPlayerAction::MUTE));
+      break;
+
+    case IDS_CONTENT_CONTEXT_UNMUTE:
+      MediaPlayerActionAt(params_.x,
+                          params_.y,
+                          MediaPlayerAction(MediaPlayerAction::UNMUTE));
+      break;
+
+    case IDS_CONTENT_CONTEXT_LOOP:
+      if (ItemIsChecked(IDS_CONTENT_CONTEXT_LOOP)) {
+        MediaPlayerActionAt(params_.x,
+                            params_.y,
+                            MediaPlayerAction(MediaPlayerAction::NO_LOOP));
+      } else {
+        MediaPlayerActionAt(params_.x,
+                            params_.y,
+                            MediaPlayerAction(MediaPlayerAction::LOOP));
+      }
+      break;
+
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW:
+      MediaPlayerActionAt(
+          params_.x,
+          params_.y,
+          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
+                            kSlowPlaybackRate));
+      break;
+
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL:
+      MediaPlayerActionAt(
+          params_.x,
+          params_.y,
+          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
+                            kNormalPlaybackRate));
+      break;
+
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST:
+      MediaPlayerActionAt(
+          params_.x,
+          params_.y,
+          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
+                            kFastPlaybackRate));
+      break;
+
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER:
+      MediaPlayerActionAt(
+          params_.x,
+          params_.y,
+          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
+                            kFasterPlaybackRate));
+      break;
+
+    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME:
+      MediaPlayerActionAt(
+          params_.x,
+          params_.y,
+          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
+                            kDoubleTimePlaybackRate));
       break;
 
     case IDS_CONTENT_CONTEXT_BACK:
@@ -778,4 +852,11 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
 
   WriteTextToClipboard(UTF8ToUTF16(utf8_text));
   DidWriteURLToClipboard(utf8_text);
+}
+
+void RenderViewContextMenu::MediaPlayerActionAt(
+    int x,
+    int y,
+    const MediaPlayerAction& action) {
+  source_tab_contents_->render_view_host()->MediaPlayerActionAt(x, y, action);
 }

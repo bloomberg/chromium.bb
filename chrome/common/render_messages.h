@@ -484,8 +484,8 @@ struct ParamTraits<FilterPolicy::Type> {
 };
 
 template <>
-struct ParamTraits<ContextNode> {
-  typedef ContextNode param_type;
+struct ParamTraits<ContextNodeType> {
+  typedef ContextNodeType param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteInt(p.type);
   }
@@ -493,7 +493,7 @@ struct ParamTraits<ContextNode> {
     int type;
     if (!m->ReadInt(iter, &type))
       return false;
-    *p = ContextNode(type);
+    *p = ContextNodeType(type);
     return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
@@ -503,19 +503,19 @@ struct ParamTraits<ContextNode> {
       event.append(L"NONE");
     } else {
       event.append(L"(");
-      if (p.type & ContextNode::PAGE)
+      if (p.type & ContextNodeType::PAGE)
         event.append(L"PAGE|");
-      if (p.type & ContextNode::FRAME)
+      if (p.type & ContextNodeType::FRAME)
         event.append(L"FRAME|");
-      if (p.type & ContextNode::LINK)
+      if (p.type & ContextNodeType::LINK)
         event.append(L"LINK|");
-      if (p.type & ContextNode::IMAGE)
+      if (p.type & ContextNodeType::IMAGE)
         event.append(L"IMAGE|");
-      if (p.type & ContextNode::SELECTION)
+      if (p.type & ContextNodeType::SELECTION)
         event.append(L"SELECTION|");
-      if (p.type & ContextNode::EDITABLE)
+      if (p.type & ContextNodeType::EDITABLE)
         event.append(L"EDITABLE|");
-      if (p.type & ContextNode::MISSPELLED_WORD)
+      if (p.type & ContextNodeType::MISSPELLED_WORD)
         event.append(L"MISSPELLED_WORD|");
       event.append(L")");
     }
@@ -838,7 +838,7 @@ template <>
 struct ParamTraits<ContextMenuParams> {
   typedef ContextMenuParams param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.node);
+    WriteParam(m, p.node_type);
     WriteParam(m, p.x);
     WriteParam(m, p.y);
     WriteParam(m, p.link_url);
@@ -857,7 +857,7 @@ struct ParamTraits<ContextMenuParams> {
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
-      ReadParam(m, iter, &p->node) &&
+      ReadParam(m, iter, &p->node_type) &&
       ReadParam(m, iter, &p->x) &&
       ReadParam(m, iter, &p->y) &&
       ReadParam(m, iter, &p->link_url) &&
@@ -876,6 +876,46 @@ struct ParamTraits<ContextMenuParams> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<ContextMenuParams>");
+  }
+};
+
+template <>
+struct ParamTraits<MediaPlayerAction> {
+  typedef MediaPlayerAction param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.command);
+    WriteParam(m, p.playback_rate);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->command) &&
+      ReadParam(m, iter, &p->playback_rate);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring event = L"";
+    if (!p.command) {
+      l->append(L"NONE");
+    } else {
+      l->append(L"(");
+      if (p.command & MediaPlayerAction::PLAY)
+        l->append(L"PLAY|");
+      if (p.command & MediaPlayerAction::PAUSE)
+        l->append(L"PAUSE|");
+      if (p.command & MediaPlayerAction::MUTE)
+        l->append(L"MUTE|");
+      if (p.command & MediaPlayerAction::UNMUTE)
+        l->append(L"UNMUTE|");
+      if (p.command & MediaPlayerAction::LOOP)
+        l->append(L"LOOP|");
+      if (p.command & MediaPlayerAction::NO_LOOP)
+        l->append(L"NO_LOOP|");
+      if (p.command & MediaPlayerAction::SET_PLAYBACK_RATE) {
+        l->append(L"SET_PLAYBACK_RATE [");
+        LogParam(p.playback_rate, l);
+        l->append(L"]|");
+      }
+      l->append(L")");
+    }
   }
 };
 

@@ -262,7 +262,7 @@ class RenderView : public RenderWidget,
                                         ErrorPageType error_type);
 
   virtual void ShowContextMenu(WebView* webview,
-                               ContextNode node,
+                               ContextNodeType node_type,
                                int x,
                                int y,
                                const GURL& link_url,
@@ -531,6 +531,9 @@ class RenderView : public RenderWidget,
   void OnEnableViewSourceMode();
   void OnEnableIntrinsicWidthChangedMode();
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
+  void OnMediaPlayerActionAt(int x,
+                             int y,
+                             const MediaPlayerAction& action);
   void OnUpdateBackForwardListCount(int back_list_count,
                                     int forward_list_count);
   void OnGetAccessibilityInfo(

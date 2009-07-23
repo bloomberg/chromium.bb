@@ -17,7 +17,7 @@ class RenderViewContextMenuWin : public RenderViewContextMenu,
   RenderViewContextMenuWin(TabContents* tab_contents,
                            const ContextMenuParams& params);
 
-  ~RenderViewContextMenuWin();
+  virtual ~RenderViewContextMenuWin();
 
   void RunMenuAt(int x, int y);
 

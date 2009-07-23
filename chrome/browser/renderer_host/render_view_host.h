@@ -25,6 +25,7 @@ class SiteInstance;
 class SkBitmap;
 class ViewMsg_Navigate;
 struct ContextMenuParams;
+struct MediaPlayerAction;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;
@@ -296,6 +297,9 @@ class RenderViewHost : public RenderWidgetHost,
   // Notifies the RenderView that the modal html dialog has been closed.
   void ModalHTMLDialogClosed(IPC::Message* reply_msg,
                              const std::string& json_retval);
+
+  // Send an action to the media player element located at |x|, |y|.
+  void MediaPlayerActionAt(int x, int y, const MediaPlayerAction& action);
 
   // Copies the image at the specified point.
   void CopyImageAt(int x, int y);

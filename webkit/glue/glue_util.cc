@@ -22,6 +22,7 @@
 #include "IntPoint.h"
 #include "IntRect.h"
 #include "KURL.h"
+#include "Node.h"
 #include "PlatformString.h"
 #include "ResourceError.h"
 
@@ -36,6 +37,7 @@
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebForm.h"
 #include "webkit/api/public/WebHistoryItem.h"
+#include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebSize.h"
@@ -259,6 +261,14 @@ WebKit::WebForm HTMLFormElementToWebForm(
 WTF::PassRefPtr<WebCore::HTMLFormElement> WebFormToHTMLFormElement(
     const WebKit::WebForm& form) {
   return form;
+}
+
+// WebNode conversions ---------------------------------------------------------
+WebKit::WebNode NodeToWebNode(const WTF::PassRefPtr<WebCore::Node>& node) {
+  return node;
+}
+WTF::PassRefPtr<WebCore::Node> WebNodeToNode(const WebKit::WebNode& node) {
+  return node;
 }
 
 // WebHistoryItem conversions --------------------------------------------------

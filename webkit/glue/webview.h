@@ -16,6 +16,7 @@ class WebDragData;
 struct WebPoint;
 }
 
+struct MediaPlayerAction;
 struct WebPreferences;
 class GURL;
 class WebDevToolsAgent;
@@ -229,6 +230,12 @@ class WebView : public WebKit::WebWidget {
   // background behind it.
   virtual void SetIsTransparent(bool is_transparent) = 0;
   virtual bool GetIsTransparent() const = 0;
+
+  // Performs an action from a context menu for the node at the given
+  // location.
+  virtual void MediaPlayerActionAt(int x,
+                                   int y,
+                                   const MediaPlayerAction& action) = 0;
 
   // Updates the WebView's active state (i.e., control tints).
   virtual void SetActive(bool active) = 0;

@@ -124,24 +124,25 @@ void ContextMenuClientImpl::contextMenuDestroyed() {
 }
 
 // Figure out the URL of a page or subframe. Returns |page_type| as the type,
-// which indicates page or subframe, or ContextNode::NONE if the URL could not
+// which indicates page or subframe, or ContextNodeType::NONE if the URL could not
 // be determined for some reason.
-static ContextNode GetTypeAndURLFromFrame(WebCore::Frame* frame,
-                                          GURL* url,
-                                          ContextNode page_node) {
-  ContextNode node;
+static ContextNodeType GetTypeAndURLFromFrame(
+    WebCore::Frame* frame,
+    GURL* url,
+    ContextNodeType page_node_type) {
+  ContextNodeType node_type;
   if (frame) {
     WebCore::DocumentLoader* dl = frame->loader()->documentLoader();
     if (dl) {
       WebDataSource* ds = WebDataSourceImpl::FromLoader(dl);
       if (ds) {
-        node = page_node;
+        node_type = page_node_type;
         *url = ds->hasUnreachableURL() ? ds->unreachableURL()
                                        : ds->request().url();
       }
     }
   }
-  return node;
+  return node_type;
 }
 
 WebCore::PlatformMenuDescription
@@ -161,13 +162,13 @@ WebCore::PlatformMenuDescription
   WebCore::IntPoint menu_point =
       selected_frame->view()->contentsToWindow(r.point());
 
-  ContextNode node;
+  ContextNodeType node_type;
 
   // Links, Images, Media tags, and Image/Media-Links take preference over
   // all else.
   WebCore::KURL link_url = r.absoluteLinkURL();
   if (!link_url.isEmpty()) {
-    node.type |= ContextNode::LINK;
+    node_type.type |= ContextNodeType::LINK;
   }
 
   WebCore::KURL src_url;
@@ -176,7 +177,7 @@ WebCore::PlatformMenuDescription
 
   if (!r.absoluteImageURL().isEmpty()) {
     src_url = r.absoluteImageURL();
-    node.type |= ContextNode::IMAGE;
+    node_type.type |= ContextNodeType::IMAGE;
   } else if (!r.absoluteMediaURL().isEmpty()) {
     src_url = r.absoluteMediaURL();
           
@@ -185,25 +186,26 @@ WebCore::PlatformMenuDescription
     WebCore::HTMLMediaElement* media_element =
         static_cast<WebCore::HTMLMediaElement*>(r.innerNonSharedNode());
     if (media_element->hasTagName(WebCore::HTMLNames::videoTag)) {
-      node.type |= ContextNode::VIDEO;
+      node_type.type |= ContextNodeType::VIDEO;
     } else if (media_element->hasTagName(WebCore::HTMLNames::audioTag)) {
-      node.type |= ContextNode::AUDIO;
+      node_type.type |= ContextNodeType::AUDIO;
     }
 
     media_params.playback_rate = media_element->playbackRate();
 
     if (media_element->paused()) {
-      media_params.player_state |= ContextMenuMediaParams::PLAYER_PAUSED;
+      media_params.player_state |= ContextMenuMediaParams::PAUSED;
     }
     if (media_element->muted()) {
-      media_params.player_state |= ContextMenuMediaParams::PLAYER_MUTED;
+      media_params.player_state |= ContextMenuMediaParams::MUTED;
     }
     if (media_element->loop()) {
-      media_params.player_state |= ContextMenuMediaParams::PLAYER_LOOP;
+      media_params.player_state |= ContextMenuMediaParams::LOOP;
     }
     if (media_element->supportsSave()) {
-      media_params.player_state |= ContextMenuMediaParams::PLAYER_CAN_SAVE;
+      media_params.player_state |= ContextMenuMediaParams::CAN_SAVE;
     }
+    // TODO(ajwong): Report error states in the media player.
   }
 
   // If it's not a link, an image, a media element, or an image/media link,
@@ -217,26 +219,27 @@ WebCore::PlatformMenuDescription
   std::string frame_charset = WideToASCII(
       webkit_glue::StringToStdWString(selected_frame->loader()->encoding()));
   // Send the frame and page URLs in any case.
-  ContextNode frame_node = ContextNode(ContextNode::NONE);
-  ContextNode page_node =
+  ContextNodeType frame_node = ContextNodeType(ContextNodeType::NONE);
+  ContextNodeType page_node =
       GetTypeAndURLFromFrame(webview_->main_frame()->frame(),
                              &page_url,
-                             ContextNode(ContextNode::PAGE));
+                             ContextNodeType(ContextNodeType::PAGE));
   if (selected_frame != webview_->main_frame()->frame()) {
-    frame_node = GetTypeAndURLFromFrame(selected_frame,
-                                        &frame_url,
-                                        ContextNode(ContextNode::FRAME));
+    frame_node =
+      GetTypeAndURLFromFrame(selected_frame,
+          &frame_url,
+          ContextNodeType(ContextNodeType::FRAME));
   }
 
   if (r.isSelected()) {
-    node.type |= ContextNode::SELECTION;
+    node_type.type |= ContextNodeType::SELECTION;
     selection_text_string = CollapseWhitespace(
       webkit_glue::StringToStdWString(selected_frame->selectedText()),
       false);
   }
 
   if (r.isContentEditable()) {
-    node.type |= ContextNode::EDITABLE;
+    node_type.type |= ContextNodeType::EDITABLE;
     if (webview_->GetFocusedWebCoreFrame()->editor()->
         isContinuousSpellCheckingEnabled()) {
       misspelled_word_string = GetMisspelledWord(default_menu,
@@ -244,11 +247,11 @@ WebCore::PlatformMenuDescription
     }
   }
 
-  if (node.type == ContextNode::NONE) {
+  if (node_type.type == ContextNodeType::NONE) {
     if (selected_frame != webview_->main_frame()->frame()) {
-      node = frame_node;
+      node_type = frame_node;
     } else {
-      node = page_node;
+      node_type = page_node;
     }
   }
 
@@ -258,26 +261,26 @@ WebCore::PlatformMenuDescription
   if (ds)
     security_info = ds->response().securityInfo();
 
-  int edit_flags = ContextNode::CAN_DO_NONE;
+  int edit_flags = ContextNodeType::CAN_DO_NONE;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canUndo())
-    edit_flags |= ContextNode::CAN_UNDO;
+    edit_flags |= ContextNodeType::CAN_UNDO;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canRedo())
-    edit_flags |= ContextNode::CAN_REDO;
+    edit_flags |= ContextNodeType::CAN_REDO;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canCut())
-    edit_flags |= ContextNode::CAN_CUT;
+    edit_flags |= ContextNodeType::CAN_CUT;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canCopy())
-    edit_flags |= ContextNode::CAN_COPY;
+    edit_flags |= ContextNodeType::CAN_COPY;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canPaste())
-    edit_flags |= ContextNode::CAN_PASTE;
+    edit_flags |= ContextNodeType::CAN_PASTE;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canDelete())
-    edit_flags |= ContextNode::CAN_DELETE;
+    edit_flags |= ContextNodeType::CAN_DELETE;
   // We can always select all...
-  edit_flags |= ContextNode::CAN_SELECT_ALL;
+  edit_flags |= ContextNodeType::CAN_SELECT_ALL;
 
   WebViewDelegate* d = webview_->delegate();
   if (d) {
     d->ShowContextMenu(webview_,
-                       node,
+                       node_type,
                        menu_point.x(),
                        menu_point.y(),
                        webkit_glue::KURLToGURL(link_url),

@@ -65,6 +65,13 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,
                       RendererPreferences)
 
+  // Tells the renderer to perform the given action on the media player
+  // located at |x|, |y|.
+  IPC_MESSAGE_ROUTED3(ViewMsg_MediaPlayerActionAt,
+                      int32 /* x */,
+                      int32 /* y */,
+                      MediaPlayerAction)
+
   // Tells the render view to close.
   IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 

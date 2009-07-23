@@ -45,15 +45,15 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
                             public WebViewDelegate {
  public:
   struct CapturedContextMenuEvent {
-    CapturedContextMenuEvent(ContextNode in_node,
+    CapturedContextMenuEvent(ContextNodeType in_node_type,
                              int in_x,
                              int in_y)
-      : node(in_node),
+      : node_type(in_node_type),
         x(in_x),
         y(in_y) {
     }
 
-    ContextNode node;
+    ContextNodeType node_type;
     int x;
     int y;
   };
@@ -130,7 +130,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   virtual void StartDragging(WebView* webview,
                              const WebKit::WebDragData& drag_data);
   virtual void ShowContextMenu(WebView* webview,
-                               ContextNode node,
+                               ContextNodeType node_type,
                                int x,
                                int y,
                                const GURL& link_url,

@@ -50,6 +50,7 @@ class WebWorker;
 class WebWorkerClient;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
+class WebNode;
 class WebURLRequest;
 class WebURLResponse;
 class WebWidget;
@@ -615,7 +616,8 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // @abstract Shows a context menu with commands relevant to a specific
   //           element on the current page.
   // @param webview The WebView sending the delegate method.
-  // @param node The node(s) the context menu is being invoked on
+  // @param node_type The type of the node(s) the context menu is being
+  // invoked on
   // @param x The x position of the mouse pointer (relative to the webview)
   // @param y The y position of the mouse pointer (relative to the webview)
   // @param link_url The absolute URL of the link that contains the node the
@@ -635,7 +637,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // @param frame_charset which indicates the character encoding of
   // the currently focused frame.
   virtual void ShowContextMenu(WebView* webview,
-                               ContextNode node,
+                               ContextNodeType node_type,
                                int x,
                                int y,
                                const GURL& link_url,

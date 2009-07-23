@@ -52,6 +52,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "GraphicsContext.h"
 #include "HTMLNames.h"
 #include "HTMLInputElement.h"
+#include "HTMLMediaElement.h"
 #include "HitTestResult.h"
 #include "Image.h"
 #include "InspectorController.h"
@@ -1802,6 +1803,41 @@ void WebViewImpl::SetIsTransparent(bool is_transparent) {
 
 bool WebViewImpl::GetIsTransparent() const {
   return is_transparent_;
+}
+
+void WebViewImpl::MediaPlayerActionAt(int x,
+                                      int y,
+                                      const MediaPlayerAction& action) {
+  HitTestResult result = HitTestResultForWindowPos(IntPoint(x, y));
+
+  WTF::RefPtr<WebCore::Node> node = result.innerNonSharedNode();
+  if (node->hasTagName(WebCore::HTMLNames::videoTag) ||
+      node->hasTagName(WebCore::HTMLNames::audioTag)) {
+    WTF::RefPtr<WebCore::HTMLMediaElement> media_element =
+        static_pointer_cast<WebCore::HTMLMediaElement>(node);
+    if (action.command & MediaPlayerAction::PLAY) {
+      media_element->play();
+    }
+    if (action.command & MediaPlayerAction::PAUSE) {
+      media_element->pause();
+    }
+    if (action.command & MediaPlayerAction::MUTE) {
+      media_element->setMuted(true);
+    }
+    if (action.command & MediaPlayerAction::UNMUTE) {
+      media_element->setMuted(false);
+    }
+    if (action.command & MediaPlayerAction::LOOP) {
+      media_element->setLoop(true);
+    }
+    if (action.command & MediaPlayerAction::NO_LOOP) {
+      media_element->setLoop(false);
+    }
+    if (action.command & MediaPlayerAction::SET_PLAYBACK_RATE) {
+      // TODO(ajwong): We should test for overflow.
+      media_element->setPlaybackRate(static_cast<float>(action.playback_rate));
+    }
+  }
 }
 
 void WebViewImpl::SetActive(bool active) {

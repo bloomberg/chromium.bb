@@ -20,6 +20,7 @@ class IntPoint;
 class IntRect;
 class IntSize;
 class KURL;
+class Node;
 class ResourceError;
 class ResourceResponse;
 class SharedBuffer;
@@ -33,6 +34,7 @@ class WebData;
 class WebDragData;
 class WebForm;
 class WebHistoryItem;
+class WebNode;
 class WebString;
 class WebURL;
 class WebURLRequest;
@@ -119,6 +121,10 @@ WebKit::WebSize IntSizeToWebSize(const WebCore::IntSize&);
 
 // WebCursorInfo <- Cursor
 WebKit::WebCursorInfo CursorToWebCursorInfo(const WebCore::Cursor&);
+
+// WebNode <-> Node
+WebKit::WebNode NodeToWebNode(const WTF::PassRefPtr<WebCore::Node>&);
+WTF::PassRefPtr<WebCore::Node> WebNodeToNode(const WebKit::WebNode&);
 
 // WebDragData <-> ChromiumDataObject
 WebKit::WebDragData ChromiumDataObjectToWebDragData(

@@ -17,7 +17,7 @@ class RenderViewContextMenuExternalWin : public RenderViewContextMenuWin {
                                    const ContextMenuParams& params,
                                    const std::vector<int> disabled_menu_ids);
 
-  ~RenderViewContextMenuExternalWin() {}
+  virtual ~RenderViewContextMenuExternalWin() {}
 
  protected:
   // RenderViewContextMenuWin overrides --------------------------------------
