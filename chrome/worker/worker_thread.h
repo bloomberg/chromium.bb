@@ -5,7 +5,6 @@
 #ifndef CHROME_WORKER_WORKER_THREAD_H_
 #define CHROME_WORKER_WORKER_THREAD_H_
 
-#include "base/thread.h"
 #include "chrome/common/child_thread.h"
 
 class GURL;
@@ -21,10 +20,6 @@ class WorkerThread : public ChildThread {
 
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
-
-  // Called by the thread base class
-  virtual void Init();
-  virtual void CleanUp();
 
   void OnCreateWorker(const GURL& url, int route_id);
 

@@ -14,8 +14,7 @@ class ChildThread;
 // a render widget instance.
 class MockProcess : public ChildProcess {
  public:
-  explicit MockProcess() : ChildProcess(NULL) {}
-  explicit MockProcess(ChildThread* thread) : ChildProcess(thread) {}
+  explicit MockProcess() : ChildProcess() {}
 };
 
 #endif  // CHROME_RENDERER_MOCK_RENDER_PROCESS_H_

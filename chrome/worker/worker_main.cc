@@ -20,15 +20,16 @@
 
 // Mainline routine for running as the worker process.
 int WorkerMain(const MainFunctionParams& parameters) {
-  // The main thread of the render process.
-  MessageLoopForIO main_message_loop;
+  // The main message loop of the worker process.
+  MessageLoop main_message_loop;
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_WorkerMain").c_str());
 
   // Initialize the SystemMonitor
   base::SystemMonitor::Start();
 
-  ChildProcess worker_process(new WorkerThread());
+  ChildProcess worker_process;
+  worker_process.set_main_thread(new WorkerThread());
 #if defined(OS_WIN)
   sandbox::TargetServices* target_services =
       parameters.sandbox_info_.TargetServices();

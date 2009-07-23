@@ -11,20 +11,11 @@
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/render_messages.h"
 
-UtilityThread::UtilityThread() : ChildThread(base::Thread::Options()) {
-}
-
-UtilityThread::~UtilityThread() {
-}
-
-void UtilityThread::Init() {
-  ChildThread::Init();
+UtilityThread::UtilityThread() {
   ChildProcess::current()->AddRefProcess();
 }
 
-void UtilityThread::CleanUp() {
-  // Shutdown in reverse of the initialization order.
-  ChildThread::CleanUp();
+UtilityThread::~UtilityThread() {
 }
 
 void UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {

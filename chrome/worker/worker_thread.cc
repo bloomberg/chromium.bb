@@ -15,35 +15,20 @@ static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls(
     base::LINKER_INITIALIZED);
 
 
-WorkerThread::WorkerThread()
-    : ChildThread(base::Thread::Options(MessageLoop::TYPE_DEFAULT,
-                                        kV8StackSize)) {
-}
-
-WorkerThread::~WorkerThread() {
-}
-
-WorkerThread* WorkerThread::current() {
-  return lazy_tls.Pointer()->Get();
-}
-
-void WorkerThread::Init() {
+WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
-  ChildThread::Init();
   webkit_client_.reset(new WorkerWebKitClientImpl);
   WebKit::initialize(webkit_client_.get());
 }
 
-void WorkerThread::CleanUp() {
+WorkerThread::~WorkerThread() {
   // Shutdown in reverse of the initialization order.
-
-  if (webkit_client_.get()) {
-    WebKit::shutdown();
-    webkit_client_.reset();
-  }
-
-  ChildThread::CleanUp();
+  WebKit::shutdown();
   lazy_tls.Pointer()->Set(NULL);
+}
+
+WorkerThread* WorkerThread::current() {
+  return lazy_tls.Pointer()->Get();
 }
 
 void WorkerThread::OnControlMessageReceived(const IPC::Message& msg) {
