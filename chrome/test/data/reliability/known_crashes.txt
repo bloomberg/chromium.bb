@@ -80,3 +80,5 @@ PREFIX : wtf::hashtable<webcore::string,webcore::string,wtf::identityextractor<w
 # 8033
 SUBSTRING : windowdragresponsetask::run___messageloop::runtask___messageloop::dowork
 
+# 17569
+SUBSTRING : masksuperblitter:~masksuperblitter
