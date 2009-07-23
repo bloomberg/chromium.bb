@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/win_util.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -174,7 +175,9 @@ bool FirstRunView::Accept() {
   DisableButtons();
   customize_link_->SetEnabled(false);
   CreateDesktopShortcut();
-  CreateQuickLaunchShortcut();
+  // Windows 7 has deprecated the quick launch bar.
+  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
+    CreateQuickLaunchShortcut();
   // Index 0 is the default browser.
   FirstRun::ImportSettings(profile_,
       importer_host_->GetSourceProfileInfoAt(0).browser_type,
