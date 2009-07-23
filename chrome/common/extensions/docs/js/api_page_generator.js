@@ -32,9 +32,12 @@ Array.prototype.each = function(f) {
   }
 }
 
-Object.prototype.extends = function(obj) {
-  for (var k in obj) {
-    this[k] = obj[k];
+/*
+ * Assigns all keys & values of |obj2| to |obj1|.
+ */
+function extend(obj, obj2) {
+  for (var k in obj2) {
+    obj[k] = obj2[k];
   }
 }
 
@@ -207,7 +210,7 @@ function addPropertyListIfObject(object) {
 function linkTypeReferences(parameters, types) {
   parameters.each(function(p) {
     if (p.$ref) {
-      p.extends(types[p.$ref]);
+      extend(p, types[p.$ref]);
     }
   });
 } 
