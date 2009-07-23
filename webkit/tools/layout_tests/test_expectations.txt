@@ -2967,10 +2967,6 @@ BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
 BUG17255 LINUX WIN : LayoutTests/fast/box-shadow/spread.html = FAIL
 BUG13907 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 
-// New test from WebKit merge 46126:46141 (crashes on mac).
-BUG17321 LINUX : LayoutTests/fast/loader/non-html-load-event.html = FAIL
-BUG17321 MAC : LayoutTests/fast/loader/non-html-load-event.html = CRASH FAIL
-
 // Test failures from WebKit merge r46143:46194
 BUG17397 SKIP WIN : LayoutTests/media/audio-no-installed-engines.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
@@ -2997,3 +2993,8 @@ BUG17589 WIN LINUX : LayoutTests/fast/forms/select-popup-pagekeys.html = FAIL
 
 // These need new baselines for the merge r46270:46282.
 BUG_DARIN WIN LINUX : LayoutTests/fast/overflow/overflow-with-local-background-attachment.html = FAIL
+
+// These need new baselines for the merge r46282:46288.
+BUG_DARIN WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
