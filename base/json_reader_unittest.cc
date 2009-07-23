@@ -24,6 +24,24 @@ TEST(JSONReaderTest, Reading) {
   ASSERT_TRUE(root.get());
   ASSERT_TRUE(root->IsType(Value::TYPE_BOOLEAN));
 
+  // Embedded comment
+  root.reset(JSONReader().JsonToValue("/* comment */null", false, false));
+  ASSERT_TRUE(root.get());
+  ASSERT_TRUE(root->IsType(Value::TYPE_NULL));
+  root.reset(JSONReader().JsonToValue("40 /* comment */", false, false));
+  ASSERT_TRUE(root.get());
+  ASSERT_TRUE(root->IsType(Value::TYPE_INTEGER));
+  root.reset(JSONReader().JsonToValue("true // comment", false, false));
+  ASSERT_TRUE(root.get());
+  ASSERT_TRUE(root->IsType(Value::TYPE_BOOLEAN));
+  root.reset(JSONReader().JsonToValue("/* comment */\"sample string\"",
+                                      false, false));
+  ASSERT_TRUE(root.get());
+  ASSERT_TRUE(root->IsType(Value::TYPE_STRING));
+  std::string value;
+  ASSERT_TRUE(root->GetAsString(&value));
+  ASSERT_EQ("sample string", value);
+
   // Test number formats
   root.reset(JSONReader().JsonToValue("43", false, false));
   ASSERT_TRUE(root.get());

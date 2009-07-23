@@ -601,15 +601,11 @@ bool JSONReader::EatComment() {
     // Block comment, read until */
     json_pos_ += 2;
     while ('\0' != *json_pos_) {
-      switch (*json_pos_) {
-        case '*':
-          if ('/' == *(json_pos_ + 1)) {
-            json_pos_ += 2;
-            return true;
-          }
-        default:
-          ++json_pos_;
+      if ('*' == *json_pos_ && '/' == *(json_pos_ + 1)) {
+        json_pos_ += 2;
+        return true;
       }
+      ++json_pos_;
     }
   } else {
     return false;
