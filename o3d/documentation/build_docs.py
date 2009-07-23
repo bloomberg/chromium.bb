@@ -163,7 +163,7 @@ def RunNixysa(idl_files, generate, output_dir, nixysa_options):
   python_exe = 'python'
   Execute([
     python_exe,
-    MakePath('../third_party/nixysa/files/codegen.py'),
+    MakePath('../third_party/nixysa/codegen.py'),
     '--binding-module=o3d:%s' % MakePath('../plugin/o3d_binding.py'),
     '--generate=' + generate,
     '--force',
@@ -359,4 +359,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-

@@ -49,7 +49,7 @@
 #include "command_buffer/service/win/d3d9/gapi_d3d9.h"
 #endif
 #include "third_party/native_client/googleclient/native_client/src/trusted/desc/nrd_all_modules.h"
-#include "third_party/nixysa/files/static_glue/npapi/npn_api.h"
+#include "third_party/nixysa/static_glue/npapi/npn_api.h"
 
 namespace o3d {
 namespace command_buffer {

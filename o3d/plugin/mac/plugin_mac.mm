@@ -256,7 +256,8 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
 
 bool ExceptionCallback(int exception_type,
                        int exception_code,
-                       mach_port_t crashing_thread) {
+                       mach_port_t crashing_thread,
+                       void* context) {
   return BreakpadEnabler::IsEnabled();
 }
 
@@ -266,7 +267,7 @@ void InitializeBreakpad() {
     NSDictionary* info = [bundle infoDictionary];
 
     gBreakpadRef = BreakpadCreate(info);
-    BreakpadSetFilterCallback(gBreakpadRef, ExceptionCallback);
+    BreakpadSetFilterCallback(gBreakpadRef, ExceptionCallback, NULL);
   }
 }
 
