@@ -392,6 +392,10 @@ void EventSendingController::keyDown(
       code = WebCore::VKEY_PRIOR;
     } else if (L"pageDown" == code_str) {
       code = WebCore::VKEY_NEXT;
+    } else if (L"home" == code_str) {
+      code = WebCore::VKEY_HOME;
+    } else if (L"end" == code_str) {
+      code = WebCore::VKEY_END;
     } else {
       DCHECK(code_str.length() == 1);
       code = code_str[0];
