@@ -72,17 +72,17 @@ RenderProcess::RenderProcess()
   }
 #endif
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
-    webkit_glue::SetJavaScriptFlags(
-      command_line.GetSwitchValue(switches::kJavaScriptFlags));
-  }
-
   // Out of process dev tools rely upon auto break behavior.
   webkit_glue::SetJavaScriptFlags(
       L"--debugger-auto-break"
       // Enable lazy in-memory profiling.
       L" --prof --prof-lazy --logfile=* --compress-log");
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
+    webkit_glue::SetJavaScriptFlags(
+      command_line.GetSwitchValue(switches::kJavaScriptFlags));
+  }
 
   if (command_line.HasSwitch(switches::kEnableWatchdog)) {
     // TODO(JAR): Need to implement renderer IO msgloop watchdog.
