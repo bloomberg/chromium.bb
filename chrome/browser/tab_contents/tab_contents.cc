@@ -1544,7 +1544,7 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
   DCHECK(!plugin_path.value().empty());
 
   std::wstring plugin_name = plugin_path.ToWStringHack();
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(plugin_path));
   if (version_info.get()) {
