@@ -214,9 +214,11 @@ TEST_F(FilePathUtilsTest, FindFile) {
 
   FilePath expected_path_1(folder_path_1);
   expected_path_1 = expected_path_1.Append(file_path_1);
+  o3d::AbsolutePath(&expected_path_1);
   FilePath expected_path_2(folder_path_2);
   expected_path_2 =
       expected_path_2.Append(UTF8ToFilePath("tga-256x256-32bit.tga"));
+  o3d::AbsolutePath(&expected_path_2);
 
   std::vector<FilePath> paths;
   EXPECT_FALSE(FindFile(paths, file_path_1, &out_path));
