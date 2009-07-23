@@ -834,6 +834,8 @@ willPositionSheet:(NSWindow*)sheet
 - (void)userChangedTheme {
   [self setTheme];
   [self applyTheme];
+
+  [tabStripController_ userChangedTheme];
 }
 
 // TODO(rohitrao, jrg): Move this logic out of BrowserWindowController?

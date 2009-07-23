@@ -600,4 +600,10 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
   tabModel_->InsertTabContentsAt(index, contents, true, false);
 }
 
+- (void)userChangedTheme {
+  for (TabController* tab in tabArray_.get()) {
+    [[tab view] setNeedsDisplay:YES];
+  }
+}
+
 @end

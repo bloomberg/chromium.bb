@@ -98,6 +98,9 @@ class ToolbarModel;
 // Force the tabs to rearrange themselves to reflect the current model
 - (void)layoutTabs;
 
+// The user changed the theme.
+- (void)userChangedTheme;
+
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;
 @end

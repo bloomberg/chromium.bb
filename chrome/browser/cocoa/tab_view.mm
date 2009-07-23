@@ -458,7 +458,7 @@ static const double kDragStartDistance = 3.0;
   [path stroke];
   [[NSGraphicsContext currentContext] restoreGraphicsState];
 
-  GTMTheme *theme = [[self self] gtm_theme];
+  GTMTheme *theme = [self gtm_theme];
 
   if (!selected) {
     NSColor *windowColor =
