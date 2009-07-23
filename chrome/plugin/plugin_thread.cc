@@ -197,7 +197,7 @@ bool IsDefaultPluginEnabled() {
   // http://code.google.com/p/chromium/issues/detail?id=10952
   return false;
 #elif defined(OS_MACOSX)
-  NOTIMPLEMENTED();
+  // http://code.google.com/p/chromium/issues/detail?id=17392
   return false;
 #endif
 }
