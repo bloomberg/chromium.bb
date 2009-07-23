@@ -51,7 +51,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/src/WrappedResourceRequest.h"
 #include "webkit/api/src/WrappedResourceResponse.h"
 #include "webkit/glue/autofill_form.h"
-#include "webkit/glue/alt_404_page_resource_fetcher.h"
+#include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -75,11 +75,13 @@ using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebString;
 using WebKit::WebURL;
+using WebKit::WebURLError;
+using WebKit::WebURLRequest;
 using WebKit::WebVector;
 using WebKit::WrappedResourceRequest;
 using WebKit::WrappedResourceResponse;
 
-using webkit_glue::Alt404PageResourceFetcher;
+using webkit_glue::AltErrorPageResourceFetcher;
 
 // Domain for internal error codes.
 static const char kInternalErrorDomain[] = "webkit_glue";
@@ -352,8 +354,9 @@ void WebFrameLoaderClient::dispatchDidFinishLoading(DocumentLoader* loader,
     const GURL& url = GetAlt404PageUrl(loader);
     DCHECK(url.is_valid()) <<
         "URL changed? It was valid in dispatchDidReceiveResponse.";
-    alt_404_page_fetcher_.reset(new Alt404PageResourceFetcher(this,
-        webframe_->frame(), loader, url));
+    alt_404_page_fetcher_.reset(new AltErrorPageResourceFetcher(
+        url, webframe_, webkit_glue::KURLToGURL(loader->url()),
+        NewCallback(this, &WebFrameLoaderClient::Alt404PageFinished)));
   }
 
   WebViewImpl* webview = webframe_->GetWebViewImpl();
@@ -380,16 +383,21 @@ GURL WebFrameLoaderClient::GetAlt404PageUrl(DocumentLoader* loader) {
   return d->GetAlternateErrorPageURL(failedURL, WebViewDelegate::HTTP_404);
 }
 
-void WebFrameLoaderClient::Alt404PageFinished(DocumentLoader* loader,
+void WebFrameLoaderClient::Alt404PageFinished(const GURL& unreachable_url,
                                               const std::string& html) {
-  const WebURL& base_url = webkit_glue::KURLToWebURL(loader->url());
-  if (html.length() > 0) {
+  // TODO(darin): Move this processing out to the embedder.
+  if (!html.empty()) {
     // TODO(tc): Handle backoff on so we don't hammer the alt error page
     // servers.
-    webframe_->LoadHTMLString(html, base_url);
+    WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
+    if (!d)
+      return;
+    WebURLError error;
+    error.unreachableURL = unreachable_url;
+    d->LoadNavigationErrorPage(webframe_, WebURLRequest(), error, html, false);
   } else {
     // Fall back on original text
-    webframe_->LoadHTMLString(postponed_data_, base_url);
+    webframe_->LoadHTMLString(postponed_data_, unreachable_url);
   }
 }
 

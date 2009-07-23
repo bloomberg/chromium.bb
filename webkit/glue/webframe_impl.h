@@ -398,6 +398,11 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
 
   void LoadJavaScriptURL(const WebCore::KURL& url);
 
+  // Callback function for download of alternate error pages.  If the server is
+  // down or we take too long to download the page, |html| will be empty.
+  void AltErrorPageFinished(const GURL& unreachable_url,
+                            const std::string& html);
+
   // Valid between calls to BeginPrint() and EndPrint(). Containts the print
   // information. Is used by PrintPage().
   scoped_ptr<ChromePrintContext> print_context_;

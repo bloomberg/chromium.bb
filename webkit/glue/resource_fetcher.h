@@ -41,7 +41,7 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
                     const std::string&>::Type Callback;
 
   // We need a frame to make requests.
-  ResourceFetcher(const GURL& url, WebFrame* frame, Callback* d);
+  ResourceFetcher(const GURL& url, WebFrame* frame, Callback* callback);
   ~ResourceFetcher();
 
   // Stop the request and don't call the callback.

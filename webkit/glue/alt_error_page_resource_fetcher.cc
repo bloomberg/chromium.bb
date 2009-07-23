@@ -2,23 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
-#include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
-#include "ResourceResponse.h"
-MSVC_POP_WARNING();
-#undef LOG
-
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 
-#include "webkit/api/public/WebDataSource.h"
-#include "webkit/api/public/WebURLRequest.h"
-#include "webkit/glue/glue_util.h"
-#include "webkit/glue/webframe_impl.h"
-#include "webkit/glue/webview_delegate.h"
-#include "webkit/glue/webview.h"
+#include "webkit/glue/resource_fetcher.h"
 
 using WebKit::WebURLError;
 using WebKit::WebURLResponse;
@@ -30,38 +16,32 @@ namespace webkit_glue {
 static const int kDownloadTimeoutSec = 3;
 
 AltErrorPageResourceFetcher::AltErrorPageResourceFetcher(
-    WebView* web_view,
-    WebFrame* web_frame,
-    const WebURLError& web_error,
-    const GURL& url)
-    : web_view_(web_view),
-      web_error_(web_error),
-      web_frame_(web_frame) {
-  failed_request_ = web_frame_->GetProvisionalDataSource()->request();
+    const GURL& url,
+    WebFrame* frame,
+    const GURL& unreachable_url,
+    Callback* callback)
+    : callback_(callback),
+      unreachable_url_(unreachable_url) {
   fetcher_.reset(new ResourceFetcherWithTimeout(
-      url, web_frame, kDownloadTimeoutSec,
+      url, frame, kDownloadTimeoutSec,
       NewCallback(this, &AltErrorPageResourceFetcher::OnURLFetchComplete)));
 }
 
 AltErrorPageResourceFetcher::~AltErrorPageResourceFetcher() {
 }
 
+void AltErrorPageResourceFetcher::Cancel() {
+  fetcher_->Cancel();
+}
+
 void AltErrorPageResourceFetcher::OnURLFetchComplete(
     const WebURLResponse& response,
     const std::string& data) {
-  WebViewDelegate* delegate = web_view_->GetDelegate();
-  if (!delegate)
-    return;
-
   // A null response indicates a network error.
   if (!response.isNull() && response.httpStatusCode() == 200) {
-    // We successfully got a response from the alternate error page server, so
-    // load it.
-    delegate->LoadNavigationErrorPage(web_frame_, failed_request_,
-                                      web_error_, data, true);
+    callback_->Run(unreachable_url_, data);
   } else {
-    delegate->LoadNavigationErrorPage(web_frame_, failed_request_,
-                                      web_error_, std::string(), true);
+    callback_->Run(unreachable_url_, std::string());
   }
 }
 

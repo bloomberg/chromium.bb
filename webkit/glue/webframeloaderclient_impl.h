@@ -20,7 +20,7 @@ class Widget;
 }
 
 namespace webkit_glue {
-class Alt404PageResourceFetcher;
+class AltErrorPageResourceFetcher;
 }
 
 class WebFrameImpl;
@@ -203,13 +203,11 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
 
   virtual void registerForIconNotification(bool listen = true);
 
-  // Callback function for download of alternate 404 pages.  If the server is
-  // down or we take more than 1s to download the page, html will be an empty
-  // string.
-  void Alt404PageFinished(WebCore::DocumentLoader* loader,
-                          const std::string& html);
-
  private:
+  // Callback function for download of alternate 404 pages.  If the server is
+  // down or we take too long to download the page, |html| will be empty.
+  void Alt404PageFinished(const GURL& unreachable_url, const std::string& html);
+
   void makeDocumentView();
 
   // Given a NavigationAction, determine the associated WebNavigationPolicy.
@@ -233,7 +231,7 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   WebFrameImpl* webframe_;
 
   // Resource fetcher for downloading an alternate 404 page.
-  scoped_ptr<webkit_glue::Alt404PageResourceFetcher> alt_404_page_fetcher_;
+  scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_404_page_fetcher_;
 
   bool postpone_loading_data_;
   std::string postponed_data_;

@@ -151,6 +151,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/api/public/WebURLError.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/dom_operations.h"
@@ -1563,7 +1564,8 @@ void WebFrameImpl::LoadAlternateHTMLErrorPage(const WebURLRequest& request,
                  replace);
 
   alt_error_page_fetcher_.reset(new AltErrorPageResourceFetcher(
-      GetWebViewImpl(), this, error, error_page_url));
+      error_page_url, this, error.unreachableURL,
+      NewCallback(this, &WebFrameImpl::AltErrorPageFinished)));
 }
 
 void WebFrameImpl::DispatchWillSendRequest(WebURLRequest* request) {
@@ -1842,4 +1844,14 @@ void WebFrameImpl::LoadJavaScriptURL(const KURL& url) {
     frame_->loader()->write(script_result);
     frame_->loader()->end();
   }
+}
+
+void WebFrameImpl::AltErrorPageFinished(const GURL& unreachable_url,
+                                        const std::string& html) {
+  WebViewDelegate* d = GetWebViewImpl()->delegate();
+  if (!d)
+    return;
+  WebURLError error;
+  error.unreachableURL = unreachable_url;
+  d->LoadNavigationErrorPage(this, WebURLRequest(), error, html, true);
 }
