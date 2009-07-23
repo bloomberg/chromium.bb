@@ -238,8 +238,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
 }
 
 // Background window does not steal focus.
-// TODO(brettw) bug 15265 enable this test when it's fixed.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_BackgroundBrowserDontStealFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
@@ -609,8 +608,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
-// TODO(brettw) bug 15265 enable this test when it's fixed.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
   BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
   ASSERT_TRUE(browser_view);
