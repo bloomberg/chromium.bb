@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -30,7 +30,7 @@ extern "C" {
 // The current version of the API, used by the 'version' field of CPPluginFuncs
 // and CPBrowserFuncs.
 #define CP_MAJOR_VERSION 0
-#define CP_MINOR_VERSION 10
+#define CP_MINOR_VERSION 11
 #define CP_VERSION       ((CP_MAJOR_VERSION << 8) | (CP_MINOR_VERSION))
 
 #define CP_GET_MAJOR_VERSION(version) ((version & 0xff00) >> 8)
@@ -445,6 +445,13 @@ typedef CPError (STDCALL *CPB_GetDragDataFunc)(
 typedef CPError (STDCALL *CPB_SetDropEffectFunc)(
     CPID id, CPBrowsingContext context, struct NPObject* event, int effect);
 
+// For drag type "Files", the drag data returned by CPB_GetDragDataFunc() is a
+// backspace delimited list of file paths.  Use this routine to pass that data
+// to the browser process to verify that the renderer has permission to access
+// the files.  Returns CPERR_SUCCESS if access is allowed.
+typedef CPError (STDCALL *CPB_AllowFileDropFunc)(
+    CPID id, CPBrowsingContext context, const char* file_drag_data);
+
 // Function table for issuing requests using via the other side's network stack.
 // For the plugin, this functions deal with issuing requests through the
 // browser.  For the browser, these functions deal with allowing the plugin to
@@ -521,6 +528,7 @@ typedef struct _CPBrowserFuncs {
   CPB_OpenFileDialogFunc open_file_dialog;
   CPB_GetDragDataFunc get_drag_data;
   CPB_SetDropEffectFunc set_drop_effect;
+  CPB_AllowFileDropFunc allow_file_drop;
 } CPBrowserFuncs;
 
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,6 +72,13 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
                               int32 /* request_context */,
                               GURL /* url */,
                               std::string /* cookies */)
+
+  // Used by the plugin process to verify that its renderer |process_id| has
+  // permission to access the given |files|.
+  IPC_SYNC_MESSAGE_CONTROL2_1(PluginProcessHostMsg_AccessFiles,
+                              int /* process_id */,
+                              std::vector<std::string> /* files */,
+                              bool /* allowed */)
 
   // Get the list of proxies to use for |url|, as a semicolon delimited list
   // of "<TYPE> <HOST>:<PORT>" | "DIRECT". See also ViewHostMsg_ResolveProxy

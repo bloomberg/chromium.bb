@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,6 +87,9 @@ class WebPluginProxy : public WebPlugin {
   // Returns a WebPluginResourceClient object given its id, or NULL if no
   // object with that id exists.
   WebPluginResourceClient* GetResourceClient(int id);
+
+  // Returns the process id of the renderer that contains this plugin.
+  int GetRendererProcessId();
 
   // For windowless plugins, paints the given rectangle into the local buffer.
   void Paint(const gfx::Rect& rect);

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,6 +101,8 @@ class PluginProcessHost : public ChildProcessHost,
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
   void OnGetCookies(uint32 request_context, const GURL& url,
                     std::string* cookies);
+  void OnAccessFiles(int process_id, const std::vector<std::string>& files,
+                     bool* allowed);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
   void OnPluginMessage(const std::vector<uint8>& data);
 

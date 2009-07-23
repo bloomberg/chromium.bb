@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -546,6 +546,12 @@ CPError STDCALL CPB_SetDropEffect(
   return CPERR_FAILURE;
 }
 
+CPError STDCALL CPB_AllowFileDrop(
+    CPID id, CPBrowsingContext context, const char* file_drag_data) {
+  NOTREACHED() << "Should not be called in the browser process.";
+  return CPERR_FAILURE;
+}
+
 //
 // Functions related to network interception
 //
@@ -789,6 +795,7 @@ CPBrowserFuncs* GetCPBrowserFuncsForBrowser() {
     browser_funcs.open_file_dialog = CPB_OpenFileDialog;
     browser_funcs.get_drag_data = CPB_GetDragData;
     browser_funcs.set_drop_effect = CPB_SetDropEffect;
+    browser_funcs.allow_file_drop = CPB_AllowFileDrop;
 
     request_funcs.size = sizeof(request_funcs);
     request_funcs.start_request = CPR_StartRequest;

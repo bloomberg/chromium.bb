@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -351,6 +351,33 @@ CPError STDCALL CPB_SetDropEffect(
   return CPERR_FAILURE;
 }
 
+CPError STDCALL CPB_AllowFileDrop(
+    CPID id, CPBrowsingContext context, const char* file_drag_data) {
+  CHECK(ChromePluginLib::IsPluginThread());
+
+  WebPluginProxy* webplugin = WebPluginProxy::FromCPBrowsingContext(context);
+  if (!webplugin || !file_drag_data)
+    return CPERR_INVALID_PARAMETER;
+
+  const int pid = webplugin->GetRendererProcessId();
+  if (!pid)
+    return CPERR_FAILURE;
+
+  static const char kDelimiter('\b');
+  std::vector<std::string> files;
+  SplitStringDontTrim(file_drag_data, kDelimiter, &files);
+
+  bool allowed = false;
+  if (!PluginThread::current()->Send(
+          new PluginProcessHostMsg_AccessFiles(pid, files, &allowed))) {
+    return CPERR_FAILURE;
+  }
+
+  if (allowed)
+    return CPERR_SUCCESS;
+  return CPERR_FAILURE;
+}
+
 CPError STDCALL CPB_GetCommandLineArguments(
     CPID id, CPBrowsingContext context, const char* url, char** arguments) {
   CHECK(ChromePluginLib::IsPluginThread());
@@ -636,6 +663,7 @@ CPBrowserFuncs* GetCPBrowserFuncsForPlugin() {
     browser_funcs.open_file_dialog = CPB_OpenFileDialog;
     browser_funcs.get_drag_data = CPB_GetDragData;
     browser_funcs.set_drop_effect = CPB_SetDropEffect;
+    browser_funcs.allow_file_drop = CPB_AllowFileDrop;
 
     browser_funcs.request_funcs = &request_funcs;
     browser_funcs.response_funcs = &response_funcs;

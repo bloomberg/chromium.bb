@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/plugin_service.h"
@@ -439,6 +440,7 @@ void PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
                         OnGetPluginFinderUrl)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginMessage, OnPluginMessage)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_GetCookies, OnGetCookies)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_AccessFiles, OnAccessFiles)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PluginProcessHostMsg_ResolveProxy,
                                     OnResolveProxy)
 #if defined(OS_WIN)
@@ -505,6 +507,24 @@ void PluginProcessHost::OnGetCookies(uint32 request_context,
   // Note: We don't have a first_party_for_cookies check because plugins bypass
   // third-party cookie blocking.
   *cookies = context->cookie_store()->GetCookies(url);
+}
+
+void PluginProcessHost::OnAccessFiles(int process_id,
+                                      const std::vector<std::string>& files,
+                                      bool* allowed) {
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+
+  for (size_t i = 0; i < files.size(); ++i) {
+    const FilePath path = FilePath::FromWStringHack(UTF8ToWide(files[i]));
+    if (!policy->CanUploadFile(process_id, path)) {
+      LOG(INFO) << "Denied unauthorized request for file " << files[i];
+      *allowed = false;
+      return;
+    }
+  }
+
+  *allowed = true;
 }
 
 void PluginProcessHost::OnResolveProxy(const GURL& url,

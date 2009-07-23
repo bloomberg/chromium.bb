@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -292,7 +292,7 @@ bool ChildProcessSecurityPolicy::CanRequestURL(int renderer_id, const GURL& url)
 }
 
 bool ChildProcessSecurityPolicy::CanUploadFile(int renderer_id,
-                                           const FilePath& file) {
+                                               const FilePath& file) {
   AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(renderer_id);
