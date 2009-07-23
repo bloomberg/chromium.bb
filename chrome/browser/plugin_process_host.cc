@@ -82,8 +82,6 @@ class PluginDownloadUrlHelper : public URLRequest::Delegate {
   void InitiateDownload();
 
   // URLRequest::Delegate
-  virtual void OnReceivedRedirect(URLRequest* request,
-                                  const GURL& new_url);
   virtual void OnAuthRequired(URLRequest* request,
                               net::AuthChallengeInfo* auth_info);
   virtual void OnSSLCertificateError(URLRequest* request,
@@ -141,10 +139,6 @@ void PluginDownloadUrlHelper::InitiateDownload() {
   download_file_request_->set_origin_pid(download_source_pid_);
   download_file_request_->set_context(Profile::GetDefaultRequestContext());
   download_file_request_->Start();
-}
-
-void PluginDownloadUrlHelper::OnReceivedRedirect(URLRequest* request,
-                                                 const GURL& new_url) {
 }
 
 void PluginDownloadUrlHelper::OnAuthRequired(

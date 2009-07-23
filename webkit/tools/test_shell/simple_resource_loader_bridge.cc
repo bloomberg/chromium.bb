@@ -280,7 +280,8 @@ class RequestProxy : public URLRequest::Delegate,
   // URLRequest::Delegate implementation:
 
   virtual void OnReceivedRedirect(URLRequest* request,
-                                  const GURL& new_url) {
+                                  const GURL& new_url,
+                                  bool* defer_redirect) {
     DCHECK(request->status().is_success());
     OnReceivedRedirect(new_url);
   }

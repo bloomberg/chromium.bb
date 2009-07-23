@@ -74,6 +74,7 @@ class TestDelegate : public URLRequest::Delegate {
         cancel_in_rd_(false),
         cancel_in_rd_pending_(false),
         quit_on_complete_(true),
+        quit_on_redirect_(false),
         allow_certificate_errors_(false),
         response_started_count_(0),
         received_bytes_count_(0),
@@ -84,10 +85,15 @@ class TestDelegate : public URLRequest::Delegate {
         buf_(new net::IOBuffer(kBufferSize)) {
   }
 
-  virtual void OnReceivedRedirect(URLRequest* request, const GURL& new_url) {
+  virtual void OnReceivedRedirect(URLRequest* request, const GURL& new_url,
+                                  bool* defer_redirect) {
     received_redirect_count_++;
-    if (cancel_in_rr_)
+    if (quit_on_redirect_) {
+      *defer_redirect = true;
+      MessageLoop::current()->Quit();
+    } else if (cancel_in_rr_) {
       request->Cancel();
+    }
   }
 
   virtual void OnResponseStarted(URLRequest* request) {
@@ -182,6 +188,7 @@ class TestDelegate : public URLRequest::Delegate {
     cancel_in_rd_pending_ = val;
   }
   void set_quit_on_complete(bool val) { quit_on_complete_ = val; }
+  void set_quit_on_redirect(bool val) { quit_on_redirect_ = val; }
   void set_allow_certificate_errors(bool val) {
     allow_certificate_errors_ = val;
   }
@@ -207,6 +214,7 @@ class TestDelegate : public URLRequest::Delegate {
   bool cancel_in_rd_;
   bool cancel_in_rd_pending_;
   bool quit_on_complete_;
+  bool quit_on_redirect_;
   bool allow_certificate_errors_;
 
   std::wstring username_;

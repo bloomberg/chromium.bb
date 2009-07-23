@@ -889,7 +889,8 @@ void ResourceDispatcherHost::RemovePendingRequest(
 // URLRequest::Delegate -------------------------------------------------------
 
 void ResourceDispatcherHost::OnReceivedRedirect(URLRequest* request,
-                                                const GURL& new_url) {
+                                                const GURL& new_url,
+                                                bool* defer_redirect) {
   RESOURCE_LOG("OnReceivedRedirect: " << request->url().spec());
   ExtraRequestInfo* info = ExtraInfoForRequest(request);
 

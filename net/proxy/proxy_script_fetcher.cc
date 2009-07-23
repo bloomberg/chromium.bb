@@ -67,7 +67,6 @@ class ProxyScriptFetcherImpl : public ProxyScriptFetcher,
                               AuthChallengeInfo* auth_info);
   virtual void OnSSLCertificateError(URLRequest* request, int cert_error,
                                      X509Certificate* cert);
-  virtual void OnReceivedRedirect(URLRequest* request, const GURL& to_url);
   virtual void OnResponseStarted(URLRequest* request);
   virtual void OnReadCompleted(URLRequest* request, int num_bytes);
   virtual void OnResponseCompleted(URLRequest* request);
@@ -197,12 +196,6 @@ void ProxyScriptFetcherImpl::OnSSLCertificateError(URLRequest* request,
   // Certificate errors are in same space as net errors.
   result_code_ = cert_error;
   request->Cancel();
-}
-
-void ProxyScriptFetcherImpl::OnReceivedRedirect(URLRequest* request,
-                                                const GURL& to_url) {
-  DCHECK(request == cur_request_.get());
-  // OK, thanks for telling.
 }
 
 void ProxyScriptFetcherImpl::OnResponseStarted(URLRequest* request) {
