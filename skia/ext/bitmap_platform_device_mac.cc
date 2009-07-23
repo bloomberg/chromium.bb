@@ -300,16 +300,15 @@ void BitmapPlatformDevice::DrawToContext(CGContextRef context, int x, int y,
   // anything to trigger copy on write
   CGImageRef image = CGBitmapContextCreateImage(data_->bitmap_context_);
   CGRect bounds;
+  bounds.origin.x = x;
+  bounds.origin.y = y;
   if (src_rect) {
-    bounds = *src_rect;
-    bounds.origin.x = x;
-    bounds.origin.y = y;
+    bounds.size.width = src_rect->size.width;
+    bounds.size.height = src_rect->size.height;
     CGImageRef sub_image = CGImageCreateWithImageInRect(image, *src_rect);
     CGContextDrawImage(context, bounds, sub_image);
     CGImageRelease(sub_image);
   } else {
-    bounds.origin.x = 0;
-    bounds.origin.y = 0;
     bounds.size.width = width();
     bounds.size.height = height();
     CGContextDrawImage(context, bounds, image);
