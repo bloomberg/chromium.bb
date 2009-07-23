@@ -40,7 +40,8 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
 
 
-/* struct LdtEntry is a structure that is laid out exactly as the segment
+/*
+ * struct LdtEntry is a structure that is laid out exactly as the segment
  * descriptors described in the Intel reference manuals.  This is needed
  * because Mac and Windows use this representation in the methods used to
  * set and get entries in the local descriptor table (LDT), but use different
@@ -51,18 +52,20 @@
 struct LdtEntry {
   uint16_t limit_00to15;
   uint16_t base_00to15;
-  /* NOTE: the bitfields are using a gcc extension switching to
-     "unsigned:<n>" is NOT straight forward */
-  uint8_t base_16to23;
-  uint8_t type : 5;
-  uint8_t descriptor_privilege : 2;
-  uint8_t present : 1;
-  uint8_t limit_16to19 : 4;
-  uint8_t available : 1;
-  uint8_t code_64_bit : 1;
-  uint8_t op_size_32 : 1;
-  uint8_t granularity : 1;
-  uint8_t base_24to31;
+
+  unsigned int base_16to23 : 8;
+
+  unsigned int type : 5;
+  unsigned int descriptor_privilege : 2;
+  unsigned int present : 1;
+
+  unsigned int limit_16to19 : 4;
+  unsigned int available : 1;
+  unsigned int code_64_bit : 1;
+  unsigned int op_size_32 : 1;
+  unsigned int granularity : 1;
+
+  unsigned int base_24to31 : 8;
 };
 
 /*
@@ -304,4 +307,3 @@ void NaClLdtDeleteSelector(uint16_t selector) {
   modify_ldt(1, &ud, sizeof ud);
   NaClMutexUnlock(&nacl_ldt_mutex);
 }
-

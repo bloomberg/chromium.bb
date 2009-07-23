@@ -29,6 +29,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if defined(HAVE_SDL)
+#include <SDL.h>
+#endif
 
 #include "native_client/src/include/portability.h"
 
@@ -151,7 +154,7 @@ void WINAPI Alarmer(void *state) {
   if (gVerbosity) {
     printf("Alarmer %p: alarm to go off in"
            " %"PRId64".%06"PRId64" seconds\n",
-           sp,
+           (void *) sp,
            sp->sleep_usec / kMicroXinX, sp->sleep_usec % kMicroXinX);
     fflush(NULL);
   }
@@ -161,7 +164,7 @@ void WINAPI Alarmer(void *state) {
   usleep((useconds_t) sp->sleep_usec);
 #endif
   if (gVerbosity) {
-    printf("Alarmer %p: woke up\n", sp);
+    printf("Alarmer %p: woke up\n", (void *) sp);
   }
   NaClMutexLock(&sp->mu);
   should_abort = sp->abort_on_wake;
@@ -170,19 +173,19 @@ void WINAPI Alarmer(void *state) {
   if (should_abort) {
     printf("Alarmer %p: woke up after %"PRId64".%06"PRId64" seconds"
            " without condition\n",
-           sp,
+           (void *) sp,
            sp->sleep_usec / kMicroXinX,
            sp->sleep_usec % kMicroXinX);
     printf("condvar timeout was %"PRId64".%06"PRId64" sec\n",
            cond_timeout_usec / kMicroXinX,
            cond_timeout_usec % kMicroXinX);
-    printf("Alarmer %p:  variable timing out.\n", sp);
+    printf("Alarmer %p:  variable timing out.\n", (void *) sp);
     PrintFailureSuggestions();
-    printf("Alarmer %p: aborting all threads\n", sp);
+    printf("Alarmer %p: aborting all threads\n", (void *) sp);
     exit(1);
   }
   if (gVerbosity) {
-    printf("Alarmer %p: cond var ok\n", sp);
+    printf("Alarmer %p: cond var ok\n", (void *) sp);
   }
   AlarmerStateDtor(sp);
   /* leaks memory associated with thread state, if any. */
@@ -340,10 +343,6 @@ void TestAbsWait(void *arg) {
   NaClXMutexUnlock(&gMu);
 }
 
-
-#if defined(HAVE_SDL)
-#include <SDL.h>
-#endif
 
 int main(int argc,
          char **argv) {

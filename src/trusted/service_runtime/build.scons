@@ -31,20 +31,6 @@
 
 Import('env')
 
-# TODO(robertm): this is necessary for  unittest_main.c which includes
-#                gtest/gtest.h
-#                The problem is that gtest.h includes other files
-#                expecting the include path to be set
-env.Prepend(
-    CPPPATH=
-      ['${SOURCE_ROOT}/testing/gtest/include'])
-
-if env.Bit('linux') or env.Bit('mac'):
-  # because of: gtest-typed-test.h:236:46: error:
-  # anonymous variadic macros were introduced in C99
-  env.FilterOut(CCFLAGS=['-pedantic'])
-
-
 # TODO(robertm): move those into EXTR_LIB when feature available
 env.Prepend(
     LIBS = [
@@ -71,6 +57,7 @@ if env.AllBits('windows', 'debug'):
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
                          'x86/Microsoft.VC80.DebugCRT')
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
 
 
 if env.Bit('windows'):
@@ -246,7 +233,8 @@ if sdl_mode != 'none':
     env.AddPluginPrerequisite(['$SDL_DIR/lib/SDL.dll'])
   elif env.Bit('mac'):
     # TODO: why do we replicate this THREE times?
-    sdl_dll += env.Replicate('$TARGET_ROOT/Frameworks', '$SDL_DIR/SDL.framework')
+    sdl_dll += env.Replicate('$TARGET_ROOT/Frameworks',
+                             '$SDL_DIR/SDL.framework')
     sdl_dll += env.Replicate('$OBJ_ROOT/Frameworks', '$SDL_DIR/SDL.framework')
     sdl_dll += env.Replicate('$OBJ_ROOT/src/trusted/Frameworks',
                              '$SDL_DIR/SDL.framework')
@@ -272,6 +260,21 @@ if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
 # Unit Tests
 # ----------------------------------------------------------
 
+test_env = env.Clone()
+
+# This is necessary for unittest_main.c which includes gtest/gtest.h
+# The problem is that gtest.h includes other files expecting the
+# include path to be set.  We do *not*, however, strip out the
+# -pedantic compiler flag for building non-gtest-using source files.
+test_env.Prepend(
+    CPPPATH=
+      ['${SOURCE_ROOT}/testing/gtest/include'])
+
+if test_env.Bit('linux') or test_env.Bit('mac'):
+  # because of: gtest-typed-test.h:236:46: error:
+  # anonymous variadic macros were introduced in C99
+  test_env.FilterOut(CCFLAGS=['-pedantic'])
+
 unittest_inputs = [
     'unittest_main.cc',
     'sel_memory_unittest.cc',
@@ -281,20 +284,22 @@ unittest_inputs = [
     'sel_ldr_test.cc',
 ]
 
-UNITTEST_OUTPUT = env.subst('$TARGET_ROOT/test_results/src/trusted/'
-                            + 'service_runtime/gtest_output.xml')
-env['ENV']['GTEST_OUTPUT'] = 'xml:' + UNITTEST_OUTPUT
+UNITTEST_OUTPUT = test_env.subst('$TARGET_ROOT/test_results/src/trusted/'
+                                 + 'service_runtime/gtest_output.xml')
+test_env['ENV']['GTEST_OUTPUT'] = 'xml:' + UNITTEST_OUTPUT
 
-unit_tests_exe = env.ComponentProgram('service_runtime_tests', unittest_inputs,
-                                       EXTRA_LIBS=['gtest'])
-env.Requires(unit_tests_exe, sdl_dll)
+unit_tests_exe = test_env.ComponentProgram('service_runtime_tests',
+                                           unittest_inputs,
+                                           EXTRA_LIBS=['gtest'])
+test_env.Requires(unit_tests_exe, sdl_dll)
 
 # TODO(gregoryd): the "-d" argument does nothing, however Hammer doesn't run
 # the test if it is launched without any arguments.
-node = env.Command(UNITTEST_OUTPUT,
-                   [unit_tests_exe],
-                   '$SOURCE -d')
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_service_runtime_tests')
+node = test_env.Command(UNITTEST_OUTPUT,
+                        [unit_tests_exe],
+                        '$SOURCE -d')
+test_env.AddNodeToTestSuite(node, ['small_tests'], 'run_service_runtime_tests')
+
 
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
