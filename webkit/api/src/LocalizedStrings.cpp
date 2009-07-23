@@ -34,6 +34,7 @@
 #include "IntSize.h"
 #include "NotImplemented.h"
 #include "PlatformString.h"
+#include "StringBuilder.h"
 
 #include "WebKit.h"
 #include "WebKitClient.h"
@@ -190,8 +191,15 @@ String keygenMenuMediumGradeKeySize()
 // Used in ImageDocument.cpp as the title for pages when that page is an image.
 String imageTitle(const String& filename, const IntSize& size)
 {
-    // C3 97 is UTF-8 for U+00D7 (multiplication sign).
-    return filename + String::format(" (%d\xC3\x97%d)", size.width(), size.height());
+    // Note that we cannot use String::format because it works for ASCII only.
+    StringBuilder result;
+    result.append(filename);
+    result.append(" (");
+    result.append(String::number(size.width()));
+    result.append(static_cast<UChar>(0xD7));  // U+00D7 (multiplication sign)
+    result.append(String::number(size.height()));
+    result.append(")");
+    return result.toString();
 }
 
 // We don't use these strings, so they return an empty String. We can't just
