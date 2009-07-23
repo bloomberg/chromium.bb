@@ -338,6 +338,16 @@ int ChromeMain(int argc, const char** argv) {
     return 1;
 #endif
 
+#if defined(OS_LINUX)
+  // Show the man page on --help or -h.
+  if (parsed_command_line.HasSwitch(L"help") ||
+      parsed_command_line.HasSwitch(L"h")) {
+    FilePath binary(parsed_command_line.argv()[0]);
+    int ret = execlp("man", "man", binary.BaseName().value().c_str(), NULL);
+    LOG(FATAL) << "execlp failed: " << strerror(ret);
+  }
+#endif
+
 #if defined(OS_POSIX)
   // Always ignore SIGPIPE.  We check the return value of write().
   CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
