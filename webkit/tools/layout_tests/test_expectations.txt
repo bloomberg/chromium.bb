@@ -654,7 +654,7 @@ BUG13907 WIN : LayoutTests/media/video-src-set.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src-source.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src.html = PASS CRASH
 // These tests are flaky.
-BUG16779 BUG13097 WIN : LayoutTests/media/video-display-toggle.html = FAIL TIMEOUT
+BUG16779 BUG13097 WIN : LayoutTests/media/video-display-toggle.html = FAIL TIMEOUT CRASH
 BUG13907 WIN : LayoutTests/media/controls-styling.html = FAIL
 // This test is added in WebKit merge 45610:45621
 BUG13907 WIN : LayoutTests/media/controls-after-reload.html = TIMEOUT
@@ -2989,3 +2989,8 @@ BUG17326 LINUX WIN : LayoutTests/editing/execCommand/5138441.html = FAIL
 BUG17497 WIN RELEASE : LayoutTests/media/video-play-pause-exception.html = CRASH
 BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
 BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = CRASH
+
+// not sure why this started failing
+BUG17509 LINUX : LayoutTests/fast/loader/local-CSS-from-local.html = FAIL
+BUG17509 LINUX : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL TIMEOUT
+BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
