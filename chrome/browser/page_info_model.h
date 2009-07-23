@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_INFO_MODEL_H
-#define CHROME_BROWSER_PAGE_INFO_MODEL_H
+#ifndef CHROME_BROWSER_PAGE_INFO_MODEL_H_
+#define CHROME_BROWSER_PAGE_INFO_MODEL_H_
 
 #include <string>
 #include <vector>
@@ -37,9 +37,9 @@ class PageInfoModel {
 
   struct SectionInfo {
     SectionInfo(bool state,
-                std::wstring title,
-                std::wstring head_line,
-                std::wstring description)
+                const std::wstring& title,
+                const std::wstring& head_line,
+                const std::wstring& description)
         : state(state),
           title(title),
           head_line(head_line),
@@ -87,4 +87,4 @@ class PageInfoModel {
   DISALLOW_COPY_AND_ASSIGN(PageInfoModel);
 };
 
-#endif  // CHROME_BROWSER_PAGE_INFO_MODEL_H
+#endif  // CHROME_BROWSER_PAGE_INFO_MODEL_H_
