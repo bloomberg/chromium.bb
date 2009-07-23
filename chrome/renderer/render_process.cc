@@ -47,43 +47,10 @@ static size_t GetMaxSharedMemorySize() {
 //-----------------------------------------------------------------------------
 
 RenderProcess::RenderProcess()
-    : ChildProcess(new RenderThread()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
+    : ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
           base::TimeDelta::FromSeconds(5),
           this, &RenderProcess::ClearTransportDIBCache)),
       sequence_number_(0) {
-  Init();
-}
-
-RenderProcess::RenderProcess(const std::string& channel_name)
-    : ChildProcess(new RenderThread(channel_name)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(shared_mem_cache_cleaner_(
-          base::TimeDelta::FromSeconds(5),
-          this, &RenderProcess::ClearTransportDIBCache)),
-      sequence_number_(0) {
-  Init();
-}
-
-RenderProcess::~RenderProcess() {
-  // TODO(port)
-  // Try and limit what we pull in for our non-Win unit test bundle
-#ifndef NDEBUG
-  // log important leaked objects
-  webkit_glue::CheckForLeaks();
-#endif
-
-  GetShutDownEvent()->Signal();
-
-  // We need to stop the RenderThread as the clearer_factory_
-  // member could be in use while the object itself is destroyed,
-  // as a result of the containing RenderProcess object being destroyed.
-  // This race condition causes a crash when the renderer process is shutting
-  // down.
-  child_thread()->Stop();
-  ClearTransportDIBCache();
-}
-
-void RenderProcess::Init() {
   in_process_plugins_ = InProcessPlugins();
   for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i)
     shared_mem_cache_[i] = NULL;
@@ -131,6 +98,18 @@ void RenderProcess::Init() {
       media::InitializeMediaLibrary(module_path);
 }
 
+RenderProcess::~RenderProcess() {
+  // TODO(port)
+  // Try and limit what we pull in for our non-Win unit test bundle
+#ifndef NDEBUG
+  // log important leaked objects
+  webkit_glue::CheckForLeaks();
+#endif
+
+  GetShutDownEvent()->Signal();
+  ClearTransportDIBCache();
+}
+
 bool RenderProcess::InProcessPlugins() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 #if defined(OS_LINUX)
@@ -157,7 +136,7 @@ TransportDIB* RenderProcess::CreateTransportDIB(size_t size) {
   // get one.
   TransportDIB::Handle handle;
   IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, &handle);
-  if (!child_thread()->Send(msg))
+  if (!main_thread()->Send(msg))
     return NULL;
   if (handle.fd < 0)
     return NULL;
@@ -173,7 +152,7 @@ void RenderProcess::FreeTransportDIB(TransportDIB* dib) {
   // On Mac we need to tell the browser that it can drop a reference to the
   // shared memory.
   IPC::Message* msg = new ViewHostMsg_FreeTransportDIB(dib->id());
-  child_thread()->Send(msg);
+  main_thread()->Send(msg);
 #endif
 
   delete dib;

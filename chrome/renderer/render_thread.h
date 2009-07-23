@@ -20,7 +20,7 @@ class AppCacheDispatcher;
 class DevToolsAgentFilter;
 class FilePath;
 class ListValue;
-class NotificationService;
+
 class RenderDnsMaster;
 class RendererHistogram;
 class RendererWebKitClientImpl;
@@ -114,9 +114,7 @@ class RenderThread : public RenderThreadBase,
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
-  // Called by the thread base class.
-  virtual void Init();
-  virtual void CleanUp();
+  void Init();
 
   void OnUpdateVisitedLinks(base::SharedMemoryHandle table);
   void OnAddVisitedLinks(const VisitedLinkSlave::Fingerprints& fingerprints);
@@ -154,23 +152,14 @@ class RenderThread : public RenderThreadBase,
   void EnsureWebKitInitialized();
 
   // These objects live solely on the render thread.
-  scoped_ptr<VisitedLinkSlave> visited_link_slave_;
-
-  scoped_ptr<UserScriptSlave> user_script_slave_;
-
-  scoped_ptr<RenderDnsMaster> dns_master_;
-
-  scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
-
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > cache_stats_factory_;
-
-  scoped_ptr<NotificationService> notification_service_;
-
-  scoped_ptr<RendererWebKitClientImpl> webkit_client_;
-
+  scoped_ptr<VisitedLinkSlave> visited_link_slave_;
+  scoped_ptr<UserScriptSlave> user_script_slave_;
+  scoped_ptr<RenderDnsMaster> dns_master_;
   scoped_ptr<AppCacheDispatcher> app_cache_dispatcher_;
-
   scoped_refptr<DevToolsAgentFilter> devtools_agent_filter_;
+  scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
+  scoped_ptr<RendererWebKitClientImpl> webkit_client_;
 
 #if defined(OS_POSIX)
   scoped_refptr<IPC::ChannelProxy::MessageFilter>

@@ -7,6 +7,7 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/thread.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
