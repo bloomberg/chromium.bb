@@ -206,7 +206,11 @@ void WidgetGtk::AddChild(GtkWidget* child) {
 }
 
 void WidgetGtk::RemoveChild(GtkWidget* child) {
-  gtk_container_remove(GTK_CONTAINER(window_contents_), child);
+  // We can be called after the contents widget has been destroyed, e.g. any
+  // NativeViewHost not removed from the view hierarchy before the window is
+  // closed.
+  if (GTK_IS_CONTAINER(window_contents_))
+    gtk_container_remove(GTK_CONTAINER(window_contents_), child);
 }
 
 void WidgetGtk::ReparentChild(GtkWidget* child) {
@@ -533,7 +537,7 @@ void WidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
   HandleGrabBroke();
 }
 
-void WidgetGtk::OnDestroy(GtkWidget* widget) {
+void WidgetGtk::OnDestroy() {
   widget_ = window_contents_ = NULL;
   root_view_->OnWidgetDestroyed();
   if (delete_on_destroy_)
@@ -773,10 +777,8 @@ void WidgetGtk::CallGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 // static
 void WidgetGtk::CallDestroy(GtkObject* object) {
   WidgetGtk* widget_gtk = GetViewForNative(GTK_WIDGET(object));
-  if (!widget_gtk)
-    return;
-
-  return widget_gtk->OnDestroy(GTK_WIDGET(object));
+  if (widget_gtk)
+    widget_gtk->OnDestroy();
 }
 
 // static

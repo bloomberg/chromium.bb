@@ -129,7 +129,7 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   }
   virtual gboolean OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event);
   virtual void OnGrabNotify(GtkWidget* widget, gboolean was_grabbed);
-  virtual void OnDestroy(GtkWidget* widget);
+  virtual void OnDestroy();
 
   // Returns whether capture should be released on mouse release. The default
   // is true.

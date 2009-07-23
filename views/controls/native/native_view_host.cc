@@ -64,13 +64,6 @@ void NativeViewHost::Layout() {
   if (!native_view_ || !native_wrapper_.get())
     return;
 
-  // Since widgets know nothing about the View hierarchy (they are direct
-  // children of the Widget that hosts our View hierarchy) they need to be
-  // positioned in the coordinate system of the Widget, not the current
-  // view.
-  gfx::Point top_left;
-  ConvertPointToWidget(this, &top_left);
-
   gfx::Rect vis_bounds = GetVisibleBounds();
   bool visible = !vis_bounds.IsEmpty();
 
@@ -88,10 +81,17 @@ void NativeViewHost::Layout() {
     }
   }
 
-  if (visible)
+  if (visible) {
+    // Since widgets know nothing about the View hierarchy (they are direct
+    // children of the Widget that hosts our View hierarchy) they need to be
+    // positioned in the coordinate system of the Widget, not the current
+    // view.
+    gfx::Point top_left;
+    ConvertPointToWidget(this, &top_left);
     native_wrapper_->ShowWidget(top_left.x(), top_left.y(), width(), height());
-  else
+  } else {
     native_wrapper_->HideWidget();
+  }
 }
 
 void NativeViewHost::Paint(gfx::Canvas* canvas) {

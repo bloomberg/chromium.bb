@@ -44,6 +44,12 @@ class NativeButtonGtk : public NativeControlGtk, public NativeButtonWrapper {
   // The NativeButton we are bound to.
   NativeButton* native_button_;
 
+  // The preferred size from the last size_request. We save this until we are
+  // notified that data may have caused the preferred size to change because
+  // otherwise it seems every time we call gtk_widget_size_request the size
+  // returned is a little larger (?!).
+  gfx::Size preferred_size_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeButtonGtk);
 };
 

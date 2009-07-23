@@ -34,6 +34,7 @@ void NativeButtonGtk::UpdateLabel() {
 
   gtk_button_set_label(GTK_BUTTON(native_view()),
                        WideToUTF8(native_button_->label()).c_str());
+  preferred_size_ = gfx::Size();
 }
 
 void NativeButtonGtk::UpdateFont() {
@@ -41,6 +42,7 @@ void NativeButtonGtk::UpdateFont() {
     return;
 
   NOTIMPLEMENTED();
+  preferred_size_ = gfx::Size();
   // SendMessage(GetHWND(), WM_SETFONT,
   // reinterpret_cast<WPARAM>(native_button_->font().hfont()),
   // FALSE);
@@ -75,9 +77,14 @@ gfx::NativeView NativeButtonGtk::GetTestingHandle() const {
 gfx::Size NativeButtonGtk::GetPreferredSize() {
   if (!native_view())
     return gfx::Size();
-  GtkRequisition size_request = { 0, 0 };
-  gtk_widget_size_request(native_view(), &size_request);
-  return gfx::Size(size_request.width, size_request.height);
+
+  if (preferred_size_.IsEmpty()) {
+    GtkRequisition size_request = { 0, 0 };
+    gtk_widget_size_request(native_view(), &size_request);
+    preferred_size_.SetSize(size_request.width,
+                            std::max(size_request.height, 29));
+  }
+  return preferred_size_;
 }
 
 void NativeButtonGtk::CreateNativeControl() {

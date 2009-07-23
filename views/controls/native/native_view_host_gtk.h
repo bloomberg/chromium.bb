@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #include <string>
 
+#include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "views/controls/native/native_view_host_wrapper.h"
 
@@ -34,6 +35,21 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   virtual void SetFocus();
 
  private:
+  // Create and Destroy the GtkFixed that performs clipping on our hosted
+  // GtkWidget. |needs_window| is true when a clip is installed and implies the
+  // fixed is backed by a X Window which actually performs the clipping.
+  // It's kind of retarded that Gtk/Cairo doesn't clip painting of child windows
+  // regardless of whether or not there's an X Window. It's not that hard.
+  void CreateFixed(bool needs_window);
+
+  // DestroyFixed returns true if an associated GtkWidget was addref'ed.
+  // It does this because when the fixed is destroyed the refcount for the
+  // contained GtkWidget is decremented, which may cause it to be destroyed
+  // which we do not want. If this function returns true, the caller is
+  // responsible for unrefing the GtkWidget after it has been added to the new
+  // container.
+  bool DestroyFixed();
+
   WidgetGtk* GetHostWidget() const;
 
   // Invoked from the 'destroy' signal.
@@ -46,8 +62,16 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   // visible portion of the gfx::NativeView ?
   bool installed_clip_;
 
+  // The installed clip rect. InstallClip doesn't actually perform the clipping,
+  // a call to ShowWidget will.
+  gfx::Rect installed_clip_bounds_;
+
   // Signal handle id for 'destroy' signal.
   gulong destroy_signal_id_;
+
+  // The GtkFixed that contains the attached gfx::NativeView (used for
+  // clipping).
+  GtkWidget* fixed_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostGtk);
 };

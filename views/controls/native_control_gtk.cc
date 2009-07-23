@@ -45,7 +45,9 @@ void NativeControlGtk::VisibilityChanged(View* starting_from, bool is_visible) {
   if (!is_visible) {
     // We destroy the child widget when we become invisible because of the
     // performance cost of maintaining widgets that aren't currently needed.
+    GtkWidget* widget = native_view();
     Detach();
+    gtk_widget_destroy(widget);
   } else if (!native_view()) {
     CreateNativeControl();
   }
