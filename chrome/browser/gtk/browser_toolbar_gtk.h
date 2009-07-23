@@ -147,9 +147,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                        GtkMenuDirectionType dir,
                                        BrowserToolbarGtk* toolbar);
 
-  // Initialize the background NineBox.
-  void InitNineBox();
-
   // Ninebox for the toolbar background
   scoped_ptr<NineBox> background_ninebox_;
 

@@ -82,8 +82,6 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
-
-  InitNineBox();
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
@@ -352,6 +350,8 @@ void BrowserToolbarGtk::SetProfile(Profile* profile) {
 
   profile_ = profile;
   location_bar_->SetProfile(profile);
+  background_ninebox_.reset(new NineBox(profile->GetThemeProvider(),
+      0, IDR_THEME_TOOLBAR, 0, 0, 0, 0, 0, 0, 0));
 }
 
 void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
@@ -619,11 +619,4 @@ void BrowserToolbarGtk::OnPageAppMenuMoveCurrent(GtkWidget* menu,
     default:
       break;
   }
-}
-
-void BrowserToolbarGtk::InitNineBox() {
-  // TODO(estade): use |profile_|?
-  background_ninebox_.reset(new NineBox(
-      browser_->profile()->GetThemeProvider(),
-      0, IDR_THEME_TOOLBAR, 0, 0, 0, 0, 0, 0, 0));
 }
