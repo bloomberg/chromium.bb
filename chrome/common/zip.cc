@@ -23,7 +23,7 @@ static bool ExtractCurrentFile(unzFile zip_file,
   char filename_inzip[kZipMaxPath] = {0};
   unz_file_info file_info;
   int err = unzGetCurrentFileInfo(zip_file, &file_info, filename_inzip,
-                                  sizeof(filename_inzip), NULL, 0, NULL, 0);
+                                  sizeof(filename_inzip) - 1, NULL, 0, NULL, 0);
   if (err != UNZ_OK)
     return false;
   if (filename_inzip[0] == '\0')
