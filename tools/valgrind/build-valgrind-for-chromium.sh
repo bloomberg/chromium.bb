@@ -42,6 +42,11 @@ patch -p0 < "$THISDIR"/fork.patch
 #wget -O longlines.patch "https://bugs.kde.org/attachment.cgi?id=35174"
 patch -p0 < "$THISDIR"/longlines.patch
 
+# Add feature bug https://bugs.kde.org/show_bug.cgi?id=201170
+# "Want --show-possible option so I can ignore the bazillion possible leaks..."
+#wget -O possible.patch https://bugs.kde.org/attachment.cgi?id=35559
+patch -p0 < "$THISDIR"/possible.patch
+
 sh autogen.sh
 ./configure --prefix=/usr/local/valgrind-20090715
 make -j4
