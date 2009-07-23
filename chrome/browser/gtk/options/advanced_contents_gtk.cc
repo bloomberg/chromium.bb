@@ -302,23 +302,33 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
 
   scoped_ptr<base::EnvironmentVariableGetter> env_getter(
       base::EnvironmentVariableGetter::Create());
-  if (base::UseGnomeForSettings(env_getter.get())) {
-    std::vector<std::string> argv;
-    argv.push_back(kProxyConfigBinary);
-    base::file_handle_mapping_vector no_files;
-    base::environment_vector env;
-    base::ProcessHandle handle;
-    env.push_back(std::make_pair("GTK_PATH",
-                                 getenv("CHROMIUM_SAVED_GTK_PATH")));
-    if (!base::LaunchApp(argv, env, no_files, false, &handle)) {
-      LOG(ERROR) << "OpenProxyConfigDialogTask failed";
-      return;
+
+  switch (base::GetDesktopEnvironment(env_getter.get())) {
+    case base::DESKTOP_ENVIRONMENT_GNOME: {
+      std::vector<std::string> argv;
+      argv.push_back(kProxyConfigBinary);
+      base::file_handle_mapping_vector no_files;
+      base::environment_vector env;
+      base::ProcessHandle handle;
+      env.push_back(std::make_pair("GTK_PATH",
+                                   getenv("CHROMIUM_SAVED_GTK_PATH")));
+      if (!base::LaunchApp(argv, env, no_files, false, &handle)) {
+        LOG(ERROR) << "OpenProxyConfigDialogTask failed";
+        return;
+      }
+      ProcessWatcher::EnsureProcessGetsReaped(handle);
+      break;
     }
-    ProcessWatcher::EnsureProcessGetsReaped(handle);
-  } else {
-    BrowserList::GetLastActive()->
-        OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
-                GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+
+    case base::DESKTOP_ENVIRONMENT_KDE:
+      NOTIMPLEMENTED() << "Bug 17363: obey KDE proxy settings.";
+      // Fall through to default behavior for now.
+
+    case base::DESKTOP_ENVIRONMENT_OTHER:
+      BrowserList::GetLastActive()->
+          OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
+                  GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+      break;
   }
 }
 
