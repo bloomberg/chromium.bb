@@ -26,6 +26,9 @@ class RenderViewContextMenuExternalWin : public RenderViewContextMenuWin {
   // RenderViewContextMenu override
   virtual void DoInit();
 
+  // RenderViewContextMenu override
+  virtual void ExecuteItemCommand(int id);
+
  private:
   // Contains the list of context menu ids to be disabled.
   std::vector<int> disabled_menu_ids_;

@@ -59,13 +59,13 @@ class RenderViewContextMenu {
 
   // For Linux, we want to know when we have written a URL to the clipboard.
   // Most platforms won't care.
-  virtual void DidWriteURLToClipboard(const std::string& url) { };
+  virtual void DidWriteURLToClipboard(const std::string& url) { }
 
   // Delegate functions --------------------------------------------------------
 
   bool IsItemCommandEnabled(int id) const;
   bool ItemIsChecked(int id) const;
-  void ExecuteItemCommand(int id);
+  virtual void ExecuteItemCommand(int id);
 
  protected:
   ContextMenuParams params_;

@@ -6,6 +6,9 @@
 
 #include <algorithm>
 
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "grit/generated_resources.h"
+
 RenderViewContextMenuExternalWin::RenderViewContextMenuExternalWin(
     TabContents* tab_contents,
     const ContextMenuParams& params,
@@ -36,4 +39,17 @@ void RenderViewContextMenuExternalWin::DoInit() {
   mi.fMask = MIM_STYLE | MIM_MENUDATA;
   mi.dwMenuData = reinterpret_cast<ULONG_PTR>(this);
   SetMenuInfo(menu, &mi);
+}
+
+void RenderViewContextMenuExternalWin::ExecuteItemCommand(int id) {
+  switch (id) {
+    case IDS_CONTENT_CONTEXT_RELOAD:
+      // Prevent the modal "Resubmit form post" dialog from appearing in the
+      // context of an external context menu.
+      source_tab_contents_->controller().Reload(false);
+      break;
+    default:
+      RenderViewContextMenu::ExecuteItemCommand(id);
+      break;
+  }
 }
