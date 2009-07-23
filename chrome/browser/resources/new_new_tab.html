@@ -241,11 +241,11 @@ logEvent('log start');
           <a class="item"
               jsdisplay="type == 'download'"
               jsvalues="href:file_path;title:url;
-                  .style.backgroundImage:
-                      'url(chrome://theme/downloads_favicon)';
                   dir:direction;
                   .fileId:id"
-              jscontent="file_name"></a>
+              jscontent="file_name"
+              style="background-image:
+                  url(chrome://theme/downloads_favicon)"></a>
         </div>
         <a href="chrome://history/" class="item nav"
             i18n-content="viewfullhistory"></a>

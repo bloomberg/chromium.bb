@@ -11,7 +11,7 @@ body {
   background: url(chrome://theme/product_logo) no-repeat 0 8px;
   position: relative;
   margin: 0 auto;
-  width: 940px;
+  width: 920px;
   -webkit-transition: width .15s;
 }
 
@@ -32,7 +32,7 @@ html[anim='false'] *,
   position: relative;
   padding: 0;
   margin-bottom: 34px;
-  height: 372px;
+  height: 366px;
   -webkit-user-select: none;
   -webkit-transition: height .15s, opacity .15s;
 }
@@ -57,8 +57,8 @@ html[anim='false'] *,
 
 .thumbnail,
 .thumbnail-container > .title {
-  width: 212px; /* natural size is 196 */
-  height: 132px; /* 136 */
+  width: 207px; /* natural size is 196 */
+  height: 129px; /* 136 */
   -webkit-transition: width .15s, height .15s;
 }
 
@@ -529,7 +529,7 @@ html[dir='rtl'] #view-toolbar {
 #lower-sections > .section {
   -webkit-transition: width .15s, opacity .15s, left .15s;
   -webkit-box-sizing: border-box;
-  width: 460px; /* Set default size so we don't have to do a js layout at
+  width: 450px; /* Set default size so we don't have to do a js layout at
                    load */
 }
 
@@ -639,24 +639,24 @@ html[dir='rtl'] #option-menu {
 }
 
 #t1, #t5 {
-  left: 240px;
+  left: 235px;
 }
 
 #t2, #t6 {
-  left: 480px;
+  left: 470px;
 }
 
 #t3, #t7 {
-  left: 720px;
+  left: 705px;
 }
 
 #t4, #t5, #t6, #t7 {
-  top: 186px;
+  top: 183px;
 }
 
 /* small */
 
-@media (max-width: 940px) {
+@media (max-width: 920px) {
 
   #main {
     width: 692px;

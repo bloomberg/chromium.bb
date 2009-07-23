@@ -263,7 +263,7 @@ TEST(WindowSizerTest, DefaultSizeCase) {
                     false, DEFAULT, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
-                        840 - kWindowTilePixels * 3,
+                        840 - static_cast<int>(kWindowTilePixels * 1.5),
                         1050 - kWindowTilePixels * 2),
               window_bounds);
   }
@@ -275,7 +275,7 @@ TEST(WindowSizerTest, DefaultSizeCase) {
                     false, DEFAULT, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
-                        960 - kWindowTilePixels * 3,
+                        960 - static_cast<int>(kWindowTilePixels * 1.5),
                         1200 - kWindowTilePixels * 2),
               window_bounds);
   }

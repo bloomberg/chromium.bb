@@ -265,7 +265,7 @@ function chromeSend(name, params, callbackName, callback) {
 }
 
 function useSmallGrid() {
-  return window.innerWidth <= 940;
+  return window.innerWidth <= 920;
 }
 
 var LayoutMode = {
@@ -528,8 +528,8 @@ var mostVisited = {
     var marginWidth = 10;
     var marginHeight = 7;
     var borderWidth = 4;
-    var thumbWidth = small ? 150 : 212;
-    var thumbHeight = small ? 93 : 132;
+    var thumbWidth = small ? 150 : 207;
+    var thumbHeight = small ? 93 : 129;
     var w = thumbWidth + 2 * borderWidth + 2 * marginWidth;
     var h = thumbHeight + 40 + 2 * marginHeight;
     var sumWidth = cols * w  - 2 * marginWidth;

@@ -189,9 +189,11 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   // computer display.
   if (((width_to_height * 10) >= 16) &&
       work_area.width() > kMinScreenWidthForWindowHalving) {
-    // Halve the work area, subtracting aesthetic padding on either side, plus
-    // some more aesthetic padding for spacing between windows.
-    default_width = (work_area.width() / 2) - 3 * kWindowTilePixels;
+    // Halve the work area, subtracting aesthetic padding on either side.
+    // The padding is set so that two windows, side by side have
+    // kWindowTilePixels between screen edge and each other.
+    default_width = static_cast<int>(work_area.width() / 2. -
+        1.5 * kWindowTilePixels);
   }
   default_bounds->SetRect(kWindowTilePixels + work_area.x(),
                           kWindowTilePixels + work_area.y(),
