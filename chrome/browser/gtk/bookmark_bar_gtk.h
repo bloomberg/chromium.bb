@@ -184,9 +184,6 @@ class BookmarkBarGtk : public AnimationDelegate,
                                  GdkDragContext* context,
                                  guint time,
                                  BookmarkBarGtk* bar);
-  static gboolean OnToolbarDragDrop(GtkWidget* widget, GdkDragContext* context,
-                                    gint x, gint y, guint time,
-                                    BookmarkBarGtk* bar);
   static void OnToolbarDragReceived(GtkWidget* widget,
                                     GdkDragContext* context,
                                     gint x, gint y,

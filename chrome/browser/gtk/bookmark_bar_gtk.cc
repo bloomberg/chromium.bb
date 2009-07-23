@@ -166,8 +166,6 @@ void BookmarkBarGtk::Init(Profile* profile) {
                    G_CALLBACK(&OnToolbarDragMotion), this);
   g_signal_connect(bookmark_toolbar_.get(), "drag-leave",
                    G_CALLBACK(&OnToolbarDragLeave), this);
-  g_signal_connect(bookmark_toolbar_.get(), "drag-drop",
-                   G_CALLBACK(&OnToolbarDragDrop), this);
   g_signal_connect(bookmark_toolbar_.get(), "drag-data-received",
                    G_CALLBACK(&OnToolbarDragReceived), this);
   g_signal_connect(bookmark_toolbar_.get(), "button-press-event",
@@ -770,25 +768,6 @@ void BookmarkBarGtk::OnToolbarDragLeave(GtkToolbar* toolbar,
   }
 
   gtk_toolbar_set_drop_highlight_item(toolbar, NULL, 0);
-}
-
-// static
-gboolean BookmarkBarGtk::OnToolbarDragDrop(
-    GtkWidget* widget, GdkDragContext* context,
-    gint x, gint y, guint time,
-    BookmarkBarGtk* bar) {
-  gboolean is_valid_drop_site = FALSE;
-
-  if (context->targets) {
-    GdkAtom target_type =
-        GDK_POINTER_TO_ATOM(g_list_nth_data(
-            context->targets, GtkDndUtil::CHROME_BOOKMARK_ITEM));
-    gtk_drag_get_data(widget, context, target_type, time);
-
-    is_valid_drop_site = TRUE;
-  }
-
-  return is_valid_drop_site;
 }
 
 // static
