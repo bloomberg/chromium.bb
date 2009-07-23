@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -15,6 +16,7 @@
 class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBarView;
+class GURL;
 class Profile;
 class PrefService;
 

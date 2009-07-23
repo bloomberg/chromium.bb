@@ -7,6 +7,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"

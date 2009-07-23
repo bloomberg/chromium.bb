@@ -7,7 +7,7 @@
 
 #include "app/slide_animation.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/views/bookmark_menu_controller_views.h"
 #include "chrome/common/notification_registrar.h"

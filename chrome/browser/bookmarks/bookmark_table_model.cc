@@ -11,6 +11,7 @@
 #include "app/table_model_observer.h"
 #include "base/string_util.h"
 #include "base/time_format.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"

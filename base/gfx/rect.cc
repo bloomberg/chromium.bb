@@ -12,6 +12,8 @@
 #include <gdk/gdk.h>
 #endif
 
+#include <iostream>
+
 #include "base/logging.h"
 
 namespace {
@@ -224,3 +226,7 @@ Point Rect::CenterPoint() const {
 }
 
 }  // namespace gfx
+
+std::ostream& operator<<(std::ostream& out, const gfx::Rect& r) {
+  return out << r.origin() << " " << r.size();
+}

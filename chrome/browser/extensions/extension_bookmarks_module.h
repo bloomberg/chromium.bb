@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/singleton.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/notification_registrar.h"
 

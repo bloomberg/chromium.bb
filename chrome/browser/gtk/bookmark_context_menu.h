@@ -9,7 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "base/scoped_ptr.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 // TODO(port): Port this file.
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
@@ -22,6 +23,7 @@
 
 class Browser;
 class PageNavigator;
+class Profile;
 
 // BookmarkContextMenu manages the context menu shown for the
 // bookmark bar, items on the bookmark bar, submenus of the bookmark bar and

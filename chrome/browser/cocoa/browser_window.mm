@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/browser_window.h"
 
+#include "base/logging.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 

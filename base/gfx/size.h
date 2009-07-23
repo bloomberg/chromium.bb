@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#include <iostream>
+#include <iosfwd>
 
 #if defined(OS_WIN)
 typedef struct tagSIZE SIZE;
@@ -71,8 +71,6 @@ class Size {
 
 }  // namespace gfx
 
-inline std::ostream& operator<<(std::ostream& out, const gfx::Size& s) {
-  return out << s.width() << "x" << s.height();
-}
+std::ostream& operator<<(std::ostream& out, const gfx::Size& s);
 
 #endif  // BASE_GFX_SIZE_H_

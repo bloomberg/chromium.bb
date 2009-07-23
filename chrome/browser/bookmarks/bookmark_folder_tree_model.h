@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "app/tree_node_model.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 // The type of nodes created by BookmarkFolderTreeModel.
 typedef TreeNodeWithValue<const BookmarkNode*> FolderNode;

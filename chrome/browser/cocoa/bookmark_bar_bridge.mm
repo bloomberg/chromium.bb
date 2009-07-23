@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/cocoa/bookmark_bar_bridge.h"
+
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/cocoa/bookmark_bar_controller.h"
 
 BookmarkBarBridge::BookmarkBarBridge(BookmarkBarController* controller,

@@ -7,7 +7,7 @@
 
 #include "app/table_model.h"
 #include "build/build_config.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 // BookmarkTableModel provides a view of the BookmarkModel as a TableModel.
 // Three variations are provided:

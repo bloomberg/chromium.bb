@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BASE_BOOKMARK_MODEL_OBSERVER_H_
 #define CHROME_BROWSER_BOOKMARKS_BASE_BOOKMARK_MODEL_OBSERVER_H_
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "base/basictypes.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 // Base class for a BookmarkModelObserver implementation. All mutations of the
 // model funnel into the method BookmarkModelChanged.

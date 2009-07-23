@@ -11,7 +11,8 @@
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_BAR_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_BAR_BRIDGE_H_
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "base/basictypes.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 class Browser;
 @class BookmarkBarController;

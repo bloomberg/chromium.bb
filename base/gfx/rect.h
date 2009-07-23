@@ -12,7 +12,7 @@
 #ifndef BASE_GFX_RECT_H__
 #define BASE_GFX_RECT_H__
 
-#include <iostream>
+#include <iosfwd>
 
 #include "base/gfx/point.h"
 #include "base/gfx/size.h"
@@ -155,8 +155,6 @@ class Rect {
 
 }  // namespace gfx
 
-inline std::ostream& operator<<(std::ostream& out, const gfx::Rect& r) {
-  return out << r.origin() << " " << r.size();
-}
+std::ostream& operator<<(std::ostream& out, const gfx::Rect& r);
 
 #endif  // BASE_GFX_RECT_H__

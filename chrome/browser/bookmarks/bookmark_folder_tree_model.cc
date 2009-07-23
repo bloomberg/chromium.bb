@@ -6,8 +6,10 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 BookmarkFolderTreeModel::BookmarkFolderTreeModel(BookmarkModel* model)
     : TreeNodeModel<FolderNode>(new FolderNode(NULL)),

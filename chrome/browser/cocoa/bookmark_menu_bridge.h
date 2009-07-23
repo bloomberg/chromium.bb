@@ -20,7 +20,7 @@
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_MENU_BRIDGE_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_MENU_BRIDGE_H_
 
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browser_list.h"
 
 class Browser;

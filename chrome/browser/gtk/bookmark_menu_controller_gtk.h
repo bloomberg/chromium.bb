@@ -16,6 +16,7 @@
 
 class BookmarkContextMenu;
 class Browser;
+class Profile;
 class Profiler;
 class PageNavigator;
 class BookmarkModel;

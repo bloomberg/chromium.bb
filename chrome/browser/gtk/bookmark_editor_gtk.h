@@ -7,8 +7,14 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
+
+#include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
+
+class GURL;
 
 // GTK version of the bookmark editor dialog.
 class BookmarkEditorGtk : public BookmarkEditor,

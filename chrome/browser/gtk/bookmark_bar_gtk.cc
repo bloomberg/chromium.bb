@@ -12,6 +12,7 @@
 #include "base/gfx/gtk_util.h"
 #include "base/pickle.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/bookmark_context_menu.h"
