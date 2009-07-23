@@ -1128,7 +1128,7 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
 
   if (show_dialog) {
 #if defined(OS_WIN)
-    if (!win_util::MessageBox(GetForegroundWindow(),
+    if (win_util::MessageBox(GetForegroundWindow(),
             L"Are you sure you want to install this extension?\n\n"
             L"This is a temporary message and it will be removed when "
             L"extensions UI is finalized.",
