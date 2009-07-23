@@ -268,6 +268,10 @@ const wchar_t kCheckDefaultBrowser[] = L"browser.check_default_browser";
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const wchar_t kUseCustomChromeFrame[] = L"browser.custom_chrome_frame";
 
+// Boolean that indicates whether the infobar explaining that search can be done
+// directly from the omnibox should be shown.
+const wchar_t kShowOmniboxSearchHint[] = L"browser.show_omnibox_search_hint";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

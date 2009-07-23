@@ -4058,6 +4058,16 @@ each locale. -->
         Created new window in existing browser session.
       </message>
 
+      <message name="IDS_OMNIBOX_SEARCH_HINT_INFOBAR_TEXT" desc="The text displayed in the info-bar to tell users they can type their search queries directly in the location bar.">
+        Did you know you can search directly from the box above?
+      </message>
+      <message name="IDS_OMNIBOX_SEARCH_HINT_INFOBAR_BUTTON_LABEL" desc="The label of the 'Show Me' button on the omnibox search hint infobar.">
+        Show Me
+      </message>
+      <message name="IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT" desc="The text displayed selected in the omnibox once the user clicked the 'Show Me' button on the omnibox search hint infobar.">
+        Type your search query here
+      </message>
+
       <!-- Mac Menubar Menus -->
       <if expr="os == 'darwin'">
         <!-- Menubar Menu Titles -->

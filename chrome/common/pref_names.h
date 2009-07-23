@@ -101,6 +101,7 @@ extern const wchar_t kCurrentThemeTints[];
 extern const wchar_t kCurrentThemeDisplayProperties[];
 extern const wchar_t kCheckDefaultBrowser[];
 extern const wchar_t kUseCustomChromeFrame[];
+extern const wchar_t kShowOmniboxSearchHint[];
 
 // Local state
 extern const wchar_t kAvailableProfiles[];

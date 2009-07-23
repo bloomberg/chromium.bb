@@ -207,6 +207,8 @@ extern const wchar_t kEnableTabtastic2[];
 
 extern const wchar_t kPinnedTabCount[];
 
+extern const wchar_t kSearchInOmniboxHint[];
+
 extern const wchar_t kEnableLocalStorage[];
 
 extern const wchar_t kEnableSessionStorage[];

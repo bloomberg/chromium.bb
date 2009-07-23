@@ -1207,6 +1207,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);
   prefs->RegisterBooleanPref(prefs::kUseCustomChromeFrame, false);
+  prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);
 }
 
 // static

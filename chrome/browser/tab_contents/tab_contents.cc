@@ -28,6 +28,7 @@
 #include "chrome/browser/jsmessage_box_handler.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
+#include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/profile.h"
@@ -284,6 +285,10 @@ TabContents::TabContents(Profile* profile,
   // Keep a global copy of the previous search string (if any).
   static string16 global_last_search = string16();
   last_search_prepopulate_text_ = &global_last_search;
+
+  // Set-up the showing of the omnibox search infobar if applicable.
+  if (OmniboxSearchHint::IsEnabled(profile))
+    omnibox_search_hint_.reset(new OmniboxSearchHint(this));
 
   view_->InitRendererPrefs(&renderer_preferences_);
 }

@@ -41,6 +41,14 @@ class LinkInfoBarDelegate;
 // AddInfoBar!
 class InfoBarDelegate {
  public:
+  // The type of the infobar. It controls its appearence, such as its background
+  // color.
+  enum Type {
+    INFO_TYPE,
+    WARNING_TYPE,
+    ERROR_TYPE
+  };
+
   // Returns true if the supplied |delegate| is equal to this one. Equality is
   // left to the implementation to define. This function is called by the
   // TabContents when determining whether or not a delegate should be added
@@ -56,6 +64,9 @@ class InfoBarDelegate {
   // navigated somewhere else or reloaded.
   virtual bool ShouldExpire(
       const NavigationController::LoadCommittedDetails& details) const;
+
+  // Called when the user clicks on the close button to dismiss the infobar.
+  virtual void InfoBarDismissed() {}
 
   // Called after the InfoBar is closed. The delegate is free to delete itself
   // at this point.
@@ -82,6 +93,12 @@ class InfoBarDelegate {
   // Returns a pointer to the ConfirmInfoBarDelegate interface, if implemented.
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() {
     return NULL;
+  }
+
+  // Returns the type of the infobar.  The type determines the appearance (such
+  // as background color) of the infobar.
+  virtual Type GetInfoBarType() {
+    return WARNING_TYPE;
   }
 
  protected:

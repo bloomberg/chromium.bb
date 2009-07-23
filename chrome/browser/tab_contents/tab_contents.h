@@ -74,6 +74,7 @@ class DOMUI;
 class DOMUIContents;
 class DownloadItem;
 class LoadNotificationDetails;
+class OmniboxSearchHint;
 class PageAction;
 class PasswordManager;
 class PluginInstaller;
@@ -1088,6 +1089,10 @@ class TabContents : public PageNavigator,
   // True if the user has decided to block future javascript messages. This is
   // reset on navigations to false on navigations.
   bool suppress_javascript_messages_;
+
+  // Shows an info-bar to users when they search from a known search engine and
+  // have never used the monibox for search before.
+  scoped_ptr<OmniboxSearchHint> omnibox_search_hint_;
 
   // Settings that get passed to the renderer process.
   RendererPreferences renderer_preferences_;

@@ -1294,6 +1294,8 @@
         'browser/net/url_fetcher_protect.h',
         'browser/net/url_fixer_upper.cc',
         'browser/net/url_fixer_upper.h',
+	'browser/omnibox_search_hint.cc',
+	'browser/omnibox_search_hint.h',
         'browser/options_page_base.cc',
         'browser/options_page_base.h',
         'browser/options_util.cc',

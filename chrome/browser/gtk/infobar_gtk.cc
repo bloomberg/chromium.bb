@@ -150,6 +150,8 @@ void InfoBar::Closed() {
 
 // static
 void InfoBar::OnCloseButton(GtkWidget* button, InfoBar* info_bar) {
+  if (info_bar->delegate_)
+    info_bar->delegate_->InfoBarDismissed();
   info_bar->RemoveInfoBar();
 }
 

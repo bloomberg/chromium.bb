@@ -30,8 +30,16 @@ static const int kIconLabelSpacing = 5;
 static const int kButtonSpacing = 5;
 static const int kWordSpacing = 2;
 
-static const SkColor kBackgroundColorTop = SkColorSetRGB(255, 242, 183);
-static const SkColor kBackgroundColorBottom = SkColorSetRGB(250, 230, 145);
+static const SkColor kInfoBackgroundColorTop = SkColorSetRGB(170, 214, 112);
+static const SkColor kInfoBackgroundColorBottom = SkColorSetRGB(146, 205, 114);
+
+static const SkColor kWarningBackgroundColorTop = SkColorSetRGB(255, 242, 183);
+static const SkColor kWarningBackgroundColorBottom =
+    SkColorSetRGB(250, 230, 145);
+
+static const SkColor kErrorBackgroundColorTop = kWarningBackgroundColorTop;
+static const SkColor kErrorBackgroundColorBottom =
+    kWarningBackgroundColorBottom;
 
 static const int kSeparatorLineHeight = 1;
 
@@ -57,10 +65,29 @@ int OffsetY(views::View* parent, const gfx::Size prefsize) {
 
 class InfoBarBackground : public views::Background {
  public:
-  InfoBarBackground() {
+  InfoBarBackground(InfoBarDelegate::Type infobar_type) {
+    SkColor top_color;
+    SkColor bottom_color;
+    switch (infobar_type) {
+      case InfoBarDelegate::INFO_TYPE:
+        top_color = kInfoBackgroundColorTop;
+        bottom_color = kInfoBackgroundColorBottom;
+        break;
+      case InfoBarDelegate::WARNING_TYPE:
+        top_color = kWarningBackgroundColorTop;
+        bottom_color = kWarningBackgroundColorBottom;
+        break;
+      case InfoBarDelegate::ERROR_TYPE:
+        top_color = kErrorBackgroundColorTop;
+        bottom_color = kErrorBackgroundColorBottom;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
     gradient_background_.reset(
-        views::Background::CreateVerticalGradientBackground(
-            kBackgroundColorTop, kBackgroundColorBottom));
+        views::Background::CreateVerticalGradientBackground(top_color,
+                                                            bottom_color));
   }
 
   // Overridden from views::View:
@@ -90,7 +117,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   // We delete ourselves when we're removed from the view hierarchy.
   SetParentOwned(false);
 
-  set_background(new InfoBarBackground);
+  set_background(new InfoBarBackground(delegate->GetInfoBarType()));
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
@@ -172,8 +199,11 @@ void InfoBar::RemoveInfoBar() const {
 // InfoBar, views::ButtonListener implementation: ------------------
 
 void InfoBar::ButtonPressed(views::Button* sender) {
-  if (sender == close_button_)
+  if (sender == close_button_) {
+    if (delegate_)
+      delegate_->InfoBarDismissed();
     RemoveInfoBar();
+  }
 }
 
 // InfoBar, AnimationDelegate implementation: ----------------------------------

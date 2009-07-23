@@ -538,6 +538,10 @@ const wchar_t kEnableTabtastic2[] = L"enable-tabtastic2";
 // enabled.
 const wchar_t kPinnedTabCount[] = L"pinned-tab-count";
 
+// Enables the showing of an info-bar instructing user they can search directly
+// from the omnibox.
+const wchar_t kSearchInOmniboxHint[] = L"search-in-omnibox-hint";
+
 // Enable local storage.  Still buggy.
 const wchar_t kEnableLocalStorage[] = L"enable-local-storage";
 
