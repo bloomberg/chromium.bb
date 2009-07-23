@@ -343,6 +343,8 @@ class Memcheck(ValgrindTool):
 
     if self._options.show_all_leaks:
       ret += ["--show-reachable=yes"];
+    else:
+      ret += ["--show-possible=no"];
 
     if self._options.track_origins:
       ret += ["--track-origins=yes"];
