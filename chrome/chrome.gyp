@@ -3615,9 +3615,6 @@
         'utility',
         '../app/app.gyp:app_resources',
         '../ipc/ipc.gyp:ipc',
-        # TODO(jamesr): this is required for the release builders to build
-        # ipc_tests.exe. However, it's probably not what we really want.
-        '../ipc/ipc.gyp:ipc_tests',
         '../net/net.gyp:net_resources',
         '../net/net.gyp:net_test_support',
         '../printing/printing.gyp:printing',
@@ -4451,6 +4448,7 @@
             'installer/installer.gyp:*',
             '../app/app.gyp:*',
             '../base/base.gyp:*',
+            '../ipc/ipc.gyp:*',
             '../media/media.gyp:*',
             '../net/net.gyp:*',
             '../printing/printing.gyp:*',
