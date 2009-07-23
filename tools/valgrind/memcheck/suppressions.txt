@@ -904,16 +904,6 @@
    fun:_ZN7WebCore5Frame4initEv
 }
 {
-   bug_17184
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN7WebCore10StringImplnwEj
-   fun:_ZN7WebCore10StringImpl5adoptERN3WTF6VectorItLj0EEE
-   fun:_ZN7WebCore12createMarkupEPKNS_5RangeEPN3WTF6VectorIPNS_4NodeELj0EEENS_23EAnnotateForInterchangeEb
-   fun:_ZN7WebCore10Pasteboard14writeSelectionEPNS_5RangeEbPNS_5FrameE
-}
-{
    bug_17185
    Memcheck:Leak
    fun:malloc

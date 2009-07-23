@@ -46,6 +46,8 @@ namespace WebKit {
             FormatSmartPaste
         };
 
+        virtual ~WebClipboard() {}
+
         virtual bool isFormatAvailable(Format) = 0;
 
         virtual WebString readPlainText() = 0;

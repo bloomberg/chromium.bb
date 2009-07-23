@@ -18,6 +18,8 @@ class WebClipboardImpl : public WebKit::WebClipboard {
   static std::string URLToImageMarkup(const WebKit::WebURL& url,
       const WebKit::WebString& title);
 
+  virtual ~WebClipboardImpl() {}
+
   // WebClipboard methods:
   virtual bool isFormatAvailable(WebKit::WebClipboard::Format);
   virtual WebKit::WebString readPlainText();
