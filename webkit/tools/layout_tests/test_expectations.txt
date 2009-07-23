@@ -2819,11 +2819,6 @@ BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL CRASH
 // Failing approximately starting from 20629
 BUG16754 : LayoutTests/fast/loader/empty-embed-src-attribute.html = CRASH
 
-// HTML5 DataGrid bindings have not been implemented for V8 yet.
-BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = TIMEOUT
-BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom.html = TIMEOUT
-BUG16730 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attributes.html = FAIL TIMEOUT
-
 // Disabling since try bots use Chromium FFmpeg DLLs, which means we can no
 // longer decode WebKit's test clips because they use H.264, AAC, etc.
 BUG16779 : LayoutTests/media/media-startTime.html = FAIL
@@ -2994,3 +2989,16 @@ BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = C
 BUG17509 LINUX : LayoutTests/fast/loader/local-CSS-from-local.html = FAIL
 BUG17509 LINUX : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL TIMEOUT
 BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
+
+// These need new baselines for the merge r46229:46269.
+BUG_DARIN WIN LINUX : LayoutTests/fast/backgrounds/size/backgroundSize20.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/backgrounds/size/backgroundSize21.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/backgrounds/size/backgroundSize22.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/css/remove-shorthand.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/forms/select-popup-pagekeys.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/inspector/style.html = FAIL
+BUG_DARIN WIN LINUX MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null-char.html = FAIL
+BUG_DARIN WIN RELEASE : LayoutTests/media/video-document-types.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
