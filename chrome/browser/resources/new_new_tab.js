@@ -511,6 +511,7 @@ var mostVisited = {
 
   invalidate: function() {
     this.dirty_ = true;
+    this.calculationsDirty_ = true;
   },
 
   layout: function() {
@@ -518,8 +519,65 @@ var mostVisited = {
       return;
     }
     var d0 = Date.now();
+
+    this.calculateLayout_();
+
     var mostVisitedElement = $('most-visited');
     var thumbnails = mostVisitedElement.children;
+
+    if (shownSections & Section.LIST) {
+      addClass(mostVisitedElement, 'list');
+    } else if (shownSections & Section.THUMB) {
+      removeClass(mostVisitedElement, 'list');
+    }
+
+    var cache = this.layoutCache_;
+    mostVisitedElement.style.height = cache.sumHeight + 'px';
+    mostVisitedElement.style.opacity = cache.opacity;
+    // We set overflow to hidden so that the most visited element does not
+    // "leak" when we hide and show it.
+    if (!cache.opacity) {
+      mostVisitedElement.style.overflow = 'hidden';
+    }
+
+    if (shownSections & Section.THUMB || shownSections & Section.LIST) {
+      for (var i = 0; i < thumbnails.length; i++) {
+        var t = thumbnails[i];
+
+        // Remove temporary ID that was used during startup layout.
+        t.id = '';
+
+        var rect = cache.rects[i];
+        t.style.left = rect.left + 'px';
+        t.style.top = rect.top + 'px';
+        t.style.width = rect.width != undefined ? rect.width + 'px' : '';
+        var innerStyle = t.firstElementChild.style;
+        innerStyle.left = innerStyle.top = '';
+      }
+    }
+
+    afterTransition(function() {
+      // Only set overflow to visible if the element is shown.
+      if (cache.opacity) {
+        mostVisitedElement.style.overflow = '';
+      }
+    });
+
+    this.dirty_ = false;
+
+    logEvent('mostVisited.layout: ' + (Date.now() - d0));
+  },
+
+  layoutCache_: {},
+  calculationsDirty_: true,
+
+  /**
+   * Calculates and caches the layout positions for the thumbnails.
+   */
+  calculateLayout_: function() {
+    if (!this.calculationsDirty_) {
+      return;
+    }
 
     var small = useSmallGrid();
 
@@ -542,32 +600,17 @@ var mostVisited = {
       rows = 4;
       cols = 2;
       sumHeight = rows * h;
-      addClass(mostVisitedElement, 'list');
-    } else if (shownSections & Section.THUMB) {
-      removeClass(mostVisitedElement, 'list');
-      } else {
+    } else if (!(shownSections & Section.THUMB)) {
       sumHeight = 0;
       opacity = 0;
     }
 
-    mostVisitedElement.style.height = sumHeight + 'px';
-    mostVisitedElement.style.opacity = opacity;
-    // We set overflow to hidden so that the most visited element does not
-    // "leak" when we hide and show it.
-    if (!opacity) {
-      mostVisitedElement.style.overflow = 'hidden';
-    }
-
     var rtl = document.documentElement.dir == 'rtl';
+    var rects = [];
 
     if (shownSections & Section.THUMB || shownSections & Section.LIST) {
-      for (var i = 0; i < thumbnails.length; i++) {
-        var t = thumbnails[i];
-
-        // Remove temporary ID that was used during startup layout.
-        t.id = '';
-
-        var row, col;
+      for (var i = 0; i < rows * cols; i++) {
+        var row, col, left, top, width;
         if (shownSections & Section.THUMB) {
           row = Math.floor(i / cols);
           col = i % cols;
@@ -577,34 +620,33 @@ var mostVisited = {
         }
 
         if (shownSections & Section.THUMB) {
-          t.style.left = (rtl ?
-              sumWidth - col * w - thumbWidth - 2 * borderWidth :
-              col * w) + 'px';
+          left = rtl ? sumWidth - col * w - thumbWidth - 2 * borderWidth :
+              col * w;
         } else {
-          t.style.left = (rtl ?
-              sumWidth - col * w - w + 2 * marginWidth :
-              col * w) + 'px';
+          left = rtl ? sumWidth - col * w - w + 2 * marginWidth : col * w;
         }
-        t.style.top = row * h + 'px';
+        top = row * h;
 
         if (shownSections & Section.LIST) {
-          t.style.width = w - 2 * marginWidth + 'px';
-        } else {
-          t.style.width = '';
+          width = w - 2 * marginWidth;
         }
+
+        rects[i] = {left: left, top: top, width: width};
       }
     }
 
-    afterTransition(function() {
-      // Only set overflow to visible if the element is shown.
-      if (opacity) {
-        mostVisitedElement.style.overflow = '';
-      }
-    });
+    this.layoutCache_ = {
+      opacity: opacity,
+      sumHeight: sumHeight,
+      rects: rects
+    }
 
-    this.dirty_ = false;
+    this.calculationsDirty_ = false;
+  },
 
-    logEvent('mostVisited.layout: ' + (Date.now() - d0));
+  getRectByIndex: function(index) {
+    this.calculateLayout_();
+    return this.layoutCache_.rects[index]
   }
 };
 
@@ -1156,7 +1198,46 @@ document.addEventListener('mouseover', function(e) {
 // DnD
 
 var dnd = {
-  currentOverItem: null,
+  currentOverItem_: null,
+  get currentOverItem() {
+    return this.currentOverItem_;
+  },
+  set currentOverItem(item) {
+    var style;
+    if (item != this.currentOverItem_) {
+      if (this.currentOverItem_) {
+        style = this.currentOverItem_.firstElementChild.style;
+        style.left = style.top = '';
+      }
+      this.currentOverItem_ = item;
+
+      if (item) {
+        // Make the drag over item move 15px towards the source. The movement is
+        // done by only moving the edit-mode-border (as in the mocks) and it is
+        // done with relative positioning so that the movement does not change
+        // the drop target.
+        var dragIndex = mostVisited.getThumbnailIndex(this.dragItem);
+        var overIndex = mostVisited.getThumbnailIndex(item);
+        if (dragIndex == -1 || overIndex == -1) {
+          return;
+        }
+
+        var dragRect = mostVisited.getRectByIndex(dragIndex);
+        var overRect = mostVisited.getRectByIndex(overIndex);
+
+        var x = dragRect.left - overRect.left;
+        var y = dragRect.top - overRect.top;
+        var z = Math.sqrt(x * x + y * y);
+        var z2 = 15;
+        var x2 = x * z2 / z;
+        var y2 = y * z2 / z;
+
+        style = this.currentOverItem_.firstElementChild.style;
+        style.left = x2 + 'px';
+        style.top = y2 + 'px';
+      }
+    }
+  },
   dragItem: null,
   startX: 0,
   startY: 0,
@@ -1176,7 +1257,6 @@ var dnd = {
   },
 
   handleDragEnter: function(e) {
-    this.currentOverItem = mostVisited.getItem(e.target);
     if (this.canDropOnElement(this.currentOverItem)) {
       e.preventDefault();
     }
@@ -1184,6 +1264,7 @@ var dnd = {
 
   handleDragOver: function(e) {
     var item = mostVisited.getItem(e.target);
+    this.currentOverItem = item;
     if (this.canDropOnElement(item)) {
       e.preventDefault();
     }

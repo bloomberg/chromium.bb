@@ -237,6 +237,10 @@ html[dir=rtl] .thumbnail-container > .title > div {
 .edit-mode-border {
   -webkit-border-radius: 4px;
   background-color: hsla(213, 54%, 95%, 0);
+
+  /* when dragged over we move this */
+  position: relative;
+  -webkit-transition: top .15s, left .15s;
 }
 
 .thumbnail-container:focus .thumbnail,
