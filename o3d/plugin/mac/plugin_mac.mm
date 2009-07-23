@@ -246,7 +246,7 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
           aglSetInteger(obj->mac_agl_context_, AGL_SWAP_INTERVAL, &sync);
         }
 
-        obj->client()->RenderClient();
+        obj->client()->RenderClient(true);
       }
     }
   }

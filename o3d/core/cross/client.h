@@ -248,8 +248,16 @@ class Client {
   // This is the function anything hosting the client, like a plugin, should
   // call to render.
   // Parameters:
-  //   None
-  void RenderClient();
+  //   send_callback : whether to make the javascript render callback.
+  //       Generally you want to pass true, but if the render is happening
+  //       in non-windowed mode (eg on a Mac) and is in response to an update
+  //       event rather than a timer, it can be useful to pass false to prevent
+  //       the javascript code triggering another update and causing an infinite
+  //       calback loop. Case in point is the custom camera example, which
+  //       modifies some HTML form text fields on render callback, which on
+  //       Firefox causes a plugin invalidation and round and round we would
+  //       go.
+  void RenderClient(bool send_callback);
 
   // Sets the texture to use when a Texture or Sampler is missing while
   // rendering. If you set it to NULL you'll get an error if you try to render

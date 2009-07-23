@@ -73,8 +73,8 @@ scoped_ptr<base::AtExitManager> g_at_exit_manager;
 #define CFTIMER
 // #define DEFERRED_DRAW_ON_NULLEVENTS
 
-void DrawPlugin(PluginObject* obj) {
-  obj->client()->RenderClient();
+void DrawPlugin(PluginObject* obj, bool send_callback) {
+  obj->client()->RenderClient(send_callback);
 }
 
 unsigned char GetMacEventKeyChar(const EventRecord *the_event) {
@@ -411,7 +411,7 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
   obj->MacEventReceived();
   switch (the_event->type) {
     case NPCocoaEventDrawRect:
-      DrawPlugin(obj);
+      DrawPlugin(obj, false);
       handled = true;
       break;
     case NPCocoaEventMouseDown:
@@ -729,7 +729,7 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
       GLUE_PROFILE_STOP(instance, "forceredraw");
 #elif defined(CFTIMER)
 #else
-      DrawPlugin(obj);
+      DrawPlugin(obj, true);
 #endif
       // Safari tab switching recovery code.
       if (obj->mac_surface_hidden_) {
@@ -754,7 +754,7 @@ bool HandleMacEvent(EventRecord* the_event, NPP instance) {
       handled = true;
       break;
     case updateEvt:
-      DrawPlugin(obj);
+      DrawPlugin(obj, false);
       handled = true;
       break;
     case osEvt:

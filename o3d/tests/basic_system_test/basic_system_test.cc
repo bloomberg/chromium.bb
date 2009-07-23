@@ -198,7 +198,7 @@ void BasicSystemTest::SetUp() {
 
 void BasicSystemTest::TearDown() {
   // Force another render to make the stream capture end.
-  client()->RenderClient();
+  client()->RenderClient(true);
 
   pack_->Destroy();
   delete client_;
@@ -328,7 +328,7 @@ TEST_F(BasicSystemTest, BasicSystemTestCase) {
   // and framebuffer contents.
   BEGIN_ASSERT_STREAM_CAPTURE();
   for (int frame_count = 0; frame_count < 5; ++frame_count) {
-    client()->RenderClient();
+    client()->RenderClient(true);
     ASSERT_FRAMEBUFFER();
     Matrix4 mat(Matrix4::rotationY(static_cast<float>(frame_count) * 2 *
                                    static_cast<float>(M_PI) / 5.0f));

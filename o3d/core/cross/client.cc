@@ -210,7 +210,7 @@ void Client::ClearLostResourcesCallback() {
   }
 }
 
-void Client::RenderClient() {
+void Client::RenderClient(bool send_callback) {
   ElapsedTimeTimer timer;
   rendering_ = true;
   render_tree_called_ = false;
@@ -223,7 +223,8 @@ void Client::RenderClient() {
     counter_manager_.AdvanceRenderFrameCounters(1.0f);
 
     profiler_->ProfileStart("Render callback");
-    render_callback_manager_.Run(render_event_);
+    if (send_callback)
+      render_callback_manager_.Run(render_event_);
     profiler_->ProfileStop("Render callback");
 
     if (!render_tree_called_) {

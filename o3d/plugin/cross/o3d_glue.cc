@@ -863,7 +863,7 @@ void PluginObject::AsyncTick() {
 void PluginObject::Tick() {
   client_->Tick();
   if (renderer_ && renderer_->need_to_render()) {
-    client_->RenderClient();
+    client_->RenderClient(true);
   }
 
   DCHECK(pending_ticks_ > 0);

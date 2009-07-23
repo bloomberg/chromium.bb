@@ -59,7 +59,7 @@ bool g_xembed_support = false;
 static void DrawPlugin(PluginObject *obj) {
   // Limit drawing to no more than once every timer tick.
   if (!obj->draw_) return;
-  obj->client()->RenderClient();
+  obj->client()->RenderClient(true);
   obj->draw_ = false;
 }
 
@@ -72,7 +72,9 @@ void LinuxTimer(XtPointer data, XtIntervalId* id) {
   obj->draw_ = true;
   if (obj->renderer()) {
     if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
+
         obj->renderer()->need_to_render()) {
+
       // NOTE: this draws no matter what instead of just invalidating the
       // region, which means it will execute even if the plug-in window is
       // invisible.
@@ -569,7 +571,9 @@ static gboolean GtkTimeoutCallback(gpointer user_data) {
   obj->client()->Tick();
   if (obj->renderer()) {
     if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS ||
+
         obj->renderer()->need_to_render()) {
+
       gtk_widget_queue_draw(obj->gtk_container_);
     }
   }
