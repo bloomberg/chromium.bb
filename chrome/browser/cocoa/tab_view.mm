@@ -281,8 +281,15 @@ static const double kDragStartDistance = 3.0;
     origin.y = (1 - tearProgress) * tearOrigin_.y + tearProgress * origin.y;
   }
 
-  if (targetController_)
-    origin.y = [[targetController_ window] frame].origin.y;
+  if (targetController_) {
+    // In order to "snap" two windows of different sizes together at their
+    // toolbar, we can't just use the origin of the target frame. We also have
+    // to take into consideration the difference in height.
+    NSRect targetFrame = [[targetController_ window] frame];
+    NSRect sourceFrame = [dragWindow_ frame];
+    origin.y = NSMinY(targetFrame) +
+                (NSHeight(targetFrame) - NSHeight(sourceFrame));
+  }
   [dragWindow_ setFrameOrigin:NSMakePoint(origin.x, origin.y)];
 
   // If we're not hovering over any window, make the window is fully
