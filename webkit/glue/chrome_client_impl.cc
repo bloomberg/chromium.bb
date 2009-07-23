@@ -517,14 +517,16 @@ void ChromeClientImpl::setToolTip(const WebCore::String& tooltip_text,
   if (webview_->delegate()) {
     std::wstring tooltip_text_as_wstring =
       webkit_glue::StringToStdWString(tooltip_text);
-    if (dir == WebCore::LTR) {
-      // Force the tooltip to have LTR directionality.
-      tooltip_text_as_wstring.insert(0, 1, WebCore::leftToRightEmbed);
-      tooltip_text_as_wstring.push_back(WebCore::popDirectionalFormatting);
-    } else {
-      // Force the tooltip to have RTL directionality.
-      tooltip_text_as_wstring.insert(0, 1, WebCore::rightToLeftEmbed);
-      tooltip_text_as_wstring.push_back(WebCore::popDirectionalFormatting);
+    if (!tooltip_text_as_wstring.empty()) {
+      if (dir == WebCore::LTR) {
+        // Force the tooltip to have LTR directionality.
+        tooltip_text_as_wstring.insert(0, 1, WebCore::leftToRightEmbed);
+        tooltip_text_as_wstring.push_back(WebCore::popDirectionalFormatting);
+      } else {
+        // Force the tooltip to have RTL directionality.
+        tooltip_text_as_wstring.insert(0, 1, WebCore::rightToLeftEmbed);
+        tooltip_text_as_wstring.push_back(WebCore::popDirectionalFormatting);
+      }
     }
     webview_->delegate()->SetTooltipText(webview_, tooltip_text_as_wstring);
   }
