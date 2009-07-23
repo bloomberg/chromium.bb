@@ -29,6 +29,11 @@ static bool ExtractCurrentFile(unzFile zip_file,
   if (filename_inzip[0] == '\0')
     return false;
 
+  // Check the filename here for directory traversal issues. In the name of
+  // simplicity and security, we might reject a valid filename such as "a..b"
+  if (strstr(filename_inzip, "..") != NULL)
+    return false;
+
   err = unzOpenCurrentFile(zip_file);
   if (err != UNZ_OK)
     return false;

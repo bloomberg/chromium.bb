@@ -42,16 +42,21 @@ class ZipTest : public PlatformTest {
     ASSERT_FALSE(file_util::PathExists(test_dir_));
   }
 
-  void TestUnzipFile(const FilePath::StringType& filename) {
+  void TestUnzipFile(const FilePath::StringType& filename, bool need_success) {
     FilePath test_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
     test_dir = test_dir.AppendASCII("zip");
-    TestUnzipFile(test_dir.Append(filename));
+    TestUnzipFile(test_dir.Append(filename), need_success);
   }
 
-  void TestUnzipFile(const FilePath& path) {
+  void TestUnzipFile(const FilePath& path, bool need_success) {
     ASSERT_TRUE(file_util::PathExists(path)) << "no file " << path.value();
-    ASSERT_TRUE(Unzip(path, test_dir_));
+    if (need_success) {
+      ASSERT_TRUE(Unzip(path, test_dir_));
+    } else {
+      ASSERT_FALSE(Unzip(path, test_dir_));
+      return;
+    }
 
     file_util::FileEnumerator files(test_dir_, true,
         static_cast<file_util::FileEnumerator::FILE_TYPE>(
@@ -79,13 +84,20 @@ class ZipTest : public PlatformTest {
 };
 
 TEST_F(ZipTest, Unzip) {
-  TestUnzipFile(FILE_PATH_LITERAL("test.zip"));
+  TestUnzipFile(FILE_PATH_LITERAL("test.zip"), true);
 }
 
 TEST_F(ZipTest, UnzipUncompressed) {
-  TestUnzipFile(FILE_PATH_LITERAL("test_nocompress.zip"));
+  TestUnzipFile(FILE_PATH_LITERAL("test_nocompress.zip"), true);
 }
 
+TEST_F(ZipTest, UnzipEvil) {
+  TestUnzipFile(FILE_PATH_LITERAL("evil.zip"), false);
+  FilePath evil_file = test_dir_;
+  evil_file = evil_file.AppendASCII(
+      "../levilevilevilevilevilevilevilevilevilevilevilevil");
+  ASSERT_FALSE(file_util::PathExists(evil_file));
+}
 
 TEST_F(ZipTest, Zip) {
   FilePath src_dir;
@@ -99,7 +111,7 @@ TEST_F(ZipTest, Zip) {
 
   EXPECT_TRUE(Zip(src_dir, zip_file));
 
-  TestUnzipFile(zip_file);
+  TestUnzipFile(zip_file, true);
 
   EXPECT_TRUE(file_util::Delete(zip_file, false));
 }
