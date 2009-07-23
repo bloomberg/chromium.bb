@@ -37,18 +37,18 @@ sandbox::SboxTestResult CreateProcessHelper(const std::wstring &exe,
   PROCESS_INFORMATION pi;
   STARTUPINFOW si = {sizeof(si)};
 
-  wchar_t *exe_name = NULL;
+  const wchar_t *exe_name = NULL;
   if (!exe.empty())
-    exe_name = const_cast<wchar_t*>(exe.c_str());
+    exe_name = exe.c_str();
 
-  wchar_t *cmd_line = NULL;
+  const wchar_t *cmd_line = NULL;
   if (!command.empty())
-    cmd_line = const_cast<wchar_t*>(command.c_str());
+    cmd_line = command.c_str();
 
   // Create the process with the unicode version of the API.
   sandbox::SboxTestResult ret1 = sandbox::SBOX_TEST_FAILED;
-  if (!::CreateProcessW(exe_name, cmd_line, NULL, NULL, FALSE, 0, NULL,
-                        NULL, &si, &pi)) {
+  if (!::CreateProcessW(exe_name, const_cast<wchar_t*>(cmd_line), NULL, NULL,
+                        FALSE, 0, NULL, NULL, &si, &pi)) {
     DWORD last_error = GetLastError();
     if ((ERROR_NOT_ENOUGH_QUOTA == last_error) ||
         (ERROR_ACCESS_DENIED == last_error) ||
@@ -65,7 +65,9 @@ sandbox::SboxTestResult CreateProcessHelper(const std::wstring &exe,
   STARTUPINFOA sia = {sizeof(sia)};
   sandbox::SboxTestResult ret2 = sandbox::SBOX_TEST_FAILED;
 
-  std::string narrow_cmd_line = sandbox::WideToMultiByte(cmd_line);
+  std::string narrow_cmd_line;
+  if (cmd_line)
+    narrow_cmd_line = sandbox::WideToMultiByte(cmd_line);
   if (!::CreateProcessA(
         exe_name ? sandbox::WideToMultiByte(exe_name).c_str() : NULL,
         cmd_line ? const_cast<char*>(narrow_cmd_line.c_str()) : NULL,
