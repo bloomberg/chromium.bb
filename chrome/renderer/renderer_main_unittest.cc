@@ -8,6 +8,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TODO(port): Bring up this test this on other platforms.
