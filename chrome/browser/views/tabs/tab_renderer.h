@@ -155,9 +155,6 @@ class TabRenderer : public views::View,
   // Close Button.
   views::ImageButton* close_button_;
 
-  // The current color of the close button.
-  SkColor close_button_color_;
-
   // Hover animation.
   scoped_ptr<SlideAnimation> hover_animation_;
 
@@ -200,6 +197,9 @@ class TabRenderer : public views::View,
 
   // The offset used to animate the favicon location.
   int fav_icon_hiding_offset_;
+
+  // The current color of the close button.
+  SkColor close_button_color_;
 
   // The animation object used to swap the favicon with the sad tab icon.
   class FavIconCrashAnimation;
