@@ -93,6 +93,10 @@ class ImageDiff(test_type_base.TestTypeBase):
           _compare_available = False
         else:
           raise e
+      except ValueError:
+        # work around a race condition in Python 2.4's implementation of
+        # subprocess.Popen
+        pass
 
     global _compare_msg_printed
 
