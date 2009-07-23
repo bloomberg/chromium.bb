@@ -1271,6 +1271,12 @@ void TabContents::MaybeCloseChildWindows(const GURL& previous_url,
     if (window)
       window->CloseConstrainedWindow();
   }
+
+  // Close the popup container.
+  if (blocked_popups_) {
+    blocked_popups_->Destroy();
+    blocked_popups_ = NULL;
+  }
 }
 
 void TabContents::UpdateStarredStateForCurrentURL() {
