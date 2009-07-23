@@ -153,14 +153,14 @@ int ExprNodeWidth(ExprNodeVector* vector, int node);
  */
 int GetExprNodeKidIndex(ExprNodeVector* vector, int node, int kid);
 
-/* Given the index of a 64-bit constant, returns the corresponding constant. */
-uint64_t GetExprConstant64(ExprNodeVector* vector, int index);
+/* Given the index of a constant, returns the corresponding constant. */
+uint64_t GetExprConstant(ExprNodeVector* vector, int index);
 
 /* Given a 64-bit constant, return the corresponding two 32-bit constants to
  * Use. Note: The lower 32 bits are put in val1, and the upper 32 bits are
  * put in val2.
  */
-void SplitExprConstant64(uint64_t val, uint32_t* val1, uint32_t* val2);
+void SplitExprConstant(uint64_t val, uint32_t* val1, uint32_t* val2);
 
 /* Returns true if the index points to a constant that is negative. */
 Bool IsExprNegativeConstant(ExprNodeVector* vector, int index);

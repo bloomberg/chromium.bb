@@ -209,6 +209,7 @@ static void CheckIfIOperandRepeated(int index) {
       case Ib_Operand:
       case Iw_Operand:
       case Iv_Operand:
+      case Io_Operand:
         FatalOperand(index, "Can't use I_Operand more than once");
         break;
       case J_Operand:
@@ -360,6 +361,17 @@ static void ApplySanityChecksToOperand(int index) {
       if (current_opcode->flags & InstFlag(OpcodeHasImmed_v)) {
         FatalOperand(index,
                      "Size implied by OpcodeHasImmed_v, use I_Operand instead");
+      }
+      CheckIfIOperandRepeated(index);
+      break;
+    case Io_Operand:
+      if (current_opcode->flags & InstFlag(OperandSize_o)) {
+        FatalOperand(index,
+                     "Size implied by OperandSize_o, use I_Operand instead");
+      }
+      if (current_opcode->flags & InstFlag(OpcodeHasImmed_o)) {
+        FatalOperand(index,
+                     "Size implied by OpcodeHasImmed_o, use I_Operand instead");
       }
       CheckIfIOperandRepeated(index);
       break;
@@ -1278,6 +1290,12 @@ static void DefineOneByteOpcodes() {
 
   /* 0x91 0x82 0x93 0x94 0x95 0x96 0x97 0x98 0x99
      0x9a 0x9b 0x9c 0x9d 0x9e 0x9f */
+
+  DefineOpcode(0xa0, NACLi_386,
+               InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed_Addr),
+               InstMov);
+  DefineOperand(RegAL, OpFlag(OpSet));
+  DefineOperand(O_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xA8, NACLi_386,
                InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed),

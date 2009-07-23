@@ -98,17 +98,6 @@ const char* ExprNodeFlagName(ExprNodeFlagEnum flag) {
   return g_ExprNodeFlagName[flag];
 }
 
-/* Returns the constant defined by the given node. */
-static INLINE uint32_t GetNodeConstant(ExprNode* node) {
-  assert(node->kind == ExprConstant);
-  return node->value;
-}
-
-/* Returns the constant defined by the indexed node in the vector of nodes. */
-static INLINE uint32_t GetNodeVectorConstant(ExprNodeVector* vector, int node) {
-  return GetNodeConstant(&vector->node[node]);
-}
-
 /* Returns the register defined by the given node. */
 static INLINE OperandKind GetNodeRegister(ExprNode* node) {
   assert(node->kind == ExprRegister);
@@ -174,8 +163,8 @@ static void PrintDisassembledConst64(
   uint64_t value;
   node = &vector->node[index];
   assert(node->kind == ExprConstant64);
-  value = GetExprConstant64(vector, index);
-  if (node->flags & ExprFlag(ExprSignedHex)) {
+  value = GetExprConstant(vector, index);
+  if (node->flags & ExprFlag(ExprUnsignedHex)) {
     fprintf(file, "0x%"PRIx64, value);
   } else if (node->flags & ExprFlag(ExprSignedHex)) {
     int64_t val = (int64_t) value;
@@ -262,8 +251,8 @@ static int PrintDisassembledMemOffset(FILE* file,
   int disp_index = scale_index + ExprNodeWidth(vector, scale_index);
   OperandKind r1 = GetNodeVectorRegister(vector, r1_index);
   OperandKind r2 = GetNodeVectorRegister(vector, r2_index);
-  int scale = (int) GetNodeVectorConstant(vector, scale_index);
-  uint32_t disp = GetNodeVectorConstant(vector, disp_index);
+  int scale = (int) GetExprConstant(vector, scale_index);
+  uint64_t disp = GetExprConstant(vector, disp_index);
   assert(ExprMemOffset == vector->node[index].kind);
   fprintf(file,"[");
   if (r1 != RegUnknown) {
@@ -406,13 +395,22 @@ int GetExprNodeKidIndex(ExprNodeVector* vector, int node, int kid) {
   return node;
 }
 
-uint64_t GetExprConstant64(ExprNodeVector* vector, int index) {
-  assert(vector->node[index].kind == ExprConstant64);
-  return (uint64_t) vector->node[index+1].value |
-      (((uint64_t) vector->node[index+2].value) << 32);
+uint64_t GetExprConstant(ExprNodeVector* vector, int index) {
+  ExprNode* node = &vector->node[index];
+  switch (node->kind) {
+    case ExprConstant:
+      return node->value;
+    case ExprConstant64:
+      return (uint64_t) vector->node[index+1].value |
+          (((uint64_t) vector->node[index+2].value) << 32);
+    default:
+      assert(0);
+  }
+  /* NOT REACHED */
+  return 0;
 }
 
-void SplitExprConstant64(uint64_t val, uint32_t* val1, uint32_t* val2) {
+void SplitExprConstant(uint64_t val, uint32_t* val1, uint32_t* val2) {
   *val1 = (uint32_t) (val & 0xFFFFFFFF);
   *val2 = (uint32_t) (val >> 32);
 }
@@ -435,7 +433,7 @@ Bool IsExprNegativeConstant(ExprNodeVector* vector, int index) {
         return FALSE;
       } else {
         /* Assume signed value. */
-        int64_t value = (int64_t) GetExprConstant64(vector, index);
+        int64_t value = (int64_t) GetExprConstant(vector, index);
         return value < 0;
       }
       break;

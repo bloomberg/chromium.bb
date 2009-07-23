@@ -524,6 +524,10 @@ static int GetNumImmediateBytes(NcInstState* state) {
     return 1;
   } else if (state->opcode->flags & InstFlag(OpcodeHasImmed_w)) {
     return 2;
+  } else if (state->opcode->flags & InstFlag(OpcodeHasImmed_o)) {
+    return 8;
+  } else if (state->opcode->flags & InstFlag(OpcodeHasImmed_Addr)) {
+    return NACL_TARGET_SUBARCH == 64 ? 8 : 4;
   } else {
     return 0;
   }

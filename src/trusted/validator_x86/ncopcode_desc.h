@@ -173,6 +173,12 @@ typedef enum {
   OpcodeHasImmed_b,
   OpcodeHasImmed_w,
   OpcodeHasImmed_v,
+  OpcodeHasImmed_o,
+
+  /* In 32-bit mode, same as OpcodeHasImmed_v, In 64-bit mode, same as
+   * OpcodeHasImmed_o.
+   */
+  OpcodeHasImmed_Addr,
 
   /* Defines a register code, from 0 through 7, added to the hexadecimal byte
    * associated with the instruction, based on the operand size.
@@ -356,6 +362,9 @@ typedef enum {
   /* An immediate 32-bit value. Intel's notation is imm32. */
   Iv_Operand,
 
+  /* An immediate 64-bit value. Intel's notation is imm64. */
+  Io_Operand,
+
   /* Note: The instruction decoder may count on the fact that the J_Operand
    * values are contiguous, in the order specified.
    */
@@ -444,7 +453,7 @@ typedef enum {
   Ow_Operand,
 
   /* A memory 32-bit offset. Intel's notation is moffs32. */
-  Ov_Opernd,
+  Ov_Operand,
 
   /* A memory 64-bit offset. Intel's notation is moffs64. */
   Oo_Operand,
