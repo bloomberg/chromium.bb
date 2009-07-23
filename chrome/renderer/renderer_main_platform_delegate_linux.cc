@@ -17,6 +17,9 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }
 
 void RendererMainPlatformDelegate::PlatformInitialize() {
+  // To make wcstombs/mbstowcs work in a renderer.
+  const char* locale = setlocale(LC_ALL, "");
+  LOG_IF(WARNING, locale == NULL) << "setlocale failed.";
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {
