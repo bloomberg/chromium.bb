@@ -157,7 +157,11 @@ void ChromeClientImpl::focus() {
 
     // If accessibility is enabled, we should notify assistive technology that
     // the active AccessibilityObject changed.
-    WebCore::Document* doc = webview_->GetFocusedWebCoreFrame()->document();
+    const WebCore::Frame* frame = webview_->GetFocusedWebCoreFrame();
+    if (!frame)
+      return;
+
+    WebCore::Document* doc = frame->document();
 
     if (doc && doc->axObjectCache()->accessibilityEnabled()) {
       WebCore::Node* focused_node = webview_->GetFocusedNode();
