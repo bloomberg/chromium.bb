@@ -1341,7 +1341,7 @@ static void DefineOneByteOpcodes() {
 
     DefineOpcode(0xB8 + i, NACLi_386,
                  InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) |
-                 InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_v) |
+                 InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed) |
                  InstFlag(OpcodeUsesRexW),
                  InstMov);
     DefineOperand(OpcodeBaseMinus[i], OpFlag(OperandExtendsOpcode));

@@ -632,3 +632,21 @@ ExprNodeVector[10] = {
   { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
   { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
 };
+0000000000000000: 48 b8 88 77 66 55 44 33 22 11                mov %rax, 0x1122334455667788
+  { 0xb8,
+    NACLi_386,
+    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeHasImmed) | InstFlag(OpcodePlusR) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    InstMov,
+    3, {
+      { OpcodeBaseMinus0, OpFlag(OperandExtendsOpcode) },
+      { G_OpcodeBase, OpFlag(OpSet) },
+      { I_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[6] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant64[2] , 0x1122334455667788, ExprUsed | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
+  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+};
