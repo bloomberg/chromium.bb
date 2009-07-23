@@ -67,7 +67,11 @@ ifeq ($(PLATFORM), Cygwin)
   BUILDPATH=$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin:/cygdrive/c/Python25/:/usr/X11R6/bin:/cygdrive/c/WINDOWS/system32:/cygdrive/c/WINDOWS:/cygdrive/c/WINDOWS/system32/WBEM:/cygdrive/c/WINDOWS/system32/WindowsPowerShell/v1.0:/usr/lib/lapack
   SCONS?=scons.bat
   SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC))
-  CYGWIN_DLL_COPY=cp -f ../src/third_party/gnu_binutils/files/cygwin1.dll $(SDKROOT)/bin
+  CYGWIN_DLL_COPY= \
+    cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
+    /cygdrive/c/cygwin/bin/cygiconv*.dll \
+    /cygdrive/c/cygwin/bin/cygintl*.dll \
+    $(SDKROOT)/bin
 else
   BUILDPATH=$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
