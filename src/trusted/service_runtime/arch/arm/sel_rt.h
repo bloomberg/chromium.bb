@@ -43,8 +43,8 @@ void NaClInitGlobals();
 uint32_t NaClGetSp(void);
 
 struct NaClThreadContext {
-uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, esp, lr, eip;
-          /* 0   4   8   c  10  14   18  1c   20  24   28 */
+uint32_t    r4, r5, r6, r7, r8, r9, r10, fp, stack_ptr, lr, prog_ctr;
+          /* 0   4   8   c  10  14   18  1c         20  24        28 */
 };
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H___ */

@@ -45,7 +45,7 @@ void WINAPI NaClThreadLauncher(void *state) {
   NaClLog(4, "NaClThreadLauncher: entered\n");
   natp = (struct NaClAppThread *) state;
   NaClLog(4, "natp = 0x%08"PRIxPTR"\n", (uintptr_t) natp);
-  NaClLog(4, "eip  = 0x%08"PRIx32"\n", natp->user.eip);
+  NaClLog(4, "prog_ctr  = 0x%08"PRIx32"\n", natp->user.prog_ctr);
 
   NaClLog(4, "Obtaining thread_num\n");
   /*
@@ -65,7 +65,7 @@ void WINAPI NaClThreadLauncher(void *state) {
    * shown.
    */
   WINDOWS_EXCEPTION_TRY;
-  NaClStartThreadInApp(natp, natp->user.eip);
+  NaClStartThreadInApp(natp, natp->user.prog_ctr);
   WINDOWS_EXCEPTION_CATCH;
 }
 
@@ -73,7 +73,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
                       int                   is_privileged,
                       uintptr_t             usr_entry,
-                      uintptr_t             usr_esp,
+                      uintptr_t             usr_stack_ptr,
                       uint16_t              gs) {
   int                         rv;
   uint16_t                    ldt_ix;
@@ -82,7 +82,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   NaClLog(4, "natp = 0x%08"PRIxPTR"\n", (uintptr_t) natp);
   NaClLog(4, "nap = 0x%08"PRIxPTR"\n", (uintptr_t) nap);
 
-  NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_esp, gs);
+  NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, gs);
 
   effp = NULL;
 
@@ -161,7 +161,7 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               struct NaClApp        *nap,
                               int                   is_privileged,
                               uintptr_t             usr_entry,
-                              uintptr_t             usr_esp,
+                              uintptr_t             usr_stack_ptr,
                               uintptr_t             sys_tdb_base,
                               size_t                tdb_size) {
   uint16_t  gs;
@@ -178,15 +178,20 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                              (void *) sys_tdb_base,
                              tdb_size);
 
-  NaClLog(4, "NaClAppThreadAllocSegCtor: esp 0x%08"PRIxPTR", gs 0x%02x\n",
-          usr_esp, gs);
+  NaClLog(4, "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"PRIxPTR", gs 0x%02x\n",
+          usr_stack_ptr, gs);
 
   if (0 == gs) {
     NaClLog(LOG_ERROR, "No gs for thread, num_thread %d\n", nap->num_threads);
     return 0;
   }
 
-  return NaClAppThreadCtor(natp, nap, is_privileged, usr_entry, usr_esp, gs);
+  return NaClAppThreadCtor(natp,
+                           nap,
+                           is_privileged,
+                           usr_entry,
+                           usr_stack_ptr,
+                           gs);
 }
 
 

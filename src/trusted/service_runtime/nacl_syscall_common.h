@@ -200,7 +200,7 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
 
 int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    void                 *eip,
-                                   void                 *esp,
+                                   void                 *stack_ptr,
                                    void                 *tdb,
                                    size_t               tdb_size);
 

@@ -1928,8 +1928,8 @@ cleanup:
 }
 
 int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
-                                   void                 *eip,
-                                   void                 *esp,
+                                   void                 *prog_ctr,
+                                   void                 *stack_ptr,
                                    void                 *tdb,
                                    size_t               tdb_size) {
   int32_t     retval = -NACL_ABI_EINVAL;
@@ -1938,17 +1938,18 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
   NaClSysCommonThreadSyscallEnter(natp);
 
   /* make sure that the thread start function is in the text region */
-  if ((uintptr_t) eip >= NACL_TRAMPOLINE_END + natp->nap->text_region_bytes) {
+  if ((uintptr_t) prog_ctr >= NACL_TRAMPOLINE_END +
+                              natp->nap->text_region_bytes) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
   /* make sure that the thread start function is aligned */
-  if (0 != ((natp->nap->align_boundary - 1) & (uintptr_t) eip)) {
+  if (0 != ((natp->nap->align_boundary - 1) & (uintptr_t) prog_ctr)) {
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }
   /* we do not enforce stack alignment */
-  if (kNaClBadAddress == NaClUserToSysAddr(natp->nap, (uintptr_t) esp)) {
+  if (kNaClBadAddress == NaClUserToSysAddr(natp->nap, (uintptr_t) stack_ptr)) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
@@ -1958,8 +1959,8 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
     goto cleanup;
   }
   retval = NaClCreateAdditionalThread(natp->nap,
-                                      (uintptr_t) eip,
-                                      (uintptr_t) esp,
+                                      (uintptr_t) prog_ctr,
+                                      (uintptr_t) stack_ptr,
                                       sys_tdb,
                                       tdb_size);
 cleanup:

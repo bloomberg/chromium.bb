@@ -157,14 +157,14 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
                       int                   is_privileged,
                       uintptr_t             entry,
-                      uintptr_t             esp,
+                      uintptr_t             stack_ptr,
                       uint16_t              gs);
 
 void NaClAppThreadDtor(struct NaClAppThread *natp);
 
 /*
  * Low level initialization of thread, with validated values.  The
- * usr_entry and usr_esp values are directly used to initialize the
+ * usr_entry and usr_stack_ptr values are directly used to initialize the
  * user register values; the sys_tdb_base is the system address for
  * allocating a %gs thread descriptor block base.  The caller is
  * responsible for error checking: usr_entry is a valid entry point (0
@@ -174,7 +174,7 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               struct NaClApp        *nap,
                               int                   is_privileged,
                               uintptr_t             usr_entry,
-                              uintptr_t             usr_esp,
+                              uintptr_t             usr_stack_ptr,
                               uintptr_t             sys_tdb_base,
                               size_t                tdb_size);
 

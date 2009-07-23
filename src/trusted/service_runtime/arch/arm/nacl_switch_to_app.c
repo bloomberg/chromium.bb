@@ -39,19 +39,19 @@
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
-                                   uint32_t             new_eip) {
-  natp->sys.esp = (NaClGetSp() & ~0xf) + 4;
+                                   uint32_t             new_prog_ctr) {
+  natp->sys.stack_ptr = (NaClGetSp() & ~0xf) + 4;
 
   /*
    * springboard pops 4 words from stack which are the parameters for
    * syscall. In this case, it is not a syscall so no parameters, but we still
    * need to adjust the stack
    */
-  natp->user.esp -= 16;
+  natp->user.stack_ptr -= 16;
 
   NaClSwitch(
       0, /* nothing to return */
-      new_eip,
+      new_prog_ctr,
       NaClSysToUser(natp->nap, natp->nap->springboard_addr),
       (uint32_t)&natp->user,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -61,10 +61,10 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
  * syscall return
  */
 NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
-                              uint32_t             new_eip) {
+                              uint32_t             new_prog_ctr) {
   NaClSwitch(
       natp->sysret,
-      new_eip,
+      new_prog_ctr,
       NaClSysToUser(natp->nap, natp->nap->springboard_addr),
       (uint32_t)&natp->user,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0);

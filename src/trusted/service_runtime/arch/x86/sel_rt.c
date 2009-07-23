@@ -56,8 +56,8 @@ uint16_t NaClGetGlobalCs() {
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
-                          uintptr_t                 eip,
-                          uintptr_t                 esp,
+                          uintptr_t                 prog_ctr,
+                          uintptr_t                 stack_ptr,
                           uint16_t                  gs) {
   NaClLog(4, "&nap->code_seg_sel = 0x%08"PRIxPTR"\n",
           (uintptr_t) &nap->code_seg_sel);
@@ -75,8 +75,8 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->esi = 0;
   ntcp->edi = 0;
   ntcp->frame_ptr = 0;
-  ntcp->stack_ptr = esp;
-  ntcp->eip = eip;
+  ntcp->stack_ptr = stack_ptr;
+  ntcp->prog_ctr = prog_ctr;
 
   ntcp->cs = nap->code_seg_sel;
   ntcp->ds = nap->data_seg_sel;

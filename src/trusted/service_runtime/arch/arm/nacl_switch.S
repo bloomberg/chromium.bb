@@ -43,7 +43,7 @@ IDENTIFIER(NaClSwitch):
    * the first four arguments are in register r0-r3
    *
    * r0 -- syscall return value
-   * r1 -- new eip (ip)
+   * r1 -- new pc
    * r2 -- springboard address
    * r3 -- user NaClThreadContext -- pointer to register values
    * == stack ==

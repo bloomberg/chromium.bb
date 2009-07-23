@@ -96,7 +96,7 @@ struct NaClThreadContext {
   uintptr_t   frame_ptr, stack_ptr;
   /*          c          10 */
   /* 64-bit   10         18 (there is a padding at 0xc - 0x10) */
-  uint32_t    eip;  /* return addr */
+  uint32_t    prog_ctr; /* return addr */
   /*          14 */
   /* 64-bit   20 */
   uint16_t    cs, ds, es, fs, gs, ss;

@@ -44,18 +44,18 @@ void NaClInitGlobals() {
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
-                          uintptr_t                 pc,
-                          uintptr_t                 sp,
+                          uintptr_t                 prog_ctr,
+                          uintptr_t                 stack_ptr,
                           uint16_t                  r9) {
   UNREFERENCED_PARAMETER(nap);
 
   memset(ntcp, 0, sizeof(*ntcp));
-  ntcp->esp = sp;
-  ntcp->eip = pc;
+  ntcp->stack_ptr = stack_ptr;
+  ntcp->prog_ctr = prog_ctr;
   ntcp->r9 = r9;
 
-  NaClLog(4, "user.sp: 0x%08x\n", ntcp->esp);
-  NaClLog(4, "user.pc: 0x%08x\n", ntcp->eip);
+  NaClLog(4, "user.stack_ptr: 0x%08x\n", ntcp->stack_ptr);
+  NaClLog(4, "user.prog_ctr: 0x%08x\n", ntcp->prog_ctr);
   NaClLog(4, "user.r9: 0x%08x\n", ntcp->r9);
 
   return 1;

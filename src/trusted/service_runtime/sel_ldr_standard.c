@@ -470,7 +470,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   int                   *argv_len;
   int                   *envv_len;
   struct NaClAppThread  *natp;
-  uintptr_t             esp;
+  uintptr_t             stack_ptr;
 
   retval = 0;  /* fail */
   CHECK(argc > 0);
@@ -514,10 +514,11 @@ int NaClCreateMainThread(struct NaClApp     *nap,
 
   /* write strings and char * arrays to stack */
 
-  esp = (nap->mem_start + (1 << nap->addr_bits) - size);
-  VCHECK(0 == (esp & PTR_ALIGN_MASK), ("esp not aligned: %08x\n", esp));
+  stack_ptr = (nap->mem_start + (1 << nap->addr_bits) - size);
+  VCHECK(0 == (stack_ptr & PTR_ALIGN_MASK),
+          ("stack_ptr not aligned: %08x\n", stack_ptr));
 
-  p = (char *) esp;
+  p = (char *) stack_ptr;
   strp = p + (argc + envc + 4) * sizeof(char *) + sizeof(int);
 
 #define BLAT(t, v) do { \
@@ -557,7 +558,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
                                  nap,
                                  1,
                                  nap->elf_hdr.e_entry,
-                                 NaClSysToUser(nap, esp),
+                                 NaClSysToUser(nap, stack_ptr),
                                  NaClUserToSys(nap, nap->break_addr),
                                  1)) {
     retval = 0;
@@ -602,8 +603,8 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
 }
 
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
-                                   uintptr_t      eip,
-                                   uintptr_t      esp,
+                                   uintptr_t      prog_ctr,
+                                   uintptr_t      stack_ptr,
                                    uintptr_t      sys_tdb,
                                    size_t         tdb_size) {
   struct NaClAppThread  *natp;
@@ -612,7 +613,13 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
   if (NULL == natp) {
     return -NACL_ABI_ENOMEM;
   }
-  if (!NaClAppThreadAllocSegCtor(natp, nap, 0, eip, esp, sys_tdb, tdb_size)) {
+  if (!NaClAppThreadAllocSegCtor(natp,
+                                 nap,
+                                 0,
+                                 prog_ctr,
+                                 stack_ptr,
+                                 sys_tdb,
+                                 tdb_size)) {
     return -NACL_ABI_ENOMEM;
   }
   return 0;

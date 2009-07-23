@@ -390,8 +390,8 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap);
  * Used by syscall code.
  */
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
-                                   uintptr_t      eip,
-                                   uintptr_t      esp,
+                                   uintptr_t      prog_ctr,
+                                   uintptr_t      stack_ptr,
                                    uintptr_t      sys_tdb,
                                    size_t         tdb_size);
 
@@ -616,8 +616,8 @@ void NaClApplyPatchToMemory(struct NaClPatchInfo *patch);
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
-                          uintptr_t                 eip,
-                          uintptr_t                 esp,
+                          uintptr_t                 prog_ctr,
+                          uintptr_t                 stack_ptr,
                           uint16_t                  gs);
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);

@@ -39,7 +39,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
-                                   uint32_t             new_eip) {
+                                   uint32_t             new_prog_ctr) {
   struct NaClApp  *nap;
   /*
    * Save service runtime segment registers; fs/gs is used for TLS
@@ -64,7 +64,7 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
   nap = natp->nap;
 
   NaClSwitch(
-      new_eip,
+      new_prog_ctr,
       natp->user.frame_ptr,
       natp->user.edi,
       natp->user.esi,
@@ -86,12 +86,12 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
  * syscall return
  */
 NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
-                              uint32_t             new_eip) {
+                              uint32_t             new_prog_ctr) {
   struct NaClApp  *nap;
 
   nap = natp->nap;
   NaClSwitch(
-      new_eip,
+      new_prog_ctr,
       natp->user.frame_ptr,
       natp->user.edi,
       natp->user.esi,

@@ -458,11 +458,11 @@ int32_t NaClSysTls_Init(struct NaClAppThread  *natp,
 }
 
 int32_t NaClSysThread_Create(struct NaClAppThread *natp,
-                             void                 *eip,
-                             void                 *esp,
+                             void                 *prog_ctr,
+                             void                 *stack_ptr,
                              void                 *tdb,
                              size_t               tdb_size) {
-  return NaClCommonSysThread_Create(natp, eip, esp, tdb, tdb_size);
+  return NaClCommonSysThread_Create(natp, prog_ctr, stack_ptr, tdb, tdb_size);
 }
 
 /* mutex */

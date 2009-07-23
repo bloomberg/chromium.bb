@@ -42,7 +42,7 @@ EXTERN_C_BEGIN
 
 struct NaClAppThread;
 
-extern NORETURN void NaClSwitch(uint32_t eip,
+extern NORETURN void NaClSwitch(uint32_t prog_ctr,
                                 uint32_t ebp,
                                 uint32_t edi,
                                 uint32_t esi,
@@ -55,13 +55,13 @@ extern NORETURN void NaClSwitch(uint32_t eip,
                                 uint32_t ds,
                                 uint32_t eax,
                                 uint32_t ss,
-                                uint32_t esp);
+                                uint32_t stack_ptr);
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
-                                   uint32_t             new_eip);
+                                   uint32_t             new_prog_ctr);
 
 NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
-                              uint32_t             new_eip);
+                              uint32_t             new_prog_ctr);
 
 EXTERN_C_END
 
