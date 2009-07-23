@@ -118,6 +118,10 @@ class DraggedTabGtk : public AnimationDelegate {
   // The window that contains the dragged tab or tab contents.
   GtkWidget* container_;
 
+  // The fixed widget that we use to contain the tab renderer so that the
+  // tab widget won't be resized.
+  GtkWidget* fixed_;
+
   // The native view of the tab contents.
   GtkWidget* contents_;
 

@@ -60,7 +60,13 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
   g_signal_connect(G_OBJECT(container_), "expose-event",
                    G_CALLBACK(OnExposeEvent), this);
   gtk_widget_add_events(container_, GDK_STRUCTURE_MASK);
-  gtk_container_add(GTK_CONTAINER(container_), renderer_->widget());
+
+  // We contain the tab renderer in a GtkFixed in order to maintain the
+  // requested size.  Otherwise, the widget will fill the entire window and
+  // cause a crash when rendering because the bounds don't match our images.
+  fixed_ = gtk_fixed_new();
+  gtk_fixed_put(GTK_FIXED(fixed_), renderer_->widget(), 0, 0);
+  gtk_container_add(GTK_CONTAINER(container_), fixed_);
   gtk_widget_show_all(container_);
 }
 
