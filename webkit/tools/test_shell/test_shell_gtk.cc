@@ -209,6 +209,8 @@ void TestShell::PlatformCleanUp() {
   // The GTK widgets will be destroyed, which will free the associated
   // objects.  So we don't need the scoped_ptr to free the webViewHost.
   m_webViewHost.release();
+  if (m_mainWnd)
+    gtk_widget_destroy(GTK_WIDGET(m_mainWnd));
 }
 
 namespace {
@@ -217,7 +219,6 @@ namespace {
 
 // Callback for when the main window is destroyed.
 gboolean MainWindowDestroyed(GtkWindow* window, TestShell* shell) {
-
   TestShell::RemoveWindowFromList(window);
 
   if (TestShell::windowList()->empty() || shell->is_modal()) {
@@ -317,6 +318,9 @@ bool TestShell::Initialize(const std::wstring& startingURL) {
   gtk_window_set_title(m_mainWnd, "Test Shell");
   g_signal_connect(G_OBJECT(m_mainWnd), "destroy",
                    G_CALLBACK(MainWindowDestroyed), this);
+  // Null out m_mainWnd when it is destroyed so we don't destroy it twice.
+  g_signal_connect(G_OBJECT(m_mainWnd), "destroy",
+                   G_CALLBACK(gtk_widget_destroyed), &m_mainWnd);
   g_signal_connect(G_OBJECT(m_mainWnd), "focus-out-event",
                    G_CALLBACK(MainWindowLostFocus), this);
   g_object_set_data(G_OBJECT(m_mainWnd), "test-shell", this);

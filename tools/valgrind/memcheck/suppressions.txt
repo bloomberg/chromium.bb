@@ -935,13 +935,6 @@
    fun:_ZN7WebCore10Pasteboard10writeImageEPNS_4NodeERKNS_4KURLERKNS_6StringE
 }
 {
-   # Only in test shell
-   bug_17188
-   Memcheck:Addr4
-   fun:_ZN9TestShell10ClosePopupEv
-   fun:_ZN12_GLOBAL__N_119MainWindowLostFocusEP10_GtkWidgetP14_GdkEventFocusP9TestShell
-}
-{
    bug_17385
    Memcheck:Leak
    fun:_Znw*
