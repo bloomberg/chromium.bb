@@ -4,12 +4,16 @@
 
 #include "chrome/browser/net/metadata_url_request.h"
 
+#include "base/file_path.h"
 #include "base/message_loop.h"
 #include "build/build_config.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/io_buffer.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
+#include "chrome/browser/parsers/metadata_parser_manager.h"
+#include "chrome/browser/parsers/metadata_parser.h"
 
 namespace {
 
@@ -30,15 +34,16 @@ class MetadataRequestHandler : public URLRequestJob {
 
  private:
   void StartAsync();
-
+  std::string result_;
+  bool parsed;
   int data_offset_;
-
   DISALLOW_COPY_AND_ASSIGN(MetadataRequestHandler);
 };
 
 MetadataRequestHandler::MetadataRequestHandler(URLRequest* request)
     : URLRequestJob(request),
       data_offset_(0) {
+  parsed = false;
 }
 
 MetadataRequestHandler::~MetadataRequestHandler() {
@@ -61,13 +66,47 @@ void MetadataRequestHandler::Kill() {
 
 bool MetadataRequestHandler::ReadRawData(net::IOBuffer* buf, int buf_size,
                                          int *bytes_read) {
-  std::string fake_result = "{ \"foo\": 3.14 }";
+  FilePath path;
 
-  int remaining = static_cast<int>(fake_result.size()) - data_offset_;
+  if (!request()->url().is_valid()) {
+    return false;
+  }
+  if (!net::FileURLToFilePath(request()->url(), &path)) {
+    return false;
+  }
+  if (!parsed) {
+    MetadataParserManager* manager = MetadataParserManager::Get();
+    scoped_ptr<MetadataParser> parser(manager->GetParserForFile(path));
+    if (parser != NULL) {
+      result_ = "{\n";
+      parser->Parse();
+      MetadataPropertyIterator *iter = parser->GetPropertyIterator();
+      while (!iter->IsEnd()) {
+        std::string key;
+        std::string value;
+        if (iter->GetNext(&key, &value)) {
+          result_ += "\"";
+          result_ += key;
+          result_ += "\":";
+          result_ += "\"";
+          result_ += value;
+          result_ += "\",\n";
+        } else {
+          break;
+        }
+      }
+      result_ += "}";
+      delete iter;
+    } else {
+      result_ = "{}";
+    }
+    parsed = true;
+  }
+  int remaining = static_cast<int>(result_.size()) - data_offset_;
   if (buf_size > remaining)
     buf_size = remaining;
   if (buf_size > 0) {
-    memcpy(buf->data(), &fake_result[data_offset_], buf_size);
+    memcpy(buf->data(), &result_[data_offset_], buf_size);
     data_offset_ += buf_size;
   }
   *bytes_read = buf_size;
@@ -86,8 +125,6 @@ void MetadataRequestHandler::StartAsync() {
 }  // namespace
 
 void RegisterMetadataURLRequestHandler() {
-  // This is currently unfinished. It will eventually provide metadata
-  // but currently just returns a dummy stub string.
 #if defined(OS_CHROMEOS)
   URLRequest::RegisterProtocolFactory(kMetadataScheme,
                                       &MetadataRequestHandler::Factory);
