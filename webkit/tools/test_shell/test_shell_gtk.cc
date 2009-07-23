@@ -43,17 +43,113 @@ const FcChar8* FilePathAsFcChar(const FilePath& path) {
 }
 
 // Data resources on linux.  This is a pointer to the mmapped resources file.
-static base::DataPack* g_resource_data_pack = NULL;
+base::DataPack* g_resource_data_pack = NULL;
 
 // Used to keep track of the temporary ahem file we extract to disk.
-static FilePath* g_ahem_path = NULL;
+FilePath* g_ahem_path = NULL;
 
-}
-
-static void TerminationSignalHandler(int signatl) {
+void TerminationSignalHandler(int signatl) {
   TestShell::ShutdownTestShell();
   exit(0);
 }
+
+// GTK callbacks ------------------------------------------------------
+
+// Callback for when the main window is destroyed.
+gboolean MainWindowDestroyed(GtkWindow* window, TestShell* shell) {
+  TestShell::RemoveWindowFromList(window);
+
+  if (TestShell::windowList()->empty() || shell->is_modal()) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     new MessageLoop::QuitTask());
+  }
+
+  delete shell;
+
+  return FALSE;  // Don't stop this message.
+}
+
+gboolean MainWindowLostFocus(GtkWidget* widget, GdkEventFocus* event,
+                             TestShell* shell) {
+  shell->ClosePopup();
+  return FALSE;
+}
+
+// Callback for when you click the back button.
+void BackButtonClicked(GtkButton* button, TestShell* shell) {
+  shell->GoBackOrForward(-1);
+}
+
+// Callback for when you click the forward button.
+void ForwardButtonClicked(GtkButton* button, TestShell* shell) {
+  shell->GoBackOrForward(1);
+}
+
+// Callback for when you click the stop button.
+void StopButtonClicked(GtkButton* button, TestShell* shell) {
+  shell->webView()->StopLoading();
+}
+
+// Callback for when you click the reload button.
+void ReloadButtonClicked(GtkButton* button, TestShell* shell) {
+  shell->Reload();
+}
+
+// Callback for when you press enter in the URL box.
+void URLEntryActivate(GtkEntry* entry, TestShell* shell) {
+  const gchar* url = gtk_entry_get_text(entry);
+  shell->LoadURL(UTF8ToWide(url).c_str());
+}
+
+// Callback for Debug > Dump body text... menu item.
+gboolean DumpBodyTextActivated(GtkWidget* widget, TestShell* shell) {
+  shell->DumpDocumentText();
+  return FALSE;  // Don't stop this message.
+}
+
+// Callback for Debug > Dump render tree... menu item.
+gboolean DumpRenderTreeActivated(GtkWidget* widget, TestShell* shell) {
+  shell->DumpRenderTree();
+  return FALSE;  // Don't stop this message.
+}
+
+// Callback for Debug > Show web inspector... menu item.
+gboolean ShowWebInspectorActivated(GtkWidget* widget, TestShell* shell) {
+  shell->webView()->InspectElement(0, 0);
+  return FALSE;  // Don't stop this message.
+}
+
+// GTK utility functions ----------------------------------------------
+
+GtkWidget* AddMenuEntry(GtkWidget* menu_widget, const char* text,
+                        GCallback callback, TestShell* shell) {
+  GtkWidget* entry = gtk_menu_item_new_with_label(text);
+  g_signal_connect(G_OBJECT(entry), "activate", callback, shell);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_widget), entry);
+  return entry;
+}
+
+GtkWidget* CreateMenu(GtkWidget* menu_bar, const char* text) {
+  GtkWidget* menu_widget = gtk_menu_new();
+  GtkWidget* menu_header = gtk_menu_item_new_with_label(text);
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_header), menu_widget);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_header);
+  return menu_widget;
+}
+
+GtkWidget* CreateMenuBar(TestShell* shell) {
+  GtkWidget* menu_bar = gtk_menu_bar_new();
+  GtkWidget* debug_menu = CreateMenu(menu_bar, "Debug");
+  AddMenuEntry(debug_menu, "Dump body text...",
+               G_CALLBACK(DumpBodyTextActivated), shell);
+  AddMenuEntry(debug_menu, "Dump render tree...",
+               G_CALLBACK(DumpRenderTreeActivated), shell);
+  AddMenuEntry(debug_menu, "Show web inspector...",
+               G_CALLBACK(ShowWebInspectorActivated), shell);
+  return menu_bar;
+}
+
+}  // namespace
 
 // static
 void TestShell::InitializeTestShell(bool layout_test_mode) {
@@ -209,108 +305,13 @@ void TestShell::PlatformCleanUp() {
   // The GTK widgets will be destroyed, which will free the associated
   // objects.  So we don't need the scoped_ptr to free the webViewHost.
   m_webViewHost.release();
-  if (m_mainWnd)
+  if (m_mainWnd) {
+    // Disconnect our MainWindowDestroyed handler so that we don't go through
+    // the shutdown process more than once.
+    g_signal_handlers_disconnect_by_func(m_mainWnd,
+        reinterpret_cast<gpointer>(MainWindowDestroyed), this);
     gtk_widget_destroy(GTK_WIDGET(m_mainWnd));
-}
-
-namespace {
-
-// GTK callbacks ------------------------------------------------------
-
-// Callback for when the main window is destroyed.
-gboolean MainWindowDestroyed(GtkWindow* window, TestShell* shell) {
-  TestShell::RemoveWindowFromList(window);
-
-  if (TestShell::windowList()->empty() || shell->is_modal()) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     new MessageLoop::QuitTask());
   }
-
-  delete shell;
-
-  return FALSE;  // Don't stop this message.
-}
-
-gboolean MainWindowLostFocus(GtkWidget* widget, GdkEventFocus* event,
-                             TestShell* shell) {
-  shell->ClosePopup();
-  return FALSE;
-}
-
-// Callback for when you click the back button.
-void BackButtonClicked(GtkButton* button, TestShell* shell) {
-  shell->GoBackOrForward(-1);
-}
-
-// Callback for when you click the forward button.
-void ForwardButtonClicked(GtkButton* button, TestShell* shell) {
-  shell->GoBackOrForward(1);
-}
-
-// Callback for when you click the stop button.
-void StopButtonClicked(GtkButton* button, TestShell* shell) {
-  shell->webView()->StopLoading();
-}
-
-// Callback for when you click the reload button.
-void ReloadButtonClicked(GtkButton* button, TestShell* shell) {
-  shell->Reload();
-}
-
-// Callback for when you press enter in the URL box.
-void URLEntryActivate(GtkEntry* entry, TestShell* shell) {
-  const gchar* url = gtk_entry_get_text(entry);
-  shell->LoadURL(UTF8ToWide(url).c_str());
-}
-
-// Callback for Debug > Dump body text... menu item.
-gboolean DumpBodyTextActivated(GtkWidget* widget, TestShell* shell) {
-  shell->DumpDocumentText();
-  return FALSE;  // Don't stop this message.
-}
-
-// Callback for Debug > Dump render tree... menu item.
-gboolean DumpRenderTreeActivated(GtkWidget* widget, TestShell* shell) {
-  shell->DumpRenderTree();
-  return FALSE;  // Don't stop this message.
-}
-
-// Callback for Debug > Show web inspector... menu item.
-gboolean ShowWebInspectorActivated(GtkWidget* widget, TestShell* shell) {
-  shell->webView()->InspectElement(0, 0);
-  return FALSE;  // Don't stop this message.
-}
-
-// GTK utility functions ----------------------------------------------
-
-GtkWidget* AddMenuEntry(GtkWidget* menu_widget, const char* text,
-                        GCallback callback, TestShell* shell) {
-  GtkWidget* entry = gtk_menu_item_new_with_label(text);
-  g_signal_connect(G_OBJECT(entry), "activate", callback, shell);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu_widget), entry);
-  return entry;
-}
-
-GtkWidget* CreateMenu(GtkWidget* menu_bar, const char* text) {
-  GtkWidget* menu_widget = gtk_menu_new();
-  GtkWidget* menu_header = gtk_menu_item_new_with_label(text);
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_header), menu_widget);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_header);
-  return menu_widget;
-}
-
-GtkWidget* CreateMenuBar(TestShell* shell) {
-  GtkWidget* menu_bar = gtk_menu_bar_new();
-  GtkWidget* debug_menu = CreateMenu(menu_bar, "Debug");
-  AddMenuEntry(debug_menu, "Dump body text...",
-               G_CALLBACK(DumpBodyTextActivated), shell);
-  AddMenuEntry(debug_menu, "Dump render tree...",
-               G_CALLBACK(DumpRenderTreeActivated), shell);
-  AddMenuEntry(debug_menu, "Show web inspector...",
-               G_CALLBACK(ShowWebInspectorActivated), shell);
-  return menu_bar;
-}
-
 }
 
 bool TestShell::Initialize(const std::wstring& startingURL) {
