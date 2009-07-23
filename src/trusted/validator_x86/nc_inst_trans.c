@@ -997,6 +997,11 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case RegREBP:
       return AppendRegister(state->address_size == 64 ? RegRBP : RegEBP,
                             &state->nodes);
+
+    case Const_1:
+      return AppendExprNode(ExprConstant, 1,
+                            ExprFlag(ExprSize8) | ExprFlag(ExprUnsignedInt),
+                            &state->nodes);
       /* TODO(karl) fill in the rest of the possibilities of type
        * OperandKind, or remove them if not needed.
        */

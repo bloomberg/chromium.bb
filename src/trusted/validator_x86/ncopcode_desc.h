@@ -86,8 +86,15 @@ typedef enum {
   InstPush,
   InstPusha,
   InstPushad,
+  InstRcl,
+  InstRcr,
   InstRet,
+  InstRol,
+  InstRor,
+  InstSar,
   InstSbb,
+  InstShl,
+  InstShr,
   InstSub,
   InstTest,
   InstXor,
@@ -586,6 +593,9 @@ typedef enum {
   Opcode5,
   Opcode6,
   Opcode7,
+
+  /* Predefined constants. */
+  Const_1,
 
   /* Special marker defining the end of the list. */
   OperandKindEnumSize

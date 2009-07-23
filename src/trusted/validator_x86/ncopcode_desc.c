@@ -211,7 +211,8 @@ static const char* const g_OperandKindName[OperandKindEnumSize] = {
   "Opcode4",
   "Opcode5",
   "Opcode6",
-  "Opcode7"
+  "Opcode7",
+  "Const_1",
 };
 
 const char* OperandKindName(const OperandKind kind) {
@@ -284,8 +285,15 @@ static const char* const g_InstMnemonicName[InstMnemonicEnumSize] = {
   "Push",
   "Pusha",
   "Pushad",
+  "Rcl",
+  "Rcr",
   "Ret",
+  "Rol",
+  "Ror",
+  "Sar",
   "Sbb",
+  "Shl",
+  "Shr",
   "Sub",
   "Test",
   "Xor",

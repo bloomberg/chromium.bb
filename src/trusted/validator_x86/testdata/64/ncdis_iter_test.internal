@@ -550,6 +550,22 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , -0x4, ExprSize8 | ExprSignedHex },
 };
+0000000000000000: 41 d3 e4                                     shl %r12d, %cl
+  { 0xd3,
+    NACLi_OPINMRM,
+    InstFlag(OpcodeInModRm) | InstFlag(OperandSize_v),
+    InstShl,
+    3, {
+      { Opcode4, OpFlag(OperandExtendsOpcode) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { RegCL, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %r12d, ExprSet | ExprUsed | ExprSize32 },
+  { OperandReference[1] , 2, 0 },
+  { ExprRegister[0] , %cl, ExprUsed | ExprSize8 },
+};
 0000000000000000: 66 66 66 66 66 2e 0f 1f 84 00 00 00 00 00    nop
   { 0x1f,
     NACLi_386,
