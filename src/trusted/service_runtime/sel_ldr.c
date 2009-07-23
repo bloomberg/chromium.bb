@@ -480,6 +480,8 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "ELF executable missing a required segment (text)";
     case LOAD_SEGMENT_BAD_PARAM:
       return "ELF executable segment header parameter error";
+    case LOAD_VALIDATION_FAILED:
+      return "Validation failure. File violates Native Client safety rules.";
     case SRT_NO_SEG_SEL:
       return "Service Runtime: cannot allocate segment selector";
   }

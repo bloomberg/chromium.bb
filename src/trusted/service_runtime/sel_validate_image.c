@@ -80,7 +80,9 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
       NaClLog(LOG_ERROR, "VALIDATION FAILED.\n");
       NaClLog(LOG_ERROR,
               "Run sel_ldr in debug mode to ignore validation failure.\n");
-      rcode = LOAD_BAD_FILE;
+      NaClLog(LOG_ERROR,
+              "Run ncval <module-name> for validation error details.\n");
+      rcode = LOAD_VALIDATION_FAILED;
     }
   }
   NCValidateFreeState(&vstate);

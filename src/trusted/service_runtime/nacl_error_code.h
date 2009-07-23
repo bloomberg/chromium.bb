@@ -84,6 +84,7 @@ typedef enum NaClErrorCode {
   LOAD_BAD_SEGMENT,
   LOAD_REQUIRED_SEG_MISSING,
   LOAD_SEGMENT_BAD_PARAM,
+  LOAD_VALIDATION_FAILED,
   /*
    * service runtime errors (post load, during startup phase)
    */

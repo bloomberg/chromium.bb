@@ -69,6 +69,13 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
  * it to check memory that can't be accessed. This should of be
  * interpreted as an indication that the module in question is
  * invalid.
+ *
+ * This routine will not produce verbose validator output, but will
+ * print an error message to suggest using ncval for more details on
+ * validation errors.
+ *
+ * NCValidateSegment is used by sel_ldr. For dev/debug purposes,
+ * use NCDecodeSegment(). See ncval.c for an example.
  */
 void NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t sz,
                        struct NCValidatorState *vstate);
