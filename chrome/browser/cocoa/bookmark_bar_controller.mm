@@ -10,10 +10,11 @@
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
-#import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
+#import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
+#include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -22,6 +23,10 @@
 @interface BookmarkBarController(Private)
 - (void)applyContentAreaOffset:(BOOL)apply immediately:(BOOL)immediately;
 - (void)showBookmarkBar:(BOOL)enable immediately:(BOOL)immediately;
+- (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
+- (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
+- (void)tagEmptyMenu:(NSMenu*)menu;
+- (void)clearMenuTagMap;
 @end
 
 namespace {
@@ -62,6 +67,11 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 - (void)awakeFromNib {
   // We default to NOT open, which means height=0.
   DCHECK([[self view] isHidden]);  // Hidden so it's OK to change.
@@ -81,6 +91,40 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   // Don't pass ourself along (as 'self') until our init is completely
   // done.  Thus, this call is (almost) last.
   bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
+
+  // When resized we may need to add new buttons, or remove them (if
+  // no longer visible), or add/remove the "off the side" menu.
+  [[self view] setPostsFrameChangedNotifications:YES];
+  [[NSNotificationCenter defaultCenter]
+    addObserver:self
+       selector:@selector(frameDidChange)
+           name:NSViewFrameDidChangeNotification
+         object:[self view]];
+}
+
+// Check if we should enable the off-the-side button.
+// TODO(jrg): when we are smarter about creating buttons (e.g. don't
+// bother creating buttons which aren't visible), we'll have to be
+// smarter here too.
+- (void)checkEnableOffTheSideButton {
+  NSButton* button = [buttons_ lastObject];
+  if ((!button) ||
+      (NSMaxX([button frame]) <=
+       NSMaxX([[button superview] frame]))) {
+    [offTheSideButton_ setEnabled:NO];
+  } else {
+    [offTheSideButton_ setEnabled:YES];
+  }
+}
+
+- (BOOL)offTheSideButtonIsEnabled {
+  return [offTheSideButton_ isEnabled];
+}
+
+// Called when our controlled frame has changed size.
+// TODO(jrg): be smarter (e.g. add/remove buttons as appropriate).
+- (void)frameDidChange {
+  [self checkEnableOffTheSideButton];
 }
 
 // Show or hide the bar based on the value of |show|. Handles
@@ -218,6 +262,120 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   [delegate_ openBookmarkURL:node->GetURL() disposition:CURRENT_TAB];
 }
 
+// Given a NSMenuItem tag, return the appropriate bookmark node id.
+- (int64)nodeIdFromMenuTag:(int32)tag {
+  return menuTagMap_[tag];
+}
+
+// Create and return a new tag for the given node id.
+- (int32)menuTagFromNodeId:(int64)menuid {
+  int tag = seedId_++;
+  menuTagMap_[tag] = menuid;
+  return tag;
+}
+
+- (void)clearMenuTagMap {
+  seedId_ = 0;
+  menuTagMap_.clear();
+}
+
+// Recursively add the given bookmark node and all its children to
+// menu, one menu item per node.
+- (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu {
+  NSString* title = [BookmarkMenuCocoaController menuTitleForNode:child];
+  NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title
+                                                 action:nil
+                                          keyEquivalent:@""] autorelease];
+  [menu addItem:item];
+  if (child->is_folder()) {
+    NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
+    [menu setSubmenu:submenu forItem:item];
+    if (child->GetChildCount()) {
+      [self addFolderNode:child toMenu:submenu];  // potentially recursive
+    } else {
+      [self tagEmptyMenu:submenu];
+    }
+  } else {
+    [item setTarget:self];
+    [item setAction:@selector(openBookmarkMenuItem:)];
+    [item setTag:[self menuTagFromNodeId:child->id()]];
+    // Add a tooltip
+    std::string url_string = child->GetURL().possibly_invalid_spec();
+    NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
+                                  base::SysWideToNSString(child->GetTitle()),
+                                  url_string.c_str()];
+    [item setToolTip:tooltip];
+
+  }
+}
+
+// Empty menus are odd; if empty, add something to look at.
+// Matches windows behavior.
+// TODO(jrg): localize.
+- (void)tagEmptyMenu:(NSMenu*)menu {
+  [menu addItem:[[[NSMenuItem alloc] initWithTitle:@"(empty)"
+                                            action:NULL
+                                     keyEquivalent:@""] autorelease]];
+}
+
+// Add the children of the given bookmark node (and their children...)
+// to menu, one menu item per node.
+- (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu {
+  for (int i = 0; i < node->GetChildCount(); i++) {
+    const BookmarkNode* child = node->GetChild(i);
+    [self addNode:child toMenu:menu];
+  }
+}
+
+// Return an autoreleased NSMenu that represents the given bookmark
+// folder node.
+- (NSMenu *)menuForFolderNode:(const BookmarkNode*)node {
+  if (!node->is_folder())
+    return nil;
+  NSString* title = base::SysWideToNSString(node->GetTitle());
+  NSMenu* menu = [[[NSMenu alloc] initWithTitle:title] autorelease];
+  [self addFolderNode:node toMenu:menu];
+
+  if (![menu numberOfItems]) {
+    [self tagEmptyMenu:menu];
+  }
+  return menu;
+}
+
+// Called from a Folder bookmark button.
+- (IBAction)openFolderMenuFromButton:(id)sender {
+  NSMenu* menu = [self menuForFolderNode:[self nodeFromButton:sender]];
+  if (menu) {
+    [NSMenu popUpContextMenu:menu
+                   withEvent:[NSApp currentEvent]
+                     forView:sender];
+  }
+}
+
+// TODO(jrg): cache the menu so we don't need to build it every time.
+// TODO(jrg): if we get smarter such that we don't even bother
+//   creating buttons which aren't visible, we'll need to be smarter
+//   here.
+- (IBAction)openOffTheSideMenuFromButton:(id)sender {
+  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
+  for (NSButton* each_button in buttons_.get()) {
+    if (NSMaxX([each_button frame]) >
+        NSMaxX([[each_button superview] frame])) {
+      [self addNode:[self nodeFromButton:each_button] toMenu:menu.get()];
+    }
+  }
+
+  // TODO(jrg): once we disable the button when the menu should be
+  // empty, remove this 'helper'.
+  if (![menu numberOfItems]) {
+    [self tagEmptyMenu:menu];
+  }
+
+  [NSMenu popUpContextMenu:menu
+                 withEvent:[NSApp currentEvent]
+                   forView:sender];
+}
+
 // As a convention we set the menu's delegate to be the button's cell
 // so we can easily obtain bookmark info.  Convention applied in
 // -[BookmarkButtonCell menu].
@@ -289,10 +447,15 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   [self openBookmarkNodesRecursive:node];
 }
 
+// May be called from the bar or from a folder button.
+// If called from a button, that button becomes the parent.
 - (IBAction)addPage:(id)sender {
+  const BookmarkNode* parent = [self nodeFromMenuItem:sender];
+  if (!parent)
+    parent = bookmarkModel_->GetBookmarkBarNode();
   BookmarkEditor::Show([[[self view] window] contentView],
                        profile_,
-                       bookmarkModel_->GetBookmarkBarNode(),
+                       parent,
                        nil,
                        BookmarkEditor::SHOW_TREE,
                        nil);
@@ -314,10 +477,16 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   // ends.
 }
 
-// Delete all bookmarks from the bookmark bar.
+- (NSView*)buttonView {
+  return buttonView_;
+}
+
+// Delete all bookmarks from the bookmark bar, and reset knowledge of
+// bookmarks.
 - (void)clearBookmarkBar {
   [buttons_ makeObjectsPerformSelector:@selector(removeFromSuperview)];
   [buttons_ removeAllObjects];
+  [self clearMenuTagMap];
 }
 
 // Return an autoreleased NSCell suitable for a bookmark button.
@@ -329,15 +498,18 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   DCHECK(cell);
   [cell setRepresentedObject:[NSValue valueWithPointer:node]];
 
-  // The favicon may be NULL if we haven't loaded it yet.  Bookmarks
-  // (and their icons) are loaded on the IO thread to speed launch.
-  const SkBitmap& favicon = bookmarkModel_->GetFavIcon(node);
-  if (!favicon.isNull()) {
-    NSImage* image = gfx::SkBitmapToNSImage(favicon);
-    if (image) {
-      [cell setImage:image];
-      [cell setImagePosition:NSImageLeft];
+  NSImage* image = NULL;
+  if (node->is_folder()) {
+    image = nsimage_cache::ImageNamed(@"bookmark_bar_folder.png");
+  } else {
+    const SkBitmap& favicon = bookmarkModel_->GetFavIcon(node);
+    if (!favicon.isNull()) {
+      image = gfx::SkBitmapToNSImage(favicon);
     }
+  }
+  if (image) {
+    [cell setImage:image];
+    [cell setImagePosition:NSImageLeft];
   }
   [cell setTitle:title];
   [cell setMenu:buttonContextMenu_];
@@ -397,6 +569,12 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   }
 }
 
+- (IBAction)openBookmarkMenuItem:(id)sender {
+  int64 tag = [self nodeIdFromMenuTag:[sender tag]];
+  const BookmarkNode* node = bookmarkModel_->GetNodeByID(tag);
+  [delegate_ openBookmarkURL:node->GetURL() disposition:CURRENT_TAB];
+}
+
 // Add all items from the given model to our bookmark bar.
 // TODO(jrg): lots of things!
 //  - bookmark folders (e.g. menu from the button)
@@ -427,9 +605,8 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
     [button setCell:cell];
 
     if (child->is_folder()) {
-      // For now just disable the button if it's a folder.
-      // TODO(jrg): recurse.
-      [button setEnabled:NO];
+      [button setTarget:self];
+      [button setAction:@selector(openFolderMenuFromButton:)];
     } else {
       // Make the button do something
       [button setTarget:self];
@@ -442,7 +619,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
       [button setToolTip:tooltip];
     }
     // Finally, add it to the bookmark bar.
-    [[self view] addSubview:button];
+    [buttonView_ addSubview:button];
   }
 }
 
@@ -456,6 +633,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   const BookmarkNode* node = model->GetBookmarkBarNode();
   [self clearBookmarkBar];
   [self addNodesToBar:node];
+  [self checkEnableOffTheSideButton];
 }
 
 - (void)beingDeleted:(BookmarkModel*)model {

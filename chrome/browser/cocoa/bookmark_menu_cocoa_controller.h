@@ -19,6 +19,10 @@ class BookmarkMenuBridge;
   BookmarkMenuBridge* bridge_;  // weak; owns me
 }
 
+// Return an autoreleased string to be used as a menu title for the
+// given bookmark node.
++ (NSString*)menuTitleForNode:(const BookmarkNode*)node;
+
 - (id)initWithBridge:(BookmarkMenuBridge *)bridge;
 
 // Called by any Bookmark menu item.

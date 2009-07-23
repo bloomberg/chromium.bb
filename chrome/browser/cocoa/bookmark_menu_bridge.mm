@@ -170,31 +170,10 @@ void BookmarkMenuBridge::ClearBookmarkMenu(NSMenu* menu) {
   }
 }
 
-namespace {
-
-// Menus more than this many chars long will get trimmed
-const NSUInteger kMaximumMenuWidthInChars = 65;
-
-// When trimming, use this many chars from each side
-const NSUInteger kMenuTrimSizeInChars = 30;
-
-}
-
 void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
   for (int i = 0; i < node->GetChildCount(); i++) {
     const BookmarkNode* child = node->GetChild(i);
-    NSString* full_title = base::SysWideToNSString(child->GetTitle());
-    NSString* title = full_title;
-    if ([title length] > kMaximumMenuWidthInChars) {
-      // TODO(jrg): add a better heuristic?  I'd really like to trim this
-      // by pixels, not by chars (font is not fixed width).
-      // For Safari, it appears that menu names >60 chars get split up to
-      // 30char + "..." + 30char.
-      title = [NSString stringWithFormat:@"%@…%@",
-                 [title substringToIndex:kMenuTrimSizeInChars],
-                 [title substringFromIndex:([title length] -
-                                            kMenuTrimSizeInChars)]];
-    }
+    NSString* title = [BookmarkMenuCocoaController menuTitleForNode:child];
     NSMenuItem* item = [[[NSMenuItem alloc] initWithTitle:title
                                                    action:nil
                                             keyEquivalent:@""] autorelease];
@@ -209,7 +188,8 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
       [item setTag:child->id()];
       // Add a tooltip
       std::string url_string = child->GetURL().possibly_invalid_spec();
-      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", full_title,
+      NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
+                                    base::SysWideToNSString(child->GetTitle()),
                                     url_string.c_str()];
       [item setToolTip:tooltip];
 

@@ -54,6 +54,24 @@
 
 @end
 
+// Remember the number of times we've gotten a frameDidChange notification.
+@interface BookmarkBarControllerTogglePong : BookmarkBarController {
+@private
+  int toggles_;
+}
+@property (readonly) int toggles;
+@end
+
+@implementation BookmarkBarControllerTogglePong
+
+@synthesize toggles = toggles_;
+
+- (void)frameDidChange {
+  toggles_++;
+}
+
+@end
+
 
 namespace {
 
@@ -78,16 +96,8 @@ class BookmarkBarControllerTest : public testing::Test {
                                         webContentView:content_area_.get()
                                           infoBarsView:infobar_view_.get()
                                               delegate:nil]);
-    [bar_ view];  // force loading of the nib
 
-    // Awkwardness to look like we've been installed.
-    [parent_view_ addSubview:[bar_ view]];
-    NSRect frame = [[[bar_ view] superview] frame];
-    frame.origin.y = 100;
-    [[[bar_ view] superview] setFrame:frame];
-
-    // make sure it's open so certain things aren't no-ops
-    [bar_ toggleBookmarkBar];
+    InstallAndToggleBar(bar_.get());
 
     // Create a menu/item to act like a sender
     menu_.reset([[NSMenu alloc] initWithTitle:@"I_dont_care"]);
@@ -99,6 +109,20 @@ class BookmarkBarControllerTest : public testing::Test {
     [menu_item_ setMenu:menu_.get()];
     [menu_ setDelegate:cell_.get()];
   }
+
+  void InstallAndToggleBar(BookmarkBarController* bar) {
+    // Force loading of the nib.
+    [bar view];
+    // Awkwardness to look like we've been installed.
+    [parent_view_ addSubview:[bar view]];
+    NSRect frame = [[[bar view] superview] frame];
+    frame.origin.y = 100;
+    [[[bar view] superview] setFrame:frame];
+
+    // make sure it's open so certain things aren't no-ops
+    [bar toggleBookmarkBar];
+  }
+
 
   // Return a menu item that points to the right URL.
   NSMenuItem* ItemForBookmarkBarMenu(GURL& gurl) {
@@ -158,6 +182,112 @@ TEST_F(BookmarkBarControllerTest, ShowHide) {
   EXPECT_EQ([[bar_ view] frame].size.height, 0);
 }
 
+// Make sure we're watching for frame change notifications.
+TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
+  scoped_nsobject<BookmarkBarControllerTogglePong> bar;
+  bar.reset(
+    [[BookmarkBarControllerTogglePong alloc]
+          initWithProfile:helper_.profile()
+               parentView:parent_view_.get()
+           webContentView:content_area_.get()
+             infoBarsView:infobar_view_.get()
+                 delegate:nil]);
+  InstallAndToggleBar(bar.get());
+
+  EXPECT_GT([bar toggles], 0);
+
+  // Hard to force toggles -- simple whacking the frame is inadequate.
+  // TODO(jrg): find a way to set frame, force a toggle, and verify it.
+}
+
+// Confirm off the side button only enabled when reasonable.
+TEST_F(BookmarkBarControllerTest, OffTheSideButtonEnable) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  [bar_ loaded:model];
+  EXPECT_FALSE([bar_ offTheSideButtonIsEnabled]);
+
+  for (int i = 0; i < 2; i++) {
+    model->SetURLStarred(GURL("http://www.foo.com"), L"small", true);
+    EXPECT_FALSE([bar_ offTheSideButtonIsEnabled]);
+  }
+
+  for (int i = 0; i < 20; i++) {
+    const BookmarkNode* parent = model->GetBookmarkBarNode();
+    model->AddURL(parent, parent->GetChildCount(),
+                  L"super duper wide title",
+                  GURL("http://superfriends.hall-of-justice.edu"));
+  }
+  EXPECT_TRUE([bar_ offTheSideButtonIsEnabled]);
+}
+
+TEST_F(BookmarkBarControllerTest, TagMap) {
+  int64 ids[] = { 1, 3, 4, 40, 400, 4000, 800000000, 2, 123456789 };
+  std::vector<int32> tags;
+
+  // Generate some tags
+  for (unsigned int i = 0; i < arraysize(ids); i++) {
+    tags.push_back([bar_ menuTagFromNodeId:ids[i]]);
+  }
+
+  // Confirm reverse mapping.
+  for (unsigned int i = 0; i < arraysize(ids); i++) {
+    EXPECT_EQ(ids[i], [bar_ nodeIdFromMenuTag:tags[i]]);
+  }
+
+  // Confirm uniqueness.
+  std::sort(tags.begin(), tags.end());
+  for (unsigned int i=0; i<(tags.size()-1); i++) {
+    EXPECT_NE(tags[i], tags[i+1]);
+  }
+}
+
+TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  // First make sure something (e.g. "(empty)" string) is always present.
+  NSMenu* menu = [bar_ menuForFolderNode:model->GetBookmarkBarNode()];
+  EXPECT_GT([menu numberOfItems], 0);
+
+  // Test two bookmarks.
+  GURL gurl("http://www.foo.com");
+  model->SetURLStarred(gurl, L"small", true);
+  model->SetURLStarred(GURL("http://www.cnn.com"), L"bigger title", true);
+  menu = [bar_ menuForFolderNode:model->GetBookmarkBarNode()];
+  EXPECT_EQ([menu numberOfItems], 2);
+  NSMenuItem *item = [menu itemWithTitle:@"bigger title"];
+  EXPECT_TRUE(item);
+  item = [menu itemWithTitle:@"small"];
+  EXPECT_TRUE(item);
+  if (item) {
+    int64 tag = [bar_ nodeIdFromMenuTag:[item tag]];
+    const BookmarkNode* node = model->GetNodeByID(tag);
+    EXPECT_TRUE(node);
+    EXPECT_EQ(gurl, node->GetURL());
+  }
+
+  // Test with an actual folder as well
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* folder = model->AddGroup(parent,
+                                               parent->GetChildCount(),
+                                               L"group");
+  model->AddURL(folder, folder->GetChildCount(),
+                L"f1", GURL("http://framma-lamma.com"));
+  model->AddURL(folder, folder->GetChildCount(),
+                L"f2", GURL("http://framma-lamma-ding-dong.com"));
+  menu = [bar_ menuForFolderNode:model->GetBookmarkBarNode()];
+  EXPECT_EQ([menu numberOfItems], 3);
+
+  item = [menu itemWithTitle:@"group"];
+  EXPECT_TRUE(item);
+  EXPECT_TRUE([item hasSubmenu]);
+  NSMenu *submenu = [item submenu];
+  EXPECT_TRUE(submenu);
+  EXPECT_EQ(2, [submenu numberOfItems]);
+  EXPECT_TRUE([submenu itemWithTitle:@"f1"]);
+  EXPECT_TRUE([submenu itemWithTitle:@"f2"]);
+}
+
 // Confirm openBookmark: forwards the request to the controller's delegate
 TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   GURL gurl("http://walla.walla.ding.dong.com");
@@ -209,47 +339,47 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
 
 TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-
+  NSView* buttonView = [bar_ buttonView];
   EXPECT_EQ(0U, [[bar_ buttons] count]);
-  unsigned int initial_subview_count = [[[bar_ view] subviews] count];
+  unsigned int initial_subview_count = [[buttonView subviews] count];
 
   // Make sure a redundant call doesn't choke
   [bar_ clearBookmarkBar];
   EXPECT_EQ(0U, [[bar_ buttons] count]);
-  EXPECT_EQ(initial_subview_count, [[[bar_ view] subviews] count]);
+  EXPECT_EQ(initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl1("http://superfriends.hall-of-justice.edu");
   std::wstring title1(L"Protectors of the Universe");
   model->SetURLStarred(gurl1, title1, true);
   EXPECT_EQ(1U, [[bar_ buttons] count]);
-  EXPECT_EQ(1+initial_subview_count, [[[bar_ view] subviews] count]);
+  EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl2("http://legion-of-doom.gov");
   std::wstring title2(L"Bad doodz");
   model->SetURLStarred(gurl2, title2, true);
   EXPECT_EQ(2U, [[bar_ buttons] count]);
-  EXPECT_EQ(2+initial_subview_count, [[[bar_ view] subviews] count]);
+  EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
 
   for (int i = 0; i < 3; i++) {
     // is_starred=false --> remove the bookmark
     model->SetURLStarred(gurl2, title2, false);
     EXPECT_EQ(1U, [[bar_ buttons] count]);
-    EXPECT_EQ(1+initial_subview_count, [[[bar_ view] subviews] count]);
+    EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
     // and bring it back
     model->SetURLStarred(gurl2, title2, true);
     EXPECT_EQ(2U, [[bar_ buttons] count]);
-    EXPECT_EQ(2+initial_subview_count, [[[bar_ view] subviews] count]);
+    EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
   }
 
   [bar_ clearBookmarkBar];
   EXPECT_EQ(0U, [[bar_ buttons] count]);
-  EXPECT_EQ(initial_subview_count, [[[bar_ view] subviews] count]);
+  EXPECT_EQ(initial_subview_count, [[buttonView subviews] count]);
 
   // Explicit test of loaded: since this is a convenient spot
   [bar_ loaded:model];
   EXPECT_EQ(2U, [[bar_ buttons] count]);
-  EXPECT_EQ(2+initial_subview_count, [[[bar_ view] subviews] count]);
+  EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
 }
 
 // Make sure that each button we add marches to the right and does not

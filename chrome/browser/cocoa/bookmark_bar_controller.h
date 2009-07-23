@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
+#include <map>
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
@@ -42,6 +43,13 @@ class PrefService;
   BOOL contentViewHasOffset_;
   BOOL barShouldBeShown_;
 
+  // BookmarkNodes have a 64bit id.  NSMenuItems have a 32bit tag used
+  // to represent the bookmark node they refer to.  This map provides
+  // a mapping from one to the other, so we can properly identify the
+  // node from the item.  When adding items in, we start with seedId_.
+  int32 seedId_;
+  std::map<int32,int64> menuTagMap_;
+
   // Our bookmark buttons, ordered from L-->R.
   scoped_nsobject<NSMutableArray> buttons_;
 
@@ -60,6 +68,8 @@ class PrefService;
   // Delegate which can open URLs for us.
   id<BookmarkURLOpener> delegate_;  // weak
 
+  IBOutlet NSView* buttonView_;
+  IBOutlet NSButton* offTheSideButton_;
   IBOutlet NSMenu* buttonContextMenu_;
 }
 
@@ -88,6 +98,8 @@ class PrefService;
 // Actions for manipulating bookmarks.
 // From a button, ...
 - (IBAction)openBookmark:(id)sender;
+- (IBAction)openFolderMenuFromButton:(id)sender;
+- (IBAction)openOffTheSideMenuFromButton:(id)sender;
 // From a context menu over the button, ...
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender;
 - (IBAction)openBookmarkInNewWindow:(id)sender;
@@ -99,7 +111,6 @@ class PrefService;
 // Or from a context menu over either the bar or a button.
 - (IBAction)addPage:(id)sender;
 - (IBAction)addOrRenameFolder:(id)sender;
-
 
 @end
 
@@ -125,13 +136,19 @@ class PrefService;
 
 
 // These APIs should only be used by unit tests (or used internally).
-@interface BookmarkBarController(TestingAPI)
+@interface BookmarkBarController(InternalOrTestingAPI)
 // Set the delegate for a unit test.
 - (void)setDelegate:(id<BookmarkURLOpener>)delegate;
 - (void)clearBookmarkBar;
+- (NSView*)buttonView;
 - (NSArray*)buttons;
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;
+- (void)frameDidChange;
+- (BOOL)offTheSideButtonIsEnabled;
+- (NSMenu *)menuForFolderNode:(const BookmarkNode*)node;
+- (int64)nodeIdFromMenuTag:(int32)tag;
+- (int32)menuTagFromNodeId:(int64)menuid;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

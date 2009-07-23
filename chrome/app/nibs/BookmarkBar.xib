@@ -39,9 +39,42 @@
 			<object class="NSCustomView" id="620641226">
 				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">-2147483358</int>
-				<string key="NSFrameSize">{468, 65}</string>
+				<object class="NSMutableArray" key="NSSubviews">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+					<object class="NSCustomView" id="610146462">
+						<reference key="NSNextResponder" ref="620641226"/>
+						<int key="NSvFlags">274</int>
+						<string key="NSFrameSize">{584, 144}</string>
+						<reference key="NSSuperview" ref="620641226"/>
+						<string key="NSClassName">NSView</string>
+					</object>
+					<object class="NSButton" id="1071220197">
+						<reference key="NSNextResponder" ref="620641226"/>
+						<int key="NSvFlags">305</int>
+						<string key="NSFrame">{{586, 2}, {14, 28}}</string>
+						<reference key="NSSuperview" ref="620641226"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSButtonCell" key="NSCell" id="1055451269">
+							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags2">134217728</int>
+							<string key="NSContents"/>
+							<reference key="NSControlView" ref="1071220197"/>
+							<int key="NSButtonFlags">-2042347265</int>
+							<int key="NSButtonFlags2">134</int>
+							<object class="NSCustomResource" key="NSNormalImage">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">chevron</string>
+							</object>
+							<string key="NSAlternateContents"/>
+							<string key="NSKeyEquivalent"/>
+							<int key="NSPeriodicDelay">400</int>
+							<int key="NSPeriodicInterval">75</int>
+						</object>
+					</object>
+				</object>
+				<string key="NSFrameSize">{600, 144}</string>
 				<reference key="NSSuperview"/>
-				<string key="NSClassName">BookmarkBarView</string>
+				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSMenu" id="183701277">
 				<string key="NSTitle"/>
@@ -283,14 +316,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">barContextualMenu_</string>
-						<reference key="source" ref="620641226"/>
-						<reference key="destination" ref="183701277"/>
-					</object>
-					<int key="connectionID">17</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">buttonContextMenu_</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="672481054"/>
@@ -441,6 +466,46 @@
 					</object>
 					<int key="connectionID">61</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">buttonView_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="610146462"/>
+					</object>
+					<int key="connectionID">65</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">offTheSideButton_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="1071220197"/>
+					</object>
+					<int key="connectionID">66</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openOffTheSideMenuFromButton:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="1071220197"/>
+					</object>
+					<int key="connectionID">69</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">menu</string>
+						<reference key="source" ref="610146462"/>
+						<reference key="destination" ref="183701277"/>
+					</object>
+					<int key="connectionID">70</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">menu</string>
+						<reference key="source" ref="620641226"/>
+						<reference key="destination" ref="183701277"/>
+					</object>
+					<int key="connectionID">71</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -474,6 +539,11 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">1</int>
 						<reference key="object" ref="620641226"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="610146462"/>
+							<reference ref="1071220197"/>
+						</object>
 						<reference key="parent" ref="1002"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -638,6 +708,25 @@
 						<reference key="object" ref="1071747565"/>
 						<reference key="parent" ref="672481054"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">62</int>
+						<reference key="object" ref="610146462"/>
+						<reference key="parent" ref="620641226"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">63</int>
+						<reference key="object" ref="1071220197"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1055451269"/>
+						</object>
+						<reference key="parent" ref="620641226"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">64</int>
+						<reference key="object" ref="1055451269"/>
+						<reference key="parent" ref="1071220197"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -674,6 +763,9 @@
 					<string>4.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>6.IBPluginDependency</string>
+					<string>62.IBPluginDependency</string>
+					<string>63.IBPluginDependency</string>
+					<string>64.IBPluginDependency</string>
 					<string>7.IBPluginDependency</string>
 					<string>8.IBPluginDependency</string>
 					<string>9.IBPluginDependency</string>
@@ -683,7 +775,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{519, 625}, {468, 65}}</string>
+					<string>{{519, 546}, {600, 144}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -713,6 +805,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -735,19 +830,11 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">61</int>
+			<int key="maxID">71</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<object class="IBPartialClassDescription">
-					<string key="className">BackgroundGradientView</string>
-					<string key="superclassName">NSView</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/background_gradient_view.h</string>
-					</object>
-				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">BookmarkBarController</string>
 					<string key="superclassName">NSViewController</string>
@@ -764,9 +851,13 @@
 							<string>openBookmarkInIncognitoWindow:</string>
 							<string>openBookmarkInNewForegroundTab:</string>
 							<string>openBookmarkInNewWindow:</string>
+							<string>openFolderMenuFromButton:</string>
+							<string>openOffTheSideMenuFromButton:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -783,29 +874,21 @@
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>buttonContextMenu_</string>
+							<string>buttonView_</string>
 							<string>delegate_</string>
+							<string>offTheSideButton_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenu</string>
+							<string>NSView</string>
 							<string>id</string>
+							<string>NSButton</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/bookmark_bar_controller.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">BookmarkBarView</string>
-					<string key="superclassName">BackgroundGradientView</string>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">barContextualMenu_</string>
-						<string key="NS.object.0">NSMenu</string>
-					</object>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/bookmark_bar_view.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
