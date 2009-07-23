@@ -2991,14 +2991,6 @@ BUG17509 LINUX : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL
 BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 
 // These need new baselines for the merge r46229:46269.
-BUG_DARIN WIN LINUX : LayoutTests/fast/backgrounds/size/backgroundSize20.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/backgrounds/size/backgroundSize21.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/backgrounds/size/backgroundSize22.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/css/remove-shorthand.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/forms/select-popup-pagekeys.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/inspector/style.html = FAIL
 BUG_DARIN WIN LINUX MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-null-char.html = FAIL
 BUG_DARIN WIN RELEASE : LayoutTests/media/video-document-types.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
