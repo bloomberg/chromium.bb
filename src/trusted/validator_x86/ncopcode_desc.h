@@ -486,14 +486,18 @@ typedef enum {
   RegSIL,
   RegBPL,
   RegSPL,
-  RegR8L,
-  RegR9L,
-  RegR10L,
-  RegR11L,
-  RegR12L,
-  RegR13L,
-  RegR14L,
-  RegR15L,
+  /* Note: Intel manual claims that r8l..r15l should be used. However, AMD
+   * manual and (xed from Intel) uses r8b..r15b. Therefore we will use the
+   * latter.
+   */
+  RegR8B,
+  RegR9B,
+  RegR10B,
+  RegR11B,
+  RegR12B,
+  RegR13B,
+  RegR14B,
+  RegR15B,
 
   RegAX,             /* 16 bit registers in 32-bit and 64-bit modes. */
   RegBX,

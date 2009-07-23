@@ -713,3 +713,22 @@ ExprNodeVector[6] = {
   { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
   { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
 };
+0000000000000000: 44 8a 04 00                                  mov %r8b, [%rax+%rax*1]
+  { 0x8a,
+    NACLi_386,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
+    InstMov,
+    2, {
+      { G_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) },
+      { E_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpSet) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %r8b, ExprUsed | ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+};

@@ -137,14 +137,14 @@ static const OperandKind RegisterTable8[REGISTER_TABLE_SIZE] = {
   RegBPL,
   RegSIL,
   RegDIL,
-  RegR8L,
-  RegR9L,
-  RegR10L,
-  RegR11L,
-  RegR12L,
-  RegR13L,
-  RegR14L,
-  RegR15L
+  RegR8B,
+  RegR9B,
+  RegR10B,
+  RegR11B,
+  RegR12B,
+  RegR13B,
+  RegR14B,
+  RegR15B
 #else
   RegAH,
   RegCH,
@@ -289,14 +289,14 @@ static ExprNodeFlags GetRegisterSize(OperandKind register_name) {
   case RegSIL:
   case RegBPL:
   case RegSPL:
-  case RegR8L:
-  case RegR9L:
-  case RegR10L:
-  case RegR11L:
-  case RegR12L:
-  case RegR13L:
-  case RegR14L:
-  case RegR15L:
+  case RegR8B:
+  case RegR9B:
+  case RegR10B:
+  case RegR11B:
+  case RegR12B:
+  case RegR13B:
+  case RegR14B:
+  case RegR15B:
     return ExprFlag(ExprSize8);
   case RegAX:
   case RegBX:
@@ -938,14 +938,14 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case RegSIL:
     case RegBPL:
     case RegSPL:
-    case RegR8L:
-    case RegR9L:
-    case RegR10L:
-    case RegR11L:
-    case RegR12L:
-    case RegR13L:
-    case RegR14L:
-    case RegR15L:
+    case RegR8B:
+    case RegR9B:
+    case RegR10B:
+    case RegR11B:
+    case RegR12B:
+    case RegR13B:
+    case RegR14B:
+    case RegR15B:
     case RegAX:
     case RegBX:
     case RegCX:
