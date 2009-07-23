@@ -24,7 +24,6 @@
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/tabs/dragged_tab_controller.h"
 #include "chrome/browser/views/tabs/tab.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -676,7 +675,7 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
 bool TabStrip::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
-  *role = AccessibilityTypes::ROLE_GROUPING;
+  *role = AccessibilityTypes::ROLE_PAGETABLIST;
   return true;
 }
 

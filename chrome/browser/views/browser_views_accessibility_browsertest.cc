@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestPageMenuAccObj) {
   // Verify Page menu button MSAA name and role.
   TestViewAccessibilityObject(GetToolbarView()->GetViewByID(VIEW_ID_PAGE_MENU),
                               l10n_util::GetString(IDS_ACCNAME_PAGE),
-                              ROLE_SYSTEM_BUTTONDROPDOWN);
+                              ROLE_SYSTEM_BUTTONMENU);
 }
 
 // Retrieve accessibility object for App menu button and verify accessibility
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest, TestAppMenuAccObj) {
   // Verify App menu button MSAA name and role.
   TestViewAccessibilityObject(GetToolbarView()->GetViewByID(VIEW_ID_APP_MENU),
                               l10n_util::GetString(IDS_ACCNAME_APP),
-                              ROLE_SYSTEM_BUTTONDROPDOWN);
+                              ROLE_SYSTEM_BUTTONMENU);
 }
 
 }  // Namespace.

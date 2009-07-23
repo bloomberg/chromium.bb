@@ -341,7 +341,31 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
     return gfx::Size(kSeparatorWidth, 1);
   }
 
+  virtual bool GetAccessibleName(std::wstring* name) {
+    DCHECK(name);
+
+    if (!accessible_name_.empty()) {
+      name->assign(accessible_name_);
+      return true;
+    }
+    return false;
+  }
+
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role) {
+    DCHECK(role);
+
+    *role = AccessibilityTypes::ROLE_SEPARATOR;
+    return true;
+  }
+
+  virtual void SetAccessibleName(const std::wstring& name) {
+    accessible_name_.assign(name);
+  }
+
  private:
+  // Storage of strings needed for accessibility.
+  std::wstring accessible_name_;
+
   DISALLOW_COPY_AND_ASSIGN(ButtonSeparatorView);
 };
 
@@ -916,7 +940,28 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
     parent_node = root;
   }
   return bookmark_utils::PerformBookmarkDrop(profile_, data, parent_node,
-                                            index);
+                                             index);
+}
+
+bool BookmarkBarView::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+
+  if (!accessible_name_.empty()) {
+    name->assign(accessible_name_);
+    return true;
+  }
+  return false;
+}
+
+bool BookmarkBarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_TOOLBAR;
+  return true;
+}
+
+void BookmarkBarView::SetAccessibleName(const std::wstring& name) {
+  accessible_name_.assign(name);
 }
 
 void BookmarkBarView::OnFullscreenToggled(bool fullscreen) {
@@ -993,6 +1038,8 @@ void BookmarkBarView::Init() {
   AddChildView(overflow_button_);
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
+  bookmarks_separator_view_->SetAccessibleName(
+      l10n_util::GetString(IDS_ACCNAME_SEPARATOR));
   AddChildView(bookmarks_separator_view_);
 
   instructions_ = new views::Label(
@@ -1013,6 +1060,8 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   button->SetIcon(GetGroupIcon());
   button->SetContextMenuController(this);
   button->set_tag(kOtherFolderButtonTag);
+  button->SetAccessibleName(
+      l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_BOOKMARKED));
   return button;
 }
 
@@ -1032,6 +1081,9 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
 
   // Make visible as necessary.
   button->SetVisible(false);
+  // Set accessibility name.
+  button->SetAccessibleName(
+      l10n_util::GetString(IDS_ACCNAME_BOOKMARKS_CHEVRON));
   return button;
 }
 
@@ -1378,6 +1430,7 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
 void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
                                       views::TextButton* button) {
   button->SetText(node->GetTitle());
+  button->SetAccessibleName(node->GetTitle());
 
   // We don't always have a theme provider (ui tests, for example).
   if (GetThemeProvider()) {

@@ -565,8 +565,28 @@ void ExtensionShelf::OnMouseEntered(const views::MouseEvent& event) {
 void ExtensionShelf::OnMouseExited(const views::MouseEvent& event) {
 }
 
-void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host,
-                                         int index) {
+bool ExtensionShelf::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_TOOLBAR;
+  return true;
+}
+
+bool ExtensionShelf::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+
+  if (!accessible_name_.empty()) {
+    name->assign(accessible_name_);
+    return true;
+  }
+  return false;
+}
+
+void ExtensionShelf::SetAccessibleName(const std::wstring& name) {
+  accessible_name_.assign(name);
+}
+
+void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host, int index) {
   model_->SetToolstripDataAt(index, new Toolstrip(this, host));
 
   bool had_views = GetChildViewCount() > 0;
@@ -580,8 +600,7 @@ void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host,
   Layout();
 }
 
-void ExtensionShelf::ToolstripRemovingAt(ExtensionHost* host,
-                                         int index) {
+void ExtensionShelf::ToolstripRemovingAt(ExtensionHost* host, int index) {
   // Delete the Toolstrip view and remove it from the model.
   Toolstrip* toolstrip = ToolstripAtIndex(index);
   View* view = toolstrip->GetShelfView();
@@ -594,18 +613,15 @@ void ExtensionShelf::ToolstripRemovingAt(ExtensionHost* host,
   Layout();
 }
 
-void ExtensionShelf::ToolstripDraggingFrom(ExtensionHost* host,
-                                           int index) {
+void ExtensionShelf::ToolstripDraggingFrom(ExtensionHost* host, int index) {
 }
 
-void ExtensionShelf::ToolstripMoved(ExtensionHost* host,
-                                    int from_index,
+void ExtensionShelf::ToolstripMoved(ExtensionHost* host, int from_index,
                                     int to_index) {
   Layout();
 }
 
-void ExtensionShelf::ToolstripChangedAt(ExtensionHost* toolstrip,
-                                        int index) {
+void ExtensionShelf::ToolstripChangedAt(ExtensionHost* toolstrip, int index) {
 }
 
 void ExtensionShelf::ExtensionShelfEmpty() {
@@ -630,8 +646,8 @@ void ExtensionShelf::OnExtensionMouseLeave(ExtensionView* view) {
     toolstrip->HideShelfHandle(kHideDelayMs);
 }
 
-void ExtensionShelf::DropExtension(Toolstrip* toolstrip,
-                                   const gfx::Point& pt, bool cancel) {
+void ExtensionShelf::DropExtension(Toolstrip* toolstrip, const gfx::Point& pt,
+                                   bool cancel) {
   Toolstrip* dest_toolstrip = ToolstripAtX(pt.x());
   if (!dest_toolstrip) {
     if (pt.x() > 0)
@@ -647,8 +663,7 @@ void ExtensionShelf::DropExtension(Toolstrip* toolstrip,
   model_->MoveToolstripAt(from, to);
 }
 
-void ExtensionShelf::InitBackground(gfx::Canvas* canvas,
-                                    const SkRect& subset) {
+void ExtensionShelf::InitBackground(gfx::Canvas* canvas, const SkRect& subset) {
   if (!background_.empty())
     return;
 

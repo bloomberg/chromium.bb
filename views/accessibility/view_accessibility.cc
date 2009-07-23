@@ -614,21 +614,29 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
 
 long ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
   switch (role) {
-    case AccessibilityTypes::ROLE_APPLICATION :
+    case AccessibilityTypes::ROLE_APPLICATION:
       return ROLE_SYSTEM_APPLICATION;
-    case AccessibilityTypes::ROLE_BUTTONDROPDOWN :
+    case AccessibilityTypes::ROLE_BUTTONDROPDOWN:
       return ROLE_SYSTEM_BUTTONDROPDOWN;
-    case AccessibilityTypes::ROLE_GROUPING :
+    case AccessibilityTypes::ROLE_BUTTONMENU:
+      return ROLE_SYSTEM_BUTTONMENU;
+    case AccessibilityTypes::ROLE_GROUPING:
       return ROLE_SYSTEM_GROUPING;
-    case AccessibilityTypes::ROLE_PAGETAB :
+    case AccessibilityTypes::ROLE_PAGETAB:
       return ROLE_SYSTEM_PAGETAB;
-    case AccessibilityTypes::ROLE_PUSHBUTTON :
+    case AccessibilityTypes::ROLE_PAGETABLIST:
+      return ROLE_SYSTEM_PAGETABLIST;
+    case AccessibilityTypes::ROLE_PUSHBUTTON:
       return ROLE_SYSTEM_PUSHBUTTON;
-    case AccessibilityTypes::ROLE_TEXT :
+    case AccessibilityTypes::ROLE_SEPARATOR:
+      return ROLE_SYSTEM_SEPARATOR;
+    case AccessibilityTypes::ROLE_TEXT:
       return ROLE_SYSTEM_TEXT;
-    case AccessibilityTypes::ROLE_TOOLBAR :
+    case AccessibilityTypes::ROLE_TOOLBAR:
       return ROLE_SYSTEM_TOOLBAR;
-    case AccessibilityTypes::ROLE_CLIENT :
+    case AccessibilityTypes::ROLE_WINDOW:
+      return ROLE_SYSTEM_WINDOW;
+    case AccessibilityTypes::ROLE_CLIENT:
     default:
       // This is the default role for MSAA.
       return ROLE_SYSTEM_CLIENT;

@@ -36,6 +36,10 @@ class InfoBarContainer : public views::View,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual void SetAccessibleName(const std::wstring& name);
+
  protected:
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
@@ -68,6 +72,9 @@ class InfoBarContainer : public views::View,
 
   // The TabContents for which we are currently showing InfoBars.
   TabContents* tab_contents_;
+
+  // Storage of the string needed for accessibility.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);
 };

@@ -72,6 +72,27 @@ void InfoBarContainer::Layout() {
   }
 }
 
+bool InfoBarContainer::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+
+  if (!accessible_name_.empty()) {
+    name->assign(accessible_name_);
+    return true;
+  }
+  return false;
+}
+
+bool InfoBarContainer::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_TOOLBAR;
+  return true;
+}
+
+void InfoBarContainer::SetAccessibleName(const std::wstring& name) {
+  accessible_name_.assign(name);
+}
+
 void InfoBarContainer::ViewHierarchyChanged(bool is_add,
                                             views::View* parent,
                                             views::View* child) {

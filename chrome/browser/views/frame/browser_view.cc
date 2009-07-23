@@ -1444,7 +1444,8 @@ void BrowserView::Init() {
   SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
 
   tabstrip_ = TabStripWrapper::CreateTabStrip(browser_->tabstrip_model());
-  tabstrip_->GetView()->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
+  tabstrip_->
+      GetView()->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
   AddChildView(tabstrip_->GetView());
   frame_->TabStripCreated(tabstrip_);
 
@@ -1474,6 +1475,8 @@ void BrowserView::Init() {
   status_bubble_.reset(new StatusBubbleViews(GetWidget()));
 
   extension_shelf_ = new ExtensionShelf(browser_.get());
+  extension_shelf_->
+      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
   AddChildView(extension_shelf_);
 
 #if defined(OS_WIN)
@@ -1624,6 +1627,8 @@ bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
       bookmark_bar_view_->SetProfile(contents->profile());
     }
     bookmark_bar_view_->SetPageNavigator(contents);
+    bookmark_bar_view_->
+        SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_BOOKMARKS));
     new_bookmark_bar_view = bookmark_bar_view_.get();
   }
   return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);

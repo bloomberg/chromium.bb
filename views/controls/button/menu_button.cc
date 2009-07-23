@@ -250,7 +250,7 @@ bool MenuButton::GetAccessibleDefaultAction(std::wstring* action) {
 bool MenuButton::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
 
-  *role = AccessibilityTypes::ROLE_BUTTONDROPDOWN;
+  *role = AccessibilityTypes::ROLE_BUTTONMENU;
   return true;
 }
 

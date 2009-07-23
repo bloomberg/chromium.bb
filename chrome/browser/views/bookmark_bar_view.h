@@ -98,6 +98,9 @@ class BookmarkBarView : public views::View,
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual void SetAccessibleName(const std::wstring& name);
 
   // Called when fullscreen mode toggles on or off; this affects our layout.
   void OnFullscreenToggled(bool fullscreen);
@@ -430,6 +433,9 @@ class BookmarkBarView : public views::View,
 
   // Background for extension toolstrips.
   SkBitmap toolstrip_background_;
+
+  // Storage of strings needed for accessibility.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarView);
 };

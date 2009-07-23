@@ -35,6 +35,9 @@ class ExtensionShelf : public views::View,
   virtual void Layout();
   virtual void OnMouseExited(const views::MouseEvent& event);
   virtual void OnMouseEntered(const views::MouseEvent& event);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual void SetAccessibleName(const std::wstring& name);
 
   // ExtensionContainer
   virtual void OnExtensionMouseEvent(ExtensionView* view);
@@ -84,6 +87,9 @@ class ExtensionShelf : public views::View,
 
   // The model representing the toolstrips on the shelf.
   scoped_ptr<ExtensionShelfModel> model_;
+
+  // Storage of strings needed for accessibility.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionShelf);
 };
