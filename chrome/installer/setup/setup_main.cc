@@ -573,7 +573,13 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     // make any user specific changes in this option.
     std::wstring chrome_exe(cmd_line.GetSwitchValue(
         installer_util::switches::kRegisterChromeBrowser));
-    exit_code = ShellUtil::AddChromeToSetAccessDefaults(chrome_exe, true);
+    std::wstring suffix;
+    if (cmd_line.HasSwitch(
+        installer_util::switches::kRegisterChromeBrowserSuffix)) {
+      suffix = cmd_line.GetSwitchValue(
+          installer_util::switches::kRegisterChromeBrowserSuffix);
+    }
+    exit_code = ShellUtil::RegisterChromeBrowser(chrome_exe, suffix, false);
     return true;
   } else if (cmd_line.HasSwitch(installer_util::switches::kRenameChromeExe)) {
     // If --rename-chrome-exe is specified, we want to rename the executables
@@ -582,8 +588,19 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     return true;
   } else if (cmd_line.HasSwitch(
       installer_util::switches::kRemoveChromeRegistration)) {
+    // This is almost reverse of --register-chrome-browser option above.
+    // Here we delete Chrome browser registration. This option should only
+    // be used when setup.exe is launched with admin rights. We do not
+    // make any user specific changes in this option.
+    std::wstring suffix;
+    if (cmd_line.HasSwitch(
+        installer_util::switches::kRegisterChromeBrowserSuffix)) {
+      suffix = cmd_line.GetSwitchValue(
+          installer_util::switches::kRegisterChromeBrowserSuffix);
+    }
     installer_util::InstallStatus tmp = installer_util::UNKNOWN_STATUS;
-    installer_setup::DeleteChromeRegistrationKeys(HKEY_LOCAL_MACHINE, tmp);
+    installer_setup::DeleteChromeRegistrationKeys(HKEY_LOCAL_MACHINE,
+                                                  suffix, tmp);
     exit_code = tmp;
     return true;
   } else if (cmd_line.HasSwitch(installer_util::switches::kInactiveUserToast)) {

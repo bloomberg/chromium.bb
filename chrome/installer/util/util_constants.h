@@ -5,8 +5,8 @@
 // Defines all install related constants that need to be used by Chrome as
 // well as Chrome Installer.
 
-#ifndef CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H__
-#define CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H__
+#ifndef CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_
+#define CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_
 
 namespace installer_util {
 
@@ -81,6 +81,7 @@ extern const wchar_t kLogFile[];
 extern const wchar_t kMakeChromeDefault[];
 extern const wchar_t kNewSetupExe[];
 extern const wchar_t kRegisterChromeBrowser[];
+extern const wchar_t kRegisterChromeBrowserSuffix[];
 extern const wchar_t kRenameChromeExe[];
 extern const wchar_t kRemoveChromeRegistration[];
 extern const wchar_t kRunAsAdmin[];
@@ -109,4 +110,4 @@ extern const wchar_t kUninstallInstallationDate[];
 
 }  // namespace installer_util
 
-#endif  // CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H__
+#endif  // CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_

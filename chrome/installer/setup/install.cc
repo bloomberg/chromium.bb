@@ -286,26 +286,19 @@ void RegisterChromeOnMachine(const std::wstring& install_path, int options) {
   // have admin rights and we want to ignore the error.
   AddChromeToMediaPlayerList();
 
-  // We try to register Chrome as a valid browser on local machine. This
-  // will work only if current user has admin rights.
+  // Is --make-chrome-default option is given we make Chrome default browser
+  // otherwise we only register it on the machine as a valid browser.
   std::wstring chrome_exe(install_path);
   file_util::AppendToPath(&chrome_exe, installer_util::kChromeExe);
   LOG(INFO) << "Registering Chrome as browser";
-  ShellUtil::RegisterStatus ret = ShellUtil::FAILURE;
   if (options & installer_util::MAKE_CHROME_DEFAULT) {
-    ret = ShellUtil::AddChromeToSetAccessDefaults(chrome_exe, false);
-    if (ret == ShellUtil::SUCCESS) {
-      if (system_level) {
-        ShellUtil::MakeChromeDefault(
-            ShellUtil::CURRENT_USER | ShellUtil::SYSTEM_LEVEL, chrome_exe);
-      } else {
-        ShellUtil::MakeChromeDefault(ShellUtil::CURRENT_USER, chrome_exe);
-      }
-    }
+    int level = ShellUtil::CURRENT_USER;
+    if (system_level)
+      level = level | ShellUtil::SYSTEM_LEVEL;
+    ShellUtil::MakeChromeDefault(level, chrome_exe, true);
   } else {
-    ret = ShellUtil::AddChromeToSetAccessDefaults(chrome_exe, true);
+    ShellUtil::RegisterChromeBrowser(chrome_exe, L"", false);
   }
-  LOG(INFO) << "Return status of Chrome browser registration " << ret;
 }
 }  // namespace
 

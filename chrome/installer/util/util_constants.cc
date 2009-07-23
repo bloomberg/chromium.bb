@@ -57,6 +57,9 @@ const wchar_t kNewSetupExe[] = L"new-setup-exe";
 // options kInstallArchive and kUninstall are ignored.
 const wchar_t kRegisterChromeBrowser[] = L"register-chrome-browser";
 
+const wchar_t kRegisterChromeBrowserSuffix[] =
+    L"register-chrome-browser-suffix";
+
 // Renames chrome.exe to old_chrome.exe and renames new_chrome.exe to chrome.exe
 // to support in-use updates. Also deletes opv key.
 const wchar_t kRenameChromeExe[] = L"rename-chrome-exe";

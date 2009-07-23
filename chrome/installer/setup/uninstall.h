@@ -4,8 +4,8 @@
 //
 // This file declares Chrome uninstall related functions.
 
-#ifndef CHROME_INSTALLER_SETUP_UNINSTALL_H__
-#define CHROME_INSTALLER_SETUP_UNINSTALL_H__
+#ifndef CHROME_INSTALLER_SETUP_UNINSTALL_H_
+#define CHROME_INSTALLER_SETUP_UNINSTALL_H_
 
 #include <string>
 
@@ -18,8 +18,10 @@
 namespace installer_setup {
 // This function removes all Chrome registration related keys. It returns true
 // if successful, otherwise false. The error code is set in |exit_code|.
-// |root| is the registry root (HKLM|HKCU)
+// |root| is the registry root (HKLM|HKCU) and |browser_entry_suffix| is the
+// suffix for default browser entry name in the registry (optional).
 bool DeleteChromeRegistrationKeys(HKEY root,
+                                  const std::wstring& browser_entry_suffix,
                                   installer_util::InstallStatus& exit_code);
 
 // This function uninstalls Chrome.
@@ -42,4 +44,4 @@ installer_util::InstallStatus UninstallChrome(
 
 }  // namespace installer_setup
 
-#endif  // CHROME_INSTALLER_SETUP_UNINSTALL_H__
+#endif  // CHROME_INSTALLER_SETUP_UNINSTALL_H_

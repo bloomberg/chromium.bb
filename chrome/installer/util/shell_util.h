@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -6,8 +6,8 @@
 // Windows shell. These methods are all static and currently part of
 // ShellUtil class.
 
-#ifndef CHROME_INSTALLER_UTIL_SHELL_UTIL_H__
-#define CHROME_INSTALLER_UTIL_SHELL_UTIL_H__
+#ifndef CHROME_INSTALLER_UTIL_SHELL_UTIL_H_
+#define CHROME_INSTALLER_UTIL_SHELL_UTIL_H_
 
 #include <windows.h>
 #include <string>
@@ -23,13 +23,6 @@ class ShellUtil {
   enum ShellChange {
     CURRENT_USER = 0x1,  // Make any shell changes only at the user level
     SYSTEM_LEVEL = 0x2   // Make any shell changes only at the system level
-  };
-
-  // Return value of AddChromeToSetAccessDefaults.
-  enum RegisterStatus {
-    SUCCESS,             // Registration of Chrome successful (in HKLM)
-    FAILURE,             // Registration failed (no changes made)
-    REGISTERED_PER_USER  // Registered Chrome as per user (in HKCU)
   };
 
   // Relative path of DefaultIcon registry entry (prefixed with '\').
@@ -62,7 +55,7 @@ class ShellUtil {
   // Name that we give to Chrome file association handler ProgId.
   static const wchar_t* kChromeHTMLProgId;
 
-  // Description of Chrome file/URL association handler ProgId.
+  // Description of Chrome file association handler ProgId.
   static const wchar_t* kChromeHTMLProgIdDesc;
 
   // Registry path that stores url associations on Vista.
@@ -82,27 +75,6 @@ class ShellUtil {
 
   // Description of Chrome file/URL association handler ProgId.
   static const wchar_t* kChromeExtProgIdDesc;
-
-  // This method adds Chrome to the list that shows up in Add/Remove Programs->
-  // Set Program Access and Defaults and also creates Chrome ProgIds under
-  // Software\Classes. This method requires write access to HKLM so is just
-  // best effort deal. If write to HKLM fails and skip_if_not_admin is false,
-  // this method will:
-  // - add the ProgId entries to HKCU on XP. HKCU entries will not make
-  //   Chrome show in Set Program Access and Defaults but they are still useful
-  //   because we can make Chrome run when user clicks on http link or html
-  //   file.
-  // - will try to launch setup.exe with admin priviledges on Vista to do
-  //   these tasks. Users will see standard Vista elevation prompt and if they
-  //   enter the right credentials, the write operation will work.
-  // Currently skip_if_not_admin is false only when user tries to make Chrome
-  // default browser and Chrome is not registered on the machine.
-  //
-  // chrome_exe: full path to chrome.exe.
-  // skip_if_not_admin: if false will make this method try alternate methods
-  //                    as described above.
-  static RegisterStatus AddChromeToSetAccessDefaults(
-      const std::wstring& chrome_exe, bool skip_if_not_admin);
 
   // Checks if we need Admin rights for registry cleanup by checking if any
   // entry exists in HKLM.
@@ -137,8 +109,8 @@ class ShellUtil {
   // This method appends the Chrome icon index inside chrome.exe to the
   // chrome.exe path passed in as input, to generate the full path for
   // Chrome icon that can be used as value for Windows registry keys.
-  // chrome_icon: full path to chrome.exe.
-  static bool GetChromeIcon(std::wstring& chrome_icon);
+  // |chrome_exe| full path to chrome.exe.
+  static std::wstring GetChromeIcon(const std::wstring& chrome_exe);
 
   // This method returns the command to open URLs/files using chrome. Typically
   // this command is written to the registry under shell\open\command key.
@@ -167,17 +139,48 @@ class ShellUtil {
   // User's profile only affects any new user profiles (not existing ones).
   static bool GetQuickLaunchPath(bool system_level, std::wstring* path);
 
-  // Make Chrome default browser. Before calling this function Chrome should
-  // already have been registered by calling AddChromeToSetAccessDefaults()
-  // method, otherwise this function will fail.
+  // This function gets a suffix (user's login name) that can be added
+  // to Chromium default browser entry in the registry to create a unique name
+  // if there are multiple users on the machine, each with their own copy of
+  // Chromium that they want to set as default browser.
+  // This suffix value is assigned to |entry|.
+  static bool GetUserSpecificDefaultBrowserSuffix(std::wstring* entry);
+
+  // Make Chrome default browser.
   // shell_change: Defined whether to register as default browser at system
   //               level or user level. If value has ShellChange::SYSTEM_LEVEL
-  //               we should be running as admin user. Currently this setting
-  //               does not have any effect on Vista where we always set
-  //               as default only for the current user.
+  //               we should be running as admin user.
   // chrome_exe: The chrome.exe path to register as default browser.
+  // elevate_if_not_admin: On Vista if user is not admin, try to elevate for
+  //                       Chrome registration.
   static bool MakeChromeDefault(int shell_change,
-                                const std::wstring& chrome_exe);
+                                const std::wstring& chrome_exe,
+                                bool elevate_if_not_admin);
+
+  // This method adds Chrome to the list that shows up in Add/Remove Programs->
+  // Set Program Access and Defaults and also creates Chrome ProgIds under
+  // Software\Classes. This method requires write access to HKLM so is just
+  // best effort deal. If write to HKLM fails and elevate_if_not_admin is true,
+  // this method will:
+  // - add the ProgId entries to HKCU on XP. HKCU entries will not make
+  //   Chrome show in Set Program Access and Defaults but they are still useful
+  //   because we can make Chrome run when user clicks on http link or html
+  //   file.
+  // - will try to launch setup.exe with admin priviledges on Vista to do
+  //   these tasks. Users will see standard Vista elevation prompt and if they
+  //   enter the right credentials, the write operation will work.
+  // Currently elevate_if_not_admin is true only when user tries to make Chrome
+  // default browser (through the UI or through installer options) and Chrome
+  // is not registered on the machine.
+  //
+  // |chrome_exe| full path to chrome.exe.
+  // |unique_suffix| Optional input. If given, this function appends the value
+  // to default browser entries names that it creates in the registry.
+  // |elevate_if_not_admin| if true will make this method try alternate methods
+  // as described above.
+  static bool RegisterChromeBrowser(const std::wstring& chrome_exe,
+                                    const std::wstring& unique_suffix,
+                                    bool elevate_if_not_admin);
 
   // Remove Chrome shortcut from Desktop.
   // If shell_change is CURRENT_USER, the shortcut is removed from the
@@ -206,8 +209,8 @@ class ShellUtil {
                                    bool create_new);
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(ShellUtil);
+  DISALLOW_COPY_AND_ASSIGN(ShellUtil);
 };
 
 
-#endif  // CHROME_INSTALLER_UTIL_SHELL_UTIL_H__
+#endif  // CHROME_INSTALLER_UTIL_SHELL_UTIL_H_
