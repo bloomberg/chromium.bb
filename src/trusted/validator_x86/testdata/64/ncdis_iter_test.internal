@@ -592,3 +592,22 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 2, 0 },
   { ExprConstant[0] , 0x3, ExprSize8 | EpxrUnsignedHex },
 };
+0000000000000000: 48 8d 2d 0f 07 20 00                         lea %rbp, [%rip+0x20070f]
+  { 0x8d,
+    NACLi_386,
+    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    InstLea,
+    2, {
+      { G_Operand, OpFlag(OpSet) },
+      { M_Operand, OpFlag(OpAddress) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %rbp, ExprSet | ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprAddress },
+  { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x20070f, ExprSize32 | ExprSignedHex },
+};

@@ -82,6 +82,8 @@ typedef enum {
   ExprSet,
   /* Defines that a use occurs for this subexpression. */
   ExprUsed,
+  /* Defines that an address is computed by the subexpression. */
+  ExprAddress,
   /* Defines that the size of the data is 1 byte. */
   ExprSize8,
   /* Defines that the size of the data is 2 bytes. */

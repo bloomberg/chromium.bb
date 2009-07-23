@@ -75,6 +75,7 @@ typedef enum {
   InstJp,
   InstJs,
   InstJz,
+  InstLea,
   InstLeave,
   InstMov,
   InstMovsxd,
@@ -615,6 +616,8 @@ typedef enum {
   OpUse,
   /* Operand is set  */
   OpSet,
+  /* Operand is an address (as in LEA). */
+  OpAddress,
   /* Operand is implicit (rather than explicit) */
   OpImplicit,
   /* Operand is an extension of the opcode, rather than a (real) operand.

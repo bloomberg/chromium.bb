@@ -82,6 +82,7 @@ int ExprNodeKindRank(ExprNodeKind kind) {
 static const char* const g_ExprNodeFlagName[ExprNodeFlagEnumSize] = {
   "ExprSet",
   "ExprUsed",
+  "ExprAddress",
   "ExprSize8",
   "ExprSize16",
   "ExprSize32",

@@ -861,6 +861,14 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Ew_Operand:
     case Ev_Operand:
     case Eo_Operand:
+      /* TODO(karl) Should we add limitations that simple registers
+       * not allowed in M_Operand cases?
+       */
+    case M_Operand:
+    case Mb_Operand:
+    case Mw_Operand:
+    case Mv_Operand:
+    case Mo_Operand:
       switch(modrm_mod(state->modrm)) {
         case 0:
           return AppendMod00EffectiveAddress(state, operand);
@@ -1022,6 +1030,9 @@ static ExprNode* AddOperandSetUse(ExprNode* node, Operand* operand) {
   }
   if (operand->flags & OpFlag(OpUse)) {
     node->flags |= ExprFlag(ExprUsed);
+  }
+  if (operand->flags & OpFlag(OpAddress)) {
+    node->flags |= ExprFlag(ExprAddress);
   }
   return node;
 }

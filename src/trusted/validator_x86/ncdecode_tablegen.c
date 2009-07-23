@@ -1245,7 +1245,19 @@ static void DefineOneByteOpcodes() {
                InstMov);
   DefineOperand(E_Operand, OpFlag(OpSet));
 
-  /* 0x8d */
+  DefineOpcode(0x8d, NACLi_386,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstLea);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(M_Operand, OpFlag(OpAddress));
+
+  DefineOpcode(0x8d, NACLi_386,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_o) |
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesRexW),
+               InstLea);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(M_Operand, OpFlag(OpAddress));
 
   /* TODO(karl) what is SReg (first argument) in 0x8e*/
   DefineOpcode(0x8e, NACLi_ILLEGAL,
