@@ -209,6 +209,7 @@
       <include name="IDR_INFOBAR_SSL_WARNING" file="infobar_insecure.png" type="BINDATA" />
       <include name="IDR_INFOBAR_ALT_NAV_URL" file="infobar_didyoumean.png" type="BINDATA" />
       <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="infobar_plugin.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_QUESTION_MARK" file="infobar_questionmark.png" type="BINDATA" />
       <include name="IDR_INFO_BUBBLE_CORNER_TOP_LEFT" file="bubble_corner_tl.png" type="BINDATA" />
       <include name="IDR_INFO_BUBBLE_CORNER_TOP_RIGHT" file="bubble_corner_tr.png" type="BINDATA" />
       <include name="IDR_INFO_BUBBLE_CORNER_BOTTOM_LEFT" file="bubble_corner_bl.png" type="BINDATA" />
