@@ -61,6 +61,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/sandbox_init_wrapper.h"
+#include "ipc/ipc_switches.h"
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"

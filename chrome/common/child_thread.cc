@@ -11,6 +11,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_switches.h"
 #include "webkit/glue/webkit_glue.h"
 
 

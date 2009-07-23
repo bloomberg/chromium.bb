@@ -25,6 +25,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/worker_messages.h"
 #include "ipc/ipc_descriptors.h"
+#include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"
 
 #if defined(OS_WIN)

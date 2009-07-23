@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "ipc/ipc_switches.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/sandbox_policy.h"

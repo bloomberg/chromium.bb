@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
+#include "ipc/ipc_switches.h"
 
 bool DebugFlags::ProcessDebugFlags(CommandLine* command_line,
                                    ChildProcessInfo::ProcessType type,

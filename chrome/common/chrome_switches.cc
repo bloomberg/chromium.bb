@@ -47,10 +47,6 @@ const wchar_t kPluginStartupDialog[]           = L"plugin-startup-dialog";
 //   --plugin-launcher="path\to\purify /Run=yes"
 const wchar_t kPluginLauncher[]                = L"plugin-launcher";
 
-// The value of this switch tells the child process which
-// IPC channel the browser expects to use to communicate with it.
-const wchar_t kProcessChannelID[]              = L"channel";
-
 // The value of this switch tells the app to listen for and broadcast
 // testing-related messages on IPC channel with the given ID.
 const wchar_t kTestingChannelID[]              = L"testing-channel";
@@ -159,11 +155,6 @@ const wchar_t kJavaScriptFlags[]               = L"js-flags";
 // system during first run and cached in the preferences afterwards.  This is a
 // string value, the 2 letter code from ISO 3166-1.
 const wchar_t kCountry[]                       = L"country";
-
-// Will add kDebugOnStart to every child processes. If a value is passed, it
-// will be used as a filter to determine if the child process should have the
-// kDebugOnStart flag passed on or not.
-const wchar_t kDebugChildren[]                 = L"debug-children";
 
 // Will add kWaitForDebugger to every child processes. If a value is passed, it
 // will be used as a filter to determine if the child process should have the
@@ -439,10 +430,6 @@ const wchar_t kUtilityCmdPrefix[]             = L"utility-cmd-prefix";
 
 // Temparary option for new ftp implemetation.
 const wchar_t kNewFtp[]                        = L"new-ftp";
-
-// On POSIX only: use FIFO for IPC channels so that "unrelated" process
-// can connect to a channel, provided it knows its name. For debugging purposes.
-const wchar_t kIPCUseFIFO[]                    = L"ipc-use-fifo";
 
 // Enable Native Web Worker support
 const wchar_t kEnableNativeWebWorkers[]        = L"enable-native-web-workers";

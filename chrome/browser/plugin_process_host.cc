@@ -42,6 +42,7 @@
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_descriptors.h"
+#include "ipc/ipc_switches.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
