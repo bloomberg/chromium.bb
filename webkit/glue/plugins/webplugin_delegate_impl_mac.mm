@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "config.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
 #include <string>

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #import <Carbon/Carbon.h>
 
 #include "webkit/glue/plugins/plugin_lib.h"

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "webkit/glue/plugins/plugin_lib.h"
 
 #include "base/logging.h"
@@ -244,12 +242,14 @@ void PluginLib::Unload() {
     // so that the plugin will have a chance to unwind.
     bool defer_unload = webkit_glue::IsPluginRunningInRendererProcess();
 
+/* TODO(dglazkov): Revisit when re-enabling the JSC build.
 #if USE(JSC)
     // The plugin NPAPI instances may still be around. Delay the
     // NP_Shutdown and FreeLibrary calls at least till the next
     // peek message.
     defer_unload = true;
 #endif
+*/
 
     if (defer_unload) {
       FreePluginLibraryTask* free_library_task =
