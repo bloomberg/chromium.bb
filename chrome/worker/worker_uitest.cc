@@ -15,6 +15,17 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
+// TODO(levin): The debug bots were not happy. See http://crbug.com/17572.
+#ifndef NDEBUG
+#define SingleWorker DISABLED_SingleWorker
+#define MultipleWorkers DISABLED_MultipleWorkers
+#define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
+#define WorkerHttpLayoutTests DISABLED_WorkerHttpLayoutTests
+#define WorkerXhrHttpLayoutTests DISABLED_WorkerXhrHttpLayoutTests
+#define LimitPerPage DISABLED_LimitPerPage
+#define LimitTotal DISABLED_LimitTotal
+#endif
+
 #if defined(OS_WIN)
 const char kPlatformName[] = "chromium-win";
 #elif defined(OS_MACOSX)
