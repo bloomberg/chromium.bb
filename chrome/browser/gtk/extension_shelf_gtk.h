@@ -7,6 +7,8 @@
 
 #include <gtk/gtk.h>
 
+#include <set>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_shelf_model.h"
 #include "chrome/common/notification_observer.h"
@@ -35,16 +37,18 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   void Hide();
 
   // ExtensionShelfModelObserver
-  virtual void ToolstripInsertedAt(ExtensionHost* toolstrip, int index);
-  virtual void ToolstripRemovingAt(ExtensionHost* toolstrip, int index);
-  virtual void ToolstripMoved(ExtensionHost* toolstrip,
+  virtual void ToolstripInsertedAt(ExtensionHost* host, int index);
+  virtual void ToolstripRemovingAt(ExtensionHost* host, int index);
+  virtual void ToolstripMoved(ExtensionHost* host,
                               int from_index,
                               int to_index);
-  virtual void ToolstripChangedAt(ExtensionHost* toolstrip, int index);
+  virtual void ToolstripChangedAt(ExtensionHost* host, int index);
   virtual void ExtensionShelfEmpty();
   virtual void ShelfModelReloaded();
 
  private:
+  class Toolstrip;
+
   // Create the contents of the extension shelf.
   void Init(Profile* profile);
 
@@ -59,6 +63,10 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   // Determines what is our target height and sets it.
   void AdjustHeight();
 
+  void LoadFromModel();
+
+  Toolstrip* ToolstripAtIndex(int index);
+
   // GtkHBox callbacks.
   static gboolean OnHBoxExpose(GtkWidget* widget, GdkEventExpose* event,
                                ExtensionShelfGtk* window);
@@ -72,10 +80,6 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   // Used to position all children.
   GtkWidget* shelf_hbox_;
 
-  // Label for placeholder text.
-  // TODO(phajdan.jr): Remove the placeholder label when we have real contents.
-  GtkWidget* label_;
-
   GtkThemeProvider* theme_provider_;
 
   // Paints the background for our bookmark bar.
@@ -85,6 +89,11 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
 
   // The model representing the toolstrips on the shelf.
   scoped_ptr<ExtensionShelfModel> model_;
+
+  // Set of toolstrip views which are really on the shelf.
+  std::set<Toolstrip*> toolstrips_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionShelfGtk);
 };
 
 #endif  // CHROME_BROWSER_EXTENSION_SHELF_GTK_H_

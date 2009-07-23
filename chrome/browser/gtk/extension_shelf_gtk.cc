@@ -14,6 +14,55 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
+// Preferred height of the ExtensionShelfGtk.
+static const int kShelfHeight = 29;
+
+static const int kToolstripPadding = 2;
+
+class ExtensionShelfGtk::Toolstrip {
+ public:
+  explicit Toolstrip(ExtensionHost* host)
+      : host_(host),
+        extension_name_(host_->extension()->name()) {
+    Init();
+  }
+
+  ~Toolstrip() {
+    label_.Destroy();
+  }
+
+  void AddToolstripToBox(GtkWidget* box);
+  void RemoveToolstripFromBox(GtkWidget* box);
+
+ private:
+  void Init();
+
+  ExtensionHost* host_;
+
+  const std::string extension_name_;
+
+  // Placeholder label with extension's name.
+  // TODO(phajdan.jr): replace the label with rendered extension contents.
+  OwnedWidgetGtk label_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Toolstrip);
+};
+
+void ExtensionShelfGtk::Toolstrip::AddToolstripToBox(GtkWidget* box) {
+  gtk_box_pack_start(GTK_BOX(box), label_.get(), FALSE, FALSE,
+                     kToolstripPadding);
+}
+
+void ExtensionShelfGtk::Toolstrip::RemoveToolstripFromBox(GtkWidget* box) {
+  gtk_container_remove(GTK_CONTAINER(box), label_.get());
+}
+
+void ExtensionShelfGtk::Toolstrip::Init() {
+  label_.Own(gtk_label_new(extension_name_.c_str()));
+  gtk_widget_show_all(label_.get());
+}
+
 ExtensionShelfGtk::ExtensionShelfGtk(Profile* profile, Browser* browser)
     : browser_(browser),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
@@ -41,24 +90,37 @@ void ExtensionShelfGtk::Hide() {
   gtk_widget_hide(event_box_.get());
 }
 
-void ExtensionShelfGtk::ToolstripInsertedAt(ExtensionHost* toolstrip,
+void ExtensionShelfGtk::ToolstripInsertedAt(ExtensionHost* host,
                                             int index) {
+  Toolstrip* toolstrip = new Toolstrip(host);
+  toolstrip->AddToolstripToBox(shelf_hbox_);
+  toolstrips_.insert(toolstrip);
+  model_->SetToolstripDataAt(index, toolstrip);
+
   AdjustHeight();
 }
 
-void ExtensionShelfGtk::ToolstripRemovingAt(ExtensionHost* toolstrip,
+void ExtensionShelfGtk::ToolstripRemovingAt(ExtensionHost* host,
                                             int index) {
+  Toolstrip* toolstrip = ToolstripAtIndex(index);
+  toolstrip->RemoveToolstripFromBox(shelf_hbox_);
+  toolstrips_.erase(toolstrip);
+  model_->SetToolstripDataAt(index, NULL);
+  delete toolstrip;
+
   AdjustHeight();
 }
 
-void ExtensionShelfGtk::ToolstripMoved(ExtensionHost* toolstrip,
+void ExtensionShelfGtk::ToolstripMoved(ExtensionHost* host,
                                        int from_index,
                                        int to_index) {
+  // TODO(phajdan.jr): Implement reordering toolstrips.
   AdjustHeight();
 }
 
-void ExtensionShelfGtk::ToolstripChangedAt(ExtensionHost* toolstrip,
+void ExtensionShelfGtk::ToolstripChangedAt(ExtensionHost* host,
                                            int index) {
+  // TODO(phajdan.jr): Implement changing toolstrips.
   AdjustHeight();
 }
 
@@ -67,7 +129,13 @@ void ExtensionShelfGtk::ExtensionShelfEmpty() {
 }
 
 void ExtensionShelfGtk::ShelfModelReloaded() {
-  AdjustHeight();
+  for (std::set<Toolstrip*>::iterator iter = toolstrips_.begin();
+       iter != toolstrips_.end(); ++iter) {
+    (*iter)->RemoveToolstripFromBox(shelf_hbox_);
+    delete *iter;
+  }
+  toolstrips_.clear();
+  LoadFromModel();
 }
 
 void ExtensionShelfGtk::Init(Profile* profile) {
@@ -79,12 +147,7 @@ void ExtensionShelfGtk::Init(Profile* profile) {
                    G_CALLBACK(&OnHBoxExpose), this);
   gtk_container_add(GTK_CONTAINER(event_box_.get()), shelf_hbox_);
 
-  label_ = gtk_label_new("(extension shelf will appear here)");
-  gtk_box_pack_start(GTK_BOX(shelf_hbox_), label_,
-                     TRUE, TRUE, 0);
-
-  AdjustHeight();
-
+  LoadFromModel();
   model_->AddObserver(this);
 }
 
@@ -108,13 +171,27 @@ void ExtensionShelfGtk::InitBackground() {
 }
 
 void ExtensionShelfGtk::AdjustHeight() {
-  if (model_->empty()) {
+  if (model_->empty() || toolstrips_.empty()) {
+    // It's possible that |model_| is not empty, but |toolstrips_| are empty
+    // when removing the last toolstrip.
+    DCHECK(toolstrips_.empty());
     Hide();
   } else {
-    gtk_widget_set_size_request(event_box_.get(), -1,
-                                event_box_->requisition.height);
+    gtk_widget_set_size_request(event_box_.get(), -1, kShelfHeight);
     Show();
   }
+}
+
+void ExtensionShelfGtk::LoadFromModel() {
+  DCHECK(toolstrips_.empty());
+  int count = model_->count();
+  for (int i = 0; i < count; ++i)
+    ToolstripInsertedAt(model_->ToolstripAt(i), i);
+  AdjustHeight();
+}
+
+ExtensionShelfGtk::Toolstrip* ExtensionShelfGtk::ToolstripAtIndex(int index) {
+  return static_cast<Toolstrip*>(model_->ToolstripDataAt(index));
 }
 
 // static
