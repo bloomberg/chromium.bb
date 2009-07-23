@@ -102,6 +102,10 @@ class Browser : public TabStripModelDelegate,
   void set_maximized_state(MaximizedState state) {
     maximized_state_ = state;
   }
+  // Return true if the initial window bounds have been overridden.
+  bool bounds_overridden() const {
+    return !override_bounds_.IsEmpty();
+  }
 
   // Creates the Browser Window. Prefer to use the static helpers above where
   // possible. This does not show the window. You need to call window()->Show()

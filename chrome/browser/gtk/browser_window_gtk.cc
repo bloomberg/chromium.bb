@@ -1070,10 +1070,19 @@ void BrowserWindowGtk::SetGeometryHints() {
     gtk_window_unmaximize(window_);
 
   gfx::Rect bounds = browser_->GetSavedWindowBounds();
-  // Note that calling SetBounds() here is incorrect, as that sets a forced
-  // position on the window and we intentionally *don't* do that.  We tested
-  // many programs and none of them restored their position on Linux.
-  gtk_window_resize(window_, bounds.width(), bounds.height());
+  // We don't blindly call SetBounds here, that sets a forced position
+  // on the window and we intentionally *don't* do that for normal
+  // windows.  We tested many programs and none of them restored their
+  // position on Linux.
+  //
+  // However, in cases like dropping a tab where the bounds are
+  // specifically set, we do want to position explicitly.
+  if (browser_->bounds_overridden()) {
+    SetBounds(bounds);
+  } else {
+    // Ignore the position but obey the size.
+    gtk_window_resize(window_, bounds.width(), bounds.height());
+  }
 }
 
 void BrowserWindowGtk::ConnectHandlersToSignals() {
