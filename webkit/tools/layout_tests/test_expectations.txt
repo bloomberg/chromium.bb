@@ -2721,7 +2721,6 @@ BUG15478 SKIP : LayoutTests/fast/frames/viewsource-on-image-file.html = FAIL
 BUG15478 SKIP : LayoutTests/platform/qt/fast/events/event-sender-keydown-frame.html = FAIL
 
 // WebKit 45270:45287
-BUG15490 DEBUG LINUX : LayoutTests/fast/overflow/overflow-rtl-inline-scrollbar.html= CRASH
 BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS CRASH
 
 // Flaky for a while on DEBUG
@@ -2975,9 +2974,6 @@ BUG13907 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 BUG17321 LINUX : LayoutTests/fast/loader/non-html-load-event.html = FAIL
 BUG17321 MAC : LayoutTests/fast/loader/non-html-load-event.html = CRASH FAIL
 
-BUG17332 WIN DEBUG : LayoutTests/editing/execCommand/19087.html = CRASH
-BUG17332 WIN : LayoutTests/editing/execCommand/19653-1.html = CRASH FAIL
-
 // Test failures from WebKit merge r46143:46194
 BUG17397 SKIP WIN : LayoutTests/media/audio-no-installed-engines.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
@@ -2988,3 +2984,8 @@ BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 
 // Test failure from WebKit merge 46141:46143
 BUG17326 LINUX WIN : LayoutTests/editing/execCommand/5138441.html = FAIL
+
+// Test failures from WebKit merge r46194:46229
+BUG17497 WIN RELEASE : LayoutTests/media/video-play-pause-exception.html = CRASH
+BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
+BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = CRASH
