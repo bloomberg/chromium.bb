@@ -622,24 +622,6 @@
 }
 {
    # very common in ui tests
-   bug_16089
-   Memcheck:Leak
-   fun:*
-   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
-   ...
-   fun:_ZN3net12HostResolver3Job5StartEv
-}
-{
-   # ditto, but tweaked to fire on bots, more robust against optimizer changes?
-   bug_16089b
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
-   ...
-   fun:_ZN18chrome_browser_net9DnsMaster24PreLockedScheduleLookupsEv
-}
-{
-   # very common in ui tests
    bug_16091
    Memcheck:Leak
    ...
