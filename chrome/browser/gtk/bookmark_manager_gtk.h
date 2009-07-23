@@ -205,6 +205,9 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   static gboolean OnRightTreeViewMotion(GtkWidget* tree_view,
       GdkEventMotion* event, BookmarkManagerGtk* bookmark_manager);
 
+  static gboolean OnTreeViewButtonPress(GtkWidget* tree_view,
+      GdkEventButton* button, BookmarkManagerGtk* bookmark_manager);
+
   static gboolean OnTreeViewButtonRelease(GtkWidget* tree_view,
       GdkEventButton* button, BookmarkManagerGtk* bookmark_manager);
 
@@ -255,6 +258,10 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // This is true while we are propagating a delayed mousedown. It is used to
   // tell the button press handler to ignore the event.
   bool sending_delayed_mousedown_;
+
+  // This is used to avoid recursively calling our right click handler. It is
+  // only true when a right click is already being handled.
+  bool ignore_rightclicks_;
 };
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_MANAGER_GTK_H_

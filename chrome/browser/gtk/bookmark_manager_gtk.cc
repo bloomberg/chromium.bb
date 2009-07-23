@@ -116,6 +116,26 @@ void SetMenuBarStyle() {
       "widget \"*chrome-bm-menubar\" style \"chrome-bm-menubar\"");
 }
 
+bool CursorIsOverSelection(GtkTreeView* tree_view) {
+  bool rv = false;
+  gint x, y;
+  gtk_widget_get_pointer(GTK_WIDGET(tree_view), &x, &y);
+  gint bx, by;
+  gtk_tree_view_convert_widget_to_bin_window_coords(tree_view, x, y, &bx, &by);
+  GtkTreePath* path;
+  if (gtk_tree_view_get_path_at_pos(tree_view, bx, by, &path,
+                                    NULL, NULL, NULL)) {
+    if (gtk_tree_selection_path_is_selected(
+        gtk_tree_view_get_selection(tree_view), path)) {
+      rv = true;
+    }
+
+    gtk_tree_path_free(path);
+  }
+
+  return rv;
+}
+
 }  // namespace
 
 // BookmarkManager -------------------------------------------------------------
@@ -300,7 +320,8 @@ BookmarkManagerGtk::BookmarkManagerGtk(Profile* profile)
       search_factory_(this),
       select_file_dialog_(SelectFileDialog::Create(this)),
       delaying_mousedown_(false),
-      sending_delayed_mousedown_(false) {
+      sending_delayed_mousedown_(false),
+      ignore_rightclicks_(false) {
   InitWidgets();
   gtk_util::SetWindowIcon(GTK_WINDOW(window_));
   g_signal_connect(window_, "destroy",
@@ -416,6 +437,8 @@ GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
                    G_CALLBACK(OnLeftTreeViewRowCollapsed), this);
   g_signal_connect(left_tree_view_, "focus-in-event",
                    G_CALLBACK(OnLeftTreeViewFocusIn), this);
+  g_signal_connect(left_tree_view_, "button-press-event",
+                   G_CALLBACK(OnTreeViewButtonPress), this);
   g_signal_connect(left_tree_view_, "button-release-event",
                    G_CALLBACK(OnTreeViewButtonRelease), this);
 
@@ -484,6 +507,9 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
                    G_CALLBACK(OnRightTreeViewButtonPress), this);
   g_signal_connect(right_tree_view_, "motion-notify-event",
                    G_CALLBACK(OnRightTreeViewMotion), this);
+  // This handler just controls showing the context menu.
+  g_signal_connect(right_tree_view_, "button-press-event",
+                   G_CALLBACK(OnTreeViewButtonPress), this);
   g_signal_connect(right_tree_view_, "button-release-event",
                    G_CALLBACK(OnTreeViewButtonRelease), this);
 
@@ -1150,16 +1176,35 @@ gboolean BookmarkManagerGtk::OnRightTreeViewMotion(GtkWidget* tree_view,
 }
 
 // static
-gboolean BookmarkManagerGtk::OnTreeViewButtonRelease(GtkWidget* tree_view,
+gboolean BookmarkManagerGtk::OnTreeViewButtonPress(GtkWidget* tree_view,
     GdkEventButton* button, BookmarkManagerGtk* bm) {
+  if (button->button != 3)
+    return FALSE;
+
 #if defined(TOOLKIT_GTK)
-  if (button->button == 3)
-    bm->organize_menu_->PopupAsContext(button->time);
+  if (bm->ignore_rightclicks_)
+    return FALSE;
+
+  // If the cursor is not hovering over a selected row, let it propagate
+  // to the default handler so that a selection change may occur.
+  if (!CursorIsOverSelection(GTK_TREE_VIEW(tree_view))) {
+    bm->ignore_rightclicks_ = true;
+    gtk_propagate_event(tree_view, reinterpret_cast<GdkEvent*>(button));
+    bm->ignore_rightclicks_ = false;
+  }
+
+  bm->organize_menu_->PopupAsContext(button->time);
+  return TRUE;
 #else
   // Implement on GTK+views.
   NOTIMPLEMENTED();
+  return FALSE;
 #endif
+}
 
+// static
+gboolean BookmarkManagerGtk::OnTreeViewButtonRelease(GtkWidget* tree_view,
+    GdkEventButton* button, BookmarkManagerGtk* bm) {
   if (bm->delaying_mousedown_ && (tree_view == bm->right_tree_view_))
     bm->SendDelayedMousedown();
 
