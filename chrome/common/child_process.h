@@ -7,23 +7,21 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
 #include "base/waitable_event.h"
-#include "chrome/common/child_thread.h"
+
+class ChildThread;
 
 // Base class for child processes of the browser process (i.e. renderer and
 // plugin host). This is a singleton object for each child process.
 class ChildProcess {
  public:
-  // Child processes should have an object that derives from this class.
-  ChildProcess();
+  // Child processes should have an object that derives from this class.  The
+  // constructor will return once ChildThread has started.
+  ChildProcess(ChildThread* child_thread);
   virtual ~ChildProcess();
 
-  // Getter for the child process' main thread.
-  ChildThread* main_thread() { return main_thread_.get(); }
-  void set_main_thread(ChildThread* thread) { main_thread_.reset(thread); }
-
-  MessageLoop* io_message_loop() { return io_thread_.message_loop(); }
+  // Getter for this process' main thread.
+  ChildThread* child_thread() { return child_thread_.get(); }
 
   // A global event object that is signalled when the main thread's message
   // loop exits.  This gives background threads a way to observe the main
@@ -47,18 +45,14 @@ class ChildProcess {
   static ChildProcess* current() { return child_process_; }
 
  private:
+  // NOTE: make sure that child_thread_ is listed before shutdown_event_, since
+  // it depends on it (indirectly through IPC::SyncChannel).
+  scoped_ptr<ChildThread> child_thread_;
+
   int ref_count_;
 
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
-
-  // The thread that handles IO events.
-  base::Thread io_thread_;
-
-  // NOTE: make sure that main_thread_ is listed after shutdown_event_, since
-  // it depends on it (indirectly through IPC::SyncChannel).  Same for
-  // io_thread_.
-  scoped_ptr<ChildThread> main_thread_;
 
   // The singleton instance for this process.
   static ChildProcess* child_process_;

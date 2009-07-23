@@ -54,7 +54,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/renderer/render_process.h"
-#include "chrome/renderer/render_thread.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_switches.h"
@@ -94,8 +93,7 @@ class RendererMainThread : public base::Thread {
     CoInitialize(NULL);
 #endif
 
-    render_process_ = new RenderProcess();
-    render_process_->set_main_thread(new RenderThread(channel_id_));
+    render_process_ = new RenderProcess(channel_id_);
     // It's a little lame to manually set this flag.  But the single process
     // RendererThread will receive the WM_QUIT.  We don't need to assert on
     // this thread, so just force the flag manually.
@@ -414,14 +412,18 @@ bool BrowserRenderProcessHost::Init() {
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that
     // messages flow between the browser and renderer, this thread is required
-    // to prevent a deadlock in single-process mode.  Since the primordial
-    // thread in the renderer process runs the WebKit code and can sometimes
-    // blocking calls to the UI thread (i.e. this thread), they need to run on
-    // separate threads.
+    // to prevent a deadlock in single-process mode.  When using multiple
+    // processes, the primordial thread in the renderer process has a message
+    // loop which is used for sending messages asynchronously to the io thread
+    // in the browser process.  If we don't create this thread, then the
+    // RenderThread is both responsible for rendering and also for
+    // communicating IO.  This can lead to deadlocks where the RenderThread is
+    // waiting for the IO to complete, while the browsermain is trying to pass
+    // an event to the RenderThread.
     in_process_renderer_.reset(new RendererMainThread(channel_id));
 
     base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_UI;
+    options.message_loop_type = MessageLoop::TYPE_IO;
     in_process_renderer_->StartWithOptions(options);
   } else {
     base::ProcessHandle process = 0;

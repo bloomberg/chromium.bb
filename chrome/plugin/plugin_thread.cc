@@ -6,6 +6,11 @@
 
 #include "build/build_config.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#include <objbase.h>
+#endif
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
@@ -13,6 +18,7 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/plugin/chrome_plugin_host.h"
@@ -26,10 +32,27 @@ static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls(
     base::LINKER_INITIALIZED);
 
 PluginThread::PluginThread()
-    : preloaded_plugin_module_(NULL) {
+    : ChildThread(base::Thread::Options(MessageLoop::TYPE_UI, 0)),
+      preloaded_plugin_module_(NULL) {
   plugin_path_ = FilePath::FromWStringHack(
       CommandLine::ForCurrentProcess()->GetSwitchValue(switches::kPluginPath));
+}
 
+PluginThread::~PluginThread() {
+}
+
+PluginThread* PluginThread::current() {
+  return lazy_tls.Pointer()->Get();
+}
+
+void PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
+  IPC_BEGIN_MESSAGE_MAP(PluginThread, msg)
+    IPC_MESSAGE_HANDLER(PluginProcessMsg_CreateChannel, OnCreateChannel)
+    IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginMessage, OnPluginMessage)
+  IPC_END_MESSAGE_MAP()
+}
+
+void PluginThread::Init() {
   lazy_tls.Pointer()->Set(this);
 #if defined(OS_LINUX)
   {
@@ -52,8 +75,14 @@ PluginThread::PluginThread()
     }
   }
 #endif
+  ChildThread::Init();
 
   PatchNPNFunctions();
+#if defined(OS_WIN)
+  CoInitialize(NULL);
+#endif
+
+  notification_service_.reset(new NotificationService);
 
   // Preload the library to avoid loading, unloading then reloading
   preloaded_plugin_module_ = base::LoadNativeLibrary(plugin_path_);
@@ -71,7 +100,7 @@ PluginThread::PluginThread()
   message_loop()->set_exception_restoration(true);
 }
 
-PluginThread::~PluginThread() {
+void PluginThread::CleanUp() {
   if (preloaded_plugin_module_) {
     base::UnloadNativeLibrary(preloaded_plugin_module_);
     preloaded_plugin_module_ = NULL;
@@ -79,29 +108,26 @@ PluginThread::~PluginThread() {
   PluginChannelBase::CleanupChannels();
   NPAPI::PluginLib::UnloadAllPlugins();
   ChromePluginLib::UnloadAllPlugins();
+  notification_service_.reset();
+#if defined(OS_WIN)
+  CoUninitialize();
+#endif
 
   if (webkit_glue::ShouldForcefullyTerminatePluginProcess())
     base::KillProcess(base::GetCurrentProcessHandle(), 0, /* wait= */ false);
 
+  // Call this last because it deletes the ResourceDispatcher, which is used
+  // in some of the above cleanup.
+  // See http://code.google.com/p/chromium/issues/detail?id=8980
+  ChildThread::CleanUp();
   lazy_tls.Pointer()->Set(NULL);
-}
-
-PluginThread* PluginThread::current() {
-  return lazy_tls.Pointer()->Get();
-}
-
-void PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(PluginThread, msg)
-    IPC_MESSAGE_HANDLER(PluginProcessMsg_CreateChannel, OnCreateChannel)
-    IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginMessage, OnPluginMessage)
-  IPC_END_MESSAGE_MAP()
 }
 
 void PluginThread::OnCreateChannel(
     int process_id,
     bool off_the_record) {
-  scoped_refptr<PluginChannel> channel = PluginChannel::GetPluginChannel(
-      process_id, ChildProcess::current()->io_message_loop());
+  scoped_refptr<PluginChannel> channel =
+      PluginChannel::GetPluginChannel(process_id, owner_loop());
   IPC::ChannelHandle channel_handle;
   if (channel.get()) {
     channel_handle.name = channel->channel_name();

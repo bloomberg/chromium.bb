@@ -29,8 +29,8 @@
 
 // main() routine for running as the plugin process.
 int PluginMain(const MainFunctionParams& parameters) {
-  // The main thread of the plugin services UI.
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+  // The main thread of the plugin services IO.
+  MessageLoopForIO main_message_loop;
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_PluginMain").c_str());
 
@@ -80,8 +80,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   }
 
   {
-    ChildProcess plugin_process;
-    plugin_process.set_main_thread(new PluginThread());
+    ChildProcess plugin_process(new PluginThread());
 #if defined(OS_WIN)
     if (!no_sandbox && target_services)
       target_services->LowerToken();

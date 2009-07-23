@@ -237,9 +237,10 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url, char** argn,
     IPC::AddChannelSocket(channel_handle.name, channel_handle.socket.fd);
 #endif
 
+  MessageLoop* ipc_message_loop = RenderThread::current()->owner_loop();
   scoped_refptr<PluginChannelHost> channel_host =
-      PluginChannelHost::GetPluginChannelHost(
-          channel_handle.name, ChildProcess::current()->io_message_loop());
+      PluginChannelHost::GetPluginChannelHost(channel_handle.name,
+                                              ipc_message_loop);
   if (!channel_host.get())
     return false;
 
