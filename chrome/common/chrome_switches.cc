@@ -547,4 +547,7 @@ const wchar_t kEnableSessionStorage[] = L"enable-session-storage";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const wchar_t kAllowSandboxDebugging[] = L"allow-sandbox-debugging";
 
+// Triggers a pletora of diagnostic modes.
+const wchar_t kDiagnostics[] = L"diagnostics";
+
 }  // namespace switches
