@@ -106,6 +106,11 @@ void registerExtension(v8::Extension* extension,
     WebCore::V8Proxy::registerExtension(extension, schemeRestriction);
 }
 
+void flushConsoleMessages()
+{
+    WebCore::V8Proxy::processConsoleMessages();
+}
+
 void enableMediaPlayer()
 {
 #if ENABLE(VIDEO)

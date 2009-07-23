@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(dumi): expose V8Proxy::processConsoleMessages() through
-// a function in WebKit.h and remove the next 2 includes
-// http://code.google.com/p/chromium/issues/detail?id=17300
-#include "config.h"
-#include "V8Proxy.h"
 #undef LOG
 
 #include "webkit/tools/test_shell/test_shell.h"
@@ -37,6 +32,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/api/public/WebRect.h"
+#include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
@@ -188,7 +184,7 @@ void TestShell::Dump(TestShell* shell) {
   if ((shell == NULL) || ((params = shell->test_params()) == NULL))
     return;
 
-  WebCore::V8Proxy::processConsoleMessages();
+  WebKit::flushConsoleMessages();
   // Echo the url in the output so we know we're not getting out of sync.
   printf("#URL:%s\n", params->test_url.c_str());
 

@@ -77,6 +77,9 @@ namespace WebKit {
     WEBKIT_API void registerExtension(v8::Extension*,
                                       const WebString& schemeRestriction);
 
+    // Process any pending JavaScript console messages.
+    WEBKIT_API void flushConsoleMessages();
+
     // Enables HTML5 media support.
     WEBKIT_API void enableMediaPlayer();
 
