@@ -1052,6 +1052,9 @@ devtools.DebuggerAgent.formatObjectReference_ = function(v) {
   } else if (v.type == 'function') {
     var f = function() {};
     f.ref = v.ref;
+    if (v.source) {
+      f.toString = function() { return v.source; };
+    }
     return f;
   } else if (goog.isDef(v.value)) {
     return v.value;
