@@ -28,6 +28,9 @@ class TabGtk : public TabRendererGtk,
     // Returns true if the specified Tab is selected.
     virtual bool IsTabSelected(const TabGtk* tab) const = 0;
 
+    // Returns true if the specified Tab is detached.
+    virtual bool IsTabDetached(const TabGtk* tab) const = 0;
+
     // Selects the specified Tab.
     virtual void SelectTab(TabGtk* tab) = 0;
 
@@ -72,7 +75,7 @@ class TabGtk : public TabRendererGtk,
     virtual ThemeProvider* GetThemeProvider() = 0;
   };
 
-  TabGtk(TabDelegate* delegate);
+  explicit TabGtk(TabDelegate* delegate);
   virtual ~TabGtk();
 
   // Access the delegate.

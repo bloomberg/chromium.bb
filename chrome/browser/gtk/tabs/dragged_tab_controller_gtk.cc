@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/tabs/dragged_tab_controller_gtk.h"
 
+#include <algorithm>
+
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/tabs/dragged_tab_gtk.h"
@@ -100,8 +102,14 @@ TabGtk* DraggedTabControllerGtk::GetDragSourceTabForContents(
   return NULL;
 }
 
-bool DraggedTabControllerGtk::IsDragSourceTab(TabGtk* tab) const {
+bool DraggedTabControllerGtk::IsDragSourceTab(const TabGtk* tab) const {
   return source_tab_ == tab;
+}
+
+bool DraggedTabControllerGtk::IsTabDetached(const TabGtk* tab) const {
+  if (!IsDragSourceTab(tab))
+    return false;
+  return (attached_tabstrip_ == NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

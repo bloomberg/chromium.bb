@@ -248,6 +248,15 @@ void TabGtk::DidProcessEvent(GdkEvent* event) {
     case GDK_MOTION_NOTIFY:
       delegate_->ContinueDrag(NULL);
       break;
+    case GDK_GRAB_BROKEN:
+      // If the user drags the mouse away from the dragged tab before the widget
+      // is created, gtk loses the grab used for the drag and we're stuck in a
+      // limbo where the drag is still active, but we don't get any
+      // motion-notify-event signals.  Adding the grab back doesn't keep the
+      // drag alive, but it does get us out of this bind by finishing the drag.
+      if (delegate_->IsTabDetached(this))
+        gtk_grab_add(widget());
+      break;
     default:
       break;
   }

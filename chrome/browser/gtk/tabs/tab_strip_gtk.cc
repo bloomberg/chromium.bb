@@ -994,6 +994,12 @@ bool TabStripGtk::IsTabSelected(const TabGtk* tab) const {
   return GetIndexOfTab(tab) == model_->selected_index();
 }
 
+bool TabStripGtk::IsTabDetached(const TabGtk* tab) const {
+  if (drag_controller_.get())
+    return drag_controller_->IsTabDetached(tab);
+  return false;
+}
+
 void TabStripGtk::GetCurrentTabWidths(double* unselected_width,
                                       double* selected_width) const {
   *unselected_width = current_unselected_width_;

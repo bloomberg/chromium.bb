@@ -48,7 +48,10 @@ class DraggedTabControllerGtk : public NotificationObserver,
   TabGtk* GetDragSourceTabForContents(TabContents* contents) const;
 
   // Returns true if the specified tab matches the tab being dragged.
-  bool IsDragSourceTab(TabGtk* tab) const;
+  bool IsDragSourceTab(const TabGtk* tab) const;
+
+  // Returns true if the specified tab is detached.
+  bool IsTabDetached(const TabGtk* tab) const;
 
  private:
   // Enumeration of the ways a drag session can end.
