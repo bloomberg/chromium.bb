@@ -51,7 +51,7 @@ sh autogen.sh
 ./configure --prefix=/usr/local/valgrind-20090715
 make -j4
 
-if ./vg-in-place /bin/true
+if ./vg-in-place true
 then
   echo built valgrind passes smoke test, good
 else
