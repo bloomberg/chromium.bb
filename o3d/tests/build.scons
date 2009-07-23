@@ -191,8 +191,7 @@ tests = [
     'core/cross/matrix4_composition_test.cc',
     'core/cross/matrix4_scale_test.cc',
     'core/cross/matrix4_translation_test.cc',
-# Test disabled, pending investigation into NaCl API.
-#   'core/cross/message_queue_test.cc',
+    'core/cross/message_queue_test.cc',
     'core/cross/object_base_test.cc',
     'core/cross/pack_test.cc',
     'core/cross/param_array_test.cc',

@@ -79,6 +79,13 @@ class ConnectedClient {
                             void *address,
                             int32 size);
 
+  // Unregisters a client-allocated shared memory segment, referenced by ID.
+  // Parameters:
+  //  id - the unique id of the shared memory buffer.
+  // Returns:
+  //  true if the ID was valid, false otherwise
+  bool UnregisterSharedMemory(int id);
+
   // Returns the socket handle the client uses to talk to the server.
   nacl::Handle client_handle() { return client_handle_; }
 
@@ -101,9 +108,13 @@ class MessageQueue {
  public:
   enum MessageId {
     INVALID_ID = 0,
-    HELLO,                   // Handshake between the client and the server
-    ALLOCATE_SHARED_MEMORY,  // Request to allocate a shared memory buffer
-    UPDATE_TEXTURE2D,        // Request to update a 2D texture bitmap
+    HELLO,                     // Handshake between the client and the server
+    ALLOCATE_SHARED_MEMORY,    // Request to allocate a shared memory buffer
+    UPDATE_TEXTURE2D,          // Request to update a 2D texture bitmap
+    REGISTER_SHARED_MEMORY,    // Register a client-allocated shared memory
+                               // buffer, returning a shared memory ID
+    UNREGISTER_SHARED_MEMORY,  // Unregister a client-allocated shared
+                               // memory ID
     MAX_NUM_IDS,
 
     ID_FORCE_DWORD = 0x7fffffff  // Forces a 32-bit size enum
@@ -161,7 +172,7 @@ class MessageQueue {
 
   // Processes a request by a connected client to allocate a shared memory
   // buffer.  The size of the requested buffer is determined from the data
-  // passed in the message.  Once the memory is allocated, a message containting
+  // passed in the message.  Once the memory is allocated, a message containing
   // the shared memory handle is sent back to the client.
   // Parameters:
   //   client - pointer to the ConnectedClient the request came from.
@@ -196,6 +207,49 @@ class MessageQueue {
                               MessageId message_id,
                               nacl::MessageHeader* header,
                               nacl::Handle* handles);
+
+  // Processes a request by a connected client to register a
+  // client-allocated shared memory buffer with O3D.  The size of the
+  // buffer is determined from the data passed in the message.  Once
+  // the shared memory buffer has been mapped and registered, a
+  // message containing the shared memory ID is sent back to the
+  // client. This ID can be used to update the contents of a Texture2D
+  // object.
+  // Parameters:
+  //   client - pointer to the ConnectedClient the request came from.
+  //   message_length - length of the received message in bytes.
+  //   message_id - id of the request received by the message
+  //   header - message header containing information about the received
+  //            message.
+  //   handles - the array of handles referenced by the header.
+  // Returns:
+  //   true if the message is properly formed and is succesfully handled by the
+  //   Client.
+  bool ProcessRegisterSharedMemory(ConnectedClient* client,
+                                   int message_length,
+                                   MessageId message_id,
+                                   nacl::MessageHeader* header,
+                                   nacl::Handle* handles);
+
+  // Processes a request by a connected client to unregister a shared
+  // memory buffer previously registered with O3D. The shared memory
+  // buffer is referenced by the ID returned from
+  // RegisterSharedMemory.
+  // Parameters:
+  //   client - pointer to the ConnectedClient the request came from.
+  //   message_length - length of the received message in bytes.
+  //   message_id - id of the request received by the message
+  //   header - message header containing information about the received
+  //            message.
+  //   handles - the array of handles referenced by the header.
+  // Returns:
+  //   true if the message is properly formed and is succesfully handled by the
+  //   Client.
+  bool ProcessUnregisterSharedMemory(ConnectedClient* client,
+                                     int message_length,
+                                     MessageId message_id,
+                                     nacl::MessageHeader* header,
+                                     nacl::Handle* handles);
 
   // Sends a true of false (1 or 0) message using the given socket handle.
   // Parameters:

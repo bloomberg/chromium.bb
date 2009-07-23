@@ -65,6 +65,7 @@ if env.Bit('windows'):
   env.Append(CCFLAGS=['/FIstdlib.h'])
   chrome_base_inputs += [
     'base_paths_win',
+    'condition_variable_win',
     'debug_util_win',
     'file_util_win',
     'lock_impl_win',
@@ -103,6 +104,7 @@ if env.Bit('windows'):
 
 chrome_base_inputs_posix = [
   'atomicops_internals_x86_gcc',
+  'condition_variable_posix',
   'debug_util_posix',
   'file_util_posix',
   'lock_impl_posix',

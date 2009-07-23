@@ -98,6 +98,22 @@ void ConnectedClient::RegisterSharedMemory(int32 buffer_id,
   shared_memory_array_.push_back(shared_mem);
 }
 
+// Unregisters a shared memory buffer for a given client-allocated
+// memory region, unmapping and closing it in the process.
+bool ConnectedClient::UnregisterSharedMemory(int32 buffer_id) {
+  std::vector<SharedMemoryInfo>::iterator iter;
+  for (iter = shared_memory_array_.begin(); iter < shared_memory_array_.end();
+       ++iter) {
+    if (iter->buffer_id_ == buffer_id) {
+      nacl::Unmap(iter->mapped_address_, iter->size_);
+      nacl::Close(iter->shared_memory_handle_);
+      shared_memory_array_.erase(iter);
+      return true;
+    }
+  }
+  return false;
+}
+
 // Returns the SharedMemoryInfo corresponding to the given shared
 // memory buffer id.  The buffer must first be created by the
 // MessageQueue on behalf of this ConnectedClient.
@@ -190,8 +206,6 @@ bool MessageQueue::CheckForNewMessages() {
   nacl::IOVec io_vec[1];
   io_vec[0].base = message_buffer;
   io_vec[0].length = kBufferLength;
-  // Clear out the buffer.
-  memset(message_buffer, 0, kBufferLength);
 
   nacl::MessageHeader header;
   header.iov = io_vec;
@@ -226,6 +240,10 @@ bool MessageQueue::CheckForNewMessages() {
   // messages.
   std::vector<ConnectedClient*>::iterator iter;
   for (iter = connected_clients_.begin(); iter < connected_clients_.end();) {
+    // Must reset the available buffer length and number of handles each time
+    // so NaCl's IMC knows how much space is available for reading
+    io_vec[0].length = kBufferLength;
+    header.handle_count = kMaxNumHandles;
     if (ReceiveMessageFromSocket((*iter)->client_handle(),
                                  &header,
                                  &message_id,
@@ -337,6 +355,18 @@ bool MessageQueue::ProcessClientRequest(ConnectedClient* client,
                                     message_id,
                                     header,
                                     handles);
+    case REGISTER_SHARED_MEMORY:
+      return ProcessRegisterSharedMemory(client,
+                                         message_length,
+                                         message_id,
+                                         header,
+                                         handles);
+    case UNREGISTER_SHARED_MEMORY:
+      return ProcessUnregisterSharedMemory(client,
+                                           message_length,
+                                           message_id,
+                                           header,
+                                           handles);
     default:
       LOG(ERROR) << "Unrecognized message id " << message_id;
       return false;
@@ -450,7 +480,7 @@ bool MessageQueue::ProcessAllocateSharedMemory(ConnectedClient* client,
                                   shared_memory,
                                   0);
 
-  if (shared_region == NULL) {
+  if (shared_region == nacl::kMapFailed) {
     LOG_IMC_ERROR("Failed to map shared memory");
     nacl::Close(shared_memory);
     return false;
@@ -578,6 +608,113 @@ bool MessageQueue::ProcessUpdateTexture2D(ConnectedClient* client,
 
   SendBooleanResponse(client->client_handle(), true);
   return true;
+}
+
+// Processes a request to register a client-allocated shared memory
+// buffer on behalf of a connected client.  Parses the arguments of
+// the message to determine how much space is being passed. It maps
+// the shared memory buffer into the local address space and sends a
+// message back to the client with the newly allocated shared memory
+// ID.
+bool MessageQueue::ProcessRegisterSharedMemory(ConnectedClient* client,
+                                               int message_length,
+                                               MessageId message_id,
+                                               nacl::MessageHeader* header,
+                                               nacl::Handle* handles) {
+  int32 mem_size = 0;
+  int expected_message_length = sizeof(message_id) + sizeof(mem_size);
+
+  if (message_length != expected_message_length ||
+      header->iov_length != 1 ||
+      header->handle_count != 1) {
+    LOG(ERROR) << "Malformed message for REGISTER_SHARED_MEMORY";
+    return false;
+  }
+
+  char* message_buffer = static_cast<char*>(header->iov[0].base);
+  message_buffer += sizeof(message_id);
+  mem_size = *(reinterpret_cast<int32*>(message_buffer));
+  const int32 kMaxSharedMemSize = 1024 * 1024 * 100;   // 100MB
+  if (mem_size <= 0 || mem_size > kMaxSharedMemSize) {
+    LOG(ERROR) << "Invalid mem size sent: " << mem_size
+               << "(max size = " << kMaxSharedMemSize << ")";
+    return false;
+  }
+
+  // Fetch the handle to the preexisting shared memory object.
+  nacl::Handle shared_memory = header->handles[0];
+  if (shared_memory == nacl::kInvalidHandle) {
+    LOG_IMC_ERROR("Invalid shared memory object registered");
+    return false;
+  }
+
+  // Map it in local address space.
+  void* shared_region = nacl::Map(0,
+                                  mem_size,
+                                  nacl::kProtRead | nacl::kProtWrite,
+                                  nacl::kMapShared,
+                                  shared_memory,
+                                  0);
+  if (shared_region == nacl::kMapFailed) {
+    LOG_IMC_ERROR("Failed to map shared memory");
+    nacl::Close(shared_memory);
+    return false;
+  }
+
+  // Create a unique id for the shared memory buffer.
+  int32 buffer_id = next_shared_memory_id_++;
+
+  // Send the buffer id back to the client.
+  nacl::MessageHeader response_header;
+  nacl::IOVec id_vec;
+  id_vec.base = &buffer_id;
+  id_vec.length = sizeof(buffer_id);
+
+  response_header.iov = &id_vec;
+  response_header.iov_length = 1;
+  response_header.handles = NULL;
+  response_header.handle_count = 0;
+  int result = nacl::SendDatagram(client->client_handle(), &response_header, 0);
+
+  if (result != sizeof(buffer_id)) {
+    LOG_IMC_ERROR("Failed to send shared memory ID back to the client");
+    nacl::Unmap(shared_region, mem_size);
+    nacl::Close(shared_memory);
+    return false;
+  }
+
+  // Register the newly mapped shared memory with the connected client.
+  client->RegisterSharedMemory(buffer_id,
+                               shared_memory,
+                               shared_region,
+                               mem_size);
+
+  return true;
+}
+
+// Processes a request to unregister a client-allocated shared memory
+// buffer, referenced by ID.
+bool MessageQueue::ProcessUnregisterSharedMemory(ConnectedClient* client,
+                                                 int message_length,
+                                                 MessageId message_id,
+                                                 nacl::MessageHeader* header,
+                                                 nacl::Handle* handles) {
+  int32 buffer_id = 0;
+  int expected_message_length = sizeof(message_id) + sizeof(buffer_id);
+
+  if (message_length != expected_message_length ||
+      header->iov_length != 1 ||
+      header->handle_count != 0) {
+    LOG(ERROR) << "Malformed message for UNREGISTER_SHARED_MEMORY";
+    return false;
+  }
+
+  char* message_buffer = static_cast<char*>(header->iov[0].base);
+  message_buffer += sizeof(message_id);
+  buffer_id = *(reinterpret_cast<int32*>(message_buffer));
+
+  bool res = client->UnregisterSharedMemory(buffer_id);
+  SendBooleanResponse(client->client_handle(), res);
 }
 
 

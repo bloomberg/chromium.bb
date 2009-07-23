@@ -375,8 +375,7 @@
           'cross/matrix4_composition_test.cc',
           'cross/matrix4_scale_test.cc',
           'cross/matrix4_translation_test.cc',
-  # TODO(gspencer): fix this test so it can be re-enabled.
-  #       'cross/message_queue_test.cc',
+          'cross/message_queue_test.cc',
           'cross/object_base_test.cc',
           'cross/pack_test.cc',
           'cross/param_array_test.cc',
