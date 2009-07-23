@@ -53,16 +53,16 @@ using file_util::CloseFile;
 using file_util::GetFileSize;
 
 namespace {
-static const double kEpsilon = 0.0001;
-static const double kPi = 3.14159265358979;
+static const float kEpsilon = 0.0001f;
+static const float kPi = 3.14159265358979f;
 static const int kFilterSize = 3;
 
-// utility function, round double numbers into 0 to 255 integers.
-uint8 Safe8Round(double f) {
-  f += 0.5;
-  if (f < 0.0) {
+// utility function, round float numbers into 0 to 255 integers.
+uint8 Safe8Round(float f) {
+  f += 0.5f;
+  if (f < 0.0f) {
     return 0;
-  } else if (!(f < 255.0)) {
+  } else if (!(f < 255.0f)) {
     return 255;
   }
   return static_cast<uint8>(f);
@@ -404,7 +404,7 @@ void Bitmap::LanczosResize1D(const uint8* src, int src_x, int src_y,
   // the same.
   for (int i = 0; i < abs(nwidth); ++i) {
     // center is the corresponding coordinate of i in original img.
-    float center = (i + 0.5) * scale;
+    float center = (i + 0.5f) * scale;
     // boundary of weight array in original img.
     int xmin = static_cast<int>(floor(center - support));
     if (xmin < 0) xmin = 0;
@@ -415,14 +415,14 @@ void Bitmap::LanczosResize1D(const uint8* src, int src_x, int src_y,
     float wsum = 0.0;
     for (int ox = xmin; ox <= xmax; ++ox) {
       float wtemp;
-      float dx = ox + 0.5 - center;
+      float dx = ox + 0.5f - center;
       // lanczos filter
       if (dx <= -kFilterSize || dx >= kFilterSize) {
         wtemp = 0.0;
       } else if (dx == 0.0) {
-        wtemp = 1.0;
+        wtemp = 1.0f;
       } else {
-        wtemp = kFilterSize * sin(kPi * dx) * sin(kPi / kFilterSize * dx) /
+        wtemp = kFilterSize * sinf(kPi * dx) * sinf(kPi / kFilterSize * dx) /
                 (kPi * kPi * dx * dx);
       }
 
