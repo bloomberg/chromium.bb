@@ -632,6 +632,69 @@ ExprNodeVector[10] = {
   { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
   { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
 };
+0000000000000000: 66 a1 88 77 66 55 44 33 22 11                mov %ax, [0x1122334455667788]
+  { 0xa1,
+    NACLi_386,
+    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    InstMov,
+    2, {
+      { RegREAX, OpFlag(OpSet) },
+      { O_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant64[2] , 0x1122334455667788, EpxrUnsignedHex },
+  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
+  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+};
+0000000000000000: a2 88 77 66 55 44 33 22 11                   mov [0x1122334455667788], %al
+  { 0xa2,
+    NACLi_386,
+    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_b),
+    InstMov,
+    2, {
+      { O_Operand, OpFlag(OpSet) },
+      { RegAL, OpFlag(OpUse) },
+  } };
+ExprNodeVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant64[2] , 0x1122334455667788, EpxrUnsignedHex },
+  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
+  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
+};
+0000000000000000: 66 a3 88 77 66 55 44 33 22 11                mov [0x1122334455667788], %ax
+  { 0xa3,
+    NACLi_386,
+    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    InstMov,
+    2, {
+      { O_Operand, OpFlag(OpSet) },
+      { RegREAX, OpFlag(OpUse) },
+  } };
+ExprNodeVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant64[2] , 0x1122334455667788, EpxrUnsignedHex },
+  { ExprConstant[0] , 0x55667788, EpxrUnsignedHex },
+  { ExprConstant[0] , 0x11223344, EpxrUnsignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
+};
 0000000000000000: 48 b8 88 77 66 55 44 33 22 11                mov %rax, 0x1122334455667788
   { 0xb8,
     NACLi_386,

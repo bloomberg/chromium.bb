@@ -1297,6 +1297,40 @@ static void DefineOneByteOpcodes() {
   DefineOperand(RegAL, OpFlag(OpSet));
   DefineOperand(O_Operand, OpFlag(OpUse));
 
+  DefineOpcode(0xa1, NACLi_386,
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeHasImmed_Addr),
+               InstMov);
+  DefineOperand(RegREAX, OpFlag(OpSet));
+  DefineOperand(O_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xa1, NACLi_386,
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_Addr) |
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesRexW),
+               InstMov);
+  DefineOperand(RegRAX, OpFlag(OpSet));
+  DefineOperand(O_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xa2, NACLi_386,
+               InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed_Addr),
+               InstMov);
+  DefineOperand(O_Operand, OpFlag(OpSet));
+  DefineOperand(RegAL, OpFlag(OpUse));
+
+  DefineOpcode(0xa3, NACLi_386,
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeHasImmed_Addr),
+               InstMov);
+  DefineOperand(O_Operand, OpFlag(OpSet));
+  DefineOperand(RegREAX, OpFlag(OpUse));
+
+  DefineOpcode(0xa3, NACLi_386,
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_Addr) |
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesRexW),
+               InstMov);
+  DefineOperand(O_Operand, OpFlag(OpSet));
+  DefineOperand(RegRAX, OpFlag(OpUse));
+
   DefineOpcode(0xA8, NACLi_386,
                InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed),
                InstTest);
