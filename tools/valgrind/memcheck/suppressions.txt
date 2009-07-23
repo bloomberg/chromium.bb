@@ -189,6 +189,16 @@
    fun:sqlite3OsOpen
 }
 {
+   bug_17576
+   Memcheck:Leak
+   ...
+   fun:findLockInfo
+   ...
+   fun:unixOpen
+   ...
+   fun:openDatabase
+}
+{
    libevent does not provide a way to clean up unused oneshot timers at exit
    Memcheck:Leak
    fun:calloc
