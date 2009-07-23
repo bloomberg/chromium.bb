@@ -435,9 +435,9 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     // Check browser usage inactivity by the age of the last-write time of the
     // chrome user data directory. Ninety days is our trigger.
     std::wstring user_data_dir = installer::GetChromeUserDataPath();
-    const int kNinetyDays = 90 * 24;
+    const int kSixtyDays = 60 * 24;
     int dir_age_hours = GetDirectoryWriteAgeInHours(user_data_dir.c_str());
-    if (dir_age_hours < kNinetyDays)
+    if (dir_age_hours < kSixtyDays)
       return;
     // At this point the user qualifies for the experiment, however we need to
     // tag a control group, which is at random 50% of the population.
