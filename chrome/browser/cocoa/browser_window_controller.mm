@@ -920,6 +920,9 @@ willPositionSheet:(NSWindow*)sheet
 - (void)installIncognitoBadge {
   if (!browser_->profile()->IsOffTheRecord())
     return;
+  // Don't install if we're not a normal browser (ie, a popup).
+  if (![self isNormalWindow])
+    return;
 
   static const float kOffset = 4;
   NSString* incognitoPath = [mac_util::MainAppBundle()
