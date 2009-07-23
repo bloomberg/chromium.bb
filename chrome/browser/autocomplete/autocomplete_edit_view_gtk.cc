@@ -86,7 +86,10 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       popup_window_mode_(false),  // TODO(deanm)
       scheme_security_level_(ToolbarModel::NORMAL),
       selection_saved_(false),
-      mark_set_handler_id_(0) {
+      mark_set_handler_id_(0),
+      button_1_pressed_(false),
+      text_selected_during_click_(false),
+      text_view_focused_before_button_press_(false) {
   model_->set_popup_model(popup_view_->GetModel());
 }
 
@@ -163,6 +166,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleKeyReleaseThunk), this);
   g_signal_connect(text_view_, "button-press-event",
                    G_CALLBACK(&HandleViewButtonPressThunk), this);
+  g_signal_connect(text_view_, "button-release-event",
+                   G_CALLBACK(&HandleViewButtonReleaseThunk), this);
   g_signal_connect(text_view_, "focus-in-event",
                    G_CALLBACK(&HandleViewFocusInThunk), this);
   g_signal_connect(text_view_, "focus-out-event",
@@ -496,39 +501,42 @@ gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
 }
 
 gboolean AutocompleteEditViewGtk::HandleViewButtonPress(GdkEventButton* event) {
-  // When the GtkTextView is clicked, it will call gtk_widget_grab_focus.
-  // I believe this causes the focus-in event to be fired before the main
-  // clicked handling code.  If we were to try to set the selection from
-  // the focus-in event, it's just going to be undone by the click handler.
-  // This is a bit ugly.  We shim in to get the click before the GtkTextView,
-  // then if we don't have focus, we (hopefully safely) assume that the click
-  // will cause us to become focused.  We call GtkTextView's default handler
-  // and then stop propagation.  This allows us to run our code after the
-  // default handler, even if that handler stopped propagation.
-  if (GTK_WIDGET_HAS_FOCUS(text_view_))
-    return FALSE;  // Continue to propagate into the GtkTextView handler.
+  if (event->button == 1) {
+    // When the first button is pressed, track some stuff that will help us
+    // determine whether we should select all of the text when the button is
+    // released.
+    button_1_pressed_ = true;
+    text_view_focused_before_button_press_ = GTK_WIDGET_HAS_FOCUS(text_view_);
+    text_selected_during_click_ = false;
+  }
+  return FALSE;
+}
 
-  // We only want to select everything on left-click; otherwise we'll end up
-  // stealing the PRIMARY selection when the user middle-clicks to paste it
-  // here.
+gboolean AutocompleteEditViewGtk::HandleViewButtonRelease(
+    GdkEventButton* event) {
   if (event->button != 1)
     return FALSE;
+
+  button_1_pressed_ = false;
 
   // Call the GtkTextView default handler, ignoring the fact that it will
   // likely have told us to stop propagating.  We want to handle selection.
   GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(text_view_);
-  klass->button_press_event(text_view_, event);
+  klass->button_release_event(text_view_, event);
 
-  // Select the full input and update the PRIMARY selection when we get focus.
-  SelectAllInternal(false, true);
+  if (!text_view_focused_before_button_press_ && !text_selected_during_click_) {
+    // If this was a focusing click and the user didn't drag to highlight any
+    // text, select the full input and update the PRIMARY selection.
+    SelectAllInternal(false, true);
 
-  // So we told the buffer where the cursor should be, but make sure to tell
-  // the view so it can scroll it to be visible if needed.
-  // NOTE: This function doesn't seem to like a count of 0, looking at the
-  // code it will skip an important loop.  Use -1 to achieve the same.
-  GtkTextIter start, end;
-  gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
-  gtk_text_view_move_visually(GTK_TEXT_VIEW(text_view_), &start, -1);
+    // So we told the buffer where the cursor should be, but make sure to tell
+    // the view so it can scroll it to be visible if needed.
+    // NOTE: This function doesn't seem to like a count of 0, looking at the
+    // code it will skip an important loop.  Use -1 to achieve the same.
+    GtkTextIter start, end;
+    gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
+    gtk_text_view_move_visually(GTK_TEXT_VIEW(text_view_), &start, -1);
+  }
 
   return TRUE;  // Don't continue, we called the default handler already.
 }
@@ -639,6 +647,13 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
       selection_saved_ = false;
     }
     g_free(text);
+  }
+
+  // If the user just selected some text with the mouse (or at least while the
+  // mouse button was down), make sure that we won't blow their selection away
+  // later by selecting all of the text when the button is released.
+  if (button_1_pressed_ && !no_text_selected) {
+    text_selected_during_click_ = true;
   }
 
   // If we have some previously-selected text but it's no longer highlighted
