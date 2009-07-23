@@ -14,6 +14,8 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -40,7 +42,6 @@ class TestUtilityProcessHostClient : public UtilityProcessHost::Client {
 
   virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest) {
     success_ = true;
-    message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
   }
 
   virtual void OnUnpackExtensionFailed(const std::string& error_message) {
@@ -90,6 +91,39 @@ class TestUtilityProcessHost : public UtilityProcessHost {
  private:
 };
 
+class ProcessClosedObserver : public NotificationObserver {
+ public:
+  ProcessClosedObserver(MessageLoop* message_loop)
+      : message_loop_(message_loop) {
+    registrar_.Add(this, NotificationType::CHILD_PROCESS_HOST_DISCONNECTED,
+                   NotificationService::AllSources());
+  }
+
+  void RunUntilClose(int child_pid) {
+    child_pid_ = child_pid;
+    observed_ = false;
+    message_loop_->Run();
+    DCHECK(observed_);
+  }
+
+ private:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);
+    ChildProcessInfo* info = Details<ChildProcessInfo>(details).ptr();
+    if (info->GetProcessId() == child_pid_) {
+      observed_ = true;
+      message_loop_->Quit();
+    }
+  }
+
+  MessageLoop* message_loop_;
+  NotificationRegistrar registrar_;
+  int child_pid_;
+  bool observed_;
+};
+
 TEST_F(UtilityProcessHostTest, ExtensionUnpacker) {
   // Copy the test extension into a temp dir and install from the temp dir.
   FilePath extension_file;
@@ -109,9 +143,10 @@ TEST_F(UtilityProcessHostTest, ExtensionUnpacker) {
   TestUtilityProcessHost* process_host =
       new TestUtilityProcessHost(client.get(), &message_loop_, &rdh);
   // process_host will delete itself when it's done.
+  ProcessClosedObserver observer(&message_loop_);
   process_host->StartExtensionUnpacker(
       temp_extension_dir.AppendASCII("theme.crx"));
-  message_loop_.Run();
+  observer.RunUntilClose(process_host->GetProcessId());
   EXPECT_TRUE(client->success());
 
   // Clean up the temp dir.
