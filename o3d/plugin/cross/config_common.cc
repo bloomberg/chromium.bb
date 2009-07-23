@@ -48,7 +48,7 @@
 #include "plugin/cross/config.h"
 #include "plugin/cross/o3d_glue.h"
 #include "core/cross/error.h"
-#include "third_party/nixysa/files/static_glue/npapi/common.h"
+#include "third_party/nixysa/static_glue/npapi/common.h"
 
 using glue::_o3d::GetServiceLocator;
 

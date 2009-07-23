@@ -63,6 +63,21 @@
           'cross/targz_processor_test.cc',
         ],
       },
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/archive_files',
+          'files': [
+            "../tests/archive_files/BumpReflect.fx",
+            "../tests/archive_files/bogus.tar.gz",
+            "../tests/archive_files/keyboard.jpg",
+            "../tests/archive_files/keyboard.jpg.gz",
+            "../tests/archive_files/perc.aif",
+            "../tests/archive_files/test1.tar",
+            "../tests/archive_files/test1.tar.gz",
+            "../tests/archive_files/test2.tar.gz",
+          ],
+        },
+      ],
     },
   ],
 }

@@ -66,7 +66,7 @@
 #include "core/cross/profiler.h"
 #include "plugin/cross/np_v8_bridge.h"
 #include "client_glue.h"
-#include "third_party/nixysa/files/static_glue/npapi/common.h"
+#include "third_party/nixysa/static_glue/npapi/common.h"
 
 namespace o3d {
 class Client;

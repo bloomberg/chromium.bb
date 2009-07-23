@@ -43,6 +43,7 @@ env.Append(
   CPPPATH = [
     'win',
     '$SCONSTRUCT_DIR/plugin/npapi_host_control/win',
+    '$NPAPI_DIR',
   ],
   LIBS = [
     'wininet',

@@ -12,7 +12,7 @@
   ],
   'targets': [
     {
-      'target_name': 'technique',
+      'target_name': 'o3dTechnique',
       'type': 'static_library',
       'dependencies': [
         '../../../<(antlrdir)/antlr.gyp:antlr3c',
@@ -68,6 +68,24 @@
       'xcode_settings': {
         'OTHER_CFLAGS': ['-x', 'c++'],
       },
+    },
+    {
+      'target_name': 'o3dTechniqueTest',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/unittest_data',
+          'files': [
+            'test_data/fur.fx',
+            'test_data/lambert.fx',
+            'test_data/noshader.fx',
+            'test_data/notechnique.fx',
+            'test_data/sampler_test.fx',
+            'test_data/shadow_map.fx',
+            'test_data/simple.fx',
+          ],
+        },
+      ],
     },
   ],
 }

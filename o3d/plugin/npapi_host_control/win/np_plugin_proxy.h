@@ -37,7 +37,7 @@
 #define O3D_PLUGIN_NPAPI_HOST_CONTROL_WIN_NP_PLUGIN_PROXY_H_
 
 #include <vector>
-#include "third_party/npapi/files/include/npupp.h"
+#include "third_party/npapi/include/npupp.h"
 
 class NPBrowserProxy;
 struct INPObjectProxy;

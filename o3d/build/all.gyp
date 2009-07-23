@@ -17,7 +17,7 @@
         '../../<(jpegdir)/libjpeg.gyp:*',
         '../../<(pngdir)/libpng.gyp:*',
         '../../<(zlibdir)/zlib.gyp:*',
-        '../compiler/technique/technique.gyp:technique',
+        '../compiler/technique/technique.gyp:o3dTechnique',
         '../converter/converter.gyp:o3dConverter',
         '../core/core.gyp:o3dCore',
         '../core/core.gyp:o3dCorePlatform',

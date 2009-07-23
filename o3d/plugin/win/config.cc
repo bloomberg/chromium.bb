@@ -55,7 +55,7 @@
 #include "plugin/cross/config.h"
 #include "plugin/cross/plugin_metrics.h"
 #include "core/cross/install_check.h"
-#include "third_party/nixysa/files/static_glue/npapi/common.h"
+#include "third_party/nixysa/static_glue/npapi/common.h"
 
 namespace o3d {
 

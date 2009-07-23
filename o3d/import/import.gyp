@@ -28,7 +28,7 @@
         '../../<(jpegdir)/libjpeg.gyp:libjpeg',
         '../../<(pngdir)/libpng.gyp:libpng',
         '../../<(zlibdir)/zlib.gyp:zlib',
-        '../compiler/technique/technique.gyp:technique',
+        '../compiler/technique/technique.gyp:o3dTechnique',
       ],
       'sources': [
         'cross/collada_conditioner.cc',
@@ -94,6 +94,17 @@
           'cross/targz_generator_test.cc',
         ],
       },
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)/unittest_data',
+          'files': [
+            'test_data/crate.dae',
+            'test_data/crate.jpg',
+            'test_data/rock01.tga',
+            'test_data/rock02.tga',
+          ],
+        },
+      ],
     },
   ],
 }

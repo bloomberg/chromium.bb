@@ -52,8 +52,8 @@
 #include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/config.h"
 #include "plugin/cross/stream_manager.h"
-#include "third_party/nixysa/files/static_glue/npapi/common.h"
-#include "third_party/nixysa/files/static_glue/npapi/npn_api.h"
+#include "third_party/nixysa/static_glue/npapi/common.h"
+#include "third_party/nixysa/static_glue/npapi/npn_api.h"
 
 #if defined(O3D_INTERNAL_PLUGIN)
 #define HANDLE_CRASHES void(0)

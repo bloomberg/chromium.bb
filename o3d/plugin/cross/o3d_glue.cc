@@ -45,7 +45,7 @@
 #include "plugin/cross/stream_manager.h"
 #include "client_glue.h"
 #include "globals_glue.h"
-#include "third_party/nixysa/files/static_glue/npapi/common.h"
+#include "third_party/nixysa/static_glue/npapi/common.h"
 
 #ifdef OS_MACOSX
 #include "plugin_mac.h"

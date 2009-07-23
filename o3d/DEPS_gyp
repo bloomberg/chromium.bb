@@ -2,8 +2,15 @@ vars = {
   "chromium_trunk":
     "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "28",
-  "chromium_rev": "19644",
+  "chromium_rev": "21287",
   "o3d_code_rev": "101",
+  "skia_rev": "279",
+  "gyp_rev": "553",
+  "gtest_rev": "267",
+  "gflags_rev": "30",
+  "breakpad_rev": "346",
+  "icu38_rev": "20192",
+  "v8_rev": "2507",
 }
 
 deps = {
@@ -52,7 +59,7 @@ deps = {
 # Stuff from the Chromium tree.
 
   "third_party/skia":
-    "http://skia.googlecode.com/svn/trunk@239",
+    "http://skia.googlecode.com/svn/trunk@" + Var("skia_rev"),
 
   "third_party/libevent":
     Var("chromium_trunk") + "/src/third_party/libevent@" + Var("chromium_rev"),
@@ -61,7 +68,7 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/boost@" + Var("chromium_rev"),
 
   "third_party/icu38":
-    Var("chromium_trunk") + "/deps/third_party/icu38@16445",
+    Var("chromium_trunk") + "/deps/third_party/icu38@" + Var("icu38_rev"),
 
   "third_party/libjpeg":
     Var("chromium_trunk") + "/src/third_party/libjpeg@" + Var("chromium_rev"),
@@ -73,7 +80,7 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/zlib@" + Var("chromium_rev"),
 
   "v8":
-    "http://v8.googlecode.com/svn/trunk@2291",
+    "http://v8.googlecode.com/svn/branches/1.2@" + Var("v8_rev"),
 
   "testing":
     Var("chromium_trunk") + "/src/testing@" + Var("chromium_rev"),
@@ -93,22 +100,22 @@ deps = {
     "http://nativeclient.googlecode.com/svn/trunk/nacl/googleclient/native_client@188",
 
   "breakpad/src":
-    "http://google-breakpad.googlecode.com/svn/trunk/src@346",
+    "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
 
-  "third_party/nixysa/files":
+  "third_party/nixysa":
     "http://nixysa.googlecode.com/svn/trunk/nixysa@" + Var("nixysa_rev"),
 
-  "third_party/npapi/files":
+  "third_party/npapi":
     "http://nixysa.googlecode.com/svn/trunk/third_party/npapi@" + Var("nixysa_rev"),
 
-  "third_party/ply/files":
+  "third_party/ply":
     "http://nixysa.googlecode.com/svn/trunk/third_party/ply-3.1@" + Var("nixysa_rev"),
 
-  "third_party/gflags/":
-    "http://google-gflags.googlecode.com/svn/trunk@30",
+  "third_party/gflags":
+    "http://google-gflags.googlecode.com/svn/trunk@" + Var("gflags_rev"),
 
   "testing/gtest":
-    "http://googletest.googlecode.com/svn/trunk@267",
+    "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
 
   "testing/gmock":
     Var("chromium_trunk") + "/src/testing/gmock@" + Var("chromium_rev"),
@@ -119,7 +126,7 @@ deps = {
     Var("chromium_trunk") + "/src/build@" + Var("chromium_rev"),
 
   "tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@532",
+    "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
 }
 
 deps_os = {
@@ -136,6 +143,6 @@ hooks = [
   {
     # A change to a .gyp, .gypi, or to GYP itself shound run the generator.
     "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]",
-    "action": ["python", "tools/gyp/gyp_dogfood", "o3d/build/all.gyp", "--depth", ".."],
+    "action": ["python", "tools/gyp/gyp", "o3d/build/all.gyp", "--depth", ".."],
   },
 ]

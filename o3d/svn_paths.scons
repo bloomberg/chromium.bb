@@ -39,7 +39,7 @@ env.Replace(
     # A whole bunch of third-party and internal dependencies
     ANTLRLIBC_DIR = '$THIRD_PARTY/antlr3/runtime/C',
     ANTLR_DIR = '$THIRD_PARTY/antlr3/lib',
-    BREAKPAD_DIR = '$THIRD_PARTY/breakpad/files/src',
+    BREAKPAD_DIR = '$THIRD_PARTY/breakpad',
     CG_BASE_DIR = '$THIRD_PARTY/cg/files',
     # TODO: pull from Chrome's SVN with gclient ?
     CHROME_SRC_DIR = '$THIRD_PARTY/chrome/files',
@@ -66,10 +66,10 @@ env.Replace(
     # NACL has to be in this weird directory because it looks for
     # googleclient two levels above it.
     NACL_DIR = '$THIRD_PARTY/native_client/googleclient/native_client',
-    NIXYSA_DIR = '$THIRD_PARTY/nixysa/files',
-    NPAPI_DIR = '$THIRD_PARTY/npapi/files',
+    NIXYSA_DIR = '$THIRD_PARTY/nixysa',
+    NPAPI_DIR = '$THIRD_PARTY/npapi',
     PDIFF_DIR = '$THIRD_PARTY/pdiff/files',
-    PLY_DIR = '$THIRD_PARTY/ply/files',
+    PLY_DIR = '$THIRD_PARTY/ply',
     PNG_DIR = '$THIRD_PARTY/png/src',
     SCONS_DIR = '$THIRD_PARTY/scons',
     SELENIUM_JAVA_DIR = '$THIRD_PARTY/java/selenium/rev2478_mod',

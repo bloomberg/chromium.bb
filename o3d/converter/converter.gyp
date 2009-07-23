@@ -28,7 +28,7 @@
         '../../<(zlibdir)/zlib.gyp:zlib',
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
-        '../compiler/technique/technique.gyp:technique',
+        '../compiler/technique/technique.gyp:o3dTechnique',
         '../core/core.gyp:o3dCore',
         '../core/core.gyp:o3dCorePlatform',
         '../import/archive.gyp:o3dArchive',

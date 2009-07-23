@@ -9,7 +9,7 @@
   'variables': {
     'chromium_code': 0,
     'idl_out_dir': '<(SHARED_INTERMEDIATE_DIR)/idl_glue',
-    'static_glue_dir': '../../../third_party/nixysa/files/static_glue/npapi',
+    'static_glue_dir': '../../../third_party/nixysa/static_glue/npapi',
     'idl_files': [
       'archive_request.idl',
       'bitmap.idl',

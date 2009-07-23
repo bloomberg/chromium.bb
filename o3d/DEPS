@@ -3,6 +3,12 @@ vars = {
     "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "28",
   "o3d_code_rev": "101",
+  "skia_rev": "279",
+  "gyp_rev": "553",
+  "gtest_rev": "267",
+  "gflags_rev": "30",
+  "breakpad_rev": "346",
+  "v8_rev": "2507",
 }
 
 deps = {
@@ -67,30 +73,30 @@ deps = {
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zlib@" + Var("o3d_code_rev"),
 
   "o3d/third_party/v8":
-    "http://v8.googlecode.com/svn/trunk@2255",
+    "http://v8.googlecode.com/svn/branches/1.2@" + Var("v8_rev"),
 
   # NACL has to be in this weird directory because it looks for
   # googleclient two levels above it.
   "o3d/third_party/native_client/googleclient/native_client":
     "http://nativeclient.googlecode.com/svn/trunk/nacl/googleclient/native_client@188",
 
-  "o3d/third_party/breakpad/files":
-    "http://google-breakpad.googlecode.com/svn/trunk@339",
+  "o3d/third_party/breakpad":
+    "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
 
-  "o3d/third_party/nixysa/files":
+  "o3d/third_party/nixysa":
     "http://nixysa.googlecode.com/svn/trunk/nixysa@" + Var("nixysa_rev"),
 
-  "o3d/third_party/npapi/files":
+  "o3d/third_party/npapi":
     "http://nixysa.googlecode.com/svn/trunk/third_party/npapi@" + Var("nixysa_rev"),
 
-  "o3d/third_party/ply/files":
+  "o3d/third_party/ply":
     "http://nixysa.googlecode.com/svn/trunk/third_party/ply-3.1@" + Var("nixysa_rev"),
 
   "o3d/third_party/gflags/":
-    "http://google-gflags.googlecode.com/svn/trunk@30",
+    "http://google-gflags.googlecode.com/svn/trunk@" + Var("gflags_rev"),
 
   "o3d/third_party/gtest/files":
-    "http://googletest.googlecode.com/svn/trunk@243",
+    "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
 
   "o3d/third_party/gmock/files":
     "http://googlemock.googlecode.com/svn/tags/release-1.0.0",
