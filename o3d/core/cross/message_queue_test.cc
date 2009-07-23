@@ -415,9 +415,9 @@ bool TextureUpdateHelper::ConnectToO3D(const char* o3d_address,
   vec.length = message_size;
 
   nacl::SocketAddress socket_address;
-  sprintf_s(socket_address.path,
-            sizeof(socket_address.path),
-            "%s", o3d_address);
+  ::base::snprintf(socket_address.path,
+                   sizeof(socket_address.path),
+                   "%s", o3d_address);
 
   header.iov = &vec;
   header.iov_length = 1;
@@ -724,8 +724,8 @@ TEST_F(MessageQueueTest, TestConnection) {
     }
   };
 
-  RunTests(1, TimeDelta::FromSeconds(1),
-           scoped_ptr<Provider>(new Provider()).get());
+  Provider provider;
+  RunTests(1, TimeDelta::FromSeconds(1), &provider);
 }
 
 // Tests a request for shared memory.
@@ -769,8 +769,8 @@ TEST_F(MessageQueueTest, GetSharedMemory) {
     }
   };
 
-  RunTests(1, TimeDelta::FromSeconds(1),
-           scoped_ptr<Provider>(new Provider()).get());
+  Provider provider;
+  RunTests(1, TimeDelta::FromSeconds(1), &provider);
 }
 
 // Tests a request to update a texture.
@@ -844,8 +844,8 @@ TEST_F(MessageQueueTest, UpdateTexture2D) {
 
   ASSERT_TRUE(texture != NULL);
 
-  RunTests(1, TimeDelta::FromSeconds(1),
-           scoped_ptr<Provider>(new Provider(texture->id())).get());
+  Provider provider(texture->id());
+  RunTests(1, TimeDelta::FromSeconds(1), &provider);
 }
 
 // This helper class is used for both single-threaded and concurrent
@@ -907,8 +907,8 @@ TEST_F(MessageQueueTest, RegisterAndUnregisterSharedMemory) {
     }
   };
 
-  RunTests(1, TimeDelta::FromSeconds(1),
-           scoped_ptr<Provider>(new Provider()).get());
+  Provider provider;
+  RunTests(1, TimeDelta::FromSeconds(1), &provider);
 }
 
 // Tests that multiple concurrent clients of the MessageQueue don't
@@ -921,8 +921,8 @@ TEST_F(MessageQueueTest, ConcurrentSharedMemoryOperations) {
     }
   };
 
-  RunTests(2, TimeDelta::FromSeconds(6),
-           scoped_ptr<Provider>(new Provider()).get());
+  Provider provider;
+  RunTests(2, TimeDelta::FromSeconds(6), &provider);
 }
 
 }  // namespace o3d

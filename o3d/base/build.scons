@@ -110,6 +110,8 @@ chrome_base_inputs_posix = [
   'lock_impl_posix',
   'platform_thread_posix',
   'string16',
+  'time',
+  'time_posix',
   'thread_local_posix',
   'thread_local_storage_posix',
 ]
