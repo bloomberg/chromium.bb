@@ -185,9 +185,11 @@ class ValgrindTool(object):
 
         dsymutil_command = ['dsymutil', test_command]
 
-        # dsymutil is crazy slow.  Let it run for up to a half hour.  I hope
-        # that's enough.
-        common.RunSubprocess(dsymutil_command, 30 * 60)
+        # dsymutil is crazy slow.  Ideally we'd have a timeout here,
+        # but common.RunSubprocess' timeout is only checked
+        # after each line of output; dsymutil is silent
+        # until the end, and is then killed, which is silly.
+        common.RunSubprocess(dsymutil_command)
 
         if saved_test_command:
           os.rename(saved_test_command, test_command)
