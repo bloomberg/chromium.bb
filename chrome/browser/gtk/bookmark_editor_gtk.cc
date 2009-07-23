@@ -160,11 +160,11 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
 
     GtkTreeViewColumn* icon_column =
         gtk_tree_view_column_new_with_attributes(
-            "", gtk_cell_renderer_pixbuf_new(), "pixbuf",
+            "FolderIcon", gtk_cell_renderer_pixbuf_new(), "pixbuf",
              bookmark_utils::FOLDER_ICON, NULL);
     GtkTreeViewColumn* name_column =
         gtk_tree_view_column_new_with_attributes(
-            "", gtk_cell_renderer_text_new(), "text",
+            "FolderName", gtk_cell_renderer_text_new(), "text",
              bookmark_utils::FOLDER_NAME, NULL);
 
     tree_view_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tree_store_));
