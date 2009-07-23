@@ -576,3 +576,19 @@ ExprNodeVector[4] = {
   } };
 ExprNodeVector[0] = {
 };
+0000000000000000: 48 c1 fd 03                                  sar %rbp, 0x3
+  { 0xc1,
+    NACLi_OPINMRM,
+    InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    InstSar,
+    3, {
+      { Opcode7, OpFlag(OperandExtendsOpcode) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { I_Operand, 0 },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %rbp, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x3, ExprSize8 | EpxrUnsignedHex },
+};

@@ -637,6 +637,7 @@ void DecodeInstruction(
   uint8_t opcode_length;
   Opcode* cand_opcodes;
   Bool is_nacl_legal;
+  Bool found_match = FALSE;
   /* Start by consuming the prefix bytes, and getting the possible
    * candidate opcode (instruction) patterns that can match, based
    * on the consumed opcode bytes.
@@ -670,6 +671,7 @@ void DecodeInstruction(
               ConsumeImmediateBytes(state) &&
               ValidatePrefixFlags(state)) {
             /* found a match, exit loop. */
+            found_match = TRUE;
             continue_loop = FALSE;
             break;
           } else {
@@ -684,7 +686,7 @@ void DecodeInstruction(
   /* If we did not match a defined opcode, match the undefined opcode,
    * forcing field opcode to be non-NULL.
    */
-  if (NULL == state->opcode) {
+  if (!found_match) {
     DEBUG(printf("no instruction found, converting to undefined\n"));
 
     /* Can't figure out instruction, give up. */

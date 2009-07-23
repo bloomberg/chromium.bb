@@ -736,12 +736,16 @@ static const InstMnemonic Group1OpcodeName[8] = {
   InstCmp
 };
 
+/* Define the number of elements in Group2OpcodeName. */
+static const int kNumGroup1OpcodeNames =
+    sizeof(Group1OpcodeName) / sizeof(InstMnemonic);
+
 static void DefineGroup1OpcodesInModRm() {
   int i;
   /* TODO(karl) verify this pattern is correct for instructions besides add and
    * sub.
    */
-  for (i = 0; i < 8; ++i) {
+  for (i = 0; i < kNumGroup1OpcodeNames; ++i) {
     DefineOpcode(
         0x80,
         NACLi_386L,
@@ -859,9 +863,13 @@ static const InstMnemonic Group2OpcodeName[8] = {
   InstSar
 };
 
+/* Define the number of elements in Group2OpcodeName */
+static const int kNumGroup2OpcodeNames =
+    sizeof(Group2OpcodeName) / sizeof(InstMnemonic);
+
 static void DefineGroup2OpcodesInModRm() {
   int i;
-  for (i = 0; i < 6; i++) {
+  for (i = 0; i < kNumGroup2OpcodeNames; i++) {
     if (Group2OpcodeName[i] == InstMnemonicEnumSize) continue;
     DefineOpcode(0xC0, NACLi_OPINMRM,
                  InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b) |
@@ -879,9 +887,10 @@ static void DefineGroup2OpcodesInModRm() {
     DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
     DefineOperand(I_Operand, 0);
 
-    DefineOpcode(0xD1, NACLi_OPINMRM,
+    DefineOpcode(0xC1, NACLi_OPINMRM,
                  InstFlag(OpcodeInModRm) | InstFlag(OperandSize_o) |
-                 InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only),
+                 InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) |
+                 InstFlag(OpcodeHasImmed_b),
                  Group2OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
     DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
