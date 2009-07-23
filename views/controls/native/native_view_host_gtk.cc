@@ -141,6 +141,7 @@ void NativeViewHostGtk::ShowWidget(int x, int y, int w, int h) {
   gtk_fixed_move(GTK_FIXED(fixed_), host_->native_view(), child_x, child_y);
 
   gtk_widget_show(fixed_);
+  gtk_widget_show(host_->native_view());
 }
 
 void NativeViewHostGtk::HideWidget() {
