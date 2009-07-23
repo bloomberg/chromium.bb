@@ -598,6 +598,7 @@ windows_debug_env.Alias('windows_debug_data_install', n)
 
 unix_like_env = base_env.Clone()
 unix_like_env.Prepend(
+  CFLAGS = ['-std=gnu99' ],
   CCFLAGS = [
     # '-malign-double',
     '-Werror',
@@ -611,7 +612,6 @@ unix_like_env.Prepend(
   ],
   CXXFLAGS=['-std=c++98'],
   LIBPATH=['/usr/lib'],
-  CFLAGS = ['-std=gnu99' ],
   LIBS = ['pthread', 'ssl', 'crypto'],
 )
 
@@ -818,8 +818,8 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     BUILD_TYPE = 'nacl_extra_sdk',
     BUILD_TYPE_DESCRIPTION = 'NaCl SDK extra library build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
+    CFLAGS = ['-std=gnu99'],
     # TODO: explain this
-    LINK = '$CXX',
     CCFLAGS = ['-O3',
                '-Werror',
                '-Wall',
@@ -832,6 +832,7 @@ nacl_extra_sdk_env = pre_base_env.Clone(
                '-pedantic',
                ],
     CPPPATH = ['$SOURCE_ROOT'],
+    LINK = '$CXX',
 )
 
 

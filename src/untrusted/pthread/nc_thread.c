@@ -44,9 +44,9 @@
 
 #include "native_client/src/untrusted/nacl/tls.h"
 
-#include "nc_hash.h"
-#include "pthread.h"
-#include "pthread_types.h"
+#include "native_client/src/untrusted/pthread/nc_hash.h"
+#include "native_client/src/untrusted/pthread/pthread.h"
+#include "native_client/src/untrusted/pthread/pthread_types.h"
 
 
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
@@ -150,8 +150,7 @@ static int nc_allocate_thread_id_mu(nc_basic_thread_data_t *basic_data) {
   return 0;
 }
 
-static nc_basic_thread_data_t *nc_find_tdb_mu(uint32_t id)
-{
+static nc_basic_thread_data_t *nc_find_tdb_mu(uint32_t id) {
   /* assuming the global lock is locked */
   return HASH_FIND_ID(&__nc_thread_threads,
                       id,
@@ -282,7 +281,7 @@ static void nc_release_tls_node(nc_thread_memory_block_t *tls_node) {
  * TODO(gregoryd) - Make static. Use local labels to prevent redefinition errors
  * when the definition is moved to a header file.
  */
-inline void nc_spinlock_lock(int *lock) {
+inline __attribute__((gnu_inline)) void nc_spinlock_lock(int *lock) {
   __asm__("mov %0, %%ecx \n\t"
           "mov 0x1, %%eax \n\t"
           "loop: xchg    (%%ecx), %%eax    \n\t"
@@ -291,7 +290,7 @@ inline void nc_spinlock_lock(int *lock) {
           :"=r"(lock): "0"(lock));
 }
 
-inline void nc_spinlock_unlock(int *lock) {
+inline __attribute__((gnu_inline)) void nc_spinlock_unlock(int *lock) {
   __asm__("mov %0, %%ecx \n\t"
           "mov 0, %%eax \n\t"
           "xchg (%%ecx), %%eax":"=r"(lock));
@@ -575,8 +574,7 @@ void pthread_exit (void* retval) {
 
   basic_data->retval = retval;
 
-  if (joinable)
-  {
+  if (joinable) {
     /* If somebody is waiting for this thread, signal */
     basic_data->status = THREAD_TERMINATED;
     pthread_cond_signal(&basic_data->join_condvar);
