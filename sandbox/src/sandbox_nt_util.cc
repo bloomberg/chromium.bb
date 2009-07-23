@@ -301,7 +301,6 @@ UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32* flags) {
         if (headers->OptionalHeader.SizeOfCode)
           *flags |= MODULE_HAS_CODE;
       }
-
     } while (false);
   } __except(EXCEPTION_EXECUTE_HANDLER) {
   }
@@ -349,7 +348,7 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
   int start_pos = module_path->Length / sizeof(wchar_t) - 1;
   int ix = start_pos;
 
-  for(; ix >= 0; --ix) {
+  for (; ix >= 0; --ix) {
     if (module_path->Buffer[ix] == L'\\') {
       sep = &module_path->Buffer[ix];
       break;
@@ -361,7 +360,7 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
     return NULL;
 
   // No path separator found. Use the entire name.
-  if ((ix == 0) && !sep) {
+  if (!sep) {
     sep = &module_path->Buffer[-1];
   }
 

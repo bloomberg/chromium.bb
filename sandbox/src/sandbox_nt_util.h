@@ -118,9 +118,9 @@ UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32* flags);
 UNICODE_STRING* GetBackingFilePath(PVOID address);
 
 // Returns the last component of a path that contains the module name.
-// It will return NULL if the path is not a full path or if the path ends
-// with the path separator. The returned buffer must be freed with a placement
-// delete (see GetImageNameFromModule example).
+// It will return NULL if the path ends with the path separator. The returned
+// buffer must be freed with a placement delete (see GetImageNameFromModule
+// example).
 UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path);
 
 // Returns true if the parameters correspond to a dll mapped as code.
