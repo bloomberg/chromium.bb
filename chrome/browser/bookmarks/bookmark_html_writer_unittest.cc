@@ -57,7 +57,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
 
 // Tests bookmark_html_writer by populating a BookmarkModel, writing it out by
 // way of bookmark_html_writer, then using the importer to read it back in.
-TEST_F(BookmarkHTMLWriterTest, Test) {
+TEST_F(BookmarkHTMLWriterTest, DISABLED_Test) {
   // Populate the BookmarkModel. This creates the following bookmark structure:
   // Bookmarks bar
   //   F1
