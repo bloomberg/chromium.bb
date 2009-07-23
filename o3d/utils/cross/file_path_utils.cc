@@ -173,7 +173,7 @@ bool FindFileHelper(const FilePath& path_to_search,
                     const FilePath& path_to_find,
                     FilePath* found_path) {
   std::vector<FilePath::StringType> parts;
-  file_util::PathComponents(path_to_find, &parts);
+  path_to_find.GetComponents(&parts);
 
   for (size_t ii = 0; ii < parts.size(); ++ii) {
     // build a path from parts.
