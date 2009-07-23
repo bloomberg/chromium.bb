@@ -11,6 +11,7 @@
 #include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
@@ -1169,9 +1170,9 @@ void HistoryBackend::QueryTopURLsAndRedirects(
   std::vector<GURL>* top_urls = &request->value.a;
   history::RedirectMap* redirects = &request->value.b;
 
-  std::vector<PageUsageData*> data;
+  ScopedVector<PageUsageData> data;
   db_->QuerySegmentUsage(base::Time::Now() - base::TimeDelta::FromDays(90),
-      result_count, &data);
+      result_count, &data.get());
 
   for (size_t i = 0; i < data.size(); ++i) {
     top_urls->push_back(data[i]->GetURL());

@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/sqlite_compiled_statement.h"
@@ -296,8 +297,11 @@ void VisitSegmentDatabase::QuerySegmentUsage(
 
   // Limit to the top kResultCount results.
   sort(results->begin(), results->end(), PageUsageData::Predicate);
-  if (static_cast<int>(results->size()) > max_result_count)
+  if (static_cast<int>(results->size()) > max_result_count) {
+    STLDeleteContainerPointers(results->begin() + max_result_count,
+                               results->end());
     results->resize(max_result_count);
+  }
 
   // Now fetch the details about the entries we care about.
   SQLITE_UNIQUE_STATEMENT(statement2, GetStatementCache(),

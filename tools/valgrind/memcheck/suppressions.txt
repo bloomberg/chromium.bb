@@ -734,13 +734,6 @@
    fun:_ZN11TabContents19ProcessDOMUIMessageERKSsS1_ib
 }
 {
-   bug_16104
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN7history20VisitSegmentDatabase17QuerySegmentUsageERKN4base4TimeEiPSt6vectorIP13PageUsageDataSaIS7_EE
-   #fun:_ZN7history14HistoryBackend24QueryTopURLsAndRedirectsE13scoped_refptrI18CancelableRequest1I14CallbackRunnerI6Tuple2IPSt6vectorI4GURLSaIS6_EEPSt3mapIS6_S1_I16RefCountedVectorIS6_EESt4lessIS6_ESaISt4pairIKS6_SD_EEEEES4_IS8_SK_EEEi
-}
-{
    bug_16128
    Memcheck:Leak
    fun:_Znwj
