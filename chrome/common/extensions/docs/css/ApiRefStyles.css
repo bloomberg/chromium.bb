@@ -1,3 +1,8 @@
+/*
+ * PENDING: This file has styles that aren't used by handwritten pages.
+ * So we should probably have a common CSS file, plus this one, and then
+ * one for handwritten pages.
+ */
 .todo {
   color: red;
 }
