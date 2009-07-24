@@ -401,6 +401,11 @@ html[dir=rtl] .thumbnail-container > .title > div {
   font-size: 100%;
 }
 
+.item:visited,
+.item:link {
+  color: hsl(213, 90%, 24%);
+}
+
 html[dir='rtl'] .item {
   background-position-x: 100%;
   padding-right: 18px;
