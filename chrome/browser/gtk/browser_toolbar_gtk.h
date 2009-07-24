@@ -147,6 +147,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                        GtkMenuDirectionType dir,
                                        BrowserToolbarGtk* toolbar);
 
+  // Sometimes we only want to show the location w/o the toolbar buttons (e.g.,
+  // in a popup window).
+  bool ShouldOnlyShowLocation() const;
+
   // Ninebox for the toolbar background
   scoped_ptr<NineBox> background_ninebox_;
 

@@ -70,6 +70,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
     ToolbarModel* toolbar_model,
     Profile* profile,
     CommandUpdater* command_updater,
+    bool popup_window_mode,
     AutocompletePopupPositioner* popup_positioner)
     : text_view_(NULL),
       tag_table_(NULL),
@@ -83,7 +84,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
-      popup_window_mode_(false),  // TODO(deanm)
+      popup_window_mode_(popup_window_mode),
       scheme_security_level_(ToolbarModel::NORMAL),
       selection_saved_(false),
       mark_set_handler_id_(0),
@@ -125,9 +126,15 @@ void AutocompleteEditViewGtk::Init() {
   tag_table_ = gtk_text_tag_table_new();
   text_buffer_ = gtk_text_buffer_new(tag_table_);
   text_view_ = gtk_text_view_new_with_buffer(text_buffer_);
+  if (popup_window_mode_)
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view_), false);
   if (browser_defaults::kForceAutocompleteEditFontSize) {
     // Until we switch to vector graphics, force the font size.
-    gtk_util::ForceFontSizePixels(text_view_, 13.4); // 13.4px == 10pt @ 96dpi
+    const double kFontSize = 13.4;  // 13.4px == 10pt @ 96dpi
+    // On Windows, popups have a font size 5/6 the size of non-popups.
+    const double kPopupWindowFontSize = kFontSize * 5.0 / 6.0;
+    gtk_util::ForceFontSizePixels(text_view_,
+        popup_window_mode_ ? kPopupWindowFontSize : kFontSize);
   }
 
   // Override the background color for now.  http://crbug.com/12195

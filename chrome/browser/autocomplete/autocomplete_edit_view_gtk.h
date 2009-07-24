@@ -42,6 +42,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView {
                           ToolbarModel* toolbar_model,
                           Profile* profile,
                           CommandUpdater* command_updater,
+                          bool popup_window_mode,
                           AutocompletePopupPositioner* popup_positioner);
   ~AutocompleteEditViewGtk();
 
@@ -280,8 +281,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView {
   CommandUpdater* command_updater_;
 
   // When true, the location bar view is read only and also is has a slightly
-  // different presentation (font size / color). This is used for popups.
-  // TODO(deanm).
+  // different presentation (smaller font size). This is used for popups.
   bool popup_window_mode_;
 
   ToolbarModel::SecurityLevel scheme_security_level_;

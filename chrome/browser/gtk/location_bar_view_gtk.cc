@@ -30,10 +30,11 @@
 
 namespace {
 
-// Top and bottom padding/margin
 // We are positioned with a little bit of extra space that we don't use now.
 const int kTopMargin = 1;
 const int kBottomMargin = 1;
+const int kLeftMargin = 1;
+const int kRightMargin = 1;
 // We draw a border on the top and bottom (but not on left or right).
 const int kBorderThickness = 1;
 
@@ -112,7 +113,8 @@ LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
       popup_positioner_(popup_positioner),
       disposition_(CURRENT_TAB),
       transition_(PageTransition::TYPED),
-      first_run_bubble_(this) {
+      first_run_bubble_(this),
+      popup_window_mode_(false) {
 }
 
 LocationBarViewGtk::~LocationBarViewGtk() {
@@ -120,11 +122,13 @@ LocationBarViewGtk::~LocationBarViewGtk() {
   hbox_.Destroy();
 }
 
-void LocationBarViewGtk::Init() {
+void LocationBarViewGtk::Init(bool popup_window_mode) {
+  popup_window_mode_ = popup_window_mode;
   location_entry_.reset(new AutocompleteEditViewGtk(this,
                                                     toolbar_model_,
                                                     profile_,
                                                     command_updater_,
+                                                    popup_window_mode_,
                                                     popup_positioner_));
   location_entry_->Init();
 
@@ -176,10 +180,18 @@ void LocationBarViewGtk::Init() {
   // construction for with GTK themes and without. Doing that only on
   // construction was wrong, and I can't see a difference between the two ways
   // anyway... Investigate more later.
-  gtk_alignment_set_padding(GTK_ALIGNMENT(align),
-                            kTopMargin + kBorderThickness,
-                            kBottomMargin + kBorderThickness,
-                            kEditLeftRightPadding, kEditLeftRightPadding);
+  if (popup_window_mode_) {
+    gtk_alignment_set_padding(GTK_ALIGNMENT(align),
+                              kTopMargin + kBorderThickness,
+                              kBottomMargin + kBorderThickness,
+                              kEditLeftRightPadding + kBorderThickness,
+                              kEditLeftRightPadding + kBorderThickness);
+  } else {
+    gtk_alignment_set_padding(GTK_ALIGNMENT(align),
+                              kTopMargin + kBorderThickness,
+                              kBottomMargin + kBorderThickness,
+                              kEditLeftRightPadding, kEditLeftRightPadding);
+  }
   gtk_container_add(GTK_CONTAINER(align), location_entry_->widget());
   gtk_box_pack_start(GTK_BOX(hbox_.get()), align, TRUE, TRUE, 0);
 
@@ -389,7 +401,17 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
   // window, set a clip to make sure that we don't draw outside.
   gdk_gc_set_clip_rectangle(gc, &inner_rect);
 
-  // If we're not using GTK theming, draw our own border.
+  // Draw the background.
+  gdk_gc_set_rgb_fg_color(gc,
+      &kBackgroundColorByLevel[toolbar_model_->GetSchemeSecurityLevel()]);
+  gdk_draw_rectangle(drawable, gc, TRUE,
+                     inner_rect.x,
+                     inner_rect.y,
+                     inner_rect.width,
+                     inner_rect.height);
+
+  // If we're not using GTK theming, draw our own border over the edge pixels
+  // of the background.
   if (!profile_ ||
       !GtkThemeProvider::GetFrom(profile_)->UseGtkTheme()) {
     // Draw our 1px border.  TODO(deanm): Maybe this would be cleaner as an
@@ -405,16 +427,19 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
                        inner_rect.y + inner_rect.height - kBorderThickness,
                        inner_rect.width,
                        kBorderThickness);
+    if (popup_window_mode_) {
+      gdk_draw_rectangle(drawable, gc, TRUE,
+                         inner_rect.x,
+                         inner_rect.y,
+                         kBorderThickness,
+                         inner_rect.height);
+      gdk_draw_rectangle(drawable, gc, TRUE,
+                         inner_rect.x + inner_rect.width - kBorderThickness,
+                         inner_rect.y,
+                         kBorderThickness,
+                         inner_rect.height);
+    }
   }
-
-  // Draw the background within the border.
-  gdk_gc_set_rgb_fg_color(gc,
-      &kBackgroundColorByLevel[toolbar_model_->GetSchemeSecurityLevel()]);
-  gdk_draw_rectangle(drawable, gc, TRUE,
-                     inner_rect.x,
-                     inner_rect.y + kBorderThickness,
-                     inner_rect.width,
-                     inner_rect.height - (kBorderThickness * 2));
 
   g_object_unref(gc);
 

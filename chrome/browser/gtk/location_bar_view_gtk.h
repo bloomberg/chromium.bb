@@ -35,7 +35,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
                      AutocompletePopupPositioner* popup_positioner);
   virtual ~LocationBarViewGtk();
 
-  void Init();
+  void Init(bool popup_window_mode);
 
   void SetProfile(Profile* profile);
 
@@ -145,6 +145,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Used schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarViewGtk> first_run_bubble_;
+
+  // When true, the location bar view is read only and also is has a slightly
+  // different presentation (font size / color). This is used for popups.
+  bool popup_window_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

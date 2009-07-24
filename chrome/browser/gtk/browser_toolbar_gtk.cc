@@ -47,6 +47,9 @@ namespace {
 // Height of the toolbar in pixels.
 const int kToolbarHeight = 37;
 
+// Height of the toolbar in pixels when we only show the location bar.
+const int kToolbarHeightLocationBarOnly = kToolbarHeight - 10;
+
 // Interior spacing between toolbar widgets.
 const int kToolbarWidgetSpacing = 4;
 
@@ -134,10 +137,13 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   toolbar_ = gtk_hbox_new(FALSE, kToolbarWidgetSpacing);
   gtk_container_add(GTK_CONTAINER(event_box_), toolbar_);
-  gtk_container_set_border_width(GTK_CONTAINER(toolbar_), 4);
-  // Demand we're always at least kToolbarHeight tall.
-  // -1 for width means "let GTK do its normal sizing".
-  gtk_widget_set_size_request(toolbar_, -1, kToolbarHeight);
+  gtk_container_set_border_width(GTK_CONTAINER(toolbar_),
+      ShouldOnlyShowLocation() ? 0 : 4);
+  // Force the height of the toolbar so we get the right amount of padding
+  // above and below the location bar. -1 for width means "let GTK do its
+  // normal sizing".
+  gtk_widget_set_size_request(toolbar_, -1, ShouldOnlyShowLocation() ?
+      kToolbarHeightLocationBarOnly : kToolbarHeight);
   g_signal_connect(toolbar_, "expose-event",
                    G_CALLBACK(&OnToolbarExpose), this);
 
@@ -176,7 +182,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   star_.reset(BuildStarButton(l10n_util::GetStringUTF8(IDS_TOOLTIP_STAR)));
   gtk_box_pack_start(GTK_BOX(location_hbox), star_->widget(), FALSE, FALSE, 0);
 
-  location_bar_->Init();
+  location_bar_->Init(ShouldOnlyShowLocation());
   gtk_box_pack_start(GTK_BOX(location_hbox), location_bar_->widget(), TRUE,
                      TRUE, 0);
 
@@ -185,7 +191,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   g_signal_connect(location_hbox, "expose-event",
                    G_CALLBACK(OnLocationHboxExpose), this);
-  gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE,
+                     ShouldOnlyShowLocation() ? 1 : 0);
 
   // Group the menu buttons together in an hbox.
   GtkWidget* menus_hbox_ = gtk_hbox_new(FALSE, 0);
@@ -221,12 +228,20 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   gtk_box_pack_start(GTK_BOX(toolbar_), menus_hbox_, FALSE, FALSE, 0);
 
-  gtk_widget_show_all(event_box_);
-
-  if (show_home_button_.GetValue()) {
-    gtk_widget_show(home_->widget());
+  if (ShouldOnlyShowLocation()) {
+    gtk_widget_show(event_box_);
+    gtk_widget_show(toolbar_);
+    gtk_widget_show_all(location_hbox);
+    gtk_widget_hide(star_->widget());
+    gtk_widget_hide(go_->widget());
   } else {
-    gtk_widget_hide(home_->widget());
+    gtk_widget_show_all(event_box_);
+
+    if (show_home_button_.GetValue()) {
+      gtk_widget_show(home_->widget());
+    } else {
+      gtk_widget_hide(home_->widget());
+    }
   }
 }
 
@@ -318,7 +333,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
   if (type == NotificationType::PREF_CHANGED) {
     std::wstring* pref_name = Details<std::wstring>(details).ptr();
     if (*pref_name == prefs::kShowHomeButton) {
-      if (show_home_button_.GetValue()) {
+      if (show_home_button_.GetValue() && !ShouldOnlyShowLocation()) {
         gtk_widget_show(home_->widget());
       } else {
         gtk_widget_hide(home_->widget());
@@ -490,7 +505,8 @@ gboolean BrowserToolbarGtk::OnToolbarExpose(GtkWidget* widget,
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
                                                  GdkEventExpose* e,
                                                  BrowserToolbarGtk* toolbar) {
-  if (toolbar->theme_provider_->UseGtkTheme()) {
+  if (toolbar->theme_provider_->UseGtkTheme() &&
+      !toolbar->ShouldOnlyShowLocation()) {
     // To get the proper look surrounding the location bar, we fake out the
     // theme engine into drawing a button. We fake out GTK by constructing a
     // box that's from the top left corner of the bookmark button to the bottom
@@ -620,4 +636,9 @@ void BrowserToolbarGtk::OnPageAppMenuMoveCurrent(GtkWidget* menu,
     default:
       break;
   }
+}
+
+bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
+  // If we're a popup window, only show the location bar (omnibox).
+  return browser_->type() != Browser::TYPE_NORMAL;
 }
