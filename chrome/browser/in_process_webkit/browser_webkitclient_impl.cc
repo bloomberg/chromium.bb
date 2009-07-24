@@ -82,3 +82,22 @@ WebKit::WebData BrowserWebKitClientImpl::loadResource(const char* name) {
   NOTREACHED();
   return WebKit::WebData();
 }
+
+WebKit::WebStorageNamespace*
+BrowserWebKitClientImpl::createLocalStorageNamespace(
+    const WebKit::WebString& path) {
+  // The "WebStorage" interface is used for renderer WebKit -> browser WebKit
+  // communication only.  "WebStorageClient" will be used for browser WebKit ->
+  // renderer WebKit.  So this will never be implemented.
+  NOTREACHED();
+  return 0;
+}
+
+WebKit::WebStorageNamespace*
+BrowserWebKitClientImpl::createSessionStorageNamespace() {
+  // The "WebStorage" interface is used for renderer WebKit -> browser WebKit
+  // communication only.  "WebStorageClient" will be used for browser WebKit ->
+  // renderer WebKit.  So this will never be implemented.
+  NOTREACHED();
+  return 0;
+}

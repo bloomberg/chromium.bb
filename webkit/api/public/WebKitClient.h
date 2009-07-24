@@ -40,6 +40,7 @@ namespace WebKit {
     class WebMimeRegistry;
     class WebPluginListBuilder;
     class WebSandboxSupport;
+    class WebStorageNamespace;
     class WebString;
     class WebThemeEngine;
     class WebURL;
@@ -60,6 +61,17 @@ namespace WebKit {
 
         // May return null on some platforms.
         virtual WebThemeEngine* themeEngine() = 0;
+
+
+        // DOM Storage --------------------------------------------------
+
+        // Return a LocalStorage namespace that corresponds to the following
+        // path.
+        virtual WebStorageNamespace* createLocalStorageNamespace(
+            const WebString& path) = 0;
+
+        // Return a new SessionStorage namespace.
+        virtual WebStorageNamespace* createSessionStorageNamespace() = 0;
 
 
         // File ----------------------------------------------------------------

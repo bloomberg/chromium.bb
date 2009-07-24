@@ -10,6 +10,7 @@
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
@@ -20,6 +21,8 @@
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
 
+using WebKit::WebStorageArea;
+using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
 
@@ -98,6 +101,20 @@ void RendererWebKitClientImpl::suddenTerminationChanged(bool enabled) {
   RenderThread* thread = RenderThread::current();
   if (thread)  // NULL in unittests.
     thread->Send(new ViewHostMsg_SuddenTerminationChanged(enabled));
+}
+
+WebStorageNamespace* RendererWebKitClientImpl::createLocalStorageNamespace(
+    const WebString& path) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+    return WebStorageNamespace::createLocalStorageNamespace(path);
+  // The browser process decides the path, so ignore that param.
+  return new RendererWebStorageNamespaceImpl(true);
+}
+
+WebStorageNamespace* RendererWebKitClientImpl::createSessionStorageNamespace() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+    return WebStorageNamespace::createSessionStorageNamespace();
+  return new RendererWebStorageNamespaceImpl(false);
 }
 
 //------------------------------------------------------------------------------

@@ -62,3 +62,16 @@ WebKit::WebString WorkerWebKitClientImpl::defaultLocale() {
   NOTREACHED();
   return WebKit::WebString();
 }
+
+WebKit::WebStorageNamespace*
+WorkerWebKitClientImpl::createLocalStorageNamespace(
+    const WebKit::WebString& path) {
+  NOTREACHED();
+  return 0;
+}
+
+WebKit::WebStorageNamespace*
+WorkerWebKitClientImpl::createSessionStorageNamespace() {
+  NOTREACHED();
+  return 0;
+}

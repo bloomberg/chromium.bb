@@ -36,6 +36,9 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);
+  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
+      const WebKit::WebString& path);
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
 
  private:
   class MimeRegistry : public webkit_glue::SimpleWebMimeRegistryImpl {

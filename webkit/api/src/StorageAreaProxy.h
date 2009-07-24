@@ -23,31 +23,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StorageNamespaceProxy_h
-#define StorageNamespaceProxy_h
+#ifndef StorageAreaProxy_h
+#define StorageAreaProxy_h
 
 #if ENABLE(DOM_STORAGE)
 
-#include "StorageNamespace.h"
+#include "StorageArea.h"
 
-namespace WebKit { class WebStorageNamespace; }
+namespace WebKit { class WebStorageArea; }
 
 namespace WebCore {
 
-    class StorageNamespaceProxy : public StorageNamespace {
+    class StorageAreaProxy : public StorageArea {
     public:
-        StorageNamespaceProxy(WebKit::WebStorageNamespace* storageNamespace);
-        virtual ~StorageNamespaceProxy();
-        virtual PassRefPtr<StorageArea> storageArea(SecurityOrigin*);
-        virtual PassRefPtr<StorageNamespace> copy();
-        virtual void close();
+        StorageAreaProxy(WebKit::WebStorageArea* storageArea);
+        virtual ~StorageAreaProxy();
+
+        // The HTML5 DOM Storage API
+        virtual unsigned length() const;
+        virtual String key(unsigned index, ExceptionCode& ec) const;
+        virtual String getItem(const String& key) const;
+        virtual void setItem(const String& key, const String& value, ExceptionCode& ec, Frame* sourceFrame);
+        virtual void removeItem(const String& key, Frame* sourceFrame);
+        virtual void clear(Frame* sourceFrame);
+        virtual bool contains(const String& key) const;
 
     private:
-        OwnPtr<WebKit::WebStorageNamespace> m_storageNamespace;
+        OwnPtr<WebKit::WebStorageArea> m_storageArea;
     };
 
 } // namespace WebCore
 
 #endif // ENABLE(DOM_STORAGE)
 
-#endif // StorageNamespaceProxy_h
+#endif // StorageAreaProxy_h

@@ -23,6 +23,8 @@
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebKitClient.h"
+#include "webkit/api/public/WebStorageArea.h"
+#include "webkit/api/public/WebStorageNamespace.h"
 
 #include "SkFontHost_fontconfig_direct.h"
 #include "SkFontHost_fontconfig_ipc.h"
@@ -36,6 +38,8 @@ using WebKit::WebMimeRegistry;
 using WebKit::WebPluginInfo;
 using WebKit::WebPluginListBuilder;
 using WebKit::WebSandboxSupport;
+using WebKit::WebStorageArea;
+using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebThemeEngine;
 using WebKit::WebUChar;
@@ -107,6 +111,10 @@ class SandboxIPCProcess : public WebKitClient {
   virtual WebMimeRegistry* mimeRegistry() { return NULL; }
   virtual WebSandboxSupport* sandboxSupport() { return NULL; }
   virtual WebThemeEngine* themeEngine() { return NULL; }
+
+  virtual WebStorageNamespace* createLocalStorageNamespace(
+      const WebString& path) { return 0; }
+  virtual WebStorageNamespace* createSessionStorageNamespace() { return 0; }
 
   virtual bool getFileSize(const WebString& path, long long& result) {
     return false;

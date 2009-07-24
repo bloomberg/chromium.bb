@@ -90,6 +90,17 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl {
     helper_->DispatchToMainThread(func);
   }
 
+  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
+      const WebKit::WebString& path) {
+    NOTREACHED();
+    return 0;
+  }
+
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace() {
+    NOTREACHED();
+    return 0;
+  }
+
  private:
   TestWebWorkerHelper* helper_;
 };

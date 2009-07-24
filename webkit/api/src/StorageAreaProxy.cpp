@@ -24,51 +24,69 @@
  */
 
 #include "config.h"
-#include "StorageNamespaceProxy.h"
+#include "StorageAreaProxy.h"
 
 #if ENABLE(DOM_STORAGE)
 
+#include "ExceptionCode.h"
+#include "Frame.h"
 #include "SecurityOrigin.h"
-#include "StorageAreaProxy.h"
-#include "WebKit.h"
-#include "WebKitClient.h"
-#include "WebStorageNamespace.h"
+#include "StorageAreaImpl.h"
+#include "WebStorageArea.h"
 #include "WebString.h"
 
 namespace WebCore {
 
-PassRefPtr<StorageNamespace> StorageNamespace::localStorageNamespace(const String& path)
-{
-    return new StorageNamespaceProxy(WebKit::webKitClient()->createLocalStorageNamespace(path));
-}
-
-PassRefPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace()
-{
-    return new StorageNamespaceProxy(WebKit::webKitClient()->createSessionStorageNamespace());
-}
-
-StorageNamespaceProxy::StorageNamespaceProxy(WebKit::WebStorageNamespace* storageNamespace)
-    : m_storageNamespace(storageNamespace)
+StorageAreaProxy::StorageAreaProxy(WebKit::WebStorageArea* storageArea)
+    : m_storageArea(storageArea)
 {
 }
 
-StorageNamespaceProxy::~StorageNamespaceProxy()
+StorageAreaProxy::~StorageAreaProxy()
 {
 }
 
-PassRefPtr<StorageNamespace> StorageNamespaceProxy::copy()
+unsigned StorageAreaProxy::length() const
 {
-    return adoptRef(new StorageNamespaceProxy(m_storageNamespace->copy()));
+    return m_storageArea->length();
 }
 
-PassRefPtr<StorageArea> StorageNamespaceProxy::storageArea(SecurityOrigin* origin)
+String StorageAreaProxy::key(unsigned index, ExceptionCode& ec) const
 {
-    return adoptRef(new StorageAreaProxy(m_storageNamespace->createStorageArea(origin->toString())));
+    bool keyException = false;
+    String value = m_storageArea->key(index, keyException);
+    ec = keyException ? INDEX_SIZE_ERR : 0;
+    return value;
 }
 
-void StorageNamespaceProxy::close()
+String StorageAreaProxy::getItem(const String& key) const
 {
-    m_storageNamespace->close();
+    return m_storageArea->getItem(key);
+}
+
+void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionCode& ec, Frame*)
+{
+    // FIXME: Is frame any use to us? Probably not.
+    bool quotaException = false;
+    m_storageArea->setItem(key, value, quotaException);
+    ec = quotaException ? QUOTA_EXCEEDED_ERR : 0;
+}
+
+void StorageAreaProxy::removeItem(const String& key, Frame*)
+{
+    // FIXME: Is frame any use to us? Probably not.
+    m_storageArea->removeItem(key);
+}
+
+void StorageAreaProxy::clear(Frame* frame)
+{
+    // FIXME: Is frame any use to us? Probably not.
+    m_storageArea->clear();
+}
+
+bool StorageAreaProxy::contains(const String& key) const
+{
+    return !getItem(key).isNull();
 }
 
 } // namespace WebCore

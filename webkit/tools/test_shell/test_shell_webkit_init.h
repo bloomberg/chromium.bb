@@ -12,6 +12,8 @@
 #include "media/base/media.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebKit.h"
+#include "webkit/api/public/WebStorageArea.h"
+#include "webkit/api/public/WebStorageNamespace.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
@@ -124,6 +126,15 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebString defaultLocale() {
     return ASCIIToUTF16("en-US");
+  }
+
+  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
+      const WebKit::WebString& path) {
+    return WebKit::WebStorageNamespace::createLocalStorageNamespace(path);
+  }
+
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace() {
+    return WebKit::WebStorageNamespace::createSessionStorageNamespace();
   }
 
  private:
