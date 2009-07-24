@@ -60,15 +60,16 @@ class ExtensionMessageService :
 
   // --- UI thread only:
 
-  ExtensionMessageService(Profile* profile);
+  explicit ExtensionMessageService(Profile* profile);
   ~ExtensionMessageService();
 
   // Notification that our owning profile is going away.
   void ProfileDestroyed();
 
   // Add or remove |render_process_pid| as a listener for |event_name|.
-  void AddEventListener(std::string event_name, int render_process_id);
-  void RemoveEventListener(std::string event_name, int render_process_id);
+  void AddEventListener(const std::string& event_name, int render_process_id);
+  void RemoveEventListener(const std::string& event_name,
+                           int render_process_id);
 
   // Closes the message channel associated with the given port, and notifies
   // the other side.
@@ -104,7 +105,7 @@ class ExtensionMessageService :
   // Same as above, but opens a channel to the tab with the given ID.  Messages
   // are restricted to that tab, so if there are multiple tabs in that process,
   // only the targeted tab will receive messages.
-  int OpenChannelToTab(int routing_id, int tab_id, 
+  int OpenChannelToTab(int routing_id, int tab_id,
                        const std::string& extension_id,
                        const std::string& channel_name,
                        ResourceMessageFilter* source);

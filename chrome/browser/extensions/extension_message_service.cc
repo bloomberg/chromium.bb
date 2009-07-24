@@ -128,7 +128,7 @@ void ExtensionMessageService::ProfileDestroyed() {
   registrar_.RemoveAll();
 }
 
-void ExtensionMessageService::AddEventListener(std::string event_name,
+void ExtensionMessageService::AddEventListener(const std::string& event_name,
                                                int render_process_id) {
   DCHECK(RenderProcessHost::FromID(render_process_id)) <<
       "Adding event listener to a non-existant RenderProcessHost.";
@@ -137,7 +137,7 @@ void ExtensionMessageService::AddEventListener(std::string event_name,
   listeners_[event_name].insert(render_process_id);
 }
 
-void ExtensionMessageService::RemoveEventListener(std::string event_name,
+void ExtensionMessageService::RemoveEventListener(const std::string& event_name,
                                                   int render_process_id) {
   // It is possible that this RenderProcessHost is being destroyed.  If that is
   // the case, we'll have already removed his listeners, so do nothing here.
