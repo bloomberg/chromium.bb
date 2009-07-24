@@ -73,9 +73,12 @@ bool installer::LaunchChromeAndWaitForResult(bool system_install,
   }
 
   DWORD wr = ::WaitForSingleObject(pi.hProcess, INFINITE);
-  if (exit_code) {
-    ::GetExitCodeProcess(pi.hProcess, reinterpret_cast<DWORD*>(exit_code));
-  }
+  DWORD ret;
+  if (::GetExitCodeProcess(pi.hProcess, &ret) == 0)
+    return false;
+
+  if (exit_code)
+    *exit_code = ret;
 
   ::CloseHandle(pi.hProcess);
   ::CloseHandle(pi.hThread);
