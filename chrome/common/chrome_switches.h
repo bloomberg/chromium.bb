@@ -217,6 +217,8 @@ extern const wchar_t kAllowSandboxDebugging[];
 
 extern const wchar_t kDiagnostics[];
 
+extern const wchar_t kEnableCustomJumpList[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

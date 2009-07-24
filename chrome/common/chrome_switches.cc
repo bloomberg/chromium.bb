@@ -554,4 +554,7 @@ const wchar_t kAllowSandboxDebugging[] = L"allow-sandbox-debugging";
 // Triggers a pletora of diagnostic modes.
 const wchar_t kDiagnostics[] = L"diagnostics";
 
+// Enables the custom JumpList on Windows 7.
+const wchar_t kEnableCustomJumpList[] = L"enable-custom-jumplist";
+
 }  // namespace switches

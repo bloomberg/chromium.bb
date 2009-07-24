@@ -27,6 +27,9 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
+#if defined(OS_WIN)
+#include "chrome/browser/jumplist.h"
+#endif
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
@@ -1481,6 +1484,13 @@ void BrowserView::Init() {
 
 #if defined(OS_WIN)
   InitSystemMenu();
+
+  // Create a custom JumpList and add it to an observer of TabRestoreService
+  // so we can update the custom JumpList when a tab is added or removed.
+  if (JumpList::Enabled()) {
+    jumplist_.reset(new JumpList);
+    jumplist_->AddObserver(browser_->profile());
+  }
 #endif
 }
 

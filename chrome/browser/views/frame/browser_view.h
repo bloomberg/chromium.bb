@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_VIEW_H_
 #define CHROME_BROWSER_VIEWS_FRAME_BROWSER_VIEW_H_
 
+#include <map>
 #include <set>
+#include <string>
 
 #include "base/gfx/native_widget_types.h"
+#include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser.h"
@@ -37,6 +40,9 @@ class ExtensionShelf;
 class FullscreenExitBubble;
 class HtmlDialogUIDelegate;
 class InfoBarContainer;
+#if defined(OS_WIN)
+class JumpList;
+#endif
 class LocationBarView;
 class StatusBubbleViews;
 class TabContentsContainer;
@@ -473,6 +479,9 @@ class BrowserView : public BrowserWindow,
   // This object is invoked by hung_window_detector_ when it detects a hung
   // plugin window.
   HungPluginAction hung_plugin_action_;
+
+  // The custom JumpList for Windows 7.
+  scoped_ptr<JumpList> jumplist_;
 #endif
 
   // The timer used to update frames for the Loading Animation.
