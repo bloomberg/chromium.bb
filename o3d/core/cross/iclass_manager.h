@@ -70,6 +70,17 @@ class IClassManager {
     AddClass(T::GetApparentClass(), T::Create);
   }
 
+  // Removes a registered class.
+  // Paramters:
+  //   class_type: Class of type as provided by ObjectBase::GetClass.
+  virtual void RemoveClass(const ObjectBase::Class* class_type) = 0;
+
+  // A typesafe version of RemoveClass.
+  template <typename T>
+  void RemoveTypedClass() {
+    RemoveClass(T::GetApparentClass());
+  }
+
   // Returns the ObjectBase::Class for a particular class name. It only works
   // for classes that have been registered through AddClass.
   // Parameters:
@@ -99,6 +110,16 @@ class IClassManager {
   virtual ObjectBase::Ref CreateObjectByClass(
       const ObjectBase::Class* object_class) = 0;
 
+  // Creates a Object based on the type. This is a type safe version of
+  // CreateObjectByClass for C++.
+  // Returns:
+  //  pointer to new object if successful.
+  template<typename T>
+  typename T::Ref Create() {
+    return typename T::Ref(down_cast<T*>(
+        CreateObjectByClass(T::GetApparentClass()).Get()));
+  }
+
   // Creates an Object by Class name. This is an internal function. Do not use
   // directly.
   // Parameters:
@@ -111,9 +132,28 @@ class IClassManager {
   virtual std::vector<const ObjectBase::Class*>
       GetAllClasses() const = 0;
 
+  // This class registers a class with a class manager and removes it on
+  // destruction.
+  template <typename T>
+  class Register {
+   public:
+    explicit Register(ServiceLocator* service_locator)
+        : class_manager_(service_locator->GetService<IClassManager>()) {
+      class_manager_->AddTypedClass<T>();
+    }
+    ~Register() {
+      class_manager_->RemoveTypedClass<T>();
+    }
+
+   private:
+    IClassManager* class_manager_;
+    DISALLOW_COPY_AND_ASSIGN(Register);
+  };
+
  private:
   DISALLOW_COPY_AND_ASSIGN(IClassManager);
 };
+
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_ICLASS_MANAGER_H_

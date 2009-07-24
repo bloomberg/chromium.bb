@@ -62,9 +62,11 @@ else:
   env.Append(CCFLAGS = [['-include', 'import/cross/precompile.h']])
 
 collada_inputs = [
+  'cross/camera_info.cc',
   'cross/collada.cc',
   'cross/collada_zip_archive.cc',
   'cross/destination_buffer.cc',
+  'cross/json_object.cc',
   'cross/zip_archive.cc',
   'cross/gz_compressor.cc',
   'cross/file_output_stream_processor.cc',

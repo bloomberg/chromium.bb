@@ -49,6 +49,7 @@
 #include "core/cross/transform.h"
 #include "import/cross/destination_buffer.h"
 #include "import/cross/iarchive_generator.h"
+#include "import/cross/json_object.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
 #include "serializer/cross/version.h"
@@ -221,6 +222,7 @@ class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
     Enable<Curve>(&PropertiesVisitor::Visit);
     Enable<Element>(&PropertiesVisitor::Visit);
     Enable<NamedObject>(&PropertiesVisitor::Visit);
+    Enable<JSONObject>(&PropertiesVisitor::Visit);
     Enable<Pack>(&PropertiesVisitor::Visit);
     Enable<Primitive>(&PropertiesVisitor::Visit);
     Enable<Shape>(&PropertiesVisitor::Visit);
@@ -250,6 +252,11 @@ class PropertiesVisitor : public VisitorBase<PropertiesVisitor> {
 
     writer_->WritePropertyName("owner");
     Serialize(writer_, element->owner());
+  }
+
+  void Visit(JSONObject* object) {
+    Visit(static_cast<ParamObject*>(object));
+    object->Serialize(writer_);
   }
 
   void Visit(NamedObject* object) {
@@ -624,8 +631,6 @@ class BinaryVisitor : public VisitorBase<BinaryVisitor> {
   void Visit(ObjectBase* object) {
   }
 
-  // TODO: Replace this when we have code to serialize to the
-  // final binary format. This is just placeholder.
   void Visit(Curve* curve) {
     Visit(static_cast<NamedObject*>(curve));
 

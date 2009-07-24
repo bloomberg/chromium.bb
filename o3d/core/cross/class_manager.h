@@ -50,6 +50,8 @@ class ClassManager : public IClassManager {
   virtual void AddClass(const ObjectBase::Class* class_type,
                         ObjectCreateFunc function);
 
+  virtual void RemoveClass(const ObjectBase::Class* class_type);
+
   virtual const ObjectBase::Class* GetClassByClassName(
       const String& class_name) const;
 
