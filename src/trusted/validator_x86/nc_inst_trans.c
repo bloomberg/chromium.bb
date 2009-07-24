@@ -268,6 +268,7 @@ const char* RegKindName(RegKind kind) {
 }
 
 static OperandKind LookupRegister(RegKind kind, int reg_index) {
+  DEBUG(printf("Lookup register %s:%d\n", RegKindName(kind), reg_index));
   if (32 == NACL_TARGET_SUBARCH && kind == RegSize64) {
     FatallyLost("Architecture doesn't define 64 bit registers");
   }
@@ -743,7 +744,7 @@ static ExprNode* AppendSib(NcInstState* state) {
         break;
       case 1:
       case 2:
-        base_reg = RegEBP;
+        base_reg = (NACL_TARGET_SUBARCH == 64 ? RegRBP : RegEBP);
         break;
       default:
         return FatalError("SIB value", state);
