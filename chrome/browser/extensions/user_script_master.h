@@ -73,7 +73,7 @@ class UserScriptMaster : public base::RefCounted<UserScriptMaster>,
     static bool ParseMetadataHeader(const StringPiece& script_text,
                                     UserScript* script);
 
-    static void LoadScriptsFromDirectory(const FilePath script_dir,
+    static void LoadScriptsFromDirectory(const FilePath& script_dir,
                                          UserScriptList* result);
 
     explicit ScriptReloader(UserScriptMaster* master);
@@ -81,7 +81,7 @@ class UserScriptMaster : public base::RefCounted<UserScriptMaster>,
     // Start a scan for scripts.
     // Will always send a message to the master upon completion.
     void StartScan(MessageLoop* work_loop, const FilePath& script_dir,
-                   const UserScriptList &external_scripts);
+                   const UserScriptList& external_scripts);
 
     // The master is going away; don't call it back.
     void DisownMaster() {

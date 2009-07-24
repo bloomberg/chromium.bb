@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/user_script_master.h"
 
+#include <string>
 #include <vector>
 
 #include "base/file_path.h"
@@ -145,7 +146,7 @@ static void LoadScriptContent(UserScript::File* script_file) {
 }
 
 void UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
-    const FilePath script_dir, UserScriptList* result) {
+    const FilePath& script_dir, UserScriptList* result) {
   // Clear the list. We will populate it with the scrips found in script_dir.
   result->clear();
 
