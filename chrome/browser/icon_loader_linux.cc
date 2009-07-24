@@ -29,8 +29,7 @@ static int SizeToInt(IconLoader::IconSize size) {
 }
 
 void IconLoader::ReadIcon() {
-  int size = SizeToInt(icon_size_);
-  filename_ = mime_util::GetMimeIcon(group_, size);
+  filename_ = mime_util::GetMimeIcon(group_, SizeToInt(icon_size_));
   file_util::ReadFileToString(filename_, &icon_data_);
   target_message_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &IconLoader::ParseIcon));

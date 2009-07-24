@@ -22,9 +22,6 @@
 
 namespace {
 
-// Toggles whether we can handle SVG icons. See http://crbug.com/12272
-const bool kEnableSVG = false;
-
 class IconTheme;
 
 class MimeUtilConstants {
@@ -37,7 +34,7 @@ class MimeUtilConstants {
   std::map<FilePath, int>* icon_dirs_;
 
   // Store icon formats.
-  std::vector<std::string>* icon_formats_;
+  std::vector<std::string> icon_formats_;
 
   // Store loaded icon_theme.
   std::map<std::string, IconTheme*>* icon_themes_;
@@ -53,9 +50,12 @@ class MimeUtilConstants {
   MimeUtilConstants()
       : kUpdateInterval(5),
         icon_dirs_(NULL),
-        icon_formats_(NULL),
         icon_themes_(NULL),
         last_check_time_(0) {
+    icon_formats_.push_back(".png");
+    icon_formats_.push_back(".svg");
+    icon_formats_.push_back(".xpm");
+
     for (size_t i = 0; i < kDefaultThemeNum; ++i)
       default_themes_[i] = NULL;
   }
@@ -227,7 +227,7 @@ FilePath IconTheme::GetIconPathUnderSubdir(const std::string& icon_name,
   FilePath icon_path;
   std::list<FilePath>::iterator dir_iter;
   std::vector<std::string>* icon_formats =
-      Singleton<MimeUtilConstants>::get()->icon_formats_;
+      &Singleton<MimeUtilConstants>::get()->icon_formats_;
   for (dir_iter = dirs_.begin(); dir_iter != dirs_.end(); ++dir_iter) {
     for (size_t i = 0; i < icon_formats->size(); ++i) {
       icon_path = dir_iter->Append(subdir);
@@ -386,19 +386,6 @@ void AddXDGDataDir(const FilePath& dir) {
   TryAddIconDir(dir.Append("pixmaps"));
 }
 
-// Enable or disable SVG support.
-void EnableSvgIcon(bool enable) {
-  std::vector<std::string>* icon_formats =
-      Singleton<MimeUtilConstants>::get()->icon_formats_;
-  icon_formats->clear();
-  icon_formats->push_back(".png");
-  if (enable) {
-    icon_formats->push_back(".svg");
-    icon_formats->push_back(".svgz");
-  }
-  icon_formats->push_back(".xpm");
-}
-
 // Add all the xdg icon directories.
 void InitIconDir() {
   Singleton<MimeUtilConstants>::get()->icon_dirs_->clear();
@@ -445,8 +432,6 @@ void EnsureUpdated() {
   if (constants->last_check_time_ == 0) {
     constants->icon_dirs_ = new std::map<FilePath, int>;
     constants->icon_themes_ = new std::map<std::string, IconTheme*>;
-    constants->icon_formats_ = new std::vector<std::string>;
-    EnableSvgIcon(kEnableSVG);
     InitIconDir();
     constants->last_check_time_ = now;
   } else {
@@ -463,7 +448,7 @@ FilePath LookupFallbackIcon(const std::string& icon_name) {
   MimeUtilConstants* constants = Singleton<MimeUtilConstants>::get();
   std::map<FilePath, int>::iterator iter;
   std::map<FilePath, int>* icon_dirs = constants->icon_dirs_;
-  std::vector<std::string>* icon_formats = constants->icon_formats_;
+  std::vector<std::string>* icon_formats = &constants->icon_formats_;
   for (iter = icon_dirs->begin(); iter != icon_dirs->end(); ++iter) {
     for (size_t i = 0; i < icon_formats->size(); ++i) {
       icon = iter->first.Append(icon_name + (*icon_formats)[i]);
@@ -548,7 +533,6 @@ FilePath LookupIconInDefaultTheme(const std::string& icon_name, int size) {
 
 MimeUtilConstants::~MimeUtilConstants() {
   delete icon_dirs_;
-  delete icon_formats_;
   delete icon_themes_;
   for (size_t i = 0; i < kDefaultThemeNum; i++)
     delete default_themes_[i];
