@@ -100,6 +100,14 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   SkColor color_section_link =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK);
 
+  // Generate a lighter color.
+  skia::HSL section_lighter;
+  skia::SkColorToHSL(color_section, section_lighter);
+  section_lighter.l += (1 - section_lighter.l) * 0.33;
+  section_lighter.s += (1 - section_lighter.s) * 0.1;
+  SkColor color_section_lighter =
+      skia::HSLToSkColor(SkColorGetA(color_section), section_lighter);
+
   // Generate the replacements.
   std::vector<string16> subst;
   // A second list of replacements, each of which must be in $$x format,
@@ -108,19 +116,20 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
 
   // Cache-buster for background.
   subst.push_back(UTF8ToUTF16(IntToString(static_cast<int>(
-      base::Time::Now().ToDoubleT()))));
+      base::Time::Now().ToDoubleT()))));  // $1
 
   // Colors.
-  subst.push_back(SkColorToRGBAString(color_background));
-  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(false)));
-  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(true)));
-  subst.push_back(SkColorToRGBAString(color_text));
-  subst.push_back(SkColorToRGBAString(color_link));
-  subst.push_back(SkColorToRGBAString(color_section));
-  subst.push_back(SkColorToRGBAString(color_section_text));
-  subst.push_back(SkColorToRGBAString(color_section_link));
+  subst.push_back(SkColorToRGBAString(color_background));  // $2
+  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(false)));  // $3
+  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(true)));  // $4
+  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundTilingCSS()));  // $5
+  subst.push_back(SkColorToRGBAString(color_section));  // $6
+  subst.push_back(SkColorToRGBAString(color_section_lighter));  // $7
+  subst.push_back(SkColorToRGBAString(color_text));  // $8
+  subst.push_back(SkColorToRGBAString(color_link));  // $9
 
-  subst2.push_back(UTF8ToUTF16(GetNewTabBackgroundTilingCSS()));
+  subst2.push_back(SkColorToRGBAString(color_section_text));  // $$1
+  subst2.push_back(SkColorToRGBAString(color_section_link));  // $$2
 
   // Get our template.
   static const StringPiece new_tab_theme_css(
@@ -176,6 +185,14 @@ std::string DOMUIThemeSource::GetNewTabBackgroundCSS(bool bar_attached) {
 #else
   int offset = 0;
 #endif
+
+  // TODO(glen): This is a quick workaround to hide the notused.png image when
+  // no image is provided - we don't have time right now to figure out why
+  // this is painting as white.
+  // http://crbug.com/17593
+  if (!profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+    return "-64px";
+  }
 
   if (alignment & BrowserThemeProvider::ALIGN_TOP) {
     if (alignment & BrowserThemeProvider::ALIGN_LEFT)

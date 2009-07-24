@@ -2,24 +2,64 @@ html {
   background-image:url(chrome://theme/theme_ntp_background?$1);
   background-color:$2;
   background-position:$3;
-  background-repeat:$$1;
+  background-repeat:$5;
   overflow:hidden;
 }
 html[bookmarkbarattached='true'] {
   background-position:$4;
 }
 body {
-  color: $5;
+  color: $8;
   height:100%;
   overflow:auto;
 }
-a {
-  color: $6;
-}
-.sidebar.themed {
-  background-color: $7;
+.thumbnail-container,
+.list > .thumbnail-container > .title,
+.list .title > div,
+.thumbnail-container > .title {
   color: $8;
 }
-.sidebar.themed a {
-  color: $9;
+.thumbnail-container:focus .thumbnail,
+.thumbnail-container:hover .thumbnail {
+  border-color: $6;
+}
+.thumbnail-container:focus .edit-bar,
+.thumbnail-container:hover .edit-bar {
+  background-color: $6;
+  background-image: -webkit-gradient(linear, left top, left bottom,
+                                     from($7),
+                                     to($6));
+}
+.thumbnail-container:hover > .edit-mode-border {
+  background-color: $6;
+}
+:visited,
+.link {
+  cursor: pointer;
+  text-decoration: underline;
+  color: $8;
+}
+.edit-mode-border {
+  background-color: $7;
+}
+.section {
+  border: 1px solid $7;
+}
+.section > h2 {
+  background-color: $7;
+  background-image: -webkit-gradient(linear, left top, left bottom,
+                                     from($7),
+                                     to($6));
+  color: $$1;
+}
+#view-toolbar input {
+  background-color: $7;
+  -webkit-mask-image: url(chrome://theme/newtab_menu_mask);
+}
+#option-menu > [selected] {
+  background-color: $7;
+  color: white;
+}
+.tips-title {
+  color: $$1;
 }

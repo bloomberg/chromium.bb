@@ -57,6 +57,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Strings used by themes to identify miscellaneous numerical properties.
   static const char* kDisplayPropertyNTPAlignment;
   static const char* kDisplayPropertyNTPTiling;
+  static const char* kDisplayPropertyNTPInverseLogo;
 
   // Strings used in alignment properties.
   static const char* kAlignmentTop;
@@ -123,7 +124,8 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
     TINT_FRAME_INCOGNITO_INACTIVE,
     TINT_BACKGROUND_TAB,
     NTP_BACKGROUND_ALIGNMENT,
-    NTP_BACKGROUND_TILING
+    NTP_BACKGROUND_TILING,
+    NTP_LOGO_ALTERNATE
   };
 
   // A bitfield mask for alignments.
@@ -196,6 +198,10 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Generate any frame images that weren't specified. The resulting images
   // will be stored in our cache.
   void GenerateFrameImages();
+
+  // Generate any tab images that weren't specified. The resulting images
+  // will be stored in our cache.
+  void GenerateTabImages();
 
   // Clears all the override fields and saves the dictionary.
   void ClearAllThemeData();

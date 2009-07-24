@@ -24,6 +24,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/skia_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -66,6 +67,8 @@ const char* BrowserThemeProvider::kDisplayPropertyNTPAlignment =
     "ntp_background_alignment";
 const char* BrowserThemeProvider::kDisplayPropertyNTPTiling =
     "ntp_background_repeat";
+const char* BrowserThemeProvider::kDisplayPropertyNTPInverseLogo =
+    "ntp_logo_alternate";
 
 // Strings used in alignment properties.
 const char* BrowserThemeProvider::kAlignmentTop = "top";
@@ -95,19 +98,19 @@ const SkColor BrowserThemeProvider::kDefaultColorTabText =
 const SkColor BrowserThemeProvider::kDefaultColorBackgroundTabText =
     SkColorSetRGB(64, 64, 64);
 const SkColor BrowserThemeProvider::kDefaultColorBookmarkText =
-    SkColorSetRGB(64, 64, 64);
+    SkColorSetRGB(18, 50, 114);
 const SkColor BrowserThemeProvider::kDefaultColorNTPBackground =
     SkColorSetRGB(255, 255, 255);
 const SkColor BrowserThemeProvider::kDefaultColorNTPText =
     SkColorSetRGB(0, 0, 0);
 const SkColor BrowserThemeProvider::kDefaultColorNTPLink =
-    SkColorSetRGB(0, 0, 204);
-const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
-    SkColorSetRGB(225, 236, 254);
-const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText =
     SkColorSetRGB(0, 0, 0);
+const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
+    SkColorSetRGB(75, 140, 220);
+const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText =
+    SkColorSetRGB(255, 255, 255);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionLink =
-    SkColorSetRGB(0, 0, 204);
+    SkColorSetRGB(127, 148, 173);
 const SkColor BrowserThemeProvider::kDefaultColorControlBackground = NULL;
 const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
 
@@ -128,6 +131,7 @@ static const int kDefaultDisplayPropertyNTPAlignment =
     BrowserThemeProvider::ALIGN_BOTTOM;
 static const int kDefaultDisplayPropertyNTPTiling =
     BrowserThemeProvider::NO_REPEAT;
+static const int kDefaultDisplayPropertyNTPInverseLogo = 0;
 
 // The image resources that will be tinted by the 'button' tint value.
 static const int kToolbarButtonIDs[] = {
@@ -142,11 +146,33 @@ static const int kToolbarButtonIDs[] = {
   IDR_MENU_PAGE, IDR_MENU_PAGE_RTL,
   IDR_MENU_CHROME, IDR_MENU_CHROME_RTL,
   IDR_MENU_DROPARROW,
-  IDR_THROBBER, IDR_THROBBER_WAITING, IDR_THROBBER_LIGHT
+  IDR_THROBBER, IDR_THROBBER_WAITING, IDR_THROBBER_LIGHT,
+  IDR_LOCATIONBG
 };
 
 // A map for kToolbarButtonIDs.
 static std::map<const int, bool> button_images_;
+
+// The image resources we will allow people to theme.
+static const int kThemeableImages[] = {
+  IDR_THEME_FRAME,
+  IDR_THEME_FRAME_INACTIVE,
+  IDR_THEME_FRAME_INCOGNITO,
+  IDR_THEME_FRAME_INCOGNITO_INACTIVE,
+  IDR_THEME_TOOLBAR,
+  IDR_THEME_TAB_BACKGROUND,
+  IDR_THEME_TAB_BACKGROUND_INCOGNITO,
+  IDR_THEME_TAB_BACKGROUND_V,
+  IDR_THEME_NTP_BACKGROUND,
+  IDR_THEME_FRAME_OVERLAY,
+  IDR_THEME_FRAME_OVERLAY_INACTIVE,
+  IDR_THEME_BUTTON_BACKGROUND,
+  IDR_THEME_NTP_ATTRIBUTION,
+  IDR_THEME_WINDOW_CONTROL_BACKGROUND
+};
+
+// A map for kThemeableImages.
+static std::map<const int, bool> themeable_images_;
 
 // A map of frame image IDs to the tints for those ids.
 static std::map<const int, int> frame_tints_;
@@ -158,8 +184,13 @@ BrowserThemeProvider::BrowserThemeProvider()
     for (size_t i = 0; i < arraysize(kToolbarButtonIDs); ++i) {
       button_images_[kToolbarButtonIDs[i]] = true;
     }
+    for (size_t i = 0; i < arraysize(kThemeableImages); ++i) {
+      themeable_images_[kThemeableImages[i]] = true;
+    }
     frame_tints_[IDR_THEME_FRAME] = TINT_FRAME;
     frame_tints_[IDR_THEME_FRAME_INACTIVE] = TINT_FRAME_INACTIVE;
+    frame_tints_[IDR_THEME_FRAME_OVERLAY] = TINT_FRAME;
+    frame_tints_[IDR_THEME_FRAME_OVERLAY_INACTIVE] = TINT_FRAME_INACTIVE;
     frame_tints_[IDR_THEME_FRAME_INCOGNITO] = TINT_FRAME_INCOGNITO;
     frame_tints_[IDR_THEME_FRAME_INCOGNITO_INACTIVE] =
         TINT_FRAME_INCOGNITO_INACTIVE;
@@ -178,6 +209,12 @@ void BrowserThemeProvider::Init(Profile* profile) {
 
 SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
   DCHECK(CalledOnValidThread());
+
+  // Check to see whether we should substitute some images.
+  int ntp_alternate;
+  GetDisplayProperty(NTP_LOGO_ALTERNATE, &ntp_alternate);
+  if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
+    id = IDR_PRODUCT_LOGO_WHITE;
 
   // Check to see if we already have the Skia image in the cache.
   ImageCache::const_iterator found = image_cache_.find(id);
@@ -282,6 +319,14 @@ bool BrowserThemeProvider::GetDisplayProperty(int id, int* result) {
         *result = kDefaultDisplayPropertyNTPTiling;
       }
       return true;
+    case NTP_LOGO_ALTERNATE:
+      if (display_properties_.find(kDisplayPropertyNTPInverseLogo) !=
+          display_properties_.end()) {
+        *result = display_properties_[kDisplayPropertyNTPInverseLogo];
+      } else {
+        *result = kDefaultDisplayPropertyNTPInverseLogo;
+      }
+      return true;
     default:
       NOTREACHED() << "Unknown property requested";
   }
@@ -289,7 +334,7 @@ bool BrowserThemeProvider::GetDisplayProperty(int id, int* result) {
 }
 
 bool BrowserThemeProvider::ShouldUseNativeFrame() {
-  if (images_.find(IDR_THEME_FRAME) != images_.end())
+  if (HasCustomImage(IDR_THEME_FRAME))
     return false;
 #if defined(OS_WIN)
   return win_util::ShouldUseVistaFrame();
@@ -299,6 +344,9 @@ bool BrowserThemeProvider::ShouldUseNativeFrame() {
 }
 
 bool BrowserThemeProvider::HasCustomImage(int id) {
+  if (!themeable_images_[id])
+    return false;
+
   return (images_.find(id) != images_.end());
 }
 
@@ -315,6 +363,7 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   SetDisplayPropertyData(extension->GetThemeDisplayProperties());
   GenerateFrameColors();
   GenerateFrameImages();
+  GenerateTabImages();
 
   SaveImageData(extension->GetThemeImages());
   SaveColorData();
@@ -362,6 +411,10 @@ bool BrowserThemeProvider::ReadThemeFileData(
 
 SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) {
   DCHECK(CalledOnValidThread());
+
+  if (!themeable_images_[id])
+    return NULL;
+
   // Attempt to find the image in our theme bundle.
   std::vector<unsigned char> raw_data, png_data;
   if (ReadThemeFileData(id, &raw_data)) {
@@ -539,6 +592,12 @@ void BrowserThemeProvider::SetDisplayPropertyData(
         display_properties_[kDisplayPropertyNTPTiling] =
             StringToTiling(val);
     }
+    if (base::strcasecmp(WideToUTF8(*iter).c_str(),
+        kDisplayPropertyNTPInverseLogo) == 0) {
+      std::string val;
+      if (display_properties_value->GetString(*iter, &val))
+        display_properties_[kDisplayPropertyNTPInverseLogo] = StringToInt(val);
+    }
     ++iter;
   }
 }
@@ -655,13 +714,24 @@ void BrowserThemeProvider::GenerateFrameImages() {
     // If there's no frame image provided for the specified id, then load
     // the default provided frame. If that's not provided, skip this whole
     // thing and just use the default images.
-    int base_id = (id == IDR_THEME_FRAME_INCOGNITO ||
-                   id == IDR_THEME_FRAME_INCOGNITO_INACTIVE) ?
-        IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+    int base_id;
+    if (id == IDR_THEME_FRAME_INCOGNITO_INACTIVE)
+      base_id = (HasCustomImage(IDR_THEME_FRAME_INCOGNITO)) ?
+          IDR_THEME_FRAME_INCOGNITO :
+          IDR_THEME_FRAME;
+    else if (id == IDR_THEME_FRAME_OVERLAY_INACTIVE)
+      base_id = IDR_THEME_FRAME_OVERLAY;
+    else if (id == IDR_THEME_FRAME_INACTIVE)
+      base_id = IDR_THEME_FRAME;
+    else if (id == IDR_THEME_FRAME_INCOGNITO &&
+             !HasCustomImage(IDR_THEME_FRAME_INCOGNITO))
+      base_id = IDR_THEME_FRAME;
+    else
+      base_id = id;
 
-    if (images_.find(id) != images_.end()) {
+    if (HasCustomImage(id)) {
       frame.reset(LoadThemeBitmap(id));
-    } else if (base_id != id && images_.find(base_id) != images_.end()) {
+    } else if (base_id != id && HasCustomImage(base_id)) {
       frame.reset(LoadThemeBitmap(base_id));
     } else {
       // If the theme doesn't specify an image, then apply the tint to
@@ -677,6 +747,11 @@ void BrowserThemeProvider::GenerateFrameImages() {
     }
     ++iter;
   }
+}
+
+void BrowserThemeProvider::GenerateTabImages() {
+  GenerateBitmap(IDR_THEME_TAB_BACKGROUND);
+  GenerateBitmap(IDR_THEME_TAB_BACKGROUND_INCOGNITO);
 }
 
 void BrowserThemeProvider::ClearAllThemeData() {
@@ -707,10 +782,21 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
     std::map<int, SkBitmap*>::iterator it = image_cache_.find(base_id);
     if (it != image_cache_.end()) {
       SkBitmap* frame = it->second;
+      int blur_amount = (HasCustomImage(id)) ? 1 : 5;
       SkBitmap blurred =
-          skia::ImageOperations::CreateBlurredBitmap(*frame, 5);
+          skia::ImageOperations::CreateBlurredBitmap(*frame, blur_amount);
       SkBitmap* bg_tab =
           new SkBitmap(TintBitmap(blurred, TINT_BACKGROUND_TAB));
+
+      // If they've provided a custom image, overlay it.
+      if (HasCustomImage(id)) {
+        SkBitmap* overlay = LoadThemeBitmap(id);
+        SkCanvas canvas(*bg_tab);
+        for (int x = 0; x < bg_tab->width(); x += overlay->width())
+          canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
+      }
+
+      image_cache_[id] = bg_tab;
       return bg_tab;
     }
   }
@@ -752,7 +838,7 @@ void BrowserThemeProvider::SaveColorData() {
       rgb_list->Set(1, Value::CreateIntegerValue(SkColorGetG(rgba)));
       rgb_list->Set(2, Value::CreateIntegerValue(SkColorGetB(rgba)));
       if (SkColorGetA(rgba) != 255)
-        rgb_list->Set(3, Value::CreateRealValue(SkColorGetA(rgba)));
+        rgb_list->Set(3, Value::CreateRealValue(SkColorGetA(rgba) / 255.0));
       pref_colors->Set(UTF8ToWide((*iter).first), rgb_list);
       ++iter;
     }
@@ -798,6 +884,11 @@ void BrowserThemeProvider::SaveDisplayPropertyData() {
         pref_display_properties->
             SetString(UTF8ToWide((*iter).first), TilingToString(
                 (*iter).second));
+      }
+      if (base::strcasecmp((*iter).first.c_str(),
+                           kDisplayPropertyNTPInverseLogo) == 0) {
+        pref_display_properties->
+            SetInteger(UTF8ToWide((*iter).first), (*iter).second);
       }
       ++iter;
     }

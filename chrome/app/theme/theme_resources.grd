@@ -174,6 +174,7 @@
       <include name="IDR_NEWTAB_LIST_ON" file="ntp_list_on.png" type="BINDATA" />
       <include name="IDR_NEWTAB_LIST_ON_H" file="ntp_list_on_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_LIST_ON_P" file="ntp_list_on_p.png" type="BINDATA" />
+      <include name="IDR_NEWTAB_MENU_MASK" file="ntp_menu_mask.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THUMB_OFF" file="ntp_thumb_off.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THUMB_OFF_H" file="ntp_thumb_off_h.png" type="BINDATA" />
       <include name="IDR_NEWTAB_THUMB_OFF_P" file="ntp_thumb_off_p.png" type="BINDATA" />
@@ -310,6 +311,7 @@
         <include name="IDR_DISTRIBUTOR_LOGO" file="google_chrome/distributor_logo.png" type="BINDATA" />
         <include name="IDR_DISTRIBUTOR_LOGO_LIGHT" file="google_chrome/distributor_logo_light.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO" file="google_chrome/product_logo.png" type="BINDATA" />
+        <include name="IDR_PRODUCT_LOGO_WHITE" file="google_chrome/product_logo_white.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="google_chrome/product_logo_16.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON" file="google_chrome/wizard_icon.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON_RTL" file="google_chrome/wizard_icon_rtl.png" type="BINDATA" />
@@ -321,6 +323,7 @@
         <include name="IDR_ABOUT_BACKGROUND_RTL" file="chromium/about_background_rtl.png" type="BINDATA" />
         <include name="IDR_ABOUT_BACKGROUND_COLOR" file="chromium/about_background_color.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO" file="chromium/product_logo.png" type="BINDATA" />
+        <include name="IDR_PRODUCT_LOGO_WHITE" file="chromium/product_logo_white.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="chromium/product_logo_16.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON" file="chromium/wizard_icon.png" type="BINDATA" />
         <include name="IDR_WIZARD_ICON_RTL" file="chromium/wizard_icon_rtl.png" type="BINDATA" />
