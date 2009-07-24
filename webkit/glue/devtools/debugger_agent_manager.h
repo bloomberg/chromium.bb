@@ -52,6 +52,23 @@ class DebuggerAgentManager {
 
   static void OnNavigate();
 
+  class UtilityContextScope {
+   public:
+    UtilityContextScope() {
+      DCHECK(!in_utility_context_);
+      in_utility_context_ = true;
+    }
+    ~UtilityContextScope() {
+      if (debug_break_delayed_) {
+        v8::Debug::DebugBreak();
+        debug_break_delayed_ = false;
+      }
+      in_utility_context_ = false;
+    }
+   private:
+    DISALLOW_COPY_AND_ASSIGN(UtilityContextScope);
+  };
+
  private:
   DebuggerAgentManager();
   ~DebuggerAgentManager();
@@ -74,6 +91,9 @@ class DebuggerAgentManager {
   typedef HashMap<WebViewImpl*, WebCore::PageGroupLoadDeferrer*>
       DeferrersMap;
   static DeferrersMap page_deferrers_;
+
+  static bool in_utility_context_;
+  static bool debug_break_delayed_;
 
   DISALLOW_COPY_AND_ASSIGN(DebuggerAgentManager);
 };
