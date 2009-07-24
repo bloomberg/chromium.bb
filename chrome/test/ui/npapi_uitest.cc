@@ -254,7 +254,8 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
  }
 }
 
-TEST_F(NPAPIVisiblePluginTester, OpenPopupWindowWithPlugin) {
+// Flaky. See http://crbug.com/17645
+TEST_F(NPAPIVisiblePluginTester, DISABLED_OpenPopupWindowWithPlugin) {
   GURL url = GetTestUrl(L"npapi",
                         L"get_javascript_open_popup_with_plugin.html");
   NavigateToURL(url);
