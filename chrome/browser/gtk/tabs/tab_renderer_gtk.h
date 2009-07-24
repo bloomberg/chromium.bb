@@ -335,6 +335,9 @@ class TabRendererGtk : public AnimationDelegate {
   // The close button.
   scoped_ptr<CustomDrawButton> close_button_;
 
+  // The current color of the close button.
+  SkColor close_button_color_;
+
   DISALLOW_COPY_AND_ASSIGN(TabRendererGtk);
 };
 

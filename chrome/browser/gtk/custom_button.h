@@ -14,6 +14,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class GtkThemeProvider;
 
@@ -42,6 +43,9 @@ class CustomDrawButtonBase : public NotificationObserver {
   void set_paint_override(int state) { paint_override_ = state; }
   int paint_override() const { return paint_override_; }
 
+  // Set the background details.
+  void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
+
   // Provide NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -51,6 +55,9 @@ class CustomDrawButtonBase : public NotificationObserver {
   // We store one GdkPixbuf* for each possible state of the button;
   // INSENSITIVE is the last available state;
   GdkPixbuf* pixbufs_[GTK_STATE_INSENSITIVE + 1];
+
+  // The background image.
+  GdkPixbuf* background_image_;
 
   // If non-negative, the state to paint the button.
   int paint_override_;
@@ -112,6 +119,9 @@ class CustomDrawButton : public NotificationObserver {
 
   // Resume normal drawing of the widget's state.
   void UnsetPaintOverride();
+
+  // Set the background details.
+  void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
 
   // Provide NotificationObserver implementation.
   virtual void Observe(NotificationType type,

@@ -217,7 +217,8 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
       showing_close_button_(false),
       fav_icon_hiding_offset_(0),
       should_display_crashed_favicon_(false),
-      loading_animation_(theme_provider) {
+      loading_animation_(theme_provider),
+      close_button_color_(NULL) {
   InitResources();
 
   data_.pinned = false;
@@ -497,6 +498,19 @@ void TabRendererGtk::Layout() {
     close_button_bounds_.SetRect(local_bounds.width() + kCloseButtonHorzFuzz,
                                  close_button_top, close_button_width_,
                                  close_button_height_);
+
+    // If the close button color has changed, generate a new one.
+    if (theme_provider_) {
+      SkColor tab_text_color =
+        theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT);
+      if (!close_button_color_ || tab_text_color != close_button_color_) {
+        close_button_color_ = tab_text_color;
+        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        close_button_->SetBackground(close_button_color_,
+            rb.GetBitmapNamed(IDR_TAB_CLOSE),
+            rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
+      }
+    }
   } else {
     close_button_bounds_.SetRect(0, 0, 0, 0);
   }

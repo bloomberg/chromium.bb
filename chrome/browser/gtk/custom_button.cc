@@ -11,12 +11,15 @@
 #include "base/gfx/gtk_util.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
     int normal_id, int active_id, int highlight_id, int depressed_id)
-    : paint_override_(-1),
+    : background_image_(NULL),
+      paint_override_(-1),
       normal_id_(normal_id),
       active_id_(active_id),
       highlight_id_(highlight_id),
@@ -46,6 +49,10 @@ CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
 }
 
 CustomDrawButtonBase::~CustomDrawButtonBase() {
+  if (background_image_) {
+    g_object_unref(background_image_);
+    background_image_ = NULL;
+  }
 }
 
 gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
@@ -64,16 +71,33 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
 
   // The widget might be larger than the pixbuf. Paint the pixbuf flush with the
   // start of the widget (left for LTR, right for RTL).
-  int pixbuf_width = gdk_pixbuf_get_width(pixbuf);
-  int widget_width = widget->allocation.width;
-  int x = (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) ?
-      widget_width - pixbuf_width : 0;
+  gfx::Rect bounds = gfx::Rect(0, 0, gdk_pixbuf_get_width(pixbuf), 0);
+  int x = gtk_util::MirroredLeftPointForRect(widget, bounds);
+
+  if (background_image_) {
+    gdk_cairo_set_source_pixbuf(cairo_context, background_image_, x, 0);
+    cairo_paint(cairo_context);
+  }
 
   gdk_cairo_set_source_pixbuf(cairo_context, pixbuf, x, 0);
   cairo_paint(cairo_context);
   cairo_destroy(cairo_context);
 
   return TRUE;
+}
+
+void CustomDrawButtonBase::SetBackground(SkColor color,
+                                         SkBitmap* image, SkBitmap* mask) {
+  if (!image || !mask) {
+    if (background_image_) {
+      g_object_unref(background_image_);
+      background_image_ = NULL;
+    }
+  } else {
+    SkBitmap img = skia::ImageOperations::CreateButtonBackground(color,
+                                                                 *image, *mask);
+    background_image_ = gfx::GdkPixbufFromSkBitmap(&img);
+  }
 }
 
 void CustomDrawButtonBase::Observe(NotificationType type,
@@ -145,6 +169,11 @@ void CustomDrawButton::UnsetPaintOverride() {
   button_base_.set_paint_override(-1);
   gtk_chrome_button_unset_paint_state(GTK_CHROME_BUTTON(widget_.get()));
   gtk_widget_queue_draw(widget_.get());
+}
+
+void CustomDrawButton::SetBackground(SkColor color,
+                                     SkBitmap* image, SkBitmap* mask) {
+  button_base_.SetBackground(color, image, mask);
 }
 
 // static
