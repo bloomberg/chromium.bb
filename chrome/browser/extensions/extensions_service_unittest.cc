@@ -342,8 +342,14 @@ class ExtensionsServiceTest
 
   void InstallExtension(const FilePath& path,
                         bool should_succeed) {
+    InstallExtension(path, should_succeed, GURL());
+  }
+
+  void InstallExtension(const FilePath& path,
+                        bool should_succeed,
+                        const GURL& referrer_url) {
     ASSERT_TRUE(file_util::PathExists(path));
-    service_->InstallExtension(path);
+    service_->InstallExtension(path, referrer_url);
     loop_.RunAllPending();
     std::vector<std::string> errors = GetErrors();
     if (should_succeed) {
@@ -793,11 +799,18 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
   ValidatePref(theme_crx, L"state", Extension::ENABLED);
   ValidatePref(theme_crx, L"location", Extension::INTERNAL);
 
-  // A theme when extensions are disabled. Themes can be installed even though
-  // extensions are disabled.
+  // A theme when extensions are disabled. Themes cannot be installed when
+  // extensions are disabled...
   SetExtensionsEnabled(false);
   path = extensions_path.AppendASCII("theme2.crx");
-  InstallExtension(path, true);
+  InstallExtension(path, false);
+  ValidatePrefKeyCount(pref_count);
+
+  // ... unless they come from the gallery URL.
+  SetExtensionsEnabled(false);
+  path = extensions_path.AppendASCII("theme2.crx");
+  InstallExtension(path, true, GURL(
+      std::string(ExtensionsService::kGalleryURLPrefix) + "foobar"));
   ValidatePrefKeyCount(++pref_count);
   ValidatePref(theme2_crx, L"state", Extension::ENABLED);
   ValidatePref(theme2_crx, L"location", Extension::INTERNAL);

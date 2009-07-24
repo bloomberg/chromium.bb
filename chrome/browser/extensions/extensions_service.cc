@@ -61,6 +61,9 @@ const char ExtensionsService::kExtensionHeaderMagic[] = "Cr24";
 
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
+const char* ExtensionsService::kGalleryURLPrefix =
+    "https://tools.google.com/chrome/";
+
 const char* ExtensionsServiceBackend::kTempExtensionName = "TEMP_INSTALL";
 
 namespace {
@@ -79,9 +82,6 @@ const char* kSignatureVerificationFailed = "Signature verification failed";
 const char* kSignatureVerificationInitFailed =
     "Signature verification initialization failed. This is most likely "
     "caused by a public key in the wrong format (should encode algorithm).";
-
-const char* kGalleryHost = "www.google.com";
-const char* kGalleryPath = "/chrome/";
 }
 
 // This class coordinates an extension unpack task which is run in a separate
@@ -297,9 +297,9 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path,
-                                         const GURL& url) {
-  bool from_gallery = url.host() == kGalleryHost &&
-                      StartsWithASCII(url.path(), kGalleryPath, false);
+                                         const GURL& referrer_url) {
+  bool from_gallery = StartsWithASCII(referrer_url.spec(), kGalleryURLPrefix,
+                                      false);
 
   backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
       &ExtensionsServiceBackend::InstallExtension, extension_path, from_gallery,
@@ -438,15 +438,18 @@ void ExtensionsService::OnLoadedInstalledExtensions() {
 void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
   scoped_ptr<ExtensionList> cleanup(new_extensions);
 
-  // Filter out any extensions that shouldn't be loaded. Themes are always
-  // loaded, but other extensions are only loaded if the extensions system is
-  // enabled.
+  // Filter out any extensions that shouldn't be loaded. If extensions are
+  // enabled, load everything. Otherwise load only:
+  // - themes
+  // - --load-extension
+  // - externally installed extensions
   ExtensionList enabled_extensions;
   for (ExtensionList::iterator iter = new_extensions->begin();
        iter != new_extensions->end(); ++iter) {
-    if (extensions_enabled() || (*iter)->IsTheme() ||
+    if (extensions_enabled() ||
+        (*iter)->IsTheme() ||
         (*iter)->location() == Extension::LOAD ||
-        (*iter)->location() == Extension::EXTERNAL_REGISTRY) {
+        Extension::IsExternalLocation((*iter)->location())) {
       Extension* old = GetExtensionById((*iter)->id());
       if (old) {
         if ((*iter)->version()->CompareTo(*(old->version())) > 0) {
@@ -1097,25 +1100,31 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
   Extension::Location location = Extension::INTERNAL;
   LookupExternalExtension(extension.id(), NULL, &location);
 
-  // We currently only allow themes and registry-installed extensions to be
-  // installed.
-  if (!extensions_enabled_ &&
-      !extension.IsTheme() &&
-      !Extension::IsExternalLocation(location)) {
+  // We allow themes from our minigallery or externally-registered
+  // extensions to be installed, even without --enable-extensions.
+  bool allow_install = false;
+  if (extensions_enabled_)
+    allow_install = true;
+
+  if (extension.IsTheme() && from_gallery)
+    allow_install = true;
+
+  if (Extension::IsExternalLocation(location))
+    allow_install = true;
+
+  if (!allow_install) {
     ReportExtensionInstallError(extension_path,
-        "Extensions are not enabled. Add --enable-extensions to the "
-        "command-line to enable extensions.\n\n"
-        "This is a temporary message and it will be removed when extensions "
-        "UI is finalized.");
+        "Extensions are not enabled.");
     return;
   }
 
   // TODO(extensions): Make better extensions UI. http://crbug.com/12116
 
-  // We don't show the dialog for a few special cases:
+  // We also skip the dialog for a few special cases:
   // - themes from the gallery
   // - externally registered extensions
-  // - during tests (!frontend->show_extension_prompts()) and updates (silent).
+  // - during tests (!frontend->show_extension_prompts())
+  // - autoupdate (silent).
   bool show_dialog = true;
   if (extension.IsTheme() && from_gallery)
     show_dialog = false;
@@ -1130,8 +1139,7 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
 #if defined(OS_WIN)
     if (win_util::MessageBox(GetForegroundWindow(),
             L"Are you sure you want to install this extension?\n\n"
-            L"This is a temporary message and it will be removed when "
-            L"extensions UI is finalized.",
+            L"You should only install extensions from sources you trust.",
             l10n_util::GetString(IDS_PRODUCT_NAME).c_str(),
             MB_OKCANCEL) != IDOK) {
       ReportExtensionInstallError(extension_path,

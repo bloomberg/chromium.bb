@@ -183,6 +183,9 @@ class ExtensionsService
   // The name of the file that the current active version number is stored in.
   static const char* kCurrentVersionFileName;
 
+  // A special URL that allows theme installation without prompts.
+  static const char* kGalleryURLPrefix;
+
   void SetExtensionsEnabled(bool enabled);
   bool extensions_enabled() { return extensions_enabled_; }
 
