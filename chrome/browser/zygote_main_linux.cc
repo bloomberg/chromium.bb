@@ -310,6 +310,14 @@ static bool MaybeEnterChroot() {
     // files and cache the results or the descriptors.
     base::RandUint64();
 
+    // To make wcstombs/mbstowcs work in a renderer, setlocale() has to be
+    // called before the sandbox is triggered. It's possible to avoid calling
+    // setlocale() by pulling out the conversion between FilePath and
+    // WebCore String out of the renderer and using string16 in place of
+    // FilePath for IPC.
+    const char* locale = setlocale(LC_ALL, "");
+    LOG_IF(WARNING, locale == NULL) << "setlocale failed.";
+
 #if defined(ARCH_CPU_X86_FAMILY)
     PATCH_GLOBAL_OFFSET_TABLE(localtime, sandbox_wrapper::localtime);
     PATCH_GLOBAL_OFFSET_TABLE(localtime_r, sandbox_wrapper::localtime_r);
