@@ -13,6 +13,8 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/native_theme.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/views/clear_browsing_data.h"
 #include "chrome/browser/views/importer_view.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/views/options/passwords_exceptions_window_view.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "views/controls/button/radio_button.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
@@ -41,6 +44,7 @@ ContentPageView::ContentPageView(Profile* profile)
       form_autofill_neversave_radio_(NULL),
       themes_group_(NULL),
       themes_reset_button_(NULL),
+      themes_gallery_button_(NULL),
       browsing_data_label_(NULL),
       browsing_data_group_(NULL),
       import_button_(NULL),
@@ -83,6 +87,19 @@ void ContentPageView::ButtonPressed(views::Button* sender) {
   } else if (sender == themes_reset_button_) {
     UserMetricsRecordAction(L"Options_ThemesReset", profile()->GetPrefs());
     profile()->ClearTheme();
+  } else if (sender == themes_gallery_button_) {
+    UserMetricsRecordAction(L"Options_ThemesGallery", profile()->GetPrefs());
+    Browser* browser =
+        BrowserList::FindBrowserWithType(profile(), Browser::TYPE_NORMAL);
+
+    if (!browser || !browser->GetSelectedTabContents()) {
+      browser = Browser::Create(profile());
+      browser->OpenURL(GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
+                       GURL(), NEW_WINDOW, PageTransition::LINK);
+    } else {
+      browser->AddTabWithURL(GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
+          GURL(), PageTransition::LINK, true, -1, false, NULL);
+    }
   } else if (sender == import_button_) {
     views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),
@@ -252,6 +269,8 @@ void ContentPageView::InitFormAutofillGroup() {
 void ContentPageView::InitThemesGroup() {
   themes_reset_button_ = new views::NativeButton(this,
       l10n_util::GetString(IDS_THEMES_RESET_BUTTON));
+  themes_gallery_button_ = new views::NativeButton(this,
+      l10n_util::GetString(IDS_THEMES_GALLERY_BUTTON));
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -260,13 +279,17 @@ void ContentPageView::InitThemesGroup() {
   GridLayout* layout = new GridLayout(contents);
   contents->SetLayoutManager(layout);
 
-  const int single_column_view_set_id = 1;
-  ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
-      GridLayout::USE_PREF, 0, 0);
+  const int double_column_view_set_id = 1;
+  ColumnSet* double_col_set = layout->AddColumnSet(double_column_view_set_id);
+  double_col_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                            GridLayout::USE_PREF, 0, 0);
+  double_col_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  double_col_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                            GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, single_column_view_set_id);
+  layout->StartRow(0, double_column_view_set_id);
   layout->AddView(themes_reset_button_);
+  layout->AddView(themes_gallery_button_);
 
   themes_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_THEMES_GROUP_NAME),

@@ -3257,6 +3257,9 @@ each locale. -->
       <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
         Reset to default theme
       </message>
+      <message name="IDS_THEMES_GALLERY_BUTTON" desc="The button to get more themes">
+        Get themes
+      </message>
 
       <message name="IDS_OPTIONS_FONTSANDLANGUAGES_GROUP_NAME" desc="The label of the 'Fonts and Languages' group">
         Fonts and Languages:

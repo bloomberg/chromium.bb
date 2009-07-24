@@ -60,6 +60,7 @@ class ContentPageView : public OptionsPageView,
   // Controls for the Themes group
   OptionsGroupView* themes_group_;
   views::NativeButton* themes_reset_button_;
+  views::NativeButton* themes_gallery_button_;
 
   // Controls for the browsing data group.
   OptionsGroupView* browsing_data_group_;
