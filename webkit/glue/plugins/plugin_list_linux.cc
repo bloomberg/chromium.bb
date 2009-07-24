@@ -44,7 +44,9 @@ void PluginList::LoadPluginsFromDir(const FilePath& path) {
                                        file_util::FileEnumerator::FILES);
   for (FilePath path = enumerator.Next(); !path.value().empty();
        path = enumerator.Next()) {
-    LoadPlugin(path);
+    // Skip over Mozilla .xpt files.
+    if (!path.MatchesExtension(FILE_PATH_LITERAL(".xpt")))
+      LoadPlugin(path);
   }
 }
 
