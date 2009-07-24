@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 
+#include "DedicatedWorkerContext.h"
 #include "GenericWorkerTask.h"
 #include "KURL.h"
 #include "MessagePort.h"
@@ -13,7 +14,6 @@
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "SubstituteData.h"
-#include "WorkerContext.h"
 #include "WorkerThread.h"
 #include <wtf/MainThread.h>
 #include <wtf/Threading.h>
@@ -122,8 +122,8 @@ void WebWorkerImpl::PostMessageToWorkerContextTask(
     const WebCore::String& message,
     WTF::PassOwnPtr<WebCore::MessagePortChannel> channel) {
   DCHECK(context->isWorkerContext());
-  WebCore::WorkerContext* worker_context =
-      static_cast<WebCore::WorkerContext*>(context);
+  WebCore::DedicatedWorkerContext* worker_context =
+      static_cast<WebCore::DedicatedWorkerContext*>(context);
 
   WTF::RefPtr<WebCore::MessagePort> port;
   if (channel) {
