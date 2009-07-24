@@ -65,22 +65,25 @@ bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {
     // XP;
   } else {
     errors.push_back("Unsupported Operating System version "
-                     "(must use XP or Vista)");
+                     "(must use XP or Vista).");
   }
 
   // on both XP and Vista, this metric will be 17 when font size is "Normal".
   // The size of drop-down menus depends on it.
   int vScrollSize = ::GetSystemMetrics(SM_CXVSCROLL);
   if (vScrollSize != requiredVScrollSize) {
-    errors.push_back("Must use normal size fonts (96 dpi)");
+    errors.push_back("Must use normal size fonts (96 dpi).");
   }
 
-  // font smoothing (including ClearType) must be disabled
+  // ClearType must be disabled, because the rendering is unpredictable.
   BOOL bFontSmoothing;
   SystemParametersInfo(SPI_GETFONTSMOOTHING, (UINT)0,
                        (PVOID)&bFontSmoothing, (UINT)0);
-  if (bFontSmoothing) {
-    errors.push_back("Font smoothing (ClearType) must be disabled");
+  int fontSmoothingType;
+  SystemParametersInfo(SPI_GETFONTSMOOTHINGTYPE, (UINT)0,
+                       (PVOID)&fontSmoothingType, (UINT)0);
+  if (bFontSmoothing && (fontSmoothingType == FE_FONTSMOOTHINGCLEARTYPE)) {
+    errors.push_back("ClearType must be disabled.");
   }
 
   // Check that we're using the default system fonts
@@ -93,9 +96,9 @@ bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {
     if (system_fonts[i]->lfHeight != requiredFontSize ||
         wcscmp(requiredFont, system_fonts[i]->lfFaceName)) {
       if (isVista)
-        errors.push_back("Must use either the Aero or Basic theme");
+        errors.push_back("Must use either the Aero or Basic theme.");
       else
-        errors.push_back("Must use the default XP theme (Luna)");
+        errors.push_back("Must use the default XP theme (Luna).");
       break;
     }
   }
