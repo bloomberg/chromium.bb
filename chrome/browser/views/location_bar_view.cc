@@ -158,6 +158,7 @@ void LocationBarView::Init() {
 #else
   location_entry_.reset(new AutocompleteEditViewGtk(this, model_, profile_,
                                                     command_updater_,
+                                                    popup_window_mode_,
                                                     popup_positioner_));
   location_entry_->Init();
   // Make all the children of the widget visible. NOTE: this won't display
