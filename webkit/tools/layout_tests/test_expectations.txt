@@ -2987,3 +2987,6 @@ BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = C
 BUG17509 LINUX : LayoutTests/fast/loader/local-CSS-from-local.html = FAIL
 BUG17509 LINUX : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL TIMEOUT
 BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
+
+// Test failures from WebKit merge r46282:r46288
+BUG17635 LINUX : LayoutTests/fast/css/only-child-pseudo-class.html = FAIL
