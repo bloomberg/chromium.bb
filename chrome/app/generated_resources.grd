@@ -2759,7 +2759,7 @@ each locale. -->
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS" desc="Summary in the error page when there are too many URL redirects.">
         The webpage at &lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt; has resulted in
-        too many redirects.  Clearing your cookies for this site may fix the problem.  If
+        too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
         not, it is possibly a server configuration issue and not a problem with your
         computer.
       </message>
