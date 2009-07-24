@@ -70,6 +70,10 @@ void NativeButtonGtk::SetFocus() {
   Focus();
 }
 
+bool NativeButtonGtk::UsesNativeLabel() const {
+  return true;
+}
+
 gfx::NativeView NativeButtonGtk::GetTestingHandle() const {
   return native_view();
 }

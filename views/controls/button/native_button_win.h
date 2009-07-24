@@ -24,6 +24,7 @@ class NativeButtonWin : public NativeControlWin,
   virtual void UpdateDefault();
   virtual View* GetView();
   virtual void SetFocus();
+  virtual bool UsesNativeLabel() const;
   virtual gfx::NativeView GetTestingHandle() const;
 
   // Overridden from View:
@@ -63,6 +64,7 @@ class NativeCheckboxWin : public NativeButtonWin {
   virtual void UpdateChecked();
   virtual void SetPushed(bool pushed);
   virtual bool OnKeyDown(int vkey);
+  virtual bool UsesNativeLabel() const;
 
   // Overridden from NativeControlWin:
   virtual bool ProcessMessage(UINT message,

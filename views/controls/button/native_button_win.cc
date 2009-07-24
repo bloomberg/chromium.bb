@@ -63,6 +63,10 @@ void NativeButtonWin::SetFocus() {
   Focus();
 }
 
+bool NativeButtonWin::UsesNativeLabel() const {
+  return true;
+}
+
 gfx::NativeView NativeButtonWin::GetTestingHandle() const {
   return native_view();
 }
@@ -153,6 +157,10 @@ void NativeCheckboxWin::SetPushed(bool pushed) {
 bool NativeCheckboxWin::OnKeyDown(int vkey) {
   // Override the NativeButtonWin behavior which triggers the button on enter
   // key presses when focused.
+  return false;
+}
+
+bool NativeCheckboxWin::UsesNativeLabel() const {
   return false;
 }
 

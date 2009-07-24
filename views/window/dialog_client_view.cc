@@ -4,27 +4,28 @@
 
 #include "views/window/dialog_client_view.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <uxtheme.h>
-#include <vsstyle.h>
-#endif
-
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#if defined(OS_WIN)
-#include "base/gfx/native_theme.h"
-#endif
 #include "grit/app_strings.h"
 #include "views/controls/button/native_button.h"
 #include "views/standard_layout.h"
 #include "views/window/dialog_delegate.h"
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
-#endif
 #include "views/window/window.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#include <uxtheme.h>
+#include <vsstyle.h>
+
+#include "base/gfx/native_theme.h"
+#else
+#include <gtk/gtk.h>
+
+#include "views/window/hit_test.h"
+#include "views/widget/widget.h"
+#endif
 
 namespace views {
 
@@ -282,8 +283,14 @@ void DialogClientView::Paint(gfx::Canvas* canvas) {
 #if defined(OS_WIN)
   FillViewWithSysColor(canvas, this, GetSysColor(COLOR_3DFACE));
 #else
-  NOTIMPLEMENTED();
-  // TODO(port): paint dialog background color
+  GtkWidget* widget = GetWidget()->GetNativeView();
+  if (GTK_IS_WINDOW(widget)) {
+    GtkStyle* window_style = gtk_widget_get_style(widget);
+    canvas->FillRectInt(SkColorSetRGB(window_style->bg[GTK_STATE_NORMAL].red,
+                                      window_style->bg[GTK_STATE_NORMAL].green,
+                                      window_style->bg[GTK_STATE_NORMAL].blue),
+                        0, 0, width(), height());
+  }
 #endif
 }
 

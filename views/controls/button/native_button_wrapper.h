@@ -46,6 +46,10 @@ class NativeButtonWrapper {
   // Sets the focus to the button.
   virtual void SetFocus() = 0;
 
+  // Returns true if the wrapped NativeButton supplies its own label, false if
+  // the caller needs to provide one.
+  virtual bool UsesNativeLabel() const = 0;
+
   // Returns a handle to the underlying native view for testing.
   virtual gfx::NativeView GetTestingHandle() const = 0;
 

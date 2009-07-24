@@ -23,6 +23,7 @@ class NativeButtonGtk : public NativeControlGtk, public NativeButtonWrapper {
   virtual void UpdateDefault();
   virtual View* GetView();
   virtual void SetFocus();
+  virtual bool UsesNativeLabel() const;
   virtual gfx::NativeView GetTestingHandle() const;
 
   // Overridden from View:
