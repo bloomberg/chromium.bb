@@ -213,3 +213,4 @@ class TabRenderer : public views::View,
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
+
