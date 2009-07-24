@@ -218,9 +218,6 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
   gtk_window_group_add_window(gtk_window_get_group(transient_toplevel),
                               GTK_WINDOW(window_));
   gtk_grab_add(window_);
-
-  registrar_.Add(this, NotificationType::ACTIVE_WINDOW_CHANGED,
-                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   theme_provider_->InitThemesFor(this);
@@ -229,23 +226,12 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
 void InfoBubbleGtk::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::ACTIVE_WINDOW_CHANGED:
-      // If we are no longer the active toplevel for whatever reason (whether
-      // another toplevel gained focus or our browser did), close.
-      if (window_->window != Details<const GdkWindow>(details).ptr())
-        Close();
-      break;
-    case NotificationType::BROWSER_THEME_CHANGED:
-      if (theme_provider_->UseGtkTheme()) {
-        gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, NULL);
-      } else {
-        // Set the background color, so we don't need to paint it manually.
-        gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, &kBackgroundColor);
-      }
-      break;
-    default:
-      NOTREACHED();
+  DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
+  if (theme_provider_->UseGtkTheme()) {
+    gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, NULL);
+  } else {
+    // Set the background color, so we don't need to paint it manually.
+    gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, &kBackgroundColor);
   }
 }
 

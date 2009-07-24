@@ -817,11 +817,16 @@ void BrowserWindowGtk::Observe(NotificationType type,
       if (!window_)
         break;
 
+      // If we lose focus to an info bubble, we don't want to seem inactive.
+      // However we can only control this when we are painting a custom
+      // frame. So if we lose focus BUT it's to one of our info bubbles AND we
+      // are painting a custom frame, then paint as if we are active.
       const GdkWindow* active_window = Details<const GdkWindow>(details).ptr();
       const GtkWindow* info_bubble_toplevel =
           InfoBubbleGtk::GetToplevelForInfoBubble(active_window);
       bool is_active = (GTK_WIDGET(window_)->window == active_window ||
-                       window_ == info_bubble_toplevel);
+                       (window_ == info_bubble_toplevel &&
+                        use_custom_frame_.GetValue()));
       bool changed = (is_active != is_active_);
       is_active_ = is_active;
       if (changed) {
