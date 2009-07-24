@@ -2849,7 +2849,7 @@ BUG16779 : LayoutTests/media/video-size.html = FAIL
 BUG16779 : LayoutTests/media/video-source-add-src.html = FAIL
 BUG16779 : LayoutTests/media/video-source-error.html = FAIL
 BUG16779 : LayoutTests/media/video-src-change.html = FAIL CRASH
-BUG16779 : LayoutTests/media/video-src-invalid-remove.html = FAIL
+BUG16779 : LayoutTests/media/video-src-invalid-remove.html = FAIL CRASH
 BUG16779 : LayoutTests/media/video-timeupdate-during-playback.html = FAIL CRASH
 BUG16779 : LayoutTests/media/video-transformed.html = FAIL
 BUG16779 : LayoutTests/media/video-volume.html = FAIL
@@ -3044,6 +3044,8 @@ BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/child-of-absolute-with-
 BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/complex-percentage-height.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusAllStylesAllCorners.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDashed01.html = FAIL
+BUG_DARIN WIN : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
+BUG_DARIN WIN : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted01.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted02.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted03.html = FAIL
@@ -3088,6 +3090,7 @@ BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-row-
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-row.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/tables_style.html = FAIL
+BUG_DARIN WIN : LayoutTests/tables/mozilla_expected_failures/bugs/bug2479-5.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-cell.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-column-group.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-column.html = FAIL
