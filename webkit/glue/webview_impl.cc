@@ -543,20 +543,10 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
   if (!main_frame() || !main_frame()->frameview())
     return;
 
-  mouseCaptureLost();
-  main_frame()->frame()->eventHandler()->handleMouseReleaseEvent(
-      MakePlatformMouseEvent(main_frame()->frameview(), event));
-
-#if defined(OS_WIN)
-  // Dispatch the contextmenu event regardless of if the click was swallowed.
-  // On Mac/Linux, we handle it on mouse down, not up.
-  if (event.button == WebMouseEvent::ButtonRight)
-    MouseContextMenu(event);
-#endif
-
 #if defined(OS_LINUX)
   // If the event was a middle click, attempt to copy text into the focused
-  // frame.
+  // frame. We execute this before we let the page have a go at the event
+  // because the page may change what is focused during in its event handler.
   //
   // This code is in the mouse up handler. There is some debate about putting
   // this here, as opposed to the mouse down handler.
@@ -572,14 +562,23 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
   // handleMouseReleaseEvent() earlier in this function
   if (event.button == WebMouseEvent::ButtonMiddle) {
     Frame* focused = GetFocusedWebCoreFrame();
-    if (!focused)
-      return;
-    Editor* editor = focused->editor();
-    if (!editor || !editor->canEdit())
-      return;
-
-    delegate_->PasteFromSelectionClipboard();
+    if (focused) {
+      Editor* editor = focused->editor();
+      if (editor && editor->canEdit())
+        delegate_->PasteFromSelectionClipboard();
+    }
   }
+#endif
+
+  mouseCaptureLost();
+  main_frame()->frame()->eventHandler()->handleMouseReleaseEvent(
+      MakePlatformMouseEvent(main_frame()->frameview(), event));
+
+#if defined(OS_WIN)
+  // Dispatch the contextmenu event regardless of if the click was swallowed.
+  // On Mac/Linux, we handle it on mouse down, not up.
+  if (event.button == WebMouseEvent::ButtonRight)
+    MouseContextMenu(event);
 #endif
 }
 
