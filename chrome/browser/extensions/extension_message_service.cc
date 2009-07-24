@@ -130,15 +130,23 @@ void ExtensionMessageService::ProfileDestroyed() {
 
 void ExtensionMessageService::AddEventListener(std::string event_name,
                                                int render_process_id) {
+  DCHECK(RenderProcessHost::FromID(render_process_id)) <<
+      "Adding event listener to a non-existant RenderProcessHost.";
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
-  DCHECK(listeners_[event_name].count(render_process_id) == 0);
+  DCHECK_EQ(listeners_[event_name].count(render_process_id), 0u) << event_name;
   listeners_[event_name].insert(render_process_id);
 }
 
 void ExtensionMessageService::RemoveEventListener(std::string event_name,
                                                   int render_process_id) {
+  // It is possible that this RenderProcessHost is being destroyed.  If that is
+  // the case, we'll have already removed his listeners, so do nothing here.
+  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
+  if (!rph)
+    return;
+
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
-  DCHECK(listeners_[event_name].count(render_process_id) == 1);
+  DCHECK_EQ(listeners_[event_name].count(render_process_id), 1u) << event_name;
   listeners_[event_name].erase(render_process_id);
 }
 
@@ -245,8 +253,14 @@ void ExtensionMessageService::OpenChannelOnUIThreadImpl(
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   // TODO(mpcomplete): notify source if reciever doesn't exist
-  if (!source || !receiver.sender)
+  if (!source)
     return;  // Closed while in flight.
+
+  if (!receiver.sender) {
+    // Treat it as a disconnect.
+    DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),
+                         GET_OPPOSITE_PORT_ID(receiver_port_id));
+  }
 
   linked_ptr<MessageChannel> channel(new MessageChannel);
   channel->opener = MessagePort(source, MSG_ROUTING_CONTROL);

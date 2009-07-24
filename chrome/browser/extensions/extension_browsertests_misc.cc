@@ -286,12 +286,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
                     .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
                     .AppendASCII("1.0")));
 
-  // Get the ExtensionHost that is hosting our background page.
+  // Get the ExtensionHost that is hosting our toolstrip page.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/background.html", 1);
+  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip.html", 1);
 
-  // Load the tab that will communicate with our background page.
+  // Load the tab that will communicate with our toolstrip.
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("chrome-extension://bjafgdebaacbbbecmhlhpofkepfkgcpa/page.html"));
@@ -321,8 +321,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
 }
 
 // Tests that message passing between extensions and content scripts works.
-#if 0
-// TODO(mpcomplete): re-enable this
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
@@ -339,13 +337,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   }
   ASSERT_TRUE(master->ScriptsReady());
 
-  // Get the ExtensionHost that is hosting our background page.
+  // Get the ExtensionHost that is hosting our toolstrip page.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/background.html", 1);
+  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip.html", 1);
 
-  // Load the tab whose content script will communicate with our background
-  // page.
+  // Load the tab whose content script will communicate with our toolstrip.
   FilePath test_file;
   PathService::Get(chrome::DIR_TEST_DATA, &test_file);
   test_file = test_file.AppendASCII("extensions")
@@ -375,4 +372,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
 }
-#endif
