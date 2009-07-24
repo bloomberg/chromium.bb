@@ -2578,8 +2578,8 @@ BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/uri-resolution-opera-open
 BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/uri-resolution-opera-open-010.html = CRASH PASS
 BUG11832 LINUX DEBUG : LayoutTests/http/tests/xmlhttprequest/web-apps/004.html = CRASH PASS
 
-// Flaky Windows Tests
-BUG11898 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
+// Flaky Windows/Linux Tests
+BUG11898 WIN LINUX DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16be.html = TIMEOUT PASS
 BUG11898 WIN : LayoutTests/http/tests/xmlhttprequest/web-apps/004.html = CRASH PASS
 
@@ -2990,14 +2990,15 @@ BUG17635 LINUX MAC : LayoutTests/fast/css/only-child-pseudo-class.html = PASS FA
 
 // Test failures from WebKit merge 46288:46363
 BUG_DARIN WIN LINUX : LayoutTests/media/video-source-type.html = PASS FAIL CRASH
-BUG_DARIN WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH
-BUG_DARIN WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH
-BUG_DARIN LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH
-BUG_DARIN LINUX : LayoutTests/fast/overflow/008.html = CRASH
+BUG_DARIN WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH PASS
+BUG_DARIN WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH PASS
+BUG_DARIN LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH PASS
+BUG_DARIN LINUX : LayoutTests/fast/overflow/008.html = CRASH PASS
 BUG_DARIN : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
 BUG_DARIN : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG_DARIN : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 BUG_DARIN WIN : LayoutTests/fast/css/margin-top-bottom-dynamic.html = FAIL
+BUG_DARIN WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
 // Resulting from http://trac.webkit.org/changeset/46363
 BUG_DARIN WIN LINUX : LayoutTests/css1/box_properties/border_style.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/css1/box_properties/border_style_inline.html = FAIL
