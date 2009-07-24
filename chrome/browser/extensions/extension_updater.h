@@ -92,7 +92,7 @@ class ExtensionUpdater
     std::string id;
     GURL url;
     ExtensionFetch() : id(""), url() {}
-    ExtensionFetch(std::string i, GURL u) : id(i), url(u) {}
+    ExtensionFetch(const std::string& i, const GURL& u) : id(i), url(u) {}
   };
 
   // These are needed for unit testing, to help identify the correct mock
@@ -139,7 +139,7 @@ class ExtensionUpdater
   void StartUpdateCheck(const GURL& url);
 
   // Begins (or queues up) download of an updated extension.
-  void FetchUpdatedExtension(const std::string& id, GURL url);
+  void FetchUpdatedExtension(const std::string& id, const GURL& url);
 
   typedef std::vector<ParseResult*> ParseResultList;
 

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/extension_updater.h"
 
+#include <algorithm>
+#include <set>
+
 #include "base/logging.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
@@ -537,7 +540,8 @@ void ExtensionUpdater::StartUpdateCheck(const GURL& url) {
   }
 }
 
-void ExtensionUpdater::FetchUpdatedExtension(const std::string& id, GURL url) {
+void ExtensionUpdater::FetchUpdatedExtension(const std::string& id,
+                                             const GURL& url) {
   for (std::deque<ExtensionFetch>::const_iterator iter =
            extensions_pending_.begin();
        iter != extensions_pending_.end(); ++iter) {

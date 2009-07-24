@@ -205,9 +205,10 @@ class ExtensionUpdaterTest : public testing::Test {
   }
 
   // Make a test ParseResult
-  static ExtensionUpdater::ParseResult* MakeParseResult(std::string id,
-                                                        std::string version,
-                                                        std::string url) {
+  static ExtensionUpdater::ParseResult* MakeParseResult(
+      const std::string& id,
+      const std::string& version,
+      const std::string& url) {
     ExtensionUpdater::ParseResult *result = new ExtensionUpdater::ParseResult;
     result->extension_id = id;
     result->version.reset(Version::GetVersionFromString(version));
