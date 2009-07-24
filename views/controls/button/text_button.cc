@@ -270,15 +270,6 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
                                  l10n_util::DefaultCanvasTextAlignment());
 #endif
     } else {
-      // Draw bevel highlight
-      canvas->DrawStringInt(text_,
-                            font_,
-                            color_highlight_,
-                            text_bounds.x() + 1,
-                            text_bounds.y() + 1,
-                            text_bounds.width(),
-                            text_bounds.height());
-
       canvas->DrawStringInt(text_,
                             font_,
                             color_,

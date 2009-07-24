@@ -89,9 +89,6 @@ static SkBitmap* kFolderIcon = NULL;
 // Border colors for the BookmarBarView.
 static const SkColor kTopBorderColor = SkColorSetRGB(222, 234, 248);
 
-// Border color for the 'new tab' style bookmarks bar.
-static const SkColor kNewtabBorderColor = SkColorSetRGB(195, 206, 224);
-
 // How round the 'new tab' style bookmarks bar is.
 static const int kNewtabBarRoundness = 5;
 
@@ -642,8 +639,10 @@ void BookmarkBarView::Paint(gfx::Canvas* canvas) {
 
     // Draw border
     SkPaint border_paint;
-    border_paint.setColor(kNewtabBorderColor);
+    border_paint.setColor(
+        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION));
     border_paint.setStyle(SkPaint::kStroke_Style);
+    border_paint.setAlpha(96);
     border_paint.setAntiAlias(true);
 
     canvas->drawRoundRect(rect,
@@ -1045,7 +1044,12 @@ void BookmarkBarView::Init() {
   instructions_ = new views::Label(
       l10n_util::GetString(IDS_BOOKMARKS_NO_ITEMS),
       rb.GetFont(ResourceBundle::BaseFont));
-  instructions_->SetColor(kInstructionsColor);
+
+  if (GetThemeProvider()) {
+    instructions_->SetColor(GetThemeProvider()->GetColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
+  }
+
   AddChildView(instructions_);
 
   SetContextMenuController(this);
@@ -1100,15 +1104,7 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
   // Create a button for each of the children on the bookmark bar.
   for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
     AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
-
-  // This button is normally created too early to get access to the theme
-  // provider, so we change its color here; this also makes color changes from
-  // profile swaps work.
-  if (GetThemeProvider()) {
-    other_bookmarked_button_->SetEnabledColor(GetThemeProvider()->
-        GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
-  }
-
+  UpdateButtonColors();
   other_bookmarked_button_->SetEnabled(true);
 
   Layout();
@@ -1155,6 +1151,7 @@ void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
   }
   DCHECK(index >= 0 && index <= GetBookmarkButtonCount());
   AddChildView(index, CreateBookmarkButton(parent->GetChild(index)));
+  UpdateButtonColors();
   Layout();
   SchedulePaint();
 }
@@ -1230,6 +1227,7 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
   // Create the new buttons.
   for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
     AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
+  UpdateButtonColors();
 
   Layout();
   SchedulePaint();
@@ -1487,6 +1485,10 @@ void BookmarkBarView::Observe(NotificationType type,
       NOTREACHED();
       break;
   }
+}
+
+void BookmarkBarView::ThemeChanged() {
+  UpdateButtonColors();
 }
 
 void BookmarkBarView::NotifyModelChanged() {
@@ -1749,3 +1751,17 @@ void BookmarkBarView::StopThrobbing(bool immediate) {
   throbbing_view_->StartThrobbing(immediate ? 0 : 4);
   throbbing_view_ = NULL;
 }
+
+void BookmarkBarView::UpdateButtonColors() {
+  // We don't always have a theme provider (ui tests, for example).
+  if (GetThemeProvider()) {
+    for (int i = 0; i < GetBookmarkButtonCount(); i++) {
+      views::TextButton* button = GetBookmarkButton(i);
+      button->SetEnabledColor(GetThemeProvider()->GetColor(
+          BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
+    }
+    other_bookmarked_button()->SetEnabledColor(GetThemeProvider()->GetColor(
+          BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
+  }
+}
+
