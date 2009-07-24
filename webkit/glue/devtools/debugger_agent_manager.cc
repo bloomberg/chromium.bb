@@ -29,12 +29,6 @@ bool DebuggerAgentManager::in_host_dispatch_handler_ = false;
 // static
 DebuggerAgentManager::DeferrersMap DebuggerAgentManager::page_deferrers_;
 
-// static
-bool DebuggerAgentManager::in_utility_context_ = false;
-
-// static
-bool DebuggerAgentManager::debug_break_delayed_ = false;
-
 namespace {
 
 class CallerIdWrapper : public v8::Debug::ClientData {
@@ -163,11 +157,7 @@ void DebuggerAgentManager::DebugBreak(DebuggerAgentImpl* debugger_agent) {
 #if USE(V8)
   DCHECK(DebuggerAgentForHostId(debugger_agent->webdevtools_agent()->host_id())
              == debugger_agent);
-  if (in_utility_context_) {
-    debug_break_delayed_ = true;
-  } else {
-    v8::Debug::DebugBreak();
-  }
+  v8::Debug::DebugBreak();
 #endif
 }
 
@@ -211,24 +201,14 @@ void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
     return;
   }
 
-  if (in_utility_context_) {
-    if (message.GetEvent() == v8::Break) {
-      // This may happen when two tabs are being debugged in the same process.
-      // Suppose that first debugger is pauesed on an exception. It will run
-      // nested MessageLoop which may process Break request from the second
-      // debugger.
-      debug_break_delayed_ = true;
-    }
-  } else {
-    // If the context is from one of the inpected tabs or injected extension
-    // scripts it must have host_id in the data field.
-    int host_id = WebCore::V8Proxy::contextDebugId(context);
-    if (host_id != -1) {
-      DebuggerAgentImpl* agent = DebuggerAgentForHostId(host_id);
-      if (agent) {
-        agent->DebuggerOutput(out);
-        return;
-      }
+  // If the context is from one of the inpected tabs or injected extension
+  // scripts it must have host_id in the data field.
+  int host_id = WebCore::V8Proxy::contextDebugId(context);
+  if (host_id != -1) {
+    DebuggerAgentImpl* agent = DebuggerAgentForHostId(host_id);
+    if (agent) {
+      agent->DebuggerOutput(out);
+      return;
     }
   }
 
