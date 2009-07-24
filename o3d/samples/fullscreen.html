@@ -46,7 +46,7 @@ Full-Screen Mode Example
 <script type="text/javascript" src="o3djs/base.js"></script>
 
 <!-- Our javascript code -->
-<script type="text/javascript">
+<script type="text/javascript" id="o3d">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
@@ -109,7 +109,7 @@ function createBannerSurfaceAndClickableRegion(clientHeight, viewInfo) {
        [0, 0, 1, 0],
        [0,-1, 0, 0],
        [0, 0, 0, 1]]);
-   
+
   // Load our banner.
   var url = o3djs.util.getCurrentURI() + 'assets/fullscreen.png';
   o3djs.io.loadTexture(g_pack, url, function(texture, exception) {

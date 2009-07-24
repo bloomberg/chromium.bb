@@ -137,21 +137,35 @@ def TakeScreenShotAtPath(session,
   session.window_focus()
 
   # Resize window, and client area if needed.
-  resize_script = ["window.resizeTo(%d, %d)" %
-                   (selenium_constants.RESIZE_WIDTH,
-                    selenium_constants.RESIZE_HEIGHT)]
-  width_specification = session.get_eval(
-      "window.document.getElementById('o3d').style.width")
-  need_client_resize = width_specification.find("%") >= 0
-  if need_client_resize:
-    resize_script += [
-        "window.document.getElementById('o3d').style.width = '800px';",
-        "window.document.getElementById('o3d').style.height = '600px';"]
-  session.run_script("\n".join(resize_script))
+  session.run_script(
+      "(function() {\n"
+      "  var needResize = false;\n"
+      "  var divs = window.document.getElementsByTagName('div');\n"
+      "  for (var ii = 0; ii < divs.length; ++ii) {\n"
+      "    var div = divs[ii];\n"
+      "    if (div.id && div.id == 'o3d') {\n"
+      "      var widthSpec = div.style.width;\n"
+      "      if (widthSpec.indexOf('%') >= 0) {\n"
+      "        div.style.width = '800px';\n"
+      "        div.style.height = '600px';\n"
+      "        needResize = true;\n"
+      "        break;\n"
+      "      }\n"
+      "    }\n"
+      "  }\n"
+      "  window.o3d_seleniumNeedResize = needResize;\n"
+      "} ());\n")
+
+  need_client_resize = (
+      session.get_eval("window.o3d_seleniumNeedResize") == "true")
   if need_client_resize:
     session.wait_for_condition(
         "window.%s.width == 800 && window.%s.height == 600" % (client, client),
         20000)
+  else:
+    session.run_script("window.resizeTo(%d, %d)" %
+                       (selenium_constants.RESIZE_WIDTH,
+                        selenium_constants.RESIZE_HEIGHT))
 
   # Execute screenshot capture code
 

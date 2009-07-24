@@ -46,7 +46,7 @@ O3D Canvas
 <script type="text/javascript" src="o3djs/base.js"></script>
 
 <!-- Our javascript code -->
-<script type="text/javascript">
+<script type="text/javascript" id="o3d">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.primitives');
@@ -124,7 +124,7 @@ function init(clientElements) {
   var drawTextBox = false;
 
   var typefaceArray = [ 'Arial', 'Arial Black', 'Comic Sans MS', 'Courier New',
-                        'Georgia', 'Impact', 'Palatino', 'Verdana', 
+                        'Georgia', 'Impact', 'Palatino', 'Verdana',
                         'Webdings' ];
 
   var verticalPosition = 10;

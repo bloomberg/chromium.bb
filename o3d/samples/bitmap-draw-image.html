@@ -1,11 +1,11 @@
 <!--
 Copyright 2009, Google Inc.
 All rights reserved.
- 
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
- 
+
     * Redistributions of source code must retain the above copyright
 notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above
@@ -15,7 +15,7 @@ distribution.
     * Neither the name of Google Inc. nor the names of its
 contributors may be used to endorse or promote products derived from
 this software without specific prior written permission.
- 
+
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -27,33 +27,33 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---> 
- 
-<!-- 
-In this tutorial, we show how to create bitmap and how to draw 
-image on both bitmap and texture. 
---> 
+-->
+
+<!--
+In this tutorial, we show how to create bitmap and how to draw
+image on both bitmap and texture.
+-->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-  "http://www.w3.org/TR/html4/loose.dtd"> 
-<html> 
-<head> 
-<meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
-<title> 
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>
 Bitmap Draw Image Demo
-</title> 
-<script type="text/javascript" src="o3djs/base.js"></script> 
-<script type="text/javascript"> 
+</title>
+<script type="text/javascript" src="o3djs/base.js"></script>
+<script type="text/javascript" id="o3d">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.io');
 o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
 o3djs.require('o3djs.effect');
- 
+
 // Events
 // Run the init() once the page has finished loading.
 window.onload = init;
- 
+
 // global variables
 var g_o3d;
 var g_math;
@@ -64,20 +64,20 @@ var g_finished = false;  // for selenium testing
 var g_eye;
 var g_target;
 var g_up;
- 
+
 function makeShape(texture, effect) {
   // Create a Material for the effect.
   var myMaterial = g_pack.createObject('Material');
- 
+
   // Set the material's drawList for opaque objects.
   myMaterial.drawList = g_viewInfo.performanceDrawList;
- 
+
   // Apply our effect to this material.
   myMaterial.effect = effect;
 
   // Create the parameters the effect needs on the material.
   effect.createUniformParameters(myMaterial);
- 
+
   // Creates a quad.
   var myShape = o3djs.primitives.createPlane(g_pack,
                                              myMaterial,
@@ -85,15 +85,15 @@ function makeShape(texture, effect) {
                                              3,  // height
                                              1,  // quads across
                                              1);  // quads down
- 
+
   // Get the material's sampler parameter and put a sampler on it.
   var sampler_param = myMaterial.getParam('texSampler0');
   var sampler = g_pack.createObject('Sampler');
   sampler_param.value = sampler;
- 
+
   // Set the texture to use.
   sampler.texture = texture;
- 
+
   // adjust the scale of our transform to match the aspect ratio of
   // the texture. Of course we could also have waited until now to build
   // our plane and set its width and height to match instead of scaling
@@ -110,10 +110,10 @@ function makeShape(texture, effect) {
   // We now attach our quad to the root of the transform graph.
   // We do this after the texture has loaded, otherwise we'd be attempting
   // to display something invalid.
- 
+
   // Make a transform for each quad.
   var transform = g_pack.createObject('Transform');
- 
+
   transform.translate(0, 0, 0);
   transform.scale(hScale, 1, vScale);
   transform.addShape(myShape);
@@ -121,7 +121,7 @@ function makeShape(texture, effect) {
   g_finished = true;
   return myShape;
 }
- 
+
 /**
  * Creates the client area.
  */
@@ -140,16 +140,16 @@ function initStep2(clientElements) {
   g_o3d = o3dElement.o3d;
   g_math = o3djs.math;
   g_client = o3dElement.client;
- 
+
   // Create a pack to manage our resources/assets
   g_pack = g_client.createPack();
- 
+
   // Create the render graph for a view.
   g_viewInfo = o3djs.rendergraph.createBasicView(
       g_pack,
       g_client.root,
       g_client.renderGraphRoot);
- 
+
   // Set up an orthographic projection.
   var proj_matrix = g_math.matrix4.perspective(
       g_math.degToRad(45),
@@ -165,7 +165,7 @@ function initStep2(clientElements) {
 
   g_viewInfo.drawContext.view = view_matrix;
   g_viewInfo.drawContext.projection = proj_matrix;
- 
+
   // Create and load the effect.
   var effect = g_pack.createObject('Effect');
   o3djs.effect.loadEffect(effect, 'shaders/texture-only.shader');
@@ -218,17 +218,17 @@ function scrollMe(e) {
   g_eye = g_math.mulScalarVector((e.deltaY < 0 ? 11 : 13) / 12, g_eye);
   g_viewInfo.drawContext.view = g_math.matrix4.lookAt(g_eye, g_target, g_up);
 }
-</script> 
-</head> 
-<body> 
-<h1>Bitmap Draw Image Demo</h1> 
+</script>
+</head>
+<body>
+<h1>Bitmap Draw Image Demo</h1>
 This tutorial shows how to create bitmap and how to draw image
 on both bitmap and texture mipmap.
-<br/> 
+<br/>
 Scroll wheel to see different mipmaps.
 <br/>
-<!-- Start of O3D plugin --> 
-<div id="o3d" style="width: 600px; height: 600px"></div> 
-<!-- End of O3D plugin --> 
-</body> 
-</html> 
+<!-- Start of O3D plugin -->
+<div id="o3d" style="width: 600px; height: 600px"></div>
+<!-- End of O3D plugin -->
+</body>
+</html>

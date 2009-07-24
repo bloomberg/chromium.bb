@@ -48,7 +48,7 @@ render pass samples it to determine which points in the scene are in shaodow.
 Shadow Mapping
 </title>
 <script type="text/javascript" src="o3djs/base.js"></script>
-<script type="text/javascript">
+<script type="text/javascript" id="o3d">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
@@ -364,7 +364,7 @@ function createShapes() {
 function createLightShape() {
   var inverseMatrix = g_math.matrix4.inverse(g_lightViewProjection);
 
-  // Scale and translate a cube of side length 2 to get a box 
+  // Scale and translate a cube of side length 2 to get a box
   // that extends from [-1, -1, 0] to [1, 1, 1].
   var shape = o3djs.debug.createLineCube(
                   g_pack,
@@ -448,7 +448,7 @@ function keyPressed(event) {
     case 'o':
       moveLight([0, 0, -delta]);
       break;
-    
+
     case ' ':
       toggleView();
       break;

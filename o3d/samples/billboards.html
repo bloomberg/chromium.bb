@@ -44,7 +44,7 @@ Billboard Example
 <script type="text/javascript" src="o3djs/base.js"></script>
 
 <!-- Our javascript code -->
-<script type="text/javascript">
+<script type="text/javascript" id="o3d">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
@@ -118,18 +118,18 @@ function initStep2(clientElements) {
 }
 
 function loadTexture(loader, filename) {
-  loader.loadTexture(g_pack, 
-                     o3djs.util.getAbsoluteURI('assets/' + filename), 
+  loader.loadTexture(g_pack,
+                     o3djs.util.getAbsoluteURI('assets/' + filename),
                      rememberTexture);
 
   function rememberTexture(texture, exception) {
     if (exception) {
       alert(exception);
     } else {
-	  g_textures[filename] = texture;
+    g_textures[filename] = texture;
     }
   }
-}    
+}
 
 function initStep3() {
   var redMaterial = o3djs.material.createBasicMaterial(
@@ -137,7 +137,7 @@ function initStep3() {
     g_viewInfo,
     [0.2, 1, 0.2, 1]);  // green
 
-  var checkerMaterial = o3djs.material.createCheckerMaterial(g_pack, 
+  var checkerMaterial = o3djs.material.createCheckerMaterial(g_pack,
                                                              g_viewInfo);
 
   var billboardMaterial = o3djs.material.createMaterialFromFile(
@@ -147,7 +147,7 @@ function initStep3() {
       g_pack, 'shaders/imposter.shader', g_viewInfo.zOrderedDrawList);
 
   // Set the textures.
-  // We don't need to create the params or the samplers because 
+  // We don't need to create the params or the samplers because
   // createMaterialFromFile has already handled that for us.
   var sampler = billboardMaterial.getParam('texSampler0').value;
   sampler.texture = g_textures['purple-flower.png'];
@@ -246,7 +246,7 @@ function unload() {
 <body>
 <h1>Billboards</h1>
 <div>
-Flowers always face the camera.<br/>        
+Flowers always face the camera.<br/>
 Pillars rotate around Y toward the camera.
 </div>
 <div id="o3d" style="width: 800px; height: 600px;"></div>

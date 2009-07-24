@@ -43,7 +43,7 @@ O3D Juggler
 
 <script type="text/javascript" src="o3djs/base.js"></script>
 
-<script type="text/javascript">
+<script type="text/javascript" id="o3d">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
@@ -348,7 +348,7 @@ float4 drawAirborneBalls(in float pi,
                          in float hand_swing_radius,
                          in float2 Z,
                          in float threshold) {
-  float value = 
+  float value =
       // balls going right to left
       (drawBallsInArc(pi, offset, right_hand, left_hand, height_factor,
           baseline, ball_radius_2, hand_swing_radius, Z, threshold) +
@@ -397,7 +397,7 @@ float4 pixelShaderMain(PixelShaderInput input) : COLOR {
   // smaller than they would otherwise be.  That's the opposite of what we do
   // for the balls, just because it happens to be cheaper here to do smaller and
   // cheaper in drawBallsInArc to do larger.
-  result += 
+  result +=
       clamp((hand_radius_2 - length_2(Z - r_h)) / threshold, 0, 1) *
           (Z.y < r_h.y) * right_hand_color +
       clamp((hand_radius_2 - length_2(Z - l_h)) / threshold, 0, 1) *
@@ -416,7 +416,7 @@ float4 pixelShaderMain(PixelShaderInput input) : COLOR {
   // subtraction in the "1 - clamp..." below], but inverting it in
   // drawBallsInArc would be more expensive, and they have to match so that the
   // balls are all the same size.
-  result += (1 - result.a) * 
+  result += (1 - result.a) *
       (1 - clamp((length_2(Z - hand) - ball_radius_2) / threshold, 0, 1));
 
   // Draw airborne balls.

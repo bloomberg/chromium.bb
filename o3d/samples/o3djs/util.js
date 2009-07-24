@@ -667,6 +667,17 @@ o3djs.util.isScriptUri = function(uri) {
 };
 
 /**
+ * Returns whether or not this is a script tag we want. Currently that is
+ * only script tags with an id that starts with "o3d".
+ * @private
+ * @param {!Element} scriptElement The script element to check.
+ * @return {boolean} True if we want this script tag.
+ */
+o3djs.util.isWantedScriptTag_ = function(scriptElement) {
+  return scriptElement.id && scriptElement.id.match(/^o3d/);
+};
+
+/**
  * Concatenate the text of all the script tags in the document and invokes
  * the callback when complete. This function is asynchronous if any of the
  * script tags reference JavaScript through a URI.
@@ -680,7 +691,8 @@ o3djs.util.getScriptTagText_ = function() {
     var scriptElement = scriptElements[i];
     if (scriptElement.type === '' ||
         scriptElement.type === 'text/javascript') {
-      if ('text' in scriptElement && scriptElement.text) {
+      if ('text' in scriptElement && scriptElement.text &&
+          o3djs.util.isWantedScriptTag_(scriptElement)) {
         scriptTagText += scriptElement.text;
       }
       if ('src' in scriptElement && scriptElement.src &&

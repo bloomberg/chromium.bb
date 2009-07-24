@@ -45,7 +45,7 @@ O3D Canvas
 <script type="text/javascript" src="o3djs/base.js"></script>
 
 <!-- Our javascript code -->
-<script type="text/javascript">
+<script type="text/javascript" id="o3d">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.primitives');
@@ -271,7 +271,7 @@ function createSceneContents() {
   var metrics = paint.fontMetrics;
   var ascent = metrics.ascent;
   var stringDimensions = paint.measureText('Hello O3D');
-  
+
   paint.textStyle = g_o3d.CanvasPaint.BOLD;
   paint.textAlign = g_o3d.CanvasPaint.LEFT;
 

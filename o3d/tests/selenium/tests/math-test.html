@@ -44,7 +44,7 @@ This tests the math utility library.
 <br/>
 <script type="text/javascript"
   src="../../../samples/o3djs/base.js"></script>
-<script type="text/javascript">
+<script type="text/javascript" id="o3d">
 
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.test');
@@ -71,7 +71,7 @@ g_suite.testPseudoRandom = function() {
   g_math.resetPseudoRandom();
   for (var ii = 0; ii < values.length; ++ii) {
     value = g_math.pseudoRandom();
-		g_test.assertEquals(value, values[ii]);
+    g_test.assertEquals(value, values[ii]);
   }
 };
 
