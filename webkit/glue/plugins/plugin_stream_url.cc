@@ -44,8 +44,7 @@ void PluginStreamUrl::DidReceiveResponse(const std::string& mime_type,
                                          const std::string& headers,
                                          uint32 expected_length,
                                          uint32 last_modified,
-                                         bool request_is_seekable,
-                                         bool* cancel) {
+                                         bool request_is_seekable) {
   bool opened = Open(mime_type,
                      headers,
                      expected_length,
@@ -53,7 +52,7 @@ void PluginStreamUrl::DidReceiveResponse(const std::string& mime_type,
                      request_is_seekable);
   if (!opened) {
     instance()->RemoveStream(this);
-    *cancel = true;
+    CancelRequest();
   }
 }
 

@@ -239,8 +239,10 @@ WebPluginProxy* WebPluginProxy::FromCPBrowsingContext(
 
 WebPluginResourceClient* WebPluginProxy::GetResourceClient(int id) {
   ResourceClientMap::iterator iterator = resource_clients_.find(id);
+  // The IPC messages which deal with streams are now asynchronous. It is
+  // now possible to receive stream messages from the renderer for streams
+  // which may have been cancelled by the plugin.
   if (iterator == resource_clients_.end()) {
-    NOTREACHED();
     return NULL;
   }
 

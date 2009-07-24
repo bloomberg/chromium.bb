@@ -173,8 +173,7 @@ void WebPluginDelegateStub::OnWillSendRequest(int id, const GURL& url) {
 }
 
 void WebPluginDelegateStub::OnDidReceiveResponse(
-    const PluginMsg_DidReceiveResponseParams& params, bool* cancel) {
-  *cancel = false;
+    const PluginMsg_DidReceiveResponseParams& params) {
   WebPluginResourceClient* client = webplugin_->GetResourceClient(params.id);
   if (!client)
     return;
@@ -183,8 +182,7 @@ void WebPluginDelegateStub::OnDidReceiveResponse(
                              params.headers,
                              params.expected_length,
                              params.last_modified,
-                             params.request_is_seekable,
-                             cancel);
+                             params.request_is_seekable);
 }
 
 void WebPluginDelegateStub::OnDidReceiveData(int id,
