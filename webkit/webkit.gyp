@@ -973,6 +973,7 @@
       ],
       'sources': [
         'api/public/gtk/WebInputEventFactory.h',
+        'api/public/linux/WebFontRendering.h',
         'api/public/x11/WebScreenInfoFactory.h',
         'api/public/mac/WebInputEventFactory.h',
         'api/public/mac/WebScreenInfoFactory.h',
@@ -1034,6 +1035,7 @@
         'api/src/gtk/WebFontInfo.cpp',
         'api/src/gtk/WebFontInfo.h',
         'api/src/gtk/WebInputEventFactory.cpp',
+        'api/src/linux/WebFontRendering.cpp',
         'api/src/x11/WebScreenInfoFactory.cpp',
         'api/src/mac/WebInputEventFactory.mm',
         'api/src/mac/WebScreenInfoFactory.mm',
@@ -1091,6 +1093,7 @@
           'sources/': [
             ['exclude', '/gtk/'],
             ['exclude', '/x11/'],
+            ['exclude', '/linux/'],
           ],
         }],
         ['OS=="mac"', {

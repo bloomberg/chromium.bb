@@ -621,6 +621,12 @@ class RenderView : public RenderWidget,
 
   void Print(WebFrame* frame, bool script_initiated);
 
+#if defined(OS_LINUX)
+  void UpdateFontRenderingFromRendererPrefs();
+#else
+  void UpdateFontRenderingFromRendererPrefs() { }
+#endif
+
   // Bitwise-ORed set of extra bindings that have been enabled.  See
   // BindingsPolicy for details.
   int enabled_bindings_;
