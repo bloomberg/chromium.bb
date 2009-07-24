@@ -306,7 +306,7 @@ void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
   // repopulate the Find box with what was passed in.
   std::string search_string(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
   if (search_string.empty() && !text_entry_utf8.empty()) {
-    gtk_entry_set_text(GTK_ENTRY(text_entry_), text_entry_utf8.c_str());
+    SetFindText(find_text);
     gtk_entry_select_region(GTK_ENTRY(text_entry_), 0, -1);
   }
 

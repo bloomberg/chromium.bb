@@ -1507,6 +1507,10 @@ void TabContents::OnFindReply(int request_id,
                               const gfx::Rect& selection_rect,
                               int active_match_ordinal,
                               bool final_update) {
+  // Ignore responses for requests that have been aborted.
+  if (find_op_aborted_)
+    return;
+
   // Ignore responses for requests other than the one we have most recently
   // issued. That way we won't act on stale results when the user has
   // already typed in another query.
