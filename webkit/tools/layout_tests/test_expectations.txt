@@ -527,12 +527,6 @@ BUG10273 LINUX : LayoutTests/http/tests/navigation/javascriptlink-frames.html = 
 // We don't intend to copy this feature (at least not for Beta).
 BUG742182 BUG845388 LINUX WIN : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 
-// Platform-specific: simulates command-{arrow} input to modify selection
-// Our Event-Sender isn't robust enough to support this.
-// Not required for Beta.  This may also be related to known home/end issues
-// which are intended to be fixed for Beta.
-BUG742182 BUG845388 BUG960092 LINUX WIN : LayoutTests/editing/selection/move-begin-end.html = FAIL
-
 // The end result looks right, but the event messages differ.
 BUG845400 LINUX WIN : LayoutTests/editing/pasteboard/paste-xml.xhtml = FAIL
 
@@ -2981,9 +2975,6 @@ BUG17398 LINUX : LayoutTests/fast/css/pseudo-cache-stale.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/forms/input-appearance-height.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 
-// Test failure from WebKit merge 46141:46143
-BUG17326 LINUX WIN : LayoutTests/editing/execCommand/5138441.html = FAIL
-
 // Test failures from WebKit merge r46194:46229
 BUG17497 WIN RELEASE : LayoutTests/media/video-play-pause-exception.html = PASS CRASH
 BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
@@ -2996,3 +2987,123 @@ BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 
 // Test failures from WebKit merge r46282:r46288
 BUG17635 LINUX MAC : LayoutTests/fast/css/only-child-pseudo-class.html = FAIL
+
+// Test failures from WebKit merge 46288:46363
+BUG_DARIN WIN LINUX : LayoutTests/media/video-source-type.html = CRASH
+BUG_DARIN WIN LINUX : LayoutTests/media/video-src-invalid-remove.html = CRASH
+// Resulting from http://trac.webkit.org/changeset/46363
+BUG_DARIN WIN LINUX : LayoutTests/css1/box_properties/border_style.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css1/box_properties/border_style_inline.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t0805-c5517-brdr-s-00-c.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t0805-c5517-ibrdr-s-00-a.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-03-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-04-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-13-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-14-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-23-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-24-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-31-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-32-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-33-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-34-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-35-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-36-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-37-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-38-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-39-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-41-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-42-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-43-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-44-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-45-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-46-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-47-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-48-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-49-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-53-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-54-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-63-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-64-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-73-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-74-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-83-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-84-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-93-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/css2.1/t170602-bdr-conflct-w-94-d.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/editing/inserting/editing-empty-divs.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat-transformed.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/absolute-in-inline-ltr-2.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/absolute-in-inline-ltr-3.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/absolute-in-inline-ltr.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/absolute-in-inline-rtl-2.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/absolute-in-inline-rtl-3.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/absolute-in-inline-rtl.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/absolute-in-inline-short-ltr.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/absolute-in-inline-short-rtl.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/child-of-absolute-with-auto-height.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/complex-percentage-height.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusAllStylesAllCorners.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDashed01.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted01.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted02.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted03.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/css-generated-content/012.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/css/border-height.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/css/margin-top-bottom-dynamic.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/css/variables/shorthand-test.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/forms/control-clip.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/forms/negativeLineHeight.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/forms/textAreaLineHeight.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/gradients/background-clipped.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/inline-block/inline-block-vertical-align.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/layers/opacity-outline.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/lists/big-list-marker.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/lists/ordered-list-with-no-ol-tag.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/overflow/overflow-with-local-background-attachment.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/repaint/float-overflow-right.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/repaint/float-overflow.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/repaint/layer-child-outline.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/repaint/table-cell-vertical-overflow.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/replaced/replaced-child-of-absolute-with-auto-height.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/table/border-collapsing/001.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/table/border-collapsing/002.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/table/border-collapsing/rtl-border-collapsing.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/fast/table/empty-table-percent-height.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/plugins/embed-attributes-style.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/svg/custom/no-inherited-dashed-stroke.xhtml = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/bugs/bug22019.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/bugs/bug2886.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/bugs/bug2947.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/bugs/bug6674.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/collapsing_borders/bug41262-3.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_layers-opacity.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_position-table.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-cell.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-column-group.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-column.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-row-group.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-row.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/tables_style.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/bugs/bug2479-5.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-cell.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-column-group.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-column.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-quirks.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-row-group.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-row.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_fixed-bg.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_layers-hide.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-cell.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-column-group.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-column.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-row-group.html = FAIL
+BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-row.html = FAIL
