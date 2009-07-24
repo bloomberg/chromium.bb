@@ -32,10 +32,10 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_TITLE).c_str(),
       NULL,  // No parent
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
+      GTK_STOCK_CANCEL,
+      GTK_RESPONSE_REJECT,
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_OK).c_str(),
       GTK_RESPONSE_ACCEPT,
-      l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_CANCEL).c_str(),
-      GTK_RESPONSE_REJECT,
       NULL);
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
   int width, height;
