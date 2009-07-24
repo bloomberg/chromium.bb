@@ -17,6 +17,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/gfx/point.h"
 #include "chrome/browser/automation/automation_autocomplete_edit_tracker.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
@@ -219,13 +220,13 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SetFilteredInet(const IPC::Message& message, bool enabled);
   void SetProxyConfig(const std::string& new_proxy_config);
 
-#if defined(OS_WIN)
-  // TODO(port): Replace POINT.
+#if defined(TOOLKIT_VIEWS)
   void ScheduleMouseEvent(views::View* view,
                           views::Event::EventType type,
-                          POINT point,
+                          const gfx::Point& point,
                           int flags);
-#endif  // defined(OS_WIN)
+#endif  // defined(TOOLKIT_VIEWS)
+
   void GetFocusedViewID(int handle, int* view_id);
 
   // Helper function to find the browser window that contains a given
