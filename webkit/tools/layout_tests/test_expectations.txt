@@ -2990,7 +2990,6 @@ BUG17635 LINUX MAC : LayoutTests/fast/css/only-child-pseudo-class.html = FAIL
 
 // Test failures from WebKit merge 46288:46363
 BUG_DARIN WIN LINUX : LayoutTests/media/video-source-type.html = CRASH
-BUG_DARIN WIN LINUX : LayoutTests/media/video-src-invalid-remove.html = CRASH
 // Resulting from http://trac.webkit.org/changeset/46363
 BUG_DARIN WIN LINUX : LayoutTests/css1/box_properties/border_style.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/css1/box_properties/border_style_inline.html = FAIL
@@ -3045,15 +3044,12 @@ BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/child-of-absolute-with-
 BUG_DARIN WIN LINUX : LayoutTests/fast/block/positioning/complex-percentage-height.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusAllStylesAllCorners.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDashed01.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDashed02.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDashed03.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted01.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted02.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/borders/borderRadiusDotted03.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/css-generated-content/012.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/css/border-height.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/fast/css/margin-top-bottom-dynamic.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/css/variables/shorthand-test.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
@@ -3092,7 +3088,6 @@ BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-row-
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table-row.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/backgr_simple-table.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla/marvin/tables_style.html = FAIL
-BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/bugs/bug2479-5.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-cell.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-column-group.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-column.html = FAIL
