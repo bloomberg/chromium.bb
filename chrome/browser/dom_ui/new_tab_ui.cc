@@ -1488,7 +1488,7 @@ NewTabUI::NewTabUI(TabContents* contents)
   }
 
   // Listen for theme installation.
-  registrar_.Add(this, NotificationType::THEME_INSTALLED,
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   // Listen for bookmark bar visibility changes.
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
@@ -1501,7 +1501,7 @@ NewTabUI::~NewTabUI() {
 void NewTabUI::Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-  if (NotificationType::THEME_INSTALLED == type) {
+  if (NotificationType::BROWSER_THEME_CHANGED == type) {
     CallJavascriptFunction(L"themeChanged");
   } else if (NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED) {
     if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
