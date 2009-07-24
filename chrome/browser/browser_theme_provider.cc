@@ -603,9 +603,9 @@ void BrowserThemeProvider::SetDisplayPropertyData(
     }
     if (base::strcasecmp(WideToUTF8(*iter).c_str(),
         kDisplayPropertyNTPInverseLogo) == 0) {
-      std::string val;
-      if (display_properties_value->GetString(*iter, &val))
-        display_properties_[kDisplayPropertyNTPInverseLogo] = StringToInt(val);
+      int val = 0;
+      if (display_properties_value->GetInteger(*iter, &val))
+        display_properties_[kDisplayPropertyNTPInverseLogo] = val;
     }
     ++iter;
   }
