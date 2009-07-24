@@ -16,14 +16,15 @@
       '../../<(gtestdir)',
     ],
     'defines': [
-      'O3D_PLUGIN_NAME="<!(python version_info.py --name)"',
       'O3D_PLUGIN_DESCRIPTION="<!(python version_info.py --description)"',
       'O3D_PLUGIN_MIME_TYPE="<!(python version_info.py --mimetype)"',
+      'O3D_PLUGIN_NAME="<!(python version_info.py --name)"',
+      'O3D_PLUGIN_VERSION="<!(python version_info.py --version)"',
     ],
   },
   'targets': [
     {
-      'target_name': 'npo3dautoplugin',
+      'target_name': 'o3dPlugin',
       'type': '<(o3d_main_lib_type)',
       'dependencies': [
         '../../<(jpegdir)/libjpeg.gyp:libjpeg',
@@ -208,6 +209,66 @@
                 ],
               },
             ],
+          },
+        ],
+      },
+    ],
+    ['OS=="win"',
+      {
+        'targets': [
+          {
+            'target_name': 'o3dActiveXHost',
+            'type': 'shared_library',
+            'include_dirs': [
+              '<(INTERMEDIATE_DIR)',
+            ],
+            'sources': [
+              '<(INTERMEDIATE_DIR)/npapi_host_control_i.c',
+              'npapi_host_control/win/dispatch_proxy.cc',
+              'npapi_host_control/win/dispatch_proxy.h',
+              'npapi_host_control/win/host_control.cc',
+              'npapi_host_control/win/host_control.h',
+              'npapi_host_control/win/module.h',
+              'npapi_host_control/win/np_browser_proxy.cc',
+              'npapi_host_control/win/np_browser_proxy.h',
+              'npapi_host_control/win/np_object_proxy.cc',
+              'npapi_host_control/win/np_object_proxy.h',
+              'npapi_host_control/win/np_plugin_proxy.cc',
+              'npapi_host_control/win/np_plugin_proxy.h',
+              'npapi_host_control/win/npapi_host_control.cc',
+              'npapi_host_control/win/npapi_host_control.idl',
+              'npapi_host_control/win/npapi_host_control.rc',
+              'npapi_host_control/win/precompile.h',
+              'npapi_host_control/win/resource.h',
+              'npapi_host_control/win/stream_operation.cc',
+              'npapi_host_control/win/stream_operation.h',
+              'npapi_host_control/win/variant_utils.cc',
+              'npapi_host_control/win/variant_utils.h',
+            ],
+            'link_settings': {
+              'libraries': [
+                '-lwininet.lib',
+              ],
+            },
+            'defines': [
+              '_MIDL_USE_GUIDDEF_',
+              'DLL_NPAPI_HOST_CONTROL_EXPORT',
+            ],
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'ModuleDefinitionFile':
+                  'npapi_host_control/win/npapi_host_control.def'
+              },
+              'VCCLCompilerTool': {
+                'ForcedIncludeFiles':
+                  'plugin/npapi_host_control/win/precompile.h',
+                'CompileAs': '2', # Build all the files as C++, since
+                                  # ATL requires that.
+              },
+            },
+            'msvs_configuration_attributes': {
+              'UseOfATL': '1', # 1 = static link to ATL, 2 = dynamic link
+            },
           },
         ],
       },

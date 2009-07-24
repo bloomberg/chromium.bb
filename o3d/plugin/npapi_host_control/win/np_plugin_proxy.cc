@@ -291,7 +291,7 @@ void NPPluginProxy::TearDown() {
   // completed.
   HRESULT hr;
   std::vector<HANDLE> stream_handles;
-  for (int x = 0; x < active_stream_ops_.size(); ++x) {
+  for (StreamOpArray::size_type x = 0; x < active_stream_ops_.size(); ++x) {
     // Request that the stream finish early - so that large file transfers do
     // not block leaving the page.
     hr = active_stream_ops_[x]->RequestCancellation();
@@ -330,7 +330,8 @@ void NPPluginProxy::TearDown() {
       // Note:  This approach will potentially leak resources allocated by
       // the plug-in, but it prevents access to stale data by the threads
       // once the plug-in has been unloaded.
-      for (int x = 0; x < active_stream_ops_.size(); ++x) {
+      for (StreamOpArray::size_type x = 0;
+           x < active_stream_ops_.size(); ++x) {
         BOOL thread_kill = TerminateThread(stream_handles[x], 0);
         ATLASSERT(thread_kill && "Failure killing stalled download thread.");
       }

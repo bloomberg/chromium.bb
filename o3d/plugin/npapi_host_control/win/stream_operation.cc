@@ -410,7 +410,7 @@ HRESULT STDMETHODCALLTYPE StreamOperation::OnDataAvailable(
     // Read all of the available data, and pass it to the plug-in, if requested.
     HRESULT hr;
     char local_data[16384];
-    int bytes_received_total = 0;
+    DWORD bytes_received_total = 0;
     // If a large number of bytes have been received, then this loop can
     // take a long time to complete - which will block the user from leaving
     // the page as the plug-in waits for all transfers to complete.  We

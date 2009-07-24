@@ -126,7 +126,7 @@ STDMETHODIMP NPObjectProxy::GetIDsOfNames(REFIID riid,
 
   // Convert all of the wide string arguments to UTF-8.
   scoped_array<char *> utf8_names(new char*[cNames]);
-  for (int x = 0; x < cNames; ++x) {
+  for (UINT x = 0; x < cNames; ++x) {
     size_t name_length = wcstombs(NULL, rgszNames[x], 0) + 1;
     utf8_names[x] = new char[name_length];
     wcstombs(utf8_names[x], rgszNames[x], name_length);
@@ -137,11 +137,11 @@ STDMETHODIMP NPObjectProxy::GetIDsOfNames(REFIID riid,
   // For each string in the input arguments, look for a match in the set of
   // ids supported by the object instance.
   NPUTF8 *string_id = NULL;
-  for (int x = 0; x < id_count; ++x) {
+  for (uint32 x = 0; x < id_count; ++x) {
     string_id = NPBrowserProxy::GetBrowserFunctions()->
                 utf8fromidentifier(supported_ids[x]);
     ATLASSERT(string_id);
-    for (int y = 0; y < cNames; ++y) {
+    for (UINT y = 0; y < cNames; ++y) {
       if (strcmp(utf8_names[y], string_id) == 0) {
         // Return the ADDRESS of the supported ids string as the DISPID
         // for the method.
@@ -154,7 +154,7 @@ STDMETHODIMP NPObjectProxy::GetIDsOfNames(REFIID riid,
   }
 
   // Free all intermediate string resources.
-  for (int x = 0; x < cNames; ++x) {
+  for (UINT x = 0; x < cNames; ++x) {
     delete[] utf8_names[x];
   }
   NPBrowserProxy::GetBrowserFunctions()->memfree(supported_ids);
@@ -508,7 +508,7 @@ STDMETHODIMP NPObjectProxy::GetNPObjectInstance(void **np_instance) {
 
 bool NPObjectProxy::HasPropertyOrMethod(NPIdentifier np_identifier) {
   if (!hosted_) {
-    return E_FAIL;
+    return false;
   }
 
   return (hosted_->_class->hasProperty != NULL &&

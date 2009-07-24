@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
+#define _SCL_SECURE_NO_WARNINGS
 #include "plugin/npapi_host_control/win/dispatch_proxy.h"
 
 #include <atlstr.h>
@@ -68,8 +68,12 @@ HRESULT DispatchInvoke(NPBrowserProxy* browser_proxy,
   DISPPARAMS disp_arguments = {0};
   disp_arguments.cArgs = arg_count;
   disp_arguments.rgvarg = local_args.get();
-  hr = dispatch->InvokeEx(member, LOCALE_SYSTEM_DEFAULT,
-                          flags, &disp_arguments, &return_arg, NULL,
+  hr = dispatch->InvokeEx(member,
+                          LOCALE_SYSTEM_DEFAULT,
+                          static_cast<WORD>(flags),
+                          &disp_arguments,
+                          &return_arg,
+                          NULL,
                           NULL);
 
   // If the invoke succeeded, then convert and store the return argument.

@@ -515,7 +515,7 @@ STDMETHODIMP CHostControl::Load(IPropertyBag* property_bag,
   if (property_bag2) {
     ULONG property_count;
     if (SUCCEEDED(property_bag2->CountProperties(&property_count))) {
-      for (int x = 0; x < property_count; ++x) {
+      for (ULONG x = 0; x < property_count; ++x) {
         PROPBAG2 property = {0};
         ULONG properties_read = 0;
         if (SUCCEEDED(property_bag2->GetPropertyInfo(x, 1, &property,
