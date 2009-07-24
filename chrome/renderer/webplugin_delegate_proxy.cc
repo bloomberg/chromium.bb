@@ -31,6 +31,7 @@
 #include "grit/renderer_resources.h"
 #include "net/base/mime_util.h"
 #include "printing/native_metafile.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebString.h"
@@ -48,6 +49,7 @@
 #include "base/scoped_cftyperef.h"
 #endif
 
+using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
 using WebKit::WebDragData;
@@ -872,7 +874,7 @@ void WebPluginDelegateProxy::OnGetDragData(const NPVariant_Param& object,
   WebDragData data;
   NPObject* event = reinterpret_cast<NPObject*>(object.npobject_pointer);
   const int32 drag_id = webview->GetDragIdentity();
-  if (!drag_id || !webkit_glue::GetDragData(event, &event_id, &data))
+  if (!drag_id || !WebBindings::getDragData(event, &event_id, &data))
     return;
 
   NPVariant results[4];
@@ -903,7 +905,7 @@ void WebPluginDelegateProxy::OnSetDropEffect(const NPVariant_Param& object,
 
   NPObject* event = reinterpret_cast<NPObject*>(object.npobject_pointer);
   const int32 drag_id = webview->GetDragIdentity();
-  if (!drag_id || !webkit_glue::IsDragEvent(event))
+  if (!drag_id || !WebBindings::isDragEvent(event))
     return;
 
   *success = webview->SetDropEffect(effect != 0);
