@@ -449,6 +449,15 @@ void TabRenderer::Paint(gfx::Canvas* canvas) {
           BrowserThemeProvider::COLOR_TAB_TEXT :
           BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
 
+  // If the close button color has changed, generate a new one.
+  if (!close_button_color_ || title_color != close_button_color_) {
+    close_button_color_ = title_color;
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    close_button_->SetBackground(close_button_color_,
+        rb.GetBitmapNamed(IDR_TAB_CLOSE),
+        rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
+  }
+
   canvas->DrawStringInt(UTF16ToWideHack(title), *title_font, title_color,
                         title_bounds_.x(), title_bounds_.y(),
                         title_bounds_.width(), title_bounds_.height());
@@ -482,20 +491,6 @@ void TabRenderer::Layout() {
     close_button_->SetBounds(lb.width() + kCloseButtonHorzFuzz,
                              close_button_top, close_button_width,
                              close_button_height);
-
-    // If the close button color has changed, generate a new one.
-    if (GetThemeProvider()) {
-      SkColor tab_text_color =
-          GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT);
-      if (!close_button_color_ || tab_text_color != close_button_color_) {
-        close_button_color_ = tab_text_color;
-        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-        close_button_->SetBackground(close_button_color_,
-            rb.GetBitmapNamed(IDR_TAB_CLOSE),
-            rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
-      }
-    }
-
     close_button_->SetVisible(true);
   } else {
     close_button_->SetBounds(0, 0, 0, 0);
