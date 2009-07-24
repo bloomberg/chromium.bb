@@ -45,7 +45,8 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
   }
   button_.reset(new CustomDrawButton(
       GtkThemeProvider::GetFrom(browser_->profile()),
-      normal, active, highlight, depressed, stock));
+      normal, active, highlight, depressed, stock,
+      GTK_ICON_SIZE_SMALL_TOOLBAR));
   gtk_widget_set_tooltip_text(widget(),
                               l10n_util::GetStringUTF8(tooltip).c_str());
   menu_model_.reset(new BackForwardMenuModelGtk(browser,

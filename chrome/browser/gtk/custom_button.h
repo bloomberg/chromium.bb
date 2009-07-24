@@ -86,8 +86,7 @@ class CustomDrawButton : public NotificationObserver {
   CustomDrawButton(int normal_id,
                    int active_id,
                    int highlight_id,
-                   int depressed_id,
-                   const char* stock_id);
+                   int depressed_id);
 
   // Same as above, but uses themed (and possibly tinted) images.
   CustomDrawButton(GtkThemeProvider* theme_provider,
@@ -95,7 +94,8 @@ class CustomDrawButton : public NotificationObserver {
                    int active_id,
                    int highlight_id,
                    int depressed_id,
-                   const char* stock_id);
+                   const char* stock_id,
+                   GtkIconSize stock_size);
 
   ~CustomDrawButton();
 
@@ -149,8 +149,9 @@ class CustomDrawButton : public NotificationObserver {
   // Our theme provider.
   GtkThemeProvider* theme_provider_;
 
-  // The stock icon name.
+  // The stock icon name and size.
   const char* gtk_stock_name_;
+  GtkIconSize icon_size_;
 
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;

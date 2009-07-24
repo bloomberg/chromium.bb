@@ -117,10 +117,11 @@ void CustomDrawButtonBase::Observe(NotificationType type,
 }
 
 CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
-    int highlight_id, int depressed_id, const char* stock_id)
+    int highlight_id, int depressed_id)
     : button_base_(NULL, normal_id, active_id, highlight_id, depressed_id),
       theme_provider_(NULL),
-      gtk_stock_name_(stock_id) {
+      gtk_stock_name_(NULL),
+      icon_size_(GTK_ICON_SIZE_INVALID) {
   Init();
 
   // Initialize the theme stuff with no theme_provider.
@@ -129,11 +130,12 @@ CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
 
 CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
     int normal_id, int active_id, int highlight_id, int depressed_id,
-    const char* stock_id)
+    const char* stock_id, GtkIconSize stock_size)
     : button_base_(theme_provider, normal_id, active_id, highlight_id,
                    depressed_id),
       theme_provider_(theme_provider),
-      gtk_stock_name_(stock_id) {
+      gtk_stock_name_(stock_id),
+      icon_size_(stock_size) {
   Init();
 
   theme_provider_->InitThemesFor(this);
@@ -193,7 +195,7 @@ CustomDrawButton* CustomDrawButton::CloseButton(
     GtkThemeProvider* theme_provider) {
   CustomDrawButton* button = new CustomDrawButton(
       theme_provider, IDR_CLOSE_BAR, IDR_CLOSE_BAR_P,
-      IDR_CLOSE_BAR_H, 0, GTK_STOCK_CLOSE);
+      IDR_CLOSE_BAR_H, 0, GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
   return button;
 }
 
@@ -203,7 +205,7 @@ void CustomDrawButton::SetBrowserTheme() {
   if (use_gtk && gtk_stock_name_) {
     gtk_button_set_image(
         GTK_BUTTON(widget_.get()),
-        gtk_image_new_from_stock(gtk_stock_name_, GTK_ICON_SIZE_SMALL_TOOLBAR));
+        gtk_image_new_from_stock(gtk_stock_name_, icon_size_));
     gtk_widget_set_size_request(widget_.get(), -1, -1);
     gtk_widget_set_app_paintable(widget_.get(), FALSE);
     gtk_widget_set_double_buffered(widget_.get(), TRUE);

@@ -165,8 +165,7 @@ void FindBarGtk::InitWidgets() {
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP).c_str());
 
   find_next_button_.reset(new CustomDrawButton(IDR_FINDINPAGE_NEXT,
-      IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_P,
-      NULL));
+      IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_P));
   g_signal_connect(G_OBJECT(find_next_button_->widget()), "clicked",
                    G_CALLBACK(OnClicked), this);
   gtk_widget_set_tooltip_text(find_next_button_->widget(),
@@ -175,8 +174,7 @@ void FindBarGtk::InitWidgets() {
                    FALSE, FALSE, 0);
 
   find_previous_button_.reset(new CustomDrawButton(IDR_FINDINPAGE_PREV,
-      IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_P,
-      NULL));
+      IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_P));
   g_signal_connect(G_OBJECT(find_previous_button_->widget()), "clicked",
                    G_CALLBACK(OnClicked), this);
   gtk_widget_set_tooltip_text(find_previous_button_->widget(),

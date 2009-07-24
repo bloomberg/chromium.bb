@@ -1894,7 +1894,7 @@ void TabStripGtk::SetTabBounds(TabGtk* tab, const gfx::Rect& bounds) {
 
 CustomDrawButton* TabStripGtk::MakeNewTabButton() {
   CustomDrawButton* button = new CustomDrawButton(IDR_NEWTAB_BUTTON,
-      IDR_NEWTAB_BUTTON_P, IDR_NEWTAB_BUTTON_H, 0, NULL);
+      IDR_NEWTAB_BUTTON_P, IDR_NEWTAB_BUTTON_H, 0);
 
   g_signal_connect(G_OBJECT(button->widget()), "clicked",
                    G_CALLBACK(OnNewTabClicked), this);
@@ -1907,7 +1907,7 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
 #if defined(OS_CHROMEOS)
 CustomDrawButton* TabStripGtk::MakeTabOverviewButton() {
   CustomDrawButton* button =
-      new CustomDrawButton(IDR_TAB_OVERVIEW_BUTTON_ICON, 0, 0, 0, NULL);
+      new CustomDrawButton(IDR_TAB_OVERVIEW_BUTTON_ICON, 0, 0, 0);
 
   g_signal_connect(G_OBJECT(button->widget()), "clicked",
                    G_CALLBACK(OnTabOverviewButtonClicked), this);
