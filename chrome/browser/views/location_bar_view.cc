@@ -277,7 +277,10 @@ void LocationBarView::Paint(gfx::Canvas* canvas) {
   SkColor bg = kBackgroundColorByLevel[model_->GetSchemeSecurityLevel()];
 
   const SkBitmap* background =
-      popup_window_mode_ ? kPopupBackground : kBackground;
+      popup_window_mode_ ?
+          kPopupBackground :
+          GetThemeProvider()->GetBitmapNamed(IDR_LOCATIONBG);
+
   canvas->TileImageInt(*background, 0, 0, 0, 0, width(), height());
   int top_margin = TopMargin();
   canvas->FillRectInt(bg, 0, top_margin, width(),
