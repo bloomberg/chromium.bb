@@ -48,8 +48,9 @@ namespace WebKit {
 
 WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
 {
-    // FIXME: ImageSource does not support picking a matching frame.  We'll
-    // likely need to enumerate the frames ourselves.
+    // FIXME: Do something like what WebImageSkia.cpp does to enumerate frames.
+    // Not sure whether the CG decoder uses the same frame ordering rules (if so
+    // we can just use the same logic).
 
     ImageSource source;
     source.setData(PassRefPtr<SharedBuffer>(data).get(), true);
