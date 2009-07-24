@@ -128,7 +128,6 @@ class WindowWin : public WidgetWin,
   virtual void OnRButtonUp(UINT ht_component, const CPoint& point);
   virtual LRESULT OnNCUAHDrawCaption(UINT msg, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnSetCursor(HWND window, UINT hittest_code, UINT message);
   virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon);
   virtual LRESULT OnSetText(const wchar_t* text);
   virtual void OnSettingChange(UINT flags, const wchar_t* section);

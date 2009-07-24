@@ -198,7 +198,6 @@ class WidgetWin : public Widget,
     MSG_WM_RBUTTONDBLCLK(OnRButtonDblClk)
     MSG_WM_RBUTTONDOWN(OnRButtonDown)
     MSG_WM_RBUTTONUP(OnRButtonUp)
-    MSG_WM_SETCURSOR(OnSetCursor)
     MSG_WM_SETFOCUS(OnSetFocus)
     MSG_WM_SETICON(OnSetIcon)
     MSG_WM_SETTEXT(OnSetText)
@@ -449,10 +448,6 @@ class WidgetWin : public Widget,
   virtual void OnRButtonDown(UINT flags, const CPoint& point);
   virtual void OnRButtonUp(UINT flags, const CPoint& point);
   virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-  virtual LRESULT OnSetCursor(HWND window, UINT hittest_code, UINT message) {
     SetMsgHandled(FALSE);
     return 0;
   }
