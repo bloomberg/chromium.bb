@@ -10,6 +10,7 @@
 #include <sys/prctl.h>
 #include <sys/wait.h>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/global_descriptors_posix.h"
@@ -309,8 +310,10 @@ static bool MaybeEnterChroot() {
     // files and cache the results or the descriptors.
     base::RandUint64();
 
+#if defined(ARCH_CPU_X86_FAMILY)
     PATCH_GLOBAL_OFFSET_TABLE(localtime, sandbox_wrapper::localtime);
     PATCH_GLOBAL_OFFSET_TABLE(localtime_r, sandbox_wrapper::localtime_r);
+#endif
 
     static const char kChrootMe = 'C';
     static const char kChrootMeSuccess = 'O';
