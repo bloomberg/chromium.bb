@@ -32,7 +32,7 @@ AM_CFLAGS = \
 libdrm_intel_la_LTLIBRARIES = libdrm_intel.la
 libdrm_intel_ladir = $(libdir)
 libdrm_intel_la_LDFLAGS = -version-number 1:0:0 -no-undefined
-libdrm_intel_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@
+libdrm_intel_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@ @CLOCK_LIB@
 
 libdrm_intel_la_SOURCES = \
 	intel_bufmgr.c \
