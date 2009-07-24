@@ -57,6 +57,18 @@ class ToolbarModel;
   // aren't coalesced, so we store frames to avoid redundant calls.
   scoped_nsobject<NSMutableDictionary> targetFrames_;
   NSRect newTabTargetFrame_;
+
+  // Width available for resizing the tabs (doesn't include the new tab
+  // button). Used to restrict the available width when closing many tabs at
+  // once to prevent them from resizing to fit the full width. If the entire
+  // width should be used, this will have a value of |kUseFullAvailableWidth|.
+  float availableResizeWidth_;
+  // A tracking area that's the size of the tab strip used to be notified
+  // when the mouse leaves the tab strip. It's installed when the user clicks
+  // the close box of a tab and is removed when they move the mouse outside
+  // of the strip. When they do, we resize the tabs to use all available
+  // space.
+  scoped_nsobject<NSTrackingArea> closeTabTrackingArea_;
 }
 
 // Initialize the controller with a view and browser that contains

@@ -29,6 +29,10 @@
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
+// A value to indicate tab layout should use the full available width of the
+// view.
+static const float kUseFullAvailableWidth = -1.0;
+
 // A simple view class that prevents the windowserver from dragging the
 // area behind tabs. Sometimes core animation confuses it.
 @interface TabStripControllerDragBlockingView : NSView
@@ -36,6 +40,11 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 @implementation TabStripControllerDragBlockingView
 - (BOOL)mouseDownCanMoveWindow {return NO;}
 - (void)drawRect:(NSRect)rect {}
+@end
+
+@interface TabStripController(Private)
+- (void)installTrackingArea;
+- (BOOL)useFullWidthForLayout;
 @end
 
 @implementation TabStripController
@@ -66,6 +75,7 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
                               initWithFrame:NSZeroRect]);
     [view addSubview:dragBlockingView_];
     newTabTargetFrame_ = NSMakeRect(0, 0, 0, 0);
+    availableResizeWidth_ = kUseFullAvailableWidth;
 
     // Watch for notifications that the tab strip view has changed size so
     // we can tell it to layout for the new size.
@@ -79,6 +89,8 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 }
 
 - (void)dealloc {
+  if (closeTabTrackingArea_.get())
+    [tabView_ removeTrackingArea:closeTabTrackingArea_.get()];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
@@ -157,19 +169,28 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 // Called when the user clicks a tab. Tell the model the selection has changed,
 // which feeds back into us via a notification.
 - (void)selectTab:(id)sender {
+  DCHECK([sender isKindOfClass:[NSView class]]);
   int index = [self indexForTabView:sender];
   if (index >= 0 && tabModel_->ContainsIndex(index))
     tabModel_->SelectTabContentsAt(index, true);
 }
 
-// Called when the user closes a tab.  Asks the model to close the tab.
+// Called when the user closes a tab. Asks the model to close the tab. |sender|
+// is the TabView that is potentially going away.
 - (void)closeTab:(id)sender {
+  DCHECK([sender isKindOfClass:[NSView class]]);
   int index = [self indexForTabView:sender];
   if (tabModel_->ContainsIndex(index)) {
     TabContents* contents = tabModel_->GetTabContentsAt(index);
     if (contents)
       UserMetrics::RecordAction(L"CloseTab_Mouse", contents->profile());
     if ([self numberOfTabViews] > 1) {
+      // Limit the width available for laying out tabs so that tabs are not
+      // resized until a later time (when the mouse leaves the tab strip).
+      // TODO(pinkerton): re-visit when handling tab overflow.
+      NSView* penultimateTab = [self viewAtIndex:[tabArray_ count] - 2];
+      availableResizeWidth_ = NSMaxX([penultimateTab frame]);
+      [self installTrackingArea];
       tabModel_->CloseTabContentsAt(index);
     } else {
       // Use the standard window close if this is the last tab
@@ -225,12 +246,20 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:0.2];
 
-  // Compute the base width of tabs given how much size we have available.
-  float availableWidth =
-      NSWidth([tabView_ frame]) - NSWidth([newTabButton_ frame]) -
-      kNewTabButtonOffset - kIndentLeavingSpaceForControls;
+  // Compute the base width of tabs given how much room we're allowed. We
+  // may not be able to use the entire width if the user is quickly closing
+  // tabs.
+  float availableWidth = 0;
+  if ([self useFullWidthForLayout]) {
+    availableWidth = NSWidth([tabView_ frame]);
+    availableWidth -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
+  } else {
+    availableWidth = availableResizeWidth_;
+  }
+  availableWidth -= kIndentLeavingSpaceForControls;
+
   // Add back in the amount we "get back" from the tabs overlapping.
-  availableWidth += [tabContentsArray_ count] * kTabOverlap;
+  availableWidth += ([tabContentsArray_ count] - 1) * kTabOverlap;
   const float baseTabWidth =
       MAX(MIN(availableWidth / [tabContentsArray_ count],
               kMaxTabWidth),
@@ -308,16 +337,20 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
       enclosingRect = NSUnionRect(tabFrame, enclosingRect);
     }
 
+#if 0
     // Ensure the current tab is "below" the tab before it in z-order so that
     // all the tab overlaps are consistent. The selected tab is always the
     // frontmost, but it's already been made frontmost when the tab was selected
     // so we don't need to do anything about it here. It will get put back into
     // place when another tab is selected.
+    // TODO(pinkerton): this doesn't seem to work in the case where a tab
+    // is opened between existing tabs. Disabling.
     if (![tab selected]) {
       [tabView_ addSubview:[tab view]
                 positioned:NSWindowBelow
                 relativeTo:previousTab];
     }
+#endif
     previousTab = [tab view];
 
     offset += NSWidth(tabFrame);
@@ -326,8 +359,11 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
   }
 
   NSRect newTabNewFrame = [newTabButton_ frame];
-  newTabNewFrame.origin =
-      NSMakePoint(MIN(availableWidth, offset + kNewTabButtonOffset), 0);
+  if ([self useFullWidthForLayout])
+    newTabNewFrame.origin =
+        NSMakePoint(MIN(availableWidth, offset + kNewTabButtonOffset), 0);
+  else
+    newTabNewFrame.origin = NSMakePoint(offset + kNewTabButtonOffset, 0);
   newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
                                 NSMaxX(placeholderFrame_));
   if (i > 0 && [newTabButton_ isHidden]) {
@@ -400,6 +436,10 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
             relativeTo:nil];
 
   [self setTabTitle:newController withContents:contents];
+
+  // If a tab is being inserted, we can again use the entire tab strip width
+  // for layout.
+  availableResizeWidth_ = kUseFullAvailableWidth;
 
   // We don't need to call |-layoutTabs| if the tab will be in the foreground
   // because it will get called when the new tab is selected by the tab model.
@@ -652,6 +692,41 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 // the views to adjust immediately.
 - (void)tabViewFrameChanged:(NSNotification*)info {
   [self layoutTabsWithAnimation:NO];
+}
+
+- (BOOL)useFullWidthForLayout {
+  return availableResizeWidth_ == kUseFullAvailableWidth;
+}
+
+// Call to install a tracking area that reports mouseEnter/Exit messages so
+// we can track when the mouse leaves the tab view after closing a tab with
+// the mouse. Don't install another tracking rect if one is already there.
+- (void)installTrackingArea {
+  if (closeTabTrackingArea_.get())
+    return;
+  // Note that we pass |NSTrackingInVisibleRect| so the rect is actually
+  // ignored.
+  closeTabTrackingArea_.reset([[NSTrackingArea alloc]
+      initWithRect:[tabView_ bounds]
+           options:NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways |
+                    NSTrackingInVisibleRect
+             owner:self
+          userInfo:nil]);
+  [tabView_ addTrackingArea:closeTabTrackingArea_.get()];
+}
+
+- (void)mouseEntered:(NSEvent*)event {
+  // Do nothing.
+}
+
+// Called when the tracking area is in effect which means we're tracking to
+// see if the user leaves the tab strip with their mouse. When they do,
+// reset layout to use all available width.
+- (void)mouseExited:(NSEvent*)event {
+  [tabView_ removeTrackingArea:closeTabTrackingArea_.get()];
+  closeTabTrackingArea_.reset(nil);
+  availableResizeWidth_ = kUseFullAvailableWidth;
+  [self layoutTabs];
 }
 
 @end
