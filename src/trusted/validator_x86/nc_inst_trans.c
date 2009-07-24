@@ -752,7 +752,7 @@ static ExprNode* AppendSib(NcInstState* state) {
     base_reg = LookupRegister(kind,
                               GetRexBRegister(state, sib_base(state->sib)));
   }
-  if (0x4 != index) {
+  if (0x4 != index || NACL_TARGET_SUBARCH != 64 || (state->rexprefix & 0x2)) {
     index_reg = LookupRegister(kind, GetRexXRegister(state, index));
     scale = sib_scale[sib_ss(state->sib)];
   }
