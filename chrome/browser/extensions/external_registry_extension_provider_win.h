@@ -23,7 +23,7 @@ class ExternalRegistryExtensionProvider : public ExternalExtensionProvider {
   virtual void VisitRegisteredExtension(
       Visitor* visitor, const std::set<std::string>& ids_to_ignore) const;
 
-  virtual Version* RegisteredVersion(std::string id,
+  virtual Version* RegisteredVersion(const std::string& id,
                                      Extension::Location* location) const;
 };
 

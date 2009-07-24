@@ -61,7 +61,7 @@ DictionaryValue* ExtensionBrowserEventRouter::TabEntry::UpdateLoadState(
 
 DictionaryValue* ExtensionBrowserEventRouter::TabEntry::DidNavigate(
     const TabContents* contents) {
-  if(!pending_navigate_)
+  if (!pending_navigate_)
     return NULL;
 
   DictionaryValue* changed_properties = new DictionaryValue();
@@ -226,7 +226,7 @@ void ExtensionBrowserEventRouter::TabClosingAt(TabContents* contents,
   DispatchEvent(contents->profile(), events::kOnTabRemoved, json_args);
 
   int removed_count = tab_entries_.erase(tab_id);
-  DCHECK(removed_count > 0);
+  DCHECK_GT(removed_count, 0);
 
   registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
       Source<NavigationController>(&contents->controller()));
@@ -330,11 +330,12 @@ void ExtensionBrowserEventRouter::TabChangedAt(TabContents* contents,
 
 void ExtensionBrowserEventRouter::TabStripEmpty() { }
 
-void ExtensionBrowserEventRouter::PageActionExecuted(Profile* profile,
-                                                     std::string extension_id,
-                                                     std::string page_action_id,
-                                                     int tab_id,
-                                                     std::string url) {
+void ExtensionBrowserEventRouter::PageActionExecuted(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& page_action_id,
+    int tab_id,
+    const std::string& url) {
   ListValue args;
   DictionaryValue* object_args = new DictionaryValue();
   object_args->Set(tab_keys::kPageActionIdKey,

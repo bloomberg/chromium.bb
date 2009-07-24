@@ -68,7 +68,7 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
 }
 
 Version* ExternalRegistryExtensionProvider::RegisteredVersion(
-    std::string id,
+    const std::string& id,
     Extension::Location* location) const  {
   RegKey key;
   std::wstring key_path = ASCIIToWide(kRegistryExtensions);

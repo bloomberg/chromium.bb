@@ -22,13 +22,13 @@ class ExternalPrefExtensionProvider : public ExternalExtensionProvider {
 
   // Used only during testing to not use the json file for external extensions,
   // but instead parse a json file specified by the test.
-  void SetPreferencesForTesting(std::string json_data_for_testing);
+  void SetPreferencesForTesting(const std::string& json_data_for_testing);
 
   // ExternalExtensionProvider implementation:
   virtual void VisitRegisteredExtension(
       Visitor* visitor, const std::set<std::string>& ids_to_ignore) const;
 
-  virtual Version* RegisteredVersion(std::string id,
+  virtual Version* RegisteredVersion(const std::string& id,
                                      Extension::Location* location) const;
  protected:
   scoped_ptr<DictionaryValue> prefs_;

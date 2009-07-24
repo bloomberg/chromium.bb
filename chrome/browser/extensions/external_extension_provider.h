@@ -39,7 +39,7 @@ class ExternalExtensionProvider {
   // Gets the version of extension with |id| and its |location|. |location| can
   // be NULL. The caller is responsible for cleaning up the Version object
   // returned. This function returns NULL if the extension is not found.
-  virtual Version* RegisteredVersion(std::string id,
+  virtual Version* RegisteredVersion(const std::string& id,
                                      Extension::Location* location) const = 0;
 };
 

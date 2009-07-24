@@ -80,7 +80,7 @@ class MockExtensionProvider : public ExternalExtensionProvider {
 
   void UpdateOrAddExtension(const std::string& id,
                             const std::string& version,
-                            FilePath path) {
+                            const FilePath& path) {
     extension_map_[id] = std::make_pair(version, path);
   }
 
@@ -103,7 +103,7 @@ class MockExtensionProvider : public ExternalExtensionProvider {
     }
   }
 
-  virtual Version* RegisteredVersion(std::string id,
+  virtual Version* RegisteredVersion(const std::string& id,
                                      Extension::Location* location) const {
     DataMap::const_iterator it = extension_map_.find(id);
     if (it == extension_map_.end())
@@ -127,7 +127,8 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
   MockProviderVisitor() {
   }
 
-  int Visit(std::string json_data, const std::set<std::string>& ignore_list) {
+  int Visit(const std::string& json_data,
+            const std::set<std::string>& ignore_list) {
     // Give the test json file to the provider for parsing.
     provider_.reset(new ExternalPrefExtensionProvider());
     provider_->SetPreferencesForTesting(json_data);
@@ -415,8 +416,8 @@ class ExtensionsServiceTest
     EXPECT_EQ(count, dict->GetSize());
   }
 
-  void ValidatePref(std::string extension_id,
-                    std::wstring pref_path,
+  void ValidatePref(const std::string& extension_id,
+                    const std::wstring& pref_path,
                     int must_equal) {
     std::wstring msg = L" while checking: ";
     msg += ASCIIToWide(extension_id);
@@ -436,7 +437,9 @@ class ExtensionsServiceTest
     EXPECT_EQ(must_equal, val) << msg;
   }
 
-  void SetPref(std::string extension_id, std::wstring pref_path, int value) {
+  void SetPref(const std::string& extension_id,
+               const std::wstring& pref_path,
+               int value) {
     std::wstring msg = L" while setting: ";
     msg += ASCIIToWide(extension_id);
     msg += L" ";
@@ -468,7 +471,7 @@ class ExtensionsServiceTest
   NotificationRegistrar registrar_;
 };
 
-FilePath::StringType NormalizeSeperators(FilePath::StringType path) {
+FilePath::StringType NormalizeSeperators(const FilePath::StringType& path) {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
   FilePath::StringType ret_val;
   for (size_t i = 0; i < path.length(); i++) {
