@@ -31,7 +31,6 @@
 
 // This file defines the JSON Object class.
 
-#include "core/cross/precompile.h"
 #include "import/cross/json_object.h"
 
 namespace o3d {

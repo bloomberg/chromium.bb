@@ -211,6 +211,10 @@ class TestJSONObject : public JSONObject {
     optional_string_value_->set_value(value);
   }
 
+  static ObjectBase::Ref Create(ServiceLocator* service_locator) {
+    return ObjectBase::Ref(new TestJSONObject(service_locator));
+  }
+
  private:
   explicit TestJSONObject(ServiceLocator* service_locator)
       : JSONObject(service_locator) {
@@ -232,11 +236,6 @@ class TestJSONObject : public JSONObject {
     RegisterJSONValue(kOptionalIntegerValueName, &optional_integer_value_);
     RegisterJSONValue(kOptionalBooleanValueName, &optional_boolean_value_);
     RegisterJSONValue(kOptionalStringValueName, &optional_string_value_);
-  }
-
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator) {
-    return ObjectBase::Ref(new TestJSONObject(service_locator));
   }
 
   // One of each type of JSONValue

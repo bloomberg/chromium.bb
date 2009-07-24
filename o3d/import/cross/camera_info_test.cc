@@ -46,13 +46,12 @@ class TestCameraInfo : public CameraInfo {
  public:
   typedef SmartPointer<TestCameraInfo> Ref;
 
+  static ObjectBase::Ref Create(ServiceLocator* service_locator);
+
  private:
   explicit TestCameraInfo(ServiceLocator* service_locator)
       : CameraInfo(service_locator) {
   }
-
-  friend class IClassManager;
-  static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
   O3D_OBJECT_BASE_DECL_CLASS(TestCameraInfo, CameraInfo);
   DISALLOW_COPY_AND_ASSIGN(TestCameraInfo);
