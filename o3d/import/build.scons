@@ -62,16 +62,19 @@ else:
   env.Append(CCFLAGS = [['-include', 'import/cross/precompile.h']])
 
 collada_inputs = [
-  'cross/camera_info.cc',
   'cross/collada.cc',
   'cross/collada_zip_archive.cc',
-  'cross/destination_buffer.cc',
-  'cross/json_object.cc',
   'cross/zip_archive.cc',
   'cross/gz_compressor.cc',
   'cross/file_output_stream_processor.cc',
   'cross/tar_generator.cc',
   'cross/targz_generator.cc',
+]
+
+serialization_objects_inputs = [
+  'cross/camera_info.cc',
+  'cross/destination_buffer.cc',
+  'cross/json_object.cc',
 ]
 
 archive_inputs = [
@@ -108,7 +111,7 @@ if env.Bit('linux'):
 
 # Build a library called 'o3dImport' from the input sources.
 env.ComponentLibrary('o3dImport', collada_inputs)
-
+env.ComponentLibrary('o3dSerializationObjects', serialization_objects_inputs)
 env.ComponentLibrary('o3dArchive', archive_inputs)
 
 # Build a library that ONLY includes the stubbed-out conditioner code

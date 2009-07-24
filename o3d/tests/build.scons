@@ -101,6 +101,7 @@ env.Prepend(
         'o3dImport',
         'o3dArchive',
         'o3dCorePlatform',
+        'o3dSerializationObjects',
         'o3dSerializer',
         'o3dUtils',
         'o3d_base',

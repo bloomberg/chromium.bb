@@ -32,6 +32,7 @@ Import('env')
 
 env.Append(
   LIBS = [
+    'o3dSerializationObjects',
     'o3dCore',
     'o3dUtils',
     'o3d_base',
