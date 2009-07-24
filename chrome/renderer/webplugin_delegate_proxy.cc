@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
+#include "base/gfx/blit.h"
 #include "base/gfx/size.h"
 #include "base/gfx/native_widget_types.h"
 #include "chrome/common/child_process_logging.h"
@@ -523,34 +524,8 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
   bool background_changed = false;
   if (background_store_canvas_.get() && BackgroundChanged(context, rect)) {
     background_changed = true;
-#if defined(OS_WIN)
-    HDC background_hdc =
-        background_store_canvas_->getTopPlatformDevice().getBitmapDC();
-    BitBlt(background_hdc, offset_rect.x(), offset_rect.y(),
-        rect.width(), rect.height(), context, rect.x(), rect.y(), SRCCOPY);
-#elif defined(OS_MACOSX)
-    CGContextRef background_context =
-        background_store_canvas_->getTopPlatformDevice().GetBitmapContext();
-    scoped_cftyperef<CGImageRef>
-        background_image(CGBitmapContextCreateImage(background_context));
-    scoped_cftyperef<CGImageRef> sub_image(
-        CGImageCreateWithImageInRect(background_image, offset_rect.ToCGRect()));
-    CGContextDrawImage(context, rect.ToCGRect(), sub_image);
-#else
-    cairo_t *cairo =
-        background_store_canvas_->getTopPlatformDevice().beginPlatformPaint();
-    cairo_save(cairo);
-    double surface_x = plugin_rect_.x();
-    double surface_y = plugin_rect_.y();
-    cairo_user_to_device(context, &surface_x, &surface_y);
-    cairo_set_source_surface(cairo, cairo_get_target(context),
-                             -surface_x, -surface_y);
-    cairo_rectangle(cairo, offset_rect.x(), offset_rect.y(),
-                    offset_rect.width(), offset_rect.height());
-    cairo_clip(cairo);
-    cairo_paint(cairo);
-    cairo_restore(cairo);
-#endif
+    BlitContextToCanvas(background_store_canvas_.get(), offset_rect,
+                        context, rect.origin());
   }
 
   if (background_changed || !backing_store_painted_.Contains(offset_rect)) {
@@ -558,29 +533,8 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
     CopyFromTransportToBacking(offset_rect);
   }
 
-#if defined(OS_WIN)
-  HDC backing_hdc = backing_store_canvas_->getTopPlatformDevice().getBitmapDC();
-  BitBlt(context, rect.x(), rect.y(), rect.width(), rect.height(), backing_hdc,
-      offset_rect.x(), offset_rect.y(), SRCCOPY);
-#elif defined(OS_MACOSX)
-  CGContextRef backing_context =
-      backing_store_canvas_->getTopPlatformDevice().GetBitmapContext();
-  scoped_cftyperef<CGImageRef>
-      backing_image(CGBitmapContextCreateImage(backing_context));
-  scoped_cftyperef<CGImageRef> sub_image(
-      CGImageCreateWithImageInRect(backing_image, offset_rect.ToCGRect()));
-  CGContextDrawImage(context, rect.ToCGRect(), sub_image);
-#else
-  cairo_save(context);
-  cairo_t *cairo =
-      backing_store_canvas_->getTopPlatformDevice().beginPlatformPaint();
-  cairo_set_source_surface(context, cairo_get_target(cairo),
-                           plugin_rect_.x(), plugin_rect_.y());
-  cairo_rectangle(context, rect.x(), rect.y(), rect.width(), rect.height());
-  cairo_paint(context);
-  cairo_clip(context);
-  cairo_restore(context);
-#endif
+  BlitCanvasToContext(context, rect, backing_store_canvas_.get(),
+                      offset_rect.origin());
 
   if (invalidate_pending_) {
     // Only send the PaintAck message if this paint is in response to an
@@ -941,27 +895,7 @@ void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext context,
                          std::max(0, (width - sad_plugin_->width())/2),
                          std::max(0, (height - sad_plugin_->height())/2));
   }
-
-#if defined(OS_WIN)
-  skia::PlatformDevice& device = canvas.getTopPlatformDevice();
-  device.drawToHDC(context, plugin_rect_.x(), plugin_rect_.y(), NULL);
-#elif defined(OS_LINUX)
-  cairo_save(context);
-  cairo_t* cairo = canvas.getTopPlatformDevice().beginPlatformPaint();
-  cairo_set_source_surface(context, cairo_get_target(cairo),
-                           plugin_rect_.x(), plugin_rect_.y());
-  cairo_rectangle(context, rect.x(), rect.y(), rect.width(), rect.height());
-  cairo_clip(context);
-  cairo_paint(context);
-  cairo_restore(context);
-  // We have no endPlatformPaint() on the Linux PlatformDevice.
-  // The cairo_t* is owned by the device.
-#elif defined(OS_MACOSX)
-  canvas.getTopPlatformDevice().DrawToContext(
-      context, plugin_rect_.x(), plugin_rect_.y(), NULL);
-#else
-  NOTIMPLEMENTED();
-#endif
+  BlitCanvasToContext(context, plugin_rect_, &canvas, gfx::Point(0, 0));
 }
 
 void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
@@ -970,32 +904,8 @@ void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
   }
 
   // Copy the damaged rect from the transport bitmap to the backing store.
-#if defined(OS_WIN)
-  HDC backing = backing_store_canvas_->getTopPlatformDevice().getBitmapDC();
-  HDC transport = transport_store_canvas_->getTopPlatformDevice().getBitmapDC();
-  BitBlt(backing, rect.x(), rect.y(), rect.width(), rect.height(),
-      transport, rect.x(), rect.y(), SRCCOPY);
-#elif defined(OS_MACOSX)
-  gfx::NativeDrawingContext backing =
-      backing_store_canvas_->getTopPlatformDevice().GetBitmapContext();
-  gfx::NativeDrawingContext transport =
-      transport_store_canvas_->getTopPlatformDevice().GetBitmapContext();
-  scoped_cftyperef<CGImageRef> image(CGBitmapContextCreateImage(transport));
-  scoped_cftyperef<CGImageRef> sub_image(
-      CGImageCreateWithImageInRect(image, rect.ToCGRect()));
-  CGContextDrawImage(backing, rect.ToCGRect(), sub_image);
-#else
-  cairo_t *cairo =
-      backing_store_canvas_->getTopPlatformDevice().beginPlatformPaint();
-  cairo_save(cairo);
-  cairo_t *transport =
-      transport_store_canvas_->getTopPlatformDevice().beginPlatformPaint();
-  cairo_set_source_surface(cairo, cairo_get_target(transport), 0, 0);
-  cairo_rectangle(cairo, rect.x(), rect.y(), rect.width(), rect.height());
-  cairo_clip(cairo);
-  cairo_paint(cairo);
-  cairo_restore(cairo);
-#endif
+  BlitCanvasToCanvas(backing_store_canvas_.get(), rect,
+                     transport_store_canvas_.get(), rect.origin());
   backing_store_painted_ = backing_store_painted_.Union(rect);
 }
 

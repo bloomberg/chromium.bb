@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/gfx/blit.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stats_counters.h"
@@ -516,24 +517,19 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
     DCHECK_EQ(err, NPERR_NO_ERROR);
   }
 
+  gfx::Rect pixmap_draw_rect = draw_rect;
+  pixmap_draw_rect.Offset(offset_x, offset_y);
+
   gfx::Rect pixmap_rect(0, 0,
-                        draw_rect.x() + offset_x + draw_rect.width(),
-                        draw_rect.y() + offset_y + draw_rect.height());
+                        pixmap_draw_rect.right(),
+                        pixmap_draw_rect.bottom());
 
   EnsurePixmapAtLeastSize(pixmap_rect.width(), pixmap_rect.height());
 
   // Copy the current image into the pixmap, so the plugin can draw over
   // this background.
   cairo_t* cairo = gdk_cairo_create(pixmap_);
-  double surface_x = -offset_x;
-  double surface_y = -offset_y;
-  cairo_user_to_device(context, &surface_x, &surface_y);
-  cairo_set_source_surface(cairo, cairo_get_target(context),
-                           -surface_x, -surface_y);
-  cairo_rectangle(cairo, draw_rect.x() + offset_x, draw_rect.y() + offset_y,
-                  draw_rect.width(), draw_rect.height());
-  cairo_clip(cairo);
-  cairo_paint(cairo);
+  BlitContextToContext(cairo, pixmap_draw_rect, context, draw_rect.origin());
   cairo_destroy(cairo);
 
   // Construct the paint message, targeting the pixmap.
@@ -542,10 +538,10 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
   event.type = GraphicsExpose;
   event.display = GDK_DISPLAY();
   event.drawable = GDK_PIXMAP_XID(pixmap_);
-  event.x = draw_rect.x() + offset_x;
-  event.y = draw_rect.y() + offset_y;
-  event.width = draw_rect.width();
-  event.height = draw_rect.height();
+  event.x = pixmap_draw_rect.x();
+  event.y = pixmap_draw_rect.y();
+  event.width = pixmap_draw_rect.width();
+  event.height = pixmap_draw_rect.height();
 
   // Tell the plugin to paint into the pixmap.
   static StatsRate plugin_paint("Plugin.Paint");

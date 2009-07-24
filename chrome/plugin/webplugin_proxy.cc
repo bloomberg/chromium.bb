@@ -8,6 +8,7 @@
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
+#include "base/gfx/blit.h"
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
 #include "base/singleton.h"
@@ -426,17 +427,15 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   delegate_->Paint(windowless_context_, rect);
   CGContextRestoreGState(windowless_context_);
 #else
+  if (background_canvas_.get()) {
+    BlitCanvasToCanvas(windowless_canvas_.get(), rect,
+                       background_canvas_.get(), rect.origin());
+  }
   cairo_t* cairo =
       windowless_canvas_->getTopPlatformDevice().beginPlatformPaint();
   cairo_save(cairo);
   cairo_rectangle(cairo, rect.x(), rect.y(), rect.width(), rect.height());
   cairo_clip(cairo);
-  if (background_canvas_.get()) {
-    cairo_t *background =
-        background_canvas_->getTopPlatformDevice().beginPlatformPaint();
-    cairo_set_source_surface(cairo, cairo_get_target(background), 0, 0);
-    cairo_paint(cairo);
-  }
   cairo_translate(cairo, -delegate_->GetRect().x(), -delegate_->GetRect().y());
   delegate_->Paint(cairo, offset_rect);
   cairo_restore(cairo);
