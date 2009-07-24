@@ -282,6 +282,34 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
 
   return data
 
+# Look for the bracket that matches the first bracket seen in a
+# string, and return the start and end as a tuple.  For example, if
+# the input is something like "<(foo <(bar)) blah", then it would
+# return (1, 13), indicating the entire string except for the leading
+# "<" and trailing " blah".
+def FindEnclosingBracketGroup(input):
+  brackets = { '}': '{',
+               ']': '[',
+               ')': '(', }
+  stack = []
+  count = 0
+  start = -1
+  for char in input:
+    if char in brackets.values():
+      stack.append(char)
+      if start == -1:
+        start = count
+    if char in brackets.keys():
+      try:
+        last_bracket = stack.pop()
+      except IndexError:
+        return (-1, -1)
+      if last_bracket != brackets[char]:
+        return (-1, -1)
+      if len(stack) == 0:
+        return (start, count + 1)
+    count = count + 1
+  return (-1, -1)
 
 early_variable_re = re.compile('(?P<replace>(?P<type><!?@?)'
                                '\((?P<is_array>\s*\[?)'
@@ -324,7 +352,27 @@ def ExpandVariables(input, is_late, variables, build_file):
       # expansion in the input.
       expand_to_list = '@' in match['type'] and input == match['replace']
 
+      # Capture these now so we can adjust them if necessary in the
+      # command substitution.
+      replace_start = match_group.start('replace')
+      replace_end = match_group.end('replace')
       if run_command:
+        # Find the ending paren, and re-evaluate the contained string.
+        (c_start, c_end) = FindEnclosingBracketGroup(input[replace_start:])
+
+        # Adjust the replacement range to match the entire command
+        # found by FindEnclosingBracketGroup (since the variable_re
+        # probably doesn't match the entire command if it contained
+        # nested variables).
+        replace_end = replace_start + c_end
+
+        # Strip out the command.
+        command_start = replace_start + c_start + 1
+        command_end = replace_end - 1
+        command = input[command_start:command_end]
+        # Recurse to expand variables in command executions.
+        command = ExpandVariables(command, is_late, variables, build_file)
+
         # Run the command in the build file's directory.
         build_file_dir = os.path.dirname(build_file)
         if build_file_dir == '':
@@ -335,9 +383,7 @@ def ExpandVariables(input, is_late, variables, build_file):
           build_file_dir = None
 
         if match['is_array']:
-          command = eval('[%s]' % match['content'])
-        else:
-          command = match['content']
+          command = eval(command)
 
         p = subprocess.Popen(command, shell=True,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -391,6 +437,7 @@ def ExpandVariables(input, is_late, variables, build_file):
           output = shlex.split(str(replacement))
       else:
         # Expanding in string context.
+        encoded_replacement = ''
         if isinstance(replacement, list):
           # When expanding a list into string context, turn the list items
           # into a string in a way that will work with a subprocess call.
@@ -400,15 +447,12 @@ def ExpandVariables(input, is_late, variables, build_file):
           # proper list-to-argument quoting rules on a specific
           # platform instead of just calling the POSIX encoding
           # routine.
-          output = "".join([output[:match_group.start('replace')],
-                            gyp.common.EncodePOSIXShellList(replacement),
-                            output[match_group.end('replace'):]])
-
+          encoded_replacement = gyp.common.EncodePOSIXShellList(replacement)
         else:
-          # Expanding into string context is easy, just replace it.
-          output = "".join([output[:match_group.start('replace')],
-                            str(replacement),
-                            output[match_group.end('replace'):]])
+          encoded_replacement = replacement
+
+        output = output[:replace_start] + str(encoded_replacement) + \
+                 output[replace_end:]
 
   return output
 
