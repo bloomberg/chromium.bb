@@ -53,7 +53,7 @@ void LowercaseInsertTextHandler(GtkEditable *editable, const gchar *text,
   }
 }
 
-} // namespace
+}  // namespace
 
 EditSearchEngineDialog::EditSearchEngineDialog(
     GtkWindow* parent_window,

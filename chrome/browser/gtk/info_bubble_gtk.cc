@@ -12,6 +12,7 @@
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/notification_service.h"
 
 namespace {
@@ -123,16 +124,18 @@ gboolean HandleExpose(GtkWidget* widget,
 InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* transient_toplevel,
                                    const gfx::Rect& rect,
                                    GtkWidget* content,
+                                   GtkThemeProvider* provider,
                                    InfoBubbleGtkDelegate* delegate) {
-  InfoBubbleGtk* bubble = new InfoBubbleGtk();
+  InfoBubbleGtk* bubble = new InfoBubbleGtk(provider);
   bubble->Init(transient_toplevel, rect, content);
   bubble->set_delegate(delegate);
   return bubble;
 }
 
-InfoBubbleGtk::InfoBubbleGtk()
+InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider)
     : delegate_(NULL),
       window_(NULL),
+      theme_provider_(provider),
       accel_group_(gtk_accel_group_new()),
       screen_x_(0),
       screen_y_(0) {
@@ -156,8 +159,6 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
   gtk_widget_set_app_paintable(window_, TRUE);
   // Have GTK double buffer around the expose signal.
   gtk_widget_set_double_buffered(window_, TRUE);
-  // Set the background color, so we don't need to paint it manually.
-  gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, &kBackgroundColor);
   // Make sure that our window can be focused.
   GTK_WIDGET_SET_FLAGS(window_, GTK_CAN_FOCUS);
 
@@ -220,22 +221,37 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
 
   registrar_.Add(this, NotificationType::ACTIVE_WINDOW_CHANGED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
 }
 
 void InfoBubbleGtk::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::ACTIVE_WINDOW_CHANGED);
-
-  // If we are no longer the active toplevel for whatever reason (whether
-  // another toplevel gained focus or our browser did), close.
-  if (window_->window != Details<const GdkWindow>(details).ptr())
-    Close();
+  switch (type.value) {
+    case NotificationType::ACTIVE_WINDOW_CHANGED:
+      // If we are no longer the active toplevel for whatever reason (whether
+      // another toplevel gained focus or our browser did), close.
+      if (window_->window != Details<const GdkWindow>(details).ptr())
+        Close();
+      break;
+    case NotificationType::BROWSER_THEME_CHANGED:
+      if (theme_provider_->UseGtkTheme()) {
+        gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, NULL);
+      } else {
+        // Set the background color, so we don't need to paint it manually.
+        gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, &kBackgroundColor);
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 // static
 GtkWindow* InfoBubbleGtk::GetToplevelForInfoBubble(
-    const GdkWindow* bubble_window){
+    const GdkWindow* bubble_window) {
   if (!bubble_window)
     return NULL;
 

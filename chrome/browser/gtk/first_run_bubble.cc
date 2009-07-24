@@ -8,9 +8,11 @@
 
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
@@ -50,23 +52,45 @@ void FirstRunBubble::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
   // TODO(port): Enable parent window
 }
 
+void FirstRunBubble::Observe(NotificationType type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+
+  if (theme_provider_->UseGtkTheme()) {
+    for (std::vector<GtkWidget*>::iterator it = labels_.begin();
+         it != labels_.end(); ++it) {
+      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);
+    }
+  } else {
+    for (std::vector<GtkWidget*>::iterator it = labels_.begin();
+         it != labels_.end(); ++it) {
+      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+    }
+  }
+}
+
 FirstRunBubble::FirstRunBubble(Profile* profile,
                                GtkWindow* parent,
                                const gfx::Rect& rect)
     : profile_(profile),
+      theme_provider_(GtkThemeProvider::GetFrom(profile_)),
       parent_(parent),
       content_(NULL),
       bubble_(NULL) {
   GtkWidget* label1 = gtk_label_new(NULL);
+  labels_.push_back(label1);
   char* markup = g_markup_printf_escaped(kSearchLabelMarkup,
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_TITLE).c_str());
   gtk_label_set_markup(GTK_LABEL(label1), markup);
   g_free(markup);
   gtk_misc_set_alignment(GTK_MISC(label1), 0, .5);
+  // TODO(erg): Theme these colors.
   gtk_widget_modify_fg(label1, GTK_STATE_NORMAL, &gfx::kGdkBlack);
 
   GtkWidget* label2 = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_SUBTEXT).c_str());
+  labels_.push_back(label2);
   gtk_misc_set_alignment(GTK_MISC(label2), 0, .5);
   gtk_label_set_line_wrap(GTK_LABEL(label2), TRUE);
   gtk_widget_modify_fg(label2, GTK_STATE_NORMAL, &gfx::kGdkBlack);
@@ -74,6 +98,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
   string16 search_engine = GetDefaultSearchEngineName(profile_);
   GtkWidget* label3 = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_FR_BUBBLE_QUESTION, search_engine).c_str());
+  labels_.push_back(label3);
   gtk_misc_set_alignment(GTK_MISC(label3), 0, .5);
   gtk_label_set_line_wrap(GTK_LABEL(label3), TRUE);
   gtk_widget_modify_fg(label3, GTK_STATE_NORMAL, &gfx::kGdkBlack);
@@ -114,7 +139,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
   // We want the focus to start on the keep entry, not on the change button.
   gtk_container_set_focus_child(GTK_CONTAINER(content_), keep_button);
 
-  bubble_ = InfoBubbleGtk::Show(parent_, rect, content_, this);
+  bubble_ = InfoBubbleGtk::Show(parent_, rect, content_, theme_provider_, this);
   if (!bubble_) {
     NOTREACHED();
     return;
@@ -126,6 +151,10 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
                    G_CALLBACK(&HandleKeepButtonThunk), this);
   g_signal_connect(change_button, "clicked",
                    G_CALLBACK(&HandleChangeButtonThunk), this);
+
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
 }
 
 void FirstRunBubble::HandleChangeButton() {

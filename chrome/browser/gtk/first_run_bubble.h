@@ -6,16 +6,21 @@
 // presented on first run of Chromium. There can only ever be a single
 // bubble open, so the class presents only static methods.
 
-#ifndef CHROME_BROWSER_GTK_FIRST_RUN_BUBBLE_GTK_H_
-#define CHROME_BROWSER_GTK_FIRST_RUN_BUBBLE_GTK_H_
+#ifndef CHROME_BROWSER_GTK_FIRST_RUN_BUBBLE_H_
+#define CHROME_BROWSER_GTK_FIRST_RUN_BUBBLE_H_
 
 #include <gtk/gtk.h>
+
+#include <vector>
 
 #include "base/basictypes.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
-class FirstRunBubble : public InfoBubbleGtkDelegate {
+class FirstRunBubble : public InfoBubbleGtkDelegate,
+                       public NotificationObserver {
  public:
   // Shows the first run bubble, pointing at |rect|.
   static void Show(Profile* profile,
@@ -28,6 +33,11 @@ class FirstRunBubble : public InfoBubbleGtkDelegate {
   virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   FirstRunBubble(Profile* profile,
@@ -53,6 +63,9 @@ class FirstRunBubble : public InfoBubbleGtkDelegate {
   // Our current profile.
   Profile* profile_;
 
+  // Provides colors and stuff.
+  GtkThemeProvider* theme_provider_;
+
   // The toplevel window our dialogs should be transient for.
   GtkWindow* parent_;
 
@@ -60,9 +73,15 @@ class FirstRunBubble : public InfoBubbleGtkDelegate {
   // when the widget is destroyed (when the InfoBubble is destroyed).
   GtkWidget* content_;
 
+  // The various labels in the interface. We keep track of them for theme
+  // changes.
+  std::vector<GtkWidget*> labels_;
+
   InfoBubbleGtk* bubble_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubble);
 };
 
-#endif  // CHROME_BROWSER_GTK_FIRST_RUN_BUBBLE_GTK_H_
+#endif  // CHROME_BROWSER_GTK_FIRST_RUN_BUBBLE_H_

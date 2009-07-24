@@ -14,11 +14,14 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
 class BookmarkNode;
@@ -27,7 +30,8 @@ namespace gfx {
 class Rect;
 }
 
-class BookmarkBubbleGtk : public InfoBubbleGtkDelegate {
+class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
+                          public NotificationObserver {
  public:
   // Shows the bookmark bubble, pointing at |rect|.
   static void Show(GtkWindow* transient_toplevel,
@@ -41,6 +45,11 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate {
   // our widgets before they are destroyed.
   virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
                                  bool closed_by_escape);
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   BookmarkBubbleGtk(GtkWindow* transient_toplevel,
@@ -107,12 +116,19 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate {
   // Our current profile (used to access the bookmark system).
   Profile* profile_;
 
+  // Provides colors and stuff.
+  GtkThemeProvider* theme_provider_;
+
   // The toplevel window our dialogs should be transient for.
   GtkWindow* transient_toplevel_;
 
   // We let the InfoBubble own our content, and then we delete ourself
   // when the widget is destroyed (when the InfoBubble is destroyed).
   GtkWidget* content_;
+
+  // The various labels in the interface. We keep track of them for theme
+  // changes.
+  std::vector<GtkWidget*> labels_;
 
   // The GtkEntry for editing the bookmark name / title.
   GtkWidget* name_entry_;
@@ -134,6 +150,8 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate {
   // When closing the window, whether we should update or remove the bookmark.
   bool apply_edits_;
   bool remove_bookmark_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleGtk);
 };

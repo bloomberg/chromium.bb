@@ -16,6 +16,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
@@ -112,6 +113,24 @@ void BookmarkBubbleGtk::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
       NotificationService::NoDetails());
 }
 
+void BookmarkBubbleGtk::Observe(NotificationType type,
+                                const NotificationSource& source,
+                                const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+
+  if (theme_provider_->UseGtkTheme()) {
+    for (std::vector<GtkWidget*>::iterator it = labels_.begin();
+         it != labels_.end(); ++it) {
+      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, NULL);
+    }
+  } else {
+    for (std::vector<GtkWidget*>::iterator it = labels_.begin();
+         it != labels_.end(); ++it) {
+      gtk_widget_modify_fg(*it, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+    }
+  }
+}
+
 BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
                                      const gfx::Rect& rect,
                                      Profile* profile,
@@ -119,6 +138,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
                                      bool newly_bookmarked)
     : url_(url),
       profile_(profile),
+      theme_provider_(GtkThemeProvider::GetFrom(profile_)),
       transient_toplevel_(transient_toplevel),
       content_(NULL),
       name_entry_(NULL),
@@ -131,7 +151,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
   GtkWidget* label = gtk_label_new(l10n_util::GetStringUTF8(
       newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
                           IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK).c_str());
-  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+  labels_.push_back(label);
   GtkWidget* remove_button = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK).c_str());
   GtkWidget* edit_button = gtk_button_new_with_label(
@@ -166,7 +186,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
   // We use a table to allow the labels to line up with each other, along
   // with the entry and folder combo lining up.
   GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
-      &gfx::kGdkBlack,
+      &labels_,
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_TITLE_TEXT).c_str(),
       name_entry_,
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_FOLDER_TEXT).c_str(),
@@ -190,7 +210,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
   gtk_container_set_focus_child(GTK_CONTAINER(content), table);
 
   bubble_ = InfoBubbleGtk::Show(transient_toplevel_,
-                                rect, content, this);
+                                rect, content, theme_provider_, this);
   if (!bubble_) {
     NOTREACHED();
     return;
@@ -208,6 +228,10 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
                    G_CALLBACK(&HandleCloseButtonThunk), this);
   g_signal_connect(remove_button, "clicked",
                    G_CALLBACK(&HandleRemoveButtonThunk), this);
+
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
 }
 
 BookmarkBubbleGtk::~BookmarkBubbleGtk() {

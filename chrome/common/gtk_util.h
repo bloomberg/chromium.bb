@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 #include <string>
+#include <vector>
 
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
@@ -50,16 +51,20 @@ const int kContentAreaBorder = 12;
 const int kContentAreaSpacing = 18;
 
 // Create a table of labeled controls, using proper spacing and alignment.
-// Arguments should be pairs of const char*, GtkWidget*, concluding with a NULL.
-// The first argument is a color to force the label text to. It can be NULL to
-// get the system default.
+// Arguments should be pairs of const char*, GtkWidget*, concluding with a
+// NULL.  The first argument is a vector in which to place all labels
+// produced. It can be NULL if you don't need to keep track of the label
+// widgets. The second argument is a color to force the label text to. It can
+// be NULL to get the system default.
+//
 // For example:
-// controls = CreateLabeledControlsGroup(&gfx::kGdkBlack,
+// controls = CreateLabeledControlsGroup(NULL, &gfx::kGdkBlack,
 //                                       "Name:", title_entry_,
 //                                       "Folder:", folder_combobox_,
 //                                       NULL);
-GtkWidget* CreateLabeledControlsGroup(const GdkColor* color,
-                                      const char* text, ...);
+GtkWidget* CreateLabeledControlsGroup(
+    std::vector<GtkWidget*>* labels,
+    const char* text, ...);
 
 // Create a GtkBin with |child| as its child widget.  This bin will paint a
 // border of color |color| with the sizes specified in pixels.

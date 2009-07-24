@@ -18,6 +18,7 @@
 #include "base/basictypes.h"
 #include "chrome/common/notification_registrar.h"
 
+class GtkThemeProvider;
 class InfoBubbleGtk;
 namespace gfx {
 class Rect;
@@ -43,6 +44,7 @@ class InfoBubbleGtk : public NotificationObserver {
   static InfoBubbleGtk* Show(GtkWindow* transient_toplevel,
                              const gfx::Rect& rect,
                              GtkWidget* content,
+                             GtkThemeProvider* provider,
                              InfoBubbleGtkDelegate* delegate);
 
   // Close the bubble if it's open.  This will delete the widgets and object,
@@ -60,7 +62,7 @@ class InfoBubbleGtk : public NotificationObserver {
   static GtkWindow* GetToplevelForInfoBubble(const GdkWindow* bubble_window);
 
  private:
-  InfoBubbleGtk();
+  explicit InfoBubbleGtk(GtkThemeProvider* provider);
   virtual ~InfoBubbleGtk();
 
   // Creates the InfoBubble.
@@ -120,6 +122,9 @@ class InfoBubbleGtk : public NotificationObserver {
   // Our GtkWindow popup window, we don't technically "own" the widget, since
   // it deletes us when it is destroyed.
   GtkWidget* window_;
+
+  // Provides colors and stuff.
+  GtkThemeProvider* theme_provider_;
 
   // The accel group attached to |window_|, to handle closing with escape.
   GtkAccelGroup* accel_group_;
