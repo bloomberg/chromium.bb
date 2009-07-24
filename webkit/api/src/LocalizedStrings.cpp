@@ -241,8 +241,6 @@ String contextMenuItemTagLeftToRight() { return String(); }
 String contextMenuItemTagRightToLeft() { return String(); }
 String contextMenuItemTagInspectElement() { return String(); }
 String contextMenuItemTagShowSpellingPanel(bool show) { return String(); }
-
-// FIXME: These should return something.
 String mediaElementLiveBroadcastStateText() { return String(); }
 String mediaElementLoadingStateText() { return String(); }
 
