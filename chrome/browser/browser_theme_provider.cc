@@ -39,7 +39,7 @@ const char* BrowserThemeProvider::kColorFrameIncognitoInactive =
 const char* BrowserThemeProvider::kColorToolbar = "toolbar";
 const char* BrowserThemeProvider::kColorTabText = "tab_text";
 const char* BrowserThemeProvider::kColorBackgroundTabText =
-    "background_tab_text";
+    "tab_background_text";
 const char* BrowserThemeProvider::kColorBookmarkText = "bookmark_text";
 const char* BrowserThemeProvider::kColorNTPBackground = "ntp_background";
 const char* BrowserThemeProvider::kColorNTPText = "ntp_text";
@@ -536,9 +536,14 @@ void BrowserThemeProvider::SetColorData(DictionaryValue* colors_value) {
       color_list->GetInteger(2, &b);
       if (color_list->GetSize() == 4) {
         double alpha;
-        color_list->GetReal(3, &alpha);
-        colors_[WideToUTF8(*iter)] = SkColorSetARGB(
-            static_cast<int>(alpha * 255), r, g, b);
+        int alpha_int;
+        if (color_list->GetReal(3, &alpha)) {
+          colors_[WideToUTF8(*iter)] = SkColorSetARGB(
+              static_cast<int>(alpha * 255), r, g, b);
+        } else if (color_list->GetInteger(3, &alpha_int)) {
+          colors_[WideToUTF8(*iter)] = SkColorSetARGB(
+              alpha_int * 255, r, g, b);
+        }
       } else {
         colors_[WideToUTF8(*iter)] = SkColorSetRGB(r, g, b);
       }
@@ -559,10 +564,14 @@ void BrowserThemeProvider::SetTintData(DictionaryValue* tints_value) {
     if (tints_value->GetList(*iter, &tint_list) &&
         tint_list->GetSize() == 3) {
       skia::HSL hsl = { -1, -1, -1 };
-      // TODO(glen): Make this work with integer values.
-      tint_list->GetReal(0, &hsl.h);
-      tint_list->GetReal(1, &hsl.s);
-      tint_list->GetReal(2, &hsl.l);
+      int value = 0;
+      if (!tint_list->GetReal(0, &hsl.h) && tint_list->GetInteger(0, &value))
+        hsl.h = value;
+      if (!tint_list->GetReal(1, &hsl.s) &&  tint_list->GetInteger(1, &value))
+        hsl.s = value;
+      if (!tint_list->GetReal(2, &hsl.l) && tint_list->GetInteger(2, &value))
+        hsl.l = value;
+
       tints_[WideToUTF8(*iter)] = hsl;
     }
     ++iter;

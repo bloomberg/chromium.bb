@@ -637,7 +637,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
                 color_list->GetInteger(2, &color)) {
               if (color_list->GetSize() == 4) {
                 double alpha;
-                if (color_list->GetReal(3, &alpha)) {
+                int alpha_int;
+                if (color_list->GetReal(3, &alpha) ||
+                    color_list->GetInteger(3, &alpha_int)) {
                   ++iter;
                   continue;
                 }
@@ -662,12 +664,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       DictionaryValue::key_iterator iter = tints_value->begin_keys();
       while (iter != tints_value->end_keys()) {
         ListValue* tint_list;
-        double hue = 0;
+        double v = 0;
+        int vi = 0;
         if (!tints_value->GetList(*iter, &tint_list) ||
             tint_list->GetSize() != 3 ||
-            !tint_list->GetReal(0, &hue) ||
-            !tint_list->GetReal(1, &hue) ||
-            !tint_list->GetReal(2, &hue)) {
+            !(tint_list->GetReal(0, &v) || tint_list->GetInteger(0, &vi)) ||
+            !(tint_list->GetReal(1, &v) || tint_list->GetInteger(1, &vi)) ||
+            !(tint_list->GetReal(2, &v) || tint_list->GetInteger(2, &vi))) {
           *error = errors::kInvalidThemeTints;
           return false;
         }
