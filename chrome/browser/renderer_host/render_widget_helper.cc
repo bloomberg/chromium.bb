@@ -84,14 +84,13 @@ void RenderWidgetHelper::CancelResourceRequests(int render_widget_id) {
   }
 }
 
-void RenderWidgetHelper::CrossSiteClosePageACK(int new_render_process_host_id,
-                                               int new_request_id) {
+void RenderWidgetHelper::CrossSiteClosePageACK(
+    const ViewMsg_ClosePage_Params& params) {
   if (g_browser_process->io_thread()) {
     g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(this,
                           &RenderWidgetHelper::OnCrossSiteClosePageACK,
-                          new_render_process_host_id,
-                          new_request_id));
+                          params));
   }
 }
 
@@ -196,10 +195,8 @@ void RenderWidgetHelper::OnCancelResourceRequests(
 }
 
 void RenderWidgetHelper::OnCrossSiteClosePageACK(
-    int new_render_process_host_id,
-    int new_request_id) {
-  resource_dispatcher_host_->OnClosePageACK(
-      new_render_process_host_id, new_request_id);
+    ViewMsg_ClosePage_Params params) {
+  resource_dispatcher_host_->OnClosePageACK(params);
 }
 
 void RenderWidgetHelper::CreateNewWindow(int opener_id,

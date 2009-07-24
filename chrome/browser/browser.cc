@@ -2487,7 +2487,7 @@ void Browser::ProcessPendingTabs() {
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
     if (tab->render_view_host()) {
-      tab->render_view_host()->FirePageUnload();
+      tab->render_view_host()->ClosePage(false, -1, -1);
     } else {
       ClearUnloadState(tab);
     }

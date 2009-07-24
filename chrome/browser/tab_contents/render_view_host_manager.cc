@@ -145,8 +145,14 @@ bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
     // be swapped in as part of the usual DidNavigate logic.  (If the unload
     // handler later finishes, this call will be ignored because the state in
     // CrossSiteResourceHandler will already be cleaned up.)
-    current_host()->process()->CrossSiteClosePageACK(
-        pending_render_view_host_->process()->pid(), pending_request_id);
+    ViewMsg_ClosePage_Params params;
+    params.closing_process_id = render_view_host_->process()->pid();
+    params.closing_route_id = render_view_host_->routing_id();
+    params.for_cross_site_transition = true;
+    params.new_render_process_host_id =
+        pending_render_view_host_->process()->pid();
+    params.new_request_id = pending_request_id;
+    current_host()->process()->CrossSiteClosePageACK(params);
   }
   return false;
 }
@@ -215,7 +221,7 @@ void RenderViewHostManager::ShouldClosePage(bool proceed) {
 
     if (proceed_to_fire_unload) {
       // This is not a cross-site navigation, the tab is being closed.
-      render_view_host_->FirePageUnload();
+      render_view_host_->ClosePage(true, -1, -1);
     }
     return;
   }
@@ -246,7 +252,8 @@ void RenderViewHostManager::OnCrossSiteResponse(int new_render_process_host_id,
   // will send a ClosePage_ACK to the ResourceDispatcherHost with the given
   // IDs (of the pending RVH's request), allowing the pending RVH's response to
   // resume.
-  render_view_host_->ClosePage(new_render_process_host_id, new_request_id);
+  render_view_host_->ClosePage(true,
+                               new_render_process_host_id, new_request_id);
 
   // ResourceDispatcherHost has told us to run the onunload handler, which
   // means it is not a download or unsafe page, and we are going to perform the

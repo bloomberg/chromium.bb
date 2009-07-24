@@ -149,27 +149,24 @@ class RenderViewHost : public RenderWidgetHost,
   void SetNavigationsSuspended(bool suspend);
 
   // Causes the renderer to invoke the onbeforeunload event handler.  The
-  // result will be returned via ViewMsg_ShouldClose.
+  // result will be returned via ViewMsg_ShouldClose. See also ClosePage which
+  // will fire the PageUnload event.
   void FirePageBeforeUnload();
 
-  // Close the page after the page has responded that it can be closed via
-  // ViewMsg_ShouldClose. This is where the page itself is closed. The
-  // unload handler is triggered here, which can block with a dialog, but cannot
-  // cancel the close of the page.
-  void FirePageUnload();
+  // Causes the renderer to close the current page, including running its
+  // onunload event handler.  A ClosePage_ACK message will be sent to the
+  // ResourceDispatcherHost when it is finished.
+  //
+  // Please see ViewMsg_ClosePage in resource_messages_internal.h for a
+  // description of the parameters.
+  void ClosePage(bool for_cross_site_transition,
+                 int new_render_process_host_id,
+                 int new_request_id);
 
   // Close the page ignoring whether it has unload events registers.
   // This is called after the beforeunload and unload events have fired
   // and the user has agreed to continue with closing the page.
-  static void ClosePageIgnoringUnloadEvents(int render_process_host_id,
-                                            int request_id);
-
-  // Causes the renderer to close the current page, including running its
-  // onunload event handler.  A ClosePage_ACK message will be sent to the
-  // ResourceDispatcherHost when it is finished. |new_render_process_host_id|
-  // and |new_request_id| will help the ResourceDispatcherHost identify which
-  // response is associated with this event.
-  void ClosePage(int new_render_process_host_id, int new_request_id);
+  void ClosePageIgnoringUnloadEvents();
 
   // Sets whether this RenderViewHost has an outstanding cross-site request,
   // for which another renderer will need to run an onunload event handler.

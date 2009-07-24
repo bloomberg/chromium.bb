@@ -500,10 +500,8 @@ void BrowserRenderProcessHost::CancelResourceRequests(int render_widget_id) {
 }
 
 void BrowserRenderProcessHost::CrossSiteClosePageACK(
-    int new_render_process_host_id,
-    int new_request_id) {
-  widget_helper_->CrossSiteClosePageACK(new_render_process_host_id,
-                                        new_request_id);
+    const ViewMsg_ClosePage_Params& params) {
+  widget_helper_->CrossSiteClosePageACK(params);
 }
 
 bool BrowserRenderProcessHost::WaitForPaintMsg(int render_widget_id,

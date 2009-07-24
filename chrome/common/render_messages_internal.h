@@ -466,10 +466,12 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED0(ViewMsg_ShouldClose)
 
   // Instructs the renderer to close the current page, including running the
-  // onunload event handler.  Expects a ClosePage_ACK message when finished.
-  IPC_MESSAGE_ROUTED2(ViewMsg_ClosePage,
-                      int /* new_render_process_host_id */,
-                      int /* new_request_id */)
+  // onunload event handler. See the struct in render_messages.h for more.
+  //
+  // Expects a ClosePage_ACK message when finished, where the parameters are
+  // echoed back.
+  IPC_MESSAGE_ROUTED1(ViewMsg_ClosePage,
+                      ViewMsg_ClosePage_Params)
 
   // Asks the renderer to send back stats on the WebCore cache broken down by
   // resource types.
@@ -1222,10 +1224,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       bool /* proceed */)
 
   // Indicates that the current page has been closed, after a ClosePage
-  // message.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_ClosePage_ACK,
-                      int /* new_render_process_host_id */,
-                      int /* new_request_id */)
+  // message. The parameters are just echoed from the ClosePage request.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ClosePage_ACK,
+                      ViewMsg_ClosePage_Params)
 
   IPC_MESSAGE_ROUTED4(ViewHostMsg_DidDownloadFavIcon,
                       int /* Identifier of the request */,

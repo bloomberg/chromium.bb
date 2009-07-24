@@ -320,42 +320,35 @@ void RenderViewHost::FirePageBeforeUnload() {
   }
 }
 
-void RenderViewHost::FirePageUnload() {
-  ClosePage(process()->pid(), routing_id());
-}
-
-// static
-void RenderViewHost::ClosePageIgnoringUnloadEvents(int render_process_host_id,
-                                                   int request_id) {
-  RenderViewHost* rvh = RenderViewHost::FromID(render_process_host_id,
-                                               request_id);
-  if (!rvh)
-    return;
-
-  rvh->StopHangMonitorTimeout();
-  rvh->is_waiting_for_unload_ack_ = false;
-
-  rvh->set_sudden_termination_allowed(true);
-  rvh->delegate()->Close(rvh);
-}
-
-void RenderViewHost::ClosePage(int new_render_process_host_id,
+void RenderViewHost::ClosePage(bool for_cross_site_transition,
+                               int new_render_process_host_id,
                                int new_request_id) {
   // Start the hang monitor in case the renderer hangs in the unload handler.
   is_waiting_for_unload_ack_ = true;
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
+  ViewMsg_ClosePage_Params params;
+  params.closing_process_id = process()->pid();
+  params.closing_route_id = routing_id();
+  params.for_cross_site_transition = for_cross_site_transition;
+  params.new_render_process_host_id = new_render_process_host_id;
+  params.new_request_id = new_request_id;
   if (IsRenderViewLive()) {
-    Send(new ViewMsg_ClosePage(routing_id(),
-                               new_render_process_host_id,
-                               new_request_id));
+    Send(new ViewMsg_ClosePage(routing_id(), params));
   } else {
     // This RenderViewHost doesn't have a live renderer, so just skip closing
     // the page.  We must notify the ResourceDispatcherHost on the IO thread,
     // which we will do through the RenderProcessHost's widget helper.
-    process()->CrossSiteClosePageACK(new_render_process_host_id,
-                                     new_request_id);
+    process()->CrossSiteClosePageACK(params);
   }
+}
+
+void RenderViewHost::ClosePageIgnoringUnloadEvents() {
+  StopHangMonitorTimeout();
+  is_waiting_for_unload_ack_ = false;
+
+  sudden_termination_allowed_ = true;
+  delegate_->Close(this);
 }
 
 void RenderViewHost::SetHasPendingCrossSiteRequest(bool has_pending_request,

@@ -16,6 +16,7 @@
 #include "ipc/ipc_sync_channel.h"
 
 class Profile;
+struct ViewMsg_ClosePage_Params;
 
 // Virtual interface that represents the browser side of the browser <->
 // renderer communication channel. There will generally be one
@@ -118,8 +119,8 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // ResourceDispatcherHost.  Necessary for a cross-site request, in the case
   // that the original RenderViewHost is not live and thus cannot run an
   // onunload handler.
-  virtual void CrossSiteClosePageACK(int new_render_process_host_id,
-                                     int new_request_id) = 0;
+  virtual void CrossSiteClosePageACK(
+      const ViewMsg_ClosePage_Params& params) = 0;
 
   // Called on the UI thread to wait for the next PaintRect message for the
   // specified render widget.  Returns true if successful, and the msg out-

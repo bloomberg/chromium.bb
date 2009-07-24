@@ -2736,8 +2736,7 @@ void RenderView::OnMsgShouldClose() {
   Send(new ViewHostMsg_ShouldClose_ACK(routing_id_, should_close));
 }
 
-void RenderView::OnClosePage(int new_render_process_host_id,
-                             int new_request_id) {
+void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
   // TODO(creis): We'd rather use webview()->Close() here, but that currently
   // sets the WebView's delegate_ to NULL, preventing any JavaScript dialogs
   // in the onunload handler from appearing.  For now, we're bypassing that and
@@ -2751,14 +2750,13 @@ void RenderView::OnClosePage(int new_render_process_host_id,
     // TODO(davemoore) this code should be removed once WillCloseFrame() gets
     // called when a page is destroyed. DumpLoadHistograms() is safe to call
     // multiple times for the same frame, but it will simplify things.
-    if (url.SchemeIs("http") || url.SchemeIs("https"))
+    if (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme))
       DumpLoadHistograms();
     main_frame->ClosePage();
   }
 
-  Send(new ViewHostMsg_ClosePage_ACK(routing_id_,
-                                     new_render_process_host_id,
-                                     new_request_id));
+  // Just echo back the params in the ACK.
+  Send(new ViewHostMsg_ClosePage_ACK(routing_id_, params));
 }
 
 void RenderView::OnThemeChanged() {

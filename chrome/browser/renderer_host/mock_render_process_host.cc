@@ -30,8 +30,7 @@ void MockRenderProcessHost::CancelResourceRequests(int render_widget_id) {
 }
 
 void MockRenderProcessHost::CrossSiteClosePageACK(
-    int new_render_process_host_id,
-    int new_request_id) {
+    const ViewMsg_ClosePage_Params& params) {
 }
 
 bool MockRenderProcessHost::WaitForPaintMsg(int render_widget_id,

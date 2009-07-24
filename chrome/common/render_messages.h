@@ -223,6 +223,42 @@ struct ViewMsg_UploadFile_Params {
   std::wstring other_values;
 };
 
+// Information on closing a tab. This is used both for ViewMsg_ClosePage, and
+// the corresponding ViewHostMsg_ClosePage_ACK.
+struct ViewMsg_ClosePage_Params {
+  // The identifier of the RenderProcessHost for the currently closing view.
+  //
+  // These first two parameters are technically redundant since they are
+  // needed only when processing the ACK message, and the processor
+  // theoretically knows both the process and route ID. However, this is
+  // difficult to figure out with our current implementation, so this
+  // information is duplicate here.
+  int closing_process_id;
+
+  // The route identifier for the currently closing RenderView.
+  int closing_route_id;
+
+  // True when this close is for the first (closing) tab of a cross-site
+  // transition where we switch processes. False indicates the close is for the
+  // entire tab.
+  //
+  // When true, the new_* variables below must be filled in. Otherwise they must
+  // both be -1.
+  bool for_cross_site_transition;
+
+  // The identifier of the RenderProcessHost for the new view attempting to
+  // replace the closing one above. This must be valid when
+  // for_cross_site_transition is set, and must be -1 otherwise.
+  int new_render_process_host_id;
+
+  // The identifier of the *request* the new view made that is causing the
+  // cross-site transition. This is *not* a route_id, but the request that we
+  // will resume once the ACK from the closing view has been received. This
+  // must be valid when for_cross_site_transition is set, and must be -1
+  // otherwise.
+  int new_request_id;
+};
+
 // Parameters for a resource request.
 struct ViewHostMsg_Resource_Request {
   // The request method: GET, POST, etc.
@@ -1240,6 +1276,41 @@ struct ParamTraits<NavigationGesture> {
         break;
     }
     LogParam(event, l);
+  }
+};
+
+// Traits for ViewMsg_Close_Params.
+template <>
+struct ParamTraits<ViewMsg_ClosePage_Params> {
+  typedef ViewMsg_ClosePage_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.closing_process_id);
+    WriteParam(m, p.closing_route_id);
+    WriteParam(m, p.for_cross_site_transition);
+    WriteParam(m, p.new_render_process_host_id);
+    WriteParam(m, p.new_request_id);
+  }
+
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return ReadParam(m, iter, &r->closing_process_id) &&
+           ReadParam(m, iter, &r->closing_route_id) &&
+           ReadParam(m, iter, &r->for_cross_site_transition) &&
+           ReadParam(m, iter, &r->new_render_process_host_id) &&
+           ReadParam(m, iter, &r->new_request_id);
+  }
+
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.closing_process_id, l);
+    l->append(L", ");
+    LogParam(p.closing_route_id, l);
+    l->append(L", ");
+    LogParam(p.for_cross_site_transition, l);
+    l->append(L", ");
+    LogParam(p.new_render_process_host_id, l);
+    l->append(L", ");
+    LogParam(p.new_request_id, l);
+    l->append(L")");
   }
 };
 

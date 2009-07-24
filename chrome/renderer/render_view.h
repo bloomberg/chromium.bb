@@ -56,6 +56,7 @@ class WebPluginDelegateProxy;
 class WebDevToolsAgentDelegate;
 struct ContextMenuMediaParams;
 struct ThumbnailScore;
+struct ViewMsg_ClosePage_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_UploadFile_Params;
 struct WebDropData;
@@ -552,7 +553,7 @@ class RenderView : public RenderWidget,
 
   // Runs the onunload handler and closes the page, replying with ClosePage_ACK
   // (with the given RPH and request IDs, to help track the request).
-  void OnClosePage(int new_render_process_host_id, int new_request_id);
+  void OnClosePage(const ViewMsg_ClosePage_Params& params);
 
   // Notification about ui theme changes.
   void OnThemeChanged();

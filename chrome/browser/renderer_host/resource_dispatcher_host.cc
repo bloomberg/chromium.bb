@@ -109,10 +109,37 @@ const int kMaxPendingDataMessages = 20;
 // This bound is 25MB, which allows for around 6000 outstanding requests.
 const int kMaxOutstandingRequestsCostPerProcess = 26214400;
 
-// A NotificationTask proxies a resource dispatcher notification from the IO
-// thread to the RenderViewHostDelegate on the UI thread. It should be
-// constructed on the IO thread and run in the UI thread.
-class NotificationTask : public Task {
+// Calls ClosePageIgnoringUnloadEvents on the UI thread for the given
+// RenderView.
+//
+// If there are more functions we need to call on RVH, we should generalize this
+// like the "Delegate" notification task below.
+class RVHCloseNotificationTask : public Task {
+ public:
+  RVHCloseNotificationTask(int render_process_host_id,
+                           int render_view_host_id)
+      : render_process_host_id_(render_process_host_id),
+        render_view_host_id_(render_view_host_id) {
+  }
+
+  virtual void Run() {
+    RenderViewHost* rvh = RenderViewHost::FromID(render_process_host_id_,
+                                                 render_view_host_id_);
+    if (rvh)
+      rvh->ClosePageIgnoringUnloadEvents();
+  }
+
+ private:
+  int render_process_host_id_;
+  int render_view_host_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(RVHCloseNotificationTask);
+};
+
+// A RVHDelegateNotificationTask proxies a resource dispatcher notification
+// from the IO thread to the RenderViewHostDelegate on the UI thread. It should
+// be constructed on the IO thread and run in the UI thread.
+class RVHDelegateNotificationTask : public Task {
  public:
   typedef void (RenderViewHostDelegate::Resource::* ResourceFunction)
       (ResourceRequestDetails*);
@@ -122,11 +149,13 @@ class NotificationTask : public Task {
   //
   // This object will take ownership of the details pointer, which must be
   // allocated on the heap.
-  NotificationTask(
+  RVHDelegateNotificationTask(
       URLRequest* request,
       ResourceFunction function,
       ResourceRequestDetails* details)
-      : function_(function),
+      : render_process_host_id_(-1),
+        render_view_host_id_(-1),
+        function_(function),
         details_(details) {
     if (!ResourceDispatcherHost::RenderViewForRequest(request,
                                                       &render_process_host_id_,
@@ -156,7 +185,7 @@ class NotificationTask : public Task {
   // The details for the notification.
   scoped_ptr<ResourceRequestDetails> details_;
 
-  DISALLOW_COPY_AND_ASSIGN(NotificationTask);
+  DISALLOW_COPY_AND_ASSIGN(RVHDelegateNotificationTask);
 };
 
 // Consults the RendererSecurity policy to determine whether the
@@ -525,23 +554,28 @@ void ResourceDispatcherHost::OnCancelRequest(int request_id) {
   CancelRequest(receiver_->GetProcessId(), request_id, true, true);
 }
 
-void ResourceDispatcherHost::OnClosePageACK(int new_render_process_host_id,
-                                           int new_request_id) {
-  GlobalRequestID global_id(new_render_process_host_id, new_request_id);
-  PendingRequestList::iterator i = pending_requests_.find(global_id);
-  if (i == pending_requests_.end()) {
-    // If there are no matching pending requests, then this is not a
-    // cross-site navigation and we are just closing the tab/browser.
-    ui_loop_->PostTask(FROM_HERE, NewRunnableFunction(
-        &RenderViewHost::ClosePageIgnoringUnloadEvents,
-        new_render_process_host_id,
-        new_request_id));
-    return;
-  }
-
-  ExtraRequestInfo* info = ExtraInfoForRequest(i->second);
-  if (info->cross_site_handler) {
-    info->cross_site_handler->ResumeResponse();
+void ResourceDispatcherHost::OnClosePageACK(
+    const ViewMsg_ClosePage_Params& params) {
+  if (params.for_cross_site_transition) {
+    // Closes for cross-site transitions are handled such that the cross-site
+    // transition continues.
+    GlobalRequestID global_id(params.new_render_process_host_id,
+                              params.new_request_id);
+    PendingRequestList::iterator i = pending_requests_.find(global_id);
+    if (i != pending_requests_.end()) {
+      // The response we were meant to resume could have already been canceled.
+      ExtraRequestInfo* info = ExtraInfoForRequest(i->second);
+      if (info->cross_site_handler)
+        info->cross_site_handler->ResumeResponse();
+    }
+  } else {
+    // This is a tab close, so just forward the message to close it.
+    DCHECK(params.new_render_process_host_id == -1);
+    DCHECK(params.new_request_id == -1);
+    ui_loop_->PostTask(
+        FROM_HERE,
+        new RVHCloseNotificationTask(params.closing_process_id,
+                                     params.closing_route_id));
   }
 }
 
@@ -1403,7 +1437,7 @@ void ResourceDispatcherHost::NotifyResponseStarted(URLRequest* request,
   FOR_EACH_OBSERVER(Observer, observer_list_, OnRequestStarted(this, request));
 
   // Notify the observers on the UI thread.
-  ui_loop_->PostTask(FROM_HERE, new NotificationTask(request,
+  ui_loop_->PostTask(FROM_HERE, new RVHDelegateNotificationTask(request,
       &RenderViewHostDelegate::Resource::DidStartReceivingResourceResponse,
       new ResourceRequestDetails(request,
          GetCertID(request, process_id))));
@@ -1428,7 +1462,7 @@ void ResourceDispatcherHost::NotifyReceivedRedirect(URLRequest* request,
 
   // Notify the observers on the UI thread.
   ui_loop_->PostTask(FROM_HERE,
-      new NotificationTask(request,
+      new RVHDelegateNotificationTask(request,
           &RenderViewHostDelegate::Resource::DidRedirectResource,
           new ResourceRedirectDetails(request, cert_id, new_url)));
 }

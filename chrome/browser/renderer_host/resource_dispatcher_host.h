@@ -40,6 +40,7 @@ class SSLClientAuthHandler;
 class URLRequestContext;
 class WebKitThread;
 struct ViewHostMsg_Resource_Request;
+struct ViewMsg_ClosePage_Params;
 
 class ResourceDispatcherHost : public URLRequest::Delegate {
  public:
@@ -298,7 +299,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   MessageLoop* ui_loop() const { return ui_loop_; }
 
   // Called when the onunload handler for a cross-site request has finished.
-  void OnClosePageACK(int process_id, int request_id);
+  void OnClosePageACK(const ViewMsg_ClosePage_Params& params);
 
   // Force cancels any pending requests for the given process.
   void CancelRequestsForProcess(int process_id);

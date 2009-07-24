@@ -26,6 +26,7 @@ class TimeDelta;
 
 class MessageLoop;
 class ResourceDispatcherHost;
+struct ViewMsg_ClosePage_Params;
 
 // Instantiated per RenderProcessHost to provide various optimizations on
 // behalf of a RenderWidgetHost.  This class bridges between the IO thread
@@ -104,8 +105,7 @@ class RenderWidgetHelper :
   // corresponding functions in RenderProcessHost. See those declarations
   // for documentation.
   void CancelResourceRequests(int render_widget_id);
-  void CrossSiteClosePageACK(int new_render_process_host_id,
-                             int new_request_id);
+  void CrossSiteClosePageACK(const ViewMsg_ClosePage_Params& params);
   bool WaitForPaintMsg(int render_widget_id,
                        const base::TimeDelta& max_delay,
                        IPC::Message* msg);
@@ -174,8 +174,7 @@ class RenderWidgetHelper :
   void OnCancelResourceRequests(int render_widget_id);
 
   // Called on the IO thread to resume a cross-site response.
-  void OnCrossSiteClosePageACK(int new_render_process_host_id,
-                               int new_request_id);
+  void OnCrossSiteClosePageACK(ViewMsg_ClosePage_Params params);
 
 #if defined(OS_MACOSX)
   // Called on destruction to release all allocated transport DIBs
