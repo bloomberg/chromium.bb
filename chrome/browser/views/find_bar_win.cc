@@ -102,11 +102,18 @@ FindBarWin::FindBarWin(BrowserView* browser_view)
   // own handler for Escape.
   focus_manager_ =
       views::FocusManager::GetFocusManagerForNativeView(host_->GetNativeView());
-  focus_manager_->AddFocusChangeListener(this);
+  if (focus_manager_) {
+    focus_manager_->AddFocusChangeListener(this);
 
-  // Stores the currently focused view, and tracks focus changes so that we can
-  // restore focus when the find box is closed.
-  focus_tracker_.reset(new views::ExternalFocusTracker(view_, focus_manager_));
+    // Stores the currently focused view, and tracks focus changes so that we
+    // can restore focus when the find box is closed.
+    focus_tracker_.reset(new views::ExternalFocusTracker(view_,
+                                                         focus_manager_));
+  } else {
+    // In some cases (see bug http://crbug.com/17056) it seems we may not have
+    // a focus manager.  Please reopen the bug if you hit this.
+    NOTREACHED();
+  }
 
   // Start the process of animating the opening of the window.
   animation_.reset(new SlideAnimation(this));
