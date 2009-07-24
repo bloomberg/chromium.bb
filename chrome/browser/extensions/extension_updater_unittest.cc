@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
+#include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,8 +113,10 @@ class MockService : public ExtensionUpdateService {
 const char* kIdPrefix = "000000000000000000000000000000000000000";
 
 // Creates test extensions and inserts them into list. The name and
-// version are all based on their index.
-void CreateTestExtensions(int count, ExtensionList *list) {
+// version are all based on their index. If |update_url| is non-null, it
+// will be used as the update_url for each extension.
+void CreateTestExtensions(int count, ExtensionList *list,
+                          const std::string* update_url) {
   for (int i = 1; i <= count; i++) {
     DictionaryValue input;
     Extension* e = new Extension();
@@ -121,6 +124,8 @@ void CreateTestExtensions(int count, ExtensionList *list) {
                     StringPrintf("%d.0.0.0", i));
     input.SetString(extension_manifest_keys::kName,
                     StringPrintf("Extension %d", i));
+    if (update_url)
+      input.SetString(extension_manifest_keys::kUpdateURL, *update_url);
     std::string error;
     EXPECT_TRUE(e->InitFromValue(input, false, &error));
     list->push_back(e);
@@ -195,6 +200,27 @@ class ServiceForDownloadTests : public MockService {
 
 static const int kUpdateFrequencySecs = 15;
 
+// Takes a string with KEY=VALUE parameters separated by '&' in |params| and
+// puts the key/value pairs into |result|. For keys with no value, the empty
+// string is used. So for "a=1&b=foo&c", result would map "a" to "1", "b" to
+// "foo", and "c" to "".
+static void ExtractParameters(const std::string params,
+                              std::map<std::string, std::string>* result) {
+  std::vector<std::string> pairs;
+  SplitString(params, '&', &pairs);
+  for (size_t i = 0; i < pairs.size(); i++) {
+    std::vector<std::string> key_val;
+    SplitString(pairs[i], '=', &key_val);
+    if (key_val.size() > 0) {
+      std::string key = key_val[0];
+      EXPECT_TRUE(result->find(key) == result->end());
+      (*result)[key] = (key_val.size() == 2) ? key_val[1] : "";
+    } else {
+      NOTREACHED();
+    }
+  }
+}
+
 // All of our tests that need to use private APIs of ExtensionUpdater live
 // inside this class (which is a friend to ExtensionUpdater).
 class ExtensionUpdaterTest : public testing::Test {
@@ -244,11 +270,58 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(ExtensionUpdater::Parse(similar_tagnames, &results.get()));
   }
 
+  static void TestUpdateCheckRequests() {
+    // Create an extension with an update_url.
+    ServiceForManifestTests service;
+    ExtensionList tmp;
+    std::string update_url("http://foo.com/bar");
+    CreateTestExtensions(1, &tmp, &update_url);
+    service.set_extensions(tmp);
+
+    // Setup and start the updater.
+    TestURLFetcherFactory factory;
+    URLFetcher::set_factory(&factory);
+    MessageLoop message_loop;
+    scoped_refptr<ExtensionUpdater> updater =
+      new ExtensionUpdater(&service, 60*60*24, &message_loop);
+    updater->Start();
+
+    // Tell the update that it's time to do update checks.
+    updater->TimerFired();
+
+    // Get the url our mock fetcher was asked to fetch.
+    TestURLFetcher* fetcher =
+        factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
+    const GURL& url = fetcher->original_url();
+    EXPECT_FALSE(url.is_empty());
+    EXPECT_TRUE(url.is_valid());
+    EXPECT_TRUE(url.SchemeIs("http"));
+    EXPECT_EQ("foo.com", url.host());
+    EXPECT_EQ("/bar", url.path());
+
+    // Validate the extension request parameters in the query. It should
+    // look something like "?x=id%3D<id>%26v%3D<version>%26uc".
+    EXPECT_TRUE(url.has_query());
+    std::vector<std::string> parts;
+    SplitString(url.query(), '=', &parts);
+    EXPECT_EQ(2u, parts.size());
+    EXPECT_EQ("x", parts[0]);
+    std::string decoded = UnescapeURLComponent(parts[1],
+                                               UnescapeRule::URL_SPECIAL_CHARS);
+    std::map<std::string, std::string> params;
+    ExtractParameters(decoded, &params);
+    EXPECT_EQ(tmp[0]->id(), params["id"]);
+    EXPECT_EQ(tmp[0]->VersionString(), params["v"]);
+    EXPECT_EQ("", params["uc"]);
+
+    STLDeleteElements(&tmp);
+  }
+
   static void TestDetermineUpdates() {
     // Create a set of test extensions
     ServiceForManifestTests service;
     ExtensionList tmp;
-    CreateTestExtensions(3, &tmp);
+    CreateTestExtensions(3, &tmp, NULL);
     service.set_extensions(tmp);
 
     MessageLoop message_loop;
@@ -421,6 +494,10 @@ class ExtensionUpdaterTest : public testing::Test {
 
 TEST(ExtensionUpdaterTest, TestXmlParsing) {
   ExtensionUpdaterTest::TestXmlParsing();
+}
+
+TEST(ExtensionUpdaterTest, TestUpdateCheckRequests) {
+  ExtensionUpdaterTest::TestUpdateCheckRequests();
 }
 
 TEST(ExtensionUpdaterTest, TestDetermineUpdates) {

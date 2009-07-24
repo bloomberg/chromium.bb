@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/libxml_utils.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 #include "libxml/tree.h"
 
@@ -225,8 +226,40 @@ void ExtensionUpdater::OnExtensionInstallFinished(const FilePath& path,
     file_handler_.get(), &ExtensionUpdaterFileHandler::DeleteFile, path));
 }
 
-static const char* kURLEncodedEquals = "%3D";  // '='
-static const char* kURLEncodedAnd = "%26";  // '&'
+
+// Helper function for building up request parameters in update check urls. It
+// appends information about one extension to a request parameter string. The
+// format for request parameters in update checks is:
+//
+//   ?x=EXT1_INFO&x=EXT2_INFO
+//
+// where EXT1_INFO and EXT2_INFO are url-encoded strings of the form:
+//
+//   id=EXTENSION_ID&v=VERSION&uc
+//
+// So for two extensions like:
+//   Extension 1- id:aaaa version:1.1
+//   Extension 2- id:bbbb version:2.0
+//
+// the full update url would be:
+//   http://somehost/path?x=id%3Daaaa%26v%3D1.1%26uc&x=id%3Dbbbb%26v%3D2.0%26uc
+//
+// (Note that '=' is %3D and '&' is %26 when urlencoded.)
+//
+// Again, this function would just append one extension's worth of data, e.g.
+// "x=id%3Daaaa%26v%3D1.1%26uc"
+void AppendExtensionInfo(std::string* str, const Extension& extension) {
+    const Version* version = extension.version();
+    DCHECK(version);
+    std::vector<std::string> parts;
+
+    // Push extension id, version, and uc (indicates an update check to Omaha).
+    parts.push_back("id=" + extension.id());
+    parts.push_back("v=" + version->GetString());
+    parts.push_back("uc");
+
+    str->append("x=" + EscapeQueryParamValue(JoinString(parts, '&')));
+}
 
 void ExtensionUpdater::TimerFired() {
   // Generate a set of update urls for loaded extensions.
@@ -246,18 +279,7 @@ void ExtensionUpdater::TimerFired() {
     // Append extension information to the url.
     std::string full_url_string = update_url.spec();
     full_url_string.append(update_url.has_query() ? "&" : "?");
-    full_url_string.append("x=");
-
-    full_url_string.append("id");
-    full_url_string.append(kURLEncodedEquals);
-    full_url_string.append(extension->id());
-
-    const Version* version = extension->version();
-    DCHECK(version);
-    full_url_string.append("v");
-    full_url_string.append(kURLEncodedEquals);
-    full_url_string.append(version->GetString());
-    full_url_string.append(kURLEncodedAnd);
+    AppendExtensionInfo(&full_url_string, *extension);
 
     GURL full_url(full_url_string);
     if (!full_url.is_valid()) {
