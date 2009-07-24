@@ -66,8 +66,21 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
                               initWithFrame:NSZeroRect]);
     [view addSubview:dragBlockingView_];
     newTabTargetFrame_ = NSMakeRect(0, 0, 0, 0);
+
+    // Watch for notifications that the tab strip view has changed size so
+    // we can tell it to layout for the new size.
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(tabViewFrameChanged:)
+               name:NSViewFrameDidChangeNotification
+             object:tabView_];
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 
 + (CGFloat)defaultTabHeight {
@@ -194,13 +207,13 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 // Lay out all tabs in the order of their TabContentsControllers, which matches
 // the ordering in the TabStripModel. This call isn't that expensive, though
 // it is O(n) in the number of tabs. Tabs will animate to their new position
-// if the window is visible.
+// if the window is visible and |animate| is YES.
 // TODO(pinkerton): Handle drag placeholders via proxy objects, perhaps a
 // subclass of TabContentsController with everything stubbed out or by
 // abstracting a base class interface.
 // TODO(pinkerton): Note this doesn't do too well when the number of min-sized
 // tabs would cause an overflow.
-- (void)layoutTabs {
+- (void)layoutTabsWithAnimation:(BOOL)animate {
   const float kIndentLeavingSpaceForControls = 64.0;
   const float kTabOverlap = 20.0;
   const float kNewTabButtonOffset = 8.0;
@@ -245,14 +258,15 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
     }
 
     if (isPlaceholder) {
-      // Move the current tab to the correct location intantly.
+      // Move the current tab to the correct location instantly.
       // We need a duration or else it doesn't cancel an inflight animation.
       [NSAnimationContext beginGrouping];
       [[NSAnimationContext currentContext] setDuration:0.000001];
       tabFrame.origin.x = placeholderFrame_.origin.x;
       // TODO(alcor): reenable this
       //tabFrame.size.height += 10.0 * placeholderStretchiness_;
-      [[[tab view] animator] setFrame:tabFrame];
+      id target = animate ? [[tab view] animator] : [tab view];
+      [target setFrame:tabFrame];
       [NSAnimationContext endGrouping];
 
       // Store the frame by identifier to aviod redundant calls to animator.
@@ -271,7 +285,7 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
       }
 
       // Animate the tab in by putting it below the horizon.
-      if (newTab && visible) {
+      if (newTab && visible && animate) {
         [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
       }
 
@@ -282,7 +296,7 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
                            baseTabWidth;
 
       // Check the frame by identifier to avoid redundant calls to animator.
-      id frameTarget = visible ? [[tab view] animator] : [tab view];
+      id frameTarget = visible && animate ? [[tab view] animator] : [tab view];
       NSValue *identifier = [NSValue valueWithPointer:[tab view]];
       NSValue *oldTargetValue = [targetFrames_ objectForKey:identifier];
       if (!oldTargetValue ||
@@ -317,7 +331,8 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
   newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
                                 NSMaxX(placeholderFrame_));
   if (i > 0 && [newTabButton_ isHidden]) {
-    [[newTabButton_ animator] setHidden:NO];
+    id target = animate ? [newTabButton_ animator] : newTabButton_;
+    [target setHidden:NO];
   }
 
   if (!NSEqualRects(newTabTargetFrame_, newTabNewFrame)) {
@@ -328,6 +343,11 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
   [NSAnimationContext endGrouping];
   [dragBlockingView_ setFrame:enclosingRect];
+}
+
+// When we're told to layout from the public API we always want to animate.
+- (void)layoutTabs {
+  [self layoutTabsWithAnimation:YES];
 }
 
 // Handles setting the title of the tab based on the given |contents|. Uses
@@ -624,6 +644,14 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
   for (TabController* tab in tabArray_.get()) {
     [[tab view] setNeedsDisplay:YES];
   }
+}
+
+// Called when the tab strip view changes size. As we only registered for
+// changes on our view, we know it's only for our view. Layout w/out
+// animations since they are blocked by the resize nested runloop. We need
+// the views to adjust immediately.
+- (void)tabViewFrameChanged:(NSNotification*)info {
+  [self layoutTabsWithAnimation:NO];
 }
 
 @end

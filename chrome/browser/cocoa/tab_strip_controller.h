@@ -95,7 +95,7 @@ class ToolbarModel;
                           frame:(NSRect)frame
                   yStretchiness:(CGFloat)yStretchiness;
 
-// Force the tabs to rearrange themselves to reflect the current model
+// Force the tabs to rearrange themselves to reflect the current model.
 - (void)layoutTabs;
 
 // The user changed the theme.
