@@ -1576,7 +1576,10 @@ void BrowserView::LayoutTabContents(int top, int bottom) {
 }
 
 int BrowserView::LayoutDownloadShelf(int bottom) {
-  if (IsDownloadShelfVisible()) {
+  // Re-layout the shelf either if it is visible or if it's close animation
+  // is currently running.
+  if (IsDownloadShelfVisible() ||
+      (download_shelf_.get() && download_shelf_->IsClosing())) {
     bool visible = browser_->SupportsWindowFeature(
         Browser::FEATURE_DOWNLOADSHELF);
     DCHECK(download_shelf_.get());

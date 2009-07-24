@@ -199,7 +199,7 @@ void DownloadShelfView::Layout() {
   // Let our base class layout our child views
   views::View::Layout();
 
-  // If there is not enought room to show the first download item, show the
+  // If there is not enough room to show the first download item, show the
   // "Show all downloads" link to the left to make it more visible that there is
   // something to see.
   bool show_link_only = !CanFitFirstDownloadItem();
@@ -297,8 +297,7 @@ bool DownloadShelfView::IsShowing() const {
 }
 
 bool DownloadShelfView::IsClosing() const {
-  // TODO(estade): This is never called. For now just return false.
-  return false;
+  return shelf_animation_->IsClosing();
 }
 
 void DownloadShelfView::Show() {
