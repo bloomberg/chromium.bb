@@ -477,7 +477,7 @@ class ExtensionsServiceTest
   NotificationRegistrar registrar_;
 };
 
-FilePath::StringType NormalizeSeperators(const FilePath::StringType& path) {
+FilePath::StringType NormalizeSeperators(FilePath::StringType path) {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
   FilePath::StringType ret_val;
   for (size_t i = 0; i < path.length(); i++) {
