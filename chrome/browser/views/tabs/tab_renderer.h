@@ -198,6 +198,9 @@ class TabRenderer : public views::View,
   // The offset used to animate the favicon location.
   int fav_icon_hiding_offset_;
 
+  // The current color of the close button.
+  SkColor close_button_color_;
+
   // The animation object used to swap the favicon with the sad tab icon.
   class FavIconCrashAnimation;
   FavIconCrashAnimation* crash_animation_;
@@ -213,4 +216,3 @@ class TabRenderer : public views::View,
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_H__
-

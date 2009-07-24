@@ -54,6 +54,7 @@ static const double kHoverOpacity = 0.33;
 static gfx::Font* title_font = NULL;
 static int title_font_height = 0;
 static SkBitmap* close_button_n = NULL;
+static SkBitmap* close_button_m = NULL;
 static SkBitmap* close_button_h = NULL;
 static SkBitmap* close_button_p = NULL;
 static int close_button_height = 0;
@@ -81,6 +82,7 @@ void InitResources() {
     title_font_height = title_font->height();
 
     close_button_n = rb.GetBitmapNamed(IDR_TAB_CLOSE);
+    close_button_m = rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK);
     close_button_h = rb.GetBitmapNamed(IDR_TAB_CLOSE_H);
     close_button_p = rb.GetBitmapNamed(IDR_TAB_CLOSE_P);
     close_button_width = close_button_n->width();
@@ -232,6 +234,7 @@ TabRenderer::TabRenderer()
       showing_icon_(false),
       showing_close_button_(false),
       fav_icon_hiding_offset_(0),
+      close_button_color_(NULL),
       crash_animation_(NULL),
       should_display_crashed_favicon_(false),
       theme_provider_(NULL) {
@@ -268,8 +271,6 @@ ThemeProvider* TabRenderer::GetThemeProvider() {
   if (theme_provider_)
     return theme_provider_;
 
-  // return contents->profile()->GetThemeProvider();
-  NOTREACHED() << "Unable to find a theme provider";
   return NULL;
 }
 
@@ -481,6 +482,20 @@ void TabRenderer::Layout() {
     close_button_->SetBounds(lb.width() + kCloseButtonHorzFuzz,
                              close_button_top, close_button_width,
                              close_button_height);
+
+    // If the close button color has changed, generate a new one.
+    if (GetThemeProvider()) {
+      SkColor tab_text_color =
+          GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT);
+      if (!close_button_color_ || tab_text_color != close_button_color_) {
+        close_button_color_ = tab_text_color;
+        ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+        close_button_->SetBackground(close_button_color_,
+            rb.GetBitmapNamed(IDR_TAB_CLOSE),
+            rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
+      }
+    }
+
     close_button_->SetVisible(true);
   } else {
     close_button_->SetBounds(0, 0, 0, 0);
