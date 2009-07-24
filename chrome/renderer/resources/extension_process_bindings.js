@@ -171,32 +171,6 @@ var chrome = chrome || {};
     }
   }
 
-  // Bookmarks custom parameter handling.
-  chrome.bookmarks.remove = function(id, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.remove", [id, false], callback);
-  };
-
-  chrome.bookmarks.remove.params = [
-    {
-      choice : [
-        {type: "integer", minimum: 0},
-        {type: "array", item: {type: "integer", minimum: 0}, minItems: 1}
-      ] 
-    },
-    {type: "function", optional: true}
-  ];
-
-  chrome.bookmarks.removeTree = function(id, callback) {
-    validate(arguments, arguments.callee.params);
-    sendRequest("bookmarks.removeTree", [id, true], callback);
-  };
-
-  chrome.bookmarks.removeTree.params = [
-    {type: "integer", minimum: 0},
-    {type: "function", optional: true}
-  ];
-
   // Tabs connect()
   chrome.tabs.connect = function(tabId, opt_name) {
     validate(arguments, arguments.callee.params);

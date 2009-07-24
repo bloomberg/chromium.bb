@@ -427,24 +427,24 @@ TEST_F(ExtensionAPIClientTest, RemoveTab) {
 
 TEST_F(ExtensionAPIClientTest, CreateBookmark) {
   ExpectJsFail(
-      "chrome.bookmarks.create({parentId:'x', title:0}, function(){})",
+      "chrome.bookmarks.create({parentId:0, title:0}, function(){})",
       "Uncaught Error: Invalid value for argument 0. "
-      "Property 'parentId': Expected 'integer' but got 'string', "
+      "Property 'parentId': Expected 'string' but got 'integer', "
       "Property 'title': Expected 'string' but got 'integer'.");
 
   ExpectJsPass(
-      "chrome.bookmarks.create({parentId:0, title:'x'}, function(){})",
+      "chrome.bookmarks.create({parentId:'0', title:'x'}, function(){})",
       "bookmarks.create",
-      "{\"parentId\":0,\"title\":\"x\"}");
+      "{\"parentId\":\"0\",\"title\":\"x\"}");
 }
 
 TEST_F(ExtensionAPIClientTest, GetBookmarks) {
-  ExpectJsPass("chrome.bookmarks.get(0, function(){});",
+  ExpectJsPass("chrome.bookmarks.get('0', function(){});",
                "bookmarks.get",
-               "0");
-  ExpectJsPass("chrome.bookmarks.get([0,1,2,3], function(){});",
+               "\"0\"");
+  ExpectJsPass("chrome.bookmarks.get(['0','1','2','3'], function(){});",
                "bookmarks.get",
-               "[0,1,2,3]");
+               "[\"0\",\"1\",\"2\",\"3\"]");
   ExpectJsFail("chrome.bookmarks.get(null, function(){});",
                "Uncaught Error: Parameter 0 is required.");
   // TODO(erikkay) This is succeeding, when it should fail.
@@ -457,9 +457,9 @@ TEST_F(ExtensionAPIClientTest, GetBookmarks) {
 }
 
 TEST_F(ExtensionAPIClientTest, GetBookmarkChildren) {
-  ExpectJsPass("chrome.bookmarks.getChildren(42, function(){});",
+  ExpectJsPass("chrome.bookmarks.getChildren('42', function(){});",
                "bookmarks.getChildren",
-               "42");
+               "\"42\"");
 }
 
 TEST_F(ExtensionAPIClientTest, GetBookmarkTree) {
@@ -475,46 +475,46 @@ TEST_F(ExtensionAPIClientTest, SearchBookmarks) {
 }
 
 TEST_F(ExtensionAPIClientTest, RemoveBookmark) {
-  ExpectJsPass("chrome.bookmarks.remove(42);",
+  ExpectJsPass("chrome.bookmarks.remove('42');",
                "bookmarks.remove",
-               "[42,false]");
+               "\"42\"");
 }
 
 TEST_F(ExtensionAPIClientTest, RemoveBookmarkTree) {
-  ExpectJsPass("chrome.bookmarks.removeTree(42);",
+  ExpectJsPass("chrome.bookmarks.removeTree('42');",
                "bookmarks.removeTree",
-               "[42,true]");
+               "\"42\"");
 }
 
 TEST_F(ExtensionAPIClientTest, MoveBookmark) {
-  ExpectJsPass("chrome.bookmarks.move(42,{parentId:1,index:0});",
+  ExpectJsPass("chrome.bookmarks.move('42',{parentId:'1',index:0});",
                "bookmarks.move",
-               "[42,{\"parentId\":1,\"index\":0}]");
+               "[\"42\",{\"parentId\":\"1\",\"index\":0}]");
 }
 
 TEST_F(ExtensionAPIClientTest, SetBookmarkTitle) {
-  ExpectJsPass("chrome.bookmarks.update(42,{title:'x'});",
+  ExpectJsPass("chrome.bookmarks.update('42',{title:'x'});",
                "bookmarks.update",
-               "[42,{\"title\":\"x\"}]");
+               "[\"42\",{\"title\":\"x\"}]");
 }
 
 TEST_F(ExtensionAPIClientTest, EnablePageAction) {
   // Basic old-school enablePageAction call.
   ExpectJsPass("chrome.pageActions.enableForTab("
-               "\"dummy\", {tabId: 0, url: \"http://foo/\"});",
+               "'dummy', {tabId: 0, url: 'http://foo/'});",
                "pageActions.enableForTab",
                "[\"dummy\",{\"tabId\":0,\"url\":\"http://foo/\"}]");
   // Try both optional parameters (title and iconId).
   ExpectJsPass("chrome.pageActions.enableForTab("
-               "\"dummy\", {tabId: 0, url: \"http://foo/\","
-                           "title: \"a\", iconId: 0});",
+               "'dummy', {tabId: 0, url: 'http://foo/',"
+                           "title: 'a', iconId: 0});",
                "pageActions.enableForTab",
                "[\"dummy\",{\"tabId\":0,\"url\":\"http://foo/\","
                            "\"title\":\"a\",\"iconId\":0}]");
 
   // Now try disablePageAction.
   ExpectJsPass("chrome.pageActions.disableForTab("
-               "\"dummy\", {tabId: 0, url: \"http://foo/\"});",
+               "'dummy', {tabId: 0, url: 'http://foo/'});",
                "pageActions.disableForTab",
                "[\"dummy\",{\"tabId\":0,\"url\":\"http://foo/\"}]");
 }

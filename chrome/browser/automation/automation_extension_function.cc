@@ -14,10 +14,6 @@
 
 bool AutomationExtensionFunction::enabled_ = false;
 
-void AutomationExtensionFunction::SetName(const std::string& name) {
-  name_ = name;
-}
-
 void AutomationExtensionFunction::SetArgs(const std::string& args) {
   args_ = args;
 }

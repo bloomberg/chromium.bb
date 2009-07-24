@@ -492,8 +492,8 @@
           {
             name: "idOrIdList",
             choice : [
-              {type: "integer", minimum: 0},
-              {type: "array", item: {type: "integer", minimum: 0}, minItems: 1}
+              {type: "string"},
+              {type: "array", item: {type: "string"}, minItems: 1}
             ] 
           },
           {type: "function", name: "callback"}
@@ -504,7 +504,7 @@
         type: "function",
         description: "",
         parameters: [
-          {type: "integer", name: "id", minimum: 0},
+          {type: "string", name: "id"},
           {type: "function", name: "callback"}
         ]
       },
@@ -534,7 +534,7 @@
             type: "object",
             name: "bookmark",
             properties: {
-              parentId: {type: "integer", minimum: 0, optional: true},
+              parentId: {type: "string"},
               index: {type: "integer", minimum: 0, optional: true},
               title: {type: "string", optional: true},
               url: {type: "string", optional: true},
@@ -548,12 +548,12 @@
         type: "function",
         description: "",
         parameters: [
-          {type: "integer", name: "id", minimum: 0},
+          {type: "string", name: "id"},
           {
             type: "object",
             name: "destination",
             properties: {
-              parentId: {type: "integer", minimum: 0, optional: true},
+              parentId: {type: "string"},
               index: {type: "integer", minimum: 0, optional: true}
             }
           },
@@ -565,7 +565,7 @@
         type: "function",
         description: "",
         parameters: [
-          {type: "integer", name: "id", minimum: 0},
+          {type: "string", name: "id"},
           {
             type: "object",
             name: "changes",
@@ -576,6 +576,24 @@
           {type: "function", name: "callback", optional: true}
         ]
       },
+      {
+        name: "remove",
+        type: "function",
+        description: "",
+        parameters: [
+          {type: "string", name: "id"},
+          {type: "function", name: "callback", optional: true}
+        ]
+      },
+      {
+        name: "removeTree",
+        type: "function",
+        description: "",
+        parameters: [
+          {type: "string", name: "id"},
+          {type: "function", name: "callback", optional: true}
+        ]
+      },
     ],
     events: [
       {
@@ -583,7 +601,7 @@
         type: "function",
         description: "",
         parameters: [
-          {type: "integer", name: "id", minimum: 0},
+          {type: "string", name: "id"},
           {
             type: "object",
             name: "bookmark",
@@ -595,7 +613,7 @@
         type: "function",
         description: "",
         parameters: [
-          {type: "integer", name: "id", minimum: 0},
+          {type: "string", name: "id"},
           {
             type: "object",
             name: "RemoveInfo",
@@ -607,7 +625,7 @@
         type: "function",
         description: "",
         parameters: [
-          {type: "integer", name: "id", minimum: 0},
+          {type: "string", name: "id"},
           {
             type: "object",
             name: "ChangeInfo",
@@ -619,7 +637,7 @@
         type: "function",
         description: "",
         parameters: [
-          {type: "integer", name: "id", minimum: 0},
+          {type: "string", name: "id"},
           {
             type: "object",
             name: "MoveInfo",
@@ -631,7 +649,7 @@
         type: "function",
         description: "",
         parameters: [
-          {type: "integer", name: "id", minimum: 0},
+          {type: "string", name: "id"},
           {
             type: "object",
             name: "childIds",

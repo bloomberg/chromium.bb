@@ -358,19 +358,21 @@ bool SearchBookmarksFunction::RunImpl() {
 }
 
 bool RemoveBookmarkFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
   bool recursive = false;
-  EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(1, &recursive));
+  if (name() ==
+      extension_bookmarks_module_constants::kRemoveBookmarkTreeFunction)
+    recursive = true;
 
   BookmarkModel* model = profile()->GetBookmarkModel();
   int64 id;
   std::string id_string;
-  if (args->GetString(0, &id_string) && StringToInt64(id_string, &id)) {
+  if (args_->IsType(Value::TYPE_STRING) &&
+      args_->GetAsString(&id_string) &&
+      StringToInt64(id_string, &id)) {
     return ExtensionBookmarks::RemoveNode(model, id, recursive, &error_);
   } else {
-    ListValue* ids;
-    EXTENSION_FUNCTION_VALIDATE(args->GetList(0, &ids));
+    EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
+    ListValue* ids = static_cast<ListValue*>(args_);
     size_t count = ids->GetSize();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {
@@ -477,9 +479,13 @@ bool MoveBookmarkFunction::RunImpl() {
     // Optional, defaults to current parent.
     parent = node->GetParent();
   } else {
-    int parentId;
-    EXTENSION_FUNCTION_VALIDATE(destination->GetInteger(keys::kParentIdKey,
-                                                        &parentId));
+    std::string parentId_string;
+    EXTENSION_FUNCTION_VALIDATE(destination->GetString(keys::kParentIdKey,
+        &parentId_string));
+    int64 parentId;
+    if (!GetBookmarkIdAsInt64(parentId_string, &parentId))
+      return false;
+
     parent = model->GetNodeByID(parentId);
   }
   if (!parent) {

@@ -29,11 +29,12 @@ class Profile;
 // APIs that live beyond a single stack frame.
 class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
  public:
-  ExtensionFunction() : request_id_(-1), has_callback_(false) {}
+  ExtensionFunction() : request_id_(-1), name_(""), has_callback_(false) {}
   virtual ~ExtensionFunction() {}
 
   // Specifies the name of the function.
-  virtual void SetName(const std::string& name) { }
+  void set_name(const std::string& name) { name_ = name; }
+  const std::string name() { return name_; }
 
   // Specifies the raw arguments to the function, as a JSON-encoded string.
   virtual void SetArgs(const std::string& args) = 0;
@@ -70,6 +71,9 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
 
   // Id of this request, used to map the response back to the caller.
   int request_id_;
+
+  // The name of this function.
+  std::string name_;
 
   // True if the js caller provides a callback function to receive the response
   // of this call.
