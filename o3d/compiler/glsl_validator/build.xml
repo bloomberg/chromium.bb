@@ -1,0 +1,69 @@
+<!--
+   - Ant build for the ANTLR GLSL ES grammar and simple test harness.
+   - "ant" to compile everything.
+   - "ant clean" to clean the build.
+   - "ant test" to run tests.
+  -->
+
+<project name="GLSL_ES" basedir="." default="all">
+  <target name="init">
+    <property name="build" value="build" />
+    <property name="test" value="test" />
+    <path id="antlr.classpath">
+      <pathelement location="../../third_party/antlr3/lib/antlr-3.1.1.jar" />
+    </path>
+    <path id="antlr.runtime.classpath">
+      <pathelement location="../../third_party/antlr3/lib/antlr-runtime-3.1.1.jar" />
+    </path>
+    <path id="test.classpath">
+      <pathelement location="../../third_party/antlr3/lib/antlr-runtime-3.1.1.jar" />
+      <pathelement location="${build}" />
+    </path>
+  </target>
+
+  <target name="build" depends="init">
+    <mkdir dir="${build}" />
+    <mkdir dir="${build}/glsl_es" />
+    <!-- Run ANTLR on the grammar -->
+    <java classname="org.antlr.Tool">
+      <classpath refid="antlr.classpath" />
+      <arg value="glsl_es/GLSL_ES.g" />
+      <arg value="-fo" />
+      <arg value="${build}/glsl_es" />
+    </java>
+    <!-- Compile the grammar and test cases -->
+    <javac srcdir="${build}:${test}"
+           destdir="${build}">
+      <classpath refid="antlr.runtime.classpath" />
+    </javac>
+  </target>
+
+  <target name="test" depends="init">
+    <java classname="test.Main">
+      <classpath refid="test.classpath" />
+      <arg value="shaders/ambient.vert" />
+      <arg value="shaders/ambient.frag" />
+      <arg value="shaders/diffuse.vert" />
+      <arg value="shaders/diffuse.frag" />
+      <arg value="shaders/texture_mapping.vert" />
+      <arg value="shaders/texture_mapping.frag" />
+    </java>
+  </target>
+
+  <target name="testgrammar" depends="init">
+    <mkdir dir="${build}" />
+    <!-- Run ANTLR on the grammar -->
+    <java classname="org.antlr.Tool">
+      <classpath refid="antlr.classpath" />
+      <arg value="glsl_es/Test.g" />
+      <arg value="-fo" />
+      <arg value="${build}" />
+    </java>
+  </target>
+
+  <target name="clean" depends="init">
+    <delete dir="${build}" />
+  </target>
+
+  <target name="all" depends="build" />
+</project>
