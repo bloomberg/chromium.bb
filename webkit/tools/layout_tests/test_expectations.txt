@@ -2991,11 +2991,13 @@ BUG17635 LINUX MAC : LayoutTests/fast/css/only-child-pseudo-class.html = PASS FA
 // Test failures from WebKit merge 46288:46363
 BUG_DARIN WIN LINUX : LayoutTests/media/video-source-type.html = PASS FAIL CRASH
 BUG_DARIN WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH
+BUG_DARIN WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH
 BUG_DARIN LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH
 BUG_DARIN LINUX : LayoutTests/fast/overflow/008.html = CRASH
 BUG_DARIN : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
 BUG_DARIN : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG_DARIN : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
+BUG_DARIN WIN : LayoutTests/fast/css/margin-top-bottom-dynamic.html = FAIL
 // Resulting from http://trac.webkit.org/changeset/46363
 BUG_DARIN WIN LINUX : LayoutTests/css1/box_properties/border_style.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/css1/box_properties/border_style_inline.html = FAIL
