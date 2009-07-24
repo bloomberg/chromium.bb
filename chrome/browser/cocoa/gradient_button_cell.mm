@@ -256,8 +256,10 @@
     if (isTemplate) {
       NSColor* color = [theme iconColorForStyle:GTMThemeStyleToolBarButton
                                           state:YES];
-      [color set];
-      NSRectFillUsingOperation(cellFrame,NSCompositeSourceAtop);
+      if (color) {
+        [color set];
+        NSRectFillUsingOperation(cellFrame, NSCompositeSourceAtop);
+      }
     }
 
     CGContextEndTransparencyLayer(context);
