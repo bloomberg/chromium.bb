@@ -79,7 +79,7 @@ manpage.1: manpage.sgml
 
     <para><command>&dhpackage;</command> scans
     <replaceable>file</replaceable>(s) recursively
-    and prints out font pattern for each face found.
+    and prints out font pattern for each face found.</para>
 
   </refsect1>
   <refsect1>

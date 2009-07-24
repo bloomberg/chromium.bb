@@ -88,7 +88,7 @@ the best font available.  If <option>--sort</option> is given, the sorted list o
 matching fonts is displayed.
 The <option>--all</option> option works like
 <option>--sort</option> except that no pruning is done on the list of fonts.</para>
-If any elements are specified, only those are printed.
+<para>If any elements are specified, only those are printed.
 Otherwise short file name, family, and style are printed, unless verbose
 output is requested.</para>
   </refsect1>
@@ -168,6 +168,7 @@ output is requested.</para>
           <para>If set, the <replaceable>element</replaceable> property
                 is displayed for matching fonts.</para>
         </listitem>
+      </varlistentry>
     </variablelist>
   </refsect1>
 
