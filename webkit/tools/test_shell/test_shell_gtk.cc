@@ -317,11 +317,11 @@ void TestShell::PlatformCleanUp() {
 bool TestShell::Initialize(const std::wstring& startingURL) {
   m_mainWnd = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   gtk_window_set_title(m_mainWnd, "Test Shell");
-  g_signal_connect(G_OBJECT(m_mainWnd), "destroy",
-                   G_CALLBACK(MainWindowDestroyed), this);
   // Null out m_mainWnd when it is destroyed so we don't destroy it twice.
   g_signal_connect(G_OBJECT(m_mainWnd), "destroy",
                    G_CALLBACK(gtk_widget_destroyed), &m_mainWnd);
+  g_signal_connect(G_OBJECT(m_mainWnd), "destroy",
+                   G_CALLBACK(MainWindowDestroyed), this);
   g_signal_connect(G_OBJECT(m_mainWnd), "focus-out-event",
                    G_CALLBACK(MainWindowLostFocus), this);
   g_object_set_data(G_OBJECT(m_mainWnd), "test-shell", this);
