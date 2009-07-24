@@ -347,7 +347,8 @@ class ExtensionsServiceBackend
   // Utility function to read an extension manifest and return it as a
   // DictionaryValue. If it fails, NULL is returned and |error| contains an
   // appropriate message.
-  DictionaryValue* ReadManifest(FilePath manifest_path, std::string* error);
+  DictionaryValue* ReadManifest(const FilePath& manifest_path,
+                                std::string* error);
 
   // Load a single extension from |extension_path|, the top directory of
   // a specific extension where its manifest file lives.
@@ -381,7 +382,7 @@ class ExtensionsServiceBackend
   void OnExtensionUnpacked(
       const FilePath& extension_path,
       const FilePath& temp_extension_dir,
-      const std::string expected_id,
+      const std::string& expected_id,
       const DictionaryValue& manifest,
       const std::vector< Tuple2<SkBitmap, FilePath> >& images,
       bool silent,
@@ -446,7 +447,7 @@ class ExtensionsServiceBackend
 
   // Update the CurrentVersion file in |dest_dir| to |version|.
   bool SetCurrentVersion(const FilePath& dest_dir,
-                         std::string version);
+                         const std::string& version);
 
   // For the extension in |version_path| with |id|, check to see if it's an
   // externally managed extension.  If so return true if it should be

@@ -694,8 +694,8 @@ void ExtensionsServiceBackend::LoadInstalledExtension(
   ReportExtensionsLoaded(extensions);
 }
 
-DictionaryValue* ExtensionsServiceBackend::ReadManifest(FilePath manifest_path,
-                                                        std::string* error) {
+DictionaryValue* ExtensionsServiceBackend::ReadManifest(
+    const FilePath& manifest_path, std::string* error) {
   JSONFileValueSerializer serializer(manifest_path);
   scoped_ptr<Value> root(serializer.Deserialize(error));
   if (!root.get())
@@ -915,7 +915,7 @@ bool ExtensionsServiceBackend::InstallDirSafely(const FilePath& source_dir,
 }
 
 bool ExtensionsServiceBackend::SetCurrentVersion(const FilePath& dest_dir,
-                                                 std::string version) {
+                                                 const std::string& version) {
   // Write out the new CurrentVersion file.
   // <profile>/Extension/<name>/CurrentVersion
   FilePath current_version =
@@ -1084,7 +1084,7 @@ bool ExtensionsServiceBackend::ValidateSignature(const FilePath& extension_path,
 void ExtensionsServiceBackend::OnExtensionUnpacked(
     const FilePath& extension_path,
     const FilePath& temp_extension_dir,
-    const std::string expected_id,
+    const std::string& expected_id,
     const DictionaryValue& manifest,
     const std::vector< Tuple2<SkBitmap, FilePath> >& images,
     bool silent, bool from_gallery) {
