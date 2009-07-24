@@ -190,6 +190,10 @@ static BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
 }  // namespace
 
 void WindowWin::FrameTypeChanged() {
+  WINDOWPLACEMENT wp = {0};
+  GetWindowPlacement(GetNativeWindow(), &wp);
+  Hide();
+
   // Update the non-client view with the correct frame view for the active frame
   // type.
   non_client_view_->UpdateFrame();
@@ -217,6 +221,7 @@ void WindowWin::FrameTypeChanged() {
   // to notify our children too, since we can have MDI child windows who need to
   // update their appearance.
   EnumChildWindows(GetNativeView(), &SendDwmCompositionChanged, NULL);
+  SetWindowPlacement(GetNativeWindow(), &wp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -590,11 +595,7 @@ LRESULT WindowWin::OnDwmCompositionChanged(UINT msg, WPARAM w_param,
   // something skia-ey.
   // Frame type toggling caused by the user (e.g. switching theme) doesn't seem
   // to have this requirement.
-  WINDOWPLACEMENT wp = {0};
-  GetWindowPlacement(GetNativeWindow(), &wp);
-  Hide();
   FrameTypeChanged();
-  SetWindowPlacement(GetNativeWindow(), &wp);
   return 0;
 }
 
