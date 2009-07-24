@@ -2989,4 +2989,4 @@ BUG17509 LINUX : LayoutTests/fast/loader/local-JavaScript-from-local.html = FAIL
 BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 
 // Test failures from WebKit merge r46282:r46288
-BUG17635 LINUX : LayoutTests/fast/css/only-child-pseudo-class.html = FAIL
+BUG17635 LINUX MAC : LayoutTests/fast/css/only-child-pseudo-class.html = FAIL
