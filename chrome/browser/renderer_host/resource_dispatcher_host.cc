@@ -393,8 +393,23 @@ void ResourceDispatcherHost::BeginRequest(
   Blacklist::Match* match = context && context->blacklist() ?
       context->blacklist()->findMatch(request_data.url) : NULL;
   if (match && match->IsBlocked(request_data.url)) {
-    // TODO(idanan): Send a ResourceResponse to replace the blocked resource.
+    // TODO(idanan): Send a ResourceResponse to replace the blocked resource
+    // instead of the FAILED return code below.
     delete match;
+    URLRequestStatus status(URLRequestStatus::FAILED, net::ERR_ABORTED);
+    if (sync_result) {
+      SyncLoadResult result;
+      result.status = status;
+      ViewHostMsg_SyncLoad::WriteReplyParams(sync_result, result);
+      receiver_->Send(sync_result);
+    } else {
+      // Tell the renderer that this request was disallowed.
+      receiver_->Send(new ViewMsg_Resource_RequestComplete(
+          route_id,
+          request_id,
+          status,
+          std::string()));  // No connection, security info not needed.
+    }
     return;
   }
 
@@ -426,7 +441,7 @@ void ResourceDispatcherHost::BeginRequest(
   // Construct the request.
   URLRequest* request = new URLRequest(request_data.url, this);
   if (match) {
-    request->SetUserData((void*)&Blacklist::kRequestDataKey, match);
+    request->SetUserData(&Blacklist::kRequestDataKey, match);
   }
   request->set_method(request_data.method);
   request->set_first_party_for_cookies(request_data.first_party_for_cookies);
@@ -1044,6 +1059,16 @@ bool ResourceDispatcherHost::CompleteResponseStarted(URLRequest* request) {
   response->response_head.content_length = request->GetExpectedContentSize();
   response->response_head.app_cache_id = WebAppCacheContext::kNoAppCacheId;
   request->GetMimeType(&response->response_head.mime_type);
+
+  const URLRequest::UserData* d =
+      request->GetUserData(&Blacklist::kRequestDataKey);
+  if (d) {
+    const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
+    if (match->attributes() & Blacklist::kBlockByType) {
+      if (match->MatchType(response->response_head.mime_type))
+        return false;  // TODO(idanan): Generate a replacement response.
+    }
+  }
 
   if (request->ssl_info().cert) {
     int cert_id =

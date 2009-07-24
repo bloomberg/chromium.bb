@@ -400,7 +400,7 @@ const std::string& ChromeURLRequestContext::GetUserAgent(
 bool ChromeURLRequestContext::interceptCookie(const URLRequest* request,
                                               std::string* cookie) {
   const URLRequest::UserData* d =
-      request->GetUserData((void*)&Blacklist::kRequestDataKey);
+      request->GetUserData(&Blacklist::kRequestDataKey);
   if (d) {
     const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
     if (match->attributes() & Blacklist::kDontStoreCookies) {
@@ -417,7 +417,7 @@ bool ChromeURLRequestContext::interceptCookie(const URLRequest* request,
 bool ChromeURLRequestContext::allowSendingCookies(const URLRequest* request)
     const {
   const URLRequest::UserData* d =
-      request->GetUserData((void*)&Blacklist::kRequestDataKey);
+      request->GetUserData(&Blacklist::kRequestDataKey);
   if (d) {
     const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
     if (match->attributes() & Blacklist::kDontSendCookies)
