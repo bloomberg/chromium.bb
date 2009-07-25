@@ -82,3 +82,6 @@ SUBSTRING : windowdragresponsetask::run___messageloop::runtask___messageloop::do
 
 # 17569
 SUBSTRING : masksuperblitter::~masksuperblitter
+
+# 17710
+SUBSTRING : webcore::resourcerequestbase::url
