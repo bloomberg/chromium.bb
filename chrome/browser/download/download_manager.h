@@ -108,6 +108,7 @@ class DownloadItem {
                const FilePath& path,
                int path_uniquifier,
                const GURL& url,
+               const GURL& referrer_url,
                const FilePath& original_name,
                const base::Time start_time,
                int64 download_size,
@@ -184,6 +185,7 @@ class DownloadItem {
   int path_uniquifier() const { return path_uniquifier_; }
   void set_path_uniquifier(int uniquifier) { path_uniquifier_ = uniquifier; }
   GURL url() const { return url_; }
+  GURL referrer_url() const { return referrer_url_; }
   int64 total_bytes() const { return total_bytes_; }
   void set_total_bytes(int64 total_bytes) { total_bytes_ = total_bytes; }
   int64 received_bytes() const { return received_bytes_; }
@@ -232,6 +234,9 @@ class DownloadItem {
 
   // The URL from whence we came.
   GURL url_;
+
+  // The URL of the page that initiated the download.
+  GURL referrer_url_;
 
   // Total bytes expected
   int64 total_bytes_;
@@ -448,7 +453,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                            gfx::NativeView parent_window);
 
   // Opens downloaded Chrome extension file (*.crx).
-  void OpenChromeExtension(const FilePath& full_path, const GURL& download_url);
+  void OpenChromeExtension(const FilePath& full_path, const GURL& download_url,
+                           const GURL& referrer_url);
 
   // Shutdown the download manager.  This call is needed only after Init.
   void Shutdown();

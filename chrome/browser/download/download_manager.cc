@@ -141,6 +141,7 @@ DownloadItem::DownloadItem(int32 download_id,
                            const FilePath& path,
                            int path_uniquifier,
                            const GURL& url,
+                           const GURL& referrer_url,
                            const FilePath& original_name,
                            const base::Time start_time,
                            int64 download_size,
@@ -151,6 +152,7 @@ DownloadItem::DownloadItem(int32 download_id,
       full_path_(path),
       path_uniquifier_(path_uniquifier),
       url_(url),
+      referrer_url_(referrer_url),
       total_bytes_(download_size),
       received_bytes_(0),
       start_tick_(base::TimeTicks::Now()),
@@ -674,6 +676,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->path,
                                 info->path_uniquifier,
                                 info->url,
+                                info->referrer_url,
                                 info->original_name,
                                 info->start_time,
                                 info->total_bytes,
@@ -839,7 +842,8 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
 
   // Handle chrome extensions explicitly and skip the shell execute.
   if (Extension::IsExtension(download->full_path())) {
-    OpenChromeExtension(download->full_path(), download->url());
+    OpenChromeExtension(download->full_path(), download->url(),
+                        download->referrer_url());
     download->set_auto_opened(true);
   } else if (download->open_when_complete() ||
              ShouldOpenFileExtension(extension)) {
@@ -1208,16 +1212,18 @@ void DownloadManager::OpenDownload(const DownloadItem* download,
   // Open Chrome extensions with ExtensionsService. For everything else do shell
   // execute.
   if (Extension::IsExtension(download->full_path())) {
-    OpenChromeExtension(download->full_path(), download->url());
+    OpenChromeExtension(download->full_path(), download->url(),
+                        download->referrer_url());
   } else {
     OpenDownloadInShell(download, parent_window);
   }
 }
 
 void DownloadManager::OpenChromeExtension(const FilePath& full_path,
-                                          const GURL& download_url) {
+                                          const GURL& download_url,
+                                          const GURL& referrer_url) {
   profile_->GetOriginalProfile()->GetExtensionsService()->
-      InstallExtension(full_path, download_url);
+      InstallExtension(full_path, download_url, referrer_url);
 }
 
 void DownloadManager::OpenDownloadInShell(const DownloadItem* download,

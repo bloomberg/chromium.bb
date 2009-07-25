@@ -342,14 +342,15 @@ class ExtensionsServiceTest
 
   void InstallExtension(const FilePath& path,
                         bool should_succeed) {
-    InstallExtension(path, should_succeed, GURL());
+    InstallExtension(path, should_succeed, GURL(), GURL());
   }
 
   void InstallExtension(const FilePath& path,
                         bool should_succeed,
+                        const GURL& download_url,
                         const GURL& referrer_url) {
     ASSERT_TRUE(file_util::PathExists(path));
-    service_->InstallExtension(path, referrer_url);
+    service_->InstallExtension(path, download_url, referrer_url);
     loop_.RunAllPending();
     std::vector<std::string> errors = GetErrors();
     if (should_succeed) {
@@ -809,15 +810,28 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
   // ... unless they come from the gallery URL.
   SetExtensionsEnabled(false);
   path = extensions_path.AppendASCII("theme2.crx");
-  InstallExtension(path, true, GURL(
-      std::string(ExtensionsService::kGalleryURLPrefix) + "foobar"));
+  InstallExtension(path, true,
+    GURL(std::string(ExtensionsService::kGalleryDownloadURLPrefix) + "f.crx"),
+    GURL(std::string(ExtensionsService::kGalleryURLPrefix) + "foobar"));
   ValidatePrefKeyCount(++pref_count);
   ValidatePref(theme2_crx, L"state", Extension::ENABLED);
   ValidatePref(theme2_crx, L"location", Extension::INTERNAL);
-  SetExtensionsEnabled(true);
+
+  // also test this fails if either of the URLs is not correct
+  path = extensions_path.AppendASCII("theme2.crx");
+  InstallExtension(path, false,
+    GURL(std::string(ExtensionsService::kGalleryDownloadURLPrefix) + "f.crx"),
+    GURL());
+  ValidatePrefKeyCount(pref_count);
+
+  path = extensions_path.AppendASCII("theme2.crx");
+  InstallExtension(path, false,
+    GURL(), GURL(std::string(ExtensionsService::kGalleryURLPrefix) + "foobar"));
+  ValidatePrefKeyCount(pref_count);
 
   // A theme with extension elements. Themes cannot have extension elements so
   // this test should fail.
+  SetExtensionsEnabled(true);
   path = extensions_path.AppendASCII("theme_with_extension.crx");
   InstallExtension(path, false);
   ValidatePrefKeyCount(pref_count);

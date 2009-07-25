@@ -123,7 +123,9 @@ class ExtensionsService
 
   // XXX Hack: This is a temporary nasty hack to get theme installation working
   // without a dialog. Will be fixed by making ExtensionsService more modular.
-  void InstallExtension(const FilePath& extension_path, const GURL& url);
+  void InstallExtension(const FilePath& extension_path,
+                        const GURL& download_url,
+                        const GURL& referrer_url);
 
   // Updates a currently-installed extension with the contents from
   // |extension_path|. The |alert_on_error| parameter controls whether the
@@ -183,7 +185,11 @@ class ExtensionsService
   // The name of the file that the current active version number is stored in.
   static const char* kCurrentVersionFileName;
 
-  // A special URL that allows theme installation without prompts.
+  // Hack:
+  // Extensions downloaded from kGalleryDownloadURLPrefix initiated from pages
+  // with kGalleryURLPrefix will not require --enable-extensions and will be
+  // prompt-free.
+  static const char* kGalleryDownloadURLPrefix;
   static const char* kGalleryURLPrefix;
 
   void SetExtensionsEnabled(bool enabled);

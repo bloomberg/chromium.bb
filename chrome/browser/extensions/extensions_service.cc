@@ -61,6 +61,9 @@ const char ExtensionsService::kExtensionHeaderMagic[] = "Cr24";
 
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
+
+const char* ExtensionsService::kGalleryDownloadURLPrefix =
+    "https://dl-ssl.google.com/chrome/";
 const char* ExtensionsService::kGalleryURLPrefix =
     "https://tools.google.com/chrome/";
 
@@ -293,13 +296,15 @@ void ExtensionsService::Init() {
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
-  InstallExtension(extension_path, GURL());
+  InstallExtension(extension_path, GURL(), GURL());
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path,
+                                         const GURL& download_url,
                                          const GURL& referrer_url) {
-  bool from_gallery = StartsWithASCII(referrer_url.spec(), kGalleryURLPrefix,
-                                      false);
+  bool from_gallery =
+      StartsWithASCII(download_url.spec(), kGalleryDownloadURLPrefix, false) &&
+      StartsWithASCII(referrer_url.spec(), kGalleryURLPrefix, false);
 
   backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
       &ExtensionsServiceBackend::InstallExtension, extension_path, from_gallery,
@@ -1142,8 +1147,6 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
             L"You should only install extensions from sources you trust.",
             l10n_util::GetString(IDS_PRODUCT_NAME).c_str(),
             MB_OKCANCEL) != IDOK) {
-      ReportExtensionInstallError(extension_path,
-          "User did not allow extension to be installed.");
       return;
     }
 #elif defined(OS_MACOSX)
