@@ -30,10 +30,9 @@
 #include "chrome/test/automation/automation_constants.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_channel.h"
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN)
 #include "views/event.h"
-#include "views/view.h"
-#endif  // defined(TOOLKIT_VIEWS)
+#endif  // defined(OS_WIN)
 
 struct AutomationMsg_Find_Params;
 
