@@ -202,19 +202,20 @@ TEST(ImageOperations, CreateMaskedBitmap) {
   SkBitmap alpha;
   alpha.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
   alpha.allocPixels();
-
-  unsigned char* src_data =
-      reinterpret_cast<unsigned char*>(alpha.getAddr32(0, 0));
-  for (int i = 0; i < src_w * src_h; i++) {
-    src_data[i * 4] = SkColorSetARGB(i + 128 % 255,
-                                     i + 128 % 255,
-                                     i + 64 % 255,
-                                     i + 0 % 255);
+  for (int y = 0, i = 0; y < src_h; y++) {
+    for (int x = 0; x < src_w; x++) {
+      *alpha.getAddr32(x, y) = SkColorSetARGB(i + 128 % 255,
+                                              i + 128 % 255,
+                                              i + 64 % 255,
+                                              i + 0 % 255);
+      i++;
+    }
   }
 
   SkBitmap masked = skia::ImageOperations::CreateMaskedBitmap(src, alpha);
 
   SkAutoLockPixels src_lock(src);
+  SkAutoLockPixels alpha_lock(alpha);
   SkAutoLockPixels masked_lock(masked);
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {

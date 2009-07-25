@@ -388,12 +388,12 @@ SkBitmap ImageOperations::CreateMaskedBitmap(const SkBitmap& rgb,
   SkAutoLockPixels lock_alpha(alpha);
   SkAutoLockPixels lock_masked(masked);
 
-  for (int y = 0; y < rgb.height(); y++) {
+  for (int y = 0; y < masked.height(); y++) {
     uint32* rgb_row = rgb.getAddr32(0, y);
     uint32* alpha_row = alpha.getAddr32(0, y);
     uint32* dst_row = masked.getAddr32(0, y);
 
-    for (int x = 0; x < rgb.width(); x++) {
+    for (int x = 0; x < masked.width(); x++) {
       uint32 alpha_pixel = alpha_row[x];
       SkColor rgb_pixel = SkUnPreMultiply::PMColorToColor(rgb_row[x]);
 
