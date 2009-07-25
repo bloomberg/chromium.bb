@@ -41,19 +41,12 @@ static const int kBubbleCornerRadius = 4;
 // off-screen.
 static const int kMousePadding = 20;
 
-// The color of the text
-static const SkColor kTextColor = SkColorSetRGB(100, 100, 100);
-
-// The color of the highlight text
-static const SkColor kTextHighlightColor = SkColorSetRGB(242, 250, 255);
-
 // The horizontal offset of the text within the status bubble, not including the
 // outer shadow ring.
 static const int kTextPositionX = 3;
 
 // The minimum horizontal space between the (right) end of the text and the edge
-// of the status bubble, not including the outer shadow ring, or a 1 px gap we
-// leave so we can shit all the text by 1 px to produce a "highlight" effect.
+// of the status bubble, not including the outer shadow ring.
 static const int kTextHorizPadding = 1;
 
 // Delays before we start hiding or showing the bubble after we receive a
@@ -337,8 +330,9 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setColor(
-      theme_provider_->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
+  SkColor toolbar_color =
+      theme_provider_->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  paint.setColor(toolbar_color);
 
   gfx::Rect popup_bounds;
   popup_->GetBounds(&popup_bounds, true);
@@ -426,27 +420,26 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
   // Draw highlight text and then the text body. In order to make sure the text
   // is aligned to the right on RTL UIs, we mirror the text bounds if the
   // locale is RTL.
-  // The "- 1" on the end of the width and height ensures that when we add one
-  // to x() and y() for the highlight text, we still won't overlap the shadow.
   int text_width = std::min(views::Label::GetFont().GetStringWidth(text_),
-      width - (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
-  int text_height = height - (kShadowThickness * 2) - 1;
+      width - (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding);
+  int text_height = height - (kShadowThickness * 2);
   gfx::Rect body_bounds(kShadowThickness + kTextPositionX,
                         kShadowThickness,
                         std::max(0, text_width),
                         std::max(0, text_height));
   body_bounds.set_x(MirroredLeftPointForRect(body_bounds));
-  canvas->DrawStringInt(text_,
-                        views::Label::GetFont(),
-                        kTextHighlightColor,
-                        body_bounds.x() + 1,
-                        body_bounds.y() + 1,
-                        body_bounds.width(),
-                        body_bounds.height());
+  SkColor text_color =
+      theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT);
 
+  // DrawStringInt doesn't handle alpha, so we'll do the blending ourselves.
+  text_color = SkColorSetARGB(
+      SkColorGetA(text_color),
+      (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
+      (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
+      (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
   canvas->DrawStringInt(text_,
                         views::Label::GetFont(),
-                        kTextColor,
+                        text_color,
                         body_bounds.x(),
                         body_bounds.y(),
                         body_bounds.width(),
