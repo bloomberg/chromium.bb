@@ -3193,8 +3193,11 @@ each locale. -->
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_BUTTON" desc="The label of the 'Browse...' button">
         Br&amp;owse...
       </message>
-      <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE" desc="In the 'Browse For Folder' dialog, this is the text that appears above the directory selector.">
+      <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE" desc="In the 'Browse For Folder' dialog on Windows, this is the text that appears above the directory selector.">
         Download location:
+      </message>
+      <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_WINDOW_TITLE" desc="In the 'Browse For Folder' dialog on Linux, this is the text that appears in the window's title bar.">
+        Download Location
       </message>
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION" desc="The 'Ask for save location before downloading' checkbox label">
         Ask where to save each file before downloading
@@ -4230,6 +4233,17 @@ each locale. -->
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
         </message> <!-- os == 'darwin' -->
       </if>
+
+    <!-- File chooser dialog default titles (only used on Linux) -->
+    <message name="IDS_SAVE_AS_DIALOG_TITLE" desc="The default title for the Save As file chooser dialog.">
+      Save File
+    </message>
+    <message name="IDS_OPEN_FILE_DIALOG_TITLE" desc="The default title for the Open File file chooser dialog (single file).">
+      Open File
+    </message>
+    <message name="IDS_OPEN_FILES_DIALOG_TITLE" desc="The default title for the Open File file chooser dialog (multiple files).">
+      Open Files
+    </message>
 
     </messages>
   </release>

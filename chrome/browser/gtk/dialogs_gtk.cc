@@ -303,9 +303,12 @@ void SelectFileDialogImpl::FileNotSelected(GtkWidget* dialog) {
 
 GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
     gfx::NativeWindow parent) {
+  std::string title_string = !title.empty() ? title :
+        l10n_util::GetStringUTF8(IDS_OPEN_FILE_DIALOG_TITLE);
+
   // TODO(estade): do we want to set the open directory to some sort of default?
   GtkWidget* dialog =
-      gtk_file_chooser_dialog_new(title.c_str(), parent,
+      gtk_file_chooser_dialog_new(title_string.c_str(), parent,
                                   GTK_FILE_CHOOSER_ACTION_OPEN,
                                   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                   GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -324,9 +327,12 @@ GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
 
 GtkWidget* SelectFileDialogImpl::CreateMultiFileOpenDialog(
     const std::string& title, gfx::NativeWindow parent) {
+  std::string title_string = !title.empty() ? title :
+        l10n_util::GetStringUTF8(IDS_OPEN_FILES_DIALOG_TITLE);
+
   // TODO(estade): do we want to set the open directory to some sort of default?
   GtkWidget* dialog =
-      gtk_file_chooser_dialog_new(title.c_str(), parent,
+      gtk_file_chooser_dialog_new(title_string.c_str(), parent,
                                   GTK_FILE_CHOOSER_ACTION_OPEN,
                                   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                   GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -345,8 +351,11 @@ GtkWidget* SelectFileDialogImpl::CreateMultiFileOpenDialog(
 
 GtkWidget* SelectFileDialogImpl::CreateSaveAsDialog(const std::string& title,
     const FilePath& default_path, gfx::NativeWindow parent) {
+  std::string title_string = !title.empty() ? title :
+        l10n_util::GetStringUTF8(IDS_SAVE_AS_DIALOG_TITLE);
+
   GtkWidget* dialog =
-      gtk_file_chooser_dialog_new(title.c_str(), parent,
+      gtk_file_chooser_dialog_new(title_string.c_str(), parent,
                                   GTK_FILE_CHOOSER_ACTION_SAVE,
                                   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                   GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,

@@ -112,10 +112,8 @@ DownloadSection::DownloadSection(Profile* profile)
 
   // Download location options.
   download_location_button_ = gtk_file_chooser_button_new(
-      // TODO(mattm): There doesn't seem to be a reasonable localized string for
-      // the chooser title?  (Though no other file choosers have a title either,
-      // bug 16890.)
-      "",
+      l10n_util::GetStringUTF8(
+          IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_WINDOW_TITLE).c_str(),
       GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
   g_signal_connect(download_location_button_, "selection-changed",
                    G_CALLBACK(OnDownloadLocationChanged), this);
