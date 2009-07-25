@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -10,6 +11,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/json_value_serializer.h"
+#include "net/base/mime_sniffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
@@ -428,4 +430,28 @@ TEST(ExtensionTest, UpdateUrls) {
     EXPECT_FALSE(extension.InitFromValue(input_value, false, &error));
     EXPECT_TRUE(MatchPattern(error, errors::kInvalidUpdateURL));
   }
+}
+
+// This test ensures that the mimetype sniffing code stays in sync with the
+// actual crx files that we test other parts of the system with.
+TEST(ExtensionTest, MimeTypeSniffing) {
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions").AppendASCII("good.crx");
+
+  std::string data;
+  ASSERT_TRUE(file_util::ReadFileToString(path, &data));
+
+  std::string result;
+  EXPECT_TRUE(net::SniffMimeType(data.c_str(), data.size(),
+              GURL("http://www.example.com/foo.crx"), "", &result));
+  EXPECT_EQ(std::string(Extension::kMimeType), result);
+
+  data.clear();
+  result.clear();
+  path = path.DirName().AppendASCII("bad_magic.crx");
+  ASSERT_TRUE(file_util::ReadFileToString(path, &data));
+  EXPECT_TRUE(net::SniffMimeType(data.c_str(), data.size(),
+              GURL("http://www.example.com/foo.crx"), "", &result));
+  EXPECT_EQ("application/octet-stream", result);
 }

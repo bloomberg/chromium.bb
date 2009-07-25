@@ -64,12 +64,12 @@ class Extension {
   // The number of bytes in a legal id.
   static const size_t kIdSize;
 
+  // The mimetype used for extensions.
+  static const char kMimeType[];
+
   Extension() : location_(INVALID), is_theme_(false) {}
   explicit Extension(const FilePath& path);
   virtual ~Extension();
-
-  // Returns true if the specified file is an extension.
-  static bool IsExtension(const FilePath& file_name);
 
   // Resets the id counter. This is only useful for unit tests.
   static void ResetGeneratedIdCounter() {
@@ -78,6 +78,9 @@ class Extension {
 
   // Checks to see if the extension has a valid ID.
   static bool IdIsValid(const std::string& id);
+
+  // Returns true if the specified file is an extension.
+  static bool IsExtension(const FilePath& file_name);
 
   // Whether the |location| is external or not.
   static inline bool IsExternalLocation(Location location) {
