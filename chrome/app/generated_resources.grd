@@ -3309,6 +3309,12 @@ each locale. -->
       <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
         Check for server certificate revocation
       </message>
+      <message name="IDS_OPTIONS_SSL_USESSL3" desc="The label of the 'Use SSL 3.0' checkbox (Only used on Linux.)">
+        Use SSL 3.0
+      </message>
+      <message name="IDS_OPTIONS_SSL_USETLS1" desc="The label of the 'Use TLS 1.0' checkbox (Only used on Linux.)">
+        Use TLS 1.0
+      </message>
 
       <message name="IDS_OPTIONS_MIXED_CONTENT_LABEL" desc="The documentation string of the 'Mixed Content handling' preference.">
         When there is mixed content on secure (SSL) pages:
