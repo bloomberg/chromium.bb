@@ -569,8 +569,16 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
   info->suggested_path = info->suggested_path.Append(generated_name);
 
   if (!info->save_as) {
-    // Let's check if this download is dangerous, based on its name.
-    info->is_dangerous = IsDangerous(info->suggested_path.BaseName());
+    // Downloads can be marked as dangerous for two reasons:
+    // a) They have a dangerous-looking filename
+    // b) They are an extension that is not from the gallery
+    if (IsDangerous(info->suggested_path.BaseName()))
+      info->is_dangerous = true;
+    else if (info->mime_type == Extension::kMimeType &&
+             !ExtensionsService::IsDownloadFromGallery(info->url,
+                                                       info->referrer_url)) {
+      info->is_dangerous = true;
+    }
   }
 
   // We need to move over to the download thread because we don't want to stat

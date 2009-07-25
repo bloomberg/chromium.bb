@@ -67,18 +67,6 @@ class ExtensionsService
   // file, in bytes. This should be a multiple of 4.
   static const size_t kExtensionHeaderMagicSize = 4;
 
-  // The maximum size the crx parser will tolerate for a public key.
-  static const size_t kMaxPublicKeySize = 1 << 16;
-
-  // The maximum size the crx parser will tolerate for a signature.
-  static const size_t kMaxSignatureSize = 1 << 16;
-
-  // The magic character sequence at the beginning of each crx file.
-  static const char kExtensionHeaderMagic[];
-
-  // The current version of the crx format.
-  static const uint32 kCurrentVersion = 2;
-
   // This header is the first data at the beginning of an extension. Its
   // contents are purposely 32-bit aligned so that it can just be slurped into
   // a struct without manual parsing.
@@ -91,12 +79,39 @@ class ExtensionsService
     // The signature follows.
   };
 
+  // The maximum size the crx parser will tolerate for a public key.
+  static const size_t kMaxPublicKeySize = 1 << 16;
+
+  // The maximum size the crx parser will tolerate for a signature.
+  static const size_t kMaxSignatureSize = 1 << 16;
+
+  // The magic character sequence at the beginning of each crx file.
+  static const char kExtensionHeaderMagic[];
+
+  // The current version of the crx format.
+  static const uint32 kCurrentVersion = 2;
+
   // The name of the directory inside the profile where extensions are
   // installed to.
   static const char* kInstallDirectoryName;
 
   // If auto-updates are turned on, default to running every 5 hours.
   static const int kDefaultUpdateFrequencySeconds = 60 * 60 * 5;
+
+  // The name of the file that the current active version number is stored in.
+  static const char* kCurrentVersionFileName;
+
+  // Hack:
+  // Extensions downloaded from kGalleryDownloadURLPrefix initiated from pages
+  // with kGalleryURLPrefix will not require --enable-extensions and will be
+  // prompt-free.
+  static const char* kGalleryDownloadURLPrefix;
+  static const char* kGalleryURLPrefix;
+
+  // Determine if a given extension download should be treated as if it came
+  // from the gallery.
+  static bool IsDownloadFromGallery(const GURL& download_url,
+                                    const GURL& referrer_url);
 
   ExtensionsService(Profile* profile,
                     const CommandLine* command_line,
@@ -181,16 +196,6 @@ class ExtensionsService
   // |location| specifies what type of provider should be added.
   void SetProviderForTesting(Extension::Location location,
                              ExternalExtensionProvider* test_provider);
-
-  // The name of the file that the current active version number is stored in.
-  static const char* kCurrentVersionFileName;
-
-  // Hack:
-  // Extensions downloaded from kGalleryDownloadURLPrefix initiated from pages
-  // with kGalleryURLPrefix will not require --enable-extensions and will be
-  // prompt-free.
-  static const char* kGalleryDownloadURLPrefix;
-  static const char* kGalleryURLPrefix;
 
   void SetExtensionsEnabled(bool enabled);
   bool extensions_enabled() { return extensions_enabled_; }

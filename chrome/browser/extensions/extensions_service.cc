@@ -87,6 +87,17 @@ const char* kSignatureVerificationInitFailed =
     "caused by a public key in the wrong format (should encode algorithm).";
 }
 
+// static
+bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
+                                              const GURL& referrer_url) {
+  if (StartsWithASCII(download_url.spec(), kGalleryDownloadURLPrefix, false) &&
+      StartsWithASCII(referrer_url.spec(), kGalleryURLPrefix, false)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // This class coordinates an extension unpack task which is run in a separate
 // process.  Results are sent back to this class, which we route to the
 // ExtensionServiceBackend.
@@ -302,13 +313,11 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
 void ExtensionsService::InstallExtension(const FilePath& extension_path,
                                          const GURL& download_url,
                                          const GURL& referrer_url) {
-  bool from_gallery =
-      StartsWithASCII(download_url.spec(), kGalleryDownloadURLPrefix, false) &&
-      StartsWithASCII(referrer_url.spec(), kGalleryURLPrefix, false);
-
   backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::InstallExtension, extension_path, from_gallery,
+      &ExtensionsServiceBackend::InstallExtension, extension_path,
+      IsDownloadFromGallery(download_url, referrer_url),
       scoped_refptr<ExtensionsService>(this)));
+
 }
 
 void ExtensionsService::UpdateExtension(const std::string& id,
