@@ -395,9 +395,9 @@ SkBitmap ImageOperations::CreateMaskedBitmap(const SkBitmap& rgb,
 
     for (int x = 0; x < rgb.width(); x++) {
       uint32 alpha_pixel = alpha_row[x];
-      uint32 rgb_pixel = rgb_row[x];
+      SkColor rgb_pixel = SkUnPreMultiply::PMColorToColor(rgb_row[x]);
 
-      int alpha = SkColorGetA(alpha_pixel);
+      int alpha = SkAlphaMul(SkColorGetA(rgb_pixel), SkColorGetA(alpha_pixel));
       dst_row[x] = SkColorSetARGB(alpha,
                                   SkAlphaMul(SkColorGetR(rgb_pixel), alpha),
                                   SkAlphaMul(SkColorGetG(rgb_pixel), alpha),

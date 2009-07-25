@@ -6,8 +6,9 @@
 
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkUnPreMultiply.h"
 
 namespace {
 
@@ -218,18 +219,20 @@ TEST(ImageOperations, CreateMaskedBitmap) {
   for (int y = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
       // Test that the alpha is equal.
-      SkColor src_pixel = *src.getAddr32(x, y);
-      SkColor alpha_pixel = *alpha.getAddr32(x, y);
+      SkColor src_pixel = SkUnPreMultiply::PMColorToColor(*src.getAddr32(x, y));
+      SkColor alpha_pixel =
+          SkUnPreMultiply::PMColorToColor(*alpha.getAddr32(x, y));
       SkColor masked_pixel = *masked.getAddr32(x, y);
 
-      // Test that the alpha is equal.
-      unsigned int alpha = (alpha_pixel & 0xff000000) >> SK_A32_SHIFT;
-      EXPECT_EQ(alpha, (masked_pixel & 0xff000000) >> SK_A32_SHIFT);
+      int alpha_value = SkAlphaMul(SkColorGetA(src_pixel),
+                                   SkColorGetA(alpha_pixel));
+      SkColor expected_pixel = SkColorSetARGB(
+          alpha_value,
+          SkAlphaMul(SkColorGetR(src_pixel), alpha_value),
+          SkAlphaMul(SkColorGetG(src_pixel), alpha_value),
+          SkAlphaMul(SkColorGetB(src_pixel), alpha_value));
 
-      // Test that the colors are right - SkBitmaps have premultiplied alpha,
-      // so we can't just do a direct comparison.
-      EXPECT_EQ(SkColorGetR(masked_pixel),
-                SkAlphaMul(SkColorGetR(src_pixel), alpha));
+      EXPECT_TRUE(ColorsClose(expected_pixel, masked_pixel));
     }
   }
 }
