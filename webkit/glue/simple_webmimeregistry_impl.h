@@ -12,10 +12,14 @@ namespace webkit_glue {
 class SimpleWebMimeRegistryImpl : public WebKit::WebMimeRegistry {
  public:
   // WebMimeRegistry methods:
-  virtual bool supportsImageMIMEType(const WebKit::WebString&);
-  virtual bool supportsJavaScriptMIMEType(const WebKit::WebString&);
-  virtual bool supportsMediaMIMEType(const WebKit::WebString&);
-  virtual bool supportsNonImageMIMEType(const WebKit::WebString&);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsImageMIMEType(
+      const WebKit::WebString&);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
+      const WebKit::WebString&);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+      const WebKit::WebString&, const WebKit::WebString&);
+  virtual WebKit::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
+      const WebKit::WebString&);
   virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString&);
   virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString&);
   virtual WebKit::WebString preferredExtensionForMIMEType(

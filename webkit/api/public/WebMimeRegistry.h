@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -38,10 +38,13 @@ namespace WebKit {
 
     class WebMimeRegistry {
     public:
-        virtual bool supportsImageMIMEType(const WebString& mimeType) = 0;
-        virtual bool supportsJavaScriptMIMEType(const WebString& mimeType) = 0;
-        virtual bool supportsMediaMIMEType(const WebString& mimeType) = 0;
-        virtual bool supportsNonImageMIMEType(const WebString& mimeType) = 0;
+        enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
+
+        virtual SupportsType supportsImageMIMEType(const WebString& mimeType) = 0;
+        virtual SupportsType supportsJavaScriptMIMEType(const WebString& mimeType) = 0;
+        virtual SupportsType supportsMediaMIMEType(const WebString& mimeType,
+                                                   const WebString& codecs) = 0;
+        virtual SupportsType supportsNonImageMIMEType(const WebString& mimeType) = 0;
 
         virtual WebString mimeTypeForExtension(const WebString& fileExtension) = 0;
         virtual WebString mimeTypeFromFile(const WebString& filePath) = 0;

@@ -196,17 +196,20 @@ bool ChromiumBridge::layoutTestMode()
 
 bool ChromiumBridge::isSupportedImageMIMEType(const String& mimeType)
 {
-    return webKitClient()->mimeRegistry()->supportsImageMIMEType(mimeType);
+    return webKitClient()->mimeRegistry()->supportsImageMIMEType(mimeType)
+        != WebMimeRegistry::IsNotSupported;
 }
 
 bool ChromiumBridge::isSupportedJavaScriptMIMEType(const String& mimeType)
 {
-    return webKitClient()->mimeRegistry()->supportsJavaScriptMIMEType(mimeType);
+    return webKitClient()->mimeRegistry()->supportsJavaScriptMIMEType(mimeType)
+        != WebMimeRegistry::IsNotSupported;
 }
 
 bool ChromiumBridge::isSupportedNonImageMIMEType(const String& mimeType)
 {
-    return webKitClient()->mimeRegistry()->supportsNonImageMIMEType(mimeType);
+    return webKitClient()->mimeRegistry()->supportsNonImageMIMEType(mimeType)
+        != WebMimeRegistry::IsNotSupported;
 }
 
 String ChromiumBridge::mimeTypeForExtension(const String& extension)

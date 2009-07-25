@@ -377,10 +377,17 @@ void WebMediaPlayerClientImpl::getSupportedTypes(HashSet<String>& supportedTypes
 MediaPlayer::SupportsType WebMediaPlayerClientImpl::supportsType(const String& type,
                                                                  const String& codecs)
 {
-    // FIXME: respect codecs, now we only check for mime-type.
-    if (webKitClient()->mimeRegistry()->supportsMediaMIMEType(type))
-        return MediaPlayer::IsSupported;
-    return MediaPlayer::IsNotSupported;
+    WebMimeRegistry::SupportsType supportsType =
+        webKitClient()->mimeRegistry()->supportsMediaMIMEType(type, codecs);
+
+    switch (supportsType) {
+    case WebMimeRegistry::IsNotSupported:
+          return MediaPlayer::IsNotSupported;
+    case WebMimeRegistry::IsSupported:
+          return MediaPlayer::IsSupported;
+    case WebMimeRegistry::MayBeSupported:
+          return MediaPlayer::MayBeSupported;
+    }
 }
 
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl()
