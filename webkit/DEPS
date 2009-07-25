@@ -8,8 +8,6 @@ skip_child_includes = [
 ]
 
 include_rules = [
-  # Magic to include our version in our build, but the WebKit version otherwise.
-  "+bindings/npruntime.h",
   # For bridge/c/c_utility.h in npruntime_util.cc
   "+bridge",
   "+grit",  # For generated headers

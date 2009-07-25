@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_NPRUNTIME_UTIL_H_
 #define WEBKIT_GLUE_NPRUNTIME_UTIL_H_
 
-#include "bindings/npruntime.h"
+#include "third_party/npapi/bindings/npruntime.h"
 
 class Pickle;
 
