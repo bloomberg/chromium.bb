@@ -3661,6 +3661,176 @@ each locale. -->
         Google Chrome Themes Gallery
       </message>      
       
+      <!-- New tab page web clips. These are not in use yet -->
+      <message name="IDS_NEW_TAB_WEB_CLIPS_WEB_CLIPS"
+               desc="Web Clips module header">
+        Web Clips
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_CUSTOMIZE"
+               desc="Link at bottom ">
+        Customize
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_DESCRIPTION_TEXT"
+               desc="Description for Web Clips module">
+        Add your favorite sources to get news headlines, blog posts, RSS and Atom feeds right in this box.
+        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_ADDED"
+               desc="Status message when user has added a web clip">
+        added
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_REMOVE"
+               desc="Action link for removing a current web clip">
+        remove
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_REMOVED"
+               desc="Status message when user has removed a web clip">
+        removed
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_ADD"
+               desc="Button label for adding a web clip">
+        Add
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_ADD_A_NEW_WEB_CLIP"
+               desc="Header for section that lets users add new web clips">
+        Add a new web clip
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_WEB_CLIPS"
+               desc="Name for featured web clips category">
+        Featured web clips
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_NEWS"
+               desc="Label of web clips category">
+        News
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_FUN"
+               desc="Label of web clips category">
+        Fun
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_BUSINESS"
+               desc="Label of web clips category">
+        Business
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_SPORTS"
+               desc="Label of web clips category">
+        Sports
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_LIFESTYLE"
+               desc="Label of web clips category">
+        Lifestyle
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_TECHNOLOGY"
+               desc="Label of web clips category">
+        Technology
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_SEARCH_BY_TOPIC_OR_URL"
+               desc="Label for search box in Web Clips customization dialog">
+        Search by topic or URL:
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_HINT_EXAMPLES"
+               desc="Hint underneath search box in Web Clips customization dialog">
+        e.g. hockey, BBC, http://engadget.com/rss.xml
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_NO_ITEMS"
+               desc="Message shown when no web clips are cached/available">
+        There are no items to show here yet.
+        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Customize<ph name="END_LINK">&lt;/a&gt;</ph>
+        your web clips and add more sources.
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_PREVIEW"
+               desc="Link for showing preview of web clip items - seen in search results list">
+        preview
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_HIDE"
+               desc="Link for hiding preview of web clip items - seen in search results list">
+        hide
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_SEARCH_RESULTS"
+               desc="Search results when users searches for web clips">
+        Search results
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_NO_FEEDS_MATCHED_YOUR_SEARCH_QUERY"
+               desc="Description when no web clip feeds were found for the user's query">
+        No feeds matched your search query.
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_THE_FEED_YOU_ENTERED_COULD_NOT_BE_LOADED"
+               desc="Error message when web clip feed could not be loaded">
+        The feed you entered could not be loaded.
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_NOTE"
+               desc="Hint displayed underneath search results">
+        Note: Since many of these feeds don't come from Google, we can't vouch for their content.
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_N_HOURS_AGO"
+               desc="Label next to a web clip item, showing when the item was published">
+        <ph name="HOUR">$1<ex>1</ex></ph> hour/hours ago
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_MINUTES_AGO"
+               desc="Label next to a web clip item, showing when the item was published">
+        <ph name="MINUTE">$1<ex>1</ex></ph> minute/minutes ago
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_NEW_IN_CHROME"
+               desc="Alternative header for Web Clips module">
+        New in Chrome
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED"
+               desc="Alternative header for Web Clips module">
+        Featured
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_NEW"
+               desc="Alternative header for Web Clips module">
+        New!
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_THEME"
+               desc="Alternative header for Web Clips module">
+        Featured theme
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_THEMES"
+               desc="Alternative header for Web Clips module">
+        Featured themes
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_EXTRA"
+               desc="Alternative header for Web Clips module">
+        Featured extra
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_EXTRAS"
+               desc="Alternative header for Web Clips module">
+        Featured extras
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_TIPS_AND_TRICKS"
+               desc="Alternative header for Web Clips module">
+        Tips &amp; tricks
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_GOOGLE_READER_PROMO"
+               desc="Google Reader promo">
+        Want to keep track of more sites in one place? Try
+        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Google Reader<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_CANCEL"
+               desc="Cancel button">
+        Cancel
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_DONE"
+               desc="Done button">
+        Done
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_SAVE"
+               desc="Save button">
+        Save
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_BACK"
+               desc="back link">
+        back
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_NEXT"
+               desc="Next link">
+        next
+      </message>
+      <message name="IDS_NEW_TAB_WEB_CLIPS_PREVIOUS"
+               desc="Previous link">
+        previous
+      </message>
+
       <!-- SafeBrowsing -->
       <message name="IDS_SAFE_BROWSING_MALWARE_TITLE" desc="SafeBrowsing Malware HTML title">
         Malware Detected!
