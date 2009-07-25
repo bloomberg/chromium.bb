@@ -14,6 +14,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/fonts_languages_window.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -540,30 +541,35 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_PLAY:
+      UserMetrics::RecordAction(L"MediaContextMenu_Play", profile_);
       MediaPlayerActionAt(params_.x,
                           params_.y,
                           MediaPlayerAction(MediaPlayerAction::PLAY));
       break;
 
     case IDS_CONTENT_CONTEXT_PAUSE:
+      UserMetrics::RecordAction(L"MediaContextMenu_Pause", profile_);
       MediaPlayerActionAt(params_.x,
                           params_.y,
                           MediaPlayerAction(MediaPlayerAction::PAUSE));
       break;
 
     case IDS_CONTENT_CONTEXT_MUTE:
+      UserMetrics::RecordAction(L"MediaContextMenu_Mute", profile_);
       MediaPlayerActionAt(params_.x,
                         params_.y,
                         MediaPlayerAction(MediaPlayerAction::MUTE));
       break;
 
     case IDS_CONTENT_CONTEXT_UNMUTE:
+      UserMetrics::RecordAction(L"MediaContextMenu_Unmute", profile_);
       MediaPlayerActionAt(params_.x,
                           params_.y,
                           MediaPlayerAction(MediaPlayerAction::UNMUTE));
       break;
 
     case IDS_CONTENT_CONTEXT_LOOP:
+      UserMetrics::RecordAction(L"MediaContextMenu_Loop", profile_);
       if (ItemIsChecked(IDS_CONTENT_CONTEXT_LOOP)) {
         MediaPlayerActionAt(params_.x,
                             params_.y,
@@ -576,6 +582,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW:
+      UserMetrics::RecordAction(L"MediaContextMenu_RateSlow", profile_);
       MediaPlayerActionAt(
           params_.x,
           params_.y,
@@ -584,6 +591,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL:
+      UserMetrics::RecordAction(L"MediaContextMenu_RateNormal", profile_);
       MediaPlayerActionAt(
           params_.x,
           params_.y,
@@ -592,6 +600,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST:
+      UserMetrics::RecordAction(L"MediaContextMenu_RateFast", profile_);
       MediaPlayerActionAt(
           params_.x,
           params_.y,
@@ -600,6 +609,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER:
+      UserMetrics::RecordAction(L"MediaContextMenu_RateFaster", profile_);
       MediaPlayerActionAt(
           params_.x,
           params_.y,
@@ -608,6 +618,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME:
+      UserMetrics::RecordAction(L"MediaContextMenu_RateDoubleTime", profile_);
       MediaPlayerActionAt(
           params_.x,
           params_.y,
