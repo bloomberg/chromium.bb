@@ -483,6 +483,15 @@ void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
         NotificationType::EXTENSIONS_LOADED,
         Source<ExtensionsService>(this),
         Details<ExtensionList>(&enabled_extensions));
+    for (ExtensionList::iterator iter = enabled_extensions.begin();
+         iter != enabled_extensions.end(); ++iter) {
+      if ((*iter)->IsTheme() && (*iter)->location() == Extension::LOAD) {
+        NotificationService::current()->Notify(
+            NotificationType::THEME_INSTALLED,
+            Source<ExtensionsService>(this),
+            Details<Extension>(*iter));
+      }
+    }
   }
 }
 
@@ -755,19 +764,21 @@ Extension* ExtensionsServiceBackend::LoadExtension(
   // Theme resource validation.
   if (extension->IsTheme()) {
     DictionaryValue* images_value = extension->GetThemeImages();
-    DictionaryValue::key_iterator iter = images_value->begin_keys();
-    while (iter != images_value->end_keys()) {
-      std::string val;
-      if (images_value->GetString(*iter , &val)) {
-        FilePath image_path = extension->path().AppendASCII(val);
-        if (!file_util::PathExists(image_path)) {
-          ReportExtensionLoadError(extension_path,
-              StringPrintf("Could not load '%s' for theme.",
-              WideToUTF8(image_path.ToWStringHack()).c_str()));
-          return NULL;
+    if (images_value) {
+      DictionaryValue::key_iterator iter = images_value->begin_keys();
+      while (iter != images_value->end_keys()) {
+        std::string val;
+        if (images_value->GetString(*iter , &val)) {
+          FilePath image_path = extension->path().AppendASCII(val);
+          if (!file_util::PathExists(image_path)) {
+            ReportExtensionLoadError(extension_path,
+                StringPrintf("Could not load '%s' for theme.",
+                WideToUTF8(image_path.ToWStringHack()).c_str()));
+            return NULL;
+          }
         }
+        ++iter;
       }
-      ++iter;
     }
 
     // Themes cannot contain other extension types.
