@@ -70,6 +70,19 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
   return GDK_ARROW;
 }
 
+gfx::Rect GetScreenWorkArea(GdkWindow* window) {
+  guchar* raw_data = NULL;
+  gint data_len = 0;
+  gboolean success = gdk_property_get(gdk_get_default_root_window(),
+                                      gdk_atom_intern("_NET_WORKAREA", FALSE),
+                                      gdk_atom_intern("CARDINAL", FALSE),
+                                      0, 0xFF, false, NULL, NULL, &data_len,
+                                      &raw_data);
+  DCHECK(success);
+  glong* data = reinterpret_cast<glong*>(raw_data);
+  return gfx::Rect(data[0], data[1], data[0] + data[2], data[1] + data[3]);
+}
+
 }  // namespace
 
 namespace views {
@@ -83,7 +96,7 @@ Window* Window::CreateChromeWindow(gfx::NativeWindow parent,
                                    WindowDelegate* window_delegate) {
   WindowGtk* window = new WindowGtk(window_delegate);
   window->GetNonClientView()->SetFrameView(window->CreateFrameViewForWindow());
-  window->Init(bounds);
+  window->Init(parent, bounds);
   return window;
 }
 
@@ -339,16 +352,16 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
   window_delegate_->window_.reset(this);
 }
 
-void WindowGtk::Init(const gfx::Rect& bounds) {
+void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {
+  WidgetGtk::Init(NULL, bounds);
+
   // We call this after initializing our members since our implementations of
   // assorted WidgetWin functions may be called during initialization.
   is_modal_ = window_delegate_->IsModal();
-  if (is_modal_) {
-    // TODO(erg): Fix once modality works.
-    // BecomeModal();
-  }
-
-  WidgetGtk::Init(NULL, bounds);
+  if (is_modal_)
+    gtk_window_set_modal(GetNativeWindow(), true);
+  if (parent)
+    gtk_window_set_transient_for(GetNativeWindow(), parent);
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
                    G_CALLBACK(CallConfigureEvent), this);
@@ -361,7 +374,7 @@ void WindowGtk::Init(const gfx::Rect& bounds) {
   WidgetGtk::SetContentsView(non_client_view_);
 
   UpdateWindowTitle();
-  SetInitialBounds(bounds);
+  SetInitialBounds(parent, bounds);
 
   // if (!IsAppWindow()) {
   //   notification_registrar_.Add(
@@ -401,22 +414,40 @@ void WindowGtk::SaveWindowPosition() {
   window_delegate_->SaveWindowPlacement(bounds, maximized);
 }
 
-void WindowGtk::SetInitialBounds(const gfx::Rect& create_bounds) {
+void WindowGtk::SetInitialBounds(GtkWindow* parent,
+                                 const gfx::Rect& create_bounds) {
   gfx::Rect saved_bounds(create_bounds.ToGdkRectangle());
   if (window_delegate_->GetSavedWindowBounds(&saved_bounds)) {
     WidgetGtk::SetBounds(saved_bounds);
   } else {
     if (create_bounds.IsEmpty()) {
-      SizeWindowToDefault();
+      SizeWindowToDefault(parent);
     } else {
       SetBounds(create_bounds, NULL);
     }
   }
 }
 
-void WindowGtk::SizeWindowToDefault() {
+void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
+  gfx::Rect center_rect;
+
+  if (parent) {
+    // We have a parent window, center over it.
+    gint parent_x = 0;
+    gint parent_y = 0;
+    gtk_window_get_position(parent, &parent_x, &parent_y);
+    gint parent_w = 0;
+    gint parent_h = 0;
+    gtk_window_get_size(parent, &parent_w, &parent_h);
+    center_rect = gfx::Rect(parent_x, parent_y, parent_w, parent_h);
+  } else {
+    // We have no parent window, center over the screen.
+    center_rect = GetScreenWorkArea(GTK_WIDGET(GetNativeWindow())->window);
+  }
   gfx::Size size = non_client_view_->GetPreferredSize();
-  gfx::Rect bounds(size.width(), size.height());
+  gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,
+                   center_rect.y() + (center_rect.height() - size.height()) / 2,
+                   size.width(), size.height());
   SetBounds(bounds, NULL);
 }
 

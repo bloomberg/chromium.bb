@@ -78,7 +78,7 @@ class WindowGtk : public WidgetGtk, public Window {
   explicit WindowGtk(WindowDelegate* window_delegate);
 
   // Initializes the window to the passed in bounds.
-  void Init(const gfx::Rect& bounds);
+  void Init(GtkWindow* parent, const gfx::Rect& bounds);
 
  private:
   static gboolean CallConfigureEvent(GtkWidget* widget,
@@ -91,8 +91,8 @@ class WindowGtk : public WidgetGtk, public Window {
   // Asks the delegate if any to save the window's location and size.
   void SaveWindowPosition();
 
-  void SetInitialBounds(const gfx::Rect& bounds);
-  void SizeWindowToDefault();
+  void SetInitialBounds(GtkWindow* parent, const gfx::Rect& bounds);
+  void SizeWindowToDefault(GtkWindow* parent);
 
   // Whether or not the window is modal. This comes from the delegate and is
   // cached at Init time to avoid calling back to the delegate from the

@@ -35,7 +35,7 @@ BrowserFrameGtk::~BrowserFrameGtk() {
 }
 
 void BrowserFrameGtk::Init() {
-  WindowGtk::Init(gfx::Rect());
+  WindowGtk::Init(NULL, gfx::Rect());
 }
 
 views::Window* BrowserFrameGtk::GetWindow() {
