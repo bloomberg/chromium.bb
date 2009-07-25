@@ -999,7 +999,13 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
       base::SysWideToNativeMB(http_response_info.mime_type),
       base::SysWideToNativeMB(GetAllHeaders(resource_response)),
       http_response_info.expected_length,
-      http_response_info.last_modified, request_is_seekable);
+      http_response_info.last_modified, request_is_seekable, &cancel);
+
+  if (cancel) {
+    loader->cancel();
+    RemoveClient(loader);
+    return;
+  }
 
   // Bug http://b/issue?id=925559. The flash plugin would not handle the HTTP
   // error codes in the stream header and as a result, was unaware of the
