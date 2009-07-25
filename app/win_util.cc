@@ -8,6 +8,7 @@
 #include <atlapp.h>
 #include <commdlg.h>
 #include <dwmapi.h>
+#include <propvarutil.h>
 #include <shellapi.h>
 #include <shlobj.h>
 
@@ -19,6 +20,7 @@
 #include "base/gfx/gdi_util.h"
 #include "base/gfx/png_encoder.h"
 #include "base/logging.h"
+#include "base/native_library.h"
 #include "base/registry.h"
 #include "base/scoped_handle.h"
 #include "base/string_util.h"
@@ -34,6 +36,18 @@ namespace win_util {
 const int kAutoHideTaskbarThicknessPx = 2;
 
 namespace {
+
+const wchar_t kShell32[] = L"shell32.dll";
+const char kSHGetPropertyStoreForWindow[] = "SHGetPropertyStoreForWindow";
+
+// Define the type of SHGetPropertyStoreForWindow is SHGPSFW.
+typedef DECLSPEC_IMPORT HRESULT (STDAPICALLTYPE *SHGPSFW)(HWND hwnd,
+                                                          REFIID riid,
+                                                          void** ppv);
+
+EXTERN_C const PROPERTYKEY DECLSPEC_SELECTANY PKEY_AppUserModel_ID =
+    { { 0x9F4C2855, 0x9F79, 0x4B39,
+    { 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3, } }, 5 };
 
 // Enforce visible dialog box.
 UINT_PTR CALLBACK SaveAsDialogHook(HWND dialog, UINT message,
@@ -823,6 +837,46 @@ gfx::Font GetWindowTitleFont() {
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
   return gfx::Font::CreateFont(caption_font);
+}
+
+void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd) {
+  // This funcationality is only available on Win7+.
+  if (win_util::GetWinVersion() != win_util::WINVERSION_WIN7)
+    return;
+
+  // Load Shell32.dll into memory.
+  // TODO(brg): Remove this mechanism when the Win7 SDK is available in trunk.
+  std::wstring shell32_filename(kShell32);
+  FilePath shell32_filepath(shell32_filename);
+  base::NativeLibrary shell32_library = base::LoadNativeLibrary(
+      shell32_filepath);
+
+  if (!shell32_library)
+    return;
+
+  // Get the function pointer for SHGetPropertyStoreForWindow.
+  void* function = base::GetFunctionPointerFromNativeLibrary(
+      shell32_library,
+      kSHGetPropertyStoreForWindow);
+
+  if (!function) {
+    base::UnloadNativeLibrary(shell32_library);
+    return;
+  }
+
+  // Set the application's name.
+  PROPVARIANT pv;
+  InitPropVariantFromString(app_id.c_str(), &pv);
+
+  IPropertyStore* pps;
+  SHGPSFW SHGetPropertyStoreForWindow = static_cast<SHGPSFW>(function);
+  if (S_OK == SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&pps)) &&
+      S_OK == pps->SetValue(PKEY_AppUserModel_ID, pv)) {
+    pps->Commit();
+  }
+
+  // Cleanup.
+  base::UnloadNativeLibrary(shell32_library);
 }
 
 }  // namespace win_util
