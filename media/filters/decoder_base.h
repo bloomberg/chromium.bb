@@ -69,12 +69,12 @@ class DecoderBase : public Decoder {
  protected:
   DecoderBase()
       : pending_reads_(0),
-        seeking_(false),
-        state_(UNINITIALIZED) {
+        expecting_discontinuous_(false),
+        state_(kUninitialized) {
   }
 
   virtual ~DecoderBase() {
-    DCHECK(state_ == UNINITIALIZED || state_ == STOPPED);
+    DCHECK(state_ == kUninitialized || state_ == kStopped);
     DCHECK(result_queue_.empty());
     DCHECK(read_queue_.empty());
   }
@@ -115,7 +115,7 @@ class DecoderBase : public Decoder {
   MediaFormat media_format_;
 
  private:
-  bool IsStopped() { return state_ == STOPPED; }
+  bool IsStopped() { return state_ == kStopped; }
 
   void StopTask() {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
@@ -126,32 +126,38 @@ class DecoderBase : public Decoder {
     // Throw away all buffers in all queues.
     result_queue_.clear();
     STLDeleteElements(&read_queue_);
-    state_ = STOPPED;
+    state_ = kStopped;
   }
 
   void SeekTask(base::TimeDelta time, FilterCallback* callback) {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    DCHECK_EQ(0u, pending_reads_) << "Pending reads should have completed";
+    DCHECK(read_queue_.empty()) << "Read requests should be empty";
     scoped_ptr<FilterCallback> c(callback);
 
     // Delegate to the subclass first.
+    //
+    // TODO(scherkus): if we have the strong assertion that there are no pending
+    // reads in the entire pipeline when we receive Seek(), subclasses could
+    // either flush their buffers here or wait for IsDiscontinuous().  I'm
+    // inclined to say that they should still wait for IsDiscontinuous() so they
+    // don't have duplicated logic for Seek() and actual discontinuous frames.
     OnSeek(time);
 
-    // Flush the result queue.
+    // Flush our decoded results.  We'll set a boolean that we can DCHECK to
+    // verify our assertion that the first buffer received after a Seek() should
+    // always be discontinuous.
     result_queue_.clear();
+    expecting_discontinuous_ = true;
 
-    // Turn on the seeking flag so that we can discard buffers until a
-    // discontinuous buffer is received.
-    seeking_ = true;
-
-    // For now, signal that we're done seeking.
-    // TODO(scherkus): implement asynchronous seeking for decoder_base.h
+    // Signal that we're done seeking.
     callback->Run();
   }
 
   void InitializeTask(DemuxerStream* demuxer_stream, FilterCallback* callback) {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
-    DCHECK(state_ == UNINITIALIZED);
-    DCHECK(!demuxer_stream_);
+    CHECK(kUninitialized == state_);
+    CHECK(!demuxer_stream_);
     scoped_ptr<FilterCallback> c(callback);
     demuxer_stream_ = demuxer_stream;
 
@@ -164,7 +170,7 @@ class DecoderBase : public Decoder {
 
     // TODO(scherkus): subclass shouldn't mutate superclass media format.
     DCHECK(!media_format_.empty()) << "Subclass did not set media_format_";
-    state_ = INITIALIZED;
+    state_ = kInitialized;
     callback->Run();
   }
 
@@ -196,18 +202,11 @@ class DecoderBase : public Decoder {
       return;
     }
 
-    // Once the |seeking_| flag is set we ignore every buffers here
-    // until we receive a discontinuous buffer and we will turn off the
-    // |seeking_| flag.
+    // TODO(scherkus): remove this when we're less paranoid about our seeking
+    // invariants.
     if (buffer->IsDiscontinuous()) {
-      // TODO(hclam): put a DCHECK here to assert |seeking_| being true.
-      // I cannot do this now because seek operation is not fully
-      // asynchronous. There may be pending seek requests even before the
-      // previous was finished.
-      seeking_ = false;
-    }
-    if (seeking_) {
-      return;
+      DCHECK(expecting_discontinuous_);
+      expecting_discontinuous_ = false;
     }
 
     // Decode the frame right away.
@@ -251,10 +250,8 @@ class DecoderBase : public Decoder {
   // Using size_t since it is always compared against deque::size().
   size_t pending_reads_;
 
-  // An internal state of the decoder that indicates that are waiting for seek
-  // to complete. We expect to receive a discontinuous frame/packet from the
-  // demuxer to signal that seeking is completed.
-  bool seeking_;
+  // A flag used for debugging that we expect our next read to be discontinuous.
+  bool expecting_discontinuous_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
@@ -274,11 +271,14 @@ class DecoderBase : public Decoder {
   typedef std::deque<ReadCallback*> ReadQueue;
   ReadQueue read_queue_;
 
+  // Pause callback.
+  scoped_ptr<FilterCallback> pause_callback_;
+
   // Simple state tracking variable.
   enum State {
-    UNINITIALIZED,
-    INITIALIZED,
-    STOPPED,
+    kUninitialized,
+    kInitialized,
+    kStopped,
   };
   State state_;
 

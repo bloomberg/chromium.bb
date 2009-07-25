@@ -30,6 +30,8 @@ namespace media {
 class AudioRendererBase : public AudioRenderer {
  public:
   // MediaFilter implementation.
+  virtual void Play(FilterCallback* callback);
+  virtual void Pause(FilterCallback* callback);
   virtual void Stop();
 
   virtual void Seek(base::TimeDelta time, FilterCallback* callback);
@@ -54,7 +56,8 @@ class AudioRendererBase : public AudioRenderer {
   // this time, such as stopping any running threads.
   virtual void OnStop() = 0;
 
-  // Called when a AudioDecoder::Read() completes.
+  // Called when a AudioDecoder::Read() completes and decrements
+  // |pending_reads_|.
   virtual void OnReadComplete(Buffer* buffer_in);
 
   // Fills the given buffer with audio data by dequeuing buffers and copying the
@@ -87,10 +90,11 @@ class AudioRendererBase : public AudioRenderer {
                                int* sample_bits_out);
 
  private:
-  // Helper method that schedules an asynchronous read from the decoder.
+  // Helper method that schedules an asynchronous read from the decoder and
+  // increments |pending_reads_|.
   //
   // Safe to call from any thread.
-  void ScheduleRead();
+  void ScheduleRead_Locked();
 
   // Audio decoder.
   scoped_refptr<AudioDecoder> decoder_;
@@ -106,18 +110,31 @@ class AudioRendererBase : public AudioRenderer {
   // Remembers the amount of remaining audio data for the front buffer.
   size_t data_offset_;
 
-  // Whether or not we're initialized.
-  bool initialized_;
+  // Simple state tracking variable.
+  enum State {
+    kUninitialized,
+    kPaused,
+    kSeeking,
+    kPlaying,
+    kStopped,
+    kError,
+  };
+  State state_;
 
-  // Whether or not we've stopped.
-  bool stopped_;
+  // Keeps track of our pending reads.  We *must* have no pending reads before
+  // executing the pause callback, otherwise we breach the contract that all
+  // filters are idling.
+  //
+  // We use size_t since we compare against std::deque::size().
+  size_t pending_reads_;
 
   // Audio time at end of last call to FillBuffer().
   // TODO(ralphl): Update this value after seeking.
   base::TimeDelta last_fill_buffer_time_;
 
   // Filter callbacks.
-  scoped_ptr<FilterCallback> initialize_callback_;
+  scoped_ptr<FilterCallback> pause_callback_;
+  scoped_ptr<FilterCallback> seek_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererBase);
 };

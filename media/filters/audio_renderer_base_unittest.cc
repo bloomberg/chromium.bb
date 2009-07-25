@@ -95,9 +95,9 @@ TEST_F(AudioRendererBaseTest, Initialize_Failed) {
   EXPECT_CALL(callback_, OnFilterCallback());
   EXPECT_CALL(callback_, OnCallbackDestroyed());
 
-  // Initialize, we expect to get a bunch of read requests.
+  // Initialize, we expect to have no reads.
   renderer_->Initialize(decoder_, callback_.NewCallback());
-  EXPECT_EQ(kMaxQueueSize, read_queue_.size());
+  EXPECT_EQ(0u, read_queue_.size());
 }
 
 TEST_F(AudioRendererBaseTest, Initialize_Successful) {
@@ -107,18 +107,26 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
   EXPECT_CALL(*renderer_, OnInitialize(_))
       .WillOnce(Return(true));
 
-  // Set up a check point to verify that the callback hasn't been executed yet.
-  EXPECT_CALL(*renderer_, CheckPoint(0));
-
-  // After finishing preroll, we expect our callback to be executed.
+  // After finishing initialization, we expect our callback to be executed.
   EXPECT_CALL(callback_, OnFilterCallback());
   EXPECT_CALL(callback_, OnCallbackDestroyed());
 
-  // Initialize, we expect to get a bunch of read requests.
+  // Verify the following expectations haven't run until we complete the reads.
+  EXPECT_CALL(*renderer_, CheckPoint(0));
+
+  MockFilterCallback seek_callback;
+  EXPECT_CALL(seek_callback, OnFilterCallback());
+  EXPECT_CALL(seek_callback, OnCallbackDestroyed());
+
+  // Initialize, we shouldn't have any reads.
   renderer_->Initialize(decoder_, callback_.NewCallback());
+  EXPECT_EQ(0u, read_queue_.size());
+
+  // Now seek to trigger prerolling.
+  renderer_->Seek(base::TimeDelta(), seek_callback.NewCallback());
   EXPECT_EQ(kMaxQueueSize, read_queue_.size());
 
-  // Verify our callback hasn't been executed yet.
+  // Verify our seek callback hasn't been executed yet.
   renderer_->CheckPoint(0);
 
   // Now satisfy the read requests.  Our callback should be executed after

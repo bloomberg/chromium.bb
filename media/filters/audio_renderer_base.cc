@@ -19,37 +19,61 @@ const size_t AudioRendererBase::kDefaultMaxQueueSize = 16;
 AudioRendererBase::AudioRendererBase(size_t max_queue_size)
     : max_queue_size_(max_queue_size),
       data_offset_(0),
-      initialized_(false),
-      stopped_(false) {
+      state_(kUninitialized),
+      pending_reads_(0) {
 }
 
 AudioRendererBase::~AudioRendererBase() {
   // Stop() should have been called and OnReadComplete() should have stopped
   // enqueuing data.
-  DCHECK(stopped_);
+  DCHECK(state_ == kUninitialized || state_ == kStopped);
   DCHECK(queue_.empty());
+}
+
+void AudioRendererBase::Play(FilterCallback* callback) {
+  AutoLock auto_lock(lock_);
+  DCHECK_EQ(kPaused, state_);
+  scoped_ptr<FilterCallback> c(callback);
+  state_ = kPlaying;
+  callback->Run();
+}
+
+void AudioRendererBase::Pause(FilterCallback* callback) {
+  AutoLock auto_lock(lock_);
+  DCHECK_EQ(kPlaying, state_);
+  pause_callback_.reset(callback);
+  state_ = kPaused;
+
+  // We'll only pause when we've finished all pending reads.
+  if (pending_reads_ == 0) {
+    pause_callback_->Run();
+    pause_callback_.reset();
+  } else {
+    state_ = kPaused;
+  }
 }
 
 void AudioRendererBase::Stop() {
   OnStop();
 
   AutoLock auto_lock(lock_);
+  state_ = kStopped;
   queue_.clear();
-  stopped_ = true;
 }
 
 void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {
   AutoLock auto_lock(lock_);
-  last_fill_buffer_time_ = base::TimeDelta();
+  DCHECK_EQ(kPaused, state_);
+  DCHECK_EQ(0u, pending_reads_) << "Pending reads should have completed";
+  state_ = kSeeking;
+  seek_callback_.reset(callback);
 
-  // Clear the queue of decoded packets and release the buffers. Fire as many
-  // reads as buffers released. It is safe to schedule reads here because
-  // demuxer and decoders should have received the seek signal.
-  // TODO(hclam): we should preform prerolling again after each seek to avoid
-  // glitch or clicking of audio.
-  while (!queue_.empty()) {
-    queue_.pop_front();
-    ScheduleRead();
+  // Throw away everything and schedule our reads.
+  last_fill_buffer_time_ = base::TimeDelta();
+  queue_.clear();
+  data_offset_ = 0;
+  for (size_t i = 0; i < max_queue_size_; ++i) {
+    ScheduleRead_Locked();
   }
 }
 
@@ -57,51 +81,51 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
                                    FilterCallback* callback) {
   DCHECK(decoder);
   DCHECK(callback);
+  DCHECK_EQ(kUninitialized, state_);
+  scoped_ptr<FilterCallback> c(callback);
   decoder_ = decoder;
-  initialize_callback_.reset(callback);
 
   // Defer initialization until all scheduled reads have completed.
   if (!OnInitialize(decoder_->media_format())) {
     host()->SetError(PIPELINE_ERROR_INITIALIZATION_FAILED);
-    initialize_callback_->Run();
-    initialize_callback_.reset();
+    callback->Run();
+    return;
   }
 
-  // Schedule our initial reads.
-  for (size_t i = 0; i < max_queue_size_; ++i) {
-    ScheduleRead();
-  }
+  // Finally, execute the start callback.
+  state_ = kPaused;
+  callback->Run();
 }
 
 void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
-  bool initialization_complete = false;
-  {
-    AutoLock auto_lock(lock_);
-    // If we have stopped don't enqueue, same for end of stream buffer since
-    // it has no data.
-    if (!stopped_ && !buffer_in->IsEndOfStream()) {
-      queue_.push_back(buffer_in);
-      DCHECK(queue_.size() <= max_queue_size_);
-    }
+  AutoLock auto_lock(lock_);
+  DCHECK(state_ == kPaused || state_ == kSeeking || state_ == kPlaying);
+  DCHECK_GT(pending_reads_, 0u);
+  --pending_reads_;
 
-    if (!initialized_) {
-      // We have completed the initialization when we preroll enough and hit
-      // the target queue size or the stream has ended.
-      if (queue_.size() == max_queue_size_ || buffer_in->IsEndOfStream())
-        initialization_complete = true;
-    }
+  // If we have stopped don't enqueue, same for end of stream buffer since
+  // it has no data.
+  if (!buffer_in->IsEndOfStream()) {
+    queue_.push_back(buffer_in);
+    DCHECK(queue_.size() <= max_queue_size_);
   }
 
-  if (initialization_complete) {
-    if (queue_.empty()) {
-      // If we say we have initialized but buffer queue is empty, raise an
-      // error.
-      host()->SetError(PIPELINE_ERROR_NO_DATA);
-    } else {
-      initialized_ = true;
+  // Check for our preroll complete condition.
+  if (state_ == kSeeking) {
+    DCHECK(seek_callback_.get());
+    if (queue_.size() == max_queue_size_ || buffer_in->IsEndOfStream()) {
+      // Transition into paused whether we have data in |queue_| or not.
+      // FillBuffer() will play silence if there's nothing to fill.
+      state_ = kPaused;
+      seek_callback_->Run();
+      seek_callback_.reset();
     }
-    initialize_callback_->Run();
-    initialize_callback_.reset();
+  } else if (state_ == kPaused && pending_reads_ == 0) {
+    // No more pending reads!  We're now officially "paused".
+    if (pause_callback_.get()) {
+      pause_callback_->Run();
+      pause_callback_.reset();
+    }
   }
 }
 
@@ -110,7 +134,6 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
                                      size_t dest_len,
                                      float rate,
                                      const base::TimeDelta& playback_delay) {
-  size_t buffers_released = 0;
   size_t dest_written = 0;
 
   // The timestamp of the last buffer written during the last call to
@@ -118,6 +141,11 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
   base::TimeDelta last_fill_buffer_time;
   {
     AutoLock auto_lock(lock_);
+
+    // Mute audio by returning 0 when not playing.
+    if (state_ != kPlaying) {
+      return 0;
+    }
 
     // Save a local copy of last fill buffer time and reset the member.
     last_fill_buffer_time = last_fill_buffer_time_;
@@ -128,6 +156,7 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
       scoped_refptr<Buffer> buffer = queue_.front();
 
       // Determine how much to copy.
+      DCHECK_LE(data_offset_, buffer->GetDataSize());
       const uint8* data = buffer->GetData() + data_offset_;
       size_t data_len = buffer->GetDataSize() - data_offset_;
 
@@ -182,9 +211,9 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
                                    buffer->GetDuration();
         }
 
-        // Dequeue the buffer.
+        // Dequeue the buffer and request another.
         queue_.pop_front();
-        ++buffers_released;
+        ScheduleRead_Locked();
 
         // Reset our offset into the front buffer.
         data_offset_ = 0;
@@ -200,11 +229,6 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
               base::TimeDelta::FromMicroseconds(us_written);
         }
       }
-    }
-
-    // If we've released any buffers, read more buffers from the decoder.
-    for (size_t i = 0; i < buffers_released; ++i) {
-      ScheduleRead();
     }
   }
 
@@ -224,7 +248,10 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
   return dest_written;
 }
 
-void AudioRendererBase::ScheduleRead() {
+void AudioRendererBase::ScheduleRead_Locked() {
+  lock_.AssertAcquired();
+  DCHECK_LT(pending_reads_, max_queue_size_);
+  ++pending_reads_;
   decoder_->Read(NewCallback(this, &AudioRendererBase::OnReadComplete));
 }
 

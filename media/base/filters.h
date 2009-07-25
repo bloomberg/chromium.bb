@@ -88,6 +88,25 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
     return message_loop_;
   }
 
+  // The pipeline has resumed playback.  Filters can continue requesting reads.
+  // Filters may implement this method if they need to respond to this call.
+  virtual void Play(FilterCallback* callback) {
+    if (callback) {
+      callback->Run();
+      delete callback;
+    }
+  }
+
+  // The pipeline has paused playback.  Filters should fulfill any existing read
+  // requests and then idle.  Filters may implement this method if they need to
+  // respond to this call.
+  virtual void Pause(FilterCallback* callback) {
+    if (callback) {
+      callback->Run();
+      delete callback;
+    }
+  }
+
   // The pipeline is being stopped either as a result of an error or because
   // the client called Stop().
   virtual void Stop() = 0;
