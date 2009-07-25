@@ -554,11 +554,19 @@
       <message name="IDS_LINUX_PROXY_CONFIG_URL" translateable="false">
         http://code.google.com/p/chromium/wiki/LinuxProxyConfig
       </message>
-      
+
       <!-- The URL for the themes gallery. -->
+      <!-- TODO(arv): Use GRITLANGCODE -->
       <message name="IDS_THEMES_GALLERY_URL" translateable="false">
-        https://tools.google.com/chrome/intl/en/themes/index.html
+        https://tools.google.com/chrome/intl/en/themes/
       </message>
+      <!-- The URL for Google Chrome welcome page. This is used for the pre -->
+      <!-- populated thumbnails. -->
+      <!-- TODO(arv): Use GRITLANGCODE -->
+      <message name="IDS_CHROME_WELCOME_URL" translateable="false">
+        http://www.google.com/chrome/intl/en/welcome.html
+      </message>
+
     </messages>
   </release>
 </grit>

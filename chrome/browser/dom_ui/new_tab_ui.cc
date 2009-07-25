@@ -6,6 +6,8 @@
 
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 
+#include <set>
+
 #include "app/animation.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -52,7 +54,10 @@
 namespace {
 
 // The number of most visited pages we show.
-const size_t kMostVisitedPages = 9;
+const size_t kMostVisitedPages = 8;
+
+// The number of most visited pages we show on the old new tab page.
+const size_t kOldMostVisitedPages = 9;
 
 // The number of days of history we consider for most visited entries.
 const int kMostVisitedScope = 90;
@@ -474,6 +479,18 @@ void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// MostVisitedPage
+
+// This struct is used when getting the prepopulated pages in case the user
+// hasn't filled up his most visited pages.
+struct MostVisitedPage {
+  std::wstring title;
+  GURL url;
+  GURL thumbnail_url;
+  GURL favicon_url;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // MostVisitedHandler
 
 // The handler for Javascript messages related to the "most visited" view.
@@ -535,6 +552,8 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   void AddPinnedURL(const GURL& url, const std::string& title, int index);
   void RemovePinnedURL(const GURL& url);
+
+  static std::vector<MostVisitedPage> GetPrePopulatedPages();
 
   NotificationRegistrar registrar_;
 
@@ -773,10 +792,13 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
     std::vector<PageUsageData*>* data) {
   most_visited_urls_.clear();
   ListValue pages_value;
+  std::set<GURL> seen_urls;
 
   size_t data_index = 0;
   size_t output_index = 0;
-  while (output_index < kMostVisitedPages && data_index < data->size()) {
+  const size_t pages_count = NewTabUI::UseOldNewTabPage() ?
+      kOldMostVisitedPages : kMostVisitedPages;
+  while (output_index < pages_count && data_index < data->size()) {
     bool pinned = false;
     GURL url;
     string16 title;
@@ -808,6 +830,7 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
     pages_value.Append(page_value);
     output_index++;
     most_visited_urls_.push_back(url);
+    seen_urls.insert(url);
   }
 
   // If we found no pages we treat this as the first run.
@@ -816,7 +839,53 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
   // but first_run should only be true once.
   NewTabHTMLSource::set_first_run(false);
 
+  // If we have less than pages_count we add some predetermined pages.
+  if (pages_value.GetSize() < pages_count) {
+    static std::vector<MostVisitedPage> pages =
+        MostVisitedHandler::GetPrePopulatedPages();
+    for (std::vector<MostVisitedPage>::const_iterator it = pages.begin();
+        it != pages.end() && pages_value.GetSize() < pages_count;
+        ++it) {
+      MostVisitedPage page = *it;
+      std::wstring key = GetDictionaryKeyForURL(page.url.spec());
+      if (!pinned_urls_->HasKey(key) && !url_blacklist_->HasKey(key) &&
+          seen_urls.find(page.url) == seen_urls.end()) {
+        DictionaryValue* page_value = new DictionaryValue();
+        SetURLTitleAndDirection(page_value, WideToUTF16(page.title), page.url);
+        page_value->SetBoolean(L"pinned", false);
+        page_value->SetString(L"thumbnailUrl", page.thumbnail_url.spec());
+        page_value->SetString(L"faviconUrl", page.favicon_url.spec());
+        pages_value.Append(page_value);
+        most_visited_urls_.push_back(page.url);
+        seen_urls.insert(page.url);
+      }
+    }
+  }
+
   dom_ui_->CallJavascriptFunction(L"mostVisitedPages", pages_value, first_run);
+}
+
+// static
+std::vector<MostVisitedPage> MostVisitedHandler::GetPrePopulatedPages() {
+  // TODO(arv): This needs to get the data from some configurable place.
+  // http://crbug.com/17630
+  std::vector<MostVisitedPage> pages;
+
+  MostVisitedPage welcome_page = {
+      l10n_util::GetString(IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE),
+      GURL(WideToUTF8(l10n_util::GetString(IDS_CHROME_WELCOME_URL))),
+      GURL("chrome://theme/newtab_chrome_welcome_page_thumbnail"),
+      GURL("chrome://theme/newtab_chrome_welcome_page_favicon")};
+  pages.push_back(welcome_page);
+
+  MostVisitedPage gallery_page = {
+      l10n_util::GetString(IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE),
+      GURL(WideToUTF8(l10n_util::GetString(IDS_THEMES_GALLERY_URL))),
+      GURL("chrome://theme/newtab_themes_gallery_thumbnail"),
+      GURL("chrome://theme/newtab_themes_gallery_favicon")};
+  pages.push_back(gallery_page);
+
+  return pages;
 }
 
 void MostVisitedHandler::Observe(NotificationType type,

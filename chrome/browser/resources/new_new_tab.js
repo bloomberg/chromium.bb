@@ -246,10 +246,11 @@ function renderMostVisited(data) {
     // attack but setting style.backgroundImage = 'url(javascript:...)' does
     // not execute the JavaScript in WebKit.
     t.querySelector('.thumbnail-wrapper').style.backgroundImage =
-        'url("chrome://thumb/' + d.url + '")';
+        'url("' + (d.thumbnailUrl || 'chrome://thumb/' + d.url) + '")';
     var titleDiv = t.querySelector('.title > div');
     titleDiv.xtitle = titleDiv.textContent = d.title;
-    titleDiv.style.backgroundImage = 'url("chrome://favicon/' + d.url + '")';
+    titleDiv.style.backgroundImage = 'url("' +
+        (d.faviconUrl || 'chrome://favicon/' + d.url) + '")';
     titleDiv.dir = d.direction;
   }
 }
