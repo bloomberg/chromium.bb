@@ -29,7 +29,7 @@ class NewTabUI : public DOMUI,
   static bool UseOldNewTabPage();
 
   // Whether we should disable the web resources backend service
-  static bool WebResourcesDisabled();
+  static bool WebResourcesEnabled();
 
  private:
   void Observe(NotificationType type,

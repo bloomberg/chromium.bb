@@ -102,7 +102,10 @@ void InProcessBrowserTest::SetUp() {
   if (single_process_)
     command_line->AppendSwitch(switches::kSingleProcess);
 
-  command_line->AppendSwitch(switches::kDisableWebResources);
+  // TODO(arv): Reenable once kEnableWebResources is changed back to
+  // kDisableWebResources
+  // http://crbug.com/17725
+  // command_line->AppendSwitch(switches::kEnableWebResources);
 
   command_line->AppendSwitchWithValue(switches::kUserDataDir, user_data_dir);
 

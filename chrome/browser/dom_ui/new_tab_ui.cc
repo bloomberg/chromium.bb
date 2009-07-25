@@ -312,9 +312,9 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(L"recentactivities",
       l10n_util::GetString(IDS_NEW_TAB_RECENT_ACTIVITIES));
   localized_strings.SetString(L"tipsandsuggestions",
-      l10n_util::GetString(IDS_NEW_TAB_TIPS));
+      l10n_util::GetString(IDS_NEW_TAB_EVEN_MORE_TITLE));
   localized_strings.SetString(L"defaulttipstitle",
-      l10n_util::GetString(IDS_NEW_TAB_DEFAULT_TIPS_TITLE));
+      l10n_util::GetString(IDS_NEW_TAB_EVEN_MORE_CONTENT));
   localized_strings.SetString(L"downloads",
       l10n_util::GetString(IDS_NEW_TAB_DOWNLOADS));
   localized_strings.SetString(L"viewfullhistory",
@@ -334,9 +334,9 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(L"hiderecent",
       l10n_util::GetString(IDS_NEW_TAB_HIDE_RECENT));
   localized_strings.SetString(L"showtips",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_TIPS));
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_EVEN_MORE));
   localized_strings.SetString(L"hidetips",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_TIPS));
+      l10n_util::GetString(IDS_NEW_TAB_HIDE_EVEN_MORE));
   localized_strings.SetString(L"thumbnailremovednotification",
       l10n_util::GetString(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
   localized_strings.SetString(L"undothumbnailremove",
@@ -1526,7 +1526,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
     AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
     AddMessageHandler((new MetricsHandler())->Attach(this));
-    if (!WebResourcesDisabled())
+    if (WebResourcesEnabled())
       AddMessageHandler((new TipsHandler())->Attach(this));
 
     if (UseOldNewTabPage()) {
@@ -1584,7 +1584,7 @@ void NewTabUI::Observe(NotificationType type,
 void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);
-  if (!NewTabUI::WebResourcesDisabled())
+  if (NewTabUI::WebResourcesEnabled())
     TipsHandler::RegisterUserPrefs(prefs);
 }
 
@@ -1595,7 +1595,7 @@ bool NewTabUI::UseOldNewTabPage() {
 }
 
 // static
-bool NewTabUI::WebResourcesDisabled() {
+bool NewTabUI::WebResourcesEnabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kDisableWebResources);
+  return command_line->HasSwitch(switches::kEnableWebResources);
 }

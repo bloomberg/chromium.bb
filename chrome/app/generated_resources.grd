@@ -3550,6 +3550,22 @@ each locale. -->
                desc="Default content of tip box when no tips are available.  This is a short advertisement and explanation for the tips and suggestions to come.">
         Watch this space for tips and suggestions for better browsing!
       </message>
+      <message name="IDS_NEW_TAB_EVEN_MORE_TITLE"
+         desc="Title for the section on the new tab page that is currently empty. In later releases we plan to show web clips and tips and recommendations here.">
+        Even more
+      </message>
+      <message name="IDS_NEW_TAB_EVEN_MORE_CONTENT"
+         desc="Content for the section on the new tab page that is currently empty. In later releases we plan to show web clips and tips and recommendations here. This is intended to be funny!">
+        This space intentionally left blank
+      </message>
+      <message name="IDS_NEW_TAB_SHOW_EVEN_MORE"
+               desc="Menu item text used to show the even more section.">
+        Show even more
+      </message>
+      <message name="IDS_NEW_TAB_HIDE_EVEN_MORE"
+               desc="Menu item text used to hide the even more section.">
+        Hide even more
+      </message>
       <message name="IDS_NEW_TAB_DOWNLOADS"
                desc="The header text of the recent downloads section.">
         Downloads

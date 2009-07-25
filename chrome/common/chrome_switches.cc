@@ -486,9 +486,9 @@ const wchar_t kNewTabPage[]                    = L"new-tab-page";
 // Switches back to the old new tab page.
 const wchar_t kOldNewTabPage[]                 = L"old-new-tab-page";
 
-// Disables the backend service for web resources, used in the new tab page for
+// Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
-const wchar_t kDisableWebResources[]           = L"disable-web-resources";
+const wchar_t kEnableWebResources[]           = L"enable-web-resources";
 
 // Disables the default browser check. Useful for UI/browser tests where we want
 // to avoid having the default browser info-bar displayed.
