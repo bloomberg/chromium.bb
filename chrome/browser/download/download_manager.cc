@@ -121,7 +121,8 @@ static bool IsChromeExtension(const FilePath& path,
     return true;
 
   // Otherwise, it is an extension if it has the right, err, extension.
-  return path.Extension().substr(1) == chrome::kExtensionFileExtension;
+  return path.Extension().size() > 1 &&
+         path.Extension().substr(1) == chrome::kExtensionFileExtension;
 }
 
 // DownloadItem implementation -------------------------------------------------
