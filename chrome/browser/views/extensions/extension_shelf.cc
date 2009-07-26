@@ -41,6 +41,9 @@ static const int kToolstripDividerWidth = 2;
 // Preferred height of the ExtensionShelf.
 static const int kShelfHeight = 29;
 
+// Height of the toolstrip within the shelf.
+static const int kToolstripHeight = kShelfHeight - (kTopMargin + kBottomMargin);
+
 // Colors for the ExtensionShelf.
 static const SkColor kBackgroundColor = SkColorSetRGB(230, 237, 244);
 static const SkColor kBorderColor = SkColorSetRGB(201, 212, 225);
@@ -69,14 +72,19 @@ static const int kHideDelayMs = 500;
 // is being dragged or moved.
 // TODO(erikkay) this should draw a dimmed out version of the toolstrip.
 class ExtensionShelf::PlaceholderView : public views::View {
-public:
+ public:
   PlaceholderView() {}
+
+  void SetWidth(int width) {
+    SetBounds(x(), y(), width, height());
+    PreferredSizeChanged();
+  }
 
   // ExtensionShelf resizes its views to their preferred size at layout,
   // so just always prefer the current size.
   gfx::Size GetPreferredSize() { return size(); }
 
-private:
+ private:
   DISALLOW_COPY_AND_ASSIGN(PlaceholderView);
 };
 
@@ -86,7 +94,8 @@ private:
 class ExtensionShelf::Toolstrip : public views::View,
                                   public BrowserBubble::Delegate {
  public:
-  Toolstrip(ExtensionShelf* shelf, ExtensionHost* host);
+  Toolstrip(ExtensionShelf* shelf, ExtensionHost* host,
+            const Extension::ToolstripInfo& info);
   virtual ~Toolstrip();
 
   // View
@@ -146,11 +155,14 @@ class ExtensionShelf::Toolstrip : public views::View,
 
   // BrowserBubble::Delegate
   virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
-  virtual void BubbleBrowserWindowClosed(BrowserBubble* bubble);
+  virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
 
  private:
   // The actual renderer that this toolstrip contains.
   ExtensionHost* host_;
+
+  // Manifest definition of this toolstrip.
+  Extension::ToolstripInfo info_;
 
   // The handle is a BrowserBubble so that it can exist as an independent,
   // floating window.  It also acts as the container for the ExtensionView when
@@ -184,8 +196,10 @@ class ExtensionShelf::Toolstrip : public views::View,
 };
 
 ExtensionShelf::Toolstrip::Toolstrip(ExtensionShelf* shelf,
-                                     ExtensionHost* host)
+                                     ExtensionHost* host,
+                                     const Extension::ToolstripInfo& info)
     : host_(host),
+      info_(info),
       shelf_(shelf),
       placeholder_view_(NULL),
       dragging_(false),
@@ -239,21 +253,13 @@ void ExtensionShelf::Toolstrip::Paint(gfx::Canvas* canvas) {
 
 gfx::Size ExtensionShelf::Toolstrip::GetPreferredSize() {
   gfx::Size sz = title_->GetPreferredSize();
-  int width = std::max(view()->width() + 2, sz.width());
-  sz.set_width(width);
-  sz.Enlarge(kHandlePadding * 2, kHandlePadding * 2);
-  if (dragging_) {
+  sz.set_width(std::max(view()->width(), sz.width()));
+  if (!expanded_) {
+    sz.Enlarge(2 + kHandlePadding * 2, kHandlePadding * 2);
+  }
+  if (dragging_ || expanded_) {
     gfx::Size extension_size = view()->GetPreferredSize();
     sz.Enlarge(0, extension_size.height() + 2);
-  } else if (expanded_) {
-    // TODO(erikkay) these sizes are a temporary hack until we can get the
-    // size from the extension itself.
-    const int tempHeight = 200;
-    const int tempWidth = 400;
-    int width = std::max(sz.width(), tempWidth);
-    sz.set_width(width);
-    gfx::Size extension_size = view()->GetPreferredSize();
-    sz.Enlarge(0, extension_size.height() + 2 + tempHeight);
   }
   return sz;
 }
@@ -315,7 +321,9 @@ bool ExtensionShelf::Toolstrip::OnMouseDragged(const views::MouseEvent& event) {
 
 void ExtensionShelf::Toolstrip::OnMouseReleased(const views::MouseEvent& event,
                                                 bool canceled) {
+  StopHandleTimer();
   if (dragging_) {
+    // Drop the toolstrip roughly where it is now.
     views::View::OnMouseReleased(event, canceled);
     dragging_ = false;
     // |this| and |shelf_| are in different view hierarchies, so we need to
@@ -325,18 +333,33 @@ void ExtensionShelf::Toolstrip::OnMouseReleased(const views::MouseEvent& event,
     View::ConvertPointToView(NULL, shelf_, &loc);
     shelf_->DropExtension(this, loc, canceled);
     AttachToShelf(true);
-  } else {
-#if 0
-    // TODO(erikkay) implementation currently in progress
+  } else if (!canceled &&
+             info_.mole.is_valid() && info_.toolstrip.is_valid()) {
+    // Toggle mole to either expanded or collapsed.
     expanded_ = !expanded_;
+    view()->set_is_toolstrip(!expanded_);
     if (expanded_) {
+      host_->NavigateToURL(info_.mole);
       StopHandleTimer();
       DetachFromShelf(false);
+
+      gfx::Size extension_size = view()->GetPreferredSize();
+      extension_size.set_height(info_.mole_height);
+      view()->SetPreferredSize(extension_size);
       LayoutHandle();
     } else {
+      gfx::Size extension_size = view()->GetPreferredSize();
+      extension_size.set_height(kToolstripHeight);
+      view()->SetPreferredSize(extension_size);
+
+      host_->NavigateToURL(info_.toolstrip);
       AttachToShelf(false);
     }
-#endif
+
+    // This is to prevent flickering as the page loads and lays out.
+    // Once the navigation is finished, ExtensionView will wind up setting
+    // visibility to true.
+    view()->SetVisible(false);
   }
 }
 
@@ -357,7 +380,7 @@ void ExtensionShelf::Toolstrip::LayoutHandle() {
   int handle_width = std::max(view()->width(), width());
   gfx::Point origin(-kToolstripPadding, -(height() + kToolstripPadding - 1));
   if (expanded_) {
-    origin.set_y(-(height() + kToolstripPadding - 1));
+    origin.set_y(GetShelfView()->height() - height());
     views::View::ConvertPointToView(GetShelfView(), shelf_->GetRootView(),
                                     &origin);
   } else {
@@ -369,18 +392,25 @@ void ExtensionShelf::Toolstrip::LayoutHandle() {
 }
 
 void ExtensionShelf::Toolstrip::ChildPreferredSizeChanged(View* child) {
-  if (child == view())
+  if (child == view()) {
     child->SizeToPreferredSize();
+    Layout();
+    if (expanded_) {
+      LayoutHandle();
+      placeholder_view_->SetWidth(child->width());
+      shelf_->Layout();
+    }
+  }
 }
 
-void ExtensionShelf::Toolstrip::BubbleBrowserWindowMoved(BrowserBubble* bubble)
-{
+void ExtensionShelf::Toolstrip::BubbleBrowserWindowMoved(
+    BrowserBubble* bubble) {
   HideShelfHandle(0);
 }
 
-void ExtensionShelf::Toolstrip::BubbleBrowserWindowClosed(BrowserBubble* bubble)
-{
-  HideShelfHandle(0);
+void ExtensionShelf::Toolstrip::BubbleBrowserWindowClosing(
+    BrowserBubble* bubble) {
+  DoHideShelfHandle();
 }
 
 void ExtensionShelf::Toolstrip::DetachFromShelf(bool browserDetach) {
@@ -429,12 +459,13 @@ void ExtensionShelf::Toolstrip::DoShowShelfHandle() {
 }
 
 void ExtensionShelf::Toolstrip::DoHideShelfHandle() {
-  if (!handle_visible() || dragging_ || expanded_)
+  if (!handle_visible())
     return;
   handle_->Hide();
   if (handle_->attached())
     handle_->DetachFromBrowser();
   handle_.reset(NULL);
+  shelf_->Layout();
 }
 
 void ExtensionShelf::Toolstrip::StopHandleTimer() {
@@ -526,8 +557,7 @@ void ExtensionShelf::ChildPreferredSizeChanged(View* child) {
   Toolstrip *toolstrip = ToolstripForView(static_cast<ExtensionView*>(child));
   if (!toolstrip)
     return;
-  if (!toolstrip->handle_visible())
-    Layout();
+  Layout();
 }
 
 void ExtensionShelf::Layout() {
@@ -586,8 +616,10 @@ void ExtensionShelf::SetAccessibleName(const std::wstring& name) {
   accessible_name_.assign(name);
 }
 
-void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host, int index) {
-  model_->SetToolstripDataAt(index, new Toolstrip(this, host));
+void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host,
+                                         int index) {
+  model_->SetToolstripDataAt(index,
+      new Toolstrip(this, host, model_->ToolstripInfoAt(index)));
 
   bool had_views = GetChildViewCount() > 0;
   ExtensionView* view = host->view();

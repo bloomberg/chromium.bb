@@ -25,6 +25,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/render_messages.h"
 
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -139,6 +140,11 @@ void ExtensionHost::CreateRenderView(RenderWidgetHostView* host_view) {
       Details<ExtensionHost>(this));
 }
 
+void ExtensionHost::NavigateToURL(const GURL& url) {
+  url_ = url;
+  render_view_host_->NavigateToURL(url_);
+}
+
 void ExtensionHost::RecoverCrashedExtension() {
   DCHECK(!IsRenderViewLive());
 #if defined(TOOLKIT_VIEWS)
@@ -177,13 +183,41 @@ void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
       Details<ExtensionHost>(this));
 }
 
+void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
+    const ViewHostMsg_FrameNavigate_Params& params) {
+  // We only care when the outer frame changes.
+  switch (params.transition) {
+    case PageTransition::AUTO_SUBFRAME:
+    case PageTransition::MANUAL_SUBFRAME:
+      return;
+  }
+
+  url_ = params.url;
+  extension_function_dispatcher_.reset(
+      new ExtensionFunctionDispatcher(render_view_host_, this, url_));
+}
+
 void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
-  // TODO(aa): This is toolstrip-specific and should probably not be here.
-  // ExtensionToolstrip in bookmark_bar_view.cc?
-  static const StringPiece toolstrip_css(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_EXTENSIONS_TOOLSTRIP_CSS));
-  render_view_host->InsertCSSInWebFrame(L"", toolstrip_css.as_string());
+#if defined(TOOLKIT_VIEWS)
+  ExtensionView* view = view_.get();
+  if (view) {
+    // TODO(erikkay) this injection should really happen in the renderer.
+    // When the Jerry's view type change lands, investigate moving this there.
+
+    // As a toolstrip, inject our toolstrip CSS to make it easier for toolstrips
+    // to blend in with the chrome UI.
+    if (view->is_toolstrip()) {
+      static const StringPiece toolstrip_css(
+          ResourceBundle::GetSharedInstance().GetRawDataResource(
+              IDR_EXTENSIONS_TOOLSTRIP_CSS));
+      render_view_host->InsertCSSInWebFrame(L"", toolstrip_css.as_string());
+    } else {
+      // No CSS injecting currently, but call SetDidInsertCSS to tell the view
+      // that it's OK to display.
+      view->SetDidInsertCSS(true);
+    }
+  }
+#endif
 
   did_stop_loading_ = true;
 }
@@ -222,11 +256,6 @@ void ExtensionHost::DidInsertCSS() {
 }
 
 RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
-  // TODO(erikkay) this is unfortunate.  The interface declares that this method
-  // must be const (no good reason for it as far as I can tell) which means you
-  // can't return self without doing this const_cast.  Either we need to change
-  // the interface, or we need to split out the view delegate into another
-  // object (which is how TabContents works).
   return this;
 }
 
@@ -253,7 +282,6 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
     DCHECK(browser);
     if (!browser)
       return;
-    // TODO(erikkay) is it safe to pass in NULL as source?
     browser->AddTabContents(contents, disposition, initial_pos,
                             user_gesture);
   }
@@ -324,6 +352,4 @@ Browser* ExtensionHost::GetBrowser() {
 }
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
-  extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(render_view_host_, this, url_));
 }

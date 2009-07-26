@@ -7,7 +7,11 @@
     "128": "icon_128.png"
   },
   "toolstrips": [
-    "toolstrip1.html",
+    {
+      "path": "toolstrip1.html",
+      "mole": "lorem_ipsum.html",
+      "mole_height": 200
+    },
     "toolstrip2.html"
   ],
   "permissions": ["http://*.google.com/*", "https://*.google.com/*"],

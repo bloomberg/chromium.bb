@@ -61,6 +61,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   // NULL).
   void CreateRenderView(RenderWidgetHostView* host_view);
 
+  // Sets |url_| and navigates |render_view_host_|.
+  void NavigateToURL(const GURL& url);
+
   // Restarts extension's renderer process. Can be called only if the renderer
   // process crashed.
   void RecoverCrashedExtension();
@@ -70,6 +73,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual const GURL& GetURL() const { return url_; }
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewGone(RenderViewHost* render_view_host);
+  virtual void DidNavigate(RenderViewHost* render_view_host,
+                           const ViewHostMsg_FrameNavigate_Params& params);
   virtual void DidStopLoading(RenderViewHost* render_view_host);
   virtual WebPreferences GetWebkitPrefs();
   virtual void ProcessDOMUIMessage(const std::string& message,

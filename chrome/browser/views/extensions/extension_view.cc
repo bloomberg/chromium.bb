@@ -15,7 +15,7 @@
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
     : host_(host), browser_(browser),
       initialized_(false), pending_preferred_width_(0), container_(NULL),
-      did_insert_css_(false), is_clipped_(false) {
+      did_insert_css_(false), is_clipped_(false), is_toolstrip_(true) {
   host_->set_view(this);
 }
 
@@ -127,10 +127,13 @@ void ExtensionView::SetBackground(const SkBitmap& background) {
 void ExtensionView::DidContentsPreferredWidthChange(const int pref_width) {
   // Don't actually do anything with this information until we have been shown.
   // Size changes will not be honored by lower layers while we are hidden.
+  gfx::Size preferred_size = GetPreferredSize();
   if (!IsVisible()) {
     pending_preferred_width_ = pref_width;
-  } else if (pref_width > 0 && pref_width != GetPreferredSize().width()) {
-    SetPreferredSize(gfx::Size(pref_width, height()));
+  } else if (pref_width > 0 && pref_width != preferred_size.width()) {
+    if (preferred_size.height() == 0)
+      preferred_size.set_height(height());
+    SetPreferredSize(gfx::Size(pref_width, preferred_size.height()));
   }
 }
 

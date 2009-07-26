@@ -602,12 +602,11 @@ void BrowserView::SetBounds(const gfx::Rect& bounds) {
 }
 
 void BrowserView::Close() {
-  frame_->GetWindow()->Close();
-
   BubbleSet::iterator bubble = browser_bubbles_.begin();
-  for (; bubble != browser_bubbles_.end(); ++bubble) {
-    (*bubble)->BrowserWindowClosed();
-  }
+  for (; bubble != browser_bubbles_.end(); ++bubble)
+    (*bubble)->BrowserWindowClosing();
+
+  frame_->GetWindow()->Close();
 }
 
 void BrowserView::Activate() {

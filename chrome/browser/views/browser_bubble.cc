@@ -62,11 +62,13 @@ void BrowserBubble::BrowserWindowMoved() {
     delegate_->BubbleBrowserWindowMoved(this);
   else
     Hide();
+  if (visible_)
+    Reposition();
 }
 
-void BrowserBubble::BrowserWindowClosed() {
+void BrowserBubble::BrowserWindowClosing() {
   if (delegate_)
-    delegate_->BubbleBrowserWindowClosed(this);
+    delegate_->BubbleBrowserWindowClosing(this);
   else
     Hide();
 }

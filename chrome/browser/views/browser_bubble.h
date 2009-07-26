@@ -20,7 +20,10 @@ class BrowserBubble {
    public:
     // Called when the Browser Window that this bubble is attached to moves.
     virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble) = 0;
-    virtual void BubbleBrowserWindowClosed(BrowserBubble* bubble) = 0;
+
+    // Called with the Browser Window that this bubble is attached to is
+    // about to close.
+    virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble) = 0;
   };
 
   // Note that the bubble will size itself to the preferred size of |view|.
@@ -48,7 +51,7 @@ class BrowserBubble {
   // Notifications from BrowserView.
   // With no delegate, both of these default to Hiding the bubble.
   virtual void BrowserWindowMoved();
-  virtual void BrowserWindowClosed();
+  virtual void BrowserWindowClosing();
 
   // Show or hide the bubble.
   void Show();

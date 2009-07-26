@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 
 #include "base/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/controls/native/native_view_host.h"
 
@@ -39,6 +38,8 @@ class ExtensionView : public views::NativeViewHost {
   RenderViewHost* render_view_host() const;
   void SetDidInsertCSS(bool did_insert);
   void set_is_clipped(bool is_clipped) { is_clipped_ = is_clipped; }
+  bool is_toolstrip() const { return is_toolstrip_; }
+  void set_is_toolstrip(bool is) { is_toolstrip_ = is; }
 
   // Notification from ExtensionHost.
   void DidContentsPreferredWidthChange(const int pref_width);
@@ -102,6 +103,9 @@ class ExtensionView : public views::NativeViewHost {
 
   // Whether this extension view is clipped.
   bool is_clipped_;
+
+  // Whether this view is currently displaying in toolstrip mode.
+  bool is_toolstrip_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionView);
 };

@@ -531,7 +531,8 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 
   Extension* extension = loaded_[0];
   const UserScriptList& scripts = extension->content_scripts();
-  const std::vector<std::string>& toolstrips = extension->toolstrips();
+  const std::vector<Extension::ToolstripInfo>& toolstrips =
+      extension->toolstrips();
   ASSERT_EQ(2u, scripts.size());
   EXPECT_EQ(3u, scripts[0].url_patterns().size());
   EXPECT_EQ("file://*",
@@ -561,8 +562,10 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ("http://*.google.com/*", permissions[0].GetAsString());
   EXPECT_EQ("https://*.google.com/*", permissions[1].GetAsString());
   ASSERT_EQ(2u, toolstrips.size());
-  EXPECT_EQ("toolstrip1.html", toolstrips[0]);
-  EXPECT_EQ("toolstrip2.html", toolstrips[1]);
+  EXPECT_EQ(extension->GetResourceURL("toolstrip1.html"),
+            toolstrips[0].toolstrip);
+  EXPECT_EQ(extension->GetResourceURL("toolstrip2.html"),
+            toolstrips[1].toolstrip);
 
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());

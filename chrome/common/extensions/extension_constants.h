@@ -30,6 +30,8 @@ namespace extension_manifest_keys {
   extern const wchar_t* kThemeColors;
   extern const wchar_t* kThemeTints;
   extern const wchar_t* kThemeDisplayProperties;
+  extern const wchar_t* kToolstripMoleHeight;
+  extern const wchar_t* kToolstripMolePath;
   extern const wchar_t* kToolstripPath;
   extern const wchar_t* kToolstrips;
   extern const wchar_t* kType;

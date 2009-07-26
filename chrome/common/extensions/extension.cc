@@ -751,8 +751,42 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
-      std::string toolstrip;
-      if (!list_value->GetString(i, &toolstrip)) {
+      ToolstripInfo toolstrip;
+      DictionaryValue* toolstrip_value;
+      std::string toolstrip_path;
+      if (list_value->GetString(i, &toolstrip_path)) {
+        // Support a simple URL value for backwards compatibility.
+        // TODO(erikkay) Perhaps deprecate this in the future.
+        toolstrip.toolstrip = GetResourceURL(toolstrip_path);
+      } else if (list_value->GetDictionary(i, &toolstrip_value)) {
+        if (!toolstrip_value->GetString(keys::kToolstripPath,
+                                        &toolstrip_path)) {
+          *error = ExtensionErrorUtils::FormatErrorMessage(
+              errors::kInvalidToolstrip, IntToString(i));
+          return false;
+        }
+        toolstrip.toolstrip = GetResourceURL(toolstrip_path);
+        if (toolstrip_value->HasKey(keys::kToolstripMolePath)) {
+          std::string mole_path;
+          if (!toolstrip_value->GetString(keys::kToolstripMolePath,
+                                          &mole_path)) {
+            *error = ExtensionErrorUtils::FormatErrorMessage(
+                errors::kInvalidToolstrip, IntToString(i));
+            return false;
+          }
+          // TODO(erikkay) is there a better way to get this dynamically
+          // from the content itself?
+          int height;
+          if (!toolstrip_value->GetInteger(keys::kToolstripMoleHeight,
+                                           &height) || (height < 0)) {
+            *error = ExtensionErrorUtils::FormatErrorMessage(
+                errors::kInvalidToolstrip, IntToString(i));
+            return false;
+          }
+          toolstrip.mole = GetResourceURL(mole_path);
+          toolstrip.mole_height = height;
+        }
+      } else {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidToolstrip, IntToString(i));
         return false;

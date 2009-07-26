@@ -42,7 +42,9 @@ ExtensionShelfModel::~ExtensionShelfModel() {
   while (observers_.size())
     observers_.RemoveObserver(observers_.GetElementAt(0));
 
-  STLDeleteContainerPairFirstPointers(toolstrips_.begin(), toolstrips_.end());
+  ExtensionToolstrips::iterator t;
+  for (t = toolstrips_.begin(); t != toolstrips_.end(); ++t)
+    delete t->host;
   toolstrips_.clear();
 }
 
@@ -55,27 +57,25 @@ void ExtensionShelfModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void ExtensionShelfModel::AppendToolstrip(ExtensionHost* toolstrip) {
-  InsertToolstripAt(count(), toolstrip, NULL);
+void ExtensionShelfModel::AppendToolstrip(const ToolstripItem& toolstrip) {
+  InsertToolstripAt(count(), toolstrip);
 }
 
 void ExtensionShelfModel::InsertToolstripAt(int index,
-                                            ExtensionHost* toolstrip,
-                                            void* data) {
-  toolstrips_.insert(toolstrips_.begin() + index,
-                     ToolstripItem(toolstrip, data));
+                                            const ToolstripItem& toolstrip) {
+  toolstrips_.insert(toolstrips_.begin() + index, toolstrip);
   if (ready_) {
     FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
-                      ToolstripInsertedAt(toolstrip, index));
+                      ToolstripInsertedAt(toolstrip.host, index));
   }
 }
 
 void ExtensionShelfModel::RemoveToolstripAt(int index) {
-  ExtensionHost* toolstrip = ToolstripAt(index);
+  ExtensionHost* host = ToolstripAt(index);
   FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
-                    ToolstripRemovingAt(toolstrip, index));
+                    ToolstripRemovingAt(host, index));
   toolstrips_.erase(toolstrips_.begin() + index);
-  delete toolstrip;
+  delete host;
 }
 
 void ExtensionShelfModel::MoveToolstripAt(int index, int to_index) {
@@ -89,7 +89,7 @@ void ExtensionShelfModel::MoveToolstripAt(int index, int to_index) {
   toolstrips_.insert(toolstrips_.begin() + to_index, toolstrip);
 
   FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
-                    ToolstripMoved(toolstrip.first, index, to_index));
+                    ToolstripMoved(toolstrip.host, index, to_index));
 
   UpdatePrefs();
 }
@@ -97,7 +97,7 @@ void ExtensionShelfModel::MoveToolstripAt(int index, int to_index) {
 int ExtensionShelfModel::IndexOfToolstrip(ExtensionHost* toolstrip) {
   ExtensionToolstrips::iterator i;
   for (i = toolstrips_.begin(); i != toolstrips_.end(); ++i) {
-    if (i->first == toolstrip)
+    if (i->host == toolstrip)
       return i - toolstrips_.begin();
   }
   return -1;
@@ -105,17 +105,22 @@ int ExtensionShelfModel::IndexOfToolstrip(ExtensionHost* toolstrip) {
 
 ExtensionHost* ExtensionShelfModel::ToolstripAt(int index) {
   DCHECK(index >= 0);
-  return toolstrips_[index].first;
+  return toolstrips_[index].host;
+}
+
+Extension::ToolstripInfo& ExtensionShelfModel::ToolstripInfoAt(int index) {
+  DCHECK(index >= 0);
+  return toolstrips_[index].info;
 }
 
 void* ExtensionShelfModel::ToolstripDataAt(int index) {
   DCHECK(index >= 0);
-  return toolstrips_[index].second;
+  return toolstrips_[index].data;
 }
 
 void ExtensionShelfModel::SetToolstripDataAt(int index, void* data) {
   DCHECK(index >= 0);
-  toolstrips_[index].second = data;
+  toolstrips_[index].data = data;
 }
 
 void ExtensionShelfModel::Observe(NotificationType type,
@@ -154,12 +159,15 @@ void ExtensionShelfModel::AddExtension(Extension* extension) {
   if (!manager)
     return;
 
-  for (std::vector<std::string>::const_iterator toolstrip_path =
+  for (std::vector<Extension::ToolstripInfo>::const_iterator toolstrip =
        extension->toolstrips().begin();
-       toolstrip_path != extension->toolstrips().end(); ++toolstrip_path) {
-    GURL url = extension->GetResourceURL(*toolstrip_path);
-    ExtensionHost* host = manager->CreateView(extension, url, browser_);
-    AppendToolstrip(host);
+       toolstrip != extension->toolstrips().end(); ++toolstrip) {
+    GURL url = toolstrip->toolstrip;
+    ToolstripItem item;
+    item.host = manager->CreateView(extension, url, browser_);
+    item.info = *toolstrip;
+    item.data = NULL;
+    AppendToolstrip(item);
   }
 }
 
@@ -215,7 +223,7 @@ void ExtensionShelfModel::SortToolstrips() {
     GURL& url = urls[i];
     for (ExtensionToolstrips::iterator toolstrip = copy.begin();
         toolstrip != copy.end(); ++toolstrip) {
-      if (url == (*toolstrip).first->GetURL()) {
+      if (url == toolstrip->host->GetURL()) {
         // Note that it's technically possible for the same URL to appear in
         // multiple toolstrips, so we don't do any testing for uniqueness.
         toolstrips_.push_back(*toolstrip);

@@ -593,11 +593,11 @@ class NotificationType {
     EXTENSION_UNLOADED,
 
     // Sent after a new ExtensionHost is created. The details are
-    // an ExtensionHost*.
+    // an ExtensionHost* and the source is an ExtensionProcessManager*.
     EXTENSION_HOST_CREATED,
 
     // Sent before an ExtensionHost is destroyed. The details are
-    // an ExtensionHost*.
+    // an ExtensionHost* and the source is a Profile*.
     EXTENSION_HOST_DESTROYED,
 
     // Sent after an extension render process is created and fully functional.
