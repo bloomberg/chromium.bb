@@ -18,9 +18,6 @@ libdrm_nouveau_la_SOURCES = \
 			    nouveau_notifier.c \
 			    nouveau_bo.c \
 			    nouveau_resource.c \
-			    nouveau_dma.c \
-			    nouveau_fence.c \
-			    nouveau_dma.h \
 			    nouveau_private.h
 
 libdrm_nouveaucommonincludedir = ${includedir}/nouveau

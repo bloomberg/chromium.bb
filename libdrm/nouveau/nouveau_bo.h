@@ -72,10 +72,6 @@ nouveau_bo_user(struct nouveau_device *, void *ptr, int size,
 		struct nouveau_bo **);
 
 int
-nouveau_bo_fake(struct nouveau_device *dev, uint64_t offset, uint32_t flags,
-		uint32_t size, void *map, struct nouveau_bo **);
-
-int
 nouveau_bo_wrap(struct nouveau_device *, uint32_t handle, struct nouveau_bo **);
 
 int
@@ -106,10 +102,6 @@ nouveau_bo_pin(struct nouveau_bo *, uint32_t flags);
 
 void
 nouveau_bo_unpin(struct nouveau_bo *);
-
-int
-nouveau_bo_tile(struct nouveau_bo *, uint32_t flags, uint32_t delta,
-		uint32_t size);
 
 int
 nouveau_bo_busy(struct nouveau_bo *, uint32_t access);

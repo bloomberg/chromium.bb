@@ -91,28 +91,6 @@ nouveau_bo_ufree(struct nouveau_bo_priv *nvbo)
 }
 
 static void
-nouveau_bo_kfree_nomm(struct nouveau_bo_priv *nvbo)
-{
-	struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
-	struct drm_nouveau_mem_free req;
-
-	if (nvbo->map) {
-		drmUnmap(nvbo->map, nvbo->size);
-		nvbo->map = NULL;
-	}
-
-	req.offset = nvbo->offset;
-	if (nvbo->domain & NOUVEAU_BO_GART)
-		req.flags = NOUVEAU_MEM_AGP | NOUVEAU_MEM_PCI;
-	else
-	if (nvbo->domain & NOUVEAU_BO_VRAM)
-		req.flags = NOUVEAU_MEM_FB;
-	drmCommandWrite(nvdev->fd, DRM_NOUVEAU_MEM_FREE, &req, sizeof(req));
-
-	nvbo->handle = 0;
-}
-
-static void
 nouveau_bo_kfree(struct nouveau_bo_priv *nvbo)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
@@ -120,11 +98,6 @@ nouveau_bo_kfree(struct nouveau_bo_priv *nvbo)
 
 	if (!nvbo->handle)
 		return;
-
-	if (!nvdev->mm_enabled) {
-		nouveau_bo_kfree_nomm(nvbo);
-		return;
-	}
 
 	if (nvbo->map) {
 		munmap(nvbo->map, nvbo->size);
@@ -137,51 +110,6 @@ nouveau_bo_kfree(struct nouveau_bo_priv *nvbo)
 }
 
 static int
-nouveau_bo_kalloc_nomm(struct nouveau_bo_priv *nvbo)
-{
-	struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
-	struct drm_nouveau_mem_alloc req;
-	int ret;
-
-	if (nvbo->handle)
-		return 0;
-
-	if (!(nvbo->flags & (NOUVEAU_BO_VRAM|NOUVEAU_BO_GART)))
-		nvbo->flags |= (NOUVEAU_BO_GART | NOUVEAU_BO_VRAM);
-
-	req.size = nvbo->size;
-	req.alignment = nvbo->align;
-	req.flags = 0;
-	if (nvbo->flags & NOUVEAU_BO_VRAM)
-		req.flags |= NOUVEAU_MEM_FB;
-	if (nvbo->flags & NOUVEAU_BO_GART)
-		req.flags |= (NOUVEAU_MEM_AGP | NOUVEAU_MEM_PCI);
-	if (nvbo->flags & NOUVEAU_BO_TILED) {
-		req.flags |= NOUVEAU_MEM_TILE;
-		if (nvbo->flags & NOUVEAU_BO_ZTILE)
-			req.flags |= NOUVEAU_MEM_TILE_ZETA;
-	}
-	req.flags |= NOUVEAU_MEM_MAPPED;
-
-	ret = drmCommandWriteRead(nvdev->fd, DRM_NOUVEAU_MEM_ALLOC,
-				  &req, sizeof(req));
-	if (ret)
-		return ret;
-
-	nvbo->handle =
-	nvbo->map_handle = req.map_handle;
-	nvbo->size = req.size;
-	nvbo->offset = req.offset;
-	if (req.flags & (NOUVEAU_MEM_AGP | NOUVEAU_MEM_PCI))
-		nvbo->domain = NOUVEAU_BO_GART;
-	else
-	if (req.flags & NOUVEAU_MEM_FB)
-		nvbo->domain = NOUVEAU_BO_VRAM;
-
-	return 0;
-}
-
-static int
 nouveau_bo_kalloc(struct nouveau_bo_priv *nvbo, struct nouveau_channel *chan)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
@@ -191,9 +119,6 @@ nouveau_bo_kalloc(struct nouveau_bo_priv *nvbo, struct nouveau_channel *chan)
 
 	if (nvbo->handle || (nvbo->flags & NOUVEAU_BO_PIN))
 		return 0;
-
-	if (!nvdev->mm_enabled)
-		return nouveau_bo_kalloc_nomm(nvbo);
 
 	req.channel_hint = chan ? chan->id : 0;
 	req.align = nvbo->align;
@@ -227,21 +152,6 @@ nouveau_bo_kalloc(struct nouveau_bo_priv *nvbo, struct nouveau_channel *chan)
 }
 
 static int
-nouveau_bo_kmap_nomm(struct nouveau_bo_priv *nvbo)
-{
-	struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
-	int ret;
-
-	ret = drmMap(nvdev->fd, nvbo->handle, nvbo->size, &nvbo->map);
-	if (ret) {
-		nvbo->map = NULL;
-		return ret;
-	}
-
-	return 0;
-}
-
-static int
 nouveau_bo_kmap(struct nouveau_bo_priv *nvbo)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
@@ -251,9 +161,6 @@ nouveau_bo_kmap(struct nouveau_bo_priv *nvbo)
 
 	if (!nvbo->map_handle)
 		return -EINVAL;
-
-	if (!nvdev->mm_enabled)
-		return nouveau_bo_kmap_nomm(nvbo);
 
 	nvbo->map = mmap(0, nvbo->size, PROT_READ | PROT_WRITE,
 			 MAP_SHARED, nvdev->fd, nvbo->map_handle);
@@ -339,28 +246,6 @@ nouveau_bo_user(struct nouveau_device *dev, void *ptr, int size,
 }
 
 int
-nouveau_bo_fake(struct nouveau_device *dev, uint64_t offset, uint32_t flags,
-		uint32_t size, void *map, struct nouveau_bo **bo)
-{
-	struct nouveau_bo_priv *nvbo;
-	int ret;
-
-	ret = nouveau_bo_new(dev, flags & ~NOUVEAU_BO_PIN, 0, size, bo);
-	if (ret)
-		return ret;
-	nvbo = nouveau_bo(*bo);
-
-	nvbo->flags = flags | NOUVEAU_BO_PIN;
-	nvbo->domain = (flags & (NOUVEAU_BO_VRAM|NOUVEAU_BO_GART));
-	nvbo->offset = offset;
-	nvbo->size = nvbo->base.size = size;
-	nvbo->map = map;
-	nvbo->base.flags = nvbo->flags;
-	nvbo->base.offset = nvbo->offset;
-	return 0;
-}
-
-int
 nouveau_bo_wrap(struct nouveau_device *dev, uint32_t handle,
 		struct nouveau_bo **bo)
 {
@@ -368,9 +253,6 @@ nouveau_bo_wrap(struct nouveau_device *dev, uint32_t handle,
 	struct drm_nouveau_gem_info req;
 	struct nouveau_bo_priv *nvbo;
 	int ret;
-
-	if (!nvdev->mm_enabled)
-		return -ENODEV;
 
 	ret = nouveau_bo_new(dev, 0, 0, 0, bo);
 	if (ret)
@@ -406,18 +288,14 @@ nouveau_bo_handle_get(struct nouveau_bo *bo, uint32_t *handle)
 		if (ret)
 			return ret;
 
-		if (nvdev->mm_enabled) {
-			req.handle = nvbo->handle;
-			ret = ioctl(nvdev->fd, DRM_IOCTL_GEM_FLINK, &req);
-			if (ret) {
-				nouveau_bo_kfree(nvbo);
-				return ret;
-			}
-	 
-			nvbo->global_handle = req.name;
-		} else {
-			nvbo->global_handle = nvbo->offset;
+		req.handle = nvbo->handle;
+		ret = ioctl(nvdev->fd, DRM_IOCTL_GEM_FLINK, &req);
+		if (ret) {
+			nouveau_bo_kfree(nvbo);
+			return ret;
 		}
+
+		nvbo->global_handle = req.name;
 	}
  
 	*handle = nvbo->global_handle;
@@ -433,49 +311,23 @@ nouveau_bo_handle_ref(struct nouveau_device *dev, uint32_t handle,
 	struct drm_gem_open req;
 	int ret;
 
-	if (!nvdev->mm_enabled) {
-		ret = nouveau_bo_new(dev, 0, 0, 0, bo);
-		if (ret)
-			return ret;
-		nvbo = nouveau_bo(*bo);
-
-		nvbo->handle = 0;
-		nvbo->offset =  handle;
-		nvbo->domain = NOUVEAU_BO_VRAM;
-		nvbo->flags = NOUVEAU_BO_VRAM | NOUVEAU_BO_PIN;
-		nvbo->base.offset = nvbo->offset;
-		nvbo->base.flags = nvbo->flags;
-	} else {
-		req.name = handle;
-		ret = ioctl(nvdev->fd, DRM_IOCTL_GEM_OPEN, &req);
-		if (ret) {
-			nouveau_bo_ref(NULL, bo);
-			return ret;
-		}
-
-		ret = nouveau_bo_wrap(dev, req.handle, bo);
-		if (ret) {
-			nouveau_bo_ref(NULL, bo);
-			return ret;
-		}
-
-		nvbo = nouveau_bo(*bo);
+	req.name = handle;
+	ret = ioctl(nvdev->fd, DRM_IOCTL_GEM_OPEN, &req);
+	if (ret) {
+		nouveau_bo_ref(NULL, bo);
+		return ret;
 	}
 
+	ret = nouveau_bo_wrap(dev, req.handle, bo);
+	if (ret) {
+		nouveau_bo_ref(NULL, bo);
+		return ret;
+	}
+
+	nvbo = nouveau_bo(*bo);
 	nvbo->base.handle = nvbo->handle;
 	return 0;
 } 
-
-static void
-nouveau_bo_del_cb(void *priv)
-{
-	struct nouveau_bo_priv *nvbo = priv;
-
-	nouveau_fence_ref(NULL, &nvbo->fence);
-	nouveau_fence_ref(NULL, &nvbo->wr_fence);
-	nouveau_bo_kfree(nvbo);
-	free(nvbo);
-}
 
 static void
 nouveau_bo_del(struct nouveau_bo **bo)
@@ -496,18 +348,8 @@ nouveau_bo_del(struct nouveau_bo **bo)
 	}
 
 	nouveau_bo_ufree(nvbo);
-
-	if (!nouveau_device(nvbo->base.device)->mm_enabled && nvbo->fence) {
-		nouveau_fence_flush(nvbo->fence->channel);
-		if (nouveau_fence(nvbo->fence)->signalled) {
-			nouveau_bo_del_cb(nvbo);
-		} else {
-			nouveau_fence_signal_cb(nvbo->fence,
-					        nouveau_bo_del_cb, nvbo);
-		}
-	} else {
-		nouveau_bo_del_cb(nvbo);
-	}
+	nouveau_bo_kfree(nvbo);
+	free(nvbo);
 }
 
 int
@@ -527,24 +369,7 @@ nouveau_bo_ref(struct nouveau_bo *ref, struct nouveau_bo **pbo)
 }
 
 static int
-nouveau_bo_wait_nomm(struct nouveau_bo *bo, int cpu_write)
-{
-	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
-	int ret = 0;
-
-	if (cpu_write)
-		ret = nouveau_fence_wait(&nvbo->fence);
-	else
-		ret = nouveau_fence_wait(&nvbo->wr_fence);
-	if (ret)
-		return ret;
-
-	nvbo->write_marker = 0;
-	return 0;
-}
-
-static int
-nouveau_bo_wait(struct nouveau_bo *bo, int cpu_write)
+nouveau_bo_wait(struct nouveau_bo *bo, int cpu_write, int no_wait, int no_block)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
@@ -560,10 +385,15 @@ nouveau_bo_wait(struct nouveau_bo *bo, int cpu_write)
 		nouveau_pushbuf_flush(nvbo->pending_channel, 0);
 	}
 
-	if (!nvdev->mm_enabled)
-		return nouveau_bo_wait_nomm(bo, cpu_write);
-
 	req.handle = nvbo->handle;
+	req.flags = 0;
+	if (cpu_write)
+		req.flags |= NOUVEAU_GEM_CPU_PREP_WRITE;
+	if (no_wait)
+		req.flags |= NOUVEAU_GEM_CPU_PREP_NOWAIT;
+	if (no_block)
+		req.flags |= NOUVEAU_GEM_CPU_PREP_NOBLOCK;
+
 	do {
 		ret = drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_CPU_PREP,
 				      &req, sizeof(req));
@@ -608,7 +438,8 @@ nouveau_bo_map_range(struct nouveau_bo *bo, uint32_t delta, uint32_t size,
 			return ret;
 
 		if (!(flags & NOUVEAU_BO_NOSYNC)) {
-			ret = nouveau_bo_wait(bo, (flags & NOUVEAU_BO_WR));
+			ret = nouveau_bo_wait(bo, (flags & NOUVEAU_BO_WR),
+					      (flags & NOUVEAU_BO_NOWAIT), 0);
 			if (ret)
 				return ret;
 		}
@@ -633,10 +464,9 @@ nouveau_bo_map(struct nouveau_bo *bo, uint32_t flags)
 void
 nouveau_bo_unmap(struct nouveau_bo *bo)
 {
-	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 
-	if (nvdev->mm_enabled && bo->map && !nvbo->sysmem) {
+	if (bo->map && !nvbo->sysmem) {
 		struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
 		struct drm_nouveau_gem_cpu_fini req;
 
@@ -649,95 +479,6 @@ nouveau_bo_unmap(struct nouveau_bo *bo)
 }
 
 int
-nouveau_bo_validate_nomm(struct nouveau_bo_priv *nvbo, uint32_t flags)
-{
-	struct nouveau_bo *new = NULL;
-	uint32_t t_handle, t_domain, t_offset, t_size, t_maph;
-	void *t_map;
-	int ret;
-
-	if ((flags & NOUVEAU_BO_VRAM) && nvbo->domain == NOUVEAU_BO_VRAM)
-		return 0;
-	if ((flags & NOUVEAU_BO_GART) && nvbo->domain == NOUVEAU_BO_GART)
-		return 0;
-	assert(flags & (NOUVEAU_BO_VRAM|NOUVEAU_BO_GART));
-
-	/* Keep tiling info */
-	flags |= (nvbo->flags & (NOUVEAU_BO_TILED|NOUVEAU_BO_ZTILE));
-
-	ret = nouveau_bo_new(nvbo->base.device, flags, 0, nvbo->size, &new);
-	if (ret)
-		return ret;
-
-	ret = nouveau_bo_kalloc(nouveau_bo(new), NULL);
-	if (ret) {
-		nouveau_bo_ref(NULL, &new);
-		return ret;
-	}
-
-	if (nvbo->handle || nvbo->sysmem) {
-	nouveau_bo_kmap(nouveau_bo(new));
-
-	if (!nvbo->base.map) {
-		nouveau_bo_map(&nvbo->base, NOUVEAU_BO_RD);
-		memcpy(nouveau_bo(new)->map, nvbo->base.map, nvbo->base.size);
-		nouveau_bo_unmap(&nvbo->base);
-	} else {
-		memcpy(nouveau_bo(new)->map, nvbo->base.map, nvbo->base.size);
-	}
-	}
-
-	t_handle = nvbo->handle;
-	t_maph = nvbo->map_handle;
-	t_domain = nvbo->domain;
-	t_offset = nvbo->offset;
-	t_size = nvbo->size;
-	t_map = nvbo->map;
-
-	nvbo->handle = nouveau_bo(new)->handle;
-	nvbo->map_handle = nouveau_bo(new)->map_handle;
-	nvbo->domain = nouveau_bo(new)->domain;
-	nvbo->offset = nouveau_bo(new)->offset;
-	nvbo->size = nouveau_bo(new)->size;
-	nvbo->map = nouveau_bo(new)->map;
-
-	nouveau_bo(new)->handle = t_handle;
-	nouveau_bo(new)->map_handle = t_maph;
-	nouveau_bo(new)->domain = t_domain;
-	nouveau_bo(new)->offset = t_offset;
-	nouveau_bo(new)->size = t_size;
-	nouveau_bo(new)->map = t_map;
-
-	nouveau_bo_ref(NULL, &new);
-
-	return 0;
-}
-
-static int
-nouveau_bo_pin_nomm(struct nouveau_bo *bo, uint32_t flags)
-{
-	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
-	int ret;
-
-	if (!nvbo->handle) {
-		if (!(flags & (NOUVEAU_BO_VRAM | NOUVEAU_BO_GART)))
-			return -EINVAL;
-
-		ret = nouveau_bo_validate_nomm(nvbo, flags & ~NOUVEAU_BO_PIN);
-		if (ret)
-			return ret;
-	}
-
-	nvbo->pinned = 1;
-
-	/* Fill in public nouveau_bo members */
-	bo->flags = nvbo->domain;
-	bo->offset = nvbo->offset;
-
-	return 0;
-}
-
-int
 nouveau_bo_pin(struct nouveau_bo *bo, uint32_t flags)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
@@ -747,9 +488,6 @@ nouveau_bo_pin(struct nouveau_bo *bo, uint32_t flags)
 
 	if (nvbo->pinned)
 		return 0;
-
-	if (!nvdev->mm_enabled)
-		return nouveau_bo_pin_nomm(bo, flags);
 
 	/* Ensure we have a kernel object... */
 	if (!nvbo->flags) {
@@ -801,80 +539,16 @@ nouveau_bo_unpin(struct nouveau_bo *bo)
 	if (!nvbo->pinned)
 		return;
 
-	if (nvdev->mm_enabled) {
-		req.handle = nvbo->handle;
-		drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_UNPIN,
-				&req, sizeof(req));
-	}
+	req.handle = nvbo->handle;
+	drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_UNPIN, &req, sizeof(req));
 
 	nvbo->pinned = bo->offset = bo->flags = 0;
 }
 
 int
-nouveau_bo_tile(struct nouveau_bo *bo, uint32_t flags, uint32_t delta,
-		uint32_t size)
-{
-	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
-	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
-	uint32_t kern_flags = 0;
-	int ret = 0;
-
-	if (flags & NOUVEAU_BO_TILED) {
-		kern_flags |= NOUVEAU_MEM_TILE;
-		if (flags & NOUVEAU_BO_ZTILE)
-			kern_flags |= NOUVEAU_MEM_TILE_ZETA;
-	}
-
-	if (nvdev->mm_enabled) {
-		struct drm_nouveau_gem_tile req;
-
-		req.handle = nvbo->handle;
-		req.delta = delta;
-		req.size = size;
-		req.flags = kern_flags;
-		ret = drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_TILE,
-				      &req, sizeof(req));
-	} else {
-		struct drm_nouveau_mem_tile req;
-
-		req.offset = nvbo->offset;
-		req.delta = delta;
-		req.size = size;
-		req.flags = kern_flags;
-
-		if (flags & NOUVEAU_BO_VRAM)
-			req.flags |= NOUVEAU_MEM_FB;
-		if (flags & NOUVEAU_BO_GART)
-			req.flags |= NOUVEAU_MEM_AGP;
-
-		ret = drmCommandWrite(nvdev->fd, DRM_NOUVEAU_MEM_TILE,
-				      &req, sizeof(req));
-	}
-
-	return 0;
-}
-
-int
 nouveau_bo_busy(struct nouveau_bo *bo, uint32_t access)
 {
-	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
-	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
-
-	if (!nvdev->mm_enabled) {
-		struct nouveau_fence *fence;
-
-		if (nvbo->pending && (nvbo->pending->write_domains ||
-				      (access & NOUVEAU_BO_WR)))
-			return 1;
-
-		if (access & NOUVEAU_BO_WR)
-			fence = nvbo->fence;
-		else
-			fence = nvbo->wr_fence;
-		return !nouveau_fence(fence)->signalled;
-	}
-
-	return 1;
+	return nouveau_bo_wait(bo, (access & NOUVEAU_BO_WR), 1, 1);
 }
 
 struct drm_nouveau_gem_pushbuf_bo *
@@ -909,7 +583,7 @@ nouveau_bo_emit_buffer(struct nouveau_channel *chan, struct nouveau_bo *bo)
 		}
 	}
 
-	if (nvpb->nr_buffers >= NOUVEAU_PUSHBUF_MAX_BUFFERS)
+	if (nvpb->nr_buffers >= NOUVEAU_GEM_MAX_BUFFERS)
 		return NULL;
 	pbbo = nvpb->buffers + nvpb->nr_buffers++;
 	nvbo->pending = pbbo;

@@ -74,8 +74,10 @@ nouveau_channel_alloc(struct nouveau_device *dev, uint32_t fb_ctxdma,
 		nvchan->base.subc[i].gr = &gr->base;
 	}
 
-	ret = drmMap(nvdev->fd, nvchan->drm.notifier, nvchan->drm.notifier_size,
-		     (drmAddressPtr)&nvchan->notifier_block);
+	ret = nouveau_bo_wrap(dev, nvchan->drm.notifier_handle,
+			      &nvchan->notifier_bo);
+	if (!ret)
+		ret = nouveau_bo_map(nvchan->notifier_bo, NOUVEAU_BO_RDWR);
 	if (ret) {
 		nouveau_channel_free((void *)&nvchan);
 		return ret;
@@ -88,48 +90,7 @@ nouveau_channel_alloc(struct nouveau_device *dev, uint32_t fb_ctxdma,
 		return ret;
 	}
 
-	if (!nvdev->mm_enabled) {
-		ret = drmMap(nvdev->fd, nvchan->drm.ctrl, nvchan->drm.ctrl_size,
-			     (void*)&nvchan->user);
-		if (ret) {
-			nouveau_channel_free((void *)&nvchan);
-			return ret;
-		}
-		nvchan->put     = &nvchan->user[0x40/4];
-		nvchan->get     = &nvchan->user[0x44/4];
-		nvchan->ref_cnt = &nvchan->user[0x48/4];
-
-		ret = drmMap(nvdev->fd, nvchan->drm.cmdbuf,
-			     nvchan->drm.cmdbuf_size, (void*)&nvchan->pushbuf);
-		if (ret) {
-			nouveau_channel_free((void *)&nvchan);
-			return ret;
-		}
-
-		nouveau_dma_channel_init(&nvchan->base);
-	}
-
 	nouveau_pushbuf_init(&nvchan->base);
-
-	if (!nvdev->mm_enabled && dev->chipset < 0x10) {
-		ret = nouveau_grobj_alloc(&nvchan->base, 0xbeef3904, 0x5039,
-					  &nvchan->fence_grobj);
-		if (ret) {
-			nouveau_channel_free((void *)&nvchan);
-			return ret;
-		}
-
-		ret = nouveau_notifier_alloc(&nvchan->base, 0xbeef3905, 1,
-					     &nvchan->fence_ntfy);
-		if (ret) {
-			nouveau_channel_free((void *)&nvchan);
-			return ret;
-		}
-
-		BEGIN_RING(&nvchan->base, nvchan->fence_grobj, 0x0180, 1);
-		OUT_RING  (&nvchan->base, nvchan->fence_ntfy->handle);
-		nvchan->fence_grobj->bound = NOUVEAU_GROBJ_BOUND_EXPLICIT;
-	}
 
 	*chan = &nvchan->base;
 	return 0;
@@ -147,28 +108,15 @@ nouveau_channel_free(struct nouveau_channel **chan)
 	nvchan = nouveau_channel(*chan);
 	*chan = NULL;
 	nvdev = nouveau_device(nvchan->base.device);
-	
+
 	FIRE_RING(&nvchan->base);
 
-	if (!nvdev->mm_enabled) {
-		struct nouveau_fence *fence = NULL;
-
-		/* Make sure all buffer objects on delayed delete queue
-		 * actually get freed.
-		 */
-		nouveau_fence_new(&nvchan->base, &fence);
-		nouveau_fence_emit(fence);
-		nouveau_fence_wait(&fence);
-	}
-
-	if (nvchan->notifier_block)
-		drmUnmap(nvchan->notifier_block, nvchan->drm.notifier_size);
+	nouveau_bo_unmap(nvchan->notifier_bo);
+	nouveau_bo_ref(NULL, &nvchan->notifier_bo);
 
 	nouveau_grobj_free(&nvchan->base.vram);
 	nouveau_grobj_free(&nvchan->base.gart);
 	nouveau_grobj_free(&nvchan->base.nullobj);
-	nouveau_grobj_free(&nvchan->fence_grobj);
-	nouveau_notifier_free(&nvchan->fence_ntfy);
 
 	cf.channel = nvchan->drm.channel;
 	drmCommandWrite(nvdev->fd, DRM_NOUVEAU_CHANNEL_FREE, &cf, sizeof(cf));

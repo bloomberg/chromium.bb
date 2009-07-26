@@ -35,8 +35,6 @@ struct nouveau_device_priv {
 	drm_context_t ctx;
 	drmLock *lock;
 	int needs_close;
-
-	int mm_enabled;
 };
 #define nouveau_device(n) ((struct nouveau_device_priv *)(n))
 

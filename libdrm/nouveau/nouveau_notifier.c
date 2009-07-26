@@ -48,7 +48,7 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 
 	nvnotify->drm.channel = chan->id;
 	nvnotify->drm.handle  = handle;
-	nvnotify->drm.count   = count;
+	nvnotify->drm.size    = (count * 32);
 	if ((ret = drmCommandWriteRead(nouveau_device(chan->device)->fd,
 				       DRM_NOUVEAU_NOTIFIEROBJ_ALLOC,
 				       &nvnotify->drm,
@@ -57,7 +57,7 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 		return ret;
 	}
 
-	nvnotify->map = (char *)nouveau_channel(chan)->notifier_block +
+	nvnotify->map = (char *)nouveau_channel(chan)->notifier_bo->map +
 				nvnotify->drm.offset;
 	*notifier = &nvnotify->base;
 	return 0;
