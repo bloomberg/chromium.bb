@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/extensions/theme_preview_infobar_delegate.h"
+#include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
