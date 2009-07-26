@@ -1652,8 +1652,6 @@
         'browser/views/extensions/extension_shelf.h',
         'browser/views/extensions/extension_view.cc',
         'browser/views/extensions/extension_view.h',
-        'browser/views/extensions/theme_preview_infobar_delegate.cc',
-        'browser/views/extensions/theme_preview_infobar_delegate.h',
         'browser/views/external_protocol_dialog.cc',
         'browser/views/external_protocol_dialog.h',
         'browser/views/find_bar_view.cc',
