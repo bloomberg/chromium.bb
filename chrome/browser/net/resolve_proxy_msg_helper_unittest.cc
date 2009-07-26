@@ -8,6 +8,7 @@
 #include "net/base/net_errors.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_resolver.h"
+#include "net/proxy/single_threaded_proxy_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This ProxyConfigService always returns "http://pac" as the PAC url to use.
@@ -22,20 +23,28 @@ class MockProxyConfigService: public net::ProxyConfigService {
 // This PAC resolver always returns the hostname of the query URL as the
 // proxy to use. The Block() method will make GetProxyForURL() hang until
 // Unblock() is called.
-class MockProxyResolver : public net::ProxyResolver {
+class SyncMockProxyResolver : public net::ProxyResolver {
  public:
-  MockProxyResolver() : ProxyResolver(true), event_(false, false),
-                        is_blocked_(false) {
+  SyncMockProxyResolver() : ProxyResolver(false /*expects_pac_bytes*/),
+                            event_(false, false),
+                            is_blocked_(false) {
   }
 
   virtual int GetProxyForURL(const GURL& query_url,
-                             const GURL& /*pac_url*/,
-                             net::ProxyInfo* results) {
+                             net::ProxyInfo* results,
+                             net::CompletionCallback* callback,
+                             RequestHandle* request) {
     if (is_blocked_)
       event_.Wait();
     results->UseNamedProxy(query_url.host());
     return net::OK;
   }
+
+  virtual void CancelRequest(RequestHandle request) {
+    NOTREACHED();
+  }
+
+  virtual void SetPacScriptByUrlInternal(const GURL& pac_url) {}
 
   void Block() {
     is_blocked_ = true;
@@ -50,6 +59,17 @@ class MockProxyResolver : public net::ProxyResolver {
  private:
   base::WaitableEvent event_;
   bool is_blocked_;
+};
+
+class MockProxyResolver : public net::SingleThreadedProxyResolver {
+ public:
+  MockProxyResolver()
+      : net::SingleThreadedProxyResolver(new SyncMockProxyResolver) {
+    x = reinterpret_cast<SyncMockProxyResolver*>(resolver());
+  }
+
+  // TODO(eroman): cleanup.
+  SyncMockProxyResolver* x;
 };
 
 // This struct holds the values that were passed to
@@ -271,7 +291,7 @@ TEST(ResolveProxyMsgHelperTest, QueueRequests) {
   scoped_ptr<IPC::Message> msg3(new IPC::Message());
 
   // Make the proxy resolver hang on the next request.
-  runner.proxy_resolver()->Block();
+  runner.proxy_resolver()->x->Block();
 
   // Start three requests. Since the proxy resolver is hung, the second two
   // will be pending.
@@ -285,7 +305,7 @@ TEST(ResolveProxyMsgHelperTest, QueueRequests) {
   result3->WaitUntilStarted();
 
   // Unblock the proxy service so requests 1-3 can complete.
-  runner.proxy_resolver()->Unblock();
+  runner.proxy_resolver()->x->Unblock();
 
   // Wait for all the requests to finish (they run in FIFO order).
   result3->WaitUntilDone();
@@ -320,7 +340,7 @@ TEST(ResolveProxyMsgHelperTest, CancelPendingRequests) {
   IPC::Message* msg3 = new IPC::Message();
 
   // Make the next request block.
-  runner.proxy_resolver()->Block();
+  runner.proxy_resolver()->x->Block();
 
   // Start three requests; since the first one blocked, the other two should
   // be pending.
@@ -338,7 +358,7 @@ TEST(ResolveProxyMsgHelperTest, CancelPendingRequests) {
   // Unblocking the proxy resolver means the three requests can complete --
   // however they should not try to notify the delegate since we have already
   // deleted the helper.
-  runner.proxy_resolver()->Unblock();
+  runner.proxy_resolver()->x->Unblock();
 
   // Check that none of the requests were sent to the delegate.
   EXPECT_FALSE(
