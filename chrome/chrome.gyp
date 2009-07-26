@@ -977,6 +977,8 @@
         'browser/extensions/external_registry_extension_provider_win.h',
         'browser/extensions/external_pref_extension_provider.cc',
         'browser/extensions/external_pref_extension_provider.h',
+        'browser/extensions/theme_preview_infobar_delegate.cc',
+        'browser/extensions/theme_preview_infobar_delegate.h',
         'browser/extensions/user_script_master.cc',
         'browser/extensions/user_script_master.h',
         'browser/external_protocol_handler.cc',

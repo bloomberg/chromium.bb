@@ -671,6 +671,9 @@ ProfileImpl::~ProfileImpl() {
 
   extension_message_service_->ProfileDestroyed();
 
+  if (extensions_service_)
+    extensions_service_->ProfileDestroyed();
+
   MarkAsCleanShutdown();
 }
 

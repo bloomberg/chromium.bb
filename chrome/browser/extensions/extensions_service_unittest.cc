@@ -342,15 +342,8 @@ class ExtensionsServiceTest
 
   void InstallExtension(const FilePath& path,
                         bool should_succeed) {
-    InstallExtension(path, should_succeed, GURL(), GURL());
-  }
-
-  void InstallExtension(const FilePath& path,
-                        bool should_succeed,
-                        const GURL& download_url,
-                        const GURL& referrer_url) {
     ASSERT_TRUE(file_util::PathExists(path));
-    service_->InstallExtension(path, download_url, referrer_url);
+    service_->InstallExtension(path);
     loop_.RunAllPending();
     std::vector<std::string> errors = GetErrors();
     if (should_succeed) {
@@ -803,34 +796,14 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
   ValidatePref(theme_crx, L"state", Extension::ENABLED);
   ValidatePref(theme_crx, L"location", Extension::INTERNAL);
 
-  // A theme when extensions are disabled. Themes cannot be installed when
-  // extensions are disabled...
+  // A theme when extensions are disabled. Themes can be installed, even when
+  // extensions are disabled.
   SetExtensionsEnabled(false);
   path = extensions_path.AppendASCII("theme2.crx");
-  InstallExtension(path, false);
-  ValidatePrefKeyCount(pref_count);
-
-  // ... unless they come from the gallery URL.
-  SetExtensionsEnabled(false);
-  path = extensions_path.AppendASCII("theme2.crx");
-  InstallExtension(path, true,
-    GURL(std::string(ExtensionsService::kGalleryDownloadURLPrefix) + "f.crx"),
-    GURL(std::string(ExtensionsService::kGalleryURLPrefix) + "foobar"));
+  InstallExtension(path, true);
   ValidatePrefKeyCount(++pref_count);
   ValidatePref(theme2_crx, L"state", Extension::ENABLED);
   ValidatePref(theme2_crx, L"location", Extension::INTERNAL);
-
-  // also test this fails if either of the URLs is not correct
-  path = extensions_path.AppendASCII("theme2.crx");
-  InstallExtension(path, false,
-    GURL(std::string(ExtensionsService::kGalleryDownloadURLPrefix) + "f.crx"),
-    GURL());
-  ValidatePrefKeyCount(pref_count);
-
-  path = extensions_path.AppendASCII("theme2.crx");
-  InstallExtension(path, false,
-    GURL(), GURL(std::string(ExtensionsService::kGalleryURLPrefix) + "foobar"));
-  ValidatePrefKeyCount(pref_count);
 
   // A theme with extension elements. Themes cannot have extension elements so
   // this test should fail.
