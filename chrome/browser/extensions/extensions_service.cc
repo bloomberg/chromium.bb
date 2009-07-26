@@ -28,7 +28,9 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
+#include "chrome/browser/views/extensions/theme_preview_infobar_delegate.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -85,6 +87,7 @@ const char* kSignatureVerificationFailed = "Signature verification failed";
 const char* kSignatureVerificationInitFailed =
     "Signature verification initialization failed. This is most likely "
     "caused by a public key in the wrong format (should encode algorithm).";
+
 }
 
 // static
@@ -249,7 +252,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
                                      MessageLoop* frontend_loop,
                                      MessageLoop* backend_loop,
                                      bool autoupdate_enabled)
-    : extension_prefs_(new ExtensionPrefs(prefs, install_directory)),
+    : profile_(profile),
+      extension_prefs_(new ExtensionPrefs(prefs, install_directory)),
       backend_loop_(backend_loop),
       install_directory_(install_directory),
       extensions_enabled_(false),
@@ -512,10 +516,14 @@ void ExtensionsService::OnExtensionInstalled(const FilePath& path,
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
   // to apply it.
   if (extension->IsTheme()) {
-    NotificationService::current()->Notify(
-        NotificationType::THEME_INSTALLED,
-        Source<ExtensionsService>(this),
-        Details<Extension>(extension));
+    if (ShowThemePreviewInfobar(extension)) {
+      NotificationService::current()->Notify(
+          NotificationType::THEME_INSTALLED,
+          Source<ExtensionsService>(this),
+          Details<Extension>(extension));
+    } else {
+      UninstallExtension(extension->id(), false);  // not an external uninstall
+    }
   } else {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_INSTALLED,
@@ -543,10 +551,14 @@ void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id,
   FireInstallCallback(path, NULL);
   Extension* extension = GetExtensionById(id);
   if (extension && extension->IsTheme()) {
-    NotificationService::current()->Notify(
-        NotificationType::THEME_INSTALLED,
-        Source<ExtensionsService>(this),
-        Details<Extension>(extension));
+    if (ShowThemePreviewInfobar(extension)) {
+      NotificationService::current()->Notify(
+          NotificationType::THEME_INSTALLED,
+          Source<ExtensionsService>(this),
+          Details<Extension>(extension));
+    } else {
+      UninstallExtension(extension->id(), false);  // not an external uninstall
+    }
   }
 }
 
@@ -575,6 +587,23 @@ void ExtensionsService::SetProviderForTesting(
   backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
       &ExtensionsServiceBackend::SetProviderForTesting,
       location, test_provider));
+}
+
+bool ExtensionsService::ShowThemePreviewInfobar(Extension* extension) {
+  if (!profile_)
+    return false;
+
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (!browser)
+    return false;
+
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  if (!tab_contents)
+    return false;
+
+  tab_contents->AddInfoBar(new ThemePreviewInfobarDelegate(tab_contents,
+                                                           extension->name()));
+  return true;
 }
 
 // ExtensionsServicesBackend
@@ -1125,15 +1154,15 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
   Extension::Location location = Extension::INTERNAL;
   LookupExternalExtension(extension.id(), NULL, &location);
 
-  // We allow themes from our minigallery or externally-registered
-  // extensions to be installed, even without --enable-extensions.
   bool allow_install = false;
   if (extensions_enabled_)
     allow_install = true;
 
-  if (extension.IsTheme() && from_gallery)
+  // Always allow themes.
+  if (extension.IsTheme())
     allow_install = true;
 
+  // Always allow externally installed extensions (partners use this).
   if (Extension::IsExternalLocation(location))
     allow_install = true;
 
@@ -1146,12 +1175,12 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
   // TODO(extensions): Make better extensions UI. http://crbug.com/12116
 
   // We also skip the dialog for a few special cases:
-  // - themes from the gallery
+  // - themes (because we show the preview infobar for them)
   // - externally registered extensions
   // - during tests (!frontend->show_extension_prompts())
   // - autoupdate (silent).
   bool show_dialog = true;
-  if (extension.IsTheme() && from_gallery)
+  if (extension.IsTheme())
     show_dialog = false;
 
   if (Extension::IsExternalLocation(location))

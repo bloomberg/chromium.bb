@@ -208,6 +208,9 @@ class ExtensionsService
     return show_extensions_prompts_;
   }
 
+  // Profile calls this when it is destroyed so that we know not to call it.
+  void ProfileDestroyed() { profile_ = NULL; }
+
   ExtensionPrefs* extension_prefs() { return extension_prefs_.get(); }
 
   // Whether the extension service is ready.
@@ -238,6 +241,15 @@ class ExtensionsService
   // version of an existing extension.
   void OnExtensionOverinstallAttempted(const std::string& id,
                                        const FilePath& path);
+
+  // Show a confirm installation infobar on the currently active tab.
+  // TODO(aa): This should be moved up into the UI and attached to the tab it
+  // actually occured in. This requires some modularization of
+  // ExtensionsService.
+  bool ShowThemePreviewInfobar(Extension* extension);
+
+  // The profile this ExtensionsService is part of.
+  Profile* profile_;
 
   // Preferences for the owning profile.
   scoped_ptr<ExtensionPrefs> extension_prefs_;

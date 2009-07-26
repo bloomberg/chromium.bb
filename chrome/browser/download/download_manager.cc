@@ -1235,8 +1235,10 @@ void DownloadManager::OpenDownload(const DownloadItem* download,
 void DownloadManager::OpenChromeExtension(const FilePath& full_path,
                                           const GURL& download_url,
                                           const GURL& referrer_url) {
-  profile_->GetOriginalProfile()->GetExtensionsService()->
-      InstallExtension(full_path, download_url, referrer_url);
+  // We don't support extensions in OTR mode.
+  if (profile_->GetExtensionsService())
+    profile_->GetExtensionsService()->InstallExtension(full_path, download_url,
+                                                       referrer_url);
 }
 
 void DownloadManager::OpenDownloadInShell(const DownloadItem* download,

@@ -1946,7 +1946,18 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE" desc="Message displayed on the extension crashed infobar.">
         The following extension has crashed : <ph name="EXTENSION_NAME">$1<ex>Buildbot Monitor</ex></ph>
-	  </message>
+  	  </message>
+
+      <!-- Extension Crashed Info Bar-->
+      <message name="IDS_THEME_PREVIEW_INFOBAR_LABEL" desc="Text displayed on an infobar while previewing a theme.">
+        Previewing theme "<ph name="THEME_NAME">$1<ex>Snowflake Theme</ex></ph>"
+      </message>
+      <message name="IDS_THEME_PREVIEW_INFOBAR_OK_BUTTON" desc="Text displayed on the button to accept a theme preview.">
+        Keep this theme
+      </message>
+      <message name="IDS_THEME_PREVIEW_INFOBAR_CANCEL_BUTTON" desc="Text displayed on the button to reject a theme preview and go back to the default theme.">
+        Back to default
+      </message>
 
       <!-- Session Crashed Info Bar-->
       <message name="IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON" desc="Title of the restore button in the session crashed view.">

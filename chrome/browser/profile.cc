@@ -670,6 +670,7 @@ ProfileImpl::~ProfileImpl() {
   bookmark_bar_model_.reset();
 
   extension_message_service_->ProfileDestroyed();
+  extensions_service_->ProfileDestroyed();
 
   MarkAsCleanShutdown();
 }
