@@ -28,7 +28,7 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
-#include "chrome/browser/views/extensions/theme_preview_infobar_delegate.h"
+#include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/utility_process_host.h"
