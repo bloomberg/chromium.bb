@@ -557,6 +557,9 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   ASSERT_EQ(2u, toolstrips.size());
   EXPECT_EQ(extension->GetResourceURL("toolstrip1.html"),
             toolstrips[0].toolstrip);
+  EXPECT_EQ(extension->GetResourceURL("lorem_ipsum.html"),
+            toolstrips[0].mole);
+  EXPECT_EQ(200, toolstrips[0].mole_height);
   EXPECT_EQ(extension->GetResourceURL("toolstrip2.html"),
             toolstrips[1].toolstrip);
 
