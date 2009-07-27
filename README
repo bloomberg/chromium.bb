@@ -1,11 +1,34 @@
                               Fontconfig
              Font configuration and customization library
-                              Version 2.7
-                              2009-06-24
+                             Version 2.7.1
+                              2009-07-27
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.7.1
+
+Behdad Esfahbod (16):
+      git-tag -s again
+      Fix win32 build
+      Replace spaces with tabs in conf files
+      Remove unused ftglue code
+      Add Inconsolata to monospace config (#22710)
+      Fix leak with string VStack objects
+      Improve libtool version parsing (#22122)
+      Use GetSystemWindowsDirectory() instead of GetWindowsDirectory() (#22037)
+      Remove unused macros
+      Fix FcNameUnparseLangSet()
+      Fix doc syntax (#22902)
+      TT_MS_ID_UCS_4 is really UTF-16BE, not UTF-32
+      [doc] Add ~/fonts.conf.d to user docs
+      Hardcode /etc/fonts instead of @CONFDIR@ in docs (#22911)
+      Bump libtool versions that 2.7.0 (I forgot to do back then)
+      Update .gitignore
+
+Karl Tomlinson (1):
+      Don't change the order of names unnecessarily (#20128)
 
 2.7
 
