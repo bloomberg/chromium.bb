@@ -23,6 +23,7 @@ enum {
   kLeftButtonWithShadowType = -2,
   kStandardButtonType = 0,
   kRightButtonType = 1,
+  kMiddleButtonType = 2,
 };
 typedef NSInteger ButtonType;
 

@@ -166,6 +166,10 @@
   NSRect innerFrame = NSInsetRect(cellFrame, 2, 2);
   ButtonType type = [[(NSControl*)controlView cell] tag];
   switch (type) {
+    case kMiddleButtonType:
+      drawFrame.size.width += 20;
+      innerFrame.size.width += 2;
+      // Fallthrough
     case kRightButtonType:
       drawFrame.origin.x -= 20;
       innerFrame.origin.x -= 2;

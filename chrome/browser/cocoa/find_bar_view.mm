@@ -14,20 +14,37 @@
 
   NSPoint topLeft = NSMakePoint(NSMinX(rect), NSMaxY(rect));
   NSPoint topRight = NSMakePoint(NSMaxX(rect), NSMaxY(rect));
-  // Inset the bottom points by 1 so we draw the border entirely
-  // inside the frame.
-  NSPoint bottomLeft = NSMakePoint(NSMinX(rect) + curveSize, NSMinY(rect) + 1);
-  NSPoint bottomRight = NSMakePoint(NSMaxX(rect) - curveSize, NSMinY(rect) + 1);
+  NSPoint midLeft1 =
+      NSMakePoint(NSMinX(rect) + curveSize, NSMaxY(rect) - curveSize);
+  NSPoint midLeft2 =
+      NSMakePoint(NSMinX(rect) + curveSize, NSMinY(rect) + curveSize);
+  NSPoint midRight1 =
+      NSMakePoint(NSMaxX(rect) - curveSize, NSMinY(rect) + curveSize);
+  NSPoint midRight2 =
+      NSMakePoint(NSMaxX(rect) - curveSize, NSMaxY(rect) - curveSize);
+  NSPoint bottomLeft =
+      NSMakePoint(NSMinX(rect) + (2 * curveSize), NSMinY(rect));
+  NSPoint bottomRight =
+      NSMakePoint(NSMaxX(rect) - (2 * curveSize), NSMinY(rect));
 
   NSBezierPath *path = [NSBezierPath bezierPath];
   [path moveToPoint:topLeft];
+  [path curveToPoint:midLeft1
+        controlPoint1:NSMakePoint(midLeft1.x, topLeft.y)
+        controlPoint2:NSMakePoint(midLeft1.x, topLeft.y)];
+  [path lineToPoint:midLeft2];
   [path curveToPoint:bottomLeft
-        controlPoint1:NSMakePoint(topLeft.x + curveSize, topLeft.y)
-        controlPoint2:NSMakePoint(bottomLeft.x - curveSize, bottomLeft.y)];
+        controlPoint1:NSMakePoint(midLeft2.x, bottomLeft.y)
+        controlPoint2:NSMakePoint(midLeft2.x, bottomLeft.y)];
+
   [path lineToPoint:bottomRight];
+  [path curveToPoint:midRight1
+        controlPoint1:NSMakePoint(midRight1.x, bottomLeft.y)
+        controlPoint2:NSMakePoint(midRight1.x, bottomLeft.y)];
+  [path lineToPoint:midRight2];
   [path curveToPoint:topRight
-        controlPoint1:NSMakePoint(bottomRight.x + curveSize, bottomRight.y)
-        controlPoint2:NSMakePoint(topRight.x - curveSize, topRight.y)];
+        controlPoint1:NSMakePoint(midRight2.x, topLeft.y)
+        controlPoint2:NSMakePoint(midRight2.x, topLeft.y)];
 
   [NSGraphicsContext saveGraphicsState];
   [path addClip];

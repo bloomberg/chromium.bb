@@ -168,6 +168,18 @@
     // area.
     [resultsLabel_ setStringValue:@""];
   }
+
+  // Resize |resultsLabel_| to completely contain its string and right-justify
+  // it within |findText_|.  sizeToFit may shrink the frame vertically, which we
+  // don't want, so we save the original vertical positioning.
+  NSRect labelFrame = [resultsLabel_ frame];
+  [resultsLabel_ sizeToFit];
+  labelFrame.size.width = [resultsLabel_ frame].size.width;
+  labelFrame.origin.x = NSMaxX([findText_ frame]) - labelFrame.size.width;
+  [resultsLabel_ setFrame:labelFrame];
+
+  // TODO(rohitrao): If the search string is too long, then it will overlap with
+  // the results label.  Fix.
 }
 
 - (BOOL)isFindBarVisible {
