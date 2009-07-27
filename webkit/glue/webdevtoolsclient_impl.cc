@@ -9,6 +9,7 @@
 #include "Document.h"
 #include "DOMWindow.h"
 #include "Frame.h"
+#include "InspectorBackend.h"
 #include "InspectorController.h"
 #include "Node.h"
 #include "Page.h"
@@ -68,12 +69,9 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
 
     InspectorController* ic = frame_->frame()->page()->inspectorController();
     if (request.frame && request.frame->attached()) {
-      // There is a breaking change pending upstream. addSourceToFrame now
-      // lives in InspectorBackend. Following code should be replaced with:
-      // ic->inspectorBackend()->addSourceToFrame(request.mime_type,
-      //                                          content,
-      //                                          request.frame.get());
-      ic->addSourceToFrame(request.mime_type, content, request.frame.get());
+      ic->inspectorBackend()->addSourceToFrame(request.mime_type,
+                                               content,
+                                               request.frame.get());
     }
   }
 
@@ -168,16 +166,9 @@ WebDevToolsClientImpl::WebDevToolsClientImpl(
   dev_tools_host_->AddProtoFunction(
       "loaded",
       WebDevToolsClientImpl::JsLoaded);
-  // There is a breaking change pending upstream.
-  // v8InspectorControllerSearchCallback is now
-  // v8InspectorBackendSearchCallback.
-  // Following code should be replaced with:
-  // dev_tools_host_->AddProtoFunction(
-  //     "search",
-  //     WebCore::V8Custom::v8InspectorBackendSearchCallback);
   dev_tools_host_->AddProtoFunction(
       "search",
-      WebCore::V8Custom::v8InspectorControllerSearchCallback);
+      WebCore::V8Custom::v8InspectorBackendSearchCallback);
   dev_tools_host_->AddProtoFunction(
       "getPlatform",
       WebDevToolsClientImpl::JsGetPlatform);
@@ -285,11 +276,7 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsAddSourceToFrame(
 
   Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
   InspectorController* inspectorController = page->inspectorController();
-  // There is a breaking change pending upstream. Following code should be
-  // replaced with:
-  // return WebCore::v8Boolean(inspectorController->inspectorBackend()->
-  //    addSourceToFrame(mime_type, source_string, node));
-  return WebCore::v8Boolean(inspectorController->
+  return WebCore::v8Boolean(inspectorController->inspectorBackend()->
       addSourceToFrame(mime_type, source_string, node));
 }
 

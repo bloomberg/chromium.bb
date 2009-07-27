@@ -317,15 +317,10 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
   v8::HandleScope scope;
   v8::Context::Scope utility_scope(utility_context_);
   InspectorController* ic = web_view_impl_->page()->inspectorController();
-  // There is a breaking change pending upstream. INSPECTORCONTROLLER was
-  // replaced with INSPECTORBACKEND. Following code should be replaced with:
-  // utility_context_->Global()->Set(
-  //     v8::String::New("InspectorController"),
-  //     V8DOMWrapper::convertToV8Object(V8ClassIndex::INSPECTORBACKEND,
-  //                                     ic->inspectorBackend()));
   utility_context_->Global()->Set(
       v8::String::New("InspectorController"),
-      V8DOMWrapper::convertToV8Object(V8ClassIndex::INSPECTORCONTROLLER, ic));
+      V8DOMWrapper::convertToV8Object(V8ClassIndex::INSPECTORBACKEND,
+                                      ic->inspectorBackend()));
 }
 
 // static
