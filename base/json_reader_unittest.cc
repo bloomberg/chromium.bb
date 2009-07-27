@@ -72,30 +72,16 @@ TEST(JSONReaderTest, Reading) {
   root.reset(JSONReader().JsonToValue("2147483648", false, false));
   ASSERT_TRUE(root.get());
   double real_val;
-#ifdef ARCH_CPU_32_BITS
   ASSERT_TRUE(root->IsType(Value::TYPE_REAL));
   real_val = 0.0;
   ASSERT_TRUE(root->GetAsReal(&real_val));
   ASSERT_DOUBLE_EQ(2147483648.0, real_val);
-#else
-  ASSERT_TRUE(root->IsType(Value::TYPE_INTEGER));
-  int_val = 0;
-  ASSERT_TRUE(root->GetAsInteger(&int_val));
-  ASSERT_EQ(2147483648, int_val);
-#endif
   root.reset(JSONReader().JsonToValue("-2147483649", false, false));
   ASSERT_TRUE(root.get());
-#ifdef ARCH_CPU_32_BITS
   ASSERT_TRUE(root->IsType(Value::TYPE_REAL));
   real_val = 0.0;
   ASSERT_TRUE(root->GetAsReal(&real_val));
   ASSERT_DOUBLE_EQ(-2147483649.0, real_val);
-#else
-  ASSERT_TRUE(root->IsType(Value::TYPE_INTEGER));
-  int_val = 0;
-  ASSERT_TRUE(root->GetAsInteger(&int_val));
-  ASSERT_EQ(-2147483649, int_val);
-#endif
 
   // Parse a double
   root.reset(JSONReader().JsonToValue("43.1", false, false));
