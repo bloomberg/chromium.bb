@@ -68,6 +68,33 @@
 
 [
   /**
+   * chrome.self
+   */
+  {
+    namespace: "self",
+    types: [
+      {
+        id: "HTMLWindow",
+        type: "object"
+      }
+    ],
+    functions: [
+      {
+        name: "getViews",
+        type: "function",
+        description: "Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes toolstrips, background pages, and tabs.",
+        parameters: [],
+        returns: {
+          type: "array",
+          description: "Array of HTMLWindow objects",
+          items: { $ref: "HTMLWindow" }
+        }
+      },
+    ],
+    events: []
+  },
+  
+  /**
    * chrome.windows
    */
   {
@@ -191,19 +218,28 @@
   {
     namespace: "tabs",
     types: [
-    {
-      id: "Tab",
-      type: "object",
-      properties: {
-        id: {type: "integer", minimum: 0},
-        index: {type: "integer", minimum: 0},
-        windowId: {type: "integer", minimum: 0},
-        selected: {type: "boolean"},
-        url: {type: "string"},
-        title: {type: "string", optional: true},
-        favIconUrl: {type: "string", optional: true}
+      {
+        id: "Tab",
+        type: "object",
+        properties: {
+          id: {type: "integer", minimum: 0},
+          index: {type: "integer", minimum: 0},
+          windowId: {type: "integer", minimum: 0},
+          selected: {type: "boolean"},
+          url: {type: "string"},
+          title: {type: "string", optional: true},
+          favIconUrl: {type: "string", optional: true}
+        }
+      },
+      {
+        id: "Port",
+        type: "object",
+        properties: {
+          name: {type: "string"},
+          onDisconnect: {type: "object"},
+          onMessage: {type: "object"}
+        }
       }
-    }
     ],
     functions: [
       {
@@ -220,6 +256,19 @@
             ]
           }
         ]
+      },
+      {
+        name: "connect",
+        type: "function",
+        description: "",
+        parameters: [
+          {type: "integer", name: "tabId", optional: true, minimum: 0},
+          {type: "string", name: "name", optional: true}
+        ],
+        returns: {
+          name: "Port",
+          $ref: "Port"
+        }
       },
       {
         name: "getSelected",

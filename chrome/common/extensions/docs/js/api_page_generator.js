@@ -164,6 +164,13 @@ function preprocessApi(module, schema, types) {
     f.parameters.each(function(param) {
       addPropertyListIfObject(param);
     });
+    
+    // Setup return typeName & _propertyList, if any.
+    if (f.returns) {
+      linkTypeReference(f.returns, types);
+      f.returns.typeName = typeName(f.returns);
+      addPropertyListIfObject(f.returns);
+    }
   });
   
   module.events.each(function(e) {
@@ -209,11 +216,15 @@ function addPropertyListIfObject(object) {
 
 function linkTypeReferences(parameters, types) {
   parameters.each(function(p) {
-    if (p.$ref) {
-      extend(p, types[p.$ref]);
-    }
+    linkTypeReference(p, types);
   });
-} 
+}
+
+function linkTypeReference(schema, types) {
+  if (schema.$ref) {
+    extend(schema, types[schema.$ref]);
+  }
+}
 
 /**
  * Assigns a typeName(param) to each of the |parameters|.

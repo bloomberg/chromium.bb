@@ -113,7 +113,7 @@
             <a jsvalues=".name:'method-' + name"></a> <!-- method-anchor -->
             <h3 jscontent="name">method name</h3>
 
-            <div class="summary">void
+            <div class="summary"><span jsdisplay="returns" jscontent="returns.typeName">void</span>
                 <!-- Note: intentionally longer 80 columns -->
                 <span jscontent="fullName">chrome.module.methodName</span>(<span jsselect="parameters" jsvalues="class:optional ? 'optional' : ''"><span jsdisplay="$index">, </span><span jscontent="typeName"></span>
                     <var><span jscontent="name"></span></var></span>)</div>
@@ -132,6 +132,45 @@
                     <!-- Note: intentionally longer 80 columns -->
                     <var jscontent="name">paramName</var><em>
                         (<span class="optional" jsdisplay="optional">optional </span><span jscontent="typeName">paramType</span>)</em>
+                  </dt>
+                  <dd class="todo" jsdisplay="!$this.description">
+                    Undocumented.
+                  </dd>
+                  <dd jsdisplay="$this.description"
+                      jsvalues=".innerHTML:$this.description">
+                    Description of this parameter from the json schema.
+                  </dd>
+                  
+                  <!-- OBJECT PROPERTIES -->
+                  <dd jsdisplay="_propertyList">
+                    <dl>
+                      <div jsselect="_propertyList">
+                        <dt>
+                          <!-- Note: intentionally longer 80 columns -->
+                          <var jscontent="name">paramName</var><em>
+                              (<span class="optional" jsdisplay="optional">optional </span><span jscontent="typeName">paramType</span>)</em>
+                        </dt>
+                        <dd class="todo" jsdisplay="!$this.description">
+                          Undocumented.
+                        </dd>
+                        <dd jsdisplay="$this.description"
+                            jsvalues=".innerHTML:$this.description">
+                          Description of this parameter from the json schema.
+                        </dd>
+                      </div>
+                    </dl>
+                  </dd>
+                </div>
+              </dl>
+              
+              <!-- RETURNS -->
+              <h4 jsdisplay="returns">Returns</h4>
+              <dl>
+                <div jsselect="returns">
+                  <dt>
+                    <!-- Note: intentionally longer 80 columns -->
+                    <var jscontent="name">paramName</var>
+                    <em>(<span jscontent="typeName">paramType</span>)</em>
                   </dt>
                   <dd class="todo" jsdisplay="!$this.description">
                     Undocumented.

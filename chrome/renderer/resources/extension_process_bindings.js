@@ -80,19 +80,46 @@ var chrome = chrome || {};
     }
   };
 
+  function prepareRequest(args, argSchemas) {
+    var request = {};
+    var argCount = args.length;
+    
+    // Look for callback param.
+    if (argSchemas.length > 0 &&
+        args.length == argSchemas.length &&
+        argSchemas[argSchemas.length - 1].type == "function") {
+      request.callback = args[argSchemas.length - 1];
+      --argCount;
+    }
+    
+    // Calls with one argument expect singular argument. Calls with multiple
+    // expect a list.
+    if (argCount == 1)
+      request.args = args[0];
+    if (argCount > 1) {
+      request.args = [];
+      for (var k = 0; k < argCount; k++) {
+        request.args[k] = args[k];
+      }
+    }
+    
+    return request;
+  }
+
   // Send an API request and optionally register a callback.
-  function sendRequest(functionName, args, callback) {
+  function sendRequest(functionName, args, argSchemas) {
+    var request = prepareRequest(args, argSchemas);
     // JSON.stringify doesn't support a root object which is undefined.
-    if (args === undefined)
-      args = null;
-    var sargs = JSON.stringify(args);
+    if (request.args === undefined)
+      request.args = null;
+    var sargs = JSON.stringify(request.args);
     var requestId = GetNextRequestId();
     var hasCallback = false;
-    if (callback) {
+    if (request.callback) {
       hasCallback = true;
-      callbacks[requestId] = callback;
+      callbacks[requestId] = request.callback;
     }
-    StartRequest(functionName, sargs, requestId, hasCallback);
+    return StartRequest(functionName, sargs, requestId, hasCallback);
   }
   
   // Read api definitions and setup api functions in the chrome namespace.
@@ -102,6 +129,11 @@ var chrome = chrome || {};
   // TOOD(rafaelw): Consider providing some convenient override points
   //   for api functions that wish to insert themselves into the call. 
   var apiDefinitions = JSON.parse(GetExtensionAPIDefinition());
+  
+  // |apiFunctions| is a hash of name -> object that stores the 
+  // name & definition of the apiFunction. Custom handling of api functions
+  // is implemented by adding a "handleRequest" function to the object.
+  var apiFunctions = {};
 
   // Using forEach for convenience, and to bind |module|s & |apiDefs|s via
   // closures.
@@ -111,51 +143,43 @@ var chrome = chrome || {};
     }
   }
 
+  function bind(obj, func) {
+    return function() {
+      return func.apply(obj, arguments);
+    };
+  }
+
   forEach(apiDefinitions, function(apiDef) {
     var module = {};
     chrome[apiDef.namespace] = module;
     
     // Setup Functions.
-    forEach(apiDef.functions, function(functionDef) {
-      var paramSchemas = functionDef.parameters;
-      
-      module[functionDef.name] = function() {
-        validate(arguments, paramSchemas);
+    if (apiDef.functions) {
+      forEach(apiDef.functions, function(functionDef) {
+        var apiFunction = {};      
+        apiFunction.definition = functionDef;
+        apiFunction.name = apiDef.namespace + "." + functionDef.name;;
+        apiFunctions[apiFunction.name] = apiFunction;
         
-        var functionName = apiDef.namespace + "." + functionDef.name;
-        var args = null;
-        var callback = null;
-        var argCount = arguments.length;
-        
-        // Look for callback param.
-        if (paramSchemas.length > 0 &&
-            arguments.length == paramSchemas.length &&
-            paramSchemas[paramSchemas.length - 1].type == "function") {
-          callback = arguments[paramSchemas.length - 1];
-          --argCount;
-        }
-        
-        // Calls with one argument expect singular argument. Calls with multiple
-        // expect a list.
-        if (argCount == 1)
-          args = arguments[0];
-        if (argCount > 1) {
-          args = [];
-          for (var k = 0; k < argCount; k++) {
-            args[k] = arguments[k];
-          }
-        }
-        
-        // Make the request.
-        sendRequest(functionName, args, callback);        
-      }
-    });
+        module[functionDef.name] = bind(apiFunction, function() {
+          validate(arguments, this.definition.parameters);
+    
+          if (this.handleRequest)
+            return this.handleRequest.apply(this, arguments);
+          else 
+            return sendRequest(this.name, arguments,
+                this.definition.parameters);        
+        });
+      });
+    }
     
     // Setup Events
-    forEach(apiDef.events, function(eventDef) {
-      var eventName = apiDef.namespace + "." + eventDef.name;
-      module[eventDef.name] = new chrome.Event(eventName);
-    });
+    if (apiDef.events) {
+      forEach(apiDef.events, function(eventDef) {
+        var eventName = apiDef.namespace + "." + eventDef.name;
+        module[eventDef.name] = new chrome.Event(eventName);
+      });
+    }
   });
 
   // --- Setup additional api's not currently handled in common/extensions/api
@@ -172,16 +196,10 @@ var chrome = chrome || {};
   }
 
   // Tabs connect()
-  chrome.tabs.connect = function(tabId, opt_name) {
-    validate(arguments, arguments.callee.params);
+  apiFunctions["tabs.connect"].handleRequest = function(tabId, opt_name) {
     var portId = OpenChannelToTab(tabId, chrome.extension.id_, opt_name || "");
     return chromeHidden.Port.createPort(portId, opt_name);
-  };
-
-  chrome.tabs.connect.params = [
-    {type: "integer", optional: true, minimum: 0},
-    {type: "string", optional: true}
-  ];
+  }
 
   // chrome.self / chrome.extension.
   chrome.self = chrome.self || {};
@@ -194,8 +212,9 @@ var chrome = chrome || {};
 
     setupPageActionEvents(extensionId);
   });
-
-  chrome.self.getViews = function() {
+  
+  // Self getViews();
+  apiFunctions["self.getViews"].handleRequest = function() {
     return GetViews();
   }
 })();
