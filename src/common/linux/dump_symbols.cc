@@ -95,8 +95,6 @@ struct FuncInfo {
   uint32_t size;
   // Total size of stack parameters.
   uint32_t stack_param_size;
-  // Is there any lines included from other files?
-  bool has_sol;
   // Line information array.
   LineInfoList line_info;
 };
@@ -218,7 +216,6 @@ static int LoadLineInfo(struct nlist *list,
                         const struct SourceFileInfo &source_file_info,
                         struct FuncInfo *func_info) {
   struct nlist *cur_list = list;
-  func_info->has_sol = false;
   // Records which source file the following lines belongs. Default
   // to the file we are handling. This helps us handling inlined source.
   // When encountering N_SOL, we will change this to the source file
@@ -233,8 +230,6 @@ static int LoadLineInfo(struct nlist *list,
       // N_SOL means source lines following it will be from
       // another source file.
       if (cur_list->n_type == N_SOL) {
-        func_info->has_sol = true;
-
         if (cur_list->n_un.n_strx > 0 &&
             cur_list->n_un.n_strx != current_source_name_index) {
           // The following lines will be from this source file.
@@ -289,7 +284,6 @@ static int LoadFuncSymbols(struct nlist *list,
       func_info.rva_to_base = 0;
       func_info.size = 0;
       func_info.stack_param_size = 0;
-      func_info.has_sol = 0;
 
       // Stack parameter size.
       cur_list += LoadStackParamSize(cur_list, list_end, &func_info);
