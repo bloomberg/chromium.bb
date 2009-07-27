@@ -566,10 +566,8 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());
   EXPECT_EQ(std::string(""), loaded_[1]->description());
-  // TODO(erikkay): re-enable:
-  // http://code.google.com/p/chromium/issues/detail?id=15363.
-  // EXPECT_EQ(loaded_[1]->GetResourceURL("background.html"),
-  //          loaded_[1]->background_url());
+  EXPECT_EQ(loaded_[1]->GetResourceURL("background.html"),
+            loaded_[1]->background_url());
   EXPECT_EQ(0u, loaded_[1]->content_scripts().size());
   EXPECT_EQ(2u, loaded_[1]->plugins().size());
   EXPECT_EQ(loaded_[1]->path().AppendASCII("content_plugin.dll").value(),
