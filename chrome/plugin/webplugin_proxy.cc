@@ -540,7 +540,6 @@ void WebPluginProxy::UpdateTransform() {
 }
 #elif defined(OS_MACOSX)
 void WebPluginProxy::UpdateTransform() {
-  NOTIMPLEMENTED();
 }
 
 void WebPluginProxy::SetWindowlessBuffer(

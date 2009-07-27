@@ -258,14 +258,14 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   if (window_rect_ != window_rect) {
     window_rect_ = window_rect;
 
-    window_.clipRect.top = clip_rect_.y();
-    window_.clipRect.left = clip_rect_.x();
-    window_.clipRect.bottom = clip_rect_.y() + clip_rect_.height();
-    window_.clipRect.right = clip_rect_.x() + clip_rect_.width();
+    window_.clipRect.top = 0;
+    window_.clipRect.left = 0;
+    window_.clipRect.bottom = window_rect_.height();
+    window_.clipRect.right = window_rect_.width();
     window_.height = window_rect_.height();
     window_.width = window_rect_.width();
-    window_.x = window_rect_.x();
-    window_.y = window_rect_.y();
+    window_.x = 0;
+    window_.y = 0;
     window_.type = NPWindowTypeDrawable;
     windowless_needs_set_window_ = true;
   }
@@ -282,8 +282,8 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   [NSGraphicsContext setCurrentContext:[NSGraphicsContext
                                         graphicsContextWithGraphicsPort:context
                                         flipped:NO]];
-
   CGContextSaveGState(context);
+
   cg_context_.context = context;
   window_.window = &cg_context_;
   window_.type = NPWindowTypeDrawable;
@@ -322,6 +322,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   paint_event.where.v = 0;
   paint_event.modifiers = 0;
   instance()->NPP_HandleEvent(&paint_event);
+
   CGContextRestoreGState(context);
   [NSGraphicsContext restoreGraphicsState];
 }
@@ -333,14 +334,14 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   if (window_rect_.IsEmpty())  // wait for geometry to be set.
     return;
 
-  window_.clipRect.top = clip_rect_.y();
-  window_.clipRect.left = clip_rect_.x();
-  window_.clipRect.bottom = clip_rect_.y() + clip_rect_.height();
-  window_.clipRect.right = clip_rect_.x() + clip_rect_.width();
+  window_.clipRect.top = 0;
+  window_.clipRect.left = 0;
+  window_.clipRect.bottom = window_rect_.height();
+  window_.clipRect.right = window_rect_.width();
   window_.height = window_rect_.height();
   window_.width = window_rect_.width();
-  window_.x = window_rect_.x();
-  window_.y = window_rect_.y();
+  window_.x = 0;
+  window_.y = 0;
   window_.type = NPWindowTypeDrawable;
 
   if (!force_set_window)

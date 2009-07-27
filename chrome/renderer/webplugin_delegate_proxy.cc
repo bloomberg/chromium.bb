@@ -498,6 +498,14 @@ bool WebPluginDelegateProxy::CreateBitmap(
   return true;
 }
 
+#if defined(OS_MACOSX)
+// Flips |rect| vertically within an enclosing rect with height |height|.
+// Intended for converting rects between flipped and non-flipped contexts.
+static void FlipRectVerticallyWithHeight(gfx::Rect* rect, int height) {
+  rect->set_y(height - rect->y() - rect->height());
+}
+#endif
+
 void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
                                    const gfx::Rect& damaged_rect) {
   // If the plugin is no longer connected (channel crashed) draw a crashed
@@ -535,6 +543,9 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
     CopyFromTransportToBacking(offset_rect);
   }
 
+#if defined(OS_MACOSX)
+  FlipRectVerticallyWithHeight(&offset_rect, plugin_rect_.height());
+#endif
   BlitCanvasToContext(context, rect, backing_store_canvas_.get(),
                       offset_rect.origin());
 
@@ -906,7 +917,11 @@ void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
   }
 
   // Copy the damaged rect from the transport bitmap to the backing store.
-  BlitCanvasToCanvas(backing_store_canvas_.get(), rect,
+  gfx::Rect dest_rect = rect;
+#if defined(OS_MACOSX)
+  FlipRectVerticallyWithHeight(&dest_rect, plugin_rect_.height());
+#endif
+  BlitCanvasToCanvas(backing_store_canvas_.get(), dest_rect,
                      transport_store_canvas_.get(), rect.origin());
   backing_store_painted_ = backing_store_painted_.Union(rect);
 }
