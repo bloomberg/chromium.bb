@@ -1339,16 +1339,24 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
 // static
 gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
     GdkEventMotion* event, BrowserWindowGtk* browser) {
-  // Get the mouse position relative to |widget|.  We can't just use event->x
-  // and event->y because that's relative to the gdk window that got the
-  // event.
-  gint x = 0;
-  gint y = 0;
-  gtk_widget_get_pointer(widget, &x, &y);
+  // This method is used to update the mouse cursor when over the edge of the
+  // custom frame.  If the custom frame is off or we're over some other widget,
+  // do nothing.
+  if (!browser->use_custom_frame_.GetValue() ||
+      event->window != widget->window) {
+    // Reset the cursor.
+    if (browser->frame_cursor_) {
+      gdk_cursor_unref(browser->frame_cursor_);
+      browser->frame_cursor_ = NULL;
+      gdk_window_set_cursor(GTK_WIDGET(browser->window_)->window, NULL);
+    }
+    return FALSE;
+  }
 
   // Update the cursor if we're on the custom frame border.
   GdkWindowEdge edge;
-  bool has_hit_edge = browser->GetWindowEdge(x, y, &edge);
+  bool has_hit_edge = browser->GetWindowEdge(static_cast<int>(event->x),
+      static_cast<int>(event->y), &edge);
   GdkCursorType new_cursor = GDK_LAST_CURSOR;
   if (has_hit_edge)
     new_cursor = GdkWindowEdgeToGdkCursorType(edge);
