@@ -13,14 +13,10 @@
 ThemePreviewInfobarDelegate::ThemePreviewInfobarDelegate(
     TabContents* tab_contents, const std::string& name)
          : ConfirmInfoBarDelegate(tab_contents),
-           profile_(tab_contents->profile()), name_(name),
-           selection_made_(false) {
+           profile_(tab_contents->profile()), name_(name) {
 }
 
 void ThemePreviewInfobarDelegate::InfoBarClosed() {
-  if (!selection_made_)
-    profile_->ClearTheme();
-
   delete this;
 }
 
@@ -36,30 +32,20 @@ SkBitmap* ThemePreviewInfobarDelegate::GetIcon() const {
 }
 
 int ThemePreviewInfobarDelegate::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
+  return BUTTON_CANCEL;
 }
 
 std::wstring ThemePreviewInfobarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   switch (button) {
-    case BUTTON_OK:
-      return l10n_util::GetString(IDS_THEME_PREVIEW_INFOBAR_OK_BUTTON);
     case BUTTON_CANCEL:
-      return l10n_util::GetString(IDS_THEME_PREVIEW_INFOBAR_CANCEL_BUTTON);
+      return l10n_util::GetString(IDS_THEME_PREVIEW_INFOBAR_UNDO_BUTTON);
     default:
-      NOTREACHED();
       return L"";
   }
 }
 
-bool ThemePreviewInfobarDelegate::Accept() {
-  selection_made_ = true;
-  return true;
-}
-
 bool ThemePreviewInfobarDelegate::Cancel() {
-  selection_made_ = true;
-
   // Blech, this is a total hack.
   //
   // a) We should be uninstalling via ExtensionsService, not

@@ -24,13 +24,11 @@ class ThemePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
   virtual int GetButtons() const;
   virtual std::wstring GetButtonLabel(
       ConfirmInfoBarDelegate::InfoBarButton button) const;
-  virtual bool Accept();
   virtual bool Cancel();
 
  private:
   Profile* profile_;
   std::string name_;  // name of theme to install
-  bool selection_made_;  // whether the user has made a selection yet
 };
 
 #endif  // CHROME_BROWSER_VIEWS_EXTENSIONS_THEME_PREVIEW_INFOBAR_DELEGATE_H_

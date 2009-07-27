@@ -1952,10 +1952,7 @@ each locale. -->
       <message name="IDS_THEME_PREVIEW_INFOBAR_LABEL" desc="Text displayed on an infobar while previewing a theme.">
         Previewing theme "<ph name="THEME_NAME">$1<ex>Snowflake Theme</ex></ph>"
       </message>
-      <message name="IDS_THEME_PREVIEW_INFOBAR_OK_BUTTON" desc="Text displayed on the button to accept a theme preview.">
-        Keep this theme
-      </message>
-      <message name="IDS_THEME_PREVIEW_INFOBAR_CANCEL_BUTTON" desc="Text displayed on the button to reject a theme preview and go back to the default theme.">
+      <message name="IDS_THEME_PREVIEW_INFOBAR_UNDO_BUTTON" desc="Text displayed on the button to reject a theme preview and go back to the default theme.">
         Back to default
       </message>
 
