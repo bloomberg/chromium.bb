@@ -64,10 +64,13 @@ void SaveMD5Sum(const std::wstring& path, WebCore::RGBA32Buffer* buffer) {
 #else
 void VerifyImage(WebCore::ImageDecoder* decoder,
                  const std::wstring& path,
-                 const std::wstring& md5_sum_path) {
+                 const std::wstring& md5_sum_path,
+                 size_t frame_index) {
   // Make sure decoding can complete successfully.
   EXPECT_TRUE(decoder->isSizeAvailable()) << path;
-  WebCore::RGBA32Buffer* image_buffer = decoder->frameBufferAtIndex(0);
+  EXPECT_GE(static_cast<size_t>(decoder->frameCount()), frame_index) << path;
+  WebCore::RGBA32Buffer* image_buffer =
+      decoder->frameBufferAtIndex(frame_index);
   ASSERT_NE(static_cast<WebCore::RGBA32Buffer*>(NULL), image_buffer) << path;
   EXPECT_EQ(WebCore::RGBA32Buffer::FrameComplete, image_buffer->status()) <<
       path;
@@ -132,6 +135,42 @@ bool ImageDecoderTest::ShouldImageFail(const std::wstring& path) const {
                         kBadSuffix.length(), kBadSuffix));
 }
 
+WebCore::ImageDecoder* ImageDecoderTest::SetupDecoder(
+    const std::wstring& path,
+    bool split_at_random) const {
+  Vector<char> image_contents;
+  ReadFileToVector(path, &image_contents);
+
+  WebCore::ImageDecoder* decoder = CreateDecoder();
+  RefPtr<WebCore::SharedBuffer> shared_contents(
+      WebCore::SharedBuffer::create());
+
+  if (split_at_random) {
+    // Split the file at an arbitrary point.
+    const int partial_size = static_cast<int>(
+        (static_cast<double>(rand()) / RAND_MAX) * image_contents.size());
+    shared_contents->append(image_contents.data(), partial_size);
+
+    // Make sure the image decoder doesn't fail when we ask for the frame buffer
+    // for this partial image.
+    decoder->setData(shared_contents.get(), false);
+    EXPECT_NE(static_cast<WebCore::RGBA32Buffer*>(NULL),
+              decoder->frameBufferAtIndex(0)) << path;
+    EXPECT_FALSE(decoder->failed()) << path;
+
+    // Make sure passing the complete image results in successful decoding.
+    shared_contents->append(
+        &image_contents.data()[partial_size],
+        static_cast<int>(image_contents.size() - partial_size));
+  } else {
+    shared_contents->append(image_contents.data(),
+                            static_cast<int>(image_contents.size()));
+  }
+
+  decoder->setData(shared_contents.get(), true);
+  return decoder;
+}
+
 void ImageDecoderTest::TestDecoding(
     ImageDecoderTestFileSelection file_selection,
     const int64 threshold) const {
@@ -141,25 +180,16 @@ void ImageDecoderTest::TestDecoding(
     if (ShouldSkipFile(*i, file_selection, threshold))
       continue;
 
-    Vector<char> image_contents;
-    ReadFileToVector(*i, &image_contents);
-
-    scoped_ptr<WebCore::ImageDecoder> decoder(CreateDecoder());
-    RefPtr<WebCore::SharedBuffer> shared_contents(WebCore::SharedBuffer::create());
-    shared_contents->append(image_contents.data(),
-                            static_cast<int>(image_contents.size()));
-    decoder->setData(shared_contents.get(), true);
-
+    scoped_ptr<WebCore::ImageDecoder> decoder(SetupDecoder(*i, false));
     if (ShouldImageFail(*i)) {
-      // We should always get a non-NULL frame buffer, but when the decoder
-      // tries to produce it, it should fail, and the frame buffer shouldn't
-      // complete.
+      // We may get a non-NULL frame buffer, but it should be incomplete, and
+      // the decoder should have failed.
       WebCore::RGBA32Buffer* const image_buffer =
           decoder->frameBufferAtIndex(0);
-      ASSERT_NE(static_cast<WebCore::RGBA32Buffer*>(NULL), image_buffer) <<
-          (*i);
-      EXPECT_NE(image_buffer->status(), WebCore::RGBA32Buffer::FrameComplete) <<
-          (*i);
+      if (image_buffer) {
+        EXPECT_NE(image_buffer->status(),
+                  WebCore::RGBA32Buffer::FrameComplete) << (*i);
+      }
       EXPECT_TRUE(decoder->failed()) << (*i);
       continue;
     }
@@ -167,7 +197,7 @@ void ImageDecoderTest::TestDecoding(
 #ifdef CALCULATE_MD5_SUMS
     SaveMD5Sum(GetMD5SumPath(*i), decoder->frameBufferAtIndex(0));
 #else
-    VerifyImage(decoder.get(), *i, GetMD5SumPath(*i));
+    VerifyImage(decoder.get(), *i, GetMD5SumPath(*i), 0);
 #endif
   }
 }
@@ -190,28 +220,8 @@ void ImageDecoderTest::TestChunkedDecoding(
     if (ShouldImageFail(*i))
       continue;
 
-    // Read the file and split it at an arbitrary point.
-    Vector<char> image_contents;
-    ReadFileToVector(*i, &image_contents);
-    const int partial_size = static_cast<int>(
-      (static_cast<double>(rand()) / RAND_MAX) * image_contents.size());
-    RefPtr<WebCore::SharedBuffer> partial_contents(WebCore::SharedBuffer::create());
-    partial_contents->append(image_contents.data(), partial_size);
-
-    // Make sure the image decoder doesn't fail when we ask for the frame buffer
-    // for this partial image.
-    scoped_ptr<WebCore::ImageDecoder> decoder(CreateDecoder());
-    decoder->setData(partial_contents.get(), false);
-    EXPECT_NE(static_cast<WebCore::RGBA32Buffer*>(NULL),
-              decoder->frameBufferAtIndex(0)) << (*i);
-    EXPECT_FALSE(decoder->failed()) << (*i);
-
-    // Make sure passing the complete image results in successful decoding.
-    partial_contents->append(
-        &image_contents.data()[partial_size],
-        static_cast<int>(image_contents.size() - partial_size));
-    decoder->setData(partial_contents.get(), true);
-    VerifyImage(decoder.get(), *i, GetMD5SumPath(*i));
+    scoped_ptr<WebCore::ImageDecoder> decoder(SetupDecoder(*i, true));
+    VerifyImage(decoder.get(), *i, GetMD5SumPath(*i), 0);
   }
 }
 #endif

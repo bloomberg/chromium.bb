@@ -46,9 +46,11 @@ std::wstring GetMD5SumPath(const std::wstring& path);
 void SaveMD5Sum(const std::wstring& path, WebCore::RGBA32Buffer* buffer);
 #else
 // Verifies the image.  |path| identifies the path the image was loaded from.
+// |frame_index| indicates which index from the decoder we should examine.
 void VerifyImage(WebCore::ImageDecoder* decoder,
                  const std::wstring& path,
-                 const std::wstring& md5_sum_path);
+                 const std::wstring& md5_sum_path,
+                 size_t frame_index);
 #endif
 
 class ImageDecoderTest : public testing::Test {
@@ -63,6 +65,12 @@ class ImageDecoderTest : public testing::Test {
 
   // Returns true if the image is bogus and should not be successfully decoded.
   bool ShouldImageFail(const std::wstring& path) const;
+
+  // Creates and returns an ImageDecoder for the file at the given |path|.  If
+  // |split_at_random| is true, also verifies that breaking the data supplied to
+  // the decoder into two random pieces does not cause problems.
+  WebCore::ImageDecoder* SetupDecoder(const std::wstring& path,
+                                      bool split_at_random) const;
 
   // Verifies each of the test image files is decoded correctly and matches the
   // expected state. |file_selection| and |threshold| can be used to select
