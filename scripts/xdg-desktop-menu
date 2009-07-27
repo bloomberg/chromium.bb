@@ -845,7 +845,7 @@ BEGIN {
     new_desktop_files=
     if [ $action = "install" ] ; then
         for desktop_file in $desktop_files; do
-            basefile=`basename $desktop_file`
+            basefile=`basename "$desktop_file"`
             if ! grep '^'$basefile'$' $tmpfile > /dev/null 2> /dev/null ; then
             	# Append
             	echo "$basefile" >> $tmpfile
@@ -883,7 +883,7 @@ BEGIN {
             echo '    <Name>Applications</Name>'
 
             for desktop_file in $directory_files; do
-                basefile=`basename $desktop_file`
+                basefile=`basename "$desktop_file"`
                 basefilename=`echo "$basefile"|cut -d '.' -f 1`
                 echo "<Menu>"
                 echo "    <Name>$basefilename</Name>"
@@ -1072,7 +1072,7 @@ for desktop_file in $directory_files; do
         check_vendor_prefix "$desktop_file"
     fi
 
-    basefilename=`basename "$desktop_file"|cut -d '.' -f 1`
+    basefilename=`basename "$desktop_file" | cut -d '.' -f 1`
     if [ -z "$menu_name" ] ; then
         menu_name="$basefilename"
     else
@@ -1135,7 +1135,7 @@ else
 fi
 
 for desktop_file in $directory_files; do
-    basefile=`basename $desktop_file`
+    basefile=`basename "$desktop_file"`
 
     DEBUG 1 "$action $desktop_file in $xdg_dir $kde_dir $gnome_dir"
 
@@ -1217,7 +1217,7 @@ for desktop_file in $desktop_files; do
         check_vendor_prefix "$desktop_file"
     fi
 
-    basefile=`basename $desktop_file`
+    basefile=`basename "$desktop_file"`
 
     DEBUG 1 "$action $desktop_file in $xdg_dir $kde_dir $gnome_dir"
 

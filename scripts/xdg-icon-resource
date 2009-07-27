@@ -771,7 +771,7 @@ need_gnome_mime=
 [ $context = "mimetypes" ] && need_gnome_mime=true 
 # End GNOME legacy workaround section
 
-[ -n "$icon_name" ] || icon_name=`basename $icon_file | sed 's/\.[a-z][a-z][a-z]$//'`
+[ -n "$icon_name" ] || icon_name=`basename "$icon_file" | sed 's/\.[a-z][a-z][a-z]$//'`
 
 if [ "$vendor" = "true" -a "$action" = "install" -a "$context" = "apps" ] ; then
     check_vendor_prefix "$icon_name" "icon name"

@@ -663,7 +663,7 @@ END {
 
         # No quotes around $mimetypes
         for x in $mimetypes ; do 
-            if grep '^# Installed by xdg-mime' $kde_dir/$x.desktop &>/dev/null ; then
+            if grep '^# Installed by xdg-mime' $kde_dir/$x.desktop >/dev/null 2>&1; then
                 DEBUG 1 "Removing $kde_dir/$x.desktop (KDE 3.x support)"
                 rm -f $kde_dir/$x.desktop
             fi

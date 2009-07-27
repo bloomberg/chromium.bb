@@ -1,10 +1,33 @@
+=== xdg-utils 1.x.x ====
+
+2009-07-27 Fathi Boudra <fabo@debian.org>
+    * Remove -u option from su. It doesn't have it.
+
+2009-07-27 Fathi Boudra <fabo@debian.org>
+    * Add KDE 4 support to xdg-email (BR17268)
+
+2009-07-26 Fathi Boudra <fabo@debian.org>
+    * Sleep for 50s instead of 59s to avoid to froze the seesion (BR19414)
+
+2009-07-26 Fathi Boudra <fabo@debian.org>
+    * Fix a race condition in xdg-screensaver (BR19382)
+
+2009-07-26 Fathi Boudra <fabo@debian.org>
+    * Fix basename usage when filename contains spaces (BR18567)
+
+2009-07-26 Fathi Boudra <fabo@debian.org>
+    * Fix bashisms used in xdg-mime and xdg-screensaver (BR15827)
 
 2008-08-11 Rex Dieter <rdieter@fedoraproject.org>
-    * initial support for kde4
+    * initial support for KDE 4
+    * Add dbus commands to xdg-screensaver for KDE 4 (BR17537)
 
- 2008-01-24 Kevin Krammer <kevin.krammer@gmx.at>
+2008-01-24 Kevin Krammer <kevin.krammer@gmx.at>
     * Fixing security issue in xdg-email and xdg-open at replacing
       parameter in $BROWSER
+
+2007-06-27 Waldo Bastian <waldo.bastian@intel.com>
+    * Fix xdg-mime query filetype on XFCE (BR11383)
 
 === xdg-utils 1.0.2 ====
 

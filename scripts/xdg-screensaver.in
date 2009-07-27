@@ -36,7 +36,7 @@ else
    # No secure moves available, use home dir
    DEBUG 1 "mv -T not available"
    MV="mv"
-   screensaver_file="$HOME/.xdg-screensaver-"`echo $HOSTNAME-$DISPLAY | sed 's/:/-/g'`
+   screensaver_file="$HOME/.xdg-screensaver-"`echo $(hostname)-$DISPLAY | sed 's/:/-/g'`
 fi
 lockfile_command=`which lockfile 2> /dev/null`
 
@@ -116,7 +116,7 @@ cleanup_suspend()
   lockfile
   test "${TMPDIR+set}" = set || TMPDIR=/tmp
   tmpfile=`mktemp $TMPDIR/tmp.XXXXXXXXXX`
-  grep -v "$window_id:" "$screensaver_file" > "$tmpfile" 2> /dev/null
+  grep -v "$window_id:$xprop_pid\$" "$screensaver_file" > "$tmpfile" 2> /dev/null
   $MV "$tmpfile" "$screensaver_file"
   if [ ! -s "$screensaver_file" ] ; then
       rm "$screensaver_file"
@@ -136,7 +136,7 @@ do_resume()
   unlockfile # Free lockfile
   if [ -n "$xprop_pid" ] && ps -p "$xprop_pid" 2> /dev/null | grep xprop > /dev/null; then
      # Kill the tracking process 
-     kill -TERM $xprop_pid
+     kill -s TERM $xprop_pid
   fi
   cleanup_suspend  
 }
@@ -329,7 +329,7 @@ screensaver_suspend_loop()
   fi
   $MV "$tmpfile" "$screensaver_file"
   unlockfile
-  (while [ -f "$screensaver_file" ]; do $*; sleep 59; done) > /dev/null 2> /dev/null &
+  (while [ -f "$screensaver_file" ]; do $*; sleep 50; done) > /dev/null 2> /dev/null &
 }
 
 screensaver_gnome()

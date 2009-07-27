@@ -360,7 +360,7 @@ su_generic()
     if [ -z "$user" ] ; then
         xterm -geom 60x5 -T "xdg-su: $cmd" -e su -c "$cmd"
     else
-        xterm -geom 60x5 -T "xdg-su: $cmd" -e su -u "$user" -c "$cmd"
+        xterm -geom 60x5 -T "xdg-su: $cmd" -e su -c "$cmd" "$user"
     fi
 
     if [ $? -eq 0 ]; then

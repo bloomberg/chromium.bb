@@ -121,7 +121,7 @@ if [ -n "$desktop_dir_kde" ]; then
 fi
 desktop_dir="$desktop_dir $desktop_dir_kde $desktop_dir_gnome"
 
-basefile=`basename $desktop_file`
+basefile=`basename "$desktop_file"`
 
 DEBUG 1 "$action $desktop_file in $desktop_dir"
 

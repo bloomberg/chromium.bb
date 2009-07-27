@@ -393,8 +393,13 @@ open_kde()
         fi
     fi
     DEBUG 1 "Running kmailservice \"$1\""
+    if [ x"$KDE_SESSION_VERSION" = x"4" ]; then
+        KMAILSERVICE=`kde4-config --locate kmailservice --path exe 2>/dev/null`
+    else
+        KMAILSERVICE=`which kmailservice 2>/dev/null`
+    fi
     # KDE uses locale's encoding when decoding the URI, so set it to UTF-8
-    LC_ALL=C.UTF-8 kmailservice "$1"
+    LC_ALL=C.UTF-8 $KMAILSERVICE "$1"
     kfmclient_fix_exit_code $?
 
     if [ $? -eq 0 ]; then
