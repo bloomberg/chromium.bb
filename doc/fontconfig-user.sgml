@@ -37,6 +37,7 @@
    &confdir;/fonts.conf
    &confdir;/fonts.dtd
    &confdir;/conf.d
+   ~/.fonts.conf.d
    ~/.fonts.conf
 </synopsis>
 </refsynopsisdiv>
@@ -660,6 +661,12 @@ format.  The master fonts.conf file references this directory in an
   <para>
 <emphasis>fonts.dtd</emphasis>
 is a DTD that describes the format of the configuration files.
+  </para>
+  <para>
+<emphasis>~/.fonts.conf.d</emphasis>
+is the conventional name for a per-user directory of (typically
+auto-generated) configuration files, although the
+actual location is specified in the global fonts.conf file.
   </para>
   <para>
 <emphasis>~/.fonts.conf</emphasis>
