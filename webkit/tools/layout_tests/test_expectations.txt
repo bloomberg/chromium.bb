@@ -642,7 +642,7 @@ BUG13907 WIN : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRA
 // This test crashes in debug build.
 BUG13907 WIN : LayoutTests/media/video-seek-past-end-playing.html = PASS FAIL CRASH TIMEOUT
 BUG13907 WIN : LayoutTests/media/video-size-intrinsic-scale.html = FAIL
-BUG13907 WIN : LayoutTests/media/video-source-type-params.html = FAIL
+BUG13907 WIN : LayoutTests/media/video-source-type-params.html = FAIL CRASH
 BUG13907 WIN : LayoutTests/media/video-source.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src-remove.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-src-set.html = PASS CRASH
@@ -809,7 +809,6 @@ BUG10296 LINUX : LayoutTests/svg/batik/text/textLength.svg = FAIL
 BUG10296 MAC LINUX : LayoutTests/svg/batik/text/textProperties.svg = FAIL PASS
 BUG10296 LINUX : LayoutTests/svg/custom/gradient-stop-corner-cases.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/custom/pattern-deep-referencing.svg = FAIL
-BUG10296 LINUX : LayoutTests/svg/custom/text-dom-01-f.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/hixie/perf/007.xml = FAIL
 BUG10296 LINUX : LayoutTests/svg/hixie/text/003a.xml = FAIL
 BUG10296 LINUX : LayoutTests/svg/hixie/viewbox/preserveAspectRatio/001.xml = FAIL
@@ -975,8 +974,6 @@ BUG10306 LINUX : LayoutTests/svg/carto.net/combobox.svg = FAIL
 // incorrectly removed during a merge.
 BUG10307 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = FAIL
 BUG10307 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-group-03-t.svg = FAIL
-
-BUG10308 LINUX : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-cx-prop.html = CRASH PASS
 
 // Linux pixeltest failure: slightly different shade of composited
 // alpha in bottom group.
@@ -3116,7 +3113,6 @@ BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr
 // Test failures from WebKit merge 46369 to 46426
 BUG_PKASTING WIN : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = FAIL
 BUG_PKASTING WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = TIMEOUT
-BUG_PKASTING WIN : LayoutTests/media/video-source-type-params.html = CRASH
 BUG_PKASTING WIN LINUX : LayoutTests/editing/style/remove-underline-from-stylesheet.html = FAIL
 BUG_PKASTING LINUX : LayoutTests/fast/canvas/image-pattern-rotate.html = FAIL
 BUG17845 : LayoutTests/svg/W3C-SVG-1.1/struct-dom-01-b.svg = CRASH
@@ -3125,7 +3121,8 @@ BUG17845 : LayoutTests/svg/custom/dynamic-svg-document-creation.svg = CRASH
 BUG17845 : LayoutTests/svg/custom/js-update-gradient.svg = CRASH
 BUG17845 : LayoutTests/svg/custom/js-update-pattern.svg = CRASH
 BUG17845 : LayoutTests/svg/custom/svg-xml-dom-sync.html = CRASH
-BUG17845 : LayoutTests/svg/custom/text-dom-01-f.svg = CRASH
+BUG10296 BUG17845 LINUX : LayoutTests/svg/custom/text-dom-01-f.svg = FAIL CRASH
+BUG17845 WIN MAC : LayoutTests/svg/custom/text-dom-01-f.svg = CRASH
 BUG17845 : LayoutTests/svg/custom/use-instanceRoot-event-bubbling.xhtml = CRASH
 BUG17845 : LayoutTests/svg/custom/use-property-changes-through-svg-dom.svg = CRASH
 BUG17845 : LayoutTests/svg/custom/viewport-update2.svg = CRASH
@@ -3136,7 +3133,8 @@ BUG17845 : LayoutTests/svg/dynamic-updates/SVGCircleElement-svgdom-cy-prop.html 
 BUG17845 : LayoutTests/svg/dynamic-updates/SVGCircleElement-svgdom-r-prop.html = CRASH
 BUG17845 : LayoutTests/svg/dynamic-updates/SVGCursorElement-svgdom-x-prop.html = CRASH
 BUG17845 : LayoutTests/svg/dynamic-updates/SVGCursorElement-svgdom-y-prop.html = CRASH
-BUG17845 : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-cx-prop.html = CRASH
+BUG10308 BUG17845 LINUX : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-cx-prop.html = CRASH PASS
+BUG17845 WIN MAC : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-cx-prop.html = CRASH
 BUG17845 : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-cy-prop.html = CRASH
 BUG17845 : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-rx-prop.html = CRASH
 BUG17845 : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-ry-prop.html = CRASH
