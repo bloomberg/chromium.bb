@@ -113,7 +113,7 @@ static bool getDragDataImpl(NPObject* npobj, int* eventId, WebDragData* data)
         return false;
 
     // Check the execution frames are same origin.
-    V8Proxy* current = V8Proxy::retrieve(V8Proxy::retrieveFrame());
+    V8Proxy* current = V8Proxy::retrieve(V8Proxy::retrieveFrameForCurrentContext());
     Frame* frame = V8Proxy::retrieveFrame(context);
     if (!current || !current->canAccessFrame(frame, false))
         return false;
