@@ -20,7 +20,8 @@ class ThrobberViewTest : public PlatformTest {
     NSImage* image = [[[NSImage alloc] initByReferencingFile:
                         [bundle pathForResource:@"throbber" ofType:@"png"]]
                         autorelease];
-    view_.reset([[ThrobberView alloc] initWithFrame:frame image:image]);
+    view_.reset([[ThrobberView filmstripThrobberViewWithFrame:frame
+                                                        image:image] retain]);
     [cocoa_helper_.contentView() addSubview:view_.get()];
   }
 

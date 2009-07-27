@@ -2699,6 +2699,7 @@
         'app/theme/pageinfo_bad.png',
         'app/theme/pageinfo_good.png',
         'app/theme/reload_Template.pdf',
+        'app/theme/sadfavicon.png',
         'app/theme/sadtab.png',
         'app/theme/star_Template.pdf',
         'app/theme/starred.pdf',

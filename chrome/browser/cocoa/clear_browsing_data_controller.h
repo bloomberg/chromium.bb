@@ -27,7 +27,6 @@ class Profile;
   BrowsingDataRemover* remover_;
   scoped_ptr<ClearBrowsingObserver> observer_;
   BOOL isClearing_;  // YES while clearing data is ongoing.
-  IBOutlet ThrobberView* progress_;
 
   // Values for checkboxes, kept in sync with bindings. These values get
   // persisted into prefs if the user accepts the dialog.

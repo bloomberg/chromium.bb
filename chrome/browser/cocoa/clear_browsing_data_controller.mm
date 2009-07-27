@@ -63,16 +63,6 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
   [super dealloc];
 }
 
-// Called when outlets are available. Set the throbber icon.
-- (void)awakeFromNib {
-  NSString *imagePath = [mac_util::MainAppBundle()
-                        pathForResource:@"throbber"
-                                 ofType:@"png"];
-  scoped_nsobject<NSImage> throbberImage(
-      [[NSImage alloc] initWithContentsOfFile:imagePath]);
-  [progress_ setImage:throbberImage];
-}
-
 // Run application modal.
 - (void)runModalDialog {
   [[NSApplication sharedApplication] runModalForWindow:[self window]];

@@ -571,6 +571,8 @@ static const float kUseFullAvailableWidth = -1.0;
         [nsimage_cache::ImageNamed(@"throbber_waiting.png") retain];
     static NSImage* throbberLoadingImage =
         [nsimage_cache::ImageNamed(@"throbber.png") retain];
+    static NSImage* sadFaviconImage =
+        [nsimage_cache::ImageNamed(@"sadfavicon.png") retain];
 
     TabController* tabController = [tabArray_ objectAtIndex:index];
 
@@ -584,17 +586,24 @@ static const float kUseFullAvailableWidth = -1.0;
     } else if (contents->is_loading()) {
       newState = kTabLoading;
       throbberImage = throbberLoadingImage;
+    } else if (contents->is_crashed()) {
+      newState = kTabCrashed;
     }
 
     if (oldState != newState || newState == kTabDone) {
       NSView* iconView = nil;
       if (newState == kTabDone) {
         iconView = [self favIconImageViewForContents:contents];
+      } else if (newState == kTabCrashed) {
+        NSImage* oldImage = [[self favIconImageViewForContents:contents] image];
+        NSRect frame = NSMakeRect(0, 0, 16, 16);
+        iconView = [ThrobberView toastThrobberViewWithFrame:frame
+                                                beforeImage:oldImage
+                                                 afterImage:sadFaviconImage];
       } else {
         NSRect frame = NSMakeRect(0, 0, 16, 16);
-        iconView =
-            [[[ThrobberView alloc] initWithFrame:frame
-                                           image:throbberImage] autorelease];
+        iconView = [ThrobberView filmstripThrobberViewWithFrame:frame
+                                                          image:throbberImage];
       }
 
       [tabController setLoadingState:newState];

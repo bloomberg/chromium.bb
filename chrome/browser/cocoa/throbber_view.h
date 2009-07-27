@@ -9,32 +9,35 @@
 
 #include "base/scoped_nsobject.h"
 
-@class TimerTarget;
+@class ThrobberTimerTarget;
+@protocol ThrobberDataDelegate;
 
 // A class that knows how to draw an animated state to indicate progress.
-// Currently draws via a sequence of frames in an image, but may ultimately be
-// written to render paths that are rotated around a center origin. Creating
-// the class starts the animation, destroying it stops it. There is no state
-// where the class is frozen on an image and not animating.
+// Creating the class starts the animation, destroying it stops it. There are
+// two types:
+//
+// - Filmstrip: Draws via a sequence of frames in an image. There is no state
+//   where the class is frozen on an image and not animating. The image needs to
+//   be made of squares such that the height divides evently into the width.
+//
+// - Toast: Draws an image animating down to the bottom and then another image
+//   animating up from the bottom. Stops once the animation is complete.
 
 @interface ThrobberView : NSView {
  @private
-  scoped_nsobject<CIImage> image_;
-  scoped_nsobject<TimerTarget> target_;  // Target of animation timer.
+  scoped_nsobject<ThrobberTimerTarget> target_;  // Target of animation timer.
+  id<ThrobberDataDelegate> dataDelegate_;
   NSTimer* timer_;  // Animation timer. Weak, owned by runloop.
-  unsigned int numFrames_;  // Number of frames in this animation.
-  unsigned int animationFrame_;  // Current frame of the animation,
-                                 // [0..numFrames_)
 }
 
-// Creates the view with |frame| and the image strip desginated by |image|. The
-// image needs to be made of squares such that the height divides evently into
-// the width. Takes ownership of |image|.
-- (id)initWithFrame:(NSRect)frame image:(NSImage*)image;
+// Creates a filmstrip view with |frame| and image |image|.
++ (id)filmstripThrobberViewWithFrame:(NSRect)frame
+                               image:(NSImage*)image;
 
-// Allows changing the image once the view has been created, such as when the
-// view is loaded from a nib. The same restrictions as above apply.
-- (void)setImage:(NSImage*)image;
+// Creates a toast view with |frame| and specified images.
++ (id)toastThrobberViewWithFrame:(NSRect)frame
+                     beforeImage:(NSImage*)beforeImage
+                      afterImage:(NSImage*)afterImage;
 
 @end
 

@@ -16,6 +16,7 @@ enum TabLoadingState {
   kTabDone,
   kTabLoading,
   kTabWaiting,
+  kTabCrashed,
 };
 
 @class TabView;
