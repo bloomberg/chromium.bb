@@ -3562,12 +3562,12 @@ each locale. -->
         Watch this space for tips and suggestions for better browsing!
       </message>
       <message name="IDS_NEW_TAB_EVEN_MORE_TITLE"
-         desc="Title for the section on the new tab page that is currently empty. In later releases we plan to show web clips and tips and recommendations here.">
+               desc="Title for the section on the new tab page that is currently empty. In later releases we plan to show web clips and tips and recommendations here.">
         Even more
       </message>
       <message name="IDS_NEW_TAB_EVEN_MORE_CONTENT"
-         desc="Content for the section on the new tab page that is currently empty. In later releases we plan to show web clips and tips and recommendations here. This is intended to be funny!">
-        This space intentionally left blank
+               desc="Content for the section on the new tab page that is currently empty. In later releases we plan to show web clips and tips and recommendations here. This is intended to be funny.">
+        What will we put here?
       </message>
       <message name="IDS_NEW_TAB_SHOW_EVEN_MORE"
                desc="Menu item text used to show the even more section.">
