@@ -16,6 +16,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/gfx/rect.h"
 #include "chrome/common/notification_registrar.h"
 
 class GtkThemeProvider;
@@ -70,6 +71,9 @@ class InfoBubbleGtk : public NotificationObserver {
             const gfx::Rect& rect,
             GtkWidget* content);
 
+  // Sets |screen_x_| according to our allocation and |rect_|.
+  void UpdateScreenX();
+
   // Sets the delegate.
   void set_delegate(InfoBubbleGtkDelegate* delegate) { delegate_ = delegate; }
 
@@ -85,6 +89,13 @@ class InfoBubbleGtk : public NotificationObserver {
     return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleEscape();
   }
   gboolean HandleEscape();
+
+  static void HandleSizeAllocateThunk(GtkWidget* widget,
+                                      GtkAllocation* allocation,
+                                      gpointer user_data) {
+    reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleSizeAllocate();
+  }
+  void HandleSizeAllocate();
 
   static gboolean HandleConfigureThunk(GtkWidget* widget,
                                        GdkEventConfigure* event,
@@ -128,6 +139,9 @@ class InfoBubbleGtk : public NotificationObserver {
 
   // The accel group attached to |window_|, to handle closing with escape.
   GtkAccelGroup* accel_group_;
+
+  // The rectangle that we use to calculate |screen_x_| and |screen_y_|.
+  gfx::Rect rect_;
 
   // Where we want our window to be positioned on the screen.
   int screen_x_;

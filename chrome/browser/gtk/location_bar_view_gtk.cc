@@ -541,9 +541,14 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
   gdk_window_get_origin(widget()->window, &x, &y);
   // The bubble needs to be just below the Omnibox and slightly to the right
   // of star button, so shift x and y co-ordinates.
-  x += widget()->allocation.x + kFirstRunBubbleLeftMargin;
   y += widget()->allocation.y + widget()->allocation.height +
        kFirstRunBubbleTopMargin;
+  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) {
+    x += widget()->allocation.x + kFirstRunBubbleLeftMargin;
+  } else {
+    x += widget()->allocation.x + widget()->allocation.width -
+         kFirstRunBubbleLeftMargin;
+  }
 
   FirstRunBubble::Show(profile_,
       GTK_WINDOW(gtk_widget_get_toplevel(widget())),

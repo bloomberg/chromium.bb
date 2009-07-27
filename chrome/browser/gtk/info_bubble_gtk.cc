@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "app/gfx/path.h"
+#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/rect.h"
@@ -37,9 +38,8 @@ const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 
 const gchar* kInfoBubbleToplevelKey = "__INFO_BUBBLE_TOPLEVEL__";
 
-// A small convenience since GdkPoint is a POD without a constructor.
-GdkPoint MakeGdkPoint(gint x, gint y) {
-  GdkPoint point = {x, y};
+GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
+  GdkPoint point = {ltr ? x : width - x, y};
   return point;
 }
 
@@ -59,47 +59,52 @@ std::vector<GdkPoint> MakeFramePolygonPoints(int width,
                                              FrameType type) {
   std::vector<GdkPoint> points;
 
+  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
   // If we have a stroke, we have to offset some of our points by 1 pixel.
-  int off = (type == FRAME_MASK) ? 0 : 1;
+  // We have to inset by 1 pixel when we draw horizontal lines that are on the
+  // bottom or when we draw vertical lines that are closer to the end (end is
+  // right for ltr).
+  int y_off = (type == FRAME_MASK) ? 0 : -1;
+  // We use this one for LTR.
+  int x_off_l = ltr ? y_off : 0;
+  // We use this one for RTL.
+  int x_off_r = !ltr ? -y_off : 0;
 
   // Top left corner.
-  points.push_back(MakeGdkPoint(0, kArrowSize + kCornerSize - 1));
-  points.push_back(MakeGdkPoint(kCornerSize - 1, kArrowSize));
+  points.push_back(MakeBidiGdkPoint(
+      x_off_r, kArrowSize + kCornerSize - 1, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      kCornerSize + x_off_r - 1, kArrowSize, width, ltr));
 
   // The arrow.
-  points.push_back(MakeGdkPoint(kArrowX - kArrowSize, kArrowSize));
-  points.push_back(MakeGdkPoint(kArrowX, 0));
-  points.push_back(MakeGdkPoint(kArrowX + 1 - off, 0));
-  points.push_back(MakeGdkPoint(kArrowX + kArrowSize + 1 - off, kArrowSize));
+  points.push_back(MakeBidiGdkPoint(
+      kArrowX - kArrowSize + x_off_r, kArrowSize, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      kArrowX + x_off_r, 0, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      kArrowX + 1 + x_off_l, 0, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      kArrowX + kArrowSize + 1 + x_off_l, kArrowSize, width, ltr));
 
   // Top right corner.
-  points.push_back(MakeGdkPoint(width - kCornerSize + 1 - off, kArrowSize));
-  points.push_back(MakeGdkPoint(width - off, kArrowSize + kCornerSize - 1));
+  points.push_back(MakeBidiGdkPoint(
+      width - kCornerSize + 1 + x_off_l, kArrowSize, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      width + x_off_l, kArrowSize + kCornerSize - 1, width, ltr));
 
   // Bottom right corner.
-  points.push_back(MakeGdkPoint(width - off, height - kCornerSize));
-  points.push_back(MakeGdkPoint(width - kCornerSize, height - off));
+  points.push_back(MakeBidiGdkPoint(
+      width + x_off_l, height - kCornerSize, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      width - kCornerSize + x_off_r, height + y_off, width, ltr));
 
   // Bottom left corner.
-  points.push_back(MakeGdkPoint(kCornerSize - off, height - off));
-  points.push_back(MakeGdkPoint(0, height - kCornerSize));
+  points.push_back(MakeBidiGdkPoint(
+      kCornerSize + x_off_l, height + y_off, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      x_off_r, height - kCornerSize, width, ltr));
 
   return points;
-}
-
-// When our size is initially allocated or changed, we need to recompute
-// and apply our shape mask region.
-void HandleSizeAllocate(GtkWidget* widget,
-                        GtkAllocation* allocation,
-                        gpointer unused) {
-  DCHECK(allocation->x == 0 && allocation->y == 0);
-  std::vector<GdkPoint> points = MakeFramePolygonPoints(
-      allocation->width, allocation->height, FRAME_MASK);
-  GdkRegion* mask_region = gdk_region_polygon(&points[0],
-                                              points.size(),
-                                              GDK_EVEN_ODD_RULE);
-  gdk_window_shape_combine_region(widget->window, mask_region, 0, 0);
-  gdk_region_destroy(mask_region);
 }
 
 gboolean HandleExpose(GtkWidget* widget,
@@ -149,8 +154,7 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
                          const gfx::Rect& rect,
                          GtkWidget* content) {
   DCHECK(!window_);
-  screen_x_ = rect.x() + (rect.width() / 2) - kArrowX;
-  screen_y_ = rect.y() + rect.height() + kArrowToContentPadding;
+  rect_ = rect;
 
   window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_transient_for(GTK_WINDOW(window_), transient_toplevel);
@@ -180,15 +184,22 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
   // efficently mask a GdkRegion.  Make sure the window is realized during
   // HandleSizeAllocate, so the mask can be applied to the GdkWindow.
   gtk_widget_realize(window_);
+
+  UpdateScreenX();
+  screen_y_ = rect.y() + rect.height() + kArrowToContentPadding;
+  // For RTL, we will have to move the window again when it is allocated, but
+  // this should be somewhat close to its final position.
   gtk_window_move(GTK_WINDOW(window_), screen_x_, screen_y_);
+  GtkRequisition req;
+  gtk_widget_size_request(window_, &req);
 
   gtk_widget_add_events(window_, GDK_BUTTON_PRESS_MASK |
                                  GDK_BUTTON_RELEASE_MASK);
 
-  g_signal_connect(window_, "size-allocate",
-                   G_CALLBACK(HandleSizeAllocate), NULL);
   g_signal_connect(window_, "expose-event",
                    G_CALLBACK(HandleExpose), NULL);
+  g_signal_connect(window_, "size-allocate",
+                   G_CALLBACK(HandleSizeAllocateThunk), this);
   g_signal_connect(window_, "configure-event",
                    G_CALLBACK(&HandleConfigureThunk), this);
   g_signal_connect(window_, "button-press-event",
@@ -221,6 +232,16 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   theme_provider_->InitThemesFor(this);
+}
+
+void InfoBubbleGtk::UpdateScreenX() {
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+    screen_x_ = rect_.x() + (rect_.width() / 2) - window_->allocation.width
+                + kArrowX;
+  }
+  else {
+    screen_x_ = rect_.x() + (rect_.width() / 2) - kArrowX;
+  }
 }
 
 void InfoBubbleGtk::Observe(NotificationType type,
@@ -259,6 +280,24 @@ void InfoBubbleGtk::Close(bool closed_by_escape) {
 gboolean InfoBubbleGtk::HandleEscape() {
   Close(true);  // Close by escape.
   return TRUE;
+}
+
+// When our size is initially allocated or changed, we need to recompute
+// and apply our shape mask region.
+void InfoBubbleGtk::HandleSizeAllocate() {
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+    UpdateScreenX();
+    gtk_window_move(GTK_WINDOW(window_), screen_x_, screen_y_);
+  }
+
+  DCHECK(window_->allocation.x == 0 && window_->allocation.y == 0);
+  std::vector<GdkPoint> points = MakeFramePolygonPoints(
+      window_->allocation.width, window_->allocation.height, FRAME_MASK);
+  GdkRegion* mask_region = gdk_region_polygon(&points[0],
+                                              points.size(),
+                                              GDK_EVEN_ODD_RULE);
+  gdk_window_shape_combine_region(window_->window, mask_region, 0, 0);
+  gdk_region_destroy(mask_region);
 }
 
 gboolean InfoBubbleGtk::HandleConfigure(GdkEventConfigure* event) {
