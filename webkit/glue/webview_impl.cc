@@ -90,6 +90,7 @@ MSVC_POP_WARNING();
 #include "base/string_util.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebInputEvent.h"
+#include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
@@ -1446,6 +1447,10 @@ void WebViewImpl::SetPreferences(const WebPreferences& preferences) {
 
   // Turn this on to cause WebCore to paint the resize corner for us.
   settings->setShouldPaintCustomScrollbars(true);
+
+#if ENABLE(DATABASE)
+  settings->setDatabasesEnabled(WebKit::databasesEnabled());
+#endif
 
   // Mitigate attacks from local HTML files by not granting file:// URLs
   // universal access.

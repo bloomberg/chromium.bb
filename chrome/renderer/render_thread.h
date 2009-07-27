@@ -17,6 +17,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 
 class AppCacheDispatcher;
+class DBMessageFilter;
 class DevToolsAgentFilter;
 class FilePath;
 class ListValue;
@@ -160,6 +161,8 @@ class RenderThread : public RenderThreadBase,
   scoped_refptr<DevToolsAgentFilter> devtools_agent_filter_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;
+
+  scoped_refptr<DBMessageFilter> db_message_filter_;
 
 #if defined(OS_POSIX)
   scoped_refptr<IPC::ChannelProxy::MessageFilter>

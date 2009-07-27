@@ -5,6 +5,7 @@
 #include "webkit/glue/webkitclient_impl.h"
 
 #include "base/message_loop.h"
+#include "base/platform_file.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/trace_event.h"
@@ -222,6 +223,26 @@ void WebKitClientImpl::stopSharedTimer() {
 
 void WebKitClientImpl::callOnMainThread(void (*func)()) {
   main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func));
+}
+
+base::PlatformFile WebKitClientImpl::databaseOpenFile(
+  const WebKit::WebString& file_name, int desired_flags) {
+  return base::kInvalidPlatformFileValue;
+}
+
+bool WebKitClientImpl::databaseDeleteFile(
+  const WebKit::WebString& file_name) {
+  return false;
+}
+
+long WebKitClientImpl::databaseGetFileAttributes(
+  const WebKit::WebString& file_name) {
+  return 0;
+}
+
+long long WebKitClientImpl::databaseGetFileSize(
+  const WebKit::WebString& file_name) {
+  return 0;
 }
 
 }  // namespace webkit_glue

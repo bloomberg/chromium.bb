@@ -32,6 +32,7 @@
 class AppCacheDispatcherHost;
 class AudioRendererHost;
 class Clipboard;
+class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
 class ExtensionMessageService;
 class Profile;
@@ -309,6 +310,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Handles DOM Storage related messages.
   scoped_refptr<DOMStorageDispatcherHost> dom_storage_dispatcher_host_;
+
+  // Handles HTML5 DB related messages
+  scoped_ptr<DatabaseDispatcherHost> db_dispatcher_host_;
 
   // Whether this process is used for off the record tabs.
   bool off_the_record_;

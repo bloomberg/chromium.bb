@@ -15,6 +15,7 @@
 #include "chrome/common/app_cache/app_cache_context_impl.h"
 #include "chrome/common/app_cache/app_cache_dispatcher.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/db_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
@@ -117,6 +118,8 @@ void RenderThread::Init() {
   WebAppCacheContext::SetFactory(CreateAppCacheContextForRenderer);
   devtools_agent_filter_ = new DevToolsAgentFilter();
   AddFilter(devtools_agent_filter_.get());
+  db_message_filter_ = new DBMessageFilter();
+  AddFilter(db_message_filter_.get());
 
 #if defined(OS_POSIX)
   suicide_on_channel_error_filter_ = new SuicideOnChannelErrorFilter;
@@ -127,6 +130,8 @@ void RenderThread::Init() {
 RenderThread::~RenderThread() {
   // Shutdown in reverse of the initialization order.
   RemoveFilter(devtools_agent_filter_.get());
+  RemoveFilter(db_message_filter_.get());
+  db_message_filter_ = NULL;
   WebAppCacheContext::SetFactory(NULL);
   if (webkit_client_.get())
     WebKit::shutdown();
@@ -369,6 +374,10 @@ void RenderThread::EnsureWebKitInitialized() {
 
   if (RenderProcess::current()->initialized_media_library())
     WebKit::enableMediaPlayer();
+
+  if (command_line.HasSwitch(switches::kEnableDatabases)) {
+    WebKit::enableDatabases();
+  }
 }
 
 void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,

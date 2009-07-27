@@ -12,6 +12,7 @@
 #include <time.h>
 
 #include "base/eintr_wrapper.h"
+#include "base/platform_file.h"
 #include "base/process_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -157,6 +158,20 @@ class SandboxIPCProcess : public WebKitClient {
   virtual void stopSharedTimer() { }
 
   virtual void callOnMainThread(void (*)()) { }
+
+  virtual base::PlatformFile databaseOpenFile(
+    const WebString& fileName, int desiredFlags) {
+      return base::kInvalidPlatformFileValue;
+  }
+  virtual bool databaseDeleteFile(const WebString& fileName) {
+    return false;
+  }
+  virtual long databaseGetFileAttributes(const WebString& fileName) {
+    return -1;
+  }
+  virtual long long databaseGetFileSize(const WebString& fileName) {
+    return 0;
+  }
 
  private:
   // ---------------------------------------------------------------------------

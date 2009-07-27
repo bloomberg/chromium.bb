@@ -557,4 +557,6 @@ const wchar_t kDiagnostics[] = L"diagnostics";
 // Enables the custom JumpList on Windows 7.
 const wchar_t kEnableCustomJumpList[] = L"enable-custom-jumplist";
 
+// Enables HTML5 DB support.
+const wchar_t kEnableDatabases[] = L"enable-databases";
 }  // namespace switches

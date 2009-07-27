@@ -86,6 +86,10 @@ namespace WebKit {
     // Purge the plugin list cache.
     WEBKIT_API void resetPluginCache();
 
+    // Enables HTML5 database support.
+    WEBKIT_API void enableDatabases();
+    WEBKIT_API bool databasesEnabled();
+
 } // namespace WebKit
 
 #endif

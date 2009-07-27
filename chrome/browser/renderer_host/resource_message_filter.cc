@@ -21,6 +21,7 @@
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/file_system_accessor.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/spellchecker.h"
@@ -155,6 +156,8 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
               resource_dispatcher_host->webkit_thread()))),
+      db_dispatcher_host_(
+        new DatabaseDispatcherHost(profile->GetPath(), this)),
       off_the_record_(profile->IsOffTheRecord()) {
   DCHECK(request_context_.get());
   DCHECK(request_context_->cookie_store());
@@ -249,7 +252,9 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
                                                  message, &msg_is_ok) ||
                  dom_storage_dispatcher_host_->OnMessageReceived(
                                                    message, &msg_is_ok) ||
-                 audio_renderer_host_->OnMessageReceived(message, &msg_is_ok);
+                 audio_renderer_host_->OnMessageReceived(
+                                           message, &msg_is_ok) ||
+                 db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

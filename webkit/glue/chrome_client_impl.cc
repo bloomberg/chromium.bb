@@ -14,6 +14,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "Cursor.h"
 #include "Document.h"
 #include "DocumentLoader.h"
+#include "DatabaseTracker.h"
 #include "FloatRect.h"
 #include "FileChooser.h"
 #include "FrameLoadRequest.h"
@@ -541,7 +542,10 @@ void ChromeClientImpl::print(WebCore::Frame* frame) {
 
 void ChromeClientImpl::exceededDatabaseQuota(WebCore::Frame* frame,
     const WebCore::String& databaseName) {
-  // TODO(tc): If we enable the storage API, we need to implement this function.
+  // set a reasonable quota for now -- 5Mb should be enough for anybody
+  // TODO(dglazkov): this should be configurable
+  WebCore::SecurityOrigin* origin = frame->document()->securityOrigin();
+  WebCore::DatabaseTracker::tracker().setQuota(origin, 1024 * 1024 * 5);
 }
 
 void ChromeClientImpl::runOpenPanel(WebCore::Frame* frame,

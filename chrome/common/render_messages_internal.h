@@ -13,6 +13,7 @@
 
 #include "base/clipboard.h"
 #include "base/file_path.h"
+#include "base/platform_file.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
@@ -626,6 +627,26 @@ IPC_BEGIN_MESSAGES(View)
   // validity.
   IPC_MESSAGE_CONTROL1(UtilityMsg_UnpackWebResource,
                        std::string /* JSON data */)
+
+  // Returns a file handle
+  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseOpenFileResponse,
+                       int32 /* the ID of the message we're replying to */,
+                       base::PlatformFile /* the HANDLE/fd of the DB file */)
+
+  // Returns the error code returned by a call to DeleteFile()
+  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseDeleteFileResponse,
+                       int32 /* the ID of the message we're replying to */,
+                       bool /* whether or not the DB file was deleted */)
+
+  // Returns the attributes of a file
+  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseGetFileAttributesResponse,
+                       int32 /* the ID of the message we're replying to */,
+                       int32 /* the attributes for the given DB file */)
+
+  // Returns the size of a file
+  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseGetFileSizeResponse,
+                       int32 /* the ID of the message we're replying to */,
+                       int64 /* the size of the given DB file */)
 
 IPC_END_MESSAGES(View)
 
@@ -1587,5 +1608,26 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Sent by the renderer process to acknowledge receipt of a
   // ViewMsg_CSSInsertRequest message and css has been inserted into the frame.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_OnCSSInserted)
+
+  // Asks the browser process to open a DB file with the given name
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_DatabaseOpenFile,
+                       FilePath /* file name */,
+                       int /* desired flags */,
+                       int32 /* a unique message ID */)
+
+  // Asks the browser process to delete a DB file
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseDeleteFile,
+                       FilePath /* the name of the file */,
+                       int32 /* a unique message ID */)
+
+  // Asks the browser process to return the attributes of a DB file
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseGetFileAttributes,
+                       FilePath /* the name of the file */,
+                       int32 /* a unique message ID */)
+
+  // Asks the browser process to return the size of a DB file
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseGetFileSize,
+                       FilePath /* the name of the file */,
+                       int32 /* a unique message ID */)
 
 IPC_END_MESSAGES(ViewHost)

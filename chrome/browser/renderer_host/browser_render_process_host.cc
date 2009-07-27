@@ -340,6 +340,7 @@ bool BrowserRenderProcessHost::Init() {
     switches::kDisableAudio,
     switches::kSimpleDataSource,
     switches::kEnableBenchmarking,
+    switches::kEnableDatabases,
   };
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {

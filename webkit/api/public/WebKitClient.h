@@ -34,6 +34,10 @@
 #include "WebCommon.h"
 #include "WebLocalizedString.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace WebKit {
     class WebClipboard;
     class WebData;
@@ -154,6 +158,26 @@ namespace WebKit {
 
         // Callable from a background WebKit thread.
         virtual void callOnMainThread(void (*func)()) = 0;
+
+        // HTML5 DB ------------------------------------------------------------
+
+#if defined(OS_WIN)
+typedef HANDLE FileType;
+#else
+typedef int FileType;
+#endif
+
+        // Opens a database file
+        virtual FileType databaseOpenFile(const WebString& fileName, int desiredFlags) = 0;
+
+        // Deletes a database file and returns the error code
+        virtual bool databaseDeleteFile(const WebString& fileName) = 0;
+
+        // Returns the attributes of the given database file
+        virtual long databaseGetFileAttributes(const WebString& fileName) = 0;
+
+        // Returns the size of the given database file
+        virtual long long databaseGetFileSize(const WebString& fileName) = 0;
     };
 
 } // namespace WebKit

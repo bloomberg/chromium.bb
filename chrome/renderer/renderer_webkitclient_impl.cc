@@ -5,7 +5,10 @@
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 
 #include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/platform_file.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/db_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/net/render_dns_master.h"
@@ -192,3 +195,48 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
 }
 
 #endif
+
+//------------------------------------------------------------------------------
+
+base::PlatformFile RendererWebKitClientImpl::databaseOpenFile(
+  const WebString& file_name, int desired_flags) {
+  DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
+  int message_id = db_message_filter->GetUniqueID();
+  return db_message_filter->SendAndWait(
+    new ViewHostMsg_DatabaseOpenFile(
+      FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+      desired_flags, message_id),
+    message_id, base::kInvalidPlatformFileValue);
+}
+
+bool RendererWebKitClientImpl::databaseDeleteFile(const WebString& file_name) {
+  DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
+  int message_id = db_message_filter->GetUniqueID();
+  return db_message_filter->SendAndWait(
+    new ViewHostMsg_DatabaseDeleteFile(
+      FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+      message_id),
+    message_id, false);
+}
+
+long RendererWebKitClientImpl::databaseGetFileAttributes(
+  const WebString& file_name) {
+  DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
+  int message_id = db_message_filter->GetUniqueID();
+  return db_message_filter->SendAndWait(
+    new ViewHostMsg_DatabaseGetFileAttributes(
+      FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+      message_id),
+    message_id, -1L);
+}
+
+long long RendererWebKitClientImpl::databaseGetFileSize(
+  const WebString& file_name) {
+  DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
+  int message_id = db_message_filter->GetUniqueID();
+  return db_message_filter->SendAndWait(
+    new ViewHostMsg_DatabaseGetFileSize(
+      FilePath(webkit_glue::WebStringToFilePathString(file_name)),
+      message_id),
+    message_id, 0LL);
+}

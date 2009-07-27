@@ -219,6 +219,7 @@ extern const wchar_t kDiagnostics[];
 
 extern const wchar_t kEnableCustomJumpList[];
 
+extern const wchar_t kEnableDatabases[];
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

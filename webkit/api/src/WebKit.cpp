@@ -47,6 +47,7 @@ namespace WebKit {
 
 static WebKitClient* s_webKitClient = 0;
 static bool s_layoutTestMode = false;
+static bool s_databasesEnabled = false;
 
 void initialize(WebKitClient* webKitClient)
 {
@@ -122,5 +123,18 @@ void resetPluginCache()
 {
     WebCore::Page::refreshPlugins(false);
 }
+
+void enableDatabases()
+{
+#if ENABLE(DATABASE)
+    s_databasesEnabled = true;
+#endif
+}
+
+bool databasesEnabled()
+{
+    return s_databasesEnabled;
+}
+
 
 } // namespace WebKit

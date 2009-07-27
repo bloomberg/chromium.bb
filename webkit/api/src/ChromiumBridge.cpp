@@ -429,30 +429,22 @@ bool ChromiumBridge::isLinkVisited(WebCore::LinkHash visitedLinkHash)
 PlatformFileHandle ChromiumBridge::databaseOpenFile(const String& fileName,
                                                     int desiredFlags)
 {
-    // FIXME: un-stub when the code on the browser process side is submitted
-    //return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags);
-    return invalidPlatformFileHandle;
+    return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags);
 }
 
 bool ChromiumBridge::databaseDeleteFile(const String& fileName)
 {
-    // FIXME: un-stub when the code on the browser process side is submitted
-    //return webKitClient()->databaseDeleteFile(WebString(fileName));
-    return false;
+    return webKitClient()->databaseDeleteFile(WebString(fileName));
 }
 
 long ChromiumBridge::databaseGetFileAttributes(const String& fileName)
 {
-    // FIXME: un-stub when the code on the browser process side is submitted
-    //return webKitClient()->databaseGetFileAttributes(WebString(fileName));
-    return 0L;
+    return webKitClient()->databaseGetFileAttributes(WebString(fileName));
 }
 
 long long ChromiumBridge::databaseGetFileSize(const String& fileName)
 {
-    // FIXME: un-stub when the code on the browser process side is submitted
-    //return webKitClient()->databaseGetFileSize(WebString(fileName));
-    return 0LL;
+    return webKitClient()->databaseGetFileSize(WebString(fileName));
 }
 #endif
 

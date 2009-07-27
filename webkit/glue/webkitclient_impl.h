@@ -5,6 +5,7 @@
 #ifndef WEBKIT_CLIENT_IMPL_H_
 #define WEBKIT_CLIENT_IMPL_H_
 
+#include "base/platform_file.h"
 #include "base/timer.h"
 #include "webkit/api/public/WebKitClient.h"
 #if defined(OS_WIN)
@@ -38,6 +39,12 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)());
   virtual void suddenTerminationChanged(bool enabled) { }
+
+  virtual base::PlatformFile databaseOpenFile(
+    const WebKit::WebString& file_name, int desired_flags);
+  virtual bool databaseDeleteFile(const WebKit::WebString& file_name);
+  virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
+  virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
 
  private:
   void DoTimeout() {

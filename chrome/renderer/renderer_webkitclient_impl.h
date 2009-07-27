@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_RENDERER_WEBKIT_CLIENT_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBKIT_CLIENT_IMPL_H_
 
+#include "base/platform_file.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
@@ -39,6 +40,12 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
+
+  virtual base::PlatformFile databaseOpenFile(
+    const WebKit::WebString& file_name, int desired_flags);
+  virtual bool databaseDeleteFile(const WebKit::WebString& file_name);
+  virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
+  virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
 
  private:
   class MimeRegistry : public webkit_glue::SimpleWebMimeRegistryImpl {
