@@ -211,6 +211,9 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   static gboolean OnTreeViewButtonRelease(GtkWidget* tree_view,
       GdkEventButton* button, BookmarkManagerGtk* bookmark_manager);
 
+  static gboolean OnTreeViewKeyPress(GtkWidget* tree_view,
+      GdkEventKey* key, BookmarkManagerGtk* bookmark_manager);
+
   // Tools menu item callbacks.
   static void OnImportItemActivated(GtkMenuItem* menuitem,
                                     BookmarkManagerGtk* bookmark_manager);

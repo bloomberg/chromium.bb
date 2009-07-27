@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/bookmark_manager_gtk.h"
 
+#include <gdk/gdkkeysyms.h>
 #include <vector>
 
 #include "app/l10n_util.h"
@@ -442,6 +443,8 @@ GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
                    G_CALLBACK(OnTreeViewButtonPress), this);
   g_signal_connect(left_tree_view_, "button-release-event",
                    G_CALLBACK(OnTreeViewButtonRelease), this);
+  g_signal_connect(left_tree_view_, "key-press-event",
+                   G_CALLBACK(OnTreeViewKeyPress), this);
 
   // The left side is only a drag destination (not a source).
   gtk_drag_dest_set(left_tree_view_, GTK_DEST_DEFAULT_DROP,
@@ -513,6 +516,8 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
                    G_CALLBACK(OnTreeViewButtonPress), this);
   g_signal_connect(right_tree_view_, "button-release-event",
                    G_CALLBACK(OnTreeViewButtonRelease), this);
+  g_signal_connect(right_tree_view_, "key-press-event",
+                   G_CALLBACK(OnTreeViewKeyPress), this);
 
   // We don't advertise GDK_ACTION_COPY, but since we don't explicitly do
   // any deleting following a succesful move, this should work.
@@ -850,13 +855,13 @@ void BookmarkManagerGtk::OnSearchTextChanged() {
 
 // static
 void BookmarkManagerGtk::OnLeftSelectionChanged(GtkTreeSelection* selection,
-    BookmarkManagerGtk* bm) {
-  // Sometimes we won't have a selection for a short period of time
-  // (specifically, when the user collapses an ancestor of the selected row).
-  // The context menu and right store will momentarily be stale, but we should
-  // presently receive another selection changed event that will refresh them.
-  if (gtk_tree_selection_count_selected_rows(selection) == 0)
+                                                BookmarkManagerGtk* bm) {
+  // If the selection is (newly) empty, then make the right tree view take
+  // over the organize menu.
+  if (gtk_tree_selection_count_selected_rows(selection) == 0) {
+    bm->ResetOrganizeMenu(false);
     return;
+  }
 
   bm->ResetOrganizeMenu(true);
   bm->BuildRightStore();
@@ -864,11 +869,15 @@ void BookmarkManagerGtk::OnLeftSelectionChanged(GtkTreeSelection* selection,
 
 // static
 void BookmarkManagerGtk::OnRightSelectionChanged(GtkTreeSelection* selection,
-    BookmarkManagerGtk* bookmark_manager) {
-  if (gtk_tree_selection_count_selected_rows(selection) == 0)
+                                                 BookmarkManagerGtk* bm) {
+  // If the selection is (newly) empty, then make the left tree view take
+  // over the organize menu.
+  if (gtk_tree_selection_count_selected_rows(selection) == 0) {
+    bm->ResetOrganizeMenu(true);
     return;
+  }
 
-  bookmark_manager->ResetOrganizeMenu(false);
+  bm->ResetOrganizeMenu(false);
 }
 
 // statuc
@@ -1208,6 +1217,21 @@ gboolean BookmarkManagerGtk::OnTreeViewButtonRelease(GtkWidget* tree_view,
     GdkEventButton* button, BookmarkManagerGtk* bm) {
   if (bm->delaying_mousedown_ && (tree_view == bm->right_tree_view_))
     bm->SendDelayedMousedown();
+
+  return FALSE;
+}
+
+// static
+gboolean BookmarkManagerGtk::OnTreeViewKeyPress(GtkWidget* tree_view,
+    GdkEventKey* key, BookmarkManagerGtk* bm) {
+  if (key->keyval != GDK_Delete)
+    return FALSE;
+
+  if (bm->organize_menu_.get() &&
+      bm->organize_menu_->IsCommandEnabled(IDS_BOOKMARK_BAR_REMOVE)) {
+    bm->organize_menu_->ExecuteCommand(IDS_BOOKMARK_BAR_REMOVE);
+    return TRUE;
+  }
 
   return FALSE;
 }
