@@ -45,6 +45,7 @@ doc/fcconfig.sgml
 doc/fcconstant.sgml
 doc/fcdircache.sgml
 doc/fcfile.sgml
+doc/fcformat.sgml
 doc/fcfontset.sgml
 doc/fcfreetype.sgml
 doc/fclangset.sgml
