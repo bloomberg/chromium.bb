@@ -904,8 +904,8 @@ nouveau_bo_emit_buffer(struct nouveau_channel *chan, struct nouveau_bo *bo)
 			nvbo->sysmem = sysmem_tmp;
 
 			memcpy(bo->map, nvbo->sysmem, nvbo->base.size);
-			nouveau_bo_unmap(bo);
 			nouveau_bo_ufree(nvbo);
+			nouveau_bo_unmap(bo);
 		}
 	}
 
