@@ -4,6 +4,7 @@
 
 #include "base/nss_init.h"
 
+#include <dlfcn.h>
 #include <nss.h>
 #include <plarena.h>
 #include <prerror.h>
@@ -93,12 +94,22 @@ class NSSInitSingleton {
 
     NSS_SetDomesticPolicy();
 
+    // Use late binding to avoid scary but benign warning
+    // "Symbol `SSL_ImplementedCiphers' has different size in shared object,
+    //  consider re-linking"
+    const PRUint16* pSSL_ImplementedCiphers = static_cast<const PRUint16*>(
+        dlsym(RTLD_DEFAULT, "SSL_ImplementedCiphers"));
+    if (pSSL_ImplementedCiphers == NULL) {
+      NOTREACHED() << "Can't get list of supported ciphers";
+      return;
+    }
+
     // Explicitly enable exactly those ciphers with keys of at least 80 bits
     for (int i = 0; i < SSL_NumImplementedCiphers; i++) {
       SSLCipherSuiteInfo info;
-      if (SSL_GetCipherSuiteInfo(SSL_ImplementedCiphers[i], &info,
+      if (SSL_GetCipherSuiteInfo(pSSL_ImplementedCiphers[i], &info,
                                  sizeof(info)) == SECSuccess) {
-        SSL_CipherPrefSetDefault(SSL_ImplementedCiphers[i],
+        SSL_CipherPrefSetDefault(pSSL_ImplementedCiphers[i],
                                  (info.effectiveKeyBits >= 80));
       }
     }
