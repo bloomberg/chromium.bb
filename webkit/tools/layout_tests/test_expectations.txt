@@ -1112,7 +1112,7 @@ BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
 BUG10322 WIN : LayoutTests/fast/borders/fieldsetBorderRadius.html = FAIL
 
 // This test isn't hanging, it just takes 12-13 seconds to run.
-BUG10322 SLOW : LayoutTests/http/tests/misc/acid3.html = FAIL
+BUG10322 SLOW WIN LINUX : LayoutTests/http/tests/misc/acid3.html = FAIL
 
 // Expectations for this test changed upstream. We should fix this test, but
 // it doesn't need to block the current release
@@ -3114,7 +3114,6 @@ BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr
 
 // Test failures from WebKit merge 46369 to 46417
 BUG_PKASTING WIN LINUX : LayoutTests/editing/style/remove-underline-from-stylesheet.html = FAIL
-BUG_PKASTING MAC : LayoutTests/http/tests/misc/acid3.html = CRASH
 BUG_PKASTING MAC : LayoutTests/svg/W3C-SVG-1.1/struct-dom-01-b.svg = CRASH
 BUG_PKASTING MAC : LayoutTests/svg/custom/baseval-animval-equality.svg = CRASH
 BUG_PKASTING MAC : LayoutTests/svg/custom/dynamic-svg-document-creation.svg = CRASH
@@ -3174,3 +3173,5 @@ BUG_PKASTING MAC : LayoutTests/svg/dynamic-updates/SVGRectElement-svgdom-width-p
 BUG_PKASTING MAC : LayoutTests/svg/dynamic-updates/SVGRectElement-svgdom-x-prop.html = CRASH
 BUG_PKASTING MAC : LayoutTests/svg/dynamic-updates/SVGRectElement-svgdom-y-prop.html = CRASH
 BUG_PKASTING MAC : LayoutTests/svg/hixie/dynamic/005.xml = CRASH
+// This was already SLOW FAIL, only CRASH is new
+BUG_PKASTING SLOW MAC : LayoutTests/http/tests/misc/acid3.html = FAIL CRASH
