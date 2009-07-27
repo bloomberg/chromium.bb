@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
+#import "chrome/browser/cocoa/history_menu_bridge.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/cocoa/preferences_window_controller.h"
@@ -227,6 +228,7 @@
                 recursively:YES];
 
   bookmarkMenuBridge_.reset(new BookmarkMenuBridge());
+  historyMenuBridge_.reset(new HistoryMenuBridge([self defaultProfile]));
 
   [self setUpdateCheckInterval];
 

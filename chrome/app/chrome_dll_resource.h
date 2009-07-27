@@ -206,4 +206,7 @@
 #define IDC_BOOKMARK_MENU               43000     // OSX only
 #define IDC_VIEW_MENU                   44000     // OSX only
 #define IDC_CONTROL_PANEL               45000     // Linux2 only
+#define IDC_HISTORY_MENU                46000     // OSX only
+#define IDC_HISTORY_MENU_VISITED        46100     // OSX only
+#define IDC_HISTORY_MENU_CLOSED         46200     // OSX only
 

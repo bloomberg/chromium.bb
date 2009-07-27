@@ -15,6 +15,7 @@
 class BookmarkMenuBridge;
 class CommandUpdater;
 class GURL;
+class HistoryMenuBridge;
 @class PreferencesWindowController;
 class Profile;
 
@@ -27,6 +28,7 @@ class Profile;
   // Management of the bookmark menu which spans across all windows
   // (and Browser*s).
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
+  scoped_ptr<HistoryMenuBridge> historyMenuBridge_;
   scoped_nsobject<PreferencesWindowController> prefsController_;
   scoped_nsobject<AboutWindowController> aboutController_;
 
@@ -34,7 +36,7 @@ class Profile;
   // only needed during early startup, it points to a valid vector during early
   // startup and is NULL during the rest of app execution.
   scoped_ptr<std::vector<GURL> > pendingURLs_;
-  
+
   // Outlets for the close tab/window menu items so that we can adjust the
   // commmand-key equivalent depending on the kind of window and how many
   // tabs it has.

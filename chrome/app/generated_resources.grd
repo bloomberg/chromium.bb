@@ -4421,6 +4421,12 @@ each locale. -->
         <message name="IDS_HISTORY_FORWARD_MAC" desc="The menu item for forward in the history menu.">
           Forward
         </message>
+        <message name="IDS_HISTORY_VISITED_MAC" desc="The menu item for the header of most visited items in the history menu.">
+          Most Visited
+        </message>
+        <message name="IDS_HISTORY_CLOSED_MAC" desc="The menu item for the header of recently closed items in the history menu.">
+          Recently Closed
+        </message>
         <!-- Bookmarks menu -->
         <message name="IDS_BOOKMARK_CURRENT_PAGE_MAC" desc="The menu item for booking the current page in the bookmark menu.">
           Bookmark Current Page...
