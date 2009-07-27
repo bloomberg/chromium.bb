@@ -46,6 +46,7 @@
 #include <functional>
 #include <list>
 #include <vector>
+#include <map>
 #include <string.h>
 
 #include "common/linux/dump_symbols.h"
@@ -371,21 +372,24 @@ static ElfW(Addr) NextAddress(
   return 0;
 }
 
-static int FindFileByNameIdx(uint32_t name_index,
-                             SourceFileInfoList &files) {
-  for (SourceFileInfoList::iterator it = files.begin();
-       it != files.end(); it++) {
-    if (it->name_index == name_index)
-      return it->source_id;
-  }
-
-  return -1;
-}
-
 // Add included file information.
 // Also fix the source id for the line info.
 static void AddIncludedFiles(struct SymbolInfo *symbols,
                              const ElfW(Shdr) *stabstr_section) {
+  // A map taking an offset into the string table to the SourceFileInfo
+  // structure whose name is at that offset.  LineInfo entries contain these
+  // offsets; we use this map to pair them up with their source files.
+  typedef std::map<unsigned int, struct SourceFileInfo *> FileByOffsetMap;
+  FileByOffsetMap index_to_file;
+
+  // Populate index_to_file with the source files we have now.
+  for (SourceFileInfoList::iterator source_file_it = 
+	 symbols->source_file_info.begin();
+       source_file_it != symbols->source_file_info.end();
+       ++source_file_it) {
+    index_to_file[source_file_it->name_index] = &*source_file_it;
+  }
+
   for (SourceFileInfoList::iterator source_file_it =
 	 symbols->source_file_info.begin();
        source_file_it != symbols->source_file_info.end();
@@ -409,9 +413,9 @@ static void AddIncludedFiles(struct SymbolInfo *symbols,
         if (line_info.source_name_index != source_file.name_index) {
           // This line is not from the current source file, check if this
           // source file has been added before.
-          int found_source_id = FindFileByNameIdx(line_info.source_name_index,
-                                                  symbols->source_file_info);
-          if (found_source_id < 0) {
+          struct SourceFileInfo **file_map_entry
+            = &index_to_file[line_info.source_name_index];
+          if (! *file_map_entry) {
             // Got a new included file.
             // Those included files don't have address or line information.
             SourceFileInfo new_file;
@@ -422,9 +426,10 @@ static void AddIncludedFiles(struct SymbolInfo *symbols,
             new_file.source_id = symbols->next_source_id++;
             line_info.source_id = new_file.source_id;
             symbols->source_file_info.push_back(new_file);
+            *file_map_entry = &symbols->source_file_info.back();
           } else {
             // The file has been added.
-            line_info.source_id = found_source_id;
+            line_info.source_id = (*file_map_entry)->source_id;
           }
         } else {
           // The line belongs to the file.
