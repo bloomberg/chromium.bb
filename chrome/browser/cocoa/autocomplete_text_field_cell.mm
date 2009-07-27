@@ -14,7 +14,7 @@ const NSInteger kBaselineOffset = 2;
   NSFrameRectWithWidthUsingOperation(cellFrame,  1, NSCompositeSourceOver);
 
   NSRect frame = NSInsetRect(cellFrame, 0, 1);
-  [[NSColor whiteColor] setFill];
+  [[self backgroundColor] setFill];
   NSRect innerFrame = NSInsetRect(frame, 1, 1);
   NSRectFill(innerFrame);
 
