@@ -24,6 +24,16 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
+#include "ipc/ipc_message.h"
+
+// On Windows, the about:ipc dialog shows IPCs; on POSIX, we hook up a
+// logger in this file.
+#if defined(OS_POSIX) && defined(IPC_MESSAGE_LOG_ENABLED)
+#define IPC_MESSAGE_MACROS_LOG_ENABLED
+#include "ipc/ipc_logging.h"
+#include "chrome/common/plugin_messages.h"
+#include "chrome/common/render_messages.h"
+#endif
 
 // When true, this means that error dialogs should not be shown.
 static bool dialogs_are_suppressed_ = false;
