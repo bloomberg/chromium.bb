@@ -160,6 +160,9 @@ class TabRendererGtk : public AnimationDelegate {
 
   gfx::Rect bounds() const { return bounds_; }
 
+  // Returns the non-mirrored (LTR) bounds of this tab.
+  gfx::Rect GetNonMirroredBounds(GtkWidget* parent) const;
+
   // Sets the bounds of the tab.
   void SetBounds(const gfx::Rect& bounds);
 

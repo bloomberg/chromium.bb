@@ -1426,14 +1426,16 @@ gfx::Rect TabStripGtk::GetDropBounds(int drop_index,
   int center_x;
   if (drop_index < GetTabCount()) {
     TabGtk* tab = GetTabAt(drop_index);
+    gfx::Rect bounds = tab->GetNonMirroredBounds(tabstrip_.get());
     // TODO(sky): update these for pinned tabs.
     if (drop_before)
-      center_x = tab->x() - (kTabHOffset / 2);
+      center_x = bounds.x() - (kTabHOffset / 2);
     else
-      center_x = tab->x() + (tab->width() / 2);
+      center_x = bounds.x() + (bounds.width() / 2);
   } else {
     TabGtk* last_tab = GetTabAt(drop_index - 1);
-    center_x = last_tab->x() + last_tab->width() + (kTabHOffset / 2);
+    gfx::Rect bounds = last_tab->GetNonMirroredBounds(tabstrip_.get());
+    center_x = bounds.x() + bounds.width() + (kTabHOffset / 2);
   }
 
   center_x = gtk_util::MirroredXCoordinate(tabstrip_.get(), center_x);
@@ -1455,13 +1457,17 @@ gfx::Rect TabStripGtk::GetDropBounds(int drop_index,
 }
 
 void TabStripGtk::UpdateDropIndex(GdkDragContext* context, gint x, gint y) {
-  // TODO(jhawkins): Handle RTL layout.
+  // If the UI layout is right-to-left, we need to mirror the mouse
+  // coordinates since we calculate the drop index based on the
+  // original (and therefore non-mirrored) positions of the tabs.
+  x = gtk_util::MirroredXCoordinate(tabstrip_.get(), x);
   for (int i = 0; i < GetTabCount(); ++i) {
     TabGtk* tab = GetTabAt(i);
-    const int tab_max_x = tab->x() + tab->width();
-    const int hot_width = tab->width() / 3;
+    gfx::Rect bounds = tab->GetNonMirroredBounds(tabstrip_.get());
+    const int tab_max_x = bounds.x() + bounds.width();
+    const int hot_width = bounds.width() / 3;
     if (x < tab_max_x) {
-      if (x < tab->x() + hot_width)
+      if (x < bounds.x() + hot_width)
         SetDropIndex(i, true);
       else if (x >= tab_max_x - hot_width)
         SetDropIndex(i + 1, true);

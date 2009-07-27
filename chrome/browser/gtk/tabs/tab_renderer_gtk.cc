@@ -62,6 +62,16 @@ const int kCloseButtonHorzFuzz = 5;
 
 SkBitmap* crashed_fav_icon = NULL;
 
+// Gets the bounds of |widget| relative to |parent|.
+gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
+                                          GtkWidget* widget) {
+  gfx::Point parent_pos = gtk_util::GetWidgetScreenPosition(parent);
+  gfx::Point widget_pos = gtk_util::GetWidgetScreenPosition(widget);
+  return gfx::Rect(widget_pos.x() - parent_pos.x(),
+                   widget_pos.y() - parent_pos.y(),
+                   widget->allocation.width, widget->allocation.height);
+}
+
 }  // namespace
 
 TabRendererGtk::LoadingAnimation::Data::Data(ThemeProvider* theme_provider) {
@@ -372,6 +382,15 @@ void TabRendererGtk::SetSelectedTitleColor(SkColor color) {
 // static
 void TabRendererGtk::SetUnselectedTitleColor(SkColor color) {
   unselected_title_color_ = color;
+}
+
+gfx::Rect TabRendererGtk::GetNonMirroredBounds(GtkWidget* parent) const {
+  // The tabstrip widget is a windowless widget so the tab widget's allocation
+  // is relative to the browser titlebar.  We need the bounds relative to the
+  // tabstrip.
+  gfx::Rect bounds = GetWidgetBoundsRelativeToParent(parent, widget());
+  bounds.set_x(gtk_util::MirroredLeftPointForRect(parent, bounds));
+  return bounds;
 }
 
 void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
