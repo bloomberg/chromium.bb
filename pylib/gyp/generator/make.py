@@ -102,7 +102,7 @@ DEPFLAGS = -MMD -MF $(depfile).tmp
 #   path/to/foobar.o: DEP1 DEP2
 # Additionally, we want to make missing files not cause us to needlessly
 # rebuild.  We want to rewrite
-#   foobar.o: DEP1 DEP2 \
+#   foobar.o: DEP1 DEP2 \\
 #               DEP3
 # to
 #   DEP1 DEP2:
