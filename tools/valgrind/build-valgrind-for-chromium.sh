@@ -12,6 +12,7 @@ then
   if test -x /usr/bin/ld.orig
   then
     echo "Using /usr/bin/ld.orig instead of gold to link valgrind"
+    test -d $THISDIR/override_ld && rm -rf $THISDIR/override_ld
     mkdir $THISDIR/override_ld
     ln -s /usr/bin/ld.orig $THISDIR/override_ld/ld
     PATH="$THISDIR/override_ld:$PATH"
@@ -46,6 +47,18 @@ patch -p0 < "$THISDIR"/longlines.patch
 # "Want --show-possible option so I can ignore the bazillion possible leaks..."
 #wget -O possible.patch https://bugs.kde.org/attachment.cgi?id=35559
 patch -p0 < "$THISDIR"/possible.patch
+
+if [ "$INSTALL_TSAN" = "yes" ]
+then
+  # Add ThreadSanitier to the installation.
+  # ThreadSanitizer is an experimental dynamic data race detector.
+  # See http://code.google.com/p/data-race-test/wiki/ThreadSanitizer
+  svn checkout -r 1096 http://data-race-test.googlecode.com/svn/trunk/tsan tsan
+  mkdir tsan/{docs,tests}
+  touch tsan/{docs,tests}/Makefile.am
+  patch -p 0 < tsan/valgrind.patch
+  patch -p 0 -d VEX < tsan/vex.patch
+fi
 
 sh autogen.sh
 ./configure --prefix=/usr/local/valgrind-20090715
