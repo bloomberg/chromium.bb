@@ -386,6 +386,29 @@ struct ParamTraits<std::string> {
   }
 };
 
+template<typename CharType>
+static void LogBytes(const std::vector<CharType>& data, std::wstring* out) {
+#if defined(OS_WIN)
+  // Windows has a GUI for logging, which can handle arbitrary binary data.
+  for (size_t i = 0; i < data.size(); ++i)
+    out->push_back(data[i]);
+#else
+  // On POSIX, we log to stdout, which we assume can display ASCII.
+  static const size_t kMaxBytesToLog = 100;
+  for (size_t i = 0; i < std::min(data.size(), kMaxBytesToLog); ++i) {
+    if (isprint(data[i]))
+      out->push_back(data[i]);
+    else
+      out->append(StringPrintf(L"[%02X]", static_cast<unsigned char>(data[i])));
+  }
+  if (data.size() > kMaxBytesToLog) {
+    out->append(
+        StringPrintf(L" and %u more bytes",
+                     static_cast<unsigned>(data.size() - kMaxBytesToLog)));
+  }
+#endif
+}
+
 template <>
 struct ParamTraits<std::vector<unsigned char> > {
   typedef std::vector<unsigned char> param_type;
@@ -408,8 +431,7 @@ struct ParamTraits<std::vector<unsigned char> > {
     return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
-    for (size_t i = 0; i < p.size(); ++i)
-      l->push_back(p[i]);
+    LogBytes(p, l);
   }
 };
 
@@ -434,8 +456,7 @@ struct ParamTraits<std::vector<char> > {
     return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
-    for (size_t i = 0; i < p.size(); ++i)
-      l->push_back(p[i]);
+    LogBytes(p, l);
   }
 };
 
