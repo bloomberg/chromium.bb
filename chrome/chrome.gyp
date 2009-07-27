@@ -644,6 +644,8 @@
         'browser/automation/url_request_mock_http_job.h',
         'browser/automation/url_request_slow_download_job.cc',
         'browser/automation/url_request_slow_download_job.h',
+        'browser/automation/url_request_slow_http_job.cc',
+        'browser/automation/url_request_slow_http_job.h',
         'browser/back_forward_menu_model.cc',
         'browser/back_forward_menu_model.h',
         'browser/back_forward_menu_model_views.cc',

@@ -24,6 +24,7 @@
 #include "chrome/browser/automation/url_request_failed_dns_job.h"
 #include "chrome/browser/automation/url_request_mock_http_job.h"
 #include "chrome/browser/automation/url_request_slow_download_job.h"
+#include "chrome/browser/automation/url_request_slow_http_job.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
@@ -2120,6 +2121,7 @@ class SetFilteredInetTask : public Task {
       std::wstring root_http;
       PathService::Get(chrome::DIR_TEST_DATA, &root_http);
       URLRequestMockHTTPJob::AddUITestUrls(root_http);
+      URLRequestSlowHTTPJob::AddUITestUrls(root_http);
     } else {
       // Revert to the default handlers.
       URLRequestFilter::GetInstance()->ClearHandlers();

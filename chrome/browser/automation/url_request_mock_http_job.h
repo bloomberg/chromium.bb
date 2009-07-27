@@ -28,6 +28,11 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   // Given the path to a file relative to base_path_, construct a mock URL.
   static GURL GetMockUrl(const std::wstring& path);
 
+ protected:
+  static FilePath GetOnDiskPath(const std::wstring& base_path,
+                                URLRequest* request,
+                                const std::string& scheme);
+
  private:
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
 

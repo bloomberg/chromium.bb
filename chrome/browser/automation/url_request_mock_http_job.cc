@@ -19,22 +19,8 @@ std::wstring URLRequestMockHTTPJob::base_path_ = L"";
 /* static */
 URLRequestJob* URLRequestMockHTTPJob::Factory(URLRequest* request,
                                               const std::string& scheme) {
-  std::wstring file_url(L"file:///");
-  file_url += base_path_;
-  const std::string& url = request->url().spec();
-  // Fix up the url to be the file url we're loading from disk.
-  std::string host_prefix("http://");
-  host_prefix.append(kMockHostname);
-  size_t host_prefix_len = host_prefix.length();
-  if (url.compare(0, host_prefix_len, host_prefix.data(),
-                  host_prefix_len) == 0) {
-    file_url += UTF8ToWide(url.substr(host_prefix_len));
-  }
-
-  // Convert the file:/// URL to a path on disk.
-  FilePath file_path;
-  net::FileURLToFilePath(GURL(WideToUTF8(file_url)), &file_path);
-  return new URLRequestMockHTTPJob(request, file_path);
+  return new URLRequestMockHTTPJob(request,
+                                   GetOnDiskPath(base_path_, request, scheme));
 }
 
 /* static */
@@ -54,6 +40,28 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const std::wstring& path) {
   url.append("/");
   url.append(WideToUTF8(path));
   return GURL(url);
+}
+
+/* static */
+FilePath URLRequestMockHTTPJob::GetOnDiskPath(const std::wstring& base_path,
+                                              URLRequest* request,
+                                              const std::string& scheme) {
+  std::wstring file_url(L"file:///");
+  file_url += base_path;
+  const std::string& url = request->url().spec();
+  // Fix up the url to be the file url we're loading from disk.
+  std::string host_prefix("http://");
+  host_prefix.append(kMockHostname);
+  size_t host_prefix_len = host_prefix.length();
+  if (url.compare(0, host_prefix_len, host_prefix.data(),
+                  host_prefix_len) == 0) {
+    file_url += UTF8ToWide(url.substr(host_prefix_len));
+  }
+
+  // Convert the file:/// URL to a path on disk.
+  FilePath file_path;
+  net::FileURLToFilePath(GURL(WideToUTF8(file_url)), &file_path);
+  return file_path;
 }
 
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(URLRequest* request,

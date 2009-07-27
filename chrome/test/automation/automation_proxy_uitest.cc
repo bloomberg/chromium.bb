@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/automation/url_request_slow_http_job.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -287,6 +288,14 @@ TEST_F(AutomationProxyTest, NavigateToURLWithTimeout1) {
   std::wstring title;
   ASSERT_TRUE(tab->GetTabTitle(&title));
   ASSERT_STREQ(L"Title Of Awesomeness", title.c_str());
+
+  // Use timeout high enough to allow the browser to create a url request job.
+  const int kLowTimeoutMs = 250;
+  ASSERT_GE(URLRequestSlowHTTPJob::kDelayMs, kLowTimeoutMs);
+  tab->NavigateToURLWithTimeout(
+      URLRequestSlowHTTPJob::GetMockUrl(filename.ToWStringHack()),
+      kLowTimeoutMs, &is_timeout);
+  ASSERT_TRUE(is_timeout);
 }
 
 TEST_F(AutomationProxyTest, NavigateToURLWithTimeout2) {
@@ -299,8 +308,13 @@ TEST_F(AutomationProxyTest, NavigateToURLWithTimeout2) {
   filename1 = filename1.AppendASCII("title1.html");
 
   bool is_timeout;
-  tab->NavigateToURLWithTimeout(net::FilePathToFileURL(filename1),
-                                1, &is_timeout);
+
+  // Use timeout high enough to allow the browser to create a url request job.
+  const int kLowTimeoutMs = 250;
+  ASSERT_GE(URLRequestSlowHTTPJob::kDelayMs, kLowTimeoutMs);
+  tab->NavigateToURLWithTimeout(
+      URLRequestSlowHTTPJob::GetMockUrl(filename1.ToWStringHack()),
+      kLowTimeoutMs, &is_timeout);
   ASSERT_TRUE(is_timeout);
 
   FilePath filename2(test_data_directory_);
