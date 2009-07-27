@@ -74,6 +74,7 @@ void HungRendererDialogGtk::Init() {
       l10n_util::GetStringUTF8(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT).c_str(),
       GTK_RESPONSE_OK,
       NULL));
+  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
   gtk_dialog_set_default_response(dialog_, GTK_RESPONSE_OK);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponseThunk),
                    this);
