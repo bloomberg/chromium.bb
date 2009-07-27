@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -204,7 +206,7 @@ static const int kUpdateFrequencySecs = 15;
 // puts the key/value pairs into |result|. For keys with no value, the empty
 // string is used. So for "a=1&b=foo&c", result would map "a" to "1", "b" to
 // "foo", and "c" to "".
-static void ExtractParameters(const std::string params,
+static void ExtractParameters(const std::string& params,
                               std::map<std::string, std::string>* result) {
   std::vector<std::string> pairs;
   SplitString(params, '&', &pairs);
