@@ -13,9 +13,6 @@ static const CGFloat kInsetMultiplier = 2.0/3.0;
 static const CGFloat kControlPoint1Multiplier = 1.0/3.0;
 static const CGFloat kControlPoint2Multiplier = 3.0/8.0;
 
-static const CGFloat kToolbarTopOffset = 12;
-static const CGFloat kToolbarMaxHeight = 128;
-
 @implementation TabView
 
 @synthesize state = state_;

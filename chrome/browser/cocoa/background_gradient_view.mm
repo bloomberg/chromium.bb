@@ -52,10 +52,14 @@
     CGFloat winHeight = NSHeight([[self window] frame]);
     NSGradient *gradient = [theme gradientForStyle:GTMThemeStyleToolBar
                                              state:isKey];
-    NSPoint startPoint = [self convertPointFromBase:
-                          NSMakePoint(0, winHeight - kToolbarTopOffset)];
-    NSPoint endPoint = [self convertPointFromBase:
-        NSMakePoint(0, winHeight - kToolbarTopOffset - kToolbarMaxHeight)];
+    NSPoint startPoint =
+        [self convertPoint:NSMakePoint(0, winHeight - kToolbarTopOffset)
+                  fromView:nil];
+    NSPoint endPoint =
+        [self convertPoint:NSMakePoint(0, winHeight -
+                                            kToolbarTopOffset -
+                                            kToolbarMaxHeight)
+                  fromView:nil];
 
     [gradient drawFromPoint:startPoint
                     toPoint:endPoint
