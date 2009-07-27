@@ -40,8 +40,8 @@ static bool GetTabById(int tab_id, Profile* profile, Browser** browser,
                        int* tab_index, std::string* error_message);
 
 // Construct an absolute path from a relative path.
-static GURL AbsolutePath(Profile* profile, std::string extension_id,
-                         std::string relative_url);
+static GURL AbsolutePath(Profile* profile, const std::string& extension_id,
+                         const std::string& relative_url);
 
 int ExtensionTabUtil::GetWindowId(const Browser* browser) {
   return browser->session_id().id();
@@ -715,8 +715,8 @@ static Browser* GetBrowserInProfileWithId(Profile* profile,
   return NULL;
 }
 
-static GURL AbsolutePath(Profile* profile, std::string extension_id,
-                         std::string relative_url) {
+static GURL AbsolutePath(Profile* profile, const std::string& extension_id,
+                         const std::string& relative_url) {
   ExtensionsService* service = profile->GetExtensionsService();
   Extension* extension = service->GetExtensionById(extension_id);
   return Extension::GetResourceURL(extension->url(), relative_url);
