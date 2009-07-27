@@ -60,6 +60,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
 #include "net/http/http_network_session.h"
+#include "net/socket/client_socket_pool_base.h"
 
 #if defined(OS_POSIX)
 // TODO(port): get rid of this include. It's used just to provide declarations
@@ -628,6 +629,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (http_prioritization_trial->group() == holdback_group) {
     ResourceDispatcherHost::DisableHttpPrioritization();
   }
+
+  scoped_refptr<FieldTrial> socket_late_binding_trial =
+      new FieldTrial("SocketLateBinding", 100);
+  socket_late_binding_trial->AppendGroup("_disable_late_binding", 50);
+  const int late_binding_group =
+      socket_late_binding_trial->AppendGroup("_enable_late_binding", 50);
+  if (socket_late_binding_trial->group() == late_binding_group)
+    net::ClientSocketPoolBase::EnableLateBindingOfSockets(true);
 
 #if defined(OS_WIN)
   // Init common control sex.
