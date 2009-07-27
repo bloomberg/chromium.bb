@@ -156,8 +156,8 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
               resource_dispatcher_host->webkit_thread()))),
-      db_dispatcher_host_(
-        new DatabaseDispatcherHost(profile->GetPath(), this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
+          new DatabaseDispatcherHost(profile->GetPath(), this))),
       off_the_record_(profile->IsOffTheRecord()) {
   DCHECK(request_context_.get());
   DCHECK(request_context_->cookie_store());
