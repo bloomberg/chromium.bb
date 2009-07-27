@@ -3111,5 +3111,3 @@ BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-column.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-row-group.html = FAIL
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-row.html = FAIL
-// Test failures from WebKit merge 46369:46389
-BUG_DARIN WIN LINUX : LayoutTests/editing/style/remove-underline-from-stylesheet.html = FAIL
