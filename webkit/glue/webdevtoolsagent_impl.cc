@@ -213,15 +213,6 @@ void WebDevToolsAgentImpl::ExecuteUtilityFunction(
       result, exception);
 }
 
-void WebDevToolsAgentImpl::EvaluateJavaScript(
-    int call_id,
-    const WebCore::String& source) {
-  String exception;
-  String result = debugger_agent_impl_->EvaluateJavaScript(utility_context_,
-      source, &exception);
-  tools_agent_delegate_stub_->DidEvaluateJavaScript(call_id, result, exception);
-}
-
 void WebDevToolsAgentImpl::ClearConsoleMessages() {
   Page* page = web_view_impl_->page();
   if (page) {

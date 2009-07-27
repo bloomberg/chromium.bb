@@ -161,11 +161,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
-// Tests that 'Pause' button works for eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
-  RunTest("testPauseInEval", kDebuggerTestPage);
-}
-
 // Tests console eval.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
   RunTest("testConsoleEval", kConsoleTestPage);

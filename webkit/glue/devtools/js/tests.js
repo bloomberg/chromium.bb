@@ -444,28 +444,6 @@ TestSuite.prototype.testSetBreakpoint = function() {
 
 
 /**
- * Tests 'Pause' button will pause debugger when a snippet is evaluated.
- */
-TestSuite.prototype.testPauseInEval = function() {
-  this.showPanel('scripts');
-
-  var test = this;
-
-  var pauseButton = document.getElementById('scripts-pause');
-  pauseButton.click();
-
-  devtools.tools.evaluateJavaScript('fib(10)');
-
-  this.addSniffer(WebInspector, 'pausedScript',
-      function() {
-        test.releaseControl();
-      });
-
-  test.takeControl();
-};
-
-
-/**
  * Key event with given key identifier.
  */
 TestSuite.KeyEvent = function(key) {

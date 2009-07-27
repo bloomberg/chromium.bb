@@ -48,9 +48,6 @@ class WebDevToolsAgentImpl
       int call_id,
       const WebCore::String& function_name,
       const WebCore::String& json_args);
-  virtual void EvaluateJavaScript(
-      int call_id,
-      const WebCore::String& source);
   virtual void ClearConsoleMessages();
   virtual void GetResourceContent(
       int call_id,

@@ -67,21 +67,18 @@ devtools.ToolsAgent.prototype.reset = function() {
 /**
  * @param {string} script Script exression to be evaluated in the context of the
  *     inspected page.
- * @param {function(Object|string, boolean):undefined} opt_callback Function to call
- *     with the result.
+ * @param {function(string):undefined} callback Function to call with the
+ *     result.
  */
-devtools.ToolsAgent.prototype.evaluateJavaScript = function(script,
-    opt_callback) {
-  var callbackId = devtools.Callback.wrap(function(result, exception) {
-    if (opt_callback) {
-      if (exception) {
-        opt_callback(exception, true /* result is exception */);
-      } else {
-        opt_callback(JSON.parse(result), false);
-      }
+devtools.ToolsAgent.prototype.evaluateJavaScript = function(script, callback) {
+  var callbackId = devtools.Callback.wrap(function(result) {
+    var pair = JSON.parse(result);
+    if (callback) {
+      callback(pair[0], pair[1]);
     }
   });
-  RemoteToolsAgent.EvaluateJavaScript(callbackId, script);
+  RemoteToolsAgent.ExecuteUtilityFunction(callbackId,
+      'evaluate', JSON.stringify([script]));
 };
 
 
