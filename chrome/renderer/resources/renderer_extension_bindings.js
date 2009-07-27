@@ -18,6 +18,8 @@ var chrome = chrome || {};
 (function () {
   native function OpenChannelToExtension(id);
   native function CloseChannel(portId);
+  native function PortAddRef(portId);
+  native function PortRelease(portId);
   native function PostMessage(portId, msg);
   native function GetChromeHidden();
 
@@ -46,8 +48,9 @@ var chrome = chrome || {};
     var port = new chrome.Port(portId, opt_name);
     ports[portId] = port;
     chromeHidden.onUnload.addListener(function() {
-      port.disconnect();
+      PortRelease(portId);
     });
+    PortAddRef(portId);
     return port;
   }
 

@@ -235,14 +235,15 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   RunTestOnMainThread();
   CleanUpOnMainThread();
 
+  // Close all browser windows.  This might not happen immediately, since some
+  // may need to wait for beforeunload and unload handlers to fire in a tab.
+  // When all windows are closed, the last window will call Quit().
   BrowserList::const_iterator browser = BrowserList::begin();
   for (; browser != BrowserList::end(); ++browser)
-    (*browser)->CloseAllTabs();
+    (*browser)->CloseWindow();
 
   // Stop the HTTP server.
   http_server_ = NULL;
-
-  MessageLoopForUI::current()->Quit();
 }
 
 void InProcessBrowserTest::ConfigureHostResolverProc(
