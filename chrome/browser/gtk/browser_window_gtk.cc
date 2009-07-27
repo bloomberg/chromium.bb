@@ -513,7 +513,8 @@ void BrowserWindowGtk::Show() {
   }
 #endif
 
-  gtk_widget_show(GTK_WIDGET(window_));
+  // If we are not already visible, this will just show the window.
+  gtk_window_present(window_);
 }
 
 void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
