@@ -347,9 +347,6 @@ static ElfW(Addr) NextAddress(
                          ),
                      &func_info)
                 );
-  if (next_func_iter != sorted_functions->end())
-    return (*next_func_iter)->addr;
-
   std::vector<struct SourceFileInfo *>::iterator next_file_iter =
     std::find_if(sorted_files->begin(),
                  sorted_files->end(),
@@ -360,10 +357,17 @@ static ElfW(Addr) NextAddress(
                          ),
                      &func_info)
                 );
-  if (next_file_iter != sorted_files->end()) {
-    return (*next_file_iter)->addr;
+  if (next_func_iter != sorted_functions->end()) {
+    if (next_file_iter != sorted_files->end())
+      return std::min((*next_file_iter)->addr, (*next_func_iter)->addr);
+    else
+      return (*next_func_iter)->addr;
+  } else {
+    if (next_file_iter != sorted_files->end())
+      return (*next_file_iter)->addr;
+    else
+      return 0;
   }
-  return 0;
 }
 
 // Add included file information.
