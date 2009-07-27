@@ -50,7 +50,7 @@ class ExtensionsDOMHandler : public DOMMessageHandler {
  public:
   explicit ExtensionsDOMHandler(ExtensionsService* extension_service);
   virtual ~ExtensionsDOMHandler();
-  
+
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 
@@ -70,6 +70,9 @@ class ExtensionsDOMHandler : public DOMMessageHandler {
 
   // Callback for "inspect" message.
   void HandleInspectMessage(const Value* value);
+
+  // Callback for "reload" message.
+  void HandleReloadMessage(const Value* value);
 
   // Callback for "uninstall" message.
   void HandleUninstallMessage(const Value* value);

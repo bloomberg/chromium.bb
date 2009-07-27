@@ -153,6 +153,9 @@ class ExtensionsService
                                bool alert_on_error,
                                ExtensionInstallCallback* callback);
 
+  // Reloads the specified extension.
+  void ReloadExtension(const std::string& extension_id);
+
   // Uninstalls the specified extension. Callers should only call this method
   // with extensions that exist. |external_uninstall| is a magical parameter
   // that is only used to send information to ExtensionPrefs, which external

@@ -354,6 +354,14 @@ void ExtensionsService::UpdateExtension(const std::string& id,
       alert_on_error, scoped_refptr<ExtensionsService>(this)));
 }
 
+void ExtensionsService::ReloadExtension(const std::string& extension_id) {
+  Extension* extension = GetExtensionById(extension_id);
+  FilePath extension_path = extension->path();
+
+  UnloadExtension(extension_id);
+  LoadExtension(extension_path);
+}
+
 void ExtensionsService::UninstallExtension(const std::string& extension_id,
                                            bool external_uninstall) {
   Extension* extension = GetExtensionById(extension_id);
