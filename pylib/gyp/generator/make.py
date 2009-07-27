@@ -24,9 +24,6 @@
 # See TODO near "if_changed".
 #
 # Should add a rule that regens the Makefiles from the gyp files.
-#
-# The generation is one enormous function.  Now that it works, it could
-# be refactored into smaller functions.
 
 import gyp
 import gyp.common
@@ -112,7 +109,7 @@ DEPFLAGS = -MMD -MF $(depfile).tmp
 #   DEP3:
 # so if the files are missing, they're just considered phony rules.
 # We have to do some pretty insane escaping to get those backslashes
-# and dollar signs past Python, make, the shell, and sed at the same time."""
+# and dollar signs past make, the shell, and sed at the same time."""
 r"""
 define fixup_dep
 sed -i -e "s|^$(notdir $@)|$@|" $(depfile).tmp
