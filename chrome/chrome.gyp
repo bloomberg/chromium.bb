@@ -4057,6 +4057,7 @@
       'dependencies': [
         'chrome',
         'browser',
+        'debugger',
         'common',
         'chrome_resources',
         'chrome_strings',
@@ -4123,6 +4124,7 @@
       'msvs_guid': 'A34770EA-A574-43E8-9327-F79C04770E98',
       'dependencies': [
         'chrome',
+        'debugger',
         'test_support_common',
         'test_support_ui',
         'theme_resources',
@@ -4149,6 +4151,7 @@
       'msvs_guid': 'A5F831FD-9B9C-4FEF-9FBA-554817B734CE',
       'dependencies': [
         'chrome',
+        'debugger',
         'test_support_common',
         'test_support_ui',
         'theme_resources',
@@ -4175,6 +4178,7 @@
       'msvs_guid': '7EFD0C91-198E-4043-9E71-4A4C7879B929',
       'dependencies': [
         'chrome',
+        'debugger',
         'test_support_common',
         'test_support_ui',
         'theme_resources',
@@ -4336,6 +4340,9 @@
           'msvs_guid': '265C427B-D1FF-4922-A47C-0754DDFF52E1',
           'dependencies': [
             '../base/base.gyp:base',
+            '../webkit/webkit.gyp:glue',
+            'debugger',
+            'renderer',
             'browser'
           ],
           'sources': [
