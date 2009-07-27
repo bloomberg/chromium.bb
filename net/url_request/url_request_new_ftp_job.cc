@@ -245,7 +245,7 @@ void URLRequestNewFtpJob::OnStartCompleted(int result) {
   // Clear the IO_PENDING status
   SetStatus(URLRequestStatus());
   if (result == net::OK) {
-    URLRequestJob::NotifyHeadersComplete();
+    NotifyHeadersComplete();
   } else {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
   }

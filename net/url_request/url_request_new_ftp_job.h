@@ -35,8 +35,6 @@ class URLRequestNewFtpJob : public URLRequestJob {
   virtual uint64 GetUploadProgress() const { return 0; }
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
 
-  void NotifyHeadersComplete();
-
   void DestroyTransaction();
   void StartTransaction();
 
