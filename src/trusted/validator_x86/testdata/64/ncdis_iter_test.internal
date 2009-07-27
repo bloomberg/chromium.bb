@@ -770,3 +770,22 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
 };
+0000000000000000: 41 8a 44 05 00                               mov %al, [%r13+%rax*1]
+  { 0x8a,
+    NACLi_386,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OperandSize_b),
+    InstMov,
+    2, {
+      { G_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) },
+      { E_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpSet) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprRegister[0] , %r13, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x0, ExprSize8 | ExprSignedHex },
+};

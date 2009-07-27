@@ -715,6 +715,36 @@ static ExprNode* AppendMemoryOffset(NcInstState* state,
   return root;
 }
 
+/* Extract the base register from the SIB byte. */
+static OperandKind GetSibBase(NcInstState* state) {
+  int base = sib_base(state->sib);
+  OperandKind base_reg = RegUnknown;
+  if (0x5 == base) {
+    switch (modrm_mod(state->modrm)) {
+      case 0:
+        break;
+      case 1:
+      case 2:
+        if (NACL_TARGET_SUBARCH == 64) {
+          if (state->rexprefix & 0x1) {
+            base_reg = RegR13;
+          } else {
+            base_reg = RegRBP;
+          }
+        } else {
+          base_reg = RegEBP;
+        }
+        break;
+      default:
+        FatalError("SIB value", state);
+    }
+  } else {
+    RegKind kind = NACL_TARGET_SUBARCH == 64 ? RegSize64 : RegSize32;
+    base_reg = LookupRegister(kind, GetRexBRegister(state, base));
+  }
+  return base_reg;
+}
+
 /* Define the possible scaling factors that can be defined in the
  * SIB byte of the parsed instruction.
  */
@@ -726,33 +756,15 @@ static uint8_t sib_scale[4] = { 1, 2, 4, 8 };
  * is the root of the appended expression.
  */
 static ExprNode* AppendSib(NcInstState* state) {
-  /* TODO(karl) Add effect of REX prefix to this (see table 2-5
-   * of Intel Manual).
-   */
   int index = sib_index(state->sib);
-  int base = sib_base(state->sib);
   int scale = 1;
   RegKind kind = NACL_TARGET_SUBARCH == 64 ? RegSize64 : RegSize32;
-  OperandKind base_reg = RegUnknown;
+  OperandKind base_reg;
   OperandKind index_reg = RegUnknown;
   Displacement displacement;
-  DEBUG(printf("append sib:\n"));
+  DEBUG(printf("append sib: %02x\n", state->sib));
   InitializeDisplacement(0, 0, &displacement);
-  if (0x5 == base) {
-    switch (modrm_mod(state->modrm)) {
-      case 0:
-        break;
-      case 1:
-      case 2:
-        base_reg = (NACL_TARGET_SUBARCH == 64 ? RegRBP : RegEBP);
-        break;
-      default:
-        return FatalError("SIB value", state);
-    }
-  } else {
-    base_reg = LookupRegister(kind,
-                              GetRexBRegister(state, sib_base(state->sib)));
-  }
+  base_reg = GetSibBase(state);
   if (0x4 != index || NACL_TARGET_SUBARCH != 64 || (state->rexprefix & 0x2)) {
     index_reg = LookupRegister(kind, GetRexXRegister(state, index));
     scale = sib_scale[sib_ss(state->sib)];
