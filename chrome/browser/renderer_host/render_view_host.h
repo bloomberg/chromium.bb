@@ -151,11 +151,7 @@ class RenderViewHost : public RenderWidgetHost,
   // Causes the renderer to invoke the onbeforeunload event handler.  The
   // result will be returned via ViewMsg_ShouldClose. See also ClosePage which
   // will fire the PageUnload event.
-  //
-  // Set bool for_cross_site_transition when this close is just for the current
-  // RenderView in the case of a cross-site transition. False means we're
-  // closing the entire tab.
-  void FirePageBeforeUnload(bool for_cross_site_transition);
+  void FirePageBeforeUnload();
 
   // Causes the renderer to close the current page, including running its
   // onunload event handler.  A ClosePage_ACK message will be sent to the
@@ -623,16 +619,7 @@ class RenderViewHost : public RenderWidgetHost,
   // must return to the renderer to unblock it.
   IPC::Message* run_modal_reply_msg_;
 
-  // Set to true when there is a pending ViewMsg_ShouldClose message pending.
-  // This ensures we don't spam the renderer many times to close. When true,
-  // the value of unload_ack_is_for_cross_site_transition_ indicates which type
-  // of unload this is for.
   bool is_waiting_for_unload_ack_;
-
-  // Valid only when is_waiting_for_unload_ack_ is true, this tells us if the
-  // unload request is for closing the entire tab ( = false), or only this
-  // RenderViewHost in the case of a cross-site transition ( = true).
-  bool unload_ack_is_for_cross_site_transition_;
 
   bool are_javascript_messages_suppressed_;
 

@@ -30,7 +30,8 @@ class RenderViewHostManagerTest : public InProcessBrowserTest {
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional
 // after download of a file while viewing another chrome://.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ChromeURLAfterDownload) {
+IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+                       DISABLED_ChromeURLAfterDownload) {
   GURL downloads_url("chrome://downloads");
   GURL extensions_url("chrome://extensions");
   FilePath zip_download;

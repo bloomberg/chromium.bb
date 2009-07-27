@@ -850,6 +850,7 @@ class TabContents : public PageNavigator,
   virtual RendererPreferences GetRendererPrefs() const;
   virtual WebPreferences GetWebkitPrefs();
   virtual void OnJSOutOfMemory();
+  virtual void ShouldClosePage(bool proceed);
   virtual void OnCrossSiteResponse(int new_render_process_host_id,
                                    int new_request_id);
   virtual bool CanBlur() const;

@@ -1563,7 +1563,7 @@ bool Browser::RunUnloadListenerBeforeClosing(TabContents* contents) {
     // them. Once they have fired, we'll get a message back saying whether
     // to proceed closing the page or not, which sends us back to this method
     // with the HasUnloadListener bit cleared.
-    contents->render_view_host()->FirePageBeforeUnload(false);
+    contents->render_view_host()->FirePageBeforeUnload();
     return true;
   }
   return false;
@@ -2476,7 +2476,7 @@ void Browser::ProcessPendingTabs() {
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
     if (tab->render_view_host()) {
-      tab->render_view_host()->FirePageBeforeUnload(false);
+      tab->render_view_host()->FirePageBeforeUnload();
     } else {
       ClearUnloadState(tab);
     }
