@@ -251,6 +251,9 @@ static int LoadLineInfo(struct nlist *list,
       // Don't set it here.
       // Will be processed in later pass.
       line.source_id = -1;
+      // Compiler worries about uninitialized fields in copy for 'push_back'.
+      line.size = 0;
+      line.rva_to_base = 0;
       func_info->line_info.push_back(line);
       ++cur_list;
     }
