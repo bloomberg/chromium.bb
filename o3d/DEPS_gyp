@@ -3,7 +3,7 @@ vars = {
     "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "28",
   "chromium_rev": "21287",
-  "o3d_code_rev": "101",
+  "o3d_code_rev": "103",
   "skia_rev": "279",
   "gyp_rev": "553",
   "gtest_rev": "267",
@@ -23,17 +23,11 @@ deps = {
   "third_party/cg":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/cg@" + Var("o3d_code_rev"),
 
-  "third_party/doxygen":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/doxygen@" + Var("o3d_code_rev"),
-
   "third_party/fcollada":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/fcollada@" + Var("o3d_code_rev"),
 
   "third_party/glew":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/glew@" + Var("o3d_code_rev"),
-
-  "third_party/java":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/java@" + Var("o3d_code_rev"),
 
   "third_party/jsdoctoolkit":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/jsdoctoolkit@" + Var("o3d_code_rev"),
@@ -41,11 +35,11 @@ deps = {
   "third_party/pdiff":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pdiff@" + Var("o3d_code_rev"),
 
-  "third_party/py":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/py@" + Var("o3d_code_rev"),
-
   "third_party/scons":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/scons@" + Var("o3d_code_rev"),
+
+  "third_party/selenium_rc":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/selenium_rc@" + Var("o3d_code_rev"),
 
   "third_party/vectormath":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/vectormath@" + Var("o3d_code_rev"),

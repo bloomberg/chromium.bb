@@ -55,8 +55,7 @@ import gflags
 import javascript_unit_tests
 # Import custom testrunner for pulse
 import pulse_testrunner
-# TODO: figure out if we can remove this hard-coded version
-import rev2478_mod as selenium
+import selenium
 import samples_tests
 import selenium_constants
 import selenium_utilities
@@ -203,7 +202,7 @@ class LocalFileHTTPServer(threading.Thread):
     http_server = LocalFileHTTPServer(local_root)
     http_server.setDaemon(True)
     http_server.start()
-    
+
     time_out = 30.0
 
     # Wait till the Selenium RC Server is up
@@ -320,7 +319,7 @@ class SeleniumRemoteControl(threading.Thread):
     selenium_server.start()
 
     time_out = 30.0
-    
+
     # Wait till the Selenium RC Server is up
     print 'Waiting %d seconds for Selenium RC to start.' % (int(time_out))
     selenium_server.selenium_alive.wait(time_out)
@@ -356,15 +355,15 @@ class SeleniumSession(object):
       java_path: path to java used to run selenium.
       selenium_server: path to jar containing selenium server.
       server_timeout: server timeout value, in seconds.
-      http_root: Serve http pages using this path as the document root.  When 
+      http_root: Serve http pages using this path as the document root.  When
       None, use the default.
     """
     # Start up a static file server, to serve the test pages.
 
-    if not http_root: 
+    if not http_root:
       # Serve from the o3d directory
       http_root = TESTING_ROOT + "/../"
-    
+
     self.http_server = LocalFileHTTPServer.StartServer(http_root)
 
     if self.http_server:
@@ -431,9 +430,7 @@ class SeleniumSession(object):
 
   def TearDown(self):
     """Stops the selenium server."""
-    self.session.do_command("shutDown", [])
-    # Sync with selenium_server thread
-    self.selenium_server.join()
+    self.session.shut_down_selenium_server()
 
   def TestBrowser(self, browser, test_list, test_prefix, test_suffixes,
                   server_timeout):
@@ -809,7 +806,7 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
     use_downsample = False
     use_edge = True
     edge_threshold = "5"
-    
+
     # Find out if the test specified any options relating to perceptual diff
     # that will override the defaults.
     for opt in test_options:
@@ -860,7 +857,7 @@ def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
         arguments += ["-downsample", downsample_factor]
       if use_edge:
         arguments += ["-ignoreEdges", edge_threshold]
-        
+
       # Print the perceptual diff command line so we can debug easier.
       if verbose:
         print " ".join(arguments)
@@ -944,7 +941,7 @@ def main(unused_argv):
                                      FLAGS.servertimeout)
   if not selenium_session.http_server or not selenium_session.selenium_server:
     return 1
-  
+
   for browser in FLAGS.browser:
     if browser in set(selenium_constants.SELENIUM_BROWSER_SET):
       test_list = []

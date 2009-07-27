@@ -503,7 +503,7 @@ if ARGUMENTS.get('SYSTEM_TESTS_ENABLED', False):
 
 run_env.Replace(
     SELENIUM_VERBOSE = ARGUMENTS.get('SELENIUM_VERBOSE', '0'),
-    SELENIUM_SERVER_JAR = '$SELENIUM_JAVA_DIR/server/selenium-server.jar',
+    SELENIUM_SERVER_JAR = '$SELENIUM_JAVA_DIR/selenium-server.jar',
     SELENIUM_TEST_PREFIX = ARGUMENTS.get('SELENIUM_TEST_PREFIX', 'Test'),
     SELENIUM_TEST_SUFFIXES = ARGUMENTS.get('SELENIUM_TEST_SUFFIXES',
                                            'small,medium,large'),
