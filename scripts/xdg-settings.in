@@ -82,13 +82,29 @@ fix_local_desktop_file()
     fi
 }
 
+xdg_mime_fixup()
+{
+    # xdg-mime may use ktradertest, which will fork off a copy of kdeinit if
+    # one does not already exist. It will exit after about 15 seconds if no
+    # further processes need it around. But since it does not close its stdout,
+    # the shell (via grep) will wait around for kdeinit to exit. If we start a
+    # copy here, that copy will be used in xdg-mime and we will avoid waiting.
+    if [ "$DE" = kde -a -z "$XDG_MIME_FIXED" ]; then
+        ktradertest text/html Application > /dev/null 2>&1
+        # Only do this once, as we only need it once.
+        XDG_MIME_FIXED=yes
+    fi
+}
+
 get_browser_mime()
 {
+    xdg_mime_fixup
     xdg-mime query default text/html
 }
 
 set_browser_mime()
 {
+    xdg_mime_fixup
     orig="`get_browser_mime`"
     # Fixing the local desktop file can actually change the default browser all
     # by itself, so we fix it only after querying to find the current default
