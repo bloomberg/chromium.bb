@@ -444,6 +444,7 @@ static void AddIncludedFiles(struct SymbolInfo *symbols,
 // Compute size and rva information based on symbols loaded from stab section.
 static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
                               struct SymbolInfo *symbols) {
+  int no_next_addr_count = 0;
   std::vector<struct SourceFileInfo *> sorted_files =
     SortByAddress(&(symbols->source_file_info));
   for (size_t i = 0; i < sorted_files.size(); ++i) {
@@ -476,7 +477,6 @@ static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
       // }
       // TODO(liuli): Find a better solution.
       static const int kDefaultSize = 0x10000000;
-      static int no_next_addr_count = 0;
       if (next_addr != 0) {
         func_info.size = next_addr - func_info.addr;
       } else {
