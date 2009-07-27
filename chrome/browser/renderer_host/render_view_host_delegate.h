@@ -145,9 +145,11 @@ class RenderViewHostDelegate {
    public:
     // Notification whether we should close the page, after an explicit call to
     // AttemptToClosePage.  This is called before a cross-site request or before
-    // a tab/window is closed, to allow the appropriate renderer to approve or
-    // deny the request.  |proceed| indicates whether the user chose to proceed.
-    virtual void ShouldClosePage(bool proceed) = 0;
+    // a tab/window is closed (as indicated by the first parameter) to allow the
+    // appropriate renderer to approve or deny the request.  |proceed| indicates
+    // whether the user chose to proceed.
+    virtual void ShouldClosePage(bool for_cross_site_transition,
+                                 bool proceed) = 0;
 
     // Called by ResourceDispatcherHost when a response for a pending cross-site
     // request is received.  The ResourceDispatcherHost will pause the response

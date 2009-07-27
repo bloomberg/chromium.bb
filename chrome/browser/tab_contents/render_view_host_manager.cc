@@ -211,33 +211,32 @@ void RenderViewHostManager::OnJavaScriptMessageBoxWindowDestroyed() {
   render_view_host_->JavaScriptMessageBoxWindowDestroyed();
 }
 
-void RenderViewHostManager::ShouldClosePage(bool proceed) {
-  // Should only see this while we have a pending renderer.  Otherwise, we
-  // should ignore.
-  if (!pending_render_view_host_) {
+void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
+                                            bool proceed) {
+  if (for_cross_site_transition) {
+    if (proceed) {
+      // Ok to unload the current page, so proceed with the cross-site
+      // navigation.  Note that if navigations are not currently suspended, it
+      // might be because the renderer was deemed unresponsive and this call was
+      // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
+      // is ok to do nothing here.
+      if (pending_render_view_host_->are_navigations_suspended())
+        pending_render_view_host_->SetNavigationsSuspended(false);
+    } else {
+      // Current page says to cancel.
+      CancelPending();
+      cross_navigation_pending_ = false;
+    }
+  } else {
+    // Non-cross site transition means closing the entire tab.
     bool proceed_to_fire_unload;
     delegate_->BeforeUnloadFiredFromRenderManager(proceed,
                                                   &proceed_to_fire_unload);
 
     if (proceed_to_fire_unload) {
       // This is not a cross-site navigation, the tab is being closed.
-      render_view_host_->ClosePage(true, -1, -1);
+      render_view_host_->ClosePage(false, -1, -1);
     }
-    return;
-  }
-
-  if (proceed) {
-    // Ok to unload the current page, so proceed with the cross-site
-    // navigation.  Note that if navigations are not currently suspended, it
-    // might be because the renderer was deemed unresponsive and this call was
-    // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
-    // is ok to do nothing here.
-    if (pending_render_view_host_->are_navigations_suspended())
-      pending_render_view_host_->SetNavigationsSuspended(false);
-  } else {
-    // Current page says to cancel.
-    CancelPending();
-    cross_navigation_pending_ = false;
   }
 }
 
@@ -567,7 +566,7 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
     // Tell the old render view to run its onbeforeunload handler, since it
     // doesn't otherwise know that the cross-site request is happening.  This
     // will trigger a call to ShouldClosePage with the reply.
-    render_view_host_->FirePageBeforeUnload();
+    render_view_host_->FirePageBeforeUnload(true);
 
     return pending_render_view_host_;
   } else {

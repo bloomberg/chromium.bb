@@ -2204,10 +2204,6 @@ void TabContents::OnJSOutOfMemory() {
       this, l10n_util::GetString(IDS_JS_OUT_OF_MEMORY_PROMPT), NULL));
 }
 
-void TabContents::ShouldClosePage(bool proceed) {
-  render_manager_.ShouldClosePage(proceed);
-}
-
 void TabContents::OnCrossSiteResponse(int new_render_process_host_id,
                                       int new_request_id) {
   // Allows the TabContents to react when a cross-site response is ready to be

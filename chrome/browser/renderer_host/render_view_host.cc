@@ -108,6 +108,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       suspended_nav_message_(NULL),
       run_modal_reply_msg_(NULL),
       is_waiting_for_unload_ack_(false),
+      unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
       in_inspect_element_mode_(false) {
@@ -300,21 +301,33 @@ void RenderViewHost::SetNavigationsSuspended(bool suspend) {
   }
 }
 
-void RenderViewHost::FirePageBeforeUnload() {
+void RenderViewHost::FirePageBeforeUnload(bool for_cross_site_transition) {
   if (!IsRenderViewLive()) {
     // This RenderViewHost doesn't have a live renderer, so just skip running
     // the onbeforeunload handler.
+    is_waiting_for_unload_ack_ = true;  // Prevent check in OnMsgShouldCloseACK.
+    unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
     OnMsgShouldCloseACK(true);
     return;
   }
 
   // This may be called more than once (if the user clicks the tab close button
   // several times, or if she clicks the tab close button then the browser close
-  // button), so this test makes sure we only send the message once.
-  if (!is_waiting_for_unload_ack_) {
+  // button), and we only send the message once.
+  if (is_waiting_for_unload_ack_) {
+    // Some of our close messages could be for the tab, others for cross-site
+    // transitions. We always want to think it's for closing the tab if any
+    // of the messages were, since otherwise it might be impossible to close
+    // (if there was a cross-site "close" request pending when the user clicked
+    // the close button). We want to keep the "for cross site" flag only if
+    // both the old and the new ones are also for cross site.
+    unload_ack_is_for_cross_site_transition_ =
+        unload_ack_is_for_cross_site_transition_ && for_cross_site_transition;
+  } else {
     // Start the hang monitor in case the renderer hangs in the beforeunload
     // handler.
     is_waiting_for_unload_ack_ = true;
+    unload_ack_is_for_cross_site_transition_ = for_cross_site_transition;
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
     Send(new ViewMsg_ShouldClose(routing_id()));
   }
@@ -1439,8 +1452,10 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
 
   RenderViewHostDelegate::RendererManagement* management_delegate =
       delegate_->GetRendererManagementDelegate();
-  if (management_delegate)
-    management_delegate->ShouldClosePage(proceed);
+  if (management_delegate) {
+    management_delegate->ShouldClosePage(
+        unload_ack_is_for_cross_site_transition_, proceed);
+  }
 }
 
 void RenderViewHost::OnQueryFormFieldAutofill(const std::wstring& field_name,
