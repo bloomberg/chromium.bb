@@ -32,10 +32,6 @@ class BookmarkModel;
 class BookmarkCodec;
 class Profile;
 
-namespace history {
-class StarredURLDatabase;
-}
-
 // BookmarkNode ---------------------------------------------------------------
 
 // BookmarkNode contains information about a starred entry: title, URL, favicon,
