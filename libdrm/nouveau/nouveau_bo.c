@@ -49,7 +49,7 @@ nouveau_bo_info(struct nouveau_bo_priv *nvbo, struct drm_nouveau_gem_info *arg)
 {
 	nvbo->handle = nvbo->base.handle = arg->handle;
 	nvbo->domain = arg->domain;
-	nvbo->size = nvbo->base.size = arg->size;
+	nvbo->size = arg->size;
 	nvbo->offset = arg->offset;
 	nvbo->map_handle = arg->map_handle;
 	nvbo->base.tile_mode = arg->tile_mode;
@@ -268,6 +268,7 @@ nouveau_bo_wrap(struct nouveau_device *dev, uint32_t handle,
 	}
 
 	nouveau_bo_info(nvbo, &req);
+	nvbo->base.size = nvbo->size;
 	return 0;
 }
 
