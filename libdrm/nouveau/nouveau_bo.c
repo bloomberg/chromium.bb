@@ -235,7 +235,7 @@ nouveau_bo_user(struct nouveau_device *dev, void *ptr, int size,
 	struct nouveau_bo_priv *nvbo;
 	int ret;
 
-	ret = nouveau_bo_new(dev, 0, 0, size, bo);
+	ret = nouveau_bo_new(dev, NOUVEAU_BO_MAP, 0, size, bo);
 	if (ret)
 		return ret;
 	nvbo = nouveau_bo(*bo);
