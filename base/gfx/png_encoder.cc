@@ -10,7 +10,11 @@
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
 
 extern "C" {
+#if defined(USE_SYSTEM_LIBPNG)
+#include <png.h>
+#else
 #include "third_party/libpng/png.h"
+#endif
 }
 
 namespace {
