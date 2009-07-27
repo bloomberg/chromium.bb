@@ -163,6 +163,9 @@ class TabRendererGtk : public AnimationDelegate {
   // Returns the non-mirrored (LTR) bounds of this tab.
   gfx::Rect GetNonMirroredBounds(GtkWidget* parent) const;
 
+  // Returns the requested bounds of the tab.
+  gfx::Rect GetRequisition() const;
+
   // Sets the bounds of the tab.
   void SetBounds(const gfx::Rect& bounds);
 
@@ -324,6 +327,10 @@ class TabRendererGtk : public AnimationDelegate {
 
   // The bounds of this Tab.
   gfx::Rect bounds_;
+
+  // The requested bounds of this tab.  These bounds are relative to the
+  // tabstrip.
+  gfx::Rect requisition_;
 
   // Hover animation.
   scoped_ptr<SlideAnimation> hover_animation_;

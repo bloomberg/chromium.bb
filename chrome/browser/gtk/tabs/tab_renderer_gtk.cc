@@ -393,7 +393,13 @@ gfx::Rect TabRendererGtk::GetNonMirroredBounds(GtkWidget* parent) const {
   return bounds;
 }
 
+gfx::Rect TabRendererGtk::GetRequisition() const {
+  return gfx::Rect(requisition_.x(), requisition_.y(),
+                   requisition_.width(), requisition_.height());
+}
+
 void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
+  requisition_ = bounds;
   gtk_widget_set_size_request(tab_.get(), bounds.width(), bounds.height());
 }
 

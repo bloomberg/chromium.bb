@@ -828,17 +828,17 @@ gfx::Rect DraggedTabControllerGtk::GetTabScreenBounds(TabGtk* tab) {
   // A hidden widget moved with gtk_fixed_move in a GtkFixed container doesn't
   // update its allocation until after the widget is shown, so we have to use
   // the tab bounds we keep track of.
-  int x, y;
-  x = tab->bounds().x();
-  y = tab->bounds().y();
-
+  //
+  // We use the requested bounds instead of the allocation because the
+  // allocation is relative to the first windowed widget ancestor of the tab.
+  // Because of this, we can't use the tabs allocation to get the screen bounds.
+  gfx::Rect bounds = tab->GetRequisition();
   GtkWidget* widget = tab->widget();
   GtkWidget* parent = gtk_widget_get_parent(widget);
   gfx::Point point = gtk_util::GetWidgetScreenPosition(parent);
-  x += point.x();
-  y += point.y();
+  bounds.Offset(point);
 
-  return gfx::Rect(x, y, widget->allocation.width, widget->allocation.height);
+  return gfx::Rect(bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
 void DraggedTabControllerGtk::HideFrame() {
