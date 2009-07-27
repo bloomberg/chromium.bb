@@ -80,13 +80,14 @@ class GclientTestCase(GClientBaseTestCase):
     def __init__(self, test_case, verbose=False, spec=None,
                  config_filename='a_file_name',
                  entries_filename='a_entry_file_name',
-                 deps_file='a_deps_file_name', force=False):
+                 deps_file='a_deps_file_name', force=False, nohooks=False):
       self.verbose = verbose
       self.spec = spec
       self.config_filename = config_filename
       self.entries_filename = entries_filename
       self.deps_file = deps_file
       self.force = force
+      self.nohooks = nohooks
       self.revisions = []
       self.manually_grab_svn_rev = True
       self.deps_os = None
@@ -1007,6 +1008,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       self.manually_grab_svn_rev = True
       self.deps_os = None
       self.force = False
+      self.nohooks = False
 
   def setUp(self):
     GClientBaseTestCase.setUp(self)
@@ -1137,6 +1139,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
     options.force = True
+    options.nohooks = False
     file_info = {
       'Repository Root': 'blah',
       'URL': self.url,

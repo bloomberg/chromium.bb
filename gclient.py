@@ -37,8 +37,9 @@ Files
 Hooks
   .gclient and DEPS files may optionally contain a list named "hooks" to
   allow custom actions to be performed based on files that have changed in the
-  working copy as a result of a "sync"/"update" or "revert" operation.  Hooks
-  can also be run based on what files have been modified in the working copy
+  working copy as a result of a "sync"/"update" or "revert" operation.  This
+  could be prevented by using --nohooks (hooks run by default). Hooks can also
+  be run based on what files have been modified in the working copy
   with the "runhooks" operation.  If any of these operation are run with
   --force, all known hooks will run regardless of the state of the working
   copy.
@@ -119,13 +120,15 @@ If --revision is specified, then the given revision is used in place
 of the latest, either for a single solution or for all solutions.
 Unless the --force option is provided, solutions and modules whose
 local revision matches the one to update (i.e., they have not changed
-in the repository) are *not* modified.
+in the repository) are *not* modified. Unless --nohooks is provided,
+the hooks are run.
 This a synonym for 'gclient %(alias)s'
 
 usage: gclient %(cmd)s [options] [--] [svn update options/args]
 
 Valid options:
   --force             : force update even for unchanged modules
+  --nohooks           : don't run the hooks after the update is complete
   --revision REV      : update/checkout all solutions with specified revision
   --revision SOLUTION@REV : update given solution to specified revision
   --deps PLATFORM(S)  : sync deps for the given platform(s), or 'all'
@@ -205,6 +208,7 @@ usage: status [options] [--] [svn diff args/options]
 
 Valid options:
   --verbose           : output additional diagnostics
+  --nohooks           : don't run the hooks after the update is complete
 """,
     "sync": GENERIC_UPDATE_USAGE_TEXT % {"cmd": "sync", "alias": "update"},
     "update": GENERIC_UPDATE_USAGE_TEXT % {"cmd": "update", "alias": "sync"},
@@ -1238,6 +1242,10 @@ class GClient(object):
     if not command in ('update', 'revert', 'runhooks'):
       return
 
+    # Hooks only run when --nohooks is not specified
+    if self._options.nohooks:
+      return
+
     # Get any hooks from the .gclient file.
     hooks = self.GetVar("hooks", [])
     # Add any hooks found in DEPS files.
@@ -1720,6 +1728,9 @@ def Main(argv):
   option_parser.add_option("", "--force", action="store_true", default=False,
                            help=("(update/sync only) force update even "
                                  "for modules which haven't changed"))
+  option_parser.add_option("", "--nohooks", action="store_true", default=False,
+                           help=("(update/sync/revert only) prevent the hooks from "
+                                 "running"))
   option_parser.add_option("", "--revision", action="append", dest="revisions",
                            metavar="REV", default=[],
                            help=("(update/sync only) sync to a specific "
