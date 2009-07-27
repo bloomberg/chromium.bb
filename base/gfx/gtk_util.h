@@ -18,10 +18,13 @@ typedef struct _GdkRegion GdkRegion;
 
 class SkBitmap;
 
+const int kSkiaToGDKMultiplier = 257;
+
 // Define a macro for creating GdkColors from RGB values.  This is a macro to
 // allow static construction of literals, etc.  Use this like:
 //   GdkColor white = GDK_COLOR_RGB(0xff, 0xff, 0xff);
-#define GDK_COLOR_RGB(r, g, b) {0, r * 257, g * 257, b * 257}
+#define GDK_COLOR_RGB(r, g, b) {0, r * kSkiaToGDKMultiplier, \
+        g * kSkiaToGDKMultiplier, b * kSkiaToGDKMultiplier}
 
 namespace gfx {
 
