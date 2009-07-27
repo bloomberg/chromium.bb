@@ -19,10 +19,6 @@
 # toplevel Makefile.  It may make sense to generate some .mk files on
 # the side to keep the the files readable.
 #
-# Currently doesn't include build command lines as part of the deps
-# of a target.  Editing a build file won't rebuild all affected files.
-# See TODO near "if_changed".
-#
 # Should add a rule that regens the Makefiles from the gyp files.
 
 import gyp
@@ -115,7 +111,8 @@ define fixup_dep
 sed -i -e "s|^$(notdir $@)|$@|" $(depfile).tmp
 sed -e "s|^[^:]*: *||" -e "s| *\\\\$$||" -e 's|^ *||' \
     -e "/./s|$$|:|" $(depfile).tmp >> $(depfile).tmp
-mv $(depfile).tmp $(depfile)
+cat $(depfile).tmp >> $(depfile)
+rm -f $(depfile).tmp
 endef
 """
 """
@@ -129,11 +126,8 @@ cmd_cc = $(CC) $(CFLAGS) $(DEPFLAGS) -c -o $@ $<
 quiet_cmd_cxx = CXX $@
 cmd_cxx = $(CXX) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 
-quiet_cmd_ar = AR $@
-cmd_ar = $(AR) rc $@ $(filter %.o,$^)
-
-quiet_cmd_ranlib = RANLIB $@
-cmd_ranlib = $(RANLIB) $@
+quiet_cmd_alink = AR+RANLIB $@
+cmd_alink = $(AR) rc $@ $(filter %.o,$^) && $(RANLIB) $@
 
 quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
@@ -152,41 +146,63 @@ cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 quiet_cmd_solink = SOLINK $@
 cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 
-# do_cmd: run a command via the above cmd_foo names.
-# TODO: This should also set up dependencies of the target on the
-# command line used to generate the target (so we rebuild on CFLAGS
-# change etc.).  See if_changed in the kernel source
-# scripts/Kbuild.include.
-do_cmd = @\
-echo '  $($(quiet)cmd_$(1))'; \
-mkdir -p $(dir $@); \
-$(cmd_$(1))
+# Helper to compare the command we're about to run against the command
+# we logged the last time we ran the command.  Produces an empty
+# string (false) when the commands match.
+# Tricky point: Make has no string-equality test function.
+# The kernel uses the following, but it seems like it would have false
+# positives, where one string reordered its arguments.
+#   arg_check = $(strip $(filter-out $(cmd_$(1)), $(cmd_$@)) \\
+#                       $(filter-out $(cmd_$@), $(cmd_$(1))))
+# We instead substitute each for the empty string into the other, and
+# say they're equal if both substitutions produce the empty string.
+command_changed = $(or $(subst $(cmd_$(1)),,$(cmd_$@)),\\
+                       $(subst $(cmd_$@),,$(cmd_$(1))))
+
+# Helper that is non-empty when a prerequisite changes.
+# Normally make does this implicitly, but we force rules to always run
+# so we can check their command lines.
+#   $? -- new prerequisites
+#   $| -- order-only dependencies
+prereq_changed = $(filter-out $|,$?)
+
+# do_cmd: run a command via the above cmd_foo names, if necessary.
+# Should always run for a given target to handle command-line changes.
+# Second argument, if non-zero, makes it do C/C++ dependency munging.
+define do_cmd
+$(if $(or $(command_changed),$(prereq_changed)),
+  @echo '  $($(quiet)cmd_$(1))'
+  @mkdir -p $(dir $@)
+  @$(cmd_$(1))
+  @echo 'cmd_$@ := $(cmd_$(1))' > $(depfile)
+  @$(if $(2),$(fixup_dep))
+)
+endef
+
+# Use FORCE_DO_CMD to force a target to run.  Should be coupled with
+# do_cmd.
+.PHONY: FORCE_DO_CMD
+FORCE_DO_CMD:
 
 # Suffix rules, putting all outputs into $(obj).
-$(obj)/%.o: %.c
-	$(call do_cmd,cc)
-	@$(fixup_dep)
+$(obj)/%.o: %.c FORCE_DO_CMD
+	@$(call do_cmd,cc,1)
 
-$(obj)/%.o: %.s
-	$(call do_cmd,cc)
+$(obj)/%.o: %.s FORCE_DO_CMD
+	@$(call do_cmd,cc)
 
-$(obj)/%.o: %.cpp
-	$(call do_cmd,cxx)
-	@$(fixup_dep)
-$(obj)/%.o: %.cc
-	$(call do_cmd,cxx)
-	@$(fixup_dep)
-$(obj)/%.o: %.cxx
-	$(call do_cmd,cxx)
-	@$(fixup_dep)
+$(obj)/%.o: %.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+$(obj)/%.o: %.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+$(obj)/%.o: %.cxx FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 
 # Try building from generated source, too.
-$(obj)/%.o: $(obj)/%.cc
-	$(call do_cmd,cxx)
-	@$(fixup_dep)
-$(obj)/%.o: $(obj)/%.cpp
-	$(call do_cmd,cxx)
-	@$(fixup_dep)
+$(obj)/%.o: $(obj)/%.cc FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
+$(obj)/%.o: $(obj)/%.cpp FORCE_DO_CMD
+	@$(call do_cmd,cxx,1)
 """)
 
 # This gets added to the very beginning of the Makefile, setting the root
@@ -354,14 +370,15 @@ class MakefileWriter:
         command = 'mkdir -p %s' % ' '.join(dirs) + '; ' + command
       self.WriteLn('cmd_%s = cd %s; %s' % (name, self.path, command))
       self.WriteLn()
-      self.WriteMakeRule(map(self.Absolutify, outputs),
-                         map(self.Absolutify, inputs),
-                         actions=['$(call do_cmd,%s)' % name])
+      self.WriteDoCmd(map(self.Absolutify, outputs),
+                      map(self.Absolutify, inputs),
+                      command = name)
 
       # Stuff the outputs in a variable so we can refer to them later.
       outputs_variable = 'action_%s_outputs' % name
       self.WriteLn('%s := %s' % (outputs_variable, ' '.join(outputs)))
       extra_outputs.append('$(%s)' % outputs_variable)
+      self.WriteLn()
 
     self.WriteLn()
 
@@ -405,7 +422,8 @@ class MakefileWriter:
           # amount of pain.
           actions += ['@touch --no-create $@']
 
-        self.WriteMakeRule(outputs, inputs, actions)
+        self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
+        self.WriteLn('all_targets += %s' % ' '.join(outputs))
 
       self.WriteLn()
 
@@ -443,8 +461,7 @@ class MakefileWriter:
         path = self.Absolutify(path)
         filename = os.path.split(path)[1]
         output = os.path.join(copy['destination'], filename)
-        self.WriteMakeRule([output], [path],
-                           actions = ['$(call do_cmd,copy)'])
+        self.WriteDoCmd([output], [path], 'copy')
         outputs.append(output)
     self.WriteLn('%s = %s' % (variable, ' '.join(outputs)))
     extra_outputs.append('$(%s)' % variable)
@@ -588,21 +605,14 @@ class MakefileWriter:
                    '$(LIBS)' % self.output)
 
     if self.type == 'executable':
-      self.WriteMakeRule([self.output], link_deps,
-                         actions = ['$(call do_cmd,link)'])
+      self.WriteDoCmd([self.output], link_deps, 'link')
     elif self.type == 'static_library':
-      self.WriteMakeRule([self.output], link_deps,
-                         actions = [
-                             '$(call do_cmd,ar)',
-                             '$(call do_cmd,ranlib)',
-                             ])
+      self.WriteDoCmd([self.output], link_deps, 'alink')
     elif self.type in ('loadable_module', 'shared_library'):
-      self.WriteMakeRule([self.output], link_deps,
-                         actions = ['$(call do_cmd,solink)'])
+      self.WriteDoCmd([self.output], link_deps, 'solink')
     elif self.type == 'none':
       # Write a stamp line.
-      self.WriteMakeRule([self.output], deps,
-                         actions = ['$(call do_cmd,touch)'])
+      self.WriteDoCmd([self.output], deps, 'touch')
     elif self.type == 'settings':
       # Only used for passing flags around.
       pass
@@ -616,9 +626,8 @@ class MakefileWriter:
     if self.type in ('executable', 'loadable_module'):
       filename = os.path.split(self.output)[1]
       binpath = '$(builddir)/' + filename
-      self.WriteMakeRule([binpath], [self.output],
-                         actions = ['$(call do_cmd,copy)'],
-                         comment = 'Copy this to the binary output path.')
+      self.WriteDoCmd([binpath], [self.output], 'copy',
+                      comment = 'Copy this to the binary output path.')
       self.WriteMakeRule([filename], [binpath],
                          comment = 'Short alias for building this executable.')
       self.WriteMakeRule(['all'], [binpath],
@@ -639,8 +648,22 @@ class MakefileWriter:
     self.fp.write("\n\n")
 
 
+  def WriteDoCmd(self, outputs, inputs, command, comment=None):
+    """Write a Makefile rule that uses do_cmd.
+
+    This makes the outputs dependent on the command line that was run,
+    as well as support the V= make command line flag.
+    """
+    self.WriteMakeRule(outputs, inputs,
+                       actions = ['$(call do_cmd,%s)' % command],
+                       comment = comment,
+                       force = True)
+    # Add our outputs to the list of targets we read depfiles from.
+    self.WriteLn('all_targets += %s' % ' '.join(outputs))
+
+
   def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
-                    order_only=False):
+                    order_only=False, force=False):
     """Write a Makefile rule, with some extra tricks.
 
     outputs: a list of outputs for the rule (note: this is not directly
@@ -650,11 +673,20 @@ class MakefileWriter:
     comment: a comment to put in the Makefile above the rule (also useful
              for making this Python script's code self-documenting)
     order_only: if true, makes the dependency order-only
+    force: if true, include FORCE_DO_CMD as an order-only dep
     """
     if comment:
       self.WriteLn('# ' + comment)
+    # TODO(evanm): just make order_only a list of deps instead of these hacks.
     order_insert = '| ' if order_only else ''
-    self.WriteLn('%s: %s%s' % (outputs[0], order_insert, ' '.join(inputs)))
+    force_append = ''
+    if force:
+      if order_only:
+        force_append = ' FORCE_DO_CMD'
+      else:
+        force_append = ' | FORCE_DO_CMD'
+    self.WriteLn('%s: %s%s%s' % (outputs[0], order_insert, ' '.join(inputs),
+                                 force_append))
     if actions:
       for action in actions:
         self.WriteLn('\t%s' % action)
