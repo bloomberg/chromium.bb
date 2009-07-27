@@ -10,8 +10,11 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/print_ui.h"
-#include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extensions_ui.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #ifdef CHROME_PERSONALIZATION
 #include "chrome/personalization/personalization.h"
@@ -37,9 +40,22 @@ static bool CreateDOMUI(const GURL& url, TabContents* tab_contents,
   }
 
   if (url.SchemeIs(chrome::kExtensionScheme)) {
-    if (new_ui)
-      *new_ui = new ExtensionDOMUI(tab_contents);
-    return true;
+    // We assume we have a valid extension unless we have a TabContents which
+    // can prove us wrong. This can can happen if the user types in a URL
+    // manually.
+    bool valid_extension = true;
+    if (tab_contents) {
+      // TabContents can be NULL if we're doing a quick UseDOMUIForURL check.
+      ExtensionsService* service =
+          tab_contents->profile()->GetExtensionsService();
+      valid_extension = (service && service->GetExtensionById(url.host()));
+    }
+    if (valid_extension) {
+      if (new_ui)
+        *new_ui = new ExtensionDOMUI(tab_contents);
+      return true;
+    }
+    return false;
   }
 
 // TODO(mhm) Make sure this ifdef is removed once print is complete.
