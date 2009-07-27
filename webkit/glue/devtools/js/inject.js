@@ -545,7 +545,7 @@ devtools.Injected.prototype.getUniqueStyleProperties_ = function(style) {
  */
 devtools.Injected.prototype.wrapConsoleObject = function(obj) {
   var type = typeof obj;
-  if (type == 'object' || type == 'function') {
+  if ((type == 'object' && obj != null) || type == 'function') {
     var objId = '#consoleobj#' + this.lastCachedConsoleObjectId_++;
     this.cachedConsoleObjects_[objId] = obj;
     var result = { ___devtools_id : objId };
@@ -554,24 +554,25 @@ devtools.Injected.prototype.wrapConsoleObject = function(obj) {
       result[name] = '';
     }
     return result;
-  } else {
-    return obj;
   }
+  return obj;
 };
 
 
 /**
  * Caches console object for subsequent calls to getConsoleObjectProperties.
  * @param {Object} obj Object to cache.
- * @return {string} console object id.
+ * @return {string} Console object wrapper serialized into a JSON string.
  */
-devtools.Injected.prototype.evaluate = function(expression) {
-  try {
-    // Evaluate the expression in the global context of the inspected window.
-    return [ this.wrapConsoleObject(contentWindow.eval(expression)), false ];
-  } catch (e) {
-    return [ e.toString(), true ];
-  }
+devtools.Injected.prototype.serializeConsoleObject = function(obj) {
+  var result = this.wrapConsoleObject(obj);
+  return JSON.stringify(result,
+      function (key, value) {
+        if (value === undefined) {
+         return 'undefined';
+        }
+        return value;
+      });
 };
 
 

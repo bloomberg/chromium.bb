@@ -20,6 +20,9 @@
   METHOD3(ExecuteUtilityFunction, int /* call_id */, \
       String /* function_name */, String /* json_args */) \
   \
+  /* Requests that the js source is executed within the inspected page. */ \
+  METHOD2(EvaluateJavaScript, int /* call_id */, String /* source*/) \
+  \
   /* Clears cached console messages. */ \
   METHOD0(ClearConsoleMessages) \
   \
@@ -42,6 +45,10 @@ DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
   \
   /* Response to the GetNodeProperties. */ \
   METHOD3(DidExecuteUtilityFunction, int /* call_id */, String /* result */, \
+      String /* exception */) \
+  \
+  /* Response to the EvaluateJavaScript. */ \
+  METHOD3(DidEvaluateJavaScript, int /* call_id */, String /* result */, \
       String /* exception */) \
   \
   /* Sends InspectorFrontend message to be dispatched on client. */ \

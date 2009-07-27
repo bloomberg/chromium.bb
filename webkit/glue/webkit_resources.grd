@@ -36,7 +36,7 @@
         <include name="IDR_LINUX_RADIO_DISABLED_OFF" file="resources\linux-radio-disabled-off.png" type="BINDATA" />
         <include name="IDR_LINUX_RADIO_DISABLED_ON" file="resources\linux-radio-disabled-on.png" type="BINDATA" />
       </if>
-
+ 
       <include name="IDC_ALIAS" file="resources\aliasb.cur" type="CURSOR" />
       <include name="IDC_CELL" file="resources\cell.cur" type="CURSOR" />
       <include name="IDC_COLRESIZE" file="resources\col_resize.cur" type="CURSOR" />
