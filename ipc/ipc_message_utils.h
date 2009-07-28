@@ -147,6 +147,20 @@ struct ParamTraits<int> {
 };
 
 template <>
+struct ParamTraits<unsigned int> {
+  typedef unsigned int param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return m->ReadInt(iter, reinterpret_cast<int*>(r));
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(StringPrintf(L"%d", p));
+  }
+};
+
+template <>
 struct ParamTraits<long> {
   typedef long param_type;
   static void Write(Message* m, const param_type& p) {
@@ -156,14 +170,10 @@ struct ParamTraits<long> {
     return m->ReadLong(iter, r);
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%l", p));
+    l->append(StringPrintf(L"%ld", p));
   }
 };
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-// On Linux, unsigned long is used for serializing X window ids.
-// On Windows, it's used for serializing process ids.
-// On Mac, it conflicts with some other definition.
 template <>
 struct ParamTraits<unsigned long> {
   typedef unsigned long param_type;
@@ -171,67 +181,16 @@ struct ParamTraits<unsigned long> {
     m->WriteLong(p);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    long read_output;
-    if (!m->ReadLong(iter, &read_output))
-      return false;
-    *r = static_cast<unsigned long>(read_output);
-    return true;
+    return m->ReadLong(iter, reinterpret_cast<long*>(r));
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%ul", p));
-  }
-};
-#endif
-
-template <>
-struct ParamTraits<size_t> {
-  typedef size_t param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteSize(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return m->ReadSize(iter, r);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%u", p));
-  }
-};
-
-#if defined(OS_MACOSX)
-// On Linux size_t & uint32 can be the same type.
-// TODO(playmobil): Fix compilation if this is not the case.
-template <>
-struct ParamTraits<uint32> {
-  typedef uint32 param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteUInt32(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return m->ReadUInt32(iter, r);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%u", p));
-  }
-};
-#endif  // defined(OS_MACOSX)
-
-template <>
-struct ParamTraits<int64> {
-  typedef int64 param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt64(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return m->ReadInt64(iter, r);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%" WidePRId64, p));
+    l->append(StringPrintf(L"%lu", p));
   }
 };
 
 template <>
-struct ParamTraits<uint64> {
-  typedef uint64 param_type;
+struct ParamTraits<long long> {
+  typedef long long param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteInt64(static_cast<int64>(p));
   }
@@ -239,7 +198,21 @@ struct ParamTraits<uint64> {
     return m->ReadInt64(iter, reinterpret_cast<int64*>(r));
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%" WidePRId64, p));
+    l->append(Int64ToWString(static_cast<int64>(p)));
+  }
+};
+
+template <>
+struct ParamTraits<unsigned long long> {
+  typedef unsigned long long param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt64(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return m->ReadInt64(iter, reinterpret_cast<int64*>(r));
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(Uint64ToWString(p));
   }
 };
 
