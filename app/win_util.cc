@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/registry.h"
+#include "base/scoped_comptr_win.h"
 #include "base/scoped_handle.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
@@ -868,14 +869,17 @@ void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd) {
   PROPVARIANT pv;
   InitPropVariantFromString(app_id.c_str(), &pv);
 
-  IPropertyStore* pps;
+  ScopedComPtr<IPropertyStore> pps;
   SHGPSFW SHGetPropertyStoreForWindow = static_cast<SHGPSFW>(function);
-  if (S_OK == SHGetPropertyStoreForWindow(hwnd, IID_PPV_ARGS(&pps)) &&
-      S_OK == pps->SetValue(PKEY_AppUserModel_ID, pv)) {
-    pps->Commit();
+  HRESULT result = SHGetPropertyStoreForWindow(
+      hwnd, __uuidof(*pps), reinterpret_cast<void**>(pps.Receive()));
+  if (S_OK == result) {
+    if (S_OK == pps->SetValue(PKEY_AppUserModel_ID, pv))
+      pps->Commit();
   }
 
   // Cleanup.
+  PropVariantClear(&pv);
   base::UnloadNativeLibrary(shell32_library);
 }
 
