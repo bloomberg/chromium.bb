@@ -86,8 +86,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestChunkStrings) {
   EXPECT_EQ(pm.FormatList(phish, true), "goog-phish-shavar;mac\n");
 }
 
-// Flakey, see http://code.google.com/p/chromium/issues/detail?id=1880
-TEST_F(SafeBrowsingProtocolManagerTest, DISABLED_TestGetHashBackOffTimes) {
+TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
   SafeBrowsingProtocolManager pm(NULL, NULL, "", "");
 
   // No errors or back off time yet.
@@ -97,7 +96,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, DISABLED_TestGetHashBackOffTimes) {
   Time now = Time::Now();
 
   // 1 error.
-  pm.HandleGetHashError();
+  pm.HandleGetHashError(now);
   EXPECT_EQ(pm.gethash_error_count_, 1);
   TimeDelta margin = TimeDelta::FromSeconds(5);  // Fudge factor.
   Time future = now + TimeDelta::FromMinutes(1);
@@ -105,36 +104,36 @@ TEST_F(SafeBrowsingProtocolManagerTest, DISABLED_TestGetHashBackOffTimes) {
               pm.next_gethash_time_ <= future + margin);
 
   // 2 errors.
-  pm.HandleGetHashError();
+  pm.HandleGetHashError(now);
   EXPECT_EQ(pm.gethash_error_count_, 2);
   EXPECT_TRUE(pm.next_gethash_time_ >= now + TimeDelta::FromMinutes(30));
   EXPECT_TRUE(pm.next_gethash_time_ <= now + TimeDelta::FromMinutes(60));
 
   // 3 errors.
-  pm.HandleGetHashError();
+  pm.HandleGetHashError(now);
   EXPECT_EQ(pm.gethash_error_count_, 3);
   EXPECT_TRUE(pm.next_gethash_time_ >= now + TimeDelta::FromMinutes(60));
   EXPECT_TRUE(pm.next_gethash_time_ <= now + TimeDelta::FromMinutes(120));
 
   // 4 errors.
-  pm.HandleGetHashError();
+  pm.HandleGetHashError(now);
   EXPECT_EQ(pm.gethash_error_count_, 4);
   EXPECT_TRUE(pm.next_gethash_time_ >= now + TimeDelta::FromMinutes(120));
   EXPECT_TRUE(pm.next_gethash_time_ <= now + TimeDelta::FromMinutes(240));
 
   // 5 errors.
-  pm.HandleGetHashError();
+  pm.HandleGetHashError(now);
   EXPECT_EQ(pm.gethash_error_count_, 5);
   EXPECT_TRUE(pm.next_gethash_time_ >= now + TimeDelta::FromMinutes(240));
   EXPECT_TRUE(pm.next_gethash_time_ <= now + TimeDelta::FromMinutes(480));
 
   // 6 errors, reached max backoff.
-  pm.HandleGetHashError();
+  pm.HandleGetHashError(now);
   EXPECT_EQ(pm.gethash_error_count_, 6);
   EXPECT_TRUE(pm.next_gethash_time_ == now + TimeDelta::FromMinutes(480));
 
   // 7 errors.
-  pm.HandleGetHashError();
+  pm.HandleGetHashError(now);
   EXPECT_EQ(pm.gethash_error_count_, 7);
   EXPECT_TRUE(pm.next_gethash_time_== now + TimeDelta::FromMinutes(480));
 }

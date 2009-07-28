@@ -46,8 +46,7 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // Testing friends:
   FRIEND_TEST(SafeBrowsingProtocolManagerTest, TestBackOffTimes);
   FRIEND_TEST(SafeBrowsingProtocolManagerTest, TestChunkStrings);
-  FRIEND_TEST(SafeBrowsingProtocolManagerTest,
-              DISABLED_TestGetHashBackOffTimes);
+  FRIEND_TEST(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes);
 
  public:
   SafeBrowsingProtocolManager(SafeBrowsingService* sb_service,
@@ -146,8 +145,9 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // issue the request.
   void HandleReKey();
 
-  // Update internal state for each GetHash response error.
-  void HandleGetHashError();
+  // Update internal state for each GetHash response error, assuming that the
+  // current time is |now|.
+  void HandleGetHashError(const base::Time& now);
 
   // Helper function for update completion.
   void UpdateFinished(bool success);

@@ -222,7 +222,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
           HandleReKey();
       }
     } else if (response_code >= 300) {
-      HandleGetHashError();
+      HandleGetHashError(Time::Now());
       SB_DLOG(INFO) << "SafeBrowsing GetHash request for: " << source->url()
                     << ", failed with error: " << response_code;
     }
@@ -626,9 +626,9 @@ void SafeBrowsingProtocolManager::HandleReKey() {
   IssueKeyRequest();
 }
 
-void SafeBrowsingProtocolManager::HandleGetHashError() {
+void SafeBrowsingProtocolManager::HandleGetHashError(const Time& now) {
   int next = GetNextBackOffTime(&gethash_error_count_, &gethash_back_off_mult_);
-  next_gethash_time_ = Time::Now() + TimeDelta::FromSeconds(next);
+  next_gethash_time_ = now + TimeDelta::FromSeconds(next);
 }
 
 void SafeBrowsingProtocolManager::UpdateFinished(bool success) {
