@@ -45,6 +45,9 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
     std::vector<std::string> descriptions;
     SplitString(mime_description, ';', &descriptions);
     for (size_t i = 0; i < descriptions.size(); ++i) {
+      if (descriptions[i].empty())
+        continue;  // Don't warn if they have trailing semis.
+
       std::vector<std::string> fields;
       SplitString(descriptions[i], ':', &fields);
       if (fields.size() != 3) {
@@ -70,12 +73,12 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
     const char* name = NULL;
     NP_GetValue(NULL, nsPluginVariable_NameString, &name);
     if (name)
-      info->name = ASCIIToWide(name);
+      info->name = UTF8ToWide(name);
 
     const char* description = NULL;
     NP_GetValue(NULL, nsPluginVariable_DescriptionString, &description);
     if (description)
-      info->desc = ASCIIToWide(description);
+      info->desc = UTF8ToWide(description);
   }
 
   return true;
