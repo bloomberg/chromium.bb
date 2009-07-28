@@ -256,6 +256,9 @@ class MemcheckAnalyze:
           continue
     if len(badfiles) > 0:
       logging.warn("valgrind didn't finish writing %d files?!" % len(badfiles))
+      for file in badfiles:
+        logging.warn("Last 100 lines of %s :" % file)
+        os.system("tail -n 100 '%s'" % file)
 
   def Report(self):
     if self._parse_failed:
