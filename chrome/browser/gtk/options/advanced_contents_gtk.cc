@@ -58,6 +58,43 @@ GtkWidget* CreateCheckButtonWithWrappedLabel(int string_id) {
   return checkbox;
 }
 
+// Don't let the widget handle scroll events. Instead, pass it on to the
+// parent widget.
+gboolean PassScrollToParent(GtkWidget* widget, GdkEvent* event,
+                            gpointer unused) {
+  if (widget->parent)
+    gtk_propagate_event(widget->parent, event);
+
+  return TRUE;
+}
+
+// Recursively search for a combo box among the children of |widget|.
+void SearchForComboBox(GtkWidget* widget, gpointer data) {
+  if (GTK_IS_COMBO_BOX(widget)) {
+    *reinterpret_cast<GtkWidget**>(data) = widget;
+  } else if (GTK_IS_CONTAINER(widget)) {
+    gtk_container_foreach(GTK_CONTAINER(widget), SearchForComboBox, data);
+  }
+}
+
+// Letting the combo boxes in the advanced options page handle scroll events is
+// annoying because they fight with the scrolled window. Also,
+// GtkFileChooserButton is buggy in that if you scroll on it very quickly it
+// spews Gtk-WARNINGs, which causes us to crash in debug. This function disables
+// scrolling for the combo box in |widget| (the first one it finds in a DFS).
+void DisableScrolling(GtkWidget* widget) {
+  gpointer combo_box_ptr = NULL;
+  SearchForComboBox(widget, &combo_box_ptr);
+
+  if (!combo_box_ptr) {
+    NOTREACHED() << " Did not find a combo box in this widget.";
+    return;
+  }
+
+  g_signal_connect(GTK_WIDGET(combo_box_ptr), "scroll-event",
+                   G_CALLBACK(PassScrollToParent), NULL);
+}
+
 }  // anonymous namespace
 
 
@@ -117,6 +154,8 @@ DownloadSection::DownloadSection(Profile* profile)
       GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
   g_signal_connect(download_location_button_, "selection-changed",
                    G_CALLBACK(OnDownloadLocationChanged), this);
+  DisableScrolling(download_location_button_);
+
   // Add the default download path to the list of shortcuts in the selector.
   FilePath default_download_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
@@ -470,6 +509,7 @@ PrivacySection::PrivacySection(Profile* profile)
                      FALSE, FALSE, 0);
 
   cookie_behavior_combobox_ = gtk_combo_box_new_text();
+  DisableScrolling(cookie_behavior_combobox_);
   gtk_combo_box_append_text(
       GTK_COMBO_BOX(cookie_behavior_combobox_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES).c_str());
