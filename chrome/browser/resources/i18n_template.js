@@ -47,23 +47,29 @@ var i18nTemplate = (function() {
         if (a) {
           var propName = a[1];
           var propExpr = a[2];
-          var value = obj[propExpr];
-          if (propName.charAt(0) == '.') {
-            var path = propName.slice(1).split('.');
-            var object = element;
-            while (object && path.length > 1) {
-              object = object[path.shift()];
-            }
-            if (object) {
-              object[path] = value;
-              // In case we set innerHTML (ignoring others) we need to
-              // recursively check the content
-              if (path == 'innerHTML') {
-                process(element, obj);
+
+          // Ignore missing properties
+          if (propExpr in obj) {
+            var value = obj[propExpr];
+            if (propName.charAt(0) == '.') {
+              var path = propName.slice(1).split('.');
+              var object = element;
+              while (object && path.length > 1) {
+                object = object[path.shift()];
               }
+              if (object) {
+                object[path] = value;
+                // In case we set innerHTML (ignoring others) we need to
+                // recursively check the content
+                if (path == 'innerHTML') {
+                  process(element, obj);
+                }
+              }
+            } else {
+              element.setAttribute(propName, value);
             }
           } else {
-            element.setAttribute(propName, value);
+            console.warn('i18n-values: Missing value for "' + propExpr + '"');
           }
         }
       }

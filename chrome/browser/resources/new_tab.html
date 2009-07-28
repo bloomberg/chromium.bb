@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', handleDOMContentLoaded);
   <td valign="top" width="230">
     <div align="right">
         <img src="../../app/theme/%DISTRIBUTION%/product_logo.png"
-             width="145" height="52" style="padding-bottom:8px;" />
+             height="52" style="padding-bottom:8px;" />
     </div>
     <!-- This iframe gets shown in resizeP13N -->
     <iframe id="p13n" frameborder="0" width="100%" scrolling="no" height="0"
@@ -1028,6 +1028,13 @@ setTimeout(function(){document.getElementById('main').className = 'visible'},
 html[dir='rtl'] .recent-window-container {
   background-position: right;
   padding-right: 22px;
+}
+/* override style set in theme.css which is designed for the NNTP */
+#main {
+  background-image: none;
+}
+.section {
+  border: 0;
 }
 </style>
 
