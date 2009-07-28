@@ -21,6 +21,8 @@ class GtkDndUtil {
     TEXT_PLAIN = 1 << 4,
     TEXT_URI_LIST = 1 << 5,
     TEXT_HTML = 1 << 6,
+
+    INVALID_TARGET = 1 << 7,
   };
 
   // Get the atom for a given target (of the above enum type). Will return NULL
@@ -35,13 +37,18 @@ class GtkDndUtil {
   // of the client code to do the right thing.
   static GtkTargetList* GetTargetListFromCodeMask(int code_mask);
 
-  // Set the drag target list for |dest| or |source| with the target list that
+  // Set the drag target list for |source| with the target list that
   // corresponds to |code_mask|.
-  static void SetDestTargetListFromCodeMask(GtkWidget* dest, int code_mask);
   static void SetSourceTargetListFromCodeMask(GtkWidget* source, int code_mask);
+
+  // Set the accepted targets list for |dest|. The |target_codes| array should
+  // be sorted in preference order and should be terminated with -1.
+  static void SetDestTargetList(GtkWidget* dest, const int* target_codes);
 
  private:
   GtkDndUtil();
+
+  static void AddTargetToList(GtkTargetList* targets, int target_code);
 };
 
 #endif  // CHROME_BROWSER_GTK_GTK_DND_UTIL_H_

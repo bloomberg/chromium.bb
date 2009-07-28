@@ -83,6 +83,14 @@ bool CreateNewBookmarkFromNamedUrl(
     const BookmarkNode* parent,
     int idx);
 
+// Add the URIs in |selection_data| into the model at the given position. They
+// will be added whether or not the URL is valid.
+bool CreateNewBookmarksFromURIList(
+    GtkSelectionData* selection_data,
+    BookmarkModel* model,
+    const BookmarkNode* parent,
+    int idx);
+
 }  // namespace bookmark_utils
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_UTILS_GTK_H_

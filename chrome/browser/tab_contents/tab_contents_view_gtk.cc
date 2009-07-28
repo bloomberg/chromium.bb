@@ -8,11 +8,11 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/mime_util.h"
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
+#include "base/pickle.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -34,8 +34,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "grit/app_strings.h"
-#include "net/base/net_util.h"
 #include "webkit/glue/webdropdata.h"
 
 namespace {
@@ -231,7 +229,9 @@ class WebDragDest {
       // TODO(estade): we might want to support other actions besides copy,
       // but that would increase the cost of getting our drag success guess
       // wrong.
-      gdk_drag_status(context_, GDK_ACTION_COPY, drag_over_time_);
+      gdk_drag_status(context_, is_drop_target ? GDK_ACTION_COPY :
+                                static_cast<GdkDragAction>(0),
+                      drag_over_time_);
       is_drop_target_ = false;
     }
   }
@@ -820,20 +820,9 @@ void TabContentsViewGtk::OnDragDataGet(
     }
 
     case GtkDndUtil::CHROME_NAMED_URL: {
-      std::string name;
-      const GURL& url = view->drop_data_->url;
-      if (!view->drop_data_->url_title.empty()) {
-        name = UTF16ToUTF8(view->drop_data_->url_title);
-      } else if (url.is_valid()) {
-        name = WideToUTF8(net::GetSuggestedFilename(
-            url, std::string(), std::string(), std::wstring()));
-      } else {
-        // Nothing else can be done, just use a default.
-        name = l10n_util::GetStringUTF8(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
-      }
       Pickle pickle;
-      pickle.WriteString(name);
-      pickle.WriteString(url.spec());
+      pickle.WriteString(UTF16ToUTF8(view->drop_data_->url_title));
+      pickle.WriteString(view->drop_data_->url.spec());
       gtk_selection_data_set(selection_data,
           GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
           bits_per_byte,

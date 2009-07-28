@@ -6,17 +6,6 @@
 
 #include "base/logging.h"
 
-namespace {
-
-void AddApplicationTarget(GtkTargetList* targets, int code_mask, int target) {
-  if (code_mask & target) {
-    gtk_target_list_add(targets, GtkDndUtil::GetAtomForTarget(target),
-                        GTK_TARGET_SAME_APP, target);
-  }
-}
-
-}  // namespace
-
 // static
 GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
   switch (target) {
@@ -61,28 +50,15 @@ GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
 GtkTargetList* GtkDndUtil::GetTargetListFromCodeMask(int code_mask) {
   GtkTargetList* targets = gtk_target_list_new(NULL, 0);
 
-  if (code_mask & TEXT_PLAIN)
-    gtk_target_list_add_text_targets(targets, TEXT_PLAIN);
+  for (size_t i = 1; i < INVALID_TARGET; i = i << 1) {
+    if (i == CHROME_WEBDROP_FILE_CONTENTS)
+      continue;
 
-  if (code_mask & TEXT_URI_LIST)
-    gtk_target_list_add_uri_targets(targets, TEXT_URI_LIST);
-
-  if (code_mask & TEXT_HTML)
-    gtk_target_list_add(targets, GetAtomForTarget(TEXT_PLAIN), 0, TEXT_HTML);
-
-  AddApplicationTarget(targets, code_mask, CHROME_TAB);
-  AddApplicationTarget(targets, code_mask, CHROME_BOOKMARK_ITEM);
-  AddApplicationTarget(targets, code_mask, CHROME_NAMED_URL);
+    if (i & code_mask)
+      AddTargetToList(targets, i);
+  }
 
   return targets;
-}
-
-// static
-void GtkDndUtil::SetDestTargetListFromCodeMask(GtkWidget* dest,
-                                               int code_mask) {
-  GtkTargetList* targets = GetTargetListFromCodeMask(code_mask);
-  gtk_drag_dest_set_target_list(dest, targets);
-  gtk_target_list_unref(targets);
 }
 
 // static
@@ -91,4 +67,43 @@ void GtkDndUtil::SetSourceTargetListFromCodeMask(GtkWidget* source,
   GtkTargetList* targets = GetTargetListFromCodeMask(code_mask);
   gtk_drag_source_set_target_list(source, targets);
   gtk_target_list_unref(targets);
+}
+
+// static
+void GtkDndUtil::SetDestTargetList(GtkWidget* dest, const int* target_codes) {
+  GtkTargetList* targets = gtk_target_list_new(NULL, 0);
+
+  for (size_t i = 0; target_codes[i] != -1; ++i) {
+    AddTargetToList(targets, target_codes[i]);
+  }
+
+  gtk_drag_dest_set_target_list(dest, targets);
+  gtk_target_list_unref(targets);
+}
+
+// static
+void GtkDndUtil::AddTargetToList(GtkTargetList* targets, int target_code) {
+  switch (target_code) {
+    case TEXT_PLAIN:
+      gtk_target_list_add_text_targets(targets, TEXT_PLAIN);
+      break;
+
+    case TEXT_URI_LIST:
+      gtk_target_list_add_uri_targets(targets, TEXT_URI_LIST);
+      break;
+
+    case TEXT_HTML:
+      gtk_target_list_add(targets, GetAtomForTarget(TEXT_PLAIN), 0, TEXT_HTML);
+      break;
+
+    case CHROME_TAB:
+    case CHROME_BOOKMARK_ITEM:
+    case CHROME_NAMED_URL:
+      gtk_target_list_add(targets, GtkDndUtil::GetAtomForTarget(target_code),
+                          GTK_TARGET_SAME_APP, target_code);
+      break;
+
+    default:
+      NOTREACHED() << " Unexpected target code: " << target_code;
+  }
 }

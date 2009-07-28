@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -209,7 +210,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
       for (size_t i = 0; i < nodes.size(); ++i) {
         // If the node is a folder, this will be empty. TODO(estade): figure out
         // if there are any ramifications to passing an empty URI. After a
-        // lttle testing, it seems fine.
+        // little testing, it seems fine.
         const GURL& url = nodes[i]->GetURL();
         // This const cast should be safe as gtk_selection_data_set_uris()
         // makes copies.
@@ -268,9 +269,31 @@ bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
   std::string title_utf8, url_utf8;
   bool rv = data.ReadString(&iter, &title_utf8);
   rv = rv && data.ReadString(&iter, &url_utf8);
-  if (rv)
-    model->AddURL(parent, idx, UTF8ToWide(title_utf8), GURL(url_utf8));
+  if (rv) {
+    GURL url(url_utf8);
+    if (title_utf8.empty())
+      title_utf8 = GetNameForURL(url);
+    model->AddURL(parent, idx, UTF8ToWide(title_utf8), url);
+  }
   return rv;
+}
+
+bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
+    BookmarkModel* model, const BookmarkNode* parent, int idx) {
+  gchar** uris = gtk_selection_data_get_uris(selection_data);
+  if (!uris) {
+    NOTREACHED();
+    return false;
+  }
+
+  for (size_t i = 0; uris[i] != NULL; ++i) {
+    GURL url(uris[i]);
+    std::string title = GetNameForURL(url);
+    model->AddURL(parent, idx++, UTF8ToWide(title), url);
+  }
+
+  g_strfreev(uris);
+  return true;
 }
 
 }  // namespace bookmark_utils

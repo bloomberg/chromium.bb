@@ -54,6 +54,9 @@ const int kSearchDelayMS = 200;
 // resizes the column.
 const int kDefaultColumnWidth = 200;
 
+// The targets that the right tree view accepts for dragging.
+const int kDestTargetList[] = { GtkDndUtil::CHROME_BOOKMARK_ITEM, -1 };
+
 // We only have one manager open at a time.
 BookmarkManagerGtk* manager = NULL;
 
@@ -449,8 +452,7 @@ GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
   // The left side is only a drag destination (not a source).
   gtk_drag_dest_set(left_tree_view_, GTK_DEST_DEFAULT_DROP,
                     NULL, 0, GDK_ACTION_MOVE);
-  GtkDndUtil::SetDestTargetListFromCodeMask(left_tree_view_,
-                                            GtkDndUtil::CHROME_BOOKMARK_ITEM);
+  GtkDndUtil::SetDestTargetList(left_tree_view_, kDestTargetList);
 
   g_signal_connect(left_tree_view_, "drag-data-received",
                    G_CALLBACK(&OnLeftTreeViewDragReceived), this);
@@ -525,8 +527,7 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
                       GDK_BUTTON1_MASK,
                       NULL, 0, GDK_ACTION_MOVE);
   GtkDndUtil::SetSourceTargetListFromCodeMask(
-      right_tree_view_, GtkDndUtil::CHROME_BOOKMARK_ITEM |
-                        GtkDndUtil::TEXT_URI_LIST);
+      right_tree_view_, GtkDndUtil::CHROME_BOOKMARK_ITEM);
 
   // We connect to drag dest signals, but we don't actually enable the widget
   // as a drag destination unless it corresponds to the contents of a folder.
@@ -618,8 +619,7 @@ void BookmarkManagerGtk::BuildRightStore() {
 
     gtk_drag_dest_set(right_tree_view_, GTK_DEST_DEFAULT_ALL, NULL, 0,
                       GDK_ACTION_MOVE);
-    GtkDndUtil::SetDestTargetListFromCodeMask(right_tree_view_,
-                                              GtkDndUtil::CHROME_BOOKMARK_ITEM);
+    GtkDndUtil::SetDestTargetList(right_tree_view_, kDestTargetList);
   } else {
     SaveColumnConfiguration();
     gtk_tree_view_column_set_visible(path_column_, TRUE);

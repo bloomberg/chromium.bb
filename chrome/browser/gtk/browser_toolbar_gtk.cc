@@ -452,9 +452,9 @@ void BrowserToolbarGtk::SetUpDragForHomeButton() {
   // prefer URIs over plain text when both are available.
   gtk_drag_dest_set(home_->widget(), GTK_DEST_DEFAULT_ALL,
                     NULL, 0, GDK_ACTION_COPY);
-  GtkDndUtil::SetDestTargetListFromCodeMask(home_->widget(),
-                                            GtkDndUtil::TEXT_PLAIN |
-                                            GtkDndUtil::TEXT_URI_LIST);
+  static const int targets[] = { GtkDndUtil::TEXT_PLAIN,
+                                 GtkDndUtil::TEXT_URI_LIST, -1 };
+  GtkDndUtil::SetDestTargetList(home_->widget(), targets);
 
   g_signal_connect(home_->widget(), "drag-data-received",
                    G_CALLBACK(OnDragDataReceived), this);

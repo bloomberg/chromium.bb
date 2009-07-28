@@ -701,8 +701,8 @@ void TabStripGtk::Init() {
                     NULL, 0,
                     static_cast<GdkDragAction>(
                         GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK));
-  GtkDndUtil::SetDestTargetListFromCodeMask(tabstrip_.get(),
-                                            GtkDndUtil::TEXT_URI_LIST);
+  static const int targets[] = { GtkDndUtil::TEXT_URI_LIST, -1 };
+  GtkDndUtil::SetDestTargetList(tabstrip_.get(), targets);
 
   g_signal_connect(G_OBJECT(tabstrip_.get()), "expose-event",
                    G_CALLBACK(OnExpose), this);

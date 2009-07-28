@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_UTILS_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_UTILS_H_
 
+#include <string>
 #include <vector>
 
 #include "base/gfx/native_widget_types.h"
@@ -102,6 +103,10 @@ void PasteFromClipboard(BookmarkModel* model,
 
 // Returns true if the user can copy from the pasteboard.
 bool CanPasteFromClipboard(const BookmarkNode* node);
+
+// Returns a name for the given URL. Used for drags into bookmark areas when
+// the source doesn't specify a title.
+std::string GetNameForURL(const GURL& url);
 
 // Returns a vector containing up to |max_count| of the most recently modified
 // groups. This never returns an empty vector.

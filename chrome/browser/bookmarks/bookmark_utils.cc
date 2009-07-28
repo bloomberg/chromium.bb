@@ -28,6 +28,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "grit/app_strings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -415,6 +416,15 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
   // TODO(port): Clipboard integration.
   return false;
 #endif
+}
+
+std::string GetNameForURL(const GURL& url) {
+  if (url.is_valid()) {
+    return WideToUTF8(net::GetSuggestedFilename(
+        url, std::string(), std::string(), std::wstring()));
+  } else {
+    return l10n_util::GetStringUTF8(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
+  }
 }
 
 std::vector<const BookmarkNode*> GetMostRecentlyModifiedGroups(

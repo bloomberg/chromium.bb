@@ -142,7 +142,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   void PopupMenuForNode(GtkWidget* sender, const BookmarkNode* node,
                         GdkEventButton* event);
 
-  // GtkButton callbacks
+  // GtkButton callbacks.
   static gboolean OnButtonPressed(GtkWidget* sender,
                                   GdkEventButton* event,
                                   BookmarkBarGtk* bar);
@@ -160,18 +160,12 @@ class BookmarkBarGtk : public AnimationDelegate,
                               guint target_type, guint time,
                               BookmarkBarGtk* bar);
 
-  // GtkButton callbacks for folder buttons
+  // GtkButton callbacks for folder buttons.
   static gboolean OnFolderButtonReleased(GtkWidget* sender,
                                          GdkEventButton* event,
                                          BookmarkBarGtk* bar);
-  static void OnFolderDragReceived(GtkWidget* widget,
-                                   GdkDragContext* context,
-                                   gint x, gint y,
-                                   GtkSelectionData* selection_data,
-                                   guint target_type, guint time,
-                                   BookmarkBarGtk* bar);
 
-  // GtkToolbar callbacks
+  // GtkToolbar callbacks.
   static gboolean OnToolbarExpose(GtkWidget* widget, GdkEventExpose* event,
                                   BookmarkBarGtk* window);
   static gboolean OnToolbarDragMotion(GtkToolbar* toolbar,
@@ -184,12 +178,14 @@ class BookmarkBarGtk : public AnimationDelegate,
                                  GdkDragContext* context,
                                  guint time,
                                  BookmarkBarGtk* bar);
-  static void OnToolbarDragReceived(GtkWidget* widget,
-                                    GdkDragContext* context,
-                                    gint x, gint y,
-                                    GtkSelectionData* selection_data,
-                                    guint target_type, guint time,
-                                    BookmarkBarGtk* bar);
+
+  // Used for both folder buttons and the toolbar.
+  static void OnDragReceived(GtkWidget* widget,
+                             GdkDragContext* context,
+                             gint x, gint y,
+                             GtkSelectionData* selection_data,
+                             guint target_type, guint time,
+                             BookmarkBarGtk* bar);
 
   // GtkHBox callbacks.
   static gboolean OnHBoxExpose(GtkWidget* widget, GdkEventExpose* event,
