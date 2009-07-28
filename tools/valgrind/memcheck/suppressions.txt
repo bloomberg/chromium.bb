@@ -940,6 +940,16 @@
    fun:_ZN12RenderThreadC1ERKSs
 }
 {
+   bug_17540
+   Memcheck:Leak
+   fun:_Znwj
+   fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
+   fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN3IPC7Channel11ChannelImpl7ConnectEv
+   fun:_ZN3IPC7Channel7ConnectEv
+   fun:_ZN3IPC12ChannelProxy7Context15OnChannelOpenedEv
+}
+{
    bug_17795
    Memcheck:Leak
    fun:_Znwj
