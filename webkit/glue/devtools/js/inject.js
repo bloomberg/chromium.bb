@@ -549,6 +549,7 @@ devtools.Injected.prototype.wrapConsoleObject = function(obj) {
     var objId = '#consoleobj#' + this.lastCachedConsoleObjectId_++;
     this.cachedConsoleObjects_[objId] = obj;
     var result = { ___devtools_id : objId };
+    result.___devtools_class_name = this.getClassName_(obj);
     // Loop below fills dummy object with properties for completion.
     for (var name in obj) {
       result[name] = '';

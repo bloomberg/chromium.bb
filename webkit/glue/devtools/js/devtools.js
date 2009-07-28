@@ -1005,7 +1005,7 @@ WebInspector.UIString = function(string) {
 Object.sortedProperties = function(obj) {
   var properties = [];
   for (var prop in obj) {
-    if (prop != '___devtools_id') {
+    if (prop != '___devtools_id' && prop != '___devtools_class_name') {
       properties.push(prop);
     }
   }
@@ -1046,7 +1046,8 @@ WebInspector.Console.prototype._formatobject = function(object, elem) {
     var wrapper = {};
     wrapper.id_ = object.___devtools_id;
     wrapper.protoDepth_ = -1;
-    section = new WebInspector.SidebarObjectPropertiesSection(wrapper, null);
+    var title = object.___devtools_class_name;
+    section = new WebInspector.SidebarObjectPropertiesSection(wrapper, title);
   }
   elem.appendChild(section.element);
 };
