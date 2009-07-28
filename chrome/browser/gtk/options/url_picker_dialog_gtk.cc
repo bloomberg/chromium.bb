@@ -308,7 +308,7 @@ void UrlPickerDialogGtk::OnHistorySelectionChanged(
     GtkTreeSelection *selection, UrlPickerDialogGtk* window) {
   GtkTreeIter iter;
   if (!gtk_tree_selection_get_selected(selection, NULL, &iter)) {
-    NOTREACHED();
+    // The user has unselected the history element, nothing to do.
     return;
   }
   GtkTreePath* path = gtk_tree_model_get_path(
