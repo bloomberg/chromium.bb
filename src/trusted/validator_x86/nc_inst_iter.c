@@ -49,13 +49,7 @@
  */
 #define DEBUGGING 0
 
-#if DEBUGGING
-/* Defines to execute statement(s) s if in debug mode. */
-#define DEBUG(s) s
-#else
-/* Defines to not include statement(s) s if not in debugging mode. */
-#define DEBUG(s) do { if (0) { s; } } while(0)
-#endif
+#include "native_client/src/shared/utils/debugging.h"
 
 NcInstIter* NcInstIterCreateWithLookback(
     NcSegment* segment,

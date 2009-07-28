@@ -59,22 +59,17 @@
  */
 #define DEBUGGING 0
 
-#if DEBUGGING
+#include "native_client/src/shared/utils/debugging.h"
+
 /* Turn this flag on, so that we can print out human readable
  * names for type NaclInsttype.
  */
 #define NEEDSNACLINSTTYPESTRING
-#endif
 
 #include <stdio.h>
 #include <assert.h>
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "gen/native_client/src/trusted/validator_x86/ncdecodetab.h"
-
-#if DEBUGGING
-
-/* Defines to execute statement(s) s if in debug mode. */
-#define DEBUG(s) s
 
 /* Generates a print name for the given NCDecodeImmediateType. */
 static const char* NCDecodeImmediateTypeName(NCDecodeImmediateType type) {
@@ -106,11 +101,6 @@ static void PrintOpInfo(const struct OpInfo* info) {
          NCDecodeImmediateTypeName(info->immtype),
          info->opinmrm);
 }
-
-#else
-/* Defines to not include statement(s) s if not in debugging mode. */
-#define DEBUG(s)
-#endif
 
 /* later this will make decoding x87 instructions a bit more concise. */
 static const struct OpInfo* kDecodeX87Op[8] = { kDecode87D8,
@@ -395,7 +385,7 @@ void ConsumeSIB(struct NCDecoderState* mstate) {
 }
 
 void ConsumeID(struct NCDecoderState* mstate) {
-  DEBUG( uint8_t* old_next_byte = mstate->nextbyte );
+  uint8_t* old_next_byte = mstate->nextbyte;
   if (mstate->inst.immtype == IMM_UNKNOWN) {
     ErrorInternal(mstate->vstate);
   }
