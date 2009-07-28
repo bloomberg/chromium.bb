@@ -2039,7 +2039,7 @@ each locale. -->
 
       <!-- Shelf and Add shelf item dialog -->
       <message name="IDS_ASI_ADD_TITLE" desc="Title for the shelf item dialog when adding an item.">
-        Add page
+        Add Page
       </message>
       <message name="IDS_ASI_ADD" desc="The add button">
         Add
