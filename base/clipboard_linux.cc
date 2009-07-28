@@ -135,9 +135,7 @@ void Clipboard::SetGtkClipboard() {
   int i = 0;
   for (Clipboard::TargetMap::iterator iter = clipboard_data_->begin();
        iter != clipboard_data_->end(); ++iter, ++i) {
-    char* target_string = new char[iter->first.size() + 1];
-    strcpy(target_string, iter->first.c_str());
-    targets[i].target = target_string;
+    targets[i].target = strndup(iter->first.data(), iter->first.size());
     targets[i].flags = 0;
     targets[i].info = i;
   }
@@ -148,7 +146,7 @@ void Clipboard::SetGtkClipboard() {
                               clipboard_data_);
 
   for (size_t i = 0; i < clipboard_data_->size(); i++)
-    delete[] targets[i].target;
+    free(targets[i].target);
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
@@ -269,7 +267,7 @@ void Clipboard::ReadText(string16* result) const {
   gchar* text = gtk_clipboard_wait_for_text(clipboard_);
 
   if (text == NULL)
-   return;
+    return;
 
   // TODO(estade): do we want to handle the possible error here?
   UTF8ToUTF16(text, strlen(text), result);
@@ -281,7 +279,7 @@ void Clipboard::ReadAsciiText(std::string* result) const {
   gchar* text = gtk_clipboard_wait_for_text(clipboard_);
 
   if (text == NULL)
-   return;
+    return;
 
   result->assign(text);
   g_free(text);
@@ -292,6 +290,7 @@ void Clipboard::ReadFile(FilePath* file) const {
 }
 
 // TODO(estade): handle different charsets.
+// TODO(port): set *src_url.
 void Clipboard::ReadHTML(string16* markup, std::string* src_url) const {
   markup->clear();
 

@@ -447,8 +447,10 @@ void Clipboard::ReadHTML(string16* markup, std::string* src_url) const {
   ::GlobalUnlock(data);
 
   std::string markup_utf8;
-  ClipboardUtil::CFHtmlToHtml(html_fragment, &markup_utf8, src_url);
-  markup->assign(UTF8ToWide(markup_utf8));
+  ClipboardUtil::CFHtmlToHtml(html_fragment, markup ? &markup_utf8 : NULL,
+                              src_url);
+  if (markup)
+    markup->assign(UTF8ToWide(markup_utf8));
 }
 
 void Clipboard::ReadBookmark(string16* title, std::string* url) const {

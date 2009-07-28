@@ -35,6 +35,7 @@ WebKit::WebString MockWebClipboardImpl::readPlainText() {
   return m_plainText;
 }
 
+// TODO(wtc): set output argument *url.
 WebKit::WebString MockWebClipboardImpl::readHTML(WebKit::WebURL* url) {
   return m_htmlText;
 }
