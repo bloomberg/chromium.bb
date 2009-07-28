@@ -70,18 +70,20 @@ o3djs.picking.Ray = goog.typedef;
 
 /**
  * Creates a new PickInfo.
- * @param {!o3djs.picking.ShapeInfo} shapeInfo The ShapeInfo that
- *     was picked.
- * @param {!o3d.RayIntersectionInfo} rayIntersectionInfo Information
- *     about the pick.
- * @param {!o3djs.math.Vector3} worldIntersectionPosition
- *     world position of intersection.
+ * @param {!o3d.Element} element The Element that was picked.
+ * @param {!o3djs.picking.ShapeInfo} shapeInfo The ShapeInfo that was picked.
+ * @param {!o3d.RayIntersectionInfo} rayIntersectionInfo Information about the
+ *     pick.
+ * @param {!o3djs.math.Vector3} worldIntersectionPosition world position of
+ *     intersection.
  * @return {!o3djs.picking.PickInfo} The new PickInfo.
  */
-o3djs.picking.createPickInfo = function(shapeInfo,
+o3djs.picking.createPickInfo = function(element,
+                                        shapeInfo,
                                         rayIntersectionInfo,
                                         worldIntersectionPosition) {
-  return new o3djs.picking.PickInfo(shapeInfo,
+  return new o3djs.picking.PickInfo(element,
+                                    shapeInfo,
                                     rayIntersectionInfo,
                                     worldIntersectionPosition);
 };
@@ -219,16 +221,23 @@ o3djs.picking.dumpRayIntersectionInfo = function(label,
 /**
  * Creates a new PickInfo. Used to return picking information.
  * @constructor
- * @param {!o3djs.picking.ShapeInfo} shapeInfo The ShapeInfo that
- *     was picked.
- * @param {!o3d.RayIntersectionInfo} rayIntersectionInfo Information
- *     about the pick.
+ * @param {!o3d.Element} element The Element that was picked.
+ * @param {!o3djs.picking.ShapeInfo} shapeInfo The ShapeInfo that was picked.
+ * @param {!o3d.RayIntersectionInfo} rayIntersectionInfo Information about the
+ *     pick.
  * @param {!o3djs.math.Vector3} worldIntersectionPosition world position of
  *     intersection.
  */
-o3djs.picking.PickInfo = function(shapeInfo,
+o3djs.picking.PickInfo = function(element,
+                                  shapeInfo,
                                   rayIntersectionInfo,
                                   worldIntersectionPosition) {
+  /**
+   * The Element that was picked (Primitive).
+   * @type {!o3d.Element}
+   */
+  this.element = element;
+
   /**
    * The ShapeInfo that was picked.
    * @type {!o3djs.picking.ShapeInfo}
@@ -335,7 +344,8 @@ o3djs.picking.ShapeInfo.prototype.pick = function(worldRay) {
       if (rayIntersectionInfo.intersected) {
         var worldIntersectionPosition = o3djs.math.matrix4.transformPoint(
             worldMatrix, rayIntersectionInfo.position);
-        return o3djs.picking.createPickInfo(this,
+        return o3djs.picking.createPickInfo(element,
+                                            this,
                                             rayIntersectionInfo,
                                             worldIntersectionPosition);
       }

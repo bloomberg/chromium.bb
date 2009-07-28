@@ -141,4 +141,72 @@ o3djs.element.duplicateElement = function(pack, sourceElement) {
   return newElement;
 };
 
+/**
+ * Gets the normal for specific triangle in a Primitive in that Primitive's
+ * local space.
+ *
+ * NOTE: THIS FUNCTION IS SLOW! If you want to do collisions you should use a
+ * different solution.
+ *
+ * @param {!o3d.Primitive} primitive Primitive to get normal from. The
+ *     primitive MUST be a TRIANGLELIST or a TRIANGLESTRIP and it must have a
+ *     POSITION,0 stream.
+ * @param {number} index Index of triangle.
+ * @param {boolean} opt_winding The winding of the triangles of the
+ *     Primitive. False = Clockwise, True = Counterclockwise. The default is
+ *     false. This is only used for Primitives that have no normals.
+ * @return {!o3djs.math.Vector3} The normal for the triangle.
+ */
+o3djs.element.getNormalForTriangle = function(primitive, index, opt_winding) {
+  // Check that we can do this
+  var primitiveType = primitive.primitiveType;
+  if (primitiveType != o3djs.base.o3d.Primitive.TRIANGLELIST &&
+      primitiveType != o3djs.base.o3d.Primitive.TRIANGLESTRIP) {
+    throw 'primitive is not a TRIANGLELIST or TRIANGLESTRIP';
+  }
+
+  var indexBuffer = primitive.indexBuffer;
+  var vertexIndex = (primitiveType == o3djs.base.o3d.Primitive.TRIANGLELIST) ?
+                    (index * 3) : (index + 2);
+  var vertexIndices;
+  if (indexBuffer) {
+    var indexField = indexBuffer.fields[0];
+    vertexIndices = indexField.getAt(vertexIndex, 3);
+  } else {
+    vertexIndices = [vertexIndex, vertexIndex + 1, vertexIndex + 2]
+  }
+
+  var normalStream = primitive.streamBank.getVertexStream(
+      o3djs.base.o3d.Stream.NORMAL, 0);
+  if (normalStream) {
+    var normalField = normalStream.field;
+    // Look up the 3 normals that make the triangle.
+    var summedNormal = [0, 0, 0];
+    for (var ii = 0; ii < 3; ++ii) {
+      var normal = normalField.getAt(vertexIndices[ii], 1);
+      summedNormal = o3djs.math.addVector(summedNormal, normal);
+    }
+    return o3djs.math.normalize(summedNormal);
+  } else {
+    var positionStream = primitive.streamBank.getVertexStream(
+        o3djs.base.o3d.Stream.POSITION, 0);
+    if (!positionStream) {
+      throw 'no POSITION,0 stream in primitive';
+    }
+    var positionField = positionStream.field;
+    // Lookup the 3 positions that make the triangle.
+    var positions = [];
+    for (var ii = 0; ii < 3; ++ii) {
+      positions[ii] = positionField.getAt(vertexIndices[ii], 1);
+    }
+
+    // Compute a face normal from the positions.
+    var v0 = o3djs.math.normalize(o3djs.math.subVector(positions[1],
+                                                       positions[0]));
+    var v1 = o3djs.math.normalize(o3djs.math.subVector(positions[2],
+                                                       positions[1]));
+    return opt_winding ? o3djs.math.cross(v1, v0) : o3djs.math.cross(v0, v1);
+  }
+};
+
 

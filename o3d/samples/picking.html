@@ -56,7 +56,7 @@ O3D Picking Example.
 <!-- Include default javascript library functions-->
 <script type="text/javascript" src="o3djs/base.js"></script>
 <!-- Our javascript code -->
-<script type="text/javascript">
+<script type="text/javascript" id="o3d">
 o3djs.require('o3djs.util');
 o3djs.require('o3djs.math');
 o3djs.require('o3djs.rendergraph');
@@ -64,12 +64,16 @@ o3djs.require('o3djs.pack');
 o3djs.require('o3djs.camera');
 o3djs.require('o3djs.picking');
 o3djs.require('o3djs.scene');
+o3djs.require('o3djs.debug');
 
 // Events
 // init() once the page has finished loading.
 // unload() when the page is unloaded.
 window.onload = init;
 window.onunload = unload;
+
+// constants
+var NORMAL_SCALE_FACTOR = 2.0;
 
 // global variables
 var g_o3d;
@@ -79,6 +83,9 @@ var g_pack;
 var g_viewInfo;
 var g_treeInfo;  // information about the transform graph.
 var g_pickInfoElem;
+var g_debugHelper;
+var g_debugLineGroup;
+var g_debugLine;
 var g_selectedInfo = null;
 var g_flashTimer = 0;
 var g_highlightMaterial;
@@ -135,13 +142,53 @@ function pick(e) {
   unSelectAll();
 
   // Update the entire tree in case anything moved.
+  // NOTE: This function is very SLOW!
+  // If you really want to use picking you should manually update only those
+  // transforms and shapes that moved, were added, or deleted by writing your
+  // own picking library. You should also make sure that you are only
+  // considering things that are pickable. By that I mean if you have a scene of
+  // a meadow with trees, grass, bushes, and animals and the only thing the user
+  // can pick is the animals then put the animals on their own sub branch of the
+  // transform graph and only pick against that subgraph.
+  // Even better, make a separate transform graph with only cubes on it to
+  // represent the animals and use that instead of the actual animals.
   g_treeInfo.update();
 
   var pickInfo = g_treeInfo.pick(worldRay);
   if (pickInfo) {
     select(pickInfo);
     g_pickInfoElem.innerHTML = pickInfo.shapeInfo.shape.name;
+
+    // Display the normal
+    // NOTE: Lookup the normal with this function is very SLOW!!
+    // If you need performance, for a game or something, you should consider
+    // other methods.
+    var normal = o3djs.element.getNormalForTriangle(
+        pickInfo.element,
+        pickInfo.rayIntersectionInfo.primitiveIndex);
+
+    // Convert the normal from local to world space.
+    normal = g_math.matrix4.transformNormal(
+        pickInfo.shapeInfo.parent.transform.worldMatrix,
+        normal);
+
+    // Remove the scale from the normal.
+    normal = g_math.normalize(normal);
+
+    // Get the world position of the collision.
+    var worldPosition = pickInfo.worldIntersectionPosition;
+
+    // Add the normal to it to get a point in space above it with some
+    // multiplier to scale it.
+    var normalSpot = g_math.addVector(
+        worldPosition,
+        g_math.mulVectorScalar(normal, NORMAL_SCALE_FACTOR));
+
+    // Move our debug line to show the normal
+    g_debugLine.setVisible(true);
+    g_debugLine.setEndPoints(worldPosition, normalSpot);
   } else {
+    g_debugLine.setVisible(false);
     g_pickInfoElem.innerHTML = '--nothing--';
   }
 }
@@ -237,6 +284,14 @@ function initStep2(clientElements) {
       g_pack,
       g_client.root,
       g_client.renderGraphRoot);
+
+  // Use the debug library to create a line we can position to show
+  // the normal.
+  g_debugHelper = o3djs.debug.createDebugHelper(g_client.createPack(),
+                                                g_viewInfo);
+  g_debugLineGroup = g_debugHelper.createDebugLineGroup(g_client.root);
+  g_debugLine = g_debugLineGroup.addLine();
+  g_debugLine.setColor([0,1,0,1]);
 
   // Create a material for highlighting.
   g_highlightMaterial = g_pack.createObject('Material');
