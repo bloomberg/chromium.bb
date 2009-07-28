@@ -366,7 +366,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
 }
 
 .section {
-  background: hsl(213, 75%, 97%);
+  background: rgba(239, 246, 255, 0.8);
   -webkit-border-radius: 4px;
   white-space: nowrap;
   text-overflow: ellipsis;

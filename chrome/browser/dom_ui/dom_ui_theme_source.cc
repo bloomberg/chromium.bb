@@ -104,7 +104,6 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   skia::HSL section_lighter;
   skia::SkColorToHSL(color_section, section_lighter);
   section_lighter.l += (1 - section_lighter.l) * 0.33;
-  section_lighter.s += (1 - section_lighter.s) * 0.1;
   SkColor color_section_lighter =
       skia::HSLToSkColor(SkColorGetA(color_section), section_lighter);
 
