@@ -126,6 +126,8 @@ bool EditorClientImpl::ShouldSpellcheckByDefault() {
   const WebCore::Editor* editor = frame->editor();
   if (!editor)
     return false;
+  if (editor->spellCheckingEnabledInFocusedNode())
+    return true;
   const WebCore::Document* document = frame->document();
   if (!document)
     return false;
