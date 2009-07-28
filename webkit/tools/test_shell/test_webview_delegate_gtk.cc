@@ -152,7 +152,7 @@ void TestWebViewDelegate::didChangeCursor(const WebCursorInfo& cursor_info) {
     // non-pixmap branch.
     if (cursor_type_ == cursor_type)
       return;
-    if (cursor_type_ == GDK_LAST_CURSOR)
+    if (cursor_type == GDK_LAST_CURSOR)
       gdk_cursor = NULL;
     else
       gdk_cursor = gdk_cursor_new(cursor_type);

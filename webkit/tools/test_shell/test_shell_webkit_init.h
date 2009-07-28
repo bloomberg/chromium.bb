@@ -75,7 +75,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual bool getFileSize(const WebKit::WebString& path, long long& result) {
     return file_util::GetFileSize(
-        FilePath(webkit_glue::WebStringToFilePathString(path)), &result);
+        FilePath(webkit_glue::WebStringToFilePathString(path)),
+                 reinterpret_cast<int64*>(&result));
   }
 
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
