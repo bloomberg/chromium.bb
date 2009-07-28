@@ -143,9 +143,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     startup_timer.Stop();  // End of Startup Time Measurement.
 
     if (run_loop) {
-      // Load the accelerator table from the browser executable and tell the
-      // message loop to use it when translating messages.
-      if (pool) pool->Recycle();
+      if (pool)
+        pool->Recycle();
       MessageLoop::current()->Run();
     }
   }
