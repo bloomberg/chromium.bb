@@ -106,7 +106,6 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     // WebMediaPlayerImpl.
     void PipelineInitializationCallback();
     void PipelineSeekCallback();
-    void PipelineErrorCallback();
 
    private:
     // Invoke |webmediaplayer_| to perform a repaint.
@@ -117,9 +116,6 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
     // Notify |webmediaplayer_| that a seek has finished.
     void PipelineSeekTask();
-
-    // Notify |webmediaplayer_| that a pipeline error has been set.
-    void PipelineErrorTask();
 
     // The render message loop where WebKit lives.
     MessageLoop* render_loop_;
@@ -216,8 +212,6 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   void OnPipelineInitialize();
 
   void OnPipelineSeek();
-
-  void OnPipelineError();
 
  private:
   // Helpers that set the network/ready state and notifies the client if

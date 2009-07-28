@@ -92,11 +92,6 @@ void WebMediaPlayerImpl::Proxy::PipelineSeekCallback() {
       &WebMediaPlayerImpl::Proxy::PipelineSeekTask));
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineErrorCallback() {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &WebMediaPlayerImpl::Proxy::PipelineErrorTask));
-}
-
 void WebMediaPlayerImpl::Proxy::RepaintTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   {
@@ -123,13 +118,6 @@ void WebMediaPlayerImpl::Proxy::PipelineSeekTask() {
   }
 }
 
-void WebMediaPlayerImpl::Proxy::PipelineErrorTask() {
-  DCHECK(MessageLoop::current() == render_loop_);
-  if (webmediaplayer_) {
-    webmediaplayer_->OnPipelineError();
-  }
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // WebMediaPlayerImpl implementation
 
@@ -152,8 +140,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
     NOTREACHED() << "Could not start PipelineThread";
   } else {
     pipeline_ = new media::PipelineImpl(pipeline_thread_.message_loop());
-    pipeline_->SetPipelineErrorCallback(NewCallback(proxy_.get(),
-        &WebMediaPlayerImpl::Proxy::PipelineErrorCallback));
   }
 
   // Also we want to be notified of |main_loop_| destruction.
@@ -400,38 +386,6 @@ void WebMediaPlayerImpl::OnPipelineSeek() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
     GetClient()->timeChanged();
-  }
-}
-
-void WebMediaPlayerImpl::OnPipelineError() {
-  DCHECK(MessageLoop::current() == main_loop_);
-  switch (pipeline_->GetError()) {
-    case media::PIPELINE_OK:
-    case media::PIPELINE_STOPPING:
-      // We're in a good state. Do nothing.
-      break;
-
-    case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
-    case media::PIPELINE_ERROR_REQUIRED_FILTER_MISSING:
-    case media::PIPELINE_ERROR_COULD_NOT_RENDER:
-      // Format error.
-      SetNetworkState(WebMediaPlayer::FormatError);
-      break;
-
-    case media::PIPELINE_ERROR_URL_NOT_FOUND:
-    case media::PIPELINE_ERROR_NETWORK:
-    case media::PIPELINE_ERROR_DECODE:
-    case media::PIPELINE_ERROR_ABORT:
-    case media::PIPELINE_ERROR_OUT_OF_MEMORY:
-    case media::PIPELINE_ERROR_READ:
-    case media::PIPELINE_ERROR_AUDIO_HARDWARE:
-    case media::DEMUXER_ERROR_COULD_NOT_OPEN:
-    case media::DEMUXER_ERROR_COULD_NOT_PARSE:
-    case media::DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
-    case media::DEMUXER_ERROR_COULD_NOT_CREATE_THREAD:
-      // Decode error.
-      SetNetworkState(WebMediaPlayer::DecodeError);
-      break;
   }
 }
 
