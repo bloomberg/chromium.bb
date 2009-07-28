@@ -145,6 +145,7 @@ class Extension {
                      std::string* error);
 
   const FilePath& path() const { return path_; }
+  void set_path(const FilePath& path) { path_ = path; }
   const GURL& url() const { return extension_url_; }
   const Location location() const { return location_; }
   void set_location(Location location) { location_ = location; }

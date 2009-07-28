@@ -119,7 +119,7 @@ bool ExtensionUnpacker::Run() {
   parsed_manifest_.reset(ReadManifest());
   if (!parsed_manifest_.get())
     return false;  // Error was already reported.
- 
+
   // NOTE: Since the Unpacker doesn't have the extension's public_id, the
   // InitFromValue is allowed to generate a temporary id for the extension.
   // ANY CODE THAT FOLLOWS SHOULD NOT DEPEND ON THE CORRECT ID OF THIS
@@ -160,7 +160,7 @@ bool ExtensionUnpacker::DumpImagesToFile() {
 // static
 bool ExtensionUnpacker::ReadImagesFromFile(const FilePath& extension_path,
                                            DecodedImages* images) {
-  FilePath path = extension_path.DirName().AppendASCII(kDecodedImagesFilename);
+  FilePath path = extension_path.AppendASCII(kDecodedImagesFilename);
   std::string file_str;
   if (!file_util::ReadFileToString(path, &file_str))
     return false;

@@ -6,23 +6,16 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
-#include "base/crypto/signature_verifier.h"
 #include "base/file_util.h"
-#include "base/gfx/png_encoder.h"
-#include "base/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/third_party/nss/blapi.h"
-#include "base/third_party/nss/sha256.h"
-#include "base/thread.h"
 #include "base/values.h"
 #include "net/base/file_stream.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -31,22 +24,17 @@
 #include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/utility_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
-#include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#include "chrome/common/zip.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/base64.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -59,8 +47,6 @@
 
 // ExtensionsService.
 
-const char ExtensionsService::kExtensionHeaderMagic[] = "Cr24";
-
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
 
@@ -68,27 +54,6 @@ const char* ExtensionsService::kGalleryDownloadURLPrefix =
     "https://dl-ssl.google.com/chrome/";
 const char* ExtensionsService::kGalleryURLPrefix =
     "https://tools.google.com/chrome/";
-
-const char* ExtensionsServiceBackend::kTempExtensionName = "TEMP_INSTALL";
-
-namespace {
-
-// A temporary subdirectory where we unpack extensions.
-const char* kUnpackExtensionDir = "TEMP_UNPACK";
-
-// Unpacking errors
-const char* kBadMagicNumberError = "Bad magic number";
-const char* kBadHeaderSizeError = "Excessively large key or signature";
-const char* kBadVersionNumberError = "Bad version number";
-const char* kInvalidExtensionHeaderError = "Invalid extension header";
-const char* kInvalidPublicKeyError = "Invalid public key";
-const char* kInvalidSignatureError = "Invalid signature";
-const char* kSignatureVerificationFailed = "Signature verification failed";
-const char* kSignatureVerificationInitFailed =
-    "Signature verification initialization failed. This is most likely "
-    "caused by a public key in the wrong format (should encode algorithm).";
-
-}
 
 // static
 bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
@@ -101,130 +66,45 @@ bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
   }
 }
 
-// This class coordinates an extension unpack task which is run in a separate
-// process.  Results are sent back to this class, which we route to the
-// ExtensionServiceBackend.
+// This class hosts a SandboxedExtensionUnpacker task and routes the results
+// back to ExtensionsService. The unpack process is started immediately on
+// construction of this object.
 class ExtensionsServiceBackend::UnpackerClient
-    : public UtilityProcessHost::Client {
+    : public SandboxedExtensionUnpackerClient {
  public:
   UnpackerClient(ExtensionsServiceBackend* backend,
                  const FilePath& extension_path,
-                 const std::string& public_key,
                  const std::string& expected_id,
                  bool silent, bool from_gallery)
     : backend_(backend), extension_path_(extension_path),
-      public_key_(public_key), expected_id_(expected_id), got_response_(false),
-      silent_(silent), from_gallery_(from_gallery) {
-  }
-
-  // Starts the unpack task.  We call back to the backend when the task is done,
-  // or a problem occurs.
-  void Start() {
-    AddRef();  // balanced in OnUnpackExtensionReply()
-
-    // TODO(mpcomplete): handle multiple installs
-    FilePath temp_dir = backend_->install_directory_.AppendASCII(
-        kUnpackExtensionDir);
-    if (!file_util::CreateDirectory(temp_dir)) {
-      backend_->ReportExtensionInstallError(extension_path_,
-          "Failed to create temporary directory.");
-      return;
-    }
-
-    temp_extension_path_ = temp_dir.Append(extension_path_.BaseName());
-    if (!file_util::CopyFile(extension_path_, temp_extension_path_)) {
-      backend_->ReportExtensionInstallError(extension_path_,
-          "Failed to copy extension file to temporary directory.");
-      return;
-    }
-
-    if (backend_->resource_dispatcher_host_) {
-      ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &UnpackerClient::StartProcessOnIOThread,
-                            backend_->resource_dispatcher_host_,
-                            MessageLoop::current()));
-    } else {
-      // Cheesy... but if we don't have a ResourceDispatcherHost, assume we're
-      // in a unit test and run the unpacker directly in-process.
-      ExtensionUnpacker unpacker(temp_extension_path_);
-      if (unpacker.Run()) {
-        OnUnpackExtensionSucceededImpl(*unpacker.parsed_manifest(),
-                                       unpacker.decoded_images());
-      } else {
-        OnUnpackExtensionFailed(unpacker.error_message());
-      }
-    }
+      expected_id_(expected_id), silent_(silent), from_gallery_(from_gallery) {
+    unpacker_ = new SandboxedExtensionUnpacker(extension_path,
+            backend->resource_dispatcher_host_, this);
+    unpacker_->Start();
   }
 
  private:
-  // UtilityProcessHost::Client
-  virtual void OnProcessCrashed() {
-    // Don't report crashes if they happen after we got a response.
-    if (got_response_)
-      return;
-
-    OnUnpackExtensionFailed("Chrome crashed while trying to install.");
+  // SandboxedExtensionUnpackerClient
+  virtual void OnUnpackSuccess(const FilePath& temp_dir,
+                               const FilePath& extension_dir,
+                               Extension* extension) {
+    backend_->OnExtensionUnpacked(extension_path_, extension_dir, extension,
+                                  expected_id_, silent_, from_gallery_);
+    file_util::Delete(temp_dir, true);
+    delete this;
   }
 
-  virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest) {
-     ExtensionUnpacker::DecodedImages images;
-     if (!ExtensionUnpacker::ReadImagesFromFile(temp_extension_path_,
-                                                &images)) {
-       OnUnpackExtensionFailed("Couldn't read image data from disk.");
-     } else {
-       OnUnpackExtensionSucceededImpl(manifest, images);
-     }
-  }
-
-  void OnUnpackExtensionSucceededImpl(
-      const DictionaryValue& manifest,
-      const ExtensionUnpacker::DecodedImages& images) {
-    // Add our public key into the parsed manifest. We want it to be saved so
-    // that we can later refer to it (eg for generating ids, validating
-    // signatures, etc).
-    // The const_cast is hacky, but seems like the right thing here, rather than
-    // making a full copy just to make this change.
-    const_cast<DictionaryValue*>(&manifest)->SetString(
-        extension_manifest_keys::kPublicKey, public_key_);
-
-    // The extension was unpacked to the temp dir inside our unpacking dir.
-    FilePath extension_dir = temp_extension_path_.DirName().AppendASCII(
-        ExtensionsServiceBackend::kTempExtensionName);
-    backend_->OnExtensionUnpacked(extension_path_, extension_dir,
-                                  expected_id_, manifest, images, silent_,
-                                  from_gallery_);
-    Cleanup();
-  }
-
-  virtual void OnUnpackExtensionFailed(const std::string& error_message) {
+  virtual void OnUnpackFailure(const std::string& error_message) {
     backend_->ReportExtensionInstallError(extension_path_, error_message);
-    Cleanup();
+    delete this;
   }
 
-  // Cleans up our temp directory.
-  void Cleanup() {
-    if (got_response_)
-      return;
-
-    got_response_ = true;
-    file_util::Delete(temp_extension_path_.DirName(), true);
-    Release();  // balanced in Run()
-  }
-
-  // Starts the utility process that unpacks our extension.
-  void StartProcessOnIOThread(ResourceDispatcherHost* rdh,
-                              MessageLoop* file_loop) {
-    UtilityProcessHost* host = new UtilityProcessHost(rdh, this, file_loop);
-    host->StartExtensionUnpacker(temp_extension_path_);
-  }
+  scoped_refptr<SandboxedExtensionUnpacker> unpacker_;
 
   scoped_refptr<ExtensionsServiceBackend> backend_;
 
   // The path to the crx file that we're installing.
   FilePath extension_path_;
-
-  // The public key of the extension we're installing.
-  std::string public_key_;
 
   // The path to the copy of the crx file in the temporary directory where we're
   // unpacking it.
@@ -232,10 +112,6 @@ class ExtensionsServiceBackend::UnpackerClient
 
   // The ID we expect this extension to have, if any.
   std::string expected_id_;
-
-  // True if we got a response from the utility process and have cleaned up
-  // already.
-  bool got_response_;
 
   // True if the install should be done with no confirmation dialog.
   bool silent_;
@@ -673,11 +549,6 @@ void ExtensionsServiceBackend::GarbageCollectExtensions(
     std::string extension_id = WideToASCII(
         extension_path.BaseName().ToWStringHack());
 
-    // The utility process might be in the middle of unpacking an extension, so
-    // ignore the temp unpacking directory.
-    if (extension_id == kUnpackExtensionDir)
-      continue;
-
     // If there is no Current Version file, just delete the directory and move
     // on. This can legitimately happen when an uninstall does not complete, for
     // example, when a plugin is in use at uninstall time.
@@ -1038,130 +909,28 @@ void ExtensionsServiceBackend::UpdateExtension(const std::string& id,
 void ExtensionsServiceBackend::InstallOrUpdateExtension(
     const FilePath& extension_path, bool from_gallery,
     const std::string& expected_id, bool silent) {
-  std::string actual_public_key;
-  if (!ValidateSignature(extension_path, &actual_public_key))
-    return;  // Failures reported within ValidateSignature().
-
-  UnpackerClient* client = new UnpackerClient(
-      this, extension_path, actual_public_key, expected_id, silent,
-      from_gallery);
-  client->Start();
-}
-
-bool ExtensionsServiceBackend::ValidateSignature(const FilePath& extension_path,
-                                                 std::string* key_out) {
-  ScopedStdioHandle file(file_util::OpenFile(extension_path, "rb"));
-  if (!file.get()) {
-    ReportExtensionInstallError(extension_path, "Could not open file.");
-    return NULL;
-  }
-
-  // Read and verify the header.
-  ExtensionsService::ExtensionHeader header;
-  size_t len;
-
-  // TODO(erikkay): Yuck.  I'm not a big fan of this kind of code, but it
-  // appears that we don't have any endian/alignment aware serialization
-  // code in the code base.  So for now, this assumes that we're running
-  // on a little endian machine with 4 byte alignment.
-  len = fread(&header, 1, sizeof(ExtensionsService::ExtensionHeader),
-      file.get());
-  if (len < sizeof(ExtensionsService::ExtensionHeader)) {
-    ReportExtensionInstallError(extension_path, kInvalidExtensionHeaderError);
-    return false;
-  }
-  if (strncmp(ExtensionsService::kExtensionHeaderMagic, header.magic,
-      sizeof(header.magic))) {
-    ReportExtensionInstallError(extension_path, kBadMagicNumberError);
-    return false;
-  }
-  if (header.version != ExtensionsService::kCurrentVersion) {
-    ReportExtensionInstallError(extension_path, kBadVersionNumberError);
-    return false;
-  }
-  if (header.key_size > ExtensionsService::kMaxPublicKeySize ||
-      header.signature_size > ExtensionsService::kMaxSignatureSize) {
-    ReportExtensionInstallError(extension_path, kBadHeaderSizeError);
-    return false;
-  }
-
-  std::vector<uint8> key;
-  key.resize(header.key_size);
-  len = fread(&key.front(), sizeof(uint8), header.key_size, file.get());
-  if (len < header.key_size) {
-    ReportExtensionInstallError(extension_path, kInvalidPublicKeyError);
-    return false;
-  }
-
-  std::vector<uint8> signature;
-  signature.resize(header.signature_size);
-  len = fread(&signature.front(), sizeof(uint8), header.signature_size,
-      file.get());
-  if (len < header.signature_size) {
-    ReportExtensionInstallError(extension_path, kInvalidSignatureError);
-    return false;
-  }
-
-  // Note: this structure is an ASN.1 which encodes the algorithm used
-  // with its parameters. This is defined in PKCS #1 v2.1 (RFC 3447).
-  // It is encoding: { OID sha1WithRSAEncryption      PARAMETERS NULL }
-  // TODO(aa): This needs to be factored away someplace common.
-  const uint8 signature_algorithm[15] = {
-    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-    0xf7, 0x0d, 0x01, 0x01, 0x05, 0x05, 0x00
-  };
-
-  base::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(signature_algorithm,
-                           sizeof(signature_algorithm),
-                           &signature.front(),
-                           signature.size(),
-                           &key.front(),
-                           key.size())) {
-    ReportExtensionInstallError(extension_path,
-        kSignatureVerificationInitFailed);
-    return false;
-  }
-
-  unsigned char buf[1 << 12];
-  while ((len = fread(buf, 1, sizeof(buf), file.get())) > 0)
-    verifier.VerifyUpdate(buf, len);
-
-  if (!verifier.VerifyFinal()) {
-    ReportExtensionInstallError(extension_path, kSignatureVerificationFailed);
-    return false;
-  }
-
-  net::Base64Encode(std::string(reinterpret_cast<char*>(&key.front()),
-      key.size()), key_out);
-  return true;
+  // NOTE: We don't need to keep a reference to this, it deletes itself when it
+  // is done.
+  new UnpackerClient(this, extension_path, expected_id, silent, from_gallery);
 }
 
 void ExtensionsServiceBackend::OnExtensionUnpacked(
-    const FilePath& extension_path,
-    const FilePath& temp_extension_dir,
-    const std::string& expected_id,
-    const DictionaryValue& manifest,
-    const std::vector< Tuple2<SkBitmap, FilePath> >& images,
-    bool silent, bool from_gallery) {
-  Extension extension;
-  std::string error;
-  if (!extension.InitFromValue(manifest,
-                               true,  // require ID
-                               &error)) {
-    ReportExtensionInstallError(extension_path, "Invalid extension manifest.");
-    return;
-  }
+    const FilePath& crx_path, const FilePath& unpacked_path,
+    Extension* extension, const std::string expected_id, bool silent,
+    bool from_gallery) {
+  // Take ownership of the extension object.
+  scoped_ptr<Extension> extension_deleter(extension);
 
   Extension::Location location = Extension::INTERNAL;
-  LookupExternalExtension(extension.id(), NULL, &location);
+  LookupExternalExtension(extension->id(), NULL, &location);
+  extension->set_location(location);
 
   bool allow_install = false;
   if (extensions_enabled_)
     allow_install = true;
 
   // Always allow themes.
-  if (extension.IsTheme())
+  if (extension->IsTheme())
     allow_install = true;
 
   // Always allow externally installed extensions (partners use this).
@@ -1169,8 +938,7 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
     allow_install = true;
 
   if (!allow_install) {
-    ReportExtensionInstallError(extension_path,
-        "Extensions are not enabled.");
+    ReportExtensionInstallError(crx_path, "Extensions are not enabled.");
     return;
   }
 
@@ -1182,7 +950,7 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
   // - during tests (!frontend->show_extension_prompts())
   // - autoupdate (silent).
   bool show_dialog = true;
-  if (extension.IsTheme())
+  if (extension->IsTheme())
     show_dialog = false;
 
   if (Extension::IsExternalLocation(location))
@@ -1215,7 +983,7 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
         NULL, CFSTR("Cancel"), NULL, &response);
 
     if (response == kCFUserNotificationAlternateResponse) {
-      ReportExtensionInstallError(extension_path,
+      ReportExtensionInstallError(crx_path,
           "User did not allow extension to be installed.");
       return;
     }
@@ -1223,132 +991,66 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
   }
 
   // If an expected id was provided, make sure it matches.
-  if (!expected_id.empty() && expected_id != extension.id()) {
+  if (!expected_id.empty() && expected_id != extension->id()) {
     std::string error_msg = "ID in new extension manifest (";
-    error_msg += extension.id();
+    error_msg += extension->id();
     error_msg += ") does not match expected ID (";
     error_msg += expected_id;
     error_msg += ")";
-    ReportExtensionInstallError(extension_path, error_msg);
+    ReportExtensionInstallError(crx_path, error_msg);
     return;
   }
 
   // <profile>/Extensions/<id>
-  FilePath dest_dir = install_directory_.AppendASCII(extension.id());
-  std::string version = extension.VersionString();
+  FilePath dest_dir = install_directory_.AppendASCII(extension->id());
+  std::string version = extension->VersionString();
   std::string current_version;
   Extension::InstallType install_type =
-      CompareToInstalledVersion(extension.id(), version, &current_version);
+      CompareToInstalledVersion(extension->id(), version, &current_version);
 
   // Do not allow downgrade.
   if (install_type == Extension::DOWNGRADE) {
-    ReportExtensionInstallError(extension_path,
+    ReportExtensionInstallError(crx_path,
         "Error: Attempt to downgrade extension from more recent version.");
     return;
   }
 
   if (install_type == Extension::REINSTALL) {
-    if (NeedsReinstall(extension.id(), current_version)) {
+    if (NeedsReinstall(extension->id(), current_version)) {
       // Treat corrupted existing installation as new install case.
       install_type = Extension::NEW_INSTALL;
     } else {
       // The client may use this as a signal (to switch themes, for instance).
-      ReportExtensionOverinstallAttempted(extension.id(), extension_path);
-      return;
-    }
-  }
-
-  // Write our parsed manifest back to disk, to ensure it doesn't contain an
-  // exploitable bug that can be used to compromise the browser.
-  std::string manifest_json;
-  JSONStringValueSerializer serializer(&manifest_json);
-  serializer.set_pretty_print(true);
-  if (!serializer.Serialize(manifest)) {
-    ReportExtensionInstallError(extension_path,
-                                "Error serializing manifest.json.");
-    return;
-  }
-
-  FilePath manifest_path =
-      temp_extension_dir.AppendASCII(Extension::kManifestFilename);
-  if (!file_util::WriteFile(manifest_path,
-                            manifest_json.data(), manifest_json.size())) {
-    ReportExtensionInstallError(extension_path, "Error saving manifest.json.");
-    return;
-  }
-
-  // Delete any images that may be used by the browser.  We're going to write
-  // out our own versions of the parsed images, and we want to make sure the
-  // originals are gone for good.
-  std::set<FilePath> image_paths = extension.GetBrowserImages();
-  if (image_paths.size() != images.size()) {
-    ReportExtensionInstallError(extension_path,
-        "Decoded images don't match what's in the manifest.");
-    return;
-  }
-
-  for (std::set<FilePath>::iterator it = image_paths.begin();
-       it != image_paths.end(); ++it) {
-    if (!file_util::Delete(temp_extension_dir.Append(*it), false)) {
-      ReportExtensionInstallError(extension_path,
-                                  "Error removing old image file.");
-      return;
-    }
-  }
-
-  // Write our parsed images back to disk as well.
-  for (size_t i = 0; i < images.size(); ++i) {
-    const SkBitmap& image = images[i].a;
-    FilePath path = temp_extension_dir.Append(images[i].b);
-
-    std::vector<unsigned char> image_data;
-    // TODO(mpcomplete): It's lame that we're encoding all images as PNG, even
-    // though they may originally be .jpg, etc.  Figure something out.
-    // http://code.google.com/p/chromium/issues/detail?id=12459
-    if (!PNGEncoder::EncodeBGRASkBitmap(image, false, &image_data)) {
-      ReportExtensionInstallError(extension_path,
-                                  "Error re-encoding theme image.");
-      return;
-    }
-
-    // Note: we're overwriting existing files that the utility process wrote,
-    // so we can be sure the directory exists.
-    const char* image_data_ptr = reinterpret_cast<const char*>(&image_data[0]);
-    if (!file_util::WriteFile(path, image_data_ptr, image_data.size())) {
-      ReportExtensionInstallError(extension_path, "Error saving theme image.");
+      ReportExtensionOverinstallAttempted(extension->id(), crx_path);
       return;
     }
   }
 
   // <profile>/Extensions/<dir_name>/<version>
   FilePath version_dir = dest_dir.AppendASCII(version);
+  extension->set_path(version_dir);
 
   // If anything fails after this, we want to delete the extension dir.
   ScopedTempDir scoped_version_dir;
   scoped_version_dir.Set(version_dir);
 
-  if (!InstallDirSafely(temp_extension_dir, version_dir))
+  if (!InstallDirSafely(unpacked_path, version_dir))
     return;
 
   if (!SetCurrentVersion(dest_dir, version))
     return;
 
-  Extension* loaded = LoadExtension(version_dir,
-                                    location,
-                                    true);  // require id
-  CHECK(loaded);
-
   frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend_, &ExtensionsService::OnExtensionInstalled, extension_path,
-      loaded, install_type));
+      frontend_, &ExtensionsService::OnExtensionInstalled, crx_path,
+      extension, install_type));
 
   // Only one extension, but ReportExtensionsLoaded can handle multiple,
   // so we need to construct a list.
-  scoped_ptr<ExtensionList> extensions(new ExtensionList);
-  extensions->push_back(loaded);
+  ExtensionList* extensions = new ExtensionList;
 
-  // Hand off ownership of the loaded extensions to the frontend.
-  ReportExtensionsLoaded(extensions.release());
+  // Hand off ownership of the extension to the frontend.
+  extensions->push_back(extension_deleter.release());
+  ReportExtensionsLoaded(extensions);
 
   scoped_version_dir.Take();
 }

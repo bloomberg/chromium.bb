@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
+#include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 
 class Browser;
@@ -32,7 +33,6 @@ class MessageLoop;
 class PrefService;
 class Profile;
 class ResourceDispatcherHost;
-class SkBitmap;
 class SiteInstance;
 
 typedef std::vector<Extension*> ExtensionList;
@@ -59,37 +59,6 @@ class ExtensionsService
     : public ExtensionUpdateService,
       public base::RefCountedThreadSafe<ExtensionsService> {
  public:
-
-  // TODO(port): Move Crx package definitions to ExtentionCreator. They are
-  // currently here because ExtensionCreator is excluded on linux & mac.
-
-  // The size of the magic character sequence at the beginning of each crx
-  // file, in bytes. This should be a multiple of 4.
-  static const size_t kExtensionHeaderMagicSize = 4;
-
-  // This header is the first data at the beginning of an extension. Its
-  // contents are purposely 32-bit aligned so that it can just be slurped into
-  // a struct without manual parsing.
-  struct ExtensionHeader {
-    char magic[kExtensionHeaderMagicSize];
-    uint32 version;
-    size_t key_size;  // The size of the public key, in bytes.
-    size_t signature_size;  // The size of the signature, in bytes.
-    // An ASN.1-encoded PublicKeyInfo structure follows.
-    // The signature follows.
-  };
-
-  // The maximum size the crx parser will tolerate for a public key.
-  static const size_t kMaxPublicKeySize = 1 << 16;
-
-  // The maximum size the crx parser will tolerate for a signature.
-  static const size_t kMaxSignatureSize = 1 << 16;
-
-  // The magic character sequence at the beginning of each crx file.
-  static const char kExtensionHeaderMagic[];
-
-  // The current version of the crx format.
-  static const uint32 kCurrentVersion = 2;
 
   // The name of the directory inside the profile where extensions are
   // installed to.
@@ -395,22 +364,18 @@ class ExtensionsServiceBackend
                                 bool from_gallery,
                                 const std::string& expected_id, bool silent);
 
-  // Validates the signature of the extension in |extension_path|. Returns true
-  // and the public key (in |key|) if the signature validates, false otherwise.
-  bool ValidateSignature(const FilePath& extension_path, std::string* key_out);
-
-  // Finish installing an extension after it has been unpacked to
-  // |temp_extension_dir| by our utility process.  If |expected_id| is not
-  // empty, it's verified against the extension's manifest before installation.
-  // |manifest| and |images| are parsed information from the extension that
-  // we want to write to disk in the browser process. If |silent| is true, there
-  // will be no install confirmation dialog.
+  // Finish installing the extension in |crx_path| after it has been unpacked to
+  // |unpacked_path|.  If |expected_id| is not empty, it's verified against the
+  // extension's manifest before installation. If |silent| is true, there will
+  // be no install confirmation dialog. |from_gallery| indicates whether the
+  // crx was installed from our gallery, which results in different UI.
+  //
+  // Note: We take ownership of |extension|.
   void OnExtensionUnpacked(
-      const FilePath& extension_path,
-      const FilePath& temp_extension_dir,
-      const std::string& expected_id,
-      const DictionaryValue& manifest,
-      const std::vector< Tuple2<SkBitmap, FilePath> >& images,
+      const FilePath& crx_path,
+      const FilePath& unpacked_path,
+      Extension* extension,
+      const std::string expected_id,
       bool silent,
       bool from_gallery);
 
