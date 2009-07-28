@@ -29,8 +29,9 @@ void AdvancedPageGtk::Init() {
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
                                  GTK_POLICY_NEVER,
                                  GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(scroll_window),
-                                      GTK_SHADOW_ETCHED_IN);
+  // Note that typically we call gtk_scrolled_window_set_shadow_type right
+  // here, but the add_with_viewport method of GtkScrolledWindow already adds
+  // its own shadow.
   gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(scroll_window),
                                         advanced_contents_.get_page_widget());
 
