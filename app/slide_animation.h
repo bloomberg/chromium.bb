@@ -47,8 +47,8 @@ class SlideAnimation : public Animation {
   virtual ~SlideAnimation();
 
   enum TweenType {
-    NONE,          // Default linear.
-    EASE_OUT,      // Fast in, slow out.
+    NONE,          // Linear.
+    EASE_OUT,      // Fast in, slow out (default).
     EASE_IN,       // Slow in, fast out.
     EASE_IN_OUT,   // Slow in and out, fast in the middle.
     FAST_IN_OUT,   // Fast in and out, slow in the middle.
