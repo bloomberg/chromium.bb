@@ -930,6 +930,7 @@ void BrowserThemeProvider::LoadThemePrefs() {
         prefs->GetMutableDictionary(prefs::kCurrentThemeDisplayProperties));
     GenerateFrameColors();
     GenerateFrameImages();
+    GenerateTabImages();
     UserMetrics::RecordAction(L"Themes_loaded", profile_);
   }
 }
