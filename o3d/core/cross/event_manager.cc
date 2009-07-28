@@ -76,7 +76,12 @@ void EventManager::ClearEventCallback(Event::Type type) {
 void EventManager::AddEventToQueue(const Event& event) {
   // If we're shutting down or there's no callback registered to handle
   // this event type, we drop it.
-  if (valid_ && event_callbacks_[event.type()].IsSet()) {
+  // NOTE:If we have a callback registered for the click event then we allow
+  // MOUSEDOWN and MOUSEUP events through.
+  if (valid_ && (event_callbacks_[event.type()].IsSet() ||
+                 (event_callbacks_[Event::TYPE_CLICK].IsSet() &&
+                  (event.type() == Event::TYPE_MOUSEDOWN ||
+                   event.type() == Event::TYPE_MOUSEUP)))) {
     if (!event_queue_.empty()) {
       switch (event.type()) {
         case Event::TYPE_MOUSEMOVE:
@@ -127,7 +132,8 @@ void EventManager::AddEventToQueue(const Event& event) {
       }
     }
 
-    event_queue_.push_back(event);
+    if (event_callbacks_[event.type()].IsSet())
+      event_queue_.push_back(event);
 
     if (event.type() == Event::TYPE_MOUSEUP) {
       if (mousedown_in_plugin_ && event.in_plugin()) {
