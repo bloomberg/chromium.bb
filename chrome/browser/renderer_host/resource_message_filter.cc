@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
@@ -434,8 +435,9 @@ void ResourceMessageFilter::OnMsgCreateWidget(int opener_id,
 void ResourceMessageFilter::OnSetCookie(const GURL& url,
                                         const GURL& first_party_for_cookies,
                                         const std::string& cookie) {
-  URLRequestContext* context = url.SchemeIs(chrome::kExtensionScheme) ?
-      extensions_request_context_.get() : request_context_.get();
+  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+      url.SchemeIs(chrome::kExtensionScheme) ?
+      extensions_request_context_.get() : request_context_.get());
   if (context->cookie_policy()->CanSetCookie(url, first_party_for_cookies)) {
     if (context->blacklist()) {
       Blacklist::Match* match = context->blacklist()->findMatch(url);

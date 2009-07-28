@@ -22,6 +22,7 @@
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/profile.h"
@@ -364,10 +365,11 @@ void ResourceDispatcherHost::BeginRequest(
     int route_id) {
   ChildProcessInfo::ProcessType process_type = receiver_->type();
   int process_id = receiver_->GetProcessId();
-  URLRequestContext* context =
-      receiver_->GetRequestContext(request_id, request_data);
+  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+      receiver_->GetRequestContext(request_id, request_data));
   if (!context)
-    context = Profile::GetDefaultRequestContext();
+    context = static_cast<ChromeURLRequestContext*>(
+        Profile::GetDefaultRequestContext());
 
   if (is_shutdown_ ||
       !ShouldServiceRequest(process_type, process_id, request_data)) {

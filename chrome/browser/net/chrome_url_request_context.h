@@ -8,8 +8,10 @@
 #include "chrome/common/pref_service.h"
 #include "net/url_request/url_request_context.h"
 
-class Profile;
+class Blacklist;
 class CommandLine;
+class Profile;
+
 namespace net {
 class ProxyConfig;
 }
@@ -69,6 +71,9 @@ class ChromeURLRequestContext : public URLRequestContext,
 
   virtual bool AllowSendingCookies(const URLRequest* request) const;
 
+  // Gets the Privacy Blacklist, if any for this context.
+  const Blacklist* blacklist() const { return blacklist_; }
+
 private:
   // Private constructor, use the static factory methods instead. This is
   // expected to be called on the UI thread.
@@ -114,6 +119,7 @@ private:
 
   scoped_ptr<SQLitePersistentCookieStore> cookie_db_;
   PrefService* prefs_;
+  const Blacklist* blacklist_;
   bool is_media_;
   bool is_off_the_record_;
 };

@@ -21,7 +21,6 @@ class AutomationURLRequestContext : public URLRequestContext {
     cookie_policy_.set_type(original_context->cookie_policy()->type());
     force_tls_state_ = original_context->force_tls_state();
     // ftp_auth_cache_ = original_context->ftp_auth_cache();
-    blacklist_ = original_context->blacklist();
     accept_language_ = original_context->accept_language();
     accept_charset_ = original_context->accept_charset();
     referrer_charset_ = original_context->referrer_charset();
