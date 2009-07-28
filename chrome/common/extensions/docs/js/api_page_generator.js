@@ -1,34 +1,34 @@
 /**
- * @fileoverview This file is the controller for generating one api reference
- * page of the extension documentation.
+ * @fileoverview This file is the controller for generating extension
+ * doc pages.
  *
- * It expects:
- *
- * - To be called from a "shell" page whose "base" name matches an api module
- *   name. For instance ../bookmarks.html -> chrome.bookmarks.
- * 
- * - To have available via XHR (relative path):
+ * It expects to have available via XHR (relative path):
  *   1) API_TEMPLATE which is the main template for the api pages.
  *   2) A file located at SCHEMA which is shared with the extension system and
  *      defines the methods and events contained in one api.
- *   3) An |apiName| + OVERVIEW_EXTENSION file which contains static authored
- *      content that is inserted into the "overview" slot in the API_TEMPLATE.
+ *   3) (Possibly) A static version of the current page url in /static/. I.e.
+ *      if called as ../foo.html, it will look for ../static/foo.html.
  *
  * The "shell" page may have a renderering already contained within it so that
  * the docs can be indexed.
  *
- * TODO(rafaelw): XHR support for IE.
- * TODO(rafaelw): JSON support for non-chrome 3.x clients.
  */
- 
-var API_TEMPLATE = "../template/api_template.html";
-var SCHEMA = "../../api/extension_api.json";
-var OVERVIEW_EXTENSION = "_overview.html";
+
+var API_TEMPLATE = "template/api_template.html";
+var SCHEMA = "../api/extension_api.json";
 var REQUEST_TIMEOUT = 2000;
 
-// Global Schema Types (Referenced via $ref).
+function staticResource(name) { return "static/" + name + ".html"; }
+
+// Base name of this page. (i.e. "tabs", "overview", etc...).
+var pageName;
+
+// Data to feed as context into the template.
+var pageData = null;
+
+// Schema Types (Referenced via $ref).
 var types = {};
-  
+
 Array.prototype.each = function(f) {
   for (var i = 0; i < this.length; i++) {
     f(this[i], i);
@@ -44,34 +44,50 @@ function extend(obj, obj2) {
   }
 }
 
-// name of the api this reference page is describing. i.e. "bookmarks", "tabs".
-var apiName;
-
-window.onload = function() {
-  // Determine api module being rendered. Expect ".../<apiName>.html"
+/*
+ * Main entry point for composing the page. It will fetch it's template,
+ * the extension api, and attempt to fetch the matching static content.
+ * It will insert the static content, if any, prepare it's pageData then
+ * render the template from |pageData|.
+ */
+function renderPage() {
   var pathParts = document.location.href.split(/\/|\./);
-  apiName = pathParts[pathParts.length - 2];
+  pageName = pathParts[pathParts.length - 2];
   
   // Fetch the api template and insert into the <body>.
   fetchContent(API_TEMPLATE, function(templateContent) {
     document.getElementsByTagName("body")[0].innerHTML = templateContent;
-
-    // Fetch the overview and insert into the "overview" <div>.
-    fetchContent(apiName + OVERVIEW_EXTENSION, function(overviewContent) {
-      document.getElementById("overview").innerHTML = overviewContent;
-
-      // Now the page is composed with the authored content, we fetch the schema
-      // and populate the templates.
-      fetchContent(SCHEMA, renderTemplate);	
-    });
+    fetchStatic();
+  }, function(error) {
+    alert("Failed to load " + API_TEMPLATE + ". " + error);
   });	
+}
+
+function fetchStatic() {
+  // Fetch the static content and insert into the "static" <div>.
+  fetchContent(staticResource(pageName), function(overviewContent) {
+    document.getElementById("static").innerHTML = overviewContent;
+    fetchSchema();
+    
+  }, function(error) {
+    // Not fatal. Some api pages may not have matching static content.
+    fetchSchema();
+  });
+}
+
+function fetchSchema() {
+  // Now the page is composed with the authored content, we fetch the schema
+  // and populate the templates.
+  fetchContent(SCHEMA, renderTemplate, function(error) {
+    alert("Failed to load " + SCHEMA);
+  });
 }
 
 /**
  * Fetches |url| and returns it's text contents from the xhr.responseText in
  * onSuccess(content)
  */
-function fetchContent(url, onSuccess) {
+function fetchContent(url, onSuccess, onError) {
   var xhr = new XMLHttpRequest();
   var abortTimerId = window.setTimeout(function() {
     xhr.abort();
@@ -80,6 +96,9 @@ function fetchContent(url, onSuccess) {
 
   function handleError(error) {
     window.clearTimeout(abortTimerId);
+    if (onError) {
+      onError(error);
+    }
     console.error("XHR Failed: " + error);
   }
 
@@ -107,29 +126,32 @@ function fetchContent(url, onSuccess) {
 }
 
 /**
- * Parses the content in |schema| to json, find appropriate api, adds any
+ * Parses the content in |schemaContent| to json, find appropriate api, adds any
  * additional required values, renders to html via JSTemplate, and unhides the
  * <body>.
  * This uses the root <html> element (the entire document) as the template.
  */
 function renderTemplate(schemaContent) {
-  var apiDefinition;
+  pageData = {};
   var schema = JSON.parse(schemaContent);
   
   schema.each(function(module) {
-    if (module.namespace == apiName)
-      apiDefinition = module;
+    if (module.namespace == pageName) {
+      // This page is an api page. Setup types and apiDefinition.
+      if (module.types) {
+        module.types.each(function(t) {
+          types[t.id] = t;
+        });
+      }
+      pageData.apiDefinition = module;
+      preprocessApi(pageData, schema);
+    }
   });
   
-  // Setup Schema Types
-  apiDefinition.types.each(function(t) {
-    types[t.id] = t;
-  });
+  setupPageData(pageData, schema);
   
-  preprocessApi(apiDefinition, schema, types);
-
   // Render to template
-  var input = new JsEvalContext(apiDefinition);
+  var input = new JsEvalContext(pageData);
   var output = document.getElementsByTagName("html")[0];
   jstProcess(input, output);
   
@@ -137,22 +159,42 @@ function renderTemplate(schemaContent) {
   document.getElementsByTagName("body")[0].className = "";
 }
 
+function setupPageData(pageData, schema) {
+  // Add a list of modules for the master TOC.
+  pageData.apiModules = [];
+  schema.each(function(s) {
+    var m = {};
+    m.module = s.namespace;
+    m.name = s.namespace.substring(0, 1).toUpperCase() +
+             s.namespace.substring(1);
+    pageData.apiModules.push(m);
+  });
+  pageData.apiModules.sort(function(a, b) { return a.name > b.name; });
+  
+  if (!pageData.pageTitle) {
+    pageData.pageTitle = pageName;
+    pageData.h1Header = pageName;
+  }
+}
+
 /**
  * Augment the |module| with additional values that are required by the
- * template. |schema| is the full schema (including all modules). |types| is an
- * array of typeId -> typeSchema.
+ * template. |schema| is the full schema (including all modules).
  */
-function preprocessApi(module, schema, types) {
+function preprocessApi(pageData, schema) {
+  var module = pageData.apiDefinition;
+  pageData.pageTitle = "chrome." + module.namespace + " API Reference";
+  pageData.h1Header = "chrome." + module.namespace
   module.functions.each(function(f) {
     f.fullName = "chrome." + module.namespace + "." + f.name;
-    linkTypeReferences(f.parameters, types);
+    linkTypeReferences(f.parameters);
     assignTypeNames(f.parameters);
 
     // Look for a callback that defines parameters.
     if (f.parameters.length > 0) {
       var lastParam = f.parameters[f.parameters.length - 1];
       if (lastParam.type == "function" && lastParam.parameters) {
-        linkTypeReferences(lastParam.parameters, types);
+        linkTypeReferences(lastParam.parameters);
         assignTypeNames(lastParam.parameters);        
         f.callbackParameters = lastParam.parameters;
         f.callbackSignature = generateSignatureString(lastParam.parameters);
@@ -170,31 +212,20 @@ function preprocessApi(module, schema, types) {
     
     // Setup return typeName & _propertyList, if any.
     if (f.returns) {
-      linkTypeReference(f.returns, types);
+      linkTypeReference(f.returns);
       f.returns.typeName = typeName(f.returns);
       addPropertyListIfObject(f.returns);
     }
   });
   
   module.events.each(function(e) {
-    linkTypeReferences(e.parameters, types);
+    linkTypeReferences(e.parameters);
     assignTypeNames(e.parameters);    
     e.callSignature = generateSignatureString(e.parameters);
     e.parameters.each(function(p) {
       addPropertyListIfObject(p);
     });
   });
-
-  // Add a list of modules for the master TOC.
-  module.apiModules = [];
-  schema.each(function(s) {
-    var m = {};
-    m.module = s.namespace;
-    m.name = s.namespace.substring(0, 1).toUpperCase() +
-             s.namespace.substring(1);
-    module.apiModules.push(m);
-  });
-  module.apiModules.sort(function(a, b) { return a.name > b.name; }); 
 }
 
 /*
@@ -217,13 +248,13 @@ function addPropertyListIfObject(object) {
   object._propertyList = propertyList;
 }
 
-function linkTypeReferences(parameters, types) {
+function linkTypeReferences(parameters) {
   parameters.each(function(p) {
     linkTypeReference(p, types);
   });
 }
 
-function linkTypeReference(schema, types) {
+function linkTypeReference(schema) {
   if (schema.$ref)
     extend(schema, types[schema.$ref]);
 }

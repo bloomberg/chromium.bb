@@ -14,16 +14,30 @@
     version of page template shell and the "instance" pages (bookmarks.html,
     etc...) can be generated with a build step.
 -->
+<!-- <html> must retain id="template -->
 <html xmlns="http://www.w3.org/1999/xhtml">
   <!-- <head> data is significant and loads the needed libraries and styles -->
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title jscontent="namespace">chrome.apiname</title>
-    <link href="../css/ApiRefStyles.css" rel="stylesheet" type="text/css">
+    <title jscontent="pageTitle">pageTitle</title>
+    <link href="css/ApiRefStyles.css" rel="stylesheet" type="text/css">
     <script type="text/javascript"
-            src="../../../../third_party/jstemplate/jstemplate_compiled.js">
+            src="../../../third_party/jstemplate/jstemplate_compiled.js">
     </script>
-    <script type="text/javascript" src="../js/api_page_generator.js"></script>
+    <script type="text/javascript" src="js/api_page_generator.js"></script>
+    <script>
+// Re-render the page if the user-agent is chrome and it is being served as 
+// a file:/// scheme. This allows both the initial render to static as well
+// as dynamic re-rendering for developers/doc-writers working on local changes.
+window.onload = function() {
+  var chrome = navigator.userAgent.indexOf("Chrome") > -1;
+  var fileScheme = location.protocol == "file:";
+  var regenerate = chrome && fileScheme;
+  //if (regenerate) {
+    window.renderPage();
+  //}
+}
+  </script>   
   </head>
   <!-- <body> content is completely generated. Do not edit, as it will be
       and rewritten. -->
