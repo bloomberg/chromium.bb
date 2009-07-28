@@ -51,7 +51,7 @@ bool RendererWebKitClientImpl::getFileSize(const WebString& path,
                                            long long& result) {
   if (RenderThread::current()->Send(new ViewHostMsg_GetFileSize(
       FilePath(webkit_glue::WebStringToFilePathString(path)),
-      &result))) {
+      reinterpret_cast<int64*>(&result)))) {
     return result >= 0;
   } else {
     result = -1;

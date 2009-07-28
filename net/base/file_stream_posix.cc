@@ -382,7 +382,7 @@ int FileStream::Read(
     return ERR_UNEXPECTED;
 
   // read(..., 0) will return 0, which indicates end-of-file.
-  DCHECK(buf_len > 0 && buf_len <= SSIZE_MAX);
+  DCHECK(buf_len > 0);
   DCHECK(open_flags_ & base::PLATFORM_FILE_READ);
 
   if (async_context_.get()) {
@@ -420,7 +420,7 @@ int FileStream::ReadUntilComplete(char *buf, int buf_len) {
 int FileStream::Write(
     const char* buf, int buf_len, CompletionCallback* callback) {
   // write(..., 0) will return 0, which indicates end-of-file.
-  DCHECK(buf_len > 0 && buf_len <= SSIZE_MAX);
+  DCHECK(buf_len > 0);
 
   if (!IsOpen())
     return ERR_UNEXPECTED;

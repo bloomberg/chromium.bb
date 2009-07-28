@@ -1273,7 +1273,7 @@ void BookmarkManagerGtk::OnExportItemActivated(GtkMenuItem* menuitem,
 
 void BookmarkManagerGtk::FileSelected(const FilePath& path,
                                       int index, void* params) {
-  int id = reinterpret_cast<int>(params);
+  int id = reinterpret_cast<intptr_t>(params);
   if (id == IDS_BOOKMARK_MANAGER_IMPORT_MENU) {
     // ImporterHost is ref counted and will delete itself when done.
     ImporterHost* host = new ImporterHost();

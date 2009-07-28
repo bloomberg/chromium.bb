@@ -318,7 +318,7 @@ static bool MaybeEnterChroot() {
     const char* locale = setlocale(LC_ALL, "");
     LOG_IF(WARNING, locale == NULL) << "setlocale failed.";
 
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(ARCH_CPU_X86)
     PATCH_GLOBAL_OFFSET_TABLE(localtime, sandbox_wrapper::localtime);
     PATCH_GLOBAL_OFFSET_TABLE(localtime_r, sandbox_wrapper::localtime_r);
 #endif

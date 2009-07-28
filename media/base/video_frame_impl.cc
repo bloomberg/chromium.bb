@@ -67,7 +67,8 @@ bool VideoFrameImpl::AllocateRGB(size_t bytes_per_pixel) {
   surface_.data[VideoSurface::kRGBPlane] = new uint8[bytes_per_row *
                                                      surface_.height];
   DCHECK(surface_.data[VideoSurface::kRGBPlane]);
-  DCHECK(!(reinterpret_cast<int>(surface_.data[VideoSurface::kRGBPlane]) & 7));
+  DCHECK(!(reinterpret_cast<intptr_t>(
+              surface_.data[VideoSurface::kRGBPlane]) & 7));
   COMPILE_ASSERT(0 == VideoSurface::kRGBPlane, RGB_data_must_be_index_0);
   return (NULL != surface_.data[VideoSurface::kRGBPlane]);
 }

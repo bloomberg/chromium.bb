@@ -150,8 +150,9 @@ bool IsNextMatchWithinSnippetWindow(BreakIterator* bi,
   // heuristics to speed things up if necessary, but it's not likely that
   // we need to bother.
   bi->next(kSnippetContext);
-  int64_t current = bi->current();
-  return (next_match_start < current || current == BreakIterator::DONE);
+  int64 current = bi->current();
+  return (next_match_start < static_cast<uint64>(current) ||
+          current == BreakIterator::DONE);
 }
 
 }  // namespace

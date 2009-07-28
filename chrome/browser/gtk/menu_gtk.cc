@@ -233,8 +233,8 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
     if (data) {
       id = data->id;
     } else {
-      id = reinterpret_cast<int>(g_object_get_data(G_OBJECT(menuitem),
-                                                   "menu-id"));
+      id = reinterpret_cast<intptr_t>(g_object_get_data(G_OBJECT(menuitem),
+                                                        "menu-id"));
     }
 
     // The menu item can still be activated by hotkeys even if it is disabled.
@@ -309,8 +309,8 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
   if (data) {
     id = data->id;
   } else {
-    id = reinterpret_cast<int>(
-        g_object_get_data(G_OBJECT(widget), "menu-id"));
+    id = reinterpret_cast<intptr_t>(g_object_get_data(G_OBJECT(widget),
+                                    "menu-id"));
   }
 
   if (GTK_IS_CHECK_MENU_ITEM(widget)) {
