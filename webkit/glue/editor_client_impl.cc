@@ -130,13 +130,19 @@ bool EditorClientImpl::ShouldSpellcheckByDefault() {
   if (!document)
     return false;
   const WebCore::Node* node = document->focusedNode();
+  // If |node| is NULL, we default to allowing spellchecking. This is done in
+  // order to mitigate the issue when the user clicks outside the textbox, as a
+  // result of which |node| becomes NULL, resulting in all the spell check
+  // markers being deleted. Also, the Frame will decide not to do spellchecking
+  // if the user can't edit - so returning true here will not cause any problems
+  // to the Frame's behavior.
   if (!node)
-    return false;
+    return true;
   const WebCore::RenderObject* renderer = node->renderer();
   if (!renderer)
     return false;
 
-  return (!renderer->isTextField() && editor->canEdit());
+  return !renderer->isTextField();
 }
 
 bool EditorClientImpl::isContinuousSpellCheckingEnabled() {
