@@ -110,7 +110,7 @@ void ExtensionHost::CreateView(Browser* browser) {
   // hierarchy.
   view_->SetParentOwned(false);
 #elif defined(OS_LINUX)
-  // FIXME(phajdan.jr): Add extension view for GTK.
+  view_.reset(new ExtensionViewGtk(this));
 #else
   // TODO(port)
   NOTREACHED();

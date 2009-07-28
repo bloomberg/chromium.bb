@@ -24,6 +24,7 @@ class ExtensionShelfGtk::Toolstrip {
   explicit Toolstrip(ExtensionHost* host)
       : host_(host),
         extension_name_(host_->extension()->name()) {
+    DCHECK(host_->view());
     Init();
   }
 

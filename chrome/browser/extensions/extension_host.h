@@ -13,6 +13,8 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/extensions/extension_view.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/gtk/extension_view_gtk.h"
 #endif
 
 class Browser;
@@ -42,6 +44,8 @@ class ExtensionHost : public RenderViewHostDelegate,
 #if defined(TOOLKIT_VIEWS)
   void set_view(ExtensionView* view) { view_.reset(view); }
   ExtensionView* view() const { return view_.get(); }
+#elif defined(OS_LINUX)
+  ExtensionViewGtk* view() const { return view_.get(); }
 #endif
 
   // Create an ExtensionView and tie it to this host and |browser|.
@@ -127,9 +131,11 @@ class ExtensionHost : public RenderViewHostDelegate,
   // The profile that this host is tied to.
   Profile* profile_;
 
-#if defined(TOOLKIT_VIEWS)
   // Optional view that shows the rendered content in the UI.
+#if defined(TOOLKIT_VIEWS)
   scoped_ptr<ExtensionView> view_;
+#elif defined(OS_LINUX)
+  scoped_ptr<ExtensionViewGtk> view_;
 #endif
 
   // The host for our HTML content.

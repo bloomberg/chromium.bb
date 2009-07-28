@@ -1071,6 +1071,8 @@
         'browser/gtk/edit_search_engine_dialog.h',
         'browser/gtk/extension_shelf_gtk.cc',
         'browser/gtk/extension_shelf_gtk.h',
+        'browser/gtk/extension_view_gtk.cc',
+        'browser/gtk/extension_view_gtk.h',
         'browser/gtk/first_run_bubble.cc',
         'browser/gtk/first_run_bubble.h',
         'browser/gtk/first_run_dialog.cc',
