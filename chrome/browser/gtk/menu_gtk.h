@@ -78,6 +78,10 @@ class MenuGtk {
   // triggering event (e.g. right mouse click, context menu key, etc.).
   void PopupAsContext(guint32 event_time);
 
+  // Displays the menu following a keyboard event (such as selecting |widget|
+  // and pressing "enter").
+  void PopupAsFromKeyEvent(GtkWidget* widget);
+
   // Closes the menu.
   void Cancel();
 
