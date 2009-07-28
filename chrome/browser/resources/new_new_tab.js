@@ -680,7 +680,7 @@ function layoutLowerSections() {
   var tipsElement = $('tips');
   var spacer = recentElement.nextElementSibling;
 
-  var totalWidth = useSmallGrid() ? 692 : 940;
+  var totalWidth = useSmallGrid() ? 692 : 920;
   var spacing = 20;
   var rtl = document.documentElement.dir == 'rtl';
 
