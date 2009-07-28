@@ -8,6 +8,8 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/cocoa/first_run_dialog.h"
+#include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 
@@ -44,9 +46,15 @@ bool OpenFirstRunDialog(Profile* profile, ProcessSingleton* process_singleton) {
   scoped_nsobject<FirstRunDialogController> dialog(
       [[FirstRunDialogController alloc] init]);
 
-  bool stats_enabled = [dialog.get() Show];
+  // FirstRunDialogController will call exit if "Cancel" is clicked.
+  [dialog.get() showWindow:nil];
 
-  GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
+  // If user clicked cancel, bail.
+  if ([dialog.get() userDidCancel]) {
+    return false;
+  }
+
+  BOOL stats_enabled = [dialog.get() statsEnabled];
 
   // Breakpad is normally enabled very early in the startup process,
   // however, on the first run it's off by default.  If the user opts-in to
@@ -55,6 +63,17 @@ bool OpenFirstRunDialog(Profile* profile, ProcessSingleton* process_singleton) {
     InitCrashReporter();
     InitCrashProcessInfo();
   }
+
+  GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
+
+  BOOL make_default_browser = [dialog.get() makeDefaultBrowser];
+  if (make_default_browser) {
+    bool success = ShellIntegration::SetAsDefaultBrowser();
+    DCHECK(success);
+  }
+
+  // TODO(jeremy): Import Bookmarks.
+
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return true;
 }

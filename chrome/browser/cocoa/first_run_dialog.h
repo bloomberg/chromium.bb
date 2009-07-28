@@ -7,28 +7,33 @@
 
 #import <Cocoa/Cocoa.h>
 
-// Class that acts as a controller for the temporary Modal first run dialog.
+// Class that acts as a controller for the modal first run dialog.
 // The dialog asks the user's explicit permission for reporting stats to help
 // us improve Chromium.
-// This code is temporary and while we'd like to avoid modal dialogs at all
-// costs, it's important to us, even at this early stage in development to
-// to not send any stats back unless the user has explicitly consented.
-// TODO: In the final version of this code, if we keep this class around, we
-// should probably subclass from NSWindowController.
-@interface FirstRunDialogController : NSObject {
-  IBOutlet NSWindow* first_run_dialog_;
-  bool stats_enabled_;
+@interface FirstRunDialogController : NSWindowController {
+  BOOL user_did_cancel_;
+  BOOL stats_enabled_;
+  BOOL make_default_browser_;
+  BOOL import_bookmarks_;
+  int  browser_import_selected_index_;
 }
 
-// One shot method to show the dialog and return the value of the stats
-// enabled/disabled checkbox.
-// returns:
-//  true - stats enabled.
-//  flase - stats disabled.
-- (bool)Show;
+// Called when the "Start Google Chrome" button is pressed.
+- (IBAction)ok:(id)sender;
 
-// Called when the OK button is pressed.
-- (IBAction)CloseDialog:(id)sender;
+// Cancel button calls this.
+- (IBAction)cancel:(id)sender;
+
+// Called when the "Learn More" button is pressed.
+- (IBAction)learnMore:(id)sender;
+
+// Properties for bindings
+@property(assign) BOOL userDidCancel;
+@property(assign) BOOL statsEnabled;
+@property(assign) BOOL makeDefaultBrowser;
+@property(assign) BOOL importBookmarks;
+@property(assign) int browserImportSelectedIndex;
+
 @end
 
 #endif  // CHROME_BROWSER_FIRST_RUN_DIALOG_H_

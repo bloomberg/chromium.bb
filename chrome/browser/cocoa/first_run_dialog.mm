@@ -10,24 +10,23 @@
 
 @implementation FirstRunDialogController
 
--(id)init {
-  self = [super init];
+@synthesize userDidCancel = user_did_cancel_;
+@synthesize statsEnabled = stats_enabled_;
+@synthesize makeDefaultBrowser = make_default_browser_;
+@synthesize importBookmarks = import_bookmarks_;
+@synthesize browserImportSelectedIndex = browser_import_selected_index_;
+
+- (id)init {
+  self = [super initWithWindowNibName:@"FirstRunDialog"];
   if (self != nil) {
     // Bound to the dialog checkbox, default to true.
-    stats_enabled_ = true;
+    stats_enabled_ = YES;
+    import_bookmarks_ = YES;
   }
   return self;
 }
 
-- (bool)Show {
-  // Load and instantiate our NIB
-  scoped_nsobject<NSNib> nib([[NSNib alloc]
-      initWithNibNamed:@"FirstRunDialog"
-                bundle:mac_util::MainAppBundle()]);
-  CHECK(nib);
-  [nib.get() instantiateNibWithOwner:self topLevelObjects:nil];
-  CHECK(first_run_dialog_);  // Should be set by above call.
-
+- (IBAction)showWindow:(id)sender {
   // Neat weirdness in the below code - the Application menu stays enabled
   // while the window is open but selecting items from it (e.g. Quit) has
   // no effect.  I'm guessing that this is an artifact of us being a
@@ -35,18 +34,30 @@
   // window.
 
   // Display dialog.
-  [NSApp runModalForWindow:first_run_dialog_];
-  // First run dialog has "release on close" disabled, otherwise the
-  // runModalForWindow call above crashes.
-  [first_run_dialog_ release];
-  first_run_dialog_ = nil;
-
-  return stats_enabled_;
+  NSWindow* win = [self window];
+  [NSApp runModalForWindow:win];
 }
 
-- (IBAction)CloseDialog:(id)sender {
-  [first_run_dialog_ close];
+- (void)closeDialog {
+  [[self window] close];
   [NSApp stopModal];
+}
+
+- (IBAction)ok:(id)sender {
+  [self closeDialog];
+}
+
+- (IBAction)cancel:(id)sender {
+  [self closeDialog];
+  [self setUserDidCancel:YES];
+}
+
+- (IBAction)learnMore:(id)sender {
+  // TODO(jeremy): Rather than always using English, set the language that
+  // Chrome is running in.
+  NSURL* learnMoreUrl = [NSURL URLWithString:@"http://www.google.com/support/"
+                            "chrome/bin/answer.py?answer=96817&hl=en"];
+  [[NSWorkspace sharedWorkspace] openURL:learnMoreUrl];
 }
 
 @end
