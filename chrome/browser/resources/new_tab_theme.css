@@ -16,12 +16,6 @@ body {
 #main {
   background: url(chrome://theme/product_logo?$1) no-repeat 0 8px;
 }
-:visited,
-.link {
-  cursor: pointer;
-  text-decoration: underline;
-  color: $8;
-}
 .thumbnail-container,
 .list > .thumbnail-container > .title,
 .list .title > div,

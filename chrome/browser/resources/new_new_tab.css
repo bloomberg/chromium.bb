@@ -449,7 +449,8 @@ html[dir='rtl'] .item {
 /* Made to look like a tooltip using vista/win7 look and feel.
    TODO(arv): Replace with -webkit-appearance once issue 17371 is fixed
  */
-#window-menu {
+#window-tooltip {
+  color: #555;
   pointer-events: none;
   border: 1px solid rgb(118,118,118);
   -webkit-border-radius: 3px;

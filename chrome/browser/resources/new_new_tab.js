@@ -880,7 +880,7 @@ function OptionMenu(button, menu) {
 
 OptionMenu.prototype = {
   show: function() {
-    windowMenu.hide();
+    windowTooltip.hide();
 
     this.menu.style.display = 'block';
     this.button.focus();
@@ -1074,14 +1074,14 @@ function maybeReopenTab(e) {
   }
 }
 
-function maybeShowWindowMenu(e) {
+function maybeShowWindowTooltip(e) {
   var f = function(el) {
     return el.tabItems !== undefined;
   };
   var el = findAncestor(e.target, f);
   var relatedEl = findAncestor(e.relatedTarget, f);
   if (el && el != relatedEl) {
-    windowMenu.show(e, el, el.tabItems);
+    windowTooltip.handleMouseOver(e, el, el.tabItems);
   }
 }
 
@@ -1095,50 +1095,61 @@ recentActivitiesElement.addEventListener('click', maybeReopenTab);
 recentActivitiesElement.addEventListener('keydown',
                                          handleIfEnterKey(maybeReopenTab));
 
-recentActivitiesElement.addEventListener('mouseover', maybeShowWindowMenu);
-recentActivitiesElement.addEventListener('focus', maybeShowWindowMenu, true);
+recentActivitiesElement.addEventListener('mouseover', maybeShowWindowTooltip);
+recentActivitiesElement.addEventListener('focus', maybeShowWindowTooltip, true);
 
 /**
- * This object represents a window/tooltip representing a closed window. It is
+ * This object represents a tooltip representing a closed window. It is
  * shown when hovering over a closed window item or when the item is focused. It
  * gets hidden when blurred or when mousing out of the menu or the item.
- * @param {Element} menuEl The element to use as the menu.
+ * @param {Element} tooltipEl The element to use as the tooltip.
  * @constructor
  */
-function WindowMenu(menuEl) {
-  // TODO(arv): Rename WindowTooltip and make it behave even more like a
-  // tooltip.
-  this.menuEl = menuEl;
+function WindowTooltip(tooltipEl) {
+  this.tooltipEl = tooltipEl;
   this.boundHide_ = bind(this.hide, this);
   this.boundHandleMouseOut_ = bind(this.handleMouseOut, this);
 }
 
-WindowMenu.prototype = {
-  timer: 0,
-  show: function(e, linkEl, tabs) {
-    optionMenu.hide();
+WindowTooltip.trackMouseMove_ = function(e) {
+  WindowTooltip.clientX = e.clientX;
+  WindowTooltip.clientY = e.clientY;
+};
 
+WindowTooltip.prototype = {
+  timer: 0,
+  handleMouseOver: function(e, linkEl, tabs) {
+    document.addEventListener('mousemove', WindowTooltip.trackMouseMove_);
+    this.timer = window.setTimeout(bind(this.show, this, e.type, linkEl, tabs),
+                                   300);
+  },
+  show: function(type, linkEl, tabs) {
+    document.removeEventListener('mousemove', WindowTooltip.trackMouseMove_);
     clearTimeout(this.timer);
-    processData('#window-menu', tabs);
+
+    processData('#window-tooltip', tabs);
     var rect = linkEl.getBoundingClientRect();
     var bodyRect = document.body.getBoundingClientRect()
     var rtl = document.documentElement.dir == 'rtl';
 
-    this.menuEl.style.display = 'block';
+    this.tooltipEl.style.display = 'block';
+
     // When focused show below, like a drop down menu.
-    if (e.type == 'focus') {
-      this.menuEl.style.left = (rtl ?
-          rect.left + bodyRect.left + rect.width - this.menuEl.offsetWidth :
+    if (type == 'focus') {
+      this.tooltipEl.style.left = (rtl ?
+          rect.left + bodyRect.left + rect.width - this.tooltipEl.offsetWidth :
           rect.left + bodyRect.left) + 'px';
-      this.menuEl.style.top = rect.top + bodyRect.top + rect.height + 'px';
+      this.tooltipEl.style.top = rect.top + bodyRect.top + rect.height + 'px';
     } else {
-      this.menuEl.style.left = bodyRect.left + (rtl ?
-          e.clientX - this.menuEl.offsetWidth :
-          e.clientX) + 'px';
-      this.menuEl.style.top = e.clientY + bodyRect.top + 'px';
+      this.tooltipEl.style.left = bodyRect.left + (rtl ?
+          WindowTooltip.clientX - this.tooltipEl.offsetWidth :
+          WindowTooltip.clientX) + 'px';
+      // Offset like a tooltip
+      this.tooltipEl.style.top = 20 + WindowTooltip.clientY + bodyRect.top +
+                                 'px';
     }
 
-    if (e.type == 'focus') {
+    if (type == 'focus') {
       linkEl.onblur = this.boundHide_;
     } else { // mouseover
       linkEl.onmouseout = this.boundHandleMouseOut_;
@@ -1155,16 +1166,14 @@ WindowMenu.prototype = {
       this.hide();
     }
   },
-  hide: function(e) {
-    // Delay before hiding.
-    var self = this;
-    this.timer = setTimeout(function() {
-      self.menuEl.style.display  = 'none';
-    }, 100);
+  hide: function() {
+    window.clearTimeout(this.timer);
+    document.removeEventListener('mousemove', WindowTooltip.trackMouseMove_);
+    this.tooltipEl.style.display  = 'none';
   }
 };
 
-var windowMenu = new WindowMenu($('window-menu'));
+var windowTooltip = new WindowTooltip($('window-tooltip'));
 
 function getCheckboxHandler(section) {
   return function(e) {
@@ -1200,7 +1209,6 @@ document.addEventListener('DOMContentLoaded', bind(logEvent, global,
                                                    'domcontentloaded fired'));
 
 function hideAllMenus() {
-  windowMenu.hide();
   optionMenu.hide();
 }
 
