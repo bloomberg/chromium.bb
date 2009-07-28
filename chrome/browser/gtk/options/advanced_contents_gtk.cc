@@ -9,9 +9,11 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/file_util.h"
 #include "base/linux_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_tokenizer.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
@@ -36,8 +38,10 @@
 
 namespace {
 
-// Command used to configure the gconf proxy settings.
-const char kProxyConfigBinary[] = "gnome-network-preferences";
+// Command used to configure the gconf proxy settings.  The command was renamed
+// in January 2009, so both are used to work on both old and new systems.
+const char kOldProxyConfigBinary[] = "gnome-network-preferences";
+const char kProxyConfigBinary[] = "gnome-network-properties";
 
 // The pixel width we wrap labels at.
 // TODO(evanm): make the labels wrap at the appropriate width.
@@ -342,8 +346,31 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
 
   switch (base::GetDesktopEnvironment(env_getter.get())) {
     case base::DESKTOP_ENVIRONMENT_GNOME: {
+      const char* path = getenv("PATH");
+      FilePath bin_path;
+      bool have_bin_path = false;
+      StringTokenizer tk(path, ":");
+      while (tk.GetNext()) {
+        bin_path = FilePath(tk.token()).Append(kProxyConfigBinary);
+        if (file_util::PathExists(bin_path)) {
+          have_bin_path = true;
+          break;
+        }
+        bin_path = FilePath(tk.token()).Append(kOldProxyConfigBinary);
+        if (file_util::PathExists(bin_path)) {
+          have_bin_path = true;
+          break;
+        }
+      }
+      if (!have_bin_path) {
+        LOG(ERROR) << "Could not find Gnome network settings in PATH";
+        BrowserList::GetLastActive()->
+            OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
+                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+        return;
+      }
       std::vector<std::string> argv;
-      argv.push_back(kProxyConfigBinary);
+      argv.push_back(bin_path.value());
       base::file_handle_mapping_vector no_files;
       base::environment_vector env;
       base::ProcessHandle handle;
@@ -351,6 +378,9 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
                                    getenv("CHROMIUM_SAVED_GTK_PATH")));
       if (!base::LaunchApp(argv, env, no_files, false, &handle)) {
         LOG(ERROR) << "OpenProxyConfigDialogTask failed";
+        BrowserList::GetLastActive()->
+            OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
+                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
         return;
       }
       ProcessWatcher::EnsureProcessGetsReaped(handle);
