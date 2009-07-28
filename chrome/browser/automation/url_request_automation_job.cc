@@ -93,8 +93,10 @@ void URLRequestAutomationJob::Start() {
 }
 
 void URLRequestAutomationJob::Kill() {
-  message_filter_->Send(new AutomationMsg_RequestEnd(0, tab_, id_,
-      URLRequestStatus(URLRequestStatus::CANCELED, 0)));
+  if (message_filter_.get()) {
+    message_filter_->Send(new AutomationMsg_RequestEnd(0, tab_, id_,
+        URLRequestStatus(URLRequestStatus::CANCELED, 0)));
+  }
   DisconnectFromMessageFilter();
   URLRequestJob::Kill();
 }
