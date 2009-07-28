@@ -61,7 +61,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 	return 0;
     if (FcDebug() & FC_DBG_LANGSET) 
     {
-	printf ("font charset\n");
+	printf ("font charset");
 	FcCharSetPrint (charset);
 	printf ("\n");
     }
@@ -69,7 +69,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
     {
 	if (FcDebug() & FC_DBG_LANGSET) 
 	{
-	    printf ("%s charset\n", fcLangCharSets[i].lang);
+	    printf ("%s charset", fcLangCharSets[i].lang);
 	    FcCharSetPrint (&fcLangCharSets[i].charset);
 	    printf ("\n");
 	}

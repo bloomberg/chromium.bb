@@ -116,13 +116,13 @@ FcCharSetPrint (const FcCharSet *c)
     }
 #endif
 		
+    printf ("\n");
     for (i = 0; i < c->num; i++)
     {
 	intptr_t	leaf_offset = leaves[i];
 	FcCharLeaf	*leaf = FcOffsetToPtr (leaves, leaf_offset, FcCharLeaf);
 	
-	if (i)
-	    printf ("\t");
+	printf ("\t");
 	printf ("%04x:", numbers[i]);
 	for (j = 0; j < 256/32; j++)
 	    printf (" %08x", leaf->map[j]);
