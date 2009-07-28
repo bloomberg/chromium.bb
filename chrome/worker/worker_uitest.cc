@@ -55,6 +55,7 @@ class WorkerTest : public UITest {
   FilePath new_http_root_dir_;
   FilePath new_layout_test_dir_;
   FilePath rebase_result_dir_;
+  FilePath rebase_result_win_dir_;
   std::string layout_test_controller_;
 };
 
@@ -117,17 +118,16 @@ void WorkerTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
 
   // If not found, try to use the original copy of WebKit layout tests for
   // workers. For testing only in local machine only.
-  //   webkit/data/layout_tests/LayoutTests/.../workers
+  //   third_party/LayoutTests/.../workers
   if (!file_util::DirectoryExists(layout_test_dir_)) {
-    layout_test_dir_ = src_dir.AppendASCII("webkit");
-    layout_test_dir_ = layout_test_dir_.AppendASCII("data");
-    layout_test_dir_ = layout_test_dir_.AppendASCII("layout_tests");
+    layout_test_dir_ = src_dir.AppendASCII("third_party");
     layout_test_dir_ = layout_test_dir_.Append(test_parent_dir);
     layout_test_dir_ = layout_test_dir_.Append(test_case_dir);
     ASSERT_TRUE(file_util::DirectoryExists(layout_test_dir_));
   }
 
-  // Gets the file path to rebased expected result directory for workers.
+  // Gets the file path to rebased expected result directory for workers for
+  // current platform.
   //   webkit/data/layout_tests/platform/chromium_***/LayoutTests/.../workers
   rebase_result_dir_ = src_dir.AppendASCII("webkit");
   rebase_result_dir_ = rebase_result_dir_.AppendASCII("data");
@@ -136,6 +136,19 @@ void WorkerTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   rebase_result_dir_ = rebase_result_dir_.AppendASCII(kPlatformName);
   rebase_result_dir_ = rebase_result_dir_.Append(test_parent_dir);
   rebase_result_dir_ = rebase_result_dir_.Append(test_case_dir);
+
+  // Gets the file path to rebased expected result directory for workers under
+  // win32 platform. This is used by other non-win32 platform to use the same
+  // rebased expected results.
+#if !defined(OS_WIN)
+  rebase_result_win_dir_ = src_dir.AppendASCII("webkit");
+  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("data");
+  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("layout_tests");
+  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("platform");
+  rebase_result_win_dir_ = rebase_result_win_dir_.AppendASCII("chromium-win");
+  rebase_result_win_dir_ = rebase_result_win_dir_.Append(test_parent_dir);
+  rebase_result_win_dir_ = rebase_result_win_dir_.Append(test_case_dir);
+#endif
 
   // Creates the temporary directory.
   ASSERT_TRUE(file_util::CreateNewTempDirectory(
@@ -244,10 +257,15 @@ void WorkerTest::RunLayoutTest(const std::string& test_case_file_name,
   std::string expected_result_value;
   if (!ReadExpectedResult(rebase_result_dir_,
                           test_case_file_name,
-                          &expected_result_value))
-    ReadExpectedResult(layout_test_dir_,
-                       test_case_file_name,
-                       &expected_result_value);
+                          &expected_result_value)) {
+    if (rebase_result_win_dir_.empty() ||
+        !ReadExpectedResult(rebase_result_win_dir_,
+                            test_case_file_name,
+                            &expected_result_value))
+      ReadExpectedResult(layout_test_dir_,
+                         test_case_file_name,
+                         &expected_result_value);
+  }
   ASSERT_TRUE(!expected_result_value.empty());
 
   // Normalizes the expected result.
@@ -283,7 +301,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "stress-js-execution.html",
     "use-machine-stack.html",
     "worker-close.html",
-    //"worker-constructor.html",
+    "worker-constructor.html",
     "worker-context-gc.html",
     "worker-event-listener.html",
     "worker-gc.html",
@@ -291,6 +309,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "worker-navigator.html",
     "worker-replace-global-constructor.html",
     "worker-replace-self.html",
+    "worker-script-error.html",
     "worker-terminate.html",
     "worker-timeout.html"
   };
