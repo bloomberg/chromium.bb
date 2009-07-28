@@ -16,6 +16,7 @@ class AlertInfoBarDelegate;
 class ConfirmInfoBarDelegate;
 class InfoBar;
 class LinkInfoBarDelegate;
+class ThemePreviewInfobarDelegate;
 
 // An interface implemented by objects wishing to control an InfoBar.
 // Implementing this interface is not sufficient to use an InfoBar, since it
@@ -92,6 +93,12 @@ class InfoBarDelegate {
 
   // Returns a pointer to the ConfirmInfoBarDelegate interface, if implemented.
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() {
+    return NULL;
+  }
+
+  // Returns a pointer to the ThemePreviewInfobarDelegate interface, if
+  // implemented.
+  virtual ThemePreviewInfobarDelegate* AsThemePreviewInfobarDelegate() {
     return NULL;
   }
 

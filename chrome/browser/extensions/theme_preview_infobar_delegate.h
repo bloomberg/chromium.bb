@@ -18,9 +18,11 @@ class ThemePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
   ThemePreviewInfobarDelegate(TabContents* tab_contents,
                               const std::string& name);
+  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
   virtual void InfoBarClosed();
   virtual std::wstring GetMessageText() const;
   virtual SkBitmap* GetIcon() const;
+  virtual ThemePreviewInfobarDelegate* AsThemePreviewInfobarDelegate();
   virtual int GetButtons() const;
   virtual std::wstring GetButtonLabel(
       ConfirmInfoBarDelegate::InfoBarButton button) const;
