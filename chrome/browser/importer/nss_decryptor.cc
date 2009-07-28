@@ -68,11 +68,10 @@ std::wstring NSSDecryptor::Decrypt(const std::string& crypt) const {
   if (crypt[0] != '~') {
     std::string decoded_data;
     net::Base64Decode(crypt, &decoded_data);
-    PK11SlotInfo* slot = NULL;
-    slot = PK11_GetInternalKeySlot();
+    PK11SlotInfo* slot = GetKeySlotForDB();
     SECStatus result = PK11_Authenticate(slot, PR_TRUE, NULL);
     if (result != SECSuccess) {
-      PK11_FreeSlot(slot);
+      FreeSlot(slot);
       return std::wstring();
     }
 
@@ -83,12 +82,16 @@ std::wstring NSSDecryptor::Decrypt(const std::string& crypt) const {
     SECItem reply;
     reply.data = NULL;
     reply.len = 0;
+#if defined(OS_LINUX)
+    result = PK11SDR_DecryptWithSlot(slot, &request, &reply, NULL);
+#else
     result = PK11SDR_Decrypt(&request, &reply, NULL);
+#endif  // defined(OS_LINUX)
     if (result == SECSuccess)
       plain.assign(reinterpret_cast<char*>(reply.data), reply.len);
 
     SECITEM_FreeItem(&reply, PR_FALSE);
-    PK11_FreeSlot(slot);
+    FreeSlot(slot);
   } else {
     // Deletes the leading '~' before decoding.
     net::Base64Decode(crypt.substr(1), &plain);

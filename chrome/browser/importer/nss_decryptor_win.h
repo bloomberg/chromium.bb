@@ -137,6 +137,9 @@ class NSSDecryptor {
                base::NativeLibrary plds4_dll,
                base::NativeLibrary nspr4_dll);
 
+  PK11SlotInfo* GetKeySlotForDB() const { return PK11_GetInternalKeySlot(); }
+  void FreeSlot(PK11SlotInfo* slot) const { PK11_FreeSlot(slot); }
+
   // Methods in Firefox security components.
   NSSInitFunc NSS_Init;
   NSSShutdownFunc NSS_Shutdown;

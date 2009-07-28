@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_LINUX_H_
 #define CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_LINUX_H_
 
+#include <secmodt.h>
 #include <string>
 #include <vector>
 
@@ -22,7 +23,7 @@ class NSSDecryptor {
 
   // Initializes NSS if it hasn't already been initialized.
   bool Init(const std::wstring& /* dll_path */,
-            const std::wstring& /* db_path */);
+            const std::wstring& db_path);
 
   // Decrypts Firefox stored passwords. Before using this method,
   // make sure Init() returns true.
@@ -35,7 +36,16 @@ class NSSDecryptor {
                     std::vector<webkit_glue::PasswordForm>* forms);
 
  private:
+  // Does not actually free the slot, since we'll free it when NSSDecryptor is
+  // destroyed.
+  void FreeSlot(PK11SlotInfo* slot) const {};
+  PK11SlotInfo* GetKeySlotForDB() const { return db_slot_; }
+
+  SECStatus PK11SDR_DecryptWithSlot(
+      PK11SlotInfo* slot, SECItem* data, SECItem* result, void* cx) const;
+
   bool is_nss_initialized_;
+  PK11SlotInfo* db_slot_;
 
   DISALLOW_COPY_AND_ASSIGN(NSSDecryptor);
 };

@@ -80,8 +80,8 @@ class FirefoxProfileLock {
   bool HasAcquired();
 
  private:
-  FRIEND_TEST(FirefoxImporterTest, ProfileLock);
-  FRIEND_TEST(FirefoxImporterTest, ProfileLockOrphaned);
+  FRIEND_TEST(FirefoxProfileLockTest, ProfileLock);
+  FRIEND_TEST(FirefoxProfileLockTest, ProfileLockOrphaned);
 
   static const FilePath::CharType* kLockFileName;
   static const FilePath::CharType* kOldLockFileName;
@@ -103,7 +103,7 @@ class FirefoxProfileLock {
   FilePath old_lock_file_;
 
   // Method that tries to put a fcntl lock on file specified by |lock_file_|.
-  // Returns false if lock is already help by another process. true in all
+  // Returns false if lock is already held by another process. true in all
   // other cases.
   bool LockWithFcntl();
 #endif

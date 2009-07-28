@@ -3958,6 +3958,7 @@
             'browser/download/download_manager_unittest.cc',
             'browser/gtk/go_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
+            'browser/importer/firefox_importer_unittest.cc',
             'browser/tab_contents/navigation_controller_unittest.cc',
             'browser/task_manager_unittest.cc',
             'third_party/hunspell/google/hunspell_tests.cc',
@@ -4043,7 +4044,6 @@
             'browser/browser_unittest.cc',
             # Need to port browser/automation/ui_controls.h
             'browser/extensions/extension_process_manager_unittest.cc',
-            'browser/importer/firefox_importer_unittest.cc',
             'browser/importer/importer_unittest.cc',
             'browser/login_prompt_unittest.cc',
             'browser/printing/print_job_unittest.cc',
