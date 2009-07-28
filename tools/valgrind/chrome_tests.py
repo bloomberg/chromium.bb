@@ -216,6 +216,10 @@ class ChromeTests:
     if cmd_args:
       cmd.extend(["--"])
       cmd.extend(cmd_args)
+
+    # Sets LD_LIBRARY_PATH to the build folder so external libraries can be
+    # loaded.
+    os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
     return valgrind_test.RunTool(cmd)
 
   def TestBase(self):
