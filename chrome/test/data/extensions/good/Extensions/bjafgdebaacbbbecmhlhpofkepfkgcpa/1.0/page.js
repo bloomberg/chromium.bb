@@ -12,6 +12,8 @@ win.onload = function() {
       console.log('got ' + msg);
       if (msg.testPostMessage) {
         port.postMessage({success: true});
+      } else if (msg.testPostMessageFromTab) {
+        testPostMessageFromTab(port);
       } else if (msg.testDisconnect) {
         port.disconnect();
       } else if (msg.testDisconnectOnClose) {
@@ -20,14 +22,15 @@ win.onload = function() {
       // Ignore other messages since they are from us.
     });
   });
-}
+};
 
 // Tests that postMessage to the extension and its response works.
-win.testPostMessageFromTab = function() {
+function testPostMessageFromTab(origPort) {
+  console.log('testPostMessageFromTab');
   var port = chrome.extension.connect();
   port.postMessage({testPostMessageFromTab: true});
   port.onMessage.addListener(function(msg) {
-    win.domAutomationController.send(msg.success);
+    origPort.postMessage({success: msg.success});
     console.log('sent ' + msg.success);
     port.disconnect();
   });

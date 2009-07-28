@@ -296,24 +296,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
       browser(),
       GURL("chrome-extension://bjafgdebaacbbbecmhlhpofkepfkgcpa/page.html"));
 
-  // First test that tab->extension messaging works.
+  // Test extension->tab messaging.
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"testPostMessageFromTab()", &result);
+      host->render_view_host(), L"", L"testPostMessage()", &result);
   EXPECT_TRUE(result);
 
-  // Now test extension->tab messaging, with disconnect events.
+  // Test tab->extension messaging.
+  result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), L"", L"testPostMessageFromTab()", &result);
+  EXPECT_TRUE(result);
+
+  // Test disconnect event dispatch.
   result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testDisconnect()", &result);
   EXPECT_TRUE(result);
 
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testPostMessage()", &result);
-  EXPECT_TRUE(result);
-
+  // Test disconnect is fired on tab close.
   result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
@@ -349,24 +350,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
                        .AppendASCII("test_file.html");
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
 
-  // First test that tab->extension messaging works.
+  // Test extension->tab messaging.
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"testPostMessageFromTab()", &result);
+      host->render_view_host(), L"", L"testPostMessage()", &result);
   EXPECT_TRUE(result);
 
-  // Now test extension->tab messaging, with disconnect events.
+  // Test tab->extension messaging.
+  result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), L"", L"testPostMessageFromTab()", &result);
+  EXPECT_TRUE(result);
+
+  // Test disconnect event dispatch.
   result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testDisconnect()", &result);
   EXPECT_TRUE(result);
 
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testPostMessage()", &result);
-  EXPECT_TRUE(result);
-
+  // Test disconnect is fired on tab close.
   result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
