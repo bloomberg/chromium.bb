@@ -228,6 +228,20 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   gtk_box_pack_start(GTK_BOX(toolbar_), menus_hbox_, FALSE, FALSE, 0);
 
+  // Page and app menu accelerators.
+  GtkAccelGroup* accel_group = gtk_accel_group_new();
+  gtk_window_add_accel_group(top_level_window, accel_group);
+  // Drop the initial ref on |accel_group| so |window_| will own it.
+  g_object_unref(accel_group);
+  // I would use "popup-menu" here, but GTK complains. I would use "activate",
+  // but the docs say never to connect to that signal.
+  gtk_widget_add_accelerator(page_menu, "clicked", accel_group,
+                             GDK_e, GDK_MOD1_MASK,
+                             static_cast<GtkAccelFlags>(0));
+  gtk_widget_add_accelerator(chrome_menu, "clicked", accel_group,
+                             GDK_f, GDK_MOD1_MASK,
+                             static_cast<GtkAccelFlags>(0));
+
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
     gtk_widget_show(toolbar_);
@@ -442,6 +456,8 @@ GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
   gtk_widget_set_tooltip_text(button, localized_tooltip.c_str());
   g_signal_connect(button, "button-press-event",
                    G_CALLBACK(OnMenuButtonPressEvent), this);
+  g_signal_connect(button, "clicked",
+                   G_CALLBACK(OnMenuClicked), this);
   GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
 
   return button;
@@ -577,6 +593,18 @@ gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,
   MenuGtk* menu = button == toolbar->page_menu_button_.get() ?
                   toolbar->page_menu_.get() : toolbar->app_menu_.get();
   menu->Popup(button, reinterpret_cast<GdkEvent*>(event));
+
+  return TRUE;
+}
+
+// static
+gboolean BrowserToolbarGtk::OnMenuClicked(GtkWidget* button,
+                                          BrowserToolbarGtk* toolbar) {
+  gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(button),
+                                    GTK_STATE_ACTIVE);
+  MenuGtk* menu = button == toolbar->page_menu_button_.get() ?
+                  toolbar->page_menu_.get() : toolbar->app_menu_.get();
+  menu->PopupAsFromKeyEvent(button);
 
   return TRUE;
 }

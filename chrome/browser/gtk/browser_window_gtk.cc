@@ -154,6 +154,7 @@ const struct AcceleratorMapping {
 } kAcceleratorMap[] = {
   // Focus.
   { GDK_k, IDC_FOCUS_SEARCH, GDK_CONTROL_MASK },
+  { GDK_e, IDC_FOCUS_SEARCH, GDK_CONTROL_MASK },
   { XF86XK_Search, IDC_FOCUS_SEARCH, GdkModifierType(0) },
   { GDK_l, IDC_FOCUS_LOCATION, GDK_CONTROL_MASK },
   { GDK_d, IDC_FOCUS_LOCATION, GDK_MOD1_MASK },

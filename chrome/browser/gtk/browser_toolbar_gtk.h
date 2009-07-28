@@ -130,6 +130,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                          GdkEventButton* event,
                                          BrowserToolbarGtk* toolbar);
 
+  // Gtk callback used when a hotkey activates the menu buttons.
+  static gboolean OnMenuClicked(GtkWidget* button,
+                                BrowserToolbarGtk* toolbar);
+
   // Used for drags onto home button.
   static void OnDragDataReceived(GtkWidget* widget,
                                  GdkDragContext* drag_context,
