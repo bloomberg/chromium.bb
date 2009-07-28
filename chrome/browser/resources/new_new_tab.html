@@ -48,7 +48,12 @@ logEvent('log start');
 
 </script>
 <link rel="stylesheet" href="new_new_tab.css">
-<link id="themecss" rel="stylesheet" href="chrome://theme/css/newtab.css">
+<script>
+// Until themes can clear the cache, force-reload the theme stylesheet.
+document.write('<link id="themecss" rel="stylesheet" ' +
+               'href="chrome://theme/css/newtab.css?' +
+               (new Date()).getTime() + '">');
+</script>
 </head>
 <body class="loading"
       i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
