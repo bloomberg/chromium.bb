@@ -10,7 +10,29 @@
 
 namespace IPC {
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+// This task ensures the message is deleted if the task is deleted without
+// having been run.
+class SendTask : public Task {
+ public:
+  SendTask(ChannelProxy::Context* context, Message* message)
+      : context_(context),
+        message_(message) {
+  }
+
+  virtual void Run() {
+    context_->OnSendMessage(message_.release());
+  }
+
+ private:
+  scoped_refptr<ChannelProxy::Context> context_;
+  scoped_ptr<Message> message_;
+
+  DISALLOW_COPY_AND_ASSIGN(SendTask);
+};
+
+//------------------------------------------------------------------------------
 
 ChannelProxy::Context::Context(Channel::Listener* listener,
                                MessageFilter* filter,
@@ -254,8 +276,8 @@ bool ChannelProxy::Send(Message* message) {
   Logging::current()->OnSendMessage(message, context_->channel_id());
 #endif
 
-  context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      context_.get(), &Context::OnSendMessage, message));
+  context_->ipc_message_loop()->PostTask(FROM_HERE,
+                                         new SendTask(context_.get(), message));
   return true;
 }
 

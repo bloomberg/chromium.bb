@@ -14,6 +14,8 @@ class MessageLoop;
 
 namespace IPC {
 
+class SendTask;
+
 //-----------------------------------------------------------------------------
 // IPC::ChannelProxy
 //
@@ -174,6 +176,7 @@ class ChannelProxy : public Message::Sender {
 
    private:
     friend class ChannelProxy;
+    friend class SendTask;
     // Create the Channel
     void CreateChannel(const std::string& id, const Channel::Mode& mode);
 
@@ -199,6 +202,8 @@ class ChannelProxy : public Message::Sender {
   Context* context() { return context_; }
 
  private:
+  friend class SendTask;
+
   void Init(const std::string& channel_id, Channel::Mode mode,
             MessageLoop* ipc_thread_loop, bool create_pipe_now);
 
