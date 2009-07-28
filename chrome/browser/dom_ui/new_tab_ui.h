@@ -31,7 +31,11 @@ class NewTabUI : public DOMUI,
   // Whether we should disable the web resources backend service
   static bool WebResourcesEnabled();
 
- private:
+  // Whether we should disable the first run notification based on the command
+  // line switch.
+  static bool FirstRunDisabled();
+
+private:
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details);

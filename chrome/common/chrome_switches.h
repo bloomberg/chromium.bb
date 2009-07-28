@@ -180,6 +180,7 @@ extern const wchar_t kForceFieldTestNameAndValue[];
 
 extern const wchar_t kNewTabPage[];
 extern const wchar_t kOldNewTabPage[];
+extern const wchar_t kDisableNewTabFirstRun[];
 
 extern const wchar_t kEnableWebResources[];
 

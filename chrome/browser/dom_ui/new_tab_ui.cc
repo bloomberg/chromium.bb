@@ -1498,6 +1498,9 @@ NewTabUI::NewTabUI(TabContents* contents)
     NewTabHTMLSource::set_first_view(false);
   }
 
+  if (NewTabUI::FirstRunDisabled())
+    NewTabHTMLSource::set_first_run(false);
+
   tab_contents()->render_view_host()->set_paint_observer(new PaintTimer);
 
   if (GetProfile()->IsOffTheRecord()) {
@@ -1598,4 +1601,10 @@ bool NewTabUI::UseOldNewTabPage() {
 bool NewTabUI::WebResourcesEnabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableWebResources);
+}
+
+// static
+bool NewTabUI::FirstRunDisabled() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kDisableNewTabFirstRun);
 }

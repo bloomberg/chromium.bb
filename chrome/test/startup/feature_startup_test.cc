@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -54,6 +55,10 @@ class NewTabUIStartupTest : public UITest {
   void RunStartupTest(const char* label, bool want_warm, bool important) {
     // Install the location of the test profile file.
     set_template_user_data(ComputeTypicalUserDataSource().ToWStringHack());
+
+    // Disable the first run notification because it has an animation which
+    // masks any real performance regressions.
+    launch_arguments_.AppendSwitch(switches::kDisableNewTabFirstRun);
 
     TimeDelta timings[kNumCycles];
     for (int i = 0; i < kNumCycles; ++i) {
