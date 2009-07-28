@@ -13,6 +13,7 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/common/pref_member.h"
 #include "googleurl/src/gurl.h"
 
@@ -20,7 +21,8 @@ class Profile;
 class ListStoreFavIconLoader;
 
 class GeneralPageGtk : public OptionsPageBase,
-                       public TemplateURLModelObserver {
+                       public TemplateURLModelObserver,
+                       public ShellIntegration::DefaultBrowserObserver {
  public:
   explicit GeneralPageGtk(Profile* profile);
   ~GeneralPageGtk();
@@ -126,8 +128,9 @@ class GeneralPageGtk : public OptionsPageBase,
   // option if that preference is not selected.
   void EnableCustomHomepagesControls(bool enable);
 
-  // Sets the UI state to match
-  void SetDefaultBrowserUIState(bool is_default);
+  // ShellIntegration::DefaultBrowserObserver implementation.
+  virtual void SetDefaultBrowserUIState(
+      ShellIntegration::DefaultBrowserUIState state);
 
   // Widgets of the startup group
   GtkWidget* startup_homepage_radio_;
@@ -174,6 +177,9 @@ class GeneralPageGtk : public OptionsPageBase,
 
   // Helper to load the favicon pixbufs into the |startup_custom_pages_model_|.
   scoped_ptr<ListStoreFavIconLoader> favicon_loader_;
+
+  // The helper object that performs default browser set/check tasks.
+  scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneralPageGtk);
 };

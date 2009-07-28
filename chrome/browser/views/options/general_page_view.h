@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_GENERAL_PAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_GENERAL_PAGE_VIEW_H_
 
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/views/shelf_item_dialog.h"
 #include "chrome/common/pref_member.h"
@@ -35,7 +36,8 @@ class GeneralPageView : public OptionsPageView,
                         public views::ButtonListener,
                         public views::Textfield::Controller,
                         public ShelfItemDialogDelegate,
-                        public views::TableViewObserver {
+                        public views::TableViewObserver,
+                        public ShellIntegration::DefaultBrowserObserver {
  public:
   explicit GeneralPageView(Profile* profile);
   virtual ~GeneralPageView();
@@ -64,14 +66,9 @@ class GeneralPageView : public OptionsPageView,
   virtual void Layout();
 
  private:
-  // The current default browser UI state
-  enum DefaultBrowserUIState {
-    STATE_PROCESSING,
-    STATE_DEFAULT,
-    STATE_NOT_DEFAULT
-  };
+  // ShellIntegration::DefaultBrowserObserver implementation:
   // Updates the UI state to reflect the current default browser state.
-  void SetDefaultBrowserUIState(DefaultBrowserUIState state);
+  virtual void SetDefaultBrowserUIState(ShellIntegration::DefaultBrowserUIState state);
 
   // Init all the dialog controls
   void InitStartupGroup();
@@ -151,9 +148,7 @@ class GeneralPageView : public OptionsPageView,
   views::NativeButton* default_browser_use_as_default_button_;
 
   // The helper object that performs default browser set/check tasks.
-  class DefaultBrowserWorker;
-  friend DefaultBrowserWorker;
-  scoped_refptr<DefaultBrowserWorker> default_browser_worker_;
+  scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneralPageView);
 };

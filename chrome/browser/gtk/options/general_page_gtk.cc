@@ -14,7 +14,6 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/session_startup_pref.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
@@ -58,7 +57,9 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
     : OptionsPageBase(profile),
       template_url_model_(NULL),
       default_search_initializing_(true),
-      initializing_(true)  {
+      initializing_(true),
+      default_browser_worker_(
+          new ShellIntegration::DefaultBrowserWorker(this)) {
   OptionsLayoutBuilderGtk options_builder;
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_GROUP_NAME),
@@ -93,6 +94,8 @@ GeneralPageGtk::~GeneralPageGtk() {
 
   if (template_url_model_)
     template_url_model_->RemoveObserver(this);
+
+  default_browser_worker_->ObserverDestroyed();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -339,6 +342,8 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
 GtkWidget* GeneralPageGtk::InitDefaultBrowserGroup() {
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
+  // TODO(mattm): the label should be created with a text like "checking for
+  // default" to be displayed while we wait for the check to complete.
   default_browser_status_label_ = gtk_label_new(NULL);
   gtk_box_pack_start(GTK_BOX(vbox), default_browser_status_label_,
                      FALSE, FALSE, 0);
@@ -354,7 +359,7 @@ GtkWidget* GeneralPageGtk::InitDefaultBrowserGroup() {
   GtkWidget* vbox_alignment = gtk_alignment_new(0.0, 0.5, 0.0, 0.0);
   gtk_container_add(GTK_CONTAINER(vbox_alignment), vbox);
 
-  SetDefaultBrowserUIState(ShellIntegration::IsDefaultBrowser());
+  default_browser_worker_->StartCheckDefaultBrowser();
 
   return vbox_alignment;
 }
@@ -478,8 +483,7 @@ void GeneralPageGtk::OnDefaultSearchManageEnginesClicked(
 void GeneralPageGtk::OnBrowserUseAsDefaultClicked(
     GtkButton* button,
     GeneralPageGtk* general_page) {
-  general_page->SetDefaultBrowserUIState(
-      ShellIntegration::SetAsDefaultBrowser());
+  general_page->default_browser_worker_->StartSetAsDefaultBrowser();
   // If the user made Chrome the default browser, then he/she arguably wants
   // to be notified when that changes.
   general_page->profile()->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser,
@@ -680,22 +684,26 @@ void GeneralPageGtk::EnableCustomHomepagesControls(bool enable) {
   gtk_widget_set_sensitive(startup_custom_pages_tree_, enable);
 }
 
-void GeneralPageGtk::SetDefaultBrowserUIState(bool is_default) {
-  const char* color;
+void GeneralPageGtk::SetDefaultBrowserUIState(
+    ShellIntegration::DefaultBrowserUIState state) {
+  const char* color = NULL;
   std::string text;
-  if (is_default) {
+  if (state == ShellIntegration::STATE_DEFAULT) {
     color = kDefaultBrowserLabelColor;
     text = l10n_util::GetStringFUTF8(IDS_OPTIONS_DEFAULTBROWSER_DEFAULT,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  } else {
+  } else if (state == ShellIntegration::STATE_NOT_DEFAULT) {
     color = kNotDefaultBrowserLabelColor;
     text = l10n_util::GetStringFUTF8(IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   }
-  char* markup = g_markup_printf_escaped(kDefaultBrowserLabelMarkup,
-                                         color, text.c_str());
-  gtk_label_set_markup(GTK_LABEL(default_browser_status_label_), markup);
-  g_free(markup);
+  if (color) {
+    char* markup = g_markup_printf_escaped(kDefaultBrowserLabelMarkup,
+                                           color, text.c_str());
+    gtk_label_set_markup(GTK_LABEL(default_browser_status_label_), markup);
+    g_free(markup);
+  }
 
-  gtk_widget_set_sensitive(default_browser_use_as_default_button_, !is_default);
+  gtk_widget_set_sensitive(default_browser_use_as_default_button_,
+                           state == ShellIntegration::STATE_NOT_DEFAULT);
 }

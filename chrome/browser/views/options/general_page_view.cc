@@ -9,10 +9,8 @@
 #include "base/gfx/png_decoder.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/thread.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -20,7 +18,6 @@
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/keyword_editor_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
@@ -51,118 +48,6 @@ static const SkColor kNotDefaultBrowserLabelColor = SkColorSetRGB(135, 0, 0);
 std::wstring GetNewTabUIURLString() {
   return UTF8ToWide(chrome::kChromeUINewTabURL);
 }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// GeneralPageView::DefaultBrowserWorker
-//
-//  A helper object that handles checking if Chrome is the default browser on
-//  Windows and also setting it as the default browser. These operations are
-//  performed asynchronously on the file thread since registry access is
-//  involved and this can be slow.
-//
-class GeneralPageView::DefaultBrowserWorker
-    : public base::RefCountedThreadSafe<GeneralPageView::DefaultBrowserWorker> {
- public:
-  explicit DefaultBrowserWorker(GeneralPageView* general_page_view);
-
-  // Checks if Chrome is the default browser.
-  void StartCheckDefaultBrowser();
-
-  // Sets Chrome as the default browser.
-  void StartSetAsDefaultBrowser();
-
-  // Called to notify the worker that the view is gone.
-  void ViewDestroyed();
-
- private:
-  // Functions that track the process of checking if Chrome is the default
-  // browser.
-  // |ExecuteCheckDefaultBrowser| checks the registry on the file thread.
-  // |CompleteCheckDefaultBrowser| notifies the view to update on the UI thread.
-  void ExecuteCheckDefaultBrowser();
-  void CompleteCheckDefaultBrowser(bool is_default);
-
-  // Functions that track the process of setting Chrome as the default browser.
-  // |ExecuteSetAsDefaultBrowser| updates the registry on the file thread.
-  // |CompleteSetAsDefaultBrowser| notifies the view to update on the UI thread.
-  void ExecuteSetAsDefaultBrowser();
-  void CompleteSetAsDefaultBrowser();
-
-  // Updates the UI in our associated view with the current default browser
-  // state.
-  void UpdateUI(bool is_default);
-
-  GeneralPageView* general_page_view_;
-
-  MessageLoop* ui_loop_;
-  MessageLoop* file_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(GeneralPageView::DefaultBrowserWorker);
-};
-
-GeneralPageView::DefaultBrowserWorker::DefaultBrowserWorker(
-    GeneralPageView* general_page_view)
-    : general_page_view_(general_page_view),
-      ui_loop_(MessageLoop::current()),
-      file_loop_(g_browser_process->file_thread()->message_loop()) {
-}
-
-void GeneralPageView::DefaultBrowserWorker::StartCheckDefaultBrowser() {
-  general_page_view_->SetDefaultBrowserUIState(STATE_PROCESSING);
-  file_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &DefaultBrowserWorker::ExecuteCheckDefaultBrowser));
-}
-
-void GeneralPageView::DefaultBrowserWorker::StartSetAsDefaultBrowser() {
-  general_page_view_->SetDefaultBrowserUIState(STATE_PROCESSING);
-  file_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &DefaultBrowserWorker::ExecuteSetAsDefaultBrowser));
-}
-
-void GeneralPageView::DefaultBrowserWorker::ViewDestroyed() {
-  // Our associated view has gone away, so we shouldn't call back to it if
-  // our worker thread returns after the view is dead.
-  general_page_view_ = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// DefaultBrowserWorker, private:
-
-void GeneralPageView::DefaultBrowserWorker::ExecuteCheckDefaultBrowser() {
-  DCHECK(MessageLoop::current() == file_loop_);
-  bool is_default = ShellIntegration::IsDefaultBrowser();
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &DefaultBrowserWorker::CompleteCheckDefaultBrowser, is_default));
-}
-
-void GeneralPageView::DefaultBrowserWorker::CompleteCheckDefaultBrowser(
-    bool is_default) {
-  DCHECK(MessageLoop::current() == ui_loop_);
-  UpdateUI(is_default);
-}
-
-void GeneralPageView::DefaultBrowserWorker::ExecuteSetAsDefaultBrowser() {
-  DCHECK(MessageLoop::current() == file_loop_);
-  bool result = ShellIntegration::SetAsDefaultBrowser();
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &DefaultBrowserWorker::CompleteSetAsDefaultBrowser));
-}
-
-void GeneralPageView::DefaultBrowserWorker::CompleteSetAsDefaultBrowser() {
-  DCHECK(MessageLoop::current() == ui_loop_);
-  if (general_page_view_) {
-    // Set as default completed, check again to make sure it stuck...
-    StartCheckDefaultBrowser();
-  }
-}
-
-void GeneralPageView::DefaultBrowserWorker::UpdateUI(bool is_default) {
-  if (general_page_view_) {
-    DefaultBrowserUIState state =
-        is_default ? STATE_DEFAULT : STATE_NOT_DEFAULT;
-    general_page_view_->SetDefaultBrowserUIState(state);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -525,7 +410,8 @@ GeneralPageView::GeneralPageView(Profile* profile)
       default_browser_status_label_(NULL),
       default_browser_use_as_default_button_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          default_browser_worker_(new DefaultBrowserWorker(this))),
+          default_browser_worker_(
+              new ShellIntegration::DefaultBrowserWorker(this))),
       OptionsPageView(profile) {
 }
 
@@ -535,7 +421,7 @@ GeneralPageView::~GeneralPageView() {
       prefs::kURLsToRestoreOnStartup, this);
   if (startup_custom_pages_table_)
     startup_custom_pages_table_->SetModel(NULL);
-  default_browser_worker_->ViewDestroyed();
+  default_browser_worker_->ObserverDestroyed();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -755,16 +641,17 @@ void GeneralPageView::Layout() {
 ///////////////////////////////////////////////////////////////////////////////
 // GeneralPageView, private:
 
-void GeneralPageView::SetDefaultBrowserUIState(DefaultBrowserUIState state) {
-  bool button_enabled = state == STATE_NOT_DEFAULT;
+void GeneralPageView::SetDefaultBrowserUIState(
+    ShellIntegration::DefaultBrowserUIState state) {
+  bool button_enabled = state == ShellIntegration::STATE_NOT_DEFAULT;
   default_browser_use_as_default_button_->SetEnabled(button_enabled);
-  if (state == STATE_DEFAULT) {
+  if (state == ShellIntegration::STATE_DEFAULT) {
     default_browser_status_label_->SetText(
       l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_DEFAULT,
                             l10n_util::GetString(IDS_PRODUCT_NAME)));
     default_browser_status_label_->SetColor(kDefaultBrowserLabelColor);
     Layout();
-  } else if (state == STATE_NOT_DEFAULT) {
+  } else if (state == ShellIntegration::STATE_NOT_DEFAULT) {
     default_browser_status_label_->SetText(
         l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT,
                               l10n_util::GetString(IDS_PRODUCT_NAME)));
