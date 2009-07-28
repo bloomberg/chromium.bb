@@ -132,6 +132,8 @@ NSTimeInterval kHideStatusDuration = 0.3;
     [self setSecondaryTitle:statusString];
     isStatusTextVisible_ = YES;
   }
+
+  [[self controlView] setNeedsDisplay:YES];
 }
 
 - (void)updateTrackingAreas:(id)sender {
