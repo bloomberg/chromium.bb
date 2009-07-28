@@ -85,6 +85,10 @@ html[anim='false'] *,
   border: 3px solid hsl(213, 60%, 92%);
 }
 
+.list > .filler * {
+  visibility: hidden !important;
+}
+
 .filler .thumbnail {
   visibility: inherit;
   border: 1px solid white;
@@ -264,12 +268,13 @@ html[dir=rtl] .thumbnail-container > .title > div {
   -webkit-box-shadow: 0px 2px 2px hsla(0, 0%, 0%, .5);
 }
 
-.dragging {
-  -webkit-transition: none;
+.dragging,
+.dragging * {
+  -webkit-transition: none !important;
 }
 
 .dragging > .title {
-  opacity: 0 !important;
+  opacity: 0;
 }
 
 .list > .dragging > .title {
@@ -505,8 +510,6 @@ html[dir='rtl'] .item {
 }
 
 .section {
-  -webkit-box-flex: 1;
-  width: 50%;
   display: inline-block;
 }
 
@@ -650,19 +653,27 @@ html[dir='rtl'] #option-menu {
 }
 
 /* Hard code thumbnail positions to improve initial layout speed */
-#t0, #t4 {
+#t0, #t4,
+html[dir='rtl'] #t3,
+html[dir='rtl'] #t7 {
   left: 0;
 }
 
-#t1, #t5 {
+#t1, #t5,
+html[dir='rtl'] #t2,
+html[dir='rtl'] #t6 {
   left: 235px;
 }
 
-#t2, #t6 {
+#t2, #t6,
+html[dir='rtl'] #t1,
+html[dir='rtl'] #t5 {
   left: 470px;
 }
 
-#t3, #t7 {
+#t3, #t7,
+html[dir='rtl'] #t0,
+html[dir='rtl'] #t4 {
   left: 705px;
 }
 
@@ -704,19 +715,27 @@ html[dir='rtl'] #option-menu {
     width: 336px; /* Same here, see above */
   }
 
-  #t0, #t4 {
+  #t0, #t4,
+  html[dir='rtl'] #t3,
+  html[dir='rtl'] #t7 {
     left: 0;
   }
 
-  #t1, #t5 {
+  #t1, #t5,
+  html[dir='rtl'] #t2,
+  html[dir='rtl'] #t6 {
     left: 178px;
   }
 
-  #t2, #t6 {
+  #t2, #t6,
+  html[dir='rtl'] #t1,
+  html[dir='rtl'] #t5 {
     left: 356px;
   }
 
-  #t3, #t7 {
+  #t3, #t7,
+  html[dir='rtl'] #t0,
+  html[dir='rtl'] #t4 {
     left: 534px;
   }
 

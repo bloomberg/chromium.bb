@@ -217,6 +217,10 @@ function getThumbnailClassName(data) {
       (data.filler ? ' filler' : '');
 }
 
+function url(s) {
+  return 'url("' + encodeURI(s) + '")';
+}
+
 function renderMostVisited(data) {
   var parent = $('most-visited');
   var children = parent.children;
@@ -245,12 +249,14 @@ function renderMostVisited(data) {
     // There was some concern that a malformed malicious URL could cause an XSS
     // attack but setting style.backgroundImage = 'url(javascript:...)' does
     // not execute the JavaScript in WebKit.
+
+    var thumbnailUrl = d.thumbnailUrl || 'chrome://thumb/' + d.url;
     t.querySelector('.thumbnail-wrapper').style.backgroundImage =
-        'url("' + (d.thumbnailUrl || 'chrome://thumb/' + d.url) + '")';
+        url(thumbnailUrl);
     var titleDiv = t.querySelector('.title > div');
     titleDiv.xtitle = titleDiv.textContent = d.title;
-    titleDiv.style.backgroundImage = 'url("' +
-        (d.faviconUrl || 'chrome://favicon/' + d.url) + '")';
+    var faviconUrl = d.faviconUrl || 'chrome://favicon/' + d.url;
+    titleDiv.style.backgroundImage = encodeURI(url);
     titleDiv.dir = d.direction;
   }
 }
@@ -696,21 +702,26 @@ function layoutLowerSections() {
     lowerSectionsElement.style.height = lowerSectionsElement.style.opacity = 0;
   }
 
+  // Even when the width is set to 0 it will take up 2px due to the border. We
+  // compensate by setting the margin to -2px.
   if (recentShown && tipsShown) {
     var w = (totalWidth - spacing) / 2;
     recentElement.style.width = tipsElement.style.width = w + 'px'
-    recentElement.style.opacity = tipsElement.style.opacity = '';
+    recentElement.style.opacity = tipsElement.style.opacity =
+        recentElement.style.WebkitMarginStart = '';
     spacer.style.width = spacing + 'px';
   } else if (recentShown) {
     recentElement.style.width = totalWidth + 'px';
-    recentElement.style.opacity = '';
+    recentElement.style.opacity = recentElement.style.WebkitMarginStart = '';
     tipsElement.style.width =
         tipsElement.style.opacity = 0;
     spacer.style.width = 0;
+
   } else if (tipsShown) {
     tipsElement.style.width = totalWidth + 'px';
     tipsElement.style.opacity = '';
     recentElement.style.width = recentElement.style.opacity = 0;
+    recentElement.style.WebkitMarginStart = '-2px';
     spacer.style.width = 0;
   }
 }
