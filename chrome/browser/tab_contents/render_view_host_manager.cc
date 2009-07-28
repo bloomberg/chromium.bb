@@ -220,7 +220,8 @@ void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
       // might be because the renderer was deemed unresponsive and this call was
       // already made by ShouldCloseTabOnUnresponsiveRenderer.  In that case, it
       // is ok to do nothing here.
-      if (pending_render_view_host_->are_navigations_suspended())
+      if (pending_render_view_host_ &&
+          pending_render_view_host_->are_navigations_suspended())
         pending_render_view_host_->SetNavigationsSuspended(false);
     } else {
       // Current page says to cancel.
