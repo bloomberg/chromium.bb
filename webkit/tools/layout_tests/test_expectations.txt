@@ -3111,8 +3111,6 @@ BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr
 BUG_DARIN WIN LINUX : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-row.html = FAIL
 
 // Test failures from WebKit merge 46369 to 46426
-BUG_PKASTING WIN : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = FAIL
-BUG_PKASTING WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = TIMEOUT
 BUG_PKASTING WIN LINUX : LayoutTests/editing/style/remove-underline-from-stylesheet.html = FAIL
 BUG_PKASTING WIN LINUX : LayoutTests/fast/canvas/image-pattern-rotate.html = FAIL
 BUG17845 DEBUG : LayoutTests/svg/W3C-SVG-1.1/struct-dom-01-b.svg = CRASH
