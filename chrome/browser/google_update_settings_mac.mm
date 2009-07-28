@@ -41,7 +41,7 @@ bool GetCollectStatsConsentFromDictionary(NSDictionary* dict) {
 // static
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
   // TODO(mac): This value should be read from the Chrome prefs setting.
-  // For Dev-relesae purposes, we read this value from the user's
+  // For Dev-release purposes, we read this value from the user's
   // defaults.  This allows easy control of the setting from the terminal.
   // To turn stat reporting off, run the following command from the terminal:
   // $ defaults write com.google.Chrome usagestats -bool 'NO'

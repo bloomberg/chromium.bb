@@ -606,6 +606,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
       // The user cancelled the first run dialog box, we should exit Chrome.
       return ResultCodes::NORMAL_EXIT;
     }
+#if defined(OS_POSIX)
+    // On Windows, the download is tagged with enable/disable stats so there
+    // is no need for this code.
+
+    // If stats reporting was turned on by the first run dialog then toggle
+    // the pref.
+    if (GoogleUpdateSettings::GetCollectStatsConsent())
+      local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
+#endif  // OS_POSIX
   }
 
   // Sets things up so that if we crash from this point on, a dialog will

@@ -8,10 +8,8 @@
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "chrome/app/breakpad_linux.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/gtk_util.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
@@ -135,11 +133,6 @@ void FirstRunDialog::OnDialogResponse(GtkWidget* widget, int response) {
     if (report_crashes_ &&
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(report_crashes_))) {
       if (GoogleUpdateSettings::SetCollectStatsConsent(true)) {
-        PrefService* local_state = g_browser_process->local_state();
-        if (local_state)
-          local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
-        else
-          NOTREACHED();
         InitCrashReporter();
       }
     } else {
