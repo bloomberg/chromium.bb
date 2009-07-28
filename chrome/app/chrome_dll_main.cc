@@ -51,6 +51,9 @@
 #if defined(OS_MACOSX)
 #include "chrome/app/breakpad_mac.h"
 #endif
+#if defined(OS_LINUX)
+#include "chrome/app/breakpad_linux.h"
+#endif
 #include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
@@ -346,6 +349,21 @@ int ChromeMain(int argc, const char** argv) {
     int ret = execlp("man", "man", binary.BaseName().value().c_str(), NULL);
     LOG(FATAL) << "execlp failed: " << strerror(ret);
   }
+
+#if defined(GOOGLE_CHROME_BUILD)
+  if (parsed_command_line.HasSwitch(switches::kGoogleInternalCrashReporting)) {
+    // Enable full core dump reporting. Internal only.
+    std::string core_dump_directory;
+    if (EnableCoreDumping(&core_dump_directory)) {
+      LOG(WARNING) << "Full core dump reporting enabled.";
+      const pid_t child = fork();
+      if (child != 0) {
+        MonitorForCoreDumpsAndReport(core_dump_directory, child);
+        _exit(0);
+      }
+    }
+  }
+#endif
 #endif
 
 #if defined(OS_POSIX)

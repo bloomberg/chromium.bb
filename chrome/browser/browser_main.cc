@@ -249,7 +249,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_LINUX)
   // Needs to be called after we have chrome::DIR_USER_DATA.
-  InitCrashReporter();
+  if (!parsed_command_line.HasSwitch(switches::kGoogleInternalCrashReporting))
+    InitCrashReporter();
 #endif
 
   // WARNING: If we get a WM_ENDSESSION objects created on the stack here

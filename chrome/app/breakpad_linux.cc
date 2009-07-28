@@ -4,9 +4,13 @@
 
 #include "chrome/app/breakpad_linux.h"
 
+#include <arpa/inet.h>
 #include <fcntl.h>
+#include <netinet/in.h>
+#include <sys/sendfile.h>
 #include <sys/socket.h>
 #include <sys/uio.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -15,11 +19,15 @@
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_version_info_linux.h"
+#include "base/format_macros.h"
 #include "base/global_descriptors_posix.h"
+#include "base/json_writer.h"
 #include "base/linux_util.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/scoped_fd.h"
 #include "base/string_util.h"
+#include "base/values.h"
 #include "breakpad/linux/directory_reader.h"
 #include "breakpad/linux/exception_handler.h"
 #include "breakpad/linux/linux_libc_support.h"
@@ -617,4 +625,165 @@ void InitCrashReporter() {
     }
     EnableRendererCrashDumping();
   }
+}
+
+// -----------------------------------------------------------------------------
+
+bool EnableCoreDumping(std::string* core_dump_directory) {
+  // First we check that the core files will get dumped to the
+  // current-directory in a file called 'core'. We could try to support other
+  // setups by simulating the kernel's code, but it's extra complexity and we
+  // only intend for this code to be run internally.
+  static const char kCorePatternFd[] = "/proc/sys/kernel/core_pattern";
+
+  ScopedFd core_pattern_fd(open(kCorePatternFd, O_RDONLY));
+  if (core_pattern_fd.get() < 0) {
+    LOG(WARNING) << "Cannot open " << kCorePatternFd << ": " << strerror(errno);
+    return false;
+  }
+
+  char buf[6];
+  if (read(core_pattern_fd.get(), buf, sizeof(buf)) != 5 ||
+      memcmp(buf, "core\n", 5)) {
+    LOG(WARNING) << "Your core pattern is not set to 'core\n', cannot dump";
+    return false;
+  }
+  core_pattern_fd.Close();
+
+  // We check that the rlimit on core file size is unlimited.
+  struct rlimit core_dump_limit;
+  if (getrlimit(RLIMIT_CORE, &core_dump_limit)) {
+    LOG(WARNING) << "Failed to get core dump limit: " << strerror(errno);
+    return false;
+  }
+
+  if (core_dump_limit.rlim_cur != RLIM_INFINITY) {
+    if (core_dump_limit.rlim_max != RLIM_INFINITY) {
+      LOG(WARNING) << "Cannot core dump: hard limit on core dumps found";
+      return false;
+    }
+
+    core_dump_limit.rlim_cur = RLIM_INFINITY;
+    if (setrlimit(RLIMIT_CORE, &core_dump_limit)) {
+      LOG(WARNING) << "Failed to set core dump limit: " << strerror(errno);
+      return false;
+    }
+  }
+
+  // Finally, we move the current directory into a temp dir and return the path
+  // to the temp dir so that we can clean up afterwards.
+  char temp_dir_template[] = "/tmp/chromium-core-dump-XXXXXX";
+  if (mkdtemp(temp_dir_template) == NULL) {
+    LOG(WARNING) << "Failed to create temp dir for core dumping: "
+                 << strerror(errno);
+    return false;
+  }
+
+  if (chdir(temp_dir_template)) {
+    LOG(WARNING) << "Cannot chdir into temp directory: " << strerror(errno);
+    return false;
+  }
+
+  *core_dump_directory = temp_dir_template;
+
+  return true;
+}
+
+static void UploadCoreFile(const pid_t child, std::string* core_filename) {
+  *core_filename = "core";
+  ScopedFd fd(open(core_filename->c_str(), O_RDONLY));
+  if (fd.get() < 0) {
+    *core_filename = StringPrintf("core.%d", child);
+    fd.Set(open(core_filename->c_str(), O_RDONLY));
+    if (fd.get() < 0) {
+      LOG(WARNING) << "Cannot open resulting core dump from browser: "
+                   << strerror(errno);
+      return;
+    }
+  }
+
+  struct stat st;
+  if (fstat(fd.get(), &st)) {
+    LOG(WARNING) << "Failed to stat core file: " << strerror(errno);
+    return;
+  }
+
+  const uint32_t core_size = st.st_size;
+
+  static const char kMyBinary[] = "/proc/self/exe";
+  ScopedFd self_fd(open(kMyBinary, O_RDONLY));
+  if (self_fd.get() < 0) {
+    LOG(WARNING) << "Cannot open " << kMyBinary << ": " << strerror(errno);
+    return;
+  }
+
+  if (fstat(self_fd.get(), &st)) {
+    LOG(WARNING) << "Failed to stat " << kMyBinary << ": " << strerror(errno);
+    return;
+  }
+
+  const uint64_t binary_size = st.st_size;
+
+  DictionaryValue header;
+  header.SetString(L"core-size", StringPrintf("%" PRIu32, core_size));
+  header.SetString(L"chrome-version", FILE_VERSION);
+  header.SetString(L"binary-size", StringPrintf("%" PRIu64, binary_size));
+  header.SetString(L"user", getenv("USER"));
+#if defined(GOOGLE_CHROME_BUILD)
+  header.SetBoolean(L"offical-build", true);
+#endif
+
+  std::string json;
+  JSONWriter::Write(&header, true /* pretty print */, &json);
+  const uint32_t json_size = json.size();
+
+  ScopedFd sock(socket(PF_INET, SOCK_STREAM, 0));
+  if (sock.get() < 0) {
+    LOG(WARNING) << "Cannot open socket: " << strerror(errno);
+    return;
+  }
+
+  static const char kUploadIP[] = "172.22.68.141";
+  static const uint16_t kUploadPort = 9999;
+
+  struct sockaddr_in sin;
+  sin.sin_family = AF_INET;
+  sin.sin_addr.s_addr = inet_addr(kUploadIP);
+  sin.sin_port = htons(kUploadPort);
+
+  if (connect(sock.get(), (struct sockaddr*) &sin, sizeof(sin))) {
+    LOG(WARNING) << "Failed to connect to upload server (" << kUploadIP
+                 << ":" << kUploadPort << "): " << strerror(errno);
+    return;
+  }
+
+  if (HANDLE_EINTR(write(sock.get(), &json_size, sizeof(json_size))) !=
+          static_cast<ssize_t>(sizeof(json_size)) ||
+      HANDLE_EINTR(write(sock.get(), json.data(), json_size)) !=
+          static_cast<ssize_t>(json_size) ||
+      HANDLE_EINTR(write(sock.get(), &core_size, sizeof(core_size))) !=
+          static_cast<ssize_t>(sizeof(core_size)) ||
+      HANDLE_EINTR(sendfile(sock.get(), fd.get(), NULL, core_size)) !=
+          static_cast<ssize_t>(core_size)) {
+    LOG(WARNING) << "Failed to write all data to server";
+    return;
+  }
+}
+
+void MonitorForCoreDumpsAndReport(const std::string& core_dump_directory,
+                                  const pid_t child) {
+  int status;
+  const pid_t result = HANDLE_EINTR(waitpid(child, &status, 0));
+  if (result < 1) {
+    LOG(ERROR) << "Failed to wait for browser child: " << strerror(errno);
+    return;
+  }
+
+  if (WIFSIGNALED(status) && WCOREDUMP(status)) {
+    std::string core_filename;
+    UploadCoreFile(child, &core_filename);
+    unlink(core_filename.c_str());
+  }
+
+  rmdir(core_dump_directory.c_str());
 }

@@ -219,6 +219,8 @@ extern const wchar_t kDiagnostics[];
 
 extern const wchar_t kEnableCustomJumpList[];
 
+extern const wchar_t kGoogleInternalCrashReporting[];
+
 extern const wchar_t kEnableDatabases[];
 }  // namespace switches
 
