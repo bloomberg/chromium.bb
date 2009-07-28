@@ -88,6 +88,10 @@ const int kTopResizeAdjust = 1;
 // In the window corners, the resize areas don't actually expand bigger, but
 // the 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
+// The thickness of the shadow around the toolbar+web content area.  There are
+// actually a couple pixels more that should overlap the toolbar and web
+// content area, but we don't use those pixels.
+const int kContentShadowThickness = 2;
 
 base::LazyInstance<ActiveWindowWatcher>
     g_active_window_watcher(base::LINKER_INITIALIZED);
@@ -430,7 +434,6 @@ void BrowserWindowGtk::HandleAccelerator(guint keyval,
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
                                                GdkEventExpose* event,
                                                BrowserWindowGtk* window) {
-  static NineBox* custom_frame_border = NULL;
   static NineBox* default_background = NULL;
   static NineBox* default_background_inactive = NULL;
   static NineBox* default_background_otr = NULL;
@@ -463,7 +466,22 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
         ? default_background_otr_inactive : default_background_inactive;
   }
   image->RenderTopCenterStrip(cr, 0, 0, widget->allocation.width);
-  cairo_destroy(cr);
+
+  // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
+  static NineBox top_shadow(theme_provider,
+                            0, IDR_CONTENT_TOP_CENTER, 0, 0, 0, 0, 0, 0, 0);
+  gint shadow_x, shadow_y;
+  gtk_widget_translate_coordinates(window->content_vbox_,
+      GTK_WIDGET(window->window_), 0, -kContentShadowThickness, &shadow_x,
+      &shadow_y);
+  top_shadow.RenderTopCenterStrip(cr,
+      static_cast<int>(shadow_x),
+      static_cast<int>(shadow_y),
+      static_cast<int>(window->content_vbox_->allocation.width));
+
+  // TODO(tc): Draw the shadow around the rest of content_vbox_ (corners, sides
+  // and bottom). Only do this if the custom frame is enabled.
+  // http://crbug.com/15505
 
   // TODO(tc): Draw the theme overlay.  The windows code is below.
   // if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
@@ -472,9 +490,10 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   //   canvas->DrawBitmapInt(*theme_overlay, 0, 0);
   // }
 
+  cairo_destroy(cr);
+
   if (window->use_custom_frame_.GetValue() && !window->IsMaximized()) {
-    if (!custom_frame_border) {
-      custom_frame_border = new NineBox(
+    static NineBox custom_frame_border(
           theme_provider,
           IDR_WINDOW_TOP_LEFT_CORNER,
           IDR_WINDOW_TOP_CENTER,
@@ -485,9 +504,8 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
           IDR_WINDOW_BOTTOM_LEFT_CORNER,
           IDR_WINDOW_BOTTOM_CENTER,
           IDR_WINDOW_BOTTOM_RIGHT_CORNER);
-    }
 
-    custom_frame_border->RenderToWidget(widget);
+    custom_frame_border.RenderToWidget(widget);
   }
 
   return FALSE;  // Allow subwidgets to paint.
