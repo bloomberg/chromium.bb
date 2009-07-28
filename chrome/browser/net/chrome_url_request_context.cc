@@ -178,11 +178,13 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginalForExtensions(
   context->cookie_db_.reset(new SQLitePersistentCookieStore(
       cookie_store_path.ToWStringHack(),
       g_browser_process->db_thread()->message_loop()));
-  context->cookie_store_ = new net::CookieMonster(context->cookie_db_.get());
+  net::CookieMonster* cookie_monster = new net::CookieMonster(
+      context->cookie_db_.get());
 
   // Enable cookies for extension URLs only.
   const char* schemes[] = {chrome::kExtensionScheme};
-  context->cookie_store_->SetCookieableSchemes(schemes, 1);
+  cookie_monster->SetCookieableSchemes(schemes, 1);
+  context->cookie_store_ = cookie_monster;
 
   return context;
 }
@@ -213,11 +215,12 @@ ChromeURLRequestContext*
 ChromeURLRequestContext::CreateOffTheRecordForExtensions(Profile* profile) {
   DCHECK(profile->IsOffTheRecord());
   ChromeURLRequestContext* context = new ChromeURLRequestContext(profile);
-  context->cookie_store_ = new net::CookieMonster;
+  net::CookieMonster* cookie_monster = new net::CookieMonster;
 
   // Enable cookies for extension URLs only.
   const char* schemes[] = {chrome::kExtensionScheme};
-  context->cookie_store_->SetCookieableSchemes(schemes, 1);
+  cookie_monster->SetCookieableSchemes(schemes, 1);
+  context->cookie_store_ = cookie_monster;
 
   return context;
 }
@@ -290,7 +293,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
   // net_util::GetSuggestedFilename is unlikely to be taken.
   referrer_charset_ = default_charset;
 
-  cookie_policy_.SetType(net::CookiePolicy::FromInt(
+  cookie_policy_.set_type(net::CookiePolicy::FromInt(
       prefs_->GetInteger(prefs::kCookieBehavior)));
 
   blacklist_ = profile->GetBlacklist();
@@ -397,7 +400,7 @@ const std::string& ChromeURLRequestContext::GetUserAgent(
   return webkit_glue::GetUserAgent(url);
 }
 
-bool ChromeURLRequestContext::interceptCookie(const URLRequest* request,
+bool ChromeURLRequestContext::InterceptCookie(const URLRequest* request,
                                               std::string* cookie) {
   const URLRequest::UserData* d =
       request->GetUserData(&Blacklist::kRequestDataKey);
@@ -414,7 +417,7 @@ bool ChromeURLRequestContext::interceptCookie(const URLRequest* request,
   return true;
 }
 
-bool ChromeURLRequestContext::allowSendingCookies(const URLRequest* request)
+bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
     const {
   const URLRequest::UserData* d =
       request->GetUserData(&Blacklist::kRequestDataKey);
@@ -438,7 +441,7 @@ void ChromeURLRequestContext::OnCookiePolicyChange(
     net::CookiePolicy::Type type) {
   DCHECK(MessageLoop::current() ==
          ChromeThread::GetMessageLoop(ChromeThread::IO));
-  cookie_policy_.SetType(type);
+  cookie_policy_.set_type(type);
 }
 
 void ChromeURLRequestContext::OnDefaultCharsetChange(

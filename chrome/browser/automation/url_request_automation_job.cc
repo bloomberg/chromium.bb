@@ -12,6 +12,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 
 
 // This class manages the interception of network requests for automation.
@@ -191,8 +192,33 @@ void URLRequestAutomationJob::OnRequestStarted(
   set_expected_content_size(response.content_length);
   mime_type_ = response.mime_type;
 
-  if (!response.headers.empty())
+  if (!response.headers.empty()) {
     headers_ = new net::HttpResponseHeaders(response.headers);
+
+    // Parse and set HTTP cookies.
+    const std::string name = "Set-Cookie";
+    std::string value;
+    std::vector<std::string> response_cookies;
+
+    void* iter = NULL;
+    while (headers_->EnumerateHeader(&iter, name, &value)) {
+      if (request_->context()->InterceptCookie(request_, &value))
+        response_cookies.push_back(value);
+    }
+
+    if (response_cookies.size()) {
+      URLRequestContext* ctx = request_->context();
+      if (ctx && ctx->cookie_store() &&
+          ctx->cookie_policy()->CanSetCookie(
+              request_->url(), request_->first_party_for_cookies())) {
+        net::CookieOptions options;
+        options.set_include_httponly();
+        ctx->cookie_store()->SetCookiesWithOptions(request_->url(),
+                                                   response_cookies,
+                                                   options);
+      }
+    }
+  }
 
   NotifyHeadersComplete();
 }

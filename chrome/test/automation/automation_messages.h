@@ -303,6 +303,7 @@ struct ExternalTabSettings {
   unsigned int style;
   bool is_off_the_record;
   bool load_requests_via_automation;
+  bool handle_top_level_requests;
 };
 
 // Traits for ExternalTabSettings structure to pack/unpack.
@@ -315,13 +316,15 @@ struct ParamTraits<ExternalTabSettings> {
     WriteParam(m, p.style);
     WriteParam(m, p.is_off_the_record);
     WriteParam(m, p.load_requests_via_automation);
+    WriteParam(m, p.handle_top_level_requests);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->parent) &&
            ReadParam(m, iter, &p->dimensions) &&
            ReadParam(m, iter, &p->style) &&
            ReadParam(m, iter, &p->is_off_the_record) &&
-           ReadParam(m, iter, &p->load_requests_via_automation);
+           ReadParam(m, iter, &p->load_requests_via_automation) &&
+           ReadParam(m, iter, &p->handle_top_level_requests);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -334,6 +337,8 @@ struct ParamTraits<ExternalTabSettings> {
     LogParam(p.is_off_the_record, l);
     l->append(L", ");
     LogParam(p.load_requests_via_automation, l);
+    l->append(L", ");
+    LogParam(p.handle_top_level_requests, l);
     l->append(L")");
   }
 };

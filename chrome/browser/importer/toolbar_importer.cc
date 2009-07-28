@@ -25,9 +25,9 @@ static const char* kGoogleDomainSecureCookieId = "SID=";
 
 bool toolbar_importer_utils::IsGoogleGAIACookieInstalled() {
   URLRequestContext* context = Profile::GetDefaultRequestContext();
-  net::CookieMonster* store = context->cookie_store();
+  net::CookieStore* store = context->cookie_store();
   GURL url(kGoogleDomainUrl);
-  net::CookieMonster::CookieOptions options;
+  net::CookieOptions options;
   options.set_include_httponly();  // The SID cookie might be httponly.
   std::string cookies = store->GetCookiesWithOptions(url, options);
   std::vector<std::string> cookie_list;

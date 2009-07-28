@@ -38,7 +38,11 @@ class CookiePolicy {
 
   // Sets the current policy to enforce. This should be called when the user's
   // preferences change.
-  void SetType(Type type) { type_ = type; }
+  void set_type(Type type) { type_ = type; }
+
+  Type type() const {
+    return type_;
+  }
 
   CookiePolicy();
 

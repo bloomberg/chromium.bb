@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "base/time.h"
+#include "net/base/cookie_store.h"
 
 class GURL;
 
@@ -30,7 +31,7 @@ namespace net {
 //
 // TODO(deanm) Implement CookieMonster, the cookie database.
 //  - Verify that our domain enforcement and non-dotted handling is correct
-class CookieMonster {
+class CookieMonster : public CookieStore {
  public:
   class ParsedCookie;
   class CanonicalCookie;
@@ -49,18 +50,6 @@ class CookieMonster {
   typedef std::pair<std::string, CanonicalCookie> CookieListPair;
   typedef std::vector<CookieListPair> CookieList;
 
-  class CookieOptions {
-   public:
-    // Default is to exclude httponly, which means:
-    // - reading operations will not return httponly cookies.
-    // - writing operations will not write httponly cookies.
-    CookieOptions() : exclude_httponly_(true) {}
-    void set_exclude_httponly() { exclude_httponly_ = true; }
-    void set_include_httponly() { exclude_httponly_ = false; }
-    bool exclude_httponly() const { return exclude_httponly_; }
-   private:
-    bool exclude_httponly_;
-  };
 
   CookieMonster();
 
@@ -85,35 +74,32 @@ class CookieMonster {
   // Parse the string with the cookie time (very forgivingly).
   static base::Time ParseCookieTime(const std::string& time_string);
 
-  // Set a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
-  bool SetCookie(const GURL& url, const std::string& cookie_line);
-  bool SetCookieWithOptions(const GURL& url,
-                            const std::string& cookie_line,
-                            const CookieOptions& options);
-  // Sets a single cookie with a specific creation date. To set a cookie with
-  // a creation date of Now() use SetCookie() instead (it calls this function
-  // internally).
-  bool SetCookieWithCreationTime(const GURL& url,
-                                 const std::string& cookie_line,
-                                 const base::Time& creation_time);
-  bool SetCookieWithCreationTimeWithOptions(
-                                 const GURL& url,
-                                 const std::string& cookie_line,
-                                 const base::Time& creation_time,
-                                 const CookieOptions& options);
-  // Set a vector of response cookie values for the same URL.
-  void SetCookies(const GURL& url, const std::vector<std::string>& cookies);
-  void SetCookiesWithOptions(const GURL& url,
-                             const std::vector<std::string>& cookies,
-                             const CookieOptions& options);
-
-  // TODO what if the total size of all the cookies >4k, can we have a header
-  // that big or do we need multiple Cookie: headers?
-  // Simple interface, get a cookie string "a=b; c=d" for the given URL.
-  // It will _not_ return httponly cookies, see CookieOptions.
-  std::string GetCookies(const GURL& url);
-  std::string GetCookiesWithOptions(const GURL& url,
+  // CookieStore implementation.
+  virtual bool SetCookie(const GURL& url, const std::string& cookie_line);
+  virtual bool SetCookieWithOptions(const GURL& url,
+                                    const std::string& cookie_line,
                                     const CookieOptions& options);
+  virtual bool SetCookieWithCreationTime(const GURL& url,
+                                         const std::string& cookie_line,
+                                         const base::Time& creation_time);
+  virtual bool SetCookieWithCreationTimeWithOptions(
+                                         const GURL& url,
+                                         const std::string& cookie_line,
+                                         const base::Time& creation_time,
+                                         const CookieOptions& options);
+  virtual void SetCookies(const GURL& url,
+                          const std::vector<std::string>& cookies);
+  virtual void SetCookiesWithOptions(const GURL& url,
+                                     const std::vector<std::string>& cookies,
+                                     const CookieOptions& options);
+  virtual std::string GetCookies(const GURL& url);
+  virtual std::string GetCookiesWithOptions(const GURL& url,
+                                            const CookieOptions& options);
+
+  virtual CookieMonster* GetCookieMonster() {
+    return this;
+  }
+
   // Returns all the cookies, for use in management UI, etc.  This does not mark
   // the cookies as having been accessed.
   CookieList GetAllCookies();

@@ -65,9 +65,9 @@ class ChromeURLRequestContext : public URLRequestContext,
 
   virtual const std::string& GetUserAgent(const GURL& url) const;
 
-  virtual bool interceptCookie(const URLRequest* request, std::string* cookie);
+  virtual bool InterceptCookie(const URLRequest* request, std::string* cookie);
 
-  virtual bool allowSendingCookies(const URLRequest* request) const;
+  virtual bool AllowSendingCookies(const URLRequest* request) const;
 
 private:
   // Private constructor, use the static factory methods instead. This is

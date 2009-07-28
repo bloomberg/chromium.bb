@@ -36,7 +36,6 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "net/base/cookie_monster.h"
 #include "net/base/mime_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_cache.h"

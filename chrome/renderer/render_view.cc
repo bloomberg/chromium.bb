@@ -198,7 +198,8 @@ RenderView::RenderView(RenderThreadBase* render_thread)
       delay_seconds_for_form_state_sync_(kDefaultDelaySecondsForFormStateSync),
       preferred_width_(0),
       send_preferred_width_changes_(false),
-      determine_page_text_after_loading_stops_(false) {
+      determine_page_text_after_loading_stops_(false),
+      last_top_level_navigation_page_id_(-1) {
 }
 
 RenderView::~RenderView() {
@@ -1495,16 +1496,34 @@ WebNavigationPolicy RenderView::PolicyForNavigationAction(
     WebNavigationType type,
     WebNavigationPolicy default_policy,
     bool is_redirect) {
+  // Webkit is asking whether to navigate to a new URL.
+  // This is fine normally, except if we're showing UI from one security
+  // context and they're trying to navigate to a different context.
+  const GURL& url = request.url();
+
+  // If the browser is interested, then give it a chance to look at top level
+  // navigations
+  if (renderer_preferences_.browser_handles_top_level_requests &&
+      // Only send once.
+      last_top_level_navigation_page_id_ != page_id_ &&
+      // Not interested in reloads.
+      type != WebKit::WebNavigationTypeReload &&
+      // Must be a top level frame.
+      frame->GetParent() == NULL) {
+    // Skip if navigation is on the same page (using '#').
+    GURL frame_origin = frame->GetURL().GetOrigin();
+    if (url.GetOrigin() != frame_origin || url.ref().empty()) {
+      last_top_level_navigation_page_id_ = page_id_;
+      OpenURL(webview, url, GURL(), default_policy);
+      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+    }
+  }
+
   // A content initiated navigation may have originated from a link-click,
   // script, drag-n-drop operation, etc.
   bool is_content_initiated =
       NavigationState::FromDataSource(frame->GetProvisionalDataSource())->
           is_content_initiated();
-
-  // Webkit is asking whether to navigate to a new URL.
-  // This is fine normally, except if we're showing UI from one security
-  // context and they're trying to navigate to a different context.
-  const GURL& url = request.url();
 
   // We only care about navigations that are within the current tab (as opposed
   // to, for example, opening a new window).

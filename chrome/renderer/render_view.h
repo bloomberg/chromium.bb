@@ -815,6 +815,9 @@ class RenderView : public RenderWidget,
 
   RendererPreferences renderer_preferences_;
 
+  // page id for the last navigation sent to the browser.
+  int32 last_top_level_navigation_page_id_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };
 

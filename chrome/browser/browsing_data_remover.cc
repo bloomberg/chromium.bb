@@ -110,8 +110,9 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   if (remove_mask & REMOVE_COOKIES) {
     UserMetrics::RecordAction(L"ClearBrowsingData_Cookies", profile_);
     net::CookieMonster* cookie_monster =
-        profile_->GetRequestContext()->cookie_store();
-    cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
+        profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+    if (cookie_monster)
+      cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

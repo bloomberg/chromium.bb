@@ -960,4 +960,9 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_MESSAGE_ROUTED1(AutomationMsg_PrintAsync,
                       int /* tab_handle */)
 
+  IPC_MESSAGE_ROUTED3(AutomationMsg_SetCookieAsync,
+                      int /* tab_handle */,
+                      GURL /* url */,
+                      std::string /* cookie */)
+
 IPC_END_MESSAGES(Automation)

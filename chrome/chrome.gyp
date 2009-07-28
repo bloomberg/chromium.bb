@@ -620,6 +620,8 @@
         'browser/automation/extension_automation_constants.cc',
         'browser/automation/automation_extension_function.h',
         'browser/automation/automation_extension_function.cc',
+        'browser/automation/automation_profile_impl.cc',
+        'browser/automation/automation_profile_impl.h',
         'browser/automation/automation_provider.cc',
         'browser/automation/automation_provider.h',
         'browser/automation/automation_provider_list.cc',

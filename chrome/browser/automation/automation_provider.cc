@@ -50,7 +50,6 @@
 #include "chrome/common/platform_util.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/test/automation/automation_messages.h"
-#include "net/base/cookie_monster.h"
 #include "net/proxy/proxy_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
@@ -2396,7 +2395,8 @@ void AutomationProvider::CreateExternalTab(
   Profile* profile = settings.is_off_the_record ?
       profile_->GetOffTheRecordProfile() : profile_;
   external_tab_container->Init(profile, settings.parent, settings.dimensions,
-      settings.style, settings.load_requests_via_automation);
+      settings.style, settings.load_requests_via_automation,
+      settings.handle_top_level_requests);
   TabContents* tab_contents = external_tab_container->tab_contents();
   if (tab_contents) {
     *tab_handle = tab_tracker_->Add(&tab_contents->controller());

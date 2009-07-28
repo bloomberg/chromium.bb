@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chrome/browser/automation/automation_resource_message_filter.h"
+#include "chrome/browser/automation/automation_profile_impl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/notification_observer.h"
@@ -41,7 +42,8 @@ class ExternalTabContainer : public TabContentsDelegate,
             HWND parent,
             const gfx::Rect& bounds,
             DWORD style,
-            bool load_requests_via_automation);
+            bool load_requests_via_automation,
+            bool handle_top_level_requests);
 
   // This is invoked when the external host reflects back to us a keyboard
   // message it did not process
@@ -156,6 +158,9 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // Scoped browser object for this ExternalTabContainer instance.
   scoped_ptr<Browser> browser_;
+
+  // A customized profile for automation specific needs.
+  scoped_ptr<AutomationProfileImpl> automation_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

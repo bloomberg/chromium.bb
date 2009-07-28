@@ -46,7 +46,8 @@ bool ExternalTabContainer::Init(Profile* profile,
                                 HWND parent,
                                 const gfx::Rect& bounds,
                                 DWORD style,
-                                bool load_requests_via_automation) {
+                                bool load_requests_via_automation,
+                                bool handle_top_level_requests) {
   if (IsWindow()) {
     NOTREACHED();
     return false;
@@ -66,8 +67,25 @@ bool ExternalTabContainer::Init(Profile* profile,
   // is the same as the lifetime of the window
   SetProp(GetNativeView(), kWindowObjectKey, this);
 
+  // If we are sending top level requests through the automation then
+  // we should be using automation to load url requests as well.
+  DCHECK(handle_top_level_requests ? load_requests_via_automation : 1);
+
+  if (load_requests_via_automation) {
+    // Customize our profile.
+    // TODO(joshia): If we are loading requests via automation
+    // and handling cookies in automation then it's probably better to
+    // use OTR profile so that cookies are not persisted in chrome.
+    automation_profile_.reset(new AutomationProfileImpl);
+    automation_profile_->Initialize(profile,
+                                    automation_resource_message_filter_);
+    profile = automation_profile_.get();
+  }
+
   tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
   tab_contents_->set_delegate(this);
+  tab_contents_->GetMutableRendererPrefs()->browser_handles_top_level_requests =
+      handle_top_level_requests;
   tab_contents_->render_view_host()->AllowBindings(
       BindingsPolicy::EXTERNAL_HOST);
 
@@ -163,13 +181,16 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
     case SINGLETON_TAB:
     case NEW_FOREGROUND_TAB:
     case NEW_BACKGROUND_TAB:
+    case NEW_POPUP:
     case NEW_WINDOW:
+    case SAVE_TO_DISK:
       if (automation_) {
         automation_->Send(new AutomationMsg_OpenURL(0, tab_handle_,
                                                     url, disposition));
       }
       break;
     default:
+      NOTREACHED();
       break;
   }
 }

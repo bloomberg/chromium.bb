@@ -39,7 +39,8 @@ void CookiesTableModel::RemoveCookies(int start_index, int remove_count) {
     return;
   }
 
-  net::CookieMonster* monster = profile_->GetRequestContext()->cookie_store();
+  net::CookieMonster* monster =
+      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
 
   // We need to update the searched results list, the full cookie list,
   // and the view.  We walk through the search results list (which is what
@@ -158,7 +159,7 @@ static bool ContainsFilterText(
 void CookiesTableModel::LoadCookies() {
   // mmargh mmargh mmargh!
   net::CookieMonster* cookie_monster =
-      profile_->GetRequestContext()->cookie_store();
+      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
   all_cookies_ = cookie_monster->GetAllCookies();
   DoFilter();
 }

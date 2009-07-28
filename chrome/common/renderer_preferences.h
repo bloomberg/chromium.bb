@@ -46,12 +46,16 @@ struct RendererPreferences {
   // Currently only used by Linux.
   RendererPreferencesSubpixelRenderingEnum subpixel_rendering;
 
+  // Browser wants a look at all top level requests
+  bool browser_handles_top_level_requests;
+
   RendererPreferences()
       : can_accept_load_drops(true),
         should_antialias_text(true),
         hinting(RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT),
         subpixel_rendering(
-            RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT) {
+            RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT),
+        browser_handles_top_level_requests(false) {
   }
 };
 

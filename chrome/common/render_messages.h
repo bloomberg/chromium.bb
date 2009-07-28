@@ -1602,6 +1602,7 @@ struct ParamTraits<RendererPreferences> {
     WriteParam(m, p.should_antialias_text);
     WriteParam(m, static_cast<int>(p.hinting));
     WriteParam(m, static_cast<int>(p.subpixel_rendering));
+    WriteParam(m, p.browser_handles_top_level_requests);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     if (!ReadParam(m, iter, &p->can_accept_load_drops))
@@ -1620,6 +1621,9 @@ struct ParamTraits<RendererPreferences> {
     p->subpixel_rendering =
         static_cast<RendererPreferencesSubpixelRenderingEnum>(
             subpixel_rendering);
+
+    if (!ReadParam(m, iter, &p->browser_handles_top_level_requests))
+      return false;
 
     return true;
   }

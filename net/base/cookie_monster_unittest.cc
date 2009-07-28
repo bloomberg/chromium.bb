@@ -528,7 +528,7 @@ TEST(CookieMonsterTest, PathTest) {
 TEST(CookieMonsterTest, HttpOnlyTest) {
   GURL url_google(kUrlGoogle);
   net::CookieMonster cm;
-  net::CookieMonster::CookieOptions options;
+  net::CookieOptions options;
   options.set_include_httponly();
 
   // Create a httponly cookie.
@@ -693,7 +693,7 @@ TEST(CookieMonsterTest, TestCookieDeletion) {
 TEST(CookieMonsterTest, TestCookieDeleteAll) {
   GURL url_google(kUrlGoogle);
   net::CookieMonster cm;
-  net::CookieMonster::CookieOptions options;
+  net::CookieOptions options;
   options.set_include_httponly();
 
   EXPECT_TRUE(cm.SetCookie(url_google, kValidCookieLine));
