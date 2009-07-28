@@ -1,0 +1,112 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/language_order_table_model.h"
+
+#include "app/l10n_util.h"
+#include "chrome/browser/browser_process.h"
+
+LanguageOrderTableModel::LanguageOrderTableModel()
+    : observer_(NULL) {
+}
+
+void LanguageOrderTableModel::SetAcceptLanguagesString(
+    const std::string& language_list) {
+  std::vector<std::string> languages_vector;
+  ListToVector(language_list, &languages_vector);
+  for (int i = 0; i < static_cast<int>(languages_vector.size()); i++) {
+    Add(languages_vector.at(i));
+  }
+}
+
+void LanguageOrderTableModel::SetObserver(TableModelObserver* observer) {
+  observer_ = observer;
+}
+
+std::wstring LanguageOrderTableModel::GetText(int row, int column_id) {
+  DCHECK(row >= 0 && row < RowCount());
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  return UTF16ToWide(l10n_util::GetDisplayNameForLocale(languages_.at(row),
+                                                        app_locale,
+                                                        true));
+}
+
+void LanguageOrderTableModel::Add(const std::string& language) {
+  if (language.empty())
+    return;
+  // Check for selecting duplicated language.
+  for (std::vector<std::string>::const_iterator cit = languages_.begin();
+       cit != languages_.end(); ++cit)
+    if (*cit == language)
+      return;
+  languages_.push_back(language);
+  if (observer_)
+    observer_->OnItemsAdded(RowCount() - 1, 1);
+}
+
+void LanguageOrderTableModel::Remove(int index) {
+  DCHECK(index >= 0 && index < RowCount());
+  languages_.erase(languages_.begin() + index);
+  if (observer_)
+    observer_->OnItemsRemoved(index, 1);
+}
+
+int LanguageOrderTableModel::GetIndex(const std::string& language) {
+  if (language.empty())
+    return -1;
+
+  int index = 0;
+  for (std::vector<std::string>::const_iterator cit = languages_.begin();
+      cit != languages_.end(); ++cit) {
+    if (*cit == language)
+      return index;
+
+    index++;
+  }
+
+  return -1;
+}
+
+void LanguageOrderTableModel::MoveDown(int index) {
+  if (index < 0 || index >= RowCount() - 1)
+    return;
+  std::string item = languages_.at(index);
+  languages_.erase(languages_.begin() + index);
+  if (index == RowCount() - 1)
+    languages_.push_back(item);
+  else
+    languages_.insert(languages_.begin() + index + 1, item);
+  if (observer_)
+    observer_->OnItemsChanged(0, RowCount());
+}
+
+void LanguageOrderTableModel::MoveUp(int index) {
+  if (index <= 0 || index >= static_cast<int>(languages_.size()))
+    return;
+  std::string item = languages_.at(index);
+  languages_.erase(languages_.begin() + index);
+  languages_.insert(languages_.begin() + index - 1, item);
+  if (observer_)
+    observer_->OnItemsChanged(0, RowCount());
+}
+
+int LanguageOrderTableModel::RowCount() {
+  return static_cast<int>(languages_.size());
+}
+
+void LanguageOrderTableModel::ListToVector(const std::string& list,
+                                           std::vector<std::string>* vector) {
+  SplitString(list, ',', vector);
+}
+
+std::string LanguageOrderTableModel::VectorToList(
+    const std::vector<std::string>& vector)  {
+  std::string list;
+  for (int i = 0 ; i < static_cast<int>(vector.size()) ; i++) {
+    list += vector.at(i);
+    if (i != static_cast<int>(vector.size()) - 1)
+      list += ',';
+  }
+  return list;
+}

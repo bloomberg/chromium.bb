@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #include <windows.h>
@@ -12,14 +12,13 @@
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/table_model.h"
-#include "app/table_model_observer.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/gfx/native_theme.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/language_order_table_model.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/views/options/language_combobox_model.h"
@@ -313,158 +312,6 @@ void AddLanguageWindowView::Init() {
   accept_language_combobox_->SetSelectedItem(0);
   accept_language_combobox_->set_listener(this);
   AddChildView(accept_language_combobox_);
-}
-
-class LanguageOrderTableModel : public TableModel {
- public:
-  LanguageOrderTableModel();
-
-  // Set Language List.
-  void SetAcceptLanguagesString(const std::string& language_list);
-
-  // Add at the end.
-  void Add(const std::string& language);
-
-  // Removes the entry at the specified index.
-  void Remove(int index);
-
-  // Returns index corresponding to a given language. Returns -1 if the
-  // language is not found.
-  int GetIndex(const std::string& language);
-
-  // Move down the entry at the specified index.
-  void MoveDown(int index);
-
-  // Move up the entry at the specified index.
-  void MoveUp(int index);
-
-  // Returns the set of languagess this model contains.
-  std::string GetLanguageList() { return VectorToList(languages_); }
-
-  // TableModel overrides:
-  virtual int RowCount();
-  virtual std::wstring GetText(int row, int column_id);
-  virtual void SetObserver(TableModelObserver* observer);
-
- private:
-  // This method converts a comma separated list to a vector of strings.
-  void ListToVector(const std::string& list,
-                    std::vector<std::string>* vector);
-
-  // This method returns a comma separated string given a string vector.
-  std::string VectorToList(const std::vector<std::string>& vector);
-
-  // Set of entries we're showing.
-  std::vector<std::string> languages_;
-  std::string comma_separated_language_list_;
-
-  TableModelObserver* observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(LanguageOrderTableModel);
-};
-
-LanguageOrderTableModel::LanguageOrderTableModel()
-    : observer_(NULL) {
-}
-
-void LanguageOrderTableModel::SetAcceptLanguagesString(
-    const std::string& language_list) {
-  std::vector<std::string> languages_vector;
-  ListToVector(language_list, &languages_vector);
-  for (int i = 0; i < static_cast<int>(languages_vector.size()); i++) {
-    Add(languages_vector.at(i));
-  }
-}
-
-void LanguageOrderTableModel::SetObserver(TableModelObserver* observer) {
-  observer_ = observer;
-}
-
-std::wstring LanguageOrderTableModel::GetText(int row, int column_id) {
-  DCHECK(row >= 0 && row < RowCount());
-  const std::string app_locale = g_browser_process->GetApplicationLocale();
-  return l10n_util::GetDisplayNameForLocale(languages_.at(row),
-                                            app_locale,
-                                            true);
-}
-
-void LanguageOrderTableModel::Add(const std::string& language) {
-  if (language.empty())
-    return;
-  // Check for selecting duplicated language.
-  for (std::vector<std::string>::const_iterator cit = languages_.begin();
-       cit != languages_.end(); ++cit)
-    if (*cit == language)
-      return;
-  languages_.push_back(language);
-  if (observer_)
-    observer_->OnItemsAdded(RowCount() - 1, 1);
-}
-
-void LanguageOrderTableModel::Remove(int index) {
-  DCHECK(index >= 0 && index < RowCount());
-  languages_.erase(languages_.begin() + index);
-  if (observer_)
-    observer_->OnItemsRemoved(index, 1);
-}
-
-int LanguageOrderTableModel::GetIndex(const std::string& language) {
-  if (language.empty())
-    return -1;
-
-  int index = 0;
-  for (std::vector<std::string>::const_iterator cit = languages_.begin();
-      cit != languages_.end(); ++cit) {
-    if (*cit == language)
-      return index;
-
-    index++;
-  }
-
-  return -1;
-}
-
-void LanguageOrderTableModel::MoveDown(int index) {
-  if (index < 0 || index >= RowCount() - 1)
-    return;
-  std::string item = languages_.at(index);
-  languages_.erase(languages_.begin() + index);
-  if (index == RowCount() - 1)
-    languages_.push_back(item);
-  else
-    languages_.insert(languages_.begin() + index + 1, item);
-  if (observer_)
-    observer_->OnItemsChanged(0, RowCount());
-}
-
-void LanguageOrderTableModel::MoveUp(int index) {
-  if (index <= 0 || index >= static_cast<int>(languages_.size()))
-    return;
-  std::string item = languages_.at(index);
-  languages_.erase(languages_.begin() + index);
-  languages_.insert(languages_.begin() + index - 1, item);
-  if (observer_)
-    observer_->OnItemsChanged(0, RowCount());
-}
-
-int LanguageOrderTableModel::RowCount() {
-  return static_cast<int>(languages_.size());
-}
-
-void LanguageOrderTableModel::ListToVector(const std::string& list,
-                                           std::vector<std::string>* vector) {
-  SplitString(list, ',', vector);
-}
-
-std::string LanguageOrderTableModel::VectorToList(
-    const std::vector<std::string>& vector)  {
-  std::string list;
-  for (int i = 0 ; i < static_cast<int>(vector.size()) ; i++) {
-    list += vector.at(i);
-    if (i != vector.size() - 1)
-      list += ',';
-  }
-  return list;
 }
 
 LanguagesPageView::LanguagesPageView(Profile* profile)
