@@ -2805,7 +2805,8 @@ BUG16690 SKIP MAC : LayoutTests/fast/text/international/khmer-selection.html = F
 // WebKit merge 42738:45840
 // New tests, need baseline.
 BUG16678 : LayoutTests/http/tests/security/xssAuditor/javascript-link-null-char.html = FAIL
-BUG16240 MAC WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
+BUG16240 WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
+BUG16240 MAC : LayoutTests/http/tests/cache/subresource-expiration.html = PASS TIMEOUT
 
 // Failing due to r20652.
 BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL CRASH
