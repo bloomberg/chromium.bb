@@ -43,6 +43,10 @@ patch -p0 < "$THISDIR"/fork.patch
 #wget -O longlines.patch "https://bugs.kde.org/attachment.cgi?id=35174"
 patch -p0 < "$THISDIR"/longlines.patch
 
+# Work around bug http://bugs.kde.org/186790
+# "Suppression counts do not include leak suppressions"
+patch -p0 < "$THISDIR"/leak.patch
+
 # Add feature bug https://bugs.kde.org/show_bug.cgi?id=201170
 # "Want --show-possible option so I can ignore the bazillion possible leaks..."
 #wget -O possible.patch https://bugs.kde.org/attachment.cgi?id=35559
