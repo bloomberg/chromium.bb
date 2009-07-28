@@ -1422,6 +1422,27 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
   Layout();
 }
 
+bool BrowserView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_CLIENT;
+  return true;
+}
+
+bool BrowserView::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+
+  if (!accessible_name_.empty()) {
+    *name = accessible_name_;
+    return true;
+  }
+  return false;
+}
+
+void BrowserView::SetAccessibleName(const std::wstring& name) {
+  accessible_name_ = name;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, private:
 

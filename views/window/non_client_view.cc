@@ -184,6 +184,27 @@ views::View* NonClientView::GetViewForPoint(const gfx::Point& point) {
   return View::GetViewForPoint(point);
 }
 
+bool NonClientView::GetAccessibleRole(AccessibilityTypes::Role* role) {
+  DCHECK(role);
+
+  *role = AccessibilityTypes::ROLE_WINDOW;
+  return true;
+}
+
+bool NonClientView::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+
+  if (!accessible_name_.empty()) {
+    *name = accessible_name_;
+    return true;
+  }
+  return false;
+}
+
+void NonClientView::SetAccessibleName(const std::wstring& name) {
+  accessible_name_ = name;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, View overrides:
 

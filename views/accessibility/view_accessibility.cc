@@ -632,6 +632,8 @@ long ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
       return ROLE_SYSTEM_SEPARATOR;
     case AccessibilityTypes::ROLE_TEXT:
       return ROLE_SYSTEM_TEXT;
+    case AccessibilityTypes::ROLE_TITLEBAR:
+      return ROLE_SYSTEM_TITLEBAR;
     case AccessibilityTypes::ROLE_TOOLBAR:
       return ROLE_SYSTEM_TOOLBAR;
     case AccessibilityTypes::ROLE_WINDOW:

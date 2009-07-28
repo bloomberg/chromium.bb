@@ -308,6 +308,11 @@ class BrowserView : public BrowserWindow,
   virtual gfx::Size GetMinimumSize();
   virtual std::string GetClassName() const;
 
+  // Overridden from views::View:
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual void SetAccessibleName(const std::wstring& name);
+
  protected:
   // Overridden from views::View:
   virtual void Layout();
@@ -492,6 +497,9 @@ class BrowserView : public BrowserWindow,
 
   typedef std::set<BrowserBubble*> BubbleSet;
   BubbleSet browser_bubbles_;
+
+  // The accessible name of this view.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };

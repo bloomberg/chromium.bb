@@ -391,19 +391,19 @@ void OpaqueBrowserFrameView::ViewHierarchyChanged(bool is_add,
     // The Accessibility glue looks for the product name on these two views to
     // determine if this is in fact a Chrome window.
     GetRootView()->SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
-    SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
   }
 }
 
 bool OpaqueBrowserFrameView::GetAccessibleRole(AccessibilityTypes::Role* role) {
   DCHECK(role);
-  // We aren't actually the client area of the window, but we act like it as
-  // far as accessibility and the UI tests are concerned.
-  *role = AccessibilityTypes::ROLE_CLIENT;
+
+  *role = AccessibilityTypes::ROLE_TITLEBAR;
   return true;
 }
 
 bool OpaqueBrowserFrameView::GetAccessibleName(std::wstring* name) {
+  DCHECK(name);
+
   if (!accessible_name_.empty()) {
     *name = accessible_name_;
     return true;

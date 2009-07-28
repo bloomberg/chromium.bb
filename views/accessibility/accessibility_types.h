@@ -30,6 +30,7 @@ class AccessibilityTypes {
     ROLE_PUSHBUTTON,
     ROLE_SEPARATOR,
     ROLE_TEXT,
+    ROLE_TITLEBAR,
     ROLE_TOOLBAR,
     ROLE_WINDOW
   };

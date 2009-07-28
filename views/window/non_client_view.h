@@ -194,6 +194,9 @@ class NonClientView : public View {
   virtual gfx::Size GetPreferredSize();
   virtual gfx::Size GetMinimumSize();
   virtual void Layout();
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual void SetAccessibleName(const std::wstring& name);
 
  protected:
   // NonClientView, View overrides:
@@ -213,6 +216,9 @@ class NonClientView : public View {
   // This object is not owned by the view hierarchy because it can be replaced
   // dynamically as the system settings change.
   scoped_ptr<NonClientFrameView> frame_view_;
+
+  // The accessible name of this view.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientView);
 };
