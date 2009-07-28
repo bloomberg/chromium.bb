@@ -42,6 +42,10 @@ class DownloadShelfContextMenuMac;
 // Remove ourself from the download UI.
 - (void)remove;
 
+// Update item's visibility depending on if the item is still completely
+// contained in its parent.
+- (void)updateVisibility:(id)sender;
+
 // Asynchronous icon loading callback.
 - (void)setIcon:(NSImage*)icon;
 

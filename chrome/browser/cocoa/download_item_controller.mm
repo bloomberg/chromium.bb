@@ -29,6 +29,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   using DownloadShelfContextMenu::CANCEL;
 };
 
+
 // Implementation of DownloadItemController
 
 @implementation DownloadItemController
@@ -55,9 +56,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel {
-  // TODO(thakis): The windows version of this does all kinds of things
-  // (gratituous use of animation, special handling of dangerous downloads)
-  // that we don't currently do.
+  // TODO(thakis): handling of dangerous downloads -- crbug.com/14667
 
   // Set the correct popup menu.
   if (downloadModel->download()->state() == DownloadItem::COMPLETE)
@@ -76,6 +75,14 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 - (void)remove {
   // We are deleted after this!
   [shelf_ remove:self];
+}
+
+- (void)updateVisibility:(id)sender {
+  // TODO(thakis): Make this prettier, by fading the items out or overlaying
+  // the partial visible one with a horizontal alpha gradient -- crbug.com/17830
+  NSView* view = [self view];
+  NSRect containerFrame = [[view superview] frame];
+  [view setHidden:(NSMaxX([view frame]) > NSWidth(containerFrame))];
 }
 
 - (IBAction)handleButtonClick:(id)sender {

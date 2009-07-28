@@ -17,6 +17,10 @@
 
 namespace {
 
+// Max number of download views we'll contain. Any time a view is added and
+// we already have this many download views, one is removed.
+const size_t kMaxDownloadItemCount = 16;
+
 // Border padding of a download item.
 const int kDownloadItemBorderPadding = 3;
 
@@ -38,6 +42,7 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 - (void)applyContentAreaOffset:(BOOL)apply;
 - (void)positionBar;
 - (void)showDownloadShelf:(BOOL)enable;
+- (void)resizeDownloadLinkToFit;
 @end
 
 
@@ -81,6 +86,47 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 
   [[showAllDownloadsLink_ textStorage] setAttributedString:linkText.get()];
   [showAllDownloadsLink_ setDelegate:self];
+
+  [self resizeDownloadLinkToFit];
+}
+
+- (void)dealloc {
+  for (DownloadItemController* itemController
+      in downloadItemControllers_.get()) {
+    [[NSNotificationCenter defaultCenter] removeObserver:itemController];
+  }
+  [super dealloc];
+}
+
+- (void)resizeDownloadLinkToFit {
+  // Get width required by localized download link text.
+  // http://developer.apple.com/documentation/Cocoa/Conceptual/TextLayout/Tasks/StringHeight.html
+  [[showAllDownloadsLink_ textContainer] setLineFragmentPadding:0.0];
+  (void)[[showAllDownloadsLink_ layoutManager]glyphRangeForTextContainer:
+      [showAllDownloadsLink_ textContainer]];
+  NSRect textRect = [[showAllDownloadsLink_ layoutManager]
+      usedRectForTextContainer:[showAllDownloadsLink_ textContainer]];
+
+  int offsetX = [showAllDownloadsLink_ frame].size.width - textRect.size.width;
+
+  // Fit link itself.
+  NSRect linkFrame = [linkContainer_ frame];
+  linkFrame.origin.x += offsetX;
+  linkFrame.size.width -= offsetX;
+  [linkContainer_ setFrame:linkFrame];
+  [linkContainer_ setNeedsDisplay:YES];
+
+  // Move image.
+  NSRect imageFrame = [image_ frame];
+  imageFrame.origin.x += offsetX;
+  [image_ setFrame:imageFrame];
+  [image_ setNeedsDisplay:YES];
+
+  // Change item container size.
+  NSRect itemFrame = [itemContainerView_ frame];
+  itemFrame.size.width += offsetX;
+  [itemContainerView_ setFrame:itemFrame];
+  [itemContainerView_ setNeedsDisplay:YES];
 }
 
 - (BOOL)textView:(NSTextView *)aTextView
@@ -115,8 +161,12 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   // explicity release it so that it removes itself as an Observer of the
   // DownloadItem. We don't want to wait for autorelease since the DownloadItem
   // we are observing will likely be gone by then.
+  [[NSNotificationCenter defaultCenter] removeObserver:download];
   [[download view] removeFromSuperview];
   [downloadItemControllers_ removeObject:download];
+
+  // TODO(thakis): Need to relayout the remaining item views here (
+  // crbug.com/17831 ).
 
   // Check to see if we have any downloads remaining and if not, hide the shelf.
   if (![downloadItemControllers_ count])
@@ -195,17 +245,16 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   // TODO(thakis): RTL support?
   // (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
   // Shift all existing items to the right
-  for (DownloadItemController* itemController in downloadItemControllers_.get()) {
+  for (DownloadItemController* itemController
+      in downloadItemControllers_.get()) {
     NSRect frame = [[itemController view] frame];
     frame.origin.x += kDownloadItemWidth + kDownloadItemPadding;
     [[[itemController view] animator] setFrame:frame];
   }
 
-  // Insert new item at the left
-  int startX = kDownloadItemBorderPadding;
-
+  // Insert new item at the left.
   // Start at width 0...
-  NSRect position = NSMakeRect(startX, kDownloadItemBorderPadding,
+  NSRect position = NSMakeRect(0, kDownloadItemBorderPadding,
                                0, kDownloadItemHeight);
   scoped_nsobject<DownloadItemController> controller(
       [[DownloadItemController alloc] initWithFrame:position
@@ -213,7 +262,18 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
                                               shelf:self]);
   [downloadItemControllers_ addObject:controller.get()];
 
-  [[self view] addSubview:[controller.get() view]];
+  [itemContainerView_ addSubview:[controller.get() view]];
+
+  [[NSNotificationCenter defaultCenter]
+    addObserver:controller
+       selector:@selector(updateVisibility:)
+           name:NSViewFrameDidChangeNotification
+         object:[controller view]];
+  [[NSNotificationCenter defaultCenter]
+    addObserver:controller
+       selector:@selector(updateVisibility:)
+           name:NSViewFrameDidChangeNotification
+         object:itemContainerView_];
 
   // ...then animate in
   NSRect frame = [[controller.get() view] frame];
@@ -223,6 +283,16 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   [[NSAnimationContext currentContext] setDuration:kDownloadItemOpenDuration];
   [[[controller.get() view] animator] setFrame:frame];
   [NSAnimationContext endGrouping];
+
+  // Keep only a limited number of items in the shelf.
+  if ([downloadItemControllers_ count] > kMaxDownloadItemCount) {
+    DCHECK(kMaxDownloadItemCount > 0);
+
+    // Since no user will ever see the item being removed (needs a horizontal
+    // screen resolution greater than 3200 at 16 items at 200 pixels each),
+    // there's no point in animating the removal.
+    [self remove:[downloadItemControllers_ objectAtIndex:0]];
+  }
 }
 
 @end

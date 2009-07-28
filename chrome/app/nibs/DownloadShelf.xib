@@ -84,7 +84,7 @@
 									<object class="NSTextView" id="550190606">
 										<reference key="NSNextResponder" ref="581923208"/>
 										<int key="NSvFlags">2322</int>
-										<string key="NSFrameSize">{182, 31}</string>
+										<string key="NSFrameSize">{182, 12}</string>
 										<reference key="NSSuperview" ref="581923208"/>
 										<object class="NSTextContainer" key="NSTextContainer" id="526453298">
 											<object class="NSLayoutManager" key="NSLayoutManager">
@@ -280,7 +280,7 @@
 										</object>
 										<int key="NSTVFlags">6</int>
 										<string key="NSMaxSize">{463, 1e+07}</string>
-										<string key="NSMinize">{63, 31}</string>
+										<string key="NSMinize">{63, 3}</string>
 										<nil key="NSDelegate"/>
 									</object>
 								</object>
@@ -300,7 +300,6 @@
 								<int key="NSvFlags">256</int>
 								<string key="NSFrame">{{-100, -100}, {15, 12}}</string>
 								<reference key="NSSuperview" ref="433009119"/>
-								<bool key="NSEnabled">YES</bool>
 								<reference key="NSTarget" ref="433009119"/>
 								<string key="NSAction">_doScroller:</string>
 								<double key="NSPercent">1.369863e-02</double>
@@ -320,10 +319,49 @@
 						<string key="NSFrame">{{266, 13}, {182, 14}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSNextKeyView" ref="581923208"/>
-						<int key="NSsFlags">64</int>
+						<int key="NSsFlags">0</int>
 						<reference key="NSVScroller" ref="888760421"/>
 						<reference key="NSHScroller" ref="199551096"/>
 						<reference key="NSContentView" ref="581923208"/>
+					</object>
+					<object class="NSCustomView" id="931787328">
+						<reference key="NSNextResponder" ref="1005"/>
+						<int key="NSvFlags">290</int>
+						<string key="NSFrame">{{3, 0}, {240, 40}}</string>
+						<reference key="NSSuperview" ref="1005"/>
+						<string key="NSClassName">NSView</string>
+					</object>
+					<object class="NSImageView" id="663605208">
+						<reference key="NSNextResponder" ref="1005"/>
+						<int key="NSvFlags">289</int>
+						<object class="NSMutableSet" key="NSDragTypes">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="NSMutableArray" key="set.sortedObjects">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<string>Apple PDF pasteboard type</string>
+								<string>Apple PICT pasteboard type</string>
+								<string>Apple PNG pasteboard type</string>
+								<string>NSFilenamesPboardType</string>
+								<string>NeXT Encapsulated PostScript v1.2 pasteboard type</string>
+								<string>NeXT TIFF v4.0 pasteboard type</string>
+							</object>
+						</object>
+						<string key="NSFrame">{{245, 11}, {16, 16}}</string>
+						<reference key="NSSuperview" ref="1005"/>
+						<bool key="NSEnabled">YES</bool>
+						<object class="NSImageCell" key="NSCell" id="673439633">
+							<int key="NSCellFlags">130560</int>
+							<int key="NSCellFlags2">33554432</int>
+							<object class="NSCustomResource" key="NSContents">
+								<string key="NSClassName">NSImage</string>
+								<string key="NSResourceName">downloads_favicon</string>
+							</object>
+							<int key="NSAlign">0</int>
+							<int key="NSScale">0</int>
+							<int key="NSStyle">0</int>
+							<bool key="NSAnimates">NO</bool>
+						</object>
+						<bool key="NSEditable">YES</bool>
 					</object>
 				</object>
 				<string key="NSFrameSize">{480, 40}</string>
@@ -357,6 +395,30 @@
 						<reference key="destination" ref="550190606"/>
 					</object>
 					<int key="connectionID">15</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">linkContainer_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="433009119"/>
+					</object>
+					<int key="connectionID">18</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">itemContainerView_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="931787328"/>
+					</object>
+					<int key="connectionID">19</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">image_</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="663605208"/>
+					</object>
+					<int key="connectionID">22</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -395,6 +457,8 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="538957441"/>
 							<reference ref="433009119"/>
+							<reference ref="931787328"/>
+							<reference ref="663605208"/>
 						</object>
 						<reference key="parent" ref="1002"/>
 					</object>
@@ -438,6 +502,25 @@
 						<reference key="object" ref="550190606"/>
 						<reference key="parent" ref="433009119"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">16</int>
+						<reference key="object" ref="931787328"/>
+						<reference key="parent" ref="1005"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">20</int>
+						<reference key="object" ref="663605208"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="673439633"/>
+						</object>
+						<reference key="parent" ref="1005"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">21</int>
+						<reference key="object" ref="673439633"/>
+						<reference key="parent" ref="663605208"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -455,6 +538,9 @@
 					<string>11.IBPluginDependency</string>
 					<string>12.IBPluginDependency</string>
 					<string>13.IBPluginDependency</string>
+					<string>16.IBPluginDependency</string>
+					<string>20.IBPluginDependency</string>
+					<string>21.IBPluginDependency</string>
 					<string>3.IBPluginDependency</string>
 					<string>4.IBPluginDependency</string>
 				</object>
@@ -463,10 +549,13 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{79, 87}, {480, 40}}</string>
+					<string>{{845, 30}, {480, 40}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -495,7 +584,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">15</int>
+			<int key="maxID">22</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -517,8 +606,21 @@
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">showAllDownloadsLink_</string>
-						<string key="NS.object.0">NSTextView</string>
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>image_</string>
+							<string>itemContainerView_</string>
+							<string>linkContainer_</string>
+							<string>showAllDownloadsLink_</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>NSImageView</string>
+							<string>NSView</string>
+							<string>NSScrollView</string>
+							<string>NSTextView</string>
+						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
@@ -537,13 +639,20 @@
 					<string key="className">NSObject</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/status_bubble_mac.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSObject</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
 					</object>
 				</object>
 			</object>
 		</object>
 		<int key="IBDocument.localizationMode">0</int>
-		<string key="IBDocument.LastKnownRelativeProjectPath">../../../chrome.xcodeproj</string>
+		<string key="IBDocument.LastKnownRelativeProjectPath">../../chrome.xcodeproj</string>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 	</data>
 </archive>

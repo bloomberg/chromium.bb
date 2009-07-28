@@ -2686,6 +2686,7 @@
         'app/theme/close_bar.pdf',
         'app/theme/close_bar_h.pdf',
         'app/theme/close_bar_p.pdf',
+        'app/theme/downloads_favicon.png',
         'app/theme/forward_Template.pdf',
         'app/theme/frozen_tab.png',
         'app/theme/go_Template.pdf',
