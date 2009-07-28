@@ -26,6 +26,9 @@ var SCHEMA = "../../api/extension_api.json";
 var OVERVIEW_EXTENSION = "_overview.html";
 var REQUEST_TIMEOUT = 2000;
 
+// Global Schema Types (Referenced via $ref).
+var types = {};
+  
 Array.prototype.each = function(f) {
   for (var i = 0; i < this.length; i++) {
     f(this[i], i);
@@ -118,7 +121,7 @@ function renderTemplate(schemaContent) {
       apiDefinition = module;
   });
   
-  types = {};
+  // Setup Schema Types
   apiDefinition.types.each(function(t) {
     types[t.id] = t;
   });
@@ -221,9 +224,8 @@ function linkTypeReferences(parameters, types) {
 }
 
 function linkTypeReference(schema, types) {
-  if (schema.$ref) {
+  if (schema.$ref)
     extend(schema, types[schema.$ref]);
-  }
 }
 
 /**
@@ -239,6 +241,9 @@ function assignTypeNames(parameters) {
  * Generates a short text summary of the |schema| type
  */
 function typeName(schema) {
+  if (schema.$ref)
+    schema = types[schema.$ref];
+  
   if (schema.choice) {
     var typeNames = [];
     schema.choice.each(function(c) {
@@ -248,9 +253,8 @@ function typeName(schema) {
     return typeNames.join(" or ");
   }
   
-  if (schema.type == "array") {
-    return "array of " + typeName(schema.item);
-  }
+  if (schema.type == "array")
+    return "array of " + typeName(schema.items);
   
   return schema.type;
 }
