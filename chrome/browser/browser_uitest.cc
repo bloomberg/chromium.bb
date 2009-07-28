@@ -212,7 +212,8 @@ class ShowModalDialogTest : public UITest {
   }
 };
 
-TEST_F(ShowModalDialogTest, BasicTest) {
+// This test is flaky, see http://crbug.com/17806.
+TEST_F(ShowModalDialogTest, DISABLED_BasicTest) {
   // Test that a modal dialog is shown.
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("showmodaldialog.html");
