@@ -28,7 +28,7 @@ const char* ExtensionUpdater::kExpectedGupdateXmlns =
     "http://www.google.com/update2/response";
 
 // For sanity checking on update frequency - enforced in release mode only.
-static const int kMinUpdateFrequencySeconds = 60 * 60;  // 1 hour
+static const int kMinUpdateFrequencySeconds = 30;
 static const int kMaxUpdateFrequencySeconds = 60 * 60 * 24 * 7;  // 7 days
 
 // A utility class to do file handling on the file I/O thread.
