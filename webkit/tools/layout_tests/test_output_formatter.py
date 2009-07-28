@@ -12,11 +12,16 @@ import optparse
 from layout_package import test_expectations
 from layout_package import failure
 from layout_package import failure_finder
+from layout_package import failure_finder_test
 from layout_package import html_generator
 
 DEFAULT_BUILDER = "Webkit"
 
 def main(options, args):
+
+  if options.run_tests:
+    fft = failure_finder_test.FailureFinderTest()
+    return fft.runTests()
 
   # TODO(gwilson): Add a check that verifies the given platform exists.
 
@@ -66,6 +71,9 @@ if __name__ == "__main__":
   option_parser.add_option("-m", "--max-failures",
                            default = 100,
                            help = "Limit the maximum number of failures")
+  option_parser.add_option("-r", "--run-tests", action = "store_true",
+                           default = False,
+                           help = "Runs unit tests")
   options, args = option_parser.parse_args()
   main(options, args)
 

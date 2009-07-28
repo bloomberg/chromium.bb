@@ -181,7 +181,7 @@ class FailureFinder(object):
                verbose):
     self.build = build
     # TODO(gwilson): add full url-encoding for the platform.
-    self.platform = builder_name.replace(" ", "%20")
+    self.SetPlatform(builder_name)
     self.exclude_known_failures = exclude_known_failures
     self.test_regex = test_regex
     self.output_dir = output_dir
@@ -190,6 +190,11 @@ class FailureFinder(object):
     self.fyi_builder = False
     self._flaky_test_cache = {}
     self._test_expectations_cache = None
+    # If true, scraping will still happen but no files will be downloaded.
+    self.dont_download = False
+
+  def SetPlatform(self, platform):
+    self.platform = platform.replace(" ", "%20")
 
   # TODO(gwilson): Change this to get the last build that finished
   # successfully.
@@ -214,7 +219,8 @@ class FailureFinder(object):
       print "Using build number %s" % self.build
 
     self.failures = self._GetFailuresFromBuilder()
-    if self.failures and self._DownloadResultResources():
+    if (self.failures and
+        (self._DownloadResultResources() or self.dont_download)):
       return self.failures
     return None
 
@@ -313,11 +319,7 @@ class FailureFinder(object):
     Finds and downloads/extracts all of the test results (pixel/text output)
     for all of the given failures.
     """
-    content = ScrapeURL(GetArchiveURL(self.build,
-                                      self.platform,
-                                      self.fyi_builder))
-    revision = ExtractFirstValue(content, ARCHIVE_URL_REGEX)
-    build_name = ExtractFirstValue(content, BUILD_NAME_REGEX)
+    revision, build_name = self._GetRevisionAndBuildFromArchiveStep()
 
     target_zip = "%s/layout-test-results-%s.zip" % (self.output_dir,
                                                     self.build)
@@ -326,7 +328,8 @@ class FailureFinder(object):
       print "Downloading zip file from %s to %s" % (zip_url, target_zip)
     filename = self._DownloadFile(zip_url, target_zip, "b")
     if not filename:
-      print "Could not download zip file from %s.  Does it exist?" % zip_url
+      if self.verbose:
+        print "Could not download zip file from %s.  Does it exist?" % zip_url
       return False
 
     if zipfile.is_zipfile(filename):
@@ -351,8 +354,17 @@ class FailureFinder(object):
       os.remove(filename)
       return True
     else:
-      print "Downloaded file '%s' doesn't look like a zip file." % filename
+      if self.verbose:
+        print "Downloaded file '%s' doesn't look like a zip file." % filename
       return False
+
+  def _GetRevisionAndBuildFromArchiveStep(self):
+    content = ScrapeURL(GetArchiveURL(self.build,
+                                      self.platform,
+                                      self.fyi_builder))
+    revision = ExtractFirstValue(content, ARCHIVE_URL_REGEX)
+    build_name = ExtractFirstValue(content, BUILD_NAME_REGEX)
+    return (revision, build_name)
 
   def _PopulateTextFailure(self, failure, directory, zip):
     baselines = self._GetBaseline(failure.GetExpectedTextFilename(),
@@ -363,9 +375,10 @@ class FailureFinder(object):
       self._GetFileAge(failure.GetTextBaselineTracHome()))
     failure.text_actual_local = "%s/%s" % (directory,
                                            failure.GetActualTextFilename())
-    if self._ExtractFileFromZip(zip,
-                                failure.GetTextResultLocationInZipFile(),
-                                failure.text_actual_local):
+    if (not self.dont_download and
+        self._ExtractFileFromZip(zip,
+                                 failure.GetTextResultLocationInZipFile(),
+                                 failure.text_actual_local)):
       GenerateTextDiff(failure.text_baseline_local,
                        failure.text_actual_local,
                        directory + "/" + failure.GetTextDiffFilename())
@@ -383,10 +396,11 @@ class FailureFinder(object):
       self._ExtractFileFromZip(zip,
                                failure.GetImageResultLocationInZipFile(),
                                failure.image_actual_local)
-      if not GeneratePNGDiff("./" + failure.image_baseline_local,
+      if (not GeneratePNGDiff("./" + failure.image_baseline_local,
                              "./" + failure.image_actual_local,
                              "./%s/%s" %
-                             (directory, failure.GetImageDiffFilename())):
+                             (directory, failure.GetImageDiffFilename()))
+          and self.verbose):
         print "Could not generate PNG diff for %s" % failure.test_path
       if failure.IsImageBaselineInChromium():
         upstream_baselines = (
@@ -419,7 +433,8 @@ class FailureFinder(object):
     if local_filename.endswith(".png"):
       download_file_modifiers = "b"  # binary file
 
-    CreateDirectory(local_filename[0:local_filename.rfind("/")])
+    if not self.dont_download:
+      CreateDirectory(local_filename[0:local_filename.rfind("/")])
 
     webkit_mac_location = (
       self._MangleWebkitPixelTestLocation(WEBKIT_IMAGE_BASELINE_BASE_URL_MAC,
@@ -493,7 +508,8 @@ class FailureFinder(object):
         return ExtractSingleRegexAtURL(url + "?view=log",
                                        CHROMIUM_FILE_AGE_REGEX)
     except:
-      print "Could not find age for %s. Does the file exist?" % url
+      if self.verbose:
+        print "Could not find age for %s. Does the file exist?" % url
       return None
 
   # Returns a flakiness on a scale of 1-50.
@@ -573,7 +589,10 @@ class FailureFinder(object):
       if local_filename == None:
         local_filename = url.split('/')[-1]
       if os.path.isfile(local_filename) and not force:
-        print "File at %s already exists." % local_filename
+        if self.verbose:
+          print "File at %s already exists." % local_filename
+        return local_filename
+      if self.dont_download:
         return local_filename
       webFile = urllib2.urlopen(url)
       localFile = open(local_filename, ("w%s" % modifiers))
