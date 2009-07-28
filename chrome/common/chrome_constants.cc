@@ -68,6 +68,7 @@ const FilePath::CharType kSafeBrowsingFilename[] = FPL("Safe Browsing");
 // chrome_process_util_linux would be broken.
 const FilePath::CharType kSingletonSocketFilename[] = FPL("SingletonSocket");
 const FilePath::CharType kThumbnailsFilename[] = FPL("Thumbnails");
+const FilePath::CharType kNewTabThumbnailsFilename[] = FPL("Top Thumbnails");
 const wchar_t kUserDataDirname[] = L"User Data";
 const FilePath::CharType kUserScriptsDirname[] = FPL("User Scripts");
 const FilePath::CharType kWebDataFilename[] = FPL("Web Data");

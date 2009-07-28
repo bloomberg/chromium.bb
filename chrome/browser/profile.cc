@@ -1047,7 +1047,8 @@ TabRestoreService* ProfileImpl::GetTabRestoreService() {
 ThumbnailStore* ProfileImpl::GetThumbnailStore() {
   if (!thumbnail_store_.get()) {
     thumbnail_store_ = new ThumbnailStore;
-    thumbnail_store_->Init(GetPath().AppendASCII("Top Thumbnails"), this);
+    thumbnail_store_->Init(
+        GetPath().Append(chrome::kNewTabThumbnailsFilename), this);
   }
   return thumbnail_store_.get();
 }

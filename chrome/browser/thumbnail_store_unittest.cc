@@ -96,8 +96,8 @@ void ThumbnailStoreTest::SetUp() {
   store_->cache_.reset(new ThumbnailStore::Cache);
   store_->redirect_urls_.reset(new history::RedirectMap);
 
-  store_->most_visited_urls_.reset(new std::vector<GURL>);
-  store_->most_visited_urls_->push_back(url_);
+  store_->most_visited_urls_.reset(new ThumbnailStore::MostVisitedMap);
+  (*store_->most_visited_urls_)[url_] = GURL();
 }
 
 void ThumbnailStoreTest::PrintPixelDiff(SkBitmap* image_a, SkBitmap* image_b) {
@@ -183,7 +183,7 @@ TEST_F(ThumbnailStoreTest, RetrieveFromDisk) {
   store_->InitializeFromDB(db_name_, NULL);
   // Write to the DB (dirty bit sould be set)
   store_->CommitCacheToDB(NULL, new ThumbnailStore::Cache(*store_->cache_));
-  store_->cache_->clear();        // Clear it from the cache.
+  store_->cache_->clear();  // Clear it from the cache.
 
   // Read from the DB.
   SQLITE_UNIQUE_STATEMENT(statement, *store_->statement_cache_,
@@ -215,7 +215,7 @@ TEST_F(ThumbnailStoreTest, FollowRedirects) {
   redirects.push_back(url_);  // url_ = http://www.google.com/
   (*store_->redirect_urls_)[my_url] = new RefCountedVector<GURL>(redirects);
 
-  store_->most_visited_urls_->push_back(my_url);
+  (*store_->most_visited_urls_)[url_] = my_url;
 
   EXPECT_TRUE(store_->SetPageThumbnail(GURL("google.com"), *google_, score_,
                                        false));

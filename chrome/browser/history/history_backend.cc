@@ -1163,7 +1163,7 @@ void HistoryBackend::QueryTopURLsAndRedirects(
 
   if (!db_.get()) {
     request->ForwardResult(QueryTopURLsAndRedirectsRequest::TupleType(
-        NULL, NULL));
+        request->handle(), false, NULL, NULL));
     return;
   }
 
@@ -1176,13 +1176,13 @@ void HistoryBackend::QueryTopURLsAndRedirects(
 
   for (size_t i = 0; i < data.size(); ++i) {
     top_urls->push_back(data[i]->GetURL());
-    history::RedirectList list;
-    GetMostRecentRedirectsFrom(top_urls->back(), &list);
-    (*redirects)[top_urls->back()] = new RefCountedVector<GURL>(list);
+    RefCountedVector<GURL>* list = new RefCountedVector<GURL>;
+    GetMostRecentRedirectsFrom(top_urls->back(), &list->data);
+    (*redirects)[top_urls->back()] = list;
   }
 
   request->ForwardResult(QueryTopURLsAndRedirectsRequest::TupleType(
-      top_urls, redirects));
+      request->handle(), true, top_urls, redirects));
 }
 
 void HistoryBackend::GetRedirectsFromSpecificVisit(

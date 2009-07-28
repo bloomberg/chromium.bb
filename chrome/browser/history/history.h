@@ -306,7 +306,10 @@ class HistoryService : public CancelableRequestProvider,
   // in the map containing redirects from the URL.  For example, if we have the
   // redirect chain A -> B -> C and A is a top visited URL, then A will be in
   // the vector and "A => {B -> C}" will be in the map.
-  typedef Callback2<std::vector<GURL>*, history::RedirectMap*>::Type
+  typedef Callback4<Handle,
+                    bool,  // Did we get the top urls and redirects?
+                    std::vector<GURL>*,  // List of top URLs.
+                    history::RedirectMap*>::Type  // Redirects for top URLs.
       QueryTopURLsAndRedirectsCallback;
 
   // Request the top |result_count| most visited URLs and the chain of redirects

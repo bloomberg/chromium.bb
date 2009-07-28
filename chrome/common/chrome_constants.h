@@ -37,6 +37,7 @@ extern const FilePath::CharType kPreferencesFilename[];
 extern const FilePath::CharType kSafeBrowsingFilename[];
 extern const FilePath::CharType kSingletonSocketFilename[];
 extern const FilePath::CharType kThumbnailsFilename[];
+extern const FilePath::CharType kNewTabThumbnailsFilename[];
 extern const wchar_t kUserDataDirname[];
 extern const FilePath::CharType kUserScriptsDirname[];
 extern const FilePath::CharType kWebDataFilename[];

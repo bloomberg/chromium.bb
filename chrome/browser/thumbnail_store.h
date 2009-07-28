@@ -41,9 +41,12 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   ThumbnailStore();
   ~ThumbnailStore();
 
-  // Must be called after creation but before other methods are called.
-  void Init(const FilePath& db_name,      // The location of the database.
-            Profile* profile);            // To get to the HistoryService.
+  // Must be called before {Set,Get}PageThumbnail.  |db_name| is the location
+  // of an existing ThumbnailStore database or where to create a new one.
+  void Init(const FilePath& db_name, Profile* profile);
+
+  // Is the ThumbnailStore ready for GetPageThumbnail requests?
+  bool IsReady() { return disk_data_loaded_ && redirect_urls_.get(); }
 
   // Stores the given thumbnail and score with the associated url in the cache.
   bool SetPageThumbnail(const GURL& url,
@@ -83,10 +86,18 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   // Data structure used to store thumbnail data in memory.
   typedef std::map<GURL, CacheEntry> Cache;
 
+  // Data structre used to store the top visited URLs. It maps the end of a
+  // redirect chain to the beginning. If A -> B -> C is a redirect chain and C
+  // is a top visited url, then this map will contain an entry C => A.
+  typedef std::map<GURL, GURL> MostVisitedMap;
+
   // NotificationObserver implementation
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Notify anyone listening that the ThumbnailStore is ready to be used.
+  void NotifyThumbnailStoreReady();
 
   // Most visited URLs and their redirect lists -------------------------------
 
@@ -96,7 +107,9 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   void UpdateURLData();
 
   // The callback for UpdateURLData.
-  void OnURLDataAvailable(std::vector<GURL>* urls,
+  void OnURLDataAvailable(HistoryService::Handle handle,
+                          bool success,
+                          std::vector<GURL>* urls,
                           history::RedirectMap* redirects);
 
   // The callback for the redirects request to the HistoryService made in
@@ -107,6 +120,11 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
                                   GURL url,
                                   bool success,
                                   history::RedirectList* redirects);
+
+  // Search the RedirectMap for a redirect chain ending at |url|.  Returns an
+  // iterator to an entry in redirect_urls_ if found or redirect_urls_->end().
+  history::RedirectMap::iterator GetRedirectIteratorForURL(
+      const GURL& url) const;
 
   // Remove stale data --------------------------------------------------------
 
@@ -165,9 +183,9 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   // and redirect information.
   scoped_refptr<HistoryService> hs_;
 
-  // A list of the most_visited_urls_ refreshed every 30mins from the
+  // The most visited urls refreshed every kUpdateIntervalSecs from the
   // HistoryService.
-  scoped_ptr<std::vector<GURL> > most_visited_urls_;
+  scoped_ptr<MostVisitedMap> most_visited_urls_;
 
   // A pointer to the persistent URL blacklist for this profile.
   const DictionaryValue* url_blacklist_;
@@ -178,8 +196,7 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   scoped_ptr<history::RedirectMap> redirect_urls_;
 
   // Timer on which UpdateURLData runs.
-  base::OneShotTimer<ThumbnailStore> timer_;
-  int seconds_to_next_update_;
+  base::RepeatingTimer<ThumbnailStore> timer_;
 
   // Consumer for queries to the HistoryService.
   CancelableRequestConsumer consumer_;
@@ -188,8 +205,10 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   NotificationRegistrar registrar_;
 
   static const unsigned int kMaxCacheSize = 24;
-  static const int64 kInitialUpdateIntervalSecs = 180;
-  static const int64 kMaxUpdateIntervalSecs = 3600;
+  static const int64 kUpdateIntervalSecs = 360;
+
+  // Has the data from disk been read?
+  bool disk_data_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailStore);
 };

@@ -471,6 +471,12 @@ class NotificationType {
     // history_notifications.h).
     FAVICON_CHANGED,
 
+    // Thumbnails---------------------------------------------------------------
+
+    // Set by ThumbnailStore when it was finished loading data from disk on
+    // startup.
+    THUMBNAIL_STORE_READY,
+
     // Bookmarks ---------------------------------------------------------------
 
     // Sent when the starred state of a URL changes. A URL is starred if there

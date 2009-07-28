@@ -10,6 +10,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
@@ -23,20 +24,18 @@ DOMUIThumbnailSource::DOMUIThumbnailSource(Profile* profile)
 void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
                                             int request_id) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kThumbnailStore)) {
-    RefCountedBytes* data = NULL;
     scoped_refptr<ThumbnailStore> store_ = profile_->GetThumbnailStore();
 
-    if (store_->GetPageThumbnail(GURL(path), &data)) {
-      // Got the thumbnail.
-      SendResponse(request_id, data);
-    } else {
-      // Don't have the thumbnail so return the default thumbnail.
-      if (!default_thumbnail_.get()) {
-        default_thumbnail_ = new RefCountedBytes;
-        ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
-            IDR_DEFAULT_THUMBNAIL, &default_thumbnail_->data);
+    if (!store_->IsReady()) {
+      // Register to be notified when the ThumbnailStore is ready.
+      if (registrar_.IsEmpty()) {
+        registrar_.Add(this, NotificationType::THUMBNAIL_STORE_READY,
+            Source<ThumbnailStore>(store_.get()));
       }
-      SendResponse(request_id, default_thumbnail_);
+      // Insert into pending_requests.
+      pending_requests_.push_back(std::make_pair(path, request_id));
+    } else {
+      DoDataRequest(path, request_id);
     }
     return;
   }  // end --thumbnail-store switch
@@ -52,6 +51,24 @@ void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
   } else {
     // Tell the caller that no thumbnail is available.
     SendResponse(request_id, NULL);
+  }
+}
+
+void DOMUIThumbnailSource::DoDataRequest(const std::string& path,
+                                         int request_id) {
+  RefCountedBytes* data = NULL;
+  scoped_refptr<ThumbnailStore> store_ = profile_->GetThumbnailStore();
+  if (store_->GetPageThumbnail(GURL(path), &data)) {
+    // Got the thumbnail.
+    SendResponse(request_id, data);
+  } else {
+    // Don't have the thumbnail so return the default thumbnail.
+    if (!default_thumbnail_.get()) {
+      default_thumbnail_ = new RefCountedBytes;
+      ResourceBundle::GetSharedInstance().LoadImageResourceBytes(
+          IDR_DEFAULT_THUMBNAIL, &default_thumbnail_->data);
+    }
+    SendResponse(request_id, default_thumbnail_);
   }
 }
 
@@ -73,4 +90,21 @@ void DOMUIThumbnailSource::OnThumbnailDataAvailable(
 
     SendResponse(request_id, default_thumbnail_);
   }
+}
+
+void DOMUIThumbnailSource::Observe(NotificationType type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  if (type.value != NotificationType::THUMBNAIL_STORE_READY) {
+    NOTREACHED();
+    return;
+  }
+
+  // This notification is sent only once.
+  registrar_.RemoveAll();
+
+  for (size_t i = 0; i < pending_requests_.size(); ++i)
+    DoDataRequest(pending_requests_[i].first, pending_requests_[i].second);
+
+  pending_requests_.clear();
 }
