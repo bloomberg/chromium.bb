@@ -254,13 +254,19 @@ void Logging::Log(const LogData& data) {
     }
   }
 #elif defined(OS_POSIX)
+  std::string message_name;
+  if (data.message_name.empty()) {
+    message_name = StringPrintf("[unknown type %d]", data.type);
+  } else {
+    message_name = WideToASCII(data.message_name);
+  }
+
   // On POSIX, for now, we just dump the log to stderr
-  fprintf(stderr, "ipc %s %d %d %s %s %s\n",
+  fprintf(stderr, "ipc %s %d %s %s %s\n",
           data.channel.c_str(),
           data.routing_id,
-          data.type,
-          WideToUTF8(data.flags).c_str(),
-          WideToUTF8(data.message_name).c_str(),
+          WideToASCII(data.flags).c_str(),
+          message_name.c_str(),
           WideToUTF8(data.params).c_str());
 #endif
 }

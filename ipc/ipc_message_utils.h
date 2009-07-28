@@ -753,7 +753,7 @@ struct ParamTraits<XFORM> {
 struct LogData {
   std::string channel;
   int32 routing_id;
-  uint16 type;
+  uint16 type;  // "User-defined" message type, from ipc_message.h.
   std::wstring flags;
   int64 sent;  // Time that the message was sent (i.e. at Send()).
   int64 receive;  // Time before it was dispatched (i.e. before calling
