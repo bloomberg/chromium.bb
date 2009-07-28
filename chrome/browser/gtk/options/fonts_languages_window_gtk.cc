@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/gtk/options/fonts_page_gtk.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -39,6 +40,9 @@ class FontsLanguagesWindowGtk {
   // The Profile associated with these options.
   Profile* profile_;
 
+  // The fonts page.
+  FontsPageGtk fonts_page_;
+
   DISALLOW_COPY_AND_ASSIGN(FontsLanguagesWindowGtk);
 };
 
@@ -51,7 +55,8 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
       // Always show preferences for the original profile. Most state when off
       // the record comes from the original profile, but we explicitly use
       // the original profile to avoid potential problems.
-    : profile_(profile->GetOriginalProfile()) {
+    : profile_(profile->GetOriginalProfile()),
+      fonts_page_(profile_) {
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringFUTF8(IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str(),
@@ -67,11 +72,12 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
                       gtk_util::kContentAreaSpacing);
 
   notebook_ = gtk_notebook_new();
+  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
   // Fonts and Encoding tab.
   gtk_notebook_append_page(
       GTK_NOTEBOOK(notebook_),
-      gtk_label_new("TODO content"),
+      fonts_page_.get_page_widget(),
       gtk_label_new(
           l10n_util::GetStringUTF8(
               IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE).c_str()));
@@ -83,8 +89,6 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
       gtk_label_new(
           l10n_util::GetStringUTF8(
               IDS_FONT_LANGUAGE_SETTING_LANGUAGES_TAB_TITLE).c_str()));
-
-  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
   // Show the notebook.
   gtk_widget_show_all(dialog_);

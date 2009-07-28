@@ -1121,6 +1121,8 @@
         'browser/gtk/options/cookies_view.cc',
         'browser/gtk/options/cookies_view.h',
         'browser/gtk/options/fonts_languages_window_gtk.cc',
+        'browser/gtk/options/fonts_page_gtk.cc',
+        'browser/gtk/options/fonts_page_gtk.h',
         'browser/gtk/options/general_page_gtk.cc',
         'browser/gtk/options/general_page_gtk.h',
         'browser/gtk/options/options_layout_gtk.cc',
