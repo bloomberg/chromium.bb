@@ -23,6 +23,8 @@ class CookieMonster;
 // be therad safe as its methods can be accessed from IO as well as UI threads.
 class CookieStore {
  public:
+   virtual ~CookieStore() {}
+
   // Set a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
   virtual bool SetCookie(const GURL& url, const std::string& cookie_line) = 0;
   virtual bool SetCookieWithOptions(const GURL& url,
