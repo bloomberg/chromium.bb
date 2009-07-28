@@ -7,16 +7,14 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/scoped_temp_dir.h"
-#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "net/base/file_stream.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
@@ -26,9 +24,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
-#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -249,8 +245,9 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
 
   // Tell the backend to start deleting installed extensions on the file thread.
   if (Extension::LOAD != extension->location()) {
-    backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-        &ExtensionsServiceBackend::UninstallExtension, extension_id));
+    backend_loop_->PostTask(FROM_HERE, NewRunnableFunction(
+      &extension_file_util::UninstallExtension, extension_id,
+      install_directory_));
   }
 
   UnloadExtension(extension_id);
@@ -321,9 +318,8 @@ void ExtensionsService::ReloadExtensions() {
 }
 
 void ExtensionsService::GarbageCollectExtensions() {
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::GarbageCollectExtensions,
-      scoped_refptr<ExtensionsService>(this)));
+  backend_loop_->PostTask(FROM_HERE, NewRunnableFunction(
+      &extension_file_util::GarbageCollectExtensions, install_directory_));
 }
 
 void ExtensionsService::OnLoadedInstalledExtensions() {
@@ -524,55 +520,6 @@ void ExtensionsServiceBackend::LoadInstalledExtensions(
       frontend_, &ExtensionsService::OnLoadedInstalledExtensions));
 }
 
-void ExtensionsServiceBackend::GarbageCollectExtensions(
-    scoped_refptr<ExtensionsService> frontend) {
-  frontend_ = frontend;
-  alert_on_error_ = false;
-
-  // Nothing to clean up if it doesn't exist.
-  if (!file_util::DirectoryExists(install_directory_))
-    return;
-
-  FilePath install_directory_absolute(install_directory_);
-  file_util::AbsolutePath(&install_directory_absolute);
-
-  LOG(INFO) << "Loading installed extensions...";
-
-  // Find all child directories in the install directory and load their
-  // manifests. Post errors and results to the frontend.
-  file_util::FileEnumerator enumerator(install_directory_absolute,
-                                       false,  // Not recursive.
-                                       file_util::FileEnumerator::DIRECTORIES);
-  FilePath extension_path;
-  for (extension_path = enumerator.Next(); !extension_path.value().empty();
-       extension_path = enumerator.Next()) {
-    std::string extension_id = WideToASCII(
-        extension_path.BaseName().ToWStringHack());
-
-    // If there is no Current Version file, just delete the directory and move
-    // on. This can legitimately happen when an uninstall does not complete, for
-    // example, when a plugin is in use at uninstall time.
-    FilePath current_version_path = extension_path.AppendASCII(
-        ExtensionsService::kCurrentVersionFileName);
-    if (!file_util::PathExists(current_version_path)) {
-      LOG(INFO) << "Deleting incomplete install for directory "
-                << WideToASCII(extension_path.ToWStringHack()) << ".";
-      file_util::Delete(extension_path, true);  // Recursive.
-      continue;
-    }
-
-    // Ignore directories that aren't valid IDs.
-    if (!Extension::IdIsValid(extension_id)) {
-      LOG(WARNING) << "Invalid extension ID encountered in extensions "
-                      "directory: " << extension_id;
-      // TODO(erikkay) delete these eventually too...
-      continue;
-    }
-
-    // TODO(erikkay) check for extensions that aren't loaded?
-  }
-}
-
 void ExtensionsServiceBackend::LoadSingleExtension(
     const FilePath& path_in, scoped_refptr<ExtensionsService> frontend) {
   frontend_ = frontend;
@@ -586,14 +533,21 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   LOG(INFO) << "Loading single extension from " <<
       WideToASCII(extension_path.BaseName().ToWStringHack());
 
-  Extension* extension = LoadExtension(extension_path,
-                                       Extension::LOAD,
-                                       false);  // Don't require id.
-  if (extension) {
-    ExtensionList* extensions = new ExtensionList;
-    extensions->push_back(extension);
-    ReportExtensionsLoaded(extensions);
+  std::string error;
+  Extension* extension = extension_file_util::LoadExtension(
+      extension_path,
+      false,  // Don't require id
+      &error);
+
+  if (!extension) {
+    ReportExtensionLoadError(extension_path, error);
+    return;
   }
+
+  extension->set_location(Extension::LOAD);
+  ExtensionList* extensions = new ExtensionList;
+  extensions->push_back(extension);
+  ReportExtensionsLoaded(extensions);
 }
 
 void ExtensionsServiceBackend::LoadInstalledExtension(
@@ -608,148 +562,24 @@ void ExtensionsServiceBackend::LoadInstalledExtension(
     return;
   }
 
-  Extension* extension =
-      LoadExtension(FilePath(path), location, true);  // Require id.
+  std::string error;
+  Extension* extension = extension_file_util::LoadExtension(
+      path,
+      true,  // Require id
+      &error);
+
+  if (!extension) {
+    ReportExtensionLoadError(path, error);
+    return;
+  }
 
   // TODO(erikkay) now we only report a single extension loaded at a time.
   // Perhaps we should change the notifications to remove ExtensionList.
+  extension->set_location(location);
   ExtensionList* extensions = new ExtensionList;
   if (extension)
     extensions->push_back(extension);
   ReportExtensionsLoaded(extensions);
-}
-
-DictionaryValue* ExtensionsServiceBackend::ReadManifest(
-    const FilePath& manifest_path, std::string* error) {
-  JSONFileValueSerializer serializer(manifest_path);
-  scoped_ptr<Value> root(serializer.Deserialize(error));
-  if (!root.get())
-    return NULL;
-
-  if (!root->IsType(Value::TYPE_DICTIONARY)) {
-    *error = extension_manifest_errors::kInvalidManifest;
-    return NULL;
-  }
-
-  return static_cast<DictionaryValue*>(root.release());
-}
-
-Extension* ExtensionsServiceBackend::LoadExtension(
-    const FilePath& extension_path,
-    Extension::Location location,
-    bool require_id) {
-  FilePath manifest_path =
-      extension_path.AppendASCII(Extension::kManifestFilename);
-  if (!file_util::PathExists(manifest_path)) {
-    ReportExtensionLoadError(extension_path,
-        extension_manifest_errors::kInvalidManifest);
-    return NULL;
-  }
-
-  std::string error;
-  scoped_ptr<DictionaryValue> root(ReadManifest(manifest_path, &error));
-  if (!root.get()) {
-    ReportExtensionLoadError(extension_path, error);
-    return NULL;
-  }
-
-  scoped_ptr<Extension> extension(new Extension(extension_path));
-  if (!extension->InitFromValue(*root.get(), require_id, &error)) {
-    ReportExtensionLoadError(extension_path, error);
-    return NULL;
-  }
-
-  extension->set_location(location);
-
-  // Validate icons exist.
-  for (std::map<int, std::string>::const_iterator iter =
-       extension->icons().begin(); iter != extension->icons().end(); ++iter) {
-    if (!file_util::PathExists(extension->GetResourcePath(iter->second))) {
-      ReportExtensionLoadError(extension_path,
-          StringPrintf("Could not load extension icon '%s'.",
-          iter->second.c_str()));
-      return false;
-    }
-  }
-
-  // Theme resource validation.
-  if (extension->IsTheme()) {
-    DictionaryValue* images_value = extension->GetThemeImages();
-    if (images_value) {
-      DictionaryValue::key_iterator iter = images_value->begin_keys();
-      while (iter != images_value->end_keys()) {
-        std::string val;
-        if (images_value->GetString(*iter , &val)) {
-          FilePath image_path = extension->path().AppendASCII(val);
-          if (!file_util::PathExists(image_path)) {
-            ReportExtensionLoadError(extension_path,
-                StringPrintf("Could not load '%s' for theme.",
-                WideToUTF8(image_path.ToWStringHack()).c_str()));
-            return NULL;
-          }
-        }
-        ++iter;
-      }
-    }
-
-    // Themes cannot contain other extension types.
-    return extension.release();
-  }
-
-  // Validate that claimed script resources actually exist.
-  for (size_t i = 0; i < extension->content_scripts().size(); ++i) {
-    const UserScript& script = extension->content_scripts()[i];
-
-    for (size_t j = 0; j < script.js_scripts().size(); j++) {
-      const FilePath& path = script.js_scripts()[j].path();
-      if (!file_util::PathExists(path)) {
-        ReportExtensionLoadError(extension_path,
-            StringPrintf("Could not load '%s' for content script.",
-            WideToUTF8(path.ToWStringHack()).c_str()));
-        return NULL;
-      }
-    }
-
-    for (size_t j = 0; j < script.css_scripts().size(); j++) {
-      const FilePath& path = script.css_scripts()[j].path();
-      if (!file_util::PathExists(path)) {
-        ReportExtensionLoadError(extension_path,
-            StringPrintf("Could not load '%s' for content script.",
-            WideToUTF8(path.ToWStringHack()).c_str()));
-        return NULL;
-      }
-    }
-  }
-
-  for (size_t i = 0; i < extension->plugins().size(); ++i) {
-    const Extension::PluginInfo& plugin = extension->plugins()[i];
-    if (!file_util::PathExists(plugin.path)) {
-      ReportExtensionLoadError(extension_path,
-          StringPrintf("Could not load '%s' for plugin.",
-          WideToUTF8(plugin.path.ToWStringHack()).c_str()));
-      return NULL;
-    }
-  }
-
-  // Validate icon location for page actions.
-  const PageActionMap& page_actions = extension->page_actions();
-  for (PageActionMap::const_iterator i(page_actions.begin());
-       i != page_actions.end(); ++i) {
-    PageAction* page_action = i->second;
-    const std::vector<FilePath>& icon_paths = page_action->icon_paths();
-    for (std::vector<FilePath>::const_iterator iter = icon_paths.begin();
-         iter != icon_paths.end(); ++iter) {
-      FilePath path = *iter;
-      if (!file_util::PathExists(path)) {
-        ReportExtensionLoadError(extension_path,
-            StringPrintf("Could not load icon '%s' for page action.",
-            WideToUTF8(path.ToWStringHack()).c_str()));
-        return NULL;
-      }
-    }
-  }
-
-  return extension.release();
 }
 
 void ExtensionsServiceBackend::ReportExtensionLoadError(
@@ -765,123 +595,6 @@ void ExtensionsServiceBackend::ReportExtensionsLoaded(
     ExtensionList* extensions) {
   frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
       frontend_, &ExtensionsService::OnExtensionsLoaded, extensions));
-}
-
-bool ExtensionsServiceBackend::ReadCurrentVersion(const FilePath& dir,
-                                                  std::string* version_string) {
-  FilePath current_version =
-      dir.AppendASCII(ExtensionsService::kCurrentVersionFileName);
-  if (file_util::PathExists(current_version)) {
-    if (file_util::ReadFileToString(current_version, version_string)) {
-      TrimWhitespace(*version_string, TRIM_ALL, version_string);
-      return true;
-    }
-  }
-  return false;
-}
-
-Extension::InstallType ExtensionsServiceBackend::CompareToInstalledVersion(
-    const std::string& id,
-    const std::string& new_version_str,
-    std::string *current_version_str) {
-  CHECK(current_version_str);
-  FilePath dir(install_directory_.AppendASCII(id.c_str()));
-  if (!ReadCurrentVersion(dir, current_version_str))
-    return Extension::NEW_INSTALL;
-
-  scoped_ptr<Version> current_version(
-    Version::GetVersionFromString(*current_version_str));
-  scoped_ptr<Version> new_version(
-    Version::GetVersionFromString(new_version_str));
-  int comp = new_version->CompareTo(*current_version);
-  if (comp > 0)
-    return Extension::UPGRADE;
-  else if (comp == 0)
-    return Extension::REINSTALL;
-  else
-    return Extension::DOWNGRADE;
-}
-
-bool ExtensionsServiceBackend::NeedsReinstall(const std::string& id,
-    const std::string& current_version) {
-  // Verify that the directory actually exists.
-  // TODO(erikkay): A further step would be to verify that the extension
-  // has actually loaded successfully.
-  FilePath dir(install_directory_.AppendASCII(id.c_str()));
-  FilePath version_dir(dir.AppendASCII(current_version));
-  return !file_util::PathExists(version_dir);
-}
-
-bool ExtensionsServiceBackend::InstallDirSafely(const FilePath& source_dir,
-                                                const FilePath& dest_dir) {
-  if (file_util::PathExists(dest_dir)) {
-    // By the time we get here, it should be safe to assume that this directory
-    // is not currently in use (it's not the current active version).
-    if (!file_util::Delete(dest_dir, true)) {
-      ReportExtensionInstallError(source_dir,
-          "Can't delete existing version directory.");
-      return false;
-    }
-  } else {
-    FilePath parent = dest_dir.DirName();
-    if (!file_util::DirectoryExists(parent)) {
-      if (!file_util::CreateDirectory(parent)) {
-        ReportExtensionInstallError(source_dir,
-                                    "Couldn't create extension directory.");
-        return false;
-      }
-    }
-  }
-  if (!file_util::Move(source_dir, dest_dir)) {
-    ReportExtensionInstallError(source_dir,
-                                "Couldn't move temporary directory.");
-    return false;
-  }
-
-  return true;
-}
-
-bool ExtensionsServiceBackend::SetCurrentVersion(const FilePath& dest_dir,
-                                                 const std::string& version) {
-  // Write out the new CurrentVersion file.
-  // <profile>/Extension/<name>/CurrentVersion
-  FilePath current_version =
-      dest_dir.AppendASCII(ExtensionsService::kCurrentVersionFileName);
-  FilePath current_version_old =
-    current_version.InsertBeforeExtension(FILE_PATH_LITERAL("_old"));
-  if (file_util::PathExists(current_version_old)) {
-    if (!file_util::Delete(current_version_old, false)) {
-      ReportExtensionInstallError(dest_dir,
-                                  "Couldn't remove CurrentVersion_old file.");
-      return false;
-    }
-  }
-  if (file_util::PathExists(current_version)) {
-    if (!file_util::Move(current_version, current_version_old)) {
-      ReportExtensionInstallError(dest_dir,
-                                  "Couldn't move CurrentVersion file.");
-      return false;
-    }
-  }
-  net::FileStream stream;
-  int flags = base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE;
-  if (stream.Open(current_version, flags) != 0)
-    return false;
-  if (stream.Write(version.c_str(), version.size(), NULL) < 0) {
-    // Restore the old CurrentVersion.
-    if (file_util::PathExists(current_version_old)) {
-      if (!file_util::Move(current_version_old, current_version)) {
-        LOG(WARNING) << "couldn't restore " << current_version_old.value() <<
-            " to " << current_version.value();
-
-        // TODO(erikkay): This is an ugly state to be in.  Try harder?
-      }
-    }
-    ReportExtensionInstallError(dest_dir,
-                                "Couldn't create CurrentVersion file.");
-    return false;
-  }
-  return true;
 }
 
 void ExtensionsServiceBackend::InstallExtension(
@@ -992,53 +705,37 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
 
   // If an expected id was provided, make sure it matches.
   if (!expected_id.empty() && expected_id != extension->id()) {
-    std::string error_msg = "ID in new extension manifest (";
-    error_msg += extension->id();
-    error_msg += ") does not match expected ID (";
-    error_msg += expected_id;
-    error_msg += ")";
+    ReportExtensionInstallError(crx_path,
+        StringPrintf("ID in new extension manifest (%s) does not match "
+                     "expected id (%s)", extension->id().c_str(),
+                     expected_id.c_str()));
+    return;
+  }
+
+  FilePath version_dir;
+  Extension::InstallType install_type = Extension::INSTALL_ERROR;
+  std::string error_msg;
+  if (!extension_file_util::InstallExtension(unpacked_path, install_directory_,
+                                             extension->id(),
+                                             extension->VersionString(),
+                                             &version_dir,
+                                             &install_type, &error_msg)) {
     ReportExtensionInstallError(crx_path, error_msg);
     return;
   }
 
-  // <profile>/Extensions/<id>
-  FilePath dest_dir = install_directory_.AppendASCII(extension->id());
-  std::string version = extension->VersionString();
-  std::string current_version;
-  Extension::InstallType install_type =
-      CompareToInstalledVersion(extension->id(), version, &current_version);
-
-  // Do not allow downgrade.
   if (install_type == Extension::DOWNGRADE) {
-    ReportExtensionInstallError(crx_path,
-        "Error: Attempt to downgrade extension from more recent version.");
+    ReportExtensionInstallError(crx_path, "Attempted to downgrade extension.");
     return;
   }
 
-  if (install_type == Extension::REINSTALL) {
-    if (NeedsReinstall(extension->id(), current_version)) {
-      // Treat corrupted existing installation as new install case.
-      install_type = Extension::NEW_INSTALL;
-    } else {
-      // The client may use this as a signal (to switch themes, for instance).
-      ReportExtensionOverinstallAttempted(extension->id(), crx_path);
-      return;
-    }
-  }
-
-  // <profile>/Extensions/<dir_name>/<version>
-  FilePath version_dir = dest_dir.AppendASCII(version);
   extension->set_path(version_dir);
 
-  // If anything fails after this, we want to delete the extension dir.
-  ScopedTempDir scoped_version_dir;
-  scoped_version_dir.Set(version_dir);
-
-  if (!InstallDirSafely(unpacked_path, version_dir))
+  if (install_type == Extension::REINSTALL) {
+    // The client may use this as a signal (to switch themes, for instance).
+    ReportExtensionOverinstallAttempted(extension->id(), crx_path);
     return;
-
-  if (!SetCurrentVersion(dest_dir, version))
-    return;
+  }
 
   frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
       frontend_, &ExtensionsService::OnExtensionInstalled, crx_path,
@@ -1051,8 +748,6 @@ void ExtensionsServiceBackend::OnExtensionUnpacked(
   // Hand off ownership of the extension to the frontend.
   extensions->push_back(extension_deleter.release());
   ReportExtensionsLoaded(extensions);
-
-  scoped_version_dir.Take();
 }
 
 void ExtensionsServiceBackend::ReportExtensionInstallError(
@@ -1076,23 +771,6 @@ void ExtensionsServiceBackend::ReportExtensionOverinstallAttempted(
   frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
       frontend_, &ExtensionsService::OnExtensionOverinstallAttempted, id,
       path));
-}
-
-bool ExtensionsServiceBackend::ShouldSkipInstallingExtension(
-    const std::set<std::string>& ids_to_ignore,
-    const std::string& id) {
-  if (ids_to_ignore.find(id) != ids_to_ignore.end()) {
-    LOG(INFO) << "Skipping uninstalled external extension " << id;
-    return true;
-  }
-  return false;
-}
-
-void ExtensionsServiceBackend::CheckVersionAndInstallExtension(
-    const std::string& id, const Version* extension_version,
-    const FilePath& extension_path) {
-  if (ShouldInstall(id, extension_version))
-    InstallOrUpdateExtension(FilePath(extension_path), false, id, false);
 }
 
 bool ExtensionsServiceBackend::LookupExternalExtension(
@@ -1154,41 +832,6 @@ bool ExtensionsServiceBackend::CheckExternalUninstall(
   return true;  // This is not a known extension, uninstall.
 }
 
-// Assumes that the extension isn't currently loaded or in use.
-void ExtensionsServiceBackend::UninstallExtension(
-    const std::string& extension_id) {
-  // First, delete the Current Version file. If the directory delete fails, then
-  // at least the extension won't be loaded again.
-  FilePath extension_directory = install_directory_.AppendASCII(extension_id);
-
-  if (!file_util::PathExists(extension_directory)) {
-    LOG(WARNING) << "Asked to remove a non-existent extension " << extension_id;
-    return;
-  }
-
-  FilePath current_version_file = extension_directory.AppendASCII(
-      ExtensionsService::kCurrentVersionFileName);
-  if (!file_util::PathExists(current_version_file)) {
-    LOG(WARNING) << "Extension " << extension_id
-                 << " does not have a Current Version file.";
-  } else {
-    if (!file_util::Delete(current_version_file, false)) {
-      LOG(WARNING) << "Could not delete Current Version file for extension "
-                   << extension_id;
-      return;
-    }
-  }
-
-  // OK, now try and delete the entire rest of the directory. One major place
-  // this can fail is if the extension contains a plugin (stupid plugins). It's
-  // not a big deal though, because we'll notice next time we startup that the
-  // Current Version file is gone and finish the delete then.
-  if (!file_util::Delete(extension_directory, true)) {
-    LOG(WARNING) << "Could not delete directory for extension "
-                 << extension_id;
-  }
-}
-
 void ExtensionsServiceBackend::ClearProvidersForTesting() {
   external_extension_providers_.clear();
 }
@@ -1203,19 +846,8 @@ void ExtensionsServiceBackend::SetProviderForTesting(
 
 void ExtensionsServiceBackend::OnExternalExtensionFound(
     const std::string& id, const Version* version, const FilePath& path) {
-  CheckVersionAndInstallExtension(id, version, path);
-}
-
-bool ExtensionsServiceBackend::ShouldInstall(const std::string& id,
-                                             const Version* version) {
-  std::string current_version;
-  Extension::InstallType install_type =
-      CompareToInstalledVersion(id, version->GetString(), &current_version);
-
-  if (install_type == Extension::DOWNGRADE)
-    return false;
-
-  return (install_type == Extension::UPGRADE ||
-          install_type == Extension::NEW_INSTALL ||
-          NeedsReinstall(id, current_version));
+  InstallOrUpdateExtension(path,
+                           false,  // not from gallery
+                           id,  // expected id
+                           true);  // silent
 }

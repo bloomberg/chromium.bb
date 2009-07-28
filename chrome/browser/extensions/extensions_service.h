@@ -281,10 +281,6 @@ class ExtensionsServiceBackend
   void LoadInstalledExtensions(scoped_refptr<ExtensionsService> frontend,
                                InstalledExtensions* installed);
 
-  // Scans the extension installation directory to look for partially installed
-  // or extensions to uninstall.
-  void GarbageCollectExtensions(scoped_refptr<ExtensionsService> frontend);
-
   // Loads a single extension from |path| where |path| is the top directory of
   // a specific extension where its manifest file lives.
   // Errors are reported through ExtensionErrorReporter. On completion,
@@ -314,11 +310,6 @@ class ExtensionsServiceBackend
   void CheckForExternalUpdates(std::set<std::string> ids_to_ignore,
                                scoped_refptr<ExtensionsService> frontend);
 
-  // Deletes all versions of the extension from the filesystem. Note that only
-  // extensions whose location() == INTERNAL can be uninstalled. Attempting to
-  // uninstall other extensions will silently fail.
-  void UninstallExtension(const std::string& extension_id);
-
   // Clear all ExternalExtensionProviders.
   void ClearProvidersForTesting();
 
@@ -338,22 +329,6 @@ class ExtensionsServiceBackend
   // Loads a single installed extension.
   void LoadInstalledExtension(const std::string& id, const FilePath& path,
                               Extension::Location location);
-
-  // Utility function to read an extension manifest and return it as a
-  // DictionaryValue. If it fails, NULL is returned and |error| contains an
-  // appropriate message.
-  DictionaryValue* ReadManifest(const FilePath& manifest_path,
-                                std::string* error);
-
-  // Load a single extension from |extension_path|, the top directory of
-  // a specific extension where its manifest file lives.
-  Extension* LoadExtension(const FilePath& extension_path,
-                           Extension::Location location,
-                           bool require_id);
-
-  // Load a single extension from |extension_path|, the top directory of
-  // a versioned extension where its Current Version file lives.
-  Extension* LoadExtensionCurrentVersion(const FilePath& extension_path);
 
   // Install a crx file at |extension_path|. If |expected_id| is not empty, it's
   // verified against the extension's manifest before installation. If the
@@ -395,17 +370,6 @@ class ExtensionsServiceBackend
   void ReportExtensionOverinstallAttempted(const std::string& id,
                                            const FilePath& path);
 
-  // Checks a set of strings (containing id's to ignore) in order to determine
-  // if the extension should be installed.
-  bool ShouldSkipInstallingExtension(const std::set<std::string>& ids_to_ignore,
-                                     const std::string& id);
-
-  // Installs the extension if the extension is a newer version or if the
-  // extension hasn't been installed before.
-  void CheckVersionAndInstallExtension(const std::string& id,
-                                       const Version* extension_version,
-                                       const FilePath& extension_path);
-
   // Lookup an external extension by |id| by going through all registered
   // external extension providers until we find a provider that contains an
   // extension that matches. If |version| is not NULL, the extension version
@@ -416,44 +380,11 @@ class ExtensionsServiceBackend
                                Version** version,
                                Extension::Location* location);
 
-  // Read the manifest from the front of the extension file.
-  // Caller takes ownership of return value.
-  DictionaryValue* ReadManifest(const FilePath& extension_path);
-
-  // Reads the Current Version file from |dir| into |version_string|.
-  bool ReadCurrentVersion(const FilePath& dir, std::string* version_string);
-
-  // Look for an existing installation of the extension |id| & return
-  // an InstallType that would result from installing |new_version_str|.
-  Extension::InstallType CompareToInstalledVersion(const std::string& id,
-      const std::string& new_version_str, std::string* current_version_str);
-
-  // Does an existing installed extension need to be reinstalled.
-  bool NeedsReinstall(const std::string& id,
-                      const std::string& current_version);
-
-  // Install the extension dir by moving it from |source| to |dest| safely.
-  bool InstallDirSafely(const FilePath& source,
-                        const FilePath& dest);
-
-  // Update the CurrentVersion file in |dest_dir| to |version|.
-  bool SetCurrentVersion(const FilePath& dest_dir,
-                         const std::string& version);
-
   // For the extension in |version_path| with |id|, check to see if it's an
   // externally managed extension.  If so return true if it should be
   // uninstalled.
   bool CheckExternalUninstall(const std::string& id,
                               Extension::Location location);
-
-  // Should an extension of |id| and |version| be installed?
-  // Returns true if no extension of type |id| is installed or if |version|
-  // is greater than the current installed version.
-  bool ShouldInstall(const std::string& id, const Version* version);
-
-  // The name of a temporary directory to install an extension into for
-  // validation before finalizing install.
-  static const char* kTempExtensionName;
 
   // This is a naked pointer which is set by each entry point.
   // The entry point is responsible for ensuring lifetime.

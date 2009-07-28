@@ -39,6 +39,7 @@ class Extension {
   };
 
   enum InstallType {
+    INSTALL_ERROR,
     DOWNGRADE,
     REINSTALL,
     UPGRADE,
