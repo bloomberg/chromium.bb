@@ -766,14 +766,9 @@ std::string MetricsService::GenerateClientID() {
   DCHECK(result == kGUIDSize);
 
   return WideToUTF8(guid_string.substr(1, guid_string.length() - 2));
-#elif defined(LINUX2)
+#else
   uint64 sixteen_bytes[2] = { base::RandUint64(), base::RandUint64() };
   return RandomBytesToGUIDString(sixteen_bytes);
-#else
-  // TODO(cmasone): enable the above for all OS_POSIX platforms once the
-  // first-run dialog text is all up to date.
-  NOTIMPLEMENTED();
-  return std::string();
 #endif
 }
 
