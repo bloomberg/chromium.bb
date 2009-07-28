@@ -185,15 +185,11 @@ views::View* NonClientView::GetViewForPoint(const gfx::Point& point) {
 }
 
 bool NonClientView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
   *role = AccessibilityTypes::ROLE_WINDOW;
   return true;
 }
 
 bool NonClientView::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
   if (!accessible_name_.empty()) {
     *name = accessible_name_;
     return true;
