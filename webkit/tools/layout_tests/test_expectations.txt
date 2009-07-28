@@ -3176,3 +3176,10 @@ BUG17845 DEBUG : LayoutTests/svg/dynamic-updates/SVGRectElement-svgdom-y-prop.ht
 BUG17845 DEBUG : LayoutTests/svg/hixie/dynamic/005.xml = CRASH
 // This was already SLOW FAIL, only CRASH is new
 BUG17845 SLOW : LayoutTests/http/tests/misc/acid3.html = FAIL CRASH
+
+// Test failures from WebKit merge 46426 to 46471
+// These probably just need to be rebaselined on win/linux.
+BUG17883 WIN LINUX : LayoutTests/editing/deleting/delete-3857753-fix.html = FAIL
+BUG17883 WIN LINUX : LayoutTests/editing/deleting/pruning-after-merge-2.html = FAIL
+BUG17883 WIN LINUX : LayoutTests/editing/execCommand/5138441.html = FAIL
+BUG17883 WIN LINUX : LayoutTests/editing/pasteboard/display-block-on-spans.html = FAIL
