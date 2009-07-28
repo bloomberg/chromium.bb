@@ -41,6 +41,10 @@ class WatchdogCounter : public Watchdog {
 };
 
 class WatchdogTest : public testing::Test {
+ public:
+  void SetUp() {
+    Watchdog::ResetStaticData();
+  }
 };
 
 
@@ -48,13 +52,13 @@ class WatchdogTest : public testing::Test {
 // Actual tests
 
 // Minimal constructor/destructor test.
-TEST(WatchdogTest, StartupShutdownTest) {
+TEST_F(WatchdogTest, StartupShutdownTest) {
   Watchdog watchdog1(TimeDelta::FromMilliseconds(300), "Disabled", false);
   Watchdog watchdog2(TimeDelta::FromMilliseconds(300), "Enabled", true);
 }
 
 // Test ability to call Arm and Disarm repeatedly.
-TEST(WatchdogTest, ArmDisarmTest) {
+TEST_F(WatchdogTest, ArmDisarmTest) {
   Watchdog watchdog1(TimeDelta::FromMilliseconds(300), "Disabled", false);
   watchdog1.Arm();
   watchdog1.Disarm();
@@ -69,7 +73,7 @@ TEST(WatchdogTest, ArmDisarmTest) {
 }
 
 // Make sure a basic alarm fires when the time has expired.
-TEST(WatchdogTest, AlarmTest) {
+TEST_F(WatchdogTest, AlarmTest) {
   WatchdogCounter watchdog(TimeDelta::FromMilliseconds(10), "Enabled", true);
   watchdog.Arm();
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(5),
@@ -78,7 +82,7 @@ TEST(WatchdogTest, AlarmTest) {
 }
 
 // Make sure a basic alarm fires when the time has expired.
-TEST(WatchdogTest, AlarmPriorTimeTest) {
+TEST_F(WatchdogTest, AlarmPriorTimeTest) {
   WatchdogCounter watchdog(TimeDelta::TimeDelta(), "Enabled2", true);
   // Set a time in the past.
   watchdog.ArmSomeTimeDeltaAgo(TimeDelta::FromSeconds(2));
@@ -90,7 +94,7 @@ TEST(WatchdogTest, AlarmPriorTimeTest) {
 }
 
 // Make sure a disable alarm does nothing, even if we arm it.
-TEST(WatchdogTest, ConstructorDisabledTest) {
+TEST_F(WatchdogTest, ConstructorDisabledTest) {
   WatchdogCounter watchdog(TimeDelta::FromMilliseconds(10), "Disabled", false);
   watchdog.Arm();
   // Alarm should not fire, as it was disabled.
@@ -99,7 +103,7 @@ TEST(WatchdogTest, ConstructorDisabledTest) {
 }
 
 // Make sure Disarming will prevent firing, even after Arming.
-TEST(WatchdogTest, DisarmTest) {
+TEST_F(WatchdogTest, DisarmTest) {
   WatchdogCounter watchdog(TimeDelta::FromSeconds(5), "Enabled3", true);
   watchdog.Arm();
   PlatformThread::Sleep(100);  // Don't sleep too long

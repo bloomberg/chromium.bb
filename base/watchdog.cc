@@ -127,6 +127,13 @@ void Watchdog::ThreadDelegate::SetThreadName() const {
 }
 
 // static
+void Watchdog::ResetStaticData() {
+  AutoLock lock(static_lock_);
+  last_debugged_alarm_time_ = TimeTicks();
+  last_debugged_alarm_delay_ = TimeDelta();
+}
+
+// static
 Lock Watchdog::static_lock_;  // Lock for access of static data...
 // static
 TimeTicks Watchdog::last_debugged_alarm_time_ = TimeTicks();

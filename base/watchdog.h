@@ -48,6 +48,10 @@ class Watchdog {
     DLOG(INFO) << "Watchdog alarmed for " << thread_watched_name_;
   }
 
+  // Reset static data to initial state. Useful for tests, to ensure
+  // they are independent.
+  static void ResetStaticData();
+
  private:
   class ThreadDelegate : public PlatformThread::Delegate {
    public:
