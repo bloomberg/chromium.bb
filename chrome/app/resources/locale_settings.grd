@@ -558,7 +558,7 @@
       <!-- The URL for the themes gallery. -->
       <!-- TODO(arv): Use GRITLANGCODE -->
       <message name="IDS_THEMES_GALLERY_URL" translateable="false">
-        https://tools.google.com/chrome/intl/en/themes/
+        https://tools.google.com/chrome/intl/en/themes/index.html
       </message>
       <!-- The URL for Google Chrome welcome page. This is used for the pre -->
       <!-- populated thumbnails. -->
