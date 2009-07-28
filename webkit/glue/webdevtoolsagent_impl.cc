@@ -41,6 +41,8 @@ using WebCore::InspectorFrontend;
 using WebCore::InspectorResource;
 using WebCore::Node;
 using WebCore::Page;
+using WebCore::ScriptObject;
+using WebCore::ScriptState;
 using WebCore::ScriptValue;
 using WebCore::String;
 using WebCore::V8ClassIndex;
@@ -103,9 +105,10 @@ void WebDevToolsAgentImpl::Attach() {
     tools_agent_delegate_stub_->SetResourcesPanelEnabled(
         ic->resourceTrackingEnabled());
     v8::HandleScope scope;
+    ScriptState* state = scriptStateFromPage(web_view_impl_->page());
     ic->setFrontendProxyObject(
-        scriptStateFromPage(web_view_impl_->page()),
-        utility_context_->Global());
+        state,
+        ScriptObject(state, utility_context_->Global()));
     // Allow controller to send messages to the frontend.
     ic->setWindowVisible(true, false);
   }
