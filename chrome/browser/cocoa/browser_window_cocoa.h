@@ -98,12 +98,6 @@ class BrowserWindowCocoa : public BrowserWindow,
   NSWindow* window_;  // weak, owned by controller
   Browser* browser_;  // weak, owned by controller
   BrowserWindowController* controller_;  // weak, owns us
-
-  // Data for shelves and stuff ------------------------------------------------
-  // FIXME(thakis): This should probably in the controller on OS X.
-
-  // The download shelf view (view at the bottom of the page).
-  scoped_ptr<DownloadShelf> download_shelf_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_WINDOW_COCOA_H_

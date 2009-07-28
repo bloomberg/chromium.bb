@@ -24,8 +24,7 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        NSWindow* window)
   : window_(window),
     browser_(browser),
-    controller_(controller),
-    download_shelf_() {
+    controller_(controller) {
   // This pref applies to all windows, so all must watch for it.
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
