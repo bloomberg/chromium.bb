@@ -674,7 +674,7 @@ o3djs.util.isScriptUri = function(uri) {
  * @return {boolean} True if we want this script tag.
  */
 o3djs.util.isWantedScriptTag_ = function(scriptElement) {
-  return scriptElement.id && scriptElement.id.match(/^o3d/);
+  return scriptElement.id && scriptElement.id.match(/^o3dscript/);
 };
 
 /**
