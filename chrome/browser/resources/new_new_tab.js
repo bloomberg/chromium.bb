@@ -456,11 +456,13 @@ var mostVisited = {
       }
 
       if (!newItem) {
-        newItem = {filler: true};
-      }
+        // If no other page is available to replace the blacklisted item,
+        // we need to reorder items s.t. all filler items are in the rightmost
+        // indices.
+        mostVisitedPages(data);
 
       // Replace old item with new item in the mostVisitedData array.
-      if (oldIndex != -1) {
+      } else if (oldIndex != -1) {
         mostVisitedData.splice(oldIndex, 1, newItem);
         mostVisitedPages(mostVisitedData);
         addClass(el, 'fade-in');
