@@ -417,12 +417,19 @@ bool BrowserRenderProcessHost::Init() {
     // messages flow between the browser and renderer, this thread is required
     // to prevent a deadlock in single-process mode.  Since the primordial
     // thread in the renderer process runs the WebKit code and can sometimes
-    // blocking calls to the UI thread (i.e. this thread), they need to run on
-    // separate threads.
+    // make blocking calls to the UI thread (i.e. this thread), they need to run
+    // on separate threads.
     in_process_renderer_.reset(new RendererMainThread(channel_id));
 
     base::Thread::Options options;
+#if !defined(OS_LINUX)
+    // In-process plugins require this to be a UI message loop.
     options.message_loop_type = MessageLoop::TYPE_UI;
+#else
+    // We can't have multiple UI loops on Linux, so we don't support
+    // in-process plugins.
+    options.message_loop_type = MessageLoop::TYPE_DEFAULT;
+#endif
     in_process_renderer_->StartWithOptions(options);
   } else {
     base::ProcessHandle process = 0;
