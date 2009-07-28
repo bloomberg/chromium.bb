@@ -1073,3 +1073,17 @@ WebInspector.Console.prototype._formatobject = function(object, elem) {
     glassPane.parentElement.removeChild(glassPane);
   };
 })();
+
+
+// We do not inspect DOM nodes using $ shortcuts yet.
+WebInspector.Console.prototype.addInspectedNode = function(node) {
+};
+
+
+// Pending fix upstream
+WebInspector.Console.prototype._ensureCommandLineAPIInstalled =
+    function(inspectedWindow) {
+  inspectedWindow._inspectorCommandLineAPI = {
+    _addInspectedNode : function() {}
+  };
+};
