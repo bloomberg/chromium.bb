@@ -13,17 +13,17 @@
 
 TEST(BlacklistIOTest, Generic) {
   // Testing data path.
-  std::wstring data_dir;
+  FilePath data_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
 
-  std::wstring input(data_dir);
-  file_util::AppendToPath(&input, L"blacklist_small.pbl");
+  FilePath input =
+      data_dir.Append(FilePath::FromWStringHack(L"blacklist_small.pbl"));
 
-  std::wstring expected(data_dir);
-  file_util::AppendToPath(&expected, L"blacklist_small.pbr");
+  FilePath expected =
+      data_dir.Append(FilePath::FromWStringHack(L"blacklist_small.pbr"));
 
   BlacklistIO io;
-  EXPECT_TRUE(io.Read(FilePath::FromWStringHack(input)));
+  EXPECT_TRUE(io.Read(input));
   const std::list<Blacklist::Entry*>& blacklist = io.blacklist();
   EXPECT_EQ(5U, blacklist.size());
 
@@ -38,10 +38,68 @@ TEST(BlacklistIOTest, Generic) {
   EXPECT_EQ("Sample", io.providers().front()->name());
   EXPECT_EQ("http://www.google.com", io.providers().front()->url());
 
-  std::wstring output;
+  FilePath output;
   PathService::Get(base::DIR_TEMP, &output);
-  file_util::AppendToPath(&output, L"blacklist_small.pbr");
-  CHECK(io.Write(FilePath::FromWStringHack(output)));
+  output = output.Append(FilePath::FromWStringHack(L"blacklist_small.pbr"));
+  CHECK(io.Write(output));
+  EXPECT_TRUE(file_util::ContentsEqual(output, expected));
+  EXPECT_TRUE(file_util::Delete(output, false));
+}
+
+TEST(BlacklistIOTest, Combine) {
+  // Testing data path.
+  FilePath data_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
+  data_dir = data_dir.Append(FilePath::FromWStringHack(L"blacklist_samples"));
+
+  FilePath input1 =
+      data_dir.Append(FilePath::FromWStringHack(L"annoying_ads.pbl"));
+
+  FilePath input2 =
+    data_dir.Append(FilePath::FromWStringHack(L"block_flash.pbl"));
+
+  FilePath input3 =
+    data_dir.Append(FilePath::FromWStringHack(L"session_cookies.pbl"));
+
+  BlacklistIO io;
+  EXPECT_TRUE(io.Read(input1));
+  EXPECT_TRUE(io.Read(input2));
+  EXPECT_TRUE(io.Read(input3));
+
+  const std::list<Blacklist::Entry*>& blacklist = io.blacklist();
+  EXPECT_EQ(5U, blacklist.size());
+
+  std::list<Blacklist::Entry*>::const_iterator i = blacklist.begin();
+  EXPECT_EQ(Blacklist::kBlockAll, (*i)->attributes());
+  EXPECT_EQ("annoying.ads.tv/@", (*i++)->pattern());
+  EXPECT_EQ(Blacklist::kBlockAll, (*i)->attributes());
+  EXPECT_EQ("@/annoying/120x600.jpg", (*i++)->pattern());
+  EXPECT_EQ(Blacklist::kBlockAll, (*i)->attributes());
+  EXPECT_EQ("@/annoying_ads/@", (*i++)->pattern());
+  EXPECT_EQ(Blacklist::kBlockByType, (*i)->attributes());
+  EXPECT_EQ("@", (*i++)->pattern());
+  EXPECT_EQ(Blacklist::kDontPersistCookies, (*i)->attributes());
+  EXPECT_EQ("@", (*i++)->pattern());
+
+  const std::list<Blacklist::Provider*>& providers = io.providers();
+  EXPECT_EQ(3U, providers.size());
+
+  std::list<Blacklist::Provider*>::const_iterator j = providers.begin();
+  EXPECT_EQ("AnnoyingAds", (*j)->name());
+  EXPECT_EQ("http://www.ads.tv", (*j++)->url());
+  EXPECT_EQ("BlockFlash", (*j)->name());
+  EXPECT_EQ("http://www.google.com", (*j++)->url());
+  EXPECT_EQ("SessionCookies", (*j)->name());
+  EXPECT_EQ("http://www.google.com", (*j++)->url());
+
+  FilePath output;
+  PathService::Get(base::DIR_TEMP, &output);
+  output = output.Append(FilePath::FromWStringHack(L"combine3.pbr"));
+
+  FilePath expected =
+      data_dir.Append(FilePath::FromWStringHack(L"combine3.pbr"));
+
+  CHECK(io.Write(output));
   EXPECT_TRUE(file_util::ContentsEqual(output, expected));
   EXPECT_TRUE(file_util::Delete(output, false));
 }

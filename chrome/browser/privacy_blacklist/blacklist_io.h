@@ -37,6 +37,7 @@ class BlacklistIO {
   std::list<Blacklist::Provider*> providers_;
 
   FRIEND_TEST(BlacklistIOTest, Generic);
+  FRIEND_TEST(BlacklistIOTest, Combine);
   DISALLOW_COPY_AND_ASSIGN(BlacklistIO);
 };
 

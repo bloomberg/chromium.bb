@@ -24,8 +24,8 @@
 namespace {
 
 int PrintUsage(int argc, ICHAR* argv[]) {
-  ICERR << "Usage: " << argv[0] << " <source> <target>\n"
-           "       <source> is the text blacklist (.pbl) to load.\n"
+  ICERR << "Usage: " << argv[0] << " <source>... <target>\n"
+           "       <source> are text blacklists (.pbl) to load.\n"
            "       <target> is the binary output blacklist repository.\n\n"
            "Adds all entries from <source> to <target>.\n"
            "Creates <target> if it does not exist.\n";
@@ -40,18 +40,18 @@ int IMAIN(int argc, ICHAR* argv[]) {
   if (argc < 3)
     return PrintUsage(argc, argv);
 
-  FilePath input(argv[1]);
-  FilePath output(argv[2]);
-
   BlacklistIO io;
-  if (io.Read(input)) {
-    if (io.Write(output)) {
-      return 0;
-    } else {
-      ICERR << "Error writing output file " << argv[2] << "\n";
+  for (int current = 1; current < argc-1; ++current) {
+    FilePath input(argv[current]);
+    if (!io.Read(input)) {
+      ICERR << "Error reading input file " << argv[current] << "\n";
+      return -1;
     }
-  } else {
-    ICERR << "Error reading input file " << argv[1] << "\n";
   }
-  return -1;
+
+  FilePath output(argv[argc-1]);
+  if (!io.Write(output))
+    ICERR << "Error writing output file " << argv[2] << "\n";
+
+  return 0;
 }

@@ -22,6 +22,23 @@ const char* const cookie_headers[2] = { "cookie", "set-cookie" };
 
 }  // namespace
 
+const unsigned int Blacklist::kBlockAll = 1;
+const unsigned int Blacklist::kDontSendCookies = 1 << 1;
+const unsigned int Blacklist::kDontStoreCookies = 1 << 2;
+const unsigned int Blacklist::kDontPersistCookies = 1 << 3;
+const unsigned int Blacklist::kDontSendReferrer = 1 << 4;
+const unsigned int Blacklist::kDontSendUserAgent = 1 << 5;
+const unsigned int Blacklist::kBlockByType = 1 << 6;
+const unsigned int Blacklist::kBlockUnsecure = 1 << 7;
+const unsigned int Blacklist::kBlockRequest = kBlockAll | kBlockUnsecure;
+const unsigned int Blacklist::kBlockResponse = kBlockByType;
+const unsigned int Blacklist::kModifySentHeaders =
+    kDontSendCookies | kDontSendUserAgent | kDontSendReferrer;
+const unsigned int Blacklist::kModifyReceivedHeaders =
+    kDontPersistCookies | kDontStoreCookies;
+const unsigned int Blacklist::kFilterByHeaders =
+    kModifyReceivedHeaders | kBlockByType;
+
 // Value is not important, here just that the object has an address.
 const void* const Blacklist::kRequestDataKey = 0;
 
