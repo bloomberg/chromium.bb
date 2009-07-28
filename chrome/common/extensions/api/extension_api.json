@@ -542,7 +542,7 @@
             name: "idOrIdList",
             choice : [
               {type: "string"},
-              {type: "array", item: {type: "string"}, minItems: 1}
+              {type: "array", items: {type: "string"}, minItems: 1}
             ] 
           },
           {type: "function", name: "callback"}
