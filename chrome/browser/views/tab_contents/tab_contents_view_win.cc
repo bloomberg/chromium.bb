@@ -630,6 +630,8 @@ void TabContentsViewWin::WasShown() {
 }
 
 void TabContentsViewWin::WasSized(const gfx::Size& size) {
+  UINT swp_flags = SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE;
+  SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
   if (tab_contents()->interstitial_page())
     tab_contents()->interstitial_page()->SetSize(size);
   if (tab_contents()->render_widget_host_view())
