@@ -61,7 +61,9 @@ class PasswordsPageGtk {
   // A short class to mediate requests to the password store.
   class PasswordListPopulater : public PasswordStoreConsumer {
    public:
-    explicit PasswordListPopulater(PasswordsPageGtk* page) : page_(page) {
+    explicit PasswordListPopulater(PasswordsPageGtk* page)
+        : page_(page),
+          pending_login_query_(0) {
     }
 
     // Send a query to the password store to populate a PasswordsPageGtk.

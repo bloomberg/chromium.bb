@@ -50,7 +50,9 @@ class ExceptionsPageGtk {
   // A short class to mediate requests to the password store.
   class ExceptionListPopulater : public PasswordStoreConsumer {
    public:
-    explicit ExceptionListPopulater(ExceptionsPageGtk* page) : page_(page) {
+    explicit ExceptionListPopulater(ExceptionsPageGtk* page)
+        : page_(page),
+          pending_login_query_(0) {
     }
 
     // Send a query to the password store to populate an ExceptionsPageGtk.
