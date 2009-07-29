@@ -622,15 +622,15 @@ namespace o3d {
 extern "C" {
 #endif
 
-NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs,
-                             NPPluginFuncs *pluginFuncs) {
+NPError EXPORT_SYMBOL OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs,
+                                           NPPluginFuncs *pluginFuncs) {
   NPError retval = InitializeNPNApi(browserFuncs);
   if (retval != NPERR_NO_ERROR) return retval;
   NP_GetEntryPoints(pluginFuncs);
   return InitializePlugin();
 }
 
-NPError OSCALL NP_Shutdown(void) {
+NPError EXPORT_SYMBOL OSCALL NP_Shutdown(void) {
   HANDLE_CRASHES;
   DLOG(INFO) << "NP_Shutdown";
 

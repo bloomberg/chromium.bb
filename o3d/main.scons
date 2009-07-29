@@ -684,7 +684,7 @@ linux_env.Append(
         ['NACL_LINUX', '1'],
         'SK_BUILD_FOR_UNIX'
     ],
-    CCFLAGS = ['-Wstrict-aliasing', '-m32'],
+    CCFLAGS = ['-Wstrict-aliasing', '-fvisibility=hidden', '-m32'],
     LINKFLAGS = ['-m32'],
     LIBS = ['pthread', 'rt', 'dl'],
     NACL_HTP_LIBS = ['ssl', 'crypto'],

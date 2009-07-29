@@ -397,6 +397,14 @@ def MakeObject(env, source, extra_defines):
 
 if CombinedLib:
 
+  if env.Bit('linux'):
+    # U_STATIC_IMPLEMENTATION gets overridden by U_COMBINED_IMPLEMENTATION,
+    # which on linux causes all the symbols to be exported from the shared
+    # library, conflicting with the browser's definition if it uses icu as well
+    # (e.g.  Chrome).
+    combined_flag = []
+  else:
+    combined_flag = ['U_COMBINED_IMPLEMENTATION']
   # These empirically fail to build when U_COMMON_IMPLEMENTATION
   # isn't defined in addition to U_COMBINED_IMPLEMENTATION.  Remove
   # them from the source file list and re-append them with Nodes
@@ -410,13 +418,11 @@ if CombinedLib:
   objects = []
   for n in need_common_implementation:
     common_input_files.remove(n)
-    o = MakeObject(env, n, ['U_COMMON_IMPLEMENTATION',
-                            'U_COMBINED_IMPLEMENTATION'])
+    o = MakeObject(env, n, ['U_COMMON_IMPLEMENTATION'] + combined_flag)
     objects.append(o)
 
   sources = common_input_files + i18n_input_files + stubdata_input_files
-  objects += [MakeObject(env, n, ['U_COMBINED_IMPLEMENTATION'])
-              for n in sources]
+  objects += [MakeObject(env, n, combined_flag) for n in sources]
 
   icu_lib = env.ComponentLibrary('icu', objects);
 

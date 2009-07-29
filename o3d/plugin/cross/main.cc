@@ -148,7 +148,7 @@ namespace o3d {
 extern "C" {
 #endif
 
-NPError OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
+NPError EXPORT_SYMBOL OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   HANDLE_CRASHES;
   pluginFuncs->version = 11;
   pluginFuncs->size = sizeof(*pluginFuncs);
@@ -169,7 +169,7 @@ NPError OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   return NPERR_NO_ERROR;
 }
 
-char *NP_GetMIMEDescription(void) {
+char * EXPORT_SYMBOL NP_GetMIMEDescription(void) {
   return O3D_PLUGIN_MIME_TYPE "::O3D MIME";
 }
 
@@ -177,7 +177,8 @@ char *NP_GetMIMEDescription(void) {
 
 #if !defined(O3D_INTERNAL_PLUGIN)
 extern "C" {
-NPError NP_GetValue(void *instance, NPPVariable variable, void *value) {
+NPError EXPORT_SYMBOL NP_GetValue(void *instance, NPPVariable variable,
+                                  void *value) {
   return o3d::NP_GetValue(instance, variable, value);
 }
 }

@@ -50,7 +50,7 @@ env = env.Clone(
     V8_MODE = 'release',
     V8_MODE_DIR = '$V8_SRC_DIR/obj/$V8_MODE',
     V8_SCONS_COM = '$PYTHON $SCONS -C $V8_SRC_DIR -f SConstruct '
-                   '$DEBUG_OPTS mode=$V8_MODE importenv=INCLUDE,LIB',
+                   '$DEBUG_OPTS mode=$V8_MODE importenv=INCLUDE,LIB,CCFLAGS',
     SCONS = '$SCONS_DIR/scons.py',
     DEBUG_OPTS = ['--debug=%s' % item for item in GetOption('debug')]
 )
@@ -109,6 +109,8 @@ if v8_env.Bit('windows'):
     v8_env['ENV']['LIB'] =  lib_path  + ";" + v8_env['ENV']['LIB']
   except KeyError:
     v8_env['ENV']['LIB'] = lib_path
+elif v8_env.Bit('linux'):
+  v8_env['ENV']['CCFLAGS'] = '-fvisibility=hidden'
 
 v8_no_snapshot = v8_env.Command(
     v8_scons_targets_no_snapshot,
