@@ -40,9 +40,6 @@ class BrokerServices;
 namespace printing {
 class PrintJobManager;
 }
-namespace views {
-class AcceleratorHandler;
-}
 
 // NOT THREAD SAFE, call only from the main thread.
 // These functions shouldn't return NULL unless otherwise noted.
@@ -121,8 +118,6 @@ class BrowserProcess {
   virtual unsigned int ReleaseModule() = 0;
 
   virtual bool IsShuttingDown() = 0;
-
-  virtual views::AcceleratorHandler* accelerator_handler() = 0;
 
   virtual printing::PrintJobManager* print_job_manager() = 0;
 

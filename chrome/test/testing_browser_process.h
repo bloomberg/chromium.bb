@@ -123,10 +123,6 @@ class TestingBrowserProcess : public BrowserProcess {
     return false;
   }
 
-  virtual views::AcceleratorHandler* accelerator_handler() {
-    return NULL;
-  }
-
   virtual printing::PrintJobManager* print_job_manager() {
     return NULL;
   }

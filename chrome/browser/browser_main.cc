@@ -192,7 +192,8 @@ StringPiece NetResourceProvider(int key) {
 
 void RunUIMessageLoop(BrowserProcess* browser_process) {
 #if defined(OS_WIN)
-  MessageLoopForUI::current()->Run(browser_process->accelerator_handler());
+  views::AcceleratorHandler accelerator_handler;
+  MessageLoopForUI::current()->Run(&accelerator_handler);
 #elif defined(OS_POSIX)
   MessageLoopForUI::current()->Run();
 #endif

@@ -36,7 +36,6 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "views/focus/view_storage.h"
-#include "views/widget/accelerator_handler.h"
 #elif defined(OS_POSIX)
 // TODO(port): Remove the temporary scaffolding as we port the above headers.
 #include "chrome/common/temp_scaffolding_stubs.h"
@@ -388,17 +387,6 @@ void BrowserProcessImpl::CreateDevToolsManager() {
   DCHECK(devtools_manager_.get() == NULL);
   created_devtools_manager_ = true;
   devtools_manager_ = new DevToolsManager();
-}
-
-void BrowserProcessImpl::CreateAcceleratorHandler() {
-#if defined(OS_WIN)
-  DCHECK(accelerator_handler_.get() == NULL);
-  scoped_ptr<views::AcceleratorHandler> accelerator_handler(
-      new views::AcceleratorHandler);
-  accelerator_handler_.swap(accelerator_handler);
-#else
-  // TODO(port): remove this completely, it has no business being here.
-#endif
 }
 
 void BrowserProcessImpl::CreateGoogleURLTracker() {

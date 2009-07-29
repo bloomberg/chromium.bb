@@ -169,13 +169,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return 0 == module_ref_count_;
   }
 
-  virtual views::AcceleratorHandler* accelerator_handler() {
-    DCHECK(CalledOnValidThread());
-    if (!accelerator_handler_.get())
-      CreateAcceleratorHandler();
-    return accelerator_handler_.get();
-  }
-
   virtual printing::PrintJobManager* print_job_manager();
 
   virtual GoogleURLTracker* google_url_tracker() {
@@ -211,7 +204,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateIconManager();
   void CreateDebuggerWrapper(int port);
   void CreateDevToolsManager();
-  void CreateAcceleratorHandler();
   void CreateGoogleURLTracker();
 
   void InitBrokerServices(sandbox::BrokerServices* broker_services);
@@ -256,8 +248,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   scoped_ptr<Clipboard> clipboard_;
 
   scoped_ptr<AutomationProviderList> automation_provider_list_;
-
-  scoped_ptr<views::AcceleratorHandler> accelerator_handler_;
 
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
 
