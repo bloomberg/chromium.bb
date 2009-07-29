@@ -225,7 +225,8 @@ TEST_F(TCPClientSocketPoolTest, InitHostResolutionFailure) {
   host_resolver_->rules()->AddSimulatedFailure("unresolvable.host.name");
   TestSocketRequest req(pool_.get(), &request_order_, &completion_count_);
   HostResolver::RequestInfo info("unresolvable.host.name", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req.handle.Init("a", info, 5, &req));
+  EXPECT_EQ(ERR_IO_PENDING,
+            req.handle()->Init("a", info, kDefaultPriority, &req));
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req.WaitForResult());
 }
 
@@ -235,13 +236,13 @@ TEST_F(TCPClientSocketPoolTest, InitConnectionFailure) {
   TestSocketRequest req(pool_.get(), &request_order_, &completion_count_);
   HostResolver::RequestInfo info("a", 80);
   EXPECT_EQ(ERR_IO_PENDING,
-            req.handle.Init("a", info, 5, &req));
+            req.handle()->Init("a", info, kDefaultPriority, &req));
   EXPECT_EQ(ERR_CONNECTION_FAILED, req.WaitForResult());
 
   // Make the host resolutions complete synchronously this time.
   host_resolver_->set_synchronous_mode(true);
   EXPECT_EQ(ERR_CONNECTION_FAILED,
-            req.handle.Init("a", info, 5, &req));
+            req.handle()->Init("a", info, kDefaultPriority, &req));
 }
 
 TEST_F(TCPClientSocketPoolTest, PendingRequests) {
@@ -346,8 +347,9 @@ TEST_F(TCPClientSocketPoolTest, PendingRequests_NoKeepAlive) {
 TEST_F(TCPClientSocketPoolTest, CancelRequestClearGroup) {
   TestSocketRequest req(pool_.get(), &request_order_, &completion_count_);
   HostResolver::RequestInfo info("www.google.com", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req.handle.Init("a", info, 5, &req));
-  req.handle.Reset();
+  EXPECT_EQ(ERR_IO_PENDING,
+            req.handle()->Init("a", info, kDefaultPriority, &req));
+  req.handle()->Reset();
 
   PlatformThread::Sleep(100);
 
@@ -364,13 +366,15 @@ TEST_F(TCPClientSocketPoolTest, TwoRequestsCancelOne) {
   TestSocketRequest req2(pool_.get(), &request_order_, &completion_count_);
 
   HostResolver::RequestInfo info("www.google.com", 80);
-  EXPECT_EQ(ERR_IO_PENDING, req.handle.Init("a", info, 5, &req));
-  EXPECT_EQ(ERR_IO_PENDING, req2.handle.Init("a", info, 5, &req2));
+  EXPECT_EQ(ERR_IO_PENDING,
+            req.handle()->Init("a", info, kDefaultPriority, &req));
+  EXPECT_EQ(ERR_IO_PENDING,
+            req2.handle()->Init("a", info, kDefaultPriority, &req2));
 
-  req.handle.Reset();
+  req.handle()->Reset();
 
   EXPECT_EQ(OK, req2.WaitForResult());
-  req2.handle.Reset();
+  req2.handle()->Reset();
 }
 
 TEST_F(TCPClientSocketPoolTest, ConnectCancelConnect) {
@@ -381,12 +385,12 @@ TEST_F(TCPClientSocketPoolTest, ConnectCancelConnect) {
   TestSocketRequest req(pool_.get(), &request_order_, &completion_count_);
 
   HostResolver::RequestInfo info("www.google.com", 80);
-  EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", info, 5, &callback));
+  EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", info, kDefaultPriority, &callback));
 
   handle.Reset();
 
   TestCompletionCallback callback2;
-  EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", info, 5, &callback2));
+  EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", info, kDefaultPriority, &callback2));
 
   host_resolver_->set_synchronous_mode(true);
   // At this point, handle has two ConnectingSockets out for it.  Due to the
@@ -432,8 +436,8 @@ TEST_F(TCPClientSocketPoolTest, CancelRequest) {
 
   // Cancel a request.
   size_t index_to_cancel = kMaxSocketsPerGroup + 2;
-  EXPECT_FALSE(requests_[index_to_cancel]->handle.is_initialized());
-  requests_[index_to_cancel]->handle.Reset();
+  EXPECT_FALSE(requests_[index_to_cancel]->handle()->is_initialized());
+  requests_[index_to_cancel]->handle()->Reset();
 
   ReleaseAllConnections(KEEP_ALIVE);
 
@@ -527,12 +531,12 @@ TEST_F(TCPClientSocketPoolTest, CancelActiveRequestWithPendingRequests) {
   // Now, kMaxSocketsPerGroup requests should be active.  Let's cancel them.
   ASSERT_LE(kMaxSocketsPerGroup, static_cast<int>(requests_.size()));
   for (int i = 0; i < kMaxSocketsPerGroup; i++)
-    requests_[i]->handle.Reset();
+    requests_[i]->handle()->Reset();
 
   // Let's wait for the rest to complete now.
   for (size_t i = kMaxSocketsPerGroup; i < requests_.size(); ++i) {
     EXPECT_EQ(OK, requests_[i]->WaitForResult());
-    requests_[i]->handle.Reset();
+    requests_[i]->handle()->Reset();
   }
 
   EXPECT_EQ(requests_.size() - kMaxSocketsPerGroup, completion_count_);
