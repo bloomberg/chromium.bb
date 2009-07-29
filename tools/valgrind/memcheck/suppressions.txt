@@ -927,6 +927,7 @@
    fun:_ZN7WebCore10Pasteboard10writeImageEPNS_4NodeERKNS_4KURLERKNS_6StringE
 }
 {
+   # also bug 17979.  It's a nest of leaks.
    bug_17385
    Memcheck:Leak
    fun:_Znw*
@@ -934,10 +935,8 @@
    fun:_ZN3IPC12ChannelProxy7Context13CreateChannelERKSsRKNS_7Channel4ModeE
    fun:_ZN3IPC12ChannelProxy4InitERKSsNS_7Channel4ModeEP11MessageLoopb
    fun:_ZN3IPC12ChannelProxyC2ERKSsNS_7Channel4ModeEP11MessageLoopPNS0_7ContextEb
+   ...
    fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
-   fun:_ZN11ChildThread4InitEv
-   fun:_ZN11ChildThreadC2ESs
-   fun:_ZN12RenderThreadC1ERKSs
 }
 {
    bug_17540
