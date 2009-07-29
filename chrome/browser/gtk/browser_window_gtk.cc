@@ -275,16 +275,16 @@ gboolean HandleCustomAccelerator(guint keyval, GdkModifierType modifier,
     // Gtk doesn't allow GDK_Tab or GDK_ISO_Left_Tab to be an accelerator (see
     // gtk_accelerator_valid), so we need to handle these accelerators
     // manually.
+    // Some X clients (e.g. cygwin, NX client, etc.) also send GDK_KP_Tab when
+    // typing a tab key. We should also handle GDK_KP_Tab for such X clients as
+    // Firefox does.
     case GDK_Tab:
+    case GDK_ISO_Left_Tab:
+    case GDK_KP_Tab:
       if (GDK_CONTROL_MASK == modifier) {
         browser->ExecuteCommand(IDC_SELECT_NEXT_TAB);
         return TRUE;
-      }
-      break;
-
-    case GDK_ISO_Left_Tab:
-    case GDK_KP_Tab:
-      if ((GDK_CONTROL_MASK | GDK_SHIFT_MASK) == modifier) {
+      } else if ((GDK_CONTROL_MASK | GDK_SHIFT_MASK) == modifier) {
         browser->ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
         return TRUE;
       }
