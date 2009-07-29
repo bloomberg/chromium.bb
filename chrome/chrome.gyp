@@ -1068,6 +1068,8 @@
         'browser/gtk/dialogs_gtk.cc',
         'browser/gtk/download_item_gtk.cc',
         'browser/gtk/download_item_gtk.h',
+        'browser/gtk/download_request_dialog_delegate_gtk.cc',
+        'browser/gtk/download_request_dialog_delegate_gtk.h',
         'browser/gtk/download_shelf_gtk.cc',
         'browser/gtk/download_shelf_gtk.h',
         'browser/gtk/download_started_animation_gtk.cc',

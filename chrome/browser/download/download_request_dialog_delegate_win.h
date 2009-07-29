@@ -21,10 +21,6 @@ class DownloadRequestDialogDelegateWin : public DownloadRequestDialogDelegate,
   DownloadRequestDialogDelegateWin(TabContents* tab,
       DownloadRequestManager::TabDownloadState* host);
 
-  void set_host(DownloadRequestManager::TabDownloadState* host) {
-    host_ = host;
-  }
-
  private:
   // DownloadRequestDialogDelegate methods.
   virtual void CloseWindow();
