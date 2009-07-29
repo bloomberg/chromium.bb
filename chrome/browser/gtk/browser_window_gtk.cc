@@ -12,10 +12,12 @@
 #include "base/base_paths_linux.h"
 #include "base/command_line.h"
 #include "base/gfx/gtk_util.h"
+#include "base/gfx/rect.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -54,6 +56,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/window_sizer.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -1341,6 +1344,15 @@ void BrowserWindowGtk::SaveWindowPosition() {
   window_preferences->SetInteger(L"right", restored_bounds_.right());
   window_preferences->SetInteger(L"bottom", restored_bounds_.bottom());
   window_preferences->SetBoolean(L"maximized", IsMaximized());
+
+  scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_info_provider(
+      WindowSizer::CreateDefaultMonitorInfoProvider());
+  gfx::Rect work_area(
+      monitor_info_provider->GetMonitorWorkAreaMatching(restored_bounds_));
+  window_preferences->SetInteger(L"work_area_left", work_area.x());
+  window_preferences->SetInteger(L"work_area_top", work_area.y());
+  window_preferences->SetInteger(L"work_area_right", work_area.right());
+  window_preferences->SetInteger(L"work_area_bottom", work_area.bottom());
 }
 
 // static

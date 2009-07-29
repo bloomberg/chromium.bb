@@ -27,6 +27,10 @@ static const gfx::Rect right_nonprimary(1024, 0, 1024, 768);
 // the immediate top of the primary 1024x768 monitor.
 static const gfx::Rect top_nonprimary(0, -768, 1024, 768);
 
+// Represents a 1024x768 monitor that is not the primary monitor, arranged to
+// the immediate bottom of the primary 1024x768 monitor.
+static const gfx::Rect bottom_nonprimary(0, 768, 1024, 768);
+
 // The work area for 1024x768 monitors with different taskbar orientations.
 static const gfx::Rect taskbar_bottom_work_area(0, 0, 1024, 734);
 static const gfx::Rect taskbar_top_work_area(0, 34, 1024, 734);
@@ -107,9 +111,11 @@ class TestStateProvider : public WindowSizer::StateProvider {
 
   void SetPersistentState(const gfx::Rect& bounds,
                           bool maximized,
+                          const gfx::Rect& work_area,
                           bool has_persistent_data) {
     persistent_bounds_ = bounds;
     persistent_maximized_ = maximized;
+    persistent_work_area_ = work_area;
     has_persistent_data_ = has_persistent_data;
   }
 
@@ -119,9 +125,12 @@ class TestStateProvider : public WindowSizer::StateProvider {
   }
 
   // Overridden from WindowSizer::StateProvider:
-  virtual bool GetPersistentState(gfx::Rect* bounds, bool* maximized) const {
+  virtual bool GetPersistentState(gfx::Rect* bounds,
+                                  bool* maximized,
+                                  gfx::Rect* saved_work_area) const {
     *bounds = persistent_bounds_;
     *maximized = persistent_maximized_;
+    *saved_work_area = persistent_work_area_;
     return has_persistent_data_;
   }
 
@@ -133,6 +142,7 @@ class TestStateProvider : public WindowSizer::StateProvider {
  private:
   gfx::Rect persistent_bounds_;
   bool persistent_maximized_;
+  gfx::Rect persistent_work_area_;
   bool has_persistent_data_;
 
   gfx::Rect last_active_bounds_;
@@ -149,6 +159,7 @@ static void GetWindowBounds(const gfx::Rect& monitor1_bounds,
                             const gfx::Rect& monitor2_bounds,
                             const gfx::Rect& state,
                             bool maximized,
+                            const gfx::Rect& work_area,
                             Source source,
                             gfx::Rect* out_bounds,
                             bool* out_maximized) {
@@ -158,7 +169,7 @@ static void GetWindowBounds(const gfx::Rect& monitor1_bounds,
     mip->AddMonitor(monitor2_bounds, monitor2_bounds);
   TestStateProvider* sp = new TestStateProvider;
   if (source == PERSISTED)
-    sp->SetPersistentState(state, maximized, true);
+    sp->SetPersistentState(state, maximized, work_area, true);
   else if (source == LAST_ACTIVE)
     sp->SetLastActiveState(state, true);
   WindowSizer sizer(sp, mip);
@@ -172,7 +183,7 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(), gfx::Rect(),
-                    false, DEFAULT, &window_bounds, &maximized);
+                    false, gfx::Rect(), DEFAULT, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
                         1024 - kWindowTilePixels * 2,
@@ -184,7 +195,8 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, taskbar_bottom_work_area, gfx::Rect(),
-                    gfx::Rect(), false, DEFAULT, &window_bounds, &maximized);
+                    gfx::Rect(), false, gfx::Rect(), DEFAULT, &window_bounds,
+                    &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
                         1024 - kWindowTilePixels * 2,
@@ -197,7 +209,8 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, taskbar_right_work_area, gfx::Rect(),
-                    gfx::Rect(), false, DEFAULT, &window_bounds, &maximized);
+                    gfx::Rect(), false, gfx::Rect(), DEFAULT, &window_bounds,
+                    &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
                         taskbar_right_work_area.width() - kWindowTilePixels*2,
@@ -209,7 +222,8 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, taskbar_left_work_area, gfx::Rect(),
-                    gfx::Rect(), false, DEFAULT, &window_bounds, &maximized);
+                    gfx::Rect(), false, gfx::Rect(), DEFAULT, &window_bounds,
+                    &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(taskbar_left_work_area.x() + kWindowTilePixels,
                         kWindowTilePixels,
@@ -223,7 +237,8 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, taskbar_top_work_area, gfx::Rect(),
-                    gfx::Rect(), false, DEFAULT, &window_bounds, &maximized);
+                    gfx::Rect(), false, gfx::Rect(), DEFAULT, &window_bounds,
+                    &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels,
                         taskbar_top_work_area.y() + kWindowTilePixels,
@@ -236,7 +251,7 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(twelveeighty, twelveeighty, gfx::Rect(), gfx::Rect(),
-                    false, DEFAULT, &window_bounds, &maximized);
+                    false, gfx::Rect(), DEFAULT, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
                         1050,
@@ -248,7 +263,7 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(sixteenhundred, sixteenhundred, gfx::Rect(), gfx::Rect(),
-                    false, DEFAULT, &window_bounds, &maximized);
+                    false, gfx::Rect(), DEFAULT, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
                         1050,
@@ -260,7 +275,7 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(sixteeneighty, sixteeneighty, gfx::Rect(), gfx::Rect(),
-                    false, DEFAULT, &window_bounds, &maximized);
+                    false, gfx::Rect(), DEFAULT, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
                         840 - static_cast<int>(kWindowTilePixels * 1.5),
@@ -272,7 +287,7 @@ TEST(WindowSizerTest, DefaultSizeCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(nineteentwenty, nineteentwenty, gfx::Rect(), gfx::Rect(),
-                    false, DEFAULT, &window_bounds, &maximized);
+                    false, gfx::Rect(), DEFAULT, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
                         960 - static_cast<int>(kWindowTilePixels * 1.5),
@@ -289,7 +304,7 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     bool maximized = false;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
                     gfx::Rect(kWindowTilePixels, kWindowTilePixels, 500, 400),
-                    false, LAST_ACTIVE,
+                    false, gfx::Rect(), LAST_ACTIVE,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels * 2,
@@ -301,7 +316,7 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     bool maximized = false;
     GetWindowBounds(tentwentyfour, taskbar_left_work_area, gfx::Rect(),
                     gfx::Rect(kWindowTilePixels, kWindowTilePixels, 500, 400),
-                    false, LAST_ACTIVE,
+                    false, gfx::Rect(), LAST_ACTIVE,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels * 2,
@@ -313,11 +328,12 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     bool maximized = false;
     GetWindowBounds(tentwentyfour, taskbar_top_work_area, gfx::Rect(),
                     gfx::Rect(kWindowTilePixels, kWindowTilePixels, 500, 400),
-                    false, LAST_ACTIVE,
+                    false, gfx::Rect(), LAST_ACTIVE,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels * 2,
-                        kWindowTilePixels * 2,
+                        std::max(kWindowTilePixels * 2,
+                                 34 /* toolbar height */),
                         500, 400), window_bounds);
   }
 
@@ -326,7 +342,7 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     bool maximized = false;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
                     gfx::Rect(kWindowTilePixels, kWindowTilePixels, 29, 29),
-                    false, LAST_ACTIVE,
+                    false, gfx::Rect(), LAST_ACTIVE,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels * 2,
@@ -340,7 +356,7 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     bool maximized = false;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
                     gfx::Rect(kWindowTilePixels, kWindowTilePixels, 500, 400),
-                    true, LAST_ACTIVE,
+                    true, gfx::Rect(), LAST_ACTIVE,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels * 2,
@@ -354,8 +370,8 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized = false;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(10, 728, 500, 400), false, LAST_ACTIVE,
-                    &window_bounds, &maximized);
+                    gfx::Rect(10, 728, 500, 400), false, gfx::Rect(),
+                    LAST_ACTIVE, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(10 + kWindowTilePixels, 738,
                         500, 400), window_bounds);
@@ -366,8 +382,8 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized = false;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(10, 729, 500, 400), false, LAST_ACTIVE,
-                    &window_bounds, &maximized);
+                    gfx::Rect(10, 729, 500, 400), false, gfx::Rect(),
+                    LAST_ACTIVE, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(10 + kWindowTilePixels, 738 /* not 739 */, 500, 400),
               window_bounds);
@@ -378,8 +394,8 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized = false;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(984, 10, 500, 400), false, LAST_ACTIVE,
-                    &window_bounds, &maximized);
+                    gfx::Rect(984, 10, 500, 400), false, gfx::Rect(),
+                    LAST_ACTIVE, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(994, 10 + kWindowTilePixels, 500, 400), window_bounds);
   }
@@ -389,8 +405,8 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized = false;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(985, 10, 500, 400), false, LAST_ACTIVE,
-                    &window_bounds, &maximized);
+                    gfx::Rect(985, 10, 500, 400), false, gfx::Rect(),
+                    LAST_ACTIVE, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(994 /* not 995 */, 10 + kWindowTilePixels,
                         500, 400), window_bounds);
@@ -401,8 +417,8 @@ TEST(WindowSizerTest, LastWindowBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized = false;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(985, 729, 500, 400), false, LAST_ACTIVE,
-                    &window_bounds, &maximized);
+                    gfx::Rect(985, 729, 500, 400), false, gfx::Rect(),
+                    LAST_ACTIVE, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(994 /* not 995 */, 738 /* not 739 */, 500, 400),
               window_bounds);
@@ -418,7 +434,7 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(), initial_bounds,
-                    false, PERSISTED, &window_bounds, &maximized);
+                    false, gfx::Rect(), PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(initial_bounds, window_bounds);
   }
@@ -429,7 +445,7 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(), initial_bounds,
-                    true, PERSISTED, &window_bounds, &maximized);
+                    true, gfx::Rect(), PERSISTED, &window_bounds, &maximized);
     EXPECT_TRUE(maximized);
     EXPECT_EQ(initial_bounds, window_bounds);
   }
@@ -440,8 +456,8 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, left_nonprimary,
-                    initial_bounds, false, PERSISTED, &window_bounds,
-                    &maximized);
+                    initial_bounds, false, gfx::Rect(), PERSISTED,
+                    &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(initial_bounds, window_bounds);
   }
@@ -452,8 +468,8 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, left_nonprimary,
-                    initial_bounds, true, PERSISTED, &window_bounds,
-                    &maximized);
+                    initial_bounds, true, gfx::Rect(), PERSISTED,
+                    &window_bounds, &maximized);
     EXPECT_TRUE(maximized);
     EXPECT_EQ(initial_bounds, window_bounds);
   }
@@ -465,7 +481,7 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    initial_bounds, false, PERSISTED,
+                    initial_bounds, false, gfx::Rect(), PERSISTED,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(initial_bounds, window_bounds);
@@ -476,34 +492,22 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(-471, 50, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(-471, 50, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(-470 /* not -471 */, 50, 500, 400), window_bounds);
   }
 
-  { // off the top but the minimum visibility condition is barely satisified
-    // without relocation.
+  { // off the top
     gfx::Rect initial_bounds(50, -370, 500, 400);
 
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    initial_bounds, false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(50, -370, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
-    EXPECT_EQ(initial_bounds, window_bounds);
-  }
-
-  { // off the top and the minimum visibility condition is satisified by
-    // relocation.
-    gfx::Rect window_bounds;
-    bool maximized;
-    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, -371, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
-    EXPECT_FALSE(maximized);
-    EXPECT_EQ(gfx::Rect(50, -370 /* not -371 */, 500, 400), window_bounds);
+    EXPECT_EQ(gfx::Rect(50, 0, 500, 400), window_bounds);
   }
 
   { // off the right but the minimum visibility condition is barely satisified
@@ -513,7 +517,7 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    initial_bounds, false, PERSISTED,
+                    initial_bounds, false, gfx::Rect(), PERSISTED,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(initial_bounds, window_bounds);
@@ -524,8 +528,8 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(995, 50, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(995, 50, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(994 /* not 995 */, 50, 500, 400), window_bounds);
   }
@@ -537,7 +541,7 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    initial_bounds, false, PERSISTED,
+                    initial_bounds, false, gfx::Rect(), PERSISTED,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(initial_bounds, window_bounds);
@@ -548,21 +552,20 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, 739, 500, 400), false, PERSISTED,
+                    gfx::Rect(50, 739, 500, 400), false, gfx::Rect(), PERSISTED,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(50, 738 /* not 739 */, 500, 400), window_bounds);
   }
 
-  { // off the topleft and the minimum visibility condition is satisified by
-    // relocation.
+  { // off the topleft
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(-471, -371, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(-471, -371, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
-    EXPECT_EQ(gfx::Rect(-470 /* not -471 */, -370 /* not -371 */, 500, 400),
+    EXPECT_EQ(gfx::Rect(-470 /* not -471 */, 0, 500, 400),
               window_bounds);
   }
 
@@ -571,10 +574,10 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(995, -371, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(995, -371, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
-    EXPECT_EQ(gfx::Rect(994 /* not 995 */, -370 /* not -371 */, 500, 400),
+    EXPECT_EQ(gfx::Rect(994 /* not 995 */, 0, 500, 400),
                         window_bounds);
   }
 
@@ -583,8 +586,8 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(-471, 739, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(-471, 739, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(-470 /* not -471 */, 738 /* not 739 */, 500, 400),
                         window_bounds);
@@ -595,51 +598,133 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(995, 739, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(995, 739, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(994 /* not 995 */, 738 /* not 739 */, 500, 400),
                         window_bounds);
+  }
+
+  { // entirely off left
+    gfx::Rect window_bounds;
+    bool maximized;
+    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+                    gfx::Rect(-700, 50, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
+    EXPECT_FALSE(maximized);
+    EXPECT_EQ(gfx::Rect(-470 /* not -700 */, 50, 500, 400), window_bounds);
   }
 
   { // entirely off left (monitor was detached since last run)
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(-700, 50, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(-700, 50, 500, 400), false, left_nonprimary,
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
-    EXPECT_EQ(gfx::Rect(-470 /* not -700 */, 50, 500, 400), window_bounds);
+    EXPECT_EQ(gfx::Rect(0, 50, 500, 400), window_bounds);
+  }
+
+  { // entirely off top
+    gfx::Rect window_bounds;
+    bool maximized;
+    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+                    gfx::Rect(50, -500, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
+    EXPECT_FALSE(maximized);
+    EXPECT_EQ(gfx::Rect(50, 0, 500, 400), window_bounds);
   }
 
   { // entirely off top (monitor was detached since last run)
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, -500, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(50, -500, 500, 400), false, top_nonprimary,
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
-    EXPECT_EQ(gfx::Rect(50, -370 /* not -500 */, 500, 400), window_bounds);
+    EXPECT_EQ(gfx::Rect(50, 0, 500, 400), window_bounds);
+  }
+
+  { // entirely off right
+    gfx::Rect window_bounds;
+    bool maximized;
+    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+                    gfx::Rect(1200, 50, 500, 400), false, gfx::Rect(),
+                    PERSISTED, &window_bounds, &maximized);
+    EXPECT_FALSE(maximized);
+    EXPECT_EQ(gfx::Rect(994 /* not 1200 */, 50, 500, 400), window_bounds);
   }
 
   { // entirely off right (monitor was detached since last run)
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(1200, 50, 500, 400), false, PERSISTED,
+                    gfx::Rect(1200, 50, 500, 400), false, right_nonprimary,
+                    PERSISTED, &window_bounds, &maximized);
+    EXPECT_FALSE(maximized);
+    EXPECT_EQ(gfx::Rect(524, 50, 500, 400), window_bounds);
+  }
+
+  { // entirely off bottom
+    gfx::Rect window_bounds;
+    bool maximized;
+    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
+                    gfx::Rect(50, 800, 500, 400), false, gfx::Rect(), PERSISTED,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
-    EXPECT_EQ(gfx::Rect(994 /* not 1200 */, 50, 500, 400), window_bounds);
+    EXPECT_EQ(gfx::Rect(50, 738 /* not 800 */, 500, 400), window_bounds);
   }
 
   { // entirely off bottom (monitor was detached since last run)
     gfx::Rect window_bounds;
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
-                    gfx::Rect(50, 800, 500, 400), false, PERSISTED,
-                    &window_bounds, &maximized);
+                    gfx::Rect(50, 800, 500, 400), false, bottom_nonprimary,
+                    PERSISTED, &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
-    EXPECT_EQ(gfx::Rect(50, 738 /* not 800 */, 500, 400), window_bounds);
+    EXPECT_EQ(gfx::Rect(50, 368, 500, 400), window_bounds);
+  }
+
+  { // Non-primary monitor resoultion has changed, but the monitor still
+    // completely contains the window.
+
+    gfx::Rect initial_bounds(1074, 50, 600, 500);
+
+    gfx::Rect window_bounds;
+    bool maximized;
+    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(1024, 0, 800, 600),
+                    initial_bounds, false, right_nonprimary,
+                    PERSISTED, &window_bounds, &maximized);
+    EXPECT_FALSE(maximized);
+    EXPECT_EQ(initial_bounds, window_bounds);
+  }
+
+  { // Non-primary monitor resoultion has changed, and the window is partially
+    // off-screen.
+
+    gfx::Rect initial_bounds(1274, 50, 600, 500);
+
+    gfx::Rect window_bounds;
+    bool maximized;
+    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(1024, 0, 800, 600),
+                    initial_bounds, false, right_nonprimary,
+                    PERSISTED, &window_bounds, &maximized);
+    EXPECT_FALSE(maximized);
+    EXPECT_EQ(gfx::Rect(1224, 50, 600, 500), window_bounds);
+  }
+
+  { // Non-primary monitor resoultion has changed, and the window is now too
+    // large for the monitor.
+
+    gfx::Rect initial_bounds(1274, 50, 900, 700);
+
+    gfx::Rect window_bounds;
+    bool maximized;
+    GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(1024, 0, 800, 600),
+                    initial_bounds, false, right_nonprimary,
+                    PERSISTED, &window_bounds, &maximized);
+    EXPECT_FALSE(maximized);
+    EXPECT_EQ(gfx::Rect(1024, 0, 800, 600), window_bounds);
   }
 
   { // width and height too small
@@ -647,7 +732,7 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
                     gfx::Rect(kWindowTilePixels, kWindowTilePixels, 29, 29),
-                    false, PERSISTED,
+                    false, gfx::Rect(), PERSISTED,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(gfx::Rect(kWindowTilePixels, kWindowTilePixels,
@@ -664,7 +749,7 @@ TEST(WindowSizerTest, PersistedBoundsCase) {
     bool maximized;
     GetWindowBounds(tentwentyfour, tentwentyfour, gfx::Rect(),
                     gfx::Rect(kWindowTilePixels, kWindowTilePixels, 30, 5000),
-                    false, PERSISTED,
+                    false, gfx::Rect(), PERSISTED,
                     &window_bounds, &maximized);
     EXPECT_FALSE(maximized);
     EXPECT_EQ(tentwentyfour.height(), window_bounds.height());

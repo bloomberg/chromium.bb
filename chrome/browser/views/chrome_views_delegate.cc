@@ -6,8 +6,10 @@
 
 #include "base/clipboard.h"
 #include "base/gfx/rect.h"
+#include "base/scoped_ptr.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/window_sizer.h"
 #include "chrome/common/pref_service.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,6 +33,15 @@ void ChromeViewsDelegate::SaveWindowPlacement(const std::wstring& window_name,
   window_preferences->SetInteger(L"right", bounds.right());
   window_preferences->SetInteger(L"bottom", bounds.bottom());
   window_preferences->SetBoolean(L"maximized", maximized);
+
+  scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_info_provider(
+      WindowSizer::CreateDefaultMonitorInfoProvider());
+  gfx::Rect work_area(
+      monitor_info_provider->GetMonitorWorkAreaMatching(bounds));
+  window_preferences->SetInteger(L"work_area_left", work_area.x());
+  window_preferences->SetInteger(L"work_area_top", work_area.y());
+  window_preferences->SetInteger(L"work_area_right", work_area.right());
+  window_preferences->SetInteger(L"work_area_bottom", work_area.bottom());
 }
 
 bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,

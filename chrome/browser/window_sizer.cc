@@ -22,7 +22,9 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   }
 
   // Overridden from WindowSizer::StateProvider:
-  virtual bool GetPersistentState(gfx::Rect* bounds, bool* maximized) const {
+  virtual bool GetPersistentState(gfx::Rect* bounds,
+                                  bool* maximized,
+                                  gfx::Rect* work_area) const {
     DCHECK(bounds && maximized);
 
     std::wstring key(prefs::kBrowserWindowPlacement);
@@ -46,6 +48,21 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
         wp_pref->GetBoolean(L"maximized", maximized);
     bounds->SetRect(left, top, std::max(0, right - left),
                     std::max(0, bottom - top));
+
+    int work_area_top = 0;
+    int work_area_left = 0;
+    int work_area_bottom = 0;
+    int work_area_right = 0;
+    if (wp_pref) {
+      wp_pref->GetInteger(L"work_area_top", &work_area_top);
+      wp_pref->GetInteger(L"work_area_left", &work_area_left);
+      wp_pref->GetInteger(L"work_area_bottom", &work_area_bottom);
+      wp_pref->GetInteger(L"work_area_right", &work_area_right);
+    }
+    work_area->SetRect(work_area_left, work_area_top,
+                      std::max(0, work_area_right - work_area_left),
+                      std::max(0, work_area_bottom - work_area_top));
+
     return has_prefs;
   }
 
@@ -152,17 +169,20 @@ bool WindowSizer::GetLastWindowBounds(gfx::Rect* bounds) const {
     return false;
   gfx::Rect last_window_bounds = *bounds;
   bounds->Offset(kWindowTilePixels, kWindowTilePixels);
-  AdjustBoundsToBeVisibleOnMonitorContaining(last_window_bounds, bounds);
+  AdjustBoundsToBeVisibleOnMonitorContaining(last_window_bounds,
+                                             gfx::Rect(),
+                                             bounds);
   return true;
 }
 
 bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds,
                                        bool* maximized) const {
   DCHECK(bounds && maximized);
+  gfx::Rect saved_work_area;
   if (!state_provider_ ||
-      !state_provider_->GetPersistentState(bounds, maximized))
+      !state_provider_->GetPersistentState(bounds, maximized, &saved_work_area))
     return false;
-  AdjustBoundsToBeVisibleOnMonitorContaining(*bounds, bounds);
+  AdjustBoundsToBeVisibleOnMonitorContaining(*bounds, saved_work_area, bounds);
   return true;
 }
 
@@ -235,7 +255,9 @@ namespace {
 }
 
 void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
-    const gfx::Rect& other_bounds, gfx::Rect* bounds) const {
+    const gfx::Rect& other_bounds,
+    const gfx::Rect& saved_work_area,
+    gfx::Rect* bounds) const {
   DCHECK(bounds);
   DCHECK(monitor_info_provider_);
 
@@ -255,6 +277,26 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
   // Ensure the minimum height and width.
   bounds->set_height(std::max(kMinVisibleHeight, bounds->height()));
   bounds->set_width(std::max(kMinVisibleWidth, bounds->width()));
+
+  // Ensure that the title bar is not above the work area.
+  if (bounds->y() < work_area.y())
+    bounds->set_y(work_area.y());
+
+  // Reposition and resize the bounds if the saved_work_area is different from
+  // the current work area and the current work area doesn't completely contain
+  // the bounds.
+  if (!saved_work_area.IsEmpty() &&
+      saved_work_area != work_area &&
+      !work_area.Contains(*bounds)) {
+    bounds->set_width(std::min(bounds->width(), work_area.width()));
+    bounds->set_height(std::min(bounds->height(), work_area.height()));
+    bounds->set_x(
+        std::max(work_area.x(),
+                 std::min(bounds->x(), work_area.right() - bounds->width())));
+    bounds->set_y(
+        std::max(work_area.y(),
+                 std::min(bounds->y(), work_area.bottom() - bounds->height())));
+  }
 
 #if defined(OS_MACOSX)
   // Limit the maximum height.  On the Mac the sizer is on the

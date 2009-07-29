@@ -88,7 +88,8 @@ class WindowSizer {
     // Retrieve the persisted bounds of the window. Returns true if there was
     // persisted data to retrieve state information, false otherwise.
     virtual bool GetPersistentState(gfx::Rect* bounds,
-                                    bool* maximized) const = 0;
+                                    bool* maximized,
+                                    gfx::Rect* work_area) const = 0;
 
     // Retrieve the bounds of the most recent window of the matching type.
     // Returns true if there was a last active window to retrieve state
@@ -162,8 +163,13 @@ class WindowSizer {
   // monitor containing |other_bounds|.  Despite the name, this doesn't
   // guarantee the bounds are fully contained within this monitor's work rect;
   // it just tried to ensure the edges are visible on _some_ work rect.
+  // If |saved_work_area| is non-empty, it is used to determine whether the
+  // monitor cofiguration has changed. If it has, bounds are repositioned and
+  // resized if necessary to make them completely contained in the current work
+  // area.
   void AdjustBoundsToBeVisibleOnMonitorContaining(
       const gfx::Rect& other_bounds,
+      const gfx::Rect& saved_work_area,
       gfx::Rect* bounds) const;
 
   // Providers for persistent storage and monitor metrics.
