@@ -90,7 +90,6 @@ class ATL_NO_VTABLE CHostControl
       public IObjectSafetyImpl<CHostControl,
                                INTERFACESAFE_FOR_UNTRUSTED_CALLER |
                                INTERFACESAFE_FOR_UNTRUSTED_DATA>,
-      public IPersistStreamInitImpl<CHostControl>,
       public IPersistPropertyBagImpl<CHostControl>,
       public IPersistStorageImpl<CHostControl>,
       public IConnectionPointContainerImpl<CHostControl>,
@@ -137,8 +136,6 @@ BEGIN_COM_MAP(CHostControl)
   COM_INTERFACE_ENTRY(ISupportErrorInfo)
   COM_INTERFACE_ENTRY(IProvideClassInfo)
   COM_INTERFACE_ENTRY(IProvideClassInfo2)
-  COM_INTERFACE_ENTRY(IPersistStreamInit)
-  COM_INTERFACE_ENTRY2(IPersist, IPersistStreamInit)
   COM_INTERFACE_ENTRY(IPersistPropertyBag)
   COM_INTERFACE_ENTRY(IPersistStorage)
   COM_INTERFACE_ENTRY(IConnectionPointContainer)
