@@ -2988,17 +2988,16 @@ BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 BUG17635 LINUX MAC : LayoutTests/fast/css/only-child-pseudo-class.html = PASS FAIL
 
 // Test failures from WebKit merge 46288:46363
-BUG_DARIN WIN LINUX : LayoutTests/media/video-source-type.html = PASS FAIL CRASH
-BUG_DARIN WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH PASS
-BUG_DARIN WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH PASS
-BUG_DARIN LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH PASS
-BUG_DARIN LINUX : LayoutTests/fast/overflow/008.html = CRASH PASS
-BUG_DARIN : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
-BUG_DARIN : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
-BUG_DARIN : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
-BUG_DARIN WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
-
-BUG_DARIN WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
+BUG17942 WIN LINUX : LayoutTests/media/video-source-type.html = PASS FAIL CRASH
+BUG17942 WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH PASS
+BUG17942 WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH PASS
+BUG17942 LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH PASS
+BUG17942 LINUX : LayoutTests/fast/overflow/008.html = CRASH PASS
+BUG17942 : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
+BUG17942 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
+BUG17942 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
+BUG17942 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
+BUG17942 WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
 
 // Test failures from WebKit merge 46369 to 46426
 BUG_PKASTING WIN LINUX : LayoutTests/editing/style/remove-underline-from-stylesheet.html = FAIL
