@@ -88,10 +88,10 @@ bool UITest::DieFileDie(const FilePath& file, bool recurse) {
     return true;
 
   // Sometimes Delete fails, so try a few more times.
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 25; ++i) {
     if (file_util::Delete(file, recurse))
       return true;
-    PlatformThread::Sleep(sleep_timeout_ms() / 10);
+    PlatformThread::Sleep(action_max_timeout_ms() / 25);
   }
   return false;
 }
