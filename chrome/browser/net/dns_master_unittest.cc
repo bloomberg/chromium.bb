@@ -343,7 +343,7 @@ TEST_F(DnsMasterTest, ConcurrentLookupTest) {
   testing_master->Shutdown();
 }
 
-TEST_F(DnsMasterTest, DISABLED_MassiveConcurrentLookupTest) {
+TEST_F(DnsMasterTest, MassiveConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
