@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gtk/gtk.h>
-
 #include "chrome/browser/options_window.h"
+
+#include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
@@ -38,15 +38,15 @@ class OptionsWindowGtk {
 
  private:
   static void OnSwitchPage(GtkNotebook* notebook, GtkNotebookPage* page,
-                           guint page_num, OptionsWindowGtk* options_window);
+                           guint page_num, OptionsWindowGtk* window);
 
   static void OnWindowDestroy(GtkWidget* widget, OptionsWindowGtk* window);
 
   // The options dialog.
-  GtkWidget *dialog_;
+  GtkWidget* dialog_;
 
   // The container of the option pages.
-  GtkWidget *notebook_;
+  GtkWidget* notebook_;
 
   // The Profile associated with these options.
   Profile* profile_;
@@ -66,7 +66,8 @@ class OptionsWindowGtk {
   DISALLOW_COPY_AND_ASSIGN(OptionsWindowGtk);
 };
 
-static OptionsWindowGtk* instance_ = NULL;
+// The singleton options window object.
+static OptionsWindowGtk* options_window = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsWindowGtk, public:
@@ -133,8 +134,8 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
 
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
 
-  DCHECK(
-      gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)) == OPTIONS_PAGE_COUNT);
+  DCHECK_EQ(
+      gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)), OPTIONS_PAGE_COUNT);
 
   // Need to show the notebook before connecting switch-page signal, otherwise
   // we'll immediately get a signal switching to page 0 and overwrite our
@@ -145,8 +146,7 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
 
   // We only have one button and don't do any special handling, so just hook it
   // directly to gtk_widget_destroy.
-  g_signal_connect_swapped(dialog_, "response", G_CALLBACK(gtk_widget_destroy),
-                           dialog_);
+  g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
 
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
 }
@@ -183,17 +183,17 @@ void OptionsWindowGtk::ShowOptionsPage(OptionsPage page,
 void OptionsWindowGtk::OnSwitchPage(GtkNotebook* notebook,
                                     GtkNotebookPage* page,
                                     guint page_num,
-                                    OptionsWindowGtk* options_window) {
+                                    OptionsWindowGtk* window) {
   int index = page_num;
   DCHECK(index > OPTIONS_PAGE_DEFAULT && index < OPTIONS_PAGE_COUNT);
-  options_window->last_selected_page_.SetValue(index);
+  window->last_selected_page_.SetValue(index);
 }
 
 // static
 void OptionsWindowGtk::OnWindowDestroy(GtkWidget* widget,
-                                       OptionsWindowGtk* options_window) {
-  instance_ = NULL;
-  MessageLoop::current()->DeleteSoon(FROM_HERE, options_window);
+                                       OptionsWindowGtk* window) {
+  options_window = NULL;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -205,8 +205,8 @@ void ShowOptionsWindow(OptionsPage page,
   DCHECK(profile);
   // If there's already an existing options window, activate it and switch to
   // the specified page.
-  if (!instance_) {
-    instance_ = new OptionsWindowGtk(profile);
+  if (!options_window) {
+    options_window = new OptionsWindowGtk(profile);
   }
-  instance_->ShowOptionsPage(page, highlight_group);
+  options_window->ShowOptionsPage(page, highlight_group);
 }

@@ -10,6 +10,7 @@
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
+#include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -223,7 +224,7 @@ void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkButton* widget,
 // static
 void ContentPageGtk::OnPasswordsExceptionsButtonClicked(GtkButton* widget,
                                                         ContentPageGtk* page) {
-  NOTIMPLEMENTED();
+  ShowPasswordsExceptionsWindow(page->profile());
 }
 
 // static
