@@ -18,7 +18,7 @@ using base::TimeDelta;
 void TerminateAllChromeProcesses(const FilePath& data_dir) {
   // Total time the function will wait for chrome processes
   // to terminate after it told them to do so.
-  const TimeDelta kExitTimeout = TimeDelta::FromMilliseconds(5000);
+  const TimeDelta kExitTimeout = TimeDelta::FromSeconds(30);
 
   ChromeProcessList process_pids(GetRunningChromeProcesses(data_dir));
 
