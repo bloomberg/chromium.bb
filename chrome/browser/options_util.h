@@ -18,6 +18,7 @@ class OptionsUtil {
   // permission match |enabled|, returns the actual enabled setting.
   static bool ResolveMetricsReportingEnabled(bool enabled);
 
+ private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OptionsUtil);
 };
 
