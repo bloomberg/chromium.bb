@@ -115,6 +115,7 @@ using WebKit::WebRect;
 using WebKit::WebScriptSource;
 using WebKit::WebSize;
 using WebKit::WebString;
+using WebKit::WebTextDirection;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
@@ -2411,8 +2412,10 @@ void RenderView::OnNavStateChanged(WebView* webview) {
 }
 
 void RenderView::SetTooltipText(WebView* webview,
-                                const std::wstring& tooltip_text) {
-  Send(new ViewHostMsg_SetTooltipText(routing_id_, tooltip_text));
+                                const std::wstring& tooltip_text,
+                                WebTextDirection text_direction_hint) {
+  Send(new ViewHostMsg_SetTooltipText(routing_id_, tooltip_text,
+                                      text_direction_hint));
 }
 
 void RenderView::DidChangeSelection(bool is_empty_selection) {

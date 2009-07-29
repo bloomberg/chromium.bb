@@ -31,6 +31,7 @@
 #include "base/gfx/native_widget_types.h"
 #include "webkit/api/public/WebNavigationPolicy.h"
 #include "webkit/api/public/WebNavigationType.h"
+#include "webkit/api/public/WebTextDirection.h"
 #include "webkit/api/public/WebWidgetClient.h"
 #include "webkit/glue/context_menu.h"
 
@@ -626,7 +627,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // clicked on
   // @param page_url The URL of the page the mouse right clicked on
   // @param frame_url The URL of the subframe the mouse right clicked on
-  // @param media_params Extra attributed needed by the context menu for 
+  // @param media_params Extra attributed needed by the context menu for
   // media elements.
   // @param selection_text The raw text of the selection that the mouse right
   // clicked on
@@ -789,9 +790,11 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
 
   // -------------------------------------------------------------------------
 
-  // Tell the delegate the tooltip text for the current mouse position.
+  // Tell the delegate the tooltip text and its directionality hint for the
+  // current mouse position.
   virtual void SetTooltipText(WebView* webview,
-                              const std::wstring& tooltip_text) { }
+                              const std::wstring& tooltip_text,
+                              WebKit::WebTextDirection text_direction_hint) { }
 
   // Downloading -------------------------------------------------------------
 

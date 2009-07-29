@@ -43,6 +43,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebPopupMenuInfo.h"
 #include "webkit/api/public/WebRect.h"
+#include "webkit/api/public/WebTextDirection.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/src/WrappedResourceRequest.h"
 #include "webkit/glue/glue_util.h"
@@ -61,6 +62,7 @@ using WebKit::WebMouseEvent;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
+using WebKit::WebTextDirection;
 using WebKit::WebURLRequest;
 using WebKit::WebVector;
 using WebKit::WebWidget;
@@ -518,18 +520,11 @@ void ChromeClientImpl::setToolTip(const WebCore::String& tooltip_text,
   if (webview_->delegate()) {
     std::wstring tooltip_text_as_wstring =
       webkit_glue::StringToStdWString(tooltip_text);
-    if (!tooltip_text_as_wstring.empty()) {
-      if (dir == WebCore::LTR) {
-        // Force the tooltip to have LTR directionality.
-        tooltip_text_as_wstring.insert(0, 1, WebCore::leftToRightEmbed);
-        tooltip_text_as_wstring.push_back(WebCore::popDirectionalFormatting);
-      } else {
-        // Force the tooltip to have RTL directionality.
-        tooltip_text_as_wstring.insert(0, 1, WebCore::rightToLeftEmbed);
-        tooltip_text_as_wstring.push_back(WebCore::popDirectionalFormatting);
-      }
-    }
-    webview_->delegate()->SetTooltipText(webview_, tooltip_text_as_wstring);
+    WebTextDirection text_direction = (dir == WebCore::RTL) ?
+        WebKit::WebTextDirectionRightToLeft :
+        WebKit::WebTextDirectionLeftToRight;
+    webview_->delegate()->SetTooltipText(webview_, tooltip_text_as_wstring,
+                                         text_direction);
   }
 }
 

@@ -16,6 +16,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_zoom.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebTextDirection.h"
 #include "webkit/glue/autofill_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -496,7 +497,8 @@ class RenderViewHost : public RenderWidgetHost,
                                          const std::string& target);
   void OnMsgDocumentLoadedInFrame();
   void OnMsgGoToEntryAtOffset(int offset);
-  void OnMsgSetTooltipText(const std::wstring& tooltip_text);
+  void OnMsgSetTooltipText(const std::wstring& tooltip_text,
+                           WebKit::WebTextDirection text_direction_hint);
   void OnMsgSelectionChanged(const std::string& text);
   void OnMsgPasteFromSelectionClipboard();
   void OnMsgRunFileChooser(bool multiple_files,

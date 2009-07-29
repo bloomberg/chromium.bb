@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/string_util.h"
@@ -50,6 +51,7 @@ using webkit_glue::PasswordFormDomManager;
 using WebKit::WebConsoleMessage;
 using WebKit::WebFindOptions;
 using WebKit::WebInputEvent;
+using WebKit::WebTextDirection;
 
 namespace {
 
@@ -1204,9 +1206,36 @@ void RenderViewHost::OnMsgGoToEntryAtOffset(int offset) {
     integration_delegate->GoToEntryAtOffset(offset);
 }
 
-void RenderViewHost::OnMsgSetTooltipText(const std::wstring& tooltip_text) {
+void RenderViewHost::OnMsgSetTooltipText(
+    const std::wstring& tooltip_text,
+    WebTextDirection text_direction_hint) {
+  // First, add directionality marks around tooltip text if necessary.
+  // A naive solution would be to simply always wrap the text. However, on
+  // windows, Unicode directional embedding characters can't be displayed on
+  // systems that lack RTL fonts and are instead displayed as empty squares.
+  //
+  // To get around this we only wrap the string when we deem it necessary i.e.
+  // when the locale direction is different than the tooltip direction hint.
+  //
+  // Currently, we use element's directionality as the tooltip direction hint.
+  // An alternate solution would be to set the overall directionality based on
+  // trying to detect the directionality from the tooltip text rather than the
+  // element direction.  One could argue that would be a preferable solution
+  // but we use the current approach to match Fx & IE's behavior.
+  std::wstring wrapped_tooltip_text = tooltip_text;
+  if (!tooltip_text.empty()) {
+    if (text_direction_hint == WebKit::WebTextDirectionLeftToRight &&
+        l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+      // Force the tooltip to have LTR directionality.
+      l10n_util::WrapStringWithLTRFormatting(&wrapped_tooltip_text);
+    } else if (text_direction_hint == WebKit::WebTextDirectionRightToLeft &&
+               l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) {
+      // Force the tooltip to have RTL directionality.
+      l10n_util::WrapStringWithRTLFormatting(&wrapped_tooltip_text);
+    }
+  }
   if (view())
-    view()->SetTooltipText(tooltip_text);
+    view()->SetTooltipText(wrapped_tooltip_text);
 }
 
 void RenderViewHost::OnMsgSelectionChanged(const std::string& text) {

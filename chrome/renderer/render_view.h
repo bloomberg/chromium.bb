@@ -27,6 +27,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebTextDirection.h"
 #include "webkit/glue/dom_serializer_delegate.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/password_form_dom_manager.h"
@@ -287,7 +288,8 @@ class RenderView : public RenderWidget,
   virtual int GetHistoryForwardListCount();
   virtual void OnNavStateChanged(WebView* webview);
   virtual void SetTooltipText(WebView* webview,
-                              const std::wstring& tooltip_text);
+                              const std::wstring& tooltip_text,
+                              WebKit::WebTextDirection text_direction_hint);
   // Called when the text selection changed. This is only called on linux since
   // on other platforms the RenderView doesn't act as an editor client delegate.
   virtual void DidChangeSelection(bool is_empty_selection);

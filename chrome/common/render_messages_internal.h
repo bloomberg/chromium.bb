@@ -1031,8 +1031,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              WebKit::WebScreenInfo /* results */)
 
   // Send the tooltip text for the current mouse position to the browser.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_SetTooltipText,
-                      std::wstring /* tooltip text string */)
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_SetTooltipText,
+                      std::wstring /* tooltip text string */,
+                      WebKit::WebTextDirection /* text direction hint */)
 
   // Notification that the text selection has changed.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionChanged,
