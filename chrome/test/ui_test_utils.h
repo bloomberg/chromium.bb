@@ -17,6 +17,7 @@ class DownloadManager;
 class GURL;
 class NavigationController;
 class RenderViewHost;
+class TabContents;
 class Value;
 
 // A collections of functions designed for use with InProcessBrowserTest.
@@ -90,6 +91,8 @@ void WaitForDownloadCount(DownloadManager* download_manager, size_t count);
 // Blocks until an application modal dialog is showns and returns it.
 AppModalDialog* WaitForAppModalDialog();
 
+// Causes the specified tab to crash. Blocks until it is crashed.
+void CrashTab(TabContents* tab);
 }
 
 #endif  // CHROME_TEST_UI_TEST_UTILS_H_

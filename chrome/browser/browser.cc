@@ -736,7 +736,8 @@ void Browser::Reload() {
     }
 
     // As this is caused by a user action, give the focus to the page.
-    current_tab->Focus();
+    if (!current_tab->FocusLocationBarByDefault())
+      current_tab->Focus();
     current_tab->controller().Reload(true);
   }
 }

@@ -262,7 +262,7 @@ void TabContentsViewWin::Focus() {
     return;
   }
 
-  if (sad_tab_.get()) {
+  if (tab_contents()->is_crashed() && sad_tab_.get()) {
     sad_tab_->RequestFocus();
     return;
   }

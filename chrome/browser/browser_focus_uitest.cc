@@ -504,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   EXPECT_TRUE(browser()->GetSelectedTabContents()->render_view_host()->view()->
       HasFocus());
 
-  // Let's show an interstitial.erstitial
+  // Let's show an interstitial.
   TestInterstitialPage* interstitial_page =
       new TestInterstitialPage(browser()->GetSelectedTabContents(),
                                true, GURL("http://interstitial.com"));
@@ -635,5 +635,54 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::LINK,
                            true, -1, false, NULL);
   EXPECT_EQ(browser_view->GetLocationBarView(),
+            focus_manager->GetFocusedView());
+}
+
+// Tests that focus goes where expected when using reload.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
+  HTTPTestServer* server = StartHTTPServer();
+
+  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
+  ASSERT_TRUE(browser_view);
+  views::FocusManager* focus_manager =
+      views::FocusManager::GetFocusManagerForNativeView(hwnd);
+  ASSERT_TRUE(focus_manager);
+
+  // Open the new tab, reload.
+  browser()->NewTab();
+  ui_test_utils::ReloadCurrentTab(browser());
+  // Focus should stay on the location bar.
+  EXPECT_EQ(browser_view->GetLocationBarView(),
+            focus_manager->GetFocusedView());
+
+  // Open a regular page, focus the location bar, reload.
+  ui_test_utils::NavigateToURL(browser(), server->TestServerPageW(kSimplePage));
+  browser_view->GetLocationBarView()->FocusLocation();
+  EXPECT_EQ(browser_view->GetLocationBarView(),
+            focus_manager->GetFocusedView());
+  ui_test_utils::ReloadCurrentTab(browser());
+  // Focus should now be on the tab contents.
+  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
+            focus_manager->GetFocusedView());
+}
+
+// Tests that focus goes where expected when using reload on a crashed tab.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
+  HTTPTestServer* server = StartHTTPServer();
+
+  HWND hwnd = reinterpret_cast<HWND>(browser()->window()->GetNativeHandle());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(hwnd);
+  ASSERT_TRUE(browser_view);
+  views::FocusManager* focus_manager =
+      views::FocusManager::GetFocusManagerForNativeView(hwnd);
+  ASSERT_TRUE(focus_manager);
+
+  // Open a regular page, crash, reload.
+  ui_test_utils::NavigateToURL(browser(), server->TestServerPageW(kSimplePage));
+  ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
+  ui_test_utils::ReloadCurrentTab(browser());
+  // Focus should now be on the tab contents.
+  EXPECT_EQ(browser_view->GetTabContentsContainerView(),
             focus_manager->GetFocusedView());
 }

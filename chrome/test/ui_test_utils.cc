@@ -7,6 +7,7 @@
 #include "base/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/dom_operation_notification_details.h"
@@ -229,6 +230,30 @@ class AppModalDialogObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogObserver);
 };
 
+class CrashedRenderProcessObserver : public NotificationObserver {
+ public:
+  explicit CrashedRenderProcessObserver(RenderProcessHost* rph) {
+    registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
+                   Source<RenderProcessHost>(rph));
+    ui_test_utils::RunMessageLoop();
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    if (type == NotificationType::RENDERER_PROCESS_CLOSED) {
+      MessageLoopForUI::current()->Quit();
+    } else {
+      NOTREACHED();
+    }
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrashedRenderProcessObserver);
+};
+
 }  // namespace
 
 void RunMessageLoop() {
@@ -368,6 +393,12 @@ void WaitForDownloadCount(DownloadManager* download_manager, size_t count) {
 AppModalDialog* WaitForAppModalDialog() {
   AppModalDialogObserver observer;
   return observer.WaitForAppModalDialog();
+}
+
+void CrashTab(TabContents* tab) {
+  RenderProcessHost* rph = tab->render_view_host()->process();
+  base::KillProcess(rph->process().handle(), 0, false);
+  CrashedRenderProcessObserver crash_observer(rph);
 }
 
 }  // namespace ui_test_utils
