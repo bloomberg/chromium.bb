@@ -44,12 +44,41 @@ namespace WebKit {
         // NPN Functions ------------------------------------------------------
         // These are all defined in npruntime.h and are well documented.
 
-        // NPN_GetStringIdentifier
-        WEBKIT_API static NPIdentifier getStringIdentifier(const NPUTF8*);
+        // NPN_CreateObject
+        WEBKIT_API static NPObject* createObject(NPP npp, NPClass* npClass);
 
         // NPN_GetIntIdentifier
         WEBKIT_API static NPIdentifier getIntIdentifier(int32_t);
 
+        // NPN_GetProperty
+        WEBKIT_API static bool getProperty(NPP npp, NPObject* obj, NPIdentifier propertyName, NPVariant *result);
+
+        // NPN_GetStringIdentifier
+        WEBKIT_API static NPIdentifier getStringIdentifier(const NPUTF8*);
+
+        // NPN_HasMethod
+        WEBKIT_API static bool hasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName);
+
+        // NPN_HasProperty
+        WEBKIT_API static bool hasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName);
+
+        // NPN_InitializeVariantWithStringCopy (though sometimes prefixed with an underscore)
+        WEBKIT_API static void initializeVariantWithStringCopy(NPVariant* variant, const NPString* value);
+
+        // NPN_Invoke
+        WEBKIT_API static bool invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPVariant* arguments, uint32_t argumentCount, NPVariant* result);
+
+        // NPN_ReleaseObject
+        WEBKIT_API static void releaseObject(NPObject* npObject);
+
+        // NPN_ReleaseVariantValue
+        WEBKIT_API static void releaseVariantValue(NPVariant* variant);
+
+        // NPN_RetainObject
+        WEBKIT_API static NPObject* retainObject(NPObject* npObject);
+
+        // _NPN_UnregisterObject
+        WEBKIT_API static void unregisterObject(NPObject* npObject);
 
         // Miscellaneous utility functions ------------------------------------
 

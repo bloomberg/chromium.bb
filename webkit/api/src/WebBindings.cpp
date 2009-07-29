@@ -54,6 +54,72 @@ using namespace WebCore;
 
 namespace WebKit {
 
+NPObject* WebBindings::createObject(NPP npp, NPClass* npClass)
+{
+    return NPN_CreateObject(npp, npClass);
+}
+
+NPIdentifier WebBindings::getIntIdentifier(int32_t number)
+{
+    return NPN_GetIntIdentifier(number);
+}
+
+bool WebBindings::getProperty(NPP npp, NPObject* obj, NPIdentifier propertyName, NPVariant *result)
+{
+    return NPN_GetProperty(npp, obj, propertyName, result);
+}
+
+NPIdentifier WebBindings::getStringIdentifier(const NPUTF8* string)
+{
+    return NPN_GetStringIdentifier(string);
+}
+
+bool WebBindings::hasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName)
+{
+    return NPN_HasMethod(npp, npObject, methodName);
+}
+
+bool WebBindings::hasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
+{
+    return NPN_HasProperty(npp, npObject, propertyName);
+}
+
+void WebBindings::initializeVariantWithStringCopy(NPVariant* variant, const NPString* value)
+{
+#if USE(V8)
+    _NPN_InitializeVariantWithStringCopy(variant, value);
+#else
+    NPN_InitializeVariantWithStringCopy(variant, value);
+#endif
+}
+
+bool WebBindings::invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPVariant* arguments, uint32_t argumentCount, NPVariant* result)
+{
+    return NPN_Invoke(npp, npObject, methodName, arguments, argumentCount, result);
+}
+
+void WebBindings::releaseObject(NPObject* npObject)
+{
+    return NPN_ReleaseObject(npObject);
+}
+
+void WebBindings::releaseVariantValue(NPVariant* variant)
+{
+    NPN_ReleaseVariantValue(variant);
+}
+
+NPObject* WebBindings::retainObject(NPObject* npObject)
+{
+    return NPN_RetainObject(npObject);
+}
+
+void WebBindings::unregisterObject(NPObject* npObject)
+{
+#if USE(V8)
+    _NPN_UnregisterObject(npObject);
+#endif
+}
+
 void WebBindings::extractIdentifierData(const NPIdentifier& identifier, const NPUTF8*& string, int32_t& number, bool& isString)
 {
     PrivateIdentifier* priv = static_cast<PrivateIdentifier*>(identifier);
@@ -68,16 +134,6 @@ void WebBindings::extractIdentifierData(const NPIdentifier& identifier, const NP
         string = priv->value.string;
     else
         number = priv->value.number;
-}
-
-NPIdentifier WebBindings::getStringIdentifier(const NPUTF8* string)
-{
-    return NPN_GetStringIdentifier(string);
-}
-
-NPIdentifier WebBindings::getIntIdentifier(int32_t number)
-{
-    return NPN_GetIntIdentifier(number);
 }
 
 #if USE(V8)

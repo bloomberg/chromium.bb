@@ -5,8 +5,6 @@
 // This file contains the definition for CppBindingExample, a usage example
 // that is not actually used anywhere.  See cpp_binding_example.h.
 
-#include "config.h"
-
 #include "cpp_binding_example.h"
 
 CppBindingExample::CppBindingExample() {

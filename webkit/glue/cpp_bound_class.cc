@@ -12,25 +12,13 @@
 //   name in its internal map of methods, and then calls the appropriate
 //   method.
 
-#include "config.h"
-
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/glue/webframe.h"
 
-// This is required for the KJS build due to an artifact of the
-// npruntime_priv.h file from JavaScriptCore/bindings.
-MSVC_PUSH_DISABLE_WARNING(4067)
-#include "npruntime_priv.h"
-MSVC_POP_WARNING()
-
-#if USE(JSC)
-#pragma warning(push, 0)
-#include <runtime/JSLock.h>
-#pragma warning(pop)
-#endif
+using WebKit::WebBindings;
 
 // Our special NPObject type.  We extend an NPObject with a pointer to a
 // CppBoundClass, which is just a C++ interface that we forward all NPObject
@@ -148,10 +136,8 @@ CppBoundClass::~CppBoundClass() {
     delete i->second;
 
   // Unregister ourselves if we were bound to a frame.
-#if USE(V8)
   if (bound_to_frame_)
-    _NPN_UnregisterObject(NPVARIANT_TO_OBJECT(self_variant_));
-#endif
+    WebBindings::unregisterObject(NPVARIANT_TO_OBJECT(self_variant_));
 }
 
 bool CppBoundClass::HasMethod(NPIdentifier ident) const {
@@ -215,7 +201,7 @@ bool CppBoundClass::SetProperty(NPIdentifier ident,
 
 void CppBoundClass::BindCallback(std::string name, Callback* callback) {
   // NPUTF8 is a typedef for char, so this cast is safe.
-  NPIdentifier ident = NPN_GetStringIdentifier((const NPUTF8*)name.c_str());
+  NPIdentifier ident = WebBindings::getStringIdentifier((const NPUTF8*)name.c_str());
   MethodList::iterator old_callback = methods_.find(ident);
   if (old_callback != methods_.end())
     delete old_callback->second;
@@ -224,13 +210,13 @@ void CppBoundClass::BindCallback(std::string name, Callback* callback) {
 
 void CppBoundClass::BindProperty(std::string name, CppVariant* prop) {
   // NPUTF8 is a typedef for char, so this cast is safe.
-  NPIdentifier ident = NPN_GetStringIdentifier((const NPUTF8*)name.c_str());
+  NPIdentifier ident = WebBindings::getStringIdentifier((const NPUTF8*)name.c_str());
   properties_[ident] = prop;
 }
 
 bool CppBoundClass::IsMethodRegistered(std::string name) const {
   // NPUTF8 is a typedef for char, so this cast is safe.
-  NPIdentifier ident = NPN_GetStringIdentifier((const NPUTF8*)name.c_str());
+  NPIdentifier ident = WebBindings::getStringIdentifier((const NPUTF8*)name.c_str());
   MethodList::const_iterator callback = methods_.find(ident);
   return (callback != methods_.end());
 }
@@ -240,11 +226,11 @@ CppVariant* CppBoundClass::GetAsCppVariant() {
     // Create an NPObject using our static NPClass.  The first argument (a
     // plugin's instance handle) is passed through to the allocate function
     // directly, and we don't use it, so it's ok to be 0.
-    NPObject* np_obj = NPN_CreateObject(0, &CppNPObject::np_class_);
+    NPObject* np_obj = WebBindings::createObject(0, &CppNPObject::np_class_);
     CppNPObject* obj = reinterpret_cast<CppNPObject*>(np_obj);
     obj->bound_class = this;
     self_variant_.Set(np_obj);
-    NPN_ReleaseObject(np_obj);  // CppVariant takes the reference.
+    WebBindings::releaseObject(np_obj);  // CppVariant takes the reference.
   }
   DCHECK(self_variant_.isObject());
   return &self_variant_;
@@ -252,7 +238,8 @@ CppVariant* CppBoundClass::GetAsCppVariant() {
 
 void CppBoundClass::BindToJavascript(WebFrame* frame,
                                      const std::wstring& classname) {
-#if USE(JSC)
+#if WEBKIT_USING_JSC
+#error "This is not going to work anymore...but it's not clear what the solution is...or if it's still necessary."
   JSC::JSLock lock(false);
 #endif
 

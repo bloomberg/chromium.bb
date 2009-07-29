@@ -5,16 +5,12 @@
 // This file contains definitions for CppVariant.
 
 #include <limits>
-#include "config.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/cpp_variant.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 
-#include "npruntime_priv.h" // for NPN_InitializeVariantWithStringCopy
-
-#if USE(JSC)
-#define _NPN_InitializeVariantWithStringCopy NPN_InitializeVariantWithStringCopy
-#endif
+using WebKit::WebBindings;
 
 CppVariant::CppVariant() {
   type = NPVariantType_Null;
@@ -39,7 +35,7 @@ CppVariant::~CppVariant() {
 }
 
 void CppVariant::FreeData() {
-  NPN_ReleaseVariantValue(this);
+  WebBindings::releaseVariantValue(this);
 }
 
 bool CppVariant::isEqual(const CppVariant& other) const {
@@ -91,7 +87,7 @@ void CppVariant::CopyToNPVariant(NPVariant* result) const {
       result->value.doubleValue = value.doubleValue;
       break;
     case NPVariantType_String:
-      _NPN_InitializeVariantWithStringCopy(result, &value.stringValue);
+      WebBindings::initializeVariantWithStringCopy(result, &value.stringValue);
       break;
     case NPVariantType_Null:
     case NPVariantType_Void:
@@ -99,7 +95,7 @@ void CppVariant::CopyToNPVariant(NPVariant* result) const {
       break;
     case NPVariantType_Object:
       result->type = NPVariantType_Object;
-      result->value.objectValue = NPN_RetainObject(value.objectValue);
+      result->value.objectValue = WebBindings::retainObject(value.objectValue);
       break;
   }
 }
@@ -158,7 +154,7 @@ void CppVariant::Set(const char* new_value) {
   type = NPVariantType_String;
   NPString new_string = {new_value,
                          static_cast<uint32_t>(strlen(new_value))};
-  _NPN_InitializeVariantWithStringCopy(this, &new_string);
+  WebBindings::initializeVariantWithStringCopy(this, &new_string);
 }
 
 void CppVariant::Set(const std::string& new_value) {
@@ -166,18 +162,18 @@ void CppVariant::Set(const std::string& new_value) {
   type = NPVariantType_String;
   NPString new_string = {new_value.data(),
                          static_cast<uint32_t>(new_value.size())};
-  _NPN_InitializeVariantWithStringCopy(this, &new_string);
+  WebBindings::initializeVariantWithStringCopy(this, &new_string);
 }
 void CppVariant::Set(const NPString& new_value) {
   FreeData();
   type = NPVariantType_String;
-  _NPN_InitializeVariantWithStringCopy(this, &new_value);
+  WebBindings::initializeVariantWithStringCopy(this, &new_value);
 }
 
 void CppVariant::Set(NPObject* new_value) {
   FreeData();
   type = NPVariantType_Object;
-  value.objectValue = NPN_RetainObject(new_value);
+  value.objectValue = WebBindings::retainObject(new_value);
 }
 
 std::string CppVariant::ToString() const {
@@ -218,35 +214,35 @@ std::vector<std::wstring> CppVariant::ToStringVector() const {
   DCHECK(isObject());
   std::vector<std::wstring> wstring_vector;
   NPObject* np_value = value.objectValue;
-  NPIdentifier length_id = NPN_GetStringIdentifier("length");
+  NPIdentifier length_id = WebBindings::getStringIdentifier("length");
 
-  if (NPN_HasProperty(NULL, np_value, length_id)) {
+  if (WebBindings::hasProperty(NULL, np_value, length_id)) {
     NPVariant length_value;
-    if (NPN_GetProperty(NULL, np_value, length_id, &length_value)) {
+    if (WebBindings::getProperty(NULL, np_value, length_id, &length_value)) {
       int length = 0;
       // The length is a double in some cases.
       if (NPVARIANT_IS_DOUBLE(length_value))
         length = static_cast<int>(NPVARIANT_TO_DOUBLE(length_value));
       else if (NPVARIANT_IS_INT32(length_value))
         length = NPVARIANT_TO_INT32(length_value);
-      NPN_ReleaseVariantValue(&length_value);
+      WebBindings::releaseVariantValue(&length_value);
 
       // For sanity, only allow 100 items.
       length = std::min(100, length);
       for (int i = 0; i < length; ++i) {
         // Get each of the items.
         std::string index = StringPrintf("%d", i);
-        NPIdentifier index_id = NPN_GetStringIdentifier(index.c_str());
-        if (NPN_HasProperty(NULL, np_value, index_id)) {
+        NPIdentifier index_id = WebBindings::getStringIdentifier(index.c_str());
+        if (WebBindings::hasProperty(NULL, np_value, index_id)) {
           NPVariant index_value;
-          if (NPN_GetProperty(NULL, np_value, index_id, &index_value)) {
+          if (WebBindings::getProperty(NULL, np_value, index_id, &index_value)) {
             if (NPVARIANT_IS_STRING(index_value)) {
               std::string string(
                   NPVARIANT_TO_STRING(index_value).UTF8Characters,
                   NPVARIANT_TO_STRING(index_value).UTF8Length);
               wstring_vector.push_back(UTF8ToWide(string));
             }
-            NPN_ReleaseVariantValue(&index_value);
+            WebBindings::releaseVariantValue(&index_value);
           }
         }
       }
@@ -258,11 +254,11 @@ std::vector<std::wstring> CppVariant::ToStringVector() const {
 bool CppVariant::Invoke(const std::string& method, const CppVariant* args,
                         uint32 arg_count, CppVariant& result) const {
   DCHECK(isObject());
-  NPIdentifier method_name = NPN_GetStringIdentifier(method.c_str());
+  NPIdentifier method_name = WebBindings::getStringIdentifier(method.c_str());
   NPObject* np_object = value.objectValue;
-  if (NPN_HasMethod(NULL, np_object, method_name)) {
+  if (WebBindings::hasMethod(NULL, np_object, method_name)) {
     NPVariant r;
-    bool status = NPN_Invoke(NULL, np_object, method_name, args, arg_count, &r);
+    bool status = WebBindings::invoke(NULL, np_object, method_name, args, arg_count, &r);
     result.Set(r);
     return status;
   } else {
