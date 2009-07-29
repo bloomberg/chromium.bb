@@ -58,7 +58,7 @@ SERVER_HOST = ''
 # multi-user machine and not all users are trusted.  We only serve via
 # the loopback interface.
 
-SAFE_DIR_COMPONENTS = ['googleclient', 'native_client']
+SAFE_DIR_COMPONENTS = ['native_client']
 SAFE_DIR_SUFFIX = apply(os.path.join, SAFE_DIR_COMPONENTS)
 
 
