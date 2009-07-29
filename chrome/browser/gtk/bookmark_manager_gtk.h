@@ -10,6 +10,7 @@
 
 #include "app/table_model_observer.h"
 #include "base/basictypes.h"
+#include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -74,6 +75,10 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   void InitWidgets();
   GtkWidget* MakeLeftPane();
   GtkWidget* MakeRightPane();
+
+  // Set |window_|'s initial size, using its previous size if that was saved.
+  void SetInitialWindowSize();
+
   // If |left|, then make the organize menu refer to that which is selected in
   // the left pane, otherwise use the right pane selection.
   void ResetOrganizeMenu(bool left);
@@ -149,76 +154,126 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   void OnSearchTextChanged();
 
   static void OnSearchTextChangedThunk(GtkWidget* search_entry,
-      BookmarkManagerGtk* bookmark_manager) {
+                                       BookmarkManagerGtk* bookmark_manager) {
     bookmark_manager->OnSearchTextChanged();
   }
 
   // TreeView signal handlers.
   static void OnLeftSelectionChanged(GtkTreeSelection* selection,
-                                     BookmarkManagerGtk* bookmark_manager);
+                                     BookmarkManagerGtk* bm);
 
   static void OnRightSelectionChanged(GtkTreeSelection* selection,
-                                      BookmarkManagerGtk* bookmark_manager);
+                                      BookmarkManagerGtk* bm);
 
-  static void OnLeftTreeViewDragReceived(
-      GtkWidget* tree_view, GdkDragContext* context, gint x, gint y,
-      GtkSelectionData* selection_data, guint target_type, guint time,
-      BookmarkManagerGtk* bookmark_manager);
+  static void OnLeftTreeViewDragReceived(GtkWidget* tree_view,
+                                         GdkDragContext* context,
+                                         gint x,
+                                         gint y,
+                                         GtkSelectionData* selection_data,
+                                         guint target_type,
+                                         guint time,
+                                         BookmarkManagerGtk* bm);
 
   static gboolean OnLeftTreeViewDragMotion(GtkWidget* tree_view,
-      GdkDragContext* context, gint x, gint y, guint time,
-      BookmarkManagerGtk* bookmark_manager);
+                                           GdkDragContext* context,
+                                           gint x,
+                                           gint y,
+                                           guint time,
+                                           BookmarkManagerGtk* bm);
 
   static void OnLeftTreeViewRowCollapsed(GtkTreeView* tree_view,
-      GtkTreeIter* iter, GtkTreePath* path,
-      BookmarkManagerGtk* bookmark_manager);
+                                         GtkTreeIter* iter,
+                                         GtkTreePath* path,
+                                         BookmarkManagerGtk* bm);
 
   static void OnRightTreeViewDragGet(GtkWidget* tree_view,
-      GdkDragContext* context, GtkSelectionData* selection_data,
-      guint target_type, guint time, BookmarkManagerGtk* bookmark_manager);
+                                     GdkDragContext* context,
+                                     GtkSelectionData* selection_data,
+                                     guint target_type,
+                                     guint time,
+                                     BookmarkManagerGtk* bm);
 
-  static void OnRightTreeViewDragReceived(
-      GtkWidget* tree_view, GdkDragContext* context, gint x, gint y,
-      GtkSelectionData* selection_data, guint target_type, guint time,
-      BookmarkManagerGtk* bookmark_manager);
+  static void OnRightTreeViewDragReceived(GtkWidget* tree_view,
+                                          GdkDragContext* context,
+                                          gint x,
+                                          gint y,
+                                          GtkSelectionData* selection_data,
+                                          guint target_type,
+                                          guint time,
+                                          BookmarkManagerGtk* bm);
 
   static void OnRightTreeViewDragBegin(GtkWidget* tree_view,
-      GdkDragContext* drag_context, BookmarkManagerGtk* bookmark_manager);
+                                       GdkDragContext* drag_context,
+                                       BookmarkManagerGtk* bm);
 
   static gboolean OnRightTreeViewDragMotion(GtkWidget* tree_view,
-      GdkDragContext* context, gint x, gint y, guint time,
-      BookmarkManagerGtk* bookmark_manager);
+                                            GdkDragContext* context,
+                                            gint x,
+                                            gint y,
+                                            guint time,
+                                            BookmarkManagerGtk* bm);
 
   static void OnRightTreeViewRowActivated(GtkTreeView* tree_view,
-      GtkTreePath* path, GtkTreeViewColumn* column,
-      BookmarkManagerGtk* bookmark_manager);
+                                          GtkTreePath* path,
+                                          GtkTreeViewColumn* column,
+                                          BookmarkManagerGtk* bm);
 
   static void OnRightTreeViewFocusIn(GtkTreeView* tree_view,
-      GdkEventFocus* event, BookmarkManagerGtk* bookmark_manager);
+                                     GdkEventFocus* event,
+                                     BookmarkManagerGtk* bm);
 
   static void OnLeftTreeViewFocusIn(GtkTreeView* tree_view,
-      GdkEventFocus* event, BookmarkManagerGtk* bookmark_manager);
+                                    GdkEventFocus* event,
+                                    BookmarkManagerGtk* bm);
 
   static gboolean OnRightTreeViewButtonPress(GtkWidget* tree_view,
-      GdkEventButton* event, BookmarkManagerGtk* bookmark_manager);
+                                             GdkEventButton* event,
+                                             BookmarkManagerGtk* bm);
 
   static gboolean OnRightTreeViewMotion(GtkWidget* tree_view,
-      GdkEventMotion* event, BookmarkManagerGtk* bookmark_manager);
+                                        GdkEventMotion* event,
+                                        BookmarkManagerGtk* bm);
 
   static gboolean OnTreeViewButtonPress(GtkWidget* tree_view,
-      GdkEventButton* button, BookmarkManagerGtk* bookmark_manager);
+                                        GdkEventButton* button,
+                                        BookmarkManagerGtk* bm);
 
   static gboolean OnTreeViewButtonRelease(GtkWidget* tree_view,
-      GdkEventButton* button, BookmarkManagerGtk* bookmark_manager);
+                                          GdkEventButton* button,
+                                          BookmarkManagerGtk* bm);
 
   static gboolean OnTreeViewKeyPress(GtkWidget* tree_view,
-      GdkEventKey* key, BookmarkManagerGtk* bookmark_manager);
+                                     GdkEventKey* key,
+                                     BookmarkManagerGtk* bm);
 
   // Tools menu item callbacks.
   static void OnImportItemActivated(GtkMenuItem* menuitem,
-                                    BookmarkManagerGtk* bookmark_manager);
+                                    BookmarkManagerGtk* bm);
   static void OnExportItemActivated(GtkMenuItem* menuitem,
-                                    BookmarkManagerGtk* bookmark_manager);
+                                    BookmarkManagerGtk* bm);
+
+  // Window callbacks.
+  static gboolean OnWindowDestroyedThunk(GtkWidget* window, gpointer self) {
+    return reinterpret_cast<BookmarkManagerGtk*>(self)->
+        OnWindowDestroyed(window);
+  }
+  gboolean OnWindowDestroyed(GtkWidget* window);
+
+  static gboolean OnWindowStateChangedThunk(GtkWidget* window,
+                                            GdkEventWindowState* event,
+                                            gpointer self) {
+    return reinterpret_cast<BookmarkManagerGtk*>(self)->
+        OnWindowStateChanged(window, event);
+  }
+  gboolean OnWindowStateChanged(GtkWidget* window, GdkEventWindowState* event);
+
+  static gboolean OnWindowConfiguredThunk(GtkWidget* window,
+                                          GdkEventConfigure* event,
+                                          gpointer self) {
+    return reinterpret_cast<BookmarkManagerGtk*>(self)->
+        OnWindowConfigured(window, event);
+  }
+  gboolean OnWindowConfigured(GtkWidget* window, GdkEventConfigure* event);
 
   GtkWidget* window_;
   GtkWidget* search_entry_;
@@ -241,6 +296,12 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   GtkTreeViewColumn* url_column_;
   GtkTreeViewColumn* path_column_;
   scoped_ptr<BookmarkTableModel> right_tree_model_;
+
+  // |window_|'s current position and size.
+  gfx::Rect window_bounds_;
+
+  // Flags describing |window_|'s current state.
+  GdkWindowState window_state_;
 
   // The Organize menu item.
   GtkWidget* organize_;

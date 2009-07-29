@@ -27,8 +27,11 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
-#include "chrome/browser/task_manager.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
+#include "chrome/browser/task_manager.h"
 #endif
 
 #if defined(OS_WIN)
@@ -52,6 +55,8 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
   PageInfoModel::RegisterPrefs(local_state);
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
   BrowserView::RegisterBrowserViewPrefs(local_state);
+#endif
+#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
   TaskManager::RegisterPrefs(local_state);
 #endif
 

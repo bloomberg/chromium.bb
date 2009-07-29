@@ -33,6 +33,9 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   // Initializes the task manager dialog.
   void Init();
 
+  // Set |dialog_|'s initial size, using its previous size if that was saved.
+  void SetInitialDialogSize();
+
   // Connects the ctrl-w accelerator to the dialog.
   void ConnectAccelerators();
 

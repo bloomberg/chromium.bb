@@ -11,8 +11,11 @@
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -360,10 +363,35 @@ void TaskManagerGtk::Init() {
 
   gtk_container_add(GTK_CONTAINER(scrolled), treeview_);
 
-  gtk_window_resize(GTK_WINDOW(dialog_), kDefaultWidth, kDefaultHeight);
+  SetInitialDialogSize();
   gtk_widget_show_all(dialog_);
 
   model_->AddObserver(this);
+}
+
+void TaskManagerGtk::SetInitialDialogSize() {
+  // If we previously saved the dialog's bounds, use them.
+  if (g_browser_process->local_state()) {
+    const DictionaryValue* placement_pref =
+        g_browser_process->local_state()->GetDictionary(
+            prefs::kTaskManagerWindowPlacement);
+    int top = 0, left = 0, bottom = 1, right = 1;
+    if (placement_pref &&
+        placement_pref->GetInteger(L"top", &top) &&
+        placement_pref->GetInteger(L"left", &left) &&
+        placement_pref->GetInteger(L"bottom", &bottom) &&
+        placement_pref->GetInteger(L"right", &right)) {
+      gtk_window_resize(GTK_WINDOW(dialog_),
+                        std::max(1, right - left),
+                        std::max(1, bottom - top));
+      return;
+    }
+  }
+
+  // Otherwise, just set a default size (GTK will override this if it's not
+  // large enough to hold the window's contents).
+  gtk_window_set_default_size(
+      GTK_WINDOW(dialog_), kDefaultWidth, kDefaultHeight);
 }
 
 void TaskManagerGtk::ConnectAccelerators() {
@@ -510,6 +538,24 @@ void TaskManagerGtk::ActivateFocusedTab() {
 void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
                                 TaskManagerGtk* task_manager) {
   if (response_id == GTK_RESPONSE_DELETE_EVENT) {
+    // Store the dialog's size so we can restore it the next time it's opened.
+    if (g_browser_process->local_state()) {
+      gint x = 0, y = 0, width = 1, height = 1;
+      gtk_window_get_position(GTK_WINDOW(dialog), &x, &y);
+      gtk_window_get_size(GTK_WINDOW(dialog), &width, &height);
+
+      DictionaryValue* placement_pref =
+          g_browser_process->local_state()->GetMutableDictionary(
+              prefs::kTaskManagerWindowPlacement);
+      // Note that we store left/top for consistency with Windows, but that we
+      // *don't* restore them.
+      placement_pref->SetInteger(L"left", x);
+      placement_pref->SetInteger(L"top", y);
+      placement_pref->SetInteger(L"right", x + width);
+      placement_pref->SetInteger(L"bottom", y + height);
+      placement_pref->SetBoolean(L"maximized", false);
+    }
+
     instance_ = NULL;
     delete task_manager;
   } else if (response_id == kTaskManagerResponseKill) {
