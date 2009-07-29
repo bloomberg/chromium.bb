@@ -794,15 +794,16 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
       int blur_amount = (HasCustomImage(id)) ? 1 : 5;
       SkBitmap blurred =
           skia::ImageOperations::CreateBlurredBitmap(*frame, blur_amount);
-      SkBitmap* bg_tab =
-          new SkBitmap(TintBitmap(blurred, TINT_BACKGROUND_TAB));
+      SkBitmap* bg_tab = new SkBitmap(TintBitmap(blurred, TINT_BACKGROUND_TAB));
 
       // If they've provided a custom image, overlay it.
       if (HasCustomImage(id)) {
         SkBitmap* overlay = LoadThemeBitmap(id);
-        SkCanvas canvas(*bg_tab);
-        for (int x = 0; x < bg_tab->width(); x += overlay->width())
-          canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
+        if (overlay) {
+          SkCanvas canvas(*bg_tab);
+          for (int x = 0; x < bg_tab->width(); x += overlay->width())
+            canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
+        }
       }
 
       image_cache_[id] = bg_tab;
