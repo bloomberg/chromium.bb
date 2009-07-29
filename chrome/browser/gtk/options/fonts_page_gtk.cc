@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/options/fonts_page_gtk.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
@@ -69,10 +70,16 @@ void FontsPageGtk::Init() {
         IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE),
       font_controls, false);
 
-  // TODO(mattm): default encoding
+  InitDefaultEncodingComboBox();
+  std::string encoding_group_description = l10n_util::GetStringUTF8(
+      IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL);
+  GtkWidget* encoding_controls = gtk_util::CreateLabeledControlsGroup(NULL,
+      encoding_group_description.c_str(),
+      default_encoding_combobox_,
+      NULL);
   options_builder.AddOptionGroup(l10n_util::GetStringUTF8(
         IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE),
-      gtk_label_new("todo"), false);
+      encoding_controls, false);
 
   page_ = options_builder.get_page_widget();
 
@@ -90,6 +97,27 @@ void FontsPageGtk::Init() {
   default_encoding_.Init(prefs::kDefaultCharset, profile()->GetPrefs(), this);
 
   NotifyPrefChanged(NULL);
+}
+
+void FontsPageGtk::InitDefaultEncodingComboBox() {
+  default_encoding_combobox_ = gtk_combo_box_new_text();
+  g_signal_connect(G_OBJECT(default_encoding_combobox_), "changed",
+                   G_CALLBACK(OnDefaultEncodingChanged), this);
+  int canonical_encoding_names_length =
+      CharacterEncoding::GetSupportCanonicalEncodingCount();
+  // Initialize the vector of all sorted encodings according to current
+  // UI locale.
+  std::string locale = g_browser_process->GetApplicationLocale();
+  for (int i = 0; i < canonical_encoding_names_length; i++) {
+    sorted_encoding_list_.push_back(CharacterEncoding::EncodingInfo(
+        CharacterEncoding::GetEncodingCommandIdByIndex(i)));
+  }
+  l10n_util::SortVectorWithStringKey(locale, &sorted_encoding_list_, true);
+  for (size_t i = 0; i < sorted_encoding_list_.size(); i++) {
+    gtk_combo_box_append_text(
+        GTK_COMBO_BOX(default_encoding_combobox_),
+        WideToUTF8(sorted_encoding_list_[i].encoding_display_name).c_str());
+  }
 }
 
 void FontsPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
@@ -112,7 +140,14 @@ void FontsPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
           fixed_width_size_.GetValue()).c_str());
   }
   if (!pref_name || *pref_name == prefs::kDefaultCharset) {
-    // TODO
+    const std::wstring current_encoding = default_encoding_.GetValue();
+    for (size_t i = 0; i < sorted_encoding_list_.size(); i++) {
+      if (CharacterEncoding::GetCanonicalEncodingNameByCommandId(
+          sorted_encoding_list_[i].encoding_id) == current_encoding) {
+        gtk_combo_box_set_active(GTK_COMBO_BOX(default_encoding_combobox_), i);
+        break;
+      }
+    }
   }
 }
 
@@ -154,4 +189,18 @@ void FontsPageGtk::OnFixedFontSet(GtkFontButton* font_button,
   fonts_page->SetFontsFromButton(&fonts_page->fixed_width_name_,
                                  &fonts_page->fixed_width_size_,
                                  font_button);
+}
+
+// static
+void FontsPageGtk::OnDefaultEncodingChanged(GtkComboBox* combo_box,
+                                            FontsPageGtk* fonts_page) {
+  int index = gtk_combo_box_get_active(combo_box);
+  if (index < 0 ||
+      static_cast<size_t>(index) >= fonts_page->sorted_encoding_list_.size()) {
+    NOTREACHED();
+    return;
+  }
+  fonts_page->default_encoding_.SetValue(
+      CharacterEncoding::GetCanonicalEncodingNameByCommandId(
+          fonts_page->sorted_encoding_list_[index].encoding_id));
 }

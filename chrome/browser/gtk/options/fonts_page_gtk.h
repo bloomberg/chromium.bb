@@ -9,7 +9,9 @@
 #define CHROME_BROWSER_GTK_OPTIONS_FONTS_PAGE_GTK_H_
 
 #include <gtk/gtk.h>
+#include <vector>
 
+#include "chrome/browser/character_encoding.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/common/pref_member.h"
 
@@ -24,6 +26,7 @@ class FontsPageGtk : public OptionsPageBase {
 
  private:
   void Init();
+  void InitDefaultEncodingComboBox();
 
   // Overridden from OptionsPageBase.
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
@@ -42,11 +45,16 @@ class FontsPageGtk : public OptionsPageBase {
                             FontsPageGtk* fonts_page);
   static void OnFixedFontSet(GtkFontButton* font_button,
                              FontsPageGtk* fonts_page);
+  static void OnDefaultEncodingChanged(GtkComboBox* combo_box,
+                                       FontsPageGtk* fonts_page);
 
   // The font chooser widgets
   GtkWidget* serif_font_button_;
   GtkWidget* sans_font_button_;
   GtkWidget* fixed_font_button_;
+
+  // The default encoding combobox widget.
+  GtkWidget* default_encoding_combobox_;
 
   // The widget containing the options for this page.
   GtkWidget* page_;
@@ -62,6 +70,7 @@ class FontsPageGtk : public OptionsPageBase {
 
   // Default encoding preference.
   StringPrefMember default_encoding_;
+  std::vector<CharacterEncoding::EncodingInfo> sorted_encoding_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FontsPageGtk);
 };
