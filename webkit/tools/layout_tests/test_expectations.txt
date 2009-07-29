@@ -2855,7 +2855,6 @@ BUG16779 : LayoutTests/media/video-volume.html = FAIL
 BUG16779 : LayoutTests/media/video-zoom.html = FAIL
 
 // Failure since WebKit merge 45873:45916
-BUG16823 LINUX WIN : LayoutTests/editing/execCommand/outdent-selection.html = FAIL
 BUG16823 MAC : LayoutTests/editing/execCommand/4128080-2.html = FAIL
 BUG16823 MAC : LayoutTests/editing/inserting/insert-3786362-fix.html = FAIL
 BUG16823 MAC : LayoutTests/editing/inserting/insert-3907422-fix.html = FAIL
