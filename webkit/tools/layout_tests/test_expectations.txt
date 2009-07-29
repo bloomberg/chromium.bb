@@ -1263,8 +1263,6 @@ BUG10667 MAC : chrome/plugins/return-npobject.html = FAIL
 BUG10667 MAC : chrome/plugins/script-object-invoke.html = FAIL
 BUG10667 MAC : pending/plugins/iframe-shims.html = FAIL CRASH
 BUG18027 MAC : LayoutTests/fast/dom/object-plugin-hides-properties.html = CRASH
-BUG18027 MAC : LayoutTests/fast/images/embed-image.html = CRASH
-BUG18027 MAC : LayoutTests/fast/images/object-image.html = CRASH
 BUG18027 MAC : LayoutTests/plugins/embed-attributes-style.html = CRASH
 
 // NEW FOR MERGE 36102:37604
@@ -1432,8 +1430,8 @@ BUG10377 MAC : LayoutTests/fast/events/drag-in-frames.html = FAIL
 
 // These two have a different object type in the dom dump. Plugin-related.
 // Ignored on Win/Linux because they rely on QT to provide a TIFF decoder.
-BUG10378 MAC : LayoutTests/fast/images/embed-image.html = FAIL
-BUG10378 MAC : LayoutTests/fast/images/object-image.html = FAIL
+BUG10378 MAC : LayoutTests/fast/images/embed-image.html = FAIL CRASH
+BUG10378 MAC : LayoutTests/fast/images/object-image.html = FAIL CRASH
 
 // Some times it fails because the animation starts before the first dom dump
 // so the text doesn't match.
