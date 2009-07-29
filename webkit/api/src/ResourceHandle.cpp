@@ -259,7 +259,7 @@ void ResourceHandle::loadResourceSynchronously(const ResourceRequest& request,
 }
 
 // static
-bool ResourceHandle::willLoadFromCache(ResourceRequest& request)
+bool ResourceHandle::willLoadFromCache(ResourceRequest& request, Frame*)
 {
     // This method is used to determine if a POST request can be repeated from
     // cache, but you cannot really know until you actually try to read from the
