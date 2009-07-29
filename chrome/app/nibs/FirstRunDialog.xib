@@ -140,7 +140,7 @@
 						<object class="NSPopUpButton" id="21765562">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{222, 161}, {113, 26}}</string>
+							<string key="NSFrame">{{222, 161}, {146, 26}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSPopUpButtonCell" key="NSCell" id="983528702">
@@ -476,22 +476,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">selectedIndex: browserImportSelectedIndex</string>
-						<reference key="source" ref="21765562"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="21765562"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">selectedIndex: browserImportSelectedIndex</string>
-							<string key="NSBinding">selectedIndex</string>
-							<string key="NSKeyPath">browserImportSelectedIndex</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">67</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: makeDefaultBrowser</string>
 						<reference key="source" ref="328877840"/>
 						<reference key="destination" ref="1001"/>
@@ -545,6 +529,39 @@
 						<reference key="destination" ref="575991284"/>
 					</object>
 					<int key="connectionID">73</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">content: browserImportList</string>
+						<reference key="source" ref="21765562"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector" id="586331367">
+							<reference key="NSSource" ref="21765562"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">content: browserImportList</string>
+							<string key="NSBinding">content</string>
+							<string key="NSKeyPath">browserImportList</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">79</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">selectedIndex: browserImportSelectedIndex</string>
+						<reference key="source" ref="21765562"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="21765562"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">selectedIndex: browserImportSelectedIndex</string>
+							<string key="NSBinding">selectedIndex</string>
+							<string key="NSKeyPath">browserImportSelectedIndex</string>
+							<reference key="NSPreviousConnector" ref="586331367"/>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">80</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -864,7 +881,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{336, 475}, {172, 43}}</string>
+					<string>{{849, 662}, {117, 43}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -908,7 +925,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">73</int>
+			<int key="maxID">80</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -923,11 +940,9 @@
 							<string>cancel:</string>
 							<string>learnMore:</string>
 							<string>ok:</string>
-							<string>showWindow:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>

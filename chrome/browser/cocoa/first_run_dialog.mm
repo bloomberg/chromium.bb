@@ -15,6 +15,7 @@
 @synthesize makeDefaultBrowser = make_default_browser_;
 @synthesize importBookmarks = import_bookmarks_;
 @synthesize browserImportSelectedIndex = browser_import_selected_index_;
+@synthesize browserImportList = browser_import_list_;
 
 - (id)init {
   self = [super initWithWindowNibName:@"FirstRunDialog"];
@@ -24,6 +25,11 @@
     import_bookmarks_ = YES;
   }
   return self;
+}
+
+- (void)dealloc {
+  [browser_import_list_ release];
+  [super dealloc];
 }
 
 - (IBAction)showWindow:(id)sender {

@@ -36,6 +36,9 @@ enum ProfileType {
 #endif
   FIREFOX2,
   FIREFOX3,
+#if defined(OS_MACOSX)
+  SAFARI,
+#endif
   GOOGLE_TOOLBAR5,
   // Identifies a 'bookmarks.html' file.
   BOOKMARKS_HTML
@@ -292,6 +295,9 @@ class ImporterHost : public base::RefCounted<ImporterHost>,
 #endif
   void DetectFirefoxProfiles();
   void DetectGoogleToolbarProfiles();
+#if defined(OS_MACOSX)
+  void DetectSafariProfiles();
+#endif
 
   NotificationRegistrar registrar_;
 

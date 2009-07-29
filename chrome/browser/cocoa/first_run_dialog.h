@@ -16,6 +16,7 @@
   BOOL make_default_browser_;
   BOOL import_bookmarks_;
   int  browser_import_selected_index_;
+  NSArray* browser_import_list_;
 }
 
 // Called when the "Start Google Chrome" button is pressed.
@@ -33,6 +34,7 @@
 @property(assign) BOOL makeDefaultBrowser;
 @property(assign) BOOL importBookmarks;
 @property(assign) int browserImportSelectedIndex;
+@property(retain) NSArray* browserImportList;
 
 @end
 

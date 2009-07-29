@@ -650,6 +650,12 @@ Importer* ImporterHost::CreateImporterByType(ProfileType type) {
       return new Firefox3Importer();
     case GOOGLE_TOOLBAR5:
       return new Toolbar5Importer();
+#if defined(OS_MACOSX)
+    case SAFARI:
+      // TODO(jeremy): Implement.
+      NOTIMPLEMENTED();
+      return NULL;
+#endif  // OS_MACOSX
   }
   NOTREACHED();
   return NULL;
@@ -694,6 +700,9 @@ void ImporterHost::DetectSourceProfiles() {
   // TODO(brg) : Current UI requires win_util.
   DetectGoogleToolbarProfiles();
 #else
+#if defined(OS_MACOSX)
+  DetectSafariProfiles();
+#endif
   DetectFirefoxProfiles();
 #endif
 }
@@ -807,3 +816,17 @@ void ImporterHost::DetectGoogleToolbarProfiles() {
     source_profiles_.push_back(google_toolbar);
   }
 }
+
+#if defined(OS_MACOSX)
+void ImporterHost::DetectSafariProfiles() {
+  // TODO(jeremy):Check that Safari folder is in fact present.
+  ProfileInfo* safari = new ProfileInfo();
+  safari->browser_type = SAFARI;
+  safari->description = l10n_util::GetString(IDS_IMPORT_FROM_SAFARI);
+  safari->source_path.clear();
+  safari->app_path.clear();
+  safari->services_supported = HISTORY | FAVORITES | COOKIES | PASSWORDS |
+      SEARCH_ENGINES;
+  source_profiles_.push_back(safari);
+}
+#endif  // OS_MACOSX

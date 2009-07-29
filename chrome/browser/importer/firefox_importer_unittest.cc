@@ -14,6 +14,8 @@
 
 using base::Time;
 
+// TODO(jeremy): Port NSSDecryptor to OSX and enable these tests.
+#if !defined(OS_MACOSX)
 TEST(FirefoxImporterTest, Firefox2NSS3Decryptor) {
   std::wstring nss_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &nss_path));
@@ -45,6 +47,7 @@ TEST(FirefoxImporterTest, Firefox3NSS3Decryptor) {
   EXPECT_EQ(L"\x4E2D", decryptor.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAE"
       "wFAYIKoZIhvcNAwcECLWqqiccfQHWBAie74hxnULxlw=="));
 }
+#endif  // !OS_MACOSX
 
 TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   bool result;

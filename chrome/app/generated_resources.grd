@@ -2291,6 +2291,9 @@ each locale. -->
       <message name="IDS_IMPORT_FROM_GOOGLE_TOOLBAR" desc="browser combo box: Google Toolbar">
         Google Toolbar
       </message>
+      <message name="IDS_IMPORT_FROM_SAFARI" desc="browser combo box: Safari">
+        Safari
+      </message>
       <message name="IDS_IMPORT_ITEMS_LABEL" desc="Label before item select checkboxes">
         Select items to import:
       </message>

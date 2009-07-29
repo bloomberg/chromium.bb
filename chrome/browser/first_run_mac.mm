@@ -8,6 +8,7 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"
 #import "chrome/browser/cocoa/first_run_dialog.h"
+#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -46,10 +47,26 @@ bool OpenFirstRunDialog(Profile* profile, ProcessSingleton* process_singleton) {
   scoped_nsobject<FirstRunDialogController> dialog(
       [[FirstRunDialogController alloc] init]);
 
+  scoped_refptr<ImporterHost> importer_host(new ImporterHost());
+
+  // Set list of browsers we know how to import.
+  ssize_t profiles_count = importer_host->GetAvailableProfileCount();
+
+  // TODO(jeremy): Test on newly created account.
+  // TODO(jeremy): Correctly handle case where no browsers to import from
+  // are detected.
+  NSMutableArray *browsers = [NSMutableArray arrayWithCapacity:profiles_count];
+  for (int i = 0; i < profiles_count; ++i) {
+    std::wstring profile = importer_host->GetSourceProfileNameAt(i);
+    [browsers addObject:base::SysWideToNSString(profile)];
+  }
+  [dialog.get() setBrowserImportList:browsers];
+
   // FirstRunDialogController will call exit if "Cancel" is clicked.
   [dialog.get() showWindow:nil];
 
-  // If user clicked cancel, bail.
+  // If user clicked cancel, bail - browser_main will return if we haven't
+  // turned off the first run flag when this function returns.
   if ([dialog.get() userDidCancel]) {
     return false;
   }
@@ -66,13 +83,21 @@ bool OpenFirstRunDialog(Profile* profile, ProcessSingleton* process_singleton) {
 
   GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
 
+  // If selected set as default browser.
   BOOL make_default_browser = [dialog.get() makeDefaultBrowser];
   if (make_default_browser) {
     bool success = ShellIntegration::SetAsDefaultBrowser();
     DCHECK(success);
   }
 
-  // TODO(jeremy): Import Bookmarks.
+  // Import bookmarks.
+  const ProfileInfo& source_profile = importer_host->GetSourceProfileInfoAt(
+      [dialog.get() browserImportSelectedIndex]);
+  int items = SEARCH_ENGINES + HISTORY + FAVORITES + HOME_PAGE + PASSWORDS;
+  // TODO(port): Call StartImportingWithUI here instead and launch
+  // a new process that does the actual import.
+  importer_host->StartImportSettings(source_profile, profile, items,
+                                     new ProfileWriter(profile), true);
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return true;
