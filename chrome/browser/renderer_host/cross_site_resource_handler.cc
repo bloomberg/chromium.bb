@@ -6,8 +6,10 @@
 
 #include "chrome/browser/renderer_host/cross_site_resource_handler.h"
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "net/base/io_buffer.h"
 
 namespace {
 
@@ -123,7 +125,11 @@ bool CrossSiteResourceHandler::OnResponseStarted(int request_id,
 
 bool CrossSiteResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                           int* buf_size, int min_size) {
-  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+  bool rv = next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+  // TODO(willchan): Remove after debugging bug 16371.
+  if (rv)
+    CHECK((*buf)->data());
+  return rv;
 }
 
 bool CrossSiteResourceHandler::OnReadCompleted(int request_id,

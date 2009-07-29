@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/renderer_host/sync_resource_handler.h"
+#include "base/logging.h"
 #include "chrome/common/render_messages.h"
 
 SyncResourceHandler::SyncResourceHandler(
@@ -43,6 +44,8 @@ bool SyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                      int* buf_size, int min_size) {
   DCHECK(min_size == -1);
   *buf = read_buffer_.get();
+  // TODO(willchan): Remove after debugging bug 16371.
+  CHECK(read_buffer_->data());
   *buf_size = kReadBufSize;
   return true;
 }

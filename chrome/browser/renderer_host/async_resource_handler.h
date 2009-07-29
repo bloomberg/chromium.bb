@@ -38,11 +38,6 @@ class AsyncResourceHandler : public ResourceHandler {
   static void GlobalCleanup();
 
  private:
-  // When reading, we don't know if we are going to get EOF (0 bytes read), so
-  // we typically have a buffer that we allocated but did not use.  We keep
-  // this buffer around for the next read as a small optimization.
-  static SharedIOBuffer* spare_read_buffer_;
-
   scoped_refptr<SharedIOBuffer> read_buffer_;
   ResourceDispatcherHost::Receiver* receiver_;
   int process_id_;

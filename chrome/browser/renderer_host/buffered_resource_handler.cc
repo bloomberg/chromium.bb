@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/buffered_resource_handler.h"
 
 #include "base/histogram.h"
+#include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
@@ -88,6 +89,8 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     my_buffer_ = new net::IOBuffer(kMaxBytesToSniff);
     *buf = my_buffer_.get();
     *buf_size = kMaxBytesToSniff;
+    // TODO(willchan): Remove after debugging bug 16371.
+    CHECK((*buf)->data());
     return true;
   }
 
@@ -98,6 +101,8 @@ bool BufferedResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     return false;
   }
   read_buffer_ = *buf;
+  // TODO(willchan): Remove after debugging bug 16371.
+  CHECK(read_buffer_->data());
   read_buffer_size_ = *buf_size;
   DCHECK(read_buffer_size_ >= kMaxBytesToSniff * 2);
   bytes_read_ = 0;

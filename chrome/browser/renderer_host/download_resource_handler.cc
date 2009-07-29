@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/download_resource_handler.h"
 
+#include "base/logging.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -83,6 +84,8 @@ bool DownloadResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     read_buffer_ = new net::IOBuffer(*buf_size);
   }
   *buf = read_buffer_.get();
+  // TODO(willchan): Remove after debugging bug 16371.
+  CHECK(read_buffer_->data());
   return true;
 }
 

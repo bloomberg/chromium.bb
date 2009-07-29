@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/save_file_resource_handler.h"
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/download/save_file_manager.h"
@@ -56,6 +57,8 @@ bool SaveFileResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     read_buffer_ = new net::IOBuffer(*buf_size);
   }
   *buf = read_buffer_.get();
+  // TODO(willchan): Remove after debugging bug 16371.
+  CHECK(read_buffer_->data());
   return true;
 }
 

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
 
+#include "base/logging.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
 #include "net/base/io_buffer.h"
 
@@ -71,6 +72,8 @@ bool DownloadThrottlingResourceHandler::OnWillRead(int request_id,
     min_size = 1024;
   tmp_buffer_ = new net::IOBuffer(min_size);
   *buf = tmp_buffer_.get();
+  // TODO(willchan): Remove after debugging bug 16371.
+  CHECK((*buf)->data());
   *buf_size = min_size;
   return true;
 }

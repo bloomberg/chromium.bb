@@ -4,12 +4,16 @@
 
 #include "chrome/browser/renderer_host/async_resource_handler.h"
 
+#include "base/logging.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "chrome/common/render_messages.h"
 #include "net/base/io_buffer.h"
 
-SharedIOBuffer* AsyncResourceHandler::spare_read_buffer_;
+// When reading, we don't know if we are going to get EOF (0 bytes read), so
+// we typically have a buffer that we allocated but did not use.  We keep
+// this buffer around for the next read as a small optimization.
+static SharedIOBuffer* g_spare_read_buffer = NULL;
 
 // Our version of IOBuffer that uses shared memory.
 class SharedIOBuffer : public net::IOBuffer {
@@ -22,6 +26,8 @@ class SharedIOBuffer : public net::IOBuffer {
     }
   }
   ~SharedIOBuffer() {
+    // TODO(willchan): Remove after debugging bug 16371.
+    CHECK(g_spare_read_buffer != this);
     data_ = NULL;
   }
 
@@ -73,13 +79,17 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
                                       int* buf_size, int min_size) {
   DCHECK(min_size == -1);
   static const int kReadBufSize = 32768;
-  if (spare_read_buffer_) {
+  if (g_spare_read_buffer) {
     DCHECK(!read_buffer_);
-    read_buffer_.swap(&spare_read_buffer_);
+    read_buffer_.swap(&g_spare_read_buffer);
+    // TODO(willchan): Remove after debugging bug 16371.
+    CHECK(read_buffer_->data());
   } else {
     read_buffer_ = new SharedIOBuffer(kReadBufSize);
     if (!read_buffer_->ok())
       return false;
+    // TODO(willchan): Remove after debugging bug 16371.
+    CHECK(read_buffer_->data());
   }
   *buf = read_buffer_.get();
   *buf_size = kReadBufSize;
@@ -126,18 +136,20 @@ bool AsyncResourceHandler::OnResponseCompleted(
                                                        security_info));
 
   // If we still have a read buffer, then see about caching it for later...
-  if (spare_read_buffer_) {
+  if (g_spare_read_buffer) {
     read_buffer_ = NULL;
   } else if (read_buffer_.get()) {
-    read_buffer_.swap(&spare_read_buffer_);
+    read_buffer_.swap(&g_spare_read_buffer);
   }
   return true;
 }
 
 // static
 void AsyncResourceHandler::GlobalCleanup() {
-  if (spare_read_buffer_) {
-    spare_read_buffer_->Release();
-    spare_read_buffer_ = NULL;
+  if (g_spare_read_buffer) {
+    // Avoid the CHECK in SharedIOBuffer::~SharedIOBuffer().
+    SharedIOBuffer* tmp = g_spare_read_buffer;
+    g_spare_read_buffer = NULL;
+    tmp->Release();
   }
 }

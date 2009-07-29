@@ -4,10 +4,12 @@
 
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 
+#include "base/logging.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/notification_service.h"
 #include "net/base/net_errors.h"
+#include "net/base/io_buffer.h"
 
 // Maximum time to wait for a gethash response from the Safe Browsing servers.
 static const int kMaxGetHashMs = 1000;
@@ -103,7 +105,11 @@ bool SafeBrowsingResourceHandler::OnWillRead(int request_id,
     paused_request_id_ = request_id;
   }
 
-  return next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+  bool rv = next_handler_->OnWillRead(request_id, buf, buf_size, min_size);
+  // TODO(willchan): Remove after debugging bug 16371.
+  if (rv)
+    CHECK((*buf)->data());
+  return rv;
 }
 
 bool SafeBrowsingResourceHandler::OnReadCompleted(int request_id,
@@ -205,4 +211,3 @@ void SafeBrowsingResourceHandler::Observe(NotificationType type,
     Release();
   }
 }
-
