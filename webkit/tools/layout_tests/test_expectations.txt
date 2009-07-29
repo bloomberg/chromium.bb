@@ -2999,8 +2999,8 @@ BUG17942 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-
 BUG17942 WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
 
 // Test failures from WebKit merge 46369 to 46426
-BUG_PKASTING WIN LINUX : LayoutTests/editing/style/remove-underline-from-stylesheet.html = FAIL
-BUG_PKASTING WIN LINUX : LayoutTests/fast/canvas/image-pattern-rotate.html = FAIL
+BUG18014 WIN LINUX : LayoutTests/editing/style/remove-underline-from-stylesheet.html = FAIL
+BUG18016 WIN LINUX : LayoutTests/fast/canvas/image-pattern-rotate.html = FAIL
 BUG17845 DEBUG : LayoutTests/svg/W3C-SVG-1.1/struct-dom-01-b.svg = CRASH
 BUG17845 DEBUG : LayoutTests/svg/custom/baseval-animval-equality.svg = CRASH
 BUG17845 DEBUG : LayoutTests/svg/custom/dynamic-svg-document-creation.svg = CRASH
