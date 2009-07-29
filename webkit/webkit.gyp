@@ -1440,6 +1440,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../base/base.gyp:linux_versioninfo',
           ],
           'export_dependent_settings': [
             # Users of webcursor.h need the GTK include path.

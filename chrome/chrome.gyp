@@ -1908,6 +1908,7 @@
             # '../build/linux/system.gyp:gnome-keyring',
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
+            '../base/base.gyp:linux_versioninfo',
           ],
           'sources!': [
             'browser/views/extensions/extension_shelf.cc',
