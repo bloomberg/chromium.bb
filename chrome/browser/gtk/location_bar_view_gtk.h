@@ -107,6 +107,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // The outermost widget we want to be hosted.
   OwnedWidgetGtk hbox_;
 
+  // A GtkEntry that isn't part of the hierarchy. We keep this for native
+  // rendering.
+  OwnedWidgetGtk offscreen_entry_;
+
   // SSL icons.
   GtkWidget* security_icon_align_;
   GtkWidget* security_lock_icon_image_;

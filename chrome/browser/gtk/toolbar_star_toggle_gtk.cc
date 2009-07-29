@@ -8,6 +8,7 @@
 #include "base/gfx/rect.h"
 #include "chrome/browser/gtk/bookmark_bubble_gtk.h"
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
+#include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
@@ -15,7 +16,7 @@
 
 ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
     : host_(host),
-      widget_(gtk_button_new()),
+      widget_(gtk_chrome_button_new()),
       is_starred_(false),
       theme_provider_(GtkThemeProvider::GetFrom(host->profile())),
       unstarred_(theme_provider_, IDR_STAR, IDR_STAR_P, IDR_STAR_H, IDR_STAR_D),
@@ -90,7 +91,9 @@ gboolean ToolbarStarToggleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
 }
 
 void ToolbarStarToggleGtk::UpdateGTKButton() {
-  if (theme_provider_->UseGtkTheme()) {
+  bool use_gtk = theme_provider_ && theme_provider_->UseGtkTheme();
+
+  if (use_gtk) {
     GdkPixbuf* pixbuf = NULL;
     if (is_starred_) {
       pixbuf = theme_provider_->GetPixbufNamed(IDR_STARRED_NOBORDER);
@@ -114,4 +117,7 @@ void ToolbarStarToggleGtk::UpdateGTKButton() {
     // We effectively double-buffer by virtue of having only one image...
     gtk_widget_set_double_buffered(widget_.get(), FALSE);
   }
+
+  gtk_chrome_button_set_use_gtk_rendering(
+      GTK_CHROME_BUTTON(widget_.get()), use_gtk);
 }

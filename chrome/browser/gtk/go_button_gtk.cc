@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/profile.h"
@@ -28,7 +29,7 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
                       GtkThemeProvider::GetFrom(browser->profile()) : NULL),
       go_(theme_provider_, IDR_GO, IDR_GO_P, IDR_GO_H, 0),
       stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0),
-      widget_(gtk_button_new()) {
+      widget_(gtk_chrome_button_new()) {
   gtk_widget_set_size_request(widget_.get(),
                               gdk_pixbuf_get_width(go_.pixbufs(0)),
                               gdk_pixbuf_get_height(go_.pixbufs(0)));
@@ -199,7 +200,9 @@ void GoButtonGtk::SetTooltip() {
 }
 
 void GoButtonGtk::UpdateThemeButtons() {
-  if (theme_provider_ && theme_provider_->UseGtkTheme()) {
+  bool use_gtk = theme_provider_ && theme_provider_->UseGtkTheme();
+
+  if (use_gtk) {
     // TODO(erg): Waiting for Glen to make a version of these that don't have a
     // button border on it.
     if (intended_mode_ == MODE_GO) {
@@ -224,4 +227,7 @@ void GoButtonGtk::UpdateThemeButtons() {
     // We effectively double-buffer by virtue of having only one image...
     gtk_widget_set_double_buffered(widget_.get(), FALSE);
   }
+
+  gtk_chrome_button_set_use_gtk_rendering(
+      GTK_CHROME_BUTTON(widget_.get()), use_gtk);
 }
