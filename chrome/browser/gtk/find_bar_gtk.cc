@@ -95,7 +95,6 @@ FindBarGtk::FindBarGtk(Browser* browser)
                                        0, IDR_THEME_TOOLBAR, 0,
                                        0, 0, 0, 0, 0, 0));
 
-
   // Insert the widget into the browser gtk hierarchy.
   window_->AddFindBar(this);
 
@@ -290,6 +289,12 @@ void FindBarGtk::SetFindText(const string16& find_text) {
 
 void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
                                        const string16& find_text) {
+  if (!result.selection_rect().IsEmpty()) {
+    int xposition = GetDialogPosition(result.selection_rect()).x();
+    if (xposition != slide_widget()->allocation.x)
+      gtk_fixed_move(GTK_FIXED(widget()), slide_widget(), xposition, 0);
+  }
+
   // Once we find a match we no longer want to keep track of what had
   // focus. EndFindSession will then set the focus to the page content.
   if (result.number_of_matches() > 0)
@@ -330,12 +335,36 @@ void FindBarGtk::AudibleAlert() {
 }
 
 gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
-  // TODO(estade): Logic for the positioning of the find bar should be factored
-  // out of here and browser/views/* and into FindBarController.
-  int xposition = widget()->allocation.width -
-                  slide_widget()->allocation.width - 50;
+  // TODO(estade): Logic for the positioning of the find bar might do better
+  // to share more code with Windows. Currently though they do some things we
+  // don't worry about, such as considering the state of the bookmark bar on
+  // the NTP. I've tried to stick as close to the windows function as possible
+  // here to make it easy to possibly unfork this down the road.
 
-  return gfx::Rect(xposition, 0, 1, 1);
+  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
+  // 15 is the size of the scrollbar, copied from ScrollbarThemeChromium.
+  // The height is not used.
+  gfx::Rect dialog_bounds = gfx::Rect(ltr ? 0 : 15, 0,
+                                      widget()->allocation.width -
+                                          (ltr ? 15 : 0),
+                                      0);
+
+  GtkRequisition req;
+  gtk_widget_size_request(container_, &req);
+  gfx::Size prefsize(req.width, req.height);
+
+  gfx::Rect view_location(
+      ltr ? dialog_bounds.width() - prefsize.width() : dialog_bounds.x(),
+      dialog_bounds.y(), prefsize.width(), prefsize.height());
+
+  if (!avoid_overlapping_rect.IsEmpty()) {
+    // TODO(estade): move out of the way if need be.
+  }
+
+  if (view_location.x() < 0)
+    view_location.set_x(0);
+
+  return view_location;
 }
 
 void FindBarGtk::SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) {

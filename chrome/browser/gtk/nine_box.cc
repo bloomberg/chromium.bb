@@ -164,12 +164,13 @@ void NineBox::ChangeWhiteToTransparent() {
 }
 
 void NineBox::ContourWidget(GtkWidget* widget) const {
+  int width = widget->allocation.width;
+  int height = widget->allocation.height;
   int x1 = gdk_pixbuf_get_width(images_[0]);
-  int x2 = widget->allocation.width - gdk_pixbuf_get_width(images_[2]);
+  int x2 = width - gdk_pixbuf_get_width(images_[2]);
 
   // Paint the left and right sides.
-  GdkBitmap* mask = gdk_pixmap_new(NULL, widget->allocation.width,
-                                   widget->allocation.height, 1);
+  GdkBitmap* mask = gdk_pixmap_new(NULL, width, height, 1);
   gdk_pixbuf_render_threshold_alpha(images_[0], mask,
                                     0, 0,
                                     0, 0, -1, -1,
@@ -181,14 +182,37 @@ void NineBox::ContourWidget(GtkWidget* widget) const {
 
   // Assume no transparency in the middle rectangle.
   cairo_t* cr = gdk_cairo_create(mask);
-  cairo_rectangle(cr, x1, 0, x2 - x1, widget->allocation.height);
+  cairo_rectangle(cr, x1, 0, x2 - x1, height);
   cairo_fill(cr);
+  cairo_destroy(cr);
 
   // Mask the widget's window's shape.
-  gtk_widget_shape_combine_mask(widget, mask, 0, 0);
+  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) {
+    gtk_widget_shape_combine_mask(widget, mask, 0, 0);
+  } else {
+    GdkBitmap* flipped_mask = gdk_pixmap_new(NULL, width, height, 1);
+    cairo_t* flipped_cr = gdk_cairo_create(flipped_mask);
+
+    // Clear the target bitmap.
+    cairo_set_operator(flipped_cr, CAIRO_OPERATOR_CLEAR);
+    cairo_paint(flipped_cr);
+
+    // Apply flipping transformation.
+    cairo_translate(flipped_cr, width, 0.0f);
+    cairo_scale(flipped_cr, -1.0f, 1.0f);
+
+    // Paint the source bitmap onto the target.
+    cairo_set_operator(flipped_cr, CAIRO_OPERATOR_SOURCE);
+    gdk_cairo_set_source_pixmap(flipped_cr, mask, 0, 0);
+    cairo_paint(flipped_cr);
+    cairo_destroy(flipped_cr);
+
+    // Mask the widget.
+    gtk_widget_shape_combine_mask(widget, flipped_mask, 0, 0);
+    g_object_unref(flipped_mask);
+  }
 
   g_object_unref(mask);
-  cairo_destroy(cr);
 }
 
 void NineBox::Observe(NotificationType type, const NotificationSource& source,
