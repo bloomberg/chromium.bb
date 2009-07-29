@@ -9,8 +9,9 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/logging.h"
 #include "base/base_paths_linux.h"
+#include "base/gfx/gtk_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
@@ -62,6 +63,10 @@ const int kPopupTopMargin = 0;
 // to leave 1 pixel on both side here so that the borders line up.
 const int kPopupLeftRightMargin = 1;
 
+// The color used as the base[] color of the location entry during a secure
+// connection.
+const GdkColor kSecureColor = GDK_COLOR_RGB(255, 245, 195);
+
 }  // namespace
 
 // BrowserToolbarGtk, public ---------------------------------------------------
@@ -88,6 +93,8 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
+  offscreen_entry_.Destroy();
+
   // When we created our MenuGtk objects, we pass them a pointer to our accel
   // group. Make sure to tear them down before |accel_group_|.
   page_menu_.reset();
@@ -130,6 +137,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   SetProfile(profile);
 
   theme_provider_ = GtkThemeProvider::GetFrom(profile);
+  offscreen_entry_.Own(gtk_entry_new());
 
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
 
@@ -189,6 +197,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
   go_.reset(new GoButtonGtk(location_bar_.get(), browser_));
   gtk_box_pack_start(GTK_BOX(location_hbox), go_->widget(), FALSE, FALSE, 0);
 
+  g_signal_connect(location_hbox, "expose-event",
+                   G_CALLBACK(OnLocationHboxExpose), this);
   gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox, TRUE, TRUE,
                      ShouldOnlyShowLocation() ? 1 : 0);
 
@@ -389,17 +399,12 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
 gfx::Rect BrowserToolbarGtk::GetPopupBounds() const {
   GtkWidget* left;
   GtkWidget* right;
-  if (theme_provider_->UseGtkTheme()) {
-    left = location_bar_->widget();
-    right = location_bar_->widget();
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+    left = go_->widget();
+    right = star_->widget();
   } else {
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
-      left = go_->widget();
-      right = star_->widget();
-    } else {
-      left = star_->widget();
-      right = go_->widget();
-    }
+    left = star_->widget();
+    right = go_->widget();
   }
 
   // TODO(deanm): The go and star buttons probably share the same window,
@@ -518,6 +523,74 @@ gboolean BrowserToolbarGtk::OnToolbarExpose(GtkWidget* widget,
   cairo_destroy(cr);
 
   return FALSE;  // Allow subwidgets to paint.
+}
+
+// static
+gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
+                                                 GdkEventExpose* e,
+                                                 BrowserToolbarGtk* toolbar) {
+  if (toolbar->theme_provider_->UseGtkTheme() &&
+      !toolbar->ShouldOnlyShowLocation()) {
+    // To get the proper look surrounding the location bar, we issue raw gtk
+    // painting commands to the theme engine. We figure out the region from the
+    // leftmost widget to the rightmost and then tell GTK to perform the same
+    // drawing commands that draw a GtkEntry on that region.
+    GtkWidget* star = toolbar->star_->widget();
+    GtkWidget* left = NULL;
+    GtkWidget* right = NULL;
+    if (gtk_widget_get_direction(star) == GTK_TEXT_DIR_LTR) {
+      left = toolbar->star_->widget();
+      right = toolbar->go_->widget();
+    } else {
+      left = toolbar->go_->widget();
+      right = toolbar->star_->widget();
+    }
+
+    gint x = left->allocation.x;
+    gint y = left->allocation.y;
+    gint width = (right->allocation.x - left->allocation.x) +
+                 right->allocation.width;
+    gint height = (right->allocation.y - left->allocation.y) +
+                  right->allocation.height;
+
+    // Make sure our off screen entry has the correct base color if we're in
+    // secure mode.
+    gtk_widget_modify_base(
+        toolbar->offscreen_entry_.get(), GTK_STATE_NORMAL,
+        (toolbar->browser_->toolbar_model()->GetSchemeSecurityLevel() ==
+         ToolbarModel::SECURE) ?
+        &kSecureColor : NULL);
+
+    GtkStyle* gtk_owned_style =
+        gtk_rc_get_style(toolbar->offscreen_entry_.get());
+    // GTK owns the above and we're going to have to make our own copy of it
+    // that we can edit.
+    GtkStyle* our_style = gtk_style_copy(gtk_owned_style);
+    our_style = gtk_style_attach(our_style, location_hbox->window);
+
+    // TODO(erg): Draw the focus ring if appropriate...
+
+    // We're using GTK rendering; draw a GTK entry widget onto the background.
+    gtk_paint_shadow(our_style, location_hbox->window,
+                     GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL,
+                     location_hbox, "entry",
+                     x, y, width, height);
+
+    // Draw the interior background (not all themes draw the entry background
+    // above; this is a noop on themes that do).
+    gint xborder = our_style->xthickness;
+    gint yborder = our_style->ythickness;
+    gtk_paint_flat_box(our_style, location_hbox->window,
+                       GTK_STATE_NORMAL, GTK_SHADOW_NONE, NULL,
+                       location_hbox, "entry_bg",
+                       x + xborder, y + yborder,
+                       width - 2 * xborder,
+                       height - 2 * yborder);
+
+    g_object_unref(our_style);
+  }
+
+  return FALSE;
 }
 
 // static

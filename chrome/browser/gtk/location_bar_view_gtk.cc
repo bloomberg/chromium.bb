@@ -120,13 +120,9 @@ LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
 LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should have be children of / owned by the alignment.
   hbox_.Destroy();
-
-  offscreen_entry_.Destroy();
 }
 
 void LocationBarViewGtk::Init(bool popup_window_mode) {
-  offscreen_entry_.Own(gtk_entry_new());
-
   popup_window_mode_ = popup_window_mode;
   location_entry_.reset(new AutocompleteEditViewGtk(this,
                                                     toolbar_model_,
@@ -445,35 +441,6 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
     }
 
     g_object_unref(gc);
-  } else {
-    // Make sure our fake entry has the correct base color if we're in secure
-    // mode.
-    gtk_widget_modify_base(
-        offscreen_entry_.get(), GTK_STATE_NORMAL,
-        (toolbar_model_->GetSchemeSecurityLevel() == ToolbarModel::SECURE) ?
-        &kBackgroundColorByLevel[ToolbarModel::SECURE] : NULL);
-
-    GtkStyle* gtk_owned_style = gtk_rc_get_style(offscreen_entry_.get());
-    // GTK owns the above and we're going to have to make our own copy of it
-    // that we can edit.
-    GtkStyle* our_style = gtk_style_copy(gtk_owned_style);
-    our_style = gtk_style_attach(our_style, hbox_->window);
-
-    // TODO(erg): Draw the focus ring if appropriate...
-
-    // We're using GTK rendering; draw a GTK entry widget onto the background.
-    gtk_paint_shadow(our_style, hbox_->window,
-                  GTK_STATE_NORMAL, GTK_SHADOW_NONE, NULL,
-                  hbox_.get(), "entry",
-                  inner_rect.x, inner_rect.y, inner_rect.width,
-                  inner_rect.height);
-
-    // TODO(erg): The above works for Clearlooks and most theme engines, but
-    // doesn't draw a background in Crux and some other engines. This requires
-    // a separate gtk_paint_flat_box() call, and some math to calculate where
-    // to draw the flat box.
-
-    g_object_unref(our_style);
   }
 
   return FALSE;  // Continue propagating the expose.

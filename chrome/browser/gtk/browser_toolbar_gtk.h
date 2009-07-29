@@ -114,6 +114,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Gtk callback for the "expose-event" signal.
   static gboolean OnToolbarExpose(GtkWidget* widget, GdkEventExpose* e,
                                   BrowserToolbarGtk* toolbar);
+  static gboolean OnLocationHboxExpose(GtkWidget* omnibox_hbox,
+                                       GdkEventExpose* e,
+                                       BrowserToolbarGtk* toolbar);
 
   // Gtk callback for the "clicked" signal.
   static void OnButtonClick(GtkWidget* button, BrowserToolbarGtk* toolbar);
@@ -204,6 +207,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   int last_release_event_flags_;
 
   NotificationRegistrar registrar_;
+
+  // A GtkEntry that isn't part of the hierarchy. We keep this for native
+  // rendering.
+  OwnedWidgetGtk offscreen_entry_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserToolbarGtk);
 };
