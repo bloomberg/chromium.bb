@@ -339,6 +339,9 @@ class TabStrip::RemoveTabAnimation : public TabStrip::TabAnimation {
     }
 
 #if defined(OS_WIN)
+    // NOTE: It is important that this fake WM_MOUSEMOVE not move the mouse
+    // anywhere, so we need to know the current mouse position.  Hence, we use
+    // GetCursorPos instead of GetMessagePos.
     POINT pt;
     GetCursorPos(&pt);
     views::Widget* widget = tabstrip_->GetWidget();
@@ -1277,9 +1280,8 @@ bool TabStrip::IsCursorInTabStripZone() {
   bounds.set_height(bounds.height() + kTabStripAnimationVSlop);
 
 #if defined(OS_WIN)
-  CPoint cursor_point_c;
-  GetCursorPos(&cursor_point_c);
-  gfx::Point cursor_point(cursor_point_c);
+  DWORD pos = GetMessagePos();
+  gfx::Point cursor_point(LOWORD(pos), HIWORD(pos));
 #elif defined(OS_LINUX)
   // TODO: make sure this is right with multiple monitors.
   GdkScreen* screen = gdk_screen_get_default();
