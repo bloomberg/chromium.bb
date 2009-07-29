@@ -109,6 +109,39 @@ def _MakeSubstitutions(list, options):
   return [word % substitutions for word in list]
 
 
+def RunTestsInShards(test_command, verbose=True):
+  """Runs a test in shards. The number of shards is equal to
+  NUMBER_OF_PROCESSORS.
+
+  Args:
+    test_command: the test command to run, which is a list of one or more
+                  strings.
+    verbose: if True, combines stdout and stderr into stdout.
+             Otherwise, prints only the command's stderr to stdout.
+
+  Returns:
+    The first shard process's exit status.
+
+  Raises:
+    CommandNotFound if the command executable could not be found.
+  """
+  processor_count = 2
+  try:
+    processor_count = int(os.environ['NUMBER_OF_PROCESSORS'])
+  except KeyError:
+    print 'No NUMBER_OF_PROCESSORS defined. Use 2 instances.'
+
+  commands = []
+  for i in xrange(processor_count):
+    command = [test_command[j] for j in xrange(len(test_command))]
+    # To support sharding, the test executable needs to provide --batch-count
+    # --batch-index command line switches.
+    command.append('--batch-count=%s' % processor_count)
+    command.append('--batch-index=%d' % i)
+    commands.append(command)
+  return google.process_utils.RunCommandsInParallel(commands, verbose)[0][0]
+
+
 def main(options, args):
   """Runs all the selected tests for the given build type and target."""
   options.build_type = options.build_type.lower()
@@ -184,7 +217,10 @@ def main(options, args):
       print
     print 'Running %s:' % test,
     try:
-      result = google.process_utils.RunCommand(command, options.verbose)
+      if test == 'ui':
+        result = RunTestsInShards(command, options.verbose)
+      else:
+        result = google.process_utils.RunCommand(command, options.verbose)
     except google.process_utils.CommandNotFound, e:
       print '%s' % e
       raise
