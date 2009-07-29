@@ -278,6 +278,10 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   // indicates that it's time to send the plugin a null event
   void OnNullEvent();
+
+  // last mouse position within the plugin's rect (used for null events)
+  int last_mouse_x_;
+  int last_mouse_y_;
 #endif
 
   // Holds the current cursor set by the windowless plugin.

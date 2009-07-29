@@ -47,8 +47,19 @@ namespace {
 // this seems to work well enough.
 const int kPluginIdleThrottleDelayMs = 20;  // 20ms (50Hz)
 
-// The current instance of the plugin which entered the modal loop.
-WebPluginDelegateImpl* g_current_plugin_instance = NULL;
+// The most recently seen offset between global and local coordinates.  We use
+// this to keep the placeholder Carbon WindowRef's origin in sync with the
+// actual browser window, without having to pass that geometry over IPC.  If we
+// end up needing to interpose on Carbon APIs in the plugin process (in order
+// to simulate window activation, for example), this could be replaced by
+// interposing on GlobalToLocal and/or LocalToGlobal (see related TODO comments
+// below in WebPluginDelegateImpl::OnNullEvent()).
+
+int g_current_x_offset = 0;
+int g_current_y_offset = 0;
+
+WindowRef g_last_front_window = NULL;
+ProcessSerialNumber g_saved_front_process;
 
 }  // namespace
 
@@ -83,7 +94,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       handle_event_depth_(0),
       user_gesture_message_posted_(this),
       user_gesture_msg_factory_(this),
-      null_event_factory_(this) {
+      null_event_factory_(this),
+      last_mouse_x_(0),
+      last_mouse_y_(0) {
   memset(&window_, 0, sizeof(window_));
 }
 
@@ -120,7 +133,7 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
 
   cg_context_.window = NULL;
   window_.window = &cg_context_;
-  window_.type = NPWindowTypeDrawable;
+  window_.type = NPWindowTypeWindow;
 
   plugin->SetWindow(NULL);
   plugin_url_ = url.spec();
@@ -149,40 +162,13 @@ void WebPluginDelegateImpl::UpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
 
-  if (!window_rect.IsEmpty()) {
-    NSPoint windowOffset = {0.0, 0.0};
-    Rect window_bounds;
-    window_bounds.top = window_rect.y() + windowOffset.y;
-    window_bounds.left = window_rect.x() + windowOffset.x;
-    window_bounds.bottom = window_rect.y() + window_rect.height();
-    window_bounds.right = window_rect.x() + window_rect.width();
-
-    if (!cg_context_.window) {
-      // For all plugins we create a placeholder offscreen window for the use
-      // of NPWindow.  NPAPI on the Mac requires a Carbon WindowRef for the
-      // "browser window", even if we're not using the Quickdraw drawing model.
-      // Not having a valid window reference causes subtle bugs with plugins
-      // which retreive the NPWindow and validate the same. The NPWindow
-      // can be retreived via NPN_GetValue of NPNVnetscapeWindow.
-
-      WindowRef window_ref;
-      if (CreateNewWindow(kDocumentWindowClass,
-                          kWindowStandardDocumentAttributes,
-                          &window_bounds,
-                          &window_ref) == noErr) {
-        cg_context_.window = window_ref;
-      }
-    } else {
-      SetWindowBounds(cg_context_.window, kWindowContentRgn, &window_bounds);
-    }
-  }
-
+  DCHECK(windowless_);
   WindowlessUpdateGeometry(window_rect, clip_rect);
 }
 
 void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {
-  if (windowless_)
-    WindowlessPaint(context, rect);
+  DCHECK(windowless_);
+  WindowlessPaint(context, rect);
 }
 
 void WebPluginDelegateImpl::Print(CGContextRef context) {
@@ -253,21 +239,11 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
 
   // We will inform the instance of this change when we call NPP_SetWindow.
   clip_rect_ = clip_rect;
-  cutout_rects_.clear();
 
   if (window_rect_ != window_rect) {
     window_rect_ = window_rect;
 
-    window_.clipRect.top = 0;
-    window_.clipRect.left = 0;
-    window_.clipRect.bottom = window_rect_.height();
-    window_.clipRect.right = window_rect_.width();
-    window_.height = window_rect_.height();
-    window_.width = window_rect_.width();
-    window_.x = 0;
-    window_.y = 0;
-    window_.type = NPWindowTypeDrawable;
-    windowless_needs_set_window_ = true;
+    WindowlessSetWindow(true);
   }
 }
 
@@ -281,39 +257,18 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   [NSGraphicsContext saveGraphicsState];
   [NSGraphicsContext setCurrentContext:[NSGraphicsContext
                                         graphicsContextWithGraphicsPort:context
-                                        flipped:NO]];
+                                        flipped:YES]];
   CGContextSaveGState(context);
 
   cg_context_.context = context;
-  window_.window = &cg_context_;
-  window_.type = NPWindowTypeDrawable;
-  if (windowless_needs_set_window_) {
-    Rect window_bounds;
-    window_bounds.top = window_rect_.y();
-    window_bounds.left = window_rect_.x();
-    window_bounds.bottom = window_rect_.y() + window_rect_.height();
-    window_bounds.right = window_rect_.x() + window_rect_.width();
-    if (!cg_context_.window) {
-      // For all plugins we create a placeholder offscreen window for the use
-      // of NPWindow.  NPAPI on the Mac requires a Carbon WindowRef for the
-      // "browser window", even if we're not using the Quickdraw drawing model.
-      // Not having a valid window reference causes subtle bugs with plugins
-      // which retreive the NPWindow and validate the same. The NPWindow
-      // can be retreived via NPN_GetValue of NPNVnetscapeWindow.
+  if (window_.window == NULL)
+    windowless_needs_set_window_ = true;
 
-      WindowRef window_ref;
-      if (CreateNewWindow(kDocumentWindowClass,
-                          kWindowStandardDocumentAttributes,
-                          &window_bounds,
-                          &window_ref) == noErr) {
-        cg_context_.window = window_ref;
-      }
-    } else {
-      SetWindowBounds(cg_context_.window, kWindowContentRgn, &window_bounds);
-    }
-    instance()->NPP_SetWindow(&window_);
-    windowless_needs_set_window_ = false;
-  }
+  window_.window = &cg_context_;
+
+  if (windowless_needs_set_window_)
+    WindowlessSetWindow(false);
+
   NPEvent paint_event;
   paint_event.what = updateEvt;
   paint_event.message = reinterpret_cast<uint32>(cg_context_.window);
@@ -325,6 +280,26 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
 
   CGContextRestoreGState(context);
   [NSGraphicsContext restoreGraphicsState];
+}
+
+// Moves our dummy window to the given offset relative to the last known
+// location of the real renderer window's content view.
+static void UpdateDummyWindowLocationWithOffset(WindowRef window,
+                                                int x_offset, int y_offset) {
+  int target_x = g_current_x_offset + x_offset;
+  int target_y = g_current_y_offset + y_offset;
+  Rect window_bounds;
+  GetWindowBounds(window, kWindowContentRgn, &window_bounds);
+  if ((window_bounds.left != target_x) ||
+      (window_bounds.top != target_y)) {
+    int height = window_bounds.bottom - window_bounds.top;
+    int width = window_bounds.right - window_bounds.left;
+    window_bounds.left = target_x;
+    window_bounds.top = target_y;
+    window_bounds.right = window_bounds.left + width;
+    window_bounds.bottom = window_bounds.top + height;
+    SetWindowBounds(window, kWindowContentRgn, &window_bounds);
+  }
 }
 
 void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
@@ -342,17 +317,12 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   window_.width = window_rect_.width();
   window_.x = 0;
   window_.y = 0;
-  window_.type = NPWindowTypeDrawable;
+  window_.type = NPWindowTypeWindow;
 
   if (!force_set_window)
     // Reset this flag before entering the instance in case of side-effects.
     windowless_needs_set_window_ = false;
 
-  Rect window_bounds;
-  window_bounds.top = window_rect_.y();
-  window_bounds.left = window_rect_.x();
-  window_bounds.bottom = window_rect_.y() + window_rect_.height();
-  window_bounds.right = window_rect_.x() + window_rect_.width();
   if (!cg_context_.window) {
     // For all plugins we create a placeholder offscreen window for the use
     // of NPWindow.  NPAPI on the Mac requires a Carbon WindowRef for the
@@ -360,18 +330,22 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
     // Not having a valid window reference causes subtle bugs with plugins
     // which retreive the NPWindow and validate the same. The NPWindow
     // can be retreived via NPN_GetValue of NPNVnetscapeWindow.
-
+    Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
     WindowRef window_ref;
     if (CreateNewWindow(kDocumentWindowClass,
                         kWindowStandardDocumentAttributes,
                         &window_bounds,
                         &window_ref) == noErr) {
       cg_context_.window = window_ref;
+      SelectWindow(window_ref);
+      g_last_front_window = window_ref;
     }
-  } else {
-    SetWindowBounds(cg_context_.window, kWindowContentRgn, &window_bounds);
   }
+  UpdateDummyWindowLocationWithOffset(cg_context_.window, window_rect_.x(),
+                                      window_rect_.y());
 
+  if (!force_set_window)
+    windowless_needs_set_window_ = false;
   NPError err = instance()->NPP_SetWindow(&window_);
   DCHECK(err == NPERR_NO_ERROR);
 }
@@ -383,39 +357,74 @@ void WebPluginDelegateImpl::SetFocus() {
   instance()->NPP_HandleEvent(&focus_event);
 }
 
+static bool WebInputEventIsWebMouseEvent(const WebInputEvent& event) {
+  switch (event.type) {
+    case WebInputEvent::MouseMove:
+    case WebInputEvent::MouseLeave:
+    case WebInputEvent::MouseEnter:
+    case WebInputEvent::MouseDown:
+    case WebInputEvent::MouseUp:
+      if (event.size < sizeof(WebMouseEvent)) {
+        NOTREACHED();
+        return false;
+      }
+      return true;
+    default:
+      return false;
+  }
+}
+
+static bool WebInputEventIsWebKeyboardEvent(const WebInputEvent& event) {
+  switch (event.type) {
+    case WebInputEvent::KeyDown:
+    case WebInputEvent::KeyUp:
+      if (event.size < sizeof(WebKeyboardEvent)) {
+        NOTREACHED();
+        return false;
+      }
+      return true;
+    default:
+      return false;
+  }
+}
+
 static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
                                      NPEvent *np_event) {
-  np_event->where.h = event.windowX;
-  np_event->where.v = event.windowY;
+  np_event->where.h = event.globalX;
+  np_event->where.v = event.globalY;
 
   if (event.modifiers & WebInputEvent::ControlKey)
     np_event->modifiers |= controlKey;
   if (event.modifiers & WebInputEvent::ShiftKey)
     np_event->modifiers |= shiftKey;
 
+  // default to "button up"; override this for mouse down events below.
+  np_event->modifiers |= btnState;
+
+  switch (event.button) {
+    case WebMouseEvent::ButtonLeft:
+      break;
+    case WebMouseEvent::ButtonMiddle:
+      np_event->modifiers |= cmdKey;
+      break;
+    case WebMouseEvent::ButtonRight:
+      np_event->modifiers |= controlKey;
+      break;
+  }
   switch (event.type) {
     case WebInputEvent::MouseMove:
+      np_event->what = nullEvent;
+      return true;
     case WebInputEvent::MouseLeave:
     case WebInputEvent::MouseEnter:
       np_event->what = NPEventType_AdjustCursorEvent;
       return true;
     case WebInputEvent::MouseDown:
-      switch (event.button) {
-        case WebMouseEvent::ButtonLeft:
-        case WebMouseEvent::ButtonMiddle:
-        case WebMouseEvent::ButtonRight:
-          np_event->what = mouseDown;
-          break;
-      }
+      np_event->modifiers &= ~btnState;
+      np_event->what = mouseDown;
       return true;
     case WebInputEvent::MouseUp:
-      switch (event.button) {
-        case WebMouseEvent::ButtonLeft:
-        case WebMouseEvent::ButtonMiddle:
-        case WebMouseEvent::ButtonRight:
-          np_event->what = mouseUp;
-          break;
-      }
+      np_event->what = mouseUp;
       return true;
     default:
       NOTREACHED();
@@ -425,11 +434,26 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
 
 static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
                                         NPEvent *np_event) {
-  np_event->message = event.nativeKeyCode;
+  // TODO: figure out how to handle Unicode input to plugins, if that's
+  // even possible in the NPAPI Carbon event model.
+  np_event->message = (event.nativeKeyCode << 8) & keyCodeMask;
+  np_event->message |= event.text[0] & charCodeMask;
+  np_event->modifiers |= btnState;
+  if (event.modifiers & WebInputEvent::ControlKey)
+    np_event->modifiers |= controlKey;
+  if (event.modifiers & WebInputEvent::ShiftKey)
+    np_event->modifiers |= shiftKey;
+  if (event.modifiers & WebInputEvent::AltKey)
+    np_event->modifiers |= cmdKey;
+  if (event.modifiers & WebInputEvent::MetaKey)
+    np_event->modifiers |= optionKey;
 
   switch (event.type) {
     case WebInputEvent::KeyDown:
-      np_event->what = keyDown;
+      if (event.modifiers & WebInputEvent::IsAutoRepeat)
+        np_event->what = autoKey;
+      else
+        np_event->what = keyDown;
       return true;
     case WebInputEvent::KeyUp:
       np_event->what = keyUp;
@@ -442,28 +466,26 @@ static bool NPEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
 
 static bool NPEventFromWebInputEvent(const WebInputEvent& event,
                                      NPEvent* np_event) {
-  switch (event.type) {
-    case WebInputEvent::MouseMove:
-    case WebInputEvent::MouseLeave:
-    case WebInputEvent::MouseEnter:
-    case WebInputEvent::MouseDown:
-    case WebInputEvent::MouseUp:
-      if (event.size < sizeof(WebMouseEvent)) {
-        NOTREACHED();
-        return false;
-      }
-      return NPEventFromWebMouseEvent(*static_cast<const WebMouseEvent*>(&event), np_event);
-    case WebInputEvent::KeyDown:
-    case WebInputEvent::KeyUp:
-      if (event.size < sizeof(WebKeyboardEvent)) {
-        NOTREACHED();
-        return false;
-      }
-      return NPEventFromWebKeyboardEvent(*static_cast<const WebKeyboardEvent*>(&event), np_event);
-    default:
-      DLOG(WARNING) << "unknown event type" << event.type;
-      return false;
+  if (WebInputEventIsWebMouseEvent(event)) {
+    return NPEventFromWebMouseEvent(*static_cast<const WebMouseEvent*>(&event),
+                                    np_event);
+  } else if (WebInputEventIsWebKeyboardEvent(event)) {
+    return NPEventFromWebKeyboardEvent(
+        *static_cast<const WebKeyboardEvent*>(&event), np_event);
   }
+  DLOG(WARNING) << "unknown event type" << event.type;
+  return false;
+}
+
+static void UpdateWindowLocation(WindowRef window, const WebMouseEvent& event) {
+  // TODO: figure out where the vertical offset of 22 comes from (and if 22 is
+  // exactly right) and replace with an appropriate calculation. It feels like
+  // window structure or the menu bar, but neither should be involved here.
+  g_current_x_offset = event.globalX - event.windowX;
+  g_current_y_offset = event.globalY - event.windowY + 22;
+
+  UpdateDummyWindowLocationWithOffset(window, event.windowX - event.x,
+                                      event.windowY - event.y);
 }
 
 bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
@@ -476,7 +498,23 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
     return false;
   }
   np_event.when = TickCount();
+  if (np_event.what == nullEvent) {
+    last_mouse_x_ = np_event.where.h;
+    last_mouse_y_ = np_event.where.v;
+    return true;  // Let the recurring task actually send the event.
+  }
+
+  // If this is a mouse event, we need to make sure our dummy window has the
+  // correct location before we send the event to the plugin, so that any
+  // coordinate conversion the plugin does will work out.
+  if (WebInputEventIsWebMouseEvent(event)) {
+    const WebMouseEvent* mouse_event =
+        static_cast<const WebMouseEvent*>(&event);
+    UpdateWindowLocation(cg_context_.window, *mouse_event);
+  }
+  CGContextSaveGState(cg_context_.context);
   bool ret = instance()->NPP_HandleEvent(&np_event) != 0;
+  CGContextRestoreGState(cg_context_.context);
   return ret;
 }
 
@@ -516,7 +554,53 @@ void WebPluginDelegateImpl::OnNullEvent() {
   NPEvent np_event = {0};
   np_event.what = nullEvent;
   np_event.when = TickCount();
+  np_event.modifiers = GetCurrentKeyModifiers();
+  if (!Button())
+    np_event.modifiers |= btnState;
+  np_event.where.h = last_mouse_x_;
+  np_event.where.v = last_mouse_y_;
   instance()->NPP_HandleEvent(&np_event);
+
+  WindowRef front_window = FrontWindow();
+  if (front_window == cg_context_.window) {
+    if (front_window != g_last_front_window) {
+      // If our dummy window is now the front window, but was not previously,
+      // it means that a plugin window has been destroyed. Make sure our fake
+      // browser window is selected.
+      // TODO: Use DYLD_INSERT_LIBRARIES to interpose on Carbon window
+      // APIs within the plugin process.  This will allow us to (a) get rid of
+      // the dummy window, and (b) explicitly track the creation and
+      // destruction of windows by the plugin.
+      g_last_front_window = front_window;
+      SelectWindow(cg_context_.window);
+
+      // If the plugin process is still the front process, bring the prior
+      // front process (normally this will be the browser process) back to
+      // the front.
+      // TODO: make this an IPC message so that the browser can properly
+      // reactivate the window.
+      ProcessSerialNumber this_process, front_process;
+      GetCurrentProcess(&this_process);
+      GetFrontProcess(&front_process);
+      Boolean matched = false;
+      SameProcess(&this_process, &front_process, &matched);
+      if (matched)
+        SetFrontProcess(&g_saved_front_process);
+      g_last_front_window = FrontWindow();
+    }
+  } else if (front_window != g_last_front_window) {
+    // The plugin has just created a new window and brought it to the front.
+    // bring the plugin process to the front so that the user can see it (for
+    // example, an alert or file selection dialog).
+    // TODO: make this an IPC to order the plugin process above the browser
+    // process but not necessarily the frontmost.
+    ProcessSerialNumber this_process;
+    GetCurrentProcess(&this_process);
+    GetFrontProcess(&g_saved_front_process);
+    SetFrontProcess(&this_process);
+    g_last_front_window = front_window;
+    SelectWindow(front_window);
+  }
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       null_event_factory_.NewRunnableMethod(

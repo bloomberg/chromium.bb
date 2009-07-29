@@ -412,14 +412,14 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   CGContextSaveGState(windowless_context_);
   if (!background_context_.get()) {
     CGContextSetFillColorWithColor(windowless_context_,
-                                   CGColorGetConstantColor(kCGColorWhite));
+                                   CGColorGetConstantColor(kCGColorBlack));
     CGContextFillRect(windowless_context_, rect.ToCGRect());
   } else {
     scoped_cftyperef<CGImageRef> image(
         CGBitmapContextCreateImage(background_context_));
     scoped_cftyperef<CGImageRef> sub_image(
         CGImageCreateWithImageInRect(image, rect.ToCGRect()));
-    CGContextDrawImage(background_context_, rect.ToCGRect(), sub_image);
+    CGContextDrawImage(windowless_context_, rect.ToCGRect(), sub_image);
   }
   CGContextClipToRect(windowless_context_, rect.ToCGRect());
   delegate_->Paint(windowless_context_, rect);
@@ -450,11 +450,7 @@ void WebPluginProxy::UpdateGeometry(
 
   delegate_->UpdateGeometry(window_rect, clip_rect);
   bool moved = old.x() != window_rect.x() || old.y() != window_rect.y();
-#if defined(OS_MACOSX)
-  if (windowless_buffer.fd > 0) {
-#else
-  if (windowless_buffer) {
-#endif
+  if (TransportDIB::is_valid(windowless_buffer)) {
     // The plugin's rect changed, so now we have a new buffer to draw into.
     SetWindowlessBuffer(windowless_buffer,
                         background_buffer);

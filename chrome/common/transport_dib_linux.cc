@@ -81,6 +81,10 @@ TransportDIB* TransportDIB::Map(Handle shmkey) {
   return dib;
 }
 
+bool TransportDIB::is_valid(Handle dib) {
+  return dib >= 0;
+}
+
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
   return new skia::PlatformCanvas(w, h, true,
                                   reinterpret_cast<uint8_t*>(memory()));

@@ -508,10 +508,14 @@ static void FlipRectVerticallyWithHeight(gfx::Rect* rect, int height) {
 
 void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
                                    const gfx::Rect& damaged_rect) {
+  // Limit the damaged rectangle to whatever is contained inside the plugin
+  // rectangle, as that's the rectangle that we'll actually draw.
+  gfx::Rect rect = damaged_rect.Intersect(plugin_rect_);
+
   // If the plugin is no longer connected (channel crashed) draw a crashed
   // plugin bitmap
   if (!channel_host_->channel_valid()) {
-    PaintSadPlugin(context, damaged_rect);
+    PaintSadPlugin(context, rect);
     return;
   }
 
@@ -525,9 +529,6 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
     return;
   }
 
-  // Limit the damaged rectangle to whatever is contained inside the plugin
-  // rectangle, as that's the rectangle that we'll bitblt to the hdc.
-  gfx::Rect rect = damaged_rect.Intersect(plugin_rect_);
   gfx::Rect offset_rect = rect;
   offset_rect.Offset(-plugin_rect_.x(), -plugin_rect_.y());
 

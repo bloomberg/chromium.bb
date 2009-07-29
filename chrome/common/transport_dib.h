@@ -87,6 +87,9 @@ class TransportDIB {
   // Map the referenced transport DIB. Returns NULL on failure.
   static TransportDIB* Map(Handle transport_dib);
 
+  // Returns true if the handle is valid.
+  static bool is_valid(Handle dib);
+
   // Returns a canvas using the memory of this TransportDIB. The returned
   // pointer will be owned by the caller. The bitmap will be of the given size,
   // which should fit inside this memory.
