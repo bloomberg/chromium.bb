@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 
 

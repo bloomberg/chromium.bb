@@ -83,6 +83,8 @@
     'include_dirs': [
       '../..',
     ],
+    # TODO(gregoryd): add a way to get the architecture dynamically
+    'defines': ['NACL_TARGET_SUBARCH=32',],
     'conditions': [
       ['branding=="Chrome"', {
         'defines': ['GOOGLE_CHROME_BUILD'],
@@ -215,7 +217,20 @@
           'NACL_LINUX=1',
           'NACL_OSX=0',
           'NACL_WINDOWS=0',
+          '_BSD_SOURCE=1',
+          '_POSIX_C_SOURCE=199506',
+          '_XOPEN_SOURCE=600',
+          '_GNU_SOURCE=1',
+          '__STDC_LIMIT_MACROS=1',
         ],
+        'link_settings': {
+          'libraries': [
+            '-lrt',
+            '-lpthread',
+            '-lssl',
+            '-lcrypto',
+          ],
+        },
         'scons_variable_settings': {
           'LIBPATH': ['$LIB_DIR'],
           # Linking of large files uses lots of RAM, so serialize links
@@ -331,7 +346,7 @@
             'asflags': [
               # Needed so that libs with .s files (e.g. libicudata.a)
               # are compatible with the general 32-bit-ness.
-              '-32',
+              '-m32',
             ],
             # All floating-point computations on x87 happens in 80-bit
             # precision.  Because the C and C++ language standards allow

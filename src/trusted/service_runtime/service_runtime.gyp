@@ -88,15 +88,15 @@
         #   as BUILD_ARCH and TARGET_ARCH in scons (see SConstruct fror details).
         # * rename ia32 to x86_32, ia64 to x86_64 as in scons
         # * introduce buildplatform, targetplatform, platform flags in gyp
-        ['target_arch=="ia32"', {
+        ['target_arch == "ia32"', {
           'sources': [
             'arch/x86/nacl_app.c',
-            'arch/x86/nacl_ldt.c',
+            'arch/x86/nacl_ldt_x86.c',
             'arch/x86/nacl_switch_to_app.c',
             'arch/x86/sel_rt.c',
             'arch/x86/nacl_thread.c',
             'arch/x86/sel_ldr.c',
-            'arch/x86/sel_addrspace.c',
+            'arch/x86/sel_addrspace_x86.c',
             'arch/x86_32/nacl_switch.S',
             'arch/x86_32/nacl_syscall.S',
             'arch/x86_32/springboard.S',
@@ -110,7 +110,7 @@
             'arch/arm/sel_rt.c',
             'arch/arm/nacl_thread.c',
             'arch/arm/sel_ldr.c',
-            'arch/arm/sel_addrspace.c',
+            'arch/arm/sel_addrspace_arm.c',
             'arch/arm/nacl_switch.S',
             'arch/arm/nacl_syscall.S',
             'arch/arm/springboard.S',
@@ -186,7 +186,7 @@
           ],
           'action':
              # TODO(gregoryd): find out how to generate a file in such a location that can be found in both NaCl and Chrome builds.
-             ['python nacl_syscall_handlers_gen3.py -c -f "Video|Audio|Multimedia" < <(syscall_handler) > <@(_outputs)'],
+             ['python', 'nacl_syscall_handlers_gen3.py', '-c', '-f', '"Video|Audio|Multimedia"', '<', '<@(syscall_handler)', '>', '<@(_outputs)'],
           'process_outputs_as_sources': 1,
           'message': 'Creating nacl_syscall_handlers.c',
         },

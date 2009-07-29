@@ -33,7 +33,7 @@
  * Test code for NaCl local descriptor table (LDT) managment
  */
 #include <stdio.h>
-#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 
 #if defined (HAVE_SDL)
 #include <SDL.h>

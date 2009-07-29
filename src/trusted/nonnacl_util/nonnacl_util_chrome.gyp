@@ -1,4 +1,4 @@
-# Copyright 2008, Google Inc.
+# Copyright 2009, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,37 +28,33 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 {
-  'variables': {
-  },
   'includes': [
-    '../../../build/common.gypi',
+    # NOTE: this file also defines common dependencies.
+    'nonnacl_util.gypi',
   ],
-  'target_defaults': {
-  },
-  'conditions': [
-    ['OS=="linux"', { 'targets': [
-      {
-        'target_name': 'sandbox',
-        'type': 'static_library',
-        'sources': [
-          'linux/nacl_syscall_filter.cc',
-          'linux/nacl_syscall_checker.cc',
-          'linux/nacl_syscall_def.cc',
-          'linux/nacl_registers.cc',
-          'linux/nacl_sandbox.cc',
-        ],
-      },
-      {
-        'target_name': 'sel_ldr_trace',
-        'type': 'executable',
-        'sources': [
-          'linux/nacl_sandbox_main.cc',
-        ],
-        # libraries?
-        # EXTRA_LIBS=['sandbox', '${OPTIONAL_COVERAGE_LIBS}'])
-      },
-    ]}],
-    ['OS=="mac"', { 'targets': [ ] } ],
-    ['OS=="win"', { 'targets': [ ] } ],
-  ],
+  'targets': [
+    {
+      'target_name': 'nonnacl_util_chrome',
+      'type': 'static_library',
+      'defines': [
+        'CHROME_BUILD',
+      ],
+      'include_dirs': [
+        '../../../../third_party/skia/include/config',
+      ],
+      'sources': [
+        'sel_ldr_launcher_chrome.cc',
+      ],
+      'dependencies': [
+        'nonnacl_util.gyp:sel_ldr_launcher',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '../../../../build/linux/system.gyp:gtk',
+          ],
+        }],
+      ],
+    },
+  ]
 }

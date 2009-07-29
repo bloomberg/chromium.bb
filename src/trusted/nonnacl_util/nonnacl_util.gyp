@@ -1,4 +1,4 @@
-# Copyright 2008, Google Inc.
+# Copyright 2009, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,66 +28,35 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 {
-  'variables': {
-    'common_sources': [
-      'sel_ldr_launcher.cc',
-      'sel_ldr_launcher.h',
-    ],
-  },
   'includes': [
-    '../../../build/common.gypi',
+    # NOTE: this file also defines common dependencies.
+    'nonnacl_util.gypi',
   ],
-  'target_defaults': {
-    'conditions': [
-      ['OS=="linux"', {
-        'defines': [
-          'XP_UNIX',
-        ],
-        'sources': [
-          'linux/sel_ldr_launcher_linux.cc',
-          'linux/get_plugin_dirname.cc',
-        ],
-      }],
-      ['OS=="mac"', {
-        'defines': [
-          'XP_MACOSX',
-          'XP_UNIX',
-          ['TARGET_API_MAC_CARBON', '1'],
-          'NO_X11',
-          'USE_SYSTEM_CONSOLE',
-        ],
-        'sources': [
-          'linux/sel_ldr_launcher_linux.cc',
-          'osx/get_plugin_dirname.mm',
-        ],
-      }],
-      ['OS=="win"', {
-        'defines': [
-          'XP_WIN',
-          'WIN32',
-          '_WINDOWS'
-        ],
-        'sources': [
-          'win/sel_ldr_launcher_win.cc',
-        ],
-      }],
-    ],
-  },
   'targets': [
+    {
+      'target_name': 'sel_ldr_launcher',
+      'type': 'static_library',
+      'sources': [
+        'sel_ldr_launcher.cc',
+        'sel_ldr_launcher.h',
+      ],
+    },
     {
       'target_name': 'nonnacl_util',
       'type': 'static_library',
-      'sources': [
-        '<@(common_sources)',
+      'dependencies': [
+        'sel_ldr_launcher',
       ],
     },
     {
       'target_name': 'nonnacl_util_c',
       'type': 'static_library',
       'sources': [
-        '<@(common_sources)',
         'sel_ldr_launcher_c.cc',
         'sel_ldr_launcher_c.h',
+      ],
+      'dependencies': [
+        'sel_ldr_launcher',
       ],
     }
   ]

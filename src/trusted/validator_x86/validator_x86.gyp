@@ -31,10 +31,6 @@
   'includes': [
     '../../../build/common.gypi',
   ],
-  'target_defaults': {
-    # TODO(gregoryd): add a way to get the architecture dynamically
-    'defines': ['NACL_TARGET_SUBARCH=32',]
-  },
   'targets': [
     {
       'target_name': 'ncdecode_table',
@@ -55,11 +51,6 @@
       'target_name': 'ncdecode_tablegen',
       'type': 'executable',
       'sources': ['ncdecode_tablegen.c'],
-      'link_settings': {
-        'libraries': [  # TODO(gregoryd): this is windows-only, fix
-          '-lncopcode_utils.lib',
-        ],
-      },
       'dependencies': ['ncopcode_utils' ],
       'conditions': [
         ['OS=="win"', {
@@ -77,7 +68,7 @@
       'target_name': 'ncvalidate',
       'type': 'static_library',
       'include_dirs': [
-        '$(OutDir)',
+        '<(INTERMEDIATE_DIR)',
       ],
       'dependencies': [
         'ncdecode_table',
@@ -98,16 +89,16 @@
           'action_name': 'ncdecode_table',
           'msvs_cygwin_shell': 0,
           'inputs': [
-            '$(OutDir)/ncdecode_table',
+            '<(PRODUCT_DIR)/ncdecode_table',
           ],
           'outputs': [
             # TODO(gregoryd): keeping the long include path for now to be
             # compatible with the scons build.
-            '$(OutDir)/gen/native_client/src/trusted/validator_x86/ncdecodetab.h',
-            '$(OutDir)/gen/native_client/src/trusted/validator_x86/ncdisasmtab.h',
+            '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/ncdecodetab.h',
+            '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/ncdisasmtab.h',
           ],
           'action':
-             ['<@(_inputs) -m32 $(OutDir)/gen/native_client/src/trusted/validator_x86/ncdecodetab.h $(OutDir)/gen/native_client/src/trusted/validator_x86/ncdisasmtab.h'],
+             ['<(PRODUCT_DIR)/ncdecode_table', '-m32', '<@(_outputs)'],
           'message': 'Running ncdecode_table',
           'process_outputs_as_sources': 1,
         },
@@ -115,13 +106,13 @@
           'action_name': 'ncdecode_tablegen',
           'msvs_cygwin_shell': 0,
           'inputs': [
-            '$(OutDir)/ncdecode_tablegen',
+            '<(PRODUCT_DIR)/ncdecode_tablegen',
           ],
           'outputs': [
-            '$(OutDir)/gen/native_client/src/trusted/validator_x86/nc_opcode_table.h',
+            '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/nc_opcode_table.h',
           ],
           'action':
-             ['<@(_inputs) -m32 $(OutDir)/gen/native_client/src/trusted/validator_x86/nc_opcode_table.h'],
+             ['<@(_inputs)', '-m32', '<@(_outputs)'],
           'message': 'Running ncdecode_tablegen',
           'process_outputs_as_sources': 1,
         },
@@ -131,7 +122,7 @@
       'target_name': 'ncdis_util',
       'type': 'static_library',
       'include_dirs': [
-        '$(OutDir)',
+        '<(INTERMEDIATE_DIR)',
       ],
       # we depend on ncvalidate build to generate the headers
       'dependencies': ['ncvalidate' ],

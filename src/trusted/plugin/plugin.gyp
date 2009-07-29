@@ -58,12 +58,57 @@
       # generic URL-origin / same-domain handling
       'origin.cc',
     ],
+  },
+  'includes': [
+    '../../../build/common.gypi',
+  ],
+  'target_defaults': {
+    'dependencies': [
+      '../../shared/srpc/srpc.gyp:nonnacl_srpc',
+      '../desc/desc.gyp:nrd_xfer',
+      '../../shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+      '../platform/platform.gyp:platform',
+      '../service_runtime/service_runtime.gyp:gio',
+      '../service_runtime/service_runtime.gyp:expiration',
+      ],
     'conditions': [
-      ['OS=="win"', {
-        'common_libraries': [
-          '-lgdi32.lib',
-          '-luser32.lib',
+      ['OS=="linux"', {
+        'defines': [
+          'XP_UNIX',
+          'MOZ_X11',
         ],
+        'link_settings': {
+          'libraries': [
+            '-lXt',
+            '-lX11',
+          ],
+        },
+      }],
+      ['OS=="mac"', {
+        'defines': [
+          'XP_MACOSX',
+          'XP_UNIX',
+          'TARGET_API_MAC_CARBON=1',
+          'NO_X11',
+          'USE_SYSTEM_CONSOLE',
+        ],
+      }],
+      ['OS=="win"', {
+        'defines': [
+          'XP_WIN',
+          'WIN32',
+          '_WINDOWS'
+        ],
+        'flags': [
+          '-fPIC',
+          '-Wno-long-long',
+        ],
+        'link_settings': {
+          'libraries': [
+            '-lgdi32.lib',
+            '-luser32.lib',
+          ],
+        },
       }],
       ['OS=="linux"', {
         'common_libraries': [
@@ -73,37 +118,14 @@
       }],
     ],
   },
-  'includes': [
-    '../../../build/common.gypi',
-  ],
-  'target_defaults': {
-  },
   'targets': [
     {
       'target_name': 'npGoogleNaClPlugin',
       'type': 'shared_library',
       'dependencies': [
-        '../nonnacl_util/nonnacl_util.gyp:*',
-        '../../shared/srpc/srpc.gyp:*',
-        '../desc/desc.gyp:*',
-        '../../shared/npruntime/npruntime.gyp:*',
-        '../../shared/imc/imc.gyp:*',
-        '../platform/platform.gyp:*',
-        # add gio.lib and expiration.lib when we have gyp files for them
+        '../nonnacl_util/nonnacl_util.gyp:nonnacl_util',
+        '../../shared/npruntime/npruntime.gyp:google_nacl_npruntime',
       ],
-      'link_settings': {
-        'libraries': [  # TODO(gregoryd): this is windows-only, fix
-          '<@(common_libraries)',
-          '-lnonnacl_util.lib',
-          '-lnonnacl_srpc.lib',
-          '-lnrd_xfer.lib',
-          '-lgoogle_nacl_npruntime.lib',
-          '-llibgoogle_nacl_imc_c.lib',
-          '-lplatform.lib',
-          '-lgio.lib',
-          '-lexpiration.lib',
-        ],
-      },
       'sources': [
         '<@(common_sources)',
       ],
@@ -120,7 +142,6 @@
           'VCLinkerTool': {
             'AdditionalLibraryDirectories': [
               '$(OutDir)/lib',
-              '$(OutDir)/../../scons-out/dbg-win-x86-32/lib',
             ],
             #['<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib'],
           },
@@ -130,13 +151,17 @@
     },
     {
       # static library for linking with Chrome
-      'target_name': 'npGoogleNaClPlugin2',
+      'target_name': 'npGoogleNaClPluginChrome',
       'type': 'static_library',
       'defines': [
         'CHROME_BUILD',
       ],
+      'dependencies': [
+        '../nonnacl_util/nonnacl_util_chrome.gyp:nonnacl_util_chrome',
+      ],
       'sources': [
         '<@(common_sources)',
+        'nacl_entry_points.cc',
       ],
       'conditions': [
         ['OS=="win"', {
