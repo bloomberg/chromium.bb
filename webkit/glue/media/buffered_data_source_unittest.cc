@@ -757,7 +757,7 @@ TEST_F(BufferedDataSourceTest, ReadFailed) {
 }
 
 TEST_F(BufferedDataSourceTest, ReadTimesOut) {
-  InitializeDataSource(kHttpUrl, net::OK, 1024);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024);
   ReadDataSourceTimesOut(20, 10);
   StopDataSource();
 }
