@@ -37,7 +37,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void FocusDevTools() {}
   virtual void UpdateLoadingAnimations(bool should_animate) {}
   virtual void SetStarredState(bool is_starred) {}
-  virtual gfx::Rect GetNormalBounds() const { return gfx::Rect(); }
+  virtual gfx::Rect GetRestoredBounds() const { return gfx::Rect(); }
   virtual bool IsMaximized() const { return false; }
   virtual void SetFullscreen(bool fullscreen) {}
   virtual bool IsFullscreen() const { return false; }

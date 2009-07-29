@@ -77,7 +77,7 @@ bool TabOverviewDragController::Configure(const gfx::Point& location) {
 
   if (controller_->browser()) {
     browser_window_size_ =
-        controller_->browser()->window()->GetNormalBounds().size();
+        controller_->browser()->window()->GetRestoredBounds().size();
   }
 
   return true;
@@ -115,7 +115,7 @@ void TabOverviewDragController::CommitDrag(const gfx::Point& location) {
     } else {
       DropTab(location);
     }
-  } else if (!dragging_ ) {
+  } else if (!dragging_) {
     // We haven't started dragging. Tell the controller to focus the browser.
     controller_->FocusBrowser();
   } else {

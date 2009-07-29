@@ -695,7 +695,7 @@ void BrowserView::SetStarredState(bool is_starred) {
   toolbar_->star_button()->SetToggled(is_starred);
 }
 
-gfx::Rect BrowserView::GetNormalBounds() const {
+gfx::Rect BrowserView::GetRestoredBounds() const {
   return frame_->GetWindow()->GetNormalBounds();
 }
 

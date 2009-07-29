@@ -94,10 +94,9 @@ class BrowserWindow {
   // Sets the starred state for the current tab.
   virtual void SetStarredState(bool is_starred) = 0;
 
-  // TODO(beng): RENAME (GetRestoredBounds)
   // Returns the nonmaximized bounds of the frame (even if the frame is
   // currently maximized or minimized) in terms of the screen coordinates.
-  virtual gfx::Rect GetNormalBounds() const = 0;
+  virtual gfx::Rect GetRestoredBounds() const = 0;
 
   // TODO(beng): REMOVE?
   // Returns true if the frame is maximized (aka zoomed).

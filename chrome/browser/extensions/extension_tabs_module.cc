@@ -290,7 +290,7 @@ bool UpdateWindowFunction::RunImpl() {
   if (!browser)
     return false;
 
-  gfx::Rect bounds = browser->window()->GetNormalBounds();
+  gfx::Rect bounds = browser->window()->GetRestoredBounds();
   // Any part of the bounds can optionally be set by the caller.
   int bounds_val;
   if (update_props->HasKey(keys::kLeftKey)) {
@@ -672,7 +672,7 @@ static DictionaryValue* CreateWindowValue(Browser* browser,
       browser));
   result->SetBoolean(keys::kFocusedKey,
       browser->window()->IsActive());
-  gfx::Rect bounds = browser->window()->GetNormalBounds();
+  gfx::Rect bounds = browser->window()->GetRestoredBounds();
 
   // TODO(rafaelw): zIndex ?
   result->SetInteger(keys::kLeftKey, bounds.x());

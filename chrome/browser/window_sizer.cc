@@ -91,7 +91,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     }
 
     if (window) {
-      *bounds = window->GetNormalBounds();
+      *bounds = window->GetRestoredBounds();
       return true;
     }
 

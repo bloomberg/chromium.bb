@@ -661,7 +661,7 @@ void BrowserWindowGtk::SetStarredState(bool is_starred) {
   toolbar_->star()->SetStarred(is_starred);
 }
 
-gfx::Rect BrowserWindowGtk::GetNormalBounds() const {
+gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {
   return bounds_;
 }
 

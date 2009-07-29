@@ -71,7 +71,7 @@ PanelController::PanelController(BrowserWindowGtk* browser_window)
        dragging_(false) {
   title_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   gfx::Rect title_bounds(
-      0, 0, browser_window->GetNormalBounds().width(), kTitleHeight);
+      0, 0, browser_window->GetRestoredBounds().width(), kTitleHeight);
   title_window_->Init(NULL, title_bounds);
   title_ = title_window_->GetNativeView();
   title_xid_ = x11_util::GetX11WindowFromGtkWidget(title_);

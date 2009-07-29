@@ -116,7 +116,7 @@ void BrowserWindowCocoa::SetStarredState(bool is_starred) {
   [controller_ setStarredState:is_starred ? YES : NO];
 }
 
-gfx::Rect BrowserWindowCocoa::GetNormalBounds() const {
+gfx::Rect BrowserWindowCocoa::GetRestoredBounds() const {
   // TODO(pinkerton): not sure if we can get the non-zoomed bounds, or if it
   // really matters. We may want to let Cocoa handle all this for us.
   NSRect frame = [window_ frame];

@@ -963,7 +963,7 @@ void SessionService::BuildCommandsForBrowser(
 
   commands->push_back(
       CreateSetWindowBoundsCommand(browser->session_id(),
-                                   browser->window()->GetNormalBounds(),
+                                   browser->window()->GetRestoredBounds(),
                                    browser->window()->IsMaximized()));
 
   commands->push_back(CreateSetWindowTypeCommand(

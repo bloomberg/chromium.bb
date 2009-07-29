@@ -91,7 +91,7 @@ void TabOverviewMessageListener::ProcessMessage(
       } else if (BrowserList::size() > 0) {
         Browser* browser = *BrowserList::begin();
         controller_.reset(new TabOverviewController(
-                              browser->window()->GetNormalBounds().origin()));
+                              browser->window()->GetRestoredBounds().origin()));
         new_browser_window_.reset(
             new NewBrowserWindowWidget(browser->profile()));
       }
@@ -136,7 +136,7 @@ void TabOverviewMessageListener::ShowOverview(Browser* browser,
                                               int horizontal_center) {
   if (!controller_.get()) {
     controller_.reset(new TabOverviewController(
-                          browser->window()->GetNormalBounds().origin()));
+                          browser->window()->GetRestoredBounds().origin()));
   }
   controller_->SetBrowser(browser, horizontal_center);
   controller_->Show();

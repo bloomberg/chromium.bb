@@ -43,7 +43,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void FocusDevTools();
   virtual void UpdateLoadingAnimations(bool should_animate);
   virtual void SetStarredState(bool is_starred);
-  virtual gfx::Rect GetNormalBounds() const;
+  virtual gfx::Rect GetRestoredBounds() const;
   virtual bool IsMaximized() const;
   virtual void SetFullscreen(bool fullscreen);
   virtual bool IsFullscreen() const;
