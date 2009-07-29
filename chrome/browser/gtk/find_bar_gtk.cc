@@ -88,7 +88,8 @@ FindBarGtk::FindBarGtk(Browser* browser)
       window_(static_cast<BrowserWindowGtk*>(browser->window())),
       theme_provider_(GtkThemeProvider::GetFrom(browser->profile())),
       container_shaped_(false),
-      ignore_changed_signal_(false) {
+      ignore_changed_signal_(false),
+      current_fixed_width_(-1) {
   InitWidgets();
 
   dialog_background_.reset(new NineBox(browser->profile()->GetThemeProvider(),
@@ -356,15 +357,10 @@ gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   gfx::Rect view_location(
       ltr ? dialog_bounds.width() - prefsize.width() : dialog_bounds.x(),
       dialog_bounds.y(), prefsize.width(), prefsize.height());
+  gfx::Rect new_pos = FindBarController::GetLocationForFindbarView(
+      view_location, dialog_bounds, avoid_overlapping_rect);
 
-  if (!avoid_overlapping_rect.IsEmpty()) {
-    // TODO(estade): move out of the way if need be.
-  }
-
-  if (view_location.x() < 0)
-    view_location.set_x(0);
-
-  return view_location;
+  return new_pos;
 }
 
 void FindBarGtk::SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw) {
@@ -512,17 +508,18 @@ void FindBarGtk::OnClicked(GtkWidget* button, FindBarGtk* find_bar) {
 void FindBarGtk::OnFixedSizeAllocate(GtkWidget* fixed,
                                      GtkAllocation* allocation,
                                      FindBarGtk* findbar) {
+  // Do nothing if our width hasn't changed.
+  if (findbar->current_fixed_width_ == allocation->width)
+    return;
+  findbar->current_fixed_width_ = allocation->width;
+
   // Set the background widget to the size of |fixed|.
   gtk_widget_set_size_request(findbar->border_,
                               allocation->width, allocation->height);
 
   // Reposition the dialog.
-  GtkWidget* dialog = findbar->slide_widget();
-  if (!GTK_WIDGET_VISIBLE(dialog))
-    return;
-
   int xposition = findbar->GetDialogPosition(gfx::Rect()).x();
-  if (xposition == dialog->allocation.x) {
+  if (xposition == findbar->slide_widget()->allocation.x) {
     return;
   } else {
     gtk_fixed_move(GTK_FIXED(fixed), findbar->slide_widget(), xposition, 0);

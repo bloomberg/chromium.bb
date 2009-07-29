@@ -4,11 +4,15 @@
 
 #include "chrome/browser/find_bar_controller.h"
 
+#include "app/l10n_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+
+// The minimum space between the FindInPage window and the search result.
+static const int kMinFindWndDistanceFromSelection = 5;
 
 FindBarController::FindBarController(FindBar* find_bar)
     : find_bar_(find_bar),
@@ -140,6 +144,46 @@ void FindBarController::Observe(NotificationType type,
       }
     }
   }
+}
+
+// static
+gfx::Rect FindBarController::GetLocationForFindbarView(
+    gfx::Rect view_location,
+    const gfx::Rect& dialog_bounds,
+    const gfx::Rect& avoid_overlapping_rect) {
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+    int boundary = dialog_bounds.width() - view_location.width();
+    view_location.set_x(std::min(view_location.x(), boundary));
+  } else {
+    view_location.set_x(std::max(view_location.x(), dialog_bounds.x()));
+  }
+
+  gfx::Rect new_pos = view_location;
+
+  // If the selection rectangle intersects the current position on screen then
+  // we try to move our dialog to the left (right for RTL) of the selection
+  // rectangle.
+  if (!avoid_overlapping_rect.IsEmpty() &&
+      avoid_overlapping_rect.Intersects(new_pos)) {
+    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+      new_pos.set_x(avoid_overlapping_rect.x() +
+                    avoid_overlapping_rect.width() +
+                    (2 * kMinFindWndDistanceFromSelection));
+
+      // If we moved it off-screen to the right, we won't move it at all.
+      if (new_pos.x() + new_pos.width() > dialog_bounds.width())
+        new_pos = view_location;  // Reset.
+    } else {
+      new_pos.set_x(avoid_overlapping_rect.x() - new_pos.width() -
+        kMinFindWndDistanceFromSelection);
+
+      // If we moved it off-screen to the left, we won't move it at all.
+      if (new_pos.x() < 0)
+        new_pos = view_location;  // Reset.
+    }
+  }
+
+  return new_pos;
 }
 
 void FindBarController::UpdateFindBarForCurrentResult() {

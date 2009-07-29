@@ -25,9 +25,6 @@
 #include "views/widget/widget_gtk.h"
 #endif
 
-// The minimum space between the FindInPage window and the search result.
-static const int kMinFindWndDistanceFromSelection = 5;
-
 // static
 bool FindBarWin::disable_animations_during_testing_ = false;
 
@@ -483,17 +480,6 @@ gfx::Rect FindBarWin::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   int y = dialog_bounds.y();
   view_location.SetRect(x, y, prefsize.width(), prefsize.height());
 
-  // Make sure we don't go out of bounds to the left (right in RTL) if the
-  // window is too small to fit our dialog.
-  if (view_->UILayoutIsRightToLeft()) {
-    int boundary = dialog_bounds.width() - prefsize.width();
-    view_location.set_x(std::min(view_location.x(), boundary));
-  } else {
-    view_location.set_x(std::max(view_location.x(), dialog_bounds.x()));
-  }
-
-  gfx::Rect new_pos = view_location;
-
   // When we get Find results back, we specify a selection rect, which we
   // should strive to avoid overlapping. But first, we need to offset the
   // selection rect (if one was provided).
@@ -513,28 +499,8 @@ gfx::Rect FindBarWin::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
 #endif
   }
 
-  // If the selection rectangle intersects the current position on screen then
-  // we try to move our dialog to the left (right for RTL) of the selection
-  // rectangle.
-  if (!avoid_overlapping_rect.IsEmpty() &&
-      avoid_overlapping_rect.Intersects(new_pos)) {
-    if (view_->UILayoutIsRightToLeft()) {
-      new_pos.set_x(avoid_overlapping_rect.x() +
-                    avoid_overlapping_rect.width() +
-                    (2 * kMinFindWndDistanceFromSelection));
-
-      // If we moved it off-screen to the right, we won't move it at all.
-      if (new_pos.x() + new_pos.width() > dialog_bounds.width())
-        new_pos = view_location;  // Reset.
-    } else {
-      new_pos.set_x(avoid_overlapping_rect.x() - new_pos.width() -
-        kMinFindWndDistanceFromSelection);
-
-      // If we moved it off-screen to the left, we won't move it at all.
-      if (new_pos.x() < 0)
-        new_pos = view_location;  // Reset.
-    }
-  }
+  gfx::Rect new_pos = FindBarController::GetLocationForFindbarView(
+      view_location, dialog_bounds, avoid_overlapping_rect);
 
   // While we are animating, the Find window will grow bottoms up so we need to
   // re-position the dialog so that it appears to grow out of the toolbar.

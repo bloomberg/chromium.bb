@@ -164,6 +164,10 @@ class FindBarGtk : public FindBar,
   // If true, the change signal for the text entry is ignored.
   bool ignore_changed_signal_;
 
+  // This is the width of widget(). We cache it so we can recognize whether
+  // allocate signals have changed it, and if so take appropriate actions.
+  int current_fixed_width_;
+
   scoped_ptr<NineBox> dialog_background_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarGtk);

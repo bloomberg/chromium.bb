@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_FIND_BAR_CONTROLLER_H_
 
 #include "base/basictypes.h"
+#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -38,6 +39,13 @@ class FindBarController : public NotificationObserver {
                        const NotificationDetails& details);
 
   FindBar* find_bar() const { return find_bar_.get(); }
+
+  // Reposition |view_location| such that it avoids |avoid_overlapping_rect|,
+  // and return the new location.
+  static gfx::Rect GetLocationForFindbarView(
+      gfx::Rect view_location,
+      const gfx::Rect& dialog_bounds,
+      const gfx::Rect& avoid_overlapping_rect);
 
  private:
   // Sents an update to the find bar with the tab contents' current result. The
