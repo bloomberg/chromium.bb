@@ -471,21 +471,7 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   }
   image->RenderTopCenterStrip(cr, 0, 0, widget->allocation.width);
 
-  // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
-  static NineBox top_shadow(theme_provider,
-                            0, IDR_CONTENT_TOP_CENTER, 0, 0, 0, 0, 0, 0, 0);
-  gint shadow_x, shadow_y;
-  gtk_widget_translate_coordinates(window->content_vbox_,
-      GTK_WIDGET(window->window_), 0, -kContentShadowThickness, &shadow_x,
-      &shadow_y);
-  top_shadow.RenderTopCenterStrip(cr,
-      static_cast<int>(shadow_x),
-      static_cast<int>(shadow_y),
-      static_cast<int>(window->content_vbox_->allocation.width));
-
-  // TODO(tc): Draw the shadow around the rest of content_vbox_ (corners, sides
-  // and bottom). Only do this if the custom frame is enabled.
-  // http://crbug.com/15505
+  DrawContentShadow(cr, window);
 
   // TODO(tc): Draw the theme overlay.  The windows code is below.
   // if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
@@ -513,6 +499,120 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   }
 
   return FALSE;  // Allow subwidgets to paint.
+}
+
+// static
+void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
+                                         BrowserWindowGtk* window) {
+  // Draw the shadow above the toolbar. Tabs on the tabstrip will draw over us.
+  ThemeProvider* theme_provider =
+      window->browser()->profile()->GetThemeProvider();
+  static NineBox top_shadow(theme_provider,
+                            0, IDR_CONTENT_TOP_CENTER, 0, 0, 0, 0, 0, 0, 0);
+  int left_x, top_y;
+  gtk_widget_translate_coordinates(window->content_vbox_,
+      GTK_WIDGET(window->window_), 0, 0, &left_x,
+      &top_y);
+  int width = window->content_vbox_->allocation.width;
+  top_shadow.RenderTopCenterStrip(cr,
+      left_x, top_y - kContentShadowThickness, width);
+
+  // Only draw the rest of the shadow if the user has the custom frame enabled.
+  if (!window->use_custom_frame_.GetValue())
+    return;
+
+  // The top left corner has a width of 3 pixels. On Windows, the last column
+  // of pixels overlap the toolbar. We just crop it off on Linux.  The top
+  // corners extend to the base of the toolbar (one pixel above the dividing
+  // line).
+  int right_x = left_x + width;
+  GdkPixbuf* top_left =
+      theme_provider->GetPixbufNamed(IDR_CONTENT_TOP_LEFT_CORNER);
+  gdk_cairo_set_source_pixbuf(cr, top_left,
+      left_x - kContentShadowThickness, top_y - kContentShadowThickness);
+  // The toolbar is shorter in location bar only mode so clip the image to the
+  // height of the toolbar + the amount of shadow above the toolbar.
+  int top_corner_height =
+      window->toolbar_->widget()->allocation.height + kContentShadowThickness;
+  cairo_rectangle(cr,
+      left_x - kContentShadowThickness,
+      top_y - kContentShadowThickness,
+      kContentShadowThickness,
+      top_corner_height);
+  cairo_fill(cr);
+
+  // Likewise, we crop off the left column of pixels for the top right corner.
+  GdkPixbuf* top_right =
+      theme_provider->GetPixbufNamed(IDR_CONTENT_TOP_RIGHT_CORNER);
+  gdk_cairo_set_source_pixbuf(cr, top_right,
+                              right_x - 1, top_y - kContentShadowThickness);
+  cairo_rectangle(cr,
+      right_x,
+      top_y - kContentShadowThickness,
+      kContentShadowThickness,
+      top_corner_height);
+  cairo_fill(cr);
+
+  // Fill in the sides.  As above, we only draw 2 of the 3 columns on Linux.
+  int height = window->content_vbox_->allocation.height;
+  int bottom_y = top_y + height;
+  // |side_y| is where to start drawing the side shadows.  The top corners draw
+  // the sides down to the bottom of the toolbar.
+  int side_y = top_y - kContentShadowThickness + top_corner_height;
+  // |side_height| is how many pixels to draw for the side borders.  We do one
+  // pixel before the bottom of the web contents because that extra pixel is
+  // drawn by the bottom corners.
+  int side_height = bottom_y - side_y - 1;
+  if (side_height > 0) {
+    GdkPixbuf* left = theme_provider->GetPixbufNamed(IDR_CONTENT_LEFT_SIDE);
+    gdk_cairo_set_source_pixbuf(cr, left,
+                                left_x - kContentShadowThickness, side_y);
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr,
+        left_x - kContentShadowThickness,
+        side_y,
+        kContentShadowThickness,
+        side_height);
+    cairo_fill(cr);
+
+    GdkPixbuf* right = theme_provider->GetPixbufNamed(IDR_CONTENT_RIGHT_SIDE);
+    gdk_cairo_set_source_pixbuf(cr, right, right_x - 1, side_y);
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr,
+        right_x,
+        side_y,
+        kContentShadowThickness,
+        side_height);
+    cairo_fill(cr);
+  }
+
+  // Draw the bottom corners.  The bottom corners also draw the bottom row of
+  // pixels of the side shadows.
+  GdkPixbuf* bottom_left =
+      theme_provider->GetPixbufNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
+  gdk_cairo_set_source_pixbuf(cr, bottom_left,
+                              left_x - kContentShadowThickness, bottom_y - 1);
+  cairo_paint(cr);
+
+  GdkPixbuf* bottom_right =
+      theme_provider->GetPixbufNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER);
+  gdk_cairo_set_source_pixbuf(cr, bottom_right,
+                              right_x - 1, bottom_y - 1);
+  cairo_paint(cr);
+
+  // Finally, draw the bottom row. Since we don't overlap the contents, we clip
+  // the top row of pixels.
+  GdkPixbuf* bottom =
+      theme_provider->GetPixbufNamed(IDR_CONTENT_BOTTOM_CENTER);
+  gdk_cairo_set_source_pixbuf(cr, bottom,
+                              left_x + 1, bottom_y - 1);
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr,
+      left_x + 1,
+      bottom_y,
+      width - 2,
+      kContentShadowThickness);
+  cairo_fill(cr);
 }
 
 void BrowserWindowGtk::Show() {

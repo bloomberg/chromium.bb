@@ -223,6 +223,9 @@ class BrowserWindowGtk : public BrowserWindow,
   // The content area includes the toolbar and web page but not the tab strip.
   static gboolean OnCustomFrameExpose(GtkWidget* widget, GdkEventExpose* event,
                                       BrowserWindowGtk* window);
+  // A helper method that draws the shadow above the toolbar and in the frame
+  // border during an expose.
+  static void DrawContentShadow(cairo_t* cr, BrowserWindowGtk* window);
 
   static gboolean OnGtkAccelerator(GtkAccelGroup* accel_group,
                                    GObject* acceleratable,
