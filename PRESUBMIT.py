@@ -135,8 +135,8 @@ def CheckTreeIsOpen(input_api, output_api, url, closed, url_text):
           long_text = match.group(1).strip()
       except IOError:
         pass
-      return [output_api.PresubmitPromptWarning("The tree is closed.",
-                                                long_text=long_text)]
+      return [output_api.PresubmitError("The tree is closed.",
+                                        long_text=long_text)]
   except IOError:
     pass
   return []
