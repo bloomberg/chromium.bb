@@ -11,10 +11,13 @@
 #ifndef CHROME_COMMON_COMMON_PARAM_TRAITS_H_
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_H_
 
+#include <vector>
+
 #include "base/gfx/native_widget_types.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_message_utils.h"
+#include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -212,6 +215,83 @@ struct ParamTraits<URLRequestStatus> {
       LogParam(p.os_error(), l);
       l->append(L")");
     }
+  }
+};
+
+
+// Traits for net::UploadData::Element.
+template <>
+struct ParamTraits<net::UploadData::Element> {
+  typedef net::UploadData::Element param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p.type()));
+    if (p.type() == net::UploadData::TYPE_BYTES) {
+      m->WriteData(&p.bytes()[0], static_cast<int>(p.bytes().size()));
+    } else {
+      WriteParam(m, p.file_path());
+      WriteParam(m, p.file_range_offset());
+      WriteParam(m, p.file_range_length());
+    }
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int type;
+    if (!ReadParam(m, iter, &type))
+      return false;
+    if (type == net::UploadData::TYPE_BYTES) {
+      const char* data;
+      int len;
+      if (!m->ReadData(iter, &data, &len))
+        return false;
+      r->SetToBytes(data, len);
+    } else {
+      DCHECK(type == net::UploadData::TYPE_FILE);
+      FilePath file_path;
+      uint64 offset, length;
+      if (!ReadParam(m, iter, &file_path))
+        return false;
+      if (!ReadParam(m, iter, &offset))
+        return false;
+      if (!ReadParam(m, iter, &length))
+        return false;
+      r->SetToFilePathRange(file_path, offset, length);
+    }
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<net::UploadData::Element>");
+  }
+};
+
+// Traits for net::UploadData.
+template <>
+struct ParamTraits<scoped_refptr<net::UploadData> > {
+  typedef scoped_refptr<net::UploadData> param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.get() != NULL);
+    if (p) {
+      WriteParam(m, p->elements());
+      WriteParam(m, p->identifier());
+    }
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    bool has_object;
+    if (!ReadParam(m, iter, &has_object))
+      return false;
+    if (!has_object)
+      return true;
+    std::vector<net::UploadData::Element> elements;
+    if (!ReadParam(m, iter, &elements))
+      return false;
+    int identifier;
+    if (!ReadParam(m, iter, &identifier))
+      return false;
+    *r = new net::UploadData;
+    (*r)->swap_elements(&elements);
+    (*r)->set_identifier(identifier);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<net::UploadData>");
   }
 };
 

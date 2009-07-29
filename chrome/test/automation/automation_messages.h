@@ -13,7 +13,8 @@
 #include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/test/automation/automation_constants.h"
-#include "ipc/ipc_message_utils.h"
+#include "net/base/upload_data.h"
+
 
 struct AutomationMsg_Find_Params {
   // Unused value, which exists only for backwards compat.
@@ -230,6 +231,7 @@ struct AutomationURLRequest {
   std::string method;
   std::string referrer;
   std::string extra_request_headers;
+  scoped_refptr<net::UploadData> upload_data;
 };
 
 // Traits for AutomationURLRequest structure to pack/unpack.
@@ -241,12 +243,14 @@ struct ParamTraits<AutomationURLRequest> {
     WriteParam(m, p.method);
     WriteParam(m, p.referrer);
     WriteParam(m, p.extra_request_headers);
+    WriteParam(m, p.upload_data);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return ReadParam(m, iter, &p->url) &&
            ReadParam(m, iter, &p->method) &&
            ReadParam(m, iter, &p->referrer) &&
-           ReadParam(m, iter, &p->extra_request_headers);
+           ReadParam(m, iter, &p->extra_request_headers) &&
+           ReadParam(m, iter, &p->upload_data);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -257,6 +261,8 @@ struct ParamTraits<AutomationURLRequest> {
     LogParam(p.referrer, l);
     l->append(L", ");
     LogParam(p.extra_request_headers, l);
+    l->append(L", ");
+    LogParam(p.upload_data, l);
     l->append(L")");
   }
 };

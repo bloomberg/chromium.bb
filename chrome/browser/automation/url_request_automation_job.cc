@@ -300,7 +300,8 @@ void URLRequestAutomationJob::StartAsync() {
     request_->url().spec(),
     request_->method(),
     request_->referrer(),
-    request_->extra_request_headers()
+    request_->extra_request_headers(),
+    request_->get_upload()
   };
 
   DCHECK(message_filter_);
