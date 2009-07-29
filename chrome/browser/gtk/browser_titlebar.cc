@@ -49,6 +49,11 @@ const int kOTRSideSpacing = 2;
 // titlebar is showing.
 const int kFrameBorderThickness = 4;
 
+// The left padding of the tab strip.  In Views, the tab strip has a left
+// margin of FrameBorderThickness + kClientEdgeThickness.  This offset is to
+// account for kClientEdgeThickness.
+const int kTabStripLeftPadding = 1;
+
 gboolean OnMouseMoveEvent(GtkWidget* widget, GdkEventMotion* event,
                           BrowserWindowGtk* browser_window) {
   // Reset to the default mouse cursor.
@@ -178,9 +183,10 @@ void BrowserTitlebar::UpdateCustomFrame(bool use_custom_frame) {
 void BrowserTitlebar::UpdateTitlebarAlignment() {
   if (using_custom_frame_ && !browser_window_->IsMaximized()) {
     gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_),
-        kTitlebarHeight, 0, 0, 0);
+        kTitlebarHeight, 0, kTabStripLeftPadding, 0);
   } else {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_), 0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_), 0, 0,
+                              kTabStripLeftPadding, 0);
   }
 
   int close_button_width = close_button_default_width_;
