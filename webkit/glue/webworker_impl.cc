@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 
 #include "DedicatedWorkerContext.h"
+#include "DedicatedWorkerThread.h"
 #include "GenericWorkerTask.h"
 #include "KURL.h"
 #include "MessagePort.h"
@@ -14,7 +15,6 @@
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "SubstituteData.h"
-#include "WorkerThread.h"
 #include <wtf/MainThread.h>
 #include <wtf/Threading.h>
 
@@ -168,7 +168,7 @@ void WebWorkerImpl::startWorkerContext(const WebURL& script_url,
   // This document will be used as 'loading context' for the worker.
   loading_document_ = web_frame->frame()->document();
 
-  worker_thread_ = WebCore::WorkerThread::create(
+  worker_thread_ = WebCore::DedicatedWorkerThread::create(
       webkit_glue::WebURLToKURL(script_url),
       webkit_glue::WebStringToString(user_agent),
       webkit_glue::WebStringToString(source_code),

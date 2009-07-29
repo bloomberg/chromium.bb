@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 
+#include "DedicatedWorkerThread.h"
 #include "Frame.h"
 #include "FrameLoaderClient.h"
 #include "GenericWorkerTask.h"
@@ -18,7 +19,6 @@
 #include "WorkerMessagingProxy.h"
 #include "Worker.h"
 #include "WorkerContext.h"
-#include "WorkerThread.h"
 #include <wtf/Threading.h>
 
 #undef LOG
@@ -83,8 +83,11 @@ WebCore::WorkerContextProxy* WebCore::WorkerContextProxy::create(
       return NULL;
     }
 
+    WebCore::DedicatedWorkerThread* thread =
+        static_cast<WebCore::DedicatedWorkerThread*>(
+            current_context->workerContext()->thread());
     WebCore::WorkerObjectProxy* worker_object_proxy =
-        &current_context->workerContext()->thread()->workerObjectProxy();
+        &thread->workerObjectProxy();
     WebWorkerImpl* impl = reinterpret_cast<WebWorkerImpl*>(worker_object_proxy);
     webworker = impl->client()->createWorker(proxy);
   }
