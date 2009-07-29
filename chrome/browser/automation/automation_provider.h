@@ -444,6 +444,17 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Returns the number of blocked popups in the tab |handle|.
   void GetBlockedPopupCount(int handle, int* count);
 
+  // Selects all contents on the page.
+  void SelectAll(int tab_handle);
+
+  // Edit operations on the page.
+  void Cut(int tab_handle);
+  void Copy(int tab_handle);
+  void Paste(int tab_handle);
+
+  void ReloadAsync(int tab_handle);
+  void StopAsync(int tab_handle);
+
   // Convert a tab handle into a TabContents. If |tab| is non-NULL a pointer
   // to the tab is also returned. Returns NULL in case of failure or if the tab
   // is not of the TabContents type.
@@ -463,6 +474,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   bool InterceptBrowserEventMessageFromExternalHost(const std::string& message,
                                                     const std::string& origin,
                                                     const std::string& target);
+
+  // Returns the associated view for the tab handle passed in.
+  // Returns NULL on failure.
+  RenderViewHost* GetViewForTab(int tab_handle);
 
   typedef ObserverList<NotificationObserver> NotificationObserverList;
   typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;

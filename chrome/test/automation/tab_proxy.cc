@@ -637,6 +637,30 @@ void TabProxy::SendContextMenuCommand(int selected_command) {
 
 #endif  // defined(OS_WIN)
 
+void TabProxy::SelectAll() {
+  sender_->Send(new AutomationMsg_SelectAll(0, handle_));
+}
+
+void TabProxy::Cut() {
+  sender_->Send(new AutomationMsg_Cut(0, handle_));
+}
+
+void TabProxy::Copy() {
+  sender_->Send(new AutomationMsg_Copy(0, handle_));
+}
+
+void TabProxy::Paste() {
+  sender_->Send(new AutomationMsg_Paste(0, handle_));
+}
+
+void TabProxy::ReloadAsync() {
+  sender_->Send(new AutomationMsg_ReloadAsync(0, handle_));
+}
+
+void TabProxy::StopAsync() {
+  sender_->Send(new AutomationMsg_StopAsync(0, handle_));
+}
+
 void TabProxy::AddObserver(TabProxyDelegate* observer) {
   AutoLock lock(list_lock_);
   observers_list_.AddObserver(observer);

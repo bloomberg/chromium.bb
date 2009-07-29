@@ -300,6 +300,19 @@ class TabProxy : public AutomationResourceProxy {
 
 #endif  // defined(OS_WIN)
 
+  // Selects all contents on the page.
+  void SelectAll();
+
+  // Edit operations on the page.
+  void Cut();
+  void Copy();
+  void Paste();
+
+  // These handlers issue asynchronous Reload and Stop notifications to the
+  // chrome instance.
+  void ReloadAsync();
+  void StopAsync();
+
   // Calls delegates
   void AddObserver(TabProxyDelegate* observer);
   void RemoveObserver(TabProxyDelegate* observer);

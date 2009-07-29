@@ -1067,6 +1067,12 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         SetEnableExtensionAutomation)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetShelfVisibility, SetShelfVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_BlockedPopupCount, GetBlockedPopupCount)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SelectAll, SelectAll)
+    IPC_MESSAGE_HANDLER(AutomationMsg_Cut, Cut)
+    IPC_MESSAGE_HANDLER(AutomationMsg_Copy, Copy)
+    IPC_MESSAGE_HANDLER(AutomationMsg_Paste, Paste)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ReloadAsync, ReloadAsync)
+    IPC_MESSAGE_HANDLER(AutomationMsg_StopAsync, StopAsync)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2658,43 +2664,29 @@ void AutomationProvider::OnMessageFromExternalHost(int handle,
                                                    const std::string& message,
                                                    const std::string& origin,
                                                    const std::string& target) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    if (!tab) {
-      NOTREACHED();
-      return;
-    }
-
-    TabContents* tab_contents = tab->tab_contents();
-    if (!tab_contents) {
-      NOTREACHED();
-      return;
-    }
-
-    RenderViewHost* view_host = tab_contents->render_view_host();
-    if (!view_host) {
-      return;
-    }
-
-    if (AutomationExtensionFunction::InterceptMessageFromExternalHost(
-        view_host, message, origin, target)) {
-      // Message was diverted.
-      return;
-    }
-
-    if (ExtensionPortContainer::InterceptMessageFromExternalHost(message,
-        origin, target, this, view_host, handle)) {
-      // Message was diverted.
-      return;
-    }
-
-    if (InterceptBrowserEventMessageFromExternalHost(message, origin, target)) {
-      // Message was diverted.
-      return;
-    }
-
-    view_host->ForwardMessageFromExternalHost(message, origin, target);
+  RenderViewHost* view_host = GetViewForTab(handle);
+  if (!view_host) {
+    return;
   }
+
+  if (AutomationExtensionFunction::InterceptMessageFromExternalHost(
+      view_host, message, origin, target)) {
+    // Message was diverted.
+    return;
+  }
+
+  if (ExtensionPortContainer::InterceptMessageFromExternalHost(message,
+      origin, target, this, view_host, handle)) {
+    // Message was diverted.
+    return;
+  }
+
+  if (InterceptBrowserEventMessageFromExternalHost(message, origin, target)) {
+    // Message was diverted.
+    return;
+  }
+
+  view_host->ForwardMessageFromExternalHost(message, origin, target);
 }
 
 bool AutomationProvider::InterceptBrowserEventMessageFromExternalHost(
@@ -3038,4 +3030,87 @@ void AutomationProvider::GetBlockedPopupCount(int handle, int* count) {
         }
       }
   }
+}
+
+void AutomationProvider::SelectAll(int tab_handle) {
+  RenderViewHost* view = GetViewForTab(tab_handle);
+  if (!view) {
+    NOTREACHED();
+    return;
+  }
+
+  view->SelectAll();
+}
+
+void AutomationProvider::Cut(int tab_handle) {
+  RenderViewHost* view = GetViewForTab(tab_handle);
+  if (!view) {
+    NOTREACHED();
+    return;
+  }
+
+  view->Cut();
+}
+
+void AutomationProvider::Copy(int tab_handle) {
+  RenderViewHost* view = GetViewForTab(tab_handle);
+  if (!view) {
+    NOTREACHED();
+    return;
+  }
+
+  view->Copy();
+}
+
+void AutomationProvider::Paste(int tab_handle) {
+  RenderViewHost* view = GetViewForTab(tab_handle);
+  if (!view) {
+    NOTREACHED();
+    return;
+  }
+
+  view->Paste();
+}
+
+void AutomationProvider::ReloadAsync(int tab_handle) {
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    if (!tab) {
+      NOTREACHED();
+      return;
+    }
+
+    tab->Reload(false);
+  }
+}
+
+void AutomationProvider::StopAsync(int tab_handle) {
+  RenderViewHost* view = GetViewForTab(tab_handle);
+  if (!view) {
+    NOTREACHED();
+    return;
+  }
+
+  view->Stop();
+}
+
+RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    if (!tab) {
+      NOTREACHED();
+      return NULL;
+    }
+
+    TabContents* tab_contents = tab->tab_contents();
+    if (!tab_contents) {
+      NOTREACHED();
+      return NULL;
+    }
+
+    RenderViewHost* view_host = tab_contents->render_view_host();
+    return view_host;
+  }
+
+  return NULL;
 }

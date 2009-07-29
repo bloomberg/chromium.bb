@@ -965,4 +965,21 @@ IPC_BEGIN_MESSAGES(Automation)
                       GURL /* url */,
                       std::string /* cookie */)
 
+  IPC_MESSAGE_ROUTED1(AutomationMsg_SelectAll,
+                      int /* tab handle */)
+
+  IPC_MESSAGE_ROUTED1(AutomationMsg_Cut,
+                      int /* tab handle */)
+
+  IPC_MESSAGE_ROUTED1(AutomationMsg_Copy,
+                      int /* tab handle */)
+
+  IPC_MESSAGE_ROUTED1(AutomationMsg_Paste,
+                      int /* tab handle */)
+
+  IPC_MESSAGE_ROUTED1(AutomationMsg_ReloadAsync,
+                      int /* tab handle */)
+
+  IPC_MESSAGE_ROUTED1(AutomationMsg_StopAsync,
+                      int /* tab handle */)
 IPC_END_MESSAGES(Automation)
