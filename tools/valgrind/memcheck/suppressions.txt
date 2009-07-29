@@ -441,12 +441,12 @@
    fun:_ZN7WebCore7V8Proxy20RegisterGlobalHandleENS_16GlobalHandleTypeEPvN2v810PersistentINS3_5ValueEEE
 }
 {
-   # V8 leak?  See http://crbug.com/9458
+   # V8 (or test shell) leak?  See http://crbug.com/9458
    bug_9458
    Memcheck:Leak
-   fun:_Znwj
+   ...
    fun:_NPN_RegisterObject
-   fun:_Z25CreateV8ObjectForNPObjectP8NPObjectS0_
+   fun:_Z25createV8ObjectForNPObjectP8NPObjectS0_
 }
 {
    # webkit leak?  See http://crbug.com/9503
