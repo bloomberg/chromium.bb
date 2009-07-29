@@ -81,6 +81,8 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
       info->desc = UTF8ToWide(description);
   }
 
+  base::UnloadNativeLibrary(dl);
+
   return true;
 }
 
