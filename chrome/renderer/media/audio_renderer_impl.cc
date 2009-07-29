@@ -180,7 +180,7 @@ void AudioRendererImpl::OnRequestPacket(size_t bytes_in_buffer,
     request_delay_ = ConvertToDuration(bytes_in_buffer);
   }
 
-  // Try to fill in the fulfil the packet request.
+  // Try to fill in the fulfill the packet request.
   OnNotifyPacketReady();
 }
 

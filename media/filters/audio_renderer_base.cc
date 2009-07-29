@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "media/base/filter_host.h"
 #include "media/filters/audio_renderer_base.h"
 
@@ -144,7 +146,14 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
 
     // Mute audio by returning 0 when not playing.
     if (state_ != kPlaying) {
-      return 0;
+      // TODO(scherkus): To keep the audio hardware busy we write at most 8k of
+      // zeros.  This gets around the tricky situation of pausing and resuming
+      // the audio IPC layer in Chrome.  Ideally, we should return zero and then
+      // the subclass can restart the conversation.
+      const size_t kZeroLength = 8192;
+      dest_written = std::min(kZeroLength, dest_len);
+      memset(dest, 0, dest_written);
+      return dest_written;
     }
 
     // Save a local copy of last fill buffer time and reset the member.
