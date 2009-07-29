@@ -49,7 +49,7 @@ const int kForwardWaitThreshold = 2 * kMegabyte;
 // timeout and start a new request.
 // TODO(hclam): Use this value when retry is implemented.
 // TODO(hclam): Set it to 5s, calibrate this value later.
-const int kDataTransferTimeoutSeconds = 5;
+const int kTimeoutMilliseconds = 5000;
 
 // Defines how many times we should try to read from a buffered resource loader
 // before we declare a read error. After each failure of read from a buffered
@@ -447,6 +447,13 @@ BufferedResourceLoader* BufferedDataSource::CreateLoader(
                                     last_byte_position);
 }
 
+// This method simply returns kTimeoutMilliseconds. The purpose of this
+// method is to be overidded so as to provide a different timeout value
+// for testing purpose.
+base::TimeDelta BufferedDataSource::GetTimeoutMilliseconds() {
+  return base::TimeDelta::FromMilliseconds(kTimeoutMilliseconds);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // BufferedDataSource, media::MediaFilter implementation
 void BufferedDataSource::Initialize(const std::string& url,
@@ -510,6 +517,14 @@ void BufferedDataSource::InitializeTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!loader_.get());
 
+  // Kick starts the watch dog task that will handle connection timeout.
+  // We run the watch dog 2 times faster the actual timeout so as to catch
+  // the timeout more accurately.
+  watch_dog_timer_.Start(
+      GetTimeoutMilliseconds() / 2,
+      this,
+      &BufferedDataSource::WatchDogTask);
+
   // Creates a new resource loader with the full range.
   loader_.reset(CreateLoader(-1, -1));
 
@@ -530,6 +545,8 @@ void BufferedDataSource::ReadTask(
   read_size_ = read_size;
   read_callback_.reset(read_callback);
   read_buffer_ = buffer;
+  read_submitted_time_ = base::Time::Now();
+  read_attempts_ = 0;
 
   // Call to read internal to perform the actual read.
   ReadInternal();
@@ -538,11 +555,22 @@ void BufferedDataSource::ReadTask(
 void BufferedDataSource::StopTask() {
   DCHECK(MessageLoop::current() == render_loop_);
 
+  // Stop the watch dog.
+  watch_dog_timer_.Stop();
+
   // We just need to stop the loader, so it stops activity.
   if (loader_.get()) {
     loader_->Stop();
     loader_.reset();
   }
+
+  // Reset the parameters of the current read request.
+  read_callback_.reset();
+  read_position_ = 0;
+  read_size_ = 0;
+  read_buffer_ = 0;
+  read_submitted_time_ = base::Time();
+  read_attempts_ = 0;
 }
 
 void BufferedDataSource::SwapLoaderTask(BufferedResourceLoader* loader) {
@@ -552,6 +580,32 @@ void BufferedDataSource::SwapLoaderTask(BufferedResourceLoader* loader) {
   loader_.reset(loader);
   loader_->Start(NewCallback(this,
                              &BufferedDataSource::PartialReadStartCallback));
+}
+
+void BufferedDataSource::WatchDogTask() {
+  DCHECK(MessageLoop::current() == render_loop_);
+
+  // We only care if there is an active read request.
+  if (!read_callback_.get())
+    return;
+
+  DCHECK(loader_.get());
+  base::TimeDelta delta = base::Time::Now() - read_submitted_time_;
+  if (delta < GetTimeoutMilliseconds())
+    return;
+  
+  // TODO(hclam): Maybe raise an error here. But if an error is reported
+  // the whole pipeline may get destroyed...
+  if (read_attempts_ >= kReadTrials)
+    return;
+
+  ++read_attempts_;
+  read_submitted_time_ = base::Time::Now();
+
+  // Stops the current loader and swap in a new resource loader and
+  // retry the request.
+  loader_->Stop();
+  SwapLoaderTask(CreateLoader(read_position_, -1));
 }
 
 // This method is the place where actual read happens, |loader_| must be valid

@@ -16,9 +16,11 @@
 
 using ::testing::_;
 using ::testing::Assign;
+using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SetArgumentPointee;
@@ -347,6 +349,11 @@ class MockBufferedDataSource : public BufferedDataSource {
                                            bridge_factory);
   }
 
+  virtual base::TimeDelta GetTimeoutMilliseconds() {
+    // It is 100 ms because we don't want the test to run too long.
+    return base::TimeDelta::FromMilliseconds(100);
+  }
+
   MOCK_METHOD2(CreateLoader, BufferedResourceLoader*(int64 first_position,
                                                      int64 last_position));
 
@@ -384,6 +391,7 @@ class BufferedDataSourceTest : public testing::Test {
 
   ~BufferedDataSourceTest() {
     if (data_source_) {
+      // Release the bridge factory because we don't own it.
       // Expects bridge factory to be destroyed along with data source.
       EXPECT_CALL(*bridge_factory_, OnDestroy())
           .WillOnce(Invoke(this,
@@ -568,6 +576,52 @@ class BufferedDataSourceTest : public testing::Test {
     message_loop_->RunAllPending();
   }
 
+  void ReadDataSourceTimesOut(int64 position, int size) {
+    InSequence s;
+    // 1. Drop the request and let it times out.
+    EXPECT_CALL(*loader_, Read(position, size, NotNull(), NotNull()))
+        .WillOnce(DeleteArg<3>());
+    
+    // 2. Then the current loader will be stop and destroyed.
+    StrictMock<MockBufferedResourceLoader> *new_loader =
+        new StrictMock<MockBufferedResourceLoader>();
+    EXPECT_CALL(*loader_, Stop());
+    EXPECT_CALL(*data_source_, CreateLoader(position, -1))
+        .WillOnce(Return(new_loader));
+    EXPECT_CALL(*loader_, OnDestroy())
+        .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseLoader));
+    
+    // 3. Then the new loader will be started.
+    EXPECT_CALL(*new_loader, Start(NotNull()))
+        .WillOnce(DoAll(Assign(&error_, net::OK),
+                        Invoke(this,
+                               &BufferedDataSourceTest::InvokeStartCallback)));
+    
+    // 4. Then again a read request is made to the new loader.
+    EXPECT_CALL(*new_loader, Read(position, size, NotNull(), NotNull()))
+        .WillOnce(DoAll(Assign(&error_, size),
+                        Invoke(this,
+                               &BufferedDataSourceTest::InvokeReadCallback),
+                        InvokeWithoutArgs(message_loop_.get(),
+                                          &MessageLoop::Quit)));
+
+    EXPECT_CALL(*this, ReadCallback(size));
+    
+    data_source_->Read(
+        position, size, buffer_,
+        NewCallback(this, &BufferedDataSourceTest::ReadCallback));
+
+    // This blocks the current thread until the watch task is executed and
+    // triggers a read callback to quit this message loop.
+    message_loop_->Run();
+
+    // Make sure data is correct.
+    EXPECT_EQ(0, memcmp(buffer_, data_ + static_cast<int>(position), size));
+    
+    EXPECT_TRUE(loader_.get() == NULL);
+    loader_.reset(new_loader);
+  }
+
   MOCK_METHOD1(ReadCallback, void(size_t size));
 
   scoped_ptr<StrictMock<MockMediaResourceLoaderBridgeFactory> >
@@ -621,6 +675,12 @@ TEST_F(BufferedDataSourceTest, ReadFailed) {
   InitializeDataSource(kHttpUrl, net::OK, 1024);
   ReadDataSourceHit(10, 10, 10);
   ReadDataSourceFailed(10, 10, net::ERR_CONNECTION_RESET);
+  StopDataSource();
+}
+
+TEST_F(BufferedDataSourceTest, ReadTimesOut) {
+  InitializeDataSource(kHttpUrl, net::OK, 1024);
+  ReadDataSourceTimesOut(20, 10);
   StopDataSource();
 }
 

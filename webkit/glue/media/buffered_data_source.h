@@ -9,6 +9,7 @@
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
+#include "base/timer.h"
 #include "base/condition_variable.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/factory.h"
@@ -183,6 +184,11 @@ class BufferedDataSource : public media::DataSource {
   virtual BufferedResourceLoader* CreateLoader(int64 first_byte_position,
                                                int64 last_byte_position);
 
+  // Gets the number of milliseconds to declare a request timeout since
+  // the request was made. This method is made virtual so as to inject a
+  // different number for testing purpose.
+  virtual base::TimeDelta GetTimeoutMilliseconds();
+
  private:
   friend class media::FilterFactoryImpl2<
       BufferedDataSource,
@@ -204,6 +210,11 @@ class BufferedDataSource : public media::DataSource {
   // Reset |loader_| with |loader| and starts it. This task is posted from
   // callback method from the current buffered resource loader.
   void SwapLoaderTask(BufferedResourceLoader* loader);
+
+  // This task monitors the current active read request. If the current read
+  // request has timed out, this task will destroy the current loader and
+  // creates a new to accomodate the read request.
+  void WatchDogTask();
 
   // The method that performs actual read. This method can only be executed on
   // the render thread.
@@ -252,6 +263,8 @@ class BufferedDataSource : public media::DataSource {
   int64 read_position_;
   int read_size_;
   uint8* read_buffer_;
+  base::Time read_submitted_time_;
+  int read_attempts_;
 
   // This buffer is intermediate, we use it for BufferedResourceLoader to write
   // to. And when read in BufferedResourceLoader is done, we copy data from
@@ -277,6 +290,12 @@ class BufferedDataSource : public media::DataSource {
 
   // Stop signal to suppressing activities.
   bool stopped_;
+
+  // This timer is to run the WatchDogTask repeatedly. We use a timer instead
+  // of doing PostDelayedTask() reduce the extra reference held by the message
+  // loop. The RepeatingTimer does PostDelayedTask() internally, by using it
+  // the message loop doesn't hold a reference for the watch dog task.
+  base::RepeatingTimer<BufferedDataSource> watch_dog_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };
