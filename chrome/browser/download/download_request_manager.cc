@@ -156,12 +156,6 @@ void DownloadRequestManager::TabDownloadState::NotifyCallbacks(bool allow) {
     host_->ScheduleNotification(callbacks[i], allow);
 }
 
-namespace {
-
-// DialogDelegateImpl ----------------------------------------------------------
-
-}  // namespace
-
 // DownloadRequestManager ------------------------------------------------------
 
 DownloadRequestManager::DownloadRequestManager(MessageLoop* io_loop,

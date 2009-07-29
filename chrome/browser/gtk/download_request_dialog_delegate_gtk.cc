@@ -26,8 +26,8 @@ DownloadRequestDialogDelegateGtk::~DownloadRequestDialogDelegateGtk() {
 DownloadRequestDialogDelegateGtk::DownloadRequestDialogDelegateGtk(
     TabContents* tab,
     DownloadRequestManager::TabDownloadState* host)
-    : DownloadRequestDialogDelegate(host) {
-
+    : DownloadRequestDialogDelegate(host),
+      responded_(false) {
   // Create dialog.
   root_.Own(gtk_vbox_new(NULL, gtk_util::kContentAreaBorder));
   GtkWidget* label = gtk_label_new(
@@ -46,7 +46,7 @@ DownloadRequestDialogDelegateGtk::DownloadRequestDialogDelegateGtk(
   gtk_button_set_image(
       GTK_BUTTON(deny),
       gtk_image_new_from_stock(GTK_STOCK_CANCEL, GTK_ICON_SIZE_BUTTON));
-  g_signal_connect(deny, "clicked", G_CALLBACK(OnDenyClicked), this);
+  g_signal_connect(deny, "clicked", G_CALLBACK(OnDenyClickedThunk), this);
   gtk_box_pack_end(GTK_BOX(hbox), deny, FALSE, FALSE, 0);
 
   GtkWidget* allow = gtk_button_new_with_label(
@@ -54,7 +54,7 @@ DownloadRequestDialogDelegateGtk::DownloadRequestDialogDelegateGtk(
   gtk_button_set_image(
       GTK_BUTTON(allow),
       gtk_image_new_from_stock(GTK_STOCK_OK, GTK_ICON_SIZE_BUTTON));
-  g_signal_connect(allow, "clicked", G_CALLBACK(OnAllowClicked), this);
+  g_signal_connect(allow, "clicked", G_CALLBACK(OnAllowClickedThunk), this);
   gtk_box_pack_end(GTK_BOX(hbox), allow, FALSE, FALSE, 0);
 
   // Attach to window.
@@ -75,22 +75,20 @@ GtkWidget* DownloadRequestDialogDelegateGtk::GetWidgetRoot() {
 }
 
 void DownloadRequestDialogDelegateGtk::DeleteDelegate() {
-  // On windows, host_ is set to NULL when the window is closed by not pressing
-  // one of the two buttons (i.e. by navigating to another site). We don't do
-  // that, hence we can't DCHECK(!host_) here.
+  if (!responded_)
+    DoCancel();
+  DCHECK(!host_);
   delete this;
 }
 
-void DownloadRequestDialogDelegateGtk::OnAllowClicked(
-    GtkButton *button,
-    DownloadRequestDialogDelegateGtk* handler) {
-  handler->DoAccept();
-  handler->CloseWindow();
+void DownloadRequestDialogDelegateGtk::OnAllowClicked() {
+  DoAccept();
+  responded_ = true;
+  CloseWindow();
 }
 
-void DownloadRequestDialogDelegateGtk::OnDenyClicked(
-    GtkButton *button,
-    DownloadRequestDialogDelegateGtk* handler) {
-  handler->DoCancel();
-  handler->CloseWindow();
+void DownloadRequestDialogDelegateGtk::OnDenyClicked() {
+  DoCancel();
+  responded_ = true;
+  CloseWindow();
 }

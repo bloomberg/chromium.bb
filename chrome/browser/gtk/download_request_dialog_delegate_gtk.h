@@ -27,16 +27,27 @@ class DownloadRequestDialogDelegateGtk : public DownloadRequestDialogDelegate,
   virtual void DeleteDelegate();
 
   // Other methods.
-  static void OnAllowClicked(GtkButton *button,
-                             DownloadRequestDialogDelegateGtk* handler);
-  static void OnDenyClicked(GtkButton *button,
-                             DownloadRequestDialogDelegateGtk* handler);
+  static void OnAllowClickedThunk(GtkButton* button,
+                                  DownloadRequestDialogDelegateGtk* delegate) {
+    delegate->OnAllowClicked();
+  }
+  void OnAllowClicked();
+  static void OnDenyClickedThunk(GtkButton* button,
+                                 DownloadRequestDialogDelegateGtk* delegate) {
+    delegate->OnDenyClicked();
+  }
+  void OnDenyClicked();
 
   // The ConstrainedWindow that is hosting our DownloadRequestDialog.
   ConstrainedWindow* window_;
 
   // Our root widget.
   OwnedWidgetGtk root_;
+
+  // Tracks whether we have responded so we can send a cancel response
+  // when we are getting deleted. DRDDWin gets this for free from its
+  // views::DialogDelegate superclass.
+  bool responded_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRequestDialogDelegateGtk);
 };
