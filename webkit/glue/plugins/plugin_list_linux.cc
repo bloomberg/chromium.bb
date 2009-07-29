@@ -24,7 +24,13 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
     plugin_dirs->push_back(FilePath(moz_plugin_path));
 
   // 2) NS_USER_PLUGINS_DIR: ~/.mozilla/plugins.
-  // TODO(evanm): should we do anything here?
+  // This is a de-facto standard, so even though we're not Mozilla, let's
+  // look in there too.
+  const char* home = getenv("HOME");
+  if (home)
+    plugin_dirs->push_back(FilePath(home).Append(".mozilla/plugins"));
+  // TODO(evanm): maybe consult our own plugins dir, like
+  // ~/.config/chromium/Plugins?
 
   // 3) NS_APP_PLUGINS_DIR: the binary dir + "plugins/".
   FilePath dir;
