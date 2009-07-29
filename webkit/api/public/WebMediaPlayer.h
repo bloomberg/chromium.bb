@@ -59,6 +59,13 @@ namespace WebKit {
             HaveEnoughData,
         };
 
+        enum MovieLoadType{
+            Unknown,
+            Download,
+            StoredStream,
+            LiveStream,
+        };
+
         virtual ~WebMediaPlayer() {}
 
         virtual void load(const WebURL&) = 0;
@@ -104,6 +111,9 @@ namespace WebKit {
 
         virtual unsigned long long bytesLoaded() const = 0;
         virtual unsigned long long totalBytes() const = 0;
+
+        virtual bool hasSingleSecurityOrigin() const = 0;
+        virtual MovieLoadType movieLoadType() const = 0;
     };
 
 } // namespace WebKit

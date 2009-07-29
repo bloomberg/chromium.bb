@@ -44,7 +44,7 @@ class SimpleDataSource : public media::DataSource,
   virtual void Read(int64 position, size_t size,
                     uint8* data, ReadCallback* read_callback);
   virtual bool GetSize(int64* size_out);
-  virtual bool IsSeekable();
+  virtual bool IsStreaming();
 
   // webkit_glue::ResourceLoaderBridge::Peer implementation.
   virtual void OnDownloadProgress(uint64 position, uint64 size);

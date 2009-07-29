@@ -71,32 +71,34 @@ class BufferedResourceLoaderTest : public testing::Test {
                                &BufferedResourceLoaderTest::StartCallback));
   }
 
-  void FullResponse(int64 content_length) {
+  void FullResponse(int64 instance_size) {
     EXPECT_CALL(*this, StartCallback(net::OK));
     ResourceLoaderBridge::ResponseInfo info;
     std::string header = StringPrintf("HTTP/1.1 200 OK\n"
-                                      "Content-Length: %lld", content_length);
+                                      "Content-Length: %lld", instance_size);
     replace(header.begin(), header.end(), '\n', '\0');
     info.headers = new net::HttpResponseHeaders(header);
-    info.content_length = content_length;
+    info.content_length = instance_size;
     loader_->OnReceivedResponse(info, false);
-    EXPECT_EQ(content_length, loader_->content_length());
+    EXPECT_EQ(instance_size, loader_->content_length());
+    EXPECT_EQ(instance_size, loader_->instance_size());
   }
 
-  void PartialResponse(int64 content_length) {
+  void PartialResponse(int64 instance_size) {
     EXPECT_CALL(*this, StartCallback(net::OK));
+    int64 content_length = last_position_ - first_position_ + 1;
     ResourceLoaderBridge::ResponseInfo info;
     std::string header = StringPrintf("HTTP/1.1 206 Partial Content\n"
                                       "Content-Range: bytes %lld-%lld/%lld",
                                       first_position_,
                                       last_position_,
-                                      content_length);
+                                      instance_size);
     replace(header.begin(), header.end(), '\n', '\0');
     info.headers = new net::HttpResponseHeaders(header);
     info.content_length = content_length;
     loader_->OnReceivedResponse(info, false);
-    // TODO(hclam): Right now BufferedResourceLoader doesn't care about the
-    // partial range replied by the server. Do the check here.
+    EXPECT_EQ(content_length, loader_->content_length());
+    EXPECT_EQ(instance_size, loader_->instance_size());
   }
 
   void StopWhenLoad() {
@@ -185,7 +187,7 @@ TEST_F(BufferedResourceLoaderTest, NotPartialRange) {
   Initialize(kHttpUrl, 100, -1);
   Start();
 
-  EXPECT_CALL(*this, StartCallback(net::ERR_INVALID_RESPONSE));
+  EXPECT_CALL(*this, StartCallback(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
   EXPECT_CALL(*bridge_, Cancel());
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
@@ -240,7 +242,7 @@ TEST_F(BufferedResourceLoaderTest, BufferAndRead) {
   ReadLoader(10, 10, buffer);
   VerifyBuffer(buffer, 10, 10);
 
-  // Read backwith outside buffer.
+  // Read backward outside buffer.
   EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
   ReadLoader(9, 10, buffer);
 
@@ -259,7 +261,9 @@ TEST_F(BufferedResourceLoaderTest, BufferAndRead) {
   // Try to read outside buffered range after request has completed.
   EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
   ReadLoader(5, 10, buffer);
-  EXPECT_CALL(*this, ReadCallback(net::ERR_CACHE_MISS));
+
+  // Try to read beyond the instance size.
+  EXPECT_CALL(*this, ReadCallback(0));
   ReadLoader(30, 10, buffer);
 }
 
@@ -328,6 +332,7 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
   MOCK_METHOD4(Read, void(int64 position, int read_size, uint8* buffer,
                           net::CompletionCallback* callback));
   MOCK_METHOD0(content_length, int64());
+  MOCK_METHOD0(instance_size, int64());
   MOCK_METHOD0(OnDestroy, void());
 
  private:
@@ -402,7 +407,8 @@ class BufferedDataSourceTest : public testing::Test {
     message_loop_.release();
   }
 
-  void InitializeDataSource(const char* url, int error, int64 content_length) {
+  void InitializeDataSource(const char* url, int error, int probe_error,
+                            int64 instance_size) {
     // Saves the url first.
     gurl_ = GURL(url);
 
@@ -418,34 +424,81 @@ class BufferedDataSourceTest : public testing::Test {
 
     // Creates the first mock loader to be injected.
     loader_.reset(new StrictMock<MockBufferedResourceLoader>());
+    probe_loader_.reset(new StrictMock<MockBufferedResourceLoader>());
 
     InSequence s;
     StrictMock<media::MockFilterCallback> callback;
+
+    // There is one resource loader with full range will be created.
     EXPECT_CALL(*data_source_, CreateLoader(-1, -1))
         .WillOnce(Return(loader_.get()));
+
+    // Then another resource loader with a small partial range is created.
+    EXPECT_CALL(*data_source_, CreateLoader(1, 1))
+        .WillOnce(Return(probe_loader_.get()));
+
+    // The initial response loader will be started.
     EXPECT_CALL(*loader_, Start(NotNull()))
         .WillOnce(DoAll(Assign(&error_, error),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
-    if (error != net::OK) {
+    if (error == net::OK) {
+      EXPECT_CALL(*loader_, instance_size())
+          .WillOnce(Return(instance_size));
+      if (instance_size != -1) {
+        EXPECT_CALL(host_, SetTotalBytes(instance_size));
+        EXPECT_CALL(host_, SetBufferedBytes(instance_size));
+      } else {
+        EXPECT_CALL(host_, SetStreaming(true));
+      }
+
+      // Then the probe resource loader will start.
+      EXPECT_CALL(*probe_loader_, Start(NotNull()))
+          .WillOnce(DoAll(Assign(&error_, probe_error),
+                    Invoke(this,
+                           &BufferedDataSourceTest::InvokeStartCallback)));
+      if (probe_error != net::OK)
+        EXPECT_CALL(host_, SetStreaming(true));
+      EXPECT_CALL(*probe_loader_, Stop());
+      EXPECT_CALL(callback, OnFilterCallback());
+      EXPECT_CALL(callback, OnCallbackDestroyed());
+    } else {
       EXPECT_CALL(host_, SetError(media::PIPELINE_ERROR_NETWORK));
       EXPECT_CALL(*loader_, Stop());
-    } else {
-      EXPECT_CALL(*loader_, content_length())
-          .WillOnce(Return(content_length));
-      EXPECT_CALL(host_, SetTotalBytes(content_length));
-      EXPECT_CALL(host_, SetBufferedBytes(content_length));
+      EXPECT_CALL(*probe_loader_, Stop());
+      EXPECT_CALL(callback, OnFilterCallback());
+      EXPECT_CALL(callback, OnCallbackDestroyed());
+
+      // This expectation looks a little strange, but this is actually what
+      // will happen since we are not running a message loop. So simply
+      // delete the callback.
+      EXPECT_CALL(*probe_loader_, Start(NotNull()))
+          .WillOnce(DeleteArg<0>());
     }
-    EXPECT_CALL(callback, OnFilterCallback());
-    EXPECT_CALL(callback, OnCallbackDestroyed());
 
     data_source_->Initialize(url, callback.NewCallback());
     message_loop_->RunAllPending();
 
     if (error == net::OK) {
+      // Verify the size of the data source.
       int64 size;
-      EXPECT_TRUE(data_source_->GetSize(&size));
-      EXPECT_EQ(content_length, size);
+      if (instance_size != -1) {
+        EXPECT_TRUE(data_source_->GetSize(&size));
+        EXPECT_EQ(instance_size, size);
+
+        if (probe_error == net::OK) {
+          EXPECT_FALSE(data_source_->IsStreaming());
+        }
+      } else {
+        EXPECT_FALSE(data_source_->GetSize(&size));
+        EXPECT_EQ(0, size);
+        EXPECT_TRUE(data_source_->IsStreaming());
+      }
+
+      // Verify the data source is streamed if the probe has received an error.
+      if (probe_error != net::OK) {
+        EXPECT_TRUE(data_source_->IsStreaming());
+      }
     }
   }
 
@@ -453,9 +506,13 @@ class BufferedDataSourceTest : public testing::Test {
     if (loader_.get()) {
       InSequence s;
       EXPECT_CALL(*loader_, Stop());
-      EXPECT_CALL(*loader_, OnDestroy())
-          .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseLoader));
+      EXPECT_CALL(*probe_loader_, Stop());
     }
+
+    EXPECT_CALL(*loader_, OnDestroy())
+       .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseLoader));
+    EXPECT_CALL(*probe_loader_, OnDestroy())
+       .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseProbeLoader));
 
     data_source_->Stop();
     message_loop_->RunAllPending();
@@ -467,6 +524,10 @@ class BufferedDataSourceTest : public testing::Test {
 
   void ReleaseLoader() {
     loader_.release();
+  }
+
+  void ReleaseProbeLoader() {
+    probe_loader_.release();
   }
 
   void InvokeStartCallback(net::CompletionCallback* callback) {
@@ -560,14 +621,11 @@ class BufferedDataSourceTest : public testing::Test {
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeReadCallback)));
 
-    // 2. The read has failed, so read callback will be called.
-    EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
-
-    // 3. Host will then receive an error.
-    EXPECT_CALL(host_, SetError(media::PIPELINE_ERROR_NETWORK));
-
-    // 4. The the loader is destroyed.
+    // 2. Host will then receive an error.
     EXPECT_CALL(*loader_, Stop());
+
+    // 3. The read has failed, so read callback will be called.
+    EXPECT_CALL(*this, ReadCallback(media::DataSource::kReadError));
 
     data_source_->Read(
         position, size, buffer_,
@@ -581,7 +639,7 @@ class BufferedDataSourceTest : public testing::Test {
     // 1. Drop the request and let it times out.
     EXPECT_CALL(*loader_, Read(position, size, NotNull(), NotNull()))
         .WillOnce(DeleteArg<3>());
-    
+
     // 2. Then the current loader will be stop and destroyed.
     StrictMock<MockBufferedResourceLoader> *new_loader =
         new StrictMock<MockBufferedResourceLoader>();
@@ -590,13 +648,13 @@ class BufferedDataSourceTest : public testing::Test {
         .WillOnce(Return(new_loader));
     EXPECT_CALL(*loader_, OnDestroy())
         .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseLoader));
-    
+
     // 3. Then the new loader will be started.
     EXPECT_CALL(*new_loader, Start(NotNull()))
         .WillOnce(DoAll(Assign(&error_, net::OK),
                         Invoke(this,
                                &BufferedDataSourceTest::InvokeStartCallback)));
-    
+
     // 4. Then again a read request is made to the new loader.
     EXPECT_CALL(*new_loader, Read(position, size, NotNull(), NotNull()))
         .WillOnce(DoAll(Assign(&error_, size),
@@ -606,7 +664,7 @@ class BufferedDataSourceTest : public testing::Test {
                                           &MessageLoop::Quit)));
 
     EXPECT_CALL(*this, ReadCallback(size));
-    
+
     data_source_->Read(
         position, size, buffer_,
         NewCallback(this, &BufferedDataSourceTest::ReadCallback));
@@ -617,7 +675,7 @@ class BufferedDataSourceTest : public testing::Test {
 
     // Make sure data is correct.
     EXPECT_EQ(0, memcmp(buffer_, data_ + static_cast<int>(position), size));
-    
+
     EXPECT_TRUE(loader_.get() == NULL);
     loader_.reset(new_loader);
   }
@@ -627,6 +685,7 @@ class BufferedDataSourceTest : public testing::Test {
   scoped_ptr<StrictMock<MockMediaResourceLoaderBridgeFactory> >
       bridge_factory_;
   scoped_ptr<StrictMock<MockBufferedResourceLoader> > loader_;
+  scoped_ptr<StrictMock<MockBufferedResourceLoader> > probe_loader_;
   scoped_refptr<MockBufferedDataSource > data_source_;
   scoped_refptr<media::FilterFactory> factory_;
 
@@ -643,17 +702,36 @@ class BufferedDataSourceTest : public testing::Test {
 };
 
 TEST_F(BufferedDataSourceTest, InitializationSuccess) {
-  InitializeDataSource(kHttpUrl, net::OK, 1024);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, InitiailizationFailed) {
-  InitializeDataSource(kHttpUrl, net::ERR_FILE_NOT_FOUND, 0);
+  InitializeDataSource(kHttpUrl, net::ERR_FILE_NOT_FOUND,
+                       net::ERR_FILE_NOT_FOUND, 0);
+  StopDataSource();
+}
+
+TEST_F(BufferedDataSourceTest, MissingContentLength) {
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, -1);
+  StopDataSource();
+}
+
+TEST_F(BufferedDataSourceTest, RangeRequestNotSupported) {
+  InitializeDataSource(kHttpUrl, net::OK,
+                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, 1024);
+  StopDataSource();
+}
+
+TEST_F(BufferedDataSourceTest,
+       MissingContentLengthAndRangeRequestNotSupported) {
+  InitializeDataSource(kHttpUrl, net::OK,
+                       net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, -1);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, ReadCacheHit) {
-  InitializeDataSource(kHttpUrl, net::OK, 25);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 25);
 
   // Performs read with cache hit.
   ReadDataSourceHit(10, 10, 10);
@@ -665,14 +743,14 @@ TEST_F(BufferedDataSourceTest, ReadCacheHit) {
 }
 
 TEST_F(BufferedDataSourceTest, ReadCacheMiss) {
-  InitializeDataSource(kHttpUrl, net::OK, 1024);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024);
   ReadDataSourceMiss(1000, 10);
   ReadDataSourceMiss(20, 10);
   StopDataSource();
 }
 
 TEST_F(BufferedDataSourceTest, ReadFailed) {
-  InitializeDataSource(kHttpUrl, net::OK, 1024);
+  InitializeDataSource(kHttpUrl, net::OK, net::OK, 1024);
   ReadDataSourceHit(10, 10, 10);
   ReadDataSourceFailed(10, 10, net::ERR_CONNECTION_RESET);
   StopDataSource();

@@ -201,6 +201,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   virtual unsigned long long bytesLoaded() const;
   virtual unsigned long long totalBytes() const;
 
+  virtual bool hasSingleSecurityOrigin() const;
+  virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const;
+
   // As we are closing the tab or even the browser, |main_loop_| is destroyed
   // even before this object gets destructed, so we need to know when
   // |main_loop_| is being destroyed and we can stop posting repaint task

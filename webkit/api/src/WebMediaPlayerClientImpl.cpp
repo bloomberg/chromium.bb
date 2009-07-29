@@ -361,6 +361,34 @@ void WebMediaPlayerClientImpl::setAutobuffer(bool autoBuffer)
         m_webMediaPlayer->setAutoBuffer(autoBuffer);
 }
 
+bool WebMediaPlayerClientImpl::hasSingleSecurityOrigin() const
+{
+    if (m_webMediaPlayer.get())
+        return m_webMediaPlayer->hasSingleSecurityOrigin();
+    return false;
+}
+
+MediaPlayer::MovieLoadType WebMediaPlayerClientImpl::movieLoadType() const
+{
+    COMPILE_ASSERT(
+        int(WebMediaPlayer::Unknown) == int(MediaPlayer::Unknown),
+        Unknown);
+    COMPILE_ASSERT(
+        int(WebMediaPlayer::Download) == int(MediaPlayer::Download),
+        Download);
+    COMPILE_ASSERT(
+        int(WebMediaPlayer::StoredStream) == int(MediaPlayer::StoredStream),
+        StoredStream);
+    COMPILE_ASSERT(
+        int(WebMediaPlayer::LiveStream) == int(MediaPlayer::LiveStream),
+        LiveStream);
+
+    if (m_webMediaPlayer.get())
+        return static_cast<MediaPlayer::MovieLoadType>(
+            m_webMediaPlayer->movieLoadType());
+    return MediaPlayer::Unknown;
+}
+
 MediaPlayerPrivateInterface* WebMediaPlayerClientImpl::create(MediaPlayer* player)
 {
     WebMediaPlayerClientImpl* client = new WebMediaPlayerClientImpl();

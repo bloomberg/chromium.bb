@@ -45,7 +45,18 @@ class BufferedResourceLoader : public webkit_glue::ResourceLoaderBridge::Peer {
 
   // Start the resource loading with the specified URL and range.
   // This method operates in asynchronous mode. Once there's a response from the
-  // server, success or fail |start_callback| is called with the result.
+  // server, success or fail |callback| is called with the result.
+  // |callback| is called with the following values:
+  // - net::OK
+  //   The request has started successfully.
+  // - net::ERR_REQUEST_RANGE_NOT_SATISFIABLE
+  //   A range request was made to the server but the server doesn't support it.
+  // - net::ERR_FAILED
+  //   The request has failed because of an error with the network.
+  // - net::ERR_INVALID_RESPONSE
+  //   An invalid response is received from the server.
+  // - (Anything else)
+  //   An error code that indicates the request has failed.
   virtual void Start(net::CompletionCallback* callback);
 
   // Stop this loader, cancels and request and release internal buffer.
@@ -54,12 +65,23 @@ class BufferedResourceLoader : public webkit_glue::ResourceLoaderBridge::Peer {
   // Reads the specified |read_size| from |position| into |buffer| and when
   // the operation is done invoke |callback| with number of bytes read or an
   // error code.
+  // |callback| is called with the following values:
+  // - (Anything greater than or equal 0)
+  //   Read was successful with the indicated number of bytes read.
+  // - net::ERR_FAILED
+  //   The read has failed because of an error with the network.
+  // - net::ERR_CACHE_MISS
+  //   The read was made too far away from the current buffered position.
   virtual void Read(int64 position, int read_size,
                     uint8* buffer, net::CompletionCallback* callback);
 
   // Gets the content length in bytes of the instance after this loader has been
-  // started.
+  // started. If this value is -1, then content length is unknown.
   virtual int64 content_length() { return content_length_; }
+
+  // Gets the original size of the file requested. If this value is -1, then
+  // the size is unknown.
+  virtual int64 instance_size() { return instance_size_; }
 
   /////////////////////////////////////////////////////////////////////////////
   // webkit_glue::ResourceLoaderBridge::Peer implementations.
@@ -92,12 +114,12 @@ class BufferedResourceLoader : public webkit_glue::ResourceLoaderBridge::Peer {
   // Returns true if the current read request will be fulfilled in the future.
   bool WillFulfillRead();
 
-  // Checks parameters and make sure they are valid.
-  bool VerifyRead();
-
   // Method that does the actual read and calls the |read_callbac_|, assuming
   // the request range is in |buffer_|.
   void ReadInternal();
+
+  // If we have made a range request, verify the response from the server.
+  bool VerifyPartialResponse(const ResourceLoaderBridge::ResponseInfo& info);
 
   // Done with read. Invokes the read callback and reset parameters for the
   // read request.
@@ -125,6 +147,7 @@ class BufferedResourceLoader : public webkit_glue::ResourceLoaderBridge::Peer {
   scoped_ptr<webkit_glue::ResourceLoaderBridge> bridge_;
   int64 offset_;
   int64 content_length_;
+  int64 instance_size_;
 
   // Members used during a read operation. They should be reset after each
   // read has completed or failed.
@@ -166,7 +189,7 @@ class BufferedDataSource : public media::DataSource {
                     uint8* data,
                     media::DataSource::ReadCallback* read_callback);
   virtual bool GetSize(int64* size_out);
-  virtual bool IsSeekable();
+  virtual bool IsStreaming();
 
   const media::MediaFormat& media_format() {
     return media_format_;
@@ -226,9 +249,13 @@ class BufferedDataSource : public media::DataSource {
   // Calls |initialize_callback_| and reset it.
   void DoneInitialization();
 
-  // Callback method to perform BufferedResourceLoader::Start() during
-  // initialization.
-  void InitializeStartCallback(int error);
+  // Callback method for |loader_|. This method is called when response for
+  // initial request is received.
+  void InitialStartCallback(int error);
+
+  // Callback method for |probe_loader_|. This method is called when the
+  // response for probe request is received.
+  void ProbeStartCallback(int error);
 
   // Callback method to be passed to BufferedResourceLoader during range
   // request. Once a resource request has started, this method will be called
@@ -252,11 +279,21 @@ class BufferedDataSource : public media::DataSource {
   // need to protect it.
   int64 total_bytes_;
 
+  // This value will be true if this data source can only support streaming.
+  // i.e. range request is not supported.
+  bool streaming_;
+
   // A factory object to produce ResourceLoaderBridge.
   scoped_ptr<webkit_glue::MediaResourceLoaderBridgeFactory> bridge_factory_;
 
-  // A downloader object for loading the media resource.
+  // A resource loader for the media resource.
   scoped_ptr<BufferedResourceLoader> loader_;
+
+  // A resource loader that probes the server's ability to serve range requests.
+  scoped_ptr<BufferedResourceLoader> probe_loader_;
+
+  // Callback method from the pipeline for initialization.
+  scoped_ptr<media::FilterCallback> initialize_callback_;
 
   // Read parameters received from the Read() method call.
   scoped_ptr<media::DataSource::ReadCallback> read_callback_;
@@ -265,6 +302,12 @@ class BufferedDataSource : public media::DataSource {
   uint8* read_buffer_;
   base::Time read_submitted_time_;
   int read_attempts_;
+
+  // This flag is set to true if the initial request has started.
+  bool initial_response_received_;
+
+  // This flag is set to true if the probe request has started.
+  bool probe_response_received_;
 
   // This buffer is intermediate, we use it for BufferedResourceLoader to write
   // to. And when read in BufferedResourceLoader is done, we copy data from
@@ -281,9 +324,6 @@ class BufferedDataSource : public media::DataSource {
 
   // The message loop of the render thread.
   MessageLoop* render_loop_;
-
-  // Filter callbacks.
-  scoped_ptr<media::FilterCallback> initialize_callback_;
 
   // Protects |stopped_|.
   Lock lock_;

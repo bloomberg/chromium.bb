@@ -101,8 +101,8 @@ bool SimpleDataSource::GetSize(int64* size_out) {
   return true;
 }
 
-bool SimpleDataSource::IsSeekable() {
-  return true;
+bool SimpleDataSource::IsStreaming() {
+  return false;
 }
 
 void SimpleDataSource::OnDownloadProgress(uint64 position, uint64 size) {}

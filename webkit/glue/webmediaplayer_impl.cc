@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "googleurl/src/gurl.h"
+#include "media/base/media_format.h"
 #include "media/filters/ffmpeg_audio_decoder.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -264,9 +265,7 @@ bool WebMediaPlayerImpl::totalBytesKnown() {
 bool WebMediaPlayerImpl::hasVideo() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  size_t width, height;
-  pipeline_->GetVideoSize(&width, &height);
-  return width != 0 && height != 0;
+  return pipeline_->IsRendered(media::mime_type::kMajorTypeVideo);
 }
 
 WebKit::WebSize WebMediaPlayerImpl::naturalSize() const {
@@ -317,14 +316,13 @@ float WebMediaPlayerImpl::maxTimeBuffered() const {
 float WebMediaPlayerImpl::maxTimeSeekable() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  // TODO(scherkus): move this logic down into the pipeline.
-  if (pipeline_->GetTotalBytes() == 0) {
+  // If we are performing streaming, we report that we cannot seek at all.
+  // We are using this flag to indicate if the data source supports seeking
+  // or not. We should be able to seek even if we are performing streaming.
+  // TODO(hclam): We need to update this when we have better caching.
+  if (pipeline_->IsStreaming())
     return 0.0f;
-  }
-  double total_bytes = static_cast<double>(pipeline_->GetTotalBytes());
-  double buffered_bytes = static_cast<double>(pipeline_->GetBufferedBytes());
-  double duration = static_cast<double>(pipeline_->GetDuration().InSecondsF());
-  return static_cast<float>(duration * (buffered_bytes / total_bytes));
+  return static_cast<float>(pipeline_->GetDuration().InSecondsF());
 }
 
 unsigned long long WebMediaPlayerImpl::bytesLoaded() const {
@@ -352,6 +350,23 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
   DCHECK(proxy_);
 
   proxy_->Paint(canvas, rect);
+}
+
+bool WebMediaPlayerImpl::hasSingleSecurityOrigin() const {
+  // TODO(hclam): Implement this.
+  return false;
+}
+
+WebKit::WebMediaPlayer::MovieLoadType
+    WebMediaPlayerImpl::movieLoadType() const {
+  DCHECK(MessageLoop::current() == main_loop_);
+
+  // TODO(hclam): If the pipeline is performing streaming, we say that this is
+  // a live stream. But instead it should be a StoredStream if we have proper
+  // caching.
+  if (pipeline_->IsStreaming())
+    return WebKit::WebMediaPlayer::LiveStream;
+  return WebKit::WebMediaPlayer::Unknown;
 }
 
 void WebMediaPlayerImpl::WillDestroyCurrentMessageLoop() {

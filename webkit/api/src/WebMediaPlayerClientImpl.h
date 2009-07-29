@@ -90,6 +90,8 @@ namespace WebKit {
         virtual unsigned bytesLoaded() const;
         virtual void setSize(const WebCore::IntSize&);
         virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&);
+        virtual bool hasSingleSecurityOrigin() const;
+        virtual WebCore::MediaPlayer::MovieLoadType movieLoadType() const;
 
     private:
         WebMediaPlayerClientImpl();

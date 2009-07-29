@@ -174,8 +174,9 @@ class DataSource : public MediaFilter {
   // retrieved.
   virtual bool GetSize(int64* size_out) = 0;
 
-  // Returns true if this data source supports random seeking.
-  virtual bool IsSeekable() = 0;
+  // Returns true if we are performing streaming. In this case seeking is
+  // not possible.
+  virtual bool IsStreaming() = 0;
 };
 
 

@@ -32,11 +32,6 @@ const size_t kBackwardCapcity = 2 * kMegabyte;
 // Forward capacity of the buffer, by default 10MB.
 const size_t kForwardCapacity = 10 * kMegabyte;
 
-// The maximum offset to seek to, this value limits the range of seek to
-// prevent corruption of calculations. The buffer has a maximum size of 12MB
-// so this is enough to contain every valid operations.
-const int kMaxSeek = 100 * kMegabyte;
-
 // The threshold of bytes that we should wait until the data arrives in the
 // future instead of restarting a new connection. This number is defined in the
 // number of bytes, we should determine this value from typical connection speed
@@ -63,6 +58,7 @@ const int kReadTrials = 3;
 const int kInitialReadBufferSize = 32768;
 
 // A helper method that accepts only HTTP, HTTPS and FILE protocol.
+// TODO(hclam): Support also FTP protocol.
 bool IsSchemeSupported(const GURL& url) {
   return url.SchemeIs(kHttpScheme) ||
          url.SchemeIs(kHttpsScheme) ||
@@ -92,6 +88,7 @@ BufferedResourceLoader::BufferedResourceLoader(
       bridge_(NULL),
       offset_(0),
       content_length_(kPositionNotSpecified),
+      instance_size_(kPositionNotSpecified),
       read_callback_(NULL),
       read_position_(0),
       read_size_(0),
@@ -159,29 +156,39 @@ void BufferedResourceLoader::Read(int64 position,
   read_size_ = read_size;
   read_buffer_ = buffer;
 
-  // Check that the read parameters are within the range that we can handle.
-  // If the read request is made too far from the current offset, report that
-  // we cannot serve the request.
-  if (VerifyRead()) {
-    // If we can serve the request now, do the actual read.
-    if (CanFulfillRead()) {
-      ReadInternal();
-      DisableDeferIfNeeded();
-      return;
-    }
+  // If read position is beyond the instance size, we cannot read there.
+  if (instance_size_ != kPositionNotSpecified &&
+      instance_size_ <= read_position_) {
+    DoneRead(0);
+    return;
+  }
 
-    // If we expected the read request to be fulfilled later, returns
-    // immediately and let more data to flow in.
-    if (WillFulfillRead())
-      return;
-
-    // Make a callback to report failure.
+  // Make sure |offset_| and |read_position_| does not differ by a large
+  // amount.
+  if (read_position_ > offset_ + kint32max ||
+      read_position_ < offset_ + kint32min) {
     DoneRead(net::ERR_CACHE_MISS);
     return;
   }
 
-  // TODO(hclam): We should report a better error code than just 0.
-  DoneRead(0);
+  // Prepare the parameters.
+  first_offset_ = static_cast<int>(read_position_ - offset_);
+  last_offset_ = first_offset_ + read_size_;
+
+  // If we can serve the request now, do the actual read.
+  if (CanFulfillRead()) {
+    ReadInternal();
+    DisableDeferIfNeeded();
+    return;
+  }
+
+  // If we expected the read request to be fulfilled later, returns
+  // immediately and let more data to flow in.
+  if (WillFulfillRead())
+    return;
+
+  // Make a callback to report failure.
+  DoneRead(net::ERR_CACHE_MISS);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -220,15 +227,10 @@ void BufferedResourceLoader::OnReceivedResponse(
       // if not report failure.
       error = net::ERR_INVALID_RESPONSE;
     } else if (range_requested_) {
-      if (info.headers->response_code() != kHttpPartialContent ||
-          !info.headers->GetContentRange(&first_byte_position,
-                                         &last_byte_position,
-                                          &instance_size)) {
-        // We requested a range, but server didn't reply with partial content or
-        // the "Content-Range" header is corrupted.
-        // TODO(hclam): should also make sure this is the range we requested.
-        error = net::ERR_INVALID_RESPONSE;
-      }
+      // If we have verified the partial response and it is correct, we will
+      // return net::OK.
+      if (!VerifyPartialResponse(info))
+        error = net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
     } else if (info.headers->response_code() != kHttpOK) {
       // We didn't request a range but server didn't reply with "200 OK".
       error = net::ERR_FAILED;
@@ -244,6 +246,11 @@ void BufferedResourceLoader::OnReceivedResponse(
   // |info.content_length| can be -1, in that case |content_length_| is
   // not specified and this is a streaming response.
   content_length_ = info.content_length;
+
+  // If we have not requested a range, then the size of the instance is equal
+  // to the content length.
+  if (!range_requested_)
+    instance_size_ = content_length_;
 
   // We only care about the first byte position if it's given by the server.
   // TODO(hclam): If server replies with a different offset, consider failing
@@ -370,21 +377,6 @@ bool BufferedResourceLoader::WillFulfillRead() {
   return true;
 }
 
-bool BufferedResourceLoader::VerifyRead() {
-  // Make sure |offset_| and |read_position_| does not differ by a large
-  // amount
-  if (read_position_ > offset_ + kMaxSeek)
-    return false;
-  else if (read_position_ < offset_ - kMaxSeek)
-    return false;
-
-  // If we can manage the read request with int32 math, then prepare the
-  // parameters.
-  first_offset_ = static_cast<int>(read_position_ - offset_);
-  last_offset_ = first_offset_ + read_size_;
-  return true;
-}
-
 void BufferedResourceLoader::ReadInternal() {
   // Seek to the first byte requested.
   bool ret = buffer_->Seek(first_offset_);
@@ -413,22 +405,50 @@ void BufferedResourceLoader::DoneStart(int error) {
   start_callback_.reset();
 }
 
+bool BufferedResourceLoader::VerifyPartialResponse(
+    const ResourceLoaderBridge::ResponseInfo& info) {
+  if (info.headers->response_code() != kHttpPartialContent)
+    return false;
+
+  int64 first_byte_position, last_byte_position, instance_size;
+  if (!info.headers->GetContentRange(&first_byte_position,
+                                     &last_byte_position,
+                                     &instance_size)) {
+    return false;
+  }
+
+  if (instance_size != kPositionNotSpecified)
+    instance_size_ = instance_size;
+
+  if (first_byte_position_ != -1 &&
+      first_byte_position_ != first_byte_position) {
+    return false;
+  }
+
+  // TODO(hclam): I should also check |last_byte_position|, but since
+  // we will never make such a request that it is ok to leave it unimplemented.
+  return true;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // BufferedDataSource, protected
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
     webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory)
     : total_bytes_(kPositionNotSpecified),
+      streaming_(false),
       bridge_factory_(bridge_factory),
       loader_(NULL),
+      initialize_callback_(NULL),
       read_callback_(NULL),
       read_position_(0),
       read_size_(0),
       read_buffer_(NULL),
+      initial_response_received_(false),
+      probe_response_received_(false),
       intermediate_read_buffer_(new uint8[kInitialReadBufferSize]),
       intermediate_read_buffer_size_(kInitialReadBufferSize),
       render_loop_(render_loop),
-      initialize_callback_(NULL),
       stopped_(false) {
 }
 
@@ -507,8 +527,8 @@ bool BufferedDataSource::GetSize(int64* size_out) {
   return false;
 }
 
-bool BufferedDataSource::IsSeekable() {
-  return total_bytes_ != kPositionNotSpecified;
+bool BufferedDataSource::IsStreaming() {
+  return streaming_;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -516,6 +536,7 @@ bool BufferedDataSource::IsSeekable() {
 void BufferedDataSource::InitializeTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!loader_.get());
+  DCHECK(!probe_loader_.get());
 
   // Kick starts the watch dog task that will handle connection timeout.
   // We run the watch dog 2 times faster the actual timeout so as to catch
@@ -525,12 +546,18 @@ void BufferedDataSource::InitializeTask() {
       this,
       &BufferedDataSource::WatchDogTask);
 
-  // Creates a new resource loader with the full range.
+  // Creates a new resource loader with the full range and a probe resource
+  // loader. Creates a probe resource loader to make sure the server supports
+  // partial range request.
+  // TODO(hclam): Only request 1 byte for this probe request, it may be useful
+  // that we perform a suffix range request and fetch the index. That way we
+  // can minimize the number of requests made.
   loader_.reset(CreateLoader(-1, -1));
+  probe_loader_.reset(CreateLoader(1, 1));
 
-  // And then start the resource request.
-  loader_->Start(NewCallback(this,
-                             &BufferedDataSource::InitializeStartCallback));
+  loader_->Start(NewCallback(this, &BufferedDataSource::InitialStartCallback));
+  probe_loader_->Start(
+      NewCallback(this, &BufferedDataSource::ProbeStartCallback));
 }
 
 void BufferedDataSource::ReadTask(
@@ -559,10 +586,12 @@ void BufferedDataSource::StopTask() {
   watch_dog_timer_.Stop();
 
   // We just need to stop the loader, so it stops activity.
-  if (loader_.get()) {
+  if (loader_.get())
     loader_->Stop();
-    loader_.reset();
-  }
+
+  // If the probe request is still active, stop it too.
+  if (probe_loader_.get())
+    probe_loader_->Stop();
 
   // Reset the parameters of the current read request.
   read_callback_.reset();
@@ -593,7 +622,7 @@ void BufferedDataSource::WatchDogTask() {
   base::TimeDelta delta = base::Time::Now() - read_submitted_time_;
   if (delta < GetTimeoutMilliseconds())
     return;
-  
+
   // TODO(hclam): Maybe raise an error here. But if an error is reported
   // the whole pipeline may get destroyed...
   if (read_attempts_ >= kReadTrials)
@@ -621,8 +650,7 @@ void BufferedDataSource::ReadInternal() {
   }
 
   // Perform the actual read with BufferedResourceLoader.
-  loader_->Read(read_position_, read_size_,
-                intermediate_read_buffer_.get(),
+  loader_->Read(read_position_, read_size_, intermediate_read_buffer_.get(),
                 NewCallback(this, &BufferedDataSource::ReadCallback));
 }
 
@@ -657,7 +685,7 @@ void BufferedDataSource::DoneInitialization() {
 // BufferedDataSource, callback methods.
 // These methods are called on the render thread for the events reported by
 // BufferedResourceLoader.
-void BufferedDataSource::InitializeStartCallback(int error) {
+void BufferedDataSource::InitialStartCallback(int error) {
   DCHECK(MessageLoop::current() == render_loop_);
 
   // We need to prevent calling to filter host and running the callback if
@@ -672,28 +700,60 @@ void BufferedDataSource::InitializeStartCallback(int error) {
   if (stopped_)
     return;
 
-  DCHECK(loader_.get());
-
-  if (error == net::OK) {
-    total_bytes_ = loader_->content_length();
-    // TODO(hclam): Figure out what to do when total bytes is not known.
-    if (total_bytes_ >= 0) {
-      host()->SetTotalBytes(total_bytes_);
-
-      // This value governs the range that we can seek to.
-      // TODO(hclam): Report the correct value of buffered bytes.
-      host()->SetBufferedBytes(total_bytes_);
-    }
-  } else {
+  if (error != net::OK) {
     // TODO(hclam): In case of failure, we can retry several times.
-    // Also it might be bad to access host() here.
     host()->SetError(media::PIPELINE_ERROR_NETWORK);
-
-    // Stops the loader, just to be safe.
+    DCHECK(loader_.get());
+    DCHECK(probe_loader_.get());
     loader_->Stop();
+    probe_loader_->Stop();
+    DoneInitialization();
+    return;
   }
 
-  DoneInitialization();
+  total_bytes_ = loader_->instance_size();
+  if (total_bytes_ >= 0) {
+    // This value governs the range that we can seek to.
+    // TODO(hclam): Report the correct value of buffered bytes.
+    host()->SetTotalBytes(total_bytes_);
+    host()->SetBufferedBytes(total_bytes_);
+  } else {
+    // If the server didn't reply with a content length, it is likely this
+    // is a streaming response.
+    streaming_ = true;
+    host()->SetStreaming(true);
+  }
+
+  initial_response_received_ = true;
+  if (probe_response_received_)
+    DoneInitialization();
+}
+
+void BufferedDataSource::ProbeStartCallback(int error) {
+  DCHECK(MessageLoop::current() == render_loop_);
+
+  // We need to prevent calling to filter host and running the callback if
+  // we have received the stop signal. We need to lock down the whole callback
+  // method to prevent bad things from happening. The reason behind this is
+  // that we cannot guarantee tasks on render thread have completely stopped
+  // when we receive the Stop() method call. The only way to solve this is to
+  // let tasks on render thread to run but make sure they don't call outside
+  // this object when Stop() method is ever called. Locking this method is safe
+  // because |lock_| is only acquired in tasks on render thread.
+  AutoLock auto_lock(lock_);
+  if (stopped_)
+    return;
+
+  if (error != net::OK) {
+    streaming_ = true;
+    host()->SetStreaming(true);
+  }
+
+  DCHECK(probe_loader_.get());
+  probe_loader_->Stop();
+  probe_response_received_ = true;
+  if (initial_response_received_)
+    DoneInitialization();
 }
 
 void BufferedDataSource::PartialReadStartCallback(int error) {
@@ -705,6 +765,8 @@ void BufferedDataSource::PartialReadStartCallback(int error) {
     // reading from it.
     ReadInternal();
   } else {
+    loader_->Stop();
+
     // We need to prevent calling to filter host and running the callback if
     // we have received the stop signal. We need to lock down the whole callback
     // method to prevent bad things from happening. The reason behind this is
@@ -716,12 +778,7 @@ void BufferedDataSource::PartialReadStartCallback(int error) {
     AutoLock auto_lock(lock_);
     if (stopped_)
       return;
-
-    // TODO(hclam): It may be bad to access host() here.
-    host()->SetError(media::PIPELINE_ERROR_NETWORK);
-
-    // Kill the loader just to be safe.
-    loader_->Stop();
+    DoneRead(net::ERR_INVALID_RESPONSE);
   }
 }
 
@@ -747,19 +804,10 @@ void BufferedDataSource::ReadCallback(int error) {
     // If a position error code is received, read was successful. So copy
     // from intermediate read buffer to the target read buffer.
     memcpy(read_buffer_, intermediate_read_buffer_.get(), error);
-
     DoneRead(error);
   } else if (error == net::ERR_CACHE_MISS) {
     // If the current loader cannot serve this read request, we need to create
     // a new one.
-    // We have the following conditions:
-    // 1. Read is beyond the content length of the file (if known).
-    // 2. We have tried too many times (TODO here).
-    if (read_position_ >= total_bytes_) {
-      DoneRead(0);
-      return;
-    }
-
     // TODO(hclam): we need to count how many times it failed to prevent
     // excessive trials.
 
@@ -770,18 +818,11 @@ void BufferedDataSource::ReadCallback(int error) {
     // we cannot delete it. So we need to post a task to swap in a new
     // resource loader and starts it.
     render_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this,
-                          &BufferedDataSource::SwapLoaderTask,
+        NewRunnableMethod(this, &BufferedDataSource::SwapLoaderTask,
                           CreateLoader(read_position_, -1)));
   } else {
-    // The read has finished with error.
-    DoneRead(error);
-
-    // TODO(hclam): It may be bad to access host() here.
-    host()->SetError(media::PIPELINE_ERROR_NETWORK);
-
-    // Stops the laoder.
     loader_->Stop();
+    DoneRead(error);
   }
 }
 
