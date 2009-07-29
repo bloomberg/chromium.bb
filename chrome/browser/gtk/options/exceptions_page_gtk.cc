@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
+#include "chrome/common/gtk_tree_util.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -23,35 +24,6 @@ enum {
   COL_SITE,
   COL_COUNT,
 };
-
-// Get the row number corresponding to |path|.
-gint GetRowNumForPath(GtkTreePath* path) {
-  gint* indices = gtk_tree_path_get_indices(path);
-  if (!indices) {
-    NOTREACHED();
-    return -1;
-  }
-  return indices[0];
-}
-
-// Get the row number corresponding to |iter|.
-gint GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter) {
-  GtkTreePath* path = gtk_tree_model_get_path(model, iter);
-  int row = GetRowNumForPath(path);
-  gtk_tree_path_free(path);
-  return row;
-}
-
-// Get the row number in the child tree model corresponding to |sort_path| in
-// the parent tree model.
-gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
-                                   GtkTreePath* sort_path) {
-  GtkTreePath *child_path = gtk_tree_model_sort_convert_path_to_child_path(
-      GTK_TREE_MODEL_SORT(sort_model), sort_path);
-  int row = GetRowNumForPath(child_path);
-  gtk_tree_path_free(child_path);
-  return row;
-}
 
 }  // anonymous namespace
 
@@ -161,7 +133,8 @@ void ExceptionsPageGtk::OnRemoveButtonClicked(GtkButton* widget,
 
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(page->exception_list_sort_), &iter);
-  gint index = GetTreeSortChildRowNumForPath(page->exception_list_sort_, path);
+  gint index = GtkTreeUtil::GetTreeSortChildRowNumForPath(
+      page->exception_list_sort_, path);
   gtk_tree_path_free(path);
 
   GtkTreeIter child_iter;
@@ -205,8 +178,8 @@ void ExceptionsPageGtk::OnExceptionSelectionChanged(GtkTreeSelection* selection,
 gint ExceptionsPageGtk::CompareSite(GtkTreeModel* model,
                                    GtkTreeIter* a, GtkTreeIter* b,
                                    gpointer window) {
-  int row1 = GetRowNumForIter(model, a);
-  int row2 = GetRowNumForIter(model, b);
+  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
+  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
   ExceptionsPageGtk* page = reinterpret_cast<ExceptionsPageGtk*>(window);
   return page->exception_list_[row1].origin.spec().compare(
          page->exception_list_[row2].origin.spec());

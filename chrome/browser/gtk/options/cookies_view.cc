@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/time_format.h"
 #include "chrome/browser/cookies_table_model.h"
+#include "chrome/common/gtk_tree_util.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -39,37 +40,6 @@ enum {
 
 // The currently open cookie manager, if any.
 CookiesView* instance_ = NULL;
-
-// TODO(mattm): These functions are also in url_picker_dialog_gtk. Move them to
-// some sort of gtk table model helper?
-// Get the row number corresponding to |path|.
-gint GetRowNumForPath(GtkTreePath* path) {
-  gint* indices = gtk_tree_path_get_indices(path);
-  if (!indices) {
-    NOTREACHED();
-    return -1;
-  }
-  return indices[0];
-}
-
-// Get the row number corresponding to |iter|.
-gint GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter) {
-  GtkTreePath* path = gtk_tree_model_get_path(model, iter);
-  int row = GetRowNumForPath(path);
-  gtk_tree_path_free(path);
-  return row;
-}
-
-// Get the row number in the child tree model corresponding to |sort_path| in
-// the parent tree model.
-gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
-                                   GtkTreePath* sort_path) {
-  GtkTreePath *child_path = gtk_tree_model_sort_convert_path_to_child_path(
-      GTK_TREE_MODEL_SORT(sort_model), sort_path);
-  int row = GetRowNumForPath(child_path);
-  gtk_tree_path_free(child_path);
-  return row;
-}
 
 }  // namespace
 
@@ -314,7 +284,7 @@ void CookiesView::PopulateCookieDetails() {
     NOTREACHED();
     return;
   }
-  int selected_index = GetTreeSortChildRowNumForPath(
+  int selected_index = GtkTreeUtil::GetTreeSortChildRowNumForPath(
         list_sort_, static_cast<GtkTreePath*>(list->data));
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
   g_list_free(list);
@@ -366,7 +336,7 @@ void CookiesView::RemoveSelectedCookies() {
   GList* node;
   size_t i;
   for (i = 0, node = list; node != NULL; ++i, node = node->next) {
-    selected_rows[i] = GetTreeSortChildRowNumForPath(
+    selected_rows[i] = GtkTreeUtil::GetTreeSortChildRowNumForPath(
         list_sort_, static_cast<GtkTreePath*>(node->data));
   }
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
@@ -446,8 +416,8 @@ void CookiesView::OnItemsRemoved(int start, int length) {
 // static
 gint CookiesView::CompareSite(GtkTreeModel* model, GtkTreeIter* a,
                                      GtkTreeIter* b, gpointer window) {
-  int row1 = GetRowNumForIter(model, a);
-  int row2 = GetRowNumForIter(model, b);
+  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
+  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
   return reinterpret_cast<CookiesView*>(window)->cookies_table_model_->
       CompareValues(row1, row2, IDS_COOKIES_DOMAIN_COLUMN_HEADER);
 }
@@ -455,8 +425,8 @@ gint CookiesView::CompareSite(GtkTreeModel* model, GtkTreeIter* a,
 // static
 gint CookiesView::CompareCookieName(GtkTreeModel* model, GtkTreeIter* a,
                                            GtkTreeIter* b, gpointer window) {
-  int row1 = GetRowNumForIter(model, a);
-  int row2 = GetRowNumForIter(model, b);
+  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
+  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
   return reinterpret_cast<CookiesView*>(window)->cookies_table_model_->
       CompareValues(row1, row2, IDS_COOKIES_NAME_COLUMN_HEADER);
 }

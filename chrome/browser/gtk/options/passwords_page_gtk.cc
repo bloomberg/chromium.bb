@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
+#include "chrome/common/gtk_tree_util.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -27,35 +28,6 @@ enum {
   COL_USERNAME,
   COL_COUNT,
 };
-
-// Get the row number corresponding to |path|.
-gint GetRowNumForPath(GtkTreePath* path) {
-  gint* indices = gtk_tree_path_get_indices(path);
-  if (!indices) {
-    NOTREACHED();
-    return -1;
-  }
-  return indices[0];
-}
-
-// Get the row number corresponding to |iter|.
-gint GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter) {
-  GtkTreePath* path = gtk_tree_model_get_path(model, iter);
-  int row = GetRowNumForPath(path);
-  gtk_tree_path_free(path);
-  return row;
-}
-
-// Get the row number in the child tree model corresponding to |sort_path| in
-// the parent tree model.
-gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
-                                   GtkTreePath* sort_path) {
-  GtkTreePath *child_path = gtk_tree_model_sort_convert_path_to_child_path(
-      GTK_TREE_MODEL_SORT(sort_model), sort_path);
-  int row = GetRowNumForPath(child_path);
-  gtk_tree_path_free(child_path);
-  return row;
-}
 
 }  // anonymous namespace
 
@@ -206,7 +178,8 @@ void PasswordsPageGtk::OnRemoveButtonClicked(GtkButton* widget,
 
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(page->password_list_sort_), &iter);
-  gint index = GetTreeSortChildRowNumForPath(page->password_list_sort_, path);
+  gint index = GtkTreeUtil::GetTreeSortChildRowNumForPath(
+      page->password_list_sort_, path);
   gtk_tree_path_free(path);
 
   GtkTreeIter child_iter;
@@ -286,7 +259,8 @@ void PasswordsPageGtk::OnShowPasswordButtonClicked(GtkButton* widget,
   }
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(page->password_list_sort_), &iter);
-  gint index = GetTreeSortChildRowNumForPath(page->password_list_sort_, path);
+  gint index = GtkTreeUtil::GetTreeSortChildRowNumForPath(
+      page->password_list_sort_, path);
   gtk_tree_path_free(path);
   std::string pass = WideToUTF8(page->password_list_[index].password_value);
   gtk_label_set_text(GTK_LABEL(page->password_), pass.c_str());
@@ -317,8 +291,8 @@ void PasswordsPageGtk::OnPasswordSelectionChanged(GtkTreeSelection* selection,
 gint PasswordsPageGtk::CompareSite(GtkTreeModel* model,
                                    GtkTreeIter* a, GtkTreeIter* b,
                                    gpointer window) {
-  int row1 = GetRowNumForIter(model, a);
-  int row2 = GetRowNumForIter(model, b);
+  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
+  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
   PasswordsPageGtk* page = reinterpret_cast<PasswordsPageGtk*>(window);
   return page->password_list_[row1].origin.spec().compare(
          page->password_list_[row2].origin.spec());
@@ -328,8 +302,8 @@ gint PasswordsPageGtk::CompareSite(GtkTreeModel* model,
 gint PasswordsPageGtk::CompareUsername(GtkTreeModel* model,
                                        GtkTreeIter* a, GtkTreeIter* b,
                                        gpointer window) {
-  int row1 = GetRowNumForIter(model, a);
-  int row2 = GetRowNumForIter(model, b);
+  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
+  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
   PasswordsPageGtk* page = reinterpret_cast<PasswordsPageGtk*>(window);
   return page->password_list_[row1].username_value.compare(
          page->password_list_[row2].username_value);
