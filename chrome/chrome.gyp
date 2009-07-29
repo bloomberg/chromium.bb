@@ -20,6 +20,8 @@
       '../webkit/webkit.gyp:inspector_resources',
     ],
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
+    'mac_xib_localizer_tool_path': '<(DEPTH)/build/mac/generate_localizer',
+    'mac_xib_localizers_dir': '<(INTERMEDIATE_DIR)/xib_localizers',
     'browser_tests_sources': [
       'browser/browser_browsertest.cc',
       'browser/crash_recovery_browsertest.cc',
@@ -1997,12 +1999,12 @@
               'action_name': 'process_mainmenu_xib',
               'process_outputs_as_sources': 1,
               'inputs': [
-                '<(DEPTH)/build/mac/generate_localizer',
+                '<(mac_xib_localizer_tool_path)',
                 'app/nibs/MainMenu.xib'
               ],
               'outputs': [
-                '<(INTERMEDIATE_DIR)/xib_localizers/main_menu_localizer.h',
-                '<(INTERMEDIATE_DIR)/xib_localizers/main_menu_localizer.mm',
+                '<(mac_xib_localizers_dir)/main_menu_localizer.h',
+                '<(mac_xib_localizers_dir)/main_menu_localizer.mm',
               ],
               'action': ['<@(_inputs)', '<@(_outputs)'],
             },
@@ -3178,6 +3180,7 @@
                 'pak_inputs': [
                   '<(grit_out_dir)/generated_resources_da.pak',
                   '<(grit_out_dir)/locale_settings_da.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_da.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak',
                 ],
                 'conditions': [
@@ -3217,6 +3220,7 @@
                 'pak_inputs': [
                   '<(grit_out_dir)/generated_resources_en-US.pak',
                   '<(grit_out_dir)/locale_settings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_en-US.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
                 ],
                 'conditions': [
@@ -3257,6 +3261,7 @@
                 'pak_inputs': [
                   '<(grit_out_dir)/generated_resources_he.pak',
                   '<(grit_out_dir)/locale_settings_he.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_he.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_he.pak',
                 ],
                 'conditions': [
@@ -3296,6 +3301,7 @@
                 'pak_inputs': [
                   '<(grit_out_dir)/generated_resources_zh-TW.pak',
                   '<(grit_out_dir)/locale_settings_zh-TW.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_zh-TW.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_zh-TW.pak',
                 ],
                 'conditions': [

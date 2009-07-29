@@ -48,6 +48,7 @@ localizer_template_mm = \
 
 #import "%(header_name)s"
 
+#include "grit/app_strings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
