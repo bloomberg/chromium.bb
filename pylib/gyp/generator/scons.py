@@ -558,7 +558,7 @@ if conf_list:
     # In case the same --mode= value was specified multiple times.
     conf_list = list(set(conf_list))
 else:
-    conf_list = ['Debug']
+    conf_list = ['Default']
 
 sconsbuild_dir = Dir(%(sconsbuild_dir)s)
 
