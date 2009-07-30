@@ -890,6 +890,11 @@ void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext context,
   const int height = plugin_rect_.height();
 
   gfx::Canvas canvas(width, height, false);
+#if defined(OS_MACOSX)
+  // Flip the canvas, since the context expects flipped data.
+  canvas.translate(0, height);
+  canvas.scale(1, -1);
+#endif
   SkPaint paint;
 
   paint.setStyle(SkPaint::kFill_Style);
