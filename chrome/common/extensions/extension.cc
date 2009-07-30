@@ -63,7 +63,8 @@ static const wchar_t* kValidThemeKeys[] = {
   keys::kPublicKey,
   keys::kSignature,
   keys::kTheme,
-  keys::kVersion
+  keys::kVersion,
+  keys::kUpdateURL
 };
 
 #if defined(OS_WIN)
