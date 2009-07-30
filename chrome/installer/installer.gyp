@@ -490,6 +490,19 @@
           'variables': {
             'version' : '<!(echo -n "@MAJOR@.@MINOR@.@BUILD@.@PATCH@" | <(version_py) -f ../../chrome/VERSION /dev/stdin)',
             'revision' : '<!(python ../../build/util/lastchange.py | cut -d "=" -f 2)',
+            'input_files': [
+              # TODO(mmoss) Any convenient way to get all the relevant build
+              # files? (e.g. all locales, resources, etc.)
+              '<(PRODUCT_DIR)/chrome',
+              '<(PRODUCT_DIR)/chrome.pak',
+              '<(PRODUCT_DIR)/chrome_sandbox',
+              '<(PRODUCT_DIR)/libavcodec.so.52',
+              '<(PRODUCT_DIR)/libavformat.so.52',
+              '<(PRODUCT_DIR)/libavutil.so.50',
+              '<(PRODUCT_DIR)/xdg-settings',
+              '<(PRODUCT_DIR)/locales/en-US.pak',
+              '<(PRODUCT_DIR)/themes/default.pak',
+            ],
           },
           'actions': [
             {
@@ -497,7 +510,7 @@
               'process_outputs_as_sources': 1,
               'inputs': [
                 '<(PRODUCT_DIR)/installer/debian/build.sh',
-                # TODO Add all the build archive files. Share this with stage_build.py somehow?
+                '<@(input_files)',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_i386.deb',
@@ -505,7 +518,8 @@
                 # TODO(mmoss) Add other outputs once we start building other channels.
               ],
               'action': [
-                'bash', '<(_inputs)', '-o' '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)', '-c', 'dev',
+                'bash', '<(PRODUCT_DIR)/installer/debian/build.sh', '-o'
+                '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)', '-c', 'dev',
               ],
             },
             {
@@ -513,14 +527,15 @@
               'process_outputs_as_sources': 1,
               'inputs': [
                 '<(PRODUCT_DIR)/installer/rpm/build.sh',
-                # TODO Add all the build archive files. Share this with stage_build.py somehow?
+                '<@(input_files)',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/google-chrome-unstable-<(version)-<(revision).i386.rpm',
                 # TODO(mmoss) Add other outputs once we start building other channels.
               ],
               'action': [
-                'bash', '<(_inputs)', '-o' '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)', '-c', 'dev',
+                'bash', '<(PRODUCT_DIR)/installer/rpm/build.sh', '-o'
+                '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)', '-c', 'dev',
               ],
             },
           ],
