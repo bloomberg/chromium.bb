@@ -418,6 +418,8 @@ void TestShell::ResetWebPreferences() {
         // It's off by default for Chrome, but we don't want to
         // lose the coverage of dynamic font tests in webkit test.
         web_prefs_->remote_fonts_enabled = true;
+        web_prefs_->local_storage_enabled = true;
+        web_prefs_->session_storage_enabled = true;
     }
 }
 
