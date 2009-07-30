@@ -131,6 +131,19 @@ class SourceFileInfoList : public std::list<SourceFileInfo *> {
 struct SymbolInfo {
   SourceFileInfoList source_file_info;
 
+  // An array of some addresses at which a file boundary occurs.
+  //
+  // The STABS information describing a compilation unit gives the
+  // unit's start address, but not its ending address or size.  Those
+  // must be inferred by finding the start address of the next file.
+  // For the last compilation unit, or when one compilation unit ends
+  // before the next one starts, STABS includes an N_SO entry whose
+  // filename is the empty string; such an entry's address serves
+  // simply to mark the end of the preceding compilation unit.  Rather
+  // than create FuncInfoList for such entries, we record their
+  // addresses here.  These are not necessarily sorted.
+  std::vector<ElfW(Addr)> file_boundaries;
+
   // The next source id for newly found source file.
   int next_source_id;
 };
@@ -390,11 +403,12 @@ static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
   FuncInfoList::iterator func_it;
   LineInfoList::iterator line_it;
 
-  // A table of all the addresses at which files and functions start.
-  // We build this from our lists, sort it, and then use it to find
-  // the ends of functions and source lines for which we have no size
+  // A table of all the addresses at which files and functions start
+  // or end.  We build this from the file boundary list and our lists
+  // of files and functions, sort it, and then use it to find the ends
+  // of functions and source lines for which we have no size
   // information.
-  std::vector<ElfW(Addr)> boundaries;
+  std::vector<ElfW(Addr)> boundaries = symbols->file_boundaries;
   for (file_it = symbols->source_file_info.begin();
        file_it != symbols->source_file_info.end(); file_it++) {
     boundaries.push_back((*file_it)->addr);
@@ -497,19 +511,23 @@ static bool LoadSymbols(const ElfW(Shdr) *stab_section,
     int step = 1;
     struct nlist *cur_list = lists + i;
     if (cur_list->n_type == N_SO) {
-      // FUNC <address> <length> <param_stack_size> <function>
-      struct SourceFileInfo *source_file_info = new SourceFileInfo;
-      source_file_info->name_index = cur_list->n_un.n_strx;
-      source_file_info->name = reinterpret_cast<char *>(cur_list->n_un.n_strx +
-                                                   stabstr_section->sh_offset);
-      source_file_info->addr = cur_list->n_value;
-      if (strchr(source_file_info->name, '.'))
-        source_file_info->source_id = symbols->next_source_id++;
-      else
-        source_file_info->source_id = -1;
-      step = LoadFuncSymbols(cur_list, lists + nstab,
-                             stabstr_section, source_file_info);
-      symbols->source_file_info.push_back(source_file_info);
+      if (cur_list->n_un.n_strx) {
+        struct SourceFileInfo *source_file_info = new SourceFileInfo;
+        source_file_info->name_index = cur_list->n_un.n_strx;
+        source_file_info->name = reinterpret_cast<char *>(cur_list->n_un.n_strx
+                                                 + stabstr_section->sh_offset);
+        source_file_info->addr = cur_list->n_value;
+        if (strchr(source_file_info->name, '.'))
+          source_file_info->source_id = symbols->next_source_id++;
+        else
+          source_file_info->source_id = -1;
+        step = LoadFuncSymbols(cur_list, lists + nstab,
+                               stabstr_section, source_file_info);
+        symbols->source_file_info.push_back(source_file_info);
+      } else {
+        // N_SO entries with no name mark file boundary addresses.
+        symbols->file_boundaries.push_back(cur_list->n_value);
+      }
     }
     i += step;
   }
