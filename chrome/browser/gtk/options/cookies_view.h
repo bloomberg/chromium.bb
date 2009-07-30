@@ -11,8 +11,10 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class CookiesTableModel;
+class CookiesViewTest;
 class Profile;
 
 class CookiesView : public TableModelObserver {
@@ -23,10 +25,21 @@ class CookiesView : public TableModelObserver {
   static void Show(Profile* profile);
 
  private:
+  // Column ids for |list_store_|.
+  enum {
+    COL_ICON,
+    COL_SITE,
+    COL_COOKIE_NAME,
+    COL_COUNT,
+  };
+
   explicit CookiesView(Profile* profile);
 
   // Initialize the dialog contents and layout.
   void Init();
+
+  // Initialize the widget styles and display the dialog.
+  void InitStylesAndShow();
 
   // Helper for initializing cookie details table.
   void InitCookieDetailRow(int row, int label_id, GtkWidget** display_label);
@@ -87,6 +100,7 @@ class CookiesView : public TableModelObserver {
 
   // Widgets of the dialog.
   GtkWidget* dialog_;
+  GtkWidget* description_label_;
   GtkWidget* filter_entry_;
   GtkWidget* filter_clear_button_;
   GtkWidget* remove_button_;
@@ -99,8 +113,6 @@ class CookiesView : public TableModelObserver {
   GtkTreeSelection* selection_;
 
   // The cookie details widgets.
-  GtkStyle* label_style_;
-  GtkStyle* dialog_style_;
   GtkWidget* cookie_details_table_;
   GtkWidget* cookie_name_entry_;
   GtkWidget* cookie_content_entry_;
@@ -119,6 +131,17 @@ class CookiesView : public TableModelObserver {
   // A factory to construct Runnable Methods so that we can be called back to
   // re-evaluate the model after the search query string changes.
   ScopedRunnableMethodFactory<CookiesView> filter_update_factory_;
+
+  friend class CookiesViewTest;
+  FRIEND_TEST(CookiesViewTest, TestEmpty);
+  FRIEND_TEST(CookiesViewTest, TestRemoveAll);
+  FRIEND_TEST(CookiesViewTest, TestRemove);
+  FRIEND_TEST(CookiesViewTest, TestFilter);
+  FRIEND_TEST(CookiesViewTest, TestFilterRemoveAll);
+  FRIEND_TEST(CookiesViewTest, TestFilterRemove);
+  FRIEND_TEST(CookiesViewTest, TestSort);
+  FRIEND_TEST(CookiesViewTest, TestSortRemove);
+  FRIEND_TEST(CookiesViewTest, TestSortFilterRemove);
 
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
 };
