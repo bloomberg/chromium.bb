@@ -74,7 +74,7 @@ function displayBots() {
 function requestStatus() {
   requestURL(statusURL, updateStatus);
   requestURL(waterfallURL, updateBots);
-  setTimeout(requestStatus, 30000);
+  setTimeout(requestStatus, 90000);
 }
 
 function requestURL(url, callback) {
