@@ -11,10 +11,8 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class CookiesTableModel;
-class CookiesViewTest;
 class Profile;
 
 class CookiesView : public TableModelObserver {
@@ -25,14 +23,6 @@ class CookiesView : public TableModelObserver {
   static void Show(Profile* profile);
 
  private:
-  // Column ids for |list_store_|.
-  enum {
-    COL_ICON,
-    COL_SITE,
-    COL_COOKIE_NAME,
-    COL_COUNT,
-  };
-
   explicit CookiesView(Profile* profile);
 
   // Initialize the dialog contents and layout.
@@ -129,17 +119,6 @@ class CookiesView : public TableModelObserver {
   // A factory to construct Runnable Methods so that we can be called back to
   // re-evaluate the model after the search query string changes.
   ScopedRunnableMethodFactory<CookiesView> filter_update_factory_;
-
-  friend class CookiesViewTest;
-  FRIEND_TEST(CookiesViewTest, TestEmpty);
-  FRIEND_TEST(CookiesViewTest, TestRemoveAll);
-  FRIEND_TEST(CookiesViewTest, TestRemove);
-  FRIEND_TEST(CookiesViewTest, TestFilter);
-  FRIEND_TEST(CookiesViewTest, TestFilterRemoveAll);
-  FRIEND_TEST(CookiesViewTest, TestFilterRemove);
-  FRIEND_TEST(CookiesViewTest, TestSort);
-  FRIEND_TEST(CookiesViewTest, TestSortRemove);
-  FRIEND_TEST(CookiesViewTest, TestSortFilterRemove);
 
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
 };
