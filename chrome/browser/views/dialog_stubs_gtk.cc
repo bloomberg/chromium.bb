@@ -92,14 +92,6 @@ void EditSearchEngine(gfx::NativeWindow parent,
   NOTIMPLEMENTED();
 }
 
-void ShowPageInfo(gfx::NativeView parent,
-                  Profile* profile,
-                  const GURL& url,
-                  const NavigationEntry::SSLStatus& ssl,
-                  bool show_history) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace browser
 
 void ShowOptionsWindow(OptionsPage page,

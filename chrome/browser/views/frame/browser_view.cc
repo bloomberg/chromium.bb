@@ -30,6 +30,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/jumplist.h"
 #endif
+#include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_bar_view.h"

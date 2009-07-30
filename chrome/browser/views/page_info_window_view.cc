@@ -13,8 +13,10 @@
 #include "app/resource_bundle.h"
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
+#include "base/string_util.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/page_info_model.h"
+#include "chrome/browser/page_info_window.h"
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
@@ -109,10 +111,10 @@ class PageInfoWindowView : public views::View,
 // optional head-line (in bold) and a description.
 class Section : public views::View {
  public:
-  Section(const std::wstring& title,
+  Section(const string16& title,
           bool state,
-          const std::wstring& head_line,
-          const std::wstring& description);
+          const string16& head_line,
+          const string16& description);
   virtual ~Section();
 
   virtual int GetHeightForWidth(int w);
@@ -120,16 +122,16 @@ class Section : public views::View {
 
  private:
   // The text placed on top of the section (on the left of the separator bar).
-  std::wstring title_;
+  string16 title_;
 
   // Whether to show the good/bad icon.
   bool state_;
 
   // The first line of the description, show in bold.
-  std::wstring head_line_;
+  string16 head_line_;
 
   // The description, displayed below the head line.
-  std::wstring description_;
+  string16 description_;
 
   static SkBitmap* good_state_icon_;
   static SkBitmap* bad_state_icon_;
@@ -361,10 +363,10 @@ void PageInfoWindowView::ShowCertDialog(int cert_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // Section
 
-Section::Section(const std::wstring& title,
+Section::Section(const string16& title,
                  bool state,
-                 const std::wstring& head_line,
-                 const std::wstring& description)
+                 const string16& head_line,
+                 const string16& description)
     : title_(title),
       state_(state),
       head_line_(head_line),
@@ -374,7 +376,7 @@ Section::Section(const std::wstring& title,
     good_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_GOOD);
     bad_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_BAD);
   }
-  title_label_ = new views::Label(title);
+  title_label_ = new views::Label(UTF16ToWideHack(title));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(title_label_);
 
@@ -389,13 +391,13 @@ Section::Section(const std::wstring& title,
   status_image_->SetImage(state ? good_state_icon_ : bad_state_icon_);
   AddChildView(status_image_);
 
-  head_line_label_ = new views::Label(head_line);
+  head_line_label_ = new views::Label(UTF16ToWideHack(head_line));
   head_line_label_->SetFont(
       head_line_label_->GetFont().DeriveFont(0, gfx::Font::BOLD));
   head_line_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(head_line_label_);
 
-  description_label_ = new views::Label(description);
+  description_label_ = new views::Label(UTF16ToWideHack(description));
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(description_label_);
