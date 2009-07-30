@@ -203,6 +203,7 @@ void PasswordsPageGtk::OnRemoveAllButtonClicked(GtkButton* widget,
                                               GTK_DIALOG_DESTROY_WITH_PARENT,
                                               GTK_MESSAGE_QUESTION,
                                               GTK_BUTTONS_YES_NO,
+                                              "%s",
                                               l10n_util::GetStringUTF8(
           IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS).c_str());
   gtk_window_set_modal(GTK_WINDOW(confirm), TRUE);
