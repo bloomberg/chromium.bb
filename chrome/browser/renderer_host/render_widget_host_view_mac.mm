@@ -23,6 +23,7 @@ using WebKit::WebMouseWheelEvent;
 
 @interface RenderWidgetHostViewCocoa (Private)
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
+- (void)cancelChildPopups;
 @end
 
 namespace {
@@ -250,6 +251,20 @@ void RenderWidgetHostViewMac::RenderViewGone() {
 }
 
 void RenderWidgetHostViewMac::Destroy() {
+  // On Windows, popups are implemented with a popup window style, so that when
+  // an event comes in that would "cancel" it, it receives the OnCancelMode
+  // message and can kill itself. Alas, on the Mac, views cannot capture events
+  // outside of themselves. On Windows, if Destroy is being called on a view,
+  // then the event causing the destroy had also cancelled any popups by the
+  // time Destroy() was called. On the Mac we have to destroy all the popups
+  // ourselves.
+
+  // Depth-first destroy all popups. Use ShutdownHost() to enforce deepest-first
+  // ordering.
+  for (RenderWidgetHostViewCocoa* subview in [cocoa_view_ subviews]) {
+    [subview renderWidgetHostViewMac]->ShutdownHost();
+  }
+
   // We've been told to destroy.
   [cocoa_view_ retain];
   [cocoa_view_ removeFromSuperview];
@@ -423,6 +438,12 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
 }
 
 - (void)mouseEvent:(NSEvent *)theEvent {
+  // Don't cancel child popups; killing them on a mouse click would prevent the
+  // user from positioning the insertion point in the text field spawning the
+  // popup. A click outside the text field would cause the text field to drop
+  // the focus, and then EditorClientImpl::textFieldDidEndEditing() would cancel
+  // the popup anyway, so we're OK.
+
   const WebMouseEvent& event =
       WebInputEventFactory::mouseEvent(theEvent, self);
   if (renderWidgetHostView_->render_widget_host_)
@@ -433,32 +454,34 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
   // TODO(avi): Possibly kill self? See RenderWidgetHostViewWin::OnKeyEvent and
   // http://b/issue?id=1192881 .
 
+  // Don't cancel child popups; the key events are probably what's triggering
+  // the popup in the first place.
+
   NativeWebKeyboardEvent event(theEvent);
   if (renderWidgetHostView_->render_widget_host_)
     renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
 }
 
 - (void)scrollWheel:(NSEvent *)theEvent {
-  // On Windows, popups are implemented with a popup window style, so that when
-  // an event comes in that would "cancel" it, it receives the OnCancelMode
-  // message and can kill itself. Alas, on the Mac, views cannot capture events
-  // outside of themselves.  While a click outside a popup kills it, that's just
-  // a defocusing of the text field in WebCore and our editor client kills the
-  // popup. But a scroll wheel event outside a popup must kill it.
-  //
-  // Thus this lovely case of filicide. If this view can be the key view, it is
-  // not a popup. Therefore, if it has any children, they are popups that need
-  // to be canceled.
-  if (canBeKeyView_) {
-    for (NSView* subview in [self subviews]) {
-      ((RenderWidgetHostViewCocoa*)subview)->renderWidgetHostView_->KillSelf();
-    }
-  }
+  [self cancelChildPopups];
 
   const WebMouseWheelEvent& event =
       WebInputEventFactory::mouseWheelEvent(theEvent, self);
   if (renderWidgetHostView_->render_widget_host_)
     renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(event);
+}
+
+// See the comment in RenderWidgetHostViewMac::Destroy() about cancellation
+// events. On the Mac we must kill popups on outside events, thus this lovely
+// case of filicide caused by events on parent views.
+- (void)cancelChildPopups {
+  // If this view can be the key view, it is not a popup. Therefore, if it has
+  // any children, they are popups that need to be canceled.
+  if (canBeKeyView_) {
+    for (RenderWidgetHostViewCocoa* subview in [self subviews]) {
+      subview->renderWidgetHostView_->KillSelf();
+    }
+  }
 }
 
 - (void)setFrame:(NSRect)frameRect {
