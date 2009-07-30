@@ -251,6 +251,8 @@ static const double kDragStartDistance = 3.0;
     [dragWindow_ makeMainWindow];
     [draggedController_ showOverlay];
     dragOverlay_ = [draggedController_ overlayWindow];
+    // Force the new tab button to be hidden. We'll reset it on mouse up.
+    [draggedController_ showNewTabButton:NO];
     //if (![targets count])
     //  [dragOverlay_ setHasShadow:NO];
     if (!isTheOnlyTab_) {
@@ -346,6 +348,11 @@ static const double kDragStartDistance = 3.0;
   // The drag/click is done. If the user dragged the mouse, finalize the drag
   // and clean up.
 
+  // We are now free to re-display the new tab button in the window we're
+  // dragging. It will show when the next call to -layoutTabs (which happens
+  // indrectly by several of the calls below, such as removing the placeholder).
+  [draggedController_ showNewTabButton:YES];
+
   if (draggingWithinTabStrip_) {
     if (tabWasDragged_) {
       // Move tab to new location.
@@ -370,7 +377,6 @@ static const double kDragStartDistance = 3.0;
 
     [[draggedController_ window] setLevel:NSNormalWindowLevel];
     [draggedController_ removePlaceholder];
-    [draggedController_ layoutTabs];
   }
   [sourceController_ removePlaceholder];
   chromeIsVisible_ = YES;

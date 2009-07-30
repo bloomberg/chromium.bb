@@ -225,6 +225,12 @@ static const float kUseFullAvailableWidth = -1.0;
   [self layoutTabs];
 }
 
+- (void)showNewTabButton:(BOOL)show {
+  forceNewTabButtonHidden_ = show ? NO : YES;
+  if (forceNewTabButtonHidden_)
+    [newTabButton_ setHidden:YES];
+}
+
 // Lay out all tabs in the order of their TabContentsControllers, which matches
 // the ordering in the TabStripModel. This call isn't that expensive, though
 // it is O(n) in the number of tabs. Tabs will animate to their new position
@@ -358,23 +364,29 @@ static const float kUseFullAvailableWidth = -1.0;
     i++;
   }
 
-  NSRect newTabNewFrame = [newTabButton_ frame];
-  if ([self useFullWidthForLayout])
-    newTabNewFrame.origin =
-        NSMakePoint(MIN(availableWidth, offset + kNewTabButtonOffset), 0);
-  else
-    newTabNewFrame.origin = NSMakePoint(offset + kNewTabButtonOffset, 0);
-  newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
-                                NSMaxX(placeholderFrame_));
-  if (i > 0 && [newTabButton_ isHidden]) {
-    id target = animate ? [newTabButton_ animator] : newTabButton_;
-    [target setHidden:NO];
-  }
+  // Hide the new tab button if we're explicitly told to. It may already
+  // be hidden, doing it again doesn't hurt.
+  if (forceNewTabButtonHidden_) {
+    [newTabButton_ setHidden:YES];
+  } else {
+    NSRect newTabNewFrame = [newTabButton_ frame];
+    if ([self useFullWidthForLayout])
+      newTabNewFrame.origin =
+          NSMakePoint(MIN(availableWidth, offset + kNewTabButtonOffset), 0);
+    else
+      newTabNewFrame.origin = NSMakePoint(offset + kNewTabButtonOffset, 0);
+    newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
+                                  NSMaxX(placeholderFrame_));
+    if (i > 0 && [newTabButton_ isHidden]) {
+      id target = animate ? [newTabButton_ animator] : newTabButton_;
+      [target setHidden:NO];
+    }
 
-  if (!NSEqualRects(newTabTargetFrame_, newTabNewFrame)) {
-    [newTabButton_ setFrame:newTabNewFrame];
-    newTabTargetFrame_ = newTabNewFrame;
-    // Move the new tab button into place.
+    if (!NSEqualRects(newTabTargetFrame_, newTabNewFrame)) {
+      [newTabButton_ setFrame:newTabNewFrame];
+      newTabTargetFrame_ = newTabNewFrame;
+      // Move the new tab button into place.
+    }
   }
 
   [NSAnimationContext endGrouping];

@@ -438,7 +438,7 @@ willPositionSheet:(NSWindow*)sheet
           break;
       }
 
-      // If the item is toggleable, find it's toggle state and
+      // If the item is toggleable, find its toggle state and
       // try to update it.  This is a little awkward, but the alternative is
       // to check after a commandDispatch, which seems worse.
       [self updateToggleStateWithTag:tag forItem:item];
@@ -663,15 +663,21 @@ willPositionSheet:(NSWindow*)sheet
 - (void)insertPlaceholderForTab:(TabView*)tab
                           frame:(NSRect)frame
                       yStretchiness:(CGFloat)yStretchiness {
+  [super insertPlaceholderForTab:tab frame:frame yStretchiness:yStretchiness];
   [tabStripController_ insertPlaceholderForTab:tab
                                          frame:frame
                                  yStretchiness:yStretchiness];
 }
 
 - (void)removePlaceholder {
+  [super removePlaceholder];
   [tabStripController_ insertPlaceholderForTab:nil
                                          frame:NSZeroRect
                                  yStretchiness:0];
+}
+
+- (void)showNewTabButton:(BOOL)show {
+  [tabStripController_ showNewTabButton:show];
 }
 
 - (BOOL)isBookmarkBarVisible {

@@ -141,11 +141,14 @@
 - (void)insertPlaceholderForTab:(TabView*)tab
                           frame:(NSRect)frame
                   yStretchiness:(CGFloat)yStretchiness {
-  // subclass must implement
-  NOTIMPLEMENTED();
+  [self showNewTabButton:NO];
 }
 
 - (void)removePlaceholder {
+  [self showNewTabButton:YES];
+}
+
+- (void)showNewTabButton:(BOOL)show {
   // subclass must implement
   NOTIMPLEMENTED();
 }

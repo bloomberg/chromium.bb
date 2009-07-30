@@ -54,13 +54,21 @@
 // new window will be the same size as this window.
 - (TabWindowController*)detachTabToNewWindow:(TabView*)tabView;
 
-// Make room in the tab strip for |tab| at the given x coordinate.
+// Make room in the tab strip for |tab| at the given x coordinate. Will hide the
+// new tab button while there's a placeholder. Subclasses need to call the
+// superclass implementation.
 - (void)insertPlaceholderForTab:(TabView*)tab
                           frame:(NSRect)frame
                   yStretchiness:(CGFloat)yStretchiness;
 
-// Removes the placeholder installed by |-insertPlaceholderForTab:atLocation:|.
+// Removes the placeholder installed by |-insertPlaceholderForTab:atLocation:|
+// and restores the new tab button. Subclasses need to call the superclass
+// implementation.
 - (void)removePlaceholder;
+
+// Show or hide the new tab button. The button is hidden immediately, but
+// waits until the next call to |-layoutTabs| to show it again.
+- (void)showNewTabButton:(BOOL)show;
 
 // Called to check if the receiver can receive dragged tabs from
 // source.  Return YES if so.  The default implementation returns NO.

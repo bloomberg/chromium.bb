@@ -57,6 +57,8 @@ class ToolbarModel;
   // aren't coalesced, so we store frames to avoid redundant calls.
   scoped_nsobject<NSMutableDictionary> targetFrames_;
   NSRect newTabTargetFrame_;
+  // If YES, do not show the new tab button during layout.
+  BOOL forceNewTabButtonHidden_;
 
   // Width available for resizing the tabs (doesn't include the new tab
   // button). Used to restrict the available width when closing many tabs at
@@ -106,6 +108,10 @@ class ToolbarModel;
 - (void)insertPlaceholderForTab:(TabView*)tab
                           frame:(NSRect)frame
                   yStretchiness:(CGFloat)yStretchiness;
+
+// Show or hide the new tab button. The button is hidden immediately, but
+// waits until the next call to |-layoutTabs| to show it again.
+- (void)showNewTabButton:(BOOL)show;
 
 // Force the tabs to rearrange themselves to reflect the current model.
 - (void)layoutTabs;
