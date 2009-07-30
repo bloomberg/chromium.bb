@@ -723,6 +723,11 @@ BUG8696 WIN LINUX : LayoutTests/fast/gradients/generated-gradients.html = FAIL
 BUG8696 WIN LINUX : LayoutTests/fast/gradients/simple-gradients.html = FAIL
 BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
 
+// Pipeline change is reporting errors incorrectly
+BUG16738 : LayoutTests/media/unsupported-rtsp.html = FAIL
+BUG16738 : LayoutTests/media/video-error-does-not-exist.html = FAIL
+BUG16738 : LayoutTests/media/video-src-plus-source.html = FAIL
+
 // -----------------------------------------------------------------
 // SVG TESTS
 // -----------------------------------------------------------------
