@@ -283,6 +283,12 @@ class Browser : public TabStripModelDelegate,
   // created.
   void ShowSingleDOMUITab(const GURL& url);
 
+  // Update commands whose state depends on whether the window is in fullscreen
+  // mode. This is a public function because on Linux, fullscreen mode is an
+  // async call to X. Once we get the fullscreen callback, the browser window
+  // will call this method.
+  void UpdateCommandsForFullscreenMode(bool is_fullscreen);
+
   // Assorted browser commands ////////////////////////////////////////////////
 
   // NOTE: Within each of the following sections, the IDs are ordered roughly by
@@ -520,10 +526,6 @@ class Browser : public TabStripModelDelegate,
 
   // Update commands whose state depends on the tab's state.
   void UpdateCommandsForTabState();
-
-  // Update commands whose state depends on whether the window is in fullscreen
-  // mode.
-  void UpdateCommandsForFullscreenMode(bool is_fullscreen);
 
   // Ask the Stop/Go button to change its icon, and update the Go and Stop
   // command states.  |is_loading| is true if the current TabContents is

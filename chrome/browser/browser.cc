@@ -668,6 +668,34 @@ void Browser::ShowSingleDOMUITab(const GURL& url) {
                 false, NULL);
 }
 
+void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
+  const bool show_main_ui = (type() == TYPE_NORMAL) && !is_fullscreen;
+
+  // Navigation commands
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
+
+  // Window management commands
+  command_updater_.UpdateCommandEnabled(IDC_PROFILE_MENU, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_AS_TAB,
+      (type() & TYPE_POPUP) && !is_fullscreen);
+
+  // Focus various bits of UI
+  command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_FOCUS_SEARCH, show_main_ui);
+
+  // Show various bits of UI
+  command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_NEW_PROFILE, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
 
@@ -858,7 +886,11 @@ void Browser::ConvertPopupToTabbedBrowser() {
 void Browser::ToggleFullscreenMode() {
   UserMetrics::RecordAction(L"ToggleFullscreen", profile_);
   window_->SetFullscreen(!window_->IsFullscreen());
+  // On Linux, setting fullscreen mode is an async call to the X server, which
+  // may or may not support fullscreen mode.
+#if !defined(OS_LINUX)
   UpdateCommandsForFullscreenMode(window_->IsFullscreen());
+#endif
 }
 
 void Browser::Exit() {
@@ -2254,34 +2286,6 @@ void Browser::UpdateCommandsForTabState() {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
       !current_tab->GetFavIcon().isNull());
-}
-
-void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
-  const bool show_main_ui = (type() == TYPE_NORMAL) && !is_fullscreen;
-
-  // Navigation commands
-  command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
-
-  // Window management commands
-  command_updater_.UpdateCommandEnabled(IDC_PROFILE_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_AS_TAB,
-      (type() & TYPE_POPUP) && !is_fullscreen);
-
-  // Focus various bits of UI
-  command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_FOCUS_LOCATION, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_FOCUS_SEARCH, show_main_ui);
-
-  // Show various bits of UI
-  command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_NEW_PROFILE, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_ABOUT, show_main_ui);
 }
 
 void Browser::UpdateStopGoState(bool is_loading, bool force) {

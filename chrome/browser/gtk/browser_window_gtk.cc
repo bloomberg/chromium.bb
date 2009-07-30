@@ -1101,7 +1101,9 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state) {
   state_ = state;
 
   if (fullscreen_state_changed) {
-    if (state & GDK_WINDOW_STATE_FULLSCREEN) {
+    bool is_fullscreen = state & GDK_WINDOW_STATE_FULLSCREEN;
+    browser_->UpdateCommandsForFullscreenMode(is_fullscreen);
+    if (is_fullscreen) {
       UpdateCustomFrame();
       toolbar_->Hide();
       tabstrip_->Hide();
