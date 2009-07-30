@@ -82,6 +82,12 @@ namespace WebKit {
                                       const WebString& schemeRestriction);
     WEBKIT_API void registerExtension(v8::Extension*, int extensionGroup);
 
+    // Enables special settings which are only applicable if V8 is executed
+    // in the single thread which must be the main thread.
+    // FIXME: make a try to dynamically detect when this condition is broken
+    // and automatically switch off single thread mode.
+    WEBKIT_API void enableV8SingleThreadMode();
+
     // Process any pending JavaScript console messages.
     WEBKIT_API void flushConsoleMessages();
 
@@ -94,7 +100,6 @@ namespace WebKit {
     // Enables HTML5 database support.
     WEBKIT_API void enableDatabases();
     WEBKIT_API bool databasesEnabled();
-
 } // namespace WebKit
 
 #endif

@@ -330,6 +330,8 @@ void RenderThread::EnsureWebKitInitialized() {
   webkit_client_.reset(new RendererWebKitClientImpl);
   WebKit::initialize(webkit_client_.get());
 
+  WebKit::enableV8SingleThreadMode();
+
   // chrome: pages should not be accessible by normal content, and should
   // also be unable to script anything but themselves (to help limit the damage
   // that a corrupt chrome: page could cause).
