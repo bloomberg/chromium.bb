@@ -38,11 +38,10 @@
 
 #include <stdarg.h>
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/service_runtime/gio.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /*
  * TODO: per-module logging, adding a module-name parameter, probably
@@ -88,8 +87,6 @@ void  NaClLog(int         detail_level,
 #define LOG_ERROR   (-3)
 #define LOG_FATAL   (-4)
 
-#ifdef __cplusplus
-}  /* end of extern "C" */
-#endif
+EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_LOG_H__ */
