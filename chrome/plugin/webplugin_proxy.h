@@ -190,6 +190,14 @@ class WebPluginProxy : public WebPlugin {
   scoped_ptr<TransportDIB> background_dib_;
   scoped_ptr<skia::PlatformCanvas> windowless_canvas_;
   scoped_ptr<skia::PlatformCanvas> background_canvas_;
+
+  // On Linux some plugins assume that the GtkSocket container is in the same
+  // process. So we create a GtkPlug to plug into the browser's container, and
+  // a GtkSocket to hold the plugin. container_ is the original container XID
+  // coming from the browser.
+  gfx::PluginWindowHandle container_;
+  GtkWidget *plug_;
+  GtkWidget *socket_;
 #endif
 
   ScopedRunnableMethodFactory<WebPluginProxy> runnable_method_factory_;

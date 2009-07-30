@@ -4,6 +4,11 @@
 
 #include "chrome/plugin/webplugin_proxy.h"
 
+#include "build/build_config.h"
+#if defined(OS_LINUX)
+#include <gtk/gtk.h>
+#endif
+
 #include "app/gfx/canvas.h"
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -50,6 +55,11 @@ WebPluginProxy::WebPluginProxy(
       delegate_(delegate),
       waiting_for_paint_(false),
       page_url_(page_url),
+#if defined(OS_LINUX)
+      container_(0),
+      plug_(NULL),
+      socket_(NULL),
+#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this))
 {
 }
@@ -65,13 +75,40 @@ bool WebPluginProxy::Send(IPC::Message* msg) {
 
 #if defined(OS_LINUX)
 gfx::PluginWindowHandle WebPluginProxy::CreatePluginContainer() {
-  gfx::PluginWindowHandle container;
-  Send(new PluginHostMsg_CreatePluginContainer(route_id_, &container));
-  return container;
+  DCHECK(!container_);
+  DCHECK(!plug_);
+  DCHECK(!socket_);
+
+  Send(new PluginHostMsg_CreatePluginContainer(route_id_, &container_));
+  if (!container_)
+    return 0;
+
+  plug_ = gtk_plug_new(container_);
+  gtk_widget_show(plug_);
+  socket_ = gtk_socket_new();
+  gtk_widget_show(socket_);
+  gtk_container_add(GTK_CONTAINER(plug_), socket_);
+  gtk_widget_show_all(plug_);
+
+  // Prevent the plug from being destroyed if the browser kills the container
+  // window.
+  g_signal_connect(plug_, "delete-event", G_CALLBACK(gtk_true), NULL);
+  // Prevent the socket from being destroyed when the plugin removes itself.
+  g_signal_connect(socket_, "plug_removed", G_CALLBACK(gtk_true), NULL);
+
+  return gtk_socket_get_id(GTK_SOCKET(socket_));
 }
 #endif
 
 void WebPluginProxy::SetWindow(gfx::PluginWindowHandle window) {
+#if defined(OS_LINUX)
+  if (window) {
+    DCHECK(plug_);
+    DCHECK(socket_);
+    DCHECK_EQ(window, gtk_socket_get_id(GTK_SOCKET(socket_)));
+    window = container_;
+  }
+#endif
   Send(new PluginHostMsg_SetWindow(route_id_, window));
 }
 
@@ -81,7 +118,14 @@ void WebPluginProxy::WillDestroyWindow(gfx::PluginWindowHandle window) {
       new PluginProcessHostMsg_PluginWindowDestroyed(
           window, ::GetParent(window)));
 #elif defined(OS_LINUX)
-  Send(new PluginHostMsg_DestroyPluginContainer(route_id_, window));
+  DCHECK(plug_);
+  DCHECK(socket_);
+  DCHECK_EQ(window, gtk_socket_get_id(GTK_SOCKET(socket_)));
+  Send(new PluginHostMsg_DestroyPluginContainer(route_id_, container_));
+  gtk_widget_destroy(plug_);
+  container_ = NULL;
+  plug_ = NULL;
+  socket_ = NULL;
 #else
   NOTIMPLEMENTED();
 #endif
