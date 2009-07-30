@@ -83,9 +83,11 @@ SUBSTRING : windowdragresponsetask::run___messageloop::runtask___messageloop::do
 # 17569
 SUBSTRING : masksuperblitter::~masksuperblitter
 
-# 17710
-SUBSTRING : webcore::resourcerequestbase::url
-
 # 18056
-PREFIX : 
-WebPluginDelegateStub::OnMessageReceived___WebPluginDelegateImpl::NativeWndProc___base::MessagePumpForUI::DoRunLoop
+PREFIX : WebPluginDelegateStub::OnMessageReceived___WebPluginDelegateImpl::NativeWndProc___base::MessagePumpForUI::DoRunLoop
+
+# 18058
+PREFIX : malloc___WebPluginDelegateImpl::FlashWindowlessWndProc___NPAPI::PluginInstance::NPP_Write___NPAPI::PluginStream::TryWriteToPlugin
+
+# 18059
+PREFIX : malloc___base::subtle::RefCountedThreadSafeBase::Release___NPN_InvalidateRect___WebPluginDelegateImpl::FlashWindowlessWndProc___NPAPI::PluginInstance::NPP_Write
