@@ -74,6 +74,27 @@
 
 using base::Time;
 
+#if defined(OS_WIN)
+static void MoveMouse(const POINT& point) {
+  SetCursorPos(point.x, point.y);
+
+  // Now, make sure that GetMessagePos returns the values we just set by
+  // simulating a mouse move.  The value returned by GetMessagePos is updated
+  // when a mouse move event is removed from the event queue.
+  PostMessage(NULL, WM_MOUSEMOVE, 0, MAKELPARAM(point.x, point.y));
+  MSG msg;
+  while (PeekMessage(&msg, NULL, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE))
+    ;
+
+  // Verify
+#ifndef NDEBUG
+  DWORD pos = GetMessagePos();
+  DCHECK_EQ(point.x, GET_X_LPARAM(pos));
+  DCHECK_EQ(point.y, GET_Y_LPARAM(pos));
+#endif
+}
+#endif
+
 class InitialLoadObserver : public NotificationObserver {
  public:
   InitialLoadObserver(size_t tab_count, AutomationProvider* automation)
@@ -1504,7 +1525,7 @@ class MouseEventTask : public Task {
     // monitors, so this only works reliably in a single monitor setup.
     gfx::Point screen_location(point_.x, point_.y);
     view_->ConvertPointToScreen(view_, &screen_location);
-    ::SetCursorPos(screen_location.x(), screen_location.y());
+    MoveMouse(screen_location.ToPOINT());
     switch (type_) {
       case views::Event::ET_MOUSE_PRESSED:
         view_->OnMousePressed(event);
@@ -1652,19 +1673,19 @@ void AutomationProvider::WindowSimulateDrag(int handle,
         reinterpret_cast<HWND>(browser->window()->GetNativeHandle());
     POINT temp = drag_path[0];
     MapWindowPoints(top_level_hwnd, HWND_DESKTOP, &temp, 1);
-    SetCursorPos(temp.x, temp.y);
+    MoveMouse(temp);
     SendMessage(top_level_hwnd, down_message, wparam_flags,
                 MAKELPARAM(drag_path[0].x, drag_path[0].y));
     for (int i = 1; i < static_cast<int>(drag_path.size()); ++i) {
       temp = drag_path[i];
       MapWindowPoints(top_level_hwnd, HWND_DESKTOP, &temp, 1);
-      SetCursorPos(temp.x, temp.y);
+      MoveMouse(temp);
       SendMessage(top_level_hwnd, WM_MOUSEMOVE, wparam_flags,
                   MAKELPARAM(drag_path[i].x, drag_path[i].y));
     }
     POINT end = drag_path[drag_path.size() - 1];
     MapWindowPoints(top_level_hwnd, HWND_DESKTOP, &end, 1);
-    SetCursorPos(end.x, end.y);
+    MoveMouse(end);
 
     if (press_escape_en_route) {
       // Press Escape.
