@@ -8,120 +8,11 @@
   'includes': [
     '../../build/common.gypi',
   ],
-  'targets': [
-    {
-      'target_name': 'installer_util',
-      'conditions': [
-        ['OS=="linux"', {
-          'type': 'none',
-          # Add these files to the build output so the build archives will be
-          # "hermetic" for packaging. This is only for branding="Chrome" since
-          # we only create packages for official builds.
-          'conditions': [
-            ['branding=="Chrome"', {
-              'variables': {
-                'lib32_dir': '<!(if uname -m | egrep -q "x86_64"; then echo lib32; else echo lib; fi)',
-              },
-              'copies': [
-                # Copy tools for generating packages from the build archive.
-                {
-                  'destination': '<(PRODUCT_DIR)/installer/',
-                  'files': [
-                    'linux/internal/build_from_archive.sh',
-                  ]
-                },
-                {
-                  'destination': '<(PRODUCT_DIR)/installer/debian/',
-                  'files': [
-                    'linux/internal/debian/build.sh',
-                    'linux/internal/debian/changelog.template',
-                    'linux/internal/debian/control.template',
-                    'linux/internal/debian/postinst',
-                    'linux/internal/debian/postrm',
-                    'linux/internal/debian/prerm',
-                  ]
-                },
-                {
-                  'destination': '<(PRODUCT_DIR)/installer/rpm/',
-                  'files': [
-                    'linux/internal/rpm/build.sh',
-                    'linux/internal/rpm/chrome.spec.template',
-                  ]
-                },
-                {
-                  'destination': '<(PRODUCT_DIR)/installer/common/',
-                  'files': [
-                    'linux/internal/common/apt.include',
-                    'linux/internal/common/desktop.template',
-                    'linux/internal/common/default-app.template',
-                    'linux/internal/common/default-app-block.template',
-                    'linux/internal/common/google-chrome/google-chrome.info',
-                    'linux/internal/common/installer.include',
-                    'linux/internal/common/postinst.include',
-                    'linux/internal/common/prerm.include',
-                    'linux/internal/common/repo.cron',
-                    'linux/internal/common/updater',
-                    'linux/internal/common/wrapper',
-                  ]
-                },
-                # System libs needed for 64-bit package building.
-                {
-                  'destination': '<(PRODUCT_DIR)/installer/lib32/',
-                  'files': [
-                    '/usr/<(lib32_dir)/libsqlite3.so.0',
-                    '/usr/<(lib32_dir)/libsqlite3.so.0.8.6',
-                    '/usr/<(lib32_dir)/libnspr4.so.0d',
-                    '/usr/<(lib32_dir)/libplds4.so.0d',
-                    '/usr/<(lib32_dir)/libplc4.so.0d',
-                    '/usr/<(lib32_dir)/libssl3.so.1d',
-                    '/usr/<(lib32_dir)/libnss3.so.1d',
-                    '/usr/<(lib32_dir)/libsmime3.so.1d',
-                    '/usr/<(lib32_dir)/libnssutil3.so.1d',
-                    '/usr/<(lib32_dir)/nss/libfreebl3.so',
-                    '/usr/<(lib32_dir)/nss/libsoftokn3.chk',
-                    '/usr/<(lib32_dir)/nss/libsoftokn3.so',
-                    '/usr/<(lib32_dir)/nss/libnssckbi.so',
-                    '/usr/<(lib32_dir)/nss/libnssdbm3.so',
-                    '/usr/<(lib32_dir)/nss/libfreebl3.chk',
-                  ],
-                },
-                # Additional theme resources needed for package building.
-                {
-                  'destination': '<(PRODUCT_DIR)/installer/theme/',
-                  'files': [
-                    '<(branding_dir)/product_logo_16.png',
-                    '<(branding_dir)/product_logo_32.png',
-                    '<(branding_dir)/product_logo_48.png',
-                    '<(branding_dir)/product_logo_256.png',
-                    '<(branding_dir)/BRANDING',
-                  ],
-                },
-              ],
-              'actions': [
-                {
-                  'action_name': 'save_build_info',
-                  'inputs': [
-                    '<(branding_dir)/BRANDING',
-                    '<(version_path)',
-                    '<(lastchange_path)',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/installer/version.txt',
-                  ],
-                  # Just output the default version info variables.
-                  'action': [
-                    'python', '<(version_py)',
-                    '-f', '<(branding_dir)/BRANDING',
-                    '-f', '<(version_path)',
-                    '-f', '<(lastchange_path)',
-                    '-o', '<@(_outputs)'
-                  ],
-                },
-              ],
-            }],
-          ],
-        }],
-        ['OS=="win"', {
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'installer_util',
           'type': '<(library)',
           'msvs_guid': 'EFBB1436-A63F-4CD8-9E99-B89226E782EC',
           'dependencies': [
@@ -191,13 +82,7 @@
             '../common/json_value_serializer.cc',
             '../common/pref_names.cc',
           ],
-        }],
-      ],
-    },
-  ],
-  'conditions': [
-    ['OS=="win"', {
-      'targets': [
+        },
         {
           'target_name': 'gcapi_dll',
           'type': 'loadable_module',
@@ -479,6 +364,165 @@
             'setup/run_all_unittests.cc',
             'setup/setup_util.cc',
             'setup/setup_util_unittest.cc',
+          ],
+        },
+      ],
+    }],
+    ['OS=="linux" and branding=="Chrome"', {
+      # Always google_chrome since this only applies to branding==Chrome.
+      'variables': {
+         'branding_dir': '../app/theme/google_chrome',
+      },
+      'targets': [
+        {
+          'target_name': 'installer_util',
+          'type': 'none',
+          # Add these files to the build output so the build archives will be
+          # "hermetic" for packaging. This is only for branding="Chrome" since
+          # we only create packages for official builds.
+          'variables': {
+            'lib32_dir': '<!(if uname -m | egrep -q "x86_64"; then echo lib32; else echo lib; fi)',
+          },
+          'copies': [
+            # Copy tools for generating packages from the build archive.
+            {
+              'destination': '<(PRODUCT_DIR)/installer/',
+              'files': [
+                'linux/internal/build_from_archive.sh',
+              ]
+            },
+            {
+              'destination': '<(PRODUCT_DIR)/installer/debian/',
+              'files': [
+                'linux/internal/debian/build.sh',
+                'linux/internal/debian/changelog.template',
+                'linux/internal/debian/control.template',
+                'linux/internal/debian/postinst',
+                'linux/internal/debian/postrm',
+                'linux/internal/debian/prerm',
+              ]
+            },
+            {
+              'destination': '<(PRODUCT_DIR)/installer/rpm/',
+              'files': [
+                'linux/internal/rpm/build.sh',
+                'linux/internal/rpm/chrome.spec.template',
+              ]
+            },
+            {
+              'destination': '<(PRODUCT_DIR)/installer/common/',
+              'files': [
+                'linux/internal/common/apt.include',
+                'linux/internal/common/desktop.template',
+                'linux/internal/common/default-app.template',
+                'linux/internal/common/default-app-block.template',
+                'linux/internal/common/google-chrome/google-chrome.info',
+                'linux/internal/common/installer.include',
+                'linux/internal/common/postinst.include',
+                'linux/internal/common/prerm.include',
+                'linux/internal/common/repo.cron',
+                'linux/internal/common/updater',
+                'linux/internal/common/wrapper',
+              ]
+            },
+            # System libs needed for 64-bit package building.
+            {
+              'destination': '<(PRODUCT_DIR)/installer/lib32/',
+              'files': [
+                '/usr/<(lib32_dir)/libsqlite3.so.0',
+                '/usr/<(lib32_dir)/libsqlite3.so.0.8.6',
+                '/usr/<(lib32_dir)/libnspr4.so.0d',
+                '/usr/<(lib32_dir)/libplds4.so.0d',
+                '/usr/<(lib32_dir)/libplc4.so.0d',
+                '/usr/<(lib32_dir)/libssl3.so.1d',
+                '/usr/<(lib32_dir)/libnss3.so.1d',
+                '/usr/<(lib32_dir)/libsmime3.so.1d',
+                '/usr/<(lib32_dir)/libnssutil3.so.1d',
+                '/usr/<(lib32_dir)/nss/libfreebl3.so',
+                '/usr/<(lib32_dir)/nss/libsoftokn3.chk',
+                '/usr/<(lib32_dir)/nss/libsoftokn3.so',
+                '/usr/<(lib32_dir)/nss/libnssckbi.so',
+                '/usr/<(lib32_dir)/nss/libnssdbm3.so',
+                '/usr/<(lib32_dir)/nss/libfreebl3.chk',
+              ],
+            },
+            # Additional theme resources needed for package building.
+            {
+              'destination': '<(PRODUCT_DIR)/installer/theme/',
+              'files': [
+                '<(branding_dir)/product_logo_16.png',
+                '<(branding_dir)/product_logo_32.png',
+                '<(branding_dir)/product_logo_48.png',
+                '<(branding_dir)/product_logo_256.png',
+                '<(branding_dir)/BRANDING',
+              ],
+            },
+          ],
+          'actions': [
+            {
+              'action_name': 'save_build_info',
+              'inputs': [
+                '<(branding_dir)/BRANDING',
+                '<(version_path)',
+                '<(lastchange_path)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/installer/version.txt',
+              ],
+              # Just output the default version info variables.
+              'action': [
+                'python', '<(version_py)',
+                '-f', '<(branding_dir)/BRANDING',
+                '-f', '<(version_path)',
+                '-f', '<(lastchange_path)',
+                '-o', '<@(_outputs)'
+              ],
+            },
+          ],
+        },
+        {
+          'target_name': 'linux_packages',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            '../chrome.gyp:chrome',
+          ],
+          'variables': {
+            'version' : '<!(echo -n "@MAJOR@.@MINOR@.@BUILD@.@PATCH@" | <(version_py) -f ../../chrome/VERSION /dev/stdin)',
+            'revision' : '<!(python ../../build/util/lastchange.py | cut -d "=" -f 2)',
+          },
+          'actions': [
+            {
+              'action_name': 'deb_packages',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(PRODUCT_DIR)/installer/debian/build.sh',
+                # TODO Add all the build archive files. Share this with stage_build.py somehow?
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_i386.deb',
+                '<(PRODUCT_DIR)/google-chrome-unstable_<(version)-r<(revision)_amd64.deb',
+                # TODO(mmoss) Add other outputs once we start building other channels.
+              ],
+              'action': [
+                'bash', '<(_inputs)', '-o' '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)', '-c', 'dev',
+              ],
+            },
+            {
+              'action_name': 'rpm_packages',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(PRODUCT_DIR)/installer/rpm/build.sh',
+                # TODO Add all the build archive files. Share this with stage_build.py somehow?
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-unstable-<(version)-<(revision).i386.rpm',
+                # TODO(mmoss) Add other outputs once we start building other channels.
+              ],
+              'action': [
+                'bash', '<(_inputs)', '-o' '<(PRODUCT_DIR)', '-b', '<(PRODUCT_DIR)', '-c', 'dev',
+              ],
+            },
           ],
         },
       ],
