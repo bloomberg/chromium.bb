@@ -115,7 +115,16 @@ struct SourceFileInfo {
   FuncInfoList func_info;
 };
 
-typedef std::list<struct SourceFileInfo> SourceFileInfoList;
+// A simple std::list of pointers to SourceFileInfo structures, that
+// owns the structures pointed to: destroying the list destroys them,
+// as well.
+class SourceFileInfoList : public std::list<SourceFileInfo *> {
+ public:
+  ~SourceFileInfoList() {
+    for (iterator it = this->begin(); it != this->end(); it++)
+      delete *it;
+  }
+};
 
 // Information of a symbol table.
 // This is the root of all types of symbol.
@@ -320,14 +329,14 @@ static void AddIncludedFiles(struct SymbolInfo *symbols,
 	 symbols->source_file_info.begin();
        source_file_it != symbols->source_file_info.end();
        ++source_file_it) {
-    index_to_file[source_file_it->name_index] = &*source_file_it;
+    index_to_file[(*source_file_it)->name_index] = *source_file_it;
   }
 
   for (SourceFileInfoList::iterator source_file_it =
 	 symbols->source_file_info.begin();
        source_file_it != symbols->source_file_info.end();
        ++source_file_it) {
-    struct SourceFileInfo &source_file = *source_file_it;
+    struct SourceFileInfo &source_file = **source_file_it;
 
     for (FuncInfoList::iterator func_info_it = source_file.func_info.begin(); 
 	 func_info_it != source_file.func_info.end();
@@ -351,15 +360,15 @@ static void AddIncludedFiles(struct SymbolInfo *symbols,
           if (! *file_map_entry) {
             // Got a new included file.
             // Those included files don't have address or line information.
-            SourceFileInfo new_file;
-            new_file.name_index = line_info.source_name_index;
-            new_file.name = reinterpret_cast<char *>(new_file.name_index +
-                                                     stabstr_section->sh_offset);
-            new_file.addr = 0;
-            new_file.source_id = symbols->next_source_id++;
-            line_info.source_id = new_file.source_id;
+            SourceFileInfo *new_file = new(SourceFileInfo);
+            new_file->name_index = line_info.source_name_index;
+            new_file->name = reinterpret_cast<char *>(new_file->name_index
+                                                 + stabstr_section->sh_offset);
+            new_file->addr = 0;
+            new_file->source_id = symbols->next_source_id++;
+            line_info.source_id = new_file->source_id;
             symbols->source_file_info.push_back(new_file);
-            *file_map_entry = &symbols->source_file_info.back();
+            *file_map_entry = new_file;
           } else {
             // The file has been added.
             line_info.source_id = (*file_map_entry)->source_id;
@@ -388,9 +397,9 @@ static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
   std::vector<ElfW(Addr)> boundaries;
   for (file_it = symbols->source_file_info.begin();
        file_it != symbols->source_file_info.end(); file_it++) {
-    boundaries.push_back(file_it->addr);
-    for (func_it = file_it->func_info.begin();
-         func_it != file_it->func_info.end(); func_it++)
+    boundaries.push_back((*file_it)->addr);
+    for (func_it = (*file_it)->func_info.begin();
+         func_it != (*file_it)->func_info.end(); func_it++)
       boundaries.push_back(func_it->addr);
   }
   std::sort(boundaries.begin(), boundaries.end());
@@ -398,8 +407,8 @@ static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
   int no_next_addr_count = 0;
   for (file_it = symbols->source_file_info.begin();
        file_it != symbols->source_file_info.end(); file_it++) {
-    for (func_it = file_it->func_info.begin();
-         func_it != file_it->func_info.end(); func_it++) {
+    for (func_it = (*file_it)->func_info.begin();
+         func_it != (*file_it)->func_info.end(); func_it++) {
       struct FuncInfo &func_info = *func_it;
       assert(func_info.addr >= loading_addr);
       func_info.rva_to_base = func_info.addr - loading_addr;
@@ -489,17 +498,17 @@ static bool LoadSymbols(const ElfW(Shdr) *stab_section,
     struct nlist *cur_list = lists + i;
     if (cur_list->n_type == N_SO) {
       // FUNC <address> <length> <param_stack_size> <function>
-      struct SourceFileInfo source_file_info;
-      source_file_info.name_index = cur_list->n_un.n_strx;
-      source_file_info.name = reinterpret_cast<char *>(cur_list->n_un.n_strx +
-                                 stabstr_section->sh_offset);
-      source_file_info.addr = cur_list->n_value;
-      if (strchr(source_file_info.name, '.'))
-        source_file_info.source_id = symbols->next_source_id++;
+      struct SourceFileInfo *source_file_info = new SourceFileInfo;
+      source_file_info->name_index = cur_list->n_un.n_strx;
+      source_file_info->name = reinterpret_cast<char *>(cur_list->n_un.n_strx +
+                                                   stabstr_section->sh_offset);
+      source_file_info->addr = cur_list->n_value;
+      if (strchr(source_file_info->name, '.'))
+        source_file_info->source_id = symbols->next_source_id++;
       else
-        source_file_info.source_id = -1;
+        source_file_info->source_id = -1;
       step = LoadFuncSymbols(cur_list, lists + nstab,
-                             stabstr_section, &source_file_info);
+                             stabstr_section, source_file_info);
       symbols->source_file_info.push_back(source_file_info);
     }
     i += step;
@@ -577,9 +586,9 @@ static bool WriteSourceFileInfo(FILE *file, const struct SymbolInfo &symbols) {
   for (SourceFileInfoList::const_iterator it =
 	 symbols.source_file_info.begin();
        it != symbols.source_file_info.end(); it++) {
-    if (it->source_id != -1) {
-      const char *name = it->name;
-      if (0 > fprintf(file, "FILE %d %s\n", it->source_id, name))
+    if ((*it)->source_id != -1) {
+      const char *name = (*it)->name;
+      if (0 > fprintf(file, "FILE %d %s\n", (*it)->source_id, name))
         return false;
     }
   }
@@ -622,7 +631,7 @@ static bool WriteFunctionInfo(FILE *file, const struct SymbolInfo &symbols) {
   for (SourceFileInfoList::const_iterator it =
 	 symbols.source_file_info.begin();
        it != symbols.source_file_info.end(); it++) {
-    const struct SourceFileInfo &file_info = *it;
+    const struct SourceFileInfo &file_info = **it;
     for (FuncInfoList::const_iterator fiIt = file_info.func_info.begin(); 
 	 fiIt != file_info.func_info.end(); fiIt++) {
       const struct FuncInfo &func_info = *fiIt;
