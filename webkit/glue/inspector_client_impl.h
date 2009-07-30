@@ -46,6 +46,8 @@ public:
       const WebCore::InspectorController::Setting&);
   virtual void removeSetting(const WebCore::String& key);
 
+  virtual void inspectorWindowObjectCleared();
+
 private:
   ~WebInspectorClient();
 

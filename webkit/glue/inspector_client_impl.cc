@@ -213,6 +213,10 @@ void WebInspectorClient::removeSetting(const String& key) {
   SaveSettings();
 }
 
+void WebInspectorClient::inspectorWindowObjectCleared() {
+  NOTIMPLEMENTED();
+}
+
 void WebInspectorClient::LoadSettings() {
   if (settings_)
     return;

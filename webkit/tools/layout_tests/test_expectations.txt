@@ -3081,3 +3081,7 @@ BUG17974 : LayoutTests/fast/css/remove-shorthand.html = FAIL
 BUG17974 WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 BUG17974 WIN MAC: LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 BUG17974 WIN: LyoutTests/transtions/cancel-transitions.html = FAIL
+
+// Test failure from WebKit merge 46536 to 46570
+BUG18050 : LayoutTests/http/loading/redirect-methods.html = FAIL
+BUG18051 : LayoutTests/fast/lists/ol-start-parsing.html = FAIL
