@@ -151,6 +151,10 @@ willPositionSheet:(NSWindow*)sheet
       windowRect.set_height(minSize.height);
     windowShim_->SetBounds(windowRect);
 
+    // Puts the incognito badge on the window frame, if necessary. Do this
+    // before creating the tab strip to avoid redundant tab layout.
+    [self installIncognitoBadge];
+
     // Create a controller for the tab strip, giving it the model object for
     // this window's Browser and the tab strip view. The controller will handle
     // registering for the appropriate tab notifications from the back-end and
@@ -159,9 +163,6 @@ willPositionSheet:(NSWindow*)sheet
                                 initWithView:[self tabStripView]
                                   switchView:[self tabContentArea]
                                        model:browser_->tabstrip_model()]);
-
-    // Puts the incognito badge on the window frame, if necessary.
-    [self installIncognitoBadge];
 
     // Create the infobar container view, so we can pass it to the
     // ToolbarController, but do not position the view until after the
