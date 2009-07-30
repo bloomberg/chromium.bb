@@ -3001,7 +3001,6 @@ BUG17942 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-
 BUG17942 WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
 
 // Test failures from WebKit merge 46369 to 46426
-BUG18014 WIN LINUX : LayoutTests/editing/style/remove-underline-from-stylesheet.html = FAIL
 BUG18016 WIN LINUX : LayoutTests/fast/canvas/image-pattern-rotate.html = FAIL
 BUG17845 DEBUG : LayoutTests/svg/W3C-SVG-1.1/struct-dom-01-b.svg = CRASH
 BUG17845 DEBUG : LayoutTests/svg/custom/baseval-animval-equality.svg = CRASH
@@ -3083,5 +3082,4 @@ BUG17974 WIN MAC: LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 BUG17974 WIN: LyoutTests/transtions/cancel-transitions.html = FAIL
 
 // Test failure from WebKit merge 46536 to 46570
-BUG18050 : LayoutTests/http/loading/redirect-methods.html = FAIL
-BUG18051 : LayoutTests/fast/lists/ol-start-parsing.html = FAIL
+BUG18051 MAC : LayoutTests/fast/lists/ol-start-parsing.html = FAIL
