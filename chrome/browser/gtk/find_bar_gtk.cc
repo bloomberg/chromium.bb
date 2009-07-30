@@ -345,9 +345,11 @@ gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
   // 15 is the size of the scrollbar, copied from ScrollbarThemeChromium.
   // The height is not used.
+  // At very low browser widths we can wind up with a negative |dialog_bounds|
+  // width, so clamp it to 0.
   gfx::Rect dialog_bounds = gfx::Rect(ltr ? 0 : 15, 0,
-                                      widget()->allocation.width -
-                                          (ltr ? 15 : 0),
+                                      std::max(0, widget()->allocation.width -
+                                                  (ltr ? 15 : 0)),
                                       0);
 
   GtkRequisition req;
