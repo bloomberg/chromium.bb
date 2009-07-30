@@ -5,6 +5,7 @@
 #include "chrome/browser/memory_details.h"
 #include <psapi.h>
 
+#include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -14,22 +15,13 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/url_constants.h"
+#include "grit/chromium_strings.h"
 
 class RenderViewHostDelegate;
 
 // Template of static data we use for finding browser process information.
 // These entries must match the ordering for MemoryDetails::BrowserProcess.
-static ProcessData
-    g_process_template[MemoryDetails::MAX_BROWSERS] = {
-    { L"Chromium", L"chrome.exe", },
-    { L"IE", L"iexplore.exe", },
-    { L"Firefox", L"firefox.exe", },
-    { L"Opera", L"opera.exe", },
-    { L"Safari", L"safari.exe", },
-    { L"IE (64bit)", L"iexplore.exe", },
-    { L"Konqueror", L"konqueror.exe", },
-  };
-
+static ProcessData g_process_template[MemoryDetails::MAX_BROWSERS];
 
 // About threading:
 //
@@ -46,6 +38,18 @@ static ProcessData
 
 MemoryDetails::MemoryDetails()
   : ui_loop_(NULL) {
+  static const std::wstring google_browser_name =
+    l10n_util::GetString(IDS_PRODUCT_NAME);
+  ProcessData g_process_template[MemoryDetails::MAX_BROWSERS] = {
+    { google_browser_name.c_str(), L"chrome.exe", },
+    { L"IE", L"iexplore.exe", },
+    { L"Firefox", L"firefox.exe", },
+    { L"Opera", L"opera.exe", },
+    { L"Safari", L"safari.exe", },
+    { L"IE (64bit)", L"iexplore.exe", },
+    { L"Konqueror", L"konqueror.exe", },
+  };
+
   for (int index = 0; index < arraysize(g_process_template); ++index) {
     process_data_[index].name = g_process_template[index].name;
     process_data_[index].process_name = g_process_template[index].process_name;
