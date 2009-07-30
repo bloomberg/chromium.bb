@@ -325,8 +325,8 @@ void RenderWidgetHostViewWin::MovePluginWindows(
         ::ShowWindow(window, SW_SHOW);  // Window was created hidden.
       } else if (::GetParent(parent) != m_hWnd) {
         // The renderer should only be trying to move windows that are children
-        // of its render widget window.
-        NOTREACHED();
+        // of its render widget window. However, this may happen as a result of
+        // a race condition, so we ignore it and not kill the plugin process.
         continue;
       }
 
