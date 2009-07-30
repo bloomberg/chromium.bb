@@ -373,12 +373,10 @@ void PluginInstance::DidReceiveManualResponse(const std::string& url,
     response_url = instance_url_.spec();
   }
 
-  bool cancel = false;
-
   plugin_data_stream_ = CreateStream(-1, url, mime_type, false, NULL);
 
   plugin_data_stream_->DidReceiveResponse(mime_type, headers, expected_length,
-                                          last_modified, true, &cancel);
+                                          last_modified, true);
 }
 
 void PluginInstance::DidReceiveManualData(const char* buffer, int length) {

@@ -183,20 +183,19 @@ IPC_BEGIN_MESSAGES(Plugin)
                              int /* id */,
                              GURL /* url */)
 
-  IPC_SYNC_MESSAGE_ROUTED1_1(PluginMsg_DidReceiveResponse,
-                             PluginMsg_DidReceiveResponseParams,
-                             bool /* cancel */)
+  IPC_MESSAGE_ROUTED1(PluginMsg_DidReceiveResponse,
+                      PluginMsg_DidReceiveResponseParams)
 
-  IPC_SYNC_MESSAGE_ROUTED3_0(PluginMsg_DidReceiveData,
-                             int /* id */,
-                             std::vector<char> /* buffer */,
-                             int /* data_offset */)
+  IPC_MESSAGE_ROUTED3(PluginMsg_DidReceiveData,
+                      int /* id */,
+                      std::vector<char> /* buffer */,
+                      int /* data_offset */)
 
-  IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_DidFinishLoading,
-                             int /* id */)
+  IPC_MESSAGE_ROUTED1(PluginMsg_DidFinishLoading,
+                      int /* id */)
 
-  IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_DidFail,
-                             int /* id */)
+  IPC_MESSAGE_ROUTED1(PluginMsg_DidFail,
+                      int /* id */)
 
   IPC_MESSAGE_ROUTED5(PluginMsg_SendJavaScriptStream,
                       std::string /* url */,
