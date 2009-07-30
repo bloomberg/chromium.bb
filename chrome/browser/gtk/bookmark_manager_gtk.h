@@ -279,6 +279,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   GtkWidget* search_entry_;
   Profile* profile_;
   BookmarkModel* model_;
+  GtkWidget* paned_;
   GtkWidget* left_tree_view_;
   GtkWidget* right_tree_view_;
 

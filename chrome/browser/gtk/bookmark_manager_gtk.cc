@@ -331,6 +331,9 @@ BookmarkManagerGtk::BookmarkManagerGtk(Profile* profile)
 }
 
 BookmarkManagerGtk::~BookmarkManagerGtk() {
+  g_browser_process->local_state()->SetInteger(
+      prefs::kBookmarkManagerSplitLocation,
+      gtk_paned_get_position(GTK_PANED(paned_)));
   SaveColumnConfiguration();
   model_->RemoveObserver(this);
 }
@@ -403,15 +406,26 @@ void BookmarkManagerGtk::InitWidgets() {
   GtkWidget* left_pane = MakeLeftPane();
   GtkWidget* right_pane = MakeRightPane();
 
-  GtkWidget* paned = gtk_hpaned_new();
+  paned_ = gtk_hpaned_new();
+  gtk_paned_pack1(GTK_PANED(paned_), left_pane, FALSE, FALSE);
+  gtk_paned_pack2(GTK_PANED(paned_), right_pane, TRUE, FALSE);
+
   // Set the initial position of the pane divider.
-  gtk_paned_set_position(GTK_PANED(paned), width / 3);
-  gtk_paned_pack1(GTK_PANED(paned), left_pane, FALSE, FALSE);
-  gtk_paned_pack2(GTK_PANED(paned), right_pane, TRUE, FALSE);
+  int split_x = g_browser_process->local_state()->GetInteger(
+      prefs::kBookmarkManagerSplitLocation);
+  if (split_x == -1) {
+    split_x = width / 3;
+  } else {
+    int min_split_size = width / 8;
+    // Make sure the user can see both the tree/table.
+    split_x = std::min(width - min_split_size,
+                       std::max(min_split_size, split_x));
+  }
+  gtk_paned_set_position(GTK_PANED(paned_), split_x);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), paned, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), paned_, TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(window_), vbox);
 
   ResetOrganizeMenu(true);
