@@ -104,9 +104,11 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
   virtual void DispatchWillSendRequest(WebKit::WebURLRequest* request);
   virtual void ExecuteScript(const WebKit::WebScriptSource& source);
   virtual void ExecuteScriptInNewContext(
-      const WebKit::WebScriptSource* sources, int num_sources);
+      const WebKit::WebScriptSource* sources, int num_sources,
+      int extension_group);
   virtual void ExecuteScriptInNewWorld(
-      const WebKit::WebScriptSource* sources, int num_sources);
+      const WebKit::WebScriptSource* sources, int num_sources,
+      int extension_group);
   virtual bool InsertCSSStyles(const std::string& css);
   virtual WebKit::WebHistoryItem GetPreviousHistoryItem() const;
   virtual WebKit::WebHistoryItem GetCurrentHistoryItem() const;

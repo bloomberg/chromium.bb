@@ -107,6 +107,11 @@ void registerExtension(v8::Extension* extension,
     WebCore::V8Proxy::registerExtension(extension, schemeRestriction);
 }
 
+void registerExtension(v8::Extension* extension, int extensionGroup)
+{
+    WebCore::V8Proxy::registerExtension(extension, extensionGroup);
+}
+
 void flushConsoleMessages()
 {
     WebCore::V8Proxy::processConsoleMessages();

@@ -28,6 +28,7 @@
 #include "chrome/plugin/plugin_channel_base.h"
 #endif
 #include "chrome/renderer/devtools_agent_filter.h"
+#include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -349,19 +350,25 @@ void RenderThread::EnsureWebKitInitialized() {
   WebKit::registerExtension(extensions_v8::LoadTimesExtension::Get());
   WebKit::registerExtension(extensions_v8::ExternalExtension::Get());
 
-  WebKit::registerExtension(ExtensionProcessBindings::Get(),
-      WebKit::WebString::fromUTF8(chrome::kExtensionScheme));
+  const WebKit::WebString kExtensionScheme =
+      WebKit::WebString::fromUTF8(chrome::kExtensionScheme);
+
+  WebKit::registerExtension(ExtensionProcessBindings::Get(), kExtensionScheme);
+
+  WebKit::registerExtension(BaseJsV8Extension::Get(),
+                            EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebKit::registerExtension(BaseJsV8Extension::Get(), kExtensionScheme);
+  WebKit::registerExtension(JsonSchemaJsV8Extension::Get(),
+                            EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebKit::registerExtension(JsonSchemaJsV8Extension::Get(), kExtensionScheme);
+  WebKit::registerExtension(EventBindings::Get(),
+                            EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebKit::registerExtension(EventBindings::Get(), kExtensionScheme);
+  WebKit::registerExtension(RendererExtensionBindings::Get(),
+                            EXTENSION_GROUP_CONTENT_SCRIPTS);
+  WebKit::registerExtension(RendererExtensionBindings::Get(), kExtensionScheme);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  // TODO(aa): Add a way to restrict extensions to the content script context
-  // only so that we don't have to gate these on --enable-extensions.
-  if (command_line.HasSwitch(switches::kEnableExtensions)) {
-    WebKit::registerExtension(BaseJsV8Extension::Get());
-    WebKit::registerExtension(JsonSchemaJsV8Extension::Get());
-    WebKit::registerExtension(EventBindings::Get());
-    WebKit::registerExtension(RendererExtensionBindings::Get());
-  }
 
   if (command_line.HasSwitch(switches::kEnableBenchmarking))
     WebKit::registerExtension(extensions_v8::BenchmarkingExtension::Get());

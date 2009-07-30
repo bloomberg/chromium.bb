@@ -139,16 +139,24 @@ class WebFrame {
   // Executes JavaScript in a new context associated with the web frame. The
   // script gets its own global scope and its own prototypes for intrinsic
   // JavaScript objects (String, Array, and so-on). It shares the wrappers for
-  // all DOM nodes and DOM constructors.
+  // all DOM nodes and DOM constructors. extension_group is an
+  // embedder-provided specifier that controls which v8 extensions are loaded
+  // into the new context - see WebKit::registerExtension for the corresponding
+  // specifier.
   virtual void ExecuteScriptInNewContext(
-      const WebKit::WebScriptSource* sources, int num_sources) = 0;
+      const WebKit::WebScriptSource* sources, int num_sources,
+      int extension_group) = 0;
 
   // Executes JavaScript in a new world associated with the web frame. The
   // script gets its own global scope and its own prototypes for intrinsic
   // JavaScript objects (String, Array, and so-on). It also gets its own
-  // wrappers for all DOM nodes and DOM constructors.
+  // wrappers for all DOM nodes and DOM constructors. extension_group is an
+  // embedder-provided specifier that controls which v8 extensions are loaded
+  // into the new context - see WebKit::registerExtension for the corresponding
+  // specifier.
   virtual void ExecuteScriptInNewWorld(
-      const WebKit::WebScriptSource* sources, int num_sources) = 0;
+      const WebKit::WebScriptSource* sources, int num_sources,
+      int extension_group) = 0;
 
   // Inserts the given CSS styles at the beginning of the document.
   virtual bool InsertCSSStyles(const std::string& css) = 0;

@@ -193,7 +193,8 @@ const char* RendererExtensionBindings::kName =
     "chrome/RendererExtensionBindings";
 
 v8::Extension* RendererExtensionBindings::Get() {
-  return new ExtensionImpl();
+  static v8::Extension* extension = new ExtensionImpl();
+  return extension;
 }
 
 void RendererExtensionBindings::Invoke(const std::string& function_name,

@@ -1603,7 +1603,8 @@ bool WebFrameImpl::InsertCSSStyles(const std::string& css) {
 }
 
 void WebFrameImpl::ExecuteScriptInNewContext(
-    const WebScriptSource* sources_in, int num_sources) {
+    const WebScriptSource* sources_in, int num_sources,
+      int extension_group) {
   Vector<WebCore::ScriptSourceCode> sources;
 
   for (int i = 0; i < num_sources; ++i) {
@@ -1613,11 +1614,12 @@ void WebFrameImpl::ExecuteScriptInNewContext(
         sources_in[i].startLine));
   }
 
-  frame_->script()->evaluateInNewContext(sources);
+  frame_->script()->evaluateInNewContext(sources, extension_group);
 }
 
 void WebFrameImpl::ExecuteScriptInNewWorld(
-    const WebScriptSource* sources_in, int num_sources) {
+    const WebScriptSource* sources_in, int num_sources,
+      int extension_group) {
   Vector<WebCore::ScriptSourceCode> sources;
 
   for (int i = 0; i < num_sources; ++i) {
@@ -1627,7 +1629,7 @@ void WebFrameImpl::ExecuteScriptInNewWorld(
         sources_in[i].startLine));
   }
 
-  frame_->script()->evaluateInNewWorld(sources);
+  frame_->script()->evaluateInNewWorld(sources, extension_group);
 }
 
 std::wstring WebFrameImpl::GetName() {

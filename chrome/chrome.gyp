@@ -2518,6 +2518,7 @@
         'renderer/devtools_client.h',
         'renderer/dom_ui_bindings.cc',
         'renderer/dom_ui_bindings.h',
+        'renderer/extension_groups.h',
         'renderer/external_host_bindings.cc',
         'renderer/external_host_bindings.h',
         'renderer/external_extension.cc',

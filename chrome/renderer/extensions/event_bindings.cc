@@ -107,8 +107,9 @@ class ExtensionImpl : public ExtensionBase {
 const char* EventBindings::kName = "chrome/EventBindings";
 
 v8::Extension* EventBindings::Get() {
+  static v8::Extension* extension = new ExtensionImpl();
   bindings_registered = true;
-  return new ExtensionImpl();
+  return extension;
 }
 
 // static

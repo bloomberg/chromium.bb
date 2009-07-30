@@ -13,13 +13,17 @@ using bindings_utils::GetStringResource;
 // BaseJsV8Extension
 const char* BaseJsV8Extension::kName = "chrome/base";
 v8::Extension* BaseJsV8Extension::Get() {
-  return new v8::Extension(kName, GetStringResource<IDR_DEVTOOLS_BASE_JS>(),
-                           0, NULL);
+  static v8::Extension* extension =
+      new v8::Extension(kName, GetStringResource<IDR_DEVTOOLS_BASE_JS>(),
+                        0, NULL);
+  return extension;
 }
 
 // JsonSchemaJsV8Extension
 const char* JsonSchemaJsV8Extension::kName = "chrome/jsonschema";
 v8::Extension* JsonSchemaJsV8Extension::Get() {
-  return new v8::Extension(kName, GetStringResource<IDR_JSON_SCHEMA_JS>(),
-                           0, NULL);
+  static v8::Extension* extension =
+      new v8::Extension(kName, GetStringResource<IDR_JSON_SCHEMA_JS>(),
+                        0, NULL);
+  return extension;
 }

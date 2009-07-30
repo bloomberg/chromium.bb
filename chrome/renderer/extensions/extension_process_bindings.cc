@@ -205,7 +205,8 @@ class ExtensionImpl : public ExtensionBase {
 }  // namespace
 
 v8::Extension* ExtensionProcessBindings::Get() {
-  return new ExtensionImpl();
+  static v8::Extension* extension = new ExtensionImpl();
+  return extension;
 }
 
 void ExtensionProcessBindings::SetFunctionNames(

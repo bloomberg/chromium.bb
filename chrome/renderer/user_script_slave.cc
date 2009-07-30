@@ -11,6 +11,7 @@
 #include "base/pickle.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "chrome/renderer/extension_groups.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/glue/webframe.h"
@@ -160,7 +161,8 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
                 StringPrintf(kInitExtension, script->extension_id().c_str()))));
       }
 
-      frame->ExecuteScriptInNewWorld(&sources.front(), sources.size());
+      frame->ExecuteScriptInNewWorld(&sources.front(), sources.size(),
+                                     EXTENSION_GROUP_CONTENT_SCRIPTS);
     }
   }
 

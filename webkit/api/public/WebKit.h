@@ -69,13 +69,18 @@ namespace WebKit {
     // any other URL scheme.
     WEBKIT_API void registerURLSchemeAsNoAccess(const WebString&);
 
-    // Registers a v8 extension to be available on webpages with a particular
-    // scheme. If the scheme argument is empty, the extension is available on
-    // all pages. Will only affect v8 contexts initialized after this call.
-    // Takes ownership of the v8::Extension object passed.
+    // Registers a v8 extension to be available on webpages. The three forms
+    // offer various restrictions on what types of contexts the extension is
+    // loaded into. If a scheme is provided, only pages whose URL has the given
+    // scheme will match. If extensionGroup is provided, the extension will only
+    // be loaded into scripts run via WebFrame::ExecuteInNewWorld with the
+    // matching group.
+    // Will only affect v8 contexts initialized after this call. Takes ownership
+    // of the v8::Extension object passed.
     WEBKIT_API void registerExtension(v8::Extension*);
     WEBKIT_API void registerExtension(v8::Extension*,
                                       const WebString& schemeRestriction);
+    WEBKIT_API void registerExtension(v8::Extension*, int extensionGroup);
 
     // Process any pending JavaScript console messages.
     WEBKIT_API void flushConsoleMessages();
