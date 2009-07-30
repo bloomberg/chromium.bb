@@ -305,71 +305,6 @@ static int LoadFuncSymbols(struct nlist *list,
   return cur_list - list;
 }
 
-// Comapre the address.
-// The argument should have a memeber named "addr"
-template<class T1, class T2>
-static bool CompareAddress(T1 *a, T2 *b) {
-  return a->addr < b->addr;
-}
-
-// Sort the array into increasing ordered array based on the virtual address.
-// Return vector of pointers to the elements in the incoming array. So caller
-// should make sure the returned vector lives longer than the incoming vector.
-template<class Container>
-static std::vector<typename Container::value_type *> SortByAddress(
-    Container *container) {
-  typedef typename Container::iterator It;
-  typedef typename Container::value_type T;
-  std::vector<T *> sorted_array_ptr;
-  sorted_array_ptr.reserve(container->size());
-  for (It it = container->begin(); it != container->end(); it++)
-    sorted_array_ptr.push_back(&(*it));
-  std::sort(sorted_array_ptr.begin(),
-            sorted_array_ptr.end(),
-            std::ptr_fun(CompareAddress<T, T>));
-
-  return sorted_array_ptr;
-}
-
-// Find the address of the next function or source file symbol in the symbol
-// table. The address should be bigger than the current function's address.
-static ElfW(Addr) NextAddress(
-    std::vector<struct FuncInfo *> *sorted_functions,
-    std::vector<struct SourceFileInfo *> *sorted_files,
-    const struct FuncInfo &func_info) {
-  std::vector<struct FuncInfo *>::iterator next_func_iter =
-    std::find_if(sorted_functions->begin(),
-                 sorted_functions->end(),
-                 std::bind1st(
-                     std::ptr_fun(
-                         CompareAddress<struct FuncInfo,
-                                        struct FuncInfo>
-                         ),
-                     &func_info)
-                );
-  std::vector<struct SourceFileInfo *>::iterator next_file_iter =
-    std::find_if(sorted_files->begin(),
-                 sorted_files->end(),
-                 std::bind1st(
-                     std::ptr_fun(
-                         CompareAddress<struct FuncInfo,
-                                        struct SourceFileInfo>
-                         ),
-                     &func_info)
-                );
-  if (next_func_iter != sorted_functions->end()) {
-    if (next_file_iter != sorted_files->end())
-      return std::min((*next_file_iter)->addr, (*next_func_iter)->addr);
-    else
-      return (*next_func_iter)->addr;
-  } else {
-    if (next_file_iter != sorted_files->end())
-      return (*next_file_iter)->addr;
-    else
-      return 0;
-  }
-}
-
 // Add included file information.
 // Also fix the source id for the line info.
 static void AddIncludedFiles(struct SymbolInfo *symbols,
@@ -442,21 +377,37 @@ static void AddIncludedFiles(struct SymbolInfo *symbols,
 // Compute size and rva information based on symbols loaded from stab section.
 static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
                               struct SymbolInfo *symbols) {
+  SourceFileInfoList::iterator file_it;
+  FuncInfoList::iterator func_it;
+  LineInfoList::iterator line_it;
+
+  // A table of all the addresses at which files and functions start.
+  // We build this from our lists, sort it, and then use it to find
+  // the ends of functions and source lines for which we have no size
+  // information.
+  std::vector<ElfW(Addr)> boundaries;
+  for (file_it = symbols->source_file_info.begin();
+       file_it != symbols->source_file_info.end(); file_it++) {
+    boundaries.push_back(file_it->addr);
+    for (func_it = file_it->func_info.begin();
+         func_it != file_it->func_info.end(); func_it++)
+      boundaries.push_back(func_it->addr);
+  }
+  std::sort(boundaries.begin(), boundaries.end());
+
   int no_next_addr_count = 0;
-  std::vector<struct SourceFileInfo *> sorted_files =
-    SortByAddress(&(symbols->source_file_info));
-  for (size_t i = 0; i < sorted_files.size(); ++i) {
-    struct SourceFileInfo &source_file = *sorted_files[i];
-    std::vector<struct FuncInfo *> sorted_functions =
-      SortByAddress(&(source_file.func_info));
-    for (size_t j = 0; j < sorted_functions.size(); ++j) {
-      struct FuncInfo &func_info = *sorted_functions[j];
+  for (file_it = symbols->source_file_info.begin();
+       file_it != symbols->source_file_info.end(); file_it++) {
+    for (func_it = file_it->func_info.begin();
+         func_it != file_it->func_info.end(); func_it++) {
+      struct FuncInfo &func_info = *func_it;
       assert(func_info.addr >= loading_addr);
       func_info.rva_to_base = func_info.addr - loading_addr;
       func_info.size = 0;
-      ElfW(Addr) next_addr = NextAddress(&sorted_functions,
-                                         &sorted_files,
-                                         func_info);
+      std::vector<ElfW(Addr)>::iterator boundary
+        = std::upper_bound(boundaries.begin(), boundaries.end(),
+                           func_info.addr);
+      ElfW(Addr) next_addr = (boundary == boundaries.end()) ? 0 : *boundary;
       // I've noticed functions with an address bigger than any other functions
       // and source files modules, this is probably the last function in the
       // module, due to limitions of Linux stab symbol, it is impossible to get
@@ -491,15 +442,15 @@ static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
         func_info.size = kDefaultSize;
       }
       // Compute line size.
-      for (LineInfoList::iterator line_info_it = func_info.line_info.begin(); 
-	   line_info_it != func_info.line_info.end(); line_info_it++) {
-        struct LineInfo &line_info = *line_info_it;
-	LineInfoList::iterator next_line_info_it = line_info_it;
-	next_line_info_it++;
+      for (line_it = func_info.line_info.begin(); 
+	   line_it != func_info.line_info.end(); line_it++) {
+        struct LineInfo &line_info = *line_it;
+	LineInfoList::iterator next_line_it = line_it;
+	next_line_it++;
         line_info.size = 0;
-        if (next_line_info_it != func_info.line_info.end()) {
+        if (next_line_it != func_info.line_info.end()) {
           line_info.size =
-            next_line_info_it->rva_to_func - line_info.rva_to_func;
+            next_line_it->rva_to_func - line_info.rva_to_func;
         } else {
           // The last line in the function.
           // If we can find a function or source file symbol immediately
