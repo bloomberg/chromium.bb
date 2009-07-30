@@ -74,10 +74,11 @@ class ChromeURLRequestContext : public URLRequestContext,
   // Gets the Privacy Blacklist, if any for this context.
   const Blacklist* blacklist() const { return blacklist_; }
 
-private:
+ protected:
   // Private constructor, use the static factory methods instead. This is
   // expected to be called on the UI thread.
   ChromeURLRequestContext(Profile* profile);
+  ChromeURLRequestContext(ChromeURLRequestContext* other);
 
   // Create a request context for media resources from a regular request
   // context. This helper method is called from CreateOriginalForMedia and

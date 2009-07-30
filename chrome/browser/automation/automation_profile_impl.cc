@@ -3,27 +3,37 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/automation_profile_impl.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/test/automation/automation_messages.h"
-#include "net/url_request/url_request_context.h"
 
 // A special Request context for automation. Substitute a few things
 // like cookie store, proxy settings etc to handle them differently
 // for automation.
-class AutomationURLRequestContext : public URLRequestContext {
+class AutomationURLRequestContext : public ChromeURLRequestContext {
  public:
   AutomationURLRequestContext(URLRequestContext* original_context,
-                              net::CookieStore* automation_cookie_store) {
-    host_resolver_ = original_context->host_resolver();
-    proxy_service_ = original_context->proxy_service();
-    http_transaction_factory_ = original_context->http_transaction_factory();
-    ftp_transaction_factory_ = original_context->ftp_transaction_factory();
+                              net::CookieStore* automation_cookie_store)
+        // All URLRequestContexts in chrome extend from ChromeURLRequestContext
+      : ChromeURLRequestContext(static_cast<ChromeURLRequestContext*>(
+            original_context)) {
     cookie_store_ = automation_cookie_store;
-    cookie_policy_.set_type(original_context->cookie_policy()->type());
-    force_tls_state_ = original_context->force_tls_state();
-    // ftp_auth_cache_ = original_context->ftp_auth_cache();
-    accept_language_ = original_context->accept_language();
-    accept_charset_ = original_context->accept_charset();
-    referrer_charset_ = original_context->referrer_charset();
+  }
+
+  ~AutomationURLRequestContext() {
+    // Clear out members before calling base class dtor since we don't
+    // own any of them.
+
+    // Clear URLRequestContext members.
+    host_resolver_ = NULL;
+    proxy_service_ = NULL;
+    http_transaction_factory_ = NULL;
+    ftp_transaction_factory_ = NULL;
+    cookie_store_ = NULL;
+    force_tls_state_ = NULL;
+
+    // Clear ChromeURLRequestContext members.
+    prefs_ = NULL;
+    blacklist_ = NULL;
   }
 
  private:

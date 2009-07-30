@@ -324,6 +324,29 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
   }
 }
 
+ChromeURLRequestContext::ChromeURLRequestContext(
+    ChromeURLRequestContext* other) {
+  // Set URLRequestContext members
+  host_resolver_ = other->host_resolver_;
+  proxy_service_ = other->proxy_service_;
+  http_transaction_factory_ = other->http_transaction_factory_;
+  ftp_transaction_factory_ = other->ftp_transaction_factory_;
+  cookie_store_ = other->cookie_store_;
+  cookie_policy_.set_type(other->cookie_policy_.type());
+  force_tls_state_ = other->force_tls_state_;
+  accept_language_ = other->accept_language_;
+  accept_charset_ = other->accept_charset_;
+  referrer_charset_ = other->referrer_charset_;
+
+  // Set ChromeURLRequestContext members
+  extension_paths_ = other->extension_paths_;
+  user_script_dir_path_ = other->user_script_dir_path_;
+  prefs_ = other->prefs_;
+  blacklist_ = other->blacklist_;
+  is_media_ = other->is_media_;
+  is_off_the_record_ = other->is_off_the_record_;
+}
+
 // NotificationObserver implementation.
 void ChromeURLRequestContext::Observe(NotificationType type,
                                       const NotificationSource& source,

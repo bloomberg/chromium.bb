@@ -811,6 +811,7 @@ TEST_F(ExternalTabTestType, IncognitoMode) {
     gfx::Rect(),
     WS_POPUP,
     true,
+    false,
     false
   };
   HWND external_tab_container = NULL;
@@ -848,6 +849,7 @@ TEST_F(ExternalTabTestType, ExternalTabPostMessage) {
     NULL,
     gfx::Rect(),
     WS_POPUP,
+    false,
     false,
     false
   };
@@ -891,6 +893,7 @@ TEST_F(ExternalTabTestType, ExternalTabPostMessageTarget) {
     NULL,
     gfx::Rect(),
     WS_POPUP,
+    false,
     false,
     false
   };
