@@ -301,7 +301,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "stress-js-execution.html",
     "use-machine-stack.html",
     "worker-close.html",
-    "worker-constructor.html",
+    //"worker-constructor.html",
     "worker-context-gc.html",
     "worker-event-listener.html",
     "worker-gc.html",
