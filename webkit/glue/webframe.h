@@ -83,7 +83,7 @@ class WebFrame {
 #if WEBKIT_USING_V8
   // Returns the V8 context for this frame, or an empty handle if there is
   // none.
-  virtual v8::Local<v8::Context> GetScriptContext() = 0;
+  virtual v8::Local<v8::Context> GetMainWorldScriptContext() = 0;
 #endif
 
   // Reload the current document.

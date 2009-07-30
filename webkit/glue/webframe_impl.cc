@@ -785,11 +785,11 @@ NPObject* WebFrameImpl::GetWindowNPObject() {
 #if USE(V8)
   // Returns the V8 context for this frame, or an empty handle if there is
   // none.
-v8::Local<v8::Context> WebFrameImpl::GetScriptContext() {
+v8::Local<v8::Context> WebFrameImpl::GetMainWorldScriptContext() {
   if (!frame_)
     return v8::Local<v8::Context>();
 
-  return frame_->script()->proxy()->context();
+  return WebCore::V8Proxy::mainWorldContext(frame_);
 }
 #endif
 

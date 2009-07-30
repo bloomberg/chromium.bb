@@ -188,7 +188,7 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
 
   v8::HandleScope handle_scope;
   ContextList& contexts = GetContexts();
-  v8::Local<v8::Context> frame_context = frame->GetScriptContext();
+  v8::Local<v8::Context> frame_context = frame->GetMainWorldScriptContext();
   v8::Local<v8::Context> context = v8::Context::GetCurrent();
   DCHECK(!context.IsEmpty());
   DCHECK(bindings_utils::FindContext(context) == contexts.end());
@@ -245,7 +245,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
     return;
 
   v8::HandleScope handle_scope;
-  v8::Local<v8::Context> context = frame->GetScriptContext();
+  v8::Local<v8::Context> context = frame->GetMainWorldScriptContext();
   DCHECK(!context.IsEmpty());
 
   ContextList::iterator context_iter = bindings_utils::FindContext(context);

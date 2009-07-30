@@ -61,9 +61,9 @@ void DebuggerAgentImpl::GetContextId() {
 
 void DebuggerAgentImpl::StartProfiling() {
   v8::HandleScope scope;
-  WebCore::V8Proxy* proxy = V8Proxy::retrieve(GetPage()->mainFrame());
-  DCHECK(proxy && proxy->isContextInitialized());
-  v8::Context::Scope context_scope(proxy->context());
+  WebCore::Frame* frame = GetPage()->mainFrame();
+  DCHECK(V8Proxy::retrieve(GetPage()->mainFrame())->isContextInitialized());
+  v8::Context::Scope context_scope(V8Proxy::context(frame));
   v8::V8::ResumeProfiler();
 }
 
