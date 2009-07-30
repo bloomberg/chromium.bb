@@ -87,7 +87,12 @@ class LocationBarViewGtk : public AutocompleteEditController,
     return reinterpret_cast<LocationBarViewGtk*>(userdata)->
         HandleExpose(widget, event);
   }
+
   gboolean HandleExpose(GtkWidget* widget, GdkEventExpose* event);
+
+  static gboolean OnSecurityIconPressed(GtkWidget* sender,
+                                        GdkEventButton* event,
+                                        LocationBarViewGtk* location_bar);
 
   // Set the SSL icon we should be showing.
   void SetSecurityIcon(ToolbarModel::Icon icon);
