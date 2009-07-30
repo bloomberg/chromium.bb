@@ -1,16 +1,15 @@
 vars = {
-  "chromium_trunk":
-    "http://src.chromium.org/svn/trunk",
+  "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "28",
   "chromium_rev": "21287",
   "o3d_code_rev": "109",
   "skia_rev": "279",
-  "gyp_rev": "553",
+  "gyp_rev": "563",
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "346",
-  "icu38_rev": "20192",
   "v8_rev": "2507",
+  "icu38_rev": "20192",
 }
 
 deps = {
@@ -38,9 +37,6 @@ deps = {
   "third_party/scons":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/scons@" + Var("o3d_code_rev"),
 
-  "third_party/selenium_rc":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/selenium_rc@" + Var("o3d_code_rev"),
-
   "third_party/vectormath":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/vectormath@" + Var("o3d_code_rev"),
 
@@ -49,6 +45,9 @@ deps = {
 
   "third_party/zip_utils":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zip_utils@" + Var("o3d_code_rev"),
+
+  "third_party/selenium_rc":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/selenium_rc@" + Var("o3d_code_rev"),
 
 # Stuff from the Chromium tree.
 

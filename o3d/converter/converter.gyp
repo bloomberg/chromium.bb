@@ -35,6 +35,7 @@
         '../import/import.gyp:o3dImport',
         '../serializer/serializer.gyp:o3dSerializer',
         '../utils/utils.gyp:o3dUtils',
+        '../build/libs.gyp:cg_libs',
       ],
       'sources': [
         'cross/buffer_stub.cc',

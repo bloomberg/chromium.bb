@@ -25,9 +25,10 @@
         '../import/import.gyp:o3dImport',
         '../plugin/idl/idl.gyp:o3dPluginIdl',
         '../plugin/plugin.gyp:add_version',
-        '../plugin/plugin.gyp:o3dPlugin',
+        '../plugin/plugin.gyp:npo3dautoplugin',
         '../plugin/plugin.gyp:o3dPluginLogging',
         '../serializer/serializer.gyp:o3dSerializer',
+        '../samples/samples.gyp:*',
         '../statsreport/statsreport.gyp:o3dStatsReport',
         '../tests/tests.gyp:unit_tests',
         '../utils/utils.gyp:o3dUtils',
@@ -36,7 +37,7 @@
         ['OS=="win"',
           {
             'dependencies': [
-              '../plugin/plugin.gyp:o3dActiveXHost',
+              '../plugin/plugin.gyp:o3d_host',
             ],
           },
         ],

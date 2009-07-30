@@ -24,7 +24,7 @@
   },
   'targets': [
     {
-      'target_name': 'o3dPlugin',
+      'target_name': 'npo3dautoplugin',
       'type': '<(o3d_main_lib_type)',
       'dependencies': [
         '../../<(jpegdir)/libjpeg.gyp:libjpeg',
@@ -217,7 +217,7 @@
       {
         'targets': [
           {
-            'target_name': 'o3dActiveXHost',
+            'target_name': 'o3d_host',
             'type': 'shared_library',
             'include_dirs': [
               '<(INTERMEDIATE_DIR)',

@@ -20,6 +20,9 @@
     {
       'target_name': 'o3dSerializer',
       'type': 'static_library',
+      'dependencies': [
+        '../import/import.gyp:o3dSerializationObjects',
+      ],
       'sources': [
         'cross/serializer.cc',
         'cross/serializer.h',

@@ -715,6 +715,7 @@ bool MessageQueue::ProcessUnregisterSharedMemory(ConnectedClient* client,
 
   bool res = client->UnregisterSharedMemory(buffer_id);
   SendBooleanResponse(client->client_handle(), res);
+  return true;
 }
 
 

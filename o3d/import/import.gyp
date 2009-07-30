@@ -86,6 +86,15 @@
       ],
     },
     {
+      'target_name': 'o3dSerializationObjects',
+      'type': 'static_library',
+      'sources': [
+        'cross/camera_info.cc',
+        'cross/destination_buffer.cc',
+        'cross/json_object.cc',
+      ],
+    },
+    {
       'target_name': 'o3dImportTest',
       'type': 'none',
       'direct_dependent_settings': {

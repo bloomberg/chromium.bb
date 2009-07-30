@@ -40,7 +40,7 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(nacldir)',
+          '../../<(nacldir)',
         ],
         'libraries': [
           '<(nacl_output_dir)/google_nacl_imc<(LIBRARY_SUFFIX)',
