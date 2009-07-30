@@ -87,10 +87,10 @@ SUBSTRING : masksuperblitter::~masksuperblitter
 PREFIX : webplugindelegatestub::onmessagereceived___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop
 
 # 18058
-PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write___npapi::pluginstream::trywritetoplugin
+SUBSTRING : webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write___npapi::pluginstream::trywritetoplugin
 
 # 18059
-PREFIX : malloc___base::subtle::refcountedthreadsafebase::release___npn_invalidaterect___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
+SUBSTRING : base::subtle::refcountedthreadsafebase::release___npn_invalidaterect___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
 
 # 18083
 PREFIX : webplugindelegateimpl::nativewndproc___npapi::plugininstance::npp_setwindow___webplugindelegateimpl::nativewndproc
