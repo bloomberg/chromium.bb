@@ -39,6 +39,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/file_version_info.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -86,6 +87,9 @@ const wchar_t crash_url[] = L"about:crash";
 // These are copied from v8 definitions as we cannot include them.
 const wchar_t kV8LogFileSwitch[] = L"logfile";
 const wchar_t kV8LogFileDefaultName[] = L"v8.log";
+
+// String name of local chrome dll for looking up file information.
+std::wstring kChromeDll = L"chrome.dll";
 
 bool append_page_id = false;
 int32 start_page;
@@ -145,6 +149,13 @@ class PageLoadTest : public UITest {
     // Create a test log.
     test_log_path = L"test_log.log";
     test_log.open(test_log_path.c_str());
+
+    // Check file version info for chrome dll.
+    FileVersionInfo* file_info;
+    file_info = FileVersionInfo::CreateFileVersionInfo(kChromeDll);
+    std::wstring last_change = file_info->last_change();
+    test_log << "Last Change: ";
+    test_log << last_change << std::endl;
 
     // Log timestamp for test start.
     base::Time time_now = base::Time::Now();
@@ -281,6 +292,9 @@ class PageLoadTest : public UITest {
 
     if (log_file.is_open() && save_debug_log && !continuous_load)
       SaveDebugLogs(log_file);
+    
+    // Log revision information for Chrome build under test.
+    log_file << " " << "revision=" << last_change;
 
     // Get crash dumps.
     LogOrDeleteNewCrashDumps(log_file, &metrics);
