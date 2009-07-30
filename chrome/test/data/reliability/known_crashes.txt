@@ -85,3 +85,7 @@ SUBSTRING : masksuperblitter::~masksuperblitter
 
 # 17710
 SUBSTRING : webcore::resourcerequestbase::url
+
+# 18056
+PREFIX : 
+WebPluginDelegateStub::OnMessageReceived___WebPluginDelegateImpl::NativeWndProc___base::MessagePumpForUI::DoRunLoop
