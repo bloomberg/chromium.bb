@@ -22,6 +22,7 @@ using bindings_utils::ContextList;
 using bindings_utils::GetContexts;
 using bindings_utils::GetPendingRequestMap;
 using bindings_utils::PendingRequest;
+using bindings_utils::PendingRequestMap;
 using bindings_utils::ExtensionBase;
 
 namespace {
@@ -218,21 +219,22 @@ void ExtensionProcessBindings::SetFunctionNames(
 void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
                                               const std::string& response,
                                               const std::string& error) {
-  PendingRequest* request = GetPendingRequestMap()[request_id].get();
-  if (!request)
+  PendingRequestMap& pending_requests = GetPendingRequestMap();
+  PendingRequestMap::iterator request = pending_requests.find(request_id);
+  if (request == pending_requests.end())
     return;  // The frame went away.
 
   v8::HandleScope handle_scope;
   v8::Handle<v8::Value> argv[5];
   argv[0] = v8::Integer::New(request_id);
-  argv[1] = v8::String::New(request->name.c_str());
+  argv[1] = v8::String::New(request->second->name.c_str());
   argv[2] = v8::Boolean::New(success);
   argv[3] = v8::String::New(response.c_str());
   argv[4] = v8::String::New(error.c_str());
   bindings_utils::CallFunctionInContext(
-      request->context, "handleResponse", arraysize(argv), argv);
+      request->second->context, "handleResponse", arraysize(argv), argv);
 
-  GetPendingRequestMap().erase(request_id);
+  pending_requests.erase(request);
 }
 
 // static
