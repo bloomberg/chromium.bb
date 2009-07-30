@@ -87,8 +87,11 @@
   } while (0)
 
 /*
- * By default, nacl_check_debug mode is 0, so DCHECKs are not
- * performed.  CHECKs are always performed.
+ * By default, nacl_check_debug mode is 0 in opt builds and 1 in dbg
+ * builds, so DCHECKs are only performed for dbg builds, though it's
+ * possible to change this (viz, as directed by a command line
+ * argument) by invoking NaClCheckSetDebugMode.  CHECKs are always
+ * performed.
  */
 extern void NaClCheckSetDebugMode(int mode);
 

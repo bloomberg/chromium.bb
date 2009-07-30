@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,25 +30,36 @@
  */
 
 /*
- * NaCl service runtime, support for check macros.
+ * NaCl Server Runtime logging code.
  */
 
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_LOG_INTERN_H__
+#define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_LOG_INTERN_H__
 
-#if _DEBUG
-int nacl_check_debug_mode = 1;
-#else
-int nacl_check_debug_mode = 0;
-#endif
+#include "native_client/src/include/nacl_base.h"
 
-void NaClCheckSetDebugMode(int mode) {
-  nacl_check_debug_mode = mode;
-}
+EXTERN_C_BEGIN
 
-void NaClCheckIntern(char *fmt, ...) {
-  va_list ap;
+/*
+ * The global variable gNaClLogAbortBehavior should only be modified
+ * by test code after NaClLogModuleInit() has been called.
+ *
+ * This variable is needed to make the test infrastructure simpler: on
+ * Windows, abort(3) causes the UI to pop up a window
+ * (Retry/Abort/Debug/etc), and while for CHECK macros (see
+ * nacl_check.h) we probably do normally want that kind of intrusive,
+ * in-your-face error reporting, running death tests on our testing
+ * infrastructure in a continuous build, continuous test environment
+ * cannot tolerate requiring any human interaction.  And since NaCl
+ * developers elsewhere will want to be able to run tests, including
+ * regedit kludgery to temporarily disable the popup is not a good
+ * idea -- even when scoped to the test application by name (need to
+ * do this for every death test), it should be feasible to have
+ * multiple copies of the svn source tree, and to run at least the
+ * small tests in those tree in parallel.
+ */
+extern void (*gNaClLogAbortBehavior)(void);
 
-  va_start(ap, fmt);
-  NaClLogV(LOG_FATAL, fmt, ap);
-  va_end(ap);
-}
+EXTERN_C_END
+
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_LOG_INTERN_H__ */

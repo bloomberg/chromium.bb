@@ -46,6 +46,7 @@
  */
 
 #include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/trusted/platform/nacl_log_intern.h"
 #include "native_client/src/trusted/platform/nacl_sync.h"
 #include "native_client/src/trusted/platform/nacl_threads.h"
 #include "native_client/src/trusted/platform/nacl_timestamp.h"
@@ -60,6 +61,9 @@ static int              verbosity = 0;
 static struct Gio       *log_stream = NULL;
 static struct GioFile   log_file_stream;
 static int              timestamp_enabled = 1;
+
+/* global, but explicitly not exposed in non-test header file */
+void (*gNaClLogAbortBehavior)(void) = abort;
 
 void NaClLogModuleInit() {
   NaClMutexCtor(&log_mu);
@@ -176,7 +180,7 @@ void  NaClLogV_mu(int         detail_level,
   }
 
   if (LOG_FATAL == detail_level) {
-    abort();
+    (*gNaClLogAbortBehavior)();
   }
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,26 +29,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * NaCl service runtime, support for check macros.
- */
+#include <stdio.h>
 
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
-
-#if _DEBUG
-int nacl_check_debug_mode = 1;
-#else
-int nacl_check_debug_mode = 0;
+#if defined(HAVE_SDL)
+#  include <SDL.h>
 #endif
 
-void NaClCheckSetDebugMode(int mode) {
-  nacl_check_debug_mode = mode;
+#include "native_client/src/include/portability.h"
+
+#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/trusted/platform/nacl_log_intern.h"
+#include "native_client/src/trusted/service_runtime/nacl_check.h"
+
+void MyAbort(void) {
+  exit(17);
 }
 
-void NaClCheckIntern(char *fmt, ...) {
-  va_list ap;
+int main(int ac,
+         char **av) {
+  int opt;
 
-  va_start(ap, fmt);
-  NaClLogV(LOG_FATAL, fmt, ap);
-  va_end(ap);
+
+  NaClLogModuleInit();
+  gNaClLogAbortBehavior = MyAbort;
+
+  while (-1 != (opt = getopt(ac, av, "cds:CD"))) {
+    switch (opt) {
+      case 'c':
+        CHECK(0);
+        break;
+      case 'd':
+        DCHECK(0);
+        break;
+      case 's':
+        NaClCheckSetDebugMode(strtol(optarg, (char **) 0, 0));
+        break;
+      case 'C':
+        CHECK(1);
+        break;
+      case 'D':
+        DCHECK(1);
+        break;
+    }
+  }
+  NaClLogModuleFini();
+  return 0;
 }

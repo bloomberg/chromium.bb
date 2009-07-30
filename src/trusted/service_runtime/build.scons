@@ -347,6 +347,55 @@ env.Requires(env_cleanser_test_exe, crt)
 env.Requires(env_cleanser_test_exe, sdl_dll)
 env.AddNodeToTestSuite(node, ['small_tests'])
 
+check_test_exe = env.ComponentProgram('nacl_check_test',
+                                      ['nacl_check_test.c'])
+node = env.CommandTestAgainstGoldenOutput(
+    'check_test.out',
+    [check_test_exe, '-C'])
+env.Requires(check_test_exe, crt)
+env.Requires(check_test_exe, sdl_dll)
+env.AddNodeToTestSuite(node, ['small_tests'])
+
+abort_exit = '17'  # magic, see nacl_check_test.c
+
+node = env.CommandTestAgainstGoldenOutput(
+    'check_test_death.out',
+    [check_test_exe, '-c'],
+    exit_status=abort_exit)  # abort()
+env.AddNodeToTestSuite(node, ['small_tests'])
+
+if env.Bit('debug'):
+  node = env.CommandTestAgainstGoldenOutput(
+      'dcheck_test_death.out',
+      [check_test_exe, '-d'],
+      exit_status=abort_exit)  # abort()
+else:
+  node = env.CommandTestAgainstGoldenOutput(
+      'dcheck_test_death.out',
+      [check_test_exe, '-d'])  # no abort()
+env.AddNodeToTestSuite(node, ['small_tests'])
+
+node = env.CommandTestAgainstGoldenOutput(
+    'check_test_always_death.out',
+    [check_test_exe, '-s', '0', '-C'])  # no abort
+env.AddNodeToTestSuite(node, ['small_tests'])
+
+node = env.CommandTestAgainstGoldenOutput(
+    'check_test_always_death.out',
+    [check_test_exe, '-s', '0', '-c'],
+    exit_status=abort_exit)  # abort
+env.AddNodeToTestSuite(node, ['small_tests'])
+
+node = env.CommandTestAgainstGoldenOutput(
+    'dcheck_test_never_death.out',
+    [check_test_exe, '-s', '0', '-d'])  # no abort
+env.AddNodeToTestSuite(node, ['small_tests'])
+
+node = env.CommandTestAgainstGoldenOutput(
+    'dcheck_test_always_death.out',
+    [check_test_exe, '-s', '1', '-d'],
+    exit_status=abort_exit)  # abort()
+env.AddNodeToTestSuite(node, ['small_tests'])
 
 # ----------------------------------------------------------
 # Integration Tests
