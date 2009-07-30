@@ -37,17 +37,17 @@ PageInfoModel::PageInfoModel(Profile* profile,
                              PageInfoModelObserver* observer)
     : observer_(observer) {
   bool state = true;
-  string16 head_line;
-  string16 description;
-  string16 connection_msg;
+  std::wstring head_line;
+  std::wstring description;
+  std::wstring connection_msg;
   scoped_refptr<net::X509Certificate> cert;
 
   // Identity section.
-  string16 subject_name(UTF8ToUTF16(url.host()));
+  std::wstring subject_name(UTF8ToWide(url.host()));
   bool empty_subject_name = false;
   if (subject_name.empty()) {
     subject_name.assign(
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
+        l10n_util::GetString(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
     empty_subject_name = true;
   }
   if (ssl.cert_id() &&
@@ -57,56 +57,57 @@ PageInfoModel::PageInfoModel(Profile* profile,
     if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) != 0) {
       DCHECK(!cert->subject().organization_names.empty());
       head_line =
-          l10n_util::GetStringFUTF16(IDS_PAGE_INFO_EV_IDENTITY_TITLE,
-              UTF8ToUTF16(cert->subject().organization_names[0]),
-              UTF8ToUTF16(url.host()));
+          l10n_util::GetStringF(IDS_PAGE_INFO_EV_IDENTITY_TITLE,
+              UTF8ToWide(cert->subject().organization_names[0]),
+              UTF8ToWide(url.host()));
       // An EV Cert is required to have a city (localityName) and country but
       // state is "if any".
       DCHECK(!cert->subject().locality_name.empty());
       DCHECK(!cert->subject().country_name.empty());
-      string16 locality;
+      std::wstring locality;
       if (!cert->subject().state_or_province_name.empty()) {
-        locality = l10n_util::GetStringFUTF16(
+        locality = l10n_util::GetStringF(
             IDS_PAGEINFO_ADDRESS,
-            UTF8ToUTF16(cert->subject().locality_name),
-            UTF8ToUTF16(cert->subject().state_or_province_name),
-            UTF8ToUTF16(cert->subject().country_name));
+            UTF8ToWide(cert->subject().locality_name),
+            UTF8ToWide(cert->subject().state_or_province_name),
+            UTF8ToWide(cert->subject().country_name));
       } else {
-        locality = l10n_util::GetStringFUTF16(
+        locality = l10n_util::GetStringF(
             IDS_PAGEINFO_PARTIAL_ADDRESS,
-            UTF8ToUTF16(cert->subject().locality_name),
-            UTF8ToUTF16(cert->subject().country_name));
+            UTF8ToWide(cert->subject().locality_name),
+            UTF8ToWide(cert->subject().country_name));
       }
       DCHECK(!cert->subject().organization_names.empty());
-      description.assign(l10n_util::GetStringFUTF16(
+      description.assign(l10n_util::GetStringF(
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV,
-          UTF8ToUTF16(cert->subject().organization_names[0]),
+          UTF8ToWide(cert->subject().organization_names[0]),
           locality,
-          UTF8ToUTF16(GetIssuerName(cert->issuer()))));
+          UTF8ToWide(GetIssuerName(cert->issuer()))));
     } else {
       // Non EV OK HTTPS.
       if (empty_subject_name)
         head_line.clear();  // Don't display any title.
       else
         head_line.assign(subject_name);
-      string16 issuer_name(UTF8ToUTF16(GetIssuerName(cert->issuer())));
+      std::wstring issuer_name(UTF8ToWide(GetIssuerName(cert->issuer())));
       if (issuer_name.empty()) {
-        issuer_name.assign(l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
+        issuer_name.assign(
+            l10n_util::GetString(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));
       } else {
-        description.assign(l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY, issuer_name));
+        description.assign(
+            l10n_util::GetStringF(IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY,
+                                  issuer_name));
       }
     }
   } else {
     // Bad HTTPS.
-    description.assign(l10n_util::GetStringUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
+    description.assign(
+        l10n_util::GetString(IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
     state = false;
   }
   sections_.push_back(SectionInfo(
       state,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
+      l10n_util::GetString(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       head_line,
       description));
 
@@ -120,42 +121,42 @@ PageInfoModel::PageInfoModel(Profile* profile,
   if (ssl.security_bits() <= 0) {
     state = false;
     description.assign(
-        l10n_util::GetStringFUTF16(
+        l10n_util::GetStringF(
             IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
             subject_name));
   } else if (ssl.security_bits() < 80) {
     state = false;
     description.assign(
-        l10n_util::GetStringFUTF16(
+        l10n_util::GetStringF(
             IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
             subject_name));
   } else {
     description.assign(
-        l10n_util::GetStringFUTF16(
+        l10n_util::GetStringF(
             IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
             subject_name,
-            IntToString16(ssl.security_bits())));
+            IntToWString(ssl.security_bits())));
     if (ssl.has_mixed_content()) {
       state = false;
       description.assign(
-          l10n_util::GetStringFUTF16(
+          l10n_util::GetStringF(
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
               connection_msg,
-              l10n_util::GetStringUTF16(
+              l10n_util::GetString(
                   IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_WARNING)));
     } else if (ssl.has_unsafe_content()) {
       state = false;
       description.assign(
-          l10n_util::GetStringFUTF16(
+          l10n_util::GetStringF(
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
               connection_msg,
-              l10n_util::GetStringUTF16(
+              l10n_util::GetString(
                   IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_BAD_HTTPS_WARNING)));
     }
   }
   sections_.push_back(SectionInfo(
       state,
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
+      l10n_util::GetString(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       head_line,
       description));
 
@@ -198,20 +199,16 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
   if (!visited_before_today) {
     sections_.push_back(SectionInfo(
         false,
-        l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
-        string16(),
-        l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY)));
+        l10n_util::GetString(IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
+        std::wstring(),
+        l10n_util::GetString(IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY)));
   } else {
     sections_.push_back(SectionInfo(
         true,
-        l10n_util::GetStringUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
-        string16(),
-        l10n_util::GetStringFUTF16(
-            IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,
-            WideToUTF16(base::TimeFormatShortDate(first_visit)))));
+        l10n_util::GetString(IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
+        std::wstring(),
+        l10n_util::GetStringF(IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,
+                              base::TimeFormatShortDate(first_visit))));
   }
   observer_->ModelChanged();
 }

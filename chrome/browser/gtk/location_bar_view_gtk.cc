@@ -15,7 +15,6 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -237,16 +236,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                             kBottomMargin + kBorderThickness,
                             kSecurityIconPaddingLeft,
                             kSecurityIconPaddingRight);
-  // GtkImage is a "no window" widget and requires a GtkEventBox to receive
-  // events.
-  GtkWidget* event_box = gtk_event_box_new();
-  // Make the event box not visible so it does not paint a background.
-  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box), FALSE);
-  g_signal_connect(event_box, "button-press-event",
-                   G_CALLBACK(&OnSecurityIconPressed), this);
-
-  gtk_container_add(GTK_CONTAINER(event_box), security_icon_box);
-  gtk_container_add(GTK_CONTAINER(security_icon_align_), event_box);
+  gtk_container_add(GTK_CONTAINER(security_icon_align_), security_icon_box);
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_align_, FALSE, FALSE, 0);
 }
 
@@ -563,19 +553,4 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
   FirstRunBubble::Show(profile_,
       GTK_WINDOW(gtk_widget_get_toplevel(widget())),
       gfx::Rect(x, y, 0, 0), use_OEM_bubble);
-}
-
-// static
-gboolean LocationBarViewGtk::OnSecurityIconPressed(
-    GtkWidget* sender,
-    GdkEventButton* event,
-    LocationBarViewGtk* location_bar) {
-  TabContents* tab = BrowserList::GetLastActive()->GetSelectedTabContents();
-  NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
-  if (!nav_entry) {
-    NOTREACHED();
-    return true;
-  }
-  tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
-  return true;
 }

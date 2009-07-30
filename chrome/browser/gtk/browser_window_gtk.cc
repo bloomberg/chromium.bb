@@ -53,7 +53,6 @@
 #include "chrome/browser/gtk/task_manager_gtk.h"
 #include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
 #include "chrome/browser/location_bar.h"
-#include "chrome/browser/page_info_window.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -909,7 +908,8 @@ void BrowserWindowGtk::ShowPageInfo(Profile* profile,
                                     const GURL& url,
                                     const NavigationEntry::SSLStatus& ssl,
                                     bool show_history) {
-  browser::ShowPageInfo(window_, profile, url, ssl, show_history);
+  // TODO(port): port PageInfoWindow.
+  NOTIMPLEMENTED() << "IDS_CONTENT_CONTEXT_VIEWFRAMEINFO";
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

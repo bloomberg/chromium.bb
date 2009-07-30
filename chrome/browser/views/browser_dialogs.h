@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_BROWSER_DIALOGS_H_
 
 #include "base/gfx/native_widget_types.h"
+#include "chrome/browser/tab_contents/navigation_entry.h"
 
 // This file contains functions for running a variety of browser dialogs and
 // popups. The dialogs here are the ones that the caller does not need to
@@ -96,6 +97,16 @@ void EditSearchEngine(gfx::NativeWindow parent,
                       const TemplateURL* template_url,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile);
+
+// Shows the page info using the specified information.
+// |url| is the url of the page/frame the info applies to, |ssl| is the SSL
+// information for that page/frame.  If |show_history| is true, a section
+// showing how many times that URL has been visited is added to the page info.
+void ShowPageInfo(gfx::NativeWindow parent,
+                  Profile* profile,
+                  const GURL& url,
+                  const NavigationEntry::SSLStatus& ssl,
+                  bool show_history);
 
 }  // namespace browser
 

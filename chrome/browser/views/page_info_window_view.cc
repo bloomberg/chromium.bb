@@ -15,7 +15,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/page_info_model.h"
-#include "chrome/browser/page_info_window.h"
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
@@ -75,8 +74,8 @@ class PageInfoWindowView : public views::View,
 
   // views::DialogDelegate methods:
   virtual int GetDialogButtons() const;
-  virtual string16 GetWindowTitle() const;
-  virtual string16 GetWindowName() const;
+  virtual std::wstring GetWindowTitle() const;
+  virtual std::wstring GetWindowName() const;
   virtual views::View* GetContentsView();
   virtual views::View* GetExtraView();
   virtual bool CanResize() const { return true; }
@@ -110,10 +109,10 @@ class PageInfoWindowView : public views::View,
 // optional head-line (in bold) and a description.
 class Section : public views::View {
  public:
-  Section(const string16& title,
+  Section(const std::wstring& title,
           bool state,
-          const string16& head_line,
-          const string16& description);
+          const std::wstring& head_line,
+          const std::wstring& description);
   virtual ~Section();
 
   virtual int GetHeightForWidth(int w);
@@ -121,16 +120,16 @@ class Section : public views::View {
 
  private:
   // The text placed on top of the section (on the left of the separator bar).
-  string16 title_;
+  std::wstring title_;
 
   // Whether to show the good/bad icon.
   bool state_;
 
   // The first line of the description, show in bold.
-  string16 head_line_;
+  std::wstring head_line_;
 
   // The description, displayed below the head line.
-  string16 description_;
+  std::wstring description_;
 
   static SkBitmap* good_state_icon_;
   static SkBitmap* bad_state_icon_;
@@ -238,11 +237,11 @@ int PageInfoWindowView::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
 
-string16 PageInfoWindowView::GetWindowTitle() const {
+std::wstring PageInfoWindowView::GetWindowTitle() const {
   return l10n_util::GetString(IDS_PAGEINFO_WINDOW_TITLE);
 }
 
-string16 PageInfoWindowView::GetWindowName() const {
+std::wstring PageInfoWindowView::GetWindowName() const {
   return prefs::kPageInfoWindowPlacement;
 }
 
@@ -362,10 +361,10 @@ void PageInfoWindowView::ShowCertDialog(int cert_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // Section
 
-Section::Section(const string16& title,
+Section::Section(const std::wstring& title,
                  bool state,
-                 const string16& head_line,
-                 const string16& description)
+                 const std::wstring& head_line,
+                 const std::wstring& description)
     : title_(title),
       state_(state),
       head_line_(head_line),

@@ -94,7 +94,7 @@ void PageInfoWindowMac::LayoutSections() {
     [controller_ setIdentityImg:[controller_ goodImg]];
   else
     [controller_ setIdentityImg:[controller_ badImg]];
-  [controller_ setIdentityMsg:base::SysUTF16ToNSString(
+  [controller_ setIdentityMsg:base::SysWideToNSString(
       identity_section.description)];
 
   // Connection section.
@@ -105,7 +105,7 @@ void PageInfoWindowMac::LayoutSections() {
   else
     [controller_ setConnectionImg:[controller_ badImg]];
   [controller_ setConnectionMsg:
-      base::SysUTF16ToNSString(connection_section.description)];
+      base::SysWideToNSString(connection_section.description)];
 
   if (model_.GetSectionCount() > 2) {
     // We have the history info.
@@ -117,7 +117,7 @@ void PageInfoWindowMac::LayoutSections() {
       [controller_ setHistoryImg:[controller_ badImg]];
 
     [controller_ setHistoryMsg:
-        base::SysUTF16ToNSString(history_section.description)];
+        base::SysWideToNSString(history_section.description)];
   }
 
   // By default, assume that we don't have certificate information to show.
