@@ -313,7 +313,7 @@ int TemplateURLTableModel::IndexOfTemplateURL(
 
 int TemplateURLTableModel::MoveToMainGroup(int index) {
   if (index < last_search_engine_index_)
-    return -1; // Already in the main group.
+    return index; // Already in the main group.
 
   ModelEntry* current_entry = entries_[index];
   entries_.erase(index + entries_.begin());

@@ -66,8 +66,8 @@ class TemplateURLTableModel : public TableModel,
   int IndexOfTemplateURL(const TemplateURL* template_url);
 
   // Moves the keyword at the specified index to be at the end of the main
-  // group. Returns the new index. This does nothing if the entry is already
-  // in the main group.
+  // group. Returns the new index.  If the entry is already in the main group,
+  // no action is taken, and the current index is returned.
   int MoveToMainGroup(int index);
 
   // Make the TemplateURL at |index| the default.  Returns the new index, or -1
