@@ -45,6 +45,8 @@ static const float kUseFullAvailableWidth = -1.0;
 @interface TabStripController(Private)
 - (void)installTrackingArea;
 - (BOOL)useFullWidthForLayout;
+- (void)addSubviewToPermanentList:(NSView*)aView;
+- (void)regenerateSubviewList;
 @end
 
 @implementation TabStripController
@@ -60,12 +62,15 @@ static const float kUseFullAvailableWidth = -1.0;
     bridge_.reset(new TabStripModelObserverBridge(tabModel_, self));
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
+    permanentSubviews_.reset([[NSMutableArray alloc] init]);
+
     // Take the only child view present in the nib as the new tab button. For
     // some reason, if the view is present in the nib apriori, it draws
     // correctly. If we create it in code and add it to the tab view, it draws
     // with all sorts of crazy artifacts.
     newTabButton_ = [[tabView_ subviews] objectAtIndex:0];
     DCHECK([newTabButton_ isKindOfClass:[NSButton class]]);
+    [self addSubviewToPermanentList:newTabButton_];
     [newTabButton_ setTarget:nil];
     [newTabButton_ setAction:@selector(commandDispatch:)];
     [newTabButton_ setTag:IDC_NEW_TAB];
@@ -73,9 +78,12 @@ static const float kUseFullAvailableWidth = -1.0;
     [tabView_ setWantsLayer:YES];
     dragBlockingView_.reset([[TabStripControllerDragBlockingView alloc]
                               initWithFrame:NSZeroRect]);
-    [view addSubview:dragBlockingView_];
+    [self addSubviewToPermanentList:dragBlockingView_];
     newTabTargetFrame_ = NSMakeRect(0, 0, 0, 0);
     availableResizeWidth_ = kUseFullAvailableWidth;
+
+    // Install the permanent subviews.
+    [self regenerateSubviewList];
 
     // Watch for notifications that the tab strip view has changed size so
     // we can tell it to layout for the new size.
@@ -240,7 +248,8 @@ static const float kUseFullAvailableWidth = -1.0;
 // abstracting a base class interface.
 // TODO(pinkerton): Note this doesn't do too well when the number of min-sized
 // tabs would cause an overflow.
-- (void)layoutTabsWithAnimation:(BOOL)animate {
+- (void)layoutTabsWithAnimation:(BOOL)animate
+             regenerateSubviews:(BOOL)doUpdate {
   const float kIndentLeavingSpaceForControls = 64.0;
   const float kTabOverlap = 20.0;
   const float kNewTabButtonOffset = 8.0;
@@ -251,6 +260,10 @@ static const float kUseFullAvailableWidth = -1.0;
   NSRect enclosingRect = NSZeroRect;
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:0.2];
+
+  // Update the current subviews and their z-order if requested.
+  if (doUpdate)
+      [self regenerateSubviewList];
 
   // Compute the base width of tabs given how much room we're allowed. We
   // may not be able to use the entire width if the user is quickly closing
@@ -277,7 +290,6 @@ static const float kUseFullAvailableWidth = -1.0;
   float offset = kIndentLeavingSpaceForControls;
   NSUInteger i = 0;
   NSInteger gap = -1;
-  NSView* previousTab = nil;
   for (TabController* tab in tabArray_.get()) {
     BOOL isPlaceholder = [[tab view] isEqual:placeholderTab_];
     NSRect tabFrame = [[tab view] frame];
@@ -343,22 +355,6 @@ static const float kUseFullAvailableWidth = -1.0;
       enclosingRect = NSUnionRect(tabFrame, enclosingRect);
     }
 
-#if 0
-    // Ensure the current tab is "below" the tab before it in z-order so that
-    // all the tab overlaps are consistent. The selected tab is always the
-    // frontmost, but it's already been made frontmost when the tab was selected
-    // so we don't need to do anything about it here. It will get put back into
-    // place when another tab is selected.
-    // TODO(pinkerton): this doesn't seem to work in the case where a tab
-    // is opened between existing tabs. Disabling.
-    if (![tab selected]) {
-      [tabView_ addSubview:[tab view]
-                positioned:NSWindowBelow
-                relativeTo:previousTab];
-    }
-#endif
-    previousTab = [tab view];
-
     offset += NSWidth(tabFrame);
     offset -= kTabOverlap;
     i++;
@@ -395,7 +391,7 @@ static const float kUseFullAvailableWidth = -1.0;
 
 // When we're told to layout from the public API we always want to animate.
 - (void)layoutTabs {
-  [self layoutTabsWithAnimation:YES];
+  [self layoutTabsWithAnimation:YES regenerateSubviews:YES];
 }
 
 // Handles setting the title of the tab based on the given |contents|. Uses
@@ -443,10 +439,6 @@ static const float kUseFullAvailableWidth = -1.0;
   [newView setFrame:NSOffsetRect([newView frame],
                                  0, -[[self class] defaultTabHeight])];
 
-  [tabView_ addSubview:newView
-            positioned:inForeground ? NSWindowAbove : NSWindowBelow
-            relativeTo:nil];
-
   [self setTabTitle:newController withContents:contents];
 
   // If a tab is being inserted, we can again use the entire tab strip width
@@ -455,6 +447,7 @@ static const float kUseFullAvailableWidth = -1.0;
 
   // We don't need to call |-layoutTabs| if the tab will be in the foreground
   // because it will get called when the new tab is selected by the tab model.
+  // Whenever |-layoutTabs| is called, it'll also add the new subview.
   if (!inForeground) {
     [self layoutTabs];
   }
@@ -478,10 +471,6 @@ static const float kUseFullAvailableWidth = -1.0;
     ++i;
   }
 
-  // Make this the top-most tab in the strips's z order.
-  NSView* selectedTab = [self viewAtIndex:index];
-  [tabView_ addSubview:selectedTab positioned:NSWindowAbove relativeTo:nil];
-
   // Tell the new tab contents it is about to become the selected tab. Here it
   // can do things like make sure the toolbar is up to date.
   TabContentsController* newController =
@@ -489,7 +478,8 @@ static const float kUseFullAvailableWidth = -1.0;
   [newController willBecomeSelectedTab];
 
   // Relayout for new tabs and to let the selected tab grow to be larger in
-  // size than surrounding tabs if the user has many.
+  // size than surrounding tabs if the user has many. This also raises the
+  // selected tab to the top.
   [self layoutTabs];
 
   if (oldContents) {
@@ -710,9 +700,10 @@ static const float kUseFullAvailableWidth = -1.0;
 // Called when the tab strip view changes size. As we only registered for
 // changes on our view, we know it's only for our view. Layout w/out
 // animations since they are blocked by the resize nested runloop. We need
-// the views to adjust immediately.
+// the views to adjust immediately. Neither the tabs nor their z-order are
+// changed, so we don't need to update the subviews.
 - (void)tabViewFrameChanged:(NSNotification*)info {
-  [self layoutTabsWithAnimation:NO];
+  [self layoutTabsWithAnimation:NO regenerateSubviews:NO];
 }
 
 - (BOOL)useFullWidthForLayout {
@@ -748,6 +739,41 @@ static const float kUseFullAvailableWidth = -1.0;
   closeTabTrackingArea_.reset(nil);
   availableResizeWidth_ = kUseFullAvailableWidth;
   [self layoutTabs];
+}
+
+// Adds the given subview to (the end of) the list of permanent subviews
+// (specified from bottom up). These subviews will always be below the
+// transitory subviews (tabs). |-regenerateSubviewList| must be called to
+// effectuate the addition.
+- (void)addSubviewToPermanentList:(NSView*)aView {
+  [permanentSubviews_ addObject:aView];
+}
+
+// Update the subviews, keeping the permanent ones (or, more correctly, putting
+// in the ones listed in permanentSubviews_), and putting in the current tabs in
+// the correct z-order. Any current subviews which is neither in the permanent
+// list nor a (current) tab will be removed. So if you add such a subview, you
+// should call |-addSubviewToPermanentList:| (or better yet, call that and then
+// |-regenerateSubviewList| to actually add it).
+- (void)regenerateSubviewList {
+  // Subviews to put in (in bottom-to-top order), beginning with the permanent
+  // ones.
+  NSMutableArray* subviews = [NSMutableArray arrayWithArray:permanentSubviews_];
+
+  NSView* selectedTabView = nil;
+  // Go through tabs in reverse order, since |subviews| is bottom-to-top.
+  for (TabController* tab in [tabArray_.get() reverseObjectEnumerator]) {
+    if ([tab selected]) {
+      DCHECK(!selectedTabView);
+      selectedTabView = [tab view];
+    } else {
+      [subviews addObject:[tab view]];
+    }
+  }
+  if (selectedTabView)
+    [subviews addObject:selectedTabView];
+
+  [tabView_ setSubviews:subviews];
 }
 
 @end

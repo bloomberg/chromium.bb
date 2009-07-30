@@ -71,6 +71,10 @@ class ToolbarModel;
   // of the strip. When they do, we resize the tabs to use all available
   // space.
   scoped_nsobject<NSTrackingArea> closeTabTrackingArea_;
+
+  // Array of subviews which are permanent (and which should never be removed),
+  // such as the new-tab button, but *not* the tabs themselves.
+  scoped_nsobject<NSMutableArray> permanentSubviews_;
 }
 
 // Initialize the controller with a view and browser that contains
