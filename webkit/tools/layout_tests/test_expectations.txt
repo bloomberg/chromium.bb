@@ -3076,10 +3076,5 @@ BUG17883 WIN LINUX : LayoutTests/editing/pasteboard/display-block-on-spans.html 
 // Test failures from WebKit merge 46508 to 46531
 BUG17974 WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
 BUG17974 WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-BUG17974 : LayoutTests/fast/css/remove-shorthand.html = FAIL
 BUG17974 WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
-BUG17974 WIN MAC: LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 BUG17974 WIN: LyoutTests/transtions/cancel-transitions.html = FAIL
-
-// Test failure from WebKit merge 46536 to 46570
-BUG18051 MAC : LayoutTests/fast/lists/ol-start-parsing.html = FAIL
