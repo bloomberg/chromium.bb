@@ -426,7 +426,7 @@ void WebPluginDelegateProxy::UpdateGeometry(
   // so only do so if we've actually recreated the shared memory bitmaps.
   if (!bitmaps_changed) {
     msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
-        TransportDIB::Handle(), TransportDIB::Handle());
+        TransportDIB::DefaultHandleValue(), TransportDIB::DefaultHandleValue());
   } else
 #endif
   if (transport_store_.get() && background_store_.get()) {
@@ -434,10 +434,10 @@ void WebPluginDelegateProxy::UpdateGeometry(
         transport_store_->handle(), background_store_->handle());
   } else if (transport_store_.get()) {
     msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
-        transport_store_->handle(), TransportDIB::Handle());
+        transport_store_->handle(), TransportDIB::DefaultHandleValue());
   } else {
     msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
-        TransportDIB::Handle(), TransportDIB::Handle());
+        TransportDIB::DefaultHandleValue(), TransportDIB::DefaultHandleValue());
   }
 
   msg->set_unblock(true);

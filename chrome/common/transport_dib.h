@@ -69,13 +69,25 @@ class TransportDIB {
     uint32 sequence_num;
   };
   typedef HandleAndSequenceNum Id;
+
+  // Returns a default, invalid handle, that is meant to indicate a missing
+  // Transport DIB.
+  static Handle DefaultHandleValue() { return NULL; }
 #elif defined(OS_MACOSX)
   typedef base::SharedMemoryHandle Handle;
   // On Mac, the inode number of the backing file is used as an id.
   typedef base::SharedMemoryId Id;
+
+  // Returns a default, invalid handle, that is meant to indicate a missing
+  // Transport DIB.
+  static Handle DefaultHandleValue() { return Handle(); }
 #elif defined(OS_LINUX)
   typedef int Handle;  // These two ints are SysV IPC shared memory keys
   typedef int Id;
+
+  // Returns a default, invalid handle, that is meant to indicate a missing
+  // Transport DIB.
+  static Handle DefaultHandleValue() { return -1; }
 #endif
 
   // Create a new TransportDIB
