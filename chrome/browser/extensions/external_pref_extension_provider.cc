@@ -75,8 +75,8 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
 
     scoped_ptr<Version> version;
     version.reset(Version::GetVersionFromString(external_version));
-    visitor->OnExternalExtensionFound(
-        WideToASCII(extension_id), version.get(), path);
+    visitor->OnExternalExtensionFound(WideToASCII(extension_id), version.get(),
+                                      path, Extension::EXTERNAL_PREF);
   }
 }
 

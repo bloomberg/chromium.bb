@@ -209,14 +209,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
 
 void ExtensionUpdater::OnCRXFileWritten(const std::string& id,
                                         const FilePath& path) {
-  // TODO(asargent) - Instead of calling InstallExtension here, we should have
-  // an UpdateExtension method in ExtensionsService and rely on it to check
-  // that the extension is still installed, and still an older version than
-  // what we're handing it.
-  // (http://crbug.com/12764).
-  ExtensionInstallCallback* callback =
-      NewCallback(this, &ExtensionUpdater::OnExtensionInstallFinished);
-  service_->UpdateExtension(id, path, false, callback);
+  service_->UpdateExtension(id, path);
 }
 
 void ExtensionUpdater::OnExtensionInstallFinished(const FilePath& path,

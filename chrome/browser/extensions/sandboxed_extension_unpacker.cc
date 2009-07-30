@@ -30,8 +30,6 @@ SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     SandboxedExtensionUnpackerClient* client)
       : crx_path_(crx_path), client_loop_(MessageLoop::current()), rdh_(rdh),
         client_(client), got_response_(false) {
-
-  AddRef();
 }
 
 void SandboxedExtensionUnpacker::Start() {
@@ -269,12 +267,10 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
 
 void SandboxedExtensionUnpacker::ReportFailure(const std::string& error) {
   client_->OnUnpackFailure(error);
-  Release();
 }
 
 void SandboxedExtensionUnpacker::ReportSuccess() {
   // Client takes ownership of temporary directory and extension.
   client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_,
                            extension_.release());
-  Release();
 }

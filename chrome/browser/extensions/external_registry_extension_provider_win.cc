@@ -51,7 +51,8 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
           scoped_ptr<Version> version;
           version.reset(Version::GetVersionFromString(extension_version));
           FilePath path = FilePath::FromWStringHack(extension_path);
-          visitor->OnExternalExtensionFound(id, version.get(), path);
+          visitor->OnExternalExtensionFound(id, version.get(), path,
+                                            Extension::EXTERNAL_REGISTRY);
         } else {
           // TODO(erikkay): find a way to get this into about:extensions
           LOG(WARNING) << "Missing value " << kRegistryExtensionVersion <<

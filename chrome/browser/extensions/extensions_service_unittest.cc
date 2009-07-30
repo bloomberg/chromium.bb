@@ -99,7 +99,7 @@ class MockExtensionProvider : public ExternalExtensionProvider {
       version.reset(Version::GetVersionFromString(i->second.first));
 
       visitor->OnExternalExtensionFound(
-          i->first, version.get(), i->second.second);
+          i->first, version.get(), i->second.second, location_);
     }
   }
 
@@ -160,7 +160,8 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
 
   virtual void OnExternalExtensionFound(const std::string& id,
                                         const Version* version,
-                                        const FilePath& path) {
+                                        const FilePath& path,
+                                        Extension::Location unused) {
     ++ids_found_;
     DictionaryValue* pref;
     // This tests is to make sure that the provider only notifies us of the
@@ -217,7 +218,7 @@ class ExtensionsServiceTest
                                      &loop_,
                                      &loop_,
                                      false);
-    service_->SetExtensionsEnabled(true);
+    service_->set_extensions_enabled(true);
     service_->set_show_extensions_prompts(false);
 
     // When we start up, we want to make sure there is no external provider,
@@ -308,8 +309,8 @@ class ExtensionsServiceTest
     }
   }
 
-  void SetExtensionsEnabled(bool enabled) {
-    service_->SetExtensionsEnabled(enabled);
+  void set_extensions_enabled(bool enabled) {
+    service_->set_extensions_enabled(enabled);
   }
 
   void SetMockExternalProvider(Extension::Location location,
@@ -318,28 +319,6 @@ class ExtensionsServiceTest
   }
 
  protected:
-  // A class to record whether a ExtensionInstallCallback has fired, and
-  // to remember the args it was called with.
-  class CallbackRecorder {
-   public:
-    CallbackRecorder() : was_called_(false), path_(NULL), extension_(NULL) {}
-
-    void CallbackFunc(const FilePath& path, Extension* extension) {
-      was_called_ = true;
-      path_.reset(new FilePath(path));
-      extension_ = extension;
-    }
-
-    bool was_called() { return was_called_; }
-    const FilePath* path() { return path_.get(); }
-    Extension* extension() { return extension_; }
-
-   private:
-    bool was_called_;
-    scoped_ptr<FilePath> path_;
-    Extension* extension_;
-  };
-
   void InstallExtension(const FilePath& path,
                         bool should_succeed) {
     ASSERT_TRUE(file_util::PathExists(path));
@@ -372,41 +351,32 @@ class ExtensionsServiceTest
     ExtensionErrorReporter::GetInstance()->ClearErrors();
   }
 
-  void UpdateExtension(const std::string& id, const FilePath& path,
-                       bool should_succeed, bool use_callback,
-                       bool expect_report_on_failure) {
-    ASSERT_TRUE(file_util::PathExists(path));
+  void UpdateExtension(const std::string& id, const FilePath& in_path,
+                       bool should_succeed, bool expect_report_on_failure) {
+    ASSERT_TRUE(file_util::PathExists(in_path));
 
-    CallbackRecorder callback_recorder;
-    ExtensionInstallCallback* callback = NULL;
-    if (use_callback) {
-      callback = NewCallback(&callback_recorder,
-                             &CallbackRecorder::CallbackFunc);
-    }
+    // We need to copy this to a temporary location because Update() will delete
+    // it.
+    FilePath temp_dir;
+    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &temp_dir));
+    FilePath path = temp_dir.Append(in_path.BaseName());
+    ASSERT_TRUE(file_util::CopyFile(in_path, path));
 
-    service_->UpdateExtension(id, path, false, callback);
+    service_->UpdateExtension(id, path);
     loop_.RunAllPending();
     std::vector<std::string> errors = GetErrors();
-
-    if (use_callback) {
-      EXPECT_TRUE(callback_recorder.was_called());
-      EXPECT_TRUE(path == *callback_recorder.path());
-    }
 
     if (should_succeed) {
       EXPECT_EQ(0u, errors.size()) << path.value();
       EXPECT_EQ(1u, service_->extensions()->size());
-      if (use_callback) {
-        EXPECT_EQ(service_->extensions()->at(0), callback_recorder.extension());
-      }
     } else {
       if (expect_report_on_failure) {
         EXPECT_EQ(1u, errors.size()) << path.value();
       }
-      if (use_callback) {
-        EXPECT_EQ(NULL, callback_recorder.extension());
-      }
     }
+
+    // Update() should delete the temporary input file.
+    EXPECT_FALSE(file_util::PathExists(path));
   }
 
   void ValidatePrefKeyCount(size_t count) {
@@ -674,10 +644,10 @@ TEST_F(ExtensionsServiceTest, InstallExtension) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   // Extensions not enabled.
-  SetExtensionsEnabled(false);
+  set_extensions_enabled(false);
   FilePath path = extensions_path.AppendASCII("good.crx");
   InstallExtension(path, false);
-  SetExtensionsEnabled(true);
+  set_extensions_enabled(true);
 
   ValidatePrefKeyCount(0);
 
@@ -799,7 +769,7 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
 
   // A theme when extensions are disabled. Themes can be installed, even when
   // extensions are disabled.
-  SetExtensionsEnabled(false);
+  set_extensions_enabled(false);
   path = extensions_path.AppendASCII("theme2.crx");
   InstallExtension(path, true);
   ValidatePrefKeyCount(++pref_count);
@@ -808,7 +778,7 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
 
   // A theme with extension elements. Themes cannot have extension elements so
   // this test should fail.
-  SetExtensionsEnabled(true);
+  set_extensions_enabled(true);
   path = extensions_path.AppendASCII("theme_with_extension.crx");
   InstallExtension(path, false);
   ValidatePrefKeyCount(pref_count);
@@ -923,26 +893,7 @@ TEST_F(ExtensionsServiceTest, UpdateExtension) {
   ASSERT_EQ(good_crx, good->id());
 
   path = extensions_path.AppendASCII("good2.crx");
-  UpdateExtension(good_crx, path, true, true, true);
-  ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
-}
-
-// Test doing an update without passing a completion callback
-TEST_F(ExtensionsServiceTest, UpdateWithoutCallback) {
-  InitializeEmptyExtensionsService();
-  FilePath extensions_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
-  extensions_path = extensions_path.AppendASCII("extensions");
-
-  FilePath path = extensions_path.AppendASCII("good.crx");
-
-  InstallExtension(path, true);
-  Extension* good = service_->extensions()->at(0);
-  ASSERT_EQ("1.0.0.0", good->VersionString());
-  ASSERT_EQ(good_crx, good->id());
-
-  path = extensions_path.AppendASCII("good2.crx");
-  UpdateExtension(good_crx, path, true, false, true);
+  UpdateExtension(good_crx, path, true, true);
   ASSERT_EQ("1.0.0.1", loaded_[0]->version()->GetString());
 }
 
@@ -954,7 +905,7 @@ TEST_F(ExtensionsServiceTest, UpdateNotInstalledExtension) {
   extensions_path = extensions_path.AppendASCII("extensions");
 
   FilePath path = extensions_path.AppendASCII("good.crx");
-  service_->UpdateExtension(good_crx, path, false, NULL);
+  service_->UpdateExtension(good_crx, path);
   loop_.RunAllPending();
 
   ASSERT_EQ(0u, service_->extensions()->size());
@@ -978,7 +929,7 @@ TEST_F(ExtensionsServiceTest, UpdateWillNotDowngrade) {
 
   // Change path from good2.crx -> good.crx
   path = extensions_path.AppendASCII("good.crx");
-  UpdateExtension(good_crx, path, false, true, true);
+  UpdateExtension(good_crx, path, false, true);
   ASSERT_EQ("1.0.0.1", service_->extensions()->at(0)->VersionString());
 }
 
@@ -994,7 +945,7 @@ TEST_F(ExtensionsServiceTest, UpdateToSameVersionIsNoop) {
   InstallExtension(path, true);
   Extension* good = service_->extensions()->at(0);
   ASSERT_EQ(good_crx, good->id());
-  UpdateExtension(good_crx, path, false, true, false);
+  UpdateExtension(good_crx, path, false, false);
 }
 
 // Tests uninstalling normal extensions
@@ -1133,7 +1084,7 @@ TEST_F(ExtensionsServiceTest, GenerateID) {
 TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
   // This should all work, even when normal extension installation is disabled.
   InitializeEmptyExtensionsService();
-  SetExtensionsEnabled(false);
+  set_extensions_enabled(false);
   // Verify that starting with no providers loads no extensions.
   service_->Init();
   loop_.RunAllPending();
@@ -1338,7 +1289,7 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
 
   // It should still work if extensions are disabled (disableness doesn't
   // apply to externally registered extensions).
-  SetExtensionsEnabled(false);
+  set_extensions_enabled(false);
 
   pref_provider->UpdateOrAddExtension(good_crx, "1.0", source_path);
   service_->CheckForExternalUpdates();

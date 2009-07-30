@@ -944,6 +944,8 @@
         'browser/download/save_types.h',
         'browser/encoding_menu_controller.cc',
         'browser/encoding_menu_controller.h',
+        'browser/extensions/crx_installer.cc',
+        'browser/extensions/crx_installer.h',
         'browser/extensions/extension_bookmarks_module.cc',
         'browser/extensions/extension_bookmarks_module.h',
         'browser/extensions/extension_bookmarks_module_constants.cc',

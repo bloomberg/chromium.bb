@@ -4,18 +4,13 @@
 
 #include "chrome/browser/extensions/extensions_service.h"
 
-#include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_file_util.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
@@ -29,16 +24,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
 #include "chrome/browser/extensions/external_registry_extension_provider_win.h"
-#elif defined(OS_MACOSX)
-#include "base/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
-#include <CoreFoundation/CFUserNotification.h>
 #endif
 
 // ExtensionsService.
@@ -61,61 +49,6 @@ bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
     return false;
   }
 }
-
-// This class hosts a SandboxedExtensionUnpacker task and routes the results
-// back to ExtensionsService. The unpack process is started immediately on
-// construction of this object.
-class ExtensionsServiceBackend::UnpackerClient
-    : public SandboxedExtensionUnpackerClient {
- public:
-  UnpackerClient(ExtensionsServiceBackend* backend,
-                 const FilePath& extension_path,
-                 const std::string& expected_id,
-                 bool silent, bool from_gallery)
-    : backend_(backend), extension_path_(extension_path),
-      expected_id_(expected_id), silent_(silent), from_gallery_(from_gallery) {
-    unpacker_ = new SandboxedExtensionUnpacker(extension_path,
-            backend->resource_dispatcher_host_, this);
-    unpacker_->Start();
-  }
-
- private:
-  // SandboxedExtensionUnpackerClient
-  virtual void OnUnpackSuccess(const FilePath& temp_dir,
-                               const FilePath& extension_dir,
-                               Extension* extension) {
-    backend_->OnExtensionUnpacked(extension_path_, extension_dir, extension,
-                                  expected_id_, silent_, from_gallery_);
-    file_util::Delete(temp_dir, true);
-    delete this;
-  }
-
-  virtual void OnUnpackFailure(const std::string& error_message) {
-    backend_->ReportExtensionInstallError(extension_path_, error_message);
-    delete this;
-  }
-
-  scoped_refptr<SandboxedExtensionUnpacker> unpacker_;
-
-  scoped_refptr<ExtensionsServiceBackend> backend_;
-
-  // The path to the crx file that we're installing.
-  FilePath extension_path_;
-
-  // The path to the copy of the crx file in the temporary directory where we're
-  // unpacking it.
-  FilePath temp_extension_path_;
-
-  // The ID we expect this extension to have, if any.
-  std::string expected_id_;
-
-  // True if the install should be done with no confirmation dialog.
-  bool silent_;
-
-  // True if the install is from the gallery (and therefore should not get an
-  // alert UI if it turns out to also be a theme).
-  bool from_gallery_;
-};
 
 ExtensionsService::ExtensionsService(Profile* profile,
                                      const CommandLine* command_line,
@@ -147,9 +80,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
     updater_ = new ExtensionUpdater(this, update_frequency, backend_loop_);
   }
 
-  backend_ = new ExtensionsServiceBackend(
-          install_directory_, g_browser_process->resource_dispatcher_host(),
-          frontend_loop, extensions_enabled());
+  backend_ = new ExtensionsServiceBackend(install_directory_, frontend_loop);
 }
 
 ExtensionsService::~ExtensionsService() {
@@ -157,12 +88,6 @@ ExtensionsService::~ExtensionsService() {
   if (updater_.get()) {
     updater_->Stop();
   }
-}
-
-void ExtensionsService::SetExtensionsEnabled(bool enabled) {
-  extensions_enabled_ = true;
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-    &ExtensionsServiceBackend::set_extensions_enabled, enabled));
 }
 
 void ExtensionsService::Init() {
@@ -189,41 +114,32 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
 void ExtensionsService::InstallExtension(const FilePath& extension_path,
                                          const GURL& download_url,
                                          const GURL& referrer_url) {
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::InstallExtension, extension_path,
-      IsDownloadFromGallery(download_url, referrer_url),
-      scoped_refptr<ExtensionsService>(this)));
-
+  new CrxInstaller(extension_path, install_directory_, Extension::INTERNAL,
+                   "",   // no expected id
+                   extensions_enabled_,
+                   IsDownloadFromGallery(download_url, referrer_url),
+                   show_extensions_prompts(),
+                   false,  // don't delete crx when complete
+                   backend_loop_,
+                   this);
 }
 
 void ExtensionsService::UpdateExtension(const std::string& id,
-                                        const FilePath& extension_path,
-                                        bool alert_on_error,
-                                        ExtensionInstallCallback* callback) {
-  if (callback) {
-    if (install_callbacks_.find(extension_path) != install_callbacks_.end()) {
-      // We can't have multiple outstanding install requests for the same
-      // path, so immediately indicate error via the callback here.
-      LOG(WARNING) << "Dropping update request for '" <<
-          extension_path.value() << "' (already in progress)'";
-      callback->Run(extension_path, static_cast<Extension*>(NULL));
-      delete callback;
-      return;
-    }
-    install_callbacks_[extension_path] =
-        linked_ptr<ExtensionInstallCallback>(callback);
-  }
+                                        const FilePath& extension_path) {
 
-  if (!GetExtensionById(id)) {
+  if (!GetExtensionById(id)) {	
     LOG(WARNING) << "Will not update extension " << id << " because it is not "
-        << "installed";
-    FireInstallCallback(extension_path, NULL);
-    return;
+                 << "installed";	
+    return;	
   }
 
-  backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
-      &ExtensionsServiceBackend::UpdateExtension, id, extension_path,
-      alert_on_error, scoped_refptr<ExtensionsService>(this)));
+  new CrxInstaller(extension_path, install_directory_, Extension::INTERNAL,
+                   id, extensions_enabled_,
+                   false,  // not from gallery
+                   show_extensions_prompts(),
+                   true,  // delete crx when complete
+                   backend_loop_,
+                   this);
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
@@ -269,6 +185,8 @@ void ExtensionsService::LoadAllExtensions() {
 
 void ExtensionsService::CheckForExternalUpdates() {
   // This installs or updates externally provided extensions.
+  // TODO(aa): Why pass this list into the provider, why not just filter it
+  // later?
   std::set<std::string> killed_extensions;
   extension_prefs_->GetKilledExtensionIds(&killed_extensions);
   backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
@@ -388,9 +306,7 @@ void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
   }
 }
 
-void ExtensionsService::OnExtensionInstalled(const FilePath& path,
-    Extension* extension, Extension::InstallType install_type) {
-  FireInstallCallback(path, extension);
+void ExtensionsService::OnExtensionInstalled(Extension* extension) {
   extension_prefs_->OnExtensionInstalled(extension);
 
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
@@ -407,25 +323,15 @@ void ExtensionsService::OnExtensionInstalled(const FilePath& path,
         Source<ExtensionsService>(this),
         Details<Extension>(extension));
   }
+
+  // Also load the extension.
+  ExtensionList* list = new ExtensionList;
+  list->push_back(extension);
+  OnExtensionsLoaded(list);
 }
 
 
-void ExtensionsService::OnExtenionInstallError(const FilePath& path) {
-  FireInstallCallback(path, NULL);
-}
-
-void ExtensionsService::FireInstallCallback(const FilePath& path,
-                                            Extension* extension) {
-  CallbackMap::iterator iter = install_callbacks_.find(path);
-  if (iter != install_callbacks_.end()) {
-    iter->second->Run(path, extension);
-    install_callbacks_.erase(iter);
-  }
-}
-
-void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id,
-    const FilePath& path) {
-  FireInstallCallback(path, NULL);
+void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
   Extension* extension = GetExtensionById(id);
   if (extension && extension->IsTheme()) {
     ShowThemePreviewInfobar(extension);
@@ -480,17 +386,50 @@ bool ExtensionsService::ShowThemePreviewInfobar(Extension* extension) {
   return true;
 }
 
+void ExtensionsService::OnExternalExtensionFound(const std::string& id,
+                                                 const std::string& version,
+                                                 const FilePath& path,
+                                                 Extension::Location location) {
+  // Before even bothering to unpack, check and see if we already have this
+  // version. This is important because these extensions are going to get 
+  // installed on every startup.
+  Extension* existing = GetExtensionById(id);
+  if (existing) {
+    switch (existing->version()->CompareTo(
+                *Version::GetVersionFromString(version))) {
+      case -1:  // existing version is older, we should upgrade
+        break;
+      case 0:  // existing version is same, do nothing
+        return;
+      case 1:  // existing version is newer, uh-oh
+        LOG(WARNING) << "Found external version of extension " << id
+                     << "that is older than current version. Current version "
+                     << "is: " << existing->VersionString() << ". New version "
+                     << "is: " << version << ". Keeping current version.";
+        return;
+    }
+  }
+
+  new CrxInstaller(path, install_directory_, location, id, extensions_enabled_,
+                   false,  // not from gallery
+                   show_extensions_prompts(),
+                   false,  // don't delete crx when complete
+                   backend_loop_,
+                   this);
+}
+
+
 // ExtensionsServicesBackend
 
 ExtensionsServiceBackend::ExtensionsServiceBackend(
-    const FilePath& install_directory, ResourceDispatcherHost* rdh,
-    MessageLoop* frontend_loop, bool extensions_enabled)
+    const FilePath& install_directory, MessageLoop* frontend_loop)
         : frontend_(NULL),
           install_directory_(install_directory),
-          resource_dispatcher_host_(rdh),
           alert_on_error_(false),
-          frontend_loop_(frontend_loop),
-          extensions_enabled_(extensions_enabled) {
+          frontend_loop_(frontend_loop) {
+  // TODO(aa): This ends up doing blocking IO on the UI thread because it reads
+  // pref data in the ctor and that is called on the UI thread. Would be better
+  // to re-read data each time we list external extensions, anyway.
   external_extension_providers_[Extension::EXTERNAL_PREF] =
       linked_ptr<ExternalExtensionProvider>(
           new ExternalPrefExtensionProvider());
@@ -597,182 +536,6 @@ void ExtensionsServiceBackend::ReportExtensionsLoaded(
       frontend_, &ExtensionsService::OnExtensionsLoaded, extensions));
 }
 
-void ExtensionsServiceBackend::InstallExtension(
-    const FilePath& extension_path, bool from_gallery,
-    scoped_refptr<ExtensionsService> frontend) {
-  LOG(INFO) << "Installing extension " << extension_path.value();
-
-  frontend_ = frontend;
-  alert_on_error_ = true;
-
-  InstallOrUpdateExtension(extension_path, from_gallery, std::string(), false);
-}
-
-void ExtensionsServiceBackend::UpdateExtension(const std::string& id,
-    const FilePath& extension_path, bool alert_on_error,
-    scoped_refptr<ExtensionsService> frontend) {
-  LOG(INFO) << "Updating extension " << id << " " << extension_path.value();
-
-  frontend_ = frontend;
-  alert_on_error_ = alert_on_error;
-
-  InstallOrUpdateExtension(extension_path, false, id, true);
-}
-
-void ExtensionsServiceBackend::InstallOrUpdateExtension(
-    const FilePath& extension_path, bool from_gallery,
-    const std::string& expected_id, bool silent) {
-  // NOTE: We don't need to keep a reference to this, it deletes itself when it
-  // is done.
-  new UnpackerClient(this, extension_path, expected_id, silent, from_gallery);
-}
-
-void ExtensionsServiceBackend::OnExtensionUnpacked(
-    const FilePath& crx_path, const FilePath& unpacked_path,
-    Extension* extension, const std::string expected_id, bool silent,
-    bool from_gallery) {
-  // Take ownership of the extension object.
-  scoped_ptr<Extension> extension_deleter(extension);
-
-  Extension::Location location = Extension::INTERNAL;
-  LookupExternalExtension(extension->id(), NULL, &location);
-  extension->set_location(location);
-
-  bool allow_install = false;
-  if (extensions_enabled_)
-    allow_install = true;
-
-  // Always allow themes.
-  if (extension->IsTheme())
-    allow_install = true;
-
-  // Always allow externally installed extensions (partners use this).
-  if (Extension::IsExternalLocation(location))
-    allow_install = true;
-
-  if (!allow_install) {
-    ReportExtensionInstallError(crx_path, "Extensions are not enabled.");
-    return;
-  }
-
-  // TODO(extensions): Make better extensions UI. http://crbug.com/12116
-
-  // We also skip the dialog for a few special cases:
-  // - themes (because we show the preview infobar for them)
-  // - externally registered extensions
-  // - during tests (!frontend->show_extension_prompts())
-  // - autoupdate (silent).
-  bool show_dialog = true;
-  if (extension->IsTheme())
-    show_dialog = false;
-
-  if (Extension::IsExternalLocation(location))
-    show_dialog = false;
-
-  if (silent || !frontend_->show_extensions_prompts())
-    show_dialog = false;
-
-  if (show_dialog) {
-#if defined(OS_WIN)
-    if (win_util::MessageBox(GetForegroundWindow(),
-            L"Are you sure you want to install this extension?\n\n"
-            L"You should only install extensions from sources you trust.",
-            l10n_util::GetString(IDS_PRODUCT_NAME).c_str(),
-            MB_OKCANCEL) != IDOK) {
-      return;
-    }
-#elif defined(OS_MACOSX)
-    // Using CoreFoundation to do this dialog is unimaginably lame but will do
-    // until the UI is redone.
-    scoped_cftyperef<CFStringRef> product_name(
-        base::SysWideToCFStringRef(l10n_util::GetString(IDS_PRODUCT_NAME)));
-    CFOptionFlags response;
-    CFUserNotificationDisplayAlert(
-        0, kCFUserNotificationCautionAlertLevel, NULL, NULL, NULL,
-        product_name,
-        CFSTR("Are you sure you want to install this extension?\n\n"
-             "This is a temporary message and it will be removed when "
-             "extensions UI is finalized."),
-        NULL, CFSTR("Cancel"), NULL, &response);
-
-    if (response == kCFUserNotificationAlternateResponse) {
-      ReportExtensionInstallError(crx_path,
-          "User did not allow extension to be installed.");
-      return;
-    }
-#endif  // OS_*
-  }
-
-  // If an expected id was provided, make sure it matches.
-  if (!expected_id.empty() && expected_id != extension->id()) {
-    ReportExtensionInstallError(crx_path,
-        StringPrintf("ID in new extension manifest (%s) does not match "
-                     "expected id (%s)", extension->id().c_str(),
-                     expected_id.c_str()));
-    return;
-  }
-
-  FilePath version_dir;
-  Extension::InstallType install_type = Extension::INSTALL_ERROR;
-  std::string error_msg;
-  if (!extension_file_util::InstallExtension(unpacked_path, install_directory_,
-                                             extension->id(),
-                                             extension->VersionString(),
-                                             &version_dir,
-                                             &install_type, &error_msg)) {
-    ReportExtensionInstallError(crx_path, error_msg);
-    return;
-  }
-
-  if (install_type == Extension::DOWNGRADE) {
-    ReportExtensionInstallError(crx_path, "Attempted to downgrade extension.");
-    return;
-  }
-
-  extension->set_path(version_dir);
-
-  if (install_type == Extension::REINSTALL) {
-    // The client may use this as a signal (to switch themes, for instance).
-    ReportExtensionOverinstallAttempted(extension->id(), crx_path);
-    return;
-  }
-
-  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend_, &ExtensionsService::OnExtensionInstalled, crx_path,
-      extension, install_type));
-
-  // Only one extension, but ReportExtensionsLoaded can handle multiple,
-  // so we need to construct a list.
-  ExtensionList* extensions = new ExtensionList;
-
-  // Hand off ownership of the extension to the frontend.
-  extensions->push_back(extension_deleter.release());
-  ReportExtensionsLoaded(extensions);
-}
-
-void ExtensionsServiceBackend::ReportExtensionInstallError(
-    const FilePath& extension_path,  const std::string &error) {
-
-  // TODO(erikkay): note that this isn't guaranteed to work properly on Linux.
-  std::string path_str = WideToASCII(extension_path.ToWStringHack());
-  std::string message =
-      StringPrintf("Could not install extension from '%s'. %s",
-                   path_str.c_str(), error.c_str());
-  ExtensionErrorReporter::GetInstance()->ReportError(message, alert_on_error_);
-
-  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend_,
-      &ExtensionsService::OnExtenionInstallError,
-      extension_path));
-}
-
-void ExtensionsServiceBackend::ReportExtensionOverinstallAttempted(
-    const std::string& id, const FilePath& path) {
-  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      frontend_, &ExtensionsService::OnExtensionOverinstallAttempted, id,
-      path));
-}
-
 bool ExtensionsServiceBackend::LookupExternalExtension(
     const std::string& id, Version** version, Extension::Location* location) {
   scoped_ptr<Version> extension_version;
@@ -845,9 +608,9 @@ void ExtensionsServiceBackend::SetProviderForTesting(
 }
 
 void ExtensionsServiceBackend::OnExternalExtensionFound(
-    const std::string& id, const Version* version, const FilePath& path) {
-  InstallOrUpdateExtension(path,
-                           false,  // not from gallery
-                           id,  // expected id
-                           true);  // silent
+    const std::string& id, const Version* version, const FilePath& path,
+    Extension::Location location) {
+  frontend_loop_->PostTask(FROM_HERE, NewRunnableMethod(frontend_,
+      &ExtensionsService::OnExternalExtensionFound, id, version->GetString(),
+      path, location));
 }

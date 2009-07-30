@@ -25,7 +25,8 @@ class ExternalExtensionProvider {
    public:
      virtual void OnExternalExtensionFound(const std::string& id,
                                            const Version* version,
-                                           const FilePath& path) = 0;
+                                           const FilePath& path,
+                                           Extension::Location location) = 0;
   };
 
   virtual ~ExternalExtensionProvider() {}

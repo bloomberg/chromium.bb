@@ -17,8 +17,12 @@ class Extension;
 class MessageLoop;
 class ResourceDispatcherHost;
 
-class SandboxedExtensionUnpackerClient {
+class SandboxedExtensionUnpackerClient
+    : public base::RefCountedThreadSafe<SandboxedExtensionUnpackerClient> {
  public:
+  virtual ~SandboxedExtensionUnpackerClient(){
+  }
+
   // temp_dir - A temporary directoy containing the results of the extension
   // unpacking. The client is responsible for deleting this directory.
   //
@@ -42,9 +46,17 @@ class SandboxedExtensionUnpackerClient {
 // such, it should not be used when the output is not intended to be given back
 // to the author.
 //
+//
+// Lifetime management:
+//
+// This class is ref-counted by each call it makes to itself on another thread,
+// and by UtilityProcessHost.
+//
+// Additionally, we hold a reference to our own client so that it lives at least
+// long enough to receive the result of unpacking.
+//
+//
 // NOTE: This class should only be used on the file thread.
-
-
 class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
  public:
   // The size of the magic character sequence at the beginning of each crx
@@ -114,7 +126,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   FilePath crx_path_;
   MessageLoop* client_loop_;
   ResourceDispatcherHost* rdh_;
-  SandboxedExtensionUnpackerClient* client_;
+  scoped_refptr<SandboxedExtensionUnpackerClient> client_;
   ScopedTempDir temp_dir_;
   FilePath extension_root_;
   scoped_ptr<Extension> extension_;

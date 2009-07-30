@@ -96,9 +96,7 @@ class MockService : public ExtensionUpdateService {
   }
 
   virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path,
-                               bool alert_on_error,
-                               ExtensionInstallCallback* callback) {
+                               const FilePath& extension_path) {
     EXPECT_TRUE(false);
   }
 
@@ -162,33 +160,10 @@ class ServiceForManifestTests : public MockService {
 
 class ServiceForDownloadTests : public MockService {
  public:
-  explicit ServiceForDownloadTests() : callback_(NULL) {}
-  virtual ~ServiceForDownloadTests() {
-    // expect that cleanup happened via FireInstallCallback
-    EXPECT_EQ(NULL, callback_);
-    EXPECT_TRUE(install_path_.empty());
-  }
-
   virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path,
-                               bool alert_on_error,
-                               ExtensionInstallCallback* callback) {
-    // Since this mock only has support for one oustanding update, ensure
-    // that the callback doesn't need to be run.
-    EXPECT_TRUE(install_path_.empty());
-    EXPECT_EQ(NULL, callback_);
-
+                               const FilePath& extension_path) {
     extension_id_ = id;
     install_path_ = extension_path;
-    callback_ = callback;
-  }
-
-  void FireInstallCallback() {
-    EXPECT_TRUE(callback_ != NULL);
-    callback_->Run(install_path_, static_cast<Extension*>(NULL));
-    delete callback_;
-    callback_ = NULL;
-    install_path_ = FilePath();
   }
 
   const std::string& extension_id() { return extension_id_; }
@@ -197,7 +172,6 @@ class ServiceForDownloadTests : public MockService {
  private:
   std::string extension_id_;
   FilePath install_path_;
-  ExtensionInstallCallback* callback_;
 };
 
 static const int kUpdateFrequencySecs = 15;
@@ -418,13 +392,6 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(file_util::ReadFileToString(tmpfile_path, &file_contents));
     EXPECT_TRUE(extension_data == file_contents);
 
-    service.FireInstallCallback();
-
-    message_loop.RunAllPending();
-
-    // Make sure the temp file is cleaned up
-    EXPECT_FALSE(file_util::PathExists(tmpfile_path));
-
     URLFetcher::set_factory(NULL);
   }
 
@@ -456,17 +423,11 @@ class ExtensionUpdaterTest : public testing::Test {
         extension_data1);
     message_loop.RunAllPending();
 
-    // Expect that the service was asked to do an install with the right data,
-    // and fire the callback indicating the install finished.
+    // Expect that the service was asked to do an install with the right data.
     FilePath tmpfile_path = service.install_path();
     EXPECT_FALSE(tmpfile_path.empty());
     EXPECT_EQ(id1, service.extension_id());
-    service.FireInstallCallback();
-
-    // Make sure the tempfile got cleaned up.
     message_loop.RunAllPending();
-    EXPECT_FALSE(tmpfile_path.empty());
-    EXPECT_FALSE(file_util::PathExists(tmpfile_path));
 
     // Make sure the second fetch finished and asked the service to do an
     // update.
@@ -485,8 +446,6 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(file_util::ReadFileToString(service.install_path(),
                                             &file_contents));
     EXPECT_TRUE(extension_data2 == file_contents);
-    service.FireInstallCallback();
-    message_loop.RunAllPending();
   }
 };
 

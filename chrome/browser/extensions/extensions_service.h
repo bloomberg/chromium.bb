@@ -37,20 +37,13 @@ class SiteInstance;
 
 typedef std::vector<Extension*> ExtensionList;
 
-// A callback for when installs finish. If the Extension* parameter is
-// null then the install failed.
-typedef Callback2<const FilePath&, Extension*>::Type ExtensionInstallCallback;
-
 // This is an interface class to encapsulate the dependencies that
 // ExtensionUpdater has on ExtensionsService. This allows easy mocking.
 class ExtensionUpdateService {
  public:
   virtual ~ExtensionUpdateService() {}
   virtual const ExtensionList* extensions() const = 0;
-  virtual void UpdateExtension(const std::string& id,
-                               const FilePath& path,
-                               bool alert_on_error,
-                               ExtensionInstallCallback* callback) = 0;
+  virtual void UpdateExtension(const std::string& id, const FilePath& path) = 0;
   virtual Extension* GetExtensionById(const std::string& id) = 0;
 };
 
@@ -112,15 +105,9 @@ class ExtensionsService
                         const GURL& referrer_url);
 
   // Updates a currently-installed extension with the contents from
-  // |extension_path|. The |alert_on_error| parameter controls whether the
-  // user will be notified in the event of failure. If |callback| is non-null,
-  // it will be called back when the update is finished (in success or failure).
-  // This is useful to know when the service is done using |extension_path|.
-  // Also, this takes ownership of |callback| if it's non-null.
+  // |extension_path|.
   virtual void UpdateExtension(const std::string& id,
-                               const FilePath& extension_path,
-                               bool alert_on_error,
-                               ExtensionInstallCallback* callback);
+                               const FilePath& extension_path);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
@@ -169,7 +156,26 @@ class ExtensionsService
   void SetProviderForTesting(Extension::Location location,
                              ExternalExtensionProvider* test_provider);
 
-  void SetExtensionsEnabled(bool enabled);
+  // Called by the backend when the initial extension load has completed.
+  void OnLoadedInstalledExtensions();
+
+  // Called by the backend when extensions have been loaded.
+  void OnExtensionsLoaded(ExtensionList* extensions);
+
+  // Called by the backend when an extension has been installed.
+  void OnExtensionInstalled(Extension* extension);
+
+  // Called by the backend when an attempt was made to reinstall the same
+  // version of an existing extension.
+  void OnExtensionOverinstallAttempted(const std::string& id);
+
+  // Called by the backend when an external extension is found.
+  void OnExternalExtensionFound(const std::string& id,
+                                const std::string& version,
+                                const FilePath& path,
+                                Extension::Location location);
+
+  void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
   bool extensions_enabled() { return extensions_enabled_; }
 
   void set_show_extensions_prompts(bool enabled) {
@@ -189,31 +195,6 @@ class ExtensionsService
   bool is_ready() { return ready_; }
 
  private:
-  // For OnExtensionLoaded, OnExtensionInstalled, and
-  // OnExtensionVersionReinstalled.
-  friend class ExtensionsServiceBackend;
-
-  // Called by the backend when the initial extension load has completed.
-  void OnLoadedInstalledExtensions();
-
-  // Called by the backend when extensions have been loaded.
-  void OnExtensionsLoaded(ExtensionList* extensions);
-
-  // Called by the backend when an extension has been installed.
-  void OnExtensionInstalled(const FilePath& path, Extension* extension,
-      Extension::InstallType install_type);
-
-  // Calls and then removes any registered install callback for |path|.
-  void FireInstallCallback(const FilePath& path, Extension* extension);
-
-  // Called by the backend when there was an error installing an extension.
-  void OnExtenionInstallError(const FilePath& path);
-
-  // Called by the backend when an attempt was made to reinstall the same
-  // version of an existing extension.
-  void OnExtensionOverinstallAttempted(const std::string& id,
-                                       const FilePath& path);
-
   // Show a confirm installation infobar on the currently active tab.
   // TODO(aa): This should be moved up into the UI and attached to the tab it
   // actually occured in. This requires some modularization of
@@ -244,10 +225,6 @@ class ExtensionsService
   // The backend that will do IO on behalf of this instance.
   scoped_refptr<ExtensionsServiceBackend> backend_;
 
-  // Stores data we'll need to do callbacks as installs complete.
-  typedef std::map<FilePath, linked_ptr<ExtensionInstallCallback> > CallbackMap;
-  CallbackMap install_callbacks_;
-
   // Is the service ready to go?
   bool ready_;
 
@@ -267,13 +244,9 @@ class ExtensionsServiceBackend
   // |extension_prefs| contains a dictionary value that points to the extension
   // preferences.
   ExtensionsServiceBackend(const FilePath& install_directory,
-                           ResourceDispatcherHost* rdh,
-                           MessageLoop* frontend_loop,
-                           bool extensions_enabled);
+                           MessageLoop* frontend_loop);
 
   virtual ~ExtensionsServiceBackend();
-
-  void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
 
   // Loads the installed extensions.
   // Errors are reported through ExtensionErrorReporter. On completion,
@@ -290,19 +263,6 @@ class ExtensionsServiceBackend
   // (presumably into memory) without installing it.
   void LoadSingleExtension(const FilePath &path,
                            scoped_refptr<ExtensionsService> frontend);
-
-  // Install the extension file at |extension_path|. Errors are reported through
-  // ExtensionErrorReporter. OnExtensionInstalled is called in the frontend on
-  // success.
-  void InstallExtension(const FilePath& extension_path, bool from_gallery,
-                        scoped_refptr<ExtensionsService> frontend);
-
-  // Similar to InstallExtension, but |extension_path| must be an updated
-  // version of an installed extension with id of |id|.
-  void UpdateExtension(const std::string& id,
-                       const FilePath& extension_path,
-                       bool alert_on_error,
-                       scoped_refptr<ExtensionsService> frontend);
 
   // Check externally updated extensions for updates and install if necessary.
   // Errors are reported through ExtensionErrorReporter. Succcess is not
@@ -321,23 +281,12 @@ class ExtensionsServiceBackend
   // ExternalExtensionProvider::Visitor implementation.
   virtual void OnExternalExtensionFound(const std::string& id,
                                         const Version* version,
-                                        const FilePath& path);
+                                        const FilePath& path,
+                                        Extension::Location location);
  private:
-  class UnpackerClient;
-  friend class UnpackerClient;
-
   // Loads a single installed extension.
   void LoadInstalledExtension(const std::string& id, const FilePath& path,
                               Extension::Location location);
-
-  // Install a crx file at |extension_path|. If |expected_id| is not empty, it's
-  // verified against the extension's manifest before installation. If the
-  // extension is already installed, install the new version only if its version
-  // number is greater than the current installed version. If |silent| is true,
-  // the confirmation dialog will not pop up.
-  void InstallOrUpdateExtension(const FilePath& extension_path,
-                                bool from_gallery,
-                                const std::string& expected_id, bool silent);
 
   // Finish installing the extension in |crx_path| after it has been unpacked to
   // |unpacked_path|.  If |expected_id| is not empty, it's verified against the
@@ -350,9 +299,7 @@ class ExtensionsServiceBackend
       const FilePath& crx_path,
       const FilePath& unpacked_path,
       Extension* extension,
-      const std::string expected_id,
-      bool silent,
-      bool from_gallery);
+      const std::string expected_id);
 
   // Notify the frontend that there was an error loading an extension.
   void ReportExtensionLoadError(const FilePath& extension_path,
@@ -364,11 +311,6 @@ class ExtensionsServiceBackend
   // Notify the frontend that there was an error installing an extension.
   void ReportExtensionInstallError(const FilePath& extension_path,
                                    const std::string& error);
-
-  // Notify the frontend that an attempt was made (but not carried out) to
-  // install the same version of an existing extension.
-  void ReportExtensionOverinstallAttempted(const std::string& id,
-                                           const FilePath& path);
 
   // Lookup an external extension by |id| by going through all registered
   // external extension providers until we find a provider that contains an
@@ -393,18 +335,11 @@ class ExtensionsServiceBackend
   // The top-level extensions directory being installed to.
   FilePath install_directory_;
 
-  // We only need a pointer to this to pass along to other interfaces.
-  ResourceDispatcherHost* resource_dispatcher_host_;
-
   // Whether errors result in noisy alerts.
   bool alert_on_error_;
 
   // The message loop to use to call the frontend.
   MessageLoop* frontend_loop_;
-
-  // Whether non-theme extensions are enabled (themes and externally registered
-  // extensions are always enabled).
-  bool extensions_enabled_;
 
   // A map of all external extension providers.
   typedef std::map<Extension::Location,
