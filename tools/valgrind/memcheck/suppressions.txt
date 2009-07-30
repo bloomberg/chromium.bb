@@ -214,6 +214,15 @@
    fun:g_object_weak_ref
    fun:g_object_add_weak_pointer
 }
+{
+   bug_16161
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   ...
+   fun:gtk_clipboard_set_text
+   fun:_ZN23AutocompleteEditViewGtk20SavePrimarySelectionERKSs
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -757,15 +766,6 @@
    fun:gtk_im_context_set_cursor_location
    ...
    fun:gtk_widget_size_allocate
-}
-{
-   bug_16161
-   Memcheck:Leak
-   fun:malloc
-   fun:g_malloc
-   ...
-   fun:gtk_clipboard_set_text
-   fun:_ZN23AutocompleteEditViewGtk20SavePrimarySelectionERKSs
 }
 {
    bug_16324
