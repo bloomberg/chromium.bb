@@ -76,8 +76,10 @@ def _GetNaclSdkRoot(env, sdk_mode):
       return '/usr/local/nacl-sdk'
 
   elif sdk_mode == 'download':
-    return ('$MAIN_DIR/src/third_party/nacl_sdk/' +
-            NACL_PLATFORM_DIR_MAP[env['PLATFORM']] + '/sdk/nacl-sdk')
+    platform = NACL_PLATFORM_DIR_MAP[env['PLATFORM']]
+    root = os.path.join(env['MAIN_DIR'], 'src', 'third_party', 'nacl_sdk',
+                        platform, 'sdk', 'nacl-sdk')
+    return root
 
   elif sdk_mode.startswith('custom:'):
     return os.path.abspath(sdk_mode[len('custom:'):])
@@ -86,7 +88,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
     assert 0
 
 
-def _DownloadSdk(env):
+def DownloadSdk(env):
   """Download and untar the latest sdk.
 
   Args:
@@ -123,25 +125,64 @@ def _DownloadSdk(env):
   sync_tgz.SyncTgz(url[0], target, url[1], url[2])
 
 
-def _ValidateSdk(env, sdk_mode):
-  """Check that the sdk is present.
+def _SetEnvForX86Sdk(env, sdk_path):
+  # NOTE: attempts to eliminate this PATH setting and use
+  #       absolute path have been futile
+  env.PrependENVPath('PATH', sdk_path + '/bin')
 
-  Args:
-    env: SCons environment in question.
-    sdk_mode: mode string indicating where to get the sdk from.
-  """
+  env.Replace(# replace hader and lib paths
+              NACL_SDK_INCLUDE=sdk_path + '/nacl/include',
+              NACL_SDK_LIB=sdk_path + '/nacl/lib',
+              # Replace the normal unix tools with the NaCl ones.
+              CC='nacl-gcc',
+              CXX='nacl-g++',
+              AR='nacl-ar',
+              AS='nacl-as',
+              # NOTE: use g++ for linking so we can handle c AND c++
+              LINK='nacl-g++',
+              RANLIB='nacl-ranlib',
+              )
 
-  # Try to download SDK if in download mode and using download version.
-  if env.GetOption('download') and sdk_mode == 'download':
-    _DownloadSdk(env)
 
-  # Check if stdio.h is present as a cheap check for the sdk.
-  if not os.path.exists(env.subst('$NACL_SDK_ROOT/nacl/include/stdio.h')):
-    sys.stderr.write('NativeClient SDK not present in %s\n'
-                     'Run again with the --download flag\n'
-                     'or build the SDK yourself.\n' %
-                     env.subst('$NACL_SDK_ROOT'))
-    sys.exit(1)
+def _SetEnvForSdkManually(env):
+  env.Replace(# replace header and lib paths
+              NACL_SDK_INCLUDE=os.getenv(NACL_SDK_INCLUDE,
+                                         'MISSING_SDK_INCLUDE'),
+              NACL_SDK_LIB=os.getenv(NACL_SDK_LIB, 'MISSING_SDK_LIB'),
+              # Replace the normal unix tools with the NaCl ones.
+              CC=os.getenv(NACL_SDK_CC, 'MISSING_SDK_CC'),
+              CXX=os.getenv(NACL_SDK_CXX, 'MISSING_SDK_CXX'),
+              AR=os.getenv(NACL_SDK_AR, 'MISSING_SDK_AR'),
+              AS=os.getenv(NACL_SDK_AS, 'MISSING_SDK_AS'),
+              # NOTE: use g++ for linking so we can handle c AND c++
+              LINK=os.getenv(NACL_SDK_LINK, 'MISSING_SDK_LINK'),
+              RANLIB=os.getenv(NACL_SDK_RANLIB, 'MISSING_SDK_RANLIB'),
+              )
+
+
+def ValidateSdk(env):
+  checkables = ['${NACL_SDK_INCLUDE}/stdio.h',
+                ]
+  for c in checkables:
+    if os.path.exists(env.subst(c)):
+      continue
+    sys.stderr.write(env.subst('''
+ERROR: NativeClient SDK does not seem present!,
+       Missing: %s
+
+Configuration is:
+  NACL_SDK_INCLUDE=${NACL_SDK_INCLUDE}
+  NACL_SDK_LIB=${NACL_SDK_LIB}
+  CC=${CC}
+  CXX=${CXX}
+  AR=${AR}
+  AS=${AS}
+  LINK=${LINK}
+  RANLIB=${RANLIB}
+
+Run again with the --download flag or build the SDK yourself.\n
+''' % c))
+    sys.exit(-1)
 
 
 def generate(env):
@@ -153,34 +194,11 @@ def generate(env):
   NOTE: SCons requires the use of this name, which fails lint.
   """
 
-  # Add the download option.
-  try:
-    env.GetOption('download')
-  except AttributeError:
-    SCons.Script.AddOption('--download',
-                           dest='download',
-                           metavar='DOWNLOAD',
-                           default=False,
-                           action='store_true',
-                           help='allow tools to download')
+  # make these methods to the top level scons file
+  env.AddMethod(DownloadSdk)
+  env.AddMethod(ValidateSdk)
 
-  # Pick default sdk source.
-  default_mode = env.get('NATIVE_CLIENT_SDK_DEFAULT_MODE', 'download')
-
-  # Get sdk mode (support sdk_mode for backward compatibility).
-  sdk_mode = SCons.Script.ARGUMENTS.get('sdk_mode', default_mode)
-  sdk_mode = SCons.Script.ARGUMENTS.get('naclsdk_mode', sdk_mode)
-
-  # Decide where to get the SDK.
-  env.Replace(NACL_SDK_ROOT=_GetNaclSdkRoot(env, sdk_mode))
-
-  # Validate the sdk unless disabled from the command line.
-  env.SetDefault(NACL_SDK_VALIDATE='1')
-  if int(SCons.Script.ARGUMENTS.get('naclsdk_validate',
-      env.subst('$NACL_SDK_VALIDATE'))):
-    _ValidateSdk(env, sdk_mode)
-
-  if env.subst('$NACL_SDK_ROOT_ONLY'): return
+  sdk_mode = SCons.Script.ARGUMENTS.get('naclsdk_mode', 'download')
 
   # Invoke the various unix tools that the NativeClient SDK resembles.
   env.Tool('g++')
@@ -192,7 +210,7 @@ def generate(env):
   env.Replace(
       HOST_PLATFORMS=['*'],  # NaCl builds on all platforms.
 
-      COMPONENT_LINKFLAGS=['-Wl,-rpath-link,$COMPONENT_LIBRARY_DIR'],
+      COMPONENT_LINKFLAGS=['-Wl,-rpath-link,${COMPONENT_LIBRARY_DIR}'],
       COMPONENT_LIBRARY_LINK_SUFFIXES=['.so', '.a'],
       COMPONENT_LIBRARY_DEBUG_SUFFIXES=[],
 
@@ -200,30 +218,21 @@ def generate(env):
       # when unc paths are fixed.
       IMPLICIT_COMMAND_DEPENDENCIES=False,
 
-      # Setup path to NativeClient tools.
-      NACL_SDK_BIN='$NACL_SDK_ROOT/bin',
-      NACL_SDK_INCLUDE='$NACL_SDK_ROOT/nacl/include',
-      NACL_SDK_LIB='$NACL_SDK_ROOT/nacl/lib',
-
-      # Replace the normal unix tools with the NaCl ones.
-      CC='nacl-gcc',
-      CXX='nacl-g++',
-      AR='nacl-ar',
-      AS='nacl-as',
-      LINK='nacl-g++',  # use g++ for linking so we can handle c AND c++
-      RANLIB='nacl-ranlib',
-
       # TODO: this could be .nexe and then all the .nexe stuff goes away?
       PROGSUFFIX=''  # Force PROGSUFFIX to '' on all platforms.
   )
 
-  env.PrependENVPath('PATH', [env.subst('$NACL_SDK_BIN')])
-  env.PrependENVPath('INCLUDE', [env.subst('$NACL_SDK_INCLUDE')])
-  env.Prepend(LINKFLAGS='-L' + env.subst('$NACL_SDK_LIB'))
+  # Determine where to get the SDK from.
+  sdk_root_dir = _GetNaclSdkRoot(env, sdk_mode)
+  if sdk_root_dir:
+    _SetEnvForX86Sdk(env, sdk_root_dir)
+  else:
+    _SetEnvForSdkManually(env)
 
-  env.Append(
-      CCFLAGS=[
-          '-fno-stack-protector',
-          '-fno-builtin',
+  env.Prepend(LIBPATH='${NACL_SDK_LIB}')
+
+  env.Append(CCFLAGS=[
+      '-fno-stack-protector',
+      '-fno-builtin',
       ],
   )

@@ -452,11 +452,6 @@ if os.path.exists(pre_base_env.subst('${MAIN_DIR}/supplement/build.scons')):
 # Select tests to run under coverage build.
 base_env['COVERAGE_TARGETS'] = ['small_tests', 'medium_tests']
 
-# Add the sdk root path (without setting up the tools).
-base_env['NACL_SDK_ROOT_ONLY'] = True
-base_env.Tool('naclsdk')
-
-
 base_env.Help("""\
 ======================================================================
 Help for NaCl
@@ -470,27 +465,47 @@ Common tasks:
 * just the doc:       scons --mode=doc
 * build mandel:       scons --model=nacl mandel.nexe
 * smoke test:         scons --mode=nacl,opt-linux -k pp=1 smoke_tests
-* build the plugin:   scons --mode=opt-linux npGoogleNaClPlugin
-* another way to build the plugin: scons --mode=opt-linux src/trusted/plugin
-* install the plugin: scons --verbose firefox_install
-* sel_ldr:            scons --mode=opt-linux sel_ldr
-* install pre-built plugin: scons firefox_install --prebuilt
 
+* sel_ldr:            scons --mode=opt-linux sel_ldr
+
+* build the plugin:         scons --mode=opt-linux npGoogleNaClPlugin
+*      or:                  scons --mode=opt-linux src/trusted/plugin
+* install the plugin:       scons --verbose firefox_install
+* install pre-built plugin: scons --prebuilt firefox_install
+
+* build libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_update
+* purge libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_clean
+
+* dump system info    scons --mode=nacl,opt-linux dummy
 Options:
 --------
-pp=1              use command line pretty printing (more concise output)
 sdl=<mode>        where <mode>:
-                  'none': don't use SDL (default)
-                  'local': use locally installed SDL
-                  'hermetic': use the hermetic SDL copy
+
+                    'none': don't use SDL (default)
+                    'local': use locally installed SDL
+                    'hermetic': use the hermetic SDL copy
+
 naclsdk_mode=<mode>   where <mode>:
-                      'local': use locally installed sdk kit
-                      'download': use the download copy (default)
-                      'custom:<path>': use kit at <path>
 
---prebuilt        Do not build things, just do install steps
+                    'local': use locally installed sdk kit
+                    'download': use the download copy (default)
+                    'custom:<path>': use kit at <path>
+                    'manual': use settings from env vars NACL_SDL_xxx
 
-sysinfo=          Suppress verbose system info printing
+
+--prebuilt          Do not build things, just do install steps
+
+--download          Download the sdk and unpack it at the appropriate place
+
+--verbose           Full command line logging before command execution
+
+pp=1                Use command line pretty printing (more concise output)
+
+sysinfo=            Suppress verbose system info printing
+
+naclsdk_validate=0  Suppress presence check of sdk
+
+
 
 Automagically generated help:
 -----------------------------
@@ -726,21 +741,17 @@ else:
 (linux_debug_env, linux_optimized_env) = GenerateOptimizationLevels(linux_env)
 
 
-
 # ----------------------------------------------------------
 # The nacl_env is used to build native_client modules
 # using a special tool chain which produces platform
 # independent binaries
-# NOTE: this loads stuff from:
-# third_party/software_construction_toolkit/files/site_scons/site_tools/naclsdk.py
+# NOTE: this loads stuff from: site_scons/site_tools/naclsdk.py
 # ----------------------------------------------------------
 nacl_env = pre_base_env.Clone(
     tools = ['naclsdk'],
     BUILD_TYPE = 'nacl',
     BUILD_TYPE_DESCRIPTION = 'NaCl module build',
     NACL_BUILD_FAMILY = 'UNTRUSTED',
-    # TODO: explain this
-    LINK = '$CXX',
 
     EXTRA_CFLAGS = [],
     EXTRA_CCFLAGS = [],
@@ -761,13 +772,7 @@ nacl_env = pre_base_env.Clone(
     CFLAGS = ['${EXTRA_CFLAGS}'],
     CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
     LIBS = ['${EXTRA_LIBS}'],
-
-    # from third_party/software_construction_toolkit/files/site_scons/site_tools/naclsdk.py
-    LIBPATH = ['$NACL_SDK_LIB'],
 )
-
-Banner('Building nexe binaries using sdk at [%s]' %
-       nacl_env.subst('$NACL_SDK_ROOT'))
 
 
 nacl_env.Append(
@@ -808,6 +813,32 @@ nacl_env.Append(
 )
 
 environment_list.append(nacl_env)
+
+
+# ----------------------------------------------------------
+# Possibly install an sdk by downloading it
+# ----------------------------------------------------------
+# TODO: explore using a less heavy weight mechanism
+# NOTE: this uses stuff from: site_scons/site_tools/naclsdk.py
+import SCons.Script
+
+SCons.Script.AddOption('--download',
+                       dest='download',
+                       metavar='DOWNLOAD',
+                       default=False,
+                       action='store_true',
+                       help='allow tools to download')
+
+if nacl_env.GetOption('download'):
+  nacl_env.DownloadSdk()
+
+# ----------------------------------------------------------
+# Sanity check whether we are ready to build nacl modules
+# ----------------------------------------------------------
+# NOTE: this uses stuff from: site_scons/site_tools/naclsdk.py
+if int(ARGUMENTS.get('naclsdk_validate', "1")):
+  nacl_env.ValidateSdk()
+
 # ----------------------------------------------------------
 # We force this into a separate env so that the tests in nacl_env
 # have NO access to any libraries build here but need to link them
@@ -856,8 +887,7 @@ environment_list.append(nacl_extra_sdk_env)
 
 # ----------------------------------------------------------
 # Targets for updating sdk headers and libraries
-# NACL_SDK_ROOT is defined by
-# third_party/software_construction_toolkit/files/site_scons/site_tools/naclsdk.py
+# NACL_SDK_XXX vars are defined by  site_scons/site_tools/naclsdk.py
 # NOTE: our task here is complicated by the fact that there might already
 #       some (outdated) headers/libraries at the new location
 #       One of the hacks we employ here is to make every library depend
@@ -869,35 +899,28 @@ sdk_headers = nacl_extra_sdk_env.Alias('extra_sdk_update_header', [])
 nacl_extra_sdk_env.Alias('extra_sdk_update', [])
 
 
-def AddHeaderToSdk(env, nodes, path=None):
-  if path is None:
-    path = 'nacl/include/nacl/'
-
-  n = env.Replicate('${NACL_SDK_ROOT}/' + path , nodes)
+def AddHeaderToSdk(env, nodes):
+  n = env.Replicate('${NACL_SDK_INCLUDE}/nacl/', nodes)
   env.Alias('extra_sdk_update_header', n)
   return n
 
 nacl_extra_sdk_env.AddMethod(AddHeaderToSdk)
 
-def AddLibraryToSdk(env, nodes, path=None):
+def AddLibraryToSdk(env, nodes):
   # NOTE: hack see comment
   nacl_extra_sdk_env.Requires(nodes, sdk_headers)
-  if path is None:
-    path = 'nacl/lib'
 
-  n = env.ReplicatePublished('${NACL_SDK_ROOT}/' + path, nodes, 'link')
+  n = env.ReplicatePublished('${NACL_SDK_LIB}/', nodes, 'link')
   env.Alias('extra_sdk_update', n)
   return n
 
 nacl_extra_sdk_env.AddMethod(AddLibraryToSdk)
 
-def AddObjectToSdk(env, nodes, path=None):
+def AddObjectToSdk(env, nodes):
   # NOTE: hack see comment
   nacl_extra_sdk_env.Requires(nodes, sdk_headers)
-  if path is None:
-    path = 'nacl/lib'
 
-  n = env.Replicate('${NACL_SDK_ROOT}/' + path, nodes)
+  n = env.Replicate('${NACL_SDK_LIB}/', nodes)
   env.Alias('extra_sdk_update', n)
   return n
 
@@ -905,9 +928,11 @@ nacl_extra_sdk_env.AddMethod(AddObjectToSdk)
 
 # NOTE: a helpful target to test the sdk_extra magic
 #       combine this with a 'MODE=nacl -c'
-# TODO: find a way to cleanup the libs on top of the headers
+# TODO: the cleanup of libs is not complete
 nacl_extra_sdk_env.Command('extra_sdk_clean', [],
-                           ['rm -rf ${NACL_SDK_ROOT}/nacl/include/nacl*'])
+                           ['rm -rf ${NACL_SDK_INCLUDE}/nacl*',
+                            'rm -rf ${NACL_SDK_LIB}/libgoogle*',
+                            'rm -rf ${NACL_SDK_LIB}/crt[1in].*'])
 
 # ----------------------------------------------------------
 # CODE COVERAGE
@@ -995,8 +1020,8 @@ MAYBE_RELEVANT_CONFIG = ['BUILD_OS',
                          ]
 
 def DumpCompilerVersion(cc, env):
-  if cc.startswith('gcc'):
-    os.system(env.subst('${CC} --v'))
+  if cc.startswith('gcc') or cc.endswith('gcc') or cc.endswith('gcc.exe'):
+    env.Execute(env.Action('${CC} --v'))
   elif cc.startswith('cl'):
     import subprocess
     p = subprocess.Popen(env.subst('${CC} /V'),
@@ -1007,8 +1032,6 @@ def DumpCompilerVersion(cc, env):
     stdout = p.stdout.read()
     retcode = p.wait()
     print stderr[0:stderr.find("\r")]
-  elif cc.startswith('nacl-gcc'):
-    os.system(env.subst('${NACL_SDK_ROOT}/bin/${CC} --v'))
   else:
     print "UNKNOWN COMPILER"
 
