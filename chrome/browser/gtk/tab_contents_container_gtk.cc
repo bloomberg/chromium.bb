@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 
+#include "app/l10n_util.h"
 #include "base/gfx/native_widget_types.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/status_bubble_gtk.h"
@@ -168,25 +169,26 @@ void TabContentsContainerGtk::OnFixedSizeAllocate(
 void TabContentsContainerGtk::OnSetFloatingPosition(
     GtkFloatingContainer* floating_container, GtkAllocation* allocation,
     TabContentsContainerGtk* tab_contents_container) {
-  GtkWidget* widget = tab_contents_container->status_bubble_->widget();
+  GtkWidget* status = tab_contents_container->status_bubble_->widget();
 
   // Look at the size request of the status bubble and tell the
   // GtkFloatingContainer where we want it positioned.
   GtkRequisition requisition;
-  gtk_widget_size_request(widget, &requisition);
+  gtk_widget_size_request(status, &requisition);
 
   GValue value = { 0, };
   g_value_init(&value, G_TYPE_INT);
-  g_value_set_int(&value, 0);
-  // TODO(erg): Since we're absolutely positioning stuff, we probably have to
-  // do manual RTL right here.
+  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT)
+    g_value_set_int(&value, 0);
+  else
+    g_value_set_int(&value, allocation->width - requisition.width);
   gtk_container_child_set_property(GTK_CONTAINER(floating_container),
-                                   widget, "x", &value);
+                                   status, "x", &value);
 
   int child_y = std::max(
       allocation->y + allocation->height - requisition.height, 0);
   g_value_set_int(&value, child_y);
   gtk_container_child_set_property(GTK_CONTAINER(floating_container),
-                                   widget, "y", &value);
+                                   status, "y", &value);
   g_value_unset(&value);
 }
