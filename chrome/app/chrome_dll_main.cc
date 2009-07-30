@@ -225,8 +225,8 @@ void RegisterInvalidParamHandler() {
   _set_purecall_handler(PureCall);
   // Gather allocation failure.
   std::set_new_handler(&OnNoMemory);
-  // Also enable the new handler for malloc() based failures.
-  _set_new_mode(1);
+  // TODO: use _set_new_mode to enable the new handler for malloc() based
+  // failures.
 #endif
 }
 
