@@ -110,6 +110,13 @@ devtools.DebuggerAgent.ScopeType = {
 
 
 /**
+ * A no-op JS expression that is sent to the inspected page in order to force v8
+ * execution.
+ */
+devtools.DebuggerAgent.VOID_SCRIPT = 'javascript:void(0)';
+
+
+/**
  * Resets debugger agent to its initial state.
  */
 devtools.DebuggerAgent.prototype.reset = function() {
@@ -151,7 +158,7 @@ devtools.DebuggerAgent.prototype.initUI = function() {
   });
   devtools.DebuggerAgent.sendCommand_(cmd);
   // Force v8 execution so that it gets to processing the requested command.
-  devtools.tools.evaluateJavaScript('javascript:void(0)');
+  devtools.tools.evaluateJavaScript(devtools.DebuggerAgent.VOID_SCRIPT);
 };
 
 
@@ -176,7 +183,7 @@ devtools.DebuggerAgent.prototype.resolveScriptSource = function(
   });
   devtools.DebuggerAgent.sendCommand_(cmd);
   // Force v8 execution so that it gets to processing the requested command.
-  devtools.tools.evaluateJavaScript('javascript:void(0)');
+  devtools.tools.evaluateJavaScript(devtools.DebuggerAgent.VOID_SCRIPT);
 
   this.requestSeqToCallback_[cmd.getSequenceNumber()] = function(msg) {
     if (msg.isSuccess()) {
@@ -741,6 +748,11 @@ devtools.DebuggerAgent.prototype.handleScriptsResponse_ = function(msg) {
       continue;
     }
 
+    // There is no script source
+    if (this.isVoidScript_(script)) {
+      continue;
+    }
+
     // We may already have received the info in an afterCompile event.
     if (script.id in this.parsedScripts_) {
       continue;
@@ -805,11 +817,28 @@ devtools.DebuggerAgent.prototype.handleAfterCompileEvent_ = function(msg) {
     return;
   }
   var script = msg.getBody().script;
+
+  if (this.isVoidScript_(script)) {
+    return;
+  }
+
   // Ignore scripts from other tabs.
   if (!this.isScriptFromInspectedContext_(script, msg)) {
     return;
   }
   this.addScriptInfo_(script, msg);
+};
+
+
+/**
+ * @param {Object} script Parsed JSON object representing script.
+ * @return {boolean} Whether the script is a result of the void script
+ *     evaluation and should not appear in the UI.
+ */
+devtools.DebuggerAgent.prototype.isVoidScript_ = function(script) {
+  return !script.name &&
+         (script.sourceStart == devtools.DebuggerAgent.VOID_SCRIPT ||
+          script.source == devtools.DebuggerAgent.VOID_SCRIPT);
 };
 
 
