@@ -4,9 +4,20 @@ import copy
 import gyp.input
 import optparse
 import os.path
+import sets
 import shlex
 import sys
 
+# Default debug modes for GYP
+debug = sets.Set([])
+
+# List of "official" debug modes, but you can use anything you like.
+DEBUG_GENERAL = 'general'
+DEBUG_VARIABLES = 'variables'
+
+def DebugOutput(mode, message):
+  if mode in gyp.debug:
+    print "%s: %s" % (mode.upper(), message)
 
 def FindBuildFiles():
   extension = '.gyp'
@@ -98,6 +109,10 @@ def main(args):
                     help='files to include in all loaded .gyp files')
   parser.add_option('--depth', dest='depth', metavar='PATH',
                     help='set DEPTH gyp variable to a relative path to PATH')
+  parser.add_option('-d', '--debug', dest='debug', metavar='DEBUGMODE',
+                    action='append', default=[], help='turn on a debugging '
+                    'mode for debugging GYP.  Supported modes are "variables" '
+                    'and "general"')
   parser.add_option('-S', '--suffix', dest='suffix', default='',
                     help='suffix to add to generated files')
   parser.add_option('-G', dest='generator_flags', action='append', default=[],
@@ -121,6 +136,17 @@ def main(args):
   # TODO(thomasvl): add support for ~/.gyp/defaults
 
   (options, build_files) = parser.parse_args(args)
+
+  gyp.debug = sets.Set(options.debug)
+
+  # Do an extra check to avoid work when we're not debugging.
+  if DEBUG_GENERAL in gyp.debug:
+    DebugOutput(DEBUG_GENERAL, 'running with these options:')
+    for (option, value) in options.__dict__.items():
+      if isinstance(value, basestring):
+        DebugOutput(DEBUG_GENERAL, "  %s: '%s'" % (option, value))
+      else:
+        DebugOutput(DEBUG_GENERAL, "  %s: %s" % (option, str(value)))
 
   if not options.formats:
     # If no format was given on the command line, then check the env variable.
@@ -206,7 +232,7 @@ def main(args):
   if options.generator_flags:
     gen_flags += options.generator_flags
   generator_flags = NameValueListToDict(gen_flags)
-  
+
   # TODO: Remove this and the option after we've gotten folks to move to the
   # generator flag.
   if options.msvs_version:

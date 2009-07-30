@@ -344,35 +344,44 @@ def ExpandVariables(input, is_late, variables, build_file):
       # run_command is true if a ! variant is used.
       run_command = '!' in match['type']
 
+      # Capture these now so we can adjust them later.
+      replace_start = match_group.start('replace')
+      replace_end = match_group.end('replace')
+
+      # Find the ending paren, and re-evaluate the contained string.
+      (c_start, c_end) = FindEnclosingBracketGroup(input[replace_start:])
+
+      # Adjust the replacement range to match the entire command
+      # found by FindEnclosingBracketGroup (since the variable_re
+      # probably doesn't match the entire command if it contained
+      # nested variables).
+      replace_end = replace_start + c_end
+
+      # Find the "real" replacement, matching the appropriate closing
+      # paren, and adjust the replacement start and end.
+      replacement = input[replace_start:replace_end]
+
+      # Figure out what the contents of the variable parens are.
+      contents_start = replace_start + c_start + 1
+      contents_end = replace_end - 1
+      contents = input[contents_start:contents_end]
+
+      # Recurse to expand variables in the contents
+      contents = ExpandVariables(contents, is_late, variables, build_file)
+
+      # Strip off leading/trailing whitespace so that variable matches are
+      # simpler below (and because they are rarely needed).
+      contents = contents.strip()
+
       # expand_to_list is true if an @ variant is used.  In that case,
       # the expansion should result in a list.  Note that the caller
       # is to be expecting a list in return, and not all callers do
       # because not all are working in list context.  Also, for list
       # expansions, there can be no other text besides the variable
       # expansion in the input.
-      expand_to_list = '@' in match['type'] and input == match['replace']
+      expand_to_list = '@' in match['type'] and input == replacement
 
-      # Capture these now so we can adjust them if necessary in the
-      # command substitution.
-      replace_start = match_group.start('replace')
-      replace_end = match_group.end('replace')
       if run_command:
-        # Find the ending paren, and re-evaluate the contained string.
-        (c_start, c_end) = FindEnclosingBracketGroup(input[replace_start:])
-
-        # Adjust the replacement range to match the entire command
-        # found by FindEnclosingBracketGroup (since the variable_re
-        # probably doesn't match the entire command if it contained
-        # nested variables).
-        replace_end = replace_start + c_end
-
-        # Strip out the command.
-        command_start = replace_start + c_start + 1
-        command_end = replace_end - 1
-        command = input[command_start:command_end]
-        # Recurse to expand variables in command executions.
-        command = ExpandVariables(command, is_late, variables, build_file)
-
         # Run the command in the build file's directory.
         build_file_dir = os.path.dirname(build_file)
         if build_file_dir == '':
@@ -382,46 +391,52 @@ def ExpandVariables(input, is_late, variables, build_file):
           # command in the current directory.
           build_file_dir = None
 
+        use_shell = True
         if match['is_array']:
-          command = eval(command)
+          contents = eval(contents)
+          use_shell = False
 
-        p = subprocess.Popen(command, shell=True,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                        "Executing command '%s'" % contents)
+
+
+        p = subprocess.Popen(contents, shell=use_shell,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             stdin=subprocess.PIPE,
                              cwd=build_file_dir)
-        (p_stdout, p_stderr) = p.communicate()
+
+        (p_stdout, p_stderr) = p.communicate('')
 
         if p.wait() != 0 or p_stderr:
           sys.stderr.write(p_stderr)
-          # Simulate check_call behavior by reusing its exception.
-          raise subprocess.CalledProcessError(p.returncode, command)
+          # Simulate check_call behavior, since check_call only exists
+          # in python 2.5 and later.
+          raise Exception("Call to '%s' returned exit status %d." %
+                          (contents, p.returncode))
 
         replacement = p_stdout.rstrip()
       else:
-        if not match['content'] in variables:
-          raise KeyError, 'Undefined variable ' + match['content'] + \
+        if not contents in variables:
+          raise KeyError, 'Undefined variable ' + contents + \
                           ' in ' + build_file
-        replacement = variables[match['content']]
+        replacement = variables[contents]
 
       if isinstance(replacement, list):
         for item in replacement:
           if not isinstance(item, str) and not isinstance(item, int):
-            raise TypeError, 'Variable ' + match['content'] + \
+            raise TypeError, 'Variable ' + contents + \
                              ' must expand to a string or list of strings; ' + \
                              'list contains a ' + \
                              item.__class__.__name__
         # Run through the list and handle variable expansions in it.  Since
         # the list is guaranteed not to contain dicts, this won't do anything
         # with conditions sections.
-        #
-        # TODO(mark): I think this should be made more general: any time an
-        # expansion is done, if there are more expandable tokens left in the
-        # output, additional expansion phases should be done.  It should not
-        # be effective solely for lists.
         ProcessVariablesAndConditionsInList(replacement, is_late, variables,
                                             build_file)
       elif not isinstance(replacement, str) and \
            not isinstance(replacement, int):
-            raise TypeError, 'Variable ' + match['content'] + \
+            raise TypeError, 'Variable ' + contents + \
                              ' must expand to a string or list of strings; ' + \
                              'found a ' + replacement.__class__.__name__
 
@@ -454,6 +469,8 @@ def ExpandVariables(input, is_late, variables, build_file):
         output = output[:replace_start] + str(encoded_replacement) + \
                  output[replace_end:]
 
+  gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                  "Expanding '%s' to '%s'" % (input, output))
   return output
 
 
