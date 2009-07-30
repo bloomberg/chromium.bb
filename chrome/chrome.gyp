@@ -4921,6 +4921,7 @@
           'type': 'executable',
           'msvs_guid': '018D4F38-6272-448F-A864-976DA09F05D0',
           'dependencies': [
+            'chrome',
             'chrome_dll_version',
             'chrome_resources',
             'chrome_strings',
