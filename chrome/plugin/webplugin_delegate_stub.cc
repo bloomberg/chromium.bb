@@ -175,7 +175,8 @@ void WebPluginDelegateStub::OnWillSendRequest(int id, const GURL& url) {
 }
 
 void WebPluginDelegateStub::OnDidReceiveResponse(
-    const PluginMsg_DidReceiveResponseParams& params) {
+    const PluginMsg_DidReceiveResponseParams& params, bool* cancel) {
+  *cancel = false;
   WebPluginResourceClient* client = webplugin_->GetResourceClient(params.id);
   if (!client)
     return;
@@ -184,7 +185,8 @@ void WebPluginDelegateStub::OnDidReceiveResponse(
                              params.headers,
                              params.expected_length,
                              params.last_modified,
-                             params.request_is_seekable);
+                             params.request_is_seekable,
+                             cancel);
 }
 
 void WebPluginDelegateStub::OnDidReceiveData(int id,

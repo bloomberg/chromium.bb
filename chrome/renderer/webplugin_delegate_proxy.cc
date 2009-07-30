@@ -100,7 +100,8 @@ class ResourceClientProxy : public WebPluginResourceClient {
                           const std::string& headers,
                           uint32 expected_length,
                           uint32 last_modified,
-                          bool request_is_seekable) {
+                          bool request_is_seekable,
+                          bool* cancel) {
     DCHECK(channel_ != NULL);
     PluginMsg_DidReceiveResponseParams params;
     params.id = resource_id_;
@@ -112,7 +113,8 @@ class ResourceClientProxy : public WebPluginResourceClient {
     // Grab a reference on the underlying channel so it does not get
     // deleted from under us.
     scoped_refptr<PluginChannelHost> channel_ref(channel_);
-    channel_->Send(new PluginMsg_DidReceiveResponse(instance_id_, params));
+    channel_->Send(new PluginMsg_DidReceiveResponse(instance_id_, params,
+                                                    cancel));
   }
 
   void DidReceiveData(const char* buffer, int length, int data_offset) {
