@@ -217,6 +217,10 @@ void TabGtk::OnDragBegin(GtkWidget* widget, GdkDragContext* context,
 // static
 void TabGtk::OnDragEnd(GtkWidget* widget, GdkDragContext* context,
                        TabGtk* tab) {
+  // Release our grab on the pointer.
+  gdk_pointer_ungrab(GDK_CURRENT_TIME);
+  gtk_grab_remove(tab->widget());
+
   tab->dragging_ = false;
   // Notify the drag helper that we're done with any potential drag operations.
   // Clean up the drag helper, which is re-created on the next mouse press.
@@ -254,8 +258,11 @@ void TabGtk::DidProcessEvent(GdkEvent* event) {
       // limbo where the drag is still active, but we don't get any
       // motion-notify-event signals.  Adding the grab back doesn't keep the
       // drag alive, but it does get us out of this bind by finishing the drag.
-      if (delegate_->IsTabDetached(this))
+      if (delegate_->IsTabDetached(this)) {
+        gdk_pointer_grab(widget()->window, FALSE, GDK_POINTER_MOTION_HINT_MASK,
+                         NULL, NULL, GDK_CURRENT_TIME);
         gtk_grab_add(widget());
+      }
       break;
     default:
       break;
