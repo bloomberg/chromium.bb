@@ -746,7 +746,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     writer = MakefileWriter()
     writer.Write(qualified_target, output_file, options.depth, spec, configs)
-    root_makefile.write('include ' + output_file + "\n")
+
+    # Our root_makefile lives at the source root.  Compute the relative path
+    # from there to the output_file for including.
+    submakefile_path = gyp.common.RelativePath(output_file, options.depth)
+    root_makefile.write('include ' + submakefile_path + "\n")
 
   root_makefile.write(SHARED_FOOTER)
 
