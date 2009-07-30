@@ -3086,5 +3086,5 @@ BUG18089 LINUX MAC : LayoutTests/http/tests/security/xss-DENIED-xsl-document-red
 BUG18089 LINUX MAC : LayoutTests/http/tests/security/xss-DENIED-xsl-external-entity-redirect.xml = FAIL
 BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post-sync.html = FAIL
 BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-sync-double.html = FAIL
-BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-sync.html = FAIL
+BUG18089 LINUX : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-sync.html = FAIL
 BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-unsafe-redirect.html = FAIL
