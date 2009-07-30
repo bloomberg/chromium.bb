@@ -160,6 +160,7 @@ WebData WebKitClientImpl::loadResource(const char* name) {
     { "mediaPause", IDR_MEDIA_PAUSE_BUTTON },
     { "mediaSoundFull", IDR_MEDIA_SOUND_FULL_BUTTON },
     { "mediaSoundNone", IDR_MEDIA_SOUND_NONE_BUTTON },
+    { "mediaSliderThumb", IDR_MEDIA_SLIDER_THUMB },
 #if defined(OS_LINUX)
     { "linuxCheckboxOff", IDR_LINUX_CHECKBOX_OFF },
     { "linuxCheckboxOn", IDR_LINUX_CHECKBOX_ON },

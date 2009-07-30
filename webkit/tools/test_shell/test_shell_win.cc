@@ -742,6 +742,7 @@ StringPiece GetDataResource(int resource_id) {
   case IDR_MEDIA_PLAY_BUTTON:
   case IDR_MEDIA_SOUND_FULL_BUTTON:
   case IDR_MEDIA_SOUND_NONE_BUTTON:
+  case IDR_MEDIA_SLIDER_THUMB:
     return NetResourceProvider(resource_id);
 
   default:

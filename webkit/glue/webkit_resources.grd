@@ -25,6 +25,7 @@
       <include name="IDR_MEDIA_PAUSE_BUTTON" file="resources\media_pause.png" type="BINDATA" />
       <include name="IDR_MEDIA_SOUND_FULL_BUTTON" file="resources\media_sound_full.png" type="BINDATA" />
       <include name="IDR_MEDIA_SOUND_NONE_BUTTON" file="resources\media_sound_none.png" type="BINDATA" />
+      <include name="IDR_MEDIA_SLIDER_THUMB" file="resources\media_slider_thumb.png" type="BINDATA" />
 
       <if expr="os == 'linux2'">
         <include name="IDR_LINUX_CHECKBOX_OFF" file="resources\linux-checkbox-off.png" type="BINDATA" />
