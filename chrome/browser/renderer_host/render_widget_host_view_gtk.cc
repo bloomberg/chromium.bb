@@ -779,14 +779,15 @@ class RenderWidgetHostViewGtkWidget {
       event->x = x;
       event->y = y;
     }
-    host_view->is_popup_first_mouse_release_ = false;
-    host_view->GetRenderWidgetHost()->ForwardMouseEvent(
-        WebInputEventFactory::mouseEvent(event));
 
     // TODO(evanm): why is this necessary here but not in test shell?
     // This logic is the same as GtkButton.
     if (event->type == GDK_BUTTON_PRESS && !GTK_WIDGET_HAS_FOCUS(widget))
       gtk_widget_grab_focus(widget);
+
+    host_view->is_popup_first_mouse_release_ = false;
+    host_view->GetRenderWidgetHost()->ForwardMouseEvent(
+        WebInputEventFactory::mouseEvent(event));
 
     // Although we did handle the mouse event, we need to let other handlers
     // run (in particular the one installed by TabContentsViewGtk).
