@@ -84,10 +84,13 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       rdh_(resource_dispatcher_host) {}
 
 bool CrossSiteResourceHandler::OnRequestRedirected(int request_id,
-                                                   const GURL& new_url) {
+                                                   const GURL& new_url,
+                                                   ResourceResponse* response,
+                                                   bool* defer) {
   // We should not have started the transition before being redirected.
   DCHECK(!in_cross_site_transition_);
-  return next_handler_->OnRequestRedirected(request_id, new_url);
+  return next_handler_->OnRequestRedirected(
+      request_id, new_url, response, defer);
 }
 
 bool CrossSiteResourceHandler::OnResponseStarted(int request_id,

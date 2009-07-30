@@ -371,6 +371,13 @@ bool AutomationProxy::SetFilteredInet(bool enabled) {
   return Send(new AutomationMsg_SetFilteredInet(0, enabled));
 }
 
+int AutomationProxy::GetFilteredInetHitCount() {
+  int hit_count;
+  if (!Send(new AutomationMsg_GetFilteredInetHitCount(0, &hit_count)))
+    return -1;
+  return hit_count;
+}
+
 bool AutomationProxy::SendProxyConfig(const std::string& new_proxy_config) {
   return Send(new AutomationMsg_SetProxyConfig(0, new_proxy_config));
 }

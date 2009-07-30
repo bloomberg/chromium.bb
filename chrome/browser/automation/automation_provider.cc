@@ -977,7 +977,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_GetFocusedViewID, GetFocusedViewID)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InspectElement,
                                     HandleInspectElementRequest)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetFilteredInet, SetFilteredInet)
     IPC_MESSAGE_HANDLER(AutomationMsg_DownloadDirectory, GetDownloadDirectory)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetProxyConfig, SetProxyConfig);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_OpenNewBrowserWindow,
@@ -2105,11 +2104,6 @@ void AutomationProvider::ReceivedInspectElementResponse(int num_resources) {
     Send(reply_message_);
     reply_message_ = NULL;
   }
-}
-
-void AutomationProvider::SetFilteredInet(const IPC::Message& message,
-                                         bool enabled) {
-  chrome_browser_net::SetUrlRequestMocksEnabled(enabled);
 }
 
 class SetProxyConfigTask : public Task {

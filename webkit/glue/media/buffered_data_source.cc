@@ -194,7 +194,9 @@ void BufferedResourceLoader::Read(int64 position,
 /////////////////////////////////////////////////////////////////////////////
 // BufferedResourceLoader,
 //     webkit_glue::ResourceLoaderBridge::Peer implementations
-void BufferedResourceLoader::OnReceivedRedirect(const GURL& new_url) {
+bool BufferedResourceLoader::OnReceivedRedirect(
+    const GURL& new_url,
+    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
   DCHECK(bridge_.get());
   DCHECK(start_callback_.get());
 
@@ -206,6 +208,8 @@ void BufferedResourceLoader::OnReceivedRedirect(const GURL& new_url) {
     DoneStart(net::ERR_ADDRESS_INVALID);
     Stop();
   }
+
+  return true;
 }
 
 void BufferedResourceLoader::OnReceivedResponse(

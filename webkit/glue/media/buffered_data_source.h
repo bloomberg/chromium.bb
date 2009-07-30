@@ -86,7 +86,9 @@ class BufferedResourceLoader : public webkit_glue::ResourceLoaderBridge::Peer {
   /////////////////////////////////////////////////////////////////////////////
   // webkit_glue::ResourceLoaderBridge::Peer implementations.
   virtual void OnUploadProgress(uint64 position, uint64 size) {}
-  virtual void OnReceivedRedirect(const GURL& new_url);
+  virtual bool OnReceivedRedirect(
+      const GURL& new_url,
+      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info);
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
       bool content_filtered);

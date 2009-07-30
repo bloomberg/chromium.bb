@@ -21,7 +21,8 @@ class SaveFileResourceHandler : public ResourceHandler {
 
   // Saves the redirected URL to final_url_, we need to use the original
   // URL to match original request.
-  bool OnRequestRedirected(int request_id, const GURL& url);
+  bool OnRequestRedirected(int request_id, const GURL& url,
+                           ResourceResponse* response, bool* defer);
 
   // Sends the download creation information to the download thread.
   bool OnResponseStarted(int request_id, ResourceResponse* response);

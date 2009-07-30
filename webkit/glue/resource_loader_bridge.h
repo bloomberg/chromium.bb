@@ -105,8 +105,12 @@ class ResourceLoaderBridge {
     // note: only for requests with LOAD_ENABLE_UPLOAD_PROGRESS set
     virtual void OnUploadProgress(uint64 position, uint64 size) = 0;
 
-    // Called when a redirect occurs.
-    virtual void OnReceivedRedirect(const GURL& new_url) = 0;
+    // Called when a redirect occurs.  The implementation may return false to
+    // suppress the redirect.  The given ResponseInfo provides complete
+    // information about the redirect, and new_url is the URL that will be
+    // loaded if this method returns true.
+    virtual bool OnReceivedRedirect(const GURL& new_url,
+                                    const ResponseInfo& info) = 0;
 
     // Called when response headers are available (after all redirects have
     // been followed).  |content_filtered| is set to true if the contents is

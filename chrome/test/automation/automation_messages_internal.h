@@ -982,4 +982,10 @@ IPC_BEGIN_MESSAGES(Automation)
 
   IPC_MESSAGE_ROUTED1(AutomationMsg_StopAsync,
                       int /* tab handle */)
+
+  // Returns the number of times a filter was used to service an URL request.
+  // See AutomationMsg_SetFilteredInet.
+  IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_GetFilteredInetHitCount,
+                             int /* hit_count */)
+
 IPC_END_MESSAGES(Automation)

@@ -35,7 +35,9 @@ DownloadResourceHandler::DownloadResourceHandler(ResourceDispatcherHost* rdh,
 
 // Not needed, as this event handler ought to be the final resource.
 bool DownloadResourceHandler::OnRequestRedirected(int request_id,
-                                                  const GURL& url) {
+                                                  const GURL& url,
+                                                  ResourceResponse* response,
+                                                  bool* defer) {
   url_ = url;
   return true;
 }

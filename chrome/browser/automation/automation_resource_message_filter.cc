@@ -5,7 +5,16 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
+#include "chrome/browser/net/url_request_failed_dns_job.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
+#include "chrome/browser/net/url_request_mock_util.h"
+#include "chrome/browser/net/url_request_slow_download_job.h"
+#include "chrome/browser/net/url_request_slow_http_job.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/test/automation/automation_messages.h"
+#include "net/url_request/url_request_filter.h"
 
 
 MessageLoop* AutomationResourceMessageFilter::io_loop_ = NULL;
@@ -54,7 +63,16 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
     }
   }
 
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(AutomationResourceMessageFilter, message)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetFilteredInet,
+                        OnSetFilteredInet)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetFilteredInetHitCount,
+                        OnGetFilteredInetHitCount)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
 }
 
 // Called on the IPC thread:
@@ -142,3 +160,11 @@ bool AutomationResourceMessageFilter::LookupRegisteredRenderView(
   return found;
 }
 
+void AutomationResourceMessageFilter::OnSetFilteredInet(bool enable) {
+  chrome_browser_net::SetUrlRequestMocksEnabled(enable);
+}
+
+void AutomationResourceMessageFilter::OnGetFilteredInetHitCount(
+    int* hit_count) {
+  *hit_count = URLRequestFilter::GetInstance()->hit_count();
+}

@@ -109,8 +109,11 @@ void SimpleDataSource::OnDownloadProgress(uint64 position, uint64 size) {}
 
 void SimpleDataSource::OnUploadProgress(uint64 position, uint64 size) {}
 
-void SimpleDataSource::OnReceivedRedirect(const GURL& new_url) {
+bool SimpleDataSource::OnReceivedRedirect(
+    const GURL& new_url,
+    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
   SetURL(new_url);
+  return true;
 }
 
 void SimpleDataSource::OnReceivedResponse(

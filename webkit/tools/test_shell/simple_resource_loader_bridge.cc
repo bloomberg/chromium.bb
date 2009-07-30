@@ -151,9 +151,14 @@ class RequestProxy : public URLRequest::Delegate,
   // various URLRequest callbacks.  The event hooks, defined below, trigger
   // these methods asynchronously.
 
-  void NotifyReceivedRedirect(const GURL& new_url) {
-    if (peer_)
-      peer_->OnReceivedRedirect(new_url);
+  void NotifyReceivedRedirect(const GURL& new_url,
+                              const ResourceLoaderBridge::ResponseInfo& info) {
+    if (peer_ && peer_->OnReceivedRedirect(new_url, info)) {
+      io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &RequestProxy::AsyncFollowDeferredRedirect));
+    } else {
+      Cancel();
+    }
   }
 
   void NotifyReceivedResponse(const ResourceLoaderBridge::ResponseInfo& info,
@@ -230,6 +235,14 @@ class RequestProxy : public URLRequest::Delegate,
     Done();
   }
 
+  void AsyncFollowDeferredRedirect() {
+    // This can be null in cases where the request is already done.
+    if (!request_.get())
+      return;
+
+    request_->FollowDeferredRedirect();
+  }
+
   void AsyncReadData() {
     // This can be null in cases where the request is already done.
     if (!request_.get())
@@ -252,9 +265,13 @@ class RequestProxy : public URLRequest::Delegate,
   // callbacks) that run on the IO thread.  They are designed to be overridden
   // by the SyncRequestProxy subclass.
 
-  virtual void OnReceivedRedirect(const GURL& new_url) {
+  virtual void OnReceivedRedirect(
+      const GURL& new_url,
+      const ResourceLoaderBridge::ResponseInfo& info,
+      bool* defer_redirect) {
+    *defer_redirect = true;  // See AsyncFollowDeferredRedirect
     owner_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-        this, &RequestProxy::NotifyReceivedRedirect, new_url));
+        this, &RequestProxy::NotifyReceivedRedirect, new_url, info));
   }
 
   virtual void OnReceivedResponse(
@@ -282,19 +299,15 @@ class RequestProxy : public URLRequest::Delegate,
                                   const GURL& new_url,
                                   bool* defer_redirect) {
     DCHECK(request->status().is_success());
-    OnReceivedRedirect(new_url);
+    ResourceLoaderBridge::ResponseInfo info;
+    PopulateResponseInfo(request, &info);
+    OnReceivedRedirect(new_url, info, defer_redirect);
   }
 
   virtual void OnResponseStarted(URLRequest* request) {
     if (request->status().is_success()) {
       ResourceLoaderBridge::ResponseInfo info;
-      info.request_time = request->request_time();
-      info.response_time = request->response_time();
-      info.headers = request->response_headers();
-      info.app_cache_id = WebAppCacheContext::kNoAppCacheId;
-      request->GetMimeType(&info.mime_type);
-      request->GetCharset(&info.charset);
-      info.content_length = request->GetExpectedContentSize();
+      PopulateResponseInfo(request, &info);
       OnReceivedResponse(info, false);
       AsyncReadData();  // start reading
     } else {
@@ -358,6 +371,17 @@ class RequestProxy : public URLRequest::Delegate,
     }
   }
 
+  void PopulateResponseInfo(URLRequest* request,
+                            ResourceLoaderBridge::ResponseInfo* info) const {
+    info->request_time = request->request_time();
+    info->response_time = request->response_time();
+    info->headers = request->response_headers();
+    info->app_cache_id = WebAppCacheContext::kNoAppCacheId;
+    request->GetMimeType(&info->mime_type);
+    request->GetCharset(&info->charset);
+    info->content_length = request->GetExpectedContentSize();
+  }
+
   scoped_ptr<URLRequest> request_;
 
   // Size of our async IO data buffers
@@ -397,7 +421,18 @@ class SyncRequestProxy : public RequestProxy {
   // --------------------------------------------------------------------------
   // Event hooks that run on the IO thread:
 
-  virtual void OnReceivedRedirect(const GURL& new_url) {
+  virtual void OnReceivedRedirect(
+      const GURL& new_url,
+      const ResourceLoaderBridge::ResponseInfo& info,
+      bool* defer_redirect) {
+    // TODO(darin): It would be much better if this could live in WebCore, but
+    // doing so requires API changes at all levels.  Similar code exists in
+    // WebCore/platform/network/cf/ResourceHandleCFNet.cpp :-(
+    if (new_url.GetOrigin() != result_->url.GetOrigin()) {
+      LOG(ERROR) << "Cross origin redirect denied";
+      Cancel();
+      return;
+    }
     result_->url = new_url;
   }
 

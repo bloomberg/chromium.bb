@@ -46,21 +46,13 @@ GURL URLRequestMockHTTPJob::GetMockUrl(const std::wstring& path) {
 FilePath URLRequestMockHTTPJob::GetOnDiskPath(const std::wstring& base_path,
                                               URLRequest* request,
                                               const std::string& scheme) {
-  std::wstring file_url(L"file:///");
-  file_url += base_path;
-  const std::string& url = request->url().spec();
-  // Fix up the url to be the file url we're loading from disk.
-  std::string host_prefix("http://");
-  host_prefix.append(kMockHostname);
-  size_t host_prefix_len = host_prefix.length();
-  if (url.compare(0, host_prefix_len, host_prefix.data(),
-                  host_prefix_len) == 0) {
-    file_url += UTF8ToWide(url.substr(host_prefix_len));
-  }
+  std::string file_url("file:///");
+  file_url += WideToUTF8(base_path);
+  file_url += request->url().path();
 
   // Convert the file:/// URL to a path on disk.
   FilePath file_path;
-  net::FileURLToFilePath(GURL(WideToUTF8(file_url)), &file_path);
+  net::FileURLToFilePath(GURL(file_url), &file_path);
   return file_path;
 }
 
@@ -72,6 +64,13 @@ URLRequestMockHTTPJob::URLRequestMockHTTPJob(URLRequest* request,
 void URLRequestMockHTTPJob::GetResponseInfo(net::HttpResponseInfo* info) {
   // Forward to private const version.
   GetResponseInfoConst(info);
+}
+
+bool URLRequestMockHTTPJob::IsRedirectResponse(GURL* location,
+                                               int* http_status_code) {
+  // Override the URLRequestFileJob implementation to invoke the default one
+  // based on HttpResponseInfo.
+  return URLRequestJob::IsRedirectResponse(location, http_status_code);
 }
 
 // Private const version.

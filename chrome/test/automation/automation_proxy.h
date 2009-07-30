@@ -150,6 +150,10 @@ class AutomationProxy : public IPC::Channel::Listener,
   // false if the message fails to send to the browser.
   bool SetFilteredInet(bool enabled);
 
+  // Returns the number of times a network request filter was used to service a
+  // network request.  Returns -1 on error.
+  int GetFilteredInetHitCount();
+
   // Sends the browser a new proxy configuration to start using. Returns true
   // if the proxy config was successfully sent, false otherwise.
   bool SendProxyConfig(const std::string& new_proxy_config);

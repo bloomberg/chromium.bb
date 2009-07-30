@@ -56,7 +56,7 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
                           ResourceType::Type resource_type,
                           uint32 request_context,
                           int app_cache_context_id,
-                          int route_id);
+                          int routing_id);
   virtual ~IPCResourceLoaderBridge();
 
   // ResourceLoaderBridge
@@ -88,7 +88,7 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
   int request_id_;
 
   // The routing id used when sending IPC messages.
-  int route_id_;
+  int routing_id_;
 
 #ifdef LOG_RESOURCE_REQUESTS
   // indicates the URL of this resource request for help debugging
@@ -110,11 +110,11 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
     ResourceType::Type resource_type,
     uint32 request_context,
     int app_cache_context_id,
-    int route_id)
+    int routing_id)
     : peer_(NULL),
       dispatcher_(dispatcher),
       request_id_(-1),
-      route_id_(route_id) {
+      routing_id_(routing_id) {
   DCHECK(dispatcher_) << "no resource dispatcher";
   request_.method = method;
   request_.url = url;
@@ -189,7 +189,7 @@ bool IPCResourceLoaderBridge::Start(Peer* peer) {
   request_id_ = dispatcher_->AddPendingRequest(peer_, request_.resource_type);
 
   return dispatcher_->message_sender()->Send(
-      new ViewHostMsg_RequestResource(route_id_, request_id_, request_));
+      new ViewHostMsg_RequestResource(routing_id_, request_id_, request_));
 }
 
 void IPCResourceLoaderBridge::Cancel() {
@@ -200,8 +200,7 @@ void IPCResourceLoaderBridge::Cancel() {
 
   RESOURCE_LOG("Canceling request for " << url_);
 
-  dispatcher_->message_sender()->Send(
-      new ViewHostMsg_CancelRequest(route_id_, request_id_));
+  dispatcher_->CancelPendingRequest(routing_id_, request_id_);
 
   // We can't remove the request ID from the resource dispatcher because more
   // data might be pending. Sending the cancel message may cause more data
@@ -229,7 +228,7 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   request_id_ = MakeRequestID();
 
   SyncLoadResult result;
-  IPC::Message* msg = new ViewHostMsg_SyncLoad(route_id_, request_id_,
+  IPC::Message* msg = new ViewHostMsg_SyncLoad(routing_id_, request_id_,
                                                request_, &result);
   if (!dispatcher_->message_sender()->Send(msg)) {
     response->status.set_status(URLRequestStatus::FAILED);
@@ -351,7 +350,7 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
                                         int request_id,
                                         base::SharedMemoryHandle shm_handle,
                                         int data_len) {
-  // Acknowlegde the reception of this data.
+  // Acknowledge the reception of this data.
   message_sender()->Send(
       new ViewHostMsg_DataReceived_ACK(message.routing_id(), request_id));
 
@@ -377,8 +376,11 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
   }
 }
 
-void ResourceDispatcher::OnReceivedRedirect(int request_id,
-                                            const GURL& new_url) {
+void ResourceDispatcher::OnReceivedRedirect(
+    const IPC::Message& message,
+    int request_id,
+    const GURL& new_url,
+    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
   PendingRequestList::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     // this might happen for kill()ed requests on the webkit end, so perhaps
@@ -391,7 +393,13 @@ void ResourceDispatcher::OnReceivedRedirect(int request_id,
 
   RESOURCE_LOG("Dispatching redirect for " <<
                request_info.peer->GetURLForDebugging());
-  request_info.peer->OnReceivedRedirect(new_url);
+
+  if (request_info.peer->OnReceivedRedirect(new_url, info)) {
+    message_sender()->Send(
+        new ViewHostMsg_FollowRedirect(message.routing_id(), request_id));
+  } else {
+    CancelPendingRequest(message.routing_id(), request_id);
+  }
 }
 
 void ResourceDispatcher::OnRequestComplete(int request_id,
@@ -461,10 +469,26 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   return true;
 }
 
+void ResourceDispatcher::CancelPendingRequest(int routing_id,
+                                              int request_id) {
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    DLOG(ERROR) << "unknown request";
+    return;
+  }
+  PendingRequestInfo& request_info = it->second;
+  // Avoid spamming the host with cancel messages.
+  if (request_info.is_cancelled)
+    return;
+  request_info.is_cancelled = true;
+  message_sender()->Send(
+      new ViewHostMsg_CancelRequest(routing_id, request_id));
+}
+
 void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
   PendingRequestList::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
-    NOTREACHED() << "unknown request";
+    DLOG(ERROR) << "unknown request";
     return;
   }
   PendingRequestInfo& request_info = it->second;

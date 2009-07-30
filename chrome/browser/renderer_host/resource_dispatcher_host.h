@@ -250,6 +250,10 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
                      int request_id,
                      bool from_renderer);
 
+  // Follows a deferred redirect for the given request.
+  void FollowDeferredRedirect(int process_id,
+                              int request_id);
+
   // Returns true if it's ok to send the data. If there are already too many
   // data messages pending, it pauses the request and returns false. In this
   // case the caller should not send the data.
@@ -503,6 +507,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void OnDataReceivedACK(int request_id);
   void OnUploadProgressACK(int request_id);
   void OnCancelRequest(int request_id);
+  void OnFollowRedirect(int request_id);
 
   // Returns true if the message passed in is a resource related message.
   static bool IsResourceDispatcherHostMessage(const IPC::Message&);

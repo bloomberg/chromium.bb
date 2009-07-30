@@ -56,8 +56,11 @@ bool SafeBrowsingResourceHandler::OnUploadProgress(int request_id,
   return next_handler_->OnUploadProgress(request_id, position, size);
 }
 
-bool SafeBrowsingResourceHandler::OnRequestRedirected(int request_id,
-                                                      const GURL& new_url) {
+bool SafeBrowsingResourceHandler::OnRequestRedirected(
+    int request_id,
+    const GURL& new_url,
+    ResourceResponse* response,
+    bool* defer) {
   if (in_safe_browsing_check_) {
     Release();
     in_safe_browsing_check_ = false;
@@ -73,7 +76,8 @@ bool SafeBrowsingResourceHandler::OnRequestRedirected(int request_id,
     // Can't pause now because it's too early, so we'll do it in OnWillRead.
   }
 
-  return next_handler_->OnRequestRedirected(request_id, new_url);
+  return next_handler_->OnRequestRedirected(
+      request_id, new_url, response, defer);
 }
 
 bool SafeBrowsingResourceHandler::OnResponseStarted(

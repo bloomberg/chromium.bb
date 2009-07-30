@@ -205,7 +205,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 
   // ResourceLoaderBridge::Peer methods:
   virtual void OnUploadProgress(uint64 position, uint64 size);
-  virtual void OnReceivedRedirect(const GURL& new_url);
+  virtual bool OnReceivedRedirect(
+      const GURL& new_url, const ResourceLoaderBridge::ResponseInfo& info);
   virtual void OnReceivedResponse(
       const ResourceLoaderBridge::ResponseInfo& info, bool content_filtered);
   virtual void OnReceivedData(const char* data, int len);
@@ -371,30 +372,32 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
     client_->didSendData(loader_, position, size);
 }
 
-void WebURLLoaderImpl::Context::OnReceivedRedirect(const GURL& new_url) {
+bool WebURLLoaderImpl::Context::OnReceivedRedirect(
+    const GURL& new_url,
+    const ResourceLoaderBridge::ResponseInfo& info) {
   if (!client_)
-    return;
+    return false;
 
-  // TODO(darin): We lack sufficient information to construct the
-  // actual redirect response, so we just simulate it here.
-  WebURLResponse response(url_);
+  WebURLResponse response;
+  response.initialize();
+  PopulateURLResponse(url_, info, &response);
 
-  // TODO(darin): We lack sufficient information to construct the
-  // actual request that resulted from the redirect, so we just
-  // report a GET navigation to the new location.
+  // TODO(darin): We lack sufficient information to construct the actual
+  // request that resulted from the redirect, so we just report a GET
+  // navigation to the new location.
   WebURLRequest new_request(new_url);
 
   url_ = new_url;
   client_->willSendRequest(loader_, new_request, response);
 
-  // TODO(darin): since new_request is sent as a mutable reference, it is
-  // possible that willSendRequest may have modified it.
-  //
-  // andresca on #webkit confirms that that is intentional, so we'll need
-  // to rework the ResourceLoaderBridge to give us control over what URL
-  // is really loaded (and with what headers) when a redirect is encountered.
-  // TODO(darin): we fail this assertion in some layout tests!
-  //DCHECK(GURL(new_request.url()) == new_url);
+  // Only follow the redirect if WebKit left the URL unmodified.
+  if (url_ == new_request.url())
+    return true;
+
+  // We assume that WebKit only changes the URL to suppress a redirect, and we
+  // assume that it does so by setting it to be invalid.
+  DCHECK(!new_request.url().isValid());
+  return false;
 }
 
 void WebURLLoaderImpl::Context::OnReceivedResponse(

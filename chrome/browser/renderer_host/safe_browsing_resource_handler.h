@@ -30,7 +30,8 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
 
   // ResourceHandler implementation:
   bool OnUploadProgress(int request_id, uint64 position, uint64 size);
-  bool OnRequestRedirected(int request_id, const GURL& new_url);
+  bool OnRequestRedirected(int request_id, const GURL& new_url,
+                           ResourceResponse* response, bool* defer);
   bool OnResponseStarted(int request_id, ResourceResponse* response);
   void OnGetHashTimeout();
   bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,

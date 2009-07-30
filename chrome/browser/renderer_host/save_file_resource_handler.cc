@@ -23,7 +23,9 @@ SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
 }
 
 bool SaveFileResourceHandler::OnRequestRedirected(int request_id,
-                                                  const GURL& url) {
+                                                  const GURL& url,
+                                                  ResourceResponse* response,
+                                                  bool* defer) {
   final_url_ = url;
   return true;
 }

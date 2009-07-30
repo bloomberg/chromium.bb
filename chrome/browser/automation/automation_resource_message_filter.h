@@ -72,6 +72,9 @@ class AutomationResourceMessageFilter
   static void UnRegisterRenderViewInIOThread(int renderer_pid, int renderer_id);
 
  private:
+  void OnSetFilteredInet(bool enable);
+  void OnGetFilteredInetHitCount(int* hit_count);
+
   // A unique renderer id is a combination of renderer process id and
   // it's routing id.
   struct RendererId {

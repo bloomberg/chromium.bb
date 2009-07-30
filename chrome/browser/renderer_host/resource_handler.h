@@ -63,8 +63,12 @@ class ResourceHandler : public base::RefCounted<ResourceHandler> {
     return true;
   }
 
-  // The request was redirected to a new URL.
-  virtual bool OnRequestRedirected(int request_id, const GURL& url) = 0;
+  // The request was redirected to a new URL.  |*defer| has an initial value of
+  // false.  Set |*defer| to true to defer the redirect.  The redirect may be
+  // followed later on via ResourceDispatcherHost::FollowDeferredRedirect.
+  virtual bool OnRequestRedirected(int request_id, const GURL& url,
+                                   ResourceResponse* response,
+                                   bool* defer) = 0;
 
   // Response headers and meta data are available.
   virtual bool OnResponseStarted(int request_id,

@@ -314,4 +314,21 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   EXPECT_EQ(L"Title Of Awesomeness", tab_title);
 }
 
+TEST_F(ResourceDispatcherTest, CrossOriginRedirectBlocked) {
+  int before = automation()->GetFilteredInetHitCount();
+  CheckTitleTest(L"cross-origin-redirect-blocked.html",
+                 L"done");
+  int after = automation()->GetFilteredInetHitCount();
+  //
+  // We expect the following URL requests from this test:
+  // 1-  http://mock.http/cross-origin-redirect-blocked.html
+  // 2-  http://mock.http/redirect-to-title2.html
+  // 3-  http://mock.http/title2.html
+  //
+  // If the redirect in #2 were not blocked, we'd also see a request
+  // for http://mock.http:4000/title2.html.
+  //
+  EXPECT_EQ(3, after - before);
+}
+
 }  // namespace

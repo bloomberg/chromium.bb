@@ -225,10 +225,13 @@ IPC_BEGIN_MESSAGES(View)
                       int64 /* position */,
                       int64 /* size */)
 
-  // Sent when the request has been redirected.
-  IPC_MESSAGE_ROUTED2(ViewMsg_Resource_ReceivedRedirect,
+  // Sent when the request has been redirected.  The receiver is expected to
+  // respond with either a FollowRedirect message (if the redirect is to be
+  // followed) or a CancelRequest message (if it should not be followed).
+  IPC_MESSAGE_ROUTED3(ViewMsg_Resource_ReceivedRedirect,
                       int /* request_id */,
-                      GURL /* new_url */)
+                      GURL /* new_url */,
+                      ResourceResponseHead)
 
   // Sent when some data from a resource request is ready. The handle should
   // already be mapped into the process that receives this message.
@@ -832,6 +835,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Cancels a resource request with the ID given as the parameter.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_CancelRequest,
+                      int /* request_id */)
+
+  // Follows a redirect that occured for the resource request with the ID given
+  // as the parameter.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_FollowRedirect,
                       int /* request_id */)
 
   // Makes a synchronous resource request via the browser.
