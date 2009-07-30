@@ -1281,7 +1281,7 @@ bool TabStrip::IsCursorInTabStripZone() {
 
 #if defined(OS_WIN)
   DWORD pos = GetMessagePos();
-  gfx::Point cursor_point(LOWORD(pos), HIWORD(pos));
+  gfx::Point cursor_point(GET_X_LPARAM(pos), GET_Y_LPARAM(pos));
 #elif defined(OS_LINUX)
   // TODO: make sure this is right with multiple monitors.
   GdkScreen* screen = gdk_screen_get_default();
