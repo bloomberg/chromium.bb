@@ -192,6 +192,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandlePopulatePopupThunk), this);
   mark_set_handler_id_ = g_signal_connect(
       text_buffer_, "mark-set", G_CALLBACK(&HandleMarkSetThunk), this);
+  g_signal_connect(text_view_, "drag-data-received",
+                   G_CALLBACK(&HandleDragDataReceivedThunk), this);
 }
 
 void AutocompleteEditViewGtk::SetFocus() {
@@ -668,6 +670,29 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
   if (!selected_text_.empty() && no_text_selected && !selection_saved_) {
     SavePrimarySelection(selected_text_);
     selection_saved_ = true;
+  }
+}
+
+// Just use the default behavior for DnD, except if the drop can be a PasteAndGo
+// then override.
+void AutocompleteEditViewGtk::HandleDragDataReceived(
+    GdkDragContext* context, gint x, gint y,
+    GtkSelectionData* selection_data, guint target_type, guint time) {
+  // Don't try to PasteAndGo on drops originating from this omnibox. However, do
+  // allow default behavior for such drags.
+  if (context->source_window == text_view_->window)
+    return;
+
+  guchar* text = gtk_selection_data_get_text(selection_data);
+  if (!text)
+    return;
+
+  std::wstring possible_url = UTF8ToWide(reinterpret_cast<char*>(text));
+  g_free(text);
+  if (model_->CanPasteAndGo(CollapseWhitespace(possible_url, true))) {
+    model_->PasteAndGo();
+    gtk_drag_finish(context, TRUE, TRUE, time);
+    g_signal_stop_emission_by_name(text_view_, "drag-data-received");
   }
 }
 

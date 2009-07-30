@@ -221,6 +221,21 @@ class AutocompleteEditViewGtk : public AutocompleteEditView {
                      GtkTextIter* location,
                      GtkTextMark* mark);
 
+  static void HandleDragDataReceivedThunk(GtkWidget* widget,
+                                          GdkDragContext* context,
+                                          gint x, gint y,
+                                          GtkSelectionData* selection_data,
+                                          guint target_type,
+                                          guint time,
+                                          gpointer self) {
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+        HandleDragDataReceived(context, x, y, selection_data, target_type,
+                               time);
+  }
+  void HandleDragDataReceived(GdkDragContext* context, gint x, gint y,
+                              GtkSelectionData* selection_data,
+                              guint target_type, guint time);
+
   // Actual implementation of SelectAll(), but also provides control over
   // whether the PRIMARY selection is set to the selected text (in SelectAll(),
   // it isn't, but we want set the selection when the user clicks in the entry).
