@@ -72,7 +72,7 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
   // The widget might be larger than the pixbuf. Paint the pixbuf flush with the
   // start of the widget (left for LTR, right for RTL).
   gfx::Rect bounds = gfx::Rect(0, 0, gdk_pixbuf_get_width(pixbuf), 0);
-  int x = gtk_util::MirroredLeftPointForRect(widget, bounds);
+  int x = GtkUtil::MirroredLeftPointForRect(widget, bounds);
 
   if (background_image_) {
     gdk_cairo_set_source_pixbuf(cairo_context, background_image_, x, 0);

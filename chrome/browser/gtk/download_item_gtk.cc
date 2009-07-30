@@ -211,8 +211,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   gtk_misc_set_alignment(GTK_MISC(name_label_), 0, 0.5);
   gtk_misc_set_alignment(GTK_MISC(status_label_), 0, 0.5);
   // Until we switch to vector graphics, force the font size.
-  gtk_util::ForceFontSizePixels(name_label_, 13.4);  // 13.4px == 10pt @ 96dpi
-  gtk_util::ForceFontSizePixels(status_label_, 13.4);  // 13.4px == 10pt @ 96dpi
+  GtkUtil::ForceFontSizePixels(name_label_, 13.4);  // 13.4px == 10pt @ 96dpi
+  GtkUtil::ForceFontSizePixels(status_label_, 13.4);  // 13.4px == 10pt @ 96dpi
 
   // Stack the labels on top of one another.
   GtkWidget* text_stack = gtk_vbox_new(FALSE, 0);
@@ -298,7 +298,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     GtkWidget* dangerous_label = gtk_label_new(NULL);
     // Until we switch to vector graphics, force the font size.
     // 13.4px == 10pt @ 96dpi
-    gtk_util::ForceFontSizePixels(dangerous_label, 13.4);
+    GtkUtil::ForceFontSizePixels(dangerous_label, 13.4);
     gtk_label_set_markup(GTK_LABEL(dangerous_label), label_markup);
     gtk_label_set_line_wrap(GTK_LABEL(dangerous_label), TRUE);
     // We pass TRUE, TRUE so that the label will condense to less than its
@@ -313,14 +313,14 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
         l10n_util::GetStringUTF8(IDS_SAVE_DOWNLOAD).c_str());
     g_signal_connect(dangerous_accept, "clicked",
                      G_CALLBACK(OnDangerousAccept), this);
-    gtk_util::CenterWidgetInHBox(dangerous_hbox_, dangerous_accept, false, 0);
+    GtkUtil::CenterWidgetInHBox(dangerous_hbox_, dangerous_accept, false, 0);
 
     // Create the nevermind button.
     GtkWidget* dangerous_decline = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(IDS_DISCARD_DOWNLOAD).c_str());
     g_signal_connect(dangerous_decline, "clicked",
                      G_CALLBACK(OnDangerousDecline), this);
-    gtk_util::CenterWidgetInHBox(dangerous_hbox_, dangerous_decline, false, 0);
+    GtkUtil::CenterWidgetInHBox(dangerous_hbox_, dangerous_decline, false, 0);
 
     // Put it in an alignment so that padding will be added on the left and
     // right.

@@ -106,7 +106,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
       GTK_DIALOG_MODAL,
       GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
       NULL);
-  // Pick up the style set in gtk_util.cc:InitRCStyles().
+  // Pick up the style set in GtkUtil::InitRCStyles().
   // The layout of this dialog is special because the logo should be flush
   // with the edges of the window.
   gtk_widget_set_name(dialog, "about-dialog");
@@ -154,9 +154,9 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
 
   // We use a separate box for the licensing etc. text.  See the comment near
   // the top of this function about using a special layout for this dialog.
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(vbox),
-                                 gtk_util::kContentAreaBorder);
+                                 GtkUtil::kContentAreaBorder);
 
   GtkWidget* copyright_label = MakeMarkupLabel(
       kSmaller, l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_COPYRIGHT));

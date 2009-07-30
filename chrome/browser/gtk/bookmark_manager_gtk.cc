@@ -321,7 +321,7 @@ BookmarkManagerGtk::BookmarkManagerGtk(Profile* profile)
       sending_delayed_mousedown_(false),
       ignore_rightclicks_(false) {
   InitWidgets();
-  gtk_util::SetWindowIcon(GTK_WINDOW(window_));
+  GtkUtil::SetWindowIcon(GTK_WINDOW(window_));
 
   model_->AddObserver(this);
   if (model_->IsLoaded())
@@ -364,13 +364,13 @@ void BookmarkManagerGtk::InitWidgets() {
       l10n_util::GetStringUTF8(IDS_BOOKMARK_MANAGER_ORGANIZE_MENU).c_str());
 
   GtkWidget* import_item = gtk_menu_item_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_BOOKMARK_MANAGER_IMPORT_MENU)).c_str());
   g_signal_connect(import_item, "activate",
                    G_CALLBACK(OnImportItemActivated), this);
 
   GtkWidget* export_item = gtk_menu_item_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_BOOKMARK_MANAGER_EXPORT_MENU)).c_str());
   g_signal_connect(export_item, "activate",
                    G_CALLBACK(OnExportItemActivated), this);
@@ -570,7 +570,7 @@ void BookmarkManagerGtk::SetInitialWindowSize() {
   // Otherwise, just set a default size (GTK will override this if it's not
   // large enough to hold the window's contents).
   int width = 1, height = 1;
-  gtk_util::GetWidgetSizeFromResources(
+  GtkUtil::GetWidgetSizeFromResources(
       window_,
       IDS_BOOKMARK_MANAGER_DIALOG_WIDTH_CHARS,
       IDS_BOOKMARK_MANAGER_DIALOG_HEIGHT_LINES,

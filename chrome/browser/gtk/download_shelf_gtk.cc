@@ -89,7 +89,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
 
   // Create and pack the close button.
   close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
-  gtk_util::CenterWidgetInHBox(hbox_.get(), close_button_->widget(), true, 0);
+  GtkUtil::CenterWidgetInHBox(hbox_.get(), close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnButtonClick), this);
 
@@ -101,8 +101,8 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
                    G_CALLBACK(OnButtonClick), this);
   // Until we switch to vector graphics, force the font size.
   // 13.4px == 10pt @ 96dpi
-  gtk_util::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(link_button)->label,
-                                13.4);
+  GtkUtil::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(link_button)->label,
+                               13.4);
 
   // Make the download arrow icon.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -111,8 +111,8 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
 
   // Pack the link and the icon in an hbox.
   link_hbox_ = gtk_hbox_new(FALSE, 5);
-  gtk_util::CenterWidgetInHBox(link_hbox_, download_image, false, 0);
-  gtk_util::CenterWidgetInHBox(link_hbox_, link_button, false, 0);
+  GtkUtil::CenterWidgetInHBox(link_hbox_, download_image, false, 0);
+  GtkUtil::CenterWidgetInHBox(link_hbox_, link_button, false, 0);
   gtk_box_pack_end(GTK_BOX(hbox_.get()), link_hbox_, FALSE, FALSE, 0);
 
   slide_widget_.reset(new SlideAnimatorGtk(shelf_.get(),

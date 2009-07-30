@@ -1248,7 +1248,7 @@ void TabStripGtk::LayoutNewTabButton(double last_tab_right,
   } else {
     bounds.set_x(Round(last_tab_right - kTabHOffset) + kNewTabButtonHOffset);
   }
-  bounds.set_x(gtk_util::MirroredLeftPointForRect(tabstrip_.get(), bounds));
+  bounds.set_x(GtkUtil::MirroredLeftPointForRect(tabstrip_.get(), bounds));
 
   gtk_fixed_move(GTK_FIXED(tabstrip_.get()), newtab_button_->widget(),
                  bounds.x(), bounds.y());
@@ -1390,7 +1390,7 @@ void TabStripGtk::ResizeLayoutTabs() {
 
 bool TabStripGtk::IsCursorInTabStripZone() const {
   gfx::Point tabstrip_topleft;
-  gtk_util::ConvertWidgetPointToScreen(tabstrip_.get(), &tabstrip_topleft);
+  GtkUtil::ConvertWidgetPointToScreen(tabstrip_.get(), &tabstrip_topleft);
 
   gfx::Rect bds = bounds();
   bds.set_origin(tabstrip_topleft);
@@ -1438,12 +1438,12 @@ gfx::Rect TabStripGtk::GetDropBounds(int drop_index,
     center_x = bounds.x() + bounds.width() + (kTabHOffset / 2);
   }
 
-  center_x = gtk_util::MirroredXCoordinate(tabstrip_.get(), center_x);
+  center_x = GtkUtil::MirroredXCoordinate(tabstrip_.get(), center_x);
 
   // Determine the screen bounds.
   gfx::Point drop_loc(center_x - drop_indicator_width / 2,
                       -drop_indicator_height);
-  gtk_util::ConvertWidgetPointToScreen(tabstrip_.get(), &drop_loc);
+  GtkUtil::ConvertWidgetPointToScreen(tabstrip_.get(), &drop_loc);
   gfx::Rect drop_bounds(drop_loc.x(), drop_loc.y(), drop_indicator_width,
                         drop_indicator_height);
 
@@ -1460,7 +1460,7 @@ void TabStripGtk::UpdateDropIndex(GdkDragContext* context, gint x, gint y) {
   // If the UI layout is right-to-left, we need to mirror the mouse
   // coordinates since we calculate the drop index based on the
   // original (and therefore non-mirrored) positions of the tabs.
-  x = gtk_util::MirroredXCoordinate(tabstrip_.get(), x);
+  x = GtkUtil::MirroredXCoordinate(tabstrip_.get(), x);
   for (int i = 0; i < GetTabCount(); ++i) {
     TabGtk* tab = GetTabAt(i);
     gfx::Rect bounds = tab->GetNonMirroredBounds(tabstrip_.get());
@@ -1565,7 +1565,7 @@ TabStripGtk::DropInfo::~DropInfo() {
 gboolean TabStripGtk::DropInfo::OnExposeEvent(GtkWidget* widget,
                                               GdkEventExpose* event,
                                               DropInfo* drop_info) {
-  if (gtk_util::IsScreenComposited()) {
+  if (GtkUtil::IsScreenComposited()) {
     drop_info->SetContainerTransparency();
   } else {
     drop_info->SetContainerShapeMask();
@@ -1892,7 +1892,7 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget, TabStripGtk* tabstrip) {
 
 void TabStripGtk::SetTabBounds(TabGtk* tab, const gfx::Rect& bounds) {
   gfx::Rect bds = bounds;
-  bds.set_x(gtk_util::MirroredLeftPointForRect(tabstrip_.get(), bounds));
+  bds.set_x(GtkUtil::MirroredLeftPointForRect(tabstrip_.get(), bounds));
   tab->SetBounds(bds);
   gtk_fixed_move(GTK_FIXED(tabstrip_.get()), tab->widget(),
                  bds.x(), bds.y());

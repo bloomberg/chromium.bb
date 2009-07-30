@@ -13,8 +13,6 @@
 #include "chrome/common/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-using gtk_util::ConvertAcceleratorsFromWindowsStyle;
-
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  const MenuCreateMaterial* menu_data,
                  GtkAccelGroup* accel_group)
@@ -47,9 +45,9 @@ void MenuGtk::ConnectSignalHandlers() {
 
 void MenuGtk::AppendMenuItemWithLabel(int command_id,
                                       const std::string& label) {
-  std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
+  std::string converted = GtkUtil::ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item =
-      gtk_menu_item_new_with_mnemonic(converted_label.c_str());
+      gtk_menu_item_new_with_mnemonic(converted.c_str());
   AppendMenuItem(command_id, menu_item);
 }
 
@@ -62,9 +60,9 @@ void MenuGtk::AppendMenuItemWithIcon(int command_id,
 
 void MenuGtk::AppendCheckMenuItemWithLabel(int command_id,
                                            const std::string& label) {
-  std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
+  std::string converted = GtkUtil::ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item =
-      gtk_check_menu_item_new_with_mnemonic(converted_label.c_str());
+      gtk_check_menu_item_new_with_mnemonic(converted.c_str());
   AppendMenuItem(command_id, menu_item);
 }
 
@@ -135,7 +133,7 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
       DCHECK(!label.empty());
     }
 
-    label = ConvertAcceleratorsFromWindowsStyle(label);
+    label = GtkUtil::ConvertAcceleratorsFromWindowsStyle(label);
 
     switch (menu_data->type) {
       case MENU_RADIO:
@@ -195,9 +193,9 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
 
 GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
                                            const SkBitmap& icon) {
-  std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
+  std::string converted = GtkUtil::ConvertAcceleratorsFromWindowsStyle(label);
   GtkWidget* menu_item =
-      gtk_image_menu_item_new_with_mnemonic(converted_label.c_str());
+      gtk_image_menu_item_new_with_mnemonic(converted.c_str());
 
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),

@@ -60,10 +60,10 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   gtk_window_set_default_size(GTK_WINDOW(dialog_), kDialogDefaultWidth,
                               kDialogDefaultHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      gtk_util::kContentAreaSpacing);
+                      GtkUtil::kContentAreaSpacing);
 
   // URL entry.
-  GtkWidget* url_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
+  GtkWidget* url_hbox = gtk_hbox_new(FALSE, GtkUtil::kLabelSpacing);
   GtkWidget* url_label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_ASI_URL).c_str());
   gtk_box_pack_start(GTK_BOX(url_hbox), url_label,
@@ -78,7 +78,7 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
                      FALSE, FALSE, 0);
 
   // Recent history description label.
-  GtkWidget* history_vbox = gtk_vbox_new(FALSE, gtk_util::kLabelSpacing);
+  GtkWidget* history_vbox = gtk_vbox_new(FALSE, GtkUtil::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), history_vbox);
   GtkWidget* history_label = gtk_label_new(NULL);
   char* markup = g_markup_printf_escaped(kHistoryLabelMarkup,

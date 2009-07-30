@@ -31,7 +31,7 @@ ImportLockDialogGtk::ImportLockDialogGtk(GtkWindow* parent,
       NULL);
 
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
-  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), GtkUtil::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_IMPORTER_LOCK_TEXT).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);

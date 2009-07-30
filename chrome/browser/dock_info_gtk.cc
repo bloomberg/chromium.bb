@@ -100,7 +100,7 @@ class TopMostFinder : public BaseWindowFinder {
       target_(window),
       screen_loc_(screen_loc),
       is_top_most_(false) {
-    gtk_util::EnumerateTopLevelWindows(this);
+    GtkUtil::EnumerateTopLevelWindows(this);
   }
 
   // The window we're looking for.
@@ -163,7 +163,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
     : BaseWindowFinder(ignore),
       screen_loc_(screen_loc),
       result_(0) {
-    gtk_util::EnumerateTopLevelWindows(this);
+    GtkUtil::EnumerateTopLevelWindows(this);
   }
 
   // Position of the mouse.

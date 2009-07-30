@@ -182,7 +182,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   home_.reset(BuildToolbarButton(IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0,
                                  l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME),
                                  GTK_STOCK_HOME));
-  gtk_util::SetButtonTriggersNavigation(home_->widget());
+  GtkUtil::SetButtonTriggersNavigation(home_->widget());
   SetUpDragForHomeButton();
 
   // Group the start, omnibox, and go button into an hbox.
@@ -672,9 +672,9 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
 // static
 gboolean BrowserToolbarGtk::OnPageAppMenuMouseMotion(GtkWidget* menu,
     GdkEventMotion* event, BrowserToolbarGtk* toolbar) {
-  if (gtk_util::WidgetContainsCursor(menu == toolbar->app_menu_->widget() ?
-                                     toolbar->page_menu_button_.get() :
-                                     toolbar->app_menu_button_.get())) {
+  if (GtkUtil::WidgetContainsCursor(menu == toolbar->app_menu_->widget() ?
+                                    toolbar->page_menu_button_.get() :
+                                    toolbar->app_menu_button_.get())) {
     toolbar->ChangeActiveMenu(menu, event->time);
     return TRUE;
   }

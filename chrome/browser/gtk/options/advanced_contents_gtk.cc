@@ -149,7 +149,7 @@ class DownloadSection : public OptionsPageBase {
 
 DownloadSection::DownloadSection(Profile* profile)
     : OptionsPageBase(profile), initializing_(true) {
-  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  page_ = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
 
   // Download location options.
   download_location_button_ = gtk_file_chooser_button_new(
@@ -174,7 +174,7 @@ DownloadSection::DownloadSection(Profile* profile)
     }
   }
 
-  GtkWidget* download_location_control = gtk_util::CreateLabeledControlsGroup(
+  GtkWidget* download_location_control = GtkUtil::CreateLabeledControlsGroup(
       NULL,
       l10n_util::GetStringUTF8(
           IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE).c_str(),
@@ -313,7 +313,7 @@ class NetworkSection : public OptionsPageBase {
 
 NetworkSection::NetworkSection(Profile* profile)
     : OptionsPageBase(profile) {
-  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  page_ = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
 
   GtkWidget* proxy_description_label = CreateWrappedLabel(
       IDS_OPTIONS_PROXIES_LABEL);
@@ -472,7 +472,7 @@ class PrivacySection : public OptionsPageBase {
 PrivacySection::PrivacySection(Profile* profile)
     : OptionsPageBase(profile),
       initializing_(true) {
-  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  page_ = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
 
   GtkWidget* section_description_label = CreateWrappedLabel(
       IDS_OPTIONS_DISABLE_SERVICES);
@@ -533,7 +533,7 @@ PrivacySection::PrivacySection(Profile* profile)
   gtk_misc_set_alignment(GTK_MISC(cookie_description_label), 0, 0);
   gtk_box_pack_start(GTK_BOX(page_), cookie_description_label, FALSE, FALSE, 0);
 
-  GtkWidget* cookie_controls = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* cookie_controls = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(page_),
                      OptionsLayoutBuilderGtk::IndentWidget(cookie_controls),
                      FALSE, FALSE, 0);
@@ -792,7 +792,7 @@ class SecuritySection : public OptionsPageBase {
 
 SecuritySection::SecuritySection(Profile* profile)
     : OptionsPageBase(profile) {
-  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  page_ = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
 
   GtkWidget* manage_certificates_label = CreateWrappedLabel(
       IDS_OPTIONS_CERTIFICATES_LABEL);
@@ -850,7 +850,7 @@ class WebContentSection : public OptionsPageBase {
 
 WebContentSection::WebContentSection(Profile* profile)
     : OptionsPageBase(profile) {
-  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  page_ = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
 
   GtkWidget* fonts_and_languages_label = CreateWrappedLabel(
       IDS_OPTIONS_FONTSETTINGS_INFO);

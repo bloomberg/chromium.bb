@@ -91,14 +91,14 @@ void KeywordEditorView::Init() {
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
-  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
+  GtkUtil::SetWindowIcon(GTK_WINDOW(dialog_));
 
   gtk_window_set_default_size(GTK_WINDOW(dialog_), kDialogDefaultWidth,
                               kDialogDefaultHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      gtk_util::kContentAreaSpacing);
+                      GtkUtil::kContentAreaSpacing);
 
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), hbox);
 
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
@@ -159,7 +159,7 @@ void KeywordEditorView::Init() {
   g_signal_connect(G_OBJECT(selection_), "changed",
                    G_CALLBACK(OnSelectionChanged), this);
 
-  GtkWidget* button_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* button_box = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(hbox), button_box, FALSE, FALSE, 0);
 
   add_button_ = gtk_button_new_with_label(

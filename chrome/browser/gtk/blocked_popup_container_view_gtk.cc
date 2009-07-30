@@ -173,11 +173,11 @@ void BlockedPopupContainerViewGtk::Init() {
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), menu_button_, FALSE, FALSE, kSmallPadding);
-  gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true, 0);
+  GtkUtil::CenterWidgetInHBox(hbox, close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonClicked), this);
 
-  container_.Own(gtk_util::CreateGtkBorderBin(hbox, NULL,
+  container_.Own(GtkUtil::CreateGtkBorderBin(hbox, NULL,
       kSmallPadding, kSmallPadding, kSmallPadding, kSmallPadding));
   // Manually paint the event box.
   gtk_widget_set_app_paintable(container_.get(), TRUE);

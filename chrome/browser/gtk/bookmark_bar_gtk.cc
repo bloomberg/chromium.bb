@@ -356,7 +356,7 @@ void BookmarkBarGtk::SetInstructionState() {
 }
 
 void BookmarkBarGtk::RemoveAllBookmarkButtons() {
-  gtk_util::RemoveAllChildren(bookmark_toolbar_.get());
+  GtkUtil::RemoveAllChildren(bookmark_toolbar_.get());
 }
 
 int BookmarkBarGtk::GetBookmarkButtonCount() {

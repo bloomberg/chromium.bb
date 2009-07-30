@@ -75,7 +75,7 @@ void CookiesView::Init() {
 
   remove_button_ = gtk_dialog_add_button(
       GTK_DIALOG(dialog_),
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
         l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_LABEL)).c_str(),
       RESPONSE_REMOVE);
   gtk_button_box_set_child_secondary(
@@ -85,7 +85,7 @@ void CookiesView::Init() {
 
   remove_all_button_ = gtk_dialog_add_button(
       GTK_DIALOG(dialog_),
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_ALL_LABEL)).c_str(),
       RESPONSE_REMOVE_ALL);
   gtk_button_box_set_child_secondary(
@@ -97,12 +97,12 @@ void CookiesView::Init() {
   gtk_window_set_default_size(GTK_WINDOW(dialog_), kDialogDefaultWidth,
                               kDialogDefaultHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      gtk_util::kContentAreaSpacing);
+                      GtkUtil::kContentAreaSpacing);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
 
   // Filtering controls.
-  GtkWidget* filter_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* filter_hbox = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
   filter_entry_ = gtk_entry_new();
   g_signal_connect(G_OBJECT(filter_entry_), "activate",
                    G_CALLBACK(OnFilterEntryActivated), this);
@@ -111,21 +111,21 @@ void CookiesView::Init() {
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_entry_,
                      TRUE, TRUE, 0);
   filter_clear_button_ = gtk_button_new_with_mnemonic(
-      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_CLEAR_SEARCH_LABEL)).c_str());
   g_signal_connect(G_OBJECT(filter_clear_button_), "clicked",
                    G_CALLBACK(OnFilterClearButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_clear_button_,
                      FALSE, FALSE, 0);
 
-  GtkWidget* filter_controls = gtk_util::CreateLabeledControlsGroup(NULL,
+  GtkWidget* filter_controls = GtkUtil::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(IDS_COOKIES_SEARCH_LABEL).c_str(), filter_hbox,
       NULL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), filter_controls,
                      FALSE, FALSE, 0);
 
   // Cookie list.
-  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), cookie_list_vbox,
                      TRUE, TRUE, 0);
 
@@ -194,7 +194,7 @@ void CookiesView::Init() {
   cookie_details_table_ = gtk_table_new(7, 2, FALSE);
   gtk_container_add(GTK_CONTAINER(details_frame), cookie_details_table_);
   gtk_table_set_col_spacing(GTK_TABLE(cookie_details_table_), 0,
-                            gtk_util::kLabelSpacing);
+                            GtkUtil::kLabelSpacing);
 
   // Realize a label so that its style gets initialized.
   gtk_widget_realize(description_label);

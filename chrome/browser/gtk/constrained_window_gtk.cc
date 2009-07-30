@@ -23,8 +23,8 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-      gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder,
-      gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder);
+      GtkUtil::kContentAreaBorder, GtkUtil::kContentAreaBorder,
+      GtkUtil::kContentAreaBorder, GtkUtil::kContentAreaBorder);
   gtk_container_add(GTK_CONTAINER(alignment), dialog);
   gtk_container_add(GTK_CONTAINER(frame), alignment);
   gtk_container_add(GTK_CONTAINER(ebox), frame);

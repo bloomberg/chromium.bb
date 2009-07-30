@@ -70,7 +70,7 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
   g_object_set_data(G_OBJECT(widget()), "left-align-popup",
                     reinterpret_cast<void*>(true));
 
-  gtk_util::SetButtonTriggersNavigation(widget());
+  GtkUtil::SetButtonTriggersNavigation(widget());
 }
 
 BackForwardButtonGtk::~BackForwardButtonGtk() {

@@ -71,7 +71,7 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
 
   password_ = gtk_label_new("");
 
-  GtkWidget* buttons = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* buttons = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(buttons), remove_button_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(buttons), remove_all_button_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(buttons), show_password_button_, FALSE, FALSE, 0);
@@ -87,9 +87,9 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
   InitPasswordTree();
   gtk_container_add(GTK_CONTAINER(scroll_window), password_tree_);
 
-  page_ = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  page_ = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(page_),
-                                 gtk_util::kContentAreaBorder);
+                                 GtkUtil::kContentAreaBorder);
   gtk_box_pack_end(GTK_BOX(page_), buttons, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(page_), scroll_window, TRUE, TRUE, 0);
 }

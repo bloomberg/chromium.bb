@@ -37,10 +37,10 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
       NULL);
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
   int width, height;
-  gtk_util::GetWidgetSizeFromResources(dialog_,
-                                       IDS_FIRSTRUN_DIALOG_WIDTH_CHARS,
-                                       IDS_FIRSTRUN_DIALOG_HEIGHT_LINES,
-                                       &width, &height);
+  GtkUtil::GetWidgetSizeFromResources(dialog_,
+                                      IDS_FIRSTRUN_DIALOG_WIDTH_CHARS,
+                                      IDS_FIRSTRUN_DIALOG_HEIGHT_LINES,
+                                      &width, &height);
   gtk_window_set_default_size(GTK_WINDOW(dialog_), width, height);
   g_signal_connect(G_OBJECT(dialog_), "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
@@ -80,7 +80,7 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
       l10n_util::GetStringUTF8(IDS_FR_CUSTOMIZE_DEFAULT_BROWSER).c_str());
   gtk_box_pack_start(GTK_BOX(vbox), make_default_, FALSE, FALSE, 0);
 
-  GtkWidget* combo_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
+  GtkWidget* combo_hbox = gtk_hbox_new(FALSE, GtkUtil::kLabelSpacing);
   import_data_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_FR_CUSTOMIZE_IMPORT).c_str());
   gtk_box_pack_start(GTK_BOX(combo_hbox), import_data_, FALSE, FALSE, 0);
