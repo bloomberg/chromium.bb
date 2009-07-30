@@ -61,6 +61,9 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   // Activates the tab associated with the focused row.
   void ActivateFocusedTab();
 
+  // Opens about:memory in a new foreground tab.
+  void OnLinkActivated();
+
   // response signal handler that notifies us of dialog responses.
   static void OnResponse(GtkDialog* dialog, gint response_id,
                          TaskManagerGtk* task_manager);

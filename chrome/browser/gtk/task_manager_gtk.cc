@@ -6,12 +6,16 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_window.h"
+#include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
@@ -27,6 +31,9 @@ const int kDefaultHeight = 270;
 
 // The resource id for the 'End process' button.
 const gint kTaskManagerResponseKill = 1;
+
+// The resource id for the 'Stats for nerds' link button.
+const gint kTaskManagerAboutMemoryLink = 2;
 
 enum TaskManagerColumn {
   kTaskManagerIcon,
@@ -318,6 +325,16 @@ void TaskManagerGtk::Init() {
       kTaskManagerResponseKill,
       NULL);
 
+  GtkWidget* link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK).c_str());
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog_), link,
+                               kTaskManagerAboutMemoryLink);
+
+  // Setting the link widget to secondary positions the button on the left side
+  // of the action area (vice versa for RTL layout).
+  gtk_button_box_set_child_secondary(
+      GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area), link, TRUE);
+
   ConnectAccelerators();
 
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
@@ -534,6 +551,23 @@ void TaskManagerGtk::ActivateFocusedTab() {
   task_manager_->ActivateProcess(row);
 }
 
+void TaskManagerGtk::OnLinkActivated() {
+  Browser* browser = BrowserList::GetLastActive();
+  DCHECK(browser);
+  browser->OpenURL(GURL("about:memory"), GURL(), NEW_FOREGROUND_TAB,
+                   PageTransition::LINK);
+  // In case the browser window is minimzed, show it. If this is an application
+  // or popup, we can only have one tab, hence we need to process this in a
+  // tabbed browser window. Currently, |browser| is pointing to the application,
+  // popup window. Therefore, we have to retrieve the last active tab again,
+  // since a new window has been used.
+  if (browser->type() & Browser::TYPE_APP_POPUP) {
+    browser = BrowserList::GetLastActive();
+    DCHECK(browser);
+  }
+  browser->window()->Show();
+}
+
 // static
 void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
                                 TaskManagerGtk* task_manager) {
@@ -560,6 +594,8 @@ void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
     delete task_manager;
   } else if (response_id == kTaskManagerResponseKill) {
     task_manager->KillSelectedProcesses();
+  } else if (response_id == kTaskManagerAboutMemoryLink) {
+    task_manager->OnLinkActivated();
   }
 }
 
