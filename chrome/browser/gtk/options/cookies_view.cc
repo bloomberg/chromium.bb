@@ -30,14 +30,6 @@ enum {
   RESPONSE_REMOVE_ALL
 };
 
-// Column ids for |list_store_|.
-enum {
-  COL_ICON,
-  COL_SITE,
-  COL_COOKIE_NAME,
-  COL_COUNT,
-};
-
 // The currently open cookie manager, if any.
 CookiesView* instance_ = NULL;
 
@@ -55,6 +47,7 @@ void CookiesView::Show(Profile* profile) {
     gtk_window_present(GTK_WINDOW(instance_->dialog_));
   } else {
     instance_ = new CookiesView(profile);
+    gtk_widget_show_all(instance_->dialog_);
   }
 }
 
@@ -219,10 +212,6 @@ void CookiesView::Init() {
   cookies_table_model_.reset(new CookiesTableModel(profile_));
   cookies_table_model_->SetObserver(this);
   OnModelChanged();
-
-  // Show dialog.
-  EnableControls();
-  gtk_widget_show_all(dialog_);
 }
 
 void CookiesView::InitCookieDetailRow(int row, int label_id,
@@ -234,18 +223,22 @@ void CookiesView::InitCookieDetailRow(int row, int label_id,
                    0, 1, row, row + 1, GTK_FILL, GTK_FILL, 0, 0);
 
   *entry = gtk_entry_new();
-  gtk_widget_modify_fg(*entry, GTK_STATE_NORMAL,
-                       &label_style_->fg[GTK_STATE_NORMAL]);
-  gtk_widget_modify_fg(*entry, GTK_STATE_INSENSITIVE,
-                       &label_style_->fg[GTK_STATE_INSENSITIVE]);
-  // GTK_NO_WINDOW widgets like GtkLabel don't draw their own background, so we
-  // combine the normal or insensitive fg of the label style with the normal
-  // background of the window style to achieve the "normal label" and
-  // "insensitive label" colors.
-  gtk_widget_modify_base(*entry, GTK_STATE_NORMAL,
-                         &dialog_style_->bg[GTK_STATE_NORMAL]);
-  gtk_widget_modify_base(*entry, GTK_STATE_INSENSITIVE,
-                         &dialog_style_->bg[GTK_STATE_NORMAL]);
+
+  // The style objects are NULL if running without a DISPLAY (in unittest)
+  if (label_style_ && dialog_style_) {
+    gtk_widget_modify_fg(*entry, GTK_STATE_NORMAL,
+                         &label_style_->fg[GTK_STATE_NORMAL]);
+    gtk_widget_modify_fg(*entry, GTK_STATE_INSENSITIVE,
+                         &label_style_->fg[GTK_STATE_INSENSITIVE]);
+    // GTK_NO_WINDOW widgets like GtkLabel don't draw their own background, so we
+    // combine the normal or insensitive fg of the label style with the normal
+    // background of the window style to achieve the "normal label" and
+    // "insensitive label" colors.
+    gtk_widget_modify_base(*entry, GTK_STATE_NORMAL,
+                           &dialog_style_->bg[GTK_STATE_NORMAL]);
+    gtk_widget_modify_base(*entry, GTK_STATE_INSENSITIVE,
+                           &dialog_style_->bg[GTK_STATE_NORMAL]);
+  }
 
   gtk_entry_set_editable(GTK_ENTRY(*entry), FALSE);
   gtk_entry_set_has_frame(GTK_ENTRY(*entry), FALSE);
@@ -381,6 +374,7 @@ void CookiesView::OnModelChanged() {
   gtk_list_store_clear(list_store_);
   for (int i = 0; i < cookies_table_model_->RowCount(); ++i)
     AddNodeToList(i);
+  EnableControls();
 }
 
 void CookiesView::OnItemsChanged(int start, int length) {
@@ -411,6 +405,7 @@ void CookiesView::OnItemsRemoved(int start, int length) {
     }
     gtk_list_store_remove(list_store_, &iter);
   }
+  EnableControls();
 }
 
 // static
