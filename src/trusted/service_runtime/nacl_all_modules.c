@@ -32,9 +32,6 @@
 /*
  * Gather ye all module initializations and finalizations here.
  */
-
-#include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
-
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread.h"
@@ -45,7 +42,7 @@
 void  NaClAllModulesInit(void) {
   NaClNrdAllModulesInit();
   NaClGlobalModuleInit();  /* various global variables */
-  NaClThreadInit();
+  NaClTlsInit();
 #if defined(HAVE_SDL)
   NaClMultimediaModuleInit();
 #endif
@@ -57,7 +54,7 @@ void NaClAllModulesFini(void) {
 #if defined(HAVE_SDL)
   NaClMultimediaModuleFini();
 #endif
-  NaClThreadFini();
+  NaClTlsFini();
   NaClGlobalModuleFini();
   NaClNrdAllModulesFini();
 }

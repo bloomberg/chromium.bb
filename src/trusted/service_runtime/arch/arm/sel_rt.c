@@ -33,9 +33,11 @@
  * NaCl Secure Runtime
  */
 #include "native_client/src/include/portability_string.h"
-#include "native_client/src/trusted/service_runtime/arch/arm/sel_rt.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+
+#if !defined(USE_R9_AS_TLS_REG)
+extern __thread uint32_t nacl_tls_idx;
+#endif
 
 
 void NaClInitGlobals() {
@@ -46,17 +48,17 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
                           uintptr_t                 prog_ctr,
                           uintptr_t                 stack_ptr,
-                          uint16_t                  r9) {
+                          uint32_t                  tls_idx) {
   UNREFERENCED_PARAMETER(nap);
 
-  memset(ntcp, 0, sizeof(*ntcp));
+  memset((void *)ntcp, 0, sizeof(*ntcp));
   ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;
-  ntcp->r9 = r9;
+  NaClSetTlsIdx(ntcp, tls_idx);
 
+  NaClLog(4, "user.tls_idx: 0x%08x\n", tls_idx);
   NaClLog(4, "user.stack_ptr: 0x%08x\n", ntcp->stack_ptr);
   NaClLog(4, "user.prog_ctr: 0x%08x\n", ntcp->prog_ctr);
-  NaClLog(4, "user.r9: 0x%08x\n", ntcp->r9);
 
   return 1;
 }

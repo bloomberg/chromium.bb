@@ -36,8 +36,6 @@
 #ifndef __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H__
 #define __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H__ 1
 
-#include "native_client/src/include/portability.h"
-
 void NaClInitGlobals();
 
 uint32_t NaClGetSp(void);

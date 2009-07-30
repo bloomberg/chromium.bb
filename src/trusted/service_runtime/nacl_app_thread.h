@@ -85,6 +85,8 @@ struct NaClAppThread {
 
   int                       thread_num;  /* index into nap->threads */
 
+  uint32_t                  user_tls_size; /* it is used only for ARM */
+
   struct NaClThread         thread;  /* low level thread representation */
 
   /*
@@ -158,7 +160,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       int                   is_privileged,
                       uintptr_t             entry,
                       uintptr_t             stack_ptr,
-                      uint16_t              gs);
+                      uint32_t              tls_idx);
 
 void NaClAppThreadDtor(struct NaClAppThread *natp);
 

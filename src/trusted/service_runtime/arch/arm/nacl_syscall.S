@@ -60,24 +60,33 @@ IDENTIFIER(NaClSyscallSeg):
 
   push {lr}
 
-/*
- * r9 keeps thread specific index of entries in nacl_user and nacl_sys
- * TODO(petr): make sure that untrusted code cannot write to r9
- */
+  /*
+   * TLS_IDX represents address of a TLS region and index in
+   * nacl_thread/nacl_user/nacl_sys arrays. The TLS region is paged aligned;
+   * therefore, we use the lowest 12 bits to store the thread index
+   */
 
-  /* r9 is thread id */
-  mov r0, r9 /* r0 is a paramter for NaClSyscallCSegHook */
+#if defined(USE_R9_AS_TLS_REG)
+  /* r9 keeps TLS_IDX */
+  mov r0, r9, lsl #20
+  lsr r0, #20
+#else
+  /*
+   * TLS_IDX is stored in service runtime TLS region, in nacl_tls_idx variable
+   */
+  bl NaClGetThreadIndex /* returns thread index in r0 */
+#endif
 
   ldr  r1, =nacl_user
-  ldr  r1, [r1, r9, lsl #2]
-  /* r1 = nacl_user[r9*4], r1 points to the nacl_user entry of this thread */
+  ldr  r1, [r1, r0, lsl #2]
+  /* r1 = nacl_user[r0*4], r1 points to the nacl_user entry of this thread */
 
   /* store thread state to the nacl_user entry */
   stmia r1, {r4, r5, r6, r7, r8, r9, r10, r11, sp}
 
   ldr r1, =nacl_sys
-  ldr r1, [r1, r9, lsl #2]
-  /* r1 = nacl_sys[r9*4], r1 points to the nacl_sys entry of this thread */
+  ldr r1, [r1, r0, lsl #2]
+  /* r1 = nacl_sys[r0*4], r1 points to the nacl_sys entry of this thread */
 
   /* restore the service runtime state from nacl_sys entry */
   ldmia r1, {r4, r5, r6, r7, r8, r9, r10, r11, sp}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,47 +29,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+
 /*
- * NaCl Simple/secure ELF loader (NaCl SEL) memory protection abstractions.
+ * This code is patched into trampoline region, in the pre-last slot (the last
+ * slot is occupied by the springboard). This code is used by the nacl module
+ * for obtaining a pointer to its TLS region. A function __aeabi_read_tp in nacl
+ * libc must be tweaked to jump to the trampoline slot with this code.
  */
 
-#ifndef SERVICE_RUNTIME_SEL_MEMORY_H__
-#define SERVICE_RUNTIME_SEL_MEMORY_H__ 1
-
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
+.globl  IDENTIFIER(NaClReadTP_start)
+.globl  IDENTIFIER(NaClReadTP_end)
 
 /*
-* We do not use posix_memalign but instead directly attempt to mmap
-* (or VirtualAlloc) memory into aligned addresses, since we want to be
-* able to munmap pages to map in shared memory pages for the NaCl
-* versions of shmat or mmap, esp if SHM_REMAP is used.  Note that the
-* Windows ABI has 4KB pages for operations like page protection, but
-* 64KB allocation granularity (see nacl_config.h), and since we want
-* host-OS indistinguishability, this means we inherit this restriction
-* into our least-common-denominator design.
-*/
-#define MAX_RETRIES     1024
+ * TLS_IDX represents address of a TLS region and index in
+ * nacl_thread/nacl_user/nacl_sys arrays. The TLS region is paged aligned;
+ * therefore, we use the lowest 12 bits to store the thread index
+ */
 
-int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes);
+IDENTIFIER(NaClReadTP_start):
 
-int   NaCl_page_alloc_at_addr(void **p,
-                              size_t  size);
+#if defined(USE_R9_AS_TLS_REG)
+  /* r9 keeps the TLS_IDX */
+  mov r0, r9, lsr #NACL_PAGESHIFT
+  lsl r0, #NACL_PAGESHIFT
+  bx lr
+#else
+  /*
+   * TLS_IDX is stored in service runtime thread local storage, in nacl_tls_idx
+   * variable
+   */
+  push {lr}
+  bl NaClGetTls /* returns Tls pointer in r0 */
+  pop {pc}
+#endif
 
-void  NaCl_page_free(void     *p,
-                     size_t   num_bytes);
+IDENTIFIER(NaClReadTP_end):
 
-int   NaCl_mprotect(void          *addr,
-                    size_t        len,
-                    int           prot);
-
-int   NaCl_madvise(void           *start,
-                   size_t         length,
-                   int            advice);
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
-
-#endif /*  SERVICE_RUNTIME_SEL_MEMORY_H__ */

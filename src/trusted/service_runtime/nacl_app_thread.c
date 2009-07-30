@@ -74,15 +74,15 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       int                   is_privileged,
                       uintptr_t             usr_entry,
                       uintptr_t             usr_stack_ptr,
-                      uint16_t              gs) {
+                      uint32_t              tls_idx) {
   int                         rv;
-  uint16_t                    ldt_ix;
+  uint32_t                    thread_idx;
   struct NaClDescEffectorLdr  *effp;
 
   NaClLog(4, "natp = 0x%08"PRIxPTR"\n", (uintptr_t) natp);
   NaClLog(4, "nap = 0x%08"PRIxPTR"\n", (uintptr_t) nap);
 
-  NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, gs);
+  NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, tls_idx);
 
   effp = NULL;
 
@@ -118,11 +118,11 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 
   natp->thread_num = -1;  /* illegal index */
 
-  ldt_ix = NaClGetThreadIdx(natp);
+  thread_idx = NaClTlsToIndex(natp);
 
-  nacl_thread[ldt_ix] = natp;
-  nacl_user[ldt_ix] = &natp->user;
-  nacl_sys[ldt_ix] = &natp->sys;
+  nacl_thread[thread_idx] = natp;
+  nacl_user[thread_idx] = &natp->user;
+  nacl_sys[thread_idx] = &natp->sys;
 
   rv = NaClThreadCtor(&natp->thread,
                       NaClThreadLauncher,
@@ -151,7 +151,7 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   (*natp->effp->vtbl->Dtor)(natp->effp);
   free(natp->effp);
   natp->effp = NULL;
-  NaClFreeThreadIdx(natp);
+  NaClFreeTls(natp);
   NaClCondVarDtor(&natp->cv);
   NaClMutexDtor(&natp->mu);
 }
@@ -164,25 +164,24 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               uintptr_t             usr_stack_ptr,
                               uintptr_t             sys_tdb_base,
                               size_t                tdb_size) {
-  uint16_t  gs;
+  uint32_t  tls_idx;
 
   /*
-   * Even though we don't know what segment base/range should gs
-   * select, we still need one, since gs identifies the thread when we
-   * context switch back.  This use of a dummy %gs is only needed for
-   * the main thread, which is expected to invoke the tls_init syscall
-   * from its crt code (before main or much of libc can run).  Other
-   * threads are spawned with the tdb address and size as a parameter.
+   * Even though we don't know what segment base/range should gs/r9/nacl_tls_idx
+   * select, we still need one, since it identifies the thread when we context
+   * switch back.  This use of a dummy tls is only needed for the main thread,
+   * which is expected to invoke the tls_init syscall from its crt code (before
+   * main or much of libc can run).  Other threads are spawned with the tdb
+   * address and size as a parameter.
    */
-  gs = NaClAllocateThreadIdx(0,
-                             (void *) sys_tdb_base,
-                             tdb_size);
+  tls_idx = NaClAllocateTls(natp, (void *)sys_tdb_base, tdb_size);
 
-  NaClLog(4, "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"PRIxPTR", gs 0x%02x\n",
-          usr_stack_ptr, gs);
+  NaClLog(4,
+        "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"PRIxPTR", tls_idx 0x%02x\n",
+         usr_stack_ptr, tls_idx);
 
-  if (0 == gs) {
-    NaClLog(LOG_ERROR, "No gs for thread, num_thread %d\n", nap->num_threads);
+  if (0 == tls_idx) {
+    NaClLog(LOG_ERROR, "No tls for thread, num_thread %d\n", nap->num_threads);
     return 0;
   }
 
@@ -191,7 +190,7 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                            is_privileged,
                            usr_entry,
                            usr_stack_ptr,
-                           gs);
+                           tls_idx);
 }
 
 

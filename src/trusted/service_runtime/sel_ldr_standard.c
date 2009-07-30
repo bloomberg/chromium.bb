@@ -421,6 +421,19 @@ NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
 
   NaClLoadTrampoline(nap);
 
+#if NACL_ARM
+  /*
+   * This is necessary for ARM arch as we keep TLS pointer in register r9 or in
+   * nacl_tls_idx varible. TLS hook is a piece of code patched into a trampoline
+   * slot to retrieve the TLS pointer when needed by nacl module. The hook is
+   * very simple piece of code, so we do not go to service runtime to perform
+   * it.
+   */
+  NaClLog(2, "Installing tls hook\n");
+
+  NaClLoadTlsHook(nap);
+#endif
+
   NaClLog(2, "Installing springboard\n");
 
   NaClLoadSpringboard(nap);

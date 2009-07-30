@@ -107,3 +107,31 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   nap->text_region_bytes += page_pad;
 }
 
+/*
+ * patch a tls hook, which is used by nacl module for obtaining its tls pointer,
+ * to the end of trampoline region minus one slot.
+ */
+void NaClLoadTlsHook(struct NaClApp *nap) {
+  struct NaClPatchInfo  patch_info;
+  struct NaClPatch      abs32;
+  uintptr_t tls_hook_addr;
+
+  patch_info.rel32 = 0;
+  patch_info.num_rel32 = 0;
+  patch_info.abs32 = &abs32;
+  patch_info.num_abs32 = 0;
+  patch_info.abs16 = 0;
+  patch_info.num_abs16 = 0;
+
+  tls_hook_addr = NACL_TRAMPOLINE_END - 2*nap->align_boundary;
+
+  patch_info.dst = nap->mem_start + tls_hook_addr;
+  patch_info.src = (uintptr_t) &NaClReadTP_start;
+  patch_info.nbytes = ((uintptr_t) &NaClReadTP_end
+                       - (uintptr_t) &NaClReadTP_start);
+
+  CHECK(patch_info.nbytes <= NACL_SYSCALL_BLOCK_SIZE);
+
+  NaClApplyPatchToMemory(&patch_info);
+}
+

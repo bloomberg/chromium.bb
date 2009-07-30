@@ -60,7 +60,7 @@ static INLINE size_t  size_min(size_t a, size_t b) {
  */
 void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
   struct NaClApp  *nap;
-  uint16_t        ldt_ix;
+  uint16_t        tls_idx;
 
   /*
    * mark this thread as dead; doesn't matter if some other thread is
@@ -80,10 +80,10 @@ void NaClSysCommonThreadSuicide(struct NaClAppThread  *natp) {
    * created (from some other running thread) we want to be sure that
    * any ldt-based lookups will not reach this dying thread's data.
    */
-  ldt_ix = NaClGetThreadIdx(natp);
-  nacl_sys[ldt_ix] = NULL;
-  nacl_user[ldt_ix] = NULL;
-  nacl_thread[ldt_ix] = NULL;
+  tls_idx = NaClTlsToIndex(natp);
+  nacl_sys[tls_idx] = NULL;
+  nacl_user[tls_idx] = NULL;
+  nacl_thread[tls_idx] = NULL;
   NaClLog(3, " removing thread from thread table\n");
   NaClRemoveThreadMu(nap, natp->thread_num);
   NaClLog(3, " unlocking thread\n");
@@ -1914,10 +1914,7 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
     goto cleanup;
   }
 
-  if (0 == NaClChangeThreadIdx(natp,
-                               0,
-                               (void *) sysaddr,
-                               size)) {
+  if (0 == NaClChangeTls(natp, (void *)sysaddr, size)) {
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }

@@ -29,63 +29,160 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include "native_client/src/trusted/service_runtime/nacl_assert.h"
+#include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_memory.h"
+
+#define TLS_IDX_GET_ADDR(x)  (x & ~((1 << NACL_PAGESHIFT) - 1))
+#define TLS_IDX_GET_IDX(x)   (x &  ((1 << NACL_PAGESHIFT) - 1))
+
+#if !defined(USE_R9_AS_TLS_REG)
+__thread uint32_t nacl_tls_idx;
 
 
-int NaClThreadInit() {
+uint32_t NaClGetThreadIndex() {
+  return TLS_IDX_GET_IDX(nacl_tls_idx);
+}
+
+
+uint32_t NaClGetTls() {
+  return TLS_IDX_GET_ADDR(nacl_tls_idx);
+}
+#endif
+
+
+int NaClTlsInit() {
   int i;
 
-  for (i = 1; i < LDT_ENTRIES; i++)
-    nacl_user[i] = 0;
+  for (i = 0; i < NACL_THREAD_MAX; i++)
+    nacl_thread[i] = NULL;
 
   return 1;
 }
 
 
-void NaClThreadFini() {
+void NaClTlsFini() {
 }
 
 
-uint16_t NaClAllocateThreadIdx(int read_exec_only,
-                               void *base_addr,
-                               uint32_t size_in_bytes) {
+uint32_t NaClGetTlsIdx(struct NaClThreadContext *user) {
+#if defined(USE_R9_AS_TLS_REG)
+  return user->r9;
+#else
+  UNREFERENCED_PARAMETER(user);
+  return nacl_tls_idx;
+#endif
+}
+
+void NaClSetTlsIdx(struct NaClThreadContext *user, uint32_t tls_idx) {
+#if defined(USE_R9_AS_TLS_REG)
+  user->r9 = tls_idx;
+#else
+  UNREFERENCED_PARAMETER(user);
+  nacl_tls_idx = tls_idx;
+#endif
+}
+
+
+static int NaClAllocateThreadIndex() {
   int i;
 
-  UNREFERENCED_PARAMETER(read_exec_only);
-  UNREFERENCED_PARAMETER(base_addr);
-  UNREFERENCED_PARAMETER(size_in_bytes);
+  for (i = 0; i < NACL_THREAD_MAX; i++)
+    if (nacl_thread[i] == NULL) return i;
 
-  for (i = 1; i < LDT_ENTRIES; i++)
-    if (!nacl_user[i]) return i;
+  NaClLog(LOG_ERROR, "NaClAllocateThreadIndex: "
+          "There is no more slots for a thread\n");
 
-  /* no more free entries */
-  return 0;
+  return -1;
 }
 
 
-void NaClFreeThreadIdx(struct NaClAppThread *natp) {
-  uint16_t idx = natp->user.r9;
+static void *NaClAllocateTls_intern(struct NaClAppThread *natp,
+                                    void *base_addr,
+                                    uint32_t size) {
+  int rv;
 
-  if (idx < LDT_ENTRIES)
-    nacl_user[idx] = 0;
-  else ASSERT(0);
+  base_addr = (void *)NaClRoundPage((size_t)base_addr);
+  size = NaClRoundPage(size);
+
+  NaClLog(2, "NaClAllocateTls: "
+          "new TLS is at 0x%08"PRIx32", size 0x%"PRIx32"\n",
+          (uint32_t)base_addr, size);
+
+  rv = NaCl_page_alloc_at_addr(base_addr, size);
+  if (rv) {
+    NaClLog(LOG_ERROR, "NaClAllocateTls: "
+            "NaCl_page_alloc_at_addr 0x%08"PRIxPTR" failed\n",
+            (uint32_t)base_addr);
+    return NULL;
+  }
+
+  rv = NaCl_mprotect(base_addr, size, PROT_READ | PROT_WRITE);
+  if (rv) {
+    NaClLog(LOG_ERROR, "NaClAllocateTls: "
+            "NaCl_mprotect(0x%08"PRIxPTR", 0x%08"PRIx32", 0x%x) failed,"
+            "error %d (data)\n",
+            (uint32_t)base_addr, size, PROT_READ | PROT_WRITE, rv);
+    return NULL;
+  }
+
+  natp->user_tls_size = size;
+  return base_addr;
 }
 
 
-uint16_t NaClChangeThreadIdx(struct NaClAppThread *natp,
-                             int read_exec_only,
-                             void* base_addr,
-                             uint32_t size_in_bytes) {
-  /* BUG(petr): not implemented */
-  ASSERT(0);
-  return 0;
+uint32_t NaClAllocateTls(struct NaClAppThread *natp,
+                         void *base_addr,
+                         uint32_t size) {
+  int idx;
+
+  base_addr = NaClAllocateTls_intern(natp, base_addr, size);
+  if (base_addr == NULL) return 0;
+  idx = NaClAllocateThreadIndex();
+  if (idx < 0) return 0;
+
+  /*
+   * tls region is page aligned, and we use 12 least significant bits to keep
+   * the thread index of nacl_thread/nacl_user/nacl_sys arrays
+   */
+  return (uint32_t)base_addr | (uint32_t)idx;
 }
 
 
-int16_t NaClGetThreadIdx(struct NaClAppThread *natp) {
-  return natp->user.r9;
+void NaClFreeTls(struct NaClAppThread *natp) {
+  void *addr;
+  uint32_t idx, tls_idx;
+
+  tls_idx = NaClGetTlsIdx(&natp->user);
+  NaClSetTlsIdx(&natp->user, 0);
+
+  addr = (void *)TLS_IDX_GET_ADDR(tls_idx);
+  idx = TLS_IDX_GET_IDX(tls_idx);
+
+  NaClLog(2, "NaClFreeTls: "
+          "free TLS at 0x%08"PRIx32", size 0x%"PRIx32"\n",
+          (uint32_t)addr, natp->user_tls_size);
+  NaCl_page_free(addr, natp->user_tls_size);
+}
+
+
+uint32_t NaClChangeTls(struct NaClAppThread *natp,
+                       void *base_addr,
+                       uint32_t size) {
+  uint32_t tls_idx = NaClGetTlsIdx(&natp->user);
+
+  NaClFreeTls(natp);
+  base_addr = NaClAllocateTls_intern(natp, base_addr, size);
+  tls_idx = (uint32_t)base_addr & TLS_IDX_GET_IDX(tls_idx);
+  NaClSetTlsIdx(&natp->user, tls_idx);
+
+  return tls_idx;
+}
+
+
+uint32_t NaClTlsToIndex(struct NaClAppThread *natp) {
+  uint32_t tls_idx = NaClGetTlsIdx(&natp->user);
+  return TLS_IDX_GET_IDX(tls_idx);
 }
 

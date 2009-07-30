@@ -33,44 +33,44 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 
 
-int NaClThreadInit() {
+int NaClTlsInit() {
   return NaClLdtInit();
 }
 
 
-void NaClThreadFini() {
+void NaClTlsFini() {
   NaClLdtFini();
 }
 
 
-uint16_t NaClAllocateThreadIdx(int read_exec_only,
-                               void *base_addr,
-                               uint32_t size_in_bytes) {
-  return NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
-                                     read_exec_only,
-                                     base_addr,
-                                     size_in_bytes);
+uint32_t NaClAllocateTls(struct NaClAppThread *natp,
+                         void *base_addr,
+                         uint32_t size) {
+  UNREFERENCED_PARAMETER(natp);
+  return (uint32_t)NaClLdtAllocateByteSelector(NACL_LDT_DESCRIPTOR_DATA,
+                                               0,
+                                               base_addr,
+                                               size);
 }
 
 
-void NaClFreeThreadIdx(struct NaClAppThread *natp) {
+void NaClFreeTls(struct NaClAppThread *natp) {
   NaClLdtDeleteSelector(natp->user.gs);
 }
 
 
-uint16_t NaClChangeThreadIdx(struct NaClAppThread *natp,
-                             int read_exec_only,
-                             void* base_addr,
-                             uint32_t size_in_bytes) {
-  return NaClLdtChangeByteSelector(natp->user.gs >> 3,
-                                   NACL_LDT_DESCRIPTOR_DATA,
-                                   read_exec_only,
-                                   base_addr,
-                                   size_in_bytes);
+uint32_t NaClChangeTls(struct NaClAppThread *natp,
+                       void *base_addr,
+                       uint32_t size) {
+  return (uint32_t)NaClLdtChangeByteSelector(natp->user.gs >> 3,
+                                             NACL_LDT_DESCRIPTOR_DATA,
+                                             0,
+                                             base_addr,
+                                             size);
 }
 
 
-int16_t NaClGetThreadIdx(struct NaClAppThread *natp) {
+int32_t NaClTlsToIndex(struct NaClAppThread *natp) {
   return natp->user.gs >> 3;
 }
 

@@ -115,6 +115,7 @@
             'arch/arm/nacl_syscall.S',
             'arch/arm/springboard.S',
             'arch/arm/tramp.S',
+            'arch/arm/nacl_tls.S',
           ],
         }],
         ['OS=="linux"', {

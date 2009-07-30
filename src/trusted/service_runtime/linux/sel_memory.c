@@ -92,15 +92,17 @@ int NaCl_page_alloc(void   **p,
                     size_t size) {
   void *addr = NULL;
   int rv;
+
   if (0 == (rv = NaCl_page_alloc_intern(&addr, size))) {
     *p = addr;
   }
+
   return rv;
 }
 
-int NaCl_page_alloc_at_addr(void   *p,
+int NaCl_page_alloc_at_addr(void   **p,
                             size_t size) {
-  return NaCl_page_alloc_intern(&p, size);
+  return NaCl_page_alloc_intern(p, size);
 }
 
 /*
@@ -111,19 +113,19 @@ int NaCl_page_alloc_at_addr(void   *p,
 int NaCl_mprotect(void          *addr,
                   size_t        len,
                   int           prot) {
-  int  ret;
+  int  ret = mprotect(addr, len, prot);
 
-  return (ret = mprotect(addr, len, prot)) == -1 ? -errno : ret;
+  return ret == -1 ? -errno : ret;
 }
 
 
 int NaCl_madvise(void           *start,
                  size_t         length,
                  int            advice) {
-  int ret;
+  int ret = madvise(start, length, advice);
 
   /*
    * MADV_DONTNEED and MADV_NORMAL are needed
    */
-  return (ret = madvise(start, length, advice)) == -1 ? -errno : ret;
+  return ret == -1 ? -errno : ret;
 }

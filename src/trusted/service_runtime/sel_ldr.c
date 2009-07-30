@@ -202,8 +202,7 @@ void NaClAppDtor(struct NaClApp  *nap) {
   return;
 }
 
-size_t      NaClAlignPad(size_t val,
-                         size_t align) {
+size_t  NaClAlignPad(size_t val, size_t align) {
   /* align is always a power of 2, but we do not depend on it */
   if (!align) {
     NaClLog(0,

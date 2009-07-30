@@ -618,7 +618,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
                           uintptr_t                 prog_ctr,
                           uintptr_t                 stack_ptr,
-                          uint16_t                  gs);
+                          uint32_t                  tls_idx);
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 

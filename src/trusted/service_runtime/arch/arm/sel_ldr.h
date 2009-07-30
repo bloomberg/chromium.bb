@@ -32,11 +32,30 @@
 #ifndef SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__
 #define SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__ 1
 
-#define NACL_MAX_ADDR_BITS (26) /* mmap fails for 28 bits */
+#define NACL_MAX_ADDR_BITS      (26) /* mmap fails for 28 bits */
+
+#define NACL_THREAD_MAX         (1 << NACL_PAGESHIFT)
 
 #define NACL_NOOP_OPCODE        0xe1a00000  /* mov r0, r0 */
 #define NACL_HALT_OPCODE        0xe3a0f000  /* mov pc, #0 */
 #define NACL_HALT_LEN           4           /* length of halt instruction */
+
+#if !defined(USE_R9_AS_TLS_REG)
+uint32_t NaClGetThreadIndex();
+
+uint32_t NaClGetTls();
+#endif
+
+struct NaClApp; /* fwd */
+
+uint32_t NaClGetTlsIdx(struct NaClThreadContext *user);
+
+void NaClSetTlsIdx(struct NaClThreadContext *user, uint32_t tls_idx);
+
+void NaClLoadTlsHook(struct NaClApp *nap);
+
+extern char NaClReadTP_start;
+extern char NaClReadTP_end;
 
 #endif /* SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__ */
 

@@ -33,7 +33,6 @@
  * NaCl Secure Runtime
  */
 
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
 
 
@@ -58,7 +57,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
                           uintptr_t                 prog_ctr,
                           uintptr_t                 stack_ptr,
-                          uint16_t                  gs) {
+                          uint32_t                  tls_idx) {
   NaClLog(4, "&nap->code_seg_sel = 0x%08"PRIxPTR"\n",
           (uintptr_t) &nap->code_seg_sel);
   NaClLog(4, "&nap->data_seg_sel = 0x%08"PRIxPTR"\n",
@@ -83,7 +82,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
   ntcp->es = nap->data_seg_sel;
   ntcp->fs = 0;  /* windows use this for TLS and SEH; linux does not */
-  ntcp->gs = gs;
+  ntcp->gs = (uint16_t)tls_idx;
   ntcp->ss = nap->data_seg_sel;
 
   NaClLog(4, "user.cs: 0x%02x\n", ntcp->cs);

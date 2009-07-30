@@ -32,24 +32,21 @@
 #ifndef SERVICE_RUNTIME_NACL_THREAD_H__
 #define SERVICE_RUNTIME_NACL_THREAD_H__ 1
 
-#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+int NaClTlsInit();
 
-int NaClThreadInit();
+void NaClTlsFini();
 
-void NaClThreadFini();
+uint32_t NaClAllocateTls(struct NaClAppThread *natp,
+                         void *base_addr,
+                         uint32_t size);
 
-uint16_t NaClAllocateThreadIdx(int read_exec_only,
-                               void *base_addr,
-                               uint32_t size_in_bytes);
+void NaClFreeTls(struct NaClAppThread *natp);
 
-void NaClFreeThreadIdx(struct NaClAppThread *natp);
+uint32_t NaClChangeTls(struct NaClAppThread *natp,
+                       void *base_addr,
+                       uint32_t size);
 
-uint16_t NaClChangeThreadIdx(struct NaClAppThread *natp,
-                             int read_exec_only,
-                             void* base_addr,
-                             uint32_t size_in_bytes);
-
-uint16_t NaClGetThreadIdx(struct NaClAppThread *natp);
+uint32_t NaClTlsToIndex(struct NaClAppThread *natp);
 
 #endif /* SERVICE_RUNTIME_NACL_THREAD_H__ */
 

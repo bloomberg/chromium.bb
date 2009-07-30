@@ -33,25 +33,14 @@
  * NaCl Server Runtime global scoped objects for handling global resources.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "native_client/src/include/portability.h"
-
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/nacl_secure_random.h"
-#include "native_client/src/trusted/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-/* LDT_ENTRIES */
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/sel_rt.h"
 
 
-struct NaClThreadContext    *nacl_user[LDT_ENTRIES] = {NULL};
-struct NaClThreadContext    *nacl_sys[LDT_ENTRIES] = {NULL};
+struct NaClThreadContext    *nacl_user[NACL_THREAD_MAX] = {NULL};
+struct NaClThreadContext    *nacl_sys[NACL_THREAD_MAX] = {NULL};
 
 struct NaClMutex            nacl_thread_mu = {NULL};
-struct NaClAppThread        *nacl_thread[LDT_ENTRIES] = {NULL};
+struct NaClAppThread        *nacl_thread[NACL_THREAD_MAX] = {NULL};
 
 struct NaClTsdKey           nacl_cur_thread_key;
 
