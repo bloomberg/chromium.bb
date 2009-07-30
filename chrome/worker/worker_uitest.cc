@@ -300,8 +300,9 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
     "use-machine-stack.html",
+    "worker-call.html",
     "worker-close.html",
-    //"worker-constructor.html",
+    "worker-constructor.html",
     "worker-context-gc.html",
     "worker-event-listener.html",
     "worker-gc.html",
@@ -330,7 +331,7 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     // flakey? BUG 16934 "text-encoding.html",
     "worker-importScripts.html",
-    //"worker-redirect.html",
+    "worker-redirect.html",
   };
 
   FilePath http_test_dir;
