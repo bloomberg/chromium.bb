@@ -13,6 +13,11 @@ class FilePath;
 
 namespace file_util {
 
+// Wrapper over file_util::Delete. On Windows repeatedly invokes Delete in case
+// of failure to workaround Windows file locking semantics. Returns true on
+// success.
+bool DieFileDie(const FilePath& file, bool recurse);
+
 // Clear a specific file from the system cache. After this call, trying
 // to access this file will result in a cold load from the hard drive.
 bool EvictFileFromSystemCache(const FilePath& file);

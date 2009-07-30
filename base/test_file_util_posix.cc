@@ -18,6 +18,12 @@
 
 namespace file_util {
 
+bool DieFileDie(const FilePath& file, bool recurse) {
+  // There is no need to workaround Windows problems on POSIX.
+  // Just pass-through.
+  return file_util::Delete(file, recurse);
+}
+
 bool CopyRecursiveDirNoCache(const std::wstring& source_dir,
                              const std::wstring& dest_dir) {
   const FilePath from_path(FilePath::FromWStringHack(source_dir));

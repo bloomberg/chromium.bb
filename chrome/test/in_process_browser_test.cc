@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/test_file_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -42,23 +43,6 @@ const int kInitialTimeoutInMS = 30000;
 // Delay for sub-sequent time-outs once the initial time-out happened.
 const int kSubsequentTimeoutInMS = 5000;
 
-namespace {
-
-bool DieFileDie(const std::wstring& file, bool recurse) {
-  if (!file_util::PathExists(file))
-    return true;
-
-  // Sometimes Delete fails, so try a few more times.
-  for (int i = 0; i < 10; ++i) {
-    if (file_util::Delete(file, recurse))
-      return true;
-    PlatformThread::Sleep(100);
-  }
-  return false;
-}
-
-}  // namespace
-
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       show_window_(false),
@@ -70,13 +54,13 @@ InProcessBrowserTest::InProcessBrowserTest()
 
 void InProcessBrowserTest::SetUp() {
   // Cleanup the user data dir.
-  std::wstring user_data_dir;
+  FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  ASSERT_LT(10, static_cast<int>(user_data_dir.size())) <<
+  ASSERT_LT(10, static_cast<int>(user_data_dir.value().size())) <<
       "The user data directory name passed into this test was too "
       "short to delete safely.  Please check the user-data-dir "
       "argument and try again.";
-  ASSERT_TRUE(DieFileDie(user_data_dir, true));
+  ASSERT_TRUE(file_util::DieFileDie(user_data_dir, true));
 
   // The unit test suite creates a testingbrowser, but we want the real thing.
   // Delete the current one. We'll install the testing one in TearDown.
@@ -109,7 +93,8 @@ void InProcessBrowserTest::SetUp() {
   // http://crbug.com/17725
   // command_line->AppendSwitch(switches::kEnableWebResources);
 
-  command_line->AppendSwitchWithValue(switches::kUserDataDir, user_data_dir);
+  command_line->AppendSwitchWithValue(switches::kUserDataDir,
+                                      user_data_dir.ToWStringHack());
 
   // For some reason the sandbox wasn't happy running in test mode. These
   // tests aren't intended to test the sandbox, so we turn it off.

@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/platform_thread.h"
 #include "base/scoped_handle.h"
 
 namespace file_util {
@@ -18,6 +19,24 @@ namespace file_util {
 // We could use GetSystemInfo to get the page size, but this serves
 // our purpose fine since 4K is the page size on x86 as well as x64.
 static const ptrdiff_t kPageSize = 4096;
+
+bool DieFileDie(const FilePath& file, bool recurse) {
+  // It turns out that to not induce flakiness a long timeout is needed.
+  const int kTimeoutMs = 10000;
+
+  if (!file_util::PathExists(file))
+    return true;
+
+  // Sometimes Delete fails, so try a few more times. Divide the timeout
+  // into short chunks, so that if a try succeeds, we won't delay the test
+  // for too long.
+  for (int i = 0; i < 25; ++i) {
+    if (file_util::Delete(file, recurse))
+      return true;
+    PlatformThread::Sleep(kTimeoutMs / 25);
+  }
+  return false;
+}
 
 bool EvictFileFromSystemCache(const FilePath& file) {
   // Request exclusive access to the file and overwrite it with no buffering.

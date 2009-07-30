@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/test_file_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
@@ -60,7 +61,7 @@ public:
   void TearDown() {
     UITest::TearDown();
 
-    EXPECT_TRUE(DieFileDie(tmp_profile_, true));
+    EXPECT_TRUE(file_util::DieFileDie(tmp_profile_, true));
   }
 
 public:

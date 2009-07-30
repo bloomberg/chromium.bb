@@ -83,19 +83,6 @@ const wchar_t kEnableErrorDialogs[] = L"enable-errdialogs";
 // BROWSER_WRAPPER env variable to wrap the browser process.
 // #define WAIT_FOR_DEBUGGER_ON_OPEN 1
 
-bool UITest::DieFileDie(const FilePath& file, bool recurse) {
-  if (!file_util::PathExists(file))
-    return true;
-
-  // Sometimes Delete fails, so try a few more times.
-  for (int i = 0; i < 25; ++i) {
-    if (file_util::Delete(file, recurse))
-      return true;
-    PlatformThread::Sleep(action_max_timeout_ms() / 25);
-  }
-  return false;
-}
-
 UITest::UITest()
     : testing::Test(),
       launch_arguments_(L""),
@@ -429,7 +416,7 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
                 "short to delete safely.  Please check the user-data-dir "
                 "argument and try again.";
   if (clear_profile)
-    ASSERT_TRUE(DieFileDie(user_data_dir_, true));
+    ASSERT_TRUE(file_util::DieFileDie(user_data_dir_, true));
 
   if (!template_user_data_.empty()) {
     // Recursively copy the template directory to the user_data_dir.

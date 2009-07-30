@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/string_util.h"
+#include "base/test_file_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/download/save_package.h"
@@ -63,7 +64,7 @@ class SavePageTest : public UITest {
       EXPECT_TRUE(file_util::ContentsEqual(client_file, server_file_name));
     }
 
-    EXPECT_TRUE(DieFileDie(client_file, false));
+    EXPECT_TRUE(file_util::DieFileDie(client_file, false));
   }
 
   virtual void SetUp() {
@@ -76,7 +77,7 @@ class SavePageTest : public UITest {
 
   virtual void TearDown() {
     UITest::TearDown();
-    DieFileDie(save_dir_, true);
+    file_util::DieFileDie(save_dir_, true);
   }
 
   FilePath save_dir_;
@@ -130,7 +131,7 @@ TEST_F(SavePageTest, SaveCompleteHTML) {
                             true);
   CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)),
             false);
-  EXPECT_TRUE(DieFileDie(dir, true));
+  EXPECT_TRUE(file_util::DieFileDie(dir, true));
 }
 
 TEST_F(SavePageTest, NoSave) {
@@ -177,8 +178,8 @@ TEST_F(SavePageTest, FilenameFromPageTitle) {
                             true);
   CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)),
             false);
-  EXPECT_TRUE(DieFileDie(full_file_name, false));
-  EXPECT_TRUE(DieFileDie(dir, true));
+  EXPECT_TRUE(file_util::DieFileDie(full_file_name, false));
+  EXPECT_TRUE(file_util::DieFileDie(dir, true));
 }
 
 // This tests that a webpage with the title "test.exe" is saved as
@@ -206,7 +207,7 @@ TEST_F(SavePageTest, CleanFilenameFromPageTitle) {
 
   CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)),
             false);
-  EXPECT_TRUE(DieFileDie(full_file_name, false));
-  EXPECT_TRUE(DieFileDie(dir, true));
+  EXPECT_TRUE(file_util::DieFileDie(full_file_name, false));
+  EXPECT_TRUE(file_util::DieFileDie(dir, true));
 }
 #endif
