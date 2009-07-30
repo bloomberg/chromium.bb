@@ -624,13 +624,6 @@
    fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhj
 }
 {
-   bug_15762
-   Memcheck:Cond
-   fun:_ZN7testing8internal11CmpHelperEQIjjEENS_15AssertionResultEPKcS4_RKT_RKT0_
-   ...
-   fun:_ZN39ImageOperations_CreateMaskedBitmap_Test8TestBodyEv
-}
-{
    # very common in ui tests
    bug_16089
    Memcheck:Leak
