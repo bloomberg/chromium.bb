@@ -347,8 +347,6 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
     // for use during Texture2DGL::Lock.
     if (resize_to_pot) {
       texture->backing_bitmap_->AllocateData();
-      memset(texture->backing_bitmap_->image_data(), 0,
-             texture->backing_bitmap_->GetTotalSize());
       texture->has_levels_ = (1 << bitmap->num_mipmaps()) - 1;
     }
   }
@@ -593,8 +591,6 @@ TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
     // for use during TextureCUBEGL::Lock.
     if (resize_to_pot) {
       texture->backing_bitmap_->AllocateData();
-      memset(texture->backing_bitmap_->image_data(), 0,
-             texture->backing_bitmap_->GetTotalSize());
       for (unsigned int face = 0; face < 6; ++face) {
         texture->has_levels_[face] = (1 << bitmap->num_mipmaps()) - 1;
       }

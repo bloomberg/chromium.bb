@@ -280,8 +280,6 @@ Texture2DD3D9* Texture2DD3D9::Create(ServiceLocator* service_locator,
   } else {
     if (resize_to_pot) {
       texture->backing_bitmap_->AllocateData();
-      memset(texture->backing_bitmap_->image_data(), 0,
-             texture->backing_bitmap_->GetTotalSize());
     }
   }
 
@@ -539,8 +537,6 @@ TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
   } else {
     if (resize_to_pot) {
       texture->backing_bitmap_->AllocateData();
-      memset(texture->backing_bitmap_->image_data(), 0,
-             texture->backing_bitmap_->GetTotalSize());
     }
   }
 
