@@ -98,30 +98,38 @@ devtools.Injected.prototype.getProperties =
        !obj.hasOwnProperty(name)) {
       continue;
     }
-    var value = obj[name];
-    var type = typeof value;
-    result.push(type);
-    result.push(name);
-    if (type == 'string') {
-      var str = value;
-      result.push(str.length > 99 ? str.substr(0, 99) + '...' : str);
-      result.push(undefined);
-    } else if (type == 'function') {
-      result.push(undefined);
-      var str = Function.prototype.toString.call(value);
-      // Cut function signature (everything before first ')').
-      var signatureLength = str.search(/\)/);
-      str = str.substr(0, signatureLength + 1);
-      // Collapse each group of consecutive whitespaces into one whitespaces
-      // and add body brackets.
-      str = str.replace(/\s+/g, ' ') + ' {}';
-      result.push(str);
-    } else if (type == 'object') {
-      result.push(undefined);
-      result.push(this.getClassName_(value));
-    } else {
-      result.push(value);
-      result.push(undefined);
+    if (obj['__lookupGetter__'] && obj.__lookupGetter__(name)) {
+      continue;
+    }
+
+    try {
+      var value = obj[name];
+      var type = typeof value;
+      result.push(type);
+      result.push(name);
+      if (type == 'string') {
+        var str = value;
+        result.push(str.length > 99 ? str.substr(0, 99) + '...' : str);
+        result.push(undefined);
+      } else if (type == 'function') {
+        result.push(undefined);
+        var str = Function.prototype.toString.call(value);
+        // Cut function signature (everything before first ')').
+        var signatureLength = str.search(/\)/);
+        str = str.substr(0, signatureLength + 1);
+        // Collapse each group of consecutive whitespaces into one whitespaces
+        // and add body brackets.
+        str = str.replace(/\s+/g, ' ') + ' {}';
+        result.push(str);
+      } else if (type == 'object') {
+        result.push(undefined);
+        result.push(this.getClassName_(value));
+      } else {
+        result.push(value);
+        result.push(undefined);
+      }
+    } catch (e) {
+      // Mute exceptions from unsafe getters.
     }
   }
   return result;
