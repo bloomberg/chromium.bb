@@ -453,9 +453,23 @@ resolve_kde_browser()
     fi
 }
 
-get_browser_kde()
+read_kde_browser()
 {
     browser="`kreadconfig --file kdeglobals --group General --key BrowserApplication`"
+    if [ "$browser" ]; then
+        echo "$browser"
+    fi
+    # kreadconfig in KDE 4 may not notice Key[$*]=... localized settings, so check
+    # by hand if it didn't find anything (oddly kwriteconfig works fine though)
+    kdeglobals="$HOME/.kde/share/config/kdeglobals"
+    [ ! -f "$kdeglobals" ] && return
+    # This will only take the first value if there is more than one
+    grep '^BrowserApplication\[$[^]=]*\]=' "$kdeglobals" | head -n 1 | cut -d= -f 2-
+}
+
+get_browser_kde()
+{
+    browser="`read_kde_browser`"
     if [ x"$browser" = x ]; then
         # No explicit default browser; KDE will use the MIME type text/html
         get_browser_mime
@@ -466,7 +480,7 @@ get_browser_kde()
 
 check_browser_kde()
 {
-    browser="`kreadconfig --file kdeglobals --group General --key BrowserApplication`"
+    browser="`read_kde_browser`"
     browser="`resolve_kde_browser`"
     # Because KDE will use the handler for MIME type text/html if this value
     # is empty, we allow either the empty string or a match to $1 here
