@@ -194,7 +194,7 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     // When we destroy the plugin instance, the NPObjectStub NULLs out its
     // pointer to the npobject (see NPObjectStub::OnChannelError).  Therefore,
     // we release the object before destroying the instance to avoid leaking.
-    NPN_ReleaseObject(npobject_);
+    WebBindings::releaseObject(npobject_);
     npobject_ = NULL;
   }
 
@@ -636,7 +636,7 @@ void WebPluginDelegateProxy::Print(gfx::NativeDrawingContext context) {
 
 NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
   if (npobject_)
-    return NPN_RetainObject(npobject_);
+    return WebBindings::retainObject(npobject_);
 
   int route_id = MSG_ROUTING_NONE;
   intptr_t npobject_ptr;
@@ -649,7 +649,7 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
       channel_host_.get(), route_id, npobject_ptr,
       render_view_->modal_dialog_event(), page_url_);
 
-  return NPN_RetainObject(npobject_);
+  return WebBindings::retainObject(npobject_);
 }
 
 void WebPluginDelegateProxy::DidFinishLoadWithReason(NPReason reason) {

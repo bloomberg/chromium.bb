@@ -11,6 +11,9 @@
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
+#include "webkit/api/public/WebBindings.h"
+
+using WebKit::WebBindings;
 
 NPObjectStub::NPObjectStub(
     NPObject* npobject,
@@ -28,7 +31,7 @@ NPObjectStub::NPObjectStub(
   channel_->AddRoute(route_id, this, true);
 
   // We retain the object just as PluginHost does if everything was in-process.
-  NPN_RetainObject(npobject_);
+  WebBindings::retainObject(npobject_);
 }
 
 NPObjectStub::~NPObjectStub() {
@@ -37,7 +40,7 @@ NPObjectStub::~NPObjectStub() {
 
   channel_->RemoveRoute(route_id_);
   if (npobject_ && valid_)
-    NPN_ReleaseObject(npobject_);
+    WebBindings::releaseObject(npobject_);
 }
 
 bool NPObjectStub::Send(IPC::Message* msg) {
@@ -103,7 +106,7 @@ void NPObjectStub::OnHasMethod(const NPIdentifier_Param& name,
       *result = false;
     }
   } else {
-    *result = NPN_HasMethod(0, npobject_, id);
+    *result = WebBindings::hasMethod(0, npobject_, id);
   }
 }
 
@@ -135,7 +138,7 @@ void NPObjectStub::OnInvoke(bool is_default,
         return_value = false;
       }
     } else {
-      return_value = NPN_InvokeDefault(
+      return_value = WebBindings::invokeDefault(
           0, npobject_, args_var, arg_count, &result_var);
     }
   } else {
@@ -148,13 +151,13 @@ void NPObjectStub::OnInvoke(bool is_default,
         return_value = false;
       }
     } else {
-      return_value = NPN_Invoke(
+      return_value = WebBindings::invoke(
           0, npobject_, id, args_var, arg_count, &result_var);
     }
   }
 
   for (int i = 0; i < arg_count; ++i)
-    NPN_ReleaseVariantValue(&(args_var[i]));
+    WebBindings::releaseVariantValue(&(args_var[i]));
 
   delete[] args_var;
 
@@ -175,7 +178,7 @@ void NPObjectStub::OnHasProperty(const NPIdentifier_Param& name,
       *result = false;
     }
   } else {
-    *result = NPN_HasProperty(0, npobject_, id);
+    *result = WebBindings::hasProperty(0, npobject_, id);
   }
 }
 
@@ -193,7 +196,7 @@ void NPObjectStub::OnGetProperty(const NPIdentifier_Param& name,
       *result = false;
     }
   } else {
-    *result = NPN_GetProperty(0, npobject_, id, &result_var);
+    *result = WebBindings::getProperty(0, npobject_, id, &result_var);
   }
 
   CreateNPVariantParam(
@@ -217,10 +220,10 @@ void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
       *result = false;
     }
   } else {
-    *result = NPN_SetProperty(0, npobject_, id, &property_var);
+    *result = WebBindings::setProperty(0, npobject_, id, &property_var);
   }
 
-  NPN_ReleaseVariantValue(&property_var);
+  WebBindings::releaseVariantValue(&property_var);
 }
 
 void NPObjectStub::OnRemoveProperty(const NPIdentifier_Param& name,
@@ -233,7 +236,7 @@ void NPObjectStub::OnRemoveProperty(const NPIdentifier_Param& name,
       *result = false;
     }
   } else {
-    *result = NPN_RemoveProperty(0, npobject_, id);
+    *result = WebBindings::removeProperty(0, npobject_, id);
   }
 }
 
@@ -254,7 +257,7 @@ void NPObjectStub::OnEnumeration(std::vector<NPIdentifier_Param>* value,
   NPIdentifier* value_np = NULL;
   unsigned int count = 0;
   if (!IsPluginProcess()) {
-    *result = NPN_Enumerate(0, npobject_, &value_np, &count);
+    *result = WebBindings::enumerate(0, npobject_, &value_np, &count);
   } else {
     if (!npobject_->_class->enumerate) {
       *result = false;
@@ -300,12 +303,12 @@ void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
       return_value = false;
     }
   } else {
-    return_value = NPN_Construct(
+    return_value = WebBindings::construct(
         0, npobject_, args_var, arg_count, &result_var);
   }
 
   for (int i = 0; i < arg_count; ++i)
-    NPN_ReleaseVariantValue(&(args_var[i]));
+    WebBindings::releaseVariantValue(&(args_var[i]));
 
   delete[] args_var;
 
@@ -335,8 +338,8 @@ void NPObjectStub::OnEvaluate(const std::string& script,
   script_string.UTF8Characters = script.c_str();
   script_string.UTF8Length = static_cast<unsigned int>(script.length());
 
-  bool return_value = NPN_EvaluateHelper(0, popups_allowed, npobject_,
-                                         &script_string, &result_var);
+  bool return_value = WebBindings::evaluateHelper(0, popups_allowed, npobject_,
+                                                  &script_string, &result_var);
 
   NPVariant_Param result_param;
   CreateNPVariantParam(
@@ -352,5 +355,5 @@ void NPObjectStub::OnSetException(const std::string& message) {
     return;
   }
 
-  NPN_SetException(npobject_, message.c_str());
+  WebBindings::setException(npobject_, message.c_str());
 }

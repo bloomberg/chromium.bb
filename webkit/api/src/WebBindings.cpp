@@ -54,9 +54,24 @@ using namespace WebCore;
 
 namespace WebKit {
 
+bool WebBindings::construct(NPP npp, NPObject *npobj, const NPVariant *args, uint32_t argCount, NPVariant* result)
+{
+    return NPN_Construct(npp, npobj, args, argCount, result);
+}
+
 NPObject* WebBindings::createObject(NPP npp, NPClass* npClass)
 {
     return NPN_CreateObject(npp, npClass);
+}
+
+bool WebBindings::enumerate(NPP id, NPObject* obj, NPIdentifier** identifier, uint32_t* val)
+{
+    return NPN_Enumerate(id, obj, identifier, val);
+}
+
+bool WebBindings::evaluateHelper(NPP npp, bool popups_allowed, NPObject* npobj, NPString* npscript, NPVariant* result)
+{
+    return NPN_EvaluateHelper(npp, popups_allowed, npobj, npscript, result);
 }
 
 NPIdentifier WebBindings::getIntIdentifier(int32_t number)
@@ -74,6 +89,11 @@ NPIdentifier WebBindings::getStringIdentifier(const NPUTF8* string)
     return NPN_GetStringIdentifier(string);
 }
 
+void WebBindings::getStringIdentifiers(const NPUTF8** names, int32_t nameCount, NPIdentifier* identifiers)
+{
+    NPN_GetStringIdentifiers(names, nameCount, identifiers);
+}
+
 bool WebBindings::hasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName)
 {
     return NPN_HasMethod(npp, npObject, methodName);
@@ -82,6 +102,16 @@ bool WebBindings::hasMethod(NPP npp, NPObject* npObject, NPIdentifier methodName
 bool WebBindings::hasProperty(NPP npp, NPObject* npObject, NPIdentifier propertyName)
 {
     return NPN_HasProperty(npp, npObject, propertyName);
+}
+
+bool WebBindings::identifierIsString(NPIdentifier identifier)
+{
+    return NPN_IdentifierIsString(identifier);
+}
+
+int32_t WebBindings::intFromIdentifier(NPIdentifier identifier)
+{
+    return NPN_IntFromIdentifier(identifier);
 }
 
 void WebBindings::initializeVariantWithStringCopy(NPVariant* variant, const NPString* value)
@@ -98,6 +128,11 @@ bool WebBindings::invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, c
     return NPN_Invoke(npp, npObject, methodName, arguments, argumentCount, result);
 }
 
+bool WebBindings::invokeDefault(NPP id, NPObject* obj, const NPVariant* args, uint32_t count, NPVariant* result)
+{
+    return NPN_InvokeDefault(id, obj, args, count, result);
+}
+
 void WebBindings::releaseObject(NPObject* npObject)
 {
     return NPN_ReleaseObject(npObject);
@@ -108,9 +143,24 @@ void WebBindings::releaseVariantValue(NPVariant* variant)
     NPN_ReleaseVariantValue(variant);
 }
 
+bool WebBindings::removeProperty(NPP id, NPObject* object, NPIdentifier identifier)
+{
+    return  NPN_RemoveProperty(id, object, identifier);
+}
+
 NPObject* WebBindings::retainObject(NPObject* npObject)
 {
     return NPN_RetainObject(npObject);
+}
+
+void WebBindings::setException(NPObject* obj, const NPUTF8* message)
+{
+    NPN_SetException(obj, message);
+}
+
+bool WebBindings::setProperty(NPP id, NPObject* obj, NPIdentifier identifier, const NPVariant* variant)
+{
+    return NPN_SetProperty(id, obj, identifier, variant);
 }
 
 void WebBindings::unregisterObject(NPObject* npObject)
@@ -118,6 +168,11 @@ void WebBindings::unregisterObject(NPObject* npObject)
 #if USE(V8)
     _NPN_UnregisterObject(npObject);
 #endif
+}
+
+NPUTF8* WebBindings::utf8FromIdentifier(NPIdentifier identifier)
+{
+    return NPN_UTF8FromIdentifier(identifier);
 }
 
 void WebBindings::extractIdentifierData(const NPIdentifier& identifier, const NPUTF8*& string, int32_t& number, bool& isString)

@@ -18,10 +18,12 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "skia/ext/platform_device.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_delegate.h"
 
+using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
 
 class FinishDestructionTask : public Task {
@@ -296,7 +298,7 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id,
       page_url_);
 
   // Release ref added by GetPluginScriptableObject (our stub holds its own).
-  NPN_ReleaseObject(object);
+  WebBindings::releaseObject(object);
 }
 
 void WebPluginDelegateStub::OnSendJavaScriptStream(const std::string& url,

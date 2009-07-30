@@ -21,6 +21,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/glue/npruntime_util.h"
 
@@ -321,12 +322,13 @@ struct ParamTraits<NPIdentifier_Param> {
     return webkit_glue::DeserializeNPIdentifier(*m, iter, &r->identifier);
   }
   static void Log(const param_type& p, std::wstring* l) {
-    if (NPN_IdentifierIsString(p.identifier)) {
-      NPUTF8* str = NPN_UTF8FromIdentifier(p.identifier);
+    if (WebKit::WebBindings::identifierIsString(p.identifier)) {
+      NPUTF8* str = WebKit::WebBindings::utf8FromIdentifier(p.identifier);
       l->append(UTF8ToWide(str));
       NPN_MemFree(str);
     } else {
-      l->append(IntToWString(NPN_IntFromIdentifier(p.identifier)));
+      l->append(IntToWString(
+          WebKit::WebBindings::intFromIdentifier(p.identifier)));
     }
   }
 };

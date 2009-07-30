@@ -23,11 +23,14 @@
 #include "chrome/plugin/plugin_thread.h"
 #include "chrome/plugin/webplugin_delegate_stub.h"
 #include "skia/ext/platform_device.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/webplugin_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/gfx/gdi_util.h"
 #endif
+
+using WebKit::WebBindings;
 
 typedef std::map<CPBrowsingContext, WebPluginProxy*> ContextMap;
 static ContextMap& GetContextMap() {
@@ -153,7 +156,7 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
 
 NPObject* WebPluginProxy::GetWindowScriptNPObject() {
   if (window_npobject_)
-    return NPN_RetainObject(window_npobject_);
+    return WebBindings::retainObject(window_npobject_);
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
@@ -172,7 +175,7 @@ NPObject* WebPluginProxy::GetWindowScriptNPObject() {
 
 NPObject* WebPluginProxy::GetPluginElement() {
   if (plugin_element_)
-    return NPN_RetainObject(plugin_element_);
+    return WebBindings::retainObject(plugin_element_);
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;

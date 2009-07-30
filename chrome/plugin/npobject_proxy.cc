@@ -8,9 +8,11 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel_base.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 
+using WebKit::WebBindings;
 
 struct NPObjectWrapper {
     NPObject object;
@@ -73,7 +75,7 @@ NPObject* NPObjectProxy::Create(PluginChannelBase* channel,
                                 base::WaitableEvent* modal_dialog_event,
                                 const GURL& page_url) {
   NPObjectWrapper* obj = reinterpret_cast<NPObjectWrapper*>(
-      NPN_CreateObject(0, &npclass_proxy_));
+      WebBindings::createObject(0, &npclass_proxy_));
   obj->proxy = new NPObjectProxy(
       channel, route_id, npobject_ptr, modal_dialog_event, page_url);
 

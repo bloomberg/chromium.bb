@@ -6,7 +6,10 @@
 
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/webframe.h"
+
+using WebKit::WebBindings;
 
 ExternalHostBindings::ExternalHostBindings() : frame_(NULL) {
   BindMethod("postMessage", &ExternalHostBindings::postMessage);
@@ -96,7 +99,7 @@ bool ExternalHostBindings::ForwardMessageFromExternalHost(
     NOTREACHED() << "CreateMessageEvent failed";
   } else {
     NPIdentifier init_message_event =
-        NPN_GetStringIdentifier("initMessageEvent");
+        WebBindings::getStringIdentifier("initMessageEvent");
     NPVariant init_args[8];
     STRINGN_TO_NPVARIANT("message", sizeof("message") - 1,
                          init_args[0]);  // type
@@ -112,22 +115,23 @@ bool ExternalHostBindings::ForwardMessageFromExternalHost(
 
     NPVariant result;
     NULL_TO_NPVARIANT(result);
-    status = NPN_Invoke(NULL, event_obj, init_message_event, init_args,
-                        arraysize(init_args), &result);
+    status = WebBindings::invoke(NULL, event_obj, init_message_event, init_args,
+                                 arraysize(init_args), &result);
     DCHECK(status) << "Failed to initialize MessageEvent";
-    NPN_ReleaseVariantValue(&result);
+    WebBindings::releaseVariantValue(&result);
 
     if (status) {
       NPVariant event_arg;
       OBJECT_TO_NPVARIANT(event_obj, event_arg);
-      status = NPN_InvokeDefault(NULL, on_message_handler_.value.objectValue,
-                                 &event_arg, 1, &result);
+      status = WebBindings::invokeDefault(NULL,
+                                          on_message_handler_.value.objectValue,
+                                          &event_arg, 1, &result);
       // Don't DCHECK here in case the reason for the failure is a script error.
       DLOG_IF(ERROR, !status) << "NPN_InvokeDefault failed";
-      NPN_ReleaseVariantValue(&result);
+      WebBindings::releaseVariantValue(&result);
     }
 
-    NPN_ReleaseObject(event_obj);
+    WebBindings::releaseObject(event_obj);
   }
 
   return status;
@@ -149,11 +153,11 @@ bool ExternalHostBindings::CreateMessageEvent(NPObject** message_event) {
   };
 
   NPIdentifier identifiers[arraysize(identifier_names)] = {0};
-  NPN_GetStringIdentifiers(identifier_names, arraysize(identifier_names),
-                           identifiers);
+  WebBindings::getStringIdentifiers(identifier_names,
+                                    arraysize(identifier_names), identifiers);
 
   CppVariant document;
-  bool ok = NPN_GetProperty(NULL, window, identifiers[0], &document);
+  bool ok = WebBindings::getProperty(NULL, window, identifiers[0], &document);
   DCHECK(document.isObject());
 
   bool success = false;
@@ -161,8 +165,8 @@ bool ExternalHostBindings::CreateMessageEvent(NPObject** message_event) {
     NPVariant result, event_type;
     STRINGN_TO_NPVARIANT("MessageEvent", sizeof("MessageEvent") - 1, \
                          event_type);
-    success = NPN_Invoke(NULL, document.value.objectValue, identifiers[1],
-                         &event_type, 1, &result);
+    success = WebBindings::invoke(NULL, document.value.objectValue,
+                                  identifiers[1], &event_type, 1, &result);
     DCHECK(!success || result.type == NPVariantType_Object);
     if (result.type != NPVariantType_Object) {
       DCHECK(success == false);
