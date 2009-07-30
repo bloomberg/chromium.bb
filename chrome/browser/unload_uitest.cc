@@ -5,7 +5,7 @@
 #include "app/message_box_flags.h"
 #include "base/file_util.h"
 #include "base/platform_thread.h"
-#include "chrome/browser/automation/url_request_mock_http_job.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"

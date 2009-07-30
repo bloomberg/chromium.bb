@@ -4,7 +4,7 @@
 
 #include "base/string_util.h"
 #include "chrome/test/ui/ui_test.h"
-#include "chrome/browser/automation/url_request_failed_dns_job.h"
+#include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "net/url_request/url_request_unittest.h"
 
 class ErrorPageTest : public UITest {

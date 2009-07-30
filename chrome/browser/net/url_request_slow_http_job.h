@@ -4,13 +4,13 @@
 //
 // A URLRequestMockHTTPJob class that inserts a time delay in processing.
 
-#ifndef CHROME_BROWSER_AUTOMATION_URL_REQUEST_SLOW_HTTP_JOB_H_
-#define CHROME_BROWSER_AUTOMATION_URL_REQUEST_SLOW_HTTP_JOB_H_
+#ifndef CHROME_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
+#define CHROME_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
 
 #include <string>
 
 #include "base/timer.h"
-#include "chrome/browser/automation/url_request_mock_http_job.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
 
 class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
  public:
@@ -20,8 +20,8 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
 
   static URLRequest::ProtocolFactory Factory;
 
-  // For UI tests: adds the testing URLs to the URLRequestFilter.
-  static void AddUITestUrls(const std::wstring& base_path);
+  // Adds the testing URLs to the URLRequestFilter.
+  static void AddUrlHandler(const std::wstring& base_path);
 
   // Given the path to a file relative to base_path_, construct a mock URL.
   static GURL GetMockUrl(const std::wstring& path);
@@ -38,4 +38,4 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   static std::wstring base_path_;
 };
 
-# endif  // CHROME_BROWSER_AUTOMATION_URL_REQUEST_SLOW_HTTP_JOB_H_
+# endif  // CHROME_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_

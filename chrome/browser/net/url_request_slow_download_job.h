@@ -5,8 +5,8 @@
 // download manager.  Requests to |kUnknownSizeUrl| and |kKnownSizeUrl| start
 // downloads that pause after the first
 
-#ifndef CHROME_BROWSER_AUTOMATION_URL_REQUEST_SLOW_DOWNLOAD_JOB_H__
-#define CHROME_BROWSER_AUTOMATION_URL_REQUEST_SLOW_DOWNLOAD_JOB_H__
+#ifndef CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
+#define CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_
 
 #include <string>
 #include <vector>
@@ -36,8 +36,8 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   static const char kKnownSizeUrl[];
   static const char kFinishDownloadUrl[];
 
-  // For UI tests: adds the testing URLs to the URLRequestFilter.
-  static void AddUITestUrls();
+  // Adds the testing URLs to the URLRequestFilter.
+  static void AddUrlHandler();
 
  private:
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
@@ -56,4 +56,4 @@ class URLRequestSlowDownloadJob : public URLRequestJob {
   bool should_send_second_chunk_;
 };
 
-#endif  // CHROME_BROWSER_AUTOMATION_URL_REQUEST_SLOW_DOWNLOAD_JOB_H__
+#endif  // CHROME_BROWSER_NET_URL_REQUEST_SLOW_DOWNLOAD_JOB_H_

@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/automation/url_request_slow_http_job.h"
+#include "chrome/browser/net/url_request_slow_http_job.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

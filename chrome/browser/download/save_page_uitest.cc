@@ -7,7 +7,7 @@
 #include "base/platform_thread.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/automation/url_request_mock_http_job.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/browser_proxy.h"

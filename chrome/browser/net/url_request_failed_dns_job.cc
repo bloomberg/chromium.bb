@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/url_request_failed_dns_job.h"
+#include "chrome/browser/net/url_request_failed_dns_job.h"
 
 #include "base/message_loop.h"
 #include "googleurl/src/gurl.h"
@@ -19,7 +19,7 @@ void URLRequestFailedDnsJob::Start() {
 }
 
 /* static */
-void URLRequestFailedDnsJob::AddUITestUrls() {
+void URLRequestFailedDnsJob::AddUrlHandler() {
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
   filter->AddUrlHandler(GURL(kTestUrl),
                         &URLRequestFailedDnsJob::Factory);

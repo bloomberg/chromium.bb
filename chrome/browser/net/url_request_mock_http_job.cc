@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/url_request_mock_http_job.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -24,7 +24,7 @@ URLRequestJob* URLRequestMockHTTPJob::Factory(URLRequest* request,
 }
 
 /* static */
-void URLRequestMockHTTPJob::AddUITestUrls(const std::wstring& base_path) {
+void URLRequestMockHTTPJob::AddUrlHandler(const std::wstring& base_path) {
   base_path_ = base_path;
 
   // Add kMockHostname to URLRequestFilter.

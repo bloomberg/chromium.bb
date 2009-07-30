@@ -21,10 +21,6 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/automation/extension_port_container.h"
-#include "chrome/browser/automation/url_request_failed_dns_job.h"
-#include "chrome/browser/automation/url_request_mock_http_job.h"
-#include "chrome/browser/automation/url_request_slow_download_job.h"
-#include "chrome/browser/automation/url_request_slow_http_job.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
@@ -37,6 +33,7 @@
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ssl/ssl_manager.h"
@@ -53,7 +50,6 @@
 #include "net/proxy/proxy_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_filter.h"
 
 #if defined(OS_WIN)
 // TODO(port): Port these headers.
@@ -2111,37 +2107,9 @@ void AutomationProvider::ReceivedInspectElementResponse(int num_resources) {
   }
 }
 
-// Helper class for making changes to the URLRequest ProtocolFactory on the
-// IO thread.
-class SetFilteredInetTask : public Task {
- public:
-  explicit SetFilteredInetTask(bool enabled) : enabled_(enabled) { }
-  virtual void Run() {
-    if (enabled_) {
-      URLRequestFilter::GetInstance()->ClearHandlers();
-
-      URLRequestFailedDnsJob::AddUITestUrls();
-      URLRequestSlowDownloadJob::AddUITestUrls();
-
-      std::wstring root_http;
-      PathService::Get(chrome::DIR_TEST_DATA, &root_http);
-      URLRequestMockHTTPJob::AddUITestUrls(root_http);
-      URLRequestSlowHTTPJob::AddUITestUrls(root_http);
-    } else {
-      // Revert to the default handlers.
-      URLRequestFilter::GetInstance()->ClearHandlers();
-    }
-  }
- private:
-  bool enabled_;
-};
-
 void AutomationProvider::SetFilteredInet(const IPC::Message& message,
                                          bool enabled) {
-  // Since this involves changing the URLRequest ProtocolFactory, we want to
-  // run on the main thread.
-  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      new SetFilteredInetTask(enabled));
+  chrome_browser_net::SetUrlRequestMocksEnabled(enabled);
 }
 
 class SetProxyConfigTask : public Task {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/url_request_slow_http_job.h"
+#include "chrome/browser/net/url_request_slow_http_job.h"
 
 #include "base/platform_thread.h"
 #include "base/string_util.h"
@@ -26,7 +26,7 @@ URLRequestJob* URLRequestSlowHTTPJob::Factory(URLRequest* request,
 }
 
 /* static */
-void URLRequestSlowHTTPJob::AddUITestUrls(const std::wstring& base_path) {
+void URLRequestSlowHTTPJob::AddUrlHandler(const std::wstring& base_path) {
   base_path_ = base_path;
 
   // Add kMockHostname to URLRequestFilter.

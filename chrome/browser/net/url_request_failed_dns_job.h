@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 // This class simulates what wininet does when a dns lookup fails.
 
-#ifndef CHROME_BROWSER_AUTOMATION_URL_REQUEST_FAILED_DNS_JOB_H__
-#define CHROME_BROWSER_AUTOMATION_URL_REQUEST_FAILED_DNS_JOB_H__
+#ifndef CHROME_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
+#define CHROME_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_
 
 #include "net/url_request/url_request_job.h"
 
@@ -21,12 +21,12 @@ class URLRequestFailedDnsJob : public URLRequestJob {
   // A test URL that can be used in UI tests.
   static const char kTestUrl[];
 
-  // For UI tests: adds the testing URLs to the URLRequestFilter.
-  static void AddUITestUrls();
+  // Adds the testing URLs to the URLRequestFilter.
+  static void AddUrlHandler();
 
  private:
   // Simulate a DNS failure.
   void StartAsync();
 };
 
-#endif  // CHROME_BROWSER_AUTOMATION_URL_REQUEST_FAILED_DNS_JOB_H__
+#endif  // CHROME_BROWSER_NET_URL_REQUEST_FAILED_DNS_JOB_H_

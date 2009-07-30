@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/automation/url_request_slow_download_job.h"
+#include "chrome/browser/net/url_request_slow_download_job.h"
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -31,7 +31,7 @@ void URLRequestSlowDownloadJob::Start() {
 }
 
 /* static */
-void URLRequestSlowDownloadJob::AddUITestUrls() {
+void URLRequestSlowDownloadJob::AddUrlHandler() {
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
   filter->AddUrlHandler(GURL(kUnknownSizeUrl),
                         &URLRequestSlowDownloadJob::Factory);

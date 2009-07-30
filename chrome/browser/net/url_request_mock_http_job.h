@@ -4,8 +4,8 @@
 //
 // A URLRequestJob class that pulls the content and http headers from disk.
 
-#ifndef CHROME_BROWSER_AUTOMATION_URL_REQUEST_MOCK_HTTP_JOB_H__
-#define CHROME_BROWSER_AUTOMATION_URL_REQUEST_MOCK_HTTP_JOB_H__
+#ifndef CHROME_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
+#define CHROME_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
 
 #include <string>
 
@@ -22,8 +22,8 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
 
   static URLRequest::ProtocolFactory Factory;
 
-  // For UI tests: adds the testing URLs to the URLRequestFilter.
-  static void AddUITestUrls(const std::wstring& base_path);
+  // Adds the testing URLs to the URLRequestFilter.
+  static void AddUrlHandler(const std::wstring& base_path);
 
   // Given the path to a file relative to base_path_, construct a mock URL.
   static GURL GetMockUrl(const std::wstring& path);
@@ -41,4 +41,4 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   static std::wstring base_path_;
 };
 
-# endif  // CHROME_BROWSER_AUTOMATION_URL_REQUEST_MOCK_HTTP_JOB_H__
+# endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
