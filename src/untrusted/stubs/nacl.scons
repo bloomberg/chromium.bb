@@ -30,20 +30,6 @@
 
 Import('env')
 
-# TODO: move this to common env
-if env.Bit('host_windows'):
-  env.Replace(
-# This is needed because Windows builds are case-insensitive.
-# Without this we use nacl-as, which doesn't handle include directives, etc.
-    ASCOM = '$CCCOM',
-  )
-else:
-  env.Replace(
-# This is needed because Windows builds are case-insensitive.
-# Without this we use nacl-as, which doesn't handle include directives, etc.
-    ASFLAGS = '$CCFLAGS',
-  )
-
 crt1_target = env.ComponentObject('crt1', [ 'crt1.S' ])
 crti_target = env.ComponentObject('crti', [ 'crti.S' ])
 crtn_target = env.ComponentObject('crtn', [ 'crtn.S' ])

@@ -33,20 +33,6 @@ Import('env')
 # we have some empty source files
 env.FilterOut(CCFLAGS=['-pedantic'])
 
-# TODO: move this to common env
-if env.Bit('host_windows'):
-  env.Replace(
-# This is needed because Windows builds are case-insensitive.
-# Without this we use nacl-as, which doesn't handle include directives, etc.
-    ASCOM = '$CCCOM',
-  )
-else:
-  env.Replace(
-# This is needed because Windows builds are case-insensitive.
-# Without this we use nacl-as, which doesn't handle include directives, etc.
-    ASFLAGS = '$CCFLAGS',
-  )
-
 # Sources are split into essentially one function per file to be in
 # alignment with the linker, which resolves symbols by including entire
 # object files.  Placing multiple definitions in one file may result in

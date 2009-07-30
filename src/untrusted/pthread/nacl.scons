@@ -30,20 +30,6 @@
 
 Import('env')
 
-# TODO: move this to common env
-if env.Bit('host_windows'):
-  env.Replace(
-# This is needed because Windows builds are case-insensitive.
-# Without this we use nacl-as, which doesn't handle include directives, etc.
-    ASCOM = '$CCCOM',
-  )
-else:
-  env.Replace(
-# This is needed because Windows builds are case-insensitive.
-# Without this we use nacl-as, which doesn't handle include directives, etc.
-    ASFLAGS = '$CCFLAGS',
-  )
-
 nc_threads_source_files = [
     # C source files
     'nc_thread.c',
@@ -61,7 +47,7 @@ env.AddLibraryToSdk(['libpthread'])
 
 Alias('install_libpthread',
        # Copy the header file to the include directory.
-       [env.Replicate('$NACL_SDK_ROOT/nacl/include', ['pthread.h',
-                                                      'nc_system.h',
-                                                      'atomic_ops.h',
-                                                      'semaphore.h' ])])
+       [env.Replicate('${NACL_SDK_INCLUDE}', ['pthread.h',
+                                              'nc_system.h',
+                                              'atomic_ops.h',
+                                              'semaphore.h' ])])

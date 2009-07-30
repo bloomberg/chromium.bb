@@ -36,8 +36,7 @@
  * browser plugin, and untrusted (e.g., a NaCl module) settings.
  */
 
-#include "nacl_srpc.h"
-#include "nacl_srpc_internal.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +47,10 @@
 #else
 #include "native_client/src/include/portability.h"
 #endif
+
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
+
 
 /*
  * SRPC headers include a protocol (version) number.
@@ -120,8 +123,11 @@ int __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
 
   channel->receive_buf.iovec[0].base = channel->receive_buf.bytes;
   channel->receive_buf.iovec[0].length = sizeof(channel->receive_buf.bytes);
+  /* TODO: temporarily disabled because of compiler warning */
+#if 0
   dprintf((SIDE "READ: filling buffer from %"PRIxPTR".\n",
            (uintptr_t) channel->imc_handle));
+#endif
   if (channel->timing_enabled) {
     start_usec = __NaClSrpcGetUsec();
   }
@@ -355,9 +361,11 @@ int __NaClSrpcImcFlush(NaClSrpcChannel* channel) {
   int            retval;
   double         start_usec = 0.0;
   double         this_usec;
-
+  /* TODO: temporarily disabled because of compiler warning */
+#if 0
   dprintf((SIDE "FLUSH: imc_handle %"PRIxPTR"\n",
            (uintptr_t) channel->imc_handle));
+#endif
   channel->send_buf.iovec[0].length = channel->send_buf.next_byte;
   if (channel->timing_enabled) {
     start_usec = __NaClSrpcGetUsec();

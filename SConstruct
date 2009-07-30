@@ -862,9 +862,17 @@ nacl_extra_sdk_env = pre_base_env.Clone(
                '-fdiagnostics-show-option',
                '-pedantic',
                ],
+
     CPPPATH = ['$SOURCE_ROOT'],
     LINK = '$CXX',
 )
+
+if nacl_extra_sdk_env.Bit('host_windows'):
+  # NOTE: This is needed because Windows builds are case-insensitive.
+  # Without this we use nacl-as, which doesn't handle include directives, etc.
+  nacl_extra_sdk_env.Replace(ASCOM = '${CCCOM}',)
+else:
+  nacl_extra_sdk_env.Replace(ASFLAGS = '$CCFLAGS',)
 
 
 nacl_extra_sdk_env.Append(

@@ -633,7 +633,10 @@ NaClSrpcError __NaClSrpcArgsPut(NaClSrpcChannel* channel,
       }
       break;
      case NACL_SRPC_ARG_TYPE_HANDLE:
-       dprintf(("value %"PRIxPTR"\n", (uintptr_t) arg->u.hval));
+      /* TODO: temporarily disabled because of compiler warning */
+#if 0
+      dprintf(("value %"PRIxPTR"\n", (uintptr_t) arg->u.hval));
+#endif
       if (write_values) {
         __NaClSrpcImcWriteDesc(channel, arg->u.hval);
       }
