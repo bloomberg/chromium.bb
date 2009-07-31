@@ -432,21 +432,21 @@ void WebMediaPlayerImpl::OnPipelineError() {
     case media::PIPELINE_ERROR_INITIALIZATION_FAILED:
     case media::PIPELINE_ERROR_REQUIRED_FILTER_MISSING:
     case media::PIPELINE_ERROR_COULD_NOT_RENDER:
-      // Format error.
-      SetNetworkState(WebMediaPlayer::FormatError);
-      break;
-
     case media::PIPELINE_ERROR_URL_NOT_FOUND:
     case media::PIPELINE_ERROR_NETWORK:
-    case media::PIPELINE_ERROR_DECODE:
-    case media::PIPELINE_ERROR_ABORT:
-    case media::PIPELINE_ERROR_OUT_OF_MEMORY:
     case media::PIPELINE_ERROR_READ:
-    case media::PIPELINE_ERROR_AUDIO_HARDWARE:
     case media::DEMUXER_ERROR_COULD_NOT_OPEN:
     case media::DEMUXER_ERROR_COULD_NOT_PARSE:
     case media::DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
     case media::DEMUXER_ERROR_COULD_NOT_CREATE_THREAD:
+      // Format error.
+      SetNetworkState(WebMediaPlayer::FormatError);
+      break;
+
+    case media::PIPELINE_ERROR_DECODE:
+    case media::PIPELINE_ERROR_ABORT:
+    case media::PIPELINE_ERROR_OUT_OF_MEMORY:
+    case media::PIPELINE_ERROR_AUDIO_HARDWARE:
       // Decode error.
       SetNetworkState(WebMediaPlayer::DecodeError);
       break;
