@@ -4,11 +4,14 @@
 
 #include "chrome/browser/gtk/tabs/tab_gtk.h"
 
+#include <gdk/gdkkeysyms.h>
+
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/browser/gtk/standard_menus.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -26,37 +29,32 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
  public:
   explicit ContextMenuController(TabGtk* tab)
       : tab_(tab) {
-    menu_.reset(new MenuGtk(this, false));
-    menu_->AppendMenuItemWithLabel(
-        TabStripModel::CommandNewTab,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_NEWTAB));
-    menu_->AppendSeparator();
-    menu_->AppendMenuItemWithLabel(
-        TabStripModel::CommandReload,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_RELOAD));
-    menu_->AppendMenuItemWithLabel(
-        TabStripModel::CommandDuplicate,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_DUPLICATE));
-    menu_->AppendSeparator();
-    menu_->AppendMenuItemWithLabel(
-        TabStripModel::CommandCloseTab,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_CLOSETAB));
-    menu_->AppendMenuItemWithLabel(
-        TabStripModel::CommandCloseOtherTabs,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_CLOSEOTHERTABS));
-    menu_->AppendMenuItemWithLabel(
-        TabStripModel::CommandCloseTabsToRight,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_CLOSETABSTORIGHT));
-    menu_->AppendMenuItemWithLabel(
-        TabStripModel::CommandCloseTabsOpenedBy,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_CLOSETABSOPENEDBY));
-    menu_->AppendMenuItemWithLabel(
-        TabStripModel::CommandRestoreTab,
-        l10n_util::GetStringUTF8(IDS_RESTORE_TAB));
-    menu_->AppendSeparator();
-    menu_->AppendCheckMenuItemWithLabel(
-        TabStripModel::CommandTogglePinned,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_PIN_TAB));
+    static const MenuCreateMaterial context_menu_blueprint[] = {
+        { MENU_NORMAL, TabStripModel::CommandNewTab, IDS_TAB_CXMENU_NEWTAB,
+            0, NULL, GDK_t, GDK_CONTROL_MASK, true },
+        { MENU_SEPARATOR },
+        { MENU_NORMAL, TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD,
+            0, NULL, GDK_F5, 0, true },
+        { MENU_NORMAL, TabStripModel::CommandDuplicate,
+            IDS_TAB_CXMENU_DUPLICATE },
+        { MENU_SEPARATOR },
+        { MENU_NORMAL, TabStripModel::CommandCloseTab, IDS_TAB_CXMENU_CLOSETAB,
+            0, NULL, GDK_w, GDK_CONTROL_MASK, true },
+        { MENU_NORMAL, TabStripModel::CommandCloseOtherTabs,
+          IDS_TAB_CXMENU_CLOSEOTHERTABS },
+        { MENU_NORMAL, TabStripModel::CommandCloseTabsToRight,
+            IDS_TAB_CXMENU_CLOSETABSTORIGHT },
+        { MENU_NORMAL, TabStripModel::CommandCloseTabsOpenedBy,
+            IDS_TAB_CXMENU_CLOSETABSOPENEDBY },
+        { MENU_NORMAL, TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB,
+            0, NULL, GDK_t, GDK_CONTROL_MASK | GDK_SHIFT_MASK, true },
+        { MENU_SEPARATOR },
+        { MENU_NORMAL, TabStripModel::CommandTogglePinned,
+            IDS_TAB_CXMENU_PIN_TAB },
+        { MENU_END },
+    };
+
+    menu_.reset(new MenuGtk(this, context_menu_blueprint, NULL));
   }
 
   virtual ~ContextMenuController() {}

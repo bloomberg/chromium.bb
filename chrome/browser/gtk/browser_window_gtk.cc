@@ -151,6 +151,7 @@ gfx::Rect GetInitialWindowBounds(GtkWindow* window) {
   return gfx::Rect(x, y, width, height);
 }
 
+// Keep this in sync with various context menus which display the accelerators.
 const struct AcceleratorMapping {
   guint keyval;
   int command_id;

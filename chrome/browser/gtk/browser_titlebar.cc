@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/browser_titlebar.h"
 
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
 #include <string>
@@ -16,7 +17,9 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
+#include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -338,25 +341,21 @@ void BrowserTitlebar::OnButtonClicked(GtkWidget* button,
 
 void BrowserTitlebar::ShowContextMenu() {
   if (!context_menu_.get()) {
-    context_menu_.reset(new MenuGtk(this, false));
-    context_menu_->AppendMenuItemWithLabel(
-        IDC_NEW_TAB,
-        l10n_util::GetStringUTF8(IDS_TAB_CXMENU_NEWTAB));
-    context_menu_->AppendMenuItemWithLabel(
-        IDC_RESTORE_TAB,
-        l10n_util::GetStringUTF8(IDS_RESTORE_TAB));
+    static const MenuCreateMaterial context_menu_blueprint[] = {
+        { MENU_NORMAL, IDC_NEW_TAB, IDS_TAB_CXMENU_NEWTAB, 0, NULL,
+            GDK_t, GDK_CONTROL_MASK, true },
+        { MENU_NORMAL, IDC_RESTORE_TAB, IDS_RESTORE_TAB, 0, NULL,
+            GDK_t, GDK_CONTROL_MASK | GDK_SHIFT_MASK, true },
+        { MENU_SEPARATOR },
+        { MENU_NORMAL, IDC_TASK_MANAGER, IDS_TASK_MANAGER, 0, NULL,
+            GDK_Escape, GDK_SHIFT_MASK, true },
+        { MENU_SEPARATOR },
+        { MENU_CHECKBOX, kShowWindowDecorationsCommand,
+            IDS_SHOW_WINDOW_DECORATIONS },
+        { MENU_END },
+    };
 
-    context_menu_->AppendSeparator();
-
-    context_menu_->AppendMenuItemWithLabel(
-        IDC_TASK_MANAGER,
-        l10n_util::GetStringUTF8(IDS_TASK_MANAGER));
-
-    context_menu_->AppendSeparator();
-
-    context_menu_->AppendCheckMenuItemWithLabel(
-        kShowWindowDecorationsCommand,
-        l10n_util::GetStringUTF8(IDS_SHOW_WINDOW_DECORATIONS));
+    context_menu_.reset(new MenuGtk(this, context_menu_blueprint, NULL));
   }
 
   context_menu_->PopupAsContext(gtk_get_current_event_time());

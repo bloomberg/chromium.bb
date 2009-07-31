@@ -127,7 +127,7 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
     if (menu_data->label_argument) {
       label = l10n_util::GetStringFUTF8(
           menu_data->label_id,
-          WideToUTF16(l10n_util::GetString(menu_data->label_argument)));
+          l10n_util::GetStringUTF16(menu_data->label_argument));
     } else if (menu_data->label_id) {
       label = l10n_util::GetStringUTF8(menu_data->label_id);
     } else if (menu_data->type != MENU_SEPARATOR) {
@@ -168,7 +168,7 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
                                 menu_data->custom_submenu->menu_.get());
     }
 
-    if (accel_group && menu_data->accel_key) {
+    if ((menu_data->only_show || accel_group) && menu_data->accel_key) {
       // If we ever want to let the user do any key remaping, we'll need to
       // change the following so we make a gtk_accel_map which keeps the actual
       // keys.
