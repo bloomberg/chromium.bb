@@ -603,6 +603,11 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   }
   return false;
 #else
+  // Mac implementation note: |rect| is in content-area-relative coordinates,
+  // but we may be given a context that is a subset of the content area
+  // with a transform that makes the coordinates work out. We will likely
+  // need to do fixup work like that done in BlitContextToContext when we
+  // implement this.
   NOTIMPLEMENTED();
   return true;
 #endif

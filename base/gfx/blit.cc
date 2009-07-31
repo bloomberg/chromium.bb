@@ -27,13 +27,27 @@ void BlitContextToContext(NativeDrawingContext dst_context,
          dst_rect.width(), dst_rect.height(),
          src_context, src_origin.x(), src_origin.y(), SRCCOPY);
 #elif defined(OS_MACOSX)
+  // Only translations and/or vertical flips in the source context are
+  // supported; more complex source context transforms will be ignored.
+
+  // If there is a translation on the source context, we need to account for
+  // it ourselves since CGBitmapContextCreateImage will bypass it.
   Rect src_rect(src_origin, dst_rect.size());
+  CGAffineTransform transform = CGContextGetCTM(src_context);
+  bool flipped = fabs(transform.d + 1) < 0.0001;
+  CGFloat delta_y = flipped ? CGBitmapContextGetHeight(src_context) -
+                              transform.ty
+                            : transform.ty;
+  src_rect.Offset(transform.tx, delta_y);
+
   scoped_cftyperef<CGImageRef>
       src_image(CGBitmapContextCreateImage(src_context));
   scoped_cftyperef<CGImageRef> src_sub_image(
       CGImageCreateWithImageInRect(src_image, src_rect.ToCGRect()));
   CGContextDrawImage(dst_context, dst_rect.ToCGRect(), src_sub_image);
 #elif defined(OS_LINUX)
+  // Only translations in the source context are supported; more complex
+  // source context transforms will be ignored.
   cairo_save(dst_context);
   double surface_x = src_origin.x();
   double surface_y = src_origin.y();
