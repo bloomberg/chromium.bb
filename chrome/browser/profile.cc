@@ -48,6 +48,7 @@
 #include "net/base/force_tls_state.h"
 
 #if defined(OS_LINUX)
+#include "net/ocsp/nss_ocsp.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
 
@@ -650,8 +651,14 @@ ProfileImpl::~ProfileImpl() {
       spellchecker_->Release();
   }
 
-  if (default_request_context_ == request_context_)
+  if (default_request_context_ == request_context_) {
+#if defined(OS_LINUX)
+    // We use default_request_context_ for OCSP.
+    // Release URLRequestContext used in OCSP handlers.
+    net::SetURLRequestContextForOCSP(NULL);
+#endif
     default_request_context_ = NULL;
+  }
 
   CleanupRequestContext(request_context_);
   CleanupRequestContext(media_request_context_);
@@ -795,6 +802,10 @@ URLRequestContext* ProfileImpl::GetRequestContext() {
       NotificationService::current()->Notify(
           NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
           NotificationService::AllSources(), NotificationService::NoDetails());
+#if defined(OS_LINUX)
+      // TODO(ukai): find a better way to set the URLRequestContext for OCSP.
+      net::SetURLRequestContextForOCSP(default_request_context_);
+#endif
     }
 
     DCHECK(request_context_->cookie_store());
