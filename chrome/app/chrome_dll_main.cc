@@ -186,8 +186,7 @@ static void GLibLogHandler(const gchar* log_domain,
     // This warning only occurs in obsolete versions of GTK and is harmless.
     // http://crbug.com/11133
   } else if (strstr(message, "Theme file for default has no") ||
-             strstr(message, "Theme directory") ||
-             strstr(message, "theme pixmap")) {
+             strstr(message, "Theme directory")) {
     LOG(ERROR) << "GTK theme error: " << message;
   } else {
 #ifdef NDEBUG

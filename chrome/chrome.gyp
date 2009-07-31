@@ -2224,14 +2224,10 @@
                 ['include', '^browser/gtk/first_run_dialog.h'],
                 ['include', '^browser/gtk/focus_store_gtk.cc'],
                 ['include', '^browser/gtk/focus_store_gtk.h'],
-                ['include', '^browser/gtk/gtk_chrome_button.cc'],
-                ['include', '^browser/gtk/gtk_chrome_button.h'],
                 ['include', '^browser/gtk/gtk_chrome_link_button.cc'],
                 ['include', '^browser/gtk/gtk_chrome_link_button.h'],
                 ['include', '^browser/gtk/gtk_dnd_util.cc'],
                 ['include', '^browser/gtk/gtk_dnd_util.h'],
-                ['include', '^browser/gtk/gtk_theme_provider.h'],
-                ['include', '^browser/gtk/gtk_theme_provider.cc'],
                 ['include', '^browser/gtk/hung_renderer_dialog_gtk.cc'],
                 ['include', '^browser/gtk/hung_renderer_dialog_gtk.h'],
                 ['include', '^browser/gtk/import_dialog_gtk.cc'],
@@ -2246,8 +2242,6 @@
                 ['include', '^browser/gtk/list_store_favicon_loader.h'],
                 ['include', '^browser/gtk/menu_gtk.cc'],
                 ['include', '^browser/gtk/menu_gtk.h'],
-                ['include', '^browser/gtk/nine_box.cc'],
-                ['include', '^browser/gtk/nine_box.h'],
 
                 # Other excluded stuff.
                 ['exclude', '^browser/browser_theme_provider_gtk.cc'],

@@ -12,8 +12,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/toolbar_model.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -23,12 +21,10 @@ class AutocompleteEditModel;
 class AutocompletePopupPositioner;
 class AutocompletePopupViewGtk;
 class CommandUpdater;
-class GtkThemeProvider;
 class Profile;
 class TabContents;
 
-class AutocompleteEditViewGtk : public AutocompleteEditView,
-                                public NotificationObserver {
+class AutocompleteEditViewGtk : public AutocompleteEditView {
  public:
   // Modeled like the Windows CHARRANGE.  Represent a pair of cursor position
   // offsets.  Since GtkTextIters are invalid after the buffer is changed, we
@@ -101,13 +97,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual void OnRevertTemporaryText();
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
-
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  void SetBaseColor();
 
  private:
   // TODO(deanm): Would be nice to insulate the thunkers better, etc.
@@ -292,10 +281,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   GtkTextTagTable* tag_table_;
   GtkTextBuffer* text_buffer_;
-  GtkTextTag* faded_text_tag_;
+  GtkTextTag* base_tag_;
   GtkTextTag* secure_scheme_tag_;
   GtkTextTag* insecure_scheme_tag_;
-  GtkTextTag* normal_text_tag_;
+  GtkTextTag* black_text_tag_;
 
   scoped_ptr<AutocompleteEditModel> model_;
   scoped_ptr<AutocompletePopupViewGtk> popup_view_;
@@ -342,11 +331,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // this to figure out whether we should select all of the text when the button
   // is released (we only do so if the view was initially unfocused).
   bool text_view_focused_before_button_press_;
-
-  // Supplies colors, et cetera.
-  GtkThemeProvider* theme_provider_;
-
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };
