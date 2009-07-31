@@ -180,7 +180,6 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
                                        int bytes_read) {
   std::string file_entry;
   std::string line;
-  buf->data()[bytes_read] = 0;
 
   // If all we've seen so far is ASCII, encoding_ is empty. Try to detect the
   // encoding. We don't do the separate UTF-8 check here because the encoding
@@ -196,7 +195,7 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
     encoding_ = DetectEncoding(buf->data(), bytes_read);
 
   int64 file_size;
-  std::istringstream iss(buf->data());
+  std::istringstream iss(std::string(buf->data(), bytes_read));
   while (getline(iss, line)) {
     struct net::ListState state;
     struct net::ListResult result;
