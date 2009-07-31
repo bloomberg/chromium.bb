@@ -2,18 +2,18 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_WIN_H_
-#define CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_WIN_H_
+#ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_GTK_H_
+#define CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_GTK_H_
 
-#include "views/widget/widget_win.h"
+#include "views/widget/widget_gtk.h"
 
 class AutocompleteEditView;
 class AutocompletePopupContentsView;
 
-class AutocompletePopupWin : public views::WidgetWin {
+class AutocompletePopupGtk : public views::WidgetGtk {
  public:
-  explicit AutocompletePopupWin(AutocompletePopupContentsView* contents);
-  virtual ~AutocompletePopupWin();
+  explicit AutocompletePopupGtk(AutocompletePopupContentsView* contents);
+  virtual ~AutocompletePopupGtk();
 
   // Creates the popup and shows it for the first time. |edit_view| is the edit
   // that created us.
@@ -28,16 +28,10 @@ class AutocompletePopupWin : public views::WidgetWin {
   // Returns true if the popup has been created.
   bool IsCreated() const;
 
- protected:
-  // Overridden from WidgetWin:
-  virtual LRESULT OnMouseActivate(HWND window,
-                                  UINT hit_test,
-                                  UINT mouse_message);
-
  private:
   AutocompletePopupContentsView* contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWin);
+  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupGtk);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_WIN_H_
+#endif  // #ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_GTK_H_

@@ -13,14 +13,14 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditModel;
-class AutocompleteEditViewGtk;
+class AutocompleteEditView;
 class AutocompletePopupModel;
 class Profile;
 class SkBitmap;
 
 class AutocompletePopupViewGtk : public AutocompletePopupView {
  public:
-  AutocompletePopupViewGtk(AutocompleteEditViewGtk* edit_view,
+  AutocompletePopupViewGtk(AutocompleteEditView* edit_view,
                            AutocompleteEditModel* edit_model,
                            Profile* profile,
                            AutocompletePopupPositioner* popup_positioner);
@@ -75,7 +75,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView {
   gboolean HandleButtonRelease(GtkWidget* widget, GdkEventButton* event);
 
   scoped_ptr<AutocompletePopupModel> model_;
-  AutocompleteEditViewGtk* edit_view_;
+  AutocompleteEditView* edit_view_;
   AutocompletePopupPositioner* popup_positioner_;
 
   // Our popup window, which is the only widget used, and we paint it on our

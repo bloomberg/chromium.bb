@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "base/gfx/native_widget_types.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -121,6 +122,9 @@ class AutocompleteEditView {
   // OnAfterPossibleChange() returns true if there was a change that caused it
   // to call UpdatePopup().
   virtual bool OnAfterPossibleChange() = 0;
+
+  // Returns the gfx::NativeView of the edit view.
+  virtual gfx::NativeView GetNativeView() const = 0;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_H_

@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
+#include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "base/logging.h"
@@ -79,8 +80,10 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       secure_scheme_tag_(NULL),
       insecure_scheme_tag_(NULL),
       model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(new AutocompletePopupViewGtk(this, model_.get(), profile,
-                                               popup_positioner)),
+      popup_view_(AutocompletePopupView::CreatePopupView(gfx::Font(), this,
+                                                         model_.get(),
+                                                         profile,
+                                                         popup_positioner)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
@@ -426,6 +429,10 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
     TextChanged();
 
   return something_changed;
+}
+
+gfx::NativeView AutocompleteEditViewGtk::GetNativeView() const {
+  return alignment_.get();
 }
 
 void AutocompleteEditViewGtk::HandleBeginUserAction() {

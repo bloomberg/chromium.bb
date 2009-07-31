@@ -83,6 +83,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   virtual void OnRevertTemporaryText();
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
+  virtual gfx::NativeView GetNativeView() const;
 
   // Helper functions for use from AutocompleteEditHelper Objective-C
   // class.

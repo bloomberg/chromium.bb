@@ -4,10 +4,6 @@
 
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 
-#include <objidl.h>
-#include <commctrl.h>
-#include <dwmapi.h>
-
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "app/gfx/insets.h"
@@ -15,18 +11,25 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
-#include "app/win_util.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/views/autocomplete/autocomplete_popup_win.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/icu38/public/common/unicode/ubidi.h"
 #include "views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include <objidl.h>
+#include <commctrl.h>
+#include <dwmapi.h>
+
+#include "app/win_util.h"
+#endif
+
 // Colors for various components of the view.
+#if defined(OS_WIN)
 static const SkColor kBackgroundColor =
     color_utils::GetSysSkColor(COLOR_WINDOW);
 static const SkColor kSelectedBackgroundColor =
@@ -41,6 +44,16 @@ static const SkColor kDimTextColor =
     color_utils::GetSysSkColor(COLOR_GRAYTEXT);
 static const SkColor kSelectedDimTextColor =
     color_utils::GetSysSkColor(COLOR_HIGHLIGHTTEXT);
+#else
+// TODO(beng): source from theme provider.
+static const SkColor kBackgroundColor = SK_ColorWHITE;
+static const SkColor kSelectedBackgroundColor = SK_ColorBLUE;
+static const SkColor kHoverBackgroundColor = SK_ColorCYAN;
+static const SkColor kTextColor = SK_ColorBLACK;
+static const SkColor kSelectedTextColor = SK_ColorWHITE;
+static const SkColor kDimTextColor = SK_ColorGRAY;
+static const SkColor kSelectedDimTextColor = SK_ColorWHITE;
+#endif
 static const SkColor kStandardURLColor = SkColorSetRGB(0, 0x80, 0);
 static const SkColor kHighlightURLColor = SkColorSetRGB(0xD0, 0xFF, 0xD0);
 static const int kGlassPopupTransparency = 240;
@@ -657,11 +670,15 @@ void PopupBorder::InitClass() {
 
 AutocompletePopupContentsView::AutocompletePopupContentsView(
     const gfx::Font& font,
-    AutocompleteEditViewWin* edit_view,
+    AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
     AutocompletePopupPositioner* popup_positioner)
+#if defined(OS_WIN)
     : popup_(new AutocompletePopupWin(this)),
+#else
+    : popup_(new AutocompletePopupGtk(this)),
+#endif
       model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
       popup_positioner_(popup_positioner),
@@ -690,7 +707,7 @@ gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
 // AutocompletePopupContentsView, AutocompletePopupView overrides:
 
 bool AutocompletePopupContentsView::IsOpen() const {
-  return popup_->IsWindow() && popup_->IsVisible();
+  return popup_->IsOpen();
 }
 
 void AutocompletePopupContentsView::InvalidateLine(size_t line) {
@@ -700,7 +717,7 @@ void AutocompletePopupContentsView::InvalidateLine(size_t line) {
 void AutocompletePopupContentsView::UpdatePopupAppearance() {
   if (model_->result().empty()) {
     // No matches, close any existing popup.
-    if (popup_->IsWindow()) {
+    if (popup_->IsCreated()) {
       size_animation_.Stop();
       popup_->Hide();
     }
@@ -739,7 +756,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     size_animation_.Reset();
   target_bounds_ = new_target_bounds;
 
-  if (!popup_->IsWindow()) {
+  if (!popup_->IsCreated()) {
     // If we've never been shown, we need to create the window.
     popup_->Init(edit_view_, this);
   } else {
@@ -897,6 +914,7 @@ void AutocompletePopupContentsView::MakeContentsPath(
 }
 
 void AutocompletePopupContentsView::UpdateBlurRegion() {
+#if defined(OS_WIN)
   // We only support background blurring on Vista with Aero-Glass enabled.
   if (!win_util::ShouldUseVistaFrame() || !GetWidget())
     return;
@@ -920,6 +938,7 @@ void AutocompletePopupContentsView::UpdateBlurRegion() {
   popup_region.Set(contents_path.CreateHRGN());
   bb.hRgnBlur = popup_region.Get();
   DwmEnableBlurBehindWindow(GetWidget()->GetNativeView(), &bb);
+#endif
 }
 
 void AutocompletePopupContentsView::MakeCanvasTransparent(
@@ -933,4 +952,15 @@ void AutocompletePopupContentsView::MakeCanvasTransparent(
   paint.setStyle(SkPaint::kFill_Style);
   canvas->FillRectInt(0, 0, canvas->getDevice()->width(),
                       canvas->getDevice()->height(), paint);
+}
+
+// static
+AutocompletePopupView* AutocompletePopupView::CreatePopupView(
+    const gfx::Font& font,
+    AutocompleteEditView* edit_view,
+    AutocompleteEditModel* edit_model,
+    Profile* profile,
+    AutocompletePopupPositioner* popup_positioner) {
+  return new AutocompletePopupContentsView(font, edit_view, edit_model,
+                                           profile, popup_positioner);
 }

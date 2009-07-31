@@ -19,7 +19,7 @@ namespace gfx {
 class Font;
 class Rect;
 }
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 class AutocompleteEditViewWin;
 class AutocompleteEditModel;
 class Profile;
@@ -58,12 +58,12 @@ class AutocompletePopupView {
   // Returns the popup's model.
   virtual AutocompletePopupModel* GetModel() = 0;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   // Create a popup view implementation. It may make sense for this to become
   // platform independent eventually.
   static AutocompletePopupView* CreatePopupView(
       const gfx::Font& font,
-      AutocompleteEditViewWin* edit_view,
+      AutocompleteEditView* edit_view,
       AutocompleteEditModel* edit_model,
       Profile* profile,
       AutocompletePopupPositioner* popup_positioner);

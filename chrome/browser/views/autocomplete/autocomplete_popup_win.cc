@@ -24,10 +24,10 @@ AutocompletePopupWin::AutocompletePopupWin(
 AutocompletePopupWin::~AutocompletePopupWin() {
 }
 
-void AutocompletePopupWin::Init(AutocompleteEditViewWin* edit_view,
+void AutocompletePopupWin::Init(AutocompleteEditView* edit_view,
                                 views::View* contents) {
   // Create the popup
-  WidgetWin::Init(edit_view->parent_view()->GetWidget()->GetNativeView(),
+  WidgetWin::Init(GetAncestor(edit_view->GetNativeView(), GA_ROOT),
                   contents_->GetPopupBounds());
   // The contents is owned by the LocationBarView.
   contents_->SetParentOwned(false);
@@ -38,7 +38,7 @@ void AutocompletePopupWin::Init(AutocompleteEditViewWin* edit_view,
   // Otherwise, show this popup window under top-most windows.
   // TODO(hbono): http://b/1111369 if we exclude this popup window from the
   // display area of IME windows, this workaround becomes unnecessary.
-  HWND ime_window = ImmGetDefaultIMEWnd(edit_view->m_hWnd);
+  HWND ime_window = ImmGetDefaultIMEWnd(edit_view->GetNativeView());
   SetWindowPos(ime_window ? ime_window : HWND_NOTOPMOST, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
 }
@@ -49,6 +49,14 @@ void AutocompletePopupWin::Show() {
   SetBounds(contents_->GetPopupBounds());
   if (!IsVisible())
     WidgetWin::Show();
+}
+
+bool AutocompletePopupWin::IsOpen() const {
+  return IsCreated() && IsVisible();
+}
+
+bool AutocompletePopupWin::IsCreated() const {
+  return !!IsWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

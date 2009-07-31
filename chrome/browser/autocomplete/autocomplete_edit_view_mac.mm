@@ -161,7 +161,7 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
   // |model_|.
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   [nc addObserver:edit_helper_
-         selector:@selector(windowDidResignKey:) 
+         selector:@selector(windowDidResignKey:)
              name:NSWindowDidResignKeyNotification
            object:[field_ window]];
 }
@@ -216,7 +216,7 @@ void AutocompleteEditViewMac::Update(
   if (tab_for_state_restoring) {
     RevertAll();
 
-    const AutocompleteEditViewMacState* state = 
+    const AutocompleteEditViewMacState* state =
         GetStateFromTab(tab_for_state_restoring);
     if (state) {
       // Should restore the user's text via SetUserText().
@@ -511,6 +511,10 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
   return something_changed;
 }
 
+gfx::NativeView AutocompleteEditViewMac::GetNativeView() const {
+  return field_;
+}
+
 void AutocompleteEditViewMac::OnUpOrDownKeyPressed(bool up, bool by_page) {
   // We should only arrive here when the field is focussed.
   DCHECK(IsFirstResponder());
@@ -661,12 +665,12 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
       return YES;
     }
   }
-  
+
   if (cmd == @selector(scrollPageDown:)) {
     edit_view_->OnUpOrDownKeyPressed(false, true);
     return YES;
   }
-  
+
   if (cmd == @selector(scrollPageUp:)) {
     edit_view_->OnUpOrDownKeyPressed(true, true);
     return YES;

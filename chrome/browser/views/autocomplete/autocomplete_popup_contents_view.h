@@ -10,15 +10,17 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
-#if defined(OS_WIN)
-#include "chrome/browser/views/autocomplete/autocomplete_popup_win.h"
-#endif
 #include "views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/views/autocomplete/autocomplete_popup_win.h"
+#else
+#include "chrome/browser/views/autocomplete/autocomplete_popup_gtk.h"
+#endif
+
 class AutocompleteEditModel;
 class AutocompleteEditViewWin;
-class AutocompletePopupWin;
 class Profile;
 
 // An interface implemented by an object that provides data to populate
@@ -46,7 +48,7 @@ class AutocompletePopupContentsView : public views::View,
                                       public AnimationDelegate {
  public:
   AutocompletePopupContentsView(const gfx::Font& font,
-                                AutocompleteEditViewWin* edit_view,
+                                AutocompleteEditView* edit_view,
                                 AutocompleteEditModel* edit_model,
                                 Profile* profile,
                                 AutocompletePopupPositioner* popup_positioner);
@@ -97,13 +99,15 @@ class AutocompletePopupContentsView : public views::View,
 #if defined(OS_WIN)
   // The popup that contains this view.
   scoped_ptr<AutocompletePopupWin> popup_;
+#else
+  scoped_ptr<AutocompletePopupGtk> popup_;
 #endif
 
   // The provider of our result set.
   scoped_ptr<AutocompletePopupModel> model_;
 
   // The edit view that invokes us.
-  AutocompleteEditViewWin* edit_view_;
+  AutocompleteEditView* edit_view_;
 
   // An object that tells the popup how to position itself.
   AutocompletePopupPositioner* popup_positioner_;

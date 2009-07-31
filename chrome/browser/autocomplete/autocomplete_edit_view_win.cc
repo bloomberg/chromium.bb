@@ -23,7 +23,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_accessibility.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view_win.h"
+#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
@@ -872,6 +872,10 @@ bool AutocompleteEditViewWin::OnAfterPossibleChange() {
     TextChanged();
 
   return something_changed;
+}
+
+gfx::NativeView AutocompleteEditViewWin::GetNativeView() const {
+  return m_hWnd;
 }
 
 void AutocompleteEditViewWin::PasteAndGo(const std::wstring& text) {

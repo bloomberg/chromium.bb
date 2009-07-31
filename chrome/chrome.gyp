@@ -606,8 +606,6 @@
         'browser/autocomplete/autocomplete_popup_view_gtk.h',
         'browser/autocomplete/autocomplete_popup_view_mac.h',
         'browser/autocomplete/autocomplete_popup_view_mac.mm',
-        'browser/autocomplete/autocomplete_popup_view_win.cc',
-        'browser/autocomplete/autocomplete_popup_view_win.h',
         'browser/autocomplete/history_contents_provider.cc',
         'browser/autocomplete/history_contents_provider.h',
         'browser/autocomplete/history_url_provider.cc',
@@ -1644,6 +1642,8 @@
         'browser/views/autocomplete/autocomplete_popup_contents_view.h',
         'browser/views/autocomplete/autocomplete_popup_win.cc',
         'browser/views/autocomplete/autocomplete_popup_win.h',
+        'browser/views/autocomplete/autocomplete_popup_gtk.cc',
+        'browser/views/autocomplete/autocomplete_popup_gtk.h',
         'browser/views/blocked_popup_container_view_win.cc',
         'browser/views/blocked_popup_container_view_win.h',
         'browser/views/bookmark_bar_view.cc',
@@ -1957,6 +1957,8 @@
         ['OS=="linux" and toolkit_views==0', {
           'sources!': [
             'browser/bookmarks/bookmark_drop_info.cc',
+            'browser/views/autocomplete/autocomplete_popup_gtk.cc',
+            'browser/views/autocomplete/autocomplete_popup_gtk.h'
           ],
         }],
         ['OS=="mac"', {
@@ -2115,6 +2117,10 @@
                 ['include', '^browser/dock_info.cc'],
                 ['include', '^browser/dock_info.h'],
                 ['include', '^browser/extensions/'],
+                ['include', '^browser/views/autocomplete/autocomplete_popup_contents_view.cc'],
+                ['include', '^browser/views/autocomplete/autocomplete_popup_contents_view.h'],
+                ['include', '^browser/views/autocomplete/autocomplete_popup_gtk.cc'],
+                ['include', '^browser/views/autocomplete/autocomplete_popup_gtk.h'],
                 ['include', '^browser/views/bookmark_bar_view.cc'],
                 ['include', '^browser/views/bookmark_bar_view.h'],
                 ['include', '^browser/views/bookmark_context_menu.cc'],
@@ -2244,6 +2250,8 @@
                 ['include', '^browser/gtk/menu_gtk.h'],
 
                 # Other excluded stuff.
+                ['exclude', '^browser/autocomplete/autocomplete_popup_view_gtk.cc'],
+                ['exclude', '^browser/autocomplete/autocomplete_popup_view_gtk.h'],
                 ['exclude', '^browser/browser_theme_provider_gtk.cc'],
                 ['exclude', '^browser/extensions/external_registry_extension_provider_win.cc'],
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.cc'],

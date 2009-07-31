@@ -18,7 +18,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
@@ -235,7 +235,7 @@ GdkPixbuf* IconForMatch(const AutocompleteMatch& match, bool selected) {
 }  // namespace
 
 AutocompletePopupViewGtk::AutocompletePopupViewGtk(
-    AutocompleteEditViewGtk* edit_view,
+    AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
     AutocompletePopupPositioner* popup_positioner)
@@ -507,4 +507,15 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
   g_object_unref(gc);
 
   return TRUE;
+}
+
+// static
+AutocompletePopupView* AutocompletePopupView::CreatePopupView(
+    const gfx::Font& font,
+    AutocompleteEditView* edit_view,
+    AutocompleteEditModel* edit_model,
+    Profile* profile,
+    AutocompletePopupPositioner* popup_positioner) {
+  return new AutocompletePopupViewGtk(edit_view, edit_model, profile,
+                                      popup_positioner);
 }

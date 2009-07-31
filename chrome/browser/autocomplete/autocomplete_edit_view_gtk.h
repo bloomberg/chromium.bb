@@ -19,7 +19,7 @@
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupPositioner;
-class AutocompletePopupViewGtk;
+class AutocompletePopupView;
 class CommandUpdater;
 class Profile;
 class TabContents;
@@ -97,6 +97,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView {
   virtual void OnRevertTemporaryText();
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
+  virtual gfx::NativeView GetNativeView() const;
 
  private:
   // TODO(deanm): Would be nice to insulate the thunkers better, etc.
@@ -287,7 +288,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView {
   GtkTextTag* black_text_tag_;
 
   scoped_ptr<AutocompleteEditModel> model_;
-  scoped_ptr<AutocompletePopupViewGtk> popup_view_;
+  scoped_ptr<AutocompletePopupView> popup_view_;
   AutocompleteEditController* controller_;
   ToolbarModel* toolbar_model_;
 
