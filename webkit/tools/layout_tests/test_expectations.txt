@@ -1229,9 +1229,6 @@ BUG10666 LINUX : chrome/fast/forms/basic-selects.html = FAIL
 BUG15797 LINUX : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = FAIL
 
-// Linux: mouse events are at the wrong coordinates for plugin.
-BUG15907 LINUX : LayoutTests/plugins/mouse-events.html = FAIL
-
 // Depends on plugin support.
 BUG10351 MAC : LayoutTests/accessibility/plugin.html = FAIL CRASH
 BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
