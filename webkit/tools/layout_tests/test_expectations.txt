@@ -616,6 +616,7 @@ BUG13907 WIN : LayoutTests/http/tests/media/video-seekable-stall.html = FAIL
 // We don't support WAV.
 BUG13907 SKIP : LayoutTests/media/audio-constructor-src.html = FAIL
 BUG13907 SKIP : LayoutTests/media/audio-constructor.html = FAIL
+BUG13907 SKIP : LayoutTests/media/media-load-event.html = FAIL
 // We don't support MP2 audio so skip this test.
 BUG13907 SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL
 // This test crashes in debug build not in release build.
