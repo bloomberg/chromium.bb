@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <string>
+
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
@@ -14,16 +16,22 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_registrar.h"
 
+class FilePath;
 class FindBarMac;
 @class SadTabView;
 class TabContentsViewMac;
+@class WebDragSource;
 @class WebDropTarget;
 
 @interface TabContentsViewCocoa : BaseView {
  @private
   TabContentsViewMac* tabContentsView_;  // WEAK; owns us
+  scoped_nsobject<WebDragSource> dragSource_;
   scoped_nsobject<WebDropTarget> dropTarget_;
 }
+
+// Expose this, since sometimes one needs both the NSView and the TabContents.
+- (TabContents*)tabContents;
 @end
 
 // Mac-specific implementation of the TabContentsView. It owns an NSView that
@@ -35,7 +43,6 @@ class TabContentsViewMac : public TabContentsView,
   // lifetime. This doesn't need to be the case, but is this way currently
   // because that's what was easiest when they were split.
   explicit TabContentsViewMac(TabContents* web_contents);
-  virtual ~TabContentsViewMac();
 
   // TabContentsView implementation --------------------------------------------
 
@@ -75,10 +82,6 @@ class TabContentsViewMac : public TabContentsView,
                        const NotificationDetails& details);
 
  private:
-  // Returns a drag pasteboard filled with the appropriate data. The types are
-  // populated in decending order of richness.
-  NSPasteboard* FillDragData(const WebDropData& drop_data);
-
   // The Cocoa NSView that lives in the view hierarchy.
   scoped_nsobject<TabContentsViewCocoa> cocoa_view_;
 

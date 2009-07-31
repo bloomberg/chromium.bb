@@ -4,10 +4,11 @@
 
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 
-#include "base/sys_string_conversions.h"
+#include <string>
+
 #include "chrome/browser/browser.h" // TODO(beng): this dependency is awful.
-#include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/cocoa/sad_tab_view.h"
+#import "chrome/browser/cocoa/web_drag_source.h"
 #import "chrome/browser/cocoa/web_drop_target.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
@@ -16,7 +17,6 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
-#include "net/base/net_util.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
 #include "chrome/common/temp_scaffolding_stubs.h"
@@ -24,9 +24,9 @@
 @interface TabContentsViewCocoa (Private)
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w;
 - (void)processKeyboardEvent:(NSEvent*)event;
-- (TabContents*)tabContents;
 - (void)registerDragTypes;
 - (void)setIsDropTarget:(BOOL)isTarget;
+- (void)startDragWithDropData:(const WebDropData&)dropData;
 @end
 
 // static
@@ -38,9 +38,6 @@ TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)
     : TabContentsView(tab_contents) {
   registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
-}
-
-TabContentsViewMac::~TabContentsViewMac() {
 }
 
 void TabContentsViewMac::CreateView() {
@@ -86,84 +83,11 @@ void TabContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
   *out = [cocoa_view_.get() NSRectToRect:[cocoa_view_.get() bounds]];
 }
 
-// Returns a drag pasteboard filled with the appropriate data. The types are
-// populated in decending order of richness.
-NSPasteboard* TabContentsViewMac::FillDragData(
-    const WebDropData& drop_data) {
-  NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  [pasteboard declareTypes:[NSArray array] owner:nil];
-
-  // HTML.
-  if (!drop_data.text_html.empty()) {
-    [pasteboard addTypes:[NSArray arrayWithObject:NSHTMLPboardType]
-                   owner:nil];
-    [pasteboard setString:base::SysUTF16ToNSString(drop_data.text_html)
-                  forType:NSHTMLPboardType];
-  }
-
-  // URL.
-  if (drop_data.url.is_valid()) {
-    // TODO(pinkerton/jrg): special javascript: handling for bookmark bar. Win
-    // doesn't allow you to drop js: bookmarks on the desktop (since they're
-    // meaningless) but does allow you to drop them on the bookmark bar (where
-    // they're intended to go generally). We need to figure out a private
-    // flavor for Bookmark dragging and then flag this down in the drag source.
-    [pasteboard addTypes:[NSArray arrayWithObject:NSURLPboardType]
-                   owner:nil];
-    NSString* url = base::SysUTF8ToNSString(drop_data.url.spec());
-    NSString* title = base::SysUTF16ToNSString(drop_data.url_title);
-    [pasteboard setURLs:[NSArray arrayWithObject:url]
-             withTitles:[NSArray arrayWithObject:title]];
-  }
-
-  // Files.
-  // TODO(pinkerton): Hook up image drags, data is in drop_data.file_contents.
-  if (!drop_data.file_contents.empty()) {
-#if 0
-    // Images without ALT text will only have a file extension so we need to
-    // synthesize one from the provided extension and URL.
-    std::string filename_utf8 =
-        [base::SysUTF16ToNSString(drop_data.file_description_filename)
-            fileSystemRepresentation];
-    FilePath file_name(filename_utf8);
-    file_name = file_name.BaseName().RemoveExtension();
-    if (file_name.value().empty()) {
-      // Retrieve the name from the URL.
-      file_name = FilePath::FromWStringHack(
-          net::GetSuggestedFilename(drop_data.url, "", "", L""));
-    }
-    std::string file_extension_utf8 =
-        [base::SysUTF16ToNSString(drop_data.file_extension)
-            fileSystemRepresentation];
-    file_name = file_name.ReplaceExtension(file_extension_utf8);
-    NSArray* types = [NSArray arrayWithObjects:NSFileContentsPboardType,
-                                               NSFilenamesPboardType,
-                                               nil];
-    [pasteboard addTypes:types owner:nil];
-    NSArray* file_name_array =
-        [NSArray arrayWithObject:base::SysUTF8ToNSString(file_name.value())];
-    [pasteboard setPropertyList:file_name_array forType:NSFilenamesPboardType];
-    NSData* data = [NSData dataWithBytes:drop_data.file_contents.data()
-                                  length:drop_data.file_contents.length()];
-    [pasteboard setData:data forType:NSFileContentsPboardType];
-#endif
-  }
-
-  // Plain text.
-  if (!drop_data.plain_text.empty()) {
-    [pasteboard addTypes:[NSArray arrayWithObject:NSStringPboardType]
-                   owner:nil];
-    [pasteboard setString:base::SysUTF16ToNSString(drop_data.plain_text)
-                  forType:NSStringPboardType];
-  }
-  return pasteboard;
-}
-
 void TabContentsViewMac::StartDragging(const WebDropData& drop_data) {
   // We are only allowed to call dragImage:... from inside mouseDragged:, which
   // we will never be (we're called back async), but it seems that the mouse
   // event is still always the proper left mouse drag, so everything works out
-  // in the end. However, we occasionally get spurrious "start drag" messages
+  // in the end. However, we occasionally get spurious "start drag" messages
   // from the back-end when we shouldn't. If we go through with the drag, Cocoa
   // asserts in a bad way. Just bail for now until we can figure out the root of
   // why we're getting the messages.
@@ -177,26 +101,10 @@ void TabContentsViewMac::StartDragging(const WebDropData& drop_data) {
     return;
   }
 
-  // Create an image to use for the drag.
-  // TODO(pinkerton): Generate the proper image. This one will do in a pinch.
-  NSImage* dragImage = nsimage_cache::ImageNamed(@"nav.pdf");
-
-  NSPasteboard* pasteboard = FillDragData(drop_data);
-
-  // Tell the view to start a drag using |cocoa_view_| as the drag source. The
-  // source will get notified when the drag completes (success or failure) so
-  // it can tell the render view host the drag is done. The drag invokes a
-  // nested event loop, but we need to continue processing events.
-  NSPoint mousePoint = [currentEvent locationInWindow];
-  mousePoint = [cocoa_view_ convertPoint:mousePoint fromView:nil];
+  // The drag invokes a nested event loop, but we need to continue processing
+  // events.
   MessageLoop::current()->SetNestableTasksAllowed(true);
-  [cocoa_view_ dragImage:dragImage
-                      at:mousePoint
-                  offset:NSZeroSize
-                   event:currentEvent
-              pasteboard:pasteboard
-                  source:cocoa_view_
-               slideBack:YES];
+  [cocoa_view_ startDragWithDropData:drop_data];
   MessageLoop::current()->SetNestableTasksAllowed(false);
 }
 
@@ -425,6 +333,19 @@ void TabContentsViewMac::Observe(NotificationType type,
   [self tabContents]->Paste();
 }
 
+- (void)pasteboard:(NSPasteboard*)sender provideDataForType:(NSString*)type {
+  [dragSource_ lazyWriteToPasteboard:sender
+                             forType:type];
+}
+
+- (void)startDragWithDropData:(const WebDropData&)dropData {
+  dragSource_.reset([[WebDragSource alloc]
+          initWithContentsView:self
+                      dropData:&dropData
+                    pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]]);
+  [dragSource_ startDrag];
+}
+
 // NSDraggingSource methods
 
 // Returns what kind of drag operations are available. This is a required
@@ -434,48 +355,32 @@ void TabContentsViewMac::Observe(NotificationType type,
   return NSDragOperationCopy;
 }
 
-// Called when a drag initiated in our view ends. We need to make sure that
-// we tell WebCore so that it can go about processing things as normal.
+// Called when a drag initiated in our view ends.
 - (void)draggedImage:(NSImage*)anImage
              endedAt:(NSPoint)screenPoint
            operation:(NSDragOperation)operation {
-  RenderViewHost* rvh = [self tabContents]->render_view_host();
-  if (rvh) {
-    rvh->DragSourceSystemDragEnded();
+  [dragSource_ endDragAt:screenPoint
+             isCancelled:(operation == NSDragOperationNone)];
 
-    // Convert |screenPoint| to view coordinates and flip it.
-    NSPoint localPoint = [self convertPointFromBase:screenPoint];
-    NSRect viewFrame = [self frame];
-    localPoint.y = viewFrame.size.height - localPoint.y;
-    // Flip |screenPoint|.
-    NSRect screenFrame = [[[self window] screen] frame];
-    screenPoint.y = screenFrame.size.height - screenPoint.y;
-
-    if (operation != NSDragOperationNone)
-      rvh->DragSourceEndedAt(localPoint.x, localPoint.y,
-                             screenPoint.x, screenPoint.y);
-    else
-      rvh->DragSourceCancelledAt(localPoint.x, localPoint.y,
-                                 screenPoint.x, screenPoint.y);
-  }
+  // Might as well throw out this object now.
+  dragSource_.reset();
 }
 
-// Called when a drag initiated in our view moves. We need to tell WebCore
-// so it can update anything watching for drag events.
+// Called when a drag initiated in our view moves.
 - (void)draggedImage:(NSImage*)draggedImage movedTo:(NSPoint)screenPoint {
-  RenderViewHost* rvh = [self tabContents]->render_view_host();
-  if (rvh) {
-    // Convert |screenPoint| to view coordinates and flip it.
-    NSPoint localPoint = [self convertPointFromBase:screenPoint];
-    NSRect viewFrame = [self frame];
-    localPoint.y = viewFrame.size.height - localPoint.y;
-    // Flip |screenPoint|.
-    NSRect screenFrame = [[[self window] screen] frame];
-    screenPoint.y = screenFrame.size.height - screenPoint.y;
+  [dragSource_ moveDragTo:screenPoint];
+}
 
-    rvh->DragSourceMovedTo(localPoint.x, localPoint.y,
-                           screenPoint.x, screenPoint.y);
-  }
+// Called when we're informed where a file should be dropped.
+- (NSArray*)namesOfPromisedFilesDroppedAtDestination:(NSURL*)dropDest {
+  if (![dropDest isFileURL])
+    return nil;
+
+  NSString* file_name = [dragSource_ dragPromisedFileTo:[dropDest path]];
+  if (!file_name)
+    return nil;
+
+  return [NSArray arrayWithObject:file_name];
 }
 
 // NSDraggingDestination methods
