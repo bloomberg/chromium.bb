@@ -126,11 +126,10 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path,
 
 void ExtensionsService::UpdateExtension(const std::string& id,
                                         const FilePath& extension_path) {
-
-  if (!GetExtensionById(id)) {	
+  if (!GetExtensionById(id)) {
     LOG(WARNING) << "Will not update extension " << id << " because it is not "
-                 << "installed";	
-    return;	
+                 << "installed";
+    return;
   }
 
   new CrxInstaller(extension_path, install_directory_, Extension::INTERNAL,
@@ -391,7 +390,7 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
                                                  const FilePath& path,
                                                  Extension::Location location) {
   // Before even bothering to unpack, check and see if we already have this
-  // version. This is important because these extensions are going to get 
+  // version. This is important because these extensions are going to get
   // installed on every startup.
   Extension* existing = GetExtensionById(id);
   if (existing) {
