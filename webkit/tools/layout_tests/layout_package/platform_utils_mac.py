@@ -158,7 +158,6 @@ class PlatformUtility(object):
     return PathFromBase('xcodebuild', target, 'image_diff')
 
   def LayoutTestHelperBinaryPath(self, target):
-    """Path to the layout_test helper binary, if needed, empty otherwise"""
     return PathFromBase('xcodebuild', target, 'layout_test_helper')
 
   def TestShellBinary(self):
