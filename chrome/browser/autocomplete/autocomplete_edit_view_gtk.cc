@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
@@ -75,7 +76,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
     : text_view_(NULL),
       tag_table_(NULL),
       text_buffer_(NULL),
-      base_tag_(NULL),
+      faded_text_tag_(NULL),
       secure_scheme_tag_(NULL),
       insecure_scheme_tag_(NULL),
       model_(new AutocompleteEditModel(this, controller, profile)),
@@ -90,7 +91,8 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       mark_set_handler_id_(0),
       button_1_pressed_(false),
       text_selected_during_click_(false),
-      text_view_focused_before_button_press_(false) {
+      text_view_focused_before_button_press_(false),
+      theme_provider_(GtkThemeProvider::GetFrom(profile)) {
   model_->set_popup_model(popup_view_->GetModel());
 }
 
@@ -137,10 +139,6 @@ void AutocompleteEditViewGtk::Init() {
         popup_window_mode_ ? kPopupWindowFontSize : kFontSize);
   }
 
-  // Override the background color for now.  http://crbug.com/12195
-  gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
-      &LocationBarViewGtk::kBackgroundColorByLevel[scheme_security_level_]);
-
   // The text view was floating.  It will now be owned by the alignment.
   gtk_container_add(GTK_CONTAINER(alignment_.get()), text_view_);
 
@@ -149,13 +147,13 @@ void AutocompleteEditViewGtk::Init() {
   // We want the tab key to move focus, not insert a tab.
   gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(text_view_), false);
 
-  base_tag_ = gtk_text_buffer_create_tag(text_buffer_,
+  faded_text_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kTextBaseColor, NULL);
   secure_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kSecureSchemeColor, NULL);
   insecure_scheme_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kInsecureSchemeColor, NULL);
-  black_text_tag_ = gtk_text_buffer_create_tag(text_buffer_,
+  normal_text_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", "#000000", NULL);
 
   // NOTE: This code used to connect to "changed", however this was fired too
@@ -194,6 +192,11 @@ void AutocompleteEditViewGtk::Init() {
       text_buffer_, "mark-set", G_CALLBACK(&HandleMarkSetThunk), this);
   g_signal_connect(text_view_, "drag-data-received",
                    G_CALLBACK(&HandleDragDataReceivedThunk), this);
+
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  theme_provider_->InitThemesFor(this);
 }
 
 void AutocompleteEditViewGtk::SetFocus() {
@@ -228,8 +231,7 @@ void AutocompleteEditViewGtk::Update(const TabContents* contents) {
   // TODO(deanm): This doesn't exactly match Windows.  There there is a member
   // background_color_.  I think we can get away with just the level though.
   if (changed_security_level) {
-    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
-        &LocationBarViewGtk::kBackgroundColorByLevel[security_level]);
+    SetBaseColor();
   }
 
   if (contents) {
@@ -426,6 +428,48 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
     TextChanged();
 
   return something_changed;
+}
+
+void AutocompleteEditViewGtk::Observe(NotificationType type,
+                                      const NotificationSource& source,
+                                      const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+
+  SetBaseColor();
+}
+
+void AutocompleteEditViewGtk::SetBaseColor() {
+  // If we're on a secure connection, ignore what the theme wants us to do
+  // and use a yellow background.
+  if (theme_provider_->UseGtkTheme() &&
+      scheme_security_level_ != ToolbarModel::SECURE) {
+    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL, NULL);
+
+    // Grab the text colors out of the style and set our tags to use them.
+    GtkStyle* style = gtk_rc_get_style(text_view_);
+
+    // style may be unrealized at this point, so calculate the halfway point
+    // between text[] and base[] manually instead of just using text_aa[].
+    GdkColor halfway_point;
+    halfway_point.pixel = 0;
+    halfway_point.red = (style->text[GTK_STATE_NORMAL].red +
+                         style->base[GTK_STATE_NORMAL].red) / 2;
+    halfway_point.green = (style->text[GTK_STATE_NORMAL].green +
+                           style->base[GTK_STATE_NORMAL].green) / 2;
+    halfway_point.blue = (style->text[GTK_STATE_NORMAL].blue +
+                          style->base[GTK_STATE_NORMAL].blue) / 2;
+
+    g_object_set(G_OBJECT(faded_text_tag_), "foreground-gdk",
+                 &halfway_point, NULL);
+    g_object_set(G_OBJECT(normal_text_tag_), "foreground-gdk",
+                 &style->text[GTK_STATE_NORMAL], NULL);
+  } else {
+    gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
+        &LocationBarViewGtk::kBackgroundColorByLevel[scheme_security_level_]);
+
+    g_object_set(G_OBJECT(faded_text_tag_), "foreground", kTextBaseColor, NULL);
+    g_object_set(G_OBJECT(normal_text_tag_), "foreground", "#000000", NULL);
+  }
 }
 
 void AutocompleteEditViewGtk::HandleBeginUserAction() {
@@ -781,7 +825,7 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   gtk_text_buffer_get_bounds(text_buffer_, &start, &end);
   gtk_text_buffer_remove_all_tags(text_buffer_, &start, &end);
   if (emphasize) {
-    gtk_text_buffer_apply_tag(text_buffer_, base_tag_, &start, &end);
+    gtk_text_buffer_apply_tag(text_buffer_, faded_text_tag_, &start, &end);
 
     // We've found a host name, give it more emphasis.
     gtk_text_buffer_get_iter_at_line_index(text_buffer_, &start, 0,
@@ -790,14 +834,10 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
     gtk_text_buffer_get_iter_at_line_index(text_buffer_, &end, 0,
                                            GetUTF8Offset(text,
                                                          parts.host.end()));
-    // The following forces the text color to black.  When we start obeying the
-    // user theme, we want to remove_all_tags (to get the user's default
-    // text color) rather than applying a color tag.  http://crbug.com/12195
-    gtk_text_buffer_apply_tag(text_buffer_, black_text_tag_, &start, &end);
+
+    gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
   } else {
-    // For now, force the text color to be black.  Eventually, we should allow
-    // the user to override via gtk theming.  http://crbug.com/12195
-    gtk_text_buffer_apply_tag(text_buffer_, black_text_tag_, &start, &end);
+    gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
   }
 
   // Emphasize the scheme for security UI display purposes (if necessary).
