@@ -1738,16 +1738,19 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
 
 // static
 bool BrowserWindowGtk::GetCustomFramePrefDefault() {
-  XID wm_window;
+  int wm_window = 0;
   if (!x11_util::GetIntProperty(x11_util::GetX11RootWindow(),
                                 "_NET_SUPPORTING_WM_CHECK",
-                                reinterpret_cast<int*>(&wm_window))) {
+                                &wm_window)) {
     return false;
   }
 
   std::string wm_name;
-  if (!x11_util::GetStringProperty(wm_window, "_NET_WM_NAME", &wm_name))
+  if (!x11_util::GetStringProperty(static_cast<XID>(wm_window),
+                                   "_NET_WM_NAME",
+                                   &wm_name)) {
     return false;
+  }
 
   // Ideally, we'd use the custom frame by default and just fall back on using
   // system decorations for the few (?) tiling window managers where it doesn't
