@@ -38,6 +38,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/validator_x86/addresses.h"
 
 struct NCDecoderState;
 struct NCValidatorState;
@@ -67,7 +68,7 @@ typedef void (*NCDecoderStats)(struct NCValidatorState *vstate);
 
 /* a new enumerated type for instructions */
 typedef enum {
-  NACLi_UNDEFINED=0,  /* uninitialized space; should never happen */
+  NACLi_UNDEFINED = 0, /* uninitialized space; should never happen */
   NACLi_ILLEGAL,      /* not allowed in NaCl */
   NACLi_INVALID,      /* not valid on any known x86 */
   NACLi_SYSTEM,       /* ring-0 instruction, not allowed in NaCl */
@@ -165,7 +166,7 @@ static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
 #endif  /* ifdef NEEDSNACLINSTTYPESTRING */
 
 typedef enum {
-  NOGROUP=0,
+  NOGROUP = 0,
   GROUP1,
   GROUP2,
   GROUP3,
@@ -196,17 +197,17 @@ typedef enum {
 
 /* information derived from the opcode, wherever it happens to be */
 typedef enum {
-  IMM_UNKNOWN=0,
-  IMM_NONE=1,
-  IMM_FIXED1=2,
-  IMM_FIXED2=3,
-  IMM_FIXED3=4,
-  IMM_FIXED4=5,
-  IMM_DATAV=6,
-  IMM_ADDRV=7,
-  IMM_GROUP3_F6=8,
-  IMM_GROUP3_F7=9,
-  IMM_FARPTR=10,
+  IMM_UNKNOWN = 0,
+  IMM_NONE = 1,
+  IMM_FIXED1 = 2,
+  IMM_FIXED2 = 3,
+  IMM_FIXED3 = 4,
+  IMM_FIXED4 = 5,
+  IMM_DATAV = 6,
+  IMM_ADDRV = 7,
+  IMM_GROUP3_F6 = 8,
+  IMM_GROUP3_F7 = 9,
+  IMM_FARPTR = 10,
   IMM_MOV_DATAV,     /* Special case for 64-bits MOVs (b8 through bf). */
   /* Don't add to this enum without update kNCDecodeImmediateTypeRange */
   /* and updating the tables below which are sized using this constant */
@@ -219,7 +220,7 @@ static const uint8_t kImmTypeToSize66[kNCDecodeImmediateTypeRange] =
 static const uint8_t kImmTypeToSize67[kNCDecodeImmediateTypeRange] =
   { 0, 0, 1, 2, 3, 4, 4, 2, 0, 0, 4, 4};
 static const uint8_t kImmTypeToSize[kNCDecodeImmediateTypeRange] =
- { 0, 0, 1, 2, 3, 4, 4, (NACL_TARGET_SUBARCH == 64 ? 8 : 4), 0, 0, 6, 4 };
+  { 0, 0, 1, 2, 3, 4, 4, (NACL_TARGET_SUBARCH == 64 ? 8 : 4), 0, 0, 6, 4 };
 
 #define NCDTABLESIZE 256
 
@@ -247,7 +248,7 @@ struct OpInfo {
 };
 
 struct InstInfo {
-  uint32_t vaddr;
+  PcAddress vaddr;
   uint8_t *maddr;
   uint8_t prefixbytes;  /* 0..4 */
   uint8_t hasopbyte2;
@@ -265,7 +266,7 @@ typedef struct NCDecoderState {
   uint8_t *mpc;
   uint8_t *nextbyte;
   uint8_t dbindex;  /* index into decodebuffer */
-  uint32_t vpc;
+  PcAddress vpc;
   const struct OpInfo *opinfo;
   struct InstInfo inst;
   struct NCValidatorState *vstate;
@@ -304,7 +305,7 @@ extern void NCDecodeRegisterCallbacks(NCDecoderAction decoderaction,
                                       NCDecoderStats segmentationerror,
                                       NCDecoderStats internalerror);
 
-extern void NCDecodeSegment(uint8_t *mbase, uint32_t vbase, size_t sz,
+extern void NCDecodeSegment(uint8_t *mbase, PcAddress vbase, MemorySize sz,
                             struct NCValidatorState *vstate);
 
 extern struct NCDecoderState *PreviousInst(const struct NCDecoderState *mstate,

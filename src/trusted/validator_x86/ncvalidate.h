@@ -31,6 +31,9 @@
 
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
+
+#include "native_client/src/trusted/validator_x86/addresses.h"
+
 /*
  * ncvalidate.h: exports for ncvalidate.c
  *
@@ -60,8 +63,8 @@ struct NCValidatorState;
  *    an initialized struct NCValidatorState * if everything is okay,
  *    else NULL
  */
-struct NCValidatorState *NCValidateInit(const uint32_t vbase,
-                                        const uint32_t vlimit,
+struct NCValidatorState *NCValidateInit(const PcAddress vbase,
+                                        const PcAddress vlimit,
                                         const uint8_t alignment);
 
 /* Validate a segment */

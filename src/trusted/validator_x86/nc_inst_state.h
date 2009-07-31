@@ -38,32 +38,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
-
-/* Define the width of an address based on the wordsize.
- * PcAddress - An address into memory.
- * PcNumber - Number to allow the computation of relative address offsets
- *            (both positive and negative).
- * MemorySize - The number of bytes in memory.
- */
-#if NACL_TARGET_SUBARCH == 64
-typedef uint64_t PcAddress;
-#define PRIxPcAddress    PRIx64
-#define PRIxPcAddressAll "016"PRIx64
-
-typedef int64_t PcNumber;
-
-typedef uint64_t MemorySize;
-#define PRIxMemorySize PRIx64
-#else
-typedef uint32_t PcAddress;
-#define PRIxPcAddress     PRIx32
-#define PRIxPcAddressAll "08"PRIx32
-
-typedef int32_t PcNumber;
-
-typedef uint32_t MemorySize;
-#define PRIxMemorySize PRIx32
-#endif
+#include "native_client/src/trusted/validator_x86/addresses.h"
 
 /* The meta model of an x86 opcode instruction. */
 struct Opcode;

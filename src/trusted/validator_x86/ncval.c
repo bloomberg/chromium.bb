@@ -104,7 +104,7 @@ int AnalyzeSections(ncfile *ncf, struct NCValidatorState *vstate) {
 
 
 static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
-  uint32_t vbase, vlimit;
+  PcAddress vbase, vlimit;
   struct NCValidatorState *vstate;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);

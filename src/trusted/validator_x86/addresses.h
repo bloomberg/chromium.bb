@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,48 +29,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-/*
- * portability macros for file descriptors, read, write, open, etc.
+/* addresses.h - Model memory addresses and memory size.
  */
 
-#ifndef NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_IO_H_
-#define NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_IO_H_ 1
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_x86_ADDRESSES_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_x86_ADDRESSES_H_
 
-#if NACL_WINDOWS
-/* disable warnings for deprecated _snprintf */
-#pragma warning(disable : 4996)
+/* Define the width of an address based on the wordsize.
+ * PcAddress - An address into memory.
+ * PcNumber - Number to allow the computation of relative address offsets
+ *            (both positive and negative).
+ * MemorySize - The number of bytes in memory.
+ */
+#if NACL_TARGET_SUBARCH == 64
+typedef uint64_t PcAddress;
+#define PRIxPcAddress    PRIx64
+#define PRIxPcAddressAll "016"PRIx64
 
-#include "io.h"
-#include "fcntl.h"
+typedef int64_t PcNumber;
 
-#define DUP2 _dup2
-#define OPEN _open
-#define FDOPEN _fdopen
-#define PORTABLE_DEV_NULL "nul"
-#define SNPRINTF _snprintf
-
-/* Seek method constants */
-#define SEEK_CUR    1
-#define SEEK_END    2
-#define SEEK_SET    0
-
-/* missing from win stdio.h and fcntl.h */
-
-/* from bits/fcntl.h */
-#define O_ACCMODE 0003
-
+typedef uint64_t MemorySize;
+#define PRIxMemorySize PRIx64
 #else
+typedef uint32_t PcAddress;
+#define PRIxPcAddress     PRIx32
+#define PRIxPcAddressAll "08"PRIx32
 
-#include <stdlib.h>
-#include <fcntl.h>
+typedef int32_t PcNumber;
 
-#define OPEN open
-#define DUP2 dup2
-#define FDOPEN fdopen
-#define PORTABLE_DEV_NULL  "/dev/null"
-#define SNPRINTF snprintf
-#define _O_BINARY 0
+typedef uint32_t MemorySize;
+#define PRIxMemorySize PRIx32
 #endif
 
-#endif  /* NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_IO_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_x86_ADDRESSES_H_ */

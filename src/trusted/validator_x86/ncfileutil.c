@@ -41,21 +41,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
-/*
- * TODO: move to portability.h and define an OPEN portability macro?
- * Drawback is that portability.h becomes a black hole of includes
- * that every source file includes but contains includes that are
- * mostly not needed, unnecessarily increasing compile time (even w/
- * pre-compiled headers) and obfuscating what system feature each
- * source file really needs.  Perhaps port/open.h, port/foo.h for
- * declarations associated with needing foo?
- */
-#if NACL_WINDOWS
-#include <io.h>
-#define open _open
-#else
-#include <unistd.h>
-#endif
+
+#include "native_client/src/include/portability_io.h"
 
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
 
@@ -79,6 +66,7 @@ static Elf_Addr NCPageRound(Elf_Addr v) {
 /***********************************************************************/
 /* Loading a NC executable from a host file */
 static off_t readat(const int fd, void *buf, const off_t sz, const size_t at) {
+  /* TODO(karl) fix types for off_t and size_t so that the work for 64-bits */
   size_t sofar = 0;
   int nread;
   char *cbuf = (char *)buf;
@@ -88,6 +76,7 @@ static off_t readat(const int fd, void *buf, const off_t sz, const size_t at) {
     return -1;
   }
 
+  /* TODO(robertm) Figure out if O_BINARY flag fixes this. */
   /* Strangely this loop is needed on Windows. It seems the read()   */
   /* implementation doesn't always return as many bytes as requested */
   /* so you have to keep on trying.                                  */
@@ -158,7 +147,8 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
     return -1;
   }
   phsize = h.e_phnum * sizeof(*ncf->pheaders);
-  nread = readat(fd, ncf->pheaders, phsize, h.e_phoff);
+  /* TODO(karl) Remove the cast to size_t, or verify size. */
+  nread = readat(fd, ncf->pheaders, phsize, (size_t) h.e_phoff);
   if (nread < 0 || (size_t) nread < phsize) return -1;
 
   /* Iterate through the program headers to find the virtual */
@@ -181,7 +171,8 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
     fprintf(stderr, "nc_load(%s): vmemlo is not aligned\n", ncf->fname);
     return -1;
   }
-  ncf->data = (uint8_t *)calloc(1, ncf->size);
+  /* TODO(karl) Remove the cast to size_t, or verify size. */
+  ncf->data = (uint8_t *)calloc(1, (size_t) ncf->size);
   if (NULL == ncf->data) {
     fprintf(stderr, "nc_load(%s): calloc(1, %d) failed\n",
             ncf->fname, (int)ncf->size);
@@ -197,9 +188,9 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
     if (nc_rules) {
       assert(ncf->size >= NCPageRound(p->p_vaddr - ncf->vbase + p->p_memsz));
     }
-
+    /* TODO(karl) Remove the cast to off_t, or verify value in range. */
     nread = readat(fd, &(ncf->data[p->p_vaddr - ncf->vbase]),
-                   p->p_filesz, p->p_offset);
+                   (off_t) p->p_filesz, (off_t) p->p_offset);
     if (nread < 0 || (size_t) nread < p->p_filesz) {
       fprintf(
           stderr,
@@ -213,11 +204,12 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   shsize = ncf->shnum * sizeof(*ncf->sheaders);
   ncf->sheaders = (Elf_Shdr *)calloc(1, shsize);
   if (NULL == ncf->sheaders) {
-    fprintf(stderr, "nc_load(%s): calloc(1, %d) failed\n",
-            ncf->fname, (int)shsize);
+    fprintf(stderr, "nc_load(%s): calloc(1, %"PRIdS") failed\n",
+            ncf->fname, shsize);
     return -1;
   }
-  nread = readat(fd, ncf->sheaders, shsize, h.e_shoff);
+  /* TODO(karl) Remove the cast to size_t, or verify value in range. */
+  nread = readat(fd, ncf->sheaders, shsize, (size_t) h.e_shoff);
   if (nread < 0 || (size_t) nread < shsize) {
     fprintf(stderr, "nc_load(%s): could not read section headers\n",
             ncf->fname);
@@ -231,11 +223,8 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
 ncfile *nc_loadfile_depending(const char *filename, int nc_rules) {
   ncfile *ncf;
   int fd;
-  int rdflags = O_RDONLY;
-#if NACL_WINDOWS
-  rdflags |= _O_BINARY;
-#endif
-  fd = open(filename, rdflags);
+  int rdflags = O_RDONLY | _O_BINARY;
+  fd = OPEN(filename, rdflags);
   if (fd < 0) return NULL;
 
   /* Allocate the ncfile structure */
@@ -261,10 +250,11 @@ void nc_freefile(ncfile *ncf) {
 
 /***********************************************************************/
 
-void GetVBaseAndLimit(ncfile *ncf, uint32_t *vbase, uint32_t *vlimit) {
+void GetVBaseAndLimit(ncfile *ncf, PcAddress *vbase, PcAddress *vlimit) {
   int ii;
-  uint32_t base = 0xffffffff;
-  uint32_t limit = 0;
+  /* TODO(karl) - Define so constant applies to 64-bit pc address. */
+  PcAddress base = 0xffffffff;
+  PcAddress limit = 0;
 
   for (ii = 0; ii < ncf->shnum; ii++) {
     if ((ncf->sheaders[ii].sh_flags & SHF_EXECINSTR) == SHF_EXECINSTR) {

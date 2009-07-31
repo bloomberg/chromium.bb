@@ -439,9 +439,9 @@ struct NCDecoderState *PreviousInst(const struct NCDecoderState* mstate,
 }
 
 /* The actual decoder */
-void NCDecodeSegment(uint8_t *mbase, uint32_t vbase, size_t size,
+void NCDecodeSegment(uint8_t *mbase, PcAddress vbase, MemorySize size,
                      struct NCValidatorState* vstate) {
-  const uint32_t vlimit = vbase + size;
+  const PcAddress vlimit = vbase + size;
   struct NCDecoderState decodebuffer[kDecodeBufferSize];
   struct NCDecoderState *mstate;
   int dbindex;
@@ -458,11 +458,12 @@ void NCDecodeSegment(uint8_t *mbase, uint32_t vbase, size_t size,
   mstate->nextbyte = mbase;
   mstate->vpc = vbase;
 
-  DEBUG( printf("DecodeSegment(%x-%x)\n", vbase, vlimit) );
+  DEBUG( printf("DecodeSegment(%"PRIxPcAddress"-%"PRIxPcAddress")\n",
+                vbase, vlimit) );
   g_NewSegment(mstate->vstate);
   while (mstate->vpc < vlimit) {
-    uint32_t newpc;
-    DEBUG( printf("Decoding instruction at %x:\n", mstate->vpc) );
+    PcAddress newpc;
+    DEBUG( printf("Decoding instruction at %"PRIxPcAddress":\n", mstate->vpc) );
     InitDecoder(mstate);
     ConsumePrefixBytes(mstate);
     ConsumeOpcodeBytes(mstate);
@@ -472,9 +473,9 @@ void NCDecodeSegment(uint8_t *mbase, uint32_t vbase, size_t size,
     MaybeGet3ByteOpInfo(mstate);
     /* now scrutinize this instruction */
     newpc = mstate->vpc + mstate->inst.length;
-    DEBUG( printf("new pc = %x\n", newpc) );
+    DEBUG( printf("new pc = %"PRIxPcAddress"\n", newpc) );
     if (newpc > vlimit) {
-      fprintf(stdout, "%x > %x\n", newpc, vlimit);
+      fprintf(stdout, "%"PRIxPcAddress" > %"PRIxPcAddress"\n", newpc, vlimit);
       ErrorSegmentation(vstate);
       break;
     }

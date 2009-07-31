@@ -37,6 +37,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/trusted/validator_x86/addresses.h"
 
 EXTERN_C_BEGIN
 
@@ -52,8 +53,8 @@ static const Elf_Addr kNCFileUtilPageSize = (1 << 12);
 
 typedef struct {
   const char* fname; /* name of loaded file */
-  uint32_t vbase;    /* base address in virtual memory */
-  size_t size;       /* size of program memory         */
+  PcAddress vbase;   /* base address in virtual memory */
+  MemorySize size;   /* size of program memory         */
   uint8_t* data;     /* the actual loaded bytes        */
   Elf_Half phnum;  /* number of Elf program headers */
   Elf_Phdr* pheaders;  /* copy of the Elf program headers */
@@ -74,7 +75,7 @@ static INLINE ncfile *nc_loadfile(const char *filename) {
 
 void nc_freefile(ncfile* ncf);
 
-void GetVBaseAndLimit(ncfile* ncf, uint32_t* vbase, uint32_t* vlimit);
+void GetVBaseAndLimit(ncfile* ncf, PcAddress* vbase, PcAddress* vlimit);
 
 EXTERN_C_END
 

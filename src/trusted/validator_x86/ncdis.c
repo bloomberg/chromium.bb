@@ -80,7 +80,7 @@ void Info(const char *fmt, ...) {
   va_end(ap);
 }
 
-static void AnalyzeSegment(uint8_t* mbase, uint32_t vbase, size_t size) {
+static void AnalyzeSegment(uint8_t* mbase, PcAddress vbase, MemorySize size) {
   if (FLAGS_use_iter) {
     NcSegment segment;
     NcInstIter* iter;
