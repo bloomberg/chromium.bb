@@ -55,7 +55,9 @@ Hooks
                The action is executed in the same directory as the .gclient
                file.  If the first item in the list is the string "python",
                the current Python interpreter (sys.executable) will be used
-               to run the command.
+               to run the command. If the list contains string "$matching_files"
+               it will be removed from the list and the list will be extended
+               by the list of matching files.
 
   Example:
     hooks = [
@@ -859,7 +861,7 @@ class SCMWrapper(object):
           command.extend(['--revision', str(revision)])
         RunSVNAndGetFileList(command, self._root_dir, file_list)
         return
-          
+
 
     # If the provided url has a revision number that matches the revision
     # number of the existing directory, then we don't need to bother updating.
@@ -1220,7 +1222,7 @@ class GClient(object):
         deps[d] = url
     return deps
 
-  def _RunHookAction(self, hook_dict):
+  def _RunHookAction(self, hook_dict, matching_file_list):
     """Runs the action from a single hook.
     """
     command = hook_dict['action'][:]
@@ -1229,6 +1231,10 @@ class GClient(object):
       # Python script.  Run it by starting a new copy of the same
       # interpreter.
       command[0] = sys.executable
+
+    if '$matching_files' in command:
+      command.remove('$matching_files')
+      command.extend(matching_file_list)
 
     # Use a discrete exit status code of 2 to indicate that a hook action
     # failed.  Users of this script may wish to treat hook action failures
@@ -1256,22 +1262,16 @@ class GClient(object):
     # changed so we always run all hooks.
     if self._options.force or is_using_git:
       for hook_dict in hooks:
-        self._RunHookAction(hook_dict)
+        self._RunHookAction(hook_dict, [])
       return
 
     # Run hooks on the basis of whether the files from the gclient operation
     # match each hook's pattern.
     for hook_dict in hooks:
       pattern = re.compile(hook_dict['pattern'])
-      for file in file_list:
-        if not pattern.search(file):
-          continue
-
-        self._RunHookAction(hook_dict)
-
-        # The hook's action only runs once.  Don't bother looking for any
-        # more matches.
-        break
+      matching_file_list = [file for file in file_list if pattern.search(file)]
+      if matching_file_list:
+        self._RunHookAction(hook_dict, matching_file_list)
 
   def RunOnDeps(self, command, args):
     """Runs a command on each dependency in a client and its dependencies.
@@ -1552,7 +1552,7 @@ def DoConfig(options, args):
 
 def DoExport(options, args):
   """Handle the export subcommand.
-  
+
   Raises:
     Error: on usage error
   """
