@@ -18,8 +18,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
-#if defined (OS_WIN)
-#include "views/widget/accelerator_handler.h"
+#if defined(TOOLKIT_VIEWS)
+#include "views/focus/accelerator_handler.h"
 #endif
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -260,9 +260,11 @@ void RunMessageLoop() {
   MessageLoopForUI* loop = MessageLoopForUI::current();
   bool did_allow_task_nesting = loop->NestableTasksAllowed();
   loop->SetNestableTasksAllowed(true);
-#if defined (OS_WIN)
+#if defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler handler;
   loop->Run(&handler);
+#elif defined(OS_LINUX)
+  loop->Run(NULL);
 #else
   loop->Run();
 #endif

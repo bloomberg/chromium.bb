@@ -5,9 +5,6 @@
 #ifndef VIEWS_FOCUS_FOCUS_MANAGER_H_
 #define VIEWS_FOCUS_FOCUS_MANAGER_H_
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
 #include <vector>
 #include <map>
 #include <list>
@@ -140,13 +137,10 @@ class FocusManager {
   explicit FocusManager(Widget* widget);
   ~FocusManager();
 
-#if defined(OS_WIN)
-  // OnKeyDown covers WM_KEYDOWN and WM_SYSKEYDOWN.
-  bool OnKeyDown(HWND window,
-                 UINT message,
-                 WPARAM wparam,
-                 LPARAM lparam);
-#endif
+  // Processes the passed key event for accelerators and tab traversal.
+  // Returns false if the event has been consumed and should not be processed
+  // further.
+  bool OnKeyEvent(const KeyEvent& event);
 
   // Returns true is the specified is part of the hierarchy of the window
   // associated with this FocusManager.

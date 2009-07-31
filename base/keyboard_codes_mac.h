@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BASE_KEYBOARD_CODES_POSIX_H_
-#define BASE_KEYBOARD_CODES_POSIX_H_
+#ifndef BASE_KEYBOARD_CODES_MAC_H_
+#define BASE_KEYBOARD_CODES_MAC_H_
 
 namespace base {
 
@@ -205,4 +205,4 @@ enum {
 
 }  // namespace views
 
-#endif  // BASE_KEYBOARD_CODES_POSIX_H_
+#endif  // BASE_KEYBOARD_CODES_MAC_H_

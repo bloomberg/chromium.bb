@@ -25,7 +25,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"
-#include "views/widget/accelerator_handler.h"
+#include "views/focus/accelerator_handler.h"
 #include "views/window/window.h"
 
 // Displays a warning message if the user is running chrome on windows 2000.

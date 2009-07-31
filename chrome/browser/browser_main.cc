@@ -107,13 +107,13 @@
 #include "net/http/http_network_layer.h"
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
-#include "views/widget/accelerator_handler.h"
 #endif  // defined(OS_WIN)
 
 #if defined(TOOLKIT_GTK)
 #include "chrome/common/gtk_util.h"
 #elif defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/chrome_views_delegate.h"
+#include "views/focus/accelerator_handler.h"
 #endif
 
 namespace Platform {
@@ -191,9 +191,11 @@ StringPiece NetResourceProvider(int key) {
 }
 
 void RunUIMessageLoop(BrowserProcess* browser_process) {
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
+#elif defined(OS_LINUX)
+  MessageLoopForUI::current()->Run(NULL);
 #elif defined(OS_POSIX)
   MessageLoopForUI::current()->Run();
 #endif

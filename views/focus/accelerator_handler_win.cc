@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/widget/accelerator_handler.h"
+#include "views/focus/accelerator_handler.h"
 
+#include "views/event.h"
 #include "views/focus/focus_manager.h"
 
 namespace views {
@@ -18,14 +19,16 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
     FocusManager* focus_manager =
         FocusManager::GetFocusManagerForNativeView(msg.hwnd);
     if (focus_manager) {
-      // FocusManager::OnKeyDown and OnKeyUp return false if this message has
-      // been consumed and should not be propagated further.
       switch (msg.message) {
         case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-          process_message = focus_manager->OnKeyDown(msg.hwnd, msg.message,
-              msg.wParam, msg.lParam);
+        case WM_SYSKEYDOWN: {
+          KeyEvent event(Event::ET_KEY_PRESSED,
+                         msg.wParam,
+                         msg.lParam & 0xFFFF,
+                         (msg.lParam & 0xFFFF0000) >> 16);
+          process_message = focus_manager->OnKeyEvent(event);
           break;
+        }
       }
     }
   }

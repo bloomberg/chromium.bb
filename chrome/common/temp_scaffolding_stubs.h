@@ -156,9 +156,6 @@ struct ViewHostMsg_DidPrintPage_Params;
 
 namespace views {
 
-class AcceleratorHandler {
-};
-
 #if !defined(TOOLKIT_VIEWS)
 class MenuItemView {
  public:

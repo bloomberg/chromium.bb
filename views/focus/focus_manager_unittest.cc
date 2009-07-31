@@ -10,6 +10,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/gfx/rect.h"
+#include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/background.h"
@@ -21,19 +22,28 @@
 #include "views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
+#if defined(OS_WIN)
 #include "views/controls/native_control.h"
 #include "views/controls/scroll_view.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/widget/accelerator_handler.h"
+#endif
+#include "views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
-#include "views/widget/widget_win.h"
+#include "views/window/window.h"
 #include "views/window/window_delegate.h"
+
+#if defined(OS_WIN)
+#include "views/widget/widget_win.h"
 #include "views/window/window_win.h"
+#else
+#include "views/window/window_gtk.h"
+#endif
 
 namespace views {
 
+#if defined(OS_WIN)
 static const int kWindowWidth = 600;
 static const int kWindowHeight = 500;
 
@@ -93,9 +103,95 @@ static const int kHelpLinkID = count++;  // 45
 static const int kThumbnailContainerID = count++;
 static const int kThumbnailStarID = count++;
 static const int kThumbnailSuperStarID = count++;
+#endif
 
-class FocusManagerTest;
+class FocusManagerTest : public testing::Test, public WindowDelegate {
+ public:
+  FocusManagerTest()
+      : window_(NULL),
+        content_view_(NULL),
+        focus_change_listener_(NULL) {
+#if defined(OS_WIN)
+    OleInitialize(NULL);
+#endif
+  }
 
+  ~FocusManagerTest() {
+#if defined(OS_WIN)
+    OleUninitialize();
+#endif
+  }
+
+  virtual void SetUp() {
+    window_ = Window::CreateChromeWindow(NULL, bounds(), this);
+    InitContentView();
+    window_->Show();
+  }
+
+  virtual void TearDown() {
+    if (focus_change_listener_)
+      GetFocusManager()->RemoveFocusChangeListener(focus_change_listener_);
+    //    window_->CloseNow();
+    window_->Close();
+
+    // Flush the message loop to make Purify happy.
+    message_loop()->RunAllPending();
+  }
+
+  FocusManager* GetFocusManager() {
+#if defined(OS_WIN)
+    return static_cast<WindowWin*>(window_)->GetFocusManager();
+#elif defined(OS_LINUX)
+    return static_cast<WindowGtk*>(window_)->GetFocusManager();
+#elif
+    NOTIMPLEMENTED();
+#endif
+  }
+
+  // WindowDelegate Implementation.
+  virtual View* GetContentsView() {
+    if (!content_view_)
+      content_view_ = new View();
+    return content_view_;
+  }
+
+  virtual void InitContentView() {
+  }
+
+ protected:
+  virtual gfx::Rect bounds() {
+    return gfx::Rect(0, 0, 500, 500);
+  }
+
+#if defined(OS_WIN)
+  // Mocks activating/deactivating the window.
+  void SimulateActivateWindow() {
+    ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_ACTIVE, NULL);
+  }
+  void SimulateDeactivateWindow() {
+    ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_INACTIVE, NULL);
+  }
+#endif
+
+  MessageLoopForUI* message_loop() { return &message_loop_; }
+
+  Window* window_;
+  View* content_view_;
+
+  void AddFocusChangeListener(FocusChangeListener* listener) {
+    ASSERT_FALSE(focus_change_listener_);
+    focus_change_listener_ = listener;
+    GetFocusManager()->AddFocusChangeListener(listener);
+  }
+
+ private:
+  FocusChangeListener* focus_change_listener_;
+  MessageLoopForUI message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusManagerTest);
+};
+
+#if defined(OS_WIN)
 // BorderView is a NativeControl that creates a tab control as its child and
 // takes a View to add as the child of the tab control. The tab control is used
 // to give a nice background for the view. At some point we'll have a real
@@ -181,81 +277,6 @@ class DummyComboboxModel : public Combobox::Model {
   virtual std::wstring GetItemAt(Combobox* source, int index) {
     return L"Item " + IntToWString(index);
   }
-};
-
-class FocusManagerTest : public testing::Test, public WindowDelegate {
- public:
-  FocusManagerTest()
-      : window_(NULL),
-        focus_change_listener_(NULL),
-        content_view_(NULL) {
-    OleInitialize(NULL);
-  }
-
-  ~FocusManagerTest() {
-    OleUninitialize();
-  }
-
-  virtual void SetUp() {
-    window_ = static_cast<WindowWin*>(
-        Window::CreateChromeWindow(NULL, bounds(), this));
-    InitContentView();
-    window_->Show();
-  }
-
-  virtual void TearDown() {
-    if (focus_change_listener_)
-      GetFocusManager()->RemoveFocusChangeListener(focus_change_listener_);
-    window_->CloseNow();
-
-    // Flush the message loop to make Purify happy.
-    message_loop()->RunAllPending();
-  }
-
-  FocusManager* GetFocusManager() {
-    return FocusManager::GetFocusManagerForNativeView(
-        window_->GetNativeWindow());
-  }
-
-  // WindowDelegate Implementation.
-  virtual View* GetContentsView() {
-    if (!content_view_)
-      content_view_ = new View();
-    return content_view_;
-  }
-
-  virtual void InitContentView() {
-  }
-
- protected:
-  virtual gfx::Rect bounds() {
-    return gfx::Rect(0, 0, 500, 500);
-  }
-
-  // Mocks activating/deactivating the window.
-  void SimulateActivateWindow() {
-    ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_ACTIVE, NULL);
-  }
-  void SimulateDeactivateWindow() {
-    ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_INACTIVE, NULL);
-  }
-
-  MessageLoopForUI* message_loop() { return &message_loop_; }
-
-  WindowWin* window_;
-  View* content_view_;
-
-  void AddFocusChangeListener(FocusChangeListener* listener) {
-    ASSERT_FALSE(focus_change_listener_);
-    focus_change_listener_ = listener;
-    GetFocusManager()->AddFocusChangeListener(listener);
-  }
-
- private:
-  FocusChangeListener* focus_change_listener_;
-  MessageLoopForUI message_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusManagerTest);
 };
 
 class FocusTraversalTest : public FocusManagerTest {
@@ -975,6 +996,8 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   }
 }
 
+#endif  // WIN_OS
+
 // Counts accelerator calls.
 class TestAcceleratorTarget : public AcceleratorTarget {
  public:
@@ -997,8 +1020,8 @@ class TestAcceleratorTarget : public AcceleratorTarget {
 
 TEST_F(FocusManagerTest, CallsNormalAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
-  Accelerator return_accelerator(VK_RETURN, false, false, false);
-  Accelerator escape_accelerator(VK_ESCAPE, false, false, false);
+  Accelerator return_accelerator(base::VKEY_RETURN, false, false, false);
+  Accelerator escape_accelerator(base::VKEY_ESCAPE, false, false, false);
 
   TestAcceleratorTarget return_target(true);
   TestAcceleratorTarget escape_target(true);
@@ -1115,7 +1138,7 @@ class SelfUnregisteringAcceleratorTarget : public AcceleratorTarget {
 
 TEST_F(FocusManagerTest, CallsSelfDeletingAcceleratorTarget) {
   FocusManager* focus_manager = GetFocusManager();
-  Accelerator return_accelerator(VK_RETURN, false, false, false);
+  Accelerator return_accelerator(base::VKEY_RETURN, false, false, false);
   SelfUnregisteringAcceleratorTarget target(return_accelerator, focus_manager);
   EXPECT_EQ(target.accelerator_count(), 0);
   EXPECT_EQ(NULL,

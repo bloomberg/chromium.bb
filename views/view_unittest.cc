@@ -7,6 +7,7 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/path.h"
 #include "base/clipboard.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/background.h"
@@ -1058,7 +1059,8 @@ class DefaultButtonTest : public ViewTest {
 
   void SimularePressingEnterAndCheckDefaultButton(ButtonID button_id) {
 #if defined(OS_WIN)
-    focus_manager_->OnKeyDown(native_window_, WM_KEYDOWN, VK_RETURN, 0);
+    KeyEvent event(Event::ET_KEY_PRESSED, VK_RETURN, 0, 0);
+    focus_manager_->OnKeyEvent(event);
 #else
     // TODO(platform)
     return;

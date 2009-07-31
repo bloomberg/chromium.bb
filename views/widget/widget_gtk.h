@@ -99,10 +99,14 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
   virtual ThemeProvider* GetThemeProvider() const;
+  virtual FocusManager* GetFocusManager();
 
   // MessageLoopForUI::Observer.
-  virtual void WillProcessEvent(GdkEvent* event) {}
+  virtual void WillProcessEvent(GdkEvent* event);
   virtual void DidProcessEvent(GdkEvent* event);
+
+  // Retrieves the WindowGtk associated with |widget|.
+  static WindowGtk* GetWindowForNative(GtkWidget* widget);
 
  protected:
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
@@ -135,8 +139,7 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   // is true.
   virtual bool ReleaseCaptureOnMouseReleased() { return true; }
 
-  // Sets and retrieves the WidgetGtk in the userdata section of the widget.
-  static WindowGtk* GetWindowForNative(GtkWidget* widget);
+  // Sets the WindowGtk in the userdata section of the widget.
   static void SetWindowForNative(GtkWidget* widget, WindowGtk* window);
 
   // Are we a subclass of WindowGtk?
@@ -214,6 +217,12 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
   // must be destroyed AFTER root_view_.
   scoped_ptr<TooltipManagerGtk> tooltip_manager_;
+
+  // The focus manager keeping track of focus for this Widget and any of its
+  // children.  NULL for non top-level widgets.
+  // WARNING: RootView's destructor calls into the FocusManager. As such, this
+  // must be destroyed AFTER root_view_.
+  scoped_ptr<FocusManager> focus_manager_;
 
   // The root of the View hierarchy attached to this window.
   scoped_ptr<RootView> root_view_;

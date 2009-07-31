@@ -141,9 +141,9 @@ void SearchProviderTest::RunTillProviderDone() {
     return;
 
   quit_when_done_ = true;
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   message_loop_.Run(NULL);
-#elif defined(OS_POSIX)
+#else
   message_loop_.Run();
 #endif
 }

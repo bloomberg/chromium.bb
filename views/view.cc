@@ -995,8 +995,6 @@ void View::RegisterPendingAccelerators() {
     return;
   }
 
-  // TODO(port): Fix this once we have a FocusManger for Linux.
-#if defined(OS_WIN)
   FocusManager* focus_manager = GetFocusManager();
   if (!focus_manager) {
     // Some crash reports seem to show that we may get cases where we have no
@@ -1011,7 +1009,6 @@ void View::RegisterPendingAccelerators() {
     focus_manager->RegisterAccelerator(*iter, this);
   }
   registered_accelerator_count_ = accelerators_->size();
-#endif
 }
 
 void View::UnregisterAccelerators() {

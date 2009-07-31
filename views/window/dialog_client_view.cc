@@ -8,6 +8,7 @@
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/keyboard_codes.h"
 #include "grit/app_strings.h"
 #include "views/controls/button/native_button.h"
 #include "views/standard_layout.h"
@@ -128,13 +129,9 @@ void DialogClientView::ShowDialogButtons() {
     ok_button_->SetGroup(kButtonGroup);
     if (is_default_button)
       default_button_ = ok_button_;
-#if defined(OS_WIN)
     if (!(buttons & MessageBoxFlags::DIALOGBUTTON_CANCEL))
-      ok_button_->AddAccelerator(Accelerator(VK_ESCAPE, false, false, false));
-#else
-    NOTIMPLEMENTED();
-    // TODO(port): add accelerators
-#endif
+      ok_button_->AddAccelerator(Accelerator(base::VKEY_ESCAPE,
+                                             false, false, false));
     AddChildView(ok_button_);
   }
   if (buttons & MessageBoxFlags::DIALOGBUTTON_CANCEL && !cancel_button_) {
@@ -154,12 +151,8 @@ void DialogClientView::ShowDialogButtons() {
                                       MessageBoxFlags::DIALOGBUTTON_CANCEL,
                                       label, is_default_button);
     cancel_button_->SetGroup(kButtonGroup);
-#if defined(OS_WIN)
-    cancel_button_->AddAccelerator(Accelerator(VK_ESCAPE, false, false, false));
-#else
-    NOTIMPLEMENTED();
-    // TODO(port): add accelerators
-#endif
+    cancel_button_->AddAccelerator(Accelerator(base::VKEY_ESCAPE,
+                                               false, false, false));
     if (is_default_button)
       default_button_ = ok_button_;
     AddChildView(cancel_button_);
@@ -167,12 +160,7 @@ void DialogClientView::ShowDialogButtons() {
   if (!buttons) {
     // Register the escape key as an accelerator which will close the window
     // if there are no dialog buttons.
-#if defined(OS_WIN)
-    AddAccelerator(Accelerator(VK_ESCAPE, false, false, false));
-#else
-    NOTIMPLEMENTED();
-    // TODO(port): add accelerators
-#endif
+    AddAccelerator(Accelerator(base::VKEY_ESCAPE, false, false, false));
   }
 }
 
@@ -370,12 +358,8 @@ gfx::Size DialogClientView::GetPreferredSize() {
 }
 
 bool DialogClientView::AcceleratorPressed(const Accelerator& accelerator) {
-#if defined(OS_WIN)
-  DCHECK(accelerator.GetKeyCode() == VK_ESCAPE);  // We only expect Escape key.
-#else
-  NOTIMPLEMENTED();
-  // TODO(port): add accelerators
-#endif
+  // We only expect Escape key.
+  DCHECK(accelerator.GetKeyCode() == base::VKEY_ESCAPE);
   Close();
   return true;
 }

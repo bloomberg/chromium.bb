@@ -70,6 +70,8 @@ WidgetGtk::WidgetGtk(Type type)
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       delete_on_destroy_(true),
       transparent_(false) {
+  if (type_ != TYPE_CHILD)
+    focus_manager_.reset(new FocusManager(this));
 }
 
 WidgetGtk::~WidgetGtk() {
@@ -398,8 +400,15 @@ ThemeProvider* WidgetGtk::GetThemeProvider() const {
   return default_theme_provider_.get();
 }
 
+FocusManager* WidgetGtk::GetFocusManager() {
+  return focus_manager_.get();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, MessageLoopForUI::Observer implementation:
+
+void WidgetGtk::WillProcessEvent(GdkEvent* event) {
+}
 
 void WidgetGtk::DidProcessEvent(GdkEvent* event) {
   if (root_view_->NeedsPainting(true))
@@ -518,12 +527,12 @@ gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
 }
 
 gboolean WidgetGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
-  KeyEvent key_event(event);
+  KeyEvent key_event(event, false);
   return root_view_->ProcessKeyEvent(key_event);
 }
 
 gboolean WidgetGtk::OnKeyRelease(GtkWidget* widget, GdkEventKey* event) {
-  KeyEvent key_event(event);
+  KeyEvent key_event(event, false);
   return root_view_->ProcessKeyEvent(key_event);
 }
 
