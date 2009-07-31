@@ -163,6 +163,75 @@ bool GetWindowRect(XID window, gfx::Rect* rect) {
   return true;
 }
 
+bool GetIntProperty(XID window, const std::string& property_name, int* value) {
+  Atom property_atom = gdk_x11_get_xatom_by_name_for_display(
+      gdk_display_get_default(), property_name.c_str());
+
+  Atom type = None;
+  int format = 0;  // size in bits of each item in 'property'
+  long unsigned int num_items = 0, remaining_bytes = 0;
+  unsigned char* property = NULL;
+
+  int result = XGetWindowProperty(GetXDisplay(),
+                                  window,
+                                  property_atom,
+                                  0,      // offset into property data to read
+                                  1,      // max length to get
+                                  False,  // deleted
+                                  AnyPropertyType,
+                                  &type,
+                                  &format,
+                                  &num_items,
+                                  &remaining_bytes,
+                                  &property);
+  if (result != Success)
+    return false;
+
+  if (format != 32 || num_items != 1) {
+    XFree(property);
+    return false;
+  }
+
+  *value = *(reinterpret_cast<int*>(property));
+  XFree(property);
+  return true;
+}
+
+bool GetStringProperty(
+    XID window, const std::string& property_name, std::string* value) {
+  Atom property_atom = gdk_x11_get_xatom_by_name_for_display(
+      gdk_display_get_default(), property_name.c_str());
+
+  Atom type = None;
+  int format = 0;  // size in bits of each item in 'property'
+  long unsigned int num_items = 0, remaining_bytes = 0;
+  unsigned char* property = NULL;
+
+  int result = XGetWindowProperty(GetXDisplay(),
+                                  window,
+                                  property_atom,
+                                  0,      // offset into property data to read
+                                  1024,   // max length to get
+                                  False,  // deleted
+                                  AnyPropertyType,
+                                  &type,
+                                  &format,
+                                  &num_items,
+                                  &remaining_bytes,
+                                  &property);
+  if (result != Success)
+    return false;
+
+  if (format != 8) {
+    XFree(property);
+    return false;
+  }
+
+  value->assign(reinterpret_cast<char*>(property), num_items);
+  XFree(property);
+  return true;
+}
+
 // Returns true if |window| is a named window.
 bool IsWindowNamed(XID window) {
   XTextProperty prop;

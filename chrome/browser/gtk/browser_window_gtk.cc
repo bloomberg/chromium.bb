@@ -392,6 +392,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        is_active_(true) {
   use_custom_frame_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
+
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   g_object_set_data(G_OBJECT(window_), kBrowserWindowKey, this);
   gtk_widget_add_events(GTK_WIDGET(window_), GDK_BUTTON_PRESS_MASK |
@@ -1190,6 +1191,15 @@ GtkWindow* BrowserWindowGtk::GetBrowserWindowForXID(XID xid) {
   return BrowserWindowGtk::xid_map_.find(xid)->second;
 }
 
+// static
+void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
+  bool custom_frame_default = false;
+  if (!prefs->HasPrefPath(prefs::kUseCustomChromeFrame))
+    custom_frame_default = GetCustomFramePrefDefault();
+  prefs->RegisterBooleanPref(
+      prefs::kUseCustomChromeFrame, custom_frame_default);
+}
+
 void BrowserWindowGtk::SetGeometryHints() {
   // Allow the user to resize us arbitrarily small.
   GdkGeometry geometry;
@@ -1724,4 +1734,35 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
     return true;
   }
   NOTREACHED();
+}
+
+// static
+bool BrowserWindowGtk::GetCustomFramePrefDefault() {
+  XID wm_window;
+  if (!x11_util::GetIntProperty(x11_util::GetX11RootWindow(),
+                                "_NET_SUPPORTING_WM_CHECK",
+                                reinterpret_cast<int*>(&wm_window))) {
+    return false;
+  }
+
+  std::string wm_name;
+  if (!x11_util::GetStringProperty(wm_window, "_NET_WM_NAME", &wm_name))
+    return false;
+
+  // Ideally, we'd use the custom frame by default and just fall back on using
+  // system decorations for the few (?) tiling window managers where it doesn't
+  // make sense (e.g. awesome, ion3, ratpoison, xmonad, etc.).  The EWMH
+  // _NET_SUPPORTING_WM property makes it easy to look up a name for the current
+  // WM, but at least some of the WMs in the latter group don't set it.
+  // Instead, we default to using system decorations for all WMs and
+  // special-case the ones where the custom frame should be used.  These names
+  // are taken from the WMs' source code.
+  return (wm_name == "Blackbox" ||
+          wm_name == "compiz" ||
+          wm_name == "e16" ||  // Enlightenment DR16
+          wm_name == "Fluxbox" ||
+          wm_name == "KWin" ||
+          wm_name == "Metacity" ||
+          wm_name == "Openbox" ||
+          wm_name == "Xfwm4");
 }

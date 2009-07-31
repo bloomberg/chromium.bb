@@ -30,12 +30,16 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX)
 #include "chrome/browser/task_manager.h"
 #endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/views/keyword_editor_view.h"
+#endif
+
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/browser_window_gtk.h"
 #endif
 
 namespace browser {
@@ -56,7 +60,7 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port
   BrowserView::RegisterBrowserViewPrefs(local_state);
 #endif
-#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX)
   TaskManager::RegisterPrefs(local_state);
 #endif
 
@@ -74,6 +78,9 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
   NewTabUI::RegisterUserPrefs(user_prefs);
   BlockedPopupContainer::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
+#if defined(TOOLKIT_GTK)
+  BrowserWindowGtk::RegisterUserPrefs(user_prefs);
+#endif
 }
 
 }  // namespace browser

@@ -164,6 +164,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   GtkWindow* window() { return window_; }
 
+  static void RegisterUserPrefs(PrefService* prefs);
+
  protected:
   virtual void DestroyBrowser();
   // Top level window.
@@ -276,6 +278,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // custom frame (a spot that should trigger a window resize). Returns true if
   // it should and sets |edge|.
   bool GetWindowEdge(int x, int y, GdkWindowEdge* edge);
+
+  // Determine whether we use should default to native decorations or the custom
+  // frame based on the currently-running window manager.
+  static bool GetCustomFramePrefDefault();
 
   NotificationRegistrar registrar_;
 

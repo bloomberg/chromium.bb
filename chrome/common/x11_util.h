@@ -59,6 +59,11 @@ int BitsPerPixelForPixmapDepth(Display* display, int depth);
 bool IsWindowVisible(XID window);
 // Returns the bounds of |window|.
 bool GetWindowRect(XID window, gfx::Rect* rect);
+// Get the value of an int or string property.  On success, true is returned and
+// the value is stored in |value|.
+bool GetIntProperty(XID window, const std::string& property_name, int* value);
+bool GetStringProperty(
+    XID window, const std::string& property_name, std::string* value);
 
 // Implementers of this interface receive a notification for every X window of
 // the main display.
