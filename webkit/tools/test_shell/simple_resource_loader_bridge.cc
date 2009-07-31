@@ -429,7 +429,7 @@ class SyncRequestProxy : public RequestProxy {
     // doing so requires API changes at all levels.  Similar code exists in
     // WebCore/platform/network/cf/ResourceHandleCFNet.cpp :-(
     if (new_url.GetOrigin() != result_->url.GetOrigin()) {
-      LOG(ERROR) << "Cross origin redirect denied";
+      DLOG(WARNING) << "Cross origin redirect denied";
       Cancel();
       return;
     }

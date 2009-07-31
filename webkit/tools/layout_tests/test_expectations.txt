@@ -3079,11 +3079,3 @@ BUG17974 WIN LINUX: LayoutTests/fast/css/remove-shorthand.html = FAIL
 BUG17974 WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
 BUG17974 WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 BUG17974 WIN: LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
-
-// Regressions caused by Chromium r22067
-BUG18089 LINUX MAC : LayoutTests/http/tests/security/xss-DENIED-xsl-document-redirect.xml = FAIL
-BUG18089 LINUX MAC : LayoutTests/http/tests/security/xss-DENIED-xsl-external-entity-redirect.xml = FAIL
-BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post-sync.html = FAIL
-BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-sync-double.html = FAIL
-BUG18089 LINUX : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-sync.html = FAIL
-BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-unsafe-redirect.html = FAIL
