@@ -219,18 +219,18 @@ static const wchar_t* jscript_error =
 void GetParsedFeedData(Browser* browser, std::string* feed_title,
                        std::string* item_title, std::string* item_desc,
                        std::string* error) {
-  ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
       browser->GetSelectedTabContents()->render_view_host(), L"",
-      jscript_feed_title, feed_title);
-  ui_test_utils::ExecuteJavaScriptAndExtractString(
+      jscript_feed_title, feed_title));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
       browser->GetSelectedTabContents()->render_view_host(), L"",
-      jscript_anchor, item_title);
-  ui_test_utils::ExecuteJavaScriptAndExtractString(
+      jscript_anchor, item_title));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
       browser->GetSelectedTabContents()->render_view_host(), L"",
-      jscript_desc, item_desc);
-  ui_test_utils::ExecuteJavaScriptAndExtractString(
+      jscript_desc, item_desc));
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
       browser->GetSelectedTabContents()->render_view_host(), L"",
-      jscript_error, error);
+      jscript_error, error));
 }
 
 // Tests that we can parse feeds.
