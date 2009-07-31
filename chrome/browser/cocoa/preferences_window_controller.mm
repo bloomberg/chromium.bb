@@ -32,6 +32,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "net/base/cookie_policy.h"
 
 NSString* const kUserDoneEditingPrefsNotification =
@@ -636,6 +637,23 @@ const int kDisabledIndex = 1;
 - (IBAction)resetTheme:(id)sender {
   [self recordUserAction:L"Options_ThemesReset"];
   profile_->ClearTheme();
+}
+
+- (IBAction)themesGallery:(id)sender {
+  [self recordUserAction:L"Options_ThemesGallery"];
+  Browser* browser =
+      BrowserList::FindBrowserWithType(profile_, Browser::TYPE_NORMAL);
+
+  if (!browser || !browser->GetSelectedTabContents()) {
+    browser = Browser::Create(profile_);
+    browser->OpenURL(
+        GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
+        GURL(), NEW_WINDOW, PageTransition::LINK);
+  } else {
+    browser->AddTabWithURL(
+        GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
+        GURL(), PageTransition::LINK, true, -1, false, NULL);
+  }
 }
 
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value {

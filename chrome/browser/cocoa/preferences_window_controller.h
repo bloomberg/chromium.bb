@@ -79,6 +79,7 @@ class Profile;
 - (IBAction)importData:(id)sender;
 - (IBAction)clearData:(id)sender;
 - (IBAction)resetTheme:(id)sender;
+- (IBAction)themesGallery:(id)sender;
 
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property(readonly) CustomHomePagesModel* customPagesSource;
