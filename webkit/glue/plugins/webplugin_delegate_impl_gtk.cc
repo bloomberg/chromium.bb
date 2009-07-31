@@ -315,6 +315,15 @@ void WebPluginDelegateImpl::WindowedSetWindow() {
     return;
   }
 
+  // See https://bugzilla.mozilla.org/show_bug.cgi?id=108347
+  // If we call NPP_SetWindow with a <= 0 width or height, problems arise in
+  // Flash (and possibly other plugins).
+  // TODO(piman): the Mozilla code suggests that for the Java plugin, we should
+  // still call NPP_SetWindow in that case. We need to verify that.
+  if (window_rect_.width() <= 0 || window_rect_.height() <= 0) {
+    return;
+  }
+
   instance()->set_window_handle(windowed_handle_);
 
   DCHECK(!instance()->windowless());
