@@ -51,10 +51,11 @@ class DownloadShelfContextMenu {
   explicit DownloadShelfContextMenu(BaseDownloadItemModel* download_model);
 
   enum ContextMenuCommands {
-    SHOW_IN_FOLDER = 1,  // Open a file explorer window with the item selected
-    OPEN_WHEN_COMPLETE,  // Open the download when it's finished
-    ALWAYS_OPEN_TYPE,    // Default this file extension to always open
-    CANCEL,              // Cancel the download
+    SHOW_IN_FOLDER = 1,  // Open a file explorer window with the item selected.
+    OPEN_WHEN_COMPLETE,  // Open the download when it's finished.
+    ALWAYS_OPEN_TYPE,    // Default this file extension to always open.
+    CANCEL,              // Cancel the download.
+    REMOVE_ITEM,         // Removes the item from the download shelf.
     MENU_LAST
   };
 

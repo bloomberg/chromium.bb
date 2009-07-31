@@ -55,6 +55,8 @@ std::wstring DownloadShelfContextMenu::GetItemLabel(int id) const {
       return l10n_util::GetString(IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
     case CANCEL:
       return l10n_util::GetString(IDS_DOWNLOAD_MENU_CANCEL);
+    case REMOVE_ITEM:
+      return l10n_util::GetString(IDS_DOWNLOAD_MENU_REMOVE_ITEM);
     default:
       NOTREACHED();
   }
@@ -70,6 +72,8 @@ bool DownloadShelfContextMenu::IsItemCommandEnabled(int id) const {
       return download_util::CanOpenDownload(download_);
     case CANCEL:
       return download_->state() == DownloadItem::IN_PROGRESS;
+    case REMOVE_ITEM:
+      return download_->state() == DownloadItem::COMPLETE;
     default:
       return id > 0 && id < MENU_LAST;
   }
@@ -92,6 +96,9 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
     }
     case CANCEL:
       model_->CancelTask();
+      break;
+    case REMOVE_ITEM:
+      download_->Remove(false);
       break;
     default:
       NOTREACHED();
