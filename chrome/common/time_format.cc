@@ -30,8 +30,6 @@ static const char kFallbackFormatSuffixShort[] = "}";
 static const char kFallbackFormatSuffixLeft[] = " left}";
 static const char kFallbackFormatSuffixAgo[] = " ago}";
 
-static const int kInvalidMsgId = -1;
-
 // Contains message IDs for various time units and pluralities.
 struct MessageIDs {
   // There are 4 different time units and 6 different pluralities.
@@ -45,15 +43,15 @@ static const MessageIDs kTimeShortMessageIDs = { {
     IDS_TIME_SECS_TWO, IDS_TIME_SECS_FEW, IDS_TIME_SECS_MANY
   },
   {
-    IDS_TIME_MINS_DEFAULT, IDS_TIME_MIN_SINGULAR, kInvalidMsgId,
+    IDS_TIME_MINS_DEFAULT, IDS_TIME_MIN_SINGULAR, IDS_TIME_MINS_ZERO,
     IDS_TIME_MINS_TWO, IDS_TIME_MINS_FEW, IDS_TIME_MINS_MANY
   },
   {
-    IDS_TIME_HOURS_DEFAULT, IDS_TIME_HOUR_SINGULAR, kInvalidMsgId,
+    IDS_TIME_HOURS_DEFAULT, IDS_TIME_HOUR_SINGULAR, IDS_TIME_HOURS_ZERO,
     IDS_TIME_HOURS_TWO, IDS_TIME_HOURS_FEW, IDS_TIME_HOURS_MANY
   },
   {
-    IDS_TIME_DAYS_DEFAULT, IDS_TIME_DAY_SINGULAR, kInvalidMsgId,
+    IDS_TIME_DAYS_DEFAULT, IDS_TIME_DAY_SINGULAR, IDS_TIME_DAYS_ZERO,
     IDS_TIME_DAYS_TWO, IDS_TIME_DAYS_FEW, IDS_TIME_DAYS_MANY
   }
 } };
@@ -66,17 +64,17 @@ static const MessageIDs kTimeRemainingMessageIDs = { {
   },
   {
     IDS_TIME_REMAINING_MINS_DEFAULT, IDS_TIME_REMAINING_MIN_SINGULAR,
-    kInvalidMsgId, IDS_TIME_REMAINING_MINS_TWO,
+    IDS_TIME_REMAINING_MINS_ZERO, IDS_TIME_REMAINING_MINS_TWO,
     IDS_TIME_REMAINING_MINS_FEW, IDS_TIME_REMAINING_MINS_MANY
   },
   {
     IDS_TIME_REMAINING_HOURS_DEFAULT, IDS_TIME_REMAINING_HOUR_SINGULAR,
-    kInvalidMsgId, IDS_TIME_REMAINING_HOURS_TWO,
+    IDS_TIME_REMAINING_HOURS_ZERO, IDS_TIME_REMAINING_HOURS_TWO,
     IDS_TIME_REMAINING_HOURS_FEW, IDS_TIME_REMAINING_HOURS_MANY
   },
   {
     IDS_TIME_REMAINING_DAYS_DEFAULT, IDS_TIME_REMAINING_DAY_SINGULAR,
-    kInvalidMsgId, IDS_TIME_REMAINING_DAYS_TWO,
+    IDS_TIME_REMAINING_DAYS_ZERO, IDS_TIME_REMAINING_DAYS_TWO,
     IDS_TIME_REMAINING_DAYS_FEW, IDS_TIME_REMAINING_DAYS_MANY
   }
 } };
@@ -89,17 +87,17 @@ static const MessageIDs kTimeElapsedMessageIDs = { {
   },
   {
     IDS_TIME_ELAPSED_MINS_DEFAULT, IDS_TIME_ELAPSED_MIN_SINGULAR,
-    kInvalidMsgId, IDS_TIME_ELAPSED_MINS_TWO,
+    IDS_TIME_ELAPSED_MINS_ZERO, IDS_TIME_ELAPSED_MINS_TWO,
     IDS_TIME_ELAPSED_MINS_FEW, IDS_TIME_ELAPSED_MINS_MANY
   },
   {
     IDS_TIME_ELAPSED_HOURS_DEFAULT, IDS_TIME_ELAPSED_HOUR_SINGULAR,
-    kInvalidMsgId, IDS_TIME_ELAPSED_HOURS_TWO,
+    IDS_TIME_ELAPSED_HOURS_ZERO, IDS_TIME_ELAPSED_HOURS_TWO,
     IDS_TIME_ELAPSED_HOURS_FEW, IDS_TIME_ELAPSED_HOURS_MANY
   },
   {
     IDS_TIME_ELAPSED_DAYS_DEFAULT, IDS_TIME_ELAPSED_DAY_SINGULAR,
-    kInvalidMsgId, IDS_TIME_ELAPSED_DAYS_TWO,
+    IDS_TIME_ELAPSED_DAYS_ZERO, IDS_TIME_ELAPSED_DAYS_TWO,
     IDS_TIME_ELAPSED_DAYS_FEW, IDS_TIME_ELAPSED_DAYS_MANY
   }
 } };
@@ -208,7 +206,6 @@ void TimeFormatter::BuildFormats(FormatType format_type,
     UnicodeString pattern;
     for (size_t j = 0; j < arraysize(kKeywords); ++j) {
       int msg_id = message_ids.ids[i][j];
-      if (msg_id == kInvalidMsgId) continue;
       std::string sub_pattern = WideToUTF8(l10n_util::GetString(msg_id));
       // NA means this keyword is not used in the current locale.
       // Even if a translator translated for this keyword, we do not
