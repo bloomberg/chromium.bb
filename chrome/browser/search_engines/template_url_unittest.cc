@@ -144,6 +144,10 @@ TEST_F(TemplateURLTest, URLRefTermToWide) {
     {"%e4%bd%a05%e5%a5%bd+to+you", L"\x4f60\x35\x597d to you"},
     // Undecodable input should stay escaped.
     {"%91%01+abcd", L"%91%01 abcd"},
+    // Make sure we convert %2B to +.
+    {"C%2B%2B", L"C++"},
+    // C%2B is escaped as C%252B, make sure we unescape it properly.
+    {"C%252B", L"C%2B"},
   };
 
   TemplateURL t_url;

@@ -399,7 +399,8 @@ std::wstring TemplateURLRef::SearchTermToWide(const TemplateURL& host,
   std::wstring result;
 
   std::string unescaped =
-      UnescapeURLComponent(term, UnescapeRule::REPLACE_PLUS_WITH_SPACE);
+      UnescapeURLComponent(term, UnescapeRule::REPLACE_PLUS_WITH_SPACE |
+                                 UnescapeRule::URL_SPECIAL_CHARS);
   for (size_t i = 0; i < encodings.size(); ++i) {
     if (CodepageToWide(unescaped, encodings[i].c_str(),
                        OnStringUtilConversionError::FAIL, &result))
