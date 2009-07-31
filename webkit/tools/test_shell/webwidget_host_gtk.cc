@@ -163,6 +163,19 @@ class WebWidgetHostGtkWidget {
                                  WebWidgetHost* host) {
     host->webwidget()->handleInputEvent(
         WebInputEventFactory::keyboardEvent(event));
+
+    // In the browser we do a ton of work with IMEs.  This is some minimal
+    // code to make basic text work in test_shell, but doesn't cover IME.
+    // This is a copy of the logic in ProcessUnfilteredKeyPressEvent in
+    // render_widget_host_view_gtk.cc .
+    if (event->type == GDK_KEY_PRESS) {
+      WebKeyboardEvent wke = WebInputEventFactory::keyboardEvent(event);
+      if (wke.text[0]) {
+        wke.type = WebKit::WebInputEvent::Char;
+        host->webwidget()->handleInputEvent(wke);
+      }
+    }
+
     return FALSE;
   }
 
