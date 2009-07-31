@@ -413,14 +413,15 @@
               'destination': '<(PRODUCT_DIR)/installer/common/',
               'files': [
                 'linux/internal/common/apt.include',
-                'linux/internal/common/desktop.template',
                 'linux/internal/common/default-app.template',
                 'linux/internal/common/default-app-block.template',
+                'linux/internal/common/desktop.template',
                 'linux/internal/common/google-chrome/google-chrome.info',
                 'linux/internal/common/installer.include',
                 'linux/internal/common/postinst.include',
                 'linux/internal/common/prerm.include',
                 'linux/internal/common/repo.cron',
+                'linux/internal/common/rpm.include',
                 'linux/internal/common/updater',
                 'linux/internal/common/wrapper',
               ]
