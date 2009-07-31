@@ -2228,6 +2228,8 @@
                 ['include', '^browser/gtk/gtk_chrome_link_button.h'],
                 ['include', '^browser/gtk/gtk_dnd_util.cc'],
                 ['include', '^browser/gtk/gtk_dnd_util.h'],
+                ['include', '^browser/gtk/gtk_theme_provider.h'],
+                ['include', '^browser/gtk/gtk_theme_provider.cc'],
                 ['include', '^browser/gtk/hung_renderer_dialog_gtk.cc'],
                 ['include', '^browser/gtk/hung_renderer_dialog_gtk.h'],
                 ['include', '^browser/gtk/import_dialog_gtk.cc'],
