@@ -172,7 +172,7 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
 }
 
 GtkWidget* ContentPageGtk::InitThemesGroup() {
-  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
 
   // GTK theme button.
   GtkWidget* gtk_theme_button = gtk_button_new_with_label(
