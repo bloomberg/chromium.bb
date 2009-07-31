@@ -141,6 +141,8 @@ bool AsyncResourceHandler::OnResponseCompleted(
   if (g_spare_read_buffer) {
     read_buffer_ = NULL;
   } else if (read_buffer_.get()) {
+    // TODO(willchan): Remove after debugging bug 16371.
+    CHECK(read_buffer_->data());
     read_buffer_.swap(&g_spare_read_buffer);
   }
   return true;
