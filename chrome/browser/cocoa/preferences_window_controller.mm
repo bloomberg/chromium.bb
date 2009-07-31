@@ -64,7 +64,6 @@ std::wstring GetNewTabUIURLString() {
 - (void)setRestoreOnStartupIndex:(NSInteger)type;
 - (void)setShowHomeButton:(BOOL)value;
 - (void)setShowPageOptionsButtons:(BOOL)value;
-- (void)setDefaultBrowser:(BOOL)value;
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value;
 - (void)setFormAutofillEnabledIndex:(NSInteger)value;
 - (void)setShowAlternateErrorPages:(BOOL)value;
@@ -544,6 +543,8 @@ enum { kHomepageNewTabPage, kHomepageURL };
 // Called when the user clicks the button to make Chromium the default
 // browser. Registers http and https.
 - (IBAction)makeDefaultBrowser:(id)sender {
+  [self willChangeValueForKey:@"defaultBrowser"];
+
   ShellIntegration::SetAsDefaultBrowser();
   [self recordUserAction:L"Options_SetAsDefaultBrowser"];
   // If the user made Chrome the default browser, then he/she arguably wants
@@ -551,13 +552,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
   prefs_->SetBoolean(prefs::kCheckDefaultBrowser, true);
 
   // Tickle KVO so that the UI updates.
-  [self setDefaultBrowser:YES];
-}
-
-// A stub setter so that we can trick KVO into thinking the UI needs
-// to be updated.
-- (void)setDefaultBrowser:(BOOL)ignore {
-  // Do nothing.
+  [self didChangeValueForKey:@"defaultBrowser"];
 }
 
 // Returns if Chromium is the default browser.
