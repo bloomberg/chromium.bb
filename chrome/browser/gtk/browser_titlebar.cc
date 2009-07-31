@@ -7,9 +7,10 @@
 #include <gtk/gtk.h>
 
 #include <string>
+#include <vector>
 
-#include "app/resource_bundle.h"
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
@@ -23,6 +24,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 
 namespace {
 
@@ -48,6 +50,14 @@ const int kOTRSideSpacing = 2;
 // close button whent the custom frame border isn't showing but the custom
 // titlebar is showing.
 const int kFrameBorderThickness = 4;
+
+// There is a 4px gap between the icon and the title text.
+const int kIconTitleSpacing = 4;
+
+// Padding around the icon when in app mode or popup mode.
+const int kAppModePaddingTop = 5;
+const int kAppModePaddingBottom = 4;
+const int kAppModePaddingLeft = 2;
 
 // The left padding of the tab strip.  In Views, the tab strip has a left
 // margin of FrameBorderThickness + kClientEdgeThickness.  This offset is to
@@ -75,6 +85,8 @@ GdkPixbuf* GetOTRAvatar() {
 BrowserTitlebar::BrowserTitlebar(BrowserWindowGtk* browser_window,
                                  GtkWindow* window)
     : browser_window_(browser_window), window_(window),
+      app_mode_favicon_(NULL),
+      app_mode_title_(NULL),
       using_custom_frame_(false) {
   Init();
 }
@@ -92,6 +104,17 @@ void BrowserTitlebar::Init() {
   // ||+-------+||+------------------------+||+------------------------------+||
   // |+---------++--------------------------++--------------------------------+|
   // +-------------------------------------------------------------------------+
+  //
+  // If we're a popup window or in app mode, we don't display the spy guy or
+  // the tab strip.  Instead, put an hbox in titlebar_alignment_ in place of
+  // the tab strip.
+  // +- Alignment (titlebar_alignment_) ----------------------------+
+  // |+ HBox ------------------------------------------------------+|
+  // ||+- Image (app_mode_favicon_) -++- Label (app_mode_title_) -+||
+  // |||  favicon                    ||  page title               |||
+  // ||+-----------------------------++---------------------------+||
+  // |+------------------------------------------------------------+|
+  // +--------------------------------------------------------------+
   GtkWidget* container_hbox = gtk_hbox_new(FALSE, 0);
 
   container_ = gtk_event_box_new();
@@ -104,7 +127,8 @@ void BrowserTitlebar::Init() {
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(OnWindowStateChanged), this);
 
-  if (browser_window_->browser()->profile()->IsOffTheRecord()) {
+  if (browser_window_->browser()->profile()->IsOffTheRecord() &&
+      browser_window_->browser()->type() == Browser::TYPE_NORMAL) {
     GtkWidget* spy_guy = gtk_image_new_from_pixbuf(GetOTRAvatar());
     gtk_misc_set_alignment(GTK_MISC(spy_guy), 0.0, 1.0);
     GtkWidget* spy_frame = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -119,12 +143,36 @@ void BrowserTitlebar::Init() {
 
   // We use an alignment to control the titlebar height.
   titlebar_alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_box_pack_start(GTK_BOX(container_hbox), titlebar_alignment_, TRUE,
-                     TRUE, 0);
+  if (browser_window_->browser()->type() == Browser::TYPE_NORMAL) {
+    gtk_box_pack_start(GTK_BOX(container_hbox), titlebar_alignment_, TRUE,
+                       TRUE, 0);
 
-  // Put the tab strip in the titlebar.
-  gtk_container_add(GTK_CONTAINER(titlebar_alignment_),
-                    browser_window_->tabstrip()->widget());
+    // Put the tab strip in the titlebar.
+    gtk_container_add(GTK_CONTAINER(titlebar_alignment_),
+                      browser_window_->tabstrip()->widget());
+  } else {
+    // App mode specific widgets.
+    gtk_box_pack_start(GTK_BOX(container_hbox), titlebar_alignment_, TRUE,
+                       TRUE, 0);
+    GtkWidget* app_mode_hbox = gtk_hbox_new(FALSE, kIconTitleSpacing);
+    gtk_container_add(GTK_CONTAINER(titlebar_alignment_), app_mode_hbox);
+
+    // We use the app logo as a placeholder image so the title doesn't jump
+    // around.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    // TODO(tc): Add a left click menu to this icon.
+    app_mode_favicon_ = gtk_image_new_from_pixbuf(
+        rb.GetRTLEnabledPixbufNamed(IDR_PRODUCT_LOGO_16));
+    gtk_box_pack_start(GTK_BOX(app_mode_hbox), app_mode_favicon_, FALSE,
+                       FALSE, 0);
+
+    app_mode_title_ = gtk_label_new(NULL);
+    gtk_label_set_ellipsize(GTK_LABEL(app_mode_title_), PANGO_ELLIPSIZE_END);
+    gtk_misc_set_alignment(GTK_MISC(app_mode_title_), 0.0, 0.5);
+    gtk_box_pack_start(GTK_BOX(app_mode_hbox), app_mode_title_, TRUE, TRUE,
+                       0);
+    UpdateTitle();
+  }
 
   // We put the min/max/restore/close buttons in a vbox so they are top aligned
   // and don't vertically stretch.
@@ -180,13 +228,61 @@ void BrowserTitlebar::UpdateCustomFrame(bool use_custom_frame) {
   UpdateTitlebarAlignment();
 }
 
-void BrowserTitlebar::UpdateTitlebarAlignment() {
-  if (using_custom_frame_ && !browser_window_->IsMaximized()) {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_),
-        kTitlebarHeight, 0, kTabStripLeftPadding, 0);
+void BrowserTitlebar::UpdateTitle() {
+  if (!app_mode_title_)
+    return;
+
+  // Get the page title and elide it to the available space.
+  string16 title = browser_window_->browser()->GetWindowTitleForCurrentTab();
+
+  // TODO(tc): Seems like this color should be themable, but it's hardcoded to
+  // white on Windows.  http://crbug.com/18093
+  gchar* label_markup = g_markup_printf_escaped("<span color='white'>%s</span>",
+      UTF16ToUTF8(title).c_str());
+  gtk_label_set_markup(GTK_LABEL(app_mode_title_), label_markup);
+  g_free(label_markup);
+}
+
+void BrowserTitlebar::UpdateThrobber(bool is_loading) {
+  DCHECK(app_mode_favicon_);
+
+  if (is_loading) {
+    GdkPixbuf* icon_pixbuf = throbber_.GetNextFrame();
+    gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
   } else {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_), 0, 0,
-                              kTabStripLeftPadding, 0);
+    if (browser_window_->browser()->type() == Browser::TYPE_APP) {
+      SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
+      if (!icon.empty()) {
+        GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+        gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
+        g_object_unref(icon_pixbuf);
+      }
+    } else {
+      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+      gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
+          rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
+    }
+    throbber_.Reset();
+  }
+}
+
+void BrowserTitlebar::UpdateTitlebarAlignment() {
+  if (browser_window_->browser()->type() == Browser::TYPE_NORMAL) {
+    if (using_custom_frame_ && !browser_window_->IsMaximized()) {
+      gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_),
+          kTitlebarHeight, 0, kTabStripLeftPadding, 0);
+    } else {
+      gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_), 0, 0,
+                                kTabStripLeftPadding, 0);
+    }
+  } else {
+    if (using_custom_frame_ && !browser_window_->IsFullscreen()) {
+      gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_),
+          kAppModePaddingTop, kAppModePaddingBottom, kAppModePaddingLeft, 0);
+      gtk_widget_show(titlebar_alignment_);
+    } else {
+      gtk_widget_hide(titlebar_alignment_);
+    }
   }
 
   int close_button_width = close_button_default_width_;
@@ -308,5 +404,43 @@ void BrowserTitlebar::ExecuteCommand(int command_id) {
 
     default:
       NOTREACHED();
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserTitlebar::Throbber implementation
+// TODO(tc): Handle anti-clockwise spinning when waiting for a connection.
+
+// We don't bother to clean this or the pixbufs it contains when we exit.
+static std::vector<GdkPixbuf*>* g_throbber_frames = NULL;
+
+GdkPixbuf* BrowserTitlebar::Throbber::GetNextFrame() {
+  Throbber::InitFrames();
+  return (*g_throbber_frames)[current_frame_++ % g_throbber_frames->size()];
+}
+
+void BrowserTitlebar::Throbber::Reset() {
+  current_frame_ = 0;
+}
+
+// static
+void BrowserTitlebar::Throbber::InitFrames() {
+  if (g_throbber_frames)
+    return;
+
+  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
+  SkBitmap* frame_strip = rb.GetBitmapNamed(IDR_THROBBER_LIGHT);
+
+  // Each frame of the animation is a square, so we use the height as the
+  // frame size.
+  int frame_size = frame_strip->height();
+  size_t num_frames = frame_strip->width() / frame_size;
+  g_throbber_frames = new std::vector<GdkPixbuf*>;
+
+  // Make a separate GdkPixbuf for each frame of the animation.
+  for (size_t i = 0; i < num_frames; ++i) {
+    SkBitmap frame = skia::ImageOperations::CreateTiledBitmap(*frame_strip,
+        i * frame_size, 0, frame_size, frame_size);
+    g_throbber_frames->push_back(gfx::GdkPixbufFromSkBitmap(&frame));
   }
 }

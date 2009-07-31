@@ -712,9 +712,8 @@ void BrowserWindowGtk::UpdateTitleBar() {
 
   string16 title = browser_->GetWindowTitleForCurrentTab();
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
-  if (ShouldShowWindowIcon()) {
-    // TODO(tc): If we're showing a title bar, we should update the app icon.
-  }
+  if (ShouldShowWindowIcon())
+    titlebar_->UpdateTitle();
 }
 
 void BrowserWindowGtk::UpdateDevTools() {
@@ -753,8 +752,11 @@ void BrowserWindowGtk::LoadingAnimationCallback() {
     tabstrip_->UpdateLoadingAnimations();
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
-    // http://code.google.com/p/chromium/issues/detail?id=9380
-    // TODO(willchan): implement this.
+    TabContents* tab_contents = browser_->GetSelectedTabContents();
+    // GetSelectedTabContents can return NULL for example under Purify when
+    // the animations are running slowly and this function is called on
+    // a timer through LoadingAnimationCallback.
+    titlebar_->UpdateThrobber(tab_contents && tab_contents->is_loading());
   }
 }
 

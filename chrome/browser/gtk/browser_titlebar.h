@@ -33,12 +33,37 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   // tall titlebar and the min/max/close buttons.
   void UpdateCustomFrame(bool use_custom_frame);
 
+  // Updates the title when in app or popup mode (no tabstrip).
+  void UpdateTitle();
+
+  // Called by the browser asking us to update the loading throbber.
+  void UpdateThrobber(bool is_loading);
+
   // On Windows, right clicking in the titlebar background brings up the system
   // menu.  There's no such thing on linux, so we just show the menu items we
   // add to the menu.
   void ShowContextMenu();
 
  private:
+  // A helper class to keep track of which frame of the throbber animation
+  // we're showing.
+  class Throbber {
+   public:
+    Throbber() : current_frame_(0) {}
+
+    // Get the next frame in the animation. The image is owned by the throbber
+    // so the caller doesn't need to unref.
+    GdkPixbuf* GetNextFrame();
+
+    // Reset back to the first frame.
+    void Reset();
+   private:
+    // Make sure the frames are loaded.
+    static void InitFrames();
+
+    int current_frame_;
+  };
+
   // Build the titlebar, the space above the tab
   // strip, and (maybe) the min, max, close buttons.  |container| is the gtk
   // continer that we put the widget into.
@@ -86,6 +111,10 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   // manager decorations, we draw this taller.
   GtkWidget* titlebar_alignment_;
 
+  // The favicon and page title used when in app mode or popup mode.
+  GtkWidget* app_mode_favicon_;
+  GtkWidget* app_mode_title_;
+
   // Whether we are using a custom frame.
   bool using_custom_frame_;
 
@@ -103,6 +132,9 @@ class BrowserTitlebar : public MenuGtk::Delegate {
 
   // The context menu.
   scoped_ptr<MenuGtk> context_menu_;
+
+  // The throbber used when the window is in app mode or popup window mode.
+  Throbber throbber_;
 };
 
 #endif  // CHROME_BROWSER_GTK_BROWSER_TITLEBAR_H_
