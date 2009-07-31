@@ -45,6 +45,10 @@ class ContentPageGtk : public OptionsPageBase {
   static void OnResetDefaultThemeButtonClicked(GtkButton* widget,
                                                ContentPageGtk* page);
 
+  // Callback for get themes button.
+  static void OnGetThemesButtonClicked(GtkButton* widget,
+                                       ContentPageGtk* page);
+
   // Callback for passwords exceptions button.
   static void OnPasswordsExceptionsButtonClicked(GtkButton* widget,
                                                  ContentPageGtk* page);

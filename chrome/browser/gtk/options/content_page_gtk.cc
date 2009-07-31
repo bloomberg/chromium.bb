@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
@@ -18,6 +19,7 @@
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentPageGtk, public:
@@ -179,12 +181,19 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
                    G_CALLBACK(OnGtkThemeButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(hbox), gtk_theme_button, FALSE, FALSE, 0);
 
-  // Reset themes button.
+  // Reset theme button.
   GtkWidget* themes_reset_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_THEMES_RESET_BUTTON).c_str());
   g_signal_connect(G_OBJECT(themes_reset_button), "clicked",
                    G_CALLBACK(OnResetDefaultThemeButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(hbox), themes_reset_button, FALSE, FALSE, 0);
+
+  // Get themes button.
+  GtkWidget* themes_gallery_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_BUTTON).c_str());
+  g_signal_connect(G_OBJECT(themes_gallery_button), "clicked",
+                   G_CALLBACK(OnGetThemesButtonClicked), this);
+  gtk_box_pack_start(GTK_BOX(hbox), themes_gallery_button, FALSE, FALSE, 0);
 
   return hbox;
 }
@@ -219,6 +228,16 @@ void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkButton* widget,
   page->UserMetricsRecordAction(L"Options_ThemesReset",
                                 page->profile()->GetPrefs());
   page->profile()->ClearTheme();
+}
+
+// static
+void ContentPageGtk::OnGetThemesButtonClicked(GtkButton* widget,
+                                              ContentPageGtk* page) {
+  page->UserMetricsRecordAction(L"Options_ThemesGallery",
+                                page->profile()->GetPrefs());
+  BrowserList::GetLastActive()->OpenURL(
+      GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
+      GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
 }
 
 // static

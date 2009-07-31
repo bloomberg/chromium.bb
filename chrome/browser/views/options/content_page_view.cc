@@ -89,17 +89,9 @@ void ContentPageView::ButtonPressed(views::Button* sender) {
     profile()->ClearTheme();
   } else if (sender == themes_gallery_button_) {
     UserMetricsRecordAction(L"Options_ThemesGallery", profile()->GetPrefs());
-    Browser* browser =
-        BrowserList::FindBrowserWithType(profile(), Browser::TYPE_NORMAL);
-
-    if (!browser || !browser->GetSelectedTabContents()) {
-      browser = Browser::Create(profile());
-      browser->OpenURL(GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
-                       GURL(), NEW_WINDOW, PageTransition::LINK);
-    } else {
-      browser->AddTabWithURL(GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
-          GURL(), PageTransition::LINK, true, -1, false, NULL);
-    }
+    BrowserList::GetLastActive()->OpenURL(
+        GURL(l10n_util::GetString(IDS_THEMES_GALLERY_URL)),
+        GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   } else if (sender == import_button_) {
     views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),
