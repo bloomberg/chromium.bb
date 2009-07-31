@@ -25,3 +25,6 @@ CompactLangDetTest.*
 
 # issue 17370
 FirefoxImporterTest.Firefox3NSS3Decryptor
+
+# issue 18122
+DnsMasterTest.MassiveConcurrentLookupTest
