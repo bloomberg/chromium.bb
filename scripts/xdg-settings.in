@@ -215,6 +215,8 @@ binary_to_desktop_file()
             [ -r "$file" ] || continue
             # Check to make sure it's worth the processing
             grep -q "^Exec.*$base" "$file" || continue
+            # Make sure it's a visible desktop file (e.g. not "preferred-web-browser.desktop")
+            grep -q "^NoDisplay=true" "$file" && continue
             command="`grep "^Exec\(\[[^]=]*]\)\?=" "$file" | cut -d= -f 2- | first_word`"
             full="`which "$command"`"
             if [ x"$full" = x"$binary" ]; then
