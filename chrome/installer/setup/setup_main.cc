@@ -301,7 +301,7 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
 
 installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
     const installer::Version* installed_version, const DictionaryValue* prefs) {
-  bool system_level = installer_util::GetBooleanPreference(prefs,
+  bool system_level = installer_util::GetDistroBooleanPreference(prefs,
       installer_util::master_preferences::kSystemLevel);
   installer_util::InstallStatus install_status = installer_util::UNKNOWN_STATUS;
   if (!CheckPreInstallConditions(installed_version,
@@ -395,11 +395,11 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
                                           install_msg_base, &chrome_exe);
         if (install_status == installer_util::FIRST_INSTALL_SUCCESS) {
           LOG(INFO) << "First install successful.";
-          if (installer_util::GetBooleanPreference(prefs,
+          if (installer_util::GetDistroBooleanPreference(prefs,
               installer_util::master_preferences::kMasterPreferencesValid))
             CopyPreferenceFileForFirstRun(system_level, cmd_line);
           // We never want to launch Chrome in system level install mode.
-          if (!system_level && !installer_util::GetBooleanPreference(prefs,
+          if (!system_level && !installer_util::GetDistroBooleanPreference(prefs,
               installer_util::master_preferences::kDoNotLaunchChrome))
             installer::LaunchChrome(system_level);
         }
@@ -617,11 +617,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   installer::InitInstallerLogging(parsed_command_line);
   scoped_ptr<DictionaryValue> prefs(GetInstallPreferences(parsed_command_line));
-  if (installer_util::GetBooleanPreference(prefs.get(),
+  if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kVerboseLogging))
     logging::SetMinLogLevel(logging::LOG_INFO);
 
-  bool system_install = installer_util::GetBooleanPreference(prefs.get(),
+  bool system_install = installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kSystemLevel);
   LOG(INFO) << "system install is " << system_install;
 

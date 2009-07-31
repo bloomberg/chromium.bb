@@ -7,13 +7,11 @@
 
 #include "chrome/installer/setup/install.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -24,8 +22,6 @@
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/work_item.h"
-#include "chrome/installer/util/version.h"
 #include "chrome/installer/util/work_item_list.h"
 
 // Build-time generated include file.
@@ -486,7 +482,7 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
     const std::wstring& exe_path, const std::wstring& archive_path,
     const std::wstring& install_temp_path, const DictionaryValue* prefs,
     const Version& new_version, const Version* installed_version) {
-  bool system_install = installer_util::GetBooleanPreference(prefs,
+  bool system_install = installer_util::GetDistroBooleanPreference(prefs,
       installer_util::master_preferences::kSystemLevel);
   std::wstring install_path(GetChromeInstallPath(system_install));
   if (install_path.empty()) {
@@ -528,9 +524,9 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
       result = installer_util::NEW_VERSION_UPDATED;
     }
 
-    bool create_all_shortcut = installer_util::GetBooleanPreference(prefs,
+    bool create_all_shortcut = installer_util::GetDistroBooleanPreference(prefs,
         installer_util::master_preferences::kCreateAllShortcuts);
-    bool alt_shortcut = installer_util::GetBooleanPreference(prefs,
+    bool alt_shortcut = installer_util::GetDistroBooleanPreference(prefs,
         installer_util::master_preferences::kAltShortcutText);
     if (!CreateOrUpdateChromeShortcuts(exe_path, install_path,
                                        new_version.GetString(), result,
@@ -540,7 +536,7 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
 
     RemoveOldVersionDirs(install_path, new_version.GetString());
 
-    bool make_chrome_default = installer_util::GetBooleanPreference(prefs,
+    bool make_chrome_default = installer_util::GetDistroBooleanPreference(prefs,
         installer_util::master_preferences::kMakeChromeDefault);
     RegisterChromeOnMachine(install_path, system_install, make_chrome_default);
   }
