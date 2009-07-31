@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_file.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -1251,9 +1252,17 @@ void DownloadManager::OpenChromeExtension(const FilePath& full_path,
                                           const GURL& download_url,
                                           const GURL& referrer_url) {
   // We don't support extensions in OTR mode.
-  if (profile_->GetExtensionsService())
-    profile_->GetExtensionsService()->InstallExtension(full_path, download_url,
-                                                       referrer_url);
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (service) {
+    CrxInstaller::Start(full_path,
+                        service->install_directory(),
+                        Extension::INTERNAL,
+                        "",  // no expected id
+                        true,  // please delete crx on completion
+                        g_browser_process->file_thread()->message_loop(),
+                        service,
+                        new ExtensionInstallUI(profile_));
+  }
 }
 
 void DownloadManager::OpenDownloadInShell(const DownloadItem* download,

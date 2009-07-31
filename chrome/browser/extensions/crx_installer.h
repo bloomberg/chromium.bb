@@ -14,6 +14,28 @@
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 
+// Classes that want to know about install completion, or that want to have an
+// opportunity to reject the unpacked extension before installation, should
+// implement this interface.
+class CrxInstallerClient
+    : public base::RefCountedThreadSafe<CrxInstallerClient> {
+ public:
+  virtual ~CrxInstallerClient() {}
+
+  // Return true to indicate that installation should proceed, false otherwise.
+  virtual bool ConfirmInstall(Extension* extension) = 0;
+
+  // Installation was successful.
+  virtual void OnInstallSuccess(Extension* extension) = 0;
+
+  // Intallation failed.
+  virtual void OnInstallFailure(const std::string& error) = 0;
+
+  // The install was rejected because the same extension/version is already
+  // installed.
+  virtual void OnOverinstallAttempted(Extension* extension) = 0;
+};
+
 // This class installs a crx file into a profile.
 //
 // Installing a CRX is a multi-step process, including unpacking the crx,
@@ -22,7 +44,6 @@
 // necessary to do its job. (This also minimizes external dependencies for
 // easier testing).
 //
-//
 // Lifetime management:
 //
 // This class is ref-counted by each call it makes to itself on another thread,
@@ -30,46 +51,54 @@
 //
 // Additionally, we hold a reference to our own client so that it lives at least
 // long enough to receive the result of unpacking.
-// 
 //
-// NOTE: This class is rather huge at the moment because it is handling all
-// types of installation (external, autoupdate, and manual). In the future,
-// manual installation will probably pulled out of it.
-//
-// TODO(aa): Pull out the manual installation bits.
 // TODO(aa): Pull out a frontend interface for testing?
 class CrxInstaller : public SandboxedExtensionUnpackerClient {
  public:
+  // Starts the installation of the crx file in |crx_path| into
+  // |install_directory|.
+  //
+  // Other params:
+  //  install_source: The source of the install (external, --load-extension, etc
+  //  expected_id: Optional. If the caller knows what the ID of this extension
+  //               should be after unpacking, it can be specified here as a
+  //               sanity check.
+  //  delete_crx: Whether the crx should be deleted on completion.
+  //  file_loop: The message loop to do file IO on.
+  //  frontend: The ExtensionsService to report the successfully installed
+  //            extension to.
+  //  client: Optional. If specified, will be used to confirm installation and
+  //          also notified of success/fail. Note that we hold a reference to
+  //          this, so it can outlive its creator (eg the UI).
+  static void Start(const FilePath& crx_path,
+                    const FilePath& install_directory,
+                    Extension::Location install_source,
+                    const std::string& expected_id,
+                    bool delete_crx,
+                    MessageLoop* file_loop,
+                    ExtensionsService* frontend,
+                    CrxInstallerClient* client);
+
+ private:
   CrxInstaller(const FilePath& crx_path,
                const FilePath& install_directory,
                Extension::Location install_source,
                const std::string& expected_id,
-               bool extensions_enabled,
-               bool is_from_gallery,
-               bool show_prompts,
                bool delete_crx,
                MessageLoop* file_loop,
-               ExtensionsService* frontend);
-  ~CrxInstaller() {
-    // This is only here for debugging purposes, as a convenient place to set
-    // breakpoints.
-  }
+               ExtensionsService* frontend,
+               CrxInstallerClient* client);
+  ~CrxInstaller();
 
- private:
   // SandboxedExtensionUnpackerClient
   virtual void OnUnpackFailure(const std::string& error_message);
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,
                                Extension* extension);
 
-  // Confirm with the user that it is OK to install this extension.
-  //
-  // Note that this runs on the file thread. It happens to be OK to do this on
-  // Windows and Mac, and although ugly, we leave it because this is all getting
-  // pulled out soon, anyway.
-  //
-  // TODO(aa): Pull this up, closer to the UI layer.
-  bool ConfirmInstall();
+  // Runs on the UI thread. Confirms with the user (via CrxInstallerClient) that
+  // it is OK to install this extension.
+  void ConfirmInstall();
 
   // Runs on File thread. Install the unpacked extension into the profile and
   // notify the frontend.
@@ -79,7 +108,9 @@ class CrxInstaller : public SandboxedExtensionUnpackerClient {
   void ReportFailureFromFileThread(const std::string& error);
   void ReportFailureFromUIThread(const std::string& error);
   void ReportOverinstallFromFileThread();
+  void ReportOverinstallFromUIThread();
   void ReportSuccessFromFileThread();
+  void ReportSuccessFromUIThread();
 
   // The crx file we're installing.
   FilePath crx_path_;
@@ -96,17 +127,10 @@ class CrxInstaller : public SandboxedExtensionUnpackerClient {
   // extension to contain.
   std::string expected_id_;
 
-  // Whether extension installation is set. We can't just check this before
-  // trying to install because themes are special-cased to always be allowed.
+  // Whether manual extension installation is enabled. We can't just check this
+  // before trying to install because themes are special-cased to always be
+  // allowed.
   bool extensions_enabled_;
-
-  // Whether this installation was initiated from the gallery. We trust it more
-  // and have special UI if it was.
-  bool is_from_gallery_;
-
-  // Whether we shoud should show prompts. This is sometimes false for testing
-  // and autoupdate.
-  bool show_prompts_;
 
   // Whether we're supposed to delete the source crx file on destruction.
   bool delete_crx_;
@@ -127,6 +151,10 @@ class CrxInstaller : public SandboxedExtensionUnpackerClient {
 
   // The frontend we will report results back to.
   scoped_refptr<ExtensionsService> frontend_;
+
+  // The client we will work with to do the installation. This can be NULL, in
+  // which case the install is silent.
+  scoped_refptr<CrxInstallerClient> client_;
 
   // The root of the unpacked extension directory. This is a subdirectory of
   // temp_dir_, so we don't have to delete it explicitly.

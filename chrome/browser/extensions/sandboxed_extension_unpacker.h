@@ -124,7 +124,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   void ReportSuccess();
 
   FilePath crx_path_;
-  MessageLoop* client_loop_;
+  MessageLoop* file_loop_;
   ResourceDispatcherHost* rdh_;
   scoped_refptr<SandboxedExtensionUnpackerClient> client_;
   ScopedTempDir temp_dir_;
