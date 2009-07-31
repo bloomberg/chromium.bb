@@ -558,7 +558,7 @@ if conf_list:
     # In case the same --mode= value was specified multiple times.
     conf_list = list(set(conf_list))
 else:
-    conf_list = ['Default']
+    conf_list = [%(default_configuration)r]
 
 sconsbuild_dir = Dir(%(sconsbuild_dir)s)
 
@@ -681,7 +681,8 @@ if GetOption('help'):
 
 
 def GenerateSConscriptWrapper(build_file_data, name,
-                              output_filename, sconscript_files):
+                              output_filename, sconscript_files,
+                              default_configuration):
   """
   Generates the "wrapper" SConscript file (analogous to the Visual Studio
   solution) that calls all the individual target SConscript files.
@@ -699,6 +700,7 @@ def GenerateSConscriptWrapper(build_file_data, name,
   fp = open(output_filename, 'w')
   fp.write(header)
   fp.write(_wrapper_template % {
+               'default_configuration' : default_configuration,
                'name' : name,
                'sconsbuild_dir' : repr(sconsbuild_dir),
                'sconscript_files' : '\n'.join(sconscript_file_lines),
@@ -734,11 +736,20 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if not build_file.endswith('.gyp'):
       continue
 
+  default_configuration = None
+
   for qualified_target in target_list:
     spec = target_dicts[qualified_target]
 
     if spec['type'] == 'settings':
       continue
+
+    # TODO:  assumes the default_configuration of the first target
+    # non-Default target is the correct default for all targets.
+    # Need a better model for handle variation between targets.
+    if (not default_configuration and
+        spec['default_configuration'] != 'Default'):
+      default_configuration = spec['default_configuration']
 
     build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
     output_file = TargetFilename(target, build_file, options.suffix)
@@ -784,4 +795,5 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     if sconscript_files:
       GenerateSConscriptWrapper(data[build_file], basename,
-                                output_filename, sconscript_files)
+                                output_filename, sconscript_files,
+                                default_configuration)
