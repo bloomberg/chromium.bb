@@ -368,12 +368,17 @@ void CopyToClipboard(BookmarkModel* model,
   // implemented somewhere else?
 #endif
 
+  // The following works cross-platform but I'm disabling it for now so that
+  // users who Cut a bookmark or folder won't lose it without being able to
+  // paste it.
+#if defind(OS_WIN)
   if (remove_nodes) {
     for (size_t i = 0; i < nodes.size(); ++i) {
       model->Remove(nodes[i]->GetParent(),
                     nodes[i]->GetParent()->IndexOfChild(nodes[i]));
     }
   }
+#endif
 }
 
 void PasteFromClipboard(BookmarkModel* model,
