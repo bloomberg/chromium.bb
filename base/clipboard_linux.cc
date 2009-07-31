@@ -83,22 +83,6 @@ void ClearData(GtkClipboard* clipboard,
   delete map;
 }
 
-// Frees the pointers in the given map and clears the map.
-// Does not double-free any pointers.
-void FreeTargetMap(Clipboard::TargetMap map) {
-  std::set<char*> ptrs;
-
-  for (Clipboard::TargetMap::iterator iter = map.begin();
-       iter != map.end(); ++iter)
-    ptrs.insert(iter->second.first);
-
-  for (std::set<char*>::iterator iter = ptrs.begin();
-       iter != ptrs.end(); ++iter)
-    delete[] *iter;
-
-  map.clear();
-}
-
 // Called on GdkPixbuf destruction; see WriteBitmap().
 void GdkPixbufFree(guchar* pixels, gpointer data) {
   free(pixels);

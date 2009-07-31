@@ -193,8 +193,6 @@ class Clipboard {
 
   // Write changes to gtk clipboard.
   void SetGtkClipboard();
-  // Free pointers in clipboard_data_ and clear() the map.
-  void FreeTargetMap();
   // Insert a mapping into clipboard_data_.
   void InsertMapping(const char* key, char* data, size_t data_len);
 
