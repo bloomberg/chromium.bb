@@ -714,7 +714,7 @@ class MenuController
       SCROLL_DOWN
     };
 
-    MenuPart() : type(NONE), menu(NULL), submenu(NULL) {}
+    MenuPart() : type(NONE), menu(NULL), parent(NULL), submenu(NULL) {}
 
     // Convenience for testing type == SCROLL_DOWN or type == SCROLL_UP.
     bool is_scroll() const { return type == SCROLL_DOWN || type == SCROLL_UP; }
@@ -726,8 +726,13 @@ class MenuController
     // this is NULL.
     // NOTE: if type is MENU_ITEM and the mouse is not over a valid menu item
     //       but is over a menu (for example, the mouse is over a separator or
-    //       empty menu), this is NULL.
+    //       empty menu), this is NULL and parent is the menu the mouse was
+    //       clicked on.
     MenuItemView* menu;
+
+    // If type is MENU_ITEM but the mouse is not over a menu item this is the
+    // parent of the menu item the user clicked on. Otherwise this is NULL.
+    MenuItemView* parent;
 
     // If type is SCROLL_*, this is the submenu the mouse is over.
     SubmenuView* submenu;

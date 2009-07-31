@@ -1790,7 +1790,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
 
   bool open_submenu = false;
   if (!part.menu) {
-    part.menu = source->GetMenuItem();
+    part.menu = part.parent;
     open_submenu = true;
   } else {
     if (part.menu->GetDelegate()->CanDrag(part.menu)) {
@@ -2339,6 +2339,8 @@ bool MenuController::GetMenuPartByScreenCoordinateImpl(
     View::ConvertPointToView(NULL, menu, &menu_loc);
     part->menu = GetMenuItemAt(menu, menu_loc.x(), menu_loc.y());
     part->type = MenuPart::MENU_ITEM;
+    if (!part->menu)
+      part->parent = menu->GetMenuItem();
     return true;
   }
 
