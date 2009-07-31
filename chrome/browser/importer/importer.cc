@@ -14,6 +14,7 @@
 #endif
 #include "base/file_util.h"
 #include "base/gfx/png_encoder.h"
+#include "base/mac_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -27,6 +28,9 @@
 #include "chrome/browser/importer/firefox_profile_lock.h"
 #if defined(OS_WIN)
 #include "chrome/browser/importer/ie_importer.h"
+#endif
+#if defined(OS_MACOSX)
+#include "chrome/browser/importer/safari_importer.h"
 #endif
 #include "chrome/browser/importer/toolbar_importer.h"
 #if defined(OS_WIN)
@@ -652,9 +656,7 @@ Importer* ImporterHost::CreateImporterByType(ProfileType type) {
       return new Toolbar5Importer();
 #if defined(OS_MACOSX)
     case SAFARI:
-      // TODO(jeremy): Implement.
-      NOTIMPLEMENTED();
-      return NULL;
+      return new SafariImporter(mac_util::GetUserLibraryPath());
 #endif  // OS_MACOSX
   }
   NOTREACHED();

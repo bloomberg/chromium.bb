@@ -29,6 +29,9 @@ bool AmIBundled();
 // aren't a bundle.
 NSBundle* MainAppBundle();
 
+// Returns the ~/Library directory.
+FilePath GetUserLibraryPath();
+
 // Set the bundle that MainAppBundle will return, overriding the default value
 // (Restore the default by calling SetOverrideAppBundle(nil)).
 void SetOverrideAppBundle(NSBundle* bundle);

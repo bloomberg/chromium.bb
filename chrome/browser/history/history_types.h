@@ -95,6 +95,7 @@ class URLRow {
     visit_count_ = visit_count;
   }
 
+  // Number of times the URL was typed in the Omnibox.
   int typed_count() const {
     return typed_count_;
   }
@@ -109,6 +110,7 @@ class URLRow {
     last_visit_ = last_visit;
   }
 
+  // If this is set, we won't autocomplete this URL.
   bool hidden() const {
     return hidden_;
   }

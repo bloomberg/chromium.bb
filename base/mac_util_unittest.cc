@@ -6,6 +6,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
+#include "base/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -17,4 +18,10 @@ TEST_F(MacUtilTest, TestFSRef) {
 
   ASSERT_TRUE(mac_util::FSRefFromPath(path, &ref));
   EXPECT_EQ(path, mac_util::PathFromFSRef(ref));
+}
+
+TEST_F(MacUtilTest, TestLibraryPath) {
+  FilePath library_dir = mac_util::GetUserLibraryPath();
+  // Make sure the string isn't empty.
+  EXPECT_FALSE(library_dir.value().empty());
 }

@@ -53,6 +53,20 @@ NSBundle* MainAppBundle() {
   return [NSBundle mainBundle];
 }
 
+FilePath GetUserLibraryPath() {
+  NSArray* dirs = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
+                                                      NSUserDomainMask, YES);
+  if ([dirs count] == 0)
+    return FilePath();
+
+  NSString* library_dir = [dirs objectAtIndex:0];
+  const char* library_dir_path = [library_dir fileSystemRepresentation];
+  if (!library_dir_path)
+    return FilePath();
+
+  return FilePath(library_dir_path);
+}
+
 void SetOverrideAppBundle(NSBundle* bundle) {
   [g_override_app_bundle release];
   g_override_app_bundle = [bundle retain];
