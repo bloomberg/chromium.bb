@@ -32,7 +32,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_H_
 
-#include "native_client/src/trusted/validator_x86/addresses.h"
+#include "native_client/src/trusted/validator_x86/types_memory_model.h"
 
 /*
  * ncvalidate.h: exports for ncvalidate.c

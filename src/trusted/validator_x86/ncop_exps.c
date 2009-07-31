@@ -86,6 +86,7 @@ static const char* const g_ExprNodeFlagName[ExprNodeFlagEnumSize] = {
   "ExprUnsignedInt",
   "ExprSignedInt",
   "ExprImplicit",
+  "ExprJumpTarget",
 };
 
 const char* ExprNodeFlagName(ExprNodeFlagEnum flag) {

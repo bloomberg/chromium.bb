@@ -38,7 +38,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_H_
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/validator_x86/addresses.h"
+#include "native_client/src/trusted/validator_x86/types_memory_model.h"
 
 struct NCDecoderState;
 struct NCValidatorState;

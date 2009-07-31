@@ -38,7 +38,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/validator_x86/addresses.h"
+#include "native_client/src/trusted/validator_x86/types_memory_model.h"
 
 /* The meta model of an x86 opcode instruction. */
 struct Opcode;

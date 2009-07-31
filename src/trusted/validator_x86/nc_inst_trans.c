@@ -659,7 +659,9 @@ static ExprNode* AppendRelativeImmediate(NcInstState* state) {
       break;
   }
 
-  return AppendConstant(val, ExprFlag(ExprUnsignedHex), &state->nodes);
+  return AppendConstant(val,
+                        ExprFlag(ExprUnsignedHex) | ExprFlag(ExprJumpTarget),
+                        &state->nodes);
 }
 
 /* Append a memory offset for the given memory offset defined by

@@ -105,6 +105,8 @@ typedef enum {
   ExprSignedInt,
   /* Defines an implicit argument that shouldn't be printed. */
   ExprImplicit,
+  /* Defines that the corresponding constant is a jump target. */
+  ExprJumpTarget,
   /* Special marker used to define the number of ExprNodeFlags. */
   ExprNodeFlagEnumSize
 } ExprNodeFlagEnum;
