@@ -126,6 +126,9 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
   // when the widget is destroyed (when the InfoBubble is destroyed).
   GtkWidget* content_;
 
+  // The button that removes the bookmark.
+  GtkWidget* remove_button_;
+
   // The various labels in the interface. We keep track of them for theme
   // changes.
   std::vector<GtkWidget*> labels_;

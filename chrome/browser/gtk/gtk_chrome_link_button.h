@@ -40,8 +40,12 @@ struct _GtkChromeLinkButton {
   gchar* blue_markup;
   gchar* red_markup;
   gboolean is_blue;
+  gchar* native_markup;
+  gboolean using_native_theme;
   GdkCursor* hand_cursor;
   GdkEventButton* click_button_event;
+  gchar* text;
+  gboolean uses_markup;
 };
 
 struct _GtkChromeLinkButtonClass {
@@ -53,6 +57,11 @@ GtkWidget* gtk_chrome_link_button_new(const char* text);
 
 // As above, but don't escape markup in the text.
 GtkWidget* gtk_chrome_link_button_new_with_markup(const char* markup);
+
+// Set whether the link button draws natively (using "link-color"). The default
+// is TRUE.
+void gtk_chrome_link_button_set_use_gtk_theme(GtkChromeLinkButton* button,
+                                              gboolean use_gtk);
 
 // Call this from within a "clicked" handler to get the release event that
 // triggered the click. It will return NULL if the click was triggered by a
