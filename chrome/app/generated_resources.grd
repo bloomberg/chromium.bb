@@ -1602,6 +1602,10 @@ each locale. -->
                desc="In the download view, 'Resume' link text">
         Resume
       </message>
+      <message name="IDS_DOWNLOAD_LINK_REMOVE"
+               desc="In the download view, 'Remove from list' link text">
+        Remove from list
+      </message>
       <message name="IDS_DOWNLOAD_LINK_CANCEL"
                desc="In the download view, 'Cancel' link text">
         Cancel
@@ -1662,7 +1666,7 @@ each locale. -->
       </message>
       <message name="IDS_DOWNLOAD_MENU_REMOVE_ITEM"
                desc="Download context menu remove">
-        &amp;Remove
+        &amp;Remove from list
       </message>
 
       <!-- Remove in-progress downloads confirmation dialog -->

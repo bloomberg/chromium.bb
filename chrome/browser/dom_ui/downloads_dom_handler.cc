@@ -87,6 +87,8 @@ void DownloadsDOMHandler::RegisterMessages() {
       NewCallback(this, &DownloadsDOMHandler::HandlePause));
   dom_ui_->RegisterMessageCallback("resume",
       NewCallback(this, &DownloadsDOMHandler::HandlePause));
+  dom_ui_->RegisterMessageCallback("remove",
+      NewCallback(this, &DownloadsDOMHandler::HandleRemove));
   dom_ui_->RegisterMessageCallback("cancel",
       NewCallback(this, &DownloadsDOMHandler::HandleCancel));
   dom_ui_->RegisterMessageCallback("clearAll",
@@ -193,6 +195,12 @@ void DownloadsDOMHandler::HandlePause(const Value* value) {
   DownloadItem* file = GetDownloadByValue(value);
   if (file)
     file->TogglePause();
+}
+
+void DownloadsDOMHandler::HandleRemove(const Value* value) {
+  DownloadItem* file = GetDownloadByValue(value);
+  if (file)
+    file->Remove(false);
 }
 
 void DownloadsDOMHandler::HandleCancel(const Value* value) {

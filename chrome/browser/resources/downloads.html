@@ -395,6 +395,10 @@ function Download(download) {
       localStrings.getString('control_resume'));
   this.nodeControls_.appendChild(this.controlResume_);
 
+  this.controlRemove_ = createLink(bind(this.remove_, this),
+      localStrings.getString('control_removefromlist'));
+  this.nodeControls_.appendChild(this.controlRemove_);
+
   this.controlCancel_ = createLink(bind(this.cancel_, this),
       localStrings.getString('control_cancel'));
   this.nodeControls_.appendChild(this.controlCancel_);
@@ -611,6 +615,14 @@ Download.prototype.show_ = function() {
  */
 Download.prototype.togglePause_ = function() {
   chrome.send("togglepause", [this.id_.toString()]);
+  return false;
+}
+
+/**
+ * Tells the backend to remove this download from history and download shelf.
+ */
+ Download.prototype.remove_ = function() {
+  chrome.send("remove", [this.id_.toString()]);
   return false;
 }
 

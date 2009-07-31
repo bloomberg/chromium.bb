@@ -93,6 +93,8 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_DOWNLOAD_LINK_CANCEL));
   localized_strings.SetString(L"control_resume",
       l10n_util::GetString(IDS_DOWNLOAD_LINK_RESUME));
+  localized_strings.SetString(L"control_removefromlist",
+      l10n_util::GetString(IDS_DOWNLOAD_LINK_REMOVE));
 
   SetFontAndTextDirection(&localized_strings);
 

@@ -58,6 +58,10 @@ class DownloadsDOMHandler : public DOMMessageHandler,
   // Callback for the "pause" message - pauses the file download.
   void HandlePause(const Value* value);
 
+  // Callback for the "remove" message - removes the file download from shelf
+  // and list.
+  void HandleRemove(const Value* value);
+
   // Callback for the "cancel" message - cancels the download.
   void HandleCancel(const Value* value);
 
