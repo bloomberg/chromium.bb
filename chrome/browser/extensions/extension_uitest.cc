@@ -129,11 +129,11 @@ TEST_F(SimpleApiCallExtensionTest, RunTest) {
   DictionaryValue* message_dict =
       reinterpret_cast<DictionaryValue*>(message_value.get());
   std::string result;
-  message_dict->GetString(keys::kAutomationNameKey, &result);
+  ASSERT_TRUE(message_dict->GetString(keys::kAutomationNameKey, &result));
   EXPECT_EQ(result, "tabs.remove");
 
   result = "";
-  message_dict->GetString(keys::kAutomationArgsKey, &result);
+  ASSERT_TRUE(message_dict->GetString(keys::kAutomationArgsKey, &result));
   EXPECT_NE(result, "");
 
   int callback_id = 0xBAADF00D;
@@ -347,7 +347,7 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
   std::string origin(origin());
   std::string target(target());
 
-  ASSERT_TRUE(message.length() > 0);
+  ASSERT_GT(message.length(), 0);
   ASSERT_STREQ(keys::kAutomationOrigin, origin.c_str());
 
   if (target == keys::kAutomationRequestTarget) {
@@ -360,7 +360,7 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
         reinterpret_cast<DictionaryValue*>(message_value.get());
 
     std::string name;
-    message_dict->GetString(keys::kAutomationNameKey, &name);
+    ASSERT_TRUE(message_dict->GetString(keys::kAutomationNameKey, &name));
     ASSERT_STREQ(name.c_str(), "windows.getCurrent");
 
     // Send an OpenChannelToExtension message to chrome. Note: the JSON
@@ -392,7 +392,7 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
         reinterpret_cast<DictionaryValue*>(message_value.get());
 
     std::string event_name;
-    message_dict->GetString(L"data", &event_name);
+    ASSERT_TRUE(message_dict->GetString(L"data", &event_name));
     if (event_name == "\"ACK\"") {
       ASSERT_EQ(0, event_count_.size());
     } else {
