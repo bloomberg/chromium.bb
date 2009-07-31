@@ -11,9 +11,31 @@
 #include "chrome/test/automation/automation_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
+
+// The list of filtered headers that are removed from requests sent via
+// StartAsync(). These must be lower case.
+static const char* kFilteredHeaderStrings[] = {
+  "accept",
+  "authorization",
+  "cache-control",
+  "connection",
+  "cookie",
+  "expect",
+  "if-match",
+  "if-modified-since",
+  "if-none-match",
+  "if-range",
+  "if-unmodified-since",
+  "max-forwards",
+  "proxy-authorization",
+  "te",
+  "upgrade",
+  "via"
+};
 
 // This class manages the interception of network requests for automation.
 // It looks at the request, and creates an intercept job if it indicates
@@ -279,7 +301,7 @@ void URLRequestAutomationJob::Cleanup() {
 
 void URLRequestAutomationJob::StartAsync() {
   DLOG(INFO) << "URLRequestAutomationJob: start request: " <<
-      request_->url().spec();
+      (request_ ? request_->url().spec() : "NULL request");
 
   // If the job is cancelled before we got a chance to start it
   // we have nothing much to do here.
@@ -295,12 +317,18 @@ void URLRequestAutomationJob::StartAsync() {
   // Register this request with automation message filter.
   message_filter_->RegisterRequest(this);
 
+  // Strip unwanted headers.
+  std::string new_request_headers(
+      net::HttpUtil::StripHeaders(request_->extra_request_headers(),
+                                  kFilteredHeaderStrings,
+                                  arraysize(kFilteredHeaderStrings)));
+
   // Ask automation to start this request.
   IPC::AutomationURLRequest automation_request = {
     request_->url().spec(),
     request_->method(),
     request_->referrer(),
-    request_->extra_request_headers(),
+    new_request_headers,
     request_->get_upload()
   };
 
