@@ -2786,6 +2786,7 @@ BUG16410 DEBUG : LayoutTests/fast/events/message-channel-listener-circular-owner
 BUG16410 DEBUG : LayoutTests/fast/events/message-port-constructor-for-deleted-document.html = CRASH	
 BUG16410 DEBUG : LayoutTests/fast/events/message-port-deleted-frame.html = CRASH	
 BUG16639 DEBUG : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
+BUG16639 DEBUG : LayoutTests/fast/events/mouseout-on-window.html = CRASH
 
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
