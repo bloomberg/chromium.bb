@@ -2716,7 +2716,7 @@ BUG15478 SKIP : LayoutTests/platform/qt/fast/events/event-sender-keydown-frame.h
 // WebKit 45270:45287
 BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS CRASH
 
-// Flaky for a while on DEBUG
+// Flaky for a while on DEBUG; also related to BUG17974
 BUG15267 WIN LINUX DEBUG : LayoutTests/transitions/cancel-transition.html = PASS FAIL
 
 // Started crashing without a clear reason.
@@ -3077,7 +3077,6 @@ BUG17974 WIN LINUX: LayoutTests/fast/css/remove-shorthand.html = FAIL
 BUG17974 WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
 BUG17974 WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 BUG17974 WIN: LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
-BUG17974 WIN: LayoutTests/transitions/cancel-transition.html = FAIL
 
 // Regressions caused by Chromium r22067
 BUG18089 LINUX MAC : LayoutTests/http/tests/security/xss-DENIED-xsl-document-redirect.xml = FAIL
