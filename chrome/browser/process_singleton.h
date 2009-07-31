@@ -68,12 +68,6 @@ class ProcessSingleton : public NonThreadSafe {
   }
 
  private:
-#if defined(OS_WIN) || defined(OS_LINUX)
-  // Timeout for the current browser process to respond. 20 seconds should be
-  // enough. It's only used in Windows and Linux implementations.
-  static const int kTimeoutInSeconds = 20;
-#endif
-
   bool locked_;
   gfx::NativeWindow foreground_window_;
 
@@ -98,6 +92,9 @@ class ProcessSingleton : public NonThreadSafe {
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
 #elif defined(OS_LINUX)
+  // Set up a socket and sockaddr appropriate for messaging.
+  void SetupSocket(int* sock, struct sockaddr_un* addr);
+
   // Path in file system to the socket.
   FilePath socket_path_;
 

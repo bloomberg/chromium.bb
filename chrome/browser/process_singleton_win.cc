@@ -78,6 +78,8 @@ bool ProcessSingleton::NotifyOtherProcess() {
 
   AllowSetForegroundWindow(process_id);
 
+  // Gives 20 seconds timeout for the current browser process to respond.
+  const int kTimeout = 20000;
   COPYDATASTRUCT cds;
   cds.dwData = 0;
   cds.cbData = static_cast<DWORD>((to_send.length() + 1) * sizeof(wchar_t));
@@ -88,7 +90,7 @@ bool ProcessSingleton::NotifyOtherProcess() {
                          NULL,
                          reinterpret_cast<LPARAM>(&cds),
                          SMTO_ABORTIFHUNG,
-                         kTimeoutInSeconds * 1000,
+                         kTimeout,
                          &result)) {
     // It is possible that the process owning this window may have died by now.
     if (!result) {
