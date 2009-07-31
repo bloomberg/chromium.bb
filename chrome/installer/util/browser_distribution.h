@@ -58,7 +58,7 @@ class BrowserDistribution {
   // sets the wheels in motion or in simple cases does the experiment itself.
   virtual void LaunchUserExperiment(installer_util::InstallStatus status,
                                     const installer::Version& version,
-                                    bool system_install, int options);
+                                    bool system_install);
 
   // The user has qualified for the inactive user toast experiment and this
   // function just performs it.

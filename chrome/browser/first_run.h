@@ -69,8 +69,8 @@ class FirstRun {
   // 'master_preferences' file.
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
                                        const FilePath& master_prefs_path,
-                                       int* preference_details,
-                                       std::vector<std::wstring>* new_tabs);
+                                       std::vector<std::wstring>* new_tabs,
+                                       int* ping_delay);
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser
   // shows the bubble once the main message loop gets going. Returns false if

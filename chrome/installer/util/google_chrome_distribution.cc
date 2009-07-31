@@ -407,7 +407,7 @@ void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
 // applies for users doing upgrades and non-systemwide install.
 void GoogleChromeDistribution::LaunchUserExperiment(
     installer_util::InstallStatus status, const installer::Version& version,
-    bool system_install, int options) {
+    bool system_install) {
   if ((installer_util::NEW_VERSION_UPDATED != status) || system_install)
     return;
 

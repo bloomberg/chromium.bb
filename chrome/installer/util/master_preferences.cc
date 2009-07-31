@@ -10,37 +10,26 @@
 #include "chrome/common/json_value_serializer.h"
 
 namespace {
+DictionaryValue* GetPrefsFromFile(const FilePath& master_prefs_path) {
+  std::string json_data;
+  if (!file_util::ReadFileToString(master_prefs_path, &json_data))
+    return NULL;
 
-DictionaryValue* ReadJSONPrefs(const std::string& data) {
-  JSONStringValueSerializer json(data);
+  JSONStringValueSerializer json(json_data);
   scoped_ptr<Value> root(json.Deserialize(NULL));
+
   if (!root.get())
     return NULL;
+
   if (!root->IsType(Value::TYPE_DICTIONARY))
     return NULL;
 
   return static_cast<DictionaryValue*>(root.release());
 }
-
-DictionaryValue* GetPrefsFromFile(const std::wstring& master_prefs_path) {
-  std::string json_data;
-  if (!file_util::ReadFileToString(master_prefs_path, &json_data))
-    return NULL;
-  return ReadJSONPrefs(json_data);
-}
-
-bool GetBooleanPref(const DictionaryValue* prefs, const std::wstring& name) {
-  bool value = false;
-  prefs->GetBoolean(name, &value);
-  return value;
-}
-
 }  // namespace
 
 namespace installer_util {
-// All the preferences below are expected to be inside the JSON "distribution"
-// block. See master_preferences.h for an example.
-
+namespace master_preferences {
 // Boolean pref that triggers skipping the first run dialogs.
 const wchar_t kDistroSkipFirstRunPref[] = L"skip_first_run_ui";
 // Boolean pref that triggers loading the welcome page.
@@ -77,88 +66,61 @@ const wchar_t kAltFirstRunBubble[] = L"oem_bubble";
 // Boolean pref that triggers silent import of the default browser homepage.
 const wchar_t kDistroImportHomePagePref[] = L"import_home_page";
 
-bool GetDistributionPingDelay(const FilePath& master_prefs_path,
-                              int& delay) {
+const wchar_t kMasterPreferencesValid[] = L"master_preferencs_valid";
+}
+
+bool GetBooleanPreference(const DictionaryValue* prefs,
+                          const std::wstring& name) {
+  bool value = false;
+  if (!prefs || !prefs->GetBoolean(name, &value))
+    return false;
+  return value;
+}
+
+bool GetDistributionPingDelay(const DictionaryValue* prefs,
+                              int* ping_delay) {
+  if (!prefs || !ping_delay)
+    return false;
+
   // 90 seconds is the default that we want to use in case master preferences
   // is missing or corrupt.
-  delay = 90;
-  FilePath master_prefs = master_prefs_path;
-  if (master_prefs.empty()) {
-    if (!PathService::Get(base::DIR_EXE, &master_prefs))
-      return false;
-    master_prefs = master_prefs.Append(installer_util::kDefaultMasterPrefs);
-  }
-
-  if (!file_util::PathExists(master_prefs))
-    return false;
-
-  scoped_ptr<DictionaryValue> json_root(
-      GetPrefsFromFile(master_prefs.ToWStringHack()));
-  if (!json_root.get())
-    return false;
-
-  DictionaryValue* distro = NULL;
-  if (!json_root->GetDictionary(L"distribution", &distro) ||
-      !distro->GetInteger(kDistroPingDelay, &delay))
+  *ping_delay = 90;
+  if (!prefs->GetInteger(master_preferences::kDistroPingDelay, ping_delay))
     return false;
 
   return true;
 }
 
-int ParseDistributionPreferences(const std::wstring& master_prefs_path) {
-  if (!file_util::PathExists(master_prefs_path))
-    return MASTER_PROFILE_NOT_FOUND;
-  LOG(INFO) << "master profile found";
+DictionaryValue* ParseDistributionPreferences(
+    const FilePath& master_prefs_path) {
+  if (!file_util::PathExists(master_prefs_path)) {
+    LOG(WARNING) << "Master preferences file not found: "
+                 << master_prefs_path.value();
+    return NULL;
+  }
 
   scoped_ptr<DictionaryValue> json_root(GetPrefsFromFile(master_prefs_path));
-  if (!json_root.get())
-    return MASTER_PROFILE_ERROR;
-
-  int parse_result = 0;
-  DictionaryValue* distro = NULL;
-  if (json_root->GetDictionary(L"distribution", &distro)) {
-    if (GetBooleanPref(distro, kDistroSkipFirstRunPref))
-      parse_result |= MASTER_PROFILE_NO_FIRST_RUN_UI;
-    if (GetBooleanPref(distro, kDistroShowWelcomePage))
-      parse_result |= MASTER_PROFILE_SHOW_WELCOME;
-    if (GetBooleanPref(distro, kDistroImportSearchPref))
-      parse_result |= MASTER_PROFILE_IMPORT_SEARCH_ENGINE;
-    if (GetBooleanPref(distro, kDistroImportHistoryPref))
-      parse_result |= MASTER_PROFILE_IMPORT_HISTORY;
-    if (GetBooleanPref(distro, kDistroImportBookmarksPref))
-      parse_result |= MASTER_PROFILE_IMPORT_BOOKMARKS;
-    if (GetBooleanPref(distro, kDistroImportHomePagePref))
-      parse_result |= MASTER_PROFILE_IMPORT_HOME_PAGE;
-    if (GetBooleanPref(distro, kMakeChromeDefaultForUser))
-      parse_result |= MASTER_PROFILE_MAKE_CHROME_DEFAULT_FOR_USER;
-    if (GetBooleanPref(distro, kCreateAllShortcuts))
-      parse_result |= MASTER_PROFILE_CREATE_ALL_SHORTCUTS;
-    if (GetBooleanPref(distro, kDoNotLaunchChrome))
-      parse_result |= MASTER_PROFILE_DO_NOT_LAUNCH_CHROME;
-    if (GetBooleanPref(distro, kMakeChromeDefault))
-      parse_result |= MASTER_PROFILE_MAKE_CHROME_DEFAULT;
-    if (GetBooleanPref(distro, kSystemLevel))
-      parse_result |= MASTER_PROFILE_SYSTEM_LEVEL;
-    if (GetBooleanPref(distro, kVerboseLogging))
-      parse_result |= MASTER_PROFILE_VERBOSE_LOGGING;
-    if (GetBooleanPref(distro, kRequireEula))
-      parse_result |= MASTER_PROFILE_REQUIRE_EULA;
-    if (GetBooleanPref(distro, kAltShortcutText))
-      parse_result |= MASTER_PROFILE_ALT_SHORTCUT_TXT;
-    if (GetBooleanPref(distro, kAltFirstRunBubble))
-      parse_result |= MASTER_PROFILE_OEM_FIRST_RUN_BUBBLE;
+  if (!json_root.get()) {
+    LOG(WARNING) << "Failed to parse preferences file: "
+                 << master_prefs_path.value();
+    return NULL;
   }
-  return parse_result;
+
+  DictionaryValue* distro = NULL;
+  if (!json_root->GetDictionary(L"distribution", &distro)) {
+    LOG(WARNING) << "Failed to get distriubtion params: "
+                 << master_prefs_path.value();
+    return NULL;
+  }
+  return distro;
 }
 
-std::vector<std::wstring> ParseFirstRunTabs(
-    const std::wstring& master_prefs_path) {
+std::vector<std::wstring> ParseFirstRunTabs(const DictionaryValue* prefs) {
   std::vector<std::wstring> launch_tabs;
-  scoped_ptr<DictionaryValue> json_root(GetPrefsFromFile(master_prefs_path));
-  if (!json_root.get())
+  if (!prefs)
     return launch_tabs;
   ListValue* tabs_list = NULL;
-  if (!json_root->GetList(L"first_run_tabs", &tabs_list))
+  if (!prefs->GetList(L"first_run_tabs", &tabs_list))
     return launch_tabs;
   for (size_t i = 0; i < tabs_list->GetSize(); ++i) {
     Value* entry;

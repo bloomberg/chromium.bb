@@ -145,8 +145,8 @@ void AutomationProvider::OnMessageFromExternalHost(
 // static
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
                                         const FilePath& master_prefs_path,
-                                        int* preference_details,
-                                        std::vector<std::wstring>* new_tabs) {
+                                        std::vector<std::wstring>* new_tabs,
+                                        int* ping_delay) {
   // http://code.google.com/p/chromium/issues/detail?id=11971
   // Pretend we processed them correctly.
   return true;
