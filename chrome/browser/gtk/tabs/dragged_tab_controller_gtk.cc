@@ -386,7 +386,7 @@ void DraggedTabControllerGtk::AdjustDragPointForPinnedTabs(
       // be pinned. Make sure the dragged tab does not go before the first
       // non-pinned tab.
       gfx::Rect tabstrip_bounds =
-          GtkUtil::GetWidgetScreenBounds(attached_tabstrip_->tabstrip_.get());
+          gtk_util::GetWidgetScreenBounds(attached_tabstrip_->tabstrip_.get());
       dragged_tab_point->set_x(std::max(dragged_tab_point->x(),
                                         tabstrip_bounds.x() + tab_bounds.x()));
     }
@@ -432,7 +432,7 @@ TabStripGtk* DraggedTabControllerGtk::GetTabStripIfItContains(
   // Make sure the specified screen point is actually within the bounds of the
   // specified tabstrip...
   gfx::Rect tabstrip_bounds =
-      GtkUtil::GetWidgetScreenBounds(tabstrip->tabstrip_.get());
+      gtk_util::GetWidgetScreenBounds(tabstrip->tabstrip_.get());
   if (screen_point.x() < tabstrip_bounds.right() &&
       screen_point.x() >= tabstrip_bounds.x()) {
     // TODO(beng): make this be relative to the start position of the mouse for
@@ -643,7 +643,7 @@ gfx::Point DraggedTabControllerGtk::GetDraggedTabPoint(
   // If we're not attached, we just use x and y from above.
   if (attached_tabstrip_) {
     gfx::Rect tabstrip_bounds =
-        GtkUtil::GetWidgetScreenBounds(attached_tabstrip_->tabstrip_.get());
+        gtk_util::GetWidgetScreenBounds(attached_tabstrip_->tabstrip_.get());
     // Snap the dragged tab to the tabstrip if we are attached, detaching
     // only when the mouse position (screen_point) exceeds the screen bounds
     // of the tabstrip.
@@ -835,7 +835,7 @@ gfx::Rect DraggedTabControllerGtk::GetTabScreenBounds(TabGtk* tab) {
   gfx::Rect bounds = tab->GetRequisition();
   GtkWidget* widget = tab->widget();
   GtkWidget* parent = gtk_widget_get_parent(widget);
-  gfx::Point point = GtkUtil::GetWidgetScreenPosition(parent);
+  gfx::Point point = gtk_util::GetWidgetScreenPosition(parent);
   bounds.Offset(point);
 
   return gfx::Rect(bounds.x(), bounds.y(), bounds.width(), bounds.height());

@@ -44,7 +44,7 @@ ExceptionsPageGtk::ExceptionsPageGtk(Profile* profile)
   g_signal_connect(G_OBJECT(remove_all_button_), "clicked",
                    G_CALLBACK(OnRemoveAllButtonClicked), this);
 
-  GtkWidget* buttons = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* buttons = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(buttons), remove_button_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(buttons), remove_all_button_, FALSE, FALSE, 0);
 
@@ -58,9 +58,9 @@ ExceptionsPageGtk::ExceptionsPageGtk(Profile* profile)
   InitExceptionTree();
   gtk_container_add(GTK_CONTAINER(scroll_window), exception_tree_);
 
-  page_ = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
+  page_ = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(page_),
-                                 GtkUtil::kContentAreaBorder);
+                                 gtk_util::kContentAreaBorder);
   gtk_box_pack_end(GTK_BOX(page_), buttons, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(page_), scroll_window, TRUE, TRUE, 0);
 }
@@ -133,7 +133,7 @@ void ExceptionsPageGtk::OnRemoveButtonClicked(GtkButton* widget,
 
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(page->exception_list_sort_), &iter);
-  gint index = GtkTreeUtil::GetTreeSortChildRowNumForPath(
+  gint index = gtk_tree_util::GetTreeSortChildRowNumForPath(
       page->exception_list_sort_, path);
   gtk_tree_path_free(path);
 
@@ -178,8 +178,8 @@ void ExceptionsPageGtk::OnExceptionSelectionChanged(GtkTreeSelection* selection,
 gint ExceptionsPageGtk::CompareSite(GtkTreeModel* model,
                                    GtkTreeIter* a, GtkTreeIter* b,
                                    gpointer window) {
-  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
-  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
+  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
+  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
   ExceptionsPageGtk* page = reinterpret_cast<ExceptionsPageGtk*>(window);
   return page->exception_list_[row1].origin.spec().compare(
          page->exception_list_[row2].origin.spec());

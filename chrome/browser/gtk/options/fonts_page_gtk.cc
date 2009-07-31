@@ -54,7 +54,7 @@ void FontsPageGtk::Init() {
   g_signal_connect(fixed_font_button_, "font-set", G_CALLBACK(OnFixedFontSet),
                    this);
 
-  GtkWidget* font_controls = GtkUtil::CreateLabeledControlsGroup(NULL,
+  GtkWidget* font_controls = gtk_util::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(
           IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL).c_str(),
       serif_font_button_,
@@ -73,7 +73,7 @@ void FontsPageGtk::Init() {
   InitDefaultEncodingComboBox();
   std::string encoding_group_description = l10n_util::GetStringUTF8(
       IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL);
-  GtkWidget* encoding_controls = GtkUtil::CreateLabeledControlsGroup(NULL,
+  GtkWidget* encoding_controls = gtk_util::CreateLabeledControlsGroup(NULL,
       encoding_group_description.c_str(),
       default_encoding_combobox_,
       NULL);

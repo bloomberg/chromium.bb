@@ -87,7 +87,7 @@ void DraggedTabGtk::Attach(int selected_width) {
   attached_ = true;
   Resize(selected_width);
 
-  if (GtkUtil::IsScreenComposited())
+  if (gtk_util::IsScreenComposited())
     gdk_window_set_opacity(container_->window, kOpaqueAlpha);
 }
 
@@ -118,7 +118,7 @@ void DraggedTabGtk::Detach(GtkWidget* contents, BackingStore* backing_store) {
   backing_store_ = backing_store;
   ResizeContainer();
 
-  if (GtkUtil::IsScreenComposited())
+  if (gtk_util::IsScreenComposited())
     gdk_window_set_opacity(container_->window, kTransparentAlpha);
 }
 
@@ -288,7 +288,7 @@ gboolean DraggedTabGtk::OnExposeEvent(GtkWidget* widget,
                                       GdkEventExpose* event,
                                       DraggedTabGtk* dragged_tab) {
   GdkPixbuf* pixbuf = dragged_tab->PaintTab();
-  if (GtkUtil::IsScreenComposited()) {
+  if (gtk_util::IsScreenComposited()) {
     dragged_tab->SetContainerTransparency();
   } else {
     dragged_tab->SetContainerShapeMask(pixbuf);

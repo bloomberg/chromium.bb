@@ -144,7 +144,7 @@ void StatusBubbleGtk::InitWidgets() {
   bg_box_ = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(bg_box_), padding);
 
-  container_.Own(GtkUtil::CreateGtkBorderBin(bg_box_, &kFrameBorderColor,
+  container_.Own(gtk_util::CreateGtkBorderBin(bg_box_, &kFrameBorderColor,
           kBorderPadding, kBorderPadding, kBorderPadding, kBorderPadding));
   gtk_widget_set_name(container_.get(), "status-bubble");
   gtk_widget_set_app_paintable(container_.get(), TRUE);

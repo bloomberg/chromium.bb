@@ -381,7 +381,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(TOOLKIT_GTK)
   // It is important for this to happen before the first run dialog, as it
   // styles the dialog as well.
-  GtkUtil::InitRCStyles();
+  gtk_util::InitRCStyles();
 #elif defined(TOOLKIT_VIEWS)
   // The delegate needs to be set before any UI is created so that windows
   // display the correct icon.

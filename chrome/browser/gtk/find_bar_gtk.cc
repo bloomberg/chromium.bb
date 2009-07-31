@@ -136,7 +136,7 @@ void FindBarGtk::InitWidgets() {
   // lateral position. We put that fixed in a SlideAnimatorGtk in order to get
   // the slide effect.
   GtkWidget* hbox = gtk_hbox_new(false, 0);
-  container_ = GtkUtil::CreateGtkBorderBin(hbox, NULL,
+  container_ = gtk_util::CreateGtkBorderBin(hbox, NULL,
       kBarPaddingTopBottom, kBarPaddingTopBottom,
       kEntryPaddingLeft, kBarPaddingRight);
   gtk_widget_set_app_paintable(container_, TRUE);
@@ -157,8 +157,8 @@ void FindBarGtk::InitWidgets() {
   gtk_widget_set_size_request(widget(), -1, 0);
 
   close_button_.reset(CustomDrawButton::CloseButton(NULL));
-  GtkUtil::CenterWidgetInHBox(hbox, close_button_->widget(), true,
-                              kCloseButtonPaddingLeft);
+  gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
+                               kCloseButtonPaddingLeft);
   g_signal_connect(G_OBJECT(close_button_->widget()), "clicked",
                    G_CALLBACK(OnClicked), this);
   gtk_widget_set_tooltip_text(close_button_->widget(),
@@ -209,8 +209,8 @@ void FindBarGtk::InitWidgets() {
 
   gtk_entry_set_has_frame(GTK_ENTRY(text_entry_), FALSE);
   // Until we switch to vector graphics, force the font size.
-  GtkUtil::ForceFontSizePixels(text_entry_, 13.4);  // 13.4px == 10pt @ 96dpi
-  GtkUtil::ForceFontSizePixels(match_count_centerer, 13.4);
+  gtk_util::ForceFontSizePixels(text_entry_, 13.4);  // 13.4px == 10pt @ 96dpi
+  gtk_util::ForceFontSizePixels(match_count_centerer, 13.4);
 
   gtk_box_pack_end(GTK_BOX(content_hbox), match_count_centerer,
                    FALSE, FALSE, 0);
@@ -227,13 +227,13 @@ void FindBarGtk::InitWidgets() {
   gtk_container_add(GTK_CONTAINER(content_event_box), content_hbox);
 
   // We fake anti-aliasing by having two borders.
-  GtkWidget* border_bin = GtkUtil::CreateGtkBorderBin(content_event_box,
-                                                      &kTextBorderColor,
-                                                      1, 1, 1, 0);
-  GtkWidget* border_bin_aa = GtkUtil::CreateGtkBorderBin(border_bin,
-                                                         &kTextBorderColorAA,
-                                                         1, 1, 1, 0);
-  GtkUtil::CenterWidgetInHBox(hbox, border_bin_aa, true, 0);
+  GtkWidget* border_bin = gtk_util::CreateGtkBorderBin(content_event_box,
+                                                       &kTextBorderColor,
+                                                       1, 1, 1, 0);
+  GtkWidget* border_bin_aa = gtk_util::CreateGtkBorderBin(border_bin,
+                                                          &kTextBorderColorAA,
+                                                          1, 1, 1, 0);
+  gtk_util::CenterWidgetInHBox(hbox, border_bin_aa, true, 0);
 
   // We take care to avoid showing the slide animator widget.
   gtk_widget_show_all(container_);

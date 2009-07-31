@@ -60,10 +60,10 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   gtk_window_set_default_size(GTK_WINDOW(dialog_), kDialogDefaultWidth,
                               kDialogDefaultHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      GtkUtil::kContentAreaSpacing);
+                      gtk_util::kContentAreaSpacing);
 
   // URL entry.
-  GtkWidget* url_hbox = gtk_hbox_new(FALSE, GtkUtil::kLabelSpacing);
+  GtkWidget* url_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   GtkWidget* url_label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_ASI_URL).c_str());
   gtk_box_pack_start(GTK_BOX(url_hbox), url_label,
@@ -78,7 +78,7 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
                      FALSE, FALSE, 0);
 
   // Recent history description label.
-  GtkWidget* history_vbox = gtk_vbox_new(FALSE, GtkUtil::kLabelSpacing);
+  GtkWidget* history_vbox = gtk_vbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), history_vbox);
   GtkWidget* history_label = gtk_label_new(NULL);
   char* markup = g_markup_printf_escaped(kHistoryLabelMarkup,
@@ -177,8 +177,8 @@ void UrlPickerDialogGtk::EnableControls() {
 }
 
 std::string UrlPickerDialogGtk::GetURLForPath(GtkTreePath* path) const {
-  gint row = GtkTreeUtil::GetTreeSortChildRowNumForPath(history_list_sort_,
-                                                        path);
+  gint row = gtk_tree_util::GetTreeSortChildRowNumForPath(history_list_sort_,
+                                                          path);
   if (row < 0) {
     NOTREACHED();
     return std::string();
@@ -253,8 +253,8 @@ gint UrlPickerDialogGtk::CompareTitle(GtkTreeModel* model,
                                       GtkTreeIter* a,
                                       GtkTreeIter* b,
                                       gpointer window) {
-  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
-  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
+  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
+  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
   return reinterpret_cast<UrlPickerDialogGtk*>(window)->url_table_model_->
       CompareValues(row1, row2, IDS_ASI_PAGE_COLUMN);
 }
@@ -264,8 +264,8 @@ gint UrlPickerDialogGtk::CompareURL(GtkTreeModel* model,
                                     GtkTreeIter* a,
                                     GtkTreeIter* b,
                                     gpointer window) {
-  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
-  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
+  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
+  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
   return reinterpret_cast<UrlPickerDialogGtk*>(window)->url_table_model_->
       CompareValues(row1, row2, IDS_ASI_URL_COLUMN);
 }

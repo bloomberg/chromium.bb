@@ -65,8 +65,8 @@ SkBitmap* crashed_fav_icon = NULL;
 // Gets the bounds of |widget| relative to |parent|.
 gfx::Rect GetWidgetBoundsRelativeToParent(GtkWidget* parent,
                                           GtkWidget* widget) {
-  gfx::Point parent_pos = GtkUtil::GetWidgetScreenPosition(parent);
-  gfx::Point widget_pos = GtkUtil::GetWidgetScreenPosition(widget);
+  gfx::Point parent_pos = gtk_util::GetWidgetScreenPosition(parent);
+  gfx::Point widget_pos = gtk_util::GetWidgetScreenPosition(widget);
   return gfx::Rect(widget_pos.x() - parent_pos.x(),
                    widget_pos.y() - parent_pos.y(),
                    widget->allocation.width, widget->allocation.height);
@@ -389,7 +389,7 @@ gfx::Rect TabRendererGtk::GetNonMirroredBounds(GtkWidget* parent) const {
   // is relative to the browser titlebar.  We need the bounds relative to the
   // tabstrip.
   gfx::Rect bounds = GetWidgetBoundsRelativeToParent(parent, widget());
-  bounds.set_x(GtkUtil::MirroredLeftPointForRect(parent, bounds));
+  bounds.set_x(gtk_util::MirroredLeftPointForRect(parent, bounds));
   return bounds;
 }
 
@@ -567,11 +567,11 @@ void TabRendererGtk::Layout() {
   }
 
   favicon_bounds_.set_x(
-      GtkUtil::MirroredLeftPointForRect(tab_.get(), favicon_bounds_));
+      gtk_util::MirroredLeftPointForRect(tab_.get(), favicon_bounds_));
   close_button_bounds_.set_x(
-      GtkUtil::MirroredLeftPointForRect(tab_.get(), close_button_bounds_));
+      gtk_util::MirroredLeftPointForRect(tab_.get(), close_button_bounds_));
   title_bounds_.set_x(
-      GtkUtil::MirroredLeftPointForRect(tab_.get(), title_bounds_));
+      gtk_util::MirroredLeftPointForRect(tab_.get(), title_bounds_));
 
   MoveCloseButtonWidget();
 }

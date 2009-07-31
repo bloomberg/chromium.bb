@@ -48,9 +48,9 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile) :
   gtk_widget_set_size_request(dialog_, 300, -1);
 
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
-  gtk_box_set_spacing(GTK_BOX(content_area), GtkUtil::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
-  GtkWidget* combo_hbox = gtk_hbox_new(FALSE, GtkUtil::kLabelSpacing);
+  GtkWidget* combo_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   GtkWidget* from = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_LABEL).c_str());
   gtk_box_pack_start(GTK_BOX(combo_hbox), from, FALSE, FALSE, 0);
@@ -60,7 +60,7 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile) :
 
   gtk_box_pack_start(GTK_BOX(content_area), combo_hbox, FALSE, FALSE, 0);
 
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   GtkWidget* description = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_IMPORT_ITEMS_LABEL).c_str());

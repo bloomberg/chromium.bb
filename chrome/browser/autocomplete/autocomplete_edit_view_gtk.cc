@@ -133,7 +133,7 @@ void AutocompleteEditViewGtk::Init() {
     const double kFontSize = 13.4;  // 13.4px == 10pt @ 96dpi
     // On Windows, popups have a font size 5/6 the size of non-popups.
     const double kPopupWindowFontSize = kFontSize * 5.0 / 6.0;
-    GtkUtil::ForceFontSizePixels(text_view_,
+    gtk_util::ForceFontSizePixels(text_view_,
         popup_window_mode_ ? kPopupWindowFontSize : kFontSize);
   }
 
@@ -594,7 +594,7 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
 
   // Search Engine menu item.
   GtkWidget* search_engine_menuitem = gtk_menu_item_new_with_mnemonic(
-      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_EDIT_SEARCH_ENGINES)).c_str());
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), search_engine_menuitem);
   g_signal_connect(search_engine_menuitem, "activate",
@@ -603,7 +603,7 @@ void AutocompleteEditViewGtk::HandlePopulatePopup(GtkMenu* menu) {
 
   // Paste and Go menu item.
   GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
-      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(model_->is_paste_and_search() ?
               IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO)).c_str());
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), paste_go_menuitem);

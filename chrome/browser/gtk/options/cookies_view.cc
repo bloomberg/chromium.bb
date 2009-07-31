@@ -84,7 +84,7 @@ void CookiesView::Init() {
 
   remove_button_ = gtk_dialog_add_button(
       GTK_DIALOG(dialog_),
-      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
         l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_LABEL)).c_str(),
       RESPONSE_REMOVE);
   gtk_button_box_set_child_secondary(
@@ -94,7 +94,7 @@ void CookiesView::Init() {
 
   remove_all_button_ = gtk_dialog_add_button(
       GTK_DIALOG(dialog_),
-      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_ALL_LABEL)).c_str(),
       RESPONSE_REMOVE_ALL);
   gtk_button_box_set_child_secondary(
@@ -106,12 +106,12 @@ void CookiesView::Init() {
   gtk_window_set_default_size(GTK_WINDOW(dialog_), kDialogDefaultWidth,
                               kDialogDefaultHeight);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      GtkUtil::kContentAreaSpacing);
+                      gtk_util::kContentAreaSpacing);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
 
   // Filtering controls.
-  GtkWidget* filter_hbox = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* filter_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   filter_entry_ = gtk_entry_new();
   g_signal_connect(G_OBJECT(filter_entry_), "activate",
                    G_CALLBACK(OnFilterEntryActivated), this);
@@ -120,21 +120,21 @@ void CookiesView::Init() {
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_entry_,
                      TRUE, TRUE, 0);
   filter_clear_button_ = gtk_button_new_with_mnemonic(
-      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_CLEAR_SEARCH_LABEL)).c_str());
   g_signal_connect(G_OBJECT(filter_clear_button_), "clicked",
                    G_CALLBACK(OnFilterClearButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_clear_button_,
                      FALSE, FALSE, 0);
 
-  GtkWidget* filter_controls = GtkUtil::CreateLabeledControlsGroup(NULL,
+  GtkWidget* filter_controls = gtk_util::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(IDS_COOKIES_SEARCH_LABEL).c_str(), filter_hbox,
       NULL);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), filter_controls,
                      FALSE, FALSE, 0);
 
   // Cookie list.
-  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), cookie_list_vbox,
                      TRUE, TRUE, 0);
 
@@ -203,7 +203,7 @@ void CookiesView::Init() {
   cookie_details_table_ = gtk_table_new(7, 2, FALSE);
   gtk_container_add(GTK_CONTAINER(details_frame), cookie_details_table_);
   gtk_table_set_col_spacing(GTK_TABLE(cookie_details_table_), 0,
-                            GtkUtil::kLabelSpacing);
+                            gtk_util::kLabelSpacing);
 
   InitCookieDetailRow(0, IDS_COOKIES_COOKIE_NAME_LABEL, &cookie_name_entry_);
   InitCookieDetailRow(1, IDS_COOKIES_COOKIE_CONTENT_LABEL,
@@ -289,7 +289,7 @@ void CookiesView::PopulateCookieDetails() {
     NOTREACHED();
     return;
   }
-  int selected_index = GtkTreeUtil::GetTreeSortChildRowNumForPath(
+  int selected_index = gtk_tree_util::GetTreeSortChildRowNumForPath(
         list_sort_, static_cast<GtkTreePath*>(list->data));
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
   g_list_free(list);
@@ -341,7 +341,7 @@ void CookiesView::RemoveSelectedCookies() {
   GList* node;
   size_t i;
   for (i = 0, node = list; node != NULL; ++i, node = node->next) {
-    selected_rows[i] = GtkTreeUtil::GetTreeSortChildRowNumForPath(
+    selected_rows[i] = gtk_tree_util::GetTreeSortChildRowNumForPath(
         list_sort_, static_cast<GtkTreePath*>(node->data));
   }
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
@@ -423,8 +423,8 @@ void CookiesView::OnItemsRemoved(int start, int length) {
 // static
 gint CookiesView::CompareSite(GtkTreeModel* model, GtkTreeIter* a,
                                      GtkTreeIter* b, gpointer window) {
-  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
-  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
+  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
+  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
   return reinterpret_cast<CookiesView*>(window)->cookies_table_model_->
       CompareValues(row1, row2, IDS_COOKIES_DOMAIN_COLUMN_HEADER);
 }
@@ -432,8 +432,8 @@ gint CookiesView::CompareSite(GtkTreeModel* model, GtkTreeIter* a,
 // static
 gint CookiesView::CompareCookieName(GtkTreeModel* model, GtkTreeIter* a,
                                            GtkTreeIter* b, gpointer window) {
-  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
-  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
+  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
+  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
   return reinterpret_cast<CookiesView*>(window)->cookies_table_model_->
       CompareValues(row1, row2, IDS_COOKIES_NAME_COLUMN_HEADER);
 }

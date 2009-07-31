@@ -110,7 +110,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
 
   content_ = gtk_vbox_new(FALSE, 5);
   int width, height;
-  GtkUtil::GetWidgetSizeFromResources(content_,
+  gtk_util::GetWidgetSizeFromResources(content_,
       IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS,
       IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES,
       &width, &height);

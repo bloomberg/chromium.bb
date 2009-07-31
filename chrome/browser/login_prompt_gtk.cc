@@ -58,7 +58,7 @@ class LoginHandlerGtk : public LoginHandler,
                                            std::wstring explanation) {
     DCHECK(MessageLoop::current() == ui_loop_);
 
-    root_.Own(gtk_vbox_new(NULL, GtkUtil::kContentAreaBorder));
+    root_.Own(gtk_vbox_new(NULL, gtk_util::kContentAreaBorder));
     GtkWidget* label = gtk_label_new(WideToUTF8(explanation).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
     gtk_box_pack_start(GTK_BOX(root_.get()), label, FALSE, FALSE, 0);
@@ -70,7 +70,7 @@ class LoginHandlerGtk : public LoginHandler,
     gtk_entry_set_activates_default(GTK_ENTRY(password_entry_), TRUE);
     gtk_entry_set_visibility(GTK_ENTRY(password_entry_), FALSE);
 
-    GtkWidget* table = GtkUtil::CreateLabeledControlsGroup(NULL,
+    GtkWidget* table = gtk_util::CreateLabeledControlsGroup(NULL,
         l10n_util::GetStringUTF8(IDS_LOGIN_DIALOG_USERNAME_FIELD).c_str(),
         username_entry_,
         l10n_util::GetStringUTF8(IDS_LOGIN_DIALOG_PASSWORD_FIELD).c_str(),

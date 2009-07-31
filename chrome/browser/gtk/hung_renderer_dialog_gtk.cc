@@ -74,7 +74,7 @@ void HungRendererDialogGtk::Init() {
       l10n_util::GetStringUTF8(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT).c_str(),
       GTK_RESPONSE_OK,
       NULL));
-  GtkUtil::SetWindowIcon(GTK_WINDOW(dialog_));
+  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
   gtk_dialog_set_default_response(dialog_, GTK_RESPONSE_OK);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponseThunk),
                    this);
@@ -96,7 +96,7 @@ void HungRendererDialogGtk::Init() {
   // |         kill button    wait button|
   // ·-----------------------------------·
   GtkWidget* contents_vbox = dialog_->vbox;
-  gtk_box_set_spacing(GTK_BOX(contents_vbox), GtkUtil::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(contents_vbox), gtk_util::kContentAreaSpacing);
 
   GtkWidget* hbox = gtk_hbox_new(FALSE, 12);
   gtk_box_pack_start(GTK_BOX(contents_vbox), hbox, TRUE, TRUE, 0);
@@ -109,7 +109,7 @@ void HungRendererDialogGtk::Init() {
   GtkWidget* icon = gtk_image_new_from_pixbuf(icon_pixbuf);
   gtk_box_pack_start(GTK_BOX(icon_vbox), icon, FALSE, FALSE, 0);
 
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 0);
 
   GtkWidget* text = gtk_label_new(

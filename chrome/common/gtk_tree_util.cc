@@ -6,8 +6,9 @@
 
 #include "base/logging.h"
 
-// static
-gint GtkTreeUtil::GetRowNumForPath(GtkTreePath* path) {
+namespace gtk_tree_util {
+
+gint GetRowNumForPath(GtkTreePath* path) {
   gint* indices = gtk_tree_path_get_indices(path);
   if (!indices) {
     NOTREACHED();
@@ -16,20 +17,20 @@ gint GtkTreeUtil::GetRowNumForPath(GtkTreePath* path) {
   return indices[0];
 }
 
-// static
-gint GtkTreeUtil::GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter) {
+gint GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter) {
   GtkTreePath* path = gtk_tree_model_get_path(model, iter);
   int row = GetRowNumForPath(path);
   gtk_tree_path_free(path);
   return row;
 }
 
-// static
-gint GtkTreeUtil::GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
-                                                GtkTreePath* sort_path) {
+gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
+                                   GtkTreePath* sort_path) {
   GtkTreePath *child_path = gtk_tree_model_sort_convert_path_to_child_path(
       GTK_TREE_MODEL_SORT(sort_model), sort_path);
   int row = GetRowNumForPath(child_path);
   gtk_tree_path_free(child_path);
   return row;
 }
+
+}  // namespace gtk_tree_util

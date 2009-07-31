@@ -20,9 +20,9 @@ AdvancedPageGtk::~AdvancedPageGtk() {
 }
 
 void AdvancedPageGtk::Init() {
-  page_ = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  page_ = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(page_),
-                                 GtkUtil::kContentAreaBorder);
+                                 gtk_util::kContentAreaBorder);
 
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_container_add(GTK_CONTAINER(page_), scroll_window);

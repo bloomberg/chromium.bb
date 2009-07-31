@@ -69,7 +69,7 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
       NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      GtkUtil::kContentAreaSpacing);
+                      gtk_util::kContentAreaSpacing);
 
   notebook_ = gtk_notebook_new();
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);

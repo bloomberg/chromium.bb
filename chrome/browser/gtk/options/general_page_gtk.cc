@@ -171,7 +171,7 @@ void GeneralPageGtk::HighlightGroup(OptionsGroup highlight_group) {
 // GeneralPageGtk, private:
 
 GtkWidget* GeneralPageGtk::InitStartupGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   startup_homepage_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(
@@ -196,7 +196,7 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
   gtk_box_pack_start(GTK_BOX(vbox), startup_custom_radio_, FALSE, FALSE, 0);
 
   GtkWidget* url_list_container = gtk_hbox_new(FALSE,
-                                               GtkUtil::kControlSpacing);
+                                               gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(vbox), url_list_container, TRUE, TRUE, 0);
 
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
@@ -238,26 +238,26 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
                                                    profile(),
                                                    &fav_icon_consumer_));
 
-  GtkWidget* url_list_buttons = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* url_list_buttons = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_end(GTK_BOX(url_list_container), url_list_buttons,
                    FALSE, FALSE, 0);
 
   startup_add_custom_page_button_ = gtk_button_new_with_mnemonic(
-      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_ADD_BUTTON)).c_str());
   g_signal_connect(G_OBJECT(startup_add_custom_page_button_), "clicked",
                    G_CALLBACK(OnStartupAddCustomPageClicked), this);
   gtk_box_pack_start(GTK_BOX(url_list_buttons), startup_add_custom_page_button_,
                      FALSE, FALSE, 0);
   startup_remove_custom_page_button_ = gtk_button_new_with_mnemonic(
-      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
         l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_REMOVE_BUTTON)).c_str());
   g_signal_connect(G_OBJECT(startup_remove_custom_page_button_), "clicked",
                    G_CALLBACK(OnStartupRemoveCustomPageClicked), this);
   gtk_box_pack_start(GTK_BOX(url_list_buttons),
                      startup_remove_custom_page_button_, FALSE, FALSE, 0);
   startup_use_current_page_button_ = gtk_button_new_with_mnemonic(
-      GtkUtil::ConvertAcceleratorsFromWindowsStyle(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_USE_CURRENT)).c_str());
   g_signal_connect(G_OBJECT(startup_use_current_page_button_), "clicked",
                    G_CALLBACK(OnStartupUseCurrentPageClicked), this);
@@ -268,7 +268,7 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
 }
 
 GtkWidget* GeneralPageGtk::InitHomepageGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   homepage_use_newtab_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(IDS_OPTIONS_HOMEPAGE_USE_NEWTAB).c_str());
@@ -276,7 +276,7 @@ GtkWidget* GeneralPageGtk::InitHomepageGroup() {
                    G_CALLBACK(OnNewTabIsHomePageToggled), this);
   gtk_container_add(GTK_CONTAINER(vbox), homepage_use_newtab_radio_);
 
-  GtkWidget* homepage_hbox = gtk_hbox_new(FALSE, GtkUtil::kLabelSpacing);
+  GtkWidget* homepage_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), homepage_hbox);
 
   homepage_use_url_radio_ = gtk_radio_button_new_with_label_from_widget(
@@ -302,7 +302,7 @@ GtkWidget* GeneralPageGtk::InitHomepageGroup() {
 }
 
 GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
-  GtkWidget* hbox = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
 
   default_search_engines_model_ = gtk_list_store_new(SEARCH_ENGINES_COL_COUNT,
                                                      G_TYPE_UINT,
@@ -340,7 +340,7 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
 }
 
 GtkWidget* GeneralPageGtk::InitDefaultBrowserGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   // TODO(mattm): the label should be created with a text like "checking for
   // default" to be displayed while we wait for the check to complete.

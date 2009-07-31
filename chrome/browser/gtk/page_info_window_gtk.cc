@@ -83,8 +83,8 @@ PageInfoWindowGtk::PageInfoWindowGtk(gfx::NativeWindow parent,
       NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      GtkUtil::kContentAreaSpacing);
-  GtkUtil::SetWindowIcon(GTK_WINDOW(dialog_));
+                      gtk_util::kContentAreaSpacing);
+  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
   g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponse), NULL);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
 
@@ -99,7 +99,7 @@ void PageInfoWindowGtk::ModelChanged() {
 
 GtkWidget* PageInfoWindowGtk::CreateSection(
     const PageInfoModel::SectionInfo& section) {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   GtkWidget* label = gtk_label_new(UTF16ToUTF8(section.title).c_str());
 
   PangoAttrList* attributes = pango_attr_list_new();
@@ -116,10 +116,10 @@ GtkWidget* PageInfoWindowGtk::CreateSection(
       rb.GetPixbufNamed(IDR_PAGEINFO_GOOD) :
       rb.GetPixbufNamed(IDR_PAGEINFO_BAD));
   gtk_box_pack_start(GTK_BOX(section_box), image, FALSE, FALSE,
-                     GtkUtil::kControlSpacing);
+                     gtk_util::kControlSpacing);
   gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
 
-  GtkWidget* text_box = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* text_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   if (!section.head_line.empty()) {
     label = gtk_label_new(UTF16ToUTF8(section.head_line).c_str());
     gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
@@ -139,7 +139,7 @@ GtkWidget* PageInfoWindowGtk::CreateSection(
 void PageInfoWindowGtk::InitContents() {
   if (contents_)
     gtk_widget_destroy(contents_);
-  contents_ = gtk_vbox_new(FALSE, GtkUtil::kContentAreaSpacing);
+  contents_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
   for (int i = 0; i < model_.GetSectionCount(); i++) {
     gtk_box_pack_start(GTK_BOX(contents_),
                        CreateSection(model_.GetSectionInfo(i)),

@@ -185,7 +185,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
 
   // We use a table to allow the labels to line up with each other, along
   // with the entry and folder combo lining up.
-  GtkWidget* table = GtkUtil::CreateLabeledControlsGroup(
+  GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
       &labels_,
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_TITLE_TEXT).c_str(),
       name_entry_,

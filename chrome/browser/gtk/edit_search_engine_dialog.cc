@@ -27,7 +27,7 @@ std::string GetDisplayURL(const TemplateURL& turl) {
 }
 
 GtkWidget* CreateEntryImageHBox(GtkWidget* entry, GtkWidget* image) {
-  GtkWidget* hbox = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
   return hbox;
@@ -139,7 +139,7 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window) {
         controller_->template_url()->prepopulate_id() == 0);
   }
 
-  GtkWidget* controls = GtkUtil::CreateLabeledControlsGroup(NULL,
+  GtkWidget* controls = gtk_util::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(
           IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL).c_str(),
       CreateEntryImageHBox(title_entry_, title_image_),
@@ -177,7 +177,7 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window) {
                      FALSE, FALSE, 0);
 
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      GtkUtil::kContentAreaSpacing);
+                      gtk_util::kContentAreaSpacing);
 
   EnableControls();
 

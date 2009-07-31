@@ -14,9 +14,9 @@ const char kGroupTitleMarkup[] =
 }
 
 OptionsLayoutBuilderGtk::OptionsLayoutBuilderGtk() {
-  page_ = gtk_vbox_new(FALSE, GtkUtil::kContentAreaSpacing);
+  page_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(page_),
-                                 GtkUtil::kContentAreaBorder);
+                                 gtk_util::kContentAreaBorder);
 }
 
 void OptionsLayoutBuilderGtk::AddOptionGroup(const std::string& title,
@@ -33,7 +33,7 @@ void OptionsLayoutBuilderGtk::AddOptionGroup(const std::string& title,
 
   GtkWidget* content_alignment = IndentWidget(content);
 
-  GtkWidget* group = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* group = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(group), title_alignment, FALSE, FALSE, 0);
   gtk_container_add(GTK_CONTAINER(group), content_alignment);
 
@@ -44,7 +44,7 @@ void OptionsLayoutBuilderGtk::AddOptionGroup(const std::string& title,
 GtkWidget* OptionsLayoutBuilderGtk::IndentWidget(GtkWidget* content) {
   GtkWidget* content_alignment = gtk_alignment_new(0.0, 0.5, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(content_alignment), 0, 0,
-                            GtkUtil::kGroupIndent, 0);
+                            gtk_util::kGroupIndent, 0);
   gtk_container_add(GTK_CONTAINER(content_alignment), content);
   return content_alignment;
 }

@@ -82,7 +82,7 @@ void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
 // ContentPageGtk, private:
 
 GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   // Ask to save radio button.
   passwords_asktosave_radio_ = gtk_radio_button_new_with_label(NULL,
@@ -103,7 +103,7 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
 
   // Add the exceptions button into its own horizontal box so it does not
   // depend on the spacing above.
-  GtkWidget* button_hbox = gtk_hbox_new(FALSE, GtkUtil::kLabelSpacing);
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
   GtkWidget* passwords_exceptions_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_EXCEPTIONS).c_str());
@@ -116,7 +116,7 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
 }
 
 GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   // Ask to save radio button.
   form_autofill_asktosave_radio_ = gtk_radio_button_new_with_label(NULL,
@@ -139,7 +139,7 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
 }
 
 GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   // Browsing data label.
   GtkWidget* browsing_data_label = gtk_label_new(
@@ -149,7 +149,7 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
   gtk_box_pack_start(GTK_BOX(vbox), browsing_data_label, FALSE, FALSE, 0);
 
   // Horizontal two button layout.
-  GtkWidget* button_hbox = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
 
   // Import button.
@@ -170,7 +170,7 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
 }
 
 GtkWidget* ContentPageGtk::InitThemesGroup() {
-  GtkWidget* hbox = gtk_hbox_new(FALSE, GtkUtil::kLabelSpacing);
+  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
 
   // GTK theme button.
   GtkWidget* gtk_theme_button = gtk_button_new_with_label(

@@ -401,7 +401,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   gtk_window_group_add_window(gtk_window_group_new(), window_);
   g_object_unref(gtk_window_get_group(window_));
 
-  GtkUtil::SetWindowIcon(window_);
+  gtk_util::SetWindowIcon(window_);
   SetBackgroundColor();
   SetGeometryHints();
   ConnectHandlersToSignals();

@@ -33,9 +33,9 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
       NULL);
 
   GtkWidget* content_area = GTK_DIALOG(dialog)->vbox;
-  gtk_box_set_spacing(GTK_BOX(content_area), GtkUtil::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
-  GtkWidget* vbox = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(content_area), vbox);
 
   // Label on top of the checkboxes.
@@ -99,7 +99,7 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
                    G_CALLBACK(HandleOnClickedWidget), this);
 
   // Create a horizontal layout for the combo box and label.
-  GtkWidget* combo_hbox = gtk_hbox_new(FALSE, GtkUtil::kLabelSpacing);
+  GtkWidget* combo_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   GtkWidget* time_period_label_ = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_TIME_LABEL).c_str());
   gtk_box_pack_start(GTK_BOX(combo_hbox), time_period_label_, FALSE, FALSE, 0);

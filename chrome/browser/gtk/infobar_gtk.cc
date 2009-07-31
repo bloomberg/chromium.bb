@@ -80,8 +80,8 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   // The -1 on the kInfoBarHeight is to account for the border.
   gtk_widget_set_size_request(bg_box, -1, kInfoBarHeight - 1);
 
-  border_bin_.Own(GtkUtil::CreateGtkBorderBin(bg_box, &kBorderColor,
-                                              0, 1, 0, 0));
+  border_bin_.Own(gtk_util::CreateGtkBorderBin(bg_box, &kBorderColor,
+                                               0, 1, 0, 0));
 
   // Add the icon on the left, if any.
   SkBitmap* icon = delegate->GetIcon();
@@ -94,7 +94,7 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
 
   // TODO(erg): GTK theme the info bar.
   close_button_.reset(CustomDrawButton::CloseButton(NULL));
-  GtkUtil::CenterWidgetInHBox(hbox_, close_button_->widget(), true, 0);
+  gtk_util::CenterWidgetInHBox(hbox_, close_button_->widget(), true, 0);
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButton), this);
 
@@ -207,7 +207,7 @@ class LinkInfoBar : public InfoBar {
       // this hbox that doesn't use kElementPadding.
       GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
       gtk_box_pack_start(GTK_BOX(hbox), initial_label, FALSE, FALSE, 0);
-      GtkUtil::CenterWidgetInHBox(hbox, link_button, false, 0);
+      gtk_util::CenterWidgetInHBox(hbox, link_button, false, 0);
       gtk_box_pack_start(GTK_BOX(hbox), trailing_label, FALSE, FALSE, 0);
       gtk_box_pack_start(GTK_BOX(hbox_), hbox, FALSE, FALSE, 0);
     }
@@ -252,7 +252,7 @@ class ConfirmInfoBar : public AlertInfoBar {
     if (delegate_->AsConfirmInfoBarDelegate()->GetButtons() & type) {
       GtkWidget* button = gtk_button_new_with_label(WideToUTF8(
           delegate_->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
-      GtkUtil::CenterWidgetInHBox(hbox_, button, true, 0);
+      gtk_util::CenterWidgetInHBox(hbox_, button, true, 0);
       g_signal_connect(button, "clicked",
                        G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?
                                   OnOkButton : OnCancelButton),

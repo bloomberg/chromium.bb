@@ -169,8 +169,8 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // This crazy stack of alignments and event boxes creates a box around the
   // keyword text with a border, background color, and padding around the text.
   gtk_container_add(GTK_CONTAINER(tab_to_search_),
-      GtkUtil::CreateGtkBorderBin(
-        GtkUtil::CreateGtkBorderBin(
+      gtk_util::CreateGtkBorderBin(
+        gtk_util::CreateGtkBorderBin(
             tab_to_search_label_, &kKeywordBackgroundColor, 1, 1, 2, 2),
         &kKeywordBorderColor, 1, 1, 1, 1));
 

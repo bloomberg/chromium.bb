@@ -138,8 +138,10 @@ guint32 GetGdkEventTime(GdkEvent* event) {
 
 }  // namespace event_utils
 
-GtkWidget* GtkUtil::CreateLabeledControlsGroup(std::vector<GtkWidget*>* labels,
-                                               const char* text, ...) {
+namespace gtk_util {
+
+GtkWidget* CreateLabeledControlsGroup(std::vector<GtkWidget*>* labels,
+                                      const char* text, ...) {
   va_list ap;
   va_start(ap, text);
   GtkWidget* table = gtk_table_new(0, 2, FALSE);
@@ -167,9 +169,8 @@ GtkWidget* GtkUtil::CreateLabeledControlsGroup(std::vector<GtkWidget*>* labels,
   return table;
 }
 
-GtkWidget* GtkUtil::CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
-                                       int top, int bottom,
-                                       int left, int right) {
+GtkWidget* CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
+                              int top, int bottom, int left, int right) {
   // Use a GtkEventBox to get the background painted.  However, we can't just
   // use a container border, since it won't paint there.  Use an alignment
   // inside to get the sizes exactly of how we want the border painted.
@@ -183,9 +184,8 @@ GtkWidget* GtkUtil::CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
   return ebox;
 }
 
-bool GtkUtil::GetWidgetSizeFromResources(GtkWidget* widget,
-                                         int width_chars, int height_lines,
-                                         int* width, int* height) {
+bool GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,
+                                int height_lines, int* width, int* height) {
   PangoContext* context = gtk_widget_create_pango_context(widget);
   PangoFontMetrics* metrics = pango_context_get_metrics(context,
       widget->style->font_desc, pango_context_get_language(context));
@@ -205,11 +205,11 @@ bool GtkUtil::GetWidgetSizeFromResources(GtkWidget* widget,
   return true;
 }
 
-void GtkUtil::RemoveAllChildren(GtkWidget* container) {
+void RemoveAllChildren(GtkWidget* container) {
   gtk_container_foreach(GTK_CONTAINER(container), RemoveWidget, container);
 }
 
-void GtkUtil::ForceFontSizePixels(GtkWidget* widget, double size_pixels) {
+void ForceFontSizePixels(GtkWidget* widget, double size_pixels) {
   GtkStyle* style = widget->style;
   PangoFontDescription* font_desc = style->font_desc;
   // pango_font_description_set_absolute_size sets the font size in device
@@ -219,7 +219,7 @@ void GtkUtil::ForceFontSizePixels(GtkWidget* widget, double size_pixels) {
   gtk_widget_modify_font(widget, font_desc);
 }
 
-gfx::Point GtkUtil::GetWidgetScreenPosition(GtkWidget* widget) {
+gfx::Point GetWidgetScreenPosition(GtkWidget* widget) {
   int x = 0, y = 0;
 
   if (GTK_IS_WINDOW(widget)) {
@@ -252,13 +252,13 @@ gfx::Point GtkUtil::GetWidgetScreenPosition(GtkWidget* widget) {
   return gfx::Point(x, y);
 }
 
-gfx::Rect GtkUtil::GetWidgetScreenBounds(GtkWidget* widget) {
+gfx::Rect GetWidgetScreenBounds(GtkWidget* widget) {
   gfx::Point position = GetWidgetScreenPosition(widget);
   return gfx::Rect(position.x(), position.y(),
                    widget->allocation.width, widget->allocation.height);
 }
 
-void GtkUtil::ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p) {
+void ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p) {
   DCHECK(widget);
   DCHECK(p);
 
@@ -266,7 +266,7 @@ void GtkUtil::ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p) {
   p->SetPoint(p->x() + position.x(), p->y() + position.y());
 }
 
-void GtkUtil::InitRCStyles() {
+void InitRCStyles() {
   static const char kRCText[] =
       // Make our dialogs styled like the GNOME HIG.
       //
@@ -295,8 +295,8 @@ void GtkUtil::InitRCStyles() {
   gtk_rc_parse_string(kRCText);
 }
 
-void GtkUtil::CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
-                                 bool pack_at_end, int padding) {
+void CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget, bool pack_at_end,
+                        int padding) {
   GtkWidget* centering_vbox = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(centering_vbox), widget, TRUE, FALSE, 0);
   if (pack_at_end)
@@ -305,8 +305,7 @@ void GtkUtil::CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
     gtk_box_pack_start(GTK_BOX(hbox), centering_vbox, FALSE, FALSE, padding);
 }
 
-std::string GtkUtil::ConvertAcceleratorsFromWindowsStyle(
-      const std::string& label) {
+std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
   std::string ret;
   ret.reserve(label.length());
   for (size_t i = 0; i < label.length(); ++i) {
@@ -325,13 +324,12 @@ std::string GtkUtil::ConvertAcceleratorsFromWindowsStyle(
   return ret;
 }
 
-bool GtkUtil::IsScreenComposited() {
+bool IsScreenComposited() {
   GdkScreen* screen = gdk_screen_get_default();
   return gdk_screen_is_composited(screen) == TRUE;
 }
 
-void GtkUtil::EnumerateTopLevelWindows(
-      x11_util::EnumerateWindowsDelegate* delegate) {
+void EnumerateTopLevelWindows(x11_util::EnumerateWindowsDelegate* delegate) {
   GdkScreen* screen = gdk_screen_get_default();
   GList* stack = gdk_screen_get_window_stack(screen);
   if (!stack) {
@@ -358,7 +356,7 @@ void GtkUtil::EnumerateTopLevelWindows(
   g_list_free(stack);
 }
 
-void GtkUtil::SetButtonTriggersNavigation(GtkWidget* button) {
+void SetButtonTriggersNavigation(GtkWidget* button) {
   // We handle button activation manually because we want to accept middle mouse
   // clicks.
   g_signal_connect(G_OBJECT(button), "button-press-event",
@@ -367,22 +365,21 @@ void GtkUtil::SetButtonTriggersNavigation(GtkWidget* button) {
                    G_CALLBACK(OnMouseButtonReleased), NULL);
 }
 
-int GtkUtil::MirroredLeftPointForRect(GtkWidget* widget,
-                                      const gfx::Rect& bounds) {
+int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
   if (l10n_util::GetTextDirection() != l10n_util::RIGHT_TO_LEFT) {
     return bounds.x();
   }
   return widget->allocation.width - bounds.x() - bounds.width();
 }
 
-int GtkUtil::MirroredXCoordinate(GtkWidget* widget, int x) {
+int MirroredXCoordinate(GtkWidget* widget, int x) {
   if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
     return widget->allocation.width - x;
   }
   return x;
 }
 
-bool GtkUtil::WidgetContainsCursor(GtkWidget* widget) {
+bool WidgetContainsCursor(GtkWidget* widget) {
   gint x = 0;
   gint y = 0;
   gtk_widget_get_pointer(widget, &x, &y);
@@ -400,7 +397,7 @@ bool GtkUtil::WidgetContainsCursor(GtkWidget* widget) {
   return widget_allocation.Contains(x, y);
 }
 
-void GtkUtil::SetWindowIcon(GtkWindow* window) {
+void SetWindowIcon(GtkWindow* window) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GList* icon_list = NULL;
   icon_list = g_list_append(icon_list, rb.GetPixbufNamed(IDR_PRODUCT_ICON_32));
@@ -408,3 +405,5 @@ void GtkUtil::SetWindowIcon(GtkWindow* window) {
   gtk_window_set_icon_list(window, icon_list);
   g_list_free(icon_list);
 }
+
+}  // namespace gtk_util

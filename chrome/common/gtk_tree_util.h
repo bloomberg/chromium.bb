@@ -7,23 +7,19 @@
 
 #include <gtk/gtk.h>
 
-#include "base/basictypes.h"
+namespace gtk_tree_util {
 
-class GtkTreeUtil {
- public:
-  // Get the row number corresponding to |path|.
-  static gint GetRowNumForPath(GtkTreePath* path);
+// Get the row number corresponding to |path|.
+gint GetRowNumForPath(GtkTreePath* path);
 
-  // Get the row number corresponding to |iter|.
-  static gint GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter);
+// Get the row number corresponding to |iter|.
+gint GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter);
 
-  // Get the row number in the child tree model corresponding to |sort_path| in
-  // the parent tree model.
-  static gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
-                                            GtkTreePath* sort_path);
+// Get the row number in the child tree model corresponding to |sort_path| in
+// the parent tree model.
+gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
+                                   GtkTreePath* sort_path);
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(GtkTreeUtil);
-};
+}  // namespace gtk_tree_util
 
 #endif  // CHROME_COMMON_GTK_TREE_UTIL_H_

@@ -71,7 +71,7 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
 
   password_ = gtk_label_new("");
 
-  GtkWidget* buttons = gtk_vbox_new(FALSE, GtkUtil::kControlSpacing);
+  GtkWidget* buttons = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(buttons), remove_button_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(buttons), remove_all_button_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(buttons), show_password_button_, FALSE, FALSE, 0);
@@ -87,9 +87,9 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
   InitPasswordTree();
   gtk_container_add(GTK_CONTAINER(scroll_window), password_tree_);
 
-  page_ = gtk_hbox_new(FALSE, GtkUtil::kControlSpacing);
+  page_ = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(page_),
-                                 GtkUtil::kContentAreaBorder);
+                                 gtk_util::kContentAreaBorder);
   gtk_box_pack_end(GTK_BOX(page_), buttons, FALSE, FALSE, 0);
   gtk_box_pack_end(GTK_BOX(page_), scroll_window, TRUE, TRUE, 0);
 }
@@ -178,7 +178,7 @@ void PasswordsPageGtk::OnRemoveButtonClicked(GtkButton* widget,
 
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(page->password_list_sort_), &iter);
-  gint index = GtkTreeUtil::GetTreeSortChildRowNumForPath(
+  gint index = gtk_tree_util::GetTreeSortChildRowNumForPath(
       page->password_list_sort_, path);
   gtk_tree_path_free(path);
 
@@ -260,7 +260,7 @@ void PasswordsPageGtk::OnShowPasswordButtonClicked(GtkButton* widget,
   }
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(page->password_list_sort_), &iter);
-  gint index = GtkTreeUtil::GetTreeSortChildRowNumForPath(
+  gint index = gtk_tree_util::GetTreeSortChildRowNumForPath(
       page->password_list_sort_, path);
   gtk_tree_path_free(path);
   std::string pass = WideToUTF8(page->password_list_[index].password_value);
@@ -292,8 +292,8 @@ void PasswordsPageGtk::OnPasswordSelectionChanged(GtkTreeSelection* selection,
 gint PasswordsPageGtk::CompareSite(GtkTreeModel* model,
                                    GtkTreeIter* a, GtkTreeIter* b,
                                    gpointer window) {
-  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
-  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
+  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
+  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
   PasswordsPageGtk* page = reinterpret_cast<PasswordsPageGtk*>(window);
   return page->password_list_[row1].origin.spec().compare(
          page->password_list_[row2].origin.spec());
@@ -303,8 +303,8 @@ gint PasswordsPageGtk::CompareSite(GtkTreeModel* model,
 gint PasswordsPageGtk::CompareUsername(GtkTreeModel* model,
                                        GtkTreeIter* a, GtkTreeIter* b,
                                        gpointer window) {
-  int row1 = GtkTreeUtil::GetRowNumForIter(model, a);
-  int row2 = GtkTreeUtil::GetRowNumForIter(model, b);
+  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
+  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
   PasswordsPageGtk* page = reinterpret_cast<PasswordsPageGtk*>(window);
   return page->password_list_[row1].username_value.compare(
          page->password_list_[row2].username_value);

@@ -64,7 +64,7 @@ void InfoBarContainerGtk::ChangeTabContents(TabContents* contents) {
   if (tab_contents_)
     registrar_.RemoveAll();
 
-  GtkUtil::RemoveAllChildren(widget());
+  gtk_util::RemoveAllChildren(widget());
 
   tab_contents_ = contents;
   if (tab_contents_) {

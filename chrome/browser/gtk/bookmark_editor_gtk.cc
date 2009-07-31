@@ -124,7 +124,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   // |+-------------------------------------------------------------+|
   // +---------------------------------------------------------------+
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
-  gtk_box_set_spacing(GTK_BOX(content_area), GtkUtil::kContentAreaSpacing);
+  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, 12);
 
@@ -142,7 +142,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
                    G_CALLBACK(OnEntryChanged), this);
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
 
-  GtkWidget* table = GtkUtil::CreateLabeledControlsGroup(NULL,
+  GtkWidget* table = gtk_util::CreateLabeledControlsGroup(NULL,
       l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NAME_LABEL).c_str(),
       name_entry_,
       l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_URL_LABEL).c_str(),

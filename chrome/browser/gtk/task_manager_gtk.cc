@@ -338,8 +338,8 @@ void TaskManagerGtk::Init() {
   ConnectAccelerators();
 
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      GtkUtil::kContentAreaSpacing);
-  GtkUtil::SetWindowIcon(GTK_WINDOW(dialog_));
+                      gtk_util::kContentAreaSpacing);
+  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   g_signal_connect(G_OBJECT(dialog_), "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(G_OBJECT(dialog_), "button-release-event",
@@ -635,7 +635,7 @@ gboolean TaskManagerGtk::OnButtonReleaseEvent(GtkWidget* widget,
                                               GdkEventButton* event,
                                               TaskManagerGtk* task_manager) {
   // We don't want to open the context menu in the treeview.
-  if (GtkUtil::WidgetContainsCursor(task_manager->treeview_))
+  if (gtk_util::WidgetContainsCursor(task_manager->treeview_))
     return FALSE;
 
   if (event->button == 3)
