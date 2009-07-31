@@ -84,56 +84,6 @@ class SavePageTest : public UITest {
   FilePath download_dir_;
 };
 
-// Flaky on Linux: http://code.google.com/p/chromium/issues/detail?id=14746
-TEST_F(SavePageTest, SaveHTMLOnly) {
-  std::string file_name("a.htm");
-  FilePath full_file_name = save_dir_.AppendASCII(file_name);
-  FilePath dir = save_dir_.AppendASCII("a_files");
-
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-    UTF8ToWide(std::string(kTestDir) + "/" + file_name));
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->NavigateToURL(url));
-  WaitUntilTabCount(1);
-
-  EXPECT_TRUE(tab->SavePage(full_file_name.ToWStringHack(), dir.ToWStringHack(),
-                            SavePackage::SAVE_AS_ONLY_HTML));
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
-
-  CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)),
-            true);
-  EXPECT_FALSE(file_util::PathExists(dir));
-}
-
-// Flaky on Linux: http://code.google.com/p/chromium/issues/detail?id=14746
-TEST_F(SavePageTest, SaveCompleteHTML) {
-  std::string file_name = "b.htm";
-  FilePath full_file_name = save_dir_.AppendASCII(file_name);
-  FilePath dir = save_dir_.AppendASCII("b_files");
-
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      UTF8ToWide(std::string(kTestDir) + "/" + file_name));
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->NavigateToURL(url));
-  WaitUntilTabCount(1);
-
-  EXPECT_TRUE(tab->SavePage(full_file_name.ToWStringHack(), dir.ToWStringHack(),
-                            SavePackage::SAVE_AS_COMPLETE_HTML));
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
-
-  CheckFile(dir.AppendASCII("1.png"), FilePath(FILE_PATH_LITERAL("1.png")),
-                            true);
-  CheckFile(dir.AppendASCII("1.css"), FilePath(FILE_PATH_LITERAL("1.css")),
-                            true);
-  CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)),
-            false);
-  EXPECT_TRUE(file_util::DieFileDie(dir, true));
-}
-
 TEST_F(SavePageTest, NoSave) {
   std::string file_name = "c.htm";
   FilePath full_file_name = save_dir_.AppendASCII(file_name);

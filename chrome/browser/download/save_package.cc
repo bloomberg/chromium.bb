@@ -28,6 +28,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -601,6 +603,11 @@ void SavePackage::Finish() {
                         save_ids));
 
   download_->Finished(all_save_items_count_);
+
+  NotificationService::current()->Notify(
+      NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
+      Source<SavePackage>(this),
+      Details<GURL>(&page_url_));
 }
 
 // Called for updating end state.
