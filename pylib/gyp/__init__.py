@@ -28,7 +28,8 @@ def FindBuildFiles():
   return build_files
 
 
-def Load(build_files, format, default_variables={}, includes=[], depth='.'):
+def Load(build_files, format, default_variables={},
+         includes=[], depth='.', params={}):
   """
   Loads one or more specified build files.
   default_variables and includes will be copied before use.
@@ -47,6 +48,11 @@ def Load(build_files, format, default_variables={}, includes=[], depth='.'):
   # because ActivePython cannot handle key parameters to __import__.
   generator = __import__(generator_name, globals(), locals(), generator_name)
   default_variables.update(generator.generator_default_variables)
+
+  # Give the generator the opportunity to set additional variables based on
+  # the params it will receive in the output phase.
+  if getattr(generator, 'CalculateVariables', None):
+    generator.CalculateVariables(default_variables, params)
 
   # Fetch the generator specific info that gets fed to input, we use getattr
   # so we can default things and the generators only have to provide what
@@ -245,15 +251,15 @@ def main(args):
   # Generate all requested formats (use a set in case we got one format request
   # twice)
   for format in set(options.formats):
+    params = {'options': options,
+              'build_files': build_files,
+              'generator_flags': generator_flags}
 
     # Start with the default variables from the command line.
     [generator, flat_list, targets, data] = Load(build_files, format,
                                                  cmdline_default_variables,
-                                                 includes, options.depth)
-
-    params = {'options': options,
-              'build_files': build_files,
-              'generator_flags': generator_flags}
+                                                 includes, options.depth,
+                                                 params)
 
     # TODO(mark): Pass |data| for now because the generator needs a list of
     # build files that came in.  In the future, maybe it should just accept

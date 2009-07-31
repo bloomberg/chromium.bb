@@ -859,6 +859,32 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
   return obj
 
 
+def CalculateVariables(default_variables, params):
+  """Generated variables that require params to be known."""
+
+  generator_flags = params['generator_flags']
+
+  # Select project file format version (if unset, default to auto detecting).
+  msvs_version = \
+    MSVSVersion.SelectVisualStudioVersion(generator_flags.get('msvs_version',
+                                                              'auto'))
+  # Stash msvs_version for later (so we don't have to probe the system twice).
+  params['msvs_version'] = msvs_version
+
+  # Set a variable so conditions can be based on msvs_version.
+  default_variables['MSVS_VERSION'] = msvs_version.ShortName()
+
+  # To determine processor word size on Windows, in addition to checking
+  # PROCESSOR_ARCHITECTURE (which reflects the word size of the current
+  # process), it is also necessary to check PROCESSOR_ARCITEW6432 (which
+  # contains the actual word size of the system when running thru WOW64).
+  if (os.environ.get('PROCESSOR_ARCHITECTURE', '').find('64') >= 0 or
+      os.environ.get('PROCESSOR_ARCHITEW6432', '').find('64') >= 0):
+    default_variables['MSVS_OS_BITS'] = 64
+  else:
+    default_variables['MSVS_OS_BITS'] = 32
+
+
 def GenerateOutput(target_list, target_dicts, data, params):
   """Generate .sln and .vcproj files.
 
@@ -872,10 +898,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params['generator_flags']
 
-  # Select project file format version (if unset, default to auto detecting).
-  msvs_version = \
-    MSVSVersion.SelectVisualStudioVersion(generator_flags.get('msvs_version',
-                                                              'auto'))
+  # Get the project file format version back out of where we stashed it in
+  # GeneratorCalculatedVariables.
+  msvs_version = params['msvs_version']
 
   # Prepare the set of configurations.
   configs = set()
