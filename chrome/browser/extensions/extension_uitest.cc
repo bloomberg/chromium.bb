@@ -347,7 +347,7 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
   std::string origin(origin());
   std::string target(target());
 
-  ASSERT_GT(message.length(), 0);
+  ASSERT_TRUE(message.length() > 0);
   ASSERT_STREQ(keys::kAutomationOrigin, origin.c_str());
 
   if (target == keys::kAutomationRequestTarget) {
