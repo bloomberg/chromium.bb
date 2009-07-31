@@ -207,45 +207,42 @@ installer_util::InstallStatus RenameChromeExecutables(bool system_install) {
 // Parse command line and read master profile, if present, to get distribution
 // related install options.
 DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
-  DictionaryValue* preferences = NULL;
+  DictionaryValue* prefs = NULL;
 
   if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
     FilePath prefs_path(
         cmd_line.GetSwitchValue(installer_util::switches::kInstallerData));
-    preferences = installer_util::ParseDistributionPreferences(prefs_path);
-    if (preferences)
-      preferences->SetBoolean(
-          installer_util::master_preferences::kMasterPreferencesValid, true);
+    prefs = installer_util::ParseDistributionPreferences(prefs_path);
   }
 
-  if (!preferences)
-    preferences = new DictionaryValue();
+  if (!prefs)
+    prefs = new DictionaryValue();
 
   if (cmd_line.HasSwitch(installer_util::switches::kCreateAllShortcuts))
-    preferences->SetBoolean(
-        installer_util::master_preferences::kCreateAllShortcuts, true);
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kCreateAllShortcuts, true);
 
   if (cmd_line.HasSwitch(installer_util::switches::kDoNotLaunchChrome))
-    preferences->SetBoolean(
-        installer_util::master_preferences::kDoNotLaunchChrome, true);
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kDoNotLaunchChrome, true);
 
   if (cmd_line.HasSwitch(installer_util::switches::kMakeChromeDefault))
-    preferences->SetBoolean(
-        installer_util::master_preferences::kMakeChromeDefault, true);
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kMakeChromeDefault, true);
 
   if (cmd_line.HasSwitch(installer_util::switches::kSystemLevel))
-    preferences->SetBoolean(
-        installer_util::master_preferences::kSystemLevel, true);
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kSystemLevel, true);
 
   if (cmd_line.HasSwitch(installer_util::switches::kVerboseLogging))
-    preferences->SetBoolean(
-        installer_util::master_preferences::kVerboseLogging, true);
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kVerboseLogging, true);
 
   if (cmd_line.HasSwitch(installer_util::switches::kAltDesktopShortcut))
-    preferences->SetBoolean(
-        installer_util::master_preferences::kAltShortcutText, true);
+    installer_util::SetDistroBooleanPreference(
+        prefs, installer_util::master_preferences::kAltShortcutText, true);
 
-  return preferences;
+  return prefs;
 }
 
 // Copy master preferences file provided to installer, in the same folder
@@ -395,9 +392,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
                                           install_msg_base, &chrome_exe);
         if (install_status == installer_util::FIRST_INSTALL_SUCCESS) {
           LOG(INFO) << "First install successful.";
-          if (installer_util::GetDistroBooleanPreference(prefs,
-              installer_util::master_preferences::kMasterPreferencesValid))
-            CopyPreferenceFileForFirstRun(system_level, cmd_line);
+          CopyPreferenceFileForFirstRun(system_level, cmd_line);
           // We never want to launch Chrome in system level install mode.
           if (!system_level && !installer_util::GetDistroBooleanPreference(prefs,
               installer_util::master_preferences::kDoNotLaunchChrome))

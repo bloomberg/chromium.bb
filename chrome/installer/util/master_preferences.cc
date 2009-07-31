@@ -46,7 +46,6 @@ const wchar_t kDistroSkipFirstRunPref[] = L"skip_first_run_ui";
 const wchar_t kDoNotLaunchChrome[] = L"do_not_launch_chrome";
 const wchar_t kMakeChromeDefault[] = L"make_chrome_default";
 const wchar_t kMakeChromeDefaultForUser[] = L"make_chrome_default_for_user";
-const wchar_t kMasterPreferencesValid[] = L"master_preferencs_valid";
 const wchar_t kRequireEula[] = L"require_eula";
 const wchar_t kSystemLevel[] = L"system_level";
 const wchar_t kVerboseLogging[] = L"verbose_logging";
@@ -109,6 +108,20 @@ std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs) {
     launch_tabs.push_back(tab_entry);
   }
   return launch_tabs;
+}
+
+bool SetDistroBooleanPreference(DictionaryValue* prefs,
+                                const std::wstring& name,
+                                bool value) {
+
+  bool ret = false;
+  if (prefs && !name.empty()) {
+    std::wstring key(kDistroDict);
+    key.append(L"." + name);
+    if (prefs->SetBoolean(key, value))
+      ret = true;
+  }
+  return ret;
 }
 
 }  // installer_util

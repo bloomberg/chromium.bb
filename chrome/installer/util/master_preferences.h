@@ -45,8 +45,6 @@ extern const wchar_t kDoNotLaunchChrome[];
 extern const wchar_t kMakeChromeDefault[];
 // Boolean. Register Chrome as default browser for the current user.
 extern const wchar_t kMakeChromeDefaultForUser[];
-// Boolean but only meant to be used for internal purposes.
-extern const wchar_t kMasterPreferencesValid[];
 // Boolean. Show EULA dialog before install.
 extern const wchar_t kRequireEula[];
 // Boolean. Install Chrome to system wise location. Cmd line override present.
@@ -59,6 +57,8 @@ extern const wchar_t kVerboseLogging[];
 // values in the user profile at first run.
 const wchar_t kDefaultMasterPrefs[] = L"master_preferences";
 
+// Gets the value of given boolean preference |name| from |prefs| dictionary
+// which is assumed to contain a dictionary named "distribution".
 bool GetDistroBooleanPreference(const DictionaryValue* prefs,
                                 const std::wstring& name);
 
@@ -128,6 +128,12 @@ DictionaryValue* ParseDistributionPreferences(
 // This function retuns the list as a vector of strings. If the master
 // preferences file does not contain such list the vector is empty.
 std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs);
+
+// Sets the value of given boolean preference |name| in "distribution"
+// dictionary inside |prefs| dictionary.
+bool SetDistroBooleanPreference(DictionaryValue* prefs,
+                                const std::wstring& name,
+                                bool value);
 }
 
 #endif  // CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_
