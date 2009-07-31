@@ -2994,11 +2994,11 @@ BUG17942 WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH PASS
 BUG17942 WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH PASS
 BUG17942 LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH PASS
 BUG17942 LINUX : LayoutTests/fast/overflow/008.html = CRASH PASS
-BUG17942 : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
-BUG17942 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
-BUG17942 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 BUG17942 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
-BUG17942 WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
+// New tests with this merge:
+BUG17942 : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
+BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
+BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 
 // Test failures from WebKit merge 46369 to 46426
 BUG18016 WIN LINUX : LayoutTests/fast/canvas/image-pattern-rotate.html = FAIL
