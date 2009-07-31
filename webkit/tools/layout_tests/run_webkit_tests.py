@@ -514,11 +514,9 @@ class TestRunner:
 
     # Start up any helper needed
     layout_test_helper_proc = None
-    if sys.platform in ('darwin'):
-      # Mac uses a helper for manging the color sync profile for pixel tests.
-      if not options.no_pixel_tests:
-        helper_path = \
-            path_utils.LayoutTestHelperBinaryPath(self._options.target)
+    if not options.no_pixel_tests:
+      helper_path = path_utils.LayoutTestHelperBinaryPath(self._options.target)
+      if len(helper_path):
         logging.info("Starting layout helper %s" % helper_path)
         layout_test_helper_proc = subprocess.Popen([helper_path],
                                                    stdin=subprocess.PIPE,

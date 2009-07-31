@@ -208,7 +208,7 @@
       },
       'conditions': [
         ['OS=="win"', {
-          'dependencies': ['test_worker'],
+          'dependencies': ['test_worker', 'layout_test_helper'],
           'resource_include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
@@ -628,7 +628,20 @@
         },
       ],
     }],
-    ['OS=="mac"', {
+   ['OS=="win"', {
+      'targets': [
+        {
+          # Helper application that manages the color sync profile on mac
+          # for the test shells run by the layout tests.
+          'target_name': 'layout_test_helper',
+          'type': 'executable',
+          'sources': [
+            'win/layout_test_helper.cc',
+          ],
+        },
+      ],
+    }],
+     ['OS=="mac"', {
       'targets': [
         {
           # Helper application that manages the color sync profile on mac
@@ -644,7 +657,7 @@
             ],
           },
         },
-      ]
+      ],
     }],
   ],
 }
