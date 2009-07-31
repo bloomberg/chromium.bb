@@ -27,9 +27,9 @@ def RunTest(test_name, golden_file):
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   (p_stdout, p_stderr) = p.communicate('')
-  if p_stderr:
-    print "Test %s FAILED to execute: with error output" % (test_name)
-    print "Error output was:\n%s" % p_stdout
+  if p_stderr or p.returncode:
+    print "Test %s FAILED to execute properly.  Return code %d" % (p.returncode)
+    print "Error output was:\n%s" % p_stderr
     print "Output was:\n%s" % p_stdout
     return False
 

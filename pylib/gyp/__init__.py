@@ -4,19 +4,18 @@ import copy
 import gyp.input
 import optparse
 import os.path
-import sets
 import shlex
 import sys
 
 # Default debug modes for GYP
-debug = sets.Set([])
+debug = {}
 
 # List of "official" debug modes, but you can use anything you like.
 DEBUG_GENERAL = 'general'
 DEBUG_VARIABLES = 'variables'
 
 def DebugOutput(mode, message):
-  if mode in gyp.debug:
+  if mode in gyp.debug.keys():
     print "%s: %s" % (mode.upper(), message)
 
 def FindBuildFiles():
@@ -137,10 +136,11 @@ def main(args):
 
   (options, build_files) = parser.parse_args(args)
 
-  gyp.debug = sets.Set(options.debug)
+  for mode in options.debug:
+    gyp.debug[mode] = 1
 
   # Do an extra check to avoid work when we're not debugging.
-  if DEBUG_GENERAL in gyp.debug:
+  if DEBUG_GENERAL in gyp.debug.keys():
     DebugOutput(DEBUG_GENERAL, 'running with these options:')
     for (option, value) in options.__dict__.items():
       if isinstance(value, basestring):
@@ -232,7 +232,7 @@ def main(args):
   if options.generator_flags:
     gen_flags += options.generator_flags
   generator_flags = NameValueListToDict(gen_flags)
-
+  
   # TODO: Remove this and the option after we've gotten folks to move to the
   # generator flag.
   if options.msvs_version:
