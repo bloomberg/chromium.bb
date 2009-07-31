@@ -135,4 +135,3 @@ hooks = [
     "action": ["python", "src/tools/gyp/gyp_chromium"],
   },
 ]
-
