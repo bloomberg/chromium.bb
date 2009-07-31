@@ -111,13 +111,14 @@ void BrowserTitlebar::Init() {
   // If we're a popup window or in app mode, we don't display the spy guy or
   // the tab strip.  Instead, put an hbox in titlebar_alignment_ in place of
   // the tab strip.
-  // +- Alignment (titlebar_alignment_) ----------------------------+
-  // |+ HBox ------------------------------------------------------+|
-  // ||+- Image (app_mode_favicon_) -++- Label (app_mode_title_) -+||
-  // |||  favicon                    ||  page title               |||
-  // ||+-----------------------------++---------------------------+||
-  // |+------------------------------------------------------------+|
-  // +--------------------------------------------------------------+
+  // +- Alignment (titlebar_alignment_) -----------------------------------+
+  // |+ HBox -------------------------------------------------------------+|
+  // ||+- TabStripGtk -++- Image ----------------++- Label --------------+||
+  // ||| hidden        ++    (app_mode_favicon_) ||    (app_mode_title_) |||
+  // |||               ||  favicon               ||  page title          |||
+  // ||+---------------++------------------------++----------------------+||
+  // |+-------------------------------------------------------------------+|
+  // +---------------------------------------------------------------------+
   GtkWidget* container_hbox = gtk_hbox_new(FALSE, 0);
 
   container_ = gtk_event_box_new();
@@ -159,6 +160,12 @@ void BrowserTitlebar::Init() {
                        TRUE, 0);
     GtkWidget* app_mode_hbox = gtk_hbox_new(FALSE, kIconTitleSpacing);
     gtk_container_add(GTK_CONTAINER(titlebar_alignment_), app_mode_hbox);
+
+    // Put the tab strip in the hbox even though we don't show it.  Sometimes
+    // we need the position of the tab strip so make sure it's in our widget
+    // hierarchy.
+    gtk_box_pack_start(GTK_BOX(app_mode_hbox),
+        browser_window_->tabstrip()->widget(), FALSE, FALSE, 0);
 
     // We use the app logo as a placeholder image so the title doesn't jump
     // around.

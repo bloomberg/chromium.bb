@@ -850,8 +850,10 @@ gfx::Point TabStripGtk::GetTabStripOriginForWidget(GtkWidget* target) {
       -widget()->allocation.x, 0, &x, &y)) {
     // If the tab strip isn't showing, give the coordinates relative to the
     // toplevel instead.
-    gtk_widget_translate_coordinates(
-        gtk_widget_get_toplevel(widget()), target, 0, 0, &x, &y);
+    if (!gtk_widget_translate_coordinates(
+        gtk_widget_get_toplevel(widget()), target, 0, 0, &x, &y)) {
+      NOTREACHED();
+    }
   }
   if (GTK_WIDGET_NO_WINDOW(target)) {
     x += target->allocation.x;
