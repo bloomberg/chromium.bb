@@ -206,63 +206,74 @@ installer_util::InstallStatus RenameChromeExecutables(bool system_install) {
 
 // Parse command line and read master profile, if present, to get distribution
 // related install options.
-DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
-  DictionaryValue* prefs = NULL;
+int GetInstallOptions(const CommandLine& cmd_line) {
+  int options = 0;
+  int preferences = 0;
 
   if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
-    FilePath prefs_path(
-        cmd_line.GetSwitchValue(installer_util::switches::kInstallerData));
-    prefs = installer_util::ParseDistributionPreferences(prefs_path);
+    std::wstring prefs_path = cmd_line.GetSwitchValue(
+        installer_util::switches::kInstallerData);
+    preferences = installer_util::ParseDistributionPreferences(prefs_path);
+    if ((preferences & installer_util::MASTER_PROFILE_NOT_FOUND) == 0) {
+      options |= installer_util::MASTER_PROFILE_PRESENT;
+      if ((preferences & installer_util::MASTER_PROFILE_ERROR) == 0)
+        options |= installer_util::MASTER_PROFILE_VALID;
+    }
+    // While there is a --show-eula command line flag, we don't process
+    // it in this function because it requires special handling.
+    if (preferences & installer_util::MASTER_PROFILE_REQUIRE_EULA)
+      options |= installer_util::SHOW_EULA_DIALOG;
   }
 
-  if (!prefs)
-    prefs = new DictionaryValue();
+  if (preferences & installer_util::MASTER_PROFILE_CREATE_ALL_SHORTCUTS ||
+      cmd_line.HasSwitch(installer_util::switches::kCreateAllShortcuts))
+    options |= installer_util::CREATE_ALL_SHORTCUTS;
 
-  if (cmd_line.HasSwitch(installer_util::switches::kCreateAllShortcuts))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kCreateAllShortcuts, true);
+  if (preferences & installer_util::MASTER_PROFILE_DO_NOT_LAUNCH_CHROME ||
+      cmd_line.HasSwitch(installer_util::switches::kDoNotLaunchChrome))
+    options |= installer_util::DO_NOT_LAUNCH_CHROME;
 
-  if (cmd_line.HasSwitch(installer_util::switches::kDoNotLaunchChrome))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kDoNotLaunchChrome, true);
+  if (preferences & installer_util::MASTER_PROFILE_MAKE_CHROME_DEFAULT ||
+      cmd_line.HasSwitch(installer_util::switches::kMakeChromeDefault))
+    options |= installer_util::MAKE_CHROME_DEFAULT;
 
-  if (cmd_line.HasSwitch(installer_util::switches::kMakeChromeDefault))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kMakeChromeDefault, true);
+  if (preferences & installer_util::MASTER_PROFILE_SYSTEM_LEVEL ||
+      cmd_line.HasSwitch(installer_util::switches::kSystemLevel))
+    options |= installer_util::SYSTEM_LEVEL;
 
-  if (cmd_line.HasSwitch(installer_util::switches::kSystemLevel))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kSystemLevel, true);
+  if (preferences & installer_util::MASTER_PROFILE_VERBOSE_LOGGING ||
+      cmd_line.HasSwitch(installer_util::switches::kVerboseLogging))
+    options |= installer_util::VERBOSE_LOGGING;
 
-  if (cmd_line.HasSwitch(installer_util::switches::kVerboseLogging))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kVerboseLogging, true);
+  if (preferences & installer_util::MASTER_PROFILE_ALT_SHORTCUT_TXT ||
+      cmd_line.HasSwitch(installer_util::switches::kAltDesktopShortcut))
+    options |= installer_util::ALT_DESKTOP_SHORTCUT;
 
-  if (cmd_line.HasSwitch(installer_util::switches::kAltDesktopShortcut))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kAltShortcutText, true);
-
-  return prefs;
+  return options;
 }
 
-// Copy master preferences file provided to installer, in the same folder
-// as chrome.exe so Chrome first run can find it. This function will be called
-// only on the first install of Chrome.
-void CopyPreferenceFileForFirstRun(bool system_level,
-                                   const CommandLine& cmd_line) {
-  std::wstring prefs_source_path = cmd_line.GetSwitchValue(
-      installer_util::switches::kInstallerData);
-  std::wstring prefs_dest_path(
-      installer::GetChromeInstallPath(system_level));
-  file_util::AppendToPath(&prefs_dest_path,
-                          installer_util::kDefaultMasterPrefs);
-  if (!file_util::CopyFile(prefs_source_path, prefs_dest_path))
-    LOG(ERROR) << "failed copying master profile";
+// Copy master preference file if provided to installer to the same path
+// of chrome.exe so Chrome first run can find it.
+// This function will be called only when Chrome is launched the first time.
+void CopyPreferenceFileForFirstRun(int options, const CommandLine& cmd_line) {
+  if (options & installer_util::MASTER_PROFILE_VALID) {
+    std::wstring prefs_source_path = cmd_line.GetSwitchValue(
+        installer_util::switches::kInstallerData);
+    bool system_install = (options & installer_util::SYSTEM_LEVEL) != 0;
+    std::wstring prefs_dest_path(
+        installer::GetChromeInstallPath(system_install));
+    file_util::AppendToPath(&prefs_dest_path,
+                            installer_util::kDefaultMasterPrefs);
+    if (!file_util::CopyFile(prefs_source_path, prefs_dest_path))
+      LOG(ERROR) << "failed copying master profile";
+  }
 }
 
 bool CheckPreInstallConditions(const installer::Version* installed_version,
-                               bool system_install,
+                               int options,
                                installer_util::InstallStatus& status) {
+  bool system_install = (options & installer_util::SYSTEM_LEVEL) != 0;
+
   // Check to avoid simultaneous per-user and per-machine installs.
   scoped_ptr<installer::Version>
       chrome_version(InstallUtil::GetChromeVersion(!system_install));
@@ -297,14 +308,12 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
 }
 
 installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
-    const installer::Version* installed_version, const DictionaryValue* prefs) {
-  bool system_level = installer_util::GetDistroBooleanPreference(prefs,
-      installer_util::master_preferences::kSystemLevel);
+    const installer::Version* installed_version, int options) {
   installer_util::InstallStatus install_status = installer_util::UNKNOWN_STATUS;
-  if (!CheckPreInstallConditions(installed_version,
-                                 system_level, install_status))
+  if (!CheckPreInstallConditions(installed_version, options, install_status))
     return install_status;
 
+  bool system_install = (options & installer_util::SYSTEM_LEVEL) != 0;
   // For install the default location for chrome.packed.7z is in current
   // folder, so get that value first.
   std::wstring archive = file_util::GetDirectoryFromPath(cmd_line.program());
@@ -323,7 +332,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   if (!file_util::CreateNewTempDirectory(std::wstring(L"chrome_"),
                                          &temp_path)) {
     LOG(ERROR) << "Could not create temporary path.";
-    InstallUtil::WriteInstallerResult(system_level,
+    InstallUtil::WriteInstallerResult(system_install,
                                       installer_util::TEMP_DIR_FAILED,
                                       IDS_INSTALL_TEMP_DIR_FAILED_BASE,
                                       NULL);
@@ -336,10 +345,10 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   file_util::AppendToPath(&unpack_path,
                           std::wstring(installer::kInstallSourceDir));
   bool incremental_install = false;
-  if (UnPackArchive(archive, system_level, installed_version,
+  if (UnPackArchive(archive, system_install, installed_version,
                     temp_path, unpack_path, incremental_install)) {
     install_status = installer_util::UNCOMPRESSION_FAILED;
-    InstallUtil::WriteInstallerResult(system_level, install_status,
+    InstallUtil::WriteInstallerResult(system_install, install_status,
                                       IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
                                       NULL);
   } else {
@@ -352,7 +361,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
     if (!installer_version.get()) {
       LOG(ERROR) << "Did not find any valid version in installer.";
       install_status = installer_util::INVALID_ARCHIVE;
-      InstallUtil::WriteInstallerResult(system_level, install_status,
+      InstallUtil::WriteInstallerResult(system_install, install_status,
                                         IDS_INSTALL_INVALID_ARCHIVE_BASE, NULL);
     } else {
       LOG(INFO) << "version to install: " << installer_version->GetString();
@@ -360,7 +369,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
           installed_version->IsHigherThan(installer_version.get())) {
         LOG(ERROR) << "Higher version is already installed.";
         install_status = installer_util::HIGHER_VERSION_EXISTS;
-        InstallUtil::WriteInstallerResult(system_level, install_status,
+        InstallUtil::WriteInstallerResult(system_install, install_status,
                                           IDS_INSTALL_HIGHER_VERSION_BASE,
                                           NULL);
       } else {
@@ -370,13 +379,13 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         file_util::AppendToPath(&archive_to_copy,
                                 std::wstring(installer::kChromeArchive));
         install_status = installer::InstallOrUpdateChrome(
-            cmd_line.program(), archive_to_copy, temp_path, prefs,
+            cmd_line.program(), archive_to_copy, temp_path, options,
             *installer_version, installed_version);
 
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
         std::wstring chrome_exe;
         if (install_status != installer_util::INSTALL_FAILED) {
-          chrome_exe = installer::GetChromeInstallPath(system_level);
+          chrome_exe = installer::GetChromeInstallPath(system_install);
           if (chrome_exe.empty()) {
             // If we failed to construct install path, it means the OS call to
             // get %ProgramFiles% or %AppData% failed. Report this as failure.
@@ -388,15 +397,15 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
             install_msg_base = 0;
           }
         }
-        InstallUtil::WriteInstallerResult(system_level, install_status,
+        InstallUtil::WriteInstallerResult(system_install, install_status,
                                           install_msg_base, &chrome_exe);
         if (install_status == installer_util::FIRST_INSTALL_SUCCESS) {
           LOG(INFO) << "First install successful.";
-          CopyPreferenceFileForFirstRun(system_level, cmd_line);
+          CopyPreferenceFileForFirstRun(options, cmd_line);
           // We never want to launch Chrome in system level install mode.
-          if (!system_level && !installer_util::GetDistroBooleanPreference(prefs,
-              installer_util::master_preferences::kDoNotLaunchChrome))
-            installer::LaunchChrome(system_level);
+          if (!(options & installer_util::DO_NOT_LAUNCH_CHROME) &&
+              !(options & installer_util::SYSTEM_LEVEL))
+            installer::LaunchChrome(system_install);
         }
       }
     }
@@ -405,7 +414,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
     // the case we would not do that directly at this point but in another
     //  instance of setup.exe
     dist->LaunchUserExperiment(install_status, *installer_version,
-                               system_level);
+                               system_install, options);
   }
 
   // Delete temporary files. These include install temporary directory
@@ -413,14 +422,14 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   scoped_ptr<WorkItemList> cleanup_list(WorkItem::CreateWorkItemList());
   LOG(INFO) << "Deleting temporary directory " << temp_path;
   cleanup_list->AddDeleteTreeWorkItem(temp_path, std::wstring());
-  if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
+  if (options & installer_util::MASTER_PROFILE_PRESENT) {
     std::wstring prefs_path = cmd_line.GetSwitchValue(
         installer_util::switches::kInstallerData);
     cleanup_list->AddDeleteTreeWorkItem(prefs_path, std::wstring());
   }
   cleanup_list->Do();
 
-  dist->UpdateDiffInstallStatus(system_level, incremental_install,
+  dist->UpdateDiffInstallStatus(system_install, incremental_install,
                                 install_status);
   return install_status;
 }
@@ -611,13 +620,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   CommandLine::Init(0, NULL);
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   installer::InitInstallerLogging(parsed_command_line);
-  scoped_ptr<DictionaryValue> prefs(GetInstallPreferences(parsed_command_line));
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kVerboseLogging))
+  int options = GetInstallOptions(parsed_command_line);
+  if (options & installer_util::VERBOSE_LOGGING)
     logging::SetMinLogLevel(logging::LOG_INFO);
 
-  bool system_install = installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSystemLevel);
+  bool system_install = (options & installer_util::SYSTEM_LEVEL) != 0;
   LOG(INFO) << "system install is " << system_install;
 
   // Check to make sure current system is WinXP or later. If not, log
@@ -684,7 +691,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   } else {
     install_status = InstallChrome(parsed_command_line,
                                    installed_version.get(),
-                                   prefs.get());
+                                   options);
   }
 
   CoUninitialize();

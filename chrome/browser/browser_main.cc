@@ -445,16 +445,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   BrowserInit browser_init;
 
-  int ping_delay = 0;
   if (is_first_run) {
     // On first run, we  need to process the master preferences before the
     // browser's profile_manager object is created, but after ResourceBundle
     // is initialized.
     std::vector<std::wstring> first_run_tabs;
-    first_run_ui_bypass = !FirstRun::ProcessMasterPreferences(user_data_dir,
-                                                              FilePath(),
-                                                              &first_run_tabs,
-                                                              &ping_delay);
+    first_run_ui_bypass =
+        !FirstRun::ProcessMasterPreferences(user_data_dir, FilePath(), NULL,
+                                            &first_run_tabs);
     // The master prefs might specify a set of urls to display.
     if (first_run_tabs.size())
       AddFirstRunNewTabs(&browser_init, first_run_tabs);
@@ -660,10 +658,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   win_util::ScopedCOMInitializer com_initializer;
 
+  int delay = 0;
+  installer_util::GetDistributionPingDelay(FilePath(), delay);
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
-  RLZTracker::InitRlzDelayed(base::DIR_MODULE, is_first_run, ping_delay);
+  RLZTracker::InitRlzDelayed(base::DIR_MODULE, is_first_run, delay);
 #endif
 
   // Config the network module so it has access to resources.

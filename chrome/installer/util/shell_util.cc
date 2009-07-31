@@ -334,7 +334,7 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
     params.append(installer_util::switches::kRegisterChromeBrowser);
     params.append(L"=\"" + chrome_exe + L"\"");
     if (!suffix.empty()) {
-      params.append(L" --");
+      params.append(L"--");
       params.append(installer_util::switches::kRegisterChromeBrowserSuffix);
       params.append(L"=\"" + suffix + L"\"");
     }

@@ -80,7 +80,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   virtual void LaunchUserExperiment(installer_util::InstallStatus status,
                                     const installer::Version& version,
-                                    bool system_install);
+                                    bool system_install, int options);
 
   // Assuming that the user qualifies, this function performs the inactive user
   // toast experiment. It will use chrome to show the UI and it will record the
