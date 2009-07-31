@@ -59,6 +59,9 @@ PREFIX : npapi::plugininstance::npp_destroy___webplugindelegateimpl::destroyinst
 # 5545
 PREFIX : npapi::plugininstance::npp_handleevent___webplugindelegateimpl::windowlesspaint___webpluginproxy::paint___webpluginproxy::onpaint
 
+# 17043
+PREFIX : npapi::pluginstream::trywritetoplugin___npapi::pluginstream::writetoplugin
+
 # 8020
 PREFIX : passwordformdommanager::findpasswordformfields___passwordformdommanager::createpasswordform___webframeloaderclient::dispatchdidfinishdocumentload
 
