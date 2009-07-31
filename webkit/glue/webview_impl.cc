@@ -205,6 +205,11 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     return suggestions_[list_index];
   }
 
+  virtual WebCore::String itemToolTip(unsigned last_index) const {
+    NOTIMPLEMENTED();
+    return WebCore::String();
+  }
+
   virtual bool itemIsEnabled(unsigned listIndex) const {
     return true;
   }

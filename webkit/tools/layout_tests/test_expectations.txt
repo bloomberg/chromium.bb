@@ -3086,3 +3086,5 @@ BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin
 BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-sync-double.html = FAIL
 BUG18089 LINUX : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-sync.html = FAIL
 BUG18089 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-unsafe-redirect.html = FAIL
+
+BUG18143 : LayoutTests/fast/forms/button-style-color.html = FAIL
