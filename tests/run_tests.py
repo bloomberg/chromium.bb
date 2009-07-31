@@ -18,9 +18,9 @@ def GetFileContents(filename, test_name):
 
 def RunTest(test_name, golden_file):
   gyp_script = os.path.normpath(
-    os.path.join(os.path.dirname(sys.argv[0]), '../gyp'))
+    os.path.join(os.path.dirname(sys.argv[0]), os.path.join('..','gyp')))
 
-  p = subprocess.Popen(['python', gyp_script, '--depth', '..', test_name,
+  p = subprocess.Popen([sys.executable, gyp_script, '--depth', '..', test_name,
                         '--debug', 'variables', '--debug', 'general',
                         '--format', 'gypd'],
                        shell=(sys.platform == 'win32'), stdin=subprocess.PIPE,
