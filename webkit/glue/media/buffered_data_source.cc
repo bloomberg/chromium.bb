@@ -453,7 +453,8 @@ BufferedDataSource::BufferedDataSource(
       intermediate_read_buffer_(new uint8[kInitialReadBufferSize]),
       intermediate_read_buffer_size_(kInitialReadBufferSize),
       render_loop_(render_loop),
-      stopped_(false) {
+      stopped_(false),
+      stop_task_finished_(false) {
 }
 
 BufferedDataSource::~BufferedDataSource() {
@@ -568,6 +569,14 @@ void BufferedDataSource::ReadTask(
      int64 position, int read_size, uint8* buffer,
      media::DataSource::ReadCallback* read_callback) {
   DCHECK(MessageLoop::current() == render_loop_);
+
+  // If StopTask() was executed we should return immediately. We check this
+  // variable to prevent doing any actual work after clean up was done. We do
+  // not check |stopped_| because anything use of it has to be within |lock_|
+  // which is not desirable.
+  if (stop_task_finished_)
+    return;
+
   DCHECK(!read_callback_.get());
   DCHECK(read_callback);
 
@@ -604,6 +613,9 @@ void BufferedDataSource::StopTask() {
   read_buffer_ = 0;
   read_submitted_time_ = base::Time();
   read_attempts_ = 0;
+
+  // Signal that stop task has finished execution.
+  stop_task_finished_ = true;
 }
 
 void BufferedDataSource::SwapLoaderTask(BufferedResourceLoader* loader) {

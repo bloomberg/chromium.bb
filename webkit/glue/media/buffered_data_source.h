@@ -330,8 +330,13 @@ class BufferedDataSource : public media::DataSource {
   // Protects |stopped_|.
   Lock lock_;
 
-  // Stop signal to suppressing activities.
+  // Stop signal to suppressing activities. This variable is set on the pipeline
+  // thread and read from the render thread.
   bool stopped_;
+
+  // This variable is set by StopTask() and read from ReadTask(). It is used to
+  // prevent ReadTask() from doing anything after StopTask() is executed.
+  bool stop_task_finished_;
 
   // This timer is to run the WatchDogTask repeatedly. We use a timer instead
   // of doing PostDelayedTask() reduce the extra reference held by the message
