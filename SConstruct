@@ -34,6 +34,8 @@ import stat
 import sys
 sys.path.append("./common")
 
+xxx
+
 # NOTE: Underlay for  src/third_party_mod/gtest
 # TODO: try to eliminate this hack
 Dir('src/third_party_mod/gtest').addRepository(
