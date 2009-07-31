@@ -264,8 +264,7 @@ void FindBarWin::ClearResults(const FindNotificationDetails& results) {
 }
 
 void FindBarWin::StopAnimation() {
-  if (animation_->IsAnimating())
-    animation_->End();
+  animation_->End();
 }
 
 void FindBarWin::SetFindText(const string16& find_text) {

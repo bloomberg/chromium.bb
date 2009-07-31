@@ -270,7 +270,7 @@ void FindBarGtk::ClearResults(const FindNotificationDetails& results) {
 }
 
 void FindBarGtk::StopAnimation() {
-  // http://code.google.com/p/chromium/issues/detail?id=11979
+  slide_widget_->End();
 }
 
 void FindBarGtk::MoveWindowIfNecessary(const gfx::Rect& selection_rect,

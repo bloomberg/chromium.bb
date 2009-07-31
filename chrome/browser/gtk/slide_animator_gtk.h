@@ -61,6 +61,9 @@ class SlideAnimatorGtk : public AnimationDelegate {
   // Slide shut.
   void Close();
 
+  // End the current animation.
+  void End();
+
   // Immediately hide the widget.
   void CloseWithoutAnimation();
 

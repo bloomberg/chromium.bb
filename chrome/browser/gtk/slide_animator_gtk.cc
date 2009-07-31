@@ -83,6 +83,10 @@ void SlideAnimatorGtk::Close() {
   animation_->Hide();
 }
 
+void SlideAnimatorGtk::End() {
+  animation_->End();
+}
+
 void SlideAnimatorGtk::CloseWithoutAnimation() {
   animation_->Reset(0.0);
   animation_->Hide();
