@@ -64,7 +64,7 @@ class StatusBubbleViews::StatusView : public views::Label,
  public:
   StatusView(StatusBubble* status_bubble, views::Widget* popup,
              ThemeProvider* theme_provider)
-      : Animation(kFramerate, this),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(Animation(kFramerate, this)),
         stage_(BUBBLE_HIDDEN),
         style_(STYLE_STANDARD),
         ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
