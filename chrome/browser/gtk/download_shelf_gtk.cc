@@ -97,8 +97,6 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   std::string link_text =
       l10n_util::GetStringUTF8(IDS_SHOW_ALL_DOWNLOADS);
   GtkWidget* link_button = gtk_chrome_link_button_new(link_text.c_str());
-  gtk_chrome_link_button_set_use_gtk_theme(
-      GTK_CHROME_LINK_BUTTON(link_button), FALSE);
   g_signal_connect(link_button, "clicked",
                    G_CALLBACK(OnButtonClick), this);
   // Until we switch to vector graphics, force the font size.

@@ -118,10 +118,6 @@ void BookmarkBubbleGtk::Observe(NotificationType type,
                                 const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
 
-  gtk_chrome_link_button_set_use_gtk_theme(
-      GTK_CHROME_LINK_BUTTON(remove_button_),
-      theme_provider_->UseGtkTheme());
-
   if (theme_provider_->UseGtkTheme()) {
     for (std::vector<GtkWidget*>::iterator it = labels_.begin();
          it != labels_.end(); ++it) {
@@ -156,7 +152,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
       newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
                           IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK).c_str());
   labels_.push_back(label);
-  remove_button_ = gtk_chrome_link_button_new(
+  GtkWidget* remove_button = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK).c_str());
   GtkWidget* edit_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_OPTIONS).c_str());
@@ -173,7 +169,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
   gtk_misc_set_alignment(GTK_MISC(label), 0, 1);
   gtk_box_pack_start(GTK_BOX(top), label,
                      TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(top), remove_button_,
+  gtk_box_pack_start(GTK_BOX(top), remove_button,
                      FALSE, FALSE, 0);
 
   // TODO(deanm): We should show the bookmark bar folder along with the top
@@ -230,7 +226,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
                    G_CALLBACK(&HandleEditButtonThunk), this);
   g_signal_connect(close_button, "clicked",
                    G_CALLBACK(&HandleCloseButtonThunk), this);
-  g_signal_connect(remove_button_, "clicked",
+  g_signal_connect(remove_button, "clicked",
                    G_CALLBACK(&HandleRemoveButtonThunk), this);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,

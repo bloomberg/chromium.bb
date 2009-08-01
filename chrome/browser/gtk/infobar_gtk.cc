@@ -184,8 +184,6 @@ class LinkInfoBar : public InfoBar {
     // Create the link button.
     GtkWidget* link_button =
         gtk_chrome_link_button_new(WideToUTF8(link_text).c_str());
-    gtk_chrome_link_button_set_use_gtk_theme(
-        GTK_CHROME_LINK_BUTTON(link_button), FALSE);
     g_signal_connect(link_button, "clicked",
                      G_CALLBACK(OnLinkClick), this);
 
