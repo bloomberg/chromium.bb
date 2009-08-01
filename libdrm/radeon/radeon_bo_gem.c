@@ -49,6 +49,7 @@ struct radeon_bo_gem {
     struct radeon_bo    base;
     uint32_t            name;
     int                 map_count;
+    void *priv_ptr;
 };
 
 struct bo_manager_gem {
@@ -130,8 +131,8 @@ static struct radeon_bo *bo_unref(struct radeon_bo *bo)
     if (bo->cref) {
         return bo;
     }
-    if (bo_gem->map_count) {
-        munmap(bo->ptr, bo->size);
+    if (bo_gem->priv_ptr) {
+        munmap(bo_gem->priv_ptr, bo->size);
     }
 
     /* close object */
@@ -152,6 +153,14 @@ static int bo_map(struct radeon_bo *bo, int write)
     if (bo_gem->map_count++ != 0) {
         return 0;
     }
+    if (bo_gem->priv_ptr) {
+	r = bo_wait(bo);
+	bo->ptr = bo_gem->priv_ptr;
+	if (r)
+		return r;
+	return 0;
+    }
+
     bo->ptr = NULL;
     args.handle = bo->handle;
     args.offset = 0;
@@ -168,8 +177,8 @@ static int bo_map(struct radeon_bo *bo, int write)
     ptr = mmap(0, args.size, PROT_READ|PROT_WRITE, MAP_SHARED, bo->bom->fd, args.addr_ptr);
     if (ptr == MAP_FAILED)
         return -errno;
-    bo->ptr = ptr;
-
+    bo_gem->priv_ptr = ptr;
+    bo->ptr = bo_gem->priv_ptr;
     return r;
 }
 
@@ -180,7 +189,7 @@ static int bo_unmap(struct radeon_bo *bo)
     if (--bo_gem->map_count > 0) {
         return 0;
     }
-    munmap(bo->ptr, bo->size);
+    //munmap(bo->ptr, bo->size);
     bo->ptr = NULL;
     return 0;
 }
