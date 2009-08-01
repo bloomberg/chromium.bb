@@ -17,6 +17,10 @@ namespace views {
 class View;
 class WidgetGtk;
 
+// Note that the NativeViewHostGtk assumes ownership of the GtkWidget attached
+// to it for the duration of its attachment. This is so the NativeViewHostGtk
+// can safely reparent the GtkWidget in multiple passes without having to worry
+// about the GtkWidget's refcnt falling to 0.
 class NativeViewHostGtk : public NativeViewHostWrapper {
  public:
   explicit NativeViewHostGtk(NativeViewHost* host);
@@ -42,13 +46,8 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   // regardless of whether or not there's an X Window. It's not that hard.
   void CreateFixed(bool needs_window);
 
-  // DestroyFixed returns true if an associated GtkWidget was addref'ed.
-  // It does this because when the fixed is destroyed the refcount for the
-  // contained GtkWidget is decremented, which may cause it to be destroyed
-  // which we do not want. If this function returns true, the caller is
-  // responsible for unrefing the GtkWidget after it has been added to the new
-  // container.
-  bool DestroyFixed();
+  // Destroys the GtkFixed that performs clipping on our hosted GtkWidget.
+  void DestroyFixed();
 
   WidgetGtk* GetHostWidget() const;
 

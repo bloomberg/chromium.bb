@@ -130,6 +130,12 @@ LocationBarView::LocationBarView(Profile* profile,
 }
 
 LocationBarView::~LocationBarView() {
+#if defined(OS_LINUX)
+  // We must release the ref that the NativeViewHost has on the
+  // AutocompleteEditViewGtk, otherwise its internal OwnedWidgetGtk will
+  // complain about its refcount not being 1 as it is destroyed.
+  location_entry_view_->Detach();
+#endif
   DeletePageActionViews();
 }
 

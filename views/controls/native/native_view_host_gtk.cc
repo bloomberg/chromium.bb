@@ -47,6 +47,10 @@ void NativeViewHostGtk::NativeViewAttached() {
   // Always layout though.
   host_->Layout();
 
+  // We own the native view as long as it's attached, so that we can safely
+  // reparent it in multiple passes.
+  gtk_widget_ref(host_->native_view());
+
   // TODO(port): figure out focus.
 }
 
@@ -60,6 +64,9 @@ void NativeViewHostGtk::NativeViewDetaching() {
   // TODO(port): focus.
   // FocusManager::UninstallFocusSubclass(native_view());
   installed_clip_ = false;
+
+  // Release ownership back to the caller.
+  gtk_widget_unref(host_->native_view());
 }
 
 void NativeViewHostGtk::AddedToWidget() {
@@ -87,8 +94,6 @@ void NativeViewHostGtk::RemovedFromWidget() {
   if (!host_->native_view())
     return;
 
-  // TODO(beng): We leak host_->native_view() here. Fix: make all widgets not be
-  //             refcounted.
   DestroyFixed();
 }
 
@@ -156,7 +161,7 @@ void NativeViewHostGtk::SetFocus() {
 // NativeViewHostGtk, private:
 
 void NativeViewHostGtk::CreateFixed(bool needs_window) {
-  bool native_view_addrefed = DestroyFixed();
+  DestroyFixed();
 
   fixed_ = gtk_fixed_new();
   gtk_fixed_set_has_window(GTK_FIXED(fixed_), needs_window);
@@ -168,28 +173,23 @@ void NativeViewHostGtk::CreateFixed(bool needs_window) {
     widget_gtk->AddChild(fixed_);
   if (host_->native_view())
     gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
-  if (native_view_addrefed)
-    gtk_widget_unref(host_->native_view());
 }
 
-bool NativeViewHostGtk::DestroyFixed() {
-  bool native_view_addrefed = false;
+void NativeViewHostGtk::DestroyFixed() {
   if (!fixed_)
-    return native_view_addrefed;
+    return;
 
   gtk_widget_hide(fixed_);
   GetHostWidget()->RemoveChild(fixed_);
 
   if (host_->native_view()) {
-    // We can't allow the hosted NativeView's refcount to drop to zero.
-    gtk_widget_ref(host_->native_view());
-    native_view_addrefed = true;
+    // We can safely remove the widget from its container since we own the
+    // widget from the moment it is attached.
     gtk_container_remove(GTK_CONTAINER(fixed_), host_->native_view());
   }
 
   gtk_widget_destroy(fixed_);
   fixed_ = NULL;
-  return native_view_addrefed;
 }
 
 WidgetGtk* NativeViewHostGtk::GetHostWidget() const {
