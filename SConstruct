@@ -613,8 +613,13 @@ windows_debug_env.Alias('windows_debug_data_install', n)
 # ----------------------------------------------------------
 
 unix_like_env = base_env.Clone()
+# -Wdeclaration-after-statement is desirable because MS studio does
+# not allow declarations after statements in a block, and since much
+# of our code is portable and primarily initially tested on Linux,
+# it'd be nice to get the build error earlier rather than later
+# (building and testing on Linux is faster).
 unix_like_env.Prepend(
-  CFLAGS = ['-std=gnu99' ],
+  CFLAGS = ['-std=gnu99', '-Wdeclaration-after-statement' ],
   CCFLAGS = [
     # '-malign-double',
     '-Werror',

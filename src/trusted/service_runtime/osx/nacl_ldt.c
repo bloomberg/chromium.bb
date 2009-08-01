@@ -87,6 +87,22 @@ static int NaClFindUnusedEntryNumber(int start, int refresh_state) {
   return retval;
 }
 
+static uint16_t BuildSelector(int sel_index) {
+  union {
+    sel_t sel;
+    uint16_t uintsel;
+  } u;
+
+  /*
+   * Return an LDT selector.
+   */
+  u.sel.rpl = USER_PRIV;
+  u.sel.ti = SEL_LDT;
+  u.sel.index = sel_index;
+
+  return u.uintsel;
+}
+
 /*
  * Find and allocate an available selector, inserting an LDT entry with the
  * appropriate permissions.
@@ -98,7 +114,7 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
                                  void* base_addr,
                                  uint32_t size_minus_one) {
   ldt_entry_t ldt;
-  int retval = -1;
+  int sel_index = -1;
 
   memset(&ldt, 0, sizeof(ldt));
 
@@ -143,9 +159,9 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
   if (-1 == entry_number) {
     /* -1 means caller did not specify -- allocate the first available. */
     entry_number = NaClFindUnusedEntryNumber(0, 1);
-    while ((-1 == retval) && (-1 != entry_number)) {
-      retval = i386_set_ldt(entry_number, &ldt, 1);
-      if (-1 == retval) {
+    while ((-1 == sel_index) && (-1 != entry_number)) {
+      sel_index = i386_set_ldt(entry_number, &ldt, 1);
+      if (-1 == sel_index) {
         /*
          * For some reason we failed to allocate the LDT entry - try the next
          * available one.
@@ -155,27 +171,16 @@ uint16_t NaClLdtAllocateSelector(int32_t entry_number,
     }
   } else {
     /* The caller specified an entry number - try only this one. */
-    retval = i386_set_ldt(entry_number, &ldt, 1);
+    sel_index = i386_set_ldt(entry_number, &ldt, 1);
   }
 
-  if (-1 == retval) {
+  if (-1 == sel_index) {
     goto alloc_error;
   }
 
   NaClMutexUnlock(&nacl_ldt_mutex);
 
-  /*
-   * Return an LDT selector.
-   */
-  union {
-    sel_t sel;
-    uint16_t uintsel;
-  } u;
-  u.sel.rpl = USER_PRIV;
-  u.sel.ti = SEL_LDT;
-  u.sel.index = retval;
-
-  return u.uintsel;
+  return BuildSelector(sel_index);
 
   /*
    * All error returns go through this epilog.
