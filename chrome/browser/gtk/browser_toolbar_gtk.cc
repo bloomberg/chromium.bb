@@ -546,12 +546,12 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
       right = toolbar->star_->widget();
     }
 
-    gint x = left->allocation.x;
-    gint y = left->allocation.y;
-    gint width = (right->allocation.x - left->allocation.x) +
-                 right->allocation.width;
-    gint height = (right->allocation.y - left->allocation.y) +
-                  right->allocation.height;
+    GdkRectangle rec = {
+      left->allocation.x,
+      left->allocation.y,
+      (right->allocation.x - left->allocation.x) + right->allocation.width,
+      (right->allocation.y - left->allocation.y) + right->allocation.height
+    };
 
     // Make sure our off screen entry has the correct base color if we're in
     // secure mode.
@@ -572,20 +572,20 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
 
     // We're using GTK rendering; draw a GTK entry widget onto the background.
     gtk_paint_shadow(our_style, location_hbox->window,
-                     GTK_STATE_NORMAL, GTK_SHADOW_IN, NULL,
+                     GTK_STATE_NORMAL, GTK_SHADOW_IN, &rec,
                      location_hbox, "entry",
-                     x, y, width, height);
+                     rec.x, rec.y, rec.width, rec.height);
 
     // Draw the interior background (not all themes draw the entry background
     // above; this is a noop on themes that do).
     gint xborder = our_style->xthickness;
     gint yborder = our_style->ythickness;
     gtk_paint_flat_box(our_style, location_hbox->window,
-                       GTK_STATE_NORMAL, GTK_SHADOW_NONE, NULL,
+                       GTK_STATE_NORMAL, GTK_SHADOW_NONE, &rec,
                        location_hbox, "entry_bg",
-                       x + xborder, y + yborder,
-                       width - 2 * xborder,
-                       height - 2 * yborder);
+                       rec.x + xborder, rec.y + yborder,
+                       rec.width - 2 * xborder,
+                       rec.height - 2 * yborder);
 
     g_object_unref(our_style);
   }
