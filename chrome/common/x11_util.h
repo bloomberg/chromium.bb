@@ -34,6 +34,8 @@ namespace x11_util {
 
 // These functions cache their results.
 
+// Check if there's an open connection to an X server.
+bool XDisplayExists();
 // Return an X11 connection for the current, primary display.
 Display* GetXDisplay();
 // Return true iff the connection supports X shared memory

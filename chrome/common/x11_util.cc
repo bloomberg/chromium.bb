@@ -26,6 +26,10 @@
 
 namespace x11_util {
 
+bool XDisplayExists() {
+  return (gdk_display_get_default() != NULL);
+}
+
 Display* GetXDisplay() {
   static Display* display = NULL;
 

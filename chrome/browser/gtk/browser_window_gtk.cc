@@ -1194,8 +1194,12 @@ GtkWindow* BrowserWindowGtk::GetBrowserWindowForXID(XID xid) {
 // static
 void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
   bool custom_frame_default = false;
-  if (!prefs->HasPrefPath(prefs::kUseCustomChromeFrame))
+  // Avoid checking the window manager if we're not connected to an X server (as
+  // is the case in Valgrind tests).
+  if (x11_util::XDisplayExists() &&
+      !prefs->HasPrefPath(prefs::kUseCustomChromeFrame)) {
     custom_frame_default = GetCustomFramePrefDefault();
+  }
   prefs->RegisterBooleanPref(
       prefs::kUseCustomChromeFrame, custom_frame_default);
 }
