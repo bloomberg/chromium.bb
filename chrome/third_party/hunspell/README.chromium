@@ -6,24 +6,13 @@ This is a partial copy of Hunspell 1.1.5, with the following changes:
   reference in src/hunspell/csutil.cxx changed accordingly
 * Change the input params of the constructors to receive a FILE* instead of
   a file path. This is required to use hunspell in the sandbox.
-  The patch is in google.patch.
+* Remove all HUNSPELL_WARNING parameters since we are not using HashMgr
+  anymore, just show the msg not the line number.
+* Remove the key variable from Hunspell, HashMgr and AffixMgr since Bdict
+  is being used instead.
 
 The English dictionary distributed by Firefox has been checked in to the
 dictionaries directory. It has several additions over the default
 myspell/hunspell dictionary.
 
-* Workaround for non-ASCII characters
-
-Visual Studio on Japanese Windows assumes the source files to be
-encoded in Shift_JIS.  The compiler is unhappy with non-ASCII letters
-in the source files of Hunspell.  The same problem happens with other
-CJK Windows as well.  Here is the workaround for this problem:
-
-Convert 8-bit bytes to hexadecimal escaped forms by
-
-  % perl -i -De 's/([\x80-\xff])/sprintf("\\x%02x", $1)/ge' src/*.cxx
-
-
-Note that Hunspell upstream is going to fix this problem.  We'll no
-longer need the workaround if the problem is fixed in the upstream.
 

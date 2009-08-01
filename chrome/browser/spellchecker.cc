@@ -613,7 +613,7 @@ void SpellChecker::AddCustomWordsToHunspell() {
   if (hunspell_.get()) {
     for (std::vector<std::string>::iterator it = list_of_words.begin();
          it != list_of_words.end(); ++it) {
-      hunspell_->put_word(it->c_str());
+      hunspell_->add(it->c_str());
     }
   }
 }
@@ -744,7 +744,7 @@ void SpellChecker::AddWord(const std::wstring& word) {
   // Add the word to hunspell.
   std::string word_to_add = WideToUTF8(word);
   if (!word_to_add.empty())
-    hunspell_->put_word(word_to_add.c_str());
+    hunspell_->add(word_to_add.c_str());
 
   // Now add the word to the custom dictionary file.
   Task* write_word_task =
