@@ -16,19 +16,6 @@ ThemePreviewInfobarDelegate::ThemePreviewInfobarDelegate(
            profile_(tab_contents->profile()), name_(name) {
 }
 
-bool ThemePreviewInfobarDelegate::EqualsDelegate(InfoBarDelegate* delegate)
-    const {
-  // If another infobar of this type is showing, this will prevent us adding
-  // a new one, we only care if they're the same type, as pressing undo always
-  // has the same result each time. This does mean that the text continues
-  // to refer to the old theme, but this is good enough for beta.
-  // http://crbug.com/17932
-  if (delegate->AsThemePreviewInfobarDelegate())
-    return true;
-
-  return false;
-}
-
 void ThemePreviewInfobarDelegate::InfoBarClosed() {
   delete this;
 }

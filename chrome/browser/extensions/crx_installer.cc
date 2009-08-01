@@ -14,38 +14,48 @@
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "grit/chromium_strings.h"
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#elif defined(OS_MACOSX)
-#include "base/scoped_cftyperef.h"
-#include "base/sys_string_conversions.h"
-#include <CoreFoundation/CFUserNotification.h>
-#endif
+namespace {
+  // Helper function to delete files. This is used to avoid ugly casts which
+  // would be necessary with PostMessage since file_util::Delete is overloaded.
+  static void DeleteFileHelper(const FilePath& path, bool recursive) {
+    file_util::Delete(path, recursive);
+  }
+}
+
+void CrxInstaller::Start(const FilePath& crx_path,
+                         const FilePath& install_directory,
+                         Extension::Location install_source,
+                         const std::string& expected_id,
+                         bool delete_crx,
+                         MessageLoop* file_loop,
+                         ExtensionsService* frontend,
+                         CrxInstallerClient* client) {
+  // Note: We don't keep a reference because this object manages its own
+  // lifetime.
+  new CrxInstaller(crx_path, install_directory, install_source, expected_id,
+                   delete_crx, file_loop, frontend, client);
+}
 
 CrxInstaller::CrxInstaller(const FilePath& crx_path,
                            const FilePath& install_directory,
                            Extension::Location install_source,
                            const std::string& expected_id,
-                           bool extensions_enabled,
-                           bool is_from_gallery,
-                           bool show_prompts,
                            bool delete_crx,
                            MessageLoop* file_loop,
-                           ExtensionsService* frontend)
+                           ExtensionsService* frontend,
+                           CrxInstallerClient* client)
     : crx_path_(crx_path),
       install_directory_(install_directory),
       install_source_(install_source),
       expected_id_(expected_id),
-      extensions_enabled_(extensions_enabled),
-      is_from_gallery_(is_from_gallery),
-      show_prompts_(show_prompts),
       delete_crx_(delete_crx),
       file_loop_(file_loop),
-      ui_loop_(MessageLoop::current()) {
+      ui_loop_(MessageLoop::current()),
+      frontend_(frontend),
+      client_(client) {
 
-  // Note: this is a refptr so that we keep the frontend alive long enough to
-  // get our response.
-  frontend_ = frontend;
+  extensions_enabled_ = frontend_->extensions_enabled();
+
   unpacker_ = new SandboxedExtensionUnpacker(
       crx_path, g_browser_process->resource_dispatcher_host(), this);
 
@@ -53,30 +63,39 @@ CrxInstaller::CrxInstaller(const FilePath& crx_path,
       &SandboxedExtensionUnpacker::Start));
 }
 
+CrxInstaller::~CrxInstaller() {
+  // Delete the temp directory and crx file as necessary. Note that the
+  // destructor might be called on any thread, so we post a task to the file
+  // thread to make sure the delete happens there.
+  if (!temp_dir_.value().empty()) {
+    file_loop_->PostTask(FROM_HERE, NewRunnableFunction(&DeleteFileHelper,
+        temp_dir_, true));  // recursive delete
+  }
+
+  if (delete_crx_) {
+    file_loop_->PostTask(FROM_HERE, NewRunnableFunction(&DeleteFileHelper,
+        crx_path_, false));  // non-recursive delete
+  }
+}
+
 void CrxInstaller::OnUnpackFailure(const std::string& error_message) {
+  DCHECK(MessageLoop::current() == file_loop_);
   ReportFailureFromFileThread(error_message);
 }
 
 void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
                                    const FilePath& extension_dir,
                                    Extension* extension) {
+  DCHECK(MessageLoop::current() == file_loop_);
+
   // Note: We take ownership of |extension| and |temp_dir|.
   extension_.reset(extension);
   temp_dir_ = temp_dir;
-
-  // temp_dir_deleter is stack allocated instead of a member of CrxInstaller, so
-  // that delete always happens on the file thread.
-  ScopedTempDir temp_dir_deleter;
-  temp_dir_deleter.Set(temp_dir);
 
   // The unpack dir we don't have to delete explicity since it is a child of
   // the temp dir.
   unpacked_extension_root_ = extension_dir;
   DCHECK(file_util::ContainsPath(temp_dir_, unpacked_extension_root_));
-
-  // If we were supposed to delete the source file, we can do that now.
-  if (delete_crx_)
-    file_util::Delete(crx_path_, false);  // non-recursive
 
   // Determine whether to allow installation. We always allow themes and
   // external installs.
@@ -89,59 +108,36 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   // Make sure the expected id matches.
   // TODO(aa): Also support expected version?
   if (!expected_id_.empty() && expected_id_ != extension->id()) {
-    ReportFailureFromFileThread(
-        StringPrintf("ID in new extension manifest (%s) does not match "
-                     "expected id (%s)",
-                     extension->id().c_str(),
-                     expected_id_.c_str()));
+    ReportFailureFromFileThread(StringPrintf(
+        "ID in new extension manifest (%s) does not match expected id (%s)",
+        extension->id().c_str(),
+        expected_id_.c_str()));
     return;
   }
 
-  // Show the confirm UI if necessary.
-  // NOTE: We also special case themes to not have a dialog, because we show
-  // a special infobar UI for them instead.
-  if (show_prompts_ && !extension->IsTheme()) {
-    if (!ConfirmInstall())
-      return;  // error reported by ConfirmInstall()
+  if (client_.get()) {
+    ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+        &CrxInstaller::ConfirmInstall));
+  } else {
+    CompleteInstall();
   }
-
-  CompleteInstall();
 }
 
-bool CrxInstaller::ConfirmInstall() {
-#if defined(OS_WIN)
-  if (win_util::MessageBox(GetForegroundWindow(),
-          L"Are you sure you want to install this extension?\n\n"
-          L"You should only install extensions from sources you trust.",
-          l10n_util::GetString(IDS_PRODUCT_NAME).c_str(),
-          MB_OKCANCEL) != IDOK) {
-    ReportFailureFromFileThread("User did not allow extension to be "
-                                "installed.");
-    return false;
+void CrxInstaller::ConfirmInstall() {
+  if (!client_->ConfirmInstall(extension_.get())) {
+    // We're done. Since we don't post any more tasks to ourselves, our ref
+    // count should go to zero and we die. The destructor will clean up the temp
+    // dir.
+    return;
   }
-#elif defined(OS_MACOSX)
-  // Using CoreFoundation to do this dialog is unimaginably lame but will do
-  // until the UI is redone.
-  scoped_cftyperef<CFStringRef> product_name(
-      base::SysWideToCFStringRef(l10n_util::GetString(IDS_PRODUCT_NAME)));
-  CFOptionFlags response;
-  if (kCFUserNotificationAlternateResponse == CFUserNotificationDisplayAlert(
-      0, kCFUserNotificationCautionAlertLevel, NULL, NULL, NULL,
-      product_name,
-      CFSTR("Are you sure you want to install this extension?\n\n"
-           "This is a temporary message and it will be removed when "
-           "extensions UI is finalized."),
-      NULL, CFSTR("Cancel"), NULL, &response)) {
-    ReportFailureFromFileThread("User did not allow extension to be "
-                                "installed.");
-    return false;
-  }
-#endif  // OS_*
 
-  return true;
+  file_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &CrxInstaller::CompleteInstall));
 }
 
 void CrxInstaller::CompleteInstall() {
+  DCHECK(MessageLoop::current() == file_loop_);
+
   FilePath version_dir;
   Extension::InstallType install_type = Extension::INSTALL_ERROR;
   std::string error_msg;
@@ -173,22 +169,57 @@ void CrxInstaller::CompleteInstall() {
 }
 
 void CrxInstaller::ReportFailureFromFileThread(const std::string& error) {
+  DCHECK(MessageLoop::current() == file_loop_);
   ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &CrxInstaller::ReportFailureFromUIThread, error));
 }
 
 void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
-  ExtensionErrorReporter::GetInstance()->ReportError(error, show_prompts_);
+  DCHECK(MessageLoop::current() == ui_loop_);
+
+  // This isn't really necessary, it is only used because unit tests expect to
+  // see errors get reported via this interface.
+  //
+  // TODO(aa): Need to go through unit tests and clean them up too, probably get
+  // rid of this line.
+  ExtensionErrorReporter::GetInstance()->ReportError(error, false);  // quiet
+
+  if (client_)
+    client_->OnInstallFailure(error);
 }
 
 void CrxInstaller::ReportOverinstallFromFileThread() {
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(frontend_.get(),
-      &ExtensionsService::OnExtensionOverinstallAttempted, extension_->id()));
+  DCHECK(MessageLoop::current() == file_loop_);
+  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &CrxInstaller::ReportOverinstallFromUIThread));
+}
+
+void CrxInstaller::ReportOverinstallFromUIThread() {
+  DCHECK(MessageLoop::current() == ui_loop_);
+
+  if (client_.get())
+    client_->OnOverinstallAttempted(extension_.get());
+
+  frontend_->OnExtensionOverinstallAttempted(extension_->id());
 }
 
 void CrxInstaller::ReportSuccessFromFileThread() {
+  DCHECK(MessageLoop::current() == file_loop_);
+  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &CrxInstaller::ReportSuccessFromUIThread));
+}
+
+void CrxInstaller::ReportSuccessFromUIThread() {
+  DCHECK(MessageLoop::current() == ui_loop_);
+
+  // If there is a client, tell the client about installation.
+  if (client_.get())
+    client_->OnInstallSuccess(extension_.get());
+
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
-  ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(frontend_.get(),
-      &ExtensionsService::OnExtensionInstalled, extension_.release()));
+  frontend_->OnExtensionInstalled(extension_.release());
+
+  // We're done. We don't post any more tasks to ourselves so we are deleted
+  // soon.
 }

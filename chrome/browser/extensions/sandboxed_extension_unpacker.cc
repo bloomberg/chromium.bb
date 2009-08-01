@@ -28,11 +28,15 @@ const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
 SandboxedExtensionUnpacker::SandboxedExtensionUnpacker(
     const FilePath& crx_path, ResourceDispatcherHost* rdh,
     SandboxedExtensionUnpackerClient* client)
-      : crx_path_(crx_path), client_loop_(MessageLoop::current()), rdh_(rdh),
-        client_(client), got_response_(false) {
+      : crx_path_(crx_path), file_loop_(NULL), rdh_(rdh), client_(client),
+        got_response_(false) {
 }
 
 void SandboxedExtensionUnpacker::Start() {
+  // We assume that we are started on the thread that the client wants us to do
+  // file IO on.
+  file_loop_ = MessageLoop::current();
+
   // Create a temporary directory to work in.
   if (!temp_dir_.CreateUniqueTempDir()) {
     ReportFailure("Could not create temporary directory.");
@@ -72,13 +76,13 @@ void SandboxedExtensionUnpacker::Start() {
 
 void SandboxedExtensionUnpacker::StartProcessOnIOThread(
     const FilePath& temp_crx_path) {
-  UtilityProcessHost* host = new UtilityProcessHost(rdh_, this,
-                                                    MessageLoop::current());
+  UtilityProcessHost* host = new UtilityProcessHost(rdh_, this, file_loop_);
   host->StartExtensionUnpacker(temp_crx_path);
 }
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
     const DictionaryValue& manifest) {
+  DCHECK(file_loop_ == MessageLoop::current());
   got_response_ = true;
 
   ExtensionUnpacker::DecodedImages images;
@@ -164,6 +168,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
 
 void SandboxedExtensionUnpacker::OnUnpackExtensionFailed(
     const std::string& error) {
+  DCHECK(file_loop_ == MessageLoop::current());
   got_response_ = true;
   ReportFailure(error);
 }
