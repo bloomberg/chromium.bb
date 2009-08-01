@@ -38,10 +38,6 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   explicit WidgetGtk(Type type);
   virtual ~WidgetGtk();
 
-  // Initializes this widget.
-  void Init(GtkWidget* parent,
-            const gfx::Rect& bounds);
-
   // Makes the background of the window totally transparent. This must be
   // invoked before Init. This does a couple of checks and returns true if
   // the window can be made transparent. The actual work of making the window
@@ -75,9 +71,9 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   // |widget_|.
   GtkWidget* window_contents() const { return window_contents_; }
 
-  virtual void SetContentsView(View* view);
-
   // Overridden from Widget:
+  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
+  virtual void SetContentsView(View* view);
   virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void SetShape(const gfx::Path& shape);

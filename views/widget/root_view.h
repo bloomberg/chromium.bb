@@ -42,6 +42,10 @@ class RootView : public View,
 
   virtual ~RootView();
 
+  // Sets the "contents view" of the RootView. This is the single child view
+  // that is responsible for laying out the contents of the widget.
+  void SetContentsView(View* contents_view);
+
   // Layout and Painting functions
 
   // Overridden from View to implement paint scheduling.

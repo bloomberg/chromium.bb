@@ -71,21 +71,6 @@ class WidgetWin : public Widget,
   WidgetWin();
   virtual ~WidgetWin();
 
-  // Initialize the Widget with a parent and an initial desired size.
-  // |contents_view| is the view that will be the single child of RootView
-  // within this Widget. As contents_view is inserted into RootView's tree,
-  // RootView assumes ownership of this view and cleaning it up. If you remove
-  // this view, you are responsible for its destruction. If this value is NULL,
-  // the caller is responsible for populating the RootView, and sizing its
-  // contents as the window is sized.
-  void Init(HWND parent, const gfx::Rect& bounds);
-
-  // Sets the specified view as the contents of this Widget. There can only
-  // be one contnets view child of this Widget's RootView. This view is sized to
-  // fit the entire size of the RootView. The RootView takes ownership of this
-  // View, unless it is set as not being parent-owned.
-  virtual void SetContentsView(View* view);
-
   // Sets the window styles. This is ONLY used when the window is created.
   // In other words, if you invoke this after invoking Init, nothing happens.
   void set_window_style(DWORD style) { window_style_ = style; }
@@ -211,6 +196,8 @@ class WidgetWin : public Widget,
   END_MSG_MAP()
 
   // Overridden from Widget:
+  virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
+  virtual void SetContentsView(View* view);
   virtual void GetBounds(gfx::Rect* out, bool including_frame) const;
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void SetShape(const gfx::Path& shape);

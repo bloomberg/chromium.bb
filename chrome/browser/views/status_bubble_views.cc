@@ -9,9 +9,6 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
-#if defined(OS_WIN)
-#include "app/l10n_util_win.h"
-#endif
 #include "app/animation.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
@@ -25,11 +22,10 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "views/controls/label.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-#if defined(OS_WIN)
-#include "views/widget/widget_win.h"
-#endif
+#include "views/window/window.h"
 
 // The alpha and color of the bubble's shadow.
 static const SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
@@ -466,26 +462,14 @@ StatusBubbleViews::~StatusBubbleViews() {
 
 void StatusBubbleViews::Init() {
   if (!popup_.get()) {
-#if defined(OS_WIN)
-    views::WidgetWin* popup = new views::WidgetWin;
-    popup->set_delete_on_destroy(false);
-
+    popup_.reset(views::Widget::CreateTransparentPopupWidget(false));
     if (!view_)
-      view_ = new StatusView(this, popup, frame_->GetThemeProvider());
-
-    popup->set_window_style(WS_POPUP);
-    popup->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
-                               WS_EX_TRANSPARENT |
-                               l10n_util::GetExtendedTooltipStyles());
-    popup->SetOpacity(0x00);
-    popup->Init(frame_->GetNativeView(), gfx::Rect());
-    popup->SetContentsView(view_);
+      view_ = new StatusView(this, popup_.get(), frame_->GetThemeProvider());
+    popup_->SetOpacity(0x00);
+    popup_->Init(frame_->GetNativeView(), gfx::Rect());
+    popup_->SetContentsView(view_);
     Reposition();
-    popup->Show();
-    popup_.reset(popup);
-#else
-    NOTIMPLEMENTED();
-#endif
+    popup_->Show();
   }
 }
 
@@ -589,23 +573,16 @@ void StatusBubbleViews::UpdateDownloadShelfVisibility(bool visible) {
 }
 
 void StatusBubbleViews::AvoidMouse() {
-  // Our status bubble is located in screen coordinates, so we should get
-  // those rather than attempting to reverse decode the web contents
-  // coordinates.
-  gfx::Point cursor_location;
-#if defined(OS_WIN)
-  POINT tmp = { 0, 0 };
-  GetCursorPos(&tmp);
-  cursor_location = tmp;
-#else
-  NOTIMPLEMENTED();
-#endif
-
   // Get the position of the frame.
   gfx::Point top_left;
   views::RootView* root = frame_->GetRootView();
   views::View::ConvertPointToScreen(root, &top_left);
   int window_width = root->GetLocalBounds(true).width();  // border included.
+
+  // Our status bubble is located in screen coordinates, so we should get
+  // those rather than attempting to reverse decode the web contents
+  // coordinates.
+  gfx::Point cursor_location = views::Screen::GetCursorScreenPoint();
 
   // Get the cursor position relative to the popup.
   if (view_->UILayoutIsRightToLeft()) {
@@ -648,16 +625,9 @@ void StatusBubbleViews::AvoidMouse() {
 
     // Check if the bubble sticks out from the monitor or will obscure
     // download shelf.
-#if defined(OS_WIN)
-    MONITORINFO monitor_info;
-    monitor_info.cbSize = sizeof(monitor_info);
-    GetMonitorInfo(MonitorFromWindow(frame_->GetNativeView(),
-                                     MONITOR_DEFAULTTONEAREST), &monitor_info);
-    gfx::Rect monitor_rect(monitor_info.rcWork);
-#else
-    gfx::Rect monitor_rect;
-    NOTIMPLEMENTED();
-#endif
+    gfx::NativeWindow window = frame_->GetWindow()->GetNativeWindow();
+    gfx::Rect monitor_rect =
+        views::Screen::GetMonitorWorkAreaNearestWindow(window);
     const int bubble_bottom_y = top_left.y() + position_.y() + size_.height();
 
     if (bubble_bottom_y + offset > monitor_rect.height() ||

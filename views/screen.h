@@ -5,7 +5,9 @@
 #ifndef VIEWS_SCREEN_H_
 #define VIEWS_SCREEN_H_
 
+#include "base/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
+#include "base/gfx/rect.h"
 
 namespace views {
 
@@ -15,6 +17,9 @@ namespace views {
 class Screen {
  public:
   static gfx::Point GetCursorScreenPoint();
+
+  // Returns the work area of the monitor nearest the specified window.
+  static gfx::Rect GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window);
 };
 
 }  // namespace views

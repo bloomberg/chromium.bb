@@ -7,6 +7,7 @@
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "base/gfx/rect.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/window/custom_frame_view.h"
 #include "views/window/hit_test.h"
@@ -68,19 +69,6 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
   }
   // Default to something defaultish.
   return GDK_ARROW;
-}
-
-gfx::Rect GetScreenWorkArea(GdkWindow* window) {
-  guchar* raw_data = NULL;
-  gint data_len = 0;
-  gboolean success = gdk_property_get(gdk_get_default_root_window(),
-                                      gdk_atom_intern("_NET_WORKAREA", FALSE),
-                                      gdk_atom_intern("CARDINAL", FALSE),
-                                      0, 0xFF, false, NULL, NULL, &data_len,
-                                      &raw_data);
-  DCHECK(success);
-  glong* data = reinterpret_cast<glong*>(raw_data);
-  return gfx::Rect(data[0], data[1], data[0] + data[2], data[1] + data[3]);
 }
 
 }  // namespace
@@ -442,7 +430,7 @@ void WindowGtk::SizeWindowToDefault(GtkWindow* parent) {
     center_rect = gfx::Rect(parent_x, parent_y, parent_w, parent_h);
   } else {
     // We have no parent window, center over the screen.
-    center_rect = GetScreenWorkArea(GTK_WIDGET(GetNativeWindow())->window);
+    center_rect = Screen::GetMonitorWorkAreaNearestWindow(GetNativeWindow());
   }
   gfx::Size size = non_client_view_->GetPreferredSize();
   gfx::Rect bounds(center_rect.x() + (center_rect.width() - size.width()) / 2,

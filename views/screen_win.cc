@@ -15,5 +15,14 @@ gfx::Point Screen::GetCursorScreenPoint() {
   return gfx::Point(pt);
 }
 
+// static
+gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
+  MONITORINFO monitor_info;
+  monitor_info.cbSize = sizeof(monitor_info);
+  GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST),
+                 &monitor_info);
+  return gfx::Rect(monitor_info.rcWork);
+}
+
 }  // namespace
 

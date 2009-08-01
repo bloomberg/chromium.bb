@@ -6,7 +6,6 @@
 
 #include "app/gfx/path.h"
 #include "base/compiler_specific.h"
-#include "views/fill_layout.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/root_view.h"
 #include "views/widget/tooltip_manager_gtk.h"
@@ -77,6 +76,53 @@ WidgetGtk::WidgetGtk(Type type)
 WidgetGtk::~WidgetGtk() {
   MessageLoopForUI::current()->RemoveObserver(this);
 }
+
+bool WidgetGtk::MakeTransparent() {
+  // Transparency can only be enabled for windows/popups and only if we haven't
+  // realized the widget.
+  DCHECK(!widget_ && type_ != TYPE_CHILD);
+
+  if (!gdk_screen_is_composited(gdk_screen_get_default())) {
+    // Transparency is only supported for compositing window managers.
+    DLOG(WARNING) << "compsiting not supported";
+    return false;
+  }
+
+  if (!gdk_screen_get_rgba_colormap(gdk_screen_get_default())) {
+    // We need rgba to make the window transparent.
+    return false;
+  }
+
+  transparent_ = true;
+  return true;
+}
+
+void WidgetGtk::AddChild(GtkWidget* child) {
+  gtk_container_add(GTK_CONTAINER(window_contents_), child);
+}
+
+void WidgetGtk::RemoveChild(GtkWidget* child) {
+  // We can be called after the contents widget has been destroyed, e.g. any
+  // NativeViewHost not removed from the view hierarchy before the window is
+  // closed.
+  if (GTK_IS_CONTAINER(window_contents_))
+    gtk_container_remove(GTK_CONTAINER(window_contents_), child);
+}
+
+void WidgetGtk::ReparentChild(GtkWidget* child) {
+  gtk_widget_reparent(child, window_contents_);
+}
+
+void WidgetGtk::PositionChild(GtkWidget* child, int x, int y, int w, int h) {
+  GtkAllocation alloc = { x, y, w, h };
+  // For some reason we need to do both of these to size a widget.
+  gtk_widget_size_allocate(child, &alloc);
+  gtk_widget_set_size_request(child, w, h);
+  gtk_fixed_move(GTK_FIXED(window_contents_), child, x, y);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WidgetGtk, Widget implementation:
 
 void WidgetGtk::Init(GtkWidget* parent,
                      const gfx::Rect& bounds) {
@@ -183,71 +229,9 @@ void WidgetGtk::Init(GtkWidget* parent,
   }
 }
 
-bool WidgetGtk::MakeTransparent() {
-  // Transparency can only be enabled for windows/popups and only if we haven't
-  // realized the widget.
-  DCHECK(!widget_ && type_ != TYPE_CHILD);
-
-  if (!gdk_screen_is_composited(gdk_screen_get_default())) {
-    // Transparency is only supported for compositing window managers.
-    DLOG(WARNING) << "compsiting not supported";
-    return false;
-  }
-
-  if (!gdk_screen_get_rgba_colormap(gdk_screen_get_default())) {
-    // We need rgba to make the window transparent.
-    return false;
-  }
-
-  transparent_ = true;
-  return true;
-}
-
-void WidgetGtk::AddChild(GtkWidget* child) {
-  gtk_container_add(GTK_CONTAINER(window_contents_), child);
-}
-
-void WidgetGtk::RemoveChild(GtkWidget* child) {
-  // We can be called after the contents widget has been destroyed, e.g. any
-  // NativeViewHost not removed from the view hierarchy before the window is
-  // closed.
-  if (GTK_IS_CONTAINER(window_contents_))
-    gtk_container_remove(GTK_CONTAINER(window_contents_), child);
-}
-
-void WidgetGtk::ReparentChild(GtkWidget* child) {
-  gtk_widget_reparent(child, window_contents_);
-}
-
-void WidgetGtk::PositionChild(GtkWidget* child, int x, int y, int w, int h) {
-  GtkAllocation alloc = { x, y, w, h };
-  // For some reason we need to do both of these to size a widget.
-  gtk_widget_size_allocate(child, &alloc);
-  gtk_widget_set_size_request(child, w, h);
-  gtk_fixed_move(GTK_FIXED(window_contents_), child, x, y);
-}
-
 void WidgetGtk::SetContentsView(View* view) {
-  DCHECK(view && widget_)
-      << "Can't be called until after the HWND is created!";
-  // The ContentsView must be set up _after_ the window is created so that its
-  // Widget pointer is valid.
-  root_view_->SetLayoutManager(new FillLayout);
-  if (root_view_->GetChildViewCount() != 0)
-    root_view_->RemoveAllChildViews(true);
-  root_view_->AddChildView(view);
-
-  DCHECK(widget_);  // Widget must have been created by now.
-
-  // Force a layout now, since the attached hierarchy won't be ready for the
-  // containing window's bounds. Note that we call Layout directly rather than
-  // calling OnSizeAllocate, since the RootView's bounds may not have changed,
-  // which will cause the Layout not to be done otherwise.
-  root_view_->Layout();
+  root_view_->SetContentsView(view);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// WidgetGtk, Widget implementation:
 
 void WidgetGtk::GetBounds(gfx::Rect* out, bool including_frame) const {
   DCHECK(widget_);
@@ -839,6 +823,18 @@ void WidgetGtk::HandleGrabBroke() {
     is_mouse_down_ = false;
     has_capture_ = false;
   }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, public:
+
+// static
+Widget* Widget::CreateTransparentPopupWidget(bool delete_on_destroy) {
+  WidgetGtk* popup = new WidgetGtk(WidgetGtk::TYPE_POPUP);
+  popup->set_delete_on_destroy(delete_on_destroy);
+  popup->MakeTransparent();
+  return popup;
 }
 
 }  // namespace views

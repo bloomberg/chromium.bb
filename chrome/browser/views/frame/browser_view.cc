@@ -4,10 +4,6 @@
 
 #include "chrome/browser/views/frame/browser_view.h"
 
-#if defined(OS_LINUX)
-#include <gtk/gtk.h>
-#endif
-
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
@@ -27,9 +23,6 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
-#if defined(OS_WIN)
-#include "chrome/browser/jumplist.h"
-#endif
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
@@ -63,20 +56,23 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
-#if defined(OS_WIN)
-#include "views/controls/scrollbar/native_scroll_bar.h"
-#endif
 #include "views/controls/single_split_view.h"
 #include "views/fill_layout.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
-#if !defined(OS_WIN)
-#include "views/window/hit_test.h"
-#endif
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/jumplist.h"
+#include "views/controls/scrollbar/native_scroll_bar.h"
+#elif defined(OS_LINUX)
+#include <gtk/gtk.h>
+
+#include "views/window/hit_test.h"
+#endif
 
 using base::TimeDelta;
 
@@ -641,11 +637,7 @@ BrowserWindowTesting* BrowserView::GetBrowserWindowTesting() {
 }
 
 StatusBubble* BrowserView::GetStatusBubble() {
-#if defined(OS_WIN)
   return status_bubble_.get();
-#else
-  return NULL;
-#endif
 }
 
 void BrowserView::SelectedTabToolbarSizeChanged(bool is_animating) {

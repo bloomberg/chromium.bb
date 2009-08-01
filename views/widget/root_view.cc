@@ -8,17 +8,17 @@
 
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas.h"
-#if defined(OS_WIN)
-#include "base/base_drag_source.h"
-#endif
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "views/fill_layout.h"
 #include "views/focus/view_storage.h"
-#if defined(OS_WIN)
-#include "views/widget/root_view_drop_target.h"
-#endif
 #include "views/widget/widget.h"
 #include "views/window/window.h"
+
+#if defined(OS_WIN)
+#include "base/base_drag_source.h"
+#include "views/widget/root_view_drop_target.h"
+#endif
 
 namespace views {
 
@@ -90,6 +90,23 @@ RootView::~RootView() {
 
   if (pending_paint_task_)
     pending_paint_task_->Cancel();  // Ensure we're not called any more.
+}
+
+void RootView::SetContentsView(View* contents_view) {
+  DCHECK(contents_view && GetWidget()->GetNativeView()) <<
+      "Can't be called until after the native view is created!";
+  // The ContentsView must be set up _after_ the window is created so that its
+  // Widget pointer is valid.
+  SetLayoutManager(new FillLayout);
+  if (GetChildViewCount() != 0)
+    RemoveAllChildViews(true);
+  AddChildView(contents_view);
+
+  // Force a layout now, since the attached hierarchy won't be ready for the
+  // containing window's bounds. Note that we call Layout directly rather than
+  // calling the widget's size changed handler, since the RootView's bounds may
+  // not have changed, which will cause the Layout not to be done otherwise.
+  Layout();
 }
 
 /////////////////////////////////////////////////////////////////////////////

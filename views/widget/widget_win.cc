@@ -6,13 +6,13 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/path.h"
+#include "app/l10n_util_win.h"
 #include "app/win_util.h"
 #include "base/gfx/native_theme.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/controls/native_control_win.h"
-#include "views/fill_layout.h"
 #include "views/focus/focus_util_win.h"
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
@@ -154,7 +154,10 @@ WidgetWin::~WidgetWin() {
   MessageLoopForUI::current()->RemoveObserver(this);
 }
 
-void WidgetWin::Init(HWND parent, const gfx::Rect& bounds) {
+///////////////////////////////////////////////////////////////////////////////
+// Widget implementation:
+
+void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   if (window_style_ == 0)
     window_style_ = parent ? kWindowDefaultChildStyle : kWindowDefaultStyle;
 
@@ -218,23 +221,8 @@ void WidgetWin::Init(HWND parent, const gfx::Rect& bounds) {
 }
 
 void WidgetWin::SetContentsView(View* view) {
-  DCHECK(view && hwnd_) << "Can't be called until after the HWND is created!";
-  // The ContentsView must be set up _after_ the window is created so that its
-  // Widget pointer is valid.
-  root_view_->SetLayoutManager(new FillLayout);
-  if (root_view_->GetChildViewCount() != 0)
-    root_view_->RemoveAllChildViews(true);
-  root_view_->AddChildView(view);
-
-  // Force a layout now, since the attached hierarchy won't be ready for the
-  // containing window's bounds. Note that we call Layout directly rather than
-  // calling ChangeSize, since the RootView's bounds may not have changed, which
-  // will cause the Layout not to be done otherwise.
-  root_view_->Layout();
+  root_view_->SetContentsView(view);
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// Widget implementation:
 
 void WidgetWin::GetBounds(gfx::Rect* out, bool including_frame) const {
   CRect crect;
@@ -1088,4 +1076,20 @@ void WidgetWin::PostProcessActivateMessage(WidgetWin* widget,
     widget->focus_manager_->RestoreFocusedView();
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, public:
+
+// static
+Widget* Widget::CreateTransparentPopupWidget(bool delete_on_destroy) {
+  WidgetWin* popup = new WidgetWin;
+  popup->set_window_style(WS_POPUP);
+  popup->set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW |
+                             WS_EX_TRANSPARENT |
+                             l10n_util::GetExtendedTooltipStyles());
+  popup->set_delete_on_destroy(delete_on_destroy);
+  return popup;
+}
+
 }  // namespace views
+
