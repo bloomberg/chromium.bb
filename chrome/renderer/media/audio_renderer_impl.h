@@ -183,7 +183,6 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // Protects:
   // - |stopped_|
-  // - |playback_rate_|
   // - |pending_request_|
   // - |request_timestamp_|
   // - |request_delay_|
@@ -191,9 +190,6 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // A flag that indicates this filter is called to stop.
   bool stopped_;
-
-  // Keeps the current playback rate.
-  float playback_rate_;
 
   // A flag that indicates an outstanding packet request.
   bool pending_request_;

@@ -27,7 +27,7 @@ const int kMillisecondsPreroll = 400;
 }  // namespace
 
 AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
-    : AudioRendererBase(kDefaultMaxQueueSize),
+    : AudioRendererBase(),
       channels_(0),
       sample_rate_(0),
       sample_bits_(0),
@@ -38,7 +38,6 @@ AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
       shared_memory_size_(0),
       io_loop_(filter->message_loop()),
       stopped_(false),
-      playback_rate_(0.0f),
       pending_request_(false),
       prerolling_(true),
       preroll_bytes_(0) {
@@ -117,21 +116,21 @@ void AudioRendererImpl::SetPlaybackRate(float rate) {
   DCHECK(rate >= 0.0f);
 
   // We have two cases here:
-  // Play: playback_rate_ == 0.0 && rate != 0.0
-  // Pause: playback_rate_ != 0.0 && rate == 0.0
+  // Play: GetPlaybackRate() == 0.0 && rate != 0.0
+  // Pause: GetPlaybackRate() != 0.0 && rate == 0.0
   AutoLock auto_lock(lock_);
-  if (playback_rate_ == 0.0f && rate != 0.0f) {
+  if (GetPlaybackRate() == 0.0f && rate != 0.0f) {
     // Play is a bit tricky, we can only play if we have done prerolling.
     // TODO(hclam): I should check for end of streams status here.
     if (!prerolling_)
       io_loop_->PostTask(FROM_HERE,
                          NewRunnableMethod(this, &AudioRendererImpl::OnPlay));
-  } else if (playback_rate_ != 0.0f && rate == 0.0f) {
+  } else if (GetPlaybackRate() != 0.0f && rate == 0.0f) {
     // Pause is easy, we can always pause.
     io_loop_->PostTask(FROM_HERE,
                        NewRunnableMethod(this, &AudioRendererImpl::OnPause));
   }
-  playback_rate_ = rate;
+  AudioRendererBase::SetPlaybackRate(rate);
 
   // If we are playing, give a kick to try fulfilling the packet request as
   // the previous packet request may be stalled by a pause.
@@ -273,7 +272,7 @@ void AudioRendererImpl::OnNotifyPacketReady() {
   AutoLock auto_lock(lock_);
   if (stopped_)
     return;
-  if (pending_request_ && playback_rate_ > 0.0f) {
+  if (pending_request_ && GetPlaybackRate() > 0.0f) {
     DCHECK(shared_memory_.get());
 
     // Adjust the playback delay.
@@ -294,7 +293,6 @@ void AudioRendererImpl::OnNotifyPacketReady() {
 
     size_t filled = FillBuffer(static_cast<uint8*>(shared_memory_->memory()),
                                shared_memory_size_,
-                               playback_rate_,
                                request_delay);
     // TODO(hclam): we should try to fill in the buffer as much as possible.
     if (filled > 0) {

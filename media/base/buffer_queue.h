@@ -39,9 +39,8 @@ class BufferQueue {
   // Enqueues |buffer_in| and adds a reference.
   void Enqueue(Buffer* buffer_in);
 
-  // Returns the timestamp of the first buffer plus |data_offset_| in
-  // microseconds, calculated using the conversion |bytes_to_sec|.
-  base::TimeDelta GetTime(double bytes_to_sec);
+  // Returns the current timestamp, taking into account |data_offset_|.
+  base::TimeDelta GetTime();
 
   // Returns true if the |queue_| is empty.
   bool IsEmpty();
@@ -58,6 +57,10 @@ class BufferQueue {
 
   // Keeps track of the |queue_| size in bytes.
   size_t size_in_bytes_;
+
+  // Keeps track of the most recent time we've seen in case the |queue_| is
+  // empty when our owner asks what time it is.
+  base::TimeDelta most_recent_time_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferQueue);
 };

@@ -11,7 +11,7 @@ namespace media {
 // The size in bytes we try to maintain for the |queue_|. Previous usage
 // maintained a deque of 16 Buffers, each of size 4Kb. This worked well, so we
 // maintain this number of bytes (16 * 4096).
-const size_t kDefaultMaxQueueSizeInBytes = 65536;
+const size_t kDefaultMinQueueSizeInBytes = 65536;
 
 AudioRendererAlgorithmBase::AudioRendererAlgorithmBase()
     : channels_(0),
@@ -43,9 +43,6 @@ void AudioRendererAlgorithmBase::Initialize(int channels,
   request_read_callback_.reset(callback);
 
   set_playback_rate(initial_playback_rate);
-
-  // Do the initial read.
-  request_read_callback_->Run();
 }
 
 void AudioRendererAlgorithmBase::FlushBuffers() {
@@ -55,7 +52,7 @@ void AudioRendererAlgorithmBase::FlushBuffers() {
 }
 
 base::TimeDelta AudioRendererAlgorithmBase::GetTime() {
-  return queue_.GetTime(1.0 / (channels() * sample_rate() * sample_bytes()));
+  return queue_.GetTime();
 }
 
 void AudioRendererAlgorithmBase::EnqueueBuffer(Buffer* buffer_in) {
@@ -64,7 +61,7 @@ void AudioRendererAlgorithmBase::EnqueueBuffer(Buffer* buffer_in) {
     queue_.Enqueue(buffer_in);
 
   // If we still don't have enough data, request more.
-  if (queue_.SizeInBytes() < kDefaultMaxQueueSizeInBytes)
+  if (!IsQueueFull())
     request_read_callback_->Run();
 }
 
@@ -77,19 +74,23 @@ void AudioRendererAlgorithmBase::set_playback_rate(float new_rate) {
   playback_rate_ = new_rate;
 }
 
+bool AudioRendererAlgorithmBase::IsQueueEmpty() {
+  return queue_.IsEmpty();
+}
+
+bool AudioRendererAlgorithmBase::IsQueueFull() {
+  return (queue_.SizeInBytes() >= kDefaultMinQueueSizeInBytes);
+}
+
 void AudioRendererAlgorithmBase::AdvanceInputPosition(size_t bytes) {
   queue_.Consume(bytes);
 
-  if (queue_.SizeInBytes() < kDefaultMaxQueueSizeInBytes)
-      request_read_callback_->Run();
+  if (!IsQueueFull())
+    request_read_callback_->Run();
 }
 
 size_t AudioRendererAlgorithmBase::CopyFromInput(uint8* dest, size_t bytes) {
   return queue_.Copy(dest, bytes);
-}
-
-bool AudioRendererAlgorithmBase::IsQueueEmpty() {
-  return queue_.IsEmpty();
 }
 
 size_t AudioRendererAlgorithmBase::QueueSize() {

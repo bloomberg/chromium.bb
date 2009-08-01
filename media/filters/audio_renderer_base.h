@@ -24,6 +24,7 @@
 #include "media/base/buffers.h"
 #include "media/base/factory.h"
 #include "media/base/filters.h"
+#include "media/filters/audio_renderer_algorithm_base.h"
 
 namespace media {
 
@@ -40,11 +41,8 @@ class AudioRendererBase : public AudioRenderer {
   virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback);
 
  protected:
-  // The default maximum size of the queue.
-  static const size_t kDefaultMaxQueueSize;
-
   // Only allow a factory to create this class.
-  explicit AudioRendererBase(size_t max_queue_size);
+  AudioRendererBase();
   virtual ~AudioRendererBase();
 
   // Called by Initialize().  |media_format| is the format of the AudioDecoder.
@@ -60,10 +58,9 @@ class AudioRendererBase : public AudioRenderer {
   // |pending_reads_|.
   virtual void OnReadComplete(Buffer* buffer_in);
 
-  // Fills the given buffer with audio data by dequeuing buffers and copying the
-  // data into the |dest|.  FillBuffer() also takes care of updating the clock.
-  // Returns the number of bytes copied into |dest|, which may be less than
-  // equal to |len|.
+  // Fills the given buffer with audio data by delegating to its |algorithm_|.
+  // FillBuffer() also takes care of updating the clock. Returns the number of
+  // bytes copied into |dest|, which may be less than or equal to |len|.
   //
   // If this method is returns less bytes than |len| (including zero), it could
   // be a sign that the pipeline is stalled or unable to stream the data fast
@@ -80,7 +77,6 @@ class AudioRendererBase : public AudioRenderer {
   // Safe to call on any thread.
   size_t FillBuffer(uint8* dest,
                     size_t len,
-                    float rate,
                     const base::TimeDelta& playback_delay);
 
   // Helper to parse a media format and return whether we were successful
@@ -88,6 +84,10 @@ class AudioRendererBase : public AudioRenderer {
   static bool ParseMediaFormat(const MediaFormat& media_format,
                                int* channels_out, int* sample_rate_out,
                                int* sample_bits_out);
+
+  // Get/Set the playback rate of |algorithm_|.
+  virtual void SetPlaybackRate(float playback_rate);
+  virtual float GetPlaybackRate();
 
  private:
   // Helper method that schedules an asynchronous read from the decoder and
@@ -99,16 +99,10 @@ class AudioRendererBase : public AudioRenderer {
   // Audio decoder.
   scoped_refptr<AudioDecoder> decoder_;
 
-  // Maximum queue size, configuration parameter passed in during construction.
-  size_t max_queue_size_;
+  // Algorithm for scaling audio.
+  scoped_ptr<AudioRendererAlgorithmBase> algorithm_;
 
-  // Queued audio data.
-  typedef std::deque< scoped_refptr<Buffer> > BufferQueue;
-  BufferQueue queue_;
   Lock lock_;
-
-  // Remembers the amount of remaining audio data for the front buffer.
-  size_t data_offset_;
 
   // Simple state tracking variable.
   enum State {

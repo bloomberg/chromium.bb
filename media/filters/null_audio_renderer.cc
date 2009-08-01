@@ -15,8 +15,7 @@ namespace media {
 static const size_t kBufferSizeInMilliseconds = 100;
 
 NullAudioRenderer::NullAudioRenderer()
-    : AudioRendererBase(kDefaultMaxQueueSize),
-      playback_rate_(0.0f),
+    : AudioRendererBase(),
       bytes_per_millisecond_(0),
       buffer_size_(0),
       thread_(NULL),
@@ -36,10 +35,6 @@ bool NullAudioRenderer::IsMediaFormatSupported(
   return ParseMediaFormat(media_format, &channels, &sample_rate, &sample_bits);
 }
 
-void NullAudioRenderer::SetPlaybackRate(float playback_rate) {
-  playback_rate_ = playback_rate;
-}
-
 void NullAudioRenderer::SetVolume(float volume) {
   // Do nothing.
 }
@@ -50,16 +45,15 @@ void NullAudioRenderer::ThreadMain() {
     float sleep_in_milliseconds = 0.0f;
 
     // Only consume buffers when actually playing.
-    if (playback_rate_ > 0.0f)  {
+    if (GetPlaybackRate() > 0.0f)  {
       size_t bytes = FillBuffer(buffer_.get(),
                                 buffer_size_,
-                                playback_rate_,
                                 base::TimeDelta());
 
       // Calculate our sleep duration, taking playback rate into consideration.
       sleep_in_milliseconds =
           floor(bytes / static_cast<float>(bytes_per_millisecond_));
-      sleep_in_milliseconds /= playback_rate_;
+      sleep_in_milliseconds /= GetPlaybackRate();
     } else {
       // If paused, sleep for 10 milliseconds before polling again.
       sleep_in_milliseconds = 10.0f;

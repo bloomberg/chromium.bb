@@ -21,8 +21,8 @@ namespace media {
 // Mocked subclass of AudioRendererBase for testing purposes.
 class MockAudioRendererBase : public AudioRendererBase {
  public:
-  MockAudioRendererBase(size_t max_queue_size)
-      : AudioRendererBase(max_queue_size) {}
+  MockAudioRendererBase()
+      : AudioRendererBase() {}
   virtual ~MockAudioRendererBase() {}
 
   // AudioRenderer implementation.
@@ -41,9 +41,10 @@ class MockAudioRendererBase : public AudioRendererBase {
 
 class AudioRendererBaseTest : public ::testing::Test {
  public:
+  // Give the decoder some non-garbage media properties.
   AudioRendererBaseTest()
-      : renderer_(new MockAudioRendererBase(kMaxQueueSize)),
-        decoder_(new MockAudioDecoder()) {
+      : renderer_(new MockAudioRendererBase()),
+        decoder_(new MockAudioDecoder(1, 44100, 16)) {
     renderer_->set_host(&host_);
 
     // Queue all reads from the decoder.
@@ -79,7 +80,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AudioRendererBaseTest);
 };
 
-const size_t AudioRendererBaseTest::kMaxQueueSize = 16u;
+const size_t AudioRendererBaseTest::kMaxQueueSize = 1u;
 
 TEST_F(AudioRendererBaseTest, Initialize_Failed) {
   InSequence s;
@@ -132,7 +133,8 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
   // Now satisfy the read requests.  Our callback should be executed after
   // exiting this loop.
   while (!read_queue_.empty()) {
-    scoped_refptr<DataBuffer> buffer = new DataBuffer(1);
+    scoped_refptr<DataBuffer> buffer = new DataBuffer(1024);
+    buffer->SetDataSize(1024);
     read_queue_.front()->Run(buffer);
     delete read_queue_.front();
     read_queue_.pop_front();

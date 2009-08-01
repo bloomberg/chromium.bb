@@ -127,41 +127,52 @@ TEST_F(BufferQueueTest, CopyFromMiddleOfBuffer) {
   EXPECT_EQ(0, memcmp(dataBig, kData, kDataSize));
 }
 
+
 TEST_F(BufferQueueTest, GetTime) {
   const struct {
-    int64 first_time_seconds;
+    int64 first_time_useconds;
+    int64 duration_useconds;
     size_t consume_bytes;
-    double bytes_to_seconds;
   } tests[] = {
-    { 0, 0, 0.5  },
-    { 0, 0, 1    },
-    { 0, 0, 1.75 },
-    { 0, 4, 0.5  },
-    { 0, 4, 1    },
-    { 0, 4, 1.75 },
-    { 5, 0, 0.5  },
-    { 5, 0, 1    },
-    { 5, 0, 1.75 },
-    { 5, 4, 0.5  },
-    { 5, 4, 1    },
-    { 5, 4, 1.75 },
+    // Timestamps of 0 are treated as garbage.
+    { 0, 1000000, 0 },
+    { 0, 4000000, 0 },
+    { 0, 8000000, 0 },
+    // { 0, 1000000, 4 },
+    // { 0, 4000000, 4 },
+    // { 0, 8000000, 4 },
+    // { 0, 1000000, kNewDataSize },
+    // { 0, 4000000, kNewDataSize },
+    // { 0, 8000000, kNewDataSize },
+    { 5, 1000000, 0 },
+    { 5, 4000000, 0 },
+    { 5, 8000000, 0 },
+    { 5, 1000000, 4 },
+    { 5, 4000000, 4 },
+    { 5, 8000000, 4 },
+    { 5, 1000000, kNewDataSize },
+    { 5, 4000000, kNewDataSize },
+    { 5, 8000000, kNewDataSize },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
-    buffer2->SetTimestamp(base::TimeDelta::FromSeconds(
-        tests[i].first_time_seconds));
+    buffer2->SetTimestamp(base::TimeDelta::FromMicroseconds(
+        tests[i].first_time_useconds));
+    buffer2->SetDuration(base::TimeDelta::FromMicroseconds(
+        tests[i].duration_useconds));
     queue_.Enqueue(buffer2.get());
     queue_.Consume(tests[i].consume_bytes);
 
-    int64 expected = base::TimeDelta::FromSeconds(static_cast<int64>(
-        tests[i].first_time_seconds + (tests[i].consume_bytes *
-        tests[i].bytes_to_seconds))).ToInternalValue();
+    int64 expected = base::TimeDelta::FromMicroseconds(static_cast<int64>(
+        tests[i].first_time_useconds + (tests[i].consume_bytes *
+        tests[i].duration_useconds) / kNewDataSize)).ToInternalValue();
 
-    int64 actual = queue_.GetTime(tests[i].bytes_to_seconds).ToInternalValue();
+    int64 actual = queue_.GetTime().ToInternalValue();
 
-    EXPECT_EQ(expected, actual) << "With test = {"
-        << tests[i].first_time_seconds << ", " << tests[i].consume_bytes
-        << ", " << tests[i].bytes_to_seconds << "}\n";
+    EXPECT_EQ(expected, actual) << "With test = { start:"
+        << tests[i].first_time_useconds << ", duration:"
+        << tests[i].duration_useconds << ", consumed:"
+        << tests[i].consume_bytes << "}\n";
 
     queue_.Clear();
   }

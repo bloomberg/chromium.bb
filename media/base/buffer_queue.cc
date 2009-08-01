@@ -10,7 +10,8 @@ namespace media {
 
 BufferQueue::BufferQueue()
     : data_offset_(0),
-      size_in_bytes_(0) {
+      size_in_bytes_(0),
+      most_recent_time_() {
 }
 
 BufferQueue::~BufferQueue() {
@@ -33,8 +34,21 @@ void BufferQueue::Consume(size_t bytes_to_be_consumed) {
     if (front_remaining > bytes_to_be_consumed) {
       data_offset_ += bytes_to_be_consumed;
       bytes_to_be_consumed = 0;
+      // Garbage values are unavoidable, so this check will remain.
+      if (queue_.front()->GetTimestamp().InMicroseconds() > 0) {
+        int64 offset = (queue_.front()->GetDuration().InMicroseconds() *
+            data_offset_) / queue_.front()->GetDataSize();
+
+        most_recent_time_ = queue_.front()->GetTimestamp() +
+            base::TimeDelta::FromMicroseconds(offset);
+      }
     } else {
       data_offset_ = 0;
+      // Garbage values are unavoidable, so this check will remain.
+      if (queue_.front()->GetTimestamp().InMicroseconds() > 0) {
+        most_recent_time_ = queue_.front()->GetTimestamp() +
+            queue_.front()->GetDuration();
+      }
       queue_.pop_front();
       bytes_to_be_consumed -= front_remaining;
     }
@@ -76,22 +90,22 @@ size_t BufferQueue::Copy(uint8* dest, size_t bytes) {
 }
 
 void BufferQueue::Enqueue(Buffer* buffer_in) {
+  if (queue_.empty() && buffer_in->GetTimestamp().InMicroseconds() > 0) {
+    most_recent_time_ = buffer_in->GetTimestamp();
+  }
   queue_.push_back(buffer_in);
   size_in_bytes_ += buffer_in->GetDataSize();
 }
 
-base::TimeDelta BufferQueue::GetTime(double bytes_to_sec) {
-  double bytes_to_usec = bytes_to_sec * base::Time::kMicrosecondsPerSecond;
-
-  return queue_.front()->GetTimestamp() +
-      base::TimeDelta::FromMicroseconds(static_cast<int64>(
-          data_offset_ * bytes_to_usec));
+base::TimeDelta BufferQueue::GetTime() {
+  return most_recent_time_;
 }
 
 void BufferQueue::Clear() {
   queue_.clear();
   size_in_bytes_ = 0;
   data_offset_ = 0;
+  most_recent_time_ = base::TimeDelta();
 }
 
 bool BufferQueue::IsEmpty() {

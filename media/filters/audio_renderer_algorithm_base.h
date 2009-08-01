@@ -68,6 +68,12 @@ class AudioRendererAlgorithmBase {
   virtual float playback_rate();
   virtual void set_playback_rate(float new_rate);
 
+  // Returns whether |queue_| is empty.
+  virtual bool IsQueueEmpty();
+
+  // Returns true if we have enough data
+  virtual bool IsQueueFull();
+
  protected:
   // Advances |queue_|'s internal pointer by |bytes|.
   void AdvanceInputPosition(size_t bytes);
@@ -75,9 +81,6 @@ class AudioRendererAlgorithmBase {
   // Tries to copy |bytes| bytes from |queue_| to |dest|. Returns the number of
   // bytes successfully copied.
   size_t CopyFromInput(uint8* dest, size_t bytes);
-
-  // Returns whether |queue_| is empty.
-  virtual bool IsQueueEmpty();
 
   // Returns the number of bytes left in |queue_|.
   virtual size_t QueueSize();

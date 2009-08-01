@@ -2,34 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/filters/audio_renderer_base.h"
+
 #include <algorithm>
 
 #include "media/base/filter_host.h"
-#include "media/filters/audio_renderer_base.h"
+#include "media/filters/audio_renderer_algorithm_ola.h"
 
 namespace media {
 
-// The maximum size of the queue, which also acts as the number of initial reads
-// to perform for buffering.  The size of the queue should never exceed this
-// number since we read only after we've dequeued and released a buffer in
-// callback thread.
-//
-// This is sort of a magic number, but for 44.1kHz stereo audio this will give
-// us enough data to fill approximately 4 complete callback buffers.
-const size_t AudioRendererBase::kDefaultMaxQueueSize = 16;
-
-AudioRendererBase::AudioRendererBase(size_t max_queue_size)
-    : max_queue_size_(max_queue_size),
-      data_offset_(0),
-      state_(kUninitialized),
+AudioRendererBase::AudioRendererBase()
+    : state_(kUninitialized),
       pending_reads_(0) {
 }
 
 AudioRendererBase::~AudioRendererBase() {
-  // Stop() should have been called and OnReadComplete() should have stopped
-  // enqueuing data.
+  // Stop() should have been called and |algorithm_| should have been destroyed.
   DCHECK(state_ == kUninitialized || state_ == kStopped);
-  DCHECK(queue_.empty());
+  DCHECK(!algorithm_.get());
 }
 
 void AudioRendererBase::Play(FilterCallback* callback) {
@@ -57,10 +47,9 @@ void AudioRendererBase::Pause(FilterCallback* callback) {
 
 void AudioRendererBase::Stop() {
   OnStop();
-
   AutoLock auto_lock(lock_);
   state_ = kStopped;
-  queue_.clear();
+  algorithm_.reset(NULL);
 }
 
 void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {
@@ -72,11 +61,9 @@ void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {
 
   // Throw away everything and schedule our reads.
   last_fill_buffer_time_ = base::TimeDelta();
-  queue_.clear();
-  data_offset_ = 0;
-  for (size_t i = 0; i < max_queue_size_; ++i) {
-    ScheduleRead_Locked();
-  }
+
+  // |algorithm_| will request more reads.
+  algorithm_->FlushBuffers();
 }
 
 void AudioRendererBase::Initialize(AudioDecoder* decoder,
@@ -94,6 +81,34 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
     return;
   }
 
+  // Get the media properties to initialize our algorithms.
+  int channels = 0;
+  int sample_rate = 0;
+  int sample_bits = 0;
+  bool ret = ParseMediaFormat(decoder_->media_format(),
+                              &channels,
+                              &sample_rate,
+                              &sample_bits);
+
+  // We should have successfully parsed the media format, or we would not have
+  // been created.
+  DCHECK(ret);
+
+  // Create a callback so our algorithm can request more reads.
+  AudioRendererAlgorithmBase::RequestReadCallback* cb =
+      NewCallback(this, &AudioRendererBase::ScheduleRead_Locked);
+
+  // Construct the algorithm.
+  algorithm_.reset(new AudioRendererAlgorithmOLA());
+
+  // Initialize our algorithm with media properties, initial playback rate
+  // (may be 0), and a callback to request more reads from the data source.
+  algorithm_->Initialize(channels,
+                         sample_rate,
+                         sample_bits,
+                         GetPlaybackRate(),
+                         cb);
+
   // Finally, execute the start callback.
   state_ = kPaused;
   callback->Run();
@@ -105,18 +120,14 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
   DCHECK_GT(pending_reads_, 0u);
   --pending_reads_;
 
-  // If we have stopped don't enqueue, same for end of stream buffer since
-  // it has no data.
-  if (!buffer_in->IsEndOfStream()) {
-    queue_.push_back(buffer_in);
-    DCHECK(queue_.size() <= max_queue_size_);
-  }
+  // Note: Calling this may schedule more reads.
+  algorithm_->EnqueueBuffer(buffer_in);
 
   // Check for our preroll complete condition.
   if (state_ == kSeeking) {
     DCHECK(seek_callback_.get());
-    if (queue_.size() == max_queue_size_ || buffer_in->IsEndOfStream()) {
-      // Transition into paused whether we have data in |queue_| or not.
+    if (algorithm_->IsQueueFull() || buffer_in->IsEndOfStream()) {
+      // Transition into paused whether we have data in |algorithm_| or not.
       // FillBuffer() will play silence if there's nothing to fill.
       state_ = kPaused;
       seek_callback_->Run();
@@ -131,16 +142,13 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
   }
 }
 
-// TODO(scherkus): clean up FillBuffer().. it's overly complex!!
 size_t AudioRendererBase::FillBuffer(uint8* dest,
                                      size_t dest_len,
-                                     float rate,
                                      const base::TimeDelta& playback_delay) {
-  size_t dest_written = 0;
-
   // The timestamp of the last buffer written during the last call to
   // FillBuffer().
   base::TimeDelta last_fill_buffer_time;
+  size_t dest_written = 0;
   {
     AutoLock auto_lock(lock_);
 
@@ -160,89 +168,16 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
     last_fill_buffer_time = last_fill_buffer_time_;
     last_fill_buffer_time_ = base::TimeDelta();
 
-    // Loop until the buffer has been filled.
-    while (dest_len > 0 && !queue_.empty()) {
-      scoped_refptr<Buffer> buffer = queue_.front();
+    // Do the fill.
+    dest_written = algorithm_->FillBuffer(dest, dest_len);
 
-      // Determine how much to copy.
-      DCHECK_LE(data_offset_, buffer->GetDataSize());
-      const uint8* data = buffer->GetData() + data_offset_;
-      size_t data_len = buffer->GetDataSize() - data_offset_;
-
-      // New scaled packet size aligned to 16 to ensure it's on a
-      // channel/sample boundary.  Only guaranteed to work for power of 2
-      // number of channels and sample size.
-      size_t scaled_data_len = (rate <= 0.0f) ? 0 :
-          static_cast<size_t>(data_len / rate) & ~15;
-      if (scaled_data_len > dest_len) {
-        data_len = (data_len * dest_len / scaled_data_len) & ~15;
-        scaled_data_len = dest_len;
-      }
-
-      // Handle playback rate in three different cases:
-      // 1. If rate >= 1.0
-      //    Speed up the playback, we copy partial amount of decoded samples
-      //    into target buffer.
-      // 2. If 0.5 <= rate < 1.0
-      //    Slow down the playback, duplicate the decoded samples to fill a
-      //    larger size of target buffer.
-      // 3. If rate < 0.5
-      //    Playback is too slow, simply mute the audio.
-      // TODO(hclam): the logic for handling playback rate is too complex and
-      // is not careful enough. I should do some bounds checking and even better
-      // replace this with a better/clearer implementation.
-      if (rate >= 1.0f) {
-        memcpy(dest, data, scaled_data_len);
-      } else if (rate >= 0.5) {
-        memcpy(dest, data, data_len);
-        memcpy(dest + data_len, data, scaled_data_len - data_len);
-      } else {
-        memset(dest, 0, data_len);
-      }
-      dest += scaled_data_len;
-      dest_len -= scaled_data_len;
-      dest_written += scaled_data_len;
-
-      data_offset_ += data_len;
-
-      if (rate == 0.0f) {
-        dest_written = 0;
-        break;
-      }
-
-      // Check to see if we're finished with the front buffer.
-      if (buffer->GetDataSize() - data_offset_ < 16) {
-        // Update the time.  If this is the last buffer in the queue, we'll
-        // drop out of the loop before len == 0, so we need to always update
-        // the time here.
-        if (buffer->GetTimestamp().InMicroseconds() > 0) {
-          last_fill_buffer_time_ = buffer->GetTimestamp() +
-                                   buffer->GetDuration();
-        }
-
-        // Dequeue the buffer and request another.
-        queue_.pop_front();
-        ScheduleRead_Locked();
-
-        // Reset our offset into the front buffer.
-        data_offset_ = 0;
-      } else {
-        // If we're done with the read, compute the time.
-        // Integer divide so multiply before divide to work properly.
-        int64 us_written = (buffer->GetDuration().InMicroseconds() *
-                            data_offset_) / buffer->GetDataSize();
-
-        if (buffer->GetTimestamp().InMicroseconds() > 0) {
-          last_fill_buffer_time_ =
-              buffer->GetTimestamp() +
-              base::TimeDelta::FromMicroseconds(us_written);
-        }
-      }
-    }
+    // Get the current time.
+    last_fill_buffer_time_ = algorithm_->GetTime();
   }
 
   // Update the pipeline's time if it was set last time.
-  if (last_fill_buffer_time.InMicroseconds() > 0) {
+  if (last_fill_buffer_time.InMicroseconds() > 0 &&
+      last_fill_buffer_time != last_fill_buffer_time_) {
     // Adjust the |last_fill_buffer_time| with the playback delay.
     // TODO(hclam): If there is a playback delay, the pipeline would not be
     // updated with a correct timestamp when the stream is played at the very
@@ -259,7 +194,6 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
 
 void AudioRendererBase::ScheduleRead_Locked() {
   lock_.AssertAcquired();
-  DCHECK_LT(pending_reads_, max_queue_size_);
   ++pending_reads_;
   decoder_->Read(NewCallback(this, &AudioRendererBase::OnReadComplete));
 }
@@ -276,6 +210,14 @@ bool AudioRendererBase::ParseMediaFormat(const MediaFormat& media_format,
       media_format.GetAsInteger(MediaFormat::kSampleRate, sample_rate_out) &&
       media_format.GetAsInteger(MediaFormat::kSampleBits, sample_bits_out) &&
       mime_type.compare(mime_type::kUncompressedAudio) == 0;
+}
+
+void AudioRendererBase::SetPlaybackRate(float playback_rate) {
+  algorithm_->set_playback_rate(playback_rate);
+}
+
+float AudioRendererBase::GetPlaybackRate() {
+  return algorithm_->playback_rate();
 }
 
 }  // namespace media
