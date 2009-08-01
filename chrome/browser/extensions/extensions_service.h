@@ -89,8 +89,6 @@ class ExtensionsService
     return &extensions_;
   }
 
-  const FilePath& install_directory() const { return install_directory_; }
-
   // Initialize and start all installed extensions.
   void Init();
 
@@ -98,14 +96,16 @@ class ExtensionsService
   // update if an older version is already installed.
   // For fresh installs, this method also causes the extension to be
   // immediately loaded.
-  // TODO(aa): This method can be removed. It is only used by the unit tests,
-  // and they could use CrxInstaller directly instead.
   void InstallExtension(const FilePath& extension_path);
+
+  // XXX Hack: This is a temporary nasty hack to get theme installation working
+  // without a dialog. Will be fixed by making ExtensionsService more modular.
+  void InstallExtension(const FilePath& extension_path,
+                        const GURL& download_url,
+                        const GURL& referrer_url);
 
   // Updates a currently-installed extension with the contents from
   // |extension_path|.
-  // TODO(aa): This method can be removed. ExtensionUpdater could use
-  // CrxInstaller directly instead.
   virtual void UpdateExtension(const std::string& id,
                                const FilePath& extension_path);
 
@@ -195,6 +195,12 @@ class ExtensionsService
   bool is_ready() { return ready_; }
 
  private:
+  // Show a confirm installation infobar on the currently active tab.
+  // TODO(aa): This should be moved up into the UI and attached to the tab it
+  // actually occured in. This requires some modularization of
+  // ExtensionsService.
+  bool ShowThemePreviewInfobar(Extension* extension);
+
   // The profile this ExtensionsService is part of.
   Profile* profile_;
 

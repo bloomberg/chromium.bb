@@ -14,7 +14,9 @@
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
+#include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
@@ -32,16 +34,10 @@
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
 
-/*
 const char* ExtensionsService::kGalleryDownloadURLPrefix =
     "https://dl-ssl.google.com/chrome/";
 const char* ExtensionsService::kGalleryURLPrefix =
     "https://tools.google.com/chrome/";
-*/
-const char* ExtensionsService::kGalleryDownloadURLPrefix =
-    "http://www.corp.google.com/~glen/chrome/";
-const char* ExtensionsService::kGalleryURLPrefix =
-    "http://www.corp.google.com/~glen/chrome/";
 
 // static
 bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
@@ -112,12 +108,20 @@ void ExtensionsService::Init() {
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
-  CrxInstaller::Start(extension_path, install_directory_, Extension::INTERNAL,
-                      "",   // no expected id
-                      false,  // don't delete crx when complete
-                      backend_loop_,
-                      this,
-                      NULL);  // no client (silent install)
+  InstallExtension(extension_path, GURL(), GURL());
+}
+
+void ExtensionsService::InstallExtension(const FilePath& extension_path,
+                                         const GURL& download_url,
+                                         const GURL& referrer_url) {
+  new CrxInstaller(extension_path, install_directory_, Extension::INTERNAL,
+                   "",   // no expected id
+                   extensions_enabled_,
+                   IsDownloadFromGallery(download_url, referrer_url),
+                   show_extensions_prompts(),
+                   false,  // don't delete crx when complete
+                   backend_loop_,
+                   this);
 }
 
 void ExtensionsService::UpdateExtension(const std::string& id,
@@ -128,12 +132,13 @@ void ExtensionsService::UpdateExtension(const std::string& id,
     return;
   }
 
-  CrxInstaller::Start(extension_path, install_directory_, Extension::INTERNAL,
-                      id,
-                      true,  // delete crx when complete
-                      backend_loop_,
-                      this,
-                      NULL);  // no client (silent install)
+  new CrxInstaller(extension_path, install_directory_, Extension::INTERNAL,
+                   id, extensions_enabled_,
+                   false,  // not from gallery
+                   show_extensions_prompts(),
+                   true,  // delete crx when complete
+                   backend_loop_,
+                   this);
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
@@ -306,6 +311,7 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension) {
   // If the extension is a theme, tell the profile (and therefore ThemeProvider)
   // to apply it.
   if (extension->IsTheme()) {
+    ShowThemePreviewInfobar(extension);
     NotificationService::current()->Notify(
         NotificationType::THEME_INSTALLED,
         Source<ExtensionsService>(this),
@@ -327,6 +333,7 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension) {
 void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
   Extension* extension = GetExtensionById(id);
   if (extension && extension->IsTheme()) {
+    ShowThemePreviewInfobar(extension);
     NotificationService::current()->Notify(
         NotificationType::THEME_INSTALLED,
         Source<ExtensionsService>(this),
@@ -361,6 +368,23 @@ void ExtensionsService::SetProviderForTesting(
       location, test_provider));
 }
 
+bool ExtensionsService::ShowThemePreviewInfobar(Extension* extension) {
+  if (!profile_)
+    return false;
+
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (!browser)
+    return false;
+
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  if (!tab_contents)
+    return false;
+
+  tab_contents->AddInfoBar(new ThemePreviewInfobarDelegate(tab_contents,
+                                                           extension->name()));
+  return true;
+}
+
 void ExtensionsService::OnExternalExtensionFound(const std::string& id,
                                                  const std::string& version,
                                                  const FilePath& path,
@@ -385,11 +409,12 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
     }
   }
 
-  CrxInstaller::Start(path, install_directory_, location, id,
-                      false,  // don't delete crx when complete
-                      backend_loop_,
-                      this,
-                      NULL);  // no client (silent install)
+  new CrxInstaller(path, install_directory_, location, id, extensions_enabled_,
+                   false,  // not from gallery
+                   show_extensions_prompts(),
+                   false,  // don't delete crx when complete
+                   backend_loop_,
+                   this);
 }
 
 
