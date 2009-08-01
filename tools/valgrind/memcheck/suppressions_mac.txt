@@ -180,6 +180,13 @@
    fun:dlopen
    fun:_CFBundleDlfcnCheckLoaded
 }
+{
+   bug_18215
+   Memcheck:Cond
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:-[NSApplication run]
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
@@ -328,6 +335,18 @@
    fun:thread_start
 }
 {
+   bug_16661
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
+   fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
+   fun:_ZN3IPC7Channel4SendEPNS_7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context13OnSendMessageEPNS_7MessageE
+   fun:_ZN3IPC8SendTask3RunEv
+}
+{
   bug_17297
   Memcheck:Leak
   fun:malloc
@@ -350,4 +369,29 @@
    fun:_ZN3IPC11SyncChannelC2ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
    fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
    fun:_ZN11ChildThread4InitEv
+}
+{
+   bug_18218
+   Memcheck:Leak
+   fun:malloc
+   fun:__addHandler2
+   fun:__NSFinalizeThreadData
+   fun:_pthread_tsd_cleanup
+   fun:_pthread_exit
+   fun:thread_start
+}
+{
+   bug_18219
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:CGTypeCreateInstanceWithAllocator
+   fun:CGTypeCreateInstance
+   fun:CGImageCreate
+   fun:_NSCreateImageRef2
+   fun:-[CIImage(NSAppKitAdditions) initWithBitmapImageRep:]
+   fun:-[ThrobberFilmstripDelegate initWithImage:]
+   fun:+[ThrobberView filmstripThrobberViewWithFrame:image:]
+   fun:-[TabStripController tabChangedWithContents:atIndex:loadingOnly:]
+   fun:_ZN27TabStripModelObserverBridge12TabChangedAtEP11TabContentsib
 }
