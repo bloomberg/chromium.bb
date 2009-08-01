@@ -3087,7 +3087,6 @@
               'ProgramDatabaseFile': '$(OutDir)\\chrome_exe.pdb',
               # Set /SUBSYSTEM:WINDOWS for chrome.exe itself.
               'SubSystem': '2',
-              'StackReserveSize': '2097152',
             },
             'VCManifestTool': {
               'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.exe.manifest',
