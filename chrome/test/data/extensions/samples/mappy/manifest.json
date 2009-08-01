@@ -1,0 +1,11 @@
+{
+  "name": "Mappy",
+  "version": "0.2",
+  "description": "Map stuff",
+  "toolstrips": [
+    "mappy_toolstrip.html"
+  ],
+  "content_scripts": [
+    { "matches": ["http://*/*"], "js": ["mappy_content_script.js"] }
+  ]
+}

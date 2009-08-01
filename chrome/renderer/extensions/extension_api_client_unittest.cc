@@ -518,3 +518,44 @@ TEST_F(ExtensionAPIClientTest, EnablePageAction) {
                "pageActions.disableForTab",
                "[\"dummy\",{\"tabId\":0,\"url\":\"http://foo/\"}]");
 }
+
+TEST_F(ExtensionAPIClientTest, ExpandToolstrip) {
+  ExpectJsPass("chrome.toolstrip.expand(100, 'http://foo/')",
+               "toolstrip.expand",
+               "[100,\"http://foo/\"]");
+  ExpectJsPass("chrome.toolstrip.expand(100, null)",
+               "toolstrip.expand",
+               "[100,null]");
+  ExpectJsPass("chrome.toolstrip.expand(100, 'http://foo/', function(){})",
+               "toolstrip.expand",
+               "[100,\"http://foo/\"]");
+
+  ExpectJsFail("chrome.toolstrip.expand('100', 'http://foo/')",
+               "Uncaught Error: Invalid value for argument 0. "
+               "Expected 'integer' but got 'string'.");
+  ExpectJsFail("chrome.toolstrip.expand(100, 100)",
+               "Uncaught Error: Invalid value for argument 1. "
+               "Expected 'string' but got 'integer'.");
+  ExpectJsFail("chrome.toolstrip.expand(100, 'http://foo/', 32)",
+               "Uncaught Error: Invalid value for argument 2. "
+               "Expected 'function' but got 'integer'.");
+}
+
+TEST_F(ExtensionAPIClientTest, CollapseToolstrip) {
+  ExpectJsPass("chrome.toolstrip.collapse('http://foo/')",
+               "toolstrip.collapse",
+               "\"http://foo/\"");
+  ExpectJsPass("chrome.toolstrip.collapse(null)",
+               "toolstrip.collapse",
+               "null");
+  ExpectJsPass("chrome.toolstrip.collapse('http://foo/', function(){})",
+               "toolstrip.collapse",
+               "\"http://foo/\"");
+
+  ExpectJsFail("chrome.toolstrip.collapse(100)",
+               "Uncaught Error: Invalid value for argument 0. "
+               "Expected 'string' but got 'integer'.");
+  ExpectJsFail("chrome.toolstrip.collapse('http://foo/', 32)",
+               "Uncaught Error: Invalid value for argument 1. "
+               "Expected 'function' but got 'integer'.");
+}

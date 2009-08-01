@@ -39,11 +39,13 @@ ExtensionShelfModel::ExtensionShelfModel(Browser* browser)
 }
 
 ExtensionShelfModel::~ExtensionShelfModel() {
+  FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
+                    ShelfModelDeleting());
+
   while (observers_.size())
     observers_.RemoveObserver(observers_.GetElementAt(0));
 
-  ExtensionToolstrips::iterator t;
-  for (t = toolstrips_.begin(); t != toolstrips_.end(); ++t)
+  for (iterator t = toolstrips_.begin(); t != toolstrips_.end(); ++t)
     delete t->host;
   toolstrips_.clear();
 }
@@ -71,7 +73,7 @@ void ExtensionShelfModel::InsertToolstripAt(int index,
 }
 
 void ExtensionShelfModel::RemoveToolstripAt(int index) {
-  ExtensionHost* host = ToolstripAt(index);
+  ExtensionHost* host = ToolstripAt(index).host;
   FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
                     ToolstripRemovingAt(host, index));
   toolstrips_.erase(toolstrips_.begin() + index);
@@ -94,33 +96,52 @@ void ExtensionShelfModel::MoveToolstripAt(int index, int to_index) {
   UpdatePrefs();
 }
 
-int ExtensionShelfModel::IndexOfToolstrip(ExtensionHost* toolstrip) {
-  ExtensionToolstrips::iterator i;
-  for (i = toolstrips_.begin(); i != toolstrips_.end(); ++i) {
-    if (i->host == toolstrip)
+int ExtensionShelfModel::IndexOfHost(ExtensionHost* host) {
+  for (iterator i = toolstrips_.begin(); i != toolstrips_.end(); ++i) {
+    if (i->host == host)
       return i - toolstrips_.begin();
   }
   return -1;
 }
 
-ExtensionHost* ExtensionShelfModel::ToolstripAt(int index) {
-  DCHECK(index >= 0);
-  return toolstrips_[index].host;
+ExtensionShelfModel::iterator ExtensionShelfModel::ToolstripForHost(
+    ExtensionHost* host) {
+  for (iterator i = toolstrips_.begin(); i != toolstrips_.end(); ++i) {
+    if (i->host == host)
+      return i;
+  }
+  return toolstrips_.end();
 }
 
-Extension::ToolstripInfo& ExtensionShelfModel::ToolstripInfoAt(int index) {
+const ExtensionShelfModel::ToolstripItem& ExtensionShelfModel::ToolstripAt(
+    int index) {
   DCHECK(index >= 0);
-  return toolstrips_[index].info;
-}
-
-void* ExtensionShelfModel::ToolstripDataAt(int index) {
-  DCHECK(index >= 0);
-  return toolstrips_[index].data;
+  return toolstrips_[index];
 }
 
 void ExtensionShelfModel::SetToolstripDataAt(int index, void* data) {
   DCHECK(index >= 0);
   toolstrips_[index].data = data;
+}
+
+void ExtensionShelfModel::ExpandToolstrip(iterator toolstrip,
+                                          const GURL& url, int height) {
+  if (toolstrip == end())
+    return;
+  toolstrip->height = height;
+  toolstrip->url = url;
+  FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
+                    ToolstripChanged(toolstrip));
+}
+
+void ExtensionShelfModel::CollapseToolstrip(iterator toolstrip,
+                                            const GURL& url) {
+  if (toolstrip == end())
+    return;
+  toolstrip->height = 0;
+  toolstrip->url = url;
+  FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
+                    ToolstripChanged(toolstrip));
 }
 
 void ExtensionShelfModel::Observe(NotificationType type,
@@ -136,7 +157,8 @@ void ExtensionShelfModel::Observe(NotificationType type,
       break;
     case NotificationType::EXTENSIONS_READY:
       if (browser_->profile()->GetExtensionsService()) {
-        AddExtensions(browser_->profile()->GetExtensionsService()->extensions());
+        AddExtensions(
+            browser_->profile()->GetExtensionsService()->extensions());
         SortToolstrips();
       }
       ready_ = true;
@@ -167,6 +189,7 @@ void ExtensionShelfModel::AddExtension(Extension* extension) {
     item.host = manager->CreateView(extension, url, browser_);
     item.info = *toolstrip;
     item.data = NULL;
+    item.height = 0;
     AppendToolstrip(item);
   }
 }
@@ -182,7 +205,7 @@ void ExtensionShelfModel::AddExtensions(const ExtensionList* extensions) {
 void ExtensionShelfModel::RemoveExtension(Extension* extension) {
   bool changed = false;
   for (int i = count() - 1; i >= 0; --i) {
-    ExtensionHost* t = ToolstripAt(i);
+    ExtensionHost* t = ToolstripAt(i).host;
     if (t->extension()->id() == extension->id()) {
       changed = true;
       RemoveToolstripAt(i);
@@ -202,7 +225,7 @@ void ExtensionShelfModel::UpdatePrefs() {
   // It's easiest to just rebuild the list each time.
   ExtensionPrefs::URLList urls;
   for (int i = 0; i < count(); ++i)
-    urls.push_back(ToolstripAt(i)->GetURL());
+    urls.push_back(ToolstripAt(i).host->GetURL());
   prefs_->SetShelfToolstripOrder(urls);
 
   NotificationService::current()->Notify(
@@ -213,15 +236,15 @@ void ExtensionShelfModel::UpdatePrefs() {
 
 void ExtensionShelfModel::SortToolstrips() {
   ExtensionPrefs::URLList urls = prefs_->GetShelfToolstripOrder();
-  ExtensionToolstrips copy =
-      ExtensionToolstrips(toolstrips_.begin(), toolstrips_.end());
+  ToolstripList copy =
+      ToolstripList(toolstrips_.begin(), toolstrips_.end());
   toolstrips_.clear();
 
   // Go through the urls and find the matching toolstrip, re-adding it to the
   // new list in the proper order.
   for (size_t i = 0; i < urls.size(); ++i) {
     GURL& url = urls[i];
-    for (ExtensionToolstrips::iterator toolstrip = copy.begin();
+    for (iterator toolstrip = copy.begin();
         toolstrip != copy.end(); ++toolstrip) {
       if (url == toolstrip->host->GetURL()) {
         // Note that it's technically possible for the same URL to appear in
@@ -238,7 +261,7 @@ void ExtensionShelfModel::SortToolstrips() {
 
   // Any toolstrips remaining in |copy| were somehow missing from the prefs,
   // so just append them to the end.
-  for (ExtensionToolstrips::iterator toolstrip = copy.begin();
+  for (iterator toolstrip = copy.begin();
       toolstrip != copy.end(); ++toolstrip) {
     toolstrips_.push_back(*toolstrip);
   }

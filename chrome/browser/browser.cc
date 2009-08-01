@@ -272,6 +272,10 @@ Browser* Browser::CreateForApp(const std::wstring& app_name,
 
 void Browser::CreateBrowserWindow() {
   DCHECK(!window_);
+
+  if (SupportsWindowFeature(FEATURE_EXTENSIONSHELF))
+    extension_shelf_model_.reset(new ExtensionShelfModel(this));
+
   window_ = BrowserWindow::CreateBrowserWindow(this);
 
   // Show the First Run information bubble if we've been told to.

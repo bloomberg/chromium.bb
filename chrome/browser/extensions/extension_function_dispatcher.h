@@ -14,6 +14,7 @@
 
 class Browser;
 class ExtensionFunction;
+class ExtensionHost;
 class Profile;
 class RenderViewHost;
 class RenderViewHostDelegate;
@@ -29,6 +30,7 @@ class ExtensionFunctionDispatcher {
   class Delegate {
    public:
     virtual Browser* GetBrowser() = 0;
+    virtual ExtensionHost* GetExtensionHost() { return NULL; }
   };
 
   // The peer object allows us to notify ExtensionFunctions when we are
@@ -67,6 +69,10 @@ class ExtensionFunctionDispatcher {
   // Gets the browser extension functions should operate relative to. For
   // example, for positioning windows, or alert boxes, or creating tabs.
   Browser* GetBrowser();
+
+  // Gets the ExtensionHost associated with this object.  In the case of
+  // tab hosted extension pages, this will return NULL.
+  ExtensionHost* GetExtensionHost();
 
   // Handle a malformed message.  Possibly the result of an attack, so kill
   // the renderer.

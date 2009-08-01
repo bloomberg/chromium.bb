@@ -27,7 +27,7 @@ class ExtensionShelf : public views::View,
   virtual ~ExtensionShelf();
 
   // Get the current model.
-  ExtensionShelfModel* model() { return model_.get(); }
+  ExtensionShelfModel* model() { return model_; }
 
   // View
   virtual void Paint(gfx::Canvas* canvas);
@@ -50,9 +50,10 @@ class ExtensionShelf : public views::View,
   virtual void ToolstripMoved(ExtensionHost* toolstrip,
                               int from_index,
                               int to_index);
-  virtual void ToolstripChangedAt(ExtensionHost* toolstrip, int index);
+  virtual void ToolstripChanged(ExtensionShelfModel::iterator toolstrip);
   virtual void ExtensionShelfEmpty();
   virtual void ShelfModelReloaded();
+  virtual void ShelfModelDeleting();
 
  protected:
   // View
@@ -65,6 +66,13 @@ class ExtensionShelf : public views::View,
 
   // Dragging toolstrips
   void DropExtension(Toolstrip* handle, const gfx::Point& pt, bool cancel);
+
+  // Expand the specified toolstrip, navigating to |url| if non-empty,
+  // and setting the |height|.
+  void ExpandToolstrip(ExtensionHost* host, const GURL& url, int height);
+
+  // Collapse the specified toolstrip, navigating to |url| if non-empty.
+  void CollapseToolstrip(ExtensionHost* host, const GURL& url);
 
   // Inits the background bitmap.
   void InitBackground(gfx::Canvas* canvas, const SkRect& subset);
@@ -86,7 +94,7 @@ class ExtensionShelf : public views::View,
   SkBitmap background_;
 
   // The model representing the toolstrips on the shelf.
-  scoped_ptr<ExtensionShelfModel> model_;
+  ExtensionShelfModel* model_;
 
   // Storage of strings needed for accessibility.
   std::wstring accessible_name_;

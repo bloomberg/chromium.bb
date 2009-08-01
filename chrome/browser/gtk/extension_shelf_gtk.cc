@@ -67,7 +67,7 @@ void ExtensionShelfGtk::Toolstrip::Init() {
 ExtensionShelfGtk::ExtensionShelfGtk(Profile* profile, Browser* browser)
     : browser_(browser),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
-      model_(new ExtensionShelfModel(browser)) {
+      model_(browser->extension_shelf_model()) {
   Init(profile);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -75,7 +75,8 @@ ExtensionShelfGtk::ExtensionShelfGtk(Profile* profile, Browser* browser)
 }
 
 ExtensionShelfGtk::~ExtensionShelfGtk() {
-  model_->RemoveObserver(this);
+  if (model_)
+    model_->RemoveObserver(this);
   event_box_.Destroy();
 }
 
@@ -119,8 +120,8 @@ void ExtensionShelfGtk::ToolstripMoved(ExtensionHost* host,
   AdjustHeight();
 }
 
-void ExtensionShelfGtk::ToolstripChangedAt(ExtensionHost* host,
-                                           int index) {
+void ExtensionShelfGtk::ToolstripChanged(
+    ExtensionShelfModel::iterator toolstrip) {
   // TODO(phajdan.jr): Implement changing toolstrips.
   AdjustHeight();
 }
@@ -137,6 +138,18 @@ void ExtensionShelfGtk::ShelfModelReloaded() {
   }
   toolstrips_.clear();
   LoadFromModel();
+}
+
+void ExtensionShelfGtk::ShelfModelDeleting() {
+  for (std::set<Toolstrip*>::iterator iter = toolstrips_.begin();
+       iter != toolstrips_.end(); ++iter) {
+    (*iter)->RemoveToolstripFromBox(shelf_hbox_);
+    delete *iter;
+  }
+  toolstrips_.clear();
+
+  model_->RemoveObserver(this);
+  model_ = NULL;
 }
 
 void ExtensionShelfGtk::Init(Profile* profile) {
@@ -187,12 +200,12 @@ void ExtensionShelfGtk::LoadFromModel() {
   DCHECK(toolstrips_.empty());
   int count = model_->count();
   for (int i = 0; i < count; ++i)
-    ToolstripInsertedAt(model_->ToolstripAt(i), i);
+    ToolstripInsertedAt(model_->ToolstripAt(i).host, i);
   AdjustHeight();
 }
 
 ExtensionShelfGtk::Toolstrip* ExtensionShelfGtk::ToolstripAtIndex(int index) {
-  return static_cast<Toolstrip*>(model_->ToolstripDataAt(index));
+  return static_cast<Toolstrip*>(model_->ToolstripAt(index).data);
 }
 
 // static
