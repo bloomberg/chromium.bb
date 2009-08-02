@@ -42,10 +42,9 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   virtual void ToolstripMoved(ExtensionHost* host,
                               int from_index,
                               int to_index);
-  virtual void ToolstripChanged(ExtensionShelfModel::iterator toolstrip);
+  virtual void ToolstripChangedAt(ExtensionHost* host, int index);
   virtual void ExtensionShelfEmpty();
   virtual void ShelfModelReloaded();
-  virtual void ShelfModelDeleting();
 
  private:
   class Toolstrip;
@@ -89,7 +88,7 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   NotificationRegistrar registrar_;
 
   // The model representing the toolstrips on the shelf.
-  ExtensionShelfModel* model_;
+  scoped_ptr<ExtensionShelfModel> model_;
 
   // Set of toolstrip views which are really on the shelf.
   std::set<Toolstrip*> toolstrips_;

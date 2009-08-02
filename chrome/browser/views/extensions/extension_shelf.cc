@@ -153,10 +153,6 @@ class ExtensionShelf::Toolstrip : public views::View,
   void DoHideShelfHandle();
   void StopHandleTimer();
 
-  // Expand / Collapse
-  void Expand(int height, const GURL& url);
-  void Collapse(const GURL& url);
-
   // BrowserBubble::Delegate
   virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
   virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
@@ -258,8 +254,9 @@ void ExtensionShelf::Toolstrip::Paint(gfx::Canvas* canvas) {
 gfx::Size ExtensionShelf::Toolstrip::GetPreferredSize() {
   gfx::Size sz = title_->GetPreferredSize();
   sz.set_width(std::max(view()->width(), sz.width()));
-  if (!expanded_)
+  if (!expanded_) {
     sz.Enlarge(2 + kHandlePadding * 2, kHandlePadding * 2);
+  }
   if (dragging_ || expanded_) {
     gfx::Size extension_size = view()->GetPreferredSize();
     sz.Enlarge(0, extension_size.height() + 2);
@@ -336,17 +333,33 @@ void ExtensionShelf::Toolstrip::OnMouseReleased(const views::MouseEvent& event,
     View::ConvertPointToView(NULL, shelf_, &loc);
     shelf_->DropExtension(this, loc, canceled);
     AttachToShelf(true);
-  } else if (!canceled) {
+  } else if (!canceled &&
+             info_.mole.is_valid() && info_.toolstrip.is_valid()) {
     // Toggle mole to either expanded or collapsed.
-    // TODO(erikkay) If there's no valid URL in the manifest, should we
-    // post an event to the toolstrip in this case?
+    expanded_ = !expanded_;
+    view()->set_is_toolstrip(!expanded_);
     if (expanded_) {
-      if (info_.toolstrip.is_valid())
-        shelf_->CollapseToolstrip(host_, info_.toolstrip);
+      host_->NavigateToURL(info_.mole);
+      StopHandleTimer();
+      DetachFromShelf(false);
+
+      gfx::Size extension_size = view()->GetPreferredSize();
+      extension_size.set_height(info_.mole_height);
+      view()->SetPreferredSize(extension_size);
+      LayoutHandle();
     } else {
-     if (info_.mole.is_valid())
-       shelf_->ExpandToolstrip(host_, info_.mole, info_.mole_height);
+      gfx::Size extension_size = view()->GetPreferredSize();
+      extension_size.set_height(kToolstripHeight);
+      view()->SetPreferredSize(extension_size);
+
+      host_->NavigateToURL(info_.toolstrip);
+      AttachToShelf(false);
     }
+
+    // This is to prevent flickering as the page loads and lays out.
+    // Once the navigation is finished, ExtensionView will wind up setting
+    // visibility to true.
+    view()->SetVisible(false);
   }
 }
 
@@ -401,7 +414,6 @@ void ExtensionShelf::Toolstrip::BubbleBrowserWindowClosing(
 }
 
 void ExtensionShelf::Toolstrip::DetachFromShelf(bool browserDetach) {
-  DCHECK(handle_.get());
   DCHECK(!placeholder_view_);
   if (browserDetach && handle_->attached())
     handle_->DetachFromBrowser();
@@ -418,8 +430,6 @@ void ExtensionShelf::Toolstrip::DetachFromShelf(bool browserDetach) {
 }
 
 void ExtensionShelf::Toolstrip::AttachToShelf(bool browserAttach) {
-  DCHECK(handle_.get());
-  DCHECK(placeholder_view_);
   if (browserAttach && !handle_->attached())
     handle_->AttachToBrowser();
 
@@ -463,56 +473,6 @@ void ExtensionShelf::Toolstrip::StopHandleTimer() {
     timer_factory_.RevokeAll();
 }
 
-void ExtensionShelf::Toolstrip::Expand(int height, const GURL& url) {
-  DCHECK(!expanded_);
-
-  DoShowShelfHandle();
-
-  expanded_ = true;
-  view()->set_is_toolstrip(!expanded_);
-
-  bool navigate = (!url.is_empty() && url != host_->GetURL());
-  if (navigate)
-    host_->NavigateToURL(url);
-
-  StopHandleTimer();
-  DetachFromShelf(false);
-
-  gfx::Size extension_size = view()->GetPreferredSize();
-  extension_size.set_height(height);
-  view()->SetPreferredSize(extension_size);
-  LayoutHandle();
-
-  // This is to prevent flickering as the page loads and lays out.
-  // Once the navigation is finished, ExtensionView will wind up setting
-  // visibility to true.
-  if (navigate)
-    view()->SetVisible(false);
-}
-
-void ExtensionShelf::Toolstrip::Collapse(const GURL& url) {
-  DCHECK(expanded_);
-  expanded_ = false;
-  view()->set_is_toolstrip(!expanded_);
-
-  gfx::Size extension_size = view()->GetPreferredSize();
-  extension_size.set_height(kToolstripHeight);
-  view()->SetPreferredSize(extension_size);
-  AttachToShelf(false);
-
-  if (!url.is_empty() && url != host_->GetURL()) {
-    host_->NavigateToURL(url);
-
-    // This is to prevent flickering as the page loads and lays out.
-    // Once the navigation is finished, ExtensionView will wind up setting
-    // visibility to true.
-    view()->SetVisible(false);
-  }
-
-  // Must use the delay due to bug 18248.
-  HideShelfHandle(kHideDelayMs);
-}
-
 void ExtensionShelf::Toolstrip::ShowShelfHandle() {
   StopHandleTimer();
   if (handle_visible())
@@ -540,21 +500,19 @@ void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
 ////////////////////////////////////////////////////////////////////////////////
 
 ExtensionShelf::ExtensionShelf(Browser* browser)
-    : model_(browser->extension_shelf_model()) {
+    : model_(new ExtensionShelfModel(browser)) {
   model_->AddObserver(this);
   LoadFromModel();
   EnableCanvasFlippingForRTLUI(true);
 }
 
 ExtensionShelf::~ExtensionShelf() {
-  if (model_) {
-    int count = model_->count();
-    for (int i = 0; i < count; ++i) {
-      delete ToolstripAtIndex(i);
-      model_->SetToolstripDataAt(i, NULL);
-    }
-    model_->RemoveObserver(this);
+  int count = model_->count();
+  for (int i = 0; i < count; ++i) {
+    delete ToolstripAtIndex(i);
+    model_->SetToolstripDataAt(i, NULL);
   }
+  model_->RemoveObserver(this);
 }
 
 void ExtensionShelf::Paint(gfx::Canvas* canvas) {
@@ -604,8 +562,6 @@ void ExtensionShelf::ChildPreferredSizeChanged(View* child) {
 
 void ExtensionShelf::Layout() {
   if (!GetParent())
-    return;
-  if (!model_)
     return;
 
   int x = kLeftMargin;
@@ -663,7 +619,7 @@ void ExtensionShelf::SetAccessibleName(const std::wstring& name) {
 void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host,
                                          int index) {
   model_->SetToolstripDataAt(index,
-      new Toolstrip(this, host, model_->ToolstripAt(index).info));
+      new Toolstrip(this, host, model_->ToolstripInfoAt(index)));
 
   bool had_views = GetChildViewCount() > 0;
   ExtensionView* view = host->view();
@@ -697,15 +653,7 @@ void ExtensionShelf::ToolstripMoved(ExtensionHost* host, int from_index,
   Layout();
 }
 
-void ExtensionShelf::ToolstripChanged(ExtensionShelfModel::iterator toolstrip) {
-  Toolstrip* t = static_cast<Toolstrip*>(toolstrip->data);
-  if (toolstrip->height > 0) {
-    if (!t->expanded()) {
-      t->Expand(toolstrip->height, toolstrip->url);
-    }
-  } else if (t->expanded()) {
-    t->Collapse(toolstrip->url);
-  }
+void ExtensionShelf::ToolstripChangedAt(ExtensionHost* toolstrip, int index) {
 }
 
 void ExtensionShelf::ExtensionShelfEmpty() {
@@ -716,16 +664,6 @@ void ExtensionShelf::ShelfModelReloaded() {
   // None of the child views are parent owned, so nothing is being leaked here.
   RemoveAllChildViews(false);
   LoadFromModel();
-}
-
-void ExtensionShelf::ShelfModelDeleting() {
-  int count = model_->count();
-  for (int i = 0; i < count; ++i) {
-    delete ToolstripAtIndex(i);
-    model_->SetToolstripDataAt(i, NULL);
-  }
-  model_->RemoveObserver(this);
-  model_ = NULL;
 }
 
 void ExtensionShelf::OnExtensionMouseEvent(ExtensionView* view) {
@@ -751,21 +689,10 @@ void ExtensionShelf::DropExtension(Toolstrip* toolstrip, const gfx::Point& pt,
   }
   if (toolstrip == dest_toolstrip)
     return;
-  int from = model_->IndexOfHost(toolstrip->host());
-  int to = model_->IndexOfHost(dest_toolstrip->host());
+  int from = model_->IndexOfToolstrip(toolstrip->host());
+  int to = model_->IndexOfToolstrip(dest_toolstrip->host());
   DCHECK(from != to);
   model_->MoveToolstripAt(from, to);
-}
-
-void ExtensionShelf::ExpandToolstrip(ExtensionHost* host, const GURL& url,
-                                     int height) {
-  ExtensionShelfModel::iterator toolstrip = model_->ToolstripForHost(host);
-  model_->ExpandToolstrip(toolstrip, url, height);
-}
-
-void ExtensionShelf::CollapseToolstrip(ExtensionHost* host, const GURL& url) {
-  ExtensionShelfModel::iterator toolstrip = model_->ToolstripForHost(host);
-  model_->CollapseToolstrip(toolstrip, url);
 }
 
 void ExtensionShelf::InitBackground(gfx::Canvas* canvas, const SkRect& subset) {
@@ -822,7 +749,7 @@ ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripAtX(int x) {
 }
 
 ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripAtIndex(int index) {
-  return static_cast<Toolstrip*>(model_->ToolstripAt(index).data);
+  return static_cast<Toolstrip*>(model_->ToolstripDataAt(index));
 }
 
 ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripForView(
@@ -833,11 +760,12 @@ ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripForView(
     if (view == toolstrip->view())
       return toolstrip;
   }
+  NOTREACHED();
   return NULL;
 }
 
 void ExtensionShelf::LoadFromModel() {
   int count = model_->count();
   for (int i = 0; i < count; ++i)
-    ToolstripInsertedAt(model_->ToolstripAt(i).host, i);
+    ToolstripInsertedAt(model_->ToolstripAt(i), i);
 }

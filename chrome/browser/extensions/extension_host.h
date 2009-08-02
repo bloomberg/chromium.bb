@@ -124,7 +124,6 @@ class ExtensionHost : public RenderViewHostDelegate,
   // part of.  If this is a global background page, we use the active Browser
   // instead.
   virtual Browser* GetBrowser();
-  virtual ExtensionHost* GetExtensionHost() { return this; }
 
   // The extension that we're hosting in this view.
   Extension* extension_;

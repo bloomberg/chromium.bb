@@ -65,6 +65,7 @@
  *    TODO(rafaelw): Validate event arguments in debug and unittests
  *    TODO(rafaelw): Support $ref for json_schema validation.
  */
+
 [
   /**
    * chrome.self
@@ -704,37 +705,6 @@
           }
         ]
       }
-    ]
-  },
-
-  /**
-   * chrome.toolstrip
-   */
-  {
-    namespace: "toolstrip",
-    types: [],
-    functions: [
-      {
-        name: "expand",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "height", minimum: 0},
-          {type: "string", name: "url", optional: true},
-          {type: "function", name: "callback", optional: true}
-        ]
-      },
-      {
-        name: "collapse",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "url", optional: true},
-          {type: "function", name: "callback", optional: true}
-        ]
-      }
-    ],
-    events: [
     ]
   }
 ]
