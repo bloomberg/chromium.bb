@@ -3012,6 +3012,28 @@ void RenderView::DumpLoadHistograms() const {
           kBeginToFinishMax, kBeginToFinishBucketCount);
   }
 
+  static bool use_socket_late_binding_histogram =
+      FieldTrialList::Find("SocketLateBinding") &&
+      !FieldTrialList::Find("SocketLateBinding")->group_name().empty();
+  if (use_socket_late_binding_histogram) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        FieldTrial::MakeName("Renderer4.BeginToFinish",
+                             "SocketLateBinding").data(),
+        finish - begin, kBeginToFinishMin,
+        kBeginToFinishMax, kBeginToFinishBucketCount);
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        FieldTrial::MakeName("Renderer4.StartToFinish",
+                             "SocketLateBinding").data(),
+        finish - start, kBeginToFinishMin,
+        kBeginToFinishMax, kBeginToFinishBucketCount);
+    if (!request.is_null())
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          FieldTrial::MakeName("Renderer4.RequestToFinish",
+                               "SocketLateBinding").data(),
+          finish - request, kBeginToFinishMin,
+          kBeginToFinishMax, kBeginToFinishBucketCount);
+  }
+
   static bool use_cache_histogram1(FieldTrialList::Find("CacheSize") &&
       !FieldTrialList::Find("CacheSize")->group_name().empty());
   if (use_cache_histogram1)
