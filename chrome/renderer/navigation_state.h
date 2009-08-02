@@ -9,6 +9,7 @@
 #include "base/time.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/api/public/WebDataSource.h"
+#include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/searchable_form_data.h"
 
@@ -35,9 +36,6 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
 
   // Contains the page_id for this navigation or -1 if there is none yet.
   int32 pending_page_id() const { return pending_page_id_; }
-
-  // Is this a new navigation?
-  bool is_new_navigation() const { return pending_page_id_ == -1; }
 
   // Contains the transition type that the browser specified when it
   // initiated the load.
@@ -132,6 +130,13 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     password_form_data_.reset(data);
   }
 
+  webkit_glue::AltErrorPageResourceFetcher* alt_error_page_fetcher() const {
+    return alt_error_page_fetcher_.get();
+  }
+  void set_alt_error_page_fetcher(webkit_glue::AltErrorPageResourceFetcher* f) {
+    alt_error_page_fetcher_.reset(f);
+  }
+
   const std::string& security_info() const {
     return security_info_;
   }
@@ -166,6 +171,7 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   int32 pending_page_id_;
   scoped_ptr<webkit_glue::SearchableFormData> searchable_form_data_;
   scoped_ptr<webkit_glue::PasswordForm> password_form_data_;
+  scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
   std::string security_info_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);

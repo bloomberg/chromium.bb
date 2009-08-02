@@ -354,8 +354,10 @@ void WebFrameLoaderClient::dispatchDidFinishLoading(DocumentLoader* loader,
     const GURL& url = GetAlt404PageUrl(loader);
     DCHECK(url.is_valid()) <<
         "URL changed? It was valid in dispatchDidReceiveResponse.";
+    WebURLError original_error;
+    original_error.unreachableURL = webkit_glue::KURLToWebURL(loader->url());
     alt_404_page_fetcher_.reset(new AltErrorPageResourceFetcher(
-        url, webframe_, webkit_glue::KURLToGURL(loader->url()),
+        url, webframe_, original_error,
         NewCallback(this, &WebFrameLoaderClient::Alt404PageFinished)));
   }
 
@@ -383,7 +385,8 @@ GURL WebFrameLoaderClient::GetAlt404PageUrl(DocumentLoader* loader) {
   return d->GetAlternateErrorPageURL(failedURL, WebViewDelegate::HTTP_404);
 }
 
-void WebFrameLoaderClient::Alt404PageFinished(const GURL& unreachable_url,
+void WebFrameLoaderClient::Alt404PageFinished(WebFrame* frame,
+                                              const WebURLError& original_error,
                                               const std::string& html) {
   // TODO(darin): Move this processing out to the embedder.
   if (!html.empty()) {
@@ -392,12 +395,11 @@ void WebFrameLoaderClient::Alt404PageFinished(const GURL& unreachable_url,
     WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
     if (!d)
       return;
-    WebURLError error;
-    error.unreachableURL = unreachable_url;
-    d->LoadNavigationErrorPage(webframe_, WebURLRequest(), error, html, false);
+    d->LoadNavigationErrorPage(webframe_, WebURLRequest(), original_error, html,
+                               false);
   } else {
     // Fall back on original text
-    webframe_->LoadHTMLString(postponed_data_, unreachable_url);
+    webframe_->LoadHTMLString(postponed_data_, original_error.unreachableURL);
   }
 }
 

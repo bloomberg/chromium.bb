@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/api/public/WebURLError.h"
 
 class WebFrame;
 
@@ -16,7 +17,6 @@ class WebURLResponse;
 }
 
 namespace webkit_glue {
-
 class ResourceFetcherWithTimeout;
 
 // Used for downloading alternate dns error pages. Once downloading is done
@@ -24,13 +24,14 @@ class ResourceFetcherWithTimeout;
 class AltErrorPageResourceFetcher {
  public:
   // This will be called when the alternative error page has been fetched,
-  // successfully or not.  If there is a failure, the second parameter (the
+  // successfully or not.  If there is a failure, the third parameter (the
   // data) will be empty.
-  typedef Callback2<const GURL&, const std::string&>::Type Callback;
+  typedef Callback3<
+      WebFrame*, const WebKit::WebURLError&, const std::string&>::Type Callback;
 
   AltErrorPageResourceFetcher(const GURL& url,
                               WebFrame* frame,
-                              const GURL& unreachable_url,
+                              const WebKit::WebURLError& original_error,
                               Callback* callback);
   ~AltErrorPageResourceFetcher();
 
@@ -44,12 +45,12 @@ class AltErrorPageResourceFetcher {
   // Does the actual fetching.
   scoped_ptr<ResourceFetcherWithTimeout> fetcher_;
 
+  WebFrame* frame_;
   scoped_ptr<Callback> callback_;
 
-  // The "unreachable url" associated with this load.  If there's an error
-  // talking with the alt 404 page server, we need this to complete the
-  // original load.
-  GURL unreachable_url_;
+  // The error associated with this load.  If there's an error talking with the
+  // alt error page server, we need this to complete the original load.
+  WebKit::WebURLError original_error_;
 
   DISALLOW_COPY_AND_ASSIGN(AltErrorPageResourceFetcher);
 };

@@ -62,10 +62,6 @@ class SubstituteData;
 struct WindowFeatures;
 }
 
-namespace webkit_glue {
-class AltErrorPageResourceFetcher;
-}
-
 // Implementation of WebFrame, note that this is a reference counted object.
 class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
  public:
@@ -95,12 +91,6 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
       const WebKit::WebURL& base_url,
       const WebKit::WebURL& unreachable_url = WebKit::WebURL(),
       bool replace = false);
-  virtual void LoadAlternateHTMLErrorPage(
-      const WebKit::WebURLRequest& request,
-      const WebKit::WebURLError& error,
-      const GURL& error_page_url,
-      bool replace,
-      const GURL& fake_url);
   virtual void DispatchWillSendRequest(WebKit::WebURLRequest* request);
   virtual void ExecuteScript(const WebKit::WebScriptSource& source);
   virtual void ExecuteScriptInNewContext(
@@ -119,6 +109,7 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
   virtual WebKit::WebDataSource* GetDataSource() const;
   virtual WebKit::WebDataSource* GetProvisionalDataSource() const;
   virtual void StopLoading();
+  virtual bool IsLoading() const;
   virtual WebFrame* GetOpener() const;
   virtual WebFrame* GetParent() const;
   virtual WebFrame* GetTop() const;
@@ -208,8 +199,6 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
   void Layout();
   void Paint(skia::PlatformCanvas* canvas, const WebKit::WebRect& rect);
 
-  bool IsLoading();
-
   void CreateFrameView();
 
   // The plugin delegate is used to get notifications when downloads complete.
@@ -286,9 +275,6 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
   virtual void ReportFindInPageSelection(const WebKit::WebRect& selection_rect,
                                          int active_match_ordinal,
                                          int request_id);
-
-  // Resource fetcher for downloading an alternate DNS error page.
-  scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
 
   // Used to check for leaks of this object.
   static int live_object_count_;

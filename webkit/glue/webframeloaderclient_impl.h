@@ -206,7 +206,9 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
  private:
   // Callback function for download of alternate 404 pages.  If the server is
   // down or we take too long to download the page, |html| will be empty.
-  void Alt404PageFinished(const GURL& unreachable_url, const std::string& html);
+  void Alt404PageFinished(WebFrame* frame,
+                          const WebKit::WebURLError& original_error,
+                          const std::string& html);
 
   void makeDocumentView();
 

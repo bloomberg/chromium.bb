@@ -18,10 +18,11 @@ static const int kDownloadTimeoutSec = 3;
 AltErrorPageResourceFetcher::AltErrorPageResourceFetcher(
     const GURL& url,
     WebFrame* frame,
-    const GURL& unreachable_url,
+    const WebURLError& original_error,
     Callback* callback)
-    : callback_(callback),
-      unreachable_url_(unreachable_url) {
+    : frame_(frame),
+      callback_(callback),
+      original_error_(original_error) {
   fetcher_.reset(new ResourceFetcherWithTimeout(
       url, frame, kDownloadTimeoutSec,
       NewCallback(this, &AltErrorPageResourceFetcher::OnURLFetchComplete)));
@@ -39,9 +40,9 @@ void AltErrorPageResourceFetcher::OnURLFetchComplete(
     const std::string& data) {
   // A null response indicates a network error.
   if (!response.isNull() && response.httpStatusCode() == 200) {
-    callback_->Run(unreachable_url_, data);
+    callback_->Run(frame_, original_error_, data);
   } else {
-    callback_->Run(unreachable_url_, std::string());
+    callback_->Run(frame_, original_error_, std::string());
   }
 }
 

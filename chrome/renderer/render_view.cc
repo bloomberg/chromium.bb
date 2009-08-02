@@ -98,6 +98,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::AutofillForm;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
@@ -1140,6 +1141,10 @@ void RenderView::DidStartProvisionalLoadForFrame(
 
     // Make sure redirect tracking state is clear for the new load.
     completed_client_redirect_src_ = GURL();
+  } else if (frame->GetParent()->IsLoading()) {
+    // Take note of AUTO_SUBFRAME loads here, so that we can know how to
+    // load an error page.  See DidFailProvisionalLoadWithError.
+    navigation_state->set_transition_type(PageTransition::AUTO_SUBFRAME);
   }
 
   Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
@@ -1211,32 +1216,32 @@ void RenderView::DidFailProvisionalLoadWithError(WebView* webview,
   // Make sure we never show errors in view source mode.
   frame->SetInViewSourceMode(false);
 
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+
   // If this is a failed back/forward/reload navigation, then we need to do a
   // 'replace' load.  This is necessary to avoid messing up session history.
   // Otherwise, we do a normal load, which simulates a 'go' navigation as far
   // as session history is concerned.
-  bool replace = !NavigationState::FromDataSource(ds)->is_new_navigation();
+  //
+  // AUTO_SUBFRAME loads should always be treated as loads that do not advance
+  // the page id.
+  //
+  bool replace =
+      navigation_state->pending_page_id() != -1 ||
+      navigation_state->transition_type() == PageTransition::AUTO_SUBFRAME;
 
-  // Use the alternate error page service if this is a DNS failure or
-  // connection failure.  ERR_CONNECTION_FAILED can be dropped once we no longer
-  // use winhttp.
-  int ec = error.reason;
-  if (ec == net::ERR_NAME_NOT_RESOLVED ||
-      ec == net::ERR_CONNECTION_FAILED ||
-      ec == net::ERR_CONNECTION_REFUSED ||
-      ec == net::ERR_ADDRESS_UNREACHABLE ||
-      ec == net::ERR_TIMED_OUT) {
-    const GURL& failed_url = error.unreachableURL;
-    const GURL& error_page_url = GetAlternateErrorPageURL(failed_url,
-        ec == net::ERR_NAME_NOT_RESOLVED ? WebViewDelegate::DNS_ERROR
-                                         : WebViewDelegate::CONNECTION_ERROR);
-    if (error_page_url.is_valid()) {
-      // Ask the WebFrame to fetch the alternate error page for us.
-      frame->LoadAlternateHTMLErrorPage(failed_request, error, error_page_url,
-          replace, GURL(kUnreachableWebDataURL));
-      return;
-    }
+  // If we failed on a browser initiated request, then make sure that our error
+  // page load is regarded as the same browser initiated request.
+  if (!navigation_state->is_content_initiated()) {
+    pending_navigation_state_.reset(NavigationState::CreateBrowserInitiated(
+        navigation_state->pending_page_id(),
+        navigation_state->transition_type(),
+        navigation_state->request_time()));
   }
+
+  // Provide the user with a more helpful error page?
+  if (MaybeLoadAlternateErrorPage(frame, error, replace))
+    return;
 
   // Fallback to a local error page.
   LoadNavigationErrorPage(frame, failed_request, error, std::string(),
@@ -1297,19 +1302,19 @@ void RenderView::DidCommitLoadForFrame(WebView *webview, WebFrame* frame,
                                           page_id_, true),
         kDelayForForcedCaptureMs);
   } else {
-    // Inspect the navigation_state on the main frame (set in our Navigate
-    // method) to see if the navigation corresponds to a session history
-    // navigation...  Note: |frame| may or may not be the toplevel frame, but
-    // for the case of capturing session history, the first committed frame
-    // suffices.  We keep track of whether we've seen this commit before so
-    // that only capture session history once per navigation.
+    // Inspect the navigation_state on this frame to see if the navigation
+    // corresponds to a session history navigation...  Note: |frame| may or
+    // may not be the toplevel frame, but for the case of capturing session
+    // history, the first committed frame suffices.  We keep track of whether
+    // we've seen this commit before so that only capture session history once
+    // per navigation.
     //
     // Note that we need to check if the page ID changed. In the case of a
     // reload, the page ID doesn't change, and UpdateSessionHistory gets the
     // previous URL and the current page ID, which would be wrong.
-    if (!navigation_state->is_new_navigation() &&
-        !navigation_state->request_committed() &&
-        page_id_ != navigation_state->pending_page_id()) {
+    if (navigation_state->pending_page_id() != -1 &&
+        navigation_state->pending_page_id() != page_id_ &&
+        !navigation_state->request_committed()) {
       // This is a successful session history navigation!
       UpdateSessionHistory(frame);
       page_id_ = navigation_state->pending_page_id();
@@ -2827,6 +2832,53 @@ void RenderView::OnDisassociateFromPopupCount() {
   decrement_shared_popup_at_destruction_ = false;
 }
 
+bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
+                                             const WebURLError& error,
+                                             bool replace) {
+  // We only show alternate error pages in the main frame.  They are
+  // intended to assist the user when navigating, so there is not much
+  // value in showing them for failed subframes.  Ideally, we would be
+  // able to use the TYPED transition type for this, but that flag is
+  // not preserved across page reloads.
+  if (frame->GetParent())
+    return false;
+
+  // Use the alternate error page service if this is a DNS failure or
+  // connection failure.  ERR_CONNECTION_FAILED can be dropped once we no
+  // longer use winhttp.
+  int ec = error.reason;
+  if (ec != net::ERR_NAME_NOT_RESOLVED &&
+      ec != net::ERR_CONNECTION_FAILED &&
+      ec != net::ERR_CONNECTION_REFUSED &&
+      ec != net::ERR_ADDRESS_UNREACHABLE &&
+      ec != net::ERR_TIMED_OUT)
+    return false;
+
+  const GURL& error_page_url = GetAlternateErrorPageURL(error.unreachableURL,
+      ec == net::ERR_NAME_NOT_RESOLVED ? WebViewDelegate::DNS_ERROR
+                                       : WebViewDelegate::CONNECTION_ERROR);
+  if (!error_page_url.is_valid())
+    return false;
+
+  // Load an empty page first so there is an immediate response to the error,
+  // and then kick off a request for the alternate error page.
+  frame->LoadHTMLString(std::string(),
+                        GURL(kUnreachableWebDataURL),
+                        error.unreachableURL,
+                        replace);
+
+  // Now, create a fetcher for the error page and associate it with the data
+  // source we just created via the LoadHTMLString call.  That way if another
+  // navigation occurs, the fetcher will get destroyed.
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->GetProvisionalDataSource());
+  navigation_state->set_alt_error_page_fetcher(
+      new AltErrorPageResourceFetcher(
+          error_page_url, frame, error,
+          NewCallback(this, &RenderView::AltErrorPageFinished)));
+  return true;
+}
+
 std::string RenderView::GetAltHTMLForTemplate(
     const DictionaryValue& error_strings, int template_resource_id) const {
   const StringPiece template_html(
@@ -2841,6 +2893,13 @@ std::string RenderView::GetAltHTMLForTemplate(
   // "t" is the id of the templates root node.
   return jstemplate_builder::GetTemplatesHtml(
       template_html, &error_strings, "t");
+}
+
+void RenderView::AltErrorPageFinished(WebFrame* frame,
+                                      const WebURLError& original_error,
+                                      const std::string& html) {
+  // Here, we replace the blank page we loaded previously.
+  LoadNavigationErrorPage(frame, WebURLRequest(), original_error, html, true);
 }
 
 void RenderView::OnMoveOrResizeStarted() {

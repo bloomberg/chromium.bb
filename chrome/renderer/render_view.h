@@ -609,8 +609,14 @@ class RenderView : public RenderWidget,
   // Locates a sub frame with given xpath
   WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
 
-  std::string GetAltHTMLForTemplate(const DictionaryValue& error_strings,
-                                    int template_resource_id) const;
+  // Alternate error page helpers.
+  bool MaybeLoadAlternateErrorPage(
+      WebFrame* frame, const WebKit::WebURLError& error, bool replace);
+  std::string GetAltHTMLForTemplate(
+      const DictionaryValue& error_strings, int template_resource_id) const;
+  void AltErrorPageFinished(
+      WebFrame* frame, const WebKit::WebURLError& original_error,
+      const std::string& html);
 
   virtual void DidAddHistoryItem();
 

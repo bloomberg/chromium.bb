@@ -152,7 +152,6 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURLError.h"
-#include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_operations_private.h"
@@ -602,6 +601,12 @@ void WebFrameImpl::StopLoading() {
   // bug that FrameLoader::stopLoading doesn't call stopAllLoaders.
   frame_->loader()->stopAllLoaders();
   frame_->loader()->stopLoading(false);
+}
+
+bool WebFrameImpl::IsLoading() const {
+  if (!frame_)
+    return false;
+  return frame_->loader()->isLoading();
 }
 
 WebFrame* WebFrameImpl::GetOpener() const {
@@ -1504,13 +1509,7 @@ void WebFrameImpl::Paint(skia::PlatformCanvas* canvas, const WebRect& rect) {
   }
 }
 
-bool WebFrameImpl::IsLoading() {
-  // I'm assuming this does what we want.
-  return frame_->loader()->isLoading();
-}
-
 void WebFrameImpl::Closing() {
-  alt_error_page_fetcher_.reset();
   frame_ = NULL;
 }
 
@@ -1528,11 +1527,6 @@ void WebFrameImpl::DidReceiveData(DocumentLoader* loader,
 
   // NOTE: mac only does this if there is a document
   frame_->loader()->addData(data, length);
-
-  // It's possible that we get a DNS failure followed by a second load that
-  // succeeds before we hear back from the alternate error page server.  In
-  // that case, cancel the alt error page download.
-  alt_error_page_fetcher_.reset();
 }
 
 void WebFrameImpl::DidFail(const ResourceError& error, bool was_provisional) {
@@ -1547,25 +1541,6 @@ void WebFrameImpl::DidFail(const ResourceError& error, bool was_provisional) {
       delegate->DidFailLoadWithError(web_view, web_error, this);
     }
   }
-}
-
-void WebFrameImpl::LoadAlternateHTMLErrorPage(const WebURLRequest& request,
-                                              const WebURLError& error,
-                                              const GURL& error_page_url,
-                                              bool replace,
-                                              const GURL& fake_url) {
-  // Load alternate HTML in place of the previous request.  We use a fake_url
-  // for the Base URL.  That prevents other web content from the same origin
-  // as the failed URL to script the error page.
-
-  LoadHTMLString("",  // Empty document
-                 fake_url,
-                 error.unreachableURL,
-                 replace);
-
-  alt_error_page_fetcher_.reset(new AltErrorPageResourceFetcher(
-      error_page_url, this, error.unreachableURL,
-      NewCallback(this, &WebFrameImpl::AltErrorPageFinished)));
 }
 
 void WebFrameImpl::DispatchWillSendRequest(WebURLRequest* request) {
@@ -1846,14 +1821,4 @@ void WebFrameImpl::LoadJavaScriptURL(const KURL& url) {
     frame_->loader()->write(script_result);
     frame_->loader()->end();
   }
-}
-
-void WebFrameImpl::AltErrorPageFinished(const GURL& unreachable_url,
-                                        const std::string& html) {
-  WebViewDelegate* d = GetWebViewImpl()->delegate();
-  if (!d)
-    return;
-  WebURLError error;
-  error.unreachableURL = unreachable_url;
-  d->LoadNavigationErrorPage(this, WebURLRequest(), error, html, true);
 }

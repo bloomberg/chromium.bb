@@ -118,16 +118,6 @@ class WebFrame {
       const WebKit::WebURL& unreachable_url = WebKit::WebURL(),
       bool replace = false) = 0;
 
-  // Asks the WebFrame to try and download the alternate error page.  We notify
-  // the WebViewDelegate of the results so it can decide whether or not to show
-  // something to the user (e.g., a local error page or the alternate error
-  // page).
-  virtual void LoadAlternateHTMLErrorPage(const WebKit::WebURLRequest& request,
-                                          const WebKit::WebURLError& error,
-                                          const GURL& error_page_url,
-                                          bool replace,
-                                          const GURL& fake_url) = 0;
-
   // Called to associate the WebURLRequest with this frame.  The request will
   // be modified to inherit parameters that allow it to be loaded.  This method
   // ends up triggering WebViewDelegate::WillSendRequest.
@@ -212,6 +202,9 @@ class WebFrame {
   //  and its children.
   //  - (void)stopLoading;
   virtual void StopLoading() = 0;
+
+  // Returns true if this frame is loading its main resource or a subresource.
+  virtual bool IsLoading() const = 0;
 
   // Returns the frame that opened this frame, or NULL if this window has no
   // opener.
