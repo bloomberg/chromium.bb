@@ -110,6 +110,11 @@ function downloadsList(data) {
 function recentlyClosedTabs(data) {
   logEvent('received recently closed tabs');
 
+  // Remove old tabs and windows to prevent duplicates.
+  recentItems = recentItems.filter(function(item) {
+    return item.type != 'tab' && item.type != 'window';
+  });
+
   // We handle timestamp 0 as now
   data.forEach(function(d) {
     if (d.timestamp == 0) {
@@ -123,21 +128,9 @@ function recentlyClosedTabs(data) {
 var recentItems = [];
 var recentItemKeys = {};
 
-function getRecentItemKey(d) {
-  // type == window does not have a URL
-  return d.type + (d.url || d.sessionId) + d.timestamp;
-}
-
 function gotRecentItems(data) {
   // Add new items
-  for (var i = 0; i < data.length; i++) {
-    var d = data[i];
-    var key = getRecentItemKey(d);
-    if (!(key in recentItemKeys)) {
-      recentItems.push(d);
-      recentItemKeys[key] = true;
-    }
-  }
+  Array.prototype.push.apply(recentItems, data);
 
   recentItems.sort(function(d1, d2) {
     return d2.timestamp - d1.timestamp;

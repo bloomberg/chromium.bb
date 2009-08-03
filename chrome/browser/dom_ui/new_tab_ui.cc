@@ -1232,6 +1232,12 @@ class RecentlyClosedTabsHandler : public DOMMessageHandler,
   bool WindowToValue(const TabRestoreService::Window& window,
                      DictionaryValue* dictionary);
 
+  // Adds tab to unique_items list if it is not present. Returns false if
+  // tab was already in the list, true if it was absent.  A tab is
+  // considered unique if no other tab shares both its title and its url.
+  bool EnsureTabIsUnique(const DictionaryValue* tab,
+                   std::set<std::wstring>& unique_items);
+
   // TabRestoreService that we are observing.
   TabRestoreService* tab_restore_service_;
 
@@ -1305,6 +1311,7 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
     TabRestoreService* service) {
   const TabRestoreService::Entries& entries = service->entries();
   ListValue list_value;
+  std::set<std::wstring> unique_items;
   int added_count = 0;
   const int max_count = NewTabUI::UseOldNewTabPage() ? 3 : 6;
 
@@ -1316,7 +1323,8 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
     TabRestoreService::Entry* entry = *it;
     DictionaryValue* value = new DictionaryValue();
     if ((entry->type == TabRestoreService::TAB &&
-         TabToValue(*static_cast<TabRestoreService::Tab*>(entry), value)) ||
+         TabToValue(*static_cast<TabRestoreService::Tab*>(entry), value) &&
+         EnsureTabIsUnique(value, unique_items)) ||
         (entry->type == TabRestoreService::WINDOW &&
          WindowToValue(*static_cast<TabRestoreService::Window*>(entry),
                        value))) {
@@ -1377,6 +1385,21 @@ bool RecentlyClosedTabsHandler::WindowToValue(
   dictionary->SetString(L"type", L"window");
   dictionary->SetReal(L"timestamp", window.timestamp.ToDoubleT());
   dictionary->Set(L"tabs", tab_values);
+  return true;
+}
+
+bool RecentlyClosedTabsHandler::EnsureTabIsUnique(const DictionaryValue* tab,
+    std::set<std::wstring>& unique_items) {
+  std::wstring title;
+  std::wstring url;
+  if (tab->GetString(L"title", &title) &&
+      tab->GetString(L"url", &url)) {
+    std::wstring unique_key = title + url;
+    if (unique_items.find(unique_key) != unique_items.end())
+      return false;
+    else
+      unique_items.insert(unique_key);
+  }
   return true;
 }
 
