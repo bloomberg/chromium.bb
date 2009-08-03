@@ -73,13 +73,15 @@ bool DownloadShelfContextMenu::IsItemCommandEnabled(int id) const {
     case CANCEL:
       return download_->state() == DownloadItem::IN_PROGRESS;
     case REMOVE_ITEM:
-      return download_->state() == DownloadItem::COMPLETE;
+      return download_->state() == DownloadItem::COMPLETE ||
+          download_->state() == DownloadItem::CANCELLED;
     default:
       return id > 0 && id < MENU_LAST;
   }
 }
 
 void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
+  item_removed_ = true;
   switch (id) {
     case SHOW_IN_FOLDER:
       download_->manager()->ShowDownloadInShell(download_);
@@ -98,6 +100,7 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
       model_->CancelTask();
       break;
     case REMOVE_ITEM:
+      item_removed_ = true;
       download_->Remove(false);
       break;
     default:
