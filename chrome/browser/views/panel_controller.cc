@@ -4,11 +4,6 @@
 
 #include "chrome/browser/views/panel_controller.h"
 
-#include <gdk/gdkx.h>
-extern "C" {
-#include <X11/Xlib.h>
-}
-
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/singleton.h"
