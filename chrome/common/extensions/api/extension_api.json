@@ -1,707 +1,620 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-/*
- * This file defines the extensions api functions, events and types. It is
- * json-structured list of api "modules". Each module has
- *
- *    namespace: "<apiname>", // i.e. "windows" which becomes visible to
- *                            // extensions as chrome.windows.
- *
- *    types: [],              // a list of json schemas which define "types"
- *                            // that are common to that module. i.e. "Tab" or
- *                            // "BookmarkTreeNode".
- *
- *    functions: [],          // a list of json schemas which define the 
- *                            // functions in the current module. i.e.
- *                            // chrome.tabs.getCurrent().
- *
- *    events: [],             // a list of json schemas which define the events
- *                            // which this module defines. i.e.
- *                            // chrome.windows.onCreated.
- *
- *    --Functions Schemas--
- *    Each function schema is required to have a 
- *      
- *       name: "<function name>"
- *       type: "function"
- *       description: "..." // this appears in the docs.
- *       parameters: []
- * 
- *    |parameters| is a list of json schemas which define the list of parameters
- *    this function requires and will be validated against. Each parameter
- *    should define a "name" property, and "description" property, both of which
- *    will appear in the docs. The final parameter may be a type: "function"
- *    which is expected to be the callback for this call. That parameter, should
- *    itself be named ("name": "callback"), have a "parameters" member that
- *    is a list of the json schemas that define the types that the callback
- *    sends. Callback parameters should also have "name" and "description"
- *    properties.
- *
- *    --Event Schemas--
- *    Each event schema is also a type: "function" schema that is named. It's
- *    structure is the same as the callback functions for module Functions.
- *    It should have a "name", "description", and a "parameters" describing
- *    the set of arguments it sends.
- *
- *    --Referenced Types--
- *    The "types": [] list may contain a list of types that are common to the
- *    current api module. Each type should have an "id" member ("id": "Tab").
- *    These types can be referenced from a schema with "$ref": "<idName>".
- *    i.e. 
- *  
- *        ...
- *        type: "function",
- *        parameters: [
- *          {$ref: "BookmarkTreeNode", name: "node"}
- *        ]
- *
- *    WARNING: Do not use these referenced types in module function parameters.
- *    They are not yet properly validated. They are currently safe to use in
- *    callback parameters and event parameters.
- *   
- *    TODO(rafaelw): Validate callback arguments in debug and unittests
- *    TODO(rafaelw): Validate event arguments in debug and unittests
- *    TODO(rafaelw): Support $ref for json_schema validation.
- */
-
 [
-  /**
-   * chrome.self
-   */
   {
-    namespace: "self",
-    types: [
+    "namespace": "self",
+    "types": [
       {
-        id: "HTMLWindow",
-        type: "object"
+        "id": "HTMLWindow",
+        "type": "object"
       }
     ],
-    functions: [
+    "functions": [
       {
-        name: "getViews",
-        type: "function",
-        description: "Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes toolstrips, background pages, and tabs.",
-        parameters: [],
-        returns: {
-          type: "array",
-          description: "Array of HTMLWindow objects",
-          items: { $ref: "HTMLWindow" }
+        "name": "getViews",
+        "type": "function",
+        "description": "Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes toolstrips, background pages, and tabs.",
+        "parameters": [],
+        "returns": {
+          "type": "array",
+          "description": "Array of HTMLWindow objects",
+          "items": { "$ref": "HTMLWindow" }
         }
-      },
+      }
     ],
-    events: []
+    "events": []
   },
-  
-  /**
-   * chrome.windows
-   */
   {
-    namespace: "windows",
-    types: [],
-    functions: [
+    "namespace": "windows",
+    "types": [],
+    "functions": [
       {
-        name: "get",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "windowId", minimum: 0},
-          {type: "function", name: "callback"}
+        "name": "get",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0},
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "getCurrent",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "function", name: "callback"}
+        "name": "getCurrent",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "getLastFocused",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "function", name: "callback"}
+        "name": "getLastFocused",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "getAll",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "boolean", name: "populate", optional: true},
-          {type: "function", name: "callback"}
+        "name": "getAll",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "boolean", "name": "populate", "optional": true},
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "create",
-        type: "function",
-        description: "",
-        parameters: [
+        "name": "create",
+        "type": "function",
+        "description": "",
+        "parameters": [
           {
-            type: "object",
-            name: "CreateData",
-            properties: {
-              url: {type: "string", optional: true},
-              left: {type: "integer", optional: true},
-              top: {type: "integer", optional: true},
-              width: {type: "integer", minimum: 0, optional: true},
-              height: {type: "integer", minimum: 0, optional: true}
+            "type": "object",
+            "name": "CreateData",
+            "properties": {
+              "url": {"type": "string", "optional": true},
+              "left": {"type": "integer", "optional": true},
+              "top": {"type": "integer", "optional": true},
+              "width": {"type": "integer", "minimum": 0, "optional": true},
+              "height": {"type": "integer", "minimum": 0, "optional": true}
             },
-            optional: true
+            "optional": true
           },
-          {type: "function", name: "callback", optional: true}
+          {"type": "function", "name": "callback", "optional": true}
         ]
       },
       {
-        name: "update",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "windowId", minimum: 0},
+        "name": "update",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0},
           {
-            type: "object",
-            name: "UpdateInfo",
-            properties: {
-              left: {type: "integer", optional: true},
-              top: {type: "integer", optional: true},
-              width: {type: "integer", minimum: 0, optional: true},
-              height: {type: "integer", minimum: 0, optional: true}
-            },
+            "type": "object",
+            "name": "UpdateInfo",
+            "properties": {
+              "left": {"type": "integer", "optional": true},
+              "top": {"type": "integer", "optional": true},
+              "width": {"type": "integer", "minimum": 0, "optional": true},
+              "height": {"type": "integer", "minimum": 0, "optional": true}
+            }
           },
-          {type: "function", name: "callback", optional: true}
+          {"type": "function", "name": "callback", "optional": true}
         ]
       },
       {
-        name: "remove",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "windowId", minimum: 0},
-          {type: "function", name: "callback", optional: true}
+        "name": "remove",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0},
+          {"type": "function", "name": "callback", "optional": true}
         ]
-      },
+      }
     ],
-    events: [
+    "events": [
       {
-        name: "onCreated",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "windowId", minimum: 0}
+        "name": "onCreated",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0}
         ]
       },
       {
-        name: "onRemoved",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "windowId", minimum: 0}
+        "name": "onRemoved",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0}
         ]
       },
       {
-        name: "onFocusChanged",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "windowId", minimum: 0}
+        "name": "onFocusChanged",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0}
         ]
       }
     ]
   },
-
-  /**
-   * chrome.tabs
-   */
   {
-    namespace: "tabs",
-    types: [
+    "namespace": "tabs",
+    "types": [
       {
-        id: "Tab",
-        type: "object",
-        properties: {
-          id: {type: "integer", minimum: 0},
-          index: {type: "integer", minimum: 0},
-          windowId: {type: "integer", minimum: 0},
-          selected: {type: "boolean"},
-          url: {type: "string"},
-          title: {type: "string", optional: true},
-          favIconUrl: {type: "string", optional: true}
+        "id": "Tab",
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer", "minimum": 0},
+          "index": {"type": "integer", "minimum": 0},
+          "windowId": {"type": "integer", "minimum": 0},
+          "selected": {"type": "boolean"},
+          "url": {"type": "string"},
+          "title": {"type": "string", "optional": true},
+          "favIconUrl": {"type": "string", "optional": true}
         }
       },
       {
-        id: "Port",
-        type: "object",
-        properties: {
-          name: {type: "string"},
-          onDisconnect: {type: "object"},
-          onMessage: {type: "object"}
+        "id": "Port",
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "onDisconnect": {"type": "object"},
+          "onMessage": {"type": "object"}
         }
       }
     ],
-    functions: [
+    "functions": [
       {
-        name: "get",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0},
+        "name": "get",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            type: "function",
-            name: "callback",
-            parameters: [
-              {name: "tab", $ref: "Tab"}
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"name": "tab", "$ref": "Tab"}
             ]
           }
         ]
       },
       {
-        name: "connect",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", optional: true, minimum: 0},
-          {type: "string", name: "name", optional: true}
+        "name": "connect",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "optional": true, "minimum": 0},
+          {"type": "string", "name": "name", "optional": true}
         ],
-        returns: {
-          name: "Port",
-          $ref: "Port"
+        "returns": {
+          "name": "Port",
+          "$ref": "Port"
         }
       },
       {
-        name: "getSelected",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "windowId", minimum: 0, optional: true},
+        "name": "getSelected",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0, "optional": true},
           {
-            type: "function", 
-            name: "callback",
-            parameters: [
-              {name: "tab", $ref: "Tab"}
+            "type": "function", 
+            "name": "callback",
+            "parameters": [
+              {"name": "tab", "$ref": "Tab"}
             ]
           }
         ]
       },
       {
-        name: "getAllInWindow",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "windowId", minimum: 0, optional: true},
-          {type: "function", name: "callback"}
+        "name": "getAllInWindow",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0, "optional": true},
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "create",
-        type: "function",
-        description: "",
-        parameters: [
+        "name": "create",
+        "type": "function",
+        "description": "",
+        "parameters": [
           {
-            type: "object",
-            name: "CreateProperties",
-            properties: {
-              windowId: {type: "integer", minimum: 0, optional: true},
-              index: {type: "integer", minimum: 0, optional: true},
-              url: {type: "string", optional: true},
-              selected: {type: "boolean", optional: true}
+            "type": "object",
+            "name": "CreateProperties",
+            "properties": {
+              "windowId": {"type": "integer", "minimum": 0, "optional": true},
+              "index": {"type": "integer", "minimum": 0, "optional": true},
+              "url": {"type": "string", "optional": true},
+              "selected": {"type": "boolean", "optional": true}
             }
           },
           {
-            type: "function",
-            name: "callback",
-            optional: true, 
-            parameters: [
-              {name: "tab", $ref: "Tab"}
+            "type": "function",
+            "name": "callback",
+            "optional": true, 
+            "parameters": [
+              {"name": "tab", "$ref": "Tab"}
             ]
           }
         ]
       },
       {
-        name: "update",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0},
+        "name": "update",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            type: "object",
-            name: "UpdateProperties",
-            properties: {
-              url: {type: "string", optional: true},
-              selected: {type: "boolean", optional: true}
+            "type": "object",
+            "name": "UpdateProperties",
+            "properties": {
+              "url": {"type": "string", "optional": true},
+              "selected": {"type": "boolean", "optional": true}
             }
           },
-          {type: "function", name: "callback", optional: true, parameters: []}
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       },
       {
-        name: "move",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0},
+        "name": "move",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            type: "object",
-            name: "MoveProperties",
-            properties: {
-              windowId: {type: "integer", minimum: 0, optional: true},
-              index: {type: "integer", minimum: 0}
+            "type": "object",
+            "name": "MoveProperties",
+            "properties": {
+              "windowId": {"type": "integer", "minimum": 0, "optional": true},
+              "index": {"type": "integer", "minimum": 0}
             }
           },
-          {type: "function", name: "callback", optional: true, parameters: []}
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       },
       {
-        name: "remove",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0, optional: true},
-          {type: "function", name: "callback", optional: true, parameters: []}
+        "name": "remove",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0, "optional": true},
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       },
       {
-        name: "detectLanguage",
-        type: "function",
-        description: "detect language of tab.",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0, optional: true},
+        "name": "detectLanguage",
+        "type": "function",
+        "description": "detect language of tab.",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0, "optional": true},
           {
-            type: "function",
-            name: "callback",
-            parameters: [
-              {type: "string", name: "language"}
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"type": "string", "name": "language"}
             ]
           }
         ]
       }
     ],
-    events: [
+    "events": [
       {
-        name: "onCreated",
-        type: "function",
-        description: "",
-        parameters: [
-          {$ref: "Tab", name: "tab"}
+        "name": "onCreated",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"$ref": "Tab", "name": "tab"}
         ]
       },
       {
-        name: "onUpdated",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0},
+        "name": "onUpdated",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            type: "object",
-            name: "ChangedProps",
-            properties: {
-              tabId: {type: "integer", name: "tabId", minimum: 0},
-              status: {type: "string"},
-              url: {type: "string", optional: true}
+            "type": "object",
+            "name": "ChangedProps",
+            "properties": {
+              "tabId": {"type": "integer", "name": "tabId", "minimum": 0},
+              "status": {"type": "string"},
+              "url": {"type": "string", "optional": true}
             }
           }
         ]
       },
       {
-        name: "onMoved",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0},
+        "name": "onMoved",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            type: "object",
-            name: "MoveInfo",
-            properties: {
-              windowId: {type: "integer", minimum: 0},
-              fromIndex: {type: "integer", minimum: 0},
-              toIndex: {type: "integer", minimum: 0}
+            "type": "object",
+            "name": "MoveInfo",
+            "properties": {
+              "windowId": {"type": "integer", "minimum": 0},
+              "fromIndex": {"type": "integer", "minimum": 0},
+              "toIndex": {"type": "integer", "minimum": 0}
             }
           }
         ]
       },
       {
-        name: "onSelectionChanged",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0},
+        "name": "onSelectionChanged",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            type: "object", name: "SelectInfo",
-            properties: {
-              windowId: {type: "integer", minimum: 0},
+            "type": "object", "name": "SelectInfo",
+            "properties": {
+              "windowId": {"type": "integer", "minimum": 0}
             }
           }
         ]
       },
       {
-        name: "onAttached",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0},
+        "name": "onAttached",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            type: "object",
-            name: "AttachInfo",
-            properties: {
-              newWindowId: {type: "integer", minimum: 0},
-              newPosition: {type: "integer", minimum: 0}
+            "type": "object",
+            "name": "AttachInfo",
+            "properties": {
+              "newWindowId": {"type": "integer", "minimum": 0},
+              "newPosition": {"type": "integer", "minimum": 0}
             }
           }
         ]
       },
       {
-        name: "onDetached",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0},
+        "name": "onDetached",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0},
           {
-            type: "object",
-            name: "DetachInfo",
-            properties: {
-              oldWindowId: {type: "integer", minimum: 0},
-              oldPosition: {type: "integer", minimum: 0}
+            "type": "object",
+            "name": "DetachInfo",
+            "properties": {
+              "oldWindowId": {"type": "integer", "minimum": 0},
+              "oldPosition": {"type": "integer", "minimum": 0}
             }
           }
         ]
       },
       {
-        name: "onRemoved",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "integer", name: "tabId", minimum: 0}
+        "name": "onRemoved",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "minimum": 0}
         ]
       }
     ]
   },
-
-  /**
-   * chrome.pageActions
-   */
   {
-    namespace: "pageActions",
-    types: [],
-    functions: [
+    "namespace": "pageActions",
+    "types": [],
+    "functions": [
       {
-        name: "enableForTab",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "pageActionId"},
+        "name": "enableForTab",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "pageActionId"},
           {
-            type: "object",
-            name: "action",
-            properties: {
-              tabId: {type: "integer", minimum: 0},
-              url: {type: "string"},
-              title: {type: "string", optional: true},
-              iconId: {type: "integer", minimum: 0, optional: true}
+            "type": "object",
+            "name": "action",
+            "properties": {
+              "tabId": {"type": "integer", "minimum": 0},
+              "url": {"type": "string"},
+              "title": {"type": "string", "optional": true},
+              "iconId": {"type": "integer", "minimum": 0, "optional": true}
             },
-            optional: false
+            "optional": false
           }
         ]
       },
       {
-        name: "disableForTab",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "pageActionId"},
+        "name": "disableForTab",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "pageActionId"},
           {
-            type: "object",
-            name: "action",
-            properties: {
-              tabId: {type: "integer", minimum: 0},
-              url: {type: "string"}
+            "type": "object",
+            "name": "action",
+            "properties": {
+              "tabId": {"type": "integer", "minimum": 0},
+              "url": {"type": "string"}
             },
-            optional: false
+            "optional": false
           }
         ]
       }
     ],
-    events: [
+    "events": [
     ]
   },
-
-  /**
-   * chrome.bookmarks
-   */
   {
-    namespace: "bookmarks",
-    types: [],
-    functions: [
+    "namespace": "bookmarks",
+    "types": [],
+    "functions": [
       {
-        name: "get",
-        type: "function",
-        description: "",
-        parameters: [
+        "name": "get",
+        "type": "function",
+        "description": "",
+        "parameters": [
           {
-            name: "idOrIdList",
-            choice : [
-              {type: "string"},
-              {type: "array", items: {type: "string"}, minItems: 1}
+            "name": "idOrIdList",
+            "choice": [
+              {"type": "string"},
+              {"type": "array", "items": {"type": "string"}, "minItems": 1}
             ] 
           },
-          {type: "function", name: "callback"}
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "getChildren",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
-          {type: "function", name: "callback"}
+        "name": "getChildren",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "getTree",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "function", name: "callback"}
+        "name": "getTree",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "search",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "query"},
-          {type: "function", name: "callback"}
+        "name": "search",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "query"},
+          {"type": "function", "name": "callback"}
         ]
       },
       {
-        name: "create",
-        type: "function",
-        description: "",
-        parameters: [
+        "name": "create",
+        "type": "function",
+        "description": "",
+        "parameters": [
           {
-            type: "object",
-            name: "bookmark",
-            properties: {
-              parentId: {type: "string"},
-              index: {type: "integer", minimum: 0, optional: true},
-              title: {type: "string", optional: true},
-              url: {type: "string", optional: true},
+            "type": "object",
+            "name": "bookmark",
+            "properties": {
+              "parentId": {"type": "string"},
+              "index": {"type": "integer", "minimum": 0, "optional": true},
+              "title": {"type": "string", "optional": true},
+              "url": {"type": "string", "optional": true}
             }
           },
-          {type: "function", name: "callback", optional: true}
+          {"type": "function", "name": "callback", "optional": true}
         ]
       },
       {
-        name: "move",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
+        "name": "move",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
           {
-            type: "object",
-            name: "destination",
-            properties: {
-              parentId: {type: "string"},
-              index: {type: "integer", minimum: 0, optional: true}
+            "type": "object",
+            "name": "destination",
+            "properties": {
+              "parentId": {"type": "string"},
+              "index": {"type": "integer", "minimum": 0, "optional": true}
             }
           },
-          {type: "function", name: "callback", optional: true}
+          {"type": "function", "name": "callback", "optional": true}
         ]
       },
       {
-        name: "update",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
+        "name": "update",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
           {
-            type: "object",
-            name: "changes",
-            properties: {
-              title: {type: "string", optional: true}
+            "type": "object",
+            "name": "changes",
+            "properties": {
+              "title": {"type": "string", "optional": true}
             }
           },
-          {type: "function", name: "callback", optional: true}
+          {"type": "function", "name": "callback", "optional": true}
         ]
       },
       {
-        name: "remove",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
-          {type: "function", name: "callback", optional: true}
+        "name": "remove",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
+          {"type": "function", "name": "callback", "optional": true}
         ]
       },
       {
-        name: "removeTree",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
-          {type: "function", name: "callback", optional: true}
+        "name": "removeTree",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
+          {"type": "function", "name": "callback", "optional": true}
         ]
-      },
+      }
     ],
-    events: [
+    "events": [
       {
-        name: "onAdded",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
+        "name": "onAdded",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
           {
-            type: "object",
-            name: "bookmark",
+            "type": "object",
+            "name": "bookmark"
           }
         ]
       },
       {
-        name: "onRemoved",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
+        "name": "onRemoved",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
           {
-            type: "object",
-            name: "RemoveInfo",
+            "type": "object",
+            "name": "RemoveInfo"
           }
         ]
       },
       {
-        name: "onChanged",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
+        "name": "onChanged",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
           {
-            type: "object",
-            name: "ChangeInfo",
+            "type": "object",
+            "name": "ChangeInfo"
           }
         ]
       },
       {
-        name: "onMoved",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
+        "name": "onMoved",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
           {
-            type: "object",
-            name: "MoveInfo",
+            "type": "object",
+            "name": "MoveInfo"
           }
         ]
       },
       {
-        name: "onChildrenReordered",
-        type: "function",
-        description: "",
-        parameters: [
-          {type: "string", name: "id"},
+        "name": "onChildrenReordered",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "string", "name": "id"},
           {
-            type: "object",
-            name: "childIds",
+            "type": "object",
+            "name": "childIds"
           }
         ]
       }

@@ -4413,6 +4413,25 @@
           ],
         },
         {
+          # TODO(rafaelw): Reenable build extension_docs on Mac.
+          'target_name': 'extension_docs',
+          'type': 'none',
+          'dependencies': [
+            '../webkit/tools/test_shell/test_shell.gyp:test_shell',
+          ],
+          'actions': [
+            {
+              'inputs': [ '<!@(python common/extensions/docs/build/build.py --list-inputs)'],
+              'outputs': ['<!@(python common/extensions/docs/build/build.py --list-outputs)'],        
+              'action_name': 'build_extension_docs',
+              'action': [ 'python',
+                          'common/extensions/docs/build/build.py',
+                          '--product-dir',
+                          '<(PRODUCT_DIR)'],                     
+            },
+          ],
+        },
+        {
           'target_name': 'perf_tests',
           'type': 'executable',
           'msvs_guid': '9055E088-25C6-47FD-87D5-D9DD9FD75C9F',
