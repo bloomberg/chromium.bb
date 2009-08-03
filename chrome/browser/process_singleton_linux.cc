@@ -43,6 +43,7 @@ const char kTokenDelimiter = '\0';
 const int kTimeOutInSeconds = 5;
 const int kMaxMessageLength = 32 * 1024;
 
+// Set a file descriptor to be non-blocking.
 // Return 0 on success, -1 on failure.
 int SetNonBlocking(int fd) {
   int flags = fcntl(fd, F_GETFL, 0);
@@ -51,6 +52,17 @@ int SetNonBlocking(int fd) {
   if (flags & O_NONBLOCK)
     return 0;
   return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+}
+
+// Set the close-on-exec bit on a file descriptor.
+// Returns 0 on success, -1 on failure.
+int SetCloseOnExec(int fd) {
+  int flags = fcntl(fd, F_GETFD, 0);
+  if (-1 == flags)
+    return flags;
+  if (flags & FD_CLOEXEC)
+    return 0;
+  return fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
 }
 
 }  // namespace
@@ -428,6 +440,8 @@ void ProcessSingleton::SetupSocket(int* sock, struct sockaddr_un* addr) {
 
   int rv = SetNonBlocking(*sock);
   DCHECK_EQ(0, rv) << "Failed to make non-blocking socket.";
+  rv = SetCloseOnExec(*sock);
+  DCHECK_EQ(0, rv) << "Failed to set CLOEXEC on socket.";
 
   addr->sun_family = AF_UNIX;
   if (socket_path_.value().length() > sizeof(addr->sun_path) - 1)
