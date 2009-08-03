@@ -29,7 +29,6 @@
       'target_name': 'test_shell_common',
       'type': '<(library)',
       'dependencies': [
-        'npapi_layout_test_plugin',
         '../../../base/base.gyp:base',
         '../../../base/base.gyp:base_gfx',
         '../../../media/media.gyp:media',
@@ -105,7 +104,13 @@
         '../../webkit.gyp:webkit',
       ],
       'conditions': [
-        ['OS!="win"', {
+        # http://code.google.com/p/chromium/issues/detail?id=18337
+        ['target_arch!="x64"', {
+          'dependencies': [
+            'npapi_layout_test_plugin',
+          ],
+        }],
+        ['OS!="win" and target_arch!="x64"', {
           'dependencies': [
             'npapi_test_plugin',
           ],
@@ -118,17 +123,19 @@
           ],
           # for:  test_shell_gtk.cc
           'cflags': ['-Wno-multichar'],
+        }, { # else: OS!=linux
+          'sources/': [
+            ['exclude', '_gtk\\.cc$'],
+            ['exclude', '_x11\\.cc$'],
+          ],
+        }],
+        ['OS=="linux" and target_arch!="x64"', {
           # See below TODO in the Windows branch.
           'copies': [
             {
               'destination': '<(PRODUCT_DIR)/plugins',
               'files': ['<(PRODUCT_DIR)/libnpapi_layout_test_plugin.so'],
             },
-          ],
-        }, { # else: OS!=linux
-          'sources/': [
-            ['exclude', '_gtk\\.cc$'],
-            ['exclude', '_x11\\.cc$'],
           ],
         }],
         ['OS!="mac"', {
@@ -183,7 +190,6 @@
       'msvs_guid': 'FA39524D-3067-4141-888D-28A86C66F2B9',
       'dependencies': [
         'test_shell_common',
-        'npapi_layout_test_plugin',
         '../../../tools/imagediff/image_diff.gyp:image_diff',
       ],
       'sources': [
