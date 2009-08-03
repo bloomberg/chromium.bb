@@ -14,6 +14,8 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -28,7 +30,8 @@ class ToolbarModel;
 
 class LocationBarViewGtk : public AutocompleteEditController,
                            public LocationBar,
-                           public LocationBarTesting {
+                           public LocationBarTesting,
+                           public NotificationObserver {
  public:
   LocationBarViewGtk(CommandUpdater* command_updater,
                      ToolbarModel* toolbar_model,
@@ -77,6 +80,11 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Implement the LocationBarTesting interface.
   virtual int PageActionVisibleCount();
 
+  // Implement the NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
   // Translation between a security level and the background color.  Both the
   // location bar and edit have to manage and match the background color.
   static const GdkColor kBackgroundColorByLevel[3];
@@ -120,9 +128,13 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* info_label_align_;
   GtkWidget* info_label_;
 
-  // Tab to search widgets.
+  // Area on the left shown when in tab to search mode.
   GtkWidget* tab_to_search_;
+  GtkWidget* tab_to_search_border_;
+  GtkWidget* tab_to_search_box_;
   GtkWidget* tab_to_search_label_;
+
+  // Hint to user that they can tab-to-search by hitting tab.
   GtkWidget* tab_to_search_hint_;
   GtkWidget* tab_to_search_hint_leading_label_;
   GtkWidget* tab_to_search_hint_icon_;
@@ -154,6 +166,11 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (font size / color). This is used for popups.
   bool popup_window_mode_;
+
+  // Provides colors and rendering mode.
+  GtkThemeProvider* theme_provider_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarViewGtk);
 };

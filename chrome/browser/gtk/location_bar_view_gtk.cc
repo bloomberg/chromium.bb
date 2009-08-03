@@ -24,6 +24,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -103,6 +104,8 @@ LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
       info_label_align_(NULL),
       info_label_(NULL),
       tab_to_search_(NULL),
+      tab_to_search_border_(NULL),
+      tab_to_search_box_(NULL),
       tab_to_search_label_(NULL),
       tab_to_search_hint_(NULL),
       tab_to_search_hint_leading_label_(NULL),
@@ -115,7 +118,8 @@ LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
       disposition_(CURRENT_TAB),
       transition_(PageTransition::TYPED),
       first_run_bubble_(this),
-      popup_window_mode_(false) {
+      popup_window_mode_(false),
+      theme_provider_(NULL) {
 }
 
 LocationBarViewGtk::~LocationBarViewGtk() {
@@ -168,12 +172,11 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   // This crazy stack of alignments and event boxes creates a box around the
   // keyword text with a border, background color, and padding around the text.
-  gtk_container_add(GTK_CONTAINER(tab_to_search_),
-      gtk_util::CreateGtkBorderBin(
-        gtk_util::CreateGtkBorderBin(
-            tab_to_search_label_, &kKeywordBackgroundColor, 1, 1, 2, 2),
-        &kKeywordBorderColor, 1, 1, 1, 1));
-
+  tab_to_search_box_ = gtk_util::CreateGtkBorderBin(
+      tab_to_search_label_, NULL, 1, 1, 2, 2);
+  tab_to_search_border_ = gtk_util::CreateGtkBorderBin(
+      tab_to_search_box_, NULL, 1, 1, 1, 1);
+  gtk_container_add(GTK_CONTAINER(tab_to_search_), tab_to_search_border_);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), tab_to_search_, FALSE, FALSE, 0);
 
   GtkWidget* align = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -248,6 +251,12 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_container_add(GTK_CONTAINER(event_box), security_icon_box);
   gtk_container_add(GTK_CONTAINER(security_icon_align_), event_box);
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_align_, FALSE, FALSE, 0);
+
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  theme_provider_ = GtkThemeProvider::GetFrom(profile_);
+  theme_provider_->InitThemesFor(this);
 }
 
 void LocationBarViewGtk::SetProfile(Profile* profile) {
@@ -391,6 +400,36 @@ void LocationBarViewGtk::Revert() {
 int LocationBarViewGtk::PageActionVisibleCount() {
   NOTIMPLEMENTED();
   return -1;
+}
+
+void LocationBarViewGtk::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  DCHECK_EQ(type.value,  NotificationType::BROWSER_THEME_CHANGED);
+
+  if (theme_provider_->UseGtkTheme()) {
+    gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL, NULL);
+
+    GdkColor border_color = theme_provider_->GetGdkColor(
+        BrowserThemeProvider::COLOR_FRAME);
+    gtk_widget_modify_bg(tab_to_search_border_, GTK_STATE_NORMAL,
+                         &border_color);
+
+    gtk_util::SetLabelColor(tab_to_search_label_, NULL);
+    gtk_util::SetLabelColor(tab_to_search_hint_leading_label_, NULL);
+    gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_, NULL);
+  } else {
+    gtk_widget_modify_bg(tab_to_search_box_, GTK_STATE_NORMAL,
+                         &kKeywordBackgroundColor);
+    gtk_widget_modify_bg(tab_to_search_border_, GTK_STATE_NORMAL,
+                         &kKeywordBorderColor);
+
+    gtk_util::SetLabelColor(tab_to_search_label_, &gfx::kGdkBlack);
+    gtk_util::SetLabelColor(tab_to_search_hint_leading_label_,
+                            &gfx::kGdkBlack);
+    gtk_util::SetLabelColor(tab_to_search_hint_trailing_label_,
+                            &gfx::kGdkBlack);
+  }
 }
 
 gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,

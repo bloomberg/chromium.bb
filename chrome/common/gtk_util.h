@@ -138,6 +138,9 @@ void SetWindowIcon(GtkWindow* window);
 GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
                              const gchar* stock_id, gint response_id);
 
+// Sets all the foreground color states of |label| to |color|.
+void SetLabelColor(GtkWidget* label, const GdkColor* color);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

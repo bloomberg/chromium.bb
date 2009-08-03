@@ -110,17 +110,11 @@ void BlockedPopupContainerViewGtk::Observe(NotificationType type,
   // Update the label's colors.
   GtkWidget* label = gtk_bin_get_child(GTK_BIN(menu_button_));
   if (theme_provider_->UseGtkTheme()) {
-    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, NULL);
-    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, NULL);
-    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, NULL);
-    gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, NULL);
+    gtk_util::SetLabelColor(label, NULL);
   } else {
     GdkColor color = theme_provider_->GetGdkColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &color);
-    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &color);
-    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, &color);
-    gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, &color);
+    gtk_util::SetLabelColor(label, &color);
   }
 }
 

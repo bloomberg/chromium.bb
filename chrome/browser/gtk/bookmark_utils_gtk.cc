@@ -15,6 +15,7 @@
 #include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -162,17 +163,11 @@ const BookmarkNode* BookmarkNodeForWidget(GtkWidget* widget) {
 
 void SetButtonTextColors(GtkWidget* label, GtkThemeProvider* provider) {
   if (provider->UseGtkTheme()) {
-    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, NULL);
-    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, NULL);
-    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, NULL);
-    gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, NULL);
+    gtk_util::SetLabelColor(label, NULL);
   } else {
     GdkColor color = provider->GetGdkColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &color);
-    gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, &color);
-    gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, &color);
-    gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, &color);
+    gtk_util::SetLabelColor(label, &color);
   }
 }
 

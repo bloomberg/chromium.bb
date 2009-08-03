@@ -417,4 +417,11 @@ GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
   return button;
 }
 
+void SetLabelColor(GtkWidget* label, const GdkColor* color) {
+  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, color);
+  gtk_widget_modify_fg(label, GTK_STATE_ACTIVE, color);
+  gtk_widget_modify_fg(label, GTK_STATE_PRELIGHT, color);
+  gtk_widget_modify_fg(label, GTK_STATE_INSENSITIVE, color);
+}
+
 }  // namespace gtk_util
