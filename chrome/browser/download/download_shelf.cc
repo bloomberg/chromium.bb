@@ -73,7 +73,8 @@ bool DownloadShelfContextMenu::IsItemCommandEnabled(int id) const {
     case CANCEL:
       return download_->state() == DownloadItem::IN_PROGRESS;
     case REMOVE_ITEM:
-      return download_->state() == DownloadItem::COMPLETE;
+      return download_->state() == DownloadItem::COMPLETE ||
+          download_->state() == DownloadItem::CANCELLED;
     default:
       return id > 0 && id < MENU_LAST;
   }
