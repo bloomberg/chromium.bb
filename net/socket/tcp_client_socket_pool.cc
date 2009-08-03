@@ -18,14 +18,19 @@ using base::TimeDelta;
 
 namespace net {
 
+// TCPConnectJobs will time out after this many seconds.  Note this is the total
+// time, including both host resolution and TCP connect() times.
+static const int kTCPConnectJobTimeoutInSeconds = 60;
+
 TCPConnectJob::TCPConnectJob(
     const std::string& group_name,
     const HostResolver::RequestInfo& resolve_info,
     const ClientSocketHandle* handle,
+    base::TimeDelta timeout_duration,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     Delegate* delegate)
-    : ConnectJob(group_name, handle, delegate),
+    : ConnectJob(group_name, handle, timeout_duration, delegate),
       resolve_info_(resolve_info),
       client_socket_factory_(client_socket_factory),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -38,7 +43,7 @@ TCPConnectJob::~TCPConnectJob() {
   // ~SingleRequestHostResolver and ~ClientSocket will take care of it.
 }
 
-int TCPConnectJob::Connect() {
+int TCPConnectJob::ConnectInternal() {
   next_state_ = kStateResolveHost;
   return DoLoop(OK);
 }
@@ -128,6 +133,7 @@ ConnectJob* TCPClientSocketPool::TCPConnectJobFactory::NewConnectJob(
     ConnectJob::Delegate* delegate) const {
   return new TCPConnectJob(
       group_name, request.resolve_info, request.handle,
+      base::TimeDelta::FromSeconds(kTCPConnectJobTimeoutInSeconds),
       client_socket_factory_, host_resolver_, delegate);
 }
 
