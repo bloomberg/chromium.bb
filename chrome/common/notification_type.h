@@ -624,6 +624,9 @@ class NotificationType {
     // Sent when the contents or order of toolstrips in the shelf model change.
     EXTENSION_SHELF_MODEL_CHANGED,
 
+    // Sent when a background page is ready so other components can load.
+    EXTENSION_BACKGROUND_PAGE_READY,
+
     // Debugging ---------------------------------------------------------------
 
     // Count (must be last) ----------------------------------------------------

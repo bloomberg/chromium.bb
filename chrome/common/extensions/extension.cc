@@ -17,6 +17,7 @@
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/user_script.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/base64.h"
 #include "net/base/net_util.h"
@@ -410,7 +411,8 @@ FilePath Extension::GetResourcePath(const FilePath& extension_path,
   return ret_val;
 }
 
-Extension::Extension(const FilePath& path) : is_theme_(false) {
+Extension::Extension(const FilePath& path)
+    : is_theme_(false), background_page_ready_(false) {
   DCHECK(path.IsAbsolute());
   location_ = INVALID;
 
@@ -920,4 +922,17 @@ std::set<FilePath> Extension::GetBrowserImages() {
   }
 
   return image_paths;
+}
+
+bool Extension::GetBackgroundPageReady() {
+  return background_page_ready_ || background_url().is_empty();
+}
+
+void Extension::SetBackgroundPageReady() {
+  DCHECK(!background_url().is_empty());
+  background_page_ready_ = true;
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_BACKGROUND_PAGE_READY,
+      Source<Extension>(this),
+      NotificationService::NoDetails());
 }

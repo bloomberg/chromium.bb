@@ -431,6 +431,10 @@ class RenderViewHostDelegate {
   // notion of the throbber stopping.
   virtual void DidStopLoading(RenderViewHost* render_view_host) {}
 
+  // The RenderView's main frame document element is ready. This happens when
+  // the document has finished parsing.
+  virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}
+
   // The page wants to open a URL with the specified disposition.
   virtual void RequestOpenURL(const GURL& url,
                               const GURL& referrer,

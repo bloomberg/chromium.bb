@@ -764,6 +764,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // noption of the throbber stopping.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopLoading)
 
+  // Sent when the document element is available for the toplevel frame.  This
+  // happens after the page starts loading, but before all resources are
+  // finished.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_DocumentAvailableInMainFrame)
+
   // Sent when the renderer loads a resource from its memory cache.
   // The security info is non empty if the resource was originally loaded over
   // a secure connection.

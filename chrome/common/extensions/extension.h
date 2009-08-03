@@ -77,7 +77,8 @@ class Extension {
   // The mimetype used for extensions.
   static const char kMimeType[];
 
-  Extension() : location_(INVALID), is_theme_(false) {}
+  Extension()
+      : location_(INVALID), is_theme_(false), background_page_ready_(false) {}
   explicit Extension(const FilePath& path);
   virtual ~Extension();
 
@@ -186,6 +187,16 @@ class Extension {
   // the browser might load (like themes and page action icons).
   std::set<FilePath> GetBrowserImages();
 
+
+  // Runtime data:
+  // Put dynamic data about the state of a running extension below.
+
+  // Whether the background page, if any, is ready. We don't load other
+  // components until then. If there is no background page, we consider it to
+  // be ready.
+  bool GetBackgroundPageReady();
+  void SetBackgroundPageReady();
+
  private:
   // Counter used to assign ids to extensions that are loaded using
   // --load-extension.
@@ -281,6 +292,12 @@ class Extension {
 
   // URL for fetching an update manifest
   GURL update_url_;
+ 
+
+  // Runtime data:
+
+  // True if the background page is ready.
+  bool background_page_ready_;
 
   FRIEND_TEST(ExtensionTest, LoadPageActionHelper);
 

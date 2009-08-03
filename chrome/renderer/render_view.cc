@@ -1475,12 +1475,19 @@ void RenderView::DocumentElementAvailable(WebFrame* frame) {
   // HACK.  This is a temporary workaround to allow cross-origin XHR for Chrome
   // extensions.  It grants full access to every origin, when we really want
   // to be able to restrict them more specifically.
-  if (frame->GetURL().SchemeIs(chrome::kExtensionScheme))
+  GURL url = frame->GetURL();
+  if (url.SchemeIs(chrome::kExtensionScheme))
     frame->GrantUniversalAccess();
 
   if (RenderThread::current())  // Will be NULL during unit tests.
     RenderThread::current()->user_script_slave()->InjectScripts(
         frame, UserScript::DOCUMENT_START);
+
+  // Notify the browser about non-blank documents loading in the top frame.
+  if (url.is_valid() && url.spec() != "about:blank") {
+    if (frame == webview()->GetMainFrame())
+      Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
+  }
 }
 
 void RenderView::DidCreateScriptContextForFrame(WebFrame* webframe) {

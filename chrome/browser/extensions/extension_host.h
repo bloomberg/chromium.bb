@@ -16,6 +16,7 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/gtk/extension_view_gtk.h"
 #endif
+#include "chrome/common/notification_registrar.h"
 
 class Browser;
 class Extension;
@@ -32,7 +33,8 @@ struct WebPreferences;
 // in the browser UI, or it may be hidden.
 class ExtensionHost : public RenderViewHostDelegate,
                       public RenderViewHostDelegate::View,
-                      public ExtensionFunctionDispatcher::Delegate {
+                      public ExtensionFunctionDispatcher::Delegate,
+                      public NotificationObserver {
  public:
   // Enable DOM automation in created render view hosts.
   static void EnableDOMAutomation() { enable_dom_automation_ = true; }
@@ -46,6 +48,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   ExtensionView* view() const { return view_.get(); }
 #elif defined(OS_LINUX)
   ExtensionViewGtk* view() const { return view_.get(); }
+#else
+  // TODO(port): implement
+  void* view() const { return NULL; }
 #endif
 
   // Create an ExtensionView and tie it to this host and |browser|.
@@ -56,6 +61,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   RenderProcessHost* render_process_host() const;
   SiteInstance* site_instance() const;
   bool did_stop_loading() const { return did_stop_loading_; }
+  bool document_element_available() const {
+    return document_element_available_;
+  }
 
   // Returns true if the render view is initialized and didn't crash.
   bool IsRenderViewLive() const;
@@ -80,6 +88,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual void DidStopLoading(RenderViewHost* render_view_host);
+  virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host);
+
   virtual WebPreferences GetWebkitPrefs();
   virtual void ProcessDOMUIMessage(const std::string& message,
                                    const std::string& content,
@@ -114,6 +124,11 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void HandleMouseLeave();
   virtual void UpdatePreferredWidth(int pref_width);
 
+  // NotificationObserver
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   // Whether to allow DOM automation for created RenderViewHosts. This is used
   // for testing.
@@ -124,6 +139,10 @@ class ExtensionHost : public RenderViewHostDelegate,
   // part of.  If this is a global background page, we use the active Browser
   // instead.
   virtual Browser* GetBrowser();
+
+  // Returns true if we're hosting a background page.
+  // This isn't valid until CreateRenderView is called.
+  bool is_background_page() const { return !view(); }
 
   // The extension that we're hosting in this view.
   Extension* extension_;
@@ -147,8 +166,13 @@ class ExtensionHost : public RenderViewHostDelegate,
   // Whether the RenderWidget has reported that it has stopped loading.
   bool did_stop_loading_;
 
+  // True if the main frame has finished parsing.
+  bool document_element_available_;
+
   // The URL being hosted.
   GURL url_;
+
+  NotificationRegistrar registrar_;
 
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 

@@ -87,6 +87,7 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
     : extension_(extension),
       profile_(site_instance->browsing_instance()->profile()),
       did_stop_loading_(false),
+      document_element_available_(false),
       url_(url) {
   render_view_host_ = new RenderViewHost(
       site_instance, this, MSG_ROUTING_NONE, NULL);
@@ -132,7 +133,7 @@ bool ExtensionHost::IsRenderViewLive() const {
 void ExtensionHost::CreateRenderView(RenderWidgetHostView* host_view) {
   render_view_host_->set_view(host_view);
   render_view_host_->CreateRenderView();
-  render_view_host_->NavigateToURL(url_);
+  NavigateToURL(url_);
   DCHECK(IsRenderViewLive());
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_PROCESS_CREATED,
@@ -142,7 +143,22 @@ void ExtensionHost::CreateRenderView(RenderWidgetHostView* host_view) {
 
 void ExtensionHost::NavigateToURL(const GURL& url) {
   url_ = url;
+
+  if (!is_background_page() && !extension_->GetBackgroundPageReady()) {
+    // Make sure the background page loads before any others.
+    registrar_.Add(this, NotificationType::EXTENSION_BACKGROUND_PAGE_READY,
+                   Source<Extension>(extension_));
+    return;
+  }
   render_view_host_->NavigateToURL(url_);
+}
+
+void ExtensionHost::Observe(NotificationType type,
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+  DCHECK(type == NotificationType::EXTENSION_BACKGROUND_PAGE_READY);
+  DCHECK(extension_->GetBackgroundPageReady());
+  NavigateToURL(url_);
 }
 
 void ExtensionHost::RecoverCrashedExtension() {
@@ -220,6 +236,12 @@ void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
 #endif
 
   did_stop_loading_ = true;
+}
+
+void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
+  document_element_available_ = true;
+  if (is_background_page())
+    extension_->SetBackgroundPageReady();
 }
 
 void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,

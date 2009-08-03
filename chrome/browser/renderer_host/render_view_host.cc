@@ -732,6 +732,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartLoading, OnMsgDidStartLoading)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnMsgDidStopLoading)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
+                        OnMsgDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnMsgDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
@@ -1008,6 +1010,10 @@ void RenderViewHost::OnMsgDidStartLoading() {
 
 void RenderViewHost::OnMsgDidStopLoading() {
   delegate_->DidStopLoading(this);
+}
+
+void RenderViewHost::OnMsgDocumentAvailableInMainFrame() {
+  delegate_->DocumentAvailableInMainFrame(this);
 }
 
 void RenderViewHost::OnMsgDidLoadResourceFromMemoryCache(
