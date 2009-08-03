@@ -30,9 +30,8 @@ deps = {
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@154",
 
-  # TODO(mark): Remove once this has moved into depot_tools.
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@571",
+    "http://gyp.googlecode.com/svn/trunk@573",
 
   "src/v8":
     "http://v8.googlecode.com/svn/trunk@2592",
