@@ -133,6 +133,11 @@ bool WidgetContainsCursor(GtkWidget* widget);
 // border or alt-tab list).
 void SetWindowIcon(GtkWindow* window);
 
+// Adds an action button with the given text to the dialog. Only useful when you
+// want a stock icon but not the stock text to go with it. Returns the button.
+GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
+                             const gchar* stock_id, gint response_id);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

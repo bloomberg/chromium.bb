@@ -39,9 +39,9 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile) :
 
   // Add import button separately as we might need to disable it, if
   // no supported browsers found.
-  GtkWidget* import_button = gtk_dialog_add_button(GTK_DIALOG(dialog_),
+  GtkWidget* import_button = gtk_util::AddButtonToDialog(dialog_,
       l10n_util::GetStringUTF8(IDS_IMPORT_COMMIT).c_str(),
-      GTK_RESPONSE_ACCEPT);
+      GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
 
   // TODO(rahulk): find how to set size properly so that the dialog
   // box width is at least enough to display full title.

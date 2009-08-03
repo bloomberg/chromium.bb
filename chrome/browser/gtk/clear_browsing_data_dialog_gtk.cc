@@ -28,9 +28,10 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_REJECT,
-      l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_COMMIT).c_str(),
-      GTK_RESPONSE_ACCEPT,
       NULL);
+  gtk_util::AddButtonToDialog(dialog,
+      l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_COMMIT).c_str(),
+      GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
 
   GtkWidget* content_area = GTK_DIALOG(dialog)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);

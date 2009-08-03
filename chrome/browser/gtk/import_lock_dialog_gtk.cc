@@ -24,11 +24,14 @@ ImportLockDialogGtk::ImportLockDialogGtk(GtkWindow* parent,
       l10n_util::GetStringUTF8(IDS_IMPORTER_LOCK_TITLE).c_str(),
       parent,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      l10n_util::GetStringUTF8(IDS_IMPORTER_LOCK_OK).c_str(),
-      GTK_RESPONSE_ACCEPT,
-      l10n_util::GetStringUTF8(IDS_IMPORTER_LOCK_CANCEL).c_str(),
-      GTK_RESPONSE_REJECT,
       NULL);
+
+  gtk_util::AddButtonToDialog(dialog_,
+      l10n_util::GetStringUTF8(IDS_IMPORTER_LOCK_CANCEL).c_str(),
+      GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
+  gtk_util::AddButtonToDialog(dialog_,
+      l10n_util::GetStringUTF8(IDS_IMPORTER_LOCK_OK).c_str(),
+      GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
 
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);

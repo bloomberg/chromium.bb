@@ -406,4 +406,15 @@ void SetWindowIcon(GtkWindow* window) {
   g_list_free(icon_list);
 }
 
+GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
+                             const gchar* stock_id, gint response_id) {
+  GtkWidget* button = gtk_button_new_with_label(text);
+  gtk_button_set_image(GTK_BUTTON(button),
+                       gtk_image_new_from_stock(stock_id,
+                                                GTK_ICON_SIZE_BUTTON));
+  gtk_dialog_add_action_widget(GTK_DIALOG(dialog), button,
+                               response_id);
+  return button;
+}
+
 }  // namespace gtk_util
