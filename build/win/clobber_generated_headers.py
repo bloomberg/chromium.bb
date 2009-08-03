@@ -22,6 +22,8 @@ def total_split(path):
   components = []
   while path:
     head, tail = os.path.split(path)
+    if not tail:
+      break
     components.append(tail)
     path = head
   return list(reversed(components))
