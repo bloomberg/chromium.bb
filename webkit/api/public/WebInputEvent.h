@@ -55,18 +55,29 @@ namespace WebKit {
             , modifiers(0)
             , timeStampSeconds(0.0) { }
 
-        // There are two schemes used for keyboard input. On Windows (and,
-        // interestingly enough, on Mac Carbon) there are two events for a
-        // keypress.  One is a raw keydown, which provides the keycode only.
-        // If the app doesn't handle that, then the system runs key translation
-        // to create an event containing the generated character and pumps that
-        // event.  In such a scheme, those two events are translated to
-        // RAW_KEY_DOWN and CHAR events respectively.  In Cocoa and Gtk, key
-        // events contain both the keycode and any translation into actual
-        // text.  In such a case, WebCore will eventually need to split the
-        // events (see disambiguateKeyDownEvent and its callers) but we don't
-        // worry about that here.  We just use a different type (KEY_DOWN) to
-        // indicate this.
+        // When we use an input method (or an input method editor), we receive
+        // two events for a keypress. The former event is a keydown, which
+        // provides a keycode, and the latter is a textinput, which provides
+        // a character processed by an input method. (The mapping from a
+        // keycode to a character code is not trivial for non-English
+        // keyboards.)
+        // To support input methods, Safari sends keydown events to WebKit for
+        // filtering. WebKit sends filtered keydown events back to Safari,
+        // which sends them to input methods.
+        // Unfortunately, it is hard to apply this design to Chrome because of
+        // our multiprocess architecture. An input method is running in a
+        // browser process. On the other hand, WebKit is running in a renderer
+        // process. So, this design results in increasing IPC messages.
+        // To support input methods without increasing IPC messages, Chrome
+        // handles keyboard events in a browser process and send asynchronous
+        // input events (to be translated to DOM events) to a renderer
+        // process.
+        // This design is mostly the same as the one of Windows and Mac Carbon.
+        // So, for what it's worth, our Linux and Mac front-ends emulate our
+        // Windows front-end. To emulate our Windows front-end, we can share
+        // our back-end code among Windows, Linux, and Mac.
+        // TODO(hbono): Issue 18064: remove the KeyDown type since it isn't
+        // used in Chrome any longer.
 
         enum Type {
             Undefined = -1,

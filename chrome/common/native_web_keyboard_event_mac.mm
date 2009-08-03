@@ -19,6 +19,15 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(NSEvent* event)
       os_event([event retain]) {
 }
 
+NativeWebKeyboardEvent::NativeWebKeyboardEvent(wchar_t character,
+                                               int modifiers,
+                                               double time_stamp_seconds)
+    : WebKeyboardEvent(WebInputEventFactory::keyboardEvent(character,
+                                                           modifiers,
+                                                           time_stamp_seconds)),
+      os_event(NULL) {
+}
+
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     const NativeWebKeyboardEvent& other)
     : WebKeyboardEvent(other),

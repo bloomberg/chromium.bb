@@ -29,6 +29,9 @@ struct NativeWebKeyboardEvent : public WebKit::WebKeyboardEvent {
   NativeWebKeyboardEvent(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 #elif defined(OS_MACOSX)
   explicit NativeWebKeyboardEvent(NSEvent *event);
+  NativeWebKeyboardEvent(wchar_t character,
+                         int state,
+                         double time_stamp_seconds);
 #elif defined(OS_LINUX)
   explicit NativeWebKeyboardEvent(const GdkEventKey* event);
   NativeWebKeyboardEvent(wchar_t character,
