@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
+#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "gtest/gtest.h"
 

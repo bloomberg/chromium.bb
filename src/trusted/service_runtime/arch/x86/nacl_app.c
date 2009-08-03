@@ -32,8 +32,10 @@
 /*
  * NaCl run time.
  */
+/* TODO: Is this needed */
 #include <fcntl.h>
 
+#include "native_client/src/trusted/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
@@ -175,4 +177,3 @@ done:
   NaClXMutexUnlock(&nap->mu);
   return retval;
 }
-

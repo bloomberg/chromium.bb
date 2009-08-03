@@ -44,6 +44,8 @@
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/platform/nacl_time.h"
 
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
@@ -53,6 +55,12 @@
 #include "native_client/src/trusted/service_runtime/nacl_closure.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
+
+#if NACL_ARM
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
+#else
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
+#endif
 
 #define PTR_ALIGN_MASK  ((sizeof(void *))-1)
 

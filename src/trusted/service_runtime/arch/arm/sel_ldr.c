@@ -32,8 +32,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
-
 
 /*
  * A sanity check -- should be invoked in some early function, e.g.,
@@ -134,4 +134,3 @@ void NaClLoadTlsHook(struct NaClApp *nap) {
 
   NaClApplyPatchToMemory(&patch_info);
 }
-

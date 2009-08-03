@@ -43,9 +43,9 @@
 #include "native_client/src/trusted/platform/nacl_log.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
 
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
-
 
 /*
  * This file contains base class code for NaClDesc.

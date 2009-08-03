@@ -33,8 +33,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_asm_symbols.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
-
 
 /*
  * A sanity check -- should be invoked in some early function, e.g.,

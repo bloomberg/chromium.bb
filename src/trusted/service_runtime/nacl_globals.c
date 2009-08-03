@@ -33,16 +33,25 @@
  * NaCl Server Runtime global scoped objects for handling global resources.
  */
 
+#include "native_client/src/trusted/platform/nacl_interruptible_mutex.h"
+#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/trusted/platform/nacl_threads.h"
+#include "native_client/src/trusted/service_runtime/nacl_app.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 
+#if NACL_ARM
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
+#else
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
+#endif
+
+struct NaClMutex            nacl_thread_mu = {NULL};
+struct NaClTsdKey           nacl_cur_thread_key;
 
 struct NaClThreadContext    *nacl_user[NACL_THREAD_MAX] = {NULL};
 struct NaClThreadContext    *nacl_sys[NACL_THREAD_MAX] = {NULL};
-
-struct NaClMutex            nacl_thread_mu = {NULL};
 struct NaClAppThread        *nacl_thread[NACL_THREAD_MAX] = {NULL};
-
-struct NaClTsdKey           nacl_cur_thread_key;
 
 /*
  * Hack for gdb.  This records xlate_base in a place where (1) gdb can find it,

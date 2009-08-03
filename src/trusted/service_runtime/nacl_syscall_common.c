@@ -42,13 +42,24 @@
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
 #include "native_client/src/trusted/desc/nacl_desc_semaphore.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
+
+#include "native_client/src/trusted/platform/nacl_host_desc.h"
+#include "native_client/src/trusted/platform/nacl_host_dir.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
+
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
+
+
 
 
 static INLINE size_t  size_min(size_t a, size_t b) {

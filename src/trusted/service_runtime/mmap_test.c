@@ -34,13 +34,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "native_client/src/trusted/service_runtime/gio.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+
+#include "native_client/src/trusted/service_runtime/gio.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_assert.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
 
 /*

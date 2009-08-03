@@ -31,6 +31,9 @@
 
 
 #include <string.h>
+#include <string>
+
+#include "native_client/src/trusted/platform/nacl_host_desc.h"
 
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
@@ -76,7 +79,7 @@ UrlAsNaClDescNotify::UrlAsNaClDescNotify(Plugin* plugin,
                                          std::string url,
                                          void *callback_obj) :
     Closure(plugin, url),
-    np_callback_((NPObject*)callback_obj) {
+    np_callback_(reinterpret_cast<NPObject*>callback_obj) {
   dprintf(("UrlAsNaClDescNotify ctor\n"));
   NPN_RetainObject(np_callback_);
 }
@@ -105,7 +108,6 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
 
   // execute body once; construct to use break statement to exit body early
   do {
-
     if (NULL == fname) {
       dprintf(("fetch failed\n"));
       ScalarToNPVariant("Same origin violation", &status);
@@ -179,4 +181,4 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
   NPN_ReleaseVariantValue(&retval);
 }
 
-} //namespace nacl_srpc
+}  // namespace nacl_srpc

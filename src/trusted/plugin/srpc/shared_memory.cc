@@ -32,13 +32,20 @@
 
 #include <signal.h>
 #include <string.h>
+
+#include "native_client/src/include/nacl_platform.h"
+
+#include "native_client/src/trusted/platform/nacl_host_desc.h"
+
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
+
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
+
 
 namespace nacl_srpc {
 
@@ -89,8 +96,7 @@ bool SharedMemory::RpcRead(void *obj, SrpcParams *params) {
     return false;
   }
 
-  char* ret_string =
-      (char*)malloc(utf8_buffer_len + 1);
+  char* ret_string = reinterpret_cast<char*>(malloc(utf8_buffer_len + 1));
   if (NULL == ret_string) {
     params->SetExceptionInfo("out of memory");
     return false;
@@ -291,7 +297,7 @@ bool SharedMemory::Init(struct PortableHandleInitializer* init_info) {
                                0);
       dprintf(("SharedMemory::Init: result 0x%08x\n", rval));
       if (!NaClIsNegErrno(rval)) {
-        map_addr = (void*) rval;
+        map_addr = reinterpret_cast<void*>(rval);
         break;
       }
     } while (NULL == map_addr && tries < kMaxTries);
@@ -337,12 +343,12 @@ SharedMemory::~SharedMemory() {
   // other linked structures in Deallocate.
 
   // Free the memory that was mapped to the descriptor.
-  //if (desc() && plugin_) {
-  //  desc()->vtbl->Unmap(desc(),
-  //    plugin_->effp_,
-  //    map_addr_,
-  //    size_);
-  //}
+  // if (desc() && plugin_) {
+  //   desc()->vtbl->Unmap(desc(),
+  //     plugin_->effp_,
+  //     map_addr_,
+  //     size_);
+  // }
   // TODO(sehr): is there a missing NaClDescUnref here?
   // TODO(gregoryd): in addition, should we unref the descriptor if it was
   // constructed during the initialization of this object?

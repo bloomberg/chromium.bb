@@ -54,6 +54,7 @@ EXTERN_C_BEGIN
 
 struct nacl_abi_stat;
 
+/* TODO: this is also declared in nacl_host_desc.h */
 extern int NaClXlateErrno(int errnum);
 
 /*

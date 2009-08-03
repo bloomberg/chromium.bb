@@ -39,11 +39,17 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector_cleanup.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/springboard.h"
 
+#if NACL_ARM
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
+#else
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
+#endif
 
 int NaClAppCtor(struct NaClApp  *nap) {
   NaClThreadStartupCheck();

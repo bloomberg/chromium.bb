@@ -36,12 +36,11 @@
 #ifndef SERVICE_RUNTIME_NACL_APP_H__
 #define SERVICE_RUNTIME_NACL_APP_H__
 
-#include "native_client/src/include/nacl_base.h"
-
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 EXTERN_C_BEGIN
+
+struct NaClApp;
 
 NaClErrorCode NaClAppPrepareToLaunch(struct NaClApp     *nap,
                                      int                in_desc,

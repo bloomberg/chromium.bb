@@ -53,19 +53,18 @@
 #ifndef SERVICE_RUNTIME_SEL_LDR_H__
 #define SERVICE_RUNTIME_SEL_LDR_H__ 1
 
-#include "native_client/src/trusted/platform/nacl_threads.h"
+#include "native_client/src/include/elf.h"
+
+#include "native_client/src/trusted/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/trusted/platform/nacl_threads.h"
+
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
-#if NACL_ARM
-#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
-#else
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
-#endif
 
 
 EXTERN_C_BEGIN

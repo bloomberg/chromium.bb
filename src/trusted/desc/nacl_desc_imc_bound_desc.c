@@ -42,10 +42,12 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_bound_desc.h"
 
 #include "native_client/src/trusted/platform/nacl_log.h"
+
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 

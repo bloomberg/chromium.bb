@@ -37,28 +37,23 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_BASE_H_
 
 
-/* defines PATH_MAX */
-# include "native_client/src/include/nacl_base.h"
-# include "native_client/src/include/portability.h"
+#include "native_client/src/include/nacl_base.h"
+#include "native_client/src/include/portability.h"
 
-/* TODO(sehr): include pruning. */
-#include "native_client/src/shared/imc/nacl_imc_c.h"
-#include "native_client/src/trusted/desc/nacl_desc_effector.h"
-#include "native_client/src/trusted/platform/nacl_host_desc.h"
-#include "native_client/src/trusted/platform/nacl_host_dir.h"
-#include "native_client/src/trusted/platform/nacl_interruptible_condvar.h"
+/* For NaClHandle */
+#include "native_client/src/shared/imc/nacl_htp_c.h"
+
 #include "native_client/src/trusted/platform/nacl_interruptible_mutex.h"
+#include "native_client/src/trusted/platform/nacl_interruptible_condvar.h"
 #include "native_client/src/trusted/platform/nacl_semaphore.h"
-#include "native_client/src/trusted/platform/nacl_sync.h"
-
-#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
-#include "native_client/src/trusted/service_runtime/include/sys/time.h"
-
 
 EXTERN_C_BEGIN
 
 struct NaClDesc;
 struct nacl_abi_stat;
+struct nacl_abi_timespec;
+struct NaClDescEffector;
+struct NaClMessageHeader;
 
 /*
  * Externalization / internalization state, used by

@@ -35,8 +35,10 @@
 
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
+
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    uint32_t             new_prog_ctr) {

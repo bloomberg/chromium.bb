@@ -36,12 +36,14 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+/* TODO: eliminate this */
 #if NACL_WINDOWS
 #include <io.h>
 #include <fcntl.h>
 #endif
-#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
+
+#include "native_client/src/trusted/platform/nacl_host_desc.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
@@ -49,6 +51,9 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
+
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
 
 namespace nacl {

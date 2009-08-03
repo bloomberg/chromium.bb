@@ -32,6 +32,8 @@
 #ifndef SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__
 #define SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ 1
 
+/* to make LDT_ENTRIES available */
+#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 
 #define NACL_THREAD_MAX     LDT_ENTRIES
@@ -42,4 +44,3 @@
 #define NACL_HALT_LEN       1           /* length of halt instruction */
 
 #endif /* SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ */
-
