@@ -101,6 +101,9 @@ class AutomationProfileImpl : public Profile {
   virtual void ClearTheme() {
     return original_profile_->ClearTheme();
   }
+  virtual Extension* GetTheme() {
+    return original_profile_->GetTheme();
+  }
   virtual ThemeProvider* GetThemeProvider() {
     return original_profile_->GetThemeProvider();
   }
