@@ -145,7 +145,15 @@ cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK $@
 cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
-
+"""
+r"""
+# Define an escape_quotes function to escape single quotes.
+# This allows us to handle quotes properly as long as we always use
+# use single quotes and escape_quotes.
+escape_quotes = $(subst ','\'',$(1))
+# This comment is here just to include a ' to unconfuse syntax highlighting.
+"""
+"""
 # Helper to compare the command we're about to run against the command
 # we logged the last time we ran the command.  Produces an empty
 # string (false) when the commands match.
@@ -174,7 +182,7 @@ $(if $(or $(command_changed),$(prereq_changed)),
   @echo '  $($(quiet)cmd_$(1))'
   @mkdir -p $(dir $@)
   @$(cmd_$(1))
-  @echo 'cmd_$@ := $(cmd_$(1))' > $(depfile)
+  @echo '$(call escape_quotes,cmd_$@ := $(cmd_$(1)))' > $(depfile)
   @$(if $(2),$(fixup_dep))
 )
 endef
