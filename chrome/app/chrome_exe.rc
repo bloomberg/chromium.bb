@@ -63,6 +63,7 @@ END
 // remains consistent on all systems.
 #if defined(GOOGLE_CHROME_BUILD)
 IDR_MAINFRAME           ICON                    "theme\google_chrome\chrome.ico"
+IDR_MAINFRAME_2         ICON                    "theme\google_chrome\chrome2.ico"
 #else
 IDR_MAINFRAME           ICON                    "theme\chromium\chromium.ico"
 #endif

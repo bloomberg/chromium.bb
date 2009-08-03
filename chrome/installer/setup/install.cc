@@ -142,6 +142,19 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
   }
 }
 
+// Copy master preferences file provided to installer, in the same folder
+// as chrome.exe so Chrome first run can find it. This function will be called
+// only on the first install of Chrome.
+void CopyPreferenceFileForFirstRun(bool system_level,
+                                   const std::wstring& prefs_source_path) {
+  std::wstring prefs_dest_path(
+      installer::GetChromeInstallPath(system_level));
+  file_util::AppendToPath(&prefs_dest_path,
+                          installer_util::kDefaultMasterPrefs);
+  if (!file_util::CopyFile(prefs_source_path, prefs_dest_path))
+    LOG(ERROR) << "failed copying master profile";
+}
+
 // This method creates Chrome shortcuts in Start->Programs for all users or
 // only for current user depending on whether it is system wide install or
 // user only install.
@@ -480,8 +493,9 @@ bool installer::InstallNewVersion(const std::wstring& exe_path,
 
 installer_util::InstallStatus installer::InstallOrUpdateChrome(
     const std::wstring& exe_path, const std::wstring& archive_path,
-    const std::wstring& install_temp_path, const DictionaryValue* prefs,
-    const Version& new_version, const Version* installed_version) {
+    const std::wstring& install_temp_path, const std::wstring& prefs_path,
+    const DictionaryValue* prefs, const Version& new_version,
+    const Version* installed_version) {
   bool system_install = installer_util::GetDistroBooleanPreference(prefs,
       installer_util::master_preferences::kSystemLevel);
   std::wstring install_path(GetChromeInstallPath(system_install));
@@ -508,6 +522,7 @@ installer_util::InstallStatus installer::InstallOrUpdateChrome(
     if (!installed_version) {
       LOG(INFO) << "First install of version " << new_version.GetString();
       result = installer_util::FIRST_INSTALL_SUCCESS;
+      CopyPreferenceFileForFirstRun(system_install, prefs_path);
     } else if (new_version.GetString() == installed_version->GetString()) {
       LOG(INFO) << "Install repaired of version " << new_version.GetString();
       result = installer_util::INSTALL_REPAIRED;

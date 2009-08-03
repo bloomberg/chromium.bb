@@ -245,21 +245,6 @@ DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
   return prefs;
 }
 
-// Copy master preferences file provided to installer, in the same folder
-// as chrome.exe so Chrome first run can find it. This function will be called
-// only on the first install of Chrome.
-void CopyPreferenceFileForFirstRun(bool system_level,
-                                   const CommandLine& cmd_line) {
-  std::wstring prefs_source_path = cmd_line.GetSwitchValue(
-      installer_util::switches::kInstallerData);
-  std::wstring prefs_dest_path(
-      installer::GetChromeInstallPath(system_level));
-  file_util::AppendToPath(&prefs_dest_path,
-                          installer_util::kDefaultMasterPrefs);
-  if (!file_util::CopyFile(prefs_source_path, prefs_dest_path))
-    LOG(ERROR) << "failed copying master profile";
-}
-
 bool CheckPreInstallConditions(const installer::Version* installed_version,
                                bool system_install,
                                installer_util::InstallStatus& status) {
@@ -369,9 +354,11 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         std::wstring archive_to_copy(temp_path);
         file_util::AppendToPath(&archive_to_copy,
                                 std::wstring(installer::kChromeArchive));
+        std::wstring prefs_source_path = cmd_line.GetSwitchValue(
+            installer_util::switches::kInstallerData);
         install_status = installer::InstallOrUpdateChrome(
-            cmd_line.program(), archive_to_copy, temp_path, prefs,
-            *installer_version, installed_version);
+            cmd_line.program(), archive_to_copy, temp_path, prefs_source_path,
+            prefs, *installer_version, installed_version);
 
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
         std::wstring chrome_exe;
@@ -392,7 +379,6 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
                                           install_msg_base, &chrome_exe);
         if (install_status == installer_util::FIRST_INSTALL_SUCCESS) {
           LOG(INFO) << "First install successful.";
-          CopyPreferenceFileForFirstRun(system_level, cmd_line);
           // We never want to launch Chrome in system level install mode.
           if (!system_level && !installer_util::GetDistroBooleanPreference(prefs,
               installer_util::master_preferences::kDoNotLaunchChrome))

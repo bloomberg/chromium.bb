@@ -23,6 +23,8 @@ namespace master_preferences {
 extern const wchar_t kAltShortcutText[];
 // Boolean. Use alternate smaller first run info bubble.
 extern const wchar_t kAltFirstRunBubble[];
+// Integer. Icon index from chrome.exe to use for shortcuts.
+extern const wchar_t kChromeShortcutIconIndex[];
 // Boolean. Create Desktop and QuickLaunch shortcuts. Cmd line override present.
 extern const wchar_t kCreateAllShortcuts[];
 // Boolean pref that triggers silent import of the default browser bookmarks.
@@ -64,8 +66,9 @@ bool GetDistroBooleanPreference(const DictionaryValue* prefs,
 
 // This function gets ping delay (ping_delay in the sample above) from master
 // preferences.
-bool GetDistributionPingDelay(const DictionaryValue* prefs,
-                              int* ping_delay);
+bool GetDistroIntegerPreference(const DictionaryValue* prefs,
+                                const std::wstring& name,
+                                int* value);
 
 // The master preferences is a JSON file with the same entries as the
 // 'Default\Preferences' file. This function parses the distribution
@@ -77,6 +80,7 @@ bool GetDistributionPingDelay(const DictionaryValue* prefs,
 //   "distribution": {
 //      "alternate_shortcut_text": false,
 //      "oem_bubble": false,
+//      "chrome_shortcut_icon_index": 0,
 //      "create_all_shortcuts": true,
 //      "import_bookmarks": false,
 //      "import_history": false,

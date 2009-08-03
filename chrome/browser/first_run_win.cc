@@ -186,8 +186,14 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 
   if (new_tabs)
     *new_tabs = installer_util::GetFirstRunTabs(prefs.get());
-  if (ping_delay)
-    installer_util::GetDistributionPingDelay(prefs.get(), ping_delay);
+  if (ping_delay) {
+    if (!installer_util::GetDistroIntegerPreference(prefs.get(),
+        installer_util::master_preferences::kDistroPingDelay, ping_delay)) {
+      // 90 seconds is the default that we want to use in case master
+      // preferences is missing, corrupt or ping_delay is missing.
+      *ping_delay = 90;
+    }
+  }
 
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kRequireEula)) {

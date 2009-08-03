@@ -10,31 +10,16 @@
 #include "chrome/common/json_value_serializer.h"
 
 namespace {
-
 const wchar_t* kDistroDict = L"distribution";
 
-DictionaryValue* GetPrefsFromFile(const FilePath& master_prefs_path) {
-  std::string json_data;
-  if (!file_util::ReadFileToString(master_prefs_path, &json_data))
-    return NULL;
 
-  JSONStringValueSerializer json(json_data);
-  scoped_ptr<Value> root(json.Deserialize(NULL));
-
-  if (!root.get())
-    return NULL;
-
-  if (!root->IsType(Value::TYPE_DICTIONARY))
-    return NULL;
-
-  return static_cast<DictionaryValue*>(root.release());
-}
 }  // namespace
 
 namespace installer_util {
 namespace master_preferences {
 const wchar_t kAltFirstRunBubble[] = L"oem_bubble";
 const wchar_t kAltShortcutText[] = L"alternate_shortcut_text";
+const wchar_t kChromeShortcutIconIndex[] = L"chrome_shortcut_icon_index";
 const wchar_t kCreateAllShortcuts[] = L"create_all_shortcuts";
 const wchar_t kDistroImportBookmarksPref[] = L"import_bookmarks";
 const wchar_t kDistroImportHistoryPref[] = L"import_history";
@@ -61,20 +46,17 @@ bool GetDistroBooleanPreference(const DictionaryValue* prefs,
   return value;
 }
 
-bool GetDistributionPingDelay(const DictionaryValue* prefs,
-                              int* ping_delay) {
-  if (!ping_delay)
+bool GetDistroIntegerPreference(const DictionaryValue* prefs,
+                                const std::wstring& name,
+                                int* value) {
+  if (!value)
     return false;
-
-  // 90 seconds is the default that we want to use in case master preferences
-  // is missing or corrupt.
-  *ping_delay = 90;
 
   DictionaryValue* distro = NULL;
   if (!prefs || !prefs->GetDictionary(kDistroDict, &distro) || !distro)
     return false;
 
-  if (!distro->GetInteger(master_preferences::kDistroPingDelay, ping_delay))
+  if (!distro->GetInteger(name, value))
     return false;
 
   return true;
@@ -87,8 +69,19 @@ DictionaryValue* ParseDistributionPreferences(
                  << master_prefs_path.value();
     return NULL;
   }
+  std::string json_data;
+  if (!file_util::ReadFileToString(master_prefs_path, &json_data))
+    return NULL;
+  JSONStringValueSerializer json(json_data);
+  scoped_ptr<Value> root(json.Deserialize(NULL));
 
-  return GetPrefsFromFile(master_prefs_path);
+  if (!root.get())
+    return NULL;
+
+  if (!root->IsType(Value::TYPE_DICTIONARY))
+    return NULL;
+
+  return static_cast<DictionaryValue*>(root.release());
 }
 
 std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs) {

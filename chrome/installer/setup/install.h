@@ -37,8 +37,9 @@ std::wstring GetInstallerPathUnderChrome(const std::wstring& install_path,
 // is responsible for cleaning up install_temp_path.
 installer_util::InstallStatus InstallOrUpdateChrome(
     const std::wstring& exe_path, const std::wstring& archive_path,
-    const std::wstring& install_temp_path, const DictionaryValue* prefs,
-    const Version& new_version, const Version* installed_version);
+    const std::wstring& install_temp_path, const std::wstring& prefs_path,
+    const DictionaryValue* prefs, const Version& new_version,
+    const Version* installed_version);
 
 // This function installs a new version of Chrome to the specified location.
 // It returns true if install was successful and false in case of an error.
