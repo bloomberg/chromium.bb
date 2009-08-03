@@ -42,31 +42,6 @@ enum InstallStatus {
   INSTALL_DIR_IN_USE     // Installation directory is in use by another process
 };
 
-// These are distribution related install options specified through command
-// line switches (see below) or master preference file (see
-// chrome/installer/util/master_preference.h). The options can be combined,
-// so they are bit flags.
-enum InstallOption {
-  // A master profile file is provided to installer.
-  MASTER_PROFILE_PRESENT  = 0x1,
-  // The master profile file provided is valid.
-  MASTER_PROFILE_VALID    = 0x1 << 1,
-  // Create Desktop and QuickLaunch shortcuts.
-  CREATE_ALL_SHORTCUTS    = 0x1 << 2,
-  // Prevent installer from launching Chrome after a successful first install.
-  DO_NOT_LAUNCH_CHROME    = 0x1 << 3,
-  // Register Chrome as default browser on the system.
-  MAKE_CHROME_DEFAULT     = 0x1 << 4,
-  // Install Chrome to system wise location.
-  SYSTEM_LEVEL            = 0x1 << 5,
-  // Run installer in verbose mode.
-  VERBOSE_LOGGING         = 0x1 << 6,
-  // Show the EULA dialog.
-  SHOW_EULA_DIALOG        = 0x1 << 7,
-  // Use alternate dekstop shortcut text.
-  ALT_DESKTOP_SHORTCUT    = 0x1 << 8
-};
-
 namespace switches {
 extern const wchar_t kCreateAllShortcuts[];
 extern const wchar_t kDeleteProfile[];

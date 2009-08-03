@@ -88,7 +88,7 @@ void BrowserDistribution::UpdateDiffInstallStatus(bool system_install,
 
 void BrowserDistribution::LaunchUserExperiment(
     installer_util::InstallStatus status, const installer::Version& version,
-    bool system_install, int options) {
+    bool system_install) {
 }
 
 

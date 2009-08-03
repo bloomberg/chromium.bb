@@ -8,64 +8,64 @@
 #ifndef CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_
 #define CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_
 
-#include <string>
-#include <vector>
-
-#include "base/file_util.h"
+#include "base/file_path.h"
+#include "base/values.h"
 
 namespace installer_util {
+
+namespace master_preferences {
+// All the preferences below are expected to be inside the JSON "distribution"
+// block. Some of them also have equivalent command line option. If same option
+// is specified in master preference as well as command line, the commnd line
+// value takes precedence.
+
+// Boolean. Use alternate text for the shortcut. Cmd line override present.
+extern const wchar_t kAltShortcutText[];
+// Boolean. Use alternate smaller first run info bubble.
+extern const wchar_t kAltFirstRunBubble[];
+// Boolean. Create Desktop and QuickLaunch shortcuts. Cmd line override present.
+extern const wchar_t kCreateAllShortcuts[];
+// Boolean pref that triggers silent import of the default browser bookmarks.
+extern const wchar_t kDistroImportBookmarksPref[];
+// Boolean pref that triggers silent import of the default browser history.
+extern const wchar_t kDistroImportHistoryPref[];
+// Boolean pref that triggers silent import of the default browser homepage.
+extern const wchar_t kDistroImportHomePagePref[];
+// Boolean pref that triggers silent import of the default search engine.
+extern const wchar_t kDistroImportSearchPref[];
+// Integer. RLZ ping delay in seconds.
+extern const wchar_t kDistroPingDelay[];
+// Boolean pref that triggers loading the welcome page.
+extern const wchar_t kDistroShowWelcomePage[];
+// Boolean pref that triggers skipping the first run dialogs.
+extern const wchar_t kDistroSkipFirstRunPref[];
+// Boolean. Do not launch Chrome after first install. Cmd line override present.
+extern const wchar_t kDoNotLaunchChrome[];
+// Boolean. Register Chrome as default browser. Cmd line override present.
+extern const wchar_t kMakeChromeDefault[];
+// Boolean. Register Chrome as default browser for the current user.
+extern const wchar_t kMakeChromeDefaultForUser[];
+// Boolean. Show EULA dialog before install.
+extern const wchar_t kRequireEula[];
+// Boolean. Install Chrome to system wise location. Cmd line override present.
+extern const wchar_t kSystemLevel[];
+// Boolean. Run installer in verbose mode. Cmd line override present.
+extern const wchar_t kVerboseLogging[];
+}
 
 // This is the default name for the master preferences file used to pre-set
 // values in the user profile at first run.
 const wchar_t kDefaultMasterPrefs[] = L"master_preferences";
 
-// These are the possible results of calling ParseDistributionPreferences.
-// Some of the results can be combined, so they are bit flags.
-enum MasterPrefResult {
-  MASTER_PROFILE_NOT_FOUND                     = 0x1,
-  // A critical error processing the master profile.
-  MASTER_PROFILE_ERROR                         = 0x1 << 1,
-  // Skip first run dialogs.
-  MASTER_PROFILE_NO_FIRST_RUN_UI               = 0x1 << 2,
-  // Show welcome page.
-  MASTER_PROFILE_SHOW_WELCOME                  = 0x1 << 3,
-  // Import search engine setting from the default browser.
-  MASTER_PROFILE_IMPORT_SEARCH_ENGINE          = 0x1 << 4,
-  // Import history from the default browser.
-  MASTER_PROFILE_IMPORT_HISTORY                = 0x1 << 5,
-  // Import bookmarks from the default browser.
-  MASTER_PROFILE_IMPORT_BOOKMARKS              = 0x1 << 6,
-  // Register Chrome as default browser for the current user. This option is
-  // different than MAKE_CHROME_DEFAULT as installer ignores this option and
-  // Chrome on first run makes itself default.
-  MASTER_PROFILE_MAKE_CHROME_DEFAULT_FOR_USER  = 0x1 << 7,
-  // The following boolean prefs have the same semantics as the corresponding
-  // setup command line switches. See chrome/installer/util/util_constants.cc
-  // for more info.
-  // Create Desktop and QuickLaunch shortcuts.
-  MASTER_PROFILE_CREATE_ALL_SHORTCUTS          = 0x1 << 8,
-  // Prevent installer from launching Chrome after a successful first install.
-  MASTER_PROFILE_DO_NOT_LAUNCH_CHROME          = 0x1 << 9,
-  // Register Chrome as default browser on the system.
-  MASTER_PROFILE_MAKE_CHROME_DEFAULT           = 0x1 << 10,
-  // Install Chrome to system wise location.
-  MASTER_PROFILE_SYSTEM_LEVEL                  = 0x1 << 11,
-  // Run installer in verbose mode.
-  MASTER_PROFILE_VERBOSE_LOGGING               = 0x1 << 12,
-  // Show the EULA and do not install if not accepted.
-  MASTER_PROFILE_REQUIRE_EULA                  = 0x1 << 13,
-  // Use an alternate description text for some shortcuts.
-  MASTER_PROFILE_ALT_SHORTCUT_TXT              = 0x1 << 14,
-  // Use a smaller OEM info bubble on first run.
-  MASTER_PROFILE_OEM_FIRST_RUN_BUBBLE          = 0x1 << 15,
-  // Import home page from the default browser.
-  MASTER_PROFILE_IMPORT_HOME_PAGE              = 0x1 << 16
-};
+// Gets the value of given boolean preference |name| from |prefs| dictionary
+// which is assumed to contain a dictionary named "distribution".
+bool GetDistroBooleanPreference(const DictionaryValue* prefs,
+                                const std::wstring& name);
 
 // This function gets ping delay (ping_delay in the sample above) from master
 // preferences.
-bool GetDistributionPingDelay(const FilePath& master_prefs_path,
-                              int& delay);
+bool GetDistributionPingDelay(const DictionaryValue* prefs,
+                              int* ping_delay);
 
 // The master preferences is a JSON file with the same entries as the
 // 'Default\Preferences' file. This function parses the distribution
@@ -75,21 +75,22 @@ bool GetDistributionPingDelay(const FilePath& master_prefs_path,
 //
 // {
 //   "distribution": {
-//      "skip_first_run_ui": true,
-//      "show_welcome_page": true,
-//      "import_search_engine": true,
-//      "import_history": false,
-//      "import_bookmarks": false,
-//      "import_home_page": false,
+//      "alternate_shortcut_text": false,
+//      "oem_bubble": false,
 //      "create_all_shortcuts": true,
+//      "import_bookmarks": false,
+//      "import_history": false,
+//      "import_home_page": false,
+//      "import_search_engine": true,
+//      "ping_delay": 40,
+//      "show_welcome_page": true,
+//      "skip_first_run_ui": true,
 //      "do_not_launch_chrome": false,
 //      "make_chrome_default": false,
 //      "make_chrome_default_for_user": true,
-//      "system_level": false,
-//      "verbose_logging": true,
 //      "require_eula": true,
-//      "alternate_shortcut_text": false,
-//      "ping_delay": 40
+//      "system_level": false,
+//      "verbose_logging": true
 //   },
 //   "browser": {
 //      "show_home_button": true
@@ -109,7 +110,8 @@ bool GetDistributionPingDelay(const FilePath& master_prefs_path,
 // installation properties. This entry will be ignored at other times.
 // This function parses the 'distribution' entry and returns a combination
 // of MasterPrefResult.
-int ParseDistributionPreferences(const std::wstring& master_prefs_path);
+DictionaryValue* ParseDistributionPreferences(
+    const FilePath& master_prefs_path);
 
 // As part of the master preferences an optional section indicates the tabs
 // to open during first run. An example is the following:
@@ -125,8 +127,13 @@ int ParseDistributionPreferences(const std::wstring& master_prefs_path);
 //
 // This function retuns the list as a vector of strings. If the master
 // preferences file does not contain such list the vector is empty.
-std::vector<std::wstring> ParseFirstRunTabs(
-    const std::wstring& master_prefs_path);
+std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs);
+
+// Sets the value of given boolean preference |name| in "distribution"
+// dictionary inside |prefs| dictionary.
+bool SetDistroBooleanPreference(DictionaryValue* prefs,
+                                const std::wstring& name,
+                                bool value);
 }
 
 #endif  // CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_

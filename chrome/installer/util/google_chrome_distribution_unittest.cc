@@ -256,8 +256,8 @@ TEST(BrowserDistribution, AlternateAndNormalShortcutName) {
 }
 
 TEST(MasterPreferences, ParseDistroParams) {
-  std::wstring prefs;
-  ASSERT_TRUE(file_util::CreateTemporaryFileName(&prefs));
+  std::wstring prefs_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileName(&prefs_file));
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -281,31 +281,49 @@ TEST(MasterPreferences, ParseDistroParams) {
     "  }\n"
     "} \n";
 
-  EXPECT_TRUE(file_util::WriteFile(prefs, text, sizeof(text)));
-  int result = installer_util::ParseDistributionPreferences(prefs);
-  EXPECT_FALSE(result & installer_util::MASTER_PROFILE_NOT_FOUND);
-  EXPECT_FALSE(result & installer_util::MASTER_PROFILE_ERROR);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_NO_FIRST_RUN_UI);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_SHOW_WELCOME);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_IMPORT_SEARCH_ENGINE);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_IMPORT_HISTORY);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_IMPORT_BOOKMARKS);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_IMPORT_HOME_PAGE);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_CREATE_ALL_SHORTCUTS);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_DO_NOT_LAUNCH_CHROME);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_MAKE_CHROME_DEFAULT);
-  EXPECT_TRUE(result &
-              installer_util::MASTER_PROFILE_MAKE_CHROME_DEFAULT_FOR_USER);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_SYSTEM_LEVEL);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_VERBOSE_LOGGING);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_REQUIRE_EULA);
-  EXPECT_TRUE(result & installer_util::MASTER_PROFILE_ALT_SHORTCUT_TXT);
-  EXPECT_TRUE(file_util::Delete(prefs, false));
+  EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
+  scoped_ptr<DictionaryValue> prefs(
+      installer_util::ParseDistributionPreferences(
+      FilePath::FromWStringHack(prefs_file)));
+  EXPECT_TRUE(prefs.get() != NULL);
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroSkipFirstRunPref));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroShowWelcomePage));
+
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportSearchPref));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportHistoryPref));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportBookmarksPref));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDistroImportHomePagePref));
+
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kCreateAllShortcuts));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDoNotLaunchChrome));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kMakeChromeDefault));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kMakeChromeDefaultForUser));
+
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kSystemLevel));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kVerboseLogging));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kRequireEula));
+  EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kAltShortcutText));
+
+  EXPECT_TRUE(file_util::Delete(prefs_file, false));
 }
 
 TEST(MasterPreferences, FirstRunTabs) {
-  std::wstring prefs;
-  ASSERT_TRUE(file_util::CreateTemporaryFileName(&prefs));
+  std::wstring prefs_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileName(&prefs_file));
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -318,12 +336,17 @@ TEST(MasterPreferences, FirstRunTabs) {
     "  ]\n"
     "} \n";
 
-  EXPECT_TRUE(file_util::WriteFile(prefs, text, sizeof(text)));
+  EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
+  scoped_ptr<DictionaryValue> prefs(
+      installer_util::ParseDistributionPreferences(
+      FilePath::FromWStringHack(prefs_file)));
+  EXPECT_TRUE(prefs.get() != NULL);
+
   typedef std::vector<std::wstring> TabsVector;
-  TabsVector tabs = installer_util::ParseFirstRunTabs(prefs);
+  TabsVector tabs = installer_util::GetFirstRunTabs(prefs.get());
   ASSERT_EQ(3, tabs.size());
   EXPECT_EQ(L"http://google.com/f1", tabs[0]);
   EXPECT_EQ(L"https://google.com/f2", tabs[1]);
   EXPECT_EQ(L"new_tab_page", tabs[2]);
-  EXPECT_TRUE(file_util::Delete(prefs, false));
+  EXPECT_TRUE(file_util::Delete(prefs_file, false));
 }
