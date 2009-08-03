@@ -143,7 +143,7 @@ ExprNodeVector[6] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x40045c, ExprUsed | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x40045c, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 00000000004003de: e8 7d 05 00 00                               call 0x400960
   { 0xe8,
@@ -161,7 +161,7 @@ ExprNodeVector[6] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprConstant[0] , 0x400960, ExprUsed | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x400960, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: c3                                           ret
   { 0xc3,
@@ -256,7 +256,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x4003e8, ExprUsed | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x4003e8, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: 49 89 d1                                     mov %r9, %rdx
   { 0x89,
@@ -361,7 +361,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x40046e, ExprUsed | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x40046e, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: ff d0                                        call %rax
   { 0xff,
@@ -395,7 +395,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprConstant[0] , 0x4004b3, ExprUsed | EpxrUnsignedHex },
+  { ExprConstant[0] , 0x4004b3, ExprUsed | EpxrUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: c9                                           leave
   { 0xc9,
