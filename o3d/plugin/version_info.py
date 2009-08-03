@@ -20,7 +20,9 @@ import os.path
 import re
 import sys
 
-gflags_dir = os.path.join('..', '..', 'third_party', 'gflags', 'python')
+gflags_dir = os.path.normpath(
+  os.path.join(os.path.dirname(sys.argv[0]),
+               '..', '..', 'third_party', 'gflags', 'python'))
 sys.path.append(gflags_dir)
 
 import gflags

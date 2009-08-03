@@ -29,6 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// From here on down, please keep the format consistent.  This file
+// will be read by the split_samples.py script to determine which files
+// will be split, and it reads all lines below "var codeArray = [" as
+// a python list, which just happens to match the syntax of a
+// javascript list, so please don't violate that assumption.
+// Leave this next line as it is...
 var codeArray = [
   {
     'category': 'Basic',

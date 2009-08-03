@@ -51,7 +51,8 @@ LOCAL_IDL_SOURCES = [IDL_DIR + i for i in O3D_IDL_SOURCES]
 JS_DIR = '$SCONSTRUCT_DIR/samples/o3djs/'
 LOCAL_JS_SOURCES = [JS_DIR + i for i in O3D_JS_SOURCES]
 
-DOCSGEN_ARGS = ['$JSDOC_DIR/build_docs.py $JAVA_EXE']
+DOCSGEN_ARGS = ['$JSDOC_DIR/build_docs.py $JAVA_EXE '
+                '$THIRD_PARTY $TARGET_ROOT/obj']
 
 env["BUILDERS"]["JSDocs"] = Builder(action=env.Python(DOCSGEN_ARGS))
 

@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import os.path
 import sys
@@ -21,16 +24,28 @@ names = {
 }
 
 assets = [
- {'path': 'beachdemo/convert_assets/beachdemo.zip', 'up': z_up},
- {'path': 'beachdemo/convert_assets/beach-low-poly.dae', 'up': z_up},
  {'path': 'GoogleIO-2009/convert_assets/background.zip', 'up': y_up},
  {'path': 'GoogleIO-2009/convert_assets/character.zip', 'up': y_up},
- {'path': 'home-configurators/convert_cbassets/House_Roofless.kmz', 'up': z_up},
+ {'path': 'beachdemo/convert_assets/beach-low-poly.dae', 'up': z_up},
+ {'path': 'beachdemo/convert_assets/beachdemo.zip', 'up': z_up},
+ {'path': 'convert_assets/dome1.zip', 'up': y_up},
+ {'path': 'convert_assets/dome2.zip', 'up': y_up},
+ {'path': 'convert_assets/dome3.zip', 'up': y_up},
+ {'path': 'convert_assets/dome4.zip', 'up': y_up},
+ {'path': 'convert_assets/kitty_151_idle_stand05_cff1.zip', 'up': y_up},
+ {'path': 'convert_assets/part1.zip', 'up': y_up},
+ {'path': 'convert_assets/part2.zip', 'up': y_up},
+ {'path': 'convert_assets/part3.zip', 'up': y_up},
+ {'path': 'convert_assets/seven_shapes.zip', 'up': y_up},
+ {'path': 'convert_assets/stencil_frame.zip', 'up': y_up},
+ {'path': 'convert_assets/teapot.zip', 'up': y_up},
+ {'path': 'convert_assets/yard.zip', 'up': y_up},
  {'path': 'home-configurators/convert_cbassets/Agra_Rug.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Asimi_Rug.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Camden_Chair.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Elements_Bookshelf.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Ferrara_Rug.kmz', 'up': z_up},
+ {'path': 'home-configurators/convert_cbassets/House_Roofless.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Lounge_Chair.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Lounge_Chaise.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Lounge_Sofa.kmz', 'up': z_up},
@@ -47,22 +62,9 @@ assets = [
  {'path': 'home-configurators/convert_cbassets/Troy_Sofa.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Troy_Storage_Ottoman.kmz', 'up': z_up},
  {'path': 'home-configurators/convert_cbassets/Troy_Twin_Sleeper.kmz', 'up': z_up},
-
  {'path': 'io/convert_levels/all_actors.kmz', 'up': y_up},
  {'path': 'io/convert_levels/map1.kmz', 'up': y_up},
  {'path': 'simpleviewer/convert_assets/cube.zip', 'up': y_up},
- {'path': 'convert_assets/dome1.zip', 'up': y_up},
- {'path': 'convert_assets/dome2.zip', 'up': y_up},
- {'path': 'convert_assets/dome3.zip', 'up': y_up},
- {'path': 'convert_assets/dome4.zip', 'up': y_up},
- {'path': 'convert_assets/kitty_151_idle_stand05_cff1.zip', 'up': y_up},
- {'path': 'convert_assets/part1.zip', 'up': y_up},
- {'path': 'convert_assets/part2.zip', 'up': y_up},
- {'path': 'convert_assets/part3.zip', 'up': y_up},
- {'path': 'convert_assets/seven_shapes.zip', 'up': y_up},
- {'path': 'convert_assets/stencil_frame.zip', 'up': y_up},
- {'path': 'convert_assets/teapot.zip', 'up': y_up},
- {'path': 'convert_assets/yard.zip', 'up': y_up},
  {'path': 'waterdemo/convert_assets/bamboo.zip', 'up': y_up},
  {'path': 'waterdemo/convert_assets/coconuts.zip', 'up': y_up},
  {'path': 'waterdemo/convert_assets/driftwood.zip', 'up': y_up},
@@ -121,16 +123,30 @@ for asset in assets:
 
 output_file.write("      ],\n")
 
-# coalesce copies.
+# Coalesce copies by directory so we don't have tons of copies rules
+# to parse.
 copies = {}
 for asset in assets:
   output = asset['path'].replace('convert_', '')
   output = os.path.splitext(output)[0] + ".o3dtgz"
   output_dir = os.path.dirname(output)
   if output_dir in copies:
-    copies[output_dir] += [output]
+    # Make sure we don't add any twice.
+    if not output in copies[output_dir]:
+      copies[output_dir] += [output]
   else:
     copies[output_dir] = [output]
+
+# Add in all the MANIFEST files to be copied,
+# Skipping the ones in the assets above (if any).
+manifest = open("MANIFEST", "r")
+for item in manifest.read().splitlines():
+  item_dir = os.path.dirname(item)
+  if item_dir in copies:
+    if not item in copies[item_dir]:
+      copies[item_dir] += [item]
+  else:
+    copies[item_dir] = [item]
 
 output_file.write("      'copies': [\n")
 for (dir, paths) in copies.items():
