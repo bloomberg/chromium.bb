@@ -135,19 +135,15 @@ char * DictMgr::mystrsep(char ** stringp, const char delim)
         *stringp = dp+1;
         int nc = (int)((unsigned long)dp - (unsigned long)mp); 
         rv = (char *) malloc(nc+1);
-        if (rv) {
-           memcpy(rv,mp,nc);
-           *(rv+nc) = '\0';
-           return rv;
-        }
+        memcpy(rv,mp,nc);
+        *(rv+nc) = '\0';
+        return rv;
      } else {
        rv = (char *) malloc(n+1);
-       if (rv) {
-          memcpy(rv, mp, n);
-          *(rv+n) = '\0';
-          *stringp = mp + n;
-          return rv;
-       }
+       memcpy(rv, mp, n);
+       *(rv+n) = '\0';
+       *stringp = mp + n;
+       return rv;
      }
   }
   return NULL;

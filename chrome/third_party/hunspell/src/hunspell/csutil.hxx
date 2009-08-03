@@ -3,56 +3,10 @@
 
 // First some base level utility routines
 
-#include "w_char.hxx"
-
-// casing
-#define NOCAP   0
-#define INITCAP 1
-#define ALLCAP  2
-#define HUHCAP  3
-#define HUHINITCAP  4
-
-// default encoding and keystring
-#define SPELL_ENCODING  "ISO8859-1"
-#define SPELL_KEYSTRING "qwertyuiop|asdfghjkl|zxcvbnm" 
-
-// default morphological fields
-#define MORPH_STEM        "st:"
-#define MORPH_ALLOMORPH   "al:"
-#define MORPH_POS         "po:"
-#define MORPH_DERI_PFX    "dp:"
-#define MORPH_INFL_PFX    "ip:"
-#define MORPH_TERM_PFX    "tp:"
-#define MORPH_DERI_SFX    "ds:"
-#define MORPH_INFL_SFX    "is:"
-#define MORPH_TERM_SFX    "ts:"
-#define MORPH_SURF_PFX    "sp:"
-#define MORPH_FREQ        "fr:"
-#define MORPH_PHON        "ph:"
-#define MORPH_HYPH        "hy:"
-#define MORPH_PART        "pa:"
-#define MORPH_FLAG        "fl:"
-#define MORPH_HENTRY      "_H:"
-#define MORPH_TAG_LEN     strlen(MORPH_STEM)
-
-#define MSEP_FLD ' '
-#define MSEP_REC '\n'
-#define MSEP_ALT '\v'
-
-// default flags
-#define DEFAULTFLAGS   65510
-#define FORBIDDENWORD  65510
-#define ONLYUPCASEFLAG 65511
-
-// hash entry macros
-#define HENTRY_DATA(h) (h->var ? ((h->var & H_OPT_ALIASM) ? \
-    get_stored_pointer(&(h->word) + h->blen + 1) : &(h->word) + h->blen + 1) : NULL)
-// NULL-free version for warning-free OOo build
-#define HENTRY_DATA2(h) (h->var ? ((h->var & H_OPT_ALIASM) ? \
-    get_stored_pointer(&(h->word) + h->blen + 1) : &(h->word) + h->blen + 1) : "")
-#define HENTRY_FIND(h,p) (HENTRY_DATA(h) ? strstr(HENTRY_DATA(h), p) : NULL)
-
-#define w_char_eq(a,b) (((a).l == (b).l) && ((a).h == (b).h))
+typedef struct {
+    unsigned char l;
+    unsigned char h;
+} w_char;
 
 // convert UTF-16 characters to UTF-8
 char * u16_u8(char * dest, int size, const w_char * src, int srclen);
@@ -72,9 +26,6 @@ void   mychomp(char * s);
 // duplicate string
 char * mystrdup(const char * s);
 
-// strcat for limited length destination string
-char * mystrcat(char * dest, const char * st, int max);
-
 // duplicate reverse of string
 char * myrevstrdup(const char * s);
 
@@ -90,26 +41,22 @@ char * mystrrep(char *, const char *, const char *);
 void strlinecat(char * lines, const char * s);
 
 // tokenize into lines with new line
-   int line_tok(const char * text, char *** lines, char breakchar);
+   int line_tok(const char * text, char *** lines);
 
 // tokenize into lines with new line and uniq in place
-   char * line_uniq(char * text, char breakchar);
-   char * line_uniq_app(char ** text, char breakchar);
+   char * line_uniq(char * text);
 
-// change oldchar to newchar in place
-   char * tr(char * text, char oldc, char newc);
+// change \n to c in place
+   char * line_join(char * text, char c);
+
+// leave only last {[^}]*} pattern in string
+   char * delete_zeros(char * morphout);
 
 // reverse word
    int reverseword(char *);
 
 // reverse word
    int reverseword_utf(char *);
-
-// remove duplicates
- int uniqlist(char ** list, int n);
-
-// free character array list
-   void freelist(char *** list, int n);
 
 // character encoding information
 struct cs_info {
@@ -154,11 +101,7 @@ struct cs_info * get_current_cs(const char * es);
 
 const char * get_default_enc(const char * lang);
 
-// get language identifiers of language codes
 int get_lang_num(const char * lang);
-
-// get characters of the given 8bit encoding with lower- and uppercase forms
-char * get_casechars(const char * enc);
 
 // convert null terminated string to all caps using encoding
 void enmkallcap(char * d, const char * p, const char * encoding);
@@ -184,34 +127,15 @@ void mkallsmall_utf(w_char * u, int nc, int langnum);
 // convert first nc characters of UTF-8 string to capital
 void mkallcap_utf(w_char * u, int nc, int langnum);
 
-// get type of capitalization
-int get_captype(char * q, int nl, cs_info *);
-
-// get type of capitalization (UTF-8)
-int get_captype_utf8(w_char * q, int nl, int langnum);
-
 // strip all ignored characters in the string
 void remove_ignored_chars_utf(char * word, unsigned short ignored_chars[], int ignored_len);
 
 // strip all ignored characters in the string
 void remove_ignored_chars(char * word, char * ignored_chars);
 
-int parse_string(char * line, char ** out, int ln);
+int parse_string(char * line, char ** out, const char * name);
 
-int parse_array(char * line, char ** out, unsigned short ** out_utf16,
-    int * out_utf16_len, int utf8, int ln);
-
-int fieldlen(const char * r);
-char * copy_field(char * dest, const char * morph, const char * var);
-
-int morphcmp(const char * s, const char * t);
-
-int get_sfxcount(const char * morph);
-
-// conversion function for protected memory
-void store_pointer(char * dest, char * source);
-
-// conversion function for protected memory
-char * get_stored_pointer(char * s);
+int parse_array(char * line, char ** out,
+        unsigned short ** out_utf16, int * out_utf16_len, const char * name, int utf8);
 
 #endif

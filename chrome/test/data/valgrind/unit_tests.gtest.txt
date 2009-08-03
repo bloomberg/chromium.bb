@@ -1,4 +1,2 @@
 # Takes 65 seconds to run.
 IPCSyncChannelTest.ChattyServer
-# Bug18254 - Hunspell 1.2.8 caused 28 suppression.
-SpellCheckTest.SpellCheckSuggestions_EN_US

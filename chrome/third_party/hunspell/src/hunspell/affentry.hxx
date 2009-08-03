@@ -54,7 +54,6 @@ public:
   inline void   setNextEQ(PfxEntry * ptr) { nexteq = ptr; }
   inline void   setFlgNxt(PfxEntry * ptr) { flgnxt = ptr; }
   
-  inline char * nextchar(char * p);
   inline int    test_condition(const char * st);
 };
 
@@ -124,9 +123,7 @@ public:
   inline void   setNextEQ(SfxEntry * ptr) { nexteq = ptr; }
   inline void   setFlgNxt(SfxEntry * ptr) { flgnxt = ptr; }
 
-  inline char * nextchar(char * p);
   inline int    test_condition(const char * st, const char * begin);
-
 };
 
 #endif

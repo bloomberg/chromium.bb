@@ -955,7 +955,7 @@
    fun:_ZN7WebCore8SVGNames4initEv
 }
 {
-  bug_18070
+  crbug_18070
   Memcheck:Leak
   ...
   fun:_ZN7Version20GetVersionFromStringERKSs
@@ -976,43 +976,4 @@
   fun:_ZN7testing8TestCase11RunTestCaseEPS0_
   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
   fun:_ZN7testing8UnitTest3RunEv
-}
-{
-  bug_18254
-  Memcheck:Leak
-  fun:_Znaj
-  fun:_ZN8AffixMgr10parse_fileEv
-  fun:_ZN8AffixMgrC1EPN8hunspell11BDictReaderEPP7HashMgrPi
-  fun:_ZN8HunspellC1EPKhj
-  fun:_ZN12SpellChecker10InitializeEv
-  fun:_ZN12SpellChecker14SpellCheckWordEPKwiPiS2_PSt6vectorISbIwSt11char_traitsIwESaIwEESaIS7_EE
-  fun:_ZN12SpellChecker21GetAutoCorrectionWordERKSbIwSt11char_traitsIwESaIwEEPS3_
-  fun:_ZN47SpellCheckTest_GetAutoCorrectionWord_EN_US_Test8TestBodyEv
-  fun:_ZN7testing4Test3RunEv
-  fun:_ZN7testing8internal12TestInfoImpl3RunEv
-  fun:_ZN7testing8internal12TestInfoImpl7RunTestEPNS_8TestInfoE
-  fun:_ZN7testing8TestCase3RunEv
-  fun:_ZN7testing8TestCase11RunTestCaseEPS0_
-  fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-  fun:_ZN7testing8UnitTest3RunEv
-  fun:main
-}
-{
-  bug_18254b
-  Memcheck:Leak
-  fun:_Znaj
-  fun:_ZN8AffixMgr10parse_fileEv
-  fun:_ZN8AffixMgrC1EPN8hunspell11BDictReaderEPP7HashMgrPi
-  fun:_ZN8HunspellC1EPKhj
-  fun:_ZN12SpellChecker10InitializeEv
-  fun:_ZN12SpellChecker14SpellCheckWordEPKwiPiS2_PSt6vectorISbIwSt11char_traitsIwESaIwEESaIS7_EE
-  fun:_ZN43SpellCheckTest_SpellCheckStrings_EN_US_Test8TestBodyEv
-  fun:_ZN7testing4Test3RunEv
-  fun:_ZN7testing8internal12TestInfoImpl3RunEv
-  fun:_ZN7testing8internal12TestInfoImpl7RunTestEPNS_8TestInfoE
-  fun:_ZN7testing8TestCase3RunEv
-  fun:_ZN7testing8TestCase11RunTestCaseEPS0_
-  fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-  fun:_ZN7testing8UnitTest3RunEv
-  fun:main
 }

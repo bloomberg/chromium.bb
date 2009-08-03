@@ -15,28 +15,25 @@
 
 #define ROTATE(v,q) \
    (v) = ((v) << (q)) | (((v) >> (32 - q)) & ((1 << (q))-1));
-
-// hentry options
-#define H_OPT        (1 << 0)
-#define H_OPT_ALIASM (1 << 1)
-#define H_OPT_PHON   (1 << 2)
-
-// see also csutil.hxx
-#define HENTRY_WORD(h) &(h->word)
-
 // approx. number  of user defined words
 #define USERWORD 1000
 
 struct hentry
 {
-  unsigned char blen; // word length in bytes
-  unsigned char clen; // word length in characters (different for UTF-8 enc.)
-  short    alen;      // length of affix flag vector
-  unsigned short * astr;  // affix flag vector
-  struct   hentry * next; // next word with same hash code
-  struct   hentry * next_homonym; // next homonym word (with same hash code)
-  char     var;       // variable fields (only for special pronounciation yet)
-  char     word;     // variable-length word (8-bit or UTF-8 encoding)
+  short    wlen;
+  short    alen;
+  /* NOTE:  Removed by mbelshe since this is not used.
+   * The english dictionary is 63K in size, so removing this 
+   * itty bitty field saves us ~250KB of RAM.
+  char     wbeg[2];
+  */
+  char *   word;
+  unsigned short * astr;
+  struct   hentry * next;
+  struct   hentry * next_homonym;
+#ifdef HUNSPELL_EXPERIMENTAL
+  char *   description;
+#endif
 };
 
 #endif
