@@ -1105,6 +1105,7 @@ BUG16018 : LayoutTests/fast/dom/HTMLDocument/hasFocus.html = FAIL
 // for the current release.
 BUG10322 : LayoutTests/accessibility = FAIL
 BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
+BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT
 
 // Border radius not anti-aliased.
 // New test. We should fix it, but it doesn't need to block the current release
@@ -3074,11 +3075,14 @@ BUG17883 WIN LINUX : LayoutTests/editing/execCommand/5138441.html = FAIL
 BUG17883 WIN LINUX : LayoutTests/editing/pasteboard/display-block-on-spans.html = FAIL
 
 // Test failures from WebKit merge 46508 to 46531
-BUG17974 WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
-BUG17974 WIN LINUX: LayoutTests/fast/css/remove-shorthand.html = FAIL
-BUG17974 WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-BUG17974 WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
-BUG17974 WIN: LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
+BUG17974 WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
+BUG17974 WIN LINUX : LayoutTests/fast/css/remove-shorthand.html = FAIL
+BUG17974 WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
+BUG17974 WIN LINUX : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
+BUG17974 WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 
 // This test seems to crash periodically on mac.
 BUG18206 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-onload-remove-self.html = CRASH PASS
+
+// New tests from WebKit merge from 46639 to 46726
+BUG18355 : LayoutTests/http/tests/misc/favicon-loads-with-images-disabled.html = FAIL
