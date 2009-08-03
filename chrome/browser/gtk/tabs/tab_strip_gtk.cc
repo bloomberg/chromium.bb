@@ -1305,15 +1305,15 @@ void TabStripGtk::GetDesiredTabWidths(int tab_count,
   }
 
   if (pinned_tab_count > 0) {
-    available_width -= (pinned_tab_count * TabGtk::GetPinnedWidth() -
-                        std::max(0, pinned_tab_count - 1) * kTabHOffset);
+    available_width -= pinned_tab_count * (TabGtk::GetPinnedWidth() +
+                                           kTabHOffset);
     tab_count -= pinned_tab_count;
     if (tab_count == 0) {
       *selected_width = *unselected_width = TabGtk::GetStandardSize().width();
       return;
     }
-    // For spacing between last pinned tab and normal tab.
-    available_width -= kTabHOffset;
+    // Account for gap between the last pinned tab and first non-pinned tab.
+    available_width -= pinned_to_non_pinned_gap_;
   }
 
   // Calculate the desired tab widths by dividing the available space into equal
