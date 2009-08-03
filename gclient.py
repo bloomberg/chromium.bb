@@ -1378,18 +1378,23 @@ class GClient(object):
       # delete_unversioned_trees is set to true.
       prev_entries = self._ReadEntries()
       for entry in prev_entries:
-        e_dir = os.path.join(self._root_dir, entry)
+        # Fix path separator on Windows.
+        entry_fixed = entry.replace('/', os.path.sep)
+        e_dir = os.path.join(self._root_dir, entry_fixed)
+        # Use entry and not entry_fixed there.
         if entry not in entries and os.path.exists(e_dir):
           if not self._options.delete_unversioned_trees or \
              CaptureSVNStatus(e_dir):
-            # There are modified files in this entry
-            entries[entry] = None  # Keep warning until removed.
-            print("\nWARNING: \"%s\" is no longer part of this client.  "
-                  "It is recommended that you manually remove it.\n") % entry
+            # There are modified files in this entry. Keep warning until
+            # removed.
+            entries[entry] = None
+            print(("\nWARNING: \"%s\" is no longer part of this client.  "
+                   "It is recommended that you manually remove it.\n") %
+                      entry_fixed)
           else:
             # Delete the entry
             print("\n________ deleting \'%s\' " +
-                  "in \'%s\'") % (entry, self._root_dir)
+                  "in \'%s\'") % (entry_fixed, self._root_dir)
             RemoveDirectory(e_dir)
       # record the current list of entries for next time
       self._SaveEntries(entries)
