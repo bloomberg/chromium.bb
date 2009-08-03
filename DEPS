@@ -133,4 +133,9 @@ hooks = [
     "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]",
     "action": ["python", "src/tools/gyp/gyp_chromium"],
   },
+  {
+    # Workaround IncrediBuild problem. http://crbug.com/17706.
+    "pattern": "\\.grd$",
+    "action": ["python", "src/build/win/clobber_generated_headers.py", "$matching_files"],
+  },
 ]
