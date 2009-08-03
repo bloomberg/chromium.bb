@@ -29,38 +29,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//
-// GzDecompressor decompresses a gzip compressed byte stream
-// calling the client's ProcessBytes() method with the uncompressed stream
-//
 
-#ifndef O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
-#define O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
-
-#include "base/basictypes.h"
-#include "zlib.h"
-#include "import/cross/memory_stream.h"
+#include <npapi.h>
+#include "plugin/cross/main_thread_task_poster.h"
 
 namespace o3d {
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class GzDecompressor : public StreamProcessor {
- public:
-  explicit GzDecompressor(StreamProcessor *callback_client);
-  virtual ~GzDecompressor();
+MainThreadTaskPoster::MainThreadTaskPoster(ServiceLocator* service_locator,
+                                           NPP npp)
+    : service_(service_locator, this),
+      npp_(npp) {
+}
 
-  virtual Status  ProcessBytes(MemoryReadStream *stream,
-                               size_t bytes_to_process);
-  virtual void    Close(bool success);
+MainThreadTaskPoster::~MainThreadTaskPoster() {
+}
 
- private:
-  z_stream         strm_;  // low-level zlib state
-  bool             initialized_;
-  StreamProcessor  *callback_client_;
+bool MainThreadTaskPoster::IsSupported() {
+  int plugin_major, plugin_minor, browser_major, browser_minor;
+  NPN_Version(&plugin_major, &plugin_minor, &browser_major, &browser_minor);
+  return browser_major > 0 ||
+      browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL;
+}
 
-  DISALLOW_COPY_AND_ASSIGN(GzDecompressor);
-};
+void MainThreadTaskPoster::PostTask(Task* task) {
+  DCHECK(IsSupported());
+  NPN_PluginThreadAsyncCall(npp_, &MainThreadTaskPoster::RunTask, task);
+}
 
+void MainThreadTaskPoster::RunTask(void* data) {
+  Task* task = static_cast<Task*>(data);
+  task->Run();
+  delete task;
+}
 }  // namespace o3d
-
-#endif  //  O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_

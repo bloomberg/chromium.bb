@@ -67,12 +67,27 @@ class TarTestClient : public ArchiveCallbackClient {
   virtual void ReceiveFileHeader(const ArchiveFileInfo &file_info);
   virtual bool ReceiveFileData(MemoryReadStream *stream, size_t nbytes);
 
+  virtual void Close(bool success) {
+    closed_ = true;
+    success_ = success;
+  }
+
   int GetFileCount() const { return file_count_; }
   size_t GetNumTotalBytesReceived() const { return index_; }
+
+  bool closed() const {
+    return closed_;
+  }
+
+  bool success() const {
+    return success_;
+  }
 
  private:
   int file_count_;
   int index_;
+  bool closed_;
+  bool success_;
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,18 +157,31 @@ TEST_F(TarProcessorTest, LoadTarFile) {
   MemoryReadStream tar_stream(tar_data, file_size);
   size_t bytes_to_process = file_size;
 
-  int result = Z_OK;
   while (bytes_to_process > 0) {
     size_t bytes_this_time =
         bytes_to_process < kChunkSize ? bytes_to_process : kChunkSize;
 
-    result = tar_processor.ProcessBytes(&tar_stream, bytes_this_time);
-    EXPECT_TRUE(result == Z_OK);
+    StreamProcessor::Status status = tar_processor.ProcessBytes(
+        &tar_stream, bytes_this_time);
+    EXPECT_TRUE(status != StreamProcessor::FAILURE);
 
     bytes_to_process -= bytes_this_time;
   }
+  tar_processor.Close(true);
+
+  EXPECT_TRUE(callback_client.closed());
+  EXPECT_TRUE(callback_client.success());
 
   free(tar_data);
+}
+
+TEST_F(TarProcessorTest, PassesThroughFailure) {
+  TarTestClient callback_client;
+  TarProcessor tar_processor(&callback_client);
+  tar_processor.Close(false);
+
+  EXPECT_TRUE(callback_client.closed());
+  EXPECT_FALSE(callback_client.success());
 }
 
 }  // namespace

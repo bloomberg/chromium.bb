@@ -63,7 +63,7 @@ NPError OpenURL(NPBrowserProxy* browser_proxy,
 
 NPNetscapeFuncs NPBrowserProxy::kNetscapeFunctions = {
   sizeof(kNetscapeFunctions),
-  NPVERS_HAS_NPOBJECT_ENUM,
+  NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL,
   NPN_GetURL,
   NPN_PostURL,
   NPN_RequestRead,
@@ -107,6 +107,7 @@ NPNetscapeFuncs NPBrowserProxy::kNetscapeFunctions = {
   NULL,
   NULL,
   NPN_Enumerate,
+  NPN_PluginThreadAsyncCall,
 };
 
 NPBrowserProxy::NPBrowserProxy(CHostControl* host, IDispatchEx* window_dispatch)
@@ -788,6 +789,22 @@ bool NPBrowserProxy::NPN_Evaluate(NPP npp,
     NPN_ReleaseObject(result_object);
   }
   return success;
+}
+
+void NPBrowserProxy::NPN_PluginThreadAsyncCall(NPP npp,
+                                               void (*function)(void *),
+                                               void *data) {
+  if (!npp || !function) {
+    return;
+  }
+
+  NPBrowserProxy *browser_proxy = static_cast<NPBrowserProxy*>(npp->ndata);
+  CHostControl *host_control = browser_proxy->GetHostingControl();
+  ATLASSERT(host_control);
+
+  host_control->PostMessage(WM_PLUGINASYNCCALL,
+                            reinterpret_cast<WPARAM>(function),
+                            reinterpret_cast<LPARAM>(data));
 }
 
 void NPBrowserProxy::NPN_SetException(NPObject *obj,

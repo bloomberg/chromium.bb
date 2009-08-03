@@ -101,6 +101,7 @@ PluginObject::PluginObject(NPP npp)
       client_info_manager_(&service_locator_),
       object_manager_(&service_locator_),
       profiler_(&service_locator_),
+      main_thread_task_poster_(&service_locator_, npp),
       fullscreen_(false),
       renderer_(NULL),
       features_(NULL),
@@ -822,52 +823,52 @@ void PluginObject::PlatformSpecificSetCursor() {
 
 #endif  // OS_LINUX
 
+namespace {
+void TickPluginObject(void* data) {
+  PluginObject* plugin_object = static_cast<PluginObject*>(data);
+
+  // Check the plugin has not been destroyed already. Chrome sometimes invokes
+  // async callbacks after destruction.
+  if (!plugin_object->client())
+    return;
+
+  // Don't allow reentrancy through asynchronous ticks. Chrome sometimes does
+  // this. It is also possible for the asyncronous call to be invoked while
+  // a message is being handled. This prevents that.
+  Client::ScopedIncrement reentrance_count(plugin_object->client());
+  if (reentrance_count.get() > 1)
+    return;
+
+  plugin_object->Tick();
+}
+}
+
 void PluginObject::AsyncTick() {
   if (pending_ticks_ >= 1)
     return;
 
-  class TickCallback : public StreamManager::FinishedCallback {
-   public:
-    explicit TickCallback(PluginObject* plugin_object)
-        : plugin_object_(plugin_object) {
-    }
-
-    virtual void Run(DownloadStream*,
-                     bool,
-                     const std::string&,
-                     const std::string&) {
-      plugin_object_->Tick();
-    }
-
-   private:
-    PluginObject* plugin_object_;
-  };
-
   ++pending_ticks_;
 
-  // Invoke Client::Tick and Client::RenderClient in a way that is asynchronous
-  // in Chrome. This avoids issues with making calls into the browser from a
-  // message handler.
-  // If NPN_PluginThreadAsyncCall worked in more browsers, it would be simpler
-  // to use that.
-  // We're calling LoadURL here with a URL that will return 0 bytes on browsers
-  // that support the "data:" protocol and fail in browsers that don't like IE.
-  // On browsers that support it, the side effect is to call the TickCallback.
-  if (!stream_manager_->LoadURL("data:,", NULL, NULL, NULL,
-                                new TickCallback(this), NP_NORMAL)) {
-    // Fallback on synchronous call if asynchronous load fails.
+  // Invoke Tick asynchronously if NPN_PluginThreadAsyncCall is supported.
+  // Otherwise invoke it synchronously.
+  int plugin_major, plugin_minor, browser_major, browser_minor;
+  NPN_Version(&plugin_major, &plugin_minor, &browser_major, &browser_minor);
+  if (browser_major > 0 ||
+      browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
+    NPN_PluginThreadAsyncCall(npp_, TickPluginObject, this);
+  } else {
     Tick();
   }
 }
 
 void PluginObject::Tick() {
+  DCHECK(pending_ticks_ > 0);
+  --pending_ticks_;
+
   client_->Tick();
   if (renderer_ && renderer_->need_to_render()) {
     client_->RenderClient(true);
   }
-
-  DCHECK(pending_ticks_ > 0);
-  --pending_ticks_;
 }
 
 }  // namespace _o3d

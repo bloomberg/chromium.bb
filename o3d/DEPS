@@ -1,7 +1,7 @@
 vars = {
   "chromium_trunk":
     "http://src.chromium.org/svn/trunk",
-  "nixysa_rev": "28",
+  "nixysa_rev": "29",
   "o3d_code_rev": "109",
   "skia_rev": "279",
   "gyp_rev": "553",
@@ -38,6 +38,9 @@ deps = {
 
   "o3d/third_party/jsdoctoolkit":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/jsdoctoolkit@" + Var("o3d_code_rev"),
+
+  "o3d/third_party/libevent":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/libevent@" + Var("o3d_code_rev"),
 
   "o3d/third_party/pdiff":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pdiff@" + Var("o3d_code_rev"),

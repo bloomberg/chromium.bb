@@ -29,39 +29,57 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//
-// TarGzProcessor processes a gzipped tar stream (tar.gz)
-// compressed byte stream
-//
+// MainThreadArchiveCallbackClient forwards data from one thread to
+// another client that will run on the main thread.
 
-#ifndef O3D_IMPORT_CROSS_TARGZ_PROCESSOR_H_
-#define O3D_IMPORT_CROSS_TARGZ_PROCESSOR_H_
+#ifndef O3D_IMPORT_CROSS_MAIN_THREAD_ARCHIVE_CALLBACK_CLIENT_H_
+#define O3D_IMPORT_CROSS_MAIN_THREAD_ARCHIVE_CALLBACK_CLIENT_H_
 
 #include "base/basictypes.h"
+#include "base/thread.h"
 #include "import/cross/archive_processor.h"
-#include "import/cross/gz_decompressor.h"
-#include "import/cross/tar_processor.h"
-#include "zlib.h"
+#include "import/cross/memory_stream.h"
 
 namespace o3d {
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class TarGzProcessor : public ArchiveProcessor  {
+class IMainThreadTaskPoster;
+class ServiceLocator;
+
+class MainThreadArchiveCallbackClient : public ArchiveCallbackClient {
  public:
-  explicit TarGzProcessor(ArchiveCallbackClient *callback_client);
+  MainThreadArchiveCallbackClient(ServiceLocator* service_locator,
+                                  ArchiveCallbackClient *receiver);
+  virtual ~MainThreadArchiveCallbackClient();
 
-  virtual Status ProcessBytes(MemoryReadStream *stream,
-                              size_t bytes_to_process);
-
+  virtual void ReceiveFileHeader(const ArchiveFileInfo &file_info);
+  virtual bool ReceiveFileData(MemoryReadStream *stream, size_t size);
   virtual void Close(bool success);
 
  private:
-  TarProcessor   tar_processor_;
-  GzDecompressor gz_decompressor_;
+  struct Success : ::base::RefCountedThreadSafe< Success > {
+    bool value;
+  };
 
-  DISALLOW_COPY_AND_ASSIGN(TarGzProcessor);
+  typedef scoped_refptr<Success> SuccessPtr;
+
+  static void ForwardReceiveFileHeader(SuccessPtr success,
+                                       ArchiveCallbackClient* client,
+                                       ArchiveFileInfo file_info);
+
+  static void ForwardReceiveFileData(SuccessPtr success,
+                                     ArchiveCallbackClient* client,
+                                     uint8* bytes, size_t size);
+
+  static void ForwardClose(SuccessPtr success_ptr,
+                           ArchiveCallbackClient* client,
+                           bool success);
+
+  IMainThreadTaskPoster* main_thread_task_poster_;
+  ArchiveCallbackClient* receiver_;
+  SuccessPtr success_;
+
+  DISALLOW_COPY_AND_ASSIGN(MainThreadArchiveCallbackClient);
 };
-
 }  // namespace o3d
 
-#endif  // O3D_IMPORT_CROSS_TARGZ_PROCESSOR_H_
+#endif  //  O3D_IMPORT_CROSS_MAIN_THREAD_ARCHIVE_CALLBACK_CLIENT_H_

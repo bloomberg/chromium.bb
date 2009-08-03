@@ -54,10 +54,12 @@ class TarGzTestClient : public StreamProcessor {
  public:
   explicit TarGzTestClient(size_t reference_size)
       : compressed_data_(reference_size),
-        write_stream_(compressed_data_, reference_size) {
+        write_stream_(compressed_data_, reference_size),
+        closed_(false),
+        success_(false) {
   };
 
-  virtual int     ProcessBytes(MemoryReadStream *stream,
+  virtual Status ProcessBytes(MemoryReadStream *stream,
                                size_t bytes_to_process) {
     // Simply buffer up the tar.gz bytes
     // When we've gotten them all our Validate() method will be called
@@ -69,7 +71,12 @@ class TarGzTestClient : public StreamProcessor {
 
     write_stream_.Write(p, bytes_to_process);
 
-    return 0;
+    return SUCCESS;
+  }
+
+  virtual void Close(bool success) {
+    closed_ = true;
+    success_ = success;
   }
 
   // Checks that the data from the reference tar.gz file matches the tar.gz
@@ -95,9 +102,19 @@ class TarGzTestClient : public StreamProcessor {
   }
 #endif
 
+  bool closed() const {
+    return closed_;
+  }
+
+  bool success() const {
+    return success_;
+  }
+
  private:
   MemoryBuffer<uint8>  compressed_data_;
   MemoryWriteStream    write_stream_;
+  bool closed_;
+  bool success_;
 
   DISALLOW_COPY_AND_ASSIGN(TarGzTestClient);
 };
@@ -142,7 +159,7 @@ TEST_F(TarGzGeneratorTest, GenerateTarGz) {
   targz_generator.AddFile("test/shaders/BumpReflect.fx", shader_size);
   targz_generator.AddFileBytes(shader_data, shader_size);
 
-  targz_generator.Finalize();
+  targz_generator.Close(true);
 
 #if defined(GENERATE_GOLDEN)
   std::string new_golden_file = *g_program_path +
@@ -163,10 +180,21 @@ TEST_F(TarGzGeneratorTest, GenerateTarGz) {
                       received_data,
                       test_client.compressed_data_length()));
 
+  EXPECT_TRUE(test_client.closed());
+  EXPECT_TRUE(test_client.success());
+
   free(targz_data);
   free(image_data);
   free(audio_data);
   free(shader_data);
 }
 
+TEST_F(TarGzGeneratorTest, PassesThroughCloseFailure) {
+  TarGzTestClient test_client(1000);
+  TarGzGenerator targz_generator(&test_client);
+  targz_generator.Close(false);
+
+  EXPECT_TRUE(test_client.closed());
+  EXPECT_FALSE(test_client.success());
+}
 }  // namespace o3d

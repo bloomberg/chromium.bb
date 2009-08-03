@@ -29,38 +29,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//
-// GzDecompressor decompresses a gzip compressed byte stream
-// calling the client's ProcessBytes() method with the uncompressed stream
-//
+// ThreadedStreamProcessor forwards data from one thread to
+// another processor that will run on a new thread owned by the
+// ThreadedStreamProcessor.
 
-#ifndef O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
-#define O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
+#ifndef O3D_IMPORT_CROSS_THREADED_STREAM_PROCESSOR_H_
+#define O3D_IMPORT_CROSS_THREADED_STREAM_PROCESSOR_H_
 
 #include "base/basictypes.h"
-#include "zlib.h"
+#include "base/thread.h"
 #include "import/cross/memory_stream.h"
 
 namespace o3d {
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class GzDecompressor : public StreamProcessor {
+class ThreadedStreamProcessor : public StreamProcessor {
  public:
-  explicit GzDecompressor(StreamProcessor *callback_client);
-  virtual ~GzDecompressor();
+  explicit ThreadedStreamProcessor(StreamProcessor *receiver);
+  virtual ~ThreadedStreamProcessor();
 
-  virtual Status  ProcessBytes(MemoryReadStream *stream,
-                               size_t bytes_to_process);
-  virtual void    Close(bool success);
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process);
+
+  virtual void Close(bool success);
+
+  void StartThread();
+  void StopThread();
 
  private:
-  z_stream         strm_;  // low-level zlib state
-  bool             initialized_;
-  StreamProcessor  *callback_client_;
+  static void ForwardBytes(ThreadedStreamProcessor* processor,
+                           const uint8* data, size_t size);
 
-  DISALLOW_COPY_AND_ASSIGN(GzDecompressor);
+  static void ForwardClose(ThreadedStreamProcessor* processor, bool success);
+
+  StreamProcessor* receiver_;
+  ::base::Thread thread_;
+  Status status_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadedStreamProcessor);
 };
-
 }  // namespace o3d
 
-#endif  //  O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
+#endif  //  O3D_IMPORT_CROSS_THREADED_STREAM_PROCESSOR_H_

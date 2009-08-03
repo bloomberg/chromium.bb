@@ -37,12 +37,12 @@ namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 TarGzGenerator::TarGzGenerator(StreamProcessor *callback_client)
-    : gz_compressor_(callback_client), tar_generator_(this) {
+    : gz_compressor_(callback_client), tar_generator_(&gz_compressor_) {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void TarGzGenerator::AddFile(const String &file_name, size_t file_size) {
-  tar_generator_.AddFile(file_name, file_size);
+bool TarGzGenerator::AddFile(const String &file_name, size_t file_size) {
+  return tar_generator_.AddFile(file_name, file_size);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,16 +57,8 @@ int TarGzGenerator::AddFileBytes(const uint8 *data, size_t n) {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void TarGzGenerator::Finalize() {
-  tar_generator_.Finalize();
-  gz_compressor_.Finalize();
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int TarGzGenerator::ProcessBytes(MemoryReadStream *stream,
-                                 size_t bytes_to_process) {
-  // pass bytestream from tar generator to the compressor
-  return gz_compressor_.ProcessBytes(stream, bytes_to_process);
+void TarGzGenerator::Close(bool success) {
+  tar_generator_.Close(success);
 }
 
 }  // namespace o3d

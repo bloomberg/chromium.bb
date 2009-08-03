@@ -41,12 +41,20 @@ FileOutputStreamProcessor::FileOutputStreamProcessor(FILE* file)
   DCHECK(file != NULL);
 }
 
-int FileOutputStreamProcessor::ProcessBytes(MemoryReadStream *stream,
-                                            size_t bytes_to_process) {
+StreamProcessor::Status FileOutputStreamProcessor::ProcessBytes(
+    MemoryReadStream *stream,
+    size_t bytes_to_process) {
+  DCHECK(file_ != NULL);
   size_t num_written = fwrite(stream->GetDirectMemoryPointer(),
                               1,
                               bytes_to_process,
                               file_);
-  return num_written == bytes_to_process ? 0 : -1;
+  return num_written == bytes_to_process ? IN_PROGRESS : FAILURE;
 }
+
+void FileOutputStreamProcessor::Close(bool success) {
+  fclose(file_);
+  file_ = NULL;
+}
+
 }  // namespace o3d

@@ -53,8 +53,6 @@ class ArchiveFileInfo {
  private:
   std::string      filename_;
   int              file_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArchiveFileInfo);
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,10 +61,11 @@ class ArchiveCallbackClient {
   virtual ~ArchiveCallbackClient() {}
   virtual void ReceiveFileHeader(const ArchiveFileInfo &file_info) = 0;
   virtual bool ReceiveFileData(MemoryReadStream *stream, size_t nbytes) = 0;
+  virtual void Close(bool success) = 0;
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class ArchiveProcessor {
+class ArchiveProcessor: public StreamProcessor {
  public:
   explicit ArchiveProcessor(ArchiveCallbackClient *callback_client) {}
 
@@ -75,25 +74,16 @@ class ArchiveProcessor {
   // Call to "push" bytes into the processor.  They will be decompressed and
   // the appropriate callbacks on |callback_client| will happen
   // as files come in...
-  //
-  // Return values (using zlib error codes):
-  // Z_OK         : Processing was successful - but not yet done
-  // Z_STREAM_END : We're done - archive is completely/successfully processed
-  // any other value indicates an error condition
-  //
-  // Note: even archive formats not based on zlib should use these codes
-  // (Z_OK, Z_STREAM_END)
-  //
-  virtual int     ProcessCompressedBytes(MemoryReadStream *stream,
-                                         size_t bytes_to_process) = 0;
+  virtual Status  ProcessBytes(MemoryReadStream *stream,
+                               size_t bytes_to_process) = 0;
 
   // Decompresses the complete file archive, making file callbacks as the files
   // come in...
-  virtual int     ProcessFile(const char *filename);
+  virtual Status  ProcessFile(const char *filename);
 
   // Decompresses the complete archive from memory,
   // making file callbacks as the files come in...
-  virtual int     ProcessEntireStream(MemoryReadStream *stream);
+  virtual Status  ProcessEntireStream(MemoryReadStream *stream);
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(ArchiveProcessor);

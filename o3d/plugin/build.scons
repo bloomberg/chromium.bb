@@ -130,6 +130,7 @@ if env.Bit('mac'):
     LIBS = [
       'o3dStatsreport_Common',
       'o3dStatsreport',
+      'event',
       logging_lib,
     ],
     FRAMEWORKS = [
@@ -150,7 +151,12 @@ if env.Bit('mac'):
   )
 
 if env.Bit('linux'):
-  env.Append(CPPDEFINES = ['XP_UNIX', 'MOZ_X11']);
+  env.Append(
+      CPPDEFINES = ['XP_UNIX', 'MOZ_X11'],
+      LIBS = [
+        'event',
+      ],
+  );
 
 # Add libraries based on the requested renderer
 env.Append(CPPPATH = env['RENDERER_INCLUDE_PATH'],
@@ -183,6 +189,7 @@ inputs = AUTOGEN_CC_FILES + [
   'cross/async_loading.cc',
   'cross/archive_request_static_glue.cc',
   'cross/blacklist.cc',
+  'cross/main_thread_task_poster.cc',
   'cross/o3d_glue.cc',
   'cross/np_v8_bridge.cc',
   'cross/out_of_memory.cc',

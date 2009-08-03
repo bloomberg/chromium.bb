@@ -31,7 +31,8 @@
 
 namespace o3d {
 
-[include="core/cross/file_request.h"] callback void FileRequestCallback();
+[include="core/cross/file_request.h", async]
+callback void FileRequestCallback();
 
 %[
   A FileRequest object is used to carry out an asynchronous request for a file

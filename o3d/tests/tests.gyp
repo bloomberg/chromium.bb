@@ -86,7 +86,7 @@
         ['OS == "mac"',
           {
             'sources': [
-              'common/mac/testing_common.cc',
+              'common/mac/testing_common.mm',
             ],
             'link_settings': {
               'libraries': [

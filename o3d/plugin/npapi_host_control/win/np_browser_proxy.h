@@ -266,6 +266,10 @@ class NPBrowserProxy {
                            NPString *script,
                            NPVariant *result);
 
+  static void NPN_PluginThreadAsyncCall(NPP npp,
+                                        void (*function)(void *),
+                                        void *data);
+
   static void NPN_SetException(NPObject *obj, const NPUTF8 *message);
 
   // Static table of function pointers to the member function entry points

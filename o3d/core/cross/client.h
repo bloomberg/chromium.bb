@@ -400,7 +400,6 @@ class Client {
   // Returns true on success and false on failure.
   bool SaveScreen(const String& file_name);
 
-#ifdef OS_WIN
   // This class is intended to be used on the stack, such that the variable gets
   // incremented on scope entry and decremented on scope exit.  It's currently
   // used in WindowProc to determine if we're reentrant or not, but may be
@@ -431,7 +430,6 @@ class Client {
     Client *client_;
     DISALLOW_COPY_AND_ASSIGN(ScopedIncrement);
   };
-#endif
 
  private:
 
@@ -499,9 +497,7 @@ class Client {
   // The id of the client.
   Id id_;
 
-#ifdef OS_WIN
   int calls_;  // Used to check reentrancy along with ScopedIncrement.
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(Client);
 };  // Client

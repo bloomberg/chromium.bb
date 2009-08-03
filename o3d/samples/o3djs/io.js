@@ -494,9 +494,7 @@ o3djs.io.loadArchiveAdvanced = function(pack,
   var request = pack.createArchiveRequest();
   var loadInfo = o3djs.io.createLoadInfo(request, true);
   request.open('GET', url);
-  request.onfileavailable = function() {
-    onFileAvailable(/** @type {!o3d.RawData} */ (request.data));
-  };
+  request.onfileavailable = onFileAvailable;
   /**
    * @ignore
    */

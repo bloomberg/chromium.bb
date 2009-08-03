@@ -132,14 +132,29 @@ class CallbackClient : public StreamProcessor {
       : state_(VALIDATE_DIRECTORY_HEADER1),
         total_bytes_received_(0),
         memory_block_(kBlockSize),
-        write_stream_(memory_block_, kBlockSize) {
+        write_stream_(memory_block_, kBlockSize),
+        closed_(false),
+        success_(false) {
   }
 
-  virtual int     ProcessBytes(MemoryReadStream *stream,
+  virtual Status  ProcessBytes(MemoryReadStream *stream,
                                size_t bytes_to_process);
+
+  virtual void Close(bool success) {
+    closed_ = true;
+    success_ = success;
+  }
 
   size_t          GetTotalBytesReceived() { return total_bytes_received_; }
   int             GetState() { return state_; }
+
+  bool closed() const {
+    return closed_;
+  }
+
+  bool success() const {
+    return success_;
+  }
 
  private:
   bool            IsOctalDigit(uint8 c);
@@ -159,11 +174,13 @@ class CallbackClient : public StreamProcessor {
   size_t              total_bytes_received_;
   MemoryBuffer<uint8> memory_block_;
   MemoryWriteStream   write_stream_;
+  bool                closed_;
+  bool                success_;
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int CallbackClient::ProcessBytes(MemoryReadStream *stream,
-                                 size_t bytes_to_process) {
+StreamProcessor::Status CallbackClient::ProcessBytes(MemoryReadStream *stream,
+                                                     size_t bytes_to_process) {
   total_bytes_received_ += bytes_to_process;
 
   while (bytes_to_process > 0) {
@@ -254,7 +271,7 @@ int CallbackClient::ProcessBytes(MemoryReadStream *stream,
     bytes_to_process -= bytes_this_time;
   }
 
-  return 0;
+  return IN_PROGRESS;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -403,7 +420,7 @@ TEST_F(TarGeneratorTest, CreateSimpleArchive) {
                                 kFileLength3);
   generator.AddFileBytes(&file4_stream, kFileLength3);
 
-  generator.Finalize();
+  generator.Close(true);
 
   // Verify that the tar byte stream produced is exactly divisible by
   // the block size
@@ -412,6 +429,18 @@ TEST_F(TarGeneratorTest, CreateSimpleArchive) {
 
   // Make sure the state machine is in the expected state
   EXPECT_EQ(CallbackClient::FINISHED, client.GetState());
+
+  EXPECT_TRUE(client.closed());
+  EXPECT_TRUE(client.success());
+}
+
+TEST_F(TarGeneratorTest, PassesThroughFailure) {
+  CallbackClient client;
+  TarGenerator generator(&client);
+  generator.Close(false);
+
+  EXPECT_TRUE(client.closed());
+  EXPECT_FALSE(client.success());
 }
 
 }  // namespace

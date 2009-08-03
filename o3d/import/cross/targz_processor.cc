@@ -57,10 +57,13 @@ TarGzProcessor::TarGzProcessor(ArchiveCallbackClient *callback_client)
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-int TarGzProcessor::ProcessCompressedBytes(MemoryReadStream *stream,
-                                           size_t bytes_to_process) {
-  int result = gz_decompressor_.ProcessBytes(stream, bytes_to_process);
-  return result;
+StreamProcessor::Status TarGzProcessor::ProcessBytes(MemoryReadStream *stream,
+                                                     size_t bytes_to_process) {
+  return gz_decompressor_.ProcessBytes(stream, bytes_to_process);
+}
+
+void TarGzProcessor::Close(bool success) {
+  gz_decompressor_.Close(success);
 }
 
 }  // namespace o3d

@@ -27,29 +27,62 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# This SConscript is currently only suitable for Linux.
 
 Import('env')
 
-env.Append(CPPPATH = ['$RENDERER_INCLUDE_PATH'])
+env.Prepend(
+    CPPPATH = [
+      '$LIBEVENT_DIR',
+    ],
+)
 
-inputs = [
-  "cross/main.cc",
-]
-
-if env.Bit('windows'):
-  inputs += [
-      "win/dxcapture.cc",
-      "win/testing_common.cc",
-  ]
-
-if env.Bit('linux'):
-  inputs += [
-      "linux/testing_common.cc",
-  ]
+env.Append(
+    CPPDEFINES = [
+      'HAVE_CONFIG_H',
+    ],
+)
 
 if env.Bit('mac'):
-  inputs += [
-      "mac/testing_common.mm",
-  ]
+  env.Prepend(
+      CPPPATH = [
+        '$LIBEVENT_DIR/mac',
+      ],
+  )
 
-o3dcore_lib = env.ComponentLibrary("testing_common", inputs)
+if env.Bit('linux'):
+  env.Prepend(
+      CPPPATH = [
+        '$LIBEVENT_DIR/linux',
+      ],
+  )
+
+inputs = [
+    'buffer',
+    'evbuffer',
+    'evdns',
+    'event',
+    'event_tagging',
+    'evrpc',
+    'evutil',
+    'http',
+    'log',
+    'poll',
+    'select',
+    'signal',
+    'strlcpy',
+]
+
+if env.Bit('mac'):
+  inputs.extend([
+      'kqueue',
+  ])
+
+if env.Bit('linux'):
+  inputs.extend([
+      'epoll',
+      'epoll_sub',
+  ])
+
+objects = env.MakeObjects(inputs, '$LIBEVENT_DIR', 'c')
+env.ComponentLibrary('event', inputs)

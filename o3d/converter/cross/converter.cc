@@ -256,9 +256,7 @@ bool Convert(const FilePath& in_filename,
   // the loading process.
   AddBinaryElements(collada, &archive_generator);
 
-  archive_generator.Finalize();
-
-  file_util::CloseFile(out_file);
+  archive_generator.Close(true);
 
   pack->Destroy();
   if (error_messages) {

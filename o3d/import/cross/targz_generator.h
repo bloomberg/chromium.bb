@@ -54,32 +54,26 @@
 namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class TarGzGenerator : public StreamProcessor, public IArchiveGenerator {
+class TarGzGenerator : public IArchiveGenerator {
  public:
   // |callback_client| receives the tar.gz byte stream
   explicit TarGzGenerator(StreamProcessor *callback_client);
 
   // Call AddFile() for each file entry, followed by calls to AddFileBytes()
   // for the file's data
-  void AddFile(const String &file_name,
-               size_t file_size);
+  virtual bool AddFile(const String &file_name,
+                       size_t file_size);
 
   // Call with the file's data (after calling AddFile)
   // may be called one time with all the file's data, or multiple times
   // until all the data is provided
-  int AddFileBytes(MemoryReadStream *stream, size_t n);
+  virtual int AddFileBytes(MemoryReadStream *stream, size_t n);
   int AddFileBytes(const uint8 *data, size_t n);
 
   // Must call this after all files and file data have been written
-  virtual void Finalize();
+  virtual void Close(bool success);
 
  private:
-  // StreamProcessor method:
-  // Receives the tar bytestream from the TarGenerator.
-  // It then feeds this into the GzCompressor
-  virtual int ProcessBytes(MemoryReadStream *stream,
-                           size_t bytes_to_process);
-
   GzCompressor gz_compressor_;
   TarGenerator tar_generator_;
 

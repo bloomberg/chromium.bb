@@ -260,6 +260,17 @@ LRESULT CHostControl::OnDestroy(UINT uMsg,
   return 0;
 }
 
+LRESULT CHostControl::OnPluginAsyncCall(UINT message,
+                                        WPARAM w_param,
+                                        LPARAM l_param,
+                                        BOOL& handled) {
+  typedef void (*Function)(void*);
+  Function function = reinterpret_cast<Function>(w_param);
+  void* data = reinterpret_cast<void*>(l_param);
+  function(data);
+  handled = TRUE;
+  return 0;
+}
 
 HRESULT CHostControl::FinalConstruct() {
   return ConstructPluginProxy();

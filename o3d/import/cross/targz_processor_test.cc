@@ -56,17 +56,37 @@ const char *kConcatenatedContents =
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class ArchiveTestClient : public ArchiveCallbackClient {
  public:
-  explicit ArchiveTestClient() : file_count_(0), index_(0) {}
+  explicit ArchiveTestClient()
+      : file_count_(0),
+        index_(0),
+        closed_(false),
+        success_(false) {}
+
   // ArchiveCallbackClient methods
   virtual void ReceiveFileHeader(const ArchiveFileInfo &file_info);
   virtual bool ReceiveFileData(MemoryReadStream *stream, size_t nbytes);
 
+  virtual void Close(bool success) {
+    closed_ = true;
+    success_ = success;
+  }
+
   int GetFileCount() const { return file_count_; }
   size_t GetNumTotalBytesReceived() const { return index_; }
+
+  bool closed() const {
+    return closed_;
+  }
+
+  bool success() const {
+    return success_;
+  }
 
  private:
   int file_count_;
   int index_;
+  bool closed_;
+  bool success_;
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,12 +139,17 @@ TEST_F(TarGzProcessorTest, LoadTarGzFile) {
   ArchiveTestClient test_callback_client;
 
   TarGzProcessor processor(&test_callback_client);
-  int result = processor.ProcessFile(filepath.c_str());
-  EXPECT_EQ(Z_OK, result);
+  StreamProcessor::Status status = processor.ProcessFile(filepath.c_str());
+  processor.Close(true);
+
+  EXPECT_EQ(StreamProcessor::SUCCESS, status);
 
   EXPECT_EQ(3, test_callback_client.GetFileCount());
   EXPECT_EQ(strlen(kConcatenatedContents),
             test_callback_client.GetNumTotalBytesReceived());
+
+  EXPECT_TRUE(test_callback_client.closed());
+  EXPECT_TRUE(test_callback_client.success());
 }
 
 // Tries to load something with a tar.gz extension, but which isn't
@@ -136,8 +161,12 @@ TEST_F(TarGzProcessorTest, LoadBogusTarGzFile) {
   ArchiveTestClient test_callback_client;
 
   TarGzProcessor processor(&test_callback_client);
-  int result = processor.ProcessFile(filepath.c_str());
-  EXPECT_TRUE(result != Z_OK);
-}
+  StreamProcessor::Status status = processor.ProcessFile(filepath.c_str());
+  processor.Close(false);
 
+  EXPECT_EQ(StreamProcessor::FAILURE, status);
+
+  EXPECT_TRUE(test_callback_client.closed());
+  EXPECT_FALSE(test_callback_client.success());
+}
 }  // namespace

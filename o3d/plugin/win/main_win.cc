@@ -90,9 +90,12 @@ namespace {
 const wchar_t* const kFullScreenWindowClassName = L"O3DFullScreenWindowClass";
 
 // We would normally make this a stack variable in main(), but in a
-// plugin, that's not possible, so we allocate it dynamically and
-// destroy it explicitly.
-scoped_ptr<base::AtExitManager> g_at_exit_manager;
+// plugin, that's not possible, so we make it a global. When the DLL is loaded
+// this it gets constructed and when it is unlooaded it is destructed. Note
+// that this cannot be done in NP_Initialize and NP_Shutdown because those
+// calls do not necessarily signify the DLL being loaded and unloaded. If the
+// DLL is not unloaded then the values of global variables are preserved.
+base::AtExitManager g_at_exit_manager;
 
 static int HandleKeyboardEvent(PluginObject *obj,
                                HWND hWnd,
@@ -494,13 +497,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
 
   switch (Msg) {
     case WM_PAINT: {
-      if (reentrance_count.get() > 1) {
-        // In Chrome, alert dialogs raised from JavaScript cause
-        // reentrant WM_PAINT messages to be dispatched and 100% CPU
-        // to be consumed unless we call this
-        ::ValidateRect(hWnd, NULL);
-        break;  // Ignore this message; we're reentrant.
-      }
       PAINTSTRUCT paint_struct;
       HDC hdc = ::BeginPaint(hWnd, &paint_struct);
       if (paint_struct.rcPaint.right - paint_struct.rcPaint.left != 0 ||
@@ -564,7 +560,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
       // repaint the window.
       if (obj->client()->render_mode() == o3d::Client::RENDERMODE_CONTINUOUS) {
         InvalidateRect(obj->GetHWnd(), NULL, FALSE);
-        reentrance_count.decrement();
         UpdateWindow(obj->GetHWnd());
       }
 
@@ -691,10 +686,6 @@ NPError InitializePlugin() {
     g_exception_manager->StartMonitoring();
   }
 
-  // Initialize the AtExitManager so that base singletons can be
-  // destroyed properly.
-  g_at_exit_manager.reset(new base::AtExitManager());
-
   // Turn on the logging.
   CommandLine::Init(0, NULL);
   InitLogging(L"debug.log",
@@ -790,9 +781,6 @@ NPError OSCALL NP_Shutdown(void) {
   }
 
   CommandLine::Terminate();
-
-  // Force all base singletons to be destroyed.
-  g_at_exit_manager.reset(NULL);
 
   // TODO : This is commented out until we can determine if
   // it's safe to shutdown breakpad at this stage (Gears, for
@@ -891,10 +879,10 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
     DCHECK(obj->GetPluginHWnd());
     DCHECK(obj->GetFullscreenHWnd());
     DCHECK(obj->GetPluginHWnd() == hWnd);
-    
+
     // Exit full screen if the plugin window is being modified.
     obj->CancelFullscreenDisplay();
-    
+
     return NPERR_NO_ERROR;
   }
   DCHECK(!obj->GetPluginHWnd());

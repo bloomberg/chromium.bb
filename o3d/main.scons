@@ -609,6 +609,7 @@ mac_env.Append(CPPDEFINES = ['RENDERER_GL',
                  '-mmacosx-version-min=10.4'
                  ],
                BUILD_COMPONENTS = [
+                 'event',
                  'statsreport',
                  'statsreport/common',
                  ],
@@ -689,7 +690,8 @@ linux_env.Append(
     LIBS = ['pthread', 'rt', 'dl'],
     NACL_HTP_LIBS = ['ssl', 'crypto'],
     BUILD_COMPONENTS = [
-        'installer/linux'
+        'installer/linux',
+        'event',
     ],
 )
 

@@ -31,8 +31,11 @@
 
 namespace o3d {
 
+[include="import/cross/archive_request.h", async]
+callback void ArchiveReadyStateChangeCallback();
+
 [include="import/cross/archive_request.h"]
-callback void ArchiveRequestCallback();
+callback void ArchiveFileAvailableCallback(RawData rawData);
 
 %[
   An ArchiveRequest object is used to carry out an asynchronous request for a
@@ -87,14 +90,14 @@ callback void ArchiveRequestCallback();
     A callback that gets called each time readyState changes.
   %]
   [setter]
-  ArchiveRequestCallback? onreadystatechange;
+  ArchiveReadyStateChangeCallback? onreadystatechange;
 
   %[
     A callback that gets called each time a file fully downloads and becomes
     available.
   %]
   [setter]
-  ArchiveRequestCallback? onfileavailable;
+  ArchiveFileAvailableCallback? onfileavailable;
 
   %[
     The uri of the archive being downloaded.
@@ -104,6 +107,8 @@ callback void ArchiveRequestCallback();
   %[
     A RawData object representing the file that is currently available.
     Note: This value is only valid inside the onfileavailable callback.
+    Note: This property is deprecated. It is now an argument of the
+        onfileavailable callback.
   %]
   [getter] RawData? data;
 

@@ -29,38 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//
-// GzDecompressor decompresses a gzip compressed byte stream
-// calling the client's ProcessBytes() method with the uncompressed stream
-//
 
-#ifndef O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
-#define O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
+#ifndef O3D_PLUGIN_CROSS_MAIN_THREAD_TASK_POSTER_H
+#define O3D_PLUGIN_CROSS_MAIN_THREAD_TASK_POSTER_H
 
-#include "base/basictypes.h"
-#include "zlib.h"
-#include "import/cross/memory_stream.h"
+#include <npapi.h>
+#include "core/cross/imain_thread_task_poster.h"
+#include "core/cross/service_implementation.h"
 
 namespace o3d {
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class GzDecompressor : public StreamProcessor {
+class MainThreadTaskPoster : public IMainThreadTaskPoster {
  public:
-  explicit GzDecompressor(StreamProcessor *callback_client);
-  virtual ~GzDecompressor();
-
-  virtual Status  ProcessBytes(MemoryReadStream *stream,
-                               size_t bytes_to_process);
-  virtual void    Close(bool success);
-
+  MainThreadTaskPoster(ServiceLocator* service_locator, NPP npp);
+  virtual ~MainThreadTaskPoster();
+  virtual bool IsSupported();
+  virtual void PostTask(Task* task);
  private:
-  z_stream         strm_;  // low-level zlib state
-  bool             initialized_;
-  StreamProcessor  *callback_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(GzDecompressor);
+  static void RunTask(void* data);
+  ServiceImplementation<IMainThreadTaskPoster> service_;
+  NPP npp_;
+  DISALLOW_COPY_AND_ASSIGN(MainThreadTaskPoster);
 };
 
 }  // namespace o3d
 
-#endif  //  O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
+#endif  // O3D_PLUGIN_CROSS_MAIN_THREAD_TASK_POSTER_H

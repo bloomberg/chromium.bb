@@ -64,6 +64,7 @@
 #include "core/cross/object_manager.h"
 #include "core/cross/error.h"
 #include "core/cross/profiler.h"
+#include "plugin/cross/main_thread_task_poster.h"
 #include "plugin/cross/np_v8_bridge.h"
 #include "client_glue.h"
 #include "third_party/nixysa/static_glue/npapi/common.h"
@@ -85,6 +86,7 @@ using o3d::ClientInfoManager;
 using o3d::EvaluationCounter;
 using o3d::Features;
 using o3d::EvaluationCounter;
+using o3d::MainThreadTaskPoster;
 using o3d::ObjectManager;
 using o3d::Profiler;
 using o3d::Renderer;
@@ -129,6 +131,7 @@ class PluginObject: public NPObject {
   ClientInfoManager client_info_manager_;
   ObjectManager object_manager_;
   Profiler profiler_;
+  MainThreadTaskPoster main_thread_task_poster_;
   bool fullscreen_;  // Are we rendered fullscreen or in the plugin region?
   Renderer *renderer_;
   Client *client_;

@@ -54,7 +54,7 @@ GzDecompressor::GzDecompressor(StreamProcessor *callback_client)
   strm_.next_in = Z_NULL;
 
   // Store this, so we can later check if it's OK to start processing
-  init_result_ = inflateInit2(&strm_, 31);
+  initialized_ = inflateInit2(&strm_, 31) == Z_OK;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -64,10 +64,10 @@ GzDecompressor::~GzDecompressor() {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-int GzDecompressor::ProcessBytes(MemoryReadStream *stream,
-                                 size_t bytes_to_process) {
+StreamProcessor::Status GzDecompressor::ProcessBytes(MemoryReadStream *stream,
+                                                     size_t bytes_to_process) {
   // Don't even bother trying if we didn't get initialized properly
-  if (init_result_ != Z_OK) return init_result_;
+  if (!initialized_) return FAILURE;
 
   uint8 out[kChunkSize];
   int result;
@@ -76,7 +76,7 @@ int GzDecompressor::ProcessBytes(MemoryReadStream *stream,
   // Don't try to read more than our stream has
   size_t remaining = stream->GetRemainingByteCount();
   if (bytes_to_process > remaining) {
-    return Z_STREAM_ERROR;  // could have our own error code, but good enough...
+    return FAILURE;
   }
 
   // Use direct memory access on the MemoryStream object
@@ -95,11 +95,9 @@ int GzDecompressor::ProcessBytes(MemoryReadStream *stream,
     assert(result != Z_STREAM_ERROR);  /* state not clobbered */
     switch (result) {
       case Z_NEED_DICT:
-        result = Z_DATA_ERROR;     /* and fall through */
-
       case Z_DATA_ERROR:
       case Z_MEM_ERROR:
-        return result;
+        return FAILURE;
     }
 
     have = kChunkSize - strm_.avail_out;
@@ -107,15 +105,26 @@ int GzDecompressor::ProcessBytes(MemoryReadStream *stream,
     // Callback with the decompressed byte stream
     MemoryReadStream decompressed_stream(out, have);
     if (callback_client_) {
-      int client_result =
-          callback_client_->ProcessBytes(&decompressed_stream, have);
-      if (client_result != 0) {
-        return client_result;  // propagate callback errors
+      if (callback_client_->ProcessBytes(&decompressed_stream,
+                                         have) == FAILURE) {
+        return FAILURE;
       }
     }
   } while (strm_.avail_out == 0);
 
-  return result;
+  switch (result) {
+    case Z_OK:
+    case Z_BUF_ERROR: // Zlib docs say this is expected.
+      return IN_PROGRESS;
+    case Z_STREAM_END:
+      return SUCCESS;
+    default:
+      return FAILURE;
+  }
+}
+
+void GzDecompressor::Close(bool success) {
+  callback_client_->Close(success);
 }
 
 }  // namespace o3d

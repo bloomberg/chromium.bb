@@ -58,6 +58,8 @@
 
 class NPPluginProxy;
 
+const UINT WM_PLUGINASYNCCALL = WM_USER + 100;
+
 // Class implementing an ActiveX control for containing NPAPI plugin-objects.
 // This needs to be CComMultiThreadModel because these objects are concurrently
 // AddRefed and Released from StreamOperation threads.
@@ -110,6 +112,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_HOSTCONTROL)
 BEGIN_MSG_MAP(CHostControl)
   MESSAGE_HANDLER(WM_CREATE, OnCreate)
   MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+  MESSAGE_HANDLER(WM_PLUGINASYNCCALL, OnPluginAsyncCall)
 END_MSG_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CHostControl)
@@ -176,6 +179,8 @@ END_PROP_MAP()
 
   LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
   LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+  LRESULT OnPluginAsyncCall(UINT message, WPARAM w_param, LPARAM l_param,
+                            BOOL& handled);
 
   // Initiates a data transfer, calling back into the hosted plug-in instance
   // on status updates.  Does not block on the transfer.

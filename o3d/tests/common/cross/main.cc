@@ -32,6 +32,7 @@
 
 // defines the common main() for all unit tests
 #include <build/build_config.h>
+#include "base/at_exit.h"
 #include "gtest/gtest.h"
 
 #ifdef OS_WIN
@@ -39,6 +40,7 @@ int test_main(int argc, wchar_t **argv) {
 #else
 int test_main(int argc, char **argv) {
 #endif
+  ::base::AtExitManager at_exit_manager;
   testing::InitGoogleTest(&argc, argv);
 
   return RUN_ALL_TESTS();

@@ -49,18 +49,19 @@ class GzCompressor : public StreamProcessor {
   explicit GzCompressor(StreamProcessor *callback_client);
   virtual ~GzCompressor();
 
-  virtual int ProcessBytes(MemoryReadStream *stream, size_t bytes_to_process);
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process);
 
   // Must call when all bytes to compress have been sent (with ProcessBytes)
-  void Finalize();
+  virtual void Close(bool success);
 
  private:
-  int CompressBytes(MemoryReadStream *stream,
-                    size_t bytes_to_process,
-                    bool flush);
+  Status CompressBytes(MemoryReadStream *stream,
+                       size_t bytes_to_process,
+                       bool flush);
 
   z_stream strm_;  // low-level zlib state
-  int init_result_;
+  bool initialized_;
   bool stream_is_closed_;
   StreamProcessor *callback_client_;
 

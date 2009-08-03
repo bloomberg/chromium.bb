@@ -46,16 +46,26 @@ chrome_base_inputs = [
   'debug_util',
   'file_path',
   'file_util',
+  'histogram',
+  'lazy_instance',
   'lock',
   'logging',
+  'message_loop',
+  'message_pump_default',
   'path_service',
+  'ref_counted',
+  'stats_table',
   'string_piece',
   'string_util',
   'string_util_icu',
+  'system_monitor',
+  'thread_collision_warner',
   'third_party/dmg_fp/dtoa',
   'third_party/dmg_fp/g_fmt',
   'third_party/nspr/prtime',
   'thread',
+  'tracked',
+  'tracked_objects',
 ]
 
 inputs = [
@@ -74,6 +84,7 @@ if env.Bit('windows'):
     'process_util_win',
     'registry',
     'shared_memory_win',
+    'sys_info_win',
     'sys_string_conversions_win',
     'system_monitor_win',
     'thread_local_storage_win',
@@ -83,23 +94,13 @@ if env.Bit('windows'):
     'win_util',
   ]
   # The following are cross-platform, but are not needed on linux or mac, and
-  # pull in more third-party dependencies (libevent) on those platforms, so
+  # pull in more third-party dependencies on those platforms, so
   # they are not built on all platforms currently.
   # TODO: get the dependencies straightened out.
   chrome_base_inputs += [
     'cpu',
-    'histogram',
-    'lazy_instance',
-    'message_loop',
-    'message_pump_default',
-    'ref_counted',
-    'stats_table',
-    'system_monitor',
-    'thread_collision_warner',
     'time',
     'timer',
-    'tracked',
-    'tracked_objects',
   ]
 
 chrome_base_inputs_posix = [
@@ -108,12 +109,17 @@ chrome_base_inputs_posix = [
   'debug_util_posix',
   'file_util_posix',
   'lock_impl_posix',
+  'message_pump_libevent',
   'platform_thread_posix',
+  'process_util_posix',
+  'shared_memory_posix',
   'string16',
+  'sys_info_posix',
   'time',
   'time_posix',
   'thread_local_posix',
   'thread_local_storage_posix',
+  'waitable_event_posix',
 ]
 chrome_base_inputs_mm = []
 
@@ -122,6 +128,8 @@ if env.Bit('linux'):
   chrome_base_inputs += [
     'base_paths_linux',
     'file_util_linux',
+    'message_pump_glib',
+    'process_util_linux',
     'sys_string_conversions_linux',
   ]
 
@@ -130,7 +138,10 @@ if env.Bit('mac'):
   chrome_base_inputs_mm += [
     'base_paths_mac',
     'file_util_mac',
+    'message_pump_mac',
     'platform_thread_mac',
+    'process_util_mac',
+    'scoped_nsautorelease_pool',
     'sys_string_conversions_mac',
   ]
 

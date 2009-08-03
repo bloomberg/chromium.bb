@@ -36,13 +36,11 @@
 #include "core/cross/client.h"
 #include "core/cross/types.h"
 #include "tests/common/win/testing_common.h"
-#include "base/at_exit.h"
 #include "base/condition_variable.h"
 #include "base/lock.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
 
-using ::base::AtExitManager;
 using ::base::Time;
 using ::base::TimeDelta;
 
@@ -286,7 +284,6 @@ void MessageQueueTest::RunTests(int num_threads,
   MessageQueue* message_queue = new MessageQueue(g_service_locator);
   message_queue->Initialize();
 
-  AtExitManager manager;
   TimeSource* time_source = new WallClockTimeSource();
   TestWatchdog* watchdog = new TestWatchdog(num_threads,
                                             timeout,

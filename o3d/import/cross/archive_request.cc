@@ -33,8 +33,11 @@
 
 #include "import/cross/archive_request.h"
 
-#include "import/cross/targz_processor.h"
 #include "core/cross/pack.h"
+#include "core/cross/imain_thread_task_poster.h"
+#include "import/cross/targz_processor.h"
+#include "import/cross/main_thread_archive_callback_client.h"
+#include "import/cross/threaded_stream_processor.h"
 
 #define DEBUG_ARCHIVE_CALLBACKS  0
 
@@ -61,12 +64,25 @@ ArchiveRequest::ArchiveRequest(ServiceLocator* service_locator,
       ready_state_(0),
       stream_length_(0),
       bytes_received_(0) {
-  archive_processor_ = new TarGzProcessor(this);
+  IMainThreadTaskPoster* main_thread_task_poster =
+      service_locator->GetService<IMainThreadTaskPoster>();
+  if (main_thread_task_poster->IsSupported()) {
+    main_thread_archive_callback_client_ = new MainThreadArchiveCallbackClient(
+        service_locator, this);
+    extra_processor_ = new TarGzProcessor(main_thread_archive_callback_client_);
+    archive_processor_ = new ThreadedStreamProcessor(extra_processor_);
+  } else {
+    main_thread_archive_callback_client_ = NULL;
+    extra_processor_ = NULL;
+    archive_processor_ = new TarGzProcessor(this);
+  }
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ArchiveRequest::~ArchiveRequest() {
   delete archive_processor_;
+  delete extra_processor_;
+  delete main_thread_archive_callback_client_;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -85,7 +101,7 @@ void ArchiveRequest::NewStreamCallback(DownloadStream *stream) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 int32 ArchiveRequest::WriteReadyCallback(DownloadStream *stream) {
   // Setting this too high causes Firefox to timeout in the Write callback.
-  return 1024;
+  return 128 * 1024;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,10 +115,10 @@ int32 ArchiveRequest::WriteCallback(DownloadStream *stream,
   MemoryReadStream memory_stream(reinterpret_cast<uint8*>(data), length);
 
   // Progressively decompress the bytes we've just been given
-  int result =
-      archive_processor_->ProcessCompressedBytes(&memory_stream, length);
+  StreamProcessor::Status status =
+      archive_processor_->ProcessBytes(&memory_stream, length);
 
-  if (result != Z_OK && result != Z_STREAM_END) {
+  if (status == StreamProcessor::FAILURE) {
     set_success(false);
     set_error("Invalid gzipped tar file");
     stream->Cancel();  // tell the browser to stop downloading
@@ -120,21 +136,7 @@ void ArchiveRequest::FinishedCallback(DownloadStream *stream,
                                       bool success,
                                       const std::string &filename,
                                       const std::string &mime_type)  {
-  set_ready_state(ArchiveRequest::STATE_LOADED);
-
-  // Since the standard codes only go far enough to tell us that the download
-  // succeeded, we set the success [and implicitly the done] flags to give the
-  // rest of the story.
-  set_success(success);
-  if (!success) {
-    // I have no idea if an error is already set here but one MUST be set
-    // so let's check.
-    if (error().empty()) {
-      set_error(String("Could not download archive: ") + uri());
-    }
-  }
-  if (onreadystatechange())
-    onreadystatechange()->Run();
+  archive_processor_->Close(success);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -212,7 +214,7 @@ bool ArchiveRequest::ReceiveFileData(MemoryReadStream *input_stream,
           return false;
         }
       } else {
-        onfileavailable()->Run();
+        onfileavailable()->Run(raw_data_);
       }
 
       // If data hasn't been discarded (inside callback) then writes out to
@@ -225,6 +227,24 @@ bool ArchiveRequest::ReceiveFileData(MemoryReadStream *input_stream,
     }
   }
   return true;
+}
+
+void ArchiveRequest::Close(bool success) {
+  set_ready_state(ArchiveRequest::STATE_LOADED);
+
+  // Since the standard codes only go far enough to tell us that the download
+  // succeeded, we set the success [and implicitly the done] flags to give the
+  // rest of the story.
+  set_success(success);
+  if (!success) {
+    // I have no idea if an error is already set here but one MUST be set
+    // so let's check.
+    if (error().empty()) {
+      set_error(String("Could not download archive: ") + uri());
+    }
+  }
+  if (onreadystatechange())
+    onreadystatechange()->Run();
 }
 
 }  // namespace o3d

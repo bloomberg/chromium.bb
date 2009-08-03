@@ -68,12 +68,16 @@ struct AddFileRecord {
 
 class MockArchiveGenerator : public IArchiveGenerator {
  public:
-  virtual void AddFile(const String& file_name,
+  MockArchiveGenerator() : closed_(false), success_(false) {
+  }
+
+  virtual bool AddFile(const String& file_name,
                        size_t file_size) {
     AddFileRecord record;
     record.file_name_ = file_name;
     record.file_size_ = file_size;
     add_file_records_.push_back(record);
+    return true;
   }
 
   virtual int AddFileBytes(MemoryReadStream* stream, size_t numBytes) {
@@ -85,7 +89,14 @@ class MockArchiveGenerator : public IArchiveGenerator {
     return 0;
   }
 
+  virtual void Close(bool success) {
+    closed_ = true;
+    success_ = success;
+  }
+
   vector<AddFileRecord> add_file_records_;
+  bool closed_;
+  bool success_;
 };
 
 class SerializerTest : public testing::Test {
@@ -323,8 +334,9 @@ TEST_F(SerializerTest, ShouldSerializeCurveKeysToSingleBinaryFile) {
   serializer_.SerializePack(pack_);
   EXPECT_EQ(1, archive_generator_.add_file_records_.size());
   const AddFileRecord& record = archive_generator_.add_file_records_[0];
-
   EXPECT_EQ("curve-keys.bin", record.file_name_);
+
+  EXPECT_FALSE(archive_generator_.closed_);
 
   // Test that the data matches what we get if we call SerializeCurve directly
   // The file should contain the concatenated contents of both curves
@@ -413,6 +425,8 @@ TEST_F(SerializerTest, SerializesAllIndexBufferBinaryToSingleFileInArchive) {
   EXPECT_EQ(1, archive_generator_.add_file_records_.size());
   const AddFileRecord& record = archive_generator_.add_file_records_[0];
   EXPECT_EQ("index-buffers.bin", record.file_name_);
+
+  EXPECT_FALSE(archive_generator_.closed_);
 
   // Test that the data matches what we get if we call SerializeBuffer directly
   // The file should contain the concatenated contents of both buffers
@@ -743,6 +757,8 @@ TEST_F(SerializerTest, ShouldSerializeSkinToSingleBinaryFile) {
   const AddFileRecord& record = archive_generator_.add_file_records_[0];
   EXPECT_EQ("skins.bin", record.file_name_);
 
+  EXPECT_FALSE(archive_generator_.closed_);
+
   // Test that the data matches what we get if we call SerializeSkin directly
   // The file should contain the concatenated contents of both skins
   MemoryBuffer<uint8> contents1;
@@ -1042,6 +1058,8 @@ TEST_F(SerializerTest, SerializesAllVertexBufferBinaryToSingleFileInArchive) {
   EXPECT_EQ(1, archive_generator_.add_file_records_.size());
   const AddFileRecord& record = archive_generator_.add_file_records_[0];
   EXPECT_EQ("vertex-buffers.bin", record.file_name_);
+
+  EXPECT_FALSE(archive_generator_.closed_);
 
   // Test that the data matches what we get if we call SerializeBuffer directly
   // The file should contain the concatenated contents of both buffers

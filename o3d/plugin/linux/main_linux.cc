@@ -50,9 +50,12 @@ using o3d::Event;
 
 namespace {
 // We would normally make this a stack variable in main(), but in a
-// plugin, that's not possible, so we allocate it dynamically and
-// destroy it explicitly.
-scoped_ptr<base::AtExitManager> g_at_exit_manager;
+// plugin, that's not possible, so we make it a global. When the DLL is loaded
+// this it gets constructed and when it is unlooaded it is destructed. Note
+// that this cannot be done in NP_Initialize and NP_Shutdown because those
+// calls do not necessarily signify the DLL being loaded and unloaded. If the
+// DLL is not unloaded then the values of global variables are preserved.
+base::AtExitManager g_at_exit_manager;
 
 bool g_xembed_support = false;
 
@@ -584,10 +587,6 @@ NPError InitializePlugin() {
   if (!o3d::SetupOutOfMemoryHandler())
     return NPERR_MODULE_LOAD_FAILED_ERROR;
 
-  // Initialize the AtExitManager so that base singletons can be
-  // destroyed properly.
-  g_at_exit_manager.reset(new base::AtExitManager());
-
   CommandLine::Init(0, NULL);
   InitLogging("debug.log",
               logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
@@ -635,9 +634,6 @@ NPError EXPORT_SYMBOL OSCALL NP_Shutdown(void) {
   DLOG(INFO) << "NP_Shutdown";
 
   CommandLine::Terminate();
-
-  // Force all base singletons to be destroyed.
-  g_at_exit_manager.reset(NULL);
 
   return NPERR_NO_ERROR;
 }

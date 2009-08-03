@@ -54,17 +54,19 @@ GzCompressor::GzCompressor(StreamProcessor *callback_client)
   strm_.opaque = Z_NULL;
 
   // Store this, so we can later check if it's OK to start processing
-  init_result_ = deflateInit2(
+  int result = deflateInit2(
       &strm_,
       Z_DEFAULT_COMPRESSION,
       Z_DEFLATED,
       MAX_WBITS + 16,  // 16 means write out gzip header/trailer
       DEF_MEM_LEVEL,
       Z_DEFAULT_STRATEGY);
+
+  initialized_ = result == Z_OK;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void GzCompressor::Finalize() {
+void GzCompressor::Close(bool success) {
   if (!stream_is_closed_) {
     // Flush the compression stream
     MemoryReadStream stream(NULL, 0);
@@ -74,39 +76,38 @@ void GzCompressor::Finalize() {
     deflateEnd(&strm_);
     stream_is_closed_ = true;
   }
+
+  callback_client_->Close(success);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 GzCompressor::~GzCompressor() {
-  // Finalize() turns out to be a "nop" if the user has already called it
-  Finalize();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int GzCompressor::ProcessBytes(MemoryReadStream *stream,
-                               size_t bytes_to_process) {
+StreamProcessor::Status GzCompressor::ProcessBytes(MemoryReadStream *stream,
+                                                   size_t bytes_to_process) {
   // Basic sanity check
   if (stream->GetDirectMemoryPointer() == NULL || bytes_to_process == 0) {
-    return -1;
+    return FAILURE;
   }
 
   return CompressBytes(stream, bytes_to_process, false);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int GzCompressor::CompressBytes(MemoryReadStream *stream,
-                                size_t bytes_to_process,
-                                bool flush) {
+StreamProcessor::Status GzCompressor::CompressBytes(MemoryReadStream *stream,
+                                                    size_t bytes_to_process,
+                                                    bool flush) {
   // Don't even bother trying if we didn't get initialized properly
-  if (init_result_ != Z_OK) return init_result_;
+  if (!initialized_) return FAILURE;
 
   uint8 out[kChunkSize];
-  int result = Z_OK;
 
   // Don't try to read more than our stream has
   size_t remaining = stream->GetRemainingByteCount();
   if (bytes_to_process > remaining) {
-    return Z_STREAM_ERROR;
+    return FAILURE;
   }
 
   // Use direct memory access on the MemoryStream object
@@ -120,30 +121,29 @@ int GzCompressor::CompressBytes(MemoryReadStream *stream,
   // We need to flush the stream when we reach the end
   int flush_code = flush ? Z_FINISH : Z_NO_FLUSH;
 
-  // Run inflate() on input until output buffer not full
+  // Run deflate() on input until output buffer not full
+  int result;
   do {
     strm_.avail_out = kChunkSize;
     strm_.next_out = out;
 
     result = deflate(&strm_, flush_code);
-
-    // error check here - return error codes if necessary
-    assert(result != Z_STREAM_ERROR);  // state not clobbered
+    if (result == Z_STREAM_ERROR)
+      return FAILURE;
 
     size_t have = kChunkSize - strm_.avail_out;
 
     // Callback with the compressed byte stream
     MemoryReadStream decompressed_stream(out, have);
     if (have > 0 && callback_client_) {
-      int client_result =
-          callback_client_->ProcessBytes(&decompressed_stream, have);
-      if (client_result != 0) {
-        return client_result;  // propagate callback errors
+      if (callback_client_->ProcessBytes(&decompressed_stream,
+                                         have) == FAILURE) {
+        return FAILURE;
       }
     }
   } while (strm_.avail_out == 0);
 
-  return result;
+  return result == Z_OK ? IN_PROGRESS : FAILURE;
 }
 
 }  // namespace o3d

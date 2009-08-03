@@ -41,7 +41,8 @@ static const int kFileSizeOffset         = 124;
 static const int kLinkFlagOffset         = 156;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
+StreamProcessor::Status TarProcessor::ProcessBytes(MemoryReadStream *stream,
+                                                   size_t n) {
   // Keep processing the byte-stream until we've consumed all we're given
   //
   size_t bytes_to_consume = n;
@@ -56,7 +57,7 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
           stream->Read(reinterpret_cast<uint8*>(header_ + header_bytes_read_),
                        bytes_to_read);
       if (bytes_read != bytes_to_read) {
-        return -1;
+        return FAILURE;
       }
 
       header_bytes_read_ += bytes_to_read;
@@ -73,7 +74,7 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
           getting_filename_ = true;
           // We should pick some size that's too large.
           if (file_size > 1024) {
-            return -1;
+            return FAILURE;
           }
         } else {
           getting_filename_ = false;
@@ -92,10 +93,10 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
             ArchiveFileInfo info(filename, file_size);
             callback_client_->ReceiveFileHeader(info);
           } else if (header_[0] == 0) {
-            // If filename is NULL due to zero-padding then file size
-            // should also be NULL
-            // TODO(gman): Won't this crash the plugin if I make a bad tar?
-            assert(file_size == 0);
+            // If filename is empty due to zero-padding then file size
+            // should also be zero.
+            if (file_size != 0)
+              return FAILURE;
           }
         }
 
@@ -134,7 +135,7 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
         } else {
           if (!callback_client_->ReceiveFileData(&client_read_stream,
                                                  client_bytes_this_time)) {
-            return -1;
+            return FAILURE;
           }
         }
 
@@ -166,7 +167,11 @@ int TarProcessor::ProcessBytes(MemoryReadStream *stream, size_t n) {
     }
   }
 
-  return 0;
+  return IN_PROGRESS;
+}
+
+void TarProcessor::Close(bool success) {
+  callback_client_->Close(success);
 }
 
 }  // namespace o3d

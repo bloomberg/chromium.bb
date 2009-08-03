@@ -266,9 +266,21 @@ class MemoryWriteStream {
 // Abstract interface to process a memory stream
 class StreamProcessor {
  public:
+
+// Status is defined in Linux
+#ifdef Status
+#undef Status
+#endif
+  enum Status {
+    IN_PROGRESS,
+    SUCCESS,
+    FAILURE,
+  };
+
   virtual ~StreamProcessor() {}
-  virtual int ProcessBytes(MemoryReadStream *stream,
-                           size_t bytes_to_process) = 0;
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process) = 0;
+  virtual void Close(bool success) = 0;
 };
 
 }  // namespace o3d

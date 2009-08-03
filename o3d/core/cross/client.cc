@@ -139,6 +139,18 @@ void Client::Cleanup() {
   ClearTickCallback();
   event_manager_.ClearAll();
   counter_manager_.ClearAllCallbacks();
+
+  // Disable continuous rendering because there is nothing to render after
+  // Cleanup is called. This speeds up the the process of unloading the page.
+  // It also preserves the last rendered frame so long as it does not become
+  // invalid.
+  render_mode_ = RENDERMODE_ON_DEMAND;
+
+  // Destroy the packs here if possible. If there are a lot of objects it takes
+  // a long time and seems to make Chrome timeout if it happens in NPP_Destroy.
+  root_.Reset();
+  rendergraph_root_.Reset();
+  object_manager_->DestroyAllPacks();
 }
 
 Pack* Client::CreatePack() {

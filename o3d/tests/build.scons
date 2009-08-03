@@ -110,7 +110,7 @@ env.Prepend(
         'technique',
         'antlr3c',
         'gtest',
-        'skia'
+        'skia',
     ] + env['ICU_LIBS'],
 )
 
@@ -122,6 +122,22 @@ env.Append(
     ] + env['RENDERER_LIB_PATH'],
     LIBS = env['RENDERER_LIBS'],
 )
+
+# Add libevent on posix platforms.
+if env.Bit('mac') or env.Bit('linux'):
+  env.Append(
+      LIBS = [
+        'event',
+      ],
+  )
+
+# Add cocoa framework on mac.
+if env.Bit('mac'):
+  env.Append(
+      FRAMEWORKS = [
+        'Cocoa',
+      ],
+  )
 
 run_env = env.Clone()
 if env.Bit('linux'):
@@ -181,6 +197,7 @@ tests = [
     'core/cross/draw_pass_test.cc',
     'core/cross/effect_test.cc',
     'core/cross/element_test.cc',
+    'core/cross/event_manager_test.cc',
     'core/cross/fake_vertex_source.cc',
     'core/cross/features_test.cc',
     'core/cross/field_test.cc',
@@ -223,6 +240,7 @@ tests = [
     'import/cross/gz_compressor_test.cc',
     'import/cross/gz_decompressor_test.cc',
     'import/cross/json_object_test.cc',
+    'import/cross/main_thread_archive_callback_client_test.cc',
     'import/cross/memory_buffer_test.cc',
     'import/cross/memory_stream_test.cc',
     'import/cross/raw_data_test.cc',
@@ -230,6 +248,7 @@ tests = [
     'import/cross/tar_processor_test.cc',
     'import/cross/targz_generator_test.cc',
     'import/cross/targz_processor_test.cc',
+    'import/cross/threaded_stream_processor_test.cc',
     'serializer/cross/serializer_test.cc',
     'tests/common/cross/test_utils.cc',
     'utils/cross/file_path_utils_test.cc',
@@ -743,7 +762,8 @@ pulse_tests = [env.Alias('presubmit')]
 # OpenGL tests don't work with selenium yet.
 if 'RENDERER_D3D9' in env['CPPDEFINES']:
   pulse_tests += [env.Alias('selenium_firefox'),
-                  env.Alias('selenium_ie')]
+                  env.Alias('selenium_ie'),
+                  env.Alias('selenium_chrome')]
 # Add selenium for mac.
 if env.Bit('mac'):
   pulse_tests += [env.Alias('selenium')]

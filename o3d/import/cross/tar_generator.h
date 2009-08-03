@@ -50,20 +50,19 @@
 #include <string>
 #include "base/basictypes.h"
 #include "core/cross/types.h"
+#include "import/cross/iarchive_generator.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
 
 namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class TarGenerator {
+class TarGenerator : public IArchiveGenerator {
  public:
   explicit TarGenerator(StreamProcessor *callback_client)
       : callback_client_(callback_client),
         data_block_buffer_(TAR_BLOCK_SIZE),  // initialized to zeroes
         data_buffer_stream_(data_block_buffer_, TAR_BLOCK_SIZE) {}
-
-  virtual ~TarGenerator() { Finalize(); }
 
   // Call AddFile() for each file entry, followed by calls to AddFileBytes()
   // for the file's data. Returns true on success.
@@ -75,7 +74,7 @@ class TarGenerator {
   virtual int AddFileBytes(MemoryReadStream *stream, size_t n);
 
   // Must call this after all files and file data have been written
-  virtual void Finalize();
+  virtual void Close(bool success);
 
  private:
   // Returns true on success.

@@ -56,10 +56,12 @@ class DecompressorClient : public o3d::StreamProcessor {
  public:
   explicit DecompressorClient(size_t uncompressed_byte_size)
       : buffer_(uncompressed_byte_size),
-        write_stream_(buffer_, uncompressed_byte_size) {}
+        write_stream_(buffer_, uncompressed_byte_size),
+        closed_(false),
+        success_(false) {}
 
-  virtual int     ProcessBytes(MemoryReadStream *stream,
-                               size_t bytes_to_process) {
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process) {
     // Make sure the output stream isn't full yet
     EXPECT_TRUE(write_stream_.GetRemainingByteCount() >= bytes_to_process);
 
@@ -68,7 +70,12 @@ class DecompressorClient : public o3d::StreamProcessor {
     stream->Skip(bytes_to_process);
     write_stream_.Write(p, bytes_to_process);
 
-    return 0;  // return OK
+    return SUCCESS;
+  }
+
+  virtual void Close(bool success) {
+    closed_ = true;
+    success_ = success;
   }
 
   void  VerifyDecompressedOutput(uint8 *original_data) {
@@ -80,10 +87,20 @@ class DecompressorClient : public o3d::StreamProcessor {
     EXPECT_EQ(0, memcmp(original_data, buffer_, buffer_.GetLength()));
   }
 
+  bool closed() const {
+    return closed_;
+  }
+
+  bool success() const {
+    return success_;
+  }
+
  private:
   size_t uncompressed_byte_size_;
   MemoryBuffer<uint8> buffer_;
   MemoryWriteStream write_stream_;
+  bool closed_;
+  bool success_;
 };
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -92,24 +109,27 @@ class CompressorClient : public o3d::StreamProcessor {
  public:
   explicit CompressorClient(size_t uncompressed_byte_size)
       : decompressor_client_(uncompressed_byte_size),
-        decompressor_(&decompressor_client_) {
+        decompressor_(&decompressor_client_),
+        closed_(false),
+        success_(false) {
   };
 
-  virtual int     ProcessBytes(MemoryReadStream *stream,
+  virtual Status ProcessBytes(MemoryReadStream *stream,
                                size_t bytes_to_process) {
     // We're receiving compressed bytes here, so feed them back into
     // the decompressor.  Since we're making a compression / decompression
     // round trip, we should end up with the same (initial) byte stream
     // we can verify this at the end
-    int result = decompressor_.ProcessBytes(stream, bytes_to_process);
+    Status status = decompressor_.ProcessBytes(stream, bytes_to_process);
 
-    // Verify the result code:
-    //  zlib FAQ says Z_BUF_ERROR is OK
-    //  and may occur in the middle of decompressing the stream
-    EXPECT_TRUE(result == Z_OK || result == Z_STREAM_END ||
-                result == Z_BUF_ERROR);
+    EXPECT_TRUE(status == IN_PROGRESS || status == SUCCESS);
 
-    return 0;  // no error
+    return SUCCESS;
+  }
+
+  virtual void Close(bool success) {
+    closed_ = true;
+    success_ = success;
   }
 
   void  VerifyDecompressedOutput(uint8 *original_data) {
@@ -117,15 +137,24 @@ class CompressorClient : public o3d::StreamProcessor {
     decompressor_client_.VerifyDecompressedOutput(original_data);
   }
 
+  bool closed() const {
+    return closed_;
+  }
+
+  bool success() const {
+    return success_;
+  }
+
  private:
   DecompressorClient decompressor_client_;
   o3d::GzDecompressor decompressor_;
+  bool closed_;
+  bool success_;
 };
 
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// int main (int argc, const char * argv[]) {
 TEST_F(GzCompressorTest, RoundTripCompressionDecompression) {
   // We'll compress this file
   String filepath = *g_program_path + "/archive_files/keyboard.jpg";
@@ -148,14 +177,27 @@ TEST_F(GzCompressorTest, RoundTripCompressionDecompression) {
   // Since we're making a compression / decompression
   // round trip, we should end up with the same (initial) byte stream
   // we can verify this at the end by calling VerifyDecompressedOutput()
-  int result = compressor.ProcessBytes(&input_file_stream, file_length);
-  EXPECT_TRUE(result == Z_OK || result == Z_STREAM_END);
+  StreamProcessor::Status status =
+      compressor.ProcessBytes(&input_file_stream, file_length);
+  EXPECT_NE(StreamProcessor::FAILURE, status);
 
-  compressor.Finalize();
+  compressor.Close(true);
 
   compressor_client.VerifyDecompressedOutput(p);
+  EXPECT_TRUE(compressor_client.closed());
+  EXPECT_TRUE(compressor_client.success());
 
   free(p);
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TEST_F(GzCompressorTest, PassesFailureThroughToClient) {
+  CompressorClient compressor_client(1000);
+  GzCompressor compressor(&compressor_client);
+  compressor.Close(false);
+
+  EXPECT_TRUE(compressor_client.closed());
+  EXPECT_FALSE(compressor_client.success());
 }
 
 }  // namespace o3d

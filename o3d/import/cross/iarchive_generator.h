@@ -48,13 +48,16 @@ class IArchiveGenerator {
 
   // Call AddFile() for each file entry, followed by calls to AddFileBytes()
   // for the file's data
-  virtual void AddFile(const String& file_name,
+  virtual bool AddFile(const String& file_name,
                        size_t file_size) = 0;
 
   // Call with the file's data (after calling AddFile)
   // may be called one time will all the file's data, or multiple times
   // until all the data is provided
   virtual int AddFileBytes(MemoryReadStream* stream, size_t n) = 0;
+
+  // Must be called to finish the archiving operation.
+  virtual void Close(bool success) = 0;
 };
 
 }  // namespace o3d

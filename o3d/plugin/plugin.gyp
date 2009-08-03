@@ -50,6 +50,8 @@
         'cross/download_stream.h',
         'cross/main.cc',
         'cross/main.h',
+        'cross/main_thread_task_poster.cc',
+        'cross/main_thread_task_poster.h',
         'cross/marshaling_utils.h',
         'cross/np_v8_bridge.cc',
         'cross/np_v8_bridge.h',

@@ -84,9 +84,11 @@ archive_inputs = [
   'cross/archive_request.cc',
   'cross/gz_decompressor.cc',
   'cross/memory_stream.cc',
+  'cross/main_thread_archive_callback_client.cc',
   'cross/raw_data.cc',
   'cross/tar_processor.cc',
   'cross/targz_processor.cc',
+  'cross/threaded_stream_processor.cc',
 ]
 
 conditioner_inputs = ['cross/collada_conditioner.cc']

@@ -234,8 +234,9 @@ void TarGenerator::FlushDataBuffer(bool flush_padding_zeroes) {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void TarGenerator::Finalize() {
+void TarGenerator::Close(bool success) {
   FlushDataBuffer(true);
+  callback_client_->Close(success);
 }
 
 }  // namespace o3d

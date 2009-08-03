@@ -37,6 +37,8 @@
         'cross/memory_buffer.h',
         'cross/memory_stream.cc',
         'cross/memory_stream.h',
+        'cross/main_thread_archive_callback_client.cc',
+        'cross/main_thread_archive_callback_client.h',
         'cross/raw_data.cc',
         'cross/raw_data.h',
         'cross/tar_processor.cc',
@@ -44,6 +46,8 @@
         'cross/targz_generator.h',
         'cross/targz_processor.cc',
         'cross/targz_processor.h',
+        'cross/threaded_stream_processor.cc',
+        'cross/threaded_stream_processor.h',
       ],
     },
     {
@@ -61,6 +65,7 @@
           'cross/raw_data_test.cc',
           'cross/tar_processor_test.cc',
           'cross/targz_processor_test.cc',
+          'thread_stream_processor_test.cc',
         ],
       },
       'copies': [

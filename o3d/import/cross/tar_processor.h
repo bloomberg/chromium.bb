@@ -66,7 +66,9 @@ class TarProcessor : public StreamProcessor {
 
   // Call to "push" bytes to be processed - the appropriate callback will get
   // called when we have enough data
-  virtual int ProcessBytes(MemoryReadStream *stream, size_t n);
+  virtual Status ProcessBytes(MemoryReadStream *stream, size_t n);
+
+  virtual void Close(bool success);
 
  private:
   enum {TAR_HEADER_SIZE = 512};

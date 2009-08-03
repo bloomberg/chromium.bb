@@ -51,12 +51,14 @@ class GzDecompressorTest : public testing::Test {
 //
 class GzTestClient : public StreamProcessor {
  public:
-  explicit GzTestClient(size_t uncompressed_size) {
+  explicit GzTestClient(size_t uncompressed_size)
+      : closed_(false),
+        success_(false) {
     buffer_.Allocate(uncompressed_size);
     stream_.Assign(buffer_, uncompressed_size);
   }
 
-  virtual int     ProcessBytes(MemoryReadStream *input_stream,
+  virtual Status ProcessBytes(MemoryReadStream *input_stream,
                                size_t bytes_to_process) {
     // Buffer the uncompressed bytes we're given
     const uint8 *p = input_stream->GetDirectMemoryPointer();
@@ -65,16 +67,31 @@ class GzTestClient : public StreamProcessor {
     size_t bytes_written = stream_.Write(p, bytes_to_process);
     EXPECT_EQ(bytes_written, bytes_to_process);
 
-    return Z_OK;
+    return SUCCESS;
+  }
+
+  virtual void Close(bool success) {
+    closed_ = true;
+    success_ = success;
   }
 
   // When we're done decompressing, we can check the results here
   uint8 *GetResultBuffer() { return buffer_; }
   size_t GetResultLength() const { return stream_.GetStreamPosition(); }
 
+  bool closed() const {
+    return closed_;
+  }
+
+  bool success() const {
+    return success_;
+  }
+
  private:
   MemoryBuffer<uint8> buffer_;
   MemoryWriteStream stream_;
+  bool closed_;
+  bool success_;
 };
 
 // Loads a tar.gz file, runs it through the processor.
@@ -109,19 +126,20 @@ TEST_F(GzDecompressorTest, LoadGzFile) {
   MemoryReadStream compressed_stream(compressed_data, compressed_size);
   size_t bytes_to_process = compressed_size;
 
-  int result = Z_OK;
+  StreamProcessor::Status status = StreamProcessor::SUCCESS;
   while (bytes_to_process > 0) {
     size_t bytes_this_time =
         bytes_to_process < kChunkSize ? bytes_to_process : kChunkSize;
 
-    result = decompressor.ProcessBytes(&compressed_stream, bytes_this_time);
-    EXPECT_TRUE(result == Z_OK || result == Z_STREAM_END);
+    status = decompressor.ProcessBytes(&compressed_stream, bytes_this_time);
+    EXPECT_TRUE(status != StreamProcessor::FAILURE);
 
     bytes_to_process -= bytes_this_time;
   }
 
-  // When the decompressor has finished it should return Z_STREAM_END
-  EXPECT_TRUE(result == Z_STREAM_END);
+  decompressor.Close(true);
+
+  EXPECT_TRUE(status == StreamProcessor::SUCCESS);
 
   // Now let's verify that what we just decompressed matches exactly
   // what's in the reference file...
@@ -130,13 +148,25 @@ TEST_F(GzDecompressorTest, LoadGzFile) {
   EXPECT_EQ(decompressor_client.GetResultLength(), uncompressed_size);
 
   // Now check the data
-  result = memcmp(decompressor_client.GetResultBuffer(),
-                  expected_uncompressed_data,
-                  uncompressed_size);
+  int result = memcmp(decompressor_client.GetResultBuffer(),
+                      expected_uncompressed_data,
+                      uncompressed_size);
   EXPECT_EQ(0, result);
+
+  EXPECT_TRUE(decompressor_client.closed());
+  EXPECT_TRUE(decompressor_client.success());
 
   free(compressed_data);
   free(expected_uncompressed_data);
+}
+
+TEST_F(GzDecompressorTest, PassesFailureThroughToClient) {
+  GzTestClient decompressor_client(1000);
+  GzDecompressor decompressor(&decompressor_client);
+  decompressor.Close(false);
+
+  EXPECT_TRUE(decompressor_client.closed());
+  EXPECT_FALSE(decompressor_client.success());
 }
 
 }  // namespace o3d

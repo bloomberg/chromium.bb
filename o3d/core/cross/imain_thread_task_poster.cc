@@ -29,38 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//
-// GzDecompressor decompresses a gzip compressed byte stream
-// calling the client's ProcessBytes() method with the uncompressed stream
-//
 
-#ifndef O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
-#define O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
-
-#include "base/basictypes.h"
-#include "zlib.h"
-#include "import/cross/memory_stream.h"
+#include "core/cross/precompile.h"
+#include "core/cross/imain_thread_task_poster.h"
 
 namespace o3d {
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class GzDecompressor : public StreamProcessor {
- public:
-  explicit GzDecompressor(StreamProcessor *callback_client);
-  virtual ~GzDecompressor();
-
-  virtual Status  ProcessBytes(MemoryReadStream *stream,
-                               size_t bytes_to_process);
-  virtual void    Close(bool success);
-
- private:
-  z_stream         strm_;  // low-level zlib state
-  bool             initialized_;
-  StreamProcessor  *callback_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(GzDecompressor);
-};
+const InterfaceId IMainThreadTaskPoster::kInterfaceId =
+    InterfaceTraits<IMainThreadTaskPoster>::kInterfaceId;
 
 }  // namespace o3d
-
-#endif  //  O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_

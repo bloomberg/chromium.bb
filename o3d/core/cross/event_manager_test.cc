@@ -29,38 +29,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//
-// GzDecompressor decompresses a gzip compressed byte stream
-// calling the client's ProcessBytes() method with the uncompressed stream
-//
 
-#ifndef O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
-#define O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
+// This file implements unit tests for class EventManager.
 
-#include "base/basictypes.h"
-#include "zlib.h"
-#include "import/cross/memory_stream.h"
+#include "tests/common/win/testing_common.h"
+#include "core/cross/event_manager.h"
 
 namespace o3d {
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class GzDecompressor : public StreamProcessor {
- public:
-  explicit GzDecompressor(StreamProcessor *callback_client);
-  virtual ~GzDecompressor();
+class EventManagerTest : public testing::Test {
+ protected:
+  EventManagerTest() {
+  }
 
-  virtual Status  ProcessBytes(MemoryReadStream *stream,
-                               size_t bytes_to_process);
-  virtual void    Close(bool success);
+  virtual void SetUp();
+  virtual void TearDown();
 
- private:
-  z_stream         strm_;  // low-level zlib state
-  bool             initialized_;
-  StreamProcessor  *callback_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(GzDecompressor);
+  EventManager event_manager_;
 };
 
-}  // namespace o3d
+void EventManagerTest::SetUp() {
+}
 
-#endif  //  O3D_IMPORT_CROSS_GZ_DECOMPRESSOR_H_
+void EventManagerTest::TearDown() {
+  event_manager_.ClearAll();
+}
+
+TEST_F(EventManagerTest, CanClearAllFromEventCallback) {
+  class ClearAllEventCallback : public EventCallback {
+   public:
+    explicit ClearAllEventCallback(EventManager* event_manager)
+        : event_manager_(event_manager) {
+    }
+    virtual void Run(const Event& event) {
+      event_manager_->ClearAll();
+    }
+   private:
+    EventManager* event_manager_;
+  };
+
+  event_manager_.SetEventCallback(
+      Event::TYPE_CLICK,
+      new ClearAllEventCallback(&event_manager_));
+  Event event(Event::TYPE_CLICK);
+  event_manager_.AddEventToQueue(event);
+  event_manager_.ProcessQueue();
+}
+}  // namespace o3d

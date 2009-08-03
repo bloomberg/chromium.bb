@@ -51,9 +51,14 @@ void EventManager::ProcessQueue() {
     DCHECK(!processing_event_queue_);
     processing_event_queue_ = true;
 #endif
-    const Event& event = event_queue_.front();
-    event_callbacks_[event.type()].Run(event);
+    Event event = event_queue_.front();
+
+    // Pop the event before invoking the callback; the callback might invoke
+    // Client::CleanUp, which empties the event queue. This can happen in Chrome
+    // if it invokes the unload handler when control enters JavaScript.
     event_queue_.pop_front();
+
+    event_callbacks_[event.type()].Run(event);
 #ifndef NDEBUG
     processing_event_queue_ = false;
 #endif

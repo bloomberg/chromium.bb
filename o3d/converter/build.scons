@@ -47,6 +47,7 @@ env.Append(
     'o3dCorePlatform',
     'o3dSerializer',
     'o3dSerializationObjects',
+    'o3dCore', # Archive and Core are mutually dependent so Core appears twice.
     'o3dUtils',
     'o3d_base',
     'FColladaU',
@@ -80,9 +81,20 @@ if env.Bit('mac'):
     FRAMEWORKS = [
       'ApplicationServices',
       'Cg',
+      'Cocoa',
       'Foundation',
       'OpenGL',
-     ],
+    ],
+    LIBS = [
+      'event',
+    ],
+  )
+
+if env.Bit('linux'):
+  env.Append(
+    LIBS = [
+      'event',
+    ],
   )
 
 inputs = [

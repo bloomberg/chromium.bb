@@ -44,8 +44,10 @@ class FileOutputStreamProcessor : public StreamProcessor {
  public:
   explicit FileOutputStreamProcessor(FILE* file);
 
-  virtual int ProcessBytes(MemoryReadStream *stream,
-                           size_t bytes_to_process);
+  virtual Status ProcessBytes(MemoryReadStream *stream,
+                              size_t bytes_to_process);
+  virtual void Close(bool success);
+
  private:
   FILE* file_;
   DISALLOW_COPY_AND_ASSIGN(FileOutputStreamProcessor);

@@ -63,6 +63,8 @@ const unsigned int kWindowHeight = 600;
 extern int test_main(int argc, char **argv);
 
 int main(int argc, char *argv[]) {
+  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+
   std::string error;
   if (!o3d::RendererInstallCheck(&error)) {
     return false;
@@ -131,6 +133,8 @@ int main(int argc, char *argv[]) {
   g_display_window = NULL;
   g_program_path = NULL;
   g_program_name = NULL;
+
+  [pool release];
 
   return ret;
 }

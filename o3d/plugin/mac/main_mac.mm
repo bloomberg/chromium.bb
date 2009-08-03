@@ -66,9 +66,12 @@ using o3d::Event;
 
 namespace {
 // We would normally make this a stack variable in main(), but in a
-// plugin, that's not possible, so we allocate it dynamically and
-// destroy it explicitly.
-scoped_ptr<base::AtExitManager> g_at_exit_manager;
+// plugin, that's not possible, so we make it a global. When the DLL is loaded
+// this it gets constructed and when it is unlooaded it is destructed. Note
+// that this cannot be done in NP_Initialize and NP_Shutdown because those
+// calls do not necessarily signify the DLL being loaded and unloaded. If the
+// DLL is not unloaded then the values of global variables are preserved.
+base::AtExitManager g_at_exit_manager;
 
 #define CFTIMER
 // #define DEFERRED_DRAW_ON_NULLEVENTS
@@ -500,10 +503,6 @@ NPError InitializePlugin() {
   o3d::gRenderTimer.Start();
 #endif  // CFTIMER
 
-  // Initialize the AtExitManager so that base singletons can be
-  // destroyed properly.
-  g_at_exit_manager.reset(new base::AtExitManager());
-
   // Turn on the logging.
   CommandLine::Init(0, NULL);
   InitLogging("debug.log",
@@ -690,9 +689,6 @@ NPError OSCALL NP_Shutdown(void) {
 #ifdef CFTIMER
   o3d::gRenderTimer.Stop();
 #endif
-
-  // Force all base singletons to be destroyed.
-  g_at_exit_manager.reset(NULL);
 
   o3d::ShutdownBreakpad();
 #endif  // O3D_INTERNAL_PLUGIN
