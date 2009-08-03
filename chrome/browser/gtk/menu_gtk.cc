@@ -15,6 +15,8 @@
 
 using gtk_util::ConvertAcceleratorsFromWindowsStyle;
 
+bool MenuGtk::block_activation_ = false;
+
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  const MenuCreateMaterial* menu_data,
                  GtkAccelGroup* accel_group)
@@ -227,25 +229,29 @@ void MenuGtk::BuildMenuFromDelegate() {
 
 // static
 void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
+  if (block_activation_)
+    return;
+
   // We receive activation messages when highlighting a menu that has a
   // submenu. Ignore them.
-  if (!gtk_menu_item_get_submenu(menuitem)) {
-    const MenuCreateMaterial* data =
-        reinterpret_cast<const MenuCreateMaterial*>(
-            g_object_get_data(G_OBJECT(menuitem), "menu-data"));
+  if (gtk_menu_item_get_submenu(menuitem))
+    return;
 
-    int id;
-    if (data) {
-      id = data->id;
-    } else {
-      id = reinterpret_cast<intptr_t>(g_object_get_data(G_OBJECT(menuitem),
-                                                        "menu-id"));
-    }
+  const MenuCreateMaterial* data =
+      reinterpret_cast<const MenuCreateMaterial*>(
+          g_object_get_data(G_OBJECT(menuitem), "menu-data"));
 
-    // The menu item can still be activated by hotkeys even if it is disabled.
-    if (menu->delegate_->IsCommandEnabled(id))
-      menu->delegate_->ExecuteCommand(id);
+  int id;
+  if (data) {
+    id = data->id;
+  } else {
+    id = reinterpret_cast<intptr_t>(g_object_get_data(G_OBJECT(menuitem),
+                                                      "menu-id"));
   }
+
+  // The menu item can still be activated by hotkeys even if it is disabled.
+  if (menu->delegate_->IsCommandEnabled(id))
+    menu->delegate_->ExecuteCommand(id);
 }
 
 // static
@@ -325,20 +331,15 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
     // the underlying "active" property will also call the "activate" handler
     // for this menu item. So we prevent the "activate" handler from
     // being called while we set the checkbox.
-    g_signal_handlers_block_matched(
-        item, G_SIGNAL_MATCH_FUNC,
-        0, 0, NULL,
-        reinterpret_cast<void*>(OnMenuItemActivated),
-        NULL);
-
-    gtk_check_menu_item_set_active(
-        item, menu->delegate_->IsItemChecked(id));
-
-    g_signal_handlers_unblock_matched(
-        item, G_SIGNAL_MATCH_FUNC,
-        0, 0, NULL,
-        reinterpret_cast<void*>(OnMenuItemActivated),
-        NULL);
+    // Why not use one of the glib signal-blocking functions?  Because when we
+    // toggle a radio button, it will deactivate one of the other radio buttons,
+    // which we don't have a pointer to.
+    // Wny not make this a member variable?  Because "menu" is a pointer to the
+    // root of the MenuGtk and we want to disable *all* MenuGtks, including
+    // submenus.
+    block_activation_ = true;
+    gtk_check_menu_item_set_active(item, menu->delegate_->IsItemChecked(id));
+    block_activation_ = false;
   }
 
   if (GTK_IS_MENU_ITEM(widget)) {

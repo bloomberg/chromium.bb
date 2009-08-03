@@ -137,6 +137,11 @@ class MenuGtk {
   // gtk_menu_popup() does not appear to take ownership of popup menus, so
   // MenuGtk explicitly manages the lifetime of the menu.
   OwnedWidgetGtk menu_;
+
+  // True when we should ignore "activate" signals.  Used to prevent
+  // menu items from getting activated when we are setting up the
+  // menu.
+  static bool block_activation_;
 };
 
 #endif  // CHROME_BROWSER_GTK_MENU_GTK_H_
