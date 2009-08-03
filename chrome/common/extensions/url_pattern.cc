@@ -94,16 +94,24 @@ bool URLPattern::MatchesUrl(const GURL &test) const {
 }
 
 bool URLPattern::MatchesHost(const GURL& test) const {
+  // If the hosts are exactly equal, we have a match.
   if (test.host() == host_)
     return true;
 
-  if (!match_subdomains_ || test.HostIsIPAddress())
+  // If we're matching subdomains, and we have no host in the match pattern,
+  // that means that we're matching all hosts, which means we have a match no
+  // matter what the test host is.
+  if (match_subdomains_ && host_.empty())
+    return true;
+
+  // Otherwise, we can only match if our match pattern matches subdomains.
+  if (!match_subdomains_)
     return false;
 
-  // If we're matching subdomains, and we have no host, that means the pattern
-  // was <scheme>://*/<whatever>, so we match anything.
-  if (host_.empty())
-    return true;
+  // We don't do subdomain matching against IP addresses, so we can give up now
+  // if the test host is an IP address.
+  if (test.HostIsIPAddress())
+    return false;
 
   // Check if the test host is a subdomain of our host.
   if (test.host().length() <= (host_.length() + 1))

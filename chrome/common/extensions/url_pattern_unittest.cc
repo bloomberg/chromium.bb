@@ -37,6 +37,7 @@ TEST(URLPatternTest, Match1) {
   EXPECT_TRUE(pattern.MatchesUrl(GURL("http://yahoo.com")));
   EXPECT_TRUE(pattern.MatchesUrl(GURL("http://google.com/foo")));
   EXPECT_FALSE(pattern.MatchesUrl(GURL("https://google.com")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://74.125.127.100/search")));
 }
 
 // all domains
