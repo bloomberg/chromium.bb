@@ -500,7 +500,7 @@ def ExpandXcodeVariables(string, expansions):
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
-  generator_flags = params['generator_flags']
+  generator_flags = params.get('generator_flags', {})
   parallel_builds = generator_flags.get('xcode_parallel_builds', True)
   xcode_projects = {}
   for build_file, build_file_dict in data.iteritems():

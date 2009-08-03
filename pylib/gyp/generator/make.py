@@ -730,7 +730,7 @@ class MakefileWriter:
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
-  generator_flags = params['generator_flags']
+  generator_flags = params.get('generator_flags', {})
   builddir_name = generator_flags.get('output_dir', 'out')
 
   # TODO:  search for the first non-'Default' target.  This can go

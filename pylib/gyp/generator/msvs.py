@@ -862,7 +862,7 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
 def CalculateVariables(default_variables, params):
   """Generated variables that require params to be known."""
 
-  generator_flags = params['generator_flags']
+  generator_flags = params.get('generator_flags', {})
 
   # Select project file format version (if unset, default to auto detecting).
   msvs_version = \
@@ -896,7 +896,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   """
 
   options = params['options']
-  generator_flags = params['generator_flags']
+  generator_flags = params.get('generator_flags', {})
 
   # Get the project file format version back out of where we stashed it in
   # GeneratorCalculatedVariables.
