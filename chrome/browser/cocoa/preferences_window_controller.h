@@ -48,6 +48,8 @@ class Profile;
   // User Data panel
   BooleanPrefMember askSavePasswords_;
   BooleanPrefMember formAutofill_;
+  scoped_nsobject<NSMutableArray> themeIds_;
+  int themeMenuOffset_;
 
   // Under the hood panel
   IBOutlet NSView* advancedView_;
@@ -78,7 +80,8 @@ class Profile;
 - (IBAction)showSavedPasswords:(id)sender;
 - (IBAction)importData:(id)sender;
 - (IBAction)clearData:(id)sender;
-- (IBAction)resetTheme:(id)sender;
+- (NSArray*)availableThemes;
+@property int currentTheme;
 - (IBAction)themesGallery:(id)sender;
 
 // Usable from cocoa bindings to hook up the custom home pages table.

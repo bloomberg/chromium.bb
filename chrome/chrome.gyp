@@ -736,6 +736,8 @@
         'browser/cocoa/autocomplete_text_field_cell.mm',
         'browser/cocoa/autocomplete_text_field_editor.h',
         'browser/cocoa/autocomplete_text_field_editor.mm',
+        'browser/cocoa/autoseparating_menu.h',
+        'browser/cocoa/autoseparating_menu.m',
         'browser/cocoa/background_gradient_view.h',
         'browser/cocoa/background_gradient_view.mm',
         'browser/cocoa/base_view.h',
