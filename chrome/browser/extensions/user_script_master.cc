@@ -138,11 +138,17 @@ void UserScriptMaster::ScriptReloader::NotifyMaster(
   Release();
 }
 
-static void LoadScriptContent(UserScript::File* script_file) {
+static bool LoadScriptContent(UserScript::File* script_file) {
   std::string content;
-  file_util::ReadFileToString(script_file->path(), &content);
+  if (!file_util::ReadFileToString(script_file->path(), &content)) {
+    LOG(WARNING) << "Failed to load user script file: "
+                 << script_file->path().value();
+    return false;
+  }
+
   script_file->set_content(content);
   LOG(INFO) << "Loaded user script file: " << script_file->path().value();
+  return true;
 }
 
 void UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
@@ -168,8 +174,11 @@ void UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
           net::FilePathToFileURL(file).ExtractFileName());
       user_script.js_scripts().push_back(UserScript::File(file, url));
       UserScript::File& script_file = user_script.js_scripts().back();
-      LoadScriptContent(&script_file);
-      ParseMetadataHeader(script_file.GetContent(), &user_script);
+      if (!LoadScriptContent(&script_file)) {
+        result->erase(result->end());
+      } else {
+        ParseMetadataHeader(script_file.GetContent(), &user_script);
+      }
     }
   }
 }
