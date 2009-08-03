@@ -58,7 +58,7 @@ void ThreadLocalStorageCleanup(void *value) {
 TEST(ThreadLocalStorageTest, Basics) {
   ThreadLocalStorage::Slot slot;
   slot.Set(reinterpret_cast<void*>(123));
-  int value = reinterpret_cast<int>(slot.Get());
+  int value = reinterpret_cast<intptr_t>(slot.Get());
   EXPECT_EQ(value, 123);
 }
 
