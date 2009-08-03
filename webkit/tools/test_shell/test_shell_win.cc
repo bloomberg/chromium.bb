@@ -1,13 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/tools/test_shell/test_shell.h"
 
 #include <windows.h>
-#include <atlbase.h>
 #include <commdlg.h>
 #include <objbase.h>
+#include <process.h>
 #include <shlwapi.h>
 #include <wininet.h>  // For INTERNET_MAX_URL_LENGTH
 
@@ -44,8 +44,8 @@ using WebKit::WebWidget;
 #define URLBAR_HEIGHT  24
 
 // Global Variables:
-static TCHAR g_windowTitle[MAX_LOADSTRING];     // The title bar text
-static TCHAR g_windowClass[MAX_LOADSTRING];     // The main window class name
+static wchar_t g_windowTitle[MAX_LOADSTRING];     // The title bar text
+static wchar_t g_windowClass[MAX_LOADSTRING];     // The main window class name
 
 // This is only set for layout tests.  It is used to determine the name of a
 // minidump file.
@@ -519,8 +519,8 @@ void TestShell::LoadURLForFrame(const wchar_t* url,
 
   std::wstring urlString(url);
   if (!urlString.empty() && (PathFileExists(url) || PathIsUNC(url))) {
-      TCHAR fileURL[INTERNET_MAX_URL_LENGTH];
-      DWORD fileURLLength = sizeof(fileURL)/sizeof(fileURL[0]);
+      wchar_t fileURL[INTERNET_MAX_URL_LENGTH];
+      DWORD fileURLLength = INTERNET_MAX_URL_LENGTH;
       if (SUCCEEDED(UrlCreateFromPath(url, fileURL, &fileURLLength, 0)))
           urlString.assign(fileURL);
   }
@@ -686,14 +686,14 @@ StringPiece TestShell::NetResourceProvider(int key) {
 namespace webkit_glue {
 
 string16 GetLocalizedString(int message_id) {
-  const ATLSTRINGRESOURCEIMAGE* image =
-      AtlGetStringResourceImage(_AtlBaseModule.GetModuleInstance(),
-                                message_id);
-  if (!image) {
+  wchar_t localized[MAX_LOADSTRING];
+  int length = LoadString(GetModuleHandle(NULL), message_id,
+                          localized, MAX_LOADSTRING);
+  if (!length && GetLastError() == ERROR_RESOURCE_NAME_NOT_FOUND) {
     NOTREACHED();
     return L"No string for this identifier!";
   }
-  return string16(image->achString, image->nLength);
+  return string16(localized, length);
 }
 
 // TODO(tc): Convert this to using resources from test_shell.rc.
