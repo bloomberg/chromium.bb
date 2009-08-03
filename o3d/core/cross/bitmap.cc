@@ -44,6 +44,7 @@
 #include "utils/cross/file_path_utils.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "core/cross/texture.h"
 #include "import/cross/raw_data.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
@@ -92,9 +93,9 @@ unsigned int Bitmap::GetBufferSize(unsigned int width,
   switch (format) {
     case Texture::XRGB8:
     case Texture::ARGB8:
-      return 4 * sizeof(unsigned char) * pixels;  // NOLINT
+      return 4 * sizeof(uint8) * pixels;  // NOLINT
     case Texture::ABGR16F:
-      return 4 * sizeof(unsigned short) * pixels;  // NOLINT
+      return 4 * sizeof(uint16) * pixels;  // NOLINT
     case Texture::R32F:
       return sizeof(float) * pixels;  // NOLINT
     case Texture::ABGR32F:
@@ -164,16 +165,107 @@ void Bitmap::Allocate(Texture::Format format,
   AllocateData();
 }
 
-unsigned char *Bitmap::GetMipData(unsigned int level,
-                                  TextureCUBE::CubeFace face) const {
+uint8 *Bitmap::GetMipData(unsigned int level) const {
+  DCHECK(level < num_mipmaps_);
+  DCHECK(!is_cubemap_);
+  if (!image_data_.get()) return NULL;
+  uint8 *data = image_data_.get();
+  return data + GetMipChainSize(width_, height_, format_, level);
+}
+
+uint8 *Bitmap::GetFaceMipData(TextureCUBE::CubeFace face,
+                              unsigned int level) const {
   DCHECK(level < num_mipmaps_);
   if (!image_data_.get()) return NULL;
-  unsigned char *data = image_data_.get();
-  if (is_cubemap_) {
+  uint8 *data = image_data_.get();
+  if (is_cubemap()) {
     data += (face - TextureCUBE::FACE_POSITIVE_X) *
         GetMipChainSize(width_, height_, format_, num_mipmaps_);
   }
   return data + GetMipChainSize(width_, height_, format_, level);
+}
+
+void Bitmap::SetRect(
+    int level,
+    unsigned dst_left,
+    unsigned dst_top,
+    unsigned src_width,
+    unsigned src_height,
+    const void* src_data,
+    int src_pitch) {
+  DCHECK(src_data);
+  DCHECK(level < num_mipmaps() && level >= 0);
+  unsigned mip_width;
+  unsigned mip_height;
+  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  DCHECK(dst_left + src_width <= mip_width &&
+         dst_top + src_height <= mip_height);
+  bool compressed = Texture::IsCompressedFormat(format());
+  bool entire_rect = dst_left == 0 && dst_top == 0 &&
+                     src_width == mip_width && src_height == mip_height;
+  DCHECK(!compressed || entire_rect);
+
+  uint8* dst =
+      GetMipData(level) +
+      Bitmap::GetMipChainSize(mip_width, dst_top, format(), 1) +
+      Bitmap::GetMipChainSize(dst_left, 1, format(), 1);
+
+  const uint8* src = static_cast<const uint8*>(src_data);
+  if (!compressed) {
+    unsigned bytes_per_line = GetMipChainSize(src_width, 1, format(), 1);
+    int dst_pitch = Bitmap::GetMipChainSize(mip_width, 1, format(), 1);
+    for (unsigned yy = 0; yy < src_height; ++yy) {
+      memcpy(dst, src, bytes_per_line);
+      src += src_pitch;
+      dst += dst_pitch;
+    }
+  } else {
+    memcpy(dst,
+           src,
+           Bitmap::GetMipChainSize(mip_width, mip_height, format(), 1));
+  }
+}
+
+void Bitmap::SetFaceRect(
+    TextureCUBE::CubeFace face,
+    int level,
+    unsigned dst_left,
+    unsigned dst_top,
+    unsigned src_width,
+    unsigned src_height,
+    const void* src_data,
+    int src_pitch) {
+  DCHECK(src_data);
+  DCHECK(level < num_mipmaps() && level >= 0);
+  unsigned mip_width;
+  unsigned mip_height;
+  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  DCHECK(dst_left + src_width <= mip_width &&
+         dst_top + src_height <= mip_height);
+  bool compressed = Texture::IsCompressedFormat(format());
+  bool entire_rect = dst_left == 0 && dst_top == 0 &&
+                     src_width == mip_width && src_height == mip_height;
+  DCHECK(!compressed || entire_rect);
+
+  uint8* dst =
+      GetFaceMipData(face, level) +
+      Bitmap::GetMipChainSize(mip_width, dst_top, format(), 1) +
+      Bitmap::GetMipChainSize(dst_left, 1, format(), 1);
+
+  const uint8* src = static_cast<const uint8*>(src_data);
+  if (!compressed) {
+    unsigned bytes_per_line = GetMipChainSize(src_width, 1, format(), 1);
+    int dst_pitch = Bitmap::GetMipChainSize(mip_width, 1, format(), 1);
+    for (unsigned yy = 0; yy < src_height; ++yy) {
+      memcpy(dst, src, bytes_per_line);
+      src += src_pitch;
+      dst += dst_pitch;
+    }
+  } else {
+    memcpy(dst,
+           src,
+           Bitmap::GetMipChainSize(mip_width, mip_height, format(), 1));
+  }
 }
 
 
@@ -340,8 +432,8 @@ void Bitmap::DrawImage(Bitmap* src_img,
     return;
   }
 
-  unsigned char* src_img_data = src_img->image_data();
-  unsigned char* dst_img_data = image_data();
+  uint8* src_img_data = src_img->image_data();
+  uint8* dst_img_data = image_data();
 
   // crop part of image from src img, scale it in
   // bilinear interpolation fashion, and paste it
@@ -349,7 +441,8 @@ void Bitmap::DrawImage(Bitmap* src_img,
   LanczosScale(src_img_data, src_x, src_y,
                src_width, src_height,
                src_img->width_, src_img->height_,
-               dst_img_data, dst_x, dst_y,
+               dst_img_data, width_,
+               dst_x, dst_y,
                dst_width, dst_height,
                width_, height_, components);
 }
@@ -358,7 +451,7 @@ void Bitmap::LanczosScale(const uint8* src,
                           int src_x, int src_y,
                           int src_width, int src_height,
                           int src_img_width, int src_img_height,
-                          uint8* dest,
+                          uint8* dest, int dest_pitch,
                           int dest_x, int dest_y,
                           int dest_width, int dest_height,
                           int dest_img_width, int dest_img_height,
@@ -379,23 +472,27 @@ void Bitmap::LanczosScale(const uint8* src,
 
   LanczosResize1D(src, src_x, src_y, src_width, src_height,
                   src_img_width, src_img_height,
-                  temp.get(), temp_x, temp_y, temp_width,
+                  temp.get(), temp_img_width * components,
+                  temp_x, temp_y, temp_width,
                   temp_img_width, temp_img_height, true, components);
 
   // Scale the temp buffer vertically to get the final result.
   LanczosResize1D(temp.get(), temp_x, temp_y, temp_height, temp_width,
                   temp_img_width, temp_img_height,
-                  dest, dest_x, dest_y, dest_height,
+                  dest, dest_pitch,
+                  dest_x, dest_y, dest_height,
                   dest_img_width, dest_img_height, false, components);
 }
 
 void Bitmap::LanczosResize1D(const uint8* src, int src_x, int src_y,
                              int width, int height,
                              int src_bmp_width, int src_bmp_height,
-                             uint8* out, int dest_x, int dest_y,
+                             uint8* out, int dest_pitch,
+                             int dest_x, int dest_y,
                              int nwidth,
                              int dest_bmp_width, int dest_bmp_height,
                              bool isWidth, int components) {
+  int pitch = dest_pitch / components;
   // calculate scale factor and init the weight array for lanczos filter.
   float scale = fabs(static_cast<float>(width) / nwidth);
   float support = kFilterSize * scale;
@@ -459,7 +556,7 @@ void Bitmap::LanczosResize1D(const uint8* src, int src_x, int src_y,
         const uint8* inrow = src + ((src_bmp_height - (src_y + base_y) - 1) *
                              src_bmp_width + src_x + xmin) * components;
         uint8* outpix = out + ((dest_bmp_height - (dest_y + base_y) - 1) *
-                        dest_bmp_width + dest_x + x) * components;
+                        pitch + dest_x + x) * components;
         int step = components;
         if (width < 0)
           step = -1 * step;
@@ -475,7 +572,7 @@ void Bitmap::LanczosResize1D(const uint8* src, int src_x, int src_y,
                              (src_y + xmin) - 1) * src_bmp_width) *
                              components;
         uint8* outpix = out + (dest_x + base_y + (dest_bmp_height -
-                        (dest_y + x) - 1) * dest_bmp_width) * components;
+                        (dest_y + x) - 1) * pitch) * components;
 
         int step = src_bmp_width * components;
         if (width < 0)
@@ -545,7 +642,7 @@ Bitmap::ImageFileType Bitmap::GetFileTypeFromMimeType(const char *mime_type) {
   return Bitmap::UNKNOWN;
 }
 
-void Bitmap::XYZToXYZA(unsigned char *image_data, int pixel_count) {
+void Bitmap::XYZToXYZA(uint8 *image_data, int pixel_count) {
   // We do this pixel by pixel, starting from the end to avoid overlapping
   // problems.
   for (int i = pixel_count - 1; i >= 0; --i) {
@@ -556,9 +653,9 @@ void Bitmap::XYZToXYZA(unsigned char *image_data, int pixel_count) {
   }
 }
 
-void Bitmap::RGBAToBGRA(unsigned char *image_data, int pixel_count) {
+void Bitmap::RGBAToBGRA(uint8 *image_data, int pixel_count) {
   for (int i = 0; i < pixel_count; ++i) {
-    unsigned char c = image_data[i*4+0];
+    uint8 c = image_data[i*4+0];
     image_data[i*4+0] = image_data[i*4+2];
     image_data[i*4+2] = c;
   }
@@ -580,10 +677,10 @@ static void FilterTexel(unsigned int x,
                         unsigned int y,
                         unsigned int dst_width,
                         unsigned int dst_height,
-                        unsigned char *dst_data,
+                        uint8 *dst_data,
                         unsigned int src_width,
                         unsigned int src_height,
-                        const unsigned char *src_data,
+                        const uint8 *src_data,
                         unsigned int components) {
   DCHECK(Bitmap::CheckImageDimensions(src_width, src_height));
   DCHECK(Bitmap::CheckImageDimensions(dst_width, dst_height));
@@ -660,7 +757,7 @@ static void FilterTexel(unsigned int x,
     uint64 value = accum[c] / (src_height * src_width);
     DCHECK_LE(value, 255u);
     dst_data[(y * dst_width + x) * components + c] =
-        static_cast<unsigned char>(value);
+        static_cast<uint8>(value);
   }
 }
 
@@ -668,7 +765,7 @@ bool Bitmap::GenerateMipmaps(unsigned int base_width,
                              unsigned int base_height,
                              Texture::Format format,
                              unsigned int num_mipmaps,
-                             unsigned char *data) {
+                             uint8 *data) {
   DCHECK(CheckImageDimensions(base_width, base_height));
   unsigned int components = 0;
   switch (format) {
@@ -687,13 +784,13 @@ bool Bitmap::GenerateMipmaps(unsigned int base_width,
       return false;
   }
   DCHECK_GE(std::max(base_width, base_height) >> (num_mipmaps-1), 1u);
-  unsigned char *mip_data = data;
+  uint8 *mip_data = data;
   unsigned int mip_width = base_width;
   unsigned int mip_height = base_height;
   for (unsigned int level = 1; level < num_mipmaps; ++level) {
     unsigned int prev_width = mip_width;
     unsigned int prev_height = mip_height;
-    unsigned char *prev_data = mip_data;
+    uint8 *prev_data = mip_data;
     mip_data += components * mip_width * mip_height;
     DCHECK_EQ(mip_data, data + GetMipChainSize(base_width, base_height, format,
                                                level));
@@ -733,58 +830,48 @@ bool Bitmap::GenerateMipmaps(unsigned int base_width,
 bool Bitmap::ScaleUpToPOT(unsigned int width,
                           unsigned int height,
                           Texture::Format format,
-                          const unsigned char *src,
-                          unsigned char *dst) {
+                          const uint8 *src,
+                          uint8 *dst,
+                          int dst_pitch) {
   DCHECK(CheckImageDimensions(width, height));
   unsigned int components = 0;
   switch (format) {
     case Texture::XRGB8:
     case Texture::ARGB8:
-      components = 4;
-      break;
     case Texture::ABGR16F:
     case Texture::R32F:
     case Texture::ABGR32F:
+      break;
     case Texture::DXT1:
     case Texture::DXT3:
     case Texture::DXT5:
     case Texture::UNKNOWN_FORMAT:
-      DLOG(ERROR) << "Up-scaling is not supported for format: " << format;
+      DCHECK(false);
       return false;
   }
   unsigned int pot_width = GetPOTSize(width);
   unsigned int pot_height = GetPOTSize(height);
   if (pot_width == width && pot_height == height && src == dst)
     return true;
-  return Scale(width, height, format, src, pot_width, pot_height, dst);
+  return Scale(
+      width, height, format, src, pot_width, pot_height, dst, dst_pitch);
 }
 
-// Scales the image using basic point filtering.
-bool Bitmap::Scale(unsigned int src_width,
-                   unsigned int src_height,
-                   Texture::Format format,
-                   const unsigned char *src,
-                   unsigned int dst_width,
-                   unsigned int dst_height,
-                   unsigned char *dst) {
-  DCHECK(CheckImageDimensions(src_width, src_height));
-  DCHECK(CheckImageDimensions(dst_width, dst_height));
-  unsigned int components = 0;
-  switch (format) {
-    case Texture::XRGB8:
-    case Texture::ARGB8:
-      components = 4;
-      break;
-    case Texture::ABGR16F:
-    case Texture::R32F:
-    case Texture::ABGR32F:
-    case Texture::DXT1:
-    case Texture::DXT3:
-    case Texture::DXT5:
-    case Texture::UNKNOWN_FORMAT:
-      DLOG(ERROR) << "Up-scaling is not supported for format: " << format;
-      return false;
-  }
+namespace {
+
+template <typename T>
+void PointScale(
+    unsigned components,
+    const uint8* src,
+    unsigned src_width,
+    unsigned src_height,
+    uint8* dst,
+    int dst_pitch,
+    unsigned dst_width,
+    unsigned dst_height) {
+  const T* use_src = reinterpret_cast<const T*>(src);
+  T* use_dst = reinterpret_cast<T*>(dst);
+  int pitch = dst_pitch / sizeof(*use_src) / components;
   // Start from the end to be able to do it in place.
   for (unsigned int y = dst_height - 1; y < dst_height; --y) {
     // max value for y is dst_height - 1, which makes :
@@ -796,10 +883,51 @@ bool Bitmap::Scale(unsigned int src_width,
       unsigned int base_x = ((x * 2 + 1) * src_width) / (dst_width * 2);
       DCHECK_LT(base_x, src_width);
       for (unsigned int c = 0; c < components; ++c) {
-        dst[(y * dst_width + x) * components + c] =
-            src[(base_y * src_width + base_x) * components + c];
+        use_dst[(y * pitch + x) * components + c] =
+            use_src[(base_y * src_width + base_x) * components + c];
       }
     }
+  }
+}
+
+}  // anonymous namespace
+
+// Scales the image using basic point filtering.
+bool Bitmap::Scale(unsigned int src_width,
+                   unsigned int src_height,
+                   Texture::Format format,
+                   const uint8 *src,
+                   unsigned int dst_width,
+                   unsigned int dst_height,
+                   uint8 *dst,
+                   int dst_pitch) {
+  DCHECK(CheckImageDimensions(src_width, src_height));
+  DCHECK(CheckImageDimensions(dst_width, dst_height));
+  switch (format) {
+    case Texture::XRGB8:
+    case Texture::ARGB8: {
+      PointScale<uint8>(4, src, src_width, src_height,
+                        dst, dst_pitch, dst_width, dst_height);
+      break;
+    }
+    case Texture::ABGR16F: {
+      PointScale<uint16>(4, src, src_width, src_height,
+                         dst, dst_pitch, dst_width, dst_height);
+      break;
+    }
+    case Texture::R32F:
+    case Texture::ABGR32F: {
+      PointScale<float>(format == Texture::R32F ? 1 : 4,
+                        src, src_width, src_height,
+                        dst, dst_pitch, dst_width, dst_height);
+      break;
+    }
+    case Texture::DXT1:
+    case Texture::DXT3:
+    case Texture::DXT5:
+    case Texture::UNKNOWN_FORMAT:
+      DCHECK(false);
+      return false;
   }
   return true;
 }
@@ -915,10 +1043,10 @@ bool Bitmap::CheckAlphaIsOne() const {
       int faces = is_cubemap() ? 6 : 1;
       for (int face = 0; face < faces; ++face) {
         for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-          const unsigned char *data = GetMipData(
-              level,
-              static_cast<TextureCUBE::CubeFace>(face)) + 3;
-          const unsigned char* end = data + Bitmap::GetBufferSize(
+          const uint8 *data = GetFaceMipData(
+              static_cast<TextureCUBE::CubeFace>(face),
+              level) + 3;
+          const uint8* end = data + Bitmap::GetBufferSize(
               std::max(1U, width() >> level),
               std::max(1U, height() >> level),
               format());
@@ -936,10 +1064,10 @@ bool Bitmap::CheckAlphaIsOne() const {
       int faces = is_cubemap() ? 6 : 1;
       for (int face = 0; face < faces; ++face) {
         for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-          const unsigned char *data = GetMipData(
-              level,
-              static_cast<TextureCUBE::CubeFace>(face));
-          const unsigned char* end = data + Bitmap::GetBufferSize(
+          const uint8 *data = GetFaceMipData(
+              static_cast<TextureCUBE::CubeFace>(face),
+              level);
+          const uint8* end = data + Bitmap::GetBufferSize(
               std::max(1U, width() >> level),
               std::max(1U, height() >> level),
               format());
@@ -965,10 +1093,10 @@ bool Bitmap::CheckAlphaIsOne() const {
       int faces = is_cubemap() ? 6 : 1;
       for (int face = 0; face < faces; ++face) {
         for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-          const unsigned char *data = GetMipData(
-              level,
-              static_cast<TextureCUBE::CubeFace>(face)) + 6;
-          const unsigned char* end = data + Bitmap::GetBufferSize(
+          const uint8 *data = GetFaceMipData(
+              static_cast<TextureCUBE::CubeFace>(face),
+              level) + 6;
+          const uint8* end = data + Bitmap::GetBufferSize(
               std::max(1U, width() >> level),
               std::max(1U, height() >> level),
               format());
@@ -988,10 +1116,10 @@ bool Bitmap::CheckAlphaIsOne() const {
       int faces = is_cubemap() ? 6 : 1;
       for (int face = 0; face < faces; ++face) {
         for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-          const unsigned char* data = GetMipData(
-              level,
-              static_cast<TextureCUBE::CubeFace>(face)) + 12;
-          const unsigned char* end = data + Bitmap::GetBufferSize(
+          const uint8* data = GetFaceMipData(
+              static_cast<TextureCUBE::CubeFace>(face),
+              level) + 12;
+          const uint8* end = data + Bitmap::GetBufferSize(
               std::max(1U, width() >> level),
               std::max(1U, height() >> level),
               format());

@@ -36,6 +36,7 @@
 #include "core/cross/precompile.h"
 #include "core/cross/error.h"
 #include "core/cross/types.h"
+#include "core/cross/pointer_utils.h"
 #include "core/cross/gl/renderer_gl.h"
 #include "core/cross/gl/render_surface_gl.h"
 #include "core/cross/gl/texture_gl.h"
@@ -154,11 +155,12 @@ static bool UpdateGLImageFromBitmap(GLenum target,
   DCHECK(bitmap.image_data());
   unsigned int mip_width = std::max(1U, bitmap.width() >> level);
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
-  const unsigned char *mip_data = bitmap.GetMipData(level, face);
+  const unsigned char *mip_data = bitmap.GetFaceMipData(face, level);
   unsigned int mip_size =
       Bitmap::GetBufferSize(mip_width, mip_height, bitmap.format());
   scoped_array<unsigned char> temp_data;
   if (resize_to_pot) {
+    DCHECK(!Texture::IsCompressedFormat(bitmap.format()));
     unsigned int pot_width =
         std::max(1U, Bitmap::GetPOTSize(bitmap.width()) >> level);
     unsigned int pot_height =
@@ -167,7 +169,8 @@ static bool UpdateGLImageFromBitmap(GLenum target,
                                                   bitmap.format());
     temp_data.reset(new unsigned char[pot_size]);
     Bitmap::Scale(mip_width, mip_height, bitmap.format(), mip_data,
-                  pot_width, pot_height, temp_data.get());
+                  pot_width, pot_height, temp_data.get(),
+                  Bitmap::GetMipChainSize(pot_width, 1, bitmap.format(), 1));
     mip_width = pot_width;
     mip_height = pot_height;
     mip_size = pot_size;
@@ -218,7 +221,7 @@ static bool CreateGLImagesAndUpload(GLenum target,
   for (unsigned int i = 0; i < bitmap.num_mipmaps(); ++i) {
     // Upload pixels directly if we can, otherwise it will be done with
     // UpdateGLImageFromBitmap afterwards.
-    unsigned char *data = resize_to_pot ? NULL : bitmap.GetMipData(i, face);
+    unsigned char *data = resize_to_pot ? NULL : bitmap.GetFaceMipData(face, i);
 
     if (format) {
       glTexImage2D(target, i, internal_format, mip_width, mip_height,
@@ -376,9 +379,96 @@ Texture2DGL::~Texture2DGL() {
   CHECK_GL_ERROR();
 }
 
+void Texture2DGL::SetRect(int level,
+                          unsigned dst_left,
+                          unsigned dst_top,
+                          unsigned src_width,
+                          unsigned src_height,
+                          const void* src_data,
+                          int src_pitch) {
+  if (level >= levels() || level < 0) {
+    O3D_ERROR(service_locator())
+        << "Trying to SetRect on non-existent level " << level
+        << " on Texture \"" << name() << "\"";
+    return;
+  }
+  if (render_surfaces_enabled()) {
+    O3D_ERROR(service_locator())
+        << "Attempting to SetRect a render-target texture: " << name();
+    return;
+  }
+
+  unsigned mip_width;
+  unsigned mip_height;
+  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+
+  if (dst_left + src_width > mip_width ||
+      dst_top + src_height > mip_height) {
+    O3D_ERROR(service_locator())
+        << "SetRect(" << level << ", " << dst_left << ", " << dst_top << ", "
+        << src_width << ", " << src_height << ") out of range for texture << \""
+        << name() << "\"";
+    return;
+  }
+
+  bool entire_rect = dst_left == 0 && dst_top == 0 &&
+                     src_width == mip_width && src_height == mip_height;
+  bool compressed = IsCompressed();
+
+  if (compressed && !entire_rect) {
+    O3D_ERROR(service_locator())
+        << "SetRect must be full rectangle for compressed textures";
+    return;
+  }
+
+  if (resize_to_pot_) {
+    DCHECK(backing_bitmap_->image_data());
+    DCHECK(!compressed);
+    // We need to update the backing mipmap and then use that to update the
+    // texture.
+    backing_bitmap_->SetRect(
+        level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
+    UpdateBackedMipLevel(level);
+  } else {
+    glBindTexture(GL_TEXTURE_2D, gl_texture_);
+    GLenum gl_internal_format = 0;
+    GLenum gl_data_type = 0;
+    GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
+                                             &gl_data_type);
+    if (gl_format) {
+      if (src_pitch == Bitmap::GetMipChainSize(src_width, 1, format(), 1)) {
+        glTexSubImage2D(GL_TEXTURE_2D, level,
+                        dst_left, dst_top,
+                        src_width, src_height,
+                        gl_format,
+                        gl_data_type,
+                        src_data);
+      } else {
+        for (int yy = 0; yy < src_height; ++yy) {
+          glTexSubImage2D(GL_TEXTURE_2D, level,
+                          dst_left, dst_top + yy,
+                          src_width, 1,
+                          gl_format,
+                          gl_data_type,
+                          src_data);
+          src_data = AddPointerOffset<const void*>(src_data, src_pitch);
+        }
+      }
+    } else {
+      glCompressedTexSubImage2D(
+          GL_TEXTURE_2D, level, 0, 0, src_width, src_height,
+          gl_internal_format,
+          Bitmap::GetMipChainSize(src_width, src_height, format(), 1),
+          src_data);
+    }
+  }
+}
+
 // Locks the given mipmap level of this texture for loading from main memory,
 // and returns a pointer to the buffer.
-bool Texture2DGL::Lock(int level, void** data) {
+bool Texture2DGL::Lock(int level, void** data, int* pitch) {
+  DCHECK(data);
+  DCHECK(pitch);
   DLOG(INFO) << "Texture2DGL Lock";
   renderer_->MakeCurrentLazy();
   if (level >= levels() || level < 0) {
@@ -397,7 +487,18 @@ bool Texture2DGL::Lock(int level, void** data) {
     DCHECK_EQ(has_levels_, 0u);
     backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
   }
-  *data = backing_bitmap_->GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
+  *data = backing_bitmap_->GetMipData(level);
+  unsigned int mip_width;
+  unsigned int mip_height;
+  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  if (IsCompressed()) {
+    *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
+  } else {
+    unsigned blocks_across = (mip_width + 3) / 4;
+    unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
+    unsigned bytes_per_row = bytes_per_block * blocks_across;
+    *pitch = bytes_per_row;
+  }
   if (!HasLevel(level)) {
     // TODO: add some API so we don't have to copy back the data if we
     // will rewrite it all.
@@ -651,9 +752,104 @@ RenderSurface::Ref TextureCUBEGL::GetRenderSurface(TextureCUBE::CubeFace face,
   return render_surface;
 }
 
+void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
+                            int level,
+                            unsigned dst_left,
+                            unsigned dst_top,
+                            unsigned src_width,
+                            unsigned src_height,
+                            const void* src_data,
+                            int src_pitch) {
+  if (static_cast<int>(face) < 0 || static_cast<int>(face) >= NUMBER_OF_FACES) {
+    O3D_ERROR(service_locator())
+        << "Trying to SetRect invalid face " << face << " on Texture \""
+        << name() << "\"";
+    return;
+  }
+  if (level >= levels() || level < 0) {
+    O3D_ERROR(service_locator())
+        << "Trying to SetRect non-existent level " << level
+        << " on Texture \"" << name() << "\"";
+    return;
+  }
+  if (render_surfaces_enabled()) {
+    O3D_ERROR(service_locator())
+        << "Attempting to SetRect a render-target texture: " << name();
+    return;
+  }
+
+  unsigned mip_width;
+  unsigned mip_height;
+  Bitmap::GetMipSize(
+      level, edge_length(), edge_length(), &mip_width, &mip_height);
+
+  if (dst_left + src_width > mip_width ||
+      dst_top + src_height > mip_height) {
+    O3D_ERROR(service_locator())
+        << "SetRect(" << level << ", " << dst_left << ", " << dst_top << ", "
+        << src_width << ", " << src_height << ") out of range for texture << \""
+        << name() << "\"";
+    return;
+  }
+
+  bool entire_rect = dst_left == 0 && dst_top == 0 &&
+                     src_width == mip_width && src_height == mip_height;
+  bool compressed = IsCompressed();
+
+  if (compressed && !entire_rect) {
+    O3D_ERROR(service_locator())
+        << "SetRect must be full rectangle for compressed textures";
+    return;
+  }
+
+  if (resize_to_pot_) {
+    DCHECK(backing_bitmap_->image_data());
+    DCHECK(!compressed);
+    // We need to update the backing mipmap and then use that to update the
+    // texture.
+    backing_bitmap_->SetFaceRect(face,
+        level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
+    UpdateBackedMipLevel(level, face);
+  } else {
+    // TODO(gman): Should this bind be using a FACE id?
+    glBindTexture(GL_TEXTURE_2D, gl_texture_);
+    GLenum gl_internal_format = 0;
+    GLenum gl_data_type = 0;
+    GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
+                                             &gl_data_type);
+    int gl_face = kCubemapFaceList[face];
+    if (gl_format) {
+      if (src_pitch == Bitmap::GetMipChainSize(src_width, 1, format(), 1)) {
+        glTexSubImage2D(gl_face, level,
+                        dst_left, dst_top,
+                        src_width, src_height,
+                        gl_format,
+                        gl_data_type,
+                        src_data);
+      } else {
+        for (int yy = 0; yy < src_height; ++yy) {
+          glTexSubImage2D(gl_face, level,
+                          dst_left, dst_top + yy,
+                          src_width, 1,
+                          gl_format,
+                          gl_data_type,
+                          src_data);
+          src_data = AddPointerOffset<const void*>(src_data, src_pitch);
+        }
+      }
+    } else {
+      glCompressedTexSubImage2D(
+          GL_TEXTURE_2D, level, 0, 0, src_width, src_height,
+          gl_internal_format,
+          Bitmap::GetMipChainSize(src_width, src_height, format(), 1),
+          src_data);
+    }
+  }
+}
+
 // Locks the given face and mipmap level of this texture for loading from
 // main memory, and returns a pointer to the buffer.
-bool TextureCUBEGL::Lock(CubeFace face, int level, void** data) {
+bool TextureCUBEGL::Lock(CubeFace face, int level, void** data, int* pitch) {
   DLOG(INFO) << "TextureCUBEGL Lock";
   renderer_->MakeCurrentLazy();
   if (level >= levels() || level < 0) {
@@ -676,7 +872,19 @@ bool TextureCUBEGL::Lock(CubeFace face, int level, void** data) {
     backing_bitmap_->Allocate(format(), edge_length(), edge_length(),
                              levels(), true);
   }
-  *data = backing_bitmap_->GetMipData(level, face);
+  *data = backing_bitmap_->GetFaceMipData(face, level);
+  unsigned int mip_width;
+  unsigned int mip_height;
+  Bitmap::GetMipSize(level, edge_length(), edge_length(),
+                     &mip_width, &mip_height);
+  if (IsCompressed()) {
+    *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
+  } else {
+    unsigned blocks_across = (mip_width + 3) / 4;
+    unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
+    unsigned bytes_per_row = bytes_per_block * blocks_across;
+    *pitch = bytes_per_row;
+  }
   GLenum gl_target = kCubemapFaceList[face];
   if (!HasLevel(level, face)) {
     // TODO: add some API so we don't have to copy back the data if we

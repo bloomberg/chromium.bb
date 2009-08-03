@@ -35,6 +35,7 @@
 #include "core/cross/precompile.h"
 #include "core/cross/buffer.h"
 #include "core/cross/client_info.h"
+#include "core/cross/pointer_utils.h"
 #include "core/cross/renderer.h"
 #include "core/cross/features.h"
 #include "core/cross/error.h"

@@ -61,6 +61,7 @@
         'cross/plugin_main.h',
         'cross/stream_manager.cc',
         'cross/stream_manager.h',
+        'cross/texture_static_glue.cc',
       ],
       'conditions' : [
         ['OS != "linux"',

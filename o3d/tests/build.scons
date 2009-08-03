@@ -229,6 +229,8 @@ tests = [
     'core/cross/state_test.cc',
     'core/cross/stream_bank_test.cc',
     'core/cross/stream_test.cc',
+    'core/cross/texture_base_test.cc',
+    'core/cross/texture_test.cc',
     'core/cross/transform_test.cc',
     'core/cross/tree_traversal_test.cc',
     'core/cross/vector_map_test.cc',

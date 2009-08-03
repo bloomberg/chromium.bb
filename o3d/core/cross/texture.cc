@@ -127,16 +127,9 @@ void Texture2D::DrawImage(Bitmap* src_img,
       static_cast<unsigned int>(src_height) == src_img->height() &&
       static_cast<unsigned int>(dst_width) == mip_width &&
       static_cast<unsigned int>(dst_height) == mip_height) {
-    void* data = NULL;
-    if (!Lock(dest_mip, &data))
-      return;
-
-    uint8* mip_data = static_cast<uint8*>(data);
-    unsigned int size = Bitmap::GetMipChainSize(mip_width, mip_height,
-                                                format(), 1);
-    memcpy(mip_data, src_img->image_data(), size);
-    this->Unlock(dest_mip);
-
+    SetRect(dest_mip, 0, 0, mip_width, mip_height,
+            src_img->image_data(),
+            Bitmap::GetMipChainSize(src_img->width(), 1, format(), 1));
     return;
   }
   if (src_img->format() == Texture::XRGB8 ||
@@ -150,43 +143,43 @@ void Texture2D::DrawImage(Bitmap* src_img,
     return;
   }
 
-  void* data = NULL;
-  if (!Lock(dest_mip, &data))
+  LockHelper helper(this, dest_mip);
+  uint8* mip_data = helper.GetDataAs<uint8>();
+  if (!mip_data) {
     return;
+  }
 
   uint8* src_img_data = src_img->image_data();
-  uint8* mip_data = static_cast<uint8*>(data);
 
   Bitmap::LanczosScale(src_img_data, src_x, src_y,
                        src_width, src_height,
                        src_img->width(), src_img->height(),
-                       mip_data, dst_x, dst_y,
+                       mip_data, helper.pitch(),
+                       dst_x, dst_y,
                        dst_width, dst_height,
                        mip_width, mip_height, components);
-
-  this->Unlock(dest_mip);
 }
 
 ObjectBase::Ref Texture2D::Create(ServiceLocator* service_locator) {
   return ObjectBase::Ref();
 }
 
-Texture2DLockHelper::Texture2DLockHelper(Texture2D* texture, int level)
+Texture2D::LockHelper::LockHelper(Texture2D* texture, int level)
     : texture_(texture),
       level_(level),
       data_(NULL),
       locked_(false) {
 }
 
-Texture2DLockHelper::~Texture2DLockHelper() {
+Texture2D::LockHelper::~LockHelper() {
   if (locked_) {
     texture_->Unlock(level_);
   }
 }
 
-void* Texture2DLockHelper::GetData() {
+void* Texture2D::LockHelper::GetData() {
   if (!locked_) {
-    locked_ = texture_->Lock(level_, &data_);
+    locked_ = texture_->Lock(level_, &data_, &pitch_);
     if (!locked_) {
       O3D_ERROR(texture_->service_locator())
           << "Unable to lock buffer '" << texture_->name() << "'";
@@ -280,17 +273,9 @@ void TextureCUBE::DrawImage(Bitmap* src_img,
       static_cast<unsigned int>(src_height) == src_img->height() &&
       static_cast<unsigned int>(dst_width) == mip_length &&
       static_cast<unsigned int>(dst_height) == mip_length) {
-    // get mip data by lock method.
-    void* data = NULL;
-    if (!Lock(dest_face, dest_mip, &data))
-      return;
-
-    uint8* mip_data = static_cast<uint8*>(data);
-    unsigned int size = Bitmap::GetMipChainSize(mip_length, mip_length,
-                                                format(), 1);
-    memcpy(mip_data, src_img->image_data(), size);
-    this->Unlock(dest_face, dest_mip);
-
+    SetRect(dest_face, dest_mip, 0, 0, mip_length, mip_length,
+            src_img->image_data(),
+            Bitmap::GetMipChainSize(src_img->width(), 1, format(), 1));
     return;
   }
   if (src_img->format() == Texture::XRGB8 ||
@@ -304,22 +289,49 @@ void TextureCUBE::DrawImage(Bitmap* src_img,
     return;
   }
 
-  void* data = NULL;
-  if (!Lock(dest_face, dest_mip, &data)) {
+  LockHelper helper(this, dest_face, dest_mip);
+  uint8* mip_data = helper.GetDataAs<uint8>();
+  if (!mip_data) {
     return;
   }
 
   uint8* src_img_data = src_img->image_data();
-  uint8* mip_data = static_cast<uint8*>(data);
 
   Bitmap::LanczosScale(src_img_data, src_x, src_y,
                        src_width, src_height,
                        src_img->width(), src_img->height(),
-                       mip_data, dst_x, dst_y,
+                       mip_data, helper.pitch(),
+                       dst_x, dst_y,
                        dst_width, dst_height,
                        mip_length, mip_length, components);
+}
 
-  this->Unlock(dest_face, dest_mip);
+TextureCUBE::LockHelper::LockHelper(
+    TextureCUBE* texture,
+    CubeFace face,
+    int level)
+    : texture_(texture),
+      face_(face),
+      level_(level),
+      data_(NULL),
+      locked_(false) {
+}
+
+TextureCUBE::LockHelper::~LockHelper() {
+  if (locked_) {
+    texture_->Unlock(face_, level_);
+  }
+}
+
+void* TextureCUBE::LockHelper::GetData() {
+  if (!locked_) {
+    locked_ = texture_->Lock(face_, level_, &data_, &pitch_);
+    if (!locked_) {
+      O3D_ERROR(texture_->service_locator())
+          << "Unable to lock buffer '" << texture_->name() << "'";
+    }
+  }
+  return data_;
 }
 
 }  // namespace o3d

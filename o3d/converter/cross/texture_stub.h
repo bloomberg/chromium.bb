@@ -62,12 +62,15 @@ class Texture2DStub : public Texture2D {
                   enable_render_surfaces) {}
   virtual ~Texture2DStub() {}
 
-  // Locks the image buffer of a given mipmap level for writing from main
-  // memory.
-  virtual bool Lock(int level, void** texture_data) { return true; }
-
-  // Unlocks this texture and returns it to Stub control.
-  virtual bool Unlock(int level) { return true; }
+  // Overridden from Texture2D
+  virtual void SetRect(int level,
+                       unsigned left,
+                       unsigned top,
+                       unsigned width,
+                       unsigned height,
+                       const void* src_data,
+                       int src_pitch) {
+  }
 
   // Returns a RenderSurface object associated with a mip_level of a texture.
   // Parameters:
@@ -87,6 +90,16 @@ class Texture2DStub : public Texture2D {
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
+
+ protected:
+  // Locks the image buffer of a given mipmap level for writing from main
+  // memory.
+  virtual bool Lock(int level, void** texture_data, int* pitch) {
+    return false;
+  }
+
+  // Unlocks this texture and returns it to Stub control.
+  virtual bool Unlock(int level) { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Texture2DStub);
@@ -111,14 +124,16 @@ class TextureCUBEStub : public TextureCUBE {
                     enable_render_surfaces) {}
   virtual ~TextureCUBEStub() {}
 
-  // Locks the image buffer of a given face and mipmap level for loading
-  // from main memory.
-  virtual bool Lock(CubeFace face, int level, void** texture_data) {
-    return true;
-  }
-
-  // Unlocks the image buffer of a given face and mipmap level.
-  virtual bool Unlock(CubeFace face, int level) { return true; }
+  // Overridden from TextureCUBE
+  virtual void SetRect(CubeFace face,
+                       int level,
+                       unsigned dst_left,
+                       unsigned dst_top,
+                       unsigned width,
+                       unsigned height,
+                       const void* src_data,
+                       int src_pitch) {
+  };
 
   // Returns a RenderSurface object associated with a given cube face and
   // mip_level of a texture.
@@ -142,6 +157,17 @@ class TextureCUBEStub : public TextureCUBE {
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
+
+ protected:
+  // Locks the image buffer of a given face and mipmap level for loading
+  // from main memory.
+  virtual bool Lock(
+      CubeFace face, int level, void** texture_data, int* pitch) {
+    return false;
+  }
+
+  // Unlocks the image buffer of a given face and mipmap level.
+  virtual bool Unlock(CubeFace face, int level) { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextureCUBEStub);

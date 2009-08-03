@@ -36,6 +36,7 @@
 #include "tests/common/win/testing_common.h"
 #include "core/cross/vertex_source.h"
 #include "core/cross/fake_vertex_source.h"
+#include "core/cross/pointer_utils.h"
 #include "core/cross/evaluation_counter.h"
 
 namespace o3d {

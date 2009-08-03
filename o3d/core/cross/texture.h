@@ -49,6 +49,40 @@ class Bitmap;
 class Texture2D : public Texture {
  public:
   typedef SmartPointer<Texture2D> Ref;
+
+  // Class to help lock Texture2D. Automatically unlocks texture in destructor.
+  class LockHelper {
+   public:
+    explicit LockHelper(Texture2D* texture, int level);
+    ~LockHelper();
+
+    int pitch() const {
+      return pitch_;
+    }
+
+    // Gets a pointer to the data of the buffer, locking the buffer if
+    // necessary.
+    // Returns:
+    //   Pointer to data in buffer or NULL if there was an error.
+    void* GetData();
+
+    // Typed version of GetData
+    template <typename T>
+    T* GetDataAs() {
+      return reinterpret_cast<T*>(GetData());
+    }
+
+   private:
+    Texture2D* texture_;
+    int level_;
+    int pitch_;
+    void* data_;
+    bool locked_;
+
+    DISALLOW_COPY_AND_ASSIGN(LockHelper);
+  };
+
+
   Texture2D(ServiceLocator* service_locator,
             int width,
             int height,
@@ -70,24 +104,26 @@ class Texture2D : public Texture {
     return height_param_->value();
   }
 
-  // Returns a pointer to the internal texture data for the given mipmap level.
-  // Lock must be called before the texture data can be modified.
+  // Sets a rectangular region of this texture.
+  // If the texture is a DXT format, the only acceptable values
+  // for left, top, width and height are 0, 0, texture->width, texture->height
+  //
   // Parameters:
-  //  level: [in] the mipmap level to be modified
-  //  texture_data: [out] a pointer to the current texture data
-  // Returns:
-  //  true if the operation succeeds
-  virtual bool Lock(int level, void** texture_data) = 0;
-
-  // Notifies the texture object that the internal texture data has been
-  // been modified.  Unlock must be called in conjunction with Lock.  Modifying
-  // the contents of the texture after Unlock has been called could lead to
-  // unpredictable behavior.
-  // Parameters:
-  //  level: [in] the mipmap level that was modified
-  // Returns:
-  //  true if the operation succeeds
-  virtual bool Unlock(int level) = 0;
+  //   level: The mipmap level to modify
+  //   dst_left: The left edge of the rectangular area to modify.
+  //   dst_top: The top edge of the rectangular area to modify.
+  //   width: The width of the rectangular area to modify.
+  //   height: The of the rectangular area to modify.
+  //   src_data: The source pixels.
+  //   src_pitch: If the format is uncompressed this is the number of bytes
+  //      per row of pixels. If compressed this value is unused.
+  virtual void SetRect(int level,
+                       unsigned dst_left,
+                       unsigned dst_top,
+                       unsigned width,
+                       unsigned height,
+                       const void* src_data,
+                       int src_pitch) = 0;
 
   // Returns a RenderSurface object associated with a mip_level of a texture.
   // Parameters:
@@ -116,6 +152,27 @@ class Texture2D : public Texture {
                  int dest_width, int dest_height, int dest_mip);
 
  protected:
+  // Returns a pointer to the internal texture data for the given mipmap level.
+  // Lock must be called before the texture data can be modified.
+  // Parameters:
+  //  level: [in] the mipmap level to be modified
+  //  texture_data: [out] a pointer to the current texture data
+  //  pitch: bytes across 1 row of pixels if uncompressed format. bytes across 1
+  //     row of blocks if compressed format.
+  // Returns:
+  //  true if the operation succeeds
+  virtual bool Lock(int level, void** texture_data, int* pitch) = 0;
+
+  // Notifies the texture object that the internal texture data has been
+  // been modified.  Unlock must be called in conjunction with Lock.  Modifying
+  // the contents of the texture after Unlock has been called could lead to
+  // unpredictable behavior.
+  // Parameters:
+  //  level: [in] the mipmap level that was modified
+  // Returns:
+  //  true if the operation succeeds
+  virtual bool Unlock(int level) = 0;
+
   // Returns true if the mip-map level has been locked.
   bool IsLocked(unsigned int level) {
     DCHECK_LT(static_cast<int>(level), levels());
@@ -138,32 +195,6 @@ class Texture2D : public Texture {
   DISALLOW_COPY_AND_ASSIGN(Texture2D);
 };
 
-// Class to help lock Texture2D. Automatically unlocks texture in destructor.
-class Texture2DLockHelper {
- public:
-  explicit Texture2DLockHelper(Texture2D* texture, int level);
-  ~Texture2DLockHelper();
-
-  // Gets a pointer to the data of the buffer, locking the buffer if necessary.
-  // Returns:
-  //   Pointer to data in buffer or NULL if there was an error.
-  void* GetData();
-
-  // Typed version of GetData
-  template <typename T>
-  T* GetDataAs() {
-    return reinterpret_cast<T*>(GetData());
-  }
-
- private:
-  Texture2D* texture_;
-  int level_;
-  void* data_;
-  bool locked_;
-
-  DISALLOW_COPY_AND_ASSIGN(Texture2DLockHelper);
-};
-
 class TextureCUBE : public Texture {
  public:
   typedef SmartPointer<TextureCUBE> Ref;
@@ -176,6 +207,40 @@ class TextureCUBE : public Texture {
     FACE_POSITIVE_Z,
     FACE_NEGATIVE_Z,
     NUMBER_OF_FACES,
+  };
+
+  // Class to help lock TextureCUBE.
+  // Automatically unlocks texture in destructor.
+  class LockHelper {
+   public:
+    explicit LockHelper(TextureCUBE* texture, CubeFace face, int level);
+    ~LockHelper();
+
+    int pitch() const {
+      return pitch_;
+    }
+
+    // Gets a pointer to the data of the buffer, locking the buffer if
+    // necessary.
+    // Returns:
+    //   Pointer to data in buffer or NULL if there was an error.
+    void* GetData();
+
+    // Typed version of GetData
+    template <typename T>
+    T* GetDataAs() {
+      return reinterpret_cast<T*>(GetData());
+    }
+
+   private:
+    TextureCUBE* texture_;
+    CubeFace face_;
+    int level_;
+    int pitch_;
+    void* data_;
+    bool locked_;
+
+    DISALLOW_COPY_AND_ASSIGN(LockHelper);
   };
 
   static const char* kEdgeLengthParamName;
@@ -193,27 +258,28 @@ class TextureCUBE : public Texture {
     return edge_length_param_->value();
   }
 
-  // Returns a pointer to the internal texture data for the given face and
-  // mipmap level.
-  // Lock must be called before the texture data can be modified.
+  // Sets a rectangular region of this texture.
+  // If the texture is a DXT format, the only acceptable values
+  // for left, top, width and height are 0, 0, texture->width, texture->height
+  //
   // Parameters:
-  //  face: [in] the index of the cube face to be modified
-  //  level: [in] the mipmap level to be modified
-  //  texture_data: [out] a pointer to the current texture data
-  // Returns:
-  //  true if the operation succeeds
-  virtual bool Lock(CubeFace face, int level, void** texture_data) = 0;
-
-  // Notifies the texture object that the internal texture data has been
-  // been modified.  Unlock must be called in conjunction with Lock.
-  // Modifying the contents of the texture after Unlock has been called could
-  // lead to unpredictable behavior.
-  // Parameters:
-  //  face: [in] the index of the cube face that was modified
-  //  level: [in] the mipmap level that was modified
-  // Returns:
-  //  true if the operation succeeds
-  virtual bool Unlock(CubeFace face, int level) = 0;
+  //   face: The face of the cube to modify.
+  //   level: The mipmap level to modify
+  //   dst_left: The left edge of the rectangular area to modify.
+  //   dst_top: The top edge of the rectangular area to modify.
+  //   width: The width of the rectangular area to modify.
+  //   height: The of the rectangular area to modify.
+  //   src_data: buffer to get pixels from.
+  //   src_pitch: If the format is uncompressed this is the number of bytes
+  //      per row of pixels. If compressed this value is unused.
+  virtual void SetRect(CubeFace face,
+                       int level,
+                       unsigned dst_left,
+                       unsigned dst_top,
+                       unsigned width,
+                       unsigned height,
+                       const void* src_data,
+                       int src_pitch) = 0;
 
   // Returns a RenderSurface object associated with a given cube face and
   // mip_level of a texture.
@@ -247,6 +313,31 @@ class TextureCUBE : public Texture {
                  int dest_height, CubeFace face, int dest_mip);
 
  protected:
+  // Returns a pointer to the internal texture data for the given face and
+  // mipmap level.
+  // Lock must be called before the texture data can be modified.
+  // Parameters:
+  //  face: [in] the index of the cube face to be modified
+  //  level: [in] the mipmap level to be modified
+  //  texture_data: [out] a pointer to the current texture data
+  //  pitch: bytes across 1 row of pixels if uncompressed format. bytes across 1
+  //     row of blocks if compressed format.
+  // Returns:
+  //  true if the operation succeeds
+  virtual bool Lock(
+      CubeFace face, int level, void** texture_data, int* pitch) = 0;
+
+  // Notifies the texture object that the internal texture data has been
+  // been modified.  Unlock must be called in conjunction with Lock.
+  // Modifying the contents of the texture after Unlock has been called could
+  // lead to unpredictable behavior.
+  // Parameters:
+  //  face: [in] the index of the cube face that was modified
+  //  level: [in] the mipmap level that was modified
+  // Returns:
+  //  true if the operation succeeds
+  virtual bool Unlock(CubeFace face, int level) = 0;
+
   // Returns true if the mip-map level has been locked.
   bool IsLocked(unsigned int level, CubeFace face) {
     DCHECK_LT(static_cast<int>(level), levels());

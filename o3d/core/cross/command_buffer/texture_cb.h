@@ -64,12 +64,14 @@ class Texture2DCB : public Texture2D {
                              Bitmap *bitmap,
                              bool enable_render_surfaces);
 
-  // Locks the image buffer of a given mipmap level for writing from main
-  // memory.
-  virtual bool Lock(int level, void** texture_data);
-
-  // Unlocks this texture and returns it to OpenCB control.
-  virtual bool Unlock(int level);
+  // Overridden from Texture2D
+  virtual void SetRect(int level,
+                       unsigned left,
+                       unsigned top,
+                       unsigned width,
+                       unsigned height,
+                       const void* src_data,
+                       int src_pitch);
 
   // Returns a RenderSurface object associated with a mip_level of a texture.
   // Parameters:
@@ -91,6 +93,12 @@ class Texture2DCB : public Texture2D {
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
 
+ protected:
+  // Overridden from Texture2D
+  virtual bool Lock(int level, void** texture_data, int* pitch);
+
+  // Overridden from Texture2D
+  virtual bool Unlock(int level);
 
  private:
   // Initializes the Texture2DCB from a preexisting OpenCB texture handle
@@ -133,12 +141,15 @@ class TextureCUBECB : public TextureCUBE {
                                               Bitmap *bitmap,
                                               bool enable_render_surfaces);
 
-  // Locks the image buffer of a given face and mipmap level for loading
-  // from main memory.
-  virtual bool Lock(CubeFace face, int level, void** texture_data);
-
-  // Unlocks the image buffer of a given face and mipmap level.
-  virtual bool Unlock(CubeFace face, int level);
+  // Overridden from TextureCUBE
+  virtual void SetRect(CubeFace face,
+                       int level,
+                       unsigned dst_left,
+                       unsigned dst_top,
+                       unsigned width,
+                       unsigned height,
+                       const void* src_data,
+                       int src_pitch);
 
   // Returns a RenderSurface object associated with a given cube face and
   // mip_level of a texture.
@@ -163,6 +174,14 @@ class TextureCUBECB : public TextureCUBE {
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the rendering API.
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
+
+ protected:
+  // Overridden from TextureCUBE
+  virtual bool Lock(
+      CubeFace face, int level, void** texture_data, int* pitch);
+
+  // Overridden from TextureCUBE
+  virtual bool Unlock(CubeFace face, int level);
 
  private:
   // Creates a texture from a pre-existing texture resource.

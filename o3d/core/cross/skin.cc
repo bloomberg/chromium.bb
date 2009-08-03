@@ -35,6 +35,7 @@
 #include "core/cross/precompile.h"
 #include "core/cross/skin.h"
 #include "core/cross/error.h"
+#include "core/cross/pointer_utils.h"
 #include "import/cross/memory_stream.h"
 #include "import/cross/raw_data.h"
 

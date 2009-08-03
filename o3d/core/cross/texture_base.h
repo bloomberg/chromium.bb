@@ -90,6 +90,14 @@ class Texture : public ParamObject {
   // Returns the implementation-specific texture handle.
   virtual void* GetTextureHandle() const = 0;
 
+  static bool IsCompressedFormat(Format format) {
+    return format == DXT1 || format == DXT3 || format == DXT5;
+  }
+
+  bool IsCompressed() const {
+    return IsCompressedFormat(format_);
+  }
+
   bool alpha_is_one() const { return alpha_is_one_; }
   void set_alpha_is_one(bool value)  { alpha_is_one_ = value; }
 
@@ -126,7 +134,8 @@ class Texture : public ParamObject {
   }
 
   // Whether or not to resize NPOT textures to POT when passing to the
-  // underlying graphics API.
+  // underlying graphics API. This should only be true in the if the texture
+  // is not POT and if it is not compressed.
   bool resize_to_pot_;
 
   static void RegisterSurface(RenderSurface* surface, Pack* pack);
@@ -161,7 +170,7 @@ class ParamTexture : public TypedRefParam<Texture> {
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
 
-  O3D_DECL_CLASS(ParamTexture, RefParamBase)
+  O3D_DECL_CLASS(ParamTexture, RefParamBase);
   DISALLOW_COPY_AND_ASSIGN(ParamTexture);
 };
 

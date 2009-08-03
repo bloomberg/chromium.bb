@@ -35,6 +35,7 @@
 #include "core/cross/client.h"
 #include "core/cross/skin.h"
 #include "core/cross/stream_bank.h"
+#include "core/cross/pointer_utils.h"
 #include "core/cross/fake_vertex_source.h"
 #include "tests/common/win/testing_common.h"
 

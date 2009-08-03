@@ -194,6 +194,7 @@ inputs = AUTOGEN_CC_FILES + [
   'cross/np_v8_bridge.cc',
   'cross/out_of_memory.cc',
   'cross/stream_manager.cc',
+  'cross/texture_static_glue.cc',
   'cross/config_common.cc',
 ]
 

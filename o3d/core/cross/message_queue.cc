@@ -34,14 +34,14 @@
 // the communication of external code (clients) with O3D (server) via the
 // NativeClient IMC library.
 
+#include "core/cross/precompile.h"
 #if defined(OS_MACOSX) | defined(OS_LINUX)
 #include <sys/types.h>
 #include <unistd.h>
 #endif
-
-#include "core/cross/precompile.h"
 #include "core/cross/message_queue.h"
 #include "core/cross/object_manager.h"
+#include "core/cross/bitmap.h"
 #include "core/cross/texture.h"
 #include "core/cross/error.h"
 
@@ -146,10 +146,10 @@ MessageQueue::MessageQueue(ServiceLocator* service_locator)
   // browsers running o3d at the same time as well as a count to
   // distinguish between multiple instances of o3d running in the same
   // browser.
-  base::snprintf(server_socket_address_.path,
-                 sizeof(server_socket_address_.path),
-                 "%s%d%d", kServerSocketAddressPrefix, (proc_id & 0xFFFF),
-                 next_message_queue_id_);
+  ::base::snprintf(server_socket_address_.path,
+                   sizeof(server_socket_address_.path),
+                   "%s%d%d", kServerSocketAddressPrefix, (proc_id & 0xFFFF),
+                   next_message_queue_id_);
 
   next_message_queue_id_++;
 }
@@ -521,9 +521,8 @@ bool MessageQueue::ProcessAllocateSharedMemory(ConnectedClient* client,
 // bitmap using data stored in a shared memory region.  The client sends the
 // id of the shared memory region, an offset in that region, the id of the
 // Texture object, the level to be modified and the number of bytes to copy.
-// TODO: Check that the number of bytes copied are equal to the size
-// occupied by that level in the texture.  This is essentially asynchronous as
-// the client will not receive a response back from the server
+// This is essentially asynchronous as the client will not receive a response
+// back from the server
 bool MessageQueue::ProcessUpdateTexture2D(ConnectedClient* client,
                                           int message_length,
                                           MessageId message_id,
@@ -591,20 +590,25 @@ bool MessageQueue::ProcessUpdateTexture2D(ConnectedClient* client,
     return false;
   }
 
-  void* texture_data;
-  bool locked = texture_object->Lock(level, &texture_data);
-  if (!locked) {
-    O3D_ERROR(service_locator_) << "Failed to lock texture";
+  unsigned int mip_width;
+  unsigned int mip_height;
+  Bitmap::GetMipSize(level, texture_object->width(), texture_object->height(),
+                     &mip_width, &mip_height);
+
+
+  if (number_of_bytes != Bitmap::GetMipChainSize(mip_width, mip_height,
+                                                 texture_object->format(), 1)) {
+    O3D_ERROR(service_locator_)
+        << "texture_size does not match size of texture level ("
+        << offset << " + " << number_of_bytes << " > " << info->size_;
     SendBooleanResponse(client->client_handle(), false);
     return false;
   }
 
-  // TODO: verify that we don't end up writing past the end of the
-  // memory allocated for that texture level.
   void *target_address = static_cast<char*>(info->mapped_address_) + offset;
-  memcpy(texture_data, target_address, number_of_bytes);
-
-  texture_object->Unlock(level);
+  texture_object->SetRect(
+      level, 0, 0, mip_width, mip_height, target_address,
+      Bitmap::GetMipChainSize(mip_width, 1, texture_object->format(), 1));
 
   SendBooleanResponse(client->client_handle(), true);
   return true;

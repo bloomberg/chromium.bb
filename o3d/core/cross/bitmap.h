@@ -86,6 +86,18 @@ class Bitmap : public ParamObject {
         width <= kMaxImageDimension && height < kMaxImageDimension;
   }
 
+  // Computes the width and height of a mip.
+  static void GetMipSize(int level,
+                         unsigned width,
+                         unsigned height,
+                         unsigned* mip_width,
+                         unsigned* mip_height) {
+    unsigned w = width >> level;
+    unsigned h = height >> level;
+    *mip_width = w > 0 ? w : 1u;
+    *mip_height = h > 0 ? h : 1u;
+  }
+
   // Creates a copy of a bitmap, copying the pixels as well.
   // Parameters:
   //   source: the source bitmap.
@@ -125,7 +137,7 @@ class Bitmap : public ParamObject {
   // Allocates a bitmap with initialized parameters.
   // data is zero-initialized
   void AllocateData() {
-    image_data_.reset(new unsigned char[GetTotalSize()]);
+    image_data_.reset(new uint8[GetTotalSize()]);
     memset(image_data_.get(), 0, GetTotalSize());
   }
 
@@ -133,6 +145,49 @@ class Bitmap : public ParamObject {
   void FreeData() {
     image_data_.reset(NULL);
   }
+
+  // Sets a rectangular region of this bitmap.
+  // If the bitmap is a DXT format, the only acceptable values
+  // for left, top, width and height are 0, 0, bitmap->width, bitmap->height
+  //
+  // Parameters:
+  //   level: The mipmap level to modify
+  //   dst_left: The left edge of the rectangular area to modify.
+  //   dst_top: The top edge of the rectangular area to modify.
+  //   width: The width of the rectangular area to modify.
+  //   height: The of the rectangular area to modify.
+  //   src_data: The source pixels.
+  //   src_pitch: If the format is uncompressed this is the number of bytes
+  //      per row of pixels. If compressed this value is unused.
+  void SetRect(int level,
+               unsigned dst_left,
+               unsigned dst_top,
+               unsigned width,
+               unsigned height,
+               const void* src_data,
+               int src_pitch);
+
+  // Sets a rectangular region of this bitmap.
+  // If the bitmap is a DXT format, the only acceptable values
+  // for left, top, width and height are 0, 0, bitmap->width, bitmap->height
+  //
+  // Parameters:
+  //   level: The mipmap level to modify
+  //   dst_left: The left edge of the rectangular area to modify.
+  //   dst_top: The top edge of the rectangular area to modify.
+  //   width: The width of the rectangular area to modify.
+  //   height: The of the rectangular area to modify.
+  //   src_data: The source pixels.
+  //   src_pitch: If the format is uncompressed this is the number of bytes
+  //      per row of pixels. If compressed this value is unused.
+  void SetFaceRect(TextureCUBE::CubeFace face,
+                   int level,
+                   unsigned dst_left,
+                   unsigned dst_top,
+                   unsigned width,
+                   unsigned height,
+                   const void* src_data,
+                   int src_pitch);
 
   // Gets the total size of the bitmap data, counting all faces and mip levels.
   unsigned int GetTotalSize() {
@@ -145,15 +200,19 @@ class Bitmap : public ParamObject {
                                     unsigned int height,
                                     Texture::Format format);
 
-  // Gets the image data for a given mip-map level and cube map face.
+  // Gets the image data for a given mip-map level.
   // Parameters:
   //   level: mip level to get.
-  //   face: face of cube to get. This parameter is ignored if
-  //       this bitmap is not a cube map.
-  unsigned char *GetMipData(unsigned int level,
-                            TextureCUBE::CubeFace face) const;
+  uint8 *GetMipData(unsigned int level) const;
 
-  unsigned char *image_data() const { return image_data_.get(); }
+  // Gets the image data for a given mip-map level and cube map face.
+  // Parameters:
+  //   face: face of cube to get.
+  //   level: mip level to get.
+  uint8 *GetFaceMipData(TextureCUBE::CubeFace face,
+                        unsigned int level) const;
+
+  uint8 *image_data() const { return image_data_.get(); }
   Texture::Format format() const { return format_; }
   unsigned int width() const { return width_; }
   unsigned int height() const { return height_; }
@@ -281,7 +340,7 @@ class Bitmap : public ParamObject {
                            int src_x, int src_y,
                            int src_width, int src_height,
                            int src_img_width, int src_img_height,
-                           uint8* dest,
+                           uint8* dest, int dest_pitch,
                            int dest_x, int dest_y,
                            int dest_width, int dest_height,
                            int dest_img_width, int dest_img_height,
@@ -295,10 +354,10 @@ class Bitmap : public ParamObject {
   // Adds filler alpha byte (0xff) after every pixel. Assumes buffer was
   // allocated with enough storage)
   // can convert RGB -> RGBA, BGR -> BGRA, etc.
-  static void XYZToXYZA(unsigned char *image_data, int pixel_count);
+  static void XYZToXYZA(uint8 *image_data, int pixel_count);
 
   // Swaps Red and Blue components in the image.
-  static void RGBAToBGRA(unsigned char *image_data, int pixel_count);
+  static void RGBAToBGRA(uint8 *image_data, int pixel_count);
 
   // Gets the number of mip-maps required for a full chain starting at
   // width x height.
@@ -334,7 +393,7 @@ class Bitmap : public ParamObject {
                               unsigned int base_height,
                               Texture::Format format,
                               unsigned int num_mipmaps,
-                              unsigned char *data);
+                              uint8 *data);
 
   // Scales an image up to power-of-two textures, using point filtering.
   // NOTE: this doesn't work for DXTC, or floating-point images.
@@ -345,13 +404,15 @@ class Bitmap : public ParamObject {
   //   format: the format of the data.
   //   src: the data containing the source data of the original image.
   //   dst: a buffer with enough space for the power-of-two version. Pixels are
-  //   written from the end to the beginning so dst can be the same buffer as
-  //   src.
+  //       written from the end to the beginning so dst can be the same buffer
+  //       as src.
+  //   dst_pitch: Number of bytes across 1 row of pixels.
   static bool ScaleUpToPOT(unsigned int width,
                            unsigned int height,
                            Texture::Format format,
-                           const unsigned char *src,
-                           unsigned char *dst);
+                           const uint8 *src,
+                           uint8 *dst,
+                           int dst_pitch);
 
   // Scales an image to an arbitrary size, using point filtering.
   // NOTE: this doesn't work for DXTC, or floating-point images.
@@ -364,15 +425,17 @@ class Bitmap : public ParamObject {
   //   dst_width: the width of the target image.
   //   dst_height: the height of the target image.
   //   dst: a buffer with enough space for the target version. Pixels are
-  //   written from the end to the beginning so dst can be the same buffer as
-  //   src if the transformation is an upscaling.
+  //       written from the end to the beginning so dst can be the same buffer
+  //       as src if the transformation is an upscaling.
+  //   dst_pitch: Number of bytes across 1 row of pixels.
   static bool Scale(unsigned int src_width,
                     unsigned int src_height,
                     Texture::Format format,
-                    const unsigned char *src,
+                    const uint8 *src,
                     unsigned int dst_width,
                     unsigned int dst_height,
-                    unsigned char *dst);
+                    uint8 *dst,
+                    int dst_pitch);
 
   // adjust start points and boundaries when using DrawImage data
   // in bitmap and textures.
@@ -455,7 +518,8 @@ class Bitmap : public ParamObject {
   static void LanczosResize1D(const uint8* src, int src_x, int src_y,
                               int width, int height,
                               int src_bmp_width, int src_bmp_height,
-                              uint8* dest, int dest_x, int dest_y,
+                              uint8* dest, int dest_pitch,
+                              int dest_x, int dest_y,
                               int nwidth,
                               int dest_bmp_width, int dest_bmp_height,
                               bool isWidth, int components);

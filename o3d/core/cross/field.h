@@ -42,20 +42,6 @@
 
 namespace o3d {
 
-// Adds an arbitrary byte offset to a typed pointer.
-template <typename T>
-T AddPointerOffset(T pointer, unsigned offset) {
-  return reinterpret_cast<T>(
-      const_cast<uint8*>(reinterpret_cast<const uint8*>(pointer) + offset));
-}
-
-// Creates a typed pointer from a void pointer and an offset.
-template <typename T>
-T PointerFromVoidPointer(void* pointer, unsigned offset) {
-  return reinterpret_cast<T>(
-      const_cast<uint8*>(reinterpret_cast<const uint8*>(pointer) + offset));
-}
-
 class Buffer;
 class MemoryReadStream;
 

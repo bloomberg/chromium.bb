@@ -147,14 +147,9 @@ void Renderer::InitCommon() {
   DCHECK(!error_sampler_.IsNull());
   error_sampler_->set_name(O3D_STRING_CONSTANT("errorSampler"));
 
-  // TODO: remove ifdef when textures are implemented on CB
-#ifndef RENDERER_CB
   DCHECK(!texture.IsNull());
   texture->set_name(O3D_STRING_CONSTANT("errorTexture"));
   texture->set_alpha_is_one(true);
-  void* texture_data;
-  bool locked = texture->Lock(0, &texture_data);
-  DCHECK(locked);
   static unsigned char error_texture_data[] = {
     0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,
     0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,
@@ -189,14 +184,7 @@ void Renderer::InitCommon() {
     0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,
     0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0xFF, 0x00,
   };
-  DCHECK(sizeof error_texture_data ==
-         Bitmap::GetBufferSize(texture->width(),
-                               texture->height(),
-                               texture->format()));
-  memcpy(texture_data, error_texture_data, sizeof error_texture_data);
-  bool unlocked = texture->Unlock(0);
-  DCHECK(unlocked);
-#endif
+  texture->SetRect(0, 0, 0, 8, 8, error_texture_data, 8 * 4);
 
   error_sampler_->set_mag_filter(Sampler::POINT);
   error_sampler_->set_min_filter(Sampler::POINT);

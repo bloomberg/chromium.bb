@@ -138,7 +138,7 @@ namespace o3d {
   %]
   RenderSurface? GetRenderSurface(int mip_level, Pack pack);
 
-  // TODO: Add Get, GetRect and/or expose Bitmap.
+  // TODO: Add Get, GetRect.
   %[
     Sets the values of the data stored in the texture.
 
@@ -166,7 +166,7 @@ namespace o3d {
     \param level the mip level to update.
     \param values Values to be stored in the buffer.
   %]
-  [nocpp, userglue, include="core/cross/math_utilities.h"]
+  [nocpp, userglue]
   void Set(int level, float[] values);
 
   %[
@@ -187,7 +187,7 @@ namespace o3d {
     \param values Values to be stored in the buffer.
     \see o3d.Texture2D.set
   %]
-  [nocpp, userglue, include="core/cross/math_utilities.h"]
+  [nocpp, userglue]
   void SetRect(int level,
                int destination_x,
                int destination_y,
@@ -213,204 +213,6 @@ namespace o3d {
                  int source_width, int source_height,
                  int dest_x, int dest_y,
                  int dest_width, int dest_height, int dest_mip);
-
-  [verbatim=cpp_glue] %{
-    void SetRectCheck(o3d::Texture2D* self,
-                      int level,
-                      int destination_x,
-                      int destination_y,
-                      int source_width,
-                      const std::vector<float>& values,
-                      bool check_needed) {
-      if (level < 0 || level >= self->levels()) {
-        O3D_ERROR(self->service_locator())
-            << "level (" << level << " out of range";
-        return;
-      }
-      if (values.empty() || source_width <= 0) {
-        return;
-      }
-      unsigned num_values = values.size();
-      unsigned texture_width = std::max(self->width() >> level, 1);
-      unsigned texture_height = std::max(self->height() >> level, 1);
-      unsigned num_components;
-      unsigned swizzle[4] = {2, 1, 0, 3};
-      switch (self->format()) {
-        case o3d::Texture::XRGB8:
-          num_components = 3;
-          break;
-        case o3d::Texture::R32F:
-          swizzle[0] = 0;
-          num_components = 1;
-          break;
-        case o3d::Texture::ARGB8:
-        case o3d::Texture::ABGR16F:
-          num_components = 4;
-          break;
-        case o3d::Texture::ABGR32F: {
-          num_components = 4;
-          const o3d::Texture::RGBASwizzleIndices& indices =
-             self->GetABGR32FSwizzleIndices();
-          for (int ii = 0; ii < 4; ++ii) {
-            swizzle[ii] = indices[ii];
-          }
-          break;
-        }
-        default:
-          O3D_ERROR(self->service_locator())
-            << "Texture::Set not supported for this type of texture";
-          return;
-      }
-      if (num_values % num_components != 0) {
-        O3D_ERROR(self->service_locator())
-          << "The number of elements passed in must be a multiple of "
-          << num_components;
-      }
-      unsigned num_elements = num_values / num_components;
-      if (num_elements % source_width != 0) {
-        O3D_ERROR(self->service_locator())
-          << "The number of elements passed in must be a multiple of the "
-          << "width";
-        return;
-      }
-      unsigned source_height = num_elements / source_width;
-      if (check_needed) {
-        unsigned needed = num_components * texture_width * texture_height;
-        if (num_values != needed) {
-          O3D_ERROR(self->service_locator())
-            << "needed " << needed << " values but " << num_values
-            << " passed in.";
-          return;
-        }
-      }
-
-      // clip
-      int source_x = 0;
-      int source_y = 0;
-      int copy_width = source_width;
-      int copy_height = source_height;
-
-      if (destination_x < 0) {
-        copy_width += destination_x;
-        source_x -= destination_x;
-        destination_x = 0;
-      }
-      if (destination_x + copy_width > static_cast<int>(texture_width)) {
-        copy_width -= destination_x + copy_width - texture_width;
-      }
-
-      if (destination_y < 0) {
-        copy_height += destination_y;
-        source_y -= destination_y;
-        destination_y = 0;
-      }
-      if (destination_y + copy_height > static_cast<int>(texture_height)) {
-        copy_height -= destination_y + copy_height - texture_height;
-      }
-
-      if (copy_width <= 0 || copy_height <= 0) {
-        return;
-      }
-
-      void* data;
-      if (!self->Lock(level, &data)) {
-        O3D_ERROR(self->service_locator()) << "could not lock texture";
-        return;
-      }
-      const float* source =
-          &values[0] +
-          (source_y * source_width + source_x) * num_components;
-      unsigned source_stride = (source_width - copy_width) * num_components;
-      unsigned destination_stride =
-          (texture_width - copy_width) * num_components;
-      switch (self->format()) {
-        case o3d::Texture::ABGR16F: {
-          unsigned short* destination =
-              static_cast<unsigned short*>(data) +
-              (destination_y * texture_width + destination_x) * num_components;
-          while (copy_height > 0) {
-            for (int xx = 0; xx < copy_width; ++xx) {
-              for (unsigned element = 0; element < num_components; ++element) {
-                destination[element] = Vectormath::Aos::FloatToHalf(
-                    source[swizzle[element]]);
-              }
-              destination += num_components;
-              source += num_components;
-            }
-            destination += destination_stride;
-            source += source_stride;
-            --copy_height;
-          }
-          break;
-        }
-        case o3d::Texture::R32F:
-        case o3d::Texture::ABGR32F: {
-          float* destination =
-            static_cast<float*>(data) +
-            (destination_y * texture_width + destination_x) * num_components;
-          while (copy_height > 0) {
-            for (int xx = 0; xx < copy_width; ++xx) {
-              for (unsigned element = 0; element < num_components; ++element) {
-                destination[element] = source[swizzle[element]];
-              }
-              destination += num_components;
-              source += num_components;
-            }
-            destination += destination_stride;
-            source += source_stride;
-            --copy_height;
-          }
-          break;
-        }
-        default: {
-          destination_stride = (texture_width - copy_width) * 4;
-          uint8* destination =
-              static_cast<uint8*>(data) +
-             (destination_y * texture_width + destination_x) * 4;
-          while (copy_height > 0) {
-            for (int xx = 0; xx < copy_width; ++xx) {
-              destination[0] = static_cast<unsigned char>(
-                  source[swizzle[0]] * 255.0f);
-              destination[1] = static_cast<unsigned char>(
-                  source[swizzle[1]] * 255.0f);
-              destination[2] = static_cast<unsigned char>(
-                  source[swizzle[2]] * 255.0f);
-              destination[3] = (num_components == 4) ?
-                  static_cast<unsigned char>(source[swizzle[3]] * 255.0f) : 255;
-              destination += 4;
-              source += num_components;
-            }
-            destination += destination_stride;
-            source += source_stride;
-            --copy_height;
-          }
-          break;
-        }
-      }
-      if (!self->Unlock(level)) {
-        O3D_ERROR(self->service_locator()) << "could not unlock texture";
-      }
-    }
-    void userglue_method_SetRect(o3d::Texture2D* self,
-                                 int level,
-                                 int destination_x,
-                                 int destination_y,
-                                 int source_width,
-                                 const std::vector<float>& values) {
-      SetRectCheck(self,
-                   level,
-                   destination_x,
-                   destination_y,
-                   source_width,
-                   values,
-                   false);
-    }
-    void userglue_method_Set(o3d::Texture2D* self,
-                             int level,
-                             const std::vector<float>& values) {
-      SetRectCheck(self, level, 0, 0, self->width(), values, true);
-    }
-  %}
 };  // Texture2D
 
 
@@ -456,6 +258,48 @@ namespace o3d {
     \return The RenderSurface object.
   %]
   RenderSurface? GetRenderSurface(CubeFace face, int mip_level, Pack pack);
+
+  %[
+    Sets the values of the data stored in the texture.
+
+    It is not recommend that you call this for large textures but it is useful
+    for making simple ramps or noise textures for shaders.
+
+    See o3d.Texture2D.set for details on formats.
+
+    \param face the face to update.
+    \param level the mip level to update.
+    \param values Values to be stored in the buffer.
+  %]
+  [nocpp, userglue]
+  void Set(CubeFace face, int level, float[] values);
+
+  %[
+    Sets a rectangular area of values in a texture.
+
+    Does clipping. In other words if you pass in a 10x10 pixel array
+    and give it destination of (-5, -5) it will only use the bottom 5x5
+    pixels of the array you passed in to set the top 5x5 pixels of the
+    texture.
+
+    See o3d.Texture2D.set for details on formats.
+
+    \param face the face to update.
+    \param level the mip level to update.
+    \param destination_x The x coordinate of the area in the texture to affect.
+    \param destination_y The y coordinate of the area in the texture to affect.
+    \param source_width The width of the area to effect. The height is
+        determined by the size of the array passed in.
+    \param values Values to be stored in the buffer.
+    \see o3d.Texture2D.set
+  %]
+  [nocpp, userglue]
+  void SetRect(CubeFace face,
+               int level,
+               int destination_x,
+               int destination_y,
+               int source_width,
+               float[] values);
 
   %[
     Copy pixels from source bitmap to certain mip level.

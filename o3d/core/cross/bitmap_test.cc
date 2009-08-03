@@ -570,7 +570,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Mipmap) {
   EXPECT_EQ(256, bitmap->height());
   EXPECT_EQ(9, bitmap->num_mipmaps());
   for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
-    EXPECT_TRUE(bitmap->GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
+    EXPECT_TRUE(bitmap->GetMipData(i) != NULL);
   }
   EXPECT_TRUE(TestBitmapData(*bitmap, kdxt1_256x256_mipmap));
 }
@@ -605,7 +605,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT3Mipmap) {
   EXPECT_EQ(256, bitmap->height());
   EXPECT_EQ(9, bitmap->num_mipmaps());
   for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
-    EXPECT_TRUE(bitmap->GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
+    EXPECT_TRUE(bitmap->GetMipData(i) != NULL);
   }
   EXPECT_TRUE(TestBitmapData(*bitmap, kdxt3_256x256_mipmap));
 }
@@ -640,7 +640,7 @@ TEST_F(BitmapTest, LoadDDSFileDXT5Mipmap) {
   EXPECT_EQ(256, bitmap->height());
   EXPECT_EQ(9, bitmap->num_mipmaps());
   for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
-    EXPECT_TRUE(bitmap->GetMipData(i, TextureCUBE::FACE_POSITIVE_X) != NULL);
+    EXPECT_TRUE(bitmap->GetMipData(i) != NULL);
   }
   EXPECT_TRUE(TestBitmapData(*bitmap, kdxt5_256x256_mipmap));
 }
@@ -844,13 +844,14 @@ TEST_F(BitmapTest, ScaleUpToPOT) {
   scoped_array<unsigned char> data(new unsigned char[dst_size]);
   ASSERT_TRUE(data.get() != NULL);
   // Check that scaling works when source and destination don't alias
-  Bitmap::ScaleUpToPOT(kWidth, kHeight, format, kScaleUPDataNPOT, data.get());
+  Bitmap::ScaleUpToPOT(kWidth, kHeight, format, kScaleUPDataNPOT, data.get(),
+                       4 * 4);
   EXPECT_EQ(0, memcmp(data.get(), kScaleUPDataPOT, dst_size));
 
   // Check that scaling works when source and destination do alias
   memset(data.get(), 0, dst_size);
   memcpy(data.get(), kScaleUPDataNPOT, src_size);
-  Bitmap::ScaleUpToPOT(kWidth, kHeight, format, data.get(), data.get());
+  Bitmap::ScaleUpToPOT(kWidth, kHeight, format, data.get(), data.get(), 4 * 4);
   EXPECT_EQ(0, memcmp(data.get(), kScaleUPDataPOT, dst_size));
 }
 

@@ -35,6 +35,7 @@
 #include "core/cross/precompile.h"
 #include "core/cross/texture_base.h"
 #include "core/cross/pack.h"
+#include "core/cross/bitmap.h"
 
 namespace o3d {
 

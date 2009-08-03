@@ -38,6 +38,7 @@
 #include "core/cross/field.h"
 #include "core/cross/error.h"
 #include "core/cross/buffer.h"
+#include "core/cross/pointer_utils.h"
 #include "core/cross/types.h"
 #include "core/cross/renderer.h"
 #include "import/cross/memory_stream.h"

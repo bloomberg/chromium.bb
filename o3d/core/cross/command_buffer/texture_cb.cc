@@ -110,7 +110,7 @@ void UpdateResourceFromBitmap(RendererCB *renderer,
   CommandBufferHelper *helper = renderer->helper();
   unsigned int mip_width = std::max(1U, bitmap.width() >> level);
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
-  unsigned char *mip_data = bitmap.GetMipData(level, face);
+  unsigned char *mip_data = bitmap.GetFaceMipData(face, level);
   unsigned int mip_size =
       Bitmap::GetBufferSize(mip_width, mip_height, bitmap.format());
   if (resize_to_pot) {
@@ -130,7 +130,8 @@ void UpdateResourceFromBitmap(RendererCB *renderer,
     // for the NPOT->POT case.
     DCHECK(buffer);
     Bitmap::Scale(mip_width, mip_height, bitmap.format(), mip_data,
-                  pot_width, pot_height, buffer);
+                  pot_width, pot_height, buffer,
+                  Bitmap::GetMipChainSize(pot_width, 1, bitmap.format(), 1));
     mip_width = pot_width;
     mip_height = pot_height;
     mip_size = pot_size;
@@ -206,7 +207,7 @@ void CopyBackResourceToBitmap(RendererCB *renderer,
   args[9].value_uint32 = allocator->GetOffset(buffer);
   helper->AddCommand(command_buffer::GET_TEXTURE_DATA, 10, args);
   helper->Finish();
-  memcpy(bitmap.GetMipData(level, face), buffer, mip_size);
+  memcpy(bitmap.GetFaceMipData(face, level), buffer, mip_size);
   allocator->Free(buffer);
 }
 
@@ -313,9 +314,20 @@ Texture2DCB* Texture2DCB::Create(ServiceLocator* service_locator,
   return texture;
 }
 
+void Texture2DCB::SetRect(int level,
+                          unsigned dst_left,
+                          unsigned dst_top,
+                          unsigned src_width,
+                          unsigned src_height,
+                          const void* src_data,
+                          int src_pitch) {
+  // TODO(gman): Someone needs to implement this.
+  DCHECK(false);
+}
+
 // Locks the given mipmap level of this texture for loading from main memory,
 // and returns a pointer to the buffer.
-bool Texture2DCB::Lock(int level, void** data) {
+bool Texture2DCB::Lock(int level, void** data, int* pitch) {
   if (level >= levels() || level < 0) {
     O3D_ERROR(service_locator())
         << "Trying to lock inexistent level " << level
@@ -332,7 +344,18 @@ bool Texture2DCB::Lock(int level, void** data) {
     DCHECK_EQ(has_levels_, 0);
     backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
   }
-  *data = backing_bitmap_->GetMipData(level, TextureCUBE::FACE_POSITIVE_X);
+  *data = backing_bitmap_->GetMipData(level);
+  unsigned int mip_width;
+  unsigned int mip_height;
+  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  if (IsCompressed()) {
+    *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
+  } else {
+    unsigned blocks_across = (mip_width + 3) / 4;
+    unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
+    unsigned bytes_per_row = bytes_per_block * blocks_across;
+    *pitch = bytes_per_row;
+  }
   if (!HasLevel(level)) {
     DCHECK(!resize_to_pot_);
     DCHECK_EQ(backing_bitmap_->width(), width());
@@ -489,9 +512,21 @@ TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
   return texture;
 }
 
+void TextureCUBECB::SetRect(TextureCUBE::CubeFace face,
+                            int level,
+                            unsigned dst_left,
+                            unsigned dst_top,
+                            unsigned src_width,
+                            unsigned src_height,
+                            const void* src_data,
+                            int src_pitch) {
+  // TODO(gman): Someone needs to implement this.
+  DCHECK(false);
+}
+
 // Locks the given face and mipmap level of this texture for loading from
 // main memory, and returns a pointer to the buffer.
-bool TextureCUBECB::Lock(CubeFace face, int level, void** data) {
+bool TextureCUBECB::Lock(CubeFace face, int level, void** data, int* pitch) {
   if (level >= levels() || level < 0) {
     O3D_ERROR(service_locator())
         << "Trying to lock inexistent level " << level
@@ -512,7 +547,19 @@ bool TextureCUBECB::Lock(CubeFace face, int level, void** data) {
     backing_bitmap_->Allocate(format(), edge_length(), edge_length(),
                              levels(), true);
   }
-  *data = backing_bitmap_->GetMipData(level, face);
+  *data = backing_bitmap_->GetFaceMipData(face, level);
+  unsigned int mip_width;
+  unsigned int mip_height;
+  Bitmap::GetMipSize(level, edge_length(), edge_length(),
+                     &mip_width, &mip_height);
+  if (IsCompressed()) {
+    *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
+  } else {
+    unsigned blocks_across = (mip_width + 3) / 4;
+    unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
+    unsigned bytes_per_row = bytes_per_block * blocks_across;
+    *pitch = bytes_per_row;
+  }
   if (!HasLevel(level, face)) {
     // TODO: add some API so we don't have to copy back the data if we
     // will rewrite it all.
