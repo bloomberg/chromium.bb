@@ -36,9 +36,6 @@ body {
 .thumbnail-container:hover > .edit-mode-border {
   background-color: $6;
 }
-.edit-mode-border {
-  background-color: $7;
-}
 .section {
   border: 1px solid $7;
 }
