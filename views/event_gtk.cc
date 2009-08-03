@@ -11,12 +11,12 @@ namespace views {
 // TODO(jcampan): the same physical key can send different keyvals (ex: a or A).
 // In order for accelerators to work, we need to normalize that.  The right
 // solution should probably to get the key-code out of the keystate.
-KeyEvent::KeyEvent(GdkEventKey* event, bool make_upper_case)
+KeyEvent::KeyEvent(GdkEventKey* event, bool make_lower_case)
     : Event(event->type == GDK_KEY_PRESS ?
             Event::ET_KEY_PRESSED : Event::ET_KEY_RELEASED,
             GetFlagsFromGdkState(event->state)),
       // TODO(erg): All these values are iffy.
-      character_(make_upper_case ? gdk_keyval_to_upper (event->keyval) :
+      character_(make_lower_case ? gdk_keyval_to_lower(event->keyval) :
                                    event->keyval),
       repeat_count_(0),
       message_flags_(0) {

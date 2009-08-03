@@ -576,6 +576,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for tests and
         # mocks.
+	'browser/accelerator_table_linux.cc',
+	'browser/accelerator_table_linux.h',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
         'browser/app_controller_mac.h',

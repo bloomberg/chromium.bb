@@ -447,7 +447,7 @@ class BrowserView : public BrowserWindow,
   scoped_ptr<StatusBubbleViews> status_bubble_;
 
   // A mapping between accelerators and commands.
-  scoped_ptr< std::map<views::Accelerator, int> > accelerator_table_;
+  std::map<views::Accelerator, int> accelerator_table_;
 
   // True if we have already been initialized.
   bool initialized_;

@@ -234,7 +234,7 @@ class KeyEvent : public Event {
   // Create a new key event
   KeyEvent(EventType type, int ch, int repeat_count, int message_flags);
 #elif defined(OS_LINUX)
-  KeyEvent(GdkEventKey* event, bool make_upper_case);
+  KeyEvent(GdkEventKey* event, bool make_lower_case);
 #endif
 
   int GetCharacter() const {

@@ -69,6 +69,7 @@
 #include "chrome/browser/jumplist.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #elif defined(OS_LINUX)
+#include "chrome/browser/accelerator_table_linux.h"
 #include <gtk/gtk.h>
 
 #include "views/window/hit_test.h"
@@ -459,10 +460,9 @@ bool BrowserView::ShouldShowOffTheRecordAvatar() const {
 }
 
 bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {
-  DCHECK(accelerator_table_.get());
   std::map<views::Accelerator, int>::const_iterator iter =
-      accelerator_table_->find(accelerator);
-  DCHECK(iter != accelerator_table_->end());
+      accelerator_table_.find(accelerator);
+  DCHECK(iter != accelerator_table_.end());
 
   int command_id = iter->second;
   if (browser_->command_updater()->SupportsCommand(command_id) &&
@@ -489,8 +489,8 @@ bool BrowserView::GetAccelerator(int cmd_id, views::Accelerator* accelerator) {
   }
   // Else, we retrieve the accelerator information from the accelerator table.
   std::map<views::Accelerator, int>::iterator it =
-      accelerator_table_->begin();
-  for (; it != accelerator_table_->end(); ++it) {
+      accelerator_table_.begin();
+  for (; it != accelerator_table_.end(); ++it) {
     if (it->second == cmd_id) {
       *accelerator = it->first;
       return true;
@@ -1769,15 +1769,14 @@ void BrowserView::LoadAccelerators() {
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
-  // Let's build our own accelerator table.
-  accelerator_table_.reset(new std::map<views::Accelerator, int>);
+  // Let's fill our own accelerator table.
   for (int i = 0; i < count; ++i) {
     bool alt_down = (accelerators[i].fVirt & FALT) == FALT;
     bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
     bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
     views::Accelerator accelerator(accelerators[i].key, shift_down, ctrl_down,
                                    alt_down);
-    (*accelerator_table_)[accelerator] = accelerators[i].cmd;
+    accelerator_table_[accelerator] = accelerators[i].cmd;
 
     // Also register with the focus manager.
     focus_manager->RegisterAccelerator(accelerator, this);
@@ -1786,7 +1785,26 @@ void BrowserView::LoadAccelerators() {
   // We don't need the Windows accelerator table anymore.
   free(accelerators);
 #else
-  NOTIMPLEMENTED();
+  views::FocusManager* focus_manager = GetFocusManager();
+  DCHECK(focus_manager);
+  // Let's fill our own accelerator table.
+  for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
+    bool alt_down =
+        (browser::kAcceleratorMap[i].modifier_type & GDK_MOD1_MASK) ==
+        GDK_MOD1_MASK;
+    bool ctrl_down =
+        (browser::kAcceleratorMap[i].modifier_type & GDK_CONTROL_MASK) ==
+        GDK_CONTROL_MASK;
+    bool shift_down =
+        (browser::kAcceleratorMap[i].modifier_type & GDK_SHIFT_MASK) ==
+        GDK_SHIFT_MASK;
+    views::Accelerator accelerator(browser::kAcceleratorMap[i].keyval,
+                                   shift_down, ctrl_down, alt_down);
+    accelerator_table_[accelerator] = browser::kAcceleratorMap[i].command_id;
+
+    // Also register with the focus manager.
+    focus_manager->RegisterAccelerator(accelerator, this);
+  }
 #endif
 }
 
