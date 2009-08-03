@@ -55,6 +55,8 @@ PREFIX : iat_patch::getiatfunction___iat_patch::restoreimportedfunction___iat_pa
 
 # 10791
 PREFIX : npapi::plugininstance::npp_destroy___webplugindelegateimpl::destroyinstance___webplugindelegateimpl::~webplugindelegateimpl
+PREFIX : webplugindelegateimpl::destroyinstance___webplugindelegateimpl::~webplugindelegateimpl
+
 
 # 5545
 PREFIX : npapi::plugininstance::npp_handleevent___webplugindelegateimpl::windowlesspaint___webpluginproxy::paint___webpluginproxy::onpaint
