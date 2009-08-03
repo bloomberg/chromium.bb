@@ -44,7 +44,7 @@
 
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
-class NPObject;
+struct NPObject;
 
 namespace nacl_srpc {
 
