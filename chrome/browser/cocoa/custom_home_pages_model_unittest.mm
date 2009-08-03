@@ -123,7 +123,8 @@ TEST_F(CustomHomePagesModelTest, KVO) {
 }
 
 // Test that when individual items are changed that they broadcast a message.
-TEST_F(CustomHomePagesModelTest, ModelChangedNotification) {
+// Crashy, see http://crbug.com/17452.
+TEST_F(CustomHomePagesModelTest, DISABLED_ModelChangedNotification) {
   scoped_nsobject<CustomHomePageHelper> kvo_helper(
       [[CustomHomePageHelper alloc] init]);
   [[NSNotificationCenter defaultCenter]
