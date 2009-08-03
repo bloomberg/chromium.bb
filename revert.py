@@ -261,6 +261,10 @@ and optionally commit the revert.""")
   parser.add_option("-r", "--reviewers", action="append",
                     help="Reviewers to send the email to. By default, the list "
                          "of commiters is used.")
+  if len(argv) < 2:
+    parser.print_help()
+    return 1;
+
   options, args = parser.parse_args(argv)
   revisions = []
   try:
