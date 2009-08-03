@@ -152,3 +152,20 @@ TEST_F(ErrorPageTest, IFrame404) {
 
   EXPECT_TRUE(WaitForTitleMatching(L"SUCCESS"));
 }
+
+TEST_F(ErrorPageTest, Page404) {
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
+
+  EXPECT_TRUE(WaitForTitleContaining("page404.html"));
+}
+
+TEST_F(ErrorPageTest, Page404_GoBack) {
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
+  NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"page404.html"));
+  EXPECT_TRUE(WaitForTitleContaining("page404.html"));
+
+  GetActiveTab()->GoBack();
+
+  EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
+}

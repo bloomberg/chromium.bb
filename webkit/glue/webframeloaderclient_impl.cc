@@ -396,7 +396,7 @@ void WebFrameLoaderClient::Alt404PageFinished(WebFrame* frame,
     if (!d)
       return;
     d->LoadNavigationErrorPage(webframe_, WebURLRequest(), original_error, html,
-                               false);
+                               true);
   } else {
     // Fall back on original text
     webframe_->LoadHTMLString(postponed_data_, original_error.unreachableURL);
