@@ -44,6 +44,8 @@
 
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
+class NPObject;
+
 namespace nacl_srpc {
 
 bool Closure::StartDownload() {
@@ -66,7 +68,7 @@ LoadNaClAppNotify::~LoadNaClAppNotify() {
 
 void LoadNaClAppNotify::Run(NPStream* stream, const char* fname) {
   dprintf(("LoadNaClAppNotify Run %p, %s\n",
-           static_cast<void *>(stream),
+           static_cast<void*>(stream),
            fname));
   if (NULL != fname) {
     plugin()->set_nacl_module_origin(nacl::UrlToOrigin(stream->url));
@@ -77,9 +79,9 @@ void LoadNaClAppNotify::Run(NPStream* stream, const char* fname) {
 
 UrlAsNaClDescNotify::UrlAsNaClDescNotify(Plugin* plugin,
                                          std::string url,
-                                         void *callback_obj) :
+                                         void* callback_obj) :
     Closure(plugin, url),
-    np_callback_(reinterpret_cast<NPObject*>callback_obj) {
+    np_callback_(reinterpret_cast<NPObject*>(callback_obj)) {
   dprintf(("UrlAsNaClDescNotify ctor\n"));
   NPN_RetainObject(np_callback_);
 }
