@@ -245,9 +245,10 @@ void BrowserWindowCocoa::ShowNewProfileDialog() {
   NOTIMPLEMENTED();
 }
 
+// We allow closing the window here since the real quit decision on Mac is made
+// in [AppController quit:].
 void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
-  NOTIMPLEMENTED();
-  browser_->InProgressDownloadResponse(false);
+  browser_->InProgressDownloadResponse(true);
 }
 
 void BrowserWindowCocoa::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

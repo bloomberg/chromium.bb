@@ -4,7 +4,9 @@
 
 #import "chrome/browser/app_controller_mac.h"
 
+#include "app/l10n_util.h"
 #include "base/command_line.h"
+#include "base/mac_util.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -23,11 +25,13 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/temp_scaffolding_stubs.h"
+#include "grit/generated_resources.h"
 #import "xib_localizers/main_menu_localizer.h"
 
 @interface AppController(PRIVATE)
@@ -39,6 +43,7 @@
 - (void)openFiles:(NSAppleEventDescriptor*)event
         withReply:(NSAppleEventDescriptor*)reply;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
+- (BOOL)shouldQuitWithInProgressDownloads;
 @end
 
 @implementation AppController
@@ -242,6 +247,83 @@
   [self openPendingURLs];
 }
 
+// Check all browsers for in progress downloads, and if we find any, prompt the
+// user to see if we should continue to exit (and thus cancel the downloads), or
+// if we should wait.
+- (BOOL)shouldQuitWithInProgressDownloads {
+  BrowserList::const_iterator it = BrowserList::begin();
+  for (; it != BrowserList::end(); ++it) {
+    Browser* browser = *it;
+    Profile* profile = browser->profile();
+    if (!profile)
+      continue;
+
+    DownloadManager* download_manager = profile->GetDownloadManager();
+    if (!download_manager || download_manager->in_progress_count() == 0)
+      continue;
+
+    // There are downloads in progress so run the dialog asking if we should
+    // exit. There can be multiple windows (i.e. browsers) open, but we don't
+    // want to prompt for each one. Use the first browser with downloads in
+    // progress.
+    NSString* descriptionText = nil;
+    NSString* waitButton = nil;
+    NSString* exitButton = nil;
+
+    // Set the dialog text based on whether or not there are multiple downloads.
+    if (download_manager->in_progress_count() == 1) {
+      // Dialog text.
+      descriptionText =
+          base::SysWideToNSString(
+              l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE));
+
+      // Cancel downloads and exit button text.
+      exitButton =
+          base::SysWideToNSString(
+              l10n_util::GetString(
+                  IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+
+      // Wait for downloads button text.
+      waitButton =
+          base::SysWideToNSString(
+              l10n_util::GetString(
+                  IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+    } else {
+      // Dialog text.
+      descriptionText =
+          base::SysWideToNSString(
+              l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE,
+                                    download_manager->in_progress_count()));
+
+      // Cancel downloads and exit button text.
+      exitButton =
+          base::SysWideToNSString(
+              l10n_util::GetString(
+                  IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+
+      // Wait for downloads button text.
+      waitButton =
+          base::SysWideToNSString(
+              l10n_util::GetString(
+                  IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+    }
+
+    // 'waitButton' is the default choice.
+    int choice = NSRunAlertPanel(nil, descriptionText,
+                                 waitButton, exitButton, nil);
+    if (choice == NSAlertDefaultReturn) {
+      // We're not going to exit, so show the user the download page so they can
+      // see the in progress downloads.
+      browser->ShowDownloadsTab();
+      return NO;
+    }
+    break;
+  }
+
+  // Okay to exit.
+  return YES;
+}
+
 // We can't use the standard terminate: method because it will abruptly exit
 // the app and leave things on the stack in an unfinalized state. We need to
 // post a quit message to our run loop so the stack can gracefully unwind.
@@ -253,6 +335,11 @@
   // require posting UI and may require spinning up another run loop to
   // handle it. If it says to continue, post the quit message, otherwise
   // go back to normal.
+
+  // Check for in-progress downloads, and prompt the user if they really want to
+  // quit (and thus cancel the downloads).
+  if (![self shouldQuitWithInProgressDownloads])
+    return;
 
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em removeEventHandlerForEventClass:kInternetEventClass
