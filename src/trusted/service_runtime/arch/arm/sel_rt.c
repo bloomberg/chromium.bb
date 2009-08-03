@@ -54,7 +54,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   memset((void *)ntcp, 0, sizeof(*ntcp));
   ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;
-  NaClSetTlsIdx(ntcp, tls_idx);
+  NaClSetTlsThreadIdx(ntcp, tls_idx);
 
   NaClLog(4, "user.tls_idx: 0x%08x\n", tls_idx);
   NaClLog(4, "user.stack_ptr: 0x%08x\n", ntcp->stack_ptr);

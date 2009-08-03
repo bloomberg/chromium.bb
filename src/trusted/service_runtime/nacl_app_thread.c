@@ -35,7 +35,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-#include "native_client/src/trusted/service_runtime/nacl_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
 
 
@@ -118,7 +118,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
 
   natp->thread_num = -1;  /* illegal index */
 
-  thread_idx = NaClTlsToIndex(natp);
+  thread_idx = NaClGetThreadIdx(natp);
 
   nacl_thread[thread_idx] = natp;
   nacl_user[thread_idx] = &natp->user;
@@ -151,7 +151,7 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
   (*natp->effp->vtbl->Dtor)(natp->effp);
   free(natp->effp);
   natp->effp = NULL;
-  NaClFreeTls(natp);
+  NaClTlsFree(natp);
   NaClCondVarDtor(&natp->cv);
   NaClMutexDtor(&natp->mu);
 }
@@ -174,7 +174,7 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
    * main or much of libc can run).  Other threads are spawned with the tdb
    * address and size as a parameter.
    */
-  tls_idx = NaClAllocateTls(natp, (void *)sys_tdb_base, tdb_size);
+  tls_idx = NaClTlsAllocate(natp, (void *)sys_tdb_base, tdb_size);
 
   NaClLog(4,
         "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"PRIxPTR", tls_idx 0x%02x\n",

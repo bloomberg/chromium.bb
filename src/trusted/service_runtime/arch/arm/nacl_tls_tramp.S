@@ -41,26 +41,18 @@
 .globl  IDENTIFIER(NaClReadTP_start)
 .globl  IDENTIFIER(NaClReadTP_end)
 
-/*
- * TLS_IDX represents address of a TLS region and index in
- * nacl_thread/nacl_user/nacl_sys arrays. The TLS region is paged aligned;
- * therefore, we use the lowest 12 bits to store the thread index
- */
-
 IDENTIFIER(NaClReadTP_start):
 
 #if defined(USE_R9_AS_TLS_REG)
-  /* r9 keeps the TLS_IDX */
+  /* r9 keeps the TLS_IDX which is concatenation of a TLS pointer and index in
+   * nacl_thread/nacl_user/nacl_sys arrays. The higher 20 bits are for TLS
+   * address and the lower 12 keep the index.
   mov r0, r9, lsr #NACL_PAGESHIFT
   lsl r0, #NACL_PAGESHIFT
   bx lr
 #else
-  /*
-   * TLS_IDX is stored in service runtime thread local storage, in nacl_tls_idx
-   * variable
-   */
   push {lr}
-  bl NaClGetTls /* returns Tls pointer in r0 */
+  bl NaClGetUserTls /* returns Tls pointer in r0 */
   pop {pc}
 #endif
 

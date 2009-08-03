@@ -43,14 +43,14 @@
 #if !defined(USE_R9_AS_TLS_REG)
 uint32_t NaClGetThreadIndex();
 
-uint32_t NaClGetTls();
+uint32_t NaClGetUserTls();
 #endif
 
 struct NaClApp; /* fwd */
 
-uint32_t NaClGetTlsIdx(struct NaClThreadContext *user);
+uint32_t NaClGetTlsThreadIdx(struct NaClThreadContext *user);
 
-void NaClSetTlsIdx(struct NaClThreadContext *user, uint32_t tls_idx);
+void NaClSetTlsThreadIdx(struct NaClThreadContext *user, uint32_t tls_idx);
 
 void NaClLoadTlsHook(struct NaClApp *nap);
 

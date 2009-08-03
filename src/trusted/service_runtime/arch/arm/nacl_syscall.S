@@ -74,7 +74,7 @@ IDENTIFIER(NaClSyscallSeg):
   /*
    * TLS_IDX is stored in service runtime TLS region, in nacl_tls_idx variable
    */
-  bl NaClGetThreadIndex /* returns thread index in r0 */
+  bl NaClGetThreadIdx /* returns thread index in r0 */
 #endif
 
   ldr  r1, =nacl_user
