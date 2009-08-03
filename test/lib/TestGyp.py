@@ -63,6 +63,12 @@ class TestGypBase(TestCommon.TestCommon):
     super(TestGypBase, self).__init__(*args, **kw)
 
     self.copy_test_configuration(self.origin_cwd, self.workdir)
+    self.set_configuration(None)
+
+    # TODO:  remove this when the SCons generator generates an atomic
+    # configuration that doesn't rely on chromium_builders.py.
+    lib_dir = os.path.abspath(os.path.dirname(__file__))
+    self.copy_test_configuration(lib_dir, self.workdir)
 
   def copy_test_configuration(self, source_dir, dest_dir):
     """
@@ -106,6 +112,13 @@ class TestGypBase(TestCommon.TestCommon):
     # TODO:  --depth=. works around Chromium-specific tree climbing.
     args = ('--depth=.', '--format='+self.format) + args
     return self.run(program=self.gyp, arguments=args, **kw)
+
+  def set_configuration(self, configuration):
+    """
+    Sets the configuration, to be used for invoking the build
+    tool and testing potential built output.
+    """
+    self.configuration = configuration
 
   #
   # Abstract methods to be defined by format-specific subclasses.
@@ -168,18 +181,20 @@ class TestGypMake(TestGypBase):
     specified gyp_file.
     """
     self.run_build(gyp_file, target)
-  def run_build(self, gyp_file, *args):
+  def run_build(self, gyp_file, *args, **kw):
     """
     Runs a Make build using the Makefiles generated from the specified
     gyp_file.
     """
+    if self.configuration:
+      args += ('BUILDTYPE=' + self.configuration,)
     return self.run(program=self.build_tool, arguments=args)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by Make.
     """
-    # TODO:  generalize to different configurations.
-    program = self.workpath('out/Debug/' + name)
+    configuration = self.configuration or 'Default'
+    program = self.workpath('out', configuration, name)
     return self.run(program=program, *args, **kw)
 
 
@@ -229,20 +244,22 @@ class TestGypMSVS(TestGypBase):
                                    'Common7',
                                    'IDE',
                                    'devenv.exe')
-  def run_build(self, gyp_file, *args):
+  def run_build(self, gyp_file, *args, **kw):
     """
     Runs a Visual Studio build using the configuration generated
     from the specified gyp_file.
     """
-    # TODO:  generalize to different configurations.
-    args = (gyp_file.replace('.gyp', '.sln'), '/Build', 'Default') + args
+    configuration = self.configuration or 'Default'
+    args = (gyp_file.replace('.gyp', '.sln'), '/Build', configuration) + args
+    if self.configuration:
+      args += ('/ProjectConfig', self.configuration,)
     return self.run(program=self.build_tool, arguments=args)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by Visual Studio.
     """
-    # TODO:  generalize to different configurations.
-    program = self.workpath('Default/%s.exe' % name)
+    configuration = self.configuration or 'Default'
+    program = self.workpath(configuration, '%s.exe' % name)
     return self.run(program=program, *args, **kw)
 
 
@@ -272,18 +289,20 @@ class TestGypSCons(TestGypBase):
     the specified gyp_file.
     """
     self.run_build(gyp_file, target)
-  def run_build(self, gyp_file, *args):
+  def run_build(self, gyp_file, *args, **kw):
     """
     Runs a scons build using the SCons configuration generated from the
     specified gyp_file.
     """
+    if self.configuration:
+      args += ('--mode=' + self.configuration,)
     return self.run(program=self.build_tool, arguments=args)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by scons.
     """
-    # TODO:  generalize to different configurations.
-    program = self.workpath('Default/' + name)
+    configuration = self.configuration or 'Default'
+    program = self.workpath(configuration, name)
     return self.run(program=program, *args, **kw)
 
 
@@ -311,19 +330,21 @@ class TestGypXcode(TestGypBase):
     with the .xcodeproj generated from the specified gyp_file.
     """
     return self.run_build(gyp_file, '-target', target)
-  def run_build(self, gyp_file, *args):
+  def run_build(self, gyp_file, *args, **kw):
     """
     Runs an xcodebuild using the .xcodeproj generated from the specified
     gyp_file.
     """
     args = ('-project', gyp_file.replace('.gyp', '.xcodeproj')) + args
+    if self.configuration:
+      args += ('-configuration', self.configuration)
     return self.run(program=self.build_tool, arguments=args)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by xcodebuild.
     """
-    # TODO:  generalize to different configurations.
-    program = self.workpath('build/Default/' + name)
+    configuration = self.configuration or 'Default'
+    program = self.workpath('build', configuration, name)
     return self.run(program=program, *args, **kw)
 
 

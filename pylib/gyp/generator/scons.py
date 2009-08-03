@@ -776,6 +776,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     GenerateSConscript(output_file, spec, build_file)
 
+  if not default_configuration:
+    default_configuration = 'Default'
+
   for build_file in sorted(data.keys()):
     path, ext = os.path.splitext(build_file)
     if ext != '.gyp':

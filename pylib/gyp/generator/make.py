@@ -64,7 +64,7 @@ else
 endif
 
 # Specify BUILDTYPE=Release on the command line for a release build.
-BUILDTYPE ?= Debug
+BUILDTYPE ?= __default_configuration__
 
 # Directory all our build output goes into.
 # Note that this must be two directories beneath src/ for unit tests to pass,
@@ -178,6 +178,8 @@ $(if $(or $(command_changed),$(prereq_changed)),
   @$(if $(2),$(fixup_dep))
 )
 endef
+
+all: $(all_targets)
 
 # Use FORCE_DO_CMD to force a target to run.  Should be coupled with
 # do_cmd.
@@ -730,11 +732,25 @@ def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params['generator_flags']
   builddir_name = generator_flags.get('output_dir', 'out')
+
+  # TODO:  search for the first non-'Default' target.  This can go
+  # away when we add verification that all targets have the
+  # necessary configurations.
+  default_configuration = None
+  for target in target_list:
+    spec = target_dicts[target]
+    if spec['default_configuration'] != 'Default':
+      default_configuration = spec['default_configuration']
+      break
+  if not default_configuration:
+    default_configuration = 'Default'
+
   root_makefile = open(os.path.join(options.depth, 'Makefile' + options.suffix),
                        'w')
   root_makefile.write(SHARED_HEADER_ROOTDIR % options.depth)
   root_makefile.write(SHARED_HEADER_BUILDDIR_NAME % builddir_name)
-  root_makefile.write(SHARED_HEADER)
+  root_makefile.write(SHARED_HEADER.replace('__default_configuration__',
+                                            default_configuration))
 
   for qualified_target in target_list:
     build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
