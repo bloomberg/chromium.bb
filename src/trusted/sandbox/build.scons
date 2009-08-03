@@ -31,7 +31,7 @@
 
 Import('env')
 
-if env['TARGET_PLATFORM'] == 'LINUX':
+if env['TARGET_PLATFORM'] == 'LINUX' and env['BUILD_ARCHITECTURE'] == 'x86':
     # ----------------------------------------------------------
     #
     # ----------------------------------------------------------

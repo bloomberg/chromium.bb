@@ -388,42 +388,44 @@ if ARGUMENTS.get('pp', 0):
 base_env = pre_base_env.Clone()
 base_env.Append(
   BUILD_SUBTYPE = '',
-  BUILD_SCONSCRIPTS = [
-        'src/trusted/service_runtime/build.scons',
-        'src/shared/imc/build.scons',
-        'src/shared/npruntime/build.scons',
-        'src/shared/srpc/build.scons',
-        'src/shared/utils/build.scons',
-        'src/third_party_mod/gtest/build.scons',
-        'src/trusted/desc/build.scons',
-        'src/trusted/nonnacl_util/build.scons',
-        'src/trusted/platform_qualify/build.scons',
-        'src/trusted/plugin/build.scons',
-        'src/trusted/sandbox/build.scons',
-        'src/trusted/platform/build.scons',
-        'tests/python_version/build.scons',
-        'tests/tools/build.scons',
+  CPPDEFINES = [
+    ['NACL_BLOCK_SHIFT', '5'],
+    ['NACL_BLOCK_SIZE', '32'],
+    ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
+    ['NACL_BUILD_SUBARC', '${BUILD_SUBARCH}' ],
+    ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
+    ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
     ],
-    CPPDEFINES = [
-        ['NACL_BLOCK_SHIFT', '5'],
-        ['NACL_BLOCK_SIZE', '32'],
-        ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
-        ['NACL_BUILD_SUBARC', '${BUILD_SUBARCH}' ],
-        ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
-        ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
-    ],
-    CPPPATH = ['${SOURCE_ROOT}'],
+  CPPPATH = ['${SOURCE_ROOT}'],
 
-    EXTRA_CFLAGS = [],
-    EXTRA_CCFLAGS = [],
-    EXTRA_CXXFLAGS = [],
-    EXTRA_LIBS = [],
-    CFLAGS = ['${EXTRA_CFLAGS}'],
-    CCFLAGS = ['${EXTRA_CCFLAGS}'],
-    CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
-    LIBS = ['${EXTRA_LIBS}'],
+  EXTRA_CFLAGS = [],
+  EXTRA_CCFLAGS = [],
+  EXTRA_CXXFLAGS = [],
+  EXTRA_LIBS = [],
+  CFLAGS = ['${EXTRA_CFLAGS}'],
+  CCFLAGS = ['${EXTRA_CCFLAGS}'],
+  CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
+  LIBS = ['${EXTRA_LIBS}'],
 )
 
+base_env.Append(
+  BUILD_SCONSCRIPTS = [
+    'src/trusted/service_runtime/build.scons',
+    'src/shared/imc/build.scons',
+    'src/shared/npruntime/build.scons',
+    'src/shared/srpc/build.scons',
+    'src/shared/utils/build.scons',
+    'src/third_party_mod/gtest/build.scons',
+    'src/trusted/desc/build.scons',
+    'src/trusted/nonnacl_util/build.scons',
+    'src/trusted/platform_qualify/build.scons',
+    'src/trusted/plugin/build.scons',
+    'src/trusted/platform/build.scons',
+    'src/trusted/sandbox/build.scons',
+    'tests/python_version/build.scons',
+    'tests/tools/build.scons',
+    ],
+  )
 
 if base_env['TARGET_ARCHITECTURE'] == 'arm':
   base_env.Append(
