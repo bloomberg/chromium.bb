@@ -96,6 +96,8 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   static const skia::HSL kDefaultTintFrameIncognitoInactive;
   static const skia::HSL kDefaultTintBackgroundTab;
 
+  static const char* kDefaultThemeID;
+
  public:
   BrowserThemeProvider();
   virtual ~BrowserThemeProvider();
@@ -169,6 +171,10 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Set the current theme to the native theme. On some platforms, the native
   // theme is the default theme.
   virtual void SetNativeTheme() { UseDefaultTheme(); }
+
+  // Gets the id of the last installed theme. (The theme may have been further
+  // locally customized.)
+  std::string GetThemeID();
 
   // Convert a bitfield alignment into a string like "top left". Public so that
   // it can be used to generate CSS values. Takes a bitfield of AlignmentMasks.
@@ -271,6 +277,9 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   void SaveColorData();
   void SaveTintData();
   void SaveDisplayPropertyData();
+
+  // Save the id of the last theme installed.
+  void SaveThemeID(const std::string& id);
 
   SkColor FindColor(const char* id, SkColor default_color);
 

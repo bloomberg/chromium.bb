@@ -200,6 +200,10 @@ class Profile {
   // Clear the theme and reset it to default.
   virtual void ClearTheme() = 0;
 
+  // Gets the theme that was last set. Returns NULL if the theme is no longer
+  // installed, if there is no installed theme, or the theme was cleared.
+  virtual Extension* GetTheme() = 0;
+
   // Returns or creates the ThemeProvider associated with this profile
   virtual ThemeProvider* GetThemeProvider() = 0;
 
@@ -352,6 +356,7 @@ class ProfileImpl : public Profile,
   virtual void SetTheme(Extension* extension);
   virtual void SetNativeTheme();
   virtual void ClearTheme();
+  virtual Extension* GetTheme();
   virtual ThemeProvider* GetThemeProvider();
   virtual ThumbnailStore* GetThumbnailStore();
   virtual bool HasCreatedDownloadManager() const;
