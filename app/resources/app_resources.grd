@@ -29,6 +29,10 @@
       <include name="IDR_MINIMIZE_H" file="minimize_h.png" type="BINDATA" />
       <include name="IDR_MINIMIZE_P" file="minimize_p.png" type="BINDATA" />
 
+      <include name="IDR_LINUX_CLOSE" file="linux_close.png" type="BINDATA" />
+      <include name="IDR_LINUX_CLOSE_H" file="linux_close.png" type="BINDATA" />
+      <include name="IDR_LINUX_CLOSE_P" file="linux_close.png" type="BINDATA" />
+
       <!-- Frame Images -->
       <include name="IDR_FRAME" file="frame_default.png" type="BINDATA" />
       <include name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" type="BINDATA" />
