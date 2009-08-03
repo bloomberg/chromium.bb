@@ -10,8 +10,6 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/time.h"
-#include "base/timer.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/client_socket_pool.h"
 
@@ -26,13 +24,17 @@ class TCPConnectJob : public ConnectJob {
   TCPConnectJob(const std::string& group_name,
                 const HostResolver::RequestInfo& resolve_info,
                 const ClientSocketHandle* handle,
-                base::TimeDelta timeout_duration,
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,
                 Delegate* delegate);
   virtual ~TCPConnectJob();
 
   // ConnectJob methods.
+
+  // Begins the host resolution and the TCP connect.  Returns OK on success
+  // and ERR_IO_PENDING if it cannot immediately service the request.
+  // Otherwise, it returns a net error code.
+  virtual int Connect();
 
  private:
   enum State {
@@ -42,11 +44,6 @@ class TCPConnectJob : public ConnectJob {
     kStateTCPConnectComplete,
     kStateNone,
   };
-
-  // Begins the host resolution and the TCP connect.  Returns OK on success
-  // and ERR_IO_PENDING if it cannot immediately service the request.
-  // Otherwise, it returns a net error code.
-  virtual int ConnectInternal();
 
   void OnIOComplete(int result);
 
