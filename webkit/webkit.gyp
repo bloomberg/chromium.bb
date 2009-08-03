@@ -35,6 +35,7 @@
       '../third_party/WebKit/WebCore/accessibility/chromium',
       '../third_party/WebKit/WebCore/bindings/v8',
       '../third_party/WebKit/WebCore/bindings/v8/custom',
+      '../third_party/WebKit/WebCore/bridge',
       '../third_party/WebKit/WebCore/css',
       '../third_party/WebKit/WebCore/dom',
       '../third_party/WebKit/WebCore/dom/default',
@@ -616,11 +617,6 @@
         ['exclude', '/third_party/WebKit/WebCore/(platform|svg)/graphics/filters/'],
         ['exclude', '/third_party/WebKit/WebCore/svg/Filter[^/]*\\.cpp$'],
         ['exclude', '/third_party/WebKit/WebCore/svg/SVG(FE|Filter)[^/]*\\.cpp$'],
-
-        # Exclude PluginDebug.cpp since it doesn't compile properly without the
-        # correct npapi.h inclusion (http://crbug.com/17127
-        ['exclude', '/third_party/WebKit/WebCore/plugins/PluginDebug.cpp'],
-        ['exclude', '/third_party/WebKit/WebCore/plugins/PluginDebug.h'],
 
         # Exclude some DB-related files.
         ['exclude', '/third_party/WebKit/WebCore/platform/sql/SQLiteFileSystem.cpp'],
