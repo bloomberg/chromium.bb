@@ -23,6 +23,7 @@
 class AutocompleteEditViewGtk;
 class AutocompletePopupPositioner;
 class CommandUpdater;
+class GtkThemeProvider;
 class Profile;
 class SkBitmap;
 class TabContents;
