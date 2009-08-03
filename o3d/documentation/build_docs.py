@@ -274,7 +274,7 @@ def BuildCompiledO3DJS(o3djs_files,
   file = open(compiled_o3djs_outpath, 'r')
   contents = file.read()
   file.close()
-  contents = re.sub(r'goog.exportSymbol\([^\)]*\);\n', '', contents)
+  contents = re.sub(r'goog.exportSymbol\([^\)]*\);', '', contents)
   requires = set(re.findall(r'o3djs.require\([^\)]*\);', contents))
   contents = re.sub(r'o3djs.require\([^\)]*\);', '', contents)
   file = open(compiled_o3djs_outpath, 'w')
