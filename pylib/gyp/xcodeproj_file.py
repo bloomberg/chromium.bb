@@ -2244,12 +2244,14 @@ class PBXNativeTarget(XCTarget):
 
     static_library_type = 'com.apple.product-type.library.static'
     shared_library_type = 'com.apple.product-type.library.dynamic'
+    framework_type = 'com.apple.product-type.framework'
     if isinstance(other, PBXNativeTarget) and \
        'productType' in self._properties and \
        self._properties['productType'] != static_library_type and \
        'productType' in other._properties and \
        (other._properties['productType'] == static_library_type or \
-        (other._properties['productType'] == shared_library_type and \
+        ((other._properties['productType'] == shared_library_type or \
+          other._properties['productType'] == framework_type) and \
          ((not other.HasBuildSetting('MACH_O_TYPE')) or
           other.GetBuildSetting('MACH_O_TYPE') != 'mh_bundle'))):
 
