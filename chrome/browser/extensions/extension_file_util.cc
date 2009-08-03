@@ -196,8 +196,8 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
   // Theme resource validation.
   if (extension->IsTheme()) {
     DictionaryValue* images_value = extension->GetThemeImages();
-    DictionaryValue::key_iterator iter = images_value->begin_keys();
     if (images_value) {
+      DictionaryValue::key_iterator iter = images_value->begin_keys();
       while (iter != images_value->end_keys()) {
         std::string val;
         if (images_value->GetString(*iter , &val)) {
