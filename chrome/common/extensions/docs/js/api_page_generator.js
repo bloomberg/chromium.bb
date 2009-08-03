@@ -53,11 +53,7 @@ function extend(obj, obj2) {
 function renderPage() {
   var pathParts = document.location.href.split(/\/|\./);
   pageName = pathParts[pathParts.length - 2];
-  if (!pageName) {
-    alert("Empty page name for: " + document.location.href);
-    return;
-  }
-
+  
   // Fetch the api template and insert into the <body>.
   fetchContent(API_TEMPLATE, function(templateContent) {
     document.getElementsByTagName("body")[0].innerHTML = templateContent;
@@ -72,7 +68,7 @@ function fetchStatic() {
   fetchContent(staticResource(pageName), function(overviewContent) {
     document.getElementById("static").innerHTML = overviewContent;
     fetchSchema();
-
+    
   }, function(error) {
     // Not fatal. Some api pages may not have matching static content.
     fetchSchema();
@@ -92,7 +88,6 @@ function fetchSchema() {
  * onSuccess(content)
  */
 function fetchContent(url, onSuccess, onError) {
-  var localUrl = url;
   var xhr = new XMLHttpRequest();
   var abortTimerId = window.setTimeout(function() {
     xhr.abort();
@@ -104,7 +99,7 @@ function fetchContent(url, onSuccess, onError) {
     if (onError) {
       onError(error);
     }
-    console.error("XHR Failed fetching: " + localUrl + "..." + error);
+    console.error("XHR Failed: " + error);
   }
 
   try {
@@ -118,9 +113,9 @@ function fetchContent(url, onSuccess, onError) {
         }
       }
     }
-
+    
     xhr.onerror = handleError;
-
+    
     xhr.open("GET", url, true);
     xhr.send(null);
   } catch(e) {
@@ -139,7 +134,7 @@ function fetchContent(url, onSuccess, onError) {
 function renderTemplate(schemaContent) {
   pageData = {};
   var schema = JSON.parse(schemaContent);
-
+  
   schema.each(function(module) {
     if (module.namespace == pageName) {
       // This page is an api page. Setup types and apiDefinition.
@@ -152,24 +147,16 @@ function renderTemplate(schemaContent) {
       preprocessApi(pageData, schema);
     }
   });
-
+  
   setupPageData(pageData, schema);
-
+  
   // Render to template
   var input = new JsEvalContext(pageData);
   var output = document.getElementsByTagName("html")[0];
   jstProcess(input, output);
-
+  
   // Show.
   document.getElementsByTagName("body")[0].className = "";
-
-  if (parent && parent.done)
-    parent.done();
-}
-
-function serializePage() {
- var s = new XMLSerializer();
- return s.serializeToString(document);
 }
 
 function setupPageData(pageData, schema) {
@@ -183,7 +170,7 @@ function setupPageData(pageData, schema) {
     pageData.apiModules.push(m);
   });
   pageData.apiModules.sort(function(a, b) { return a.name > b.name; });
-
+  
   if (!pageData.pageTitle) {
     pageData.pageTitle = pageName;
     pageData.h1Header = pageName;
@@ -216,13 +203,13 @@ function preprocessApi(pageData, schema) {
         });
       }
     }
-
+    
     // Setup any type: "object" pameters to have an array of params (rather than 
     // named properties).
     f.parameters.each(function(param) {
       addPropertyListIfObject(param);
     });
-
+    
     // Setup return typeName & _propertyList, if any.
     if (f.returns) {
       linkTypeReference(f.returns);
@@ -230,7 +217,7 @@ function preprocessApi(pageData, schema) {
       addPropertyListIfObject(f.returns);
     }
   });
-
+  
   module.events.each(function(e) {
     linkTypeReferences(e.parameters);
     assignTypeNames(e.parameters);    
@@ -287,19 +274,19 @@ function assignTypeNames(parameters) {
 function typeName(schema) {
   if (schema.$ref)
     schema = types[schema.$ref];
-
+  
   if (schema.choice) {
     var typeNames = [];
     schema.choice.each(function(c) {
       typeNames.push(typeName(c));
     });
-
+    
     return typeNames.join(" or ");
   }
-
+  
   if (schema.type == "array")
     return "array of " + typeName(schema.items);
-
+  
   return schema.type;
 }
 
@@ -312,6 +299,6 @@ function generateSignatureString(parameters) {
   parameters.each(function(param, i) {
     retval.push(param.typeName + " " + param.name);
   });
-
+  
   return retval.join(", ");	
 }
