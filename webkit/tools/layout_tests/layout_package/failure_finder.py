@@ -20,10 +20,10 @@ from failure import Failure
 
 WEBKIT_TRAC_HOSTNAME = "trac.webkit.org"
 WEBKIT_LAYOUT_TEST_BASE_URL = "http://svn.webkit.org/repository/webkit/trunk/"
-WEBKIT_IMAGE_BASELINE_BASE_URL_WIN = (WEBKIT_LAYOUT_TEST_BASE_URL +
-                                      "LayoutTests/platform/win/")
-WEBKIT_IMAGE_BASELINE_BASE_URL_MAC = (WEBKIT_LAYOUT_TEST_BASE_URL +
-                                      "LayoutTests/platform/mac/")
+WEBKIT_PLATFORM_BASELINE_URL = (WEBKIT_LAYOUT_TEST_BASE_URL +
+                                "LayoutTests/platform/%s/")
+WEBKIT_PLATFORM_DIRS = ["gtk", "mac", "mac-leopard", "mac-snowleopard",
+                        "mac-tiger", "qt", "win" ]
 
 BUILDBOT_BASE = "http://build.chromium.org/buildbot/"
 WEBKIT_BUILDER_BASE = BUILDBOT_BASE + "waterfall/builders/%s"
@@ -178,7 +178,11 @@ class FailureFinder(object):
                test_regex,
                output_dir,
                max_failures,
-               verbose):
+               verbose,
+               builder_output_log_file = None,
+               archive_step_log_file = None,
+               zip_file = None,
+               test_expectations_file = None):
     self.build = build
     # TODO(gwilson): add full url-encoding for the platform.
     self.SetPlatform(builder_name)
@@ -192,6 +196,13 @@ class FailureFinder(object):
     self._test_expectations_cache = None
     # If true, scraping will still happen but no files will be downloaded.
     self.dont_download = False
+    # Local caches of log files.  If set, the finder will use these files
+    # rather than scraping them from the buildbot.
+    self.builder_output_log_file = builder_output_log_file
+    self.archive_step_log_file = archive_step_log_file
+    self.zip_file = zip_file
+    self.test_expectations_file = test_expectations_file
+    self.delete_zip_file = True
 
   def SetPlatform(self, platform):
     self.platform = platform.replace(" ", "%20")
@@ -252,8 +263,14 @@ class FailureFinder(object):
     return failures
 
   def _ScrapeBuilderOutput(self):
+    # If the build log file is specified, use that instead of scraping.
+    if self.builder_output_log_file:
+      log = open(self.builder_output_log_file, 'r')
+      return "".join(log.readlines())
+
     # Scrape the failures from the buildbot for this revision.
     try:
+
       return ScrapeURL(GetResultsURL(self.build,
                                      self.platform,
                                      self.fyi_builder))
@@ -324,13 +341,16 @@ class FailureFinder(object):
     target_zip = "%s/layout-test-results-%s.zip" % (self.output_dir,
                                                     self.build)
     zip_url = GetZipFileURL(revision, build_name)
-    if self.verbose:
-      print "Downloading zip file from %s to %s" % (zip_url, target_zip)
-    filename = self._DownloadFile(zip_url, target_zip, "b")
-    if not filename:
+    if self.zip_file:
+      filename = self.zip_file
+    else:
       if self.verbose:
-        print "Could not download zip file from %s.  Does it exist?" % zip_url
-      return False
+        print "Downloading zip file from %s to %s" % (zip_url, target_zip)
+      filename = self._DownloadFile(zip_url, target_zip, "b")
+      if not filename:
+        if self.verbose:
+          print "Could not download zip file from %s.  Does it exist?" % zip_url
+        return False
 
     if zipfile.is_zipfile(filename):
       zip = zipfile.ZipFile(filename)
@@ -350,8 +370,9 @@ class FailureFinder(object):
       zip.close()
       if self.verbose:
         print "Files extracted."
+      if self.delete_zip_file:
         print "Deleting zip file..."
-      os.remove(filename)
+        os.remove(filename)
       return True
     else:
       if self.verbose:
@@ -359,9 +380,13 @@ class FailureFinder(object):
       return False
 
   def _GetRevisionAndBuildFromArchiveStep(self):
-    content = ScrapeURL(GetArchiveURL(self.build,
-                                      self.platform,
-                                      self.fyi_builder))
+    if self.archive_step_log_file:
+      log = open(self.archive_step_log_file, 'r')
+      content = "".join(log.readlines())
+    else:
+      content = ScrapeURL(GetArchiveURL(self.build,
+                                        self.platform,
+                                        self.fyi_builder))
     revision = ExtractFirstValue(content, ARCHIVE_URL_REGEX)
     build_name = ExtractFirstValue(content, BUILD_NAME_REGEX)
     return (revision, build_name)
@@ -410,17 +435,8 @@ class FailureFinder(object):
         failure.image_baseline_upstream_url = upstream_baselines[1]
 
   def _GetBaseline(self, filename, directory, upstream_only = False):
-    """
-    Search and download the baseline for the given test on the given platform.
-    First, look in the chromium repo, in that platform, for the baseline.
-    If it's not there, look in the win platform for the baseline.
-    If it's not there, look in webkit dir.
-    If it's not there, look in the webkit platform dir.
-    If it's not there, look in the webkit mac dir.
-    If it's not there, I don't know where it came from.
-    """
-    # TODO(gwilson): Add support for Webkit's OSX-specific dirs (tiger, etc.)
-    # TODO(gwilson): Refactor this to use the same logic as other scripts.
+    """ Search and download the baseline for the given test (put it in the
+    directory given.)"""
 
     local_filename = "%s/%s" % (directory, filename)
     if upstream_only:
@@ -436,29 +452,7 @@ class FailureFinder(object):
     if not self.dont_download:
       CreateDirectory(local_filename[0:local_filename.rfind("/")])
 
-    webkit_mac_location = (
-      self._MangleWebkitPixelTestLocation(WEBKIT_IMAGE_BASELINE_BASE_URL_MAC,
-                                           filename))
-    webkit_win_location = (
-      self._MangleWebkitPixelTestLocation(WEBKIT_IMAGE_BASELINE_BASE_URL_WIN,
-                                           filename))
-
-    possible_files = []
-
-    # TODO(gwilson): Move this into the Failure class.
-    if not upstream_only:
-      if IsMacPlatform(self.platform):
-        possible_files.append(self._GetBaselineURL(filename, CHROMIUM_MAC))
-      if IsLinuxPlatform(self.platform):
-        possible_files.append(self._GetBaselineURL(filename, CHROMIUM_LINUX))
-      possible_files.append(self._GetBaselineURL(filename, CHROMIUM_WIN))
-    possible_files.append(WEBKIT_LAYOUT_TEST_BASE_URL + filename)
-    if IsMacPlatform(self.platform):
-      possible_files.append(webkit_mac_location)
-      possible_files.append(webkit_win_location)
-    else:
-      possible_files.append(webkit_win_location)
-      possible_files.append(webkit_mac_location)
+    possible_files = self._GetPossibleFileList(filename, upstream_only)
 
     local_baseline = None
     url_of_baseline = None
@@ -478,6 +472,60 @@ class FailureFinder(object):
       print "Found baseline: %s" % url_of_baseline
 
     return (local_baseline, url_of_baseline)
+
+  # TODO(gwilson): Refactor this with path_utils' candidate directory
+  # generation.
+  def _GetPossibleFileList(self, filename, only_webkit):
+    """ Returns a list of possible filename locations for the given file.
+    Uses the platform of the class to determine the order.
+    """
+
+    possible_chromium_files = []
+    possible_webkit_files = []
+
+    webkit_mac_location = (
+      self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL % "mac",
+                                           filename))
+    webkit_win_location = (
+      self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL % "win",
+                                           filename))
+
+    if IsMacPlatform(self.platform):
+      possible_chromium_files.append(self._GetBaselineURL(filename,
+                                                          CHROMIUM_MAC))
+      possible_chromium_files.append(self._GetBaselineURL(filename,
+                                                          CHROMIUM_WIN))
+      possible_webkit_files.append(
+        self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL %
+                                            self.platform, filename))
+      possible_webkit_files.append(
+        self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL %
+                                            "mac-snowleopard", filename))
+      possible_webkit_files.append(
+        self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL %
+                                            "mac-leopard", filename))
+      possible_webkit_files.append(
+        self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL %
+                                            "mac-tiger", filename))
+      possible_webkit_files.append(webkit_mac_location)
+      possible_webkit_files.append(webkit_win_location)
+    elif IsLinuxPlatform(self.platform):
+      possible_chromium_files.append(self._GetBaselineURL(filename,
+                                                          CHROMIUM_LINUX))
+      possible_chromium_files.append(self._GetBaselineURL(filename,
+                                                          CHROMIUM_WIN))
+      possible_webkit_files.append(webkit_win_location)
+      possible_webkit_files.append(webkit_mac_location)
+    else:
+      possible_chromium_files.append(self._GetBaselineURL(filename,
+                                                          CHROMIUM_WIN))
+      possible_webkit_files.append(webkit_win_location)
+      possible_webkit_files.append(webkit_mac_location)
+    possible_webkit_files.append(WEBKIT_LAYOUT_TEST_BASE_URL + filename)
+
+    if only_webkit:
+      return possible_webkit_files
+    return possible_chromium_files + possible_webkit_files
 
   # Like _GetBaseline, but only retrieves the baseline from upstream (skip
   # looking in chromium).
@@ -529,15 +577,24 @@ class FailureFinder(object):
     flakiness = ExtractFirstValue(content, FLAKY_TEST_REGEX % test_path)
     return flakiness
 
-  def _GetTestExpectationsLine(self, test_path, target_platform):
+  def _GetTestExpectations(self):
     if not self._test_expectations_cache:
       try:
-        self._test_expectations_cache = ScrapeURL(TEST_EXPECTATIONS_URL)
+        if self.test_expectations_file:
+          log = open(self.test_expectations_file, 'r')
+          self._test_expectations_cache = "".join(log.readlines())
+        else:
+          self._test_expectations_cache = ScrapeURL(TEST_EXPECTATIONS_URL)
       except HTTPError:
         print ("Could not find test_expectations.txt at %s" %
                TEST_EXPECTATIONS_URL)
 
-    if not self._test_expectations_cache:
+    return self._test_expectations_cache
+
+  def _GetTestExpectationsLine(self, test_path, target_platform):
+    content = self._GetTestExpectations()
+
+    if not content:
       return None
 
     translated_platform = "WIN"
@@ -558,7 +615,7 @@ class FailureFinder(object):
     line = None
     for regex in possible_lines:
       if not line:
-        line = ExtractFirstValue(self._test_expectations_cache, regex)
+        line = ExtractFirstValue(content, regex)
     return line
 
   def _ExtractFileFromZip(self, zip, file_in_zip, file_to_create):

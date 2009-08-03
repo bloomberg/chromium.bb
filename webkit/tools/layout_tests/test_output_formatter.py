@@ -31,7 +31,11 @@ def main(options, args):
                                         options.test_regex,
                                         options.output_dir,
                                         int(options.max_failures),
-                                        options.verbose)
+                                        options.verbose,
+                                        options.builder_log,
+                                        options.archive_log,
+                                        options.zip_file,
+                                        options.expectations_file)
   failure_list = finder.GetFailures()
 
   if not failure_list:
@@ -74,6 +78,23 @@ if __name__ == "__main__":
   option_parser.add_option("-r", "--run-tests", action = "store_true",
                            default = False,
                            help = "Runs unit tests")
+  option_parser.add_option("-u", "--builder-log",
+                           default = None,
+                           help = ("Use the local builder log file instead of "
+                                   "scraping the buildbots"))
+  option_parser.add_option("-a", "--archive-log",
+                           default = None,
+                           help = ("Use the local archive log file instead of "
+                                   "scraping the buildbots"))
+  option_parser.add_option("-e", "--expectations-file",
+                           default = None,
+                           help = ("Use the local test expectations file "
+                                   "instead of scraping the buildbots"))
+  option_parser.add_option("-z", "--zip-file",
+                           default = None,
+                           help = ("Use the local test output zip file "
+                                   "instead of scraping the buildbots"))
+
   options, args = option_parser.parse_args()
   main(options, args)
 

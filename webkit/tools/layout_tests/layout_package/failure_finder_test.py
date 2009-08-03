@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import os
+import zipfile
 
 from failure_finder import FailureFinder
 
@@ -19,6 +20,7 @@ TEST_BUILDER_OUTPUT = """090723 10:38:22 test_shell_thread.py:289
             ERROR LayoutTests/plugins/bindings-test.html failed:
               Text diff mismatch
               Simplified text diff mismatch
+
 ------------------------------------------------------------------------------
 Expected to crash, but passed (1):
   chrome/fast/forms/textarea-metrics.html
@@ -28,6 +30,33 @@ Regressions: Unexpected failures (2):
   LayoutTests/plugins/bindings-test.html = FAIL
 ------------------------------------------------------------------------------
 """
+
+TEST_FAILURE_1 = ("layout-test-results/chrome/fast/forms/"
+                  "textarea-metrics-actual.txt")
+TEST_FAILURE_2 = ("layout-test-results/chrome/fast/dom/"
+                  "xss-DENIED-javascript-variations-actual.txt")
+TEST_FAILURE_3 = ("layout-test-results/LayoutTests/plugins/"
+                  "bindings-test-actual.txt")
+
+TEST_ARCHIVE_OUTPUT = """
+Adding layout-test-results\pending\fast\repaint\not-real-actual.checksum
+Adding layout-test-results\pending\fast\repaint\not-real-actual.png
+Adding layout-test-results\pending\fast\repaint\not-real-actual.txt
+last change: 22057
+build name: webkit-rel
+host name: codf138
+saving results to \\my\test\location\webkit-rel\22057
+program finished with exit code 0
+"""
+
+TEST_TEST_EXPECTATIONS = """
+BUG1234 chrome/fast/forms/textarea-metrics.html = CRASH
+"""
+
+TEST_BUILDER_LOG_FILE = "TEST_builder.log"
+TEST_ARCHIVE_LOG_FILE = "TEST_archive.log"
+TEST_DUMMY_ZIP_FILE = "TEST_zipfile.zip"
+TEST_EXPECTATIONS_FILE = "TEST_expectations.txt"
 
 WEBKIT_BUILDER_NUMBER = "9800"
 WEBKIT_FAILURES = (
@@ -59,6 +88,21 @@ TEST_ZIP_FILE = ("http://build.chromium.org/buildbot/layout_test_results/"
 EXPECTED_REVISION = "20861"
 EXPECTED_BUILD_NAME = "webkit-rel"
 
+SVG_TEST_EXPECTATION = "LayoutTests/svg/custom/foreign-object-skew-expected.png"
+SVG_TEST_EXPECTATION_UPSTREAM = ("LayoutTests/svg/custom/"
+                                 "foreign-object-skew-expected-upstream.png")
+WEBARCHIVE_TEST_EXPECTATION = ("LayoutTests/webarchive/adopt-attribute-"
+                               "styled-body-webarchive-expected.webarchive")
+DOM_TEST_EXPECTATION = ("LayoutTests/fast/dom/"
+                        "attribute-downcast-right-expected.txt")
+DOM_TEST_EXPECTATION_UPSTREAM = ("LayoutTests/fast/dom/"
+                                 "attribute-downcast-right-"
+                                 "expected-upstream.png")
+
+
+WEBKIT_ORG = "webkit.org"
+CHROMIUM_ORG = "chromium.org"
+
 class FailureFinderTest(object):
 
   def runTests(self):
@@ -71,17 +115,21 @@ class FailureFinderTest(object):
              "testGetChromiumBaseline",
              "testGetWebkitBaseline",
              "testZipDownload",
+             "testUseLocalOutput",
              "testTranslateBuildToZip",
+             "testGetBaseline",
              "testFull"]
 
     for test in tests:
-      print test
-      result = eval(test + "()")
-      if result:
-        print "PASS"
-      else:
-        all_tests_passed = False
-        print "FAIL"
+      try:
+        result = eval(test + "()")
+        if result:
+          print "[ OK      ] %s" % test
+        else:
+          all_tests_passed = False
+          print "[    FAIL ] %s" % test
+      except:
+        print "[  ERROR  ] %s" % test
     return all_tests_passed
 
 def _getBasicFailureFinder():
@@ -160,10 +208,42 @@ def testGetWebkitBaseline():
   return _testBaseline(WEBKIT_BASELINE, EXPECTED_WEBKIT_LOCAL_BASELINE,
                        EXPECTED_WEBKIT_URL_BASELINE)
 
-# TODO(gwilson): implement support for using local log files instead of
-# scraping the buildbots.
 def testUseLocalOutput():
-  return True
+  test_result = True
+  try:
+    _writeFile(TEST_BUILDER_LOG_FILE, TEST_BUILDER_OUTPUT)
+    _writeFile(TEST_ARCHIVE_LOG_FILE, TEST_ARCHIVE_OUTPUT)
+    _writeFile(TEST_EXPECTATIONS_FILE, TEST_TEST_EXPECTATIONS)
+    zip = zipfile.ZipFile(TEST_DUMMY_ZIP_FILE, 'w')
+    zip.write(TEST_BUILDER_LOG_FILE, TEST_FAILURE_1)
+    zip.write(TEST_BUILDER_LOG_FILE, TEST_FAILURE_2)
+    zip.write(TEST_BUILDER_LOG_FILE, TEST_FAILURE_3)
+    zip.close()
+    test = _getBasicFailureFinder()
+    test.archive_step_log_file = TEST_ARCHIVE_LOG_FILE
+    test.builder_output_log_file = TEST_BUILDER_LOG_FILE
+    test.test_expectations_file = TEST_EXPECTATIONS_FILE
+    test.zip_file = TEST_DUMMY_ZIP_FILE
+    test.dont_download = True
+    test.exclude_known_failures = True
+    test.delete_zip_file = False
+    failures = test.GetFailures()
+    if not failures or len(failures) != 2:
+      print "Did not get expected number of failures :"
+      for failure in failures:
+        print failure.test_path
+      test_result = False
+  finally:
+    os.remove(TEST_BUILDER_LOG_FILE)
+    os.remove(TEST_ARCHIVE_LOG_FILE)
+    os.remove(TEST_EXPECTATIONS_FILE)
+    os.remove(TEST_DUMMY_ZIP_FILE)
+  return test_result
+
+def _writeFile(filename, contents):
+  myfile = open(filename, 'w')
+  myfile.write(contents)
+  myfile.close()
 
 def testZipDownload():
   test = _getBasicFailureFinder()
@@ -181,6 +261,46 @@ def testTranslateBuildToZip():
   if revision != EXPECTED_REVISION or build_name != EXPECTED_BUILD_NAME:
     return False
   return True
+
+def testGetBaseline():
+  test = _getBasicFailureFinder()
+  result = True
+  #test.dont_download = True
+  test.platform = "chromium-mac"
+  local, url = test._GetBaseline(WEBARCHIVE_TEST_EXPECTATION, ".")
+  if not local or url.find(WEBKIT_ORG) == -1:
+    result = False
+    print "Webarchive layout test not found at webkit.org: %s" % url
+  test.platform = "chromium-win"
+  local, url = test._GetBaseline(SVG_TEST_EXPECTATION, ".")
+  if not local or url.find(CHROMIUM_ORG) == -1:
+    result = False
+    print "SVG layout test found at %s, not chromium.org" % url
+  local, url = test._GetBaseline(SVG_TEST_EXPECTATION, ".", True)
+  if not local or url.find(WEBKIT_ORG) == -1:
+    result = False
+    print "Upstream SVG layout test NOT found at webkit.org!"
+  local, url = test._GetBaseline(DOM_TEST_EXPECTATION, ".", True)
+  if not local or url.find("/platform/") > -1:
+    result = False
+    print "Upstream SVG layout test found in a platform directory: %s" % url
+  os.remove(WEBARCHIVE_TEST_EXPECTATION)
+  os.remove(SVG_TEST_EXPECTATION)
+  os.remove(SVG_TEST_EXPECTATION_UPSTREAM)
+  os.remove(DOM_TEST_EXPECTATION_UPSTREAM)
+  deleteDir("LayoutTests")
+  return result
+
+def deleteDir(directory):
+  """ Recursively deletes empty directories given a root.
+  This method will throw an exception if they are not empty. """
+  for root, dirs, files in os.walk(directory, topdown=False):
+    for d in dirs:
+      try:
+        os.rmdir(os.path.join(root, d))
+      except:
+        pass
+  os.rmdir(directory)
 
 def testFull():
   """ Verifies that the entire system works end-to-end. """
