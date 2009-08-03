@@ -542,7 +542,8 @@ WebInspector.ScriptView.prototype.setupSourceFrameIfNeeded = function() {
     devtools.tools.getDebuggerAgent().resolveScriptSource(
         this.script.sourceID,
         function(source) {
-          self.script.source = source || '<source is not available>';
+          self.script.source = source ||
+              WebInspector.UIString('<source is not available>');
           self.didResolveScriptSource_();
         });
   }
@@ -637,20 +638,20 @@ WebInspector.ScopeChainSidebarPane.prototype.update = function(callFrame) {
     var title;
     switch(scopeObject.type) {
       case ScopeType.Global:
-        title = 'Global';
+        title = WebInspector.UIString('Global');
         break;
       case ScopeType.Local:
-        title = 'Local';
+        title = WebInspector.UIString('Local');
         thisObject = callFrame.thisObject;
         break;
       case ScopeType.With:
-        title = 'With';
+        title = WebInspector.UIString('With Block');
         break;
       case ScopeType.Closure:
-        title = 'Closure';
+        title = WebInspector.UIString('Closure');
         break;
       default:
-        title = '<Unknown scope type>';
+        title = WebInspector.UIString('<Unknown scope type>');
     }
 
     var section = new WebInspector.ScopeChainPropertiesSection(
@@ -972,7 +973,8 @@ WebInspector.UIString = function(string) {
     originalUpdateResource.call(this, identifier, payload);
     var resource = this.resources[identifier];
     if (resource && resource.mainResource && resource.finished) {
-      document.title = 'Developer Tools - ' + resource.url;
+      document.title =
+          WebInspector.UIString('Developer Tools - %s', resource.url);
     }
   };
 })();

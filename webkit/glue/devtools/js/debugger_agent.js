@@ -451,7 +451,8 @@ devtools.DebuggerAgent.prototype.resolveChildren = function(object, callback,
         devtools.DebuggerAgent.formatObjectProperties_(resolved, result,
                                                        noIntrinsic);
       } else {
-        result.error = 'Failed to resolve children: ' + msg.getMessage();
+        result.error = WebInspector.UIString(
+            'Failed to resolve children: %s', msg.getMessage());
       }
       object.resolvedValue = result;
       callback(object);
@@ -460,7 +461,8 @@ devtools.DebuggerAgent.prototype.resolveChildren = function(object, callback,
     return;
   } else {
     if (!object.resolvedValue) {
-      var message = 'Corrupted object: ' + JSON.stringify(object);
+      var message = WebInspector.UIString(
+          'Corrupted object: %s', JSON.stringify(object));
       object.resolvedValue = {};
       object.resolvedValue.error = message;
     }
@@ -493,7 +495,8 @@ devtools.DebuggerAgent.prototype.resolveScope = function(scope, callback) {
       devtools.DebuggerAgent.formatObjectProperties_(scopeObjectJson, result,
                                                      true /* no intrinsic */);
     } else {
-      result.error = 'Failed to resolve scope variables: ' + msg.getMessage();
+      result.error = WebInspector.UIString(
+          'Failed to resolve scope variables: %s', msg.getMessage());
     }
     scope.resolvedValue = result;
     callback(scope);
@@ -507,7 +510,9 @@ devtools.DebuggerAgent.prototype.resolveScope = function(scope, callback) {
 devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
   // A temporary icon indicating that the profile is being processed.
   var processingIcon = new WebInspector.SidebarTreeElement(
-      'profile-sidebar-tree-item', 'Processing...', '', null, false);
+      'profile-sidebar-tree-item',
+      WebInspector.UIString('Processing...'),
+      '', null, false);
   var profilesSidebar = WebInspector.panels.profiles.sidebarTree;
 
   this.profilerProcessor_.setCallbacks(
@@ -518,7 +523,8 @@ devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
         profilesSidebar.appendChild(processingIcon);
       },
       function onProfileProcessingStatus(ticksCount) {
-        processingIcon.subtitle = ticksCount + ' ticks processed';
+        processingIcon.subtitle =
+            WebInspector.UIString('%d ticks processed', ticksCount);
       },
       function onProfileProcessingFinished(profile) {
         profilesSidebar.removeChild(processingIcon);

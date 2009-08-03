@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This file contains definitions of resources that will be translated for
+each locale. Specifically, these are UI strings that are used by WebKit 
+Inspector that need to be translated for each locale.-->
+
+<!-- These strings and string descriptions were taken from
+WebKit/WebCore/English.lproj/localizedStrings.js @ revision 46622
+so we include the original license below:
+
+/*
+ * Copyright (C) 2007, 2008 Apple Inc.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1.  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ * 2.  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+-->
+
+<grit base_dir="." latest_public_release="0" current_release="1"
+      source_lang_id="en" enc_check="möl">
+  <outputs>
+    <!-- TODO add each of your output files.  Modify the three below, and add
+    your own for your various languages.  See the user's guide
+    (http://wiki/Main/GritUsersGuide) for mor details.
+    Note that all output references are relative to the output directory
+    which is specified at build time. -->
+    <!--
+    <output filename="resource.h" type="rc_header" />
+    <output filename="en_resource.rc" type="rc_all" />
+    <output filename="fr_resource.rc" type="rc_all" />
+    -->
+  </outputs>
+  <translations>
+    <!-- TODO add references to each of the XTB files (from the Translation
+    Console) that contain translations of messages in your project.  Each
+    takes a form like <file path="english.xtb" />.  Remember that all file
+    references are relative to this .grd file. -->
+  </translations>
+  <release seq="1">
+    <messages fallback_to_english="true">
+      <message name="IDS_HEADERS_COUNT" desc="Headers count.">
+        ''' (<ph name="COUNT">%d<ex>1</ex></ph>)
+      </message>
+      <message name="IDS_MESSAGE_REPEAT_COUNT" desc="Message repeat count.">
+        ''' (repeated <ph name="COUNT">%d<ex>2</ex></ph> times)
+      </message>
+      <message name="IDS_SIZE_IN_BYTES" desc="Size in bytes.">
+        <ph name="SIZE">%.0f<ex>100</ex></ph>B
+      </message>
+      <message name="IDS_DURATION_IN_MILLISECONDS" desc="Duration in milliseconds.">
+        <ph name="DURATION">%.0f<ex>100</ex></ph>ms
+      </message>
+      <message name="IDS_DURATION_IN_DAYS" desc="Duration in days.">
+        <ph name="DURATION">%.1f<ex>5</ex></ph> days
+      </message>
+      <message name="IDS_DURATION_IN_HOURS" desc="Duration in hours.">
+        <ph name="DURATION">%.1f<ex>5</ex></ph>hrs
+      </message>
+      <message name="IDS_DURATION_IN_MINUTES" desc="Duration in minutes.">
+        <ph name="DURATION">%.1f<ex>5</ex></ph>min
+      </message>
+      <message name="IDS_SHARE_IN_PERCENTS" desc="Share in percents.">
+        <ph name="SHARE">%.2f<ex>5</ex></ph>%%
+      </message>
+      <message name="IDS_SIZE_IN_KILOBYTES" desc="Size in kilobytes.">
+        <ph name="SIZE">%.2f<ex>5</ex></ph>KB
+      </message>
+      <message name="IDS_DURATION_IN_SECONDS" desc="Duration in seconds.">
+        <ph name="DURATION">%.2f<ex>5</ex></ph>s
+      </message>
+      <message name="IDS_SIZE_IN_MEGABYTES" desc="Size in megabytes.">
+        <ph name="DURATION">%.3f<ex>5</ex></ph>MB
+      </message>
+      <message name="IDS_DURATION_IN_MILLISECONDS_HIGH_PRECISION" desc="Duration in milliseconds, high precision.">
+        <ph name="DURATION">%.3f<ex>5</ex></ph>ms
+      </message>
+      <message name="IDS_ERRORS_COUNT_SINGULAR" desc="Errors count, singular.">
+        <ph name="COUNT">%d<ex>1</ex></ph> error
+      </message>
+      <message name="IDS_ERRORS_AND_WARNINGS_COUNTS_SINGULAR_SINGULAR" desc="Errors and warnings counts, singular-singular.">
+        <ph name="ERROR_COUNT">%1$d<ex>1</ex></ph> error, <ph name="WARNING_COUNT">%2$d<ex>1</ex></ph> warning
+      </message>
+      <message name="IDS_ERRORS_AND_WARNINGS_COUNTS_SINGULAR_PLURAL" desc="Errors and warnings counts, singular-plural.">
+        <ph name="ERROR_COUNT">%1$d<ex>1</ex></ph> error, <ph name="WARNINGS_COUNT">%2$d<ex>2</ex></ph> warnings
+      </message>
+      <message name="IDS_ERRORS_COUNT_PLURAL" desc="Errors count, plural.">
+        <ph name="COUNT">%d<ex>2</ex></ph> errors
+      </message>
+      <message name="IDS_ERRORS_AND_WARNINGS_COUNTS_PLURAL_SINGULAR" desc="Errors and warnings counts, plural-singular.">
+        <ph name="ERRORS_COUNT">%1$d<ex>2</ex></ph> errors, <ph name="WARNING_COUNT">%2$d<ex>1</ex></ph> warning
+      </message>
+      <message name="IDS_ERRORS_AND_WARNINGS_COUNTS_PLURAL_PLURAL" desc="Errors and warnings counts, plural-plural.">
+        <ph name="ERRORS_COUNT">%1$d<ex>2</ex></ph> errors, <ph name="WARNINGS_COUNT">%2$d<ex>1</ex></ph> warnings
+      </message>
+      <message name="IDS_MATCHES_COUNT_PLURAL" desc="Matches count, plural.">
+        <ph name="COUNT">%d<ex>2</ex></ph> matches
+      </message>
+      <message name="IDS_WARNINGS_COUNT_SINGULAR" desc="Warnings count, singular.">
+        <ph name="COUNT">%d<ex>1</ex></ph> warning
+      </message>
+      <message name="IDS_WARNINGS_COUNT_PLURAL" desc="Warnings count, plural.">
+        <ph name="COUNT">%d<ex>2</ex></ph> warnings
+      </message>
+      <message name="IDS_IMAGE_DIMENSIONS" desc="Image dimensions (uses mutiplication symbol, not x.)">
+        <ph name="WIDTH">%1$d<ex>100</ex></ph> × <ph name="HEIGHT">%2$d<ex>100</ex></ph>
+      </message>
+      <message name="IDS_INDICATES_THAT_RESOURCE_IS_RETRIEVED_FROM_CACHE" desc="Indicates that resource is retrieved from cache.">
+        <ph name="RESOURCE_NAME">%s<ex>picture.gif</ex></ph> (from cache)
+      </message>
+      <message name="IDS_INDICATES_DURATION_OF_RESOURCE_DOWNLOAD" desc="Indicates duration of resource download.">
+        <ph name="DURATION">%s<ex>5ms</ex></ph> download
+      </message>
+      <message name="IDS_INDICATES_LATENCY_OF_RESOURCE_DOWNLOAD" desc="Indicates latency of resource download.">
+        <ph name="LATENCY">%s<ex>5ms</ex></ph> latency
+      </message>
+      <message name="IDS_INDICATES_DURATION_AND_LATENCY_OF_RESOURCE_DOWNLOAD" desc="Indicates duration and latency of resource download.">
+        <ph name="LATENCY">%1$s<ex>5ms</ex></ph> latency, <ph name="DURATION">%2$s<ex>5ms</ex></ph> download (<ph name="TOTAL">%3$s<ex>10ms</ex></ph> total)
+      </message>
+      <message name="IDS_LABELS_AN_ANONYMOUS_JAVASCRIPT_FUNCTION" desc="Labels an anonymous JavaScript function.">
+        (anonymous function)
+      </message>
+      <message name="IDS_LABELS_PROGRAM_AS_A_WHOLE" desc="Labels program as a whole.">
+        (program)
+      </message>
+      <message name="IDS_LABELS_A_SCRIPT_WITH_URL" desc="Labels a script with URL.">
+        (program): <ph name="URL">%s<ex>http://site/script.js</ex></ph>
+      </message>
+      <message name="IDS_LABELS_A_TEXT_NODE_IN_HTML_TREE" desc="Labels a text node in HTML tree.">
+        (text)
+      </message>
+      <message name="IDS_LABELS_A_WHITESPACE_NODE_IN_HTML_TREE" desc="Labels a whitespace node in HTML tree.">
+        (whitespace)
+      </message>
+      <message name="IDS_MATCHES_COUNT_SINGULAR" desc="Matches count, singular.">
+        1 match
+      </message>
+      <message name="IDS_SPECIFIES_THAT_SOME_FEATURE_IS_ALWAYS_ENABLED" desc="Specifies that some feature is always enabled.">
+        Always enable
+      </message>
+      <message name="IDS_ERROR_MESSAGE_DISPLAYED_ON_FAILURE_TO_READ_A_DATABASE_TABLE" desc="Error message displayed on failure to read a database table.">
+        An error occurred trying to\nread the “<ph name="TABLE_NAME">%s<ex>CLIENTS</ex></ph>” table.
+      </message>
+      <message name="IDS_ERROR_MESSAGE_DISPLAYED_WHEN_AN_UNEXPECTED_ERROR_OCCURS_DURING_DATABASE_QUERY" desc="Error message displayed when an unexpected error occurs during database query.">
+        An unexpected error <ph name="ERROR">%s<ex>No memory</ex></ph> occurred.
+      </message>
+      <message name="IDS_LABEL_OF_A_GRID_COLUMN_SHOWING_AVERAGE_FUNCTION_EXECUTION_TIME" desc="Label of a grid column showing average function execution time.">
+        Average
+      </message>
+      <message name="IDS_LABEL_OF_A_SIDE_PANEL_SHOWING_BREAKPOINTS" desc="Label of a side panel showing breakpoints.">
+        Breakpoints
+      </message>
+      <message name="IDS_LABEL_OF_A_SIDE_PANEL_SHOWING_CALL_STACK" desc="Label of a side panel showing call stack.">
+        Call Stack
+      </message>
+      <message name="IDS_LABEL_OF_A_GRID_COLUMN_SHOWING_FUNCTION_CALL_COUNT" desc="Label of a grid column showing function call count.">
+        Calls
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_CLEARING_CONSOLE_LOG" desc="Hint for a button clearing console log.">
+        Clear console log.
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_CLOSURE_VARIABLES" desc="Label for a section in the scope chain sidebar that shows closure's variables.">
+        Closure
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_COOKIES" desc="Label for a section showing cookies.">
+        COOKIES
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_COMPUTED_STYLE" desc="Label for a section showing computed style.">
+        Computed Style
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_COOKIES" desc="Label for a section showing cookies.">
+        Cookies
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_DATABASES" desc="Label for a section showing databases.">
+        DATABASES
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_DOM" desc="Label for a section showing DOM.">
+        DOM
+      </message>
+      <message name="IDS_ERROR_MESSAGE_INDICATING_DATABASE_VERSION_MISMATCH" desc="Error message indicating database version mismatch.">
+        Database no longer has expected version.
+      </message>
+      <message name="IDS_LABEL_FOR_THE_TAB_SHOWING_DATABASES" desc="Label for the tab showing databases.">
+        Databases
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_DEBUGGING_IS_DISABLED" desc="Message indicating that debugging is disabled.">
+        Debugging disabled. Click to enable.
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_DEBUGGING_IS_ENABLED" desc="Message indicating that debugging is enabled.">
+        Debugging enabled. Click to disable.
+      </message>
+      <message name="IDS_A_HINT_THAT_REMINDS_TO_TURN_ON_DEBUGGER" desc="A hint that reminds to turn on debugger.">
+        Debugging scripts requires you to start the debugger.
+      </message>
+      <message name="IDS_A_BUTTON_FOR_DELETING_DOM_STORAGE_ITEMS" desc="A button for deleting DOM storage items.">
+        Delete
+      </message>
+      <message name="IDS_LABEL_OF_IMAGE_DIMENSIONS_GRID_COLUMN" desc="Label of image dimensions grid column.">
+        Dimensions
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_DOCKS_INSPECTOR_TO_MAIN_WINDOW" desc="Hint for a button that docks Inspector to main window.">
+        Dock to main window.
+      </message>
+      <message name="IDS_LABEL_FOR_DOCUMENTS_RESOURCE_SECTION" desc="Label for documents resource section.">
+        Documents
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_DISABLES_PAUSE_EXECUTION_ON_EXCEPTIONS" desc="Hint for a button that disables pause execution on exceptions.">
+        Don’t pause on exceptions.
+      </message>
+      <message name="IDS_LABEL_FOR_HTML_ELEMENTS_PANEL" desc="Label for HTML elements panel.">
+        Elements
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_ENABLES_DEBUGGING" desc="Hint for a button that enables debugging.">
+        Enable Debugging
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_ENABLES_PROFILING" desc="Hint for a button that enables profiling.">
+        Enable Profiling
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_ENABLES_RESOURCE_TRACKING" desc="Hint for a button that enables resource tracking.">
+        Enable resource tracking
+      </message>
+      <message name="IDS_A_WARNING_MESSAGE_ABOUT_DEBUGGING" desc="A warning message about debugging.">
+        Enabling debugging will make scripts run slower.
+      </message>
+      <message name="IDS_A_WARNING_MESSAGE_ABOUT_PROFILING" desc="A warning message about profiling.">
+        Enabling profiling will make scripts run slower.
+      </message>
+      <message name="IDS_A_WARNING_MESSAGE_ABOUT_RESOURCE_TRACKING" desc="A warning message about resource tracking.">
+        Enabling resource tracking will reload the page and make page loading slower.
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_EVENT_DOCUMENT_VARIABLES" desc="Label for a section in the scope chain sidebar that shows event document's variables.">
+        Event Document
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_EVENT_TARGET_VARIABLES" desc="Label for a section in the scope chain sidebar that shows event target's variables.">
+        Event Target
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_EXCLUDES_A_FUNCTION_FROM_EXECUTION_PROFILE" desc="Label for a button that excludes a function from execution profile.">
+        Exclude selected function.
+      </message>
+      <message name="IDS_LABEL_OF_IMAGE_FILE_SIZE_GRID_COLUMN" desc="Label of image file size grid column.">
+        File size
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_FOCUSES_ON_A_FUNCTION_FROM_EXECUTION_PROFILE" desc="Label for a button that focuses on a function from execution profile.">
+        Focus on selected function.
+      </message>
+      <message name="IDS_LABEL_FOR_FONTS_RESOURCE_SECTION" desc="Label for fonts resource section.">
+        Fonts
+      </message>
+      <message name="IDS_LABEL_OF_A_GRID_COLUMN_SHOWING_FUNCTION_NAME" desc="Label of a grid column showing function name.">
+        Function
+      </message>
+      <message name="IDS_LABEL_FOR_GRAPHS_SIDEBAR" desc="Label for graphs sidebar.">
+        GRAPHS
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_GLOBAL_VARIABLES" desc="Label for a section in the scope chain sidebar that shows global variables.">
+        Global
+      </message>
+      <message name="IDS_LABEL_INDICATING_THAT_BOTTOM-UP_HEAVY_PROFILE_IS_SHOWN" desc="Label indicating that bottom-up (heavy) profile is shown.">
+        Heavy (Bottom Up)
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_HIDES_CONSOLE" desc="Label for a button that hides console.">
+        Hide console.
+      </message>
+      <message name="IDS_LABEL_FOR_IMAGES_RESOURCE_SECTION" desc="Label for images resource section.">
+        Images
+      </message>
+      <message name="IDS_LABEL_FOR_INLINE_STYLE_ATTRIBUTE" desc="Label for inline style attribute.">
+        Inline Style Attribute
+      </message>
+      <message name="IDS_LABEL_FOR_A_GRID_COLUMN_SHOWING_PROPERTY_KEY" desc="Label for a grid column showing property key.">
+        Key
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_LOCAL_STORAGE" desc="Label for a section showing local storage.">
+        LOCAL STORAGE
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_LOCAL_VARIABLES" desc="Label for a section in the scope chain sidebar that shows local variables.">
+        Local
+      </message>
+      <message name="IDS_LABEL_OF_IMAGE_MIME_TYPE_GRID_COLUMN" desc="Label of image MIME type grid column.">
+        MIME type
+      </message>
+      <message name="IDS_LABEL_FOR_HTML_ELEMENT_METRICS_SIDE_PANEL" desc="Label for HTML element metrics side panel.">
+        Metrics
+      </message>
+      <message name="IDS_MESSAGE_IN_BREAKPOINTS_SIDEBAR_PANEL_INDICATING_THAT_THERE_ARE_NO_BREAKPOINTS" desc="Message in breakpoints sidebar panel indicating that there are no breakpoints.">
+        No Breakpoints
+      </message>
+      <message name="IDS_MESSAGE_IN_OBJECT_PROPERTIES_SIDEBAR_PANEL_INDICATING_THAT_THERE_ARE_NO_PROPERTIES" desc="Message in object properties sidebar panel indicating that there are no properties.">
+        No Properties
+      </message>
+      <message name="IDS_MESSAGE_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_SHOWING_VARIABLES_ABSENCE" desc="Message for a section in the scope chain sidebar showing variables absence.">
+        No Variables
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_SEARCHED_STRING_DOESN'T_FOUND" desc="Message indicating that searched string doesn't found.">
+        Not Found
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_PROGRAM_ISN'T_PAUSED" desc="Message indicating that program isn't paused.">
+        Not Paused
+      </message>
+      <message name="IDS_SPECIFIES_THAT_SOME_FEATURE_IS_ONLY_ENABLED_FOR_CURRENT_SESSION" desc="Specifies that some feature is only enabled for current session.">
+        Only enable for this session
+      </message>
+      <message name="IDS_LABEL_FOR_OTHER_RESOURCES_SECTION" desc="Label for other resources section.">
+        Other
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_ENABLES_PAUSE_EXECUTION_ON_EXCEPTIONS" desc="Hint for a button that enables pause execution on exceptions.">
+        Pause on exceptions.
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_PAUSES_SCRIPT_EXECUTION" desc="Hint for a button that pauses script execution.">
+        Pause script execution.
+      </message>
+      <message name="IDS_HINT_FOR_A_PAUSE_BUTTON_IN_DEBUGGER_INDICATING_THAT_EXECUTION_IS_PAUSED" desc="Hint for a pause button in debugger, indicating that execution is paused.">
+        Paused
+      </message>
+      <message name="IDS_HINT_FOR_A_PAUSE_BUTTON_IN_DEBUGGER_INDICATING_THAT_EXECUTION_IS_BEING_PAUSED" desc="Hint for a pause button in debugger, indicating that execution is being paused.">
+        Pausing
+      </message>
+      <message name="IDS_LABEL_FOR_AN_EXECUTION_PROFILE" desc="Label for an execution profile.">
+        Profile <ph name="ID">%d<ex>1</ex></ph>
+      </message>
+      <message name="IDS_LABEL_FOR_PROFILES_TAB" desc="Label for profiles tab.">
+        Profiles
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_PROFILING_IS_DISABLED" desc="Message indicating that profiling is disabled.">
+        Profiling disabled. Click to enable.
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_PROFILING_IS_ENABLED" desc="Message indicating that profiling is enabled.">
+        Profiling enabled. Click to disable.
+      </message>
+      <message name="IDS_LABEL_FOR_OBJECT_PROPERTIES_SIDEBAR" desc="Label for object properties sidebar.">
+        Properties
+      </message>
+      <message name="IDS_LABEL_FOR_THE_PROTOTYPE_PROPERTY" desc="Label for the prototype property.">
+        Prototype
+      </message>
+      <message name="IDS_LABEL_FOR_DATABASE_QUERY" desc="Label for database query.">
+        Query
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_RESOURCES" desc="Label for a section showing resources.">
+        RESOURCES
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_REFRESHES_CURRENT_VIEW" desc="Label for a button that refreshes current view.">
+        Refresh
+      </message>
+      <message name="IDS_LABEL_FOR_HTTP_REQUEST_HEADERS" desc="Label for HTTP request headers.">
+        Request Headers
+      </message>
+      <message name="IDS_A_WARNING_ABOUT_RESOURCE_TYPE_MISMATCH" desc="A warning about resource type mismatch.">
+        Resource interpreted as <ph id="REAL_TYPE">%1$s<ex>text/javascript</ex></ph> but transferred with MIME type <ph id="SPECIFIED_TYPE">%2$s<ex>text/javascript</ex></ph>.
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_RESOURCE_TRACKING_IS_DISABLED" desc="Message indicating that resource tracking is disabled.">
+        Resource tracking disabled. Click to enable.
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_RESOURCE_TRACKING_IS_ENABLED" desc="Message indicating that resource tracking is enabled.">
+        Resource tracking enabled. Click to disable.
+      </message>
+      <message name="IDS_LABEL_FOR_RESOURCES_TAB" desc="Label for resources tab.">
+        Resources
+      </message>
+      <message name="IDS_LABEL_FOR_HTTP_REQUEST_RESPONSE_HEADERS" desc="Label for HTTP request response headers.">
+        Response Headers
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_SHOWS_ALL_FUNCTIONS_IN_PROFILER" desc="Label for a button that shows all functions in profiler.">
+        Restore all functions.
+      </message>
+      <message name="IDS_LABEL_FOR_NTH_PROFILER_RUN" desc="Label for Nth profiler run.">
+        Run <ph name="ID">%d<ex>1</ex></ph>
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_SESSION_STORAGE" desc="Label for a section showing session storage.">
+        SESSION STORAGE
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_SCOPE_VARIABLES" desc="Label for a section in the scope chain sidebar that shows scope variables.">
+        Scope Variables
+      </message>
+      <message name="IDS_LABEL_FOR_SCRIPTS_RESOURCE_SECTION" desc="Label for scripts resource section.">
+        Scripts
+      </message>
+      <message name="IDS_LABEL_INDICATING_CURRENT_SEARCH" desc="Label indicating current search.">
+        Search <ph name="STRING">%s<ex>foo</ex></ph>
+      </message>
+      <message name="IDS_HINT_THAT_ELEMENT_SHOULD_BE_SELECTED" desc="Hint that element should be selected.">
+        Select an element in the page to inspect it.
+      </message>
+      <message name="IDS_LABEL_OF_A_GRID_COLUMN_SHOWING_FUNCTION_SELF_EXECUTION_TIME" desc="Label of a grid column showing function self execution time.">
+        Self
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_TOGGLING_SHOWING_OF_ABSOLUTE_TIMES" desc="Label for a button toggling showing of absolute times.">
+        Show absolute total and self times.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_SHOWS_CONSOLE" desc="Label for a button that shows console.">
+        Show console.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_ENABLING_SHOWING_OF_INHERITED_STYLES" desc="Label for a button enabling showing of inherited styles.">
+        Show inherited
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_SHOWS_THE_NEXT_SCRIPT_RESOURCE" desc="Label for a button that shows the next script resource.">
+        Show the next script resource.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_SHOWS_THE_PREVIOUS_SCRIPT_RESOURCE" desc="Label for a button that shows the previous script resource.">
+        Show the previous script resource.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_TOGGLING_SHOWING_TIMES_AS_PERCENTAGES" desc="Label for a button toggling showing times as percentages.">
+        Show total and self times as percentages.
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_SIZE_GRAPH_1" desc="Label for a resource size graph.">
+        Size
+      </message>
+      <message name="IDS_SORT_OPTION_FOR_RESOURCES_GRAPH_2" desc="Sort option for resources graph.">
+        Sort by Duration
+      </message>
+      <message name="IDS_SORT_OPTION_FOR_RESOURCES_GRAPH_3" desc="Sort option for resources graph.">
+        Sort by End Time
+      </message>
+      <message name="IDS_SORT_OPTION_FOR_RESOURCES_GRAPH_4" desc="Sort option for resources graph.">
+        Sort by Latency
+      </message>
+      <message name="IDS_SORT_OPTION_FOR_RESOURCES_GRAPH_5" desc="Sort option for resources graph.">
+        Sort by Response Time
+      </message>
+      <message name="IDS_SORT_OPTION_FOR_RESOURCES_GRAPH_6" desc="Sort option for resources graph.">
+        Sort by Size
+      </message>
+      <message name="IDS_SORT_OPTION_FOR_RESOURCES_GRAPH_7" desc="Sort option for resources graph.">
+        Sort by Start Time
+      </message>
+      <message name="IDS_LABEL_FOR_SCRIPT_SOURCE" desc="Label for script source.">
+        Source
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_STARTS_PROFILING" desc="Label for a button that starts profiling.">
+        Start profiling.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_STEPS_INTO_NEXT_FUNCTION_CALL" desc="Label for a button that steps into next function call.">
+        Step into next function call.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_STEPS_OUT_OF_CURRENT_FUNCTION" desc="Label for a button that steps out of current function.">
+        Step out of current function.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_STEPS_OVER_NEXT_FUNCTION_CALL" desc="Label for a button that steps over next function call.">
+        Step over next function call.
+      </message>
+      <message name="IDS_HINT_FOR_A_PAUSE_BUTTON_IN_DEBUGGER,_INDICATING_THAT_DEBUGGER_IS_STEPPING_INTO_NEXT_STATEMENT" desc="Hint for a pause button in debugger, indicating that debugger is stepping into next statement.">
+        Stepping
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_STOPS_PROFILING" desc="Label for a button that stops profiling.">
+        Stop profiling.
+      </message>
+      <message name="IDS_LABEL_FOR_CSS_STYLES_SIDE_PANEL" desc="Label for CSS styles side panel.">
+        Styles
+      </message>
+      <message name="IDS_LABEL_FOR_STYLESHEETS_RESOURCE_SECTION" desc="Label for stylesheets resource section.">
+        Stylesheets
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_DATABASE_TABLE_IS_EMPTY" desc="Message indicating that database table is empty.">
+        The “<ph id="TABLE_NAME">%s<ex>foo</ex></ph>”\ntable is empty.
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_CURRENT_SITE_DOESN'T_HAVE_COOKIES" desc="Message indicating that current site doesn't have cookies.">
+        This site has no cookies.
+      </message>
+      <message name="IDS_MESSAGE_INDICATING_THAT_STORAGE_IS_EMPTY" desc="Message indicating that storage is empty.">
+        This storage is empty.
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TIME_GRAPH" desc="Label for a resource time graph.">
+        Time
+      </message>
+      <message name="IDS_LABEL_OF_A_GRID_COLUMN_SHOWING_FUNCTION_TOTAL_EXECUTION_TIME" desc="Label of a grid column showing function total execution time.">
+        Total
+      </message>
+      <message name="IDS_LABEL_INDICATING_THAT_TOP-DOWN_(TREE)_PROFILE_IS_SHOWN" desc="Label indicating that top-down (tree) profile is shown.">
+        Tree (Top Down)
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_UNDOCKS_INSPECTOR_FROM_MAIN_WINDOW" desc="Hint for a button that undocks Inspector from main window.">
+        Undock into separate window.
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_TOGGLES_SHOWING_LARGE_RESOURCE_ROWS" desc="Hint for a button that toggles showing large resource rows.">
+        Use large resource rows.
+      </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_THAT_TOGGLES_SHOWING_SMALL_RESOURCE_ROWS" desc="Hint for a button that toggles showing small resource rows.">
+        Use small resource rows.
+      </message>
+      <message name="IDS_LABEL_FOR_A_GRID_COLUMN_SHOWING_PROPERTY_KEY" desc="Label for a grid column showing property key.">
+        Value
+      </message>
+      <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_WITH_BLOCK_VARIABLES" desc="Label for a section in the scope chain sidebar that shows with block variables.">
+        With Block
+      </message>
+      <message name="IDS_LABEL_FOR_XHR_RESOURCE_SECTION" desc="Label for XHR resource section.">
+        XHR
+      </message>
+      <message name="IDS_HINT_MESSAGE_ABOUT_POTENTIAL_RESOURCES_COMPRESSION" desc="Hint message about potential resources compression.">
+        You could save bandwidth by having your web server compress this transfer with gzip or zlib.
+      </message>
+      <message name="IDS_HINT_MESSAGE_ABOUT_NEED_FOR_ENABLING_DEBUGGING" desc="Hint message about need for enabling debugging.">
+        You need to enable debugging before you can use the Scripts panel.
+      </message>
+      <message name="IDS_HINT_MESSAGE_ABOUT_NEED_FOR_ENABLING_PROFILING" desc="Hint message about need for enabling profiling.">
+        You need to enable profiling before you can use the Profiles panel.
+      </message>
+      <message name="IDS_HINT_MESSAGE_ABOUT_NEED_FOR_ENABLING_RESOURCE_TRACKING" desc="Hint message about need for enabling resource tracking.">
+        You need to enable resource tracking to use this panel.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BOX_SHOWING_HTML_ELEMENT_BORDER_SIZE" desc="Label for a box showing HTML element border size.">
+        border
+      </message>
+      <message name="IDS_LABEL_FOR_A_BOX_SHOWING_HTML_ELEMENT_CONTENT_SIZE" desc="Label for a box showing HTML element content size.">
+        content
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE" desc="Label for a resource type.">
+        document
+      </message>
+      <message name="IDS_LABEL_FOR_HTML_ELEMENT'S_ATTRIBUTE" desc="Label for HTML element's attribute.">
+        element’s “<ph name="NAME">%s<ex>width</ex></ph>” attribute
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_1" desc="Label for a resource type.">
+        font
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_2" desc="Label for a resource type.">
+        image
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_3" desc="Label for a resource type.">
+        inline stylesheet
+      </message>
+      <message name="IDS_LABEL_FOR_LINE_POSITION" desc="Label for line position.">
+        line <ph name="LINE_NUMBER">%d<ex>25</ex></ph>
+      </message>
+      <message name="IDS_LABEL_FOR_A_BOX_SHOWING_HTML_ELEMENT_MARGIN_SIZE" desc="Label for a box showing HTML element margin size.">
+        margin
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_4" desc="Label for a resource type.">
+        other
+      </message>
+      <message name="IDS_LABEL_FOR_A_BOX_SHOWING_HTML_ELEMENT_PADDING_SIZE" desc="Label for a box showing HTML element padding size.">
+        padding
+      </message>
+      <message name="IDS_LABEL_FOR_A_POSITION" desc="Label for a position.">
+        position
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_5" desc="Label for a resource type.">
+        script
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_6" desc="Label for a resource type.">
+        stylesheet
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_7" desc="Label for a resource type.">
+        user agent stylesheet
+      </message>
+      <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_8" desc="Label for a resource type.">
+        user stylesheet
+      </message>
+    </messages>
+  </release>
+</grit>
