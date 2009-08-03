@@ -172,10 +172,6 @@ class PlatformUtility(object):
     """Path to the image_diff binary."""
     return PathFromBuildResults(target, 'image_diff')
 
-  def LayoutTestHelperBinaryPath(self, target):
-    """Path to the layout_test helper binary, if needed, empty otherwise"""
-    return ''
-
   def TestShellBinary(self):
     """The name of the binary for TestShell."""
     return 'test_shell'

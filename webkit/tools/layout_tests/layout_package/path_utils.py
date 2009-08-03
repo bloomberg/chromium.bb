@@ -217,7 +217,7 @@ def LayoutTestHelperBinaryPath(target):
   platform_util = platform_utils.PlatformUtility('')
   # try output directory from either Xcode or chrome.sln
   full_path = platform_util.LayoutTestHelperBinaryPath(target)
-  if len(full_path) and not os.path.exists(full_path):
+  if not os.path.exists(full_path):
     raise PathNotFound('unable to find layout_test_helper at %s' % full_path)
   return full_path
 

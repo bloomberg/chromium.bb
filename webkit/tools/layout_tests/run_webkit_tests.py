@@ -514,16 +514,18 @@ class TestRunner:
 
     # Start up any helper needed
     layout_test_helper_proc = None
-    if not options.no_pixel_tests:
-      helper_path = path_utils.LayoutTestHelperBinaryPath(self._options.target)
-      if len(helper_path):
+    if sys.platform in ('darwin'):
+      # Mac uses a helper for manging the color sync profile for pixel tests.
+      if not options.no_pixel_tests:
+        helper_path = \
+            path_utils.LayoutTestHelperBinaryPath(self._options.target)
         logging.info("Starting layout helper %s" % helper_path)
         layout_test_helper_proc = subprocess.Popen([helper_path],
                                                    stdin=subprocess.PIPE,
                                                    stdout=subprocess.PIPE,
                                                    stderr=None)
         is_ready = layout_test_helper_proc.stdout.readline()
-        if not is_ready.startswith('ready'):
+        if is_ready != 'ready\n':
           logging.error("layout_test_helper failed to be ready")
 
     threads = self._InstantiateTestShellThreads(test_shell_binary)
