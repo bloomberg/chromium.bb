@@ -10,7 +10,9 @@
 #include "base/logging.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -18,14 +20,27 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/libxml_utils.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request_status.h"
 #include "libxml/tree.h"
 
+using base::RandDouble;
+using base::RandInt;
+using base::Time;
+using base::TimeDelta;
+using prefs::kLastExtensionsUpdateCheck;
+using prefs::kNextExtensionsUpdateCheck;
+
 const char* ExtensionUpdater::kExpectedGupdateProtocol = "2.0";
 const char* ExtensionUpdater::kExpectedGupdateXmlns =
     "http://www.google.com/update2/response";
+
+// Wait at least 5 minutes after browser startup before we do any checks. If you
+// change this value, make sure to update comments where it is used.
+const int kStartupWaitSeconds = 60 * 5;
 
 // For sanity checking on update frequency - enforced in release mode only.
 static const int kMinUpdateFrequencySeconds = 30;
@@ -83,10 +98,11 @@ class ExtensionUpdaterFileHandler
 
 
 ExtensionUpdater::ExtensionUpdater(ExtensionUpdateService* service,
+                                   PrefService* prefs,
                                    int frequency_seconds,
                                    MessageLoop* file_io_loop)
     : service_(service), frequency_seconds_(frequency_seconds),
-      file_io_loop_(file_io_loop),
+      file_io_loop_(file_io_loop), prefs_(prefs),
       file_handler_(new ExtensionUpdaterFileHandler(MessageLoop::current(),
                                                     file_io_loop_)) {
   Init();
@@ -110,14 +126,62 @@ void ExtensionUpdater::Init() {
 
 ExtensionUpdater::~ExtensionUpdater() {}
 
+static void EnsureInt64PrefRegistered(PrefService* prefs,
+                                      const wchar_t name[]) {
+  if (!prefs->IsPrefRegistered(name))
+    prefs->RegisterInt64Pref(name, 0);
+}
+
+
+// The overall goal here is to balance keeping clients up to date while
+// avoiding a thundering herd against update servers.
+TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
+  // If someone's testing with a quick frequency, just allow it.
+  if (frequency_seconds_ < kStartupWaitSeconds)
+    return TimeDelta::FromSeconds(frequency_seconds_);
+
+  // If we've never scheduled a check before, start at frequency_seconds_.
+  if (!prefs_->HasPrefPath(kNextExtensionsUpdateCheck))
+    return TimeDelta::FromSeconds(frequency_seconds_);
+
+  // If it's been a long time since our last actual check, we want to do one
+  // relatively soon.
+  Time now = Time::Now();
+  Time last = Time::FromInternalValue(prefs_->GetInt64(
+      kLastExtensionsUpdateCheck));
+  int days = (now - last).InDays();
+  if (days >= 30) {
+    // Wait 5-10 minutes.
+    return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds,
+                                          kStartupWaitSeconds * 2));
+  } else if (days >= 14) {
+    // Wait 10-20 minutes.
+    return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds * 2,
+                                          kStartupWaitSeconds * 4));
+  } else if (days >= 3) {
+    // Wait 20-40 minutes.
+    return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds * 4,
+                                          kStartupWaitSeconds * 8));
+  }
+
+  // Read the persisted next check time, and use that if it isn't too soon.
+  // Otherwise pick something random.
+  Time saved_next = Time::FromInternalValue(prefs_->GetInt64(
+      kNextExtensionsUpdateCheck));
+  Time earliest = now + TimeDelta::FromSeconds(kStartupWaitSeconds);
+  if (saved_next >= earliest) {
+    return saved_next - now;
+  } else {
+    return TimeDelta::FromSeconds(RandInt(kStartupWaitSeconds,
+                                          frequency_seconds_));
+  }
+}
+
 void ExtensionUpdater::Start() {
-  // TODO(asargent) Make sure update schedules work across browser restarts by
-  // reading/writing update frequency in profile/settings. *But*, make sure to
-  // wait a reasonable amount of time after browser startup to do the first
-  // check during a given run of the browser. Also remember to update the header
-  // comments when this is implemented. (http://crbug.com/12545).
-  timer_.Start(base::TimeDelta::FromSeconds(frequency_seconds_), this,
-      &ExtensionUpdater::TimerFired);
+  // Make sure our prefs are registered, then schedule the first check.
+  EnsureInt64PrefRegistered(prefs_, kLastExtensionsUpdateCheck);
+  EnsureInt64PrefRegistered(prefs_, kNextExtensionsUpdateCheck);
+  ScheduleNextCheck(DetermineFirstCheckDelay());
 }
 
 void ExtensionUpdater::Stop() {
@@ -254,6 +318,25 @@ void AppendExtensionInfo(std::string* str, const Extension& extension) {
     str->append("x=" + EscapeQueryParamValue(JoinString(parts, '&')));
 }
 
+void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
+  DCHECK(!timer_.IsRunning());
+  DCHECK(target_delay >= TimeDelta::FromSeconds(1));
+
+  // Add +/- 10% random jitter.
+  double delay_ms = target_delay.InMillisecondsF();
+  double jitter_factor = (RandDouble() * .2) - 0.1;
+  delay_ms += delay_ms * jitter_factor;
+  TimeDelta actual_delay = TimeDelta::FromMilliseconds(
+      static_cast<int64>(delay_ms));
+
+  // Save the time of next check.
+  Time next = Time::Now() + actual_delay;
+  prefs_->SetInt64(kNextExtensionsUpdateCheck, next.ToInternalValue());
+  prefs_->ScheduleSavePersistentPrefs();
+
+  timer_.Start(actual_delay, this, &ExtensionUpdater::TimerFired);
+}
+
 void ExtensionUpdater::TimerFired() {
   // Generate a set of update urls for loaded extensions.
   std::set<GURL> urls;
@@ -290,7 +373,11 @@ void ExtensionUpdater::TimerFired() {
     // scheduled, so we don't need to check before calling it.
     StartUpdateCheck(*iter);
   }
-  timer_.Reset();
+
+  // Save the last check time, and schedule the next check.
+  int64 now = Time::Now().ToInternalValue();
+  prefs_->SetInt64(kLastExtensionsUpdateCheck, now);
+  ScheduleNextCheck(TimeDelta::FromSeconds(frequency_seconds_));
 }
 
 static void ManifestParseError(const char* details, ...) {

@@ -109,6 +109,25 @@ class MockService : public ExtensionUpdateService {
   DISALLOW_COPY_AND_ASSIGN(MockService);
 };
 
+// Class that contains a PrefService and handles cleanup of a temporary file
+// backing it.
+class ScopedTempPrefService {
+ public:
+  ScopedTempPrefService() {
+    FilePath pref_file = temp_dir_.path().AppendASCII("prefs");
+    prefs_.reset(new PrefService(pref_file, NULL));
+  }
+
+  ~ScopedTempPrefService() {}
+
+  PrefService* get() {
+    return prefs_.get();
+  }
+
+ private:
+  scoped_ptr<PrefService> prefs_;
+  ScopedTempDir temp_dir_;
+};
 
 const char* kIdPrefix = "000000000000000000000000000000000000000";
 
@@ -206,6 +225,12 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_FALSE(ExtensionUpdater::Parse(xml, &result.get()));
   }
 
+  static void SimulateTimerFired(ExtensionUpdater* updater) {
+    EXPECT_TRUE(updater->timer_.IsRunning());
+    updater->timer_.Stop();
+    updater->TimerFired();
+  }
+
   // Make a test ParseResult
   static ExtensionUpdater::ParseResult* MakeParseResult(
       const std::string& id,
@@ -258,12 +283,13 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcherFactory factory;
     URLFetcher::set_factory(&factory);
     MessageLoop message_loop;
+    ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, 60*60*24, &message_loop);
+      new ExtensionUpdater(&service, prefs.get(), 60*60*24, &message_loop);
     updater->Start();
 
     // Tell the update that it's time to do update checks.
-    updater->TimerFired();
+    SimulateTimerFired(updater.get());
 
     // Get the url our mock fetcher was asked to fetch.
     TestURLFetcher* fetcher =
@@ -301,8 +327,10 @@ class ExtensionUpdaterTest : public testing::Test {
     service.set_extensions(tmp);
 
     MessageLoop message_loop;
+    ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, kUpdateFrequencySecs, &message_loop);
+      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
+                           &message_loop);
 
     // Check passing an empty list of parse results to DetermineUpdates
     ExtensionUpdater::ParseResultList updates;
@@ -331,8 +359,10 @@ class ExtensionUpdaterTest : public testing::Test {
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
     MessageLoop message_loop;
+    ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, kUpdateFrequencySecs, &message_loop);
+      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
+                           &message_loop);
 
     GURL url1("http://localhost/manifest1");
     GURL url2("http://localhost/manifest2");
@@ -364,8 +394,10 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
+    ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, kUpdateFrequencySecs, &message_loop);
+      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
+                           &message_loop);
 
     GURL test_url("http://localhost/extension.crx");
 
@@ -401,8 +433,10 @@ class ExtensionUpdaterTest : public testing::Test {
     TestURLFetcher* fetcher = NULL;
     URLFetcher::set_factory(&factory);
     ServiceForDownloadTests service;
+    ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
-      new ExtensionUpdater(&service, kUpdateFrequencySecs, &message_loop);
+      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
+                           &message_loop);
 
     GURL url1("http://localhost/extension1.crx");
     GURL url2("http://localhost/extension2.crx");

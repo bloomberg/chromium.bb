@@ -81,7 +81,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
       update_frequency = StringToInt(WideToASCII(command_line->GetSwitchValue(
           switches::kExtensionsUpdateFrequency)));
     }
-    updater_ = new ExtensionUpdater(this, update_frequency, backend_loop_);
+    updater_ = new ExtensionUpdater(this, prefs, update_frequency,
+                                    backend_loop_);
   }
 
   backend_ = new ExtensionsServiceBackend(install_directory_, frontend_loop);

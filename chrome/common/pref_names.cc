@@ -527,6 +527,12 @@ const wchar_t kNumKeywords[] = L"user_experience_metrics.num_keywords";
 const wchar_t kEnableExtensions[] = L"extensions.enabled";
 const wchar_t kEnableUserScripts[] = L"extensions.user_scripts_enabled";
 
+// Time of the last, and next scheduled, extensions auto-update checks.
+const wchar_t kLastExtensionsUpdateCheck[] =
+    L"extensions.autoupdate.last_check";
+const wchar_t kNextExtensionsUpdateCheck[] =
+    L"extensions.autoupdate.next_check";
+
 // New Tab Page URLs that should not be shown as most visited thumbnails.
 const wchar_t kNTPMostVisitedURLsBlacklist[] = L"ntp.most_visited_blacklist";
 

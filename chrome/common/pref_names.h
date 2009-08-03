@@ -197,6 +197,9 @@ extern const wchar_t kNumKeywords[];
 extern const wchar_t kEnableExtensions[];
 extern const wchar_t kEnableUserScripts[];
 
+extern const wchar_t kLastExtensionsUpdateCheck[];
+extern const wchar_t kNextExtensionsUpdateCheck[];
+
 extern const wchar_t kNTPMostVisitedURLsBlacklist[];
 extern const wchar_t kNTPMostVisitedPinnedURLs[];
 extern const wchar_t kNTPTipsCache[];
