@@ -3083,6 +3083,3 @@ BUG17974 WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 
 // This test seems to crash periodically on mac.
 BUG18206 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-onload-remove-self.html = CRASH PASS
-
-// New tests from WebKit merge from 46639 to 46726
-BUG18355 : LayoutTests/http/tests/misc/favicon-loads-with-images-disabled.html = FAIL

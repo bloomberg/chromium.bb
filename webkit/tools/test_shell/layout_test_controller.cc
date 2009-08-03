@@ -113,6 +113,8 @@ LayoutTestController::LayoutTestController(TestShell* shell) {
   BindMethod("pauseTransitionAtTimeOnElementWithId", &LayoutTestController::pauseTransitionAtTimeOnElementWithId);
   BindMethod("elementDoesAutoCompleteForElementWithId", &LayoutTestController::elementDoesAutoCompleteForElementWithId);
   BindMethod("numberOfActiveAnimations", &LayoutTestController::numberOfActiveAnimations);
+  BindMethod("disableImageLoading", &LayoutTestController::disableImageLoading);
+  BindMethod("setIconDatabaseEnabled", &LayoutTestController::setIconDatabaseEnabled);
   BindMethod("setCustomPolicyDelegate", &LayoutTestController::setCustomPolicyDelegate);
   BindMethod("waitForPolicyDelegate", &LayoutTestController::waitForPolicyDelegate);
 
@@ -701,6 +703,21 @@ void LayoutTestController::elementDoesAutoCompleteForElementWithId(
 void LayoutTestController::numberOfActiveAnimations(const CppArgumentList& args,
                                                     CppVariant* result) {
   result->Set(webkit_glue::NumberOfActiveAnimations(shell_->webView()));
+}
+
+void LayoutTestController::disableImageLoading(const CppArgumentList& args,
+                                               CppVariant* result) {
+  WebPreferences* prefs = shell_->GetWebPreferences();
+  prefs->loads_images_automatically = false;
+  shell_->webView()->SetPreferences(*prefs);
+
+  result->SetNull();
+}
+
+void LayoutTestController::setIconDatabaseEnabled(const CppArgumentList& args,
+                                                  CppVariant* result) {
+  // We don't use the WebKit icon database.
+  result->SetNull();
 }
 
 //
