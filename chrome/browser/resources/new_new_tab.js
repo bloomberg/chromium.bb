@@ -474,19 +474,30 @@ var mostVisited = {
         addClass(el, 'fade-in');
       }
 
-      var text = localStrings.formatString('thumbnailremovednotification',
-                                           oldItem.title);
+      // We wrap the title in a <span class=blacklisted-title>. We pass an empty
+      // string to the notifier function and use DOM to insert the real string.
       var actionText = localStrings.getString('undothumbnailremove');
 
       // Show notification and add undo callback function.
       var wasPinned = oldItem.pinned;
-      showNotification(text, actionText, function() {
+      showNotification('', actionText, function() {
         self.removeFromBlackList(url);
         if (wasPinned) {
           chromeSend('addPinnedURL', [url, oldItem.title, String(oldIndex)]);
         }
         chrome.send('getMostVisited');
       });
+
+      // Now change the DOM.
+      var textPattern = localStrings.getString('thumbnailremovednotification');
+      var parts = textPattern.split('%s');
+      var titleSpan = document.createElement('span');
+      titleSpan.className = 'blacklist-title';
+      titleSpan.textContent = oldItem.title;
+      var notifySpan = document.querySelector('#notification > span');
+      notifySpan.appendChild(document.createTextNode(parts[0]));
+      notifySpan.appendChild(titleSpan);
+      notifySpan.appendChild(document.createTextNode(parts[1]));
     });
   },
 
@@ -823,8 +834,10 @@ function afterTransition(f) {
 
 var notificationTimeout;
 
-function showNotification(text, actionText, opt_f) {
+function showNotification(text, actionText, opt_f, opt_delay) {
   var notificationElement = $('notification');
+  var f = opt_f || function() {};
+  var delay = opt_delay || 10000;
 
   function show() {
     window.clearTimeout(notificationTimeout);
@@ -832,13 +845,11 @@ function showNotification(text, actionText, opt_f) {
   }
 
   function delayedHide() {
-    notificationTimeout = window.setTimeout(hideNotification, 10000);
+    notificationTimeout = window.setTimeout(hideNotification, delay);
   }
 
   function doAction() {
-    if (opt_f) {
-      opt_f();
-    }
+    f();
     hideNotification();
   }
 
@@ -867,7 +878,8 @@ function hideNotification() {
 
 function showFirstRunNotification() {
   showNotification(localStrings.getString('firstrunnotification'),
-                   localStrings.getString('closefirstrunnotification'));
+                   localStrings.getString('closefirstrunnotification'),
+                   null, 30000);
   var notificationElement = $('notification');
   addClass(notification, 'first-run');
 }

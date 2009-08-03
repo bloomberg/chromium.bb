@@ -342,6 +342,14 @@ html[dir=rtl] .thumbnail-container > .title > div {
   -webkit-margin-start: 20px;
 }
 
+#notification > span > .blacklist-title {
+  display: inline-block;
+  max-width: 30ex;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* List mode */
 
 .list .thumbnail,
@@ -709,6 +717,10 @@ html[dir='rtl'] #t4 {
 
   #notification > * {
     max-width: 300px;
+  }
+
+  #notification > span > .blacklist-title {
+    max-width: 15ex;
   }
 
   #lower-sections > .section {
