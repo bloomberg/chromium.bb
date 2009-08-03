@@ -188,6 +188,10 @@ class PlatformUtility(google.platform_utils_win.PlatformUtility):
   def ImageCompareExecutablePath(self, target):
     return PathFromBase('chrome', target, 'image_diff.exe')
 
+  def LayoutTestHelperBinaryPath(self, target):
+    """Path to the layout_test helper binary, if needed, empty otherwise"""
+    return PathFromBase('chrome', target, 'layout_test_helper.exe')
+
   def TestShellBinary(self):
     """The name of the binary for TestShell."""
     return 'test_shell.exe'
