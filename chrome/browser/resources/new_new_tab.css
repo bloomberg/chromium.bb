@@ -309,7 +309,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
   padding: 7px 15px;
   white-space: nowrap;
   display: table;
-  margin: 10px auto;
+  margin: -8px auto 5px auto;
   font-weight: bold;
   opacity: 0;
   -webkit-transition: opacity .15s;
@@ -525,7 +525,7 @@ html[dir='rtl'] .item {
   -webkit-user-select: none;
   text-align: right;
   position: relative;
-  top: 35px;
+  top: 15px;
 }
 
 html[dir='rtl'] #view-toolbar {
