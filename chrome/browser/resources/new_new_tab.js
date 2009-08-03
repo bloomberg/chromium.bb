@@ -249,7 +249,7 @@ function renderMostVisited(data) {
     var titleDiv = t.querySelector('.title > div');
     titleDiv.xtitle = titleDiv.textContent = d.title;
     var faviconUrl = d.faviconUrl || 'chrome://favicon/' + d.url;
-    titleDiv.style.backgroundImage = encodeURI(url);
+    titleDiv.style.backgroundImage = url(faviconUrl);
     titleDiv.dir = d.direction;
   }
 }
