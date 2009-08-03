@@ -121,9 +121,9 @@ TabGtk::TabGtk(TabDelegate* delegate)
   g_signal_connect(G_OBJECT(event_box_), "button-release-event",
                    G_CALLBACK(OnMouseRelease), this);
   g_signal_connect(G_OBJECT(event_box_), "enter-notify-event",
-                   G_CALLBACK(OnEnterNotify), this);
+                   G_CALLBACK(OnEnterNotifyEvent), this);
   g_signal_connect(G_OBJECT(event_box_), "leave-notify-event",
-                   G_CALLBACK(OnLeaveNotify), this);
+                   G_CALLBACK(OnLeaveNotifyEvent), this);
   g_signal_connect_after(G_OBJECT(event_box_), "drag-begin",
                            G_CALLBACK(OnDragBegin), this);
   g_signal_connect_after(G_OBJECT(event_box_), "drag-end",
@@ -179,20 +179,6 @@ gboolean TabGtk::OnMouseRelease(GtkWidget* widget, GdkEventButton* event,
     tab->delegate_->CloseTab(tab);
   }
 
-  return TRUE;
-}
-
-// static
-gboolean TabGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event,
-                               TabGtk* tab) {
-  tab->OnMouseEntered();
-  return TRUE;
-}
-
-// static
-gboolean TabGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event,
-                               TabGtk* tab) {
-  tab->OnMouseExited();
   return TRUE;
 }
 

@@ -102,14 +102,6 @@ class TabGtk : public TabRendererGtk,
   static gboolean OnMouseRelease(GtkWidget* widget, GdkEventButton* event,
                                  TabGtk* tab);
 
-  // enter-notify-event handler that signals when the mouse enters the tab.
-  static gboolean OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event,
-                                TabGtk* tab);
-
-  // leave-notify-event handler that signals when the mouse enters the tab.
-  static gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event,
-                                TabGtk* tab);
-
   // drag-begin handler that signals when a drag action begins.
   static void OnDragBegin(GtkWidget* widget, GdkDragContext* context,
                           TabGtk* tab);

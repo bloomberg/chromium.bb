@@ -805,6 +805,10 @@ CustomDrawButton* TabRendererGtk::MakeCloseButton() {
                    G_CALLBACK(OnCloseButtonClicked), this);
   g_signal_connect(G_OBJECT(button->widget()), "button-release-event",
                    G_CALLBACK(OnCloseButtonMouseRelease), this);
+  g_signal_connect(G_OBJECT(button->widget()), "enter-notify-event",
+                   G_CALLBACK(OnEnterNotifyEvent), this);
+  g_signal_connect(G_OBJECT(button->widget()), "leave-notify-event",
+                   G_CALLBACK(OnLeaveNotifyEvent), this);
   GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
   gtk_fixed_put(GTK_FIXED(tab_.get()), button->widget(), 0, 0);
 
@@ -858,14 +862,22 @@ void TabRendererGtk::OnSizeAllocate(GtkWidget* widget,
   tab->Layout();
 }
 
-void TabRendererGtk::OnMouseEntered() {
-  hover_animation_->SetTweenType(SlideAnimation::EASE_OUT);
-  hover_animation_->Show();
+// static
+gboolean TabRendererGtk::OnEnterNotifyEvent(GtkWidget* widget,
+                                            GdkEventCrossing* event,
+                                            TabRendererGtk* tab) {
+  tab->hover_animation_->SetTweenType(SlideAnimation::EASE_OUT);
+  tab->hover_animation_->Show();
+  return FALSE;
 }
 
-void TabRendererGtk::OnMouseExited() {
-  hover_animation_->SetTweenType(SlideAnimation::EASE_IN);
-  hover_animation_->Hide();
+// static
+gboolean TabRendererGtk::OnLeaveNotifyEvent(GtkWidget* widget,
+                                            GdkEventCrossing* event,
+                                            TabRendererGtk* tab) {
+  tab->hover_animation_->SetTweenType(SlideAnimation::EASE_IN);
+  tab->hover_animation_->Hide();
+  return FALSE;
 }
 
 // static

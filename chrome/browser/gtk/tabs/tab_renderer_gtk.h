@@ -178,12 +178,13 @@ class TabRendererGtk : public AnimationDelegate {
   // Returns the title of the Tab.
   std::wstring GetTitle() const;
 
-  // Called by TabGtk to notify the renderer that the tab is being hovered.
-  void OnMouseEntered();
+  // enter-notify-event handler that signals when the mouse enters the tab.
+  static gboolean OnEnterNotifyEvent(GtkWidget* widget, GdkEventCrossing* event,
+                                     TabRendererGtk* tab);
 
-  // Called by TabGtk to notify the renderer that the tab is no longer being
-  // hovered.
-  void OnMouseExited();
+  // leave-notify-event handler that signals when the mouse enters the tab.
+  static gboolean OnLeaveNotifyEvent(GtkWidget* widget, GdkEventCrossing* event,
+                                     TabRendererGtk* tab);
 
  private:
   class FavIconCrashAnimation;
