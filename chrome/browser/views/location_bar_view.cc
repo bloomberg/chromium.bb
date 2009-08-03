@@ -1161,7 +1161,7 @@ class LocationBarView::PageActionImageView::ImageLoadingTracker
 
   void OnImageLoaded(SkBitmap* image, int index) {
     if (image == NULL) {
-      NOTREACHED();
+      NOTREACHED() << "Image failed to decode.";
       image = new SkBitmap();
     }
     if (view_)
