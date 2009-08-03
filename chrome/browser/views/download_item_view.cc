@@ -444,7 +444,7 @@ void DownloadItemView::ButtonPressed(views::Button* sender) {
 // Load an icon for the file type we're downloading, and animate any in progress
 // download state.
 void DownloadItemView::Paint(gfx::Canvas* canvas) {
-  BodyImageSet* body_image_set;
+  BodyImageSet* body_image_set = NULL;
   switch (body_state_) {
     case NORMAL:
     case HOT:
@@ -459,7 +459,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
     default:
       NOTREACHED();
   }
-  DropDownImageSet* drop_down_image_set;
+  DropDownImageSet* drop_down_image_set = NULL;
   switch (drop_down_state_) {
     case NORMAL:
     case HOT:
