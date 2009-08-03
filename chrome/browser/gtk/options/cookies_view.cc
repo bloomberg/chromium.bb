@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/time_format.h"
 #include "chrome/browser/cookies_table_model.h"
-#include "chrome/common/gtk_tree_util.h"
+#include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -289,7 +289,7 @@ void CookiesView::PopulateCookieDetails() {
     NOTREACHED();
     return;
   }
-  int selected_index = gtk_tree_util::GetTreeSortChildRowNumForPath(
+  int selected_index = gtk_tree::GetTreeSortChildRowNumForPath(
         list_sort_, static_cast<GtkTreePath*>(list->data));
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
   g_list_free(list);
@@ -341,7 +341,7 @@ void CookiesView::RemoveSelectedCookies() {
   GList* node;
   size_t i;
   for (i = 0, node = list; node != NULL; ++i, node = node->next) {
-    selected_rows[i] = gtk_tree_util::GetTreeSortChildRowNumForPath(
+    selected_rows[i] = gtk_tree::GetTreeSortChildRowNumForPath(
         list_sort_, static_cast<GtkTreePath*>(node->data));
   }
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
@@ -423,8 +423,8 @@ void CookiesView::OnItemsRemoved(int start, int length) {
 // static
 gint CookiesView::CompareSite(GtkTreeModel* model, GtkTreeIter* a,
                                      GtkTreeIter* b, gpointer window) {
-  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
-  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
+  int row1 = gtk_tree::GetRowNumForIter(model, a);
+  int row2 = gtk_tree::GetRowNumForIter(model, b);
   return reinterpret_cast<CookiesView*>(window)->cookies_table_model_->
       CompareValues(row1, row2, IDS_COOKIES_DOMAIN_COLUMN_HEADER);
 }
@@ -432,8 +432,8 @@ gint CookiesView::CompareSite(GtkTreeModel* model, GtkTreeIter* a,
 // static
 gint CookiesView::CompareCookieName(GtkTreeModel* model, GtkTreeIter* a,
                                            GtkTreeIter* b, gpointer window) {
-  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
-  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
+  int row1 = gtk_tree::GetRowNumForIter(model, a);
+  int row2 = gtk_tree::GetRowNumForIter(model, b);
   return reinterpret_cast<CookiesView*>(window)->cookies_table_model_->
       CompareValues(row1, row2, IDS_COOKIES_NAME_COLUMN_HEADER);
 }

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_GTK_TREE_UTIL_H_
-#define CHROME_COMMON_GTK_TREE_UTIL_H_
+#ifndef CHROME_COMMON_GTK_TREE_H_
+#define CHROME_COMMON_GTK_TREE_H_
 
 #include <gtk/gtk.h>
 
-namespace gtk_tree_util {
+namespace gtk_tree {
 
 // Get the row number corresponding to |path|.
 gint GetRowNumForPath(GtkTreePath* path);
@@ -20,6 +20,6 @@ gint GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter);
 gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
                                    GtkTreePath* sort_path);
 
-}  // namespace gtk_tree_util
+}  // namespace gtk_tree
 
-#endif  // CHROME_COMMON_GTK_TREE_UTIL_H_
+#endif  // CHROME_COMMON_GTK_TREE_H_

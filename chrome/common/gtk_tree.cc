@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/gtk_tree_util.h"
+#include "chrome/common/gtk_tree.h"
 
 #include "base/logging.h"
 
-namespace gtk_tree_util {
+namespace gtk_tree {
 
 gint GetRowNumForPath(GtkTreePath* path) {
   gint* indices = gtk_tree_path_get_indices(path);
@@ -33,4 +33,4 @@ gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
   return row;
 }
 
-}  // namespace gtk_tree_util
+}  // namespace gtk_tree

@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
-#include "chrome/common/gtk_tree_util.h"
+#include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -133,7 +133,7 @@ void ExceptionsPageGtk::OnRemoveButtonClicked(GtkButton* widget,
 
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(page->exception_list_sort_), &iter);
-  gint index = gtk_tree_util::GetTreeSortChildRowNumForPath(
+  gint index = gtk_tree::GetTreeSortChildRowNumForPath(
       page->exception_list_sort_, path);
   gtk_tree_path_free(path);
 
@@ -178,8 +178,8 @@ void ExceptionsPageGtk::OnExceptionSelectionChanged(GtkTreeSelection* selection,
 gint ExceptionsPageGtk::CompareSite(GtkTreeModel* model,
                                    GtkTreeIter* a, GtkTreeIter* b,
                                    gpointer window) {
-  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
-  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
+  int row1 = gtk_tree::GetRowNumForIter(model, a);
+  int row2 = gtk_tree::GetRowNumForIter(model, b);
   ExceptionsPageGtk* page = reinterpret_cast<ExceptionsPageGtk*>(window);
   return page->exception_list_[row1].origin.spec().compare(
          page->exception_list_[row2].origin.spec());

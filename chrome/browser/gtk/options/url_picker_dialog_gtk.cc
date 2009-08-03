@@ -11,7 +11,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/possible_url_model.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/gtk_tree_util.h"
+#include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
@@ -177,8 +177,7 @@ void UrlPickerDialogGtk::EnableControls() {
 }
 
 std::string UrlPickerDialogGtk::GetURLForPath(GtkTreePath* path) const {
-  gint row = gtk_tree_util::GetTreeSortChildRowNumForPath(history_list_sort_,
-                                                          path);
+  gint row = gtk_tree::GetTreeSortChildRowNumForPath(history_list_sort_, path);
   if (row < 0) {
     NOTREACHED();
     return std::string();
@@ -253,8 +252,8 @@ gint UrlPickerDialogGtk::CompareTitle(GtkTreeModel* model,
                                       GtkTreeIter* a,
                                       GtkTreeIter* b,
                                       gpointer window) {
-  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
-  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
+  int row1 = gtk_tree::GetRowNumForIter(model, a);
+  int row2 = gtk_tree::GetRowNumForIter(model, b);
   return reinterpret_cast<UrlPickerDialogGtk*>(window)->url_table_model_->
       CompareValues(row1, row2, IDS_ASI_PAGE_COLUMN);
 }
@@ -264,8 +263,8 @@ gint UrlPickerDialogGtk::CompareURL(GtkTreeModel* model,
                                     GtkTreeIter* a,
                                     GtkTreeIter* b,
                                     gpointer window) {
-  int row1 = gtk_tree_util::GetRowNumForIter(model, a);
-  int row2 = gtk_tree_util::GetRowNumForIter(model, b);
+  int row1 = gtk_tree::GetRowNumForIter(model, a);
+  int row2 = gtk_tree::GetRowNumForIter(model, b);
   return reinterpret_cast<UrlPickerDialogGtk*>(window)->url_table_model_->
       CompareValues(row1, row2, IDS_ASI_URL_COLUMN);
 }
