@@ -34,6 +34,7 @@
  */
 
 #include <stdlib.h>
+#include <errno.h>
 
 #include "native_client/src/include/portability.h"
 

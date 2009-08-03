@@ -37,21 +37,16 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_HOST_DESC_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_HOST_DESC_H__
 
-#include <errno.h>
-
 #include "native_client/src/include/portability.h"
-#include "native_client/src/include/nacl_platform.h"
-#include "native_client/src/include/nacl_base.h"
-
 #include "native_client/src/trusted/platform/nacl_sync.h"
-
-#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 
 #if NACL_LINUX || NACL_OSX
 # include "native_client/src/trusted/platform/linux/nacl_host_desc_types.h"
 #elif NACL_WINDOWS
 # include "native_client/src/trusted/platform/win/nacl_host_desc_types.h"
 #endif
+
+
 
 /*
  * see NACL_MAP_PAGESIZE from nacl_config.h; map operations must be aligned
@@ -60,6 +55,7 @@
 EXTERN_C_BEGIN
 
 struct nacl_abi_stat;
+struct NaClHostDesc;
 
 static INLINE int NaClIsNegErrno(int val) {
   /*
@@ -242,25 +238,10 @@ extern int NaClHostDescStat(char const            *host_os_pathname,
 
 /*
  * should DCE away when unused.
+ * TODO: explain what this is good for
  */
-static INLINE int NaClProtMap(int abi_prot) {
-  int host_os_prot;
 
-  host_os_prot = 0;
-#define M(H) do { \
-    if (0 != (abi_prot & NACL_ABI_ ## H)) { \
-      host_os_prot |= H; \
-    } \
-  } while (0)
-  M(PROT_READ);
-  M(PROT_WRITE);
-  M(PROT_EXEC);
-#if PROT_NONE != 0
-# error "NaClProtMap:  PROT_NONE is not zero -- are mprotect flags bit values?"
-#endif
-  return host_os_prot;
-#undef M
-}
+extern int NaClProtMap(int abi_prot);
 
 EXTERN_C_END
 

@@ -33,12 +33,15 @@
  * NaCl Service Runtime.  I/O Descriptor / Handle abstraction.  Memory
  * mapping using descriptors.
  */
+#include <errno.h>
 
+#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/trusted/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/platform/nacl_log.h"
 
+#include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
 /*
@@ -387,4 +390,24 @@ struct NaClHostDesc *NaClHostDescPosixMake(int  posix_d,
             posix_d, mode);
   }
   return nhdp;
+}
+
+
+int NaClProtMap(int abi_prot) {
+  int host_os_prot;
+
+  host_os_prot = 0;
+#define M(H) do { \
+    if (0 != (abi_prot & NACL_ABI_ ## H)) { \
+      host_os_prot |= H; \
+    } \
+  } while (0)
+  M(PROT_READ);
+  M(PROT_WRITE);
+  M(PROT_EXEC);
+#if PROT_NONE != 0
+# error "NaClProtMap:  PROT_NONE is not zero -- are mprotect flags bit values?"
+#endif
+  return host_os_prot;
+#undef M
 }

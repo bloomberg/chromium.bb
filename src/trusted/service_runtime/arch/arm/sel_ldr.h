@@ -32,6 +32,8 @@
 #ifndef SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__
 #define SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__ 1
 
+#include "native_client/src/include/portability.h"
+
 #define NACL_MAX_ADDR_BITS      (26) /* mmap fails for 28 bits */
 
 #define NACL_THREAD_MAX         (1 << NACL_PAGESHIFT)
@@ -46,7 +48,8 @@ uint32_t NaClGetThreadIndex();
 uint32_t NaClGetUserTls();
 #endif
 
-struct NaClApp; /* fwd */
+struct NaClApp;
+struct NaClThreadContext;
 
 uint32_t NaClGetTlsThreadIdx(struct NaClThreadContext *user);
 
@@ -58,4 +61,3 @@ extern char NaClReadTP_start;
 extern char NaClReadTP_end;
 
 #endif /* SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__ */
-

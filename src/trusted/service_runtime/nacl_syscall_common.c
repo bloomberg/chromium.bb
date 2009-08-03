@@ -33,6 +33,9 @@
  * NaCl service run-time, non-platform specific system call helper routines.
  */
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/include/nacl_platform.h"
+
+
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
 #include "native_client/src/trusted/desc/nacl_desc_dir.h"
@@ -58,8 +61,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-
-
 
 
 static INLINE size_t  size_min(size_t a, size_t b) {

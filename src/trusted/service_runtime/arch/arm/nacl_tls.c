@@ -28,10 +28,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+#include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+
+
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 #define TLS_IDX_GET_ADDR(x)  (x & ~((1 << NACL_PAGESHIFT) - 1))
@@ -193,4 +197,3 @@ uint32_t NaClTlsChange(struct NaClAppThread *natp,
 
   return tls_idx;
 }
-
