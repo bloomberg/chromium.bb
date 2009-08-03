@@ -1,0 +1,66 @@
+<HTML>
+<HEAD>
+<TITLE></TITLE>
+<style type="text/css">
+ body,td,div,p,a,font,span {font-family: arial,sans-serif;}
+ body { bgcolor:"#ffffff" } 
+.gaia.le.button { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+</style>
+<script>
+    function advanceThrobber() {
+      var throbber = document.getElementById('throb');
+      throbber.style.backgroundPositionX =
+      ((parseInt(throbber.style.backgroundPositionX) - 16) % 576) + 'px';
+    }
+    
+    function acceptMergeAndSync() {
+     var throbber = document.getElementById('throbber_container');
+     throbber.style.display = "inline";
+     document.getElementById("acceptMerge").disabled = true;
+     chrome.send("SubmitMergeAndSync", [""]);
+    }
+       
+    function Close() {
+      chrome.send("DialogClose", [""]);
+    }
+    
+    function showMergeAndSyncDone() {
+     var throbber = document.getElementById('throbber_container');
+     throbber.style.display = "none";
+     document.getElementById("header").innerHTML =
+         "<font size='-1'><b>All done!</b></font>";
+     document.getElementById("close").value = "Close";
+     setTimeout(Close, 1600);
+    }
+</script>
+</HEAD>
+<BODY onload="setInterval(advanceThrobber, 30);">
+<p id="header"><font size="-1"><b>Your bookmarks will be merged.</b></font></p><br />
+<img src="merge_and_sync.png" alt="Merge and sync" />
+<br />
+<p><font size="-1">
+Your existing online bookmarks will be merged with the
+bookmarks on this machine. You can use the Bookmark Manager to organize
+your bookmarks after the merge.</font></p>
+<br />
+<table align="right">
+  <tr>
+    <td>
+      <div id="throbber_container" style="display:none">
+        <div id="throb" style="background-image:url(throbber.png);
+             width:16px; height:16px; background-position:0px;">
+        </div>
+      </div>
+    </td>
+    <td>
+      <input id="acceptMerge" type="button" class="gaia le button" name="accept"
+             value="Merge and sync"
+             onclick="acceptMergeAndSync();" />
+    </td>
+    <td>
+      <input id="close" type="button" value="Abort" onclick="Close();"/>
+    </td>
+  </tr>
+</table>
+</BODY>
+</HTML>

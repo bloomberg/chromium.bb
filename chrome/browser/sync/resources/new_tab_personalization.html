@@ -1,0 +1,117 @@
+<html>
+<head>
+<style type="text/css">
+body {
+  font-family:arial;
+  background-color:white;
+  font-size:80%;
+  margin:0px;
+}
+.section-title {
+  color:#000;
+  line-height:19pt;
+  font-size:95%;
+  font-weight:bold;
+  margin-bottom:4px;
+  margin-left: 0px;
+}
+a {
+  color:#0000cc;
+  white-space: nowrap;
+}
+.sidebar {
+  width: 207px;
+  padding:3px 10px 3px 9px;
+  -webkit-border-radius:5px 5px;
+  margin-bottom:10px;
+}
+</style>
+<script>
+function resizeFrame(newsize) {
+  chrome.send("ResizeP13N", [newsize.toString()]);
+}
+</script>
+</head>
+<body>
+<div id="sync" class="sidebar">
+  <table id="titletable" width="200" cellpadding="0" cellspacing="0"
+         style="display:none">
+    <tr>
+      <td id="messagetitle" align="left" class="section-title">
+      </td>
+      <td align="right">
+        <a href="#" onclick="resizeFrame(0);">
+          <img id="greenclose" src="close.png"/>
+        </a>
+      </td>
+    </tr>
+  </table>
+  <div id="syncContainer"></div>
+</div>
+<script>
+/* Return a DOM element with tag name |elem| and attributes |attrs|. */
+function DOM(elem, attrs) {
+  var elem = document.createElement(elem);
+  for (var attr in attrs) {
+    elem[attr] = attrs[attr];
+  }
+  return elem;
+}
+
+function renderSyncMessage(message) {
+  var section = document.getElementById('sync');
+  var container = document.getElementById('syncContainer');
+  var title = document.getElementById('messagetitle');
+  var titletable = document.getElementById('titletable');
+  container.innerHTML = '';
+  title.innerHTML = ''; 
+  titletable.style.display = "none";
+  section.style.display = "block";
+ 
+  /* Set the sync section background color. */
+  if (message.msgtype == "error") {
+    section.style.backgroundColor = "#f8d1ca";
+  } else if (message.msgtype == "presynced") {
+    section.style.backgroundColor = "#e0f8ca";
+  } else {
+    section.style.backgroundColor = "#e1ecfe";
+  }
+
+  if (message.msgtype != "synced") {
+    /* Any message except the status normal / synced to 
+       message requires extra markup for a title, close button,
+       and links. */    
+    var titletxt = document.createTextNode(message.title);
+    title.appendChild(titletxt);
+    titletable.style.display = "block";
+  }
+    
+  /* The main message of the sync section. */
+  var txt = DOM('p');
+  txt.style.margin = 0;
+  txt.appendChild(document.createTextNode(message.msg));
+  container.appendChild(txt);
+  
+  /* If we should show a link, create the href. */
+  if (message.linktext) { 
+    var link = DOM('a', { href:"#", title: message.linktext});
+    link.onclick = function(tt) {
+      return function() {
+        chrome.send("SyncLinkClicked", [tt]);
+        return false;
+      }
+    } (message.title);    
+    
+    /* Tie it together. */
+    link.appendChild(document.createTextNode(message.linktext));
+    container.appendChild(link);
+  }
+
+  /* Tell our container to resize to fit us appropriately. */
+  resizeFrame(document.body.scrollHeight); 
+}
+
+chrome.send("GetSyncMessage");
+</script>
+</body>
+</html>
