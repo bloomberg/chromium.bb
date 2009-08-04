@@ -100,6 +100,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   }
   MessageLoop* ui_loop() { return render_widget_helper_->ui_loop(); }
   bool off_the_record() { return off_the_record_; }
+  CallbackWithReturnValue<int>::Type* next_route_id_callback() {
+    return next_route_id_callback_.get();
+  }
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -319,7 +322,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   bool off_the_record_;
 
   // A callback to create a routing id for the associated renderer process.
-  CallbackWithReturnValue<int>::Type* next_route_id_;
+  scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

@@ -161,7 +161,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
           new DatabaseDispatcherHost(profile->GetPath(), this))),
       off_the_record_(profile->IsOffTheRecord()),
-      next_route_id_(NewCallbackWithReturnValue(
+      next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)) {
   DCHECK(request_context_.get());
   DCHECK(request_context_->cookie_store());
@@ -257,7 +257,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      mp_dispatcher->OnMessageReceived(msg, this, next_route_id_, &msg_is_ok);
+      mp_dispatcher->OnMessageReceived(
+          msg, this, next_route_id_callback(), &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.
