@@ -635,9 +635,9 @@ html[dir='rtl'] #view-toolbar {
   position: absolute;
   right: 0;
   left: auto;
-  top: 53px; /* Position this below the option button. The option button
-                is positioned 35px from the top and has a height of 17px. We add
-                one to get some spacing there as well: 35 + 17 + 1 = 53 */
+  top: 33px; /* Position this below the option button. The option button
+                is positioned 15px from the top and has a height of 17px. We add
+                one to get some spacing there as well: 15 + 17 + 1 = 33 */
   cursor: default;
   pointer-events: all;
   min-width: 175px;
