@@ -1,8 +1,19 @@
+#!/usr/bin/env python
+
+"""
+Test variable expansion of '<!()' syntax commands.
+"""
+
+import TestGyp
+
+test = TestGyp.TestGyp(format='gypd')
+
+expect = """\
 GENERAL: running with these options:
 GENERAL:   msvs_version: None
 GENERAL:   suffix: ''
 GENERAL:   includes: None
-GENERAL:   depth: '..'
+GENERAL:   depth: '.'
 GENERAL:   generator_flags: []
 GENERAL:   formats: ['gypd']
 GENERAL:   debug: ['variables', 'general']
@@ -43,7 +54,7 @@ VARIABLES: Expanding '<(var4)' to 'ABCD'
 VARIABLES: Expanding '<(_outputs)' to 'ABCD'
 VARIABLES: Expanding '3.14159265359 ABCD' to '3.14159265359 ABCD'
 VARIABLES: Expanding 'ABCD' to 'ABCD'
-VARIABLES: Expanding 'test1.gyp' to 'test1.gyp'
+VARIABLES: Expanding 'commands.gyp' to 'commands.gyp'
 VARIABLES: Expanding 'ABCD' to 'ABCD'
 VARIABLES: Expanding '3.14159265359' to '3.14159265359'
 VARIABLES: Expanding 'ABCD' to 'ABCD'
@@ -56,3 +67,12 @@ VARIABLES: Expanding '"3.14159265359 ABCD"' to '"3.14159265359 ABCD"'
 VARIABLES: Expanding 'ABCD' to 'ABCD'
 VARIABLES: Expanding '3.14159265359 ABCD' to '3.14159265359 ABCD'
 VARIABLES: Expanding 'ABCD' to 'ABCD'
+"""
+
+test.run_gyp('commands.gyp',
+             '--debug', 'variables', '--debug', 'general',
+             stdout=expect)
+
+test.must_match('commands.gypd', test.read('commands.gypd.golden'))
+
+test.pass_test()

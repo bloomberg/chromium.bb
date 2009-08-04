@@ -156,6 +156,14 @@ class TestGypBase(TestCommon.TestCommon):
     raise NotImplementeError
 
 
+class TestGypGypd(TestGypBase):
+  """
+  Subclass for testing the GYP 'gypd' generator (spit out the
+  internal data structure as pretty-printed Python).
+  """
+  format = 'gypd'
+
+
 class TestGypMake(TestGypBase):
   """
   Subclass for testing the GYP Make generator.
@@ -349,6 +357,7 @@ class TestGypXcode(TestGypBase):
 
 
 format_class_list = [
+  TestGypGypd,
   TestGypMake,
   TestGypMSVS,
   TestGypSCons,
@@ -360,7 +369,9 @@ def TestGyp(*args, **kw):
   Returns an appropriate TestGyp* instance for a specified GYP format.
   """
   format = kw.get('format')
-  if not format:
+  if format:
+    del kw['format']
+  else:
     format = os.environ.get('TESTGYP_FORMAT')
   for format_class in format_class_list:
     if format == format_class.format:

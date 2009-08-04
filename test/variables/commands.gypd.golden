@@ -1,4 +1,4 @@
-{'included_files': ['test1.gyp'],
+{'included_files': ['commands.gyp'],
  'targets': [{'actions': [{'action': ['echo',
                                       '"3.14159265359 ABCD"',
                                       'ABCD'],
