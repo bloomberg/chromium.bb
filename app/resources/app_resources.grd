@@ -12,26 +12,40 @@
 
       <include name="IDR_DEFAULT_FAVICON" file="default_favicon.png" type="BINDATA" />
 
-      <!-- Window Controls -->
-      <include name="IDR_CLOSE" file="close.png" type="BINDATA" />
-      <include name="IDR_CLOSE_H" file="close_h.png" type="BINDATA" />
-      <include name="IDR_CLOSE_P" file="close_p.png" type="BINDATA" />
-      <include name="IDR_CLOSE_SA" file="close_sa.png" type="BINDATA" />
-      <include name="IDR_CLOSE_SA_H" file="close_sa_h.png" type="BINDATA" />
-      <include name="IDR_CLOSE_SA_P" file="close_sa_p.png" type="BINDATA" />
-      <include name="IDR_RESTORE" file="restore.png" type="BINDATA" />
-      <include name="IDR_RESTORE_H" file="restore_h.png" type="BINDATA" />
-      <include name="IDR_RESTORE_P" file="restore_p.png" type="BINDATA" />
-      <include name="IDR_MAXIMIZE" file="maximize.png" type="BINDATA" />
-      <include name="IDR_MAXIMIZE_H" file="maximize_h.png" type="BINDATA" />
-      <include name="IDR_MAXIMIZE_P" file="maximize_p.png" type="BINDATA" />
-      <include name="IDR_MINIMIZE" file="minimize.png" type="BINDATA" />
-      <include name="IDR_MINIMIZE_H" file="minimize_h.png" type="BINDATA" />
-      <include name="IDR_MINIMIZE_P" file="minimize_p.png" type="BINDATA" />
+      <if expr="os == 'win32'">
+        <!-- Window controls for Windows, in the style of Vista -->
+        <include name="IDR_CLOSE" file="close.png" type="BINDATA" />
+        <include name="IDR_CLOSE_H" file="close_h.png" type="BINDATA" />
+        <include name="IDR_CLOSE_P" file="close_p.png" type="BINDATA" />
+        <include name="IDR_CLOSE_SA" file="close_sa.png" type="BINDATA" />
+        <include name="IDR_CLOSE_SA_H" file="close_sa_h.png" type="BINDATA" />
+        <include name="IDR_CLOSE_SA_P" file="close_sa_p.png" type="BINDATA" />
+        <include name="IDR_RESTORE" file="restore.png" type="BINDATA" />
+        <include name="IDR_RESTORE_H" file="restore_h.png" type="BINDATA" />
+        <include name="IDR_RESTORE_P" file="restore_p.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE" file="maximize.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE_H" file="maximize_h.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE_P" file="maximize_p.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE" file="minimize.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE_H" file="minimize_h.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE_P" file="minimize_p.png" type="BINDATA" />
+      </if>
 
-      <include name="IDR_LINUX_CLOSE" file="linux_close.png" type="BINDATA" />
-      <include name="IDR_LINUX_CLOSE_H" file="linux_close.png" type="BINDATA" />
-      <include name="IDR_LINUX_CLOSE_P" file="linux_close.png" type="BINDATA" />
+      <if expr="os == 'linux2'">
+        <!-- Window controls for Linux, in the style of Metacity -->
+        <include name="IDR_CLOSE" file="linux_close.png" type="BINDATA" />
+        <include name="IDR_CLOSE_H" file="linux_close_h.png" type="BINDATA" />
+        <include name="IDR_CLOSE_P" file="linux_close_p.png" type="BINDATA" />
+        <include name="IDR_RESTORE" file="linux_restore.png" type="BINDATA" />
+        <include name="IDR_RESTORE_H" file="linux_restore_h.png" type="BINDATA" />
+        <include name="IDR_RESTORE_P" file="linux_restore_p.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE" file="linux_maximize.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE_H" file="linux_maximize_h.png" type="BINDATA" />
+        <include name="IDR_MAXIMIZE_P" file="linux_maximize_p.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE" file="linux_minimize.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE_H" file="linux_minimize_h.png" type="BINDATA" />
+        <include name="IDR_MINIMIZE_P" file="linux_minimize_p.png" type="BINDATA" />
+      </if>
 
       <!-- Frame Images -->
       <include name="IDR_FRAME" file="frame_default.png" type="BINDATA" />
