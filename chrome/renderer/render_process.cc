@@ -154,7 +154,11 @@ skia::PlatformCanvas* RenderProcess::GetDrawingCanvas(
   int width = rect.width();
   int height = rect.height();
   const size_t stride = skia::PlatformCanvas::StrideForWidth(rect.width());
+#if defined(OS_LINUX)
   const size_t max_size = base::SysInfo::MaxSharedMemorySize();
+#else
+  const size_t max_size = 0;
+#endif
 
   // If the requested size is too big, reduce the height. Ideally we might like
   // to reduce the width as well to make the size reduction more "balanced", but
