@@ -529,8 +529,7 @@ gboolean BrowserToolbarGtk::OnToolbarExpose(GtkWidget* widget,
 gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
                                                  GdkEventExpose* e,
                                                  BrowserToolbarGtk* toolbar) {
-  if (toolbar->theme_provider_->UseGtkTheme() &&
-      !toolbar->ShouldOnlyShowLocation()) {
+  if (toolbar->theme_provider_->UseGtkTheme()) {
     // To get the proper look surrounding the location bar, we issue raw gtk
     // painting commands to the theme engine. We figure out the region from the
     // leftmost widget to the rightmost and then tell GTK to perform the same
@@ -538,7 +537,10 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
     GtkWidget* star = toolbar->star_->widget();
     GtkWidget* left = NULL;
     GtkWidget* right = NULL;
-    if (gtk_widget_get_direction(star) == GTK_TEXT_DIR_LTR) {
+    if (toolbar->ShouldOnlyShowLocation()) {
+      left = location_hbox;
+      right = location_hbox;
+    } else if (gtk_widget_get_direction(star) == GTK_TEXT_DIR_LTR) {
       left = toolbar->star_->widget();
       right = toolbar->go_->widget();
     } else {
