@@ -538,8 +538,8 @@ JumpList::~JumpList() {
 // static
 bool JumpList::Enabled() {
   return (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7 &&
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableCustomJumpList));
+          !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableCustomJumpList));
 }
 
 bool JumpList::AddObserver(Profile* profile) {

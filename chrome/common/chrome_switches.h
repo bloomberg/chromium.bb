@@ -216,7 +216,7 @@ extern const wchar_t kAllowSandboxDebugging[];
 
 extern const wchar_t kDiagnostics[];
 
-extern const wchar_t kEnableCustomJumpList[];
+extern const wchar_t kDisableCustomJumpList[];
 
 extern const wchar_t kGoogleInternalCrashReporting[];
 

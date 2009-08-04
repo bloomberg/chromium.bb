@@ -556,8 +556,8 @@ const wchar_t kAllowSandboxDebugging[] = L"allow-sandbox-debugging";
 // Triggers a pletora of diagnostic modes.
 const wchar_t kDiagnostics[] = L"diagnostics";
 
-// Enables the custom JumpList on Windows 7.
-const wchar_t kEnableCustomJumpList[] = L"enable-custom-jumplist";
+// Disables the custom JumpList on Windows 7.
+const wchar_t kDisableCustomJumpList[] = L"disable-custom-jumplist";
 
 // Enables full core dump reporting for Googlers only (Linux only).
 const wchar_t kGoogleInternalCrashReporting[] =

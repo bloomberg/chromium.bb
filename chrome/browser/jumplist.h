@@ -121,7 +121,7 @@ class JumpList : public TabRestoreService::Observer {
   // Returns true if the custom JumpList is enabled.
   // We use the custom JumpList when we satisfy the following conditions:
   // * Chromium is running on Windows 7 and;
-  // * Chromium is lauched with an "--enable-custom-jumplist" option.
+  // * Chromium is lauched without a "--disable-custom-jumplist" option.
   // TODO(hbono): to be enabled by default when we finalize the categories and
   // items of our JumpList.
   static bool Enabled();
