@@ -84,7 +84,8 @@ RenderProcessHost::RenderProcessHost(Profile* profile)
     : max_page_id_(-1),
       pid_(-1),
       profile_(profile),
-      sudden_termination_allowed_(true) {
+      sudden_termination_allowed_(true),
+      ignore_input_events_(false) {
   all_hosts.set_check_on_null_data(true);
 }
 

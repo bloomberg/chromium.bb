@@ -100,6 +100,13 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // initialize a new renderer in place of the current one.
   void UpdateMaxPageID(int32 page_id);
 
+  void set_ignore_input_events(bool ignore_input_events) {
+    ignore_input_events_ = ignore_input_events;
+  }
+  bool ignore_input_events() {
+    return ignore_input_events_;
+  }
+
   // Virtual interface ---------------------------------------------------------
 
   // Initialize the new renderer process, returning true on success. This must
@@ -241,6 +248,10 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // if one tab has an unload event listener but another tab in the same process
   // doesn't.
   bool sudden_termination_allowed_;
+
+  // Set to true if we shouldn't send input events.  We actually do the
+  // filtering for this at the render widget level.
+  bool ignore_input_events_;
 
   // See getter above.
   static bool run_renderer_in_process_;

@@ -561,6 +561,7 @@ void RenderViewHost::CaptureThumbnail() {
 void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
                                                 bool success,
                                                 const std::wstring& prompt) {
+  process()->set_ignore_input_events(false);
   if (is_waiting_for_unload_ack_) {
     if (are_javascript_messages_suppressed_) {
       delegate_->RendererUnresponsive(this, is_waiting_for_unload_ack_);
@@ -1266,6 +1267,9 @@ void RenderViewHost::OnMsgRunJavaScriptMessage(
     const GURL& frame_url,
     const int flags,
     IPC::Message* reply_msg) {
+  // While a JS message dialog is showing, tabs in the same process shouldn't
+  // process input events.
+  process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
   SignalModalDialogEvent();
   delegate_->RunJavaScriptMessage(message, default_prompt, frame_url, flags,
@@ -1276,6 +1280,9 @@ void RenderViewHost::OnMsgRunJavaScriptMessage(
 void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
                                                  const std::wstring& message,
                                                  IPC::Message* reply_msg) {
+  // While a JS before unload dialog is showing, tabs in the same process
+  // shouldn't process input events.
+  process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
   SignalModalDialogEvent();
   delegate_->RunBeforeUnloadConfirm(message, reply_msg);

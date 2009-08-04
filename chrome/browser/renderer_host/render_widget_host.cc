@@ -345,6 +345,9 @@ void RenderWidgetHost::SystemThemeChanged() {
 }
 
 void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
+  if (process_->ignore_input_events())
+    return;
+
   // Avoid spamming the renderer with mouse move events.  It is important
   // to note that WM_MOUSEMOVE events are anyways synthetic, but since our
   // thread is able to rapidly consume WM_MOUSEMOVE events, we may get way
@@ -364,11 +367,17 @@ void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
 
 void RenderWidgetHost::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
+  if (process_->ignore_input_events())
+    return;
+
   ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent));
 }
 
 void RenderWidgetHost::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
+  if (process_->ignore_input_events())
+    return;
+
   if (key_event.type == WebKeyboardEvent::Char &&
       (key_event.windowsKeyCode == base::VKEY_RETURN ||
        key_event.windowsKeyCode == base::VKEY_SPACE)) {
@@ -397,6 +406,8 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
                                          int event_size) {
   if (!process_->HasConnection())
     return;
+
+  DCHECK(!process_->ignore_input_events());
 
   IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id_);
   message->WriteData(
