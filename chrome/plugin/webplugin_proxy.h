@@ -121,6 +121,8 @@ class WebPluginProxy : public WebPlugin {
                                 bool notify_needed,
                                 intptr_t notify_data);
 
+  void SetDeferResourceLoading(int resource_id, bool defer);
+
   bool IsOffTheRecord();
 
   void ResourceClientDeleted(WebPluginResourceClient* resource_client);

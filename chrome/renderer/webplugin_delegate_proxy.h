@@ -143,6 +143,7 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
                                   intptr_t existing_stream,
                                   bool notify_needed,
                                   intptr_t notify_data);
+  void OnDeferResourceLoading(int resource_id, bool defer);
 
   // Draw a graphic indicating a crashed plugin.
   void PaintSadPlugin(gfx::NativeDrawingContext context, const gfx::Rect& rect);

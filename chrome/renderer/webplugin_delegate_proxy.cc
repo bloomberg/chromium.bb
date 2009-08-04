@@ -100,8 +100,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
                           const std::string& headers,
                           uint32 expected_length,
                           uint32 last_modified,
-                          bool request_is_seekable,
-                          bool* cancel) {
+                          bool request_is_seekable) {
     DCHECK(channel_ != NULL);
     PluginMsg_DidReceiveResponseParams params;
     params.id = resource_id_;
@@ -113,8 +112,7 @@ class ResourceClientProxy : public WebPluginResourceClient {
     // Grab a reference on the underlying channel so it does not get
     // deleted from under us.
     scoped_refptr<PluginChannelHost> channel_ref(channel_);
-    channel_->Send(new PluginMsg_DidReceiveResponse(instance_id_, params,
-                                                    cancel));
+    channel_->Send(new PluginMsg_DidReceiveResponse(instance_id_, params));
   }
 
   void DidReceiveData(const char* buffer, int length, int data_offset) {
@@ -381,6 +379,8 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelDocumentLoad, OnCancelDocumentLoad)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InitiateHTTPRangeRequest,
                         OnInitiateHTTPRangeRequest)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_DeferResourceLoading,
+                        OnDeferResourceLoading)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -984,4 +984,9 @@ void WebPluginDelegateProxy::OnInitiateHTTPRangeRequest(
   plugin_->InitiateHTTPRangeRequest(url.c_str(), range_info.c_str(),
                                     existing_stream, notify_needed,
                                     notify_data);
+}
+
+void WebPluginDelegateProxy::OnDeferResourceLoading(int resource_id,
+                                                    bool defer) {
+  plugin_->SetDeferResourceLoading(resource_id, defer);
 }

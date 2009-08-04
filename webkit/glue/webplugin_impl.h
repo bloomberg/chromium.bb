@@ -41,6 +41,7 @@ class Widget;
 
 namespace WebKit {
 class WebURLResponse;
+class WebURLLoader;
 }
 
 namespace webkit_glue {
@@ -264,9 +265,6 @@ class WebPluginImpl : public WebPlugin,
   virtual void didFinishLoading(WebKit::WebURLLoader* loader);
   virtual void didFail(WebKit::WebURLLoader* loader, const WebKit::WebURLError&);
 
-  // Helper function
-  WebPluginResourceClient* GetClientFromLoader(WebKit::WebURLLoader* loader);
-
   // Helper function to remove the stored information about a resource
   // request given its index in m_clients.
   void RemoveClient(size_t i);
@@ -296,6 +294,8 @@ class WebPluginImpl : public WebPlugin,
   void InitiateHTTPRangeRequest(const char* url, const char* range_info,
                                 intptr_t existing_stream, bool notify_needed,
                                 intptr_t notify_data);
+
+  void SetDeferResourceLoading(int resource_id, bool defer);
 
   // Ignore in-process plugins mode for this flag.
   bool IsOffTheRecord() { return false; }
@@ -332,6 +332,10 @@ class WebPluginImpl : public WebPlugin,
     WebKit::WebURLRequest request;
     linked_ptr<WebKit::WebURLLoader> loader;
   };
+
+  // Helper functions
+  WebPluginResourceClient* GetClientFromLoader(WebKit::WebURLLoader* loader);
+  ClientInfo* GetClientInfoFromLoader(WebKit::WebURLLoader* loader);
 
   std::vector<ClientInfo> clients_;
 

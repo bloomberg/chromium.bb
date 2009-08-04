@@ -119,6 +119,9 @@ class MultiPartResponseClient : public WebURLLoaderClient {
   // Receives individual part data from a multipart response.
   virtual void didReceiveData(
       WebURLLoader*, const char* data, int data_size, long long) {
+    // TODO(ananta)
+    // We should defer further loads on multipart resources on the same lines
+    // as regular resources requested by plugins to prevent reentrancy.
     resource_client_->DidReceiveData(
         data, data_size, byte_range_lower_bound_);
   }
@@ -475,6 +478,7 @@ void WebPluginImpl::CancelResource(int id) {
   for (size_t i = 0; i < clients_.size(); ++i) {
     if (clients_[i].id == id) {
       if (clients_[i].loader.get()) {
+        clients_[i].loader->setDefersLoading(false);
         clients_[i].loader->cancel();
         RemoveClient(i);
       }
@@ -911,15 +915,22 @@ NPObject* WebPluginImpl::GetPluginScriptableObject() {
 
 WebPluginResourceClient* WebPluginImpl::GetClientFromLoader(
     WebURLLoader* loader) {
+  ClientInfo* client_info = GetClientInfoFromLoader(loader);
+  if (client_info)
+    return client_info->client;
+  return NULL;
+}
+
+WebPluginImpl::ClientInfo* WebPluginImpl::GetClientInfoFromLoader(
+    WebURLLoader* loader) {
   for (size_t i = 0; i < clients_.size(); ++i) {
     if (clients_[i].loader.get() == loader)
-      return clients_[i].client;
+      return &clients_[i];
   }
 
   NOTREACHED();
   return 0;
 }
-
 
 void WebPluginImpl::willSendRequest(WebURLLoader* loader,
                                     WebURLRequest& request,
@@ -995,17 +1006,17 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
     }
   }
 
+  // Calling into a plugin could result in reentrancy if the plugin yields
+  // control to the OS like entering a modal loop etc. Prevent this by
+  // stopping further loading until the plugin notifies us that it is ready to
+  // accept data
+  loader->setDefersLoading(true);
+
   client->DidReceiveResponse(
       base::SysWideToNativeMB(http_response_info.mime_type),
       base::SysWideToNativeMB(GetAllHeaders(resource_response)),
       http_response_info.expected_length,
-      http_response_info.last_modified, request_is_seekable, &cancel);
-
-  if (cancel) {
-    loader->cancel();
-    RemoveClient(loader);
-    return;
-  }
+      http_response_info.last_modified, request_is_seekable);
 
   // Bug http://b/issue?id=925559. The flash plugin would not handle the HTTP
   // error codes in the stream header and as a result, was unaware of the
@@ -1041,15 +1052,16 @@ void WebPluginImpl::didReceiveData(WebURLLoader* loader,
     DCHECK(multi_part_handler != NULL);
     multi_part_handler->OnReceivedData(buffer, length);
   } else {
+    loader->setDefersLoading(true);
     client->DidReceiveData(buffer, length, 0);
   }
 }
 
 void WebPluginImpl::didFinishLoading(WebURLLoader* loader) {
-  WebPluginResourceClient* client = GetClientFromLoader(loader);
-  if (client) {
+  ClientInfo* client_info = GetClientInfoFromLoader(loader);
+  if (client_info && client_info->client) {
     MultiPartResponseHandlerMap::iterator index =
-        multi_part_response_map_.find(client);
+      multi_part_response_map_.find(client_info->client);
     if (index != multi_part_response_map_.end()) {
       delete (*index).second;
       multi_part_response_map_.erase(index);
@@ -1057,19 +1069,24 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader) {
       WebView* web_view = webframe_->GetView();
       web_view->GetDelegate()->DidStopLoading(web_view);
     }
-    client->DidFinishLoading();
+    loader->setDefersLoading(true);
+    client_info->client->DidFinishLoading();
+    // The WebPluginResourceClient pointer gets deleted soon after a call to
+    // DidFinishLoading.
+    client_info->client = NULL;
   }
-
-  RemoveClient(loader);
 }
 
 void WebPluginImpl::didFail(WebURLLoader* loader,
                             const WebURLError&) {
-  WebPluginResourceClient* client = GetClientFromLoader(loader);
-  if (client)
-    client->DidFail();
-
-  RemoveClient(loader);
+  ClientInfo* client_info = GetClientInfoFromLoader(loader);
+  if (client_info && client_info->client) {
+    loader->setDefersLoading(true);
+    client_info->client->DidFail();
+    // The WebPluginResourceClient pointer gets deleted soon after a call to
+    // DidFinishLoading.
+    client_info->client = NULL;
+  }
 }
 
 void WebPluginImpl::RemoveClient(size_t i) {
@@ -1286,9 +1303,21 @@ void WebPluginImpl::InitiateHTTPRangeRequest(const char* url,
                       GURL(complete_url_string), range_info, true);
 }
 
+void WebPluginImpl::SetDeferResourceLoading(int resource_id, bool defer) {
+  std::vector<ClientInfo>::iterator client_index = clients_.begin();
+  while (client_index != clients_.end()) {
+    ClientInfo& client_info = *client_index;
+
+    if (client_info.id == resource_id) {
+      client_info.loader->setDefersLoading(defer);
+      break;
+    }
+    client_index++;
+  }
+}
+
 void WebPluginImpl::HandleHttpMultipartResponse(
-    const WebURLResponse& response,
-    WebPluginResourceClient* client) {
+    const WebURLResponse& response, WebPluginResourceClient* client) {
   std::string multipart_boundary;
   if (!MultipartResponseDelegate::ReadMultipartBoundary(
           response, &multipart_boundary)) {

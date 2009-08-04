@@ -28,8 +28,18 @@ class ExecuteGetJavascriptUrlTest : public PluginTest {
   virtual void    URLNotify(const char* url, NPReason reason, void* data);
 
  private:
+#if defined(OS_WIN)
+  static void CALLBACK TimerProc(HWND window, UINT message, UINT timer_id,
+                                 unsigned long elapsed_time);
+#endif
   bool test_started_;
+  // This flag is set to true in the context of the NPN_Evaluate call.
+  bool npn_evaluate_context_;
   std::string self_url_;
+
+#if defined(OS_WIN)
+  HWND window_;
+#endif
 };
 
 } // namespace NPAPIClient

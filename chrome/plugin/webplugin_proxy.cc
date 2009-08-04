@@ -287,8 +287,10 @@ WebPluginProxy* WebPluginProxy::FromCPBrowsingContext(
 
 WebPluginResourceClient* WebPluginProxy::GetResourceClient(int id) {
   ResourceClientMap::iterator iterator = resource_clients_.find(id);
+  // The IPC messages which deal with streams are now asynchronous. It is
+  // now possible to receive stream messages from the renderer for streams
+  // which may have been cancelled by the plugin.
   if (iterator == resource_clients_.end()) {
-    NOTREACHED();
     return NULL;
   }
 
@@ -651,6 +653,10 @@ void WebPluginProxy::InitiateHTTPRangeRequest(const char* url,
   Send(new PluginHostMsg_InitiateHTTPRangeRequest(route_id_, url,
                                                   range_info, existing_stream,
                                                   notify_needed, notify_data));
+}
+
+void WebPluginProxy::SetDeferResourceLoading(int resource_id, bool defer) {
+  Send(new PluginHostMsg_DeferResourceLoading(route_id_, resource_id, defer));
 }
 
 void WebPluginProxy::OnPaint(const gfx::Rect& damaged_rect) {
