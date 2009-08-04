@@ -32,8 +32,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/springboard.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
 
 /*
  * A sanity check -- should be invoked in some early function, e.g.,
@@ -133,4 +134,31 @@ void NaClLoadTlsHook(struct NaClApp *nap) {
   CHECK(patch_info.nbytes <= NACL_SYSCALL_BLOCK_SIZE);
 
   NaClApplyPatchToMemory(&patch_info);
+}
+
+void  NaClLoadSpringboard(struct NaClApp  *nap) {
+  /*
+   * patch in springboard.S code into space in place of
+   * the last syscall in the trampoline region.
+   */
+  struct NaClPatchInfo  patch_info;
+  struct NaClPatch      abs32;
+
+  patch_info.rel32 = 0;
+  patch_info.num_rel32 = 0;
+  patch_info.abs32 = &abs32;
+  patch_info.num_abs32 = 0;
+  patch_info.abs16 = 0;
+  patch_info.num_abs16 = 0;
+
+  nap->springboard_addr = NACL_TRAMPOLINE_END - nap->align_boundary;
+
+  patch_info.dst = nap->mem_start + nap->springboard_addr;
+  patch_info.src = (uintptr_t) &NaCl_springboard;
+  patch_info.nbytes = ((uintptr_t) &NaCl_springboard_end
+                       - (uintptr_t) &NaCl_springboard);
+
+  NaClApplyPatchToMemory(&patch_info);
+
+  nap->springboard_addr += NACL_HALT_LEN; /* skip the hlt */
 }

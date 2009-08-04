@@ -33,8 +33,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_asm_symbols.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/springboard.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
 #include "gen/src/trusted/service_runtime/arch/x86/tramp_data.h"
 /*
  * A sanity check -- should be invoked in some early function, e.g.,
@@ -111,4 +112,31 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
                                          page_pad);
 
   nap->text_region_bytes += page_pad;
+}
+
+void  NaClLoadSpringboard(struct NaClApp  *nap) {
+  /*
+   * patch in springboard.S code into space in place of
+   * the last syscall in the trampoline region.
+   */
+  struct NaClPatchInfo  patch_info;
+  struct NaClPatch      abs32;
+
+  patch_info.rel32 = 0;
+  patch_info.num_rel32 = 0;
+  patch_info.abs32 = &abs32;
+  patch_info.num_abs32 = 0;
+  patch_info.abs16 = 0;
+  patch_info.num_abs16 = 0;
+
+  nap->springboard_addr = NACL_TRAMPOLINE_END - nap->align_boundary;
+
+  patch_info.dst = nap->mem_start + nap->springboard_addr;
+  patch_info.src = (uintptr_t) &NaCl_springboard;
+  patch_info.nbytes = ((uintptr_t) &NaCl_springboard_end
+                       - (uintptr_t) &NaCl_springboard);
+
+  NaClApplyPatchToMemory(&patch_info);
+
+  nap->springboard_addr += NACL_HALT_LEN; /* skip the hlt */
 }
