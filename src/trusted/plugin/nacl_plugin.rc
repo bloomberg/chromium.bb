@@ -73,7 +73,7 @@ BEGIN
             VALUE "FileVersion", "1, 0, 0, 1"
             VALUE "InternalName", "nacl_plugin"
             VALUE "LegalCopyright", "Copyright (C) 2007, 2008"
-            VALUE "MIMEType", "application/x-nacl-srpc|application/x-nacl-npapi"
+            VALUE "MIMEType", "application/x-nacl-srpc"
             VALUE "OriginalFilename", "nacl_plugin.dll"
             VALUE "ProductName", "NativeClient Execution Environment"
             VALUE "ProductVersion", "1, 0, 0, 1"
