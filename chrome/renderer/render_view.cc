@@ -1283,6 +1283,26 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
                         replace);
 }
 
+void RenderView::DidReceiveDocumentData(WebFrame* frame, const char* data,
+                                        size_t data_len) {
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->GetDataSource());
+  if (!navigation_state->postpone_loading_data()) {
+    frame->CommitDocumentData(data, data_len);
+    return;
+  }
+
+  // Continue buffering the response data for the original 404 page.  If it
+  // grows too large, then we'll just let it through.
+  navigation_state->append_postponed_data(data, data_len);
+  if (navigation_state->postponed_data().size() >= 512) {
+    navigation_state->set_postpone_loading_data(false);
+    frame->CommitDocumentData(navigation_state->postponed_data().data(),
+                              navigation_state->postponed_data().size());
+    navigation_state->clear_postponed_data();
+  }
+}
+
 void RenderView::DidCommitLoadForFrame(WebView *webview, WebFrame* frame,
                                        bool is_new_navigation) {
   NavigationState* navigation_state =
@@ -1442,31 +1462,81 @@ void RenderView::WillSubmitForm(WebView* webview, WebFrame* frame,
   }
 }
 
-void RenderView::WillSendRequest(WebView* webview,
-                                 uint32 identifier,
+void RenderView::WillSendRequest(WebFrame* frame, uint32 identifier,
                                  WebURLRequest* request) {
   request->setRequestorID(routing_id_);
 }
 
-void RenderView::BindDOMAutomationController(WebFrame* webframe) {
+void RenderView::DidReceiveResponse(WebFrame* frame, uint32 identifier,
+                                    const WebURLResponse& response) {
+  // Consider loading an alternate error page for 404 responses.
+  if (response.httpStatusCode() != 404)
+    return;
+
+  // Only do this for responses that correspond to a provisional data source
+  // of the top-most frame.  If we have a provisional data source, then we
+  // can't have any sub-resources yet, so we know that this response must
+  // correspond to a frame load.
+  if (!frame->GetProvisionalDataSource() || frame->GetParent())
+    return;
+
+  // If we are in view source mode, then just let the user see the source of
+  // the server's 404 error page.
+  if (frame->GetInViewSourceMode())
+    return;
+
+  // Can we even load an alternate error page for this URL?
+  if (!GetAlternateErrorPageURL(response.url(), HTTP_404).is_valid())
+    return;
+
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->GetProvisionalDataSource());
+  navigation_state->set_postpone_loading_data(true);
+  navigation_state->clear_postponed_data();
+}
+
+void RenderView::DidFinishLoading(WebFrame* frame, uint32 identifier) {
+  NavigationState* navigation_state =
+      NavigationState::FromDataSource(frame->GetDataSource());
+  if (!navigation_state->postpone_loading_data())
+    return;
+
+  // The server returned a 404 and the content was < 512 bytes (which we
+  // suppressed).  Go ahead and fetch the alternate page content.
+
+  const GURL& frame_url = frame->GetURL();
+
+  const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
+  DCHECK(error_page_url.is_valid());
+
+  WebURLError original_error;
+  original_error.unreachableURL = frame_url;
+
+  navigation_state->set_alt_error_page_fetcher(
+      new AltErrorPageResourceFetcher(
+          error_page_url, frame, original_error,
+          NewCallback(this, &RenderView::AltErrorPageFinished)));
+}
+
+void RenderView::BindDOMAutomationController(WebFrame* frame) {
   dom_automation_controller_.set_message_sender(this);
   dom_automation_controller_.set_routing_id(routing_id_);
-  dom_automation_controller_.BindToJavascript(webframe,
+  dom_automation_controller_.BindToJavascript(frame,
                                               L"domAutomationController");
 }
 
-void RenderView::WindowObjectCleared(WebFrame* webframe) {
+void RenderView::WindowObjectCleared(WebFrame* frame) {
   if (BindingsPolicy::is_dom_automation_enabled(enabled_bindings_))
-    BindDOMAutomationController(webframe);
+    BindDOMAutomationController(frame);
   if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
     dom_ui_bindings_.set_message_sender(this);
     dom_ui_bindings_.set_routing_id(routing_id_);
-    dom_ui_bindings_.BindToJavascript(webframe, L"chrome");
+    dom_ui_bindings_.BindToJavascript(frame, L"chrome");
   }
   if (BindingsPolicy::is_external_host_enabled(enabled_bindings_)) {
     external_host_bindings_.set_message_sender(this);
     external_host_bindings_.set_routing_id(routing_id_);
-    external_host_bindings_.BindToJavascript(webframe, L"externalHost");
+    external_host_bindings_.BindToJavascript(frame, L"externalHost");
   }
 }
 
@@ -2113,9 +2183,9 @@ void RenderView::OnGetApplicationInfo(int page_id) {
   Send(new ViewHostMsg_DidGetApplicationInfo(routing_id_, page_id, app_info));
 }
 
-GURL RenderView::GetAlternateErrorPageURL(const GURL& failedURL,
+GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
                                           ErrorPageType error_type) {
-  if (failedURL.SchemeIsSecure()) {
+  if (failed_url.SchemeIsSecure()) {
     // If the URL that failed was secure, then the embedding web page was not
     // expecting a network attacker to be able to manipulate its contents.  As
     // we fetch alternate error pages over HTTP, we would be allowing a network
@@ -2134,7 +2204,7 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failedURL,
   remove_params.ClearPassword();
   remove_params.ClearQuery();
   remove_params.ClearRef();
-  const GURL url_to_send = failedURL.ReplaceComponents(remove_params);
+  const GURL url_to_send = failed_url.ReplaceComponents(remove_params);
 
   // Construct the query params to send to link doctor.
   std::string params(alternate_error_page_url_.query());
@@ -2862,8 +2932,7 @@ bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
     return false;
 
   const GURL& error_page_url = GetAlternateErrorPageURL(error.unreachableURL,
-      ec == net::ERR_NAME_NOT_RESOLVED ? WebViewDelegate::DNS_ERROR
-                                       : WebViewDelegate::CONNECTION_ERROR);
+      ec == net::ERR_NAME_NOT_RESOLVED ? DNS_ERROR : CONNECTION_ERROR);
   if (!error_page_url.is_valid())
     return false;
 
@@ -2906,7 +2975,18 @@ void RenderView::AltErrorPageFinished(WebFrame* frame,
                                       const WebURLError& original_error,
                                       const std::string& html) {
   // Here, we replace the blank page we loaded previously.
-  LoadNavigationErrorPage(frame, WebURLRequest(), original_error, html, true);
+
+  // If we failed to download the alternate error page, fall back to the
+  // original error page if present.  Otherwise, LoadNavigationErrorPage
+  // will simply display a default error page.
+  const std::string* html_to_load = &html;
+  if (html.empty()) {
+    NavigationState* navigation_state =
+        NavigationState::FromDataSource(frame->GetDataSource());
+    html_to_load = &navigation_state->postponed_data();
+  }
+  LoadNavigationErrorPage(
+      frame, WebURLRequest(), original_error, *html_to_load, true);
 }
 
 void RenderView::OnMoveOrResizeStarted() {

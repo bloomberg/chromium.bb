@@ -217,7 +217,7 @@ WebNavigationPolicy TestWebViewDelegate::PolicyForNavigationAction(
 }
 
 void TestWebViewDelegate::AssignIdentifierToRequest(
-    WebView* webview,
+    WebFrame* webframe,
     uint32 identifier,
     const WebURLRequest& request) {
   if (shell_->ShouldDumpResourceLoadCallbacks())
@@ -229,7 +229,7 @@ std::string TestWebViewDelegate::GetResourceDescription(uint32 identifier) {
   return it != resource_identifier_map_.end() ? it->second : "<unknown>";
 }
 
-void TestWebViewDelegate::WillSendRequest(WebView* webview,
+void TestWebViewDelegate::WillSendRequest(WebFrame* webframe,
                                           uint32 identifier,
                                           WebURLRequest* request) {
   GURL url = request->url();
@@ -240,6 +240,14 @@ void TestWebViewDelegate::WillSendRequest(WebView* webview,
     printf("%s - willSendRequest <WebRequest URL \"%s\">\n",
            GetResourceDescription(identifier).c_str(),
            request_url.c_str());
+  }
+
+  if (block_redirects_) {
+    printf("Returning null for this redirect\n");
+
+    // To block the request, we set its URL to an empty one.
+    request->setURL(WebURL());
+    return;
   }
 
   if (TestShell::layout_test_mode() && !host.empty() &&
@@ -260,7 +268,7 @@ void TestWebViewDelegate::WillSendRequest(WebView* webview,
   request->setURL(GURL(TestShell::RewriteLocalUrl(request_url)));
 }
 
-void TestWebViewDelegate::DidFinishLoading(WebView* webview,
+void TestWebViewDelegate::DidFinishLoading(WebFrame* webframe,
                                            uint32 identifier) {
   TRACE_EVENT_END("url.load", identifier, "");
   if (shell_->ShouldDumpResourceLoadCallbacks()) {
@@ -271,7 +279,7 @@ void TestWebViewDelegate::DidFinishLoading(WebView* webview,
   resource_identifier_map_.erase(identifier);
 }
 
-void TestWebViewDelegate::DidFailLoadingWithError(WebView* webview,
+void TestWebViewDelegate::DidFailLoadingWithError(WebFrame* webframe,
                                                   uint32 identifier,
                                                   const WebURLError& error) {
   if (shell_->ShouldDumpResourceLoadCallbacks()) {

@@ -1424,7 +1424,6 @@
         'glue/weburlloader_impl.cc',
         'glue/weburlloader_impl.h',
         'glue/webview.h',
-        'glue/webview_delegate.cc',
         'glue/webview_delegate.h',
         'glue/webview_impl.cc',
         'glue/webview_impl.h',

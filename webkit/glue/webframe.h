@@ -123,6 +123,10 @@ class WebFrame {
   // ends up triggering WebViewDelegate::WillSendRequest.
   virtual void DispatchWillSendRequest(WebKit::WebURLRequest* request) = 0;
 
+  // Called from within WebViewDelegate::DidReceiveDocumentData to commit data
+  // for the frame that will be used to construct the frame's document.
+  virtual void CommitDocumentData(const char* data, size_t data_len) = 0;
+
   // Executes JavaScript in the web frame.
   virtual void ExecuteScript(const WebKit::WebScriptSource& source) = 0;
 

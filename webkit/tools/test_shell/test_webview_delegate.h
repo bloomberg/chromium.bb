@@ -182,14 +182,14 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
                                     const WebKit::WebURLError& error,
                                     WebFrame* for_frame);
 
-  virtual void AssignIdentifierToRequest(WebView* webview,
+  virtual void AssignIdentifierToRequest(WebFrame* webframe,
                                          uint32 identifier,
                                          const WebKit::WebURLRequest& request);
-  virtual void WillSendRequest(WebView* webview,
+  virtual void WillSendRequest(WebFrame* webframe,
                                uint32 identifier,
                                WebKit::WebURLRequest* request);
-  virtual void DidFinishLoading(WebView* webview, uint32 identifier);
-  virtual void DidFailLoadingWithError(WebView* webview,
+  virtual void DidFinishLoading(WebFrame* webframe, uint32 identifier);
+  virtual void DidFailLoadingWithError(WebFrame* webframe,
                                        uint32 identifier,
                                        const WebKit::WebURLError& error);
 
@@ -280,6 +280,13 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   void SetCustomPolicyDelegate(bool is_custom, bool is_permissive);
   void WaitForPolicyDelegate();
 
+  void set_block_redirects(bool block_redirects) {
+    block_redirects_ = block_redirects;
+  }
+  bool block_redirects() const {
+    return block_redirects_;
+  }
+
  protected:
   // Called the title of the page changes.
   // Can be used to update the title of the window.
@@ -348,6 +355,9 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
 
   // true if we want to enable selection of trailing whitespaces
   bool select_trailing_whitespace_enabled_;
+
+  // true if we should block any redirects
+  bool block_redirects_;
 
   CapturedContextMenuEvents captured_context_menu_events_;
 

@@ -224,8 +224,6 @@ using WebKit::WebURLError;
 using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 
-using webkit_glue::AltErrorPageResourceFetcher;
-
 // Key for a StatsCounter tracking how many WebFrames are active.
 static const char* const kWebFrameActiveCount = "WebFrameActiveCount";
 
@@ -1513,22 +1511,6 @@ void WebFrameImpl::Closing() {
   frame_ = NULL;
 }
 
-void WebFrameImpl::DidReceiveData(DocumentLoader* loader,
-                                  const char* data, int length) {
-  // Set the text encoding.  This calls begin() for us.  It is safe to call
-  // this multiple times (Mac does: page/mac/WebCoreFrameBridge.mm).
-  bool user_chosen = true;
-  String encoding = frame_->loader()->documentLoader()->overrideEncoding();
-  if (encoding.isNull()) {
-    user_chosen = false;
-    encoding = loader->response().textEncodingName();
-  }
-  frame_->loader()->setEncoding(encoding, user_chosen);
-
-  // NOTE: mac only does this if there is a document
-  frame_->loader()->addData(data, length);
-}
-
 void WebFrameImpl::DidFail(const ResourceError& error, bool was_provisional) {
   WebViewImpl* web_view = GetWebViewImpl();
   WebViewDelegate* delegate = web_view->delegate();
@@ -1548,6 +1530,23 @@ void WebFrameImpl::DispatchWillSendRequest(WebURLRequest* request) {
   frame_->loader()->client()->dispatchWillSendRequest(NULL, 0,
       *webkit_glue::WebURLRequestToMutableResourceRequest(request),
       response);
+}
+
+void WebFrameImpl::CommitDocumentData(const char* data, size_t data_len) {
+  DocumentLoader* document_loader = frame_->loader()->documentLoader();
+
+  // Set the text encoding.  This calls begin() for us.  It is safe to call
+  // this multiple times (Mac does: page/mac/WebCoreFrameBridge.mm).
+  bool user_chosen = true;
+  String encoding = document_loader->overrideEncoding();
+  if (encoding.isNull()) {
+    user_chosen = false;
+    encoding = document_loader->response().textEncodingName();
+  }
+  frame_->loader()->setEncoding(encoding, user_chosen);
+
+  // NOTE: mac only does this if there is a document
+  frame_->loader()->addData(data, data_len);
 }
 
 void WebFrameImpl::ExecuteScript(const WebScriptSource& source) {

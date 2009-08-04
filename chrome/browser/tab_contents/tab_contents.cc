@@ -2201,8 +2201,8 @@ GURL TabContents::GetAlternateErrorPageURL() const {
 
 WebPreferences TabContents::GetWebkitPrefs() {
   PrefService* prefs = render_view_host()->process()->profile()->GetPrefs();
-  bool isDomUI = false;
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(prefs, isDomUI);
+  bool is_dom_ui = false;
+  return RenderViewHostDelegateHelper::GetWebkitPrefs(prefs, is_dom_ui);
 }
 
 void TabContents::OnJSOutOfMemory() {

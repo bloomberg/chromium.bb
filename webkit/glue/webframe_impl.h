@@ -92,6 +92,7 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
       const WebKit::WebURL& unreachable_url = WebKit::WebURL(),
       bool replace = false);
   virtual void DispatchWillSendRequest(WebKit::WebURLRequest* request);
+  virtual void CommitDocumentData(const char* data, size_t data_len);
   virtual void ExecuteScript(const WebKit::WebScriptSource& source);
   virtual void ExecuteScriptInNewContext(
       const WebKit::WebScriptSource* sources, int num_sources,
@@ -168,9 +169,6 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
 
   virtual bool GetInViewSourceMode() const;
 
-  virtual void DidReceiveData(WebCore::DocumentLoader* loader,
-                              const char* data,
-                              int length);
   virtual void DidFail(const WebCore::ResourceError&, bool was_provisional);
 
   virtual std::wstring GetName();

@@ -3,40 +3,30 @@
 // found in the LICENSE file.
 
 #include "config.h"
+
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
 #include "Chrome.h"
 #include "CString.h"
 #include "Document.h"
 #include "DocumentLoader.h"
-#include "HistoryItem.h"
 #include "HTMLAppletElement.h"
-#include "HTMLCollection.h"
 #include "HTMLFormElement.h"  // needed by FormState.h
-#include "HTMLFormControlElement.h"
-#include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "FormState.h"
 #include "FrameLoader.h"
 #include "FrameLoadRequest.h"
-#include "FrameView.h"
 #include "MIMETypeRegistry.h"
 #include "MouseEvent.h"
 #include "Page.h"
 #include "PlatformString.h"
 #include "PluginData.h"
-#include "RefPtr.h"
 #include "StringExtras.h"
 #include "WindowFeatures.h"
-MSVC_POP_WARNING();
-
 #undef LOG
+
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/mime_util.h"
@@ -50,12 +40,8 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebVector.h"
 #include "webkit/api/src/WrappedResourceRequest.h"
 #include "webkit/api/src/WrappedResourceResponse.h"
-#include "webkit/glue/autofill_form.h"
-#include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webdatasource_impl.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
@@ -81,8 +67,6 @@ using WebKit::WebVector;
 using WebKit::WrappedResourceRequest;
 using WebKit::WrappedResourceResponse;
 
-using webkit_glue::AltErrorPageResourceFetcher;
-
 // Domain for internal error codes.
 static const char kInternalErrorDomain[] = "webkit_glue";
 
@@ -92,12 +76,11 @@ enum {
   ERR_POLICY_CHANGE = -10000,
 };
 
-WebFrameLoaderClient::WebFrameLoaderClient(WebFrameImpl* frame) :
-    webframe_(frame),
-    postpone_loading_data_(false),
-    has_representation_(false),
-    sent_initial_response_to_plugin_(false),
-    next_navigation_policy_(WebKit::WebNavigationPolicyIgnore) {
+WebFrameLoaderClient::WebFrameLoaderClient(WebFrameImpl* frame)
+    : webframe_(frame),
+      has_representation_(false),
+      sent_initial_response_to_plugin_(false),
+      next_navigation_policy_(WebKit::WebNavigationPolicyIgnore) {
 }
 
 WebFrameLoaderClient::~WebFrameLoaderClient() {
@@ -120,9 +103,8 @@ void WebFrameLoaderClient::windowObjectCleared() {
     d->WindowObjectCleared(webframe_);
 
   WebDevToolsAgentImpl* tools_agent = webview->GetWebDevToolsAgentImpl();
-  if (tools_agent) {
+  if (tools_agent)
     tools_agent->WindowObjectCleared(webframe_);
-  }
 }
 
 void WebFrameLoaderClient::documentElementAvailable() {
@@ -210,11 +192,10 @@ void WebFrameLoaderClient::detachedFromParent3() {
 void WebFrameLoaderClient::assignIdentifierToInitialRequest(
     unsigned long identifier, DocumentLoader* loader,
     const ResourceRequest& request) {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
+  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
   if (d) {
     WrappedResourceRequest webreq(request);
-    d->AssignIdentifierToRequest(webview, identifier, webreq);
+    d->AssignIdentifierToRequest(webframe_, identifier, webreq);
   }
 }
 
@@ -267,11 +248,10 @@ void WebFrameLoaderClient::dispatchWillSendRequest(
     request.setFirstPartyForCookies(KURL("about:blank"));
 
   // Give the delegate a crack at the request.
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
+  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
   if (d) {
     WrappedResourceRequest webreq(request);
-    d->WillSendRequest(webview, identifier, &webreq);
+    d->WillSendRequest(webframe_, identifier, &webreq);
   }
 }
 
@@ -303,40 +283,11 @@ void WebFrameLoaderClient::dispatchDidCancelAuthenticationChallenge(
 void WebFrameLoaderClient::dispatchDidReceiveResponse(DocumentLoader* loader,
                                                       unsigned long identifier,
                                                       const ResourceResponse& response) {
-
-
-  /* TODO(evanm): reenable this once we properly sniff XHTML from text/xml documents.
-  // True if the request was for the page's main frame, or a subframe.
-  bool is_frame = ResourceType::IsFrame(DetermineTargetTypeFromLoader(loader));
-  if (is_frame &&
-      response.httpStatusCode() == 200 &&
-      mime_util::IsViewSourceMimeType(
-          webkit_glue::CStringToStdString(response.mimeType().latin1()).c_str())) {
-    loader->frame()->setInViewSourceMode();
-  }*/
-
-  // When the frame request first 404's, chrome may replace it with the alternate
-  // 404 page's contents. It does this using substitute data in the document
-  // loader, so the original response and url of the request can be preserved.
-  // We need to avoid replacing the current page, if it has already been
-  // replaced (otherwise could loop on setting alt-404 page!)
-  bool is_substitute_data = loader->substituteData().isValid();
-
-  // If it's a 404 page, we wait until we get 512 bytes of data before trying
-  // to load the document.  This allows us to put up an alternate 404 page if
-  // there's short text.
-  ResourceRequest::TargetType target_type =
-      DetermineTargetTypeFromLoader(loader);
-  postpone_loading_data_ =
-      ResourceRequest::TargetIsMainFrame == target_type &&
-      !is_substitute_data &&
-      response.httpStatusCode() == 404 &&
-      GetAlt404PageUrl(loader).is_valid();
-  if (postpone_loading_data_)
-    postponed_data_.clear();
-
-  // Cancel any pending loads.
-  alt_404_page_fetcher_.reset(NULL);
+  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
+  if (d) {
+    WrappedResourceResponse webresp(response);
+    d->DidReceiveResponse(webframe_, identifier, webresp);
+  }
 }
 
 void WebFrameLoaderClient::dispatchDidReceiveContentLength(
@@ -348,59 +299,9 @@ void WebFrameLoaderClient::dispatchDidReceiveContentLength(
 // Called when a particular resource load completes
 void WebFrameLoaderClient::dispatchDidFinishLoading(DocumentLoader* loader,
                                                     unsigned long identifier) {
-  if (postpone_loading_data_) {
-    // The server returned a 404 and the content was < 512 bytes (which we
-    // suppressed).  Go ahead and fetch the alternate page content.
-    const GURL& url = GetAlt404PageUrl(loader);
-    DCHECK(url.is_valid()) <<
-        "URL changed? It was valid in dispatchDidReceiveResponse.";
-    WebURLError original_error;
-    original_error.unreachableURL = webkit_glue::KURLToWebURL(loader->url());
-    alt_404_page_fetcher_.reset(new AltErrorPageResourceFetcher(
-        url, webframe_, original_error,
-        NewCallback(this, &WebFrameLoaderClient::Alt404PageFinished)));
-  }
-
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
+  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
   if (d)
-    d->DidFinishLoading(webview, identifier);
-}
-
-GURL WebFrameLoaderClient::GetAlt404PageUrl(DocumentLoader* loader) {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (!d)
-    return GURL();
-
-  const GURL& failedURL = webkit_glue::KURLToGURL(loader->url());
-
-  // If trying to view source on a 404 page, just show the original page
-  // content.
-  if (webframe_->frame()->inViewSourceMode())
-    return GURL();
-
-  // Construct the URL to fetch from the alt error page server. "html404"
-  // is understood by the link doctor server.
-  return d->GetAlternateErrorPageURL(failedURL, WebViewDelegate::HTTP_404);
-}
-
-void WebFrameLoaderClient::Alt404PageFinished(WebFrame* frame,
-                                              const WebURLError& original_error,
-                                              const std::string& html) {
-  // TODO(darin): Move this processing out to the embedder.
-  if (!html.empty()) {
-    // TODO(tc): Handle backoff on so we don't hammer the alt error page
-    // servers.
-    WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-    if (!d)
-      return;
-    d->LoadNavigationErrorPage(webframe_, WebURLRequest(), original_error, html,
-                               true);
-  } else {
-    // Fall back on original text
-    webframe_->LoadHTMLString(postponed_data_, original_error.unreachableURL);
-  }
+    d->DidFinishLoading(webframe_, identifier);
 }
 
 void WebFrameLoaderClient::dispatchDidFailLoading(DocumentLoader* loader,
@@ -409,7 +310,7 @@ void WebFrameLoaderClient::dispatchDidFailLoading(DocumentLoader* loader,
   WebViewImpl* webview = webframe_->GetWebViewImpl();
   if (webview && webview->delegate()) {
     webview->delegate()->DidFailLoadingWithError(
-        webview, identifier, webkit_glue::ResourceErrorToWebURLError(error));
+        webframe_, identifier, webkit_glue::ResourceErrorToWebURLError(error));
   }
 }
 
@@ -730,10 +631,6 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad() {
       d->DidCompleteClientRedirect(webview, webframe_,
                                    expected_client_redirect_src_);
   }
-
-  // Cancel any pending loads.
-  if (alt_404_page_fetcher_.get())
-    alt_404_page_fetcher_->Cancel();
 }
 
 void WebFrameLoaderClient::dispatchDidReceiveTitle(const String& title) {
@@ -1072,6 +969,7 @@ void WebFrameLoaderClient::startDownload(const ResourceRequest& request) {
 void WebFrameLoaderClient::willChangeTitle(DocumentLoader*) {
   // FIXME
 }
+
 void WebFrameLoaderClient::didChangeTitle(DocumentLoader*) {
   // FIXME
 }
@@ -1079,16 +977,9 @@ void WebFrameLoaderClient::didChangeTitle(DocumentLoader*) {
 // Called whenever data is received.
 void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* data, int length) {
   if (!plugin_widget_.get()) {
-    if (postpone_loading_data_) {
-      postponed_data_.append(data, length);
-      if (postponed_data_.length() >= 512) {
-        postpone_loading_data_ = false;
-        webframe_->DidReceiveData(loader, postponed_data_.c_str(),
-                              static_cast<int>(postponed_data_.length()));
-      }
-      return;
-    }
-    webframe_->DidReceiveData(loader, data, length);
+    WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
+    if (d)
+      d->DidReceiveDocumentData(webframe_, data, length);
   }
 
   // The plugin widget could have been created in the webframe_->DidReceiveData

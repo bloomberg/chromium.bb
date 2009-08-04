@@ -34,6 +34,7 @@
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/api/public/WebWidgetClient.h"
 #include "webkit/glue/context_menu.h"
+#include "webkit/glue/webframe.h"
 
 namespace webkit_glue {
 class WebMediaPlayerDelegate;
@@ -324,15 +325,14 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
                                                WebFrame* frame) {
   }
 
-  // If the provisional load fails, we try to load a an error page describing
-  // the user about the load failure.  |html| is the UTF8 text to display.  If
-  // |html| is empty, we will fall back on a local error page.
-  virtual void LoadNavigationErrorPage(
-      WebFrame* frame,
-      const WebKit::WebURLRequest& failed_request,
-      const WebKit::WebURLError& error,
-      const std::string& html,
-      bool replace) {
+  // Notifies the delegate to commit data for the given frame.  The delegate
+  // may optionally convert the data before calling CommitDocumentData or
+  // suppress a call to CommitDocumentData.  For example, if CommitDocumentData
+  // is never called, then an empty document will be created.
+  virtual void DidReceiveDocumentData(WebFrame* frame,
+                                      const char* data,
+                                      size_t data_len) {
+    frame->CommitDocumentData(data, data_len);
   }
 
   // Notifies the delegate that the load has changed from provisional to
@@ -489,7 +489,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // Resource load callbacks will use the identifier throughout the life of the
   // request.
   virtual void AssignIdentifierToRequest(
-      WebView* webview,
+      WebFrame* webframe,
       uint32 identifier,
       const WebKit::WebURLRequest& request) {
   }
@@ -498,17 +498,22 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // delegate the opportunity to modify the request.  Note that request is
   // writable here, and changes to the URL, for example, will change the request
   // to be made.
-  virtual void WillSendRequest(WebView* webview,
+  virtual void WillSendRequest(WebFrame* webframe,
                                uint32 identifier,
                                WebKit::WebURLRequest* request) {
   }
 
+  virtual void DidReceiveResponse(WebFrame* webframe,
+                                  uint32 identifier,
+                                  const WebKit::WebURLResponse& response) {
+  }
+
   // Notifies the delegate that a subresource load has succeeded.
-  virtual void DidFinishLoading(WebView* webview, uint32 identifier) {
+  virtual void DidFinishLoading(WebFrame* webframe, uint32 identifier) {
   }
 
   // Notifies the delegate that a subresource load has failed, and why.
-  virtual void DidFailLoadingWithError(WebView* webview,
+  virtual void DidFailLoadingWithError(WebFrame* webframe,
                                        uint32 identifier,
                                        const WebKit::WebURLError& error) {
   }
@@ -754,18 +759,6 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
                                 bool errored,
                                 const SkBitmap& image) {
   }
-
-  enum ErrorPageType {
-    DNS_ERROR,
-    HTTP_404,
-    CONNECTION_ERROR,
-  };
-  // If providing an alternate error page (like link doctor), returns the URL
-  // to fetch instead.  If an invalid url is returned, just fall back on local
-  // error pages. |error_name| tells the delegate what type of error page we
-  // want (e.g., 404 vs dns errors).
-  virtual GURL GetAlternateErrorPageURL(const GURL& failedURL,
-                                        ErrorPageType error_type);
 
   // History Related ---------------------------------------------------------
 

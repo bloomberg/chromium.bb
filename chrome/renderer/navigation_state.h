@@ -144,6 +144,23 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
     security_info_ = security_info;
   }
 
+  bool postpone_loading_data() const {
+    return postpone_loading_data_;
+  }
+  void set_postpone_loading_data(bool postpone_loading_data) {
+    postpone_loading_data_ = postpone_loading_data;
+  }
+
+  void clear_postponed_data() {
+    postponed_data_.clear();
+  }
+  void append_postponed_data(const char* data, size_t data_len) {
+    postponed_data_.append(data, data_len);
+  }
+  const std::string& postponed_data() const {
+    return postponed_data_;
+  }
+
  private:
   NavigationState(PageTransition::Type transition_type,
                   const base::Time& request_time,
@@ -154,7 +171,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         load_histograms_recorded_(false),
         request_committed_(false),
         is_content_initiated_(is_content_initiated),
-        pending_page_id_(pending_page_id) {
+        pending_page_id_(pending_page_id),
+        postpone_loading_data_(false) {
   }
 
   PageTransition::Type transition_type_;
@@ -173,6 +191,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   scoped_ptr<webkit_glue::PasswordForm> password_form_data_;
   scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_error_page_fetcher_;
   std::string security_info_;
+  bool postpone_loading_data_;
+  std::string postponed_data_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };

@@ -1,31 +1,19 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H__
-#define WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H__
+#ifndef WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H_
+#define WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H_
 
 #include "FrameLoaderClient.h"
 #include <wtf/RefPtr.h>
 
-#include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebNavigationPolicy.h"
 #include "webkit/glue/webview_delegate.h"
 
-namespace WebCore {
-class Frame;
-class HTMLFormElement;
-class Widget;
-}
-
-namespace webkit_glue {
-class AltErrorPageResourceFetcher;
-}
-
 class WebFrameImpl;
 class WebPluginContainer;
-
 
 class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
  public:
@@ -204,12 +192,6 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   virtual void registerForIconNotification(bool listen = true);
 
  private:
-  // Callback function for download of alternate 404 pages.  If the server is
-  // down or we take too long to download the page, |html| will be empty.
-  void Alt404PageFinished(WebFrame* frame,
-                          const WebKit::WebURLError& original_error,
-                          const std::string& html);
-
   void makeDocumentView();
 
   // Given a NavigationAction, determine the associated WebNavigationPolicy.
@@ -217,9 +199,6 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   static bool ActionSpecifiesNavigationPolicy(
       const WebCore::NavigationAction& action,
       WebKit::WebNavigationPolicy* policy);
-
-  // Returns a valid GURL if we have an alt 404 server URL.
-  GURL GetAlt404PageUrl(WebCore::DocumentLoader* loader);
 
   // Returns NavigationGestureAuto if the last load was not user initiated,
   // otherwise returns NavigationGestureUnknown.
@@ -231,12 +210,6 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   // The WebFrame that owns this object and manages its lifetime. Therefore,
   // the web frame object is guaranteed to exist.
   WebFrameImpl* webframe_;
-
-  // Resource fetcher for downloading an alternate 404 page.
-  scoped_ptr<webkit_glue::AltErrorPageResourceFetcher> alt_404_page_fetcher_;
-
-  bool postpone_loading_data_;
-  std::string postponed_data_;
 
   // True if makeRepresentation was called.  We don't actually have a concept
   // of a "representation", but we need to know when we're expected to have one.
@@ -263,4 +236,4 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   WebKit::WebNavigationPolicy next_navigation_policy_;
 };
 
-#endif  // #ifndef WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H__
+#endif  // #ifndef WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H_

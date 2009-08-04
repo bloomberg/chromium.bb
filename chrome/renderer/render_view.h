@@ -186,6 +186,8 @@ class RenderView : public RenderWidget,
       const WebKit::WebURLError& error,
       const std::string& html,
       bool replace);
+  virtual void DidReceiveDocumentData(WebFrame* frame, const char* data,
+                                      size_t data_len);
   virtual void DidCommitLoadForFrame(WebView* webview, WebFrame* frame,
                                      bool is_new_navigation);
   virtual void DidReceiveTitle(WebView* webview,
@@ -216,9 +218,13 @@ class RenderView : public RenderWidget,
   virtual void WillCloseFrame(WebView* webview, WebFrame* frame);
   virtual void WillSubmitForm(WebView* webview, WebFrame* frame,
                               const WebKit::WebForm& form);
-  virtual void WillSendRequest(WebView* webview,
+  virtual void WillSendRequest(WebFrame* webframe,
                                uint32 identifier,
                                WebKit::WebURLRequest* request);
+  virtual void DidReceiveResponse(WebFrame* webframe,
+                                  uint32 identifier,
+                                  const WebKit::WebURLResponse& response);
+  virtual void DidFinishLoading(WebFrame* webframe, uint32 identifier);
 
   virtual void WindowObjectCleared(WebFrame* webframe);
   virtual void DocumentElementAvailable(WebFrame* webframe);
@@ -260,8 +266,6 @@ class RenderView : public RenderWidget,
                                 const GURL& image_url,
                                 bool errored,
                                 const SkBitmap& image);
-  virtual GURL GetAlternateErrorPageURL(const GURL& failedURL,
-                                        ErrorPageType error_type);
 
   virtual void ShowContextMenu(WebView* webview,
                                ContextNodeType node_type,
@@ -609,7 +613,15 @@ class RenderView : public RenderWidget,
   // Locates a sub frame with given xpath
   WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
 
+  enum ErrorPageType {
+    DNS_ERROR,
+    HTTP_404,
+    CONNECTION_ERROR,
+  };
+
   // Alternate error page helpers.
+  GURL GetAlternateErrorPageURL(
+      const GURL& failed_url, ErrorPageType error_type);
   bool MaybeLoadAlternateErrorPage(
       WebFrame* frame, const WebKit::WebURLError& error, bool replace);
   std::string GetAltHTMLForTemplate(
