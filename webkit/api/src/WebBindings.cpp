@@ -195,8 +195,8 @@ void WebBindings::extractIdentifierData(const NPIdentifier& identifier, const NP
 
 static v8::Local<v8::Value> getEvent(const v8::Handle<v8::Context>& context)
 {
-    static v8::Persistent<v8::String> event(v8::Persistent<v8::String>::New(v8::String::NewSymbol("event")));
-    return context->Global()->GetHiddenValue(event);
+    static v8::Persistent<v8::String> eventSymbol(v8::Persistent<v8::String>::New(v8::String::NewSymbol("event")));
+    return context->Global()->Get(eventSymbol);
 }
 
 static bool getDragDataImpl(NPObject* npobj, int* eventId, WebDragData* data)
