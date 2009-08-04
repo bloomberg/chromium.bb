@@ -17,9 +17,16 @@ void XDGOpen(const FilePath& path) {
   std::vector<std::string> argv;
   argv.push_back("xdg-open");
   argv.push_back(path.value());
-  base::file_handle_mapping_vector no_files;
+
   base::environment_vector env;
   env.push_back(std::make_pair("GTK_PATH", getenv("CHROMIUM_SAVED_GTK_PATH")));
+  // xdg-open can fall back on mailcap which eventually might plumb through
+  // to a command that needs a terminal.  Set the environment variable telling
+  // it that we definitely don't have a terminal available and that it should
+  // bring up a new terminal if necessary.  See "man mailcap".
+  env.push_back(std::make_pair("MM_NOTTTY", "1"));
+
+  base::file_handle_mapping_vector no_files;
   base::ProcessHandle handle;
   if (base::LaunchApp(argv, env, no_files, false, &handle))
     ProcessWatcher::EnsureProcessGetsReaped(handle);
