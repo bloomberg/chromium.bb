@@ -33,7 +33,7 @@ generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
   'OS': 'linux',
-  'INTERMEDIATE_DIR': '$(obj)/gen',
+  'INTERMEDIATE_DIR': '$(obj)/geni',
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
