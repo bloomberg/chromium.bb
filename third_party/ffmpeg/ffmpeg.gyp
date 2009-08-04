@@ -21,11 +21,9 @@
       'variables': {
         'generate_stubs_script': 'generate_stubs.py',
         'sig_files': [
-          # Note that these must be listed in dependency order.
-          # (i.e. if A depends on B, then B must be listed before A.)
-          'avutil-50.sigs',
           'avcodec-52.sigs',
           'avformat-52.sigs',
+          'avutil-50.sigs',
         ],
         'extra_header': 'ffmpeg_stub_headers.fragment',
       },
