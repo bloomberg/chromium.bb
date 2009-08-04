@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"
+#include "base/sys_info.h"
 #include "base/unix_domain_socket_posix.h"
 
 #include "chrome/browser/zygote_host_linux.h"
@@ -312,6 +313,8 @@ static bool MaybeEnterChroot() {
     // Before entering the sandbox, "prime" any systems that need to open
     // files and cache the results or the descriptors.
     base::RandUint64();
+
+    base::SysInfo::MaxSharedMemorySize();
 
     // To make wcstombs/mbstowcs work in a renderer, setlocale() has to be
     // called before the sandbox is triggered. It's possible to avoid calling

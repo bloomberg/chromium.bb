@@ -32,18 +32,6 @@
 #include "media/base/media.h"
 #include "webkit/glue/webkit_glue.h"
 
-static size_t GetMaxSharedMemorySize() {
-  static int size = 0;
-#if defined(OS_LINUX)
-  if (size == 0) {
-    std::string contents;
-    file_util::ReadFileToString(FilePath("/proc/sys/kernel/shmmax"), &contents);
-    size = strtoul(contents.c_str(), NULL, 0);
-  }
-#endif
-  return size;
-}
-
 //-----------------------------------------------------------------------------
 
 RenderProcess::RenderProcess()
@@ -166,7 +154,7 @@ skia::PlatformCanvas* RenderProcess::GetDrawingCanvas(
   int width = rect.width();
   int height = rect.height();
   const size_t stride = skia::PlatformCanvas::StrideForWidth(rect.width());
-  const size_t max_size = GetMaxSharedMemorySize();
+  const size_t max_size = base::SysInfo::MaxSharedMemorySize();
 
   // If the requested size is too big, reduce the height. Ideally we might like
   // to reduce the width as well to make the size reduction more "balanced", but
