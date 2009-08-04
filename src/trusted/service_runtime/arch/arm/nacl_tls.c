@@ -33,9 +33,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-
-
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 #define TLS_IDX_GET_ADDR(x)  (x & ~((1 << NACL_PAGESHIFT) - 1))

@@ -32,6 +32,10 @@
 #ifndef SERVICE_RUNTIME_NACL_THREAD_H__
 #define SERVICE_RUNTIME_NACL_THREAD_H__ 1
 
+#include "native_client/src/include/portability.h"
+
+struct NaClAppThread;
+
 int NaClTlsInit();
 
 void NaClTlsFini();
@@ -49,4 +53,3 @@ uint32_t NaClTlsChange(struct NaClAppThread *natp,
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp);
 
 #endif /* SERVICE_RUNTIME_NACL_THREAD_H__ */
-

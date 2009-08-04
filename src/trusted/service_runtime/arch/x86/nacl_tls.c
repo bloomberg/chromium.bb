@@ -29,10 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "native_client/src/include/portability.h"
+
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
-#include "native_client/src/include/portability.h"
 
 int NaClTlsInit() {
   return NaClLdtInit();
@@ -71,7 +73,6 @@ uint32_t NaClTlsChange(struct NaClAppThread *natp,
 }
 
 
-int32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
+uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
   return natp->user.gs >> 3;
 }
-

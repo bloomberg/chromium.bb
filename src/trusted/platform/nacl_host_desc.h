@@ -237,8 +237,8 @@ extern int NaClHostDescStat(char const            *host_os_pathname,
                             struct nacl_abi_stat  *nasp);
 
 /*
- * should DCE away when unused.
- * TODO: explain what this is good for
+ * Maps NACI_ABI_ versions of the mmap prot argument to host ABI versions
+ * of the bit values
  */
 
 extern int NaClProtMap(int abi_prot);
