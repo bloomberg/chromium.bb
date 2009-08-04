@@ -600,8 +600,12 @@ void TabContents::NotifyNavigationStateChanged(unsigned changed_flags) {
 void TabContents::DidBecomeSelected() {
   controller_.SetActive(true);
 
-  if (render_widget_host_view())
+  if (render_widget_host_view()) {
     render_widget_host_view()->DidBecomeSelected();
+#if defined(OS_MACOSX)
+    render_widget_host_view()->SetActive(true);
+#endif
+  }
 
   // If pid() is -1, that means the RenderProcessHost still hasn't been
   // initialized.  It'll register with CacheManagerHost when it is.
