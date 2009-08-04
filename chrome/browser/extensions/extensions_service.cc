@@ -370,9 +370,9 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
   // version. This is important because these extensions are going to get
   // installed on every startup.
   Extension* existing = GetExtensionById(id);
+  scoped_ptr<Version> other(Version::GetVersionFromString(version));
   if (existing) {
-    switch (existing->version()->CompareTo(
-                *Version::GetVersionFromString(version))) {
+    switch (existing->version()->CompareTo(*other)) {
       case -1:  // existing version is older, we should upgrade
         break;
       case 0:  // existing version is same, do nothing

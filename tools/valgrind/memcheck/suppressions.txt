@@ -954,26 +954,3 @@
    fun:_ZN7WebCore12AtomicStringC1EPKc
    fun:_ZN7WebCore8SVGNames4initEv
 }
-{
-  crbug_18070
-  Memcheck:Leak
-  ...
-  fun:_ZN7Version20GetVersionFromStringERKSs
-  fun:_ZN17ExtensionsService24OnExternalExtensionFoundERKSsS1_RK8FilePathN9Extension8LocationE
-  fun:_ZN14RunnableMethodI17ExtensionsServiceMS0_FvRKSsS2_RK8FilePathN9Extension8LocationEE6Tuple4ISsSsS3_S7_EE3RunEv
-  fun:_ZN11MessageLoop7RunTaskEP4Task
-  fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-  fun:_ZN11MessageLoop6DoWorkEv
-  fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-  fun:_ZN11MessageLoop11RunInternalEv
-  fun:_ZN11MessageLoop10RunHandlerEv
-  fun:_ZN11MessageLoop13RunAllPendingEv
-  fun:_ZN46ExtensionsServiceTest_ExternalInstallPref_Test8TestBodyEv
-  fun:_ZN7testing4Test3RunEv
-  fun:_ZN7testing8internal12TestInfoImpl3RunEv
-  fun:_ZN7testing8internal12TestInfoImpl7RunTestEPNS_8TestInfoE
-  fun:_ZN7testing8TestCase3RunEv
-  fun:_ZN7testing8TestCase11RunTestCaseEPS0_
-  fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-  fun:_ZN7testing8UnitTest3RunEv
-}
