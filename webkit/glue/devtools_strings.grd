@@ -31,7 +31,7 @@ Google Chrome Developer Tools. -->
         Corrupted object: <ph name="OBJECT">%s<ex>bad</ex></ph>
       </message>
       <message id="IDS_SCOPE_VARS_FAILURE" name="Error message indicating failure to resolve scope variables.">
-        Failed to resolve scope variables: %s
+        Failed to resolve scope variables: <ph name="ERROR">%s<ex>Undefined variable</ex></ph>
       </message>
       <message id="IDS_PROCESSING_PROFILE" name="Message indicating that profile is being processed.">
         Processing...
@@ -46,7 +46,7 @@ Google Chrome Developer Tools. -->
         &lt;Unknown scope type&gt;
       </message>
       <message id="IDS_WINDOW_HEADER" name="DevTools window header.">
-        Developer Tools - %s
+        Developer Tools - <ph name="URL">%s<ex>http://www.example.com/</ex></ph>
       </message>
     </messages>
   </release>
