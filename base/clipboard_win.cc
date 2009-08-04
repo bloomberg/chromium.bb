@@ -373,6 +373,22 @@ void Clipboard::WriteFiles(const char* file_data, size_t file_len) {
   WriteToClipboard(CF_HDROP, hdata);
 }
 
+void Clipboard::WriteData(const char* format_name, size_t format_len,
+                          const char* data_data, size_t data_len) {
+  std::string format(format_name, format_len);
+  CLIPFORMAT clip_format =
+      ::RegisterClipboardFormat(ASCIIToWide(format).c_str());
+
+  HGLOBAL hdata = ::GlobalAlloc(GMEM_MOVEABLE, data_len);
+  if (!hdata)
+    return;
+
+  char* data = static_cast<char*>(::GlobalLock(hdata));
+  memcpy(data, data_data, data_len);
+  ::GlobalUnlock(data);
+  WriteToClipboard(clip_format, hdata);
+}
+
 void Clipboard::WriteToClipboard(unsigned int format, HANDLE handle) {
   DCHECK(clipboard_owner_);
   if (handle && !::SetClipboardData(format, handle)) {
@@ -383,6 +399,13 @@ void Clipboard::WriteToClipboard(unsigned int format, HANDLE handle) {
 
 bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format) const {
   return ::IsClipboardFormatAvailable(StringToInt(format)) != FALSE;
+}
+
+bool Clipboard::IsFormatAvailableByString(
+    const std::string& ascii_format) const {
+  std::wstring wide_format = ASCIIToWide(ascii_format);
+  CLIPFORMAT format = ::RegisterClipboardFormat(wide_format.c_str());
+  return ::IsClipboardFormatAvailable(format) != FALSE;
 }
 
 void Clipboard::ReadText(string16* result) const {
@@ -519,6 +542,28 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
       files->push_back(FilePath(file));
     }
   }
+}
+
+void Clipboard::ReadData(const std::string& format, std::string* result) {
+  if (!result) {
+    NOTREACHED();
+    return;
+  }
+
+  CLIPFORMAT clip_format =
+      ::RegisterClipboardFormat(ASCIIToWide(format).c_str());
+
+  ScopedClipboard clipboard;
+  if (!clipboard.Acquire(GetClipboardWindow()))
+    return;
+
+  HANDLE data = ::GetClipboardData(clip_format);
+  if (!data)
+    return;
+
+  result->assign(static_cast<const char*>(::GlobalLock(data)),
+                 ::GlobalSize(data));
+  ::GlobalUnlock(data);
 }
 
 // static

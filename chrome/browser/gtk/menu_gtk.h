@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/task.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class SkBitmap;
@@ -114,6 +115,9 @@ class MenuGtk {
   // recursive and does not support sub-menus.
   void BuildMenuFromDelegate();
 
+  // Contains implementation for OnMenuShow.
+  void UpdateMenu();
+
   // Callback for when a menu item is clicked.
   static void OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu);
 
@@ -142,6 +146,8 @@ class MenuGtk {
   // menu items from getting activated when we are setting up the
   // menu.
   static bool block_activation_;
+
+  ScopedRunnableMethodFactory<MenuGtk> factory_;
 };
 
 #endif  // CHROME_BROWSER_GTK_MENU_GTK_H_

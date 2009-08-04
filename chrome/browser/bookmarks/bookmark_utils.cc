@@ -6,20 +6,16 @@
 
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
-// TODO(port): Port these files.
-#if defined(OS_WIN)
-#include "app/os_exchange_data.h"
-#else
-#include "chrome/common/temp_scaffolding_stubs.h"
-#endif
 #include "app/tree_node_iterator.h"
 #include "base/basictypes.h"
+#include "base/clipboard.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/profile.h"
@@ -355,53 +351,39 @@ void OpenAll(gfx::NativeView parent,
 void CopyToClipboard(BookmarkModel* model,
                      const std::vector<const BookmarkNode*>& nodes,
                      bool remove_nodes) {
+#if defined(OS_WIN) || defined(OS_LINUX)
   if (nodes.empty())
     return;
 
-#if defined(OS_WIN)
-  OSExchangeData* data = new OSExchangeData();
-  BookmarkDragData(nodes).Write(NULL, data);
-  OleSetClipboard(data);
-  // OLE takes ownership of OSExchangeData.
-#else
-  // TODO(port): Clipboard integration.  Don't we have clipboard
-  // implemented somewhere else?
-#endif
+  BookmarkDragData(nodes).WriteToClipboard(NULL);
 
-  // The following works cross-platform but I'm disabling it for now so that
-  // users who Cut a bookmark or folder won't lose it without being able to
-  // paste it.
-#if defined(OS_WIN)
   if (remove_nodes) {
     for (size_t i = 0; i < nodes.size(); ++i) {
       model->Remove(nodes[i]->GetParent(),
                     nodes[i]->GetParent()->IndexOfChild(nodes[i]));
     }
   }
+#else
+  // Not implemented on mac yet.
 #endif
 }
 
 void PasteFromClipboard(BookmarkModel* model,
                         const BookmarkNode* parent,
                         int index) {
+#if defined(OS_WIN) || defined(OS_LINUX)
   if (!parent)
     return;
 
-#if defined(OS_WIN)
-  IDataObject* data;
-  if (OleGetClipboard(&data) != S_OK)
-    return;
-
-  OSExchangeData data_wrapper(data);
   BookmarkDragData bookmark_data;
-  if (!bookmark_data.Read(data_wrapper))
+  if (!bookmark_data.ReadFromClipboard())
     return;
 
   if (index == -1)
     index = parent->GetChildCount();
   bookmark_utils::CloneDragData(model, bookmark_data.elements, parent, index);
 #else
-  // TODO(port): Clipboard integration.
+  // Not implemented on mac yet.
 #endif
 }
 
@@ -409,18 +391,8 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
   if (!node)
     return false;
 
-#if defined(OS_WIN)
-  IDataObject* data;
-  if (OleGetClipboard(&data) != S_OK)
-    return false;
-
-  OSExchangeData data_wrapper(data);
-  BookmarkDragData bookmark_data;
-  return bookmark_data.Read(data_wrapper);
-#else
-  // TODO(port): Clipboard integration.
-  return false;
-#endif
+  return g_browser_process->clipboard()->IsFormatAvailable(
+      BookmarkDragData::kClipboardFormatString);
 }
 
 std::string GetNameForURL(const GURL& url) {

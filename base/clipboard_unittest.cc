@@ -8,6 +8,7 @@
 #include "base/clipboard.h"
 #include "base/gfx/size.h"
 #include "base/message_loop.h"
+#include "base/pickle.h"
 #include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,8 +62,7 @@ TEST_F(ClipboardTest, TextTest) {
 
   EXPECT_TRUE(clipboard.IsFormatAvailable(
       Clipboard::GetPlainTextWFormatType()));
-  EXPECT_TRUE(clipboard.IsFormatAvailable(
-      Clipboard::GetPlainTextFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetPlainTextFormatType()));
   clipboard.ReadText(&text_result);
 
   EXPECT_EQ(text, text_result);
@@ -81,8 +81,7 @@ TEST_F(ClipboardTest, HTMLTest) {
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  EXPECT_EQ(true, clipboard.IsFormatAvailable(
-      Clipboard::GetHtmlFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
   clipboard.ReadHTML(&markup_result, &url_result);
   EXPECT_EQ(markup, markup_result);
 #if defined(OS_WIN)
@@ -104,8 +103,7 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
     clipboard_writer.WriteHTML(markup, url);
   }
 
-  EXPECT_EQ(true, clipboard.IsFormatAvailable(
-      Clipboard::GetHtmlFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
   clipboard.ReadHTML(&markup_result, &url_result);
   EXPECT_EQ(markup, markup_result);
 #if defined(OS_WIN)
@@ -128,8 +126,7 @@ TEST_F(ClipboardTest, BookmarkTest) {
     clipboard_writer.WriteBookmark(title, url);
   }
 
-  EXPECT_EQ(true,
-      clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType()));
   clipboard.ReadBookmark(&title_result, &url_result);
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
@@ -150,11 +147,10 @@ TEST_F(ClipboardTest, MultiFormatTest) {
     clipboard_writer.WriteText(text);
   }
 
-  EXPECT_EQ(true,
-      clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
-  EXPECT_EQ(true, clipboard.IsFormatAvailable(
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(
       Clipboard::GetPlainTextWFormatType()));
-  EXPECT_EQ(true, clipboard.IsFormatAvailable(
+  EXPECT_TRUE(clipboard.IsFormatAvailable(
       Clipboard::GetPlainTextFormatType()));
   clipboard.ReadHTML(&markup_result, &url_result);
   EXPECT_EQ(markup, markup_result);
@@ -226,6 +222,32 @@ TEST_F(ClipboardTest, MultipleFilesTest) {
 }
 #endif  // !defined(OS_LINUX)
 
+#if defined(OS_WIN) || defined(OS_LINUX)
+TEST_F(ClipboardTest, DataTest) {
+  Clipboard clipboard;
+  const char* format = "chromium/x-test-format";
+  std::string payload("test string");
+  Pickle write_pickle;
+  write_pickle.WriteString(payload);
+
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard);
+    clipboard_writer.WritePickledData(write_pickle, format);
+  }
+
+  ASSERT_TRUE(clipboard.IsFormatAvailableByString(format));
+  std::string output;
+  clipboard.ReadData(format, &output);
+  ASSERT_FALSE(output.empty());
+
+  Pickle read_pickle(output.data(), output.size());
+  void* iter = NULL;
+  std::string unpickled_string;
+  ASSERT_TRUE(read_pickle.ReadString(&iter, &unpickled_string));
+  EXPECT_EQ(payload, unpickled_string);
+}
+#endif
+
 #if defined(OS_WIN)  // Windows only tests.
 TEST_F(ClipboardTest, HyperlinkTest) {
   Clipboard clipboard;
@@ -240,10 +262,8 @@ TEST_F(ClipboardTest, HyperlinkTest) {
     clipboard_writer.WriteHyperlink(title, url);
   }
 
-  EXPECT_EQ(true,
-            clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType()));
-  EXPECT_EQ(true,
-            clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetUrlWFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType()));
   clipboard.ReadBookmark(&title_result, &url_result);
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
@@ -259,7 +279,7 @@ TEST_F(ClipboardTest, WebSmartPasteTest) {
     clipboard_writer.WriteWebSmartPaste();
   }
 
-  EXPECT_EQ(true, clipboard.IsFormatAvailable(
+  EXPECT_TRUE(clipboard.IsFormatAvailable(
       Clipboard::GetWebKitSmartPasteFormatType()));
 }
 
@@ -277,7 +297,6 @@ TEST_F(ClipboardTest, BitmapTest) {
     clipboard_writer.WriteBitmapFromPixels(fake_bitmap, gfx::Size(3, 4));
   }
 
-  EXPECT_EQ(true, clipboard.IsFormatAvailable(
-                      Clipboard::GetBitmapFormatType()));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetBitmapFormatType()));
 }
 #endif  // defined(OS_WIN)

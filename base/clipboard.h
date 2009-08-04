@@ -40,7 +40,8 @@ class Clipboard {
     CBF_FILES,
     CBF_WEBKIT,
     CBF_BITMAP,
-    CBF_SMBITMAP  // bitmap from shared memory
+    CBF_SMBITMAP,  // Bitmap from shared memory.
+    CBF_DATA,  // Arbitrary block of bytes.
   };
 
   // ObjectMap is a map from ObjectType to associated data.
@@ -67,6 +68,8 @@ class Clipboard {
   //               size         gfx::Size struct
   // CBF_SMBITMAP  shared_mem   shared memory handle
   //               size         gfx::Size struct
+  // CBF_DATA      format       char array
+  //               data         byte array
   typedef std::vector<char> ObjectMapParam;
   typedef std::vector<ObjectMapParam> ObjectMapParams;
   typedef std::map<int /* ObjectType */, ObjectMapParams> ObjectMap;
@@ -89,6 +92,10 @@ class Clipboard {
   // Tests whether the clipboard contains a certain format
   bool IsFormatAvailable(const FormatType& format) const;
 
+  // As above, but instead of interpreting |format| by some platform-specific
+  // definition, interpret it as a literal MIME type.
+  bool IsFormatAvailableByString(const std::string& format) const;
+
   // Reads UNICODE text from the clipboard, if available.
   void ReadText(string16* result) const;
 
@@ -105,6 +112,10 @@ class Clipboard {
   // out parameter.
   void ReadFile(FilePath* file) const;
   void ReadFiles(std::vector<FilePath>* files) const;
+
+  // Reads raw data from the clipboard with the given format type. Stores result
+  // as a byte vector.
+  void ReadData(const std::string& format, std::string* result);
 
   // Get format Identifiers for various types.
   static FormatType GetUrlFormatType();
@@ -132,6 +143,8 @@ class Clipboard {
 #endif
 
  private:
+  void DispatchObject(ObjectType type, const ObjectMapParams& params);
+
   void WriteText(const char* text_data, size_t text_len);
 
   void WriteHTML(const char* markup_data,
@@ -153,9 +166,13 @@ class Clipboard {
 
   void WriteFiles(const char* file_data, size_t file_len);
 
-  void DispatchObject(ObjectType type, const ObjectMapParams& params);
-
   void WriteBitmap(const char* pixel_data, const char* size_data);
+#if defined(OS_WIN) || defined(OS_LINUX)
+  // |format_name| is an ASCII string and should be NULL-terminated.
+  // TODO(estade): port to mac.
+  void WriteData(const char* format_name, size_t format_len,
+                 const char* data_data, size_t data_len);
+#endif
 #if defined(OS_WIN)
   void WriteBitmapFromSharedMemory(const char* bitmap_data,
                                    const char* size_data,
@@ -200,7 +217,7 @@ class Clipboard {
   GtkClipboard* clipboard_;
 #endif
 
-  DISALLOW_EVIL_CONSTRUCTORS(Clipboard);
+  DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };
 
 #endif  // BASE_CLIPBOARD_H_

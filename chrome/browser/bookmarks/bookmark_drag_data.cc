@@ -4,25 +4,33 @@
 
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 
+#include "base/basictypes.h"
+#include "base/pickle.h"
+#include "base/scoped_clipboard_writer.h"
+#include "base/string_util.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/browser/browser_process.h"
+
 // TODO(port): Port this file.
 #if defined(TOOLKIT_VIEWS)
 #include "app/os_exchange_data.h"
 #else
 #include "chrome/common/temp_scaffolding_stubs.h"
 #endif
-#include "base/basictypes.h"
-#include "base/pickle.h"
-#include "base/string_util.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/profile.h"
-#include "chrome/common/url_constants.h"
+
+const char* BookmarkDragData::kClipboardFormatString =
+    "chromium/x-bookmark-entries";
 
 #if defined(OS_WIN)
 static CLIPFORMAT clipboard_format = 0;
 
 static void RegisterFormat() {
   if (clipboard_format == 0) {
-    clipboard_format = RegisterClipboardFormat(L"chrome/x-bookmark-entries");
+    clipboard_format =
+        ::RegisterClipboardFormat(ASCIIToWide(
+            BookmarkDragData::kClipboardFormatString).c_str());
     DCHECK(clipboard_format);
   }
 }
@@ -85,6 +93,51 @@ BookmarkDragData::BookmarkDragData(
   for (size_t i = 0; i < nodes.size(); ++i)
     elements.push_back(Element(nodes[i]));
 }
+
+#if !defined(OS_MACOSX)
+void BookmarkDragData::WriteToClipboard(Profile* profile) const {
+  ScopedClipboardWriter scw(g_browser_process->clipboard());
+
+  // If there is only one element and it is a URL, write the URL to the
+  // clipboard.
+  if (elements.size() == 1 && elements[0].is_url) {
+    scw.WriteBookmark(WideToUTF16Hack(elements[0].title),
+                      elements[0].url.spec());
+  }
+
+  Pickle pickle;
+  WriteToPickle(profile, &pickle);
+  scw.WritePickledData(pickle, kClipboardFormatString);
+}
+
+bool BookmarkDragData::ReadFromClipboard() {
+  std::string data;
+  Clipboard* clipboard = g_browser_process->clipboard();
+  clipboard->ReadData(kClipboardFormatString, &data);
+
+  if (!data.empty()) {
+    Pickle pickle(data.data(), data.size());
+    if (ReadFromPickle(&pickle))
+      return true;
+  }
+
+  string16 title;
+  std::string url;
+  clipboard->ReadBookmark(&title, &url);
+  if (!url.empty()) {
+    Element element;
+    element.is_url = true;
+    element.url = GURL(url);
+    element.title = UTF16ToWideHack(title);
+
+    elements.clear();
+    elements.push_back(element);
+    return true;
+  }
+
+  return false;
+}
+#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 void BookmarkDragData::Write(Profile* profile, OSExchangeData* data) const {

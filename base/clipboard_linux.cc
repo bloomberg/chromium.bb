@@ -21,7 +21,7 @@ namespace {
 const char kMimeBmp[] = "image/bmp";
 const char kMimeHtml[] = "text/html";
 const char kMimeText[] = "text/plain";
-const char kMimeWebkitSmartPaste[] = "chromium-internal/webkit-paste";
+const char kMimeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 
 std::string GdkAtomToString(const GdkAtom& atom) {
   gchar* name = gdk_atom_name(atom);
@@ -193,6 +193,14 @@ void Clipboard::WriteFiles(const char* file_data, size_t file_len) {
   NOTIMPLEMENTED();
 }
 
+void Clipboard::WriteData(const char* format_name, size_t format_len,
+                          const char* data_data, size_t data_len) {
+  char* data = new char[data_len];
+  memcpy(data, data_data, data_len);
+  std::string format(format_name, format_len);
+  InsertMapping(format.c_str(), data, data_len);
+}
+
 // We do not use gtk_clipboard_wait_is_target_available because of
 // a bug with the gtk clipboard. It caches the available targets
 // and does not always refresh the cache when it is appropriate.
@@ -246,6 +254,10 @@ bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format) const {
   return retval;
 }
 
+bool Clipboard::IsFormatAvailableByString(const std::string& format) const {
+  return IsFormatAvailable(format);
+}
+
 void Clipboard::ReadText(string16* result) const {
   result->clear();
   gchar* text = gtk_clipboard_wait_for_text(clipboard_);
@@ -284,9 +296,20 @@ void Clipboard::ReadHTML(string16* markup, std::string* src_url) const {
   if (!data)
     return;
 
-  UTF8ToUTF16(reinterpret_cast<char*>(data->data),
-              strlen(reinterpret_cast<char*>(data->data)),
-              markup);
+  UTF8ToUTF16(reinterpret_cast<char*>(data->data), data->length, markup);
+  gtk_selection_data_free(data);
+}
+
+void Clipboard::ReadBookmark(string16* title, std::string* url) const {
+  // TODO(estade): implement this.
+}
+
+void Clipboard::ReadData(const std::string& format, std::string* result) {
+  GtkSelectionData* data =
+      gtk_clipboard_wait_for_contents(clipboard_, StringToGdkAtom(format));
+  if (!data)
+    return;
+  result->assign(reinterpret_cast<char*>(data->data), data->length);
   gtk_selection_data_free(data);
 }
 

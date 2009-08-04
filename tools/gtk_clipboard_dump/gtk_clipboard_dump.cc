@@ -19,6 +19,11 @@ void PrintClipboardContents(GtkClipboard* clip) {
   GtkSelectionData* target_data =
       gtk_clipboard_wait_for_contents(clip,
                                       gdk_atom_intern("TARGETS", false));
+  if (!target_data) {
+    printf("failed to get the contents!\n");
+    return;
+  }
+
   gtk_selection_data_get_targets(target_data, &targets, &num_targets);
 
   printf("%d available targets:\n---------------\n", num_targets);

@@ -17,6 +17,8 @@
 #include "base/file_path.h"
 #include "base/string16.h"
 
+class Pickle;
+
 // This class is a wrapper for |Clipboard| that handles packing data
 // into a Clipboard::ObjectMap.
 // NB: You should probably NOT be using this class if you include
@@ -54,6 +56,9 @@ class ScopedClipboardWriter {
   // Adds a bitmap to the clipboard
   // Pixel format is assumed to be 32-bit BI_RGB.
   void WriteBitmapFromPixels(const void* pixels, const gfx::Size& size);
+
+  // Adds arbitrary data to clipboard.
+  void WritePickledData(const Pickle& pickle, Clipboard::FormatType format);
 
  protected:
   // We accumulate the data passed to the various targets in the |objects_|

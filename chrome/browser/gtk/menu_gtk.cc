@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/gtk/standard_menus.h"
@@ -22,7 +23,8 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  GtkAccelGroup* accel_group)
     : delegate_(delegate),
       dummy_accel_group_(gtk_accel_group_new()),
-      menu_(gtk_menu_new()) {
+      menu_(gtk_menu_new()),
+      factory_(this) {
   ConnectSignalHandlers();
   BuildMenuIn(menu_.get(), menu_data, accel_group);
 }
@@ -30,7 +32,8 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate, bool load)
     : delegate_(delegate),
       dummy_accel_group_(NULL),
-      menu_(gtk_menu_new()) {
+      menu_(gtk_menu_new()),
+      factory_(this) {
   ConnectSignalHandlers();
   if (load)
     BuildMenuFromDelegate();
@@ -43,6 +46,8 @@ MenuGtk::~MenuGtk() {
 }
 
 void MenuGtk::ConnectSignalHandlers() {
+  // We connect afterwards because OnMenuShow calls SetMenuItemInfo, which may
+  // take a long time or even start a nested message loop.
   g_signal_connect(menu_.get(), "show", G_CALLBACK(OnMenuShow), this);
   g_signal_connect(menu_.get(), "hide", G_CALLBACK(OnMenuHidden), this);
 }
@@ -293,10 +298,14 @@ void MenuGtk::MenuPositionFunc(GtkMenu* menu,
   *push_in = FALSE;
 }
 
+void MenuGtk::UpdateMenu() {
+  gtk_container_foreach(GTK_CONTAINER(menu_.get()), SetMenuItemInfo, this);
+}
+
 // static
 void MenuGtk::OnMenuShow(GtkWidget* widget, MenuGtk* menu) {
-  gtk_container_foreach(GTK_CONTAINER(menu->menu_.get()),
-                        SetMenuItemInfo, menu);
+  MessageLoop::current()->PostTask(FROM_HERE,
+      menu->factory_.NewRunnableMethod(&MenuGtk::UpdateMenu));
 }
 
 // static

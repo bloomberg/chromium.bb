@@ -17,7 +17,7 @@ bool IsBitmapSafe(const Clipboard::ObjectMapParams& params) {
       static_cast<size_t>(size->width() * size->height() * 4);
 }
 
-}
+}  // namespace
 
 void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
   switch (type) {
@@ -56,6 +56,11 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       if (!IsBitmapSafe(params))
         return;
       WriteBitmap(&(params[0].front()), &(params[1].front()));
+      break;
+
+    case CBF_DATA:
+      WriteData(&(params[0].front()), params[0].size(),
+                &(params[1].front()), params[1].size());
       break;
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 

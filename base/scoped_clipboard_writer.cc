@@ -6,9 +6,11 @@
 // purpose can be found in base/scoped_clipboard_writer.h. Documentation on the
 // format of the parameters for each clipboard target can be found in
 // base/clipboard.h.
+
 #include "base/scoped_clipboard_writer.h"
 
 #include "base/gfx/size.h"
+#include "base/pickle.h"
 #include "base/string_util.h"
 
 ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard)
@@ -138,4 +140,19 @@ void ScopedClipboardWriter::WriteBitmapFromPixels(const void* pixels,
   parameters.push_back(pixels_parameter);
   parameters.push_back(size_parameter);
   objects_[Clipboard::CBF_BITMAP] = parameters;
+}
+
+void ScopedClipboardWriter::WritePickledData(const Pickle& pickle,
+                                             Clipboard::FormatType format) {
+  Clipboard::ObjectMapParam format_parameter(format.begin(), format.end());
+  Clipboard::ObjectMapParam data_parameter;
+
+  data_parameter.resize(pickle.size());
+  memcpy(const_cast<char*>(&data_parameter.front()),
+         pickle.data(), pickle.size());
+
+  Clipboard::ObjectMapParams parameters;
+  parameters.push_back(format_parameter);
+  parameters.push_back(data_parameter);
+  objects_[Clipboard::CBF_DATA] = parameters;
 }
