@@ -3583,6 +3583,7 @@
         'browser/media_uitest.cc',
         'browser/metrics/metrics_service_uitest.cc',
         'browser/printing/printing_layout_uitest.cc',
+        'browser/process_singleton_linux_uitest.cc',
         'browser/renderer_host/resource_dispatcher_host_uitest.cc',
         'browser/sanity_uitest.cc',
         'browser/session_history_uitest.cc',
@@ -3621,6 +3622,10 @@
             'browser/login_prompt_uitest.cc',
             'test/reliability/page_load_test.cc',
             'test/ui/layout_plugin_uitest.cc',
+          ],
+        }, { # else: OS != "linux"
+          'sources!': [
+            'browser/process_singleton_linux_uitest.cc',
           ],
         }],
         ['OS=="linux" and toolkit_views==1', {
