@@ -785,6 +785,7 @@
         'browser/cocoa/download_shelf_mac.mm',
         'browser/cocoa/download_shelf_view.h',
         'browser/cocoa/download_shelf_view.mm',
+        'browser/cocoa/download_started_animation_mac.mm',
         'browser/cocoa/encoding_menu_controller_delegate_mac.h',
         'browser/cocoa/encoding_menu_controller_delegate_mac.mm',
         'browser/cocoa/find_bar_bridge.h',

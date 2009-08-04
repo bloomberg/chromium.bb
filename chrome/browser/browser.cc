@@ -2018,8 +2018,6 @@ void Browser::OnStartDownload(DownloadItem* download) {
   // GetDownloadShelf creates the download shelf if it was not yet created.
   window()->GetDownloadShelf()->AddDownload(new DownloadItemModel(download));
 
-// TODO(port): port for mac.
-#if defined(OS_WIN) || defined(OS_LINUX)
   // Don't show the animation for "Save file" downloads.
   if (download->total_bytes() > 0) {
     TabContents* current_tab = GetSelectedTabContents();
@@ -2028,7 +2026,6 @@ void Browser::OnStartDownload(DownloadItem* download) {
         Animation::ShouldRenderRichAnimation())
       DownloadStartedAnimation::Show(current_tab);
   }
-#endif
 }
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
