@@ -86,6 +86,32 @@
                 },
               },
             },
+            'conditions': [
+              ['OS=="win"', {
+                # TODO(bradnelson): add a gyp mechanism to make this more
+                # graceful.
+                'Purify': {
+                  'msvs_props': [
+                    'mini_installer/mini_installer_release.vsprops'
+                  ],
+                  'msvs_settings': {
+                    'VCCLCompilerTool': {
+                      'BasicRuntimeChecks': '0',
+                    },
+                  },
+                },
+                'Release - no tcmalloc': {
+                  'msvs_props': [
+                    'mini_installer/mini_installer_release.vsprops'
+                  ],
+                  'msvs_settings': {
+                    'VCCLCompilerTool': {
+                      'BasicRuntimeChecks': '0',
+                    },
+                  },
+                },
+              }],
+            ],
           },
           'rules': [
             {
