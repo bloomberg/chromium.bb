@@ -84,54 +84,6 @@ class SavePageTest : public UITest {
   FilePath download_dir_;
 };
 
-TEST_F(SavePageTest, NoSave) {
-  std::string file_name = "c.htm";
-  FilePath full_file_name = save_dir_.AppendASCII(file_name);
-  FilePath dir = save_dir_.AppendASCII("c_files");
-
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->NavigateToURL(GURL("about:blank")));
-  WaitUntilTabCount(1);
-
-  EXPECT_FALSE(tab->SavePage(full_file_name.ToWStringHack(),
-                             dir.ToWStringHack(),
-                             SavePackage::SAVE_AS_ONLY_HTML));
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  EXPECT_FALSE(WaitForDownloadShelfVisible(browser.get()));
-}
-
-TEST_F(SavePageTest, FilenameFromPageTitle) {
-  std::string file_name = "b.htm";
-
-  FilePath full_file_name = download_dir_.AppendASCII(
-      std::string("Test page for saving page feature") + kAppendedExtension);
-  FilePath dir = download_dir_.AppendASCII(
-      "Test page for saving page feature_files");
-
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(
-      UTF8ToWide(std::string(kTestDir) + "/" + file_name));
-  scoped_refptr<TabProxy> tab(GetActiveTab());
-  ASSERT_TRUE(tab.get());
-  ASSERT_TRUE(tab->NavigateToURL(url));
-  WaitUntilTabCount(1);
-
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  automation()->SavePackageShouldPromptUser(false);
-  EXPECT_TRUE(browser->RunCommandAsync(IDC_SAVE_PAGE));
-  EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
-  automation()->SavePackageShouldPromptUser(true);
-
-  CheckFile(dir.AppendASCII("1.png"), FilePath(FILE_PATH_LITERAL("1.png")),
-                            true);
-  CheckFile(dir.AppendASCII("1.css"), FilePath(FILE_PATH_LITERAL("1.css")),
-                            true);
-  CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)),
-            false);
-  EXPECT_TRUE(file_util::DieFileDie(full_file_name, false));
-  EXPECT_TRUE(file_util::DieFileDie(dir, true));
-}
-
 // This tests that a webpage with the title "test.exe" is saved as
 // "test.exe.htm".
 // We probably don't care to handle this on Linux or Mac.

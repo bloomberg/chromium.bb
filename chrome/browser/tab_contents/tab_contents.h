@@ -524,8 +524,9 @@ class TabContents : public PageNavigator,
   void OnSavePage();
 
   // Save page with the main HTML file path, the directory for saving resources,
-  // and the save type: HTML only or complete web page.
-  void SavePage(const std::wstring& main_file,
+  // and the save type: HTML only or complete web page. Returns true if the
+  // saving process has been initiated successfully.
+  bool SavePage(const std::wstring& main_file,
                 const std::wstring& dir_path,
                 SavePackage::SavePackageType save_type);
 
