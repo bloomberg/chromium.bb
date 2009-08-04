@@ -10,8 +10,26 @@
 using WebKit::WebFontRendering;
 
 static SkPaint::Hinting RendererPreferencesToSkiaHinting(
-    RendererPreferencesHintingEnum hinting) {
-  switch (hinting) {
+    const RendererPreferences& prefs) {
+  if (!prefs.should_antialias_text) {
+    // When anti-aliasing is off, GTK maps all non-zero hinting settings to
+    // 'Normal' hinting so we do the same. Otherwise, folks who have 'Slight'
+    // hinting selected will see readable text in everything expect Chromium.
+    switch (prefs.hinting) {
+      case RENDERER_PREFERENCES_HINTING_NONE:
+        return SkPaint::kNo_Hinting;
+      case RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT:
+      case RENDERER_PREFERENCES_HINTING_SLIGHT:
+      case RENDERER_PREFERENCES_HINTING_MEDIUM:
+      case RENDERER_PREFERENCES_HINTING_FULL:
+        return SkPaint::kNormal_Hinting;
+      default:
+        NOTREACHED();
+        return SkPaint::kNormal_Hinting;
+    }
+  }
+
+  switch (prefs.hinting) {
   case RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT:
     return SkPaint::kNormal_Hinting;
   case RENDERER_PREFERENCES_HINTING_NONE:
@@ -83,7 +101,7 @@ static bool RendererPreferencesToSubpixelGlyphsFlag(
 void RenderView::UpdateFontRenderingFromRendererPrefs() {
   const RendererPreferences& prefs = renderer_preferences_;
   WebFontRendering::setHinting(
-      RendererPreferencesToSkiaHinting(prefs.hinting));
+      RendererPreferencesToSkiaHinting(prefs));
   WebFontRendering::setLCDOrder(
       RendererPreferencesToSkiaLCDOrder(prefs.subpixel_rendering));
   WebFontRendering::setLCDOrientation(
