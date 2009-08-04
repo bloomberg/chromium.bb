@@ -650,7 +650,9 @@ const int kDisabledIndex = 1;
 
   NSSortDescriptor* sortDescriptor =
       [[[NSSortDescriptor alloc] initWithKey:@"name"
-                                   ascending:YES] autorelease];
+                                   ascending:YES
+                                    selector:@selector(localizedCompare:)]
+       autorelease];
 
   [themes sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
 
