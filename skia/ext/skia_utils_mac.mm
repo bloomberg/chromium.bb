@@ -148,7 +148,7 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
   DCHECK(context != NULL);
 
   // Save the current graphics context so that we can restore it later.
-  NSGraphicsContext* current_context = [NSGraphicsContext currentContext];
+  [NSGraphicsContext saveGraphicsState];
 
   // Dummy context that we will draw into.
   NSGraphicsContext* context_cocoa =
@@ -162,7 +162,7 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
            fraction:1.0];
 
   // Done drawing, restore context.
-  [NSGraphicsContext setCurrentContext:current_context];
+  [NSGraphicsContext restoreGraphicsState];
 
   return bitmap;
 }
