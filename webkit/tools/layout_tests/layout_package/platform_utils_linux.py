@@ -168,9 +168,20 @@ class PlatformUtility(object):
     """
     return 'wdiff'
 
-  def ImageCompareExecutablePath(self, target):
+  def ImageDiffBinary(self):
+    return 'image_diff'
+
+  def ImageDiffBinaryPath(self, target):
     """Path to the image_diff binary."""
-    return PathFromBuildResults(target, 'image_diff')
+    return PathFromBuildResults(target, self.ImageDiffBinary())
+
+  def LayoutTestHelperBinary(self):
+    """Path to the layout_test helper binary, if needed, empty otherwise"""
+    return ''
+
+  def LayoutTestHelperBinaryPath(self, target):
+    """Path to the layout_test helper binary, if needed, empty otherwise"""
+    return ''
 
   def TestShellBinary(self):
     """The name of the binary for TestShell."""

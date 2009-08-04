@@ -185,8 +185,32 @@ class PlatformUtility(google.platform_utils_win.PlatformUtility):
     """Path to the WDiff executable, whose binary is checked in on Win"""
     return PathFromBase('third_party', 'cygwin', 'bin', 'wdiff.exe')
 
-  def ImageCompareExecutablePath(self, target):
-    return PathFromBase('chrome', target, 'image_diff.exe')
+  def ImageDiffBinary(self):
+    return 'image_diff.exe'
+
+  def ImageDiffBinaryPath(self, target):
+    """Return the platform-specific binary path for the image compare util.
+       We use this if we can't find the binary in the default location
+       in path_utils.
+
+    Args:
+      target: Build target mode (debug or release)
+    """
+    return PathFromBase('chrome', target, self.ImageDiffBinary())
+
+  def LayoutTestHelperBinary(self):
+    """name of the layout test helper binary, if needed, empty otherwise"""
+    return 'layout_test_helper.exe'
+
+  def LayoutTestHelperBinaryPath(self, target):
+    """Return the platform-specific binary path for the layout test helper.
+       We use this if we can't find the binary in the default location
+       in path_utils.
+
+    Args:
+      target: Build target mode (debug or release)
+    """
+    return PathFromBase('chrome', target, self.LayoutTestHelperBinary())
 
   def TestShellBinary(self):
     """The name of the binary for TestShell."""
@@ -194,6 +218,8 @@ class PlatformUtility(google.platform_utils_win.PlatformUtility):
 
   def TestShellBinaryPath(self, target):
     """Return the platform-specific binary path for our TestShell.
+       We use this if we can't find the binary in the default location
+       in path_utils.
 
     Args:
       target: Build target mode (debug or release)

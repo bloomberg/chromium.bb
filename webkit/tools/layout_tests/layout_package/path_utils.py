@@ -198,6 +198,19 @@ def ExpectedFilename(filename, suffix, platform):
   return os.path.join(os.path.dirname(filename),
                       os.path.basename(results_filename))
 
+def ImageDiffBinaryPath(target):
+  """Gets the full path to the image_diff binary for the target build
+  configuration. Raises PathNotFound if the file doesn't exist"""
+  platform_util = platform_utils.PlatformUtility('')
+  full_path = os.path.join(WebKitRoot(), target,
+                           platform_util.ImageDiffBinary())
+  if not os.path.exists(full_path):
+    # try output directory from either Xcode or chrome.sln
+    full_path = platform_util.ImageDiffBinaryPath(target)
+  if not os.path.exists(full_path):
+    raise PathNotFound('unable to find image_diff at %s' % full_path)
+  return full_path
+
 def TestShellBinaryPath(target):
   """Gets the full path to the test_shell binary for the target build
   configuration. Raises PathNotFound if the file doesn't exist"""
@@ -213,13 +226,22 @@ def TestShellBinaryPath(target):
 
 def LayoutTestHelperBinaryPath(target):
   """Gets the full path to the layout test helper binary for the target build
-  configuration. Raises PathNotFound if the file doesn't exist"""
+  configuration, if it is needed, or an empty string if it isn't.
+
+  Raises PathNotFound if it is needed and the file doesn't exist"""
   platform_util = platform_utils.PlatformUtility('')
-  # try output directory from either Xcode or chrome.sln
-  full_path = platform_util.LayoutTestHelperBinaryPath(target)
-  if not os.path.exists(full_path):
-    raise PathNotFound('unable to find layout_test_helper at %s' % full_path)
-  return full_path
+  if len(platform_util.LayoutTestHelperBinary()):
+    full_path = os.path.join(WebKitRoot(), target,
+                             platform_util.LayoutTestHelperBinary())
+    if not os.path.exists(full_path):
+      # try output directory from either Xcode or chrome.sln
+      full_path = platform_util.LayoutTestHelperBinaryPath(target)
+      if len(full_path) and not os.path.exists(full_path):
+        raise PathNotFound('unable to find layout_test_helper at %s' %
+                           full_path)
+    return full_path
+  else:
+    return ''
 
 def RelativeTestFilename(filename):
   """Provide the filename of the test relative to the layout data

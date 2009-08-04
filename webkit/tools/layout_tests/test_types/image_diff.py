@@ -72,13 +72,12 @@ class ImageDiff(test_type_base.TestTypeBase):
       self.FILENAME_SUFFIX_ACTUAL + '.png')
     expected_filename = self.OutputFilename(filename,
       self.FILENAME_SUFFIX_EXPECTED + '.png')
-    platform_util = platform_utils.PlatformUtility('')
 
     global _compare_available
     cmd = ''
 
     try:
-      executable = platform_util.ImageCompareExecutablePath(target)
+      executable = path_utils.ImageDiffBinaryPath(target)
       cmd = [executable, '--diff', actual_filename, expected_filename,
              diff_filename]
     except Exception, e:

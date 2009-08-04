@@ -154,11 +154,25 @@ class PlatformUtility(object):
     """
     return 'wdiff'
 
-  def ImageCompareExecutablePath(self, target):
-    return PathFromBase('xcodebuild', target, 'image_diff')
+  def ImageDiffBinary(self):
+    """The name of the binary for image_diff."""
+    return 'image_diff'
+
+  def ImageDiffBinaryPath(self, target):
+    """Return the platform-specific binary path for our image compare util.
+
+    Args:
+      target: Build target mode (debug or release)
+    """
+    return PathFromBase('xcodebuild', target, self.ImageDiffBinary())
+
+  def LayoutTestHelperBinary(self):
+    """name of the layout_test helper binary, if needed, empty otherwise"""
+    return 'layout_test_helper'
 
   def LayoutTestHelperBinaryPath(self, target):
-    return PathFromBase('xcodebuild', target, 'layout_test_helper')
+    """Path to the layout_test helper binary, if needed, empty otherwise"""
+    return PathFromBase('xcodebuild', target, self.LayoutTestHelperBinary())
 
   def TestShellBinary(self):
     """The name of the binary for TestShell."""

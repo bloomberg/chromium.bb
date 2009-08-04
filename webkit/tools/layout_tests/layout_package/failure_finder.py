@@ -5,10 +5,12 @@
 # TODO(gwilson): 1.  Change text differs to use external utils.
 #                2.  Change text_expectations parsing to existing
 #                    logic in layout_pagckage.test_expectations.
-import google.path_utils
+
 import difflib
 import errno
+import google.path_utils
 import os
+import path_utils
 import platform_utils
 import re
 import subprocess
@@ -135,10 +137,9 @@ def ScrapeURL(url):
   return urllib2.urlopen(urllib2.Request(url)).read()
 
 def GeneratePNGDiff(file1, file2, output_file):
-  platform_util = platform_utils.PlatformUtility('')
   _compare_available = False;
   try:
-    executable = platform_util.ImageCompareExecutablePath("Debug")
+    executable = path_utils.ImageDiffBinaryPath("Debug")
     cmd = [executable, '--diff', file1, file2, output_file]
     _compare_available = True;
   except Exception, e:
