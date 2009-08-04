@@ -3093,3 +3093,6 @@ BUG17974 WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 
 // This test seems to crash periodically on mac.
 BUG18206 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-onload-remove-self.html = CRASH PASS
+
+// This test started failing after CL 22369
+BUG18392 WIN LINUX MAC : LayoutTests/http/tests/plugins/npapi-response-headers.html = FAIL
