@@ -14,6 +14,9 @@ class TabContents;
 
 // When a user installs a theme, we display it immediately, but provide an
 // infobar allowing them to cancel.
+//
+// TODO(aa): Rename this to ThemeInstalledInfoBarDelegate, since it isn't
+// used for previewing anymore.
 class ThemePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
   ThemePreviewInfobarDelegate(TabContents* tab_contents,

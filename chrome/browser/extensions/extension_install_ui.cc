@@ -4,12 +4,17 @@
 
 #include "chrome/browser/extensions/extension_install_ui.h"
 
+#include <map>
+
 #include "app/l10n_util.h"
-#include "grit/chromium_strings.h"
+#include "base/file_util.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/extensions/extension.h"
+#include "grit/chromium_strings.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -23,24 +28,24 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile), ui_loop_(MessageLoop::current()) {
 }
 
-bool ExtensionInstallUI::ConfirmInstall(Extension* extension) {
+void ExtensionInstallUI::ConfirmInstall(CrxInstaller* installer,
+                                        Extension* extension,
+                                        SkBitmap* install_icon) {
   DCHECK(ui_loop_ == MessageLoop::current());
 
   // We special-case themes to not show any confirm UI. Instead they are
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
   // to allow the user to revert if they don't like it.
-  if (extension->IsTheme())
-    return true;
+  if (extension->IsTheme()) {
+    installer->ContinueInstall();
+    return;
+  }
 
 #if defined(OS_WIN)
-  if (win_util::MessageBox(GetForegroundWindow(),
-          L"Are you sure you want to install this extension?\n\n"
-          L"You should only install extensions from sources you trust.",
-          l10n_util::GetString(IDS_PRODUCT_NAME).c_str(),
-          MB_OKCANCEL) != IDOK) {
-    return false;
-  }
+  ShowExtensionInstallPrompt(profile_, installer, extension, install_icon);
+
 #elif defined(OS_MACOSX)
+  // TODO(port): Implement nicer UI.
   // Using CoreFoundation to do this dialog is unimaginably lame but will do
   // until the UI is redone.
   scoped_cftyperef<CFStringRef> product_name(
@@ -53,13 +58,15 @@ bool ExtensionInstallUI::ConfirmInstall(Extension* extension) {
            "This is a temporary message and it will be removed when "
            "extensions UI is finalized."),
       NULL, CFSTR("Cancel"), NULL, &response)) {
-    return false;
+    installer->AbortInstall();
+  } else {
+    installer->ContinueInstall();
   }
 #else
+  // TODO(port): Implement some UI.
   NOTREACHED();
+  installer->ContinueInstall();
 #endif  // OS_*
-
-  return true;
 }
 
 void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {

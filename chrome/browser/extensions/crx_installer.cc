@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "grit/chromium_strings.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "webkit/glue/image_decoder.h"
 
 namespace {
   // Helper function to delete files. This is used to avoid ugly casts which
@@ -116,6 +118,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   }
 
   if (client_.get()) {
+    DecodeInstallIcon();
     ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
         &CrxInstaller::ConfirmInstall));
   } else {
@@ -123,16 +126,60 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   }
 }
 
-void CrxInstaller::ConfirmInstall() {
-  if (!client_->ConfirmInstall(extension_.get())) {
-    // We're done. Since we don't post any more tasks to ourselves, our ref
-    // count should go to zero and we die. The destructor will clean up the temp
-    // dir.
+void CrxInstaller::DecodeInstallIcon() {
+  std::map<int, std::string>::const_iterator iter =
+      extension_->icons().find(128);
+  if (iter == extension_->icons().end())
+    return;
+
+  FilePath path = extension_->GetResourcePath(iter->second);
+  std::string file_contents;
+  if (!file_util::ReadFileToString(path, &file_contents)) {
+    LOG(ERROR) << "Could not read icon file: "
+               << WideToUTF8(path.ToWStringHack());
     return;
   }
 
+  // Decode the image using WebKit's image decoder.
+  const unsigned char* data =
+      reinterpret_cast<const unsigned char*>(file_contents.data());
+  webkit_glue::ImageDecoder decoder;
+  scoped_ptr<SkBitmap> decoded(new SkBitmap());
+  *decoded = decoder.Decode(data, file_contents.length());
+  if(decoded->empty()) {
+    LOG(ERROR) << "Could not decode icon file: "
+               << WideToUTF8(path.ToWStringHack());
+    return;
+  }
+
+  if (decoded->width() != 128 || decoded->height() != 128) {
+    LOG(ERROR) << "Icon file has unexpected size: "
+               << IntToString(decoded->width()) << "x"
+               << IntToString(decoded->height());
+    return;
+  }
+
+  install_icon_.reset(decoded.release());
+}
+
+void CrxInstaller::ConfirmInstall() {
+  AddRef();  // balanced in ContinueInstall() and AbortInstall().
+
+  client_->ConfirmInstall(this, extension_.get(), install_icon_.get());
+}
+
+void CrxInstaller::ContinueInstall() {
   file_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &CrxInstaller::CompleteInstall));
+
+  Release();  // balanced in ConfirmInstall().
+}
+
+void CrxInstaller::AbortInstall() {
+  Release();  // balanced in ConfirmInstall().
+
+  // We're done. Since we don't post any more tasks to ourself, our ref count
+  // should go to zero and we die. The destructor will clean up the temp dir.
 }
 
 void CrxInstaller::CompleteInstall() {
@@ -156,14 +203,22 @@ void CrxInstaller::CompleteInstall() {
     return;
   }
 
-  extension_->set_path(version_dir);
-  extension_->set_location(install_source_);
-
   if (install_type == Extension::REINSTALL) {
     // We use this as a signal to switch themes.
     ReportOverinstallFromFileThread();
     return;
   }
+
+  // This is lame, but we must reload the extension because absolute paths
+  // inside the content scripts are established inside InitFromValue() and we
+  // just moved the extension.
+  // TODO(aa): All paths to resources inside extensions should be created
+  // lazily and based on the Extension's root path at that moment.
+  std::string error;
+  extension_.reset(extension_file_util::LoadExtension(version_dir, true,
+                                                      &error));
+  DCHECK(error.empty());
+  extension_->set_location(install_source_);
 
   ReportSuccessFromFileThread();
 }

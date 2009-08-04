@@ -78,7 +78,12 @@ const size_t Extension::kIdSize = 16;
 
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 
-const int Extension::kKnownIconSizes[] = { 128 };
+const int Extension::kIconSizes[] = {
+  EXTENSION_ICON_LARGE,
+  EXTENSION_ICON_MEDIUM,
+  EXTENSION_ICON_SMALL,
+  EXTENSION_ICON_BITTY
+};
 
 Extension::~Extension() {
   for (PageActionMap::iterator i = page_actions_.begin();
@@ -302,7 +307,7 @@ PageAction* Extension::LoadPageActionHelper(
   int icon_count = 0;
   for (ListValue::const_iterator iter = icons->begin();
        iter != icons->end(); ++iter) {
-    FilePath::StringType path;
+    std::string path;
     if (!(*iter)->GetAsString(&path) || path.empty()) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidPageActionIconPath,
@@ -310,8 +315,7 @@ PageAction* Extension::LoadPageActionHelper(
       return NULL;
     }
 
-    FilePath icon_path = path_.Append(path);
-    result->AddIconPath(icon_path);
+    result->AddIconPath(path);
     ++icon_count;
   }
 
@@ -580,8 +584,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       return false;
     }
 
-    for (size_t i = 0; i < arraysize(kKnownIconSizes); ++i) {
-      std::wstring key = ASCIIToWide(IntToString(kKnownIconSizes[i]));
+    for (size_t i = 0; i < arraysize(kIconSizes); ++i) {
+      std::wstring key = ASCIIToWide(IntToString(kIconSizes[i]));
       if (icons_value->HasKey(key)) {
         std::string icon_path;
         if (!icons_value->GetString(key, &icon_path)) {
@@ -589,7 +593,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
               errors::kInvalidIconPath, WideToASCII(key));
           return false;
         }
-        icons_[kKnownIconSizes[i]] = icon_path;
+        icons_[kIconSizes[i]] = icon_path;
       }
     }
   }
@@ -914,10 +918,10 @@ std::set<FilePath> Extension::GetBrowserImages() {
   // page action icons
   for (PageActionMap::const_iterator it = page_actions().begin();
        it != page_actions().end(); ++it) {
-    const std::vector<FilePath>& icon_paths = it->second->icon_paths();
-    for (std::vector<FilePath>::const_iterator iter = icon_paths.begin();
+    const std::vector<std::string>& icon_paths = it->second->icon_paths();
+    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
-      image_paths.insert(*iter);
+      image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(*iter)));
     }
   }
 

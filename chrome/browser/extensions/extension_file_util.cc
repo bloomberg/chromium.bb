@@ -254,13 +254,12 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
   for (PageActionMap::const_iterator i(page_actions.begin());
        i != page_actions.end(); ++i) {
     PageAction* page_action = i->second;
-    const std::vector<FilePath>& icon_paths = page_action->icon_paths();
-    for (std::vector<FilePath>::const_iterator iter = icon_paths.begin();
+    const std::vector<std::string>& icon_paths = page_action->icon_paths();
+    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
-      FilePath path = *iter;
-      if (!file_util::PathExists(path)) {
+      if (!file_util::PathExists(extension->GetResourcePath(*iter))) {
         *error = StringPrintf("Could not load icon '%s' for page action.",
-                              WideToUTF8(path.ToWStringHack()).c_str());
+                              iter->c_str());
         return NULL;
       }
     }

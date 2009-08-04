@@ -14,6 +14,9 @@
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 
+class CrxInstaller;
+class SkBitmap;
+
 // Classes that want to know about install completion, or that want to have an
 // opportunity to reject the unpacked extension before installation, should
 // implement this interface.
@@ -22,8 +25,17 @@ class CrxInstallerClient
  public:
   virtual ~CrxInstallerClient() {}
 
-  // Return true to indicate that installation should proceed, false otherwise.
-  virtual bool ConfirmInstall(Extension* extension) = 0;
+  // This is called by the installer to verify whether the installation should
+  // proceed. Clients can use this time to put up UI, or to do any checks they
+  // need to on the unpacked extension.
+  //
+  // Clients *MUST* eventually call either ContinueInstall() or AbortInstall()
+  // on |installer|.
+  //
+  // Clients should not AddRef() |installer|.
+  virtual void ConfirmInstall(CrxInstaller* installer,
+                              Extension* extension,
+                              SkBitmap* icon) = 0;
 
   // Installation was successful.
   virtual void OnInstallSuccess(Extension* extension) = 0;
@@ -79,6 +91,14 @@ class CrxInstaller : public SandboxedExtensionUnpackerClient {
                     ExtensionsService* frontend,
                     CrxInstallerClient* client);
 
+  // Clients should call this method after ConfirmInstall() if they want the
+  // installation to continue.
+  void ContinueInstall();
+
+  // Clients should call this method after ConfirmInstall() if they want the
+  // installation to stop.
+  void AbortInstall();
+
  private:
   CrxInstaller(const FilePath& crx_path,
                const FilePath& install_directory,
@@ -95,6 +115,10 @@ class CrxInstaller : public SandboxedExtensionUnpackerClient {
   virtual void OnUnpackSuccess(const FilePath& temp_dir,
                                const FilePath& extension_dir,
                                Extension* extension);
+
+  // Read the icon from the extension if present and decode it into
+  // install_icon_.
+  void DecodeInstallIcon();
 
   // Runs on the UI thread. Confirms with the user (via CrxInstallerClient) that
   // it is OK to install this extension.
@@ -144,6 +168,9 @@ class CrxInstaller : public SandboxedExtensionUnpackerClient {
   // The extension we're installing. We own this and either pass it off to
   // ExtensionsService on success, or delete it on failure.
   scoped_ptr<Extension> extension_;
+
+  // The icon we will display in the installation UI, if any.
+  scoped_ptr<SkBitmap> install_icon_;
 
   // The temp directory extension resources were unpacked to. We own this and
   // must delete it when we are done with it.

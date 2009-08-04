@@ -119,6 +119,13 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
   // originals are gone for good.
   extension_.reset(new Extension);
   std::string manifest_error;
+
+  // Update the path to refer to the temporary location. We do this because
+  // clients may want to use resources inside the extension before it is
+  // installed and they need the correct path. For example, the install UI shows
+  // one of the icons from the extension.
+  extension_->set_path(extension_root_);
+
   if (!extension_->InitFromValue(*final_manifest, true,  // require id
                                  &manifest_error)) {
     ReportFailure(std::string("Manifest is invalid: ") +

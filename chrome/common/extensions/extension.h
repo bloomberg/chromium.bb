@@ -46,8 +46,17 @@ class Extension {
     NEW_INSTALL
   };
 
+  // NOTE: If you change this list, you should also change kIconSizes in the cc
+  // file.
+  enum Icons {
+    EXTENSION_ICON_LARGE = 128,
+    EXTENSION_ICON_MEDIUM = 48,
+    EXTENSION_ICON_SMALL = 32,
+    EXTENSION_ICON_BITTY = 16,
+  };
+
   // Icon sizes used by the extension system.
-  static const int kKnownIconSizes[];
+  static const int kIconSizes[];
 
   // An NPAPI plugin included in the extension.
   struct PluginInfo {

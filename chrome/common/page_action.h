@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
+#include "base/basictypes.h"
 
 class PageAction {
  public:
@@ -35,8 +35,8 @@ class PageAction {
   std::string name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
-  const std::vector<FilePath>& icon_paths() const { return icon_paths_; }
-  void AddIconPath(const FilePath& icon_path) {
+  const std::vector<std::string>& icon_paths() const { return icon_paths_; }
+  void AddIconPath(const std::string& icon_path) {
     icon_paths_.push_back(icon_path);
   }
 
@@ -55,7 +55,7 @@ class PageAction {
   std::string name_;
 
   // The paths to the icons that this PageIcon can show.
-  std::vector<FilePath> icon_paths_;
+  std::vector<std::string> icon_paths_;
 };
 
 typedef std::map<std::string, PageAction*> PageActionMap;

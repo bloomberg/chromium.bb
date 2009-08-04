@@ -16,16 +16,20 @@ class Profile;
 class SandboxedExtensionUnpacker;
 
 // Displays all the UI around extension installation.
-//
-// TODO(aa): This will become a view and move to browser/views/extensions in the
-// future.
 class ExtensionInstallUI : public CrxInstallerClient {
  public:
+  // NOTE: The implementation of this is platform-specific.
+  static void ShowExtensionInstallPrompt(Profile* profile,
+                                         CrxInstaller* installer,
+                                         Extension* extension,
+                                         SkBitmap* install_icon);
+
   ExtensionInstallUI(Profile* profile);
 
  private:
   // CrxInstallerClient
-  virtual bool ConfirmInstall(Extension* extension);
+  virtual void ConfirmInstall(CrxInstaller* installer, Extension* extension,
+                              SkBitmap* icon);
   virtual void OnInstallSuccess(Extension* extension);
   virtual void OnInstallFailure(const std::string& error);
   virtual void OnOverinstallAttempted(Extension* extension);

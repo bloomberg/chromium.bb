@@ -279,8 +279,8 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Now setup some values to use in the page action.
   const std::string id("MyPageActionId");
   const std::string name("MyPageActionName");
-  FilePath::StringType img1 = FILE_PATH_LITERAL("image1.png");
-  FilePath::StringType img2 = FILE_PATH_LITERAL("image2.png");
+  std::string img1("image1.png");
+  std::string img2("image2.png");
 
   // Add the page_actions dictionary.
   input.SetString(keys::kPageActionId, id);
@@ -297,8 +297,8 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_STREQ(id.c_str(), page_action->id().c_str());
   ASSERT_STREQ(name.c_str(), page_action->name().c_str());
   ASSERT_EQ(2u, page_action->icon_paths().size());
-  ASSERT_STREQ(img1.c_str(), page_action->icon_paths()[0].value().c_str());
-  ASSERT_STREQ(img2.c_str(), page_action->icon_paths()[1].value().c_str());
+  ASSERT_STREQ(img1.c_str(), page_action->icon_paths()[0].c_str());
+  ASSERT_STREQ(img2.c_str(), page_action->icon_paths()[1].c_str());
   // Type hasn't been set, but it defaults to PERMANENT.
   ASSERT_EQ(PageAction::PERMANENT, page_action->type());
 

@@ -21,7 +21,7 @@ void ThemePreviewInfobarDelegate::InfoBarClosed() {
 }
 
 std::wstring ThemePreviewInfobarDelegate::GetMessageText() const {
-  return l10n_util::GetStringF(IDS_THEME_PREVIEW_INFOBAR_LABEL,
+  return l10n_util::GetStringF(IDS_THEME_INSTALL_INFOBAR_LABEL,
                                UTF8ToWide(name_));
 }
 
@@ -44,7 +44,7 @@ std::wstring ThemePreviewInfobarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   switch (button) {
     case BUTTON_CANCEL:
-      return l10n_util::GetString(IDS_THEME_PREVIEW_INFOBAR_UNDO_BUTTON);
+      return l10n_util::GetString(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
     default:
       return L"";
   }

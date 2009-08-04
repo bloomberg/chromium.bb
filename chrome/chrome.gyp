@@ -1705,6 +1705,7 @@
         'browser/views/edit_search_engine_dialog.h',
         'browser/views/event_utils.cc',
         'browser/views/event_utils.h',
+        'browser/views/extensions/extension_install_prompt.cc',
         'browser/views/extensions/extension_shelf.cc',
         'browser/views/extensions/extension_shelf.h',
         'browser/views/extensions/extension_view.cc',

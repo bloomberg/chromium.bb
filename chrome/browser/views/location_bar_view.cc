@@ -1263,18 +1263,22 @@ LocationBarView::PageActionImageView::PageActionImageView(
       page_action_(page_action),
       current_tab_id_(-1),
       tooltip_(page_action_->name()) {
+  Extension* extension = profile->GetExtensionsService()->GetExtensionById(
+      page_action->extension_id());
+  DCHECK(extension);
+
   // Load the images this view needs asynchronously on the file thread. We'll
   // get a call back into OnImageLoaded if the image loads successfully. If not,
   // the ImageView will have no image and will not appear in the Omnibox.
   DCHECK(!page_action->icon_paths().empty());
-  const std::vector<FilePath>& icon_paths = page_action->icon_paths();
+  const std::vector<std::string>& icon_paths = page_action->icon_paths();
   page_action_icons_.resize(icon_paths.size());
   int index = 0;
   MessageLoop* file_loop = g_browser_process->file_thread()->message_loop();
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
-  for (std::vector<FilePath>::const_iterator iter = icon_paths.begin();
+  for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
-    FilePath path = *iter;
+    FilePath path = extension->GetResourcePath(*iter);
     file_loop->PostTask(FROM_HERE, new LoadImageTask(tracker_, path, index++));
   }
 }

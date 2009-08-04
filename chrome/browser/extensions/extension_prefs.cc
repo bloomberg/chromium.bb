@@ -213,7 +213,7 @@ void ExtensionPrefs::OnExtensionInstalled(Extension* extension) {
   FilePath::StringType path = MakePathRelative(install_directory_,
       extension->path(), NULL);
   UpdateExtensionPref(id, kPrefPath, Value::CreateStringValue(path));
-  prefs_->ScheduleSavePersistentPrefs();
+  prefs_->SavePersistentPrefs();
 }
 
 void ExtensionPrefs::OnExtensionUninstalled(const Extension* extension,
