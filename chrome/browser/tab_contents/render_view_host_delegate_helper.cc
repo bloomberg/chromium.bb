@@ -176,8 +176,13 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kEnableRemoteFonts);
     web_prefs.xss_auditor_enabled =
         command_line.HasSwitch(switches::kEnableXSSAuditor);
+
+    // NOTE: We imply local storage enabledness for extensions because the
+    // extensions team is beta testing local storage and we like to live on the
+    // edge.
     web_prefs.local_storage_enabled =
-      command_line.HasSwitch(switches::kEnableLocalStorage);
+      command_line.HasSwitch(switches::kEnableLocalStorage) ||
+      command_line.HasSwitch(switches::kEnableExtensions);
     web_prefs.session_storage_enabled =
       command_line.HasSwitch(switches::kEnableSessionStorage);
   }

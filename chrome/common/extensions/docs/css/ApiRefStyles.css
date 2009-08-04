@@ -160,3 +160,19 @@ p#classSummary {
 
 #pageFooter {
 }
+
+#mainColumn table {
+  border-collapse:collapse;
+}
+
+#mainColumn th {
+  background:#ccc;
+  border:1px solid #999;
+}
+
+#mainColumn td {
+  text-align:left;
+  vertical-align:top;
+  border:1px solid #999;
+  padding:6px;
+}
