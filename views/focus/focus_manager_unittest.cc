@@ -22,8 +22,8 @@
 #include "views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
+#include "views/controls/native/native_view_host.h"
 #if defined(OS_WIN)
-#include "views/controls/native_control.h"
 #include "views/controls/scroll_view.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
@@ -131,7 +131,6 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
   virtual void TearDown() {
     if (focus_change_listener_)
       GetFocusManager()->RemoveFocusChangeListener(focus_change_listener_);
-    //    window_->CloseNow();
     window_->Close();
 
     // Flush the message loop to make Purify happy.
@@ -145,6 +144,14 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
     return static_cast<WindowGtk*>(window_)->GetFocusManager();
 #elif
     NOTIMPLEMENTED();
+#endif
+  }
+
+  void FocusNativeView(gfx::NativeView native_view) {
+#if defined(OS_WIN)
+  ::SendMessage(native_view, WM_SETFOCUS, NULL, NULL);
+#else
+  NOTIMPLEMENTED();
 #endif
   }
 
@@ -163,15 +170,21 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
     return gfx::Rect(0, 0, 500, 500);
   }
 
-#if defined(OS_WIN)
   // Mocks activating/deactivating the window.
   void SimulateActivateWindow() {
+#if defined(OS_WIN)
     ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_ACTIVE, NULL);
+#else
+  NOTDEFINED();
+#endif
   }
   void SimulateDeactivateWindow() {
+#if defined(OS_WIN)
     ::SendMessage(window_->GetNativeWindow(), WM_ACTIVATE, WA_INACTIVE, NULL);
-  }
+#else
+  NOTDEFINED();
 #endif
+  }
 
   MessageLoopForUI* message_loop() { return &message_loop_; }
 
@@ -191,81 +204,53 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(FocusManagerTest);
 };
 
-#if defined(OS_WIN)
-// BorderView is a NativeControl that creates a tab control as its child and
-// takes a View to add as the child of the tab control. The tab control is used
-// to give a nice background for the view. At some point we'll have a real
-// wrapper for TabControl, and this can be nuked in favor of it.
-// Taken from keyword_editor_view.cc.
-// It is interesting in our test as it is a native control containing another
-// RootView.
-class BorderView : public NativeControl {
+// BorderView is a view containing a native window with its own view hierarchy.
+// It is interesting to test focus traversal from a view hierarchy to an inner
+// view hierarchy.
+class BorderView : public NativeViewHost {
  public:
-  explicit BorderView(View* child) : child_(child) {
+  explicit BorderView(View* child) : child_(child), widget_(NULL) {
     DCHECK(child);
     SetFocusable(false);
   }
 
   virtual ~BorderView() {}
 
-  virtual HWND CreateNativeControl(HWND parent_container) {
-    // Create the tab control.
-    HWND tab_control = ::CreateWindowEx(GetAdditionalExStyle(),
-                                        WC_TABCONTROL,
-                                        L"",
-                                        WS_CHILD,
-                                        0, 0, width(), height(),
-                                        parent_container, NULL, NULL, NULL);
-    // Create the view container which is a child of the TabControl.
-    widget_ = new WidgetWin();
-    widget_->Init(tab_control, gfx::Rect());
-    widget_->SetContentsView(child_);
-    widget_->SetFocusTraversableParentView(this);
-    ResizeContents(tab_control);
-    return tab_control;
-  }
-
-  virtual LRESULT OnNotify(int w_param, LPNMHDR l_param) {
-    return 0;
-  }
-
-  virtual void Layout() {
-    NativeControl::Layout();
-    ResizeContents(GetNativeControlHWND());
-  }
-
   virtual RootView* GetContentsRootView() {
     return widget_->GetRootView();
   }
 
   virtual FocusTraversable* GetFocusTraversable() {
-    return widget_;
+    return widget_->GetRootView();
   }
 
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child) {
-    NativeControl::ViewHierarchyChanged(is_add, parent, child);
+    NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
 
     if (child == this && is_add) {
-      // We have been added to a view hierarchy, update the FocusTraversable
-      // parent.
-      widget_->SetFocusTraversableParent(GetRootView());
+      if (!widget_) {
+#if defined(OS_WIN)
+        WidgetWin* widget_win = new WidgetWin();
+        widget_win->Init(parent->GetRootView()->GetWidget()->GetNativeView(),
+                         gfx::Rect(0, 0, 100, 100));
+        widget_win->SetFocusTraversableParentView(this);
+        widget_ = widget_win;
+#else
+        widget_ = new WidgetGtk();
+#endif
+        widget_->SetContentsView(child_);
+      }
+
+      // We have been added to a view hierarchy, attach the native view.
+      Attach(widget_->GetNativeView());
+      // Also update the FocusTraversable parent so the focus traversal works.
+      widget_->GetRootView()->SetFocusTraversableParent(GetRootView());
     }
   }
 
  private:
-  void ResizeContents(HWND tab_control) {
-    DCHECK(tab_control);
-    CRect content_bounds;
-    if (!GetClientRect(tab_control, &content_bounds))
-      return;
-    TabCtrl_AdjustRect(tab_control, FALSE, &content_bounds);
-    widget_->MoveWindow(content_bounds.left, content_bounds.top,
-      content_bounds.Width(), content_bounds.Height(),
-      TRUE);
-  }
-
   View* child_;
-  WidgetWin* widget_;
+  Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(BorderView);
 };
@@ -719,7 +704,7 @@ class TestNativeButton : public NativeButton {
   explicit TestNativeButton(const std::wstring& text)
       : NativeButton(NULL, text) {
   };
-  virtual HWND TestGetNativeControlHWND() {
+  virtual gfx::NativeView TestGetNativeControlView() {
     return native_wrapper_->GetTestingHandle();
   }
 };
@@ -728,7 +713,7 @@ class TestCheckbox : public Checkbox {
  public:
   explicit TestCheckbox(const std::wstring& text) : Checkbox(text) {
   };
-  virtual HWND TestGetNativeControlHWND() {
+  virtual gfx::NativeView TestGetNativeControlView() {
     return native_wrapper_->GetTestingHandle();
   }
 };
@@ -737,7 +722,7 @@ class TestRadioButton : public RadioButton {
  public:
   explicit TestRadioButton(const std::wstring& text) : RadioButton(text, 1) {
   };
-  virtual HWND TestGetNativeControlHWND() {
+  virtual gfx::NativeView TestGetNativeControlView() {
     return native_wrapper_->GetTestingHandle();
   }
 };
@@ -745,7 +730,7 @@ class TestRadioButton : public RadioButton {
 class TestTextfield : public Textfield {
  public:
   TestTextfield() { }
-  virtual HWND TestGetNativeComponent() {
+  virtual gfx::NativeView TestGetNativeControlView() {
     return native_wrapper_->GetTestingHandle();
   }
 };
@@ -753,7 +738,7 @@ class TestTextfield : public Textfield {
 class TestCombobox : public Combobox, public Combobox::Model {
  public:
   TestCombobox() : Combobox(this) { }
-  virtual HWND TestGetNativeComponent() {
+  virtual gfx::NativeView TestGetNativeControlView() {
     return native_wrapper_->GetTestingHandle();
   }
   virtual int GetItemCount(Combobox* source) {
@@ -767,7 +752,7 @@ class TestCombobox : public Combobox, public Combobox::Model {
 class TestTabbedPane : public TabbedPane {
  public:
   TestTabbedPane() { }
-  virtual HWND TestGetNativeComponent() {
+  virtual gfx::NativeView TestGetNativeControlView() {
     return native_tabbed_pane_->GetTestingHandle();
   }
 };
@@ -791,29 +776,26 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
   content_view_->AddChildView(tabbed_pane);
   tabbed_pane->AddTab(L"Awesome tab", tab_button);
 
-  // Simulate the native HWNDs getting the native focus.
-  ::SendMessage(button->TestGetNativeControlHWND(), WM_SETFOCUS, NULL, NULL);
+  // Simulate the native view getting the native focus (such as by user click).
+  FocusNativeView(button->TestGetNativeControlView());
   EXPECT_EQ(button, GetFocusManager()->GetFocusedView());
 
-  ::SendMessage(checkbox->TestGetNativeControlHWND(), WM_SETFOCUS, NULL, NULL);
+  FocusNativeView(checkbox->TestGetNativeControlView());
   EXPECT_EQ(checkbox, GetFocusManager()->GetFocusedView());
 
-  ::SendMessage(radio_button->TestGetNativeControlHWND(), WM_SETFOCUS,
-                NULL, NULL);
+  FocusNativeView(radio_button->TestGetNativeControlView());
   EXPECT_EQ(radio_button, GetFocusManager()->GetFocusedView());
 
-  ::SendMessage(textfield->TestGetNativeComponent(), WM_SETFOCUS, NULL, NULL);
+  FocusNativeView(textfield->TestGetNativeControlView());
   EXPECT_EQ(textfield, GetFocusManager()->GetFocusedView());
 
-  ::SendMessage(combobox->TestGetNativeComponent(), WM_SETFOCUS, NULL, NULL);
+  FocusNativeView(combobox->TestGetNativeControlView());
   EXPECT_EQ(combobox, GetFocusManager()->GetFocusedView());
 
-  ::SendMessage(tabbed_pane->TestGetNativeComponent(), WM_SETFOCUS,
-                NULL, NULL);
+  FocusNativeView(tabbed_pane->TestGetNativeControlView());
   EXPECT_EQ(tabbed_pane, GetFocusManager()->GetFocusedView());
 
-  ::SendMessage(tab_button->TestGetNativeControlHWND(), WM_SETFOCUS,
-                NULL, NULL);
+  FocusNativeView(tab_button->TestGetNativeControlView());
   EXPECT_EQ(tab_button, GetFocusManager()->GetFocusedView());
 }
 
@@ -995,8 +977,6 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
     }
   }
 }
-
-#endif  // WIN_OS
 
 // Counts accelerator calls.
 class TestAcceleratorTarget : public AcceleratorTarget {
