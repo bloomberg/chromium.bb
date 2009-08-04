@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/db_message_filter.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/render_thread.h"
@@ -68,6 +69,11 @@ unsigned long long RendererWebKitClientImpl::visitedLinkHash(
 
 bool RendererWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
   return RenderThread::current()->visited_link_slave()->IsVisited(link_hash);
+}
+
+WebKit::WebMessagePortChannel*
+RendererWebKitClientImpl::createMessagePortChannel() {
+  return new WebMessagePortChannelImpl();
 }
 
 void RendererWebKitClientImpl::setCookies(const WebURL& url,

@@ -5,6 +5,7 @@
 #include "chrome/worker/worker_webkitclient_impl.h"
 
 #include "base/logging.h"
+#include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/worker/worker_thread.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
@@ -34,6 +35,11 @@ unsigned long long WorkerWebKitClientImpl::visitedLinkHash(
 bool WorkerWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
   NOTREACHED();
   return false;
+}
+
+WebKit::WebMessagePortChannel*
+WorkerWebKitClientImpl::createMessagePortChannel() {
+  return new WebMessagePortChannelImpl();
 }
 
 void WorkerWebKitClientImpl::setCookies(const WebKit::WebURL& url,

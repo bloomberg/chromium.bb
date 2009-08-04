@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WORKER_HOST__WORKER_SERVICE_H_
-#define CHROME_BROWSER_WORKER_HOST__WORKER_SERVICE_H_
+#ifndef CHROME_BROWSER_WORKER_HOST_WORKER_SERVICE_H_
+#define CHROME_BROWSER_WORKER_HOST_WORKER_SERVICE_H_
 
 #include <list>
 
@@ -42,17 +42,6 @@ class WorkerService : public NotificationObserver {
   // forwarded to the worker process.
   void ForwardMessage(const IPC::Message& message, int sender_pid);
 
-  // NotificationObserver interface.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
-
-  // Notifies us that a process that's talking to a worker has shut down.
-  void OnSenderShutdown(IPC::Message::Sender* sender);
-
-  // Notifies us that a worker process has closed.
-  void OnWorkerProcessDestroyed(WorkerProcessHost* process);
-
   MessageLoop* ui_loop() { return ui_loop_; }
 
   int next_worker_route_id() { return ++next_worker_route_id_; }
@@ -86,6 +75,17 @@ class WorkerService : public NotificationObserver {
   // we're using a strategy of one process per core.
   bool CanCreateWorkerProcess(const WorkerProcessHost::WorkerInstance& instance);
 
+  // NotificationObserver interface.
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details);
+
+  // Notifies us that a process that's talking to a worker has shut down.
+  void SenderShutdown(IPC::Message::Sender* sender);
+
+  // Notifies us that a worker process has closed.
+  void WorkerProcessDestroyed(WorkerProcessHost* process);
+
   NotificationRegistrar registrar_;
   int next_worker_route_id_;
   ResourceDispatcherHost* resource_dispatcher_host_;
@@ -96,4 +96,4 @@ class WorkerService : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(WorkerService);
 };
 
-#endif  // CHROME_BROWSER_WORKER_HOST__WORKER_SERVICE_H_
+#endif  // CHROME_BROWSER_WORKER_HOST_WORKER_SERVICE_H_

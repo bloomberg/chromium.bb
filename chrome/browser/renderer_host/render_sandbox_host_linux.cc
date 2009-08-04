@@ -124,6 +124,10 @@ class SandboxIPCProcess : public WebKitClient {
   virtual unsigned long long visitedLinkHash(const char*, size_t) { return 0; }
   virtual bool isLinkVisited(unsigned long long) { return false; }
 
+  virtual WebKit::WebMessagePortChannel* createMessagePortChannel() {
+    return NULL;
+  }
+
   virtual void setCookies(const WebURL&, const WebURL&, const WebString&) { }
   virtual WebString cookies(const WebURL&, const WebURL&) { return WebString(); }
 

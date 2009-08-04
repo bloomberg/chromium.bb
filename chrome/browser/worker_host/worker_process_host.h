@@ -8,6 +8,7 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/task.h"
 #include "chrome/common/child_process_host.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
@@ -68,6 +69,9 @@ class WorkerProcessHost : public ChildProcessHost {
   void OnForwardToWorker(const IPC::Message& message);
 
   Instances instances_;
+
+  // A callback to create a routing id for the associated worker process.
+  CallbackWithReturnValue<int>::Type* next_route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };

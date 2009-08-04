@@ -36,6 +36,12 @@ bool BrowserWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
   return false;
 }
 
+WebKit::WebMessagePortChannel*
+BrowserWebKitClientImpl::createMessagePortChannel() {
+  NOTREACHED();
+  return NULL;
+}
+
 void BrowserWebKitClientImpl::setCookies(const WebKit::WebURL& url,
                                          const WebKit::WebURL& policy_url,
                                          const WebKit::WebString& value) {

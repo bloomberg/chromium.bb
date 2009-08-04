@@ -706,6 +706,10 @@
         '../third_party/WebKit/WebCore/platform/graphics/RenderLayerBacking.cpp',
         '../third_party/WebKit/WebCore/platform/graphics/RenderLayerCompositor.cpp',
 
+        # We use a multi-process version from the WebKit API.
+        '../third_party/WebKit/WebCore/dom/default/PlatformMessagePortChannel.cpp',
+        '../third_party/WebKit/WebCore/dom/default/PlatformMessagePortChannel.h',
+
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -997,6 +1001,8 @@
         'api/public/WebLocalizedString.h',
         'api/public/WebMediaPlayer.h',
         'api/public/WebMediaPlayerClient.h',
+        'api/public/WebMessagePortChannel.h',
+        'api/public/WebMessagePortChannelClient.h',
         'api/public/WebMimeRegistry.h',
         'api/public/WebNavigationType.h',
         'api/public/WebNode.h',
@@ -1022,6 +1028,8 @@
         'api/public/WebVector.h',
         'api/public/WebWidget.h',
         'api/public/WebWidgetClient.h',
+        'api/public/WebWorker.h',
+        'api/public/WebWorkerClient.h',
         'api/public/win/WebInputEventFactory.h',
         'api/public/win/WebSandboxSupport.h',
         'api/public/win/WebScreenInfoFactory.h',
@@ -1038,6 +1046,8 @@
         'api/src/mac/WebScreenInfoFactory.mm',
         'api/src/LocalizedStrings.cpp',
         'api/src/MediaPlayerPrivateChromium.cpp',
+        'api/src/PlatformMessagePortChannel.cpp',
+        'api/src/PlatformMessagePortChannel.h',
         'api/src/ResourceHandle.cpp',
         'api/src/StorageAreaProxy.cpp',
         'api/src/StorageAreaProxy.h',

@@ -10,9 +10,9 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugin_service.h"
-#include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/worker_messages.h"
@@ -30,8 +30,11 @@ WorkerService::WorkerService()
     : next_worker_route_id_(0),
       resource_dispatcher_host_(NULL),
       ui_loop_(NULL) {
-  // Receive a notification if the message filter is deleted.
+  // Receive a notification if a message filter or WorkerProcessHost is deleted.
   registrar_.Add(this, NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
+                 NotificationService::AllSources());
+
+  registrar_.Add(this, NotificationType::WORKER_PROCESS_HOST_SHUTDOWN,
                  NotificationService::AllSources());
 }
 
@@ -210,12 +213,19 @@ bool WorkerService::CanCreateWorkerProcess(
 void WorkerService::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN);
-  ResourceMessageFilter* filter = Source<ResourceMessageFilter>(source).ptr();
-  OnSenderShutdown(filter);
+  if (type.value == NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN) {
+    ResourceMessageFilter* sender = Source<ResourceMessageFilter>(source).ptr();
+    SenderShutdown(sender);
+  } else if (type.value == NotificationType::WORKER_PROCESS_HOST_SHUTDOWN) {
+    WorkerProcessHost* sender = Source<WorkerProcessHost>(source).ptr();
+    SenderShutdown(sender);
+    WorkerProcessDestroyed(sender);
+  } else {
+    NOTREACHED();
+  }
 }
 
-void WorkerService::OnSenderShutdown(IPC::Message::Sender* sender) {
+void WorkerService::SenderShutdown(IPC::Message::Sender* sender) {
   for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
@@ -233,7 +243,7 @@ void WorkerService::OnSenderShutdown(IPC::Message::Sender* sender) {
   }
 }
 
-void WorkerService::OnWorkerProcessDestroyed(WorkerProcessHost* process) {
+void WorkerService::WorkerProcessDestroyed(WorkerProcessHost* process) {
   if (queued_workers_.empty())
     return;
 

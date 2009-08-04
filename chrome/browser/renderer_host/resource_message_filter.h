@@ -15,6 +15,7 @@
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
+#include "base/task.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
@@ -316,6 +317,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Whether this process is used for off the record tabs.
   bool off_the_record_;
+
+  // A callback to create a routing id for the associated renderer process.
+  CallbackWithReturnValue<int>::Type* next_route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

@@ -169,6 +169,10 @@ class NotificationType {
     // twice).
     RESOURCE_MESSAGE_FILTER_SHUTDOWN,
 
+    // Lets interested observers know when a WorkerProcessHost is being deleted
+    // and can no longer be used.
+    WORKER_PROCESS_HOST_SHUTDOWN,
+
     // Views -------------------------------------------------------------------
 
     // Notification that a view was removed from a view hierarchy.  The source

@@ -18,11 +18,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/result_codes.h"
 #include "chrome/common/worker_messages.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
@@ -59,11 +62,16 @@ class WorkerCrashTask : public Task {
 WorkerProcessHost::WorkerProcessHost(
     ResourceDispatcherHost* resource_dispatcher_host_)
     : ChildProcessHost(WORKER_PROCESS, resource_dispatcher_host_) {
+  next_route_id_ = NewCallbackWithReturnValue(
+      WorkerService::GetInstance(), &WorkerService::next_worker_route_id);
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
-  WorkerService::GetInstance()->OnSenderShutdown(this);
-  WorkerService::GetInstance()->OnWorkerProcessDestroyed(this);
+  // Let interested observers know we are being deleted.
+  NotificationService::current()->Notify(
+      NotificationType::WORKER_PROCESS_HOST_SHUTDOWN,
+      Source<WorkerProcessHost>(this),
+      NotificationService::NoDetails());
 
   // If we crashed, tell the RenderViewHost.
   MessageLoop* ui_loop = WorkerService::GetInstance()->ui_loop();
@@ -157,16 +165,28 @@ URLRequestContext* WorkerProcessHost::GetRequestContext(
 }
 
 void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WorkerProcessHost, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateDedicatedWorker,
-                        OnCreateDedicatedWorker)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
-                        OnCancelCreateDedicatedWorker)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
-                        OnForwardToWorker)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  bool msg_is_ok = true;
+  bool handled = MessagePortDispatcher::GetInstance()->OnMessageReceived(
+      message, this, next_route_id_, &msg_is_ok);
+
+  if (!handled) {
+    handled = true;
+    IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateDedicatedWorker,
+                          OnCreateDedicatedWorker)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
+                          OnCancelCreateDedicatedWorker)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
+                          OnForwardToWorker)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP_EX()
+  }
+
+  if (!msg_is_ok) {
+    NOTREACHED();
+    base::KillProcess(handle(), ResultCodes::KILLED_BAD_MESSAGE, false);
+  }
+
   if (handled)
     return;
 

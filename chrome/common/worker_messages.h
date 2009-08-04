@@ -14,6 +14,8 @@
 #include "chrome/common/common_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 
+typedef std::pair<string16, int> QueuedMessage;
+
 // Parameters structure for WorkerHostMsg_PostConsoleMessageToWorkerObject,
 // which has too many data parameters to be reasonably put in a predefined
 // IPC message. The data members directly correspond to parameters of

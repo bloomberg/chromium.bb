@@ -29,6 +29,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual unsigned long long visitedLinkHash(
       const char* canonicalURL, size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
+  virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
   virtual void setCookies(const WebKit::WebURL& url,
                           const WebKit::WebURL& first_party_for_cookies,
                           const WebKit::WebString&);

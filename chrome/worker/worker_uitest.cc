@@ -374,6 +374,35 @@ TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   StopHttpServer();
 }
 
+TEST_F(WorkerTest, MessagePorts) {
+  static const char* kLayoutTestFiles[] = {
+    "message-channel-gc.html",
+    "message-channel-gc-2.html",
+    "message-channel-gc-3.html",
+    "message-channel-gc-4.html",
+    "message-port.html",
+    "message-port-clone.html",
+    "message-port-constructor-for-deleted-document.html",
+    "message-port-deleted-document.html",
+    "message-port-deleted-frame.html",
+    "message-port-inactive-document.html",
+    "message-port-no-wrapper.html",
+    // Only works with run-webkit-tests --leaks.
+    //"message-channel-listener-circular-ownership.html",
+  };
+
+  FilePath fast_test_dir;
+  fast_test_dir = fast_test_dir.AppendASCII("LayoutTests");
+  fast_test_dir = fast_test_dir.AppendASCII("fast");
+
+  FilePath worker_test_dir;
+  worker_test_dir = worker_test_dir.AppendASCII("events");
+  InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
+
+  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
+    RunLayoutTest(kLayoutTestFiles[i], false);
+}
+
 TEST_F(WorkerTest, LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");

@@ -59,6 +59,10 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl {
     return false;
   }
 
+  virtual WebKit::WebMessagePortChannel* createMessagePortChannel() {
+    return NULL;
+  }
+
   virtual void setCookies(const WebKit::WebURL& url,
                           const WebKit::WebURL& first_party_for_cookies,
                           const WebKit::WebString& value) {

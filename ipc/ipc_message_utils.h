@@ -517,6 +517,25 @@ struct ParamTraits<std::wstring> {
   }
 };
 
+template <class A, class B>
+struct ParamTraits<std::pair<A, B> > {
+  typedef std::pair<A, B> param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.first);
+    WriteParam(m, p.second);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    return ReadParam(m, iter, &r->first) && ReadParam(m, iter, &r->second);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.first, l);
+    l->append(L", ");
+    LogParam(p.second, l);
+    l->append(L")");
+  }
+};
+
 // If WCHAR_T_IS_UTF16 is defined, then string16 is a std::wstring so we don't
 // need this trait.
 #if !defined(WCHAR_T_IS_UTF16)

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
@@ -14,6 +15,18 @@ IPC_BEGIN_MESSAGES(WorkerProcess)
   IPC_MESSAGE_CONTROL2(WorkerProcessMsg_CreateWorker,
                        GURL  /* url */,
                        int  /* route_id */)
+
+  // Note: these Message Port related messages can also be sent to the
+  // renderer process.  Putting them here since we don't have a shared place
+  // like common_messages_internal.h
+  IPC_MESSAGE_ROUTED3(WorkerProcessMsg_Message,
+                      string16 /* message */,
+                      int /* sent_message_port_id */,
+                      int /* new_routing_id */)
+
+  // Tells the Message Port Channel object that there are no more in-flight
+  // messages arriving.
+  IPC_MESSAGE_ROUTED0(WorkerProcessMsg_MessagesQueued)
 IPC_END_MESSAGES(WorkerProcess)
 
 
@@ -21,9 +34,48 @@ IPC_END_MESSAGES(WorkerProcess)
 // WorkerProcessHost messages
 // These are messages sent from the worker process to the browser process.
 
-// No messages being sent in this direction for now.
-//IPC_BEGIN_MESSAGES(WorkerProcessHost)
-//IPC_END_MESSAGES(WorkerProcessHost)
+IPC_BEGIN_MESSAGES(WorkerProcessHost)
+  // Note: these Message Port related messages can also be sent out from the
+  // renderer process.  Putting them here since we don't have a shared place
+  // like common_messages_internal.h
+
+  // Creates a new Message Port Channel object.  The first paramaeter is the
+  // message port channel's routing id in this process.  The second parameter
+  // is the process-wide-unique identifier for that port.
+  IPC_SYNC_MESSAGE_CONTROL0_2(WorkerProcessHostMsg_CreateMessagePort,
+                              int /* route_id */,
+                              int /* message_port_id */)
+
+  // Sent when a Message Port Channel object is destroyed.
+  IPC_MESSAGE_CONTROL1(WorkerProcessHostMsg_DestroyMessagePort,
+                       int /* message_port_id */)
+
+  // Sends a message to a message port.  Optionally sends a message port as
+  // as well if sent_message_port_id != MSG_ROUTING_NONE.
+  IPC_MESSAGE_CONTROL3(WorkerProcessHostMsg_PostMessage,
+                       int /* sender_message_port_id */,
+                       string16 /* message */,
+                       int /* sent_message_port_id */)
+
+  // Causes messages sent to the remote port to be delivered to this local port.
+  IPC_MESSAGE_CONTROL2(WorkerProcessHostMsg_Entangle,
+                       int /* local_message_port_id */,
+                       int /* remote_message_port_id */)
+
+  // Causes the browser to queue messages sent to this port until the the port
+  // has made sure that all in-flight messages were routed to the new
+  // destination.
+  IPC_MESSAGE_CONTROL1(WorkerProcessHostMsg_QueueMessages,
+                       int /* message_port_id */)
+
+  // Sends the browser all the queued messages that arrived at this message port
+  // after it was sent in a postMessage call.
+  // NOTE: MSVS can't compile the macro if std::vector<std::pair<string16, int> >
+  // is used, so we typedef it in worker_messages.h.
+  IPC_MESSAGE_CONTROL2(WorkerProcessHostMsg_SendQueuedMessages,
+                       int /* message_port_id */,
+                       std::vector<QueuedMessage> /* queued_messages */)
+IPC_END_MESSAGES(WorkerProcessHost)
 
 //-----------------------------------------------------------------------------
 // Worker messages

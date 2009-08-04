@@ -200,6 +200,17 @@ class scoped_refptr {
   operator T*() const { return ptr_; }
   T* operator->() const { return ptr_; }
 
+  // Release a pointer.
+  // The return value is the current pointer held by this object.
+  // If this object holds a NULL pointer, the return value is NULL.
+  // After this operation, this object will hold a NULL pointer,
+  // and will not own the object any more.
+  T* release() {
+    T* retVal = ptr_;
+    ptr_ = NULL;
+    return retVal;
+  }
+
   scoped_refptr<T>& operator=(T* p) {
     // AddRef first so that self assignment should work
     if (p)

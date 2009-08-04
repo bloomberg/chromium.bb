@@ -26,6 +26,7 @@
 #include "chrome/browser/renderer_host/file_system_accessor.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/spellchecker.h"
+#include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/app_cache/app_cache_dispatcher_host.h"
 #include "chrome/common/chrome_plugin_lib.h"
@@ -37,6 +38,7 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/worker_messages.h"
 #include "net/base/mime_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_cache.h"
@@ -158,7 +160,9 @@ ResourceMessageFilter::ResourceMessageFilter(
               resource_dispatcher_host->webkit_thread()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
           new DatabaseDispatcherHost(profile->GetPath(), this))),
-      off_the_record_(profile->IsOffTheRecord()) {
+      off_the_record_(profile->IsOffTheRecord()),
+      next_route_id_(NewCallbackWithReturnValue(
+          render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)) {
   DCHECK(request_context_.get());
   DCHECK(request_context_->cookie_store());
   DCHECK(media_request_context_.get());
@@ -244,22 +248,21 @@ void ResourceMessageFilter::OnChannelClosing() {
 }
 
 // Called on the IPC thread:
-bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
+bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
+  MessagePortDispatcher* mp_dispatcher = MessagePortDispatcher::GetInstance();
   bool msg_is_ok = true;
-  bool handled = resource_dispatcher_host_->OnMessageReceived(
-                                                message, this, &msg_is_ok) ||
-                 app_cache_dispatcher_host_->OnMessageReceived(
-                                                 message, &msg_is_ok) ||
-                 dom_storage_dispatcher_host_->OnMessageReceived(
-                                                   message, &msg_is_ok) ||
-                 audio_renderer_host_->OnMessageReceived(
-                                           message, &msg_is_ok) ||
-                 db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok);
+  bool handled =
+      resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
+      app_cache_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      mp_dispatcher->OnMessageReceived(msg, this, next_route_id_, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.
     handled = true;
-    IPC_BEGIN_MESSAGE_MAP_EX(ResourceMessageFilter, message, msg_is_ok)
+    IPC_BEGIN_MESSAGE_MAP_EX(ResourceMessageFilter, msg, msg_is_ok)
       // On Linux we need to dispatch these messages to the UI2 thread
       // because we cannot make X calls from the IO thread.  Mac
       // doesn't have windowed plug-ins so we handle the messages in
@@ -288,7 +291,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPath, OnGetPluginPath)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
-          OnReceiveContextMenuMsg(message))
+                                  OnReceiveContextMenuMsg(msg))
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
                                       OnOpenChannelToPlugin)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateDedicatedWorker,
@@ -304,12 +307,11 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms,
                           OnRendererHistograms)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_PaintRect,
-          render_widget_helper_->DidReceivePaintMsg(message))
+          render_widget_helper_->DidReceivePaintMsg(msg))
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsAsync,
                           OnClipboardWriteObjects)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsSync,
                           OnClipboardWriteObjects)
-
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardIsFormatAvailable,
                                       OnClipboardIsFormatAvailable)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadText,
@@ -318,7 +320,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
                                       OnClipboardReadAsciiText)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadHTML,
                                       OnClipboardReadHTML)
-
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromExtension,
                           OnGetMimeTypeFromExtension)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromFile,
@@ -344,14 +345,11 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
                           OnOpenChannelToExtension)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToTab,
-                          OnOpenChannelToTab)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToTab, OnOpenChannelToTab)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CloseIdleConnections,
                           OnCloseIdleConnections)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode,
-                          OnSetCacheMode)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize,
-                                      OnGetFileSize)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
 
       IPC_MESSAGE_UNHANDLED(
           handled = false)
@@ -359,8 +357,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
   }
 
   if (!msg_is_ok) {
-    BrowserRenderProcessHost::BadMessageTerminateProcess(message.type(),
-                                                         handle());
+    BrowserRenderProcessHost::BadMessageTerminateProcess(msg.type(), handle());
   }
 
   return handled;
