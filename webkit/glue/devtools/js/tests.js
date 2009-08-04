@@ -485,7 +485,7 @@ TestSuite.prototype.testConsoleEval = function() {
       new TestSuite.KeyEvent('Enter'));
 
   var test = this;
-  this.addSniffer(WebInspector.Console.prototype, 'addMessage',
+  this.addSniffer(WebInspector.ConsoleView.prototype, 'addMessage',
       function(commandResult) {
         test.assertEquals('123', commandResult.toMessageElement().textContent);
         test.releaseControl();
@@ -546,7 +546,7 @@ TestSuite.prototype.testEvalGlobal = function() {
       new TestSuite.KeyEvent('Enter'));
 
   var test = this;
-  this.addSniffer(WebInspector.Console.prototype, 'addMessage',
+  this.addSniffer(WebInspector.ConsoleView.prototype, 'addMessage',
       function(commandResult) {
         test.assertEquals('fooValue',
                           commandResult.toMessageElement().textContent);
