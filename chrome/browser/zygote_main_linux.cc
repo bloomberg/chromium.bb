@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/global_descriptors_posix.h"
+#include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"
 #include "base/unix_domain_socket_posix.h"
@@ -24,6 +25,8 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/sandbox_methods_linux.h"
+
+#include "media/base/media.h"
 
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 
@@ -322,6 +325,10 @@ static bool MaybeEnterChroot() {
     PATCH_GLOBAL_OFFSET_TABLE(localtime, sandbox_wrapper::localtime);
     PATCH_GLOBAL_OFFSET_TABLE(localtime_r, sandbox_wrapper::localtime_r);
 #endif
+
+    FilePath module_path;
+    if (PathService::Get(base::DIR_MODULE, &module_path))
+      media::InitializeMediaLibrary(module_path);
 
     static const char kChrootMe = 'C';
     static const char kChrootMeSuccess = 'O';
