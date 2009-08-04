@@ -29,6 +29,8 @@ static TestWebWorkerHelper* g_helper;
 WebWorker* TestWebWorkerHelper::CreateWebWorker(WebWorkerClient* client) {
   if (!g_helper)
     g_helper = new TestWebWorkerHelper();
+  if (!g_helper->CreateWebWorker_)
+    return NULL;
   g_helper->worker_count_++;
   return g_helper->CreateWebWorker_(client, g_helper);
 }
