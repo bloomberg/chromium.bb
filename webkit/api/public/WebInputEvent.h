@@ -147,7 +147,7 @@ namespace WebKit {
         // |windowsKeyCode| is the Windows key code associated with this key
         // event.  Sometimes it's direct from the event (i.e. on Windows),
         // sometimes it's via a mapping function.  If you want a list, see
-        // webkit/port/platform/chromium/KeyboardCodes* .
+        // WebCore/platform/chromium/KeyboardCodes* .
         int windowsKeyCode;
 
         // The actual key code genenerated by the platform.  The DOM spec runs
