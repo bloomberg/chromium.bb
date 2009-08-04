@@ -1,0 +1,4 @@
+git-cl-repo
+git-try-repo
+tests/pymox
+*.pyc

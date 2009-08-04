@@ -6,7 +6,7 @@
 base_dir=$(dirname "$0")
 
 if [ ! -f "$base_dir/git-cl-repo/git-cl" ]; then
-  git clone git://neugierig.org/git-cl.git $base_dir/git-cl-repo
+  git clone git://neugierig.org/git-cl.git $base_dir/git-cl-repo -q
 fi
 
 $base_dir/git-cl-repo/git-cl "$@"
