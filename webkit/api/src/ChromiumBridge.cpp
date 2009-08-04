@@ -150,9 +150,51 @@ void ChromiumBridge::prefetchDNS(const String& hostname)
 
 // File ------------------------------------------------------------------------
 
+bool ChromiumBridge::fileExists(const String& path)
+{
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+bool ChromiumBridge::deleteFile(const String& path)
+{
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+bool ChromiumBridge::deleteEmptyDirectory(const String& path)
+{
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
 bool ChromiumBridge::getFileSize(const String& path, long long& result)
 {
-  return webKitClient()->getFileSize(path, result);
+    return webKitClient()->getFileSize(path, result);
+}
+
+bool ChromiumBridge::getFileModificationTime(const String& path, time_t& result)
+{
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+String ChromiumBridge::directoryName(const String& path)
+{
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
+String ChromiumBridge::pathByAppendingComponent(const String& path, const String& component)
+{
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
+bool ChromiumBridge::makeAllDirectories(const String& path)
+{
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 // Font -----------------------------------------------------------------------
@@ -247,6 +289,13 @@ PassRefPtr<Image> ChromiumBridge::loadPlatformImageResource(const char* name)
     RefPtr<Image> image = BitmapImage::create();
     image->setData(resource, true);
     return image;
+}
+
+// Sandbox --------------------------------------------------------------------
+
+bool ChromiumBridge::sandboxEnabled()
+{
+    return true;
 }
 
 // SharedTimers ---------------------------------------------------------------
