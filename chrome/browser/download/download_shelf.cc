@@ -57,6 +57,12 @@ std::wstring DownloadShelfContextMenu::GetItemLabel(int id) const {
       return l10n_util::GetString(IDS_DOWNLOAD_MENU_CANCEL);
     case REMOVE_ITEM:
       return l10n_util::GetString(IDS_DOWNLOAD_MENU_REMOVE_ITEM);
+    case TOGGLE_PAUSE: {
+      if (download_->is_paused())
+        return l10n_util::GetString(IDS_DOWNLOAD_MENU_RESUME_ITEM);
+      else
+        return l10n_util::GetString(IDS_DOWNLOAD_MENU_PAUSE_ITEM);
+    }
     default:
       NOTREACHED();
   }
@@ -75,6 +81,8 @@ bool DownloadShelfContextMenu::IsItemCommandEnabled(int id) const {
     case REMOVE_ITEM:
       return download_->state() == DownloadItem::COMPLETE ||
           download_->state() == DownloadItem::CANCELLED;
+    case TOGGLE_PAUSE:
+      return download_->state() == DownloadItem::IN_PROGRESS;
     default:
       return id > 0 && id < MENU_LAST;
   }
@@ -100,6 +108,13 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
       break;
     case REMOVE_ITEM:
       download_->Remove(false);
+      break;
+    case TOGGLE_PAUSE:
+      // It is possible for the download to complete before the user clicks the
+      // menu item, recheck if the download is in progress state before toggling
+      // pause.
+      if (download_->state() == DownloadItem::IN_PROGRESS)
+        download_->TogglePause();
       break;
     default:
       NOTREACHED();

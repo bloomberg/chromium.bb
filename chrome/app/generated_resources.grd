@@ -1784,6 +1784,14 @@ each locale. -->
                desc="Download context menu remove">
         &amp;Remove from list
       </message>
+      <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
+               desc="Download context menu pause download">
+        &amp;Pause
+      </message>
+      <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
+               desc="Download context menu resume download">
+        &amp;Resume
+      </message>
 
       <!-- Remove in-progress downloads confirmation dialog -->
       <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the browser when one download is in-progress.">
