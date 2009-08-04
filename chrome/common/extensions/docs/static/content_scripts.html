@@ -1,0 +1,108 @@
+<p>Content Scripts are JavaScript files that run in the context of web pages. By using the standard <a href="http://www.w3.org/TR/DOM-Level-2-HTML/">Document Object Model</a> (DOM), they can read details of the web pages the browser visits, or make changes to them. 
+
+<p>Some examples of things that content scripts can do include:
+
+<ul>
+  <li>Find unlinked URLs in web pages and convert them into hyperlinks
+  <li>Increase the font size to make text more legible
+  <li>Find and process <a href="http://microformats.org/">microformat</a> data in the DOM
+</ul>
+
+<h3 id="registration">Registration</h3>
+
+<p>Content scripts are registered in an extension's <a href="manifest.html">manifest.json</a> file, like so:
+
+<pre>{
+  "name": "My First Extension",
+  "version": "1.0",
+  "description": "The first extension that I made.",
+<span style="background:yellow; font-weight:bold;">  "content_scripts": [
+    {
+      "matches": ["http://www.google.com/*"],
+      "css": ["mystyles.css"],
+      "js": ["jquery.js", "myscript.js"]
+    }
+  ]</span>
+}</pre>
+
+<p>An extension can contain any number of content scripts, and a content script can consist of any number of JavaScript or CSS files. The value of the <code>matches</code> property controls when the content script will run.
+
+<p>Each content script registered in the manifest can specify the following properties:</p>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>matches</td>
+    <td>array of strings</td>
+    <td>Required. Controls the pages this content script will be injected into. See <a href="#match_patterns">Match Patterns</a> for more details on the syntax of these strins.</td>
+  </tr>
+  <tr>
+    <td>js</td>
+    <td><nobr>array of strings</nobr></td>
+    <td>Optional. The list of JavaScript files to be injected into matching pages. These are injected in the order they appear in this array.</td>
+  </tr>
+  <tr>
+    <td>css</td>
+    <td>array of strings</td>
+    <td>Optional. The list of CSS files to be injected into matching pages. These are injected in the order they appear in this array, before any DOM is constructed or displayed for the page.</td>
+  </tr>
+  <tr>
+    <td>run_at</td>
+    <td>string</td>
+    <td>Optional. Controls when the files in <code>js</code> are injected. Can be <code>"document_start"</code> or <code>"document_end"</code>. Defaults to <code>"document_end"</code>. In the case of <code>"document_start"</code>, the files are injected after any files from <code>"css"</code>, but before any other DOM is constructed or any other script is run. In the case of <code>"document_end"</code>, the files are injected after the DOM is complete, but before subresources like images and frames have necessarily loaded.</td>
+  </tr>
+</table>
+
+<h3 id="match_patterns">Match Patterns</h3>
+
+<p>TODO</p>
+
+<h3 id="execution_environment">Execution Environment</h3>
+
+<p>Content scripts execute in a special environment called an <em>isolated world</em>. They have access to the DOM of the page they are injected into, but not to any JavaScript variables or functions created by the page. It looks to each content script as if there is no other JavaScript executing on the page it is running on. The same is true in reverse: JavaScript running on the page cannot call any functions or access any variables defined by content scripts.
+
+<p>For example, consider this simple page:
+
+<pre>hello.html
+===========
+&lt;html&gt;
+  &lt;button id="button"&gt;click me&lt;/button&gt;
+  &lt;script&gt;
+    var greeting = "hello!";
+    function sayGreeting() {
+      alert(greeting);
+    }
+    document.getElementById("button").onclick = sayGreeting;
+  &lt;/script&gt;
+&lt;/html&gt;</pre>
+
+<p>Now, suppose this content script was injected into hello.html:
+
+<pre>contentscript.js
+==================
+console.log(greeting);  // undefined
+console.log(sayGreeting);  // undefined
+console.log(document.getElementById("button").onclick);  // still undefined
+document.getElementById("button").onclick = function() {
+  alert("hola!");
+}</pre>
+
+<p>Now, if the button is pressed, you will see both greetings.
+
+<p>Isolated worlds allow each content script to make changes to its JavaScript environment without worrying about conflicting with the page or with other contnet scripts. For example, a content script could include JQuery v1 and the page could include JQuery v2, and they wouldn't conflict with each other.
+
+<p>Another important benefit of isolated worlds is that they completely separate the JavaScript on the page from the JavaScript in extensions. This allows us to offer extra functionality to content scripts that should not be accessible from web pages without worrying about web pages accessing it.
+
+<h3 id="messaging">Messaging</h3>
+
+<p>Content scripts can communicate with their parent extension using message passing. The content script opens a channel to the extension using the <a href="extension.html#connect">chrome.extension.connect()</a> method and then sends messages back and forth to it. The messages can contain any valid JSON object (null, boolean, number, string, array, or object).
+
+<p>The parent extension can also open a channel to a content script in a given tab by calling <a href="tabs.html#connect">chrome.tabs.connect(tabId)</a>.
+
+<p>When a channel is opened from a content script to an extension, the <a href="extension.html#onConnect">onConnect</a> event is fired in all views in the extension. Any view can receive the event. The event contains a <a href="extension.html#port">Port</a> object, which can be used by the extension view to communicate back to the content script.
+
+<p>[TODO: Complete this]
