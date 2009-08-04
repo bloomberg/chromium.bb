@@ -35,7 +35,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
-
+#include "gen/src/trusted/service_runtime/arch/x86/tramp_data.h"
 /*
  * A sanity check -- should be invoked in some early function, e.g.,
  * main, or something that main invokes early.
@@ -59,28 +59,28 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   struct NaClPatch      patch16[1];
   struct NaClPatch      patch32[2];
 
-  patch16[0].target = ((uintptr_t) &NaCl_tramp_cseg_patch) - 2;
+  patch16[0].target = ((uintptr_t) kTrampolineCode) + NACL_TRAMP_CSEG_PATCH - 2;
   patch16[0].value = NaClGetGlobalCs();
 
   patch_info.abs16 = patch16;
-  patch_info.num_abs16 = sizeof patch16/sizeof patch16[0];
+  patch_info.num_abs16 = sizeof patch16 / sizeof patch16[0];
 
   patch_info.rel32 = 0;
   patch_info.num_rel32 = 0;
 
-  patch32[0].target = ((uintptr_t) &NaCl_tramp_cseg_patch) - 6;
+  /* TODO: NaClSyscallSeg has to be in the lower 4 GB */
+  patch32[0].target = ((uintptr_t) kTrampolineCode) + NACL_TRAMP_CSEG_PATCH - 6;
   patch32[0].value = (uintptr_t) NaClSyscallSeg;
 
-  patch32[1].target = ((uintptr_t) &NaCl_tramp_dseg_patch) - 4;
+  patch32[1].target = ((uintptr_t) kTrampolineCode) + NACL_TRAMP_DSEG_PATCH - 4;
   patch32[1].value = NaClGetGlobalDs();  /* opens the data sandbox */
 
   patch_info.abs32 = patch32;
   patch_info.num_abs32 = sizeof patch32/sizeof patch32[0];
 
   patch_info.dst = target_addr;
-  patch_info.src = (uintptr_t) &NaCl_trampoline_seg_code;
-  patch_info.nbytes = ((uintptr_t) &NaCl_trampoline_seg_end
-                       - (uintptr_t) &NaCl_trampoline_seg_code);
+  patch_info.src = (uintptr_t) kTrampolineCode;
+  patch_info.nbytes = sizeof(kTrampolineCode);
 
   NaClApplyPatchToMemory(&patch_info);
 }

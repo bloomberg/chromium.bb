@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,35 +29,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * NaCl Simple/secure ELF loader (NaCl SEL).
- */
+#include <stdio.h>
+#include "native_client/src/include/portability.h"
 
-/*
- Trampoline to transfer control from native client module to
- sel_ldr's NaClSyscallSeg residing in the same address space
-*/
+extern char   NaCl_trampoline_seg_code, NaCl_trampoline_seg_end;
+extern char   NaCl_tramp_cseg_patch, NaCl_tramp_dseg_patch;
 
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-	.text
-	.globl	IDENTIFIER(NaCl_trampoline_seg_code)
-	.globl	IDENTIFIER(NaCl_tramp_dseg_patch)
-	.globl	IDENTIFIER(NaCl_tramp_cseg_patch)
-	.globl	IDENTIFIER(NaCl_trampoline_seg_end)
-IDENTIFIER(NaCl_trampoline_seg_code):
-	movl	$0xdeadbeef, %eax
-IDENTIFIER(NaCl_tramp_dseg_patch):
-	mov	%eax, %ds  /* remove data sandbox */
-	lcall	$0xcafe, $0xdeadbeef
-	/* trampoline installer will s/0xdeadbeef/NaClSyscallSeg/ */
-IDENTIFIER(NaCl_tramp_cseg_patch):
-	ret
-IDENTIFIER(NaCl_trampoline_seg_end):
+int main() {
+  unsigned char * idx = (unsigned char *) &NaCl_trampoline_seg_code;
 
-	.globl	IDENTIFIER(NaCl_text_prot)
-	.globl	IDENTIFIER(NaCl_text_prot_end)
+  /* print out the offsets used for patching */
+  printf("#define NACL_TRAMP_CSEG_PATCH 0x%02"PRIxPTR"\n",
+         ((uintptr_t) &NaCl_tramp_cseg_patch -
+          (uintptr_t) &NaCl_trampoline_seg_code));
+  printf("#define NACL_TRAMP_DSEG_PATCH 0x%02"PRIxPTR"\n",
+         ((uintptr_t) &NaCl_tramp_dseg_patch -
+          (uintptr_t) &NaCl_trampoline_seg_code));
+  printf("\n");
 
-IDENTIFIER(NaCl_text_prot):
-	hlt
-IDENTIFIER(NaCl_text_prot_end):
+  printf("char kTrampolineCode[] = {\n");
+  while (idx <= (unsigned char *) &NaCl_trampoline_seg_end) {
+    printf("0x%02x, ", *idx);
+    idx++;
+  }
+  printf("\n};\n");
+
+  return 0;
+}

@@ -31,6 +31,14 @@
 
 Import('env')
 
+# TODO(robertm): consider adding this to the top level scons files
+env.Append(CPPPATH=['${TARGET_ROOT}'])
+
+if env.Bit('linux') or env.Bit('mac'):
+  # because of: gtest-typed-test.h:236:46: error:
+  # anonymous variadic macros were introduced in C99
+  env.FilterOut(CCFLAGS=['-pedantic'])
+
 # TODO(robertm): move those into EXTR_LIB when feature available
 env.Prepend(
     LIBS = [
@@ -77,6 +85,23 @@ env.Command(target=GENERATED + '/nacl_syscall_handlers.c',
                            ' ${SYSCALL_GEN_FLAGS} < ${SOURCE} >>${TARGET}.tmp'),
                     Move('${TARGET}', '${TARGET}.tmp')])
 
+tramp_gen_obj = env.ComponentObject('arch/x86_32/tramp.S')
+
+tramp_gen_exe = env.ComponentProgram('tramp_gen',
+                                     ['arch/x86_32/tramp_gen.c',
+                                      tramp_gen_obj],
+                                     LIBS=[])
+
+ARCH_X86 = GENERATED + '/arch/x86'
+generated_data_headers = [ ARCH_X86 + '/tramp_data.h' ]
+
+env.Command(target=generated_data_headers,
+            source=tramp_gen_exe,
+            action=['echo HEADER GENERATION: %s' % str(generated_data_headers),
+                    Delete(ARCH_X86),
+                    Mkdir(ARCH_X86),
+                    '${SOURCE} > ${TARGET}'])
+
 # ----------------------------------------------------------
 ldr_inputs = [
     'dyn_array.c',
@@ -114,7 +139,6 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
     'arch/x86_32/nacl_switch.S',
     'arch/x86_32/nacl_syscall.S',
     'arch/x86_32/springboard.S',
-    'arch/x86_32/tramp.S',
   ]
 elif env['BUILD_ARCHITECTURE'] == 'arm':
   ldr_inputs += [
