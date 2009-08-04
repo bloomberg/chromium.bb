@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,11 +43,9 @@ class AudioOutputStream {
  public:
   enum State {
     STATE_CREATED = 0,  // The output stream is created.
-    STATE_OPENED,       // The output stream is opened.
     STATE_STARTED,      // The output stream is started.
     STATE_PAUSED,       // The output stream is paused.
     STATE_STOPPED,      // The output stream is stopped.
-    STATE_CLOSING,      // The output stream is being closed.
     STATE_CLOSED,       // The output stream is closed.
     STATE_ERROR,        // The output stream is in error state.
   };
