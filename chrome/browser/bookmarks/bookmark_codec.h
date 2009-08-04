@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,7 +109,8 @@ class BookmarkCodec {
 
   // Decodes the supplied node from the supplied value. Child nodes are
   // created appropriately by way of DecodeChildren. If node is NULL a new
-  // node is created and added to parent, otherwise node is used.
+  // node is created and added to parent (parent must then be non-NULL),
+  // otherwise node is used.
   bool DecodeNode(const DictionaryValue& value,
                   BookmarkNode* parent,
                   BookmarkNode* node);

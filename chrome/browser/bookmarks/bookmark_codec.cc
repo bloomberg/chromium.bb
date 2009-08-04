@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -180,6 +180,13 @@ bool BookmarkCodec::DecodeChildren(const ListValue& child_value_list,
 bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
                                BookmarkNode* parent,
                                BookmarkNode* node) {
+  // If no |node| is specified, we'll create one and add it to the |parent|.
+  // Therefore, in that case, |parent| must be non-NULL.
+  if (!node && !parent) {
+    NOTREACHED();
+    return false;
+  }
+
   std::string id_string;
   int64 id = 0;
   if (!value.GetString(kIdKey, &id_string) || !StringToInt64(id_string, &id))
@@ -209,7 +216,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     if (!node)
       node = new BookmarkNode(id, GURL(WideToUTF8(url_string)));
     else
-      return false; // Node invalid.
+      return false;  // Node invalid.
 
     if (parent)
       parent->Add(parent->GetChildCount(), node);
