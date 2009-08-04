@@ -5,14 +5,13 @@
 #include <gdk/gdkkeysyms.h>
 #include <X11/XF86keysym.h>
 
-#include "chrome/browser/accelerator_table_linux.h"
+#include "chrome/browser/views/accelerator_table_gtk.h"
 
 #include "base/basictypes.h"
 #include "chrome/app/chrome_dll_resource.h"
 
 namespace browser {
 
-// Keep this in sync with various context menus which display the accelerators.
 const AcceleratorMapping kAcceleratorMap[] = {
   // Focus.
   { GDK_k, IDC_FOCUS_SEARCH, GDK_CONTROL_MASK },
@@ -25,6 +24,10 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { XF86XK_Go, IDC_FOCUS_LOCATION, GdkModifierType(0) },
 
   // Tab/window controls.
+  { GDK_t, IDC_NEW_TAB, GDK_CONTROL_MASK },
+  { GDK_n, IDC_NEW_WINDOW, GDK_CONTROL_MASK },
+  { GDK_n, IDC_NEW_INCOGNITO_WINDOW,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_Page_Down, IDC_SELECT_NEXT_TAB, GDK_CONTROL_MASK },
   { GDK_Page_Up, IDC_SELECT_PREVIOUS_TAB, GDK_CONTROL_MASK },
   { GDK_w, IDC_CLOSE_TAB, GDK_CONTROL_MASK },
@@ -114,20 +117,25 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { GDK_d, IDC_STAR, GDK_CONTROL_MASK },
   { XF86XK_AddFavorite, IDC_STAR, GdkModifierType(0) },
   { XF86XK_Favorites, IDC_SHOW_BOOKMARK_BAR, GdkModifierType(0) },
+  { GDK_b, IDC_SHOW_BOOKMARK_BAR, GDK_CONTROL_MASK },
   { XF86XK_History, IDC_SHOW_HISTORY, GdkModifierType(0) },
+  { GDK_h, IDC_SHOW_HISTORY, GDK_CONTROL_MASK },
+  { GDK_j, IDC_SHOW_DOWNLOADS, GDK_CONTROL_MASK },
   { GDK_o, IDC_OPEN_FILE, GDK_CONTROL_MASK },
   { GDK_F11, IDC_FULLSCREEN, GdkModifierType(0) },
   { GDK_u, IDC_VIEW_SOURCE, GDK_CONTROL_MASK },
+  { GDK_j, IDC_DEV_TOOLS, GdkModifierType(GDK_CONTROL_MASK | GDK_MOD1_MASK) },
   { GDK_p, IDC_PRINT, GDK_CONTROL_MASK },
   { GDK_Escape, IDC_TASK_MANAGER, GDK_SHIFT_MASK },
-
-#if defined(OS_CHROMEOS)
   { GDK_f, IDC_FULLSCREEN,
     GdkModifierType(GDK_CONTROL_MASK | GDK_MOD1_MASK) },
   { GDK_Delete, IDC_TASK_MANAGER,
     GdkModifierType(GDK_CONTROL_MASK | GDK_MOD1_MASK) },
   { GDK_comma, IDC_CONTROL_PANEL, GdkModifierType(GDK_CONTROL_MASK) },
-#endif
+  { GDK_b, IDC_SHOW_BOOKMARK_MANAGER,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
+  { GDK_F1, IDC_HELP_PAGE,  GdkModifierType(0) },
+  { GDK_q, IDC_EXIT, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
 };
 
 const size_t kAcceleratorMapLength = arraysize(kAcceleratorMap);

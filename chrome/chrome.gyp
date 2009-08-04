@@ -591,8 +591,6 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for tests and
         # mocks.
-	'browser/accelerator_table_linux.cc',
-	'browser/accelerator_table_linux.h',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
         'browser/app_controller_mac.h',
@@ -1667,6 +1665,8 @@
         'browser/views/about_ipc_dialog.h',
         'browser/views/about_network_dialog.cc',
         'browser/views/about_network_dialog.h',
+        'browser/views/accelerator_table_gtk.cc',
+        'browser/views/accelerator_table_gtk.h',
         'browser/views/autocomplete/autocomplete_popup_contents_view.cc',
         'browser/views/autocomplete/autocomplete_popup_contents_view.h',
         'browser/views/autocomplete/autocomplete_popup_win.cc',
@@ -2149,6 +2149,8 @@
                 ['include', '^browser/dock_info.cc'],
                 ['include', '^browser/dock_info.h'],
                 ['include', '^browser/extensions/'],
+                ['include', '^browser/views/accelerator_table_gtk.cc'],
+                ['include', '^browser/views/accelerator_table_gtk.h'],
                 ['include', '^browser/views/autocomplete/autocomplete_popup_contents_view.cc'],
                 ['include', '^browser/views/autocomplete/autocomplete_popup_contents_view.h'],
                 ['include', '^browser/views/autocomplete/autocomplete_popup_gtk.cc'],

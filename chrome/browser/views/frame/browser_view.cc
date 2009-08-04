@@ -69,7 +69,7 @@
 #include "chrome/browser/jumplist.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #elif defined(OS_LINUX)
-#include "chrome/browser/accelerator_table_linux.h"
+#include "chrome/browser/views/accelerator_table_gtk.h"
 #include <gtk/gtk.h>
 
 #include "views/window/hit_test.h"
@@ -601,7 +601,7 @@ void BrowserView::SetBounds(const gfx::Rect& bounds) {
 void BrowserView::Close() {
   // BrowserWindowClosing will usually cause the bubble to remove itself from
   // the set, so we need to iterate in a way that's safe against deletion.
-  for (BubbleSet::iterator i = browser_bubbles_.begin(); 
+  for (BubbleSet::iterator i = browser_bubbles_.begin();
        i != browser_bubbles_.end();) {
     BubbleSet::iterator bubble = i++;
     (*bubble)->BrowserWindowClosing();
