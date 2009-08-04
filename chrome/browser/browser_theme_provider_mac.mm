@@ -7,7 +7,22 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "skia/ext/skia_utils.h"
 #include "skia/ext/skia_utils_mac.h"
+
+namespace {
+
+void HSLToHSB(const skia::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
+  SkColor color = skia::HSLToSkColor(1.0, hsl);  // alpha value doesn't matter
+  SkScalar hsv[3];
+  SkColorToHSV(color, hsv);
+
+  *h = SkScalarToDouble(hsv[0]) / 360.0;
+  *s = SkScalarToDouble(hsv[1]);
+  *b = SkScalarToDouble(hsv[2]);
+}
+
+}
 
 NSImage* BrowserThemeProvider::GetNSImageNamed(int id) {
   DCHECK(CalledOnValidThread());
@@ -63,13 +78,12 @@ NSColor* BrowserThemeProvider::GetNSColorTint(int id) {
   TintMap::iterator tint_iter = tints_.find(GetTintKey(id));
   if (tint_iter != tints_.end()) {
     skia::HSL tint = tint_iter->second;
+    CGFloat hue, saturation, brightness;
+    HSLToHSB(tint, &hue, &saturation, &brightness);
 
-    // The tint is HSL, not HSB, but we're cheating for now. TODO(avi,alcor):
-    // determine how much this matters and fix it if necessary.
-    // http://crbug.com/15760
-    NSColor* tint_color = [NSColor colorWithCalibratedHue:tint.h
-                                               saturation:tint.s
-                                               brightness:tint.l
+    NSColor* tint_color = [NSColor colorWithCalibratedHue:hue
+                                               saturation:saturation
+                                               brightness:brightness
                                                     alpha:1.0];
 
     // We loaded successfully.  Cache the color.
