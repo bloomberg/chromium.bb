@@ -74,6 +74,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
 #else
       , select_trailing_whitespace_enabled_(false)
 #endif
+      , block_redirects_(false)
 #if defined(OS_LINUX)
       , cursor_type_(GDK_X_CURSOR)
 #endif
