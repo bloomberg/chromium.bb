@@ -235,6 +235,9 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
     "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf",
     "/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf",
     "/usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf",
+    "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_ta.ttf",
+    "/usr/share/fonts/truetype/ttf-indic-fonts-core/lohit_pa.ttf",
+    "/usr/share/fonts/truetype/ttf-indic-fonts-core/MuktiNarrow.ttf",
   };
   for (size_t i = 0; i < arraysize(fonts); ++i) {
     if (access(fonts[i], R_OK)) {
