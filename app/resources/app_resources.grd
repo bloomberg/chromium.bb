@@ -106,6 +106,8 @@
 
       <!-- Menus -->
       <include name="IDR_MENU_DROPARROW" file="menu_droparrow.png" type="BINDATA" />
+
+      <include name="IDR_GLEN" file="linux_close_glen.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

@@ -4621,6 +4621,9 @@ each locale. -->
       Open Files
     </message>
 
+    <message translateable="false" name="IDS_GLEN" desc="Glen">
+      Glen
+    </message>
     </messages>
   </release>
 </grit>

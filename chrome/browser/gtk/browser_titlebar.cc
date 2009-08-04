@@ -191,8 +191,15 @@ void BrowserTitlebar::Init() {
   gtk_box_pack_start(GTK_BOX(titlebar_buttons_box_), buttons_hbox, FALSE,
                      FALSE, 0);
 
-  close_button_.reset(BuildTitlebarButton(IDR_CLOSE, IDR_CLOSE_P, IDR_CLOSE_H,
-                      buttons_hbox, IDS_XPFRAME_CLOSE_TOOLTIP));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(L"glen")) {
+    close_button_.reset(BuildTitlebarButton(IDR_GLEN, IDR_GLEN, IDR_GLEN,
+                                            buttons_hbox, IDS_GLEN));
+  } else {
+    close_button_.reset(BuildTitlebarButton(IDR_CLOSE, IDR_CLOSE_P, IDR_CLOSE_H,
+                                            buttons_hbox,
+                                            IDS_XPFRAME_CLOSE_TOOLTIP));
+  }
+
   restore_button_.reset(BuildTitlebarButton(IDR_RESTORE, IDR_RESTORE_P,
                         IDR_RESTORE_H, buttons_hbox,
                         IDS_XPFRAME_RESTORE_TOOLTIP));
