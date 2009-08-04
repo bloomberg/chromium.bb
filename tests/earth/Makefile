@@ -41,5 +41,4 @@ endif
 CCFLAGS=-Wall -Werror
 NAME:=earth
 FILES:=earth.cc
-CLIENT:=$(filter-out *%,$(subst /googleclient,/googleclient *,$(CURDIR)))
-include $(CLIENT)/native_client/common/Makefile.mk
+include ../../common/Makefile.mk

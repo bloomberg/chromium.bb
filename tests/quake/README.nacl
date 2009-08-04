@@ -16,12 +16,12 @@ line.
 
 Downloading
 -----------
-To download Quake and apply the patches, run the download.sh script.
+To download Quake and apply the patches, run the download make target.
 Windows users must run this script from a Cygwin shell.
 
-  ./download.sh
+  make download nacl
 
-The bash download script performs the following steps:
+This invokes a download script, which performs the following steps:
 
   First, it uses wget (or curl) to fetch the Quake tarballs, one for the
   source code and one for the level data.

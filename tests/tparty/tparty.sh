@@ -38,7 +38,7 @@ readonly OS_NAME=$(uname -s)
 # you will need to locally modify the line below
 readonly FIREFOX_WINDOWS="/cygdrive/c/Program Files/Mozilla Firefox/firefox.exe"
 
-readonly TESTS="../../tests"
+readonly TESTS="../"
 
 # helper function to launch Firefox across all OS
 # TODO: needs to trap errors returned by Firefox
@@ -131,8 +131,8 @@ make debug nacl run
 make release nacl run ARGS="-m8"
 # Quake demo
 cd ../quake
-make allclean
-make download
+make allclean nacl
+make download nacl
 make release nacl run
 Firefox http://localhost:5103/tests/quake/quake.html
 # Xaos demo
@@ -148,13 +148,13 @@ make release nacl
 Firefox http://localhost:5103/tests/lua/lua.html
 # AWK demo
 cd ../awk
-make allclean
-make download
-make release nacl run \
+make allclean nacl
+make download nacl
+make release nacl run dbgldr \
 ARGS="'BEGIN { print \"Test PASSED:\" } NR==1' <README.nacl"
 # Darkroom demo
 cd ../photo
-rm -d ./*.nexe
+rm -f ./*.nexe
 ./photo_tool.sh
 make clean nacl
 make release nacl
