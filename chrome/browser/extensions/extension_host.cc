@@ -26,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -209,6 +210,10 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
   }
 
   url_ = params.url;
+  if (!url_.SchemeIs(chrome::kExtensionScheme)) {
+    extension_function_dispatcher_.reset(NULL);
+    return;
+  }
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host_, this, url_));
 }
@@ -266,8 +271,10 @@ void ExtensionHost::ProcessDOMUIMessage(const std::string& message,
                                         const std::string& content,
                                         int request_id,
                                         bool has_callback) {
-  extension_function_dispatcher_->HandleRequest(message, content, request_id,
-                                                has_callback);
+  if (extension_function_dispatcher_.get()) {
+    extension_function_dispatcher_->HandleRequest(message, content, request_id,
+                                                  has_callback);
+  }
 }
 
 void ExtensionHost::DidInsertCSS() {

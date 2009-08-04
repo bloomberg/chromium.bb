@@ -80,18 +80,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionShelfModelTest, Basic) {
 
   // extension1 has two toolstrips
   EXPECT_EQ(inserted_count_, 2);
-  ExtensionHost* one = model_->ToolstripAt(0);
-  ExtensionHost* two = model_->ToolstripAt(1);
+  ExtensionHost* one = model_->ToolstripAt(0).host;
+  ExtensionHost* two = model_->ToolstripAt(1).host;
   EXPECT_EQ(one->GetURL().path(), "/toolstrip1.html");
   EXPECT_EQ(two->GetURL().path(), "/toolstrip2.html");
 
   model_->MoveToolstripAt(0, 1);
-  EXPECT_EQ(two, model_->ToolstripAt(0));
-  EXPECT_EQ(one, model_->ToolstripAt(1));
+  EXPECT_EQ(two, model_->ToolstripAt(0).host);
+  EXPECT_EQ(one, model_->ToolstripAt(1).host);
   EXPECT_EQ(moved_count_, 1);
 
   model_->RemoveToolstripAt(0);
-  EXPECT_EQ(one, model_->ToolstripAt(0));
+  EXPECT_EQ(one, model_->ToolstripAt(0).host);
   EXPECT_EQ(1, model_->count());
   EXPECT_EQ(removed_count_, 1);
 }

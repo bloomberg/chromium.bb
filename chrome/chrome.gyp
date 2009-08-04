@@ -984,6 +984,8 @@
         'browser/extensions/extension_tabs_module.h',
         'browser/extensions/extension_tabs_module_constants.cc',
         'browser/extensions/extension_tabs_module_constants.h',
+        'browser/extensions/extension_toolstrip_api.cc',
+        'browser/extensions/extension_toolstrip_api.h',
         'browser/extensions/extension_updater.cc',
         'browser/extensions/extension_updater.h',
         'browser/extensions/extensions_service.cc',

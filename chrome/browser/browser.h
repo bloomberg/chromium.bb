@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/extensions/extension_shelf_model.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -133,6 +134,9 @@ class Browser : public TabStripModelDelegate,
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
   FindBarController* find_bar() { return find_bar_controller_.get(); }
+  ExtensionShelfModel* extension_shelf_model() { 
+    return extension_shelf_model_.get(); 
+  }
 
   // Setters /////////////////////////////////////////////////////////////////
 
@@ -702,6 +706,9 @@ class Browser : public TabStripModelDelegate,
 
   // The model for the toolbar view.
   BrowserToolbarModel toolbar_model_;
+
+  // The model for the extension shelf.
+  scoped_ptr<ExtensionShelfModel> extension_shelf_model_;
 
   // UI update coalescing and handling ////////////////////////////////////////
 

@@ -16,36 +16,7 @@
 
 class Browser;
 class ExtensionPrefs;
-
-// Objects implement this interface when they wish to be notified of changes to
-// the ExtensionShelfModel.
-//
-// Register your ExtensionShelfModelObserver with the ExtensionShelfModel using
-// Add/RemoveObserver methods.
-class ExtensionShelfModelObserver {
- public:
-  // A new toolstrip was inserted into ExtensionShelfModel at |index|.
-  virtual void ToolstripInsertedAt(ExtensionHost* toolstrip, int index) {}
-
-  // The specified toolstrip is being removed and destroyed.
-  virtual void ToolstripRemovingAt(ExtensionHost* toolstrip, int index) {}
-
-  // |toolstrip| moved from |from_index| to |to_index|.
-  virtual void ToolstripMoved(ExtensionHost* toolstrip,
-                              int from_index,
-                              int to_index) {}
-
-  // The specified toolstrip changed in some way (currently only size changes)
-  virtual void ToolstripChangedAt(ExtensionHost* toolstrip, int index) {}
-
-  // There are no more toolstrips in the model.
-  virtual void ExtensionShelfEmpty() {}
-
-  // The entire model may have changed.
-  virtual void ShelfModelReloaded() {}
-
-  // TODO(erikkay) - any more?
-};
+class ExtensionShelfModelObserver;
 
 // The model representing the toolstrips on an ExtensionShelf.  The order of
 // the toolstrips is common across all of the models for a given Profile,
@@ -60,7 +31,12 @@ class ExtensionShelfModel : public NotificationObserver {
     ExtensionHost* host;
     Extension::ToolstripInfo info;
     void* data;
+    int height;
+    GURL url;
   };
+
+  typedef std::vector<ToolstripItem> ToolstripList;
+  typedef ToolstripList::iterator iterator;
 
   // Add and remove observers to changes within this ExtensionShelfModel.
   void AddObserver(ExtensionShelfModelObserver* observer);
@@ -69,6 +45,10 @@ class ExtensionShelfModel : public NotificationObserver {
   // The number of toolstrips in the model.
   int count() const { return static_cast<int>(toolstrips_.size()); }
   bool empty() const { return toolstrips_.empty(); }
+
+  // Iterators for the toolstrips in the model.
+  iterator begin() { return toolstrips_.begin(); }
+  ExtensionShelfModel::iterator end() { return toolstrips_.end(); }
 
   // Add |toolstrip| to the end of the shelf.
   void AppendToolstrip(const ToolstripItem& toolstrip);
@@ -82,18 +62,28 @@ class ExtensionShelfModel : public NotificationObserver {
   // Move the toolstrip at |index| to |to_index|.
   void MoveToolstripAt(int index, int to_index);
 
-  // Lookup the index of |toolstrip|.  Returns -1 if not present.
-  int IndexOfToolstrip(ExtensionHost* toolstrip);
+  // Lookup the index of |host|.  Returns -1 if not present.
+  int IndexOfHost(ExtensionHost* host);
 
   // Return the toolstrip at |index|.
-  ExtensionHost* ToolstripAt(int index);
+  const ToolstripItem& ToolstripAt(int index);
 
-  // Return the ToolstripInfo at |index|.
-  Extension::ToolstripInfo& ToolstripInfoAt(int index);
+  // Return the ToolstripItem associated with |host| or NULL if it's not
+  // present.
+  ToolstripList::iterator ToolstripForHost(ExtensionHost* host);
 
-  // Get/Set some arbitrary data associated with a particular toolstrip.
+  // Set some arbitrary data associated with a particular toolstrip.
   void SetToolstripDataAt(int index, void* data);
-  void* ToolstripDataAt(int index);
+
+  // Update the ToolstripItem for |toolstrip| to set its |url| and |height|
+  // and then call ToolstripChanged for all observers.
+  // If |url| is empty, no navigation is requested.
+  void ExpandToolstrip(iterator toolstrip, const GURL& url, int height);
+
+  // Update the ToolstripItem for |toolstrip| to set its |url| and its height
+  // to 0, and then call ToolstripChanged for all observers.
+  // If |url| is empty, no navigation is requested.
+  void CollapseToolstrip(iterator toolstrip, const GURL& url);
 
   // NotificationObserver
   virtual void Observe(NotificationType type,
@@ -126,8 +116,7 @@ class ExtensionShelfModel : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   // The Toolstrips loaded in this model. The model owns these objects.
-  typedef std::vector<ToolstripItem> ExtensionToolstrips;
-  ExtensionToolstrips toolstrips_;
+  ToolstripList toolstrips_;
 
   // Our observers.
   typedef ObserverList<ExtensionShelfModelObserver>
@@ -139,5 +128,37 @@ class ExtensionShelfModel : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionShelfModel);
 };
+
+// Objects implement this interface when they wish to be notified of changes to
+// the ExtensionShelfModel.
+//
+// Register your ExtensionShelfModelObserver with the ExtensionShelfModel using
+// Add/RemoveObserver methods.
+class ExtensionShelfModelObserver {
+ public:
+  // A new toolstrip was inserted into ExtensionShelfModel at |index|.
+  virtual void ToolstripInsertedAt(ExtensionHost* toolstrip, int index) {}
+
+  // The specified toolstrip is being removed and destroyed.
+  virtual void ToolstripRemovingAt(ExtensionHost* toolstrip, int index) {}
+
+  // |toolstrip| moved from |from_index| to |to_index|.
+  virtual void ToolstripMoved(ExtensionHost* toolstrip,
+                              int from_index,
+                              int to_index) {}
+
+  // The specified toolstrip changed in some way (currently only size changes)
+  virtual void ToolstripChanged(ExtensionShelfModel::iterator toolstrip) {}
+
+  // There are no more toolstrips in the model.
+  virtual void ExtensionShelfEmpty() {}
+
+  // The entire model may have changed.
+  virtual void ShelfModelReloaded() {}
+
+  // The model is being destroyed.
+  virtual void ShelfModelDeleting() {}
+};
+
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SHELF_MODEL_H_

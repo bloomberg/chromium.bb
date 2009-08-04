@@ -16,10 +16,12 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/extension_toolstrip_api.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/common/url_constants.h"
 
 // FactoryRegistry -------------------------------------------------------------
 
@@ -67,6 +69,7 @@ void FactoryRegistry::ResetFunctions() {
   namespace tabs = extension_tabs_module_constants;
   namespace page_actions = extension_page_actions_module_constants;
   namespace bookmarks = extension_bookmarks_module_constants;
+  namespace toolstrip = extension_toolstrip_api_functions;
 
   // Windows
   factories_[tabs::kGetWindowFunction] =
@@ -127,6 +130,12 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<MoveBookmarkFunction>;
   factories_[bookmarks::kSetBookmarkTitleFunction] =
       &NewExtensionFunction<SetBookmarkTitleFunction>;
+
+  // Toolstrips.
+  factories_[toolstrip::kExpandFunction] =
+      &NewExtensionFunction<ToolstripExpandFunction>;
+  factories_[toolstrip::kCollapseFunction] =
+      &NewExtensionFunction<ToolstripCollapseFunction>;
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {
@@ -187,6 +196,10 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     delegate_(delegate),
     url_(url),
     ALLOW_THIS_IN_INITIALIZER_LIST(peer_(new Peer(this))) {
+  // TODO(erikkay) should we do something for these errors in Release?
+  DCHECK(url.SchemeIs(chrome::kExtensionScheme));
+  DCHECK(profile()->GetExtensionsService()->GetExtensionByURL(url));
+
   all_instances()->insert(this);
 
   // Notify the ExtensionProcessManager that the view was created.
@@ -205,6 +218,11 @@ Browser* ExtensionFunctionDispatcher::GetBrowser() {
 
   Browser* retval = delegate_->GetBrowser();
   return retval;
+}
+
+ExtensionHost* ExtensionFunctionDispatcher::GetExtensionHost() {
+  DCHECK(delegate_);
+  return delegate_->GetExtensionHost();
 }
 
 void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,

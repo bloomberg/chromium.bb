@@ -599,9 +599,13 @@ void BrowserView::SetBounds(const gfx::Rect& bounds) {
 }
 
 void BrowserView::Close() {
-  BubbleSet::iterator bubble = browser_bubbles_.begin();
-  for (; bubble != browser_bubbles_.end(); ++bubble)
+  // BrowserWindowClosing will usually cause the bubble to remove itself from
+  // the set, so we need to iterate in a way that's safe against deletion.
+  for (BubbleSet::iterator i = browser_bubbles_.begin(); 
+       i != browser_bubbles_.end();) {
+    BubbleSet::iterator bubble = i++;
     (*bubble)->BrowserWindowClosing();
+  }
 
   frame_->GetWindow()->Close();
 }
@@ -1490,10 +1494,12 @@ void BrowserView::Init() {
 
   status_bubble_.reset(new StatusBubbleViews(GetWidget()));
 
-  extension_shelf_ = new ExtensionShelf(browser_.get());
-  extension_shelf_->
-      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
-  AddChildView(extension_shelf_);
+  if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
+    extension_shelf_ = new ExtensionShelf(browser_.get());
+    extension_shelf_->
+        SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
+    AddChildView(extension_shelf_);
+  }
 
 #if defined(OS_WIN)
   InitSystemMenu();

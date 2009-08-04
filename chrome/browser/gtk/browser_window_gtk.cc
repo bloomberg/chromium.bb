@@ -945,7 +945,8 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
 }
 
 void BrowserWindowGtk::MaybeShowExtensionShelf() {
-  extension_shelf_->Show();
+  if (extension_shelf_.get())
+    extension_shelf_->Show();
 }
 
 void BrowserWindowGtk::UpdateDevToolsForContents(TabContents* contents) {
@@ -1011,7 +1012,8 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state) {
       toolbar_->Hide();
       tabstrip_->Hide();
       bookmark_bar_->Hide(false);
-      extension_shelf_->Hide();
+      if (extension_shelf_.get())
+        extension_shelf_->Hide();
     } else {
       UpdateCustomFrame();
       ShowSupportedWindowFeatures();
@@ -1195,10 +1197,12 @@ void BrowserWindowGtk::InitWidgets() {
                                          this));
   bookmark_bar_->AddBookmarkbarToBox(content_vbox_);
 
-  extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
-                                               browser_.get()));
-  extension_shelf_->AddShelfToBox(content_vbox_);
-  MaybeShowExtensionShelf();
+  if (IsExtensionShelfSupported()) {
+    extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
+                                                 browser_.get()));
+    extension_shelf_->AddShelfToBox(content_vbox_);
+    MaybeShowExtensionShelf();
+  }
 
   // This vbox surrounds the render area: find bar, info bars and render view.
   // The reason is that this area as a whole needs to be grouped in its own
@@ -1563,7 +1567,7 @@ void BrowserWindowGtk::HideUnsupportedWindowFeatures() {
   if (!IsBookmarkBarSupported())
     bookmark_bar_->Hide(false);
 
-  if (!IsExtensionShelfSupported())
+  if (!IsExtensionShelfSupported() && extension_shelf_.get())
     extension_shelf_->Hide();
 }
 
