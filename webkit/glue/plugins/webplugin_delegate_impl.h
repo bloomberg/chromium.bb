@@ -162,6 +162,8 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   gfx::Rect windowed_last_pos_;
 #endif
 
+  // TODO(dglazkov): No longer used by Windows, make sure the removal
+  // causes no regressions and eliminate from other platforms.
   // this is an optimization to avoid calling SetWindow to the plugin
   // when it is not necessary.  Initially, we need to call SetWindow,
   // and after that we only need to call it when the geometry changes.

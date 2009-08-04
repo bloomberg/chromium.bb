@@ -50,6 +50,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/registry.h"
+#include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -94,15 +95,21 @@ class PluginTest : public UITest {
     UITest::SetUp();
   }
 
-  void TestPlugin(const std::wstring& test_case, int timeout) {
-    GURL url = GetTestUrl(test_case);
+  void TestPlugin(const std::wstring& test_case,
+                  int timeout,
+                  bool mock_http) {
+    GURL url = GetTestUrl(test_case, mock_http);
     NavigateToURL(url);
-    WaitForFinish(timeout);
+    WaitForFinish(timeout, mock_http);
   }
 
   // Generate the URL for testing a particular test.
   // HTML for the tests is all located in test_directory\plugin\<testcase>
-  GURL GetTestUrl(const std::wstring &test_case) {
+  // Set |mock_http| to true to use mock HTTP server.
+  GURL GetTestUrl(const std::wstring &test_case, bool mock_http) {
+    if (mock_http)
+      return URLRequestMockHTTPJob::GetMockUrl(L"plugin/" + test_case);
+
     FilePath path;
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("plugin");
@@ -111,11 +118,11 @@ class PluginTest : public UITest {
   }
 
   // Waits for the test case to finish.
-  void WaitForFinish(const int wait_time) {
+  void WaitForFinish(const int wait_time, bool mock_http) {
     const int kSleepTime = 500;      // 2 times per second
     const int kMaxIntervals = wait_time / kSleepTime;
 
-    GURL url = GetTestUrl(L"done");
+    GURL url = GetTestUrl(L"done", mock_http);
     scoped_refptr<TabProxy> tab(GetActiveTab());
 
     std::string done_str;
@@ -135,41 +142,46 @@ class PluginTest : public UITest {
 };
 
 TEST_F(PluginTest, Quicktime) {
-  TestPlugin(L"quicktime.html", kShortWaitTimeout);
+  TestPlugin(L"quicktime.html", kShortWaitTimeout, false);
 }
 
 TEST_F(PluginTest, DISABLED_MediaPlayerNew) {
-  TestPlugin(L"wmp_new.html", kShortWaitTimeout);
+  TestPlugin(L"wmp_new.html", kShortWaitTimeout, false);
 }
 
 // http://crbug.com/4809
 TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
-  TestPlugin(L"wmp_old.html", kLongWaitTimeout);
+  TestPlugin(L"wmp_old.html", kLongWaitTimeout, false);
 }
 
 TEST_F(PluginTest, Real) {
-  TestPlugin(L"real.html", kShortWaitTimeout);
+  TestPlugin(L"real.html", kShortWaitTimeout, false);
 }
 
 TEST_F(PluginTest, Flash) {
-  TestPlugin(L"flash.html", kShortWaitTimeout);
+  TestPlugin(L"flash.html", kShortWaitTimeout, false);
 }
 
 TEST_F(PluginTest, FlashOctetStream) {
-  TestPlugin(L"flash-octet-stream.html", kShortWaitTimeout);
+  TestPlugin(L"flash-octet-stream.html", kShortWaitTimeout, false);
 }
 
 TEST_F(PluginTest, FlashSecurity) {
-  TestPlugin(L"flash.html", kShortWaitTimeout);
+  TestPlugin(L"flash.html", kShortWaitTimeout, false);
+}
+
+// http://crbug.com/16114
+TEST_F(PluginTest, FlashLayoutWhilePainting) {
+  TestPlugin(L"flash-layout-while-painting.html", kShortWaitTimeout, true);
 }
 
 // http://crbug.com/8690
 TEST_F(PluginTest, DISABLED_Java) {
-  TestPlugin(L"Java.html", kShortWaitTimeout);
+  TestPlugin(L"Java.html", kShortWaitTimeout, false);
 }
 
 TEST_F(PluginTest, Silverlight) {
-  TestPlugin(L"silverlight.html", kShortWaitTimeout);
+  TestPlugin(L"silverlight.html", kShortWaitTimeout, false);
 }
 
 typedef HRESULT (__stdcall* DllRegUnregServerFunc)();
@@ -185,7 +197,7 @@ class ActiveXTest : public PluginTest {
       RegisterTestControl(true);
       dll_registered = true;
     }
-    TestPlugin(test_case, timeout);
+    TestPlugin(test_case, timeout, false);
   }
   virtual void TearDown() {
     PluginTest::TearDown();

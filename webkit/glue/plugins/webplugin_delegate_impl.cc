@@ -67,6 +67,38 @@ base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_track_popup_menu(
 base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_set_cursor(
     base::LINKER_INITIALIZED);
 
+// http://crbug.com/16114
+// Enforces providing a valid device context in NPWindow, so that NPP_SetWindow
+// is never called with NPNWindoTypeDrawable and NPWindow set to NULL.
+// Doing so allows removing NPP_SetWindow call during painting a windowless
+// plugin, which otherwise could trigger layout change while painting by
+// invoking NPN_Evaluate. Which would cause bad, bad crashes. Bad crashes.
+// TODO(dglazkov): If this approach doesn't produce regressions, move class to
+// webplugin_delegate_impl.h and implement for other platforms.
+class DrawableContextEnforcer {
+ public:
+  explicit DrawableContextEnforcer(NPWindow* window)
+      : window_(window),
+        disposable_dc_(window && !window->window) {
+    // If NPWindow is NULL, create a device context with monochrome 1x1 surface
+    // and stuff it to NPWindow.
+    if (disposable_dc_)
+      window_->window = CreateCompatibleDC(NULL);
+  }
+
+  ~DrawableContextEnforcer() {
+    if (!disposable_dc_)
+      return;
+
+    DeleteDC(static_cast<HDC>(window_->window));
+    window_->window = NULL;
+  }
+
+ private:
+  NPWindow* window_;
+  bool disposable_dc_;
+};
+
 }  // namespace
 
 WebPluginDelegate* WebPluginDelegate::Create(
@@ -906,9 +938,6 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   if (window_rect == window_rect_ && clip_rect == clip_rect_)
     return;
 
-  // Set this flag before entering the instance in case of side-effects.
-  windowless_needs_set_window_ = true;
-
   // We will inform the instance of this change when we call NPP_SetWindow.
   clip_rect_ = clip_rect;
   cutout_rects_.clear();
@@ -943,19 +972,7 @@ void WebPluginDelegateImpl::WindowlessPaint(HDC hdc,
   damage_rect_win.right  = damage_rect_win.left + damage_rect.width();
   damage_rect_win.bottom = damage_rect_win.top + damage_rect.height();
 
-  // We need to pass the HDC to the plugin via NPP_SetWindow in the
-  // first paint to ensure that it initiates rect invalidations.
-  if (window_.window == NULL)
-    windowless_needs_set_window_ = true;
-
   window_.window = hdc;
-  // TODO(darin): we should avoid calling NPP_SetWindow here since it may
-  // cause page layout to be invalidated.
-
-  // We really don't need to continually call SetWindow.
-  // m_needsSetWindow flags when the geometry has changed.
-  if (windowless_needs_set_window_)
-    WindowlessSetWindow(false);
 
   NPEvent paint_event;
   paint_event.event = WM_PAINT;
@@ -985,10 +1002,7 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   window_.x = window_rect_.x();
   window_.y = window_rect_.y();
   window_.type = NPWindowTypeDrawable;
-
-  if (!force_set_window)
-    // Reset this flag before entering the instance in case of side-effects.
-    windowless_needs_set_window_ = false;
+  DrawableContextEnforcer enforcer(&window_);
 
   NPError err = instance()->NPP_SetWindow(&window_);
   DCHECK(err == NPERR_NO_ERROR);
