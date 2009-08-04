@@ -288,15 +288,15 @@ bool WorkerTest::ReadExpectedResult(const FilePath& result_dir_path,
                                      expected_result_value);
 }
 
-TEST_F(WorkerTest, SingleWorker) {
+TEST_F(WorkerTest, DISABLED_SingleWorker) {
   RunTest(L"single_worker.html");
 }
 
-TEST_F(WorkerTest, MultipleWorkers) {
+TEST_F(WorkerTest, DISABLED_MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-TEST_F(WorkerTest, WorkerFastLayoutTests) {
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
     "use-machine-stack.html",
@@ -327,7 +327,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-TEST_F(WorkerTest, WorkerHttpLayoutTests) {
+TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     // flakey? BUG 16934 "text-encoding.html",
     "worker-importScripts.html",
@@ -349,7 +349,7 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
+TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
     "close.html",
@@ -374,7 +374,7 @@ TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   StopHttpServer();
 }
 
-TEST_F(WorkerTest, MessagePorts) {
+TEST_F(WorkerTest, DISABLED_MessagePorts) {
   static const char* kLayoutTestFiles[] = {
     "message-channel-gc.html",
     "message-channel-gc-2.html",
@@ -403,7 +403,7 @@ TEST_F(WorkerTest, MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-TEST_F(WorkerTest, LimitPerPage) {
+TEST_F(WorkerTest, DISABLED_LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab + 1));
@@ -416,7 +416,7 @@ TEST_F(WorkerTest, LimitPerPage) {
             UITest::GetBrowserProcessCount());
 }
 
-TEST_F(WorkerTest, LimitTotal) {
+TEST_F(WorkerTest, DISABLED_LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
