@@ -877,7 +877,7 @@ WebInspector.ScriptsPanel.prototype.__defineGetter__(
     WebInspector.searchableViews_);
 
 
-WebInspector.Console.prototype.doEvalInWindow =
+WebInspector.ConsoleView.prototype.doEvalInWindow =
     function(expression, callback) {
   if (!expression ) {
     // Empty expression should evaluate to the global object for completions to
@@ -1032,7 +1032,7 @@ Object.sortedProperties = function(obj) {
 })();
 
 
-WebInspector.Console.prototype._formatobject = function(object, elem) {
+WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
   var section;
   if (object.handle && object.className) {
     object.ref = object.handle;
@@ -1079,5 +1079,5 @@ WebInspector.Console.prototype._formatobject = function(object, elem) {
 
 
 // We do not inspect DOM nodes using $ shortcuts yet.
-WebInspector.Console.prototype.addInspectedNode = function(node) {
+WebInspector.ConsoleView.prototype.addInspectedNode = function(node) {
 };
