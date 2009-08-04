@@ -18,10 +18,16 @@ class ExtensionViewGtk {
 
   gfx::NativeView native_view();
 
+  bool is_toolstrip() const { return is_toolstrip_; }
+  void set_is_toolstrip(bool is_toolstrip) { is_toolstrip_ = is_toolstrip; }
+
  private:
   RenderViewHost* render_view_host() const;
 
   void CreateWidgetHostView();
+
+  // True if the contents are being displayed inside the extension shelf.
+  bool is_toolstrip_;
 
   ExtensionHost* extension_host_;
 

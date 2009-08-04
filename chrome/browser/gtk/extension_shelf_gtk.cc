@@ -28,40 +28,36 @@ class ExtensionShelfGtk::Toolstrip {
     Init();
   }
 
-  ~Toolstrip() {
-    label_.Destroy();
-  }
-
   void AddToolstripToBox(GtkWidget* box);
   void RemoveToolstripFromBox(GtkWidget* box);
 
  private:
   void Init();
 
+  gfx::NativeView native_view() {
+    return host_->view()->native_view();
+  }
+
   ExtensionHost* host_;
 
   const std::string extension_name_;
-
-  // Placeholder label with extension's name.
-  // TODO(phajdan.jr): replace the label with rendered extension contents.
-  OwnedWidgetGtk label_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Toolstrip);
 };
 
 void ExtensionShelfGtk::Toolstrip::AddToolstripToBox(GtkWidget* box) {
-  gtk_box_pack_start(GTK_BOX(box), label_.get(), FALSE, FALSE,
+  gtk_box_pack_start(GTK_BOX(box), native_view(), TRUE, TRUE,
                      kToolstripPadding);
 }
 
 void ExtensionShelfGtk::Toolstrip::RemoveToolstripFromBox(GtkWidget* box) {
-  gtk_container_remove(GTK_CONTAINER(box), label_.get());
+  gtk_container_remove(GTK_CONTAINER(box), native_view());
 }
 
 void ExtensionShelfGtk::Toolstrip::Init() {
-  label_.Own(gtk_label_new(extension_name_.c_str()));
-  gtk_widget_show_all(label_.get());
+  host_->view()->set_is_toolstrip(true);
+  gtk_widget_show_all(native_view());
 }
 
 ExtensionShelfGtk::ExtensionShelfGtk(Profile* profile, Browser* browser)

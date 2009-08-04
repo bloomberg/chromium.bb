@@ -219,6 +219,9 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
 }
 
 void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
+  static const StringPiece toolstrip_css(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_EXTENSIONS_TOOLSTRIP_CSS));
 #if defined(TOOLKIT_VIEWS)
   ExtensionView* view = view_.get();
   if (view) {
@@ -228,15 +231,17 @@ void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
     // As a toolstrip, inject our toolstrip CSS to make it easier for toolstrips
     // to blend in with the chrome UI.
     if (view->is_toolstrip()) {
-      static const StringPiece toolstrip_css(
-          ResourceBundle::GetSharedInstance().GetRawDataResource(
-              IDR_EXTENSIONS_TOOLSTRIP_CSS));
       render_view_host->InsertCSSInWebFrame(L"", toolstrip_css.as_string());
     } else {
       // No CSS injecting currently, but call SetDidInsertCSS to tell the view
       // that it's OK to display.
       view->SetDidInsertCSS(true);
     }
+  }
+#elif defined(OS_LINUX)
+  ExtensionViewGtk* view = view_.get();
+  if (view && view->is_toolstrip()) {
+    render_view_host->InsertCSSInWebFrame(L"", toolstrip_css.as_string());
   }
 #endif
 
