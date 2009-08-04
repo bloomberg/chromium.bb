@@ -4,6 +4,7 @@
 
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 
+#include "base/logging.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 
 namespace views {
@@ -67,7 +68,33 @@ void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && !native_tabbed_pane_ && GetWidget()) {
     CreateWrapper();
     AddChildView(native_tabbed_pane_->GetView());
+    LoadAccelerators();
   }
+}
+
+bool TabbedPane::AcceleratorPressed(const views::Accelerator& accelerator) {
+  // We only accept Ctrl+Tab keyboard events.
+  DCHECK(accelerator.GetKeyCode() == VK_TAB && accelerator.IsCtrlDown());
+
+  int tab_count = GetTabCount();
+  if (tab_count <= 1)
+    return false;
+  int selected_tab_index = GetSelectedTabIndex();
+  int next_tab_index = accelerator.IsShiftDown() ?
+      (selected_tab_index - 1) % tab_count :
+      (selected_tab_index + 1) % tab_count;
+  // Wrap around.
+  if (next_tab_index < 0)
+    next_tab_index += tab_count;
+  SelectTabAt(next_tab_index);
+  return true;
+}
+
+void TabbedPane::LoadAccelerators() {
+  // Ctrl+Shift+Tab
+  AddAccelerator(views::Accelerator(VK_TAB, true, true, false));
+  // Ctrl+Tab
+  AddAccelerator(views::Accelerator(VK_TAB, false, true, false));
 }
 
 void TabbedPane::Layout() {

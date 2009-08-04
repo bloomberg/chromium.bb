@@ -65,6 +65,8 @@ class TabbedPane : public View {
 
   // View overrides:
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  // Handles Ctrl+Tab and Ctrl+Shift+Tab navigation of pages.
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
   virtual std::string GetClassName() const;
   virtual void Layout();
   virtual void Focus();
@@ -80,6 +82,9 @@ class TabbedPane : public View {
 
   // Creates the native wrapper.
   void CreateWrapper();
+
+  // We support Ctrl+Tab and Ctrl+Shift+Tab to navigate tabbed option pages.
+  void LoadAccelerators();
 
   // The listener we notify about tab selection changes.
   Listener* listener_;
