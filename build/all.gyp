@@ -13,10 +13,16 @@
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
         '../src/trusted/platform/platform.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
-        '../src/trusted/sandbox/sandbox.gyp:*',
         '../src/trusted/plugin/plugin.gyp:npGoogleNaClPlugin',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
         '../src/trusted/validator_x86/validator_x86.gyp:*',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '../src/trusted/sandbox/sandbox.gyp:*',
+          ],
+        }],
       ],
     },
   ],

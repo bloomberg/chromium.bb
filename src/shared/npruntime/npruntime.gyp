@@ -44,7 +44,7 @@
         'defines': [
           'XP_MACOSX',
           'XP_UNIX',
-          ['TARGET_API_MAC_CARBON', '1'],
+          'TARGET_API_MAC_CARBON=1',
           'NO_X11',
           'USE_SYSTEM_CONSOLE',
         ],
