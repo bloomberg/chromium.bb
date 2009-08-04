@@ -47,9 +47,12 @@ class MockProxyResolver : public ProxyResolver {
     NOTREACHED();
   }
 
-  virtual void SetPacScriptByDataInternal(const std::string& bytes) {
+  virtual int SetPacScript(const GURL& pac_url,
+                           const std::string& bytes,
+                           CompletionCallback* callback) {
     CheckIsOnWorkerThread();
     last_pac_bytes_ = bytes;
+    return OK;
   }
 
   const std::string& last_pac_bytes() const { return last_pac_bytes_; }
@@ -127,9 +130,13 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
   EXPECT_TRUE(resolver->expects_pac_bytes());
 
-  // Call SetPacScriptByData() -- we will make sure it reaches the sync resolver
-  // later on.
-  resolver->SetPacScriptByData("pac script bytes");
+  // Call SetPacScriptByData() -- verify that it reaches the synchronous
+  // resolver.
+  TestCompletionCallback set_script_callback;
+  rv = resolver->SetPacScriptByData("pac script bytes", &set_script_callback);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, set_script_callback.WaitForResult());
+  EXPECT_EQ("pac script bytes", mock->last_pac_bytes());
 
   // Start request 0.
   TestCompletionCallback callback0;
@@ -142,11 +149,6 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   rv = callback0.WaitForResult();
   EXPECT_EQ(0, rv);
   EXPECT_EQ("PROXY request0:80", results0.ToPacString());
-
-  // Verify that the data from SetPacScriptByData() reached the resolver.
-  // (Since we waited for the first request to complete, we are guaranteed
-  // that the earlier post completed).
-  EXPECT_EQ("pac script bytes", mock->last_pac_bytes());
 
   // Start 3 more requests (request1 to request3).
 
@@ -307,6 +309,61 @@ TEST(SingleThreadedProxyResolverTest, CancelRequestByDeleting) {
   EXPECT_FALSE(callback0.have_result());
   EXPECT_FALSE(callback1.have_result());
   EXPECT_FALSE(callback2.have_result());
+}
+
+// Cancel an outstanding call to SetPacScriptByData().
+TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
+  BlockableProxyResolver* mock = new BlockableProxyResolver;
+  scoped_ptr<SingleThreadedProxyResolver> resolver(
+      new SingleThreadedProxyResolver(mock));
+
+  int rv;
+
+  // Block the proxy resolver, so no request can complete.
+  mock->Block();
+
+  // Start request 0.
+  ProxyResolver::RequestHandle request0;
+  TestCompletionCallback callback0;
+  ProxyInfo results0;
+  rv = resolver->GetProxyForURL(
+      GURL("http://request0"), &results0, &callback0, &request0);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // Wait until requests 0 reaches the worker thread.
+  mock->WaitUntilBlocked();
+
+  TestCompletionCallback set_pac_script_callback;
+  rv = resolver->SetPacScriptByData("data", &set_pac_script_callback);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // Cancel the SetPacScriptByData request (it can't have finished yet,
+  // since the single-thread is currently blocked).
+  resolver->CancelSetPacScript();
+
+  // Start 1 more request.
+
+  TestCompletionCallback callback1;
+  ProxyInfo results1;
+  rv = resolver->GetProxyForURL(
+      GURL("http://request1"), &results1, &callback1, NULL);
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  // Unblock the worker thread so the requests can continue running.
+  mock->Unblock();
+
+  // Wait for requests 0 and 1 to finish.
+
+  rv = callback0.WaitForResult();
+  EXPECT_EQ(0, rv);
+  EXPECT_EQ("PROXY request0:80", results0.ToPacString());
+
+  rv = callback1.WaitForResult();
+  EXPECT_EQ(1, rv);
+  EXPECT_EQ("PROXY request1:80", results1.ToPacString());
+
+  // The SetPacScript callback should never have been completed.
+  EXPECT_FALSE(set_pac_script_callback.have_result());
 }
 
 }  // namespace

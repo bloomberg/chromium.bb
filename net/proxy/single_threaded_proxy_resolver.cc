@@ -10,28 +10,77 @@
 
 namespace net {
 
-// Runs on the worker thread to call ProxyResolver::SetPacScriptByUrl or
-// ProxyResolver::SetPacScriptByData.
-// TODO(eroman): the lifetime of this task is ill-defined; |resolver_| must
-// be valid when the task eventually is run. Make this task cancellable.
-class SetPacScriptTask : public Task {
- public:
-  SetPacScriptTask(ProxyResolver* resolver,
-                   const GURL& pac_url,
-                   const std::string& bytes)
-      : resolver_(resolver), pac_url_(pac_url), bytes_(bytes) {}
+// SingleThreadedProxyResolver::SetPacScriptTask ------------------------------
 
-  virtual void Run() {
-    if (resolver_->expects_pac_bytes())
-      resolver_->SetPacScriptByData(bytes_);
-    else
-      resolver_->SetPacScriptByUrl(pac_url_);
+// Runs on the worker thread to call ProxyResolver::SetPacScript.
+class SingleThreadedProxyResolver::SetPacScriptTask
+    : public base::RefCountedThreadSafe<
+        SingleThreadedProxyResolver::SetPacScriptTask> {
+ public:
+  SetPacScriptTask(SingleThreadedProxyResolver* coordinator,
+                   const GURL& pac_url,
+                   const std::string& pac_bytes,
+                   CompletionCallback* callback)
+    : coordinator_(coordinator),
+      callback_(callback),
+      pac_bytes_(pac_bytes),
+      pac_url_(pac_url),
+      origin_loop_(MessageLoop::current()) {
+    DCHECK(callback);
   }
 
+  // Start the SetPacScript request on the worker thread.
+  void Start() {
+    // TODO(eroman): Are these manual AddRef / Release necessary?
+    AddRef();  // balanced in RequestComplete
+
+    coordinator_->thread()->message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &SetPacScriptTask::DoRequest,
+        coordinator_->resolver_.get()));
+  }
+
+  void Cancel() {
+    // Clear these to inform RequestComplete that it should not try to
+    // access them.
+    coordinator_ = NULL;
+    callback_ = NULL;
+  }
+
+  // Returns true if Cancel() has been called.
+  bool was_cancelled() const { return callback_ == NULL; }
+
  private:
-  ProxyResolver* resolver_;
+  // Runs on the worker thread.
+  void DoRequest(ProxyResolver* resolver) {
+    int rv = resolver->expects_pac_bytes() ?
+        resolver->SetPacScriptByData(pac_bytes_, NULL) :
+        resolver->SetPacScriptByUrl(pac_url_, NULL);
+
+    DCHECK_NE(rv, ERR_IO_PENDING);
+    origin_loop_->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &SetPacScriptTask::RequestComplete, rv));
+  }
+
+  // Runs the completion callback on the origin thread.
+  void RequestComplete(int result_code) {
+    // The task may have been cancelled after it was started.
+    if (!was_cancelled()) {
+      CompletionCallback* callback = callback_;
+      coordinator_->RemoveOutstandingSetPacScriptTask(this);
+      callback->Run(result_code);
+    }
+
+    Release();  // Balances the AddRef in Start.
+  }
+
+  // Must only be used on the "origin" thread.
+  SingleThreadedProxyResolver* coordinator_;
+  CompletionCallback* callback_;
+  std::string pac_bytes_;
   GURL pac_url_;
-  std::string bytes_;
+
+  // Usable from within DoQuery on the worker thread.
+  MessageLoop* origin_loop_;
 };
 
 // SingleThreadedProxyResolver::Job -------------------------------------------
@@ -102,7 +151,7 @@ class SingleThreadedProxyResolver::Job
         coordinator_->RemoveFrontOfJobsQueueAndStartNext(this);
     }
 
-    Release();  // balances the AddRef in Query.  we may get deleted after
+    Release();  // Balances the AddRef in Start. We may get deleted after
                 // we return.
   }
 
@@ -133,6 +182,9 @@ SingleThreadedProxyResolver::~SingleThreadedProxyResolver() {
        ++it) {
     (*it)->Cancel();
   }
+
+  if (outstanding_set_pac_script_task_)
+    outstanding_set_pac_script_task_->Cancel();
 
   // Note that |thread_| is destroyed before |resolver_|. This is important
   // since |resolver_| could be running on |thread_|.
@@ -182,21 +234,24 @@ void SingleThreadedProxyResolver::CancelRequest(RequestHandle req) {
   pending_jobs_.erase(it);
 }
 
-void SingleThreadedProxyResolver::SetPacScriptByUrlInternal(
-    const GURL& pac_url) {
-  SetPacScriptHelper(pac_url, std::string());
+void SingleThreadedProxyResolver::CancelSetPacScript() {
+  DCHECK(outstanding_set_pac_script_task_);
+  outstanding_set_pac_script_task_->Cancel();
+  outstanding_set_pac_script_task_ = NULL;
 }
 
-void SingleThreadedProxyResolver::SetPacScriptByDataInternal(
-    const std::string& bytes) {
-  SetPacScriptHelper(GURL(), bytes);
-}
-
-void SingleThreadedProxyResolver::SetPacScriptHelper(const GURL& pac_url,
-                                                     const std::string& bytes) {
+int SingleThreadedProxyResolver::SetPacScript(
+    const GURL& pac_url,
+    const std::string& pac_bytes,
+    CompletionCallback* callback) {
   EnsureThreadStarted();
-  thread()->message_loop()->PostTask(
-      FROM_HERE, new SetPacScriptTask(resolver(), pac_url, bytes));
+  DCHECK(!outstanding_set_pac_script_task_);
+
+  SetPacScriptTask* task = new SetPacScriptTask(
+      this, pac_url, pac_bytes, callback);
+  outstanding_set_pac_script_task_ = task;
+  task->Start();
+  return ERR_IO_PENDING;
 }
 
 void SingleThreadedProxyResolver::EnsureThreadStarted() {
@@ -226,6 +281,12 @@ void SingleThreadedProxyResolver::RemoveFrontOfJobsQueueAndStartNext(
 
   // Start next work item.
   ProcessPendingJobs();
+}
+
+void SingleThreadedProxyResolver::RemoveOutstandingSetPacScriptTask(
+    SetPacScriptTask* task) {
+  DCHECK_EQ(outstanding_set_pac_script_task_.get(), task);
+  outstanding_set_pac_script_task_ = NULL;
 }
 
 }  // namespace net

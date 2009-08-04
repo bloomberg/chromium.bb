@@ -44,7 +44,11 @@ class SyncMockProxyResolver : public net::ProxyResolver {
     NOTREACHED();
   }
 
-  virtual void SetPacScriptByUrlInternal(const GURL& pac_url) {}
+  virtual int SetPacScript(const GURL& /*pac_url*/,
+                           const std::string& /*bytes*/,
+                           net::CompletionCallback* /*callback*/) {
+    return net::OK;
+  }
 
   void Block() {
     is_blocked_ = true;

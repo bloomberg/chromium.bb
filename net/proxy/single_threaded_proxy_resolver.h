@@ -37,6 +37,7 @@ class SingleThreadedProxyResolver : public ProxyResolver {
                              CompletionCallback* callback,
                              RequestHandle* request);
   virtual void CancelRequest(RequestHandle request);
+  virtual void CancelSetPacScript();
 
  protected:
   // The wrapped (synchronous) ProxyResolver.
@@ -47,18 +48,17 @@ class SingleThreadedProxyResolver : public ProxyResolver {
   // thread.
   class Job;
   friend class Job;
+  class SetPacScriptTask;
+  friend class SetPacScriptTask;
   // FIFO queue that contains the in-progress job, and any pending jobs.
   typedef std::deque<scoped_refptr<Job> > PendingJobsQueue;
 
   base::Thread* thread() { return thread_.get(); }
 
   // ProxyResolver implementation:
-  virtual void SetPacScriptByUrlInternal(const GURL& pac_url);
-  virtual void SetPacScriptByDataInternal(const std::string& bytes);
-
-  // Helper for shared code between SetPacScriptByUrlInternal() and
-  // SetPacScriptByDataInternal() -- the unused parameter is set to empty.
-  void SetPacScriptHelper(const GURL& pac_url, const std::string& bytes);
+  virtual int SetPacScript(const GURL& pac_url,
+                           const std::string& pac_bytes,
+                           CompletionCallback* callback);
 
   // Starts the worker thread if it isn't already running.
   void EnsureThreadStarted();
@@ -71,6 +71,10 @@ class SingleThreadedProxyResolver : public ProxyResolver {
   // DCHECK for verification purposes.
   void RemoveFrontOfJobsQueueAndStartNext(Job* expected_job);
 
+  // Clears |outstanding_set_pac_script_task_|.
+  // Called when |task| has just finished.
+  void RemoveOutstandingSetPacScriptTask(SetPacScriptTask* task);
+
   // The synchronous resolver implementation.
   scoped_ptr<ProxyResolver> resolver_;
 
@@ -81,6 +85,7 @@ class SingleThreadedProxyResolver : public ProxyResolver {
   scoped_ptr<base::Thread> thread_;
 
   PendingJobsQueue pending_jobs_;
+  scoped_refptr<SetPacScriptTask> outstanding_set_pac_script_task_;
 };
 
 }  // namespace net

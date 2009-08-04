@@ -62,7 +62,8 @@ class SynchFetcherThreadHelper {
   // Starts fetching the script at |url|. Upon completion |event_| will be
   // signalled, and the bytes read will have been written to |fetch_result_|.
   void Start(const GURL& url) {
-    fetcher_->Fetch(url, &fetch_result_->bytes, &callback_);
+    int rv = fetcher_->Fetch(url, &fetch_result_->bytes, &callback_);
+    EXPECT_EQ(net::ERR_IO_PENDING, rv);
   }
 
   void OnFetchCompletion(int result) {

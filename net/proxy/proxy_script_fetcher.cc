@@ -57,8 +57,8 @@ class ProxyScriptFetcherImpl : public ProxyScriptFetcher,
 
   // ProxyScriptFetcher methods:
 
-  virtual void Fetch(const GURL& url, std::string* bytes,
-                     CompletionCallback* callback);
+  virtual int Fetch(const GURL& url, std::string* bytes,
+                    CompletionCallback* callback);
   virtual void Cancel();
 
   // URLRequest::Delegate methods:
@@ -137,9 +137,9 @@ ProxyScriptFetcherImpl::~ProxyScriptFetcherImpl() {
   // ensure that the delegate (this) is not called again.
 }
 
-void ProxyScriptFetcherImpl::Fetch(const GURL& url,
-                                   std::string* bytes,
-                                   CompletionCallback* callback) {
+int ProxyScriptFetcherImpl::Fetch(const GURL& url,
+                                  std::string* bytes,
+                                  CompletionCallback* callback) {
   // It is invalid to call Fetch() while a request is already in progress.
   DCHECK(!cur_request_.get());
 
@@ -171,6 +171,7 @@ void ProxyScriptFetcherImpl::Fetch(const GURL& url,
 
   // Start the request.
   cur_request_->Start();
+  return ERR_IO_PENDING;
 }
 
 void ProxyScriptFetcherImpl::Cancel() {
