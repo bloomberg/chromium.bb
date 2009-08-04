@@ -242,14 +242,6 @@ void TestWebViewDelegate::WillSendRequest(WebFrame* webframe,
            request_url.c_str());
   }
 
-  if (block_redirects_) {
-    printf("Returning null for this redirect\n");
-
-    // To block the request, we set its URL to an empty one.
-    request->setURL(WebURL());
-    return;
-  }
-
   if (TestShell::layout_test_mode() && !host.empty() &&
       (url.SchemeIs("http") || url.SchemeIs("https")) &&
        host != "127.0.0.1" &&

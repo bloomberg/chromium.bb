@@ -74,7 +74,6 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
 #else
       , select_trailing_whitespace_enabled_(false)
 #endif
-      , block_redirects_(false)
 #if defined(OS_LINUX)
       , cursor_type_(GDK_X_CURSOR)
 #endif
@@ -281,13 +280,6 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   void SetCustomPolicyDelegate(bool is_custom, bool is_permissive);
   void WaitForPolicyDelegate();
 
-  void set_block_redirects(bool block_redirects) {
-    block_redirects_ = block_redirects;
-  }
-  bool block_redirects() const {
-    return block_redirects_;
-  }
-
  protected:
   // Called the title of the page changes.
   // Can be used to update the title of the window.
@@ -356,9 +348,6 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
 
   // true if we want to enable selection of trailing whitespaces
   bool select_trailing_whitespace_enabled_;
-
-  // true if we should block any redirects
-  bool block_redirects_;
 
   CapturedContextMenuEvents captured_context_menu_events_;
 
