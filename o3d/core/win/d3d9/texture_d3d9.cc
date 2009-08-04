@@ -406,9 +406,8 @@ void Texture2DD3D9::UpdateBackedMipLevel(unsigned int level) {
   DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK_EQ(backing_bitmap_->num_mipmaps(), levels());
 
-  unsigned int mip_width;
-  unsigned int mip_height;
-  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  unsigned int mip_width = Bitmap::GetMipDimension(level, width());
+  unsigned int mip_height = Bitmap::GetMipDimension(level, height());
   unsigned int rect_width = mip_width;
   unsigned int rect_height = mip_height;
   rect_width = std::max(1U, Bitmap::GetPOTSize(width()) >> level);
@@ -501,9 +500,8 @@ void Texture2DD3D9::SetRect(int level,
     return;
   }
 
-  unsigned mip_width;
-  unsigned mip_height;
-  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  unsigned mip_width = Bitmap::GetMipDimension(level, width());
+  unsigned mip_height = Bitmap::GetMipDimension(level, height());
 
   if (dst_left + src_width > mip_width ||
       dst_top + src_height > mip_height) {
@@ -571,9 +569,8 @@ bool Texture2DD3D9::Lock(int level, void** texture_data, int* pitch) {
   if (resize_to_pot_) {
     DCHECK(backing_bitmap_->image_data());
     *texture_data = backing_bitmap_->GetMipData(level);
-    unsigned int mip_width;
-    unsigned int mip_height;
-    Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+    unsigned int mip_width = Bitmap::GetMipDimension(level, width());
+    unsigned int mip_height = Bitmap::GetMipDimension(level, height());
     *pitch = Bitmap::GetMipChainSize(mip_width, 1, format(), 1);
     locked_levels_ |= 1 << level;
     return true;
@@ -850,10 +847,8 @@ void TextureCUBED3D9::SetRect(TextureCUBE::CubeFace face,
     return;
   }
 
-  unsigned mip_width;
-  unsigned mip_height;
-  Bitmap::GetMipSize(
-      level, edge_length(), edge_length(), &mip_width, &mip_height);
+  unsigned mip_width = Bitmap::GetMipDimension(level, edge_length());
+  unsigned mip_height = mip_width;
 
   if (dst_left + src_width > mip_width ||
       dst_top + src_height > mip_height) {
@@ -923,10 +918,8 @@ bool TextureCUBED3D9::Lock(
   if (resize_to_pot_) {
     DCHECK(backing_bitmap_->image_data());
     *texture_data = backing_bitmap_->GetFaceMipData(face, level);
-    unsigned int mip_width;
-    unsigned int mip_height;
-    Bitmap::GetMipSize(
-        level, edge_length(), edge_length(), &mip_width, &mip_height);
+    unsigned int mip_width = Bitmap::GetMipDimension(level, edge_length());
+    unsigned int mip_height = mip_width;
     *pitch = Bitmap::GetMipChainSize(mip_width, 1, format(), 1);
     locked_levels_[face] |= 1 << level;
     return true;

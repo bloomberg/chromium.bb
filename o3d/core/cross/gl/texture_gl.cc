@@ -398,9 +398,8 @@ void Texture2DGL::SetRect(int level,
     return;
   }
 
-  unsigned mip_width;
-  unsigned mip_height;
-  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  unsigned mip_width = Bitmap::GetMipDimension(level, width());
+  unsigned mip_height = Bitmap::GetMipDimension(level, height());
 
   if (dst_left + src_width > mip_width ||
       dst_top + src_height > mip_height) {
@@ -488,10 +487,9 @@ bool Texture2DGL::Lock(int level, void** data, int* pitch) {
     backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
   }
   *data = backing_bitmap_->GetMipData(level);
-  unsigned int mip_width;
-  unsigned int mip_height;
-  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
-  if (IsCompressed()) {
+  unsigned int mip_width = Bitmap::GetMipDimension(level, width());
+  unsigned int mip_height = Bitmap::GetMipDimension(level, height());
+  if (!IsCompressed()) {
     *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
   } else {
     unsigned blocks_across = (mip_width + 3) / 4;
@@ -778,10 +776,8 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
     return;
   }
 
-  unsigned mip_width;
-  unsigned mip_height;
-  Bitmap::GetMipSize(
-      level, edge_length(), edge_length(), &mip_width, &mip_height);
+  unsigned mip_width = Bitmap::GetMipDimension(level, edge_length());
+  unsigned mip_height = mip_width;
 
   if (dst_left + src_width > mip_width ||
       dst_top + src_height > mip_height) {
@@ -873,11 +869,8 @@ bool TextureCUBEGL::Lock(CubeFace face, int level, void** data, int* pitch) {
                              levels(), true);
   }
   *data = backing_bitmap_->GetFaceMipData(face, level);
-  unsigned int mip_width;
-  unsigned int mip_height;
-  Bitmap::GetMipSize(level, edge_length(), edge_length(),
-                     &mip_width, &mip_height);
-  if (IsCompressed()) {
+  unsigned int mip_width = Bitmap::GetMipDimension(level, edge_length());
+  if (!IsCompressed()) {
     *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
   } else {
     unsigned blocks_across = (mip_width + 3) / 4;

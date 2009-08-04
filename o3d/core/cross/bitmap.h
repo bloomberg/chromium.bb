@@ -86,16 +86,10 @@ class Bitmap : public ParamObject {
         width <= kMaxImageDimension && height < kMaxImageDimension;
   }
 
-  // Computes the width and height of a mip.
-  static void GetMipSize(int level,
-                         unsigned width,
-                         unsigned height,
-                         unsigned* mip_width,
-                         unsigned* mip_height) {
-    unsigned w = width >> level;
-    unsigned h = height >> level;
-    *mip_width = w > 0 ? w : 1u;
-    *mip_height = h > 0 ? h : 1u;
+  // Computes one dimension of a mip.
+  static unsigned GetMipDimension(int level, unsigned dimension) {
+    unsigned v = dimension >> level;
+    return v > 0 ? v : 1u;
   }
 
   // Creates a copy of a bitmap, copying the pixels as well.

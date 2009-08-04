@@ -195,9 +195,8 @@ void Bitmap::SetRect(
     int src_pitch) {
   DCHECK(src_data);
   DCHECK(level < static_cast<int>(num_mipmaps()) && level >= 0);
-  unsigned mip_width;
-  unsigned mip_height;
-  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  unsigned mip_width = Bitmap::GetMipDimension(level, width());
+  unsigned mip_height = Bitmap::GetMipDimension(level, height());
   DCHECK(dst_left + src_width <= mip_width &&
          dst_top + src_height <= mip_height);
   bool compressed = Texture::IsCompressedFormat(format());
@@ -237,9 +236,8 @@ void Bitmap::SetFaceRect(
     int src_pitch) {
   DCHECK(src_data);
   DCHECK(level < static_cast<int>(num_mipmaps()) && level >= 0);
-  unsigned mip_width;
-  unsigned mip_height;
-  Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
+  unsigned mip_width = Bitmap::GetMipDimension(level, width());
+  unsigned mip_height = Bitmap::GetMipDimension(level, height());
   DCHECK(dst_left + src_width <= mip_width &&
          dst_top + src_height <= mip_height);
   bool compressed = Texture::IsCompressedFormat(format());
@@ -441,7 +439,7 @@ void Bitmap::DrawImage(Bitmap* src_img,
   LanczosScale(src_img_data, src_x, src_y,
                src_width, src_height,
                src_img->width_, src_img->height_,
-               dst_img_data, width_,
+               dst_img_data, width_ * components,
                dst_x, dst_y,
                dst_width, dst_height,
                width_, height_, components);

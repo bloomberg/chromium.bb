@@ -398,6 +398,8 @@
           'cross/state_test.cc',
           'cross/stream_bank_test.cc',
           'cross/stream_test.cc',
+          'cross/texture_base_test.cc',
+          'cross/texture_test.cc',
           'cross/transform_test.cc',
           'cross/tree_traversal_test.cc',
           'cross/vector_map_test.cc',

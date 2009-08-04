@@ -590,11 +590,10 @@ bool MessageQueue::ProcessUpdateTexture2D(ConnectedClient* client,
     return false;
   }
 
-  unsigned int mip_width;
-  unsigned int mip_height;
-  Bitmap::GetMipSize(level, texture_object->width(), texture_object->height(),
-                     &mip_width, &mip_height);
-
+  unsigned int mip_width =
+      Bitmap::GetMipDimension(level, texture_object->width());
+  unsigned int mip_height =
+      Bitmap::GetMipDimension(level, texture_object->height());
 
   if (number_of_bytes != Bitmap::GetMipChainSize(mip_width, mip_height,
                                                  texture_object->format(), 1)) {
