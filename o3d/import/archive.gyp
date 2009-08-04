@@ -65,7 +65,7 @@
           'cross/raw_data_test.cc',
           'cross/tar_processor_test.cc',
           'cross/targz_processor_test.cc',
-          'thread_stream_processor_test.cc',
+          'cross/threaded_stream_processor_test.cc',
         ],
       },
       'copies': [

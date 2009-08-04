@@ -194,7 +194,7 @@ void Bitmap::SetRect(
     const void* src_data,
     int src_pitch) {
   DCHECK(src_data);
-  DCHECK(level < num_mipmaps() && level >= 0);
+  DCHECK(level < static_cast<int>(num_mipmaps()) && level >= 0);
   unsigned mip_width;
   unsigned mip_height;
   Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
@@ -236,7 +236,7 @@ void Bitmap::SetFaceRect(
     const void* src_data,
     int src_pitch) {
   DCHECK(src_data);
-  DCHECK(level < num_mipmaps() && level >= 0);
+  DCHECK(level < static_cast<int>(num_mipmaps()) && level >= 0);
   unsigned mip_width;
   unsigned mip_height;
   Bitmap::GetMipSize(level, width(), height(), &mip_width, &mip_height);
