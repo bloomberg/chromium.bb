@@ -2773,19 +2773,29 @@ BUG16355 WIN : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = 
 BUG16355 WIN : LayoutTests/media/audio-delete-while-step-button-clicked.html = TIMEOUT
 BUG16355 LINUX : LayoutTests/fast/forms/slider-delete-while-dragging-thumb.html = FAIL
 
-// Tests that rely on cross-process MessagePorts
-BUG16410 : LayoutTests/fast/workers/worker-cloneport.html = FAIL CRASH
-BUG16410 : LayoutTests/fast/workers/worker-messageport-gc.html = FAIL CRASH
-BUG16410 : LayoutTests/fast/workers/worker-messageport.html = FAIL CRASH
+// Tests that rely on cross-process MessagePorts.  No point in running them in
+// test_shell, since we'd have to use a completely different implementation from
+// what is used in the browser.
+BUG16410 SKIP : LayoutTests/fast/events/message-channel-gc-2.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-channel-gc-3.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-channel-gc-4.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-channel-gc.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-channel-listener-circular-ownership.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-port-clone.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-port-deleted-document.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-port-deleted-frame.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-port-inactive-document.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-port-no-wrapper.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/events/message-port.html = CRASH
+BUG16410 SKIP : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = CRASH
+BUG16410 SKIP : chrome/fast/dom/messageport-gc.html = CRASH
+BUG16410 SKIP : LayoutTests/fast/workers/worker-cloneport.html = FAIL CRASH
+BUG16410 SKIP : LayoutTests/fast/workers/worker-messageport-gc.html = FAIL CRASH
+BUG16410 SKIP : LayoutTests/fast/workers/worker-messageport.html = FAIL CRASH
 
 // WebKit merge 45685:45738
-BUG16410 : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
 BUG16652 : LayoutTests/fast/replaced/embed-display-none.html = PASS CRASH
-BUG16410 DEBUG : LayoutTests/fast/events/message-channel-gc-2.html = CRASH	
-BUG16410 DEBUG : LayoutTests/fast/events/message-channel-gc-4.html = CRASH	
-BUG16410 DEBUG : LayoutTests/fast/events/message-channel-listener-circular-ownership.html = CRASH	
 BUG16410 DEBUG : LayoutTests/fast/events/message-port-constructor-for-deleted-document.html = CRASH	
-BUG16410 DEBUG : LayoutTests/fast/events/message-port-deleted-frame.html = CRASH	
 BUG16639 DEBUG : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
 BUG16639 DEBUG : LayoutTests/fast/events/mouseout-on-window.html = CRASH
 
