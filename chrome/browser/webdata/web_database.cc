@@ -343,6 +343,7 @@ bool WebDatabase::InitLoginsTable() {
     }
   }
 
+#if defined(OS_WIN)
   if (!DoesSqliteTableExist(db_, "ie7_logins")) {
     // First time
     if (sqlite3_exec(db_, "CREATE TABLE ie7_logins ("
@@ -362,6 +363,8 @@ bool WebDatabase::InitLoginsTable() {
       return false;
     }
   }
+#endif
+
   return true;
 }
 
@@ -733,7 +736,9 @@ bool WebDatabase::RemoveLoginsCreatedBetween(const Time delete_begin,
                 delete_end.is_null() ?
                     std::numeric_limits<int64>::max() :
                     delete_end.ToTimeT());
+  bool success = s1.step() == SQLITE_DONE;
 
+#if defined(OS_WIN)
   SQLStatement s2;
   if (s2.prepare(db_,
                "DELETE FROM ie7_logins WHERE "
@@ -746,8 +751,10 @@ bool WebDatabase::RemoveLoginsCreatedBetween(const Time delete_begin,
                 delete_end.is_null() ?
                     std::numeric_limits<int64>::max() :
                     delete_end.ToTimeT());
+  success = success && (s2.step() == SQLITE_DONE);
+#endif
 
-  return s1.step() == SQLITE_DONE && s2.step() == SQLITE_DONE;
+  return success;
 }
 
 static void InitPasswordFormFromStatement(PasswordForm* form,
