@@ -43,6 +43,7 @@
 #include <unistd.h>
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/nacl_platform.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
