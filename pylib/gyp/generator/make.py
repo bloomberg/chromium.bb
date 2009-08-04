@@ -566,7 +566,10 @@ class MakefileWriter:
     else:
       print ("ERROR: What output file should be generated?",
              "typ", self.type, "target", target)
-    return os.path.join('$(obj)', self.path, target)
+
+    path = spec.get('product_dir',
+                    os.path.join('$(obj)', self.path))
+    return os.path.join(path, target)
 
 
   def ComputeDeps(self, spec):
@@ -636,8 +639,9 @@ class MakefileWriter:
     if self.type in ('executable', 'loadable_module'):
       filename = os.path.split(self.output)[1]
       binpath = '$(builddir)/' + filename
-      self.WriteDoCmd([binpath], [self.output], 'copy',
-                      comment = 'Copy this to the binary output path.')
+      if binpath != self.output:
+        self.WriteDoCmd([binpath], [self.output], 'copy',
+                        comment = 'Copy this to the binary output path.')
       self.WriteMakeRule([filename], [binpath],
                          comment = 'Short alias for building this executable.')
       self.WriteMakeRule(['all'], [binpath],
