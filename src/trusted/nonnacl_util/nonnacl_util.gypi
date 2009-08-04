@@ -38,7 +38,8 @@
           'XP_UNIX',
         ],
         'dependencies': [
-          'linux/nonnacl_util_linux.gyp:nonnacl_util_linux',
+# TODO(bradnelson): this doesn't seem to exist.
+#          'linux/nonnacl_util_linux.gyp:nonnacl_util_linux',
         ],
       }],
       ['OS=="mac"', {

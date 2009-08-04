@@ -1,6 +1,8 @@
 deps = {
   "tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@546",
+    "http://gyp.googlecode.com/svn/trunk@573",
+  "build":
+    "http://src.chromium.org/svn/trunk/src/build",
   "site_scons":
     "http://src.chromium.org/svn/trunk/src/site_scons",
   "testing/gtest":
@@ -12,7 +14,7 @@ deps = {
 hooks = [
   {
     "pattern": "\\.gypi?$[|[/\\\]src[/\\\]tools[/\\\]gyp[/\\\]",
-    "action": ["python", "tools/gyp/gyp_dogfood",
+    "action": ["python", "native_client/build/gyp_nacl",
                "native_client/build/all.gyp"],
   },
 ]
