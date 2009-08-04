@@ -157,24 +157,8 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
     tree_store_ = bookmark_utils::MakeFolderTreeStore();
     bookmark_utils::AddToTreeStore(bb_model_, selected_id,
                                    tree_store_, &selected_iter);
-
-    GtkTreeViewColumn* icon_column =
-        gtk_tree_view_column_new_with_attributes(
-            "FolderIcon", gtk_cell_renderer_pixbuf_new(), "pixbuf",
-             bookmark_utils::FOLDER_ICON, NULL);
-    GtkTreeViewColumn* name_column =
-        gtk_tree_view_column_new_with_attributes(
-            "FolderName", gtk_cell_renderer_text_new(), "text",
-             bookmark_utils::FOLDER_NAME, NULL);
-
-    tree_view_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(tree_store_));
-    // Let |tree_view| own the store.
-    g_object_unref(tree_store_);
-    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_view_), FALSE);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_), icon_column);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view_), name_column);
+    tree_view_ = bookmark_utils::MakeTreeViewForStore(tree_store_);
     gtk_widget_set_size_request(tree_view_, kTreeWidth, kTreeHeight);
-
     tree_selection_ = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree_view_));
 
     GtkTreePath* path = NULL;

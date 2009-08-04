@@ -433,20 +433,8 @@ void BookmarkManagerGtk::InitWidgets() {
 
 GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
   left_store_ = bookmark_utils::MakeFolderTreeStore();
+  left_tree_view_ = bookmark_utils::MakeTreeViewForStore(left_store_);
 
-  GtkTreeViewColumn* icon_column = gtk_tree_view_column_new_with_attributes(
-      "", gtk_cell_renderer_pixbuf_new(), "pixbuf", bookmark_utils::FOLDER_ICON,
-       NULL);
-  GtkTreeViewColumn* name_column = gtk_tree_view_column_new_with_attributes(
-      "", gtk_cell_renderer_text_new(), "text", bookmark_utils::FOLDER_NAME,
-       NULL);
-
-  left_tree_view_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(left_store_));
-  // Let |tree_view| own the store.
-  g_object_unref(left_store_);
-  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(left_tree_view_), FALSE);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(left_tree_view_), icon_column);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(left_tree_view_), name_column);
   // When a row is collapsed that contained the selected node, we want to select
   // it.
   g_signal_connect(left_tree_view_, "row-collapsed",

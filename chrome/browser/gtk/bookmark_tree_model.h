@@ -15,6 +15,7 @@ typedef struct _GtkTreeIter GtkTreeIter;
 typedef struct _GtkTreeModel GtkTreeModel;
 typedef struct _GtkTreeStore GtkTreeStore;
 typedef struct _GdkPixbuf GdkPixbuf;
+typedef struct _GtkWidget GtkWidget;
 
 namespace bookmark_utils {
 
@@ -45,6 +46,10 @@ void AddToTreeStore(BookmarkModel* model, int64 selected_id,
 void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
                       GtkTreeStore* store, GtkTreeIter* selected_iter,
                       GtkTreeIter* parent);
+
+// Makes a tree view for the store. This will take ownership of |store| and the
+// returned widget has a floating reference.
+GtkWidget* MakeTreeViewForStore(GtkTreeStore* store);
 
 // Commits changes to a GtkTreeStore built from BuildTreeStoreFrom() back
 // into the BookmarkModel it was generated from.  Returns the BookmarkNode that

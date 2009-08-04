@@ -86,6 +86,26 @@ void AddToTreeStore(BookmarkModel* model, int64 selected_id,
   }
 }
 
+GtkWidget* MakeTreeViewForStore(GtkTreeStore* store) {
+  GtkTreeViewColumn* column = gtk_tree_view_column_new();
+  GtkCellRenderer* image_renderer = gtk_cell_renderer_pixbuf_new();
+  gtk_tree_view_column_pack_start(column, image_renderer, FALSE);
+  gtk_tree_view_column_add_attribute(column, image_renderer,
+                                     "pixbuf", FOLDER_ICON);
+  GtkCellRenderer* text_renderer = gtk_cell_renderer_text_new();
+  g_object_set(text_renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+  gtk_tree_view_column_pack_start(column, text_renderer, TRUE);
+  gtk_tree_view_column_add_attribute(column, text_renderer,
+                                     "text", FOLDER_NAME);
+
+  GtkWidget* tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+  // Let |tree_view| own the store.
+  g_object_unref(store);
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_view), FALSE);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
+  return tree_view;
+}
+
 void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
                       GtkTreeStore* store, GtkTreeIter* selected_iter,
                       GtkTreeIter* parent) {
