@@ -783,9 +783,6 @@ BUG10291 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAI
 // Selection wrong.
 BUG10292 MAC LINUX : LayoutTests/editing/selection/5354455-1.html = FAIL
 
-BUG10293 LINUX : LayoutTests/fast/text/international/bidi-linebreak-002.html = FAIL
-BUG10293 LINUX : LayoutTests/fast/text/international/bidi-linebreak-003.html = FAIL
-
 // Missing scrollbar.
 BUG10294 LINUX : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
 
@@ -1202,7 +1199,6 @@ BUG10343 LINUX : LayoutTests/fast/text/atsui-kerning-and-ligatures.html = FAIL
 BUG10343 LINUX : LayoutTests/fast/text/atsui-partial-selection.html = FAIL
 BUG10343 LINUX : LayoutTests/fast/text/atsui-small-caps-punctuation-size.html = FAIL
 BUG10343 LINUX : LayoutTests/fast/text/cg-vs-atsui.html = FAIL
-BUG10343 LINUX : LayoutTests/fast/text/international/complex-character-based-fallback.html = FAIL
 
 // Started timing out with agl's complext text change.  Page is verrry slow.
 BUG10343 LINUX : LayoutTests/fast/text/large-text-composed-char.html = TIMEOUT FAIL
@@ -2590,7 +2586,6 @@ BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test1.html = F
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test2.html = FAIL
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test3.html = FAIL
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test4.html = FAIL
-BUG12053 LINUX : LayoutTests/fast/text/international/danda-space.html = FAIL
 
 // New test, added in http://trac.webkit.org/changeset/43793, fails for us.
 BUG12104 WIN LINUX : LayoutTests/fast/backgrounds/background-clip-text.html = FAIL
@@ -2713,7 +2708,6 @@ BUG15460 : LayoutTests/media/video-empty-source.html = FAIL
 BUG15460 : LayoutTests/media/video-zoom-controls.html = FAIL
 
 // WebKit 45247:45270
-BUG15478 LINUX : LayoutTests/fast/text/international/hindi-whitespace.html = FAIL
 BUG15478 SKIP : LayoutTests/fast/frames/viewsource-on-image-file.html = FAIL
 BUG15478 SKIP : LayoutTests/platform/qt/fast/events/event-sender-keydown-frame.html = FAIL
 
