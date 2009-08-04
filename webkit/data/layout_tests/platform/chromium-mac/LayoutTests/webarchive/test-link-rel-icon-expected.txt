@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 7: Uncaught TypeError: Object [object Object] has no method 'setIconDatabaseEnabled'
+CONSOLE MESSAGE: line 8: Uncaught TypeError: Object [object Object] has no method 'dumpDOMAsWebArchive'
 layer at (0,0) size 800x600
   RenderView at (0,0) size 800x600
 layer at (0,0) size 800x600
