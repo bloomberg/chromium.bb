@@ -131,15 +131,22 @@ class NSSInitSingleton {
     SSL_ClearSessionCache();
 
     SECStatus status = NSS_Shutdown();
-    if (status != SECSuccess)
-      LOG(ERROR) << "NSS_Shutdown failed, leak?  See "
-                    "http://code.google.com/p/chromium/issues/detail?id=4609";
+    if (status != SECSuccess) {
+      // We LOG(INFO) because this failure is relatively harmless
+      // (leaking, but we're shutting down anyway).
+      LOG(INFO) << "NSS_Shutdown failed; see "
+                   "http://code.google.com/p/chromium/issues/detail?id=4609";
+    }
 
     PL_ArenaFinish();
 
     PRStatus prstatus = PR_Cleanup();
-    if (prstatus != PR_SUCCESS)
-      LOG(ERROR) << "PR_Cleanup failed?";
+    if (prstatus != PR_SUCCESS) {
+      // We LOG(ERROR) here because this failure is bad: it indicates
+      // NSPR isn't initialized and cleaned up on the same thread.
+      LOG(ERROR) << "PR_Cleanup failed; see "
+                    "http://code.google.com/p/chromium/issues/detail?id=18410";
+    }
   }
 
  private:
