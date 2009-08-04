@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_unpacker.h"
@@ -59,7 +60,8 @@ void SandboxedExtensionUnpacker::Start() {
 
   // If we are supposed to use a subprocess, copy the crx to the temp directory
   // and kick off the subprocess.
-  if (rdh_) {
+  if (rdh_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
     ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
         NewRunnableMethod(this,
             &SandboxedExtensionUnpacker::StartProcessOnIOThread,
