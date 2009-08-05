@@ -32,16 +32,10 @@
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
 
-/*
 const char* ExtensionsService::kGalleryDownloadURLPrefix =
     "https://dl-ssl.google.com/chrome/";
 const char* ExtensionsService::kGalleryURLPrefix =
     "https://tools.google.com/chrome/";
-*/
-const char* ExtensionsService::kGalleryDownloadURLPrefix =
-    "http://www.corp.google.com/~glen/chrome/";
-const char* ExtensionsService::kGalleryURLPrefix =
-    "http://www.corp.google.com/~glen/chrome/";
 
 // static
 bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
