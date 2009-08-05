@@ -284,10 +284,10 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
       cwd = input_api.os_path.dirname(unit_test)
       unit_test = input_api.os_path.basename(unit_test)
       env = input_api.environ.copy()
-      backpath = [';'.join(['..'] * (cwd.count('/') + 1))]
+      backpath = [input_api.os_path.pathsep.join(['..'] * (cwd.count('/') + 1))]
       if env.get('PYTHONPATH'):
         backpath.append(env.get('PYTHONPATH'))
-      env['PYTHONPATH'] = ';'.join((backpath))
+      env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))
     subproc = input_api.subprocess.Popen(
         [
           input_api.python_executable,
