@@ -3,7 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/test_suite.h"
+#include "chrome/common/chrome_paths.h"
 
 int main(int argc, char** argv) {
-  return TestSuite(argc, argv).Run();
+  TestSuite test_suite(argc, argv);
+
+  // Register Chrome Path provider so that we can get test data dir.
+  chrome::RegisterPathProvider();
+
+  return test_suite.Run();
 }

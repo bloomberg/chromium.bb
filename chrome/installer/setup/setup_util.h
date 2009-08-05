@@ -12,11 +12,18 @@
 #include "chrome/installer/util/version.h"
 
 namespace setup_util {
+  // Apply a diff patch to source file. First tries to apply it using courgette
+  // since it checks for courgette header and fails quickly. If that fails
+  // tries to apply the patch using regular bsdiff. Returns status code.
+  int ApplyDiffPatch(const std::wstring& src,
+                     const std::wstring& patch,
+                     const std::wstring& dest);
+
   // Parse command line and read master preferences, if present, to get
   // distribution related install options. Merge them if any command line
   // options present (command line value takes precedence).
   DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line);
-
+                     
   // Find the version of Chrome from an install source directory.
   // Chrome_path should contain a version folder.
   // Returns the first version found or NULL if no version is found.

@@ -169,6 +169,10 @@
                 # TODO(sgk):  may just use environment variables
                 #'--distribution=$(CHROMIUM_BUILD)',
                 '--distribution=_google_chrome',
+		# Optional arguments to generate diff installer
+                #'--last_chrome_installer=C:/Temp/base',
+                #'--setup_exe_format=DIFF',
+                #'--diff_algorithm=COURGETTE',
               ],
               'message': 'Create installer archive'
             },

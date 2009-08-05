@@ -32,51 +32,12 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/work_item.h"
-#include "courgette/courgette.h"
-#include "third_party/bspatch/mbspatch.h"
 
 #include "installer_util_strings.h"
 
 namespace {
 
-// Applies a binary patch to existing Chrome installer archive on the system.
-// Uses bspatch library.
-int PatchArchiveFile(bool system_install, const std::wstring& archive_path,
-                     const std::wstring& uncompressed_archive,
-                     const installer::Version* installed_version) {
-  std::wstring existing_archive =
-      installer::GetChromeInstallPath(system_install);
-  file_util::AppendToPath(&existing_archive,
-                          installed_version->GetString());
-  file_util::AppendToPath(&existing_archive, installer_util::kInstallerDir);
-  file_util::AppendToPath(&existing_archive, installer::kChromeArchive);
-
-  std::wstring patch_archive(archive_path);
-  file_util::AppendToPath(&patch_archive, installer::kChromeArchivePatch);
-
-  LOG(INFO) << "Applying patch " << patch_archive
-            << " to file " << existing_archive
-            << " and generating file " << uncompressed_archive;
-
-  // Try Courgette first.  Courgette checks the patch file first and fails
-  // quickly if the patch file does not have a valid Courgette header.
-  courgette::Status patch_status =
-      courgette::ApplyEnsemblePatch(existing_archive.c_str(),
-                                    patch_archive.c_str(),
-                                    uncompressed_archive.c_str());
-
-  if (patch_status == courgette::C_OK) {
-    return 0;
-  }
-
-  return ApplyBinaryPatch(existing_archive.c_str(),
-                          patch_archive.c_str(),
-                          uncompressed_archive.c_str());
-}
-
-
-// This method unpacks and uncompresses the given archive file. For Chrome
+  // This method unpacks and uncompresses the given archive file. For Chrome
 // install we are creating a uncompressed archive that contains all the files
 // needed for the installer. This uncompressed archive is later compressed.
 //
@@ -90,68 +51,43 @@ DWORD UnPackArchive(const std::wstring& archive, bool system_install,
                     const installer::Version* installed_version,
                     const std::wstring& temp_path, const std::wstring& path,
                     bool& incremental_install) {
-    DWORD ret = NO_ERROR;
-    installer::LzmaUtil util;
-    // First uncompress the payload. This could be a differential
-    // update (patch.7z) or full archive (chrome.7z). If this uncompress fails
-    // return with error.
-    LOG(INFO) << "Opening archive " << archive;
-    if ((ret = util.OpenArchive(archive)) != NO_ERROR) {
-      LOG(ERROR) << "Unable to open install archive: " << archive;
-    } else {
-      LOG(INFO) << "Uncompressing archive to path " << temp_path;
-      if ((ret = util.UnPack(temp_path)) != NO_ERROR) {
-        LOG(ERROR) << "Error during uncompression: " << ret;
-      }
-      util.CloseArchive();
-    }
-    if (ret != NO_ERROR)
-      return ret;
-
-    std::wstring uncompressed_archive(temp_path);
-    file_util::AppendToPath(&uncompressed_archive, installer::kChromeArchive);
-
-    // Check if this is differential update and if it is, patch it to the
-    // installer archive that should already be on the machine.
-    std::wstring archive_name = file_util::GetFilenameFromPath(archive);
-    std::wstring prefix = installer::kChromeCompressedPatchArchivePrefix;
-    if ((archive_name.size() >= prefix.size()) &&
-        (std::equal(prefix.begin(), prefix.end(), archive_name.begin(),
-                    CaseInsensitiveCompare<wchar_t>()))) {
-      incremental_install = true;
-      LOG(INFO) << "Differential patch found. Applying to existing archive.";
-      // First pre-emptively set flag in registry to get full installer next
-      // time. If the current installer works, this flag will get reset at the
-      // the end of installation.
-      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-      dist->UpdateDiffInstallStatus(system_install, incremental_install,
-                                    installer_util::INSTALL_FAILED);
-      if (!installed_version) {
-        LOG(ERROR) << "Can not use differential update when Chrome is not "
-                   << "installed on the system.";
-        return 1;
-      }
-      if (int i = PatchArchiveFile(system_install, temp_path,
-                                   uncompressed_archive, installed_version)) {
-        LOG(ERROR) << "Binary patching failed with error " << i;
-        return 1;
-      }
-    }
-
-    // If we got the uncompressed archive, lets unpack it
-    LOG(INFO) << "Opening archive " << uncompressed_archive;
-    if ((ret = util.OpenArchive(uncompressed_archive)) != NO_ERROR) {
-      LOG(ERROR) << "Unable to open install archive: " <<
-          uncompressed_archive;
-    } else {
-      LOG(INFO) << "Unpacking archive to path " << path;
-      if ((ret = util.UnPack(path)) != NO_ERROR) {
-        LOG(ERROR) << "Error during uncompression: " << ret;
-      }
-      util.CloseArchive();
-    }
-
+  // First uncompress the payload. This could be a differential
+  // update (patch.7z) or full archive (chrome.7z). If this uncompress fails
+  // return with error.
+  std::wstring unpacked_file;
+  int32 ret = LzmaUtil::UnPackArchive(archive, temp_path, &unpacked_file);
+  if (ret != NO_ERROR)
     return ret;
+
+  std::wstring uncompressed_archive(temp_path);
+  file_util::AppendToPath(&uncompressed_archive, installer::kChromeArchive);
+
+  // Check if this is differential update and if it is, patch it to the
+  // installer archive that should already be on the machine. We assume
+  // it is a differential installer if chrome.7z is not found.
+  if (!file_util::PathExists(uncompressed_archive)) {
+    incremental_install = true;
+    LOG(INFO) << "Differential patch found. Applying to existing archive.";
+    if (!installed_version) {
+      LOG(ERROR) << "Can not use differential update when Chrome is not "
+                 << "installed on the system.";
+      return installer_util::InstallStatus::CHROME_NOT_INSTALLED;
+    }
+    std::wstring existing_archive =
+        installer::GetChromeInstallPath(system_install);
+    file_util::AppendToPath(&existing_archive,
+                            installed_version->GetString());
+    file_util::AppendToPath(&existing_archive, installer_util::kInstallerDir);
+    file_util::AppendToPath(&existing_archive, installer::kChromeArchive);
+    if (int i = setup_util::ApplyDiffPatch(existing_archive, unpacked_file,
+                                           uncompressed_archive)) {
+      LOG(ERROR) << "Binary patching failed with error " << i;
+      return i;
+    }
+  }
+
+  // Unpack the uncompressed archive.
+  return LzmaUtil::UnPackArchive(uncompressed_archive, path, &unpacked_file);
 }
 
 
@@ -436,51 +372,19 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     if (!file_util::CreateNewTempDirectory(std::wstring(L"chrome_"),
                                            &temp_path)) {
       LOG(ERROR) << "Could not create temporary path.";
-      status = installer_util::SETUP_PATCH_FAILED;
     } else {
       std::wstring setup_patch = cmd_line.GetSwitchValue(
           installer_util::switches::kUpdateSetupExe);
       LOG(INFO) << "Opening archive " << setup_patch;
-      DWORD ret = NO_ERROR;
-      installer::LzmaUtil util;
-      if ((ret = util.OpenArchive(setup_patch)) != NO_ERROR) {
-        LOG(ERROR) << "Unable to open install archive: " << setup_patch;
-      } else {
-        LOG(INFO) << "Uncompressing archive to path " << temp_path;
-        if ((ret = util.UnPack(temp_path)) != NO_ERROR) {
-          LOG(ERROR) << "Error during uncompression: " << ret;
-        }
-        util.CloseArchive();
-      }
-
-      if (ret != NO_ERROR) {
-        status = installer_util::SETUP_PATCH_FAILED;
-      } else {
+      std::wstring uncompressed_patch;
+      if (LzmaUtil::UnPackArchive(setup_patch, temp_path,
+                                  &uncompressed_patch) == NO_ERROR) {
         std::wstring old_setup_exe = cmd_line.program();
-        std::wstring uncompressed_setup_patch(temp_path);
-        file_util::AppendToPath(&uncompressed_setup_patch,
-                                installer::kSetupExePatch);
         std::wstring new_setup_exe = cmd_line.GetSwitchValue(
             installer_util::switches::kNewSetupExe);
-        LOG(INFO) << "Patching " << old_setup_exe
-                  << " with patch " << uncompressed_setup_patch
-                  << " and creating new exe " << new_setup_exe;
-
-        // Try Courgette first.
-        courgette::Status patch_status = courgette::ApplyEnsemblePatch(
-            old_setup_exe.c_str(), uncompressed_setup_patch.c_str(),
-            new_setup_exe.c_str());
-
-        // If courgette didn't work, try regular bspatch.
-        if (patch_status != courgette::C_OK) {
-          LOG(WARNING) << "setup patch failed using courgette " << patch_status;
-          if (!ApplyBinaryPatch(old_setup_exe.c_str(),
-                                uncompressed_setup_patch.c_str(),
-                                new_setup_exe.c_str()))
-            status = installer_util::NEW_VERSION_UPDATED;
-        } else {
+        if (!setup_util::ApplyDiffPatch(old_setup_exe, uncompressed_patch,
+                                        new_setup_exe))
           status = installer_util::NEW_VERSION_UPDATED;
-        }
       }
     }
 

@@ -10,7 +10,28 @@
 #include "base/logging.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
+#include "courgette/courgette.h"
+#include "third_party/bspatch/mbspatch.h"
 
+int setup_util::ApplyDiffPatch(const std::wstring& src,
+                               const std::wstring& patch,
+                               const std::wstring& dest) {
+  LOG(INFO) << "Applying patch " << patch
+            << " to file " << src
+            << " and generating file " << dest;
+
+  // Try Courgette first.  Courgette checks the patch file first and fails
+  // quickly if the patch file does not have a valid Courgette header.
+  courgette::Status patch_status =
+      courgette::ApplyEnsemblePatch(src.c_str(), patch.c_str(), dest.c_str());
+  if (patch_status == courgette::C_OK) {
+    return 0;
+  } else {
+    LOG(INFO) << "Failed to apply patch " << patch << " using courgette.";
+  }
+
+  return ApplyBinaryPatch(src.c_str(), patch.c_str(), dest.c_str());
+}
 
 DictionaryValue* setup_util::GetInstallPreferences(
     const CommandLine& cmd_line) {

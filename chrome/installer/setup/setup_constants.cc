@@ -9,9 +9,7 @@ namespace installer {
 const wchar_t kWowHelperExe[] = L"wow_helper.exe";
 const wchar_t kDictionaries[] = L"Dictionaries";
 const wchar_t kChromeArchive[] = L"chrome.7z";
-const wchar_t kChromeArchivePatch[] = L"chrome_patch.diff";
 const wchar_t kChromeCompressedArchive[] = L"chrome.packed.7z";
-const wchar_t kChromeCompressedPatchArchivePrefix[] = L"chrome_patch";
 
 // Sub directory of install source package under install temporary directory.
 const wchar_t kInstallSourceDir[] = L"source";

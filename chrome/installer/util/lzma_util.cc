@@ -14,7 +14,7 @@ extern "C" {
 }
 
 
-namespace installer {
+namespace {
 
 typedef struct _CFileInStream {
   ISzInStream InStream;
@@ -73,14 +73,40 @@ SZ_RESULT SzFileReadImp(void *object, void **buffer,
   return SZ_OK;
 }
 
+}  // namespace
+
+// static
+int32 LzmaUtil::UnPackArchive(const std::wstring& archive,
+                             const std::wstring& output_dir,
+                             std::wstring* output_file) {
+  LOG(INFO) << "Opening archive " << archive;
+  LzmaUtil lzma_util;
+  DWORD ret;
+  if ((ret = lzma_util.OpenArchive(archive)) != NO_ERROR) {
+    LOG(ERROR) << "Unable to open install archive: " << archive
+               << ", error: " << ret;
+  } else {
+    LOG(INFO) << "Uncompressing archive to path " << output_dir;
+    if ((ret = lzma_util.UnPack(output_dir, output_file)) != NO_ERROR) {
+      LOG(ERROR) << "Unable to uncompress archive: " << archive
+                 << ", error: " << ret;
+    }
+    lzma_util.CloseArchive();
+  }
+
+  return ret;
+}
 
 LzmaUtil::LzmaUtil() : archive_handle_(NULL) {}
 
 LzmaUtil::~LzmaUtil() {
-  if (archive_handle_) CloseArchive();
+  CloseArchive();
 }
 
 DWORD LzmaUtil::OpenArchive(const std::wstring& archivePath) {
+  // Make sure file is not already open.
+  CloseArchive();
+
   DWORD ret = NO_ERROR;
   archive_handle_ = CreateFile(archivePath.c_str(), GENERIC_READ,
       FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -90,8 +116,15 @@ DWORD LzmaUtil::OpenArchive(const std::wstring& archivePath) {
   return ret;
 }
 
-// Unpacks the archive to the given location.
 DWORD LzmaUtil::UnPack(const std::wstring& location) {
+  return UnPack(location, NULL);
+}
+
+DWORD LzmaUtil::UnPack(const std::wstring& location,
+                       std::wstring* output_file) {
+  if (!archive_handle_)
+    return ERROR_INVALID_HANDLE;
+
   CFileInStream archiveStream;
   ISzAlloc allocImp;
   ISzAlloc allocTempImp;
@@ -110,12 +143,14 @@ DWORD LzmaUtil::UnPack(const std::wstring& location) {
   SzArDbExInit(&db);
   if ((ret = SzArchiveOpen(&archiveStream.InStream, &db,
                            &allocImp, &allocTempImp)) != SZ_OK) {
+    LOG(ERROR) << L"Error returned by SzArchiveOpen: " << ret;
     return ret;
   }
 
   Byte *outBuffer = 0; // it must be 0 before first call for each new archive
   UInt32 blockIndex = 0xFFFFFFFF; // can have any value if outBuffer = 0
   size_t outBufferSize = 0;  // can have any value if outBuffer = 0
+
   for (unsigned int i = 0; i < db.Database.NumFiles; i++) {
     DWORD written;
     size_t offset;
@@ -125,12 +160,15 @@ DWORD LzmaUtil::UnPack(const std::wstring& location) {
     if ((ret = SzExtract(&archiveStream.InStream, &db, i, &blockIndex,
                          &outBuffer, &outBufferSize, &offset, &outSizeProcessed,
                          &allocImp, &allocTempImp)) != SZ_OK) {
+      LOG(ERROR) << L"Error returned by SzExtract: " << ret;
       break;
     }
 
     // Append location to the file path in archive, to get full path.
     std::wstring wfileName(location);
     file_util::AppendToPath(&wfileName, UTF8ToWide(f->Name));
+    if (output_file)
+      *output_file = wfileName;
 
     // If archive entry is directory create it and move on to the next entry.
     if (f->IsDirectory) {
@@ -146,6 +184,7 @@ DWORD LzmaUtil::UnPack(const std::wstring& location) {
                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)  {
       ret = GetLastError();
+      LOG(ERROR) << L"Error returned by CreateFile: " << ret;
       break;
     }
 
@@ -154,6 +193,7 @@ DWORD LzmaUtil::UnPack(const std::wstring& location) {
         (written != outSizeProcessed)) {
       ret = GetLastError();
       CloseHandle(hFile);
+      LOG(ERROR) << L"Error returned by WriteFile: " << ret;
       break;
     }
 
@@ -162,11 +202,13 @@ DWORD LzmaUtil::UnPack(const std::wstring& location) {
                        (const FILETIME *)&(f->LastWriteTime))) {
         ret = GetLastError();
         CloseHandle(hFile);
+        LOG(ERROR) << L"Error returned by SetFileTime: " << ret;
         break;
       }
     }
     if (!CloseHandle(hFile)) {
       ret = GetLastError();
+      LOG(ERROR) << L"Error returned by CloseHandle: " << ret;
       break;
     }
   }  // for loop
@@ -177,8 +219,8 @@ DWORD LzmaUtil::UnPack(const std::wstring& location) {
 }
 
 void LzmaUtil::CloseArchive() {
-  CloseHandle(archive_handle_);
-  archive_handle_ = NULL;
+  if (archive_handle_) {
+    CloseHandle(archive_handle_);
+    archive_handle_ = NULL;
+  }
 }
-
-}  // namespace installer
