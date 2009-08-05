@@ -5,6 +5,9 @@
 {
   'variables': {
     'chromium_code': 1,
+    # We only want the documentation targets to be defined if the JS
+    # Compiler is available, so we use python to find out if it's
+    # available.
     'jscomp_exists': '<!(python ../build/file_exists.py '
                      '../../o3d-internal/jscomp/JSCompiler_deploy.jar)',
   },
@@ -14,14 +17,16 @@
   'targets': [
   ],
   'conditions': [
-    # We only want the documentation targets to be defined if the JS
-    # Compiler is available, so we use python to find out if it's
-    # available.
     [ '"<(jscomp_exists)"=="True"',
       {
+        # Define these here so we don't run the scripts unless we need to.
         'variables': {
-          'input_js_files': '<!@(python get_docs_files.py --js)',
-          'input_idl_files': '<!@(python get_docs_files.py --idl)',
+          'input_js_files': [
+            '<!@(python get_docs_files.py --js)',
+          ],
+          'input_idl_files': [
+            '<!@(python get_docs_files.py --idl)',
+          ],
         },
         'targets': [
           {
@@ -69,6 +74,15 @@
                 ],
               },
             ],
+          },
+        ],
+      },
+      {
+        'targets': [
+          {
+            # Empty target if the js compiler doesn't exist.
+            'target_name': 'documentation',
+            'type': 'none',
           },
         ],
       },
