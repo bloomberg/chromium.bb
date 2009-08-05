@@ -91,13 +91,15 @@ bool OpenFirstRunDialog(Profile* profile, ProcessSingleton* process_singleton) {
   }
 
   // Import bookmarks.
-  const ProfileInfo& source_profile = importer_host->GetSourceProfileInfoAt(
-      [dialog.get() browserImportSelectedIndex]);
-  int items = SEARCH_ENGINES + HISTORY + FAVORITES + HOME_PAGE + PASSWORDS;
-  // TODO(port): Call StartImportingWithUI here instead and launch
-  // a new process that does the actual import.
-  importer_host->StartImportSettings(source_profile, profile, items,
-                                     new ProfileWriter(profile), true);
+  if ([dialog.get() importBookmarks]) {
+    const ProfileInfo& source_profile = importer_host->GetSourceProfileInfoAt(
+        [dialog.get() browserImportSelectedIndex]);
+    int items = SEARCH_ENGINES + HISTORY + FAVORITES + HOME_PAGE + PASSWORDS;
+    // TODO(port): Call StartImportingWithUI here instead and launch
+    // a new process that does the actual import.
+    importer_host->StartImportSettings(source_profile, profile, items,
+                                       new ProfileWriter(profile), true);
+  }
 
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return true;

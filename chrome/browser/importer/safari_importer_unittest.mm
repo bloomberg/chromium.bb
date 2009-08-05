@@ -4,6 +4,7 @@
 
 #include "chrome/browser/importer/safari_importer.h"
 
+#include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -19,28 +20,32 @@ FilePath GetTestSafariLibraryPath() {
     std::wstring test_dir_wstring;
     PathService::Get(chrome::DIR_TEST_DATA, &test_dir_wstring);
     FilePath test_dir = FilePath::FromWStringHack(test_dir_wstring);
-    
+
     // Our simulated ~/Library directory
     test_dir = test_dir.Append("safari_import");
     return test_dir;
 }
 
-class SafariImporterTest : public PlatformTest {};
+class SafariImporterTest : public PlatformTest {
+ public:
+  SafariImporter* GetSafariImporter() {
+    FilePath test_library_dir = GetTestSafariLibraryPath();
+    CHECK(file_util::PathExists(test_library_dir))  <<
+        "Missing test data directory";
+
+    return new SafariImporter(test_library_dir);
+  }
+};
 
 TEST_F(SafariImporterTest, HistoryImport) {
-  FilePath test_library_dir = GetTestSafariLibraryPath();
-  ASSERT_TRUE(file_util::PathExists(test_library_dir))  <<
-      "Missing test data directory";
+  scoped_refptr<SafariImporter> importer(GetSafariImporter());
 
-  scoped_refptr<SafariImporter> importer(
-      new SafariImporter(test_library_dir));
-  
   std::vector<history::URLRow> history_items;
   importer->ParseHistoryItems(&history_items);
-  
+
   // Should be 2 history items.
   ASSERT_EQ(history_items.size(), 2U);
-  
+
   history::URLRow& it1 = history_items[0];
   EXPECT_EQ(it1.url(), GURL("http://www.firsthistoryitem.com/"));
   EXPECT_EQ(it1.title(), L"First History Item Title");
@@ -49,7 +54,7 @@ TEST_F(SafariImporterTest, HistoryImport) {
   EXPECT_EQ(it1.typed_count(), 0);
   EXPECT_EQ(it1.last_visit().ToDoubleT(),
       importer->HistoryTimeToEpochTime(@"270598264.4"));
-  
+
   history::URLRow& it2 = history_items[1];
   std::string second_item_title("http://www.secondhistoryitem.com/");
   EXPECT_EQ(it2.url(), GURL(second_item_title));
@@ -60,4 +65,81 @@ TEST_F(SafariImporterTest, HistoryImport) {
   EXPECT_EQ(it2.typed_count(), 0);
   EXPECT_EQ(it2.last_visit().ToDoubleT(),
       importer->HistoryTimeToEpochTime(@"270598231.4"));
+}
+
+TEST_F(SafariImporterTest, BookmarkImport) {
+  // Expected results
+  const struct {
+    bool in_toolbar;
+    GURL url;
+    // If the path array for an element is entry set this to true.
+    bool path_is_empty;
+    // We ony support one level of nesting in paths, this makes testing a little
+    // easier.
+    std::wstring path;
+    std::wstring title;
+  } kImportedBookmarksData[] = {
+    {true, GURL("http://www.apple.com/"), true, L"", L"Apple"},
+    {true, GURL("http://www.yahoo.com/"), true, L"", L"Yahoo!"},
+    {true, GURL("http://www.cnn.com/"), false, L"News", L"CNN"},
+    {true, GURL("http://www.nytimes.com/"), false, L"News",
+        L"The New York Times"},
+    {false, GURL("http://www.reddit.com/"), true, L"",
+        L"reddit.com: what's new online!"},
+  };
+
+  scoped_refptr<SafariImporter> importer(GetSafariImporter());
+  std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+  importer->ParseBookmarks(&bookmarks);
+  size_t num_bookmarks = bookmarks.size();
+  EXPECT_EQ(num_bookmarks, ARRAYSIZE_UNSAFE(kImportedBookmarksData));
+
+  for (size_t i = 0; i < num_bookmarks; ++i) {
+    ProfileWriter::BookmarkEntry& entry = bookmarks[i];
+    EXPECT_EQ(entry.in_toolbar, kImportedBookmarksData[i].in_toolbar);
+    EXPECT_EQ(entry.url, kImportedBookmarksData[i].url);
+    if (kImportedBookmarksData[i].path_is_empty) {
+      EXPECT_EQ(entry.path.size(), 0U);
+    } else {
+      EXPECT_EQ(entry.path.size(), 1U);
+      EXPECT_EQ(entry.path[0], kImportedBookmarksData[i].path);
+      EXPECT_EQ(entry.title, kImportedBookmarksData[i].title);
+    }
+  }
+
+}
+
+TEST_F(SafariImporterTest, FavIconImport) {
+  scoped_refptr<SafariImporter> importer(GetSafariImporter());
+  sqlite_utils::scoped_sqlite_db_ptr db(importer->OpenFavIconDB());
+  ASSERT_TRUE(db.get() != NULL);
+
+  SafariImporter::FaviconMap favicon_map;
+  importer->ImportFavIconURLs(db.get(), &favicon_map);
+
+  std::vector<history::ImportedFavIconUsage> favicons;
+  importer->LoadFaviconData(db.get(), favicon_map, &favicons);
+
+  size_t num_favicons = favicons.size();
+  ASSERT_EQ(num_favicons, 2U);
+
+  history::ImportedFavIconUsage &fav0 = favicons[0];
+  EXPECT_EQ("http://s.ytimg.com/yt/favicon-vfl86270.ico",
+            fav0.favicon_url.spec());
+  EXPECT_GT(fav0.png_data.size(), 0U);
+  EXPECT_EQ(fav0.urls.size(), 1U);
+  EXPECT_TRUE(fav0.urls.find(GURL("http://www.youtube.com/"))
+      != fav0.urls.end());
+
+  history::ImportedFavIconUsage &fav1 = favicons[1];
+  EXPECT_EQ("http://www.opensearch.org/favicon.ico",
+            fav1.favicon_url.spec());
+  EXPECT_GT(fav1.png_data.size(), 0U);
+  EXPECT_EQ(fav1.urls.size(), 2U);
+  EXPECT_TRUE(fav1.urls.find(GURL("http://www.opensearch.org/Home"))
+      != fav1.urls.end());
+
+  EXPECT_TRUE(fav1.urls.find(
+      GURL("http://www.opensearch.org/Special:Search?search=lalala&go=Search"))
+          != fav1.urls.end());
 }

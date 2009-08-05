@@ -24,20 +24,6 @@
 using base::Time;
 using webkit_glue::PasswordForm;
 
-// Wraps the function sqlite3_close() in a class that is
-// used in scoped_ptr_malloc.
-
-namespace {
-
-class DBClose {
- public:
-  inline void operator()(sqlite3* x) const {
-    sqlite3_close(x);
-  }
-};
-
-}  // namespace
-
 void Firefox3Importer::StartImport(ProfileInfo profile_info,
                                    uint16 items, ProfileWriter* writer,
                                    MessageLoop* delagate_loop,
@@ -84,7 +70,7 @@ void Firefox3Importer::ImportHistory() {
   sqlite3* sqlite;
   if (sqlite3_open(WideToUTF8(file).c_str(), &sqlite) != SQLITE_OK)
     return;
-  scoped_ptr_malloc<sqlite3, DBClose> db(sqlite);
+  sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   SQLStatement s;
   // |visit_type| represent the transition type of URLs (typed, click,
@@ -133,7 +119,7 @@ void Firefox3Importer::ImportBookmarks() {
   sqlite3* sqlite;
   if (sqlite3_open(WideToUTF8(file).c_str(), &sqlite) != SQLITE_OK)
     return;
-  scoped_ptr_malloc<sqlite3, DBClose> db(sqlite);
+  sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   // Get the bookmark folders that we are interested in.
   int toolbar_folder_id = -1;
@@ -329,7 +315,7 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
   sqlite3* sqlite;
   if (sqlite3_open(WideToUTF8(file).c_str(), &sqlite) != SQLITE_OK)
     return;
-  scoped_ptr_malloc<sqlite3, DBClose> db(sqlite);
+  sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   SQLStatement s;
   const char* stmt = "SELECT engineid FROM engine_data "

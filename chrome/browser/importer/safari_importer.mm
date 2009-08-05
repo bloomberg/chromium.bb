@@ -6,13 +6,16 @@
 
 #include "chrome/browser/importer/safari_importer.h"
 
+#include <map>
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
+#include "chrome/common/sqlite_utils.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -57,11 +60,6 @@ void SafariImporter::StartImport(ProfileInfo profile_info,
     ImportBookmarks();
     NotifyItemEnded(FAVORITES);
   }
-  if ((items & SEARCH_ENGINES) && !cancelled()) {
-    NotifyItemStarted(SEARCH_ENGINES);
-    ImportSearchEngines();
-    NotifyItemEnded(SEARCH_ENGINES);
-  }
   if ((items & PASSWORDS) && !cancelled()) {
     NotifyItemStarted(PASSWORDS);
     ImportPasswords();
@@ -76,11 +74,199 @@ void SafariImporter::StartImport(ProfileInfo profile_info,
 }
 
 void SafariImporter::ImportBookmarks() {
-  NOTIMPLEMENTED();
+  std::vector<ProfileWriter::BookmarkEntry> bookmarks;
+  ParseBookmarks(&bookmarks);
+
+  // Write bookmarks into profile.
+  if (!bookmarks.empty() && !cancelled()) {
+    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
+        &ProfileWriter::AddBookmarkEntry, bookmarks,
+        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_SAFARI),
+        import_to_bookmark_bar() ? ProfileWriter::IMPORT_TO_BOOKMARK_BAR : 0));
+  }
+
+  // Import favicons.
+  sqlite_utils::scoped_sqlite_db_ptr db(OpenFavIconDB());
+  FaviconMap favicon_map;
+  ImportFavIconURLs(db.get(), &favicon_map);
+  // Write favicons into profile.
+  if (!favicon_map.empty() && !cancelled()) {
+    std::vector<history::ImportedFavIconUsage> favicons;
+    LoadFaviconData(db.get(), favicon_map, &favicons);
+    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
+        &ProfileWriter::AddFavicons, favicons));
+  }
 }
 
-void SafariImporter::ImportSearchEngines() {
-  NOTIMPLEMENTED();
+sqlite3* SafariImporter::OpenFavIconDB() {
+  // Construct ~/Library/Safari/WebIcons.db path
+  NSString* library_dir = [NSString
+      stringWithUTF8String:library_dir_.value().c_str()];
+  NSString* safari_dir = [library_dir
+      stringByAppendingPathComponent:@"Safari"];
+  NSString* favicons_db_path = [safari_dir
+    stringByAppendingPathComponent:@"WebpageIcons.db"];
+
+  sqlite3* favicons_db;
+  const char* safariicons_dbname = [favicons_db_path fileSystemRepresentation];
+  if (sqlite3_open(safariicons_dbname, &favicons_db) != SQLITE_OK)
+    return NULL;
+
+  return favicons_db;
+}
+
+void SafariImporter::ImportFavIconURLs(sqlite3* db, FaviconMap* favicon_map) {
+  SQLStatement s;
+  const char* stmt = "SELECT iconID, url FROM PageURL;";
+  if (s.prepare(db, stmt) != SQLITE_OK)
+    return;
+
+  while (s.step() == SQLITE_ROW && !cancelled()) {
+    int64 icon_id = s.column_int(0);
+    GURL url = GURL(s.column_string(1));
+    (*favicon_map)[icon_id].insert(url);
+  }
+}
+
+void SafariImporter::LoadFaviconData(sqlite3* db,
+                                     const FaviconMap& favicon_map,
+                        std::vector<history::ImportedFavIconUsage>* favicons) {
+  SQLStatement s;
+  const char* stmt = "SELECT i.url, d.data "
+                     "FROM IconInfo i JOIN IconData d "
+                     "ON i.iconID = d.iconID "
+                     "WHERE i.iconID = ?;";
+  if (s.prepare(db, stmt) != SQLITE_OK)
+    return;
+
+  for (FaviconMap::const_iterator i = favicon_map.begin();
+       i != favicon_map.end(); ++i) {
+    s.bind_int64(0, i->first);
+    if (s.step() == SQLITE_ROW) {
+      history::ImportedFavIconUsage usage;
+
+      usage.favicon_url = GURL(s.column_string(0));
+      if (!usage.favicon_url.is_valid())
+        continue;  // Don't bother importing favicons with invalid URLs.
+
+      std::vector<unsigned char> data;
+      if (!s.column_blob_as_vector(1, &data) || data.empty())
+        continue;  // Data definitely invalid.
+
+      if (!ReencodeFavicon(&data[0], data.size(), &usage.png_data))
+        continue;  // Unable to decode.
+
+      usage.urls = i->second;
+      favicons->push_back(usage);
+    }
+    s.reset();
+  }
+}
+
+void SafariImporter::RecursiveReadBookmarksFolder(
+    NSDictionary* bookmark_folder,
+    const std::vector<std::wstring>& parent_path_elements,
+    bool is_in_toolbar,
+    std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks) {
+  DCHECK(bookmark_folder);
+
+  NSString* type = [bookmark_folder objectForKey:@"WebBookmarkType"];
+  NSString* title = [bookmark_folder objectForKey:@"Title"];
+
+  // Are we the dictionary that contains all other bookmarks?
+  // We need to know this so we don't add it to the path.
+  bool is_top_level_bookmarks_container = [bookmark_folder
+      objectForKey:@"WebBookmarkFileVersion"] != nil;
+
+  // We're expecting a list of bookmarks here, if that isn't what we got, fail.
+  if (![type isEqualToString:@"WebBookmarkTypeList"] || !title) {
+    DCHECK(false) << "Type =("
+    << (type ? base::SysNSStringToUTF8(type) : "Null Type")
+    << ") Title=(" << (title ? base::SysNSStringToUTF8(title) : "Null title")
+    << ")";
+    return;
+  }
+
+  std::vector<std::wstring> path_elements(parent_path_elements);
+  // Is this the toolbar folder?
+  if ([title isEqualToString:@"BookmarksBar"]) {
+    // Be defensive, the toolbar items shouldn't have a prepended path.
+    path_elements.clear();
+    is_in_toolbar = true;
+  } else if ([title isEqualToString:@"BookmarksMenu"]) {
+    // top level container for normal bookmarks.
+    path_elements.clear();
+  } else if (!is_top_level_bookmarks_container) {
+    if (title)
+      path_elements.push_back(base::SysNSStringToWide(title));
+  }
+
+  NSArray* elements = [bookmark_folder objectForKey:@"Children"];
+  // TODO(jeremy) Does Chrome support importing empty folders?
+  if (!elements)
+    return;
+
+  // Iterate over individual bookmarks.
+  for (NSDictionary* bookmark in elements) {
+    NSString* type = [bookmark objectForKey:@"WebBookmarkType"];
+    if (!type)
+      continue;
+
+    // If this is a folder, recurse.
+    if ([type isEqualToString:@"WebBookmarkTypeList"]) {
+      RecursiveReadBookmarksFolder(bookmark,
+                                   path_elements,
+                                   is_in_toolbar,
+                                   out_bookmarks);
+    }
+
+    // If we didn't see a bookmark folder, then we're expecting a bookmark
+    // item, if that's not what we got then ignore it.
+    if (![type isEqualToString:@"WebBookmarkTypeLeaf"])
+      continue;
+
+    NSString* url = [bookmark objectForKey:@"URLString"];
+    NSString* title = [[bookmark objectForKey:@"URIDictionary"]
+        objectForKey:@"title"];
+
+    if (!url || !title)
+      continue;
+
+    // Output Bookmark.
+    ProfileWriter::BookmarkEntry entry;
+    // Safari doesn't specify a creation time for the bookmark.
+    entry.creation_time = base::Time::Now();
+    entry.title = base::SysNSStringToWide(title);
+    entry.url = GURL(base::SysNSStringToUTF8(url));
+    entry.path = path_elements;
+    entry.in_toolbar = is_in_toolbar;
+
+    out_bookmarks->push_back(entry);
+  }
+}
+
+void SafariImporter::ParseBookmarks(
+    std::vector<ProfileWriter::BookmarkEntry>* bookmarks) {
+  DCHECK(bookmarks);
+
+  // Construct ~/Library/Safari/Bookmarks.plist path
+  NSString* library_dir = [NSString
+      stringWithUTF8String:library_dir_.value().c_str()];
+  NSString* safari_dir = [library_dir
+      stringByAppendingPathComponent:@"Safari"];
+  NSString* bookmarks_plist = [safari_dir
+    stringByAppendingPathComponent:@"Bookmarks.plist"];
+
+  // Load the plist file.
+  NSDictionary* bookmarks_dict = [NSDictionary
+      dictionaryWithContentsOfFile:bookmarks_plist];
+  if (!bookmarks_dict)
+    return;
+
+  // Recursively read in bookmarks.
+  std::vector<std::wstring> parent_path_elements;
+  RecursiveReadBookmarksFolder(bookmarks_dict, parent_path_elements, false,
+                               bookmarks);
 }
 
 void SafariImporter::ImportPasswords() {
@@ -126,13 +312,15 @@ void SafariImporter::ParseHistoryItems(
   // Load the plist file.
   NSDictionary* history_dict = [NSDictionary
       dictionaryWithContentsOfFile:history_plist];
+  if (!history_dict)
+    return;
 
-  NSArray* safari_history_items = [history_dict valueForKey:@"WebHistoryDates"];
+  NSArray* safari_history_items = [history_dict objectForKey:@"WebHistoryDates"];
 
   for (NSDictionary* history_item in safari_history_items) {
     using base::SysNSStringToUTF8;
     using base::SysNSStringToWide;
-    NSString* url_ns = [history_item valueForKey:@""];
+    NSString* url_ns = [history_item objectForKey:@""];
     if (!url_ns)
       continue;
 
@@ -142,7 +330,7 @@ void SafariImporter::ParseHistoryItems(
       continue;
 
     history::URLRow row(url);
-    NSString* title_ns = [history_item valueForKey:@"title"];
+    NSString* title_ns = [history_item objectForKey:@"title"];
 
     // Sometimes items don't have a title, in which case we just substitue
     // the url.
@@ -150,7 +338,7 @@ void SafariImporter::ParseHistoryItems(
       title_ns = url_ns;
 
     row.set_title(SysNSStringToWide(title_ns));
-    int visit_count = [[history_item valueForKey:@"visitCount"]
+    int visit_count = [[history_item objectForKey:@"visitCount"]
                           intValue];
     row.set_visit_count(visit_count);
     // Include imported URLs in autocompletion - don't hide them.
@@ -158,7 +346,7 @@ void SafariImporter::ParseHistoryItems(
     // Item was never typed before in the omnibox.
     row.set_typed_count(0);
 
-    NSString* last_visit_str = [history_item valueForKey:@"lastVisitedDate"];
+    NSString* last_visit_str = [history_item objectForKey:@"lastVisitedDate"];
     // The last visit time should always be in the history item, but if not
     /// just continue without this item.
     DCHECK(last_visit_str);
@@ -188,36 +376,3 @@ void SafariImporter::ImportHomepage() {
         &ProfileWriter::AddHomepage, homepage));
   }
 }
-
-// TODO(jeremy): This is temporary, just copied from the FF import code in case
-// we need it, clean this up when writing favicon import code.
-// static
-void SafariImporter::DataURLToFaviconUsage(
-    const GURL& link_url,
-    const GURL& favicon_data,
-    std::vector<history::ImportedFavIconUsage>* favicons) {
-  if (!link_url.is_valid() || !favicon_data.is_valid() ||
-      !favicon_data.SchemeIs(chrome::kDataScheme))
-    return;
-
-  // Parse the data URL.
-  std::string mime_type, char_set, data;
-  if (!net::DataURL::Parse(favicon_data, &mime_type, &char_set, &data) ||
-      data.empty())
-    return;
-
-  history::ImportedFavIconUsage usage;
-  if (!ReencodeFavicon(reinterpret_cast<const unsigned char*>(&data[0]),
-                       data.size(), &usage.png_data))
-    return;  // Unable to decode.
-
-  // We need to make up a URL for the favicon. We use a version of the page's
-  // URL so that we can be sure it will not collide.
-  usage.favicon_url = GURL(std::string("made-up-favicon:") + link_url.spec());
-
-  // We only have one URL per favicon for Firefox 2 bookmarks.
-  usage.urls.insert(link_url);
-
-  favicons->push_back(usage);
-}
-

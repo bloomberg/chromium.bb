@@ -7,6 +7,12 @@
 
 #include "chrome/browser/importer/importer.h"
 
+#include <map>
+#include <set>
+#include <vector>
+
+#include "chrome/common/sqlite_utils.h"
+
 #if __OBJC__
 @class NSDictionary;
 @class NSString;
@@ -31,13 +37,34 @@ class SafariImporter : public Importer {
                            ImporterHost* host);
 
  private:
+  FRIEND_TEST(SafariImporterTest, BookmarkImport);
+  FRIEND_TEST(SafariImporterTest, FavIconImport);
   FRIEND_TEST(SafariImporterTest, HistoryImport);
 
+  // Multiple URLs can share the same FavIcon, this is a map
+  // of URLs -> IconIDs that we load as a temporary step before
+  // actually loading the icons.
+  typedef std::map<int64, std::set<GURL> > FaviconMap;
+
   void ImportBookmarks();
-  void ImportSearchEngines();
   void ImportPasswords();
   void ImportHistory();
   void ImportHomepage();
+
+  // Parse Safari's stored bookmarks.
+  void ParseBookmarks(std::vector<ProfileWriter::BookmarkEntry>* bookmarks);
+
+  // Function to recursively read Bookmarks out of Safari plist.
+  // |bookmark_folder| The dictionary containing a folder to parse.
+  // |parent_path_elements| Path elements up to this point.
+  // |is_in_toolbar| Is this folder in the toolbar.
+  // |out_bookmarks| BookMark element array to write into.
+  void RecursiveReadBookmarksFolder(
+      NSDictionary* bookmark_folder,
+      const std::vector<std::wstring>& parent_path_elements,
+      bool is_in_toolbar,
+      std::vector<ProfileWriter::BookmarkEntry>* out_bookmarks);
+
 
   // Converts history time stored by Safari as a double serialized as a string,
   // to seconds-since-UNIX-Ephoch-format used by Chrome.
@@ -46,13 +73,16 @@ class SafariImporter : public Importer {
   // Parses Safari's history and loads it into the input array.
   void ParseHistoryItems(std::vector<history::URLRow>* history_items);
 
-  // Given the URL of a page and a favicon data URL, adds an appropriate record
-  // to the given favicon usage vector. Will do nothing if the favicon is not
-  // valid.
-  static void DataURLToFaviconUsage(
-      const GURL& link_url,
-      const GURL& favicon_data,
-      std::vector<history::ImportedFavIconUsage>* favicons);
+  // Loads the favicon Database file, returns NULL on failure.
+  sqlite3* OpenFavIconDB();
+
+  // Loads the urls associated with the favicons into favicon_map;
+  void ImportFavIconURLs(sqlite3* db, FaviconMap* favicon_map);
+
+  // Loads and reencodes the individual favicons.
+  void LoadFaviconData(sqlite3* db,
+                       const FaviconMap& favicon_map,
+                       std::vector<history::ImportedFavIconUsage>* favicons);
 
   ProfileWriter* writer_;
   FilePath library_dir_;

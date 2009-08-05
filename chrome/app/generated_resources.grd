@@ -2742,6 +2742,9 @@ each locale. -->
       <message name="IDS_BOOKMARK_GROUP_FROM_FIREFOX" desc="The group name of bookmarks from Firefox">
         Imported From Firefox
       </message>
+      <message name="IDS_BOOKMARK_GROUP_FROM_SAFARI" desc="The group name of bookmarks from Safari">
+        Imported From Safari
+      </message>
       <message name="IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR" desc="The group name of bookmarks from Google Toolbar">
         Imported From Google Toolbar
       </message>

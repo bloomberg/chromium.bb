@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 
@@ -196,6 +197,25 @@ class scoped_sqlite3_stmt_ptr {
  private:
   DISALLOW_COPY_AND_ASSIGN(scoped_sqlite3_stmt_ptr);
 };
+
+//------------------------------------------------------------------------------
+// A scoped sqlite database that closes when it goes out of scope.
+//------------------------------------------------------------------------------
+
+// TODO: Use this namespace for the functions below (see TODO further down by
+// estade).
+namespace sqlite_utils {
+
+class DBClose {
+ public:
+  inline void operator()(sqlite3* x) const {
+    sqlite3_close(x);
+  }
+};
+
+typedef scoped_ptr_malloc<sqlite3, DBClose> scoped_sqlite_db_ptr;
+
+}  // namespace sqlite_utils
 
 
 //------------------------------------------------------------------------------
