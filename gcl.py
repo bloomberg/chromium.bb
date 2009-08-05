@@ -681,6 +681,10 @@ Advanced commands:
       of changenames.
       --> Use 'gcl help try' for more information!
 
+   gcl deleteempties
+      Deletes all changelists that have no files associated with them. Careful,
+      you can lose your descriptions.
+
    gcl help [command]
       Print this help menu, or help for the given command if it exists.
 """)
@@ -973,7 +977,7 @@ def Change(change_info, override_description):
       description = change_info.description
 
   other_files = GetFilesNotInCL()
-  
+
   #Edited files will have a letter for the first character in a string.
   #This regex looks for the presence of that character.
   file_re = re.compile(r"^[a-z].+\Z", re.IGNORECASE)
@@ -1023,6 +1027,11 @@ def Change(change_info, override_description):
     status = line[:7]
     file = line[7:]
     new_cl_files.append((status, file))
+
+  if (not len(change_info._files)) and (not change_info.issue) and \
+      (not len(new_description) and (not new_cl_files)):
+    ErrorExit("Empty changelist not saved")
+
   change_info._files = new_cl_files
 
   change_info.Save()
@@ -1094,6 +1103,16 @@ def Changes():
       print "".join(file)
 
 
+def DeleteEmptyChangeLists():
+  """Delete all changelists that have no files."""
+  print "\n--- Deleting:"
+  for cl in GetCLs():
+    change_info = ChangeInfo.Load(cl, GetRepositoryRoot(), True, True)
+    if not len(change_info._files):
+      print change_info.name
+      change_info.Delete()
+
+
 def main(argv=None):
   if argv is None:
     argv = sys.argv
@@ -1150,6 +1169,9 @@ def main(argv=None):
     del CODEREVIEW_SETTINGS['__just_initialized']
     print '\n'.join(("%s: %s" % (str(k), str(v))
                      for (k,v) in CODEREVIEW_SETTINGS.iteritems()))
+    return 0
+  if command == "deleteempties":
+    DeleteEmptyChangeLists()
     return 0
 
   if len(argv) == 2:

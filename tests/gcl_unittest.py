@@ -41,7 +41,8 @@ class GclUnittest(GclTestsBase):
     self.mox.ReplayAll()
     members = [
       'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 'CPP_EXTENSIONS',
-      'Change', 'ChangeInfo', 'Changes', 'Commit', 'DoPresubmitChecks',
+      'Change', 'ChangeInfo', 'Changes', 'DeleteEmptyChangeLists', 'Commit',
+      'DoPresubmitChecks',
       'ErrorExit', 'FILES_CACHE', 'FilterFlag', 'GenerateChangeName',
       'GenerateDiff',
       'GetCacheDir', 'GetCachedFile', 'GetChangesDir', 'GetCLs',
