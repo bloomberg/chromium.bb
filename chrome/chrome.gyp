@@ -22,6 +22,17 @@
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'mac_xib_localizer_tool_path': '<(DEPTH)/build/mac/generate_localizer',
     'mac_xib_localizers_dir': '<(INTERMEDIATE_DIR)/xib_localizers',
+    # TODO(mmoss) This might need to go somewhere more general, then we can use
+    # it to also rewrite app/locales/locales.gyp with a helper script.
+    'locales': [
+      'ar', 'bg', 'bn', 'ca', 'cs', 'da', 'de', 'el', 'en-GB',
+      'en-US', 'es-419', 'es', 'et', 'fi', 'fil', 'fr', 'gu', 'he',
+      'hi', 'hr', 'hu', 'id', 'it', 'ja', 'kn', 'ko', 'lt', 'lv',
+      'ml', 'mr', 'nb', 'nl', 'or', 'pl', 'pt-BR', 'pt-PT', 'ro',
+      'ru', 'sk', 'sl', 'sr', 'sv', 'ta', 'te', 'th', 'tr',
+      'uk', 'vi', 'zh-CN', 'zh-TW',
+    ],
+    'repack_locales_cmd': ['python', 'tools/build/repack_locales.py',],
     'browser_tests_sources': [
       'browser/browser_browsertest.cc',
       'browser/crash_recovery_browsertest.cc',
@@ -191,6 +202,8 @@
           ],
           'outputs': [
             '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
+            # TODO(mmoss) Generate this list from a helper script, like
+            # repack_locales_cmd.
             '<(grit_out_dir)/<(RULE_INPUT_ROOT)_da.pak',
             '<(grit_out_dir)/<(RULE_INPUT_ROOT)_en-US.pak',
             '<(grit_out_dir)/<(RULE_INPUT_ROOT)_he.pak',
@@ -2868,11 +2881,9 @@
             },
             {
               'destination': '<(PRODUCT_DIR)/locales',
-              'files': ['<(INTERMEDIATE_DIR)/repack/da.pak',
-                        '<(INTERMEDIATE_DIR)/repack/en-US.pak',
-                        '<(INTERMEDIATE_DIR)/repack/he.pak',
-                        '<(INTERMEDIATE_DIR)/repack/zh-TW.pak',
-                        ],
+              'files': [
+                '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+              ],
             },
             {
               'destination': '<(PRODUCT_DIR)/themes',
@@ -3192,165 +3203,50 @@
               ],
             },
             {
-              # TODO(mark): Make this work with more languages than the
-              # hardcoded da, en-US, he, zh-TW.
-              'action_name': 'repack_locale_da',
+              'action_name': 'repack_locales',
               'variables': {
-                'pak_inputs': [
-                  '<(grit_out_dir)/generated_resources_da.pak',
-                  '<(grit_out_dir)/locale_settings_da.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_da.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_da.pak',
-                ],
                 'conditions': [
                   ['branding=="Chrome"', {
-                    'pak_inputs': [
-                        '<(grit_out_dir)/google_chrome_strings_da.pak',
-                      ]
+                    'branding_flag': ['-b', 'google_chrome',],
                   }, {  # else: branding!="Chrome"
-                    'pak_inputs': [
-                        '<(grit_out_dir)/chromium_strings_da.pak',
-                      ]
+                    'branding_flag': ['-b', 'chromium',],
                   }],
                 ],
               },
               'inputs': [
-                '<(repack_path)',
-                '<@(pak_inputs)',
+                'tools/build/repack_locales.py',
+                # NOTE: Ideally the common command args would be shared amongst
+                # inputs/outputs/action, but the args include shell variables
+                # which need to be passed intact, and command expansion wants
+                # to expand the shell variables. Adding the explicit quoting
+                # here was the only way it seemed to work.
+                '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
               ],
               'conditions': [
                 ['OS=="mac"', {
+                  'process_outputs_as_mac_bundle_resources': 1,
+                  'variables': {
+                    'locales=': [ 'da', 'en-US', 'he', 'zh-TW', ],
+                  },
                   'outputs': [
                     '<(INTERMEDIATE_DIR)/repack/da.lproj/locale.pak',
-                  ],
-                }, {  # else: OS!="mac"
-                  'outputs': [
-                    '<(INTERMEDIATE_DIR)/repack/da.pak',
-                  ],
-                }],
-              ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
-            },
-            {
-              # TODO(mark): Make this work with more languages than the
-              # hardcoded da, en-US, he, zh-TW.
-              'action_name': 'repack_locale_en_us',
-              'variables': {
-                'pak_inputs': [
-                  '<(grit_out_dir)/generated_resources_en-US.pak',
-                  '<(grit_out_dir)/locale_settings_en-US.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_en-US.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
-                ],
-                'conditions': [
-                  ['branding=="Chrome"', {
-                    'pak_inputs': [
-                        '<(grit_out_dir)/google_chrome_strings_en-US.pak',
-                      ]
-                  }, {  # else: branding!="Chrome"
-                    'pak_inputs': [
-                        '<(grit_out_dir)/chromium_strings_en-US.pak',
-                      ]
-                  }],
-                ],
-              },
-              'inputs': [
-                '<(repack_path)',
-                '<@(pak_inputs)',
-              ],
-              'conditions': [
-                ['OS=="mac"', {
-                  'outputs': [
                     '<(INTERMEDIATE_DIR)/repack/en.lproj/locale.pak',
-                  ],
-                }, {  # else: OS!="mac"
-                  'outputs': [
-                    '<(INTERMEDIATE_DIR)/repack/en-US.pak',
-                  ],
-                }],
-              ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
-              'process_outputs_as_mac_bundle_resources': 1,
-            },
-            {
-              # TODO(mark): Make this work with more languages than the
-              # hardcoded da, en-US, he, zh-TW.
-              'action_name': 'repack_locale_he',
-              'variables': {
-                'pak_inputs': [
-                  '<(grit_out_dir)/generated_resources_he.pak',
-                  '<(grit_out_dir)/locale_settings_he.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_he.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_he.pak',
-                ],
-                'conditions': [
-                  ['branding=="Chrome"', {
-                    'pak_inputs': [
-                        '<(grit_out_dir)/google_chrome_strings_he.pak',
-                      ]
-                  }, {  # else: branding!="Chrome"
-                    'pak_inputs': [
-                        '<(grit_out_dir)/chromium_strings_he.pak',
-                      ]
-                  }],
-                ],
-              },
-              'inputs': [
-                '<(repack_path)',
-                '<@(pak_inputs)',
-              ],
-              'conditions': [
-                ['OS=="mac"', {
-                  'outputs': [
                     '<(INTERMEDIATE_DIR)/repack/he.lproj/locale.pak',
-                  ],
-                }, {  # else: OS!="mac"
-                  'outputs': [
-                    '<(INTERMEDIATE_DIR)/repack/he.pak',
-                  ],
-                }],
-              ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
-            },
-            {
-              # TODO(mark): Make this work with more languages than the
-              # hardcoded da, en-US, he, zh-TW.
-              'action_name': 'repack_locale_zh_tw',
-              'variables': {
-                'pak_inputs': [
-                  '<(grit_out_dir)/generated_resources_zh-TW.pak',
-                  '<(grit_out_dir)/locale_settings_zh-TW.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/app/app_strings_zh-TW.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_zh-TW.pak',
-                ],
-                'conditions': [
-                  ['branding=="Chrome"', {
-                    'pak_inputs': [
-                        '<(grit_out_dir)/google_chrome_strings_zh-TW.pak',
-                      ]
-                  }, {  # else: branding!="Chrome"
-                    'pak_inputs': [
-                        '<(grit_out_dir)/chromium_strings_zh-TW.pak',
-                      ]
-                  }],
-                ],
-              },
-              'inputs': [
-                '<(repack_path)',
-                '<@(pak_inputs)',
-              ],
-              'conditions': [
-                ['OS=="mac"', {
-                  'outputs': [
                     '<(INTERMEDIATE_DIR)/repack/zh.lproj/locale.pak',
                   ],
                 }, {  # else: OS!="mac"
                   'outputs': [
-                    '<(INTERMEDIATE_DIR)/repack/zh-TW.pak',
+                    '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
                   ],
                 }],
               ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
+              'action': ['<@(repack_locales_cmd)',
+                '<@(branding_flag)',
+                '-g', '<(grit_out_dir)',
+                '-s', '<(SHARED_INTERMEDIATE_DIR)',
+                '-x', '<(INTERMEDIATE_DIR)',
+                '<@(locales)',
+              ],
             },
           ],
           'sources!': [
