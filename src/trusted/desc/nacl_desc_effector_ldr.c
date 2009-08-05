@@ -34,8 +34,6 @@
  * Implementation of service runtime effector subclass used for all
  * application threads.
  */
-#include "native_client/src/include/nacl_platform.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
 
 #include "native_client/src/trusted/platform/nacl_host_desc.h"

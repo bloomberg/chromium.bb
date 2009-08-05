@@ -38,7 +38,6 @@
 #include <fcntl.h>
 #include <string.h>
 
-#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
@@ -103,11 +102,8 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
   char                      *hdr_buf;
   struct NaClDescXferState  xfer_state;
 
-  static struct NaClInternalHeader const  kNoHandles = {
-    {
-      NACL_HANDLE_TRANSFER_PROTOCOL,
-      0,
-    },
+  static struct NaClInternalHeader const kNoHandles = {
+    { NACL_HANDLE_TRANSFER_PROTOCOL, 0, },
     /* and implicit zeros for pad bytes */
   };
 

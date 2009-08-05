@@ -49,8 +49,6 @@
 #include <linux/types.h>
 #include <linux/unistd.h>
 
-#include "native_client/src/include/nacl_platform.h"
-
 #include "native_client/src/trusted/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/platform/nacl_host_dir.h"
 #include "native_client/src/trusted/platform/nacl_log.h"

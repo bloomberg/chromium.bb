@@ -418,7 +418,6 @@ base_env.Append(
     'src/third_party_mod/gtest/build.scons',
     'src/trusted/desc/build.scons',
     'src/trusted/nonnacl_util/build.scons',
-    'src/trusted/platform_qualify/build.scons',
     'src/trusted/plugin/build.scons',
     'src/trusted/platform/build.scons',
     'src/trusted/sandbox/build.scons',
@@ -434,7 +433,10 @@ if base_env['TARGET_ARCHITECTURE'] == 'arm':
 
 elif base_env['TARGET_ARCHITECTURE'] == 'x86':
   base_env.Append(
-      BUILD_SCONSCRIPTS = ['src/trusted/validator_x86/build.scons',]
+      BUILD_SCONSCRIPTS = ['src/trusted/platform_qualify/build.scons',
+                           # NOTE: this also requires the BUILD arch to be x86
+                           'src/trusted/validator_x86/build.scons',
+                           ]
       )
 else:
   Banner("unknown TARGET_ARCHITECTURE %s" % base_env['TARGET_ARCHITECTURE'])

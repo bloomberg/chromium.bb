@@ -34,13 +34,10 @@
  */
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-
-#if !defined(USE_R9_AS_TLS_REG)
-extern __thread uint32_t nacl_tls_idx;
-#endif
-
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
 
 void NaClInitGlobals() {
+  /* intentionally left empty */
 }
 
 
@@ -62,4 +59,3 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
   return 1;
 }
-

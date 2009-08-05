@@ -41,9 +41,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-
-#include "native_client/src/include/nacl_platform.h"
-
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -148,9 +145,10 @@ int main(int ac, char **av) {
      */
 
     /* not opaque type */
-    printf("Server socket address: %.*s\n",
+    printf("Server socket address:\n%.*s\n",
            NACL_PATH_MAX,
            ((struct NaClDescConnCap *) pair[1])->cap.path);
+    fflush(stdout);
 
     if (0 != (rv = (*pair[0]->vtbl->AcceptConn)(pair[0], effp))) {
       fprintf(stderr, "AcceptConn returned %d\n", rv);

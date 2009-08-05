@@ -74,9 +74,9 @@ static void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
   uint32_t *inst = (uint32_t *) start;
   int i;
 
-  CHECK(!(size % NACL_HALT_LEN));
+  CHECK(0 == size % NACL_HALT_LEN);
   /* check that the region start is 4 bytes alligned */
-  CHECK(!((uint32_t)start % NACL_HALT_LEN));
+  CHECK(0 == (uint32_t)start % NACL_HALT_LEN);
 
   for (i = 0; i < (size / NACL_HALT_LEN); i++)
     inst[i] = NACL_HALT_OPCODE;
@@ -84,8 +84,7 @@ static void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
 
 
 void NaClFillTrampolineRegion(struct NaClApp *nap) {
-  NaClFillMemoryRegionWithHalt((void *) nap->mem_start +
-                               NACL_TRAMPOLINE_START,
+  NaClFillMemoryRegionWithHalt((void *)(nap->mem_start + NACL_TRAMPOLINE_START),
                                NACL_TRAMPOLINE_SIZE);
 }
 
@@ -100,9 +99,9 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   page_pad = NaClRoundPage(nap->text_region_bytes) - nap->text_region_bytes;
   CHECK(page_pad < NACL_PAGESIZE);
 
-  NaClFillMemoryRegionWithHalt((void *) nap->mem_start +
-                               NACL_TRAMPOLINE_END +
-                               nap->text_region_bytes,
+  NaClFillMemoryRegionWithHalt((void *)(nap->mem_start +
+                                        NACL_TRAMPOLINE_END +
+                                        nap->text_region_bytes),
                                page_pad);
 
   nap->text_region_bytes += page_pad;
