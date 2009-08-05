@@ -33,7 +33,11 @@ import sys
 
 Import('env')
 
-# Other unconditional builds will go here.
+# NOTE: this is just stubbing things out to create a 'compatible' library.
+#       Needs to be revisited once we understand arm better
+if env['BUILD_ARCHITECTURE'] == 'arm':
+  env.ComponentLibrary('platform_qual_lib', ['dummy_qualify.c'])
+  Return()
 
 pql_inputs = [];
 

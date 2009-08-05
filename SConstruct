@@ -420,7 +420,11 @@ base_env.Append(
     'src/trusted/nonnacl_util/build.scons',
     'src/trusted/plugin/build.scons',
     'src/trusted/platform/build.scons',
+    'src/trusted/platform_qualify/build.scons',
     'src/trusted/sandbox/build.scons',
+    # TODO: This file has an early out in case we are building for ARM
+    #       Needs to be cleaned up
+    'src/trusted/validator_x86/build.scons',
     'tests/python_version/build.scons',
     'tests/tools/build.scons',
     ],
@@ -430,14 +434,8 @@ if base_env['TARGET_ARCHITECTURE'] == 'arm':
   base_env.Append(
       BUILD_SCONSCRIPTS = ['src/trusted/validator_arm/build.scons',]
       )
-
 elif base_env['TARGET_ARCHITECTURE'] == 'x86':
-  base_env.Append(
-      BUILD_SCONSCRIPTS = ['src/trusted/platform_qualify/build.scons',
-                           # NOTE: this also requires the BUILD arch to be x86
-                           'src/trusted/validator_x86/build.scons',
-                           ]
-      )
+  pass
 else:
   Banner("unknown TARGET_ARCHITECTURE %s" % base_env['TARGET_ARCHITECTURE'])
 
