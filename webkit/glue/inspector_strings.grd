@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- This file contains definitions of resources that will be translated for
-each locale. Specifically, these are UI strings that are used by WebKit 
+each locale. Specifically, these are UI strings that are used by WebKit
 Inspector that need to be translated for each locale.-->
 
 <!-- These strings and string descriptions were taken from
-WebKit/WebCore/English.lproj/localizedStrings.js @ revision 46622
+WebKit/WebCore/English.lproj/localizedStrings.js @ revision 46732
 so we include the original license below:
 
 /*
@@ -47,9 +47,7 @@ so we include the original license below:
     Note that all output references are relative to the output directory
     which is specified at build time. -->
     <!--
-    <output filename="resource.h" type="rc_header" />
-    <output filename="en_resource.rc" type="rc_all" />
-    <output filename="fr_resource.rc" type="rc_all" />
+    <output filename="localizedStrings_en.js" type="js_map_format" lang="en" />
     -->
   </outputs>
   <translations>
@@ -117,6 +115,12 @@ so we include the original license below:
       <message name="IDS_MATCHES_COUNT_PLURAL" desc="Matches count, plural.">
         <ph name="COUNT">%d<ex>2</ex></ph> matches
       </message>
+      <message name="IDS_STYLE_CHANGE_SINGULAR" desc="Style changes count, singular.">
+        <ph name="COUNT">%d<ex>1</ex></ph> style change
+      </message>
+      <message name="IDS_STYLE_CHANGE_PLURAL" desc="Style changes count, plural.">
+        <ph name="COUNT">%d<ex>2</ex></ph> style changes
+      </message>
       <message name="IDS_WARNINGS_COUNT_SINGULAR" desc="Warnings count, singular.">
         <ph name="COUNT">%d<ex>1</ex></ph> warning
       </message>
@@ -177,13 +181,16 @@ so we include the original license below:
       <message name="IDS_LABEL_OF_A_GRID_COLUMN_SHOWING_FUNCTION_CALL_COUNT" desc="Label of a grid column showing function call count.">
         Calls
       </message>
+      <message name="IDS_HINT_FOR_A_BUTTON_CLEARING_CHANGES_LOG" desc="Hint for a button clearing changes log.">
+        Clear changes log.
+      </message>
       <message name="IDS_HINT_FOR_A_BUTTON_CLEARING_CONSOLE_LOG" desc="Hint for a button clearing console log.">
         Clear console log.
       </message>
       <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_CLOSURE_VARIABLES" desc="Label for a section in the scope chain sidebar that shows closure's variables.">
         Closure
       </message>
-      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_COOKIES" desc="Label for a section showing cookies.">
+      <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_COOKIES_CAPS" desc="Label for a section showing cookies.">
         COOKIES
       </message>
       <message name="IDS_LABEL_FOR_A_SECTION_SHOWING_COMPUTED_STYLE" desc="Label for a section showing computed style.">
@@ -226,7 +233,10 @@ so we include the original license below:
         Documents
       </message>
       <message name="IDS_HINT_FOR_A_BUTTON_THAT_DISABLES_PAUSE_EXECUTION_ON_EXCEPTIONS" desc="Hint for a button that disables pause execution on exceptions.">
-        Don’t pause on exceptions.
+        Don't pause on exceptions.
+      </message>
+      <message name="IDS_DOUBLE_CLICK_TO_ADD" desc="Instruction on adding an element.">
+        Double-Click to Add
       </message>
       <message name="IDS_LABEL_FOR_HTML_ELEMENTS_PANEL" desc="Label for HTML elements panel.">
         Elements
@@ -262,7 +272,7 @@ so we include the original license below:
         File size
       </message>
       <message name="IDS_LABEL_FOR_A_BUTTON_THAT_FOCUSES_ON_A_FUNCTION_FROM_EXECUTION_PROFILE" desc="Label for a button that focuses on a function from execution profile.">
-        Focus on selected function.
+        Focus selected function.
       </message>
       <message name="IDS_LABEL_FOR_FONTS_RESOURCE_SECTION" desc="Label for fonts resource section.">
         Fonts
@@ -278,6 +288,9 @@ so we include the original license below:
       </message>
       <message name="IDS_LABEL_INDICATING_THAT_BOTTOM-UP_HEAVY_PROFILE_IS_SHOWN" desc="Label indicating that bottom-up (heavy) profile is shown.">
         Heavy (Bottom Up)
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_HIDES_CHANGES" desc="Label for a button that hides changes view.">
+        Hide changes view.
       </message>
       <message name="IDS_LABEL_FOR_A_BUTTON_THAT_HIDES_CONSOLE" desc="Label for a button that hides console.">
         Hide console.
@@ -367,7 +380,7 @@ so we include the original license below:
         Request Headers
       </message>
       <message name="IDS_A_WARNING_ABOUT_RESOURCE_TYPE_MISMATCH" desc="A warning about resource type mismatch.">
-        Resource interpreted as <ph id="REAL_TYPE">%1$s<ex>text/javascript</ex></ph> but transferred with MIME type <ph id="SPECIFIED_TYPE">%2$s<ex>text/javascript</ex></ph>.
+        Resource interpreted as <ph name="REAL_TYPE">%1$s<ex>text/javascript</ex></ph> but transferred with MIME type <ph name="SPECIFIED_TYPE">%2$s<ex>text/javascript</ex></ph>.
       </message>
       <message name="IDS_MESSAGE_INDICATING_THAT_RESOURCE_TRACKING_IS_DISABLED" desc="Message indicating that resource tracking is disabled.">
         Resource tracking disabled. Click to enable.
@@ -407,6 +420,9 @@ so we include the original license below:
       </message>
       <message name="IDS_LABEL_FOR_A_BUTTON_TOGGLING_SHOWING_OF_ABSOLUTE_TIMES" desc="Label for a button toggling showing of absolute times.">
         Show absolute total and self times.
+      </message>
+      <message name="IDS_LABEL_FOR_A_BUTTON_THAT_SHOWS_CHANGES" desc="Label for a button that shows changes view.">
+        Show changes view.
       </message>
       <message name="IDS_LABEL_FOR_A_BUTTON_THAT_SHOWS_CONSOLE" desc="Label for a button that shows console.">
         Show console.
@@ -465,6 +481,9 @@ so we include the original license below:
       <message name="IDS_LABEL_FOR_A_BUTTON_THAT_STOPS_PROFILING" desc="Label for a button that stops profiling.">
         Stop profiling.
       </message>
+      <message name="IDS_LABEL_FOR_STYLE_ATTRIBUTE" desc="Label for style attribute.">
+        Style Attribute
+      </message>
       <message name="IDS_LABEL_FOR_CSS_STYLES_SIDE_PANEL" desc="Label for CSS styles side panel.">
         Styles
       </message>
@@ -472,7 +491,7 @@ so we include the original license below:
         Stylesheets
       </message>
       <message name="IDS_MESSAGE_INDICATING_THAT_DATABASE_TABLE_IS_EMPTY" desc="Message indicating that database table is empty.">
-        The “<ph id="TABLE_NAME">%s<ex>foo</ex></ph>”\ntable is empty.
+        The “<ph name="TABLE_NAME">%s<ex>foo</ex></ph>”\ntable is empty.
       </message>
       <message name="IDS_MESSAGE_INDICATING_THAT_CURRENT_SITE_DOESN'T_HAVE_COOKIES" desc="Message indicating that current site doesn't have cookies.">
         This site has no cookies.
@@ -498,7 +517,7 @@ so we include the original license below:
       <message name="IDS_HINT_FOR_A_BUTTON_THAT_TOGGLES_SHOWING_SMALL_RESOURCE_ROWS" desc="Hint for a button that toggles showing small resource rows.">
         Use small resource rows.
       </message>
-      <message name="IDS_LABEL_FOR_A_GRID_COLUMN_SHOWING_PROPERTY_KEY" desc="Label for a grid column showing property key.">
+      <message name="IDS_LABEL_FOR_A_GRID_COLUMN_SHOWING_PROPERTY_VALUE" desc="Label for a grid column showing property value.">
         Value
       </message>
       <message name="IDS_LABEL_FOR_A_SECTION_IN_THE_SCOPE_CHAIN_SIDEBAR_THAT_SHOWS_WITH_BLOCK_VARIABLES" desc="Label for a section in the scope chain sidebar that shows with block variables.">
@@ -566,6 +585,9 @@ so we include the original license below:
       </message>
       <message name="IDS_LABEL_FOR_A_RESOURCE_TYPE_8" desc="Label for a resource type.">
         user stylesheet
+      </message>
+      <message name="IDS_LABEL_VIA_INSPECTOR" desc="Label for a style attribute added via Inspector.">
+        via inspector
       </message>
     </messages>
   </release>

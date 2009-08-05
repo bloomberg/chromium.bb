@@ -11,9 +11,7 @@ Google Chrome Developer Tools. -->
     Note that all output references are relative to the output directory
     which is specified at build time. -->
     <!--
-    <output filename="resource.h" type="rc_header" />
-    <output filename="en_resource.rc" type="rc_all" />
-    <output filename="fr_resource.rc" type="rc_all" />
+    <output filename="localizedStrings_en.js" type="js_map_format" lang="en" />
     -->
   </outputs>
   <translations>
@@ -24,28 +22,28 @@ Google Chrome Developer Tools. -->
   </translations>
   <release seq="1">
     <messages fallback_to_english="true">
-      <message id="IDS_FAILED_TO_RESOLVE_CHILDREN" name="Message indicating that resolving element children has failed.">
+      <message name="IDS_FAILED_TO_RESOLVE_CHILDREN" desc="Message indicating that resolving element children has failed.">
         Failed to resolve children: <ph name="ERROR">%s<ex>Allocation failure</ex></ph>
       </message>
-      <message id="IDS_CORRUPT_OBJECT" name="Error message showing corrupt object.">
+      <message name="IDS_CORRUPT_OBJECT" desc="Error message showing corrupt object.">
         Corrupted object: <ph name="OBJECT">%s<ex>bad</ex></ph>
       </message>
-      <message id="IDS_SCOPE_VARS_FAILURE" name="Error message indicating failure to resolve scope variables.">
+      <message name="IDS_SCOPE_VARS_FAILURE" desc="Error message indicating failure to resolve scope variables.">
         Failed to resolve scope variables: <ph name="ERROR">%s<ex>Undefined variable</ex></ph>
       </message>
-      <message id="IDS_PROCESSING_PROFILE" name="Message indicating that profile is being processed.">
+      <message name="IDS_PROCESSING_PROFILE" desc="Message indicating that profile is being processed.">
         Processing...
       </message>
-      <message id="IDS_PROFILE_TICKS_PROCESSED" name="Message showing how many ticks are already processed.">
+      <message name="IDS_PROFILE_TICKS_PROCESSED" desc="Message showing how many ticks are already processed.">
         <ph name="COUNT">%d<ex>1000</ex></ph> ticks processed
       </message>
-      <message id="IDS_NO_SOURCE" name="Label for a script with no source.">
+      <message name="IDS_NO_SOURCE" desc="Label for a script with no source.">
         &lt;source is not available&gt;
       </message>
-      <message id="IDS_UNKNOWN_SCOPE_TYPE" name="Label for an unknown scope type.">
+      <message name="IDS_UNKNOWN_SCOPE_TYPE" desc="Label for an unknown scope type.">
         &lt;Unknown scope type&gt;
       </message>
-      <message id="IDS_WINDOW_HEADER" name="DevTools window header.">
+      <message name="IDS_WINDOW_HEADER" desc="DevTools window header.">
         Developer Tools - <ph name="URL">%s<ex>http://www.example.com/</ex></ph>
       </message>
     </messages>
