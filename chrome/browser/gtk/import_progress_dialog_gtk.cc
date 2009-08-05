@@ -11,16 +11,18 @@
 #include "grit/generated_resources.h"
 
 namespace {
-void SetItemImportStatus(GtkWidget* chkbox, int res_id, bool is_done) {
+
+void SetItemImportStatus(GtkWidget* label, int res_id, bool is_done) {
   std::string status = l10n_util::GetStringUTF8(res_id);
   // Windows version of this has fancy throbbers to indicate progress. Here
   // we rely on text until we can have something equivalent on Linux.
   if (is_done)
-    status.append(" done.");
+    status = "\xE2\x9C\x94 " + status;  // U+2714 HEAVY CHECK MARK
   else
-    status.append(" importing...");
-  gtk_button_set_label(GTK_BUTTON(chkbox), status.c_str());
+    status.append(" ...");
+  gtk_label_set_text(GTK_LABEL(label), status.c_str());
 }
+
 }  // namespace
 
 // static
@@ -127,39 +129,48 @@ ImportProgressDialogGtk::ImportProgressDialogGtk(const string16& source_profile,
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
+  GtkWidget* control_group = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
   GtkWidget* import_info = gtk_label_new(
       l10n_util::GetStringFUTF8(IDS_IMPORT_PROGRESS_INFO,
                                 source_profile).c_str());
-  gtk_label_set_single_line_mode(GTK_LABEL(import_info), FALSE);
-  gtk_box_pack_start(GTK_BOX(content_area), import_info, FALSE, FALSE, 0);
+  gtk_label_set_line_wrap(GTK_LABEL(import_info), TRUE);
+  gtk_widget_set_size_request(import_info, 350, -1);
+  gtk_box_pack_start(GTK_BOX(control_group), import_info, FALSE, FALSE, 0);
 
-  bookmarks_ = gtk_check_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS).c_str());
-  gtk_box_pack_start(GTK_BOX(content_area), bookmarks_, FALSE, FALSE, 0);
-  gtk_widget_set_sensitive(bookmarks_, FALSE);
-  if (items_ & FAVORITES)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bookmarks_), TRUE);
+  GtkWidget* item_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
-  search_engines_ = gtk_check_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_SEARCH).c_str());
-  gtk_box_pack_start(GTK_BOX(content_area), search_engines_, FALSE, FALSE, 0);
-  gtk_widget_set_sensitive(search_engines_, FALSE);
-  if (items_ & SEARCH_ENGINES)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(search_engines_), TRUE);
+  if (items_ & FAVORITES) {
+    bookmarks_ = gtk_label_new(
+        l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS).c_str());
+    gtk_misc_set_alignment(GTK_MISC(bookmarks_), 0, 0.5);
+    gtk_box_pack_start(GTK_BOX(item_box), bookmarks_, FALSE, FALSE, 0);
+  }
 
-  passwords_ = gtk_check_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_PASSWORDS).c_str());
-  gtk_box_pack_start(GTK_BOX(content_area), passwords_, FALSE, FALSE, 0);
-  gtk_widget_set_sensitive(passwords_, FALSE);
-  if (items_ & PASSWORDS)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(passwords_), TRUE);
+  if (items_ & SEARCH_ENGINES) {
+    search_engines_ = gtk_label_new(
+        l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_SEARCH).c_str());
+    gtk_misc_set_alignment(GTK_MISC(search_engines_), 0, 0.5);
+    gtk_box_pack_start(GTK_BOX(item_box), search_engines_, FALSE, FALSE, 0);
+  }
 
-  history_ = gtk_check_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_HISTORY).c_str());
-  gtk_box_pack_start(GTK_BOX(content_area), history_, FALSE, FALSE, 0);
-  gtk_widget_set_sensitive(history_, FALSE);
-  if (items_ & HISTORY)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(history_), TRUE);
+  if (items_ & PASSWORDS) {
+    passwords_ = gtk_label_new(
+        l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_PASSWORDS).c_str());
+    gtk_misc_set_alignment(GTK_MISC(passwords_), 0, 0.5);
+    gtk_box_pack_start(GTK_BOX(item_box), passwords_, FALSE, FALSE, 0);
+  }
+
+  if (items_ & HISTORY) {
+    history_ = gtk_label_new(
+        l10n_util::GetStringUTF8(IDS_IMPORT_PROGRESS_STATUS_HISTORY).c_str());
+    gtk_misc_set_alignment(GTK_MISC(history_), 0, 0.5);
+    gtk_box_pack_start(GTK_BOX(item_box), history_, FALSE, FALSE, 0);
+  }
+
+  gtk_box_pack_start(GTK_BOX(control_group), gtk_util::IndentWidget(item_box),
+                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(content_area), control_group, FALSE, FALSE, 0);
 
   g_signal_connect(dialog_, "response",
                    G_CALLBACK(HandleOnResponseDialog), this);

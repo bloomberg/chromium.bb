@@ -208,7 +208,7 @@ DownloadSection::DownloadSection(Profile* profile)
                      reset_file_handlers_button_,
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(page_),
-                     OptionsLayoutBuilderGtk::IndentWidget(button_hbox),
+                     gtk_util::IndentWidget(button_hbox),
                      FALSE, FALSE, 0);
 
   // Init prefs watchers.
@@ -332,7 +332,7 @@ NetworkSection::NetworkSection(Profile* profile)
                      change_proxies_button,
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(page_),
-                     OptionsLayoutBuilderGtk::IndentWidget(button_hbox),
+                     gtk_util::IndentWidget(button_hbox),
                      FALSE, FALSE, 0);
 }
 
@@ -535,7 +535,7 @@ PrivacySection::PrivacySection(Profile* profile)
 
   GtkWidget* cookie_controls = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(page_),
-                     OptionsLayoutBuilderGtk::IndentWidget(cookie_controls),
+                     gtk_util::IndentWidget(cookie_controls),
                      FALSE, FALSE, 0);
 
   cookie_behavior_combobox_ = gtk_combo_box_new_text();
@@ -808,8 +808,8 @@ SecuritySection::SecuritySection(Profile* profile)
   GtkWidget* manage_certificates_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(manage_certificates_hbox),
                      manage_certificates_link, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(page_), OptionsLayoutBuilderGtk::IndentWidget(
-                         manage_certificates_hbox),
+  gtk_box_pack_start(GTK_BOX(page_),
+                     gtk_util::IndentWidget(manage_certificates_hbox),
                      FALSE, FALSE, 0);
   g_signal_connect(manage_certificates_link, "clicked",
                    G_CALLBACK(OnManageCertificatesClicked), this);
@@ -869,7 +869,7 @@ WebContentSection::WebContentSection(Profile* profile)
                      fonts_and_languages_button,
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(page_),
-                     OptionsLayoutBuilderGtk::IndentWidget(button_hbox),
+                     gtk_util::IndentWidget(button_hbox),
                      FALSE, FALSE, 0);
 
   // TODO(mattm): gears options would go here if we supported gears

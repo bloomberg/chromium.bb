@@ -141,6 +141,9 @@ GtkWidget* AddButtonToDialog(GtkWidget* dialog, const gchar* text,
 // Sets all the foreground color states of |label| to |color|.
 void SetLabelColor(GtkWidget* label, const GdkColor* color);
 
+// Adds the given widget to an alignment identing it by |kGroupIndent|.
+GtkWidget* IndentWidget(GtkWidget* content);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_
