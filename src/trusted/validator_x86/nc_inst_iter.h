@@ -96,6 +96,9 @@ Bool NcInstIterHasNext(NcInstIter* iter);
  */
 struct NcInstState* NcInstIterGetState(NcInstIter* iter);
 
+/* Returns true iff it is valid to look back the given distance. */
+Bool NcInstIterHasLookbackState(NcInstIter* iter, size_t distance);
+
 /* Return a state containing the instruction matched distance elements ago
  * from the currently matched instruction (zero corresponds to the currently
  * matched instruction). Note: This instruction is only valid until the next

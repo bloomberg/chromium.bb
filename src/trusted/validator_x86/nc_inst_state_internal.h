@@ -132,6 +132,10 @@ struct NcInstIter {
   struct NcSegment* segment;
   /* Defines the current (relative pc) index into the segment. */
   MemorySize index;
+  /* Defines the index of the current instruction, relative to
+   * the beginning of the segment.
+   */
+  MemorySize inst_count;
   /* The following fields define a ring buffer, where buffer_index
    * is the index of the current instruction in the buffer, and
    * buffer_size is the number of iterator states in the buffer.

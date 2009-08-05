@@ -61,6 +61,7 @@ NcInstIter* NcInstIterCreateWithLookback(
   iter = (NcInstIter*) malloc(sizeof(NcInstIter));
   iter->segment = segment;
   iter->index = 0;
+  iter->inst_count = 0;
   iter->buffer_size = lookback_size + 1;
   iter->buffer_index = 0;
   iter->buffer = (NcInstState*) calloc(iter->buffer_size, sizeof(NcInstState));
@@ -87,9 +88,14 @@ NcInstState* NcInstIterGetState(NcInstIter* iter) {
   return state;
 }
 
+Bool NcInstIterHasLookbackState(NcInstIter* iter, size_t distance) {
+  return distance < iter->buffer_size && distance <= iter->inst_count;
+}
+
 NcInstState* NcInstIterGetLookbackState(NcInstIter* iter, size_t distance) {
   NcInstState* state;
   assert(distance < iter->buffer_size);
+  assert(distance <= iter->inst_count);
   state = &iter->buffer[((iter->buffer_index + iter->buffer_size) - distance)
                         % iter->buffer_size];
   if (NULL == state->opcode) {
@@ -112,6 +118,7 @@ void NcInstIterAdvance(NcInstIter* iter) {
   }
   state = NcInstIterGetState(iter);
   iter->index += state->length;
+  ++iter->inst_count;
   iter->buffer_index = (iter->buffer_index + 1) % iter->buffer_size;
   DEBUG(
       printf(
