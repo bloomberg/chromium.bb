@@ -57,19 +57,19 @@ class DownloadShelfMacTest : public testing::Test {
   BrowserTestHelper browser_helper_;
 };
 
-TEST_F(DownloadShelfMacTest, CreationCallsShow) {
+TEST_F(DownloadShelfMacTest, CreationDoesNotCallShow) {
   // Also make sure the DownloadShelfMacTest constructor doesn't crash.
   DownloadShelfMac shelf(browser_helper_.browser(),
       (DownloadShelfController*)shelf_controller_.get());
-  EXPECT_EQ(1, shelf_controller_.get()->callCountShow);
+  EXPECT_EQ(0, shelf_controller_.get()->callCountShow);
 }
 
 TEST_F(DownloadShelfMacTest, ForwardsShow) {
   DownloadShelfMac shelf(browser_helper_.browser(),
       (DownloadShelfController*)shelf_controller_.get());
-  EXPECT_EQ(1, shelf_controller_.get()->callCountShow);
+  EXPECT_EQ(0, shelf_controller_.get()->callCountShow);
   shelf.Show();
-  EXPECT_EQ(2, shelf_controller_.get()->callCountShow);
+  EXPECT_EQ(1, shelf_controller_.get()->callCountShow);
 }
 
 TEST_F(DownloadShelfMacTest, ForwardsHide) {

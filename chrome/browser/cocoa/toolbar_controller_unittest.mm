@@ -9,6 +9,7 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
+#import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,12 +33,12 @@ class ToolbarControllerTest : public testing::Test {
     // ensure they get picked up correct on initialization
     updater->UpdateCommandEnabled(IDC_BACK, false);
     updater->UpdateCommandEnabled(IDC_FORWARD, false);
+    resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     bar_.reset(
         [[ToolbarController alloc] initWithModel:browser->toolbar_model()
                                         commands:browser->command_updater()
                                          profile:helper_.profile()
-                                  webContentView:nil
-                                    infoBarsView:nil
+                                  resizeDelegate:resizeDelegate_.get()
                                 bookmarkDelegate:nil]);
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [cocoa_helper_.window() contentView];
@@ -61,6 +62,7 @@ class ToolbarControllerTest : public testing::Test {
 
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
+  scoped_nsobject<ViewResizerPong> resizeDelegate_;
   scoped_nsobject<ToolbarController> bar_;
 };
 
@@ -182,6 +184,34 @@ TEST_F(ToolbarControllerTest, TogglePageWrench) {
   EXPECT_EQ(showButtons, [wrenchButton isHidden]);
   EXPECT_NE(NSMinX(originalGoFrame), NSMinX([goButton frame]));
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
+}
+
+TEST_F(ToolbarControllerTest, BookmarkBarResizes) {
+  NSView* bookmarkBarView = [[bar_ bookmarkBarController] view];
+  ASSERT_EQ(0, NSHeight([bookmarkBarView frame]));
+  [resizeDelegate_ setHeight:-1];
+
+  // Resize the bookmarkbar to 30px.  The toolbar should ask the delegate to
+  // resize to 64px.
+  [bar_ resizeView:bookmarkBarView newHeight:30];
+  EXPECT_EQ(64, [resizeDelegate_ height]);
+  EXPECT_EQ(30, NSHeight([bookmarkBarView frame]));
+
+  // Resize the bookmarkbar back to 0px.  Toolbar should be at 39px.
+  [bar_ resizeView:bookmarkBarView newHeight:0];
+  EXPECT_EQ(39, [resizeDelegate_ height]);
+  EXPECT_EQ(0, NSHeight([bookmarkBarView frame]));
+
+  // Resize the bookmarkbar to 5px.  Toolbar should stay at 39px.
+  [resizeDelegate_ setHeight:-1];
+  [bar_ resizeView:bookmarkBarView newHeight:5];
+  EXPECT_EQ(39, [resizeDelegate_ height]);
+  EXPECT_EQ(5, NSHeight([bookmarkBarView frame]));
+
+  // Resize the bookmarkbar to 6px.  Toolbar should grow to 40px.
+  [bar_ resizeView:bookmarkBarView newHeight:6];
+  EXPECT_EQ(40, [resizeDelegate_ height]);
+  EXPECT_EQ(6, NSHeight([bookmarkBarView frame]));
 }
 
 }  // namespace

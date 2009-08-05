@@ -40,7 +40,6 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 
 @interface DownloadShelfController(Private)
 - (void)applyContentAreaOffset:(BOOL)apply;
-- (void)positionBar;
 - (void)showDownloadShelf:(BOOL)enable;
 - (void)resizeDownloadLinkToFit;
 @end
@@ -49,14 +48,15 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 @implementation DownloadShelfController
 
 - (id)initWithBrowser:(Browser*)browser
-          contentArea:(NSView*)content {
+       resizeDelegate:(id<ViewResizer>)resizeDelegate {
   if ((self = [super initWithNibName:@"DownloadShelf"
                               bundle:mac_util::MainAppBundle()])) {
-    contentArea_ = content;
+    resizeDelegate_ = resizeDelegate;
     shelfHeight_ = [[self view] bounds].size.height;
 
-    [self positionBar];
-    [[[contentArea_ window] contentView] addSubview:[self view]];
+    // Reset the download shelf's frame to zero.  It will be properly positioned
+    // and sized the first time we try to set its height.
+    [[self view] setFrame:NSZeroRect];
 
     downloadItemControllers_.reset([[NSMutableArray alloc] init]);
 
@@ -136,26 +136,6 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   return YES;
 }
 
-// Initializes the download shelf at the bottom edge of |contentArea_|.
-- (void)positionBar {
-  // Set the bar's height to zero and position it at the bottom of the content
-  // area, within the window's content view (as opposed to the tab strip, which
-  // is a sibling). We'll enlarge it and slide the content area up when we need
-  // to show this strip.
-  NSRect contentFrame = [contentArea_ frame];
-  NSRect barFrame = NSMakeRect(0, 0, contentFrame.size.width, shelfHeight_);
-  [[self view] setFrame:barFrame];
-}
-
-// Called when the contentArea's frame changes.  Enlarge the view to stay with
-// the bottom of the contentArea.
-- (void)resizeDownloadShelf {
-  NSRect barFrame = [[self view] frame];
-  barFrame.origin.y = 0;
-  barFrame.size.height = NSMinY([contentArea_ frame]);
-  [[self view] setFrame:barFrame];
-}
-
 - (void)remove:(DownloadItemController*)download {
   // Look for the download in our controller array and remove it. This will
   // explicity release it so that it removes itself as an Observer of the
@@ -185,34 +165,9 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   if ([self isVisible] == enable)
     return;
 
-  contentAreaHasOffset_ = enable;
-  [[self view] setHidden:enable ? NO : YES];
-  [self applyContentAreaOffset:enable];
-
+  [resizeDelegate_ resizeView:[self view]
+                    newHeight:(enable ? shelfHeight_ : 0)];
   barIsVisible_ = enable;
-}
-
-// Apply a contents box offset to make (or remove) room for the download shelf.
-// If apply is YES, always make room (the contentView_ is "full size"). If apply
-// is NO, we are trying to undo an offset. If no offset there is nothing to undo.
-- (void)applyContentAreaOffset:(BOOL)apply {
-  if (!contentAreaHasOffset_ && apply) {
-    // There is no offset to unconditionally apply.
-    return;
-  }
-
-  NSRect frame = [contentArea_ frame];
-  if (apply) {
-    frame.origin.y += shelfHeight_;
-    frame.size.height -= shelfHeight_;
-  } else {
-    frame.origin.y -= shelfHeight_;
-    frame.size.height += shelfHeight_;
-  }
-
-  [[contentArea_ animator] setFrame:frame];
-  [[self view] setNeedsDisplay:YES];
-  [contentArea_ setNeedsDisplay:YES];
 }
 
 - (DownloadShelf*)bridge {

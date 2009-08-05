@@ -23,6 +23,12 @@
 // Name of image in the bundle for the yellow of the star icon.
 static NSString* const kStarredImageName = @"starred.pdf";
 
+// Height of the toolbar in pixels when the bookmark bar is closed.
+static const float kBaseToolbarHeight = 39.0;
+
+// Overlap (in pixels) between the toolbar and the bookmark bar.
+static const float kBookmarkBarOverlap = 5.0;
+
 @interface ToolbarController(Private)
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(std::wstring*)prefName;
@@ -54,8 +60,7 @@ class PrefObserverBridge : public NotificationObserver {
 - (id)initWithModel:(ToolbarModel*)model
            commands:(CommandUpdater*)commands
             profile:(Profile*)profile
-     webContentView:(NSView*)webContentView
-       infoBarsView:(NSView*)infoBarsView
+     resizeDelegate:(id<ViewResizer>)resizeDelegate
    bookmarkDelegate:(id<BookmarkURLOpener>)delegate {
   DCHECK(model && commands && profile);
   if ((self = [super initWithNibName:@"Toolbar"
@@ -63,9 +68,8 @@ class PrefObserverBridge : public NotificationObserver {
     toolbarModel_ = model;
     commands_ = commands;
     profile_ = profile;
+    resizeDelegate_ = resizeDelegate;
     bookmarkBarDelegate_ = delegate;
-    webContentView_ = webContentView;
-    infoBarsView_ = infoBarsView;
     hasToolbar_ = YES;
 
     // Register for notifications about state changes for the toolbar buttons
@@ -109,16 +113,31 @@ class PrefObserverBridge : public NotificationObserver {
   // Create a sub-controller for the bookmark bar.
   bookmarkBarController_.reset([[BookmarkBarController alloc]
                                    initWithProfile:profile_
-                                        parentView:[self view]
-                                    webContentView:webContentView_
-                                      infoBarsView:infoBarsView_
-                                          delegate:bookmarkBarDelegate_]);
+                                      initialWidth:NSWidth([[self view] frame])
+                                    resizeDelegate:self
+                                       urlDelegate:bookmarkBarDelegate_]);
 
   // Add bookmark bar to the view hierarchy.  This also triggers the
   // nib load.  The bookmark bar is defined (in the nib) to be
   // bottom-aligned to it's parent view (among other things), so
   // position and resize properties don't need to be set.
   [[self view] addSubview:[bookmarkBarController_ view]];
+}
+
+- (void)resizeView:(NSView*)view newHeight:(float)height {
+  DCHECK(view == [bookmarkBarController_ view]);
+
+  // The bookmark bar is always rooted at the bottom of the toolbar view, with
+  // width equal to the toolbar's width.  The toolbar view is resized to
+  // accomodate the new bookmark bar height.
+  NSRect frame = NSMakeRect(0, 0, [[self view] bounds].size.width, height);
+  [view setFrame:frame];
+
+  float newToolbarHeight = kBaseToolbarHeight + height - kBookmarkBarOverlap;
+  if (newToolbarHeight < kBaseToolbarHeight)
+    newToolbarHeight = kBaseToolbarHeight;
+
+  [resizeDelegate_ resizeView:[self view] newHeight:newToolbarHeight];
 }
 
 - (LocationBar*)locationBar {
