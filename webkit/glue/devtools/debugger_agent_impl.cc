@@ -59,20 +59,20 @@ void DebuggerAgentImpl::GetContextId() {
   delegate_->SetContextId(webdevtools_agent_->host_id());
 }
 
-void DebuggerAgentImpl::StartProfiling() {
+void DebuggerAgentImpl::StartProfiling(int flags) {
   v8::HandleScope scope;
   WebCore::Frame* frame = GetPage()->mainFrame();
   DCHECK(V8Proxy::retrieve(GetPage()->mainFrame())->isContextInitialized());
   v8::Context::Scope context_scope(V8Proxy::context(frame));
-  v8::V8::ResumeProfiler();
+  v8::V8::ResumeProfilerEx(flags);
 }
 
-void DebuggerAgentImpl::StopProfiling() {
-  v8::V8::PauseProfiler();
+void DebuggerAgentImpl::StopProfiling(int flags) {
+  v8::V8::PauseProfilerEx(flags);
 }
 
-void DebuggerAgentImpl::IsProfilingStarted() {
-  delegate_->DidIsProfilingStarted(!v8::V8::IsProfilerPaused());
+void DebuggerAgentImpl::GetActiveProfilerModules() {
+  delegate_->DidGetActiveProfilerModules(v8::V8::GetActiveProfilerModules());
 }
 
 void DebuggerAgentImpl::GetNextLogLines() {

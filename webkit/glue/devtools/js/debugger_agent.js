@@ -17,8 +17,8 @@ devtools.DebuggerAgent = function() {
       goog.bind(this.handleDebuggerOutput_, this);
   RemoteDebuggerAgent.SetContextId =
       goog.bind(this.setContextId_, this);
-  RemoteDebuggerAgent.DidIsProfilingStarted =
-      goog.bind(this.didIsProfilingStarted_, this);
+  RemoteDebuggerAgent.DidGetActiveProfilerModules =
+      goog.bind(this.didGetActiveProfilerModules_, this);
   RemoteDebuggerAgent.DidGetNextLogLines =
       goog.bind(this.didGetNextLogLines_, this);
 
@@ -69,10 +69,11 @@ devtools.DebuggerAgent = function() {
   this.scriptsCacheInitialized_ = false;
 
   /**
-   * Whether profiling session is started.
-   * @type {boolean}
+   * Active profiler modules flags.
+   * @type {number}
    */
-  this.isProfilingStarted_ = false;
+  this.activeProfilerModules_ =
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_NONE;
 
   /**
    * Profiler processor instance.
@@ -114,6 +115,19 @@ devtools.DebuggerAgent.ScopeType = {
  * execution.
  */
 devtools.DebuggerAgent.VOID_SCRIPT = 'javascript:void(0)';
+
+
+/**
+ * A copy of enum from include/v8.h
+ * @enum {number}
+ */
+devtools.DebuggerAgent.ProfilerModules = {
+  PROFILER_MODULE_NONE: 0,
+  PROFILER_MODULE_CPU: 1,
+  PROFILER_MODULE_HEAP_STATS: 1 << 1,
+  PROFILER_MODULE_JS_CONSTRUCTORS: 1 << 2,
+  PROFILER_MODULE_HEAP_SNAPSHOT: 1 << 16
+};
 
 
 /**
@@ -544,24 +558,31 @@ devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
  */
 devtools.DebuggerAgent.prototype.initializeProfiling = function() {
   this.setupProfilerProcessorCallbacks();
-  RemoteDebuggerAgent.IsProfilingStarted();
+  RemoteDebuggerAgent.GetActiveProfilerModules();
 };
 
 
 /**
- * Starts (resumes) profiling.
+ * Starts profiling.
+ * @param {number} modules List of modules to enable.
  */
-devtools.DebuggerAgent.prototype.startProfiling = function() {
-  RemoteDebuggerAgent.StartProfiling();
-  RemoteDebuggerAgent.IsProfilingStarted();
+devtools.DebuggerAgent.prototype.startProfiling = function(modules) {
+  RemoteDebuggerAgent.StartProfiling(modules);
+  if (modules &
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT) {
+    // Active modules will not change, instead, a snapshot will be logged.
+    RemoteDebuggerAgent.GetNextLogLines();
+  } else {
+    RemoteDebuggerAgent.GetActiveProfilerModules();
+  }
 };
 
 
 /**
- * Stops (pauses) profiling.
+ * Stops profiling.
  */
-devtools.DebuggerAgent.prototype.stopProfiling = function() {
-  RemoteDebuggerAgent.StopProfiling();
+devtools.DebuggerAgent.prototype.stopProfiling = function(modules) {
+  RemoteDebuggerAgent.StopProfiling(modules);
 };
 
 
@@ -850,19 +871,24 @@ devtools.DebuggerAgent.prototype.isVoidScript_ = function(script) {
 
 /**
  * Handles current profiler status.
+ * @param {number} modules List of active (started) modules.
  */
-devtools.DebuggerAgent.prototype.didIsProfilingStarted_ = function(
-    is_started) {
-  if (is_started && !this.isProfilingStarted_) {
+devtools.DebuggerAgent.prototype.didGetActiveProfilerModules_ = function(
+    modules) {
+  var profModules = devtools.DebuggerAgent.ProfilerModules;
+  var profModuleNone = profModules.PROFILER_MODULE_NONE;
+  if (modules != profModuleNone &&
+      this.activeProfilerModules_ == profModuleNone) {
     // Start to query log data.
     RemoteDebuggerAgent.GetNextLogLines();
   }
-  this.isProfilingStarted_ = is_started;
-  // Update button.
-  WebInspector.setRecordingProfile(is_started);
-  if (is_started) {
+  this.activeProfilerModules_ = modules;
+  // Update buttons.
+  WebInspector.setRecordingProfile(modules & profModules.PROFILER_MODULE_CPU);
+  if (modules != profModuleNone) {
     // Monitor profiler state. It can stop itself on buffer fill-up.
-    setTimeout(function() { RemoteDebuggerAgent.IsProfilingStarted(); }, 1000);
+    setTimeout(
+        function() { RemoteDebuggerAgent.GetActiveProfilerModules(); }, 1000);
   }
 };
 
@@ -874,7 +900,8 @@ devtools.DebuggerAgent.prototype.didIsProfilingStarted_ = function(
 devtools.DebuggerAgent.prototype.didGetNextLogLines_ = function(log) {
   if (log.length > 0) {
     this.profilerProcessor_.processLogChunk(log);
-  } else if (!this.isProfilingStarted_) {
+  } else if (this.activeProfilerModules_ ==
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_NONE) {
     // No new data and profiling is stopped---suspend log reading.
     return;
   }

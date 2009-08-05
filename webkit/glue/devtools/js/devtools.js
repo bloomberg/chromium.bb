@@ -1081,3 +1081,14 @@ WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
 // We do not inspect DOM nodes using $ shortcuts yet.
 WebInspector.ConsoleView.prototype.addInspectedNode = function(node) {
 };
+
+
+/* Hiding 'Heap' tab because it's not functional yet.
+(function() {
+  var originalCreatePanels = WebInspector._createPanels;
+  WebInspector._createPanels = function() {
+    originalCreatePanels.apply(this, arguments);
+    this.panels.heap = new WebInspector.HeapProfilerPanel();
+  };
+})();
+*/

@@ -231,7 +231,8 @@ devtools.InspectorControllerImpl.prototype.setPauseOnExceptions = function(
  * @override
  */
 devtools.InspectorControllerImpl.prototype.startProfiling = function() {
-  devtools.tools.getDebuggerAgent().startProfiling();
+  devtools.tools.getDebuggerAgent().startProfiling(
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
 };
 
 
@@ -239,7 +240,8 @@ devtools.InspectorControllerImpl.prototype.startProfiling = function() {
  * @override
  */
 devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
-  devtools.tools.getDebuggerAgent().stopProfiling();
+  devtools.tools.getDebuggerAgent().stopProfiling(
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
 };
 
 

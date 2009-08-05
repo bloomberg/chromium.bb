@@ -1512,6 +1512,7 @@
             'glue/devtools/js/devtools_callback.js',
             'glue/devtools/js/devtools_host_stub.js',
             'glue/devtools/js/dom_agent.js',
+            'glue/devtools/js/heap_profiler_panel.js',
             'glue/devtools/js/inject.js',
             'glue/devtools/js/inspector_controller.js',
             'glue/devtools/js/inspector_controller_impl.js',

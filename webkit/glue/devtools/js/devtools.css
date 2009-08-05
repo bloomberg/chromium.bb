@@ -18,3 +18,9 @@ body.attached #toolbar {
 #toolbar {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(242, 247, 253)), to(rgb(223, 234, 248)));
 }
+
+
+div.heap-profiler {
+    overflow: scroll;
+    -webkit-user-select: text;
+}

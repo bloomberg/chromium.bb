@@ -17,14 +17,14 @@
   /* Requests global context id of the inspected tab. */ \
   METHOD0(GetContextId) \
   \
-  /* Starts profiling (samples collection). */ \
-  METHOD0(StartProfiling) \
+  /* Starts profiling. */ \
+  METHOD1(StartProfiling, int /* flags */)     \
   \
-  /* Stops profiling (samples collection). */ \
-  METHOD0(StopProfiling) \
+  /* Stops profiling. */ \
+  METHOD1(StopProfiling, int /* flags */)     \
   \
-  /* Requests current profiler status. */ \
-  METHOD0(IsProfilingStarted) \
+  /* Requests current profiler state. */ \
+  METHOD0(GetActiveProfilerModules)       \
   \
   /* Retrieves next portion of profiler log. */ \
   METHOD0(GetNextLogLines)
@@ -38,8 +38,8 @@ DEFINE_RPC_CLASS(DebuggerAgent, DEBUGGER_AGENT_STRUCT)
   /* Pushes debugger context id into the client. */ \
   METHOD1(SetContextId, int /* context id */) \
   \
-  /* Response to IsProfilingStarted. */ \
-  METHOD1(DidIsProfilingStarted, bool /* is_started */) \
+  /* Response to GetActiveProfilerModules. */ \
+  METHOD1(DidGetActiveProfilerModules, int /* flags */) \
   \
   /* Response to GetNextLogLines. */ \
   METHOD1(DidGetNextLogLines, std::string /* log */)

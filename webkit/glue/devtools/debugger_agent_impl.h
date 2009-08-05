@@ -38,11 +38,11 @@ class DebuggerAgentImpl : public DebuggerAgent {
   virtual void DebugBreak();
   virtual void GetContextId();
 
-  virtual void StartProfiling();
+  virtual void StartProfiling(int flags);
 
-  virtual void StopProfiling();
+  virtual void StopProfiling(int flags);
 
-  virtual void IsProfilingStarted();
+  virtual void GetActiveProfilerModules();
 
   virtual void GetNextLogLines();
 

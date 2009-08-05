@@ -11,8 +11,10 @@
  * @constructor
  */
 RemoteDebuggerAgentStub = function() {
-  this.isProfiling_ = false;
+  this.activeProfilerModules_ =
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_NONE;
   this.profileLogPos_ = 0;
+  this.heapProfLog_ = '';
 };
 
 
@@ -25,35 +27,52 @@ RemoteDebuggerAgentStub.prototype.GetContextId = function() {
 };
 
 
-RemoteDebuggerAgentStub.prototype.StopProfiling = function() {
-  this.isProfiling_ = false;
+RemoteDebuggerAgentStub.prototype.StopProfiling = function(modules) {
+  this.activeProfilerModules_ &= ~modules;
 };
 
 
-RemoteDebuggerAgentStub.prototype.StartProfiling = function() {
-  this.isProfiling_ = true;
+RemoteDebuggerAgentStub.prototype.StartProfiling = function(modules) {
+  var profModules = devtools.DebuggerAgent.ProfilerModules;
+  if (modules & profModules.PROFILER_MODULE_HEAP_SNAPSHOT) {
+    if (modules & profModules.PROFILER_MODULE_HEAP_STATS) {
+      this.heapProfLog_ +=
+          'heap-sample-begin,"Heap","allocated",' +
+              (new Date()).getTime() + '\n' +
+          'heap-sample-stats,"Heap","allocated",10000,1000\n' +
+          'heap-sample-end,"Heap","allocated"\n';
+    }
+  } else {
+    this.activeProfilerModules_ |= modules;
+  }
 };
 
 
-RemoteDebuggerAgentStub.prototype.IsProfilingStarted = function() {
+RemoteDebuggerAgentStub.prototype.GetActiveProfilerModules = function() {
   var self = this;
   setTimeout(function() {
-      RemoteDebuggerAgent.DidIsProfilingStarted(self.isProfiling_);
+      RemoteDebuggerAgent.DidGetActiveProfilerModules(
+          self.activeProfilerModules_);
   }, 100);
 };
 
 
 RemoteDebuggerAgentStub.prototype.GetNextLogLines = function() {
-  if (this.profileLogPos_ < RemoteDebuggerAgentStub.ProfilerLogBuffer.length) {
-    this.profileLogPos_ += RemoteDebuggerAgentStub.ProfilerLogBuffer.length;
-    setTimeout(function() {
-        RemoteDebuggerAgent.DidGetNextLogLines(
-            RemoteDebuggerAgentStub.ProfilerLogBuffer);
-        },
-        100);
-  } else {
-    setTimeout(function() { RemoteDebuggerAgent.DidGetNextLogLines(''); }, 100);
+  var profModules = devtools.DebuggerAgent.ProfilerModules;
+  var logLines = '';
+  if (this.activeProfilerModules_ & profModules.PROFILER_MODULE_CPU) {
+    if (this.profileLogPos_ < RemoteDebuggerAgentStub.ProfilerLogBuffer.length) {
+      this.profileLogPos_ += RemoteDebuggerAgentStub.ProfilerLogBuffer.length;
+      logLines += RemoteDebuggerAgentStub.ProfilerLogBuffer;
+    }
   }
+  if (this.heapProfLog_) {
+    logLines += this.heapProfLog_;
+    this.heapProfLog_ = '';
+  }
+  setTimeout(function() {
+    RemoteDebuggerAgent.DidGetNextLogLines(logLines);
+  }, 100);
 };
 
 

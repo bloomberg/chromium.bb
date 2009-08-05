@@ -173,6 +173,16 @@ devtools.profiler.Processor = function() {
           processor: this.processTick_, backrefs: true, needProfile: true },
       'profiler': { parsers: [null, 'var-args'],
           processor: this.processProfiler_, needsProfile: false },
+      'heap-sample-begin': { parsers: [null, null, parseInt],
+          processor: this.processHeapSampleBegin_ },
+      'heap-sample-stats': { parsers: [null, null, parseInt, parseInt],
+          processor: this.processHeapSampleStats_ },
+      'heap-sample-item': { parsers: [null, parseInt, parseInt],
+          processor: this.processHeapSampleItem_ },
+      'heap-js-cons-item': { parsers: [null, parseInt, parseInt],
+          processor: this.processHeapJsConsItem_ },
+      'heap-sample-end': { parsers: [null, null],
+          processor: this.processHeapSampleEnd_ },
       // Not used in DevTools Profiler.
       'shared-library': null,
       // Obsolete row types.
@@ -358,6 +368,47 @@ devtools.profiler.Processor.prototype.processTick_ = function(
   stack.push(devtools.profiler.Processor.PROGRAM_ENTRY_STR);
   this.currentProfile_.recordTick(this.processStack(pc, stack));
   this.ticksCount_++;
+};
+
+
+devtools.profiler.Processor.prototype.processHeapSampleBegin_ = function(
+    space, state, ticks) {
+  if (space != 'Heap') return;
+  this.recordHeapItems_ = true;
+  WebInspector.panels.heap.addLogLine(
+      'heap-sample-begin,' + space + ',' + state + ',' + ticks);
+};
+
+
+devtools.profiler.Processor.prototype.processHeapSampleStats_ = function(
+    space, state, capacity, used) {
+  if (space != 'Heap') return;
+  WebInspector.panels.heap.addLogLine(
+      'heap-sample-stats,' + space + ',' + state + ',' + capacity + ',' + used);
+};
+
+
+devtools.profiler.Processor.prototype.processHeapSampleItem_ = function(
+    item, number, size) {
+  if (!this.recordHeapItems_) return;
+  WebInspector.panels.heap.addLogLine(
+      'heap-sample-item,' + item + ',' + number + ',' + size);
+};
+
+
+devtools.profiler.Processor.prototype.processHeapJsConsItem_ = function(
+    item, number, size) {
+  if (!this.recordHeapItems_) return;
+  WebInspector.panels.heap.addLogLine(
+      'heap-js-cons-item,' + item + ',' + number + ',' + size);
+};
+
+
+devtools.profiler.Processor.prototype.processHeapSampleEnd_ = function(
+    space, state) {
+  if (space != 'Heap') return;
+  this.recordHeapItems_ = false;
+  WebInspector.panels.heap.addLogLine('heap-sample-end,' + space + ',' + state);
 };
 
 
