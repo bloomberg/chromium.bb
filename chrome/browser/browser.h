@@ -134,8 +134,8 @@ class Browser : public TabStripModelDelegate,
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
   FindBarController* find_bar() { return find_bar_controller_.get(); }
-  ExtensionShelfModel* extension_shelf_model() { 
-    return extension_shelf_model_.get(); 
+  ExtensionShelfModel* extension_shelf_model() {
+    return extension_shelf_model_.get();
   }
 
   // Setters /////////////////////////////////////////////////////////////////
@@ -336,8 +336,8 @@ class Browser : public TabStripModelDelegate,
 #if defined(OS_WIN)
   // Page-related commands.
   void ClosePopups();
-  void Print();
 #endif
+  void Print();
   void ToggleEncodingAutoDetect();
   void OverrideEncoding(int encoding_id);
 

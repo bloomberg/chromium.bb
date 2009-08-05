@@ -964,17 +964,20 @@ bool Browser::SupportsWindowFeature(WindowFeature feature) const {
 }
 
 #if defined(OS_WIN)
-
 void Browser::ClosePopups() {
   UserMetrics::RecordAction(L"CloseAllSuppressedPopups", profile_);
   GetSelectedTabContents()->CloseAllSuppressedPopups();
 }
+#endif
 
 void Browser::Print() {
   UserMetrics::RecordAction(L"PrintPreview", profile_);
+#if defined(OS_WIN) || defined(OS_LINUX)
   GetSelectedTabContents()->PrintPreview();
+#else
+  NOTIMPLEMENTED();
+#endif
 }
-#endif  // #if defined(OS_WIN)
 
 void Browser::ToggleEncodingAutoDetect() {
   UserMetrics::RecordAction(L"AutoDetectChange", profile_);
@@ -1334,8 +1337,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_VIEW_SOURCE:           ViewSource();                  break;
 #if defined(OS_WIN)
     case IDC_CLOSE_POPUPS:          ClosePopups();                 break;
-    case IDC_PRINT:                 Print();                       break;
 #endif
+    case IDC_PRINT:                 Print();                       break;
     case IDC_ENCODING_AUTO_DETECT:  ToggleEncodingAutoDetect();    break;
     case IDC_ENCODING_UTF8:
     case IDC_ENCODING_UTF16LE:

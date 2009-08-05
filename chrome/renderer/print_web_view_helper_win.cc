@@ -5,105 +5,29 @@
 #include "chrome/renderer/print_web_view_helper.h"
 
 #include "app/l10n_util.h"
-#include "base/logging.h"
 #include "base/gfx/size.h"
+#include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
-#include "printing/units.h"
 #include "webkit/api/public/WebConsoleMessage.h"
-#include "webkit/api/public/WebRect.h"
-#include "webkit/api/public/WebScreenInfo.h"
-#include "webkit/api/public/WebSize.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/webframe.h"
 
-#if defined(OS_WIN)
-#include "skia/ext/vector_canvas.h"
-#endif
-
 using WebKit::WebConsoleMessage;
-using WebKit::WebRect;
-using WebKit::WebScreenInfo;
 using WebKit::WebString;
-using WebKit::WebURLRequest;
 
-namespace {
-
-const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
-const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 2 * 60;  // 2 Minutes.
-
-// Class that calls the Begin and End print functions on the frame and changes
-// the size of the view temporarily to support full page printing..
-// Do not serve any events in the time between construction and destruction of
-// this class because it will cause flicker.
-class PrepareFrameAndViewForPrint {
- public:
-  PrepareFrameAndViewForPrint(const ViewMsg_Print_Params& print_params,
-                              WebFrame* frame,
-                              WebView* web_view)
-      : frame_(frame),
-        web_view_(web_view),
-        expected_pages_count_(0) {
-    print_canvas_size_.set_width(
-        printing::ConvertUnit(print_params.printable_size.width(),
-        static_cast<int>(print_params.dpi),
-        print_params.desired_dpi));
-    print_canvas_size_.set_height(
-        printing::ConvertUnit(print_params.printable_size.height(),
-        static_cast<int>(print_params.dpi),
-        print_params.desired_dpi));
-
-    // Layout page according to printer page size. Since WebKit shrinks the
-    // size of the page automatically (from 125% to 200%) we trick it to
-    // think the page is 125% larger so the size of the page is correct for
-    // minimum (default) scaling.
-    // This is important for sites that try to fill the page.
-    gfx::Size print_layout_size(print_canvas_size_);
-    print_layout_size.set_height(static_cast<int>(
-        static_cast<double>(print_layout_size.height()) * 1.25));
-
-    prev_view_size_ = web_view->size();
-
-    web_view->resize(print_layout_size);
-
-    expected_pages_count_ = frame->PrintBegin(print_canvas_size_);
-  }
-
-  int GetExpectedPageCount() const {
-    return expected_pages_count_;
-  }
-
-  gfx::Size GetPrintCanvasSize() const {
-    return print_canvas_size_;
-  }
-
-  ~PrepareFrameAndViewForPrint() {
-    frame_->PrintEnd();
-    web_view_->resize(prev_view_size_);
-  }
-
- private:
-  WebFrame* frame_;
-  WebView* web_view_;
-  gfx::Size print_canvas_size_;
-  gfx::Size prev_view_size_;
-  int expected_pages_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
-};
-
-}  // namespace
+#include "skia/ext/vector_canvas.h"
 
 void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
-#if defined(OS_WIN)
+  const int kMinSecondsToIgnoreJavascriptInitiatedPrint = 2;
+  const int kMaxSecondsToIgnoreJavascriptInitiatedPrint = 2 * 60;  // 2 Minutes.
 
   // If still not finished with earlier print request simply ignore.
   if (IsPrinting())
     return;
 
+  // TODO(maruel): Move this out of platform specific code.
   // Check if there is script repeatedly trying to print and ignore it if too
   // frequent.  We use exponential wait time so for a page that calls print() in
   // a loop the user will need to cancel the print dialog after 2 seconds, 4
@@ -215,87 +139,11 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
     last_cancelled_script_print_ = base::Time::Now();
   }
   DidFinishPrinting(user_cancelled_print);
-#else  // defined(OS_WIN)
-  // TODO(port): print not implemented
-  NOTIMPLEMENTED();
-#endif
-}
-
-void PrintWebViewHelper::DidFinishPrinting(bool success) {
-  if (!success) {
-    WebView* web_view = print_web_view_.get();
-    if (!web_view)
-      web_view = render_view_->webview();
-
-    // TODO: Create an async alert (http://crbug.com/14918).
-    render_view_->RunJavaScriptAlert(web_view->GetMainFrame(),
-        l10n_util::GetString(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
-  }
-
-  if (print_web_view_.get()) {
-    print_web_view_->close();
-    print_web_view_.release();  // Close deletes object.
-    print_pages_params_.reset();
-  }
-
-}
-
-bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
-                                      WebFrame* web_frame) {
-  // Create a new WebView with the same settings as the current display one.
-  // Except that we disable javascript (don't want any active content running
-  // on the page).
-  WebPreferences prefs = web_frame->GetView()->GetPreferences();
-  prefs.javascript_enabled = false;
-  prefs.java_enabled = false;
-  print_web_view_.reset(WebView::Create(this, prefs));
-
-  print_pages_params_.reset(new ViewMsg_PrintPages_Params(params));
-  print_pages_params_->pages.clear();  // Print all pages of selection.
-
-  std::string html = web_frame->GetSelection(true);
-  std::string url_str = "data:text/html;charset=utf-8,";
-  url_str.append(html);
-  GURL url(url_str);
-
-  // When loading is done this will call DidStopLoading that will do the
-  // actual printing.
-  print_web_view_->GetMainFrame()->LoadRequest(WebURLRequest(url));
-
-  return true;
-}
-
-void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
-                                    WebFrame* frame) {
-  PrepareFrameAndViewForPrint prep_frame_view(params.params,
-                                              frame,
-                                              frame->GetView());
-  int page_count = prep_frame_view.GetExpectedPageCount();
-
-  Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                               params.params.document_cookie,
-                                               page_count));
-  if (page_count) {
-    ViewMsg_PrintPage_Params page_params;
-    page_params.params = params.params;
-    if (params.pages.empty()) {
-      for (int i = 0; i < page_count; ++i) {
-        page_params.page_number = i;
-        PrintPage(page_params, prep_frame_view.GetPrintCanvasSize(), frame);
-      }
-    } else {
-      for (size_t i = 0; i < params.pages.size(); ++i) {
-        page_params.page_number = params.pages[i];
-        PrintPage(page_params, prep_frame_view.GetPrintCanvasSize(), frame);
-      }
-    }
-  }
 }
 
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                 const gfx::Size& canvas_size,
                                 WebFrame* frame) {
-#if defined(OS_WIN)
   // Generate a memory-based metafile. It will use the current screen's DPI.
   printing::NativeMetafile metafile;
 
@@ -400,42 +248,5 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
       &page_params.metafile_data_handle))) {
     Send(new ViewHostMsg_DidPrintPage(routing_id(), page_params));
   }
-#else  // defined(OS_WIN)
-  // TODO(port) implement printing
-  NOTIMPLEMENTED();
-#endif
 }
 
-bool PrintWebViewHelper::Send(IPC::Message* msg) {
-  return render_view_->Send(msg);
-}
-
-int32 PrintWebViewHelper::routing_id() {
-  return render_view_->routing_id();
-}
-
-WebRect PrintWebViewHelper::windowRect() {
-  NOTREACHED();
-  return WebRect();
-}
-
-WebRect PrintWebViewHelper::windowResizerRect() {
-  NOTREACHED();
-  return WebRect();
-}
-
-WebRect PrintWebViewHelper::rootWindowRect() {
-  NOTREACHED();
-  return WebRect();
-}
-
-WebScreenInfo PrintWebViewHelper::screenInfo() {
-  NOTREACHED();
-  return WebScreenInfo();
-}
-
-void PrintWebViewHelper::DidStopLoading(WebView* webview) {
-  DCHECK(print_pages_params_.get() != NULL);
-  DCHECK_EQ(webview, print_web_view_.get());
-  PrintPages(*print_pages_params_.get(), print_web_view_->GetMainFrame());
-}

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "webkit/glue/webview_delegate.h"
@@ -26,16 +27,43 @@ struct ViewMsg_PrintPage_Params;
 struct ViewMsg_PrintPages_Params;
 
 
+// Class that calls the Begin and End print functions on the frame and changes
+// the size of the view temporarily to support full page printing..
+// Do not serve any events in the time between construction and destruction of
+// this class because it will cause flicker.
+class PrepareFrameAndViewForPrint {
+ public:
+  PrepareFrameAndViewForPrint(const ViewMsg_Print_Params& print_params,
+                              WebFrame* frame,
+                              WebView* web_view);
+  ~PrepareFrameAndViewForPrint();
+
+  int GetExpectedPageCount() const {
+    return expected_pages_count_;
+  }
+
+  const gfx::Size& GetPrintCanvasSize() const {
+    return print_canvas_size_;
+  }
+
+ private:
+  WebFrame* frame_;
+  WebView* web_view_;
+  gfx::Size print_canvas_size_;
+  gfx::Size prev_view_size_;
+  int expected_pages_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
+};
+
+
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
 class PrintWebViewHelper : public WebViewDelegate {
  public:
-  explicit PrintWebViewHelper(RenderView * render_view)
-      : render_view_(render_view),
-        user_cancelled_scripted_print_count_(0) {}
-
-  virtual ~PrintWebViewHelper() {}
+  explicit PrintWebViewHelper(RenderView* render_view);
+  virtual ~PrintWebViewHelper();
 
   void Print(WebFrame* frame, bool script_initiated);
 
