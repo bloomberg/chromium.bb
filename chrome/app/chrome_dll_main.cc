@@ -92,6 +92,7 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 }
 #elif defined(OS_POSIX)
 extern "C" {
+__attribute__((visibility("default")))
 int ChromeMain(int argc, const char** argv);
 }
 #endif
@@ -295,12 +296,29 @@ int ChromeMain(int argc, const char** argv) {
 #endif
 
 #if defined(OS_MACOSX)
+  // TODO(mark): Some of these things ought to be handled in chrome_exe_main.mm,
+  // such as Breakpad initialization.  Under the current architecture, nothing
+  // in chrome_exe_main can rely directly on chrome_dll code on the Mac,
+  // though, so until some of this code is refactored to avoid such a
+  // dependency, it lives here.  See also the TODO(mark) below at
+  // DestructCrashReporter().
+  base::EnableTerminationOnHeapCorruption();
+
+  // The exit manager is in charge of calling the dtors of singletons.
+  // Win has one here, but we assert with multiples from BrowserMain() if we
+  // keep it.
+  // base::AtExitManager exit_manager;
+
+#if defined(GOOGLE_CHROME_BUILD)
+  InitCrashReporter();
+#endif
+
   // If Breakpad is not present then turn off os crash dumps so we don't have
   // to wait eons for Apple's Crash Reporter to generate a dump.
   if (IsCrashReporterDisabled()) {
     DebugUtil::DisableOSCrashDumps();
   }
-#endif
+#endif  // OS_MACOSX
   RegisterInvalidParamHandler();
 
   // The exit manager is in charge of calling the dtors of singleton objects.
@@ -555,6 +573,11 @@ int ChromeMain(int argc, const char** argv) {
 #endif
 
   logging::CleanupChromeLogging();
+
+#if defined(OS_MACOSX) && defined(GOOGLE_CHROME_BUILD)
+  // TODO(mark): See the TODO(mark) above at InitCrashReporter.
+  DestructCrashReporter();
+#endif  // OS_MACOSX && GOOGLE_CHROME_BUILD
 
   return rv;
 }

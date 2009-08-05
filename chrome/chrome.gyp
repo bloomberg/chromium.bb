@@ -2723,8 +2723,6 @@
         'app/google_update_client.h',
         'app/hard_error_handler_win.cc',
         'app/hard_error_handler_win.h',
-        'app/keystone_glue.h',
-        'app/keystone_glue.m',
         'app/scoped_ole_initializer.h',
       ],
       'dependencies': [
@@ -2857,10 +2855,17 @@
             }],
           ],
           'dependencies': [
+            # On Linux, link the dependencies (libraries) that make up actual
+            # Chromium functionality directly into the executable.
+            '<@(chromium_dependencies)',
             # Needed for chrome_dll_main.cc #include of gtk/gtk.h
             '../build/linux/system.gyp:gtk',
             # Needed for chrome_dll_main.cc use of g_thread_init
             '../build/linux/system.gyp:gthread',
+          ],
+          'sources': [
+            'app/chrome_dll_main.cc',
+            'app/chrome_dll_resource.h',
           ],
           'copies': [
             {
@@ -2932,12 +2937,7 @@
                 # A real .dSYM is needed for dump_syms to operate on.
                 'mac_real_dsym': 1,
               },
-              'sources': [
-                'app/breakpad_mac.mm',
-                'app/breakpad_mac.h',
-              ],
               'dependencies': [
-                '../breakpad/breakpad.gyp:breakpad',
                 '../breakpad/breakpad.gyp:dump_syms',
                 '../breakpad/breakpad.gyp:symupload',
               ],
@@ -2953,12 +2953,6 @@
                   'action': ['<(DEPTH)/build/mac/dump_app_syms',
                              '<(branding)'],
                 },
-              ],
-            }, {
-              # no breakpad, put in the stubs
-              'sources': [
-                'app/breakpad_mac_stubs.mm',
-                'app/breakpad_mac.h',
               ],
             }],  # mac_breakpad
             ['mac_keystone==1', {
@@ -2998,6 +2992,12 @@
               'message': 'Running pdfsqueeze on <(RULE_INPUT_PATH)',
             },
           ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Frameworks',
+              'files': ['<(PRODUCT_DIR)/<(mac_product_name) Framework.framework'],
+            },
+          ],
         }, { # else: OS != "mac"
           'conditions': [
             ['branding=="Chrome"', {
@@ -3017,7 +3017,7 @@
         ['OS=="mac"', {
           'actions': [
             {
-              # Mac addes an action to modify the Info.plist to meet our needs
+              # Mac adds an action to modify the Info.plist to meet our needs
               # (see the script for why this is done).
               'action_name': 'tweak_app_infoplist',
               # We don't list any inputs or outputs because we always want
@@ -3051,12 +3051,15 @@
             }],
           ],
         }],
+        ['OS=="mac" or OS=="win"', {
+          'dependencies': [
+            # On Windows and Mac, make sure we've built chrome_dll, which
+            # contains all of the library code with Chromium functionality.
+            'chrome_dll',
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
-            # On Windows, make sure we've built chrome.dll, which
-            # contains all of the library code with Chromium
-            # functionality.
-            'chrome_dll',
             'installer/installer.gyp:installer_util',
             'installer/installer.gyp:installer_util_strings',
             '../breakpad/breakpad.gyp:breakpad_handler',
@@ -3141,17 +3144,7 @@
               'message': 'Copy first run complete sentinel file',
             },
           ],
-        },{  # 'OS!="win"
-          'dependencies': [
-            # On Linux and Mac, link the dependencies (libraries)
-            # that make up actual Chromium functionality directly
-            # into the executable.
-            '<@(chromium_dependencies)',
-          ],
-          'sources': [
-            'app/chrome_dll_main.cc',
-            'app/chrome_dll_resource.h',
-          ],
+        }, {  # 'OS!="win"
           'variables': {
             'repack_path': '../tools/data_pack/repack.py',
           },
@@ -4161,39 +4154,200 @@
     },
   ],
   'conditions': [
-    ['OS=="mac"', {
-      'conditions': [
-        # We need the Mac app name on disk, so we stick this into a variable so
-        # the different places that need it can use the common variable.
-        # NOTE: chrome/app/theme/chromium/BRANDING and
-        # chrome/app/theme/google_chrome/BRANDING have the short names, etc.;
-        # but extracting from there still means xcodeproject are out of date until
-        # the next project regeneration.
-        ['branding=="Chrome"', {
-          'variables': {
-            'mac_product_name%': 'Google Chrome',
-          }
-        }, {
-          'variables': {
-            'mac_product_name%': 'Chromium',
-          }
-        }],
-        # We set feature variables so the different parts of the gyp file use
-        # these vars in conditions instead of repeating the check of branding
-        # and buildtype.
-        ['branding=="Chrome" and buildtype=="Official"', {
-          'variables': {
-            'mac_breakpad%': 1,
-            'mac_keystone%': 1,
-          }
-        }, {
-          'variables': {
-            'mac_breakpad%': 0,
-            'mac_keystone%': 0,
-          }
-        }],
-      ],
-    }],
+    ['OS=="mac" or OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'chrome_dll',
+          'type': 'shared_library',
+          'dependencies': [
+            '<@(chromium_dependencies)',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'product_name': 'chrome',
+              'msvs_guid': 'C0A7EE2C-2A6D-45BE-BA78-6D006FDF52D9',
+              'include_dirs': [
+                'third_party/wtl/include',
+              ],
+              'dependencies': [
+                # On Windows, link the dependencies (libraries) that make
+                # up actual Chromium functionality into this .dll.
+                'chrome_dll_version',
+                'chrome_resources',
+                'installer/installer.gyp:installer_util_strings',
+                'theme_dll',
+                'worker',
+                '../printing/printing.gyp:printing',
+                '../net/net.gyp:net_resources',
+                '../build/util/support/support.gyp:*',
+                '../third_party/cld/cld.gyp:cld',
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+                '../views/views.gyp:views',
+                '../webkit/webkit.gyp:webkit_resources',
+                '../gears/gears.gyp:gears',
+              ],
+              'defines': [
+                'CHROME_DLL',
+                'BROWSER_DLL',
+                'RENDERER_DLL',
+                'PLUGIN_DLL',
+              ],
+              'sources': [
+                'app/chrome_dll.rc',
+                'app/chrome_dll_main.cc',
+                'app/chrome_dll_resource.h',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+
+                '../webkit/glue/resources/aliasb.cur',
+                '../webkit/glue/resources/cell.cur',
+                '../webkit/glue/resources/col_resize.cur',
+                '../webkit/glue/resources/copy.cur',
+                '../webkit/glue/resources/row_resize.cur',
+                '../webkit/glue/resources/vertical_text.cur',
+                '../webkit/glue/resources/zoom_in.cur',
+                '../webkit/glue/resources/zoom_out.cur',
+
+                # TODO:  It would be nice to have these pulled in
+                # automatically from direct_dependent_settings in
+                # their various targets (net.gyp:net_resources, etc.),
+                # but that causes errors in other targets when
+                # resulting .res files get referenced multiple times.
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+
+                # TODO(sgk):  left-over from pre-gyp build, figure out
+                # if we still need them and/or how to update to gyp.
+                #'app/check_dependents.bat',
+                #'app/chrome.dll.deps',
+              ],
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'BaseAddress': '0x01c30000',
+                  'DelayLoadDLLs': [
+                    'crypt32.dll',
+                    'cryptui.dll',
+                    'winhttp.dll',
+                    'wininet.dll',
+                    'wsock32.dll',
+                    'ws2_32.dll',
+                    'winspool.drv',
+                    'comdlg32.dll',
+                    'imagehlp.dll',
+                    'psapi.dll',
+                    'urlmon.dll',
+                    'imm32.dll',
+                  ],
+                  'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
+                  'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
+                  # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
+                  'SubSystem': '2',
+                },
+                'VCManifestTool': {
+                  'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
+                },
+              },
+              'configurations': {
+                'Debug': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '1',       # /INCREMENTAL:NO
+                    },
+                  },
+                },
+              },
+            }],  # OS=="win"
+            ['OS=="mac"', {
+              # The main browser executable's name is <(mac_product_name).
+              # Certain things will get confused if two modules in the
+              # executable share the same name, so append " Framework" to the
+              # product_name used for the framework.  This will result in
+              # a name like "Chromium Framework.framework".
+              'product_name': '<(mac_product_name) Framework',
+              'mac_bundle': 1,
+              'xcode_settings': {
+                'DYLIB_INSTALL_NAME_BASE': '@executable_path/../Frameworks',
+              },
+              'sources': [
+                'app/chrome_dll_main.cc',
+                'app/chrome_dll_resource.h',
+                'app/chrome_exe_main.mm',
+                'app/keystone_glue.h',
+                'app/keystone_glue.m',
+              ],
+              'dependencies': [
+                '../build/util/support/support.gyp:*',
+              ],
+
+              # For now, don't put any resources into the framework.  Exclude
+              # them all and push them into the bundle resources of the sole
+              # app bundle, the only dependent of this target.
+              # TODO(mark): Fix.
+              'mac_bundle_resources/': [
+                ['exclude', ''],
+              ],
+              'direct_dependent_settings': {
+                'mac_bundle_resources': [
+                  '../third_party/WebKit/WebCore/Resources/aliasCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/cellCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/contextMenuCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/copyCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/crossHairCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/eastResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/eastWestResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/helpCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/linkCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/missingImage.png',
+                  '../third_party/WebKit/WebCore/Resources/moveCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/noDropCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/noneCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/northEastResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/northEastSouthWestResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/northResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/northWestResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/northWestSouthEastResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/notAllowedCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/progressCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/southEastResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/southResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/southWestResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/verticalTextCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/waitCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/westResizeCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/zoomInCursor.png',
+                  '../third_party/WebKit/WebCore/Resources/zoomOutCursor.png',
+                  'renderer/renderer.sb',
+                ],
+              },
+
+              'conditions': [
+                ['mac_breakpad==1', {
+                  'variables': {
+                    # A real .dSYM is needed for dump_syms to operate on.
+                    'mac_real_dsym': 1,
+                  },
+                  'sources': [
+                    'app/breakpad_mac.mm',
+                    'app/breakpad_mac.h',
+                  ],
+                  'dependencies': [
+                    '../breakpad/breakpad.gyp:breakpad',
+                  ],
+                }, {  # else: mac_breakpad!=1
+                  # No Breakpad, put in the stubs.
+                  'sources': [
+                    'app/breakpad_mac_stubs.mm',
+                    'app/breakpad_mac.h',
+                  ],
+                }],  # mac_breakpad
+              ],  # conditions
+            }],  # OS=="mac"
+          ],  # conditions
+        },  # target chrome_dll
+      ],  # targets
+    }],  # OS=="mac" or OS=="win"
     ['OS=="linux"', {
       'conditions': [
         # Only Chrome builds get breakpad since crash processing is internal.
@@ -4209,14 +4363,12 @@
       ],
     }],
     ['OS=="mac"',
-      # On Mac only, add a project target called "build_app_dmg" that only
-      # builds a DMG out of the App (eventually will completely replace
-      # "package_app").
       { 'targets': [
         {
+          # Convenience target to build a disk image.
           'target_name': 'build_app_dmg',
-          # do NOT place this in the 'all' list; most won't want it.
-          # In gyp, booleans are 0/1 not True/False.
+          # Don't place this in the 'all' list; most won't want it.
+          # In GYP, booleans are 0/1, not True/False.
           'suppress_wildcard': 1,
           'type': 'none',
           'dependencies': [
@@ -4466,105 +4618,6 @@
             '../webkit/activex_shim_dll/activex_shim_dll.gyp:*',
             '../v8/tools/gyp/v8.gyp:v8_shell',
           ],
-        },
-        {
-          'target_name': 'chrome_dll',
-          'type': 'shared_library',
-          'product_name': 'chrome',
-          'msvs_guid': 'C0A7EE2C-2A6D-45BE-BA78-6D006FDF52D9',
-          'include_dirs': [
-            'third_party/wtl/include',
-          ],
-          'dependencies': [
-            # On Windows, link the dependencies (libraries) that make
-            # up actual Chromium functionality into this .dll.
-            '<@(chromium_dependencies)',
-            'chrome_dll_version',
-            'chrome_resources',
-            'installer/installer.gyp:installer_util_strings',
-            'theme_dll',
-            'worker',
-            '../printing/printing.gyp:printing',
-            '../net/net.gyp:net_resources',
-            '../build/util/support/support.gyp:*',
-            '../third_party/cld/cld.gyp:cld',
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
-            '../views/views.gyp:views',
-            '../webkit/webkit.gyp:webkit_resources',
-            '../gears/gears.gyp:gears',
-          ],
-          'defines': [
-            'CHROME_DLL',
-            'BROWSER_DLL',
-            'RENDERER_DLL',
-            'PLUGIN_DLL',
-          ],
-          'sources': [
-            'app/chrome_dll.rc',
-            'app/chrome_dll_main.cc',
-            'app/chrome_dll_resource.h',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
-
-            '../webkit/glue/resources/aliasb.cur',
-            '../webkit/glue/resources/cell.cur',
-            '../webkit/glue/resources/col_resize.cur',
-            '../webkit/glue/resources/copy.cur',
-            '../webkit/glue/resources/row_resize.cur',
-            '../webkit/glue/resources/vertical_text.cur',
-            '../webkit/glue/resources/zoom_in.cur',
-            '../webkit/glue/resources/zoom_out.cur',
-
-            # TODO:  It would be nice to have these pulled in
-            # automatically from direct_dependent_settings in
-            # their various targets (net.gyp:net_resources, etc.),
-            # but that causes errors in other targets when
-            # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
-
-            # TODO(sgk):  left-over from pre-gyp build, figure out
-            # if we still need them and/or how to update to gyp.
-            #'app/check_dependents.bat',
-            #'app/chrome.dll.deps',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'BaseAddress': '0x01c30000',
-              'DelayLoadDLLs': [
-                'crypt32.dll',
-                'cryptui.dll',
-                'winhttp.dll',
-                'wininet.dll',
-                'wsock32.dll',
-                'ws2_32.dll',
-                'winspool.drv',
-                'comdlg32.dll',
-                'imagehlp.dll',
-                'psapi.dll',
-                'urlmon.dll',
-                'imm32.dll',
-              ],
-              'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
-              'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
-              # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
-              'SubSystem': '2',
-            },
-            'VCManifestTool': {
-              'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
-            },
-          },
-          'configurations': {
-            'Debug': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '1',       # /INCREMENTAL:NO
-                },
-              },
-            },
-          },
         },
         {
           'target_name': 'chrome_dll_version',
