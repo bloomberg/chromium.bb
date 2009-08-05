@@ -1,0 +1,26 @@
+<script>
+function LayoutTestController() {
+  this.wait_until_done_ = false;
+  this.dumpAsText = function () { };
+  this.waitUntilDone = function () {
+    this.wait_until_done_ = true;
+  };
+  this.notifyDone = function () {
+    var cookie = "%COOKIE%=" + encodeURIComponent(document.firstChild.innerText);
+    document.cookie = cookie;
+  };
+  this.OnTimerEvent = function () {
+    // Some layout tests do not call waitUntilDone.  If this is true, we should
+    // assume the test is done when it's finished loading.
+    if (!this.wait_until_done_)
+      layoutTestController.notifyDone();
+  };
+  this.OnLoadEvent = function (event) {
+    // Do a timeout to ensure that we run after all other onload handlers have
+    // finished.
+    setTimeout(layoutTestController.OnTimerEvent, 0);
+  };
+}
+window.layoutTestController = new LayoutTestController();
+window.addEventListener('load', layoutTestController.OnLoadEvent, false);
+</script>

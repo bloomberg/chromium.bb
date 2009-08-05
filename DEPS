@@ -57,18 +57,27 @@ deps = {
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@19546",
 
-  # TODO(jianli): Remove this once we do not need to run worker's layout tests
-  # in ui test.
-  "src/chrome/test/data/workers/LayoutTests/fast/events":
-    Var("webkit_trunk") + "/LayoutTests/fast/events@" + Var("webkit_revision"),
-  "src/chrome/test/data/workers/LayoutTests/fast/workers":
-    Var("webkit_trunk") + "/LayoutTests/fast/workers@" + Var("webkit_revision"),
-  "src/chrome/test/data/workers/LayoutTests/http/tests/resources":
-    Var("webkit_trunk") + "/LayoutTests/http/tests/resources@" + Var("webkit_revision"),
-  "src/chrome/test/data/workers/LayoutTests/http/tests/workers":
-    Var("webkit_trunk") + "/LayoutTests/http/tests/workers@" + Var("webkit_revision"),
-  "src/chrome/test/data/workers/LayoutTests/http/tests/xmlhttprequest":
-    Var("webkit_trunk") + "/LayoutTests/http/tests/xmlhttprequest@" + Var("webkit_revision"),
+  # We run these layout tests as UI tests.  Since many of the buildbots that
+  # run layout tests do NOT have access to the LayoutTest directory, we need
+  # to map them here.  In practice, these do not take up much space.
+  "src/chrome/test/data/layout_tests/LayoutTests/fast/events":
+    Var("webkit_trunk") + "/LayoutTests/fast/events@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/fast/workers":
+    Var("webkit_trunk") + "/LayoutTests/fast/workers@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/http/tests/resources":
+    Var("webkit_trunk") + "/LayoutTests/http/tests/resources@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/http/tests/workers":
+    Var("webkit_trunk") + "/LayoutTests/http/tests/workers@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/http/tests/xmlhttprequest":
+    Var("webkit_trunk") + "/LayoutTests/http/tests/xmlhttprequest@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/storage/domstorage":
+    Var("webkit_trunk") + "/LayoutTests/storage/domstorage@" +
+    Var("webkit_revision"),
 }
 
 
