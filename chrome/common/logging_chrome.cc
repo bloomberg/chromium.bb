@@ -104,7 +104,12 @@ void InitChromeLogging(const CommandLine& command_line,
 
   logging::LoggingDestination log_mode;
   if (enable_logging) {
-    log_mode = kDefaultLoggingMode;
+    // Let --enable-logging=stderr force only stderr, particularly useful for
+    // non-debug builds where otherwise you can't get logs to stderr at all.
+    if (command_line.GetSwitchValue(switches::kEnableLogging) == L"stderr")
+      log_mode = logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG;
+    else
+      log_mode = kDefaultLoggingMode;
   } else {
     log_mode = logging::LOG_NONE;
   }

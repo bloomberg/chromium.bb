@@ -64,8 +64,21 @@ ZygoteHost::ZygoteHost() {
         browser_command_line.GetSwitchValue(switches::kZygoteCmdPrefix);
     cmd_line.PrependWrapper(prefix);
   }
+  // Append any switches from the browser process that need to be forwarded on
+  // to the zygote/renderers.
   if (browser_command_line.HasSwitch(switches::kAllowSandboxDebugging)) {
     cmd_line.AppendSwitch(switches::kAllowSandboxDebugging);
+  }
+  if (browser_command_line.HasSwitch(switches::kLoggingLevel)) {
+    cmd_line.AppendSwitchWithValue(switches::kLoggingLevel,
+                                   browser_command_line.GetSwitchValue(
+                                       switches::kLoggingLevel));
+  }
+  if (browser_command_line.HasSwitch(switches::kEnableLogging)) {
+    // Append with value to support --enable-logging=stderr.
+    cmd_line.AppendSwitchWithValue(switches::kEnableLogging,
+                                   browser_command_line.GetSwitchValue(
+                                       switches::kEnableLogging));
   }
 
   const char* sandbox_binary = NULL;
