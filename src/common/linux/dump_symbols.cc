@@ -57,12 +57,10 @@
 // This namespace contains helper functions.
 namespace {
 
+struct SourceFileInfo;
+
 // Infomation of a line.
 struct LineInfo {
-  // The index into string table for the name of the source file which
-  // this line belongs to.
-  // Load from stab symbol.
-  uint32_t source_name_index;
   // Offset from start of the function.
   // Load from stab symbol.
   ElfW(Off) rva_to_func;
@@ -74,8 +72,8 @@ struct LineInfo {
   uint32_t size;
   // Line number.
   uint32_t line_num;
-  // Id of the source file for this line.
-  int source_id;
+  // The source file this line belongs to.
+  SourceFileInfo *file;
 };
 
 typedef std::list<struct LineInfo> LineInfoList;
@@ -103,8 +101,6 @@ typedef std::list<struct FuncInfo> FuncInfoList;
 
 // Information of a source file.
 struct SourceFileInfo {
-  // Name string index into the string table.
-  uint32_t name_index;
   // Name of the source file.
   const char *name;
   // Starting address of the source file.
@@ -126,10 +122,24 @@ class SourceFileInfoList : public std::list<SourceFileInfo *> {
   }
 };
 
+typedef std::map<const char *, SourceFileInfo *> NameToFileMap;
+
 // Information of a symbol table.
 // This is the root of all types of symbol.
 struct SymbolInfo {
-  SourceFileInfoList source_file_info;
+  // The main files used in this module.  This does not include header
+  // files; it includes only files that were provided as the primary
+  // source file for the compilation unit.  In STABS, these are files
+  // named in 'N_SO' entries.
+  SourceFileInfoList main_files;
+
+  // Map from file names to source file structures.  Note that this
+  // map's keys are compared as pointers, not strings, so if the same
+  // name appears at two different addresses in stabstr, the map will
+  // treat that as two different names.  If the linker didn't unify
+  // names in .stabstr (which it does), this would result in duplicate
+  // FILE lines, which is benign.
+  NameToFileMap name_to_file;
 
   // An array of some addresses at which a file boundary occurs.
   //
@@ -143,9 +153,6 @@ struct SymbolInfo {
   // than create FuncInfoList for such entries, we record their
   // addresses here.  These are not necessarily sorted.
   std::vector<ElfW(Addr)> file_boundaries;
-
-  // The next source id for newly found source file.
-  int next_source_id;
 };
 
 // Stab section name.
@@ -215,6 +222,31 @@ static const ElfW(Shdr) *FindSectionByName(const char *name,
   return NULL;
 }
 
+// Return the SourceFileInfo for the file named NAME in SYMBOLS, as
+// recorden in the name_to_file map.  If none exists, create a new
+// one.
+//
+// If the file is a main file, it is the caller's responsibility to
+// set its address and add it to the list of main files.
+//
+// When creating a new file, this function does not make a copy of
+// NAME; NAME must stay alive for as long as the symbol table does.
+static SourceFileInfo *FindSourceFileInfo(SymbolInfo *symbols,
+                                          const char *name) {
+  SourceFileInfo **map_entry = &symbols->name_to_file[name];
+  SourceFileInfo *file;
+  if (*map_entry)
+    file = *map_entry;
+  else {
+    file = new SourceFileInfo;
+    file->name = name;
+    file->source_id = -1;
+    file->addr = 0;
+    *map_entry = file;
+  }
+  return file;
+}
+
 // TODO(liuli): Computer the stack parameter size.
 // Expect parameter variables are immediately following the N_FUN symbol.
 // Will need to parse the type information to get a correct size.
@@ -235,41 +267,40 @@ static int LoadStackParamSize(struct nlist *list,
 
 static int LoadLineInfo(struct nlist *list,
                         struct nlist *list_end,
-                        const struct SourceFileInfo &source_file_info,
-                        struct FuncInfo *func_info) {
+                        SymbolInfo *symbols,
+                        struct SourceFileInfo *source_file_info,
+                        struct FuncInfo *func_info,
+                        const ElfW(Shdr) *stabstr_section) {
   struct nlist *cur_list = list;
-  // Records which source file the following lines belongs. Default
-  // to the file we are handling. This helps us handling inlined source.
-  // When encountering N_SOL, we will change this to the source file
-  // specified by N_SOL.
-  int current_source_name_index = source_file_info.name_index;
+  // The source file to which subsequent lines belong.
+  SourceFileInfo *current_source_file = source_file_info;
+  // The name of the file any subsequent lines would belong to.
+  const char *last_source_name = current_source_file->name;
   do {
     // Skip non line information.
     while (cur_list < list_end && cur_list->n_type != N_SLINE) {
       // Only exit when got another function, or source file.
       if (cur_list->n_type == N_FUN || cur_list->n_type == N_SO)
         return cur_list - list;
-      // N_SOL means source lines following it will be from
-      // another source file.
-      if (cur_list->n_type == N_SOL) {
-        if (cur_list->n_un.n_strx > 0 &&
-            cur_list->n_un.n_strx != current_source_name_index) {
-          // The following lines will be from this source file.
-          current_source_name_index = cur_list->n_un.n_strx;
-        }
-      }
+      // N_SOL means source lines following it will be from another
+      // source file.  But don't actually create a file entry yet;
+      // wait until we see executable code attributed to the file.
+      if (cur_list->n_type == N_SOL
+          && cur_list->n_un.n_strx > 0)
+        last_source_name = reinterpret_cast<char *>(cur_list->n_un.n_strx
+                                                 + stabstr_section->sh_offset);
       ++cur_list;
     }
     struct LineInfo line;
     while (cur_list < list_end && cur_list->n_type == N_SLINE) {
-      line.source_name_index = current_source_name_index;
+      // If this line is attributed to a new file, create its entry now.
+      if (last_source_name != current_source_file->name)
+        current_source_file = FindSourceFileInfo(symbols, last_source_name);
+      line.file = current_source_file;
       line.rva_to_func = cur_list->n_value;
       // n_desc is a signed short
       line.line_num = (unsigned short)cur_list->n_desc;
-      // Don't set it here.
-      // Will be processed in later pass.
-      line.source_id = -1;
-      // Compiler worries about uninitialized fields in copy for 'push_back'.
+      // We will compute these later.  For now, pacify compiler warnings.
       line.size = 0;
       line.rva_to_base = 0;
       func_info->line_info.push_back(line);
@@ -282,8 +313,9 @@ static int LoadLineInfo(struct nlist *list,
 
 static int LoadFuncSymbols(struct nlist *list,
                            struct nlist *list_end,
-                           const ElfW(Shdr) *stabstr_section,
-                           struct SourceFileInfo *source_file_info) {
+                           SymbolInfo *symbols,
+                           struct SourceFileInfo *source_file_info,
+                           const ElfW(Shdr) *stabstr_section) {
   struct nlist *cur_list = list;
   assert(cur_list->n_type == N_SO);
   ++cur_list;
@@ -312,8 +344,10 @@ static int LoadFuncSymbols(struct nlist *list,
       // Line info.
       cur_list += LoadLineInfo(cur_list,
                                list_end,
-                               *source_file_info,
-                               &func_info);
+                               symbols,
+                               source_file_info,
+                               &func_info,
+                               stabstr_section);
 
       // Functions in this module should have address bigger than the module
       // startring address.
@@ -325,75 +359,6 @@ static int LoadFuncSymbols(struct nlist *list,
     }
   }
   return cur_list - list;
-}
-
-// Add included file information.
-// Also fix the source id for the line info.
-static void AddIncludedFiles(struct SymbolInfo *symbols,
-                             const ElfW(Shdr) *stabstr_section) {
-  // A map taking an offset into the string table to the SourceFileInfo
-  // structure whose name is at that offset.  LineInfo entries contain these
-  // offsets; we use this map to pair them up with their source files.
-  typedef std::map<unsigned int, struct SourceFileInfo *> FileByOffsetMap;
-  FileByOffsetMap index_to_file;
-
-  // Populate index_to_file with the source files we have now.
-  for (SourceFileInfoList::iterator source_file_it = 
-	 symbols->source_file_info.begin();
-       source_file_it != symbols->source_file_info.end();
-       ++source_file_it) {
-    index_to_file[(*source_file_it)->name_index] = *source_file_it;
-  }
-
-  for (SourceFileInfoList::iterator source_file_it =
-	 symbols->source_file_info.begin();
-       source_file_it != symbols->source_file_info.end();
-       ++source_file_it) {
-    struct SourceFileInfo &source_file = **source_file_it;
-
-    for (FuncInfoList::iterator func_info_it = source_file.func_info.begin(); 
-	 func_info_it != source_file.func_info.end();
-	 ++func_info_it) {
-      struct FuncInfo &func_info = *func_info_it;
-
-      for (LineInfoList::iterator line_info_it = func_info.line_info.begin(); 
-	   line_info_it != func_info.line_info.end(); ++line_info_it) {
-        struct LineInfo &line_info = *line_info_it;
-
-        assert(line_info.source_name_index > 0);
-        assert(source_file.name_index > 0);
-
-        // Check if the line belongs to the source file by comparing the
-        // name index into string table.
-        if (line_info.source_name_index != source_file.name_index) {
-          // This line is not from the current source file, check if this
-          // source file has been added before.
-          struct SourceFileInfo **file_map_entry
-            = &index_to_file[line_info.source_name_index];
-          if (! *file_map_entry) {
-            // Got a new included file.
-            // Those included files don't have address or line information.
-            SourceFileInfo *new_file = new(SourceFileInfo);
-            new_file->name_index = line_info.source_name_index;
-            new_file->name = reinterpret_cast<char *>(new_file->name_index
-                                                 + stabstr_section->sh_offset);
-            new_file->addr = 0;
-            new_file->source_id = symbols->next_source_id++;
-            line_info.source_id = new_file->source_id;
-            symbols->source_file_info.push_back(new_file);
-            *file_map_entry = new_file;
-          } else {
-            // The file has been added.
-            line_info.source_id = (*file_map_entry)->source_id;
-          }
-        } else {
-          // The line belongs to the file.
-          line_info.source_id = source_file.source_id;
-        }
-      }  // for each line.
-    }  // for each function.
-  } // for each source file.
-
 }
 
 // Compute size and rva information based on symbols loaded from stab section.
@@ -409,8 +374,8 @@ static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
   // of functions and source lines for which we have no size
   // information.
   std::vector<ElfW(Addr)> boundaries = symbols->file_boundaries;
-  for (file_it = symbols->source_file_info.begin();
-       file_it != symbols->source_file_info.end(); file_it++) {
+  for (file_it = symbols->main_files.begin();
+       file_it != symbols->main_files.end(); file_it++) {
     boundaries.push_back((*file_it)->addr);
     for (func_it = (*file_it)->func_info.begin();
          func_it != (*file_it)->func_info.end(); func_it++)
@@ -419,8 +384,8 @@ static bool ComputeSizeAndRVA(ElfW(Addr) loading_addr,
   std::sort(boundaries.begin(), boundaries.end());
 
   int no_next_addr_count = 0;
-  for (file_it = symbols->source_file_info.begin();
-       file_it != symbols->source_file_info.end(); file_it++) {
+  for (file_it = symbols->main_files.begin();
+       file_it != symbols->main_files.end(); file_it++) {
     for (func_it = (*file_it)->func_info.begin();
          func_it != (*file_it)->func_info.end(); func_it++) {
       struct FuncInfo &func_info = *func_it;
@@ -512,18 +477,16 @@ static bool LoadSymbols(const ElfW(Shdr) *stab_section,
     struct nlist *cur_list = lists + i;
     if (cur_list->n_type == N_SO) {
       if (cur_list->n_un.n_strx) {
-        struct SourceFileInfo *source_file_info = new SourceFileInfo;
-        source_file_info->name_index = cur_list->n_un.n_strx;
-        source_file_info->name = reinterpret_cast<char *>(cur_list->n_un.n_strx
+        const char *name = reinterpret_cast<char *>(cur_list->n_un.n_strx
                                                  + stabstr_section->sh_offset);
+        struct SourceFileInfo *source_file_info
+            = FindSourceFileInfo(symbols, name);
+        // Add it to the list; use ADDR to tell whether we've already done so.
+        if (! source_file_info->addr)
+          symbols->main_files.push_back(source_file_info);
         source_file_info->addr = cur_list->n_value;
-        if (strchr(source_file_info->name, '.'))
-          source_file_info->source_id = symbols->next_source_id++;
-        else
-          source_file_info->source_id = -1;
-        step = LoadFuncSymbols(cur_list, lists + nstab,
-                               stabstr_section, source_file_info);
-        symbols->source_file_info.push_back(source_file_info);
+        step = LoadFuncSymbols(cur_list, lists + nstab, symbols,
+                               source_file_info, stabstr_section);
       } else {
         // N_SO entries with no name mark file boundary addresses.
         symbols->file_boundaries.push_back(cur_list->n_value);
@@ -533,14 +496,7 @@ static bool LoadSymbols(const ElfW(Shdr) *stab_section,
   }
 
   // Second pass, compute the size of functions and lines.
-  if (ComputeSizeAndRVA(loading_addr, symbols)) {
-    // Third pass, check for included source code, especially for header files.
-    // Until now, we only have compiling unit information, but they can
-    // have code from include files, add them here.
-    AddIncludedFiles(symbols, stabstr_section);
-    return true;
-  }
-  return false;
+  return ComputeSizeAndRVA(loading_addr, symbols);
 }
 
 static bool LoadSymbols(ElfW(Ehdr) *elf_header, struct SymbolInfo *symbols) {
@@ -600,15 +556,67 @@ static bool WriteModuleInfo(FILE *file,
   return false;
 }
 
-static bool WriteSourceFileInfo(FILE *file, const struct SymbolInfo &symbols) {
-  for (SourceFileInfoList::const_iterator it =
-	 symbols.source_file_info.begin();
-       it != symbols.source_file_info.end(); it++) {
-    if ((*it)->source_id != -1) {
-      const char *name = (*it)->name;
-      if (0 > fprintf(file, "FILE %d %s\n", (*it)->source_id, name))
+// Set *INCLUDED_FILES to the list of included files in SYMBOLS,
+// ordered appropriately for output.  Included files should appear in
+// the order in which they are first referenced by source line info.
+// Assign these files source id numbers starting with NEXT_SOURCE_ID.
+//
+// Note that the name_to_file map may contain #included files that are
+// unreferenced; these are the result of LoadFuncSymbols omitting
+// functions from the list whose addresses fall outside the address
+// range of the file that contains them.
+static void CollectIncludedFiles(const struct SymbolInfo &symbols,
+                                 std::vector<SourceFileInfo *> *included_files,
+                                 int next_source_id) {
+  for (SourceFileInfoList::const_iterator file_it = symbols.main_files.begin();
+       file_it != symbols.main_files.end(); file_it++) {
+    for (FuncInfoList::const_iterator func_it = (*file_it)->func_info.begin();
+         func_it != (*file_it)->func_info.end(); func_it++) {
+      for (LineInfoList::const_iterator line_it = func_it->line_info.begin();
+           line_it != func_it->line_info.end(); line_it++) {
+        SourceFileInfo *file = line_it->file;
+        if (file->source_id == -1) {
+          file->source_id = next_source_id++;
+          // Here we use the source id as a mark, ensuring that each
+          // file appears in the list only once.
+          included_files->push_back(file);
+        }
+      }
+    }
+  }
+}
+
+// Write 'FILE' lines for all source files in SYMBOLS to FILE.  We
+// assign source id numbers to files here.
+static bool WriteSourceFileInfo(FILE *file, struct SymbolInfo &symbols) {
+  int next_source_id = 0;
+  // Assign source id numbers to main files, and write them out to the file.
+  for (SourceFileInfoList::iterator file_it = symbols.main_files.begin();
+       file_it != symbols.main_files.end(); file_it++) {
+    SourceFileInfo *file_info = *file_it;
+    assert(file_info->addr);
+    // We only output 'FILE' lines for main files if their names
+    // contain '.'.  The extensionless C++ header files are #included,
+    // not main files, so it wouldn't affect them.  If you know the
+    // story, please patch this comment.
+    if (strchr(file_info->name, '.')) {
+      file_info->source_id = next_source_id++;
+      if (0 > fprintf(file, "FILE %d %s\n",
+                      file_info->source_id, file_info->name))
         return false;
     }
+  }
+  // Compute the list of included files, and write them out.
+  // Can't use SourceFileInfoList here, because that owns the files it
+  // points to.
+  std::vector<SourceFileInfo *> included_files;
+  std::vector<SourceFileInfo *>::const_iterator file_it;
+  CollectIncludedFiles(symbols, &included_files, next_source_id);
+  for (file_it = included_files.begin(); file_it != included_files.end();
+       file_it++) {
+    if (0 > fprintf(file, "FILE %d %s\n",
+                    (*file_it)->source_id, (*file_it)->name))
+      return false;
   }
   return true;
 }
@@ -637,7 +645,7 @@ static bool WriteOneFunction(FILE *file,
                       (unsigned long) line_info.rva_to_base,
                       (unsigned long) line_info.size,
                       line_info.line_num,
-                      line_info.source_id))
+                      line_info.file->source_id))
         return false;
     }
     return true;
@@ -646,9 +654,8 @@ static bool WriteOneFunction(FILE *file,
 }
 
 static bool WriteFunctionInfo(FILE *file, const struct SymbolInfo &symbols) {
-  for (SourceFileInfoList::const_iterator it =
-	 symbols.source_file_info.begin();
-       it != symbols.source_file_info.end(); it++) {
+  for (SourceFileInfoList::const_iterator it = symbols.main_files.begin();
+       it != symbols.main_files.end(); it++) {
     const struct SourceFileInfo &file_info = **it;
     for (FuncInfoList::const_iterator fiIt = file_info.func_info.begin(); 
 	 fiIt != file_info.func_info.end(); fiIt++) {
@@ -660,7 +667,7 @@ static bool WriteFunctionInfo(FILE *file, const struct SymbolInfo &symbols) {
   return true;
 }
 
-static bool DumpStabSymbols(FILE *file, const struct SymbolInfo &symbols) {
+static bool DumpStabSymbols(FILE *file, struct SymbolInfo &symbols) {
   return WriteSourceFileInfo(file, symbols) &&
     WriteFunctionInfo(file, symbols);
 }
@@ -739,7 +746,6 @@ bool DumpSymbols::WriteSymbolFile(const std::string &obj_file,
   if (!IsValidElf(elf_header))
     return false;
   struct SymbolInfo symbols;
-  symbols.next_source_id = 0;
 
   if (!LoadSymbols(elf_header, &symbols))
      return false;
