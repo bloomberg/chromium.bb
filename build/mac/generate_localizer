@@ -145,7 +145,11 @@ def Main(argv=None):
   constants_list = extract_resource_constants(localizable_strings, xib_path)
   if not constants_list:
     sys.stderr.write("%s:0: warning: %s didn't find any resource strings\n" %
-                     xib_path, generate_localizer);
+                     (xib_path, generate_localizer));
+    # Seed constant_list with an entry so things will compile even though the
+    # array sould really be empty (array_size in the generated file doesn't
+    # like an empty array).
+    constants_list.append('^0');
 
   # Name the class based on the output file
   class_name = os.path.splitext(os.path.basename(output_h_path))[0]
