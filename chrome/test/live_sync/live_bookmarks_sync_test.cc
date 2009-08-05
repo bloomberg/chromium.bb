@@ -1,0 +1,80 @@
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+#ifdef CHROME_PERSONALIZATION
+
+#include "chrome/test/live_sync/live_bookmarks_sync_test.h"
+
+#include <vector>
+
+#include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/path_service.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/profile_manager.h"
+#include "chrome/test/ui_test_utils.h"
+
+// BookmarkLoadObserver is used when blocking until the BookmarkModel
+// finishes loading. As soon as the BookmarkModel finishes loading the message
+// loop is quit.
+class BookmarkLoadObserver : public BookmarkModelObserver {
+ public:
+  BookmarkLoadObserver() {}
+  virtual void Loaded(BookmarkModel* model) {
+    MessageLoop::current()->Quit();
+  }
+
+  virtual void BookmarkNodeMoved(BookmarkModel* model,
+                                 const BookmarkNode* old_parent,
+                                 int old_index,
+                                 const BookmarkNode* new_parent,
+                                 int new_index) {}
+  virtual void BookmarkNodeAdded(BookmarkModel* model,
+                                 const BookmarkNode* parent,
+                                 int index) {}
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) {}
+  virtual void BookmarkNodeChanged(BookmarkModel* model,
+                                   const BookmarkNode* node) {}
+  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                             const BookmarkNode* node) {}
+  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+                                         const BookmarkNode* node) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
+};
+
+// static
+void LiveBookmarksSyncTest::BlockUntilLoaded(BookmarkModel* m) {
+  if (m->IsLoaded())
+    return;
+  BookmarkLoadObserver observer;
+  m->AddObserver(&observer);
+  ui_test_utils::RunMessageLoop();
+  m->RemoveObserver(&observer);
+  ASSERT_TRUE(m->IsLoaded());
+}
+
+// static
+const BookmarkNode* LiveBookmarksSyncTest::GetByUniqueURL(BookmarkModel* m,
+                                                          const GURL& url) {
+  std::vector<const BookmarkNode*> nodes;
+  m->GetNodesByURL(url, &nodes);
+  EXPECT_EQ(1, nodes.size());
+  return nodes[0];
+}
+
+// static
+Profile* LiveBookmarksSyncTest::MakeProfile(const string16& name) {
+  string16 path_string;
+  PathService::Get(chrome::DIR_USER_DATA, &path_string);
+  file_util::AppendToPath(&path_string, name);
+  FilePath path(path_string);
+  return ProfileManager::CreateProfile(path, name, L"", L"");
+}
+
+#endif  // CHROME_PERSONALIZATION

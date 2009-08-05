@@ -76,7 +76,7 @@
       'filepath': 'sandbox/linux/.*',
     },
     'sync': {
-      'filepath': 'chrome/browser/sync/.*',
+      'filepath': 'chrome/browser/sync/.*|chrome/browser/views/sync/.*|chrome/test/live_sync/.*',
     },
   },
 
