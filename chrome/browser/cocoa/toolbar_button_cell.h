@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_COCOA_TOOLBAR_BUTTON_CELL_H_
 
 #import <Cocoa/Cocoa.h>
-#import "chrome/browser/cocoa/gradient_button_cell.h"
+#import "chrome/browser/cocoa/clickhold_button_cell.h"
 
 // A button cell for the toolbar.
 
@@ -20,7 +20,7 @@
 // TODO(jrg): If no differences come up, remove this file and use
 // the base class explicitly for both the toolbar and bookmark bar.
 
-@interface ToolbarButtonCell : GradientButtonCell {
+@interface ToolbarButtonCell : ClickHoldButtonCell {
 }
 @end
 

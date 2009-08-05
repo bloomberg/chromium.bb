@@ -36,6 +36,7 @@ class ToolbarControllerTest : public testing::Test {
         [[ToolbarController alloc] initWithModel:browser->toolbar_model()
                                         commands:browser->command_updater()
                                          profile:helper_.profile()
+                                         browser:browser
                                   webContentView:nil
                                     infoBarsView:nil
                                 bookmarkDelegate:nil]);
