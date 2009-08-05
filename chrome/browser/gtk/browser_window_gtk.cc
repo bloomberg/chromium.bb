@@ -1033,7 +1033,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
     show_bar = true;
   }
 
-  if (show_bar) {
+  if (show_bar && !contents->IsBookmarkBarAlwaysVisible()) {
     PrefService* prefs = contents->profile()->GetPrefs();
     show_bar = prefs->GetBoolean(prefs::kShowBookmarkBar);
   }
