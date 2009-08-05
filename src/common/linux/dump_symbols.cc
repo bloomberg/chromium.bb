@@ -611,7 +611,7 @@ static bool WriteOneFunction(FILE *file,
                              const struct FuncInfo &func_info){
   // Discard the ending part of the name.
   std::string func_name(func_info.name);
-  std::string::size_type last_colon = func_name.find_last_of(':');
+  std::string::size_type last_colon = func_name.find_first_of(':');
   if (last_colon != std::string::npos)
     func_name = func_name.substr(0, last_colon);
   func_name = Demangle(func_name.c_str());
