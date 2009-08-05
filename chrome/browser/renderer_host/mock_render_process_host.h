@@ -40,6 +40,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void ReceivedBadMessage(uint16 msg_type);
   virtual void WidgetRestored();
   virtual void WidgetHidden();
+  virtual void ViewCreated();
   virtual void AddWord(const std::wstring& word);
   virtual void AddVisitedLinks(
       const VisitedLinkCommon::Fingerprints& visited_links);

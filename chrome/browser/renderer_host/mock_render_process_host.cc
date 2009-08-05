@@ -49,6 +49,9 @@ void MockRenderProcessHost::WidgetRestored() {
 void MockRenderProcessHost::WidgetHidden() {
 }
 
+void MockRenderProcessHost::ViewCreated() {
+}
+
 void MockRenderProcessHost::AddWord(const std::wstring& word) {
 }
 

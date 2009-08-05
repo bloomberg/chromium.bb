@@ -196,6 +196,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
     : RenderProcessHost(profile),
       visible_widgets_(0),
       backgrounded_(true),
+      view_created_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
@@ -522,11 +523,17 @@ void BrowserRenderProcessHost::ReceivedBadMessage(uint16 msg_type) {
   BadMessageTerminateProcess(msg_type, process_.handle());
 }
 
+void BrowserRenderProcessHost::ViewCreated() {
+  view_created_ = true;
+  visited_link_updater_->Update(this);
+}
+
 void BrowserRenderProcessHost::WidgetRestored() {
   // Verify we were properly backgrounded.
   DCHECK_EQ(backgrounded_, (visible_widgets_ == 0));
   visible_widgets_++;
-  visited_link_updater_->Update(this);
+  if (view_created_)
+    visited_link_updater_->Update(this);
   SetBackgrounded(false);
 }
 

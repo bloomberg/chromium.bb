@@ -565,6 +565,7 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
     rvh_factory_.set_render_process_host_factory(&vc_rph_factory_);
     profile_.reset(new VisitCountingProfile(event_listener_.get()));
     RenderViewHostTestHarness::SetUp();
+    rvh()->CreateRenderView();
   }
 
   VisitCountingProfile* profile() const {

@@ -144,6 +144,9 @@ class RenderProcessHost : public IPC::Channel::Sender,
   virtual void WidgetRestored() = 0;
   virtual void WidgetHidden() = 0;
 
+  // Called when RenderView is created by a listener.
+  virtual void ViewCreated() = 0;
+
   // Add a word in the spellchecker.
   virtual void AddWord(const std::wstring& word) = 0;
 

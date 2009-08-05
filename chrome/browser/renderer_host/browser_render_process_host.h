@@ -64,6 +64,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void ReceivedBadMessage(uint16 msg_type);
   virtual void WidgetRestored();
   virtual void WidgetHidden();
+  virtual void ViewCreated();
   virtual void AddWord(const std::wstring& word);
   virtual void AddVisitedLinks(const VisitedLinkCommon::Fingerprints& links);
   virtual void ResetVisitedLinks();
@@ -134,6 +135,9 @@ class BrowserRenderProcessHost : public RenderProcessHost,
 
   // Does this process have backgrounded priority.
   bool backgrounded_;
+
+  // Is true only when the process had a render view created.
+  bool view_created_;
 
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.
