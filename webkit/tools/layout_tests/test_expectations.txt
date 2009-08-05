@@ -2590,7 +2590,8 @@ BUG11763 LINUX : LayoutTests/fast/layers/self-painting-outline.html = FAIL PASS
 
 // This test got moved (and the baselines have been moved accordingly), but now as a result
 // it seems to be failing?!
-BUG11795 : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL
+BUG11795 WIN LINUX : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL
+BUG11795 MAC : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL CRASH
 
 // Already baselined for chromium-win, may need to be done for mac/linux as well.
 BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
