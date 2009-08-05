@@ -339,6 +339,7 @@ if env.Bit('mac'):
               'find "$ARTIFACTS_DIR/O3D.plugin/Contents/Frameworks" -iname "*.h" -delete',
               'find "$ARTIFACTS_DIR/O3D.plugin/Contents/Frameworks" -iname "Headers" -type l -delete',
               'find "$ARTIFACTS_DIR/O3D.plugin/Contents/Frameworks" -iname "Headers" -type d -prune -delete',
+              Touch("$ARTIFACTS_DIR/O3D.plugin/"),
               Touch('$ARTIFACTS_DIR/plugin_done')
               ])
 
