@@ -12,6 +12,7 @@ import sys
 _SRC_PATH = os.path.join(os.path.dirname(__file__), '..', '..')
 
 sys.path.append(os.path.join(_SRC_PATH, 'tools', 'grit'))
+import grit.exception
 import grit.grd_reader
 
 # We need to apply the workaround only on Windows.
@@ -31,7 +32,16 @@ def total_split(path):
 for path in sys.argv[1:]:
   path = os.path.join('src', path)
   path_components = total_split(path)
-  root = grit.grd_reader.Parse(path)
+  try:
+    root = grit.grd_reader.Parse(path)
+  except grit.exception.Base, exc:
+    # This hook exploded badly a few times on the buildbot with exception
+    # at this point. Do not exit with an error, just print more information
+    # for debugging.
+    # TODO(phajdan.jr): Make exception fatal when the root cause is fixed.
+    print 'Unexpected GRIT exception while processing ' + path
+    print exc
+    continue
   output_files = [node.GetOutputFilename() for node in root.GetOutputFiles()]
   output_headers = [file for file in output_files if file.endswith('.h')]
   for build_type in ('Debug', 'Release'):
