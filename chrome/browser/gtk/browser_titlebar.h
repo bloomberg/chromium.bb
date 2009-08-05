@@ -111,6 +111,10 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   // manager decorations, we draw this taller.
   GtkWidget* titlebar_alignment_;
 
+  // Padding between the titlebar buttons and the top of the screen. Only show
+  // when not maximized.
+  GtkWidget* top_padding_;
+
   // The favicon and page title used when in app mode or popup mode.
   GtkWidget* app_mode_favicon_;
   GtkWidget* app_mode_title_;
@@ -118,11 +122,11 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   // Whether we are using a custom frame.
   bool using_custom_frame_;
 
-  // The normal width of the close button (the width it appears to the user)
-  // which is determined by the width of the bitmap we use to paint it. Its
-  // actual clickable width may differ if we are showing a custom frame and the
-  // window is maximized.
-  int close_button_default_width_;
+  // We change the size of these three buttons when the window is maximized, so
+  // we use these structs to keep track of their original size.
+  GtkRequisition close_button_req_;
+  GtkRequisition minimize_button_req_;
+  GtkRequisition restore_button_req_;
 
   // Maximize and restore widgets in the titlebar.
   scoped_ptr<CustomDrawButton> minimize_button_;

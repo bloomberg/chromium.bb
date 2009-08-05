@@ -67,6 +67,12 @@ const int kAppModePaddingLeft = 2;
 // account for kClientEdgeThickness.
 const int kTabStripLeftPadding = 1;
 
+// Spacing between buttons of the titlebar.
+const int kButtonSpacing = 2;
+
+// Spacing around outside of titlebar buttons.
+const int kButtonOuterPadding = 2;
+
 gboolean OnMouseMoveEvent(GtkWidget* widget, GdkEventMotion* event,
                           BrowserWindowGtk* browser_window) {
   // Reset to the default mouse cursor.
@@ -100,7 +106,8 @@ void BrowserTitlebar::Init() {
   // +- EventBox (container_) -------------------------------------------------+
   // +- HBox (container_hbox) -------------------------------------------------+
   // |+- Algn. -++- Alignment --------------++- VBox (titlebar_buttons_box_) -+|
-  // ||+ Image +||   (titlebar_alignment_)  ||+- HBox -----------------------+||
+  // ||+ Image +||   (titlebar_alignment_)  ||+ - Fixed (top_padding_) ------+||
+  // |||       |||                          ||+- HBox -----------------------+||
   // |||spy_guy|||                          |||+- button -++- button -+      |||
   // |||       |||+- TabStripGtk  ---------+|||| minimize || restore  | ...  |||
   // |||  )8\  |||| tab   tab   tabclose   ||||+----------++----------+      |||
@@ -185,9 +192,13 @@ void BrowserTitlebar::Init() {
   }
 
   // We put the min/max/restore/close buttons in a vbox so they are top aligned
-  // and don't vertically stretch.
+  // (up to padding) and don't vertically stretch.
   titlebar_buttons_box_ = gtk_vbox_new(FALSE, 0);
-  GtkWidget* buttons_hbox = gtk_hbox_new(FALSE, 0);
+  GtkWidget* buttons_hbox = gtk_hbox_new(FALSE, kButtonSpacing);
+  top_padding_ = gtk_fixed_new();
+  gtk_widget_set_size_request(top_padding_, -1, kButtonOuterPadding);
+  gtk_box_pack_start(GTK_BOX(titlebar_buttons_box_), top_padding_, FALSE, FALSE,
+                     0);
   gtk_box_pack_start(GTK_BOX(titlebar_buttons_box_), buttons_hbox, FALSE,
                      FALSE, 0);
 
@@ -210,9 +221,9 @@ void BrowserTitlebar::Init() {
                          IDR_MINIMIZE_H, buttons_hbox,
                          IDS_XPFRAME_MINIMIZE_TOOLTIP));
 
-  GtkRequisition req;
-  gtk_widget_size_request(close_button_->widget(), &req);
-  close_button_default_width_ = req.width;
+  gtk_widget_size_request(close_button_->widget(), &close_button_req_);
+  gtk_widget_size_request(minimize_button_->widget(), &minimize_button_req_);
+  gtk_widget_size_request(restore_button_->widget(), &restore_button_req_);
 
   gtk_box_pack_end(GTK_BOX(container_hbox), titlebar_buttons_box_, FALSE,
                    FALSE, 0);
@@ -302,10 +313,28 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
     }
   }
 
-  int close_button_width = close_button_default_width_;
-  if (using_custom_frame_ && browser_window_->IsMaximized())
-    close_button_width += kFrameBorderThickness;
-  gtk_widget_set_size_request(close_button_->widget(), close_button_width, -1);
+  // Resize the buttons so that the clickable area extends all the way to the
+  // edge of the browser window.
+  GtkRequisition close_button_req = close_button_req_;
+  GtkRequisition minimize_button_req = minimize_button_req_;
+  GtkRequisition restore_button_req = restore_button_req_;
+  if (using_custom_frame_ && browser_window_->IsMaximized()) {
+    close_button_req.width += kButtonOuterPadding;
+    close_button_req.height += kButtonOuterPadding;
+    minimize_button_req.height += kButtonOuterPadding;
+    restore_button_req.height += kButtonOuterPadding;
+    gtk_widget_hide(top_padding_);
+  } else {
+    gtk_widget_show(top_padding_);
+  }
+  gtk_widget_set_size_request(close_button_->widget(),
+                              close_button_req.width, close_button_req.height);
+  gtk_widget_set_size_request(minimize_button_->widget(),
+                              minimize_button_req.width,
+                              minimize_button_req.height);
+  gtk_widget_set_size_request(restore_button_->widget(),
+                              restore_button_req.width,
+                              restore_button_req.height);
 }
 
 // static

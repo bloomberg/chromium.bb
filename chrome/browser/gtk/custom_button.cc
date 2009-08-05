@@ -70,16 +70,17 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget, GdkEventExpose* e) {
   cairo_translate(cairo_context, widget->allocation.x, widget->allocation.y);
 
   // The widget might be larger than the pixbuf. Paint the pixbuf flush with the
-  // start of the widget (left for LTR, right for RTL).
+  // start of the widget (left for LTR, right for RTL) and its bottom.
   gfx::Rect bounds = gfx::Rect(0, 0, gdk_pixbuf_get_width(pixbuf), 0);
   int x = gtk_util::MirroredLeftPointForRect(widget, bounds);
+  int y = widget->allocation.height - gdk_pixbuf_get_height(pixbuf);
 
   if (background_image_) {
-    gdk_cairo_set_source_pixbuf(cairo_context, background_image_, x, 0);
+    gdk_cairo_set_source_pixbuf(cairo_context, background_image_, x, y);
     cairo_paint(cairo_context);
   }
 
-  gdk_cairo_set_source_pixbuf(cairo_context, pixbuf, x, 0);
+  gdk_cairo_set_source_pixbuf(cairo_context, pixbuf, x, y);
   cairo_paint(cairo_context);
   cairo_destroy(cairo_context);
 
