@@ -156,6 +156,24 @@
    fun:ActivateTSMDocument
 }
 {
+   bug_18540
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFArrayInit
+   fun:CFArrayCreate
+   fun:-[__NSPlaceholderArray initWithObjects:count:]
+   fun:-[NSArray initWithObjects:]
+   fun:-[RenderWidgetHostViewCocoa validAttributesForMarkedText]
+   fun:-[NSTSMInputContext initWithClient:]
+   fun:+[NSInputContext inputContextWithClient:]
+   fun:-[NSView inputContext]
+   fun:+[NSInputContext currentInputContext]
+   fun:+[NSInputContext updateInputContexts]
+   fun:-[NSApplication updateWindows]
+   fun:_handleWindowsNeedUpdateNote
+}
+{
    # Looks like an Apple bug; has no visual impact.
    unitialized_rect_allocated_on_stack_when_reparenting_window_content_views
    Memcheck:Cond
@@ -186,6 +204,12 @@
    fun:_DPSNextEvent
    fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
    fun:-[NSApplication run]
+}
+{
+   bug_18223
+   Memcheck:Cond
+   fun:_ZNK8Security12UnixPlusPlus17StaticForkMonitorclEv
+   fun:_ZN12ocspdGlobals10serverPortEv
 }
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
@@ -323,18 +347,6 @@
    fun:_ZN3IPC11SyncChannel11SyncContext17OnMessageReceivedERKNS_7MessageE
 }
 {
-   bug_16210
-   Memcheck:Leak
-   fun:_Znwm
-   fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
-   fun:_ZN11ChildThread4InitEv
-   fun:_ZN12RenderThread4InitEv
-   fun:_ZN4base6Thread10ThreadMainEv
-   fun:_ZL10ThreadFuncPv
-   fun:_pthread_start
-   fun:thread_start
-}
-{
    bug_16661
    Memcheck:Leak
    fun:_Znwm
@@ -371,6 +383,31 @@
    fun:_ZN11ChildThread4InitEv
 }
 {
+   # Nasty invalid write.  Should we even suppress this?
+   bug_18189
+   Memcheck:Addr8
+   fun:sseCGSFill8by1
+   fun:argb32_mark_constshape
+   fun:argb32_mark
+   fun:ripl_BltShape
+   fun:ripc_Render
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:CGContextFillRect
+   fun:NSRectFill
+   fun:-[NSView _drawRect:clip:]
+   fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
+   fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSNextStepFrame _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
+   fun:-[NSView _displayRectIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:]
+   fun:-[NSView displayIfNeeded]
+   fun:-[NSWindow displayIfNeeded]
+   fun:-[NSWindow _reallyDoOrderWindow:relativeTo:findKey:forCounter:force:isModal:]
+   fun:-[NSWindow orderWindow:relativeTo:]
+   fun:-[NSWindow addChildWindow:ordered:]
+   fun:_ZN15StatusBubbleMac6CreateEv
+}
+{
    bug_18218
    Memcheck:Leak
    fun:malloc
@@ -394,4 +431,43 @@
    fun:+[ThrobberView filmstripThrobberViewWithFrame:image:]
    fun:-[TabStripController tabChangedWithContents:atIndex:loadingOnly:]
    fun:_ZN27TabStripModelObserverBridge12TabChangedAtEP11TabContentsib
+}
+{
+   bug_18252
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject allocWithZone:]
+   fun:+[NSColor colorWithCalibratedRed:green:blue:alpha:]
+   fun:+[GTMTheme(BrowserThemeProviderInitialization) themeWithBrowserThemeProvider:isOffTheRecord:]
+   fun:-[BrowserWindowController(Private) setTheme]
+   fun:-[BrowserWindowController initWithBrowser:takeOwnership:]
+   fun:-[BrowserWindowController initWithBrowser:]
+   fun:_ZN13BrowserWindow19CreateBrowserWindowEP7Browser
+   fun:_ZN7Browser19CreateBrowserWindowEv
+   fun:_ZN7Browser6CreateEP7Profile
+   fun:_ZN7Browser15OpenEmptyWindowEP7Profile
+   fun:_ZN7Browser18NewIncognitoWindowEv
+}
+{
+   bug_18253
+   Memcheck:Cond
+   fun:resample_band
+   fun:img_interpolate_read
+   fun:img_colormatch_read
+   fun:img_data_lock
+   fun:CGSImageDataLock
+   fun:ripc_AcquireImage
+   fun:ripc_DrawImage
+   fun:CGContextDrawImage
+   fun:_ZN7WebCore11BitmapImage4drawEPNS_15GraphicsContextERKNS_9FloatRectES5_NS_17CompositeOperatorE
+   fun:_ZN7WebCore5Image9drawTiledEPNS_15GraphicsContextERKNS_9FloatRectERKNS_10FloatPointERKNS_9FloatSizeENS_17CompositeOperatorE
+   fun:_ZN7WebCore15GraphicsContext14drawTiledImageEPNS_5ImageERKNS_7IntRectERKNS_8IntPointERKNS_7IntSizeENS_17CompositeOperatorE
+   fun:_ZN7WebCore20RenderBoxModelObject22paintFillLayerExtendedERKNS_12RenderObject9PaintInfoERKNS_5ColorEPKNS_9FillLayerEiiiiPNS_13InlineFlowBoxENS_17CompositeOperatorE
+   fun:_ZN7WebCore9RenderBox14paintFillLayerERKNS_12RenderObject9PaintInfoERKNS_5ColorEPKNS_9FillLayerEiiiiNS_17CompositeOperatorE
+   fun:_ZN7WebCore9RenderBox15paintFillLayersERKNS_12RenderObject9PaintInfoERKNS_5ColorEPKNS_9FillLayerEiiiiNS_17CompositeOperatorE
+   fun:_ZN7WebCore9RenderBox19paintBoxDecorationsERNS_12RenderObject9PaintInfoEii
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_12RenderObject9PaintInfoEii
+   fun:_ZN7WebCore11RenderBlock5paintERNS_12RenderObject9PaintInfoEii
 }

@@ -731,7 +731,7 @@
 {
    bug_16128
    Memcheck:Leak
-   fun:_Znwj
+   fun:_Znw*
    fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
    fun:_ZN11ChildThread4InitEv
 }
@@ -892,6 +892,17 @@
    fun:_ZN7WebCore5Frame4initEv
 }
 {
+   bug_17113
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18ResourceDispatcher12CreateBridgeERKSsRK4GURLS4_S4_S1_S1_S1_iiN12ResourceType4TypeEjii
+   fun:_ZN11webkit_glue20ResourceLoaderBridge6CreateERKSsRK4GURLS5_S5_S2_S2_S2_iiN12ResourceType4TypeEii
+   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context5StartERKN6WebKit13WebURLRequestEPNS_20ResourceLoaderBridge16SyncLoadResponseE
+   fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN6WebKit13WebURLRequestEPNS1_18WebURLLoaderClientE
+   fun:_ZN11webkit_glue15ResourceFetcher5StartEP8WebFrame
+   fun:_ZN11webkit_glue15ResourceFetcherC1ERK4GURLP8WebFrameP14CallbackRunnerI6Tuple2IRKN6WebKit14WebURLResponseERKSsEE
+}
+{
    bug_17185
    Memcheck:Leak
    fun:malloc
@@ -925,6 +936,18 @@
    fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
 }
 {
+   bug_17451
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
+   fun:_ZN11webkit_glue16WebKitClientImpl15createURLLoaderEv
+   fun:_ZN11webkit_glue15ResourceFetcher5StartEP8WebFrame
+   fun:_ZN11webkit_glue15ResourceFetcherC1ERK4GURLP8WebFrameP14CallbackRunnerI6Tuple2IRKN6WebKit14WebURLResponseERKSsEE
+   fun:_ZN11webkit_glue20ImageResourceFetcherC1ERK4GURLP8WebFrameiiP14CallbackRunnerI6Tuple2IPS0_RK8SkBitmapEE
+   fun:_ZN11WebViewImpl13DownloadImageEiRK4GURLi
+   fun:_ZN10RenderView17OnDownloadFavIconEiRK4GURLi
+}
+{
    bug_17540
    Memcheck:Leak
    fun:_Znw*
@@ -953,4 +976,10 @@
    fun:_ZN7WebCore12AtomicString3addEPKc
    fun:_ZN7WebCore12AtomicStringC1EPKc
    fun:_ZN7WebCore8SVGNames4initEv
+}
+{
+   bug_18268
+   Memcheck:Cond
+   fun:_ZN20NavigationController22IsLikelyAutoNavigationEN4base9TimeTicksE
+   fun:_ZN20NavigationController28RendererDidNavigateToNewPageERK32ViewHostMsg_FrameNavigate_ParamsPb
 }
