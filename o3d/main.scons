@@ -181,6 +181,7 @@ binaries_env.Append(
         'converter',
         'core',
         'import',
+        'ipc',
         'plugin',
         'samples',
         'serializer',
@@ -346,6 +347,7 @@ windows_env.Append(
         'psapi',
         'winmm',  # For V8
         'ws2_32', # For V8
+        'Dbghelp', # For Chrome base
     ],
     BUILD_COMPONENTS = [
         'breakpad',

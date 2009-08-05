@@ -105,12 +105,6 @@
 // We can add more sophisticated per-platform #defines as necessary here
 #define IS_LITTLE_ENDIAN 1
 
-#if defined(GYP_BUILD)
-// We only need this in the gyp build because we're using the current
-// chrome/base, which doesn't have down_cast in it anymore.
-// TODO(gspencer): Remove this #ifdef when we are moved fully over to
-// gyp.
-
 // When you upcast (that is, cast a pointer from type Foo to type
 // SuperclassOfFoo), it's fine to use implicit_cast<>, since upcasts
 // always succeed.  When you downcast (that is, cast a pointer from
@@ -137,7 +131,6 @@ inline To down_cast(From* f) {  // Defined as From* so we only accept pointers.
 
   return static_cast<To>(f);
 }
-#endif  // GYP_BUILD
 
 namespace o3d {
 

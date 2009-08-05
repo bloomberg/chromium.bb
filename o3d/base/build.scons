@@ -38,12 +38,16 @@ env.ApplySConscript([
     '$ICU38_DIR/using_icu38.scons',
 ])
 
+# For FRIEND_TEST in gtest_prod.h
+env.Append(CPPPATH = '$GTEST_DIR/include')
+
 chrome_base_inputs = [
   'at_exit',
   'base_paths',
   'base_switches',
   'command_line',
   'debug_util',
+  'dynamic_annotations',
   'file_path',
   'file_util',
   'histogram',
@@ -53,6 +57,7 @@ chrome_base_inputs = [
   'message_loop',
   'message_pump_default',
   'path_service',
+  'pickle',
   'ref_counted',
   'stats_table',
   'string_piece',
