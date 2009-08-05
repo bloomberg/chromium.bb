@@ -353,6 +353,22 @@ bool BrowserThemeProvider::HasCustomImage(int id) {
   return (images_.find(id) != images_.end());
 }
 
+bool BrowserThemeProvider::GetRawData(int id,
+                                      std::vector<unsigned char>* raw_data) {
+  if (raw_data_.find(id) != raw_data_.end()) {
+    *raw_data = raw_data_[id];
+    return true;
+  }
+
+  if (!ReadThemeFileData(id, raw_data)) {
+    if (!rb_.LoadImageResourceBytes(id, raw_data))
+      return false;
+  }
+
+  raw_data_[id] = *raw_data;
+  return true;
+}
+
 void BrowserThemeProvider::SetTheme(Extension* extension) {
   // Clear our image cache.
   ClearCaches();
@@ -364,6 +380,7 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   SetColorData(extension->GetThemeColors());
   SetTintData(extension->GetThemeTints());
   SetDisplayPropertyData(extension->GetThemeDisplayProperties());
+  raw_data_.clear();
   GenerateFrameColors();
   GenerateFrameImages();
   GenerateTabImages();
@@ -780,6 +797,7 @@ void BrowserThemeProvider::ClearAllThemeData() {
   colors_.clear();
   tints_.clear();
   display_properties_.clear();
+  raw_data_.clear();
 
   SaveImageData(NULL);
   SaveColorData();

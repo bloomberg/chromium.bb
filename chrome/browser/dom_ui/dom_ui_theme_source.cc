@@ -155,18 +155,14 @@ void DOMUIThemeSource::SendThemeBitmap(int request_id, int resource_id) {
   ThemeProvider* tp = profile_->GetThemeProvider();
   DCHECK(tp);
 
-  SkBitmap* image = tp->GetBitmapNamed(resource_id);
-  if (!image || image->empty()) {
-    SendResponse(request_id, NULL);
-    return;
-  }
-
   std::vector<unsigned char> png_bytes;
-  PNGEncoder::EncodeBGRASkBitmap(*image, false, &png_bytes);
-
-  scoped_refptr<RefCountedBytes> image_data =
-      new RefCountedBytes(png_bytes);
-  SendResponse(request_id, image_data);
+  if (tp->GetRawData(resource_id, &png_bytes)) {
+    scoped_refptr<RefCountedBytes> image_data =
+        new RefCountedBytes(png_bytes);
+    SendResponse(request_id, image_data);
+  } else {
+    SendResponse(request_id, NULL);
+  }
 }
 
 std::string DOMUIThemeSource::GetNewTabBackgroundCSS(bool bar_attached) {

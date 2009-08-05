@@ -17,7 +17,7 @@ class MockThemeSource : public DOMUIThemeSource {
   explicit MockThemeSource(Profile* profile)
       : DOMUIThemeSource(profile),
         result_request_id_(-1),
-        result_data_size_(0) { 
+        result_data_size_(0) {
   }
 
   virtual void SendResponse(int request_id, RefCountedBytes* data) {
@@ -56,20 +56,16 @@ TEST_F(DOMUISourcesTest, ThemeSourceMimeTypes) {
 }
 
 TEST_F(DOMUISourcesTest, ThemeSourceImages) {
-  // Our test data. Rather than comparing the data itself, we just compare
-  // its size.
-  SkBitmap* image = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      IDR_THEME_FRAME_INCOGNITO);
-  std::vector<unsigned char> png_bytes;
-  PNGEncoder::EncodeBGRASkBitmap(*image, false, &png_bytes);
-
+  // We used to PNGEncode the images ourselves, but encoder differences
+  // invalidated that. We now just check that the image exists.
   theme_source()->StartDataRequest("theme_frame_incognito", 1);
+  size_t min = 0;
   EXPECT_EQ(theme_source()->result_request_id_, 1);
-  EXPECT_EQ(theme_source()->result_data_size_, png_bytes.size());
+  EXPECT_GT(theme_source()->result_data_size_, min);
 
   theme_source()->StartDataRequest("theme_toolbar", 2);
   EXPECT_EQ(theme_source()->result_request_id_, 2);
-  EXPECT_NE(theme_source()->result_data_size_, png_bytes.size());
+  EXPECT_GT(theme_source()->result_data_size_, min);
 }
 
 TEST_F(DOMUISourcesTest, ThemeSourceCSS) {

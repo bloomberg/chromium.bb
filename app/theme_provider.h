@@ -5,6 +5,8 @@
 #ifndef APP_THEME_PROVIDER_H_
 #define APP_THEME_PROVIDER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -57,6 +59,10 @@ class ThemeProvider {
   // Whether or not we have a certain image. Used for when the default theme
   // doesn't provide a certain image, but custom themes might (badges, etc).
   virtual bool HasCustomImage(int id) = 0;
+
+  // Reads the image data from the theme file into the specified vector. Returns
+  // true on success.
+  virtual bool GetRawData(int id, std::vector<unsigned char>* raw_data) = 0;
 
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   // Gets the GdkPixbuf with the specified |id|.  Returns a pointer to a shared
