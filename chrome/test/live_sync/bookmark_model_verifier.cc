@@ -12,7 +12,7 @@
 #include "app/tree_node_iterator.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/test/live_sync/live_bookmarks_sync_test.h"
+#include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // static
