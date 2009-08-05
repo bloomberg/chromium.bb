@@ -43,6 +43,7 @@
 #include <unistd.h>
 #include <algorithm>
 
+#include <string>
 #include <functional>
 #include <list>
 #include <vector>
@@ -81,7 +82,7 @@ typedef std::list<struct LineInfo> LineInfoList;
 // Information of a function.
 struct FuncInfo {
   // Name of the function.
-  const char *name;
+  std::string name;
   // Offset from the base of the loading address.
   ElfW(Off) rva_to_base;
   // Virtual address of the function.
@@ -317,9 +318,16 @@ static int LoadFuncSymbols(struct nlist *list,
     }
     if (cur_list->n_type == N_FUN) {
       struct FuncInfo func_info;
-      func_info.name =
-        reinterpret_cast<char *>(cur_list->n_un.n_strx +
-                                 stabstr_section->sh_offset);
+      // The STABS data for an N_FUN entry is the function's (mangled)
+      // name, followed by a colon, followed by type information.  We
+      // want to retain the name only.
+      const char *stabs_name
+        = reinterpret_cast<char *>(cur_list->n_un.n_strx +
+                                   stabstr_section->sh_offset);
+      const char *name_end = strchr(stabs_name, ':');
+      if (! name_end)
+        name_end = stabs_name + strlen(stabs_name);
+      func_info.name = std::string(stabs_name, name_end - stabs_name);
       func_info.addr = cur_list->n_value;
       func_info.rva_to_base = 0;
       func_info.size = 0;
@@ -609,12 +617,7 @@ static bool WriteSourceFileInfo(FILE *file, struct SymbolInfo &symbols) {
 
 static bool WriteOneFunction(FILE *file,
                              const struct FuncInfo &func_info){
-  // Discard the ending part of the name.
-  std::string func_name(func_info.name);
-  std::string::size_type last_colon = func_name.find_first_of(':');
-  if (last_colon != std::string::npos)
-    func_name = func_name.substr(0, last_colon);
-  func_name = Demangle(func_name.c_str());
+  std::string func_name = Demangle(func_info.name.c_str());
 
   if (func_info.size <= 0)
     return true;
