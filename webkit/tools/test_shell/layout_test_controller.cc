@@ -136,7 +136,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) {
   BindMethod("setUseDashboardCompatibilityMode", &LayoutTestController::setUseDashboardCompatibilityMode);
 
   BindMethod("setXSSAuditorEnabled", &LayoutTestController::setXSSAuditorEnabled);
-  BindMethod("queueScriptInIsolatedWorld", &LayoutTestController::queueScriptInIsolatedWorld);
+  BindMethod("evaluateScriptInIsolatedWorld", &LayoutTestController::evaluateScriptInIsolatedWorld);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -342,18 +342,6 @@ class WorkItemNonLoadingScript : public LayoutTestController::WorkItem {
   bool Run(TestShell* shell) {
     shell->webView()->GetMainFrame()->ExecuteScript(
         WebScriptSource(WebString::fromUTF8(script_)));
-    return false;
-  }
- private:
-  string script_;
-};
-
-class WorkItemIsolatedWorldScript : public LayoutTestController::WorkItem {
- public:
-  WorkItemIsolatedWorldScript(const string& script) : script_(script) {}
-  bool Run(TestShell* shell) {
-    WebScriptSource source(WebString::fromUTF8(script_));
-    shell->webView()->GetMainFrame()->ExecuteScriptInNewWorld(&source, 1, 0);
     return false;
   }
  private:
@@ -801,10 +789,12 @@ void LayoutTestController::setXSSAuditorEnabled(
   result->SetNull();
 }
 
-void LayoutTestController::queueScriptInIsolatedWorld(
+void LayoutTestController::evaluateScriptInIsolatedWorld(
     const CppArgumentList& args, CppVariant* result) {
-  if (args.size() > 0 && args[0].isString())
-    work_queue_.AddWork(new WorkItemIsolatedWorldScript(args[0].ToString()));
+  if (args.size() > 0 && args[0].isString()) {
+    WebScriptSource source(WebString::fromUTF8(args[0].ToString()));
+    shell_->webView()->GetMainFrame()->ExecuteScriptInNewWorld(&source, 1, 1);
+  }
   result->SetNull();
 }
 
