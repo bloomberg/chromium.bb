@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/theme_resources_util.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -114,8 +115,8 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   std::vector<string16> subst2;
 
   // Cache-buster for background.
-  subst.push_back(UTF8ToUTF16(IntToString(static_cast<int>(
-      base::Time::Now().ToDoubleT()))));  // $1
+  subst.push_back(WideToUTF16(
+      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
 
   // Colors.
   subst.push_back(SkColorToRGBAString(color_background));  // $2
