@@ -204,47 +204,6 @@ installer_util::InstallStatus RenameChromeExecutables(bool system_install) {
   return ret;
 }
 
-// Parse command line and read master profile, if present, to get distribution
-// related install options.
-DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
-  DictionaryValue* prefs = NULL;
-
-  if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
-    FilePath prefs_path(
-        cmd_line.GetSwitchValue(installer_util::switches::kInstallerData));
-    prefs = installer_util::ParseDistributionPreferences(prefs_path);
-  }
-
-  if (!prefs)
-    prefs = new DictionaryValue();
-
-  if (cmd_line.HasSwitch(installer_util::switches::kCreateAllShortcuts))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kCreateAllShortcuts, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kDoNotLaunchChrome))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kDoNotLaunchChrome, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kMakeChromeDefault))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kMakeChromeDefault, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kSystemLevel))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kSystemLevel, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kVerboseLogging))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kVerboseLogging, true);
-
-  if (cmd_line.HasSwitch(installer_util::switches::kAltDesktopShortcut))
-    installer_util::SetDistroBooleanPreference(
-        prefs, installer_util::master_preferences::kAltShortcutText, true);
-
-  return prefs;
-}
-
 bool CheckPreInstallConditions(const installer::Version* installed_version,
                                bool system_install,
                                installer_util::InstallStatus& status) {
@@ -597,7 +556,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   CommandLine::Init(0, NULL);
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   installer::InitInstallerLogging(parsed_command_line);
-  scoped_ptr<DictionaryValue> prefs(GetInstallPreferences(parsed_command_line));
+  scoped_ptr<DictionaryValue> prefs(setup_util::GetInstallPreferences(
+      parsed_command_line));
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kVerboseLogging))
     logging::SetMinLogLevel(logging::LOG_INFO);

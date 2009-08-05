@@ -146,6 +146,7 @@
           'sources': [
             'setup/compat_checks_unittest.cc',
             'setup/setup_constants.cc',
+            'util/browser_distribution_unittest.cc',
             'util/copy_tree_work_item_unittest.cc',
             'util/create_dir_work_item_unittest.cc',
             'util/create_reg_key_work_item_unittest.cc',
@@ -155,6 +156,7 @@
             'util/helper_unittest.cc',
             'util/installer_util_unittests.rc',
             'util/installer_util_unittests_resource.h',
+            'util/master_preferences_unittest.cc',
             'util/move_tree_work_item_unittest.cc',
             'util/run_all_unittests.cc',
             'util/set_reg_value_work_item_unittest.cc',
