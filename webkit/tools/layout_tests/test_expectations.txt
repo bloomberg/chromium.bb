@@ -611,6 +611,9 @@ WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects
 // Depends on SessionStorage.  I'm not sure if this is working yet, but I don't think we need to SKIP it.
 BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
 
+// WebKit and us disagree how this is best done.  Disable for now.
+BUG4360 : LayoutTests/storage/domstorage/localstorage/complex-keys.html = FAIL
+
 // Database
 BUG4359 SKIP : LayoutTests/storage/close-during-stress-test.html = PASS
 BUG4359 SKIP : LayoutTests/storage/database-lock-after-reload.html = PASS
