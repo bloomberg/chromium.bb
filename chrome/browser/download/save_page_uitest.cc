@@ -30,8 +30,7 @@ class SavePageTest : public UITest {
   SavePageTest() : UITest() {}
 
   void CheckFile(const FilePath& client_file,
-                 const FilePath& server_file,
-                 bool check_equal) {
+                 const FilePath& server_file) {
     file_util::FileInfo previous, current;
     bool exist = false;
     for (int i = 0; i < 20; ++i) {
@@ -47,23 +46,6 @@ class SavePageTest : public UITest {
       PlatformThread::Sleep(sleep_timeout_ms());
     }
     EXPECT_TRUE(exist);
-
-    if (check_equal) {
-      FilePath server_file_name;
-      ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
-                                   &server_file_name));
-      server_file_name = server_file_name.AppendASCII(kTestDir)
-                                         .Append(server_file);
-      ASSERT_TRUE(file_util::PathExists(server_file_name));
-
-      int64 client_file_size = 0;
-      int64 server_file_size = 0;
-      EXPECT_TRUE(file_util::GetFileSize(client_file, &client_file_size));
-      EXPECT_TRUE(file_util::GetFileSize(server_file_name, &server_file_size));
-      EXPECT_EQ(client_file_size, server_file_size);
-      EXPECT_TRUE(file_util::ContentsEqual(client_file, server_file_name));
-    }
-
     EXPECT_TRUE(file_util::DieFileDie(client_file, false));
   }
 
@@ -107,8 +89,7 @@ TEST_F(SavePageTest, CleanFilenameFromPageTitle) {
   EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
   automation()->SavePackageShouldPromptUser(true);
 
-  CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)),
-            false);
+  CheckFile(full_file_name, FilePath::FromWStringHack(UTF8ToWide(file_name)));
   EXPECT_TRUE(file_util::DieFileDie(full_file_name, false));
   EXPECT_TRUE(file_util::DieFileDie(dir, true));
 }
