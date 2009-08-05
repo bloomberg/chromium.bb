@@ -819,7 +819,7 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
     std::map<int, SkBitmap*>::iterator it = image_cache_.find(base_id);
     if (it != image_cache_.end()) {
       SkBitmap* frame = it->second;
-      int blur_amount = (HasCustomImage(id)) ? 1 : 5;
+      int blur_amount = (HasCustomImage(id)) ? 1 : 2;
       SkBitmap blurred =
           skia::ImageOperations::CreateBlurredBitmap(*frame, blur_amount);
       SkBitmap* bg_tab = new SkBitmap(TintBitmap(blurred, TINT_BACKGROUND_TAB));
