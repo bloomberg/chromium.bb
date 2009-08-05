@@ -1301,7 +1301,6 @@ BUG10667 MAC : chrome/plugins/return-npobject.html = FAIL
 BUG10667 MAC : chrome/plugins/script-object-invoke.html = FAIL
 BUG10667 MAC : pending/plugins/iframe-shims.html = FAIL CRASH
 BUG18027 MAC : LayoutTests/fast/dom/object-plugin-hides-properties.html = CRASH
-BUG18027 MAC : LayoutTests/plugins/embed-attributes-style.html = CRASH
 
 // NEW FOR MERGE 36102:37604
 
@@ -3033,7 +3032,7 @@ BUG17942 WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH PASS
 BUG17942 WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH PASS
 BUG17942 LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH PASS
 BUG17942 LINUX : LayoutTests/fast/overflow/008.html = CRASH PASS
-BUG17942 WIN DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
+BUG17942 WIN : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
 // New tests with this merge:
 BUG17942 : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
 BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
