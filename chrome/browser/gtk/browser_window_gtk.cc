@@ -758,7 +758,7 @@ void BrowserWindowGtk::LoadingAnimationCallback() {
     // GetSelectedTabContents can return NULL for example under Purify when
     // the animations are running slowly and this function is called on
     // a timer through LoadingAnimationCallback.
-    titlebar_->UpdateThrobber(tab_contents && tab_contents->is_loading());
+    titlebar_->UpdateThrobber(tab_contents);
   }
 }
 

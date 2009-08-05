@@ -22,6 +22,7 @@
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
@@ -271,11 +272,12 @@ void BrowserTitlebar::UpdateTitle() {
   g_free(label_markup);
 }
 
-void BrowserTitlebar::UpdateThrobber(bool is_loading) {
+void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
   DCHECK(app_mode_favicon_);
 
-  if (is_loading) {
-    GdkPixbuf* icon_pixbuf = throbber_.GetNextFrame();
+  if (tab_contents && tab_contents->is_loading()) {
+    GdkPixbuf* icon_pixbuf =
+        throbber_.GetNextFrame(tab_contents->waiting_for_response());
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
   } else {
     if (browser_window_->browser()->type() == Browser::TYPE_APP) {
@@ -453,16 +455,43 @@ void BrowserTitlebar::ExecuteCommand(int command_id) {
 // BrowserTitlebar::Throbber implementation
 // TODO(tc): Handle anti-clockwise spinning when waiting for a connection.
 
-// We don't bother to clean this or the pixbufs it contains when we exit.
+// We don't bother to clean up these or the pixbufs they contain when we exit.
 static std::vector<GdkPixbuf*>* g_throbber_frames = NULL;
+static std::vector<GdkPixbuf*>* g_throbber_waiting_frames = NULL;
 
-GdkPixbuf* BrowserTitlebar::Throbber::GetNextFrame() {
+// Load |resource_id| from the ResourceBundle and split it into a series of
+// square GdkPixbufs that get stored in |frames|.
+static void MakeThrobberFrames(int resource_id,
+                               std::vector<GdkPixbuf*>* frames) {
+  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
+  SkBitmap* frame_strip = rb.GetBitmapNamed(resource_id);
+
+  // Each frame of the animation is a square, so we use the height as the
+  // frame size.
+  int frame_size = frame_strip->height();
+  size_t num_frames = frame_strip->width() / frame_size;
+
+  // Make a separate GdkPixbuf for each frame of the animation.
+  for (size_t i = 0; i < num_frames; ++i) {
+    SkBitmap frame = skia::ImageOperations::CreateTiledBitmap(*frame_strip,
+        i * frame_size, 0, frame_size, frame_size);
+    frames->push_back(gfx::GdkPixbufFromSkBitmap(&frame));
+  }
+}
+
+GdkPixbuf* BrowserTitlebar::Throbber::GetNextFrame(bool is_waiting) {
   Throbber::InitFrames();
-  return (*g_throbber_frames)[current_frame_++ % g_throbber_frames->size()];
+  if (is_waiting) {
+    return (*g_throbber_waiting_frames)[current_waiting_frame_++ %
+        g_throbber_waiting_frames->size()];
+  } else {
+    return (*g_throbber_frames)[current_frame_++ % g_throbber_frames->size()];
+  }
 }
 
 void BrowserTitlebar::Throbber::Reset() {
   current_frame_ = 0;
+  current_waiting_frame_ = 0;
 }
 
 // static
@@ -470,19 +499,10 @@ void BrowserTitlebar::Throbber::InitFrames() {
   if (g_throbber_frames)
     return;
 
-  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
-  SkBitmap* frame_strip = rb.GetBitmapNamed(IDR_THROBBER_LIGHT);
-
-  // Each frame of the animation is a square, so we use the height as the
-  // frame size.
-  int frame_size = frame_strip->height();
-  size_t num_frames = frame_strip->width() / frame_size;
+  // We load the light version of the throbber since it'll be in the titlebar.
   g_throbber_frames = new std::vector<GdkPixbuf*>;
+  MakeThrobberFrames(IDR_THROBBER_LIGHT, g_throbber_frames);
 
-  // Make a separate GdkPixbuf for each frame of the animation.
-  for (size_t i = 0; i < num_frames; ++i) {
-    SkBitmap frame = skia::ImageOperations::CreateTiledBitmap(*frame_strip,
-        i * frame_size, 0, frame_size, frame_size);
-    g_throbber_frames->push_back(gfx::GdkPixbufFromSkBitmap(&frame));
-  }
+  g_throbber_waiting_frames = new std::vector<GdkPixbuf*>;
+  MakeThrobberFrames(IDR_THROBBER_WAITING_LIGHT, g_throbber_waiting_frames);
 }

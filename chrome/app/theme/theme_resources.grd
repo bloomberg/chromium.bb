@@ -231,6 +231,7 @@
       <include name="IDR_DOWNLOADS_SECTION" file="downloads_section.png" type="BINDATA" />
       <include name="IDR_DEFAULT_THUMBNAIL" file="default_thumbnail.png" type="BINDATA" />
       <include name="IDR_THROBBER_WAITING" file="throbber_waiting.png" type="BINDATA" />
+      <include name="IDR_THROBBER_WAITING_LIGHT" file="throbber_waiting_light.png" type="BINDATA" />
       <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed.png" type="BINDATA" />
       <include name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" type="BINDATA" />
       <include name="IDR_UPDATE_FAIL" file="update_fail.png" type="BINDATA" />

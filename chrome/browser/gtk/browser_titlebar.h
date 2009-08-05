@@ -17,6 +17,7 @@
 
 class BrowserWindowGtk;
 class CustomDrawButton;
+class TabContents;
 class TabStripGtk;
 
 class BrowserTitlebar : public MenuGtk::Delegate {
@@ -37,7 +38,9 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   void UpdateTitle();
 
   // Called by the browser asking us to update the loading throbber.
-  void UpdateThrobber(bool is_loading);
+  // |tab_contents| is the tab that is associated with the window throbber.
+  // |tab_contents| can be null.
+  void UpdateThrobber(TabContents* tab_contents);
 
   // On Windows, right clicking in the titlebar background brings up the system
   // menu.  There's no such thing on linux, so we just show the menu items we
@@ -49,11 +52,12 @@ class BrowserTitlebar : public MenuGtk::Delegate {
   // we're showing.
   class Throbber {
    public:
-    Throbber() : current_frame_(0) {}
+    Throbber() : current_frame_(0), current_waiting_frame_(0) {}
 
     // Get the next frame in the animation. The image is owned by the throbber
-    // so the caller doesn't need to unref.
-    GdkPixbuf* GetNextFrame();
+    // so the caller doesn't need to unref.  |is_waiting| is true if we're
+    // still waiting for a response.
+    GdkPixbuf* GetNextFrame(bool is_waiting);
 
     // Reset back to the first frame.
     void Reset();
@@ -62,6 +66,7 @@ class BrowserTitlebar : public MenuGtk::Delegate {
     static void InitFrames();
 
     int current_frame_;
+    int current_waiting_frame_;
   };
 
   // Build the titlebar, the space above the tab
