@@ -16,6 +16,7 @@ class WebKitThread;
 namespace WebKit {
 class WebStorageArea;
 class WebStorageNamespace;
+class WebString;
 }
 
 // This class handles the logistics of DOM Storage within the browser process.
@@ -69,7 +70,7 @@ class DOMStorageDispatcherHost :
 
   // Get the path to the LocalStorage directory.  Calculate it if we haven't
   // already.  Only call on the WebKit thread.
-  string16 GetLocalStoragePath();
+  WebKit::WebString GetLocalStoragePath();
 
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;

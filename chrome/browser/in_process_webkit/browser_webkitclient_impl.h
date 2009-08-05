@@ -13,6 +13,7 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
+  virtual bool sandboxEnabled();
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
                                              size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
@@ -23,7 +24,6 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebString cookies(const WebKit::WebURL& url,
                                     const WebKit::WebURL& policy_url);
   virtual void prefetchHostName(const WebKit::WebString&);
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual WebKit::WebString defaultLocale();
   virtual WebKit::WebThemeEngine* themeEngine();
   virtual WebKit::WebURLLoader* createURLLoader();

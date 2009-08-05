@@ -4,6 +4,8 @@
 
 #include "webkit/glue/webkitclient_impl.h"
 
+#include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/stats_counters.h"
@@ -227,23 +229,72 @@ void WebKitClientImpl::callOnMainThread(void (*func)()) {
 }
 
 base::PlatformFile WebKitClientImpl::databaseOpenFile(
-  const WebKit::WebString& file_name, int desired_flags) {
+    const WebKit::WebString& file_name, int desired_flags) {
   return base::kInvalidPlatformFileValue;
 }
 
 bool WebKitClientImpl::databaseDeleteFile(
-  const WebKit::WebString& file_name) {
+    const WebKit::WebString& file_name) {
   return false;
 }
 
 long WebKitClientImpl::databaseGetFileAttributes(
-  const WebKit::WebString& file_name) {
+    const WebKit::WebString& file_name) {
   return 0;
 }
 
 long long WebKitClientImpl::databaseGetFileSize(
-  const WebKit::WebString& file_name) {
+    const WebKit::WebString& file_name) {
   return 0;
+}
+
+bool WebKitClientImpl::fileExists(const WebKit::WebString& path) {
+  NOTREACHED();
+  return false;
+}
+
+bool WebKitClientImpl::deleteFile(const WebKit::WebString& path) {
+  NOTREACHED();
+  return false;
+}
+
+bool WebKitClientImpl::deleteEmptyDirectory(const WebKit::WebString& path) {
+  NOTREACHED();
+  return false;
+}
+
+bool WebKitClientImpl::getFileSize(const WebKit::WebString& path,
+                                   long long& result) {
+  NOTREACHED();
+  return false;
+}
+
+bool WebKitClientImpl::getFileModificationTime(const WebKit::WebString& path,
+                                               time_t& result) {
+  NOTREACHED();
+  return false;
+}
+
+WebKit::WebString WebKitClientImpl::directoryName(
+    const WebKit::WebString& path) {
+  NOTREACHED();
+  return WebKit::WebString();
+}
+
+WebKit::WebString WebKitClientImpl::pathByAppendingComponent(
+    const WebKit::WebString& webkit_path,
+    const WebKit::WebString& webkit_component) {
+  FilePath path(webkit_glue::WebStringToFilePathString(webkit_path));
+  FilePath component(webkit_glue::WebStringToFilePathString(webkit_component));
+  FilePath combined_path = path.Append(component);
+  return webkit_glue::FilePathStringToWebString(combined_path.value());
+}
+
+bool WebKitClientImpl::makeAllDirectories(
+    const WebKit::WebString& path) {
+  DCHECK(!sandboxEnabled());
+  FilePath::StringType file_path = webkit_glue::WebStringToFilePathString(path);
+  return file_util::CreateDirectory(FilePath(file_path));
 }
 
 }  // namespace webkit_glue

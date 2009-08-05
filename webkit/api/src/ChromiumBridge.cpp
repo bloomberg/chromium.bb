@@ -152,20 +152,17 @@ void ChromiumBridge::prefetchDNS(const String& hostname)
 
 bool ChromiumBridge::fileExists(const String& path)
 {
-    ASSERT_NOT_REACHED();
-    return false;
+    return webKitClient()->fileExists(path);
 }
 
 bool ChromiumBridge::deleteFile(const String& path)
 {
-    ASSERT_NOT_REACHED();
-    return false;
+    return webKitClient()->deleteFile(path);
 }
 
 bool ChromiumBridge::deleteEmptyDirectory(const String& path)
 {
-    ASSERT_NOT_REACHED();
-    return false;
+    return webKitClient()->deleteEmptyDirectory(path);
 }
 
 bool ChromiumBridge::getFileSize(const String& path, long long& result)
@@ -175,26 +172,22 @@ bool ChromiumBridge::getFileSize(const String& path, long long& result)
 
 bool ChromiumBridge::getFileModificationTime(const String& path, time_t& result)
 {
-    ASSERT_NOT_REACHED();
-    return false;
+    return webKitClient()->getFileModificationTime(path, result);
 }
 
 String ChromiumBridge::directoryName(const String& path)
 {
-    ASSERT_NOT_REACHED();
-    return String();
+    return webKitClient()->directoryName(path);
 }
 
 String ChromiumBridge::pathByAppendingComponent(const String& path, const String& component)
 {
-    ASSERT_NOT_REACHED();
-    return String();
+    return webKitClient()->pathByAppendingComponent(path, component);
 }
 
 bool ChromiumBridge::makeAllDirectories(const String& path)
 {
-    ASSERT_NOT_REACHED();
-    return false;
+  return webKitClient()->makeAllDirectories(path);
 }
 
 // Font -----------------------------------------------------------------------
@@ -217,6 +210,30 @@ String ChromiumBridge::getFontFamilyForCharacters(const UChar* characters, size_
         return webKitClient()->sandboxSupport()->getFontFamilyForCharacters(characters, numCharacters);
     else
         return WebFontInfo::familyForChars(characters, numCharacters);
+}
+#endif
+
+// HTML5 DB -------------------------------------------------------------------
+
+#if ENABLE(DATABASE)
+PlatformFileHandle ChromiumBridge::databaseOpenFile(const String& fileName, int desiredFlags)
+{
+    return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags);
+}
+
+bool ChromiumBridge::databaseDeleteFile(const String& fileName)
+{
+    return webKitClient()->databaseDeleteFile(WebString(fileName));
+}
+
+long ChromiumBridge::databaseGetFileAttributes(const String& fileName)
+{
+    return webKitClient()->databaseGetFileAttributes(WebString(fileName));
+}
+
+long long ChromiumBridge::databaseGetFileSize(const String& fileName)
+{
+    return webKitClient()->databaseGetFileSize(WebString(fileName));
 }
 #endif
 
@@ -295,7 +312,7 @@ PassRefPtr<Image> ChromiumBridge::loadPlatformImageResource(const char* name)
 
 bool ChromiumBridge::sandboxEnabled()
 {
-    return true;
+    return webKitClient()->sandboxEnabled();
 }
 
 // SharedTimers ---------------------------------------------------------------
@@ -471,30 +488,5 @@ bool ChromiumBridge::isLinkVisited(WebCore::LinkHash visitedLinkHash)
 {
     return webKitClient()->isLinkVisited(visitedLinkHash);
 }
-
-// HTML5 DB -------------------------------------------------------------------
-
-#if ENABLE(DATABASE)
-PlatformFileHandle ChromiumBridge::databaseOpenFile(const String& fileName,
-                                                    int desiredFlags)
-{
-    return webKitClient()->databaseOpenFile(WebString(fileName), desiredFlags);
-}
-
-bool ChromiumBridge::databaseDeleteFile(const String& fileName)
-{
-    return webKitClient()->databaseDeleteFile(WebString(fileName));
-}
-
-long ChromiumBridge::databaseGetFileAttributes(const String& fileName)
-{
-    return webKitClient()->databaseGetFileAttributes(WebString(fileName));
-}
-
-long long ChromiumBridge::databaseGetFileSize(const String& fileName)
-{
-    return webKitClient()->databaseGetFileSize(WebString(fileName));
-}
-#endif
 
 } // namespace WebCore

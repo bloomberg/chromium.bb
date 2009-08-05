@@ -74,6 +74,10 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     return NULL;
   }
 
+  virtual bool sandboxEnabled() {
+    return false;
+  }
+
   virtual bool getFileSize(const WebKit::WebString& path, long long& result) {
     return file_util::GetFileSize(
         FilePath(webkit_glue::WebStringToFilePathString(path)),

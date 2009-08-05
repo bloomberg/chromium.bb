@@ -25,6 +25,12 @@ WebKit::WebSandboxSupport* WorkerWebKitClientImpl::sandboxSupport() {
   return NULL;
 }
 
+bool WorkerWebKitClientImpl::sandboxEnabled() {
+  // Always return true because WebKit should always act as though the Sandbox
+  // is enabled for workers.  See the comment in WebKitClient for more info.
+  return true;
+}
+
 unsigned long long WorkerWebKitClientImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {

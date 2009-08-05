@@ -14,9 +14,11 @@
 #include "webkit/api/public/WebStorageArea.h"
 #include "webkit/api/public/WebStorageNamespace.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;
+using WebKit::WebString;
 
 DOMStorageDispatcherHost::DOMStorageDispatcherHost(
     IPC::Message::Sender* message_sender,
@@ -281,7 +283,7 @@ void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebStorageArea* storage_area = GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  WebKit::WebString value = storage_area->getItem(key);
+  WebString value = storage_area->getItem(key);
   ViewHostMsg_DOMStorageGetItem::WriteReplyParams(reply_msg, (string16)value,
                                                   value.isNull());
   Send(reply_msg);
@@ -375,8 +377,10 @@ int64 DOMStorageDispatcherHost::AddStorageNamespace(
   return new_namespace_id;
 }
 
-string16 DOMStorageDispatcherHost::GetLocalStoragePath() {
-  // TODO(jorlow): Create a path based on the WebKitContext.
-  string16 path;
-  return path;
+WebString DOMStorageDispatcherHost::GetLocalStoragePath() {
+  const FilePath& path = webkit_context_->data_path();
+  if (path.empty())
+    return WebString();
+  FilePath::StringType path_string = path.AppendASCII("localStorage").value();
+  return webkit_glue::FilePathStringToWebString(path_string);
 }

@@ -48,6 +48,17 @@ WebKit::WebSandboxSupport* RendererWebKitClientImpl::sandboxSupport() {
 #endif
 }
 
+bool RendererWebKitClientImpl::sandboxEnabled() {
+  // As explained in WebKitClient.h, this function is used to decide whether to
+  // allow file system operations to come out of WebKit or not.  Even if the
+  // sandbox is disabled, there's no reason why the code should act any
+  // differently...unless we're in single process mode.  In which case, we have
+  // no other choice.  WebKitClient.h discourages using this switch unless
+  // absolutely necessary, so hopefully we won't end up with too many code paths
+  // being different in single-process mode.
+  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
+}
+
 bool RendererWebKitClientImpl::getFileSize(const WebString& path,
                                            long long& result) {
   if (RenderThread::current()->Send(new ViewHostMsg_GetFileSize(

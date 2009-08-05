@@ -111,15 +111,12 @@ class SandboxIPCProcess : public WebKitClient {
   virtual WebClipboard* clipboard() { return NULL; }
   virtual WebMimeRegistry* mimeRegistry() { return NULL; }
   virtual WebSandboxSupport* sandboxSupport() { return NULL; }
+  virtual bool sandboxEnabled() { return true; }
   virtual WebThemeEngine* themeEngine() { return NULL; }
 
   virtual WebStorageNamespace* createLocalStorageNamespace(
       const WebString& path) { return 0; }
   virtual WebStorageNamespace* createSessionStorageNamespace() { return 0; }
-
-  virtual bool getFileSize(const WebString& path, long long& result) {
-    return false;
-  }
 
   virtual unsigned long long visitedLinkHash(const char*, size_t) { return 0; }
   virtual bool isLinkVisited(unsigned long long) { return false; }
@@ -129,7 +126,9 @@ class SandboxIPCProcess : public WebKitClient {
   }
 
   virtual void setCookies(const WebURL&, const WebURL&, const WebString&) { }
-  virtual WebString cookies(const WebURL&, const WebURL&) { return WebString(); }
+  virtual WebString cookies(const WebURL&, const WebURL&) {
+    return WebString();
+  }
 
   virtual void prefetchHostName(const WebString&) { }
 
@@ -176,6 +175,22 @@ class SandboxIPCProcess : public WebKitClient {
   virtual long long databaseGetFileSize(const WebString& fileName) {
     return 0;
   }
+
+  bool fileExists(const WebString& path) { return false; }
+  bool deleteFile(const WebString& path) { return false; }
+  bool deleteEmptyDirectory(const WebString& path) { return false; }
+  bool getFileSize(const WebString& path, long long& result) {
+    return false;
+  }
+  bool getFileModificationTime(const WebString& path, time_t& result) {
+    return false;
+  }
+  WebString directoryName(const WebString& path) { return WebString(); }
+  WebString pathByAppendingComponent(const WebString& path,
+                                     const WebString& component) {
+    return WebString();
+  }
+  bool makeAllDirectories(const WebString& path) { return false; }
 
  private:
   // ---------------------------------------------------------------------------

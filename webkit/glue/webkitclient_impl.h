@@ -41,10 +41,21 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual void suddenTerminationChanged(bool enabled) { }
 
   virtual base::PlatformFile databaseOpenFile(
-    const WebKit::WebString& file_name, int desired_flags);
+      const WebKit::WebString& file_name, int desired_flags);
   virtual bool databaseDeleteFile(const WebKit::WebString& file_name);
   virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
   virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
+
+  virtual bool fileExists(const WebKit::WebString& path);
+  virtual bool deleteFile(const WebKit::WebString& path);
+  virtual bool deleteEmptyDirectory(const WebKit::WebString& path);
+  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
+  virtual bool getFileModificationTime(const WebKit::WebString& path,
+                                       time_t& result);
+  virtual WebKit::WebString directoryName(const WebKit::WebString& path);
+  virtual WebKit::WebString pathByAppendingComponent(
+      const WebKit::WebString& path, const WebKit::WebString& component);
+  virtual bool makeAllDirectories(const WebKit::WebString& path);
 
  private:
   void DoTimeout() {

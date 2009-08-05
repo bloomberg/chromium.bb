@@ -24,6 +24,10 @@ WebKit::WebSandboxSupport* BrowserWebKitClientImpl::sandboxSupport() {
   return NULL;
 }
 
+bool BrowserWebKitClientImpl::sandboxEnabled() {
+  return false;
+}
+
 unsigned long long BrowserWebKitClientImpl::visitedLinkHash(
     const char* canonical_url,
     size_t length) {
@@ -56,12 +60,6 @@ WebKit::WebString BrowserWebKitClientImpl::cookies(
 
 void BrowserWebKitClientImpl::prefetchHostName(const WebKit::WebString&) {
   NOTREACHED();
-}
-
-bool BrowserWebKitClientImpl::getFileSize(const WebKit::WebString& path,
-                                          long long& result) {
-  NOTREACHED();
-  return false;
 }
 
 WebKit::WebString BrowserWebKitClientImpl::defaultLocale() {

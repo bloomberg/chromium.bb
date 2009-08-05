@@ -38,6 +38,7 @@
 #include "DOMTimer.h"
 #include "FrameLoader.h"
 #include "Page.h"
+#include "TextEncoding.h"
 #include "V8Binding.h"
 #include "V8Proxy.h"
 #include "WorkerContextExecutionProxy.h"
@@ -65,6 +66,15 @@ void initialize(WebKitClient* webKitClient)
     // 4ms prevents the CPU from spinning too busily and provides a balance
     // between CPU spinning and the smallest possible interval timer.
     WebCore::DOMTimer::setMinTimerInterval(0.004);
+
+    // There are some code paths (for example, running WebKit in the browser
+    // process and calling into LocalStorage before anything else) where the
+    // UTF8 string encoding tables are used on a background thread before
+    // they're set up.  This is a problem because their set up routines assert
+    // they're running on the main WebKitThread.  It might be possible to make
+    // the initialization thread-safe, but given that so many code paths use
+    // this, initializing this lazily probably doesn't buy us much.
+    WebCore::UTF8Encoding();
 }
 
 void shutdown()

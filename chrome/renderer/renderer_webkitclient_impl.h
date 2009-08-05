@@ -25,6 +25,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
+  virtual bool sandboxEnabled();
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual unsigned long long visitedLinkHash(
       const char* canonicalURL, size_t length);

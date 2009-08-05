@@ -48,6 +48,10 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl {
     return NULL;
   }
 
+  virtual bool sandboxEnabled() {
+    return true;
+  }
+
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
                                              size_t length) {
     NOTREACHED();
