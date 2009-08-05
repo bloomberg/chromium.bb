@@ -72,15 +72,16 @@ void BookmarkIndex::AddMatchToResults(
     std::vector<bookmark_utils::TitleMatch>* results) {
   for (NodeSet::const_iterator i = match.nodes_begin();
        i != match.nodes_end() && results->size() < max_count; ++i) {
-    results->push_back(bookmark_utils::TitleMatch());
-    bookmark_utils::TitleMatch& title_match = results->back();
-    title_match.node = *i;
-    if (!parser->DoesQueryMatch((*i)->GetTitle(), query_nodes,
-                                &(title_match.match_positions))) {
-      // If we get here it implies the QueryParser didn't match something we
-      // thought should match. We should always match the same thing as the
-      // query parser.
-      NOTREACHED();
+    bookmark_utils::TitleMatch title_match;
+    // Check that the result matches the query.  The previous search
+    // was a simple per-word search, while the more complex matching
+    // of QueryParser may filter it out.  For example, the query
+    // ["thi"] will match the bookmark titled [Thinking], but since
+    // ["thi"] is quoted we don't want to do a prefix match.
+    if (parser->DoesQueryMatch((*i)->GetTitle(), query_nodes,
+                               &(title_match.match_positions))) {
+      title_match.node = *i;
+      results->push_back(title_match);
     }
   }
 }
