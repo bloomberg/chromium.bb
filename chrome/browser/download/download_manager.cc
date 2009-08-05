@@ -966,8 +966,6 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
     return;
   DownloadItem* download = it->second;
 
-  CancelDownloadRequest(download->render_process_id(), download->request_id());
-
   // Clean up will happen when the history system create callback runs if we
   // don't have a valid db_handle yet.
   if (download->db_handle() != kUninitializedHandle) {
@@ -975,12 +973,23 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
     UpdateHistoryForDownload(download);
   }
 
+  DownloadCancelledInternal(download_id,
+                            download->render_process_id(),
+                            download->request_id());
+}
+
+void DownloadManager::DownloadCancelledInternal(int download_id,
+                                                int render_process_id,
+                                                int request_id) {
+  // Cancel the network request.
+  CancelDownloadRequest(render_process_id, request_id);
+
   // Tell the file manager to cancel the download.
-  file_manager_->RemoveDownload(download->id(), this);  // On the UI thread
+  file_manager_->RemoveDownload(download_id, this);  // On the UI thread
   file_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(file_manager_,
                         &DownloadFileManager::CancelDownload,
-                        download->id()));
+                        download_id));
 }
 
 void DownloadManager::PauseDownload(int32 download_id, bool pause) {
@@ -1386,9 +1395,9 @@ void DownloadManager::FileSelectionCanceled(void* params) {
   // The user didn't pick a place to save the file, so need to cancel the
   // download that's already in progress to the temporary location.
   DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
-  file_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(file_manager_, &DownloadFileManager::CancelDownload,
-                        info->download_id));
+  DownloadCancelledInternal(info->download_id,
+                            info->render_process_id,
+                            info->request_id);
 }
 
 void DownloadManager::DeleteDownload(const FilePath& path) {

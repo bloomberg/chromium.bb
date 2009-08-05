@@ -496,6 +496,11 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Persist the automatic opening preference.
   void SaveAutoOpens();
 
+  // Download cancel helper function.
+  void DownloadCancelledInternal(int download_id,
+                                 int render_process_id,
+                                 int request_id);
+
   // Runs the network cancel on the IO thread.
   static void OnCancelDownloadRequest(ResourceDispatcherHost* rdh,
                                       int render_process_id,
