@@ -117,6 +117,10 @@ TEST_F(BookmarkIndexTest, Tests) {
 
     // Title with term multiple times.
     { L"ab ab",                     L"ab",      L"ab ab"},
+
+    // Make sure quotes don't do a prefix match.
+    { L"think",                     L"\"thi\"", L""},
+
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     std::vector<std::wstring> titles;
@@ -124,7 +128,8 @@ TEST_F(BookmarkIndexTest, Tests) {
     AddBookmarksWithTitles(titles);
 
     std::vector<std::wstring> expected;
-    SplitString(data[i].expected, L';', &expected);
+    if (!data[i].expected.empty())
+      SplitString(data[i].expected, L';', &expected);
 
     ExpectMatches(data[i].query, expected);
 
