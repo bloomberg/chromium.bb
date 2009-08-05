@@ -4,7 +4,7 @@
 
 #ifdef CHROME_PERSONALIZATION
 
-#include "chrome/browser/views/user_data_page_view.h"
+#include "chrome/browser/views/options/user_data_page_view.h"
 
 #include "app/l10n_util.h"
 #include "base/path_service.h"
