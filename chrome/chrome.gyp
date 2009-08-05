@@ -3026,33 +3026,6 @@
                          '-k<(mac_keystone)',
                          '<(branding)'],
             },
-            {
-              # TODO(tvl): delete this after it has been in a week or so since
-              # it will migrate bots/developers to the new layout instead of
-              # them getting errors with stale xib in the old dir.
-              'action_name': 'remove_stale_nibs',
-              'inputs': [],
-              'outputs': [],
-              'action': ['rm', '-rf',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/About.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/BookmarkBar.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/BrowserWindow.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/ClearBrowsingData.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/DownloadItem.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/DownloadShelf.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/FindBar.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/FirstRunDialog.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/HungRendererDialog.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/InfoBar.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/InfoBarContainer.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/MainMenu.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/PageInfo.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/Preferences.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/SaveAccessoryView.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/TabContents.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/TabView.nib',
-                '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/en.lproj/Toolbar.nib'],
-            },
           ],
         }],
         ['OS=="mac"', {
