@@ -102,12 +102,17 @@ class XcodeProject(object):
     # Replace the XCConfigurationList attached to the PBXProject object with
     # a new one specifying all of the configuration names used by the various
     # targets.
-    xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
-    for configuration in configurations:
-      xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
-      xccl.AppendProperty('buildConfigurations', xcbc)
-    xccl.SetProperty('defaultConfigurationName', configurations[0])
-    self.project.SetProperty('buildConfigurationList', xccl)
+    try:
+      xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+      for configuration in configurations:
+        xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
+        xccl.AppendProperty('buildConfigurations', xcbc)
+      xccl.SetProperty('defaultConfigurationName', configurations[0])
+      self.project.SetProperty('buildConfigurationList', xccl)
+    except:
+      import sys
+      sys.stderr.write("Problem with gyp file %s\n" % self.gyp_path)
+      raise
 
     # The need for this setting is explained above where _intermediate_var is
     # defined.  The comments below about wanting to avoid project-wide build
@@ -1001,9 +1006,12 @@ exit 1
         xcbc.AppendBuildSetting('HEADER_SEARCH_PATHS', include_dir)
       if 'defines' in configuration:
         for define in configuration['defines']:
-          # If the define is of the form A="B", escape the quotes yielding
-          # A=\"B\".
-          set_define = re.sub('^([^=]*=)"([^"]*)"$', '\\1\\"\\2\\"', define)
+          # If the define is of the form A="B", escape the quotes
+          # yielding A=\"\\\"B\\\"\".  The extra set of quotes tell
+          # Xcode NOT to split on spaces, and still define a string
+          # literal (with quotes).
+          set_define = re.sub(r'^([^=]*=)"([^"]*)"$',
+                              r'\1"\"\2\""', define)
           xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', set_define)
       if 'xcode_settings' in configuration:
         for xck, xcv in configuration['xcode_settings'].iteritems():
