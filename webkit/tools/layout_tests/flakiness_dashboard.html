@@ -1,0 +1,625 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>Webkit Layout Test History</title>
+  <style>
+    .test-link {
+      white-space: normal;
+    }
+    .test-table {
+      white-space: nowrap;
+    }
+    .test-table {
+      width: 100%;
+    }
+    .test-table td {
+      font-size: 13px;
+      padding: 0 2px;
+    }
+    .test-table tr {
+      border: 1px solid red;
+      background-color: #E8E8E8;
+    }
+    .test-table tbody tr:hover {
+      opacity: .7;
+    }
+    .test-table th {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+    }
+    .link {
+      color: blue;
+      text-decoration: underline;
+    }
+    .header-container,
+    .header-container *,
+    .table-header-content,
+    .table-header-content * {
+      display: -webkit-box;
+    }
+    .table-header-content * {
+      -webkit-box-flex: 1;
+    }
+    .header-container * {
+      -webkit-box-flex: 0;
+    }
+    .header-title {
+      -webkit-box-flex: 1;
+      -webkit-box-pack: center;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .results {
+      cursor: pointer;
+    }
+    .legend * {
+      padding: 0 3px;
+    }
+    .builders * {
+      margin: 0 5px;
+    }
+    .test-table .expectation-mismatch,
+    .expectation-mismatch {
+      background-color: #afdaff;
+    }
+    .P {
+      background-color: #8fdf5f;
+    }
+    .N {
+      background-color: #e0b0ff;
+    }
+    .C {
+      background-color: #ffc343;
+    }
+    .T {
+      background-color: #fffc6c;
+    }
+    .I {
+      background-color: yellow;
+    }
+    .S {
+      background-color: red;
+    }
+    .F {
+      background-color: #e98080;
+    }
+    .O {
+      background-color: blue;
+    }
+    .separator {
+      border: 1px solid lightgray;
+      height: 0px;
+    }
+    .different-platform {
+      color: gray;
+      font-size: 10px;
+    }
+    .current-builder {
+      text-decoration: none;
+      color: black;
+    }
+  </style>
+
+  <script>
+  /**
+   * @fileoverview Creates a dashboard for multiple runs of a given set of tests
+   * on the buildbots. Pulls in JSONP-ish files with the results for running
+   * tests on a given builder (i.e. ADD_RESULTS(json_here)) and the expectations
+   * for all tests on all builders (i.e. ADD_EXPECTATIONS(json_here)).
+   *
+   * This shows flakiness of the tests as well as runtimes for slow tests.
+   *
+   * Also, each column in the dashboard is sortable.
+   *
+   * Currently, only webkit tests are supported, but adding other test types
+   * should just require the following steps:
+   *   -generate results.json and expectations.json for these tests
+   *   -copy them to the appropriate location
+   *   -add the builder name to the list of builders below.
+   */
+  var builders = ['WebKit', 'WebKitDebug'];
+
+  /* TODO
+  PYTHON
+  -have bots copy JSON files for build results + expectations to the right
+      places. Include the test type in the path so we can reuse this HTML for
+      other tests (e.g. UI tests)
+  -get the build_number and builder_name from the bot
+  -make file paths local
+
+  JS
+  -make getPathToBuilderResultsFile point to the actual bots
+  -UNEXPECTED RESULTS PRINTS WRONG THING
+   (e.g. undefined for "N" and SIMPLIFIED for "S")
+
+  JS - Nice-to-haves
+  -highlight expected results that never happen
+  -show range of build numbers that are included
+  -checkboxes to hide defer/wontfix tests
+  */
+  var resultsByBuilder = {};
+  var expectationsByTest = {};
+  var testType = window.location.search.substring(1);
+  function ADD_RESULTS(builds) {
+    for (var builderName in builds)
+      resultsByBuilder[builderName] = builds[builderName];
+  }
+  var BUILDER_BASE = 'LayoutTestDashBoard';
+  function getPathToBuilderResultsFile(builderName) {
+    // TODO(ojan): Make this match the actual path to the bots.
+    return BUILDER_BASE + testType + builders[i]
+  }
+  for (var i = 0; i < builders.length; i++) {
+    var script = document.createElement('script');
+    script.src = getPathToBuilderResultsFile(builders[i]) + 'results.js';
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  var script = document.createElement('script');
+  // Grab expectations file from any builder.
+  script.src = getPathToBuilderResultsFile(builders[0]) + 'expectations.json';
+  document.getElementsByTagName('head')[0].appendChild(script);
+
+  function ADD_EXPECTATIONS(expectations) {
+    for (var test in expectations)
+      expectationsByTest[test] = expectations[test];
+  }
+
+  // CONSTANTS
+  var FORWARD = 'forward';
+  var BACKWARD = 'backward';
+  var TEST_URL_BASE_PATH =
+      'http://trac.webkit.org/projects/webkit/browser/trunk/';
+  var BUILDERS_BASE_PATH =
+      'http://build.chromium.org/buildbot/waterfall/builders/';
+  var EXPECTATIONS_MAP = {
+    'T': 'TIMEOUT',
+    'C': 'CRASH',
+    'P': 'PASS',
+    'F': 'TEXT FAIL',
+    'S': 'SIMPLIFIED',
+    'I': 'IMAGE',
+    'O': 'OTHER'
+  };
+  var TABLE_HEADERS = ['test', 'modifiers', 'expectations',
+      'unexpected results', 'slowest run',
+      'flakiness (numbers are runtimes in seconds)'];
+  var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
+  var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
+
+  // GLOBALS
+  var currentState = {builder: null, sortFailures: 'test', sortPasses: 'test',
+      sortFailuresOrder: FORWARD, sortPassesOrder: FORWARD};
+  var perBuilderPlatformAndBuildType = {};
+  var oldLocation;
+  var perBuilderFailures = {};
+  var allTestsCache;
+
+  function createResultsObjectForTest(test) {
+    return {
+      test: test,
+      // HTML for display of the results in the flakiness column
+      html: '',
+      flips: 0,
+      slowestTime: 0,
+      meetsExpectations: true,
+      // Map of test results that don't match their expectations
+      unexpectedExpectations: {},
+      // Sorted string of unexpected expectations
+      unexpected: '',
+      // HTML for expectations for this test for all platforms
+      expectationsHTML: '',
+      // HTML for modifiers for this test for all platforms
+      modifiersHTML: ''
+    };
+  }
+
+  function getMatchingElement(stringToMatch, elementsMap) {
+    for (var element in elementsMap) {
+      if (stringToMatch.indexOf(elementsMap[element]) != -1)
+        return element;
+    }
+  }
+
+  function stringContains(a, b) {
+    return a.indexOf(b) != -1;
+  }
+
+  function anyKeyInString(object, string) {
+    for (var key in object) {
+      if (stringContains(string, key))
+        return true;
+    }
+    return false;
+  }
+
+  function hasPlatformAndBuildTypeForBuilder(builderName, modifiers) {
+    var currentPlatformAndBuildType;
+    if (perBuilderPlatformAndBuildType[builderName]) {
+      currentPlatformAndBuildType = perBuilderPlatformAndBuildType[builderName];
+    } else {
+      // If the build name does not contain a platform
+      // or build type, assume Windows Release.
+      var currentBuildUppercase = builderName.toUpperCase();
+      var platform = getMatchingElement(currentBuildUppercase, PLATFORMS) ||
+          'WIN';
+      var buildType = getMatchingElement(currentBuildUppercase, BUILD_TYPES) ||
+          'RELEASE';
+      currentPlatformAndBuildType = {platform: platform, buildType: buildType};
+    }
+
+    var hasThisPlatform = stringContains(modifiers,
+        currentPlatformAndBuildType.platform);
+    var hasThisBuildType = stringContains(modifiers,
+        currentPlatformAndBuildType.buildType);
+
+    var hasAnyPlatform = anyKeyInString(PLATFORMS, modifiers);
+    var hasAnyBuildType = anyKeyInString(BUILD_TYPES, modifiers);
+
+    return (!hasAnyBuildType || hasThisBuildType) &&
+        (!hasAnyPlatform || hasThisPlatform);
+  }
+
+  function processTestRunsForBuilder(builderName) {
+    if (perBuilderFailures[builderName])
+      return;
+
+    var failures = [];
+    var passes = [];
+
+    var allTests = resultsByBuilder[builderName].tests;
+
+    var expectationsMap = {};
+    var testPrefixes = {};
+    var testsWithoutDirectExpectations = [];
+    for (var test in allTests) {
+      if (expectationsByTest[test])
+        expectationsMap[test] = expectationsByTest[test];
+      else
+        testsWithoutDirectExpectations.push(test);
+    }
+    for (var path in expectationsByTest) {
+      if (allTests[path]) {
+        // Test path is an exact match (i.e. not a prefix match)
+        expectationsMap[path] = expectationsByTest[path];
+        testPrefixes[path] = path;
+      } else {
+        // Test path doesn't match a specific test, see if it prefix matches
+        // any test.
+        for (var test in allTests) {
+          if (stringContains(test, path) &&
+              (!testPrefixes[test] || testPrefixes[test].indexOf(path) == -1)) {
+            expectationsMap[test] = expectationsByTest[path];
+            testPrefixes[test] = path;
+          }
+        }
+      }
+    }
+
+    for (var test in allTests) {
+      var resultsForTest = createResultsObjectForTest(test);
+
+      if (expectationsMap[test] && expectationsMap[test].length) {
+        var expectationsArray = expectationsMap[test];
+        var expectationsHTMLArray = [];
+        var modifiersHTMLArray = [];
+
+        var thisBuilderExpectations;
+        var thisBuilderModifiers;
+        for (var i = 0; i < expectationsArray.length; i++) {
+          var modifiers = expectationsArray[i].modifiers;
+          var expectations = expectationsArray[i].expectations;
+          if (hasPlatformAndBuildTypeForBuilder(builderName, modifiers)) {
+            resultsForTest.expectations = expectations;
+            resultsForTest.modifiers = modifiers;
+          } else {
+            // TODO: add classname to the ones that don't apply for this
+            // platform in getHTMLForOptionsList so they can be greyed out
+            expectationsHTMLArray.push(
+                '<div class="option different-platform">' + expectations +
+                '</div>');
+            modifiersHTMLArray.push(
+                '<div class="option different-platform">' + modifiers +
+                '</div>');
+          }
+        }
+
+        if (resultsForTest.expectations) {
+          expectationsHTMLArray.push('<div class="option">' +
+              resultsForTest.expectations + '</div>');
+          modifiersHTMLArray.push('<div class="option">' +
+              resultsForTest.modifiers + '</div>');
+        }
+
+        resultsForTest.expectationsHTML +=
+            expectationsHTMLArray.join('<div class=separator></div>');
+        resultsForTest.modifiersHTML +=
+            modifiersHTMLArray.join('<div class=separator></div>');
+      }
+
+      var results = resultsByBuilder[builderName].tests[test].results.split('');
+
+      var unexpectedExpectations = [];
+      for (var i = 0; i < results.length - 1; i++) {
+        if (results[i] != results[i + 1])
+          resultsForTest.flips++;
+
+        var expectation = EXPECTATIONS_MAP[results[i]];
+        if (hasExpectations(resultsForTest.expectations, results[i])) {
+          unexpectedExpectations[expectation] = true;
+          resultsForTest.meetsExpectations = false;
+        }
+      }
+
+      var times = resultsByBuilder[builderName].tests[test].times;
+      resultsForTest.slowestTime = Math.max.apply(null, times)
+
+      resultsForTest.html = getHtmlForIndividualTest(builderName, test);
+
+      var expectations = [];
+      for (var expectation in unexpectedExpectations) {
+        expectations.push(expectation);
+      }
+      if (expectations.length) {
+        resultsForTest.unexpected = expectations.join(' ');
+      }
+
+      if (didTestPassAllRuns(builderName, test)) {
+        resultsForTest.meetsExpectations =
+            expectations || expectations == 'PASS';
+      }
+
+      failures.push(resultsForTest);
+    }
+
+    perBuilderFailures[currentState.builder] = failures;
+  }
+
+  function hasExpectations(expectations, result) {
+    // For the purposes of comparing against the expecations of a test,
+    // consider image/simplified diff failures as just failures since
+    // the test_expectations file doesn't treat them specially.
+    if (result == 'S' || result == 'I')
+      result = 'F'
+
+    var thisExpectation = EXPECTATIONS_MAP[result];
+    if (!thisExpectation)
+      return true;
+
+    if (!expectations)
+      return false;
+
+    return expectations.indexOf(thisExpectation) != -1;
+  }
+
+  function didTestPassAllRuns(builderName, testPath) {
+    var numBuilds = resultsByBuilder[builderName].buildNumbers.length;
+    var passingResults = Array(numBuilds + 1).join('P');
+    var results = resultsByBuilder[builderName].tests[testPath].results;
+    return results == passingResults;
+  }
+
+  function loadBuilderPageForBuildNumber(builderName, buildNumber) {
+    window.open(BUILDERS_BASE_PATH + builderName + '/builds/' + buildNumber);
+  }
+
+  function getHtmlForIndividualTest(builderName, testPath) {
+    var html = '';
+    var test = resultsByBuilder[builderName].tests[testPath];
+    var results = test.results.split('');
+    var times = test.times;
+    var buildNumbers = resultsByBuilder[builderName].buildNumbers;
+    for (var i = 0; i < results.length; i++) {
+      var buildNumber = buildNumbers[i];
+      // To avoid noise, only print times that are larger than 1 second.
+      // TODO: See if this is necessary. If it is, look into tweaking the
+      // threshold lower/higher.
+      var innerHTML = times[i] > 1 ? times[i] : '&nbsp;';
+      html += '<td title="Build:' + buildNumber + '" class="results ' +
+          results[i] + '" onclick=\'loadBuilderPageForBuildNumber("' +
+          builderName + '","' + buildNumber + '")\'>' + innerHTML + '</td>';
+    }
+    return html;
+  }
+
+  function getHTMLForTestTable(results, id, sort, order) {
+    var html = '<table id=' + id + ' class=test-table>' +
+        getTableHeaders(sort, order) + '<tbody>';
+
+    sortTests(results, sort, order);
+    for (var i = 0; i < results.length; i++) {
+      var test = results[i];
+      html += '<tr class=' +
+        (test.meetsExpectations ? '' : 'expectation-mismatch') +
+        // TODO: If a test is a chrome/ or a pending/ test, point to
+        // src.chromium.org instead of trac.webkit.org.
+        '><td class=test-link><a href="' + TEST_URL_BASE_PATH + test.test +
+        '">' + test.test + '</a>' +
+        '</td><td class=options-container>' + test.modifiersHTML +
+        '</td><td class=options-container>' + test.expectationsHTML +
+        '</td><td>' + test.unexpected +
+        '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
+        '</td>' +
+        test.html +
+        '</tr>';
+    }
+
+    html += "</tbody></table>"
+    return html;
+  }
+
+  function getTableHeaders(sort, order) {
+    var html = '<thead><tr>';
+    for (var i = 0; i < TABLE_HEADERS.length; i++) {
+      // Use the first word of the header title as the sortkey
+      var thisSortValue = TABLE_HEADERS[i].split(' ')[0];
+      var arrowHTML = thisSortValue == sort ?
+          '<span class=' + order + '>' +
+          (order == FORWARD ? '&uarr;' : '&darr;' ) + '</span>' :
+          '';
+      html += '<th sortValue=' + thisSortValue +
+          // Extend last th through all the rest of the columns.
+          (i == TABLE_HEADERS.length - 1 ? ' colspan=10000' : '') +
+          // Extra span here is so flex boxing actually centers.
+          // There's probably a better way to do this with CSS only though.
+          '><div class=table-header-content><span></span>' + arrowHTML +
+          '<span class=link>' + TABLE_HEADERS[i] + '</span>' +
+          arrowHTML + '</div></th>';
+    }
+    html += '</tr></thead>';
+    return html;
+  }
+
+  function getHTMLForPageHeader() {
+    var html = '<div class=header-container>';
+
+    html += '<span class=builders>';
+    for (var builder in resultsByBuilder) {
+      var className = builder == currentState.builder ? 'current-builder' : '';
+      html += '<a' + (className ? ' class="' + className : '') + '" link"' +
+          ' onclick=\'setState("builder", "' + builder +
+          '");return false;\'>' + builder + '</a>';
+    }
+    html += '</span>';
+
+    html += '<span class=header-title></span>';
+
+    html += '<span class=legend>';
+    for (var expectation in EXPECTATIONS_MAP) {
+      html += '<span class=' + expectation + '>' +
+          EXPECTATIONS_MAP[expectation] + '</span>';
+    }
+    html += '<span class=N>NO DATA</span>'
+    html += '<span class=expectation-mismatch>WRONG EXPECTATIONS</span>'
+    html += '</span>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function setFullPageHTML() {
+    var html = getHTMLForPageHeader();
+    html += getHTMLForTestTable(perBuilderFailures[currentState.builder],
+       'failures', currentState.sortFailures, currentState.sortFailuresOrder);
+    document.body.innerHTML = html;
+  }
+
+  function getAlphanumericCompare(column, reverse) {
+    return getReversibleCompareFunction(function(a, b) {
+      // Put null entries at the bottom
+      var a = a[column] ? String(a[column]) : 'z';
+      var b = b[column] ? String(b[column]) : 'z';
+
+      if (a < b)
+        return -1;
+      else if (a == b)
+        return 0;
+      else
+        return 1;
+    }, reverse);
+  }
+
+  function getNumericSort(column, reverse) {
+    return getReversibleCompareFunction(function(a, b) {
+      a = parseFloat(a[column]);
+      b = parseFloat(b[column]);
+      return a - b;
+    }, reverse);
+  }
+
+  function getReversibleCompareFunction(compare, reverse) {
+    return function(a, b) {
+      return compare(reverse ? b : a, reverse ? a : b);
+    }
+  }
+
+  function changeSort(e) {
+    var target = e.currentTarget;
+    e.preventDefault();
+
+    var sortValue = target.getAttribute('sortValue');
+    while (target && target.tagName != 'TABLE') {
+      target = target.parentNode;
+    }
+
+    var sort = target.id == 'passes' ? 'sortPasses' : 'sortFailures';
+
+    var orderKey = sort + 'Order';
+    if (sortValue == currentState[sort] && currentState[orderKey] == FORWARD)
+      order = BACKWARD;
+    else
+      order = FORWARD;
+
+    setState(sort, sortValue);
+    setState(orderKey, order);
+  }
+
+  function sortTests(tests, column, order) {
+    var resultsProperty, sortFunctionGetter;
+    if (column == 'flakiness') {
+      sortFunctionGetter = getNumericSort;
+      resultsProperty = 'flips';
+    } else if (column == 'slowest') {
+      sortFunctionGetter = getNumericSort;
+      resultsProperty = 'slowestTime';
+    } else {
+      sortFunctionGetter = getAlphanumericCompare;
+      resultsProperty = column;
+    }
+
+    tests.sort(sortFunctionGetter(resultsProperty, order == BACKWARD));
+  }
+
+  function generatePage() {
+    currentPlatformAndBuildType = null;
+    oldLocation = window.location.toString();
+    var hash = window.location.hash;
+    var builderName;
+    if (hash) {
+      hashParts = hash.slice(1).split('&');
+      for (var i = 0; i < hashParts.length; i++) {
+        var itemParts = hashParts[i].split('=');
+        // TODO: Validate itemParts[0]
+        currentState[itemParts[0]] = itemParts[1];
+      }
+    }
+    if (!(currentState.builder in resultsByBuilder)) {
+      for (builder in resultsByBuilder) {
+        currentState.builder = builder;
+        break;
+      }
+    }
+
+    processTestRunsForBuilder(currentState.builder);
+    setFullPageHTML();
+
+    var ths = document.getElementsByTagName('th');
+    for (var i = 0; i < ths.length; i++) {
+      ths[i].addEventListener('click', changeSort, false);
+    }
+  }
+
+  function setState(key, value) {
+    currentState[key] = value;
+    window.location.replace(window.location.pathname + '#' +
+        'builder=' + currentState.builder + '&' +
+        'sortFailures=' + currentState.sortFailures + '&' +
+        'sortFailuresOrder=' + currentState.sortFailuresOrder + '&' +
+        'sortPasses=' + currentState.sortPasses + '&' +
+        'sortPassesOrder=' + currentState.sortPassesOrder);
+  }
+
+  window.onload = function() {
+    // Poll for hash changes.
+    // TODO: Use hashchange event when it is supported.
+    setInterval(function() {
+      if (oldLocation != window.location)
+        generatePage();
+    }, 100);
+  }
+  </script>
+</head>
+
+<body></body>
+</html>

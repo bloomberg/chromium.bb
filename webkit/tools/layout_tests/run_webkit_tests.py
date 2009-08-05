@@ -28,6 +28,7 @@ import optparse
 import os
 import Queue
 import random
+import re
 import shutil
 import subprocess
 import sys
@@ -39,6 +40,7 @@ import google.path_utils
 from layout_package import compare_failures
 from layout_package import test_expectations
 from layout_package import http_server
+from layout_package import json_results_generator
 from layout_package import path_utils
 from layout_package import platform_utils
 from layout_package import test_failures
@@ -575,6 +577,9 @@ class TestRunner:
     # Write summaries to stdout.
     self._PrintResults(failures, sys.stdout)
 
+    if self._options.verbose:
+      self._WriteJSONFiles(failures, individual_test_timings);
+
     # Write the same data to a log file.
     out_filename = os.path.join(self._options.results_directory, "score.txt")
     output_file = open(out_filename, "w")
@@ -590,6 +595,33 @@ class TestRunner:
     sys.stdout.flush()
     sys.stderr.flush()
     return len(regressions)
+
+  def _WriteJSONFiles(self, failures, individual_test_timings):
+    # Write a json file of the test_expectations.txt file for the layout tests
+    # dashboard.
+    expectations_file = open(os.path.join(self._options.results_directory,
+        "expectations.json"), "w")
+    # TODO(ojan): Generate JSON using a JSON library instead of relying on
+    # GetExpectationsForAllPlatforms returning an object that only uses
+    # primitive types.
+    # Strip whitespace to reduce filesize.
+    expectations_json = re.sub(r'\s+', '',
+        repr(self._expectations.GetExpectationsForAllPlatforms()))
+    expectations_file.write(("ADD_EXPECTATIONS(" + expectations_json + ");"))
+    expectations_file.close()
+
+    results_file_path = os.path.join(self._options.results_directory,
+        "results.json")
+    # TODO(ojan): get these from the bot
+    builder_name = "WebKitBuilder"
+    build_number = "12346"
+    json_generator = json_results_generator.JSONResultsGenerator(failures,
+        individual_test_timings, builder_name, build_number, results_file_path)
+    results_json = json_generator.GetJSON()
+
+    results_file = open(results_file_path, "w")
+    results_file.write(results_json)
+    results_file.close()
 
   def _PrintTimingStatistics(self, directory_test_timings,
       individual_test_timings, failures):

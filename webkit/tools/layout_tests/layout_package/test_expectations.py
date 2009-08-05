@@ -22,7 +22,6 @@ import compare_failures
 # Test expectation file update action constants
 (NO_CHANGE, REMOVE_TEST, REMOVE_PLATFORM, ADD_PLATFORMS_EXCEPT_THIS) = range(4)
 
-
 class TestExpectations:
   TEST_LIST = "test_expectations.txt"
 
@@ -36,6 +35,9 @@ class TestExpectations:
   # to run, but not when getting metrics.
   # TODO(ojan): Replace the Get* calls here with the more sane API exposed
   # by TestExpectationsFile below. Maybe merge the two classes entirely?
+
+  def GetExpectationsForAllPlatforms(self):
+    return self._expected_failures.GetExpectationsForAllPlatforms()
 
   def GetFixable(self):
     return self._expected_failures.GetTestSet(NONE)
@@ -145,6 +147,17 @@ def StripComments(line):
   if line == '': return None
   else: return line
 
+class ModifiersAndExpectations:
+  """A holder for modifiers and expectations on a test that serializes to JSON.
+  """
+  def __init__(self, modifiers, expectations):
+    self.modifiers = modifiers
+    self.expectations = expectations
+
+  def __repr__(self):
+    return ("{modifiers:'" + self.modifiers + "', expectations:'" +
+        self.expectations + "'}")
+
 class TestExpectationsFile:
   """Test expectation files consist of lines with specifications of what
   to expect from layout test cases. The test cases can be directories
@@ -213,6 +226,11 @@ class TestExpectationsFile:
     self._platform = platform
     self._is_debug_mode = is_debug_mode
 
+    # Maps relative test paths as listed in the expectations file to a list of
+    # maps containing modifiers and expectations for each time the test is
+    # listed in the expectations file.
+    self._all_expectations = {}
+
     # Maps a test to its list of expectations.
     self._test_to_expectations = {}
 
@@ -248,6 +266,9 @@ class TestExpectationsFile:
 
   def GetExpectations(self, test):
     return self._test_to_expectations[test]
+
+  def GetExpectationsForAllPlatforms(self):
+    return self._all_expectations
 
   def Contains(self, test):
     return test in self._test_to_expectations
@@ -421,6 +442,12 @@ class TestExpectationsFile:
 
     return True
 
+  def _AddToAllExpectations(self, test, options, expectations):
+    if not test in self._all_expectations:
+      self._all_expectations[test] = []
+    self._all_expectations[test].append(
+        ModifiersAndExpectations(options, expectations))
+
   def _Read(self, path):
     """For each test in an expectations file, generate the expectations for it.
     """
@@ -430,16 +457,15 @@ class TestExpectationsFile:
       line = StripComments(line)
       if not line: continue
 
-      modifiers = set()
+      options_string = None
+      expectations_string = None
+
       if line.find(':') is -1:
         test_and_expectations = line
       else:
         parts = line.split(':')
         test_and_expectations = parts[1]
-        options = self._GetOptionsList(parts[0])
-        if not self._HasValidModifiersForCurrentPlatform(options, lineno,
-            test_and_expectations, modifiers):
-          continue
+        options_string = parts[0]
 
       tests_and_expecation_parts = test_and_expectations.split('=')
       if (len(tests_and_expecation_parts) is not 2):
@@ -447,12 +473,23 @@ class TestExpectationsFile:
         continue
 
       test_list_path = tests_and_expecation_parts[0].strip()
-      expectations = self._ParseExpectations(tests_and_expecation_parts[1],
-          lineno, test_list_path)
+      expectations_string = tests_and_expecation_parts[1]
+
+      self._AddToAllExpectations(test_list_path, options_string,
+          expectations_string)
+
+      modifiers = set()
+      options = self._GetOptionsList(options_string)
+      if options and not self._HasValidModifiersForCurrentPlatform(options,
+          lineno, test_and_expectations, modifiers):
+        continue
+
+      expectations = self._ParseExpectations(expectations_string, lineno,
+          test_list_path)
 
       if 'slow' in options and TIMEOUT in expectations:
-        self._AddError(lineno, 'A test cannot be both slow and timeout. If the '
-            'test times out indefinitely, the it should be listed as timeout.',
+        self._AddError(lineno, 'A test should not be both slow and timeout. '
+            'If it times out indefinitely, then it should be just timeout.',
             test_and_expectations)
 
       full_path = os.path.join(path_utils.LayoutTestsDir(test_list_path),
