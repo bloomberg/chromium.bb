@@ -543,9 +543,10 @@ void TabRendererGtk::Layout() {
   if (!is_pinned() || width() >= kPinnedTabRendererAsTabWidth) {
     // Size the Title text to fill the remaining space.
     int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
-    // Center the mean line of the text in the content area.
-    int title_top = kTopPadding +
-        (content_height - title_font_->baseline()) / 2;
+    // Center the text in the content area.  We need to shift the text up by a
+    // pixel to match Windows.  TODO(estade): Figure out why we need to shift
+    // the text up by a pixel.  http://crbug.com/18555
+    int title_top = kTopPadding + (content_height - title_font_height_) / 2 - 1;
 
     // If the user has big fonts, the title will appear rendered too far down
     // on the y-axis if we use the regular top padding, so we need to adjust it
@@ -888,9 +889,10 @@ void TabRendererGtk::InitResources() {
   LoadTabImages();
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  // Force the font size to 8pt.
+  // Force the font size to 9pt, which matches Windows' default font size
+  // (taken from the system).
   gfx::Font base_font = rb.GetFont(ResourceBundle::BaseFont);
-  title_font_ = new gfx::Font(gfx::Font::CreateFont(base_font.FontName(), 8));
+  title_font_ = new gfx::Font(gfx::Font::CreateFont(base_font.FontName(), 9));
   title_font_height_ = title_font_->height();
 
   crashed_fav_icon = rb.GetBitmapNamed(IDR_SAD_FAVICON);
