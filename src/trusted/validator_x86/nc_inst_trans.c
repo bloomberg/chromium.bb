@@ -872,6 +872,23 @@ static ExprNode* AppendMod11EffectiveAddress(
                                GetGenRmRegister(state));
 }
 
+/* Compute the effect address using the Mod/Rm and SIB bytes. */
+static ExprNode* AppendEffectiveAddress(NcInstState* state, Operand* operand) {
+  switch(modrm_mod(state->modrm)) {
+    case 0:
+      return AppendMod00EffectiveAddress(state, operand);
+    case 1:
+      return AppendMod01EffectiveAddress(state, operand);
+    case 2:
+      return AppendMod10EffectiveAddress(state, operand);
+    case 3:
+      return AppendMod11EffectiveAddress(state, operand);
+    default:
+      break;
+  }
+  return FatalError("Operand", state);
+}
+
 /* Given the corresponding operand of the opcode associated with the
  * instruction of the given state, append the corresponding expression
  * nodes that it corresponds to. Returns the root of the corresponding
@@ -892,18 +909,13 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Mb_Operand:
     case Mw_Operand:
     case Mv_Operand:
-    case Mo_Operand:
-      switch(modrm_mod(state->modrm)) {
-        case 0:
-          return AppendMod00EffectiveAddress(state, operand);
-        case 1:
-          return AppendMod01EffectiveAddress(state, operand);
-        case 2:
-          return AppendMod10EffectiveAddress(state, operand);
-        case 3:
-          return AppendMod11EffectiveAddress(state, operand);
-        default:
-          break;
+    case Mo_Operand: {
+        ExprNode* address = AppendEffectiveAddress(state, operand);
+        /* Near operands are jump addresses. Mark them as such. */
+        if (operand->flags & OpFlag(OperandNear)) {
+          address->flags |= ExprFlag(ExprJumpTarget);
+        }
+        return address;
       }
       break;
     case G_Operand:

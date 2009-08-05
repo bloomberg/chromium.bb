@@ -212,7 +212,7 @@ ExprNodeVector[8] = {
   { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
   { OperandReference[1] , 2, 0 },
-  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprMemOffset[4] , 0, ExprUsed | ExprJumpTarget },
   { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -380,7 +380,7 @@ ExprNodeVector[6] = {
   { OperandReference[1] , 2, ExprImplicit },
   { ExprRegister[0] , %rsp, ExprSet | ExprUsed | ExprSize64 },
   { OperandReference[1] , 3, 0 },
-  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 | ExprJumpTarget },
 };
 000000000040048d: eb 24                                        jmp 0x4004b3
   { 0xeb,
