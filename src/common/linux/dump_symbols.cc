@@ -153,6 +153,10 @@ struct SymbolInfo {
   // than create FuncInfoList for such entries, we record their
   // addresses here.  These are not necessarily sorted.
   std::vector<ElfW(Addr)> file_boundaries;
+
+  // The current source file, for line number information.  This is
+  // persistent across functions.
+  SourceFileInfo *current_source_file;
 };
 
 // Stab section name.
@@ -254,10 +258,8 @@ static int LoadLineInfo(struct nlist *list,
                         struct FuncInfo *func_info,
                         const ElfW(Shdr) *stabstr_section) {
   struct nlist *cur_list = list;
-  // The source file to which subsequent lines belong.
-  SourceFileInfo *current_source_file = source_file_info;
   // The name of the file any subsequent lines would belong to.
-  const char *last_source_name = current_source_file->name;
+  const char *last_source_name = symbols->current_source_file->name;
   do {
     // Skip non line information.
     while (cur_list < list_end && cur_list->n_type != N_SLINE) {
@@ -276,9 +278,11 @@ static int LoadLineInfo(struct nlist *list,
     struct LineInfo line;
     while (cur_list < list_end && cur_list->n_type == N_SLINE) {
       // If this line is attributed to a new file, create its entry now.
-      if (last_source_name != current_source_file->name)
-        current_source_file = FindSourceFileInfo(symbols, last_source_name);
-      line.file = current_source_file;
+      if (last_source_name != symbols->current_source_file->name) {
+        symbols->current_source_file
+          = FindSourceFileInfo(symbols, last_source_name);
+      }
+      line.file = symbols->current_source_file;
       line.rva_to_func = cur_list->n_value;
       // n_desc is a signed short
       line.line_num = (unsigned short)cur_list->n_desc;
@@ -466,6 +470,7 @@ static bool LoadSymbols(const ElfW(Shdr) *stab_section,
         if (! source_file_info->addr)
           symbols->main_files.push_back(source_file_info);
         source_file_info->addr = cur_list->n_value;
+        symbols->current_source_file = source_file_info;
         step = LoadFuncSymbols(cur_list, lists + nstab, symbols,
                                source_file_info, stabstr_section);
       } else {
