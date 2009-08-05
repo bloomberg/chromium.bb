@@ -2511,7 +2511,6 @@ BUG11613 LINUX : LayoutTests/fast/forms/select-selected.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/select-size.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/stuff-on-my-optgroup.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/targeted-frame-submission.html = FAIL
-BUG11613 LINUX : LayoutTests/fast/forms/textfield-drag-into-disabled.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/textfield-outline.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/forms/textfield-overflow.html = FAIL
 BUG11613 LINUX : LayoutTests/fast/invalid/014.html = FAIL
@@ -3071,6 +3070,3 @@ BUG18206 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-
 // file a bug.
 BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
 BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-prototypes.html = FAIL
-
-// Test failures from WebKit merge 46766 to 46794
-BUG18487 WIN : LayoutTests/fast/forms/textfield-drag-into-disabled.html = FAIL
