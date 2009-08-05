@@ -86,6 +86,8 @@ TEST_F(CustomHomePagesModelTest, KVOObserveWhenListChanges) {
   urls.push_back(GURL("http://www.google.com"));
   [model_ setURLs:urls];  // Should send kvo change notification.
   EXPECT_TRUE(kvo_helper.get()->sawNotification_);
+
+  [model_ removeObserver:kvo_helper forKeyPath:@"customHomePages"];
 }
 
 // Test the KVO "to-many" bindings for |customHomePages| and the KVO
@@ -120,6 +122,8 @@ TEST_F(CustomHomePagesModelTest, KVO) {
                   isEqualToString:@"dev.chromium.org"]);
   EXPECT_TRUE([[model_ objectInCustomHomePagesAtIndex:0]
                   isEqualToString:@"www.google.com"]);
+
+  [model_ removeObserver:kvo_helper forKeyPath:@"customHomePages"];
 }
 
 // Test that when individual items are changed that they broadcast a message.
@@ -139,4 +143,5 @@ TEST_F(CustomHomePagesModelTest, DISABLED_ModelChangedNotification) {
   id entry = [model_ objectInCustomHomePagesAtIndex:0];
   [entry setURL:@"http://www.foo.bar"];
   EXPECT_TRUE(kvo_helper.get()->sawNotification_);
+  [[NSNotificationCenter defaultCenter] removeObserver:kvo_helper];
 }
