@@ -551,11 +551,14 @@ def LoadAutomaticVariablesFromDict(variables, the_dict):
       variables['_' + key] = value
 
 
-def LoadVariablesFromVariablesDict(variables, the_dict):
+def LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key):
   # Any keys in the_dict's "variables" dict, if it has one, becomes a
   # variable.  The variable name is the key name in the "variables" dict.
   # Variables that end with the % character are set only if they are unset in
-  # the variables dict.
+  # the variables dict.  the_dict_key is the name of the key that accesses
+  # the_dict in the_dict's parent dict.  If the_dict's parent is not a dict
+  # (it could be a list or it could be parentless because it is a root dict),
+  # the_dict_key will be None.
   for key, value in the_dict.get('variables', {}).iteritems():
     if not isinstance(value, str) and not isinstance(value, int) and \
        not isinstance(value, list):
@@ -563,10 +566,14 @@ def LoadVariablesFromVariablesDict(variables, the_dict):
 
     if key.endswith('%'):
       variable_name = key[:-1]
-      if variable_name in variables or variable_name in the_dict:
-        # If the variable is already set, don't set it.  If the variable is
-        # also set without a % in the_dict, don't set it either.
+      if variable_name in variables:
+        # If the variable is already set, don't set it.
         continue
+      if the_dict_key is 'variables' and variable_name in the_dict:
+        # If the variable is set without a % in the_dict, and the_dict is a
+        # variables dict (making |variables| a varaibles sub-dict of a
+        # variables dict), use the_dict's definition.
+        value = the_dict[variable_name]
     else:
       variable_name = key
 
@@ -574,7 +581,7 @@ def LoadVariablesFromVariablesDict(variables, the_dict):
 
 
 def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
-                                        build_file):
+                                        build_file, the_dict_key=None):
   """Handle all variable and command expansion and conditional evaluation.
 
   This function is the public entry point for all variable expansions and
@@ -595,9 +602,10 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
     # Otherwise, it would have extra automatics added for everything that
     # should just be an ordinary variable in this scope.
     ProcessVariablesAndConditionsInDict(the_dict['variables'], is_late,
-                                        variables.copy(), build_file)
+                                        variables.copy(), build_file,
+                                        'variables')
 
-  LoadVariablesFromVariablesDict(variables, the_dict)
+  LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key)
 
   for key, value in the_dict.iteritems():
     # Skip "variables", which was already processed if present.
@@ -613,7 +621,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
   # TODO(mark): Optimization: only reload if no changes were made.
   variables = variables_orig.copy()
   LoadAutomaticVariablesFromDict(variables, the_dict)
-  LoadVariablesFromVariablesDict(variables, the_dict)
+  LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key)
 
   # Process conditions in this dict.  This is done after variable expansion
   # so that conditions may take advantage of expanded variables.  For example,
@@ -658,7 +666,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
   # were made.
   variables = variables_orig
   LoadAutomaticVariablesFromDict(variables, the_dict)
-  LoadVariablesFromVariablesDict(variables, the_dict)
+  LoadVariablesFromVariablesDict(variables, the_dict, the_dict_key)
 
   # Recurse into child dicts, or process child lists which may result in
   # further recursion into descendant dicts.
@@ -671,7 +679,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
       # Pass a copy of the variables dict so that subdicts can't influence
       # parents.
       ProcessVariablesAndConditionsInDict(value, is_late, variables.copy(),
-                                          build_file)
+                                          build_file, key)
     elif isinstance(value, list):
       # The list itself can't influence the variables dict, and
       # ProcessVariablesAndConditionsInList will make copies of the variables
