@@ -474,14 +474,14 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   }
   image->RenderTopCenterStrip(cr, 0, 0, widget->allocation.width);
 
-  DrawContentShadow(cr, window);
+  if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
+    GdkPixbuf* theme_overlay = theme_provider->GetPixbufNamed(
+        IDR_THEME_FRAME_OVERLAY);
+    gdk_cairo_set_source_pixbuf(cr, theme_overlay, 0, 0);
+    cairo_paint(cr);
+  }
 
-  // TODO(tc): Draw the theme overlay.  The windows code is below.
-  // if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
-  //   SkBitmap* theme_overlay = theme_provider->GetBitmapNamed(
-  //       IDR_THEME_FRAME_OVERLAY);
-  //   canvas->DrawBitmapInt(*theme_overlay, 0, 0);
-  // }
+  DrawContentShadow(cr, window);
 
   cairo_destroy(cr);
 
