@@ -72,6 +72,11 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
   [nameField_ setStringValue:initialName_];
   [urlField_ setStringValue:initialUrl_];
 
+  // Get a ping when the URL text changes;
+  // trigger an initial ping to set things up.
+  [urlField_ setDelegate:self];
+  [self controlTextDidChange:nil];
+
   if (configuration_ == BookmarkEditor::SHOW_TREE) {
     // build the tree et al
     NOTIMPLEMENTED();
@@ -119,6 +124,30 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
   [NSApp endSheet:[self window]];
 }
 
+// If possible, return a valid GURL from the URL text field.
+- (GURL)GURLFromUrlField {
+  NSString *url = [urlField_ stringValue];
+  GURL newURL = GURL([url UTF8String]);
+  if (!newURL.is_valid()) {
+    // Mimic observed friendliness from Windows
+    newURL = GURL([[NSString stringWithFormat:@"http://%@", url] UTF8String]);
+  }
+  return newURL;
+}
+
+// When the URL changes we may enable or disable the OK button.
+// We set ourselves as the delegate of urlField_ so this gets called.
+// (Yes, setting ourself as a delegate automatically registers us for
+// the notification.)
+- (void)controlTextDidChange:(NSNotification *)aNotification {
+  GURL newURL = [self GURLFromUrlField];
+  if (newURL.is_valid()) {
+    [okButton_ setEnabled:YES];
+  } else {
+    [okButton_ setEnabled:NO];
+  }
+}
+
 // TODO(jrg): Once the tree is available edits may be more extensive
 // than just name/url.
 - (IBAction)ok:(id)sender {
@@ -128,14 +157,11 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
   if ((![name isEqual:initialName_]) ||
       (![url isEqual:initialUrl_])) {
     std::wstring newTitle = base::SysNSStringToWide(name);
-    GURL newURL = GURL([url UTF8String]);
+    GURL newURL = [self GURLFromUrlField];
     if (!newURL.is_valid()) {
-      // Mimic observed friendliness from Windows
-      newURL = GURL([[NSString stringWithFormat:@"http://%@", url] UTF8String]);
-    }
-    if (!newURL.is_valid()) {
-      // Silently ignoring a bad URL is unfriendly.
-      newURL = GURL();
+      // Shouldn't be reached -- OK button disabled if not valid!
+      NOTREACHED();
+      return;
     }
     int index = 0;
     BookmarkModel* model = profile_->GetBookmarkModel();
@@ -158,6 +184,11 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
 - (void)didEndSheet:(NSWindow*)sheet
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
+  // This is probably unnecessary but it feels cleaner since the
+  // delegate of a text field can be automatically registered for
+  // notifications.
+  [urlField_ setDelegate:nil];
+
   [[self window] orderOut:self];
 
   // BookmarkEditor::Show() will create us then run away.  Unusually
@@ -180,6 +211,11 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
 
 - (void)setDisplayURL:(NSString*)name {
   [urlField_ setStringValue:name];
+  [self controlTextDidChange:nil];
+}
+
+- (BOOL)okButtonEnabled {
+  return [okButton_ isEnabled];
 }
 
 @end  // BookmarkEditorController

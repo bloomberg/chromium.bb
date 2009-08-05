@@ -18,6 +18,7 @@
   IBOutlet NSTextField* nameField_;
   IBOutlet NSTextField* urlField_;
   IBOutlet NSBrowser* browser_;
+  IBOutlet NSButton* okButton_;
   IBOutlet NSButton* newFolderButton_;
 
   NSWindow* parentWindow_;
@@ -47,6 +48,7 @@
 @interface BookmarkEditorController(TestingAPI)
 @property (assign) NSString* displayName;
 @property (assign) NSString* displayURL;
+@property (readonly) BOOL okButtonEnabled;
 @end
 
 

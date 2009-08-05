@@ -90,14 +90,25 @@ TEST_F(BookmarkEditorControllerTest, UserEditsStuff) {
   EXPECT_EQ(child->GetURL(), GURL(url_name));
 
   // Change just the URL
+  EXPECT_TRUE([controller okButtonEnabled]);
   [controller setDisplayURL:@"http://yellow-sneakers.com/"];
+  EXPECT_TRUE([controller okButtonEnabled]);
   [controller ok:nil];
   child = parent->GetChild(0);
   EXPECT_EQ(child->GetTitle(), L"whamma jamma bamma");
   EXPECT_EQ(child->GetURL(), GURL("http://yellow-sneakers.com/"));
+
+  // Give it a URL which needs fixen up to be valid
+  // (e.g. http:// prefix added)
+  [controller setDisplayURL:@"x"];
+  [controller ok:nil];
+  child = parent->GetChild(0);
+  EXPECT_TRUE(child->GetURL().is_valid());
+
+  // Confirm OK button enabled/disabled as appropriate.
+  EXPECT_TRUE([controller okButtonEnabled]);
+  [controller setDisplayURL:@""];
+  EXPECT_FALSE([controller okButtonEnabled]);
+  [controller setDisplayURL:@"http://www.cnn.com"];
+  EXPECT_TRUE([controller okButtonEnabled]);
 }
-
-
-
-
-
