@@ -3069,5 +3069,5 @@ BUG18206 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-
 
 // This happened when I enabled DOM Storage.  Adam asked me to just exclude and
 // file a bug.
-BUG18412 : LayoutTests/http/tests/security/isolatedworld/all-window-properties.html = FAIL
-BUG18412 : LayoutTests/http/tests/security/isolatedworld/all-window-prototypes.html = FAIL
+BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
+BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-prototypes.html = FAIL
