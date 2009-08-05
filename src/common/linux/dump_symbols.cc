@@ -247,24 +247,6 @@ static SourceFileInfo *FindSourceFileInfo(SymbolInfo *symbols,
   return file;
 }
 
-// TODO(liuli): Computer the stack parameter size.
-// Expect parameter variables are immediately following the N_FUN symbol.
-// Will need to parse the type information to get a correct size.
-static int LoadStackParamSize(struct nlist *list,
-                              struct nlist *list_end,
-                              struct FuncInfo *func_info) {
-  struct nlist *cur_list = list;
-  assert(cur_list->n_type == N_FUN);
-  ++cur_list;
-  int step = 1;
-  while (cur_list < list_end && cur_list->n_type == N_PSYM) {
-    ++cur_list;
-    ++step;
-  }
-  func_info->stack_param_size = 0;
-  return step;
-}
-
 static int LoadLineInfo(struct nlist *list,
                         struct nlist *list_end,
                         SymbolInfo *symbols,
@@ -338,9 +320,8 @@ static int LoadFuncSymbols(struct nlist *list,
       func_info.rva_to_base = 0;
       func_info.size = 0;
       func_info.stack_param_size = 0;
+      cur_list++;
 
-      // Stack parameter size.
-      cur_list += LoadStackParamSize(cur_list, list_end, &func_info);
       // Line info.
       cur_list += LoadLineInfo(cur_list,
                                list_end,
