@@ -3064,4 +3064,4 @@ BUG18206 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-
 BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
 BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-prototypes.html = FAIL
 
-BUG18569 MAC DEBUG : LayoutTests/fast/repaint/overflow-scroll-delete.html = PASS FAIL
+BUG18569 MAC DEBUG : LayoutTests/fast/repaint/overflow-scroll-delete.html = PASS CRASH
