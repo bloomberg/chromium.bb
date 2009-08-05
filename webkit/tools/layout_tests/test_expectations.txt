@@ -1301,6 +1301,7 @@ BUG10667 MAC : chrome/plugins/return-npobject.html = FAIL
 BUG10667 MAC : chrome/plugins/script-object-invoke.html = FAIL
 BUG10667 MAC : pending/plugins/iframe-shims.html = FAIL CRASH
 BUG18027 MAC : LayoutTests/fast/dom/object-plugin-hides-properties.html = CRASH
+BUG18027 MAC : LayoutTests/plugins/embed-attributes-style.html = PASS CRASH
 
 // NEW FOR MERGE 36102:37604
 
@@ -1476,7 +1477,6 @@ BUG10379 MAC : LayoutTests/svg/hixie/perf/007.xml = FAIL PASS
 
 // To be figured out, probably timing due to the dual status
 BUG10380 MAC : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
-BUG10380 MAC : LayoutTests/animations/change-one-anim.html = FAIL PASS
 
 // All of these svg tests seem to be hit or miss on the mac.  the issue is they
 // seem not always take the dom snapshot at a consistent state, so some times
@@ -1516,7 +1516,6 @@ BUG10381 DEBUG MAC : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 // These may be similar timing issue as above.
 BUG10382 MAC : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG10382 MAC : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
-BUG10382 MAC : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 BUG10382 MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
 // Most of the http tests seem to be flaky on the mac.
@@ -1699,9 +1698,6 @@ BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = FAIL
 
 // We disallow file:// urls from doing XHR to data:.
 BUG9275 : LayoutTests/fast/encoding/char-decoding.html = FAIL
-
-// Flakey tests
-BUG10410 LINUX : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 
 // intermittent failures on the buildbot
 BUG10411 : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
@@ -2094,7 +2090,6 @@ BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
 BUG9798 LINUX : LayoutTests/animations/animation-iteration-event-destroy-renderer.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/animations/change-one-anim.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/fast/backgrounds/001.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = FAIL PASS
@@ -3065,3 +3060,8 @@ BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.h
 BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-prototypes.html = FAIL
 
 BUG18569 MAC DEBUG : LayoutTests/fast/repaint/overflow-scroll-delete.html = PASS CRASH
+
+// Flaky.  Timing?
+BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
+BUG18584 WIN : LayoutTests/animations/play-state.html = FAIL PASS
+BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
