@@ -46,16 +46,19 @@ namespace o3d {
 class Matrix4AxisRotation : ParamObject {
   %[
     The local rotation axis. This must be a unit vector.
+    Default = [0, 0, 0].
   %]
   [getter, setter] Float3 axis;
 
   %[
     The angle of rotation in radians.
+    Default = 0.
   %]
   [getter, setter] float angle;
 
   %[
-    The input matrix. Identity by default.
+    The input matrix.
+    Default = Identity.
   %]
   [getter, setter] Vectormath::Aos::Matrix4 input_matrix;
 

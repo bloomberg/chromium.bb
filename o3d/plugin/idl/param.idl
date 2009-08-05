@@ -115,6 +115,7 @@ typedef Param[] ParamVector;
 
 %[
   A Param class which stores a single float.
+  Default Value = 0.
 %]
 [nocpp, include="core/cross/param.h"] class ParamFloat : Param {
   %[
@@ -125,10 +126,11 @@ typedef Param[] ParamVector;
 
 %[
   A Param class which stores a Float2.
+  Default Value = [0, 0].
 %]
 [nocpp, include="core/cross/param.h"] class ParamFloat2 : Param {
   %[
-    Sets the Float2 stored by the Param by an array of 2 numbers.
+    The Float2 stored by the Param as an array of 2 numbers.
   %]
   [setter, getter, property=rw, nocpp] Float2 value;
 
@@ -150,10 +152,11 @@ typedef Param[] ParamVector;
 
 %[
   A Param class which stores a Float3.
+  Default Value = [0, 0, 0].
 %]
 [nocpp, include="core/cross/param.h"] class ParamFloat3 : Param {
   %[
-    Sets the Float3 stored by the Param by an array of 3 numbers.
+    The Float3 stored by the Param as an array of 3 numbers.
   %]
   [setter, getter, property=rw, nocpp] Float3 value;
 
@@ -177,10 +180,11 @@ typedef Param[] ParamVector;
 
 %[
   A Param class which stores a Float4.
+  Default Value = [0, 0, 0, 0].
 %]
 [nocpp, include="core/cross/param.h"] class ParamFloat4 : Param {
   %[
-    Sets the Float4 stored by the Param by an array of 4 numbers.
+    The Float4 stored by the Param as an array of 4 numbers.
   %]
   [setter, getter, property=rw, nocpp] Float4 value;
 
@@ -206,6 +210,7 @@ typedef Param[] ParamVector;
 
 %[
   A Param class which stores a 4-by-4 matrix.
+  Default Value = Identity.
 %]
 [nocpp, include="core/cross/param.h"] class ParamMatrix4 : Param {
   %[
@@ -217,6 +222,7 @@ typedef Param[] ParamVector;
 
 %[
   A Param class which stores an integer.
+  Default Value = 0.
 %]
 [nocpp, include="core/cross/param.h"] class ParamInteger : Param {
   %[
@@ -227,6 +233,7 @@ typedef Param[] ParamVector;
 
 %[
   A Param class which stores a boolean.
+  Default Value = false.
 %]
 [nocpp, include="core/cross/param.h"] class ParamBoolean : Param {
   %[
@@ -237,6 +244,7 @@ typedef Param[] ParamVector;
 
 %[
   A Param which stores a string.
+  Default Value = "".
 %]
 [nocpp, include="core/cross/param.h"] class ParamString : Param {
   %[

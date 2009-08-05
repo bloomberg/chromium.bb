@@ -82,45 +82,53 @@ class Sampler : ParamObject {
 
   %[
     The texture address mode for the u coordinate.
+    Default = WRAP.
   %]
   [getter, setter] AddressMode address_mode_u_;
 
   %[
     The texture address mode for the v coordinate.
+    Default = WRAP.
   %]
   [getter, setter] AddressMode address_mode_v_;
 
   %[
     The texture address mode for the w coordinate.
+    Default = WRAP.
   %]
   [getter, setter] AddressMode address_mode_w_;
 
   %[
     The magnification filter.  Valid values for the mag filter are: POINT and
     LINEAR.
+    Default = LINEAR.
   %]
   [getter, setter] FilterType mag_filter_;
 
   %[
     The minification filter. Valid values for the min filter are: POINT, LINEAR
     and ANISOTROPIC.
+    Default = LINEAR.
   %]
   [getter, setter] FilterType min_filter_;
 
   %[
     The mipmap filter used during minification.  Valid values for the mip filter
     are: NONE, POINT and LINEAR.
+    Default = LINEAR.
   %]
   [getter, setter] FilterType mip_filter_;
 
   %[
     Color returned for texture coordinates outside the [0,1] range when the
     address mode is set to BORDER.
+    Default = [0, 0, 0, 0].
   %]
   [getter, setter] Float4 border_color;
 
   %[
     Degree of anisotropy used when the ANISOTROPIC filter type is used.
+    Default = 1.
   %]
   [getter, setter] int max_anisotropy_;
 

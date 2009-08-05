@@ -380,7 +380,7 @@ class Client {
     \param type Type of event to set callback for.
     \param handler Function to call on event.
 
-    \sa Event for a list of event
+    \sa o3d.Event
   %]
   void SetEventCallback(String type, EventCallback? handler);
 
@@ -494,6 +494,7 @@ class Client {
 
   %[
     Gets / Sets the cursor's shape.
+    Default = DEFAULT.
   %]
   [userglue_getter, userglue_setter, getter, setter, plugin_data]
   Cursor::CursorType cursor;

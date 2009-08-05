@@ -72,7 +72,8 @@ class Function : NamedObject {
 [nocpp, include="core/cross/function.h"]
 class FunctionEval : ParamObject {
   %[
-    The input to the function
+    The input to the function.
+    Default = 0.
   %]
   [getter, setter] float input;
 

@@ -142,17 +142,20 @@ class Curve : Function {
 
   %[
     The behavior of the curve before the first key.
+    Default = CONSTANT.
   %]
   [getter, setter] Infinity pre_infinity;
 
   %[
     The behavior of the curve after the last key.
+    Default = CONSTANT.
   %]
   [getter, setter] Infinity post_infinity;
 
   %[
     Whether or not a cache is used to speed up evaluation of this Curve
-    \sa SetSampleRate
+    Default = true.
+    \sa o3d.Curve.setSampleRate
   %]
   [getter, setter] bool use_cache;
 
@@ -164,7 +167,7 @@ class Curve : Function {
     The default is 1/30 (30hz). You can set it anywhere from 1/240th (240hz) to
     any larger value. Note: Setting the sample rate has the side effect of
     invalidating the cache thereby causing it to get rebuilt.
-    Must be 1/240 or greater. Default = 1/30
+    Must be 1/240 or greater. Default = 1/30.
   %]
   [getter, setter, userglue_setter] float sample_rate;
 

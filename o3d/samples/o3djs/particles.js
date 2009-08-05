@@ -540,7 +540,7 @@ o3djs.particles.ParticleSpec = function() {
 
   /**
    * The startTime of a particle.
-   * @type {number?}
+   * @type {?number}
    */
   this.startTime = null;
   // TODO: Describe what happens if this is not set. I still have some
@@ -650,7 +650,7 @@ o3djs.particles.ParticleSpec = function() {
 
   /**
    * The color multiplier range.
-   * @type {!o3djs.math.Vector4} colorMultRange
+   * @type {!o3djs.math.Vector4}
    */
   this.colorMultRange = [0, 0, 0, 0];
 

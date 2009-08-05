@@ -52,6 +52,7 @@ typedef Shape[] ShapeArray;
    : ParamObject {
   %[
     The Visibility for this transform.
+    Default = true.
   %]
   [getter, setter] bool visible_;
 
@@ -168,6 +169,7 @@ typedef Shape[] ShapeArray;
 
   %[
     Local transformation matrix.
+    Default = Identity.
   %]
   [getter, setter, nocpp] Vectormath::Aos::Matrix4 local_matrix;
 
@@ -175,6 +177,7 @@ typedef Shape[] ShapeArray;
     The cull setting for this transform. If true this Transform will be culled
     by having its bounding box compared to the view frustum of any draw context
     it is used with.
+    Default = false.
   %]
   [getter, setter] bool cull_;
 

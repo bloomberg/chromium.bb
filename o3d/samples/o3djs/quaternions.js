@@ -157,9 +157,9 @@ o3djs.quaternions.subScalarQuaternion = function(a, b) {
 
 /**
  * Multiplies a scalar by a quaternion.
- * @param {Array} k The scalar.
- * @param {Array} q The quaternion.
- * @return {Array} The product of k and q.
+ * @param {number} k The scalar.
+ * @param {!o3djs.quaternions.Quaternion} q The quaternion.
+ * @return {!o3djs.quaternions.Quaternion} The product of k and q.
  */
 o3djs.quaternions.mulScalarQuaternion = function(k, q) {
   return [k * q[0], k * q[1], k * q[2], k * q[3]];

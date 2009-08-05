@@ -50,34 +50,40 @@ namespace o3d {
     : RenderNode {
   %[
     The color to clear the buffer in RGBA Float4 format.
+    Default = [0, 0, 0, 1]
   %]
   [getter, setter] Float4 clear_color;
 
   %[
     true clears the current render target's color buffer to the clear color.
     false does not clear the color buffer.
+    Default = true.
   %]
   [getter, setter] bool clear_color_flag_;
 
   %[
     The value to clear the depth buffer (0.0 to 1.0)
+    Default = 1.
   %]
   [getter, setter] float clear_depth_;
 
   %[
     true clears the current render target's depth buffer to the clear depth
     value. false does not clear the depth buffer.
+    Default = true.
   %]
   [getter, setter] bool clear_depth_flag_;
 
   %[
     The value to clear the stencil buffer to (0 - 255).
+    Default = 0.
   %]
   [getter, setter] int clear_stencil_;
 
   %[
     true clears the current render target's stencil buffer to the clear stencil
     value. false does not clear the stencil buffer
+    Default = true.
   %]
   [getter, setter] bool clear_stencil_flag_;
 

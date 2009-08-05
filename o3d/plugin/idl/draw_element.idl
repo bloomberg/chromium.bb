@@ -36,9 +36,9 @@ namespace o3d {
   You can override other Effect parameters by adding corresponding params to
   the DrawElement.
 
-  \sa Element
-  \sa Material
-  \sa Effect
+  \sa o3d.Element
+  \sa o3d.Material
+  \sa o3d.Effect
 
   @o3dparameter material ParamMaterial The material used to render this
       the Element that owns this DrawElement.
@@ -47,7 +47,7 @@ namespace o3d {
     : ParamObject {
 
   %[
-    The Material for this Draw Element. If it is null the material of owner will
+    The Material for this DrawElement. If it is null the material of owner will
     be used.
   %]
   [getter, setter] Material? material_;

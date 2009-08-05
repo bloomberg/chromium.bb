@@ -144,8 +144,8 @@ class Buffer : NamedObject {
 %[
   VertexBufferBase is a the base class for both VertexBuffer and SourceBuffer
 
-  \sa VertexBuffer
-  \sa SourceBuffer
+  \sa o3d.VertexBuffer
+  \sa o3d.SourceBuffer
 %]
 [nocpp, include="core/cross/buffer.h"]
 class VertexBufferBase : Buffer {
@@ -344,7 +344,7 @@ class VertexBufferBase : Buffer {
   (e.g. vertex positions, normals, colors, etc).
   A VertexBuffer can be rendered directly by the GPU.
 
-  \sa SourceBuffer
+  \sa o3d.SourceBuffer
 %]
 [nocpp, include="core/cross/buffer.h"]
 class VertexBuffer : VertexBufferBase {
@@ -357,7 +357,7 @@ class VertexBuffer : VertexBufferBase {
   A SourceBuffer is the source for operations like skinning and morph
   targets. It can not be directly rendered by the GPU.
 
-  \sa VertexBuffer
+  \sa o3d.VertexBuffer
 %]
 [nocpp, include="core/cross/buffer.h"]
 class SourceBuffer : VertexBufferBase {

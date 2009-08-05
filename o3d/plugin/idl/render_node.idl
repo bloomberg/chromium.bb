@@ -45,13 +45,14 @@ namespace o3d {
 
   %[
     Sets the priority of this render node. lower priorities are rendered first.
+    Default = 0.
   %]
   [getter, setter] float priority_;
 
   %[
     Setting false skips this render node. Setting true processes this render
-    node. (ie, renders
-    whatever it's supposed to render)
+    node. (ie, renders whatever it's supposed to render)
+    Default = true.
   %]
   [getter, setter] bool active_;
 

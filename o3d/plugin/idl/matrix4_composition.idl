@@ -45,11 +45,13 @@ namespace o3d {
 class Matrix4Composition : ParamObject {
   %[
     The local matrix.
+    Default = Identity.
   %]
   [getter, setter] Vectormath::Aos::Matrix4 local_matrix;
 
   %[
-    The input matrix. Identity by default.
+    The input matrix.
+    Default = Identity.
   %]
   [getter, setter] Vectormath::Aos::Matrix4 input_matrix;
 

@@ -93,6 +93,7 @@ class ObjectBase {
 class NamedObjectBase: ObjectBase {
   %[
     The object's name.
+    Default = "".
   %]
   [getter] String name;
 

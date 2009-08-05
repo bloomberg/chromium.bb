@@ -55,6 +55,7 @@ typedef DrawElement[] DrawElementArray;
     The BoundingBox for this element. If culling is on this bounding box will be
     tested against the view frustum of any draw context used to render this
     Element.
+    Default = [[0, 0, 0], [0, 0, 0]].
   %]
   [getter, setter] BoundingBox bounding_box_;
 
@@ -62,12 +63,14 @@ typedef DrawElement[] DrawElementArray;
     The z sort point for this element. If this Element is drawn by a DrawPass
     that is set to sort by z order this value will be multiplied by the
     worldViewProjection matrix to compute a z value to sort by.
+    Default = [0, 0, 0].
   %]
   [getter, setter] Float3 z_sort_point;
 
   %[
     The priority for this element. Used to sort if this Element is drawn by a
     DrawPass that is set to sort by priority.
+    Default = 0.
   %]
   [getter, setter] float priority_;
 
@@ -75,6 +78,7 @@ typedef DrawElement[] DrawElementArray;
     The cull settings for this element. If true this Element will be culled
     by the bounding box above compared to the view frustum it is being rendered
     with.
+    Default = false.
   %]
   [getter, setter] bool cull_;
 

@@ -40,14 +40,20 @@ var g_symbolArray;
 var g_filePrefix;
 var g_skipRE;
 var g_validJSDOCTypes = {
+  'boolean': true,
+  'Event': true,
+  'Element': true,
+  'null': true,
   'number': true,
   'Number': true,
   'object': true,
   'Object': true,
   '*': true,
   '...': true,
+  'RegExp': true,
   'string': true,
   'String': true,
+  'XMLHttpRequest': true,
   'void': true,
   'undefined': true};
 var g_unknownTypes = { };
@@ -567,6 +573,15 @@ function endsWith(str, suffix) {
 }
 
 /**
+ * Returns a string stripped of leading and trailing whitespace.
+ * @param {string} str String to strip.
+ * @return {string} stripped string.
+ */
+function stripWhitespace(str) {
+  return str.replace(/^\s+/, '').replace(/\s+$/, '');
+}
+
+/**
  * Converts a camelCase name to underscore as in TypeOfFruit becomes
  * type_of_fruit.
  * @param {string} str CamelCase string.
@@ -679,6 +694,11 @@ function generatePlaceError(place, msg) {
  * @return {string} linkified string.
  */
 function linkifySingleType(place, type) {
+  if (!type) {
+    generatePlaceError(place, 'type is empty');
+    return '';
+  }
+  type = stripWhitespace(type);
   var not = '';
   var equals = '';
   // Remove ! if it exists.
@@ -702,6 +722,20 @@ function linkifySingleType(place, type) {
       link = 'Array.&lt;' +
         linkifySingleType(place, type.substring(7, closingAngle)) + '>';
     }
+  } else if (startsWith(type, 'Object.<')) {
+      var closingAngle = getIndexOfClosingCharacter(type, 6);
+      if (closingAngle < 0) {
+        generatePlaceError(place, 'Unmatched "<" in Object type : ' + type);
+      } else {
+        var objectSpec = type.substring(8, closingAngle);
+        var elements = objectSpec.split(/\s*,\s*/);
+        if (elements.length != 2) {
+          generatePlaceError(place, 'An Object spec must have exactly 2 types');
+        }
+        link = 'Object.&lt;' +
+            linkifySingleType(place, elements[0]) + ', ' +
+            linkifySingleType(place, elements[1]) + '>';
+      }
   } else if (startsWith(type, 'function(')) {
     var closingParen = getIndexOfClosingCharacter(type, 8);
     if (closingParen < 0) {
@@ -728,33 +762,28 @@ function linkifySingleType(place, type) {
                linkifyTypeSpec(place, end.substring(2));
       }
     }
-  } else if (type.indexOf(':') >= 0) { // check for records.
-    if (type.indexOf('::') >= 0) { // check for CPP scope
-      generatePlaceError(place,
-                         'CPP "::" scope operator found for type "' + type +
-                         '" must be Javascript "." scope operator.');
-    } else {
-      var elements = type.split(/\s*,\s*/);
-      var output = '{';
-      for (var ii = 0; ii < elements.length; ++ii) {
-        if (ii > 0) {
-          output += ', ';
-        }
-        var element = elements[ii];
-        var colon = element.indexOf(': ');
-        if (colon < 0) {
-          generatePlaceError(place,
-                             'Malformed record specification. Format must be ' +
-                             '{id1: type1, id2: type2, ...}.');
-          output += element;
-        } else {
-          var name = element.substring(0, colon);
-          var subType = element.substring(colon + 2);
-          output += name + ':&nbsp;' + linkifyTypeSpec(place, subType)
-        }
+  } else if (startsWith(type, '{') && endsWith(type, '}')) {
+    // found a record.
+    var elements = type.substr(1, type.length - 2).split(/\s*,\s*/);
+    var output = '{';
+    for (var ii = 0; ii < elements.length; ++ii) {
+      if (ii > 0) {
+        output += ', ';
       }
-      link = output + '}';
+      var element = elements[ii];
+      var colon = element.indexOf(': ');
+      if (colon < 0) {
+        generatePlaceError(place,
+                           'Malformed record specification. Format must be ' +
+                           '{id1: type1, id2: type2, ...}.');
+        output += element;
+      } else {
+        var name = element.substring(0, colon);
+        var subType = element.substring(colon + 2);
+        output += name + ':&nbsp;' + linkifyTypeSpec(place, subType);
+      }
     }
+    link = output + '}';
   } else {
     var symbol = getSymbol(type);
     if (symbol) {
@@ -762,6 +791,7 @@ function linkifySingleType(place, type) {
           type + '</a>';
     } else {
       // See if the symbol is a property or field.
+      var found = false;
       var period = type.lastIndexOf('.');
       if (period >= 0 && type != '...') {
         var subType = type.substring(0, period);
@@ -770,13 +800,16 @@ function linkifySingleType(place, type) {
           var field = type.substring(period + 1);
           link = '<a class="el" href="' + getLinkToSymbol(symbol) + '#' +
               field + '">' +  type + '</a>';
-        } else {
-          if (subType[0] == '?') {
-            subType = subType.substring(1);
-          }
-          if (!g_validJSDOCTypes[subType]) {
-            reportUnknownType(place, type);
-          }
+          found = true;
+        }
+      }
+
+      if (!found) {
+        if (type[0] == '?') {
+          type = type.substring(1);
+        }
+        if (!g_validJSDOCTypes[type]) {
+          reportUnknownType(place, type);
         }
       }
     }

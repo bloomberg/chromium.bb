@@ -46,6 +46,8 @@ namespace o3d {
 
   %[
     The sort method for this DrawPass to draw the DrawList by.
+    Default = BY_PERFORMANCE.
+    \sa o3d.DrawList
   %]
   [getter, setter] DrawList::SortMethod sort_method_;
 };  // Material

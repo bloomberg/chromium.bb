@@ -63,22 +63,26 @@ class Primitive : Element {
   %[
     The type of primitive the primitive is (i.e., Primitive::POINTLIST,
     Primitive::LINELIST, Primitive::TRIANGLELIST, etc.)
+    Default = TRIANGLELIST.
   %]
   [getter, setter] Primitive::PrimitiveType primitive_type;
 
   %[
     The number of vertices the primitive has.
+    Default = 0.
   %]
   [getter, setter] unsigned int number_vertices;
 
   %[
     The number of rendering primitives (i.e., triangles, points, lines) the
     primitive has.
+    Default = 0.
   %]
   [getter, setter] unsigned int number_primitives;
 
   %[
     The index of the first vertex to render.
+    Default = 0.
   %]
   [getter, setter] unsigned int start_index;
 

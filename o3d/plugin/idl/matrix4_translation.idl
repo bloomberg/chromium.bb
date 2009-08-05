@@ -44,11 +44,13 @@ namespace o3d {
 class Matrix4Translation : ParamObject {
   %[
     The local translation.
+    Default = [0, 0, 0].
   %]
   [getter, setter] Float3 translation;
 
   %[
-    The input matrix. Identity by default.
+    The input matrix.
+    Default = Identity.
   %]
   [getter, setter] Vectormath::Aos::Matrix4 input_matrix;
 

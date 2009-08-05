@@ -44,11 +44,13 @@ namespace o3d {
 class Matrix4Scale : ParamObject {
   %[
     The local scaling.
+    Default = [0, 0, 0].
   %]
   [getter, setter] Float3 scale;
 
   %[
-    The parent matrix. Identity by default.
+    The parent matrix.
+    Default = Identity.
   %]
   [getter, setter] Vectormath::Aos::Matrix4 input_matrix;
 

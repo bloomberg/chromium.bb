@@ -141,27 +141,32 @@ class CanvasPaint : ParamObject {
 
   %[
     The color used for all the draw operations using this paint.
+    Default = [0, 0, 0, 1].
   %]
   [getter, setter] Float4 color;
 
   %[
     The size of the font used for drawing text.
+    Default = 10.
   %]
   [getter, setter] float text_size;
 
   %[
     The font typeface used for drawing text.  Passing an empty string will
     revert to the default font.
+    Default = "".
   %]
   [getter, setter] String text_typeface;
 
   %[
     The style applied to the text (e.g. italic, bold, etc)
+    Default = NORMAL.
   %]
   [getter, setter] Style text_style;
 
   %[
     The alignment mode used for drawing text.
+    Default = LEFT.
   %]
   [getter, setter] TextAlign text_align;
 

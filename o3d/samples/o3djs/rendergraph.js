@@ -379,9 +379,9 @@ o3djs.rendergraph.ViewInfo = function(pack,
 /**
  * Destroys the various objects created for the view.
  *
- * @param {Boolean} opt_destroyDrawContext True if you want view's DrawContext
+ * @param {boolean} opt_destroyDrawContext True if you want view's DrawContext
  *     destroyed. Default = true.
- * @param {Boolean} opt_destroyDrawList True if you want view's DrawLists
+ * @param {boolean} opt_destroyDrawList True if you want view's DrawLists
  *     destroyed. Default = true.
  */
 o3djs.rendergraph.ViewInfo.prototype.destroy = function(

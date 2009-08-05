@@ -62,17 +62,20 @@ more colors need to be specified for the gradient.
 class CanvasLinearGradient : CanvasShader {
   %[
     The start point of this gradient.
+    Default = [0, 0].
   %]
   [getter, setter] Float2 start_point;
 
   %[
     The end point of this gradient.
+    Default = [0, 0].
   %]
   [getter, setter] Float2 end_point;
 
   %[
     The array of colors to be distributed between the two points in RBGA format
     stored as an array of [r, g, b, a] colors.
+    Default = [[0, 0, 0, 1], [0, 0, 0, 1]].
   %]
   [getter, setter] Float4[] colors;
 
@@ -87,6 +90,7 @@ class CanvasLinearGradient : CanvasShader {
   %[
     The TileMode of this gradient which controls how the gradient pattern
     repeats.
+    Default = REPEAT.
   %]
   [getter, setter] TileMode tile_mode;
 

@@ -47,6 +47,7 @@ namespace o3d {
   %[
     The view matrix represents the viewing transformation, used to take vertices
     from world space to view space.
+    Default = Identity.
   %]
   [getter, setter] Vectormath::Aos::Matrix4 view;
 
@@ -54,6 +55,7 @@ namespace o3d {
     The projection matrix represents the projection transformation, used to take
     vertices from view space to screen space.  This matrix is usually an
     orthographic or perspective transformation.
+    Default = Identity.
   %]
   [getter, setter] Vectormath::Aos::Matrix4 projection;
 };  // DrawContext

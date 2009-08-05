@@ -69,32 +69,38 @@ typedef NumberArray[] NumberArrayArray;
   };
 
   %[
-    Whether or not this counter is running. Default = true.
+    Whether or not this counter is running.
+    Default = true.
   %]
   [getter, setter] bool running_;
 
   %[
-    Which direction this counter is counting. Default = true.
+    Which direction this counter is counting.
+    Default = true.
   %]
   [getter, setter] bool forward_;
 
   %[
-    The start count for this counter. Default = 0.
+    The start count for this counter.
+    Default = 0.
   %]
   [getter, setter] float start_;
 
   %[
-    The end count for this counter. Default = 0.
+    The end count for this counter.
+    Default = 0.
   %]
   [getter, setter] float end_;
 
   %[
-    The current count value for this counter. Default = 0.
+    The current count value for this counter.
+    Default = 0.
   %]
   [getter] float count_;
 
   %[
-    The current count mode for this counter. Default = CONTINUOUS.
+    The current count mode for this counter.
+    Default = CONTINUOUS.
   %]
   [getter, setter] CountMode count_mode_;
 
@@ -137,7 +143,8 @@ typedef NumberArray[] NumberArrayArray;
   %[
     A multiplier used when advancing the count. The default value is 1.0.
     For example you could set this to 0.5 to run the counter at half speed
-    or 2.0 to run it at double speed. Default = 1.
+    or 2.0 to run it at double speed.
+    Default = 1.
   %]
   [getter, setter] float multiplier_;
 
