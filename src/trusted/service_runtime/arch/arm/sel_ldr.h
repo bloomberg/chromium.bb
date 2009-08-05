@@ -33,6 +33,7 @@
 #define SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__ 1
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #define NACL_MAX_ADDR_BITS      (26) /* mmap fails for 28 bits */
 
