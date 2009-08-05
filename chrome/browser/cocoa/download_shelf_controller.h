@@ -6,7 +6,6 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#import "chrome/browser/cocoa/view_resizer.h"
 
 class BaseDownloadItemModel;
 class Browser;
@@ -39,9 +38,14 @@ class DownloadShelf;
 
   IBOutlet NSImageView* image_;
 
+  // Currently these two are always the same, but they mean slightly different
+  // things. |contentAreaHasOffset_| is an implementation detail of the download
+  // shelf visibility.
+  BOOL contentAreaHasOffset_;
   BOOL barIsVisible_;
 
   scoped_ptr<DownloadShelf> bridge_;
+  NSView* contentArea_;  // the browser's content area
   float shelfHeight_;
 
   // The download items we have added to our shelf.
@@ -49,13 +53,9 @@ class DownloadShelf;
 
   // The container that contains (and clamps) all the download items.
   IBOutlet NSView* itemContainerView_;
-
-  // Delegate that handles resizing our view.
-  id<ViewResizer> resizeDelegate_;
 };
 
-- (id)initWithBrowser:(Browser*)browser
-       resizeDelegate:(id<ViewResizer>)resizeDelegate;
+- (id)initWithBrowser:(Browser*)browser contentArea:(NSView*)content;
 
 - (DownloadShelf*)bridge;
 - (BOOL)isVisible;
@@ -66,6 +66,9 @@ class DownloadShelf;
 - (IBAction)hide:(id)sender;
 
 - (void)addDownloadItem:(BaseDownloadItemModel*)model;
+
+// Resizes the download shelf based on the state of the content area.
+- (void)resizeDownloadShelf;
 
 // Remove a download, possibly via clearing browser data.
 - (void)remove:(DownloadItemController*)download;

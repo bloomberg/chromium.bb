@@ -32,11 +32,15 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 
 @implementation FakeBookmarkBarController
 
-- (id)initWithProfile:(Profile*)profile {
+- (id)initWithProfile:(Profile*)profile
+           parentView:(NSView*)parentView
+       webContentView:(NSView*)webContentView
+         infoBarsView:(NSView*)infoBarsView {
   if ((self = [super initWithProfile:profile
-                        initialWidth:100  // arbitrary
-                      resizeDelegate:nil
-                         urlDelegate:self])) {
+                          parentView:parentView
+                      webContentView:webContentView
+                        infoBarsView:infoBarsView
+                            delegate:self])) {
     callbacks_.reset([[NSMutableArray alloc] init]);
   }
   return self;
@@ -92,8 +96,14 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 
 class BookmarkBarBridgeTest : public testing::Test {
  public:
+  BookmarkBarBridgeTest() {
+    NSRect content_frame = NSMakeRect(0, 0, 100, 100);
+    view_.reset([[NSView alloc] initWithFrame:content_frame]);
+  }
+
   CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_test_helper_;
+  scoped_nsobject<NSView> view_;
 };
 
 // Call all the callbacks; make sure they are all redirected to the objc object.
@@ -109,7 +119,11 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
       [[NSView alloc] initWithFrame:NSMakeRect(0,0,100,100)]);
 
   scoped_nsobject<FakeBookmarkBarController>
-      controller([[FakeBookmarkBarController alloc] initWithProfile:profile]);
+    controller([[FakeBookmarkBarController alloc]
+                 initWithProfile:profile
+                      parentView:parentView.get()
+                  webContentView:webView.get()
+                    infoBarsView:infoBarsView.get()]);
   EXPECT_TRUE(controller.get());
   scoped_ptr<BookmarkBarBridge> bridge(new BookmarkBarBridge(controller.get(),
                                                              model));

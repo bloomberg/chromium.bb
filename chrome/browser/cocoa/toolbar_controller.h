@@ -11,7 +11,6 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/command_observer_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
-#import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/common/pref_member.h"
 
 @class AutocompleteTextField;
@@ -32,8 +31,7 @@ class ToolbarView;
 // Manages the bookmark bar and it's position in the window relative to
 // the web content view.
 
-@interface ToolbarController :
-    NSViewController<CommandObserverProtocol, ViewResizer> {
+@interface ToolbarController : NSViewController<CommandObserverProtocol> {
  @private
   ToolbarModel* toolbarModel_;  // weak, one per window
   CommandUpdater* commands_;  // weak, one per window
@@ -42,8 +40,9 @@ class ToolbarView;
   scoped_ptr<LocationBarViewMac> locationBarView_;
   scoped_nsobject<AutocompleteTextFieldEditor> autocompleteTextFieldEditor_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
-  id<ViewResizer> resizeDelegate_;  // weak
   id<BookmarkURLOpener> bookmarkBarDelegate_;  // weak
+  NSView* webContentView_;  // weak; where the web goes
+  NSView* infoBarsView_;     // weak; where the infobars go
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
@@ -73,7 +72,8 @@ class ToolbarView;
 - (id)initWithModel:(ToolbarModel*)model
            commands:(CommandUpdater*)commands
             profile:(Profile*)profile
-     resizeDelegate:(id<ViewResizer>)resizeDelegate
+     webContentView:(NSView*)webContentView
+       infoBarsView:(NSView*)infoBarsView
    bookmarkDelegate:(id<BookmarkURLOpener>)delegate;
 
 // Get the C++ bridge object representing the location bar for this tab.

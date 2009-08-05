@@ -52,23 +52,21 @@
         true, false);
 }
 
-// Positions the find bar view in the correct location based on the current
-// state of the window.  The findbar is always positioned one pixel above the
-// infobar container.  Note that we are using the infobar container location as
-// a proxy for the toolbar location, but we cannot position based on the toolbar
-// because the toolbar is not always present (for example in fullscreen
-// windows).
-- (void)positionFindBarView:(NSView*)infoBarContainerView {
+// Positions the find bar view in the correct location based on the
+// current state of the window.  Currently only the visibility of the
+// bookmark bar can affect the find bar's position.
+- (void)positionFindBarView:(NSView*)contentArea {
   static const int kRightEdgeOffset = 25;
   NSView* findBarView = [self view];
   int findBarHeight = NSHeight([findBarView frame]);
   int findBarWidth = NSWidth([findBarView frame]);
 
-  // Start by computing the upper right corner of the infobar container, then
-  // move left by a constant offset and up one pixel.  This gives us the upper
-  // right corner of our bounding box.  We move up one pixel to overlap with the
-  // toolbar area, which allows us to cover up the toolbar's border, if present.
-  NSRect windowRect = [infoBarContainerView frame];
+  // Start by computing the upper right corner of the tab content
+  // area, then move left by a constant offset and up one pixel.  This
+  // gives us the upper right corner of our bounding box.  We move up
+  // one pixel to overlap with the toolbar area, which allows us to
+  // cover up the toolbar's border.
+  NSRect windowRect = [contentArea frame];
   int max_x = NSMaxX(windowRect) - kRightEdgeOffset;
   int max_y = NSMaxY(windowRect) + 1;
 

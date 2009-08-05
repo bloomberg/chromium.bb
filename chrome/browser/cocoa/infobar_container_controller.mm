@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/mac_util.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/infobar.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/infobar_controller.h"
@@ -63,11 +64,11 @@ class InfoBarNotificationObserver : public NotificationObserver {
 
 @implementation InfoBarContainerController
 - (id)initWithTabStripModel:(TabStripModel*)model
-             resizeDelegate:(id<ViewResizer>)resizeDelegate {
-  DCHECK(resizeDelegate);
+    browserWindowController:(BrowserWindowController*)controller {
+  DCHECK(controller);
   if ((self = [super initWithNibName:@"InfoBarContainer"
                               bundle:mac_util::MainAppBundle()])) {
-    resizeDelegate_ = resizeDelegate;
+    browserController_ = controller;
     tabObserver_.reset(new TabStripModelObserverBridge(model, self));
     infoBarObserver_.reset(new InfoBarNotificationObserver(self));
 
@@ -184,7 +185,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
     [view setFrame:frame];
   }
 
-  [resizeDelegate_ resizeView:[self view] newHeight:[self desiredHeight]];
+  [browserController_ infoBarResized:[self desiredHeight]];
 }
 
 @end

@@ -7,21 +7,44 @@
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #include "chrome/browser/cocoa/infobar_test_helper.h"
-#import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// Objective-C classes must be defined outside the namespace.
+@interface BrowserWindowControllerPong : BrowserWindowController {
+  BOOL pong_;
+}
+@property(readonly) BOOL pong;
+@end
+
+@implementation BrowserWindowControllerPong
+@synthesize pong = pong_;
+
+- (id)initWithBrowser:(Browser*)browser {
+  if ((self = [super initWithBrowser:browser takeOwnership:NO])) {
+    pong_ = NO;
+  }
+  return self;
+}
+
+- (void)infoBarResized:(float)newHeight {
+  pong_ = TRUE;
+}
+@end
 
 namespace {
 
 class InfoBarContainerControllerTest : public testing::Test {
   virtual void SetUp() {
-    resizeDelegate_.reset([[ViewResizerPong alloc] init]);
+    browserController_.reset([[BrowserWindowControllerPong alloc]
+                               initWithBrowser:browser_helper_.browser()]);
     TabStripModel* model = browser_helper_.browser()->tabstrip_model();
     controller_.reset([[InfoBarContainerController alloc]
                         initWithTabStripModel:model
-                               resizeDelegate:resizeDelegate_.get()]);
+                        browserWindowController:browserController_]);
   }
 
  public:
@@ -31,7 +54,7 @@ class InfoBarContainerControllerTest : public testing::Test {
   CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_helper_;
   base::ScopedNSAutoreleasePool pool_;
-  scoped_nsobject<ViewResizerPong> resizeDelegate_;
+  scoped_nsobject<BrowserWindowControllerPong> browserController_;
   scoped_nsobject<InfoBarContainerController> controller_;
 };
 
@@ -44,11 +67,9 @@ TEST_F(InfoBarContainerControllerTest, Show) {
 }
 
 TEST_F(InfoBarContainerControllerTest, BWCPong) {
-  // Call positionInfoBarsAndResize and check that |resizeDelegate_| got a
-  // resize message.
-  [resizeDelegate_ setHeight:-1];
+  // Call positionInfoBarsAndResize and check that the BWC got a resize message.
   [controller_ positionInfoBarsAndRedraw];
-  EXPECT_NE(-1, [resizeDelegate_ height]);
+  EXPECT_TRUE([browserController_ pong]);
 }
 
 TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {

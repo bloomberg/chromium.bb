@@ -20,7 +20,6 @@ class BookmarkNode;
 class GURL;
 class Profile;
 class PrefService;
-@protocol ViewResizer;
 
 // The interface for an object which can open URLs for a bookmark.
 @protocol BookmarkURLOpener
@@ -37,8 +36,12 @@ class PrefService;
   BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the
                                   // top-level Browser object.
 
-  // Our initial view width, which is applied in awakeFromNib.
-  float initialWidth_;
+  // Currently these two are always the same when not in fullscreen
+  // mode, but they mean slightly different things.
+  // contentAreaHasOffset_ is an implementation detail of bookmark bar
+  // show state.
+  BOOL contentViewHasOffset_;
+  BOOL barShouldBeShown_;
 
   // BookmarkNodes have a 64bit id.  NSMenuItems have a 32bit tag used
   // to represent the bookmark node they refer to.  This map provides
@@ -54,18 +57,16 @@ class PrefService;
   // Set when using fullscreen mode.
   BOOL barIsEnabled_;
 
-  // Set to YES when the user elects to always show the bookmark bar.
-  BOOL barShouldBeShown_;
+  NSView* parentView_;      // weak; our parent view
+  NSView* webContentView_;  // weak; where the web goes
+  NSView* infoBarsView_;    // weak; where the infobars go
 
   // Bridge from Chrome-style C++ notifications (e.g. derived from
   // BookmarkModelObserver)
   scoped_ptr<BookmarkBarBridge> bridge_;
 
-  // Delegate that can resize us.
-  id<ViewResizer> resizeDelegate_;  // weak
-
-  // Delegate that can open URLs for us.
-  id<BookmarkURLOpener> urlDelegate_;  // weak
+  // Delegate which can open URLs for us.
+  id<BookmarkURLOpener> delegate_;  // weak
 
   IBOutlet NSView* buttonView_;
   IBOutlet NSButton* offTheSideButton_;
@@ -73,11 +74,15 @@ class PrefService;
 }
 
 // Initializes the bookmark bar controller with the given browser
-// profile and delegates.
+// profile, parent view (the toolbar), web content view, and delegate.
+// |delegate| is used for opening URLs.
+// TODO(rohitrao, jrg): The bookmark bar shouldn't know about the
+// infoBarsView or the webContentView.
 - (id)initWithProfile:(Profile*)profile
-         initialWidth:(float)initialWidth
-       resizeDelegate:(id<ViewResizer>)resizeDelegate
-          urlDelegate:(id<BookmarkURLOpener>)urlDelegate;
+           parentView:(NSView*)parentView
+       webContentView:(NSView*)webContentView
+         infoBarsView:(NSView*)infoBarsView
+             delegate:(id<BookmarkURLOpener>)delegate;
 
 // Returns whether or not the bookmark bar is visible.
 - (BOOL)isBookmarkBarVisible;
@@ -133,7 +138,7 @@ class PrefService;
 // These APIs should only be used by unit tests (or used internally).
 @interface BookmarkBarController(InternalOrTestingAPI)
 // Set the delegate for a unit test.
-- (void)setUrlDelegate:(id<BookmarkURLOpener>)urlDelegate;
+- (void)setDelegate:(id<BookmarkURLOpener>)delegate;
 - (void)clearBookmarkBar;
 - (NSView*)buttonView;
 - (NSArray*)buttons;

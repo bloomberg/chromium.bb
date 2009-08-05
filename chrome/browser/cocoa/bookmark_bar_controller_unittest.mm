@@ -9,7 +9,6 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Pretend BookmarkURLOpener delegate to keep track of requests
@@ -82,15 +81,21 @@ static const int kInfoBarViewHeight = 30;
 class BookmarkBarControllerTest : public testing::Test {
  public:
   BookmarkBarControllerTest() {
-    resizeDelegate_.reset([[ViewResizerPong alloc] init]);
+    NSRect content_frame = NSMakeRect(0, 0, 800, kContentAreaHeight);
+    // |infobar_frame| is set to be directly above |content_frame|.
+    NSRect infobar_frame = NSMakeRect(0, kContentAreaHeight,
+                                      800, kInfoBarViewHeight);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
+    content_area_.reset([[NSView alloc] initWithFrame:content_frame]);
+    infobar_view_.reset([[NSView alloc] initWithFrame:infobar_frame]);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
     [parent_view_ setHidden:YES];
     bar_.reset(
         [[BookmarkBarController alloc] initWithProfile:helper_.profile()
-                                          initialWidth:NSWidth(parent_frame)
-                                        resizeDelegate:resizeDelegate_.get()
-                                           urlDelegate:nil]);
+                                            parentView:parent_view_.get()
+                                        webContentView:content_area_.get()
+                                          infoBarsView:infobar_view_.get()
+                                              delegate:nil]);
 
     InstallAndToggleBar(bar_.get());
 
@@ -134,9 +139,10 @@ class BookmarkBarControllerTest : public testing::Test {
 
 
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  scoped_nsobject<NSView> content_area_;
+  scoped_nsobject<NSView> infobar_view_;
   scoped_nsobject<NSView> parent_view_;
   BrowserTestHelper helper_;
-  scoped_nsobject<ViewResizerPong> resizeDelegate_;
   scoped_nsobject<BookmarkBarController> bar_;
   scoped_nsobject<NSMenu> menu_;
   scoped_nsobject<NSMenuItem> menu_item_;
@@ -158,14 +164,22 @@ TEST_F(BookmarkBarControllerTest, ShowHide) {
   [bar_ toggleBookmarkBar];
   EXPECT_TRUE([bar_ isBookmarkBarVisible]);
   EXPECT_FALSE([[bar_ view] isHidden]);
-  EXPECT_GT([resizeDelegate_ height], 0);
+  NSRect content_frame = [content_area_ frame];
+  NSRect infobar_frame = [infobar_view_ frame];
+  EXPECT_NE(content_frame.size.height, kContentAreaHeight);
+  EXPECT_EQ(NSMaxY(content_frame), NSMinY(infobar_frame));
+  EXPECT_EQ(kInfoBarViewHeight, infobar_frame.size.height);
   EXPECT_GT([[bar_ view] frame].size.height, 0);
 
   [bar_ toggleBookmarkBar];
   EXPECT_FALSE([bar_ isBookmarkBarVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
-  EXPECT_EQ(0, [resizeDelegate_ height]);
-  EXPECT_EQ(0, [[bar_ view] frame].size.height);
+  content_frame = [content_area_ frame];
+  infobar_frame = [infobar_view_ frame];
+  EXPECT_EQ(content_frame.size.height, kContentAreaHeight);
+  EXPECT_EQ(NSMaxY(content_frame), NSMinY(infobar_frame));
+  EXPECT_EQ(kInfoBarViewHeight, infobar_frame.size.height);
+  EXPECT_EQ([[bar_ view] frame].size.height, 0);
 }
 
 // Make sure we're watching for frame change notifications.
@@ -174,9 +188,10 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
   bar.reset(
     [[BookmarkBarControllerTogglePong alloc]
           initWithProfile:helper_.profile()
-             initialWidth:100  // arbitrary
-           resizeDelegate:resizeDelegate_.get()
-              urlDelegate:nil]);
+               parentView:parent_view_.get()
+           webContentView:content_area_.get()
+             infoBarsView:infobar_view_.get()
+                 delegate:nil]);
   InstallAndToggleBar(bar.get());
 
   EXPECT_GT([bar toggles], 0);
@@ -279,7 +294,7 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   scoped_ptr<BookmarkNode> node(new BookmarkNode(gurl));
   scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
                                                 init]);
-  [bar_ setUrlDelegate:pong.get()];
+  [bar_ setDelegate:pong.get()];
 
   scoped_nsobject<NSButtonCell> cell([[NSButtonCell alloc] init]);
   scoped_nsobject<NSButton> button([[NSButton alloc] init]);
@@ -290,7 +305,7 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   EXPECT_EQ(pong.get()->urls_[0], node->GetURL());
   EXPECT_EQ(pong.get()->dispositions_[0], CURRENT_TAB);
 
-  [bar_ setUrlDelegate:nil];
+  [bar_ setDelegate:nil];
 }
 
 // Confirm opening of bookmarks works from the menus (different
@@ -298,7 +313,7 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
 TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
   scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
                                                 init]);
-  [bar_ setUrlDelegate:pong.get()];
+  [bar_ setDelegate:pong.get()];
 
   const char* urls[] = { "http://walla.walla.ding.dong.com",
                          "http://i_dont_know.com",
@@ -319,7 +334,7 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
     EXPECT_EQ(pong.get()->dispositions_[0], dispositions[i]);
     [pong clear];
   }
-  [bar_ setUrlDelegate:nil];
+  [bar_ setDelegate:nil];
 }
 
 TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
@@ -443,7 +458,7 @@ TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
 TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
   scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
                                                 init]);
-  [bar_ setUrlDelegate:pong.get()];
+  [bar_ setDelegate:pong.get()];
 
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
@@ -478,7 +493,7 @@ TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
 
   EXPECT_EQ(pong.get()->dispositions_[3], NEW_BACKGROUND_TAB);
 
-  [bar_ setUrlDelegate:nil];
+  [bar_ setDelegate:nil];
 }
 
 // TODO(jrg): write a test to confirm that nodeFavIconLoaded calls

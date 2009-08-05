@@ -66,11 +66,19 @@ const int kWindowGradientHeight = 24;
 
 @interface BrowserWindowController(Private)
 
+- (void)positionInfoBar;
+- (void)positionBar;  // toolbar or URL bar
+- (void)removeBar;    // toolbar or URL bar
+
 // Leopard's gradient heuristic gets confused by our tabs and makes the title
 // gradient jump when creating a tab that is less than a tab width from the
 // right side of the screen. This function disables Leopard's gradient
 // heuristic.
 - (void)fixWindowGradient;
+
+// Called by the Notification Center whenever the tabContentArea's
+// frame changes.  Re-positions the bookmark bar and the find bar.
+- (void)tabContentAreaFrameChanged:(id)sender;
 
 // Saves the window's position in the local state preferences.
 - (void)saveWindowPositionIfNeeded;
@@ -89,9 +97,6 @@ willPositionSheet:(NSWindow*)sheet
 
 // Theme up the window.
 - (void)applyTheme;
-
-// Repositions the windows subviews.
-- (void)layoutSubviews;
 @end
 
 
@@ -160,12 +165,12 @@ willPositionSheet:(NSWindow*)sheet
                                        model:browser_->tabstrip_model()]);
 
     // Create the infobar container view, so we can pass it to the
-    // ToolbarController.
+    // ToolbarController, but do not position the view until after the
+    // toolbar is in place, as positionToolbar will move the tab content area.
     infoBarContainerController_.reset(
         [[InfoBarContainerController alloc]
           initWithTabStripModel:(browser_->tabstrip_model())
-                 resizeDelegate:self]);
-    [[[self window] contentView] addSubview:[infoBarContainerController_ view]];
+          browserWindowController:self]);
 
     // Create a controller for the toolbar, giving it the toolbar model object
     // and the toolbar view from the nib. The controller will handle
@@ -174,19 +179,30 @@ willPositionSheet:(NSWindow*)sheet
                                initWithModel:browser->toolbar_model()
                                     commands:browser->command_updater()
                                      profile:browser->profile()
-                              resizeDelegate:self
+                              webContentView:[self tabContentArea]
+                                infoBarsView:[infoBarContainerController_ view]
                             bookmarkDelegate:self]);
     // If we are a pop-up, we have a titlebar and no toolbar.
     if (!browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) &&
         browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR)) {
       [toolbarController_ setHasToolbar:NO];
     }
-    [[[self window] contentView] addSubview:[toolbarController_ view]];
-
+    [self positionBar];
     [self fixWindowGradient];
 
-    // Force a relayout of all the various bars.
-    [self layoutSubviews];
+    // Put the infobar container view into the window above the
+    // tabcontentarea.  There are no infobars when starting up, so its
+    // initial height is 0.
+    [self positionInfoBar];
+
+    // Register ourselves for frame changed notifications from the
+    // tabContentArea.  This has to come after all of the resizing and
+    // positioning above.
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(tabContentAreaFrameChanged:)
+               name:nil
+             object:[self tabContentArea]];
 
     // Create the bridge for the status bubble.
     statusBubble_.reset(new StatusBubbleMac([self window], self));
@@ -220,6 +236,7 @@ willPositionSheet:(NSWindow*)sheet
   // window destruction.
   [window_ setDelegate:nil];
 
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -321,6 +338,8 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
+
+
 // Called when the user clicks the zoom button (or selects it from the Window
 // menu). Zoom to the appropriate size based on the content. Make sure we
 // enforce a minimum width to ensure websites with small intrinsic widths
@@ -351,32 +370,6 @@ willPositionSheet:(NSWindow*)sheet
     frame.size.height = screenSize.height;
   }
   return frame;
-}
-
-// Main method to resize browser window subviews.  This method should be called
-// when resizing any child of the content view, rather than resizing the views
-// directly.  If the view is already the correct height, does not force a
-// relayout.
-- (void)resizeView:(NSView*)view newHeight:(float)height {
-  // We should only ever be called for one of the following three views.
-  // |downloadShelfController_| may be nil.
-  DCHECK(view);
-  DCHECK(view == [toolbarController_ view] ||
-         view == [infoBarContainerController_ view] ||
-         view == [downloadShelfController_ view]);
-
-  // Change the height of the view and call layoutViews.  We set the height here
-  // without regard to where the view is on the screen or whether it needs to
-  // "grow up" or "grow down."  The below call to layoutSubviews will position
-  // each view correctly.
-  NSRect frame = [view frame];
-  if (frame.size.height == height)
-    return;
-
-  frame.size.height = height;
-  // TODO(rohitrao): Determine if calling setFrame: twice is bad.
-  [view setFrame:frame];
-  [self layoutSubviews];
 }
 
 // Update a toggle state for an NSMenuItem if modified.
@@ -715,9 +708,7 @@ willPositionSheet:(NSWindow*)sheet
 - (DownloadShelfController*)downloadShelf {
   if (!downloadShelfController_.get()) {
     downloadShelfController_.reset([[DownloadShelfController alloc]
-        initWithBrowser:browser_.get() resizeDelegate:self]);
-    [[[self window] contentView] addSubview:[downloadShelfController_ view]];
-    [downloadShelfController_ show:nil];
+        initWithBrowser:browser_.get() contentArea:[self tabContentArea]]);
   }
   return downloadShelfController_;
 }
@@ -728,11 +719,8 @@ willPositionSheet:(NSWindow*)sheet
 
   // Create a controller for the findbar.
   findBarCocoaController_.reset([findBarCocoaController retain]);
-  [[[self window] contentView] addSubview:[findBarCocoaController_ view]
-                               positioned:NSWindowAbove
-                               relativeTo:[toolbarController_ view]];
-  [findBarCocoaController_
-    positionFindBarView:[infoBarContainerController_ view]];
+  [[[self window] contentView] addSubview:[findBarCocoaController_ view]];
+  [findBarCocoaController_ positionFindBarView:[self tabContentArea]];
 }
 
 // Adjust the UI for fullscreen mode.  E.g. when going fullscreen,
@@ -741,23 +729,18 @@ willPositionSheet:(NSWindow*)sheet
   if (fullscreen) {
     // Disable showing of the bookmark bar.  This does not toggle the
     // preference.
-    // TODO(jrg): Is this still necessary?
     [[toolbarController_ bookmarkBarController] setBookmarkBarEnabled:NO];
     // Make room for more content area.
-    [[toolbarController_ view] removeFromSuperview];
+    [self removeBar];
     // Hide the menubar, and allow it to un-hide when moving the mouse
     // to the top of the screen.  Does this eliminate the need for an
     // info bubble describing how to exit fullscreen mode?
     SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
   } else {
     SetSystemUIMode(kUIModeNormal, 0);
-    [[[self window] contentView] addSubview:[toolbarController_ view]];
-    // TODO(jrg): Is this still necessary?
+    [self positionBar];
     [[toolbarController_ bookmarkBarController] setBookmarkBarEnabled:YES];
   }
-
-  // Force a relayout.
-  [self layoutSubviews];
 }
 
 - (NSWindow*)fullscreenWindow {
@@ -768,27 +751,24 @@ willPositionSheet:(NSWindow*)sheet
 - (void)setFullscreen:(BOOL)fullscreen {
   fullscreen_ = fullscreen;
   if (fullscreen) {
+    // Minimize our UI
+    [self adjustUIForFullscreen:fullscreen];
     // Move content to a new fullscreen window
     NSView* content = [[self window] contentView];
     fullscreen_window_.reset([[self fullscreenWindow] retain]);
     [content removeFromSuperview];
     [fullscreen_window_ setContentView:content];
     [self setWindow:fullscreen_window_.get()];
-    // Minimize our UI.  This call triggers a relayout, so it needs to come
-    // after we move the contentview to the new window.
-    [self adjustUIForFullscreen:fullscreen];
     // Show one window, hide the other.
     [fullscreen_window_ makeKeyAndOrderFront:self];
     [content setNeedsDisplay:YES];
     [window_ orderOut:self];
   } else {
+    [self adjustUIForFullscreen:fullscreen];
     NSView* content = [fullscreen_window_ contentView];
     [content removeFromSuperview];
     [window_ setContentView:content];
     [self setWindow:window_.get()];
-    // This call triggers a relayout, so it needs to come after we move the
-    // contentview to the new window.
-    [self adjustUIForFullscreen:fullscreen];
     [content setNeedsDisplay:YES];
 
     // With this call, valgrind yells at me about "Conditional jump or
@@ -871,6 +851,22 @@ willPositionSheet:(NSWindow*)sheet
   [tabStripController_ userChangedTheme];
 }
 
+// TODO(rohitrao, jrg): Move this logic out of BrowserWindowController?
+- (void)infoBarResized:(float)newHeight {
+  // The top edge of the infobar is fixed.
+  NSView* infoBarView = [infoBarContainerController_ view];
+  NSRect infoBarFrame = [infoBarView frame];
+  int maxY = NSMaxY(infoBarFrame);
+  int minY = maxY - newHeight;
+
+  [infoBarView setFrame:NSMakeRect(infoBarFrame.origin.x, minY,
+                                   infoBarFrame.size.width, newHeight)];
+
+  NSRect contentFrame = [[self tabContentArea] frame];
+  contentFrame.size.height = minY - contentFrame.origin.y;
+  [[self tabContentArea] setFrame:contentFrame];
+}
+
 - (GTMTheme *)gtm_themeForWindow:(NSWindow*)window {
   return theme_ ? theme_ : [GTMTheme defaultTheme];
 }
@@ -878,6 +874,60 @@ willPositionSheet:(NSWindow*)sheet
 @end
 
 @implementation BrowserWindowController (Private)
+
+// TODO(rohitrao, jrg): Move this logic out of BrowserWindowController?
+- (void)positionInfoBar {
+  NSView* infoBarView = [infoBarContainerController_ view];
+  NSRect infoBarFrame = [[self tabContentArea] frame];
+  infoBarFrame.origin.y = NSMaxY(infoBarFrame);
+  infoBarFrame.size.height = 0;
+  [infoBarView setFrame:infoBarFrame];
+  [[[self window] contentView] addSubview:infoBarView];
+}
+
+// If |add| is YES:
+// Position |barView| below the tab strip, but not as a sibling. The
+// toolbar or titlebar is part of the window's contentView, mainly
+// because we want the opacity during drags to be the same as the web
+// content.  This can be used for either the initial add or a
+// reposition.
+// If |add| is NO:
+// Remove the toolbar or titlebar from it's parent view (the window's
+// content view).  Called when going fullscreen and we need to
+// minimize UI.
+- (void)positionOrRemoveBar:(BOOL)add {
+  NSView* barView = [toolbarController_ view];
+  NSRect barFrame = [barView frame];
+  NSView* contentView = [self tabContentArea];
+  NSRect contentFrame = [contentView frame];
+
+  // Shrink or grow the content area by the height of the toolbar.
+  if (add)
+    contentFrame.size.height -= barFrame.size.height;
+  else
+    contentFrame.size.height += barFrame.size.height;
+  [contentView setFrame:contentFrame];
+
+  if (add) {
+    // Move the toolbar above the content area, within the window's content view
+    // (as opposed to the tab strip, which is a sibling).
+    barFrame.origin.y = NSMaxY(contentFrame);
+    barFrame.origin.x = 0;
+    barFrame.size.width = contentFrame.size.width;
+    [barView setFrame:barFrame];
+    [[[self window] contentView] addSubview:barView];
+  } else {
+    [barView removeFromSuperview];
+  }
+}
+
+- (void)positionBar {
+  [self positionOrRemoveBar:YES];
+}
+
+- (void)removeBar {
+  [self positionOrRemoveBar:NO];
+}
 
 // If the browser is in incognito mode, install the image view to decorate
 // the window at the upper right. Use the same base y coordinate as the
@@ -928,6 +978,14 @@ willPositionSheet:(NSWindow*)sheet
     [win setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
     [win setContentBorderThickness:kWindowGradientHeight forEdge:NSMaxYEdge];
   }
+}
+
+- (void)tabContentAreaFrameChanged:(id)sender {
+  // TODO(rohitrao): This is triggered by window resizes also.  Make
+  // sure we aren't doing anything wasteful in those cases.
+  [downloadShelfController_ resizeDownloadShelf];
+
+  [findBarCocoaController_ positionFindBarView:[self tabContentArea]];
 }
 
 - (void)saveWindowPositionIfNeeded {
@@ -1021,68 +1079,6 @@ willPositionSheet:(NSWindow*)sheet
       [theme_ backgroundPatternColorForStyle:GTMThemeStyleWindow
                                        state:[[self window] isMainWindow]];
   [[self window] setBackgroundColor:color];
-}
-
-// Private method to layout browser window subviews.  Positions the toolbar and
-// the infobar above the tab content area.  Positions the download shelf below
-// the tab content area.  If the toolbar is not a child of the contentview, this
-// method will not leave room for it.  If we are currently running in fullscreen
-// mode, or if the tabstrip is not a descendant of the window, this method fills
-// the entire content area.  Otherwise, this method places the topmost view
-// directly beneath the tabstrip.
-- (void)layoutSubviews {
-  NSView* contentView = fullscreen_ ? [fullscreen_window_ contentView]
-                                    : [[self window] contentView];
-  NSRect contentFrame = [contentView frame];
-  int maxY = NSMaxY(contentFrame);
-  int minY = NSMinY(contentFrame);
-  if (!fullscreen_ && [self isNormalWindow]) {
-    maxY = NSMinY([[self tabStripView] frame]);
-  }
-  DCHECK_GE(maxY, minY);
-
-  // Place the toolbar at the top of the reserved area, but only if we're not in
-  // fullscreen mode.
-  NSView* toolbarView = [toolbarController_ view];
-  NSRect toolbarFrame = [toolbarView frame];
-  if (!fullscreen_) {
-    // The toolbar is present in the window, so we make room for it.
-    toolbarFrame.origin.x = 0;
-    toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame);
-    toolbarFrame.size.width = NSWidth(contentFrame);
-    maxY -= NSHeight(toolbarFrame);
-  }
-  [toolbarView setFrame:toolbarFrame];
-
-  // Place the infobar container in place below the toolbar.
-  NSView* infoBarView = [infoBarContainerController_ view];
-  NSRect infoBarFrame = [infoBarView frame];
-  infoBarFrame.origin.y = maxY - NSHeight(infoBarFrame);
-  infoBarFrame.size.width = NSWidth(contentFrame);
-  [infoBarView setFrame:infoBarFrame];
-  maxY -= NSHeight(infoBarFrame);
-
-  // Place the download shelf at the bottom of the view, if it exists.
-  if (downloadShelfController_.get()) {
-    NSView* downloadView = [downloadShelfController_ view];
-    NSRect downloadFrame = [downloadView frame];
-    downloadFrame.origin.y = minY;
-    downloadFrame.size.width = NSWidth(contentFrame);
-    [downloadView setFrame:downloadFrame];
-    minY += NSHeight(downloadFrame);
-  }
-
-  // Finally, the tabContentArea takes up all of the remaining space.
-  NSView* tabContentView = [self tabContentArea];
-  NSRect tabContentFrame = [tabContentView frame];
-  tabContentFrame.origin.y = minY;
-  tabContentFrame.size.height = maxY - minY;
-  tabContentFrame.size.width = NSWidth(contentFrame);
-  [tabContentView setFrame:tabContentFrame];
-
-  // Position the find bar relative to the infobar container.
-  [findBarCocoaController_
-    positionFindBarView:[infoBarContainerController_ view]];
 }
 
 @end

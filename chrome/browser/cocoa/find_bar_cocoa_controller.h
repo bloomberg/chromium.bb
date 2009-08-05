@@ -40,9 +40,8 @@ class FindNotificationDetails;
 
 - (IBAction)previousResult:(id)sender;
 
-// Positions the find bar based on the location of the infobar container.
-// TODO(rohitrao): Move this logic into BrowserWindowController.
-- (void)positionFindBarView:(NSView*)infoBarContainerView;
+// Positions the find bar based on the location of |contentArea|.
+- (void)positionFindBarView:(NSView*)contentArea;
 
 // Methods called from FindBarBridge.
 - (void)showFindBar;
