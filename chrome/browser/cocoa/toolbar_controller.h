@@ -11,14 +11,10 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/command_observer_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
-#import "chrome/browser/cocoa/delayedmenu_button.h"
 #include "chrome/common/pref_member.h"
 
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
-@class DelayedMenuButton;
-@class BackForwardMenuController;
-class Browser;
 class CommandUpdater;
 class LocationBar;
 class LocationBarViewMac;
@@ -40,7 +36,6 @@ class ToolbarView;
   ToolbarModel* toolbarModel_;  // weak, one per window
   CommandUpdater* commands_;  // weak, one per window
   Profile* profile_;  // weak, one per window
-  Browser* browser_;  // weak, one per window
   scoped_ptr<CommandObserverBridge> commandObserver_;
   scoped_ptr<LocationBarViewMac> locationBarView_;
   scoped_nsobject<AutocompleteTextFieldEditor> autocompleteTextFieldEditor_;
@@ -48,8 +43,6 @@ class ToolbarView;
   id<BookmarkURLOpener> bookmarkBarDelegate_;  // weak
   NSView* webContentView_;  // weak; where the web goes
   NSView* infoBarsView_;     // weak; where the infobars go
-  scoped_nsobject<BackForwardMenuController> backMenuController_;
-  scoped_nsobject<BackForwardMenuController> forwardMenuController_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
@@ -63,8 +56,8 @@ class ToolbarView;
   // The ordering is important for unit tests. If new items are added or the
   // ordering is changed, make sure to update |-toolbarViews| and the
   // corresponding enum in the unit tests.
-  IBOutlet DelayedMenuButton* backButton_;
-  IBOutlet DelayedMenuButton* forwardButton_;
+  IBOutlet NSButton* backButton_;
+  IBOutlet NSButton* forwardButton_;
   IBOutlet NSButton* reloadButton_;
   IBOutlet NSButton* homeButton_;
   IBOutlet NSButton* starButton_;
@@ -75,12 +68,10 @@ class ToolbarView;
 }
 
 // Initialize the toolbar and register for command updates. The profile is
-// needed for initializing the location bar. The browser is needed for
-// initializing the back/forward menus.
+// needed for initializing the location bar.
 - (id)initWithModel:(ToolbarModel*)model
            commands:(CommandUpdater*)commands
             profile:(Profile*)profile
-            browser:(Browser*)browser
      webContentView:(NSView*)webContentView
        infoBarsView:(NSView*)infoBarsView
    bookmarkDelegate:(id<BookmarkURLOpener>)delegate;

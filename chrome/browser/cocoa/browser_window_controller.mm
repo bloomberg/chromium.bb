@@ -179,7 +179,6 @@ willPositionSheet:(NSWindow*)sheet
                                initWithModel:browser->toolbar_model()
                                     commands:browser->command_updater()
                                      profile:browser->profile()
-                                     browser:browser
                               webContentView:[self tabContentArea]
                                 infoBarsView:[infoBarContainerController_ view]
                             bookmarkDelegate:self]);
