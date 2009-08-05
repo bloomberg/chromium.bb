@@ -35,7 +35,7 @@
 #include "WebSize.h"
 
 #include "Image.h"
-#include "ImageSourceSkia.h"
+#include "ImageSource.h"
 #include "NativeImageSkia.h"
 #include "SharedBuffer.h"
 #include <wtf/OwnPtr.h>
@@ -47,8 +47,8 @@ namespace WebKit {
 
 WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
 {
-    ImageSourceSkia source;
-    source.setData(PassRefPtr<SharedBuffer>(data).get(), true, desiredSize);
+    ImageSource source;
+    source.setData(PassRefPtr<SharedBuffer>(data).get(), true);
     if (!source.isSizeAvailable())
         return WebImage();
 

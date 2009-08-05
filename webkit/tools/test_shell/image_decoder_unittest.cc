@@ -68,7 +68,7 @@ void VerifyImage(WebCore::ImageDecoder* decoder,
                  size_t frame_index) {
   // Make sure decoding can complete successfully.
   EXPECT_TRUE(decoder->isSizeAvailable()) << path;
-  EXPECT_GE(static_cast<size_t>(decoder->frameCount()), frame_index) << path;
+  EXPECT_GE(decoder->frameCount(), frame_index) << path;
   WebCore::RGBA32Buffer* image_buffer =
       decoder->frameBufferAtIndex(frame_index);
   ASSERT_NE(static_cast<WebCore::RGBA32Buffer*>(NULL), image_buffer) << path;

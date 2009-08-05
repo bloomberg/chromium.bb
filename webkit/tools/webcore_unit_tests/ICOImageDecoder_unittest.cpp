@@ -35,22 +35,14 @@
 #include "ICOImageDecoder.h"
 #include "SharedBuffer.h"
 
-static const int kFavIconSize = 16;
-
 class ICOImageDecoderTest : public ImageDecoderTest {
  public:
-  ICOImageDecoderTest() : ImageDecoderTest(L"ico"),
-                          testing_favicon_size_(false) { }
+  ICOImageDecoderTest() : ImageDecoderTest(L"ico") { }
 
  protected:
   virtual WebCore::ImageDecoder* CreateDecoder() const {
-    WebCore::IntSize desired_size;
-    if (testing_favicon_size_)
-      desired_size = WebCore::IntSize(kFavIconSize, kFavIconSize);
-    return new WebCore::ICOImageDecoder(desired_size);
+    return new WebCore::ICOImageDecoder();
   }
-
-  bool testing_favicon_size_;
 };
 
 TEST_F(ICOImageDecoderTest, Decoding) {
@@ -64,8 +56,7 @@ TEST_F(ICOImageDecoderTest, ChunkedDecoding) {
 #endif
 
 TEST_F(ICOImageDecoderTest, FaviconSize) {
-  // Test that the decoder decodes a preferred size when specified.
-  testing_favicon_size_ = true;
+  // Test that the decoder decodes multiple sizes of icons which have them.
 
   // Load an icon that has both favicon-size and larger entries.
   std::wstring multisize_icon_path(data_dir_);
@@ -75,13 +66,11 @@ TEST_F(ICOImageDecoderTest, FaviconSize) {
 
   // Verify the decoding.
   const std::wstring md5_sum_path(GetMD5SumPath(multisize_icon_path) + L"2");
-  static const int kDesiredFrameIndex = 0;
+  static const int kDesiredFrameIndex = 3;
 #ifdef CALCULATE_MD5_SUMS
   SaveMD5Sum(md5_sum_path, decoder->frameBufferAtIndex(kDesiredFrameIndex));
 #else
   VerifyImage(decoder.get(), multisize_icon_path, md5_sum_path,
               kDesiredFrameIndex);
 #endif
-
-  testing_favicon_size_ = false;
 }
