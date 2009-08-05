@@ -1,0 +1,165 @@
+<html>
+</html>
+<html id="t"> 
+<head> 
+<title>About Sync</title> 
+ 
+<style type="text/css"> 
+body {
+  font-size: 84%;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0.75em;
+  margin: 0;
+  min-width: 45em;
+}
+ 
+h1 {
+  font-size: 110%;
+  font-weight: bold;
+  color: #4a8ee6;
+  letter-spacing: -1px;
+  padding: 0;
+  margin: 0;  
+}
+h2 {
+  font-size: 110%;
+  letter-spacing: -1px;
+  font-weight: normal;
+  color: #4a8ee6;
+  padding: 0;
+  margin: 0;
+  padding: 0.5em 1em;
+  color: #3a75bd;
+  margin-left: -38px;
+  padding-left: 38px;
+  
+  border-top: 1px solid #3a75bd;
+  padding-top: 0.5em;
+ 
+}
+h2:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+div#header {
+  padding: 0.75em 1em;
+  padding-top: 0.6em;
+  padding-left: 0;
+  margin-bottom: 0.75em;
+  position: relative;
+  overflow: hidden;
+  background: #5296de;
+  -webkit-background-size: 100%;
+  border: 1px solid #3a75bd;
+  -webkit-border-radius: 6px;
+  color: white;
+  text-shadow: 0 0 2px black;
+}
+div#header h1 {
+  padding-left: 37px;
+  margin: 0;
+  display: inline;
+  background: url('gear.png') 12px 60% no-repeat;
+  color: white;
+}
+div#header p {
+  font-size: 84%;
+  font-style: italic;
+  padding: 0;
+  margin: 0;
+  color: white;
+  padding-left: 0.4em;
+  display: inline;
+}
+
+table.list {
+  line-height: 200%;
+  border-collapse: collapse;
+  font-size: 84%;
+  table-layout: fixed;
+}
+table.list:not([class*='filtered']) tr:nth-child(odd) td {
+  background: #eff3ff;
+}
+
+table.list td {
+  padding: 0 0.5em;
+  vertical-align: top;
+  line-height: 1.4em;
+  padding-top: 0.35em;
+}
+table.list tr td:nth-last-child(1),
+table.list tr th:nth-last-child(1) {
+  padding-right: 1em;
+}
+table.list:not([class*='filtered']) .tab .name {
+  padding-left: 1.5em;
+}
+ 
+table.list .name {
+}
+ 
+table.list .name div {
+  height: 1.6em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+table.list .number {
+  width: 7em;
+  text-align: right;
+}
+
+table.list#details tr:not([class*='firstRow']) > *:nth-child(1),
+table.list#details tr:not([class*='firstRow']) > *:nth-child(4),
+table.list#details tr.firstRow th:nth-child(1),
+table.list#details tr.firstRow th:nth-child(2) {
+  border-right: 1px solid #b5c6de;
+}
+table.list#details .name {
+  padding-left: 25px;
+  background-position: 5px center;
+  background-repeat: no-repeat;
+}
+</style>
+</head>
+<body>
+  <div id='header'>
+    <h1>About Sync</h1>
+    <p> Sync engine diagnostic data</p>
+  </div>
+  <div id='content'>
+    <h2> Summary </h2>
+    <strong jscontent="summary"></strong>
+    <br /><br /><br />
+    <h2> Details </h2>
+    <table class='list' id='details'>
+      <tr>
+        <td class='name'> Authenticated </td>
+        <td class='number'>
+          <div jscontent="authenticated"> </div>
+          <div jsdisplay="!authenticated"
+               style="color:red"
+               jscontent="auth_problem"></div>
+        </td>
+      </tr>
+      </tr>
+      <tr>
+        <td class='name'>Last Synced</td>
+        <td class='number' jscontent="time_since_sync"> </td>
+      </tr>
+      <tr jsselect="details">
+        <td class='name'>
+  	  <div jscontent="stat_name"></div>
+        </td>
+	<td class='number'>
+  	  <div jscontent="stat_value"></div>        
+    	</td>
+      </tr>	      
+    </table>
+  </div>
+</body>
+</html>
+

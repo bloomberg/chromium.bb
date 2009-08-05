@@ -11,13 +11,13 @@
 #include "chrome/browser/views/options/advanced_page_view.h"
 #include "chrome/browser/views/options/content_page_view.h"
 #include "chrome/browser/views/options/general_page_view.h"
+#ifdef CHROME_PERSONALIZATION
+#include "chrome/browser/sync/personalization.h"
+#include "chrome/browser/views/options/user_data_page_view.h"
+#endif
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/personalization/personalization.h"
-#include "chrome/personalization/views/user_data_page_view.h"
-#endif
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

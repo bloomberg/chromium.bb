@@ -36,6 +36,9 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#ifdef CHROME_PERSONALIZATION
+#include "chrome/browser/sync/personalization.h"
+#endif
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -43,9 +46,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/personalization/personalization.h"
-#endif
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

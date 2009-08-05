@@ -1,0 +1,331 @@
+<html> 
+<style type="text/css"><!--
+  body,td,div,p,a,font,span {font-family: arial,sans-serif;}
+  body { bgcolor:"#ffffff" } 
+  A:link {color:#0000cc; } 
+  A:visited { color:#551a8b; }
+  A:active { color:#ff0000; }
+  .form-noindent {background-color: #ffffff; border: #C3D9FF 1px solid}
+--></style> 
+  <head> 
+    <style type="text/css"><!--
+      .body { margin-left: 3em;
+              margin-right: 5em;
+              font-family: arial,sans-serif; }
+      div.errorbox-good {}
+      div.errorbox-bad {} 
+      div.errormsg { color: red; font-size: smaller;
+                     font-family: arial,sans-serif;}
+      font.errormsg { color: red; font-size: smaller;
+                      font-family: arial,sans-serif;}
+      hr {
+        border: 0;
+        background-color:#DDDDDD; 
+        height: 1px;
+        width: 100%;
+        text-align: left;
+        margin: 5px;
+      }
+    --></style> 
+  </head> 
+  <body dir="ltr" bgcolor="#ffffff" vlink="#666666"
+        style="margin-bottom: 0" onload="initForm();"> 
+  <table width="100%" align="center" cellpadding="1" cellspacing="1"> 
+  <tr> 
+  <td valign="top"> <!-- LOGIN BOX --> 
+  <script>  
+    function gaia_setFocus() {
+      var f = null;
+      if (document.getElementById) { 
+        f = document.getElementById("gaia_loginform");
+      } else if (window.gaia_loginform) { 
+        f = window.gaia_loginform;
+      } 
+      if (f) {
+        if (f.Email && (f.Email.value == null || f.Email.value == "")) {
+          f.Email.focus();
+        } else if (f.Passwd) {
+          f.Passwd.focus();
+        } 
+      }
+    }
+ 
+    function advanceThrobber() {
+      var throbber = document.getElementById('throb');
+      throbber.style.backgroundPositionX =
+      ((parseInt(throbber.style.backgroundPositionX) - 16) % 576) + 'px';
+    }
+ 
+    function showGaiaLogin(args) {
+      var throbber = document.getElementById('throbber_container');
+      throbber.style.display = "none";
+      var f = document.getElementById("gaia_loginform");
+      if (f) {        
+        f.Email.value = args.user; 
+      }     
+      resetErrorVisibility();
+      var t = document.getElementById("errormsg_1_Password");
+      if (t) {
+        t.innerHTML = "Username and password do not match. [<a href=\"http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444\">?</a>]";
+      }
+      if (1 == args.error) {
+        setElementDisplay("errormsg_1_Password", 'table-row');
+        setBlurbError();
+      }
+      if (3 == args.error) {
+        setElementDisplay("errormsg_0_Connection", 'table-row');
+        setBlurbError();
+      }
+      document.getElementById("signIn").disabled = false;
+      gaia_setFocus();
+    }
+    
+    function CloseDialog() {
+      chrome.send("DialogClose", [""]);
+    }
+    
+    function showGaiaSuccessAndClose() {
+      document.getElementById("signIn").value = "Success!";
+      setTimeout(CloseDialog, 1600);
+    }
+    
+    function showGaiaSuccessAndSettingUp() {
+      document.getElementById("signIn").value = "Setting up...";
+    }
+
+    function initForm() {
+      setInterval(advanceThrobber, 30);
+      var args = JSON.parse(chrome.dialogArguments);
+      showGaiaLogin(args);
+    }
+
+    function sendCredentialsAndClose() {
+      if (!setErrorVisibility())
+        return false;
+        
+      var throbber = document.getElementById('throbber_container');
+      throbber.style.display = "inline";
+      var f = document.getElementById("gaia_loginform");
+      var result = JSON.stringify({"user" : f.Email.value,
+                                   "pass" : f.Passwd.value});
+      document.getElementById("signIn").disabled = true;
+      chrome.send("SubmitAuth", [result]);
+    }
+        
+    function setElementDisplay(id, display) {
+      var d = document.getElementById(id);
+      if (d)
+        d.style.display = display;
+    }    
+    
+    function setBlurbError() {
+      var blurb = document.getElementById("top_blurb");
+      blurb.innerHTML =
+          '<font size="-1">Setting up Bookmarks Sync<br/><br/><b>Error signing in.</b></font>';
+    }
+    
+    function resetErrorVisibility() {
+      setElementDisplay("errormsg_0_Email", 'none');
+      setElementDisplay("errormsg_0_Password", 'none');
+      setElementDisplay("errormsg_1_Password", 'none');
+      setElementDisplay("errormsg_0_Connection", 'none');
+    }   
+    
+    function setErrorVisibility() {
+      resetErrorVisibility();
+      var f = document.getElementById("gaia_loginform");      
+      if (null == f.Email.value || "" == f.Email.value) {
+        setElementDisplay("errormsg_0_Email", 'table-row');
+        setBlurbError();
+        return false;
+      }      
+      if (null == f.Passwd.value || "" == f.Passwd.value) {
+        setElementDisplay("errormsg_0_Password", 'table-row');
+        setBlurbError();
+        return false;
+      }
+      return true;
+    }
+  </script> 
+<style type="text/css"><!--
+  div.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif; }
+  font.errormsg { color: red; font-size: smaller; font-family:arial,sans-serif;}  
+--></style> 
+<style type="text/css"><!--
+.gaia.le.lbl { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+.gaia.le.fpwd { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
+.gaia.le.chusr { font-family: Arial, Helvetica, sans-serif; font-size: 70%; }
+.gaia.le.val { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+.gaia.le.button { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+.gaia.le.rem { font-family: Arial, Helvetica, sans-serif; font-size: smaller; }
+.gaia.captchahtml.desc { font-family: arial, sans-serif; font-size: smaller; } 
+.gaia.captchahtml.cmt { font-family: arial, sans-serif; font-size: smaller;
+                        font-style: italic; }
+--></style> 
+<p id="top_blurb"> <font size="-1">
+Google Chrome can sync your bookmarks with your Google account &ndash;
+bookmarks you create on this computer will be made instantly visible on all the
+computers synced to the same account.</font></p>
+<form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;"> 
+<div id="gaia_loginbox"> 
+<table class="form-noindent" cellspacing="3" cellpadding="5" width="100%"
+       border="0"> 
+  <tr> 
+    <td valign="top" style="text-align:center" nowrap="nowrap"
+        bgcolor="#e8eefa"> 
+      <div class="loginBox"> 
+        <table id="gaia_table" align="center" border="0" cellpadding="1"
+               cellspacing="0"> 
+          <tr> 
+            <td colspan="2" align="center"> 
+              <font size="-1"> Sign in with your </font> 
+              <table> 
+                <tr> 
+                  <td valign="top"> 
+                    <img src="google_transparent.png" alt="Google">
+                    </img> 
+                  </td>  
+                  <td valign="middle"> 
+                    <font size="+0"><b>Account</b> </font> 
+                  </td> 
+                </tr> 
+              </table> 
+            </td> 
+          </tr> 
+          <script type="text/javascript"><!--
+            function onPreCreateAccount() {
+              return true;
+            }
+            function onPreLogin() {
+              if (window["onlogin"] != null) {
+                return onlogin(); 
+              } else {
+                return true;
+              }
+            }
+          --></script> 
+          <tr> 
+            <td colspan="2" align="center"> </td> 
+          </tr>
+          <tr> 
+            <td nowrap="nowrap"> 
+              <div align="right"> 
+                <span class="gaia le lbl"> 
+                  Email:
+                </span> 
+              </div> 
+            </td> 
+            <td> 
+              <input type="text" name="Email"  id="Email" size="18"
+                     value="" class='gaia le val' /> 
+            </td> 
+          </tr>
+          <tr> 
+            <td></td> 
+            <td align="left"> 
+              <div class="errormsg" id="errormsg_0_Email"> 
+                Required field cannot be left blank
+              </div> 
+            </td> 
+          </tr>           
+          <tr> 
+            <td></td> 
+            <td align="left"> </td> 
+          </tr> 
+          <tr> 
+            <td align="right"> 
+              <span class="gaia le lbl"> 
+                Password: 
+              </span> 
+            </td> 
+            <td> 
+              <input type="password" name="Passwd" id="Passwd" size="18"
+                     class="gaia le val"/> 
+            </td> 
+          </tr>
+          <tr> 
+            <td></td> 
+            <td align="left"> 
+              <div class="errormsg" id="errormsg_0_Password"> 
+                Required field cannot be left blank
+              </div> 
+            </td> 
+          </tr>
+          <tr> 
+            <td> 
+            </td> 
+            <td align="left"> 
+              <div class="errormsg" id="errormsg_1_Password">                 	
+              </div> 
+            </td> 
+          </tr> 
+          <tr> 
+            <td> 
+            </td> 
+            <td align="left"> 
+              <div class="errormsg" id="errormsg_0_Connection">                 	
+                Could not connect to the server
+              </div> 
+            </td> 
+          </tr>          
+          <tr> 
+            <td> 
+            </td> 
+            <td align="left"> 
+            </td> 
+          </tr> 
+          <tr> 
+            <td> 
+            </td> 
+            <td align="left"> 
+              <table>
+                <tr>
+                  <td>
+                    <div id="throbber_container" style="display:none">
+                      <div id="throb" style="background-image:url(throbber.png);
+                           width:16px; height:16px; background-position:0px;">
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <input id="signIn" type="button" class="gaia le button"
+                           name="signIn" value="Sign in"
+                           onclick="sendCredentialsAndClose();" />
+                  </td>
+                </tr>
+              </table>
+            </td> 
+          </tr>
+          <tr id="ga-fprow"> 
+            <td colspan="2" height="16.0" class="gaia le fpwd"
+                align="center" valign="bottom"> 
+              <a href="http://www.google.com/support/accounts/bin/answer.py?answer=48598&hl=en&fpUrl=https%3A%2F%2Fwww.google.com%2Faccounts%2FForgotPasswd%3FfpOnly%3D1%26service%3Dchromiumsync"
+                 target=_blank> 
+              I cannot access my account
+              </a> 
+            </td>
+          </tr> 
+          <tr>
+            <td colspan="2" height="16.0" class="gaia le fpwd"
+                align="center" valign="bottom"> 
+              <a href="javascript:var popup=window.open('https%3A%5Cx2F%5Cx2Fwww.google.com%5Cx2Faccounts%5Cx2FNewAccount%3Fservice%3Dchromiumsync', 'NewAccount', 'height=870,width=870,resizable=yes,scrollbars=yes');"> 
+              Create a Google account
+              </a> 
+           </td> 
+          </tr>
+        </table> 
+      </div> 
+    </td> 
+  </tr> 
+</table> 
+</div> 
+</form> 
+</td> 
+</tr> 
+ </table> 
+   <div align="right">
+     <input type="button" name="cancel" value="Cancel" onclick="CloseDialog();"/>
+   </div>
+ </table>
+</body> 
+</html>

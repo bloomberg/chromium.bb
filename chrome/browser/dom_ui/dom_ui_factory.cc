@@ -17,7 +17,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #ifdef CHROME_PERSONALIZATION
-#include "chrome/personalization/personalization.h"
+#include "chrome/browser/sync/personalization.h"
 #endif
 #include "googleurl/src/gurl.h"
 

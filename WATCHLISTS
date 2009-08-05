@@ -75,6 +75,9 @@
     'linux-sandboxing': {
       'filepath': 'sandbox/linux/.*',
     },
+    'sync': {
+      'filepath': 'chrome/browser/sync/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -102,5 +105,7 @@
               'scherkus@chromium.org'],
     'ipc': ['jam@chromium.org'],
     'linux-sandboxing': ['agl@chromium.org'],
+    'sync': ['tim@chromium.org', 'nick@chromium.org',
+             'idana@chromium.org'],
   },
 }

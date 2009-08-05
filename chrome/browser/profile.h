@@ -15,10 +15,10 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/web_resource/web_resource_service.h"
 #ifdef CHROME_PERSONALIZATION
-#include "chrome/personalization/personalization.h"
+#include "chrome/browser/sync/personalization.h"
 #endif
+#include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/notification_registrar.h"
 
 namespace net {

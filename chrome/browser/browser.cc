@@ -51,7 +51,7 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
 #ifdef CHROME_PERSONALIZATION
-#include "chrome/personalization/personalization.h"
+#include "chrome/browser/sync/personalization.h"
 #endif
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

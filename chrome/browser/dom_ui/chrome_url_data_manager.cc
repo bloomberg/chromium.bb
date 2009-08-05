@@ -12,6 +12,12 @@
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#ifdef CHROME_PERSONALIZATION
+// TODO(timsteele): Remove all CHROME_PERSONALIZATION code in this file.
+// It is only temporarily needed to configure some personalization data sources
+// that will go away soon.
+#include "chrome/browser/sync/personalization.h"
+#endif
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/url_constants.h"
@@ -21,12 +27,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_job.h"
-#ifdef CHROME_PERSONALIZATION
-// TODO(timsteele): Remove all CHROME_PERSONALIZATION code in this file.
-// It is only temporarily needed to configure some personalization data sources
-// that will go away soon.
-#include "chrome/personalization/personalization.h"
-#endif
 
 #include "grit/locale_settings.h"
 

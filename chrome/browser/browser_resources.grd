@@ -40,6 +40,11 @@ without changes to the corresponding grd file.  -->
         <include name="IDR_LINUX_SPLASH_HTML_CHROMIUM" file="resources\linux-splash.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_LINUX_SPLASH_HTML_CHROME" file="resources\linux-splash-chrome.html" flattenhtml="true" type="BINDATA" />
       </if>
+      <include name="IDR_ABOUT_SYNC_HTML" file="sync\resources\about_sync.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MERGE_AND_SYNC_HTML" file="sync\resources\merge_and_sync.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NEW_TAB_P13N_HTML" file="sync\resources\new_tab_personalization.html" flattenhtml="true" type="BINDATA" />
     </includes>
   </release>
 </grit>
