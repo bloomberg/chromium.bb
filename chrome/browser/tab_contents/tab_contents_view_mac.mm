@@ -135,8 +135,11 @@ void TabContentsViewMac::OnTabCrashed() {
 }
 
 void TabContentsViewMac::SizeContents(const gfx::Size& size) {
-  // TODO(brettw) this is a hack and should be removed. See tab_contents_view.h.
-  NOTIMPLEMENTED();  // Leaving the hack unimplemented.
+  // TODO(brettw | japhet) This is a hack and should be removed.
+  // See tab_contents_view.h.
+  gfx::Rect rect(gfx::Point(), size);
+  TabContentsViewCocoa* view = cocoa_view_.get();
+  [view setFrame:[view RectToNSRect:rect]];
 }
 
 void TabContentsViewMac::Focus() {
