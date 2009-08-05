@@ -1972,7 +1972,7 @@ BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-verti
 // New failures from merge
 BUG10463 WIN LINUX : LayoutTests/editing/selection/hit-test-anonymous.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
-BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL
+BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL CRASH
 BUG10463 WIN : LayoutTests/svg/W3C-SVG-1.1/animate-elem-36-t.svg = FAIL
 BUG10463 WIN : LayoutTests/svg/W3C-SVG-1.1/animate-elem-39-t.svg = FAIL
 SLOW BUG10463 WIN : LayoutTests/svg/carto.net/scrollbar.svg = FAIL
@@ -2152,7 +2152,7 @@ BUG9798 MAC : LayoutTests/svg/hixie/processing-model/003.xml = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/tables/mozilla/other/test3.html = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
 BUG9798 MAC DEBUG : LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = FAIL PASS
-BUG9798 WIN : LayoutTests/fast/dom/Window/window-lookup-precedence.html = TIMEOUT PASS
+BUG9798 WIN : LayoutTests/fast/dom/Window/window-lookup-precedence.html = TIMEOUT PASS CRASH
 BUG9798 WIN : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-gc.html = CRASH PASS
