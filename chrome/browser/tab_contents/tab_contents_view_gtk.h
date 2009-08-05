@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/focus_store_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -25,7 +26,8 @@ class WebDragDest;
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 
 class TabContentsViewGtk : public TabContentsView,
-                           public NotificationObserver {
+                           public NotificationObserver,
+                           public MessageLoopForUI::Observer {
  public:
   // The corresponding TabContents is passed in the constructor, and manages our
   // lifetime. This doesn't need to be the case, but is this way currently
@@ -77,6 +79,12 @@ class TabContentsViewGtk : public TabContentsView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+
+ protected:
+  // MessageLoop::Observer implementation:
+  virtual void WillProcessEvent(GdkEvent* event);
+  virtual void DidProcessEvent(GdkEvent* event);
+
  private:
   // Insert the given widget into the content area. Should only be used for
   // web pages and the like (including interstitials and sad tab). Note that
@@ -84,8 +92,7 @@ class TabContentsViewGtk : public TabContentsView,
   // should be taken that the correct one is hidden/shown.
   void InsertIntoContentArea(GtkWidget* widget);
 
-  // Tell webkit the drag is over.
-  void DragEnded();
+  void CancelDragIfAny();
 
   // We keep track of the timestamp of the latest mousedown event.
   static gboolean OnMouseDown(GtkWidget* widget,
@@ -100,12 +107,30 @@ class TabContentsViewGtk : public TabContentsView,
       GtkFloatingContainer* floating_container, GtkAllocation* allocation,
       TabContentsViewGtk* tab_contents_view);
 
-  // Webkit DnD.
-  static void OnDragEnd(GtkWidget* widget, GdkDragContext* drag_context,
-                        TabContentsViewGtk* tab_contents_view);
-  static void OnDragDataGet(GtkWidget* drag_widget,
-    GdkDragContext* context, GtkSelectionData* selection_data,
-    guint target_type, guint time, TabContentsViewGtk* view);
+  // Webkit source-side DnD.
+  static gboolean OnDragFailedThunk(GtkWidget* widget,
+                                    GdkDragContext* drag_context,
+                                    GtkDragResult result,
+                                    TabContentsViewGtk* view) {
+    return view->OnDragFailed();
+  }
+  gboolean OnDragFailed();
+  static void OnDragEndThunk(GtkWidget* widget,
+                             GdkDragContext* drag_context,
+                             TabContentsViewGtk* view) {
+    view->OnDragEnd();
+  }
+  void OnDragEnd();
+  static void OnDragDataGetThunk(GtkWidget* drag_widget,
+                                 GdkDragContext* context,
+                                 GtkSelectionData* selection_data,
+                                 guint target_type,
+                                 guint time,
+                                 TabContentsViewGtk* view) {
+    view->OnDragDataGet(context, selection_data, target_type, time);
+  }
+  void OnDragDataGet(GdkDragContext* context, GtkSelectionData* selection_data,
+                     guint target_type, guint time);
 
   // Contains |fixed_| as its GtkBin member and a possible floating widget from
   // |popup_view_|.
@@ -139,13 +164,20 @@ class TabContentsViewGtk : public TabContentsView,
   std::vector<ConstrainedWindowGtk*> constrained_windows_;
 
   // The drop data for the current drag (for drags that originate in the render
-  // view).
+  // view). Non-NULL iff there is a current drag.
   scoped_ptr<WebDropData> drop_data_;
   // The mime type for the file contents of the current drag (if any).
   GdkAtom drag_file_mime_type_;
   // The helper object that handles drag destination related interactions with
   // GTK.
   scoped_ptr<WebDragDest> drag_dest_;
+  // Whether the current drag has failed. Meaningless if we are not the source
+  // for a current drag.
+  bool drag_failed_;
+  // This is the widget we use to initiate drags. Since we don't use the
+  // renderer widget, we can persist drags even when our contents is switched
+  // out.
+  GtkWidget* drag_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };

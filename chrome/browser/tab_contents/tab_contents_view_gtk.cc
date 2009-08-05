@@ -189,6 +189,21 @@ int GdkEventKeyToLayoutIndependentKeyval(const GdkEventKey* event) {
   return event->keyval;
 }
 
+// Get the current location of the mouse cursor relative to the screen.
+gfx::Point ScreenPoint(GtkWidget* widget) {
+  int x, y;
+  gdk_display_get_pointer(gtk_widget_get_display(widget), NULL, &x, &y,
+                          NULL);
+  return gfx::Point(x, y);
+}
+
+// Get the current location of the mouse cursor relative to the widget.
+gfx::Point ClientPoint(GtkWidget* widget) {
+  int x, y;
+  gtk_widget_get_pointer(widget, &x, &y);
+  return gfx::Point(x, y);
+}
+
 }  // namespace
 
 // A helper class that handles DnD for drops in the renderer. In GTK parlance,
@@ -287,7 +302,7 @@ class WebDragDest {
       }
     } else if (data_requests_ == 0) {
       tab_contents_->render_view_host()->
-          DragTargetDragOver(ClientPoint(), ScreenPoint());
+          DragTargetDragOver(ClientPoint(widget_), ScreenPoint(widget_));
       drag_over_time_ = time;
     }
 
@@ -348,7 +363,8 @@ class WebDragDest {
       // Tell the renderer about the drag.
       // |x| and |y| are seemingly arbitrary at this point.
       tab_contents_->render_view_host()->
-          DragTargetDragEnter(*drop_data_.get(), ClientPoint(), ScreenPoint());
+          DragTargetDragEnter(*drop_data_.get(),
+                              ClientPoint(widget_), ScreenPoint(widget_));
       drag_over_time_ = time;
     }
   }
@@ -373,7 +389,7 @@ class WebDragDest {
     method_factory_.RevokeAll();
 
     tab_contents_->render_view_host()->
-        DragTargetDrop(ClientPoint(), ScreenPoint());
+        DragTargetDrop(ClientPoint(widget_), ScreenPoint(widget_));
 
     // The second parameter is just an educated guess, but at least we will
     // get the drag-end animation right sometimes.
@@ -381,20 +397,6 @@ class WebDragDest {
     return TRUE;
   }
 
-  // Get the current location of the mouse cursor, relative to the screen.
-  gfx::Point ScreenPoint() {
-    int x, y;
-    gdk_display_get_pointer(gtk_widget_get_display(widget_), NULL, &x, &y,
-                            NULL);
-    return gfx::Point(x, y);
-  }
-
-  // Get the current location of the mouse cursor, relative to the render view.
-  gfx::Point ClientPoint() {
-    int x, y;
-    gtk_widget_get_pointer(widget_, &x, &y);
-    return gfx::Point(x, y);
-  }
 
   TabContents* tab_contents_;
   // The render view.
@@ -435,7 +437,9 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
     : TabContentsView(tab_contents),
       floating_(gtk_floating_container_new()),
       fixed_(gtk_fixed_new()),
-      popup_view_(NULL) {
+      popup_view_(NULL),
+      drag_failed_(false),
+      drag_widget_(NULL) {
   g_signal_connect(fixed_, "size-allocate",
                    G_CALLBACK(OnSizeAllocate), this);
   g_signal_connect(floating_.get(), "set-floating-position",
@@ -446,6 +450,15 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
   gtk_widget_show(floating_.get());
   registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
+
+  // Renderer source DnD.
+  drag_widget_ = gtk_invisible_new();
+  g_signal_connect(drag_widget_, "drag-failed",
+                   G_CALLBACK(OnDragFailedThunk), this);
+  g_signal_connect(drag_widget_, "drag-end", G_CALLBACK(OnDragEndThunk), this);
+  g_signal_connect(drag_widget_, "drag-data-get",
+                   G_CALLBACK(OnDragDataGetThunk), this);
+  g_object_ref_sink(drag_widget_);
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -522,14 +535,11 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
                         GDK_POINTER_MOTION_MASK);
   g_signal_connect(content_view, "button-press-event",
                    G_CALLBACK(OnMouseDown), this);
+  InsertIntoContentArea(content_view);
 
-  // Renderer DnD.
-  g_signal_connect(content_view, "drag-end", G_CALLBACK(OnDragEnd), this);
-  g_signal_connect(content_view, "drag-data-get", G_CALLBACK(OnDragDataGet),
-                   this);
+  // Renderer target DnD.
   drag_dest_.reset(new WebDragDest(tab_contents(), content_view));
 
-  InsertIntoContentArea(content_view);
   return view;
 }
 
@@ -542,7 +552,6 @@ gfx::NativeView TabContentsViewGtk::GetContentNativeView() const {
     return NULL;
   return tab_contents()->render_widget_host_view()->GetNativeView();
 }
-
 
 gfx::NativeWindow TabContentsViewGtk::GetTopLevelNativeWindow() const {
   GtkWidget* window = gtk_widget_get_ancestor(GetNativeView(), GTK_TYPE_WINDOW);
@@ -612,7 +621,25 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
 }
 
 void TabContentsViewGtk::OnContentsDestroy() {
-  // TODO(estade): Windows uses this for some sort of plugin-related stuff.
+  // We don't want to try to handle drag events from this point on.
+  g_signal_handlers_disconnect_by_func(drag_widget_,
+      reinterpret_cast<gpointer>(OnDragFailedThunk), this);
+  g_signal_handlers_disconnect_by_func(drag_widget_,
+      reinterpret_cast<gpointer>(OnDragEndThunk), this);
+  g_signal_handlers_disconnect_by_func(drag_widget_,
+      reinterpret_cast<gpointer>(OnDragDataGetThunk), this);
+
+  // Break the current drag, if any.
+  if (drop_data_.get()) {
+    gtk_grab_add(drag_widget_);
+    gtk_grab_remove(drag_widget_);
+    MessageLoopForUI::current()->RemoveObserver(this);
+    drop_data_.reset();
+  }
+
+  gtk_widget_destroy(drag_widget_);
+  g_object_unref(drag_widget_);
+  drag_widget_ = NULL;
 }
 
 void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
@@ -722,6 +749,23 @@ void TabContentsViewGtk::Observe(NotificationType type,
   }
 }
 
+void TabContentsViewGtk::WillProcessEvent(GdkEvent* event) {
+  // No-op.
+}
+
+void TabContentsViewGtk::DidProcessEvent(GdkEvent* event) {
+  if (event->type != GDK_MOTION_NOTIFY)
+    return;
+
+  GdkEventMotion* event_motion = reinterpret_cast<GdkEventMotion*>(event);
+  gfx::Point client = ClientPoint(GetContentNativeView());
+
+  if (tab_contents()->render_view_host()) {
+    tab_contents()->render_view_host()->DragSourceMovedTo(
+        client.x(), client.y(), event_motion->x_root, event_motion->y_root);
+  }
+}
+
 void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   context_menu_.reset(new RenderViewContextMenuGtk(tab_contents(), params,
                                                    last_mouse_down_.time));
@@ -730,11 +774,6 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
 }
 
 // Render view DnD -------------------------------------------------------------
-
-void TabContentsViewGtk::DragEnded() {
-  if (tab_contents()->render_view_host())
-    tab_contents()->render_view_host()->DragSourceSystemDragEnded();
-}
 
 void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
   DCHECK(GetContentNativeView());
@@ -754,8 +793,8 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
 
   if (targets_mask == 0) {
     NOTIMPLEMENTED();
-    DragEnded();
-    return;
+    if (tab_contents()->render_view_host())
+      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
   }
 
   drop_data_.reset(new WebDropData(drop_data));
@@ -768,6 +807,7 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
                         0, GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS);
   }
 
+  drag_failed_ = false;
   // If we don't pass an event, GDK won't know what event time to start grabbing
   // mouse events. Technically it's the mouse motion event and not the mouse
   // down event that causes the drag, but there's no reliable way to know
@@ -776,23 +816,22 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
   // and holds and doesn't start dragging for a long time. I doubt it matters
   // much, but we should probably look into the possibility of getting the
   // initiating event from webkit.
-  gtk_drag_begin(GetContentNativeView(), list, GDK_ACTION_COPY,
+  gtk_drag_begin(drag_widget_, list, GDK_ACTION_COPY,
                  1,  // Drags are always initiated by the left button.
                  reinterpret_cast<GdkEvent*>(&last_mouse_down_));
+  MessageLoopForUI::current()->AddObserver(this);
   // The drag adds a ref; let it own the list.
   gtk_target_list_unref(list);
 }
 
-// static
 void TabContentsViewGtk::OnDragDataGet(
-    GtkWidget* drag_widget,
     GdkDragContext* context, GtkSelectionData* selection_data,
-    guint target_type, guint time, TabContentsViewGtk* view) {
+    guint target_type, guint time) {
   const int bits_per_byte = 8;
 
   switch (target_type) {
     case GtkDndUtil::TEXT_PLAIN: {
-      std::string utf8_text = UTF16ToUTF8(view->drop_data_->plain_text);
+      std::string utf8_text = UTF16ToUTF8(drop_data_->plain_text);
       gtk_selection_data_set_text(selection_data, utf8_text.c_str(),
                                   utf8_text.length());
       break;
@@ -800,7 +839,7 @@ void TabContentsViewGtk::OnDragDataGet(
 
     case GtkDndUtil::TEXT_URI_LIST: {
       gchar* uri_array[2];
-      uri_array[0] = strdup(view->drop_data_->url.spec().c_str());
+      uri_array[0] = strdup(drop_data_->url.spec().c_str());
       uri_array[1] = NULL;
       gtk_selection_data_set_uris(selection_data, uri_array);
       free(uri_array[0]);
@@ -810,7 +849,7 @@ void TabContentsViewGtk::OnDragDataGet(
     case GtkDndUtil::TEXT_HTML: {
       // TODO(estade): change relative links to be absolute using
       // |html_base_url|.
-      std::string utf8_text = UTF16ToUTF8(view->drop_data_->text_html);
+      std::string utf8_text = UTF16ToUTF8(drop_data_->text_html);
       gtk_selection_data_set(selection_data,
           GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_HTML),
           bits_per_byte,
@@ -821,8 +860,8 @@ void TabContentsViewGtk::OnDragDataGet(
 
     case GtkDndUtil::CHROME_NAMED_URL: {
       Pickle pickle;
-      pickle.WriteString(UTF16ToUTF8(view->drop_data_->url_title));
-      pickle.WriteString(view->drop_data_->url.spec());
+      pickle.WriteString(UTF16ToUTF8(drop_data_->url_title));
+      pickle.WriteString(drop_data_->url.spec());
       gtk_selection_data_set(selection_data,
           GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
           bits_per_byte,
@@ -833,10 +872,9 @@ void TabContentsViewGtk::OnDragDataGet(
 
     case GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS: {
       gtk_selection_data_set(selection_data,
-          view->drag_file_mime_type_, bits_per_byte,
-          reinterpret_cast<const guchar*>(
-              view->drop_data_->file_contents.data()),
-          view->drop_data_->file_contents.length());
+          drag_file_mime_type_, bits_per_byte,
+          reinterpret_cast<const guchar*>(drop_data_->file_contents.data()),
+          drop_data_->file_contents.length());
       break;
     }
 
@@ -845,11 +883,38 @@ void TabContentsViewGtk::OnDragDataGet(
   }
 }
 
-// static
-void TabContentsViewGtk::OnDragEnd(GtkWidget* widget,
-     GdkDragContext* drag_context, TabContentsViewGtk* view) {
-  view->DragEnded();
-  view->drop_data_.reset();
+gboolean TabContentsViewGtk::OnDragFailed() {
+  drag_failed_ = true;
+
+  gfx::Point root = ScreenPoint(GetContentNativeView());
+  gfx::Point client = ClientPoint(GetContentNativeView());
+
+  if (tab_contents()->render_view_host()) {
+    tab_contents()->render_view_host()->DragSourceCancelledAt(
+        client.x(), client.y(), root.x(), root.y());
+  }
+
+  // Let the native failure animation run.
+  return FALSE;
+}
+
+void TabContentsViewGtk::OnDragEnd() {
+  MessageLoopForUI::current()->RemoveObserver(this);
+
+  if (!drag_failed_) {
+    gfx::Point root = ScreenPoint(GetContentNativeView());
+    gfx::Point client = ClientPoint(GetContentNativeView());
+
+    if (tab_contents()->render_view_host()) {
+      tab_contents()->render_view_host()->DragSourceEndedAt(
+          client.x(), client.y(), root.x(), root.y());
+    }
+  }
+
+  if (tab_contents()->render_view_host())
+      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+
+  drop_data_.reset();
 }
 
 // -----------------------------------------------------------------------------
