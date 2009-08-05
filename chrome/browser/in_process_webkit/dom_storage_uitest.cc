@@ -50,7 +50,7 @@ class DOMStorageTest : public UILayoutTest {
   FilePath test_dir_;
 };
 
-TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
+TEST_F(DOMStorageTest, DISABLED_DOMStorageLayoutTests) {
   // TODO(jorlow): Enable these tests when we remove them from the
   //               test_exceptions.txt file.
   //InitializeForLayoutTest(test_dir_, FilePath(), false);
@@ -58,14 +58,14 @@ TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
   //  RunLayoutTest(kTopLevelFiles[i], false, true);
 }
 
-TEST_F(DOMStorageTest, LocalStorageLayoutTests) {
+TEST_F(DOMStorageTest, DISABLED_LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           false);
   for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
     RunLayoutTest(kSubDirFiles[i], false);
 }
 
-TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
+TEST_F(DOMStorageTest, DISABLED_SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
                           false);
   for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
