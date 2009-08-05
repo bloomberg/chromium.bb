@@ -12,11 +12,14 @@
       'type': 'none',
       'variables': {
         'lastchange_out_path': '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
+        'default_lastchange_path': '../LASTCHANGE.in',
       },
       'actions': [
         {
           'action_name': 'lastchange',
           'inputs': [
+            # Note:  <(default_lastchange_path) is optional,
+            # so it doesn't show up in inputs.
             './lastchange.py',
           ],
           'outputs': [
@@ -24,9 +27,12 @@
             '<(lastchange_out_path).always',
           ],
           'action': [
-            'python', '<@(_inputs)', '-o', '<(lastchange_out_path)',
+            'python', '<@(_inputs)',
+            '-o', '<(lastchange_out_path)',
+            '-d', '<(default_lastchange_path)',
           ],
-          'message': 'Extracting last change to <(lastchange_out_path)'
+          'message': 'Extracting last change to <(lastchange_out_path)',
+          'process_outputs_as_sources': '1',
         },
       ],
     },
