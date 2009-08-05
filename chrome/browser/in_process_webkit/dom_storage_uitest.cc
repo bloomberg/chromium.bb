@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Completely disable for now.
+#if 0
+
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_layout_test.h"
 
@@ -71,3 +74,6 @@ TEST_F(DOMStorageTest, DISABLED_SessionStorageLayoutTests) {
   for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
     RunLayoutTest(kSubDirFiles[i], false);
 }
+
+#endif
+
