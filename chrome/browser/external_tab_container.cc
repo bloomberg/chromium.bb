@@ -55,7 +55,7 @@ bool ExternalTabContainer::Init(Profile* profile,
 
   load_requests_via_automation_ = load_requests_via_automation;
 
-  set_window_style(WS_POPUP);
+  set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   views::WidgetWin::Init(NULL, bounds);
   if (!IsWindow()) {
     NOTREACHED();
