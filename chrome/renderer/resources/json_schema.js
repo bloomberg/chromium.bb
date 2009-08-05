@@ -55,6 +55,7 @@ var chrome = chrome || {};
  */
 chrome.JSONSchemaValidator = function() {
   this.errors = [];
+  this.types = [];
 };
 
 chrome.JSONSchemaValidator.messages = {
@@ -74,6 +75,7 @@ chrome.JSONSchemaValidator.messages = {
   invalidChoice: "Value does not match any valid type choices.",
   invalidPropertyType: "Missing property type.",
   schemaRequired: "Schema value required.",
+  unknownSchemaReference: "Unknown schema reference: *."
 };
 
 /**
@@ -115,6 +117,27 @@ chrome.JSONSchemaValidator.getType = function(value) {
 };
 
 /**
+ * Add types that may be referenced by validated schemas that reference them
+ * with "$ref": <typeId>. Each type must be a valid schema and define an
+ * "id" property.
+ */
+chrome.JSONSchemaValidator.prototype.addTypes = function(typeOrTypeList) {
+  function addType(validator, type) {
+    if(!type.id)
+      throw "Attempt to addType with missing 'id' property";
+    validator.types[type.id] = type;
+  }
+
+  if (typeOrTypeList instanceof Array) {
+    for (var i = 0; i < typeOrTypeList.length; i++) {
+      addType(this, typeOrTypeList[i]);
+    }
+  } else {
+    addType(this, typeOrTypeList);
+  }
+}
+
+/**
  * Validates an instance against a schema. The instance can be any JavaScript
  * value and will be validated recursively. When this method returns, the
  * |errors| property will contain a list of errors, if any.
@@ -128,10 +151,23 @@ chrome.JSONSchemaValidator.prototype.validate = function(instance, schema,
     return;
   }
 
+  // If this schema defines itself as reference type, save it in this.types.
+  if (schema.id)
+    this.types[schema.id] = schema;
+
   // If the schema has an extends property, the instance must validate against
   // that schema too.
   if (schema.extends)
     this.validate(instance, schema.extends, path);
+  
+  // If the schema has a $ref property, the instance must validate against
+  // that schema too. It must be present in this.types to be referenced.
+  if (schema["$ref"]) {
+    if (!this.types[schema["$ref"]])
+      this.addError(path, "unknownSchemaReference", [ schema["$ref"] ]);
+    else
+      this.validate(instance, this.types[schema["$ref"]], path)
+  }
 
   // If the schema has a choices property, the instance must validate against at
   // least one of the items in that array.

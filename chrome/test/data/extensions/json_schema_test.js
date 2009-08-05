@@ -7,8 +7,10 @@ function assert(truth) {
     throw new Error("Assertion failed.");
 }
 
-function assertValid(type, instance, schema) {
+function assertValid(type, instance, schema, types) {
   var validator = new chrome.JSONSchemaValidator();
+  if (types)
+    validator.addTypes(types);
   validator["validate" + type](instance, schema, "");
   if (validator.errors.length != 0) {
     log("Got unexpected errors");
@@ -17,8 +19,10 @@ function assertValid(type, instance, schema) {
   }
 }
 
-function assertNotValid(type, instance, schema, errors) {
+function assertNotValid(type, instance, schema, errors, types) {
   var validator = new chrome.JSONSchemaValidator();
+  if (types)
+    validator.addTypes(types);
   validator["validate" + type](instance, schema, "");
   assert(validator.errors.length === errors.length);
   for (var i = 0; i < errors.length; i++) {
@@ -197,6 +201,76 @@ function testObject() {
   assertValid("Object", {foo:"foo",bar:undefined}, schema);
   assertNotValid("Object", {foo:"foo", bar:"42"}, schema,
                  [formatError("invalidType", ["integer", "string"])]);
+}
+
+function testTypeReference() {
+  var referencedTypes = [
+    {
+      id: "MinLengthString",
+      type: "string",
+      minLength: 2
+    },
+    {
+      id: "Max10Int",
+      type: "integer",
+      maximum: 10
+    }
+  ];
+
+  var schema = {
+    type: "object",
+    properties: {
+      "foo": {
+        type: "string"
+      },
+      "bar": {
+        $ref: "Max10Int"
+      },
+      "baz": {
+        $ref: "MinLengthString"
+      }
+    }
+  };
+
+  var schemaInlineReference = {
+    type: "object",
+    properties: {
+      "foo": {
+        type: "string"
+      },
+      "bar": {
+        id: "NegativeInt",
+        type: "integer",
+        maximum: 0
+      },
+      "baz": {
+        $ref: "NegativeInt"
+      }
+    }
+  }
+
+  // Valid type references externally added.
+  assertValid("", {foo:"foo",bar:4,baz:"ab"}, schema, referencedTypes);
+
+  // Valida type references internally defined.
+  assertValid("", {foo:"foo",bar:-4,baz:-2}, schemaInlineReference);
+ 
+  // Failures in validation, but succesful schema reference.
+  assertNotValid("", {foo:"foo",bar:4,baz:"a"}, schema,
+                [formatError("stringMinLength", [2])], referencedTypes);
+   assertNotValid("", {foo:"foo",bar:20,baz:"abc"}, schema,
+                 [formatError("numberMaxValue", [10])], referencedTypes);
+
+  // Remove MinLengthString type.
+  referencedTypes.shift();
+  assertNotValid("", {foo:"foo",bar:4,baz:"ab"}, schema,
+                 [formatError("unknownSchemaReference", ["MinLengthString"])],
+                 referencedTypes);
+
+  // Remove internal type "NegativeInt"
+  delete schemaInlineReference.properties.bar;
+  assertNotValid("", {foo:"foo",baz:-2}, schemaInlineReference,
+                 [formatError("unknownSchemaReference", ["NegativeInt"])]);
 }
 
 function testArrayTuple() {

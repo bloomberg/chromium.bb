@@ -77,3 +77,8 @@ TEST_F(JsonSchemaTest, TestNumber) {
 TEST_F(JsonSchemaTest, TestType) {
   TestFunction("testType");
 }
+
+TEST_F(JsonSchemaTest, TestTypeReference) {
+  TestFunction("testTypeReference");
+}
+
