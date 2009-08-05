@@ -50,12 +50,13 @@ env.Prepend(
         'ncvalidate',
         'google_nacl_imc_c',
         'container',
-        'platform_qual_lib',
         'platform',
+        'platform_qual_lib',
         'gio',
         'expiration',
     ],
 )
+
 
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
@@ -85,22 +86,23 @@ env.Command(target=GENERATED + '/nacl_syscall_handlers.c',
                            ' ${SYSCALL_GEN_FLAGS} < ${SOURCE} >>${TARGET}.tmp'),
                     Move('${TARGET}', '${TARGET}.tmp')])
 
-tramp_gen_obj = env.ComponentObject('arch/x86_32/tramp.S')
+if env['BUILD_ARCHITECTURE'] == 'x86':
+  tramp_gen_obj = env.ComponentObject('arch/x86_32/tramp.S')
 
-tramp_gen_exe = env.ComponentProgram('tramp_gen',
-                                     ['arch/x86_32/tramp_gen.c',
-                                      tramp_gen_obj],
-                                     LIBS=[])
+  tramp_gen_exe = env.ComponentProgram('tramp_gen',
+                                       ['arch/x86_32/tramp_gen.c',
+                                        tramp_gen_obj],
+                                       LIBS=[])
 
-ARCH_X86 = GENERATED + '/arch/x86'
-generated_data_headers = [ ARCH_X86 + '/tramp_data.h' ]
+  ARCH_X86 = GENERATED + '/arch/x86'
+  generated_data_headers = [ ARCH_X86 + '/tramp_data.h' ]
 
-env.Command(target=generated_data_headers,
-            source=tramp_gen_exe,
-            action=['echo HEADER GENERATION: %s' % str(generated_data_headers),
-                    Delete(ARCH_X86),
-                    Mkdir(ARCH_X86),
-                    '${SOURCE} > ${TARGET}'])
+  env.Command(target=generated_data_headers,
+              source=tramp_gen_exe,
+              action=['echo HEADER GENERATION: %s' % str(generated_data_headers),
+                      Delete(ARCH_X86),
+                      Mkdir(ARCH_X86),
+                      '${SOURCE} > ${TARGET}'])
 
 # ----------------------------------------------------------
 ldr_inputs = [
@@ -277,7 +279,8 @@ if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])
 
   env.ComponentProgram('sel_universal', 'sel_universal.c')
-  env.ComponentProgram('nacl_ldt_unittest', 'nacl_ldt_unittest.c')
+  if env['BUILD_ARCHITECTURE'] == 'x86':
+    env.ComponentProgram('nacl_ldt_unittest', 'nacl_ldt_unittest.c')
   env.Requires(SEL_LDR_NODE, crt)
   env.Requires(SEL_LDR_NODE, sdl_dll)
 
