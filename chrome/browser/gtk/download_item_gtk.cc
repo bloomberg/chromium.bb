@@ -61,6 +61,10 @@ const int kNewItemAnimationDurationMs = 800;
 // How long the 'download complete' animation should last for.
 const int kCompleteAnimationDurationMs = 2500;
 
+// Width of the body area of the download item.
+// TODO(estade): get rid of the fudge factor. http://crbug.com/18692
+const int kBodyWidth = kTextWidth + 50 + download_util::kSmallProgressIconSize;
+
 }  // namespace
 
 // DownloadShelfContextMenuGtk -------------------------------------------------
@@ -372,6 +376,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
     // We have been approved.
     gtk_widget_show_all(hbox_.get());
     gtk_widget_destroy(dangerous_prompt_);
+    gtk_widget_set_size_request(body_.get(), kBodyWidth, -1);
     dangerous_prompt_ = NULL;
   }
 
@@ -427,12 +432,9 @@ void DownloadItemGtk::AnimationProgressed(const Animation* animation) {
       gtk_widget_set_size_request(dangerous_hbox_, showing_width, -1);
     } else {
       DCHECK(animation == new_item_animation_.get());
-      // See above TODO for explanation of the extra 50.
       int showing_width = std::max(kMinDownloadItemWidth,
-          static_cast<int>((kTextWidth + 50 +
-                           download_util::kSmallProgressIconSize) *
+          static_cast<int>(kBodyWidth *
                            new_item_animation_->GetCurrentValue()));
-      showing_width = std::max(showing_width, kMinDownloadItemWidth);
       gtk_widget_set_size_request(body_.get(), showing_width, -1);
     }
   }
