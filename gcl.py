@@ -990,10 +990,9 @@ def Change(change_info, override_description):
   separator2 = "\n\n---Paths modified but not in any changelist:\n\n"
   text = (description + separator1 + '\n' +
           '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]) +
-          '\n'.join([f[0] + f[1] for f in affected_files]) + '\n' +
           separator2 +
-          '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n'
-          )
+          '\n'.join([f[0] + f[1] for f in affected_files]) + '\n' +
+          '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n')
 
   handle, filename = tempfile.mkstemp(text=True)
   os.write(handle, text)
