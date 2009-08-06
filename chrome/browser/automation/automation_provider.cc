@@ -2188,9 +2188,6 @@ class SetProxyConfigTask : public Task {
 
 void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
   URLRequestContext* context = Profile::GetDefaultRequestContext();
-  // If we don't have a default request context yet then we have to create
-  // one.
-  bool run_on_ui_thread = false;
   if (!context) {
     FilePath user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -2199,23 +2196,14 @@ void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
     Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
     DCHECK(profile);
     context = profile->GetRequestContext();
-    run_on_ui_thread = true;
   }
   DCHECK(context);
   // Every URLRequestContext should have a proxy service.
   net::ProxyService* proxy_service = context->proxy_service();
   DCHECK(proxy_service);
 
-  // If we just now created the URLRequestContext then we can immediately
-  // set the proxy settings on this (the UI) thread. If there was already
-  // a URLRequestContext, then run the reset on the IO thread.
-  if (run_on_ui_thread) {
-    SetProxyConfigTask set_proxy_config_task(proxy_service, new_proxy_config);
-    set_proxy_config_task.Run();
-  } else {
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        new SetProxyConfigTask(proxy_service, new_proxy_config));
-  }
+  g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+      new SetProxyConfigTask(proxy_service, new_proxy_config));
 }
 
 void AutomationProvider::GetDownloadDirectory(
