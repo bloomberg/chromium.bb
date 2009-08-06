@@ -67,6 +67,21 @@
    fun:FcPatternObjectAddWithBinding
 }
 {
+   bug_18590
+   Memcheck:Leak
+   fun:malloc
+   fun:FcConfigValues
+   fun:FcConfigValues
+   fun:FcConfigValues
+   fun:FcConfigValues
+   fun:FcConfigValues
+   fun:FcConfigValues
+   fun:FcConfigValues
+   fun:FcConfigValues
+   fun:FcConfigSubstituteWithPat
+   fun:FcConfigSubstitute
+}
+{
    dlopen invalid read, probably a bug in glibc.  TODO(dkegel): file glibc bug
    Memcheck:Value4
    ...
