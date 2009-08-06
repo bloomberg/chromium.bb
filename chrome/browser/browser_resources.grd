@@ -19,6 +19,7 @@ without changes to the corresponding grd file. aa1 -->
       <include name="IDR_SSL_ERROR_HTML" file="security\resources\ssl_error.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_HTML" file="resources\new_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_THEME_CSS" file="resources\new_tab_theme.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_NEW_TAB_HTML" file="resources\new_new_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_NEW_TAB_CSS" file="resources\new_new_tab.css" type="BINDATA" />
       <include name="IDR_NEW_NEW_TAB_JS" file="resources\new_new_tab.js" type="BINDATA" />

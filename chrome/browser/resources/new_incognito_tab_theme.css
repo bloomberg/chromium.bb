@@ -1,0 +1,11 @@
+html {
+  background-image:url(chrome://theme/theme_ntp_background?$1);
+  background-color:$2;
+  background-position:$3;
+  background-repeat:$5;
+  overflow:hidden;
+}
+
+html[bookmarkbarattached='true'] {
+  background-position:$4;
+}

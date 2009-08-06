@@ -28,6 +28,9 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
   // Generate and send the CSS for the new tab.
   void SendNewTabCSS(int request_id);
 
+  // Generate and send the CSS for the new incognito tab.
+  void SendNewIncognitoTabCSS(int request_id);
+
   // Fetch and send the theme bitmap.
   void SendThemeBitmap(int request_id, int resource_id);
 

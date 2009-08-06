@@ -433,9 +433,8 @@ std::string NewTabHTMLSource::GetCustomNewTabPageFromCommandLine() {
 
 class IncognitoTabHTMLSource : public ChromeURLDataManager::DataSource {
  public:
-  // Creates our datasource and sets our user message to a specific message
-  // from our string bundle.
-  IncognitoTabHTMLSource();
+  // Creates our datasource and registers initial state of the bookmark bar.
+  explicit IncognitoTabHTMLSource(bool bookmark_bar_attached);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -446,11 +445,14 @@ class IncognitoTabHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
+  bool bookmark_bar_attached_;
+
   DISALLOW_COPY_AND_ASSIGN(IncognitoTabHTMLSource);
 };
 
-IncognitoTabHTMLSource::IncognitoTabHTMLSource()
-    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()) {
+IncognitoTabHTMLSource::IncognitoTabHTMLSource(bool bookmark_bar_attached)
+    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
+      bookmark_bar_attached_(bookmark_bar_attached) {
 }
 
 void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
@@ -461,6 +463,8 @@ void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(L"content",
       l10n_util::GetStringF(IDS_NEW_TAB_OTR_MESSAGE,
           l10n_util::GetString(IDS_LEARN_MORE_INCOGNITO_URL)));
+  localized_strings.SetString(L"bookmarkbarattached",
+      bookmark_bar_attached_ ? "true" : "false");
 
   SetFontAndTextDirection(&localized_strings);
 
@@ -1529,7 +1533,8 @@ NewTabUI::NewTabUI(TabContents* contents)
   if (GetProfile()->IsOffTheRecord()) {
     incognito_ = true;
 
-    IncognitoTabHTMLSource* html_source = new IncognitoTabHTMLSource();
+    IncognitoTabHTMLSource* html_source = new IncognitoTabHTMLSource(
+        GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar));
 
     g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(&chrome_url_data_manager,

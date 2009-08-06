@@ -28,6 +28,7 @@
 // Path for the New Tab CSS. When we get more than a few of these, we should
 // use a resource map rather than hard-coded strings.
 static const char* kNewTabCSSPath = "css/newtab.css";
+static const char* kNewIncognitoTabCSSPath = "css/newincognitotab.css";
 
 static string16 SkColorToRGBAString(SkColor color) {
   return WideToUTF16(l10n_util::GetStringF(IDS_RGBA_CSS_FORMAT_STRING,
@@ -59,6 +60,9 @@ void DOMUIThemeSource::StartDataRequest(const std::string& path,
   if (strcmp(uncached_path.c_str(), kNewTabCSSPath) == 0) {
     SendNewTabCSS(request_id);
     return;
+  } else if (strcmp(uncached_path.c_str(), kNewIncognitoTabCSSPath) == 0) {
+    SendNewIncognitoTabCSS(request_id);
+    return;
   } else {
     int resource_id = ThemeResourcesUtil::GetId(uncached_path);
     if (resource_id != -1) {
@@ -73,7 +77,8 @@ void DOMUIThemeSource::StartDataRequest(const std::string& path,
 std::string DOMUIThemeSource::GetMimeType(const std::string& path) const {
   std::string uncached_path = StripQueryParams(path);
 
-  if (strcmp(uncached_path.c_str(), kNewTabCSSPath) == 0)
+  if (strcmp(uncached_path.c_str(), kNewTabCSSPath) == 0 ||
+      strcmp(uncached_path.c_str(), kNewIncognitoTabCSSPath) == 0)
     return "text/css";
   return "image/png";
 }
@@ -147,6 +152,46 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   scoped_refptr<RefCountedBytes> css_bytes(new RefCountedBytes);
   css_bytes->data.resize(css_string2.size());
   std::copy(css_string2.begin(), css_string2.end(), css_bytes->data.begin());
+
+  // Send.
+  SendResponse(request_id, css_bytes);
+}
+
+void DOMUIThemeSource::SendNewIncognitoTabCSS(int request_id) {
+  ThemeProvider* tp = profile_->GetThemeProvider();
+  DCHECK(tp);
+
+  // Get our theme colors
+  SkColor color_background =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND);
+
+  // Generate the replacements.
+  std::vector<string16> subst;
+
+  // Cache-buster for background.
+  subst.push_back(WideToUTF16(
+      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
+
+  // Colors.
+  subst.push_back(SkColorToRGBAString(color_background));  // $2
+  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(false)));  // $3
+  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(true)));  // $4
+  subst.push_back(UTF8ToUTF16(GetNewTabBackgroundTilingCSS()));  // $5
+
+  // Get our template.
+  static const StringPiece new_tab_theme_css(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_NEW_INCOGNITO_TAB_THEME_CSS));
+
+  // Create the string from our template and the replacements.
+  string16 format_string = ASCIIToUTF16(new_tab_theme_css.as_string());
+  const std::string css_string = UTF16ToASCII(ReplaceStringPlaceholders(
+      format_string, subst, NULL));
+
+  // Convert to a format appropriate for sending.
+  scoped_refptr<RefCountedBytes> css_bytes(new RefCountedBytes);
+  css_bytes->data.resize(css_string.size());
+  std::copy(css_string.begin(), css_string.end(), css_bytes->data.begin());
 
   // Send.
   SendResponse(request_id, css_bytes);
