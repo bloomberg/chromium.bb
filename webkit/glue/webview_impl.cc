@@ -1259,6 +1259,11 @@ bool WebViewImpl::ShouldClose() {
   return frame->shouldClose();
 }
 
+void WebViewImpl::ClosePage() {
+  // Run unload handlers.
+  page_->mainFrame()->loader()->closeURL();
+}
+
 WebViewDelegate* WebViewImpl::GetDelegate() {
   return delegate_;
 }

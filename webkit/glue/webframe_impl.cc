@@ -1709,12 +1709,6 @@ void WebFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
       1, String());
 }
 
-void WebFrameImpl::ClosePage() {
-  // TODO(creis): Find a way to use WebView::Close() instead.  (See comments in
-  // webframe.h and RenderView::OnClosePage.)
-  frame_->loader()->closeURL();
-}
-
 WebSize WebFrameImpl::ScrollOffset() const {
   WebCore::FrameView* view = frameview();
   if (view)

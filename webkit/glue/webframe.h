@@ -394,13 +394,6 @@ class WebFrame {
   // Adds a message to the frame's console.
   virtual void AddMessageToConsole(const WebKit::WebConsoleMessage&) = 0;
 
-  // Tells the current page to close, running the onunload handler.
-  // TODO(creis): We'd rather use WebView::Close(), but that sets its delegate_
-  // to NULL, preventing any JavaScript dialogs in the onunload handler from
-  // appearing.  This lets us shortcut that for now, but we should refactor
-  // close messages so that this isn't necessary.
-  virtual void ClosePage() = 0;
-
   // The current scroll offset from the top of frame in pixels.
   virtual WebKit::WebSize ScrollOffset() const = 0;
 

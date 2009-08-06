@@ -2857,8 +2857,8 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
     // multiple times for the same frame, but it will simplify things.
     if (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme))
       DumpLoadHistograms();
-    main_frame->ClosePage();
   }
+  webview()->ClosePage();
 
   // Just echo back the params in the ACK.
   Send(new ViewHostMsg_ClosePage_ACK(routing_id_, params));

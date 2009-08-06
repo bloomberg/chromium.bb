@@ -82,6 +82,15 @@ class WebView : public WebKit::WebWidget {
   // onbeforeunload event handlers.
   virtual bool ShouldClose() = 0;
 
+  // Tells the current page to close, running the onunload handler.
+  // TODO(creis): We'd rather use WebWidget::Close(), but that sets its
+  // delegate_ to NULL, preventing any JavaScript dialogs in the onunload
+  // handler from appearing.  This lets us shortcut that for now, but we should
+  // refactor close messages so that this isn't necessary.
+  // TODO(darin): This comment is out-of-date, and we should be able to use
+  // WebWidget::Close now.
+  virtual void ClosePage() = 0;
+
   //
   //  @method mainFrame
   //  @abstract Return the top level frame.

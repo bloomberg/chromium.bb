@@ -181,8 +181,6 @@ class WebFrameImpl : public WebFrame, public base::RefCounted<WebFrameImpl> {
 
   virtual void AddMessageToConsole(const WebKit::WebConsoleMessage&);
 
-  virtual void ClosePage();
-
   virtual WebKit::WebSize ScrollOffset() const;
 
   virtual int PrintBegin(const WebKit::WebSize& page_size);
