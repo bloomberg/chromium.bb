@@ -121,6 +121,13 @@ const char* WebNavigationTypeToString(WebNavigationType type) {
   return kIllegalString;
 }
 
+std::string GetURLDescription(const GURL& url) {
+  if (url.SchemeIs("file"))
+    return url.ExtractFileName();
+
+  return url.possibly_invalid_spec();
+}
+
 std::string GetResponseDescription(const WebURLResponse& response) {
   if (response.isNull())
     return "(null)";
@@ -130,15 +137,36 @@ std::string GetResponseDescription(const WebURLResponse& response) {
       response.httpStatusCode());
 }
 
-int ToNSErrorCode(const WebURLError& error) {
-  if (UTF16ToUTF8(error.domain) == net::kErrorDomain) {
+std::string GetErrorDescription(const WebURLError& error) {
+  std::string domain;
+  int code;
+
+  if (EqualsASCII(error.domain, net::kErrorDomain)) {
+    domain = "NSURLErrorDomain";
     switch (error.reason) {
       case net::ERR_ABORTED:
-        return -999;
+        code = -999;
+        break;
+      case net::ERR_UNSAFE_PORT:
+        // Our unsafe port checking happens at the network stack level, but we
+        // make this translation here to match the behavior of stock WebKit.
+        domain = "WebKitErrorDomain";
+        code = 103;
+        break;
+      case net::ERR_ADDRESS_INVALID:
+        code = -1004;
+        break;
+      default:
+        code = -1;
     }
+  } else {
+    DLOG(WARNING) << "Unknown error domain";
+    domain = UTF16ToASCII(error.domain);
+    code = error.reason;
   }
-  DLOG(WARNING) << "Add an error code mapping!";
-  return error.reason;
+
+  return StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
+      domain.c_str(), code, error.unreachableURL.spec().data());
 }
 
 }  // namespace
@@ -216,15 +244,9 @@ WebNavigationPolicy TestWebViewDelegate::PolicyForNavigationAction(
   WebNavigationPolicy result;
   if (policy_delegate_enabled_) {
     std::wstring frame_name = frame->GetName();
-    std::string url_description;
-    GURL request_url = request.url();
-    if (request_url.SchemeIs("file")) {
-      url_description = request_url.ExtractFileName();
-    } else {
-      url_description = request_url.spec();
-    }
     printf("Policy delegate: attempt to load %s with navigation type '%s'\n",
-           url_description.c_str(), WebNavigationTypeToString(type));
+           GetURLDescription(request.url()).c_str(),
+           WebNavigationTypeToString(type));
     if (policy_delegate_is_permissive_) {
       result = WebKit::WebNavigationPolicyCurrentTab;
     } else {
@@ -265,7 +287,7 @@ void TestWebViewDelegate::WillSendRequest(
            " http method %s> redirectResponse %s\n",
            GetResourceDescription(identifier).c_str(),
            request_url.c_str(),
-           main_document_url.possibly_invalid_spec().c_str(),
+           GetURLDescription(main_document_url).c_str(),
            UTF16ToUTF8(request->httpMethod()).c_str(),
            GetResponseDescription(redirect_response).c_str());
   }
@@ -323,11 +345,9 @@ void TestWebViewDelegate::DidFailLoadingWithError(WebFrame* webframe,
                                                   uint32 identifier,
                                                   const WebURLError& error) {
   if (shell_->ShouldDumpResourceLoadCallbacks()) {
-    printf("%s - didFailLoadingWithError: <NSError domain NSURLErrorDomain,"
-           " code %d, failing URL \"%s\">\n",
+    printf("%s - didFailLoadingWithError: %s\n",
            GetResourceDescription(identifier).c_str(),
-           ToNSErrorCode(error),
-           error.unreachableURL.spec().data());
+           GetErrorDescription(error).c_str());
   }
 
   resource_identifier_map_.erase(identifier);
