@@ -339,8 +339,9 @@ class TabRendererGtk : public AnimationDelegate {
   // Contains the loading animation state.
   LoadingAnimation loading_animation_;
 
-  // TODO(jhawkins): If the theme is changed after the tab is created, we'll
-  // still render the old theme for this tab.
+  // The offset used to paint the tab theme images.
+  int background_offset_x_;
+
   ThemeProvider* theme_provider_;
 
   // The close button.

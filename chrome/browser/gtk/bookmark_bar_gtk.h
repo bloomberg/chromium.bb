@@ -21,7 +21,6 @@ class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
 class CustomContainerButton;
-class NineBox;
 class PageNavigator;
 class Profile;
 struct GtkThemeProvider;
@@ -135,9 +134,6 @@ class BookmarkBarGtk : public AnimationDelegate,
   // Finds the BookmarkNode from the model associated with |button|.
   const BookmarkNode* GetNodeForToolButton(GtkWidget* button);
 
-  // Loads the background image into memory, or does nothing if already loaded.
-  void InitBackground();
-
   // Creates and displays a popup menu for BookmarkNode |node|.
   void PopupMenuForNode(GtkWidget* sender, const BookmarkNode* node,
                         GdkEventButton* event);
@@ -244,9 +240,6 @@ class BookmarkBarGtk : public AnimationDelegate,
   // The last displayed left click menu, or NULL if no menus have been
   // displayed yet.
   scoped_ptr<BookmarkMenuController> current_menu_;
-
-  // Paints the background for our bookmark bar.
-  scoped_ptr<NineBox> background_ninebox_;
 
   scoped_ptr<SlideAnimation> slide_animation_;
 

@@ -62,7 +62,7 @@ class TabRenderer : public views::View,
 
   // Set the background offset used to match the image in the inactive tab
   // to the frame image.
-  void SetBackgroundOffset(gfx::Point offset) {
+  void SetBackgroundOffset(const gfx::Point& offset) {
     background_offset_ = offset;
   }
 
@@ -171,7 +171,6 @@ class TabRenderer : public views::View,
     bool crashed;
     bool off_the_record;
     bool show_icon;
-    int background_vertical_offset;
   };
   TabData data_;
 

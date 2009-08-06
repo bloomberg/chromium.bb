@@ -28,6 +28,7 @@ const int kLeftPadding = 16;
 const int kTopPadding = 6;
 const int kRightPadding = 15;
 const int kBottomPadding = 5;
+const int kDropShadowHeight = 2;
 const int kFavIconTitleSpacing = 4;
 const int kTitleCloseButtonSpacing = 5;
 const int kStandardTitleWidth = 175;
@@ -596,6 +597,10 @@ void TabRendererGtk::PaintTab(GdkEventExpose* event) {
   // coordinate event->area.  Translate by these offsets so we can render at
   // (0,0) to match Windows' rendering metrics.
   canvas.TranslateInt(event->area.x, event->area.y);
+
+  // Save the original x offset so we can position background images properly.
+  background_offset_x_ = event->area.x;
+
   Paint(&canvas);
 }
 
@@ -680,7 +685,7 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.
-  int offset = 1;
+  int offset = background_offset_x_;
 
   int tab_id = is_otr ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
@@ -723,7 +728,7 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 }
 
 void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
-  int offset = 1;
+  int offset = background_offset_x_;
 
   SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
@@ -745,9 +750,10 @@ void TabRendererGtk::PaintActiveTabBackground(gfx::Canvas* canvas) {
 
   // Draw center.
   canvas->TileImageInt(*tab_bg,
-      offset + tab_active_.l_width, 2,
-      tab_active_.l_width, 2,
-      width() - tab_active_.l_width - tab_active_.r_width, height() - 2);
+      offset + tab_active_.l_width, kDropShadowHeight,
+      tab_active_.l_width, kDropShadowHeight,
+      width() - tab_active_.l_width - tab_active_.r_width,
+      height() - kDropShadowHeight);
 
   canvas->DrawBitmapInt(*tab_active_.image_l, 0, 0);
   canvas->TileImageInt(*tab_active_.image_c, tab_active_.l_width, 0,

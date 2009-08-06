@@ -24,7 +24,6 @@
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
@@ -133,6 +132,9 @@ void BookmarkBarGtk::SetPageNavigator(PageNavigator* navigator) {
 
 void BookmarkBarGtk::Init(Profile* profile) {
   event_box_.Own(gtk_event_box_new());
+  // Make the event box transparent so themes can use transparent backgrounds.
+  if (!theme_provider_->UseGtkTheme())
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
 
   bookmark_hbox_ = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(event_box_.get()), bookmark_hbox_);
@@ -399,6 +401,12 @@ void BookmarkBarGtk::Observe(NotificationType type,
       DLOG(ERROR) << "Received a theme change notification while we "
                   << "don't have a BookmarkModel. Taking no action.";
     }
+
+    // When using the GTK+ theme, we need to have the event box be visible so
+    // buttons don't get a halo color from the background.  When using Chromium
+    // themes, we want to let the background show through the toolbar.
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
+                                     theme_provider_->UseGtkTheme());
   }
 }
 
@@ -492,15 +500,6 @@ const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {
     return model_->GetBookmarkBarNode()->GetChild(index_to_use);
 
   return NULL;
-}
-
-void BookmarkBarGtk::InitBackground() {
-  if (background_ninebox_.get())
-    return;
-
-  background_ninebox_.reset(new NineBox(
-      browser_->profile()->GetThemeProvider(),
-      0, IDR_THEME_TOOLBAR, 0, 0, 0, 0, 0, 0, 0));
 }
 
 void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
@@ -815,12 +814,22 @@ gboolean BookmarkBarGtk::OnHBoxExpose(GtkWidget* widget,
   cairo_rectangle(cr, event->area.x, event->area.y,
                   event->area.width, event->area.height);
   cairo_clip(cr);
-  bar->InitBackground();
   gfx::Point tabstrip_origin =
       bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
-  bar->background_ninebox_->RenderTopCenterStrip(
-      cr, tabstrip_origin.x(), tabstrip_origin.y(),
-      event->area.x + event->area.width - tabstrip_origin.x());
+
+  GtkThemeProvider* theme_provider = bar->theme_provider_;
+  GdkPixbuf* toolbar_background = theme_provider->GetPixbufNamed(
+      IDR_THEME_TOOLBAR);
+  gdk_cairo_set_source_pixbuf(cr, toolbar_background, tabstrip_origin.x(),
+                              tabstrip_origin.y());
+  // We tile the toolbar background in both directions.
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr,
+      tabstrip_origin.x(),
+      tabstrip_origin.y(),
+      event->area.x + event->area.width - tabstrip_origin.x(),
+      event->area.y + event->area.height - tabstrip_origin.y());
+  cairo_fill(cr);
   cairo_destroy(cr);
 
   return FALSE;  // Propagate expose to children.
