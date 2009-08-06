@@ -1914,7 +1914,6 @@ BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAI
 // New failures from 41660:41709
 // Newly added tests.
 BUG9159 LINUX WIN : LayoutTests/editing/pasteboard/5089327.html = FAIL
-BUG9160 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL
 BUG9161 MAC LINUX WIN : LayoutTests/fast/forms/basic-textareas.html = FAIL
 BUG9163 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL
 BUG9163 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL TIMEOUT
@@ -3060,3 +3059,7 @@ BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 
 // Baseline is out-of-date
 BUG18610 WIN LINUX : LayoutTests/security/block-test.html = FAIL
+
+// Flaky crashes
+BUG18656 LINUX : LayoutTests/fast/overflow/overflow-stacking.html = PASS CRASH
+BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL CRASH
