@@ -36,16 +36,7 @@ body {
 .thumbnail-container:hover > .edit-mode-border {
   background-color: $6;
 }
-.section {
-  border: 1px solid $7;
-}
-.section > h2 {
-  background-color: $7;
-  background-image: -webkit-gradient(linear, left top, left bottom,
-                                     from($7),
-                                     to($6));
-  color: $$1;
-}
+
 #view-toolbar > input {
   background-color: $7;
   -webkit-mask-image: url(chrome://theme/newtab_menu_mask);
@@ -57,3 +48,11 @@ body {
 .tips-title {
   color: $$1;
 }
+
+/* TODO(arv): The theme does not have the thumbnail outline color in non hover
+   mode
+#recently-closed {
+  border-color:
+  background-color:
+}
+*/

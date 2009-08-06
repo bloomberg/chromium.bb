@@ -307,20 +307,8 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
   localized_strings.SetString(L"attributionintro",
       l10n_util::GetString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
-  localized_strings.SetString(L"resourcecache",
-      l10n_util::GetString(IDS_NEW_TAB_WEB_RESOURCE_CACHE));
-  localized_strings.SetString(L"recentactivities",
-      l10n_util::GetString(IDS_NEW_TAB_RECENT_ACTIVITIES));
-  localized_strings.SetString(L"tipsandsuggestions",
-      l10n_util::GetString(IDS_NEW_TAB_EVEN_MORE_TITLE));
-  localized_strings.SetString(L"defaulttipstitle",
-      l10n_util::GetString(IDS_NEW_TAB_EVEN_MORE_CONTENT));
-  localized_strings.SetString(L"downloads",
-      l10n_util::GetString(IDS_NEW_TAB_DOWNLOADS));
   localized_strings.SetString(L"viewfullhistory",
       l10n_util::GetString(IDS_NEW_TAB_VIEW_FULL_HISTORY));
-  localized_strings.SetString(L"viewalldownloads",
-      l10n_util::GetString(IDS_NEW_TAB_VIEW_ALL_DOWNLOADS));
   localized_strings.SetString(L"showthumbnails",
       l10n_util::GetString(IDS_NEW_TAB_SHOW_THUMBNAILS));
   localized_strings.SetString(L"hidethumbnails",
@@ -329,14 +317,10 @@ void NewTabHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_NEW_TAB_SHOW_LIST));
   localized_strings.SetString(L"hidelist",
       l10n_util::GetString(IDS_NEW_TAB_HIDE_LIST));
-  localized_strings.SetString(L"showrecent",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_RECENT));
-  localized_strings.SetString(L"hiderecent",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_RECENT));
-  localized_strings.SetString(L"showtips",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_EVEN_MORE));
-  localized_strings.SetString(L"hidetips",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_EVEN_MORE));
+  localized_strings.SetString(L"showrecentlyclosedtabs",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_RECENTLY_CLOSED_TABS));
+  localized_strings.SetString(L"hiderecentlyclosedtabs",
+      l10n_util::GetString(IDS_NEW_TAB_HIDE_RECENTLY_CLOSED_TABS));
   localized_strings.SetString(L"thumbnailremovednotification",
       l10n_util::GetString(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
   localized_strings.SetString(L"undothumbnailremove",

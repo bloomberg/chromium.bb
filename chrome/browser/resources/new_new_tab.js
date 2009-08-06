@@ -94,58 +94,57 @@ function mostVisitedPages(data, firstRun) {
   }
 }
 
-function downloadsList(data) {
-  logEvent('received downloads');
-
-  // We should only show complete downloads.
-  data = data.filter(function(d) {
-    d.type = 'download';
-    d.timestamp = d.started;
-    return d.state == 'COMPLETE';
-  });
-
-  gotRecentItems(data, 'download');
-}
-
 function recentlyClosedTabs(data) {
   logEvent('received recently closed tabs');
-
-  // Remove old tabs and windows to prevent duplicates.
-  recentItems = recentItems.filter(function(item) {
-    return item.type != 'tab' && item.type != 'window';
-  });
-
-  // We handle timestamp 0 as now
-  data.forEach(function(d) {
-    if (d.timestamp == 0) {
-      d.timestamp = Date.now();
-    }
-  });
-
-  gotRecentItems(data);
+  // We need to store the recent items so we can update the layout on a resize.
+  recentItems = data;
+  renderRecentlyClosed();
 }
 
 var recentItems = [];
 var recentItemKeys = {};
 
-function gotRecentItems(data) {
-  // Add new items
-  Array.prototype.push.apply(recentItems, data);
+function renderRecentlyClosed() {
+  // We remove all items but the header and the nav
+  var recentlyClosedElement = $('recently-closed');
+  var headerEl = recentlyClosedElement.firstElementChild;
+  var navEl = recentlyClosedElement.lastElementChild;
 
-  recentItems.sort(function(d1, d2) {
-    return d2.timestamp - d1.timestamp;
+  for (var el = navEl.previousElementSibling; el != headerEl;
+       el = navEl.previousElementSibling) {
+    recentlyClosedElement.removeChild(el);
+  }
+
+  // Create new items
+  recentItems.forEach(function(item) {
+    var el = createRecentItem(item);
+    recentlyClosedElement.insertBefore(el, navEl);
   });
 
-  renderRecentItems();
+  layoutRecentlyClosed();
 }
 
-function renderRecentItems() {
-  // When tips are shown we only show 10 items
-  var desiredCount = shownSections & Section.TIPS ? 10 : 20;
-  desiredCount -= 2; // Show all downloads and all history uses two rows.
-
-  processData('#recent-activities > .item-container',
-              recentItems.slice(0, desiredCount));
+function createRecentItem(data) {
+  var isWindow = data.type == 'window';
+  var el;
+  if (isWindow) {
+    el = document.createElement('span');
+    el.className = 'item link window';
+    el.tabItems = data.tabs;
+    el.tabIndex = 0;
+    el.textContent = formatTabsText(data.tabs.length);
+  } else {
+    el = document.createElement('a');
+    el.className = 'item';
+    el.href = data.url;
+    el.style.backgroundImage = url('chrome://favicon/' + data.url);
+    el.dir = data.direction;
+    el.textContent = data.title;
+  }
+  el.sessionId = data.sessionId;
+  var wrapperEl = document.createElement('span');
+  wrapperEl.appendChild(el);
+  return wrapperEl;
 }
 
 function onShownSections(mask) {
@@ -160,16 +159,8 @@ function onShownSections(mask) {
       mostVisited.invalidate();
     }
 
-    if ((mask & Section.RECENT) != (oldShownSections & Section.RECENT)) {
-      notifyLowerSectionForChange(Section.RECENT);
-    }
-
-    if ((mask & Section.TIPS) != (oldShownSections & Section.TIPS)) {
-      notifyLowerSectionForChange(Section.TIPS);
-    }
-
     mostVisited.updateDisplayMode();
-    layoutLowerSections();
+    layoutRecentlyClosed();
     updateOptionMenu();
   }
 
@@ -179,12 +170,6 @@ function onShownSections(mask) {
 
 function saveShownSections() {
   chrome.send('setShownSections', [String(shownSections)]);
-}
-
-function tips(data) {
-  logEvent('received tips data');
-  data.length = Math.min(data.length, 5);
-  processData('#tip-items', data);
 }
 
 function processData(selector, data) {
@@ -292,7 +277,7 @@ function handleWindowResize() {
   if (layoutMode != oldLayoutMode){
     mostVisited.invalidate();
     mostVisited.layout();
-    layoutLowerSections();
+    layoutRecentlyClosed();
   }
 }
 
@@ -304,11 +289,10 @@ function handleWindowResize() {
 var Section = {
   THUMB: 1,
   LIST: 2,
-  RECENT: 4,
-  TIPS: 8
+  RECENT: 4
 };
 
-var shownSections = Section.THUMB | Section.RECENT | Section.TIPS;
+var shownSections = Section.THUMB | Section.RECENT;
 
 function showSection(section) {
   if (!(section & shownSections)) {
@@ -324,8 +308,7 @@ function showSection(section) {
       shownSections &= ~Section.THUMB;
       mostVisited.invalidate();
     } else {
-      notifyLowerSectionForChange(section);
-      layoutLowerSections();
+      layoutRecentlyClosed();
     }
 
     updateOptionMenu();
@@ -342,26 +325,13 @@ function hideSection(section) {
       mostVisited.invalidate();
     }
 
-    if (section & Section.RECENT || section & Section.TIPS) {
-      notifyLowerSectionForChange(section);
-      layoutLowerSections();
+    if (section & Section.RECENT) {
+      layoutRecentlyClosed();
     }
 
     updateOptionMenu();
     mostVisited.updateDisplayMode();
     mostVisited.layout();
-  }
-}
-
-function notifyLowerSectionForChange(section) {
-  // Notify recent and tips if they need to display more data.
-  if (section == Section.RECENT || section == Section.TIPS) {
-    if (shownSections & Section.RECENT) {
-      recentChangedSize(!(shownSections & Section.TIPS));
-    }
-    if (shownSections & Section.TIPS) {
-      tipsChangedSize(!(shownSections & Section.RECENT));
-    }
   }
 }
 
@@ -611,13 +581,16 @@ var mostVisited = {
     var sumWidth = cols * w  - 2 * marginWidth;
     var sumHeight = rows * h;
     var opacity = 1;
+    // Since the list mode does not have a toolbar move it down a little to add
+    // some spacing at the top.
+    var LIST_TOP_SPACING = 22;
 
     if (shownSections & Section.LIST) {
-      w = (sumWidth + 2 * marginWidth) / 2;
-      h = 45;
-      rows = 4;
-      cols = 2;
-      sumHeight = rows * h;
+      w = sumWidth;
+      h = 34;
+      rows = 8;
+      cols = 1;
+      sumHeight = rows * h + LIST_TOP_SPACING;
     } else if (!(shownSections & Section.THUMB)) {
       sumHeight = 0;
       opacity = 0;
@@ -646,7 +619,8 @@ var mostVisited = {
         top = row * h;
 
         if (shownSections & Section.LIST) {
-          width = w - 2 * marginWidth;
+          width = w;
+          top += LIST_TOP_SPACING;
         }
 
         rects[i] = {left: left, top: top, width: width};
@@ -668,65 +642,45 @@ var mostVisited = {
   }
 };
 
-function recentChangedSize(large) {
-  if (large) {
-    addClass($('recent-activities'), 'large');
-  } else {
-    removeClass($('recent-activities'), 'large');
-  }
+// Recently closed
 
-  renderRecentItems();
-}
+function layoutRecentlyClosed() {
+  var recentElement = $('recently-closed');
 
-function tipsChangedSize(large) {
-  // TODO(arv): Implement
-}
-
-// Recent activities
-
-function layoutLowerSections() {
-  // This lower sections are inline blocks so all we need to do is to set the
-  // width and opacity.
-  var lowerSectionsElement = $('lower-sections');
-  var recentElement = $('recent-activities');
-  var tipsElement = $('tips');
-  var spacer = recentElement.nextElementSibling;
-
-  var totalWidth = useSmallGrid() ? 692 : 920;
-  var spacing = 20;
   var rtl = document.documentElement.dir == 'rtl';
-
   var recentShown = shownSections & Section.RECENT;
-  var tipsShown = shownSections & Section.TIPS;
+  var style = recentElement.style;
 
-  if (recentShown || tipsShown) {
-    lowerSectionsElement.style.height = '198px';
-    lowerSectionsElement.style.opacity = '';
+  if (!recentShown) {
+    style.opacity = style.height = 0;
   } else {
-    lowerSectionsElement.style.height = lowerSectionsElement.style.opacity = 0;
-  }
+    style.opacity = style.height = '';
 
-  // Even when the width is set to 0 it will take up 2px due to the border. We
-  // compensate by setting the margin to -2px.
-  if (recentShown && tipsShown) {
-    var w = (totalWidth - spacing) / 2;
-    recentElement.style.width = tipsElement.style.width = w + 'px'
-    recentElement.style.opacity = tipsElement.style.opacity =
-        recentElement.style.WebkitMarginStart = '';
-    spacer.style.width = spacing + 'px';
-  } else if (recentShown) {
-    recentElement.style.width = totalWidth + 'px';
-    recentElement.style.opacity = recentElement.style.WebkitMarginStart = '';
-    tipsElement.style.width =
-        tipsElement.style.opacity = 0;
-    spacer.style.width = 0;
+    // Show all items.
+    for (var i = 0, child; child = recentElement.children[i]; i++) {
+      child.style.display = '';
+    }
 
-  } else if (tipsShown) {
-    tipsElement.style.width = totalWidth + 'px';
-    tipsElement.style.opacity = '';
-    recentElement.style.width = recentElement.style.opacity = 0;
-    recentElement.style.WebkitMarginStart = '-2px';
-    spacer.style.width = 0;
+    // We cannot use clientWidth here since the width has a transition.
+    var spacing = 20;
+    var headerEl = recentElement.firstElementChild;
+    var navEl = recentElement.lastElementChild;
+    var navWidth = navEl.offsetWidth;
+    // Subtract 10 for the padding
+    var availWidth = (useSmallGrid() ? 690 : 918) - navWidth - 10;
+
+    // Now go backwards and hide as many elements as needed.
+    var elementsToHide = [];
+    for (var el = navEl.previousElementSibling; el != headerEl;
+         el = el.previousElementSibling) {
+      if (el.offsetLeft + el.offsetWidth + spacing > availWidth) {
+        elementsToHide.push(el);
+      }
+    }
+
+    elementsToHide.forEach(function(el) {
+      el.style.display = 'none';
+    });
   }
 }
 
@@ -1102,17 +1056,17 @@ function maybeShowWindowTooltip(e) {
 }
 
 
-var recentActivitiesElement = $('recent-activities');
-recentActivitiesElement.addEventListener('click', maybeOpenFile);
-recentActivitiesElement.addEventListener('keydown',
-                                         handleIfEnterKey(maybeOpenFile));
+var recentlyClosedElement = $('recently-closed');
+recentlyClosedElement.addEventListener('click', maybeOpenFile);
+recentlyClosedElement.addEventListener('keydown',
+                                       handleIfEnterKey(maybeOpenFile));
 
-recentActivitiesElement.addEventListener('click', maybeReopenTab);
-recentActivitiesElement.addEventListener('keydown',
-                                         handleIfEnterKey(maybeReopenTab));
+recentlyClosedElement.addEventListener('click', maybeReopenTab);
+recentlyClosedElement.addEventListener('keydown',
+                                       handleIfEnterKey(maybeReopenTab));
 
-recentActivitiesElement.addEventListener('mouseover', maybeShowWindowTooltip);
-recentActivitiesElement.addEventListener('focus', maybeShowWindowTooltip, true);
+recentlyClosedElement.addEventListener('mouseover', maybeShowWindowTooltip);
+recentlyClosedElement.addEventListener('focus', maybeShowWindowTooltip, true);
 
 /**
  * This object represents a tooltip representing a closed window. It is
@@ -1146,6 +1100,7 @@ WindowTooltip.prototype = {
                                    300);
   },
   show: function(type, linkEl, tabs) {
+    window.addEventListener('blur', this.boundHide_);
     this.linkEl_.removeEventListener('mousemove',
                                      WindowTooltip.trackMouseMove_);
     clearTimeout(this.timer);
@@ -1185,6 +1140,7 @@ WindowTooltip.prototype = {
   },
   hide: function() {
     window.clearTimeout(this.timer);
+    window.removeEventListener('blur', this.boundHide_);
     this.linkEl_.removeEventListener('mousemove',
                                      WindowTooltip.trackMouseMove_);
     this.linkEl_.removeEventListener('mouseout', this.boundHandleMouseOut_);

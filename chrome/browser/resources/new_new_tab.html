@@ -34,15 +34,13 @@ function registerCallback(name) {
 
 chrome.send('getShownSections');
 chrome.send('getMostVisited');
-chrome.send('getDownloads');
 chrome.send('getRecentlyClosedTabs');
-chrome.send('getTips');
 
 registerCallback('onShownSections');
 registerCallback('mostVisitedPages');
-registerCallback('downloadsList');
 registerCallback('recentlyClosedTabs');
-registerCallback('tips');
+// TODO(arv): The backend calls this function. Remove the call on the backend.
+function downloadsList() {}
 
 logEvent('log start');
 
@@ -75,13 +73,9 @@ document.write('<link id="themecss" rel="stylesheet" ' +
     <div section="LIST" show="true" i18n-content="showlist"></div>
     <div section="LIST" show="false" i18n-content="hidelist"
          style="display:none"></div>
-    <div section="RECENT" show="true" i18n-content="showrecent"
+    <div section="RECENT" show="true" i18n-content="showrecentlyclosedtabs"
          style="display:none"></div>
-    <div section="RECENT" show="false" i18n-content="hiderecent"></div>
-    <div section="TIPS" show="true"
-         i18n-content="showtips" style="display:none"></div>
-    <div section="TIPS" show="false"
-         i18n-content="hidetips"></div>
+    <div section="RECENT" show="false" i18n-content="hiderecentlyclosedtabs"></div>
   </div>
 
   <div id="notification">
@@ -220,61 +214,12 @@ document.write('<link id="themecss" rel="stylesheet" ' +
 
   </div>
 
-  <div id="lower-sections">
-
-    <div id="recent-activities" class="section">
-      <h2 i18n-content="recentactivities"></h2>
-
-      <div class="item-container">
-        <div jsselect="$this">
-          <a class="item"
-              jsdisplay="type == 'tab'"
-              jsvalues="href:url;
-                  .xtitle:title;
-                  .style.backgroundImage:'url(&quot;chrome://favicon/' +
-                      url + '&quot;)';
-                  dir:direction;
-                  .sessionId:sessionId"
-              jscontent="title"></a>
-          <div jsdisplay="type == 'window'"
-              class="item link window"
-              jsvalues=".sessionId:sessionId;
-                        .tabItems:tabs"
-              tabindex="0">
-            <span jscontent="formatTabsText($this.tabs.length)"></span>
-          </div>
-          <a class="item"
-              jsdisplay="type == 'download'"
-              jsvalues="href:file_path;title:url;
-                  dir:direction;
-                  .fileId:id"
-              jscontent="file_name"
-              style="background-image:
-                  url(chrome://theme/downloads_favicon)"></a>
-        </div>
-        <a href="chrome://history/" class="item nav"
-            i18n-content="viewfullhistory"></a>
-        <a href="chrome://downloads/" class="item nav"
-            i18n-content="viewalldownloads"></a>
-      </div>
-
-    </div><div class="spacer">
-
-    </div><div id="tips" class="section">
-      <h2 i18n-content="tipsandsuggestions"></h2>
-      <div id="tip-items">
-        <div class="item" jsselect="$this"
-            jsdisplay="!url"
-            i18n-content="defaulttipstitle">
-        </div>
-        <div class="tips-container item-container">
-          <a class="item" jsselect="$this"
-              jsdisplay="url.length"
-              jsvalues="href:url;.xtitle:title"
-              jscontent="title"></a>
-        </div>
-      </div>
-    </div>
+  <div id="recently-closed">
+    <h2 i18n-content="recentlyclosed"></h2>
+    <span class="nav">
+      <a href="chrome://history/" class="item"
+          i18n-content="viewfullhistory"></a>
+    </span>
   </div>
 
 </div> <!-- main -->

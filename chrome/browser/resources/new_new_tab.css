@@ -361,40 +361,21 @@ html[dir=rtl] .thumbnail-container > .title > div {
 }
 
 .list > .thumbnail-container > .title {
-  font-size: 160%;
-  line-height: 40px;
-  height: 40px;
+  font-size: 120%;
+  line-height: 34px;
+  height: 34px;
   color: hsl(213, 27%, 68%);
   width: 100%;
 }
 
-.list .title > div {
+.list > .thumbnail-container {
+  color: hsl(213, 27%, 68%);
+  text-decoration: underline;
+}
+
+.list > .thumbnail-container > .title > div {
+  text-decoration: none;
   color: rgb(6, 45, 117);
-}
-
-.section {
-  background: rgba(239, 246, 255, 0.8);
-  -webkit-border-radius: 4px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  border: 1px solid hsl(213, 63%, 93%);
-  overflow: hidden;
-  min-height: 151px; /* height of 5 items plus the header */
-  vertical-align: top;
-  margin: 0;
-  margin-bottom: 10px;
-}
-
-.section > h2 {
-  background-image: -webkit-gradient(linear, left top, left bottom,
-      from(hsl(213, 87%, 67%)),
-      to(hsl(213, 66%, 57%)));
-  -webkit-border-top-left-radius: 2px;
-  -webkit-border-top-right-radius: 2px;
-  padding: 4px 8px;
-  color: white;
-  font-size: 100%;
-  margin: 0px;
 }
 
 .item {
@@ -423,17 +404,6 @@ html[dir='rtl'] .item {
   padding-right: 18px;
   padding-left: 2px;
   text-align: right;
-}
-
-.tips-title {
-  color: black;
-  text-decoration: none;
-  padding-top: 6px;
-  white-space: normal;
-}
-
-.tips-container {
-  padding-top: 4px;
 }
 
 .window {
@@ -479,45 +449,45 @@ html[dir='rtl'] .item {
   -webkit-box-orient: horizontal;
 }
 
-.section h3 {
-  padding: 8px 5px;
-  padding-bottom: 0;
-  font-size: 80%;
-  font-weight: normal;
-  margin: 0;
-  -webkit-margin-start: 2px;
+#recently-closed {
+  -webkit-transition: opacity .15s;
+  background-color: hsla(213, 60%, 92%, .4);
+  border: 1px solid hsl(213, 60%, 92%);
+  -webkit-border-radius: 2px;
+  padding: 5px 0px;;
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+#recently-closed > * {
+  display: inline-block;
+  max-width: 200px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 100%;
+  margin: 0 10px;
 }
 
-.item-container {
-  margin: 0 5px;
-  text-decoration: underline;
+#recently-closed > h2,
+#recently-closed .nav {
+  max-width: none;
+}
+
+#recently-closed > span {
   color: hsl(213, 27%, 68%);
+  text-decoration: underline;
 }
 
-.item.nav:after {
+.nav > a {
+  /* no icon */
+  padding: 0;
+}
+
+.nav > a:after {
   content: '\00bb'; /* raque gets flipped automatically in rtl */
   font-size: 115%;
   -webkit-padding-start: 2px;
-}
-
-#recent-activities {
-  -webkit-transition: width .15s, opacity .15s;
-}
-
-#recent-activities > .item-container {
-  -webkit-column-count: 2;
-  -webkit-column-gap: 20px;
-  height: 120px;
-}
-
-#recent-activities.large > .item-container {
-  -webkit-column-count: 4;
-}
-
-.section {
-  display: inline-block;
 }
 
 #view-toolbar {
@@ -543,26 +513,6 @@ html[dir='rtl'] #view-toolbar {
   -webkit-margin-start: 5px;
   /* Do not show focus outline */
   outline: none;
-}
-
-#lower-sections {
-  position: relative;
-  overflow: hidden;
-  -webkit-transition: height .15s, width .15s, opacity .15s;
-  white-space: nowrap;
-}
-
-#lower-sections > .section {
-  -webkit-transition: width .15s, opacity .15s, left .15s;
-  -webkit-box-sizing: border-box;
-  width: 450px; /* Set default size so we don't have to do a js layout at
-                   load */
-}
-
-#lower-sections .spacer {
-  width: 20px;
-  -webkit-transition: width .15s;
-  display: inline-block;
 }
 
 #thumb-checkbox {
@@ -720,10 +670,6 @@ html[dir='rtl'] #t4 {
 
   #notification > span > .blacklist-title {
     max-width: 15ex;
-  }
-
-  #lower-sections > .section {
-    width: 336px; /* Same here, see above */
   }
 
   #t0, #t4,
