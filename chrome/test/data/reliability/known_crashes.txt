@@ -91,3 +91,5 @@ SUBSTRING : windowdragresponsetask::run___messageloop::runtask___messageloop::do
 # 17569
 SUBSTRING : masksuperblitter::~masksuperblitter
 
+# 18700
+SUBSTRING : std::deque<bool,std::allocator<bool> >::_tidy___messageloop::reloadworkqueue
