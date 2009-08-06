@@ -89,20 +89,14 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   const ExtensionList* extensions = extensions_service_->extensions();
   for (ExtensionList::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-         extensions_list->Append(CreateExtensionDetailValue(
+    // Don't show the themes since this page's UI isn't really useful for
+    // themes.
+    if (!(*extension)->IsTheme()) {
+      extensions_list->Append(CreateExtensionDetailValue(
           *extension, GetActivePagesForExtension((*extension)->id())));
+    }
   }
   results.Set(L"extensions", extensions_list);
-
-  // Add any error log lines to the result structure.
-  ListValue *errors_list = new ListValue();
-  const std::vector<std::string>* errors =
-      ExtensionErrorReporter::GetInstance()->GetErrors();
-  for (std::vector<std::string>::const_iterator error = errors->begin();
-       error != errors->end(); ++error) {
-    errors_list->Append(Value::CreateStringValue(*error));
-  }
-  results.Set(L"errors", errors_list);
 
   dom_ui_->CallJavascriptFunction(L"returnExtensionsData", results);
 }

@@ -69,10 +69,6 @@ var extensionDataFormat = {
         }
       ]
     }
-  ],
-  "errors": [
-    "something failed to happen",
-    "something else failed to happen"
   ]
 };
 
@@ -245,12 +241,6 @@ th.desc {
     <div id="outside">
       <div id="installed-extensions">Installed Extensions</div>
       <div id="extensionTemplate">
-
-        <div id="error-box" jsdisplay="errors.length > 0">
-          <div id="error-log">Errors</div>
-          <div class="error" jsselect="errors" jscontent="$this">
-              Error Detail</div>
-        </div>
 
         <div class="extension-name" jsdisplay="extensions.length === 0">
             No Extensions Installed</div>
