@@ -205,7 +205,7 @@ WONTFIX SKIP : LayoutTests/printing/media-queries-print.html = PASS
 
 // Chrome doesn't call the willCacheResponse callback (a method
 // of ResourceHandleClient).  That function is Mac-specific.
-BUG853268 WONTFIX : LayoutTests/http/tests/misc/willCacheResponse-delegate-callback.html = FAIL
+WONTFIX SKIP : LayoutTests/http/tests/misc/willCacheResponse-delegate-callback.html = FAIL
 
 // Checks for very kjs-specific garbage collector
 // behavior. Gc-9 is completely braindamaged; it tests that certain
