@@ -40,7 +40,7 @@ namespace WebKit {
 
     class WebStorageAreaImpl : public WebStorageArea {
     public:
-        WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea);
+        WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea, PassRefPtr<WebCore::SecurityOrigin> origin);
         virtual ~WebStorageAreaImpl();
         virtual void lock(bool& invalidateCache, size_t& bytesLeftInQuota);
         virtual void unlock();
@@ -53,6 +53,9 @@ namespace WebKit {
 
     private:
         RefPtr<WebCore::StorageArea> m_storageArea;
+
+        // We must store a reference to this because m_storageArea contains a pointer to it.
+        RefPtr<WebCore::SecurityOrigin> m_origin;
     };
 
 } // namespace WebKit

@@ -34,12 +34,14 @@
 #if ENABLE(DOM_STORAGE)
 
 #include "ExceptionCode.h"
+#include "SecurityOrigin.h"
 #include "WebString.h"
 
 namespace WebKit {
 
-WebStorageAreaImpl::WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea)
+WebStorageAreaImpl::WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea, PassRefPtr<WebCore::SecurityOrigin> origin)
     : m_storageArea(storageArea)
+    , m_origin(origin)
 {
 }
 
