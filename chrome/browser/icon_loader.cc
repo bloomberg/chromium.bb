@@ -29,6 +29,6 @@ void IconLoader::Start() {
 }
 
 void IconLoader::NotifyDelegate() {
-  delegate_->OnBitmapLoaded(this, bitmap_);
-  bitmap_ = NULL;
+  if (delegate_->OnBitmapLoaded(this, bitmap_))
+    bitmap_ = NULL;
 }
