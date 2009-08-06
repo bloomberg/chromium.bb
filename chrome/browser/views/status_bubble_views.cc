@@ -632,7 +632,8 @@ void StatusBubbleViews::AvoidMouse() {
 
     if (bubble_bottom_y + offset > monitor_rect.height() ||
         (download_shelf_is_visible_ &&
-         view_->GetStyle() == StatusView::STYLE_FLOATING)) {
+         (view_->GetStyle() == StatusView::STYLE_FLOATING ||
+          view_->GetStyle() == StatusView::STYLE_BOTTOM))) {
       // The offset is still too large. Move the bubble to the right and reset
       // Y offset_ to zero.
       view_->SetStyle(StatusView::STYLE_STANDARD_RIGHT);
