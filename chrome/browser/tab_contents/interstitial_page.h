@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 
 class MessageLoop;
@@ -102,6 +103,9 @@ class InterstitialPage : public NotificationObserver,
                            const std::wstring& title);
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id);
+  virtual RendererPreferences GetRendererPrefs() const {
+    return renderer_preferences_;
+  }
 
   // Invoked when the page sent a command through DOMAutomation.
   virtual void CommandReceived(const std::string& command) {}
@@ -199,6 +203,9 @@ class InterstitialPage : public NotificationObserver,
   // be able to retrieve them.
   typedef std::map<TabContents*,InterstitialPage*> InterstitialPageMap;
   static InterstitialPageMap* tab_to_interstitial_page_;
+
+  // Settings passed to the renderer.
+  RendererPreferences renderer_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPage);
 };

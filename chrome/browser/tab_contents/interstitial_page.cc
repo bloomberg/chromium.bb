@@ -17,6 +17,9 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
+#if defined(TOOLKIT_GTK)
+#include "chrome/common/gtk_util.h"
+#endif
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
@@ -130,6 +133,10 @@ InterstitialPage::InterstitialPage(TabContents* tab,
   // a page) when we have a pending entry (in the process of loading a new top
   // frame).
   DCHECK(new_navigation || !tab->controller().pending_entry());
+
+#if defined(TOOLKIT_GTK)
+  gtk_util::InitRendererPrefsFromGtkSettings(&renderer_preferences_);
+#endif
 }
 
 InterstitialPage::~InterstitialPage() {

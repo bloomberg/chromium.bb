@@ -16,6 +16,8 @@
 
 typedef struct _GtkWidget GtkWidget;
 
+struct RendererPreferences;  // from common/renderer_preferences.h
+
 namespace event_utils {
 
 // Translates event flags into what kind of disposition they represent.
@@ -143,6 +145,10 @@ void SetLabelColor(GtkWidget* label, const GdkColor* color);
 
 // Adds the given widget to an alignment identing it by |kGroupIndent|.
 GtkWidget* IndentWidget(GtkWidget* content);
+
+// Initialize the font settings in |prefs| (used when creating new renderers)
+// based on GtkSettings (which itself comes from XSETTINGS).
+void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs);
 
 }  // namespace gtk_util
 
