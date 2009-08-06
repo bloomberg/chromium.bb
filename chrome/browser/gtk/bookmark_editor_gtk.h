@@ -90,6 +90,9 @@ class BookmarkEditorGtk : public BookmarkEditor,
   // new group.
   void AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child);
 
+  static void OnSelectionChanged(GtkTreeSelection* treeselection,
+                                 BookmarkEditorGtk* dialog);
+
   static void OnResponse(GtkDialog* dialog, int response_id,
                          BookmarkEditorGtk* window);
 
@@ -110,6 +113,7 @@ class BookmarkEditorGtk : public BookmarkEditor,
   GtkWidget* name_entry_;
   GtkWidget* url_entry_;
   GtkWidget* tree_view_;
+  GtkWidget* new_folder_button_;
 
   // Helper object that manages the currently selected item in |tree_view_|.
   GtkTreeSelection* tree_selection_;
