@@ -42,7 +42,7 @@ class ExtensionView : public views::NativeViewHost {
   void set_is_toolstrip(bool is) { is_toolstrip_ = is; }
 
   // Notification from ExtensionHost.
-  void DidContentsPreferredWidthChange(const int pref_width);
+  void UpdatePreferredWidth(int pref_width);
   void HandleMouseEvent();
   void HandleMouseLeave();
 

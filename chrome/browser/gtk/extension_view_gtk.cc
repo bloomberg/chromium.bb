@@ -23,6 +23,10 @@ RenderViewHost* ExtensionViewGtk::render_view_host() const {
   return extension_host_->render_view_host();
 }
 
+void ExtensionViewGtk::UpdatePreferredWidth(int pref_width) {
+  gtk_widget_set_size_request(native_view(), pref_width, -1);
+}
+
 void ExtensionViewGtk::CreateWidgetHostView() {
   DCHECK(!render_widget_host_view_);
   render_widget_host_view_ = new RenderWidgetHostViewGtk(render_view_host());

@@ -47,7 +47,7 @@ class ExtensionShelfGtk::Toolstrip {
 };
 
 void ExtensionShelfGtk::Toolstrip::AddToolstripToBox(GtkWidget* box) {
-  gtk_box_pack_start(GTK_BOX(box), native_view(), TRUE, TRUE,
+  gtk_box_pack_start(GTK_BOX(box), native_view(), FALSE, FALSE,
                      kToolstripPadding);
 }
 

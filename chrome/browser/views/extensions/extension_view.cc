@@ -103,7 +103,7 @@ void ExtensionView::ShowIfCompletelyLoaded() {
       !is_clipped_ && did_insert_css_ &&
       !render_view_host()->view()->background().empty()) {
     SetVisible(true);
-    DidContentsPreferredWidthChange(pending_preferred_width_);
+    UpdatePreferredWidth(pending_preferred_width_);
   }
 }
 
@@ -124,7 +124,7 @@ void ExtensionView::SetBackground(const SkBitmap& background) {
   ShowIfCompletelyLoaded();
 }
 
-void ExtensionView::DidContentsPreferredWidthChange(const int pref_width) {
+void ExtensionView::UpdatePreferredWidth(int pref_width) {
   // Don't actually do anything with this information until we have been shown.
   // Size changes will not be honored by lower layers while we are hidden.
   gfx::Size preferred_size = GetPreferredSize();

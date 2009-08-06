@@ -21,6 +21,10 @@ class ExtensionViewGtk {
   bool is_toolstrip() const { return is_toolstrip_; }
   void set_is_toolstrip(bool is_toolstrip) { is_toolstrip_ = is_toolstrip; }
 
+  // Method for the ExtensionHost to notify us about the correct width for
+  // extension contents.
+  void UpdatePreferredWidth(int pref_width);
+
  private:
   RenderViewHost* render_view_host() const;
 

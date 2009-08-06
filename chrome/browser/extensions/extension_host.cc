@@ -178,9 +178,9 @@ void ExtensionHost::RecoverCrashedExtension() {
 }
 
 void ExtensionHost::UpdatePreferredWidth(int pref_width) {
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
   if (view_.get())
-    view_->DidContentsPreferredWidthChange(pref_width);
+    view_->UpdatePreferredWidth(pref_width);
 #endif
 }
 
