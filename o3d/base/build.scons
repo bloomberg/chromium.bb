@@ -142,6 +142,7 @@ if env.Bit('mac'):
   chrome_base_inputs += chrome_base_inputs_posix
   chrome_base_inputs_mm += [
     'base_paths_mac',
+    'mac_util',
     'file_util_mac',
     'message_pump_mac',
     'platform_thread_mac',
