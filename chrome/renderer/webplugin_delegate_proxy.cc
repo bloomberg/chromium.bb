@@ -172,6 +172,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(const std::string& mime_type,
     : render_view_(render_view),
       plugin_(NULL),
       windowless_(false),
+      window_(NULL),
       mime_type_(mime_type),
       clsid_(clsid),
       npobject_(NULL),
@@ -386,8 +387,14 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void WebPluginDelegateProxy::OnChannelError() {
-  if (plugin_)
+  if (plugin_) {
+    if (window_) {
+      // The actual WebPluginDelegate never got a chance to tell the WebPlugin
+      // its window was going away. Do it on its behalf.
+      plugin_->WillDestroyWindow(window_);
+    }
     plugin_->Invalidate();
+  }
   render_view_->PluginCrashed(GetProcessId(), plugin_path_);
 }
 
@@ -691,6 +698,7 @@ int WebPluginDelegateProxy::GetProcessId() {
 
 void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
   windowless_ = !window;
+  window_ = window;
   if (plugin_)
     plugin_->SetWindow(window);
 }

@@ -413,6 +413,8 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
 }
 
 void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
+  DCHECK_EQ(window, window_);
+  window_ = NULL;
   WebCore::Frame* frame = element_->document()->frame();
   WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
   WebViewImpl* webview = webframe->GetWebViewImpl();

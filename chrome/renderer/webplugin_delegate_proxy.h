@@ -166,6 +166,7 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   RenderView* render_view_;
   WebPlugin* plugin_;
   bool windowless_;
+  gfx::PluginWindowHandle window_;
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;
   std::string clsid_;

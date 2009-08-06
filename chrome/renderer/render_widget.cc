@@ -845,3 +845,13 @@ void RenderWidget::SchedulePluginMove(const WebPluginGeometry& move) {
   if (i == plugin_window_moves_.size())
     plugin_window_moves_.push_back(move);
 }
+
+void RenderWidget::CleanupWindowInPluginMoves(gfx::PluginWindowHandle window) {
+  for (WebPluginGeometryVector::iterator i = plugin_window_moves_.begin();
+       i != plugin_window_moves_.end(); ++i) {
+    if (i->window == window) {
+      plugin_window_moves_.erase(i);
+      break;
+    }
+  }
+}
