@@ -159,7 +159,7 @@ class JumpList : public TabRestoreService::Observer {
                               bool know_favicon,
                               scoped_refptr<RefCountedBytes> data,
                               bool expired,
-                              const GURL& icon_url);
+                              GURL icon_url);
 
  private:
   // Our consumers for HistoryService.

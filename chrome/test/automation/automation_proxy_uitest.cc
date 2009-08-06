@@ -829,7 +829,7 @@ TEST_F(ExternalTabTestType, IncognitoMode) {
   tab = NULL;
   CloseBrowserAndServer();
 
-  value_result.clear();
+  value_result.empty();
   clear_profile_ = false;
   external_tab_container = NULL;
   tab_wnd = NULL;

@@ -42,7 +42,7 @@ void DOMUIFavIconSource::OnFavIconDataAvailable(
     bool know_favicon,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
-    const GURL& icon_url) {
+    GURL icon_url) {
   HistoryService* hs =
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   int request_id = cancelable_consumer_.GetClientData(hs, request_handle);

@@ -66,8 +66,7 @@ static std::string FormatEntryDetails(disk_cache::Entry* entry) {
   std::string result = EscapeForHTML(entry->GetKey());
 
   net::HttpResponseInfo response;
-  if (!net::HttpCache::ReadResponseInfo(entry, &response))
-    return "error reading cache entry";
+  net::HttpCache::ReadResponseInfo(entry, &response);
 
   if (response.headers) {
     result.append("<hr><pre>");

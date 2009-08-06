@@ -709,7 +709,7 @@ void JumpList::OnFavIconDataAvailable(
     bool know_favicon,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
-    const GURL& icon_url) {
+    GURL icon_url) {
   // Attach the received data to the ShellLinkItem object.
   // This data will be decoded by JumpListUpdateTask.
   if (know_favicon && data.get() && !data->data.empty())

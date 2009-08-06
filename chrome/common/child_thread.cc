@@ -22,7 +22,7 @@ ChildThread::ChildThread() {
   Init();
 }
 
-ChildThread::ChildThread(const std::string& channel_name)
+ChildThread::ChildThread(const std::string channel_name)
     : channel_name_(channel_name) {
   Init();
 }

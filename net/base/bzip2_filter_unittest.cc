@@ -43,7 +43,7 @@ class BZip2FilterUnitTest : public PlatformTest {
     file_path = file_path.AppendASCII("google.txt");
 
     // Read data from the file into buffer.
-    ASSERT_TRUE(file_util::ReadFileToString(file_path, &source_buffer_));
+    file_util::ReadFileToString(file_path, &source_buffer_);
 
     // Append the extra data to end of source
     source_buffer_.append(kExtraData, kExtraDataBufferSize);

@@ -156,7 +156,7 @@ void ThumbnailStore::Shutdown() {
 
 void ThumbnailStore::OnRedirectsForURLAvailable(
     HistoryService::Handle handle,
-    const GURL& url,
+    GURL url,
     bool success,
     history::RedirectList* redirects) {
   if (!success)

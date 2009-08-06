@@ -51,7 +51,7 @@ class PossibleURLModel : public TableModel {
                                   bool fav_icon_available,
                                   scoped_refptr<RefCountedBytes> data,
                                   bool expired,
-                                  const GURL& icon_url);
+                                  GURL icon_url);
 
   virtual void SetObserver(TableModelObserver* observer) {
     observer_ = observer;

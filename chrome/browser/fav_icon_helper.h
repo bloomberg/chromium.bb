@@ -120,7 +120,7 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
                                   bool know_favicon,
                                   scoped_refptr<RefCountedBytes> data,
                                   bool expired,
-                                  const GURL& icon_url);
+                                  GURL icon_url);
 
   // If the favicon has expired, asks the renderer to download the favicon.
   // Otherwise asks history to update the mapping between page url and icon
@@ -132,7 +132,7 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
                      bool know_favicon,
                      scoped_refptr<RefCountedBytes> data,
                      bool expired,
-                     const GURL& icon_url);
+                     GURL icon_url);
 
   // Schedules a download for the specified entry. This adds the request to
   // download_requests_.

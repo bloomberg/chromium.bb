@@ -20,7 +20,7 @@ class ChildThread : public IPC::Channel::Listener,
   // Creates the thread.
   ChildThread();
   // Used for single-process mode.
-  ChildThread(const std::string& channel_name);
+  ChildThread(const std::string channel_name);
   virtual ~ChildThread();
 
   // IPC::Message::Sender implementation:

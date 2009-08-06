@@ -37,7 +37,7 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
                               bool know_favicon,
                               scoped_refptr<RefCountedBytes> data,
                               bool expired,
-                              const GURL& url);
+                              GURL url);
 
  private:
   Profile* profile_;

@@ -270,8 +270,8 @@ class HistoryService : public CancelableRequestProvider,
   // some reason, success will additionally be false. If the given page
   // has redirected to multiple destinations, this will pick a random one.
   typedef Callback4<Handle,
-                    const GURL&,  // from_url
-                    bool,         // success
+                    GURL,  // from_url
+                    bool,  // success
                     history::RedirectList*>::Type
       QueryRedirectsCallback;
 
@@ -356,7 +356,7 @@ class HistoryService : public CancelableRequestProvider,
                     bool,                            // know_favicon
                     scoped_refptr<RefCountedBytes>,  // data
                     bool,                            // expired
-                    const GURL&>::Type               // url of the favicon
+                    GURL>::Type                      // url of the favicon
       FavIconDataCallback;
 
   // Requests the favicon. FavIconConsumer is notified
