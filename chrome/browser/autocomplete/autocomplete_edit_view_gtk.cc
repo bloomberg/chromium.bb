@@ -535,7 +535,8 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
       event->keyval == GDK_ISO_Enter ||
       event->keyval == GDK_KP_Enter ||
       event->keyval == GDK_Tab ||
-     (event->keyval == GDK_Escape && event->state == 0)) {
+     (event->keyval == GDK_Escape &&
+       (event->state & gtk_accelerator_get_default_mod_mask()) == 0)) {
     // Handle IME. This is basically taken from GtkTextView and reworked a bit.
     GtkTextIter iter;
     GtkTextView* text_view = GTK_TEXT_VIEW(text_view_);
