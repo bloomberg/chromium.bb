@@ -8,7 +8,7 @@ vars = {
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "346",
-  "v8_rev": "2507",
+  "v8_rev": "2624",
   "icu38_rev": "20192",
 }
 
@@ -76,7 +76,7 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/zlib@" + Var("chromium_rev"),
 
   "v8":
-    "http://v8.googlecode.com/svn/branches/1.2@" + Var("v8_rev"),
+    "http://v8.googlecode.com/svn/trunk@" + Var("v8_rev"),
 
   "testing":
     Var("chromium_trunk") + "/src/testing@" + Var("chromium_rev"),

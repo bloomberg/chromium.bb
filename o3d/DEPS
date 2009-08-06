@@ -8,7 +8,7 @@ vars = {
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "346",
-  "v8_rev": "2507",
+  "v8_rev": "2624",
 }
 
 deps = {
@@ -70,7 +70,7 @@ deps = {
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zlib@" + Var("o3d_code_rev"),
 
   "o3d/third_party/v8":
-    "http://v8.googlecode.com/svn/branches/1.2@" + Var("v8_rev"),
+    "http://v8.googlecode.com/svn/trunk@" + Var("v8_rev"),
 
   # NACL has to be in this weird directory because it looks for
   # googleclient two levels above it.
