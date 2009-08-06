@@ -3033,9 +3033,6 @@ BUG17942 WIN : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events
 BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 
-// Test failures from WebKit merge 46369 to 46426
-BUG18016 WIN : LayoutTests/fast/canvas/image-pattern-rotate.html = FAIL
-
 // Test failures from WebKit merge 46426 to 46471
 // These probably just need to be rebaselined on win/linux.
 BUG17883 WIN LINUX : LayoutTests/editing/deleting/delete-3857753-fix.html = FAIL
