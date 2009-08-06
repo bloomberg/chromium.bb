@@ -17,7 +17,7 @@
 #include "chrome/browser/views/sync/sync_setup_flow.h"
 #include "chrome/common/pref_service.h"
 
-static const int kSyncDialogWidth = 267;
+static const int kSyncDialogWidth = 270;
 static const int kSyncDialogHeight = 369;
 
 // XPath expression for finding specific iframes.
