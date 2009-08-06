@@ -822,7 +822,7 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
     const WebCore::NavigationAction& action,
     const WebCore::ResourceRequest& request,
     PassRefPtr<WebCore::FormState> form_state) {
-  PolicyAction policy_action = PolicyUse;
+  PolicyAction policy_action = PolicyIgnore;
 
   WebViewImpl* wv = webframe_->GetWebViewImpl();
   WebViewDelegate* d = wv->delegate();

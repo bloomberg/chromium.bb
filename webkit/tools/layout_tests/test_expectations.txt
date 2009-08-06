@@ -2834,9 +2834,6 @@ BUG16240 MAC : LayoutTests/http/tests/cache/subresource-expiration.html = PASS T
 // Failing due to r20652.
 BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL CRASH
 
-// Failing approximately starting from 20629
-BUG16754 : LayoutTests/fast/loader/empty-embed-src-attribute.html = CRASH
-
 // HTML5 DataGrid bindings are not enabled yet because the feature's not fully implemented.
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = FAIL
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom.html = FAIL
