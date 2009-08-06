@@ -94,11 +94,29 @@ const int TestServerLauncher::kBadHTTPSPort = 9666;
 // The issuer name of the cert that should be trusted for the test to work.
 const wchar_t TestServerLauncher::kCertIssuerName[] = L"Test CA";
 
-TestServerLauncher::TestServerLauncher() : process_handle_(NULL)
+TestServerLauncher::TestServerLauncher() : process_handle_(NULL),
+                                           connection_attempts_(10),
+                                           connection_timeout_(1000)
 #if defined(OS_LINUX)
 , cert_(NULL)
 #endif
 {
+  InitCertPath();
+}
+
+TestServerLauncher::TestServerLauncher(int connection_attempts,
+                                       int connection_timeout)
+                        : process_handle_(NULL),
+                          connection_attempts_(connection_attempts),
+                          connection_timeout_(connection_timeout)
+#if defined(OS_LINUX)
+, cert_(NULL)
+#endif
+{
+  InitCertPath();
+}
+
+void TestServerLauncher::InitCertPath() {
   PathService::Get(base::DIR_SOURCE_ROOT, &cert_dir_);
   cert_dir_ = cert_dir_.Append(FILE_PATH_LITERAL("net"))
                        .Append(FILE_PATH_LITERAL("data"))
@@ -253,7 +271,8 @@ bool TestServerLauncher::WaitToStart(const std::string& host_name, int port) {
     return false;
 
   net::TCPPinger pinger(addr);
-  rv = pinger.Ping();
+  rv = pinger.Ping(base::TimeDelta::FromMilliseconds(connection_timeout_),
+                   connection_attempts_);
   return rv == net::OK;
 }
 

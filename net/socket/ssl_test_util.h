@@ -26,6 +26,7 @@ namespace net {
 class TestServerLauncher {
  public:
   TestServerLauncher();
+  TestServerLauncher(int connection_attempts, int connection_timeout);
 
   virtual ~TestServerLauncher();
 
@@ -94,6 +95,9 @@ class TestServerLauncher {
   // Returns false if our test root certificate is not trusted.
   bool CheckCATrusted();
 
+  // Initilize the certificate path.
+  void InitCertPath();
+
   FilePath document_root_dir_;
 
   FilePath cert_dir_;
@@ -101,6 +105,10 @@ class TestServerLauncher {
   FilePath python_runtime_;
 
   base::ProcessHandle process_handle_;
+
+  // Number of tries and timeout for each try used for WaitToStart.
+  int connection_attempts_;
+  int connection_timeout_;
 
 #if defined(OS_LINUX)
   struct PrivateCERTCertificate;

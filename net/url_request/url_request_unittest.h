@@ -238,6 +238,8 @@ class TestDelegate : public URLRequest::Delegate {
 class BaseTestServer : public base::RefCounted<BaseTestServer> {
  protected:
   BaseTestServer() { }
+  BaseTestServer(int connection_attempts, int connection_timeout)
+      : launcher_(connection_attempts, connection_timeout) { }
 
  public:
 
@@ -347,6 +349,10 @@ class HTTPTestServer : public BaseTestServer {
   explicit HTTPTestServer() : loop_(NULL) {
   }
 
+  explicit HTTPTestServer(int connection_attempts, int connection_timeout)
+      : BaseTestServer(connection_attempts, connection_timeout), loop_(NULL) {
+  }
+
  public:
   // Creates and returns a new HTTPTestServer. If |loop| is non-null, requests
   // are serviced on it, otherwise a new thread and message loop are created.
@@ -356,11 +362,32 @@ class HTTPTestServer : public BaseTestServer {
     return CreateServerWithFileRootURL(document_root, std::wstring(), loop);
   }
 
+  static scoped_refptr<HTTPTestServer> CreateServer(
+      const std::wstring& document_root,
+      MessageLoop* loop,
+      int connection_attempts,
+      int connection_timeout) {
+    return CreateServerWithFileRootURL(document_root, std::wstring(), loop,
+                                       connection_attempts,
+                                       connection_timeout);
+  }
+
   static scoped_refptr<HTTPTestServer> CreateServerWithFileRootURL(
       const std::wstring& document_root,
       const std::wstring& file_root_url,
       MessageLoop* loop) {
-    scoped_refptr<HTTPTestServer> test_server = new HTTPTestServer();
+    return CreateServerWithFileRootURL(document_root, file_root_url,
+                                       loop, 10, 1000);
+  }
+
+  static scoped_refptr<HTTPTestServer> CreateServerWithFileRootURL(
+      const std::wstring& document_root,
+      const std::wstring& file_root_url,
+      MessageLoop* loop,
+      int connection_attempts,
+      int connection_timeout) {
+    scoped_refptr<HTTPTestServer> test_server =
+        new HTTPTestServer(connection_attempts, connection_timeout);
     test_server->loop_ = loop;
     FilePath no_cert;
     FilePath docroot = FilePath::FromWStringHack(document_root);
