@@ -204,7 +204,8 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   EXPECT_EQ(kMaxQueueSize, read_queue_.size());
 
   // Fulfill the read with an end-of-stream packet.
-  read_queue_.front()->Run(new DataBuffer(0));
+  scoped_refptr<DataBuffer> last_buffer = new DataBuffer(0);
+  read_queue_.front()->Run(last_buffer);
   delete read_queue_.front();
   read_queue_.pop_front();
 
