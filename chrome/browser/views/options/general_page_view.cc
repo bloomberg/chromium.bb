@@ -106,7 +106,7 @@ class CustomHomePagesTableModel : public TableModel {
                     bool know_fav_icon,
                     scoped_refptr<RefCountedBytes> image_data,
                     bool is_expired,
-                    GURL icon_url);
+                    const GURL& icon_url);
 
   // Returns the entry whose fav_icon_handle matches handle and sets entry_index
   // to the index of the entry.
@@ -230,7 +230,7 @@ void CustomHomePagesTableModel::OnGotFavIcon(
     bool know_fav_icon,
     scoped_refptr<RefCountedBytes> image_data,
     bool is_expired,
-    GURL icon_url) {
+    const GURL& icon_url) {
   int entry_index;
   Entry* entry = GetEntryByLoadHandle(handle, &entry_index);
   DCHECK(entry);

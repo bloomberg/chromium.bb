@@ -240,7 +240,7 @@ class HistoryTest : public testing::Test {
 
   // Callback for QueryRedirects.
   void OnRedirectQueryComplete(HistoryService::Handle handle,
-                               GURL url,
+                               const GURL& url,
                                bool success,
                                history::RedirectList* redirects) {
     redirect_query_success_ = success;

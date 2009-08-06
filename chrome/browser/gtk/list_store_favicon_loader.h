@@ -35,9 +35,11 @@ class ListStoreFavIconLoader {
                              GtkTreeIter* result_iter);
 
   // Callback from HistoryService:::GetFavIconForURL
-  void OnGotFavIcon(HistoryService::Handle handle, bool know_fav_icon,
-                    scoped_refptr<RefCountedBytes> image_data, bool is_expired,
-                    GURL icon_url);
+  void OnGotFavIcon(HistoryService::Handle handle,
+                    bool know_fav_icon,
+                    scoped_refptr<RefCountedBytes> image_data,
+                    bool is_expired,
+                    const GURL& icon_url);
 
   // The list store we are loading favicons into.
   GtkListStore* list_store_;

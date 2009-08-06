@@ -1844,7 +1844,7 @@ void AutomationProvider::OnChannelError() {
 // TODO(brettw) change this to accept GURLs when history supports it
 void AutomationProvider::OnRedirectQueryComplete(
     HistoryService::Handle request_handle,
-    GURL from_url,
+    const GURL& from_url,
     bool success,
     history::RedirectList* redirects) {
   DCHECK(request_handle == redirect_query_);

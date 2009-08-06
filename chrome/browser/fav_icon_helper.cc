@@ -155,7 +155,7 @@ void FavIconHelper::OnFavIconDataForInitialURL(
     bool know_favicon,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
-    GURL icon_url) {
+    const GURL& icon_url) {
   NavigationEntry* entry = GetEntry();
   if (!entry)
     return;
@@ -226,7 +226,7 @@ void FavIconHelper::OnFavIconData(
     bool know_favicon,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
-    GURL icon_url) {
+    const GURL& icon_url) {
   NavigationEntry* entry = GetEntry();
   if (!entry)
     return;

@@ -371,7 +371,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
       bool know_favicon,
       scoped_refptr<RefCountedBytes> data,
       bool expired,
-      GURL icon_url);
+      const GURL& icon_url);
 
   // Invoked from the node to load the favicon. Requests the favicon from the
   // history service.

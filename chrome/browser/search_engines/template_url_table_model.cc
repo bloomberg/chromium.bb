@@ -97,7 +97,7 @@ class ModelEntry {
       bool know_favicon,
       scoped_refptr<RefCountedBytes> data,
       bool expired,
-      GURL icon_url) {
+      const GURL& icon_url) {
     load_state_ = LOADED;
     if (know_favicon && data.get() &&
         PNGDecoder::Decode(&data->data, &fav_icon_)) {

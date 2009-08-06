@@ -117,7 +117,7 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   // will be called with url=C and redirects = {B -> A}.  This information gets
   // inserted into the RedirectMap as A => {B -> C}.
   void OnRedirectsForURLAvailable(HistoryService::Handle handle,
-                                  GURL url,
+                                  const GURL& url,
                                   bool success,
                                   history::RedirectList* redirects);
 

@@ -466,7 +466,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(
       HistoryService::Handle request_handle,
-      GURL from_url,
+      const GURL& from_url,
       bool success,
       history::RedirectList* redirects);
 

@@ -636,7 +636,7 @@ void BookmarkModel::OnFavIconDataAvailable(
     bool know_favicon,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
-    GURL icon_url) {
+    const GURL& icon_url) {
   SkBitmap fav_icon;
   BookmarkNode* node =
       load_consumer_.GetClientData(

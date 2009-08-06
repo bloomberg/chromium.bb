@@ -57,8 +57,11 @@ bool ListStoreFavIconLoader::GetRowByFavIconHandle(
 }
 
 void ListStoreFavIconLoader::OnGotFavIcon(
-    HistoryService::Handle handle, bool know_fav_icon,
-    scoped_refptr<RefCountedBytes> image_data, bool is_expired, GURL icon_url) {
+    HistoryService::Handle handle,
+    bool know_fav_icon,
+    scoped_refptr<RefCountedBytes> image_data,
+    bool is_expired,
+    const GURL& icon_url) {
   GtkTreeIter iter;
   if (!GetRowByFavIconHandle(handle, &iter))
     return;

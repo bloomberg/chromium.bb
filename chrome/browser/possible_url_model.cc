@@ -166,7 +166,7 @@ void PossibleURLModel::OnFavIconAvailable(
     bool fav_icon_available,
     scoped_refptr<RefCountedBytes> data,
     bool expired,
-    GURL icon_url) {
+    const GURL& icon_url) {
   if (profile_) {
     HistoryService* hs =
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
