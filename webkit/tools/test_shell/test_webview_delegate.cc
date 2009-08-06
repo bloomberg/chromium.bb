@@ -154,7 +154,6 @@ std::string GetErrorDescription(const WebURLError& error) {
         code = 103;
         break;
       case net::ERR_ADDRESS_INVALID:
-      case net::ERR_ADDRESS_UNREACHABLE:
         code = -1004;
         break;
       default:
