@@ -27,20 +27,20 @@ class WorkerTest : public UILayoutTest {
   }
 };
 
-TEST_F(WorkerTest, DISABLED_SingleWorker) {
+TEST_F(WorkerTest, SingleWorker) {
   RunTest(L"single_worker.html");
 }
 
-TEST_F(WorkerTest, DISABLED_MultipleWorkers) {
+TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
+TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
     "use-machine-stack.html",
     "worker-call.html",
-    "worker-close.html",
+    //"worker-close.html",
     "worker-constructor.html",
     "worker-context-gc.html",
     "worker-event-listener.html",
@@ -66,7 +66,7 @@ TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
+TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     // flakey? BUG 16934 "text-encoding.html",
     "worker-importScripts.html",
@@ -88,7 +88,7 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
+TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
     "close.html",
@@ -142,7 +142,7 @@ TEST_F(WorkerTest, DISABLED_MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-TEST_F(WorkerTest, DISABLED_LimitPerPage) {
+TEST_F(WorkerTest, LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab + 1));
@@ -155,7 +155,7 @@ TEST_F(WorkerTest, DISABLED_LimitPerPage) {
             UITest::GetBrowserProcessCount());
 }
 
-TEST_F(WorkerTest, DISABLED_LimitTotal) {
+TEST_F(WorkerTest, LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
