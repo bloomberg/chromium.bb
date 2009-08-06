@@ -500,20 +500,6 @@ class TestRunner:
     start_time = time.time()
     test_shell_binary = path_utils.TestShellBinaryPath(self._options.target)
 
-    # Check that the system dependencies (themes, fonts, ...) are correct.
-    if not self._options.nocheck_sys_deps:
-      proc = subprocess.Popen([test_shell_binary,
-                              "--check-layout-test-sys-deps"])
-      if proc.wait() != 0:
-        logging.info("Aborting because system dependencies check failed.\n"
-                     "To override, invoke with --nocheck-sys-deps")
-        sys.exit(1)
-
-    logging.info("Starting tests")
-
-    # Create the output directory if it doesn't already exist.
-    google.path_utils.MaybeMakeDirectory(self._options.results_directory)
-
     # Start up any helper needed
     layout_test_helper_proc = None
     if not options.no_pixel_tests:
@@ -527,6 +513,20 @@ class TestRunner:
         is_ready = layout_test_helper_proc.stdout.readline()
         if not is_ready.startswith('ready'):
           logging.error("layout_test_helper failed to be ready")
+
+    # Check that the system dependencies (themes, fonts, ...) are correct.
+    if not self._options.nocheck_sys_deps:
+      proc = subprocess.Popen([test_shell_binary,
+                              "--check-layout-test-sys-deps"])
+      if proc.wait() != 0:
+        logging.info("Aborting because system dependencies check failed.\n"
+                     "To override, invoke with --nocheck-sys-deps")
+        sys.exit(1)
+
+    logging.info("Starting tests")
+
+    # Create the output directory if it doesn't already exist.
+    google.path_utils.MaybeMakeDirectory(self._options.results_directory)
 
     threads = self._InstantiateTestShellThreads(test_shell_binary)
 
