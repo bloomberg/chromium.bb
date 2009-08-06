@@ -231,8 +231,8 @@ void WorkerProcessHost::RelayMessage(
     // We want to send the receiver a routing id for the new channel, so
     // crack the message first.
     string16 msg;
-    int sent_message_port_id;
-    int new_routing_id;  // Ignore the bogus value from the sender.
+    int sent_message_port_id = MSG_ROUTING_NONE;
+    int new_routing_id = MSG_ROUTING_NONE;
     if (!WorkerMsg_PostMessage::Read(
             &message, &msg, &sent_message_port_id, &new_routing_id)) {
       return;
