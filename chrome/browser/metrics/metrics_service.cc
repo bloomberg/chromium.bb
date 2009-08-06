@@ -162,6 +162,12 @@
 #include <objbase.h>
 #endif
 
+#if defined(USE_SYSTEM_LIBBZ2)
+#include <bzlib.h>
+#else
+#include "third_party/bzip2/bzlib.h"
+#endif
+
 #include "base/file_path.h"
 #include "base/histogram.h"
 #include "base/path_service.h"
@@ -191,7 +197,6 @@
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
-#include "third_party/bzip2/bzlib.h"
 
 #if defined(OS_POSIX)
 // TODO(port): Move these headers above as they are ported.

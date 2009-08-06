@@ -20,9 +20,14 @@
 #ifndef NET_BASE_BZIP2_FILTER_H_
 #define NET_BASE_BZIP2_FILTER_H_
 
+#if defined(USE_SYSTEM_LIBBZ2)
+#include <bzlib.h>
+#else
+#include "third_party/bzip2/bzlib.h"
+#endif
+
 #include "base/scoped_ptr.h"
 #include "net/base/filter.h"
-#include "third_party/bzip2/bzlib.h"
 
 class BZip2Filter : public Filter {
  public:
