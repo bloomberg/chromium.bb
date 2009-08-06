@@ -53,6 +53,12 @@ enum FilterType {
   FILTER_VIDEO_RENDERER
 };
 
+// A filter can broadcast messages to all other filters.  This identifies
+// the type of message to be broadcasted.
+enum FilterMessage {
+  kMsgDisableAudio,
+};
+
 // Used for completing asynchronous methods.
 typedef Callback0::Type FilterCallback;
 
@@ -122,6 +128,12 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
     if (seek_callback.get()) {
       seek_callback->Run();
     }
+  }
+
+  // This method is called from the pipeline when a message of type |message|
+  // is broadcasted from |source|. Filters can ignore the message if they do
+  // not need to react to events raised from another filter.
+  virtual void OnReceivedMessage(FilterMessage message) {
   }
 
  protected:

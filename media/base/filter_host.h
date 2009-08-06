@@ -18,6 +18,7 @@
 #define MEDIA_BASE_FILTER_HOST_H_
 
 #include "base/task.h"
+#include "media/base/filters.h"
 #include "media/base/pipeline.h"
 
 namespace media {
@@ -55,6 +56,9 @@ class FilterHost {
 
   // Sets the flag to indicate that we are doing streaming.
   virtual void SetStreaming(bool streaming) = 0;
+
+  // Broadcast a message of type |message| to all other filters from |source|.
+  virtual void BroadcastMessage(FilterMessage message) = 0;
 
  protected:
   virtual ~FilterHost() {}
