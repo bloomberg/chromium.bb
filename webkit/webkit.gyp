@@ -1206,6 +1206,19 @@
       ],
     },
     {
+      'target_name': 'appcache',
+      'type': '<(library)',
+      'msvs_guid': '0B945915-31A7-4A07-A5B5-568D737A39B1',
+      'dependencies': [
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+      ],
+      'sources': [
+        # This list contains all .h and .cc in appcache except for test code.
+        'appcache/manifest_parser.cc',
+        'appcache/manifest_parser.h',
+      ],
+    },
+    {
       'target_name': 'glue',
       'type': '<(library)',
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',

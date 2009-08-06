@@ -29,156 +29,197 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "ManifestParser.h"
+#include "manifest_parser.h"
 
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+#include "base/logging.h"
+#include "base/string_util.h"
+#include "googleurl/src/gurl.h"
 
-#include "CharacterNames.h"
-#include "KURL.h"
-#include "TextResourceDecoder.h"
+namespace appcache {
 
-using namespace std;
+enum Mode {
+  kExplicit,
+  kFallback,
+  kOnlineWhitelist,
+  kUnknown,
+};
 
-namespace WebCore {
+bool ParseManifest(const GURL& manifest_url, const char* data, int length,
+                   Manifest& manifest) {
+  static const std::wstring kSignature(L"CACHE MANIFEST");
 
-enum Mode { Explicit, Fallback, OnlineWhitelist, Unknown };
+  DCHECK(manifest.explicit_urls.empty());
+  DCHECK(manifest.online_whitelisted_urls.empty());
+  DCHECK(manifest.fallback_urls.empty());
 
-bool parseManifest(const KURL& manifestURL, const char* data, int length, Manifest& manifest)
-{
-    ASSERT(manifest.explicitURLs.isEmpty());
-    ASSERT(manifest.onlineWhitelistedURLs.isEmpty());
-    ASSERT(manifest.fallbackURLs.isEmpty());
+  Mode mode = kExplicit;
 
-    Mode mode = Explicit;
+  std::wstring data_string;
+  // TODO(jennb): cannot do UTF8ToWide(data, length, &data_string);
+  // until UTF8ToWide uses 0xFFFD Unicode replacement character.
+  CodepageToWide(std::string(data, length), "UTF-8",
+                 OnStringUtilConversionError::SUBSTITUTE, &data_string);
+  const wchar_t* p = data_string.c_str();
+  const wchar_t* end = p + data_string.length();
 
-    RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("text/cache-manifest", "UTF-8");
-    String s = decoder->decode(data, length);
-    s += decoder->flush();
+  // Look for the magic signature: "^\xFEFF?CACHE MANIFEST[ \t]?"
+  // Example: "CACHE MANIFEST #comment" is a valid signature.
+  // Example: "CACHE MANIFEST;V2" is not.
 
-    // Look for the magic signature: "^\xFEFF?CACHE MANIFEST[ \t]?" (the BOM is removed by TextResourceDecoder).
-    // Example: "CACHE MANIFEST #comment" is a valid signature.
-    // Example: "CACHE MANIFEST;V2" is not.
-    if (!s.startsWith("CACHE MANIFEST"))
-        return false;
+  // When the input data starts with a UTF-8 Byte-Order-Mark
+  // (0xEF, 0xBB, 0xBF), the UTF8ToWide() function converts it to a
+  // Unicode BOM (U+FEFF). Skip a converted Unicode BOM if it exists.
+  int bom_offset = 0;
+  if (!data_string.empty() && data_string[0] == 0xFEFF) {
+    bom_offset = 1;
+    ++p;
+  }
 
-    const UChar* end = s.characters() + s.length();
-    const UChar* p = s.characters() + 14; // "CACHE MANIFEST" is 14 characters.
+  if (p >= end ||
+      data_string.compare(bom_offset, kSignature.length(), kSignature)) {
+    return false;
+  }
 
-    if (p < end && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
-        return false;
+  p += kSignature.length();     // Skip past "CACHE MANIFEST"
 
-    // Skip to the end of the line.
+  // Character after "CACHE MANIFEST" must be whitespace.
+  if (p < end && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
+    return false;
+
+  // Skip to the end of the line.
+  while (p < end && *p != '\r' && *p != '\n')
+    ++p;
+
+  while (1) {
+    // Skip whitespace
+    while (p < end && (*p == '\n' || *p == '\r' || *p == ' ' || *p == '\t'))
+      ++p;
+
+    if (p == end)
+      break;
+
+    const wchar_t* line_start = p;
+
+    // Find the end of the line
     while (p < end && *p != '\r' && *p != '\n')
-        p++;
+      ++p;
 
-    while (1) {
-        // Skip whitespace
-        while (p < end && (*p == '\n' || *p == '\r' || *p == ' ' || *p == '\t'))
-            p++;
+    // Check if we have a comment
+    if (*line_start == '#')
+      continue;
 
-        if (p == end)
-            break;
+    // Get rid of trailing whitespace
+    const wchar_t* tmp = p - 1;
+    while (tmp > line_start && (*tmp == ' ' || *tmp == '\t'))
+      --tmp;
 
-        const UChar* lineStart = p;
+    std::wstring line(line_start, tmp - line_start + 1);
 
-        // Find the end of the line
-        while (p < end && *p != '\r' && *p != '\n')
-            p++;
+    if (line == L"CACHE:") {
+      mode = kExplicit;
+    } else if (line == L"FALLBACK:") {
+      mode = kFallback;
+    } else if (line == L"NETWORK:") {
+      mode = kOnlineWhitelist;
+    } else if (*(line.end() - 1) == ':') {
+      mode = kUnknown;
+    } else if (mode == kUnknown) {
+      continue;
+    } else if (mode == kExplicit || mode == kOnlineWhitelist) {
+      const wchar_t *line_p = line.c_str();
+      const wchar_t *line_end = line_p + line.length();
 
-        // Check if we have a comment
-        if (*lineStart == '#')
-            continue;
+      // Look for whitespace separating the URL from subsequent ignored tokens.
+      while (line_p < line_end && *line_p != '\t' && *p != ' ')
+        ++line_p;
 
-        // Get rid of trailing whitespace
-        const UChar* tmp = p - 1;
-        while (tmp > lineStart && (*tmp == ' ' || *tmp == '\t'))
-            tmp--;
+      string16 url16;
+      WideToUTF16(line.c_str(), line_p - line.c_str(), &url16);
+      GURL url = manifest_url.Resolve(url16);
+      if (!url.is_valid())
+        continue;
+      if (url.has_ref()) {
+        GURL::Replacements replacements;
+        replacements.ClearRef();
+        url = url.ReplaceComponents(replacements);
+      }
 
-        String line(lineStart, tmp - lineStart + 1);
+      // Scheme component must be the same as the manifest URL's.
+      if (url.scheme() != manifest_url.scheme()) {
+        continue;
+      }
 
-        if (line == "CACHE:")
-            mode = Explicit;
-        else if (line == "FALLBACK:")
-            mode = Fallback;
-        else if (line == "NETWORK:")
-            mode = OnlineWhitelist;
-        else if (line.endsWith(":"))
-            mode = Unknown;
-        else if (mode == Unknown)
-            continue;
-        else if (mode == Explicit || mode == OnlineWhitelist) {
-            const UChar* p = line.characters();
-            const UChar* lineEnd = p + line.length();
+      if (mode == kExplicit) {
+        manifest.explicit_urls.insert(url.spec());
+      } else {
+        manifest.online_whitelisted_urls.push_back(url);
+      }
+    } else if (mode == kFallback) {
+      const wchar_t* line_p = line.c_str();
+      const wchar_t* line_end = line_p + line.length();
 
-            // Look for whitespace separating the URL from subsequent ignored tokens.
-            while (p < lineEnd && *p != '\t' && *p != ' ')
-                p++;
+      // Look for whitespace separating the two URLs
+      while (line_p < line_end && *line_p != '\t' && *line_p != ' ')
+        ++line_p;
 
-            KURL url(manifestURL, String(line.characters(), p - line.characters()));
+      if (line_p == line_end) {
+        // There was no whitespace separating the URLs.
+        continue;
+      }
 
-            if (!url.isValid())
-                continue;
+      string16 namespace_url16;
+      WideToUTF16(line.c_str(), line_p - line.c_str(), &namespace_url16);
+      GURL namespace_url = manifest_url.Resolve(namespace_url16);
+      if (!namespace_url.is_valid())
+        continue;
+      if (namespace_url.has_ref()) {
+        GURL::Replacements replacements;
+        replacements.ClearRef();
+        namespace_url = namespace_url.ReplaceComponents(replacements);
+      }
 
-            if (url.hasRef())
-                url.setRef(String());
+      // Fallback namespace URL must have the same scheme, host and port
+      // as the manifest's URL.
+      if (manifest_url.GetOrigin() != namespace_url.GetOrigin()) {
+        continue;
+      }
 
-            if (!equalIgnoringCase(url.protocol(), manifestURL.protocol()))
-                continue;
+      // Skip whitespace separating fallback namespace from URL.
+      while (line_p < line_end && (*line_p == '\t' || *line_p == ' '))
+        ++line_p;
 
-            if (mode == Explicit)
-                manifest.explicitURLs.add(url.string());
-            else
-                manifest.onlineWhitelistedURLs.append(url);
+      // Look for whitespace separating the URL from subsequent ignored tokens.
+      const wchar_t* fallback_start = line_p;
+      while (line_p < line_end && *line_p != '\t' && *line_p != ' ')
+        ++line_p;
 
-        } else if (mode == Fallback) {
-            const UChar* p = line.characters();
-            const UChar* lineEnd = p + line.length();
+      string16 fallback_url16;
+      WideToUTF16(fallback_start, line_p - fallback_start, &fallback_url16);
+      GURL fallback_url = manifest_url.Resolve(fallback_url16);
+      if (!fallback_url.is_valid())
+        continue;
+      if (fallback_url.has_ref()) {
+        GURL::Replacements replacements;
+        replacements.ClearRef();
+        fallback_url = fallback_url.ReplaceComponents(replacements);
+      }
 
-            // Look for whitespace separating the two URLs
-            while (p < lineEnd && *p != '\t' && *p != ' ')
-                p++;
+      // Fallback entry URL must have the same scheme, host and port
+      // as the manifest's URL.
+      if (manifest_url.GetOrigin() != fallback_url.GetOrigin()) {
+        continue;
+      }
 
-            if (p == lineEnd) {
-                // There was no whitespace separating the URLs.
-                continue;
-            }
-
-            KURL namespaceURL(manifestURL, String(line.characters(), p - line.characters()));
-            if (!namespaceURL.isValid())
-                continue;
-            if (namespaceURL.hasRef())
-                namespaceURL.setRef(String());
-
-            if (!protocolHostAndPortAreEqual(manifestURL, namespaceURL))
-                continue;
-
-            // Skip whitespace separating fallback namespace from URL.
-            while (p < lineEnd && (*p == '\t' || *p == ' '))
-                p++;
-
-            // Look for whitespace separating the URL from subsequent ignored tokens.
-            const UChar* fallbackStart = p;
-            while (p < lineEnd && *p != '\t' && *p != ' ')
-                p++;
-
-            KURL fallbackURL(manifestURL, String(fallbackStart, p - fallbackStart));
-            if (!fallbackURL.isValid())
-                continue;
-            if (fallbackURL.hasRef())
-                fallbackURL.setRef(String());
-
-            if (!protocolHostAndPortAreEqual(manifestURL, fallbackURL))
-                continue;
-
-            manifest.fallbackURLs.append(make_pair(namespaceURL, fallbackURL));
-        } else
-            ASSERT_NOT_REACHED();
+      // Store regardless of duplicate namespace URL. Only first match
+      // will ever be used.
+      manifest.fallback_urls.push_back(
+          std::make_pair(namespace_url, fallback_url));
+    } else {
+      NOTREACHED();
     }
+  }
 
-    return true;
+  return true;
 }
 
-}
-
-#endif // ENABLE(OFFLINE_WEB_APPLICATIONS)
+}  // namespace appcache

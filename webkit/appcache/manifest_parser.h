@@ -29,27 +29,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ManifestParser_h
-#define ManifestParser_h
+#ifndef WEBKIT_APPCACHE_MANIFEST_PARSER_H_
+#define WEBKIT_APPCACHE_MANIFEST_PARSER_H_
 
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+#include <string>
+#include <vector>
 
-#include "ApplicationCache.h"
+#include "base/hash_tables.h"
 
-namespace WebCore {
+class GURL;
 
-    class KURL;
+namespace appcache {
 
-    struct Manifest {
-        Vector<KURL> onlineWhitelistedURLs;
-        HashSet<String> explicitURLs;
-        FallbackURLVector fallbackURLs;
-    };
+typedef std::vector<std::pair<GURL, GURL> > FallbackUrlVector;
 
-    bool parseManifest(const KURL& manifestURL, const char* data, int length, Manifest&);
+// TODO(jennb): spec changed since webkit implementation. Update in next CL.
+struct Manifest {
+  std::vector<GURL> online_whitelisted_urls;
+  base::hash_set<std::string> explicit_urls;
+  FallbackUrlVector fallback_urls;
+};
 
-}
+bool ParseManifest(const GURL& manifest_url, const char* data, int length,
+                   Manifest& manifest);
 
-#endif // ENABLE(OFFLINE_WEB_APPLICATIONS)
+}  // namespace appcache
 
-#endif // ManifestParser_h
+#endif  // WEBKIT_APPCACHE_MANIFEST_PARSER_H_
