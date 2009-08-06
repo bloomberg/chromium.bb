@@ -59,6 +59,12 @@ class TestTexture : public Texture {
                 false) {}
   void* GetTextureHandle() const { return NULL; }
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
+  virtual void SetFromBitmap(const Bitmap& bitmap) {
+    DCHECK(false);
+  }
+  virtual void GenerateMips(int source_level, int last_target_level) {
+    DCHECK(false);
+  }
 };
 
 const Texture::RGBASwizzleIndices& TestTexture::GetABGR32FSwizzleIndices() {

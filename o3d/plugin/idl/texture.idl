@@ -107,6 +107,29 @@ namespace o3d {
     True of all the alpha values in the texture are 1.0
   %]
   [getter, getter, setter] bool alpha_is_one;
+
+  %[
+    Generates Mips.
+    \param source_level the mip to use as the source.
+    \param num_levels the number of mips from the source to generate.
+  %]
+  void GenerateMips(int source_level, int num_levels);
+
+  %[
+    Sets the content of the texture to the content of the bitmap. The texture
+    and the bitmap must be the same dimensions and the same format.
+
+    \param bitmap The bitmap to copy data from.
+  %]
+  [userglue]
+  void SetFromBitmap(Bitmap bitmap);
+
+  [verbatim=cpp_glue] %{
+    void userglue_method_SetFromBitmap(o3d::Texture* self,
+                                       o3d::Bitmap* bitmap) {
+      self->SetFromBitmap(*bitmap);
+    }
+  %}
 };  // Texture
 
 %[
@@ -209,10 +232,25 @@ namespace o3d {
     \param dest_height height of the dest image.
     \param dest_mip on which mip level the sourceImg would be drawn.
   %]
+  [userglue]
   void DrawImage(Bitmap source_img, int source_x, int source_y,
                  int source_width, int source_height,
                  int dest_x, int dest_y,
                  int dest_width, int dest_height, int dest_mip);
+
+  [verbatim=cpp_glue] %{
+  void userglue_method_DrawImage(
+       o3d::Texture2D* self,
+       o3d::Bitmap* source_img, int source_x, int source_y,
+       int source_width, int source_height,
+       int dest_x, int dest_y,
+       int dest_width, int dest_height, int dest_mip) {
+    self->DrawImage(*source_img, source_x, source_y,
+                    source_width, source_height,
+                    dest_x, dest_y,
+                    dest_width, dest_height, dest_mip);
+  }
+%}
 };  // Texture2D
 
 
@@ -317,11 +355,27 @@ namespace o3d {
     \param face on which face the sourceImg would be drawn.
     \param dest_mip on which mip level the sourceImg would be drawn.
   %]
+  [userglue]
   void DrawImage(Bitmap source_img, int source_x, int source_y,
                  int source_width, int source_height,
                  int dest_x, int dest_y,
                  int dest_width, int dest_height,
                  CubeFace face, int dest_mip);
+
+  [verbatim=cpp_glue] %{
+    void userglue_method_DrawImage(
+         o3d::TextureCUBE* self,
+         o3d::Bitmap* source_img, int source_x, int source_y,
+         int source_width, int source_height,
+         int dest_x, int dest_y,
+         int dest_width, int dest_height,
+         o3d::TextureCUBE::CubeFace dest_face, int dest_mip) {
+      self->DrawImage(*source_img, source_x, source_y,
+                      source_width, source_height,
+                      dest_x, dest_y,
+                      dest_width, dest_height, dest_face, dest_mip);
+    }
+  %}
 };  // TextureCUBE
 
 }  // namespace o3d

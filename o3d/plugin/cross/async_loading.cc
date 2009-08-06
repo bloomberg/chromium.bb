@@ -90,8 +90,8 @@ class LoadTextureURLCallback : public StreamManager::FinishedCallback {
       // Unfortunately, TGA and DDS don't have standard MIME type, so we may
       // have to rely on the filename, or let the image loader figure it out by
       // itself (by trying every possible type).
-      Bitmap::ImageFileType image_type =
-          Bitmap::GetFileTypeFromMimeType(mime_type.c_str());
+      o3d::image::ImageFileType image_type =
+          o3d::image::GetFileTypeFromMimeType(mime_type.c_str());
       texture = Texture::Ref(
           request_->pack()->CreateTextureFromFile(
               request_->uri(),

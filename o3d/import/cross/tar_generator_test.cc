@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/client.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
 #include "import/cross/tar_generator.h"

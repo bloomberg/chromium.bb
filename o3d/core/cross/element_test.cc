@@ -33,9 +33,11 @@
 // This file implements unit tests for class Element.
 
 #include <algorithm>
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/element.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/service_dependency.h"
 #include "core/cross/primitive.h"
 
 namespace o3d {

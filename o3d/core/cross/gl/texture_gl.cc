@@ -157,20 +157,20 @@ static bool UpdateGLImageFromBitmap(GLenum target,
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
   const unsigned char *mip_data = bitmap.GetFaceMipData(face, level);
   unsigned int mip_size =
-      Bitmap::GetBufferSize(mip_width, mip_height, bitmap.format());
+      image::ComputeBufferSize(mip_width, mip_height, bitmap.format());
   scoped_array<unsigned char> temp_data;
   if (resize_to_pot) {
     DCHECK(!Texture::IsCompressedFormat(bitmap.format()));
     unsigned int pot_width =
-        std::max(1U, Bitmap::GetPOTSize(bitmap.width()) >> level);
+        std::max(1U, image::ComputePOTSize(bitmap.width()) >> level);
     unsigned int pot_height =
-        std::max(1U, Bitmap::GetPOTSize(bitmap.height()) >> level);
-    unsigned int pot_size = Bitmap::GetBufferSize(pot_width, pot_height,
-                                                  bitmap.format());
+        std::max(1U, image::ComputePOTSize(bitmap.height()) >> level);
+    unsigned int pot_size = image::ComputeBufferSize(pot_width, pot_height,
+                                                     bitmap.format());
     temp_data.reset(new unsigned char[pot_size]);
-    Bitmap::Scale(mip_width, mip_height, bitmap.format(), mip_data,
-                  pot_width, pot_height, temp_data.get(),
-                  Bitmap::GetMipChainSize(pot_width, 1, bitmap.format(), 1));
+    image::Scale(mip_width, mip_height, bitmap.format(), mip_data,
+                 pot_width, pot_height, temp_data.get(),
+                 image::ComputePitch(bitmap.format(), pot_width));
     mip_width = pot_width;
     mip_height = pot_height;
     mip_size = pot_size;
@@ -202,8 +202,8 @@ static bool CreateGLImagesAndUpload(GLenum target,
   unsigned int mip_width = bitmap.width();
   unsigned int mip_height = bitmap.height();
   if (resize_to_pot) {
-    mip_width = Bitmap::GetPOTSize(mip_width);
-    mip_height = Bitmap::GetPOTSize(mip_height);
+    mip_width = image::ComputePOTSize(mip_width);
+    mip_height = image::ComputePOTSize(mip_height);
   }
   // glCompressedTexImage2D does't accept NULL as a parameter, so we need
   // to pass in some data. If we can pass in the original pixel data, we'll
@@ -213,8 +213,8 @@ static bool CreateGLImagesAndUpload(GLenum target,
   if (!format && (!bitmap.image_data() || resize_to_pot)) {
     // Allocate a buffer big enough for the first level which is the biggest
     // one.
-    unsigned int size = Bitmap::GetBufferSize(mip_width, mip_height,
-                                              bitmap.format());
+    unsigned int size = image::ComputeBufferSize(mip_width, mip_height,
+                                                 bitmap.format());
     temp_data.reset(new unsigned char[size]);
     memset(temp_data.get(), 0, size);
   }
@@ -231,8 +231,8 @@ static bool CreateGLImagesAndUpload(GLenum target,
         return false;
       }
     } else {
-      unsigned int mip_size = Bitmap::GetBufferSize(mip_width, mip_height,
-                                                    bitmap.format());
+      unsigned int mip_size = image::ComputeBufferSize(mip_width, mip_height,
+                                                       bitmap.format());
       DCHECK(data || temp_data.get());
       glCompressedTexImage2DARB(target, i, internal_format, mip_width,
                                 mip_height, 0, mip_size,
@@ -398,8 +398,8 @@ void Texture2DGL::SetRect(int level,
     return;
   }
 
-  unsigned mip_width = Bitmap::GetMipDimension(level, width());
-  unsigned mip_height = Bitmap::GetMipDimension(level, height());
+  unsigned mip_width = image::ComputeMipDimension(level, width());
+  unsigned mip_height = image::ComputeMipDimension(level, height());
 
   if (dst_left + src_width > mip_width ||
       dst_top + src_height > mip_height) {
@@ -435,8 +435,7 @@ void Texture2DGL::SetRect(int level,
     GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
                                              &gl_data_type);
     if (gl_format) {
-      if ((unsigned)src_pitch == Bitmap::GetMipChainSize(src_width, 1,
-                                                         format(), 1)) {
+      if (src_pitch == image::ComputePitch(format(), src_width)) {
         glTexSubImage2D(GL_TEXTURE_2D, level,
                         dst_left, dst_top,
                         src_width, src_height,
@@ -459,7 +458,7 @@ void Texture2DGL::SetRect(int level,
       glCompressedTexSubImage2D(
           GL_TEXTURE_2D, level, 0, 0, src_width, src_height,
           gl_internal_format,
-          Bitmap::GetMipChainSize(src_width, src_height, format(), 1),
+          image::ComputeMipChainSize(src_width, src_height, format(), 1),
           src_data);
     }
   }
@@ -489,10 +488,9 @@ bool Texture2DGL::Lock(int level, void** data, int* pitch) {
     backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
   }
   *data = backing_bitmap_->GetMipData(level);
-  unsigned int mip_width = Bitmap::GetMipDimension(level, width());
-
+  unsigned int mip_width = image::ComputeMipDimension(level, width());
   if (!IsCompressed()) {
-    *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
+    *pitch = image::ComputePitch(format(), mip_width);
   } else {
     unsigned blocks_across = (mip_width + 3) / 4;
     unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
@@ -778,7 +776,7 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
     return;
   }
 
-  unsigned mip_width = Bitmap::GetMipDimension(level, edge_length());
+  unsigned mip_width = image::ComputeMipDimension(level, edge_length());
   unsigned mip_height = mip_width;
 
   if (dst_left + src_width > mip_width ||
@@ -817,8 +815,7 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
                                              &gl_data_type);
     int gl_face = kCubemapFaceList[face];
     if (gl_format) {
-      if (static_cast<unsigned>(src_pitch) ==
-          Bitmap::GetMipChainSize(src_width, 1, format(), 1)) {
+      if (src_pitch == image::ComputePitch(format(), src_width)) {
         glTexSubImage2D(gl_face, level,
                         dst_left, dst_top,
                         src_width, src_height,
@@ -841,7 +838,7 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
       glCompressedTexSubImage2D(
           GL_TEXTURE_2D, level, 0, 0, src_width, src_height,
           gl_internal_format,
-          Bitmap::GetMipChainSize(src_width, src_height, format(), 1),
+          image::ComputeMipChainSize(src_width, src_height, format(), 1),
           src_data);
     }
   }
@@ -873,9 +870,9 @@ bool TextureCUBEGL::Lock(CubeFace face, int level, void** data, int* pitch) {
                              levels(), true);
   }
   *data = backing_bitmap_->GetFaceMipData(face, level);
-  unsigned int mip_width = Bitmap::GetMipDimension(level, edge_length());
+  unsigned int mip_width = image::ComputeMipDimension(level, edge_length());
   if (!IsCompressed()) {
-    *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
+    *pitch = image::ComputePitch(format(), mip_width);
   } else {
     unsigned blocks_across = (mip_width + 3) / 4;
     unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;

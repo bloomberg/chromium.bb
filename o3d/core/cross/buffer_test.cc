@@ -36,6 +36,7 @@
 #include "tests/common/win/testing_common.h"
 #include "core/cross/error_status.h"
 #include "core/cross/buffer.h"
+#include "core/cross/pack.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
 #include "import/cross/raw_data.h"

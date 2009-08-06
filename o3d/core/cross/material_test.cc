@@ -32,9 +32,13 @@
 
 // This file implements unit tests for class Material.
 
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/material.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/semantic_manager.h"
+#include "core/cross/service_dependency.h"
+#include "core/cross/transformation_context.h"
 
 namespace o3d {
 

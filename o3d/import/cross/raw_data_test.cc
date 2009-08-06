@@ -32,7 +32,6 @@
 
 // Tests functionality of the RawData class
 
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
 #include "utils/cross/file_path_utils.h"
 #include "base/file_path.h"

@@ -101,7 +101,7 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
 
   // NOTE: The following smart pointer needs to be declared before the
   // setjmp so that it is properly destroyed if we jump back.
-  scoped_array<unsigned char> image_data;
+  scoped_array<uint8> image_data;
   png_bytepp row_pointers = NULL;
 
   // Set error handling if you are using the setjmp/longjmp method. If any
@@ -139,7 +139,7 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
                NULL,
                NULL);
 
-  if (!CheckImageDimensions(png_width, png_height)) {
+  if (!image::CheckImageDimensions(png_width, png_height)) {
     DLOG(ERROR) << "Failed to load " << filename
                 << ": dimensions are too large (" << png_width
                 << ", " << png_height << ").";
@@ -209,11 +209,11 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
 
   // Allocate storage for the pixels.
   unsigned int num_mipmaps =
-      generate_mipmaps ? GetMipMapCount(png_width, png_height) : 1;
+      generate_mipmaps ? image::ComputeMipMapCount(png_width, png_height) : 1;
   // Allocate storage for the pixels.
-  unsigned int png_image_size = GetMipChainSize(png_width, png_height, format,
-                                                num_mipmaps);
-  image_data.reset(new unsigned char[png_image_size]);
+  unsigned int png_image_size =
+      image::ComputeMipChainSize(png_width, png_height, format, num_mipmaps);
+  image_data.reset(new uint8[png_image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "PNG image memory allocation error \"" << filename << "\"";
     png_error(png_ptr, "Cannot allocate memory for bitmap");
@@ -231,13 +231,10 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
 
   // Fill the row pointer array.
   DCHECK_LE(png_get_rowbytes(png_ptr, info_ptr), png_width * dst_components);
-  // NOTE: we load images bottom to up to respect max/maya's UV
-  // orientation.
-  png_bytep row_ptr = reinterpret_cast<png_bytep>(image_data.get())
-      + png_width * dst_components * (png_height - 1);
+  png_bytep row_ptr = reinterpret_cast<png_bytep>(image_data.get());
   for (unsigned int i = 0; i < png_height; ++i) {
     row_pointers[i] = row_ptr;
-    row_ptr -= png_width * dst_components;
+    row_ptr += png_width * dst_components;
   }
 
   // Read the image, applying format transforms and de-interlacing as we go.

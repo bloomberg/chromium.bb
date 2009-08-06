@@ -33,49 +33,29 @@
 namespace o3d {
 
 %[
-Bitmap provides an interface for basic image operations on bitmap,
-including scale and crop. The contents of bitmap can be created from
-RawData via pack.createBitmapFromRawData(), and also can be transfered 
-to mip of a Texure2D or a specific face of TextureCUBE via methods
-in Texture.
+  Bitmap provides an interface for basic image operations on bitmap,
+  including scale and crop. The contents of bitmap can be created from
+  RawData via pack.createBitmapFromRawData(), and also can be transfered
+  to mip of a Texure2D or a specific face of TextureCUBE via methods
+  in Texture.
 %]
 
 [nocpp, include="core/cross/bitmap.h"]
 class Bitmap : ParamObject {
   %[
-  enum ImageFileType {
-    \li UNKNOWN, Image type unknown.
-    \li TGA, image in TGA format.
-    \li JPEG, image in JPEG format.
-    \li PNG, image in PNG format.
-    \li DDS, image in DDS format.
-  };
+    Flips a bitmap vertically in place.
   %]
-  enum ImageFileType {
-    UNKNOWN,
-    TGA,
-    JPEG,
-    PNG,
-    DDS
-  };
+  void FlipVertically();
 
   %[
-    Copy pixels from source bitmap. Scales if the width and height of source
-    and dest do not match.
-    \param source_img source bitmap which would be drawn.
-    \param source_x x-coordinate of the starting pixel in the source image.
-    \param source_y y-coordinate of the starting pixel in the source image.
-    \param source_width width of the source image to draw.
-    \param source_height Height of the source image to draw.
-    \param dest_x x-coordinate of the starting pixel in the dest image.
-    \param dest_y y-coordinate of the starting pixel in the dest image.
-    \param dest_width width of the dest image to draw.
-    \param dest_height height of the dest image to draw.
+    Generates mip maps from the source level to lower levels.
+
+    You can currently only use this on XRGB8 and ARGB8 textures.
+
+    \param source_level The level to use as the source of the mips.
+    \param num_levels The number of levels to generate below the source level.
   %]
-  void DrawImage(Bitmap source_img, int source_x, int source_y, 
-                 int source_width, int source_height, 
-                 int dest_x, int dest_y, 
-                 int dest_width, int dest_height);
+  void GenerateMips(int source_level, int num_levels);
 
   %[
     The width of the bitmap (read only).
@@ -87,6 +67,20 @@ class Bitmap : ParamObject {
   %]
   [getter] int height_;
 
+  %[
+    The format of the bitmap (read only).
+  %]
+  [getter] Texture::Format format_;
+
+  %[
+    Number mip-maps (read only)
+  %]
+  [getter] int num_mipmaps_;
+
+  %[
+    Whether or not the bitmap is a cubemap.
+  %]
+  [getter] bool is_cubemap_;
 };  // Bitmap
 
 }  // namespace o3d

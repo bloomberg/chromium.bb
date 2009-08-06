@@ -33,7 +33,6 @@
 #include <sys/stat.h>
 #include <algorithm>
 
-#include "core/cross/client.h"
 #include "import/cross/gz_decompressor.h"
 #include "import/cross/memory_buffer.h"
 #include "tests/common/win/testing_common.h"

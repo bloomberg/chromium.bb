@@ -39,6 +39,7 @@
 #include <vector>
 #include "core/cross/callback.h"
 #include "core/cross/param_object.h"
+#include "core/cross/pack.h"
 
 namespace o3d {
 

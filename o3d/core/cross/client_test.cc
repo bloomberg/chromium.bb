@@ -34,6 +34,8 @@
 
 #include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
+#include "core/cross/pack.h"
+#include "core/cross/buffer.h"
 
 namespace o3d {
 

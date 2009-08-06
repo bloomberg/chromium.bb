@@ -33,7 +33,6 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "core/cross/client.h"
 #include "import/cross/memory_stream.h"
 #include "import/cross/targz_generator.h"
 #include "tests/common/cross/test_utils.h"

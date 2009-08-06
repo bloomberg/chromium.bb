@@ -39,32 +39,34 @@
 #include <vector>
 #include <set>
 
-#include "core/cross/bitmap.h"
-#include "core/cross/buffer.h"
-#include "core/cross/effect.h"
 #include "core/cross/named_object.h"
-#include "core/cross/sampler.h"
-#include "core/cross/shape.h"
-#include "core/cross/state.h"
 #include "core/cross/smart_ptr.h"
-#include "core/cross/texture.h"
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
-#include "core/cross/render_node.h"
+#include "core/cross/image_utils.h"
+
+class FilePath;
 
 namespace o3d {
+
+class Bitmap;
+class ArchiveRequest;
+class RawData;
+class Texture;
+class Texture2D;
+class TextureCUBE;
+class FileRequest;
+class DrawContext;
+class IClassManager;
+class ObjectManager;
+class RenderDepthStencilSurface;
 
 // Type definitions ------------------------
 
 // Array of object id's
 typedef std::vector<Id> IdArray;
-
-class ArchiveRequest;
-class RawData;
-class FileRequest;
-class DrawContext;
-class IClassManager;
-class ObjectManager;
+// Array of Bitmaps.
+typedef std::vector<Bitmap*> BitmapArray;
 
 // A Pack object functions as a container for O3D objects.  All objects
 // inheriting from ObjectBase must be constructed and assigned a pack. The Pack
@@ -200,14 +202,14 @@ class Pack : public NamedObject {
   //  A pointer to the texture or NULL if it did not load
   Texture* CreateTextureFromFile(const String& uri,
                                  const FilePath& filepath,
-                                 Bitmap::ImageFileType file_type,
+                                 image::ImageFileType file_type,
                                  bool generate_mipmaps);
 
   // This version takes a String |filename| argument instead of the preferred
   // FilePath argument.  The use of this method should be phased out.
   Texture* CreateTextureFromFile(const String& uri,
                                  const String& filename,
-                                 Bitmap::ImageFileType file_type,
+                                 image::ImageFileType file_type,
                                  bool generate_mipmaps);
 
   // Creates a new Texture object given a "raw-data" object which must contain
@@ -223,16 +225,13 @@ class Pack : public NamedObject {
   //   format: The format of the bitmap.
   // Returns:
   //   A pointer to the bitmap obejct.
-
   Bitmap* CreateBitmap(int width, int height, Texture::Format format);
 
   // Creates a new Bitmap object from RawData.
   // Parameters:
   //   raw_data: contains the bitmap data in one of the know formats.
-  //   file_type: the format of the bitmap data. If UNKNOW, the file
-  //              type would determined from the extension.
   // Returns:
-  //   A pointer to the bitmap object.
+  //   An array of pointers to the bitmap objects.
   Bitmap* CreateBitmapFromRawData(RawData* raw_data);
 
   // Creates a new Texture2D object of the specified size and format and

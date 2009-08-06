@@ -32,9 +32,11 @@
 
 // This file implements unit tests for class StreamBank.
 
-#include "core/cross/client.h"
 #include "core/cross/skin.h"
 #include "core/cross/stream_bank.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/service_dependency.h"
 #include "core/cross/pointer_utils.h"
 #include "core/cross/fake_vertex_source.h"
 #include "tests/common/win/testing_common.h"

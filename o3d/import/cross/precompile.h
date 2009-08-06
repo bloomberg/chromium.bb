@@ -42,6 +42,13 @@
 
 #ifdef __cplusplus
 
+#if defined(RENDERER_GL)
+#include <GL/glew.h>
+#if defined(OS_WIN)
+#include <GL/wglew.h>
+#endif
+#endif // defined(RENDERER_GL)
+
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>
 #include <FCollada.h>

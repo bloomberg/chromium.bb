@@ -34,10 +34,13 @@
 
 #include <algorithm>
 
-#include "core/cross/client.h"
+#include "core/cross/transform.h"
 #include "core/cross/shape.h"
 #include "core/cross/primitive.h"
 #include "core/cross/material.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/service_dependency.h"
 #include "tests/common/win/testing_common.h"
 
 namespace o3d {

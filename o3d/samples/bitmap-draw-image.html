@@ -113,8 +113,6 @@ function makeShape(texture, effect) {
 
   // Make a transform for each quad.
   var transform = g_pack.createObject('Transform');
-
-  transform.translate(0, 0, 0);
   transform.scale(hScale, 1, vScale);
   transform.addShape(myShape);
   transform.parent = g_client.root;
@@ -184,34 +182,28 @@ function initStep2(clientElements) {
       var bitmap2 = g_pack.createBitmapFromRawData(rawdata2);
       var rawdata_hi = archiveInfo.getFileByURI('hi.jpg', true);
       var bitmap_hi = g_pack.createBitmapFromRawData(rawdata_hi);
-      var bitmap = g_pack.createBitmap(300, 300, g_o3d.Texture.XRGB8);
+      var texture = g_pack.createTexture2D(300, 300, g_o3d.Texture.XRGB8, 0,
+                                           false);
       // draw image on bitmap.
       // scale down on top left corner.
-      bitmap.drawImage(bitmap1, 0, 0, 300, 300, 0, 0, 150, 150);
+      texture.drawImage(bitmap1, 0, 0, 300, 300, 0, 0, 150, 150, 0);
       // scale up on top right corner.
-      bitmap.drawImage(bitmap1, 0, 0, 100, 100, 150, 0, 150, 150);
+      texture.drawImage(bitmap1, 0, 0, 100, 100, 150, 0, 150, 150, 0);
       // flip and draw part of the img on bottom left.
-      bitmap.drawImage(bitmap1, 150, 0, 150, 150, 149, 299, -150, -150);
+      texture.drawImage(bitmap1, 150, 0, 150, 150, 149, 299, -150, -150, 0);
       // draw out of boundary.
-      bitmap.drawImage(bitmap1, 0, 0, 300, 300, 150, 150, 300, 300);
+      texture.drawImage(bitmap1, 0, 0, 300, 300, 150, 150, 300, 300, 0);
       // draw o3d.
-      bitmap.drawImage(bitmap_hi, 0, 0, 100, 50, 100, 125, 100, 50);
+      texture.drawImage(bitmap_hi, 0, 0, 100, 50, 100, 125, 100, 50, 0);
 
-      var texture = g_pack.createTexture2D(300, 300, g_o3d.Texture.XRGB8,
-                                           0, false);
-      if (texture) {
-        // draw image on texture.
-        texture.drawImage(bitmap, 0, 0, 300, 300, 0, 0, 300, 300, 0);
+      // draw image on different mip-maps.
+      texture.drawImage(bitmap1, 0, 0, 300, 300, 0, 0, 150, 150, 1);
+      texture.drawImage(bitmap2, 0, 0, 2, 2, 0, 0, 75, 75, 2);
 
-        // draw image on different mip-maps.
-        texture.drawImage(bitmap1, 0, 0, 300, 300, 0, 0, 150, 150, 1);
-        texture.drawImage(bitmap2, 0, 0, 2, 2, 0, 0, 75, 75, 2);
-
-        makeShape(texture, effect);
-      }
+      makeShape(texture, effect);
     }
   }
-    o3djs.event.addEventListener(o3dElement, 'wheel', scrollMe);
+  o3djs.event.addEventListener(o3dElement, 'wheel', scrollMe);
 }
 
 function scrollMe(e) {

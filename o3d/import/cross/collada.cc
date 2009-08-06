@@ -49,6 +49,7 @@
 #include "core/cross/pack.h"
 #include "core/cross/param_operation.h"
 #include "core/cross/primitive.h"
+#include "core/cross/sampler.h"
 #include "core/cross/skin.h"
 #include "core/cross/stream.h"
 #include "import/cross/collada.h"
@@ -1686,7 +1687,7 @@ Texture* Collada::BuildTextureFromImage(FCDImage* image) {
     tex = Texture::Ref(
         pack_->CreateTextureFromFile(FilePathToUTF8(uri),
                                      file_path,
-                                     Bitmap::UNKNOWN,
+                                     image::UNKNOWN,
                                      options_.generate_mipmaps));
     if (tex) {
       const fstring name(image->GetName());

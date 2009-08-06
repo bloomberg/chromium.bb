@@ -121,7 +121,7 @@ ArchiveRequest *Pack::CreateArchiveRequest() {
 // Creates a Texture object from a file in the current render context format.
 Texture* Pack::CreateTextureFromFile(const String& uri,
                                      const FilePath& filepath,
-                                     Bitmap::ImageFileType file_type,
+                                     image::ImageFileType file_type,
                                      bool generate_mipmaps) {
   if (!renderer_) {
     O3D_ERROR(service_locator()) << "No Render Device Available";
@@ -150,7 +150,7 @@ Texture* Pack::CreateTextureFromFile(const String& uri,
 // FilePath argument.  The use of this method should be phased out
 Texture* Pack::CreateTextureFromFile(const String& uri,
                                      const String& filename,
-                                     Bitmap::ImageFileType file_type,
+                                     image::ImageFileType file_type,
                                      bool generate_mipmaps) {
   FilePath filepath = UTF8ToFilePath(filename);
   return CreateTextureFromFile(uri,
@@ -213,7 +213,7 @@ Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
 
 
   Bitmap::Ref bitmap(new Bitmap(service_locator()));
-  if (!bitmap->LoadFromRawData(raw_data, Bitmap::UNKNOWN, generate_mips)) {
+  if (!bitmap->LoadFromRawData(raw_data, image::UNKNOWN, generate_mips)) {
     O3D_ERROR(service_locator())
         << "Failed to load bitmap from raw data \"" << uri << "\"";
     return NULL;
@@ -225,7 +225,7 @@ Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
 // Create a bitmap object.
 Bitmap* Pack::CreateBitmap(int width, int height,
                            Texture::Format format) {
-  DCHECK(Bitmap::CheckImageDimensions(width, height));
+  DCHECK(image::CheckImageDimensions(width, height));
 
   Bitmap::Ref bitmap(new Bitmap(service_locator()));
   if (bitmap.IsNull()) {
@@ -251,8 +251,7 @@ Bitmap* Pack::CreateBitmapFromRawData(RawData* raw_data) {
         << "Failed to create bitmap object.";
     return NULL;
   }
-  if (!bitmap->LoadFromRawData(raw_data, Bitmap::UNKNOWN,
-                               false)) {
+  if (!bitmap->LoadFromRawData(raw_data, image::UNKNOWN, false)) {
     O3D_ERROR(service_locator())
         << "Failed to load bitmap from raw data.";
     return NULL;
@@ -281,8 +280,8 @@ Texture2D* Pack::CreateTexture2D(int width,
   }
 
   if (enable_render_surfaces) {
-    if (Bitmap::GetPOTSize(width) != static_cast<unsigned int>(width) ||
-        Bitmap::GetPOTSize(height) != static_cast<unsigned int>(height)) {
+    if (image::ComputePOTSize(width) != static_cast<unsigned int>(width) ||
+        image::ComputePOTSize(height) != static_cast<unsigned int>(height)) {
       O3D_ERROR(service_locator()) <<
           "Textures with RenderSurfaces enabled must have power-of-two "
           "dimensions.";
@@ -294,8 +293,7 @@ Texture2D* Pack::CreateTexture2D(int width,
       width,
       height,
       format,
-      (levels == 0) ? Bitmap::GetMipMapCount(width,
-                                             height) : levels,
+      (levels == 0) ? image::ComputeMipMapCount(width, height) : levels,
       enable_render_surfaces);
   if (!texture.IsNull()) {
     RegisterObject(texture);
@@ -322,7 +320,7 @@ TextureCUBE* Pack::CreateTextureCUBE(int edge_length,
 
 
   if (enable_render_surfaces) {
-    if (Bitmap::GetPOTSize(edge_length) !=
+    if (image::ComputePOTSize(edge_length) !=
         static_cast<unsigned int>(edge_length)) {
       O3D_ERROR(service_locator()) <<
           "Textures with RenderSurfaces enabled must have power-of-two "
@@ -334,8 +332,8 @@ TextureCUBE* Pack::CreateTextureCUBE(int edge_length,
   TextureCUBE::Ref texture = renderer_->CreateTextureCUBE(
       edge_length,
       format,
-      (levels == 0) ? Bitmap::GetMipMapCount(edge_length,
-                                             edge_length) : levels,
+      (levels == 0) ? image::ComputeMipMapCount(edge_length,
+                                                edge_length) : levels,
       enable_render_surfaces);
   if (!texture.IsNull()) {
     RegisterObject(texture);
@@ -359,8 +357,8 @@ RenderDepthStencilSurface* Pack::CreateDepthStencilSurface(int width,
     return NULL;
   }
 
-  if (Bitmap::GetPOTSize(width) != static_cast<unsigned int>(width) ||
-      Bitmap::GetPOTSize(height) != static_cast<unsigned int>(height)) {
+  if (image::ComputePOTSize(width) != static_cast<unsigned int>(width) ||
+      image::ComputePOTSize(height) != static_cast<unsigned int>(height)) {
     O3D_ERROR(service_locator()) <<
         "Depth-stencil RenderSurfaces must have power-of-two dimensions.";
     return NULL;

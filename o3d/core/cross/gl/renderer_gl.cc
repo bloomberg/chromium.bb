@@ -1567,7 +1567,7 @@ bool RendererGL::SaveScreen(const String& file_name) {
   MakeCurrentLazy();
   Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
   bitmap->Allocate(Texture::ARGB8, width(), height(), 1, false);
-  
+
   // Note: glReadPixels captures the alpha component of the frame buffer as well
   // as the color components, the browser usually ignores the alpha channel when
   // drawing to the screen, so unless the alpha is 1, the png image generated

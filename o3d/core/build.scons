@@ -66,6 +66,7 @@ cross_inputs = [
     'cross/iclass_manager.cc',
     'cross/ierror_status.cc',
     'cross/id_manager.cc',
+    'cross/image_utils.cc',
     'cross/imain_thread_task_poster.cc',
     'cross/material.cc',
     'cross/math_utilities.cc',

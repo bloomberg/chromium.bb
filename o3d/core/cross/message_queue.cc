@@ -591,13 +591,14 @@ bool MessageQueue::ProcessUpdateTexture2D(ConnectedClient* client,
   }
 
   unsigned int mip_width =
-      Bitmap::GetMipDimension(level, texture_object->width());
+      image::ComputeMipDimension(level, texture_object->width());
   unsigned int mip_height =
-      Bitmap::GetMipDimension(level, texture_object->height());
+      image::ComputeMipDimension(level, texture_object->height());
 
   if (static_cast<unsigned>(number_of_bytes) !=
-      Bitmap::GetMipChainSize(mip_width, mip_height,
-                              texture_object->format(), 1)) {
+      image::ComputeMipChainSize(mip_width, mip_height,
+                                 texture_object->format(),
+                                 1)) {
     O3D_ERROR(service_locator_)
         << "texture_size does not match size of texture level ("
         << offset << " + " << number_of_bytes << " > " << info->size_;
@@ -608,7 +609,7 @@ bool MessageQueue::ProcessUpdateTexture2D(ConnectedClient* client,
   void *target_address = static_cast<char*>(info->mapped_address_) + offset;
   texture_object->SetRect(
       level, 0, 0, mip_width, mip_height, target_address,
-      Bitmap::GetMipChainSize(mip_width, 1, texture_object->format(), 1));
+      image::ComputePitch(texture_object->format(), mip_width));
 
   SendBooleanResponse(client->client_handle(), true);
   return true;

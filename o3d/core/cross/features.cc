@@ -49,6 +49,7 @@ Features::Features(ServiceLocator* service_locator)
       large_geometry_(true),
       windowless_(false),
       not_anti_aliased_(false),
+      flip_textures_(true),
       init_status_(Renderer::SUCCESS) {
   // NOTE: For backward compatibility floating_point_textures and
   //     large_geometry default to true.  o3djs.util.makeClients before 0.1.35.0
@@ -58,36 +59,59 @@ Features::Features(ServiceLocator* service_locator)
   //     which sets those to false to start.
 }
 
-void Features::Init(const String& requested_features) {
-  large_geometry_ = false;
-  floating_point_textures_ = false;
-
-  std::vector<std::string> features;
-  SplitString(requested_features, ',', &features);
+void Features::ParseFeatures(const std::vector<std::string>& features,
+                             bool version_pass) {
   for (size_t jj = 0; jj < features.size(); ++jj) {
     const std::string& feature_string = features[jj];
     std::vector<std::string> arguments;
     SplitString(feature_string, '=', &arguments);
     const std::string feature(arguments.front());
     arguments.erase(arguments.begin());
-    if (feature.compare("FloatingPointTextures") == 0) {
-      floating_point_textures_ = true;
-    } else if (feature.compare("LargeGeometry") == 0) {
-      large_geometry_ = true;
-    } else if (feature.compare("Windowless") == 0) {
-      windowless_ = true;
-    } else if (feature.compare("NotAntiAliased") == 0) {
-      not_anti_aliased_ = true;
-    } else if (feature.compare("MaxCapabilities") == 0) {
-      large_geometry_ = true;
-      floating_point_textures_ = true;
-    } else if (feature.compare("InitStatus") == 0 &&
-               !arguments.empty()) {
-      int value;
-      StringToInt(arguments[0], &value);
-      init_status_ = static_cast<Renderer::InitStatus>(value);
+    if (version_pass) {
+      if (feature.compare("APIVersion") == 0 && !arguments.empty()) {
+        int version[4] = { 0, };
+        std::vector<std::string> parts;
+        SplitString(arguments[0], '.', &parts);
+        size_t num_parts = std::min(parts.size(), arraysize(version));
+        for (size_t ii = 0; ii < num_parts; ++ii) {
+          StringToInt(parts[ii], &version[ii]);
+        }
+        if (version[0] >= 0 && version[1] >= 1 && version[2] >= 40) {
+          flip_textures_ = false;
+        }
+      }
+    } else {
+      if (feature.compare("FloatingPointTextures") == 0) {
+        floating_point_textures_ = true;
+      } else if (feature.compare("LargeGeometry") == 0) {
+        large_geometry_ = true;
+      } else if (feature.compare("Windowless") == 0) {
+        windowless_ = true;
+      } else if (feature.compare("NotAntiAliased") == 0) {
+        not_anti_aliased_ = true;
+      } else if (feature.compare("FlipTextures") == 0) {
+        flip_textures_ = true;
+      } else if (feature.compare("MaxCapabilities") == 0) {
+        large_geometry_ = true;
+        floating_point_textures_ = true;
+      } else if (feature.compare("InitStatus") == 0 &&
+                 !arguments.empty()) {
+        int value;
+        StringToInt(arguments[0], &value);
+        init_status_ = static_cast<Renderer::InitStatus>(value);
+      }
     }
   }
+}
+
+void Features::Init(const String& requested_features) {
+  large_geometry_ = false;
+  floating_point_textures_ = false;
+
+  std::vector<std::string> features;
+  SplitString(requested_features, ',', &features);
+  ParseFeatures(features, true);
+  ParseFeatures(features, false);
 }
 
 }  // namespace o3d

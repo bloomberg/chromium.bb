@@ -32,12 +32,15 @@
 
 // Tests functionality of the Skin class
 
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/error.h"
+#include "core/cross/error_status.h"
 #include "core/cross/skin.h"
 #include "core/cross/pointer_utils.h"
 #include "core/cross/primitive.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/service_dependency.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
 #include "serializer/cross/serializer_binary.h"

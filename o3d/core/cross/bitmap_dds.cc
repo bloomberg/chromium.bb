@@ -51,17 +51,17 @@ namespace o3d {
 // LoadFromDDSFile -------------------------------------------------------------
 
 // A function that flips a DXTC block.
-typedef void (* FlipBlockFunction)(unsigned char *block);
+typedef void (* FlipBlockFunction)(uint8 *block);
 
 // Flips a full DXT1 block in the y direction.
-static void FlipDXT1BlockFull(unsigned char *block) {
+static void FlipDXT1BlockFull(uint8 *block) {
   // A DXT1 block layout is:
   // [0-1] color0.
   // [2-3] color1.
   // [4-7] color bitmap, 2 bits per pixel.
   // So each of the 4-7 bytes represents one line, flipping a block is just
   // flipping those bytes.
-  unsigned char tmp = block[4];
+  uint8 tmp = block[4];
   block[4] = block[7];
   block[7] = tmp;
   tmp = block[5];
@@ -70,21 +70,21 @@ static void FlipDXT1BlockFull(unsigned char *block) {
 }
 
 // Flips the first 2 lines of a DXT1 block in the y direction.
-static void FlipDXT1BlockHalf(unsigned char *block) {
+static void FlipDXT1BlockHalf(uint8 *block) {
   // See layout above.
-  unsigned char tmp = block[4];
+  uint8 tmp = block[4];
   block[4] = block[5];
   block[5] = tmp;
 }
 
 // Flips a full DXT3 block in the y direction.
-static void FlipDXT3BlockFull(unsigned char *block) {
+static void FlipDXT3BlockFull(uint8 *block) {
   // A DXT3 block layout is:
   // [0-7]  alpha bitmap, 4 bits per pixel.
   // [8-15] a DXT1 block.
 
   // We can flip the alpha bits at the byte level (2 bytes per line).
-  unsigned char tmp = block[0];
+  uint8 tmp = block[0];
   block[0] = block[6];
   block[6] = tmp;
   tmp = block[1];
@@ -102,9 +102,9 @@ static void FlipDXT3BlockFull(unsigned char *block) {
 }
 
 // Flips the first 2 lines of a DXT3 block in the y direction.
-static void FlipDXT3BlockHalf(unsigned char *block) {
+static void FlipDXT3BlockHalf(uint8 *block) {
   // See layout above.
-  unsigned char tmp = block[0];
+  uint8 tmp = block[0];
   block[0] = block[2];
   block[2] = tmp;
   tmp = block[1];
@@ -114,7 +114,7 @@ static void FlipDXT3BlockHalf(unsigned char *block) {
 }
 
 // Flips a full DXT5 block in the y direction.
-static void FlipDXT5BlockFull(unsigned char *block) {
+static void FlipDXT5BlockFull(uint8 *block) {
   // A DXT5 block layout is:
   // [0]    alpha0.
   // [1]    alpha1.
@@ -157,7 +157,7 @@ static void FlipDXT5BlockFull(unsigned char *block) {
 }
 
 // Flips the first 2 lines of a DXT5 block in the y direction.
-static void FlipDXT5BlockHalf(unsigned char *block) {
+static void FlipDXT5BlockHalf(uint8 *block) {
   // See layout above.
   unsigned int line_0_1 = block[2] + 256 * (block[3] + 256 * block[4]);
   unsigned int line_1_0 = ((line_0_1 & 0x000fff) << 12) |
@@ -173,8 +173,8 @@ static void FlipDXTCImage(unsigned int width,
                           unsigned int height,
                           unsigned int levels,
                           Texture::Format format,
-                          unsigned char *data) {
-  DCHECK(Bitmap::CheckImageDimensions(width, height));
+                          uint8 *data) {
+  DCHECK(image::CheckImageDimensions(width, height));
   // Height must be a power-of-two.
   DCHECK_EQ(height & (height - 1), 0u);
   FlipBlockFunction full_block_function = NULL;
@@ -223,10 +223,10 @@ static void FlipDXTCImage(unsigned int width,
       // corresponding one in the second half.
       // note that this is a no-op if mip_height is 4.
       unsigned int row_bytes = block_bytes * blocks_per_row;
-      scoped_array<unsigned char> temp_line(new unsigned char[row_bytes]);
+      scoped_array<uint8> temp_line(new uint8[row_bytes]);
       for (unsigned int y = 0; y < blocks_per_col / 2; ++y) {
-        unsigned char *line1 = data + y * row_bytes;
-        unsigned char *line2 = data + (blocks_per_col - y - 1) * row_bytes;
+        uint8 *line1 = data + y * row_bytes;
+        uint8 *line2 = data + (blocks_per_col - y - 1) * row_bytes;
         memcpy(temp_line.get(), line1, row_bytes);
         memcpy(line1, line2, row_bytes);
         memcpy(line2, temp_line.get(), row_bytes);
@@ -244,20 +244,21 @@ static void FlipBGRAImage(unsigned int width,
                           unsigned int height,
                           unsigned int levels,
                           Texture::Format format,
-                          unsigned char *data) {
-  DCHECK(Bitmap::CheckImageDimensions(width, height));
-  DCHECK(format == Texture::XRGB8 || format == Texture::ARGB8);
-  unsigned int pixel_bytes = 4;
+                          uint8 *data) {
+  DCHECK(image::CheckImageDimensions(width, height));
+  DCHECK(format != Texture::DXT1 && format != Texture::DXT3 &&
+         format != Texture::DXT5);
+  unsigned int pixel_bytes = image::ComputeMipChainSize(1, 1, format, 1);
   unsigned int mip_width = width;
   unsigned int mip_height = height;
   // rows are at most as big as the first one.
-  scoped_array<unsigned char> temp_line(
-      new unsigned char[mip_width * pixel_bytes]);
+  scoped_array<uint8> temp_line(
+      new uint8[mip_width * pixel_bytes]);
   for (unsigned int i = 0; i < levels; ++i) {
     unsigned int row_bytes = pixel_bytes * mip_width;
     for (unsigned int y = 0; y < mip_height / 2; ++y) {
-      unsigned char *line1 = data + y * row_bytes;
-      unsigned char *line2 = data + (mip_height - y - 1) * row_bytes;
+      uint8 *line1 = data + y * row_bytes;
+      uint8 *line2 = data + (mip_height - y - 1) * row_bytes;
       memcpy(temp_line.get(), line1, row_bytes);
       memcpy(line1, line2, row_bytes);
       memcpy(line2, temp_line.get(), row_bytes);
@@ -268,6 +269,19 @@ static void FlipBGRAImage(unsigned int width,
     mip_height = std::max(1U, mip_height >> 1);
   }
 }
+
+void Bitmap::FlipVertically() {
+  if (!is_cubemap()) {
+    if (format() == Texture::DXT1 ||
+        format() == Texture::DXT3 ||
+        format() == Texture::DXT5) {
+      FlipDXTCImage(width(), height(), num_mipmaps(), format(), image_data());
+    } else {
+      FlipBGRAImage(width(), height(), num_mipmaps(), format(), image_data());
+    }
+  }
+}
+
 
 // Load the bitmap data as DXTC compressed data from a DDS stream into the
 // Bitmap object. This routine only supports compressed DDS formats DXT1,
@@ -314,7 +328,7 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
       dd_surface_descriptor.dwMipMapCount : 1;
   unsigned int dds_width = dd_surface_descriptor.dwWidth;
   unsigned int dds_height = dd_surface_descriptor.dwHeight;
-  if (!CheckImageDimensions(dds_width, dds_height)) {
+  if (!image::CheckImageDimensions(dds_width, dds_height)) {
     DLOG(ERROR) << "Failed to load " << filename
                 << ": dimensions are too large (" << dds_width
                 << ", " << dds_height << ").";
@@ -376,7 +390,8 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
 
     // Check that the advertised size is correct.
     if (dd_surface_descriptor.dwFlags & DDSD_LINEARSIZE) {
-      unsigned int expected_size = GetBufferSize(dds_width, dds_height, format);
+      unsigned int expected_size =
+          image::ComputeBufferSize(dds_width, dds_height, format);
       if (expected_size != dd_surface_descriptor.dwLinearSize) {
         DLOG(ERROR) << "Advertised buffer size in \"" << filename
                     << "\" differs from expected size.";
@@ -443,17 +458,18 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
   unsigned int num_faces = is_cubemap ? 6 : 1;
   // power-of-two dimensions.
   unsigned int final_mip_count =
-      generate_mipmaps ? GetMipMapCount(dds_width, dds_height) : mip_count;
-  unsigned int face_size = GetMipChainSize(dds_width, dds_height, format,
-                                           final_mip_count);
+      generate_mipmaps ? image::ComputeMipMapCount(
+          dds_width, dds_height) : mip_count;
+  unsigned int face_size = image::ComputeMipChainSize(
+      dds_width, dds_height, format, final_mip_count);
   unsigned int buffer_size = num_faces * face_size;
 
 
   // Allocate and load bitmap data.
-  scoped_array<unsigned char> image_data(new unsigned char[buffer_size]);
+  scoped_array<uint8> image_data(new uint8[buffer_size]);
 
-  unsigned int disk_face_size = GetMipChainSize(dds_width, dds_height, format,
-                                                mip_count);
+  unsigned int disk_face_size =
+      image::ComputeMipChainSize(dds_width, dds_height, format, mip_count);
   if (!is_dxtc) {
     // if reading uncompressed RGB, for example, we shouldn't read alpha channel
     // NOTE: here we assume that RGB data is packed - it may not be true
@@ -475,25 +491,16 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
     DCHECK(components_per_pixel == 3 || components_per_pixel == 4);
     unsigned int pixel_count = disk_face_size / components_per_pixel;
     for (unsigned int face = 0; face < num_faces; ++face) {
-      unsigned char *data = image_data.get() + face_size * face;
+      uint8 *data = image_data.get() + face_size * face;
       // convert to four components per pixel if necessary
       if (add_filler_alpha) {
         DCHECK_EQ(components_per_pixel, 3u);
-        XYZToXYZA(data, pixel_count);
+        image::XYZToXYZA(data, pixel_count);
       } else {
         DCHECK_EQ(components_per_pixel, 4u);
       }
       if (rgb_to_bgr)
-        RGBAToBGRA(data, pixel_count);
-    }
-  }
-
-  if (!is_cubemap) {
-    // NOTE: we flip the images to respect max/maya's UV orientation.
-    if (is_dxtc) {
-      FlipDXTCImage(dds_width, dds_height, mip_count, format, image_data.get());
-    } else {
-      FlipBGRAImage(dds_width, dds_height, mip_count, format, image_data.get());
+        image::RGBAToBGRA(data, pixel_count);
     }
   }
 
@@ -502,11 +509,10 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
     // face.
     unsigned int base_mip_width = dds_width >> (mip_count - 1);
     unsigned int base_mip_height = dds_height >> (mip_count - 1);
-    unsigned int base_mip_offset = GetMipChainSize(dds_width, dds_height,
-                                                   format, mip_count - 1);
+    unsigned int base_mip_offset = image::ComputeMipChainSize(
+        dds_width, dds_height, format, mip_count - 1);
     for (unsigned int face = 0; face < num_faces; ++face) {
-      unsigned char *data =
-          image_data.get() + face_size * face + base_mip_offset;
+      uint8 *data = image_data.get() + face_size * face + base_mip_offset;
       if (!GenerateMipmaps(base_mip_width, base_mip_height, format,
                            final_mip_count - mip_count, data)) {
         DLOG(ERROR) << "mip-map generation failed for \"" << filename << "\"";

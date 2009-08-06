@@ -35,6 +35,8 @@
 #ifndef O3D_CORE_CROSS_FEATURES_H_
 #define O3D_CORE_CROSS_FEATURES_H_
 
+#include <string>
+#include <vector>
 #include "core/cross/types.h"
 #include "core/cross/service_locator.h"
 #include "core/cross/service_implementation.h"
@@ -68,7 +70,11 @@ class Features {
   }
 
   bool not_anti_aliased() const {
-    return  not_anti_aliased_;
+    return not_anti_aliased_;
+  }
+
+  bool flip_textures() const {
+    return flip_textures_;
   }
 
   // This can be used to force the renderer to fail for testing.
@@ -77,12 +83,21 @@ class Features {
   }
 
  private:
+  // Parses the features strings.
+  // Parameters:
+  //   features: vector of feature strings.
+  //   version_pass: True = only check for APIVersion, false = check everything
+  //       but APIVersion.
+  void ParseFeatures(const std::vector<std::string>& features,
+                     bool version_pass);
+
   ServiceImplementation<Features> service_;
 
   bool floating_point_textures_;
   bool large_geometry_;
   bool windowless_;
   bool not_anti_aliased_;
+  bool flip_textures_;
   Renderer::InitStatus init_status_;
 
   DISALLOW_COPY_AND_ASSIGN(Features);

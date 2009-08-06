@@ -40,6 +40,7 @@
 
 namespace o3d {
 
+class Bitmap;
 class Pack;
 class Renderer;
 class RenderSurface;
@@ -51,8 +52,6 @@ class Texture : public ParamObject {
  public:
   typedef SmartPointer<Texture> Ref;
   typedef WeakPointer<Texture> WeakPointerType;
-
-  enum Type { TEXTURE_1D, TEXTURE_2D, TEXTURE_3D, TEXTURE_CUBE };
 
   enum Format {
     UNKNOWN_FORMAT,
@@ -114,6 +113,12 @@ class Texture : public ParamObject {
   bool render_surfaces_enabled() const {
     return render_surfaces_enabled_;
   }
+
+  // Sets the contents of the texture from a Bitmap.
+  virtual void SetFromBitmap(const Bitmap& bitmap) = 0;
+
+  // Generates mips.
+  virtual void GenerateMips(int source_level, int num_levels) = 0;
 
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the graphics API.

@@ -52,11 +52,8 @@
 #include "core/cross/object_manager.h"
 #include "core/cross/semantic_manager.h"
 #include "core/cross/transformation_context.h"
-#include "core/cross/pack.h"
-#include "core/cross/bitmap.h"
+#include "core/cross/render_node.h"
 #include "core/cross/callback.h"
-#include "core/cross/cursor.h"
-#include "core/cross/draw_list.h"
 #include "core/cross/event.h"
 #include "core/cross/event_callback.h"
 #include "core/cross/event_manager.h"
@@ -65,11 +62,13 @@
 #include "core/cross/tick_event.h"
 #include "core/cross/timer.h"
 #include "core/cross/timingtable.h"
+#include "core/cross/transform.h"
 
 namespace o3d {
 class MessageQueue;
 class Profiler;
 class State;
+class Pack;
 
 // The Client class is the main point of entry to O3D.  It defines methods
 // for creating and deleting packs and internal use only methods for creating

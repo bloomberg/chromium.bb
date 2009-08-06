@@ -32,12 +32,15 @@
 
 // Tests functionality of the ParamArray class
 
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/id_manager.h"
 #include "core/cross/error.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
 #include "core/cross/param_array.h"
+#include "core/cross/service_dependency.h"
 #include "core/cross/standard_param.h"
+#include "core/cross/transformation_context.h"
 
 namespace o3d {
 

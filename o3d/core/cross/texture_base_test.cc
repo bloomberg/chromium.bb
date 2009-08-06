@@ -58,11 +58,17 @@ class MockTexture : public Texture {
 
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices() {
     return swizzle;
-  };
+  }
 
   virtual void* GetTextureHandle() const {
     return NULL;
-  };
+  }
+
+  virtual void SetFromBitmap(const Bitmap& bitmap) {
+  }
+
+  virtual void GenerateMips(int source_level, int num_levels) {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTexture);

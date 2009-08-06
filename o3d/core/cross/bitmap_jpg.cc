@@ -151,7 +151,7 @@ bool Bitmap::LoadFromJPEGStream(MemoryReadStream *stream,
 
   // NOTE: The following smart pointer needs to be declared before the
   // setjmp so that it is properly destroyed if we jump back.
-  scoped_array<unsigned char> image_data;
+  scoped_array<uint8> image_data;
 
   // Establish the setjmp return context for my_error_exit to use.
   if (setjmp(jerr.setjmp_buffer)) {
@@ -182,7 +182,7 @@ bool Bitmap::LoadFromJPEGStream(MemoryReadStream *stream,
   // Set the Bitmap member variables from the jpeg_decompress_struct fields.
   unsigned int width = cinfo.image_width;
   unsigned int height = cinfo.image_height;
-  if (!CheckImageDimensions(width, height)) {
+  if (!image::CheckImageDimensions(width, height)) {
     DLOG(ERROR) << "Failed to load " << filename
                 << ": dimensions are too large (" << width
                 << ", " << height << ").";
@@ -199,12 +199,12 @@ bool Bitmap::LoadFromJPEGStream(MemoryReadStream *stream,
   }
   unsigned int image_components = 4;
   unsigned int num_mipmaps =
-      generate_mipmaps ? GetMipMapCount(width, height) : 1;
+      generate_mipmaps ? image::ComputeMipMapCount(width, height) : 1;
   Texture::Format format = Texture::XRGB8;
   // Allocate storage for the pixels.
-  unsigned int image_size = GetMipChainSize(width, height, format,
-                                            num_mipmaps);
-  image_data.reset(new unsigned char[image_size]);
+  unsigned int image_size =
+      image::ComputeMipChainSize(width, height, format, num_mipmaps);
+  image_data.reset(new uint8[image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "JPEG memory allocation error \"" << filename << "\"";
     // Invoke the longjmp() error handler.
@@ -237,6 +237,10 @@ bool Bitmap::LoadFromJPEGStream(MemoryReadStream *stream,
   // Use the library's state variable cinfo.output_scanline as the
   // loop counter, so that we don't have to keep track ourselves.
   while (cinfo.output_scanline < height) {
+    // Initialise the buffer write location.
+    uint8 *image_write_ptr = image_data.get() +
+         cinfo.output_scanline * width * image_components;
+
     // jpeg_read_scanlines() expects an array of pointers to scanlines.
     // Here we ask for only one scanline to be read into "buffer".
     jpeg_read_scanlines(&cinfo, buffer, 1);
@@ -244,11 +248,6 @@ bool Bitmap::LoadFromJPEGStream(MemoryReadStream *stream,
     // output_scanline is the numbe of scanlines that have been emitted.
     DCHECK_LE(cinfo.output_scanline, height);
 
-    // Initialise the buffer write location.
-    // NOTE: we load images bottom to up to respect max/maya's UV
-    // orientation.
-    unsigned char *image_write_ptr = image_data.get()
-        + (height - cinfo.output_scanline) * width * image_components;
     // copy the scanline to its final destination
     for (unsigned int i = 0; i < width; ++i) {
       // RGB -> BGRX

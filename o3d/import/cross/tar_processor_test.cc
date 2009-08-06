@@ -30,7 +30,6 @@
  */
 
 
-#include "core/cross/client.h"
 #include "import/cross/targz_processor.h"
 #include "tests/common/win/testing_common.h"
 #include "tests/common/cross/test_utils.h"

@@ -203,6 +203,7 @@ tests = [
     'core/cross/field_test.cc',
     'core/cross/float_n_test.cc',
     'core/cross/function_test.cc',
+    'core/cross/image_utils_test.cc',
     'core/cross/material_test.cc',
     'core/cross/math_utilities_test.cc',
     'core/cross/matrix4_axis_rotation_test.cc',

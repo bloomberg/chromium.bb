@@ -33,7 +33,10 @@
 // Tests the functionality defined in MessageQueue.cc/h
 
 #include "core/cross/message_queue.h"
-#include "core/cross/client.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/service_dependency.h"
+#include "core/cross/texture.h"
 #include "core/cross/types.h"
 #include "tests/common/win/testing_common.h"
 #include "base/condition_variable.h"

@@ -60,6 +60,7 @@
 #include "core/cross/evaluation_counter.h"
 #include "core/cross/class_manager.h"
 #include "core/cross/client_info.h"
+#include "core/cross/cursor.h"
 #include "core/cross/features.h"
 #include "core/cross/object_manager.h"
 #include "core/cross/error.h"

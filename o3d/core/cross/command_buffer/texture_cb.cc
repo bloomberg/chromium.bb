@@ -112,14 +112,14 @@ void UpdateResourceFromBitmap(RendererCB *renderer,
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
   unsigned char *mip_data = bitmap.GetFaceMipData(face, level);
   unsigned int mip_size =
-      Bitmap::GetBufferSize(mip_width, mip_height, bitmap.format());
+      image::ComputeBufferSize(mip_width, mip_height, bitmap.format());
   if (resize_to_pot) {
     unsigned int pot_width =
-        std::max(1U, Bitmap::GetPOTSize(bitmap.width()) >> level);
+        std::max(1U, image::ComputePOTSize(bitmap.width()) >> level);
     unsigned int pot_height =
-        std::max(1U, Bitmap::GetPOTSize(bitmap.height()) >> level);
-    unsigned int pot_size = Bitmap::GetBufferSize(pot_width, pot_height,
-                                                  bitmap.format());
+        std::max(1U, image::ComputePOTSize(bitmap.height()) >> level);
+    unsigned int pot_size = image::ComputeBufferSize(pot_width, pot_height,
+                                                     bitmap.format());
     unsigned char *buffer = allocator->AllocTyped<unsigned char>(pot_size);
     // This should succeed for practical purposes: we don't store persistent
     // data in the transfer buffer, and the maximum texture size 2048x2048
@@ -129,9 +129,9 @@ void UpdateResourceFromBitmap(RendererCB *renderer,
     // by bits that fit into an arbitrarily small buffer, but that is complex
     // for the NPOT->POT case.
     DCHECK(buffer);
-    Bitmap::Scale(mip_width, mip_height, bitmap.format(), mip_data,
-                  pot_width, pot_height, buffer,
-                  Bitmap::GetMipChainSize(pot_width, 1, bitmap.format(), 1));
+    image::Scale(mip_width, mip_height, bitmap.format(), mip_data,
+                 pot_width, pot_height, buffer,
+                 image::ComputePitch(bitmap.format(), pot_width));
     mip_width = pot_width;
     mip_height = pot_height;
     mip_size = pot_size;
@@ -143,7 +143,7 @@ void UpdateResourceFromBitmap(RendererCB *renderer,
     mip_data = buffer;
   }
 
-  unsigned int pitch = Bitmap::GetBufferSize(mip_width, 1, bitmap.format());
+  unsigned int pitch = image::ComputeBufferSize(mip_width, 1, bitmap.format());
 
   CommandBufferEntry args[10];
   args[0].value_uint32 = texture_id;
@@ -180,11 +180,11 @@ void CopyBackResourceToBitmap(RendererCB *renderer,
   unsigned int mip_width = std::max(1U, bitmap.width() >> level);
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
   unsigned int mip_size =
-      Bitmap::GetBufferSize(mip_width, mip_height, bitmap.format());
+      image::ComputeBufferSize(mip_width, mip_height, bitmap.format());
   unsigned char *buffer = allocator->AllocTyped<unsigned char>(mip_size);
   DCHECK(buffer);
 
-  unsigned int pitch = Bitmap::GetBufferSize(mip_width, 1, bitmap.format());
+  unsigned int pitch = image::ComputeBufferSize(mip_width, 1, bitmap.format());
 
   CommandBufferEntry args[10];
   args[0].value_uint32 = texture_id;
@@ -276,8 +276,8 @@ Texture2DCB* Texture2DCB::Create(ServiceLocator* service_locator,
   unsigned int mip_width = bitmap->width();
   unsigned int mip_height = bitmap->height();
   if (resize_to_pot) {
-    mip_width = Bitmap::GetPOTSize(mip_width);
-    mip_height = Bitmap::GetPOTSize(mip_height);
+    mip_width = image::ComputePOTSize(mip_width);
+    mip_height = image::ComputePOTSize(mip_height);
   }
 
   ResourceID texture_id = renderer->texture_ids().AllocateID();
@@ -345,10 +345,10 @@ bool Texture2DCB::Lock(int level, void** data, int* pitch) {
     backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
   }
   *data = backing_bitmap_->GetMipData(level);
-  unsigned int mip_width = Bitmap::GetMipDimension(level, width());
-  unsigned int mip_height = Bitmap::GetMipDimension(level, height());
+  unsigned int mip_width = image::ComputeMipDimension(level, width());
+  unsigned int mip_height = image::ComputeMipDimension(level, height());
   if (!IsCompressed()) {
-    *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
+    *pitch = image::ComputePitch(format(), mip_width);
   } else {
     unsigned blocks_across = (mip_width + 3) / 4;
     unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;
@@ -471,8 +471,8 @@ TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
   unsigned int mip_width = bitmap->width();
   unsigned int mip_height = bitmap->height();
   if (resize_to_pot) {
-    mip_width = Bitmap::GetPOTSize(mip_width);
-    mip_height = Bitmap::GetPOTSize(mip_height);
+    mip_width = image::ComputePOTSize(mip_width);
+    mip_height = image::ComputePOTSize(mip_height);
   }
 
   ResourceID texture_id = renderer->texture_ids().AllocateID();
@@ -547,9 +547,9 @@ bool TextureCUBECB::Lock(CubeFace face, int level, void** data, int* pitch) {
                              levels(), true);
   }
   *data = backing_bitmap_->GetFaceMipData(face, level);
-  unsigned int mip_width  = Bitmap::GetMipDimension(level, edge_length());
+  unsigned int mip_width  = image::ComputeMipDimension(level, edge_length());
   if (!IsCompressed()) {
-    *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
+    *pitch = image::ComputePitch(format(), mip_width);
   } else {
     unsigned blocks_across = (mip_width + 3) / 4;
     unsigned bytes_per_block = format() == Texture::DXT1 ? 8 : 16;

@@ -104,11 +104,6 @@ class Texture2D : public Texture {
     return height_param_->value();
   }
 
-  // Sets a rectangular region of this texture.
-  // If the texture is a DXT format, the only acceptable values
-  // for left, top, width and height are 0, 0, texture->width, texture->height
-  //
-  // Parameters:
   //   level: The mipmap level to modify
   //   dst_left: The left edge of the rectangular area to modify.
   //   dst_top: The top edge of the rectangular area to modify.
@@ -146,10 +141,16 @@ class Texture2D : public Texture {
   //   dest_width: width of the dest image.
   //   dest_height: height of the dest image.
   //   dest_mip: on which mip level the sourceImg would be drawn.
-  void DrawImage(Bitmap* source_img, int source_x, int source_y,
+  void DrawImage(const Bitmap& source_img, int source_x, int source_y,
                  int source_width, int source_height,
                  int dest_x, int dest_y,
                  int dest_width, int dest_height, int dest_mip);
+
+  // Sets the contents of the texture from a Bitmap.
+  virtual void SetFromBitmap(const Bitmap& bitmap);
+
+  // Generates mips.
+  virtual void GenerateMips(int source_level, int num_levels);
 
  protected:
   // Returns a pointer to the internal texture data for the given mipmap level.
@@ -307,10 +308,16 @@ class TextureCUBE : public Texture {
   //   dest_height: height of the dest image.
   //   face: on which face the sourceImg would be drawn.
   //   dest_mip: on which mip level the sourceImg would be drawn.
-  void DrawImage(Bitmap* source_img, int source_x, int source_y,
+  void DrawImage(const Bitmap& source_img, int source_x, int source_y,
                  int source_width, int source_height,
                  int dest_x, int dest_y, int dest_width,
                  int dest_height, CubeFace face, int dest_mip);
+
+  // Sets the contents of the texture from a Bitmap.
+  virtual void SetFromBitmap(const Bitmap& bitmap);
+
+  // Generates mips.
+  virtual void GenerateMips(int source_level, int num_levels);
 
  protected:
   // Returns a pointer to the internal texture data for the given face and

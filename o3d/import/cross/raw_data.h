@@ -46,8 +46,6 @@
 #include "core/cross/param.h"
 #include "core/cross/types.h"
 
-class FilePath;
-
 namespace o3d {
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

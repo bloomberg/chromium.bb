@@ -32,9 +32,11 @@
 
 // This file implements unit tests for class Function and FunctionEval.
 
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
+#include "core/cross/error_status.h"
 #include "core/cross/function.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
 
 namespace o3d {
 

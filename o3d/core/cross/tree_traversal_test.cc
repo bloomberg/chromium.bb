@@ -32,9 +32,13 @@
 
 // This file implements unit tests for class TreeTraveral.
 
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/tree_traversal.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/service_dependency.h"
+#include "core/cross/transformation_context.h"
+#include "core/cross/draw_list_manager.h"
 
 namespace o3d {
 

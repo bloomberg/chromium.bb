@@ -45,11 +45,11 @@
 #pragma warning(disable : 4311)
 #endif
 
-#ifdef OS_MACOSX
-#include <OpenGL/gl.h>
-#else
-#include <GL/gl.h>
-#endif
+//#ifdef OS_MACOSX
+//#include <OpenGL/gl.h>
+//#else
+//#include <GL/gl.h>
+//#endif
 
 #include "core/cross/bitmap.h"
 #include "core/cross/texture.h"

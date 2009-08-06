@@ -71,10 +71,15 @@ TEST_F(FeaturesTest, Basic) {
   //     Features::Init is not called.  o3djs,util.makeClients after and
   //     including 0.1.35.0 do set o3d_features and therefore Init is called
   //     which sets those to false to start.
+  //
+  // NOTE: pre 0.1.40.0 flip_textures defaults to true. After it defaults to
+  //     false.
+
   EXPECT_TRUE(features->floating_point_textures());
   EXPECT_TRUE(features->large_geometry());
   EXPECT_FALSE(features->windowless());
   EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;
@@ -90,6 +95,39 @@ TEST_F(FeaturesTest, Empty) {
   EXPECT_FALSE(features->large_geometry());
   EXPECT_FALSE(features->windowless());
   EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
+  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+
+  delete features;
+}
+
+TEST_F(FeaturesTest, APIVersion0_1_38_0) {
+  Features* features = new Features(service_locator());
+
+  features->Init("APIVersion=0.1.38.0");
+
+  // Check that the features start off as false.
+  EXPECT_FALSE(features->floating_point_textures());
+  EXPECT_FALSE(features->large_geometry());
+  EXPECT_FALSE(features->windowless());
+  EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
+  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+
+  delete features;
+}
+
+TEST_F(FeaturesTest, APIVersion0_1_40_0) {
+  Features* features = new Features(service_locator());
+
+  features->Init("APIVersion=0.1.40.0");
+
+  // Check that the features start off as false.
+  EXPECT_FALSE(features->floating_point_textures());
+  EXPECT_FALSE(features->large_geometry());
+  EXPECT_FALSE(features->windowless());
+  EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_FALSE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;
@@ -104,6 +142,7 @@ TEST_F(FeaturesTest, FloatingPointTextures) {
   EXPECT_FALSE(features->large_geometry());
   EXPECT_FALSE(features->windowless());
   EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;
@@ -118,6 +157,7 @@ TEST_F(FeaturesTest, LargeGeometry) {
   EXPECT_TRUE(features->large_geometry());
   EXPECT_FALSE(features->windowless());
   EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;
@@ -132,6 +172,7 @@ TEST_F(FeaturesTest, Windowless) {
   EXPECT_FALSE(features->large_geometry());
   EXPECT_TRUE(features->windowless());
   EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;
@@ -146,6 +187,22 @@ TEST_F(FeaturesTest, NotAntiAliased) {
   EXPECT_FALSE(features->large_geometry());
   EXPECT_FALSE(features->windowless());
   EXPECT_TRUE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
+  EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
+
+  delete features;
+}
+
+TEST_F(FeaturesTest, FlipTextures) {
+  Features* features = new Features(service_locator());
+
+  features->Init("FlipTextures,APIVersion=0.1.40.0");
+
+  EXPECT_FALSE(features->floating_point_textures());
+  EXPECT_FALSE(features->large_geometry());
+  EXPECT_FALSE(features->windowless());
+  EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;
@@ -166,6 +223,7 @@ TEST_F(FeaturesTest, InitStatus) {
     EXPECT_FALSE(features->large_geometry());
     EXPECT_FALSE(features->windowless());
     EXPECT_FALSE(features->not_anti_aliased());
+    EXPECT_TRUE(features->flip_textures());
     EXPECT_EQ(features->init_status(), statuses[ii]);
 
     delete features;
@@ -181,6 +239,7 @@ TEST_F(FeaturesTest, BadInput) {
   EXPECT_FALSE(features->large_geometry());
   EXPECT_FALSE(features->windowless());
   EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;
@@ -195,6 +254,7 @@ TEST_F(FeaturesTest, MultipleFeatures) {
   EXPECT_FALSE(features->large_geometry());
   EXPECT_TRUE(features->windowless());
   EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;
@@ -209,6 +269,7 @@ TEST_F(FeaturesTest, MaxCapabilities) {
   EXPECT_TRUE(features->large_geometry());
   EXPECT_FALSE(features->windowless());
   EXPECT_FALSE(features->not_anti_aliased());
+  EXPECT_TRUE(features->flip_textures());
   EXPECT_EQ(features->init_status(), Renderer::SUCCESS);
 
   delete features;

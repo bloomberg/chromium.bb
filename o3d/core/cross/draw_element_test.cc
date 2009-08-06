@@ -32,9 +32,11 @@
 
 // This file implements unit tests for class DrawElement.
 
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/draw_element.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/service_dependency.h"
 
 namespace o3d {
 

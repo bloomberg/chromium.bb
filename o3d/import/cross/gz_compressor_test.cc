@@ -33,7 +33,6 @@
 #include <sys/stat.h>
 #include <string>
 
-#include "core/cross/client.h"
 #include "import/cross/memory_stream.h"
 #include "import/cross/memory_buffer.h"
 #include "import/cross/gz_decompressor.h"

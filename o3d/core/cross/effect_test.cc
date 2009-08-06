@@ -30,13 +30,17 @@
  */
 
 
+#include "tests/common/win/testing_common.h"
 #include "core/cross/client.h"
 #include "core/cross/effect.h"
-#include "core/cross/primitive.h"
-#include "core/cross/standard_param.h"
+#include "core/cross/image_utils.h"
+#include "core/cross/pack.h"
 #include "core/cross/param_array.h"
+#include "core/cross/primitive.h"
+#include "core/cross/sampler.h"
+#include "core/cross/standard_param.h"
 #include "core/cross/stream.h"
-#include "tests/common/win/testing_common.h"
+#include "core/cross/texture_base.h"
 
 namespace o3d {
 
@@ -305,7 +309,7 @@ TEST_F(EffectTest, CreateAndDestroyEffect) {
   String filepath = *g_program_path + "/unittest_data/rock01.tga";
   Texture *texture = pack->CreateTextureFromFile(filepath,
                                                  filepath,
-                                                 Bitmap::TGA,
+                                                 image::TGA,
                                                  true);
   EXPECT_TRUE(texture != NULL);
 

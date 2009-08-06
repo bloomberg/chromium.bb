@@ -33,7 +33,7 @@
 // This file implements unit tests for class Texture.
 
 #include "tests/common/win/testing_common.h"
-#include "core/cross/texture_base.h"
+#include "core/cross/texture.h"
 #include "core/cross/object_manager.h"
 #include "core/cross/pack.h"
 

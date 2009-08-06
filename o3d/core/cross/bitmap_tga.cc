@@ -55,14 +55,14 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
                                const String &filename,
                                bool generate_mipmaps) {
   // Read the magic header.
-  unsigned char file_magic[12];
+  uint8 file_magic[12];
   if (stream->Read(file_magic, sizeof(file_magic)) != sizeof(file_magic)) {
     DLOG(ERROR) << "Targa file magic not loaded \"" << filename << "\"";
     return false;
   }
   // Match the first few bytes of the TGA header to confirm we can read this
   // format. Multibyte values are stored little endian.
-  const unsigned char kTargaMagic[12] = {
+  const uint8 kTargaMagic[12] = {
     0,     // ID Length (0 = no ID string present)
     0,     // Color Map Type ( 0 = no color map)
     2,     // Image Type (2 = Uncompressed True Color)
@@ -76,12 +76,16 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
            // MATCHED LATER: Pixel Depth (1 byte)
            // MATCHED LATER: Image Descriptor (1 byte, alpha:4bit, origin:2bit)
   };
+
+  // TODO(gman): The most common targa format is compressed! We should support
+  // that format or remove targa support completely. If we are keeping targa
+  // format we should also support grayscale, 8bit indexed and 16bit formats.
   if (memcmp(kTargaMagic, file_magic, sizeof(kTargaMagic)) != 0) {
     DLOG(ERROR) << "Targa file subtype not recognized \"" << filename << "\"";
     return false;
   }
   // Read the image header.
-  unsigned char header[6];
+  uint8 header[6];
   if (stream->Read(header, sizeof(header)) != sizeof(header)) {
     DLOG(ERROR) << "Targa file header not read \"" << filename << "\"";
     return false;
@@ -89,7 +93,7 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
   // Calculate image width and height, stored as little endian.
   unsigned int tga_width  = header[1] * 256 + header[0];
   unsigned int tga_height = header[3] * 256 + header[2];
-  if (!CheckImageDimensions(tga_width, tga_height)) {
+  if (!image::CheckImageDimensions(tga_width, tga_height)) {
     DLOG(ERROR) << "Failed to load " << filename
                 << ": dimensions are too large (" << tga_width
                 << ", " << tga_height << ").";
@@ -106,11 +110,11 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
   unsigned int pixel_count = tga_width * tga_height;
   // Allocate storage for the pixels.
   unsigned int num_mipmaps =
-      generate_mipmaps ? GetMipMapCount(tga_width, tga_height) : 1;
+      generate_mipmaps ? image::ComputeMipMapCount(tga_width, tga_height) : 1;
   Texture::Format format = components == 3 ? Texture::XRGB8 : Texture::ARGB8;
-  unsigned int image_size = GetMipChainSize(tga_width, tga_height, format,
-                                            num_mipmaps);
-  scoped_array<unsigned char> image_data(new unsigned char[image_size]);
+  unsigned int image_size =
+      image::ComputeMipChainSize(tga_width, tga_height, format, num_mipmaps);
+  scoped_array<uint8> image_data(new uint8[image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "Targa file memory allocation error \"" << filename << "\"";
     return false;
@@ -124,7 +128,7 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
 
   if (components == 3) {
     // Fixup the image by inserting an alpha value of 1 (BGR->BGRX).
-    XYZToXYZA(image_data.get(), pixel_count);
+    image::XYZToXYZA(image_data.get(), pixel_count);
   }
 
   if (generate_mipmaps) {
@@ -141,6 +145,13 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
   height_ = tga_height;
   format_ = format;
   num_mipmaps_ = num_mipmaps;
+
+  // Targas are generally bottom first in memory so flip it.
+  //
+  // TODO(gman): In truth a targa can be any orientation. We should check
+  // that orientation and flip or not flip accordingly.
+  FlipVertically();
+
   return true;
 }
 

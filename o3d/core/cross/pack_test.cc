@@ -32,8 +32,10 @@
 
 // Tests for functionality in pack.cc/.h.
 
-#include "core/cross/client.h"
 #include "core/cross/pack.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/service_dependency.h"
+#include "core/cross/transform.h"
 #include "tests/common/win/testing_common.h"
 
 namespace o3d {
