@@ -32,6 +32,7 @@
 namespace o3d {
 
 typedef ObjectBase[] ObjectArray;
+typedef Bitmap[] BitmapArray;
 
 %[
   A Pack object functions as a container for O3D objects. The Pack
@@ -312,23 +313,17 @@ typedef ObjectBase[] ObjectArray;
                                     bool generate_mips);
 
   %[
-    Create a new Bitmap object from RawData.
+    Create Bitmaps from RawData.
 
-    \param raw_data contains the bitmap data in one of the know formats.
-    \return the new bitmap object.
+    If you load a cube map you'll get 6 an array of 6 Bitmaps.
+    If you load a volume map you'll get an array of n Bitmaps.
+    If there is an error you'll get an empty array.
+
+    \param raw_data contains the bitmap data in a supported format.
+    \return An Array of Bitmaps object.
   %]
-  Bitmap? CreateBitmapFromRawData(RawData raw_data);
-
-  %[
-    Create a new Bitmap object of the specified size and format and
-    reserves the necessary resources for it.
-
-    \param width The width of the bitmap in pixel.
-    \param height The height of the bitmap in pixel.
-    \param format The format of the bitmap.
-    \return the new bitmap obejct.
-  %]
-  Bitmap? CreateBitmap(int width, int height, Texture::Format format);
+  //BitmapArray CreateBitmapsFromRawData(RawData raw_data);
+  Bitmap CreateBitmapFromRawData(RawData raw_data);
 };  // Pack
 
 }  // namespace o3d

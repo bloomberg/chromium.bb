@@ -32,12 +32,16 @@
 
 // This file implements unit tests for class VertexSource.
 
-#include "core/cross/client.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/vertex_source.h"
+#include "core/cross/error_status.h"
+#include "core/cross/evaluation_counter.h"
 #include "core/cross/fake_vertex_source.h"
 #include "core/cross/pointer_utils.h"
-#include "core/cross/evaluation_counter.h"
+#include "core/cross/buffer.h"
+#include "core/cross/object_manager.h"
+#include "core/cross/pack.h"
+#include "core/cross/service_dependency.h"
 
 namespace o3d {
 
