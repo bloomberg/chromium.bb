@@ -2733,7 +2733,7 @@ BUG15478 SKIP : LayoutTests/platform/qt/fast/events/event-sender-keydown-frame.h
 BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS CRASH
 
 // Flaky for a while on DEBUG; also related to BUG17974
-BUG15267 WIN LINUX DEBUG : LayoutTests/transitions/cancel-transition.html = PASS FAIL
+BUG15267 WIN LINUX : LayoutTests/transitions/cancel-transition.html = PASS FAIL
 
 // Started crashing without a clear reason.
 BUG15425 WIN : LayoutTests/dom/html/level2/html/HTMLElement142.html = PASS CRASH
