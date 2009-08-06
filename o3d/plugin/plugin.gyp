@@ -83,6 +83,9 @@
               'mac/plugin_mac.h',
               'mac/plugin_mac.mm',
             ],
+            'defines': [
+              'XP_MACOSX=1',
+            ],
             'link_settings': {
               'libraries': [
                 '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
