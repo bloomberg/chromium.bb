@@ -2071,7 +2071,7 @@ BUG9786 : LayoutTests/http/tests/security/cross-frame-access-document-direct.htm
 BUG9787 WIN : LayoutTests/svg/W3C-SVG-1.1/animate-elem-41-t.svg = FAIL
 BUG9787 : LayoutTests/svg/W3C-SVG-1.1/coords-trans-01-b.svg = FAIL
 BUG9787 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-render-01-b.svg = FAIL
-BUG10479 RELEASE MAC : LayoutTests/fast/dom/Window/window-object-cross-frame-calls.html = FAIL
+BUG10479 RELEASE MAC : LayoutTests/fast/dom/Window/window-object-cross-frame-calls.html = FAIL PASS CRASH
 BUG10479 MAC : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
