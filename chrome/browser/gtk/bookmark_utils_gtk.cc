@@ -128,22 +128,29 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
   GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
   g_object_unref(pixbuf);
 
-  GtkWidget* label = gtk_label_new(WideToUTF8(node->GetTitle()).c_str());
-  gtk_label_set_max_width_chars(GTK_LABEL(label), kMaxCharsOnAButton);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-
   GtkWidget* box = gtk_hbox_new(FALSE, kBarButtonPadding);
   gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+
+  std::string label_string = WideToUTF8(node->GetTitle());
+  if (!label_string.empty()) {
+    GtkWidget* label = gtk_label_new(label_string.c_str());
+    gtk_label_set_max_width_chars(GTK_LABEL(label), kMaxCharsOnAButton);
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+    gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+    SetButtonTextColors(label, provider);
+  }
 
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-      kButtonPaddingTop, kButtonPaddingBottom,
-      kButtonPaddingLeft, kButtonPaddingRight);
+  // If we are not showing the label, don't set any padding, so that the icon
+  // will just be centered.
+  if (label_string.c_str()) {
+    gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
+        kButtonPaddingTop, kButtonPaddingBottom,
+        kButtonPaddingLeft, kButtonPaddingRight);
+  }
   gtk_container_add(GTK_CONTAINER(alignment), box);
   gtk_container_add(GTK_CONTAINER(button), alignment);
 
-  SetButtonTextColors(label, provider);
   g_object_set_data(G_OBJECT(button), bookmark_utils::kBookmarkNode,
                     AsVoid(node));
 
