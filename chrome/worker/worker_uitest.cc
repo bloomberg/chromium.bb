@@ -46,6 +46,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "worker-event-listener.html",
     "worker-gc.html",
     "worker-location.html",
+    "worker-messageport.html",
     "worker-navigator.html",
     "worker-replace-global-constructor.html",
     "worker-replace-self.html",
@@ -113,7 +114,7 @@ TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   StopHttpServer();
 }
 
-TEST_F(WorkerTest, DISABLED_MessagePorts) {
+TEST_F(WorkerTest, MessagePorts) {
   static const char* kLayoutTestFiles[] = {
     "message-channel-gc.html",
     "message-channel-gc-2.html",

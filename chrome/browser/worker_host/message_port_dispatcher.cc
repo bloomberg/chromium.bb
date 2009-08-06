@@ -58,6 +58,22 @@ bool MessagePortDispatcher::OnMessageReceived(
   return handled;
 }
 
+void MessagePortDispatcher::UpdateMessagePort(
+    int message_port_id,
+    IPC::Message::Sender* sender,
+    int routing_id,
+    CallbackWithReturnValue<int>::Type* next_routing_id) {
+  if (!message_ports_.count(message_port_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  MessagePort& port = message_ports_[message_port_id];
+  port.sender = sender;
+  port.route_id = routing_id;
+  port.next_routing_id = next_routing_id;
+}
+
 bool MessagePortDispatcher::Send(IPC::Message* message) {
   return sender_->Send(message);
 }
@@ -84,7 +100,6 @@ void MessagePortDispatcher::OnDestroy(int message_port_id) {
   }
 
   DCHECK(message_ports_[message_port_id].queued_messages.empty());
-  delete message_ports_[message_port_id].next_routing_id;
   message_ports_.erase(message_port_id);
 }
 

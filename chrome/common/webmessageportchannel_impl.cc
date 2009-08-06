@@ -48,7 +48,10 @@ void WebMessagePortChannelImpl::setClient(WebMessagePortChannelClient* client) {
 
 void WebMessagePortChannelImpl::destroy() {
   setClient(NULL);
-  Release();
+
+  // Release the object on the main thread, since the destructor might want to
+  // send an IPC, and that has to happen on the main thread.
+  ChildThread::current()->message_loop()->ReleaseSoon(FROM_HERE, this);
 }
 
 void WebMessagePortChannelImpl::entangle(WebMessagePortChannel* channel) {

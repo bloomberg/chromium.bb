@@ -88,8 +88,10 @@ IPC_BEGIN_MESSAGES(Worker)
 
   IPC_MESSAGE_ROUTED0(WorkerMsg_TerminateWorkerContext)
 
-  IPC_MESSAGE_ROUTED1(WorkerMsg_PostMessageToWorkerContext,
-                      string16  /* message */)
+  IPC_MESSAGE_ROUTED3(WorkerMsg_PostMessage,
+                      string16  /* message */,
+                      int  /* sent_message_port_id */,
+                      int  /* new_routing_id */)
 
   IPC_MESSAGE_ROUTED0(WorkerMsg_WorkerObjectDestroyed)
 IPC_END_MESSAGES(Worker)
@@ -99,9 +101,7 @@ IPC_END_MESSAGES(Worker)
 // WorkerHost messages
 // These are messages sent from the worker process to the renderer process.
 IPC_BEGIN_MESSAGES(WorkerHost)
-  IPC_MESSAGE_ROUTED1(WorkerHostMsg_PostMessageToWorkerObject,
-                      string16  /* message */)
-
+  // WorkerMsg_PostMessage is also sent here.
   IPC_MESSAGE_ROUTED3(WorkerHostMsg_PostExceptionToWorkerObject,
                       string16  /* error_message */,
                       int  /* line_number */,

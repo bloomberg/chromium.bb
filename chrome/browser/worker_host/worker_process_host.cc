@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -62,8 +63,8 @@ class WorkerCrashTask : public Task {
 WorkerProcessHost::WorkerProcessHost(
     ResourceDispatcherHost* resource_dispatcher_host_)
     : ChildProcessHost(WORKER_PROCESS, resource_dispatcher_host_) {
-  next_route_id_ = NewCallbackWithReturnValue(
-      WorkerService::GetInstance(), &WorkerService::next_worker_route_id);
+  next_route_id_callback_.reset(NewCallbackWithReturnValue(
+      WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
@@ -148,9 +149,8 @@ bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     if (i->sender_pid == sender_pid &&
         i->sender_route_id == message.routing_id()) {
-      IPC::Message* new_message = new IPC::Message(message);
-      new_message->set_routing_id(i->worker_route_id);
-      Send(new_message);
+      RelayMessage(
+          message, this, i->worker_route_id, next_route_id_callback_.get());
       return true;
     }
   }
@@ -167,7 +167,7 @@ URLRequestContext* WorkerProcessHost::GetRequestContext(
 void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool msg_is_ok = true;
   bool handled = MessagePortDispatcher::GetInstance()->OnMessageReceived(
-      message, this, next_route_id_, &msg_is_ok);
+      message, this, next_route_id_callback_.get(), &msg_is_ok);
 
   if (!handled) {
     handled = true;
@@ -192,9 +192,9 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     if (i->worker_route_id == message.routing_id()) {
-      IPC::Message* new_message = new IPC::Message(message);
-      new_message->set_routing_id(i->sender_route_id);
-      i->sender->Send(new_message);
+      CallbackWithReturnValue<int>::Type* next_route_id =
+          GetNextRouteIdCallback(i->sender);
+      RelayMessage(message, i->sender, i->sender_route_id, next_route_id);
 
       if (message.type() == WorkerHostMsg_WorkerContextDestroyed::ID) {
         instances_.erase(i);
@@ -203,6 +203,55 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
       break;
     }
   }
+}
+
+CallbackWithReturnValue<int>::Type* WorkerProcessHost::GetNextRouteIdCallback(
+    IPC::Message::Sender* sender) {
+  // We don't keep callbacks for senders associated with workers, so figure out
+  // what kind of sender this is, and cast it to the correct class to get the
+  // callback.
+  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+       !iter.Done(); ++iter) {
+    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+    if (static_cast<IPC::Message::Sender*>(worker) == sender)
+      return worker->next_route_id_callback_.get();
+  }
+
+  // Must be a ResourceMessageFilter.
+  return static_cast<ResourceMessageFilter*>(sender)->next_route_id_callback();
+}
+
+void WorkerProcessHost::RelayMessage(
+    const IPC::Message& message,
+    IPC::Message::Sender* sender,
+    int route_id,
+    CallbackWithReturnValue<int>::Type* next_route_id) {
+  IPC::Message* new_message;
+  if (message.type() == WorkerMsg_PostMessage::ID) {
+    // We want to send the receiver a routing id for the new channel, so
+    // crack the message first.
+    string16 msg;
+    int sent_message_port_id;
+    int new_routing_id;  // Ignore the bogus value from the sender.
+    if (!WorkerMsg_PostMessage::Read(
+            &message, &msg, &sent_message_port_id, &new_routing_id)) {
+      return;
+    }
+
+    if (sent_message_port_id != MSG_ROUTING_NONE) {
+      new_routing_id = next_route_id->Run();
+      MessagePortDispatcher::GetInstance()->UpdateMessagePort(
+          sent_message_port_id, sender, new_routing_id, next_route_id);
+    }
+
+    new_message = new WorkerMsg_PostMessage(
+        route_id, msg, sent_message_port_id, new_routing_id);
+  } else {
+    new_message = new IPC::Message(message);
+    new_message->set_routing_id(route_id);
+  }
+
+  sender->Send(new_message);
 }
 
 void WorkerProcessHost::SenderShutdown(IPC::Message::Sender* sender) {

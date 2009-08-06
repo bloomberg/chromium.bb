@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
 #include "chrome/renderer/webworker_proxy.h"
 #include "chrome/worker/worker_thread.h"
@@ -16,6 +17,7 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebWorker.h"
 
+using WebKit::WebMessagePortChannel;
 using WebKit::WebString;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
@@ -78,8 +80,19 @@ WebWorkerClientProxy::~WebWorkerClientProxy() {
 }
 
 void WebWorkerClientProxy::postMessageToWorkerObject(
-    const WebString& message) {
-  Send(new WorkerHostMsg_PostMessageToWorkerObject(route_id_, message));
+    const WebString& message,
+    WebMessagePortChannel* channel) {
+  int message_port_id = MSG_ROUTING_NONE;
+  if (channel) {
+    WebMessagePortChannelImpl* webchannel =
+        static_cast<WebMessagePortChannelImpl*>(channel);
+    message_port_id = webchannel->message_port_id();
+    webchannel->QueueMessages();
+    DCHECK(message_port_id != MSG_ROUTING_NONE);
+  }
+
+  Send(new WorkerMsg_PostMessage(
+      route_id_, message, message_port_id, MSG_ROUTING_NONE));
 }
 
 void WebWorkerClientProxy::postExceptionToWorkerObject(
@@ -144,8 +157,7 @@ void WebWorkerClientProxy::OnMessageReceived(const IPC::Message& message) {
                         WebWorker::startWorkerContext)
     IPC_MESSAGE_HANDLER(WorkerMsg_TerminateWorkerContext,
                         OnTerminateWorkerContext)
-    IPC_MESSAGE_FORWARD(WorkerMsg_PostMessageToWorkerContext, impl_,
-                        WebWorker::postMessageToWorkerContext)
+    IPC_MESSAGE_HANDLER(WorkerMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_FORWARD(WorkerMsg_WorkerObjectDestroyed, impl_,
                         WebWorker::workerObjectDestroyed)
   IPC_END_MESSAGE_MAP()
@@ -165,4 +177,16 @@ void WebWorkerClientProxy::OnTerminateWorkerContext() {
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       new KillProcessTask(this), kMaxTimeForRunawayWorkerMs);
+}
+
+void WebWorkerClientProxy::OnPostMessage(const string16& message,
+                                         int sent_message_port_id,
+                                         int new_routing_id) {
+  WebMessagePortChannel* channel = NULL;
+  if (sent_message_port_id != MSG_ROUTING_NONE) {
+    channel = new WebMessagePortChannelImpl(
+        new_routing_id, sent_message_port_id);
+  }
+
+  impl_->postMessageToWorkerContext(message, channel);
 }

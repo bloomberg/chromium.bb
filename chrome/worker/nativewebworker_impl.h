@@ -27,7 +27,8 @@ class NativeWebWorkerImpl : public WebKit::WebWorker {
                           const WebKit::WebString& user_agent,
                           const WebKit::WebString& source_code);
   void terminateWorkerContext();
-  void postMessageToWorkerContext(const WebKit::WebString& message);
+  void postMessageToWorkerContext(const WebKit::WebString& message,
+                                  WebKit::WebMessagePortChannel* channel);
   void workerObjectDestroyed();
 
  private:

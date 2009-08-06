@@ -21,10 +21,12 @@
 #undef LOG
 
 #include "base/logging.h"
+#include "webkit/api/public/WebMessagePortChannel.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebWorkerClient.h"
+#include "webkit/api/src/PlatformMessagePortChannel.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdatasource_impl.h"
 #include "webkit/glue/webframe_impl.h"
@@ -34,6 +36,7 @@
 #include "webkit/glue/webworker_impl.h"
 
 using WebKit::WebCursorInfo;
+using WebKit::WebMessagePortChannel;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
@@ -190,13 +193,23 @@ void WebWorkerImpl::terminateWorkerContext() {
     worker_thread_->stop();
 }
 
-void WebWorkerImpl::postMessageToWorkerContext(const WebString& message) {
-  // TODO(jam): Need to update these APIs to accept MessagePorts.
+void WebWorkerImpl::postMessageToWorkerContext(
+    const WebString& message,
+    WebMessagePortChannel* webchannel) {
+
+  OwnPtr<WebCore::MessagePortChannel> channel;
+  if (webchannel) {
+    RefPtr<WebCore::PlatformMessagePortChannel> platform_channel =
+        WebCore::PlatformMessagePortChannel::create(webchannel);
+    webchannel->setClient(platform_channel.get());
+    channel = WebCore::MessagePortChannel::create(platform_channel);
+  }
+
   worker_thread_->runLoop().postTask(WebCore::createCallbackTask(
       &PostMessageToWorkerContextTask,
       this,
       webkit_glue::WebStringToString(message),
-      WTF::PassOwnPtr<WebCore::MessagePortChannel>(0)));
+      channel.release()));
 }
 
 void WebWorkerImpl::workerObjectDestroyed() {
@@ -236,10 +249,14 @@ void WebWorkerImpl::PostMessageTask(
     WebWorkerImpl* this_ptr,
     WebCore::String message,
     WTF::PassOwnPtr<WebCore::MessagePortChannel> channel) {
-  // TODO(jam): Update to pass a MessagePortChannel or
-  // PlatformMessagePortChannel when we add MessagePort support to Chrome.
+  WebMessagePortChannel* webChannel = NULL;
+  if (channel.get()) {
+    webChannel = channel->channel()->webChannelRelease();
+    webChannel->setClient(0);
+  }
+
   this_ptr->client_->postMessageToWorkerObject(
-      webkit_glue::StringToWebString(message));
+      webkit_glue::StringToWebString(message), webChannel);
 }
 
 void WebWorkerImpl::postExceptionToWorkerObject(

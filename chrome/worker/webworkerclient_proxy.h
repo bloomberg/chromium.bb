@@ -25,7 +25,9 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient,
   WebWorkerClientProxy(const GURL& url, int route_id);
 
   // WebWorkerClient implementation.
-  virtual void postMessageToWorkerObject(const WebKit::WebString& message);
+  virtual void postMessageToWorkerObject(
+      const WebKit::WebString& message,
+      WebKit::WebMessagePortChannel* channel);
   virtual void postExceptionToWorkerObject(
       const WebKit::WebString& error_message,
       int line_number,
@@ -52,6 +54,9 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient,
   bool Send(IPC::Message* message);
 
   void OnTerminateWorkerContext();
+  void OnPostMessage(const string16& message,
+                     int sent_message_port_id,
+                     int new_routing_id);
 
   // The source url for this worker.
   GURL url_;

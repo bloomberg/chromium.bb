@@ -41,7 +41,7 @@ void TestWebWorker::startWorkerContext(const WebURL& script_url,
   webworker_impl_->startWorkerContext(script_url, user_agent, source_code);
 
   for (size_t i = 0; i < queued_messages_.size(); ++i)
-    webworker_impl_->postMessageToWorkerContext(queued_messages_[i]);
+    webworker_impl_->postMessageToWorkerContext(queued_messages_[i], NULL);
   queued_messages_.clear();
 }
 
@@ -50,9 +50,10 @@ void TestWebWorker::terminateWorkerContext() {
     webworker_impl_->terminateWorkerContext();
 }
 
-void TestWebWorker::postMessageToWorkerContext(const WebString& message) {
+void TestWebWorker::postMessageToWorkerContext(const WebString& message,
+                                               WebKit::WebMessagePortChannel*) {
   if (webworker_impl_)
-    webworker_impl_->postMessageToWorkerContext(message);
+    webworker_impl_->postMessageToWorkerContext(message, NULL);
   else
     queued_messages_.push_back(message);
 }
@@ -65,14 +66,15 @@ void TestWebWorker::workerObjectDestroyed() {
   Release();    // Releases the reference held for worker object.
 }
 
-void TestWebWorker::postMessageToWorkerObject(const WebString& message) {
+void TestWebWorker::postMessageToWorkerObject(const WebString& message,
+                                              WebKit::WebMessagePortChannel*) {
   if (!webworkerclient_delegate_)
     return;
   // The string was created in the dll's memory space as a result of a postTask.
   // If we pass it to test shell's memory space, it'll cause problems when GC
   // occurs.  So duplicate it from the test shell's memory space first.
   webworkerclient_delegate_->postMessageToWorkerObject(
-      webworker_helper_->DuplicateString(message));
+      webworker_helper_->DuplicateString(message), NULL);
 }
 
 void TestWebWorker::postExceptionToWorkerObject(const WebString& error_message,

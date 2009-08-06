@@ -48,7 +48,9 @@ class WebWorkerClientImpl : public WebCore::WorkerContextProxy,
 
   // WebWorkerClient methods:
   // These are called on the main WebKit thread.
-  virtual void postMessageToWorkerObject(const WebKit::WebString& message);
+  virtual void postMessageToWorkerObject(
+      const WebKit::WebString& message,
+      WebKit::WebMessagePortChannel* channel);
   virtual void postExceptionToWorkerObject(
       const WebKit::WebString& error_message,
       int line_number,

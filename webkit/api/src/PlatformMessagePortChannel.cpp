@@ -122,7 +122,8 @@ PlatformMessagePortChannel::PlatformMessagePortChannel()
     : m_localPort(0)
 {
     m_webChannel = webKitClient()->createMessagePortChannel();
-    m_webChannel->setClient(this);
+    if (m_webChannel)
+        m_webChannel->setClient(this);
 }
 
 PlatformMessagePortChannel::PlatformMessagePortChannel(WebMessagePortChannel* channel)
@@ -174,7 +175,7 @@ void PlatformMessagePortChannel::disentangle()
 
 void PlatformMessagePortChannel::postMessageToRemote(PassOwnPtr<MessagePortChannel::EventData> message)
 {
-    if (!m_localPort)
+    if (!m_localPort || !m_webChannel)
         return;
 
     WebString messageString = message->message();
@@ -232,7 +233,8 @@ bool PlatformMessagePortChannel::hasPendingActivity()
 
 void PlatformMessagePortChannel::setEntangledChannel(PassRefPtr<PlatformMessagePortChannel> remote)
 {
-    m_webChannel->entangle(remote->m_webChannel);
+    if (m_webChannel)
+        m_webChannel->entangle(remote->m_webChannel);
 
     MutexLocker lock(m_mutex);
     m_entangledChannel = remote;

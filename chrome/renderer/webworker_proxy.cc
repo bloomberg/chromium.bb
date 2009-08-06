@@ -6,10 +6,12 @@
 
 #include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebWorkerClient.h"
 
+using WebKit::WebMessagePortChannel;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebWorkerClient;
@@ -73,8 +75,18 @@ void WebWorkerProxy::terminateWorkerContext() {
 }
 
 void WebWorkerProxy::postMessageToWorkerContext(
-    const WebString& message) {
-  Send(new WorkerMsg_PostMessageToWorkerContext(route_id_, message));
+    const WebString& message, WebMessagePortChannel* channel) {
+  int message_port_id = MSG_ROUTING_NONE;
+  if (channel) {
+    WebMessagePortChannelImpl* webchannel =
+        static_cast<WebMessagePortChannelImpl*>(channel);
+    message_port_id = webchannel->message_port_id();
+    webchannel->QueueMessages();
+    DCHECK(message_port_id != MSG_ROUTING_NONE);
+  }
+
+  Send(new WorkerMsg_PostMessage(
+      route_id_, message, message_port_id, MSG_ROUTING_NONE));
 }
 
 void WebWorkerProxy::workerObjectDestroyed() {
@@ -107,9 +119,7 @@ void WebWorkerProxy::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(WebWorkerProxy, message)
     IPC_MESSAGE_HANDLER(ViewMsg_DedicatedWorkerCreated,
                         OnDedicatedWorkerCreated)
-    IPC_MESSAGE_FORWARD(WorkerHostMsg_PostMessageToWorkerObject,
-                        client_,
-                        WebWorkerClient::postMessageToWorkerObject)
+    IPC_MESSAGE_HANDLER(WorkerMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_FORWARD(WorkerHostMsg_PostExceptionToWorkerObject,
                         client_,
                         WebWorkerClient::postExceptionToWorkerObject)
@@ -135,6 +145,18 @@ void WebWorkerProxy::OnDedicatedWorkerCreated() {
     queued_messages[i]->set_routing_id(route_id_);
     Send(queued_messages[i]);
   }
+}
+
+void WebWorkerProxy::OnPostMessage(const string16& message,
+                                   int sent_message_port_id,
+                                   int new_routing_id) {
+  WebMessagePortChannel* channel = NULL;
+  if (sent_message_port_id != MSG_ROUTING_NONE) {
+    channel = new WebMessagePortChannelImpl(
+        new_routing_id, sent_message_port_id);
+  }
+
+  client_->postMessageToWorkerObject(message, channel);
 }
 
 void WebWorkerProxy::OnPostConsoleMessageToWorkerObject(

@@ -66,7 +66,9 @@ class WebWorkerImpl: public WebCore::WorkerObjectProxy,
                                   const WebKit::WebString& user_agent,
                                   const WebKit::WebString& source_code);
   virtual void terminateWorkerContext();
-  virtual void postMessageToWorkerContext(const WebKit::WebString& message);
+  virtual void postMessageToWorkerContext(
+      const WebKit::WebString& message,
+      WebKit::WebMessagePortChannel* channel);
   virtual void workerObjectDestroyed();
 
   WebKit::WebWorkerClient* client() { return client_; }

@@ -28,6 +28,12 @@ class MessagePortDispatcher : public NotificationObserver {
                          CallbackWithReturnValue<int>::Type* next_routing_id,
                          bool* message_was_ok);
 
+  void UpdateMessagePort(
+      int message_port_id,
+      IPC::Message::Sender* sender,
+      int routing_id,
+      CallbackWithReturnValue<int>::Type* next_routing_id);
+
   bool Send(IPC::Message* message);
 
  private:

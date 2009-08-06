@@ -57,6 +57,17 @@ class WorkerProcessHost : public ChildProcessHost {
   // Called when a message arrives from the worker process.
   void OnMessageReceived(const IPC::Message& message);
 
+  // Given a Sender, returns the callback that generates a new routing id.
+  static CallbackWithReturnValue<int>::Type* GetNextRouteIdCallback(
+      IPC::Message::Sender* sender);
+
+  // Relays a message to the given endpoint.  Takes care of parsing the message
+  // if it contains a message port and sending it a valid route id.
+  static void RelayMessage(const IPC::Message& message,
+                           IPC::Message::Sender* sender,
+                           int route_id,
+                           CallbackWithReturnValue<int>::Type* next_route_id);
+
   virtual bool CanShutdown() { return instances_.empty(); }
 
   // Updates the title shown in the task manager.
@@ -71,7 +82,7 @@ class WorkerProcessHost : public ChildProcessHost {
   Instances instances_;
 
   // A callback to create a routing id for the associated worker process.
-  CallbackWithReturnValue<int>::Type* next_route_id_;
+  scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };

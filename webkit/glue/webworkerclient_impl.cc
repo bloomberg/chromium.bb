@@ -28,9 +28,11 @@
 #include "base/command_line.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebKitClient.h"
+#include "webkit/api/public/WebMessagePortChannel.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebWorker.h"
+#include "webkit/api/src/PlatformMessagePortChannel.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
 #include "webkit/glue/webframe_impl.h"
@@ -38,6 +40,7 @@
 #include "webkit/glue/webview_impl.h"
 #include "webkit/glue/webworker_impl.h"
 
+using WebKit::WebMessagePortChannel;
 using WebKit::WebString;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
@@ -151,7 +154,7 @@ void WebWorkerClientImpl::terminateWorkerContext() {
 
 void WebWorkerClientImpl::postMessageToWorkerContext(
     const WebCore::String& message,
-    WTF::PassOwnPtr<WebCore::MessagePortChannel> port) {
+    WTF::PassOwnPtr<WebCore::MessagePortChannel> channel) {
   // Worker.terminate() could be called from JS before the context is started.
   if (asked_to_terminate_)
     return;
@@ -161,14 +164,18 @@ void WebWorkerClientImpl::postMessageToWorkerContext(
   if (!WTF::isMainThread()) {
     WebWorkerImpl::DispatchTaskToMainThread(
         WebCore::createCallbackTask(
-            &PostMessageToWorkerContextTask, this, message, port));
+            &PostMessageToWorkerContextTask, this, message, channel));
     return;
   }
 
-  // TODO(jam): Update to pass a MessagePortChannel or
-  // PlatformMessagePortChannel when we add MessagePort support to Chrome.
+  WebMessagePortChannel* webchannel = NULL;
+  if (channel.get()) {
+    webchannel = channel->channel()->webChannelRelease();
+    webchannel->setClient(0);
+  }
+
   webworker_->postMessageToWorkerContext(
-      webkit_glue::StringToWebString(message));
+      webkit_glue::StringToWebString(message), webchannel);
 }
 
 bool WebWorkerClientImpl::hasPendingActivity() const {
@@ -188,18 +195,27 @@ void WebWorkerClientImpl::workerObjectDestroyed() {
       WebCore::createCallbackTask(&WorkerObjectDestroyedTask, this));
 }
 
-void WebWorkerClientImpl::postMessageToWorkerObject(const WebString& message) {
-  // TODO(jam): Add support for passing MessagePorts when they are supported
-  // in Chrome.
+void WebWorkerClientImpl::postMessageToWorkerObject(
+    const WebString& message,
+    WebMessagePortChannel* channel) {
+  WebCore::String message2 = webkit_glue::WebStringToString(message);
+  OwnPtr<WebCore::MessagePortChannel> channel2;
+  if (channel) {
+    RefPtr<WebCore::PlatformMessagePortChannel> platform_channel =
+        WebCore::PlatformMessagePortChannel::create(channel);
+    channel->setClient(platform_channel.get());
+    channel2 = WebCore::MessagePortChannel::create(platform_channel);
+  }
+
   if (WTF::currentThread() != worker_thread_id_) {
     script_execution_context_->postTask(
         WebCore::createCallbackTask(&PostMessageToWorkerObjectTask, this,
-            webkit_glue::WebStringToString(message),
-            WTF::PassOwnPtr<WebCore::MessagePortChannel>(0)));
+            message2, channel2.release()));
     return;
   }
 
-  worker_->dispatchMessage(webkit_glue::WebStringToString(message), 0);
+  PostMessageToWorkerObjectTask(
+      script_execution_context_.get(), this, message2, channel2.release());
 }
 
 void WebWorkerClientImpl::postExceptionToWorkerObject(
@@ -298,10 +314,14 @@ void WebWorkerClientImpl::PostMessageToWorkerContextTask(
     WebWorkerClientImpl* this_ptr,
     const WebCore::String& message,
     WTF::PassOwnPtr<WebCore::MessagePortChannel> channel) {
-  // TODO(jam): Update to pass a MessagePortChannel or
-  // PlatformMessagePortChannel when we add MessagePort support to Chrome.
+  WebMessagePortChannel* webChannel = NULL;
+  if (channel.get()) {
+    webChannel = channel->channel()->webChannelRelease();
+    webChannel->setClient(0);
+  }
+
   this_ptr->webworker_->postMessageToWorkerContext(
-      webkit_glue::StringToWebString(message));
+      webkit_glue::StringToWebString(message), webChannel);
 }
 
 void WebWorkerClientImpl::WorkerObjectDestroyedTask(

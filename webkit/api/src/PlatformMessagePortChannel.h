@@ -31,7 +31,9 @@
 #ifndef PlatformMessagePortChannel_h
 #define PlatformMessagePortChannel_h
 
-#include "WebMessagePortChannelClient.h"
+// FIXME: This relative path is a temporary hack to support using this
+// header from webkit/glue.
+#include "../public/WebMessagePortChannelClient.h"
 
 #include "MessagePortChannel.h"
 
