@@ -661,18 +661,22 @@ ImageFileType GetFileTypeFromFilename(const char *filename) {
   }
 }
 
+namespace {
+
+struct MimeTypeToFileType {
+  const char *mime_type;
+  ImageFileType file_type;
+};
+
+const MimeTypeToFileType mime_type_map[] = {
+  {"image/png", PNG},
+  {"image/jpeg", JPEG},
+  // No official MIME type for TGA or DDS.
+};
+
+}  // anonymous namespace
+
 ImageFileType GetFileTypeFromMimeType(const char *mime_type) {
-  struct MimeTypeToFileType {
-    const char *mime_type;
-    ImageFileType file_type;
-  };
-
-  static const MimeTypeToFileType mime_type_map[] = {
-    {"image/png", PNG},
-    {"image/jpeg", JPEG},
-    // No official MIME type for TGA or DDS.
-  };
-
   for (unsigned int i = 0u; i < arraysize(mime_type_map); ++i) {
     if (!strcmp(mime_type, mime_type_map[i].mime_type))
       return mime_type_map[i].file_type;

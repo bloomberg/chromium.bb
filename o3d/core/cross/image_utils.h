@@ -34,8 +34,6 @@
 #ifndef O3D_CORE_CROSS_IMAGE_UTILS_H_
 #define O3D_CORE_CROSS_IMAGE_UTILS_H_
 
-#include "core/cross/precompile.h"
-
 #include "base/cross/bits.h"
 #include "core/cross/types.h"
 #include "core/cross/texture_base.h"
