@@ -136,7 +136,7 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
     'arch/x86/nacl_switch_to_app.c',
     'arch/x86/sel_rt.c',
     'arch/x86/nacl_tls.c',
-    'arch/x86/sel_ldr.c',
+    'arch/x86/sel_ldr_x86.c',
     'arch/x86/sel_addrspace_x86.c',
     'arch/x86_32/nacl_switch.S',
     'arch/x86_32/nacl_syscall.S',

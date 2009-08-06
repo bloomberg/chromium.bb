@@ -68,7 +68,7 @@
       'target_name': 'ncvalidate',
       'type': 'static_library',
       'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       'dependencies': [
         'ncdecode_table',
@@ -94,8 +94,8 @@
           'outputs': [
             # TODO(gregoryd): keeping the long include path for now to be
             # compatible with the scons build.
-            '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/ncdecodetab.h',
-            '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/ncdisasmtab.h',
+            '<(SHARED_INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/ncdecodetab.h',
+            '<(SHARED_INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/ncdisasmtab.h',
           ],
           'action':
              ['<(PRODUCT_DIR)/ncdecode_table', '-m32', '<@(_outputs)'],
@@ -109,7 +109,7 @@
             '<(PRODUCT_DIR)/ncdecode_tablegen',
           ],
           'outputs': [
-            '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/nc_opcode_table.h',
+            '<(SHARED_INTERMEDIATE_DIR)/gen/native_client/src/trusted/validator_x86/nc_opcode_table.h',
           ],
           'action':
              ['<@(_inputs)', '-m32', '<@(_outputs)'],
@@ -122,7 +122,7 @@
       'target_name': 'ncdis_util',
       'type': 'static_library',
       'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)',
       ],
       # we depend on ncvalidate build to generate the headers
       'dependencies': ['ncvalidate' ],
