@@ -3064,3 +3064,6 @@ BUG18569 MAC DEBUG : LayoutTests/fast/repaint/overflow-scroll-delete.html = PASS
 BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
 BUG18584 WIN : LayoutTests/animations/play-state.html = FAIL PASS
 BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
+
+// Baseline is out-of-date
+BUG18610 WIN LINUX : LayoutTests/security/block-test.html = FAIL
