@@ -5,7 +5,6 @@
 #include "app/gfx/canvas.h"
 
 #include <cairo/cairo.h>
-#include <gtk/gtk.h>
 #include <pango/pango.h>
 #include <pango/pangocairo.h>
 
@@ -15,10 +14,6 @@
 #include "base/string_util.h"
 
 namespace {
-
-// Font settings that we initialize once and then use when drawing text in
-// DrawStringInt().
-static cairo_font_options_t* cairo_font_options = NULL;
 
 // Returns a new pango font, free with pango_font_description_free().
 PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font) {
@@ -44,70 +39,6 @@ PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font) {
   }
 
   return pfd;
-}
-
-// Update |cairo_font_options| based on GtkSettings, allocating it if needed.
-static void UpdateCairoFontOptions() {
-  if (!cairo_font_options)
-    cairo_font_options = cairo_font_options_create();
-
-  GtkSettings* gtk_settings = gtk_settings_get_default();
-  gint antialias = 0;
-  gint hinting = 0;
-  gchar* hint_style = NULL;
-  gchar* rgba_style = NULL;
-  g_object_get(gtk_settings,
-               "gtk-xft-antialias", &antialias,
-               "gtk-xft-hinting", &hinting,
-               "gtk-xft-hintstyle", &hint_style,
-               "gtk-xft-rgba", &rgba_style,
-               NULL);
-
-  // g_object_get() doesn't tell us whether the properties were present or not,
-  // but if they aren't (because gnome-settings-daemon isn't running), we'll get
-  // NULL values for the strings.
-  if (hint_style && rgba_style) {
-    if (!antialias) {
-      cairo_font_options_set_antialias(cairo_font_options,
-                                       CAIRO_ANTIALIAS_NONE);
-    } else if (strcmp(rgba_style, "none") == 0) {
-      cairo_font_options_set_antialias(cairo_font_options,
-                                       CAIRO_ANTIALIAS_GRAY);
-    } else {
-      cairo_font_options_set_antialias(cairo_font_options,
-                                       CAIRO_ANTIALIAS_SUBPIXEL);
-      cairo_subpixel_order_t cairo_subpixel_order =
-          CAIRO_SUBPIXEL_ORDER_DEFAULT;
-      if (strcmp(rgba_style, "rgb") == 0) {
-        cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_RGB;
-      } else if (strcmp(rgba_style, "bgr") == 0) {
-        cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_BGR;
-      } else if (strcmp(rgba_style, "vrgb") == 0) {
-        cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_VRGB;
-      } else if (strcmp(rgba_style, "vbgr") == 0) {
-        cairo_subpixel_order = CAIRO_SUBPIXEL_ORDER_VBGR;
-      }
-      cairo_font_options_set_subpixel_order(cairo_font_options,
-                                            cairo_subpixel_order);
-    }
-
-    cairo_hint_style_t cairo_hint_style = CAIRO_HINT_STYLE_DEFAULT;
-    if (hinting == 0 || strcmp(hint_style, "hintnone") == 0) {
-      cairo_hint_style = CAIRO_HINT_STYLE_NONE;
-    } else if (strcmp(hint_style, "hintslight") == 0) {
-      cairo_hint_style = CAIRO_HINT_STYLE_SLIGHT;
-    } else if (strcmp(hint_style, "hintmedium") == 0) {
-      cairo_hint_style = CAIRO_HINT_STYLE_MEDIUM;
-    } else if (strcmp(hint_style, "hintfull") == 0) {
-      cairo_hint_style = CAIRO_HINT_STYLE_FULL;
-    }
-    cairo_font_options_set_hint_style(cairo_font_options, cairo_hint_style);
-  }
-
-  if (hint_style)
-    g_free(hint_style);
-  if (rgba_style)
-    g_free(rgba_style);
 }
 
 }  // namespace
@@ -170,13 +101,6 @@ void Canvas::DrawStringInt(const std::wstring& text,
                            int flags) {
   cairo_t* cr = beginPlatformPaint();
   PangoLayout* layout = pango_cairo_create_layout(cr);
-
-  if (!cairo_font_options)
-    UpdateCairoFontOptions();
-  // This needs to be done early on; it has no effect when called just before
-  // pango_cairo_show_layout().
-  pango_cairo_context_set_font_options(
-      pango_layout_get_context(layout), cairo_font_options);
 
   // Callers of DrawStringInt handle RTL layout themselves, so tell pango to not
   // scope out RTL characters.
