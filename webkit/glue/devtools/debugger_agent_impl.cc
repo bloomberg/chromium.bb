@@ -138,8 +138,15 @@ void DebuggerAgentImpl::ResetUtilityContext(
   // Inject javascript into the context.
   StringPiece basejs = webkit_glue::GetDataResource(IDR_DEVTOOLS_BASE_JS);
   v8::Script::Compile(v8::String::New(basejs.as_string().c_str()))->Run();
+
+  StringPiece injectjs_webkit =
+      webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
+  v8::Script::Compile(
+      v8::String::New(injectjs_webkit.as_string().c_str()))->Run();
+
   StringPiece injectjs = webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_JS);
   v8::Script::Compile(v8::String::New(injectjs.as_string().c_str()))->Run();
+
   StringPiece inject_dispatchjs = webkit_glue::GetDataResource(
       IDR_DEVTOOLS_INJECT_DISPATCH_JS);
   v8::Script::Compile(v8::String::New(

@@ -245,4 +245,101 @@ devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
 };
 
 
+devtools.InspectorControllerImpl.prototype.storeLastActivePanel =
+    function(panel) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.Callback.wrap(undefined),
+      'InspectorController', JSON.stringify(['storeLastActivePanel', panel]));
+};
+
+
+// Temporary methods that will be dispatched via InspectorController into the
+// injected context.
+devtools.InspectorControllerImpl.prototype.getStyles =
+    function(node, authorOnly, callback) {
+  var mycallback = function(result) {
+    callback(result);
+  }
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(mycallback),
+      'InjectedScript', JSON.stringify(['getStyles', node.id_, authorOnly]));
+};
+
+
+devtools.InspectorControllerImpl.prototype.getComputedStyle =
+    function(node, callback) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(callback),
+      'InjectedScript', JSON.stringify(['getComputedStyle', node.id_]));
+};
+
+
+devtools.InspectorControllerImpl.prototype.getInlineStyle =
+    function(node, callback) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(callback),
+      'InjectedScript', JSON.stringify(['getInlineStyle', node.id_]));
+};
+
+
+devtools.InspectorControllerImpl.prototype.applyStyleText =
+    function(styleId, styleText, propertyName, callback) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(callback),
+      'InjectedScript', JSON.stringify(['applyStyleText', styleId, styleText,
+                                           propertyName]));
+};
+
+
+devtools.InspectorControllerImpl.prototype.setStyleText =
+    function(style, cssText, callback) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(callback),
+      'InjectedScript', JSON.stringify(['setStyleText', style, cssText]));
+};
+
+
+devtools.InspectorControllerImpl.prototype.toggleStyleEnabled =
+    function(styleId, propertyName, disabled, callback) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(callback),
+      'InjectedScript', JSON.stringify(['toggleStyleEnabled', styleId,
+                                            propertyName, disabled]));
+};
+
+
+devtools.InspectorControllerImpl.prototype.applyStyleRuleText =
+    function(ruleId, newContent, selectedNode, callback) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(callback),
+      'InjectedScript', JSON.stringify(['applyStyleRuleText', ruleId,
+                                           newContent, selectedNode]));
+};
+
+
+devtools.InspectorControllerImpl.prototype.addStyleSelector =
+    function(newContent, callback) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(callback),
+      'InjectedScript', JSON.stringify(['addStyleSelector', newContent]));
+};
+
+
+devtools.InspectorControllerImpl.prototype.setStyleProperty =
+    function(styleId, name, value, callback) {
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(callback),
+      'InjectedScript', JSON.stringify(['setStyleProperty', styleId, name,
+                                           value]));
+};
+
+
+devtools.InspectorControllerImpl.parseWrap_ = function(callback) {
+  return devtools.Callback.wrap(
+      function(data) {
+        callback.call(this, JSON.parse(data));
+      });
+};
+
+
 var InspectorController = new devtools.InspectorControllerImpl();

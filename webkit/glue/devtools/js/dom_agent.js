@@ -56,17 +56,11 @@ devtools.DomNode = function(doc, payload) {
   this.firstChild = null;
   this.parentNode = null;
 
-  this.disabledStyleProperties_ = {};
-
   if (payload.length > devtools.PayloadIndex.CHILD_NODES) {
     // Has children payloads
     this.setChildrenPayload_(
         payload[devtools.PayloadIndex.CHILD_NODES]);
   }
-
-  this.computedStyle_ = null;
-  this.style = null;
-  this.matchedCSSRules_ = [];
 };
 
 
@@ -254,86 +248,6 @@ devtools.DomNode.prototype.removeAttribute = function(name) {
 
 
 /**
- * Makes available the following methods and properties:
- * - node.style property
- * - node.document.defaultView.getComputedStyles(node)
- * - node.document.defaultView.getMatchedCSSRules(node, ...)
- * - style attribute of node's attributes
- * @param {string} computedStyle is a cssText of result of getComputedStyle().
- * @param {string} inlineStyle is a style.cssText (defined in the STYLE
- *     attribute).
- * @param {Object} styleAttributes represents 'style' property
- *     of attributes.
- * @param {Array.<object>} matchedCSSRules represents result of the
- *     getMatchedCSSRules(node, '', authorOnly). Each elemet consists of:
- *     selector, rule.style.cssText[, rule.parentStyleSheet.href
- *     [, rule.parentStyleSheet.ownerNode.nodeName]].
- */
-devtools.DomNode.prototype.setStyles = function(computedStyle, inlineStyle,
-     styleAttributes, matchedCSSRules) {
-  this.computedStyle_ = this.makeStyle_(computedStyle);
-  this.style = this.makeStyle_(inlineStyle);
-
-  for (var name in styleAttributes) {
-    if (this.attributesMap_[name]) {
-      this.attributesMap_[name].style =
-          this.makeStyle_(styleAttributes[name]);
-    }
-  }
-
-  this.matchedCSSRules_ = [];
-  for (var i = 0; i < matchedCSSRules.length; i++) {
-    var descr = matchedCSSRules[i];
-
-    var rule = {};
-    rule.selectorText = descr['selector'];
-    rule.style = this.makeStyle_(descr['style']);
-
-    if (descr['parentStyleSheet']) {
-      var parentStyleMock = {};
-      parentStyleMock.href = descr['parentStyleSheet']['href'];
-      var nodeName = descr['parentStyleSheet']['ownerNodeName'];
-      if (nodeName) {
-        parentStyleMock.ownerNode = {
-          'nodeName': nodeName
-        };
-      }
-      rule.parentStyleSheet = parentStyleMock;
-    }
-    this.matchedCSSRules_.push(rule);
-  }
-};
-
-
-/**
- * Creates a style declaration.
- * @param {payload} payload
- * @return {devtools.CSSStyleDeclaration:undefined}
- * @see devtools.CSSStyleDeclaration
- */
-devtools.DomNode.prototype.makeStyle_ = function(payload) {
-  var style = new devtools.CSSStyleDeclaration(payload);
-  style.nodeId_ = this.id_;
-  return style;
-};
-
-
-/**
- * Remove references to the style information to release
- * resources when styles are not going to be used.
- * @see setStyles.
- */
-devtools.DomNode.prototype.clearStyles = function() {
-  this.computedStyle = null;
-  this.style = null;
-  for (var name in this.attributesMap_) {
-    this.attributesMap_[name].style = null;
-  }
-  this.matchedCSSRules_ = null;
-};
-
-
-/**
  * Remote Dom document abstraction.
  * @param {devtools.DomAgent} domAgent owner agent.
  * @param {devtools.DomWindow} defaultView owner window.
@@ -440,30 +354,6 @@ devtools.DomWindow.prototype.__defineGetter__('Element', function() {
  * constructor.
  */
 devtools.DomWindow.prototype.Object = function() {
-};
-
-
-/**
- * Simulates the DOM interface for styles.
- * @param {devtools.DomNode} node
- * @return {CSSStyleDescription}
- */
-devtools.DomWindow.prototype.getComputedStyle = function(node) {
-  return node.computedStyle_;
-};
-
-
-/**
- * Simulates the DOM interface for styles.
- * @param {devtools.DomNode} nodeStyles
- * @param {string} pseudoElement assumed to be empty string.
- * @param {boolean} authorOnly assumed to be equal to authorOnly argument of
- *     getNodeStylesAsync.
- * @return {CSSStyleDescription}
- */
-devtools.DomWindow.prototype.getMatchedCSSRules = function(node,
-    pseudoElement, authorOnly) {
-  return node.matchedCSSRules_;
 };
 
 
@@ -859,71 +749,6 @@ devtools.DomAgent.prototype.getNodePrototypesAsync = function(nodeId,
 
 
 /**
- * Returns styles for given node.
- * @param {devtools.DomNode} node Node to get prototypes for.
- * @param {boolean} authorOnly Returns only author styles if true.
- * @param {Function} callback.
- */
-devtools.DomAgent.prototype.getNodeStylesAsync = function(node,
-    authorOnly, callback) {
-  var callbackId = this.utilityFunctionCallbackWrapper_(callback);
-  RemoteToolsAgent.ExecuteUtilityFunction(callbackId,
-      'getStyles',
-      JSON.stringify([node.id_, authorOnly]));
-};
-
-
-/**
- * Toggles style with given id on/off.
- * @param {devtools.CSSStyleDeclaration} style Style to toggle.
- * @param {boolean} enabled True if style should be enabled.
- * @param {string} name Style name.
- * @param {Function} callback.
- */
-devtools.DomAgent.prototype.toggleNodeStyleAsync = function(
-    style, enabled, name, callback) {
-  var callbackId = this.utilityFunctionCallbackWrapper_(callback);
-  RemoteToolsAgent.ExecuteUtilityFunction(callbackId,
-      'toggleNodeStyle',
-      JSON.stringify([style.nodeId_, style.id_, enabled, name]));
-};
-
-
-/**
- * Applies new text to a style.
- * @param {devtools.CSSStyleDeclaration} style Style to edit.
- * @param {string} name Property name to edit.
- * @param {string} styleText Text to set the style from.
- * @param {Function} callback.
- */
-devtools.DomAgent.prototype.applyStyleTextAsync = function(
-    style, name, styleText, callback) {
-  var callbackId = this.utilityFunctionCallbackWrapper_(callback);
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      callbackId,
-      'applyStyleText',
-      JSON.stringify([style.nodeId_, style.id_, name, styleText]));
-};
-
-
-/**
- * Sets style property with given name to a value.
- * @param {devtools.DomNode} node Node to edit style for.
- * @param {string} name Property name to edit.
- * @param {string} value New value.
- * @param {Function} callback.
- */
-devtools.DomAgent.prototype.setStylePropertyAsync = function(
-    node, name, value, callback) {
-  var callbackId = this.utilityFunctionCallbackWrapper_(callback);
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      callbackId,
-      'setStyleProperty',
-      JSON.stringify([node.id_, name, value]));
-};
-
-
-/**
  * Dumps exception if something went wrong in ExecuteUtilityFunction.
  * @param {Function} callback Callback to wrap.
  * @return {number} Callback id.
@@ -932,82 +757,12 @@ devtools.DomAgent.prototype.utilityFunctionCallbackWrapper_ =
     function(callback) {
   var mycallback = function(result, exception) {
     if (exception && exception.length) {
-      debugPrint('Exception in ExecuteUtilityFunction styles:' + exception);
+      debugPrint('Exception in ExecuteUtilityFunction:' + exception);
       return;
     }
     callback(result);
   };
   return devtools.Callback.wrap(mycallback);
-};
-
-
-/**
- * Represents remote CSSStyleDeclaration for using in StyleSidebarPane.
- * @param {id, Array<Object>} payload built by inject's getStyle from the
- *     injected js.
- * @constructor
- */
-devtools.CSSStyleDeclaration = function(payload) {
-  this.id_ = payload[0];
-  this.width = payload[1];
-  this.height = payload[2];
-  this.__disabledProperties = payload[3];
-  this.__disabledPropertyValues = payload[4];
-  this.__disabledPropertyPriorities = payload[5];
-
-  this.length = payload.length - 6;
-  this.priority_ = {};
-  this.implicit_ = {};
-  this.shorthand_ = {};
-  this.value_ = {};
-
-  for (var i = 6; i < payload.length; ++i) {
-    var p = payload[i];
-    var name = p[0];
-
-    this.priority_[name] = p[1];
-    this.implicit_[name] = p[2];
-    this.shorthand_[name] = p[3];
-    this.value_[name] = p[4];
-
-    this[i - 6] = name;
-  }
-};
-
-
-/**
- * @param {string} name of a CSS property.
- * @return {string}
- */
-devtools.CSSStyleDeclaration.prototype.getPropertyValue = function(name) {
-  return this.value_[name] || '';
-};
-
-
-/**
- * @param {string} name of a CSS property.
- * @return {string} 'important' | ''.
- */
-devtools.CSSStyleDeclaration.prototype.getPropertyPriority = function(name) {
-  return this.priority_[name] || '';
-};
-
-
-/**
- * @param {string} name of a CSS property.
- * @return {string} shorthand name  or ''
- */
-devtools.CSSStyleDeclaration.prototype.getPropertyShorthand = function(name) {
-  return this.shorthand_[name] || '';
-};
-
-
-/**
- * @param {string} name of a CSS property.
- * @return {boolean}
- */
-devtools.CSSStyleDeclaration.prototype.isPropertyImplicit = function(name) {
-  return !!this.implicit_[name];
 };
 
 

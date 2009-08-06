@@ -341,98 +341,6 @@ WebInspector.ElementsPanel.prototype.jumpToPreviousSearchResult = function() {
 /**
  * @override
  */
-WebInspector.ElementsPanel.prototype.updateStyles = function(forceUpdate) {
-  var stylesSidebarPane = this.sidebarPanes.styles;
-  if (!stylesSidebarPane.expanded || !stylesSidebarPane.needsUpdate) {
-    return;
-  }
-  this.invokeWithStyleSet_(function(node) {
-    stylesSidebarPane.needsUpdate = !!node;
-    stylesSidebarPane.update(node, null, forceUpdate);
-  });
-};
-
-
-/**
- * @override
- */
-WebInspector.ElementsPanel.prototype.updateMetrics = function() {
-  var metricsSidebarPane = this.sidebarPanes.metrics;
-  if (!metricsSidebarPane.expanded || !metricsSidebarPane.needsUpdate) {
-    return;
-  }
-  this.invokeWithStyleSet_(function(node) {
-    metricsSidebarPane.needsUpdate = !!node;
-    metricsSidebarPane.update(node);
-  });
-};
-
-
-/**
- * Temporarily sets style fetched from the inspectable tab to the currently
- * focused node, invokes updateUI callback and clears the styles.
- * @param {function(Node):undefined} updateUI Callback to call while styles are
- *     set.
- */
-WebInspector.ElementsPanel.prototype.invokeWithStyleSet_ =
-    function(updateUI) {
-  var node = this.focusedDOMNode;
-  if (node && node.nodeType === Node.TEXT_NODE && node.parentNode)
-    node = node.parentNode;
-
-  if (node && node.nodeType == Node.ELEMENT_NODE) {
-    var callback = function(stylesStr) {
-      var styles = JSON.parse(stylesStr);
-      if (!styles.computedStyle) {
-        return;
-      }
-      node.setStyles(styles.computedStyle, styles.inlineStyle,
-          styles.styleAttributes, styles.matchedCSSRules);
-      updateUI(node);
-      node.clearStyles();
-    };
-    devtools.tools.getDomAgent().getNodeStylesAsync(
-        node,
-        !Preferences.showUserAgentStyles,
-        callback);
-  } else {
-    updateUI(null);
-  }
-};
-
-
-/**
- * @override
- */
-WebInspector.MetricsSidebarPane.prototype.editingCommitted =
-    function(element, userInput, previousContent, context) {
-  if (userInput === previousContent) {
-    // nothing changed, so cancel
-    return this.editingCancelled(element, context);
-  }
-
-  if (context.box !== "position" && (!userInput || userInput === "\u2012")) {
-    userInput = "0px";
-  } else if (context.box === "position" &&
-      (!userInput || userInput === "\u2012")) {
-    userInput = "auto";
-  }
-
-  // Append a "px" unit if the user input was just a number.
-  if (/^\d+$/.test(userInput)) {
-    userInput += "px";
-  }
-  devtools.tools.getDomAgent().setStylePropertyAsync(
-      this.node,
-      context.styleProperty,
-      userInput,
-      WebInspector.updateStylesAndMetrics_);
-};
-
-
-/**
- * @override
- */
 WebInspector.PropertiesSidebarPane.prototype.update = function(object) {
   var body = this.bodyElement;
   body.removeChildren();
@@ -807,46 +715,6 @@ WebInspector.DebuggedObjectTreeElement.addResolvedChildren = function(
 
 
 /**
- * @override
- */
-WebInspector.StylePropertyTreeElement.prototype.toggleEnabled =
-    function(event) {
-  var enabled = event.target.checked;
-  devtools.tools.getDomAgent().toggleNodeStyleAsync(
-      this.style,
-      enabled,
-      this.name,
-      WebInspector.updateStylesAndMetrics_);
-};
-
-
-/**
- * @override
- */
-WebInspector.StylePropertyTreeElement.prototype.applyStyleText = function(
-    styleText, updateInterface) {
-  devtools.tools.getDomAgent().applyStyleTextAsync(this.style, this.name,
-      styleText,
-      function() {
-        if (updateInterface) {
-          WebInspector.updateStylesAndMetrics_();
-        }
-      });
-};
-
-
-/**
- * Forces update of styles and metrics sidebar panes.
- */
-WebInspector.updateStylesAndMetrics_ = function() {
-  WebInspector.panels.elements.sidebarPanes.metrics.needsUpdate = true;
-  WebInspector.panels.elements.updateMetrics();
-  WebInspector.panels.elements.sidebarPanes.styles.needsUpdate = true;
-  WebInspector.panels.elements.updateStyles(true);
-};
-
-
-/**
  * This function overrides standard searchableViews getters to perform search
  * only in the current view (other views are loaded asynchronously, no way to
  * search them yet).
@@ -1080,6 +948,13 @@ WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
 
 // We do not inspect DOM nodes using $ shortcuts yet.
 WebInspector.ConsoleView.prototype.addInspectedNode = function(node) {
+};
+
+
+// Stub until moved to async access in WebKit.
+WebInspector.StylePropertiesSection.prototype._doesSelectorAffectSelectedNode =
+    function() {
+  return true;
 };
 
 
