@@ -177,7 +177,7 @@ cactions_dll_path = env.File('$ARTIFACTS_DIR/cactions.dll')
 
 # Pass flags to the wix compiler.
 env.Append(WIXCANDLEFLAGS = [
-  '-dCustomActionsPath=' + custom_actions_path,
+  '-dCustomActionsPath=' + custom_actions_path.abspath,
   '-dD3DXGuid=' + d3dx_guid,
   '-dDBLGuid=' + o3d_driver_blacklist_guid,
   '-dDBLPath=' + dbl_path.abspath,
