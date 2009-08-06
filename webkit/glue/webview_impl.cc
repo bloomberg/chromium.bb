@@ -693,12 +693,10 @@ bool WebViewImpl::AutocompleteHandleKeyEvent(const WebKeyboardEvent& event) {
     return false;
 
   if (autocomplete_popup_->handleKeyEvent(MakePlatformKeyboardEvent(event))) {
-#if defined(OS_WIN) || defined(OS_LINUX)
       // We need to ignore the next Char event after this otherwise pressing
       // enter when selecting an item in the menu will go to the page.
       if (WebInputEvent::RawKeyDown == event.type)
         suppress_next_keypress_event_ = true;
-#endif
       return true;
     }
 
@@ -836,11 +834,7 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
       break;
     }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
     case WebInputEvent::RawKeyDown: {
-#else
-    case WebInputEvent::KeyDown: {
-#endif
       if (event.modifiers == WebInputEvent::ControlKey) {
         switch (event.windowsKeyCode) {
           case 'A':
