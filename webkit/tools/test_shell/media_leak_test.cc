@@ -16,7 +16,7 @@ class MediaLeakTest : public TestShellTest {
 
 // This test plays a Theora video file for 1 second. It tries to expose
 // memory leaks during a normal playback.
-TEST_F(MediaLeakTest, VideoBear) {
+TEST_F(MediaLeakTest, DISABLED_VideoBear) {
   FilePath media_file;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &media_file));
   media_file = media_file.Append(FILE_PATH_LITERAL("webkit"))
@@ -29,7 +29,7 @@ TEST_F(MediaLeakTest, VideoBear) {
 
 // This test loads a Theora video file and unloads it many times. It tries
 // to expose memory leaks in the glue layer with WebKit.
-TEST_F(MediaLeakTest, ManyVideoBear) {
+TEST_F(MediaLeakTest, DISABLED_ManyVideoBear) {
   FilePath media_file;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &media_file));
   media_file = media_file.Append(FILE_PATH_LITERAL("webkit"))
