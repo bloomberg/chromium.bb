@@ -1,3 +1,5 @@
 # Way too slow under Purify at the moment; http://crbug.com/9177
 BMPImageDecoderTest.ChunkedDecodingSlow
 BMPImageDecoderTest.DecodingSlow
+# Started timing out at r22420; http://crbug.com/18598
+PluginTest.Refresh
