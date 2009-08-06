@@ -72,7 +72,7 @@ int main(int argc, const char** argv) {
 
   std::vector<std::wstring> filenames(cmd_line->GetLooseValues());
   if (filenames.empty()) {
-    std::cerr << "Usage: alg_test RATE INFILE OUTFILE\n"
+    std::cerr << "Usage: wav_ola_test RATE INFILE OUTFILE\n"
               << std::endl;
     return 1;
   }
@@ -121,6 +121,7 @@ int main(int argc, const char** argv) {
                  wav.bit_rate,
                  static_cast<float>(playback_rate),
                  cb);
+  ola.FlushBuffers();
 
   // Print out input format.
   std::cout << in_path << "\n"
