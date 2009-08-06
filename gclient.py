@@ -1233,8 +1233,8 @@ class GClient(object):
       command[0] = sys.executable
 
     if '$matching_files' in command:
-      command.remove('$matching_files')
-      command.extend(matching_file_list)
+      splice_index = command.index('$matching_files')
+      command[splice_index:splice_index + 1] = matching_file_list
 
     # Use a discrete exit status code of 2 to indicate that a hook action
     # failed.  Users of this script may wish to treat hook action failures
