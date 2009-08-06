@@ -8,6 +8,7 @@
 #include "media/base/mock_filters.h"
 #include "media/filters/audio_renderer_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 using ::testing::_;
 using ::testing::InSequence;
@@ -36,6 +37,8 @@ class MockAudioRendererBase : public AudioRendererBase {
   MOCK_METHOD1(CheckPoint, void(int id));
 
  private:
+  FRIEND_TEST(AudioRendererBaseTest, OneCompleteReadCycle);
+
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererBase);
 };
 
@@ -139,6 +142,74 @@ TEST_F(AudioRendererBaseTest, Initialize_Successful) {
     delete read_queue_.front();
     read_queue_.pop_front();
   }
+}
+
+TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
+  InSequence s;
+
+  // Then our subclass will be asked to initialize.
+  EXPECT_CALL(*renderer_, OnInitialize(_))
+      .WillOnce(Return(true));
+
+  // After finishing initialization, we expect our callback to be executed.
+  EXPECT_CALL(callback_, OnFilterCallback());
+  EXPECT_CALL(callback_, OnCallbackDestroyed());
+
+  // Verify the following expectations haven't run until we complete the reads.
+  EXPECT_CALL(*renderer_, CheckPoint(0));
+
+  MockFilterCallback seek_callback;
+  EXPECT_CALL(seek_callback, OnFilterCallback());
+  EXPECT_CALL(seek_callback, OnCallbackDestroyed());
+
+  // Initialize, we shouldn't have any reads.
+  renderer_->Initialize(decoder_, callback_.NewCallback());
+  EXPECT_EQ(0u, read_queue_.size());
+
+  // Now seek to trigger prerolling.
+  renderer_->Seek(base::TimeDelta(), seek_callback.NewCallback());
+  EXPECT_EQ(kMaxQueueSize, read_queue_.size());
+
+  // Verify our seek callback hasn't been executed yet.
+  renderer_->CheckPoint(0);
+
+  // Now satisfy the read requests.  Our callback should be executed after
+  // exiting this loop.
+  const size_t kDataSize = 1024;
+  while (!read_queue_.empty()) {
+    scoped_refptr<DataBuffer> buffer = new DataBuffer(kDataSize);
+    buffer->SetDataSize(kDataSize);
+    read_queue_.front()->Run(buffer);
+    delete read_queue_.front();
+    read_queue_.pop_front();
+  }
+
+  MockFilterCallback play_callback;
+  EXPECT_CALL(play_callback, OnFilterCallback());
+  EXPECT_CALL(play_callback, OnCallbackDestroyed());
+
+  // Then set the renderer to play state.
+  renderer_->Play(play_callback.NewCallback());
+  renderer_->SetPlaybackRate(1.0f);
+  EXPECT_EQ(1.0f, renderer_->GetPlaybackRate());
+
+  // Then flush the data in the renderer by reading from it.
+  uint8 buffer[kDataSize];
+  for (size_t i = 0; i < kMaxQueueSize; ++i) {
+    EXPECT_EQ(kDataSize,
+              renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
+  }
+
+  // Make sure the read request queue is full.
+  EXPECT_EQ(kMaxQueueSize, read_queue_.size());
+
+  // Fulfill the read with an end-of-stream packet.
+  read_queue_.front()->Run(new DataBuffer(0));
+  delete read_queue_.front();
+  read_queue_.pop_front();
+
+  // We should have one less read request in the queue.
+  EXPECT_EQ(kMaxQueueSize - 1, read_queue_.size());
 }
 
 }  // namespace media

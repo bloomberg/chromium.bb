@@ -120,8 +120,11 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
   DCHECK_GT(pending_reads_, 0u);
   --pending_reads_;
 
-  // Note: Calling this may schedule more reads.
-  algorithm_->EnqueueBuffer(buffer_in);
+  // Don't enqueue an end-of-stream buffer because it has no data.
+  if (!buffer_in->IsEndOfStream()) {
+    // Note: Calling this may schedule more reads.
+    algorithm_->EnqueueBuffer(buffer_in);
+  }
 
   // Check for our preroll complete condition.
   if (state_ == kSeeking) {
