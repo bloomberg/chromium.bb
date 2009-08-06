@@ -47,7 +47,7 @@
 #if NACL_ARM
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
 #else
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 #endif
 
 int NaClAppCtor(struct NaClApp  *nap) {
