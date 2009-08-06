@@ -2217,13 +2217,6 @@ BUG9916 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FA
 // Windows. Probably just need the same on other platforms.
 BUG9962 LINUX : LayoutTests/fast/block/positioning/fixed-positioning-scrollbar-bug.html = FAIL
 BUG9962 MAC : LayoutTests/fast/js/function-apply-aliased.html = FAIL
-BUG9962 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-in-body.html = FAIL
-BUG9962 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-allow.html = FAIL
-BUG9962 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html = FAIL
-BUG9962 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag.html = FAIL
-BUG9962 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny.html = FAIL
-BUG9962 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html = TIMEOUT FAIL
-BUG9962 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-deny.html = FAIL
 
 // Regressions from WebKit merge 43264:42403, possibly due to r42375.
 BUG9992 WIN LINUX : LayoutTests/fast/text/shadow-no-blur.html = FAIL
