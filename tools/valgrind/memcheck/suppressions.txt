@@ -751,6 +751,14 @@
    fun:_ZN11ChildThread4InitEv
 }
 {
+   bug_16128_2
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncChannelC2ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
+   fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
+   fun:_ZN11ChildThread4InitEv
+}
+{
    bug_16129
    Memcheck:Leak
    fun:_Znwj
