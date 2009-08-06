@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <dlfcn.h>
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/types.h>
@@ -205,11 +206,9 @@ class Zygote {
   }
 };
 
-// Patched dynamic symbol wrapper functions...
-namespace sandbox_wrapper {
-
-void do_localtime(time_t input, struct tm* output, char* timezone_out,
-                  size_t timezone_out_len) {
+static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
+                                        char* timezone_out,
+                                        size_t timezone_out_len) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_LOCALTIME);
   request.WriteString(
@@ -244,58 +243,75 @@ void do_localtime(time_t input, struct tm* output, char* timezone_out,
   }
 }
 
+static bool g_am_zygote_or_renderer = false;
+
+// Sandbox interception of libc calls.
+//
+// Because we are running in a sandbox certain libc calls will fail (localtime
+// being the motivating example - it needs to read /etc/localtime). We need to
+// intercept these calls and proxy them to the browser. However, these calls
+// may come from us or from our libraries. In some cases we can't just change
+// our code.
+//
+// It's for these cases that we have the following setup:
+//
+// We define global functions for those functions which we wish to override.
+// Since we will be first in the dynamic resolution order, the dynamic linker
+// will point callers to our versions of these functions. However, we have the
+// same binary for both the browser and the renderers, which means that our
+// overrides will apply in the browser too.
+//
+// The global |g_am_zygote_or_renderer| is true iff we are in a zygote or
+// renderer process. It's set in ZygoteMain and inherited by the renderers when
+// they fork. (This means that it'll be incorrect for global constructor
+// functions and before ZygoteMain is called - beware).
+//
+// Our replacement functions can check this global and either proxy
+// the call to the browser over the sandbox IPC
+// (http://code.google.com/p/chromium/wiki/LinuxSandboxIPC) or they can use
+// dlsym with RTLD_NEXT to resolve the symbol, ignoring any symbols in the
+// current module.
+//
+// Other avenues:
+//
+// Our first attempt involved some assembly to patch the GOT of the current
+// module. This worked, but was platform specific and doesn't catch the case
+// where a library makes a call rather than current module.
+//
+// We also considered patching the function in place, but this would again by
+// platform specific and the above technique seems to work well enough.
+
 struct tm* localtime(const time_t* timep) {
-  static struct tm time_struct;
-  static char timezone_string[64];
-  do_localtime(*timep, &time_struct, timezone_string, sizeof(timezone_string));
-  return &time_struct;
+  if (g_am_zygote_or_renderer) {
+    static struct tm time_struct;
+    static char timezone_string[64];
+    ProxyLocaltimeCallToBrowser(*timep, &time_struct, timezone_string,
+                                sizeof(timezone_string));
+    return &time_struct;
+  } else {
+    typedef struct tm* (*LocaltimeFunction)(const time_t* timep);
+    static LocaltimeFunction libc_localtime;
+    if (!libc_localtime)
+      libc_localtime = (LocaltimeFunction) dlsym(RTLD_NEXT, "localtime");
+
+    return libc_localtime(timep);
+  }
 }
 
 struct tm* localtime_r(const time_t* timep, struct tm* result) {
-  do_localtime(*timep, result, NULL, 0);
-  return result;
+  if (g_am_zygote_or_renderer) {
+    ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
+    return result;
+  } else {
+    typedef struct tm* (*LocaltimeRFunction)(const time_t* timep,
+                                             struct tm* result);
+    static LocaltimeRFunction libc_localtime_r;
+    if (!libc_localtime_r)
+      libc_localtime_r = (LocaltimeRFunction) dlsym(RTLD_NEXT, "localtime_r");
+
+    return libc_localtime_r(timep, result);
+  }
 }
-
-}  // namespace sandbox_wrapper
-
-/* On IA-32, function calls which need to be resolved by the dynamic linker are
- * directed to the producure linking table (PLT). Each PLT entry contains code
- * which jumps (indirectly) via the global offset table (GOT):
- *   Dump of assembler code for function f@plt:
- *   0x0804830c <f@plt+0>:   jmp    *0x804a004  # GOT indirect jump
- *   0x08048312 <f@plt+6>:   push   $0x8
- *   0x08048317 <f@plt+11>:  jmp    0x80482ec <_init+48>
- *
- * At the beginning of a process's lifetime, the GOT entry jumps back to
- * <f@plt+6> end then enters the dynamic linker. Once the symbol has been
- * resolved, the GOT entry is patched so that future calls go directly to the
- * resolved function.
- *
- * This macro finds the PLT entry for a given symbol, |symbol|, and reads the
- * GOT entry address from the first instruction. It then patches that address
- * with the address of a replacement function, |replacement|.
- */
-#define PATCH_GLOBAL_OFFSET_TABLE(symbol, replacement) \
-       /* First, get the current instruction pointer since the PLT address */ \
-       /* is IP relative */ \
-  asm ("call 0f\n" \
-       "0: pop %%ecx\n" \
-       /* Move the IP relative address of the PLT entry into EAX */ \
-       "mov $" #symbol "@plt,%%eax\n" \
-       /* Add EAX to ECX to get an absolute entry */ \
-       "add %%eax,%%ecx\n" \
-       /* The value in ECX was relative to the add instruction, however, */ \
-       /* the IP value was that of the pop. The pop and mov take 6 */ \
-       /* bytes, so adding 6 gets us the correct address for the PLT. The */ \
-       /* first instruction at the PLT is FF 25 <abs address>, so we skip 2 */ \
-       /* bytes to get to the address. 6 + 2 = 8: */ \
-       "movl 8(%%ecx),%%ecx\n" \
-       /* Now ECX contains the address of the GOT entry, we poke our */ \
-       /* replacement function in there: */ \
-       "movl %0,(%%ecx)\n" \
-       :  /* no output */ \
-       :  "r" (replacement) \
-       : "memory", "%eax", "%ecx");
 
 static bool MaybeEnterChroot() {
   const char* const sandbox_fd_string = getenv("SBX_D");
@@ -323,11 +339,6 @@ static bool MaybeEnterChroot() {
     // FilePath for IPC.
     const char* locale = setlocale(LC_ALL, "");
     LOG_IF(WARNING, locale == NULL) << "setlocale failed.";
-
-#if defined(ARCH_CPU_X86)
-    PATCH_GLOBAL_OFFSET_TABLE(localtime, sandbox_wrapper::localtime);
-    PATCH_GLOBAL_OFFSET_TABLE(localtime_r, sandbox_wrapper::localtime_r);
-#endif
 
     FilePath module_path;
     if (PathService::Get(base::DIR_MODULE, &module_path))
@@ -390,6 +401,8 @@ static bool MaybeEnterChroot() {
 }
 
 bool ZygoteMain(const MainFunctionParams& params) {
+  g_am_zygote_or_renderer = true;
+
   if (!MaybeEnterChroot()) {
     LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
                << errno << ")";
