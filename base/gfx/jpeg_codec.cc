@@ -11,7 +11,11 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 extern "C" {
+#if defined(USE_SYSTEM_LIBJPEG)
+#include <jpeglib.h>
+#else
 #include "third_party/libjpeg/jpeglib.h"
+#endif
 }
 
 // Encoder/decoder shared stuff ------------------------------------------------
