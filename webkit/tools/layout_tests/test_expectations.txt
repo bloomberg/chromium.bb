@@ -1848,10 +1848,6 @@ BUG10438 MAC : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = FAIL
 BUG10438 MAC : LayoutTests/plugins/netscape-plugin-setwindow-size.html = FAIL
 BUG10438 MAC : LayoutTests/plugins/destroy-stream-twice.html = TIMEOUT
 
-// Crashes sometimes.  Race?  Memory corruption?
-// Might be related to https://bugs.webkit.org/show_bug.cgi?id=22834
-BUG10439 LINUX : LayoutTests/fast/canvas/set-colors.html = CRASH PASS
-
 // Flakey. Not clear when it started, but it was before 3/9/09.
 // This test also started failing with the merge of March 25th 2009
 BUG10441 LINUX : LayoutTests/fast/clip/outline-overflowClip.html = CRASH FAIL PASS
