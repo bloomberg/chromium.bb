@@ -898,8 +898,6 @@ function OptionMenu(button, menu) {
 
 OptionMenu.prototype = {
   show: function() {
-    windowTooltip.hide();
-
     this.menu.style.display = 'block';
     this.button.focus();
 
@@ -1137,12 +1135,19 @@ WindowTooltip.trackMouseMove_ = function(e) {
 WindowTooltip.prototype = {
   timer: 0,
   handleMouseOver: function(e, linkEl, tabs) {
-    document.addEventListener('mousemove', WindowTooltip.trackMouseMove_);
+    this.linkEl_ = linkEl;
+    if (e.type == 'mouseover') {
+      this.linkEl_.addEventListener('mousemove', WindowTooltip.trackMouseMove_);
+      this.linkEl_.addEventListener('mouseout', this.boundHandleMouseOut_);
+    } else { // focus
+      this.linkEl_.addEventListener('blur', this.boundHide_);
+    }
     this.timer = window.setTimeout(bind(this.show, this, e.type, linkEl, tabs),
                                    300);
   },
   show: function(type, linkEl, tabs) {
-    document.removeEventListener('mousemove', WindowTooltip.trackMouseMove_);
+    this.linkEl_.removeEventListener('mousemove',
+                                     WindowTooltip.trackMouseMove_);
     clearTimeout(this.timer);
 
     processData('#window-tooltip', tabs);
@@ -1166,12 +1171,6 @@ WindowTooltip.prototype = {
       this.tooltipEl.style.top = 20 + WindowTooltip.clientY + bodyRect.top +
                                  'px';
     }
-
-    if (type == 'focus') {
-      linkEl.onblur = this.boundHide_;
-    } else { // mouseover
-      linkEl.onmouseout = this.boundHandleMouseOut_;
-    }
   },
   handleMouseOut: function(e) {
     // Don't hide when move to another item in the link.
@@ -1186,7 +1185,12 @@ WindowTooltip.prototype = {
   },
   hide: function() {
     window.clearTimeout(this.timer);
-    document.removeEventListener('mousemove', WindowTooltip.trackMouseMove_);
+    this.linkEl_.removeEventListener('mousemove',
+                                     WindowTooltip.trackMouseMove_);
+    this.linkEl_.removeEventListener('mouseout', this.boundHandleMouseOut_);
+    this.linkEl_.removeEventListener('blur', this.boundHide_);
+    this.linkEl_ = null;
+
     this.tooltipEl.style.display  = 'none';
   }
 };
