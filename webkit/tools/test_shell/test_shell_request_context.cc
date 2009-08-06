@@ -4,13 +4,11 @@
 
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 
-#include "base/command_line.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/proxy/proxy_service.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/tools/test_shell/test_shell_switches.h"
 
 TestShellRequestContext::TestShellRequestContext() {
   Init(std::wstring(), net::HttpCache::NORMAL, false);
@@ -58,14 +56,7 @@ void TestShellRequestContext::Init(
   cache->set_mode(cache_mode);
   http_transaction_factory_ = cache;
 
-  // The kNewFtp switch is Windows specific only because we have multiple FTP
-  // implementations on Windows.
-#if defined(OS_WIN)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(test_shell::kNewFtp))
-    ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
-#else
   ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
-#endif
 }
 
 TestShellRequestContext::~TestShellRequestContext() {

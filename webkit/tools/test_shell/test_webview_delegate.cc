@@ -138,10 +138,10 @@ std::string GetResponseDescription(const WebURLResponse& response) {
 }
 
 std::string GetErrorDescription(const WebURLError& error) {
-  std::string domain;
-  int code;
+  std::string domain = UTF16ToASCII(error.domain);
+  int code = error.reason;
 
-  if (EqualsASCII(error.domain, net::kErrorDomain)) {
+  if (domain == net::kErrorDomain) {
     domain = "NSURLErrorDomain";
     switch (error.reason) {
       case net::ERR_ABORTED:
@@ -154,15 +154,12 @@ std::string GetErrorDescription(const WebURLError& error) {
         code = 103;
         break;
       case net::ERR_ADDRESS_INVALID:
+      case net::ERR_ADDRESS_UNREACHABLE:
         code = -1004;
         break;
-      default:
-        code = -1;
     }
   } else {
     DLOG(WARNING) << "Unknown error domain";
-    domain = UTF16ToASCII(error.domain);
-    code = error.reason;
   }
 
   return StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
