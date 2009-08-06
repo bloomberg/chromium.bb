@@ -3042,15 +3042,10 @@ BUG17974 WIN LINUX : LayoutTests/fast/css/getComputedStyle/computed-style.html =
 BUG17974 WIN LINUX : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 BUG17974 WIN : LayoutTests/svg/custom/svg-fonts-in-html.html = FAIL
 
-// This test seems to crash periodically on linux and mac.
-BUG18206 LINUX MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-onload-remove-self.html = CRASH PASS
-
 // This happened when I enabled DOM Storage.  Adam asked me to just exclude and
 // file a bug.
 BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
 BUG18412 : LayoutTests/http/tests/security/isolatedWorld/all-window-prototypes.html = FAIL
-
-BUG18569 MAC DEBUG : LayoutTests/fast/repaint/overflow-scroll-delete.html = PASS CRASH
 
 // Flaky.  Timing?
 BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
@@ -3061,5 +3056,10 @@ BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 BUG18610 WIN LINUX : LayoutTests/security/block-test.html = FAIL
 
 // Flaky crashes
+BUG18206 LINUX MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-iframe-onload-remove-self.html = CRASH PASS
+BUG18569 MAC DEBUG : LayoutTests/fast/repaint/overflow-scroll-delete.html = PASS CRASH
 BUG18656 LINUX : LayoutTests/fast/overflow/overflow-stacking.html = PASS CRASH
 BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL CRASH
+
+// Flaky timeout
+BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEOUT
