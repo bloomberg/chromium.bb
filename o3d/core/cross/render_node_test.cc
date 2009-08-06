@@ -95,12 +95,12 @@ TEST_F(RenderNodeBasicTest, SetParent) {
 
   // Check that the node was added as a child to the parent transform
   const RenderNodeArray children = parent->GetChildren();
-  EXPECT_EQ(1, children.size());
+  EXPECT_EQ(1U, children.size());
   EXPECT_EQ(render_node, children[0]);
 
   // Check that SetParent(NULL) works properly too
   render_node->SetParent(NULL);
-  EXPECT_EQ(0, parent->GetChildren().size());
+  EXPECT_EQ(0U, parent->GetChildren().size());
 }
 
 TEST_F(RenderNodeBasicTest, SetParentCyclic) {

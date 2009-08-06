@@ -171,9 +171,9 @@ TEST_F(SkinTest, GetSetVertexInfluence) {
 
   // Check Highests are 0
   const Skin::InfluencesArray& influences = skin->influences();
-  ASSERT_EQ(influences.size(), 0);
-  EXPECT_EQ(skin->GetHighestMatrixIndex(), 0);
-  EXPECT_EQ(skin->GetHighestInfluences(), 0);
+  ASSERT_EQ(influences.size(), 0U);
+  EXPECT_EQ(skin->GetHighestMatrixIndex(), 0U);
+  EXPECT_EQ(skin->GetHighestInfluences(), 0U);
 
   // Add some influences.
   Skin::Influences no_influences;
@@ -188,7 +188,7 @@ TEST_F(SkinTest, GetSetVertexInfluence) {
   skin->SetVertexInfluences(4, influences_4);
 
   // Check they got set.
-  ASSERT_EQ(influences.size(), 5);
+  ASSERT_EQ(influences.size(), 5U);
   EXPECT_TRUE(CompareInfluences(influences[0], influences_0));
   EXPECT_TRUE(CompareInfluences(influences[1], no_influences));
   EXPECT_TRUE(CompareInfluences(influences[2], no_influences));
@@ -196,8 +196,8 @@ TEST_F(SkinTest, GetSetVertexInfluence) {
   EXPECT_TRUE(CompareInfluences(influences[4], influences_4));
 
   // Check the limits
-  EXPECT_EQ(skin->GetHighestMatrixIndex(), 4);
-  EXPECT_EQ(skin->GetHighestInfluences(), 2);
+  EXPECT_EQ(skin->GetHighestMatrixIndex(), 4U);
+  EXPECT_EQ(skin->GetHighestInfluences(), 2U);
 
   // Add a new influence.
   Skin::Influences influences_2;
@@ -207,7 +207,7 @@ TEST_F(SkinTest, GetSetVertexInfluence) {
 
   // Check they got set.
   skin->SetVertexInfluences(2, influences_2);
-  ASSERT_EQ(influences.size(), 5);
+  ASSERT_EQ(influences.size(), 5U);
   EXPECT_TRUE(CompareInfluences(influences[0], influences_0));
   EXPECT_TRUE(CompareInfluences(influences[1], no_influences));
   EXPECT_TRUE(CompareInfluences(influences[2], influences_2));
@@ -215,12 +215,12 @@ TEST_F(SkinTest, GetSetVertexInfluence) {
   EXPECT_TRUE(CompareInfluences(influences[4], influences_4));
 
   // Check the limits
-  EXPECT_EQ(skin->GetHighestMatrixIndex(), 9);
-  EXPECT_EQ(skin->GetHighestInfluences(), 3);
+  EXPECT_EQ(skin->GetHighestMatrixIndex(), 9U);
+  EXPECT_EQ(skin->GetHighestInfluences(), 3U);
 
   // Add one past the end.
   skin->SetVertexInfluences(6, influences_4);
-  ASSERT_EQ(influences.size(), 7);
+  ASSERT_EQ(influences.size(), 7U);
   EXPECT_TRUE(CompareInfluences(influences[0], influences_0));
   EXPECT_TRUE(CompareInfluences(influences[1], no_influences));
   EXPECT_TRUE(CompareInfluences(influences[2], influences_2));
@@ -230,8 +230,8 @@ TEST_F(SkinTest, GetSetVertexInfluence) {
   EXPECT_TRUE(CompareInfluences(influences[6], influences_4));
 
   // Check the limits
-  EXPECT_EQ(skin->GetHighestMatrixIndex(), 9);
-  EXPECT_EQ(skin->GetHighestInfluences(), 3);
+  EXPECT_EQ(skin->GetHighestMatrixIndex(), 9U);
+  EXPECT_EQ(skin->GetHighestInfluences(), 3U);
 }
 
 TEST_F(SkinTest, GetSetInverseBindPoseMatrices) {
@@ -240,7 +240,7 @@ TEST_F(SkinTest, GetSetInverseBindPoseMatrices) {
   ASSERT_TRUE(skin != NULL);
 
   const Skin::MatrixArray& matrices = skin->inverse_bind_pose_matrices();
-  EXPECT_EQ(matrices.size(), 0);
+  EXPECT_EQ(matrices.size(), 0U);
 
   Matrix4 matrix_2(Vector4(1.0f, 2.0f, 3.0f, 4.0f),
                    Vector4(2.0f, 3.0f, 4.0f, 6.0f),
@@ -252,13 +252,13 @@ TEST_F(SkinTest, GetSetInverseBindPoseMatrices) {
                    Vector4(4.0f, 5.0f, 6.0f, 8.0f));
 
   skin->SetInverseBindPoseMatrix(2, matrix_2);
-  EXPECT_EQ(matrices.size(), 3);
+  EXPECT_EQ(matrices.size(), 3U);
   EXPECT_TRUE(CompareMatrix4s(matrices[0], Matrix4::identity()));
   EXPECT_TRUE(CompareMatrix4s(matrices[1], Matrix4::identity()));
   EXPECT_TRUE(CompareMatrix4s(matrices[2], matrix_2));
 
   skin->SetInverseBindPoseMatrix(4, matrix_4);
-  EXPECT_EQ(matrices.size(), 5);
+  EXPECT_EQ(matrices.size(), 5U);
   EXPECT_TRUE(CompareMatrix4s(matrices[0], Matrix4::identity()));
   EXPECT_TRUE(CompareMatrix4s(matrices[1], Matrix4::identity()));
   EXPECT_TRUE(CompareMatrix4s(matrices[2], matrix_2));
@@ -407,7 +407,6 @@ TEST_F(SkinEvalTest, BindStreams) {
     0.5f + 4.0f, 3.0f + 5.0f, 1.5f + 6.0f, 1.0f,
   };
 
-  const unsigned kStride = 10 * sizeof(vertices[0]);
   const unsigned kNumElements = 3;
 
   // Create the buffers.
@@ -668,7 +667,7 @@ TEST_F(SkinTest, SkinRawDataValid) {
 
 
   // Write out some influence data
-  const size_t kNumInfluences = 32;
+  const int kNumInfluences = 32;
   write_stream.WriteLittleEndianInt32(kNumInfluences);
 
   for (int i = 0; i < kNumInfluences; ++i) {
@@ -688,10 +687,11 @@ TEST_F(SkinTest, SkinRawDataValid) {
 
   // Validate the influences
   const Skin::InfluencesArray& influences_array = skin->influences();
-  EXPECT_EQ(1, influences_array.size());
+  EXPECT_EQ(1U, influences_array.size());
 
   const Skin::Influences& influences = influences_array[0];
-  EXPECT_EQ(kNumInfluences, influences.size());
+  unsigned expected_count = kNumInfluences;
+  EXPECT_EQ(expected_count, influences.size());
 
   for (Skin::Influences::size_type i = 0; i < influences.size(); ++i) {
     const Skin::Influence &influence = influences[i];

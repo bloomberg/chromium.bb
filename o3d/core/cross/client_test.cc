@@ -140,7 +140,7 @@ TEST_F(ClientBasic, GetBuffers) {
   b3->set_name("buffer3");
 
   std::vector<Buffer*> buffers = object_manager_->Get<Buffer>("buffer1");
-  EXPECT_EQ(2, buffers.size());
+  EXPECT_EQ(2U, buffers.size());
   std::vector<Buffer*>::const_iterator pos;
   EXPECT_TRUE((pos = find(buffers.begin(), buffers.end(), b1)) !=
       buffers.end());
@@ -182,7 +182,7 @@ TEST_F(ClientBasic, GetEffects) {
   e3->set_name("effect3");
 
   EffectArray effects = object_manager_->Get<Effect>("effect1");
-  EXPECT_EQ(2, effects.size());
+  EXPECT_EQ(2U, effects.size());
   EffectArray::const_iterator pos;
   EXPECT_TRUE((pos = find(effects.begin(), effects.end(), e1)) !=
       effects.end());
@@ -295,17 +295,17 @@ TEST_F(ClientTree, GetById) {
 // Tests GetByName
 TEST_F(ClientTree, GetByName) {
   TransformArray transforms = object_manager_->Get<Transform>("t3");
-  EXPECT_EQ(1, transforms.size());
+  EXPECT_EQ(1U, transforms.size());
   EXPECT_TRUE(transforms[0] == t3_);
 
   transforms = object_manager_->Get<Transform>("t5");
-  EXPECT_EQ(0, transforms.size());
+  EXPECT_EQ(0U, transforms.size());
 
   // Add one more transform with the name "t3"
   Transform* t3_new = pack()->Create<Transform>();
   t3_new->set_name("t3");
   transforms = object_manager_->Get<Transform>("t3");
-  EXPECT_EQ(2, transforms.size());
+  EXPECT_EQ(2U, transforms.size());
   TransformArray::const_iterator pos;
   EXPECT_TRUE((pos = find(transforms.begin(),
                           transforms.end(),

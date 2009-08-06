@@ -71,7 +71,7 @@ TEST_F(ShapeTest, ElementsAccessorShouldReturnAllElements) {
   shape->AddElement(element);
   ElementArray elements = shape->GetElements();
 
-  EXPECT_EQ(1, elements.size());
+  EXPECT_EQ(1U, elements.size());
   EXPECT_EQ(element, elements[0]);
 }
 
@@ -87,7 +87,7 @@ TEST_F(ShapeTest, ElementsAccessorShouldReplaceAllElements) {
   shape->SetElements(elements);
   elements = shape->GetElements();
 
-  EXPECT_EQ(1, elements.size());
+  EXPECT_EQ(1U, elements.size());
   EXPECT_EQ(element2, elements[0]);
 }
 }  // namespace o3d

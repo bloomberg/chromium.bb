@@ -252,7 +252,7 @@ TEST_F(CounterTest, AddRemoveGetCallback) {
   counter->AddCallback(2.0f, test2);
   counter->AddCallback(1.0f, test1);
   // Check that both got added.
-  ASSERT_EQ(counters.size(), 2);
+  ASSERT_EQ(counters.size(), 2U);
   iter = counters.begin();
   EXPECT_EQ(iter->count(), 1.0f);
   ++iter;
@@ -261,7 +261,7 @@ TEST_F(CounterTest, AddRemoveGetCallback) {
   // Check that adding one at the same time removes the other
   counter->AddCallback(2.0f, test1);
   EXPECT_TRUE(test2_deleted);
-  ASSERT_EQ(counters.size(), 2);
+  ASSERT_EQ(counters.size(), 2U);
 
   // Check that removing a non-existant callback fails.
   EXPECT_FALSE(counter->RemoveCallback(3.0f));
@@ -269,12 +269,12 @@ TEST_F(CounterTest, AddRemoveGetCallback) {
   // Check that removing one of the duplicated callbacks does not remove the
   // other.
   EXPECT_TRUE(counter->RemoveCallback(1.0f));
-  ASSERT_EQ(counters.size(), 1);
+  ASSERT_EQ(counters.size(), 1U);
   EXPECT_FALSE(test1_deleted);
 
   // Check that removing final callback deletes the callback.
   EXPECT_TRUE(counter->RemoveCallback(2.0f));
-  ASSERT_EQ(counters.size(), 0);
+  ASSERT_EQ(counters.size(), 0U);
   EXPECT_TRUE(test1_deleted);
   EXPECT_FALSE(counter->RemoveCallback(2.0f));
 
@@ -611,7 +611,7 @@ TEST_F(CounterTest, AddRemoveGetCallback) {
 
   // Check RemoveAllCallbacks.
   counter->RemoveAllCallbacks();
-  EXPECT_EQ(counters.size(), 0);
+  EXPECT_EQ(counters.size(), 0U);
   EXPECT_TRUE(test1_deleted);
   EXPECT_TRUE(test2_deleted);
   EXPECT_TRUE(test3_deleted);

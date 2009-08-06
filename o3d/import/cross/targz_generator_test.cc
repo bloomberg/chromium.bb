@@ -145,7 +145,7 @@ TEST_F(TarGzGeneratorTest, GenerateTarGz) {
   ASSERT_TRUE(audio_data != NULL);
   ASSERT_TRUE(shader_data != NULL);
 
-  ASSERT_NE(0, targz_reference_size);
+  ASSERT_NE(0U, targz_reference_size);
 
   TarGzTestClient test_client(targz_reference_size);
   TarGzGenerator targz_generator(&test_client);

@@ -63,7 +63,9 @@ PluginLogging::PluginLogging() : timer_(new HighresTimer()),
 bool PluginLogging::UpdateLogging() {
   // Check that sufficient time has passed since last aggregation
   // Otherwise we can just return
-  if (timer_->GetElapsedMs() < kStatsAggregationIntervalMSec) return false;
+  if (timer_->GetElapsedMs() <
+      static_cast<unsigned>(kStatsAggregationIntervalMSec))
+    return false;
 
   // Sufficient time has passed, let's process
   // Reset timer

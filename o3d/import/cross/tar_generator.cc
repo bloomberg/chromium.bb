@@ -158,7 +158,7 @@ bool TarGenerator::AddEntry(const String &file_name,
                             bool is_directory) {
   // If filename is longer 99 chars, use the GNU format to write out a longer
   // filename.
-  if (file_name.size() >= kMaxFilenameSizeOldFormat) {
+  if (file_name.size() >= static_cast<unsigned>(kMaxFilenameSizeOldFormat)) {
     WriteHeader(kLongLink,
                 file_name.size(),
                 'L',

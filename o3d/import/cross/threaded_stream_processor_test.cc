@@ -89,7 +89,7 @@ TEST_F(ThreadedStreamProcessorTest, CanForwardZeroBuffers) {
   processor.Close(true);
   processor.StopThread();
 
-  EXPECT_EQ(0, receiver.GetResultLength());
+  EXPECT_EQ(0U, receiver.GetResultLength());
   EXPECT_TRUE(receiver.closed());
   EXPECT_TRUE(receiver.success());
 }
@@ -104,7 +104,7 @@ TEST_F(ThreadedStreamProcessorTest, CanForwardOneBufferOfZeroBytes) {
   processor.Close(true);
   processor.StopThread();
 
-  EXPECT_EQ(0, receiver.GetResultLength());
+  EXPECT_EQ(0U, receiver.GetResultLength());
   EXPECT_TRUE(receiver.closed());
   EXPECT_TRUE(receiver.success());
 }

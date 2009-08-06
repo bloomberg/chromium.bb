@@ -252,7 +252,6 @@ TEST_F(EffectTest, CreateAndDestroyEffect) {
   ASSERT_TRUE(color != NULL);
   ASSERT_TRUE(index != NULL);
 
-  void* vbuffer = NULL;
   Field* vertex_field = verts->CreateField(FloatField::GetApparentClass(),
                                            arraysize(kVertexBlock[0]));
   ASSERT_TRUE(vertex_field != NULL);

@@ -58,7 +58,7 @@ uint8 *ReadFile(o3d::String file, size_t *data_size) {
 
   int bytes_read = fread(data, 1, file_size, fp);
   fclose(fp);
-  DCHECK_EQ(bytes_read, file_size);
+  DCHECK_EQ(static_cast<unsigned>(bytes_read), file_size);
 
   // Return file size and data
   if (data_size) *data_size = file_size;

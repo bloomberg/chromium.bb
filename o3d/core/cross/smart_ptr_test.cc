@@ -108,7 +108,9 @@ TEST_F(SmartPtrTest, AssignmentRelease) {
   SmartPointer<InstanceCount> smart_ptr1(new InstanceCount());
   SmartPointer<InstanceCount> smart_ptr2(new InstanceCount());
   InstanceCount *raw_ptr1 = smart_ptr1.Get();
+  EXPECT_TRUE(raw_ptr1 != NULL);
   InstanceCount *raw_ptr2 = smart_ptr2.Get();
+  EXPECT_TRUE(raw_ptr2 != NULL);
 
   // Validate that assignment destroys the previous instance.
   smart_ptr2 = smart_ptr1;

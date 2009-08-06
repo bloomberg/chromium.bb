@@ -124,11 +124,11 @@ TEST_F(GzDecompressorTest, LoadGzFile) {
   const int kChunkSize = 512;
 
   MemoryReadStream compressed_stream(compressed_data, compressed_size);
-  size_t bytes_to_process = compressed_size;
+  int bytes_to_process = compressed_size;
 
   StreamProcessor::Status status = StreamProcessor::SUCCESS;
   while (bytes_to_process > 0) {
-    size_t bytes_this_time =
+    int bytes_this_time =
         bytes_to_process < kChunkSize ? bytes_to_process : kChunkSize;
 
     status = decompressor.ProcessBytes(&compressed_stream, bytes_this_time);

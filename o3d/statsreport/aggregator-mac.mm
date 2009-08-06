@@ -43,8 +43,8 @@ namespace stats_report {
 
 MetricsAggregatorMac::MetricsAggregatorMac(const MetricCollection &coll)
   : MetricsAggregator(coll),
-    dict_(nil),
-    pool_(nil){
+    pool_(nil),
+    dict_(nil) {
   storePath_ = O3DStatsPath();
 }
 

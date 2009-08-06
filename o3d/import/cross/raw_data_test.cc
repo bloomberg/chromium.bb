@@ -118,7 +118,7 @@ TEST_F(RawDataTest, CreateFromFile) {
   size_t file_length = static_cast<size_t>(file_size64);
   ASSERT_TRUE(file_length > 0);
   scoped_array<uint8> data(new uint8[file_length]);
-  ASSERT_EQ(fread(data.get(), file_length, 1, file), 1);
+  ASSERT_EQ(fread(data.get(), file_length, 1, file), 1U);
   CloseFile(file);
 
   ASSERT_EQ(file_length, ref->GetLength());

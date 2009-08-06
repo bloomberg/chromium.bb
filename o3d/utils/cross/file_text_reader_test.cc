@@ -46,15 +46,15 @@ struct FileInfo {
 };
 
 static const FileInfo kFileInfo[] = {
-  "/test_file_string_one", "testing 1..2..3",
-  "/test_file_string_two", "4..5..6",
-  "/test_file_string_lf", "testing 1..2..3\n4..5..6\n",
-  "/test_file_string_cr", "testing 1..2..3\r4..5..6\r",
-  "/test_file_string_crlf", "testing 1..2..3\r\n4..5..6\r\n",
-  "/test_file_string_lfcr", "testing 1..2..3\n\r4..5..6\n\r",
-  "/test_file_string_lflf", "testing 1..2..3\n\n4..5..6\n\n",
-  "/test_file_string_short", "T",
-  "/test_file_string_empty", "",
+  { "/test_file_string_one", "testing 1..2..3" },
+  { "/test_file_string_two", "4..5..6" },
+  { "/test_file_string_lf", "testing 1..2..3\n4..5..6\n" },
+  { "/test_file_string_cr", "testing 1..2..3\r4..5..6\r" },
+  { "/test_file_string_crlf", "testing 1..2..3\r\n4..5..6\r\n" },
+  { "/test_file_string_lfcr", "testing 1..2..3\n\r4..5..6\n\r" },
+  { "/test_file_string_lflf", "testing 1..2..3\n\n4..5..6\n\n" },
+  { "/test_file_string_short", "T" },
+  { "/test_file_string_empty", "" }
 };
 
 static const int kNumFiles = arraysize(kFileInfo);
@@ -119,7 +119,7 @@ class FileTextReaderTest : public testing::Test {
 
 TEST_F(FileTextReaderTest, StartAtBeginning) {
   FileTextReader reader(file_pointers_[0]);
-  EXPECT_EQ(0, reader.position());
+  EXPECT_EQ(0U, reader.position());
   EXPECT_EQ(file_pointers_[0], reader.input());
   EXPECT_EQ(false, reader.IsAtEnd());
 }
@@ -127,42 +127,42 @@ TEST_F(FileTextReaderTest, StartAtBeginning) {
 TEST_F(FileTextReaderTest, TestPeekString) {
   FileTextReader reader(file_pointers_[0]);
   EXPECT_EQ(test_string_one_.substr(0, 6), reader.PeekString(6));
-  EXPECT_EQ(0, reader.position());
+  EXPECT_EQ(0U, reader.position());
   EXPECT_EQ(false, reader.IsAtEnd());
 }
 
 TEST_F(FileTextReaderTest, ReadsSingleCharacter) {
   FileTextReader reader(file_pointers_[0]);
   EXPECT_EQ(test_string_one_.substr(0, 1)[0], reader.ReadChar());
-  EXPECT_EQ(1, reader.position());
+  EXPECT_EQ(1U, reader.position());
   EXPECT_EQ(false, reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(1, 2), reader.PeekString(2));
-  EXPECT_EQ(1, reader.position());
+  EXPECT_EQ(1U, reader.position());
 }
 
 TEST_F(FileTextReaderTest, ReadsMultipleCharacters) {
   FileTextReader reader(file_pointers_[0]);
   EXPECT_EQ(test_string_one_.substr(0, 1)[0], reader.ReadChar());
   EXPECT_EQ(test_string_one_.substr(1, 1)[0], reader.ReadChar());
-  EXPECT_EQ(2, reader.position());
+  EXPECT_EQ(2U, reader.position());
   EXPECT_EQ(false, reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(2, 2), reader.PeekString(2));
-  EXPECT_EQ(2, reader.position());
+  EXPECT_EQ(2U, reader.position());
 }
 
 TEST_F(FileTextReaderTest, ReadsFile) {
   FileTextReader reader(file_pointers_[0]);
   EXPECT_EQ(test_string_one_.substr(0, 7), reader.ReadString(7));
-  EXPECT_EQ(7, reader.position());
+  EXPECT_EQ(7U, reader.position());
   EXPECT_EQ(false, reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(7, 2), reader.PeekString(2));
-  EXPECT_EQ(7, reader.position());
+  EXPECT_EQ(7U, reader.position());
 }
 
 TEST_F(FileTextReaderTest, EmptyFile) {
   FileTextReader reader(file_pointers_[8]);
   EXPECT_EQ("", reader.PeekString(1));
-  EXPECT_EQ(0, reader.position());
+  EXPECT_EQ(0U, reader.position());
   EXPECT_EQ(true, reader.IsAtEnd());
   EXPECT_EQ(0, reader.ReadChar());
   EXPECT_EQ(true, reader.IsAtEnd());
@@ -171,7 +171,7 @@ TEST_F(FileTextReaderTest, EmptyFile) {
 TEST_F(FileTextReaderTest, TinyFile) {
   FileTextReader reader(file_pointers_[7]);
   EXPECT_EQ(test_string_short_.substr(0, 1), reader.PeekString(1));
-  EXPECT_EQ(0, reader.position());
+  EXPECT_EQ(0U, reader.position());
   EXPECT_EQ(false, reader.IsAtEnd());
   EXPECT_EQ(test_string_short_[0], reader.ReadChar());
   EXPECT_EQ(true, reader.IsAtEnd());

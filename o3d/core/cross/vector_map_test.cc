@@ -47,12 +47,12 @@ TEST(VectorMapTest, General) {
   the_map[0] = 5;
 
   EXPECT_FALSE(the_map.empty());
-  EXPECT_EQ(the_map.size(), 1);
+  EXPECT_EQ(the_map.size(), 1U);
 
   the_map[9] = 2;
 
   EXPECT_FALSE(the_map.empty());
-  EXPECT_EQ(the_map.size(), 2);
+  EXPECT_EQ(the_map.size(), 2U);
 
   EXPECT_EQ(the_map[9], 2);
   EXPECT_EQ(the_map[0], 5);
@@ -77,7 +77,7 @@ TEST(VectorMapTest, General) {
   EXPECT_EQ(the_map[1234], 90);
   EXPECT_EQ(the_map[   8], 23);
   EXPECT_EQ(the_map[  -5],  6);
-  EXPECT_EQ(the_map.size(), 5);
+  EXPECT_EQ(the_map.size(), 5U);
   EXPECT_FALSE(the_map.empty());
 
   iter = the_map.begin();
@@ -120,7 +120,7 @@ TEST(VectorMapTest, Insert) {
       EXPECT_EQ(it->first, j);
       EXPECT_EQ(it->second, j * 100);
     }
-    EXPECT_EQ(the_map.size(), i);
+    EXPECT_EQ(static_cast<int>(the_map.size()), i);
     EXPECT_FALSE(the_map.empty());
   }
 }
@@ -171,7 +171,7 @@ TEST(VectorMapTest, InsertIfNotPresent) {
       EXPECT_EQ(it->first, j);
       EXPECT_EQ(it->second, j * 100);
     }
-    EXPECT_EQ(the_map.size(), i);
+    EXPECT_EQ(static_cast<int>(the_map.size()), i);
     EXPECT_FALSE(the_map.empty());
   }
 }
@@ -188,7 +188,7 @@ TEST(VectorMapTest, Erase) {
   EXPECT_EQ(the_map["monday"   ], 1);
   EXPECT_EQ(the_map["tuesday"  ], 2);
   EXPECT_EQ(the_map["wednesday"], 3);
-  EXPECT_EQ(the_map.count("tuesday"), 1);
+  EXPECT_EQ(the_map.count("tuesday"), 1U);
 
   iter = the_map.begin();
   ASSERT_TRUE(iter != the_map.end());
@@ -212,12 +212,12 @@ TEST(VectorMapTest, Erase) {
   EXPECT_TRUE(iter1 == iter2);
   EXPECT_TRUE(iter == the_map.end());
 
-  EXPECT_EQ(the_map.erase("tuesday"), 1);
+  EXPECT_EQ(the_map.erase("tuesday"), 1U);
 
   EXPECT_EQ(the_map["monday"   ], 1);
   EXPECT_EQ(the_map["wednesday"], 3);
-  EXPECT_EQ(the_map.count("tuesday"), 0);
-  EXPECT_EQ(the_map.erase("tuesday"), 0);
+  EXPECT_EQ(the_map.count("tuesday"), 0U);
+  EXPECT_EQ(the_map.erase("tuesday"), 0U);
 
   iter = the_map.begin();
   ASSERT_TRUE(iter != the_map.end());
@@ -234,24 +234,24 @@ TEST(VectorMapTest, Erase) {
 
   the_map["thursday"] = 4;
   the_map["friday"] = 5;
-  EXPECT_EQ(the_map.size(), 4);
+  EXPECT_EQ(the_map.size(), 4U);
   EXPECT_FALSE(the_map.empty());
 
   the_map["saturday"] = 6;
 
-  EXPECT_EQ(the_map.count("friday"), 1);
-  EXPECT_EQ(the_map.erase("friday"), 1);
-  EXPECT_EQ(the_map.count("friday"), 0);
-  EXPECT_EQ(the_map.erase("friday"), 0);
+  EXPECT_EQ(the_map.count("friday"), 1U);
+  EXPECT_EQ(the_map.erase("friday"), 1U);
+  EXPECT_EQ(the_map.count("friday"), 0U);
+  EXPECT_EQ(the_map.erase("friday"), 0U);
 
-  EXPECT_EQ(the_map.size(), 4);
+  EXPECT_EQ(the_map.size(), 4U);
   EXPECT_FALSE(the_map.empty());
-  EXPECT_EQ(the_map.erase("monday"), 1);
-  EXPECT_EQ(the_map.size(), 3);
+  EXPECT_EQ(the_map.erase("monday"), 1U);
+  EXPECT_EQ(the_map.size(), 3U);
   EXPECT_FALSE(the_map.empty());
 
   the_map.clear();
-  EXPECT_EQ(the_map.size(), 0);
+  EXPECT_EQ(the_map.size(), 0U);
   EXPECT_TRUE(the_map.empty());
 }
 

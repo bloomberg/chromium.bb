@@ -64,7 +64,7 @@ void ObjectBaseTest::TearDown() {
 }
 
 TEST_F(ObjectBaseTest, ObjectIdOfNullIsZero) {
-  ASSERT_EQ(0, GetObjectId(NULL));
+  ASSERT_EQ(0U, GetObjectId(NULL));
 }
 
 TEST_F(ObjectBaseTest, ObjectIdOfObjectIsReturned) {

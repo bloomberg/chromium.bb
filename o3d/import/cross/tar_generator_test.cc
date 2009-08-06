@@ -335,7 +335,7 @@ void CallbackClient::ValidateHeader(uint8 *header,
   // Validate length
   int length_in_header;
   sscanf((const char*)header + kFileSizeOffset, "%o", &length_in_header);
-  EXPECT_EQ(file_length, length_in_header);
+  EXPECT_EQ(file_length, static_cast<unsigned>(length_in_header));
 
 
   EXPECT_EQ(0, header[kMaxFilenameSize - 1]);
@@ -425,7 +425,7 @@ TEST_F(TarGeneratorTest, CreateSimpleArchive) {
   // Verify that the tar byte stream produced is exactly divisible by
   // the block size
   size_t bytes_received = client.GetTotalBytesReceived();
-  EXPECT_EQ(0, bytes_received % kBlockSize);
+  EXPECT_EQ(0U, bytes_received % kBlockSize);
 
   // Make sure the state machine is in the expected state
   EXPECT_EQ(CallbackClient::FINISHED, client.GetState());

@@ -224,8 +224,8 @@ TEST_F(VertexSourceTest, BindStream) {
                               3.0f));
 
   // Check that UpdateOutputs only got called once.
-  EXPECT_EQ(destination->update_outputs_call_count(), 1);
-  EXPECT_EQ(source->update_outputs_call_count(), 1);
+  EXPECT_EQ(destination->update_outputs_call_count(), 1U);
+  EXPECT_EQ(source->update_outputs_call_count(), 1U);
 
   // Test that if we chain another VertexSource UpdateOutputs only gets called
   // once.
@@ -271,15 +271,15 @@ TEST_F(VertexSourceTest, BindStream) {
                               3.0f));
 
   // Check that UpdateOutputs only got called once.
-  EXPECT_EQ(destination->update_outputs_call_count(), 2);
-  EXPECT_EQ(source->update_outputs_call_count(), 2);
-  EXPECT_EQ(source_b->update_outputs_call_count(), 1);
+  EXPECT_EQ(destination->update_outputs_call_count(), 2U);
+  EXPECT_EQ(source->update_outputs_call_count(), 2U);
+  EXPECT_EQ(source_b->update_outputs_call_count(), 1U);
 
   // Test that if we ask again UpdateOutputs does not get called.
   destination->UpdateStreams();
-  EXPECT_EQ(destination->update_outputs_call_count(), 2);
-  EXPECT_EQ(source->update_outputs_call_count(), 2);
-  EXPECT_EQ(source_b->update_outputs_call_count(), 1);
+  EXPECT_EQ(destination->update_outputs_call_count(), 2U);
+  EXPECT_EQ(source->update_outputs_call_count(), 2U);
+  EXPECT_EQ(source_b->update_outputs_call_count(), 1U);
 
   // Test that we can unbind.
   EXPECT_TRUE(source->UnbindStream(Stream::POSITION, 0));

@@ -363,9 +363,9 @@ TEST_F(BitmapTest, LoadTGAFile24bit) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, ktga256x256_24bit_BGRX));
 }
 
@@ -378,9 +378,9 @@ TEST_F(BitmapTest, LoadTGAFile32bit) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::ARGB8, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, ktga256x256_32bit_BGRA));
 }
 
@@ -405,9 +405,9 @@ TEST_F(BitmapTest, LoadJPEGFile) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kjpg256x256_BGRX));
 }
 
@@ -429,9 +429,9 @@ TEST_F(BitmapTest, LoadPNGFile24bit) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kpng256x256_24bit_BGRX));
 }
 
@@ -445,9 +445,9 @@ TEST_F(BitmapTest, LoadPNGFile24bitInterlaced) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kpng256x256_24bit_interlaced_BGRX));
 }
 
@@ -459,9 +459,9 @@ TEST_F(BitmapTest, LoadPNGFile32bit) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::ARGB8, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kpng256x256_32bit_BGRA));
 }
 
@@ -475,9 +475,9 @@ TEST_F(BitmapTest, LoadPNGFile8bitPalette) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kpng256x256_8bit_palette_BGRX));
 }
 
@@ -491,9 +491,9 @@ TEST_F(BitmapTest, LoadPNGFile4bitPalette) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::XRGB8, bitmap->format());
-  EXPECT_EQ(20, bitmap->width());
-  EXPECT_EQ(14, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(20U, bitmap->width());
+  EXPECT_EQ(14U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kpng20x14_4bit_palette_BGRX));
 }
 
@@ -519,9 +519,9 @@ TEST_F(BitmapTest, LoadPNGFile8bitPaletteAlpha) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::ARGB8, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
 }
 */
 
@@ -534,9 +534,9 @@ TEST_F(BitmapTest, LoadDDSFileDXT1) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::DXT1, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kdxt1_256x256));
 }
 
@@ -550,9 +550,9 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Alpha) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::DXT1, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kdxt1_256x256_alpha));
 }
 
@@ -566,9 +566,9 @@ TEST_F(BitmapTest, LoadDDSFileDXT1Mipmap) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::DXT1, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(9, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(9U, bitmap->num_mipmaps());
   for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
     EXPECT_TRUE(bitmap->GetMipData(i) != NULL);
   }
@@ -585,9 +585,9 @@ TEST_F(BitmapTest, LoadDDSFileDXT3) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::DXT3, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kdxt3_256x256_alpha));
 }
 
@@ -601,9 +601,9 @@ TEST_F(BitmapTest, LoadDDSFileDXT3Mipmap) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::DXT3, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(9, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(9U, bitmap->num_mipmaps());
   for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
     EXPECT_TRUE(bitmap->GetMipData(i) != NULL);
   }
@@ -620,9 +620,9 @@ TEST_F(BitmapTest, LoadDDSFileDXT5) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::DXT5, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(1, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(1U, bitmap->num_mipmaps());
   EXPECT_TRUE(TestBitmapData(*bitmap, kdxt5_256x256_alpha));
 }
 
@@ -636,9 +636,9 @@ TEST_F(BitmapTest, LoadDDSFileDXT5Mipmap) {
   EXPECT_TRUE(bitmap->image_data() != NULL);
   EXPECT_FALSE(bitmap->is_cubemap());
   EXPECT_EQ(Texture::DXT5, bitmap->format());
-  EXPECT_EQ(256, bitmap->width());
-  EXPECT_EQ(256, bitmap->height());
-  EXPECT_EQ(9, bitmap->num_mipmaps());
+  EXPECT_EQ(256U, bitmap->width());
+  EXPECT_EQ(256U, bitmap->height());
+  EXPECT_EQ(9U, bitmap->num_mipmaps());
   for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
     EXPECT_TRUE(bitmap->GetMipData(i) != NULL);
   }
@@ -688,10 +688,9 @@ static const unsigned char kMipmapDataPOT[] = {
 TEST_F(BitmapTest, GenerateMipmapsPOT) {
   const unsigned int kWidth = 4;
   const unsigned int kHeight = 4;
-  const unsigned int kComponents = 4;
   const Texture::Format format = Texture::ARGB8;
   unsigned int mipmaps = Bitmap::GetMipMapCount(kWidth, kHeight);
-  EXPECT_EQ(3, mipmaps);
+  EXPECT_EQ(3U, mipmaps);
   unsigned int size = Bitmap::GetMipChainSize(kWidth, kHeight, format, mipmaps);
   ASSERT_EQ(sizeof(kMipmapDataPOT), size);
   scoped_array<unsigned char> data(new unsigned char[size]);
@@ -746,10 +745,9 @@ static const unsigned char kMipmapDataNPOT[] = {
 TEST_F(BitmapTest, GenerateMipmapsNPOT) {
   const unsigned int kWidth = 7;
   const unsigned int kHeight = 7;
-  const unsigned int kComponents = 4;
   const Texture::Format format = Texture::ARGB8;
   unsigned int mipmaps = Bitmap::GetMipMapCount(kWidth, kHeight);
-  EXPECT_EQ(3, mipmaps);
+  EXPECT_EQ(3U, mipmaps);
   unsigned int size = Bitmap::GetMipChainSize(kWidth, kHeight, format, mipmaps);
   ASSERT_EQ(sizeof(kMipmapDataNPOT), size);
   scoped_array<unsigned char> data(new unsigned char[size]);
@@ -831,11 +829,10 @@ static const unsigned char kScaleUPDataPOT[] = {
 TEST_F(BitmapTest, ScaleUpToPOT) {
   const unsigned int kWidth = 3;
   const unsigned int kHeight = 3;
-  const unsigned int kComponents = 4;
   const unsigned int kPOTWidth = Bitmap::GetPOTSize(kWidth);
-  ASSERT_EQ(kPOTWidth, 4);
+  ASSERT_EQ(kPOTWidth, 4U);
   const unsigned int kPOTHeight = Bitmap::GetPOTSize(kHeight);
-  ASSERT_EQ(kPOTHeight, 4);
+  ASSERT_EQ(kPOTHeight, 4U);
   const Texture::Format format = Texture::ARGB8;
   unsigned int src_size = Bitmap::GetBufferSize(kWidth, kHeight, format);
   ASSERT_EQ(sizeof(kScaleUPDataNPOT), src_size);

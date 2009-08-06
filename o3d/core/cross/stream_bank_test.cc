@@ -255,7 +255,7 @@ TEST_F(StreamBankTest, BindStream) {
                               3.0f));
 
   // Check that UpdateOutputs only got called once.
-  EXPECT_EQ(source->update_outputs_call_count(), 1);
+  EXPECT_EQ(source->update_outputs_call_count(), 1U);
 }
 
 }  // namespace o3d

@@ -595,8 +595,9 @@ bool MessageQueue::ProcessUpdateTexture2D(ConnectedClient* client,
   unsigned int mip_height =
       Bitmap::GetMipDimension(level, texture_object->height());
 
-  if (number_of_bytes != Bitmap::GetMipChainSize(mip_width, mip_height,
-                                                 texture_object->format(), 1)) {
+  if (static_cast<unsigned>(number_of_bytes) !=
+      Bitmap::GetMipChainSize(mip_width, mip_height,
+                              texture_object->format(), 1)) {
     O3D_ERROR(service_locator_)
         << "texture_size does not match size of texture level ("
         << offset << " + " << number_of_bytes << " > " << info->size_;
@@ -718,7 +719,7 @@ bool MessageQueue::ProcessUnregisterSharedMemory(ConnectedClient* client,
 
   bool res = client->UnregisterSharedMemory(buffer_id);
   SendBooleanResponse(client->client_handle(), res);
-  return true;
+  return res;
 }
 
 

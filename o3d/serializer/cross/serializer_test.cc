@@ -332,7 +332,7 @@ TEST_F(SerializerTest, ShouldSerializeCurveKeysToSingleBinaryFile) {
   linear_key->SetOutput(4);
 
   serializer_.SerializePack(pack_);
-  EXPECT_EQ(1, archive_generator_.add_file_records_.size());
+  EXPECT_EQ(1U, archive_generator_.add_file_records_.size());
   const AddFileRecord& record = archive_generator_.add_file_records_[0];
   EXPECT_EQ("curve-keys.bin", record.file_name_);
 
@@ -422,7 +422,7 @@ TEST_F(SerializerTest, SerializesAllIndexBufferBinaryToSingleFileInArchive) {
   }
 
   serializer_.SerializePack(pack_);
-  EXPECT_EQ(1, archive_generator_.add_file_records_.size());
+  EXPECT_EQ(1U, archive_generator_.add_file_records_.size());
   const AddFileRecord& record = archive_generator_.add_file_records_[0];
   EXPECT_EQ("index-buffers.bin", record.file_name_);
 
@@ -753,7 +753,7 @@ TEST_F(SerializerTest, ShouldSerializeSkinToSingleBinaryFile) {
   skin2->SetInverseBindPoseMatrix(0, Matrix4::identity());
 
   serializer_.SerializePack(pack_);
-  EXPECT_EQ(1, archive_generator_.add_file_records_.size());
+  EXPECT_EQ(1U, archive_generator_.add_file_records_.size());
   const AddFileRecord& record = archive_generator_.add_file_records_[0];
   EXPECT_EQ("skins.bin", record.file_name_);
 
@@ -842,6 +842,7 @@ TEST_F(SerializerTest, ShouldSerializeBoundSkinEval) {
   skin_eval1->BindStream(skin_eval2, Stream::POSITION, 0);
   ParamVertexBufferStream* param = skin_eval2->GetVertexStreamParam(
       Stream::POSITION, 0);
+  EXPECT_TRUE(param != NULL);
 
   serializer_.SerializeSection(skin_eval1, Serializer::CUSTOM_SECTION);
   StringWriter expected(StringWriter::CR_LF);
@@ -868,6 +869,8 @@ TEST_F(SerializerTest, ShouldSerializeStreamBank) {
   Field* field_1 = vertex_buffer_1->CreateField(FloatField::GetApparentClass(),
                                                 3);
   VertexBuffer* vertex_buffer_2 = pack_->Create<VertexBuffer>();
+  EXPECT_TRUE(vertex_buffer_2 != NULL);
+
   Field* field_2 = vertex_buffer_1->CreateField(FloatField::GetApparentClass(),
                                                 3);
   stream_bank->SetVertexStream(Stream::POSITION,
@@ -1055,7 +1058,7 @@ TEST_F(SerializerTest, SerializesAllVertexBufferBinaryToSingleFileInArchive) {
   }
 
   serializer_.SerializePack(pack_);
-  EXPECT_EQ(1, archive_generator_.add_file_records_.size());
+  EXPECT_EQ(1U, archive_generator_.add_file_records_.size());
   const AddFileRecord& record = archive_generator_.add_file_records_[0];
   EXPECT_EQ("vertex-buffers.bin", record.file_name_);
 

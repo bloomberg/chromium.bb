@@ -73,43 +73,43 @@ class StringReaderTest : public testing::Test {
 
 TEST_F(StringReaderTest, StartAtBeginning) {
   StringReader reader(test_string_one_);
-  EXPECT_EQ(0, reader.position());
+  EXPECT_EQ(0U, reader.position());
   EXPECT_EQ(test_string_one_, reader.input());
 }
 
 TEST_F(StringReaderTest, TestPeekString) {
   StringReader reader(test_string_one_);
   EXPECT_EQ(test_string_one_.substr(0, 6), reader.PeekString(6));
-  EXPECT_EQ(0, reader.position());
+  EXPECT_EQ(0U, reader.position());
   EXPECT_EQ(test_string_one_, reader.input());
 }
 
 TEST_F(StringReaderTest, ReadsSingleCharacter) {
   StringReader reader(test_string_one_);
   EXPECT_EQ(test_string_one_.substr(0, 1)[0], reader.ReadChar());
-  EXPECT_EQ(1, reader.position());
+  EXPECT_EQ(1U, reader.position());
   EXPECT_EQ(false, reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(1, 2), reader.PeekString(2));
-  EXPECT_EQ(1, reader.position());
+  EXPECT_EQ(1U, reader.position());
 }
 
 TEST_F(StringReaderTest, ReadsMultipleCharacters) {
   StringReader reader(test_string_one_);
   EXPECT_EQ(test_string_one_.substr(0, 1)[0], reader.ReadChar());
   EXPECT_EQ(test_string_one_.substr(1, 1)[0], reader.ReadChar());
-  EXPECT_EQ(2, reader.position());
+  EXPECT_EQ(2U, reader.position());
   EXPECT_EQ(false, reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(2, 2), reader.PeekString(2));
-  EXPECT_EQ(2, reader.position());
+  EXPECT_EQ(2U, reader.position());
 }
 
 TEST_F(StringReaderTest, ReadsString) {
   StringReader reader(test_string_one_);
   EXPECT_EQ(test_string_one_.substr(0, 7), reader.ReadString(7));
-  EXPECT_EQ(7, reader.position());
+  EXPECT_EQ(7U, reader.position());
   EXPECT_EQ(false, reader.IsAtEnd());
   EXPECT_EQ(test_string_one_.substr(7, 2), reader.PeekString(2));
-  EXPECT_EQ(7, reader.position());
+  EXPECT_EQ(7U, reader.position());
 }
 
 TEST_F(StringReaderTest, ReadsToEnd) {

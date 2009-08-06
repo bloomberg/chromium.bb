@@ -227,8 +227,8 @@ class MessageQueueTest : public testing::Test {
  private:
   ServiceDependency<ObjectManager> object_manager_;
   Pack *pack_;
-  int num_socket_handles_;
   nacl::Handle* socket_handles_;
+  int num_socket_handles_;
 
   // This can't be part of SetUp since it needs to be called from each
   // individual test.
@@ -381,7 +381,7 @@ bool TextureUpdateHelper::ReceiveBooleanResponse() {
 
   int result = nacl::ReceiveDatagram(o3d_handle_, &header, 0);
 
-  EXPECT_EQ(sizeof(response), result);
+  EXPECT_EQ(sizeof(response), static_cast<unsigned>(result));
   if (result != sizeof(response)) {
     return false;
   }
@@ -479,8 +479,8 @@ bool TextureUpdateHelper::RequestSharedMemory(size_t requested_size,
 
   // Send message.
   int result = nacl::SendDatagram(o3d_handle_, &header, 0);
-  EXPECT_EQ(vec.length, result);
-  if (result != vec.length) {
+  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
+  if (static_cast<unsigned>(result) != vec.length) {
     return false;
   }
 
@@ -499,8 +499,8 @@ bool TextureUpdateHelper::RequestSharedMemory(size_t requested_size,
 
   EXPECT_LT(0, result);
   EXPECT_EQ(0, header.flags & nacl::kMessageTruncated);
-  EXPECT_EQ(1, header.handle_count);
-  EXPECT_EQ(1, header.iov_length);
+  EXPECT_EQ(1U, header.handle_count);
+  EXPECT_EQ(1U, header.iov_length);
 
   if (result < 0 ||
       header.flags & nacl::kMessageTruncated ||
@@ -573,9 +573,9 @@ bool TextureUpdateHelper::RequestTextureUpdate(unsigned int texture_id,
   // Send message.
   int result = nacl::SendDatagram(o3d_handle_, &header, 0);
 
-  EXPECT_EQ(vec.length, result);
+  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
 
-  if (result != vec.length) {
+  if (static_cast<unsigned>(result) != vec.length) {
     return false;
   }
 
@@ -621,8 +621,8 @@ int TextureUpdateHelper::RegisterSharedMemory(nacl::Handle shared_memory,
 
   // Send message.
   int result = nacl::SendDatagram(o3d_handle_, &header, 0);
-  EXPECT_EQ(vec.length, result);
-  if (result != vec.length) {
+  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
+  if (static_cast<unsigned>(result) != vec.length) {
     return -1;
   }
 
@@ -639,10 +639,10 @@ int TextureUpdateHelper::RegisterSharedMemory(nacl::Handle shared_memory,
   reply_header.handle_count = 0;
 
   result = nacl::ReceiveDatagram(o3d_handle_, &reply_header, 0);
-  EXPECT_EQ(shared_memory_vec.length, result);
+  EXPECT_EQ(shared_memory_vec.length, static_cast<unsigned>(result));
   EXPECT_EQ(0, reply_header.flags & nacl::kMessageTruncated);
-  EXPECT_EQ(0, reply_header.handle_count);
-  EXPECT_EQ(1, reply_header.iov_length);
+  EXPECT_EQ(0U, reply_header.handle_count);
+  EXPECT_EQ(1U, reply_header.iov_length);
 
   return shared_memory_id;
 }
@@ -691,7 +691,7 @@ TEST_F(MessageQueueTest, Initialize) {
   String socket_addr = message_queue->GetSocketAddress();
 
   // Make sure the name starts with the expected value
-  EXPECT_EQ(0, socket_addr.find("o3d"));
+  EXPECT_EQ(0U, socket_addr.find("o3d"));
 
   delete message_queue;
 }

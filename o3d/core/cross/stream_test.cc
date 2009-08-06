@@ -91,7 +91,7 @@ TEST_F(StreamBasic, Constructor) {
   FieldTest::Ref field(new FieldTest());
 
   unsigned start_index = 1;
-  unsigned semantic_index = 2;
+  int semantic_index = 2;
   Stream::Semantic semantic = Stream::BINORMAL;
 
   Stream stream(g_service_locator,

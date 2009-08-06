@@ -155,10 +155,10 @@ TEST_F(TarProcessorTest, LoadTarFile) {
   const int kChunkSize = 32;
 
   MemoryReadStream tar_stream(tar_data, file_size);
-  size_t bytes_to_process = file_size;
+  int bytes_to_process = file_size;
 
   while (bytes_to_process > 0) {
-    size_t bytes_this_time =
+    int bytes_this_time =
         bytes_to_process < kChunkSize ? bytes_to_process : kChunkSize;
 
     StreamProcessor::Status status = tar_processor.ProcessBytes(

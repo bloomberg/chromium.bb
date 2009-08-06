@@ -100,8 +100,8 @@ TEST_F(PrimitiveTest, Basic) {
   primitive->set_number_vertices(8);
 
   EXPECT_EQ(primitive->primitive_type(), o3d::Primitive::TRIANGLELIST);
-  EXPECT_EQ(primitive->number_primitives(), 12);
-  EXPECT_EQ(primitive->number_vertices(), 8);
+  EXPECT_EQ(primitive->number_primitives(), 12U);
+  EXPECT_EQ(primitive->number_vertices(), 8U);
 
   // Check getting the index buffer.
   EXPECT_EQ(primitive->index_buffer(), index_buffer);

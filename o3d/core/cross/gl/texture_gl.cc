@@ -435,7 +435,8 @@ void Texture2DGL::SetRect(int level,
     GLenum gl_format = GLFormatFromO3DFormat(format(), &gl_internal_format,
                                              &gl_data_type);
     if (gl_format) {
-      if (src_pitch == Bitmap::GetMipChainSize(src_width, 1, format(), 1)) {
+      if ((unsigned)src_pitch == Bitmap::GetMipChainSize(src_width, 1,
+                                                         format(), 1)) {
         glTexSubImage2D(GL_TEXTURE_2D, level,
                         dst_left, dst_top,
                         src_width, src_height,
@@ -443,7 +444,8 @@ void Texture2DGL::SetRect(int level,
                         gl_data_type,
                         src_data);
       } else {
-        for (int yy = 0; yy < src_height; ++yy) {
+        int limit = src_height;
+        for (int yy = 0; yy < limit; ++yy) {
           glTexSubImage2D(GL_TEXTURE_2D, level,
                           dst_left, dst_top + yy,
                           src_width, 1,
@@ -488,7 +490,7 @@ bool Texture2DGL::Lock(int level, void** data, int* pitch) {
   }
   *data = backing_bitmap_->GetMipData(level);
   unsigned int mip_width = Bitmap::GetMipDimension(level, width());
-  unsigned int mip_height = Bitmap::GetMipDimension(level, height());
+
   if (!IsCompressed()) {
     *pitch = Bitmap::GetMipChainSize(mip_width, 1,format(), 1);
   } else {
@@ -815,7 +817,8 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
                                              &gl_data_type);
     int gl_face = kCubemapFaceList[face];
     if (gl_format) {
-      if (src_pitch == Bitmap::GetMipChainSize(src_width, 1, format(), 1)) {
+      if (static_cast<unsigned>(src_pitch) ==
+          Bitmap::GetMipChainSize(src_width, 1, format(), 1)) {
         glTexSubImage2D(gl_face, level,
                         dst_left, dst_top,
                         src_width, src_height,
@@ -823,7 +826,8 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
                         gl_data_type,
                         src_data);
       } else {
-        for (int yy = 0; yy < src_height; ++yy) {
+        int limit = src_height;
+        for (int yy = 0; yy < limit; ++yy) {
           glTexSubImage2D(gl_face, level,
                           dst_left, dst_top + yy,
                           src_width, 1,

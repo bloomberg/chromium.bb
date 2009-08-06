@@ -48,12 +48,12 @@ TEST_F(MemoryBufferTest, Basic) {
   int i;
   MemoryBuffer<int> buffer;
   // Check that initially the buffer is not allocated
-  ASSERT_EQ(0, buffer.GetLength());
+  ASSERT_EQ(0U, buffer.GetLength());
 
   // Allocate and check the length is good
   const int kBufferLength = 1024;
   buffer.Allocate(kBufferLength);
-  ASSERT_EQ(kBufferLength, buffer.GetLength());
+  ASSERT_EQ(kBufferLength, static_cast<int>(buffer.GetLength()));
 
   // Once allocated, the initial contents should be zero
   // Check that the buffer contents are zeroed out
@@ -92,7 +92,7 @@ TEST_F(MemoryBufferTest, Basic) {
 
   // Deallocate the buffer and verify its length
   buffer.Deallocate();
-  ASSERT_EQ(0, buffer.GetLength());
+  ASSERT_EQ(0U, buffer.GetLength());
 }
 
 }  // namespace o3d

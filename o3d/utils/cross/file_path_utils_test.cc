@@ -96,7 +96,7 @@ TEST_F(FilePathUtilsTest, AbsolutePathBasic) {
   FilePath test_path(FILE_PATH_LITERAL("this/is/a/path"));
 #endif
   FilePath abs_path = test_path;
-  bool result = AbsolutePath(&abs_path);
+  AbsolutePath(&abs_path);
   FilePath expected_result = cwd;
   expected_result = expected_result.Append(test_path);
   EXPECT_STREQ(expected_result.value().c_str(), abs_path.value().c_str());
@@ -109,7 +109,7 @@ TEST_F(FilePathUtilsTest, AbsolutePathAlreadyAbsolute) {
   FilePath test_path(FILE_PATH_LITERAL("/this/is/a/path"));
 #endif
   FilePath abs_path = test_path;
-  bool result = AbsolutePath(&abs_path);
+  AbsolutePath(&abs_path);
   EXPECT_STREQ(test_path.value().c_str(), abs_path.value().c_str());
 }
 

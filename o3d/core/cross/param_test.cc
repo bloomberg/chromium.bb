@@ -293,7 +293,7 @@ TEST_F(ParamBasic, OutputConnections) {
   EXPECT_TRUE(param4->Bind(param1));
 
   ParamVector out_connections = param1->output_connections();
-  EXPECT_EQ(3, out_connections.size());
+  EXPECT_EQ(3U, out_connections.size());
 
   EXPECT_EQ(param2->input_connection(), param1);
   EXPECT_EQ(param3->input_connection(), param1);
@@ -311,7 +311,7 @@ TEST_F(ParamBasic, OutputConnections) {
   // Remove one and check again
   EXPECT_TRUE(param1->UnbindOutput(param3));
   out_connections = param1->output_connections();
-  EXPECT_EQ(2, out_connections.size());
+  EXPECT_EQ(2U, out_connections.size());
   EXPECT_TRUE(find(out_connections.begin(), out_connections.end(), param2) !=
               out_connections.end());
   EXPECT_FALSE(find(out_connections.begin(), out_connections.end(), param3) !=
@@ -328,7 +328,7 @@ TEST_F(ParamBasic, OutputConnections) {
 
   // and that output connections are updated
   out_connections = param1->output_connections();
-  EXPECT_EQ(1, out_connections.size());
+  EXPECT_EQ(1U, out_connections.size());
   EXPECT_TRUE(find(out_connections.begin(), out_connections.end(), param2) !=
               out_connections.end());
   EXPECT_FALSE(find(out_connections.begin(), out_connections.end(), param3) !=
@@ -346,7 +346,7 @@ TEST_F(ParamBasic, UnbindInput) {
 
   Param *source = param2->input_connection();
 
-  EXPECT_TRUE(param2->input_connection() != NULL);
+  EXPECT_TRUE(source != NULL);
 
   param2->UnbindInput();
 
@@ -622,26 +622,26 @@ TEST_F(ParamBindTest, GetInputsGetOuputs) {
 
   ParamVector params;
   float_param_1_->GetInputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_2_, params));
   EXPECT_TRUE(ParamInParams(float_param_3_, params));
 
   float_param_1_->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 0);
+  EXPECT_EQ(params.size(), 0U);
 
   float_param_2_->GetInputs(&params);
-  EXPECT_EQ(params.size(), 1);
+  EXPECT_EQ(params.size(), 1U);
   EXPECT_TRUE(ParamInParams(float_param_3_, params));
 
   float_param_2_->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 1);
+  EXPECT_EQ(params.size(), 1U);
   EXPECT_TRUE(ParamInParams(float_param_1_, params));
 
   float_param_3_->GetInputs(&params);
-  EXPECT_EQ(params.size(), 0);
+  EXPECT_EQ(params.size(), 0U);
 
   float_param_3_->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_1_, params));
   EXPECT_TRUE(ParamInParams(float_param_2_, params));
 
@@ -651,32 +651,32 @@ TEST_F(ParamBindTest, GetInputsGetOuputs) {
   // 3->2->1->3
 
   float_param_1_->GetInputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_2_, params));
   EXPECT_TRUE(ParamInParams(float_param_3_, params));
 
   float_param_1_->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_2_, params));
   EXPECT_TRUE(ParamInParams(float_param_3_, params));
 
   float_param_2_->GetInputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_1_, params));
   EXPECT_TRUE(ParamInParams(float_param_3_, params));
 
   float_param_2_->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_1_, params));
   EXPECT_TRUE(ParamInParams(float_param_3_, params));
 
   float_param_3_->GetInputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_1_, params));
   EXPECT_TRUE(ParamInParams(float_param_2_, params));
 
   float_param_3_->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_1_, params));
   EXPECT_TRUE(ParamInParams(float_param_2_, params));
 
@@ -689,12 +689,12 @@ TEST_F(ParamBindTest, GetInputsGetOuputs) {
   //        +->3
 
   float_param_3_->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_1_, params));
   EXPECT_TRUE(ParamInParams(float_param_2_, params));
 
   float_param_1_->GetInputs(&params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(float_param_2_, params));
   EXPECT_TRUE(ParamInParams(float_param_3_, params));
 }

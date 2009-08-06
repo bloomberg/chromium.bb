@@ -305,13 +305,13 @@ TEST_F(ParamObjectTest, GetInputsForParamGetOutputsForParam) {
   // Verify that FakeDivModParamOperationWorks.
   operation->set_input1(19);
   operation->set_input2(5);
-  EXPECT_EQ(operation->NumberOfCallsToUpdateOutputs(), 0);
+  EXPECT_EQ(operation->NumberOfCallsToUpdateOutputs(), 0U);
   EXPECT_EQ(operation->output1(), 3);
-  EXPECT_EQ(operation->NumberOfCallsToUpdateOutputs(), 1);
+  EXPECT_EQ(operation->NumberOfCallsToUpdateOutputs(), 1U);
   EXPECT_EQ(operation->output2(), 4);
   // This should be 1 because calling operation->output1() should
   // have updated output2().
-  EXPECT_EQ(operation->NumberOfCallsToUpdateOutputs(), 1);
+  EXPECT_EQ(operation->NumberOfCallsToUpdateOutputs(), 1U);
 
   // Now check GetInputs
   Param* input1 = operation->GetUntypedParam(
@@ -330,36 +330,36 @@ TEST_F(ParamObjectTest, GetInputsForParamGetOutputsForParam) {
   ParamVector params;
   // There should be no params on the params
   operation->GetInputsForParam(input1, &params);
-  EXPECT_EQ(params.size(), 0);
+  EXPECT_EQ(params.size(), 0U);
   operation->GetInputsForParam(input2, &params);
-  EXPECT_EQ(params.size(), 0);
+  EXPECT_EQ(params.size(), 0U);
   // There should be two params for each output.
   operation->GetInputsForParam(output1, &params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(input1, params));
   EXPECT_TRUE(ParamInParams(input2, params));
   params.clear();  // make sure we are not just getting the same result.
   operation->GetInputsForParam(output2, &params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(input1, params));
   EXPECT_TRUE(ParamInParams(input2, params));
   // Make sure we don't just add more params.
   operation->GetInputsForParam(output2, &params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
 
   // Check GetOutputs
   operation->GetOutputsForParam(input1, &params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(output1, params));
   EXPECT_TRUE(ParamInParams(output2, params));
   operation->GetOutputsForParam(input2, &params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   EXPECT_TRUE(ParamInParams(output1, params));
   EXPECT_TRUE(ParamInParams(output2, params));
   operation->GetOutputsForParam(output1, &params);
-  EXPECT_EQ(params.size(), 0);
+  EXPECT_EQ(params.size(), 0U);
   operation->GetOutputsForParam(output2, &params);
-  EXPECT_EQ(params.size(), 0);
+  EXPECT_EQ(params.size(), 0U);
 
   // If we bind the output we should not get it as an input or an output.
   Param* other = operation->CreateParam<ParamInteger>("other");
@@ -369,17 +369,17 @@ TEST_F(ParamObjectTest, GetInputsForParamGetOutputsForParam) {
   // There should be two inputs for output1 but none for output2 since it is
   // bound.
   operation->GetInputsForParam(output1, &params);
-  EXPECT_EQ(params.size(), 2);
+  EXPECT_EQ(params.size(), 2U);
   operation->GetInputsForParam(output2, &params);
-  EXPECT_EQ(params.size(), 0);
+  EXPECT_EQ(params.size(), 0U);
 
   // There should only be 1 output for each of the inputs since output2 is
   // no longer effected by the inputs.
   operation->GetOutputsForParam(input1, &params);
-  EXPECT_EQ(params.size(), 1);
+  EXPECT_EQ(params.size(), 1U);
   EXPECT_TRUE(ParamInParams(output1, params));
   operation->GetOutputsForParam(input2, &params);
-  EXPECT_EQ(params.size(), 1);
+  EXPECT_EQ(params.size(), 1U);
   EXPECT_TRUE(ParamInParams(output1, params));
 }
 
@@ -433,7 +433,7 @@ TEST_F(ParamObjectTest, ImplicitCycles) {
   //           +-------------+
 
   input_a_1->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 6);
+  EXPECT_EQ(params.size(), 6U);
   EXPECT_TRUE(ParamInParams(output_a_1, params));
   EXPECT_TRUE(ParamInParams(output_a_2, params));
   EXPECT_TRUE(ParamInParams(output_b_1, params));
@@ -452,7 +452,7 @@ TEST_F(ParamObjectTest, ImplicitCycles) {
   //    IA2   OA2    IB2   OB2
 
   output_b_1->GetInputs(&params);
-  EXPECT_EQ(params.size(), 5);
+  EXPECT_EQ(params.size(), 5U);
   EXPECT_TRUE(ParamInParams(input_a_1, params));
   EXPECT_TRUE(ParamInParams(input_a_2, params));
   EXPECT_TRUE(ParamInParams(input_b_1, params));

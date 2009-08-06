@@ -286,13 +286,13 @@ TEST_F(TransformBasic, GetChildren) {
   Transform* t2 = pack()->Create<Transform>();
   Transform* t3 = pack()->Create<Transform>();
 
-  EXPECT_EQ(0, transform_->GetChildren().size());
+  EXPECT_EQ(0U, transform_->GetChildren().size());
 
   t2->SetParent(transform_);
-  EXPECT_EQ(1, transform_->GetChildren().size());
+  EXPECT_EQ(1U, transform_->GetChildren().size());
 
   t3->SetParent(transform_);
-  EXPECT_EQ(2, transform_->GetChildren().size());
+  EXPECT_EQ(2U, transform_->GetChildren().size());
 
   TransformArray children = transform_->GetChildren();
   TransformArrayConstIterator pos = find(children.begin(), children.end(), t2);
@@ -334,7 +334,7 @@ TEST_F(TransformBasic, GetTransformsInTree) {
   TransformArray transforms_in_tree(transform2_->GetTransformsInTree());
 
   // Check that all of them are in the tree.
-  EXPECT_EQ(transforms_in_tree.size(), 4);
+  EXPECT_EQ(transforms_in_tree.size(), 4U);
   EXPECT_TRUE(std::find(transforms_in_tree.begin(),
                         transforms_in_tree.end(),
                         transform_) != transforms_in_tree.end());
@@ -352,7 +352,7 @@ TEST_F(TransformBasic, GetTransformsInTree) {
   t3->SetParent(NULL);
 
   transforms_in_tree = transform2_->GetTransformsInTree();
-  EXPECT_EQ(transforms_in_tree.size(), 2);
+  EXPECT_EQ(transforms_in_tree.size(), 2U);
   EXPECT_TRUE(std::find(transforms_in_tree.begin(),
                         transforms_in_tree.end(),
                         transform_) != transforms_in_tree.end());
@@ -373,9 +373,9 @@ TEST_F(TransformBasic, GetTransformsByNameInTree) {
   SetupSimpleTree();
 
   // Check that a transform is in there.
-  EXPECT_EQ(transform2_->GetTransformsByNameInTree("t2").size(), 1);
+  EXPECT_EQ(transform2_->GetTransformsByNameInTree("t2").size(), 1U);
   // Check that another transform is not in there.
-  EXPECT_EQ(transform2_->GetTransformsByNameInTree("t3").size(), 0);
+  EXPECT_EQ(transform2_->GetTransformsByNameInTree("t3").size(), 0U);
 }
 
 // Tests AddShape, RemoveShape, GetShapes.
@@ -391,7 +391,7 @@ TEST_F(TransformBasic, AddShapeRemoveShapeGetShapes) {
   // Check that they actually got added.
   {
     const ShapeRefArray& shapes = transform_->GetShapeRefs();
-    EXPECT_EQ(shapes.size(), 2);
+    EXPECT_EQ(shapes.size(), 2U);
     EXPECT_TRUE(std::find(shapes.begin(),
                           shapes.end(),
                           Shape::Ref(shape1)) != shapes.end());
@@ -406,7 +406,7 @@ TEST_F(TransformBasic, AddShapeRemoveShapeGetShapes) {
   {
     // check it got added.
     ShapeArray shapes = transform_->GetShapes();
-    EXPECT_EQ(shapes.size(), 3);
+    EXPECT_EQ(shapes.size(), 3U);
     EXPECT_TRUE(std::find(shapes.begin(),
                           shapes.end(),
                           Shape::Ref(shape1)) != shapes.end());
@@ -435,7 +435,7 @@ TEST_F(TransformBasic,
   transform_->SetShapes(shape_array);
   shape_array = transform_->GetShapes();
 
-  EXPECT_EQ(1, shape_array.size());
+  EXPECT_EQ(1U, shape_array.size());
   EXPECT_EQ(shape2, shape_array[0]);
 }
 
@@ -463,8 +463,8 @@ TEST_F(TransformBasic, CreateGroupDrawElements) {
   transform2_->CreateDrawElements(pack(), material);
 
   // Check that they got created correctly.
-  EXPECT_EQ(primitive1->GetDrawElementRefs().size(), 2);
-  EXPECT_EQ(primitive2->GetDrawElementRefs().size(), 2);
+  EXPECT_EQ(primitive1->GetDrawElementRefs().size(), 2U);
+  EXPECT_EQ(primitive2->GetDrawElementRefs().size(), 2U);
 }
 
 TEST_F(TransformBasic, GetConcreteInputsForParamGetConcreteOutputsForParam) {
@@ -500,7 +500,7 @@ TEST_F(TransformBasic, GetConcreteInputsForParamGetConcreteOutputsForParam) {
   // Tests GetConcreteInputsForParam (because GetInputsForParam calles
   // GetConcreteInputsForParam)
   t1_world_matrix->GetInputs(&params);
-  EXPECT_EQ(params.size(), 7);
+  EXPECT_EQ(params.size(), 7U);
   EXPECT_TRUE(ParamInParams(t1_local_matrix, params));
   EXPECT_TRUE(ParamInParams(t2_world_matrix, params));
   EXPECT_TRUE(ParamInParams(t2_local_matrix, params));
@@ -510,19 +510,19 @@ TEST_F(TransformBasic, GetConcreteInputsForParamGetConcreteOutputsForParam) {
   EXPECT_TRUE(ParamInParams(t4_local_matrix, params));
 
   t1_local_matrix->GetInputs(&params);
-  EXPECT_EQ(params.size(), 0);
+  EXPECT_EQ(params.size(), 0U);
 
   // Tests GetConcreteOutputsForParam (because GetOutputsForParam calles
   // GetConcreteOutputsForParam)
   t4_local_matrix->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 4);
+  EXPECT_EQ(params.size(), 4U);
   EXPECT_TRUE(ParamInParams(t1_world_matrix, params));
   EXPECT_TRUE(ParamInParams(t2_world_matrix, params));
   EXPECT_TRUE(ParamInParams(t3_world_matrix, params));
   EXPECT_TRUE(ParamInParams(t4_world_matrix, params));
 
   t4_world_matrix->GetOutputs(&params);
-  EXPECT_EQ(params.size(), 3);
+  EXPECT_EQ(params.size(), 3U);
   EXPECT_TRUE(ParamInParams(t1_world_matrix, params));
   EXPECT_TRUE(ParamInParams(t2_world_matrix, params));
   EXPECT_TRUE(ParamInParams(t3_world_matrix, params));
@@ -545,12 +545,15 @@ TEST_F(TransformBasic, ImplicitInputs) {
 
   Param* t1_local_matrix = transform_->GetUntypedParam(
       Transform::kLocalMatrixParamName);
+  EXPECT_TRUE(t1_local_matrix != NULL);
   Param* t2_local_matrix = transform2_->GetUntypedParam(
       Transform::kLocalMatrixParamName);
+  EXPECT_TRUE(t2_local_matrix != NULL);
   Param* t3_local_matrix = t3->GetUntypedParam(
       Transform::kLocalMatrixParamName);
   Param* t4_local_matrix = t4->GetUntypedParam(
       Transform::kLocalMatrixParamName);
+  EXPECT_TRUE(t4_local_matrix != NULL);
   ParamMatrix4* t1_world_matrix = transform_->GetParam<ParamMatrix4>(
       Transform::kWorldMatrixParamName);
   Param* t2_world_matrix = transform2_->GetUntypedParam(

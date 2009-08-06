@@ -46,10 +46,14 @@ MetricCollectionBase g_global_metric_storage = { 0, 0 };
 MetricCollection &g_global_metrics =
     *static_cast<MetricCollection*>(&g_global_metric_storage);
 
+#ifdef OS_WIN
 #pragma warning(push)
+#endif
 // C4640: construction of local static object is not thread-safe.
 // C4073: initializers put in library initialization area.
+#ifdef OS_WIN
 #pragma warning(disable : 4640 4073)
+#endif
 
 // Serialize all metric manipulation and access under this lock.
 #ifdef OS_WIN
@@ -197,7 +201,7 @@ uint64 TimingMetric::average() const {
 
   uint64 ret = 0;
   if (0 == data_.count) {
-    DCHECK_EQ(0, data_.sum);
+    DCHECK_EQ(0U,  data_.sum);
   } else {
     ret = data_.sum / data_.count;
   }

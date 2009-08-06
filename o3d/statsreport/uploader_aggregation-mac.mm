@@ -116,11 +116,6 @@ static bool ReportMetrics(const char* extra_url_data,
 }
 
 void ResetPersistentMetrics() {
-  NSError *error = nil;
-  /*
-  [[NSFileManager defaultManager] removeItemAtPath:O3DStatsPath()
-                                             error:&error];
-                                             */
   [[NSFileManager defaultManager] removeFileAtPath:O3DStatsPath()
                                            handler:nil];
 }

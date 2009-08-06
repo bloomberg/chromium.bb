@@ -80,7 +80,7 @@ class DecompressorClient : public o3d::StreamProcessor {
 
   void  VerifyDecompressedOutput(uint8 *original_data) {
     // Make sure we filled up the output buffer
-    EXPECT_EQ(0, write_stream_.GetRemainingByteCount());
+    EXPECT_EQ(0U, write_stream_.GetRemainingByteCount());
 
     // Verify decompressed data with the original data we fed into the
     // compressor
