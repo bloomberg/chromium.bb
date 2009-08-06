@@ -28,6 +28,7 @@
 #include "MediaPlayer.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
+#include <wtf/Assertions.h>
 
 using namespace WebCore;
 
@@ -409,12 +410,14 @@ MediaPlayer::SupportsType WebMediaPlayerClientImpl::supportsType(const String& t
         webKitClient()->mimeRegistry()->supportsMediaMIMEType(type, codecs);
 
     switch (supportsType) {
+    default:
+        ASSERT_NOT_REACHED();
     case WebMimeRegistry::IsNotSupported:
-          return MediaPlayer::IsNotSupported;
+        return MediaPlayer::IsNotSupported;
     case WebMimeRegistry::IsSupported:
-          return MediaPlayer::IsSupported;
+        return MediaPlayer::IsSupported;
     case WebMimeRegistry::MayBeSupported:
-          return MediaPlayer::MayBeSupported;
+        return MediaPlayer::MayBeSupported;
     }
 }
 
