@@ -34,12 +34,13 @@
  */
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/include/nacl_platform.h"
 #include <windows.h>
 #include <errno.h>
 #include <stdio.h>
 #include "native_client/src/trusted/platform/nacl_sync.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
+/* for LDT_ENTRIES */
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
 
 /*
  * A static helper for finding unused LDT entry.

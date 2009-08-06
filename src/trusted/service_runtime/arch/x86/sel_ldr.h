@@ -33,7 +33,14 @@
 #define SERVICE_RUNTIME_ARCH_X86_SEL_LDR_H__ 1
 
 /* to make LDT_ENTRIES available */
-#include "native_client/src/include/nacl_platform.h"
+#if NACL_WINDOWS
+# define LDT_ENTRIES 8192
+#elif NACL_OSX
+# define LDT_ENTRIES 8192
+#elif NACL_LINUX
+# include <asm/ldt.h>
+#endif
+
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 
 #define NACL_THREAD_MAX     LDT_ENTRIES

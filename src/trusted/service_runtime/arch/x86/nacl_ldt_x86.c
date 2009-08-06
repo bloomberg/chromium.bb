@@ -33,8 +33,9 @@
  * NaCl local descriptor table (LDT) management - common for all platforms
  */
 
-#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
+/* for LDT_ENTRIES */
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr.h"
 
 /* TODO(gregoryd): These need to come from a header file. */
 extern int NaClLdtInitPlatformSpecific();
@@ -57,4 +58,3 @@ int NaClLdtInit() {
 void NaClLdtFini() {
   NaClLdtFiniPlatformSpecific();
 }
-

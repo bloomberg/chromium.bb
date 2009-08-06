@@ -46,18 +46,6 @@
 #include <unistd.h>
 #endif
 
-
-/*  LDT_ENTRIES */
-#if NACL_WINDOWS
-# define LDT_ENTRIES 8192
-#elif NACL_OSX
-# define LDT_ENTRIES 8192
-#elif NACL_LINUX
-# include <asm/ldt.h>
-#endif
-
-
-
 /* mmap enums, e.g.  PROT_READ, PROT_WRITE*/
 #if NACL_WINDOWS
 #include "native_client/src/trusted/service_runtime/win/mman.h"
