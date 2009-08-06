@@ -385,7 +385,7 @@ static void ManifestParseError(const char* details, ...) {
   va_start(args, details);
   std::string message("Extension update manifest parse error: ");
   StringAppendV(&message, details, args);
-  ExtensionErrorReporter::GetInstance()->ReportError(message, false);
+  LOG(WARNING) << message;
 }
 
 // Checks whether a given node's name matches |expected_name| and
