@@ -3047,4 +3047,4 @@ BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL 
 BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEOUT
 
 BUG18665 MAC : LayoutTests/security/block-test.html = FAIL
-BUG18665 MAC LINUX : LayoutTests/security/block-test-no-port.html = FAIL
+BUG18665 MAC : LayoutTests/security/block-test-no-port.html = FAIL
