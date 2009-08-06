@@ -456,6 +456,8 @@
    fun:resample_band
    fun:img_interpolate_read
    fun:img_colormatch_read
+   # sometimes fun:img_alphamerge_read
+   ...
    fun:img_data_lock
    fun:CGSImageDataLock
    fun:ripc_AcquireImage
@@ -470,4 +472,49 @@
    fun:_ZN7WebCore9RenderBox19paintBoxDecorationsERNS_12RenderObject9PaintInfoEii
    fun:_ZN7WebCore11RenderBlock11paintObjectERNS_12RenderObject9PaintInfoEii
    fun:_ZN7WebCore11RenderBlock5paintERNS_12RenderObject9PaintInfoEii
+}
+{
+   # Probably a system leak?
+   bug_16628
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFDictionaryInit
+   fun:CARenderOGLNew_
+   fun:view_state_new
+   fun:view_state_acquire
+   fun:view_draw
+   fun:CAViewDraw
+   fun:-[NSView _drawRect:clip:]
+}
+{
+   # System leak?  But we usually tickle it with our throbber...
+   bug_18661
+   fun:realloc
+   fun:sl_stream_finish
+   fun:sl_program_assemble
+   fun:fe_kernel_get_program_string
+   fun:fe_gl_load_programs
+   fun:fe_gl_load_kernel
+   fun:fe_context_test_kernel
+   fun:fe_tree_merge_apply
+   fun:fe_tree_merge_kernels_1
+   ...
+   fun:fe_tree_merge_kernels
+   fun:fe_tree_prepare_tree_
+   fun:fe_tree_render_image
+   fun:fe_image_render_
+   fun:fe_image_render
+   fun:renderImage
+   fun:-[CIOpenGLContextImpl renderWithBounds:matrix:function:info:]
+   fun:-[CIContextImpl render:]
+   fun:cgxcoreimage_instance_render
+   fun:CGXCoreImageInstanceRender
+   fun:ripc_AcquireCoreImage
+   fun:ripc_DrawShading
+   fun:CGContextDrawShading
+   fun:-[CICGContextImpl render:]
+   fun:-[CIContext drawImage:inRect:fromRect:]
+   fun:-[CIImage(NSAppKitAdditions) drawInRect:fromRect:operation:fraction:]
+   fun:-[ThrobberFilmstripDelegate drawFrameInRect:]
 }

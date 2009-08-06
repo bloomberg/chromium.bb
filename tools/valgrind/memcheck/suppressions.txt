@@ -445,19 +445,6 @@
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
 }
 {
-   # See http://crbug.com/6547
-   # Found by running 20-sharded ui tests over and over, aways in shard 18
-   # after AutomationProxyTest.AutocompleteParallelProxy
-   bug_6547
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN18ResourceDispatcher12CreateBridgeERKSsRK4GURLS4_S4_S1_S1_S1_iiN12ResourceType4TypeEjii
-   fun:_ZN11webkit_glue20ResourceLoaderBridge6CreateERKSsRK4GURLS5_S5_S2_S2_S2_iiN12ResourceType4TypeEii
-   fun:_ZN7WebCore22ResourceHandleInternal5StartEPN11webkit_glue20ResourceLoaderBridge16SyncLoadResponseE
-   fun:_ZN7WebCore14ResourceHandle5startEPNS_5FrameE
-   fun:_ZN7WebCore14ResourceHandle6createERKNS_15ResourceRequestEPNS_20ResourceHandleClientEPNS_5FrameEbbb
-}
-{
    # V8 (or test shell) leak?  See http://crbug.com/9458
    bug_9458
    Memcheck:Leak
@@ -1020,4 +1007,16 @@
    fun:_ZN7WebCore4PageD1Ev
    fun:_ZN11WebViewImpl5closeEv
    fun:_ZN12RenderWidget5CloseEv
+}
+{
+   # Originally filed as http://crbug.com/6547, but that was closed
+   # Found by running ui tests over and over
+   bug_18664
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18ResourceDispatcher12CreateBridgeERKSsRK4GURLS4_S4_S1_S1_S1_iiN12ResourceType4TypeEjii
+   fun:_ZN11webkit_glue20ResourceLoaderBridge6CreateERKSsRK4GURLS5_S5_S2_S2_S2_iiN12ResourceType4TypeEii
+   ...
+   fun:_ZN7WebCore14ResourceHandle5startEPNS_5FrameE
+   fun:_ZN7WebCore14ResourceHandle6createERKNS_15ResourceRequestEPNS_20ResourceHandleClientEPNS_5FrameEbbb
 }

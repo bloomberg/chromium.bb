@@ -8,3 +8,5 @@ SunSpiderReferenceTest.Perf
 V8BenchmarkReferenceTest.Perf
 # Buggy test; see http://crbug.com/6522
 DownloadTest.UnknownSize
+# Hangs on mac at exit, during final valgrind leak checking? (valgrind bug?)
+ErrorPageTest.DNSError_GoBack2Forward2
