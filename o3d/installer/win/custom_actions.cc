@@ -247,6 +247,7 @@ HRESULT SetCustomUpdateError(MSIHANDLE installer_handle,
         return hr;
       }
     }
+    return S_OK;
 }
 
 // Check whether DirectX version 9.0c or higher is installed and

@@ -403,11 +403,11 @@ void Bitmap::DrawImage(const Bitmap& src_img,
 
 
 void Bitmap::GenerateMips(int source_level, int num_levels) {
-  if (source_level >= num_mipmaps() || source_level < 0) {
+  if (source_level >= static_cast<int>(num_mipmaps()) || source_level < 0) {
     O3D_ERROR(service_locator()) << "source level out of range.";
     return;
   }
-  if (source_level + num_levels >= num_mipmaps() || num_levels < 0) {
+  if (source_level + num_levels >= static_cast<int>(num_mipmaps()) || num_levels < 0) {
     O3D_ERROR(service_locator()) << "num levels out of range.";
     return;
   }

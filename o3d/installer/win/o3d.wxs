@@ -309,7 +309,7 @@ Wix script for building o3d installer.
 
     <Binary
         Id='CustomActions'
-        SourceFile='cactions.dll' />
+        SourceFile='$(var.CustomActionsPath)' />
 
     <!-- Custom action for telling Google Update to install d3dx if necessary. -->
     <CustomAction

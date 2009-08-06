@@ -32,6 +32,7 @@
         'variables': {
           'renderer': 'd3d9',
           'cgdir': 'third_party/cg/files/win',
+          'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
           'LIBRARY_SUFFIX': '.lib',
           'CONFIGURATION': '$(ConfigurationName)',
         },
@@ -43,6 +44,7 @@
             'UNICODE',
             'NACL_WINDOWS',
           ],
+          # Disable warning: "'this' : used in base member initialization list."
           'msvs_disabled_warnings': [4355],
           'msvs_settings': {
             'VCCLCompilerTool': {

@@ -24,6 +24,7 @@
         '../documentation/documentation.gyp:*',
         '../import/archive.gyp:o3dArchive',
         '../import/import.gyp:o3dImport',
+        '../installer/installer.gyp:installer',
         '../plugin/idl/idl.gyp:o3dPluginIdl',
         '../plugin/plugin.gyp:add_version',
         '../plugin/plugin.gyp:npo3dautoplugin',

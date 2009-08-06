@@ -165,6 +165,7 @@ docs_path = env.File('$SCONSTRUCT_DIR/installer/win/docs.url')
 rep_path = env.File('$ARTIFACTS_DIR/reporter.exe')
 dbl_path = env.File('$SCONSTRUCT_DIR/installer/win/driver_blacklist.txt')
 get_extras_path = env.File('$ARTIFACTS_DIR/getextras.exe')
+custom_actions_path = env.File('$ARTIFACTS_DIR/cactions.dll')
 
 # Tell wix to include the software renderer IFF it's there.
 software_renderer_path = \
@@ -176,32 +177,33 @@ cactions_dll_path = env.File('$ARTIFACTS_DIR/cactions.dll')
 
 # Pass flags to the wix compiler.
 env.Append(WIXCANDLEFLAGS = [
-  '-dNppProductGuid=' + o3d_npp_product_guid,
-  '-dNppVersion=' + dotnppversion,
+  '-dCustomActionsPath=' + custom_actions_path,
+  '-dD3DXGuid=' + d3dx_guid,
+  '-dDBLGuid=' + o3d_driver_blacklist_guid,
+  '-dDBLPath=' + dbl_path.abspath,
   '-dDeprecatedUpgradeCode=' + bad_old_o3d_upgrade_code,
-  '-dNppUpgradeCode=' + o3d_npp_upgrade_code,
-  '-dNppPackageGuid=' + o3d_npp_package_guid,
-  '-dNppComponentGuid=' + o3d_npp_component_guid,
-  '-dSoftwareRendererGuid=' + o3d_software_renderer_guid,
-  '-dSoftwareRendererPath=' + software_renderer_path,
-  '-dIncludeSoftwareRenderer=%s' % include_software_renderer,
-  '-dNPPluginPath=' + npplugin_path.abspath,
+  '-dGetExtrasGuid=' + o3d_get_extras_guid,
+  '-dGetExtrasPath=' + get_extras_path.abspath,
   '-dIEPluginPath=' + ieplugin_path.abspath,
   '-dIepComponentGuid=' + o3d_iep_component_guid,
-  '-dD3DXGuid=' + d3dx_guid,
+  '-dIncludeSoftwareRenderer=%s' % include_software_renderer,
+  '-dNPPluginPath=' + npplugin_path.abspath,
+  '-dNppComponentGuid=' + o3d_npp_component_guid,
   '-dNppGoogleUpdateRegGuid=' + o3d_npp_google_update_reg_component_guid,
   '-dNppGoogleUpdateRegKey=' + o3d_npp_reg_key,
   '-dNppGoogleUpdateStateRegKey=' + o3d_npp_state_reg_key,
+  '-dNppPackageGuid=' + o3d_npp_package_guid,
+  '-dNppProductGuid=' + o3d_npp_product_guid,
+  '-dNppUpgradeCode=' + o3d_npp_upgrade_code,
+  '-dNppVersion=' + dotnppversion,
   '-dRepGuid=' + o3d_reporter_guid,
-  '-dDBLGuid=' + o3d_driver_blacklist_guid,
   '-dRepPath=' + rep_path.abspath,
-  '-dDBLPath=' + dbl_path.abspath,
-  '-dGetExtrasGuid=' + o3d_get_extras_guid,
-  '-dGetExtrasPath=' + get_extras_path.abspath,
+  '-dSoftwareRendererGuid=' + o3d_software_renderer_guid,
+  '-dSoftwareRendererPath=' + software_renderer_path,
 ])
 
 # Build installer
-installer_msi = env.WiX('o3d.msi', ['o3d_plugin.wxs'])
+installer_msi = env.WiX('o3d.msi', ['o3d.wxs'])
 
 # Make sure that the plugin dll has been built before building the installer.
 # Make sure that the custom action dll has been built before building the
@@ -238,8 +240,7 @@ if os.path.exists(dx_redist_path.abspath):
   ])
 
   # Build the installer
-  extras_msi = env.WiX('o3dextras.msi', ['o3d_extras.wxs'])
+  extras_msi = env.WiX('o3dextras.msi', ['o3dextras.wxs'])
 
   # copy to artifacts
   env.Replicate('$ARTIFACTS_DIR', extras_msi)
-

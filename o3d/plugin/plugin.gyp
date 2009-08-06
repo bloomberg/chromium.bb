@@ -120,8 +120,8 @@
           {
             'link_settings': {
               'libraries': [
-                '-l"$(DXSDK_DIR)/Lib/x86/DxErr9.lib"',
-                '-l"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
+                '"$(DXSDK_DIR)/Lib/x86/DxErr9.lib"',
+                '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
                 '-ld3d9.lib',
               ],
             },

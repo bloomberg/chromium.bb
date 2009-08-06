@@ -418,8 +418,8 @@ void FilterTexel(unsigned int x,
   DCHECK_LE(dst_height, src_height);
   DCHECK_LE(x, dst_width);
   DCHECK_LE(y, dst_height);
-  DCHECK_LE(src_width, src_pitch);
-  DCHECK_LE(dst_width, dst_pitch);
+  DCHECK_LE(static_cast<int>(src_width), src_pitch);
+  DCHECK_LE(static_cast<int>(dst_width), dst_pitch);
 
   src_pitch /= components;
   dst_pitch /= components;
@@ -625,6 +625,7 @@ bool GenerateMipmap(unsigned int src_width,
       }
     }
   }
+  return true;
 }
 
 ImageFileType GetFileTypeFromFilename(const char *filename) {
