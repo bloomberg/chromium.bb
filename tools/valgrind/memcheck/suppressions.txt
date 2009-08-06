@@ -1006,3 +1006,18 @@
    fun:_ZN20NavigationController22IsLikelyAutoNavigationEN4base9TimeTicksE
    fun:_ZN20NavigationController28RendererDidNavigateToNewPageERK32ViewHostMsg_FrameNavigate_ParamsPb
 }
+{
+   bug_18654
+   Memcheck:Leak
+   ...
+   fun:_ZN12WebFrameImplD0Ev
+   fun:_ZN20WebFrameLoaderClient20frameLoaderDestroyedEv
+   fun:_ZN7WebCore11FrameLoaderD1Ev
+   fun:_ZN7WebCore5FrameD1Ev
+   fun:_ZN7WebCore17InspectorResourceD1Ev
+   fun:_ZN3WTF10RefCountedIN7WebCore17InspectorResourceEE5derefEv
+   fun:_ZN7WebCore19InspectorControllerD1Ev
+   fun:_ZN7WebCore4PageD1Ev
+   fun:_ZN11WebViewImpl5closeEv
+   fun:_ZN12RenderWidget5CloseEv
+}
