@@ -5,7 +5,6 @@
 #include "base/test_file_util.h"
 
 #include <errno.h>
-#include <fts.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -24,6 +23,7 @@ bool DieFileDie(const FilePath& file, bool recurse) {
   return file_util::Delete(file, recurse);
 }
 
+// Mostly a verbatim copy of CopyDirectory
 bool CopyRecursiveDirNoCache(const std::wstring& source_dir,
                              const std::wstring& dest_dir) {
   const FilePath from_path(FilePath::FromWStringHack(source_dir));
@@ -35,90 +35,72 @@ bool CopyRecursiveDirNoCache(const std::wstring& source_dir,
     return false;
   }
 
-  char* dir_list[] = { top_dir, NULL };
-  FTS* fts = fts_open(dir_list, FTS_PHYSICAL | FTS_NOSTAT, NULL);
-  if (!fts) {
-    LOG(ERROR) << "fts_open failed: " << strerror(errno);
+  // This function does not properly handle destinations within the source
+  FilePath real_to_path = to_path;
+  if (PathExists(real_to_path)) {
+    if (!AbsolutePath(&real_to_path))
+      return false;
+  } else {
+    real_to_path = real_to_path.DirName();
+    if (!AbsolutePath(&real_to_path))
+      return false;
+  }
+  if (real_to_path.value().compare(0, from_path.value().size(),
+      from_path.value()) == 0)
     return false;
+
+  bool success = true;
+  FileEnumerator::FILE_TYPE traverse_type =
+      static_cast<FileEnumerator::FILE_TYPE>(FileEnumerator::FILES |
+      FileEnumerator::SHOW_SYM_LINKS | FileEnumerator::DIRECTORIES);
+  FileEnumerator traversal(from_path, true, traverse_type);
+
+  // to_path may not exist yet, start the loop with to_path
+  FileEnumerator::FindInfo info;
+  FilePath current = from_path;
+  if (stat(from_path.value().c_str(), &info.stat) < 0) {
+    LOG(ERROR) << "CopyRecursiveDirNoCache() couldn't stat source directory: "
+        << from_path.value() << " errno = " << errno;
+    success = false;
   }
 
-  int error = 0;
-  FTSENT* ent;
-  while (!error && (ent = fts_read(fts)) != NULL) {
-    // ent->fts_path is the source path, including from_path, so paste
+  while (success && !current.empty()) {
+    // current is the source path, including from_path, so paste
     // the suffix after from_path onto to_path to create the target_path.
-    std::string suffix(&ent->fts_path[from_path.value().size()]);
+    std::string suffix(&current.value().c_str()[from_path.value().size()]);
     // Strip the leading '/' (if any).
     if (!suffix.empty()) {
       DCHECK_EQ('/', suffix[0]);
       suffix.erase(0, 1);
     }
     const FilePath target_path = to_path.Append(suffix);
-    switch (ent->fts_info) {
-      case FTS_D:  // Preorder directory.
-        // Try creating the target dir, continuing on it if it exists already.
-        // Rely on the user's umask to produce correct permissions.
-        if (mkdir(target_path.value().c_str(), 0777) != 0) {
-          if (errno != EEXIST)
-            error = errno;
-        }
-        break;
-      case FTS_F:     // Regular file.
-      case FTS_NSOK:  // File, no stat info requested.
-        {
-          errno = 0;
-          FilePath source_path(ent->fts_path);
-          if (CopyFile(source_path, target_path)) {
-            bool success = EvictFileFromSystemCache(target_path);
-            DCHECK(success);
-          } else {
-            error = errno ? errno : EINVAL;
-          }
-        }
-        break;
-      case FTS_DP:   // Postorder directory.
-      case FTS_DOT:  // "." or ".."
-        // Skip it.
-        continue;
-      case FTS_DC:   // Directory causing a cycle.
-        // Skip this branch.
-        if (fts_set(fts, ent, FTS_SKIP) != 0)
-          error = errno;
-        break;
-      case FTS_DNR:  // Directory cannot be read.
-      case FTS_ERR:  // Error.
-      case FTS_NS:   // Stat failed.
-        // Abort with the error.
-        error = ent->fts_errno;
-        break;
-      case FTS_SL:      // Symlink.
-      case FTS_SLNONE:  // Symlink with broken target.
-        LOG(WARNING) << "skipping symbolic link: " << ent->fts_path;
-        continue;
-      case FTS_DEFAULT:  // Some other sort of file.
-        LOG(WARNING) << "skipping file of unknown type: " << ent->fts_path;
-        continue;
-      default:
-        NOTREACHED();
-        continue;  // Hope for the best!
+
+    if (S_ISDIR(info.stat.st_mode)) {
+      if (mkdir(target_path.value().c_str(), info.stat.st_mode & 01777) != 0 &&
+          errno != EEXIST) {
+        LOG(ERROR) << "CopyRecursiveDirNoCache() couldn't create directory: " <<
+            target_path.value() << " errno = " << errno;
+        success = false;
+      }
+    } else if (S_ISREG(info.stat.st_mode)) {
+      if (CopyFile(current, target_path)) {
+        success = EvictFileFromSystemCache(target_path);
+        DCHECK(success);
+      } else {
+        LOG(ERROR) << "CopyRecursiveDirNoCache() couldn't create file: " <<
+            target_path.value();
+        success = false;
+      }
+    } else {
+      LOG(WARNING) << "CopyRecursiveDirNoCache() skipping non-regular file: " <<
+          current.value();
     }
-  }
-  // fts_read may have returned NULL and set errno to indicate an error.
-  if (!error && errno != 0)
-    error = errno;
 
-  if (!fts_close(fts)) {
-    // If we already have an error, let's use that error instead of the error
-    // fts_close set.
-    if (!error)
-      error = errno;
+    current = traversal.Next();
+    traversal.GetFindInfo(&info);
   }
 
-  if (error) {
-    LOG(ERROR) << strerror(error);
-    return false;
-  }
-  return true;
+  return success;
 }
 
 }  // namespace file_util
