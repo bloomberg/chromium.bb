@@ -564,7 +564,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestConnectToBadPort) {
 // - navigate to a bad HTTPS (expect unsafe content and filtered frame), then
 //   back
 // - navigate to HTTP (expect mixed content), then back
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestGoodFrameNavigation) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   scoped_refptr<HTTPSTestServer> good_https_server = GoodCertServer();
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
