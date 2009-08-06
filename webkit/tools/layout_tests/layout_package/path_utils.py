@@ -93,11 +93,11 @@ def PlatformResultsEnclosingDir(platform):
     return ChromiumPlatformResultsEnclosingDir()
   return WebKitPlatformResultsEnclosingDir()
 
-def ExpectedFilename(filename, suffix, platform):
-  """Given a test name, returns an absolute path to its expected results.
+def GetPlatformDirs(platform):
+  """Returns a list of directories to look in for test results.
 
-  The result will be sought in the hierarchical platform directories, in the
-  corresponding WebKit platform directories, in the WebKit platform/mac/
+  The result will be sought in the chromium-specific platform directories,
+  in the corresponding WebKit platform directories, in the WebKit platform/mac/
   directory, and finally next to the test file.
 
   Suppose that the |platform| is 'chromium-win-xp'.  In that case, the
@@ -132,29 +132,14 @@ def ExpectedFilename(filename, suffix, platform):
     LayoutTests/platform/mac/
     the directory in which the test itself is located
 
-  If no expected results are found in any of the searched directories, the
-  directory in which the test itself is located will be returned.
-
   Args:
-    filename: absolute filename to test file
-    suffix: file suffix of the expected results, including dot; e.g. '.txt'
-        or '.png'.  This should not be None, but may be an empty string.
     platform: a hyphen-separated list of platform descriptors from least to
         most specific, matching the WebKit format, that will be used to find
         the platform/ directories to look in. For example, 'chromium-win' or
         'chromium-mac-leopard'.
-
   Returns:
-    An absolute path to the most specific matching result file for the given
-    test, following the search rules described above.
+    a list of directories to search
   """
-  testname = os.path.splitext(RelativeTestFilename(filename))[0]
-  # While we still have tests in LayoutTests/, chrome/, and pending/, we need
-  # to strip that outer directory.
-  # TODO(pamg): Once we upstream all of chrome/ and pending/, clean this up.
-  testdir, testname = testname.split('/', 1)
-  results_filename = testname + '-expected' + suffix
-
   # Use the cached directory list if we have one.
   global _platform_results_dirs
   platform_dirs = _platform_results_dirs.get(platform, [])
@@ -183,6 +168,30 @@ def ExpectedFilename(filename, suffix, platform):
                      for x in platform_dirs]
     _platform_results_dirs[platform] = platform_dirs
 
+  return platform_dirs
+
+def ExpectedFilename(filename, suffix, platform):
+  """Given a test name, returns an absolute path to its expected results.
+
+  If no expected results are found in any of the searched directories, the
+  directory in which the test itself is located will be returned.
+
+  Args:
+     filename: absolute filename to test file
+     suffix: file suffix of the expected results, including dot; e.g. '.txt'
+         or '.png'.  This should not be None, but may be an empty string.
+     platform: the most-specific directory name to use to build the
+         search list of directories, e.g., 'chromium-win', or
+         'chromium-mac-leopard' (we follow the WebKit format)
+  """
+  testname = os.path.splitext(RelativeTestFilename(filename))[0]
+  # While we still have tests in LayoutTests/, chrome/, and pending/, we need
+  # to strip that outer directory.
+  # TODO(pamg): Once we upstream all of chrome/ and pending/, clean this up.
+  testdir, testname = testname.split('/', 1)
+  results_filename = testname + '-expected' + suffix
+
+  platform_dirs = GetPlatformDirs(platform)
   for platform_dir in platform_dirs:
     # TODO(pamg): Clean this up once we upstream everything in chrome/ and
     # pending/.
