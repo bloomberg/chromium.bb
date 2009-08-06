@@ -2,4 +2,4 @@
 BMPImageDecoderTest.ChunkedDecodingSlow
 BMPImageDecoderTest.DecodingSlow
 # Started timing out at r22420; http://crbug.com/18598
-PluginTest.Refresh
+PluginTest.*
