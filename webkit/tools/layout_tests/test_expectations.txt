@@ -3030,7 +3030,6 @@ BUG17942 LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH P
 BUG17942 LINUX : LayoutTests/fast/overflow/008.html = CRASH PASS
 BUG17942 WIN : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
 // New tests with this merge:
-BUG17942 : LayoutTests/http/tests/misc/will-send-request-returns-null-on-redirect.html = FAIL
 BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 

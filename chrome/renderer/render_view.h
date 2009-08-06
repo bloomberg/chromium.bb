@@ -220,7 +220,8 @@ class RenderView : public RenderWidget,
                               const WebKit::WebForm& form);
   virtual void WillSendRequest(WebFrame* webframe,
                                uint32 identifier,
-                               WebKit::WebURLRequest* request);
+                               WebKit::WebURLRequest* request,
+                               const WebKit::WebURLResponse& redirect_response);
   virtual void DidReceiveResponse(WebFrame* webframe,
                                   uint32 identifier,
                                   const WebKit::WebURLResponse& response);

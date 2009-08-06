@@ -117,6 +117,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) {
   BindMethod("setIconDatabaseEnabled", &LayoutTestController::setIconDatabaseEnabled);
   BindMethod("setCustomPolicyDelegate", &LayoutTestController::setCustomPolicyDelegate);
   BindMethod("waitForPolicyDelegate", &LayoutTestController::waitForPolicyDelegate);
+  BindMethod("setWillSendRequestReturnsNullOnRedirect", &LayoutTestController::setWillSendRequestReturnsNullOnRedirect);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -584,6 +585,14 @@ void LayoutTestController::waitForPolicyDelegate(
     const CppArgumentList& args, CppVariant* result) {
   shell_->delegate()->WaitForPolicyDelegate();
   wait_until_done_ = true;
+  result->SetNull();
+}
+
+void LayoutTestController::setWillSendRequestReturnsNullOnRedirect(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() > 0 && args[0].isBool())
+    shell_->delegate()->set_block_redirects(args[0].value.boolValue);
+
   result->SetNull();
 }
 

@@ -222,22 +222,12 @@ static ResourceRequest::TargetType DetermineTargetTypeFromLoader(
 
 void WebFrameLoaderClient::dispatchWillSendRequest(
     DocumentLoader* loader, unsigned long identifier, ResourceRequest& request,
-    const ResourceResponse& redirectResponse) {
+    const ResourceResponse& redirect_response) {
 
   if (loader) {
     // We want to distinguish between a request for a document to be loaded into
     // the main frame, a sub-frame, or the sub-objects in that document.
     request.setTargetType(DetermineTargetTypeFromLoader(loader));
-  }
-
-  // Inherit the first party for cookies from the request's frame.  However, if
-  // the request is for a main frame, the current document's
-  // firstPartyForCookies is the old document, so we leave firstPartyForCookies
-  // empty to indicate that the request is a first-party request.
-  if (request.targetType() != ResourceRequest::TargetIsMainFrame &&
-      webframe_->frame()->document()) {
-    request.setFirstPartyForCookies(
-        webframe_->frame()->document()->firstPartyForCookies());
   }
 
   // FrameLoader::loadEmptyDocumentSynchronously() creates an empty document
@@ -251,7 +241,8 @@ void WebFrameLoaderClient::dispatchWillSendRequest(
   WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
   if (d) {
     WrappedResourceRequest webreq(request);
-    d->WillSendRequest(webframe_, identifier, &webreq);
+    WrappedResourceResponse webresp(redirect_response);
+    d->WillSendRequest(webframe_, identifier, &webreq, webresp);
   }
 }
 
@@ -451,6 +442,10 @@ void WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad() 
     NOTREACHED() << "Got a server redirect when there is no provisional DS";
     return;
   }
+
+  // The server redirect may have been blocked.
+  if (ds->request().isNull())
+    return;
 
   // A provisional load should have started already, which should have put an
   // entry in our redirect chain.

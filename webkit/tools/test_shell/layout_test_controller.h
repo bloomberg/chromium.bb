@@ -113,6 +113,10 @@ class LayoutTestController : public CppBoundClass {
   // Delays completion of the test until the policy delegate runs.
   void waitForPolicyDelegate(const CppArgumentList& args, CppVariant* result);
 
+  // Causes WillSendRequest to block redirects.
+  void setWillSendRequestReturnsNullOnRedirect(const CppArgumentList& args,
+                                               CppVariant* result);
+
   // Converts a URL starting with file:///tmp/ to the local mapping.
   void pathToLocalResource(const CppArgumentList& args, CppVariant* result);
 

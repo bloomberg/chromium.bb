@@ -28,6 +28,7 @@
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebURLRequest.h"
+#include "webkit/api/public/WebURLResponse.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
@@ -65,6 +66,7 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
+using WebKit::WebURLResponse;
 using WebKit::WebWidget;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
@@ -117,6 +119,26 @@ const char* WebNavigationTypeToString(WebNavigationType type) {
       return kOtherString;
   }
   return kIllegalString;
+}
+
+std::string GetResponseDescription(const WebURLResponse& response) {
+  if (response.isNull())
+    return "(null)";
+
+  return StringPrintf("<NSURLResponse %s, http status code %d>",
+      GURL(response.url()).possibly_invalid_spec().c_str(),
+      response.httpStatusCode());
+}
+
+int ToNSErrorCode(const WebURLError& error) {
+  if (UTF16ToUTF8(error.domain) == net::kErrorDomain) {
+    switch (error.reason) {
+      case net::ERR_ABORTED:
+        return -999;
+    }
+  }
+  DLOG(WARNING) << "Add an error code mapping!";
+  return error.reason;
 }
 
 }  // namespace
@@ -229,19 +251,34 @@ std::string TestWebViewDelegate::GetResourceDescription(uint32 identifier) {
   return it != resource_identifier_map_.end() ? it->second : "<unknown>";
 }
 
-void TestWebViewDelegate::WillSendRequest(WebFrame* webframe,
-                                          uint32 identifier,
-                                          WebURLRequest* request) {
+void TestWebViewDelegate::WillSendRequest(
+    WebFrame* webframe,
+    uint32 identifier,
+    WebURLRequest* request,
+    const WebURLResponse& redirect_response) {
   GURL url = request->url();
   std::string request_url = url.possibly_invalid_spec();
-  std::string host = url.host();
 
   if (shell_->ShouldDumpResourceLoadCallbacks()) {
-    printf("%s - willSendRequest <WebRequest URL \"%s\">\n",
+    GURL main_document_url = request->firstPartyForCookies();
+    printf("%s - willSendRequest <NSURLRequest URL %s, main document URL %s,"
+           " http method %s> redirectResponse %s\n",
            GetResourceDescription(identifier).c_str(),
-           request_url.c_str());
+           request_url.c_str(),
+           main_document_url.possibly_invalid_spec().c_str(),
+           UTF16ToUTF8(request->httpMethod()).c_str(),
+           GetResponseDescription(redirect_response).c_str());
   }
 
+  if (!redirect_response.isNull() && block_redirects_) {
+    printf("Returning null for this redirect\n");
+
+    // To block the request, we set its URL to an empty one.
+    request->setURL(WebURL());
+    return;
+  }
+
+  std::string host = url.host();
   if (TestShell::layout_test_mode() && !host.empty() &&
       (url.SchemeIs("http") || url.SchemeIs("https")) &&
        host != "127.0.0.1" &&
@@ -260,6 +297,17 @@ void TestWebViewDelegate::WillSendRequest(WebFrame* webframe,
   request->setURL(GURL(TestShell::RewriteLocalUrl(request_url)));
 }
 
+void TestWebViewDelegate::DidReceiveResponse(
+    WebFrame* webframe,
+    uint32 identifier,
+    const WebURLResponse& response) {
+  if (shell_->ShouldDumpResourceLoadCallbacks()) {
+    printf("%s - didReceiveResponse %s\n",
+           GetResourceDescription(identifier).c_str(),
+           GetResponseDescription(response).c_str());
+  }
+}
+
 void TestWebViewDelegate::DidFinishLoading(WebFrame* webframe,
                                            uint32 identifier) {
   TRACE_EVENT_END("url.load", identifier, "");
@@ -275,10 +323,10 @@ void TestWebViewDelegate::DidFailLoadingWithError(WebFrame* webframe,
                                                   uint32 identifier,
                                                   const WebURLError& error) {
   if (shell_->ShouldDumpResourceLoadCallbacks()) {
-    printf("%s - didFailLoadingWithError <WebError code %d,"
-           " failing URL \"%s\">\n",
+    printf("%s - didFailLoadingWithError: <NSError domain NSURLErrorDomain,"
+           " code %d, failing URL \"%s\">\n",
            GetResourceDescription(identifier).c_str(),
-           error.reason,
+           ToNSErrorCode(error),
            error.unreachableURL.spec().data());
   }
 
@@ -311,7 +359,7 @@ void TestWebViewDelegate::DidStartProvisionalLoadForFrame(
   UpdateAddressBar(webview);
 }
 
-void TestWebViewDelegate::DidReceiveServerRedirectForProvisionalLoadForFrame(
+void TestWebViewDelegate::DidReceiveProvisionalLoadServerRedirect(
     WebView* webview,
     WebFrame* frame) {
   if (shell_->ShouldDumpFrameLoadCallbacks()) {
@@ -453,13 +501,14 @@ void TestWebViewDelegate::DidReceiveIconForFrame(WebView* webview,
 
 void TestWebViewDelegate::WillPerformClientRedirect(WebView* webview,
                                                     WebFrame* frame,
-                                                    const std::wstring& dest_url,
+                                                    const GURL& src_url,
+                                                    const GURL& dest_url,
                                                     unsigned int delay_seconds,
                                                     unsigned int fire_date) {
   if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    // FIXME: prettyprint the url?
-    printf("%S - willPerformClientRedirectToURL: %S\n",
-           GetFrameDescription(frame).c_str(), dest_url.c_str());
+    printf("%S - willPerformClientRedirectToURL: %s \n",
+           GetFrameDescription(frame).c_str(),
+           dest_url.possibly_invalid_spec().c_str());
   }
 }
 

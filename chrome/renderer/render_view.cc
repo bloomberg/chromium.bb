@@ -1463,7 +1463,8 @@ void RenderView::WillSubmitForm(WebView* webview, WebFrame* frame,
 }
 
 void RenderView::WillSendRequest(WebFrame* frame, uint32 identifier,
-                                 WebURLRequest* request) {
+                                 WebURLRequest* request,
+                                 const WebURLResponse& redirect_response) {
   request->setRequestorID(routing_id_);
 }
 

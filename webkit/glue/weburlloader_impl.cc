@@ -221,7 +221,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   void HandleDataURL();
 
   WebURLLoaderImpl* loader_;
-  GURL url_;
+  WebURLRequest request_;
   WebURLLoaderClient* client_;
   scoped_ptr<ResourceLoaderBridge> bridge_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
@@ -258,11 +258,13 @@ void WebURLLoaderImpl::Context::Start(
     ResourceLoaderBridge::SyncLoadResponse* sync_load_response) {
   DCHECK(!bridge_.get());
 
-  url_ = request.url();
-  if (url_.SchemeIs("data")) {
+  request_ = request;  // Save the request.
+
+  GURL url = request.url();
+  if (url.SchemeIs("data")) {
     if (sync_load_response) {
       // This is a sync load. Do the work now.
-      sync_load_response->url = url_;
+      sync_load_response->url = url;
       std::string data;
       GetInfoFromDataURL(sync_load_response->url, sync_load_response,
                          &sync_load_response->data,
@@ -316,7 +318,7 @@ void WebURLLoaderImpl::Context::Start(
   // creating the GURLs.
   bridge_.reset(ResourceLoaderBridge::Create(
       method,
-      url_,
+      url,
       request.firstPartyForCookies(),
       referrer_url,
       frame_origin,
@@ -380,18 +382,20 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 
   WebURLResponse response;
   response.initialize();
-  PopulateURLResponse(url_, info, &response);
+  PopulateURLResponse(request_.url(), info, &response);
 
   // TODO(darin): We lack sufficient information to construct the actual
-  // request that resulted from the redirect, so we just report a GET
-  // navigation to the new location.
+  // request that resulted from the redirect.
   WebURLRequest new_request(new_url);
+  new_request.setFirstPartyForCookies(request_.firstPartyForCookies());
+  if (response.httpStatusCode() == 307)
+    new_request.setHTTPMethod(request_.httpMethod());
 
-  url_ = new_url;
+  request_ = new_request;
   client_->willSendRequest(loader_, new_request, response);
 
   // Only follow the redirect if WebKit left the URL unmodified.
-  if (url_ == new_request.url())
+  if (new_url == GURL(new_request.url()))
     return true;
 
   // We assume that WebKit only changes the URL to suppress a redirect, and we
@@ -408,7 +412,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
   WebURLResponse response;
   response.initialize();
-  PopulateURLResponse(url_, info, &response);
+  PopulateURLResponse(request_.url(), info, &response);
   response.setIsContentFiltered(content_filtered);
 
   expected_content_length_ = response.expectedContentLength();
@@ -474,7 +478,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
       WebURLError error;
       error.domain = WebString::fromUTF8(net::kErrorDomain);
       error.reason = error_code;
-      error.unreachableURL = url_;
+      error.unreachableURL = request_.url();
       client_->didFail(loader_, error);
     } else {
       client_->didFinishLoading(loader_);
@@ -488,7 +492,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
 }
 
 std::string WebURLLoaderImpl::Context::GetURLForDebugging() {
-  return url_.spec();
+  return request_.url().spec();
 }
 
 void WebURLLoaderImpl::Context::HandleDataURL() {
@@ -496,7 +500,7 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
   URLRequestStatus status;
   std::string data;
 
-  if (GetInfoFromDataURL(url_, &info, &data, &status)) {
+  if (GetInfoFromDataURL(request_.url(), &info, &data, &status)) {
     OnReceivedResponse(info, false);
     if (!data.empty())
       OnReceivedData(data.data(), data.size());

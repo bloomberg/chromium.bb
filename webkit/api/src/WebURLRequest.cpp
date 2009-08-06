@@ -78,6 +78,11 @@ void WebURLRequest::assign(const WebURLRequest& r)
         assign(r.m_private ? new WebURLRequestPrivateImpl(r.m_private) : 0);
 }
 
+bool WebURLRequest::isNull() const
+{
+    return !m_private || m_private->m_resourceRequest->isNull();
+}
+
 WebURL WebURLRequest::url() const
 {
     return m_private->m_resourceRequest->url();

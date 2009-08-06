@@ -497,10 +497,13 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // Notifies the delegate that a request is about to be sent out, giving the
   // delegate the opportunity to modify the request.  Note that request is
   // writable here, and changes to the URL, for example, will change the request
-  // to be made.
-  virtual void WillSendRequest(WebFrame* webframe,
-                               uint32 identifier,
-                               WebKit::WebURLRequest* request) {
+  // made.  If this request is the result of a redirect, then redirect_response
+  // will be non-null and contain the response that triggered the redirect.
+  virtual void WillSendRequest(
+      WebFrame* webframe,
+      uint32 identifier,
+      WebKit::WebURLRequest* request,
+      const WebKit::WebURLResponse& redirect_response) {
   }
 
   virtual void DidReceiveResponse(WebFrame* webframe,

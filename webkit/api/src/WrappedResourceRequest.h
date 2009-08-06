@@ -65,8 +65,7 @@ namespace WebKit {
 
         void bind(const WebCore::ResourceRequest& resourceRequest)
         {
-            m_handle.m_resourceRequest = const_cast<WebCore::ResourceRequest*>(&resourceRequest);
-            assign(&m_handle);
+            bind(*const_cast<WebCore::ResourceRequest*>(&resourceRequest));
         }
 
     private:

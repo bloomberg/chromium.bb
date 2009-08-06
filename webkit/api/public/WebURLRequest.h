@@ -79,7 +79,7 @@ namespace WebKit {
         WEBKIT_API void reset();
         WEBKIT_API void assign(const WebURLRequest&);
 
-        bool isNull() const { return m_private == 0; }
+        WEBKIT_API bool isNull() const;
 
         WEBKIT_API WebURL url() const;
         WEBKIT_API void setURL(const WebURL&);

@@ -68,16 +68,16 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
       top_loading_frame_(NULL),
       page_id_(-1),
       last_page_id_updated_(-1),
-      smart_insert_delete_enabled_(true)
-#if defined(OS_WIN)
-      , select_trailing_whitespace_enabled_(true)
-#else
-      , select_trailing_whitespace_enabled_(false)
-#endif
 #if defined(OS_LINUX)
-      , cursor_type_(GDK_X_CURSOR)
+      cursor_type_(GDK_X_CURSOR),
 #endif
-      {
+      smart_insert_delete_enabled_(true),
+#if defined(OS_WIN)
+      select_trailing_whitespace_enabled_(true),
+#else
+      select_trailing_whitespace_enabled_(false),
+#endif
+      block_redirects_(false) {
   }
   virtual ~TestWebViewDelegate();
 
@@ -149,7 +149,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
     WebView* webview,
     WebFrame* frame,
     NavigationGesture gesture);
-  virtual void DidReceiveServerRedirectForProvisionalLoadForFrame(
+  virtual void DidReceiveProvisionalLoadServerRedirect(
     WebView* webview, WebFrame* frame);
   virtual void DidFailProvisionalLoadWithError(
       WebView* webview,
@@ -171,7 +171,8 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
 
   virtual void WillPerformClientRedirect(WebView* webview,
                                          WebFrame* frame,
-                                         const std::wstring& dest_url,
+                                         const GURL& src_url,
+                                         const GURL& dest_url,
                                          unsigned int delay_seconds,
                                          unsigned int fire_date);
   virtual void DidCancelClientRedirect(WebView* webview,
@@ -187,7 +188,11 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
                                          const WebKit::WebURLRequest& request);
   virtual void WillSendRequest(WebFrame* webframe,
                                uint32 identifier,
-                               WebKit::WebURLRequest* request);
+                               WebKit::WebURLRequest* request,
+                               const WebKit::WebURLResponse& redirect_response);
+  virtual void DidReceiveResponse(WebFrame* webframe,
+                                  uint32 identifier,
+                                  const WebKit::WebURLResponse& response);
   virtual void DidFinishLoading(WebFrame* webframe, uint32 identifier);
   virtual void DidFailLoadingWithError(WebFrame* webframe,
                                        uint32 identifier,
@@ -280,6 +285,13 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   void SetCustomPolicyDelegate(bool is_custom, bool is_permissive);
   void WaitForPolicyDelegate();
 
+  void set_block_redirects(bool block_redirects) {
+    block_redirects_ = block_redirects;
+  }
+  bool block_redirects() const {
+    return block_redirects_;
+  }
+
  protected:
   // Called the title of the page changes.
   // Can be used to update the title of the window.
@@ -343,12 +355,6 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   ResourceMap resource_identifier_map_;
   std::string GetResourceDescription(uint32 identifier);
 
-  // true if we want to enable smart insert/delete.
-  bool smart_insert_delete_enabled_;
-
-  // true if we want to enable selection of trailing whitespaces
-  bool select_trailing_whitespace_enabled_;
-
   CapturedContextMenuEvents captured_context_menu_events_;
 
   WebCursor current_cursor_;
@@ -370,6 +376,15 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   scoped_ptr<WebKit::WebPopupMenuInfo> popup_menu_info_;
   WebKit::WebRect popup_bounds_;
 #endif
+
+  // true if we want to enable smart insert/delete.
+  bool smart_insert_delete_enabled_;
+
+  // true if we want to enable selection of trailing whitespaces
+  bool select_trailing_whitespace_enabled_;
+
+  // true if we should block any redirects
+  bool block_redirects_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };
