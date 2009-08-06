@@ -53,6 +53,25 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
+    'rules': [
+    {
+      'rule_name': 'cygwin_assembler',
+      'msvs_cygwin_shell': 0,
+      'extension': 'S',
+      'inputs': [
+        '..\\..\\third_party\\gnu_binutils\\files\\as.exe',
+      ],
+      'outputs': [
+        '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj',
+      ],
+      'action':
+        # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
+        ['cl /E /I..\..\..\.. /DNACL_BLOCK_SHIFT=5 /DNACL_WINDOWS=1 <(RULE_INPUT_PATH) | <@(_inputs) -defsym @feat.00=1 -o <(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
+      'message': 'Building assembly file <(RULE_INPUT_PATH)',
+      'process_outputs_as_sources': 1,
+    },
+  ],
+
   },
   'targets': [
     {
@@ -102,6 +121,30 @@
             'arch/x86_32/springboard.S',
             'arch/x86_32/tramp.S',
           ],
+          'dependencies': [ 'tramp_gen', ],
+          'include_dirs': [
+            '<(INTERMEDIATE_DIR)',
+          ],
+          'actions': [
+            {
+              'action_name': 'header_gen',
+              'conditions': [
+                ['OS=="win"', {
+                  'msvs_cygwin_shell': 0,
+                }],
+              ],
+              'inputs': [
+                '<(PRODUCT_DIR)/tramp_gen',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/gen/src/trusted/service_runtime/arch/x86/tramp_data.h',
+              ],
+              'action':
+                ['<@(_inputs)', '>', '<@(_outputs)'],
+              'process_outputs_as_sources': 1,
+              'message': 'Creating tramp_data.h',
+            },
+          ],
         }],
         ['target_arch=="arm"', {
           'sources': [
@@ -148,24 +191,6 @@
             'win/nacl_ldt.c',
             'win/sel_memory.c',
             'win/sel_segments.c',
-          ],
-          'rules': [
-            {
-              'rule_name': 'cygwin_assembler',
-              'msvs_cygwin_shell': 0,
-              'extension': 'S',
-              'inputs': [
-                '..\\..\\third_party\\gnu_binutils\\files\\as.exe',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj',
-              ],
-              'action':
-                # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
-                ['cl /E /I..\..\..\.. /DNACL_BLOCK_SHIFT=5 /DNACL_WINDOWS=1 <(RULE_INPUT_PATH) | <@(_inputs) -defsym @feat.00=1 -o <(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
-              'message': 'Building assembly file <(RULE_INPUT_PATH)',
-              'process_outputs_as_sources': 1,
-            },
           ],
         }],
       ],
@@ -219,6 +244,14 @@
       'sources': [
         'fs/xdr.c',
         'fs/obj_proxy.c',
+      ],
+    },
+    {
+      'target_name': 'tramp_gen',
+      'type': 'executable',
+      'sources': [
+        'arch/x86_32/tramp.S',
+        'arch/x86_32/tramp_gen.c',
       ],
     },
     # TODO(bsy): no tests are built; see build.scons
