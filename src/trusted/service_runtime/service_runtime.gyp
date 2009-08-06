@@ -121,7 +121,10 @@
             'arch/x86_32/springboard.S',
             'arch/x86_32/tramp.S',
           ],
-          'dependencies': [ 'tramp_gen', ],
+          'dependencies': [
+            'tramp_gen',
+            'springboard_gen'
+          ],
           'include_dirs': [
             '<(INTERMEDIATE_DIR)',
           ],
@@ -143,6 +146,24 @@
                 ['<@(_inputs)', '>', '<@(_outputs)'],
               'process_outputs_as_sources': 1,
               'message': 'Creating tramp_data.h',
+            },
+            {
+              'action_name': 'sheader_gen',
+              'conditions': [
+                ['OS=="win"', {
+                  'msvs_cygwin_shell': 0,
+                }],
+              ],
+              'inputs': [
+                '<(PRODUCT_DIR)/springboard_gen',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/gen/src/trusted/service_runtime/arch/x86/springboard_data.h',
+              ],
+              'action':
+                ['<@(_inputs)', '>', '<@(_outputs)'],
+              'process_outputs_as_sources': 1,
+              'message': 'Creating springboard_data.h',
             },
           ],
         }],
@@ -252,6 +273,14 @@
       'sources': [
         'arch/x86_32/tramp.S',
         'arch/x86_32/tramp_gen.c',
+      ],
+    },
+    {
+      'target_name': 'springboard_gen',
+      'type': 'executable',
+      'sources': [
+        'arch/x86_32/springboard.S',
+        'arch/x86_32/springboard_gen.c',
       ],
     },
     # TODO(bsy): no tests are built; see build.scons

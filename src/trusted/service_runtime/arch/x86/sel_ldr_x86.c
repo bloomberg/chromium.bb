@@ -37,6 +37,7 @@
 #include "native_client/src/trusted/service_runtime/tramp.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 #include "gen/src/trusted/service_runtime/arch/x86/tramp_data.h"
+#include "gen/src/trusted/service_runtime/arch/x86/springboard_data.h"
 /*
  * A sanity check -- should be invoked in some early function, e.g.,
  * main, or something that main invokes early.
@@ -132,9 +133,8 @@ void  NaClLoadSpringboard(struct NaClApp  *nap) {
   nap->springboard_addr = NACL_TRAMPOLINE_END - nap->align_boundary;
 
   patch_info.dst = nap->mem_start + nap->springboard_addr;
-  patch_info.src = (uintptr_t) &NaCl_springboard;
-  patch_info.nbytes = ((uintptr_t) &NaCl_springboard_end
-                       - (uintptr_t) &NaCl_springboard);
+  patch_info.src = (uintptr_t) kSpringboardCode;
+  patch_info.nbytes = sizeof(kSpringboardCode);
 
   NaClApplyPatchToMemory(&patch_info);
 
