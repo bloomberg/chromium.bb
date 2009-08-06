@@ -1288,12 +1288,40 @@ gboolean BookmarkManagerGtk::OnTreeViewButtonRelease(
 // static
 gboolean BookmarkManagerGtk::OnTreeViewKeyPress(
     GtkWidget* tree_view, GdkEventKey* key, BookmarkManagerGtk* bm) {
-  if (key->keyval != GDK_Delete)
+  int command = -1;
+
+  if ((key->state & gtk_accelerator_get_default_mod_mask()) ==
+      GDK_SHIFT_MASK) {
+    if (key->keyval == GDK_Delete)
+      command = IDS_CUT;
+    else if (key->keyval == GDK_Insert)
+      command = IDS_PASTE;
+  } else if ((key->state & gtk_accelerator_get_default_mod_mask()) ==
+             GDK_CONTROL_MASK) {
+    switch (key->keyval) {
+      case GDK_c:
+      case GDK_Insert:
+        command = IDS_COPY;
+        break;
+      case GDK_x:
+        command = IDS_CUT;
+        break;
+      case GDK_v:
+        command = IDS_PASTE;
+        break;
+      default:
+        break;
+    }
+  } else if (key->keyval == GDK_Delete) {
+    command = IDS_BOOKMARK_BAR_REMOVE;
+  }
+
+  if (command == -1)
     return FALSE;
 
   if (bm->organize_menu_.get() &&
-      bm->organize_menu_->IsCommandEnabled(IDS_BOOKMARK_BAR_REMOVE)) {
-    bm->organize_menu_->ExecuteCommand(IDS_BOOKMARK_BAR_REMOVE);
+      bm->organize_menu_->IsCommandEnabled(command)) {
+    bm->organize_menu_->ExecuteCommand(command);
     return TRUE;
   }
 

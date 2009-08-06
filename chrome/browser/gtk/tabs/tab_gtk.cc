@@ -34,7 +34,7 @@ class TabGtk::ContextMenuController : public MenuGtk::Delegate {
             0, NULL, GDK_t, GDK_CONTROL_MASK, true },
         { MENU_SEPARATOR },
         { MENU_NORMAL, TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD,
-            0, NULL, GDK_F5, 0, true },
+            0, NULL, GDK_r, GDK_CONTROL_MASK, true },
         { MENU_NORMAL, TabStripModel::CommandDuplicate,
             IDS_TAB_CXMENU_DUPLICATE },
         { MENU_SEPARATOR },
