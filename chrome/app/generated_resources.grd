@@ -1674,9 +1674,8 @@ each locale. -->
                desc="Size and units downloaded.">
         <ph name="DOWNLOAD_SIZE">$1<ex>54kB</ex></ph>, Complete
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_CANCELLED"
-               desc="Size and units downloaded, for the cancelled state.">
-        <ph name="DOWNLOAD_SIZE">$1<ex>54kB</ex></ph>, Cancelled
+      <message name="IDS_DOWNLOAD_STATUS_CANCELLED" desc="Cancelled text.">
+        Cancelled 
       </message>
       <message name="IDS_DOWNLOAD_BUTTON_OPEN"
                desc="Button open text.">

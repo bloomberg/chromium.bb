@@ -80,8 +80,7 @@ std::wstring DownloadItemModel::GetStatusText() {
       status_text.clear();
       break;
     case DownloadItem::CANCELLED:
-      status_text = l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_CANCELLED,
-                                          simple_size);
+      status_text = l10n_util::GetString(IDS_DOWNLOAD_STATUS_CANCELLED);
       break;
     case DownloadItem::REMOVING:
       break;
