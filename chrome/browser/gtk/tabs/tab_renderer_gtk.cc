@@ -681,12 +681,16 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.
   int offset = 1;
-  int offset_y = 20;
 
   int tab_id = is_otr ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
 
   SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(tab_id);
+
+  // If the theme is providing a custom background image, then its top edge
+  // should be at the top of the tab. Otherwise, we assume that the background
+  // image is a composited foreground + frame image.
+  int offset_y = theme_provider_->HasCustomImage(tab_id) ? 0 : 20;
 
   // Draw left edge.
   SkBitmap tab_l = skia::ImageOperations::CreateTiledBitmap(

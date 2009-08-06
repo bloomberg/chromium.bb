@@ -24,7 +24,6 @@ class GtkThemeProvider;
 class GoButtonGtk;
 class LocationBar;
 class LocationBarViewGtk;
-class NineBox;
 class Profile;
 class TabContents;
 class ToolbarModel;
@@ -154,9 +153,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Sometimes we only want to show the location w/o the toolbar buttons (e.g.,
   // in a popup window).
   bool ShouldOnlyShowLocation() const;
-
-  // Ninebox for the toolbar background
-  scoped_ptr<NineBox> background_ninebox_;
 
   // An event box that holds |toolbar_|. We need the toolbar to have its own
   // GdkWindow when we use the GTK drawing because otherwise the color from our

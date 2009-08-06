@@ -25,7 +25,6 @@
 #include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/gtk/nine_box.h"
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
@@ -142,6 +141,10 @@ void BrowserToolbarGtk::Init(Profile* profile,
   show_home_button_.Init(prefs::kShowHomeButton, profile->GetPrefs(), this);
 
   event_box_ = gtk_event_box_new();
+  // Make the event box transparent so themes can use transparent toolbar
+  // backgrounds.
+  if (!theme_provider_->UseGtkTheme())
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
 
   toolbar_ = gtk_hbox_new(FALSE, kToolbarWidgetSpacing);
   gtk_container_add(GTK_CONTAINER(event_box_), toolbar_);
@@ -374,6 +377,12 @@ void BrowserToolbarGtk::Observe(NotificationType type,
         theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_PAGE));
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_menu_image_),
         theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_CHROME));
+
+    // When using the GTK+ theme, we need to have the event box be visible so
+    // buttons don't get a halo color from the background.  When using Chromium
+    // themes, we want to let the background show through the toolbar.
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_),
+                                     theme_provider_->UseGtkTheme());
   } else {
     NOTREACHED();
   }
@@ -387,8 +396,6 @@ void BrowserToolbarGtk::SetProfile(Profile* profile) {
 
   profile_ = profile;
   location_bar_->SetProfile(profile);
-  background_ninebox_.reset(new NineBox(profile->GetThemeProvider(),
-      0, IDR_THEME_TOOLBAR, 0, 0, 0, 0, 0, 0, 0));
 }
 
 void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
@@ -517,9 +524,19 @@ gboolean BrowserToolbarGtk::OnToolbarExpose(GtkWidget* widget,
   // tab strip.
   gfx::Point tabstrip_origin =
       toolbar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
-  toolbar->background_ninebox_->RenderTopCenterStrip(
-      cr, tabstrip_origin.x(), tabstrip_origin.y(),
-      e->area.x + e->area.width - tabstrip_origin.x());
+  GtkThemeProvider* theme_provider = toolbar->theme_provider_;
+  GdkPixbuf* toolbar_background = theme_provider->GetPixbufNamed(
+      IDR_THEME_TOOLBAR);
+  gdk_cairo_set_source_pixbuf(cr, toolbar_background, tabstrip_origin.x(),
+                              tabstrip_origin.y());
+  // We tile the toolbar background in both directions.
+  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+  cairo_rectangle(cr,
+      tabstrip_origin.x(),
+      tabstrip_origin.y(),
+      e->area.x + e->area.width - tabstrip_origin.x(),
+      e->area.y + e->area.height - tabstrip_origin.y());
+  cairo_fill(cr);
   cairo_destroy(cr);
 
   return FALSE;  // Allow subwidgets to paint.
