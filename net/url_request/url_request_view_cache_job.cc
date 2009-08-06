@@ -66,9 +66,7 @@ static std::string FormatEntryDetails(disk_cache::Entry* entry) {
   std::string result = EscapeForHTML(entry->GetKey());
 
   net::HttpResponseInfo response;
-  net::HttpCache::ReadResponseInfo(entry, &response);
-
-  if (response.headers) {
+  if (net::HttpCache::ReadResponseInfo(entry, &response) && response.headers) {
     result.append("<hr><pre>");
     result.append(EscapeForHTML(response.headers->GetStatusLine()));
     result.push_back('\n');
