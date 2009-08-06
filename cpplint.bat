@@ -1,0 +1,4 @@
+@echo off
+:: This is required with cygwin only.
+PATH=%~dp0;%PATH%
+call python "%~dp0cpplint.py" %*
