@@ -69,26 +69,34 @@ class StatusBubbleGtk : public StatusBubble,
   // Notification from the window that we should retheme ourself.
   void UserChangedTheme();
 
+  // Draws the inside border.
+  static gboolean OnExpose(GtkWidget* widget, GdkEventExpose* event,
+                           StatusBubbleGtk* bubble);
+
   NotificationRegistrar registrar_;
 
   // Provides colors.
   GtkThemeProvider* theme_provider_;
 
-  // A GtkAlignment that is the child of |slide_widget_|.
+  // The toplevel event box.
   OwnedWidgetGtk container_;
 
   // The GtkLabel holding the text.
   GtkWidget* label_;
-
-  // The background event box. We keep this so we can change its background
-  // color.
-  GtkWidget* bg_box_;
 
   // The status text we want to display when there are no URLs to display.
   std::string status_text_;
 
   // The url we want to display when there is no status text to display.
   std::string url_text_;
+
+  // Color of the lighter border around the edge of the status bubble.
+  GdkColor border_color_;
+
+  // Cached allocation of |container_|. We keep this on hand so that we can
+  // reset the widget's shape when the width/height change.
+  int bubble_width_;
+  int bubble_height_;
 
   // A timer that hides our window after a delay.
   ScopedRunnableMethodFactory<StatusBubbleGtk> timer_factory_;

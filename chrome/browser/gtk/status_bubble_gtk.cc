@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "app/gfx/text_elider.h"
+#include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -18,24 +19,77 @@
 
 namespace {
 
-const GdkColor kTextColor = GDK_COLOR_RGB(100, 100, 100);
-const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xe6, 0xed, 0xf4);
 const GdkColor kFrameBorderColor = GDK_COLOR_RGB(0xbe, 0xc8, 0xd4);
 
 // Inner padding between the border and the text label.
 const int kInternalTopBottomPadding = 1;
 const int kInternalLeftRightPadding = 2;
 
-// Border of color kFrameBorderColor around the status bubble.
-const int kBorderPadding = 1;
+// The radius of the edges of our bubble.
+const int kCornerSize = 4;
 
 // Milliseconds before we hide the status bubble widget when you mouseout.
-static const int kHideDelay = 250;
+const int kHideDelay = 250;
+
+// Number of times that the background color should be counted when trying to
+// calculate the border color in GTK theme mode.
+const int kBgWeight = 3;
+
+// Reverses a point in RTL mode.
+GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
+  GdkPoint point = {ltr ? x : width - x, y};
+  return point;
+}
+
+enum FrameType {
+  FRAME_MASK,
+  FRAME_STROKE,
+};
+
+// Returns a list of points that either form the outline of the status bubble
+// (|type| == FRAME_MASK) or form the inner border around the inner edge
+// (|type| == FRAME_STROKE).
+std::vector<GdkPoint> MakeFramePolygonPoints(int width,
+                                             int height,
+                                             FrameType type) {
+  std::vector<GdkPoint> points;
+
+  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
+  // If we have a stroke, we have to offset some of our points by 1 pixel.
+  // We have to inset by 1 pixel when we draw horizontal lines that are on the
+  // bottom or when we draw vertical lines that are closer to the end (end is
+  // right for ltr).
+  int y_off = (type == FRAME_MASK) ? 0 : -1;
+  // We use this one for LTR.
+  int x_off_l = ltr ? y_off : 0;
+
+  // Top left corner.
+  points.push_back(MakeBidiGdkPoint(0, 0, width, ltr));
+
+  // Top right (rounded) corner.
+  points.push_back(MakeBidiGdkPoint(
+      width - kCornerSize + 1 + x_off_l, 0, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      width + x_off_l, kCornerSize - 1, width, ltr));
+
+  // Bottom right corner.
+  points.push_back(MakeBidiGdkPoint(
+      width + x_off_l, height + y_off, width, ltr));
+
+  if (type == FRAME_MASK) {
+    // Bottom left corner.
+    points.push_back(MakeBidiGdkPoint(0, height + y_off, width, ltr));
+  }
+
+  return points;
+}
 
 }  // namespace
 
 StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
     : theme_provider_(GtkThemeProvider::GetFrom(profile)),
+      bubble_width_(-1),
+      bubble_height_(-1),
       timer_factory_(this) {
   InitWidgets();
 
@@ -138,16 +192,16 @@ void StatusBubbleGtk::InitWidgets() {
   GtkWidget* padding = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(padding),
       kInternalTopBottomPadding, kInternalTopBottomPadding,
-      kInternalLeftRightPadding, kInternalLeftRightPadding);
+      kInternalLeftRightPadding,
+      kInternalLeftRightPadding + kCornerSize);
   gtk_container_add(GTK_CONTAINER(padding), label_);
 
-  bg_box_ = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(bg_box_), padding);
-
-  container_.Own(gtk_util::CreateGtkBorderBin(bg_box_, &kFrameBorderColor,
-          kBorderPadding, kBorderPadding, kBorderPadding, kBorderPadding));
+  container_.Own(gtk_event_box_new());
   gtk_widget_set_name(container_.get(), "status-bubble");
+  gtk_container_add(GTK_CONTAINER(container_.get()), padding);
   gtk_widget_set_app_paintable(container_.get(), TRUE);
+  g_signal_connect(G_OBJECT(container_.get()), "expose-event",
+                   G_CALLBACK(OnExpose), this);
 
   UserChangedTheme();
 }
@@ -155,7 +209,21 @@ void StatusBubbleGtk::InitWidgets() {
 void StatusBubbleGtk::UserChangedTheme() {
   if (theme_provider_->UseGtkTheme()) {
     gtk_widget_modify_fg(label_, GTK_STATE_NORMAL, NULL);
-    gtk_widget_modify_bg(bg_box_, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, NULL);
+
+    // Creates a weighted average between the text and base color where
+    // the base color counts more than once.
+    GtkStyle* style = gtk_rc_get_style(container_.get());
+    border_color_.pixel = 0;
+    border_color_.red = (style->text[GTK_STATE_NORMAL].red +
+                         (style->bg[GTK_STATE_NORMAL].red * kBgWeight)) /
+                         (1 + kBgWeight);
+    border_color_.green = (style->text[GTK_STATE_NORMAL].green +
+                           (style->bg[GTK_STATE_NORMAL].green * kBgWeight)) /
+                          (1 + kBgWeight);
+    border_color_.blue = (style->text[GTK_STATE_NORMAL].blue +
+                          (style->bg[GTK_STATE_NORMAL].blue * kBgWeight)) /
+                         (1 + kBgWeight);
   } else {
     // TODO(erg): This is the closest to "text that will look good on a
     // toolbar" that I can find. Maybe in later iterations of the theme system,
@@ -166,17 +234,41 @@ void StatusBubbleGtk::UserChangedTheme() {
 
     GdkColor toolbar_color =
         theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
-    gtk_widget_modify_bg(bg_box_, GTK_STATE_NORMAL, &toolbar_color);
+    gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, &toolbar_color);
+
+    border_color_ = kFrameBorderColor;
+  }
+}
+
+// static
+gboolean StatusBubbleGtk::OnExpose(GtkWidget* widget,
+                                   GdkEventExpose* event,
+                                   StatusBubbleGtk* bubble) {
+  if (bubble->bubble_width_ != widget->allocation.width ||
+      bubble->bubble_height_ != widget->allocation.height) {
+    // We need to update the shape of the status bubble whenever our GDK
+    // window changes shape.
+    std::vector<GdkPoint> mask_points = MakeFramePolygonPoints(
+        widget->allocation.width, widget->allocation.height, FRAME_MASK);
+    GdkRegion* mask_region = gdk_region_polygon(&mask_points[0],
+                                                mask_points.size(),
+                                                GDK_EVEN_ODD_RULE);
+    gdk_window_shape_combine_region(widget->window, mask_region, 0, 0);
+    gdk_region_destroy(mask_region);
+
+    bubble->bubble_width_ = widget->allocation.width;
+    bubble->bubble_height_ = widget->allocation.height;
   }
 
-  // TODO(erg): I don't know what to do with the status bubble border
-  // (|container_|). There needs to be a border in GTK mode, and I'm not sure
-  // which BrowserThemeProvider::COLOR I'm supposed to use here since the Views
-  // implementation still uses constants in the equivalent, and it's used for
-  // alpha blending instead of drawing a real border.
-  //
-  // This doesn't really matter because this part of the UI needs to be
-  // rewritten per the UI review anyway; we should be matching windows with a
-  // semi-transparent, rounded border instead of our constantly
-  // CreateGtkBorderBin() usage.
+  GdkDrawable* drawable = GDK_DRAWABLE(event->window);
+  GdkGC* gc = gdk_gc_new(drawable);
+  gdk_gc_set_rgb_fg_color(gc, &bubble->border_color_);
+
+  // Stroke the frame border.
+  std::vector<GdkPoint> points = MakeFramePolygonPoints(
+      widget->allocation.width, widget->allocation.height, FRAME_STROKE);
+  gdk_draw_lines(drawable, gc, &points[0], points.size());
+
+  g_object_unref(gc);
+  return FALSE;  // Propagate so our children paint, etc.
 }
