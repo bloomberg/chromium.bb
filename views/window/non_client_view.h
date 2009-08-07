@@ -198,6 +198,10 @@ class NonClientView : public View {
   virtual bool GetAccessibleName(std::wstring* name);
   virtual void SetAccessibleName(const std::wstring& name);
 
+  // Call if the nonclientview is in an app or popup and we are in Vista, to
+  // force usage of glass frame.
+  void ForceAeroGlassFrame();
+
  protected:
   // NonClientView, View overrides:
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
@@ -219,6 +223,10 @@ class NonClientView : public View {
 
   // The accessible name of this view.
   std::wstring accessible_name_;
+
+  // True if the nonclientview is in an app or popup and we are in Vista. Used
+  // to force usage of glass frame.
+  bool force_aero_glass_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientView);
 };

@@ -51,6 +51,10 @@ BrowserFrameWin::BrowserFrameWin(BrowserView* browser_view, Profile* profile)
   GetNonClientView()->SetFrameView(CreateFrameViewForWindow());
   // Don't focus anything on creation, selecting a tab will set the focus.
   set_focus_on_creation(false);
+  // Force popups and apps under Vista to have a nonthemed frame.
+  if (win_util::ShouldUseVistaFrame() &&
+      !browser_view_->IsBrowserTypeNormal())
+    GetNonClientView()->ForceAeroGlassFrame();
 }
 
 void BrowserFrameWin::Init() {
@@ -298,7 +302,9 @@ int BrowserFrameWin::GetShowState() const {
 }
 
 views::NonClientFrameView* BrowserFrameWin::CreateFrameViewForWindow() {
-  if (GetThemeProvider()->ShouldUseNativeFrame())
+  if (GetThemeProvider()->ShouldUseNativeFrame() ||
+      (!browser_view_->IsBrowserTypeNormal() &&
+      win_util::ShouldUseVistaFrame()))
     browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);
   else
     browser_frame_view_ = new OpaqueBrowserFrameView(this, browser_view_);

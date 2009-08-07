@@ -125,7 +125,6 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background =
       tp->GetBitmapNamed(IDR_THEME_WINDOW_CONTROL_BACKGROUND);
-
   minimize_button_->SetImage(
       views::CustomButton::BS_NORMAL,
       tp->GetBitmapNamed(IDR_MINIMIZE));
@@ -135,8 +134,9 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   minimize_button_->SetImage(
       views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_MINIMIZE_P));
-  minimize_button_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_MINIMIZE_BUTTON_MASK));
+  if (browser_view_->IsBrowserTypeNormal())
+    minimize_button_->SetBackground(color, background,
+        tp->GetBitmapNamed(IDR_MINIMIZE_BUTTON_MASK));
   minimize_button_->SetAccessibleName(
       l10n_util::GetString(IDS_ACCNAME_MINIMIZE));
   AddChildView(minimize_button_);
@@ -150,8 +150,9 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   maximize_button_->SetImage(
       views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_MAXIMIZE_P));
-  maximize_button_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_MAXIMIZE_BUTTON_MASK));
+  if (browser_view_->IsBrowserTypeNormal())
+    maximize_button_->SetBackground(color, background,
+        tp->GetBitmapNamed(IDR_MAXIMIZE_BUTTON_MASK));
   maximize_button_->SetAccessibleName(
       l10n_util::GetString(IDS_ACCNAME_MAXIMIZE));
   AddChildView(maximize_button_);
@@ -165,8 +166,9 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   restore_button_->SetImage(
       views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_RESTORE_P));
-  restore_button_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_RESTORE_BUTTON_MASK));
+  if (browser_view_->IsBrowserTypeNormal())
+    restore_button_->SetBackground(color, background,
+        tp->GetBitmapNamed(IDR_RESTORE_BUTTON_MASK));
   restore_button_->SetAccessibleName(
       l10n_util::GetString(IDS_ACCNAME_RESTORE));
   AddChildView(restore_button_);
@@ -180,8 +182,9 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   close_button_->SetImage(
       views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_CLOSE_P));
-  close_button_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_CLOSE_BUTTON_MASK));
+  if (browser_view_->IsBrowserTypeNormal())
+    close_button_->SetBackground(color, background,
+        tp->GetBitmapNamed(IDR_CLOSE_BUTTON_MASK));
   close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
 
@@ -560,7 +563,22 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   // Window frame mode and color
   SkBitmap* theme_frame;
   SkColor frame_color;
-  if (!browser_view_->IsOffTheRecord()) {
+
+  // Never theme app and popup windows.
+  if (!browser_view_->IsBrowserTypeNormal()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    if (frame_->GetWindow()->IsActive()) {
+      theme_frame = rb.GetBitmapNamed(IDR_FRAME);
+      frame_color = browser_view_->IsOffTheRecord() ?
+          ResourceBundle::frame_color_incognito :
+          ResourceBundle::frame_color;
+    } else {
+      theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+      frame_color = browser_view_->IsOffTheRecord() ?
+          ResourceBundle::frame_color_incognito_inactive :
+          ResourceBundle::frame_color_inactive;
+    }
+  } else if (!browser_view_->IsOffTheRecord()) {
     if (frame_->GetWindow()->IsActive()) {
       theme_frame = tp->GetBitmapNamed(IDR_THEME_FRAME);
       frame_color = tp->GetColor(BrowserThemeProvider::COLOR_FRAME);
@@ -599,7 +617,8 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
 
   // Draw the theme frame overlay
-  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
+  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
+      browser_view_->IsBrowserTypeNormal()) {
     SkBitmap* theme_overlay;
     if (frame_->GetWindow()->IsActive())
       theme_overlay = tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY);
@@ -654,7 +673,15 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 
   // Window frame mode and color
   SkBitmap* theme_frame;
-  if (!browser_view_->IsOffTheRecord()) {
+
+  // Never theme app and popup windows.
+  if (!browser_view_->IsBrowserTypeNormal()) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    if (frame_->GetWindow()->IsActive())
+      theme_frame = rb.GetBitmapNamed(IDR_FRAME);
+    else
+      theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+  } else if (!browser_view_->IsOffTheRecord()) {
     theme_frame = window->IsActive() ?
         tp->GetBitmapNamed(IDR_THEME_FRAME) :
         tp->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
@@ -668,7 +695,8 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
 
   // Draw the theme frame overlay
-  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
+  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
+      browser_view_->IsBrowserTypeNormal()) {
     SkBitmap* theme_overlay = tp->GetBitmapNamed(IDR_THEME_FRAME_OVERLAY);
     canvas->DrawBitmapInt(*theme_overlay, 0, 0);
   }
