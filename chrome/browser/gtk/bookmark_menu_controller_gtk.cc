@@ -39,9 +39,9 @@ const BookmarkNode* GetNodeFromMenuItem(GtkWidget* menu_item) {
       g_object_get_data(G_OBJECT(menu_item), "bookmark-node"));
 }
 
-const BookmarkNode* GetParentNodeFromEmptyMenuItem(GtkWidget* menu_item) {
+const BookmarkNode* GetParentNodeFromEmptyMenu(GtkWidget* menu) {
   return static_cast<const BookmarkNode*>(
-      g_object_get_data(G_OBJECT(menu_item), "parent-node"));
+      g_object_get_data(G_OBJECT(menu), "parent-node"));
 }
 
 void* AsVoid(const BookmarkNode* node) {
@@ -115,14 +115,16 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
                                        GtkWidget* menu) {
   DCHECK(!parent->GetChildCount() ||
          start_child_index < parent->GetChildCount());
+
+  g_signal_connect(G_OBJECT(menu), "button-press-event",
+                   G_CALLBACK(OnButtonPressed), this);
+
   for (int i = start_child_index; i < parent->GetChildCount(); ++i) {
     const BookmarkNode* node = parent->GetChild(i);
 
     GtkWidget* menu_item = gtk_image_menu_item_new_with_label(
         WideToUTF8(node->GetTitle()).c_str());
     g_object_set_data(G_OBJECT(menu_item), "bookmark-node", AsVoid(node));
-    g_signal_connect(G_OBJECT(menu_item), "button-press-event",
-                     G_CALLBACK(OnButtonPressed), this);
 
     if (node->is_url()) {
       SkBitmap icon = profile_->GetBookmarkModel()->GetFavIcon(node);
@@ -166,10 +168,6 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
     GtkWidget* empty_menu = gtk_menu_item_new_with_label(
         l10n_util::GetStringUTF8(IDS_MENU_EMPTY_SUBMENU).c_str());
     gtk_widget_set_sensitive(empty_menu, FALSE);
-    // We connect to the menu rather than the item because the item is
-    // insensitive and doesn't listen for button presses.
-    g_signal_connect(G_OBJECT(menu), "button-press-event",
-                     G_CALLBACK(OnButtonPressed), this);
     g_object_set_data(G_OBJECT(menu), "parent-node", AsVoid(parent));
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), empty_menu);
   }
@@ -181,12 +179,35 @@ gboolean BookmarkMenuController::OnButtonPressed(
     GdkEventButton* event,
     BookmarkMenuController* controller) {
   controller->ignore_button_release_ = false;
+  GtkMenuShell* menu_shell = GTK_MENU_SHELL(sender);
 
   if (event->button == 3) {
+    // If the cursor is outside our bounds, pass this event up to the parent.
+    if (!gtk_util::WidgetContainsCursor(sender)) {
+      if (menu_shell->parent_menu_shell) {
+        return OnButtonPressed(menu_shell->parent_menu_shell, event, controller);
+      } else {
+        // We are the top level menu; we can propagate no further.
+        return FALSE;
+      }
+    }
+
+    // This will return NULL if we are not an empty menu.
+    const BookmarkNode* parent = GetParentNodeFromEmptyMenu(sender);
+    bool is_empty_menu = !!parent;
+    // If there is no active menu item and we are not an empty menu, then do
+    // nothing.
+    GtkWidget* menu_item = menu_shell->active_menu_item;
+    if (!is_empty_menu && !menu_item)
+      return FALSE;
+
+    const BookmarkNode* node =
+        menu_item ? GetNodeFromMenuItem(menu_item) : NULL;
+    DCHECK_NE(is_empty_menu, !!node);
+    if (!is_empty_menu)
+      parent = node->GetParent();
+
     // Show the right click menu and stop processing this button event.
-    const BookmarkNode* node = GetNodeFromMenuItem(sender);
-    const BookmarkNode* parent = node ? node->GetParent() :
-        GetParentNodeFromEmptyMenuItem(sender);
     std::vector<const BookmarkNode*> nodes;
     if (node)
       nodes.push_back(node);
