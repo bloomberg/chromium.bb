@@ -16,6 +16,8 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/sync/personalization_strings.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/views/clear_browsing_data.h"
 #include "chrome/browser/views/importer_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
@@ -33,6 +35,15 @@ namespace {
 
 const int kPasswordSavingRadioGroup = 1;
 const int kFormAutofillRadioGroup = 2;
+
+#ifdef CHROME_PERSONALIZATION
+// Background color for the status label when it's showing an error.
+static const SkColor kSyncLabelErrorBgColor = SkColorSetRGB(0xff, 0x9a, 0x9a);
+
+static views::Background* CreateErrorBackground() {
+  return views::Background::CreateSolidBackground(kSyncLabelErrorBgColor);
+}
+#endif
 }  // namespace
 
 ContentPageView::ContentPageView(Profile* profile)
@@ -49,10 +60,29 @@ ContentPageView::ContentPageView(Profile* profile)
       browsing_data_group_(NULL),
       import_button_(NULL),
       clear_data_button_(NULL),
+#ifdef CHROME_PERSONALIZATION
+      sync_group_(NULL),
+      sync_status_label_(NULL),
+      sync_action_link_(NULL),
+      sync_start_stop_button_(NULL),
+      sync_service_(NULL),
+#endif
       OptionsPageView(profile) {
+#ifdef CHROME_PERSONALIZATION
+  ProfilePersonalization* profile_p13n = profile->GetProfilePersonalization();
+  if (profile_p13n) {
+    sync_service_ = profile_p13n->sync_service();
+    DCHECK(sync_service_);
+    sync_service_->AddObserver(this);
+  }
+#endif
 }
 
 ContentPageView::~ContentPageView() {
+#ifdef CHROME_PERSONALIZATION
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,8 +132,25 @@ void ContentPageView::ButtonPressed(views::Button* sender) {
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
       new ClearBrowsingDataView(profile()))->Show();
+#ifdef CHROME_PERSONALIZATION
+  } else if (sender == sync_start_stop_button_) {
+    DCHECK(sync_service_);
+    if (sync_service_->IsSyncEnabledByUser()) {
+      sync_service_->DisableForUser();
+    } else {
+      sync_service_->EnableForUser();
+    }
+#endif
   }
 }
+
+#ifdef CHROME_PERSONALIZATION
+void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
+  DCHECK_EQ(source, sync_action_link_);
+  DCHECK(sync_service_);
+  sync_service_->ShowLoginDialog();
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // ContentPageView, OptionsPageView implementation:
@@ -120,6 +167,16 @@ void ContentPageView::InitControlLayout() {
   ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
+
+#ifdef CHROME_PERSONALIZATION
+  if (sync_service_) {
+    layout->StartRow(0, single_column_view_set_id);
+    InitSyncGroup();
+    layout->AddView(sync_group_);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+#endif
+
   layout->StartRow(0, single_column_view_set_id);
   InitPasswordSavingGroup();
   layout->AddView(passwords_group_);
@@ -168,6 +225,10 @@ void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
 // ContentsPageView, views::View overrides:
 
 void ContentPageView::Layout() {
+#ifdef CHROME_PERSONALIZATION
+  if (is_initialized())
+    UpdateSyncControls();
+#endif
   // We need to Layout twice - once to get the width of the contents box...
   View::Layout();
   passwords_asktosave_radio_->SetBounds(
@@ -176,9 +237,28 @@ void ContentPageView::Layout() {
       0, 0, passwords_group_->GetContentsWidth(), 0);
   browsing_data_label_->SetBounds(
       0, 0, browsing_data_group_->GetContentsWidth(), 0);
+#ifdef CHROME_PERSONALIZATION
+  if (is_initialized()) {
+    sync_status_label_->SetBounds(
+        0, 0, sync_group_->GetContentsWidth(), 0);
+  }
+#endif
   // ... and twice to get the height of multi-line items correct.
   View::Layout();
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ContentsPageView, ProfileSyncServiceObserver implementation:
+#ifdef CHROME_PERSONALIZATION
+void ContentPageView::OnStateChanged() {
+  // If the UI controls are not yet initialized, then don't do anything. This
+  // can happen if the Options dialog is up, but the Content tab is not yet
+  // clicked.
+  if (is_initialized())
+    Layout();
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // ContentPageView, private:
@@ -332,3 +412,68 @@ void ContentPageView::InitBrowsingDataGroup() {
       contents, l10n_util::GetString(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME),
       L"", true);
 }
+
+#ifdef CHROME_PERSONALIZATION
+void ContentPageView::InitSyncGroup() {
+  sync_status_label_ = new views::Label;
+  sync_status_label_->SetMultiLine(true);
+  sync_status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+
+  sync_action_link_ = new views::Link();
+  sync_action_link_->set_collapse_when_hidden(true);
+  sync_action_link_->SetController(this);
+
+  sync_start_stop_button_ = new views::NativeButton(this, std::wstring());
+
+  using views::GridLayout;
+  using views::ColumnSet;
+
+  views::View* contents = new views::View;
+  GridLayout* layout = new GridLayout(contents);
+  contents->SetLayoutManager(layout);
+
+  const int single_column_view_set_id = 0;
+  ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(sync_status_label_);
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(sync_action_link_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(sync_start_stop_button_);
+
+  sync_group_ = new OptionsGroupView(contents,
+                                     kSyncGroupName,
+                                     std::wstring(),
+                                     true);
+}
+
+void ContentPageView::UpdateSyncControls() {
+  DCHECK(sync_service_);
+  std::wstring status_label;
+  std::wstring link_label;
+  std::wstring button_label;
+  bool sync_enabled = sync_service_->IsSyncEnabledByUser();
+  bool status_has_error = SyncStatusUIHelper::GetLabels(sync_service_,
+      &status_label, &link_label) == SyncStatusUIHelper::SYNC_ERROR;
+  button_label = sync_enabled ? kStopSyncButtonLabel :
+                 sync_service_->SetupInProgress() ? UTF8ToWide(kSettingUpText)
+                 : kStartSyncButtonLabel;
+
+  sync_status_label_->SetText(status_label);
+  sync_start_stop_button_->SetEnabled(!sync_service_->WizardIsVisible());
+  sync_start_stop_button_->SetLabel(button_label);
+  sync_action_link_->SetText(link_label);
+  sync_action_link_->SetVisible(!link_label.empty());
+  if (status_has_error) {
+    sync_status_label_->set_background(CreateErrorBackground());
+    sync_action_link_->set_background(CreateErrorBackground());
+  } else {
+    sync_status_label_->set_background(NULL);
+    sync_action_link_->set_background(NULL);
+  }
+}
+
+#endif

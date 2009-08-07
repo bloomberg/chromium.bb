@@ -157,7 +157,7 @@ void HandleMenuItemClick(Profile* p) {
   ProfileSyncService* service = p->GetProfilePersonalization()->sync_service();
   DCHECK(service);
   if (service->IsSyncEnabledByUser()) {
-      ShowOptionsWindow(OPTIONS_PAGE_USER_DATA, OPTIONS_GROUP_NONE, p);
+      ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, p);
   } else {
     service->EnableForUser();
   }

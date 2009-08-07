@@ -5,13 +5,16 @@
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_PAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_PAGE_VIEW_H_
 
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/common/pref_member.h"
 #include "views/controls/button/button.h"
+#include "views/controls/link.h"
 #include "views/view.h"
 
 namespace views {
 class Checkbox;
+class Label;
 class NativeButton;
 class RadioButton;
 }
@@ -23,6 +26,10 @@ class PrefService;
 // ContentPageView
 
 class ContentPageView : public OptionsPageView,
+#ifdef CHROME_PERSONALIZATION
+                        public views::LinkController,
+                        public ProfileSyncServiceObserver,
+#endif
                         public views::ButtonListener {
  public:
   explicit ContentPageView(Profile* profile);
@@ -30,6 +37,14 @@ class ContentPageView : public OptionsPageView,
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender);
+
+#ifdef CHROME_PERSONALIZATION
+  // views::LinkController method.
+  virtual void LinkActivated(views::Link* source, int event_flags);
+
+  // ProfileSyncServiceObserver methods.
+  virtual void OnStateChanged();
+#endif
 
  protected:
   // OptionsPageView implementation:
@@ -40,11 +55,27 @@ class ContentPageView : public OptionsPageView,
   virtual void Layout();
 
  private:
+#ifdef CHROME_PERSONALIZATION
+  // Updates various sync controls based on the current sync state.
+  void UpdateSyncControls();
+
+  // Returns whether initialization of controls is done or not.
+  bool is_initialized() const {
+    // If initialization is already done, all the UI controls data members
+    // should be non-NULL. So check for one of them to determine if controls
+    // are already initialized or not.
+    return sync_group_ != NULL;
+  }
+#endif
+
   // Init all the dialog controls.
   void InitPasswordSavingGroup();
   void InitFormAutofillGroup();
   void InitBrowsingDataGroup();
   void InitThemesGroup();
+#ifdef CHROME_PERSONALIZATION
+  void InitSyncGroup();
+#endif
 
   // Controls for the Password Saving group
   views::NativeButton* passwords_exceptions_button_;
@@ -68,8 +99,22 @@ class ContentPageView : public OptionsPageView,
   views::NativeButton* import_button_;
   views::NativeButton* clear_data_button_;
 
+#ifdef CHROME_PERSONALIZATION
+  // Controls for the Sync group.
+  OptionsGroupView* sync_group_;
+  views::Label* sync_status_label_;
+  views::Link* sync_action_link_;
+  views::NativeButton* sync_start_stop_button_;
+#endif
+
   BooleanPrefMember ask_to_save_passwords_;
   BooleanPrefMember ask_to_save_form_autofill_;
+
+#ifdef CHROME_PERSONALIZATION
+  // Cached pointer to ProfileSyncService, if it exists. Kept up to date
+  // and NULL-ed out on destruction.
+  ProfileSyncService* sync_service_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentPageView);
 };

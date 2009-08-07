@@ -11,10 +11,6 @@
 #include "chrome/browser/views/options/advanced_page_view.h"
 #include "chrome/browser/views/options/content_page_view.h"
 #include "chrome/browser/views/options/general_page_view.h"
-#ifdef CHROME_PERSONALIZATION
-#include "chrome/browser/sync/personalization.h"
-#include "chrome/browser/views/options/user_data_page_view.h"
-#endif
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -201,15 +197,6 @@ void OptionsWindowView::Init() {
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_OPTIONS_CONTENT_TAB_LABEL),
                        content_page, false);
-
-#ifdef CHROME_PERSONALIZATION
-  if (!Personalization::IsP13NDisabled(profile_)) {
-    UserDataPageView* user_data_page = new UserDataPageView(profile_);
-    tabs_->AddTabAtIndex(tab_index++,
-                         l10n_util::GetString(IDS_OPTIONS_USER_DATA_TAB_LABEL),
-                         user_data_page, false);
-  }
-#endif
 
   AdvancedPageView* advanced_page = new AdvancedPageView(profile_);
   tabs_->AddTabAtIndex(tab_index++,

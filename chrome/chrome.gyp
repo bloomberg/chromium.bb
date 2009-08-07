@@ -1839,8 +1839,6 @@
         'browser/views/options/passwords_exceptions_window_view.h',
         'browser/views/options/passwords_page_view.cc',
         'browser/views/options/passwords_page_view.h',
-        'browser/views/options/user_data_page_view.cc',
-        'browser/views/options/user_data_page_view.h',
         'browser/views/page_info_window_view.cc',
         'browser/views/panel_controller.cc',
         'browser/views/panel_controller.h',
