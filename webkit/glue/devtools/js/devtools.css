@@ -20,7 +20,57 @@ body.attached #toolbar {
 }
 
 
-div.heap-profiler {
-    overflow: scroll;
-    -webkit-user-select: text;
+/* Heap Profiler Styles */
+
+#heap-snapshot-views {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 200px;
+    bottom: 0;
+}
+
+#heap-snapshot-status-bar-items {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 200px;
+    overflow: hidden;
+    border-left: 1px solid rgb(184, 184, 184);
+    margin-left: -1px;
+}
+
+.heap-snapshot-status-bar-item {
+    background-image: url(Images/focusButtons.png) !important;
+}
+
+.heap-snapshot-status-bar-item:active {
+    background-position: 32px 0;
+}
+
+.heap-snapshot-sidebar-tree-item .icon {
+    content: url(Images/profileIcon.png);
+}
+
+.heap-snapshot-sidebar-tree-item.small .icon {
+    content: url(Images/profileSmallIcon.png);
+}
+
+.heap-snapshot-view {
+    display: none;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.heap-snapshot-view.visible {
+    display: block;
+}
+
+.heap-snapshot-view .data-grid {
+    border: none;
+    height: 100%;
 }

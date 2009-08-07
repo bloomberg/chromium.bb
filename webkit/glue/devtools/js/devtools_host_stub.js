@@ -40,6 +40,8 @@ RemoteDebuggerAgentStub.prototype.StartProfiling = function(modules) {
           'heap-sample-begin,"Heap","allocated",' +
               (new Date()).getTime() + '\n' +
           'heap-sample-stats,"Heap","allocated",10000,1000\n' +
+          'heap-js-cons-item,"foo",10,1000\n' +
+          'heap-js-cons-item,"bar",20,2000\n' +
           'heap-sample-end,"Heap","allocated"\n';
     }
   } else {
@@ -245,7 +247,8 @@ RemoteToolsAgentStub.prototype.ExecuteUtilityFunction = function(callId,
       } catch (e) {
         result = [ e.toString(), true ];
       }
-    } else if (functionName == 'InspectorController') {
+    } else if (functionName == 'InspectorController' ||
+        functionName == 'InjectedScript') {
       // do nothing;
     } else {
       alert('Unexpected utility function:' + functionName);

@@ -46,6 +46,12 @@ Google Chrome Developer Tools. -->
       <message name="IDS_WINDOW_HEADER" desc="DevTools window header.">
         Developer Tools - <ph name="URL">%s<ex>http://www.example.com/</ex></ph>
       </message>
+      <message name="IDS_HEAP_SNAPSHOT" desc="Heap snapshot title.">
+        Snapshot <ph name="COUNT">%d<ex>1</ex></ph>
+      </message>
+      <message name="IDS_HEAP_USAGE" desc="Heap usage.">
+        Used <ph name="USED">%1$s<ex>100MB</ex></ph> of <ph name="CAPACITY">%2$s<ex>200MB</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>

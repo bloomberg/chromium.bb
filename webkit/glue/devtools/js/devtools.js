@@ -958,7 +958,6 @@ WebInspector.StylePropertiesSection.prototype._doesSelectorAffectSelectedNode =
 };
 
 
-/* Hiding 'Heap' tab because it's not functional yet.
 (function() {
   var originalCreatePanels = WebInspector._createPanels;
   WebInspector._createPanels = function() {
@@ -966,4 +965,3 @@ WebInspector.StylePropertiesSection.prototype._doesSelectorAffectSelectedNode =
     this.panels.heap = new WebInspector.HeapProfilerPanel();
   };
 })();
-*/
