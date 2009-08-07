@@ -12,6 +12,7 @@
 
 #include "base/message_loop.h"
 #include "base/system_monitor.h"
+#include "base/window_impl.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout_manager.h"
 #include "views/widget/widget.h"
@@ -63,7 +64,8 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 //  then responsible for cleaning up after it.
 //
 ///////////////////////////////////////////////////////////////////////////////
-class WidgetWin : public Widget,
+class WidgetWin : public base::WindowImpl,
+                  public Widget,
                   public MessageLoopForUI::Observer,
                   public FocusTraversable,
                   public AcceleratorTarget {
@@ -71,22 +73,11 @@ class WidgetWin : public Widget,
   WidgetWin();
   virtual ~WidgetWin();
 
-  // Sets the window styles. This is ONLY used when the window is created.
-  // In other words, if you invoke this after invoking Init, nothing happens.
-  void set_window_style(DWORD style) { window_style_ = style; }
-  DWORD window_style() const { return window_style_; }
+  // Returns the RootView associated with the specified HWND (if any).
+  static RootView* FindRootView(HWND hwnd);
 
-  // Sets the extended window styles. See comment about |set_window_style|.
-  void set_window_ex_style(DWORD style) { window_ex_style_ = style; }
-  DWORD window_ex_style() const { return window_ex_style_; };
-
-  // Sets the class style to use. The default is CS_DBLCLKS.
-  void set_initial_class_style(UINT class_style) {
-    // We dynamically generate the class name, so don't register it globally!
-    DCHECK((class_style & CS_GLOBALCLASS) == 0);
-    class_style_ = class_style;
-  }
-  UINT initial_class_style() { return class_style_; }
+  // Returns the Widget associated with the specified HWND (if any).
+  static WidgetWin* GetWidget(HWND hwnd);
 
   void set_delete_on_destroy(bool delete_on_destroy) {
     delete_on_destroy_ = delete_on_destroy;
@@ -100,16 +91,7 @@ class WidgetWin : public Widget,
     can_update_layered_window_ = can_update_layered_window;
   }
 
-  // Returns the RootView associated with the specified HWND (if any).
-  static RootView* FindRootView(HWND hwnd);
-
-  // Returns the Widget associated with the specified HWND (if any).
-  static WidgetWin* GetWidget(HWND hwnd);
-
-  // All classes registered by WidgetWin start with this name.
-  static const wchar_t* const kBaseClassName;
-
-  BEGIN_MSG_MAP_EX(0)
+  BEGIN_MSG_MAP_EX(WidgetWin)
     // Range handlers must go first!
     MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCMOUSEMOVE, OnMouseRange)
@@ -316,11 +298,9 @@ class WidgetWin : public Widget,
   }
 
  protected:
-  // Call close instead of this to Destroy the window.
-  BOOL DestroyWindow() {
-    DCHECK(::IsWindow(GetNativeView()));
-    return ::DestroyWindow(GetNativeView());
-  }
+  // Overridden from WindowImpl:
+  virtual HICON GetDefaultWindowIcon() const;
+  virtual LRESULT OnWndProc(UINT message, WPARAM w_param, LPARAM l_param);
 
   // Message Handlers
   // These are all virtual so that specialized Widgets can modify or augment
@@ -545,20 +525,10 @@ class WidgetWin : public Widget,
   // so that subclasses can do any cleanup they need to.
   void OnDestroyImpl();
 
-  // The windows procedure used by all WidgetWins.
-  static LRESULT CALLBACK WndProc(HWND window,
-                                  UINT message,
-                                  WPARAM w_param,
-                                  LPARAM l_param);
-
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.
   static void PostProcessActivateMessage(WidgetWin* widget,
                                          int activation_state);
-
-  // Gets the window class name to use when creating the corresponding HWND.
-  // If necessary, this registers the window class.
-  std::wstring GetWindowClassName();
 
   // The following factory is used for calls to close the WidgetWin
   // instance.
@@ -570,15 +540,6 @@ class WidgetWin : public Widget,
   DWORD active_mouse_tracking_flags_;
 
   bool opaque_;
-
-  // Window Styles used when creating the window.
-  DWORD window_style_;
-
-  // Window Extended Styles used when creating the window.
-  DWORD window_ex_style_;
-
-  // Style of the class to use.
-  UINT class_style_;
 
   // Should we keep an offscreen buffer? This is initially true and if the
   // window has WS_EX_LAYERED then it remains true. You can set this to false
@@ -624,11 +585,8 @@ class WidgetWin : public Widget,
   CComPtr<IAccessible> accessibility_root_;
 
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;
-
-  // Our hwnd.
-  HWND hwnd_;
 };
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_WIDGET_WIDGET_WIN_H_
+#endif  // VIEWS_WIDGET_WIDGET_WIN_H_

@@ -22,11 +22,6 @@
 
 namespace views {
 
-static const DWORD kWindowDefaultChildStyle =
-    WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-static const DWORD kWindowDefaultStyle = WS_OVERLAPPEDWINDOW;
-static const DWORD kWindowDefaultExStyle = 0;
-
 // Property used to link the HWND to its RootView.
 static const wchar_t* const kRootViewWindowProperty = L"__ROOT_VIEW__";
 
@@ -44,110 +39,19 @@ NativeControlWin* GetNativeControlWinForHWND(HWND hwnd) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Window class tracking.
-
-// static
-const wchar_t* const WidgetWin::kBaseClassName =
-    L"Chrome_WidgetWin_";
-
-// Window class information used for registering unique windows.
-struct ClassInfo {
-  UINT style;
-  HBRUSH background;
-
-  explicit ClassInfo(int style)
-      : style(style),
-        background(NULL) {}
-
-  // Compares two ClassInfos. Returns true if all members match.
-  bool Equals(const ClassInfo& other) const {
-    return (other.style == style && other.background == background);
-  }
-};
-
-class ClassRegistrar {
- public:
-  ~ClassRegistrar() {
-    for (RegisteredClasses::iterator i = registered_classes_.begin();
-         i != registered_classes_.end(); ++i) {
-      UnregisterClass(i->name.c_str(), NULL);
-    }
-  }
-
-  // Puts the name for the class matching |class_info| in |class_name|, creating
-  // a new name if the class is not yet known.
-  // Returns true if this class was already known, false otherwise.
-  bool RetrieveClassName(const ClassInfo& class_info, std::wstring* name) {
-    for (RegisteredClasses::const_iterator i = registered_classes_.begin();
-         i != registered_classes_.end(); ++i) {
-      if (class_info.Equals(i->info)) {
-        name->assign(i->name);
-        return true;
-      }
-    }
-
-    name->assign(std::wstring(WidgetWin::kBaseClassName) +
-        IntToWString(registered_count_++));
-    return false;
-  }
-
-  void RegisterClass(const ClassInfo& class_info,
-                     const std::wstring& name,
-                     ATOM atom) {
-    registered_classes_.push_back(RegisteredClass(class_info, name, atom));
-  }
-
- private:
-  // Represents a registered window class.
-  struct RegisteredClass {
-    RegisteredClass(const ClassInfo& info,
-                    const std::wstring& name,
-                    ATOM atom)
-        : info(info),
-          name(name),
-          atom(atom) {
-    }
-
-    // Info used to create the class.
-    ClassInfo info;
-
-    // The name given to the window.
-    std::wstring name;
-
-    // The ATOM returned from creating the window.
-    ATOM atom;
-  };
-
-  ClassRegistrar() : registered_count_(0) { }
-  friend struct DefaultSingletonTraits<ClassRegistrar>;
-
-  typedef std::list<RegisteredClass> RegisteredClasses;
-  RegisteredClasses registered_classes_;
-
-  // Counter of how many classes have ben registered so far.
-  int registered_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClassRegistrar);
-};
-
-///////////////////////////////////////////////////////////////////////////////
 // WidgetWin, public
 
 WidgetWin::WidgetWin()
     : close_widget_factory_(this),
       active_mouse_tracking_flags_(0),
       has_capture_(false),
-      window_style_(0),
-      window_ex_style_(kWindowDefaultExStyle),
       use_layered_buffer_(true),
       layered_alpha_(255),
       delete_on_destroy_(true),
       can_update_layered_window_(true),
       last_mouse_event_was_move_(false),
       is_mouse_down_(false),
-      is_window_(false),
-      class_style_(CS_DBLCLKS),
-      hwnd_(NULL) {
+      is_window_(false) {
 }
 
 WidgetWin::~WidgetWin() {
@@ -158,44 +62,31 @@ WidgetWin::~WidgetWin() {
 // Widget implementation:
 
 void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
-  if (window_style_ == 0)
-    window_style_ = parent ? kWindowDefaultChildStyle : kWindowDefaultStyle;
+  // Force creation of the RootView; otherwise, we may get a WM_SIZE after the
+  // window is created and before the root view is set up.
+  GetRootView();
+
+  // Create the window.
+  WindowImpl::Init(parent, bounds);
 
   // See if the style has been overridden.
-  opaque_ = !(window_ex_style_ & WS_EX_TRANSPARENT);
+  opaque_ = !(window_ex_style() & WS_EX_TRANSPARENT);
   use_layered_buffer_ = (use_layered_buffer_ &&
-                         !!(window_ex_style_ & WS_EX_LAYERED));
-
-  // Force creation of the RootView if it hasn't been created yet.
-  GetRootView();
+                         !!(window_ex_style() & WS_EX_LAYERED));
 
   default_theme_provider_.reset(new DefaultThemeProvider());
 
-  // Ensures the parent we have been passed is valid, otherwise CreateWindowEx
-  // will fail.
-  if (parent && !::IsWindow(parent)) {
-    NOTREACHED() << "invalid parent window specified.";
-    parent = NULL;
-  }
-
-  hwnd_ = CreateWindowEx(window_ex_style_, GetWindowClassName().c_str(), L"",
-                         window_style_, bounds.x(), bounds.y(), bounds.width(),
-                         bounds.height(), parent, NULL, NULL, this);
-  DCHECK(hwnd_);
-  SetWindowSupportsRerouteMouseWheel(hwnd_);
-
-  // The window procedure should have set the data for us.
-  DCHECK(win_util::GetWindowUserData(hwnd_) == this);
+  SetWindowSupportsRerouteMouseWheel(GetNativeView());
 
   root_view_->OnWidgetCreated();
 
-  if ((window_style_ & WS_CHILD) == 0) {
+  if ((window_style() & WS_CHILD) == 0) {
     // Top-level widgets get a FocusManager.
     focus_manager_.reset(new FocusManager(this));
   }
 
   // Sets the RootView as a property, so the automation can introspect windows.
-  SetRootViewForHWND(hwnd_, root_view_.get());
+  SetRootViewForHWND(GetNativeView(), root_view_.get());
 
   MessageLoopForUI::current()->AddObserver(this);
 
@@ -234,7 +125,7 @@ void WidgetWin::GetBounds(gfx::Rect* out, bool including_frame) const {
 
   GetClientRect(&crect);
   POINT p = {0, 0};
-  ::ClientToScreen(hwnd_, &p);
+  ::ClientToScreen(GetNativeView(), &p);
   out->SetRect(crect.left + p.x, crect.top + p.y,
                crect.Width(), crect.Height());
 }
@@ -293,7 +184,7 @@ void WidgetWin::Hide() {
 }
 
 gfx::NativeView WidgetWin::GetNativeView() const {
-  return hwnd_;
+  return WindowImpl::GetNativeView();
 }
 
 static BOOL CALLBACK EnumChildProcForRedraw(HWND hwnd, LPARAM lparam) {
@@ -320,7 +211,7 @@ void WidgetWin::PaintNow(const gfx::Rect& update_rect) {
       // We're transparent. Need to force painting to occur from our parent.
       CRect parent_update_rect = update_rect.ToRECT();
       POINT location_in_parent = { 0, 0 };
-      ClientToScreen(hwnd_, &location_in_parent);
+      ClientToScreen(GetNativeView(), &location_in_parent);
       ::ScreenToClient(GetParent(), &location_in_parent);
       parent_update_rect.OffsetRect(location_in_parent);
       ::RedrawWindow(GetParent(), parent_update_rect, NULL,
@@ -338,11 +229,11 @@ void WidgetWin::PaintNow(const gfx::Rect& update_rect) {
       gfx::Rect invalid_screen_rect = update_rect;
       invalid_screen_rect.Offset(screen_rect.x(), screen_rect.y());
 
-      ::RedrawWindow(hwnd_, &update_rect.ToRECT(), NULL,
+      ::RedrawWindow(GetNativeView(), &update_rect.ToRECT(), NULL,
                      RDW_INVALIDATE | RDW_UPDATENOW | RDW_NOCHILDREN);
 
       LPARAM lparam = reinterpret_cast<LPARAM>(&invalid_screen_rect);
-      EnumChildWindows(hwnd_, EnumChildProcForRedraw, lparam);
+      EnumChildWindows(GetNativeView(), EnumChildProcForRedraw, lparam);
     }
     // As we were created with a style of WS_CLIPCHILDREN redraw requests may
     // result in an empty paint rect in WM_PAINT (this'll happen if a
@@ -369,7 +260,7 @@ RootView* WidgetWin::GetRootView() {
 
 Widget* WidgetWin::GetRootWidget() const {
   return reinterpret_cast<WidgetWin*>(
-      win_util::GetWindowUserData(GetAncestor(hwnd_, GA_ROOT)));
+      win_util::GetWindowUserData(GetAncestor(GetNativeView(), GA_ROOT)));
 }
 
 bool WidgetWin::IsVisible() const {
@@ -409,11 +300,11 @@ ThemeProvider* WidgetWin::GetThemeProvider() const {
 }
 
 Window* WidgetWin::GetWindow() {
-  return GetWindowImpl(hwnd_);
+  return GetWindowImpl(GetNativeView());
 }
 
 const Window* WidgetWin::GetWindow() const {
-  return GetWindowImpl(hwnd_);
+  return GetWindowImpl(GetNativeView());
 }
 
 FocusManager* WidgetWin::GetFocusManager() {
@@ -434,7 +325,7 @@ void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
     return;
 
   use_layered_buffer_ = use_layered_buffer;
-  if (!hwnd_)
+  if (!GetNativeView())
     return;
 
   if (use_layered_buffer_) {
@@ -543,7 +434,7 @@ void WidgetWin::OnClose() {
 void WidgetWin::OnDestroy() {
   root_view_->OnWidgetDestroyed();
 
-  RemoveProp(hwnd_, kRootViewWindowProperty);
+  RemoveProp(GetNativeView(), kRootViewWindowProperty);
 }
 
 LRESULT WidgetWin::OnEraseBkgnd(HDC dc) {
@@ -647,7 +538,7 @@ LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
   // Reroute the mouse-wheel to the window under the mouse pointer if
   // applicable.
   if (message == WM_MOUSEWHEEL &&
-      views::RerouteMouseWheel(hwnd_, w_param, l_param)) {
+      views::RerouteMouseWheel(GetNativeView(), w_param, l_param)) {
     return 0;
   }
 
@@ -948,39 +839,9 @@ void WidgetWin::UpdateWindowFromContents(HDC dib_dc) {
 
     BLENDFUNCTION blend = {AC_SRC_OVER, 0, layered_alpha_, AC_SRC_ALPHA};
     ::UpdateLayeredWindow(
-        hwnd_, NULL, &window_position, &size, dib_dc, &zero_origin,
+        GetNativeView(), NULL, &window_position, &size, dib_dc, &zero_origin,
         RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   }
-}
-
-std::wstring WidgetWin::GetWindowClassName() {
-  ClassInfo class_info(initial_class_style());
-  std::wstring name;
-  if (Singleton<ClassRegistrar>()->RetrieveClassName(class_info, &name))
-    return name;
-
-  // No class found, need to register one.
-  WNDCLASSEX class_ex;
-  class_ex.cbSize = sizeof(WNDCLASSEX);
-  class_ex.style = class_info.style;
-  class_ex.lpfnWndProc = &WidgetWin::WndProc;
-  class_ex.cbClsExtra = 0;
-  class_ex.cbWndExtra = 0;
-  class_ex.hInstance = NULL;
-  class_ex.hIcon = NULL;
-  if (ViewsDelegate::views_delegate)
-    class_ex.hIcon = ViewsDelegate::views_delegate->GetDefaultWindowIcon();
-  class_ex.hCursor = LoadCursor(NULL, IDC_ARROW);
-  class_ex.hbrBackground = reinterpret_cast<HBRUSH>(class_info.background + 1);
-  class_ex.lpszMenuName = NULL;
-  class_ex.lpszClassName = name.c_str();
-  class_ex.hIconSm = class_ex.hIcon;
-  ATOM atom = RegisterClassEx(&class_ex);
-  DCHECK(atom);
-
-  Singleton<ClassRegistrar>()->RegisterClass(class_info, name, atom);
-
-  return name;
 }
 
 // Get the source HWND of the specified message. Depending on the message, the
@@ -999,6 +860,12 @@ HWND GetControlHWNDForMessage(UINT message, WPARAM w_param, LPARAM l_param) {
     case WM_CTLCOLORSTATIC:
       return reinterpret_cast<HWND>(l_param);
   }
+  return NULL;
+}
+
+HICON WidgetWin::GetDefaultWindowIcon() const {
+  if (ViewsDelegate::views_delegate)
+    return ViewsDelegate::views_delegate->GetDefaultWindowIcon();
   return NULL;
 }
 
@@ -1026,23 +893,8 @@ bool ProcessNativeControlMessage(UINT message,
   return false;
 }
 
-// static
-LRESULT CALLBACK WidgetWin::WndProc(HWND window, UINT message,
-                                    WPARAM w_param, LPARAM l_param) {
-  if (message == WM_NCCREATE) {
-    CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(l_param);
-    WidgetWin* widget = reinterpret_cast<WidgetWin*>(cs->lpCreateParams);
-    DCHECK(widget);
-    win_util::SetWindowUserData(window, widget);
-    widget->hwnd_ = window;
-    return TRUE;
-  }
-
-  WidgetWin* widget = reinterpret_cast<WidgetWin*>(
-      win_util::GetWindowUserData(window));
-  if (!widget)
-    return 0;
-
+LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
+  HWND window = GetNativeView();
   LRESULT result = 0;
 
   // First allow messages sent by child controls to be processed directly by
@@ -1052,12 +904,12 @@ LRESULT CALLBACK WidgetWin::WndProc(HWND window, UINT message,
     return result;
 
   // Otherwise we handle everything else.
-  if (!widget->ProcessWindowMessage(window, message, w_param, l_param, result))
+  if (!ProcessWindowMessage(window, message, w_param, l_param, result))
     result = DefWindowProc(window, message, w_param, l_param);
   if (message == WM_NCDESTROY)
-    widget->OnFinalMessage(window);
+    OnFinalMessage(window);
   if (message == WM_ACTIVATE)
-    PostProcessActivateMessage(widget, LOWORD(w_param));
+    PostProcessActivateMessage(this, LOWORD(w_param));
   return result;
 }
 
@@ -1092,4 +944,3 @@ Widget* Widget::CreateTransparentPopupWidget(bool delete_on_destroy) {
 }
 
 }  // namespace views
-
