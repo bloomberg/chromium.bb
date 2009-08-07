@@ -133,28 +133,30 @@ class Module {
   void AddFunctions(vector<Function *>::iterator begin,
                     vector<Function *>::iterator end);
 
-  // If this module has a file named NAME, return a pointer to a
-  // pointer to it.  If it has none, then create one and return a
-  // pointer to the new file.
-  // Destroying this module frees all File objects that have been created
-  // using this function, or with Insert.
+  // If this module has a file named NAME, return a pointer to it.  If
+  // it has none, then create one and return a pointer to the new
+  // file.  Destroying this module frees all File objects that have
+  // been created using this function, or with Insert.
   File *FindFile(const string &name);
   File *FindFile(const char *name);
 
   // Write this module to STREAM in the breakpad symbol format.
   // Return true if all goes well, or false if an error occurs.  This
-  // method writes out a header based on the values given to the
-  // constructor, writes the source files added via Insert and
-  // FindFile, and then the functions added via Insert, along with
-  // their lines.
+  // method writes out:
+  // - a header based on the values given to the constructor,
+  // - the source files added via FindFile, and finally
+  // - the functions added via AddFunctions, each with its lines.
+  // Addresses in the output are all relative to the load address
+  // established by SetLoadAddress.
   bool Write(FILE *stream);
 
 private:
 
-  // Assign source id numbers to this modules' files that functions'
-  // line number data actually refers to.  Set the source id numbers
-  // for all other files to -1.  We do this before writing out the
-  // symbol file, omitting any unused files.
+  // Find those files in this module that are actually referred to by
+  // functions' line number data, and assign them source id numbers.
+  // Set the source id numbers for all other files --- unused by the
+  // source line data --- to -1.  We do this before writing out the
+  // symbol file, at which point we omit any unused files.
   void AssignSourceIds();
 
   // Report an error that has occurred writing the symbol file, using
