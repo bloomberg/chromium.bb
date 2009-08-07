@@ -11,6 +11,9 @@
 #include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 
+// Given an authentication state, this helper function returns the appropriate
+// status message and, if necessary, the text that should appear in the
+// re-login link.
 static void GetLabelsForAuthError(AuthErrorState auth_error,
     ProfileSyncService* service, std::wstring* status_label,
     std::wstring* link_label) {
@@ -35,6 +38,9 @@ static void GetLabelsForAuthError(AuthErrorState auth_error,
   }
 }
 
+// Returns the message that should be displayed when the user is authenticated
+// and can connect to the sync server. If the user hasn't yet authenticated, an
+// empty string is returned.
 static std::wstring GetSyncedStateStatusLabel(ProfileSyncService* service) {
   std::wstring label;
   std::wstring user_name(UTF16ToWide(service->GetAuthenticatedUsername()));
@@ -59,14 +65,15 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
   if (sync_enabled) {
     ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
     AuthErrorState auth_error(service->GetAuthErrorState());
+
     // Either show auth error information with a link to re-login, auth in prog,
     // or note that everything is OK with the last synced time.
-    status_label->assign(GetSyncedStateStatusLabel(service));
     if (status.authenticated) {
       // Everything is peachy.
+      status_label->assign(GetSyncedStateStatusLabel(service));
       DCHECK_EQ(auth_error, AUTH_ERROR_NONE);
     } else if (service->UIShouldDepictAuthInProgress()) {
-      status_label->append(kSyncAuthenticatingLabel);
+      status_label->assign(kSyncAuthenticatingLabel);
       result_type = PRE_SYNCED;
     } else if (auth_error != AUTH_ERROR_NONE) {
       GetLabelsForAuthError(auth_error, service, status_label, link_label);

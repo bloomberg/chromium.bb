@@ -14,7 +14,7 @@
 #ifndef CHROME_BROWSER_SYNC_PERSONALIZATION_STRINGS_H_
 #define CHROME_BROWSER_SYNC_PERSONALIZATION_STRINGS_H_
 
-// User Data tab in the Options menu.
+// Options dialog strings.
 static const wchar_t kSyncGroupName[] = L"Bookmark Sync:";
 static const wchar_t kSyncNotSetupInfo[] =
     L"You are not set up to sync your bookmarks with your other computers.";
@@ -38,14 +38,6 @@ static const wchar_t kStopSyncButtonLabel[] = L"Stop syncing this account";
 // Sync status messages.
 static const wchar_t kLastSyncedTimeNever[] = L"Never.";
 static const wchar_t kLastSyncedTimeWithinLastMinute[] = L"Just now.";
-
-// Sync merge warning dialog strings.
-static const wchar_t kMergeWarningMessageText[] =
-    L"WARNING: Your existing online bookmarks will be merged with the "
-    L"bookmarks on this machine. You can use the Bookmark Manager to organize "
-    L"your bookmarks after the merge.";
-static const wchar_t kCancelSyncButtonLabel[] = L"Cancel";
-static const wchar_t kMergeAndSyncButtonLabel[] = L"Merge and Sync";
 
 // Various strings for the new tab page personalization.
 static const char kSyncSectionTitle[] = "Bookmark Sync";
