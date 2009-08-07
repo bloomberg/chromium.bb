@@ -35,7 +35,7 @@ Import('env')
 
 # NOTE: this is just stubbing things out to create a 'compatible' library.
 #       Needs to be revisited once we understand arm better
-if env['BUILD_ARCHITECTURE'] == 'arm':
+if env['BUILD_ARCHITECTURE'] == 'arm' or env['TARGET_ARCHITECTURE'] == 'arm':
   env.ComponentLibrary('platform_qual_lib', ['dummy_qualify.c'])
   Return()
 
