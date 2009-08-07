@@ -99,7 +99,6 @@ bool ScaleUpToPOT(unsigned int width,
                   uint8 *dst,
                   int dst_pitch) {
   DCHECK(CheckImageDimensions(width, height));
-  unsigned int components = 0;
   switch (format) {
     case Texture::XRGB8:
     case Texture::ARGB8:

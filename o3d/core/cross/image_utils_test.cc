@@ -52,26 +52,26 @@ TEST_F(ImageTest, CheckImageDimensions) {
 }
 
 TEST_F(ImageTest, ComputeMipMapCount) {
-  EXPECT_EQ(image::ComputeMipMapCount(1, 1), 1);
-  EXPECT_EQ(image::ComputeMipMapCount(2, 2), 2);
-  EXPECT_EQ(image::ComputeMipMapCount(2, 1), 2);
-  EXPECT_EQ(image::ComputeMipMapCount(256, 1), 9);
-  EXPECT_EQ(image::ComputeMipMapCount(256, 256), 9);
+  EXPECT_EQ(image::ComputeMipMapCount(1, 1), 1u);
+  EXPECT_EQ(image::ComputeMipMapCount(2, 2), 2u);
+  EXPECT_EQ(image::ComputeMipMapCount(2, 1), 2u);
+  EXPECT_EQ(image::ComputeMipMapCount(256, 1), 9u);
+  EXPECT_EQ(image::ComputeMipMapCount(256, 256), 9u);
 }
 
 TEST_F(ImageTest, ComputePOTSize) {
-  EXPECT_EQ(image::ComputePOTSize(1), 1);
-  EXPECT_EQ(image::ComputePOTSize(2), 2);
-  EXPECT_EQ(image::ComputePOTSize(3), 4);
-  EXPECT_EQ(image::ComputePOTSize(4), 4);
-  EXPECT_EQ(image::ComputePOTSize(5), 8);
-  EXPECT_EQ(image::ComputePOTSize(7), 8);
-  EXPECT_EQ(image::ComputePOTSize(8), 8);
-  EXPECT_EQ(image::ComputePOTSize(9), 16);
-  EXPECT_EQ(image::ComputePOTSize(128), 128);
-  EXPECT_EQ(image::ComputePOTSize(129), 256);
-  EXPECT_EQ(image::ComputePOTSize(255), 256);
-  EXPECT_EQ(image::ComputePOTSize(4096), 4096);
+  EXPECT_EQ(image::ComputePOTSize(1), 1u);
+  EXPECT_EQ(image::ComputePOTSize(2), 2u);
+  EXPECT_EQ(image::ComputePOTSize(3), 4u);
+  EXPECT_EQ(image::ComputePOTSize(4), 4u);
+  EXPECT_EQ(image::ComputePOTSize(5), 8u);
+  EXPECT_EQ(image::ComputePOTSize(7), 8u);
+  EXPECT_EQ(image::ComputePOTSize(8), 8u);
+  EXPECT_EQ(image::ComputePOTSize(9), 16u);
+  EXPECT_EQ(image::ComputePOTSize(128), 128u);
+  EXPECT_EQ(image::ComputePOTSize(129), 256u);
+  EXPECT_EQ(image::ComputePOTSize(255), 256u);
+  EXPECT_EQ(image::ComputePOTSize(4096), 4096u);
 }
 
 static const uint8 kScaleUPDataNPOT[] = {
@@ -116,11 +116,10 @@ static const uint8 kScaleUPDataPOT[] = {
 TEST_F(ImageTest, ScaleUpToPOT) {
   const unsigned int kWidth = 3;
   const unsigned int kHeight = 3;
-  const unsigned int kComponents = 4;
   const unsigned int kPOTWidth = image::ComputePOTSize(kWidth);
-  ASSERT_EQ(kPOTWidth, 4);
+  ASSERT_EQ(kPOTWidth, 4u);
   const unsigned int kPOTHeight = image::ComputePOTSize(kHeight);
-  ASSERT_EQ(kPOTHeight, 4);
+  ASSERT_EQ(kPOTHeight, 4u);
   const Texture::Format format = Texture::ARGB8;
   unsigned int src_size =
       image::ComputeBufferSize(kWidth, kHeight, format);
@@ -173,10 +172,9 @@ static const uint8 kMipmapDataPOT[] = {
 TEST_F(ImageTest, GenerateMipmapsPOT) {
   const unsigned int kWidth = 4;
   const unsigned int kHeight = 4;
-  const unsigned int kComponents = 4;
   const Texture::Format format = Texture::ARGB8;
   unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
-  EXPECT_EQ(3, mipmaps);
+  EXPECT_EQ(3u, mipmaps);
   unsigned int size =
       image::ComputeMipChainSize(kWidth, kHeight, format, mipmaps);
   ASSERT_EQ(sizeof(kMipmapDataPOT), size);
@@ -245,10 +243,9 @@ static const uint8 kMipmapDataNPOT[] = {
 TEST_F(ImageTest, GenerateMipmapsNPOT) {
   const unsigned int kWidth = 7;
   const unsigned int kHeight = 7;
-  const unsigned int kComponents = 4;
   const Texture::Format format = Texture::ARGB8;
   unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
-  EXPECT_EQ(3, mipmaps);
+  EXPECT_EQ(3u, mipmaps);
   unsigned int size =
       image::ComputeMipChainSize(kWidth, kHeight, format, mipmaps);
   ASSERT_EQ(sizeof(kMipmapDataNPOT), size);

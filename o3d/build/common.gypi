@@ -75,7 +75,7 @@
           'xcode_settings': {
             'CFLAGS': ['-gstabs+',
                        '-fno-eliminate-unused-debug-symbols',
-                       '-mmacosx-version-min=1.4'],
+                       '-mmacosx-version-min=10.4'],
             'WARNING_CXXFLAGS': ['-Wstrict-aliasing',
                                  '-Wno-deprecated'],
           },

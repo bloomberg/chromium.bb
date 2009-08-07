@@ -88,6 +88,9 @@
             'sources': [
               'common/mac/testing_common.mm',
             ],
+            'include_dirs': [
+              '../../third_party/glew/files/include',
+            ],
             'link_settings': {
               'libraries': [
                 '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
@@ -147,6 +150,9 @@
           {
             'sources': [
               'common/linux/testing_common.cc',
+            ],
+            'include_dirs': [
+              '../../third_party/glew/files/include',
             ],
           },
         ],

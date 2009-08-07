@@ -49,6 +49,7 @@
         'cross/zip_archive.cc',
         'cross/zip_archive.h',
       ],
+
       'conditions' : [
         ['renderer == "d3d9" and OS == "win"',
           {
@@ -69,6 +70,9 @@
             'sources': [
               'mac/collada_conditioner_mac.mm',
             ],
+            'include_dirs': [
+              '../../third_party/glew/files/include',
+            ],
             'link_settings': {
               'libraries': [
                 '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
@@ -80,6 +84,9 @@
           {
             'sources': [
               'linux/collada_conditioner_linux.cc',
+            ],
+            'include_dirs': [
+              '../../third_party/glew/files/include',
             ],
           },
         ],

@@ -169,7 +169,8 @@ void Texture2D::DrawImage(const Bitmap& src_img,
 
 void Texture2D::SetFromBitmap(const Bitmap& bitmap) {
   DCHECK(bitmap.image_data());
-  if (bitmap.width() != width() || bitmap.height() != height() ||
+  if (bitmap.width() != static_cast<unsigned>(width()) ||
+      bitmap.height() != static_cast<unsigned>(height()) ||
       bitmap.format() != format() || bitmap.is_cubemap()) {
     O3D_ERROR(service_locator())
         << "bitmap must be the same format and dimensions as texture";
@@ -379,7 +380,8 @@ void TextureCUBE::DrawImage(const Bitmap& src_img,
 
 void TextureCUBE::SetFromBitmap(const Bitmap& bitmap) {
   DCHECK(bitmap.image_data());
-  if (bitmap.width() != edge_length() || bitmap.height() != edge_length() ||
+  if (bitmap.width() != static_cast<unsigned>(edge_length()) ||
+      bitmap.height() != static_cast<unsigned>(edge_length()) ||
       bitmap.format() != format() || !bitmap.is_cubemap()) {
     O3D_ERROR(service_locator())
         << "bitmap must be the same format and dimensions as texture";
