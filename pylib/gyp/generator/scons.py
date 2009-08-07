@@ -67,22 +67,22 @@ def _SCons_program_writer(fp, spec):
   # on-disk target, so other dependent targets can't get confused.
   name = full_product_name(spec)
   pre = '_program = env.File(\'${PROGPREFIX}%s${PROGSUFFIX}\')\n' % name
-  builder = 'env.ChromeProgram(_program, input_files)'
+  builder = 'env.GypProgram(_program, input_files)'
   return _SCons_writer(fp, spec, builder, pre)
 
 def _SCons_static_library_writer(fp, spec):
   name = full_product_name(spec)
-  builder = 'env.ChromeStaticLibrary(\'%s\', input_files)' % name
+  builder = 'env.GypStaticLibrary(\'%s\', input_files)' % name
   return _SCons_writer(fp, spec, builder)
 
 def _SCons_shared_library_writer(fp, spec):
   name = full_product_name(spec)
-  builder = 'env.ChromeSharedLibrary(\'%s\', input_files)' % name
+  builder = 'env.GypSharedLibrary(\'%s\', input_files)' % name
   return _SCons_writer(fp, spec, builder)
 
 def _SCons_loadable_module_writer(fp, spec):
   name = full_product_name(spec)
-  builder = 'env.ChromeLoadableModule(\'%s\', input_files)' % name
+  builder = 'env.GypLoadableModule(\'%s\', input_files)' % name
   return _SCons_writer(fp, spec, builder)
 
 SConsTypeWriter = {
@@ -369,7 +369,7 @@ def GenerateSConscript(output_filename, spec, build_file):
   #
   sources = spec.get('sources')
   if sources:
-    pre = '\ninput_files = ChromeFileList([\n    '
+    pre = '\ninput_files = GypFileList([\n    '
     WriteList(fp, map(repr, sources), preamble=pre, postamble=',\n])\n')
   else:
     fp.write('\ninput_files = []\n')
@@ -461,6 +461,9 @@ including all the specific targets in various *.scons files.
 
 import os
 import sys
+
+import SCons.Environment
+import SCons.Util
 
 def GetProcessorCount():
   '''
@@ -578,41 +581,250 @@ if src_dir:
 else:
   src_dir = '$SCONSBUILD_DIR/..'
 
-for conf in conf_list:
-  env = Environment(
-      tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
-      _GYP='_gyp',
-      CONFIG_NAME=conf,
-      LIB_DIR='$TOP_BUILDDIR/lib',
-      OBJ_DIR='$TOP_BUILDDIR/obj',
-      SCONSBUILD_DIR=sconsbuild_dir.abspath,
-      SRC_DIR=src_dir,
-      TARGET_PLATFORM='LINUX',
-      TOP_BUILDDIR='$SCONSBUILD_DIR/$CONFIG_NAME',
+
+class FileList(object):
+  def __init__(self, entries=None):
+    if isinstance(entries, FileList):
+      entries = entries.entries
+    self.entries = entries or []
+  def __getitem__(self, i):
+    return self.entries[i]
+  def __setitem__(self, i, item):
+    self.entries[i] = item
+  def __delitem__(self, i):
+    del self.entries[i]
+  def __add__(self, other):
+    if isinstance(other, FileList):
+      return self.__class__(self.entries + other.entries)
+    elif isinstance(other, type(self.entries)):
+      return self.__class__(self.entries + other)
+    else:
+      return self.__class__(self.entries + list(other))
+  def __radd__(self, other):
+    if isinstance(other, FileList):
+      return self.__class__(other.entries + self.entries)
+    elif isinstance(other, type(self.entries)):
+      return self.__class__(other + self.entries)
+    else:
+      return self.__class__(list(other) + self.entries)
+  def __iadd__(self, other):
+    if isinstance(other, FileList):
+      self.entries += other.entries
+    elif isinstance(other, type(self.entries)):
+      self.entries += other
+    else:
+      self.entries += list(other)
+    return self
+  def append(self, item):
+    return self.entries.append(item)
+  def extend(self, item):
+    return self.entries.extend(item)
+  def index(self, item, *args):
+    return self.entries.index(item, *args)
+  def remove(self, item):
+    return self.entries.remove(item)
+
+def FileListWalk(top, topdown=True, onerror=None):
+  try:
+    entries = top.entries
+  except AttributeError, err:
+    if onerror is not None:
+      onerror(err)
+    return
+
+  dirs, nondirs = [], []
+  for entry in entries:
+    if hasattr(entry, 'entries'):
+      dirs.append(entry)
+    else:
+      nondirs.append(entry)
+
+  if topdown:
+    yield top, dirs, nondirs
+  for entry in dirs:
+    for x in FileListWalk(entry, topdown, onerror):
+      yield x
+  if not topdown:
+    yield top, dirs, nondirs
+
+class GypFileList(FileList):
+  def Append(self, *args):
+    for element in args:
+      self.append(element)
+  def Extend(self, *args):
+    for element in args:
+      self.extend(element)
+  def Remove(self, *args):
+    for top, lists, nonlists in FileListWalk(self, topdown=False):
+      for element in args:
+        try:
+          top.remove(element)
+        except ValueError:
+          pass
+  def Replace(self, old, new):
+    for top, lists, nonlists in FileListWalk(self, topdown=False):
+      try:
+        i = top.index(old)
+      except ValueError:
+        pass
+      else:
+        if SCons.Util.is_List(new):
+          top[i:i+1] = new
+        else:
+          top[i] = new
+
+import __builtin__
+__builtin__.GypFileList = GypFileList
+
+
+def FilterOut(self, **kw):
+  kw = SCons.Environment.copy_non_reserved_keywords(kw)
+  for key, val in kw.items():
+    envval = self.get(key, None)
+    if envval is None:
+      # No existing variable in the environment, so nothing to delete.
+      continue
+
+    for vremove in val:
+      # Use while not if, so we can handle duplicates.
+      while vremove in envval:
+        envval.remove(vremove)
+
+    self[key] = envval
+
+    # TODO(sgk): SCons.Environment.Append() has much more logic to deal
+    # with various types of values.  We should handle all those cases in here
+    # too.  (If variable is a dict, etc.)
+
+
+non_compilable_suffixes = {
+    'LINUX' : set([
+        '.bdic',
+        '.css',
+        '.dat',
+        '.fragment',
+        '.gperf',
+        '.h',
+        '.html',
+        '.hxx',
+        '.idl',
+        '.js',
+        '.mk',
+        '.rc',
+        '.sigs',
+    ]),
+    'WINDOWS' : set([
+        '.h',
+        '.dat',
+        '.idl',
+    ]),
+}
+
+def compilable(env, file):
+  base, ext = os.path.splitext(str(file))
+  if ext in non_compilable_suffixes[env['TARGET_PLATFORM']]:
+    return False
+  return True
+
+def compilable_files(env, sources):
+  if not hasattr(sources, 'entries'):
+    return [x for x in sources if compilable(env, x)]
+  result = []
+  for top, folders, nonfolders in FileListWalk(sources):
+    result.extend([x for x in nonfolders if compilable(env, x)])
+  return result
+
+def GypProgram(env, target, source, *args, **kw):
+  source = compilable_files(env, source)
+  result = env.Program('$TOP_BUILDDIR/' + str(target), source, *args, **kw)
+  if env.get('INCREMENTAL'):
+    env.Precious(result)
+  return result
+
+def GypTestProgram(env, target, source, *args, **kw):
+  source = compilable_files(env, source)
+  result = env.Program('$TOP_BUILDDIR/' + str(target), source, *args, **kw)
+  if env.get('INCREMENTAL'):
+    env.Precious(*result)
+  return result
+
+def GypLibrary(env, target, source, *args, **kw):
+  source = compilable_files(env, source)
+  result = env.Library('$LIB_DIR/' + str(target), source, *args, **kw)
+  return result
+
+def GypLoadableModule(env, target, source, *args, **kw):
+  source = compilable_files(env, source)
+  result = env.LoadableModule(target, source, *args, **kw)
+  return result
+
+def GypStaticLibrary(env, target, source, *args, **kw):
+  source = compilable_files(env, source)
+  result = env.StaticLibrary('$LIB_DIR/' + str(target), source, *args, **kw)
+  return result
+
+def GypSharedLibrary(env, target, source, *args, **kw):
+  source = compilable_files(env, source)
+  result = env.SharedLibrary('$LIB_DIR/' + str(target), source, *args, **kw)
+  if env.get('INCREMENTAL'):
+    env.Precious(result)
+  return result
+
+def GypObject(env, *args, **kw):
+  result = env.Object(target, source, *args, **kw)
+  return result
+
+def add_gyp_methods(env):
+  env.AddMethod(GypProgram)
+  env.AddMethod(GypTestProgram)
+  env.AddMethod(GypLibrary)
+  env.AddMethod(GypLoadableModule)
+  env.AddMethod(GypStaticLibrary)
+  env.AddMethod(GypSharedLibrary)
+  env.AddMethod(GypObject)
+
+  env.AddMethod(FilterOut)
+
+
+base_env = Environment(
+    # TODO(sgk):  support GYP configuration of a list of additional tools
+    # to use, and move 'chromium_builders' to the chromium gyp config.
+    tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
+    LIB_DIR='$TOP_BUILDDIR/lib',
+    OBJ_DIR='$TOP_BUILDDIR/obj',
+    SCONSBUILD_DIR=sconsbuild_dir.abspath,
+    SRC_DIR=src_dir,
+    TARGET_PLATFORM='LINUX',
+    TOP_BUILDDIR='$SCONSBUILD_DIR/$CONFIG_NAME',
+    LIBPATH=['$LIB_DIR'],
+)
+
+if not GetOption('verbose'):
+  base_env.SetDefault(
+      ARCOMSTR='Creating library $TARGET',
+      ASCOMSTR='Assembling $TARGET',
+      CCCOMSTR='Compiling $TARGET',
+      CONCATSOURCECOMSTR='ConcatSource $TARGET',
+      CXXCOMSTR='Compiling $TARGET',
+      LDMODULECOMSTR='Building loadable module $TARGET',
+      LINKCOMSTR='Linking $TARGET',
+      MANIFESTCOMSTR='Updating manifest for $TARGET',
+      MIDLCOMSTR='Compiling IDL $TARGET',
+      PCHCOMSTR='Precompiling $TARGET',
+      RANLIBCOMSTR='Indexing $TARGET',
+      RCCOMSTR='Compiling resource $TARGET',
+      SHCCCOMSTR='Compiling $TARGET',
+      SHCXXCOMSTR='Compiling $TARGET',
+      SHLINKCOMSTR='Linking $TARGET',
+      SHMANIFESTCOMSTR='Updating manifest for $TARGET',
   )
-  if not GetOption('verbose'):
-    env.SetDefault(
-        ARCOMSTR='Creating library $TARGET',
-        ASCOMSTR='Assembling $TARGET',
-        CCCOMSTR='Compiling $TARGET',
-        CONCATSOURCECOMSTR='ConcatSource $TARGET',
-        CXXCOMSTR='Compiling $TARGET',
-        LDMODULECOMSTR='Building loadable module $TARGET',
-        LINKCOMSTR='Linking $TARGET',
-        MANIFESTCOMSTR='Updating manifest for $TARGET',
-        MIDLCOMSTR='Compiling IDL $TARGET',
-        PCHCOMSTR='Precompiling $TARGET',
-        RANLIBCOMSTR='Indexing $TARGET',
-        RCCOMSTR='Compiling resource $TARGET',
-        SHCCCOMSTR='Compiling $TARGET',
-        SHCXXCOMSTR='Compiling $TARGET',
-        SHLINKCOMSTR='Linking $TARGET',
-        SHMANIFESTCOMSTR='Updating manifest for $TARGET',
-    )
+
+add_gyp_methods(base_env)
+
+for conf in conf_list:
+  env = base_env.Clone(CONFIG_NAME=conf)
   SConsignFile(env.File('$TOP_BUILDDIR/.sconsign').abspath)
-
   env.Dir('$OBJ_DIR').addRepository(env.Dir('$SRC_DIR'))
-
   for sconscript in sconscript_files:
     target_alias = env.SConscript('$OBJ_DIR/%(subdir)s/' + sconscript,
                                   exports=['env'])
