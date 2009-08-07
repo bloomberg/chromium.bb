@@ -14,7 +14,7 @@ var chrome = chrome || {};
 (function() {
   native function GetExtensionAPIDefinition();
   native function StartRequest();
-  native function GetCurrentPageActions();
+  native function GetCurrentPageActions(extensionId);
   native function GetViews();
   native function GetChromeHidden();
   native function GetNextRequestId();
@@ -186,7 +186,7 @@ var chrome = chrome || {};
 
   // Page action events send (pageActionId, {tabId, tabUrl}).
   function setupPageActionEvents(extensionId) {
-    var pageActions = GetCurrentPageActions();
+    var pageActions = GetCurrentPageActions(extensionId);
     var eventName = "";
     for (var i = 0; i < pageActions.length; ++i) {
       eventName = extensionId + "/" + pageActions[i];

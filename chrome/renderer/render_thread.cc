@@ -202,6 +202,12 @@ void RenderThread::OnPageActionsUpdated(
   ExtensionProcessBindings::SetPageActions(extension_id, page_actions);
 }
 
+void RenderThread::OnExtensionSetPermissions(
+    const std::string& extension_id,
+    const std::vector<std::string>& permissions) {
+  ExtensionProcessBindings::SetPermissions(extension_id, permissions);
+}
+
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   // App cache messages are handled by a delegate.
   if (app_cache_dispatcher_->OnMessageReceived(msg))
@@ -233,6 +239,8 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_UpdatePageActions,
                         OnPageActionsUpdated)
+    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetPermissions,
+                        OnExtensionSetPermissions)
   IPC_END_MESSAGE_MAP()
 }
 

@@ -520,7 +520,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
                           .AppendASCII("script3.js")
                           .value()),
       NormalizeSeperators(scripts[1].js_scripts()[0].path().value()));
-  const std::vector<URLPattern> permissions = extension->permissions();
+  const std::vector<URLPattern> permissions = extension->host_permissions();
   ASSERT_EQ(2u, permissions.size());
   EXPECT_EQ("http://*.google.com/*", permissions[0].GetAsString());
   EXPECT_EQ("https://*.google.com/*", permissions[1].GetAsString());

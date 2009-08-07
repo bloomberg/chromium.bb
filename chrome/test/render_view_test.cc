@@ -5,6 +5,7 @@
 #include "chrome/test/render_view_test.h"
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
@@ -79,6 +80,11 @@ void RenderViewTest::SetUp() {
   std::vector<std::string> names;
   ExtensionFunctionDispatcher::GetAllFunctionNames(&names);
   ExtensionProcessBindings::SetFunctionNames(names);
+
+  std::vector<std::string> permissions(
+      Extension::kPermissionNames,
+      Extension::kPermissionNames + Extension::kNumPermissions);
+  ExtensionProcessBindings::SetPermissions("", permissions);
 
   mock_process_.reset(new MockProcess());
 

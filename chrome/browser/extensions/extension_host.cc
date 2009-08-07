@@ -386,4 +386,10 @@ Browser* ExtensionHost::GetBrowser() {
 }
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
+  // TODO(mpcomplete): This is duplicated in DidNavigate, which means that
+  // we'll create 2 EFDs for the first navigation. We should try to find a
+  // better way to unify them.
+  // See http://code.google.com/p/chromium/issues/detail?id=18240
+  extension_function_dispatcher_.reset(
+      new ExtensionFunctionDispatcher(render_view_host, this, url_));
 }

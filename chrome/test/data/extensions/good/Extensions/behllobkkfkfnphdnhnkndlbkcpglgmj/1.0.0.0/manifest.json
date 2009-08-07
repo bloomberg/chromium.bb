@@ -14,7 +14,7 @@
     },
     "toolstrip2.html"
   ],
-  "permissions": ["http://*.google.com/*", "https://*.google.com/*"],
+  "permissions": ["tabs", "http://*.google.com/*", "https://*.google.com/*"],
   "content_scripts": [
     {
       "matches": ["file://*", "http://*.google.com/*", "https://*.google.com/*"],

@@ -126,6 +126,8 @@ class RenderThread : public RenderThreadBase,
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
   void OnPageActionsUpdated(const std::string& extension_id,
                             const std::vector<std::string>& page_actions);
+  void OnExtensionSetPermissions(const std::string& extension_id,
+                                 const std::vector<std::string>& permissions);
   void OnSetNextPageID(int32 next_page_id);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(gfx::NativeViewId parent_hwnd,

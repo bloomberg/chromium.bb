@@ -3,6 +3,7 @@
   "version": "1.0",
   "name": "My extension 3",
   "toolstrips": ["toolstrip.html"],
+  "permissions": ["tabs"],
   "content_scripts": [
     {
       "matches": ["file://*"],

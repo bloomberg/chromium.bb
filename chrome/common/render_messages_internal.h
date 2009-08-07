@@ -589,6 +589,12 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_Extension_SetFunctionNames,
                        std::vector<std::string>)
 
+  // Tell the renderer process which permissions the given extension has. See
+  // Extension::Permissions for which elements correspond to which permissions.
+  IPC_MESSAGE_CONTROL2(ViewMsg_Extension_SetPermissions,
+                       std::string /* extension_id */,
+                       std::vector<std::string> /* permissions */)
+
   // Tell the renderer process all known page action ids for a particular
   // extension.
   IPC_MESSAGE_CONTROL2(ViewMsg_Extension_UpdatePageActions,

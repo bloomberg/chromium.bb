@@ -207,7 +207,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
 
   // Add permissions
   ListValue *permission_list = new ListValue;
-  std::vector<URLPattern> permissions = extension->permissions();
+  std::vector<URLPattern> permissions = extension->host_permissions();
   for (std::vector<URLPattern>::iterator permission = permissions.begin();
        permission != permissions.end(); ++permission) {
     permission_list->Append(Value::CreateStringValue(

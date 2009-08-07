@@ -20,6 +20,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
 
@@ -198,7 +199,10 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     ALLOW_THIS_IN_INITIALIZER_LIST(peer_(new Peer(this))) {
   // TODO(erikkay) should we do something for these errors in Release?
   DCHECK(url.SchemeIs(chrome::kExtensionScheme));
-  DCHECK(profile()->GetExtensionsService()->GetExtensionByURL(url));
+
+  Extension* extension =
+      profile()->GetExtensionsService()->GetExtensionByURL(url);
+  DCHECK(extension);
 
   all_instances()->insert(this);
 
@@ -206,6 +210,12 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   ExtensionProcessManager* epm = profile()->GetExtensionProcessManager();
   epm->RegisterExtensionProcess(extension_id(),
                                 render_view_host->process()->pid());
+
+  // Update the extension permissions. Doing this each time we create an EFD
+  // ensures that new processes are informed of permissions for newly installed
+  // extensions.
+  render_view_host->Send(new ViewMsg_Extension_SetPermissions(
+      extension->id(), extension->api_permissions()));
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {

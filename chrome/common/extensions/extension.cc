@@ -31,26 +31,37 @@ namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 
 namespace {
-  const int kPEMOutputColumns = 65;
+const int kPEMOutputColumns = 65;
 
-  // KEY MARKERS
-  const char kKeyBeginHeaderMarker[] = "-----BEGIN";
-  const char kKeyBeginFooterMarker[] = "-----END";
-  const char kKeyInfoEndMarker[] = "KEY-----";
-  const char kPublic[] = "PUBLIC";
-  const char kPrivate[] = "PRIVATE";
+// KEY MARKERS
+const char kKeyBeginHeaderMarker[] = "-----BEGIN";
+const char kKeyBeginFooterMarker[] = "-----END";
+const char kKeyInfoEndMarker[] = "KEY-----";
+const char kPublic[] = "PUBLIC";
+const char kPrivate[] = "PRIVATE";
 
-  const int kRSAKeySize = 1024;
+const int kRSAKeySize = 1024;
 
-  // Converts a normal hexadecimal string into the alphabet used by extensions.
-  // We use the characters 'a'-'p' instead of '0'-'f' to avoid ever having a
-  // completely numeric host, since some software interprets that as an IP
-  // address.
-  static void ConvertHexadecimalToIDAlphabet(std::string* id) {
-    for (size_t i = 0; i < id->size(); ++i)
-      (*id)[i] = HexStringToInt(id->substr(i, 1)) + 'a';
+// Converts a normal hexadecimal string into the alphabet used by extensions.
+// We use the characters 'a'-'p' instead of '0'-'f' to avoid ever having a
+// completely numeric host, since some software interprets that as an IP
+// address.
+static void ConvertHexadecimalToIDAlphabet(std::string* id) {
+  for (size_t i = 0; i < id->size(); ++i)
+    (*id)[i] = HexStringToInt(id->substr(i, 1)) + 'a';
+}
+
+// Returns true if the given string is an API permission (see kPermissionNames).
+static bool IsAPIPermission(const std::string& str) {
+  for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
+    if (str == Extension::kPermissionNames[i])
+      return true;
   }
-};
+
+  return false;
+}
+
+}  // namespace
 
 // static
 int Extension::id_counter_ = 0;
@@ -84,6 +95,13 @@ const int Extension::kIconSizes[] = {
   EXTENSION_ICON_SMALL,
   EXTENSION_ICON_BITTY
 };
+
+const char* Extension::kPermissionNames[] = {
+  "tabs",
+  "bookmarks",
+};
+const size_t Extension::kNumPermissions =
+    arraysize(Extension::kPermissionNames);
 
 Extension::~Extension() {
   for (PageActionMap::iterator i = page_actions_.begin();
@@ -852,28 +870,35 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
 
   // Initialize the permissions (optional).
   if (source.HasKey(keys::kPermissions)) {
-    ListValue* hosts = NULL;
-    if (!source.GetList(keys::kPermissions, &hosts)) {
+    ListValue* permissions = NULL;
+    if (!source.GetList(keys::kPermissions, &permissions)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidPermissions, "");
       return false;
     }
 
-    if (hosts->GetSize() == 0) {
+    if (permissions->GetSize() == 0) {
       ExtensionErrorReporter::GetInstance()->ReportError(
           errors::kInvalidPermissionCountWarning, false);
     }
 
-    for (size_t i = 0; i < hosts->GetSize(); ++i) {
-      std::string host_str;
-      if (!hosts->GetString(i, &host_str)) {
+    for (size_t i = 0; i < permissions->GetSize(); ++i) {
+      std::string permission_str;
+      if (!permissions->GetString(i, &permission_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermission, IntToString(i));
         return false;
       }
 
+      // Check if it's a module permission.  If so, enable that permission.
+      if (IsAPIPermission(permission_str)) {
+        api_permissions_.push_back(permission_str);
+        continue;
+      }
+
+      // Otherwise, it's a host pattern permission.
       URLPattern pattern;
-      if (!pattern.Parse(host_str)) {
+      if (!pattern.Parse(permission_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermission, IntToString(i));
         return false;
@@ -887,7 +912,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
         return false;
       }
 
-      permissions_.push_back(pattern);
+      host_permissions_.push_back(pattern);
     }
   }
 

@@ -5,6 +5,7 @@
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 
 #include "base/singleton.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
@@ -30,6 +31,12 @@ namespace {
 // A map of extension ID to vector of page action ids.
 typedef std::map< std::string, std::vector<std::string> > PageActionIdMap;
 
+// A map of permission name to whether its enabled for this extension.
+typedef std::map<std::string, bool> PermissionsMap;
+
+// A map of extension ID to permissions map.
+typedef std::map<std::string, PermissionsMap> ExtensionPermissionsMap;
+
 const char kExtensionName[] = "chrome/ExtensionProcessBindings";
 const char* kExtensionDeps[] = {
   BaseJsV8Extension::kName,
@@ -41,6 +48,7 @@ const char* kExtensionDeps[] = {
 struct SingletonData {
   std::set<std::string> function_names_;
   PageActionIdMap page_action_ids_;
+  ExtensionPermissionsMap permissions_;
 };
 
 static std::set<std::string>* GetFunctionNameSet() {
@@ -49,6 +57,10 @@ static std::set<std::string>* GetFunctionNameSet() {
 
 static PageActionIdMap* GetPageActionMap() {
   return &Singleton<SingletonData>()->page_action_ids_;
+}
+
+static PermissionsMap* GetPermissionsMap(const std::string& extension_id) {
+  return &Singleton<SingletonData>()->permissions_[extension_id];
 }
 
 class ExtensionImpl : public ExtensionBase {
@@ -62,6 +74,18 @@ class ExtensionImpl : public ExtensionBase {
     for (size_t i = 0; i < names.size(); ++i) {
       name_set->insert(names[i]);
     }
+  }
+
+  // Note: do not call this function before or during the chromeHidden.onLoad
+  // event dispatch. The URL might not have been committed yet and might not
+  // be an extension URL.
+  static std::string ExtensionIdForCurrentContext() {
+    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
+    DCHECK(renderview);
+    GURL url = renderview->webview()->GetMainFrame()->GetURL();
+    if (url.SchemeIs(chrome::kExtensionScheme))
+      return url.host();
+    return std::string();
   }
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -84,20 +108,13 @@ class ExtensionImpl : public ExtensionBase {
   }
 
  private:
-  static std::string ExtensionIdFromCurrentContext() {
-    RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
-    DCHECK(renderview);
-    GURL url = renderview->webview()->GetMainFrame()->GetURL();
-    return url.host();
-  }
-
   static v8::Handle<v8::Value> GetExtensionAPIDefinition(
       const v8::Arguments& args) {
     return v8::String::New(GetStringResource<IDR_EXTENSION_API_JSON>());
   }
 
   static v8::Handle<v8::Value> GetViews(const v8::Arguments& args) {
-    std::string extension_id = ExtensionIdFromCurrentContext();
+    std::string extension_id = ExtensionIdForCurrentContext();
 
     ContextList contexts =
         bindings_utils::GetContextsForExtension(extension_id);
@@ -145,11 +162,9 @@ class ExtensionImpl : public ExtensionBase {
 
   static v8::Handle<v8::Value> GetCurrentPageActions(
       const v8::Arguments& args) {
-    std::string extension_id = ExtensionIdFromCurrentContext();
-    PageActionIdMap* page_action_map =
-        GetPageActionMap();
-    PageActionIdMap::const_iterator it =
-        page_action_map->find(extension_id);
+    std::string extension_id = *v8::String::Utf8Value(args[0]->ToString());
+    PageActionIdMap* page_action_map = GetPageActionMap();
+    PageActionIdMap::const_iterator it = page_action_map->find(extension_id);
 
     std::vector<std::string> page_actions;
     size_t size  = 0;
@@ -186,6 +201,9 @@ class ExtensionImpl : public ExtensionBase {
       NOTREACHED() << "Unexpected function " << name;
       return v8::Undefined();
     }
+
+    if (!ExtensionProcessBindings::CurrentContextHasPermission(name))
+      return ExtensionProcessBindings::ThrowPermissionDeniedException(name);
 
     std::string json_args = *v8::String::Utf8Value(args[1]);
     int request_id = args[2]->Int32Value();
@@ -248,4 +266,76 @@ void ExtensionProcessBindings::SetPageActions(
     if (page_action_map.find(extension_id) != page_action_map.end())
       page_action_map.erase(extension_id);
   }
+}
+
+// static
+void ExtensionProcessBindings::SetPermissions(
+    const std::string& extension_id,
+    const std::vector<std::string>& permissions) {
+  PermissionsMap& permissions_map = *GetPermissionsMap(extension_id);
+
+  // Default all permissions to false, then enable the ones in the vector.
+  for (size_t i = 0; i < Extension::kNumPermissions; ++i)
+    permissions_map[Extension::kPermissionNames[i]] = false;
+  for (size_t i = 0; i < permissions.size(); ++i)
+    permissions_map[permissions[i]] = true;
+}
+
+// Given a name like "tabs.onConnect", return the permission name required
+// to access that API ("tabs" in this example).
+static std::string GetPermissionName(const std::string& function_name) {
+  size_t first_dot = function_name.find('.');
+  std::string permission_name = function_name.substr(0, first_dot);
+  if (permission_name == "windows")
+    return "tabs";  // windows and tabs are the same permission.
+  return permission_name;
+}
+
+// static
+bool ExtensionProcessBindings::CurrentContextHasPermission(
+    const std::string& function_name) {
+  std::string extension_id = ExtensionImpl::ExtensionIdForCurrentContext();
+  PermissionsMap& permissions_map = *GetPermissionsMap(extension_id);
+  std::string permission_name = GetPermissionName(function_name);
+  PermissionsMap::iterator it = permissions_map.find(permission_name);
+
+  // We explicitly check if the permission entry is present and false, because
+  // some APIs do not have a required permission entry (ie, "chrome.self").
+  return (it == permissions_map.end() || it->second);
+}
+
+// static
+v8::Handle<v8::Value>
+    ExtensionProcessBindings::ThrowPermissionDeniedException(
+      const std::string& function_name) {
+  static const char kMessage[] =
+      "You do not have permission to use 'chrome.%s'. Be sure to declare"
+      " in your manifest what permissions you need.";
+  std::string permission_name = GetPermissionName(function_name);
+  std::string error_msg = StringPrintf(kMessage, permission_name.c_str());
+
+#if EXTENSION_TIME_TO_BREAK_API
+  return v8::ThrowException(v8::Exception::Error(
+      v8::String::New(error_msg.c_str())));
+#else
+  // Call console.error for now.
+
+  v8::HandleScope scope;
+
+  v8::Local<v8::Value> console =
+      v8::Context::GetCurrent()->Global()->Get(v8::String::New("console"));
+  v8::Local<v8::Value> console_error;
+  if (!console.IsEmpty() && console->IsObject())
+    console_error = console->ToObject()->Get(v8::String::New("error"));
+  if (console_error.IsEmpty() || !console_error->IsFunction())
+    return v8::Undefined();
+
+  v8::Local<v8::Function> function =
+      v8::Local<v8::Function>::Cast(console_error);
+  v8::Local<v8::Value> argv[] = { v8::String::New(error_msg.c_str()) };
+  if (!function.IsEmpty())
+    function->Call(console->ToObject(), arraysize(argv), argv);
+
+  return v8::Undefined();
+#endif
 }

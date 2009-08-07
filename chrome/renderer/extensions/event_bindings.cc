@@ -76,9 +76,19 @@ class ExtensionImpl : public ExtensionBase {
 
     if (args[0]->IsString()) {
       std::string event_name(*v8::String::AsciiValue(args[0]));
-      if (EventIncrementListenerCount(event_name) == 1) {
+      bool has_permission =
+          ExtensionProcessBindings::CurrentContextHasPermission(event_name);
+
+      // Increment the count even if the caller doesn't have permission, so that
+      // refcounts stay balanced.
+      if (EventIncrementListenerCount(event_name) == 1 && has_permission) {
         EventBindings::GetRenderThread()->Send(
             new ViewHostMsg_ExtensionAddListener(event_name));
+      }
+
+      if (!has_permission) {
+        return ExtensionProcessBindings::ThrowPermissionDeniedException(
+            event_name);
       }
     }
 

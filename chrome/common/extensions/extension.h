@@ -58,6 +58,10 @@ class Extension {
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
 
+  // Each permission is a module that the extension is permitted to use.
+  static const char* kPermissionNames[];
+  static const size_t kNumPermissions;
+
   // An NPAPI plugin included in the extension.
   struct PluginInfo {
     FilePath path;  // Path to the plugin.
@@ -172,7 +176,12 @@ class Extension {
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const GURL& background_url() const { return background_url_; }
   const std::vector<ToolstripInfo>& toolstrips() const { return toolstrips_; }
-  const std::vector<URLPattern>& permissions() const { return permissions_; }
+  const std::vector<URLPattern>& host_permissions() const {
+    return host_permissions_;
+  }
+  const std::vector<std::string>& api_permissions() const {
+    return api_permissions_;
+  }
   const GURL& update_url() const { return update_url_; }
   const std::map<int, std::string>& icons() { return icons_; }
 
@@ -293,8 +302,11 @@ class Extension {
   // Whether the extension is a theme - if it is, certain things are disabled.
   bool is_theme_;
 
+  // The set of module-level APIs this extension can use.
+  std::vector<std::string> api_permissions_;
+
   // The sites this extension has permission to talk to (using XHR, etc).
-  std::vector<URLPattern> permissions_;
+  std::vector<URLPattern> host_permissions_;
 
   // The paths to the icons the extension contains mapped by their width.
   std::map<int, std::string> icons_;
