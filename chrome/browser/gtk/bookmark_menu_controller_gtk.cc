@@ -48,6 +48,34 @@ void* AsVoid(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
+// The context menu has been dismissed, restore the X and application grabs
+// to whichever menu last had them. (Assuming that menu is still showing.)
+// The event mask in this function is taken from gtkmenu.c.
+void OnContextMenuHide(GtkWidget* context_menu, GtkWidget* grab_menu) {
+  guint time = gtk_get_current_event_time();
+
+  if (GTK_WIDGET_VISIBLE(grab_menu)) {
+    if (!gdk_pointer_grab(grab_menu->window, TRUE,
+                          GdkEventMask(
+                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+                          GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK |
+                          GDK_POINTER_MOTION_MASK), NULL, NULL, time) == 0) {
+      g_object_unref(grab_menu);
+      return;
+    }
+    if (!gdk_keyboard_grab(grab_menu->window, TRUE, time) == 0) {
+      gdk_display_pointer_ungrab(gdk_drawable_get_display(grab_menu->window),
+                                 time);
+      g_object_unref(grab_menu);
+      return;
+    }
+    gtk_grab_add(grab_menu);
+  }
+
+  // Match the ref we took when connecting this signal.
+  g_object_unref(grab_menu);
+}
+
 }  // namespace
 
 BookmarkMenuController::BookmarkMenuController(Browser* browser,
@@ -138,8 +166,7 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
       g_signal_connect(G_OBJECT(menu_item), "button-release-event",
                        G_CALLBACK(OnButtonReleased), this);
     } else if (node->is_folder()) {
-      SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
-          GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
+      SkBitmap* folder_icon = bookmark_utils::GetFolderIcon();
       SetImageMenuItem(menu_item, *folder_icon);
 
       GtkWidget* submenu = gtk_menu_new();
@@ -216,6 +243,14 @@ gboolean BookmarkMenuController::OnButtonPressed(
             sender, controller->profile_, controller->browser_,
             controller->page_navigator_, parent, nodes,
             BookmarkContextMenu::BOOKMARK_BAR));
+
+    // Our bookmark folder menu loses the grab to the context menu. When the
+    // context menu is hidden, re-assert our grab.
+    GtkWidget* grabbing_menu = gtk_grab_get_current();
+    g_object_ref(grabbing_menu);
+    g_signal_connect(controller->context_menu_->menu(), "hide",
+                     G_CALLBACK(OnContextMenuHide), grabbing_menu);
+
     controller->context_menu_->PopupAsContext(event->time);
     return TRUE;
   }
