@@ -348,6 +348,7 @@ class TestGypXcode(TestGypBase):
     args = ('-project', gyp_file.replace('.gyp', '.xcodeproj')) + args
     if self.configuration:
       args += ('-configuration', self.configuration)
+    args += ('SYMROOT=$SRCROOT/build',) + args
     return self.run(program=self.build_tool, arguments=args)
   def run_built_executable(self, name, *args, **kw):
     """
