@@ -2046,6 +2046,8 @@
             '../third_party/GTM/AppKit/GTMTheme.m',
             '../third_party/GTM/AppKit/GTMUILocalizer.h',
             '../third_party/GTM/AppKit/GTMUILocalizer.m',
+            '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h',
+            '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.m',
             # Build necessary Mozilla sources
             '../third_party/mozilla/include/NSPasteboard+Utils.h',
             '../third_party/mozilla/include/NSPasteboard+Utils.mm',
@@ -2072,6 +2074,45 @@
             # This block of actions are used to extract the localization data
             # from xib files and generate a localizer out of it.
             {
+              'action_name': 'process_bookmark_bar_xib',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(mac_xib_localizer_tool_path)',
+                'app/nibs/BookmarkBar.xib'
+              ],
+              'outputs': [
+                '<(mac_xib_localizers_dir)/bookmark_bar_localizer.h',
+                '<(mac_xib_localizers_dir)/bookmark_bar_localizer.mm',
+              ],
+              'action': ['<@(_inputs)', '<@(_outputs)'],
+            },
+            {
+              'action_name': 'process_bookmark_editor_xib',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(mac_xib_localizer_tool_path)',
+                'app/nibs/BookmarkEditor.xib'
+              ],
+              'outputs': [
+                '<(mac_xib_localizers_dir)/bookmark_editor_localizer.h',
+                '<(mac_xib_localizers_dir)/bookmark_editor_localizer.mm',
+              ],
+              'action': ['<@(_inputs)', '<@(_outputs)'],
+            },
+            {
+              'action_name': 'process_bookmark_name_folder_xib',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(mac_xib_localizer_tool_path)',
+                'app/nibs/BookmarkNameFolder.xib'
+              ],
+              'outputs': [
+                '<(mac_xib_localizers_dir)/bookmark_name_folder_localizer.h',
+                '<(mac_xib_localizers_dir)/bookmark_name_folder_localizer.mm',
+              ],
+              'action': ['<@(_inputs)', '<@(_outputs)'],
+            },
+            {
               'action_name': 'process_mainmenu_xib',
               'process_outputs_as_sources': 1,
               'inputs': [
@@ -2081,6 +2122,32 @@
               'outputs': [
                 '<(mac_xib_localizers_dir)/main_menu_localizer.h',
                 '<(mac_xib_localizers_dir)/main_menu_localizer.mm',
+              ],
+              'action': ['<@(_inputs)', '<@(_outputs)'],
+            },
+            {
+              'action_name': 'process_tab_view_xib',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(mac_xib_localizer_tool_path)',
+                'app/nibs/TabView.xib'
+              ],
+              'outputs': [
+                '<(mac_xib_localizers_dir)/tab_view_localizer.h',
+                '<(mac_xib_localizers_dir)/tab_view_localizer.mm',
+              ],
+              'action': ['<@(_inputs)', '<@(_outputs)'],
+            },
+            {
+              'action_name': 'process_toolbar_xib',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(mac_xib_localizer_tool_path)',
+                'app/nibs/Toolbar.xib'
+              ],
+              'outputs': [
+                '<(mac_xib_localizers_dir)/toolbar_localizer.h',
+                '<(mac_xib_localizers_dir)/toolbar_localizer.mm',
               ],
               'action': ['<@(_inputs)', '<@(_outputs)'],
             },

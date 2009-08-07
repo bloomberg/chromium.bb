@@ -57,7 +57,7 @@
 							<object class="NSTextFieldCell" key="NSCell" id="383706794">
 								<int key="NSCellFlags">68288064</int>
 								<int key="NSCellFlags2">272630784</int>
-								<string key="NSContents">Name:</string>
+								<string key="NSContents">^IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL</string>
 								<object class="NSFont" key="NSSupport" id="11363697">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">1.300000e+01</double>
@@ -86,7 +86,7 @@
 						</object>
 						<object class="NSTextField" id="781907324">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">268</int>
+							<int key="NSvFlags">266</int>
 							<string key="NSFrame">{{67, 60}, {393, 22}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
@@ -116,14 +116,14 @@
 						</object>
 						<object class="NSButton" id="810399603">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">268</int>
+							<int key="NSvFlags">289</int>
 							<string key="NSFrame">{{370, 12}, {96, 32}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="869818464">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">134217728</int>
-								<string key="NSContents">OK</string>
+								<string key="NSContents">^IDS_APP_OK</string>
 								<reference key="NSSupport" ref="11363697"/>
 								<reference key="NSControlView" ref="810399603"/>
 								<int key="NSButtonFlags">-2038284033</int>
@@ -136,14 +136,14 @@
 						</object>
 						<object class="NSButton" id="166877485">
 							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">268</int>
+							<int key="NSvFlags">289</int>
 							<string key="NSFrame">{{274, 12}, {96, 32}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="1061805124">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">134217728</int>
-								<string key="NSContents">Cancel</string>
+								<string key="NSContents">^IDS_APP_CANCEL</string>
 								<reference key="NSSupport" ref="11363697"/>
 								<reference key="NSControlView" ref="166877485"/>
 								<int key="NSButtonFlags">-2038284033</int>
@@ -160,6 +160,9 @@
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
+			</object>
+			<object class="NSCustomObject" id="352865609">
+				<string key="NSClassName">BookmarkNameFolderLocalizer</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -196,6 +199,14 @@
 						<reference key="destination" ref="1005"/>
 					</object>
 					<int key="connectionID">14</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">owner_</string>
+						<reference key="source" ref="352865609"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">16</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -242,10 +253,10 @@
 						<reference key="object" ref="1006"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="1000877900"/>
 							<reference ref="810399603"/>
 							<reference ref="166877485"/>
 							<reference ref="781907324"/>
+							<reference ref="1000877900"/>
 						</object>
 						<reference key="parent" ref="1005"/>
 					</object>
@@ -305,6 +316,11 @@
 						<reference key="object" ref="1061805124"/>
 						<reference key="parent" ref="166877485"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">15</int>
+						<reference key="object" ref="352865609"/>
+						<reference key="parent" ref="1002"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -321,6 +337,7 @@
 					<string>1.WindowOrigin</string>
 					<string>1.editorWindowContentRectSynchronizationRect</string>
 					<string>10.IBPluginDependency</string>
+					<string>15.IBPluginDependency</string>
 					<string>2.IBPluginDependency</string>
 					<string>3.IBPluginDependency</string>
 					<string>4.IBPluginDependency</string>
@@ -341,6 +358,7 @@
 					<boolean value="NO"/>
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -372,7 +390,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">14</int>
+			<int key="maxID">16</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -400,6 +418,45 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/bookmark_name_folder_controller.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">BookmarkNameFolderLocalizer</string>
+					<string key="superclassName">ChromeUILocalizer</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../xcodebuild/chrome.build/DerivedSources/Debug/xib_localizers/bookmark_name_folder_localizer.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">ChromeUILocalizer</string>
+					<string key="superclassName">GTMUILocalizer</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/ui_localizer.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">GTMUILocalizer</string>
+					<string key="superclassName">NSObject</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSMutableArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>otherObjectToLocalize_</string>
+							<string>owner_</string>
+							<string>yetAnotherObjectToLocalize_</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">../third_party/GTM/AppKit/GTMUILocalizer.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
