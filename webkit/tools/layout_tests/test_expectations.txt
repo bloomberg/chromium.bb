@@ -713,7 +713,6 @@ BUG10277 LINUX : LayoutTests/fast/css/font-face-default-font.html = FAIL
 
 // We don't support dynamic fonts on Linux.
 // Once we have the sandbox working, we should re-evaluate this.
-BUG10278 LINUX : LayoutTests/fast/css/font-face-remote.html = FAIL
 BUG10278 LINUX : LayoutTests/fast/css/font-face-implicit-local-font.html = FAIL
 BUG10278 LINUX : LayoutTests/fast/css/font-face-unicode-range.html = FAIL
 
@@ -2356,7 +2355,6 @@ BUG11613 WIN : LayoutTests/http/tests/navigation/javascriptlink-frames.html = FA
 // tree red. May be more involved then just rebaselining.
 BUG11613 LINUX : LayoutTests/editing/deleting/5168598.html = FAIL
 BUG11613 LINUX : LayoutTests/editing/inserting/5607069-2.html = FAIL
-BUG11613 LINUX : LayoutTests/editing/inserting/5607069-3.html = FAIL
 
 // This needs to be rebaselined.  See http://trac.webkit.org/changeset/43378
 BUG11669 LINUX : LayoutTests/fast/layers/remove-only-this-layer-update.html = FAIL
@@ -2375,7 +2373,6 @@ BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
 
 // Flaky Mac tests
 BUG11810 MAC : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
-BUG11810 MAC : LayoutTests/http/tests/mime/standard-mode-does-not-load-stylesheet-with-text-plain.html = TIMEOUT PASS
 BUG11810 MAC : LayoutTests/svg/custom/polyline-points-crash.html = CRASH PASS
 BUG11810 MAC : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
 BUG11810 MAC DEBUG : LayoutTests/fast/repaint/subtree-root-clip.html = CRASH PASS
@@ -2392,7 +2389,7 @@ BUG11832 LINUX : LayoutTests/http/tests/xmlhttprequest/uri-resolution-opera-open
 BUG11832 LINUX DEBUG : LayoutTests/http/tests/xmlhttprequest/web-apps/004.html = CRASH PASS
 
 // Flaky Windows/Linux Tests
-BUG11898 WIN LINUX DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
+BUG11898 WIN LINUX MAC : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16be.html = TIMEOUT PASS
 BUG11898 WIN : LayoutTests/http/tests/xmlhttprequest/web-apps/004.html = CRASH PASS
 BUG18772 WIN DEBUG : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
@@ -2426,7 +2423,7 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 
 // Details for all of these are in the bugs.
 BUG12340 WIN : LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = PASS FAIL
-BUG12341 WIN : LayoutTests/editing/selection/4975120.html = PASS FAIL
+BUG12341 WIN LINUX : LayoutTests/editing/selection/4975120.html = PASS FAIL
 BUG12354 : LayoutTests/plugins/netscape-invoke-browserfuncs.html = FAIL
 BUG12355 : LayoutTests/editing/pasteboard/file-input-files-access.html = FAIL
 BUG12361 : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
@@ -2850,6 +2847,7 @@ BUG18724 LINUX DEBUG : LayoutTests/transitions/transition-drt-api-delay.html = P
 BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEOUT
 BUG18733 WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PASS TIMEOUT
+BUG18794 WIN MAC : LayoutTests/http/tests/mime/standard-mode-does-not-load-stylesheet-with-text-plain.html = TIMEOUT PASS
 
 BUG18665 MAC : LayoutTests/security/block-test.html = FAIL
 BUG18665 MAC : LayoutTests/security/block-test-no-port.html = FAIL
