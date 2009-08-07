@@ -15,8 +15,26 @@
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-@interface BrowserWindowController (ExposedForTesting)
+@interface BrowserWindowController (JustForTesting)
+// Already defined in BWC.
 - (void)saveWindowPositionToPrefs:(PrefService*)prefs;
+- (void)layoutSubviews;
+@end
+
+@interface BrowserWindowController (ExposedForTesting)
+// Implementations are below.
+- (NSView*)infoBarContainerView;
+- (NSView*)toolbarView;
+@end
+
+@implementation BrowserWindowController (ExposedForTesting)
+- (NSView*)infoBarContainerView {
+  return [infoBarContainerController_ view];
+}
+
+- (NSView*)toolbarView {
+  return [toolbarController_ view];
+}
 @end
 
 class BrowserWindowControllerTest : public testing::Test {
@@ -52,13 +70,29 @@ TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
 }
 
 @interface BrowserWindowControllerFakeFullscreen : BrowserWindowController {
+ @private
+  // We release the window ourselves, so we don't have to rely on the unittest
+  // doing it for us.
+  scoped_nsobject<NSWindow> fullscreenWindow_;
 }
 @end
 @implementation BrowserWindowControllerFakeFullscreen
-// This isn't needed to pass the test, but does prevent an actual
-// fullscreen from happening.
+// Override fullscreenWindow to return a dummy window.  This isn't needed to
+// pass the test, but because the dummy window is only 100x100, it prevents the
+// real fullscreen window from flashing up and taking over the whole screen..
+// We have to return an actual window because layoutSubviews: looks at the
+// window's frame.
 - (NSWindow*)fullscreenWindow {
-  return nil;
+  if (fullscreenWindow_.get())
+    return fullscreenWindow_.get();
+
+  fullscreenWindow_.reset(
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(0,0,400,400)
+                                   styleMask:NSBorderlessWindowMask
+                                     backing:NSBackingStoreBuffered
+                                       defer:NO]);
+  [fullscreenWindow_ setReleasedWhenClosed:NO];
+  return fullscreenWindow_.get();
 }
 @end
 
@@ -131,5 +165,96 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
   controller_.release();
 }
 #endif
+
+@interface BrowserWindowControllerResizePong : BrowserWindowController {
+}
+@end
+
+@implementation BrowserWindowControllerResizePong
+@end
+
+// Test to make sure resizing and relaying-out subviews works correctly.
+TEST_F(BrowserWindowControllerTest, TestResizeViews) {
+  TabStripView* tabstrip = [controller_ tabStripView];
+  NSView* contentView = [[tabstrip window] contentView];
+  NSView* toolbar = [controller_ toolbarView];
+  NSView* infobar = [controller_ infoBarContainerView];
+  NSView* contentArea = [controller_ tabContentArea];
+
+  // We need to muck with the views a bit to put us in a consistent state before
+  // we start resizing.  In particular, we need to move the tab strip to be
+  // immediately above the content area, since we layout views to be directly
+  // under the tab strip.  We also explicitly set the contentView's frame to be
+  // 800x600.
+  [contentView setFrame:NSMakeRect(0, 0, 800, 600)];
+  NSRect tabstripFrame = [tabstrip frame];
+  tabstripFrame.origin.y = NSMaxY([contentView frame]);
+  [tabstrip setFrame:tabstripFrame];
+
+  // Make sure each view is as tall as we expect.
+  ASSERT_EQ(39, NSHeight([toolbar frame]));
+  ASSERT_EQ(0, NSHeight([infobar frame]));
+
+  // Force a layout and check each view's frame.
+  // contentView should be at 0,0 800x600
+  // contentArea should be at 0,0 800x561
+  // infobar should be at 0,561 800x0
+  // toolbar should be at 0,561 800x39
+  [controller_ layoutSubviews];
+  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
+  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 0, 800, 561)));
+  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 561, 800, 0)));
+  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 561, 800, 39)));
+
+  // Expand the infobar to 60px and recheck
+  // contentView should be at 0,0 800x600
+  // contentArea should be at 0,0 800x501
+  // infobar should be at 0,501 800x60
+  // toolbar should be at 0,561 800x39
+  [controller_ resizeView:infobar newHeight:60];
+  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
+  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 0, 800, 501)));
+  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 501, 800, 60)));
+  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 561, 800, 39)));
+
+  // Expand the toolbar to 64px and recheck
+  // contentView should be at 0,0 800x600
+  // contentArea should be at 0,0 800x476
+  // infobar should be at 0,476 800x60
+  // toolbar should be at 0,536 800x64
+  [controller_ resizeView:toolbar newHeight:64];
+  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
+  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 0, 800, 476)));
+  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 476, 800, 60)));
+  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 536, 800, 64)));
+
+  // Add a 30px download shelf and recheck
+  // contentView should be at 0,0 800x600
+  // download should be at 0,0 800x30
+  // contentArea should be at 0,30 800x446
+  // infobar should be at 0,476 800x60
+  // toolbar should be at 0,536 800x64
+  NSView* download = [[controller_ downloadShelf] view];
+  [controller_ resizeView:download newHeight:30];
+  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
+  EXPECT_TRUE(NSEqualRects([download frame], NSMakeRect(0, 0, 800, 30)));
+  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 30, 800, 446)));
+  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 476, 800, 60)));
+  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 536, 800, 64)));
+
+  // Shrink the infobar to 0px and toolbar to 39px and recheck
+  // contentView should be at 0,0 800x600
+  // download should be at 0,0 800x30
+  // contentArea should be at 0,30 800x531
+  // infobar should be at 0,561 800x0
+  // toolbar should be at 0,561 800x39
+  [controller_ resizeView:infobar newHeight:0];
+  [controller_ resizeView:toolbar newHeight:39];
+  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
+  EXPECT_TRUE(NSEqualRects([download frame], NSMakeRect(0, 0, 800, 30)));
+  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 30, 800, 531)));
+  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 561, 800, 0)));
+  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 561, 800, 39)));
+}
 
 /* TODO(???): test other methods of BrowserWindowController */

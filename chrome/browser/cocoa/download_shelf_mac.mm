@@ -13,7 +13,6 @@ DownloadShelfMac::DownloadShelfMac(Browser* browser,
                                    DownloadShelfController* controller)
     : browser_(browser),
       shelf_controller_(controller) {
-  Show();
 }
 
 void DownloadShelfMac::AddDownload(BaseDownloadItemModel* download_model) {

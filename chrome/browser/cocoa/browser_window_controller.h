@@ -16,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/view_resizer.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 class Browser;
@@ -37,6 +38,7 @@ class TabStripModelObserverBridge;
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkURLOpener,
+                      ViewResizer,
                       GTMThemeDelegate> {
  @private
   // The ordering of these members is important as it determines the order in
@@ -123,10 +125,6 @@ class TabStripModelObserverBridge;
 
 // Returns fullscreen state.
 - (BOOL)isFullscreen;
-
-// Sent when the infobar view has been resized and other content needs
-// to be shifted around it.
-- (void)infoBarResized:(float)newHeight;
 
 // The user changed the theme.
 - (void)userChangedTheme;

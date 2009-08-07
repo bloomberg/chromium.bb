@@ -6,9 +6,9 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
+#import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/common/notification_registrar.h"
 
-@class BrowserWindowController;
 class InfoBarDelegate;
 class InfoBarNotificationObserver;
 class TabContents;
@@ -22,8 +22,8 @@ class TabStripModelObserverBridge;
 // adding/removing infobars when needed.
 @interface InfoBarContainerController : NSViewController {
  @private
-  // Needed to send infoBarResized: messages when infobars are added or removed.
-  BrowserWindowController* browserController_;  // weak, owns us.
+  // Needed to send resize messages when infobars are added or removed.
+  id<ViewResizer> resizeDelegate_;  // weak
 
   // The TabContents we are currently showing infobars for.
   TabContents* currentTabContents_;  // weak
@@ -42,7 +42,7 @@ class TabStripModelObserverBridge;
 }
 
 - (id)initWithTabStripModel:(TabStripModel*)model
-    browserWindowController:(BrowserWindowController*)controller;
+             resizeDelegate:(id<ViewResizer>)resizeDelegate;
 
 // Informs the selected TabContents that the infobars for the given
 // |delegate| need to be removed.  Does not remove any infobar views
