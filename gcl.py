@@ -306,6 +306,10 @@ class ChangeInfo(object):
     """Returns the local repository checkout root directory."""
     return self._local_root
 
+  def Exists(self):
+    """Returns True if this change already exists (i.e., is not new)."""
+    return (self.issue or self.description or self._files)
+
   def _NonDeletedFileList(self):
     """Returns a list of files in this change, not including deleted files."""
     return [file[1] for file in self.GetFiles()
@@ -978,21 +982,26 @@ def Change(change_info, override_description):
 
   other_files = GetFilesNotInCL()
 
-  #Edited files will have a letter for the first character in a string.
-  #This regex looks for the presence of that character.
+  # Edited files (as opposed to files with only changed properties) will have
+  # a letter for the first character in the status string.
   file_re = re.compile(r"^[a-z].+\Z", re.IGNORECASE)
-  affected_files = filter(lambda x: file_re.match(x[0]), other_files)
-  unaffected_files = filter(lambda x: not file_re.match(x[0]), other_files)
+  affected_files = [x for x in other_files if file_re.match(x[0])]
+  unaffected_files = [x for x in other_files if not file_re.match(x[0])]
 
   separator1 = ("\n---All lines above this line become the description.\n"
                 "---Repository Root: " + change_info.GetLocalRoot() + "\n"
                 "---Paths in this changelist (" + change_info.name + "):\n")
   separator2 = "\n\n---Paths modified but not in any changelist:\n\n"
   text = (description + separator1 + '\n' +
-          '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]) +
-          separator2 +
-          '\n'.join([f[0] + f[1] for f in affected_files]) + '\n' +
-          '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n')
+          '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]))
+
+  if change_info.Exists():
+    text += (separator2 +
+            '\n'.join([f[0] + f[1] for f in affected_files]) + '\n')
+  else:
+    text += ('\n'.join([f[0] + f[1] for f in affected_files]) + '\n' +
+            separator2)
+  text += '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n'
 
   handle, filename = tempfile.mkstemp(text=True)
   os.write(handle, text)

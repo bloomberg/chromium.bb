@@ -177,7 +177,7 @@ class ChangeInfoUnittest(GclTestsBase):
     self.mox.ReplayAll()
     members = [
       'CloseIssue', 'Delete', 'GetFiles', 'GetFileNames', 'GetLocalRoot',
-      'Load', 'MissingTests', 'Save', 'UpdateRietveldDescription',
+      'Exists', 'Load', 'MissingTests', 'Save', 'UpdateRietveldDescription',
       'description', 'issue', 'name',
       'patch', 'patchset',
     ]
