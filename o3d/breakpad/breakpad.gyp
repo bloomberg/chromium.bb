@@ -17,6 +17,16 @@
     ],
   },
   'conditions': [
+    ['OS=="mac"',
+      {
+        'targets': [
+          {
+            'target_name': 'reporter',
+            'type': 'none',
+          },
+        ],
+      },
+    ],
     ['OS=="win"',
       {
         'targets': [
