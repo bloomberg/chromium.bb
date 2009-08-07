@@ -400,22 +400,6 @@ class SeleniumSession(object):
     server_url += str(self.http_server.http_port)
     browser_path_with_space = FLAGS.browserpath
 
-    # TODO: This is a hack to figure out if we're on 64-bit
-    # Windows.  If we are, then we have to run the 32-bit Internet
-    # Explorer so that our plugin will work (indeed, even Microsoft
-    # has even made it impossible to use 64-bit Internet Explorer as
-    # your default browser).  We need to find a better way to
-    # determine if we're on 64-bit Windows, so that it will work on
-    # foreign machines (which don't use the strings below for "Program
-    # Files" and "Internet Explorer").
-    if (not browser_path_with_space and
-        browser == "*iexplore"):
-      program_files_x86 = "C:\\Program Files (x86)"
-      if os.path.isdir(program_files_x86):
-        browser_path_with_space = os.path.join(program_files_x86,
-                                               "Internet Explorer",
-                                               "iexplore.exe")
-
     if browser_path_with_space:
       browser_path_with_space = " " + browser_path_with_space
     self.session = selenium.selenium("localhost",

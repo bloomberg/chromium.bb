@@ -640,6 +640,7 @@ def DeferSelenium(env):
     run_selenium_ie = run_env.Alias(
         'selenium_ie',
         ['$ARTIFACTS_DIR/${LIBPREFIX}npo3dautoplugin$SHLIBSUFFIX',
+         '$ARTIFACTS_DIR/${LIBPREFIX}o3d_host$SHLIBSUFFIX',
          env.GetPublished('samples', 'asset_files')],
         # TODO: have a cleaner way to do this.
         [Delete('$ARTIFACTS_DIR/selenium/screenshots_ie'),
