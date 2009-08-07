@@ -113,7 +113,7 @@ int main(int argc, char**argv) {
   StatsTable table("fetchclient", 50, 1000);
   table.set_current(&table);
 
-  CommandLine::Init(0, NULL);
+  CommandLine::Init(argc, argv);
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   std::string url = WideToASCII(parsed_command_line.GetSwitchValue(L"url"));
   if (!url.length())
@@ -125,7 +125,7 @@ int main(int argc, char**argv) {
   bool use_cache = parsed_command_line.HasSwitch(L"use-cache");
 
   // Do work here.
-  MessageLoop loop;
+  MessageLoop loop(MessageLoop::TYPE_IO);
 
   scoped_refptr<net::HostResolver> host_resolver(
       net::CreateSystemHostResolver());
