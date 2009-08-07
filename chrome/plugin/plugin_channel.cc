@@ -17,6 +17,16 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
+class PluginReleaseTask : public Task {
+ public:
+  void Run() {
+    ChildProcess::current()->ReleaseProcess();
+  }
+};
+
+// How long we wait before releasing the plugin process.
+static const int kPluginReleaseTimeMS = 10000;
+
 PluginChannel* PluginChannel::GetPluginChannel(
     int process_id, MessageLoop* ipc_message_loop) {
   // map renderer's process id to a (single) channel to that process
@@ -54,7 +64,8 @@ PluginChannel::~PluginChannel() {
     close(renderer_fd_);
   }
 #endif
-  ChildProcess::current()->ReleaseProcess();
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, new PluginReleaseTask(),
+                                          kPluginReleaseTimeMS);
 }
 
 bool PluginChannel::Send(IPC::Message* msg) {
