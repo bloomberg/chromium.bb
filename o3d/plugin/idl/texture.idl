@@ -218,6 +218,25 @@ namespace o3d {
                float[] values);
 
   %[
+    Gets a rectangular area of values from a texture.
+
+    See o3d.Texture2D.set for details on formats.
+    Can not be used for compressed textures.
+
+    \param level the mip level to get.
+    \param x The x coordinate of the area in the texture to retrieve.
+    \param y The y coordinate of the area in the texture to retrieve.
+    \param width The width of the area to retrieve.
+    \param height The height of the area to retrieve.
+  %]
+  [nocpp, userglue]
+  float[] GetRect(int level,
+                  int x,
+                  int y,
+                  int width,
+                  int height);
+
+  %[
     Copy pixels from source bitmap to certain mip level.
     Scales if the width and height of source and dest do not match.
 
@@ -338,6 +357,27 @@ namespace o3d {
                int destination_y,
                int source_width,
                float[] values);
+
+  %[
+    Gets a rectangular area of values from a texture.
+
+    See o3d.Texture2D.set for details on formats.
+    Can not be used for compressed textures.
+
+    \param face the face to get.
+    \param level the mip level to get.
+    \param x The x coordinate of the area in the texture to retrieve.
+    \param y The y coordinate of the area in the texture to retrieve.
+    \param width The width of the area to retrieve.
+    \param height The height of the area to retrieve.
+  %]
+  [nocpp, userglue]
+  float[] GetRect(CubeFace face,
+                  int level,
+                  int x,
+                  int y,
+                  int width,
+                  int height);
 
   %[
     Copy pixels from source bitmap to certain mip level.

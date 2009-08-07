@@ -48,7 +48,7 @@ T AddPointerOffset(T pointer, unsigned offset) {
 
 // Creates a typed pointer from a void pointer and an offset.
 template <typename T>
-T PointerFromVoidPointer(void* pointer, unsigned offset) {
+T PointerFromVoidPointer(const void* pointer, unsigned offset) {
   return reinterpret_cast<T>(
       const_cast<uint8*>(reinterpret_cast<const uint8*>(pointer) + offset));
 }

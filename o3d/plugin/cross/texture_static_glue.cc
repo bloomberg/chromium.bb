@@ -34,13 +34,13 @@
 #include "core/cross/error.h"
 #include "core/cross/math_utilities.h"
 #include "core/cross/texture.h"
+#include "core/cross/image_utils.h"
 
 namespace {
 
 void SetRectCheck(o3d::Texture* self,
                   void* data,
                   int pitch,
-                  o3d::Texture::Format format,
                   int destination_x,
                   int destination_y,
                   int texture_width,
@@ -50,7 +50,7 @@ void SetRectCheck(o3d::Texture* self,
                   const std::vector<float>& values) {
   unsigned num_components;
   unsigned swizzle[4] = {2, 1, 0, 3};
-  switch (format) {
+  switch (self->format()) {
     case o3d::Texture::XRGB8:
       num_components = 3;
       break;
@@ -108,12 +108,12 @@ void SetRectCheck(o3d::Texture* self,
       &values[0] +
       (source_y * source_width + source_x) * num_components;
   unsigned source_stride = (source_width - copy_width) * num_components;
-  switch (format) {
+  switch (self->format()) {
     case o3d::Texture::ABGR16F: {
       uint16* dest_line =
           static_cast<uint16*>(data) +
           (destination_y * texture_width + destination_x) * num_components;
-      while (copy_height > 0) {
+      for (; copy_height > 0; --copy_height) {
         uint16* destination = dest_line;
         for (int xx = 0; xx < copy_width; ++xx) {
           for (unsigned element = 0; element < num_components; ++element) {
@@ -125,7 +125,6 @@ void SetRectCheck(o3d::Texture* self,
         }
         dest_line = o3d::AddPointerOffset<uint16*>(dest_line, pitch);
         source += source_stride;
-        --copy_height;
       }
       break;
     }
@@ -134,7 +133,7 @@ void SetRectCheck(o3d::Texture* self,
       float* dest_line =
         static_cast<float*>(data) +
         (destination_y * texture_width + destination_x) * num_components;
-      while (copy_height > 0) {
+      for (; copy_height > 0; --copy_height) {
         float* destination = dest_line;
         for (int xx = 0; xx < copy_width; ++xx) {
           for (unsigned element = 0; element < num_components; ++element) {
@@ -145,7 +144,6 @@ void SetRectCheck(o3d::Texture* self,
         }
         dest_line = o3d::AddPointerOffset<float*>(dest_line, pitch);
         source += source_stride;
-        --copy_height;
       }
       break;
     }
@@ -153,7 +151,7 @@ void SetRectCheck(o3d::Texture* self,
       uint8* dest_line =
           static_cast<uint8*>(data) +
          (destination_y * texture_width + destination_x) * 4;
-      while (copy_height > 0) {
+      for (; copy_height > 0; --copy_height) {
         uint8* destination = dest_line;
         for (int xx = 0; xx < copy_width; ++xx) {
           destination[0] = static_cast<unsigned char>(
@@ -169,7 +167,6 @@ void SetRectCheck(o3d::Texture* self,
         }
         dest_line = o3d::AddPointerOffset<uint8*>(dest_line, pitch);
         source += source_stride;
-        --copy_height;
       }
       break;
     }
@@ -244,7 +241,7 @@ void SetRectCheck2D(o3d::Texture2D* self,
     return;
   }
 
-  SetRectCheck(self, data, helper.pitch(), self->format(),
+  SetRectCheck(self, data, helper.pitch(),
                destination_x, destination_y,
                texture_width, texture_height,
                source_width, source_height,
@@ -320,11 +317,107 @@ void SetRectCheckCUBE(o3d::TextureCUBE* self,
     return;
   }
 
-  SetRectCheck(self, data, helper.pitch(), self->format(),
+  SetRectCheck(self, data, helper.pitch(),
                destination_x, destination_y,
                texture_width, texture_height,
                source_width, source_height,
                values);
+}
+
+// Assumes dst points to width * height * num_components floats.
+void GetRect(o3d::Texture* self,
+             const void* src_data,
+             int src_pitch,
+             int x,
+             int y,
+             int width,
+             int height,
+             float* dst) {
+  unsigned num_components;
+  unsigned swizzle[4] = {2, 1, 0, 3};
+  switch (self->format()) {
+    case o3d::Texture::XRGB8:
+      num_components = 3;
+      break;
+    case o3d::Texture::R32F:
+      swizzle[0] = 0;
+      num_components = 1;
+      break;
+    case o3d::Texture::ARGB8:
+    case o3d::Texture::ABGR16F:
+      num_components = 4;
+      break;
+    case o3d::Texture::ABGR32F: {
+      num_components = 4;
+      const o3d::Texture::RGBASwizzleIndices& indices =
+         self->GetABGR32FSwizzleIndices();
+      for (int ii = 0; ii < 4; ++ii) {
+        swizzle[ii] = indices[ii];
+      }
+      break;
+    }
+    default:
+      DCHECK(false);
+      return;
+  }
+
+  switch (self->format()) {
+    case o3d::Texture::ABGR16F: {
+      uint16* src_line = o3d::PointerFromVoidPointer<uint16*>(
+          src_data,
+          (y * src_pitch)) + x * num_components;
+      for (; height > 0; --height) {
+        uint16* src = src_line;
+        for (int xx = 0; xx < width; ++xx) {
+          for (unsigned element = 0; element < num_components; ++element) {
+            dst[swizzle[element]] = Vectormath::Aos::HalfToFloat(src[element]);
+          }
+          dst += num_components;
+          src += num_components;
+        }
+        src_line = o3d::AddPointerOffset<uint16*>(src_line, src_pitch);
+      }
+      break;
+    }
+    case o3d::Texture::R32F:
+    case o3d::Texture::ABGR32F: {
+      float* src_line = o3d::PointerFromVoidPointer<float*>(
+          src_data,
+          (y * src_pitch)) + x * num_components;
+      for (; height > 0; --height) {
+        float* src = src_line;
+        for (int xx = 0; xx < width; ++xx) {
+          for (unsigned element = 0; element < num_components; ++element) {
+            dst[swizzle[element]] = src[element];
+          }
+          dst += num_components;
+          src += num_components;
+        }
+        src_line = o3d::AddPointerOffset<float*>(src_line, src_pitch);
+      }
+      break;
+    }
+    default: {
+      uint8* src_line = o3d::PointerFromVoidPointer<uint8*>(
+          src_data,
+          (y * src_pitch)) + x * num_components;
+      for (; height > 0; --height) {
+        uint8* src = src_line;
+        for (int xx = 0; xx < width; ++xx) {
+          dst[swizzle[0]] = static_cast<float>(src[0]) / 255.0f;
+          dst[swizzle[1]] = static_cast<float>(src[1]) / 255.0f;
+          dst[swizzle[2]] = static_cast<float>(src[2]) / 255.0f;
+          if (num_components == 4) {
+            dst[swizzle[3]] = static_cast<float>(src[3]) / 255.0f;
+          }
+          dst += num_components;
+          src += 4;
+        }
+        src_line = o3d::AddPointerOffset<uint8*>(src_line, src_pitch);
+      }
+      break;
+    }
+  }
 }
 
 }  // anonymous namespace
@@ -351,6 +444,66 @@ void userglue_method_Set(o3d::Texture2D* self,
                          int level,
                          const std::vector<float>& values) {
   SetRectCheck2D(self, level, 0, 0, self->width(), values, true);
+}
+std::vector<float> userglue_method_GetRect(o3d::Texture2D* self,
+                                           int level,
+                                           int x,
+                                           int y,
+                                           int width,
+                                           int height) {
+  std::vector<float> empty;
+  if (level < 0 || level >= self->levels()) {
+    O3D_ERROR(self->service_locator())
+        << "level (" << level << " out of range";
+    return empty;
+  }
+  if (width <= 0 || height <= 0) {
+    O3D_ERROR(self->service_locator())
+        << "width and height must be positive";
+    return empty;
+  }
+
+  int mip_width =
+      static_cast<int>(o3d::image::ComputeMipDimension(level, self->width()));
+  int mip_height =
+      static_cast<int>(o3d::image::ComputeMipDimension(level, self->height()));
+
+  if (x < 0 || x + width > mip_width || y < 0 || y + height > mip_height) {
+    O3D_ERROR(self->service_locator()) << "area out of range";
+    return empty;
+  }
+
+  unsigned num_components;
+  switch (self->format()) {
+    case o3d::Texture::XRGB8:
+      num_components = 3;
+      break;
+    case o3d::Texture::R32F:
+      num_components = 1;
+      break;
+    case o3d::Texture::ARGB8:
+    case o3d::Texture::ABGR16F:
+      num_components = 4;
+      break;
+    case o3d::Texture::ABGR32F: {
+      num_components = 4;
+      break;
+    }
+    default:
+      O3D_ERROR(self->service_locator())
+        << "Texture::Set not supported for this type of texture";
+      return empty;
+  }
+  o3d::Texture2D::LockHelper helper(self, level);
+  void* data = helper.GetData();
+  if (!data) {
+    O3D_ERROR(self->service_locator()) << "could not lock texture";
+    return empty;
+  }
+
+  std::vector<float> values(width * height * num_components, 0);
+  GetRect(self, data, helper.pitch(), x, y, width, height, &values[0]);
+  return values;
 }
 
 }  // namespace class_Texture2D
@@ -379,9 +532,67 @@ void userglue_method_Set(o3d::TextureCUBE* self,
                          const std::vector<float>& values) {
   SetRectCheckCUBE(self, face, level, 0, 0, self->edge_length(), values, true);
 }
+std::vector<float> userglue_method_GetRect(o3d::TextureCUBE* self,
+                                           o3d::TextureCUBE::CubeFace face,
+                                           int level,
+                                           int x,
+                                           int y,
+                                           int width,
+                                           int height) {
+  std::vector<float> empty;
+  if (level < 0 || level >= self->levels()) {
+    O3D_ERROR(self->service_locator())
+        << "level (" << level << " out of range";
+    return empty;
+  }
+  if (width <= 0 || height <= 0) {
+    O3D_ERROR(self->service_locator())
+        << "width and height must be positive";
+    return empty;
+  }
 
+  int mip_length = static_cast<int>(o3d::image::ComputeMipDimension(
+      level, self->edge_length()));
 
-}  // namespace class_Texture2D
+  if (x < 0 || x + width > mip_length || y < 0 || y + height > mip_length) {
+    O3D_ERROR(self->service_locator()) << "area out of range";
+    return empty;
+  }
+
+  unsigned num_components;
+  switch (self->format()) {
+    case o3d::Texture::XRGB8:
+      num_components = 3;
+      break;
+    case o3d::Texture::R32F:
+      num_components = 1;
+      break;
+    case o3d::Texture::ARGB8:
+    case o3d::Texture::ABGR16F:
+      num_components = 4;
+      break;
+    case o3d::Texture::ABGR32F: {
+      num_components = 4;
+      break;
+    }
+    default:
+      O3D_ERROR(self->service_locator())
+        << "Texture::Set not supported for this type of texture";
+      return empty;
+  }
+  o3d::TextureCUBE::LockHelper helper(self, face, level);
+  void* data = helper.GetData();
+  if (!data) {
+    O3D_ERROR(self->service_locator()) << "could not lock texture";
+    return empty;
+  }
+
+  std::vector<float> values(width * height * num_components, 0);
+  GetRect(self, data, helper.pitch(), x, y, width, height, &values[0]);
+  return values;
+}
+
+}  // namespace class_TextureCUBE
 
 }  // namespace namespace_o3d
 }  // namespace glue

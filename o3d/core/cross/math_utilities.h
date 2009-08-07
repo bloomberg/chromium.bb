@@ -65,6 +65,8 @@ Matrix4 CreateOrthographicMatrix(float left,
 
 // Converts a 32 bit float to a 16 bit float.
 uint16 FloatToHalf(float value);
+// Converts a 16 bit float to a 32 bit float.
+float HalfToFloat(uint16 value);
 }  // namespace Vectormath
 }  // namespace Aos
 

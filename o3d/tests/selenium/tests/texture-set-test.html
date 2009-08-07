@@ -278,10 +278,33 @@ function initStep2(clientElements) {
         }
         texture.setRect(0, tx, ty, 32, pixels);
         sampler.texture = texture;
+        if (tx == 0 && ty == 0) {
+          var texturePixels = texture.getRect(0, tx, ty, 32, 32);
+          if (texturePixels.length != pixels.length) {
+            reportResult(false, 'different length');
+            return;
+          }
+          for (var ndx = 0; ndx < pixels.length; ++ndx) {
+            // because float<->half conversion is not perfect
+            var difference = Math.abs(pixels[ndx] - texturePixels[ndx]);
+            if (difference > 0.004) {
+              reportResult(false, 'pixels different by:' + difference);
+              return;
+            }
+          }
+        }
       }
     }
   }
-  window.g_testResult = true;  // for selenium testing.
+  reportResult(true, '');
+}
+
+function reportResult(result, msg) {
+  o3djs.BROWSER_ONLY;
+  document.getElementById('result').innerHTML = result ?
+      '<font color="green">success</font>' :
+      '<font color="red">failure: ' + msg + '</font>';
+  window.g_testResult = result;  // for selenium testing.
 }
 
 </script>
@@ -293,6 +316,7 @@ function initStep2(clientElements) {
 <!-- Start of O3D plugin -->
 <div id="o3d" style="width: 400px; height: 400px;"></div>
 <!-- End of O3D plugin -->
+<div>Result: <span id="result"></span></div>
 <script type="test/o3deffect" id="texture_only">
 /*
  * Copyright 2009, Google Inc.
