@@ -106,3 +106,31 @@ document.getElementById("button").onclick = function() {
 <p>When a channel is opened from a content script to an extension, the <a href="extension.html#onConnect">onConnect</a> event is fired in all views in the extension. Any view can receive the event. The event contains a <a href="extension.html#port">Port</a> object, which can be used by the extension view to communicate back to the content script.
 
 <p>[TODO: Complete this]
+
+<h3 id="hostPageCommuncation">Communication with the embedding page</h3>
+
+<p>Although the execution environments of content scripts and the pages that host them are isolated from each other, they share access to the page's DOM. If the page wishes to communicate with the content script (or with the extension via the content script), it must do so through the shared DOM.</p>
+
+<p>An example can be accomplished using custom DOM events and storing data in a known location. Consider: </p>
+
+<pre>http://foo.com/example.html
+================================
+var customEvent = document.createEvent('Event');
+customEvent.initEvent('myCustomEvent', true, true);
+
+function fireCustomEvent(data) {
+  hidenDiv = document.getElementById('myCustomEventDiv');
+  hidenDiv.innerHTML = data
+  hidenDiv.dispatchEvent(customEvent);
+}</pre>
+
+<pre>contentscript.js
+=====================
+var port = chrome.extension.connect();
+
+document.getElementById('myCustomEventDiv').addEventListener('myCustomEvent', function() {
+  var eventData = document.getElementById('myCustomEventDiv').innerHTML;
+  port.postMessage({message: "myCustomEvent", values: eventData});
+});</pre>
+
+<p>In the above example, example.html (which is not a part of the extension) creates a custom event and then can decide to fire the event by setting the event data to a known location in the DOM and then dispatching the custom event. The content script listens for the name of the custom event on the known element and handles the event by inspecting the data of the element, and turning around to post the message to the extension process. In this way the page establishes a line of communication to the extension. The reverse is possible through similar means.</p>

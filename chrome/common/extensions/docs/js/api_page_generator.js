@@ -140,14 +140,18 @@ function renderTemplate(schemaContent) {
   pageData = {};
   var schema = JSON.parse(schemaContent);
 
+  // Find all defined types
+  schema.each(function(module) {
+    if (module.types) {
+      module.types.each(function(t) {
+        types[t.id] = t;
+      });
+    }
+  });
+
   schema.each(function(module) {
     if (module.namespace == pageName) {
       // This page is an api page. Setup types and apiDefinition.
-      if (module.types) {
-        module.types.each(function(t) {
-          types[t.id] = t;
-        });
-      }
       pageData.apiDefinition = module;
       preprocessApi(pageData, schema);
     }
@@ -288,9 +292,9 @@ function typeName(schema) {
   if (schema.$ref)
     schema = types[schema.$ref];
 
-  if (schema.choice) {
+  if (schema.choices) {
     var typeNames = [];
-    schema.choice.each(function(c) {
+    schema.choices.each(function(c) {
       typeNames.push(typeName(c));
     });
 

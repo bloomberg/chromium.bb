@@ -59,7 +59,7 @@ def RenderPage(name, test_shell):
       stdout=PIPE)
 
   # first output line is url that was processed by test_shell
-  p.stdout.readline()
+  firstline = p.stdout.readline()
 
   # second output line is the layoutTestShell.dumpText() value.
   result = p.stdout.readline()  
@@ -68,8 +68,14 @@ def RenderPage(name, test_shell):
   os.remove(input_file)
 
   if (not result.startswith(_expected_output_preamble)):
-    if (original):
-      open(input_file).write(original);
+    if (firstline.startswith("#TEST_TIMED_OUT")):
+        raise Exception("test_shell returned TEST_TIMED_OUT.\n" +
+                        "Their was probably a problem with generating the " +
+                        "page\n" +
+                        "Try copying template/page_shell.html to:\n" + 
+                        input_file + 
+                        "\nAnd open it in chrome using the file: scheme.\n" + 
+                        "Look from javascript errors via the inspector.")
     raise Exception("test_shell returned unexpected output: " + result);
 
   # Write output

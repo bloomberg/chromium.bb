@@ -2,10 +2,6 @@
   {
     "namespace": "self",
     "types": [
-      {
-        "id": "HTMLWindow",
-        "type": "object"
-      }
     ],
     "functions": [
       {
@@ -16,7 +12,7 @@
         "returns": {
           "type": "array",
           "description": "Array of HTMLWindow objects",
-          "items": { "$ref": "HTMLWindow" }
+          "items": { "type": "object" }
         }
       }
     ],
@@ -24,46 +20,92 @@
   },
   {
     "namespace": "windows",
-    "types": [],
+    "types": [
+      {
+        "id": "Window",
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer", "minimum": 0},
+          "focused": {"type": "boolean"},
+          "left": {"type": "integer"},
+          "top": {"type": "integer"},
+          "bottom": {"type": "integer"},
+          "right": {"type": "integer"},
+          "tabs": {"type": "array", "items": { "$ref": "Tab" }, "optional": true}
+        }
+      }
+    ],
     "functions": [
       {
         "name": "get",
         "type": "function",
-        "description": "",
+        "description": "Get window with given id.",
         "parameters": [
           {"type": "integer", "name": "windowId", "minimum": 0},
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "window", "$ref": "Window"
+              }
+            ]
+          }
         ]
       },
       {
         "name": "getCurrent",
         "type": "function",
-        "description": "",
+        "description": "Get the window that is the container for the caller. i.e. the window containing the ToolStrip that makes the call.",
         "parameters": [
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "window", "$ref": "Window"
+              }
+            ]
+          }
         ]
       },
       {
         "name": "getLastFocused",
         "type": "function",
-        "description": "",
+        "description": "Get the window that was most recenly focused -- typically the window 'on top'.",
         "parameters": [
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "window", "$ref": "Window"
+              }
+            ]
+          }
         ]
       },
       {
         "name": "getAll",
         "type": "function",
-        "description": "",
+        "description": "Get all windows. If <var>populate</var> is true, each window object will have a <var>tabs</var> property that contains a list of the Tab objects for that window.",
         "parameters": [
           {"type": "boolean", "name": "populate", "optional": true},
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "windows", "type": "array", "items": { "type": "object" }
+              }
+            ]
+          }
         ]
       },
       {
         "name": "create",
         "type": "function",
-        "description": "",
+        "description": "Create (open) a new browser with any optional sizing, position or default url provided.",
         "parameters": [
           {
             "type": "object",
@@ -77,7 +119,16 @@
             },
             "optional": true
           },
-          {"type": "function", "name": "callback", "optional": true}
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "window", "$ref": "Window"
+              }
+            ]
+          }
         ]
       },
       {
@@ -96,7 +147,16 @@
               "height": {"type": "integer", "minimum": 0, "optional": true}
             }
           },
-          {"type": "function", "name": "callback", "optional": true}
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "window", "$ref": "Window"
+              }
+            ]
+          }
         ]
       },
       {
@@ -105,7 +165,7 @@
         "description": "",
         "parameters": [
           {"type": "integer", "name": "windowId", "minimum": 0},
-          {"type": "function", "name": "callback", "optional": true}
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       }
     ],
@@ -212,7 +272,13 @@
         "description": "",
         "parameters": [
           {"type": "integer", "name": "windowId", "minimum": 0, "optional": true},
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function", 
+            "name": "callback",
+            "parameters": [
+              {"name": "tabs", "type": "array", "items": { "$ref": "Tab" } }
+            ]
+          }
         ]
       },
       {
@@ -453,7 +519,7 @@
         "parameters": [
           {
             "name": "idOrIdList",
-            "choice": [
+            "choices": [
               {"type": "string"},
               {"type": "array", "items": {"type": "string"}, "minItems": 1}
             ] 
