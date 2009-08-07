@@ -410,6 +410,9 @@ void DownloadItemView::OnDownloadOpened(DownloadItem* download) {
 // In dangerous mode we have to layout our buttons.
 void DownloadItemView::Layout() {
   if (IsDangerousMode()) {
+    dangerous_download_label_->SetColor(
+      GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
+
     int x = kLeftPadding + dangerous_mode_body_image_set_.top_left->width() +
       warning_icon_->width() + kLabelPadding;
     int y = (height() - dangerous_download_label_->height()) / 2;
