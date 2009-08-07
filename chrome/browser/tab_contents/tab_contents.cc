@@ -890,6 +890,28 @@ void TabContents::RemoveInfoBar(InfoBarDelegate* delegate) {
   }
 }
 
+void TabContents::ReplaceInfoBar(InfoBarDelegate* old_delegate,
+                                 InfoBarDelegate* new_delegate) {
+  std::vector<InfoBarDelegate*>::iterator it =
+      find(infobar_delegates_.begin(), infobar_delegates_.end(), old_delegate);
+  DCHECK(it != infobar_delegates_.end());
+
+  // Notify the container about the change of plans.
+  scoped_ptr<std::pair<InfoBarDelegate*, InfoBarDelegate*> > details(
+    new std::pair<InfoBarDelegate*, InfoBarDelegate*>(
+        old_delegate, new_delegate));
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
+      Source<TabContents>(this),
+      Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details.get()));
+
+  // Remove the old one.
+  infobar_delegates_.erase(it);
+
+  // Add the new one.
+  infobar_delegates_.push_back(new_delegate);
+}
+
 bool TabContents::IsBookmarkBarAlwaysVisible() {
   // See GetDOMUIForCurrentState() comment for more info. This case is very
   // similar, but for non-first loads, we want to use the committed entry. This

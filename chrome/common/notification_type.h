@@ -280,6 +280,13 @@ class NotificationType {
     // InfoBarDelegate interface for the InfoBar that was removed.
     TAB_CONTENTS_INFOBAR_REMOVED,
 
+    // This message is sent when an InfoBar is replacing another infobar in a
+    // TabContents. The source is a Source<TabContents> with a pointer to the
+    // TabContents the InfoBar was removed from. The details is a
+    // Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> > with a pointer
+    // to the old and new InfoBarDelegates, respectively.
+    TAB_CONTENTS_INFOBAR_REPLACED,
+
     // This is sent when an externally hosted tab is created. The details
     // contain the ExternalTabContainer that contains the tab
     EXTERNAL_TAB_CREATED,

@@ -401,6 +401,10 @@ class TabContents : public PageNavigator,
   // Removes the InfoBar for the specified |delegate|.
   void RemoveInfoBar(InfoBarDelegate* delegate);
 
+  // Replaces one infobar with another, without any animation in between.
+  void ReplaceInfoBar(InfoBarDelegate* old_delegate,
+                      InfoBarDelegate* new_delegate);
+
   // Enumeration and access functions.
   int infobar_delegate_count() const { return infobar_delegates_.size(); }
   InfoBarDelegate* GetInfoBarDelegateAt(int index) {

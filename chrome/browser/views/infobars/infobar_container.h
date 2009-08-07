@@ -57,13 +57,19 @@ class InfoBarContainer : public views::View,
   void UpdateInfoBars();
 
   // Adds an InfoBar for the specified delegate, in response to a notification
-  // from the selected TabContents. The InfoBar's appearance will be animated.
-  void AddInfoBar(InfoBarDelegate* delegate);
+  // from the selected TabContents. The InfoBar's appearance will be animated
+  // if |use_animation| is true.
+  void AddInfoBar(InfoBarDelegate* delegate, bool use_animation);
 
   // Removes an InfoBar for the specified delegate, in response to a
   // notification from the selected TabContents. The InfoBar's disappearance
-  // will be animated.
-  void RemoveInfoBar(InfoBarDelegate* delegate);
+  // will be animated if |use_animation| is true.
+  void RemoveInfoBar(InfoBarDelegate* delegate, bool use_animation);
+
+  // Replaces an InfoBar for the specified delegate with a new one. There is no
+  // animation.
+  void ReplaceInfoBar(InfoBarDelegate* old_delegate,
+                      InfoBarDelegate* new_delegate);
 
   NotificationRegistrar registrar_;
 

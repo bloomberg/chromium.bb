@@ -112,16 +112,22 @@ void ExtensionInstallUI::ShowThemeInfoBar(Extension* extension) {
   if (!tab_contents)
     return;
 
-  // First remove any previous theme preview infobar.
+  // First find any previous theme preview infobars.
+  InfoBarDelegate* old_delegate = NULL;
   for (int i = 0; i < tab_contents->infobar_delegate_count(); ++i) {
     InfoBarDelegate* delegate = tab_contents->GetInfoBarDelegateAt(i);
     if (delegate->AsThemePreviewInfobarDelegate()) {
-      tab_contents->RemoveInfoBar(delegate);
+      old_delegate = delegate;
       break;
     }
   }
 
-  // Now add the new one.
-  tab_contents->AddInfoBar(new ThemePreviewInfobarDelegate(
-      tab_contents, extension->name()));
+  // Then either replace that old one or add a new one.
+  InfoBarDelegate* new_delegate = new ThemePreviewInfobarDelegate(tab_contents,
+      extension->name());
+
+  if (old_delegate)
+    tab_contents->ReplaceInfoBar(old_delegate, new_delegate);
+  else
+    tab_contents->AddInfoBar(new_delegate);
 }
