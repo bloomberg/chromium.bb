@@ -718,6 +718,12 @@ void BrowserWindowGtk::UpdateTitleBar() {
   gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
   if (ShouldShowWindowIcon())
     titlebar_->UpdateTitle();
+
+  // We need to update the bookmark bar state if we're navigating away from the
+  // NTP and "always show bookmark bar" is not set.  On Windows,
+  // UpdateTitleBar() causes a layout in BrowserView which checks to see if
+  // the bookmarks bar should be shown.
+  MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
 }
 
 void BrowserWindowGtk::UpdateDevTools() {
