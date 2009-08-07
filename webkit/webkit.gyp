@@ -1274,6 +1274,8 @@
         'glue/plugins/mozilla_extensions.cc',
         'glue/plugins/mozilla_extensions.h',
         'glue/plugins/nphostapi.h',
+        'glue/plugins/fake_plugin_window_tracker_mac.h',
+        'glue/plugins/fake_plugin_window_tracker_mac.cc',
         'glue/plugins/gtk_plugin_container.h',
         'glue/plugins/gtk_plugin_container.cc',
         'glue/plugins/gtk_plugin_container_manager.h',

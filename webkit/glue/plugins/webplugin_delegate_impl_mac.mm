@@ -18,6 +18,7 @@
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin.h"
+#include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -57,9 +58,6 @@ const int kPluginIdleThrottleDelayMs = 20;  // 20ms (50Hz)
 
 int g_current_x_offset = 0;
 int g_current_y_offset = 0;
-
-WindowRef g_last_front_window = NULL;
-ProcessSerialNumber g_saved_front_process;
 
 }  // namespace
 
@@ -101,10 +99,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
+  FakePluginWindowTracker::SharedInstance()->RemoveFakeWindowForDelegate(
+      this, cg_context_.window);
   DestroyInstance();
-
-  if (cg_context_.window)
-    DisposeWindow(cg_context_.window);
 }
 
 void WebPluginDelegateImpl::PluginDestroyed() {
@@ -131,7 +128,11 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
   if (!start_result)
     return false;
 
-  cg_context_.window = NULL;
+  FakePluginWindowTracker* window_tracker =
+      FakePluginWindowTracker::SharedInstance();
+  cg_context_.window = window_tracker->GenerateFakeWindowForDelegate(this);
+  Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
+  SetWindowBounds(cg_context_.window, kWindowContentRgn, &window_bounds);
   window_.window = &cg_context_;
   window_.type = NPWindowTypeWindow;
 
@@ -161,7 +162,6 @@ void WebPluginDelegateImpl::DestroyInstance() {
 void WebPluginDelegateImpl::UpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
-
   DCHECK(windowless_);
   WindowlessUpdateGeometry(window_rect, clip_rect);
 }
@@ -284,16 +284,22 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
 
 // Moves our dummy window to the given offset relative to the last known
 // location of the real renderer window's content view.
-static void UpdateDummyWindowLocationWithOffset(WindowRef window,
-                                                int x_offset, int y_offset) {
+// If new_width or new_height is non-zero, the window size (content region)
+// will be updated accordingly; if they are zero, the existing size will be
+// preserved.
+static void UpdateDummyWindowBoundsWithOffset(WindowRef window,
+                                              int x_offset, int y_offset,
+                                              int new_width, int new_height) {
   int target_x = g_current_x_offset + x_offset;
   int target_y = g_current_y_offset + y_offset;
   Rect window_bounds;
   GetWindowBounds(window, kWindowContentRgn, &window_bounds);
   if ((window_bounds.left != target_x) ||
       (window_bounds.top != target_y)) {
-    int height = window_bounds.bottom - window_bounds.top;
-    int width = window_bounds.right - window_bounds.left;
+    int height = new_height ? new_height
+                            : window_bounds.bottom - window_bounds.top;
+    int width = new_width ? new_width
+                          : window_bounds.right - window_bounds.left;
     window_bounds.left = target_x;
     window_bounds.top = target_y;
     window_bounds.right = window_bounds.left + width;
@@ -323,26 +329,9 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
     // Reset this flag before entering the instance in case of side-effects.
     windowless_needs_set_window_ = false;
 
-  if (!cg_context_.window) {
-    // For all plugins we create a placeholder offscreen window for the use
-    // of NPWindow.  NPAPI on the Mac requires a Carbon WindowRef for the
-    // "browser window", even if we're not using the Quickdraw drawing model.
-    // Not having a valid window reference causes subtle bugs with plugins
-    // which retreive the NPWindow and validate the same. The NPWindow
-    // can be retreived via NPN_GetValue of NPNVnetscapeWindow.
-    Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
-    WindowRef window_ref;
-    if (CreateNewWindow(kDocumentWindowClass,
-                        kWindowStandardDocumentAttributes,
-                        &window_bounds,
-                        &window_ref) == noErr) {
-      cg_context_.window = window_ref;
-      SelectWindow(window_ref);
-      g_last_front_window = window_ref;
-    }
-  }
-  UpdateDummyWindowLocationWithOffset(cg_context_.window, window_rect_.x(),
-                                      window_rect_.y());
+  UpdateDummyWindowBoundsWithOffset(cg_context_.window, window_rect_.x(),
+                                    window_rect_.y(), window_rect_.width(),
+                                    window_rect_.height());
 
   if (!force_set_window)
     windowless_needs_set_window_ = false;
@@ -484,8 +473,8 @@ static void UpdateWindowLocation(WindowRef window, const WebMouseEvent& event) {
   g_current_x_offset = event.globalX - event.windowX;
   g_current_y_offset = event.globalY - event.windowY + 22;
 
-  UpdateDummyWindowLocationWithOffset(window, event.windowX - event.x,
-                                      event.windowY - event.y);
+  UpdateDummyWindowBoundsWithOffset(window, event.windowX - event.x,
+                                    event.windowY - event.y, 0, 0);
 }
 
 bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
@@ -560,47 +549,6 @@ void WebPluginDelegateImpl::OnNullEvent() {
   np_event.where.h = last_mouse_x_;
   np_event.where.v = last_mouse_y_;
   instance()->NPP_HandleEvent(&np_event);
-
-  WindowRef front_window = FrontWindow();
-  if (front_window == cg_context_.window) {
-    if (front_window != g_last_front_window) {
-      // If our dummy window is now the front window, but was not previously,
-      // it means that a plugin window has been destroyed. Make sure our fake
-      // browser window is selected.
-      // TODO: Use DYLD_INSERT_LIBRARIES to interpose on Carbon window
-      // APIs within the plugin process.  This will allow us to (a) get rid of
-      // the dummy window, and (b) explicitly track the creation and
-      // destruction of windows by the plugin.
-      g_last_front_window = front_window;
-      SelectWindow(cg_context_.window);
-
-      // If the plugin process is still the front process, bring the prior
-      // front process (normally this will be the browser process) back to
-      // the front.
-      // TODO: make this an IPC message so that the browser can properly
-      // reactivate the window.
-      ProcessSerialNumber this_process, front_process;
-      GetCurrentProcess(&this_process);
-      GetFrontProcess(&front_process);
-      Boolean matched = false;
-      SameProcess(&this_process, &front_process, &matched);
-      if (matched)
-        SetFrontProcess(&g_saved_front_process);
-      g_last_front_window = FrontWindow();
-    }
-  } else if (front_window != g_last_front_window) {
-    // The plugin has just created a new window and brought it to the front.
-    // bring the plugin process to the front so that the user can see it (for
-    // example, an alert or file selection dialog).
-    // TODO: make this an IPC to order the plugin process above the browser
-    // process but not necessarily the frontmost.
-    ProcessSerialNumber this_process;
-    GetCurrentProcess(&this_process);
-    GetFrontProcess(&g_saved_front_process);
-    SetFrontProcess(&this_process);
-    g_last_front_window = front_window;
-    SelectWindow(front_window);
-  }
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       null_event_factory_.NewRunnableMethod(

@@ -453,6 +453,8 @@
         'common/platform_util_linux.cc',
         'common/platform_util_mac.mm',
         'common/platform_util_win.cc',
+        'common/plugin_carbon_interpose_constants_mac.h',
+        'common/plugin_carbon_interpose_constants_mac.cc',
         'common/plugin_messages.h',
         'common/plugin_messages_internal.h',
         'common/pref_member.cc',
@@ -3015,7 +3017,8 @@
                   'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/',
                   'files': ['../third_party/ffmpeg/binaries/chrome/libavcodec.52.dylib',
                             '../third_party/ffmpeg/binaries/chrome/libavformat.52.dylib',
-                            '../third_party/ffmpeg/binaries/chrome/libavutil.50.dylib'],
+                            '../third_party/ffmpeg/binaries/chrome/libavutil.50.dylib',
+                            '<(PRODUCT_DIR)/plugin_carbon_interpose.dylib'],
                 },
               ],
             }, {  # else: 'branding!="Chrome"
@@ -3028,7 +3031,8 @@
                   'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/',
                   'files': ['../third_party/ffmpeg/binaries/chromium/libavcodec.52.dylib',
                             '../third_party/ffmpeg/binaries/chromium/libavformat.52.dylib',
-                            '../third_party/ffmpeg/binaries/chromium/libavutil.50.dylib'],
+                            '../third_party/ffmpeg/binaries/chromium/libavutil.50.dylib',
+                            '<(PRODUCT_DIR)/plugin_carbon_interpose.dylib'],
                 },
               ],
             }],
@@ -3077,6 +3081,7 @@
           # Bring in pdfsqueeze and run it on all pdfs
           'dependencies': [
             '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
+            'interpose_dependency_shim',
           ],
           'rules': [
             {
@@ -4495,6 +4500,49 @@
               'action': ['<(build_app_dmg_script_path)', '<@(branding)'],
             },
           ],  # 'actions'
+        },
+        {
+          # Dummy target to allow chrome to require plugin_carbon_interpose to
+          # build without actually linking to the resulting library.
+          'target_name': 'interpose_dependency_shim',
+          'type': 'executable',
+          'dependencies': [
+            'plugin_carbon_interpose',
+          ],
+          # In release, we end up with a strip step that is unhappy if there is
+          # no binary. Rather than check in a new file for this temporary hack,
+          # just generate a source file on the fly.
+          'actions': [
+            {
+              'action_name': 'generate_stub_main',
+              'process_outputs_as_sources': 1,
+              'inputs': [],
+              'outputs': [ '<(INTERMEDIATE_DIR)/dummy_main.c' ],
+              'action': [
+                'bash', '-c',
+                'echo "int main() { return 0; }" > <(INTERMEDIATE_DIR)/dummy_main.c'
+              ],
+            },
+          ],
+        },
+        {
+          # dylib for interposing Carbon calls in the plugin process.
+          'target_name': 'plugin_carbon_interpose',
+          'type': 'shared_library',
+          'dependencies': [
+            'chrome_dll',
+          ],
+          'sources': [
+            'browser/plugin_carbon_interpose_mac.cc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+            ],
+          },
         },
       ]
     }, { # else: OS != "mac"

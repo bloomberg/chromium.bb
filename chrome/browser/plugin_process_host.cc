@@ -64,6 +64,10 @@
 #include "base/gfx/gtk_native_view_id_manager.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/common/plugin_carbon_interpose_constants_mac.h"
+#endif
+
 static const char kDefaultPluginFinderURL[] =
     "http://dl.google.com/chrome/plugins/plugins2.xml";
 
@@ -410,7 +414,22 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   if (ipcfd > -1)
     fds_to_map.push_back(std::pair<int, int>(
         ipcfd, kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
-  base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
+  base::environment_vector env;
+#if defined(OS_MACOSX)
+  // Add our interposing library for Carbon. This is stripped back out in
+  // plugin_main.cc, so changes here should be reflected there.
+  std::string interpose_list(plugin_interpose_strings::kInterposeLibraryPath);
+  const char* existing_list =
+      getenv(plugin_interpose_strings::kDYLDInsertLibrariesKey);
+  if (existing_list) {
+    interpose_list.insert(0, ":");
+    interpose_list.insert(0, existing_list);
+  }
+  env.push_back(std::pair<const char*, const char*>(
+      plugin_interpose_strings::kDYLDInsertLibrariesKey,
+      interpose_list.c_str()));
+#endif
+  base::LaunchApp(cmd_line.argv(), env, fds_to_map, false, &process);
 #endif
 
   if (!process)
