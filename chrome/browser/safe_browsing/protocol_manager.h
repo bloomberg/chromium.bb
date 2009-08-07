@@ -152,6 +152,10 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // Helper function for update completion.
   void UpdateFinished(bool success);
 
+  // A callback that runs if we timeout waiting for a response to an update
+  // request. We use this to properly set our update state.
+  void UpdateResponseTimeout();
+
  private:
   // Main SafeBrowsing interface object.
   SafeBrowsingService* sb_service_;
