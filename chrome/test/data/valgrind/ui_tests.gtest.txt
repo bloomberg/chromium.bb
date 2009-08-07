@@ -10,3 +10,5 @@ V8BenchmarkReferenceTest.Perf
 DownloadTest.UnknownSize
 # Hangs on mac at exit, during final valgrind leak checking? (valgrind bug?)
 ErrorPageTest.DNSError_GoBack2Forward2
+# Flakily hangs on Linux, may be due to same issue
+ErrorPageTest.DNSError_GoBack2AndForward
