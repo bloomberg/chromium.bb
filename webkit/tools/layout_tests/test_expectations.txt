@@ -1265,6 +1265,7 @@ BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = FAIL
 BUG10351 MAC : LayoutTests/accessibility/plugin.html = FAIL CRASH
 BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 BUG10351 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL PASS
+
 BUG10351 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug8499.html = FAIL
 BUG10673 MAC : chrome/plugins/call-as-function.html = FAIL
 BUG10351 MAC : LayoutTests/http/tests/plugins/cross-frame-object-access.html = FAIL
@@ -2136,7 +2137,7 @@ BUG9798 MAC : LayoutTests/tables/mozilla/other/test3.html = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
 BUG9798 MAC DEBUG : LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/dom/Window/window-lookup-precedence.html = TIMEOUT PASS CRASH
-BUG9798 WIN : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL PASS
+BUG9798 WIN : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL PASS TIMEOUT
 BUG9798 WIN : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-gc.html = CRASH PASS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset-and-css-extension.html = TIMEOUT PASS
