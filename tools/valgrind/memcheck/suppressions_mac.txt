@@ -128,6 +128,16 @@
    fun:CMOpenOrNewAccess
 }
 {
+   # suddenly very common as of 6 aug 2009
+   bug_11333b
+   fun:malloc
+   fun:stdSmartNewPtr
+   fun:stdSmartNewHandle
+   fun:IOCreateAndOpen
+   fun:ScratchInit
+   fun:CMNewAccessFromAnother
+}
+{
    # Mac unit_tests.  See http://crbug.com/11271
    bug_12640a
    Memcheck:Cond
@@ -490,6 +500,7 @@
 {
    # System leak?  But we usually tickle it with our throbber...
    bug_18661
+   Memcheck:Leak
    fun:realloc
    fun:sl_stream_finish
    fun:sl_program_assemble
@@ -510,11 +521,39 @@
    fun:-[CIContextImpl render:]
    fun:cgxcoreimage_instance_render
    fun:CGXCoreImageInstanceRender
-   fun:ripc_AcquireCoreImage
-   fun:ripc_DrawShading
-   fun:CGContextDrawShading
-   fun:-[CICGContextImpl render:]
-   fun:-[CIContext drawImage:inRect:fromRect:]
-   fun:-[CIImage(NSAppKitAdditions) drawInRect:fromRect:operation:fraction:]
-   fun:-[ThrobberFilmstripDelegate drawFrameInRect:]
+}
+{
+   bug_18705
+   Memcheck:Cond
+   fun:NSMouseInRect
+   fun:-[NSThemeFrame _updateWidgets]
+   fun:-[NSThemeFrame _tileTitlebarAndRedisplay:]
+   fun:-[NSTitledFrame tileAndSetWindowShape:]
+   fun:-[NSThemeFrame initWithFrame:styleMask:owner:]
+   fun:-[NSGrayFrame initWithFrame:styleMask:owner:]
+   fun:-[NSWindow _commonInitFrame:styleMask:backing:defer:]
+   fun:-[NSWindow _initContent:styleMask:backing:defer:contentView:]
+   fun:-[NSWindow initWithContentRect:styleMask:backing:defer:]
+   fun:-[NSWindowTemplate nibInstantiate]
+   fun:-[NSIBObjectData instantiateObject:]
+   fun:-[NSIBObjectData nibInstantiateWithOwner:topLevelObjects:]
+   fun:loadNib
+   fun:+[NSBundle(NSNibLoading) _loadNibFile:nameTable:withZone:ownerBundle:]
+   fun:+[NSBundle(NSNibLoading) loadNibFile:externalNameTable:withZone:]
+   fun:-[NSWindowController loadWindow]
+   fun:-[NSWindowController window]
+   fun:-[BrowserWindowController initWithBrowser:takeOwnership:]
+}
+{
+   bug_18705b
+   Memcheck:Cond
+   fun:_ZN3gfx4Size10set_heightEi
+   fun:_ZN3gfx4Rect10set_heightEi
+   fun:_ZN3gfx4RectC1ERK6CGRect
+   fun:_ZNK12_GLOBAL__N_126DefaultMonitorInfoProvider23GetPrimaryMonitorBoundsEv
+   fun:_ZNK11WindowSizer22GetDefaultWindowBoundsEPN3gfx4RectE
+   fun:_ZNK11WindowSizer21DetermineWindowBoundsERKN3gfx4RectEPS1_Pb
+   fun:_ZN11WindowSizer22GetBrowserWindowBoundsERKSbIwSt11char_traitsIwESaIwEERKN3gfx4RectEP7BrowserPS7_Pb
+   fun:_ZNK7Browser20GetSavedWindowBoundsEv
+   fun:-[BrowserWindowController initWithBrowser:takeOwnership:]
 }
