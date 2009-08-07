@@ -174,6 +174,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
                    G_CALLBACK(&OnToolbarDragLeave), this);
   g_signal_connect(bookmark_toolbar_.get(), "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
+  gtk_widget_add_events(bookmark_toolbar_.get(), GDK_BUTTON_PRESS_MASK);
   g_signal_connect(bookmark_toolbar_.get(), "button-press-event",
                    G_CALLBACK(&OnButtonPressed), this);
 
@@ -187,7 +188,6 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_bookmarks_button_,
                      FALSE, FALSE, 0);
 
-  // Set the current theme state for all the buttons.
   gtk_widget_set_size_request(event_box_.get(), -1, 0);
 
   slide_animation_.reset(new SlideAnimation(this));
