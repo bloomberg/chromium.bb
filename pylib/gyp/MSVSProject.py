@@ -114,6 +114,8 @@ class Writer(object):
     # Add files section
     self.n_files = self.doc.createElement('Files')
     self.n_root.appendChild(self.n_files)
+    # Keep a dict keyed on filename to speed up access.
+    self.n_files_dict = dict()
 
     # Add empty Globals section
     self.n_root.appendChild(self.doc.createElement('Globals'))
@@ -187,6 +189,7 @@ class Writer(object):
       else:
         node = self.doc.createElement('File')
         node.setAttribute('RelativePath', f)
+        self.n_files_dict[f] = node
       parent.appendChild(node)
 
   def AddFiles(self, files):
@@ -216,11 +219,7 @@ class Writer(object):
       ValueError: Relative path does not match any file added via AddFiles().
     """
     # Find the file node with the right relative path
-    parent = None
-    for n in  self.n_files.getElementsByTagName('File'):
-      if n.attributes['RelativePath'].nodeValue == path:
-        parent = n
-        break
+    parent = self.n_files_dict.get(path)
     if not parent:
       raise ValueError('AddFileConfig: file "%s" not in project.' % path)
 
