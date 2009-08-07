@@ -416,6 +416,9 @@ def ExpandVariables(input, is_late, variables, build_file):
                           (contents, p.returncode))
 
         replacement = p_stdout.rstrip()
+        gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                        "Command Replacement '%s' (%d, %d)" %
+                        (replacement, replace_start, replace_end))
       else:
         if not contents in variables:
           raise KeyError, 'Undefined variable ' + contents + \
@@ -466,8 +469,15 @@ def ExpandVariables(input, is_late, variables, build_file):
         else:
           encoded_replacement = replacement
 
-        output = output[:replace_start] + str(encoded_replacement) + \
-                 output[replace_end:]
+        prefix = output[:replace_start]
+        suffix = output[replace_end:]
+        gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                        "Building '%s' + '%s' + '%s'" %
+                        (prefix, str(encoded_replacement), suffix))
+        output = prefix + str(encoded_replacement) + suffix
+
+      # Prepare for the next match iteration.
+      input = output
 
   gyp.DebugOutput(gyp.DEBUG_VARIABLES,
                   "Expanding '%s' to '%s'" % (input, output))

@@ -1,10 +1,11 @@
 {'included_files': ['commands.gyp'],
  'targets': [{'actions': [{'action': ['echo',
                                       '"3.14159265359 ABCD"',
-                                      'ABCD'],
+                                      'ABCD letters_list'],
                            'action_name': 'test_action',
                            'inputs': ['3.14159265359 ABCD'],
-                           'outputs': ['ABCD']}],
+                           'outputs': ['ABCD', 'letters_list'],
+                           'variables': {'var7': 'letters_list'}}],
               'configurations': {'Default': {}},
               'default_configuration': 'Default',
               'target_name': 'foo',
@@ -12,5 +13,7 @@
               'variables': {'var1': '3.14159265359',
                             'var2': '3.14159265359 ABCD',
                             'var3': 'ABCD',
-                            'var4': 'ABCD'}}],
- 'variables': {'letters': 'ABCD', 'pi': 'import math; print math.pi'}}
+                            'var4': 'ABCD',
+                            'var5': 'letters_',
+                            'var6': 'list'}}],
+ 'variables': {'letters_list': 'ABCD', 'pi': 'import math; print math.pi'}}
