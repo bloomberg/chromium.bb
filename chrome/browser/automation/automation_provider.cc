@@ -1502,7 +1502,6 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
 }
 
 #if defined(OS_WIN)
-// TODO(port): Use portable replacement for POINT.
 
 // This task enqueues a mouse event on the event loop, so that the view
 // that it's being sent to can do the requisite post-processing.
@@ -1510,20 +1509,20 @@ class MouseEventTask : public Task {
  public:
   MouseEventTask(views::View* view,
                  views::Event::EventType type,
-                 POINT point,
+                 const gfx::Point& point,
                  int flags)
       : view_(view), type_(type), point_(point), flags_(flags) {}
   virtual ~MouseEventTask() {}
 
   virtual void Run() {
-    views::MouseEvent event(type_, point_.x, point_.y, flags_);
+    views::MouseEvent event(type_, point_.x(), point_.y(), flags_);
     // We need to set the cursor position before we process the event because
     // some code (tab dragging, for instance) queries the actual cursor location
     // rather than the location of the mouse event. Note that the reason why
     // the drag code moved away from using mouse event locations was because
     // our conversion to screen location doesn't work well with multiple
     // monitors, so this only works reliably in a single monitor setup.
-    gfx::Point screen_location(point_.x, point_.y);
+    gfx::Point screen_location(point_.x(), point_.y());
     view_->ConvertPointToScreen(view_, &screen_location);
     MoveMouse(screen_location.ToPOINT());
     switch (type_) {
@@ -1547,7 +1546,7 @@ class MouseEventTask : public Task {
  private:
   views::View* view_;
   views::Event::EventType type_;
-  POINT point_;
+  gfx::Point point_;
   int flags_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseEventTask);
@@ -1555,11 +1554,12 @@ class MouseEventTask : public Task {
 
 void AutomationProvider::ScheduleMouseEvent(views::View* view,
                                             views::Event::EventType type,
-                                            POINT point,
+                                            const gfx::Point& point,
                                             int flags) {
   MessageLoop::current()->PostTask(FROM_HERE,
       new MouseEventTask(view, type, point, flags));
 }
+
 #endif  // defined(OS_WIN)
 
 // This task just adds another task to the event queue.  This is useful if

@@ -46,6 +46,10 @@ class ExternalTabContainer;
 class ExtensionPortContainer;
 struct AutocompleteMatchData;
 
+namespace gfx {
+class Point;
+}
+
 class AutomationProvider : public base::RefCounted<AutomationProvider>,
                            public IPC::Channel::Listener,
                            public IPC::Message::Sender {
@@ -221,12 +225,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SetProxyConfig(const std::string& new_proxy_config);
 
 #if defined(OS_WIN)
-  // TODO(port): Replace POINT.
   void ScheduleMouseEvent(views::View* view,
                           views::Event::EventType type,
-                          POINT point,
+                          const gfx::Point& point,
                           int flags);
 #endif  // defined(OS_WIN)
+
   void GetFocusedViewID(int handle, int* view_id);
 
   // Helper function to find the browser window that contains a given
