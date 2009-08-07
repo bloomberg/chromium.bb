@@ -21,8 +21,9 @@
 namespace {
 
 // Initial size for dialog.
-const int kDialogDefaultWidth = 450;
+const int kDialogDefaultWidth = 550;
 const int kDialogDefaultHeight = 550;
+const int kSiteColumnInitialSize = 300;
 
 // Delay after entering filter text before filtering occurs.
 const int kSearchFilterDelayMs = 500;
@@ -165,6 +166,8 @@ void CookiesView::Init() {
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(list_sort_),
                                   COL_COOKIE_NAME, CompareCookieName, this,
                                   NULL);
+  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(list_sort_),
+                                       COL_SITE, GTK_SORT_ASCENDING);
   tree_ = gtk_tree_view_new_with_model(GTK_TREE_MODEL(list_sort_));
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_), TRUE);
   gtk_container_add(GTK_CONTAINER(scroll_window), tree_);
@@ -182,6 +185,9 @@ void CookiesView::Init() {
       site_column, l10n_util::GetStringUTF8(
           IDS_COOKIES_DOMAIN_COLUMN_HEADER).c_str());
   gtk_tree_view_column_set_sort_column_id(site_column, COL_SITE);
+  gtk_tree_view_column_set_sizing(site_column, GTK_TREE_VIEW_COLUMN_FIXED);
+  gtk_tree_view_column_set_resizable(site_column, TRUE);
+  gtk_tree_view_column_set_fixed_width(site_column, kSiteColumnInitialSize);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree_), site_column);
 
   GtkTreeViewColumn* name_column = gtk_tree_view_column_new_with_attributes(
