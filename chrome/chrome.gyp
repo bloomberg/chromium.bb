@@ -3783,7 +3783,6 @@
         'browser/cocoa/toolbar_button_cell_unittest.mm',
         'browser/cocoa/toolbar_controller_unittest.mm',
         'browser/cocoa/toolbar_view_unittest.mm',
-        'browser/cocoa/ui_localizer_unittest.mm',
         'browser/cocoa/view_resizer_pong.h',
         'browser/cocoa/view_resizer_pong.mm',
         'browser/cocoa/web_drop_target_unittest.mm',

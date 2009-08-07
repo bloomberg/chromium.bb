@@ -13,10 +13,6 @@
 
 namespace ui_localizer {
 
-// Remove the Windows-style accelerator marker and change "..." into an
-// ellipsis.  Returns the result in an autoreleased NSString.
-NSString* FixUpWindowsStyleLabel(const string16& label);
-
 struct ResourceMap {
   const char* const name;
   unsigned int label_id;

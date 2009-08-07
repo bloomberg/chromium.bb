@@ -5,13 +5,13 @@
 #import <Foundation/Foundation.h>
 
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/cocoa/ui_localizer.h"
+#include "app/l10n_util_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-typedef PlatformTest UILocalizerTest;
+typedef PlatformTest L10nUtilMacTest;
 
-TEST_F(UILocalizerTest, FixUpWindowsStyleLabel) {
+TEST_F(L10nUtilMacTest, FixUpWindowsStyleLabel) {
   struct TestData {
     NSString* input;
     NSString* output;
@@ -36,7 +36,7 @@ TEST_F(UILocalizerTest, FixUpWindowsStyleLabel) {
   for (size_t idx = 0; idx < ARRAYSIZE_UNSAFE(data); ++idx) {
     string16 input16(base::SysNSStringToUTF16(data[idx].input));
 
-    NSString* result = ui_localizer::FixUpWindowsStyleLabel(input16);
+    NSString* result = l10n_util::FixUpWindowsStyleLabel(input16);
     EXPECT_TRUE(result != nil) << "Fixup Failed, idx = " << idx;
 
     EXPECT_TRUE([data[idx].output isEqualTo:result])

@@ -4,10 +4,9 @@
 
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 
-#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/compiler_specific.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/cocoa/ui_localizer.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "base/scoped_nsobject.h"
@@ -71,7 +70,7 @@ void RenderViewContextMenuMac::DoInit() {
 // and middle-truncate?
 NSString* RenderViewContextMenuMac::PrepareLabelForDisplay(
     const string16& label) {
-  NSString* title = ui_localizer::FixUpWindowsStyleLabel(label);
+  NSString* title = l10n_util::FixUpWindowsStyleLabel(label);
   DCHECK(title);
   return title ? title : @"";
 }

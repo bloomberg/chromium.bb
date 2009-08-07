@@ -6,35 +6,11 @@
 
 #import <Foundation/Foundation.h>
 
-#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/logging.h"
 
 namespace ui_localizer {
-
-NSString* FixUpWindowsStyleLabel(const string16& label) {
-  const char16 kEllipsisUTF16 = 0x2026;
-  string16 ret;
-  size_t label_len = label.length();
-  ret.reserve(label_len);
-  for (size_t i = 0; i < label_len; ++i) {
-    char16 c = label[i];
-    if (c == '&') {
-      if (i + 1 < label_len && label[i + 1] == '&') {
-        ret.push_back(c);
-        ++i;
-      }
-    } else if (c == '.' && i + 2 < label_len && label[i + 1] == '.'
-               && label[i + 2] == '.') {
-      ret.push_back(kEllipsisUTF16);
-      i += 2;
-    } else {
-      ret.push_back(c);
-    }
-  }
-
-  return base::SysUTF16ToNSString(ret);
-}
 
 NSString* LocalizedStringForKeyFromMapList(NSString* key,
                                            const ResourceMap* map_list,
@@ -54,12 +30,11 @@ NSString* LocalizedStringForKeyFromMapList(NSString* key,
         if (map_list[i].label_arg_id != 0) {
           const string16 label_arg(
               l10n_util::GetStringUTF16(map_list[i].label_arg_id));
-          return FixUpWindowsStyleLabel(
-              l10n_util::GetStringFUTF16(map_list[i].label_id, label_arg));
+          return l10n_util::GetNSStringFWithFixup(map_list[i].label_id,
+                                                  label_arg);
         }
 
-        return FixUpWindowsStyleLabel(
-            l10n_util::GetStringUTF16(map_list[i].label_id));
+        return l10n_util::GetNSStringWithFixup(map_list[i].label_id);
       }
 
       // If we've passed where the string would be, give up.

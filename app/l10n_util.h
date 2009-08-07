@@ -26,6 +26,10 @@
 #include "unicode/ubidi.h"
 #include "unicode/uchar.h"
 
+#if defined(OS_MACOSX)
+#include "app/l10n_util.h"
+#endif  // OS_MACOSX
+
 class FilePath;
 class PrefService;
 
@@ -65,6 +69,10 @@ bool IsLocaleSupportedByOS(const std::string& locale);
 string16 GetDisplayNameForLocale(const std::string& locale_code,
                                  const std::string& display_locale,
                                  bool is_for_ui);
+
+//
+// Mac Note: See l10n_util_mac.h for some NSString versions and other support.
+//
 
 // Pulls resource string from the string bundle and returns it.
 std::wstring GetString(int message_id);
