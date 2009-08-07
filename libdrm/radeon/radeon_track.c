@@ -137,4 +137,5 @@ void radeon_tracker_print(struct radeon_tracker *tracker, FILE *file)
         track = track->next;
         free(tmp);
     }
+	tracker->tracks.next = NULL;
 }
