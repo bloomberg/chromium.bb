@@ -60,6 +60,9 @@
     'net': {
       'filepath': 'net/.*',
     },
+    'ftp': {
+      'filepath': 'ftp',
+    },
     'installer': {
       'filepath': 'chrome/installer/.*',
     },
@@ -98,6 +101,7 @@
     'extension': ['erikkay@chromium.org'],
     'purify': ['erikkay@chromium.org'],
     'net': ['darin@chromium.org', 'willchan@chromium.org'],
+    'ftp': ['phajdan.jr@chromium.org'],
     'installer': ['kuchhal@chromium.org'],
     'importer': ['kuchhal@chromium.org'],
     'media': ['ajwong@chromium.org', 'fbarchard@chromium.org',
