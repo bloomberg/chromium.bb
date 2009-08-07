@@ -246,7 +246,7 @@ void URLRequestNewFtpJob::OnStartCompleted(int result) {
   if (result == net::OK) {
     NotifyHeadersComplete();
   } else {
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
 }
 
