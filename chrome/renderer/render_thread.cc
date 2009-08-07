@@ -40,6 +40,7 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/user_script_slave.h"
+#include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebString.h"
@@ -211,6 +212,7 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Add, OnAddVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Reset, OnResetVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_SetNextPageID, OnSetNextPageID)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetCSSColors, OnSetCSSColors)
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
@@ -238,6 +240,27 @@ void RenderThread::OnSetNextPageID(int32 next_page_id) {
   // This should only be called at process initialization time, so we shouldn't
   // have to worry about thread-safety.
   RenderView::SetNextPageID(next_page_id);
+}
+
+// Called when to register CSS Color name->system color mappings.
+// We update the colors one by one and then tell WebKit to refresh all render
+// views.
+void RenderThread::OnSetCSSColors(
+    const std::vector<CSSColors::CSSColorMapping>& colors) {
+
+  size_t num_colors = colors.size();
+  scoped_array<WebKit::WebColorName> color_names(
+      new WebKit::WebColorName[num_colors]);
+  scoped_array<WebKit::WebColor> web_colors(new WebKit::WebColor[num_colors]);
+  size_t i = 0;
+  for (std::vector<CSSColors::CSSColorMapping>::const_iterator it =
+          colors.begin();
+       it != colors.end();
+       ++it, ++i) {
+    color_names[i] = it->first;
+    web_colors[i] = it->second;
+  }
+  WebKit::setNamedColors(color_names.get(), web_colors.get(), num_colors);
 }
 
 void RenderThread::OnCreateNewView(gfx::NativeViewId parent_hwnd,

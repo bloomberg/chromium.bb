@@ -18,6 +18,7 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
 #include "base/values.h"
+#include "chrome/common/css_colors.h"
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -39,6 +40,16 @@ IPC_BEGIN_MESSAGES(View)
   // sets its global "next page id" counter to the given value.
   IPC_MESSAGE_CONTROL1(ViewMsg_SetNextPageID,
                        int32 /* next_page_id */)
+
+  // Sends System Colors corresponding to a set of CSS color keywords
+  // down the pipe.
+  // This message must be sent to the renderer immediately on launch
+  // before creating any new views.
+  // The message can also be sent during a renderer's lifetime if system colors
+  // are updated.
+  // TODO(jeremy): Possibly change IPC format once we have this all hooked up.
+  IPC_MESSAGE_ROUTED1(ViewMsg_SetCSSColors,
+                      std::vector<CSSColors::CSSColorMapping>)
 
   // Tells the renderer to create a new view.
   // This message is slightly different, the view it takes is the view to

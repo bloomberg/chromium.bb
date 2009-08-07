@@ -15,6 +15,7 @@
 #include "base/shared_memory.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/common_param_traits.h"
+#include "chrome/common/css_colors.h"
 #include "chrome/common/filter_policy.h"
 #include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/page_transition_types.h"
@@ -1518,6 +1519,22 @@ struct ParamTraits<ViewHostMsg_DidPrintPage_Params> {
     l->append(L"<ViewHostMsg_DidPrintPage_Params>");
   }
 };
+
+// Traits for reading/writing CSS Colors
+template <>
+struct ParamTraits<CSSColors::CSSColorName> {
+  typedef CSSColors::CSSColorName param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p));
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, reinterpret_cast<int*>(p));
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<CSSColorName>");
+  }
+};
+
 
 // Traits for RendererPreferences structure to pack/unpack.
 template <>

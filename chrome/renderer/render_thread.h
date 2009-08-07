@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
+#include "chrome/common/css_colors.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
 
@@ -126,6 +127,7 @@ class RenderThread : public RenderThreadBase,
   void OnPageActionsUpdated(const std::string& extension_id,
                             const std::vector<std::string>& page_actions);
   void OnSetNextPageID(int32 next_page_id);
+  void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(gfx::NativeViewId parent_hwnd,
                        ModalDialogEvent modal_dialog_event,
                        const RendererPreferences& renderer_prefs,

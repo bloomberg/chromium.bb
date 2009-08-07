@@ -31,9 +31,15 @@
 #ifndef WebColor_h
 #define WebColor_h
 
+#include "WebCommon.h"
+#include "WebColorName.h"
+
 namespace WebKit {
 
     typedef unsigned WebColor;  // RGBA quad
+
+    // Sets the values of a set of named colors.
+    WEBKIT_API void setNamedColors(const WebColorName*, const WebColor*, size_t length);
 
 } // namespace WebKit
 

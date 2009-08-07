@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string.h>
+#include <utility>
 
 #include "base/scoped_ptr.h"
 #include "base/values.h"
@@ -50,6 +51,22 @@ TEST(IPCMessageTest, Serialize) {
   GURL output;
   void* iter = NULL;
   EXPECT_FALSE(IPC::ParamTraits<GURL>::Read(&msg, &iter, &output));
+}
+
+// Tests std::pair serialization
+TEST(IPCMessageTest, Pair) {
+  typedef std::pair<std::string, std::string> TestPair;
+
+  TestPair input("foo", "bar");
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::ParamTraits<TestPair>::Write(&msg, input);
+
+  TestPair output;
+  void* iter = NULL;
+  EXPECT_TRUE(IPC::ParamTraits<TestPair>::Read(&msg, &iter, &output));
+  EXPECT_EQ(output.first, "foo");
+  EXPECT_EQ(output.second, "bar");
+
 }
 
 // Tests bitmap serialization.

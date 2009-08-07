@@ -397,6 +397,7 @@
         'common/common_glue.cc',
         'common/common_param_traits.cc',
         'common/common_param_traits.h',
+        'common/css_colors.h',
         'common/db_message_filter.cc',
         'common/db_message_filter.h',
         'common/debug_flags.cc',
