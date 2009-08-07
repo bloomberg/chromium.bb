@@ -84,6 +84,14 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
   EXPECT_NE(view, [bar_ view]);
   EXPECT_FALSE([bar_ bookmarkBarController]);
 
+  // Simulate a popup going fullscreen and back.
+  NSView* superview = [view superview];
+  // TODO(jrg): find a way to add an [NSAutoreleasePool drain] in
+  // here.  I don't have access to the current
+  // scoped_nsautorelease_pool to do it properly :-(
+  [view removeFromSuperview];
+  [superview addSubview:view];
+
   [bar_ setHasToolbar:YES];
   EXPECT_EQ(view, [bar_ view]);
   EXPECT_TRUE([bar_ bookmarkBarController]);

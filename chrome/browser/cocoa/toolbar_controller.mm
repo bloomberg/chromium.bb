@@ -119,6 +119,16 @@ class PrefObserverBridge : public NotificationObserver {
   // bottom-aligned to it's parent view (among other things), so
   // position and resize properties don't need to be set.
   [[self view] addSubview:[bookmarkBarController_ view]];
+
+  // For a popup window, the toolbar is really just a location bar
+  // (see override for [ToolbarController view], below).  When going
+  // fullscreen, we remove the toolbar controller's view from the view
+  // hierarchy.  Calling [locationBar_ removeFromSuperview] when going
+  // fullscreen causes it to get released, making us unhappy
+  // (http://crbug.com/18551).  We avoid the problem by incrementing
+  // the retain count of the location bar; use of the scoped object
+  // helps us remember to release it.
+  locationBarRetainer_.reset([locationBar_ retain]);
 }
 
 - (LocationBar*)locationBar {

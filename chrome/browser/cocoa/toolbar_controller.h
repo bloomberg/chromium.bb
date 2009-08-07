@@ -50,6 +50,10 @@ class ToolbarView;
   BooleanPrefMember showPageOptionButtons_;
   BOOL hasToolbar_;  // if NO, we only have the location bar.
 
+  // We have an extra retain in the locationBar_.
+  // See comments in awakeFromNib for more info.
+  scoped_nsobject<AutocompleteTextField> locationBarRetainer_;
+
   IBOutlet NSMenu* pageMenu_;
   IBOutlet NSMenu* wrenchMenu_;
 
