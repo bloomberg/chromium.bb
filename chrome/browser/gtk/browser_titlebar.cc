@@ -280,15 +280,19 @@ void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
         throbber_.GetNextFrame(tab_contents->waiting_for_response());
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
   } else {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     if (browser_window_->browser()->type() == Browser::TYPE_APP) {
       SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
-      if (!icon.empty()) {
+      if (icon.empty()) {
+        // Fallback to the Chromium icon if the page has no icon.
+        gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
+            rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
+      } else {
         GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
         gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
         g_object_unref(icon_pixbuf);
       }
     } else {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_),
           rb.GetPixbufNamed(IDR_PRODUCT_LOGO_16));
     }
