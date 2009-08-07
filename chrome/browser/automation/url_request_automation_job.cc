@@ -5,6 +5,7 @@
 #include "chrome/browser/automation/url_request_automation_job.h"
 
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -15,6 +16,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
+using base::Time;
+using base::TimeDelta;
 
 // The list of filtered headers that are removed from requests sent via
 // StartAsync(). These must be lower case.
@@ -156,7 +159,19 @@ void URLRequestAutomationJob::GetResponseInfo(net::HttpResponseInfo* info) {
   if (headers_)
     info->headers = headers_;
   if (request_->url().SchemeIsSecure()) {
-    // TODO(joshia): fill up SSL related fields.
+    // Make up a fake certificate for this response since we don't have
+    // access to the real SSL info.
+    const char* kCertIssuer = "Chrome Internal";
+    const int kLifetimeDays = 100;
+
+    info->ssl_info.cert =
+        new net::X509Certificate(request_->url().GetWithEmptyPath().spec(),
+                                 kCertIssuer,
+                                 Time::Now(),
+                                 Time::Now() +
+                                     TimeDelta::FromDays(kLifetimeDays));
+    info->ssl_info.cert_status = 0;
+    info->ssl_info.security_bits = 0;
   }
 }
 
