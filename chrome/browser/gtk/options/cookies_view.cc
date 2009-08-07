@@ -4,6 +4,9 @@
 
 #include "chrome/browser/gtk/options/cookies_view.h"
 
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "base/message_loop.h"
@@ -40,8 +43,8 @@ void InitCookieDetailStyle(GtkWidget* entry, GtkStyle* label_style,
   gtk_widget_modify_fg(entry, GTK_STATE_INSENSITIVE,
                        &label_style->fg[GTK_STATE_INSENSITIVE]);
   // GTK_NO_WINDOW widgets like GtkLabel don't draw their own background, so we
-  // combine the normal or insensitive fg of the label style with the normal
-  // background of the window style to achieve the "normal label" and
+  // combine the normal or insensitive foreground of the label style with the
+  // normal background of the window style to achieve the "normal label" and
   // "insensitive label" colors.
   gtk_widget_modify_base(entry, GTK_STATE_NORMAL,
                          &dialog_style->bg[GTK_STATE_NORMAL]);
@@ -205,17 +208,20 @@ void CookiesView::Init() {
   gtk_table_set_col_spacing(GTK_TABLE(cookie_details_table_), 0,
                             gtk_util::kLabelSpacing);
 
-  InitCookieDetailRow(0, IDS_COOKIES_COOKIE_NAME_LABEL, &cookie_name_entry_);
-  InitCookieDetailRow(1, IDS_COOKIES_COOKIE_CONTENT_LABEL,
+  int row = 0;
+  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+                      &cookie_name_entry_);
+  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_CONTENT_LABEL,
                       &cookie_content_entry_);
-  InitCookieDetailRow(2, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
+  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_DOMAIN_LABEL,
                       &cookie_domain_entry_);
-  InitCookieDetailRow(3, IDS_COOKIES_COOKIE_PATH_LABEL, &cookie_path_entry_);
-  InitCookieDetailRow(4, IDS_COOKIES_COOKIE_SENDFOR_LABEL,
+  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_PATH_LABEL,
+                      &cookie_path_entry_);
+  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_SENDFOR_LABEL,
                       &cookie_send_for_entry_);
-  InitCookieDetailRow(5, IDS_COOKIES_COOKIE_CREATED_LABEL,
+  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_CREATED_LABEL,
                       &cookie_created_entry_);
-  InitCookieDetailRow(6, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
+  InitCookieDetailRow(row++, IDS_COOKIES_COOKIE_EXPIRES_LABEL,
                       &cookie_expires_entry_);
 
   // Initialize model.
@@ -336,13 +342,11 @@ void CookiesView::ClearCookieDetails() {
 
 void CookiesView::RemoveSelectedCookies() {
   GList* list = gtk_tree_selection_get_selected_rows(selection_, NULL);
-  std::vector<int> selected_rows(
-      gtk_tree_selection_count_selected_rows(selection_));
+  std::vector<int> selected_rows;
   GList* node;
-  size_t i;
-  for (i = 0, node = list; node != NULL; ++i, node = node->next) {
-    selected_rows[i] = gtk_tree::GetTreeSortChildRowNumForPath(
-        list_sort_, static_cast<GtkTreePath*>(node->data));
+  for (node = list; node != NULL; node = node->next) {
+    selected_rows.push_back(gtk_tree::GetTreeSortChildRowNumForPath(
+        list_sort_, static_cast<GtkTreePath*>(node->data)));
   }
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
   g_list_free(list);
@@ -391,15 +395,17 @@ void CookiesView::OnModelChanged() {
 
 void CookiesView::OnItemsChanged(int start, int length) {
   GtkTreeIter iter;
-  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_),
-                                          &iter, NULL, start);
+  if (!gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_),
+                                     &iter, NULL, start)) {
+    NOTREACHED();
+    return;
+  }
   for (int i = 0; i < length; ++i) {
-    if (!rv) {
+    SetColumnValues(start + i, &iter);
+    if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store_), &iter)) {
       NOTREACHED();
       return;
     }
-    SetColumnValues(start + i, &iter);
-    rv = gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store_), &iter);
   }
 }
 
@@ -420,22 +426,26 @@ void CookiesView::OnItemsRemoved(int start, int length) {
   EnableControls();
 }
 
-// static
-gint CookiesView::CompareSite(GtkTreeModel* model, GtkTreeIter* a,
-                                     GtkTreeIter* b, gpointer window) {
+// Compare the value of the given column at the given rows.
+gint CookiesView::CompareRows(GtkTreeModel* model, GtkTreeIter* a,
+                              GtkTreeIter* b, int column_id) {
   int row1 = gtk_tree::GetRowNumForIter(model, a);
   int row2 = gtk_tree::GetRowNumForIter(model, b);
-  return reinterpret_cast<CookiesView*>(window)->cookies_table_model_->
-      CompareValues(row1, row2, IDS_COOKIES_DOMAIN_COLUMN_HEADER);
+  return cookies_table_model_->CompareValues(row1, row2, column_id);
+}
+
+// static
+gint CookiesView::CompareSite(GtkTreeModel* model, GtkTreeIter* a,
+                              GtkTreeIter* b, gpointer window) {
+  return static_cast<CookiesView*>(window)->CompareRows(
+      model, a, b, IDS_COOKIES_DOMAIN_COLUMN_HEADER);
 }
 
 // static
 gint CookiesView::CompareCookieName(GtkTreeModel* model, GtkTreeIter* a,
-                                           GtkTreeIter* b, gpointer window) {
-  int row1 = gtk_tree::GetRowNumForIter(model, a);
-  int row2 = gtk_tree::GetRowNumForIter(model, b);
-  return reinterpret_cast<CookiesView*>(window)->cookies_table_model_->
-      CompareValues(row1, row2, IDS_COOKIES_NAME_COLUMN_HEADER);
+                                    GtkTreeIter* b, gpointer window) {
+  return static_cast<CookiesView*>(window)->CompareRows(
+      model, a, b, IDS_COOKIES_NAME_COLUMN_HEADER);
 }
 
 // static

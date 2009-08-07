@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This is the Gtk implementation of the Cookie Manager dialog.
+
 #ifndef CHROME_BROWSER_GTK_OPTIONS_COOKIES_VIEW_H_
 #define CHROME_BROWSER_GTK_OPTIONS_COOKIES_VIEW_H_
 
@@ -17,12 +19,24 @@ class CookiesTableModel;
 class CookiesViewTest;
 class Profile;
 
+// CookiesView is thread-hostile, and should only be called on the UI thread.
+// Usage:
+//   CookiesView::Show(profile);
+// Once the CookiesView is shown, it is responsible for deleting itself when the
+// user closes the dialog.
+
 class CookiesView : public TableModelObserver {
  public:
   virtual ~CookiesView();
 
-  // Create (if necessary) and show the keyword window window.
+  // Create (if necessary) and show the cookie manager window.
   static void Show(Profile* profile);
+
+  // TableModelObserver implementation.
+  virtual void OnModelChanged();
+  virtual void OnItemsChanged(int start, int length);
+  virtual void OnItemsAdded(int start, int length);
+  virtual void OnItemsRemoved(int start, int length);
 
  private:
   // Column ids for |list_store_|.
@@ -66,11 +80,9 @@ class CookiesView : public TableModelObserver {
   // Add the values from |row| of |cookies_table_model_|.
   void AddNodeToList(int row);
 
-  // TableModelObserver implementation.
-  virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
+  // Compare the value of the given column at the given rows.
+  gint CompareRows(GtkTreeModel* model, GtkTreeIter* a, GtkTreeIter* b,
+                   int column_id);
 
   // List sorting callbacks.
   static gint CompareSite(GtkTreeModel* model, GtkTreeIter* a, GtkTreeIter* b,
@@ -98,8 +110,10 @@ class CookiesView : public TableModelObserver {
   static void OnFilterClearButtonClicked(GtkButton* button,
                                          CookiesView* window);
 
-  // Widgets of the dialog.
+  // The parent widget.
   GtkWidget* dialog_;
+
+  // Widgets of the dialog.
   GtkWidget* description_label_;
   GtkWidget* filter_entry_;
   GtkWidget* filter_clear_button_;
@@ -125,7 +139,7 @@ class CookiesView : public TableModelObserver {
   // The profile.
   Profile* profile_;
 
-  // The Cookies Table model
+  // The Cookies Table model.
   scoped_ptr<CookiesTableModel> cookies_table_model_;
 
   // A factory to construct Runnable Methods so that we can be called back to
@@ -133,18 +147,17 @@ class CookiesView : public TableModelObserver {
   ScopedRunnableMethodFactory<CookiesView> filter_update_factory_;
 
   friend class CookiesViewTest;
-  FRIEND_TEST(CookiesViewTest, TestEmpty);
-  FRIEND_TEST(CookiesViewTest, TestRemoveAll);
-  FRIEND_TEST(CookiesViewTest, TestRemove);
-  FRIEND_TEST(CookiesViewTest, TestFilter);
-  FRIEND_TEST(CookiesViewTest, TestFilterRemoveAll);
-  FRIEND_TEST(CookiesViewTest, TestFilterRemove);
-  FRIEND_TEST(CookiesViewTest, TestSort);
-  FRIEND_TEST(CookiesViewTest, TestSortRemove);
-  FRIEND_TEST(CookiesViewTest, TestSortFilterRemove);
+  FRIEND_TEST(CookiesViewTest, Empty);
+  FRIEND_TEST(CookiesViewTest, RemoveAll);
+  FRIEND_TEST(CookiesViewTest, Remove);
+  FRIEND_TEST(CookiesViewTest, Filter);
+  FRIEND_TEST(CookiesViewTest, FilterRemoveAll);
+  FRIEND_TEST(CookiesViewTest, FilterRemove);
+  FRIEND_TEST(CookiesViewTest, Sort);
+  FRIEND_TEST(CookiesViewTest, SortRemove);
+  FRIEND_TEST(CookiesViewTest, SortFilterRemove);
 
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
 };
-
 
 #endif  // CHROME_BROWSER_GTK_OPTIONS_COOKIES_VIEW_H_
