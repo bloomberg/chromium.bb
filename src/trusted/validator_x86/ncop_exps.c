@@ -94,7 +94,7 @@ const char* ExprNodeFlagName(ExprNodeFlagEnum flag) {
 }
 
 /* Returns the register defined by the given node. */
-static INLINE OperandKind GetNodeRegister(ExprNode* node) {
+OperandKind GetNodeRegister(ExprNode* node) {
   assert(node->kind == ExprRegister);
   return (OperandKind) node->value;
 }
@@ -102,7 +102,7 @@ static INLINE OperandKind GetNodeRegister(ExprNode* node) {
 /* Returns the name of the register defined by the indexed node in the
  * vector of nodes.
  */
-static INLINE OperandKind GetNodeVectorRegister(ExprNodeVector* vector,
+OperandKind GetNodeVectorRegister(ExprNodeVector* vector,
                                                 int node) {
   return GetNodeRegister(&vector->node[node]);
 }

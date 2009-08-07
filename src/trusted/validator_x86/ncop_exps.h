@@ -167,6 +167,12 @@ void SplitExprConstant(uint64_t val, uint32_t* val1, uint32_t* val2);
 /* Returns true if the index points to a constant that is negative. */
 Bool IsExprNegativeConstant(ExprNodeVector* vector, int index);
 
+/* Returns the register in the given node. */
+OperandKind GetNodeRegister(ExprNode* node);
+
+/* Returns the register in the given indexed node. */
+OperandKind GetNodeVectorRegister(ExprNodeVector* vector, int node);
+
 /* Print out the contents of the given vector of nodes to the given file. */
 void PrintExprNodeVector(FILE* file, ExprNodeVector* vector);
 

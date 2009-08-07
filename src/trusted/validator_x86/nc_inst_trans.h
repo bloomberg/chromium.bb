@@ -37,6 +37,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_TRANS_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_TRANS_H_
 
+#include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
+
 /* Defines the state used to match an instruction, while walking
  * instructions using the NcInstIter.
  */
@@ -46,5 +48,10 @@ struct NcInstState;
  * Opcode of the instruction state.
  */
 void BuildExprNodeVector(struct NcInstState* state);
+
+/* Returns true iff the given 32 bit register is the base part of the
+ * corresponding given 64-bit register.
+ */
+Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64);
 
 #endif   /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_TRANS_H_ */

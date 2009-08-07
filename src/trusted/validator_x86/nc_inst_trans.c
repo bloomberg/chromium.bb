@@ -227,6 +227,18 @@ static const OperandKind RegisterTable64[REGISTER_TABLE_SIZE] = {
  */
 typedef const OperandKind RegisterTableGroup[REGISTER_TABLE_SIZE];
 
+Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64) {
+#if NACL_TARGET_SUBARCH == 64
+  int i;
+  for (i = 0; i < REGISTER_TABLE_SIZE; ++i) {
+    if (reg32 == RegisterTable32[i]) {
+      return reg64 == RegisterTable64[i];
+    }
+  }
+#endif
+  return FALSE;
+}
+
 /* Define the set of available registers, categorized by size.
  * Note: The order is important, and is based on the indexing values used
  * in the ModRm and SIB bytes (and the REX prefix if appropriate).
