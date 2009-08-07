@@ -389,7 +389,8 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        panel_controller_(NULL),
 #endif
        frame_cursor_(NULL),
-       is_active_(true) {
+       is_active_(true),
+       last_click_time_(0) {
   use_custom_frame_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
 
@@ -1567,10 +1568,39 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
       && !has_hit_edge;
   if (event->button == 1) {
     if (GDK_BUTTON_PRESS == event->type) {
+      guint32 last_click_time = browser->last_click_time_;
+      gfx::Point last_click_position = browser->last_click_position_;
+      browser->last_click_time_ = event->time;
+      browser->last_click_position_ = gfx::Point(event->x, event->y);
+
       if (has_hit_titlebar) {
-        gtk_window_begin_move_drag(browser->window_, event->button,
-                                   event->x_root, event->y_root, event->time);
-        return TRUE;
+        // We want to start a move when the user single clicks, but not start a
+        // move when the user double clicks.  However, a double click sends the
+        // following GDK events: GDK_BUTTON_PRESS, GDK_BUTTON_RELEASE,
+        // GDK_BUTTON_PRESS, GDK_2BUTTON_PRESS, GDK_BUTTON_RELEASE.  If we
+        // start a gtk_window_begin_move_drag on the second GDK_BUTTON_PRESS,
+        // the call to gtk_window_maximize fails.  To work around this, we
+        // keep track of the last click and if it's going to be a double click,
+        // we don't call gtk_window_begin_move_drag.
+        static GtkSettings* settings = gtk_settings_get_default();
+        gint double_click_time = 250;
+        gint double_click_distance = 5;
+        g_object_get(G_OBJECT(settings),
+            "gtk-double-click-time", &double_click_time,
+            "gtk-double-click-distance", &double_click_distance,
+            NULL);
+
+        guint32 click_time = event->time - last_click_time;
+        int click_move_x = event->x - last_click_position.x();
+        int click_move_y = event->y - last_click_position.y();
+
+        if (click_time > static_cast<guint32>(double_click_time) ||
+            click_move_x > double_click_distance ||
+            click_move_y > double_click_distance) {
+          gtk_window_begin_move_drag(browser->window_, event->button,
+                                     event->x_root, event->y_root, event->time);
+          return TRUE;
+        }
       } else if (has_hit_edge) {
         gtk_window_begin_resize_drag(browser->window_, edge, event->button,
                                      event->x_root, event->y_root, event->time);

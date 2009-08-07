@@ -352,6 +352,11 @@ class BrowserWindowGtk : public BrowserWindow,
   // this will always be true.
   bool is_active_;
 
+  // Keep track of the last click time and the last click position so we can
+  // filter out extra GDK_BUTTON_PRESS events when a double click happens.
+  guint32 last_click_time_;
+  gfx::Point last_click_position_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowGtk);
 };
 
