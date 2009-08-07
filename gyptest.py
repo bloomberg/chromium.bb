@@ -114,7 +114,7 @@ sys.stderr = Unbuffered(sys.stderr)
 
 def find_all_gyptest_files(directory):
     result = []
-    for root, dirs, files in os.walk('test'):
+    for root, dirs, files in os.walk(directory):
       if '.svn' in dirs:
         dirs.remove('.svn')
       result.extend([ os.path.join(root, f) for f in files
@@ -147,11 +147,17 @@ def main(argv=None):
     if not opts.all:
       sys.stderr.write('Specify -a to get all tests.\n')
       return 1
+    args = ['test']
 
-    args = find_all_gyptest_files('test')
+  tests = []
+  for arg in args:
+    if os.path.isdir(arg):
+      tests.extend(find_all_gyptest_files(os.path.normpath(arg)))
+    else:
+      tests.append(arg)
 
   if opts.list:
-    for test in args:
+    for test in tests:
       print test
     sys.exit(0)
 
@@ -184,7 +190,7 @@ def main(argv=None):
     if not opts.quiet:
       sys.stdout.write('TESTGYP_FORMAT=%s\n' % format)
 
-    for test in args:
+    for test in tests:
       status = cr.run([sys.executable, test],
                       stdout=sys.stdout,
                       stderr=sys.stderr)
