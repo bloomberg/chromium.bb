@@ -792,10 +792,6 @@
             '../third_party/WebKit/WebCore/platform/graphics/chromium/VDMXParser.cpp',
             '../third_party/WebKit/WebCore/platform/graphics/chromium/HarfbuzzSkia.cpp',
           ],
-          'sources!': [
-            # Not yet ported to Linux.
-            '../third_party/WebKit/WebCore/platform/graphics/chromium/FontCustomPlatformData.cpp',
-          ],
           'sources/': [
             # Cherry-pick files excluded by the broader regular expressions above.
             ['include', 'third_party/WebKit/WebCore/platform/chromium/KeyCodeConversionGtk\\.cpp$'],
