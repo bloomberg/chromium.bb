@@ -1533,6 +1533,7 @@
             '../third_party/WebKit/WebCore/inspector/front-end/BreakpointsSidebarPane.js',
             '../third_party/WebKit/WebCore/inspector/front-end/Callback.js',
             '../third_party/WebKit/WebCore/inspector/front-end/CallStackSidebarPane.js',
+            '../third_party/WebKit/WebCore/inspector/front-end/Color.js',
             '../third_party/WebKit/WebCore/inspector/front-end/ConsoleView.js',
             '../third_party/WebKit/WebCore/inspector/front-end/ChangesView.js',
             '../third_party/WebKit/WebCore/inspector/front-end/Database.js',

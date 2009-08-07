@@ -436,3 +436,5 @@ devtools.InspectorController.prototype.stepOutOfFunctionInDebugger =
 devtools.InspectorController.prototype.stepOverStatementInDebugger =
     function() {
 };
+
+var InspectorController = new devtools.InspectorController();

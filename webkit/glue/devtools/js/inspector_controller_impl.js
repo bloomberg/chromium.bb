@@ -342,4 +342,4 @@ devtools.InspectorControllerImpl.parseWrap_ = function(callback) {
 };
 
 
-var InspectorController = new devtools.InspectorControllerImpl();
+InspectorController = new devtools.InspectorControllerImpl();
