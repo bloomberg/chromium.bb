@@ -97,9 +97,9 @@ def extract_resource_constants(plist_localizable_strings_dict, xib_path):
 
 def generate_files_contents(class_name, constants_list, header_name, xib_path):
   """Generates a localizer files contents from the list of constants."""
-  # Copy and sort the list, then build the strings we need from it.
-  constants_list = constants_list[:]
-  constants_list.sort()
+  # Bounce through a set to uniq the strings, sort the list, then build the
+  # values we need from it.
+  constants_list = sorted(set(constants_list))
   constant_list_str = ''
   for item in constants_list:
     parts = item.split('$', 1)
