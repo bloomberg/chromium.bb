@@ -2854,5 +2854,6 @@ BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PAS
 BUG18665 MAC : LayoutTests/security/block-test.html = FAIL
 BUG18665 MAC : LayoutTests/security/block-test-no-port.html = FAIL
 
-// Test failures from WebKit merge 46508 to 46531
+// Test failures/flakiness from WebKit merge 46850 to 46894
 BUG18784 LINUX : LayoutTests/fast/overflow/overflow-focus-ring.html = CRASH PASS
+BUG18784 LINUX : LayoutTests/fast/text/drawBidiText.html = FAIL PASS
