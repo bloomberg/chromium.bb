@@ -4478,144 +4478,199 @@ each locale. -->
       <if expr="os == 'darwin'">
         <!-- Menubar Menu Titles -->
         <!-- TODO: these titles aren't in MainMenu.xib because of UI flash, see http://crbug.com/17380 for what needs to happen to get them into the xib -->
-        <message name="IDS_FILE_MENU_MAC" desc="The menu title of the file menu.">
+        <message name="IDS_FILE_MENU_MAC" desc="The menu title of the Mac file menu.">
           File
         </message>
-        <message name="IDS_EDIT_MENU_MAC" desc="The menu title of the edit menu.">
+        <message name="IDS_EDIT_MENU_MAC" desc="The menu title of the Mac edit menu.">
           Edit
         </message>
-        <message name="IDS_VIEW_MENU_MAC" desc="The menu title of the view menu.">
+        <message name="IDS_VIEW_MENU_MAC" desc="The menu title of the Mac view menu.">
           View
         </message>
-        <message name="IDS_HISTORY_MENU_MAC" desc="The menu title of the history menu.">
+        <message name="IDS_HISTORY_MENU_MAC" desc="The menu title of the Mac history menu.">
           History
         </message>
-        <message name="IDS_BOOKMARKS_MENU_MAC" desc="The menu title of the bookmarks menu.">
+        <message name="IDS_BOOKMARKS_MENU_MAC" desc="The menu title of the Mac bookmarks menu.">
           Bookmarks
         </message>
-        <message name="IDS_WINDOW_MENU_MAC" desc="The menu title of the window menu.">
+        <message name="IDS_WINDOW_MENU_MAC" desc="The menu title of the Mac window menu.">
           Window
         </message>
-        <message name="IDS_HELP_MENU_MAC" desc="The menu title of the help menu.">
+        <message name="IDS_HELP_MENU_MAC" desc="The menu title of the Mac help menu.">
           Help
         </message>
         <!-- App menu -->
-        <message name="IDS_PREFERENCES_MAC" desc="The menu item to open the preferences window in the app menu.">
+        <message name="IDS_ABOUT_MAC" desc="The Mac menu item to open the about box.">
+          About <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        </message>
+        <message name="IDS_PREFERENCES_MAC" desc="The Mac menu item to open the preferences window in the app menu.">
           Preferences...
         </message>
-        <message name="IDS_HIDE_APP_MAC" desc="The menu item to hide all browser windows in the app menu.">
+        <message name="IDS_CLEAR_BROWSING_DATA_MAC" desc="The Mac menu item for clearing of browsing data in the app menu.">
+          Clear Browsing Data...
+        </message>
+        <message name="IDS_SERVICES_MAC" desc="The Mac menu item for the OS X services submenu (OS fills it in) in the app menu.">
+          Services
+        </message>
+        <message name="IDS_HIDE_APP_MAC" desc="The Mac menu item to hide all browser windows in the app menu.">
           Hide <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
-        <message name="IDS_HIDE_OTHERS_MAC" desc="The menu item to hide other applications' windows in the app menu.">
+        <message name="IDS_HIDE_OTHERS_MAC" desc="The Mac menu item to hide other applications' windows in the app menu.">
           Hide Others
         </message>
-        <message name="IDS_SHOW_ALL_MAC" desc="The menu item to show all browser windows in the app menu.">
+        <message name="IDS_SHOW_ALL_MAC" desc="The Mac menu item to show all browser windows in the app menu.">
           Show All
         </message>
-        <message name="IDS_EXIT_MAC" desc="The menu item to quit the browser in the app menu.">
+        <message name="IDS_EXIT_MAC" desc="The Mac menu item to quit the browser in the app menu.">
           Quit <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
         <!-- File menu -->
-        <message name="IDS_REOPEN_CLOSED_TABS_MAC" desc="The menu item reopen recently closed tabs in the file menu.">
+        <message name="IDS_NEW_TAB_MAC" desc="The Mac menu item for opening a new tab in the file menu.">
+          New Tab
+        </message>
+        <message name="IDS_NEW_WINDOW_MAC" desc="The Mac menu item for opening a new window in the file menu.">
+          New Window
+        </message>
+        <message name="IDS_NEW_INCOGNITO_WINDOW_MAC" desc="The Mac menu item for opening a new incognito window in the file menu.">
+          New Incognito Window
+        </message>
+        <message name="IDS_REOPEN_CLOSED_TABS_MAC" desc="The Mac menu item reopen recently closed tabs in the file menu.">
           Reopen Closed Tabs
         </message>
-        <message name="IDS_OPEN_FILE_MAC" desc="The menu item to open a file in the file menu.">
+        <message name="IDS_OPEN_FILE_MAC" desc="The Mac menu item to open a file in the file menu.">
           Open File...
         </message>
-        <message name="IDS_OPEN_LOCATION_MAC" desc="The menu item to open a location in the file menu (puts cursor in the url bar).">
+        <message name="IDS_OPEN_LOCATION_MAC" desc="The Mac menu item to open a location in the file menu (puts cursor in the url bar).">
           Open Locations...
         </message>
-        <message name="IDS_OPEN_RECENT_MAC" desc="The menu item for the recent files menu in the file menu.">
+        <message name="IDS_OPEN_RECENT_MAC" desc="The Mac menu item for the recent files menu in the file menu.">
           Open Recent
         </message>
-        <message name="IDS_CREATE_APPLICATION_MAC" desc="The menu item to create an application shortcut in the file menu.">
+        <message name="IDS_CREATE_APPLICATION_MAC" desc="The Mac menu item to create an application shortcut in the file menu.">
           Create Application Shortcut...
         </message>
-        <message name="IDS_CLOSE_WINDOW_MAC" desc="The menu item to close a window in the file menu.">
+        <message name="IDS_CLOSE_WINDOW_MAC" desc="The Mac menu item to close a window in the file menu.">
           Close Window
         </message>
-        <message name="IDS_CLOSE_TAB_MAC" desc="The menu item to close a browser tab in the file menu.">
+        <message name="IDS_CLOSE_TAB_MAC" desc="The Mac menu item to close a browser tab in the file menu.">
           Close Tab
         </message>
-        <message name="IDS_EMAIL_PAGE_LOCATION_MAC" desc="The menu item to email the page location in the file menu.">
+        <message name="IDS_SAVE_PAGE_MAC" desc="The Mac menu item to save a page in the file menu.">
+          Save Page As...
+        </message>
+        <message name="IDS_EMAIL_PAGE_LOCATION_MAC" desc="The Mac menu item to email the page location in the file menu.">
           Email Page Location
         </message>
-        <message name="IDS_PRINT_PAGE_SETUP_MAC" desc="The menu item to open the printer page setup window in the file menu.">
+        <message name="IDS_PRINT_PAGE_SETUP_MAC" desc="The Mac menu item to open the printer page setup window in the file menu.">
           Page Setup...
         </message>
         <!-- Edit menu -->
-        <message name="IDS_EDIT_UNDO_MAC" desc="The menu item undo in the edit menu.">
+        <message name="IDS_EDIT_UNDO_MAC" desc="The Mac menu item undo in the edit menu.">
           Undo
         </message>
-        <message name="IDS_EDIT_REDO_MAC" desc="The menu item redo in the edit menu.">
+        <message name="IDS_EDIT_REDO_MAC" desc="The Mac menu item redo in the edit menu.">
           Redo
         </message>
-        <message name="IDS_EDIT_COPY_URL_MAC" desc="The menu item copy url in the edit menu.">
+        <message name="IDS_CUT_MAC" desc="The Mac menu item for cut in the edit menu.">
+          Cut
+        </message>
+        <message name="IDS_COPY_MAC" desc="The Mac menu item for copy in the edit menu.">
+          Copy
+        </message>
+        <message name="IDS_EDIT_COPY_URL_MAC" desc="The Mac menu item copy url in the edit menu.">
           Copy URL
         </message>
-        <message name="IDS_EDIT_DELETE_MAC" desc="The menu item delete in the edit menu.">
+        <message name="IDS_PASTE_MAC" desc="The Mac menu item for paste in the edit menu.">
+          Paste
+        </message>
+        <message name="IDS_EDIT_DELETE_MAC" desc="The Mac menu item delete in the edit menu.">
           Delete
         </message>
-        <message name="IDS_EDIT_SELECT_ALL_MAC" desc="The menu item select all in the edit menu.">
+        <message name="IDS_EDIT_SELECT_ALL_MAC" desc="The Mac menu item select all in the edit menu.">
           Select All
         </message>
         <!-- View menu -->
-        <message name="IDS_STOP_MENU_MAC" desc="The menu item stop in the view menu.">
+        <message name="IDS_BOOMARK_BAR_ALWAYS_SHOW_MAC" desc="The Mac menu item for having bookmark bar always visible in the view menu.">
+          Always Show Bookmarks Bar
+        </message>
+        <message name="IDS_STOP_MENU_MAC" desc="The Mac menu item stop in the view menu.">
           Stop
         </message>
-        <message name="IDS_RELOAD_MENU_MAC" desc="The menu item reload in the view menu.">
+        <message name="IDS_RELOAD_MENU_MAC" desc="The Mac menu item reload in the view menu.">
           Reload
         </message>
-        <message name="IDS_TEXT_BIGGER_MAC" desc="The menu item to make text bigger in the view menu.">
+        <message name="IDS_FULLSCREEN_MAC" desc="The Mac menu item to go into fullscreen mode in the view menu.">
+          Full Screen
+        </message>
+        <message name="IDS_TEXT_BIGGER_MAC" desc="The Mac menu item to make text bigger in the view menu.">
           Make Text Bigger
         </message>
-        <message name="IDS_TEXT_DEFAULT_MAC" desc="The menu item to make text default in the view menu.">
+        <message name="IDS_TEXT_DEFAULT_MAC" desc="The Mac menu item to make text default in the view menu.">
           Make Text Default
         </message>
-        <message name="IDS_TEXT_SMALLER_MAC" desc="The menu item to make text smaller in the view menu.">
+        <message name="IDS_TEXT_SMALLER_MAC" desc="The Mac menu item to make text smaller in the view menu.">
           Make Text Smaller
         </message>
-        <message name="IDS_TEXT_ENCODING_MAC" desc="The menu item for the text encoding submenu in the view menu.">
+        <message name="IDS_TEXT_ENCODING_MAC" desc="The Mac menu item for the text encoding submenu in the view menu.">
           Text Encoding
         </message>
+        <message name="IDS_DEVELOPER_MENU_MAC" desc="The Mac menu item for the developer submenu in the view menu.">
+          Developer
+        </message>
+        <!-- View->Developer menu -->
+        <message name="IDS_VIEW_SOURCE_MAC" desc="The Mac menu item for view page source in the developer submenu of the view menu.">
+          View Source
+        </message>
+        <message name="IDS_DEV_TOOLS_MAC" desc="The Mac menu item for the developer tools in the developer submenu of the view menu.">
+          Developer Tools
+        </message>
+        <message name="IDS_TASK_MANAGER_MAC" desc="The Mac menu item for task manager in the developer submenu of the view menu.">
+          Task Manager
+        </message>
         <!-- History menu -->
-        <message name="IDS_HISTORY_HOME_MAC" desc="The menu item for home in the history menu.">
+        <message name="IDS_SHOW_HISTORY_MAC" desc="The Mac menu item to show history in the history menu.">
+          History
+        </message>
+        <message name="IDS_HISTORY_HOME_MAC" desc="The Mac menu item for home in the history menu.">
           Home
         </message>
-        <message name="IDS_HISTORY_BACK_MAC" desc="The menu item for back in the history menu.">
+        <message name="IDS_HISTORY_BACK_MAC" desc="The Mac menu item for back in the history menu.">
           Back
         </message>
-        <message name="IDS_HISTORY_FORWARD_MAC" desc="The menu item for forward in the history menu.">
+        <message name="IDS_HISTORY_FORWARD_MAC" desc="The Mac menu item for forward in the history menu.">
           Forward
         </message>
-        <message name="IDS_HISTORY_VISITED_MAC" desc="The menu item for the header of most visited items in the history menu.">
+        <message name="IDS_HISTORY_VISITED_MAC" desc="The Mac menu item for the header of most visited items in the history menu.">
           Most Visited
         </message>
-        <message name="IDS_HISTORY_CLOSED_MAC" desc="The menu item for the header of recently closed items in the history menu.">
+        <message name="IDS_HISTORY_CLOSED_MAC" desc="The Mac menu item for the header of recently closed items in the history menu.">
           Recently Closed
         </message>
         <!-- Bookmarks menu -->
-        <message name="IDS_BOOKMARK_CURRENT_PAGE_MAC" desc="The menu item for booking the current page in the bookmark menu.">
+        <message name="IDS_BOOKMARK_CURRENT_PAGE_MAC" desc="The Mac menu item for booking the current page in the bookmark menu.">
           Bookmark Current Page...
         </message>
         <!-- Window menu -->
-        <message name="IDS_MINIMIZE_WINDOW_MAC" desc="The menu item for minimize the window menu.">
+        <message name="IDS_MINIMIZE_WINDOW_MAC" desc="The Mac menu item for minimize the window menu.">
           Minimize
         </message>
-        <message name="IDS_ZOOM_WINDOW_MAC" desc="The menu item for zoom the window menu.">
+        <message name="IDS_ZOOM_WINDOW_MAC" desc="The Mac menu item for zoom (maximize) in the window menu.">
           Zoom
         </message>
-        <message name="IDS_NEXT_TAB_MAC" desc="The menu item for next tab the window menu.">
+        <message name="IDS_NEXT_TAB_MAC" desc="The Mac menu item for next tab in the window menu.">
           Next Tab
         </message>
-        <message name="IDS_PREV_TAB_MAC" desc="The menu item for previous tab the window menu.">
+        <message name="IDS_PREV_TAB_MAC" desc="The Mac menu item for previous tab in the window menu.">
           Previous Tab
         </message>
-        <message name="IDS_ALL_WINDOWS_FRONT_MAC" desc="The menu item for bring all to front the window menu.">
+        <message name="IDS_SHOW_DOWNLOADS_MAC" desc="The Mac menu item to show downloads in the window menu.">
+          Downloads
+        </message>
+        <message name="IDS_ALL_WINDOWS_FRONT_MAC" desc="The Mac menu item for bring all to front the window menu.">
           Bring All to Front
         </message>
         <!-- Help menu -->
-        <message name="IDS_HELP_MAC" desc="The menu item to show help in the Help menu.">
+        <message name="IDS_HELP_MAC" desc="The Mac menu item to show help in the Help menu.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
         </message> <!-- os == 'darwin' -->
       </if>
