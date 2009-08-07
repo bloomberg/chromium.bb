@@ -34,7 +34,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/springboard.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
-#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 
 /*
  * A sanity check -- should be invoked in some early function, e.g.,

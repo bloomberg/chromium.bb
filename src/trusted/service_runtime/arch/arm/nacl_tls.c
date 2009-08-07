@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "native_client/src/include/nacl_platform.h"
-#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"

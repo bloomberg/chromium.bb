@@ -75,7 +75,7 @@ else:
   syscall_impl = 'linux/nacl_syscall_impl.c'
 
 # TODO GENERATED CODE
-GENERATED='${TARGET_ROOT}/gen/src/trusted/service_runtime'
+GENERATED='${TARGET_ROOT}/gen/native_client/src/trusted/service_runtime'
 env.Command(target=GENERATED + '/nacl_syscall_handlers.c',
             source=[syscall_impl, 'nacl_syscall_handlers_gen2.py'],
             action=[Delete(GENERATED),
@@ -125,12 +125,14 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
                       source=tramp_gen_exe,
                       action=['echo HEADER GENERATION: %s' %
                               str(tramp_data_header),
+                              Mkdir(ARCH_X86),
                               '${SOURCE} > ${TARGET}'])
 
   modules_env.Command(target=springboard_data_header,
                       source=springboard_gen_exe,
                       action=['echo HEADER GENERATION: %s' %
                               str(springboard_data_header),
+                              Mkdir(ARCH_X86),
                               '${SOURCE} > ${TARGET}'])
 
 # ----------------------------------------------------------
@@ -184,7 +186,7 @@ elif env['BUILD_ARCHITECTURE'] == 'arm':
     'arch/arm/nacl_switch_to_app.c',
     'arch/arm/sel_rt.c',
     'arch/arm/nacl_tls.c',
-    'arch/arm/sel_ldr.c',
+    'arch/arm/sel_ldr_arm.c',
     'arch/arm/sel_addrspace_arm.c',
     'arch/arm/nacl_switch.S',
     'arch/arm/nacl_syscall.S',

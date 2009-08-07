@@ -36,8 +36,8 @@
 #include "native_client/src/trusted/service_runtime/springboard.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
-#include "gen/src/trusted/service_runtime/arch/x86/tramp_data.h"
-#include "gen/src/trusted/service_runtime/arch/x86/springboard_data.h"
+#include "gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h"
+#include "gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h"
 /*
  * A sanity check -- should be invoked in some early function, e.g.,
  * main, or something that main invokes early.
@@ -67,7 +67,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   patch_info.abs16 = patch16;
   patch_info.num_abs16 = sizeof patch16 / sizeof patch16[0];
 
-  patch_info.rel32 = 0;
+  patch_info.rel32 = NULL;
   patch_info.num_rel32 = 0;
 
   /* TODO: NaClSyscallSeg has to be in the lower 4 GB */
@@ -121,13 +121,12 @@ void  NaClLoadSpringboard(struct NaClApp  *nap) {
    * the last syscall in the trampoline region.
    */
   struct NaClPatchInfo  patch_info;
-  struct NaClPatch      abs32;
 
-  patch_info.rel32 = 0;
+  patch_info.rel32 = NULL;
   patch_info.num_rel32 = 0;
-  patch_info.abs32 = &abs32;
+  patch_info.abs32 = NULL;
   patch_info.num_abs32 = 0;
-  patch_info.abs16 = 0;
+  patch_info.abs16 = NULL;
   patch_info.num_abs16 = 0;
 
   nap->springboard_addr = NACL_TRAMPOLINE_END - nap->align_boundary;

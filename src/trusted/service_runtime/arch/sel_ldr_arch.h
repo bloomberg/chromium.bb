@@ -30,32 +30,18 @@
  */
 
 /*
- * NaCl Secure Runtime
+ * This file switches to the architecture-specific header and
+ * otherwise has no content.  There is no need for an inclusion guard,
+ * but we include one to conform to the style rules.
  */
-#include "native_client/src/include/portability_string.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_SEL_LDR_ARCH_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_SEL_LDR_ARCH_H_
+
+#if NACL_ARM
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
+#else
+#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
+#endif
 
-void NaClInitGlobals() {
-  /* intentionally left empty */
-}
-
-
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          struct NaClApp            *nap,
-                          uintptr_t                 prog_ctr,
-                          uintptr_t                 stack_ptr,
-                          uint32_t                  tls_idx) {
-  UNREFERENCED_PARAMETER(nap);
-
-  memset((void *)ntcp, 0, sizeof(*ntcp));
-  ntcp->stack_ptr = stack_ptr;
-  ntcp->prog_ctr = prog_ctr;
-  NaClSetTlsThreadIdx(ntcp, tls_idx);
-
-  NaClLog(4, "user.tls_idx: 0x%08x\n", tls_idx);
-  NaClLog(4, "user.stack_ptr: 0x%08x\n", ntcp->stack_ptr);
-  NaClLog(4, "user.prog_ctr: 0x%08x\n", ntcp->prog_ctr);
-
-  return 1;
-}
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ARCH_SEL_LDR_ARCH_H_ */

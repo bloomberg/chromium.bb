@@ -36,15 +36,10 @@
 #include "native_client/src/trusted/platform/nacl_interruptible_mutex.h"
 #include "native_client/src/trusted/platform/nacl_log.h"
 #include "native_client/src/trusted/platform/nacl_threads.h"
+#include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
-
-#if NACL_ARM
-#include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr.h"
-#else
-#include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
-#endif
 
 struct NaClMutex            nacl_thread_mu = {NULL};
 struct NaClTsdKey           nacl_cur_thread_key;

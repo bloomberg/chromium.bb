@@ -140,7 +140,7 @@
                 '<(PRODUCT_DIR)/tramp_gen',
               ],
               'outputs': [
-                '<(INTERMEDIATE_DIR)/gen/src/trusted/service_runtime/arch/x86/tramp_data.h',
+                '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h',
               ],
               'action':
                 ['<@(_inputs)', '>', '<@(_outputs)'],
@@ -158,7 +158,7 @@
                 '<(PRODUCT_DIR)/springboard_gen',
               ],
               'outputs': [
-                '<(INTERMEDIATE_DIR)/gen/src/trusted/service_runtime/arch/x86/springboard_data.h',
+                '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h',
               ],
               'action':
                 ['<@(_inputs)', '>', '<@(_outputs)'],
