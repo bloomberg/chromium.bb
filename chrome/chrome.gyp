@@ -4064,7 +4064,7 @@
               'msvs_precompiled_source': 'tools/build/win/precompiled_wtl.cc',
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '1',       # /INCREMENTAL:NO
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
                 },
               },
             },
@@ -4358,7 +4358,7 @@
                 'Debug': {
                   'msvs_settings': {
                     'VCLinkerTool': {
-                      'LinkIncremental': '1',       # /INCREMENTAL:NO
+                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
                     },
                   },
                 },
@@ -4598,16 +4598,18 @@
                 '../views/views.gyp:views',
               ],
             }],
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '1',       # /INCREMENTAL:NO
+            ['OS=="win"', {
+              'configurations': {
+                'Debug': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                    },
+                  },
                 },
               },
-            },
-          },
+            }],
+          ],
         },
       ],
     }],  # OS!="mac"
@@ -4867,7 +4869,7 @@
              'test/automation/window_proxy.h',
           ],
         },
-	{
+        {
           # Windows-only for now; this has issues with scons
           # regarding use of run_all_unittests.cc.
           # TODO(zork): add target to linux build.
@@ -4950,7 +4952,7 @@
                 ],
               }],
             ],
-	},
+        },
         {
           # Shared library used by the in-proc browser tests.
           'target_name': 'browser_tests_dll',
@@ -4981,7 +4983,7 @@
               'msvs_precompiled_source': 'tools/build/win/precompiled_wtl.cc',
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '1',       # /INCREMENTAL:NO
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
                 },
               },
             },
@@ -5150,7 +5152,7 @@
               'msvs_precompiled_source': 'tools/build/win/precompiled_wtl.cc',
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '1',       # /INCREMENTAL:NO
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
                 },
               },
             },
@@ -5299,7 +5301,7 @@
             'Debug': {
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '1',       # /INCREMENTAL:NO
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
                 },
               },
             },
