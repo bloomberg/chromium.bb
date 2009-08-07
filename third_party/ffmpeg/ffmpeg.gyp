@@ -194,7 +194,6 @@
               'binaries/<(branding_dir)/avcodec-52.dll',
               'binaries/<(branding_dir)/avformat-52.dll',
               'binaries/<(branding_dir)/avutil-50.dll',
-              'binaries/<(branding_dir)/pthreadGC2.dll',
             ],
           },
           'dependencies': ['../../build/win/system.gyp:cygwin'],
