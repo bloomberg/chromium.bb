@@ -33,6 +33,7 @@
  * NaCl Server Runtime logging code.
  */
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_process.h"
 
 #include <stdio.h>
 #include <stdlib.h>

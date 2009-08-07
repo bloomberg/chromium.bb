@@ -70,9 +70,6 @@ typedef long              clock_t;
 typedef __int64           int64_t;
 typedef unsigned __int64  uint64_t;
 
-/* TODO(gregoryd): make includes of elf.h explicit. */
-#include "native_client/src/include/elf.h"
-
 #if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
 /* only what we need so far */
 # define UINT8_MAX       (255)

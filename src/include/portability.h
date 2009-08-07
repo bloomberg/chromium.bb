@@ -55,7 +55,6 @@
 /* disable warnings for deprecated functions like getenv, etc. */
 #pragma warning( disable : 4996)
 # include <malloc.h>
-# include <process.h>
 /* TODO: eliminate port_win.h */
 # include "native_client/src/include/win/port_win.h"
 #else
@@ -139,12 +138,10 @@ struct timezone {
   int tz_dsttime;
 };
 
-# define GETPID _getpid
 #else
 
 # define LOCALTIME_R(in_time_t_ptr, out_struct_tm_ptr) \
   localtime_r(in_time_t_ptr, out_struct_tm_ptr)
-# define GETPID getpid
 #endif
 
 /*

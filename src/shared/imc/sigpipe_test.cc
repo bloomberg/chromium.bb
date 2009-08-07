@@ -39,15 +39,12 @@
 #include <string.h>
 #include <errno.h>
 
-#if NACL_WINDOWS
-#  include <process.h>
-#  include <io.h>
-#endif
 
 #include <string>
 #include <vector>
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/platform/nacl_sync.h"
 #include "native_client/src/trusted/platform/nacl_threads.h"
