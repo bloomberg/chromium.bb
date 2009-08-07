@@ -166,7 +166,8 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
       g_signal_connect(G_OBJECT(menu_item), "button-release-event",
                        G_CALLBACK(OnButtonReleased), this);
     } else if (node->is_folder()) {
-      SkBitmap* folder_icon = bookmark_utils::GetFolderIcon();
+      SkBitmap* folder_icon = ResourceBundle::GetSharedInstance().
+          GetBitmapNamed(IDR_BOOKMARK_BAR_FOLDER);
       SetImageMenuItem(menu_item, *folder_icon);
 
       GtkWidget* submenu = gtk_menu_new();
