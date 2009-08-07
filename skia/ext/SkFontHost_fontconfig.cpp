@@ -59,6 +59,10 @@ static FontConfigInterface* GetFcImpl() {
 static SkMutex global_fc_map_lock;
 static std::map<uint32_t, SkTypeface *> global_fc_typefaces;
 
+static SkMutex global_remote_font_map_lock;
+static std::map<uint32_t, std::pair<uint8_t*, size_t> > global_remote_fonts;
+static unsigned global_next_remote_font_id;
+
 // This is the maximum size of the font cache.
 static const unsigned kFontCacheMemoryBudget = 2 * 1024 * 1024;  // 2MB
 
@@ -81,11 +85,32 @@ static unsigned FileIdAndStyleToUniqueId(unsigned fileid,
     return (fileid << 8) | static_cast<int>(style);
 }
 
+static const unsigned kRemoteFontMask = 0x00800000u;
+
+static bool IsRemoteFont(unsigned fileid)
+{
+    return fileid & kRemoteFontMask;
+}
+
 class FontConfigTypeface : public SkTypeface {
 public:
     FontConfigTypeface(Style style, uint32_t id)
         : SkTypeface(style, id)
     { }
+
+    ~FontConfigTypeface()
+    {
+        const uint32_t id = uniqueID();
+        if (IsRemoteFont(UniqueIdToFileId(id))) {
+            SkAutoMutexAcquire ac(global_remote_font_map_lock);
+            std::map<uint32_t, std::pair<uint8_t*, size_t> >::iterator iter
+                = global_remote_fonts.find(id);
+            if (iter != global_remote_fonts.end()) {
+                sk_free(iter->second.first);  // remove the font on memory.
+                global_remote_fonts.erase(iter);
+            }
+        }
+    }
 };
 
 // static
@@ -135,8 +160,40 @@ SkTypeface* SkFontHost::CreateTypeface(const SkTypeface* familyFace,
 // static
 SkTypeface* SkFontHost::CreateTypefaceFromStream(SkStream* stream)
 {
-    SkASSERT(!"SkFontHost::CreateTypefaceFromStream unimplemented");
-    return NULL;
+    if (!stream)
+        return NULL;
+
+    const size_t length = stream->read(0, 0);
+    if (!length)
+        return NULL;
+    if (length >= 1024 * 1024 * 1024)
+        return NULL;  // don't accept too large fonts (>= 1GB) for safety.
+
+    uint8_t* font = (uint8_t*)sk_malloc_throw(length);
+    if (stream->read(font, length) != length) {
+        sk_free(font);
+        return NULL;
+    }
+
+    SkTypeface::Style style = static_cast<SkTypeface::Style>(0);
+    unsigned id = 0;
+    {
+        SkAutoMutexAcquire ac(global_remote_font_map_lock);
+        id = FileIdAndStyleToUniqueId(
+            global_next_remote_font_id | kRemoteFontMask, style);
+
+        if (++global_next_remote_font_id >= kRemoteFontMask)
+            global_next_remote_font_id = 0;
+
+        if (!global_remote_fonts.insert(
+                std::make_pair(id, std::make_pair(font, length))).second) {
+            sk_free(font);
+            return NULL;
+        }
+    }
+
+    SkTypeface* typeface = SkNEW_ARGS(FontConfigTypeface, (style, id));
+    return typeface;
 }
 
 // static
@@ -148,8 +205,15 @@ SkTypeface* SkFontHost::CreateTypefaceFromFile(const char path[])
 
 // static
 bool SkFontHost::ValidFontID(SkFontID uniqueID) {
-    SkAutoMutexAcquire ac(global_fc_map_lock);
-    return global_fc_typefaces.find(uniqueID) != global_fc_typefaces.end();
+    if (IsRemoteFont(UniqueIdToFileId(uniqueID))) {
+        // remote font
+        SkAutoMutexAcquire ac(global_remote_font_map_lock);
+        return global_remote_fonts.find(uniqueID) != global_remote_fonts.end();
+    } else {
+        // local font
+        SkAutoMutexAcquire ac(global_fc_map_lock);
+        return global_fc_typefaces.find(uniqueID) != global_fc_typefaces.end();
+    }
 }
 
 void SkFontHost::Serialize(const SkTypeface*, SkWStream*) {
@@ -224,6 +288,19 @@ class SkFileDescriptorStream : public SkStream {
 SkStream* SkFontHost::OpenStream(uint32_t id)
 {
     const unsigned fileid = UniqueIdToFileId(id);
+
+    if (IsRemoteFont(fileid)) {
+      // remote font
+      SkAutoMutexAcquire ac(global_remote_font_map_lock);
+      std::map<uint32_t, std::pair<uint8_t*, size_t> >::const_iterator iter
+          = global_remote_fonts.find(id);
+      if (iter == global_remote_fonts.end())
+          return NULL;
+      return SkNEW_ARGS(
+          SkMemoryStream, (iter->second.first, iter->second.second));
+    }
+
+    // system font
     const int fd = GetFcImpl()->Open(fileid);
     if (fd < 0)
         return NULL;
