@@ -116,23 +116,16 @@ if env['BUILD_ARCHITECTURE'] == 'x86':
       LIBS=[])
   springboard_data_header = [ ARCH_X86 + '/springboard_data.h' ]
 
-  modules_env.Command(target=[],
-                      source=[],
-                      action=[Delete(ARCH_X86),
-                              Mkdir(ARCH_X86)])
-
-  modules_env.Command(target=tramp_data_header,
+  modules_env.Command(target=modules_env.File(tramp_data_header),
                       source=tramp_gen_exe,
                       action=['echo HEADER GENERATION: %s' %
                               str(tramp_data_header),
-                              Mkdir(ARCH_X86),
                               '${SOURCE} > ${TARGET}'])
 
-  modules_env.Command(target=springboard_data_header,
+  modules_env.Command(target=modules_env.File(springboard_data_header),
                       source=springboard_gen_exe,
                       action=['echo HEADER GENERATION: %s' %
                               str(springboard_data_header),
-                              Mkdir(ARCH_X86),
                               '${SOURCE} > ${TARGET}'])
 
 # ----------------------------------------------------------
