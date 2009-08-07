@@ -4,9 +4,6 @@
 
 #include "chrome/common/url_constants.h"
 
-// TODO(port): Remove this header when last ifdef is removed from this file.
-#include "build/build_config.h"
-
 namespace chrome {
 
 const char kAboutScheme[] = "about";
