@@ -3043,6 +3043,7 @@ BUG18206 LINUX MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-open-after-i
 BUG18569 MAC DEBUG : LayoutTests/fast/repaint/overflow-scroll-delete.html = PASS CRASH
 BUG18656 LINUX : LayoutTests/fast/overflow/overflow-stacking.html = PASS CRASH
 BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL CRASH
+BUG18724 LINUX DEBUG : LayoutTests/transitions/transition-drt-api-delay.html = PASS CRASH
 
 // Flaky timeout
 BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEOUT
