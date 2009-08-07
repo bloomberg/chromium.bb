@@ -74,7 +74,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
   if (instance_->mime_type() == "application/x-shockwave-flash") {
     // Flash is tied to Firefox's whacky behavior with windowless plugins. See
     // comments in WindowlessPaint
-    quirks_ |= PLUGIN_QUIRK_WINDOWLESS_OFFSET_WINDOW_TO_DRAW;
+    quirks_ |= PLUGIN_QUIRK_WINDOWLESS_OFFSET_WINDOW_TO_DRAW
+        | PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW;
   }
 }
 
@@ -616,6 +617,12 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
 
   NPError err = instance()->NPP_SetWindow(&window_);
   DCHECK(err == NPERR_NO_ERROR);
+  if (quirks_ & PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW) {
+    // After a NPP_SetWindow, Flash cancels its timer that generates the
+    // invalidates until it gets a paint event, but doesn't explicitly call
+    // NPP_InvalidateRect.
+    plugin_->InvalidateRect(clip_rect_);
+  }
 }
 
 void WebPluginDelegateImpl::SetFocus() {

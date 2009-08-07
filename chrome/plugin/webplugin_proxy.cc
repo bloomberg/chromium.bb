@@ -182,6 +182,12 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
   // Ignore NPN_InvalidateRect calls with empty rects.  Also don't send an
   // invalidate if it's outside the clipping region, since if we did it won't
   // lead to a paint and we'll be stuck waiting forever for a DidPaint response.
+  //
+  // TODO(piman): There is a race condition here, because this test assumes
+  // that when the paint actually occurs, the clip rect will not have changed.
+  // This is not true because scrolling (or window resize) could occur and be
+  // handled by the renderer before it receives the InvalidateRect message,
+  // changing the clip rect and then not painting.
   if (rect.IsEmpty() || !delegate_->GetClipRect().Intersects(rect))
     return;
 

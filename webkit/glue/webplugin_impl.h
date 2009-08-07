@@ -278,8 +278,8 @@ class WebPluginImpl : public WebPlugin,
   // Calculates the bounds of the plugin widget based on the frame
   // rect passed in.
   void CalculateBounds(const WebCore::IntRect& frame_rect,
-                       WebCore::IntRect* window_rect,
-                       WebCore::IntRect* clip_rect,
+                       gfx::Rect* window_rect,
+                       gfx::Rect* clip_rect,
                        std::vector<gfx::Rect>* cutout_rects);
 
   void HandleURLRequest(const char *method,
@@ -366,6 +366,10 @@ class WebPluginImpl : public WebPlugin,
 
   // Indicates if this is the first geometry update received by the plugin.
   bool first_geometry_update_;
+
+  // The current plugin geometry and clip rectangle.
+  gfx::Rect window_rect_;
+  gfx::Rect clip_rect_;
 
   // The mime type of the plugin.
   std::string mime_type_;

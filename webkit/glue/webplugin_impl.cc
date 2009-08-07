@@ -729,8 +729,8 @@ void WebPluginImpl::setFrameRect(const WebCore::IntRect& rect) {
     return;
   }
 
-  WebCore::IntRect window_rect;
-  WebCore::IntRect clip_rect;
+  gfx::Rect window_rect;
+  gfx::Rect clip_rect;
   std::vector<gfx::Rect> cutout_rects;
   CalculateBounds(rect, &window_rect, &clip_rect, &cutout_rects);
 
@@ -740,8 +740,8 @@ void WebPluginImpl::setFrameRect(const WebCore::IntRect& rect) {
     // at the same time.
     WebPluginGeometry move;
     move.window = window_;
-    move.window_rect = webkit_glue::FromIntRect(window_rect);
-    move.clip_rect = webkit_glue::FromIntRect(clip_rect);
+    move.window_rect = window_rect;
+    move.clip_rect = clip_rect;
     move.cutout_rects = cutout_rects;
     move.rects_valid = true;
     move.visible = widget_->isVisible();
@@ -749,26 +749,29 @@ void WebPluginImpl::setFrameRect(const WebCore::IntRect& rect) {
     webview->delegate()->DidMovePlugin(move);
   }
 
-  // Notify the plugin that its parameters have changed.
-  delegate_->UpdateGeometry(webkit_glue::FromIntRect(window_rect),
-                            webkit_glue::FromIntRect(clip_rect));
+  if (first_geometry_update_ || window_rect != window_rect_ ||
+      clip_rect != clip_rect_) {
+    window_rect_ = window_rect;
+    clip_rect_ = clip_rect;
+    // Notify the plugin that its parameters have changed.
+    delegate_->UpdateGeometry(window_rect_, clip_rect_);
 
-  // Initiate a download on the plugin url. This should be done for the
-  // first update geometry sequence. We need to ensure that the plugin
-  // receives the geometry update before it starts receiving data.
-  if (first_geometry_update_) {
-    first_geometry_update_ = false;
-    // An empty url corresponds to an EMBED tag with no src attribute.
-    if (!load_manually_ && plugin_url_.is_valid()) {
-      // The Flash plugin hangs for a while if it receives data before
-      // receiving valid plugin geometry. By valid geometry we mean the
-      // geometry received by a call to setFrameRect in the Webkit
-      // layout code path. To workaround this issue we download the
-      // plugin source url on a timer.
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(
-              &WebPluginImpl::OnDownloadPluginSrcUrl),
-          0);
+    // Initiate a download on the plugin url. This should be done for the
+    // first update geometry sequence. We need to ensure that the plugin
+    // receives the geometry update before it starts receiving data.
+    if (first_geometry_update_) {
+      first_geometry_update_ = false;
+      // An empty url corresponds to an EMBED tag with no src attribute.
+      if (!load_manually_ && plugin_url_.is_valid()) {
+        // The Flash plugin hangs for a while if it receives data before
+        // receiving valid plugin geometry. By valid geometry we mean the
+        // geometry received by a call to setFrameRect in the Webkit
+        // layout code path. To workaround this issue we download the
+        // plugin source url on a timer.
+        MessageLoop::current()->PostDelayedTask(
+            FROM_HERE, method_factory_.NewRunnableMethod(
+                &WebPluginImpl::OnDownloadPluginSrcUrl), 0);
+      }
     }
   }
 }
@@ -1121,18 +1124,19 @@ WebCore::ScrollView* WebPluginImpl::parent() const {
 }
 
 void WebPluginImpl::CalculateBounds(const WebCore::IntRect& frame_rect,
-                                    WebCore::IntRect* window_rect,
-                                    WebCore::IntRect* clip_rect,
+                                    gfx::Rect* window_rect,
+                                    gfx::Rect* clip_rect,
                                     std::vector<gfx::Rect>* cutout_rects) {
   DCHECK(parent()->isFrameView());
   WebCore::FrameView* view = static_cast<WebCore::FrameView*>(parent());
 
-  *window_rect =
+  WebCore::IntRect web_window_rect =
       WebCore::IntRect(view->contentsToWindow(frame_rect.location()),
                                               frame_rect.size());
+  *window_rect = webkit_glue::FromIntRect(web_window_rect);
   // Calculate a clip-rect so that we don't overlap the scrollbars, etc.
-  *clip_rect = windowClipRect();
-  clip_rect->move(-window_rect->x(), -window_rect->y());
+  *clip_rect = webkit_glue::FromIntRect(windowClipRect());
+  clip_rect->Offset(-window_rect->x(), -window_rect->y());
 
   cutout_rects->clear();
   WTF::Vector<WebCore::IntRect> rects;
