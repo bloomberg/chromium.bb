@@ -2351,6 +2351,13 @@ BUG_DARIN LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS
 BUG11613 WIN : LayoutTests/http/tests/navigation/anchor-frames.html = FAIL
 BUG11613 WIN : LayoutTests/http/tests/navigation/javascriptlink-frames.html = FAIL
 
+// TODO(erg): Attempted to rebaseline these tests as part of the above
+// 43346:43361 rebaseling from http://trac.webkit.org/changeset/43355. Turned
+// tree red. May be more involved then just rebaselining.
+BUG11613 LINUX : LayoutTests/editing/deleting/5168598.html = FAIL
+BUG11613 LINUX : LayoutTests/editing/inserting/5607069-2.html = FAIL
+BUG11613 LINUX : LayoutTests/editing/inserting/5607069-3.html = FAIL
+
 // This needs to be rebaselined.  See http://trac.webkit.org/changeset/43378
 BUG11669 LINUX : LayoutTests/fast/layers/remove-only-this-layer-update.html = FAIL
 
