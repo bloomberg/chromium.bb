@@ -167,12 +167,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
 }
 
 // Tests console eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
+// DISABLED:  See http://crbug.com/18786
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleEval) {
   RunTest("testConsoleEval", kConsoleTestPage);
 }
 
 // Tests console log.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
+// DISABLED:  See http://crbug.com/18786
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleLog) {
   RunTest("testConsoleLog", kConsoleTestPage);
 }
 
