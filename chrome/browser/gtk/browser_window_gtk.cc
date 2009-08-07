@@ -477,7 +477,8 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
 
   if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
     GdkPixbuf* theme_overlay = theme_provider->GetPixbufNamed(
-        IDR_THEME_FRAME_OVERLAY);
+        window->IsActive() ? IDR_THEME_FRAME_OVERLAY
+                           : IDR_THEME_FRAME_OVERLAY_INACTIVE);
     gdk_cairo_set_source_pixbuf(cr, theme_overlay, 0, 0);
     cairo_paint(cr);
   }
