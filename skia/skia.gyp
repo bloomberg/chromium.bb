@@ -317,7 +317,6 @@
         '../third_party/skia/src/effects/SkKernel33MaskFilter.cpp',
         '../third_party/skia/src/effects/SkLayerDrawLooper.cpp',
         '../third_party/skia/src/effects/SkLayerRasterizer.cpp',
-        '../third_party/skia/src/effects/SkNWayCanvas.cpp',
         '../third_party/skia/src/effects/SkPaintFlagsDrawFilter.cpp',
         '../third_party/skia/src/effects/SkPorterDuff.cpp',
         '../third_party/skia/src/effects/SkPixelXorXfermode.cpp',
@@ -353,6 +352,9 @@
         '../third_party/skia/src/images/SkScaledBitmapSampler.cpp',
         '../third_party/skia/src/images/SkScaledBitmapSampler.h',
 
+        '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
+        '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+
         #'../third_party/skia/src/ports/SkFontHost_FONTPATH.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
         #'../third_party/skia/src/ports/SkFontHost_android.cpp',
@@ -382,8 +384,8 @@
         #'../third_party/skia/src/ports/SkXMLPullParser_expat.cpp',
         '../third_party/skia/src/ports/sk_predefined_gamma.h',
 
-	'../third_party/skia/src/include/utils/mac/SkCGUtils.h',
-	'../third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp',
+        '../third_party/skia/src/include/utils/mac/SkCGUtils.h',
+        '../third_party/skia/src/utils/mac/SkCreateCGImageRef.cpp',
 
         '../third_party/skia/include/core/Sk64.h',
         '../third_party/skia/include/core/SkAutoKern.h',
@@ -544,6 +546,7 @@
         '../third_party/skia/include/effects',
         '../third_party/skia/include/images',
         '../third_party/skia/include/utils',
+        '../third_party/skia/src/core',
       ],
       'msvs_disabled_warnings': [4244, 4267,4345, 4390, 4554, 4800],
       'mac_framework_dirs': [
