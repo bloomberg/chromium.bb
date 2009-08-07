@@ -58,8 +58,13 @@ elif env.Bit('mac'):
                                '$SDL_DIR/SDL.framework')
   sdl_dll += sdl_env.Replicate('$OBJ_ROOT/Frameworks', '$SDL_DIR/SDL.framework')
 elif env.Bit('linux'):
-  sdl_dll += sdl_env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/libSDL-1.2.so.0')
-  sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib/libSDL-1.2.so.0')
+  if env['BUILD_SUBARCH'] == '32':
+    sdl_dll += sdl_env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/libSDL-1.2.so.0')
+    sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib/libSDL-1.2.so.0')
+  elif env['BUILD_SUBARCH'] == '64':
+    sdl_dll += sdl_env.Replicate('$STAGING_DIR',
+                                 '$SDL_DIR/lib64/libSDL-1.2.so.0')
+    sdl_dll += sdl_env.Replicate('.', '$SDL_DIR/lib64/libSDL-1.2.so.0')
 
 # Make a copy of debug CRT for now.
 # TODO(bradnelson): there should be a better way to generalize this requirement.
@@ -141,17 +146,19 @@ env.Command(
 
 # ======================================================================
 # Decoder unittests
-if env['TARGET_SUBARCH'] is '32':
-  ncdecode_tests = env.ComponentProgram('ncdecode_tests',
-                                        ['ncdecode_tests.c'],
-                                        EXTRA_LIBS=['ncvalidate', 'ncdis_util'])
+if env['TARGET_SUBARCH'] == '32':
+  # TODO(kschimpf): remove this when the validator builds as 64-bits.
+  if env['BUILD_SUBARCH'] == '32':
+    ncdecode_tests = env.ComponentProgram('ncdecode_tests',
+                                          ['ncdecode_tests.c'],
+                                          EXTRA_LIBS=['ncvalidate', 'ncdis_util'])
 
-  node = env.CommandTestAgainstGoldenOutput(
-      'ncdecode_tests.out',
-      [ncdecode_tests[0]],
-      )
+    node = env.CommandTestAgainstGoldenOutput(
+        'ncdecode_tests.out',
+        [ncdecode_tests[0]],
+        )
 
-  env.AddNodeToTestSuite(node, ['small_tests'])
+    env.AddNodeToTestSuite(node, ['small_tests'])
 
 # ======================================================================
 ncdis = env.ComponentProgram('ncdis',
@@ -167,7 +174,7 @@ env.Requires(ncdis, sdl_dll)
 
 # ======================================================================
 # Valiator unittests
-if env['TARGET_SUBARCH'] is '32':
+if env['TARGET_SUBARCH'] == '32':
   ncval_tests = env.ComponentProgram('ncval_tests',
                                      ['ncval_tests.c'],
                                      EXTRA_LIBS=['ncvalidate', 'nchelper'])
@@ -182,7 +189,7 @@ if env['TARGET_SUBARCH'] is '32':
   env.AddNodeToTestSuite(node, ['small_tests'])
 
 # ======================================================================
-if env['TARGET_SUBARCH'] is '32':
+if env['TARGET_SUBARCH'] == '32':
   nacl_cpuid = env.ComponentProgram('nacl_cpuid',
                                     ['nacl_cpuid_test.c'],
                                     EXTRA_LIBS=['ncvalidate'])
@@ -208,7 +215,7 @@ TESTDATA_DIR = 'testdata/' + env['TARGET_SUBARCH'] + '/'
 # ======================================================================
 # Decoder vs objdump tests
 # TODO: add tests using the toolchain binaries in the sdk
-if env.Bit('linux') and env['TARGET_SUBARCH'] is '32':
+if env.Bit('linux') and env['TARGET_SUBARCH'] == '32':
   for vtest in TEST_IMAGES_NACL:
     node = env.CommandTestAgainstGoldenOutput(
         'discmp_' + vtest + ".out",
@@ -277,7 +284,7 @@ env.Requires(ncval, sdl_dll)
 # TODO: add tests using binaries produced by nacl.scons files
 # TODO: consider comparing the actual output (not just exit codes)
 # Validate tests
-if env['TARGET_SUBARCH'] is '32':
+if env['TARGET_SUBARCH'] == '32':
   for vtest in TEST_IMAGES_NACL:
     node = env.CommandTestAgainstGoldenOutput(
         'validate_' + vtest + ".out",

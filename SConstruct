@@ -694,13 +694,6 @@ linux_env.SetDefault(
 
 # Prepend so we can disable warnings via Append
 linux_env.Prepend(
-    ASFLAGS = ['-m32', ],
-    # TODO(robertm): move these flags up to unix_like_env.
-    #                currently mac issues prevent us from doing that
-    CCFLAGS = ['-m32',
-               # NOTE: not available with older gcc/g++ versions
-               # '-fdiagnostics-show-option',
-               ],
     CPPDEFINES = [['NACL_WINDOWS', '0'],
                   ['NACL_OSX', '0'],
                   ['NACL_LINUX', '1'],
@@ -711,7 +704,6 @@ linux_env.Prepend(
                   ['__STDC_LIMIT_MACROS', '1'],
                   ],
     LIBS = ['rt'],
-    LINKFLAGS = ['-m32', '-L/usr/lib32'],
 )
 
 if linux_env['BUILD_ARCHITECTURE'] == 'x86':

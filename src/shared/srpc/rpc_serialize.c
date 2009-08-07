@@ -323,7 +323,8 @@ NaClSrpcError __NaClSrpcArgsGet(NaClSrpcChannel* channel,
                                 int read_values,
                                 NaClSrpcArg* argvec[],
                                 const char* arg_types) {
-  uint32_t dim;
+  uint32_t dimdim;
+  size_t dim;
   size_t length;
   NaClSrpcArg *args;
   int retval = NACL_SRPC_RESULT_OK;
@@ -410,12 +411,13 @@ NaClSrpcError __NaClSrpcArgsGet(NaClSrpcChannel* channel,
       dprintf(("value %d\n", args[i].u.bval));
       break;
      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-      retval = __NaClSrpcImcRead(&dim, sizeof(dim), 1, channel);
+      retval = __NaClSrpcImcRead(&dimdim, sizeof(dim), 1, channel);
       if (retval != 1) {
         retval = NACL_SRPC_RESULT_MESSAGE_TRUNCATED;
         goto error;
       }
-      dprintf(("dim %"PRIu32"\n", dim));
+      dprintf(("dim %"PRIu32"\n", dimdim));
+      dim = (size_t) dimdim;
       if (allocate_args) {
         /* sizeof(char) == 1, so no overflow possible below */
         args[i].u.caval.carr = (char*) malloc(dim * sizeof(char));
@@ -446,12 +448,13 @@ NaClSrpcError __NaClSrpcArgsGet(NaClSrpcChannel* channel,
       dprintf(("value %f\n", args[i].u.dval));
       break;
      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-      retval = __NaClSrpcImcRead(&dim, sizeof(dim), 1, channel);
+      retval = __NaClSrpcImcRead(&dimdim, sizeof(dim), 1, channel);
       if (retval != 1) {
         retval = NACL_SRPC_RESULT_MESSAGE_TRUNCATED;
         goto error;
       }
-      dprintf(("dim %"PRIu32"\n", dim));
+      dprintf(("dim %"PRIu32"\n", dimdim));
+      dim = (size_t) dimdim;
       if (allocate_args) {
         if (dim > SIZE_T_MAX / sizeof(double)) {
           retval = NACL_SRPC_RESULT_NO_MEMORY;
@@ -493,12 +496,13 @@ NaClSrpcError __NaClSrpcArgsGet(NaClSrpcChannel* channel,
       dprintf(("value %d\n", args[i].u.ival));
       break;
      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-      retval = __NaClSrpcImcRead(&dim, sizeof(dim), 1, channel);
+      retval = __NaClSrpcImcRead(&dimdim, sizeof(dim), 1, channel);
       if (retval != 1) {
         retval = NACL_SRPC_RESULT_MESSAGE_TRUNCATED;
         goto error;
       }
-      dprintf(("dim %u\n", (unsigned) dim));
+      dprintf(("dim %u\n", (unsigned) dimdim));
+      dim = (size_t) dimdim;
       if (allocate_args) {
         if (dim > SIZE_T_MAX / sizeof(int)) {
           retval = NACL_SRPC_RESULT_NO_MEMORY;
@@ -527,7 +531,7 @@ NaClSrpcError __NaClSrpcArgsGet(NaClSrpcChannel* channel,
       break;
      case NACL_SRPC_ARG_TYPE_STRING:
       if (read_values) {
-        retval = __NaClSrpcImcRead(&dim, sizeof(dim), 1, channel);
+        retval = __NaClSrpcImcRead(&dimdim, sizeof(dim), 1, channel);
         if (retval != 1) {
           retval = NACL_SRPC_RESULT_MESSAGE_TRUNCATED;
           goto error;
@@ -536,6 +540,7 @@ NaClSrpcError __NaClSrpcArgsGet(NaClSrpcChannel* channel,
          * check if dim + 1 (in the malloc below) will result in an
          * integer overflow
          */
+        dim = (size_t) dimdim;
         if (dim > SIZE_T_MAX - 1) {
           retval = NACL_SRPC_RESULT_NO_MEMORY;
           goto error;

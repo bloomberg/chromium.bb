@@ -38,6 +38,9 @@ if env['TARGET_ARCHITECTURE'] != 'x86':
 if env['TARGET_SUBARCH'] != '32':
   Return()
 
+if env['BUILD_SUBARCH'] == '64':
+  Return()
+
 # TODO(sehr): there is an  unreferenced file ldt_unittest.cc in this directory
 
 # NOTE(robertm): currently needed for env.ComponentObject magic below

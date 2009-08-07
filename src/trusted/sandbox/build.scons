@@ -31,6 +31,9 @@
 
 Import('env')
 
+if env['BUILD_SUBARCH'] == '64':
+    Return()
+
 if env['TARGET_PLATFORM'] == 'LINUX' and env['BUILD_ARCHITECTURE'] == 'x86':
     # ----------------------------------------------------------
     #

@@ -87,40 +87,51 @@ env.Command(target=GENERATED + '/nacl_syscall_handlers.c',
                     Move('${TARGET}', '${TARGET}.tmp')])
 
 if env['BUILD_ARCHITECTURE'] == 'x86':
+  modules_env = env.Clone()
+  modules_env.FilterOut(ASFLAGS=['-m64'])
+  modules_env.FilterOut(CCFLAGS=['-m64'])
+  modules_env.FilterOut(LINKFLAGS = ['-m64', '-L/usr/lib64'])
+  modules_env.Prepend(ASFLAGS = ['-m32', ],
+                      CCFLAGS = ['-m32', ],
+                      LINKFLAGS = ['-m32', '-L/usr/lib32'],
+                      )
+
   # TODO(tuduce): If two .c files will both need to look at the
   # tramp/springboard code array, generate .c data files instead of .h
   ARCH_X86 = GENERATED + '/arch/x86'
 
-  tramp_gen_obj = env.ComponentObject('arch/x86_32/tramp.S')
-  tramp_gen_exe = env.ComponentProgram('tramp_gen',
-                                       ['arch/x86_32/tramp_gen.c',
-                                        tramp_gen_obj],
-                                       LIBS=[])
+  tramp_gen_obj = modules_env.ComponentObject('arch/x86_32/tramp.S')
+  tramp_gen_exe = modules_env.ComponentProgram(
+      'tramp_gen',
+      ['arch/x86_32/tramp_gen.c',
+       tramp_gen_obj],
+      LIBS=[])
   tramp_data_header = [ ARCH_X86 + '/tramp_data.h' ]
 
-  springboard_gen_obj = env.ComponentObject('arch/x86_32/springboard.S')
-  springboard_gen_exe = env.ComponentProgram('springboard_gen',
-                                             ['arch/x86_32/springboard_gen.c',
-                                              springboard_gen_obj],
-                                             LIBS=[])
+  springboard_gen_obj = modules_env.ComponentObject('arch/x86_32/springboard.S')
+  springboard_gen_exe = modules_env.ComponentProgram(
+      'springboard_gen',
+      ['arch/x86_32/springboard_gen.c',
+       springboard_gen_obj],
+      LIBS=[])
   springboard_data_header = [ ARCH_X86 + '/springboard_data.h' ]
 
-  env.Command(target=[],
-              source=[],
-              action=[Delete(ARCH_X86),
-                      Mkdir(ARCH_X86)])
+  modules_env.Command(target=[],
+                      source=[],
+                      action=[Delete(ARCH_X86),
+                              Mkdir(ARCH_X86)])
 
-  env.Command(target=tramp_data_header,
-              source=tramp_gen_exe,
-              action=['echo HEADER GENERATION: %s' %
-                        str(tramp_data_header),
-                      '${SOURCE} > ${TARGET}'])
+  modules_env.Command(target=tramp_data_header,
+                      source=tramp_gen_exe,
+                      action=['echo HEADER GENERATION: %s' %
+                              str(tramp_data_header),
+                              '${SOURCE} > ${TARGET}'])
 
-  env.Command(target=springboard_data_header,
-              source=springboard_gen_exe,
-              action=['echo HEADER GENERATION: %s' %
-                      str(springboard_data_header),
-                      '${SOURCE} > ${TARGET}'])
+  modules_env.Command(target=springboard_data_header,
+                      source=springboard_gen_exe,
+                      action=['echo HEADER GENERATION: %s' %
+                              str(springboard_data_header),
+                              '${SOURCE} > ${TARGET}'])
 
 # ----------------------------------------------------------
 ldr_inputs = [
@@ -149,17 +160,24 @@ ldr_inputs = [
 
 if env['BUILD_ARCHITECTURE'] == 'x86':
   ldr_inputs += [
-    'arch/x86/nacl_app.c',
-    'arch/x86/nacl_ldt_x86.c',
-    'arch/x86/nacl_switch_to_app.c',
-    'arch/x86/sel_rt.c',
-    'arch/x86/nacl_tls.c',
-    'arch/x86/sel_ldr_x86.c',
-    'arch/x86/sel_addrspace_x86.c',
-    'arch/x86_32/nacl_switch.S',
-    'arch/x86_32/nacl_syscall.S',
-#    'arch/x86_32/springboard.S',
-  ]
+      'arch/x86/nacl_app.c',
+      'arch/x86/nacl_ldt_x86.c',
+      'arch/x86/nacl_switch_to_app.c',
+      'arch/x86/sel_rt.c',
+      'arch/x86/nacl_tls.c',
+      'arch/x86/sel_ldr_x86.c',
+      'arch/x86/sel_addrspace_x86.c',
+      ]
+  if env['BUILD_SUBARCH'] == '32':
+    ldr_inputs += [
+        'arch/x86_32/nacl_switch.S',
+        'arch/x86_32/nacl_syscall.S',
+        ]
+  elif env['BUILD_SUBARCH'] == '64':
+    ldr_inputs += [
+        'arch/x86_64/nacl_switch.S',
+        'arch/x86_64/nacl_syscall.S',
+        ]
 elif env['BUILD_ARCHITECTURE'] == 'arm':
   ldr_inputs += [
     'arch/arm/nacl_app.c',
@@ -285,10 +303,14 @@ if sdl_mode != 'none':
                              '$SDL_DIR/SDL.framework')
     env.AddPluginPrerequisite(['$SDL_DIR/SDL.framework'])
   elif env.Bit('linux'):
-    sdl_dll += env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/libSDL-1.2.so.0')
-    sdl_dll += env.Replicate('.', '$SDL_DIR/lib/libSDL-1.2.so.0')
-    env.AddPluginPrerequisite(['$SDL_DIR/lib/libSDL-1.2.so.0'])
-
+    if env['BUILD_SUBARCH'] == '32':
+      sdl_dll += env.Replicate('$STAGING_DIR', '$SDL_DIR/lib/libSDL-1.2.so.0')
+      sdl_dll += env.Replicate('.', '$SDL_DIR/lib/libSDL-1.2.so.0')
+      env.AddPluginPrerequisite(['$SDL_DIR/lib/libSDL-1.2.so.0'])
+    elif env['BUILD_SUBARCH'] == '64':
+      sdl_dll += env.Replicate('$STAGING_DIR', '$SDL_DIR/lib64/libSDL-1.2.so.0')
+      sdl_dll += env.Replicate('.', '$SDL_DIR/lib64/libSDL-1.2.so.0')
+      # add AddPluginPrerequisite if you build a 64-bit plugin
 if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
   # TODO(petr): sel_ldr must be placed in upper part of its address space
   # so there is a place for nacl module in the bottom

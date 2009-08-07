@@ -401,7 +401,8 @@ void ConsumeID(struct NCDecoderState* mstate) {
   }
   mstate->nextbyte += mstate->inst.dispbytes;
   mstate->inst.length = mstate->nextbyte - mstate->mpc;
-  DEBUG( printf("ID: consume %d bytes\n", mstate->nextbyte - old_next_byte) );
+  DEBUG( printf("ID: consume %"PRIxPTR" bytes\n",
+                (intptr_t)( mstate->nextbyte - old_next_byte)) );
 }
 
 /* Actually this routine is special for 3DNow instructions */
