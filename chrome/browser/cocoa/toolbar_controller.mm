@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
+#import "chrome/browser/cocoa/back_forward_menu_controller.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
@@ -60,6 +61,7 @@ class PrefObserverBridge : public NotificationObserver {
 - (id)initWithModel:(ToolbarModel*)model
            commands:(CommandUpdater*)commands
             profile:(Profile*)profile
+            browser:(Browser*)browser
      resizeDelegate:(id<ViewResizer>)resizeDelegate
    bookmarkDelegate:(id<BookmarkURLOpener>)delegate {
   DCHECK(model && commands && profile);
@@ -68,6 +70,7 @@ class PrefObserverBridge : public NotificationObserver {
     toolbarModel_ = model;
     commands_ = commands;
     profile_ = profile;
+    browser_ = browser;
     resizeDelegate_ = resizeDelegate;
     bookmarkBarDelegate_ = delegate;
     hasToolbar_ = YES;
@@ -122,6 +125,16 @@ class PrefObserverBridge : public NotificationObserver {
   // bottom-aligned to it's parent view (among other things), so
   // position and resize properties don't need to be set.
   [[self view] addSubview:[bookmarkBarController_ view]];
+
+  // Create the controllers for the back/forward menus.
+  backMenuController_.reset([[BackForwardMenuController alloc]
+          initWithBrowser:browser_
+                modelType:BACK_FORWARD_MENU_TYPE_BACK
+                   button:backButton_]);
+  forwardMenuController_.reset([[BackForwardMenuController alloc]
+          initWithBrowser:browser_
+                modelType:BACK_FORWARD_MENU_TYPE_FORWARD
+                   button:forwardButton_]);
 
   // For a popup window, the toolbar is really just a location bar
   // (see override for [ToolbarController view], below).  When going

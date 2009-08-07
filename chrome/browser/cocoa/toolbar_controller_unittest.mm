@@ -38,6 +38,7 @@ class ToolbarControllerTest : public testing::Test {
         [[ToolbarController alloc] initWithModel:browser->toolbar_model()
                                         commands:browser->command_updater()
                                          profile:helper_.profile()
+                                         browser:browser
                                   resizeDelegate:resizeDelegate_.get()
                                 bookmarkDelegate:nil]);
     EXPECT_TRUE([bar_ view]);

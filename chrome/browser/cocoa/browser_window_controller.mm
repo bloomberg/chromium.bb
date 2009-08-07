@@ -174,6 +174,7 @@ willPositionSheet:(NSWindow*)sheet
                                initWithModel:browser->toolbar_model()
                                     commands:browser->command_updater()
                                      profile:browser->profile()
+                                     browser:browser
                               resizeDelegate:self
                             bookmarkDelegate:self]);
     // If we are a pop-up, we have a titlebar and no toolbar.
