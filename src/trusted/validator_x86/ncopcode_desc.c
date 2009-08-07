@@ -226,7 +226,6 @@ const char* OperandKindName(const OperandKind kind) {
 
 /* Define the corresponding names of OperandFlag. */
 static const char* const g_OperandFlagName[OperandFlagEnumSize] = {
-  "RexExcludesAhBhChDh",
   "OpUse",
   "OpSet",
   "OpAddress",
@@ -234,6 +233,7 @@ static const char* const g_OperandFlagName[OperandFlagEnumSize] = {
   "OperandExtendsOpcode",
   "OperandNear",
   "OperandRelative",
+  "OperandZeroExtends_v",
 };
 
 const char* OperandFlagName(const OperandFlagEnum flag) {

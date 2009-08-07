@@ -622,9 +622,6 @@ extern const char* OperandKindName(const OperandKind kind);
  * operand.
  */
 typedef enum {
-  /* If in 64-bit mode, and using REX prefix, excludes registers AH, BH,
-   * CH, and DH. */
-  RexExcludesAhBhChDh,
   /* Operand is used */
   OpUse,
   /* Operand is set  */
@@ -642,6 +639,8 @@ typedef enum {
   OperandNear,
   /* When jump address, the jump is relative (rather than absolute. */
   OperandRelative,
+  /* Operand zero-extends 32-bit register results to 64-bits. */
+  OperandZeroExtends_v,
   /* Special marker denoting the number of operand flags. */
   OperandFlagEnumSize
 } OperandFlagEnum;

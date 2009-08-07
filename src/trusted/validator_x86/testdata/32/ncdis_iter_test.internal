@@ -4,8 +4,8 @@
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
     InstAdd,
     2, {
-      { E_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[10] = {
   { OperandReference[1] , 0, 0 },
@@ -25,8 +25,8 @@ ExprNodeVector[10] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
     InstAdd,
     2, {
-      { E_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) | OpFlag(OpSet) },
-      { G_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[4] = {
   { OperandReference[1] , 0, 0 },
@@ -40,7 +40,7 @@ ExprNodeVector[4] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
     2, {
-      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
       { G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[4] = {
@@ -55,7 +55,7 @@ ExprNodeVector[4] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
       { E_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[10] = {
@@ -76,7 +76,7 @@ ExprNodeVector[10] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
     InstAdd,
     2, {
-      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v) },
       { E_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[4] = {
@@ -91,8 +91,8 @@ ExprNodeVector[4] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(OpcodeLockable) | InstFlag(OperandSize_b),
     InstAdd,
     2, {
-      { G_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) | OpFlag(OpSet) },
-      { E_Operand, OpFlag(RexExcludesAhBhChDh) | OpFlag(OpUse) },
+      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { E_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[10] = {
   { OperandReference[1] , 0, 0 },

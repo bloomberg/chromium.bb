@@ -581,10 +581,8 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) |
       InstFlag(OperandSize_b) | extra_flags,
       name);
-  DefineOperand(E_Operand,
-                OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(RexExcludesAhBhChDh));
-  DefineOperand(G_Operand,
-                OpFlag(OpUse) | OpFlag(RexExcludesAhBhChDh));
+  DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(
       base+1,
@@ -592,7 +590,8 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v) |
       InstFlag(OperandSize_w) | extra_flags,
       name);
-  DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(E_Operand,
+                OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -610,10 +609,8 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) |
       InstFlag(OperandSize_b) | extra_flags,
       name);
-  DefineOperand(G_Operand, OpFlag(OpUse) | OpFlag(OpSet) |
-                OpFlag(RexExcludesAhBhChDh));
-  DefineOperand(E_Operand, OpFlag(OpUse) |
-                OpFlag(RexExcludesAhBhChDh));
+  DefineOperand(G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
 
   DefineOpcode(
       base+3,
@@ -621,7 +618,8 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
       InstFlag(OperandSize_v) | extra_flags,
       name);
-  DefineOperand(G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(G_Operand,
+                OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(E_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -646,7 +644,8 @@ static void BuildBinaryOps_00_05(const uint8_t base,
       itype,
       InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v) | extra_flags,
       name);
-  DefineOperand(RegEAX, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(RegEAX,
+                OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(
@@ -766,9 +765,8 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeLockable) | InstFlag(OpcodeRex),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand,
-                  OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(RexExcludesAhBhChDh));
-    DefineOperand(I_Operand, OpFlag(OpUse) | OpFlag(RexExcludesAhBhChDh));
+    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+    DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
         0x81,
@@ -787,7 +785,8 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeHasImmed) | InstFlag(OpcodeLockable),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+    DefineOperand(E_Operand,
+                  OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
@@ -818,7 +817,8 @@ static void DefineGroup1OpcodesInModRm() {
         InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeLockable),
         Group1OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+    DefineOperand(E_Operand,
+                  OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(
@@ -896,7 +896,8 @@ static void DefineGroup2OpcodesInModRm() {
                  InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                  Group2OpcodeName[i]);
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+    DefineOperand(E_Operand,
+                  OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OperandZeroExtends_v));
     DefineOperand(I_Operand, 0);
 
     DefineOpcode(0xC1, NACLi_OPINMRM,
@@ -1077,7 +1078,7 @@ static void DefineOneByteOpcodes() {
                InstFlag(Opcode64Only) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm),
                InstMovsxd);
-  DefineOperand(Go_Operand, OpFlag(OpSet));
+  DefineOperand(Go_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(E_Operand, OpFlag(OpSet));
 
   DefineOpcode(0x68, NACLi_386,
@@ -1213,7 +1214,7 @@ static void DefineOneByteOpcodes() {
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v),
                InstMov);
-  DefineOperand(E_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(0x89, NACLi_386,
@@ -1227,22 +1228,22 @@ static void DefineOneByteOpcodes() {
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
                InstFlag(OpcodeRex),
                InstMov);
-  DefineOperand(G_Operand, OpFlag(OpUse) | OpFlag(RexExcludesAhBhChDh));
-  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(RexExcludesAhBhChDh));
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
 
   DefineOpcode(0x8B, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v),
                InstMov);
-  DefineOperand(G_Operand, OpFlag(OpUse));
-  DefineOperand(E_Operand, OpFlag(OpSet));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
+  DefineOperand(E_Operand, OpFlag(OpUse));
 
   DefineOpcode(0x8B, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_o) |
                InstFlag(Opcode64Only) | InstFlag(OpcodeUsesRexW),
                InstMov);
-  DefineOperand(G_Operand, OpFlag(OpUse));
-  DefineOperand(E_Operand, OpFlag(OpSet));
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
 
   /* TODO(karl) what is SReg (second argument) in 0x8c*/
   DefineOpcode(0x8c, NACLi_ILLEGAL,
@@ -1261,7 +1262,7 @@ static void DefineOneByteOpcodes() {
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v),
                InstLea);
-  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(M_Operand, OpFlag(OpAddress));
 
   DefineOpcode(0x8d, NACLi_386,
@@ -1301,7 +1302,7 @@ static void DefineOneByteOpcodes() {
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeHasImmed_Addr),
                InstMov);
-  DefineOperand(RegREAX, OpFlag(OpSet));
+  DefineOperand(RegREAX, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(O_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xa1, NACLi_386,
@@ -1321,7 +1322,7 @@ static void DefineOneByteOpcodes() {
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeHasImmed_Addr),
                InstMov);
-  DefineOperand(O_Operand, OpFlag(OpSet));
+  DefineOperand(O_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(RegREAX, OpFlag(OpUse));
 
   DefineOpcode(0xa3, NACLi_386,
@@ -1362,7 +1363,7 @@ static void DefineOneByteOpcodes() {
                  InstFlag(OpcodeHasImmed),
                  InstMov);
     DefineOperand(OpcodeBaseMinus[i], OpFlag(OperandExtendsOpcode));
-    DefineOperand(G_OpcodeBase, OpFlag(OpSet));
+    DefineOperand(G_OpcodeBase, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
     DefineOperand(I_Operand, OpFlag(OpUse));
 
     DefineOpcode(0xB8 + i, NACLi_386,
@@ -1412,7 +1413,7 @@ static void DefineOneByteOpcodes() {
                InstFlag(OpcodeHasImmed),
                InstMov);
   DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xC7, NACLi_386,
@@ -1495,7 +1496,7 @@ static void DefineOneByteOpcodes() {
                InstFlag(OpcodeHasImmed) | InstFlag(OpcodeRex),
                InstTest);
   DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse) | OpFlag(RexExcludesAhBhChDh));
+  DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xF7, NACLi_386,
