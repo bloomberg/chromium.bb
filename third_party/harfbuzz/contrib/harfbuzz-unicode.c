@@ -6,8 +6,9 @@
 #include <harfbuzz-shaper.h>
 #include "harfbuzz-unicode.h"
 
-#include "tables/script-properties.h"
 #include "tables/grapheme-break-properties.h"
+#include "tables/mirroring-properties.h"
+#include "tables/script-properties.h"
 
 uint32_t
 utf16_to_code_point(const uint16_t *chars, size_t len, ssize_t *iter) {
@@ -234,10 +235,30 @@ HB_GetGraphemeAndLineBreakClass(HB_UChar32 ch, HB_GraphemeClass *gclass, HB_Line
   *breakclass = HB_GetLineBreakClass(ch);
 }
 
+static int
+mirroring_property_cmp(const void *vkey, const void *vcandidate) {
+  const uint32_t key = (uint32_t) (intptr_t) vkey;
+  const struct mirroring_property *candidate = vcandidate;
+
+  if (key < candidate->a) {
+    return -1;
+  } else if (key > candidate->a) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 HB_UChar16
 HB_GetMirroredChar(HB_UChar16 ch) {
-  abort();
-  return 0;
+  const void *mprop = bsearch((void *) (intptr_t) ch, mirroring_properties,
+                              mirroring_properties_count,
+                              sizeof(struct mirroring_property),
+                              mirroring_property_cmp);
+  if (!mprop)
+    return ch;
+
+  return ((const struct mirroring_property *) mprop)->b;
 }
 
 void *
