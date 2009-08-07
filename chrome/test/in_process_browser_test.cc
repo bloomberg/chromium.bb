@@ -54,6 +54,9 @@ InProcessBrowserTest::InProcessBrowserTest()
 }
 
 void InProcessBrowserTest::SetUp() {
+  // This method does nothing in default case. But can be overridden
+  // to set user data dir for test.
+  SetUpUserDataDirForTest();
   // Cleanup the user data dir.
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -61,7 +64,8 @@ void InProcessBrowserTest::SetUp() {
       "The user data directory name passed into this test was too "
       "short to delete safely.  Please check the user-data-dir "
       "argument and try again.";
-  ASSERT_TRUE(file_util::DieFileDie(user_data_dir, true));
+  if (ShouldDeleteProfile())
+    ASSERT_TRUE(file_util::DieFileDie(user_data_dir, true));
 
   // The unit test suite creates a testingbrowser, but we want the real thing.
   // Delete the current one. We'll install the testing one in TearDown.
