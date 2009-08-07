@@ -67,15 +67,19 @@ document.write('<link id="themecss" rel="stylesheet" ' +
               i18n-values="title:pagedisplaytooltip"></div>
 
   <div id="option-menu" class="window-menu">
-    <div section="THUMB" show="true" i18n-content="showthumbnails"
+    <div command="show" section="THUMB" i18n-content="showthumbnails"
          style="display:none"></div>
-    <div section="THUMB" show="false" i18n-content="hidethumbnails"></div>
-    <div section="LIST" show="true" i18n-content="showlist"></div>
-    <div section="LIST" show="false" i18n-content="hidelist"
+    <div command="hide" section="THUMB" i18n-content="hidethumbnails"></div>
+    <div command="show" section="LIST" i18n-content="showlist"></div>
+    <div command="hide" section="LIST" i18n-content="hidelist"
          style="display:none"></div>
-    <div section="RECENT" show="true" i18n-content="showrecentlyclosedtabs"
+    <div command="show" section="RECENT" i18n-content="showrecentlyclosedtabs"
          style="display:none"></div>
-    <div section="RECENT" show="false" i18n-content="hiderecentlyclosedtabs"></div>
+    <div command="hide" section="RECENT"
+         i18n-content="hiderecentlyclosedtabs"></div>
+    <hr>
+    <div command="clear-all-blacklisted"
+         i18n-content="restorethumbnails"></div>
   </div>
 
   <div id="notification">

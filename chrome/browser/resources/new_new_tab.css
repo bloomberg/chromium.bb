@@ -420,12 +420,17 @@ html[dir='rtl'] .item {
   border: 1px solid #999;
   -webkit-box-shadow: 2px 2px 3px hsla(0, 0%, 0%, .3);
   background-color: hsla(213, 0%, 100%, .95);
-  width: 157px;
   left: 0;
   white-space: nowrap;
   z-index: 2;
   padding: 1px;
   cursor: default;
+}
+
+.window-menu > hr {
+  border: 0;
+  border-top: 1px solid rgb(153, 153, 153);
+  margin: 2px 0;
 }
 
 /* Made to look like a tooltip using vista/win7 look and feel.

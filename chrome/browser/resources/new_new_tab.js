@@ -748,11 +748,14 @@ function updateOptionMenu() {
   var menuItems = $('option-menu').children;
   for (var i = 0; i < menuItems.length; i++) {
     var item = menuItems[i];
-    var section = Section[item.getAttribute('section')];
-    var show = item.getAttribute('show') == 'true';
-    // Hide show items if already shown. Hide hide items if already hidden.
-    var hideMenuItem = show == !!(shownSections & section);
-    item.style.display = hideMenuItem ? 'none' : '';
+    var command = item.getAttribute('command');
+    if (command == 'show' || command == 'hide') {
+      var show = command == 'show';
+      var section = Section[item.getAttribute('section')];
+      // Hide show items if already shown. Hide hide items if already hidden.
+      var hideMenuItem = show == !!(shownSections & section);
+      item.style.display = hideMenuItem ? 'none' : '';
+    }
   }
 }
 
@@ -895,8 +898,12 @@ OptionMenu.prototype = {
 
   handleMouseOver: function(e) {
     var el = e.target;
-    var index = Array.prototype.indexOf.call(this.menu.children, el);
-    this.setSelectedIndex(index);
+    if (!el.hasAttribute('command')) {
+      this.setSelectedIndex(-1);
+    } else {
+      var index = Array.prototype.indexOf.call(this.menu.children, el);
+      this.setSelectedIndex(index);
+    }
   },
 
   handleMouseOut: function(e) {
@@ -925,7 +932,8 @@ OptionMenu.prototype = {
       while (true) {
         i = (i + m + len) % len;
         item = children[i];
-        if (item && item.style.display != 'none') {
+        if (item && item.hasAttribute('command') &&
+            item.style.display != 'none') {
           break;
         }
       }
@@ -990,20 +998,32 @@ OptionMenu.prototype = {
   },
 
   executeItem: function(item) {
-    var section = Section[item.getAttribute('section')];
-    var show = item.getAttribute('show') == 'true';
-    if (show) {
-      showSection(section);
-    } else {
-      hideSection(section);
+    var command = item.getAttribute('command');
+    if (command in this.commands) {
+      this.commands[command].call(this, item);
     }
 
     this.hide();
-    saveShownSections();
   }
 };
 
 var optionMenu = new OptionMenu($('option-button'), $('option-menu'));
+optionMenu.commands = {
+  'clear-all-blacklisted' : function() {
+    mostVisited.clearAllBlacklisted();
+    chrome.send('getMostVisited');
+  },
+  'show': function(item) {
+    var section = Section[item.getAttribute('section')];
+    showSection(section);
+    saveShownSections();
+  },
+  'hide': function(item) {
+    var section = Section[item.getAttribute('section')];
+    hideSection(section);
+    saveShownSections();
+  }
+};
 
 $('most-visited').addEventListener('click', function(e) {
   var target = e.target;
