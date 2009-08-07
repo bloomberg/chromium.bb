@@ -2922,14 +2922,13 @@ bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
     return false;
 
   // Use the alternate error page service if this is a DNS failure or
-  // connection failure.  ERR_CONNECTION_FAILED can be dropped once we no
-  // longer use winhttp.
+  // connection failure.
   int ec = error.reason;
   if (ec != net::ERR_NAME_NOT_RESOLVED &&
       ec != net::ERR_CONNECTION_FAILED &&
       ec != net::ERR_CONNECTION_REFUSED &&
       ec != net::ERR_ADDRESS_UNREACHABLE &&
-      ec != net::ERR_TIMED_OUT)
+      ec != net::ERR_CONNECTION_TIMED_OUT)
     return false;
 
   const GURL& error_page_url = GetAlternateErrorPageURL(error.unreachableURL,
