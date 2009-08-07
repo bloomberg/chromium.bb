@@ -3048,6 +3048,7 @@ BUG18724 LINUX DEBUG : LayoutTests/transitions/transition-drt-api-delay.html = P
 // Flaky timeout
 BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEOUT
 BUG18733 WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
+BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PASS TIMEOUT
 
 BUG18665 MAC : LayoutTests/security/block-test.html = FAIL
 BUG18665 MAC : LayoutTests/security/block-test-no-port.html = FAIL
