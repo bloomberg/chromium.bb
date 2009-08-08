@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="th">
+<translation id="1871244248791675517">Ins</translation>
+<translation id="6135826906199951471">Del</translation>
+<translation id="528468243742722775">End</translation>
+<translation id="5613020302032141669">ลูกศรซ้าย</translation>
+<translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="7658239707568436148">ยกเลิก</translation>
+<translation id="7222373446505536781">F11</translation>
+<translation id="3660179305079774227">ลูกศรขึ้น</translation>
+<translation id="3990502903496589789">ขอบขวา</translation>
+<translation id="932327136139879170">Home</translation>
+<translation id="3909791450649380159">&amp;ตัด</translation>
+<translation id="5076340679995252485">&amp;วาง</translation>
+<translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="3234408098842461169">ลูกศรลง</translation>
+<translation id="3087734570205094154">ด้านล่าง</translation>
+<translation id="6364916375976753737">เลื่อนทางซ้าย</translation>
+<translation id="8210608804940886430">เลื่อนหน้าลง</translation>
+<translation id="6659594942844771486">แท็บ</translation>
+<translation id="2497284189126895209">ไฟล์ทั้งหมด</translation>
+<translation id="7814458197256864873">&amp;คัดลอก</translation>
+<translation id="3889424535448813030">ลูกศรขวา</translation>
+<translation id="1901303067676059328">เลือก&amp;ทั้งหมด</translation>
+<translation id="2168039046890040389">เลื่อนหน้าขึ้น</translation>
+<translation id="3183922693828471536">เลื่อนมาที่นี่</translation>
+<translation id="4552416320897244156">PgDwn</translation>
+<translation id="7052633198403197513">F1</translation>
+<translation id="2190355936436201913">(ว่างเปล่า)</translation>
+<translation id="8447116497070723931">PgUp</translation>
+<translation id="4588090240171750605">เลื่อนทางขวา</translation>
+<translation id="2666092431469916601">ด้านบน</translation>
+<translation id="8331626408530291785">เลื่อนขึ้น</translation>
+<translation id="1293699935367580298">Esc</translation>
+<translation id="815598010540052116">เลื่อนลง</translation>
+<translation id="8179976553408161302">Enter</translation>
+<translation id="9170848237812810038">เ&amp;ลิกทำ</translation>
+<translation id="436869212180315161">กด</translation>
+<translation id="6040143037577758943">ปิด</translation>
+<translation id="7000311294523403548">หน้าเว็บที่ไม่ระบุชื่อ</translation>
+<translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6965382102122355670">ตกลง</translation>
+<translation id="8328145009876646418">ขอบซ้าย</translation>
+</translationbundle>
