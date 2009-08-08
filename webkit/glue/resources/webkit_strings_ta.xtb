@@ -13,7 +13,7 @@
 <translation id="795667975304826397">எந்த கோப்பும் தேர்ந்தெடுக்கப்டவில்லை</translation>
 <translation id="1275511093094545429"><ph name="PLUGIN"/> செருகுநிரல் தேவைப்படுகிறது</translation>
 <translation id="8662565117025751661">செருகுநிரலைப் பதிவிறக்குகிறது...</translation>
-<translation id="8141602879876242471">இது தேடக்கூடிய பொருளடக்கம். தேடல் திறவுச்சொற்களை உள்ளிடுக:</translation>
+<translation id="8141602879876242471">இது தேடக்கூடிய பொருளடக்கம். தேடல் சொற்களை உள்ளிடுக:</translation>
 <translation id="6845533974506654842">அழுத்துக</translation>
 <translation id="8244226242650769279">பட மேப்</translation>
 <translation id="1383141426028388991"><ph name="URL"/> இலிருந்து செருகுநிரலை நிறுவுவதில் தோல்வியடைந்தது</translation>
@@ -35,6 +35,7 @@
 <translation id="3771786644471114952">செருகுநிரலைப் பெறுக</translation>
 <translation id="1842960171412779397">தேர்ந்தெடு</translation>
 <translation id="6119846243427417423">செயல்படுத்து</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> கோப்புகள்</translation>
 <translation id="3926627843712816530">இந்த செருகுநிரலை நிறுவ விரும்புகிறீர்கள் என்பதை உறுதிப்படுத்துக. நீங்கள் நம்பும் செருகுநிரல்களை மட்டுமே நிறுவ வேண்டும்.</translation>
 <translation id="4838490908464673667">தேவையான செருகுநிரல் நிறுவப்படவில்லை</translation>
 <translation id="8597182159515967513">தலைப்பு</translation>

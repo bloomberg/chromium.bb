@@ -9,7 +9,7 @@
 <translation id="4202807286478387388">જંપ કરો</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
 <translation id="4317653869502688143">કૃપા કરીને પુષ્ટિ કરો કે તમને <ph name="PLUGIN"/> પ્લગઇન ઇન્સ્ટોલ કરવું ગમશે. તમારે ફક્ત તે જ પ્લગઇન્સ ઇન્સ્ટોલ કરવા જોઈએ જેના પર તમે વિશ્વાસ કરો છો.</translation>
-<translation id="7658239707568436148">કેન્સલ કરો</translation>
+<translation id="7658239707568436148">રદ કરો</translation>
 <translation id="795667975304826397">કોઈ ફાઇલ પસંદ કરેલી નથી</translation>
 <translation id="1275511093094545429"><ph name="PLUGIN"/> પ્લગઇનની જરૂરિયાત છે</translation>
 <translation id="8662565117025751661">પ્લગઇન ડાઉનલોડ કરી રહ્યું છે...</translation>
@@ -35,6 +35,7 @@
 <translation id="3771786644471114952">પ્લગઇન મેળવો</translation>
 <translation id="1842960171412779397">પસંદ કરો</translation>
 <translation id="6119846243427417423">સક્રિય કરો</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ફાઇલો</translation>
 <translation id="3926627843712816530">કૃપા કરીને પુષ્ટિ કરો કે તમને આ પ્લગઇન ઇન્સ્ટોલ કરવું ગમશે. તમારે ફક્ત તે જ પ્લગઇન્સ ઇન્સ્ટોલ કરવા જોઈએ જેના પર તમે વિશ્વાસ કરો છો.</translation>
 <translation id="4838490908464673667">જોઈતું પ્લગઇન ઇન્સ્ટોલ કરેલું નથી</translation>
 <translation id="8597182159515967513">મથાળું</translation>

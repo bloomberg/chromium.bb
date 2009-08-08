@@ -21,7 +21,7 @@
 <translation id="5944544982112848342">2048 (เกรดสูง)</translation>
 <translation id="3040011195152428237">ลิงก์</translation>
 <translation id="8281246460978372009">หลังจากติดตั้งปลั๊กอิน คลิกที่นี่เพื่อรีเฟรซ</translation>
-<translation id="7364796246159120393">ปิดไฟล์</translation>
+<translation id="7364796246159120393">เลือกไฟล์</translation>
 <translation id="8964020114565522021">ลากไฟล์มาที่นี่</translation>
 <translation id="838869780401515933">ทำเครื่องหมาย</translation>
 <translation id="2846343701378493991">1024 (เกรดปานกลาง)</translation>
@@ -35,6 +35,7 @@
 <translation id="3771786644471114952">ติดตั้งปลั๊กอิน</translation>
 <translation id="1842960171412779397">เลือก</translation>
 <translation id="6119846243427417423">เปิดใช้งาน</translation>
+<translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ไฟล์</translation>
 <translation id="3926627843712816530">โปรดยืนยันว่าคุณต้องการติดตั้งปลั๊กอินนี้ คุณควรติดตั้งปลั๊กอินที่คุณเชื่อถือเท่านั้น</translation>
 <translation id="4838490908464673667">ไม่ได้ติดตั้งปลั๊กอินที่จำเป็น</translation>
 <translation id="8597182159515967513">ส่วนหัว</translation>
