@@ -96,9 +96,9 @@ void ToolbarStarToggleGtk::UpdateGTKButton() {
   if (use_gtk) {
     GdkPixbuf* pixbuf = NULL;
     if (is_starred_) {
-      pixbuf = theme_provider_->GetPixbufNamed(IDR_STARRED_NOBORDER);
+      pixbuf = theme_provider_->GetPixbufNamed(IDR_STARRED_NOBORDER_CENTER);
     } else {
-      pixbuf = theme_provider_->GetPixbufNamed(IDR_STAR_NOBORDER);
+      pixbuf = theme_provider_->GetPixbufNamed(IDR_STAR_NOBORDER_CENTER);
     }
 
     gtk_button_set_image(

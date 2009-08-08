@@ -203,17 +203,16 @@ void GoButtonGtk::UpdateThemeButtons() {
   bool use_gtk = theme_provider_ && theme_provider_->UseGtkTheme();
 
   if (use_gtk) {
-    // TODO(erg): Waiting for Glen to make a version of these that don't have a
-    // button border on it.
+    GdkPixbuf* pixbuf = NULL;
     if (intended_mode_ == MODE_GO) {
-      gtk_button_set_image(
-          GTK_BUTTON(widget_.get()),
-          gtk_image_new_from_stock(GTK_STOCK_MEDIA_PLAY, GTK_ICON_SIZE_BUTTON));
+      pixbuf = theme_provider_->GetPixbufNamed(IDR_GO_NOBORDER_CENTER);
     } else {
-      gtk_button_set_image(
-          GTK_BUTTON(widget_.get()),
-          gtk_image_new_from_stock(GTK_STOCK_STOP, GTK_ICON_SIZE_BUTTON));
+      pixbuf = theme_provider_->GetPixbufNamed(IDR_STOP_NOBORDER_CENTER);
     }
+
+    gtk_button_set_image(
+        GTK_BUTTON(widget_.get()),
+        gtk_image_new_from_pixbuf(pixbuf));
 
     gtk_widget_set_size_request(widget_.get(), -1, -1);
     gtk_widget_set_app_paintable(widget_.get(), FALSE);
