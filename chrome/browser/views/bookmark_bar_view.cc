@@ -567,11 +567,18 @@ void BookmarkBarView::DidChangeBounds(const gfx::Rect& previous,
 void BookmarkBarView::ViewHierarchyChanged(bool is_add,
                                            View* parent,
                                            View* child) {
-  if (is_add && child == this && height() > 0) {
-    // We only layout while parented. When we become parented, if our bounds
-    // haven't changed, DidChangeBounds won't get invoked and we won't layout.
-    // Therefore we always force a layout when added.
-    Layout();
+  if (is_add && child == this) {
+    // We may get inserted into a hierarchy with a profile - this typically
+    // occurs when the bar's contents get populated fast enough that the
+    // buttons are created before the bar is attached to a frame.
+    UpdateButtonColors();
+
+    if (height() > 0) {
+      // We only layout while parented. When we become parented, if our bounds
+      // haven't changed, DidChangeBounds won't get invoked and we won't layout.
+      // Therefore we always force a layout when added.
+      Layout();
+    }
   }
 }
 
