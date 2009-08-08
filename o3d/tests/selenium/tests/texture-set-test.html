@@ -280,7 +280,7 @@ function initStep2(clientElements) {
         sampler.texture = texture;
         if (tx == 0 && ty == 0) {
           var texturePixels = texture.getRect(0, tx, ty, 32, 32);
-          if (texturePixels.length != pixels.length) {
+          if (texturePixels.length != pixels.length && format != 4) {
             reportResult(false, 'different length');
             return;
           }
@@ -288,8 +288,13 @@ function initStep2(clientElements) {
             // because float<->half conversion is not perfect
             var difference = Math.abs(pixels[ndx] - texturePixels[ndx]);
             if (difference > 0.004) {
-              reportResult(false, 'pixels different by:' + difference);
-              return;
+              //console.log("fmt: " + format +
+              //            " ndx: " + ndx +
+              //            " p1: " + pixels[ndx] +
+              //            " p2: " + texturePixels[ndx] +
+              //            " dif: " + difference);
+              reportResult(false, 'pixels, format: ' + format +
+                           ' different by: ' + difference);
             }
           }
         }

@@ -696,7 +696,7 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
 
 #ifdef OS_MACOSX
   // The Radeon X1600 says it supports NPOT, but in most situations it doesn't.
-  if (supports_npot_ &&
+  if (supports_npot() &&
       !strcmp("ATI Radeon X1600 OpenGL Engine",
               reinterpret_cast<const char*>(::glGetString(GL_RENDERER))))
     SetSupportsNPOT(false);
