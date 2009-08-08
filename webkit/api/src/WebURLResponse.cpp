@@ -155,12 +155,12 @@ void WebURLResponse::setHTTPStatusText(const WebString& httpStatusText)
 
 WebString WebURLResponse::httpHeaderField(const WebString& name) const
 {
-    return m_private->m_resourceResponse->httpHeaderField(String(name));
+    return m_private->m_resourceResponse->httpHeaderField(name);
 }
 
 void WebURLResponse::setHTTPHeaderField(const WebString& name, const WebString& value)
 {
-    m_private->m_resourceResponse->setHTTPHeaderField(String(name), value);
+    m_private->m_resourceResponse->setHTTPHeaderField(name, value);
 }
 
 void WebURLResponse::addHTTPHeaderField(const WebString& name, const WebString& value)
@@ -169,7 +169,7 @@ void WebURLResponse::addHTTPHeaderField(const WebString& name, const WebString& 
     const HTTPHeaderMap& map = m_private->m_resourceResponse->httpHeaderFields();
     String valueStr(value);
     pair<HTTPHeaderMap::iterator, bool> result =
-        const_cast<HTTPHeaderMap*>(&map)->add(String(name), valueStr);
+        const_cast<HTTPHeaderMap*>(&map)->add(name, valueStr);
     if (!result.second)
         result.first->second += ", " + valueStr;
 }
@@ -178,14 +178,14 @@ void WebURLResponse::clearHTTPHeaderField(const WebString& name)
 {
     // FIXME: Add a clearHTTPHeaderField method to ResourceResponse.
     const HTTPHeaderMap& map = m_private->m_resourceResponse->httpHeaderFields();
-    const_cast<HTTPHeaderMap*>(&map)->remove(String(name));
+    const_cast<HTTPHeaderMap*>(&map)->remove(name);
 }
 
 void WebURLResponse::visitHTTPHeaderFields(WebHTTPHeaderVisitor* visitor) const
 {
     const HTTPHeaderMap& map = m_private->m_resourceResponse->httpHeaderFields();
     for (HTTPHeaderMap::const_iterator it = map.begin(); it != map.end(); ++it)
-        visitor->visitHeader(String(it->first), it->second);
+        visitor->visitHeader(it->first, it->second);
 }
 
 double WebURLResponse::lastModifiedDate() const
