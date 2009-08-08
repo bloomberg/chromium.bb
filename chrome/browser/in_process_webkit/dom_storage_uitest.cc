@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Completely disable for now.
-#if 0
-
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_layout_test.h"
 
@@ -53,7 +50,7 @@ class DOMStorageTest : public UILayoutTest {
   FilePath test_dir_;
 };
 
-TEST_F(DOMStorageTest, DISABLED_DOMStorageLayoutTests) {
+TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
   // TODO(jorlow): Enable these tests when we remove them from the
   //               test_exceptions.txt file.
   //InitializeForLayoutTest(test_dir_, FilePath(), false);
@@ -61,19 +58,17 @@ TEST_F(DOMStorageTest, DISABLED_DOMStorageLayoutTests) {
   //  RunLayoutTest(kTopLevelFiles[i], false, true);
 }
 
-TEST_F(DOMStorageTest, DISABLED_LocalStorageLayoutTests) {
+TEST_F(DOMStorageTest, LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           false);
   for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
     RunLayoutTest(kSubDirFiles[i], false);
 }
 
-TEST_F(DOMStorageTest, DISABLED_SessionStorageLayoutTests) {
+TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
                           false);
   for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
     RunLayoutTest(kSubDirFiles[i], false);
 }
-
-#endif
 
