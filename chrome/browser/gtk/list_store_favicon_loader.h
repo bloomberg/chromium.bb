@@ -25,6 +25,8 @@ class ListStoreFavIconLoader {
                          Profile* profile,
                          CancelableRequestConsumer* consumer);
 
+  ~ListStoreFavIconLoader();
+
   // Start loading the favicon for |url| into the row |iter|.
   void LoadFaviconForRow(const GURL& url, GtkTreeIter* iter);
 
@@ -55,8 +57,7 @@ class ListStoreFavIconLoader {
   // Used in loading favicons.
   CancelableRequestConsumer* consumer_;
 
-  // Default icon to show when one can't be found for the URL.  This is owned by
-  // the ResourceBundle and we do not need to free it.
+  // Default icon to show when one can't be found for the URL.
   GdkPixbuf* default_favicon_;
 
   DISALLOW_COPY_AND_ASSIGN(ListStoreFavIconLoader);

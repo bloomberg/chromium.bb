@@ -4,11 +4,10 @@
 
 #include "chrome/browser/gtk/list_store_favicon_loader.h"
 
-#include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/png_decoder.h"
+#include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/profile.h"
-#include "grit/app_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 ListStoreFavIconLoader::ListStoreFavIconLoader(
@@ -16,9 +15,12 @@ ListStoreFavIconLoader::ListStoreFavIconLoader(
     Profile* profile, CancelableRequestConsumer* consumer)
     : list_store_(list_store), favicon_col_(favicon_col),
       favicon_handle_col_(favicon_handle_col), profile_(profile),
-      consumer_(consumer) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  default_favicon_ = rb.GetPixbufNamed(IDR_DEFAULT_FAVICON);
+      consumer_(consumer),
+      default_favicon_(bookmark_utils::GetDefaultFavicon(true)) {
+}
+
+ListStoreFavIconLoader::~ListStoreFavIconLoader() {
+  g_object_unref(default_favicon_);
 }
 
 void ListStoreFavIconLoader::LoadFaviconForRow(const GURL& url,

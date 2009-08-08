@@ -611,6 +611,7 @@ void BookmarkManagerGtk::BuildLeftStore() {
       model_->GetBookmarkBarNode()->id(), left_store_, &select_iter);
   gtk_tree_selection_select_iter(left_selection(), &select_iter);
 
+  // TODO(estade): is there a decent stock icon we can use here?
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gtk_tree_store_append(left_store_, &select_iter, NULL);
   gtk_tree_store_set(left_store_, &select_iter,
@@ -622,15 +623,18 @@ void BookmarkManagerGtk::BuildLeftStore() {
       bookmark_utils::ITEM_ID, kRecentID,
       -1);
 
+  GdkPixbuf* search_icon = gtk_widget_render_icon(
+      window_, GTK_STOCK_FIND, GTK_ICON_SIZE_MENU, NULL);
   gtk_tree_store_append(left_store_, &select_iter, NULL);
   gtk_tree_store_set(left_store_, &select_iter,
       bookmark_utils::FOLDER_ICON,
-      rb.GetPixbufNamed(IDR_BOOKMARK_MANAGER_SEARCH_ICON),
+      search_icon,
       bookmark_utils::FOLDER_NAME,
       l10n_util::GetStringUTF8(
           IDS_BOOKMARK_TREE_SEARCH_NODE_TITLE).c_str(),
       bookmark_utils::ITEM_ID, kSearchID,
       -1);
+  g_object_unref(search_icon);
 }
 
 void BookmarkManagerGtk::BuildRightStore() {
@@ -735,7 +739,7 @@ void BookmarkManagerGtk::SetRightSideColumnValues(int row, GtkTreeIter* iter) {
   // TODO(estade): building the path could be optimized out when we aren't
   // showing the path column.
   const BookmarkNode* node = right_tree_model_->GetNodeForRow(row);
-  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model_);
+  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model_, true);
   std::wstring title =
       right_tree_model_->GetText(row, IDS_BOOKMARK_TABLE_TITLE);
   std::wstring url = right_tree_model_->GetText(row, IDS_BOOKMARK_TABLE_URL);

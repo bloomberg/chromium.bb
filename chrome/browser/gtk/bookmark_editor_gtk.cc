@@ -313,7 +313,7 @@ void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {
   gtk_tree_store_set(
       tree_store_, child,
       bookmark_utils::FOLDER_ICON,
-      bookmark_utils::GetFolderIcon(),
+      bookmark_utils::GetFolderIcon(true),
       bookmark_utils::FOLDER_NAME,
       l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME).c_str(),
       bookmark_utils::ITEM_ID, static_cast<int64>(0),

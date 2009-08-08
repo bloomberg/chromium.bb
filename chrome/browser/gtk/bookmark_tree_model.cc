@@ -16,10 +16,14 @@ namespace {
 void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
                               GtkTreeIter *iter, GtkTreeIter* parent) {
   gtk_tree_store_append(store, iter, parent);
-  // TODO(estade): we should show the folder open icon when it's expanded.
+  // It would be easy to show a different icon when the folder is open (as they
+  // do on Windows, for example), using pixbuf-expander-closed and
+  // pixbuf-expander-open. Unfortunately there is no GTK_STOCK_OPEN_DIRECTORY
+  // (and indeed, Nautilus does not render an expanded directory any
+  // differently).
   gtk_tree_store_set(store, iter,
                      bookmark_utils::FOLDER_ICON,
-                     bookmark_utils::GetFolderIcon(),
+                     bookmark_utils::GetFolderIcon(true),
                      bookmark_utils::FOLDER_NAME,
                      WideToUTF8(node->GetTitle()).c_str(),
                      bookmark_utils::ITEM_ID, node->id(),

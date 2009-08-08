@@ -45,6 +45,10 @@ void* AsVoid(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
 
+// This is a dummy widget that only exists so we have something to pass to
+// gtk_widget_render_icon().
+GtkWidget* icon_widget = NULL;
+
 }  // namespace
 
 namespace bookmark_utils {
@@ -54,32 +58,53 @@ const char kBookmarkNode[] = "bookmark-node";
 // Spacing between the buttons on the bar.
 const int kBarButtonPadding = 4;
 
-GdkPixbuf* GetFolderIcon() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* default_folder_icon = rb.GetPixbufNamed(
-      IDR_BOOKMARK_BAR_FOLDER);
-  return default_folder_icon;
+GdkPixbuf* GetFolderIcon(bool native) {
+  if (!native) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    static GdkPixbuf* default_folder_icon = rb.GetPixbufNamed(
+        IDR_BOOKMARK_BAR_FOLDER);
+    return default_folder_icon;
+  } else {
+    if (!icon_widget)
+      icon_widget = gtk_fixed_new();
+    // We never release our ref, so we will leak this on program shutdown.
+    static GdkPixbuf* default_folder_icon =
+        gtk_widget_render_icon(icon_widget, GTK_STOCK_DIRECTORY,
+                               GTK_ICON_SIZE_MENU, NULL);
+    return default_folder_icon;
+  }
 }
 
-GdkPixbuf* GetDefaultFavicon() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  static GdkPixbuf* default_bookmark_icon = rb.GetPixbufNamed(
-      IDR_DEFAULT_FAVICON);
-  return default_bookmark_icon;
+GdkPixbuf* GetDefaultFavicon(bool native) {
+  if (!native) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    static GdkPixbuf* default_bookmark_icon = rb.GetPixbufNamed(
+        IDR_DEFAULT_FAVICON);
+    return default_bookmark_icon;
+  } else {
+    if (!icon_widget)
+      icon_widget = gtk_fixed_new();
+    // We never release our ref, so we will leak this on program shutdown.
+    static GdkPixbuf* default_bookmark_icon =
+        gtk_widget_render_icon(icon_widget, GTK_STOCK_FILE,
+                               GTK_ICON_SIZE_MENU, NULL);
+    return default_bookmark_icon;
+  }
 }
 
-GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model) {
+GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
+                            bool native) {
   GdkPixbuf* pixbuf;
 
   if (node->is_url()) {
     if (model->GetFavIcon(node).width() != 0) {
       pixbuf = gfx::GdkPixbufFromSkBitmap(&model->GetFavIcon(node));
     } else {
-      pixbuf = GetDefaultFavicon();
+      pixbuf = GetDefaultFavicon(native);
       g_object_ref(pixbuf);
     }
   } else {
-    pixbuf = GetFolderIcon();
+    pixbuf = GetFolderIcon(native);
     g_object_ref(pixbuf);
   }
 
@@ -124,7 +149,8 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
 
   // We pack the button manually (rather than using gtk_button_set_*) so that
   // we can have finer control over its label.
-  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model);
+  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model,
+                                                       provider->UseGtkTheme());
   GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
   g_object_unref(pixbuf);
 
