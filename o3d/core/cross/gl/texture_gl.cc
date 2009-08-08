@@ -155,10 +155,10 @@ static bool UpdateGLImageFromBitmap(GLenum target,
   DCHECK(bitmap.image_data());
   unsigned int mip_width = std::max(1U, bitmap.width() >> level);
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
-  const unsigned char *mip_data = bitmap.GetFaceMipData(face, level);
+  const uint8 *mip_data = bitmap.GetFaceMipData(face, level);
   unsigned int mip_size =
       image::ComputeBufferSize(mip_width, mip_height, bitmap.format());
-  scoped_array<unsigned char> temp_data;
+  scoped_array<uint8> temp_data;
   if (resize_to_pot) {
     DCHECK(!Texture::IsCompressedFormat(bitmap.format()));
     unsigned int pot_width =
@@ -167,7 +167,7 @@ static bool UpdateGLImageFromBitmap(GLenum target,
         std::max(1U, image::ComputePOTSize(bitmap.height()) >> level);
     unsigned int pot_size = image::ComputeBufferSize(pot_width, pot_height,
                                                      bitmap.format());
-    temp_data.reset(new unsigned char[pot_size]);
+    temp_data.reset(new uint8[pot_size]);
     image::Scale(mip_width, mip_height, bitmap.format(), mip_data,
                  pot_width, pot_height, temp_data.get(),
                  image::ComputePitch(bitmap.format(), pot_width));
@@ -209,43 +209,39 @@ static bool CreateGLImagesAndUpload(GLenum target,
   // to pass in some data. If we can pass in the original pixel data, we'll
   // do that, otherwise we'll pass an empty buffer. In that case, prepare it
   // here once for all.
-  scoped_array<unsigned char> temp_data;
-  if (!format && (!bitmap.image_data() || resize_to_pot)) {
-    // Allocate a buffer big enough for the first level which is the biggest
-    // one.
+  scoped_array<uint8> temp_data;
+  if (!bitmap.image_data()) {
     unsigned int size = image::ComputeBufferSize(mip_width, mip_height,
                                                  bitmap.format());
-    temp_data.reset(new unsigned char[size]);
+    temp_data.reset(new uint8[size]);
     memset(temp_data.get(), 0, size);
   }
   for (unsigned int i = 0; i < bitmap.num_mipmaps(); ++i) {
-    // Upload pixels directly if we can, otherwise it will be done with
-    // UpdateGLImageFromBitmap afterwards.
-    unsigned char *data = resize_to_pot ? NULL : bitmap.GetFaceMipData(face, i);
-
-    if (format) {
-      glTexImage2D(target, i, internal_format, mip_width, mip_height,
-                   0, format, type, data);
-      if (glGetError() != GL_NO_ERROR) {
-        DLOG(ERROR) << "glTexImage2D failed";
-        return false;
-      }
-    } else {
-      unsigned int mip_size = image::ComputeBufferSize(mip_width, mip_height,
-                                                       bitmap.format());
-      DCHECK(data || temp_data.get());
-      glCompressedTexImage2DARB(target, i, internal_format, mip_width,
-                                mip_height, 0, mip_size,
-                                data ? data : temp_data.get());
-      if (glGetError() != GL_NO_ERROR) {
-        DLOG(ERROR) << "glCompressedTexImage2D failed";
-        return false;
-      }
-    }
     if (resize_to_pot && bitmap.image_data()) {
       if (!UpdateGLImageFromBitmap(target, i, face, bitmap, true)) {
         DLOG(ERROR) << "UpdateGLImageFromBitmap failed";
         return false;
+      }
+    } else {
+      uint8 *data = resize_to_pot ? NULL :  bitmap.GetFaceMipData(face, i);
+      data = data ? data : temp_data.get();
+      if (format) {
+        glTexImage2D(target, i, internal_format, mip_width, mip_height,
+                     0, format, type, data);
+        if (glGetError() != GL_NO_ERROR) {
+          DLOG(ERROR) << "glTexImage2D failed";
+          return false;
+        }
+      } else {
+        unsigned int mip_size = image::ComputeBufferSize(mip_width, mip_height,
+                                                         bitmap.format());
+        DCHECK(data || temp_data.get());
+        glCompressedTexImage2DARB(target, i, internal_format, mip_width,
+                                  mip_height, 0, mip_size, data);
+        if (glGetError() != GL_NO_ERROR) {
+          DLOG(ERROR) << "glCompressedTexImage2D failed";
+          return false;
+        }
       }
     }
     mip_width = std::max(1U, mip_width >> 1);

@@ -278,9 +278,9 @@ function initStep2(clientElements) {
         }
         texture.setRect(0, tx, ty, 32, pixels);
         sampler.texture = texture;
-        if (tx == 0 && ty == 0) {
+        if (tx == 0 && ty == 0 && format != 4) {
           var texturePixels = texture.getRect(0, tx, ty, 32, 32);
-          if (texturePixels.length != pixels.length && format != 4) {
+          if (texturePixels.length != pixels.length) {
             reportResult(false, 'different length');
             return;
           }
@@ -295,6 +295,7 @@ function initStep2(clientElements) {
               //            " dif: " + difference);
               reportResult(false, 'pixels, format: ' + format +
                            ' different by: ' + difference);
+              return;
             }
           }
         }
