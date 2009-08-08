@@ -31,7 +31,7 @@ class WindowImpl {
   WindowImpl();
   virtual ~WindowImpl();
 
-  BEGIN_MSG_MAP_EX(WidgetWin)
+  BEGIN_MSG_MAP_EX(WindowImpl)
     // No messages to handle
   END_MSG_MAP()
 

@@ -126,9 +126,19 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
     parent = NULL;
   }
 
+  int x, y, width, height;
+  if (bounds.IsEmpty()) {
+    x = y = width = height = CW_USEDEFAULT;
+  } else {
+    x = bounds.x();
+    y = bounds.y();
+    width = bounds.width();
+    height = bounds.height();
+  }
+
   hwnd_ = CreateWindowEx(window_ex_style_, GetWindowClassName().c_str(), L"",
-                         window_style_, bounds.x(), bounds.y(), bounds.width(),
-                         bounds.height(), parent, NULL, NULL, this);
+                         window_style_, x, y, width, height,
+                         parent, NULL, NULL, this);
   DCHECK(hwnd_);
 
   // The window procedure should have set the data for us.
