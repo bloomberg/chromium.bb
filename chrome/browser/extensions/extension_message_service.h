@@ -42,9 +42,9 @@ class URLRequestContext;
 // port: an IPC::Message::Sender interface and an optional routing_id (in the
 // case that the port is a tab).  The Sender is usually either a
 // RenderProcessHost or a RenderViewHost.
-class ExtensionMessageService :
-    public base::RefCountedThreadSafe<ExtensionMessageService>,
-    public NotificationObserver {
+class ExtensionMessageService
+    : public base::RefCountedThreadSafe<ExtensionMessageService>,
+      public NotificationObserver {
  public:
   // Javascript function name constants.
   static const char kDispatchOnConnect[];
@@ -88,6 +88,7 @@ class ExtensionMessageService :
   int OpenAutomationChannelToExtension(int source_process_id,
                                        int routing_id,
                                        const std::string& extension_id,
+                                       const std::string& channel_name,
                                        IPC::Message::Sender* source);
 
   // --- IO thread only:
@@ -137,7 +138,7 @@ class ExtensionMessageService :
     const std::string& channel_name);
 
   // Common between OpenChannelOnUIThread and OpenAutomationChannelToExtension.
-  void OpenChannelOnUIThreadImpl(
+  bool OpenChannelOnUIThreadImpl(
     IPC::Message::Sender* source, int source_process_id, int source_routing_id,
     const MessagePort& receiver, int receiver_port_id,
     const std::string& extension_id, const std::string& channel_name);

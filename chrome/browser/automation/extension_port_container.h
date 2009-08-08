@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSION_PORT_CONTAINER_H_
-#define CHROME_BROWSER_EXTENSION_PORT_CONTAINER_H_
+#ifndef CHROME_BROWSER_AUTOMATION_EXTENSION_PORT_CONTAINER_H_
+#define CHROME_BROWSER_AUTOMATION_EXTENSION_PORT_CONTAINER_H_
 
 #include <string>
 
@@ -55,13 +55,16 @@ class ExtensionPortContainer : public IPC::Message::Sender {
   bool Connect(const std::string &extension_id,
                int process_id,
                int routing_id,
-               int connection_id);
-  // Sends a response to the
+               int connection_id,
+               const std::string& channel_name);
+
+  // Sends a connect response to the external port.
   void SendConnectionResponse(int connection_id, int port_id);
 
   void OnExtensionMessageInvoke(const std::string& function_name,
                                 const ListValue& args);
   void OnExtensionHandleMessage(const std::string& message, int source_port_id);
+  void OnExtensionPortDisconnected(int source_port_id);
 
   // Our automation provider.
   AutomationProvider* automation_;
@@ -77,4 +80,4 @@ class ExtensionPortContainer : public IPC::Message::Sender {
   DISALLOW_COPY_AND_ASSIGN(ExtensionPortContainer);
 };
 
-#endif  // CHROME_BROWSER_EXTENSION_PORT_CONTAINER_H_
+#endif  // CHROME_BROWSER_AUTOMATION_EXTENSION_PORT_CONTAINER_H_

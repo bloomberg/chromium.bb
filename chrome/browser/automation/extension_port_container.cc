@@ -25,7 +25,7 @@ ExtensionPortContainer::ExtensionPortContainer(AutomationProvider* automation,
                                                int tab_handle) :
     automation_(automation), service_(NULL), port_id_(-1),
     tab_handle_(tab_handle) {
-  service_ = automation_->profile()->GetExtensionMessageService();;
+  service_ = automation_->profile()->GetExtensionMessageService();
   DCHECK(service_);
 }
 
@@ -61,16 +61,22 @@ void ExtensionPortContainer::PostMessageFromExternalPort(
 bool ExtensionPortContainer::Connect(const std::string &extension_id,
                                      int process_id,
                                      int routing_id,
-                                     int connection_id) {
+                                     int connection_id,
+                                     const std::string& channel_name) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   port_id_ = service_->OpenAutomationChannelToExtension(process_id,
                                                         routing_id,
                                                         extension_id,
+                                                        channel_name,
                                                         this);
+  if (port_id_ == -1) {
+    // In this case a disconnect message has been dispatched.
+    return false;
+  }
 
   SendConnectionResponse(connection_id, port_id_);
-  return port_id_ != -1;
+  return true;
 }
 
 void ExtensionPortContainer::SendConnectionResponse(int connection_id,
@@ -110,7 +116,13 @@ void ExtensionPortContainer::OnExtensionMessageInvoke(
     if (args.GetString(0, &message) && args.GetInteger(1, &source_port_id))
       OnExtensionHandleMessage(message, source_port_id);
   } else if (function_name == ExtensionMessageService::kDispatchOnDisconnect) {
-    // do nothing
+    DCHECK_EQ(args.GetSize(), 1u);
+    int port_id;
+    if (args.GetInteger(0, &port_id))
+      OnExtensionPortDisconnected(port_id);
+  } else if (function_name == ExtensionMessageService::kDispatchOnConnect) {
+    // Do nothing.
+    // TODO(siggi): implement
   } else {
     NOTREACHED() << function_name << " shouldn't be called.";
   }
@@ -119,13 +131,25 @@ void ExtensionPortContainer::OnExtensionMessageInvoke(
 void ExtensionPortContainer::OnExtensionHandleMessage(
     const std::string& message, int source_port_id) {
   // Compose the reply message and fire it away.
-  scoped_ptr<DictionaryValue> msg_dict(new DictionaryValue());
-  msg_dict->SetInteger(ext::kAutomationRequestIdKey, ext::POST_MESSAGE);
-  msg_dict->SetInteger(ext::kAutomationPortIdKey, port_id_);
-  msg_dict->SetString(ext::kAutomationMessageDataKey, message);
+  DictionaryValue msg_dict;
+  msg_dict.SetInteger(ext::kAutomationRequestIdKey, ext::POST_MESSAGE);
+  msg_dict.SetInteger(ext::kAutomationPortIdKey, port_id_);
+  msg_dict.SetString(ext::kAutomationMessageDataKey, message);
 
   std::string msg_json;
-  JSONWriter::Write(msg_dict.get(), false, &msg_json);
+  JSONWriter::Write(&msg_dict, false, &msg_json);
+
+  PostMessageToExternalPort(msg_json);
+}
+
+void ExtensionPortContainer::OnExtensionPortDisconnected(int source_port_id) {
+  // Compose the disconnect message and fire it away.
+  DictionaryValue msg_dict;
+  msg_dict.SetInteger(ext::kAutomationRequestIdKey, ext::CHANNEL_CLOSED);
+  msg_dict.SetInteger(ext::kAutomationPortIdKey, port_id_);
+
+  std::string msg_json;
+  JSONWriter::Write(&msg_dict, false, &msg_json);
 
   PostMessageToExternalPort(msg_json);
 }
@@ -173,13 +197,18 @@ bool ExtensionPortContainer::InterceptMessageFromExternalHost(
     if (!got_value)
       return true;
 
+    std::string channel_name;
+    // Channel name is optional.
+    message_dict->GetString(ext::kAutomationChannelNameKey, &channel_name);
+
     int routing_id = view_host->routing_id();
     // Create the extension port and connect it.
     scoped_ptr<ExtensionPortContainer> port(
         new ExtensionPortContainer(automation, tab_handle));
 
     int process_id = view_host->process()->pid();
-    if (port->Connect(extension_id, process_id, routing_id, connection_id)) {
+    if (port->Connect(extension_id, process_id, routing_id, connection_id,
+                      channel_name)) {
       // We have a successful connection.
       automation->AddPortContainer(port.release());
     }
@@ -200,6 +229,19 @@ bool ExtensionPortContainer::InterceptMessageFromExternalHost(
     DCHECK(port);
     if (port)
       port->PostMessageFromExternalPort(data);
+  } else if (command == ext::CHANNEL_CLOSED) {
+    int port_id = -1;
+    got_value = message_dict->GetInteger(ext::kAutomationPortIdKey, &port_id);
+    DCHECK(got_value);
+    if (!got_value)
+      return true;
+
+    ExtensionPortContainer* port = automation->GetPortContainer(port_id);
+    DCHECK(port);
+    if (port) {
+      // This will delete the port and notify the other end of the disconnect.
+      automation->RemovePortContainer(port);
+    }
   } else {
     // We don't expect other messages here.
     NOTREACHED();

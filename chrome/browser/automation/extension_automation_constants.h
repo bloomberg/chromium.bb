@@ -30,6 +30,9 @@ extern const wchar_t kAutomationConnectionIdKey[];
 extern const wchar_t kAutomationMessageDataKey[];
 extern const wchar_t kAutomationExtensionIdKey[];
 extern const wchar_t kAutomationPortIdKey[];
+extern const wchar_t kAutomationChannelNameKey[];
+extern const wchar_t kAutomationTabJsonKey[];
+
 // All external port message requests should have this target.
 extern const char kAutomationPortRequestTarget[];
 // All external port message responses have this target.
@@ -43,6 +46,7 @@ enum PrivatePortCommand {
   OPEN_CHANNEL = 0,
   CHANNEL_OPENED = 1,
   POST_MESSAGE = 2,
+  CHANNEL_CLOSED = 3,
 };
 
 };  // namespace automation_extension_constants

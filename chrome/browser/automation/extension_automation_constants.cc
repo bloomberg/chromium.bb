@@ -21,6 +21,9 @@ const wchar_t kAutomationConnectionIdKey[] = L"connid";
 const wchar_t kAutomationMessageDataKey[] = L"data";
 const wchar_t kAutomationExtensionIdKey[] = L"extid";
 const wchar_t kAutomationPortIdKey[] = L"portid";
+const wchar_t kAutomationChannelNameKey[] = L"chname";
+const wchar_t kAutomationTabJsonKey[] = L"tab";
+
 const char kAutomationPortRequestTarget[] = "__priv_prtreq";
 const char kAutomationPortResponseTarget[] = "__priv_prtres";
 

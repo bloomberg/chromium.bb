@@ -246,7 +246,7 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
                             channel_name);
 }
 
-void ExtensionMessageService::OpenChannelOnUIThreadImpl(
+bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
     IPC::Message::Sender* source, int source_process_id, int source_routing_id,
     const MessagePort& receiver, int receiver_port_id,
     const std::string& extension_id, const std::string& channel_name) {
@@ -254,12 +254,13 @@ void ExtensionMessageService::OpenChannelOnUIThreadImpl(
 
   // TODO(mpcomplete): notify source if reciever doesn't exist
   if (!source)
-    return;  // Closed while in flight.
+    return false;  // Closed while in flight.
 
   if (!receiver.sender) {
     // Treat it as a disconnect.
     DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),
                          GET_OPPOSITE_PORT_ID(receiver_port_id));
+    return false;
   }
 
   linked_ptr<MessageChannel> channel(new MessageChannel);
@@ -281,11 +282,13 @@ void ExtensionMessageService::OpenChannelOnUIThreadImpl(
   // opener has the opposite port ID).
   DispatchOnConnect(receiver, receiver_port_id, channel_name, tab_json,
                     extension_id);
+
+  return true;
 }
 
 int ExtensionMessageService::OpenAutomationChannelToExtension(
     int source_process_id, int routing_id, const std::string& extension_id,
-    IPC::Message::Sender* source) {
+    const std::string& channel_name, IPC::Message::Sender* source) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   DCHECK(profile_);
 
@@ -302,8 +305,10 @@ int ExtensionMessageService::OpenAutomationChannelToExtension(
   MessagePort receiver(
       profile_->GetExtensionProcessManager()->GetExtensionProcess(extension_id),
       MSG_ROUTING_CONTROL);
-  OpenChannelOnUIThreadImpl(source, source_process_id, routing_id, receiver,
-                            port2_id, extension_id, "");
+  if (!OpenChannelOnUIThreadImpl(source, source_process_id, routing_id,
+                                 receiver, port2_id, extension_id,
+                                 channel_name))
+    return -1;
 
   return port1_id;
 }
