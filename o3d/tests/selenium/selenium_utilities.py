@@ -39,6 +39,7 @@ import os
 import re
 import time
 import unittest
+import base64
 import gflags
 import selenium_constants
 
@@ -174,7 +175,8 @@ def TakeScreenShotAtPath(session,
   full_path = filename.replace("\\", "/")
 
   # Attempt to take a screenshot of the display buffer
-  eval_string = ("%s.saveScreen('%s')" % (client, full_path))
+  eval_string = ("%s.toDataURL()" % client)
+
 
   # Set Post render call back to take screenshot
   script = ["window.g_selenium_post_render = false;",
@@ -196,9 +198,13 @@ def TakeScreenShotAtPath(session,
   session.wait_for_condition("window.g_selenium_post_render", 20000)
 
   # Get result
-  success = session.get_eval("window.g_selenium_save_screen_result")
-
-  if success == u"true":
+  data_url = session.get_eval("window.g_selenium_save_screen_result")
+  expected_header = "data:image/png;base64,"
+  if data_url.startswith(expected_header):
+    png = base64.b64decode(data_url[len(expected_header):])
+    file = open(full_path + ".png", 'wb')
+    file.write(png)
+    file.close()
     print "Saved screenshot %s." % full_path
     return True
 

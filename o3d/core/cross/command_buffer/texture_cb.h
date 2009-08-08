@@ -32,8 +32,8 @@
 
 // This file contains the declarations for Texture2DCB and TextureCUBECB.
 
-#ifndef O3D_CORE_CROSS_COMMAND_BUFFER_TEXTURE_CB_H__
-#define O3D_CORE_CROSS_COMMAND_BUFFER_TEXTURE_CB_H__
+#ifndef O3D_CORE_CROSS_COMMAND_BUFFER_TEXTURE_CB_H_
+#define O3D_CORE_CROSS_COMMAND_BUFFER_TEXTURE_CB_H_
 
 // Precompiled header comes before everything else.
 #include "core/cross/precompile.h"
@@ -212,4 +212,4 @@ class TextureCUBECB : public TextureCUBE {
 
 }  // namespace o3d
 
-#endif  // O3D_CORE_CROSS_COMMAND_BUFFER_TEXTURE_CB_H__
+#endif  // O3D_CORE_CROSS_COMMAND_BUFFER_TEXTURE_CB_H_

@@ -30,8 +30,8 @@
  */
 
 
-#ifndef O3D_CORE_CROSS_GL_UTILS_GL_H__
-#define O3D_CORE_CROSS_GL_UTILS_GL_H__
+#ifndef O3D_CORE_CROSS_GL_UTILS_GL_H_
+#define O3D_CORE_CROSS_GL_UTILS_GL_H_
 
 #include "base/basictypes.h"
 #include "core/cross/stream.h"
@@ -44,4 +44,4 @@ Stream::Semantic GLVertexAttributeToStream(const unsigned int attr, int *index);
 
 }  // namespace o3d
 
-#endif  // O3D_CORE_CROSS_GL_UTILS_GL_H__
+#endif  // O3D_CORE_CROSS_GL_UTILS_GL_H_

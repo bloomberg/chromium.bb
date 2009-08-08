@@ -146,8 +146,8 @@ void Bitmap::SetRect(
 
   uint8* dst =
       GetMipData(level) +
-      image::ComputeMipChainSize(mip_width, dst_top, format(), 1) +
-      image::ComputeMipChainSize(dst_left, 1, format(), 1);
+      image::ComputePitch(format(), mip_width) * dst_top +
+      image::ComputePitch(format(), dst_left);
 
   const uint8* src = static_cast<const uint8*>(src_data);
   if (!compressed) {

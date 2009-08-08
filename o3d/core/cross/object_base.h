@@ -33,8 +33,8 @@
 // This file contains the declaration of the ObjectBase class and definitions
 // for the macros used to define the O3D object classes.
 
-#ifndef O3D_CORE_CROSS_OBJECT_BASE_H__
-#define O3D_CORE_CROSS_OBJECT_BASE_H__
+#ifndef O3D_CORE_CROSS_OBJECT_BASE_H_
+#define O3D_CORE_CROSS_OBJECT_BASE_H_
 
 #include <vector>
 
@@ -240,4 +240,4 @@ typedef std::vector<ObjectBase*> ObjectBaseArray;
 
 }  // namespace o3d
 
-#endif  // O3D_CORE_CROSS_OBJECT_BASE_H__
+#endif  // O3D_CORE_CROSS_OBJECT_BASE_H_

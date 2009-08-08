@@ -55,6 +55,7 @@
 #include "core/cross/profiler.h"
 #include "utils/cross/string_writer.h"
 #include "utils/cross/json_writer.h"
+#include "utils/cross/dataurl.h"
 
 #ifdef OS_WIN
 #include "core/cross/core_metrics.h"
@@ -401,12 +402,17 @@ void Client::InvalidateAllParameters() {
   evaluation_counter_->InvalidateAllParameters();
 }
 
-bool Client::SaveScreen(const String& file_name) {
+String Client::ToDataURL() {
   if (!renderer_.IsAvailable()) {
     O3D_ERROR(service_locator_) << "No Render Device Available";
-    return false;
+    return dataurl::kEmptyDataURL;
   } else {
-    return renderer_->SaveScreen(file_name);
+    Bitmap::Ref bitmap(renderer_->TakeScreenshot());
+    if (bitmap.IsNull()) {
+      return dataurl::kEmptyDataURL;
+    } else {
+      return bitmap->ToDataURL();
+    }
   }
 }
 

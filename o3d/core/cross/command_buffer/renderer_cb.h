@@ -141,9 +141,8 @@ class RendererCB : public Renderer {
     return RenderDepthStencilSurface::Ref();
   }
 
-  // Saves a png screenshot.
-  // Returns true on success and false on failure.
-  virtual bool SaveScreen(const String& file_name);
+  // Overridden from Renderer.
+  virtual Bitmap::Ref TakeScreenshot();
 
   // Gets the allocator for vertex buffer IDs.
   IdAllocator &vertex_buffer_ids() { return vertex_buffer_ids_; }

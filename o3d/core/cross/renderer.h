@@ -364,9 +364,8 @@ class Renderer {
       int width,
       int height) = 0;
 
-  // Saves a png screenshot.
-  // Returns true on success and false on failure.
-  virtual bool SaveScreen(const String& file_name) = 0;
+  // Returns the screen as a Bitmap. Will return a null reference on error.
+  virtual Bitmap::Ref TakeScreenshot() = 0;
 
   ServiceLocator* service_locator() const { return service_locator_; }
 

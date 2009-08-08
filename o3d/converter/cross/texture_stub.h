@@ -32,8 +32,8 @@
 
 // This file contains the declarations for Texture2DStub and TextureCUBEStub.
 
-#ifndef O3D_CONVERTER_CROSS_TEXTURE_STUB_H__
-#define O3D_CONVERTER_CROSS_TEXTURE_STUB_H__
+#ifndef O3D_CONVERTER_CROSS_TEXTURE_STUB_H_
+#define O3D_CONVERTER_CROSS_TEXTURE_STUB_H_
 
 #include "core/cross/bitmap.h"
 #include "core/cross/texture.h"
@@ -175,4 +175,4 @@ class TextureCUBEStub : public TextureCUBE {
 
 }  // namespace o3d
 
-#endif  // O3D_CONVERTER_CROSS_TEXTURE_STUB_H__
+#endif  // O3D_CONVERTER_CROSS_TEXTURE_STUB_H_

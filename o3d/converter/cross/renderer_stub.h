@@ -35,8 +35,8 @@
 // can use it for serialization of the scene graph on all systems
 // without needing graphics.
 
-#ifndef O3D_CONVERTER_CROSS_RENDERER_STUB_H__
-#define O3D_CONVERTER_CROSS_RENDERER_STUB_H__
+#ifndef O3D_CONVERTER_CROSS_RENDERER_STUB_H_
+#define O3D_CONVERTER_CROSS_RENDERER_STUB_H_
 
 #include "core/cross/renderer.h"
 
@@ -79,7 +79,7 @@ class RendererStub : public Renderer {
   virtual RenderDepthStencilSurface::Ref CreateDepthStencilSurface(int width,
                                                                    int height);
   virtual StreamBank::Ref CreateStreamBank();
-  virtual bool SaveScreen(const String& file_name);
+  virtual Bitmap::Ref TakeScreenshot();
   ParamCache *CreatePlatformSpecificParamCache();
   virtual void SetViewportInPixels(int left,
                                    int top,
@@ -123,4 +123,4 @@ class RendererStub : public Renderer {
 
 }  // namespace o3d
 
-#endif  // O3D_CONVERTER_CROSS_RENDERER_STUB_H__
+#endif  // O3D_CONVERTER_CROSS_RENDERER_STUB_H_

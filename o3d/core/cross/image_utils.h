@@ -59,8 +59,7 @@ enum ImageFileType {
 unsigned int GetNumComponentsForFormat(Texture::Format format);
 
 inline bool CheckImageDimensions(unsigned int width, unsigned int height) {
-  return width > 0 && height > 0 &&
-      width <= kMaxImageDimension && height <= kMaxImageDimension;
+  return width <= kMaxImageDimension && height <= kMaxImageDimension;
 }
 
 // Gets the number of mip-maps required for a full chain starting at

@@ -368,9 +368,8 @@ void RendererCB::SetViewportInPixels(int left,
   helper_->AddCommand(command_buffer::SET_VIEWPORT, 6, args);
 }
 
-bool RendererCB::SaveScreen(const String& file_name) {
-  // TODO
-  return false;
+Bitmap::Ref RendererCB::TakeScreenshot() {
+  return Bitmap::Ref();
 }
 
 const int* RendererCB::GetRGBAUByteNSwizzleTable() {

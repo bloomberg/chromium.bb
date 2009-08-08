@@ -1708,20 +1708,18 @@ RenderDepthStencilSurface::Ref RendererD3D9::CreateDepthStencilSurface(
                                         depth_constructor));
 }
 
-// Saves a png screenshot 'filename.png'.
-// Returns true on success and false on failure.
-bool RendererD3D9::SaveScreen(const String& file_name) {
-#ifdef TESTING
+Bitmap::Ref RendererD3D9::TakeScreenshot() {
+  Bitmap::Ref empty;
   LPDIRECT3DDEVICE9 device = d3d_device();
   CComPtr<IDirect3DSurface9> system_surface;
   CComPtr<IDirect3DSurface9> current_surface;
 
   if (!HR(device->GetRenderTarget(0, &current_surface)))
-    return false;
+    return empty;
 
   D3DSURFACE_DESC surface_description;
   if (!HR(current_surface->GetDesc(&surface_description)))
-    return false;
+    return empty;
 
   // Construct an intermediate surface with multi-sampling disabled.
   // This surface is required because GetRenderTargetData(...) will fail
@@ -1737,7 +1735,7 @@ bool RendererD3D9::SaveScreen(const String& file_name) {
                                      FALSE,
                                      &intermediate_target,
                                      NULL))) {
-    return false;
+    return empty;
   }
 
   if (!HR(device->StretchRect(current_surface,
@@ -1745,7 +1743,7 @@ bool RendererD3D9::SaveScreen(const String& file_name) {
                               intermediate_target,
                               NULL,
                               D3DTEXF_NONE))) {
-    return false;
+    return empty;
   }
 
   if (!HR(device->CreateOffscreenPlainSurface(surface_description.Width,
@@ -1754,27 +1752,39 @@ bool RendererD3D9::SaveScreen(const String& file_name) {
                                               D3DPOOL_SYSTEMMEM,
                                               &system_surface,
                                               NULL))) {
-    return false;
+    return empty;
   }
 
   if (!HR(device->GetRenderTargetData(intermediate_target, system_surface)))
-    return false;
+    return empty;
 
-  // append .png to the end of file_name
-  String png_file_name = file_name;
-  png_file_name.append(String(".png"));
-  // convert file name to utf16
-  std::wstring file_name_utf16 = UTF8ToWide(png_file_name);
+  D3DLOCKED_RECT out_rect = {0};
+  if (!HR(system_surface->LockRect(&out_rect, NULL, D3DLOCK_READONLY))) {
+    O3D_ERROR(service_locator()) << "Failed to Lock Surface (D3D9)";
+    return empty;
+  }
 
-  return HR(o3d::D3DXSaveSurfaceToFile(file_name_utf16.c_str(),
-                                       D3DXIFF_PNG,
-                                       system_surface,
-                                       NULL,
-                                       NULL));
-#else
-  // Not a test build, always return false.
-  return false;
-#endif
+  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
+  bitmap->Allocate(Texture::ARGB8,
+                   surface_description.Width,
+                   surface_description.Height,
+                   1,
+                   false);
+  bitmap->SetRect(0, 0, 0,
+                  surface_description.Width,
+                  surface_description.Height,
+                  out_rect.pBits,
+                  out_rect.Pitch);
+  // TODO(gman): Remove this when we get the D3D backbuffer to be RGBA
+  // Set the Alpha to 0xFF
+  uint8* data = bitmap->image_data();
+  uint8* end = data + bitmap->width() * bitmap->height() * 4;
+  while (data != end) {
+    data[3] = 0xFF;
+    data += 4;
+  }
+  bitmap->FlipVertically();
+  return bitmap;
 }
 
 const int* RendererD3D9::GetRGBAUByteNSwizzleTable() {

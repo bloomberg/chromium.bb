@@ -242,13 +242,10 @@ class Bitmap : public ParamObject {
   // from a flippable format back to a DXT format.
   void FlipVertically();
 
-  // Saves to a PNG file. The image must be of the ARGB8 format, be a 2D image
-  // with no mip-maps (only the base level).
-  // Parameters:
-  //   filename: the name of the file to into.
+  // Returns the contents of the bitmap as a data URL
   // Returns:
-  //   true if successful.
-  bool SaveToPNGFile(const char* filename);
+  //   A data url that represents the content of the bitmap.
+  String ToDataURL();
 
   // Checks that the alpha channel for the entire bitmap is 1.0
   bool CheckAlphaIsOne() const;

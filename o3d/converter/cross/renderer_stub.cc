@@ -196,9 +196,8 @@ StreamBank::Ref RendererStub::CreateStreamBank() {
   return StreamBank::Ref(new StreamBankStub(service_locator()));
 }
 
-bool RendererStub::SaveScreen(const String &) {
-  DCHECK(false);
-  return true;
+Bitmap::Ref RendererStub::TakeScreenshot() {
+  return Bitmap::Ref();
 }
 
 ParamCache *RendererStub::CreatePlatformSpecificParamCache(void) {

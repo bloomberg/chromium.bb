@@ -395,9 +395,8 @@ class Client {
   // Dumps all profiler state to a string.
   String ProfileToString();
 
-  // Saves a png screenshot of the display buffer.
-  // Returns true on success and false on failure.
-  bool SaveScreen(const String& file_name);
+  // Reutrns a data: URL of the client area in png format.
+  String ToDataURL();
 
   // This class is intended to be used on the stack, such that the variable gets
   // incremented on scope entry and decremented on scope exit.  It's currently

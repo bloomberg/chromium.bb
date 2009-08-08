@@ -32,8 +32,8 @@
 
 // This file contains the declaration for the Sampler class.
 
-#ifndef O3D_CORE_CROSS_SAMPLER_H__
-#define O3D_CORE_CROSS_SAMPLER_H__
+#ifndef O3D_CORE_CROSS_SAMPLER_H_
+#define O3D_CORE_CROSS_SAMPLER_H_
 
 #include "core/cross/param_object.h"
 #include "core/cross/param.h"
@@ -204,4 +204,4 @@ class ParamSampler : public TypedRefParam<Sampler> {
 
 }  // namespace o3d
 
-#endif  // O3D_CORE_CROSS_SAMPLER_H__
+#endif  // O3D_CORE_CROSS_SAMPLER_H_

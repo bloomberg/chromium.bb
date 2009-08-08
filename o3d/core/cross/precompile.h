@@ -33,8 +33,8 @@
 // This file contains includes for common headers used by O3D files.  It
 // is used for pre-compiled header support.
 
-#ifndef O3D_CORE_CROSS_PRECOMPILE_H__
-#define O3D_CORE_CROSS_PRECOMPILE_H__
+#ifndef O3D_CORE_CROSS_PRECOMPILE_H_
+#define O3D_CORE_CROSS_PRECOMPILE_H_
 
 #include <build/build_config.h>
 
@@ -63,4 +63,4 @@
 #include <map>
 #include <vector>
 
-#endif  // O3D_CORE_CROSS_PRECOMPILE_H__
+#endif  // O3D_CORE_CROSS_PRECOMPILE_H_

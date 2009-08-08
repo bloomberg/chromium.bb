@@ -32,8 +32,8 @@
 
 // This file contains the declarations for Texture2DGL and TextureCUBEGL.
 
-#ifndef O3D_CORE_CROSS_GL_TEXTURE_GL_H__
-#define O3D_CORE_CROSS_GL_TEXTURE_GL_H__
+#ifndef O3D_CORE_CROSS_GL_TEXTURE_GL_H_
+#define O3D_CORE_CROSS_GL_TEXTURE_GL_H_
 
 // Precompiled header comes before everything else.
 #include "core/cross/precompile.h"
@@ -235,4 +235,4 @@ class TextureCUBEGL : public TextureCUBE {
 
 }  // namespace o3d
 
-#endif  // O3D_CORE_CROSS_GL_TEXTURE_GL_H__
+#endif  // O3D_CORE_CROSS_GL_TEXTURE_GL_H_

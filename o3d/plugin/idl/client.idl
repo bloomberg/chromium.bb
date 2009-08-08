@@ -486,11 +486,21 @@ class Client {
   void InvalidateAllParameters();
 
   %[
-    This function is only available in the test version of the plugin.
-    \param file_name Name to save screenshot to.
-    \return True on success.
+    Gets a copy of the current backbuffer of O3D as a data: url.
+
+    NOTE: Calling it will cause a render to happen.
+
+    \return A Data URL for the backbuffer.
   %]
-  bool SaveScreen(String file_name);
+  String ToDataURL();
+
+  %[
+    Gets a copy of the current backbuffer of O3D as a data: url.
+    \param mime_type The type of data url you want. Currently O3D only supports
+       image/png. See HTML5 canvas tag for info about toDataURL.
+    \return A Data URL for the backbuffer.
+  %]
+  [userglue] String ToDataURL(String mime_type);
 
   %[
     Returns the status of initializing the renderer so we can display the
@@ -584,6 +594,12 @@ class Client {
       static_cast<glue::_o3d::PluginObject*>(plugin_data)->GetDisplayModes(
           &modes);
       return modes;
+    }
+    o3d::String userglue_method_ToDataURL(o3d::Client* self,
+                                          const o3d::String& mime_type) {
+        // We ignore the mime_type since it's only a suggestion
+        // and we only return the required image/png type.
+        return self->ToDataURL();
     }
     void userglue_method_SetFullscreenClickRegion(
         void *plugin_data, o3d::Client *self, int x, int y, int width,

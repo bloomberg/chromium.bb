@@ -254,6 +254,8 @@ tests = [
     'import/cross/threaded_stream_processor_test.cc',
     'serializer/cross/serializer_test.cc',
     'tests/common/cross/test_utils.cc',
+    'utils/cross/base64_test.cc',
+    'utils/cross/dataurl_test.cc',
     'utils/cross/file_path_utils_test.cc',
     'utils/cross/file_text_reader_test.cc',
     'utils/cross/json_writer_test.cc',

@@ -37,6 +37,7 @@
 
 #include <fstream>
 #include "core/cross/bitmap.h"
+#include "core/cross/error.h"
 #include "core/cross/types.h"
 #include "utils/cross/file_path_utils.h"
 #include "base/file_path.h"
@@ -44,22 +45,38 @@
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
 #include "png.h"
+#include "utils/cross/dataurl.h"
 
 using file_util::OpenFile;
 using file_util::CloseFile;
 
 namespace o3d {
 
+namespace {
+
 // Helper function for LoadFromPNGFile that converts a stream into the
 // necessary abstract byte reading function.
-static void stream_read_data(png_structp png_ptr,
-                             png_bytep data,
-                             png_size_t length) {
+void StreamReadData(png_structp png_ptr, png_bytep data, png_size_t length) {
   MemoryReadStream *stream =
     static_cast<MemoryReadStream*>(png_get_io_ptr(png_ptr));
   stream->Read(data, length);
 }
 
+// Helper function for ToDataURL that converts a stream into the necessary
+// abstract byte writing function.
+void StreamWriteData(png_structp png_ptr, png_bytep data, png_size_t length) {
+  std::vector<uint8>* stream =
+     static_cast<std::vector<uint8>*>(png_get_io_ptr(png_ptr));
+  stream->insert(stream->end(),
+                 static_cast<uint8*>(data),
+                 static_cast<uint8*>(data) + length);
+}
+
+// Because libpng requires a flush function according to the docs.
+void StreamFlush(png_structp png_ptr) {
+}
+
+}  // anonymous namespace
 
 // Loads the raw RGB data from a compressed PNG file.
 bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
@@ -117,7 +134,7 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
   }
 
   // Set up our STL stream input control
-  png_set_read_fn(png_ptr, stream, &stream_read_data);
+  png_set_read_fn(png_ptr, stream, &StreamReadData);
 
   // We have already read some of the signature, advance the pointer.
   png_set_sig_bytes(png_ptr, sizeof(magic));
@@ -263,27 +280,17 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
   return true;
 }
 
-// Saves the BGRA data from a compressed PNG file.
-bool Bitmap::SaveToPNGFile(const char* filename) {
-  if (format_ != Texture::ARGB8) {
-    DLOG(ERROR) << "Can only save ARGB8 images.";
-    return false;
-  }
-  if (num_mipmaps_ != 1 || is_cubemap_) {
-    DLOG(ERROR) << "Only 2D images with only the base level can be saved.";
-    return false;
-  }
-  FILE *fp = fopen(filename, "wb");
-  if (!fp) {
-    DLOG(ERROR) << "Could not open file " << filename << " for writing.";
-    return false;
-  }
+namespace {
+
+bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
+  DCHECK(bitmap.format() == Texture::ARGB8);
+  DCHECK(bitmap.num_mipmaps() == 1);
+  DCHECK(!bitmap.is_cubemap());
 
   png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
                                                 NULL, NULL);
   if (!png_ptr) {
     DLOG(ERROR) << "Could not create PNG structure.";
-    fclose(fp);
     return false;
   }
 
@@ -291,26 +298,27 @@ bool Bitmap::SaveToPNGFile(const char* filename) {
   if (!info_ptr) {
     DLOG(ERROR) << "Could not create PNG info structure.";
     png_destroy_write_struct(&png_ptr,  png_infopp_NULL);
-    fclose(fp);
     return false;
   }
 
-  scoped_array<png_bytep> row_pointers(new png_bytep[height_]);
-  for (int i = 0; i < height_; ++i) {
-    row_pointers[height_-1-i] = image_data_.get() + i * width_ * 4;
+  unsigned width = bitmap.width();
+  unsigned height = bitmap.height();
+  scoped_array<png_bytep> row_pointers(new png_bytep[height]);
+  for (int i = 0; i < height; ++i) {
+    row_pointers[height - 1 - i] = bitmap.GetMipData(0) + i * width * 4;
   }
 
   if (setjmp(png_jmpbuf(png_ptr))) {
     // If we get here, we had a problem reading the file.
-    DLOG(ERROR) << "Error while writing file " << filename << ".";
+    DLOG(ERROR) << "Error while getting dataURL.";
     png_destroy_write_struct(&png_ptr, &info_ptr);
-    fclose(fp);
     return false;
   }
 
-  png_init_io(png_ptr, fp);
+  // Set up our STL stream output.
+  png_set_write_fn(png_ptr, buffer, &StreamWriteData, &StreamFlush);
 
-  png_set_IHDR(png_ptr, info_ptr, width_, height_, 8,
+  png_set_IHDR(png_ptr, info_ptr, width, height, 8,
                PNG_COLOR_TYPE_RGB_ALPHA, PNG_INTERLACE_NONE,
                PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
   png_set_bgr(png_ptr);
@@ -318,8 +326,27 @@ bool Bitmap::SaveToPNGFile(const char* filename) {
   png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, png_voidp_NULL);
 
   png_destroy_write_struct(&png_ptr, &info_ptr);
-  fclose(fp);
-  return true;
+}
+
+}  // anonymous namespace
+
+String Bitmap::ToDataURL() {
+  if (format_ != Texture::ARGB8) {
+    O3D_ERROR(service_locator()) << "Can only get data URL from ARGB8 images.";
+    return dataurl::kEmptyDataURL;
+  }
+  if (num_mipmaps_ != 1 || is_cubemap_) {
+    O3D_ERROR(service_locator()) <<
+        "Can only get data URL from 2d images with no mips.";
+    return dataurl::kEmptyDataURL;
+  }
+
+  std::vector<uint8> stream;
+  if (!CreatePNGInUInt8Vector(*this, &stream)) {
+    return dataurl::kEmptyDataURL;
+  }
+
+  return dataurl::ToDataURL("image/png", &stream[0], stream.size());
 }
 
 }  // namespace o3d

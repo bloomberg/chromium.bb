@@ -156,9 +156,8 @@ class RendererD3D9 : public Renderer {
       int width,
       int height);
 
-  // Saves a png screenshot 'file_name.png'.
-  // Returns true on success and false on failure.
-  virtual bool SaveScreen(const String& file_name);
+  // Overridden from Renderer.
+  virtual Bitmap::Ref TakeScreenshot();
 
   inline LPDIRECT3DDEVICE9 d3d_device() const { return d3d_device_; }
   inline LPDIRECT3D9 d3d() const { return d3d_; }

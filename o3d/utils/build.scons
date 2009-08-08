@@ -31,6 +31,8 @@
 Import('env')
 
 inputs = [
+    'cross/base64.cc',
+    'cross/dataurl.cc',
     'cross/file_path_utils.cc',
     'cross/file_text_reader.cc',
     'cross/file_text_writer.cc',

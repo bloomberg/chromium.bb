@@ -21,6 +21,10 @@
       'target_name': 'o3dUtils',
       'type': 'static_library',
       'sources': [
+        "cross/base64.cc",
+        "cross/base64.h",
+        "cross/dataurl.cc",
+        "cross/dataurl.h",
         "cross/file_path_utils.cc",
         "cross/file_path_utils.h",
         "cross/file_text_reader.cc",
@@ -50,6 +54,8 @@
       ],
       'direct_dependent_settings': {
         'sources': [
+          "cross/base64_test.cc",
+          "cross/dataurl_test.cc",
           "cross/file_path_utils_test.cc",
           "cross/file_text_reader_test.cc",
           "cross/json_writer_test.cc",

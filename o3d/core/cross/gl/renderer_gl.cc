@@ -1560,10 +1560,7 @@ RenderDepthStencilSurface::Ref RendererGL::CreateDepthStencilSurface(
                                       height));
 }
 
-// Saves a png screenshot 'file_name.png'.
-// Returns true on success and false on failure.
-bool RendererGL::SaveScreen(const String& file_name) {
-#ifdef TESTING
+Bitmap::Ref RendererGL::TakeScreenshot() {;
   MakeCurrentLazy();
   Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
   bitmap->Allocate(Texture::ARGB8, width(), height(), 1, false);
@@ -1574,16 +1571,7 @@ bool RendererGL::SaveScreen(const String& file_name) {
   // might exhibit suprise translucency.
   ::glReadPixels(0, 0, width(), height(), GL_BGRA, GL_UNSIGNED_BYTE,
                  bitmap->image_data());
-  bool result = bitmap->SaveToPNGFile((file_name + ".png").c_str());
-  if (!result) {
-    O3D_ERROR(service_locator())
-        << "Failed to save screen into " << file_name;
-  }
-  return result;
-#else
-  // Not a test build, always return false.
-  return false;
-#endif
+  return bitmap;
 }
 
 const int* RendererGL::GetRGBAUByteNSwizzleTable() {

@@ -43,12 +43,10 @@ class ImageTest : public testing::Test {
 
 TEST_F(ImageTest, CheckImageDimensions) {
   EXPECT_TRUE(image::CheckImageDimensions(1u, 1u));
-  EXPECT_FALSE(image::CheckImageDimensions(0u, 1u));
-  EXPECT_FALSE(image::CheckImageDimensions(1u, 0u));
   EXPECT_TRUE(image::CheckImageDimensions(image::kMaxImageDimension,
                                           image::kMaxImageDimension));
-  EXPECT_FALSE(image::CheckImageDimensions(0u, image::kMaxImageDimension));
-  EXPECT_FALSE(image::CheckImageDimensions(image::kMaxImageDimension, 0u));
+  EXPECT_FALSE(image::CheckImageDimensions(0u, image::kMaxImageDimension + 1));
+  EXPECT_FALSE(image::CheckImageDimensions(image::kMaxImageDimension + 1, 0u));
 }
 
 TEST_F(ImageTest, ComputeMipMapCount) {
@@ -300,4 +298,5 @@ TEST_F(ImageTest, GetFileTypeFromMimeType) {
 }
 
 }  // namespace
+
 
