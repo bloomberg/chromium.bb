@@ -35,6 +35,8 @@
 #ifndef O3D_UTILS_CROSS_BASE64_H_
 #define O3D_UTILS_CROSS_BASE64_H_
 
+#include <stddef.h>
+
 namespace o3d {
 namespace base64 {
 
