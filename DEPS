@@ -88,6 +88,9 @@ deps_os = {
 
     "src/third_party/python_24":
       "/trunk/deps/third_party/python_24@19441",
+
+    "src/third_party/ffmpeg/binaries/chromium":
+      "/trunk/deps/third_party/ffmpeg/binaries/win@22838",
   },
   "mac": {
     "src/third_party/GTM":
@@ -98,11 +101,15 @@ deps_os = {
       Var("webkit_trunk") + "/WebKit/mac@" + Var("webkit_revision"),
     "src/third_party/WebKit/WebKitLibraries":
       Var("webkit_trunk") + "/WebKitLibraries@" + Var("webkit_revision"),
+    "src/third_party/ffmpeg/binaries/chromium":
+      "/trunk/deps/third_party/ffmpeg/binaries/mac@22838",
   },
   "unix": {
     # Linux, really.
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@22207",
+    "src/third_party/ffmpeg/binaries/chromium":
+      "/trunk/deps/third_party/ffmpeg/binaries/linux@22838",
   },
 }
 
