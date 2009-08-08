@@ -38,6 +38,7 @@ namespace WebKit {
 class WebKeyboardEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
+class WebSettingsImpl;
 }
 
 class AutocompletePopupMenuClient;
@@ -88,6 +89,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual bool DownloadImage(int id, const GURL& image_url, int image_size);
   virtual void SetPreferences(const WebPreferences& preferences);
   virtual const WebPreferences& GetPreferences();
+  virtual WebKit::WebSettings* GetSettings();
   virtual void SetPageEncoding(const std::wstring& encoding_name);
   virtual std::wstring GetMainFrameEncodingName();
   virtual void ZoomIn(bool text_only);
@@ -256,6 +258,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   // A copy of the WebPreferences object we receive from the browser.
   WebPreferences webprefs_;
+
+  // An object that can be used to manipulate page_->settings() without linking
+  // against WebCore.  This is lazily allocated the first time GetWebSettings()
+  // is called.
+  scoped_ptr<WebKit::WebSettingsImpl> web_settings_;
 
   // A copy of the web drop data object we received from the browser.
   RefPtr<WebCore::ChromiumDataObject> current_drag_data_;

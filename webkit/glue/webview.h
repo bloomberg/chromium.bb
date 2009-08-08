@@ -13,6 +13,7 @@
 
 namespace WebKit {
 class WebDragData;
+class WebSettings;
 struct WebPoint;
 }
 
@@ -146,8 +147,14 @@ class WebView : public WebKit::WebWidget {
   virtual bool DownloadImage(int id, const GURL& image_url, int image_size) = 0;
 
   // Replace the standard setting for the WebView with |preferences|.
+  // TODO(jorlow): Remove in favor of the GetWebSettings() interface below.
   virtual void SetPreferences(const WebPreferences& preferences) = 0;
   virtual const WebPreferences& GetPreferences() = 0;
+
+  // Gets a WebSettings object that can be used to modify the behavior of this
+  // WebView.  The object is deleted by this class on destruction, so you must
+  // not use it beyond WebView's lifetime.
+  virtual WebKit::WebSettings* GetSettings() = 0;
 
   // Set the encoding of the current main frame. The value comes from
   // the encoding menu. WebKit uses the function named

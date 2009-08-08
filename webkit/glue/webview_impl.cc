@@ -1,34 +1,6 @@
-/*
-* Copyright 2007 Google Inc. All Rights Reserved.
-*
-* Portions Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
-*
-* ***** BEGIN LICENSE BLOCK *****
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions
-* are met:
-* 1. Redistributions of source code must retain the above copyright
-*    notice, this list of conditions and the following disclaimer.
-* 2. Redistributions in binary form must reproduce the above copyright
-*    notice, this list of conditions and the following disclaimer in the
-*    documentation and/or other materials provided with the distribution.
-*
-* THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-* PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
-* CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-* EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-* PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-* OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* ***** END LICENSE BLOCK *****
-*
-*/
+// Copyright (c) 2007-2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "config.h"
 #include "build/build_config.h"
@@ -94,6 +66,8 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
+#include "webkit/api/public/WebURL.h"
+#include "webkit/api/src/WebSettingsImpl.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/context_menu_client_impl.h"
 #include "webkit/glue/dom_operations.h"
@@ -132,12 +106,15 @@ using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebPoint;
 using WebKit::WebRect;
+using WebKit::WebSettings;
+using WebKit::WebSettingsImpl;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebTextDirectionDefault;
 using WebKit::WebTextDirectionLeftToRight;
 using WebKit::WebTextDirectionRightToLeft;
+using WebKit::WebURL;
 
 using webkit_glue::ImageResourceFetcher;
 
@@ -1393,25 +1370,25 @@ void WebViewImpl::SetPreferences(const WebPreferences& preferences) {
   // Keep a local copy of the preferences struct for GetPreferences.
   webprefs_ = preferences;
 
-  Settings* settings = page_->settings();
+  WebSettings* settings = GetSettings();
 
-  settings->setStandardFontFamily(webkit_glue::StdWStringToString(
+  settings->setStandardFontFamily(WideToUTF16Hack(
     preferences.standard_font_family));
-  settings->setFixedFontFamily(webkit_glue::StdWStringToString(
+  settings->setFixedFontFamily(WideToUTF16Hack(
     preferences.fixed_font_family));
-  settings->setSerifFontFamily(webkit_glue::StdWStringToString(
+  settings->setSerifFontFamily(WideToUTF16Hack(
     preferences.serif_font_family));
-  settings->setSansSerifFontFamily(webkit_glue::StdWStringToString(
+  settings->setSansSerifFontFamily(WideToUTF16Hack(
     preferences.sans_serif_font_family));
-  settings->setCursiveFontFamily(webkit_glue::StdWStringToString(
+  settings->setCursiveFontFamily(WideToUTF16Hack(
     preferences.cursive_font_family));
-  settings->setFantasyFontFamily(webkit_glue::StdWStringToString(
+  settings->setFantasyFontFamily(WideToUTF16Hack(
     preferences.fantasy_font_family));
   settings->setDefaultFontSize(preferences.default_font_size);
   settings->setDefaultFixedFontSize(preferences.default_fixed_font_size);
   settings->setMinimumFontSize(preferences.minimum_font_size);
   settings->setMinimumLogicalFontSize(preferences.minimum_logical_font_size);
-  settings->setDefaultTextEncodingName(webkit_glue::StdWStringToString(
+  settings->setDefaultTextEncodingName(WideToUTF16Hack(
     preferences.default_encoding));
   settings->setJavaScriptEnabled(preferences.javascript_enabled);
   settings->setWebSecurityEnabled(preferences.web_security_enabled);
@@ -1428,12 +1405,10 @@ void WebViewImpl::SetPreferences(const WebPreferences& preferences) {
   settings->setTextAreasAreResizable(preferences.text_areas_are_resizable);
   settings->setAllowScriptsToCloseWindows(
     preferences.allow_scripts_to_close_windows);
-  if (preferences.user_style_sheet_enabled) {
-    settings->setUserStyleSheetLocation(webkit_glue::GURLToKURL(
-      preferences.user_style_sheet_location));
-  } else {
-    settings->setUserStyleSheetLocation(KURL());
-  }
+  if (preferences.user_style_sheet_enabled)
+    settings->setUserStyleSheetLocation(preferences.user_style_sheet_location);
+  else
+    settings->setUserStyleSheetLocation(WebURL());
   settings->setUsesPageCache(preferences.uses_page_cache);
   settings->setDownloadableBinaryFontsEnabled(preferences.remote_fonts_enabled);
   settings->setXSSAuditorEnabled(preferences.xss_auditor_enabled);
@@ -1444,9 +1419,9 @@ void WebViewImpl::SetPreferences(const WebPreferences& preferences) {
   // clicking the link should select it rather than navigate to it.
   // Safari uses the same default. It is unlikley an embedder would want to
   // change this, since it would break existing rich text editors.
-  settings->setEditableLinkBehavior(WebCore::EditableLinkNeverLive);
+  settings->setEditableLinkBehaviorNeverLive();
 
-  settings->setFontRenderingMode(NormalRenderingMode);
+  settings->setFontRenderingModeNormal();
   settings->setJavaEnabled(preferences.java_enabled);
 
   // Turn this on to cause WebCore to paint the resize corner for us.
@@ -1463,8 +1438,7 @@ void WebViewImpl::SetPreferences(const WebPreferences& preferences) {
   // We prevent WebKit from checking if it needs to add a "text direction"
   // submenu to a context menu. it is not only because we don't need the result
   // but also because it cause a possible crash in Editor::hasBidiSelection().
-  settings->setTextDirectionSubmenuInclusionBehavior(
-      TextDirectionSubmenuNeverIncluded);
+  settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
 
 #if defined(OS_WIN)
   // RenderTheme is a singleton that needs to know the default font size to
@@ -1476,6 +1450,13 @@ void WebViewImpl::SetPreferences(const WebPreferences& preferences) {
 
 const WebPreferences& WebViewImpl::GetPreferences() {
   return webprefs_;
+}
+
+WebSettings* WebViewImpl::GetSettings() {
+  if (!web_settings_.get())
+    web_settings_.reset(new WebSettingsImpl(page_->settings()));
+  DCHECK(web_settings_.get());
+  return web_settings_.get();
 }
 
 // Set the encoding of the current main frame to the one selected by
