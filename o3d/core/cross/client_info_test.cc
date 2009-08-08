@@ -77,6 +77,7 @@ TEST_F(ClientInfoManagerTest, Basic) {
   EXPECT_EQ(0, client_info_manager->client_info().buffer_memory_used());
   EXPECT_EQ(0, client_info_manager->client_info().num_objects());
   EXPECT_FALSE(client_info_manager->client_info().software_renderer());
+  EXPECT_FALSE(client_info_manager->client_info().non_power_of_two_textures());
 
   delete client_info_manager;
 }
@@ -145,6 +146,19 @@ TEST_F(ClientInfoManagerTest, SetSoftwareRenderer) {
   EXPECT_TRUE(client_info_manager->client_info().software_renderer());
   client_info_manager->SetSoftwareRenderer(false);
   EXPECT_FALSE(client_info_manager->client_info().software_renderer());
+
+  delete client_info_manager;
+}
+
+TEST_F(ClientInfoManagerTest, SetNonPowerOfTwoTextures) {
+  ClientInfoManager* client_info_manager =
+      new ClientInfoManager(service_locator());
+  ASSERT_TRUE(client_info_manager != NULL);
+
+  client_info_manager->SetNonPowerOfTwoTextures(true);
+  EXPECT_TRUE(client_info_manager->client_info().non_power_of_two_textures());
+  client_info_manager->SetNonPowerOfTwoTextures(false);
+  EXPECT_FALSE(client_info_manager->client_info().non_power_of_two_textures());
 
   delete client_info_manager;
 }

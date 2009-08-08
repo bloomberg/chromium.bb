@@ -48,7 +48,8 @@ class ClientInfo {
       : num_objects_(0),
         texture_memory_used_(0),
         buffer_memory_used_(0),
-        software_renderer_(false) {
+        software_renderer_(false),
+        non_power_of_two_textures_(false) {
   }
 
   // The number of objects the client is currently tracking.
@@ -71,6 +72,17 @@ class ClientInfo {
     return software_renderer_;
   }
 
+  // Whether or not the underlying GPU supports non power of 2 textures.
+  // NOTE: O3D always supports non power of 2 textures from a public API
+  // point of view and massages the data underneath to make this work.
+  // The point of this flag is mostly that if you are doing any kind of
+  // dynamic texture updating, like video, then you might want to use a
+  // power of two texture so O3D doesn't have to do extra work of converting
+  // your NPOT texture into a POT texture behind the scenes.
+  bool non_power_of_two_textures() const {
+    return non_power_of_two_textures_;
+  }
+
  private:
   friend class ClientInfoManager;
 
@@ -78,6 +90,7 @@ class ClientInfo {
   int texture_memory_used_;
   int buffer_memory_used_;
   bool software_renderer_;
+  bool non_power_of_two_textures_;
 };
 
 // A class to manage the client info so other classes can easily look it up.
@@ -103,6 +116,10 @@ class ClientInfoManager {
 
   void SetSoftwareRenderer(bool used) {
     client_info_.software_renderer_ = used;
+  }
+
+  void SetNonPowerOfTwoTextures(bool npot) {
+    client_info_.non_power_of_two_textures_ = npot;
   }
 
 private:

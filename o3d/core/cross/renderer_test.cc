@@ -33,6 +33,7 @@
 #include "core/cross/precompile.h"
 #include "tests/common/win/testing_common.h"
 #include "core/cross/client.h"
+#include "core/cross/client_info.h"
 #include "core/cross/renderer.h"
 #include "core/cross/bitmap.h"
 #include "core/cross/features.h"
@@ -54,15 +55,18 @@ class RendererTest : public testing::Test {
   virtual void SetUp() {
     service_locator_ = new ServiceLocator;
     features_ = new Features(service_locator_);
+    client_info_manager_ = new ClientInfoManager(service_locator_);
   }
 
   virtual void TearDown() {
+    delete client_info_manager_;
     delete features_;
     delete service_locator_;
   }
 
   ServiceLocator* service_locator_;
   Features* features_;
+  ClientInfoManager* client_info_manager_;
 };
 
 // This tests that a default Renderer can be created.

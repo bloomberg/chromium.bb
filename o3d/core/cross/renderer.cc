@@ -38,6 +38,7 @@
 
 #include "core/cross/renderer.h"
 
+#include "core/cross/client_info.h"
 #include "core/cross/display_window.h"
 #include "core/cross/error.h"
 #include "core/cross/features.h"
@@ -206,6 +207,13 @@ void Renderer::UninitCommon() {
   error_object_.Reset();
   fallback_error_texture_.Reset();
   RemoveDefaultStates();
+}
+
+void Renderer::SetSupportsNPOT(bool supports_npot) {
+  supports_npot_ = supports_npot;
+  ClientInfoManager* client_info_manager =
+      service_locator()->GetService<ClientInfoManager>();
+  client_info_manager->SetNonPowerOfTwoTextures(supports_npot);
 }
 
 void Renderer::SetLostResourcesCallback(LostResourcesCallback* callback) {

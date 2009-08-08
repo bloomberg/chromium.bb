@@ -1004,7 +1004,7 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
 
   const unsigned int kNpotFlags =
       D3DPTEXTURECAPS_POW2 | D3DPTEXTURECAPS_CUBEMAP_POW2;
-  supports_npot_ = ((d3d_caps.TextureCaps & kNpotFlags) == 0);
+  SetSupportsNPOT((d3d_caps.TextureCaps & kNpotFlags) == 0);
 
   SetClientSize(width, height);
   have_device_ = true;

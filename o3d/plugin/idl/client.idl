@@ -118,6 +118,17 @@ class ClientInfo {
     Whether or not O3D is using the software renderer.
   %]
   [getter] bool software_renderer;
+
+  %[
+    Whether or not the GPU supports non power of two textures.
+    NOTE: O3D always allows non power of two textures.
+
+    The only reason to look at this flag is for things like video that are
+    updating the texture every frame. In that case, you might want to know
+    that you could run faster if you used a power of 2 texture instead of
+    a non power of 2 texture.
+  %]
+  [getter] bool non_power_of_two_textures;
 };
 
 %[

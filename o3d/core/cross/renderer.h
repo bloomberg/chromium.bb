@@ -499,6 +499,9 @@ class Renderer {
   // using the CreateDefaultRenderer factory method.
   explicit Renderer(ServiceLocator* service_locator);
 
+  // Sets whether or not the renderer supports non-power of 2 textures.
+  void SetSupportsNPOT(bool supports_npot);
+
   // Adds a state handler to the state handler map
   // Parameters:
   //   state_name: Name of the state.
@@ -561,9 +564,6 @@ class Renderer {
 
   // Sets the client's size. Derived classes must call this on Init and Resize.
   void SetClientSize(int width, int height);
-
-  // Whether or not the underlying API supports non-power-of-two textures.
-  bool supports_npot_;
 
   // Whether we need to clear the entire client area next render.
   bool clear_client_;
@@ -638,6 +638,9 @@ class Renderer {
   // X and Y offsets for destination rectangle.
   int dest_x_offset_;
   int dest_y_offset_;
+
+  // Whether or not the underlying API supports non-power-of-two textures.
+  bool supports_npot_;
 
   // Adds the default states to their respective stacks.
   void AddDefaultStates();

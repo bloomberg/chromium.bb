@@ -692,14 +692,14 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
     return GPU_NOT_UP_TO_SPEC;
   }
 
-  supports_npot_ = GLEW_ARB_texture_non_power_of_two;
+  SetSupportsNPOT(GLEW_ARB_texture_non_power_of_two);
 
 #ifdef OS_MACOSX
   // The Radeon X1600 says it supports NPOT, but in most situations it doesn't.
   if (supports_npot_ &&
       !strcmp("ATI Radeon X1600 OpenGL Engine",
               reinterpret_cast<const char*>(::glGetString(GL_RENDERER))))
-    supports_npot_ = false;
+    SetSupportsNPOT(false);
 #endif
 
   // Check for necessary extensions
