@@ -10,7 +10,6 @@
 <translation id="5048179823246820836">Nordic</translation>
 <translation id="561349411957324076">Nakumpleto</translation>
 <translation id="4610656722473172270">Google Toolbar</translation>
-<translation id="2088818908407967256">Ang pahinang ito ay naglalaman ng hindi secure na mga elemento.</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;I-redo</translation>
 <translation id="6135826906199951471">Del</translation>
@@ -19,6 +18,7 @@
 <translation id="7567293639574541773">S&amp;iyasatin ang elemento</translation>
 <translation id="8571213806525832805">Huling 4 na linggo</translation>
 <translation id="6021004449668343960">Sans-Serif Font:</translation>
+<translation id="5341849548509163798"><ph name="NUMBER_MANY"/> mga oras ang nakalipas</translation>
 <translation id="4422428420715047158">Domain:</translation>
 <translation id="4021918302616263355">Maghanap sa <ph name="ENGINE"/> para sa <ph name="SEARCH_TERMS"/></translation>
 <translation id="5376169624176189338">I-click upang bumalik, pindutin nang matagal upang makita ang history</translation>
@@ -40,16 +40,17 @@
 <translation id="9213479837033539041"><ph name="NUMBER_MANY"/> mga natitirang segundo</translation>
 <translation id="6391832066170725637">Ang file o direktoryo ay hindi mahanap.</translation>
 <translation id="8256087479641463867">Ipasadya Ang Iyong Mga Setting</translation>
-<translation id="7070442422749762650">Ang webpage sa &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; ay nag-resulta sa napakaraming mga pag-redirect.  Ang paglimas ng iyong cookies para sa site na ito ay maaaring ayusin ang problema.  Kung hindi, posible na ito ay isang isyu sa pagsasaayos ng server at hindi isang problema sa iyong computer.</translation>
 <translation id="7931071620596053769">Ang (mga) sumusunod na pahina ay naging hindi matugunan. Maaari kang maghintay para sa kanila upang maging tumugon o puksain ang mga ito.</translation>
 <translation id="1209866192426315618"><ph name="NUMBER_DEFAULT"/> nalalabing mga minuto</translation>
 <translation id="2179052183774520942">Idagdag ang Search Engine</translation>
 <translation id="2956948609882871496">Mag-import ng mga bookmark...</translation>
 <translation id="1621207256975573490">I-save &amp;frame bilang...</translation>
 <translation id="2278562042389100163">Magbukas ng browser window</translation>
+<translation id="9218430445555521422">Itakda bilang default</translation>
 <translation id="4589279373639964403">I-export ang mga bookmark...</translation>
 <translation id="5463275305984126951">Index ng <ph name="LOCATION"/></translation>
 <translation id="5154917547274118687">Memorya</translation>
+<translation id="1735662153177951739">Hindi nabawi ang kabuuan ng pahinang ito sa secure na koneksyon. Naglalaman ito ng ilang nilalamang nabawi sa hindi secure na mga koneksyon.</translation>
 <translation id="873849583815421063">Pagtatapos...</translation>
 <translation id="5819484510464120153">Lumikha ng mga &amp;shortcut sa application...</translation>
 <translation id="1748246833559136615">Sumuko</translation>
@@ -71,7 +72,6 @@
 <translation id="2994458892329442723">Paganahin ang mga plug-in</translation>
 <translation id="1669397342410349095">Mag-ulat ng phishing website...</translation>
 <translation id="1674989413181946727">Mga setting ng Computer-wide SSL:</translation>
-<translation id="1773709998578631869">Mayroon kang <ph name="DOWNLOAD_COUNT"/> (mga) download na kasalukuyang isinasagawa. Kung isasara mo ang Google Chrome ngayon, makakansela ang mga pag-download na ito.</translation>
 <translation id="8703575177326907206">Ang iyong koneksyon sa <ph name="DOMAIN"/> ay hindi naka-encrypt.</translation>
 <translation id="1644574205037202324">History</translation>
 <translation id="2518917559152314023">I&amp;dagdag...</translation>
@@ -81,6 +81,7 @@
 <translation id="3512466011168167042">Ipakita ang mga mungkahi para sa maling navigation</translation>
 <translation id="7767960058630128695">Mga Password:</translation>
 <translation id="6518014396551869914">Kop&amp;yahin ang imahe</translation>
+<translation id="6363850194751762580">Pamahalaan ang mga pop-up</translation>
 <translation id="4120898696391891645">Hindi nagkakarga ng pahina</translation>
 <translation id="5584537427775243893">Nag-i-import</translation>
 <translation id="4181841719683918333">Mga wika</translation>
@@ -94,21 +95,25 @@
 <translation id="5233638681132016545">Bagong tab</translation>
 <translation id="5210365745912300556">Isara ang tab</translation>
 <translation id="8806796506533854282">Magpasok ng bagong pangalan ng profile</translation>
+<translation id="2551763528995812091">Mga Password at Pagbubukod</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="8571852575982769756">Walang naka-install na mga plug-in</translation>
 <translation id="7925285046818567682">Naghihintay para sa <ph name="HOST_NAME"/>...</translation>
 <translation id="3280237271814976245">I-save &amp;bilang...</translation>
 <translation id="5300471193642408424">Ipakita ang mga pahina</translation>
 <translation id="7658239707568436148">Ikansela</translation>
+<translation id="6996264303975215450">Web Page, Complete</translation>
 <translation id="2154710561487035718">Kopyahin ang URL</translation>
 <translation id="4244236525807044920">Baguhin ang mga setting ng font at wika</translation>
 <translation id="2679629658858164554">URL ng Pahina:</translation>
 <translation id="6746124502594467657">Ibaba</translation>
+<translation id="4657169630710541069">Error sa Mapagkukunan</translation>
 <translation id="3383487468758466563">Mga Font at Mga Wika:</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(Walang pamagat)</translation>
 <translation id="8725178340343806893">Mga Paborito/Bookmark</translation>
+<translation id="8926389886865778422">Huwag nang itanong ulit</translation>
 <translation id="3605499851022050619">Pahina ng diagnostic sa Ligtas na Pagba-browse</translation>
 <translation id="4307992518367153382">Mga Pangunahing Kaalaman</translation>
 <translation id="5912378097832178659">&amp;I-edit ang mga search engine...</translation>
@@ -122,6 +127,7 @@
 <translation id="6909042471249949473">Limasin ang data mula sa panahon na ito:</translation>
 <translation id="7615851733760445951">&lt;no cookie selected&gt;</translation>
 <translation id="3660179305079774227">Up Arrow</translation>
+<translation id="7392915005464253525">M&amp;uling buksan ang nakasarang window</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="5392041771307264501">Pumili ng profile upang magbukas ng bagong window</translation>
 <translation id="68541483639528434">Isara ang ibang mga tab</translation>
@@ -131,6 +137,7 @@
 <translation id="2663762871503078613">I-import:</translation>
 <translation id="1635247229519770914">Ipapatuloy ang Pag-install</translation>
 <translation id="8945419807169257367">Hindi masuri ang sertipiko ng server</translation>
+<translation id="1464570622807304272">Subukan ito - i-type ang &quot;mga orchid&quot; at pindutin ang Enter.</translation>
 <translation id="5872213955895293073">I-debug JavaScript</translation>
 <translation id="1965338962645102116">Upang mai-import sa Chrome ang mga bookmark ng Toolbar, kailangang naka-log in ka sa iyong Google account. Mangyaring mag-log in at subukan i-import muli.</translation>
 <translation id="5903264686717710770">Pamagat:</translation>
@@ -140,6 +147,7 @@
 <translation id="3990502903496589789">Tamang Lamang</translation>
 <translation id="5303890401939113396">JavaScript Debugger - Pahinga</translation>
 <translation id="2423578206845792524">I-sa&amp;ve ang imahe bilang...</translation>
+<translation id="1095038624419434542">Nakatagpo ng error habang naglo-load ng mapagkukunan ng program. Subukan ang muling pag-install.</translation>
 <translation id="9068931793451030927">Landas:</translation>
 <translation id="7052402604161570346">Ang uri ng file na ito ay maaaring makapinsala sa iyong computer. Sigurado ka bang gusto mong i-download ang <ph name="FILE_NAME"/>?</translation>
 <translation id="8642489171979176277">Na-import Mula sa Google Toolbar</translation>
@@ -151,11 +159,13 @@
 <translation id="939736085109172342">Bagong folder</translation>
 <translation id="2009541932026160416">I-click ang <ph name="CROSS_IMAGE"/> upang maalis ang thumbnail</translation>
 <translation id="5641560969478423183">Hindi tumutugma ang URL sa sertipiko ng server</translation>
+<translation id="6474422710030751464">Nabawi ang ilan sa nilalaman sa pahinang ito sa koneksyong may mga error na SSL.</translation>
 <translation id="121827551500866099">Ipakita ang lahat ng mga pag-download...</translation>
 <translation id="3115147772012638511">Naghihintay para sa cache...</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="6513615899227776181">Plug-in: <ph name="PLUGIN_NAME"/></translation>
 <translation id="3520476450377425184"><ph name="NUMBER_MANY"/> mga nalalabing araw</translation>
+<translation id="9055207877339166954">Mga Tema:</translation>
 <translation id="1059307158073710225">Suriin ang pagbaybay:</translation>
 <translation id="7643817847124207232">Ang koneksyon sa Internet ay nawawala.</translation>
 <translation id="758007724455091072">Lumikha ng desktop shortcut para sa profile na ito</translation>
@@ -178,6 +188,7 @@
 <translation id="7012108905414904806">Gayunpaman, ang pahinang ito ay nagsasasama ng iba pang mga mapagkukunan na hindi secure. Ang mga mapagkukunang ito ay maaaring tingnan ng iba habang nasa transit, at maaaring mabago ng isang attacker upang baguhin ang hitsura o gawi ng pahina.</translation>
 <translation id="4515911410595374805">Ang ilang mga elemento ng pahinang ito ay galing sa isang hindi pinatotohanang mapagkukunan at hindi ipinapakita.</translation>
 <translation id="1195447618553298278">Hindi kilalang error.</translation>
+<translation id="3353284378027041011"><ph name="NUMBER_FEW"/> araw ang nakalipas</translation>
 <translation id="1087119889335281750">&amp;Walang mga mungkahi sa pagbaybay</translation>
 <translation id="5076340679995252485">&amp;Ilagay</translation>
 <translation id="14171126816530869">Ang pagkilanlan ng <ph name="ORGANIZATION"/> sa <ph name="LOCALITY"/> ay napatotohanan ng <ph name="ISSUER"/>.</translation>
@@ -206,6 +217,7 @@
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="3369624026883419694">Nilulutas ang host...</translation>
 <translation id="3967132639560659870">Ang ilang mga error sa SSL sa pahinang ito:</translation>
+<translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minuto ang nakalipas</translation>
 <translation id="175196451752279553">M&amp;uling buksan ang nakasarang tab</translation>
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="2266011376676382776">(Mga)pahina Hindi matugunan</translation>
@@ -231,13 +243,16 @@
 <translation id="2794293857160098038">Default na mga pagpipilian sa paghahanap</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> natitirang minuto</translation>
 <translation id="5496587651328244253">Isaayos</translation>
+<translation id="2592884116796016067">May nasirang bahagi ang pahinang ito (HTML WebWorker), kaya maaaring hindi ito gumana nang maayos.</translation>
 <translation id="5568069709869097550">Hindi makapag-sign in</translation>
 <translation id="4181898366589410653">Walang nahanap na mekanismong pagpapawalang-bisa sa sertipiko ng server.</translation>
 <translation id="6364916375976753737">Mag-scroll Pakaliwa</translation>
 <translation id="1665770420914915777">Gamitin ang Bagong pahina ng Tab</translation>
+<translation id="2629089419211541119"><ph name="NUMBER_ONE"/> oras ang nakalipas</translation>
 <translation id="7789175495288668515">Baguhin ang mga pagpipiliang pang-install sa default.</translation>
 <translation id="347250956943431997">Napaso na ang sertipiko ng server</translation>
 <translation id="9087164549070846958">Kung, gayunpaman, gumagawa ka sa isang samahan na nagbubuo ng sariling mga sertipiko, at sinusubukan mong kumunekta sa isang nakapaloob na website ng samahan na iyon sa paggamit kagaya ng sertipiko, maaari mo pang masolusyonan ang naka-secure na problemang ito. Maaari kang mag-import sa iyong pangunahing sertipiko ng samahan bilang isang &quot;pangunahing sertipiko&quot;, at pagkatapos ang mga isyu sa sertipiko o patotohana sa pamamagitan ng iyong samaha ay pinagkakatiwalaan at hindi mo makikita ang error na ito sa susunod na subukan mong kumunekta sa isang nakapaloob na website. Makipag-ugnay sa iyong tauhan sa tulong ng samahan para sa tulong sa pagdagdag ng isang bagong pangunahing sertipiko sa Windows.</translation>
+<translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> minuto ang nakalipas</translation>
 <translation id="7977590112176369853">&lt;ilagay ang query&gt;</translation>
 <translation id="5155632014218747366">Para sa detalyadong impormasyon tungkol sa mga problema sa site na ito, bisitahin ang Google <ph name="DIAGNOSTIC_PAGE"/> para sa <ph name="DOMAIN"/>.</translation>
 <translation id="1120026268649657149">Dapat bakante o natatangi ang keyword</translation>
@@ -253,9 +268,10 @@
 <translation id="1425127764082410430">&amp;Paghahanap <ph name="SEARCH_ENGINE"/> para sa '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="877010697526426622">Ang webpage sa &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; ay maaaring pansamantalang ibababa o maaari itong pansamantalang ilipat sa isang bagong web address.</translation>
 <translation id="4378551569595875038">Kumukonekta...</translation>
-<translation id="7029809446516969842">Mga Password</translation>
+<translation id="7300965843904003671">Laging ipakita ang mga pop-up mula sa <ph name="URL"/></translation>
 <translation id="8211437954284917092">Magpasok ng query sa patlang ng teksto sa itaas upang hanapin ang iyong mga bookmark.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> mga file</translation>
+<translation id="1291121346508216435">Awtomatikong itama ang spelling:</translation>
 <translation id="6805291412499505360">Paghigpitan kung paano maaaring magamit ang third party cookies</translation>
 <translation id="1201402288615127009">Susunod</translation>
 <translation id="370665806235115550">Kumakarga...</translation>
@@ -263,6 +279,7 @@
 <translation id="3810973564298564668">Mamahala</translation>
 <translation id="254416073296957292">&amp;Mga setting ng wika...</translation>
 <translation id="4222982218026733335">Hindi Wastong Sertipiko ng Server</translation>
+<translation id="8494214181322051417">Bago!</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Ikaw ay naging incognito<ph name="END_BOLD"/>. Ang mga pahinang tiningnan mo sa window na ito ay hindi lilitaw sa iyong kasaysayan ng browser o kasaysayan sa paghahanap, at hindi mag-iiwan ng ibang mga bakas, katulad ng mga cookies, sa iyong computer pagkatapos mo isara ang window na incognito. Gayunpaman, mapapanatili ang anumang mga file na na-download mo o mga bookmark na nalikha mo.        <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>Hindi maaapektuhan ang ugali ng ibang tao, mga server, o software na incognito. Maging mapagmasid sa:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>Mga website na kumukolekta o nagbabahagi ng impormasyon tungkol sa iyo<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Mga nagbibigay ng serbisyong Pang-internet o mga nagpapatrabaho na sumusubaybay sa mga pahina na nabisita mo<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Ang mapaminsalang software na sumusubaybay sa iyong mga keystroke na may kapalit na libreng mga smiley<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Sa pagmamanman ng mga secret agent<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Mga taong sumusuporta sa iyo<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        <ph name="BEGIN_LINK"/>Dagdagan ang nalalaman<ph name="END_LINK"/> tungkol sa pag-browse ng incognito.</translation>
 <translation id="4439241094464540230">&lt;Bagong Profile&gt;...</translation>
 <translation id="1813414402673211292">I-clear Data sa Pag-browse</translation>
@@ -281,6 +298,7 @@
 <translation id="374530189620960299">Ang sertipiko ng seguridad ng site ay hindi pinagkakatiwalaan!</translation>
 <translation id="5048040498971143039">Mga Resulta sa Paghahanap para sa '<ph name="SEARCH_STRING"/>'</translation>
 <translation id="5453632173748266363">Cyrillic</translation>
+<translation id="8415351664471761088">Hintaying matapos ang pag-download</translation>
 <translation id="5329858601952122676">&amp;Tanggalin</translation>
 <translation id="6100736666660498114">Start menu</translation>
 <translation id="1120098871254928930">Pinahintulutan ang lahat ng nilalaman sa pagkarga</translation>
@@ -303,6 +321,7 @@
 <translation id="4408599188496843485">T&amp;ulong</translation>
 <translation id="2800662284745373504">Hindi wastong sertipiko ng server</translation>
 <translation id="2681441671465314329">Bakantehin ang cache</translation>
+<translation id="3646789916214779970">Mag-reset sa default na tema</translation>
 <translation id="6222380584850953107">Ipakita ang mga naka-save na password</translation>
 <translation id="1521442365706402292">Pamahalaan ang mga sertipiko</translation>
 <translation id="7887998671651498201">Ang sumusunod na plug-in ay hindi tumutugon: <ph name="PLUGIN_NAME"/>Nais mo bang itigil ito?</translation>
@@ -316,6 +335,7 @@
 <translation id="6710213216561001401">Nakaraan</translation>
 <translation id="583281660410589416">Hindi kilala</translation>
 <translation id="5528368756083817449">Tagapangasiwa ng Bookmark</translation>
+<translation id="7275974018215686543"><ph name="NUMBER_MANY"/> segundo ang nakalipas</translation>
 <translation id="1560991001553749272">Naidagdag na ang Bookmark!</translation>
 <translation id="3966072572894326936">Pumili ng isa pang folder...</translation>
 <translation id="7781829728241885113">Kahapon</translation>
@@ -339,6 +359,7 @@
 <translation id="3867260226944967367">Hindi nahanap ang webpage na ito.</translation>
 <translation id="6507969014813375884">Tsino Pinapayak</translation>
 <translation id="1767991048059195456">Ipadala ang ulat</translation>
+<translation id="4612149584835516432">Mayroon kang isang pag-download na kasalukuyang isinasagawa. Kung isasara mo ang Google Chrome ngayon, makakansela ang mga pag-download na ito.</translation>
 <translation id="5646376287012673985">Lokasyon</translation>
 <translation id="1110155001042129815">Mag-intay</translation>
 <translation id="7071586181848220801">Hindi kilalang plug-in</translation>
@@ -350,24 +371,26 @@
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
 <translation id="6659594942844771486">Tab</translation>
-<translation id="5452592754878692665">Baguhin ang mga setting sa Google Gears</translation>
 <translation id="5316814419223884568">Maghanap mula rito</translation>
 <translation id="965674096648379287">Ang web page na ito ay nangangailangan ng data na maaga mong ipinasok upang ipakita ng maayos. Maaari muling ipadala ang data, ngunit sa sa paggawa nito kailangan mong ulitin ang anumang aksyon ng nakaraang pagganap sa pahinang ito. Pindutin ang Reload upang muling ipadala ang data at ipakita ang pahinang ito.</translation>
 <translation id="43742617823094120">Sa kadahilanang ito, ang sertipikong ipinakita sa iyong browser ay binawi mismo ng tagabigay nito. Karaniwan ay nangangahulugan ito na ang integridad ng sertipikong ito ay nakompromiso, at ang sertipikong iyon ay hindi dapat pagkatiwalaan. Hindi ka dapat ganap na tumuloy sa puntong ito.</translation>
 <translation id="2065985942032347596">Kinakailangan na Pagpapatunay</translation>
 <translation id="1175364870820465910">&amp;I-print...</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
+<translation id="6549689063733911810">Kamakailan</translation>
 <translation id="5552632479093547648">Nakita ang malware at phishing!</translation>
+<translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> araw ang nakalipas</translation>
 <translation id="9118804773997839291">Sa ibaba ay listahan ng lahat ng hindi ligtas na mga elemento para sa pahina. Mag-click sa link na Diagnostic para sa higit pang impormasyon sa thread para sa partikular na elemento.</translation>
 <translation id="7754704193130578113">Magtanong kung saan masi-save ang bawat file bago ang pag-download</translation>
 <translation id="2497284189126895209">Lahat ng Mga File</translation>
-<translation id="435463392378565996">Maliliit na Tweak</translation>
 <translation id="5360606537916580043">Huling araw</translation>
 <translation id="6589689504565594563">Tanggalin ang cookies</translation>
 <translation id="6833901631330113163">South European</translation>
+<translation id="5110450810124758964"><ph name="NUMBER_ONE"/>  araw ang nakalipas</translation>
 <translation id="5256138355144269748">Hinarangang Pop-up</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> segundo</translation>
 <translation id="3122496702278727796">Nabigo Sa Paglikha ng Direktoryo sa Data</translation>
+<translation id="4517036173149081027">Isara at kanselahin ang pag-download</translation>
 <translation id="8446970197849314122">Maaari mong i-import ang iyong mga bookmark at setting mula sa iba pang mga browser at mga account ng gumagamit sa computer na ito.</translation>
 <translation id="6281636957902664775">Pumunta sa <ph name="URL"/></translation>
 <translation id="630065524203833229">L&amp;umabas</translation>
@@ -381,11 +404,11 @@
 <translation id="3889424535448813030">Right Arrow</translation>
 <translation id="5435666907653217300">Iba pang problema</translation>
 <translation id="8382913212082956454">Komopya &amp;email address</translation>
+<translation id="4229495110203539533"><ph name="NUMBER_ONE"/> segundo ang nakalipas</translation>
 <translation id="6419902127459849040">Central European</translation>
 <translation id="1714078437629572290">Buksan ang homepage</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> mga natitirang segundo</translation>
 <translation id="2454247629720664989">Keyword</translation>
-<translation id="614298788004369532">Ang pahinang ito ay naglalaman ng ilang hindi secure na mga elemento</translation>
 <translation id="1628736721748648976">Encoding</translation>
 <translation id="6521850982405273806">Mag-ulat ng isang error</translation>
 <translation id="8503813439785031346">Username</translation>
@@ -433,15 +456,16 @@
 <translation id="4002066346123236978">Pamagat</translation>
 <translation id="9015241028623917394">Kontrolin ang kasalukuyang pahina</translation>
 <translation id="7861215335140947162">&amp;Mga download</translation>
-<translation id="5460429403253574028">Alisin ang mga thumbnail</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT"/> ng <ph name="TOTAL_SIZE"/></translation>
 <translation id="6644512095122093795">Mag-alok na mag-save ng mga password</translation>
 <translation id="5384051050210890146">Pumili ng mapagkakatiwalaang SSL na sertipiko</translation>
 <translation id="6865323153634004209">Ipasadya ang mga setting na iyon</translation>
 <translation id="154603084978752493">Idagdag bilang paghahanap en&amp;gine...</translation>
+<translation id="2079545284768500474">I-undo</translation>
 <translation id="3254409185687681395">Mag-bookmark sa pahinang ito</translation>
 <translation id="1384616079544830839">Ang pagkilala ng website na ito ay natukoy ng <ph name="ISSUER"/>.</translation>
 <translation id="1800035677272595847">Phishing</translation>
+<translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> segundo ang nakalipas</translation>
 <translation id="4610637590575890427">Ibig mo bang sabihin na pumunta sa <ph name="SITE"/>?</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
 <translation id="7208899522964477531">Paghahanap <ph name="SITE_NAME"/> para sa <ph name="SEARCH_TERMS"/></translation>
@@ -471,6 +495,7 @@
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="4756388243121344051">&amp;History</translation>
 <translation id="4789872672210757069">Tungkol sa &amp;<ph name="PRODUCT_NAME"/></translation>
+<translation id="4373894838514502496"><ph name="NUMBER_FEW"/> minuto ang nakalipas</translation>
 <translation id="1017280919048282932">&amp;Idagdag sa talahulugan</translation>
 <translation id="1829244130665387512">Nahanap sa pahina</translation>
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> mga araw</translation>
@@ -491,7 +516,6 @@
 <translation id="4588090240171750605">Mag-scroll Pakanan</translation>
 <translation id="8940262601983387853">Pangalan ng Cookie</translation>
 <translation id="8053959338015477773">Isang karagdagang plug-in ay kinakailangang magpakita ng ilang mga elemento sa pahinang ito.</translation>
-<translation id="4666192354592784528">Ang pahinang ito ay hindi makukuha ng buo sa isang secure na koneksyon.  Naglalaman ito ng ilang mga elemento na nakuha sa mga hindi secure na koneksyon.</translation>
 <translation id="7414887922320653780"><ph name="NUMBER_ONE"/> natitirang oras</translation>
 <translation id="399179161741278232">Na-import</translation>
 <translation id="3927932062596804919">Tanggihan</translation>
@@ -519,6 +543,7 @@
 <translation id="1526560967942511387">Walang pamagat na Dokumento</translation>
 <translation id="5538307496474303926">Nililimas...</translation>
 <translation id="6783679543387074885">Mag-ulat ng bug o Nasirang Web Site</translation>
+<translation id="3413103074007669042">Naglalaman ang pahinang ito ng ilang hindi secure na nilalaman</translation>
 <translation id="5285267187067365830">Mag-install sa plug-in...</translation>
 <translation id="8015746205953933323">Hindi magagamit ang webpage na ito.</translation>
 <translation id="8520668773617044689">Firefox</translation>
@@ -530,12 +555,11 @@
 <translation id="703748601351783580">Buksan lahat ng mga bookmark sa bagong window</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="8502249598105294518">Ipasadya at kontrolin ang <ph name="PRODUCT_NAME"/></translation>
+<translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> na oras ang nakalipas</translation>
 <translation id="815598010540052116">Mag-scroll Pababa</translation>
-<translation id="5291303148298143069">Abisuhan ako kapag naharangan ang isang pop-up</translation>
 <translation id="2115926821277323019">Kailangan ng isang wastong URL</translation>
 <translation id="7397054681783221164">Lipunin ang sumusunod na mga item:</translation>
 <translation id="4891251785049117953">Limasin ang data sa na-save na form</translation>
-<translation id="5230516054153933099">Window</translation>
 <translation id="7554791636758816595">Bagong Tab</translation>
 <translation id="4400697530699263877">Gamitin ang DNS pre-fetching upang pahusayin ang pagganap ng pahina sa pagkarga</translation>
 <translation id="1086613338090581534">Para sa isang sertipiko na hindi pa napapaso, ang tagabigay ng sertpikong iyon ay may pananagutan para sa pagpapanatili ng isang bagay na tinatawag na &quot;listahan ng pagbawi&quot;. Kung ang isang sertipiko ay palaging nakompromiso, ang tagabigay ay maaaring bawiin ito sa pamamagitan ng pagdagdag nito sa listahan ng pagbawi, at pagkatapos ang sertipikong ito ay hindi na pagkakatiwalaan ng iyong browser. Ang katayuan sa pagbawi ay hindi kailangang panatilihin para sa mga pasong sertipiko, sa gayon habang ang sertipikong ito ay ginamit upang maging wasto para sa website na iyong binibisita, sa puntong ito hindi posible na matukoy kung ang sertipiko ay nakompromiso at kasunod na pagbawi, o kung ito ay mananatiling secure. Ang tulad nito na imposibleng masabi kung nakikipag-komunika ka sa lehitimong web site, o kung ang sertipiko ay nakompromiso at sa ngayon ay nasa pag-aari ng isang attacker na kung kanino ka nakikipag-komunika. Hindi ka dapat tumuloy sa puntong ito.</translation>
@@ -582,23 +606,28 @@
 <translation id="770015031906360009">Greek</translation>
 <translation id="4474796446011988286">Ang sumusunod na cookies ay nakaimbak sa iyong computer:</translation>
 <translation id="884923133447025588">Walang nahanap na mekanismo ng pagpapawalang-bisa.</translation>
+<translation id="7671130400130574146">Gumamit ng system title bar at mga hangganan</translation>
 <translation id="9170848237812810038">&amp;I-undo</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
 <translation id="4444364671565852729">Na-update na ang <ph name="PRODUCT_NAME"/> sa <ph name="VERSION"/></translation>
 <translation id="6483805311199035658">Binubuksan ang <ph name="FILE"/>...</translation>
+<translation id="1285266685456062655"><ph name="NUMBER_FEW"/> (na) oras ang nakalipas</translation>
 <translation id="9154176715500758432">Manatili sa Pahinang ito</translation>
 <translation id="5875565123733157100">Uri ng bug:</translation>
+<translation id="373572798843615002">1 Tab</translation>
 <translation id="2440604414813129000">Tingnan s&amp;ource</translation>
+<translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Resume</translation>
+<translation id="6358975074282722691"><ph name="NUMBER_TWO"/> segundo ang nakalipas</translation>
 <translation id="3009731429620355204">Mga Session</translation>
 <translation id="3473034187222004855">Kopyahin ang file &amp;path</translation>
 <translation id="6325525973963619867">Nabigo</translation>
+<translation id="2120291134670287161">Walang nakitang printer, Mangyaring mag-install ng printer.</translation>
 <translation id="1676388805288306495">Baguhin ang default na font at wika para sa mga webpage.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;View frame source</translation>
 <translation id="7564847347806291057">Tapusin ang proseso</translation>
 <translation id="7851589172948533362">Patotohanan ng <ph name="ISSUER"/></translation>
-<translation id="5501358408399407103">Web Page, HTML Only\0*.htm\0Web Page, Complete\0*.htm</translation>
 <translation id="7063412606254013905">Dagdagan ang nalalman tungkol sa mga scam sa phishing.</translation>
 <translation id="307767688111441685">Mukhang kakaiba ang pahina</translation>
 <translation id="5295309862264981122">Kumpirmahin ang Pag-nabiga</translation>
@@ -617,6 +646,7 @@
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> seg</translation>
 <translation id="5139955368427980650">&amp;Buksan</translation>
 <translation id="7088615885725309056">Mas Luma</translation>
+<translation id="5263972071113911534"><ph name="NUMBER_MANY"/> araw ang nakalipas</translation>
 <translation id="746319800473277382">Pumunta sa homepage ng site:</translation>
 <translation id="8562413501751825163">Isarado ang Firefox Bago Mag-import</translation>
 <translation id="5034259512732355072">Pumili ng Iba Pang Direktoryo...</translation>
@@ -625,20 +655,23 @@
 <translation id="5280833172404792470">Umalis sa full screen<ph name="ACCELERATOR"/></translation>
 <translation id="129553762522093515">Kamakailang isinara</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> mga araw</translation>
-<translation id="3702416240431471861">Google Gears:</translation>
 <translation id="3891357445869647828">Pinaganang JavaScript</translation>
 <translation id="6451458296329894277">Muling pagsusumite ng Form sa Pagkumpirma</translation>
 <translation id="3218545474413654570"><ph name="URL"/> - <ph name="WINDOW_TITLE"/></translation>
 <translation id="5116333507878097773"><ph name="NUMBER_ONE"/> oras</translation>
 <translation id="1851266746056575977">Mag-update Ngayon</translation>
 <translation id="19901320010520290">Ang website sa &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ay naglalaman ng mga elemento mula sa mga site na lumilitaw upang mag-host ng malware - ang software na maaaring makapinsala sa iyong computer o kung hindi man ay magpatakbo ng walang pahintulot mo. Ang pagbisita lamang sa isang site na nagho-host ng malware ay maaaring makahawa sa iyong computer. Nagho-host rin ang website ng mga nilalaman mula sa mga site na naiulat bilang mga &quot;phishing&quot; site. Niloloko ng mga phisihing site ang mga gumagamit sa pagsisiwalat ng personal o pinansyal na impormasyon, na kadalasan ay sa pamamagitan ng pagkukunwaring kumakatawan sa mga pinagkakatiwalaang institusyon, tulad ng mga bangko.</translation>
+<translation id="2679312662830811292"><ph name="NUMBER_ONE"/> minuto ang nakalipas</translation>
 <translation id="9065203028668620118">I-edit</translation>
+<translation id="8236028464988198644">Maghanap mula sa address bar.</translation>
 <translation id="4867297348137739678">Nakaraang linggo</translation>
 <translation id="4881695831933465202">Buksan</translation>
+<translation id="5457793226917888578">Naglalaman ang pahinang ito ng hindi secure na nilalaman.</translation>
 <translation id="5981759340456370804">Mga istatistika para sa mga masyodong pala-aral</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> araw</translation>
 <translation id="6512448926095770873">Iwanan ang Pahinang ito</translation>
 <translation id="5607455023223000189">Na-install na mga plug-in</translation>
+<translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> segundo ang nakalipas</translation>
 <translation id="7009102566764819240">Sa ibaba ay listahan ng lahat ng hindi ligtas na mga elemento para sa pahina. Mag-click sa link na Diagnostic para sa higit pang impormasyon sa thread para sa partikular na elemento. Kung alam mo nang ang mapagkukunan ng impormasyon ay iniulat nang mali bilang phishing, i-click ang link na 'Iulat ang error.'</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> mga natitirang segundo</translation>
 <translation id="1485146213770915382">Ipasok <ph name="SEARCH_TERMS_LITERAL"/> sa URL kung saan ang mga tuntunin sa paghahanap ay dapat lumitaw.</translation>
@@ -653,10 +686,12 @@
 <translation id="8241707690549784388">Ang pahina na hinahanap mo para sa paggamit ng impormasyon na ipinasok mo. Ang pagbalik sa pahinang iyon maaaring magsanhi ng anumang aksyon na akalo mo ay naulit. Nais mo bang ipagpatuloy?</translation>
 <translation id="486595306984036763">Buksan ang ulat sa phishing</translation>
 <translation id="1568162916422682473">Ang sumusunod na plug-in ay may crash : <ph name="PLUGIN_NAME"/></translation>
+<translation id="4860787810836767172"><ph name="NUMBER_FEW"/> segundo ang nakalipas</translation>
 <translation id="2441719842399509963">Mag-reset sa mga default</translation>
 <translation id="170407012880898501">Mag-save ng mga teksto mula sa mga form upang mas madali silang mapunan</translation>
 <translation id="8116972784401310538">&amp;Tagapangasiwa ng bookmark</translation>
 <translation id="6040143037577758943">Isara</translation>
+<translation id="1101671447232096497"><ph name="NUMBER_MANY"/> minuto ang nakalipas</translation>
 <translation id="4943872375798546930">Walang mga resulta</translation>
 <translation id="4910619056351738551">Narito ang ilang mga iminungkahi:</translation>
 <translation id="7451556917824271099">Ang website sa &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; na naglalaman ng mga elemento mula sa site &lt;strong&gt;<ph name="ELEMENTS_HOST_NAME"/>&lt;/strong&gt;, na lilitaw upang mag-host sa malware – software na maaaring makapinsala sa iyong computer o kung hindi man paandarin na walang pahintulot.  Bibisitahin lamang ang isang site na naglalaman ng malware na maaaring makasira sa iyong computer.</translation>
@@ -671,6 +706,7 @@
 <translation id="5508407262627860757">Ikansela Anupaman</translation>
 <translation id="7587108133605326224">Baltic</translation>
 <translation id="8598751847679122414">Ang webpage na ito ay may isang muling direkta sa loop.</translation>
+<translation id="6389701355360299052">Web Page, HTML Only</translation>
 <translation id="5271549068863921519">I-save ang password</translation>
 <translation id="2987775926667433828">Tsino Tradisyunal</translation>
 <translation id="6227291405321948850">Walang pamagat na Imehe ng Web</translation>
@@ -683,12 +719,12 @@
 <translation id="942671148946453043">Binuksan mo ang isang incognito window. Ang mga pahina na binuksan mo sa window na ito ay hindi lilitaw sa iyong history.</translation>
 <translation id="6996505290426962909">&amp;Mag-import ng mga bookmark &amp;&amp; setting...</translation>
 <translation id="6165508094623778733">Dagdagan ang nalalaman</translation>
+<translation id="822618367988303761"><ph name="NUMBER_TWO"/> araw ang nakalipas</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> mga minuto</translation>
 <translation id="2649911884196340328">Ang sertipiko sa seguridad ng server ay may mga error!</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> mga natitirang araw</translation>
 <translation id="668171684555832681">Iba pa...</translation>
 <translation id="3108416241300843963">May nabigong hiling sapagkat hindi wasto ang sertipiko ng server.</translation>
-<translation id="116506693382293616">Ang ilang mga elemento sa pahinang ito ay makuha sa isang kuneksyon sa mga error sa SSL.</translation>
 <translation id="7887455386323777409">Patayin ang plug-in</translation>
 <translation id="3761000923495507277">Ipakita ang pindutang Home sa toolbar</translation>
 <translation id="8709969075297564489">Suriin para sa pagpapawalang-bisa ng sertipiko ng server</translation>
@@ -705,6 +741,7 @@
 <translation id="7607002721634913082">I-pause</translation>
 <translation id="480990236307250886">Buksan ang home page</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> mga oras na nalalabi</translation>
+<translation id="8959208747503200525"><ph name="NUMBER_TWO"/> oras ang nakalipas</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="1908748899139377733">Tingnan ang frame &amp;impormasyon</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
@@ -721,6 +758,7 @@
 <translation id="9141716082071217089">Hindi sinuri kung ang sertipiko ng server ay marerepaso.</translation>
 <translation id="4304224509867189079">Mag-log In</translation>
 <translation id="4492190037599258964">Mga resulta ng paghahanap para sa '<ph name="SEARCH_STRING"/>'</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Bumuo ang Developer</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">URL:</translation>
@@ -736,6 +774,7 @@
 <translation id="9147392381910171771">&amp;Mga pagpipilian</translation>
 <translation id="6264485186158353794">Bumalik sa kaligtasan</translation>
 <translation id="3807747707162121253">&amp;Kanselahin</translation>
+<translation id="6422698515595625913">Mayroon kang <ph name="DOWNLOAD_COUNT"/> download na kasalukuyang isinasagawa. Kung isasara mo ang Google Chrome ngayon, makakansela ang mga pag-download na ito.</translation>
 <translation id="7447718177945067973">Ang server ay maaaring hindi nakita.</translation>
 <translation id="715468010956678290">Buksan ang frame sa inco&amp;gnito window</translation>
 <translation id="7755167023778553803">Gayunpaman, ang pahinang ito ay kasama sa magpagkukunan mula sa iba pang mga website na hindi patotohanan ang pagkilala.</translation>
