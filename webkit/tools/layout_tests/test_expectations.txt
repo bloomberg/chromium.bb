@@ -2848,6 +2848,7 @@ BUG18659 WIN : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEO
 BUG18733 WIN : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PASS TIMEOUT
 BUG18794 WIN MAC : LayoutTests/http/tests/mime/standard-mode-does-not-load-stylesheet-with-text-plain.html = TIMEOUT PASS
+BUG18802 WIN : LayoutTests/http/tests/misc/referrer.html = TIMEOUT PASS
 
 BUG18665 MAC : LayoutTests/security/block-test.html = FAIL
 BUG18665 MAC : LayoutTests/security/block-test-no-port.html = FAIL
