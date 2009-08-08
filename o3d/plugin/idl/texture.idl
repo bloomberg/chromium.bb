@@ -228,6 +228,7 @@ namespace o3d {
     \param y The y coordinate of the area in the texture to retrieve.
     \param width The width of the area to retrieve.
     \param height The height of the area to retrieve.
+    \return Array of pixel values.
   %]
   [nocpp, userglue]
   float[] GetRect(int level,
@@ -370,6 +371,7 @@ namespace o3d {
     \param y The y coordinate of the area in the texture to retrieve.
     \param width The width of the area to retrieve.
     \param height The height of the area to retrieve.
+    \return Array of pixel values.
   %]
   [nocpp, userglue]
   float[] GetRect(CubeFace face,
