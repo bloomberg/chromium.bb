@@ -101,6 +101,10 @@ p#classSummary {
 .apiItem {
 }
 
+.hidden {
+  display: none;
+}
+
 #container {
   height:auto !important;
   margin:0;
