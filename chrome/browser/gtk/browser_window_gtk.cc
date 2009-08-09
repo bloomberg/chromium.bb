@@ -1557,8 +1557,8 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
     return TRUE;
   }
 
-  // Handle left and right clicks.  In particular, we care about clicks in the
-  // custom frame border and clicks in the titlebar.
+  // Handle left, middle and right clicks.  In particular, we care about clicks
+  // in the custom frame border and clicks in the titlebar.
   GdkWindowEdge edge;
   bool has_hit_edge = browser->GetWindowEdge(static_cast<int>(event->x),
       static_cast<int>(event->y), &edge);
@@ -1624,6 +1624,9 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
         return TRUE;
       }
     }
+  } else if (event->button == 2) {
+    gdk_window_lower(GTK_WIDGET(browser->window_)->window);
+    return TRUE;
   } else if (event->button == 3) {
     if (has_hit_titlebar) {
       browser->titlebar_->ShowContextMenu();
