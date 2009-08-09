@@ -63,7 +63,8 @@
         'app_paths.cc',
         'app_switches.h',
         'app_switches.cc',
-        'drag_drop_types.cc',
+        'drag_drop_types_gtk.cc',
+        'drag_drop_types_win.cc',
         'drag_drop_types.h',
         'gfx/canvas.cc',
         'gfx/canvas.h',
@@ -125,6 +126,17 @@
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
           ],
+          'conditions': [
+            ['toolkit_views==0 and chromeos==0', {
+              # Note: because of gyp predence rules this has to be defined as
+              # 'sources/' rather than 'sources!'.
+              'sources/': [
+                ['exclude', '^os_exchange_data_gtk.cc'],
+                ['exclude', '^os_exchange_data.h'],
+                ['exclude', '^drag_drop_types_gtk.cc'],
+              ],
+            }],
+          ],
         }],
         ['OS=="win"', {
           'sources': [
@@ -134,21 +146,10 @@
         }],
         ['OS!="win"', {
           'sources!': [
-            'drag_drop_types.cc',
             'drag_drop_types.h',
             'gfx/icon_util.cc',
             'gfx/icon_util.h',
             'os_exchange_data.cc',
-          ],
-          'conditions': [
-            ['toolkit_views==0', {
-              # Note: because of gyp predence rules this has to be defined as
-              # 'sources/' rather than 'sources!'.
-              'sources/': [
-                ['exclude', '^os_exchange_data_gtk.cc'],
-                ['exclude', '^os_exchange_data.h'],
-              ],
-            }],
           ],
         }],
       ],
