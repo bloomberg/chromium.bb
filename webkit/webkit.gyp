@@ -42,6 +42,7 @@
       '../third_party/WebKit/WebCore/editing',
       '../third_party/WebKit/WebCore/history',
       '../third_party/WebKit/WebCore/html',
+      '../third_party/WebKit/WebCore/html/canvas',
       '../third_party/WebKit/WebCore/inspector',
       '../third_party/WebKit/WebCore/loader',
       '../third_party/WebKit/WebCore/loader/appcache',
