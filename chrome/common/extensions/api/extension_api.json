@@ -510,47 +510,86 @@
   },
   {
     "namespace": "bookmarks",
-    "types": [],
+    "types": [
+      {
+        "id": "BookmarkTreeNode",
+        "type": "object",
+        "properties": {
+          "id": {"type": "integer", "minimum": 0},
+          "index": {"type": "integer", "minimum": 0},
+          "windowId": {"type": "integer", "minimum": 0},
+          "selected": {"type": "boolean"},
+          "url": {"type": "string"},
+          "title": {"type": "string", "optional": true},
+          "favIconUrl": {"type": "string", "optional": true}
+        }
+      }
+    ],
     "functions": [
       {
         "name": "get",
         "type": "function",
-        "description": "",
+        "description": "Retrieves the specified BookmarkTreeNode(s).",
         "parameters": [
           {
             "name": "idOrIdList",
+            "description": "A single string-valued id, or an array of string-valued ids",
             "choices": [
               {"type": "string"},
               {"type": "array", "items": {"type": "string"}, "minItems": 1}
             ] 
           },
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function", 
+            "name": "callback",
+            "parameters": [
+              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+            ]
+          }
         ]
       },
       {
         "name": "getChildren",
         "type": "function",
-        "description": "",
+        "description": "Retrieves the children of the specified BookmarkTreeNode id.",
         "parameters": [
           {"type": "string", "name": "id"},
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function", 
+            "name": "callback",
+            "parameters": [
+              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+            ]
+          }
         ]
       },
       {
         "name": "getTree",
         "type": "function",
-        "description": "",
+        "description": "Retrieves the entire Bookmarks hierarchy.",
         "parameters": [
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function", 
+            "name": "callback",
+            "parameters": [
+              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+            ]
+          }
         ]
       },
       {
         "name": "search",
         "type": "function",
-        "description": "",
+        "description": "Seaches for BookmarkTreeNodes matching the given query.",
         "parameters": [
           {"type": "string", "name": "query"},
-          {"type": "function", "name": "callback"}
+          {
+            "type": "function", 
+            "name": "callback",
+            "parameters": [
+              {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
+            ]
+          }
         ]
       },
       {
@@ -568,13 +607,20 @@
               "url": {"type": "string", "optional": true}
             }
           },
-          {"type": "function", "name": "callback", "optional": true}
+          {
+            "type": "function", 
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {"name": "result", "$ref": "BookmarkTreeNode" }
+            ]
+          }
         ]
       },
       {
         "name": "move",
         "type": "function",
-        "description": "",
+        "description": "Moves the specified BookmarkTreeNode to the provided location.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
@@ -585,7 +631,7 @@
               "index": {"type": "integer", "minimum": 0, "optional": true}
             }
           },
-          {"type": "function", "name": "callback", "optional": true}
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       },
       {
@@ -601,7 +647,14 @@
               "title": {"type": "string", "optional": true}
             }
           },
-          {"type": "function", "name": "callback", "optional": true}
+          {
+            "type": "function", 
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {"name": "result", "$ref": "BookmarkTreeNode" }
+            ]
+          }
         ]
       },
       {
@@ -610,7 +663,7 @@
         "description": "",
         "parameters": [
           {"type": "string", "name": "id"},
-          {"type": "function", "name": "callback", "optional": true}
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       },
       {
@@ -619,7 +672,7 @@
         "description": "",
         "parameters": [
           {"type": "string", "name": "id"},
-          {"type": "function", "name": "callback", "optional": true}
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       }
     ],
@@ -631,7 +684,7 @@
         "parameters": [
           {"type": "string", "name": "id"},
           {
-            "type": "object",
+            "$ref": "BookmarkTreeNode",
             "name": "bookmark"
           }
         ]
@@ -644,7 +697,11 @@
           {"type": "string", "name": "id"},
           {
             "type": "object",
-            "name": "RemoveInfo"
+            "name": "RemoveInfo",
+            "properties": {
+              "parentId": { "type": "integer" },
+              "index": { "type": "integer" }
+            }
           }
         ]
       },
@@ -668,7 +725,13 @@
           {"type": "string", "name": "id"},
           {
             "type": "object",
-            "name": "MoveInfo"
+            "name": "MoveInfo",
+            "properties": {
+              "parentId": { "type": "integer" },
+              "index": { "type": "integer" },
+              "oldParentId": { "type": "integer" },
+              "oldIndex": { "type": "integer" }
+            }
           }
         ]
       },
@@ -679,8 +742,9 @@
         "parameters": [
           {"type": "string", "name": "id"},
           {
-            "type": "object",
-            "name": "childIds"
+            "type": "arary",
+            "name": "childIds",
+            "items": { "type": "integer" }
           }
         ]
       }
@@ -697,7 +761,7 @@
         "parameters": [
           {"type": "integer", "name": "height", "minimum": 0},
           {"type": "string", "name": "url", "optional": true},
-          {"type": "function", "name": "callback", "optional": true}
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       },
       {
@@ -706,7 +770,7 @@
         "description": "",
         "parameters": [
           {"type": "string", "name": "url", "optional": true},
-          {"type": "function", "name": "callback", "optional": true}
+          {"type": "function", "name": "callback", "optional": true, "parameters": []}
         ]
       }
     ],
