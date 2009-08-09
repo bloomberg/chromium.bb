@@ -58,6 +58,9 @@ function renderPage() {
     return;
   }
 
+  pageName = pageName.replace(/([A-Z])/g, " $1");
+  pageName = pageName.substring(0, 1).toUpperCase() + pageName.substring(1);
+
   // Fetch the api template and insert into the <body>.
   fetchContent(API_TEMPLATE, function(templateContent) {
     document.getElementsByTagName("body")[0].innerHTML = templateContent;
@@ -165,7 +168,7 @@ function renderTemplate(schemaContent) {
   jstProcess(input, output);
 
   // Show.
-  document.getElementsByTagName("body")[0].className = "";
+  document.getElementsByTagName("body")[0].style.display = "block";
 
   if (parent && parent.done)
     parent.done();
