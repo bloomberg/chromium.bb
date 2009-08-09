@@ -75,13 +75,10 @@ void Firefox2Importer::StartImport(ProfileInfo profile_info,
 // static
 void Firefox2Importer::LoadDefaultBookmarks(const std::wstring& app_path,
                                             std::set<GURL> *urls) {
-  // TODO(port): Code below is correct only on Windows.
-  // Firefox keeps its default bookmarks in a bookmarks.html file that
-  // lives at: <Firefox install dir>\defaults\profile\bookmarks.html
   FilePath file = FilePath::FromWStringHack(app_path);
-  file.AppendASCII("defaults");
-  file.AppendASCII("profile");
-  file.AppendASCII("bookmarks.html");
+  file = file.AppendASCII("defaults");
+  file = file.AppendASCII("profile");
+  file = file.AppendASCII("bookmarks.html");
 
   urls->clear();
 
