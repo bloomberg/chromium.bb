@@ -61,20 +61,17 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
     line_end = script_text.find('\n', line_start);
 
     // Handle the case where there is no trailing newline in the file.
-    if (line_end == std::string::npos) {
+    if (line_end == std::string::npos)
       line_end = script_text.length() - 1;
-    }
 
     line.set(script_text.data() + line_start, line_end - line_start);
 
     if (!in_metadata) {
-      if (line.starts_with(kUserScriptBegin)) {
+      if (line.starts_with(kUserScriptBegin))
         in_metadata = true;
-      }
     } else {
-      if (line.starts_with(kUserScriptEng)) {
+      if (line.starts_with(kUserScriptEng))
         break;
-      }
 
       std::string value;
       if (GetDeclarationValue(line, kIncludeDeclaration, &value)) {
@@ -126,12 +123,11 @@ void UserScriptMaster::ScriptReloader::StartScan(
 
 void UserScriptMaster::ScriptReloader::NotifyMaster(
     base::SharedMemory* memory) {
-  if (!master_) {
-    // The master went away, so these new scripts aren't useful anymore.
+  // The master went away, so these new scripts aren't useful anymore.
+  if (!master_)
     delete memory;
-  } else {
+  else
     master_->NewScriptsAvailable(memory);
-  }
 
   // Drop our self-reference.
   // Balances StartScan().
@@ -174,11 +170,10 @@ void UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
           net::FilePathToFileURL(file).ExtractFileName());
       user_script.js_scripts().push_back(UserScript::File(file, url));
       UserScript::File& script_file = user_script.js_scripts().back();
-      if (!LoadScriptContent(&script_file)) {
-        result->erase(result->end());
-      } else {
+      if (!LoadScriptContent(&script_file))
+        result->pop_back();
+      else
         ParseMetadataHeader(script_file.GetContent(), &user_script);
-      }
     }
   }
 }
@@ -188,25 +183,23 @@ static void LoadLoneScripts(UserScriptList* lone_scripts) {
     UserScript& script = lone_scripts->at(i);
     for (size_t k = 0; k < script.js_scripts().size(); ++k) {
       UserScript::File& script_file = script.js_scripts()[k];
-      if (script_file.GetContent().empty()) {
+      if (script_file.GetContent().empty())
         LoadScriptContent(&script_file);
-      }
     }
     for (size_t k = 0; k < script.css_scripts().size(); ++k) {
       UserScript::File& script_file = script.css_scripts()[k];
-      if (script_file.GetContent().empty()) {
+      if (script_file.GetContent().empty())
         LoadScriptContent(&script_file);
-      }
     }
   }
 }
 
 // Pickle user scripts and return pointer to the shared memory.
-static base::SharedMemory* Serialize(UserScriptList& scripts) {
+static base::SharedMemory* Serialize(const UserScriptList& scripts) {
   Pickle pickle;
   pickle.WriteSize(scripts.size());
   for (size_t i = 0; i < scripts.size(); i++) {
-    UserScript& script = scripts[i];
+    const UserScript& script = scripts[i];
     script.Pickle(&pickle);
     // Write scripts as 'data' so that we can read it out in the slave without
     // allocating a new string.
@@ -226,9 +219,8 @@ static base::SharedMemory* Serialize(UserScriptList& scripts) {
   if (!shared_memory->Create(std::wstring(),  // anonymous
                              false,  // read-only
                              false,  // open existing
-                             pickle.size())) {
+                             pickle.size()))
     return NULL;
-  }
 
   // Map into our process.
   if (!shared_memory->Map(pickle.size()))
@@ -372,9 +364,8 @@ void UserScriptMaster::Observe(NotificationType type,
       UserScriptList new_lone_scripts;
       for (UserScriptList::iterator iter = lone_scripts_.begin();
            iter != lone_scripts_.end(); ++iter) {
-        if (iter->extension_id() != extension->id()) {
+        if (iter->extension_id() != extension->id())
           new_lone_scripts.push_back(*iter);
-        }
       }
       lone_scripts_ = new_lone_scripts;
       StartScan();
