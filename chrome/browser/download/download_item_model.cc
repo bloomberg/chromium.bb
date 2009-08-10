@@ -80,7 +80,7 @@ std::wstring DownloadItemModel::GetStatusText() {
       status_text.clear();
       break;
     case DownloadItem::CANCELLED:
-      status_text = l10n_util::GetString(IDS_DOWNLOAD_STATUS_CANCELLED);
+      status_text = l10n_util::GetString(IDS_DOWNLOAD_STATUS_CANCELED);
       break;
     case DownloadItem::REMOVING:
       break;
@@ -118,7 +118,7 @@ std::wstring SavePageModel::GetStatusText() {
       status_text = l10n_util::GetString(IDS_SAVE_PAGE_STATUS_COMPLETED);
       break;
     case DownloadItem::CANCELLED:
-      status_text = l10n_util::GetString(IDS_SAVE_PAGE_STATUS_CANCELLED);
+      status_text = l10n_util::GetString(IDS_SAVE_PAGE_STATUS_CANCELED);
       break;
     case DownloadItem::REMOVING:
       break;

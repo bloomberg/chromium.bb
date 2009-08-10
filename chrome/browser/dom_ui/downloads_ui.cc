@@ -72,7 +72,7 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
 
   // Status.
   localized_strings.SetString(L"status_cancelled",
-      l10n_util::GetString(IDS_DOWNLOAD_TAB_CANCELLED));
+      l10n_util::GetString(IDS_DOWNLOAD_TAB_CANCELED));
   localized_strings.SetString(L"status_paused",
       l10n_util::GetString(IDS_DOWNLOAD_PROGRESS_PAUSED));
 

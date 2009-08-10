@@ -1674,8 +1674,8 @@ each locale. -->
                desc="Size and units downloaded.">
         <ph name="DOWNLOAD_SIZE">$1<ex>54kB</ex></ph>, Complete
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_CANCELLED" desc="Cancelled text.">
-        Cancelled 
+      <message name="IDS_DOWNLOAD_STATUS_CANCELED" desc="Canceled text.">
+        Canceled 
       </message>
       <message name="IDS_DOWNLOAD_BUTTON_OPEN"
                desc="Button open text.">
@@ -1729,9 +1729,9 @@ each locale. -->
                desc="In the download view, 'Show in folder' link text">
         Show in folder
       </message>
-      <message name="IDS_DOWNLOAD_TAB_CANCELLED"
+      <message name="IDS_DOWNLOAD_TAB_CANCELED"
                desc="Cancel link text">
-        Cancelled
+        Canceled
       </message>
       <message name="IDS_DOWNLOAD_TAB_PROGRESS_STATUS_TIME_UNKNOWN"
                desc="The status text for a download in progress in the download manager. This includes information such as speed and received byte counts and is used when we do not know the remaining time">
@@ -4227,8 +4227,8 @@ each locale. -->
       <message name="IDS_SAVE_PAGE_STATUS_COMPLETED" desc="Save page status: completed">
         Completed
       </message>
-      <message name="IDS_SAVE_PAGE_STATUS_CANCELLED" desc="Save page status: cancelled">
-        Cancelled
+      <message name="IDS_SAVE_PAGE_STATUS_CANCELED" desc="Save page status: canceled">
+        Canceled
       </message>
       <message name="IDS_SAVE_PAGE_STATUS_FAILED" desc="Save page status: failed">
         Failed
