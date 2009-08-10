@@ -357,6 +357,10 @@ class BrowserWindowGtk : public BrowserWindow,
   guint32 last_click_time_;
   gfx::Point last_click_position_;
 
+  // If true, maximize the window after we call BrowserWindow::Show for the
+  // first time.  This is to work around a compiz bug.
+  bool maximize_after_show_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowGtk);
 };
 

@@ -390,7 +390,8 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
 #endif
        frame_cursor_(NULL),
        is_active_(true),
-       last_click_time_(0) {
+       last_click_time_(0),
+       maximize_after_show_(false) {
   use_custom_frame_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
 
@@ -640,8 +641,11 @@ void BrowserWindowGtk::Show() {
   }
 #endif
 
-  // If we are not already visible, this will just show the window.
   gtk_window_present(window_);
+  if (maximize_after_show_) {
+    gtk_window_maximize(window_);
+    maximize_after_show_ = false;
+  }
 }
 
 void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
@@ -1221,10 +1225,11 @@ void BrowserWindowGtk::SetGeometryHints() {
   geometry.min_height = 1;
   gtk_window_set_geometry_hints(window_, NULL, &geometry, GDK_HINT_MIN_SIZE);
 
-  if (browser_->GetSavedMaximizedState())
-    gtk_window_maximize(window_);
-  else
-    gtk_window_unmaximize(window_);
+  // If we call gtk_window_maximize followed by gtk_window_present, compiz gets
+  // confused and maximizes the window, but doesn't set the
+  // GDK_WINDOW_STATE_MAXIMIZED bit.  So instead, we keep track of whether to
+  // maximize and call it after gtk_window_present.
+  maximize_after_show_ = browser_->GetSavedMaximizedState();
 
   gfx::Rect bounds = browser_->GetSavedWindowBounds();
   // We don't blindly call SetBounds here, that sets a forced position
