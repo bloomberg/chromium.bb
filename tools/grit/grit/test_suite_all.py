@@ -45,6 +45,7 @@ class TestSuiteAll(unittest.TestSuite):
     from grit import shortcuts_unittests
     from grit.gather import muppet_strings_unittest
     from grit.node.custom import filename_unittest
+    import grit.format.js_map_format_unittest
 
     test_classes = [
       base_unittest.NodeUnittest,
@@ -73,6 +74,7 @@ class TestSuiteAll(unittest.TestSuite):
       shortcuts_unittests.ShortcutsUnittest,
       muppet_strings_unittest.MuppetStringsUnittest,
       filename_unittest.WindowsFilenameUnittest,
+      grit.format.js_map_format_unittest.JsMapFormatUnittest,
       # add test classes here...
     ]
 
@@ -82,4 +84,3 @@ class TestSuiteAll(unittest.TestSuite):
 
 if __name__ == '__main__':
   unittest.TextTestRunner(verbosity=2).run(TestSuiteAll())
-

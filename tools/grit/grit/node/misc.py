@@ -224,6 +224,9 @@ class GritNode(base.Node):
     elif t == 'resource_map_source':
       from grit.format import resource_map
       return resource_map.SourceTopLevel()
+    elif t == 'js_map_format':
+      from grit.format import js_map_format
+      return js_map_format.TopLevel()
     else:
       return super(type(self), self).ItemFormatter(t)
 
@@ -268,5 +271,3 @@ class IdentifierNode(base.Node):
     node.EndParsing()
     return node
   Construct = staticmethod(Construct)
-
-

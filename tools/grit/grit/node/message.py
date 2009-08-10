@@ -104,6 +104,8 @@ class MessageNode(base.ContentNode):
     elif (t in ['rc_all', 'rc_translateable', 'rc_nontranslateable'] and
           self.SatisfiesOutputCondition()):
       return grit.format.rc.Message()
+    elif t == 'js_map_format' and self.SatisfiesOutputCondition():
+        return grit.format.js_map_format.Message()
     else:
       return super(type(self), self).ItemFormatter(t)
 
@@ -264,4 +266,3 @@ class PhNode(base.ContentNode):
 class ExNode(base.ContentNode):
   '''An <ex> element.'''
   pass
-

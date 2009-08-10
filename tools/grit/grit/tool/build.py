@@ -172,6 +172,8 @@ are exported to translation interchange files (e.g. XMB files), etc.
       if output.GetType() in ('rc_header', 'resource_map_header',
                               'resource_map_source'):
         encoding = 'cp1252'
+      elif output.GetType() == 'js_map_format':
+        encoding = 'utf_8'
       else:
         encoding = 'utf_16'
 
