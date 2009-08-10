@@ -338,6 +338,10 @@ class UITest : public testing::Test {
     log_level_ = value;
   }
 
+  // Returns the directory name where the "typical" user data is that we use
+  // for testing.
+  static FilePath ComputeTypicalUserDataSource(int profile_type);
+
   // Called by some tests that wish to have a base profile to start from. This
   // "user data directory" (containing one or more profiles) will be recursively
   // copied into the user data directory for the test and the files will be
@@ -403,6 +407,12 @@ class UITest : public testing::Test {
   // Synchronously launches local http server normally used to run LayoutTests.
   void StartHttpServer(const FilePath& root_directory);
   void StopHttpServer();
+
+  // Profile theme type choices.
+  enum {
+    DEFAULT_THEME = 0,
+    COMPLEX_THEME = 1
+  } ProfileType;
 
  private:
   // Check that no processes related to Chrome exist, displaying

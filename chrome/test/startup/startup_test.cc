@@ -28,7 +28,7 @@ class StartupTest : public UITest {
   void TearDown() {}
 
   void RunStartupTest(const char* graph, const char* trace,
-      bool test_cold, bool important) {
+      bool test_cold, bool important, int profile_type) {
     const int kNumCyclesMax = 20;
     int numCycles = kNumCyclesMax;
 // It's ok for unit test code to use getenv(), isn't it?
@@ -64,6 +64,12 @@ class StartupTest : public UITest {
         NOTIMPLEMENTED() << "gears not enabled yet";
 #endif
       }
+
+      // Sets the profile data for the run.  For now, this is only used for
+      // the complex theme test.
+      if (profile_type == UITest::COMPLEX_THEME)
+        set_template_user_data(UITest::ComputeTypicalUserDataSource(
+            profile_type).ToWStringHack());
 
       UITest::SetUp();
       TimeTicks end_time = TimeTicks::Now();
@@ -125,32 +131,39 @@ class StartupFileTest : public StartupTest {
 };
 
 TEST_F(StartupTest, Perf) {
-  RunStartupTest("warm", "t", false /* not cold */, true /* important */);
+  RunStartupTest("warm", "t", false /* not cold */, true /* important */,
+                 UITest::DEFAULT_THEME);
 }
 
 // TODO(port): We need a mac reference build checked in for this.
 TEST_F(StartupReferenceTest, Perf) {
   RunStartupTest("warm", "t_ref", false /* not cold */,
-                 true /* important */);
+                 true /* important */, UITest::DEFAULT_THEME);
 }
 
 // TODO(mpcomplete): Should we have reference timings for all these?
 
 TEST_F(StartupTest, PerfCold) {
-  RunStartupTest("cold", "t", true /* cold */, false /* not important */);
+  RunStartupTest("cold", "t", true /* cold */, false /* not important */,
+                 UITest::DEFAULT_THEME);
 }
 
 #if defined(OS_WIN)
 // TODO(port): Enable gears tests on linux/mac once gears is working.
 TEST_F(StartupFileTest, PerfGears) {
   RunStartupTest("warm", "gears", false /* not cold */,
-                 false /* not important */);
+                 false /* not important */, UITest::DEFAULT_THEME);
 }
 
 TEST_F(StartupFileTest, PerfColdGears) {
   RunStartupTest("cold", "gears", true /* cold */,
-                 false /* not important */);
+                 false /* not important */, UITest::DEFAULT_THEME);
 }
 #endif
+
+TEST_F(StartupTest, PerfColdComplexTheme) {
+  RunStartupTest("warm", "t-theme", false /* warm */,
+                 false /* not important */, UITest::COMPLEX_THEME);
+}
 
 }  // namespace

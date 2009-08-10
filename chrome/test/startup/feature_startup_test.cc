@@ -19,17 +19,6 @@ using base::TimeDelta;
 
 namespace {
 
-// Returns the directory name where the "typical" user data is that we use for
-// testing.
-FilePath ComputeTypicalUserDataSource() {
-  FilePath source_history_file;
-  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
-                               &source_history_file));
-  source_history_file = source_history_file.AppendASCII("profiles")
-      .AppendASCII("typical_history");
-  return source_history_file;
-}
-
 class NewTabUIStartupTest : public UITest {
  public:
   NewTabUIStartupTest() {
@@ -52,9 +41,11 @@ class NewTabUIStartupTest : public UITest {
   // Run the test, by bringing up a browser and timing the new tab startup.
   // |want_warm| is true if we should output warm-disk timings, false if
   // we should report cold timings.
-  void RunStartupTest(const char* label, bool want_warm, bool important) {
+  void RunStartupTest(const char* label, bool want_warm, bool important,
+                      int profile_type) {
     // Install the location of the test profile file.
-    set_template_user_data(ComputeTypicalUserDataSource().ToWStringHack());
+    set_template_user_data(UITest::ComputeTypicalUserDataSource(
+        profile_type).ToWStringHack());
 
     // Disable the first run notification because it has an animation which
     // masks any real performance regressions.
@@ -106,11 +97,19 @@ class NewTabUIStartupTest : public UITest {
 
 // TODO(pamg): run these tests with a reference build?
 TEST_F(NewTabUIStartupTest, PerfCold) {
-  RunStartupTest("tab_cold", false /* cold */, true /* important */);
+  RunStartupTest("tab_cold", false /* cold */, true /* important */,
+                 UITest::DEFAULT_THEME);
 }
 
 TEST_F(NewTabUIStartupTest, DISABLED_PerfWarm) {
-  RunStartupTest("tab_warm", true /* warm */, false /* not important */);
+  RunStartupTest("tab_warm", true /* warm */, false /* not important */,
+                 UITest::DEFAULT_THEME);
+}
+
+TEST_F(NewTabUIStartupTest, ComplexTheme) {
+  RunStartupTest("tab_complex_theme_cold", false /* cold */,
+                 false /* not important */,
+                 UITest::COMPLEX_THEME);
 }
 
 }  // namespace

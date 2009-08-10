@@ -963,3 +963,22 @@ bool UITest::EvictFileFromSystemCacheWrapper(const FilePath& path) {
   }
   return false;
 }
+
+// static
+FilePath UITest::ComputeTypicalUserDataSource(int profile_type) {
+  FilePath source_history_file;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
+                               &source_history_file));
+  if (profile_type == UITest::DEFAULT_THEME) {
+    source_history_file = source_history_file.AppendASCII("profiles")
+        .AppendASCII("typical_history");
+  } else if (profile_type == UITest::COMPLEX_THEME) {
+    source_history_file = source_history_file.AppendASCII("profiles")
+        .AppendASCII("complex_theme");
+  } else {
+    NOTREACHED();
+  }
+  return source_history_file;
+}
+
+
