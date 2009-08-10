@@ -60,15 +60,18 @@ class TestGypBase(TestCommon.TestCommon):
       # a temporary directory for us.
       kw['workdir'] = ''
 
+    formats = kw.get('formats')
+    if kw.has_key('formats'):
+      del kw['formats']
+
     super(TestGypBase, self).__init__(*args, **kw)
+
+    if formats and self.format not in formats:
+      msg = 'Invalid test for %r format; skipping test.\n'
+      self.skip_test(msg % self.format)
 
     self.copy_test_configuration(self.origin_cwd, self.workdir)
     self.set_configuration(None)
-
-    # TODO:  remove this when the SCons generator generates an atomic
-    # configuration that doesn't rely on chromium_builders.py.
-    lib_dir = os.path.abspath(os.path.dirname(__file__))
-    self.copy_test_configuration(lib_dir, self.workdir)
 
   def copy_test_configuration(self, source_dir, dest_dir):
     """

@@ -787,9 +787,7 @@ def add_gyp_methods(env):
 
 
 base_env = Environment(
-    # TODO(sgk):  support GYP configuration of a list of additional tools
-    # to use, and move 'chromium_builders' to the chromium gyp config.
-    tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
+    tools = %(scons_tools)s,
     LIB_DIR='$TOP_BUILDDIR/lib',
     OBJ_DIR='$TOP_BUILDDIR/obj',
     SCONSBUILD_DIR=sconsbuild_dir.abspath,
@@ -902,6 +900,7 @@ def GenerateSConscriptWrapper(build_file_data, name,
   subdir = os.path.basename(os.path.split(output_filename)[0])
   scons_settings = build_file_data.get('scons_settings', {})
   sconsbuild_dir = scons_settings.get('sconsbuild_dir', '#')
+  scons_tools = scons_settings.get('tools', ['default'])
 
   sconscript_file_lines = ['dict(']
   for target in sorted(sconscript_files.keys()):
@@ -914,6 +913,7 @@ def GenerateSConscriptWrapper(build_file_data, name,
   fp.write(_wrapper_template % {
                'default_configuration' : default_configuration,
                'name' : name,
+               'scons_tools' : repr(scons_tools),
                'sconsbuild_dir' : repr(sconsbuild_dir),
                'sconscript_files' : '\n'.join(sconscript_file_lines),
                'subdir' : subdir,
