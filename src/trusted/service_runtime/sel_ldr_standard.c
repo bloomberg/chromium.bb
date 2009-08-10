@@ -239,8 +239,9 @@ NaClErrorCode NaClProcessPhdrs(struct NaClApp *nap) {
   return LOAD_OK;
 }
 
-NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
-                              struct NaClApp  *nap) {
+NaClErrorCode NaClAppLoadFile(struct Gio                 *gp,
+                              struct NaClApp             *nap,
+                              enum NaClAbiMismatchOption abi_mismatch_option) {
   NaClErrorCode ret = LOAD_INTERNAL;
   NaClErrorCode subret;
 
@@ -295,15 +296,19 @@ NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
     NaClLog(LOG_ERROR, "Expected OSABI %d, got %d\n",
             ELFOSABI_NACL,
             nap->elf_hdr.e_ident[EI_OSABI]);
-    ret = LOAD_BAD_ABI;
-    goto done;
+    if (abi_mismatch_option == NACL_ABI_MISMATCH_OPTION_ABORT) {
+      ret = LOAD_BAD_ABI;
+      goto done;
+    }
   }
   if (EF_NACL_ABIVERSION != nap->elf_hdr.e_ident[EI_ABIVERSION]) {
     NaClLog(LOG_ERROR, "Expected ABIVERSION %d, got %d\n",
             EF_NACL_ABIVERSION,
             nap->elf_hdr.e_ident[EI_ABIVERSION]);
-    ret = LOAD_BAD_ABI;
-    goto done;
+    if (abi_mismatch_option == NACL_ABI_MISMATCH_OPTION_ABORT) {
+      ret = LOAD_BAD_ABI;
+      goto done;
+    }
   }
   if (ET_EXEC != nap->elf_hdr.e_type) {
     ret = LOAD_NOT_EXEC;

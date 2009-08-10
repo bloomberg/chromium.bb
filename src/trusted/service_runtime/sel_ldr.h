@@ -328,8 +328,17 @@ void  NaClAppFreeAllMemory(struct NaClApp *nap);
  * self-modifying code / data writes and automatically invalidate the
  * cache lines.
  */
+
+
+enum NaClAbiMismatchOption {
+  NACL_ABI_MISMATCH_OPTION_ABORT,
+  NACL_ABI_MISMATCH_OPTION_IGNORE,
+};
+
 NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
-                              struct NaClApp  *nap) NACL_WUR;
+                              struct NaClApp  *nap,
+                              enum NaClAbiMismatchOption abi_mismatch_option)
+  NACL_WUR;
 
 size_t  NaClAlignPad(size_t val,
                      size_t align);

@@ -360,7 +360,7 @@ int32_t NaClCommonSysExit(struct NaClAppThread  *natp,
                           int                   status) {
   struct NaClApp            *nap;
 
-  NaClLog(LOG_INFO, "Exit syscall handler\n");
+  NaClLog(LOG_INFO, "Exit syscall handler: %d\n", status);
   NaClSysCommonThreadSyscallEnter(natp);
 
   nap = natp->nap;

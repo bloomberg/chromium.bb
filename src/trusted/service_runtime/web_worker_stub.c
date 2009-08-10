@@ -164,7 +164,9 @@ int NaClStartNativeWebWorker(char *buffer,
   /*
    * Load the NaCl module from the memory file.
    */
-  if (LOAD_OK != NaClAppLoadFile((struct Gio *) &gf, *nap)) {
+  if (LOAD_OK != NaClAppLoadFile((struct Gio *) &gf,
+                                 *nap,
+                                 NACL_ABI_MISMATCH_OPTION_ABORT)) {
     goto done;
   }
   /*

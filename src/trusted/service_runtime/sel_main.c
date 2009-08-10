@@ -178,6 +178,8 @@ int main(int  ac,
   int                           main_thread_only = 1;
   int                           export_addr_to = -2;
   int                           dump_sock_addr_to = -1;
+  enum NaClAbiMismatchOption    abi_mismatch_option =
+                                    NACL_ABI_MISMATCH_OPTION_ABORT;
 
   struct NaClApp                *nap;
 
@@ -234,7 +236,7 @@ int main(int  ac,
     return 1;
   }
 
-  while ((opt = getopt(ac, av, "a:dD:f:h:i:l:mMP:r:vw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "a:dD:f:h:i:Il:mMP:r:vw:X:")) != -1) {
     switch (opt) {
       case 'a':
         /* import IMC socket address */
@@ -288,7 +290,10 @@ int main(int  ac,
         *redir_qend = entry;
         redir_qend = &entry->next;
         break;
-      case 'l':
+      case 'I':
+        abi_mismatch_option = NACL_ABI_MISMATCH_OPTION_IGNORE;
+        break;
+     case 'l':
         log_file = optarg;
         break;
       case 'm':
@@ -430,7 +435,7 @@ int main(int  ac,
   }
 
   if (LOAD_OK == errcode) {
-    errcode = NaClAppLoadFile((struct Gio *) &gf, nap);
+    errcode = NaClAppLoadFile((struct Gio *) &gf, nap, abi_mismatch_option);
     if (LOAD_OK != errcode) {
       nap->module_load_status = errcode;
       fprintf(stderr, "Error while loading \"%s\": %s\n",
