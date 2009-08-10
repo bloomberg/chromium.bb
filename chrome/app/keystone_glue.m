@@ -26,12 +26,23 @@ NSString *KSRegistrationStartUpdateNotification =
 NSString *KSUpdateCheckSuccessfulKey = @"CheckSuccessful";
 NSString *KSUpdateCheckSuccessfullyInstalledKey = @"SuccessfullyInstalled";
 
+NSString *KSRegistrationRemoveExistingTag = @"";
+#define KSRegistrationPreserveExistingTag nil
+
 @interface KSRegistration : NSObject
 + (id)registrationWithProductID:(NSString*)productID;
+// Older API
 - (BOOL)registerWithVersion:(NSString*)version
        existenceCheckerType:(KSExistenceCheckerType)xctype
      existenceCheckerString:(NSString*)xc
             serverURLString:(NSString*)serverURLString;
+// Newer API
+- (BOOL)registerWithVersion:(NSString*)version
+       existenceCheckerType:(KSExistenceCheckerType)xctype
+     existenceCheckerString:(NSString*)xc
+            serverURLString:(NSString*)serverURLString
+            preserveTTToken:(BOOL)preserveToken
+                        tag:(NSString *)tag;
 - (void)setActive;
 - (void)checkForUpdate;
 - (void)startUpdate;
@@ -60,6 +71,7 @@ NSString *KSUpdateCheckSuccessfullyInstalledKey = @"SuccessfullyInstalled";
   [url_ release];
   [productID_ release];
   [version_ release];
+  [channel_ release];
   [registration_ release];
   [super dealloc];
 }
@@ -81,9 +93,16 @@ NSString *KSUpdateCheckSuccessfullyInstalledKey = @"SuccessfullyInstalled";
     return;
   }
 
+  NSString* channel = [infoDictionary objectForKey:@"KSChannelID"];
+  // The stable channel has no tag.  If updating to stable, remove the
+  // dev and beta tags since we've been "promoted".
+  if (channel == nil)
+    channel = KSRegistrationRemoveExistingTag;
+
   url_ = [url retain];
   productID_ = [product retain];
   version_ = [version retain];
+  channel_ = [channel retain];
 }
 
 - (BOOL)loadKeystoneRegistration {
@@ -109,10 +128,23 @@ NSString *KSUpdateCheckSuccessfullyInstalledKey = @"SuccessfullyInstalled";
 }
 
 - (void)registerWithKeystone {
-  [registration_ registerWithVersion:version_
-                existenceCheckerType:kKSPathExistenceChecker
-              existenceCheckerString:[[NSBundle mainBundle] bundlePath]
-                     serverURLString:url_];
+  // Only use new API if we can.  This lets us land the new call
+  // before the new Keystone has been released.
+  //
+  // TODO(jrg): once we hit Beta and the new Keystone is released,
+  // make this call unconditional.
+  if ([registration_ respondsToSelector:@selector(registerWithVersion:existenceCheckerType:existenceCheckerString:serverURLString:preserveTTToken:tag:)])
+    [registration_ registerWithVersion:version_
+                  existenceCheckerType:kKSPathExistenceChecker
+                existenceCheckerString:[[NSBundle mainBundle] bundlePath]
+                       serverURLString:url_
+                       preserveTTToken:YES
+                                   tag:channel_];
+  else
+    [registration_ registerWithVersion:version_
+                  existenceCheckerType:kKSPathExistenceChecker
+                existenceCheckerString:[[NSBundle mainBundle] bundlePath]
+                       serverURLString:url_];
 
   // Mark an active RIGHT NOW; don't wait an hour for the first one.
   [registration_ setActive];

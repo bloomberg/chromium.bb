@@ -49,6 +49,7 @@
   NSString* url_;
   NSString* productID_;
   NSString* version_;
+  NSString* channel_;  // Logically: Dev, Beta, or Stable.
 
   // And the Keystone registration itself, with the active timer
   KSRegistration* registration_;  // strong
