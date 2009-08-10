@@ -779,7 +779,7 @@ void BrowserWindowGtk::SetStarredState(bool is_starred) {
 }
 
 gfx::Rect BrowserWindowGtk::GetRestoredBounds() const {
-  return bounds_;
+  return restored_bounds_;
 }
 
 bool BrowserWindowGtk::IsMaximized() const {
