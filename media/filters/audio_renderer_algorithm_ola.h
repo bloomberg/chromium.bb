@@ -7,7 +7,9 @@
 // consumes more input data than output data requested and crossfades samples
 // to fill |buffer_out|. For speeds less than 1.0f, FillBuffer() consumers less
 // input data than output data requested and draws overlapping samples from the
-// input data to fill |buffer_out|. As ARAB is thread-unsafe, so is ARAO.
+// input data to fill |buffer_out|. ARAO will mute the audio for very high or
+// very low playback rates to preserve quality. As ARAB is thread-unsafe, so is
+// ARAO.
 
 #ifndef MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_OLA_H_
 #define MEDIA_FILTERS_AUDIO_RENDERER_ALGORITHM_OLA_H_

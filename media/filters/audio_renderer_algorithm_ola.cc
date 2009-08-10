@@ -4,6 +4,7 @@
 
 #include "media/filters/audio_renderer_algorithm_ola.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "media/base/buffers.h"
@@ -13,6 +14,11 @@ namespace media {
 // Default window and crossfade lengths in seconds.
 const double kDefaultWindowLength = 0.08;
 const double kDefaultCrossfadeLength = 0.008;
+
+// Default mute ranges for fast/slow audio. These rates would sound better
+// under a frequency domain algorithm.
+const float kMinRate = 0.75f;
+const float kMaxRate = 4.0f;
 
 AudioRendererAlgorithmOLA::AudioRendererAlgorithmOLA()
     : input_step_(0),
@@ -41,9 +47,19 @@ size_t AudioRendererAlgorithmOLA::FillBuffer(uint8* dest, size_t length) {
     return dest_written;
   }
 
+  // Mute when out of acceptable quality range. Note: This may not play at the
+  // speed requested as we can only consume as much data as we have, and audio
+  // timestamps drive the pipeline clock.
+  if (playback_rate() < kMinRate || playback_rate() > kMaxRate) {
+    size_t consume = static_cast<size_t>(length * playback_rate());
+    size_t safe_to_consume = std::min(QueueSize(), consume);
+    memset(dest, 0, length);
+    AlignToSampleBoundary(&safe_to_consume);
+    AdvanceInputPosition(safe_to_consume);
+    return length;
+  }
+
   // For other playback rates, OLA with crossfade!
-  // TODO(kylep): Limit the rates to reasonable values. We may want to do this
-  // on the UI side or in set_playback_rate().
   while (length >= output_step_ + crossfade_size_) {
     // If we don't have enough data to completely finish this loop, quit.
     if (QueueSize() < window_size_)
