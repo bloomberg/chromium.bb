@@ -304,7 +304,7 @@ bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
   unsigned width = bitmap.width();
   unsigned height = bitmap.height();
   scoped_array<png_bytep> row_pointers(new png_bytep[height]);
-  for (int i = 0; i < height; ++i) {
+  for (unsigned int i = 0; i < height; ++i) {
     row_pointers[height - 1 - i] = bitmap.GetMipData(0) + i * width * 4;
   }
 
@@ -326,6 +326,7 @@ bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
   png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, png_voidp_NULL);
 
   png_destroy_write_struct(&png_ptr, &info_ptr);
+  return true;
 }
 
 }  // anonymous namespace

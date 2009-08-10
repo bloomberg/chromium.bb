@@ -89,8 +89,8 @@ deps = {
 
   # NACL has to be in this weird directory because it looks for
   # googleclient two levels above it.
-  "third_party/native_client/googleclient/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/nacl/googleclient/native_client@188",
+  "native_client":
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@492",
 
   "breakpad/src":
     "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),

@@ -38,7 +38,7 @@
         '../import/archive.gyp:o3dArchive',
         '../serializer/serializer.gyp:o3dSerializer',
         '../utils/utils.gyp:o3dUtils',
-        '../build/nacl.gyp:build_nacl',
+        '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
         'idl/idl.gyp:o3dPluginIdl',
       ],
       'sources': [

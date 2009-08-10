@@ -28,7 +28,7 @@
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
-        '../build/nacl.gyp:build_nacl',
+        '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
         '../compiler/technique/technique.gyp:o3dTechnique',
         '../compiler/technique/technique.gyp:o3dTechniqueTest',
         '../core/core.gyp:o3dCore',
