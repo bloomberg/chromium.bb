@@ -72,10 +72,8 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   // expects.  We will resize ourselves open later if needed.
   [[self view] setFrame:NSMakeRect(0, 0, initialWidth_, 0)];
 
-  // Be sure to enable the bar before trying to show it...
+  // We are enabled by default.
   barIsEnabled_ = YES;
-  if (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
-    [self showBookmarkBar:YES immediately:YES];
 
   // Don't pass ourself along (as 'self') until our init is completely
   // done.  Thus, this call is (almost) last.
@@ -89,6 +87,11 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
        selector:@selector(frameDidChange)
            name:NSViewFrameDidChangeNotification
          object:[self view]];
+}
+
+- (void)showIfNeeded {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
+    [self showBookmarkBar:YES immediately:YES];
 }
 
 // Check if we should enable the off-the-side button.

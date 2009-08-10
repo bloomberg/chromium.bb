@@ -79,6 +79,10 @@ class PrefService;
        resizeDelegate:(id<ViewResizer>)resizeDelegate
           urlDelegate:(id<BookmarkURLOpener>)urlDelegate;
 
+// Tell the bar to show itself if needed (e.g. if the kShowBookmarkBar
+// is set).  Called once after the controller is first created.
+- (void)showIfNeeded;
+
 // Returns whether or not the bookmark bar is visible.
 - (BOOL)isBookmarkBarVisible;
 

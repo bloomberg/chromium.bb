@@ -126,6 +126,11 @@ class PrefObserverBridge : public NotificationObserver {
   // position and resize properties don't need to be set.
   [[self view] addSubview:[bookmarkBarController_ view]];
 
+  // We don't want to try and show the bar before it gets placed in
+  // it's parent view, so this step shoudn't be inside the bookmark
+  // bar controller's awakeFromNib.
+  [bookmarkBarController_ showIfNeeded];
+
   // Create the controllers for the back/forward menus.
   backMenuController_.reset([[BackForwardMenuController alloc]
           initWithBrowser:browser_

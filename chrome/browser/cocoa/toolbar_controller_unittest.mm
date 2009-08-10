@@ -223,4 +223,29 @@ TEST_F(ToolbarControllerTest, BookmarkBarResizes) {
   EXPECT_EQ(6, NSHeight([bookmarkBarView frame]));
 }
 
+// Make sure, by default, the bookmark bar is the full width of the
+// toolbar.
+TEST_F(ToolbarControllerTest, BookmarkBarIsFullWidth) {
+  // Set the pref to the bookmark bar is visible when the toolbar is
+  // first created.
+  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+
+  // Create a new bar (after the pref is set)
+  Browser* browser = helper_.browser();
+  bar_.reset(
+    [[ToolbarController alloc] initWithModel:browser->toolbar_model()
+                                    commands:browser->command_updater()
+                                     profile:helper_.profile()
+                                     browser:browser
+                              resizeDelegate:resizeDelegate_.get()
+                            bookmarkDelegate:nil]);
+  EXPECT_TRUE([bar_ view]);
+
+  // Make sure the bookmark bar is the same width as the toolbar
+  NSView* bookmarkBarView = [[bar_ bookmarkBarController] view];
+  EXPECT_EQ([[bar_ view] frame].size.width,
+            [bookmarkBarView frame].size.width);
+  EXPECT_TRUE([bookmarkBarView isDescendantOf:[bar_ view]]);
+}
+
 }  // namespace
