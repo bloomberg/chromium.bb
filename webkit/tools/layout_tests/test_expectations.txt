@@ -780,9 +780,6 @@ BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = FAIL
 BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-07-t.svg = FAIL
 BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = FAIL
 
-// Radial gradient on text not rendered.
-BUG10282 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-11-b.svg = FAIL
-
 // Radial gradients with offset focal points are not implemented in Skia.
 // See comment in WebCore/platform/graphics/skia/GradientSkia.cpp
 BUG8696 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-13-b.svg = FAIL
