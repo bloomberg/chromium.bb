@@ -325,6 +325,11 @@ void TaskManagerGtk::Init() {
       kTaskManagerResponseKill,
       NULL);
 
+  // The response button should not be sensitive when the dialog is first opened
+  // because the selecetion is initially empty.
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
+                                    kTaskManagerResponseKill, FALSE);
+
   GtkWidget* link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK).c_str());
   gtk_dialog_add_action_widget(GTK_DIALOG(dialog_), link,
