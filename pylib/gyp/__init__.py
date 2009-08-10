@@ -158,7 +158,7 @@ def main(args):
     # If no format was given on the command line, then check the env variable.
     generate_formats = os.environ.get('GYP_GENERATORS', [])
     if generate_formats:
-      generate_formats = shlex.split(generate_formats)
+      generate_formats = re.split('[\s,]', generate_formats)
     if generate_formats:
       options.formats = generate_formats
     else:
