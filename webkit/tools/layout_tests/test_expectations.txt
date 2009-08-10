@@ -2855,3 +2855,6 @@ BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
 BUG18939 MAC : LayoutTests/editing/execCommand/toggle-compound-styles.html = FAIL
 BUG18939 MAC : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH PASS
 BUG18939 WIN : LayoutTests/media/controls-right-click-on-timebar.html = FAIL
+
+// Flakiness from WebKit merge to 46977
+BUG18966 LINUX : LayoutTests/fast/overflow/overflow-float-stacking.html = PASS FAIL
