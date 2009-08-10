@@ -21,7 +21,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/keyword_editor_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
-#include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -889,7 +888,7 @@ void GeneralPageView::SaveStartupPref() {
 }
 
 void GeneralPageView::AddURLToStartupURLs() {
-  ShelfItemDialog* dialog = new ShelfItemDialog(this, profile(), false);
+  UrlPicker* dialog = new UrlPicker(this, profile(), false);
   dialog->Show(GetWindow()->GetNativeWindow());
 }
 
@@ -936,7 +935,7 @@ void GeneralPageView::EnableCustomHomepagesControls(bool enable) {
   startup_custom_pages_table_->SetEnabled(enable);
 }
 
-void GeneralPageView::AddBookmark(ShelfItemDialog* dialog,
+void GeneralPageView::AddBookmark(UrlPicker* dialog,
                                   const std::wstring& title,
                                   const GURL& url) {
   int index = startup_custom_pages_table_->FirstSelectedRow();

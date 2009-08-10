@@ -7,7 +7,7 @@
 
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/views/options/options_page_view.h"
-#include "chrome/browser/views/shelf_item_dialog.h"
+#include "chrome/browser/views/url_picker.h"
 #include "chrome/common/pref_member.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/button/button.h"
@@ -35,7 +35,7 @@ class GeneralPageView : public OptionsPageView,
                         public views::Combobox::Listener,
                         public views::ButtonListener,
                         public views::Textfield::Controller,
-                        public ShelfItemDialogDelegate,
+                        public UrlPickerDelegate,
                         public views::TableViewObserver,
                         public ShellIntegration::DefaultBrowserObserver {
  public:
@@ -94,8 +94,8 @@ class GeneralPageView : public OptionsPageView,
   // option if that preference is not selected.
   void EnableCustomHomepagesControls(bool enable);
 
-  // ShelfItemDialogDelegate. Adds the URL to the list of startup urls.
-  virtual void AddBookmark(ShelfItemDialog* dialog,
+  // UrlPickerDelegate. Adds the URL to the list of startup urls.
+  virtual void AddBookmark(UrlPicker* dialog,
                            const std::wstring& title,
                            const GURL& url);
 
