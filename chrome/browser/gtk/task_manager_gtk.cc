@@ -552,8 +552,10 @@ void TaskManagerGtk::ActivateFocusedTab() {
   // If the user has just double clicked, only one item is selected.
   GtkTreeModel* model;
   GList* selected = gtk_tree_selection_get_selected_rows(selection, &model);
-  int row = GetRowNumForPath(reinterpret_cast<GtkTreePath*>(selected->data));
-  task_manager_->ActivateProcess(row);
+  if (selected) {
+    int row = GetRowNumForPath(reinterpret_cast<GtkTreePath*>(selected->data));
+    task_manager_->ActivateProcess(row);
+  }
 }
 
 void TaskManagerGtk::OnLinkActivated() {
