@@ -5,13 +5,16 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
 #define CHROME_RENDERER_EXTENSIONS_EVENT_BINDINGS_H_
 
-#include "v8/include/v8.h"
-
 #include <string>
+
+#include "v8/include/v8.h"
 
 class RenderThreadBase;
 class RenderView;
+
+namespace WebKit {
 class WebFrame;
+}
 
 // This class deals with the javascript bindings related to Event objects.
 class EventBindings {
@@ -24,8 +27,9 @@ class EventBindings {
   static RenderThreadBase* GetRenderThread();
 
   // Handle a script context coming / going away.
-  static void HandleContextCreated(WebFrame* frame, bool content_script);
-  static void HandleContextDestroyed(WebFrame* frame);
+  static void HandleContextCreated(WebKit::WebFrame* frame,
+                                   bool content_script);
+  static void HandleContextDestroyed(WebKit::WebFrame* frame);
 
   // Calls the given function in each registered context which is listening for
   // events.  If render_view is non-NULL, only call the function in contexts

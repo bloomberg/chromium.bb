@@ -21,6 +21,7 @@ class IntRect;
 class IntSize;
 class KURL;
 class Node;
+class Range;
 class ResourceError;
 class ResourceResponse;
 class SharedBuffer;
@@ -35,6 +36,7 @@ class WebDragData;
 class WebForm;
 class WebHistoryItem;
 class WebNode;
+class WebRange;
 class WebString;
 class WebURL;
 class WebURLRequest;
@@ -143,6 +145,12 @@ WebKit::WebHistoryItem HistoryItemToWebHistoryItem(
     const WTF::PassRefPtr<WebCore::HistoryItem>&);
 WTF::PassRefPtr<WebCore::HistoryItem> WebHistoryItemToHistoryItem(
     const WebKit::WebHistoryItem&);
+
+// WebRange <-> Range
+WebKit::WebRange RangeToWebRange(
+    const WTF::PassRefPtr<WebCore::Range>&);
+WTF::PassRefPtr<WebCore::Range> WebRangeToRange(
+    const WebKit::WebRange&);
 
 // WebURLError <-> ResourceError
 WebKit::WebURLError ResourceErrorToWebURLError(

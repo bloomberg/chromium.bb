@@ -12,9 +12,10 @@
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
 #include "webkit/api/public/WebConsoleMessage.h"
-#include "webkit/glue/webframe.h"
+#include "webkit/api/public/WebFrame.h"
 
 using WebKit::WebConsoleMessage;
+using WebKit::WebFrame;
 using WebKit::WebString;
 
 #include "skia/ext/vector_canvas.h"
@@ -42,7 +43,7 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
     if (diff.InSeconds() < min_wait_seconds) {
       WebString message(WebString::fromUTF8(
           "Ignoring too frequent calls to print()."));
-      frame->AddMessageToConsole(WebConsoleMessage(
+      frame->addMessageToConsole(WebConsoleMessage(
           WebConsoleMessage::LevelWarning,
           message));
       return;
@@ -77,7 +78,7 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
       {
         PrepareFrameAndViewForPrint prep_frame_view(default_settings,
                                                     frame,
-                                                    frame->GetView());
+                                                    frame->view());
         expected_pages_count = prep_frame_view.GetExpectedPageCount();
         DCHECK(expected_pages_count);
       }
@@ -96,7 +97,7 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
       // of this message has to deal with this.
       params.host_window_id = render_view_->host_window();
       params.cookie = default_settings.document_cookie;
-      params.has_selection = frame->HasSelection();
+      params.has_selection = frame->hasSelection();
       params.expected_pages_count = expected_pages_count;
 
       msg = new ViewHostMsg_ScriptedPrint(params,
@@ -195,7 +196,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
 #else
   // 100% GDI based.
   skia::VectorCanvas canvas(hdc, size_x, size_y);
-  float webkit_shrink = frame->PrintPage(params.page_number, &canvas);
+  float webkit_shrink = frame->printPage(params.page_number, &canvas);
   if (shrink <= 0) {
     NOTREACHED() << "Printing page " << params.page_number << " failed.";
   } else {

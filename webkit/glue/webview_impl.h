@@ -15,7 +15,6 @@
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/glue/back_forward_list_client_impl.h"
-#include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
@@ -39,6 +38,10 @@ class WebKeyboardEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebSettingsImpl;
+}
+
+namespace webkit_glue {
+class ImageResourceFetcher;
 }
 
 class AutocompletePopupMenuClient;
@@ -76,12 +79,12 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void SetDelegate(WebViewDelegate*);
   virtual void SetUseEditorDelegate(bool value);
   virtual void SetTabKeyCyclesThroughElements(bool value);
-  virtual WebFrame* GetMainFrame();
-  virtual WebFrame* GetFocusedFrame();
-  virtual void SetFocusedFrame(WebFrame* frame);
-  virtual WebFrame* GetFrameWithName(const std::wstring& name);
-  virtual WebFrame* GetPreviousFrameBefore(WebFrame* frame, bool wrap);
-  virtual WebFrame* GetNextFrameAfter(WebFrame* frame, bool wrap);
+  virtual WebKit::WebFrame* GetMainFrame();
+  virtual WebKit::WebFrame* GetFocusedFrame();
+  virtual void SetFocusedFrame(WebKit::WebFrame* frame);
+  virtual WebKit::WebFrame* GetFrameWithName(const std::wstring& name);
+  virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame, bool wrap);
+  virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame, bool wrap);
   virtual void ClearFocusedNode();
   virtual void StopLoading();
   virtual void SetBackForwardListSize(int size);

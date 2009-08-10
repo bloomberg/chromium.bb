@@ -228,7 +228,7 @@ WebCore::Page* ChromeClientImpl::createWindow(
   // This corresponds to window.open(""), for example.
   if (!r.resourceRequest().isEmpty()) {
     WrappedResourceRequest request(r.resourceRequest());
-    new_view->main_frame()->LoadRequest(request);
+    new_view->main_frame()->loadRequest(request);
   }
 
   WebViewImpl* new_view_impl = static_cast<WebViewImpl*>(new_view);

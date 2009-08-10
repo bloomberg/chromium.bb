@@ -10,12 +10,13 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/units.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURLRequest.h"
-#include "webkit/glue/webframe.h"
 
+using WebKit::WebFrame;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebString;
@@ -50,11 +51,11 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
 
   web_view->resize(print_layout_size);
 
-  expected_pages_count_ = frame->PrintBegin(print_canvas_size_);
+  expected_pages_count_ = frame->printBegin(print_canvas_size_);
 }
 
 PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
-  frame_->PrintEnd();
+  frame_->printEnd();
   web_view_->resize(prev_view_size_);
 }
 
@@ -88,7 +89,7 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
   // Create a new WebView with the same settings as the current display one.
   // Except that we disable javascript (don't want any active content running
   // on the page).
-  WebPreferences prefs = web_frame->GetView()->GetPreferences();
+  WebPreferences prefs = web_frame->view()->GetPreferences();
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
   print_web_view_.reset(WebView::Create(this, prefs));
@@ -96,14 +97,14 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
   print_pages_params_.reset(new ViewMsg_PrintPages_Params(params));
   print_pages_params_->pages.clear();  // Print all pages of selection.
 
-  std::string html = web_frame->GetSelection(true);
+  std::string html = web_frame->selectionAsMarkup().utf8();
   std::string url_str = "data:text/html;charset=utf-8,";
   url_str.append(html);
   GURL url(url_str);
 
   // When loading is done this will call DidStopLoading that will do the
   // actual printing.
-  print_web_view_->GetMainFrame()->LoadRequest(WebURLRequest(url));
+  print_web_view_->GetMainFrame()->loadRequest(WebURLRequest(url));
 
   return true;
 }
@@ -112,7 +113,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                     WebFrame* frame) {
   PrepareFrameAndViewForPrint prep_frame_view(params.params,
                                               frame,
-                                              frame->GetView());
+                                              frame->view());
   int page_count = prep_frame_view.GetExpectedPageCount();
 
   Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),

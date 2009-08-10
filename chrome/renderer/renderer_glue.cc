@@ -30,9 +30,7 @@
 #include "webkit/api/public/WebKitClient.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webkit_glue.h"
-
 
 #if defined(OS_WIN)
 #include <strsafe.h>  // note: per msdn docs, this must *follow* other includes

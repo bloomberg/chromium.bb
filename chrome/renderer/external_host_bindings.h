@@ -29,7 +29,8 @@ class ExternalHostBindings : public DOMBoundBrowserObject {
                                       const std::string& target);
 
   // Overridden to hold onto a pointer back to the web frame.
-  void BindToJavascript(WebFrame* frame, const std::wstring& classname) {
+  void BindToJavascript(WebKit::WebFrame* frame,
+                        const std::wstring& classname) {
     frame_ = frame;
     DOMBoundBrowserObject::BindToJavascript(frame, classname);
   }
@@ -42,7 +43,7 @@ class ExternalHostBindings : public DOMBoundBrowserObject {
 
  private:
   CppVariant on_message_handler_;
-  WebFrame* frame_;
+  WebKit::WebFrame* frame_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalHostBindings);
 };

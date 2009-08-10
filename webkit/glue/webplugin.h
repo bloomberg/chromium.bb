@@ -18,7 +18,6 @@
 typedef void* HANDLE;
 
 class GURL;
-class WebFrame;
 class WebPluginResourceClient;
 
 struct NPObject;

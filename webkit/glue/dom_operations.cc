@@ -38,6 +38,7 @@ MSVC_POP_WARNING();
 #include "webkit/glue/webview_impl.h"
 
 using WebCore::String;
+using WebKit::WebFrame;
 
 namespace {
 
@@ -780,7 +781,7 @@ void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info) {
               webkit_glue::StringToStdWString(meta->content());
         } else if (meta->name() == String("application-url")) {
           std::string url = webkit_glue::StringToStdString(meta->content());
-          GURL main_url = main_frame->GetURL();
+          GURL main_url = main_frame->url();
           app_info->app_url = main_url.is_valid() ?
               main_url.Resolve(url) : GURL(url);
           if (!app_info->app_url.is_valid())

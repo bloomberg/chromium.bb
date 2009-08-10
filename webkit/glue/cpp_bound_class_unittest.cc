@@ -10,12 +10,14 @@
 
 #include "base/message_loop.h"
 #include "webkit/api/public/WebData.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/glue/cpp_binding_example.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
+
+using WebKit::WebFrame;
 
 namespace {
 
@@ -102,7 +104,7 @@ class CppBoundClassTest : public TestShellTest {
      html.append(javascript);
      html.append("</script></body></html>");
      // The base URL doesn't matter.
-     webframe_->LoadHTMLString(html, GURL("about:blank"));
+     webframe_->loadHTMLString(html, GURL("about:blank"));
 
      test_shell_->WaitTestFinished();
     }

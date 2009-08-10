@@ -24,6 +24,7 @@
 #include "KURL.h"
 #include "Node.h"
 #include "PlatformString.h"
+#include "Range.h"
 #include "ResourceError.h"
 
 #undef LOG
@@ -39,6 +40,7 @@
 #include "webkit/api/public/WebHistoryItem.h"
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebPoint.h"
+#include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"
@@ -264,9 +266,11 @@ WTF::PassRefPtr<WebCore::HTMLFormElement> WebFormToHTMLFormElement(
 }
 
 // WebNode conversions ---------------------------------------------------------
+
 WebKit::WebNode NodeToWebNode(const WTF::PassRefPtr<WebCore::Node>& node) {
   return node;
 }
+
 WTF::PassRefPtr<WebCore::Node> WebNodeToNode(const WebKit::WebNode& node) {
   return node;
 }
@@ -281,6 +285,16 @@ WebKit::WebHistoryItem HistoryItemToWebHistoryItem(
 WTF::PassRefPtr<WebCore::HistoryItem> WebHistoryItemToHistoryItem(
     const WebKit::WebHistoryItem& item) {
   return item;
+}
+
+// WebRange conversions --------------------------------------------------------
+
+WebKit::WebRange RangeToWebRange(const WTF::PassRefPtr<WebCore::Range>& range) {
+  return range;
+}
+
+WTF::PassRefPtr<WebCore::Range> WebRangeToRange(const WebKit::WebRange& range) {
+  return range;
 }
 
 // WebURLError conversions -----------------------------------------------------

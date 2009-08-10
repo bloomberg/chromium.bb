@@ -639,9 +639,10 @@ std::string WebPluginImpl::GetCookies(const GURL& url, const GURL& policy_url) {
 void WebPluginImpl::ShowModalHTMLDialog(const GURL& url, int width, int height,
                                         const std::string& json_arguments,
                                         std::string* json_retval) {
-  if (webframe_ && webframe_->GetView() &&
-      webframe_->GetView()->GetDelegate()) {
-    webframe_->GetView()->GetDelegate()->ShowModalHTMLDialog(
+  if (webframe_ &&
+      webframe_->GetWebViewImpl() &&
+      webframe_->GetWebViewImpl()->GetDelegate()) {
+    webframe_->GetWebViewImpl()->GetDelegate()->ShowModalHTMLDialog(
         url, width, height, json_arguments, json_retval);
   }
 }
@@ -1071,7 +1072,7 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader) {
       delete (*index).second;
       multi_part_response_map_.erase(index);
 
-      WebView* web_view = webframe_->GetView();
+      WebView* web_view = webframe_->GetWebViewImpl();
       web_view->GetDelegate()->DidStopLoading(web_view);
     }
     loader->setDefersLoading(true);
@@ -1333,7 +1334,7 @@ void WebPluginImpl::HandleHttpMultipartResponse(
     return;
   }
 
-  WebView* web_view = webframe_->GetView();
+  WebView* web_view = webframe_->GetWebViewImpl();
   web_view->GetDelegate()->DidStartLoading(web_view);
 
   MultiPartResponseClient* multi_part_response_client =

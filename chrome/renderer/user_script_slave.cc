@@ -13,11 +13,12 @@
 #include "base/string_util.h"
 #include "chrome/renderer/extension_groups.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebScriptSource.h"
-#include "webkit/glue/webframe.h"
 
 #include "grit/renderer_resources.h"
 
+using WebKit::WebFrame;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 
@@ -111,7 +112,7 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
 bool UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
   // Don't bother if this is not a URL we inject script into.
-  if (!URLPattern::IsValidScheme(frame->GetURL().scheme()))
+  if (!URLPattern::IsValidScheme(GURL(frame->url()).scheme()))
     return true;
 
   PerfTimer timer;
@@ -120,7 +121,7 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
   for (size_t i = 0; i < scripts_.size(); ++i) {
     std::vector<WebScriptSource> sources;
     UserScript* script = scripts_[i];
-    if (!script->MatchesUrl(frame->GetURL()))
+    if (!script->MatchesUrl(frame->url()))
       continue;  // This frame doesn't match the script url pattern, skip it.
 
     ++num_matched;
@@ -128,7 +129,8 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
     if (location == UserScript::DOCUMENT_START) {
       for (size_t j = 0; j < script->css_scripts().size(); ++j) {
         UserScript::File& file = script->css_scripts()[j];
-        frame->InsertCSSStyles(file.GetContent().as_string());
+        frame->insertStyleText(
+            WebString::fromUTF8(file.GetContent().as_string()));
       }
     }
     if (script->run_location() == location) {
@@ -161,7 +163,7 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
                 StringPrintf(kInitExtension, script->extension_id().c_str()))));
       }
 
-      frame->ExecuteScriptInNewWorld(&sources.front(), sources.size(),
+      frame->executeScriptInNewWorld(&sources.front(), sources.size(),
                                      EXTENSION_GROUP_CONTENT_SCRIPTS);
     }
   }
@@ -176,6 +178,6 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
   }
 
   LOG(INFO) << "Injected " << num_matched << " user scripts into " <<
-      frame->GetURL().spec();
+      frame->url().spec().data();
   return true;
 }

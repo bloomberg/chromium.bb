@@ -20,13 +20,13 @@
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/api/public/WebData.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/glue/devtools/devtools_mock_rpc.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 #include "webkit/glue/devtools/dom_agent_impl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
@@ -38,6 +38,7 @@ using WebCore::HTMLFrameOwnerElement;
 using WebCore::Node;
 using WebCore::String;
 using WebCore::Text;
+using WebKit::WebFrame;
 
 namespace {
 
@@ -61,7 +62,7 @@ class DomAgentTests : public TestShellTest {
     test_shell_->ResetTestController();
     GURL file_url = net::FilePathToFileURL(data_dir_);
     WebFrame* main_frame = test_shell_->webView()->GetMainFrame();
-    main_frame->LoadHTMLString("<html> <head> </head> <body>  </body> </html>",
+    main_frame->loadHTMLString("<html> <head> </head> <body>  </body> </html>",
         file_url);
     WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
 

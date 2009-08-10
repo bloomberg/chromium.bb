@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 
+using WebKit::WebFrame;
+
 void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   // TODO(port): print not implemented
   NOTIMPLEMENTED();

@@ -14,9 +14,9 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/glue/dom_operations.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
@@ -329,7 +329,7 @@ class WorkItemLoadingScript : public LayoutTestController::WorkItem {
  public:
   WorkItemLoadingScript(const string& script) : script_(script) {}
   bool Run(TestShell* shell) {
-    shell->webView()->GetMainFrame()->ExecuteScript(
+    shell->webView()->GetMainFrame()->executeScript(
         WebScriptSource(WebString::fromUTF8(script_)));
     return true;  // TODO(darin): Did it really start a navigation?
   }
@@ -341,7 +341,7 @@ class WorkItemNonLoadingScript : public LayoutTestController::WorkItem {
  public:
   WorkItemNonLoadingScript(const string& script) : script_(script) {}
   bool Run(TestShell* shell) {
-    shell->webView()->GetMainFrame()->ExecuteScript(
+    shell->webView()->GetMainFrame()->executeScript(
         WebScriptSource(WebString::fromUTF8(script_)));
     return false;
   }
@@ -380,7 +380,7 @@ class WorkItemLoad : public LayoutTestController::WorkItem {
 void LayoutTestController::queueLoad(
     const CppArgumentList& args, CppVariant* result) {
   if (args.size() > 0 && args[0].isString()) {
-    GURL current_url = shell_->webView()->GetMainFrame()->GetURL();
+    GURL current_url = shell_->webView()->GetMainFrame()->url();
     GURL full_url = current_url.Resolve(args[0].ToString());
 
     string target = "";
@@ -532,8 +532,8 @@ void LayoutTestController::execCommand(
       value = args[2].ToString();
 
     // Note: webkit's version does not return the boolean, so neither do we.
-    shell_->webView()->GetFocusedFrame()->ExecuteEditCommandByName(command,
-                                                                   value);
+    shell_->webView()->GetFocusedFrame()->executeCommand(
+        WebString::fromUTF8(command), WebString::fromUTF8(value));
   }
   result->SetNull();
 }
@@ -546,7 +546,8 @@ void LayoutTestController::isCommandEnabled(
   }
 
   std::string command = args[0].ToString();
-  bool rv = shell_->webView()->GetFocusedFrame()->IsEditCommandEnabled(command);
+  bool rv = shell_->webView()->GetFocusedFrame()->isCommandEnabled(
+      WebString::fromUTF8(command));
   result->Set(rv);
 }
 
@@ -802,7 +803,7 @@ void LayoutTestController::evaluateScriptInIsolatedWorld(
     const CppArgumentList& args, CppVariant* result) {
   if (args.size() > 0 && args[0].isString()) {
     WebScriptSource source(WebString::fromUTF8(args[0].ToString()));
-    shell_->webView()->GetMainFrame()->ExecuteScriptInNewWorld(&source, 1, 1);
+    shell_->webView()->GetMainFrame()->executeScriptInNewWorld(&source, 1, 1);
   }
   result->SetNull();
 }

@@ -1,14 +1,19 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/tools/test_shell/text_input_controller.h"
 
 #include "base/string_util.h"
+#include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebRange.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/glue/webview.h"
-#include "webkit/glue/webframe.h"
-#include "webkit/glue/webtextinput.h"
 #include "webkit/tools/test_shell/test_shell.h"
+
+using WebKit::WebFrame;
+using WebKit::WebRange;
+using WebKit::WebString;
 
 TestShell* TextInputController::shell_ = NULL;
 
@@ -34,51 +39,46 @@ TextInputController::TextInputController(TestShell* shell) {
   BindMethod("makeAttributedString", &TextInputController::makeAttributedString);
 }
 
-/* static */ WebView* TextInputController::webview() {
-  return shell_->webView();
-}
-
-/* static */ WebTextInput* TextInputController::GetTextInput() {
-  return webview()->GetMainFrame()->GetTextInput();
+// static
+WebFrame* TextInputController::GetMainFrame() {
+  return shell_->webView()->GetMainFrame();
 }
 
 void TextInputController::insertText(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
     return;
 
-  if (args.size() >= 1 && args[0].isString()) {
-    text_input->InsertText(UTF8ToUTF16(args[0].ToString()));
-  }
+  if (args.size() >= 1 && args[0].isString())
+    main_frame->insertText(WebString::fromUTF8(args[0].ToString()));
 }
 
 void TextInputController::doCommand(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
     return;
 
-  if (args.size() >= 1 && args[0].isString()) {
-    text_input->DoCommand(UTF8ToUTF16(args[0].ToString()));
-  }
+  if (args.size() >= 1 && args[0].isString())
+    main_frame->executeCommand(WebString::fromUTF8(args[0].ToString()));
 }
 
 void TextInputController::setMarkedText(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
     return;
 
   if (args.size() >= 3 && args[0].isString()
       && args[1].isNumber() && args[2].isNumber()) {
-    text_input->SetMarkedText(UTF8ToUTF16(args[0].ToString()),
+    main_frame->setMarkedText(WebString::fromUTF8(args[0].ToString()),
                               args[1].ToInt32(),
                               args[2].ToInt32());
   }
@@ -88,72 +88,54 @@ void TextInputController::unmarkText(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
     return;
 
-  text_input->UnMarkText();
+  main_frame->unmarkText();
 }
 
 void TextInputController::hasMarkedText(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
     return;
 
-  result->Set(text_input->HasMarkedText());
+  result->Set(main_frame->hasMarkedText());
 }
 
 void TextInputController::conversationIdentifier(
     const CppArgumentList& args, CppVariant* result) {
+  NOTIMPLEMENTED();
   result->SetNull();
-
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
-    return;
-
-  text_input->ConversationIdentifier();
 }
 
 void TextInputController::substringFromRange(
     const CppArgumentList& args, CppVariant* result) {
+  NOTIMPLEMENTED();
   result->SetNull();
-
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
-    return;
-
-  if (args.size() >= 2 && args[0].isNumber() && args[1].isNumber()) {
-    text_input->SubstringFromRange(args[0].ToInt32(), args[1].ToInt32());
-  }
 }
 
 void TextInputController::attributedSubstringFromRange(
     const CppArgumentList& args, CppVariant* result) {
+  NOTIMPLEMENTED();
   result->SetNull();
-
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
-    return;
-
-  if (args.size() >= 2 && args[0].isNumber() && args[1].isNumber()) {
-    text_input->AttributedSubstringFromRange(args[0].ToInt32(),
-                                             args[1].ToInt32());
-  }
 }
 
 void TextInputController::markedRange(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
     return;
 
+  WebRange range = main_frame->markedRange();
+
   std::string range_str;
-  text_input->MarkedRange(&range_str);
+  SStringPrintf(&range_str, "%d,%d", range.startOffset(), range.endOffset());
   result->Set(range_str);
 }
 
@@ -161,65 +143,43 @@ void TextInputController::selectedRange(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
     return;
 
+  WebRange range = main_frame->selectionRange();
+
   std::string range_str;
-  text_input->SelectedRange(&range_str);
+  SStringPrintf(&range_str, "%d,%d", range.startOffset(), range.endOffset());
   result->Set(range_str);
 }
 
 void TextInputController::firstRectForCharacterRange(
     const CppArgumentList& args, CppVariant* result) {
+  NOTIMPLEMENTED();
   result->SetNull();
-
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
-    return;
-
-  if (args.size() >= 2 && args[0].isNumber() && args[1].isNumber()) {
-    text_input->FirstRectForCharacterRange(args[0].ToInt32(),
-                                           args[1].ToInt32());
-  }
 }
 
 void TextInputController::characterIndexForPoint(
     const CppArgumentList& args, CppVariant* result) {
+  NOTIMPLEMENTED();
   result->SetNull();
-
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
-    return;
-
-  if (args.size() >= 2 && args[0].isDouble() && args[1].isDouble()) {
-    text_input->CharacterIndexForPoint(args[0].ToDouble(),
-                                       args[1].ToDouble());
-  }
 }
 
 void TextInputController::validAttributesForMarkedText(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
     return;
 
-  std::string attributes_str;
-  text_input->ValidAttributesForMarkedText(&attributes_str);
-  result->Set(attributes_str);
+  result->Set("NSUnderline,NSUnderlineColor,NSMarkedClauseSegment,"
+              "NSTextInputReplacementRangeAttributeName");
 }
 
 void TextInputController::makeAttributedString(
     const CppArgumentList& args, CppVariant* result) {
+  NOTIMPLEMENTED();
   result->SetNull();
-
-  WebTextInput* text_input = GetTextInput();
-  if (!text_input)
-    return;
-
-  if (args.size() >= 1 && args[0].isString()) {
-    text_input->MakeAttributedString(args[0].ToString());
-  }
 }

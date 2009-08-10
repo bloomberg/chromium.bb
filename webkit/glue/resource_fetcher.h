@@ -22,9 +22,9 @@
 #include "webkit/api/public/WebURLResponse.h"
 
 class GURL;
-class WebFrame;
 
 namespace WebKit {
+class WebFrame;
 class WebURLLoader;
 class WebURLRequest;
 struct WebURLError;
@@ -41,7 +41,8 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
                     const std::string&>::Type Callback;
 
   // We need a frame to make requests.
-  ResourceFetcher(const GURL& url, WebFrame* frame, Callback* callback);
+  ResourceFetcher(
+      const GURL& url, WebKit::WebFrame* frame, Callback* callback);
   ~ResourceFetcher();
 
   // Stop the request and don't call the callback.
@@ -82,7 +83,7 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
 
  private:
   // Start the actual download.
-  void Start(WebFrame* frame);
+  void Start(WebKit::WebFrame* frame);
 
   // Buffer to hold the content from the server.
   std::string data_;
@@ -92,7 +93,7 @@ class ResourceFetcher : public WebKit::WebURLLoaderClient {
 // A resource fetcher with a timeout
 class ResourceFetcherWithTimeout : public ResourceFetcher {
  public:
-  ResourceFetcherWithTimeout(const GURL& url, WebFrame* frame,
+  ResourceFetcherWithTimeout(const GURL& url, WebKit::WebFrame* frame,
                              int timeout_secs, Callback* c);
   virtual ~ResourceFetcherWithTimeout() {}
 

@@ -51,7 +51,6 @@ class GURL;
 class ListValue;
 class NavigationState;
 class PrintWebViewHelper;
-class WebFrame;
 class WebPluginDelegate;
 class WebPluginDelegateProxy;
 class WebDevToolsAgentDelegate;
@@ -141,15 +140,15 @@ class RenderView : public RenderWidget,
   virtual void ShowModalHTMLDialog(const GURL& url, int width, int height,
                                    const std::string& json_arguments,
                                    std::string* json_retval);
-  virtual void RunJavaScriptAlert(WebFrame* webframe,
+  virtual void RunJavaScriptAlert(WebKit::WebFrame* webframe,
                                   const std::wstring& message);
-  virtual bool RunJavaScriptConfirm(WebFrame* webframe,
+  virtual bool RunJavaScriptConfirm(WebKit::WebFrame* webframe,
                                     const std::wstring& message);
-  virtual bool RunJavaScriptPrompt(WebFrame* webframe,
+  virtual bool RunJavaScriptPrompt(WebKit::WebFrame* webframe,
                                    const std::wstring& message,
                                    const std::wstring& default_value,
                                    std::wstring* result);
-  virtual bool RunBeforeUnloadConfirm(WebFrame* webframe,
+  virtual bool RunBeforeUnloadConfirm(WebKit::WebFrame* webframe,
                                       const std::wstring& message);
   virtual void QueryFormFieldAutofill(const std::wstring& field_name,
                                       const std::wstring& text,
@@ -169,73 +168,74 @@ class RenderView : public RenderWidget,
 
   virtual void DidStartLoading(WebView* webview);
   virtual void DidStopLoading(WebView* webview);
-  virtual void DidCreateDataSource(WebFrame* frame, WebKit::WebDataSource* ds);
+  virtual void DidCreateDataSource(WebKit::WebFrame* frame,
+                                   WebKit::WebDataSource* ds);
   virtual void DidStartProvisionalLoadForFrame(
       WebView* webview,
-      WebFrame* frame,
+      WebKit::WebFrame* frame,
       NavigationGesture gesture);
   virtual void DidReceiveProvisionalLoadServerRedirect(WebView* webview,
-                                                       WebFrame* frame);
+                                                       WebKit::WebFrame* frame);
   virtual void DidFailProvisionalLoadWithError(
       WebView* webview,
       const WebKit::WebURLError& error,
-      WebFrame* frame);
+      WebKit::WebFrame* frame);
   virtual void LoadNavigationErrorPage(
-      WebFrame* frame,
+      WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error,
       const std::string& html,
       bool replace);
-  virtual void DidReceiveDocumentData(WebFrame* frame, const char* data,
+  virtual void DidReceiveDocumentData(WebKit::WebFrame* frame, const char* data,
                                       size_t data_len);
-  virtual void DidCommitLoadForFrame(WebView* webview, WebFrame* frame,
+  virtual void DidCommitLoadForFrame(WebView* webview, WebKit::WebFrame* frame,
                                      bool is_new_navigation);
   virtual void DidReceiveTitle(WebView* webview,
                                const std::wstring& title,
-                               WebFrame* frame);
+                               WebKit::WebFrame* frame);
   virtual void DidFinishLoadForFrame(WebView* webview,
-                                     WebFrame* frame);
+                                     WebKit::WebFrame* frame);
   virtual void DidFailLoadWithError(WebView* webview,
                                     const WebKit::WebURLError& error,
-                                    WebFrame* forFrame);
-  virtual void DidFinishDocumentLoadForFrame(WebView* webview, WebFrame* frame);
+                                    WebKit::WebFrame* forFrame);
+  virtual void DidFinishDocumentLoadForFrame(WebView* webview, WebKit::WebFrame* frame);
   virtual bool DidLoadResourceFromMemoryCache(
       WebView* webview,
       const WebKit::WebURLRequest& request,
       const WebKit::WebURLResponse& response,
-      WebFrame* frame);
-  virtual void DidHandleOnloadEventsForFrame(WebView* webview, WebFrame* frame);
+      WebKit::WebFrame* frame);
+  virtual void DidHandleOnloadEventsForFrame(WebView* webview, WebKit::WebFrame* frame);
   virtual void DidChangeLocationWithinPageForFrame(WebView* webview,
-                                                   WebFrame* frame,
+                                                   WebKit::WebFrame* frame,
                                                    bool is_new_navigation);
   virtual void DidContentsSizeChange(WebKit::WebWidget* webwidget,
                                      int new_width,
                                      int new_height);
 
   virtual void DidCompleteClientRedirect(WebView* webview,
-                                         WebFrame* frame,
+                                         WebKit::WebFrame* frame,
                                          const GURL& source);
-  virtual void WillCloseFrame(WebView* webview, WebFrame* frame);
-  virtual void WillSubmitForm(WebView* webview, WebFrame* frame,
+  virtual void WillCloseFrame(WebView* webview, WebKit::WebFrame* frame);
+  virtual void WillSubmitForm(WebView* webview, WebKit::WebFrame* frame,
                               const WebKit::WebForm& form);
-  virtual void WillSendRequest(WebFrame* webframe,
+  virtual void WillSendRequest(WebKit::WebFrame* webframe,
                                uint32 identifier,
                                WebKit::WebURLRequest* request,
                                const WebKit::WebURLResponse& redirect_response);
-  virtual void DidReceiveResponse(WebFrame* webframe,
+  virtual void DidReceiveResponse(WebKit::WebFrame* webframe,
                                   uint32 identifier,
                                   const WebKit::WebURLResponse& response);
-  virtual void DidFinishLoading(WebFrame* webframe, uint32 identifier);
+  virtual void DidFinishLoading(WebKit::WebFrame* webframe, uint32 identifier);
 
-  virtual void WindowObjectCleared(WebFrame* webframe);
-  virtual void DocumentElementAvailable(WebFrame* webframe);
-  virtual void DidCreateScriptContextForFrame(WebFrame* webframe);
-  virtual void DidDestroyScriptContextForFrame(WebFrame* webframe);
-  virtual void DidCreateIsolatedScriptContext(WebFrame* webframe);
+  virtual void WindowObjectCleared(WebKit::WebFrame* webframe);
+  virtual void DocumentElementAvailable(WebKit::WebFrame* webframe);
+  virtual void DidCreateScriptContextForFrame(WebKit::WebFrame* webframe);
+  virtual void DidDestroyScriptContextForFrame(WebKit::WebFrame* webframe);
+  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* webframe);
 
   virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
       WebView* webview,
-      WebFrame* frame,
+      WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
       WebKit::WebNavigationPolicy default_policy,
@@ -320,7 +320,7 @@ class RenderView : public RenderWidget,
                           int* misspell_length);
   virtual std::wstring GetAutoCorrectWord(const std::wstring& word);
   virtual void SetInputMethodState(bool enabled);
-  virtual void ScriptedPrint(WebFrame* frame);
+  virtual void ScriptedPrint(WebKit::WebFrame* frame);
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
@@ -413,9 +413,9 @@ class RenderView : public RenderWidget,
             SharedRenderViewCounter* counter,
             int32 routing_id);
 
-  void UpdateURL(WebFrame* frame);
-  void UpdateTitle(WebFrame* frame, const std::wstring& title);
-  void UpdateSessionHistory(WebFrame* frame);
+  void UpdateURL(WebKit::WebFrame* frame);
+  void UpdateTitle(WebKit::WebFrame* frame, const std::wstring& title);
+  void UpdateSessionHistory(WebKit::WebFrame* frame);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -430,7 +430,7 @@ class RenderView : public RenderWidget,
   // c) function:DidFinishDocumentLoadForFrame. When this function is
   // called, that means we have got whole html page. In here we should
   // finally get right encoding of page.
-  void UpdateEncoding(WebFrame* frame, const std::wstring& encoding_name);
+  void UpdateEncoding(WebKit::WebFrame* frame, const std::wstring& encoding_name);
 
   // Captures the thumbnail and text contents for indexing for the given load
   // ID. If the view's load ID is different than the parameter, this call is
@@ -440,7 +440,7 @@ class RenderView : public RenderWidget,
 
   // Called to retrieve the text from the given frame contents, the page text
   // up to the maximum amount will be placed into the given buffer
-  void CaptureText(WebFrame* frame, std::wstring* contents);
+  void CaptureText(WebKit::WebFrame* frame, std::wstring* contents);
 
   // Creates a thumbnail of |frame|'s contents resized to (|w|, |h|)
   // and puts that in |thumbnail|. Thumbnail metadata goes in |score|.
@@ -606,14 +606,14 @@ class RenderView : public RenderWidget,
 
   // Exposes the DOMAutomationController object that allows JS to send
   // information to the browser process.
-  void BindDOMAutomationController(WebFrame* webframe);
+  void BindDOMAutomationController(WebKit::WebFrame* webframe);
 
   // Creates DevToolsClient and sets up JavaScript bindings for developer tools
   // UI that is going to be hosted by this RenderView.
   void CreateDevToolsClient();
 
   // Locates a sub frame with given xpath
-  WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
+  WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
 
   enum ErrorPageType {
     DNS_ERROR,
@@ -625,11 +625,11 @@ class RenderView : public RenderWidget,
   GURL GetAlternateErrorPageURL(
       const GURL& failed_url, ErrorPageType error_type);
   bool MaybeLoadAlternateErrorPage(
-      WebFrame* frame, const WebKit::WebURLError& error, bool replace);
+      WebKit::WebFrame* frame, const WebKit::WebURLError& error, bool replace);
   std::string GetAltHTMLForTemplate(
       const DictionaryValue& error_strings, int template_resource_id) const;
   void AltErrorPageFinished(
-      WebFrame* frame, const WebKit::WebURLError& original_error,
+      WebKit::WebFrame* frame, const WebKit::WebURLError& original_error,
       const std::string& html);
 
   virtual void DidAddHistoryItem();
@@ -640,9 +640,9 @@ class RenderView : public RenderWidget,
   void DumpLoadHistograms() const;
 
   // Scan the given frame for password forms and send them up to the browser.
-  void SendPasswordForms(WebFrame* frame);
+  void SendPasswordForms(WebKit::WebFrame* frame);
 
-  void Print(WebFrame* frame, bool script_initiated);
+  void Print(WebKit::WebFrame* frame, bool script_initiated);
 
 #if defined(OS_LINUX)
   void UpdateFontRenderingFromRendererPrefs();

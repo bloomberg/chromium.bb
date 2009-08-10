@@ -36,7 +36,6 @@ MSVC_POP_WARNING();
 #include "webkit/glue/dom_serializer.h"
 #include "webkit/glue/dom_serializer_delegate.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -109,11 +108,12 @@ class DomSerializerTests : public TestShellTest,
     test_shell_->ResetTestController();
     // If input encoding is empty, use UTF-8 as default encoding.
     if (encoding_info.isEmpty()) {
-      test_shell_->webView()->GetMainFrame()->LoadHTMLString(contents,
+      test_shell_->webView()->GetMainFrame()->loadHTMLString(contents,
                                                              base_url);
     } else {
       // Do not use WebFrame.LoadHTMLString because it assumes that input
       // html contents use UTF-8 encoding.
+      // TODO(darin): This should use WebFrame::loadData.
       WebFrameImpl* web_frame =
           static_cast<WebFrameImpl*>(test_shell_->webView()->GetMainFrame());
       ASSERT_TRUE(web_frame != NULL);

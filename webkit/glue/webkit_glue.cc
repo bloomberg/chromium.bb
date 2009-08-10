@@ -49,6 +49,7 @@
 
 #include "webkit_version.h"  // Generated
 
+using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebString;
 using WebKit::WebVector;
@@ -90,10 +91,10 @@ std::wstring DumpFramesAsText(WebFrame* web_frame, bool recursive) {
   std::wstring result;
 
   // Add header for all but the main frame. Skip empty frames.
-  if (webFrameImpl->GetParent() &&
+  if (webFrameImpl->parent() &&
       webFrameImpl->frame()->document()->documentElement()) {
     result.append(L"\n--------\nFrame: '");
-    result.append(webFrameImpl->GetName());
+    result.append(UTF16ToWideHack(webFrameImpl->name()));
     result.append(L"'\n--------\n");
   }
 
@@ -126,7 +127,7 @@ std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
   std::wstring result;
 
   if (offset.width() > 0 || offset.height() > 0) {
-    if (webFrameImpl->GetParent()) {
+    if (webFrameImpl->parent()) {
       StringAppendF(&result, L"frame '%ls' ", StringToStdWString(
           webFrameImpl->frame()->tree()->name()).c_str());
     }

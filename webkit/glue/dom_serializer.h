@@ -11,7 +11,6 @@
 #include "base/hash_tables.h"
 #include "googleurl/src/gurl.h"
 
-class WebFrame;
 class WebFrameImpl;
 
 namespace WebCore {
@@ -20,6 +19,10 @@ class Element;
 class Node;
 class String;
 class TextEncoding;
+}
+
+namespace WebKit {
+class WebFrame;
 }
 
 namespace webkit_glue {
@@ -50,7 +53,7 @@ class DomSerializer {
   // saved links, which matched with vector:links one by one.
   // The parameter local_directory_name is relative path of directory which
   // contain all saved auxiliary files included all sub frames and resources.
-  DomSerializer(WebFrame* webframe,
+  DomSerializer(WebKit::WebFrame* webframe,
                 bool recursive_serialization,
                 DomSerializerDelegate* delegate,
                 const std::vector<GURL>& links,

@@ -111,11 +111,11 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
                        const GURL& referrer,
                        WebKit::WebNavigationPolicy policy);
   virtual void DidMovePlugin(const WebPluginGeometry& move);
-  virtual void RunJavaScriptAlert(WebFrame* webframe,
+  virtual void RunJavaScriptAlert(WebKit::WebFrame* webframe,
                                   const std::wstring& message);
-  virtual bool RunJavaScriptConfirm(WebFrame* webframe,
+  virtual bool RunJavaScriptConfirm(WebKit::WebFrame* webframe,
                                     const std::wstring& message);
-  virtual bool RunJavaScriptPrompt(WebFrame* webframe,
+  virtual bool RunJavaScriptPrompt(WebKit::WebFrame* webframe,
                                    const std::wstring& message,
                                    const std::wstring& default_value,
                                    std::wstring* result);
@@ -143,58 +143,60 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
                                int edit_flags,
                                const std::string& security_info,
                                const std::string& frame_charset);
-  virtual void DidCreateDataSource(WebFrame* frame,
+  virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds);
   virtual void DidStartProvisionalLoadForFrame(
     WebView* webview,
-    WebFrame* frame,
+    WebKit::WebFrame* frame,
     NavigationGesture gesture);
   virtual void DidReceiveProvisionalLoadServerRedirect(
-    WebView* webview, WebFrame* frame);
+    WebView* webview, WebKit::WebFrame* frame);
   virtual void DidFailProvisionalLoadWithError(
       WebView* webview,
       const WebKit::WebURLError& error,
-      WebFrame* frame);
-  virtual void DidCommitLoadForFrame(WebView* webview, WebFrame* frame,
-                                     bool is_new_navigation);
+      WebKit::WebFrame* frame);
+  virtual void DidCommitLoadForFrame(
+      WebView* webview,
+      WebKit::WebFrame* frame,
+      bool is_new_navigation);
   virtual void DidReceiveTitle(WebView* webview,
                                const std::wstring& title,
-                               WebFrame* frame);
+                               WebKit::WebFrame* frame);
   virtual void DidFinishDocumentLoadForFrame(WebView* webview,
-                                             WebFrame* frame);
+                                             WebKit::WebFrame* frame);
   virtual void DidHandleOnloadEventsForFrame(WebView* webview,
-                                             WebFrame* frame);
+                                             WebKit::WebFrame* frame);
   virtual void DidChangeLocationWithinPageForFrame(WebView* webview,
-                                                   WebFrame* frame,
+                                                   WebKit::WebFrame* frame,
                                                    bool is_new_navigation);
-  virtual void DidReceiveIconForFrame(WebView* webview, WebFrame* frame);
+  virtual void DidReceiveIconForFrame(WebView* webview, WebKit::WebFrame* frame);
 
   virtual void WillPerformClientRedirect(WebView* webview,
-                                         WebFrame* frame,
+                                         WebKit::WebFrame* frame,
                                          const GURL& src_url,
                                          const GURL& dest_url,
                                          unsigned int delay_seconds,
                                          unsigned int fire_date);
   virtual void DidCancelClientRedirect(WebView* webview,
-                                       WebFrame* frame);
+                                       WebKit::WebFrame* frame);
 
-  virtual void DidFinishLoadForFrame(WebView* webview, WebFrame* frame);
+  virtual void DidFinishLoadForFrame(WebView* webview, WebKit::WebFrame* frame);
   virtual void DidFailLoadWithError(WebView* webview,
                                     const WebKit::WebURLError& error,
-                                    WebFrame* for_frame);
+                                    WebKit::WebFrame* for_frame);
 
-  virtual void AssignIdentifierToRequest(WebFrame* webframe,
+  virtual void AssignIdentifierToRequest(WebKit::WebFrame* webframe,
                                          uint32 identifier,
                                          const WebKit::WebURLRequest& request);
-  virtual void WillSendRequest(WebFrame* webframe,
+  virtual void WillSendRequest(WebKit::WebFrame* webframe,
                                uint32 identifier,
                                WebKit::WebURLRequest* request,
                                const WebKit::WebURLResponse& redirect_response);
-  virtual void DidReceiveResponse(WebFrame* webframe,
+  virtual void DidReceiveResponse(WebKit::WebFrame* webframe,
                                   uint32 identifier,
                                   const WebKit::WebURLResponse& response);
-  virtual void DidFinishLoading(WebFrame* webframe, uint32 identifier);
-  virtual void DidFailLoadingWithError(WebFrame* webframe,
+  virtual void DidFinishLoading(WebKit::WebFrame* webframe, uint32 identifier);
+  virtual void DidFailLoadingWithError(WebKit::WebFrame* webframe,
                                        uint32 identifier,
                                        const WebKit::WebURLError& error);
 
@@ -227,10 +229,10 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   virtual void DidStartLoading(WebView* webview);
   virtual void DidStopLoading(WebView* webview);
 
-  virtual void WindowObjectCleared(WebFrame* webframe);
+  virtual void WindowObjectCleared(WebKit::WebFrame* webframe);
   virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
     WebView* webview,
-    WebFrame* frame,
+    WebKit::WebFrame* frame,
     const WebKit::WebURLRequest& request,
     WebKit::WebNavigationType type,
     WebKit::WebNavigationPolicy default_policy,
@@ -259,7 +261,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   void SetSelectTrailingWhitespaceEnabled(bool enabled);
 
   // Additional accessors
-  WebFrame* top_loading_frame() { return top_loading_frame_; }
+  WebKit::WebFrame* top_loading_frame() { return top_loading_frame_; }
 #if defined(OS_WIN)
   IDropTarget* drop_delegate() { return drop_delegate_.get(); }
   IDropSource* drag_delegate() { return drag_delegate_.get(); }
@@ -313,17 +315,17 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   // In the Mac code, this is called to trigger the end of a test after the
   // page has finished loading.  From here, we can generate the dump for the
   // test.
-  void LocationChangeDone(WebFrame*);
+  void LocationChangeDone(WebKit::WebFrame*);
 
   WebWidgetHost* GetWidgetHost();
 
-  void UpdateForCommittedLoad(WebFrame* webframe, bool is_new_navigation);
-  void UpdateURL(WebFrame* frame);
-  void UpdateSessionHistory(WebFrame* frame);
+  void UpdateForCommittedLoad(WebKit::WebFrame* webframe, bool is_new_navigation);
+  void UpdateURL(WebKit::WebFrame* frame);
+  void UpdateSessionHistory(WebKit::WebFrame* frame);
   void UpdateSelectionClipboard(bool is_empty_selection);
 
   // Get a string suitable for dumping a frame to the console.
-  std::wstring GetFrameDescription(WebFrame* webframe);
+  std::wstring GetFrameDescription(WebKit::WebFrame* webframe);
 
  private:
   // Causes navigation actions just printout the intended navigation instead
@@ -342,7 +344,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   TestShell* shell_;
 
   // This is non-NULL IFF a load is in progress.
-  WebFrame* top_loading_frame_;
+  WebKit::WebFrame* top_loading_frame_;
 
   // For tracking session history.  See RenderView.
   int page_id_;

@@ -134,10 +134,6 @@ class ResourceDispatcherTest : public testing::Test,
   }
 
  protected:
-  static ResourceDispatcher* GetResourceDispatcher(WebFrame* unused) {
-    return dispatcher_.get();
-  }
-
   // testing::Test
   virtual void SetUp() {
     dispatcher_.reset(new ResourceDispatcher(this));

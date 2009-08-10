@@ -75,7 +75,7 @@ Page* WebInspectorClient::createPage() {
   if (!inspector_web_view_)
     return NULL;
 
-  inspector_web_view_->main_frame()->LoadRequest(
+  inspector_web_view_->main_frame()->loadRequest(
       WebURLRequest(webkit_glue::GetInspectorURL()));
 
   page = inspector_web_view_->page();

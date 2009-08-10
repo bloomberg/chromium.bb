@@ -22,10 +22,10 @@ class GURL;
 class SkBitmap;
 class StringPiece;
 class WebView;
-class WebFrame;
 struct WebPluginInfo;
 
 namespace WebKit {
+class WebFrame;
 class WebString;
 }
 
@@ -40,18 +40,18 @@ void SetJavaScriptFlags(const std::wstring& flags);
 void EnableWebCoreNotImplementedLogging();
 
 // Returns the text of the document element.
-std::wstring DumpDocumentText(WebFrame* web_frame);
+std::wstring DumpDocumentText(WebKit::WebFrame* web_frame);
 
 // Returns the text of the document element and optionally its child frames.
 // If recursive is false, this is equivalent to DumpDocumentText followed by
 // a newline.  If recursive is true, it recursively dumps all frames as text.
-std::wstring DumpFramesAsText(WebFrame* web_frame, bool recursive);
+std::wstring DumpFramesAsText(WebKit::WebFrame* web_frame, bool recursive);
 
 // Returns the renderer's description of its tree (its externalRepresentation).
-std::wstring DumpRenderer(WebFrame* web_frame);
+std::wstring DumpRenderer(WebKit::WebFrame* web_frame);
 
 // Returns a dump of the scroll position of the webframe.
-std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive);
+std::wstring DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
 
 // Returns a dump of the given history state suitable for implementing the
 // dumpBackForwardList command of the layoutTestController.

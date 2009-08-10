@@ -100,6 +100,7 @@ using WebKit::WebCompositionCommand;
 using WebKit::WebCompositionCommandConfirm;
 using WebKit::WebCompositionCommandDiscard;
 using WebKit::WebDragData;
+using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
@@ -815,11 +816,11 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
       if (event.modifiers == WebInputEvent::ControlKey) {
         switch (event.windowsKeyCode) {
           case 'A':
-            GetFocusedFrame()->SelectAll();
+            GetFocusedFrame()->selectAll();
             return true;
           case VKEY_INSERT:
           case 'C':
-            GetFocusedFrame()->Copy();
+            GetFocusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
             return true;
           // Match FF behavior in the sense that Ctrl+home/end are the only Ctrl
           // key combinations which affect scrolling. Safari is buggy in the
@@ -1294,7 +1295,7 @@ WebFrame* WebViewImpl::GetNextFrameAfter(WebFrame* frame, bool wrap) {
 // TODO(darin): these navigation methods should be killed
 
 void WebViewImpl::StopLoading() {
-  main_frame()->StopLoading();
+  main_frame()->stopLoading();
 }
 
 void WebViewImpl::SetBackForwardListSize(int size) {

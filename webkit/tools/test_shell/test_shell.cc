@@ -31,15 +31,15 @@
 #include "skia/ext/bitmap_platform_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/api/public/WebRect.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
+#include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/public/WebURLResponse.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
@@ -47,6 +47,7 @@
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 
+using WebKit::WebFrame;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
 using WebKit::WebSize;
@@ -201,7 +202,7 @@ void TestShell::Dump(TestShell* shell) {
       if (!should_dump_as_text) {
         // Plain text pages should be dumped as text
         const string16& mime_type =
-            frame->GetDataSource()->response().mimeType();
+            frame->dataSource()->response().mimeType();
         should_dump_as_text = EqualsASCII(mime_type, "text/plain");
       }
       if (should_dump_as_text) {
@@ -474,7 +475,7 @@ void TestShell::DumpBackForwardList(std::wstring* result) {
 }
 
 void TestShell::CallJSGC() {
-  webView()->GetMainFrame()->CallJSGC();
+  webView()->GetMainFrame()->collectGarbage();
 }
 
 WebView* TestShell::CreateWebView(WebView* webview) {
@@ -530,14 +531,14 @@ bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {
   // If we are reloading, then WebKit will use the state of the current page.
   // Otherwise, we give it the state to navigate to.
   if (reload) {
-    frame->Reload();
+    frame->reload();
   } else if (!entry.GetContentState().empty()) {
     DCHECK(entry.GetPageID() != -1);
-    frame->LoadHistoryItem(
+    frame->loadHistoryItem(
         webkit_glue::HistoryItemFromString(entry.GetContentState()));
   } else {
     DCHECK(entry.GetPageID() == -1);
-    frame->LoadRequest(WebURLRequest(entry.GetURL()));
+    frame->loadRequest(WebURLRequest(entry.GetURL()));
   }
 
   // In case LoadRequest failed before DidCreateDataSource was called.

@@ -49,6 +49,7 @@ using WebCore::V8ClassIndex;
 using WebCore::V8DOMWrapper;
 using WebCore::V8Proxy;
 using WebKit::WebDataSource;
+using WebKit::WebFrame;
 using WebKit::WebURLRequest;
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
@@ -158,7 +159,7 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
     DisposeUtilityContext();
     return;
   }
-  WebDataSource* ds = frame->GetDataSource();
+  WebDataSource* ds = frame->dataSource();
   const WebURLRequest& request = ds->request();
   GURL url = ds->hasUnreachableURL() ?
       ds->unreachableURL() :

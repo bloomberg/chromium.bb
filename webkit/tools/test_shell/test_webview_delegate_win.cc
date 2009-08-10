@@ -20,9 +20,9 @@
 #include "base/trace_event.h"
 #include "net/base/net_errors.h"
 #include "webkit/api/public/WebCursorInfo.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
@@ -159,7 +159,7 @@ void TestWebViewDelegate::runModal() {
   if (!host)
     return;
 
-  show(WebNavigationPolicy() /*XXX NEW_WINDOW*/);
+  show(WebKit::WebNavigationPolicyNewWindow);
 
   WindowList* wl = TestShell::windowList();
   for (WindowList::const_iterator i = wl->begin(); i != wl->end(); ++i) {

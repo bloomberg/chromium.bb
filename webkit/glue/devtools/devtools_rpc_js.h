@@ -14,10 +14,10 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/webframe.h"
 
 ///////////////////////////////////////////////////////
 // JS RPC binds and stubs

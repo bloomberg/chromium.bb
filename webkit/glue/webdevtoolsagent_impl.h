@@ -21,6 +21,10 @@ class Node;
 class String;
 }
 
+namespace WebKit {
+class WebFrame;
+}
+
 class BoundObject;
 class DebuggerAgentDelegateStub;
 class DebuggerAgentImpl;
@@ -28,7 +32,6 @@ class DomAgentImpl;
 class NetAgentImpl;
 class Value;
 class WebDevToolsAgentDelegate;
-class WebFrame;
 class WebFrameImpl;
 class WebViewImpl;
 
@@ -74,7 +77,7 @@ class WebDevToolsAgentImpl
   // Methods called by the glue.
   void SetMainFrameDocumentReady(bool ready);
   void DidCommitLoadForFrame(WebViewImpl* webview,
-                             WebFrame* frame,
+                             WebKit::WebFrame* frame,
                              bool is_new_navigation);
 
   void WindowObjectCleared(WebFrameImpl* webframe);

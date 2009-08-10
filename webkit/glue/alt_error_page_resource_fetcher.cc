@@ -6,6 +6,7 @@
 
 #include "webkit/glue/resource_fetcher.h"
 
+using WebKit::WebFrame;
 using WebKit::WebURLError;
 using WebKit::WebURLResponse;
 

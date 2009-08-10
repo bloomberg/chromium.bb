@@ -15,11 +15,13 @@
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
 #include "chrome/common/page_transition_types.h"
+#include "webkit/api/public/WebCString.h"
 #include "webkit/api/public/WebCursorInfo.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebRect.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
@@ -32,6 +34,7 @@
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebCursorInfo;
+using WebKit::WebFrame;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;
 
@@ -59,7 +62,12 @@ void SelectionClipboardGetContents(GtkClipboard* clipboard,
     frame = webview->GetMainFrame();
   DCHECK(frame);
 
-  std::string selection = frame->GetSelection(TEXT_HTML == info);
+  std::string selection;
+  if (TEXT_HTML == info) {
+    selection = frame->selectionAsMarkup().utf8();
+  } else {
+    selection = frame->selectionAsText().utf8();
+  }
   if (TEXT_HTML == info) {
     gtk_selection_data_set(selection_data,
                            GetTextHtmlAtom(),

@@ -4,7 +4,9 @@
 
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/render_view.h"
-#include "webkit/glue/webframe.h"
+#include "webkit/api/public/WebFrame.h"
+
+using WebKit::WebFrame;
 
 namespace extensions_v8 {
 
@@ -35,12 +37,12 @@ class ExternalExtensionWrapper : public v8::Extension {
       if (!args.Length())
         return v8::Undefined();
 
-      WebFrame* webframe = WebFrame::RetrieveFrameForEnteredContext();
+      WebFrame* webframe = WebFrame::frameForEnteredContext();
       DCHECK(webframe) << "There should be an active frame since we just got "
                           "a native function called.";
       if (!webframe) return v8::Undefined();
 
-      WebView* webview = webframe->GetView();
+      WebView* webview = webframe->view();
       if (!webview) return v8::Undefined();  // can happen during closing
 
       RenderView* renderview = static_cast<RenderView*>(webview->GetDelegate());

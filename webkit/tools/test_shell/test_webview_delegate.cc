@@ -22,6 +22,7 @@
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebHistoryItem.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
@@ -35,7 +36,6 @@
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/webappcachecontext.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webview.h"
@@ -56,6 +56,7 @@
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
+using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
@@ -240,7 +241,6 @@ WebNavigationPolicy TestWebViewDelegate::PolicyForNavigationAction(
     bool is_redirect) {
   WebNavigationPolicy result;
   if (policy_delegate_enabled_) {
-    std::wstring frame_name = frame->GetName();
     printf("Policy delegate: attempt to load %s with navigation type '%s'\n",
            GetURLDescription(request.url()).c_str(),
            WebNavigationTypeToString(type));
@@ -371,7 +371,7 @@ void TestWebViewDelegate::DidStartProvisionalLoadForFrame(
   if (shell_->layout_test_controller()->StopProvisionalFrameLoads()) {
     printf("%S - stopping load in didStartProvisionalLoadForFrame callback\n",
            GetFrameDescription(frame).c_str());
-    frame->StopLoading();
+    frame->stopLoading();
   }
   UpdateAddressBar(webview);
 }
@@ -408,7 +408,7 @@ void TestWebViewDelegate::DidFailProvisionalLoadWithError(
   if (error.reason == net::ERR_ABORTED)
     return;
 
-  const WebDataSource* failed_ds = frame->GetProvisionalDataSource();
+  const WebDataSource* failed_ds = frame->provisionalDataSource();
 
   TestShellExtraData* extra_data =
       static_cast<TestShellExtraData*>(failed_ds->extraData());
@@ -419,9 +419,9 @@ void TestWebViewDelegate::DidFailProvisionalLoadWithError(
       failed_ds->request().url().spec().data());
 
   // Make sure we never show errors in view source mode.
-  frame->SetInViewSourceMode(false);
+  frame->enableViewSourceMode(false);
 
-  frame->LoadHTMLString(
+  frame->loadHTMLString(
       error_text, GURL("testshell-error:"), error.unreachableURL, replace);
 }
 
@@ -453,7 +453,7 @@ void TestWebViewDelegate::DidReceiveTitle(WebView* webview,
 
 void TestWebViewDelegate::DidFinishLoadForFrame(WebView* webview,
                                                 WebFrame* frame) {
-  TRACE_EVENT_END("frame.load", this, frame->GetURL().spec());
+  TRACE_EVENT_END("frame.load", this, frame->url().spec());
   if (shell_->ShouldDumpFrameLoadCallbacks()) {
     printf("%S - didFinishLoadForFrame\n",
            GetFrameDescription(frame).c_str());
@@ -480,7 +480,7 @@ void TestWebViewDelegate::DidFinishDocumentLoadForFrame(WebView* webview,
     printf("%S - didFinishDocumentLoadForFrame\n",
            GetFrameDescription(frame).c_str());
   } else {
-    unsigned pending_unload_events = frame->PendingFrameUnloadEventCount();
+    unsigned pending_unload_events = frame->unloadListenerCount();
     if (pending_unload_events) {
       printf("%S - has %u onunload handler(s)\n",
           GetFrameDescription(frame).c_str(), pending_unload_events);
@@ -498,7 +498,7 @@ void TestWebViewDelegate::DidHandleOnloadEventsForFrame(WebView* webview,
 
 void TestWebViewDelegate::DidChangeLocationWithinPageForFrame(
     WebView* webview, WebFrame* frame, bool is_new_navigation) {
-  frame->GetDataSource()->setExtraData(pending_extra_data_.release());
+  frame->dataSource()->setExtraData(pending_extra_data_.release());
 
   if (shell_->ShouldDumpFrameLoadCallbacks()) {
     printf("%S - didChangeLocationWithinPageForFrame\n",
@@ -884,9 +884,9 @@ void TestWebViewDelegate::WaitForPolicyDelegate() {
 void TestWebViewDelegate::UpdateAddressBar(WebView* webView) {
   WebFrame* mainFrame = webView->GetMainFrame();
 
-  WebDataSource* dataSource = mainFrame->GetDataSource();
+  WebDataSource* dataSource = mainFrame->dataSource();
   if (!dataSource)
-    dataSource = mainFrame->GetProvisionalDataSource();
+    dataSource = mainFrame->provisionalDataSource();
   if (!dataSource)
     return;
 
@@ -915,7 +915,7 @@ void TestWebViewDelegate::UpdateForCommittedLoad(WebFrame* frame,
                                                  bool is_new_navigation) {
   // Code duplicated from RenderView::DidCommitLoadForFrame.
   TestShellExtraData* extra_data = static_cast<TestShellExtraData*>(
-      frame->GetDataSource()->extraData());
+      frame->dataSource()->extraData());
 
   if (is_new_navigation) {
     // New navigation.
@@ -936,7 +936,7 @@ void TestWebViewDelegate::UpdateForCommittedLoad(WebFrame* frame,
 }
 
 void TestWebViewDelegate::UpdateURL(WebFrame* frame) {
-  WebDataSource* ds = frame->GetDataSource();
+  WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
 
   const WebURLRequest& request = ds->request();
@@ -953,7 +953,7 @@ void TestWebViewDelegate::UpdateURL(WebFrame* frame) {
     entry->SetURL(request.url());
   }
 
-  const WebHistoryItem& history_item = frame->GetCurrentHistoryItem();
+  const WebHistoryItem& history_item = frame->currentHistoryItem();
   if (!history_item.isNull())
     entry->SetContentState(webkit_glue::HistoryItemToString(history_item));
 
@@ -975,7 +975,7 @@ void TestWebViewDelegate::UpdateSessionHistory(WebFrame* frame) {
     return;
 
   const WebHistoryItem& history_item =
-      shell_->webView()->GetMainFrame()->GetPreviousHistoryItem();
+      shell_->webView()->GetMainFrame()->previousHistoryItem();
   if (history_item.isNull())
     return;
 
@@ -983,7 +983,7 @@ void TestWebViewDelegate::UpdateSessionHistory(WebFrame* frame) {
 }
 
 std::wstring TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
-  std::wstring name = webframe->GetName();
+  std::wstring name = UTF16ToWideHack(webframe->name());
 
   if (webframe == shell_->webView()->GetMainFrame()) {
     if (name.length())

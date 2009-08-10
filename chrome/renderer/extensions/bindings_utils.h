@@ -15,7 +15,6 @@
 #include <string>
 
 class RenderView;
-class WebFrame;
 
 namespace bindings_utils {
 

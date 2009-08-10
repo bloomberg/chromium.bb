@@ -11,13 +11,14 @@
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/api/public/WebData.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebScriptSource.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
+using WebKit::WebFrame;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 
@@ -97,23 +98,23 @@ TEST_F(PluginTest, Refresh) {
   // test plugin from a previous test.
   DeleteTestPlugin();
   ASSERT_FALSE(file_util::PathExists(plugin_file_path_));
-  test_shell_->webView()->GetMainFrame()->ExecuteScript(refresh);
+  test_shell_->webView()->GetMainFrame()->executeScript(refresh);
 
-  test_shell_->webView()->GetMainFrame()->LoadHTMLString(
+  test_shell_->webView()->GetMainFrame()->loadHTMLString(
       html, GURL("about:blank"));
   test_shell_->WaitTestFinished();
 
-  std::wstring text;
-  test_shell_->webView()->GetMainFrame()->ExecuteScript(call_check);
-  test_shell_->webView()->GetMainFrame()->GetContentAsPlainText(10000, &text);
-  ASSERT_EQ(text, L"FAIL");
+  std::string text;
+  test_shell_->webView()->GetMainFrame()->executeScript(call_check);
+  text = test_shell_->webView()->GetMainFrame()->contentAsText(10000).utf8();
+  ASSERT_EQ(text, "FAIL");
 
   CopyTestPlugin();
 
-  test_shell_->webView()->GetMainFrame()->ExecuteScript(refresh);
-  test_shell_->webView()->GetMainFrame()->ExecuteScript(call_check);
-  test_shell_->webView()->GetMainFrame()->GetContentAsPlainText(10000, &text);
-  ASSERT_EQ(text, L"DONE");
+  test_shell_->webView()->GetMainFrame()->executeScript(refresh);
+  test_shell_->webView()->GetMainFrame()->executeScript(call_check);
+  text = test_shell_->webView()->GetMainFrame()->contentAsText(10000).utf8();
+  ASSERT_EQ(text, "DONE");
 }
 
 #if defined(OS_WIN)
@@ -136,14 +137,13 @@ TEST_F(PluginTest, DefaultPluginLoadTest) {
       </DIV>\
       ";
 
-  test_shell_->webView()->GetMainFrame()->LoadHTMLString(
+  test_shell_->webView()->GetMainFrame()->loadHTMLString(
       html, GURL("about:blank"));
   test_shell_->WaitTestFinished();
 
-  std::wstring text;
-  test_shell_->webView()->GetMainFrame()->GetContentAsPlainText(10000, &text);
-
-  ASSERT_EQ(true, StartsWith(text, L"DONE", true));
+  std::string text =
+      test_shell_->webView()->GetMainFrame()->contentAsText(10000).utf8();
+  ASSERT_EQ(true, StartsWithASCII(text, "DONE", true));
 }
 #endif
 
@@ -194,13 +194,13 @@ TEST_F(PluginTest, PluginVisibilty) {
   ASSERT_TRUE(plugin_hwnd != NULL);
   ASSERT_FALSE(IsWindowVisible(plugin_hwnd));
 
-  main_frame->ExecuteScript(WebString::fromUTF8("showPlugin(true)"));
+  main_frame->executeScript(WebString::fromUTF8("showPlugin(true)"));
   ASSERT_TRUE(IsWindowVisible(plugin_hwnd));
 
-  main_frame->ExecuteScript(WebString::fromUTF8("showFrame(false)"));
+  main_frame->executeScript(WebString::fromUTF8("showFrame(false)"));
   ASSERT_FALSE(IsWindowVisible(plugin_hwnd));
 
-  main_frame->ExecuteScript(WebString::fromUTF8("showFrame(true)"));
+  main_frame->executeScript(WebString::fromUTF8("showFrame(true)"));
   ASSERT_TRUE(IsWindowVisible(plugin_hwnd));
 }
 #endif

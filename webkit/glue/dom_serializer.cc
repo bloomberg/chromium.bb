@@ -80,6 +80,8 @@ MSVC_POP_WARNING();
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"
 
+using WebKit::WebFrame;
+
 namespace {
 
 // Default "mark of the web" declaration

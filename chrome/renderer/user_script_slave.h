@@ -14,7 +14,9 @@
 #include "base/string_piece.h"
 #include "chrome/common/extensions/user_script.h"
 
+namespace WebKit {
 class WebFrame;
+}
 
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {
@@ -27,7 +29,7 @@ class UserScriptSlave {
   // Inject the appropriate scripts into a frame based on its URL.
   // TODO(aa): Extract a UserScriptFrame interface out of this to improve
   // testability.
-  bool InjectScripts(WebFrame* frame, UserScript::RunLocation location);
+  bool InjectScripts(WebKit::WebFrame* frame, UserScript::RunLocation location);
 
  private:
   // Shared memory containing raw script data.

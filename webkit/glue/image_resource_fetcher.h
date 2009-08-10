@@ -21,7 +21,7 @@ class ImageResourceFetcher {
   typedef Callback2<ImageResourceFetcher*, const SkBitmap&>::Type Callback;
 
   ImageResourceFetcher(const GURL& image_url,
-                       WebFrame* frame,
+                       WebKit::WebFrame* frame,
                        int id,
                        int image_size,
                        Callback* callback);

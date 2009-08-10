@@ -188,7 +188,7 @@ public:
     // Called by the WebView delegate WindowObjectCleared() method, this
     // binds the layout_test_controller_ and other C++ controller classes to
     // window JavaScript objects so they can be accessed by layout tests.
-    virtual void BindJSObjectsToWindow(WebFrame* frame);
+    virtual void BindJSObjectsToWindow(WebKit::WebFrame* frame);
 
     // Runs a layout test.  Loads a single file (specified in params.test_url)
     // into the first available window, then dumps the requested text

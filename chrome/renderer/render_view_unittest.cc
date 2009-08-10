@@ -14,6 +14,7 @@
 #include "webkit/api/public/WebURLError.h"
 
 using WebKit::WebCompositionCommand;
+using WebKit::WebFrame;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 
@@ -247,8 +248,8 @@ TEST_F(RenderViewTest, ImeComposition) {
       // Retrieve the content of this page and compare it with the expected
       // result.
       const int kMaxOutputCharacters = 128;
-      std::wstring output;
-      GetMainFrame()->GetContentAsPlainText(kMaxOutputCharacters, &output);
+      std::wstring output = UTF16ToWideHack(
+          GetMainFrame()->contentAsText(kMaxOutputCharacters));
       EXPECT_EQ(output, ime_message->result);
     }
   }
@@ -296,8 +297,8 @@ TEST_F(RenderViewTest, OnSetTextDirection) {
     // Copy the document content to std::wstring and compare with the
     // expected result.
     const int kMaxOutputCharacters = 16;
-    std::wstring output;
-    GetMainFrame()->GetContentAsPlainText(kMaxOutputCharacters, &output);
+    std::wstring output = UTF16ToWideHack(
+        GetMainFrame()->contentAsText(kMaxOutputCharacters));
     EXPECT_EQ(output, kTextDirection[i].expected_result);
   }
 }
@@ -612,9 +613,8 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
         // text created from a virtual-key code, a character code, and the
         // modifier-key status.
         const int kMaxOutputCharacters = 1024;
-        std::wstring output;
-        GetMainFrame()->GetContentAsPlainText(kMaxOutputCharacters, &output);
-
+        std::wstring output = UTF16ToWideHack(
+            GetMainFrame()->contentAsText(kMaxOutputCharacters));
         EXPECT_EQ(expected_result, output);
       }
     }
@@ -825,8 +825,8 @@ TEST_F(RenderViewTest, InsertCharacters) {
     // text created from a virtual-key code, a character code, and the
     // modifier-key status.
     const int kMaxOutputCharacters = 4096;
-    std::wstring output;
-    GetMainFrame()->GetContentAsPlainText(kMaxOutputCharacters, &output);
+    std::wstring output = UTF16ToWideHack(
+        GetMainFrame()->contentAsText(kMaxOutputCharacters));
     EXPECT_EQ(kLayouts[i].expected_result, output);
   }
 #else
@@ -852,15 +852,15 @@ TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForError) {
 #endif
 
 TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForCancellation) {
-  GetMainFrame()->SetInViewSourceMode(true);
+  GetMainFrame()->enableViewSourceMode(true);
   WebURLError error;
   error.domain.fromUTF8("test_domain");
   error.reason = net::ERR_ABORTED;
   error.unreachableURL = GURL("http://foo");
   WebFrame* web_frame = GetMainFrame();
-  WebView* web_view = web_frame->GetView();
+  WebView* web_view = web_frame->view();
   // A cancellation occurred.
   view_->DidFailProvisionalLoadWithError(web_view, error, web_frame);
   // Frame should stay in view-source mode.
-  EXPECT_TRUE(web_frame->GetInViewSourceMode());
+  EXPECT_TRUE(web_frame->isViewSourceModeEnabled());
 }

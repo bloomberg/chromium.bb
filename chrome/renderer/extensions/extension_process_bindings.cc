@@ -15,7 +15,7 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
-#include "webkit/glue/webframe.h"
+#include "webkit/api/public/WebFrame.h"
 
 using bindings_utils::GetStringResource;
 using bindings_utils::ContextInfo;
@@ -82,7 +82,7 @@ class ExtensionImpl : public ExtensionBase {
   static std::string ExtensionIdForCurrentContext() {
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
     DCHECK(renderview);
-    GURL url = renderview->webview()->GetMainFrame()->GetURL();
+    GURL url = renderview->webview()->GetMainFrame()->url();
     if (url.SchemeIs(chrome::kExtensionScheme))
       return url.host();
     return std::string();
@@ -192,7 +192,7 @@ class ExtensionImpl : public ExtensionBase {
     if (!renderview)
       return v8::Undefined();
 
-    if (args.Length() != 4 || !args[0]->IsString() || !args[1]->IsString() || 
+    if (args.Length() != 4 || !args[0]->IsString() || !args[1]->IsString() ||
         !args[2]->IsInt32() || !args[3]->IsBoolean())
       return v8::Undefined();
 

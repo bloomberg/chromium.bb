@@ -5,9 +5,11 @@
 #include "webkit/glue/image_resource_fetcher.h"
 
 #include "base/gfx/size.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/glue/image_decoder.h"
-#include "webkit/glue/webframe.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+using WebKit::WebFrame;
 
 namespace webkit_glue {
 

@@ -14,22 +14,22 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/js_only_v8_extensions.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/webview.h"
 
+using WebKit::WebFrame;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 using WebKit::WebURLRequest;
 
 namespace {
-
 const int32 kRouteId = 5;
 const int32 kOpenerId = 7;
-
-};
+}
 
 void RenderViewTest::ProcessPendingMessages() {
   msg_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask());
@@ -41,7 +41,7 @@ WebFrame* RenderViewTest::GetMainFrame() {
 }
 
 void RenderViewTest::ExecuteJavaScript(const char* js) {
-  GetMainFrame()->ExecuteScript(WebScriptSource(WebString::fromUTF8(js)));
+  GetMainFrame()->executeScript(WebScriptSource(WebString::fromUTF8(js)));
 }
 
 void RenderViewTest::LoadHTML(const char* html) {
@@ -49,7 +49,7 @@ void RenderViewTest::LoadHTML(const char* html) {
   url_str.append(html);
   GURL url(url_str);
 
-  GetMainFrame()->LoadRequest(WebURLRequest(url));
+  GetMainFrame()->loadRequest(WebURLRequest(url));
 
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.

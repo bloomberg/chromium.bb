@@ -29,7 +29,6 @@
 #include "net/base/mime_util.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"

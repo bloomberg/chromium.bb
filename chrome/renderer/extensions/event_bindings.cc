@@ -15,8 +15,8 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "webkit/api/public/WebDataSource.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURLRequest.h"
-#include "webkit/glue/webframe.h"
 
 using bindings_utils::CallFunctionInContext;
 using bindings_utils::ContextInfo;
@@ -26,6 +26,7 @@ using bindings_utils::GetStringResource;
 using bindings_utils::ExtensionBase;
 using bindings_utils::GetPendingRequestMap;
 using bindings_utils::PendingRequestMap;
+using WebKit::WebFrame;
 
 namespace {
 
@@ -199,17 +200,17 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
 
   v8::HandleScope handle_scope;
   ContextList& contexts = GetContexts();
-  v8::Local<v8::Context> frame_context = frame->GetMainWorldScriptContext();
+  v8::Local<v8::Context> frame_context = frame->mainWorldScriptContext();
   v8::Local<v8::Context> context = v8::Context::GetCurrent();
   DCHECK(!context.IsEmpty());
   DCHECK(bindings_utils::FindContext(context) == contexts.end());
 
   // Figure out the URL for the toplevel frame.  If the top frame is loading,
   // use its provisional URL, since we get this notification before commit.
-  WebFrame* main_frame = frame->GetView()->GetMainFrame();
-  WebKit::WebDataSource* ds = main_frame->GetProvisionalDataSource();
+  WebFrame* main_frame = frame->view()->GetMainFrame();
+  WebKit::WebDataSource* ds = main_frame->provisionalDataSource();
   if (!ds)
-    ds = main_frame->GetDataSource();
+    ds = main_frame->dataSource();
   GURL url = ds->request().url();
   std::string extension_id;
   if (url.SchemeIs(chrome::kExtensionScheme)) {
@@ -238,8 +239,8 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   }
 
   RenderView* render_view = NULL;
-  if (frame->GetView() && frame->GetView()->GetDelegate())
-    render_view = static_cast<RenderView*>(frame->GetView()->GetDelegate());
+  if (frame->view() && frame->view()->GetDelegate())
+    render_view = static_cast<RenderView*>(frame->view()->GetDelegate());
 
   contexts.push_back(linked_ptr<ContextInfo>(
       new ContextInfo(persistent_context, extension_id, parent_context,
@@ -256,7 +257,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
     return;
 
   v8::HandleScope handle_scope;
-  v8::Local<v8::Context> context = frame->GetMainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   DCHECK(!context.IsEmpty());
 
   ContextList::iterator context_iter = bindings_utils::FindContext(context);

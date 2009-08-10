@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/api/public/WebBindings.h"
-#include "webkit/glue/webframe.h"
 
 using WebKit::WebBindings;
 
@@ -45,7 +44,7 @@ void ExternalHostBindings::postMessage(
   }
 
   std::string origin;
-  GURL origin_url(frame_->GetURL().GetOrigin());
+  GURL origin_url(GURL(frame_->url()).GetOrigin());
   if (origin_url.is_empty()) {
     // If the origin is not a scheme/host/port tuple, then return the literal
     // string "null".
@@ -67,7 +66,7 @@ bool ExternalHostBindings::ForwardMessageFromExternalHost(
   bool status = false;
 
   if (target.compare("*") != 0) {
-    GURL frame_url(frame_->GetURL());
+    GURL frame_url(frame_->url());
     GURL frame_origin(frame_url.GetOrigin());
     GURL target_origin(GURL(target).GetOrigin());
 
@@ -141,9 +140,9 @@ bool ExternalHostBindings::CreateMessageEvent(NPObject** message_event) {
   DCHECK(message_event != NULL);
   DCHECK(frame_ != NULL);
 
-  NPObject* window = frame_->GetWindowNPObject();
+  NPObject* window = frame_->windowObject();
   if (!window) {
-    NOTREACHED() << "frame_->GetWindowNPObject";
+    NOTREACHED() << "frame_->windowObject";
     return false;
   }
 

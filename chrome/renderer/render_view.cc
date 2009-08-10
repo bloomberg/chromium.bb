@@ -58,6 +58,7 @@
 #include "webkit/api/public/WebDataSource.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebForm.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebHistoryItem.h"
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebPoint.h"
@@ -82,12 +83,10 @@
 #include "webkit/glue/webaccessibilitymanager_impl.h"
 #include "webkit/glue/webdevtoolsagent_delegate.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webplugin_delegate.h"
-#include "webkit/glue/webtextinput.h"
 #include "webkit/glue/webview.h"
 
 #if defined(OS_WIN)
@@ -108,6 +107,7 @@ using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
 using WebKit::WebForm;
+using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
@@ -337,7 +337,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 void RenderView::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->GetMainFrame() : NULL;
   child_process_logging::ScopedActiveURLSetter url_setter(
-      main_frame ? main_frame->GetURL() : GURL());
+      main_frame ? main_frame->url() : WebURL());
 
   // If this is developer tools renderer intercept tools messages first.
   if (devtools_client_.get() && devtools_client_->OnMessageReceived(message))
@@ -441,7 +441,7 @@ void RenderView::SendThumbnail() {
     return;
 
   // get the URL for this page
-  GURL url(main_frame->GetURL());
+  GURL url(main_frame->url());
   if (url.is_empty())
     return;
 
@@ -463,7 +463,7 @@ void RenderView::OnPrintPages() {
   if (webview()) {
     // If the user has selected text in the currently focused frame we print
     // only that frame (this makes print selection work for multiple frames).
-    if (webview()->GetFocusedFrame()->HasSelection())
+    if (webview()->GetFocusedFrame()->hasSelection())
       Print(webview()->GetFocusedFrame(), false);
     else
       Print(webview()->GetMainFrame(), false);
@@ -493,12 +493,12 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
     return;
 
   // Don't index/capture pages that are in view source mode.
-  if (main_frame->GetInViewSourceMode())
+  if (main_frame->isViewSourceModeEnabled())
     return;
 
   // Don't index/capture pages that failed to load.  This only checks the top
   // level frame so the thumbnail may contain a frame that failed to load.
-  WebDataSource* ds = main_frame->GetDataSource();
+  WebDataSource* ds = main_frame->dataSource();
   if (ds && ds->hasUnreachableURL())
     return;
 
@@ -506,7 +506,7 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
     last_indexed_page_id_ = load_id;
 
   // get the URL for this page
-  GURL url(main_frame->GetURL());
+  GURL url(main_frame->url());
   if (url.is_empty())
     return;
 
@@ -539,7 +539,7 @@ void RenderView::CaptureText(WebFrame* frame, std::wstring* contents) {
   // TODO(brettw) we may want to consider more elaborate heuristics such as
   // the cachability of the page. We may also want to consider subframes (this
   // test will still index subframes if the subframe is SSL).
-  if (frame->GetURL().SchemeIsSecure())
+  if (GURL(frame->url()).SchemeIsSecure())
     return;
 
 #ifdef TIME_TEXT_RETRIEVAL
@@ -547,7 +547,7 @@ void RenderView::CaptureText(WebFrame* frame, std::wstring* contents) {
 #endif
 
   // get the contents of the frame
-  frame->GetContentAsPlainText(kMaxIndexChars, contents);
+  *contents = UTF16ToWideHack(frame->contentAsText(kMaxIndexChars));
 
 #ifdef TIME_TEXT_RETRIEVAL
   double end = time_util::GetHighResolutionTimeNow();
@@ -621,7 +621,7 @@ bool RenderView::CaptureThumbnail(WebView* view,
     }
   }
 
-  score->at_top = (view->GetMainFrame()->ScrollOffset().height == 0);
+  score->at_top = (view->GetMainFrame()->scrollOffset().height == 0);
 
   SkBitmap subset;
   device.accessBitmap(false).extractSubset(&subset, src_rect);
@@ -664,7 +664,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   bool is_reload = params.reload;
 
   WebFrame* main_frame = webview()->GetMainFrame();
-  if (is_reload && main_frame->GetCurrentHistoryItem().isNull()) {
+  if (is_reload && main_frame->currentHistoryItem().isNull()) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.  Our workaround here is a bit of
     // a hack since it means that reload after a crashed tab does not cause an
@@ -685,11 +685,11 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   // have history state, then we need to navigate to it, which corresponds to a
   // back/forward navigation event.
   if (is_reload) {
-    main_frame->Reload();
+    main_frame->reload();
   } else if (!params.state.empty()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
-    main_frame->LoadHistoryItem(
+    main_frame->loadHistoryItem(
         webkit_glue::HistoryItemFromString(params.state));
   } else {
     // Navigate to the given URL.
@@ -698,7 +698,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
     // A session history navigation should have been accompanied by state.
     DCHECK_EQ(params.page_id, -1);
 
-    if (main_frame->GetInViewSourceMode())
+    if (main_frame->isViewSourceModeEnabled())
       request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
 
     if (params.referrer.is_valid()) {
@@ -706,7 +706,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
                                  WebString::fromUTF8(params.referrer.spec()));
     }
 
-    main_frame->LoadRequest(request);
+    main_frame->loadRequest(request);
   }
 
   // In case LoadRequest failed before DidCreateDataSource was called.
@@ -730,7 +730,7 @@ void RenderView::OnLoadAlternateHTMLText(const std::string& html,
       new_navigation ? -1 : page_id_, PageTransition::LINK, Time::Now()));
   pending_navigation_state_->set_security_info(security_info);
 
-  webview()->GetMainFrame()->LoadHTMLString(html,
+  webview()->GetMainFrame()->loadHTMLString(html,
                                             GURL(kUnreachableWebDataURL),
                                             display_url,
                                             !new_navigation);
@@ -747,7 +747,8 @@ void RenderView::OnExecuteEditCommand(const std::string& name,
   if (!webview() || !webview()->GetFocusedFrame())
     return;
 
-  webview()->GetFocusedFrame()->ExecuteEditCommandByName(name, value);
+  webview()->GetFocusedFrame()->executeCommand(
+      WebString::fromUTF8(name), WebString::fromUTF8(value));
 }
 
 void RenderView::OnSetupDevToolsClient() {
@@ -761,11 +762,11 @@ void RenderView::OnStopFinding(bool clear_selection) {
     return;
 
   if (clear_selection)
-    view->GetFocusedFrame()->ClearSelection();
+    view->GetFocusedFrame()->clearSelection();
 
   WebFrame* frame = view->GetMainFrame();
   while (frame) {
-    frame->StopFinding(clear_selection);
+    frame->stopFinding(clear_selection);
     frame = view->GetNextFrameAfter(frame, false);
   }
 }
@@ -793,63 +794,71 @@ void RenderView::OnUndo() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->Undo();
+  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Undo"));
+  UserMetricsRecordAction(L"Undo");
 }
 
 void RenderView::OnRedo() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->Redo();
+  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Redo"));
+  UserMetricsRecordAction(L"Redo");
 }
 
 void RenderView::OnCut() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->Cut();
+  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Cut"));
+  UserMetricsRecordAction(L"Cut");
 }
 
 void RenderView::OnCopy() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->Copy();
+  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
+  UserMetricsRecordAction(L"Copy");
 }
 
 void RenderView::OnPaste() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->Paste();
+  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Paste"));
+  UserMetricsRecordAction(L"Paste");
 }
 
 void RenderView::OnReplace(const std::wstring& text) {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->Replace(text);
+  webview()->GetFocusedFrame()->replaceSelection(WideToUTF16Hack(text));
 }
 
 void RenderView::OnToggleSpellCheck() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->ToggleSpellCheck();
+  WebFrame* frame = webview()->GetFocusedFrame();
+  frame->enableContinuousSpellChecking(
+      !frame->isContinuousSpellCheckingEnabled());
 }
 
 void RenderView::OnDelete() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->Delete();
+  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Delete"));
+  UserMetricsRecordAction(L"DeleteSelection");
 }
 
 void RenderView::OnSelectAll() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->SelectAll();
+  webview()->GetFocusedFrame()->selectAll();
 }
 
 void RenderView::OnSetInitialFocus(bool reverse) {
@@ -862,7 +871,7 @@ void RenderView::OnSetInitialFocus(bool reverse) {
 
 // Tell the embedding application that the URL of the active page has changed
 void RenderView::UpdateURL(WebFrame* frame) {
-  WebDataSource* ds = frame->GetDataSource();
+  WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
 
   const WebURLRequest& request = ds->request();
@@ -914,7 +923,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
   params.gesture = navigation_gesture_;
   navigation_gesture_ = NavigationGestureUnknown;
 
-  if (!frame->GetParent()) {
+  if (!frame->parent()) {
     // Top-level navigation.
 
     // Update contents MIME type for main frame.
@@ -1022,7 +1031,7 @@ void RenderView::UpdateSessionHistory(WebFrame* frame) {
     return;
 
   const WebHistoryItem& item =
-      webview()->GetMainFrame()->GetPreviousHistoryItem();
+      webview()->GetMainFrame()->previousHistoryItem();
   if (item.isNull())
     return;
 
@@ -1064,11 +1073,11 @@ void RenderView::DidStopLoading(WebView* webview) {
   // displayed when done loading. Ideally we would send notification when
   // finished parsing the head, but webkit doesn't support that yet.
   // The feed discovery code would also benefit from access to the head.
-  GURL favicon_url(webview->GetMainFrame()->GetFavIconURL());
+  GURL favicon_url(webview->GetMainFrame()->favIconURL());
   if (!favicon_url.is_empty())
     Send(new ViewHostMsg_UpdateFavIconURL(routing_id_, page_id_, favicon_url));
 
-  AddGURLSearchProvider(webview->GetMainFrame()->GetOSDDURL(),
+  AddGURLSearchProvider(webview->GetMainFrame()->openSearchDescriptionURL(),
                         true);  // autodetected
 
   Send(new ViewHostMsg_DidStopLoading(routing_id_));
@@ -1099,13 +1108,13 @@ void RenderView::DidCreateDataSource(WebFrame* frame, WebDataSource* ds) {
 void RenderView::DidPaint() {
   WebFrame* main_frame = webview()->GetMainFrame();
 
-  if (main_frame->GetProvisionalDataSource()) {
+  if (main_frame->provisionalDataSource()) {
     // If we have a provisional frame we are between the start
     // and commit stages of loading...ignore this paint.
     return;
   }
 
-  WebDataSource* ds = main_frame->GetDataSource();
+  WebDataSource* ds = main_frame->dataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   DCHECK(navigation_state);
 
@@ -1123,7 +1132,7 @@ void RenderView::DidStartProvisionalLoadForFrame(
     WebView* webview,
     WebFrame* frame,
     NavigationGesture gesture) {
-  WebDataSource* ds = frame->GetProvisionalDataSource();
+  WebDataSource* ds = frame->provisionalDataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
 
   navigation_state->set_start_load_time(Time::Now());
@@ -1135,13 +1144,13 @@ void RenderView::DidStartProvisionalLoadForFrame(
       navigation_state->set_request_time(Time::FromDoubleT(event_time));
   }
 
-  bool is_top_most = !frame->GetParent();
+  bool is_top_most = !frame->parent();
   if (is_top_most) {
     navigation_gesture_ = gesture;
 
     // Make sure redirect tracking state is clear for the new load.
     completed_client_redirect_src_ = GURL();
-  } else if (frame->GetParent()->IsLoading()) {
+  } else if (frame->parent()->isLoading()) {
     // Take note of AUTO_SUBFRAME loads here, so that we can know how to
     // load an error page.  See DidFailProvisionalLoadWithError.
     navigation_state->set_transition_type(PageTransition::AUTO_SUBFRAME);
@@ -1157,9 +1166,11 @@ bool RenderView::DidLoadResourceFromMemoryCache(WebView* webview,
                                                 WebFrame* frame) {
   // Let the browser know we loaded a resource from the memory cache.  This
   // message is needed to display the correct SSL indicators.
-  Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(routing_id_,
-      request.url(), frame->GetSecurityOrigin(),
-      frame->GetTop()->GetSecurityOrigin(),
+  Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
+      routing_id_,
+      request.url(),
+      frame->securityOrigin().utf8(),
+      frame->top()->securityOrigin().utf8(),
       response.securityInfo()));
 
   return false;
@@ -1170,7 +1181,7 @@ void RenderView::DidReceiveProvisionalLoadServerRedirect(WebView* webview,
   if (frame == webview->GetMainFrame()) {
     // Received a redirect on the main frame.
     WebDataSource* data_source =
-        webview->GetMainFrame()->GetProvisionalDataSource();
+        webview->GetMainFrame()->provisionalDataSource();
     if (!data_source) {
       // Should only be invoked when we have a data source.
       NOTREACHED();
@@ -1195,7 +1206,7 @@ void RenderView::DidFailProvisionalLoadWithError(WebView* webview,
   //       SSL manager can react to the provisional load failure before being
   //       notified the load stopped.
   //
-  WebDataSource* ds = frame->GetProvisionalDataSource();
+  WebDataSource* ds = frame->provisionalDataSource();
   DCHECK(ds);
 
   const WebURLRequest& failed_request = ds->request();
@@ -1204,8 +1215,7 @@ void RenderView::DidFailProvisionalLoadWithError(WebView* webview,
       (error.reason == net::ERR_CACHE_MISS &&
        EqualsASCII(failed_request.httpMethod(), "POST"));
   Send(new ViewHostMsg_DidFailProvisionalLoadWithError(
-      routing_id_, !frame->GetParent(),
-      error.reason, error.unreachableURL,
+      routing_id_, !frame->parent(), error.reason, error.unreachableURL,
       show_repost_interstitial));
 
   // Don't display an error page if this is simply a cancelled load.  Aside
@@ -1214,7 +1224,7 @@ void RenderView::DidFailProvisionalLoadWithError(WebView* webview,
     return;
 
   // Make sure we never show errors in view source mode.
-  frame->SetInViewSourceMode(false);
+  frame->enableViewSourceMode(false);
 
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
 
@@ -1277,7 +1287,7 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
     alt_html = html;
   }
 
-  frame->LoadHTMLString(alt_html,
+  frame->loadHTMLString(alt_html,
                         GURL(kUnreachableWebDataURL),
                         failed_url,
                         replace);
@@ -1286,9 +1296,9 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
 void RenderView::DidReceiveDocumentData(WebFrame* frame, const char* data,
                                         size_t data_len) {
   NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->GetDataSource());
+      NavigationState::FromDataSource(frame->dataSource());
   if (!navigation_state->postpone_loading_data()) {
-    frame->CommitDocumentData(data, data_len);
+    frame->commitDocumentData(data, data_len);
     return;
   }
 
@@ -1297,7 +1307,7 @@ void RenderView::DidReceiveDocumentData(WebFrame* frame, const char* data,
   navigation_state->append_postponed_data(data, data_len);
   if (navigation_state->postponed_data().size() >= 512) {
     navigation_state->set_postpone_loading_data(false);
-    frame->CommitDocumentData(navigation_state->postponed_data().data(),
+    frame->commitDocumentData(navigation_state->postponed_data().data(),
                               navigation_state->postponed_data().size());
     navigation_state->clear_postponed_data();
   }
@@ -1306,7 +1316,7 @@ void RenderView::DidReceiveDocumentData(WebFrame* frame, const char* data,
 void RenderView::DidCommitLoadForFrame(WebView *webview, WebFrame* frame,
                                        bool is_new_navigation) {
   NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->GetDataSource());
+      NavigationState::FromDataSource(frame->dataSource());
 
   navigation_state->set_commit_load_time(Time::Now());
   if (is_new_navigation) {
@@ -1368,7 +1378,7 @@ void RenderView::DidReceiveTitle(WebView* webview,
 }
 
 void RenderView::DidFinishLoadForFrame(WebView* webview, WebFrame* frame) {
-  WebDataSource* ds = frame->GetDataSource();
+  WebDataSource* ds = frame->dataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   DCHECK(navigation_state);
   navigation_state->set_finish_load_time(Time::Now());
@@ -1384,7 +1394,7 @@ void RenderView::DidFailLoadWithError(WebView* webview,
 
 void RenderView::DidFinishDocumentLoadForFrame(WebView* webview,
                                                WebFrame* frame) {
-  WebDataSource* ds = frame->GetDataSource();
+  WebDataSource* ds = frame->dataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   DCHECK(navigation_state);
   navigation_state->set_finish_document_load_time(Time::Now());
@@ -1417,12 +1427,12 @@ void RenderView::DidChangeLocationWithinPageForFrame(WebView* webview,
   // initiate this navigation, then we need to take care to reset any pre-
   // existing navigation state to a content-initiated navigation state.
   // DidCreateDataSource conveniently takes care of this for us.
-  DidCreateDataSource(frame, frame->GetDataSource());
+  DidCreateDataSource(frame, frame->dataSource());
 
   DidCommitLoadForFrame(webview, frame, is_new_navigation);
 
   const string16& title =
-      webview->GetMainFrame()->GetDataSource()->pageTitle();
+      webview->GetMainFrame()->dataSource()->pageTitle();
   UpdateTitle(frame, UTF16ToWideHack(title));
 }
 
@@ -1434,8 +1444,8 @@ void RenderView::DidCompleteClientRedirect(WebView* webview,
 }
 
 void RenderView::WillCloseFrame(WebView* webview, WebFrame* frame) {
-  if (!frame->GetParent()) {
-    const GURL& url = frame->GetURL();
+  if (!frame->parent()) {
+    const GURL& url = frame->url();
     if (url.SchemeIs("http") || url.SchemeIs("https"))
       DumpLoadHistograms();
   }
@@ -1444,7 +1454,7 @@ void RenderView::WillCloseFrame(WebView* webview, WebFrame* frame) {
 void RenderView::WillSubmitForm(WebView* webview, WebFrame* frame,
                                 const WebForm& form) {
   NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->GetProvisionalDataSource());
+      NavigationState::FromDataSource(frame->provisionalDataSource());
 
   if (navigation_state->transition_type() == PageTransition::LINK)
     navigation_state->set_transition_type(PageTransition::FORM_SUBMIT);
@@ -1478,12 +1488,12 @@ void RenderView::DidReceiveResponse(WebFrame* frame, uint32 identifier,
   // of the top-most frame.  If we have a provisional data source, then we
   // can't have any sub-resources yet, so we know that this response must
   // correspond to a frame load.
-  if (!frame->GetProvisionalDataSource() || frame->GetParent())
+  if (!frame->provisionalDataSource() || frame->parent())
     return;
 
   // If we are in view source mode, then just let the user see the source of
   // the server's 404 error page.
-  if (frame->GetInViewSourceMode())
+  if (frame->isViewSourceModeEnabled())
     return;
 
   // Can we even load an alternate error page for this URL?
@@ -1491,21 +1501,21 @@ void RenderView::DidReceiveResponse(WebFrame* frame, uint32 identifier,
     return;
 
   NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->GetProvisionalDataSource());
+      NavigationState::FromDataSource(frame->provisionalDataSource());
   navigation_state->set_postpone_loading_data(true);
   navigation_state->clear_postponed_data();
 }
 
 void RenderView::DidFinishLoading(WebFrame* frame, uint32 identifier) {
   NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->GetDataSource());
+      NavigationState::FromDataSource(frame->dataSource());
   if (!navigation_state->postpone_loading_data())
     return;
 
   // The server returned a 404 and the content was < 512 bytes (which we
   // suppressed).  Go ahead and fetch the alternate page content.
 
-  const GURL& frame_url = frame->GetURL();
+  const GURL& frame_url = frame->url();
 
   const GURL& error_page_url = GetAlternateErrorPageURL(frame_url, HTTP_404);
   DCHECK(error_page_url.is_valid());
@@ -1546,9 +1556,9 @@ void RenderView::DocumentElementAvailable(WebFrame* frame) {
   // HACK.  This is a temporary workaround to allow cross-origin XHR for Chrome
   // extensions.  It grants full access to every origin, when we really want
   // to be able to restrict them more specifically.
-  GURL url = frame->GetURL();
+  GURL url = frame->url();
   if (url.SchemeIs(chrome::kExtensionScheme))
-    frame->GrantUniversalAccess();
+    frame->grantUniversalAccess();
 
   if (RenderThread::current())  // Will be NULL during unit tests.
     RenderThread::current()->user_script_slave()->InjectScripts(
@@ -1593,9 +1603,9 @@ WebNavigationPolicy RenderView::PolicyForNavigationAction(
       // Not interested in reloads.
       type != WebKit::WebNavigationTypeReload &&
       // Must be a top level frame.
-      frame->GetParent() == NULL) {
+      frame->parent() == NULL) {
     // Skip if navigation is on the same page (using '#').
-    GURL frame_origin = frame->GetURL().GetOrigin();
+    GURL frame_origin = GURL(frame->url()).GetOrigin();
     if (url.GetOrigin() != frame_origin || url.ref().empty()) {
       last_top_level_navigation_page_id_ = page_id_;
       OpenURL(webview, url, GURL(), default_policy);
@@ -1606,7 +1616,7 @@ WebNavigationPolicy RenderView::PolicyForNavigationAction(
   // A content initiated navigation may have originated from a link-click,
   // script, drag-n-drop operation, etc.
   bool is_content_initiated =
-      NavigationState::FromDataSource(frame->GetProvisionalDataSource())->
+      NavigationState::FromDataSource(frame->provisionalDataSource())->
           is_content_initiated();
 
   // We only care about navigations that are within the current tab (as opposed
@@ -1614,13 +1624,13 @@ WebNavigationPolicy RenderView::PolicyForNavigationAction(
   // But we sometimes navigate to about:blank to clear a tab, and we want to
   // still allow that.
   if (default_policy == WebKit::WebNavigationPolicyCurrentTab &&
-      is_content_initiated && frame->GetParent() == NULL &&
+      is_content_initiated && frame->parent() == NULL &&
       !url.SchemeIs(chrome::kAboutScheme)) {
     // When we received such unsolicited navigations, we sometimes want to
     // punt them up to the browser to handle.
     if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
         BindingsPolicy::is_extension_enabled(enabled_bindings_) ||
-        frame->GetInViewSourceMode() ||
+        frame->isViewSourceModeEnabled() ||
         url.SchemeIs(chrome::kViewSourceScheme) ||
         url.SchemeIs(chrome::kPrintScheme)) {
       OpenURL(webview, url, GURL(), default_policy);
@@ -1641,15 +1651,15 @@ WebNavigationPolicy RenderView::PolicyForNavigationAction(
   // JavaScript.
   bool is_fork =
       // Must start from a tab showing about:blank, which is later redirected.
-      frame->GetURL() == GURL("about:blank") &&
+      GURL(frame->url()) == GURL("about:blank") &&
       // Must be the first real navigation of the tab.
       GetHistoryBackListCount() < 1 &&
       GetHistoryForwardListCount() < 1 &&
       // The parent page must have set the child's window.opener to null before
       // redirecting to the desired URL.
-      frame->GetOpener() == NULL &&
+      frame->opener() == NULL &&
       // Must be a top-level frame.
-      frame->GetParent() == NULL &&
+      frame->parent() == NULL &&
       // Must not have issued the request from this page.
       is_content_initiated &&
       // Must be targeted at the current tab.
@@ -1670,7 +1680,7 @@ void RenderView::RunJavaScriptAlert(WebFrame* webframe,
   RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptAlert,
                        message,
                        std::wstring(),
-                       webframe->GetURL(),
+                       webframe->url(),
                        NULL);
 }
 
@@ -1679,7 +1689,7 @@ bool RenderView::RunJavaScriptConfirm(WebFrame* webframe,
   return RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptConfirm,
                               message,
                               std::wstring(),
-                              webframe->GetURL(),
+                              webframe->url(),
                               NULL);
 }
 
@@ -1690,7 +1700,7 @@ bool RenderView::RunJavaScriptPrompt(WebFrame* webframe,
   return RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptPrompt,
                               message,
                               default_value,
-                              webframe->GetURL(),
+                              webframe->url(),
                               result);
 }
 
@@ -1725,7 +1735,7 @@ bool RenderView::RunBeforeUnloadConfirm(WebFrame* webframe,
   // response as RunJavaScriptMessage.
   std::wstring ignored_result;
   IPC::SyncMessage* msg = new ViewHostMsg_RunBeforeUnloadConfirm(
-      routing_id_, webframe->GetURL(), message, &success,  &ignored_result);
+      routing_id_, webframe->url(), message, &success,  &ignored_result);
 
   msg->set_pump_messages_event(modal_dialog_event_.get());
   Send(msg);
@@ -1903,7 +1913,7 @@ WebPluginDelegate* RenderView::CreatePluginDelegate(
 
   GURL policy_url;
   if (webview->GetMainFrame())
-    policy_url = webview->GetMainFrame()->GetURL();
+    policy_url = webview->GetMainFrame()->url();
 
   FilePath path;
   render_thread_->Send(
@@ -2022,7 +2032,7 @@ void RenderView::DidContentsSizeChange(WebWidget* webwidget,
     // WebCore likes to tell us things have changed even when they haven't, so
     // cache the width and only send the IPC message when we're sure the
     // width is different.
-    int width = webview()->GetMainFrame()->GetContentsPreferredWidth();
+    int width = webview()->GetMainFrame()->contentsPreferredWidth();
     if (width != preferred_width_) {
       Send(new ViewHostMsg_DidContentsPreferredWidthChange(routing_id_, width));
       preferred_width_ = width;
@@ -2072,8 +2082,7 @@ void RenderView::SyncNavigationState() {
   if (!webview())
     return;
 
-  const WebHistoryItem& item =
-      webview()->GetMainFrame()->GetCurrentHistoryItem();
+  const WebHistoryItem& item = webview()->GetMainFrame()->currentHistoryItem();
   if (item.isNull())
     return;
 
@@ -2108,7 +2117,7 @@ void RenderView::ShowContextMenu(WebView* webview,
   params.selection_text = selection_text;
   params.misspelled_word = misspelled_word;
   params.spellcheck_enabled =
-      webview->GetFocusedFrame()->SpellCheckEnabled();
+      webview->GetFocusedFrame()->isContinuousSpellCheckingEnabled();
   params.edit_flags = edit_flags;
   params.security_info = security_info;
   params.frame_charset = frame_charset;
@@ -2255,12 +2264,12 @@ void RenderView::OnFind(int request_id,
   bool result = false;
 
   do {
-    result = search_frame->Find(
+    result = search_frame->find(
         request_id, search_text, options, wrap_within_frame, &selection_rect);
 
     if (!result) {
       // don't leave text selected as you move to the next frame.
-      search_frame->ClearSelection();
+      search_frame->clearSelection();
 
       // Find the next frame, but skip the invisible ones.
       do {
@@ -2269,10 +2278,11 @@ void RenderView::OnFind(int request_id,
         search_frame = options.forward ?
             webview()->GetNextFrameAfter(search_frame, true) :
             webview()->GetPreviousFrameBefore(search_frame, true);
-      } while (!search_frame->Visible() && search_frame != focused_frame);
+      } while (!search_frame->hasVisibleContent() &&
+               search_frame != focused_frame);
 
       // Make sure selection doesn't affect the search operation in new frame.
-      search_frame->ClearSelection();
+      search_frame->clearSelection();
 
       // If we have multiple frames and we have wrapped back around to the
       // focused frame, we need to search it once more allowing wrap within
@@ -2280,7 +2290,7 @@ void RenderView::OnFind(int request_id,
       // reported matches, but no frames after the focused_frame contain a
       // match for the search word(s).
       if (multi_frame && search_frame == focused_frame) {
-        result = search_frame->Find(
+        result = search_frame->find(
             request_id, search_text, options, true,  // Force wrapping.
             &selection_rect);
       }
@@ -2291,7 +2301,7 @@ void RenderView::OnFind(int request_id,
 
   if (options.findNext) {
     // Force the main_frame to report the actual count.
-    main_frame->IncreaseMatchCount(0, request_id);
+    main_frame->increaseMatchCount(0, request_id);
   } else {
     // If nothing is found, set result to "0 of 0", otherwise, set it to
     // "-1 of 1" to indicate that we found at least one item, but we don't know
@@ -2314,18 +2324,18 @@ void RenderView::OnFind(int request_id,
     // Scoping effort begins, starting with the mainframe.
     search_frame = main_frame;
 
-    main_frame->ResetMatchCount();
+    main_frame->resetMatchCount();
 
     do {
       // Cancel all old scoping requests before starting a new one.
-      search_frame->CancelPendingScopingEffort();
+      search_frame->cancelPendingScopingEffort();
 
       // We don't start another scoping effort unless at least one match has
       // been found.
       if (result) {
         // Start new scoping request. If the scoping function determines that it
         // needs to scope, it will defer until later.
-        search_frame->ScopeStringMatches(request_id,
+        search_frame->scopeStringMatches(request_id,
                                          search_text,
                                          options,
                                          true);  // reset the tickmarks
@@ -2462,9 +2472,7 @@ void RenderView::OnInsertText(const string16& text) {
   WebFrame* frame = webview()->GetFocusedFrame();
   if (!frame)
     return;
-  WebTextInput* text_input = frame->GetTextInput();
-  if (text_input)
-    text_input->InsertText(text);
+  frame->insertText(text);
 }
 
 void RenderView::OnSetPageEncoding(const std::wstring& encoding_name) {
@@ -2510,7 +2518,7 @@ void RenderView::DidChangeSelection(bool is_empty_selection) {
     // the selection hasn't actually changed. We don't want to report these
     // because it will cause us to continually claim the X clipboard.
     const std::string& this_selection =
-        webview()->GetFocusedFrame()->GetSelection(false);
+        webview()->GetFocusedFrame()->selectionAsText().utf8();
     if (this_selection == last_selection_)
       return;
 
@@ -2539,15 +2547,32 @@ void RenderView::PasteFromSelectionClipboard() {
   Send(new ViewHostMsg_PasteFromSelectionClipboard(routing_id_));
 }
 
-WebFrame* RenderView::GetChildFrame(const std::wstring& frame_xpath) const {
-  WebFrame* web_frame;
-  if (frame_xpath.empty()) {
-    web_frame = webview()->GetMainFrame();
-  } else {
-    web_frame = webview()->GetMainFrame()->GetChildFrame(frame_xpath);
+WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
+  if (xpath.empty())
+    return webview()->GetMainFrame();
+
+  // xpath string can represent a frame deep down the tree (across multiple
+  // frame DOMs).
+  // Example, /html/body/table/tbody/tr/td/iframe\n/frameset/frame[0]
+  // should break into 2 xpaths
+  // /html/body/table/tbody/tr/td/iframe & /frameset/frame[0]
+
+  WebFrame* frame = webview()->GetMainFrame();
+
+  std::wstring xpath_remaining = xpath;
+  while (!xpath_remaining.empty()) {
+    std::wstring::size_type delim_pos = xpath_remaining.find_first_of(L'\n');
+    std::wstring xpath_child;
+    if (delim_pos != std::wstring::npos) {
+      xpath_child = xpath_remaining.substr(0, delim_pos);
+      xpath_remaining.erase(0, delim_pos + 1);
+    } else {
+      xpath_remaining.swap(xpath_child);
+    }
+    frame = frame->findChildByExpression(WideToUTF16Hack(xpath_child));
   }
 
-  return web_frame;
+  return frame;
 }
 
 void RenderView::EvaluateScript(const std::wstring& frame_xpath,
@@ -2556,7 +2581,7 @@ void RenderView::EvaluateScript(const std::wstring& frame_xpath,
   if (!web_frame)
     return;
 
-  web_frame->ExecuteScript(WebScriptSource(WideToUTF16Hack(script)));
+  web_frame->executeScript(WebScriptSource(WideToUTF16Hack(script)));
 }
 
 void RenderView::InsertCSS(const std::wstring& frame_xpath,
@@ -2565,7 +2590,7 @@ void RenderView::InsertCSS(const std::wstring& frame_xpath,
   if (!web_frame)
     return;
 
-  web_frame->InsertCSSStyles(css);
+  web_frame->insertStyleText(WebString::fromUTF8(css));
 }
 
 void RenderView::OnScriptEvalRequest(const std::wstring& frame_xpath,
@@ -2587,7 +2612,7 @@ void RenderView::OnAddMessageToConsole(
     const WebConsoleMessage::Level& level) {
   WebFrame* web_frame = GetChildFrame(UTF16ToWideHack(frame_xpath));
   if (web_frame)
-    web_frame->AddMessageToConsole(WebConsoleMessage(level, message));
+    web_frame->addMessageToConsole(WebConsoleMessage(level, message));
 }
 
 void RenderView::OnAllowBindings(int enabled_bindings_flags) {
@@ -2728,7 +2753,7 @@ void RenderView::OnEnableViewSourceMode() {
   if (!main_frame)
     return;
 
-  main_frame->SetInViewSourceMode(true);
+  main_frame->enableViewSourceMode(true);
 }
 
 void RenderView::OnEnableIntrinsicWidthChangedMode() {
@@ -2851,11 +2876,12 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
   // http://b/issue?id=753080.
   WebFrame* main_frame = webview()->GetMainFrame();
   if (main_frame) {
-    const GURL& url = main_frame->GetURL();
+    const GURL& url = main_frame->url();
     // TODO(davemoore) this code should be removed once WillCloseFrame() gets
     // called when a page is destroyed. DumpLoadHistograms() is safe to call
     // multiple times for the same frame, but it will simplify things.
-    if (url.SchemeIs(chrome::kHttpScheme) || url.SchemeIs(chrome::kHttpsScheme))
+    if (url.SchemeIs(chrome::kHttpScheme) ||
+        url.SchemeIs(chrome::kHttpsScheme))
       DumpLoadHistograms();
   }
   webview()->ClosePage();
@@ -2881,7 +2907,7 @@ void RenderView::DidAddHistoryItem() {
   WebFrame* main_frame = webview()->GetMainFrame();
   DCHECK(main_frame != NULL);
 
-  WebDataSource* ds = main_frame->GetDataSource();
+  WebDataSource* ds = main_frame->dataSource();
   DCHECK(ds != NULL);
 
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
@@ -2918,7 +2944,7 @@ bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
   // value in showing them for failed subframes.  Ideally, we would be
   // able to use the TYPED transition type for this, but that flag is
   // not preserved across page reloads.
-  if (frame->GetParent())
+  if (frame->parent())
     return false;
 
   // Use the alternate error page service if this is a DNS failure or
@@ -2938,7 +2964,7 @@ bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
 
   // Load an empty page first so there is an immediate response to the error,
   // and then kick off a request for the alternate error page.
-  frame->LoadHTMLString(std::string(),
+  frame->loadHTMLString(std::string(),
                         GURL(kUnreachableWebDataURL),
                         error.unreachableURL,
                         replace);
@@ -2947,7 +2973,7 @@ bool RenderView::MaybeLoadAlternateErrorPage(WebFrame* frame,
   // source we just created via the LoadHTMLString call.  That way if another
   // navigation occurs, the fetcher will get destroyed.
   NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->GetProvisionalDataSource());
+      NavigationState::FromDataSource(frame->provisionalDataSource());
   navigation_state->set_alt_error_page_fetcher(
       new AltErrorPageResourceFetcher(
           error_page_url, frame, error,
@@ -2982,7 +3008,7 @@ void RenderView::AltErrorPageFinished(WebFrame* frame,
   const std::string* html_to_load = &html;
   if (html.empty()) {
     NavigationState* navigation_state =
-        NavigationState::FromDataSource(frame->GetDataSource());
+        NavigationState::FromDataSource(frame->dataSource());
     html_to_load = &navigation_state->postponed_data();
   }
   LoadNavigationErrorPage(
@@ -3074,7 +3100,7 @@ void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
 void RenderView::DumpLoadHistograms() const {
   WebFrame* main_frame = webview()->GetMainFrame();
   NavigationState* navigation_state =
-      NavigationState::FromDataSource(main_frame->GetDataSource());
+      NavigationState::FromDataSource(main_frame->dataSource());
   Time finish = navigation_state->finish_load_time();
 
   // If we've already dumped or we haven't finished loading, do nothing.
@@ -3250,8 +3276,8 @@ void RenderView::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
 }
 
 void RenderView::SendPasswordForms(WebFrame* frame) {
-  std::vector<WebForm> forms;
-  frame->GetForms(&forms);
+  WebVector<WebForm> forms;
+  frame->forms(forms);
 
   std::vector<PasswordForm> password_forms;
   for (size_t i = 0; i < forms.size(); ++i) {

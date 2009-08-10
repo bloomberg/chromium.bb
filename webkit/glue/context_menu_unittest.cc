@@ -10,7 +10,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell_test.h"

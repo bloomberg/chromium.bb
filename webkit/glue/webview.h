@@ -13,6 +13,7 @@
 
 namespace WebKit {
 class WebDragData;
+class WebFrame;
 class WebSettings;
 struct WebPoint;
 }
@@ -21,7 +22,6 @@ struct MediaPlayerAction;
 struct WebPreferences;
 class GURL;
 class WebDevToolsAgent;
-class WebFrame;
 class WebViewDelegate;
 
 //
@@ -99,24 +99,24 @@ class WebView : public WebKit::WebWidget {
   //  mainFrame.
   //  @result The main frame.
   //  - (WebFrame *)mainFrame;
-  virtual WebFrame* GetMainFrame() = 0;
+  virtual WebKit::WebFrame* GetMainFrame() = 0;
 
   // Returns the currently focused frame.
-  virtual WebFrame* GetFocusedFrame() = 0;
+  virtual WebKit::WebFrame* GetFocusedFrame() = 0;
 
   // Sets focus to the frame passed in.
-  virtual void SetFocusedFrame(WebFrame* frame) = 0;
+  virtual void SetFocusedFrame(WebKit::WebFrame* frame) = 0;
 
   // Returns the frame with the given name, or NULL if not found.
-  virtual WebFrame* GetFrameWithName(const std::wstring& name) = 0;
+  virtual WebKit::WebFrame* GetFrameWithName(const std::wstring& name) = 0;
 
   // Returns the frame previous to the specified frame, by traversing the frame
   // tree, wrapping around if necessary.
-  virtual WebFrame* GetPreviousFrameBefore(WebFrame* frame, bool wrap) = 0;
+  virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame, bool wrap) = 0;
 
   // Returns the frame after to the specified frame, by traversing the frame
   // tree, wrapping around if necessary.
-  virtual WebFrame* GetNextFrameAfter(WebFrame* frame, bool wrap) = 0;
+  virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame, bool wrap) = 0;
 
   // ---- TODO(darin): remove from here ----
 

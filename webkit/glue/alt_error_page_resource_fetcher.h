@@ -10,9 +10,8 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebURLError.h"
 
-class WebFrame;
-
 namespace WebKit {
+class WebFrame;
 class WebURLResponse;
 }
 
@@ -26,11 +25,11 @@ class AltErrorPageResourceFetcher {
   // This will be called when the alternative error page has been fetched,
   // successfully or not.  If there is a failure, the third parameter (the
   // data) will be empty.
-  typedef Callback3<
-      WebFrame*, const WebKit::WebURLError&, const std::string&>::Type Callback;
+  typedef Callback3<WebKit::WebFrame*, const WebKit::WebURLError&,
+                    const std::string&>::Type Callback;
 
   AltErrorPageResourceFetcher(const GURL& url,
-                              WebFrame* frame,
+                              WebKit::WebFrame* frame,
                               const WebKit::WebURLError& original_error,
                               Callback* callback);
   ~AltErrorPageResourceFetcher();
@@ -45,7 +44,7 @@ class AltErrorPageResourceFetcher {
   // Does the actual fetching.
   scoped_ptr<ResourceFetcherWithTimeout> fetcher_;
 
-  WebFrame* frame_;
+  WebKit::WebFrame* frame_;
   scoped_ptr<Callback> callback_;
 
   // The error associated with this load.  If there's an error talking with the

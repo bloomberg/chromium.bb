@@ -8,10 +8,11 @@
 
 #include "base/time.h"
 #include "chrome/renderer/navigation_state.h"
+#include "webkit/api/public/WebFrame.h"
 #include "v8/include/v8.h"
-#include "webkit/glue/webframe.h"
 
 using WebKit::WebDataSource;
+using WebKit::WebFrame;
 using WebKit::WebNavigationType;
 
 // Values for CSI "tran" property
@@ -94,9 +95,9 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> GetLoadTimes(const v8::Arguments& args) {
-    WebFrame* frame = WebFrame::RetrieveFrameForEnteredContext();
+    WebFrame* frame = WebFrame::frameForEnteredContext();
     if (frame) {
-      WebDataSource* data_source = frame->GetDataSource();
+      WebDataSource* data_source = frame->dataSource();
       if (data_source) {
         NavigationState* navigation_state =
             NavigationState::FromDataSource(data_source);
@@ -135,9 +136,9 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> GetCSI(const v8::Arguments& args) {
-    WebFrame* frame = WebFrame::RetrieveFrameForEnteredContext();
+    WebFrame* frame = WebFrame::frameForEnteredContext();
     if (frame) {
-      WebDataSource* data_source = frame->GetDataSource();
+      WebDataSource* data_source = frame->dataSource();
       if (data_source) {
         NavigationState* navigation_state =
             NavigationState::FromDataSource(data_source);

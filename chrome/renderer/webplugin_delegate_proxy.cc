@@ -35,9 +35,9 @@
 #include "webkit/api/public/WebBindings.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebDragData.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebVector.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webview.h"
@@ -180,7 +180,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(const std::string& mime_type,
       sad_plugin_(NULL),
       invalidate_pending_(false),
       transparent_(false),
-      page_url_(render_view_->webview()->GetMainFrame()->GetURL()) {
+      page_url_(render_view_->webview()->GetMainFrame()->url()) {
 }
 
 WebPluginDelegateProxy::~WebPluginDelegateProxy() {

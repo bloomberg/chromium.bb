@@ -28,50 +28,75 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRange_h
-#define WebRange_h
+#include "config.h"
+#include "WebRange.h"
 
-#include "WebCommon.h"
+#include "WebNode.h"
 
-#if WEBKIT_IMPLEMENTATION
-namespace WebCore { class Range; }
-namespace WTF { template <typename T> class PassRefPtr; }
-#endif
+#include "Range.h"
+#include <wtf/PassRefPtr.h>
+
+using namespace WebCore;
 
 namespace WebKit {
-    class WebNode;
-    class WebRangePrivate;
 
-    // Provides readonly access to some properties of a DOM range.
-    class WebRange {
-    public:
-        ~WebRange() { reset(); }
+class WebRangePrivate : public Range {
+};
 
-        WebRange() : m_private(0) { }
-        WebRange(const WebRange& r) : m_private(0) { assign(r); }
-        WebRange& operator=(const WebRange& r) { assign(r); return *this; }
+void WebRange::reset()
+{
+    assign(0);
+}
 
-        WEBKIT_API void reset();
-        WEBKIT_API void assign(const WebRange&);
+void WebRange::assign(const WebRange& other)
+{
+    WebRangePrivate* p = const_cast<WebRangePrivate*>(other.m_private);
+    p->ref();
+    assign(p);
+}
 
-        bool isNull() const { return m_private == 0; }
+int WebRange::startOffset() const
+{
+    return m_private->startOffset();
+}
 
-        WEBKIT_API int startOffset() const;
-        WEBKIT_API int endOffset() const;
-        WEBKIT_API WebNode startContainer(int& exceptionCode) const;
-        WEBKIT_API WebNode endContainer(int& exceptionCode) const;
+int WebRange::endOffset() const
+{
+    return m_private->endOffset();
+}
 
-#if WEBKIT_IMPLEMENTATION
-        WebRange(const WTF::PassRefPtr<WebCore::Range>&);
-        WebRange& operator=(const WTF::PassRefPtr<WebCore::Range>&);
-        operator WTF::PassRefPtr<WebCore::Range>() const;
-#endif
+WebNode WebRange::startContainer(int& exceptionCode) const
+{
+    return PassRefPtr<Node>(m_private->startContainer(exceptionCode));
+}
 
-    private:
-        void assign(WebRangePrivate*);
-        WebRangePrivate* m_private;
-    };
+WebNode WebRange::endContainer(int& exceptionCode) const
+{
+    return PassRefPtr<Node>(m_private->endContainer(exceptionCode));
+}
+
+WebRange::WebRange(const WTF::PassRefPtr<WebCore::Range>& range)
+    : m_private(static_cast<WebRangePrivate*>(range.releaseRef()))
+{
+}
+
+WebRange& WebRange::operator=(const WTF::PassRefPtr<WebCore::Range>& range)
+{
+    assign(static_cast<WebRangePrivate*>(range.releaseRef()));
+    return *this;
+}
+
+WebRange::operator WTF::PassRefPtr<WebCore::Range>() const
+{
+    return PassRefPtr<Range>(const_cast<WebRangePrivate*>(m_private));
+}
+
+void WebRange::assign(WebRangePrivate* p)
+{
+    // p is already ref'd for us by the caller
+    if (m_private)
+        m_private->deref();
+    m_private = p;
+}
 
 } // namespace WebKit
-
-#endif

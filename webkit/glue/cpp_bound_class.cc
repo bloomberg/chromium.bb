@@ -14,11 +14,14 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "webkit/api/public/WebBindings.h"
+#include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/glue/cpp_bound_class.h"
-#include "webkit/glue/webframe.h"
 
 using WebKit::WebBindings;
+using WebKit::WebFrame;
 
 // Our special NPObject type.  We extend an NPObject with a pointer to a
 // CppBoundClass, which is just a C++ interface that we forward all NPObject
@@ -246,6 +249,7 @@ void CppBoundClass::BindToJavascript(WebFrame* frame,
   // BindToWindowObject will take its own reference to the NPObject, and clean
   // up after itself.  It will also (indirectly) register the object with V8,
   // so we must remember this so we can unregister it when we're destroyed.
-  frame->BindToWindowObject(classname, NPVARIANT_TO_OBJECT(*GetAsCppVariant()));
+  frame->bindToWindowObject(WideToUTF16Hack(classname),
+                            NPVARIANT_TO_OBJECT(*GetAsCppVariant()));
   bound_to_frame_ = true;
 }

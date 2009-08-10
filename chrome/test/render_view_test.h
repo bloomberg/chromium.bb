@@ -18,7 +18,7 @@
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webframe.h"
+#include "webkit/api/public/WebFrame.h"
 
 class RenderViewTest : public testing::Test {
  public:
@@ -30,7 +30,7 @@ class RenderViewTest : public testing::Test {
   void ProcessPendingMessages();
 
   // Returns a pointer to the main frame.
-  WebFrame* GetMainFrame();
+  WebKit::WebFrame* GetMainFrame();
 
   // Executes the given JavaScript in the context of the main frame. The input
   // is a NULL-terminated UTF-8 string.

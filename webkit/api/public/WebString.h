@@ -40,7 +40,7 @@ namespace WebCore { class String; class AtomicString; }
 #endif
 
 namespace WebKit {
-
+    class WebCString;
     class WebStringPrivate;
 
     // A UTF-16 string container.  It is inexpensive to copy a WebString
@@ -76,6 +76,8 @@ namespace WebKit {
 
         bool isEmpty() const { return length() == 0; }
         bool isNull() const { return m_private == 0; }
+
+        WEBKIT_API WebCString utf8() const;
 
         WEBKIT_API static WebString fromUTF8(const char* data, size_t length);
         WEBKIT_API static WebString fromUTF8(const char* data);

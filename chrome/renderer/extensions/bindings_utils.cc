@@ -6,7 +6,9 @@
 
 #include "base/string_util.h"
 #include "chrome/renderer/render_view.h"
-#include "webkit/glue/webframe.h"
+#include "webkit/api/public/WebFrame.h"
+
+using WebKit::WebFrame;
 
 namespace bindings_utils {
 
@@ -78,12 +80,12 @@ PendingRequestMap& GetPendingRequestMap() {
 }
 
 RenderView* GetRenderViewForCurrentContext() {
-  WebFrame* webframe = WebFrame::RetrieveFrameForCurrentContext();
+  WebFrame* webframe = WebFrame::frameForCurrentContext();
   DCHECK(webframe) << "RetrieveCurrentFrame called when not in a V8 context.";
   if (!webframe)
     return NULL;
 
-  WebView* webview = webframe->GetView();
+  WebView* webview = webframe->view();
   if (!webview)
     return NULL;  // can happen during closing
 

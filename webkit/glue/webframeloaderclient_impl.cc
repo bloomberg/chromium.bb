@@ -44,6 +44,7 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/webdatasource_impl.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
+#include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin_delegate.h"
@@ -488,7 +489,7 @@ void WebFrameLoaderClient::dispatchWillPerformClientRedirect(const KURL& url,
   WebViewImpl* webview = webframe_->GetWebViewImpl();
   WebViewDelegate* d = webview ? webview->delegate() : NULL;
   if (d) {
-    expected_client_redirect_src_ = webframe_->GetURL();
+    expected_client_redirect_src_ = webframe_->url();
     expected_client_redirect_dest_ = webkit_glue::KURLToGURL(url);
 
     // TODO(timsteele): bug 1135512. Webkit does not properly notify us of
@@ -1253,7 +1254,7 @@ PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(const IntSize& size, // TO
 #if defined(OS_WIN)
   std::string clsid, version;
   if (activex_shim::IsMimeTypeActiveX(my_mime_type)) {
-    GURL url = webframe_->GetURL();
+    GURL url = webframe_->url();
     for (unsigned int i = 0; i < param_names.size(); i++) {
       String lowercase_param_name = param_names[i].lower();
       if (lowercase_param_name == "classid") {

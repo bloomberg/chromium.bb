@@ -11,14 +11,15 @@
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "webkit/api/public/WebDataSource.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebVector.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
 using WebKit::WebDataSource;
+using WebKit::WebFrame;
 using WebKit::WebURL;
 using WebKit::WebVector;
 
@@ -39,7 +40,7 @@ TEST_F(IFrameRedirectTest, Test) {
 
   WebFrame* iframe = test_shell_->webView()->GetFrameWithName(L"ifr");
   ASSERT_TRUE(iframe != NULL);
-  WebDataSource* iframe_ds = iframe->GetDataSource();
+  WebDataSource* iframe_ds = iframe->dataSource();
   ASSERT_TRUE(iframe_ds != NULL);
   WebVector<WebURL> redirects;
   iframe_ds->redirectChain(redirects);

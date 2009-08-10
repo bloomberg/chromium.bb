@@ -6,14 +6,15 @@
 #include <gtk/gtk.h>
 #endif
 
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURLResponse.h"
 #include "webkit/glue/unittest_test_server.h"
 #include "webkit/glue/webview.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/resource_fetcher.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
+using WebKit::WebFrame;
 using WebKit::WebURLResponse;
 using webkit_glue::ResourceFetcher;
 using webkit_glue::ResourceFetcherWithTimeout;

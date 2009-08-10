@@ -27,7 +27,7 @@
 #include "net/base/net_module.h"
 #include "net/url_request/url_request_file_job.h"
 #include "skia/ext/bitmap_platform_device.h"
-#include "webkit/glue/webframe.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"

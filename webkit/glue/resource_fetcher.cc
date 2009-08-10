@@ -5,15 +5,16 @@
 #include "webkit/glue/resource_fetcher.h"
 
 #include "base/logging.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebKitClient.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebURLLoader.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/public/WebURL.h"
-#include "webkit/glue/webframe.h"
 
 using base::TimeDelta;
+using WebKit::WebFrame;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
 using WebKit::WebURLRequest;
@@ -46,7 +47,7 @@ void ResourceFetcher::Cancel() {
 
 void ResourceFetcher::Start(WebFrame* frame) {
   WebURLRequest request(url_);
-  frame->DispatchWillSendRequest(&request);
+  frame->dispatchWillSendRequest(request);
 
   loader_.reset(WebKit::webKitClient()->createURLLoader());
   loader_->loadAsynchronously(request, this);

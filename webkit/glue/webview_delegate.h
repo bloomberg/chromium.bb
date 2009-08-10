@@ -29,12 +29,12 @@
 #include <vector>
 
 #include "base/gfx/native_widget_types.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebNavigationPolicy.h"
 #include "webkit/api/public/WebNavigationType.h"
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/api/public/WebWidgetClient.h"
 #include "webkit/glue/context_menu.h"
-#include "webkit/glue/webframe.h"
 
 namespace webkit_glue {
 class WebMediaPlayerDelegate;
@@ -65,7 +65,6 @@ struct WebURLError;
 class FilePath;
 class SkBitmap;
 class WebDevToolsAgentDelegate;
-class WebFrame;
 class WebMediaPlayerDelegate;
 class WebPluginDelegate;
 class WebView;
@@ -233,27 +232,27 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // implementation binds native objects to the window via the webframe instead.
   // TODO(pamg): If we do implement WebScriptObject, we may wish to switch to
   // using the original version of this function.
-  virtual void WindowObjectCleared(WebFrame* webframe) {
+  virtual void WindowObjectCleared(WebKit::WebFrame* webframe) {
   }
 
   // Notifies that the documentElement for the document in a webframe has been
   // created. This is called before anything else is parsed or executed for the
   // document.
-  virtual void DocumentElementAvailable(WebFrame* webframe) {
+  virtual void DocumentElementAvailable(WebKit::WebFrame* webframe) {
   }
 
   // Notifies that a new script context has been created for this frame.
   // This is similar to WindowObjectCleared but only called once per frame
   // context.
-  virtual void DidCreateScriptContextForFrame(WebFrame* webframe) {
+  virtual void DidCreateScriptContextForFrame(WebKit::WebFrame* webframe) {
   }
 
   // Notifies that this frame's script context has been destroyed.
-  virtual void DidDestroyScriptContextForFrame(WebFrame* webframe) {
+  virtual void DidDestroyScriptContextForFrame(WebKit::WebFrame* webframe) {
   }
 
   // Notifies that a garbage-collected context was created - content scripts.
-  virtual void DidCreateIsolatedScriptContext(WebFrame* webframe) {
+  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* webframe) {
   }
 
   // PolicyDelegate ----------------------------------------------------------
@@ -270,7 +269,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // is_redirect is true if this is a redirect rather than user action.
   virtual WebKit::WebNavigationPolicy PolicyForNavigationAction(
       WebView* webview,
-      WebFrame* frame,
+      WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
       WebKit::WebNavigationPolicy default_policy,
@@ -282,7 +281,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
 
   // A datasource has been created for a new navigation.  The given datasource
   // will become the provisional datasource for the frame.
-  virtual void DidCreateDataSource(WebFrame* frame,
+  virtual void DidCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* ds) {
   }
 
@@ -294,7 +293,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // an empty invalid GURL in other cases.
   virtual void DidStartProvisionalLoadForFrame(
       WebView* webview,
-      WebFrame* frame,
+      WebKit::WebFrame* frame,
       NavigationGesture gesture) {
   }
 
@@ -308,7 +307,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // same as the provisional data source's current URL), and the next-to-last
   // element will be the referring URL.
   virtual void DidReceiveProvisionalLoadServerRedirect(WebView* webview,
-                                                       WebFrame* frame) {
+                                                       WebKit::WebFrame* frame) {
   }
 
   //  @method webView:didFailProvisionalLoadWithError:forFrame:
@@ -322,17 +321,17 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   //  This notification is only received for errors like network errors.
   virtual void DidFailProvisionalLoadWithError(WebView* webview,
                                                const WebKit::WebURLError& error,
-                                               WebFrame* frame) {
+                                               WebKit::WebFrame* frame) {
   }
 
   // Notifies the delegate to commit data for the given frame.  The delegate
   // may optionally convert the data before calling CommitDocumentData or
   // suppress a call to CommitDocumentData.  For example, if CommitDocumentData
   // is never called, then an empty document will be created.
-  virtual void DidReceiveDocumentData(WebFrame* frame,
+  virtual void DidReceiveDocumentData(WebKit::WebFrame* frame,
                                       const char* data,
                                       size_t data_len) {
-    frame->CommitDocumentData(data, data_len);
+    frame->commitDocumentData(data, data_len);
   }
 
   // Notifies the delegate that the load has changed from provisional to
@@ -348,7 +347,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // The "is_new_navigation" flag will be true when a new session history entry
   // was created for the load.  The frame's GetHistoryState method can be used
   // to get the corresponding session history state.
-  virtual void DidCommitLoadForFrame(WebView* webview, WebFrame* frame,
+  virtual void DidCommitLoadForFrame(WebView* webview, WebKit::WebFrame* frame,
                                      bool is_new_navigation) {
   }
 
@@ -362,7 +361,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   //  - (void)webView:(WebView *)sender didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame;
   virtual void DidReceiveTitle(WebView* webview,
                                const std::wstring& title,
-                               WebFrame* frame) {
+                               WebKit::WebFrame* frame) {
   }
 
   //
@@ -375,7 +374,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   //  Plug-In content and JavaScript-requested loads may occur after this method is called.
   //  - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame;
   virtual void DidFinishLoadForFrame(WebView* webview,
-                                     WebFrame* frame) {
+                                     WebKit::WebFrame* frame) {
   }
 
   //
@@ -388,14 +387,14 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   //  - (void)webView:(WebView *)sender didFailLoadWithError:(NSError *)error forFrame:(WebFrame *)frame;
   virtual void DidFailLoadWithError(WebView* webview,
                                     const WebKit::WebURLError& error,
-                                    WebFrame* forFrame) {
+                                    WebKit::WebFrame* forFrame) {
   }
 
   // Notifies the delegate of a DOMContentLoaded event.
   // This is called when the html resource has been loaded, but
   // not necessarily all subresources (images, stylesheets). So, this is called
   // before DidFinishLoadForFrame.
-  virtual void DidFinishDocumentLoadForFrame(WebView* webview, WebFrame* frame) {
+  virtual void DidFinishDocumentLoadForFrame(WebView* webview, WebKit::WebFrame* frame) {
   }
 
   // This method is called when we load a resource from an in-memory cache.
@@ -405,23 +404,23 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
       WebView* webview,
       const WebKit::WebURLRequest& request,
       const WebKit::WebURLResponse& response,
-      WebFrame* frame) {
+      WebKit::WebFrame* frame) {
     return false;
   }
 
   // This is called after javascript onload handlers have been fired.
-  virtual void DidHandleOnloadEventsForFrame(WebView* webview, WebFrame* frame) {
+  virtual void DidHandleOnloadEventsForFrame(WebView* webview, WebKit::WebFrame* frame) {
   }
 
   // This method is called when anchors within a page have been clicked.
   // It is very similar to DidCommitLoadForFrame.
   virtual void DidChangeLocationWithinPageForFrame(WebView* webview,
-                                                   WebFrame* frame,
+                                                   WebKit::WebFrame* frame,
                                                    bool is_new_navigation) {
   }
 
   // This is called when the favicon for a frame has been received.
-  virtual void DidReceiveIconForFrame(WebView* webview, WebFrame* frame) {
+  virtual void DidReceiveIconForFrame(WebView* webview, WebKit::WebFrame* frame) {
   }
 
   // Notifies the delegate that a frame will start a client-side redirect. When
@@ -437,7 +436,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // client-side redirect is pending. Watch out: WebKit seems to call us twice
   // for client redirects, resulting in two calls of this function.
   virtual void WillPerformClientRedirect(WebView* webview,
-                                         WebFrame* frame,
+                                         WebKit::WebFrame* frame,
                                          const GURL& src_url,
                                          const GURL& dest_url,
                                          unsigned int delay_seconds,
@@ -455,7 +454,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   //
   // See the implementation of FrameLoader::clientRedirectCancelledOrFinished.
   virtual void DidCancelClientRedirect(WebView* webview,
-                                       WebFrame* frame) {
+                                       WebKit::WebFrame* frame) {
   }
 
   // Notifies the delegate that the load about to be committed for the specified
@@ -463,12 +462,12 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // The information/notification obtained from this method is relevant until
   // the next provisional load is started, at which point it becomes obsolete.
   virtual void DidCompleteClientRedirect(WebView* webview,
-                                         WebFrame* frame,
+                                         WebKit::WebFrame* frame,
                                          const GURL& source) {
   }
 
   // Notifies the delegate that a form is about to be submitted.
-  virtual void WillSubmitForm(WebView* webview, WebFrame* frame,
+  virtual void WillSubmitForm(WebView* webview, WebKit::WebFrame* frame,
                               const WebKit::WebForm& form) {
   }
 
@@ -480,7 +479,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   //  @discussion This method is called right before WebKit is done with the frame
   //  and the objects that it contains.
   //  - (void)webView:(WebView *)sender willCloseFrame:(WebFrame *)frame;
-  virtual void WillCloseFrame(WebView* webview, WebFrame* frame) {
+  virtual void WillCloseFrame(WebView* webview, WebKit::WebFrame* frame) {
   }
 
   // ResourceLoadDelegate ----------------------------------------------------
@@ -489,7 +488,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // Resource load callbacks will use the identifier throughout the life of the
   // request.
   virtual void AssignIdentifierToRequest(
-      WebFrame* webframe,
+      WebKit::WebFrame* webframe,
       uint32 identifier,
       const WebKit::WebURLRequest& request) {
   }
@@ -500,23 +499,23 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // made.  If this request is the result of a redirect, then redirect_response
   // will be non-null and contain the response that triggered the redirect.
   virtual void WillSendRequest(
-      WebFrame* webframe,
+      WebKit::WebFrame* webframe,
       uint32 identifier,
       WebKit::WebURLRequest* request,
       const WebKit::WebURLResponse& redirect_response) {
   }
 
-  virtual void DidReceiveResponse(WebFrame* webframe,
+  virtual void DidReceiveResponse(WebKit::WebFrame* webframe,
                                   uint32 identifier,
                                   const WebKit::WebURLResponse& response) {
   }
 
   // Notifies the delegate that a subresource load has succeeded.
-  virtual void DidFinishLoading(WebFrame* webframe, uint32 identifier) {
+  virtual void DidFinishLoading(WebKit::WebFrame* webframe, uint32 identifier) {
   }
 
   // Notifies the delegate that a subresource load has failed, and why.
-  virtual void DidFailLoadingWithError(WebFrame* webframe,
+  virtual void DidFailLoadingWithError(WebKit::WebFrame* webframe,
                                        uint32 identifier,
                                        const WebKit::WebURLError& error) {
   }
@@ -564,7 +563,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // should visually indicate that this panel comes from JavaScript and some
   // information about the originating frame (at least the domain). The panel
   // should have a single OK button.
-  virtual void RunJavaScriptAlert(WebFrame* webframe,
+  virtual void RunJavaScriptAlert(WebKit::WebFrame* webframe,
                                   const std::wstring& message) {
   }
 
@@ -572,7 +571,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // Clients should visually indicate that this panel comes
   // from JavaScript. The panel should have two buttons, e.g. "OK" and
   // "Cancel". Returns true if the user hit OK, or false if the user hit Cancel.
-  virtual bool RunJavaScriptConfirm(WebFrame* webframe,
+  virtual bool RunJavaScriptConfirm(WebKit::WebFrame* webframe,
                                     const std::wstring& message) {
     return false;
   }
@@ -584,7 +583,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // panel when it is shown. If the user hit OK, returns true and fills result
   // with the text in the box.  The value of result is undefined if the user
   // hit Cancel.
-  virtual bool RunJavaScriptPrompt(WebFrame* webframe,
+  virtual bool RunJavaScriptPrompt(WebKit::WebFrame* webframe,
                                    const std::wstring& message,
                                    const std::wstring& default_value,
                                    std::wstring* result) {
@@ -600,7 +599,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   // that the navigation should continue, and Cancel means that the navigation
   // should be cancelled, leaving the user on the current page.  Returns true
   // if the user hit OK, or false if the user hit Cancel.
-  virtual bool RunBeforeUnloadConfirm(WebFrame* webframe,
+  virtual bool RunBeforeUnloadConfirm(WebKit::WebFrame* webframe,
                                       const std::wstring& message) {
     return true;  // OK, continue to navigate away
   }
@@ -840,7 +839,7 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
 
   // Asks the user to print the page or a specific frame. Called in response to
   // a window.print() call.
-  virtual void ScriptedPrint(WebFrame* frame) { }
+  virtual void ScriptedPrint(WebKit::WebFrame* frame) { }
 
   // Called when an item was added to the history
   virtual void DidAddHistoryItem() { }

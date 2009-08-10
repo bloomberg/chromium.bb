@@ -36,6 +36,7 @@
 #include "webkit/glue/webworker_impl.h"
 
 using WebKit::WebCursorInfo;
+using WebKit::WebFrame;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebRect;

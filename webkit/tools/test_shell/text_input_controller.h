@@ -14,8 +14,10 @@
 #include "webkit/glue/cpp_bound_class.h"
 
 class TestShell;
-class WebView;
-class WebTextInput;
+
+namespace WebKit {
+class WebFrame;
+}
 
 class TextInputController : public CppBoundClass {
  public:
@@ -37,10 +39,8 @@ class TextInputController : public CppBoundClass {
   void makeAttributedString(const CppArgumentList& args, CppVariant* result);
 
  private:
-  static WebTextInput* GetTextInput();
-
-  // Returns the test shell's webview.
-  static WebView* webview();
+  // Returns the test shell's main WebFrame.
+  static WebKit::WebFrame* GetMainFrame();
 
   // Non-owning pointer.  The LayoutTestController is owned by the host.
   static TestShell* shell_;

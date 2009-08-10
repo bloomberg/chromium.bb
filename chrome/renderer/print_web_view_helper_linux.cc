@@ -7,8 +7,9 @@
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "skia/ext/vector_canvas.h"
-#include "webkit/glue/webframe.h"
+#include "webkit/api/public/WebFrame.h"
 
+using WebKit::WebFrame;
 
 void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   // If still not finished with earlier print request simply ignore.
@@ -39,7 +40,7 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
   // Calculate the estimated page count.
   PrepareFrameAndViewForPrint prep_frame_view(default_settings,
                                               frame,
-                                              frame->GetView());
+                                              frame->view());
   int expected_pages_count = prep_frame_view.GetExpectedPageCount();
   DCHECK(expected_pages_count);
 
@@ -74,7 +75,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   // each page in printing. We might also need to create a metafile class
   // on Linux.
   skia::VectorCanvas canvas(size_x, size_y);
-  float webkit_shrink = frame->PrintPage(params.page_number, &canvas);
+  float webkit_shrink = frame->printPage(params.page_number, &canvas);
   if (shrink <= 0) {
     NOTREACHED() << "Printing page " << params.page_number << " failed.";
   } else {

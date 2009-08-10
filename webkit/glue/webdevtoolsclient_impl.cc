@@ -25,6 +25,7 @@
 
 #include "base/string_util.h"
 #include "base/values.h"
+#include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent.h"
@@ -34,10 +35,10 @@
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsclient_delegate.h"
 #include "webkit/glue/webdevtoolsclient_impl.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webview_impl.h"
 
 using namespace WebCore;
+using WebKit::WebFrame;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 
@@ -229,7 +230,7 @@ void WebDevToolsClientImpl::AddResourceSourceToFrame(int resource_id,
 }
 
 void WebDevToolsClientImpl::ExecuteScript(const std::string& expr) {
-  web_view_impl_->GetMainFrame()->ExecuteScript(
+  web_view_impl_->GetMainFrame()->executeScript(
       WebScriptSource(WebString::fromUTF8(expr)));
 }
 

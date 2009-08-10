@@ -703,7 +703,7 @@ void EditorClientImpl::textFieldDidEndEditing(WebCore::Element* element) {
 
   WebFrameImpl* webframe =
       WebFrameImpl::FromFrame(input_element->document()->frame());
-  if (webframe->GetView() && !webframe->GetView()->GetDelegate())
+  if (webframe->GetWebViewImpl() && !webframe->GetWebViewImpl()->GetDelegate())
     return;  // The page is getting closed, don't fill the password.
 
   webkit_glue::PasswordAutocompleteListener* listener =

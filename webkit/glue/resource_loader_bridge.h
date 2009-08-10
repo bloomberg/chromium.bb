@@ -28,8 +28,6 @@
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/resource_type.h"
 
-class WebFrame;
-
 namespace net {
 class HttpResponseHeaders;
 }

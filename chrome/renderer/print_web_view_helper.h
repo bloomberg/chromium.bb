@@ -34,7 +34,7 @@ struct ViewMsg_PrintPages_Params;
 class PrepareFrameAndViewForPrint {
  public:
   PrepareFrameAndViewForPrint(const ViewMsg_Print_Params& print_params,
-                              WebFrame* frame,
+                              WebKit::WebFrame* frame,
                               WebView* web_view);
   ~PrepareFrameAndViewForPrint();
 
@@ -47,7 +47,7 @@ class PrepareFrameAndViewForPrint {
   }
 
  private:
-  WebFrame* frame_;
+  WebKit::WebFrame* frame_;
   WebView* web_view_;
   gfx::Size print_canvas_size_;
   gfx::Size prev_view_size_;
@@ -65,7 +65,7 @@ class PrintWebViewHelper : public WebViewDelegate {
   explicit PrintWebViewHelper(RenderView* render_view);
   virtual ~PrintWebViewHelper();
 
-  void Print(WebFrame* frame, bool script_initiated);
+  void Print(WebKit::WebFrame* frame, bool script_initiated);
 
   // Is there a background print in progress?
   bool IsPrinting() {
@@ -77,16 +77,17 @@ class PrintWebViewHelper : public WebViewDelegate {
 
  protected:
   bool CopyAndPrint(const ViewMsg_PrintPages_Params& params,
-                    WebFrame* web_frame);
+                    WebKit::WebFrame* web_frame);
 
   // Prints the page listed in |params|.
   void PrintPage(const ViewMsg_PrintPage_Params& params,
                  const gfx::Size& canvas_size,
-                 WebFrame* frame);
+                 WebKit::WebFrame* frame);
 
   // Prints all the pages listed in |params|.
   // It will implicitly revert the document to display CSS media type.
-  void PrintPages(const ViewMsg_PrintPages_Params& params, WebFrame* frame);
+  void PrintPages(const ViewMsg_PrintPages_Params& params,
+                  WebKit::WebFrame* frame);
 
   // IPC::Message::Sender
   bool Send(IPC::Message* msg);

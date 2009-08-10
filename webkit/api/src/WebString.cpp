@@ -31,6 +31,9 @@
 #include "config.h"
 #include "WebString.h"
 
+#include "WebCString.h"
+
+#include "CString.h"
 #include "PlatformString.h"
 #include "AtomicString.h"
 
@@ -66,6 +69,11 @@ size_t WebString::length() const
 const WebUChar* WebString::data() const
 {
     return m_private ? const_cast<WebStringPrivate*>(m_private)->characters() : 0;
+}
+
+WebCString WebString::utf8() const
+{
+    return WebCore::String(m_private).utf8();
 }
 
 WebString WebString::fromUTF8(const char* data, size_t length)

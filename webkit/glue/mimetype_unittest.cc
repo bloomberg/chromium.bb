@@ -15,6 +15,8 @@
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
+using WebKit::WebFrame;
+
 namespace {
 
 class MimeTypeTests : public TestShellTest {

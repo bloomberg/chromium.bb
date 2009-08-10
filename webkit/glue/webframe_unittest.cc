@@ -5,10 +5,14 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/api/public/WebData.h"
+#include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
-#include "webkit/glue/webframe.h"
 #include "webkit/glue/webview.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
+
+using WebKit::WebFrame;
+using WebKit::WebString;
 
 class WebFrameTest : public TestShellTest {
  public:
@@ -21,38 +25,38 @@ TEST_F(WebFrameTest, GetContentAsPlainText) {
   // Generate a simple test case.
   const char simple_source[] = "<div>Foo bar</div><div></div>baz";
   GURL test_url("http://foo/");
-  frame->LoadHTMLString(simple_source, test_url);
+  frame->loadHTMLString(simple_source, test_url);
   test_shell_->WaitTestFinished();
 
   // Make sure it comes out OK.
-  const std::wstring expected(ASCIIToWide("Foo bar\nbaz"));
-  std::wstring text;
-  frame->GetContentAsPlainText(std::numeric_limits<int>::max(), &text);
+  const string16 expected(ASCIIToUTF16("Foo bar\nbaz"));
+  string16 text = frame->contentAsText(std::numeric_limits<size_t>::max());
   EXPECT_EQ(expected, text);
 
   // Try reading the same one with clipping of the text.
   const int len = 5;
-  frame->GetContentAsPlainText(len, &text);
+  text = frame->contentAsText(len);
   EXPECT_EQ(expected.substr(0, len), text);
 
   // Now do a new test with a subframe.
   const char outer_frame_source[] = "Hello<iframe></iframe> world";
-  frame->LoadHTMLString(outer_frame_source, test_url);
+  frame->loadHTMLString(outer_frame_source, test_url);
   test_shell_->WaitTestFinished();
 
   // Load something into the subframe.
-  WebFrame* subframe = frame->GetChildFrame(L"/html/body/iframe");
+  WebFrame* subframe = frame->findChildByExpression(
+      WebString::fromUTF8("/html/body/iframe"));
   ASSERT_TRUE(subframe);
-  subframe->LoadHTMLString("sub<p>text", test_url);
+  subframe->loadHTMLString("sub<p>text", test_url);
   test_shell_->WaitTestFinished();
 
-  frame->GetContentAsPlainText(std::numeric_limits<int>::max(), &text);
-  EXPECT_EQ("Hello world\n\nsub\ntext", WideToUTF8(text));
+  text = frame->contentAsText(std::numeric_limits<size_t>::max());
+  EXPECT_EQ("Hello world\n\nsub\ntext", UTF16ToUTF8(text));
 
   // Get the frame text where the subframe separator falls on the boundary of
   // what we'll take. There used to be a crash in this case.
-  frame->GetContentAsPlainText(12, &text);
-  EXPECT_EQ("Hello world", WideToUTF8(text));
+  text = frame->contentAsText(12);
+  EXPECT_EQ("Hello world", UTF16ToUTF8(text));
 }
 
 TEST_F(WebFrameTest, GetFullHtmlOfPage) {
@@ -62,33 +66,29 @@ TEST_F(WebFrameTest, GetFullHtmlOfPage) {
   // Generate a simple test case.
   const char simple_source[] = "<p>Hello</p><p>World</p>";
   GURL test_url("http://hello/");
-  frame->LoadHTMLString(simple_source, test_url);
+  frame->loadHTMLString(simple_source, test_url);
   test_shell_->WaitTestFinished();
 
-  std::wstring text;
-  frame->GetContentAsPlainText(std::numeric_limits<int>::max(), &text);
-  EXPECT_EQ("Hello\n\nWorld", WideToUTF8(text));
+  string16 text = frame->contentAsText(std::numeric_limits<size_t>::max());
+  EXPECT_EQ("Hello\n\nWorld", UTF16ToUTF8(text));
 
-  const std::string html = frame->GetFullPageHtml();
+  const std::string html = frame->contentAsMarkup().utf8();
 
   // Load again with the output html.
-  frame->LoadHTMLString(html, test_url);
+  frame->loadHTMLString(html, test_url);
   test_shell_->WaitTestFinished();
 
-  EXPECT_EQ(html, frame->GetFullPageHtml());
+  EXPECT_EQ(html, UTF16ToUTF8(frame->contentAsMarkup()));
 
-  text = L"";
-  frame->GetContentAsPlainText(std::numeric_limits<int>::max(), &text);
-  EXPECT_EQ("Hello\n\nWorld", WideToUTF8(text));
+  text = frame->contentAsText(std::numeric_limits<size_t>::max());
+  EXPECT_EQ("Hello\n\nWorld", UTF16ToUTF8(text));
 
   // Test selection check
-  EXPECT_FALSE(frame->HasSelection());
-  frame->SelectAll();
-  EXPECT_TRUE(frame->HasSelection());
-  frame->ClearSelection();
-  EXPECT_FALSE(frame->HasSelection());
-  std::string selection_html = frame->GetSelection(true);
-  EXPECT_TRUE(selection_html.empty());
-
+  EXPECT_FALSE(frame->hasSelection());
+  frame->selectAll();
+  EXPECT_TRUE(frame->hasSelection());
+  frame->clearSelection();
+  EXPECT_FALSE(frame->hasSelection());
+  WebString selection_html = frame->selectionAsMarkup();
+  EXPECT_TRUE(selection_html.isEmpty());
 }
-
