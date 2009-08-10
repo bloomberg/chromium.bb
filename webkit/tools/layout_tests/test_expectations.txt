@@ -2772,7 +2772,7 @@ BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 // Test failures from WebKit merge r46194:46229
 BUG17497 WIN RELEASE : LayoutTests/media/video-play-pause-exception.html = PASS CRASH
 BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
-BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = CRASH
+BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = FAIL
 
 // not sure why this started failing
 BUG17509 LINUX : LayoutTests/fast/loader/local-CSS-from-local.html = FAIL
