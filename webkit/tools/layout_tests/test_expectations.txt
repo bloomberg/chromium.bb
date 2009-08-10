@@ -873,9 +873,6 @@ BUG3244 LINUX WIN : LayoutTests/fast/backgrounds/svg-as-background-6.html = FAIL
 // The failures listed below have never passed in Chromium and need to be
 // investigated, categorized, and (one hopes) fixed.
 
-// The following tests fail because SVG animation is not yet implemented
-BUG992321 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/animate-elem-78-t.svg = FAIL
-
 // These test fail full text diff (but not simplified diff) most likely due
 // to differing implementations of SVG fonts. They may or may not represent
 // real bugs which need fixin'
