@@ -33,7 +33,7 @@ VectorPlatformDevice::VectorPlatformDevice(const SkBitmap& bitmap)
   // for testing when we run chromium without sanboxing.
   surface_ = cairo_pdf_surface_create("chrome_printing_test.pdf",
                                       width(), height());
-  SkASSERT(surface);
+  SkASSERT(surface_);
   context_ = cairo_create(surface_);
   SkASSERT(context_);
 
@@ -41,7 +41,7 @@ VectorPlatformDevice::VectorPlatformDevice(const SkBitmap& bitmap)
 }
 
 VectorPlatformDevice::~VectorPlatformDevice() {
-  SkASSERT(surface);
+  SkASSERT(surface_);
   SkASSERT(context_);
 
   cairo_destroy(context_);
@@ -72,7 +72,6 @@ void VectorPlatformDevice::drawDevice(const SkDraw& draw,
                                       int y,
                                       const SkPaint& paint) {
   SkASSERT(device);
-  SkASSERT(device->accessBitmap(false));
 
   // TODO(myhuang): We may also have to consider http://b/1183870 .
   drawSprite(draw, device->accessBitmap(false), x, y, paint);
@@ -248,7 +247,7 @@ void VectorPlatformDevice::drawPosText(const SkDraw& draw,
                                        const SkPaint& paint) {
   SkASSERT(text);
   SkASSERT(pos);
-  SkASSERT(paint.gettextEncoding() == SkPaint::kGlyphID_TextEncoding);
+  SkASSERT(paint.getTextEncoding() == SkPaint::kGlyphID_TextEncoding);
   SkASSERT(scalarsPerPos == 2);  // Each pos contains x and y.
 
   if (!len)

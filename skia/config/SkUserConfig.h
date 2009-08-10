@@ -203,20 +203,6 @@ typedef unsigned uint32_t;
 // assertion.
 #define SK_CRASH() SkDebugf_FileLine(__FILE__, __LINE__, true, "SK_CRASH")
 
-// TODO(brettw) bug 6373: Re-enable Skia assertions. This is blocked on fixing
-// some of our transparency handling which generates purposely-invalid colors,
-// in turn causing assertions.
-//#ifndef NDEBUG
-//  #define SK_DEBUG
-//  #undef SK_RELEASE
-  #undef SK_SUPPORT_UNITTEST  // This is only necessary in debug mode since
-                              // we've disabled assertions. When we re-enable
-                              // them, this line can be removed.
-//#else
-  #define SK_RELEASE
-  #undef SK_DEBUG
-//#endif
-
 // For now (and to avoid rebaselining 1700+ tests), we'll use the old version
 // of SkAlpha255To256.
 #define SK_USE_OLD_255_TO_256

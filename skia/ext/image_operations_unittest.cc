@@ -204,10 +204,10 @@ TEST(ImageOperations, CreateMaskedBitmap) {
   alpha.allocPixels();
   for (int y = 0, i = 0; y < src_h; y++) {
     for (int x = 0; x < src_w; x++) {
-      *alpha.getAddr32(x, y) = SkColorSetARGB(i + 128 % 255,
-                                              i + 128 % 255,
-                                              i + 64 % 255,
-                                              i + 0 % 255);
+      *alpha.getAddr32(x, y) = SkColorSetARGB((i + 128) % 255,
+                                              (i + 128) % 255,
+                                              (i + 64) % 255,
+                                              (i + 0) % 255);
       i++;
     }
   }
