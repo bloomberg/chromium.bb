@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/encoding_menu_controller.h"
+#include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -468,6 +469,22 @@ willPositionSheet:(NSWindow*)sheet
 // disabled in the UI in validateUserInterfaceItem:.
 - (void)commandDispatch:(id)sender {
   NSInteger tag = [sender tag];
+  switch (tag) {
+    case IDC_FORWARD:
+    case IDC_BACK:
+      [self locationBar]->Revert();
+      break;
+    case IDC_RELOAD:
+      if ([sender isKindOfClass:[NSButton class]]) {
+        // We revert the bar when the reload button is pressed, but don't when
+        // Command+r is pressed (Issue 15464). Unlike the event handler function
+        // for Windows (ToolbarView::ButtonPressed()), this function handles
+        // both reload button press event and Command+r press event. Thus the
+        // 'isKindofClass' check is necessary.
+        [self locationBar]->Revert();
+      }
+      break;
+  }
   browser_->ExecuteCommand(tag);
 }
 
