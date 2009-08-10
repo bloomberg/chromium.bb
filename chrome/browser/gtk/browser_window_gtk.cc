@@ -905,6 +905,7 @@ void BrowserWindowGtk::UserChangedTheme() {
   SetBackgroundColor();
   gdk_window_invalidate_rect(GTK_WIDGET(window_)->window,
       &GTK_WIDGET(window_)->allocation, TRUE);
+  UpdateWindowShape(bounds_.width(), bounds_.height());
 }
 
 int BrowserWindowGtk::GetExtraRenderViewHeight() const {
