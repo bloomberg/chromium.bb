@@ -1002,10 +1002,8 @@ BUG10305 : LayoutTests/svg/custom/use-instanceRoot-event-listeners.xhtml = FAIL
 
 BUG10306 LINUX : LayoutTests/svg/carto.net/combobox.svg = FAIL
 
-// These have been failing for as long as we've had SVG support and were
-// incorrectly removed during a merge.
-BUG10307 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = FAIL
-BUG10307 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-group-03-t.svg = FAIL
+// There are a ugly room between black strokes and white painting of characters.
+BUG10307 WIN : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = FAIL
 
 BUG10308 LINUX : LayoutTests/svg/dynamic-updates/SVGEllipseElement-svgdom-cx-prop.html = CRASH PASS
 
