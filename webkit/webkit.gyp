@@ -1557,6 +1557,7 @@
             '../third_party/WebKit/WebCore/inspector/front-end/MetricsSidebarPane.js',
             '../third_party/WebKit/WebCore/inspector/front-end/Object.js',
             '../third_party/WebKit/WebCore/inspector/front-end/ObjectPropertiesSection.js',
+            '../third_party/WebKit/WebCore/inspector/front-end/ObjectProxy.js',
             '../third_party/WebKit/WebCore/inspector/front-end/Panel.js',
             '../third_party/WebKit/WebCore/inspector/front-end/PanelEnablerView.js',
             '../third_party/WebKit/WebCore/inspector/front-end/Placard.js',

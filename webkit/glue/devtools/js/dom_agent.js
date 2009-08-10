@@ -333,12 +333,23 @@ devtools.DomWindow = function(domAgent) {
   this.document = new devtools.DomDocument(domAgent, this);
 };
 
+
 /**
  * Represents DOM Node class.
  */
 devtools.DomWindow.prototype.__defineGetter__('Node', function() {
   return devtools.DomNode;
 });
+
+
+/**
+ * Represents DOM NodeList class.
+ * @constructor
+ */
+devtools.DomWindow.prototype.__defineGetter__('NodeList', function() {
+  return function() {};
+});
+
 
 /**
  * Represents DOM Element class.
@@ -715,54 +726,6 @@ devtools.DomAgent.prototype.performSearchCallback_ = function(callback,
  */
 devtools.DomAgent.prototype.getSearchResultNode = function(index) {
   return this.idToDomNode_[this.searchResults_[index]];
-};
-
-
-/**
- * Returns all properties of the given node.
- * @param {number} nodeId Node to get properties for.
- * @param {Array.<string>} path Path to the object.
- * @param {number} protoDepth Depth to the exact proto level.
- * @param {function(string):undefined} callback Function to call with the
- *     result.
- */
-devtools.DomAgent.prototype.getNodePropertiesAsync = function(nodeId,
-    path, protoDepth, callback) {
-  var callbackId = this.utilityFunctionCallbackWrapper_(callback);
-  RemoteToolsAgent.ExecuteUtilityFunction(callbackId,
-      'getProperties',
-      JSON.stringify([nodeId, path, protoDepth]));
-};
-
-
-/**
- * Returns prototype chain for a given node.
- * @param {number} nodeId Node to get prototypes for.
- * @param {Function} callback.
- */
-devtools.DomAgent.prototype.getNodePrototypesAsync = function(nodeId,
-    callback) {
-  var callbackId = this.utilityFunctionCallbackWrapper_(callback);
-  RemoteToolsAgent.ExecuteUtilityFunction(callbackId,
-      'getPrototypes', JSON.stringify([nodeId]));
-};
-
-
-/**
- * Dumps exception if something went wrong in ExecuteUtilityFunction.
- * @param {Function} callback Callback to wrap.
- * @return {number} Callback id.
- */
-devtools.DomAgent.prototype.utilityFunctionCallbackWrapper_ =
-    function(callback) {
-  var mycallback = function(result, exception) {
-    if (exception && exception.length) {
-      debugPrint('Exception in ExecuteUtilityFunction:' + exception);
-      return;
-    }
-    callback(result);
-  };
-  return devtools.Callback.wrap(mycallback);
 };
 
 

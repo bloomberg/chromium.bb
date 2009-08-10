@@ -339,100 +339,6 @@ WebInspector.ElementsPanel.prototype.jumpToPreviousSearchResult = function() {
 
 
 /**
- * @override
- */
-WebInspector.PropertiesSidebarPane.prototype.update = function(object) {
-  var body = this.bodyElement;
-  body.removeChildren();
-
-  this.sections = [];
-
-  if (!object) {
-    return;
-  }
-
-
-  var self = this;
-  devtools.tools.getDomAgent().getNodePrototypesAsync(object.id_,
-      function(json) {
-        // Get array of prototype user-friendly names.
-        var prototypes = JSON.parse(json);
-        for (var i = 0; i < prototypes.length; ++i) {
-          var prototype = {};
-          prototype.id_ = object.id_;
-          prototype.protoDepth_ = i;
-          var section = new WebInspector.SidebarObjectPropertiesSection(
-              prototype,
-              prototypes[i]);
-          self.sections.push(section);
-          body.appendChild(section.element);
-        }
-      });
-};
-
-
-/**
- * Our implementation of ObjectPropertiesSection for Elements tab.
- * @constructor
- */
-WebInspector.SidebarObjectPropertiesSection = function(object, title) {
-  WebInspector.ObjectPropertiesSection.call(this, object, title,
-      null /* subtitle */, null /* emptyPlaceholder */,
-      null /* ignoreHasOwnProperty */, null /* extraProperties */,
-      WebInspector.SidebarObjectPropertyTreeElement /* treeElementConstructor */
-      );
-};
-goog.inherits(WebInspector.SidebarObjectPropertiesSection,
-    WebInspector.ObjectPropertiesSection);
-
-
-/**
- * @override
- */
-WebInspector.SidebarObjectPropertiesSection.prototype.onpopulate = function() {
-  var nodeId = this.object.id_;
-  var protoDepth = this.object.protoDepth_;
-  var path = [];
-  devtools.tools.getDomAgent().getNodePropertiesAsync(nodeId, path, protoDepth,
-      goog.partial(WebInspector.didGetNodePropertiesAsync_,
-          this.propertiesTreeOutline,
-          this.treeElementConstructor,
-          nodeId,
-          path));
-};
-
-
-/**
- * Our implementation of ObjectPropertyTreeElement for Elements tab.
- * @constructor
- */
-WebInspector.SidebarObjectPropertyTreeElement = function(parentObject,
-    propertyName) {
-  WebInspector.ObjectPropertyTreeElement.call(this, parentObject,
-      propertyName);
-};
-goog.inherits(WebInspector.SidebarObjectPropertyTreeElement,
-    WebInspector.ObjectPropertyTreeElement);
-
-
-/**
- * @override
- */
-WebInspector.SidebarObjectPropertyTreeElement.prototype.onpopulate =
-    function() {
-  var nodeId = this.parentObject.devtools$$nodeId_;
-  var path = this.parentObject.devtools$$path_.slice(0);
-  path.push(this.propertyName);
-  devtools.tools.getDomAgent().getNodePropertiesAsync(nodeId, path, -1,
-      goog.partial(
-          WebInspector.didGetNodePropertiesAsync_,
-          this,
-          this.treeOutline.section.treeElementConstructor,
-          nodeId, path));
-};
-
-
-/**
  * This override is necessary for adding script source asynchronously.
  * @override
  */
@@ -659,9 +565,8 @@ WebInspector.ScopeChainPropertiesSection.prototype.didResolveChildren_ =
  * using the debugger agent.
  * @constructor
  */
-WebInspector.DebuggedObjectTreeElement = function(parentObject,
-    propertyName) {
-  WebInspector.ScopeVariableTreeElement.call(this, parentObject, propertyName);
+WebInspector.DebuggedObjectTreeElement = function(property) {
+  WebInspector.ScopeVariableTreeElement.call(this, property);
 }
 WebInspector.DebuggedObjectTreeElement.inherits(
     WebInspector.ScopeVariableTreeElement);
@@ -672,7 +577,7 @@ WebInspector.DebuggedObjectTreeElement.inherits(
  */
 WebInspector.DebuggedObjectTreeElement.prototype.onpopulate =
     function() {
-  var obj = this.parentObject[this.propertyName];
+  var obj = this.property.childObject;
   devtools.tools.getDebuggerAgent().resolveChildren(obj,
       goog.bind(this.didResolveChildren_, this), false /* no intrinsic */ );
 };
@@ -708,8 +613,13 @@ WebInspector.DebuggedObjectTreeElement.addResolvedChildren = function(
   }
   names.sort();
   for (var i = 0; i < names.length; i++) {
-    treeElementContainer.appendChild(
-        new treeElementConstructor(object, names[i]));
+    var property = {};
+    property.name = names[i];
+    property.childObject = object[property.name];
+    property.type = typeof property.childObject;
+    property.hasChildren = property.type == 'object' && Object.hasProperties(property.childObject);
+    property.textContent = Object.describe(property.childObject, true);
+    treeElementContainer.appendChild(new treeElementConstructor(property));
   }
 };
 
@@ -913,11 +823,9 @@ WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
       }
     };
   } else {
-    var wrapper = {};
-    wrapper.id_ = object.___devtools_id;
-    wrapper.protoDepth_ = -1;
-    var title = object.___devtools_class_name;
-    section = new WebInspector.SidebarObjectPropertiesSection(wrapper, title);
+    section = new WebInspector.ObjectPropertiesSection(
+        new WebInspector.ObjectProxy(object.___devtools_id),
+        object.___devtools_class_name);
   }
   elem.appendChild(section.element);
 };

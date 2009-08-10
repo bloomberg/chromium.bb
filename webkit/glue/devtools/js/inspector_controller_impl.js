@@ -12,6 +12,19 @@ goog.provide('devtools.InspectorControllerImpl');
 devtools.InspectorControllerImpl = function() {
   devtools.InspectorController.call(this);
   this.frame_element_id_ = 1;
+
+  this.installInjectedScriptDelegate_('getStyles', true);
+  this.installInjectedScriptDelegate_('getComputedStyle', true);
+  this.installInjectedScriptDelegate_('getInlineStyle', true);
+  this.installInjectedScriptDelegate_('applyStyleText');
+  this.installInjectedScriptDelegate_('setStyleText');
+  this.installInjectedScriptDelegate_('toggleStyleEnabled');
+  this.installInjectedScriptDelegate_('applyStyleRuleText');
+  this.installInjectedScriptDelegate_('addStyleSelector');
+  this.installInjectedScriptDelegate_('setStyleProperty');
+  this.installInjectedScriptDelegate_('getPrototypes', true);
+  this.installInjectedScriptDelegate_('getProperties', true);
+  this.installInjectedScriptDelegate_('setPropertyValue', true);
 };
 goog.inherits(devtools.InspectorControllerImpl,
     devtools.InspectorController);
@@ -253,84 +266,39 @@ devtools.InspectorControllerImpl.prototype.storeLastActivePanel =
 };
 
 
-// Temporary methods that will be dispatched via InspectorController into the
-// injected context.
-devtools.InspectorControllerImpl.prototype.getStyles =
-    function(node, authorOnly, callback) {
-  var mycallback = function(result) {
-    callback(result);
+/**
+ * Installs delegating handler into the inspector controller.
+ * @param {number} argsCound Number of the arguments in the delegating call
+ *     excluding callback.
+ * @param {string} methodName Method to install delegating handler for.
+ * @parma {boolean} unwrap Replace first argument with its id.
+ */
+devtools.InspectorControllerImpl.prototype.installInjectedScriptDelegate_ =
+    function(methodName, unwrap) {
+  this[methodName] = goog.bind(this.callInjectedScript_, this, unwrap,
+      methodName);
+};
+
+
+/**
+ * Bound function with the installInjectedScriptDelegate_ actual
+ * implementation.
+ */
+devtools.InspectorControllerImpl.prototype.callInjectedScript_ =
+    function(unwrap, methodName, var_arg) {
+  var allArgs = Array.prototype.slice.call(arguments);
+  var callback = allArgs[allArgs.length - 1];
+  var args = Array.prototype.slice.call(allArgs, 1, allArgs.length - 1);
+  if (unwrap) {
+    if (args[1].id_) {
+      args[1] = args[1].id_;
+    } else if (args[1].objectId && args[1].objectId.id_) {
+      args[1].objectId = args[1].objectId.id_;
+    }
   }
   RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(mycallback),
-      'InjectedScript', JSON.stringify(['getStyles', node.id_, authorOnly]));
-};
-
-
-devtools.InspectorControllerImpl.prototype.getComputedStyle =
-    function(node, callback) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
       devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(['getComputedStyle', node.id_]));
-};
-
-
-devtools.InspectorControllerImpl.prototype.getInlineStyle =
-    function(node, callback) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(['getInlineStyle', node.id_]));
-};
-
-
-devtools.InspectorControllerImpl.prototype.applyStyleText =
-    function(styleId, styleText, propertyName, callback) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(['applyStyleText', styleId, styleText,
-                                           propertyName]));
-};
-
-
-devtools.InspectorControllerImpl.prototype.setStyleText =
-    function(style, cssText, callback) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(['setStyleText', style, cssText]));
-};
-
-
-devtools.InspectorControllerImpl.prototype.toggleStyleEnabled =
-    function(styleId, propertyName, disabled, callback) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(['toggleStyleEnabled', styleId,
-                                            propertyName, disabled]));
-};
-
-
-devtools.InspectorControllerImpl.prototype.applyStyleRuleText =
-    function(ruleId, newContent, selectedNode, callback) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(['applyStyleRuleText', ruleId,
-                                           newContent, selectedNode]));
-};
-
-
-devtools.InspectorControllerImpl.prototype.addStyleSelector =
-    function(newContent, callback) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(['addStyleSelector', newContent]));
-};
-
-
-devtools.InspectorControllerImpl.prototype.setStyleProperty =
-    function(styleId, name, value, callback) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(callback),
-      'InjectedScript', JSON.stringify(['setStyleProperty', styleId, name,
-                                           value]));
+      'InjectedScript', JSON.stringify(args));
 };
 
 
