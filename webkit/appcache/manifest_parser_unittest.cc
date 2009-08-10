@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/manifest_parser.h"
 
-using appcache::FallbackUrlVector;
+using appcache::FallbackNamespace;
 using appcache::Manifest;
 using appcache::ParseManifest;
 
@@ -71,8 +71,9 @@ TEST(ManifestParserTest, NoManifestUrl) {
   const GURL kUrl = GURL::EmptyGURL();
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
-  EXPECT_TRUE(manifest.online_whitelisted_urls.empty());
-  EXPECT_TRUE(manifest.fallback_urls.empty());
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
 }
 
 TEST(ManifestParserTest, ExplicitUrls) {
@@ -92,19 +93,24 @@ TEST(ManifestParserTest, ExplicitUrls) {
     "CACHE: \r"
     "garbage:#!@\r"
     "https://www.foo.com/diffscheme \t \r"
-    "  \t relative/four#stripme\n\r");
+    "  \t relative/four#stripme\n\r"
+    "*\r");
 
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
-  EXPECT_TRUE(manifest.online_whitelisted_urls.empty());
-  EXPECT_TRUE(manifest.fallback_urls.empty());
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
 
   base::hash_set<std::string> urls = manifest.explicit_urls;
-  const size_t kExpected = 4;
+  const size_t kExpected = 5;
   ASSERT_EQ(kExpected, urls.size());
   EXPECT_TRUE(urls.find("http://www.foo.com/relative/one") != urls.end());
   EXPECT_TRUE(urls.find("http://www.foo.com/two") != urls.end());
   EXPECT_TRUE(urls.find("http://www.diff.com/three") != urls.end());
   EXPECT_TRUE(urls.find("http://www.foo.com/relative/four") != urls.end());
+
+  // Wildcard is treated as a relative URL in explicit section.
+  EXPECT_TRUE(urls.find("http://www.foo.com/*") != urls.end());
 }
 
 TEST(ManifestParserTest, WhitelistUrls) {
@@ -124,20 +130,23 @@ TEST(ManifestParserTest, WhitelistUrls) {
     "NETWORK:\r"
     "https://www.wrongscheme.com\n"
     "relative/four#stripref \t \r"
-    "http://www.five.com\r\n");
+    "http://www.five.com\r\n"
+    "*foo\r");
 
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
-  EXPECT_TRUE(manifest.fallback_urls.empty());
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
 
-  std::vector<GURL> online = manifest.online_whitelisted_urls;
-  const size_t kExpected = 5;
+  std::vector<GURL> online = manifest.online_whitelist_namespaces;
+  const size_t kExpected = 6;
   ASSERT_EQ(kExpected, online.size());
   EXPECT_EQ(GURL("http://www.bar.com/relative/one"), online[0]);
   EXPECT_EQ(GURL("http://www.bar.com/two"), online[1]);
   EXPECT_EQ(GURL("http://www.diff.com/three"), online[2]);
   EXPECT_EQ(GURL("http://www.bar.com/relative/four"), online[3]);
   EXPECT_EQ(GURL("http://www.five.com"), online[4]);
+  EXPECT_EQ(GURL("http://www.bar.com/*foo"), online[5]);
 }
 
 TEST(ManifestParserTest, FallbackUrls) {
@@ -150,6 +159,7 @@ TEST(ManifestParserTest, FallbackUrls) {
     "UNKNOWN:\r"
     "FALLBACK:\r"
     "relative/one \t \t http://glorp.com/onefb  \t \r"
+    "*\r"
     "https://glorp.com/wrong http://glorp.com/wrongfb\r"
     "http://glorp.com/two#strip relative/twofb\r"
     "HTTP://glorp.com/three relative/threefb#strip\n"
@@ -167,9 +177,10 @@ TEST(ManifestParserTest, FallbackUrls) {
 
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
-  EXPECT_TRUE(manifest.online_whitelisted_urls.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
 
-  FallbackUrlVector fallbacks = manifest.fallback_urls;
+  std::vector<FallbackNamespace> fallbacks = manifest.fallback_namespaces;
   const size_t kExpected = 5;
   ASSERT_EQ(kExpected, fallbacks.size());
   EXPECT_EQ(GURL("http://glorp.com/relative/one"),
@@ -209,9 +220,10 @@ TEST(ManifestParserTest, FallbackUrlsWithPort) {
 
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
-  EXPECT_TRUE(manifest.online_whitelisted_urls.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
 
-  FallbackUrlVector fallbacks = manifest.fallback_urls;
+  std::vector<FallbackNamespace> fallbacks = manifest.fallback_namespaces;
   const size_t kExpected = 3;
   ASSERT_EQ(kExpected, fallbacks.size());
   EXPECT_EQ(GURL("http://www.portme.com:1234/one"),
@@ -238,6 +250,7 @@ TEST(ManifestParserTest, ComboUrls) {
     "NETWORK:\r"
     "http://combo.com/whitelist-1\r"
     "HTTP://www.diff.com/whitelist-2#strip\r"
+    "*\r"
     "CACHE:\n\r"
     "http://www.diff.com/explicit-3\r"
     "FALLBACK:\r"
@@ -250,6 +263,7 @@ TEST(ManifestParserTest, ComboUrls) {
     "relative/whitelist-3#strip\r"
     "http://combo.com:99/whitelist-4\r");
   EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(manifest.online_whitelist_all);
 
   base::hash_set<std::string> urls = manifest.explicit_urls;
   size_t expected = 3;
@@ -259,7 +273,7 @@ TEST(ManifestParserTest, ComboUrls) {
   EXPECT_TRUE(urls.find("http://combo.com:99/explicit-2") != urls.end());
   EXPECT_TRUE(urls.find("http://www.diff.com/explicit-3") != urls.end());
 
-  std::vector<GURL> online = manifest.online_whitelisted_urls;
+  std::vector<GURL> online = manifest.online_whitelist_namespaces;
   expected = 4;
   ASSERT_EQ(expected, online.size());
   EXPECT_EQ(GURL("http://combo.com/whitelist-1"), online[0]);
@@ -267,7 +281,7 @@ TEST(ManifestParserTest, ComboUrls) {
   EXPECT_EQ(GURL("http://combo.com:42/relative/whitelist-3"), online[2]);
   EXPECT_EQ(GURL("http://combo.com:99/whitelist-4"), online[3]);
 
-  FallbackUrlVector fallbacks = manifest.fallback_urls;
+  std::vector<FallbackNamespace> fallbacks = manifest.fallback_namespaces;
   expected = 2;
   ASSERT_EQ(expected, fallbacks.size());
   EXPECT_EQ(GURL("http://combo.com:42/fallback-1"),

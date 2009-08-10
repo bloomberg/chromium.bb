@@ -49,8 +49,9 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
   static const std::wstring kSignature(L"CACHE MANIFEST");
 
   DCHECK(manifest.explicit_urls.empty());
-  DCHECK(manifest.online_whitelisted_urls.empty());
-  DCHECK(manifest.fallback_urls.empty());
+  DCHECK(manifest.fallback_namespaces.empty());
+  DCHECK(manifest.online_whitelist_namespaces.empty());
+  DCHECK(!manifest.online_whitelist_all);
 
   Mode mode = kExplicit;
 
@@ -125,6 +126,9 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       mode = kUnknown;
     } else if (mode == kUnknown) {
       continue;
+    } else if (line == L"*" && mode == kOnlineWhitelist) {
+      manifest.online_whitelist_all = true;
+      continue;
     } else if (mode == kExplicit || mode == kOnlineWhitelist) {
       const wchar_t *line_p = line.c_str();
       const wchar_t *line_end = line_p + line.length();
@@ -152,7 +156,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       if (mode == kExplicit) {
         manifest.explicit_urls.insert(url.spec());
       } else {
-        manifest.online_whitelisted_urls.push_back(url);
+        manifest.online_whitelist_namespaces.push_back(url);
       }
     } else if (mode == kFallback) {
       const wchar_t* line_p = line.c_str();
@@ -212,8 +216,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
 
       // Store regardless of duplicate namespace URL. Only first match
       // will ever be used.
-      manifest.fallback_urls.push_back(
-          std::make_pair(namespace_url, fallback_url));
+      manifest.fallback_namespaces.push_back(
+          FallbackNamespace(namespace_url, fallback_url));
     } else {
       NOTREACHED();
     }

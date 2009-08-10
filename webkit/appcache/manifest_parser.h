@@ -41,13 +41,15 @@ class GURL;
 
 namespace appcache {
 
-typedef std::vector<std::pair<GURL, GURL> > FallbackUrlVector;
+typedef std::pair<GURL, GURL> FallbackNamespace;
 
-// TODO(jennb): spec changed since webkit implementation. Update in next CL.
 struct Manifest {
-  std::vector<GURL> online_whitelisted_urls;
   base::hash_set<std::string> explicit_urls;
-  FallbackUrlVector fallback_urls;
+  std::vector<FallbackNamespace> fallback_namespaces;
+  std::vector<GURL> online_whitelist_namespaces;
+  bool online_whitelist_all;
+
+  Manifest() : online_whitelist_all(false) {}
 };
 
 bool ParseManifest(const GURL& manifest_url, const char* data, int length,
