@@ -76,16 +76,33 @@ void NaClLogV(int         detail_level,
 
 void  NaClLog(int         detail_level,
               char const  *fmt,
-              ...)
-#if !NACL_WINDOWS
-    __attribute__((format(printf, 2, 3)))
-#endif
-;
+              ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 #define LOG_INFO    (-1)
 #define LOG_WARNING (-2)
 #define LOG_ERROR   (-3)
 #define LOG_FATAL   (-4)
+
+/*
+ * Low-level logging code that requires manual lock manipulation.
+ * Should be used carefully!
+ */
+void NaClLogLock(void);
+void NaClLogUnlock(void);
+
+/*
+ * Caller is responsible for grabbing the NaClLog mutex lock (via
+ * NaClLogLock) before calling NaClLogV_mu or NaClLog_mu and for
+ * releasing it (via NaClLogUnlock) afterward.
+ */
+void  NaClLogV_mu(int         detail_level,
+                  char const  *fmt,
+                  va_list     ap);
+
+void  NaClLog_mu(int         detail_level,
+                 char const  *fmt,
+                 ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+
 
 EXTERN_C_END
 

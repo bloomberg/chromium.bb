@@ -66,15 +66,15 @@ static int              timestamp_enabled = 1;
 /* global, but explicitly not exposed in non-test header file */
 void (*gNaClLogAbortBehavior)(void) = abort;
 
-void NaClLogModuleInit() {
+void NaClLogModuleInit(void) {
   NaClMutexCtor(&log_mu);
 }
 
-void NaClLogModuleFini() {
+void NaClLogModuleFini(void) {
   NaClMutexDtor(&log_mu);
 }
 
-void NaClLogLock() {
+void NaClLogLock(void) {
   NaClMutexLock(&log_mu);
 }
 
@@ -214,4 +214,20 @@ void  NaClLog(int         detail_level,
   NaClLogV_mu(detail_level, fmt, ap);
   va_end(ap);
   NaClLogUnlock();
+}
+
+void  NaClLog_mu(int         detail_level,
+                 char const  *fmt,
+                 ...) {
+  va_list ap;
+
+#if NON_THREAD_SAFE_DETAIL_CHECK
+  if (detail_level > verbosity) {
+    return;
+  }
+#endif
+
+  va_start(ap, fmt);
+  NaClLogV_mu(detail_level, fmt, ap);
+  va_end(ap);
 }

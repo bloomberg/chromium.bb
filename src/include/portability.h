@@ -89,6 +89,11 @@
 # error "what platform?"
 #endif
 
+#if NACL_WINDOWS
+# define ATTRIBUTE_FORMAT_PRINTF(m, n)
+#else
+# define ATTRIBUTE_FORMAT_PRINTF(m, n) __attribute__((format(printf, m, n)))
+#endif
 
 #if NACL_WINDOWS
 # define UNREFERENCED_PARAMETER(P) (P)
