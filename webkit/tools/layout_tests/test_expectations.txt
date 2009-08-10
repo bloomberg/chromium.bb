@@ -2489,7 +2489,6 @@ BUG14951 WIN LINUX : LayoutTests/fast/repaint/background-generated.html = FAIL
 
 // WebKit 44969:45017
 BUG15132 WIN LINUX : LayoutTests/editing/execCommand/5482023.html = FAIL
-BUG15132 WIN LINUX : LayoutTests/editing/inserting/editable-html-element.html = FAIL
 BUG15132 WIN LINUX : LayoutTests/editing/pasteboard/4989774.html = FAIL
 BUG15132 WIN LINUX : LayoutTests/editing/selection/4983858.html = FAIL
 BUG15132 WIN LINUX : LayoutTests/fast/dom/HTMLTableColElement/resize-table-using-col-width.html = FAIL
