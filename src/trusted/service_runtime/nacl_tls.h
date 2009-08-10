@@ -42,13 +42,13 @@ void NaClTlsFini();
 
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
                          void *base_addr,
-                         uint32_t size);
+                         uint32_t size) NACL_WUR;
 
 void NaClTlsFree(struct NaClAppThread *natp);
 
 uint32_t NaClTlsChange(struct NaClAppThread *natp,
                        void *base_addr,
-                       uint32_t size);
+                       uint32_t size) NACL_WUR;
 
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp);
 

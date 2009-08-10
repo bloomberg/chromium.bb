@@ -41,13 +41,13 @@
 
 struct NaClApp; /* fwd */
 
-NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap);
+NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) NACL_WUR;
 
 /*
  * Apply memory protection to memory regions.
  */
-NaClErrorCode NaClMemoryProtection(struct NaClApp *nap);
+NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) NACL_WUR;
 
-int NaClAllocateSpace(void **mem, size_t size);
+int NaClAllocateSpace(void **mem, size_t size) NACL_WUR;
 
 #endif

@@ -179,6 +179,8 @@ int main(int ac, char **av) {
 
       for (i = 0; i < msg_hdr.ndesc_length; ++i) {
         struct NaClDesc *ndp;
+        size_t msglen = strlen(message);
+        ssize_t write_result;
         /*
          * TODO(bsy): a bit gross; we should expose type tags and RTTI
          * in a better way, e.g, downcast functions.  (Though exposing
@@ -189,7 +191,13 @@ int main(int ac, char **av) {
         ndp = msg_hdr.ndescv[i];
         printf(" type %d\n", ndp->vtbl->typeTag);
 
-        (*ndp->vtbl->Write)(ndp, effp, (void *) message, strlen(message));
+        if (msglen != (write_result = (*ndp->vtbl->Write)(ndp,
+                                                          effp,
+                                                          (void *) message,
+                                                          msglen))) {
+          printf("Write failed: got %"PRIdS", expected %"PRIuS"\n",
+                 write_result, msglen);
+        }
 
         NaClDescUnref(ndp);
       }

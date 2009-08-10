@@ -160,7 +160,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       int                   is_privileged,
                       uintptr_t             entry,
                       uintptr_t             stack_ptr,
-                      uint32_t              tls_idx);
+                      uint32_t              tls_idx) NACL_WUR;
 
 void NaClAppThreadDtor(struct NaClAppThread *natp);
 
@@ -178,7 +178,7 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               uintptr_t             usr_entry,
                               uintptr_t             usr_stack_ptr,
                               uintptr_t             sys_tdb_base,
-                              size_t                tdb_size);
+                              size_t                tdb_size) NACL_WUR;
 
 int NaClAppThreadIncRef(struct NaClAppThread *natp);
 

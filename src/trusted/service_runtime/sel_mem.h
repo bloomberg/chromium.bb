@@ -88,7 +88,7 @@ struct NaClVmmapEntry *NaClVmmapIterStar(struct NaClVmmapIter *nvip);
 void                  NaClVmmapIterIncr(struct NaClVmmapIter *nvip);
 void                  NaClVmmapIterErase(struct NaClVmmapIter *nvip);
 
-int   NaClVmmapCtor(struct NaClVmmap  *self);
+int   NaClVmmapCtor(struct NaClVmmap  *self) NACL_WUR;
 
 void  NaClVmmapDtor(struct NaClVmmap  *self);
 
@@ -96,7 +96,7 @@ int   NaClVmmapAdd(struct NaClVmmap   *self,
                    uintptr_t          page_num,
                    size_t             npages,
                    int                prot,
-                   struct NaClMemObj  *nmop);
+                   struct NaClMemObj  *nmop) NACL_WUR;
 
 void NaClVmmapUpdate(struct NaClVmmap   *self,
                      uintptr_t          page_num,

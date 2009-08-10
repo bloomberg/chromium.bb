@@ -61,7 +61,7 @@ int NaClSyncQueueEmpty(struct NaClSyncQueue *nsqp);
 /*
  * Placement new style constructor for a NaClSyncQueue object.
  */
-int NaClSyncQueueCtor(struct NaClSyncQueue *nsqp);
+int NaClSyncQueueCtor(struct NaClSyncQueue *nsqp) NACL_WUR;
 
 void NaClSyncQueueDtor(struct NaClSyncQueue *nsqp);
 

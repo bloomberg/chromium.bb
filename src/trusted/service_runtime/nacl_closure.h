@@ -72,13 +72,13 @@ struct NaClClosure0 {
   void                (*fn)(void);
 };
 
-struct NaClClosure0 *NaClClosure0Ctor(void  (*fn)(void));
+struct NaClClosure0 *NaClClosure0Ctor(void  (*fn)(void)) NACL_WUR;
 void NaClClosure0Dtor(struct NaClClosure *vself);
 void NaClClosure0Run(struct NaClClosure *vself);
 
 struct NaClClosure1 {
   struct NaClClosure  base;
-  void                (*fn)(void *);
+  void                (*fn)(void *arg1);
   void                *arg1;
 };
 
@@ -97,7 +97,7 @@ struct NaClClosure2 {
 struct NaClClosure2 *NaClClosure2Ctor(void  (*fn)(void *arg1,
                                                   void *arg2),
                                       void  *arg1,
-                                      void  *arg2);
+                                      void  *arg2) NACL_WUR;
 void NaClClosure2Dtor(struct NaClClosure *self);
 void NaClClosure2Run(struct NaClClosure *vself);
 
@@ -114,7 +114,7 @@ struct NaClClosure3 *NaClClosure3Ctor(void  (*fn)(void *arg1,
                                                   void *arg3),
                                       void  *arg1,
                                       void  *arg2,
-                                      void  *arg3);
+                                      void  *arg3) NACL_WUR;
 void NaClClosure3Dtor(struct NaClClosure *self);
 void NaClClosure3Run(struct NaClClosure *vself);
 
@@ -134,7 +134,7 @@ struct NaClClosure4 *NaClClosure4Ctor(void  (*fn)(void *arg1,
                                       void  *arg1,
                                       void  *arg2,
                                       void  *arg3,
-                                      void  *arg4);
+                                      void  *arg4) NACL_WUR;
 void NaClClosure4Dtor(struct NaClClosure *self);
 void NaClClosure4Run(struct NaClClosure *vself);
 
@@ -155,7 +155,7 @@ struct NaClClosure5 *NaClClosure5Ctor(void  (*fn)(void *arg1,
                                       void  *arg2,
                                       void  *arg3,
                                       void  *arg4,
-                                      void  *arg5);
+                                      void  *arg5) NACL_WUR;
 void NaClClosure5Dtor(struct NaClClosure *self);
 void NaClClosure5Run(struct NaClClosure *vself);
 
@@ -182,7 +182,7 @@ struct NaClClosure6 *NaClClosure6Ctor(void  (*fn)(void *arg1,
                                       void  *arg3,
                                       void  *arg4,
                                       void  *arg5,
-                                      void  *arg6);
+                                      void  *arg6) NACL_WUR;
 void NaClClosure6Dtor(struct NaClClosure *self);
 void NaClClosure6Run(struct NaClClosure *vself);
 
@@ -212,7 +212,7 @@ struct NaClClosure7 *NaClClosure7Ctor(void  (*fn)(void *arg1,
                                       void  *arg4,
                                       void  *arg5,
                                       void  *arg6,
-                                      void  *arg7);
+                                      void  *arg7) NACL_WUR;
 void NaClClosure7Dtor(struct NaClClosure *self);
 void NaClClosure7Run(struct NaClClosure *vself);
 
@@ -245,7 +245,7 @@ struct NaClClosure8 *NaClClosure8Ctor(void  (*fn)(void *arg1,
                                       void  *arg5,
                                       void  *arg6,
                                       void  *arg7,
-                                      void  *arg8);
+                                      void  *arg8) NACL_WUR;
 void NaClClosure8Dtor(struct NaClClosure *self);
 void NaClClosure8Run(struct NaClClosure *vself);
 
@@ -282,7 +282,7 @@ struct NaClClosure9 *NaClClosure9Ctor(void  (*fn)(void *arg1,
                                       void  *arg6,
                                       void  *arg7,
                                       void  *arg8,
-                                      void  *arg9);
+                                      void  *arg9) NACL_WUR;
 void NaClClosure9Dtor(struct NaClClosure *self);
 void NaClClosure9Run(struct NaClClosure *vself);
 
@@ -322,7 +322,7 @@ struct NaClClosure10 *NaClClosure10Ctor(void  (*fn)(void *arg1,
                                       void  *arg7,
                                       void  *arg8,
                                       void  *arg9,
-                                      void  *arg10);
+                                      void  *arg10) NACL_WUR;
 void NaClClosure10Dtor(struct NaClClosure *self);
 void NaClClosure10Run(struct NaClClosure *vself);
 

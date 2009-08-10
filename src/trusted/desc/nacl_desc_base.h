@@ -172,7 +172,7 @@ struct NaClDescVtbl {
                    size_t                   len,
                    int                      prot,
                    int                      flags,
-                   off_t                    offset);
+                   off_t                    offset) NACL_WUR;
   /*
    * UnmapUnsafe really unmaps and leaves a hole in the address space.
    * It is intended for use by Map (through the effector interface) to
@@ -183,7 +183,7 @@ struct NaClDescVtbl {
   int (*UnmapUnsafe)(struct NaClDesc          *vself,
                      struct NaClDescEffector  *effp,
                      void                     *start_addr,
-                     size_t                   len);
+                     size_t                   len) NACL_WUR;
   /*
    * Unmap is the version that removes the mapping but continues to
    * hold the address space in reserve, preventing it from being used
@@ -194,19 +194,19 @@ struct NaClDescVtbl {
   int (*Unmap)(struct NaClDesc          *vself,
                struct NaClDescEffector  *effp,
                void                     *start_addr,
-               size_t                   len);
+               size_t                   len) NACL_WUR;
   ssize_t (*Read)(struct NaClDesc         *vself,
                   struct NaClDescEffector *effp,
                   void                    *buf,
-                  size_t                  len);
+                  size_t                  len) NACL_WUR;
   ssize_t (*Write)(struct NaClDesc          *vself,
                    struct NaClDescEffector  *effp,
                    void const               *buf,
-                   size_t                   len);
+                   size_t                   len) NACL_WUR;
   int (*Seek)(struct NaClDesc         *vself,
               struct NaClDescEffector *effp,
               off_t                   offset,
-              int                     whence);
+              int                     whence) NACL_WUR;
   /*
    * TODO(bsy): Need to figure out which requests we support.  Also,
    * request determines arg size and whether it is an input or output arg!
@@ -214,12 +214,12 @@ struct NaClDescVtbl {
   int (*Ioctl)(struct NaClDesc          *vself,
                struct NaClDescEffector  *effp,
                int                      request,
-               void                     *arg);
+               void                     *arg) NACL_WUR;
   int (*Fstat)(struct NaClDesc          *vself,
                struct NaClDescEffector  *effp,
                struct nacl_abi_stat     *statbuf);
   int (*Close)(struct NaClDesc          *vself,
-               struct NaClDescEffector  *effp);
+               struct NaClDescEffector  *effp) NACL_WUR;
 
   /*
    * Directory access support.  Directories require support for getdents.
@@ -227,7 +227,7 @@ struct NaClDescVtbl {
   ssize_t (*Getdents)(struct NaClDesc         *vself,
                       struct NaClDescEffector *effp,
                       void                    *dirp,
-                      size_t                  count);
+                      size_t                  count) NACL_WUR;
 
   /*
    * typeTag is one of the enumeration values from NaClDescTypeTag.
@@ -256,7 +256,7 @@ struct NaClDescVtbl {
    */
   int (*ExternalizeSize)(struct NaClDesc      *vself,
                          size_t               *nbytes,
-                         size_t               *nhandles);
+                         size_t               *nhandles) NACL_WUR;
   /*
    * Externalize the "this" or "self" descriptor: this will take an
    * IMC datagram object to which the Nrd will be appended, either as
@@ -265,48 +265,48 @@ struct NaClDescVtbl {
    * sleep or otherwise manipulate thread or process state.
    */
   int (*Externalize)(struct NaClDesc          *vself,
-                     struct NaClDescXferState *xfer);
+                     struct NaClDescXferState *xfer) NACL_WUR;
   /*
    * Lock and similar syscalls cannot just indefintely block,
    * since address space move will require that all other threads are
    * stopped and in a known
    */
   int (*Lock)(struct NaClDesc         *vself,
-              struct NaClDescEffector *effp);
+              struct NaClDescEffector *effp) NACL_WUR;
   int (*TryLock)(struct NaClDesc          *vself,
-                 struct NaClDescEffector  *effp);
+                 struct NaClDescEffector  *effp) NACL_WUR;
   int (*Unlock)(struct NaClDesc         *vself,
-                struct NaClDescEffector *effp);
+                struct NaClDescEffector *effp) NACL_WUR;
   int (*Wait)(struct NaClDesc         *vself,
               struct NaClDescEffector *effp,
-              struct NaClDesc         *mutex);
+              struct NaClDesc         *mutex) NACL_WUR;
   int (*TimedWaitAbs)(struct NaClDesc           *vself,
                       struct NaClDescEffector   *effp,
                       struct NaClDesc           *mutex,
-                      struct nacl_abi_timespec  *ts);
+                      struct nacl_abi_timespec  *ts) NACL_WUR;
   int (*Signal)(struct NaClDesc         *vself,
-                struct NaClDescEffector *effp);
+                struct NaClDescEffector *effp) NACL_WUR;
   int (*Broadcast)(struct NaClDesc          *vself,
-                   struct NaClDescEffector  *effp);
+                   struct NaClDescEffector  *effp) NACL_WUR;
 
   int (*SendMsg)(struct NaClDesc          *vself,
                  struct NaClDescEffector  *effp,
                  struct NaClMessageHeader *dgram,
-                 int                      flags);
+                 int                      flags) NACL_WUR;
   int (*RecvMsg)(struct NaClDesc          *vself,
                  struct NaClDescEffector  *effp,
                  struct NaClMessageHeader *dgram,
-                 int                      flags);
+                 int                      flags) NACL_WUR;
   int (*ConnectAddr)(struct NaClDesc          *vself,
-                     struct NaClDescEffector  *effp);
+                     struct NaClDescEffector  *effp) NACL_WUR;
   int (*AcceptConn)(struct NaClDesc         *vself,
-                    struct NaClDescEffector *effp);
+                    struct NaClDescEffector *effp) NACL_WUR;
   int (*Post)(struct NaClDesc         *vself,
-              struct NaClDescEffector *effp);
+              struct NaClDescEffector *effp) NACL_WUR;
   int (*SemWait)(struct NaClDesc          *vself,
-                 struct NaClDescEffector  *effp);
+                 struct NaClDescEffector  *effp) NACL_WUR;
   int (*GetValue)(struct NaClDesc         *vself,
-                  struct NaClDescEffector *effp);
+                  struct NaClDescEffector *effp) NACL_WUR;
   /*
    * Inappropriate methods for the subclass will just return
    * -NACL_ABI_EINVAL.
@@ -325,7 +325,7 @@ struct NaClDesc {
  * The subclasses' ctor must call this base class ctor during their
  * contruction.
  */
-int NaClDescCtor(struct NaClDesc *ndp);
+int NaClDescCtor(struct NaClDesc *ndp) NACL_WUR;
 
 /* Typically it is incorrect to call the dtor directly; see NaClDescUnref */
 void NaClDescDtor(struct NaClDesc *ndp);
@@ -350,7 +350,7 @@ struct NaClDescDirDesc {
 };
 
 extern int NaClDescDirInternalize(struct NaClDesc          **baseptr,
-                                  struct NaClDescXferState *xfer);
+                                  struct NaClDescXferState *xfer) NACL_WUR;
 
 /*
  * I/O descriptors
@@ -369,7 +369,7 @@ struct NaClDescIoDesc {
 };
 
 extern int NaClDescIoInternalize(struct NaClDesc          **baseptr,
-                                 struct NaClDescXferState *xfer);
+                                 struct NaClDescXferState *xfer) NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescConnCapVtbl;
 
@@ -382,7 +382,7 @@ struct NaClDescConnCap {
 };
 
 extern int NaClDescConnCapInternalize(struct NaClDesc          **baseptr,
-                                      struct NaClDescXferState *xfer);
+                                      struct NaClDescXferState *xfer) NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescImcBoundDescVtbl;
 
@@ -395,7 +395,8 @@ struct NaClDescImcBoundDesc {
 };
 
 extern int NaClDescImcBoundDescInternalize(struct NaClDesc          **baseptr,
-                                           struct NaClDescXferState *xfer);
+                                           struct NaClDescXferState *xfer)
+NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescImcDescVtbl;
 
@@ -408,7 +409,7 @@ struct NaClDescImcDesc {
 };
 
 extern int NaClDescImcDescInternalize(struct NaClDesc           **baseptr,
-                                      struct NaClDescXferState  *xfer);
+                                      struct NaClDescXferState  *xfer) NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescImcShmVtbl;
 
@@ -419,7 +420,7 @@ struct NaClDescImcShm {
 };
 
 extern int NaClDescImcShmInternalize(struct NaClDesc          **baseptr,
-                                     struct NaClDescXferState *xfer);
+                                     struct NaClDescXferState *xfer) NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescMutexVtbl;
 
@@ -429,7 +430,7 @@ struct NaClDescMutex {
 };
 
 extern int NaClDescMutexInternalize(struct NaClDesc          **baseptr,
-                                    struct NaClDescXferState *xfer);
+                                    struct NaClDescXferState *xfer) NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescCondVarVtbl;
 
@@ -439,7 +440,7 @@ struct NaClDescCondVar {
 };
 
 extern int NaClDescCondVarInternalize(struct NaClDesc          **baseptr,
-                                      struct NaClDescXferState *xfer);
+                                      struct NaClDescXferState *xfer) NACL_WUR;
 
 extern struct NaClDescVtbl const kNaClDescSemaphoreVtbl;
 
@@ -449,7 +450,8 @@ struct NaClDescSemaphore {
 };
 
 extern int NaClDescSemaphoreInternalize(struct NaClDesc          **baseptr,
-                                        struct NaClDescXferState *xfer);
+                                        struct NaClDescXferState *xfer)
+NACL_WUR;
 
 /* utility routines */
 

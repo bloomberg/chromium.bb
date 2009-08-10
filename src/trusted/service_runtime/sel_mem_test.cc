@@ -69,7 +69,7 @@ TEST(SelMemTest, AddTest) {
 TEST(SelMemTest, UpdateTest) {
   struct NaClVmmap mem_map;
 
-  NaClVmmapCtor(&mem_map);
+  EXPECT_EQ(1, NaClVmmapCtor(&mem_map));
 
   // 1st region
   NaClVmmapUpdate(&mem_map,
@@ -183,21 +183,21 @@ TEST(SelMemTest, FindSpaceTest) {
   ret_code = NaClVmmapFindSpace(&mem_map, 32);
   EXPECT_EQ(0, ret_code);
 
-  NaClVmmapAdd(&mem_map,
-               32,
-               10,
-               PROT_READ | PROT_EXEC,
-               (struct NaClMemObj *) NULL);
+  EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
+                            32,
+                            10,
+                            PROT_READ | PROT_EXEC,
+                            (struct NaClMemObj *) NULL));
   EXPECT_EQ(1, static_cast<int>(mem_map.nvalid));
   // one entry only
   ret_code = NaClVmmapFindSpace(&mem_map, 2);
   EXPECT_EQ(0, ret_code);
 
-  NaClVmmapAdd(&mem_map,
-               64,
-               10,
-               PROT_READ | PROT_EXEC,
-               (struct NaClMemObj *) NULL);
+  EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
+                            64,
+                            10,
+                            PROT_READ | PROT_EXEC,
+                            (struct NaClMemObj *) NULL));
   EXPECT_EQ(2, static_cast<int>(mem_map.nvalid));
 
   // the space is [32, 42], [64, 74]
@@ -207,11 +207,11 @@ TEST(SelMemTest, FindSpaceTest) {
   ret_code = NaClVmmapFindSpace(&mem_map, 2);
   EXPECT_EQ(62, ret_code);
 
-  NaClVmmapAdd(&mem_map,
-               96,
-               10,
-               PROT_READ | PROT_EXEC,
-               (struct NaClMemObj *) NULL);
+  EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
+                            96,
+                            10,
+                            PROT_READ | PROT_EXEC,
+                            (struct NaClMemObj *) NULL));
   EXPECT_EQ(3, static_cast<int>(mem_map.nvalid));
 
   // vmmap is [32, 42], [64, 74], [96, 106]

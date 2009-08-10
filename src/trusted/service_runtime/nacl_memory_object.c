@@ -94,7 +94,9 @@ struct NaClMemObj *NaClMemObjMake(struct NaClDesc *ndp,
                         " (NaClDesc = 0x%08"PRIxPTR", offset = 0x%"PRIx64")\n"),
             (uintptr_t) ndp, (int64_t) offset);
   }
-  (void) NaClMemObjCtor(nmop, ndp, nbytes, offset);
+  if (!NaClMemObjCtor(nmop, ndp, nbytes, offset)) {
+    NaClLog(LOG_FATAL, "NaClMemObjMake: NaClMemObjCtor failed!\n");
+  }
   return nmop;
 }
 
@@ -112,7 +114,9 @@ struct NaClMemObj *NaClMemObjSplit(struct NaClMemObj *orig,
                         " additional = 0x%"PRIx64")\n"),
             (uintptr_t) orig, (int64_t) additional);
   }
-  NaClMemObjCopyCtorOff(nmop, orig, additional);
+  if (!NaClMemObjCopyCtorOff(nmop, orig, additional)) {
+    NaClLog(LOG_FATAL, "NaClMemObjSplit: NaClMemObjCopyCtorOff failed\n");
+  }
   return nmop;
 }
 

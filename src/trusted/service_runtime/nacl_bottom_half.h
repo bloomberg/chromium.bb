@@ -50,7 +50,7 @@ struct NaClClosureResult {
   void                *rv;
 };
 
-int NaClClosureResultCtor(struct NaClClosureResult *self);
+int NaClClosureResultCtor(struct NaClClosureResult *self) NACL_WUR;
 
 void NaClClosureResultDtor(struct NaClClosureResult *self);
 
@@ -62,7 +62,7 @@ void NaClClosureResultDone(struct NaClClosureResult *self,
 void NaClStartAsyncOp(struct NaClAppThread  *natp,
                       struct NaClClosure    *ncp);
 
-int32_t NaClWaitForAsyncOp(struct NaClAppThread *natp);
+int32_t NaClWaitForAsyncOp(struct NaClAppThread *natp) NACL_WUR;
 
 #if defined(HAVE_SDL)
 
@@ -91,8 +91,8 @@ void NaClBotSysAudio_Init(struct NaClAppThread *natp,
 void NaClBotSysAudio_Shutdown(struct NaClAppThread *natp);
 
 int32_t NaClSliceSysAudio_Stream(struct NaClAppThread *natp,
-                               const void           *data,
-                               size_t               *size);
+                                 const void           *data,
+                                 size_t               *size) NACL_WUR;
 
 #endif  /* defined(HAVE_SDL) */
 

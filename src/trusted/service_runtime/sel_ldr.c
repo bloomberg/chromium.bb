@@ -959,10 +959,13 @@ static void NaClAppFreeWalker(void                  *state,
                " 0x%"PRIxS"\n"),
               nbytes);
     }
-    (*entry->nmop->ndp->vtbl->UnmapUnsafe)(entry->nmop->ndp,
-                                           p->effp,
-                                           (void *) sysaddr,
-                                           nbytes);
+    if (0 != (*entry->nmop->ndp->vtbl->UnmapUnsafe)(entry->nmop->ndp,
+                                                    p->effp,
+                                                    (void *) sysaddr,
+                                                    nbytes)) {
+      NaClLog(LOG_FATAL,
+              "NaClAppFreeWalker could not unmap memory\n");
+    }
   }
 }
 

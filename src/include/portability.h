@@ -110,13 +110,19 @@
 # define WINAPI
 #endif
 
+#if NACL_WINDOWS
+# define NACL_WUR
+#else
+# define NACL_WUR __attribute__((__warn_unused_result__))
+#endif
+
 /*
-Per C99 7.8.14, define __STDC_CONSTANT_MACROS before including <stdint.h>
-to get the INTn_C and UINTn_C macros for integer constants.  It's difficult
-to guarantee any specific ordering of header includes, so it's difficult to
-guarantee that the INTn_C macros can be defined by including <stdint.h> at
-any specific point.  Provide GG_INTn_C macros instead.
-*/
+ * Per C99 7.8.14, define __STDC_CONSTANT_MACROS before including <stdint.h>
+ * to get the INTn_C and UINTn_C macros for integer constants.  It's difficult
+ * to guarantee any specific ordering of header includes, so it's difficult to
+ * guarantee that the INTn_C macros can be defined by including <stdint.h> at
+ * any specific point.  Provide GG_INTn_C macros instead.
+ */
 
 #define GG_INT8_C(x)    (x)
 #define GG_INT16_C(x)   (x)

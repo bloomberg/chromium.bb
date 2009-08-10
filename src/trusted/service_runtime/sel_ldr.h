@@ -299,7 +299,7 @@ struct NaClPhdrChecks {
 
 void  NaClAppIncrVerbosity(void);
 
-int   NaClAppCtor(struct NaClApp  *nap);
+int   NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
 
 void  NaClAppDtor(struct NaClApp  *nap);
 
@@ -329,7 +329,7 @@ void  NaClAppFreeAllMemory(struct NaClApp *nap);
  * cache lines.
  */
 NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
-                              struct NaClApp  *nap);
+                              struct NaClApp  *nap) NACL_WUR;
 
 size_t  NaClAlignPad(size_t val,
                      size_t align);
@@ -343,10 +343,10 @@ void  NaClStore32(uintptr_t   addr,
                   uint32_t    v);
 
 NaClErrorCode NaClLoadImage(struct Gio            *gp,
-                            struct NaClApp        *nap);
+                            struct NaClApp        *nap) NACL_WUR;
 
 void NaClIgnoreValidatorResult();
-NaClErrorCode NaClValidateImage(struct NaClApp  *nap);
+NaClErrorCode NaClValidateImage(struct NaClApp  *nap) NACL_WUR;
 
 
 int NaClAddrIsValidEntryPt(struct NaClApp *nap,
@@ -381,7 +381,7 @@ void NaClAddImcAddr(struct NaClApp                  *nap,
 int NaClCreateMainThread(struct NaClApp     *nap,
                          int                argc,
                          char               **argv,
-                         char const *const  *envp);
+                         char const *const  *envp) NACL_WUR;
 
 int NaClWaitForMainThreadToExit(struct NaClApp  *nap);
 
@@ -392,7 +392,7 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      prog_ctr,
                                    uintptr_t      stack_ptr,
                                    uintptr_t      sys_tdb,
-                                   size_t         tdb_size);
+                                   size_t         tdb_size) NACL_WUR;
 
 void  NaClLoadTrampoline(struct NaClApp *nap);
 

@@ -104,11 +104,11 @@ struct NaClMemObj {
 int NaClMemObjCtor(struct NaClMemObj  *nmop,
                    struct NaClDesc    *ndp,
                    off_t              nbytes,
-                   off_t              offset);
+                   off_t              offset) NACL_WUR;
 
 int NaClMemObjCopyCtorOff(struct NaClMemObj *nmop,
                           struct NaClMemObj *src,
-                          off_t             additional);
+                          off_t             additional) NACL_WUR;
 
 void NaClMemObjDtor(struct NaClMemObj *nmop);
 
@@ -117,10 +117,10 @@ void NaClMemObjDtor(struct NaClMemObj *nmop);
  */
 struct NaClMemObj *NaClMemObjMake(struct NaClDesc *ndp,
                                   off_t           nbytes,
-                                  off_t           offset);
+                                  off_t           offset) NACL_WUR;
 
 struct NaClMemObj *NaClMemObjSplit(struct NaClMemObj  *nmop,
-                                   off_t              additional);
+                                   off_t              additional) NACL_WUR;
 
 void NaClMemObjIncOffset(struct NaClMemObj  *nmop,
                          off_t              additional);

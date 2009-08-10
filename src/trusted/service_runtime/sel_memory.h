@@ -53,21 +53,21 @@ extern "C" {
 #define MAX_RETRIES     1024
 
 int   NaCl_page_alloc(void    **p,
-                      size_t  num_bytes);
+                      size_t  num_bytes) NACL_WUR;
 
 int   NaCl_page_alloc_at_addr(void **p,
-                              size_t  size);
+                              size_t  size) NACL_WUR;
 
 void  NaCl_page_free(void     *p,
                      size_t   num_bytes);
 
 int   NaCl_mprotect(void          *addr,
                     size_t        len,
-                    int           prot);
+                    int           prot) NACL_WUR;
 
 int   NaCl_madvise(void           *start,
                    size_t         length,
-                   int            advice);
+                   int            advice) NACL_WUR;
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
