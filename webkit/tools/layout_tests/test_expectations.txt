@@ -1953,7 +1953,6 @@ BUG10463 WIN LINUX : LayoutTests/editing/selection/hit-test-anonymous.html = FAI
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL CRASH
 BUG10463 WIN : LayoutTests/svg/W3C-SVG-1.1/animate-elem-36-t.svg = FAIL
-BUG10463 WIN : LayoutTests/svg/W3C-SVG-1.1/animate-elem-39-t.svg = FAIL
 SLOW BUG10463 WIN : LayoutTests/svg/carto.net/scrollbar.svg = FAIL
 BUG10463 WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH FAIL
 BUG10463 WIN : LayoutTests/svg/custom/focus-ring.svg = FAIL
@@ -2246,7 +2245,6 @@ BUG10861 LINUX MAC : LayoutTests/security/set-form-autocomplete-attribute.html =
 // WebKit change http://trac.webkit.org/changeset/42751
 // changed the name of SVG image in the dump from "RenderImage"
 // to "RenderSVGImage".
-BUG10998 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-39-t.svg = FAIL
 BUG10998 LINUX : LayoutTests/svg/custom/image-parent-translation.xhtml = FAIL
 BUG10998 LINUX : LayoutTests/svg/custom/text-image-opacity.svg = FAIL
 
