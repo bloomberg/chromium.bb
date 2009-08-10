@@ -43,6 +43,13 @@
             ],
           },
         ],
+        ['OS=="mac"',
+          {
+            'dependencies': [
+              '../../breakpad/breakpad.gyp:breakpad',
+            ],
+          },
+        ],
       ],
     },
   ],
