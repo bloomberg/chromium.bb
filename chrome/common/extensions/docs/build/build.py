@@ -49,7 +49,7 @@ def RenderPage(name, test_shell):
   # Copy page_shell to destination output and move aside original, if it exists.
   original = None;
   if (os.path.isfile(input_file)):
-    original = open(input_file, 'r').read()
+    original = open(input_file, 'rb').read()
     os.remove(input_file)
 
   shutil.copy(_page_shell_html, input_file)
@@ -78,8 +78,10 @@ def RenderPage(name, test_shell):
                         "Look from javascript errors via the inspector.")
     raise Exception("test_shell returned unexpected output: " + result);
 
+  # Remove CRs that are appearing from captured test_shell output.
+  result = result.replace('\r', '')
   # Write output
-  open(input_file, 'w').write(result);
+  open(input_file, 'wb').write(result);
   if (original and result == original):
     return None
   else:
