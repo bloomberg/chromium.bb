@@ -142,6 +142,8 @@ class TransportDIB {
   Display* display_;  // connection to the X server
 #endif
   size_t size_;  // length, in bytes
+
+  DISALLOW_COPY_AND_ASSIGN(TransportDIB);
 };
 
 class MessageLoop;

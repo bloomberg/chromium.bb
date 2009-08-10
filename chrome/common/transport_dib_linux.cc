@@ -45,7 +45,7 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
   if (shmkey == -1) {
     DLOG(ERROR) << "Failed to create SysV shared memory region"
                 << " errno:" << errno;
-    return false;
+    return NULL;
   }
 
   void* address = shmat(shmkey, NULL /* desired address */, 0 /* flags */);
@@ -54,7 +54,7 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
   // that the kernel will automatically clean it up for us.
   shmctl(shmkey, IPC_RMID, 0);
   if (address == kInvalidAddress)
-    return false;
+    return NULL;
 
   TransportDIB* dib = new TransportDIB;
 

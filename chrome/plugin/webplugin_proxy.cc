@@ -636,7 +636,13 @@ void WebPluginProxy::SetWindowlessBuffer(
   int width = delegate_->GetRect().width();
   int height = delegate_->GetRect().height();
   windowless_dib_.reset(TransportDIB::Map(windowless_buffer));
-  windowless_canvas_.reset(windowless_dib_->GetPlatformCanvas(width, height));
+  if (windowless_dib_.get()) {
+    windowless_canvas_.reset(windowless_dib_->GetPlatformCanvas(width, height));
+  } else {
+    // This can happen if the renderer has already destroyed the TransportDIB
+    // by the time we receive the handle, e.g. in case of multiple resizes.
+    windowless_canvas_.reset();
+  }
   background_dib_.reset(TransportDIB::Map(background_buffer));
   if (background_dib_.get()) {
     background_canvas_.reset(background_dib_->GetPlatformCanvas(width, height));
