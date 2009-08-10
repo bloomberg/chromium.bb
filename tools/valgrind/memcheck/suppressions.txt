@@ -1040,3 +1040,10 @@
    fun:_ZN7WebCore14ResourceHandle5startEPNS_5FrameE
    fun:_ZN7WebCore14ResourceHandle6createERKNS_15ResourceRequestEPNS_20ResourceHandleClientEPNS_5FrameEbbb
 }
+{
+   bug_18984
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELj0EEE
+   fun:_ZN7WebCore9CSSParser15createStyleRuleEPN3WTF6VectorIPNS_11CSSSelectorELj0EEE
+}
