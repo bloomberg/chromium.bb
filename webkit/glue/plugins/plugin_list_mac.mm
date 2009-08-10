@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/mac_util.h"
+#include "base/string_util.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 
 namespace {
@@ -66,12 +67,18 @@ void PluginList::LoadPluginsFromDir(const FilePath &path) {
 }
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info) {
+  // For now, only load plugins that we know are working reasonably well.
+  // Anything using QuickDraw-based drawing, for example, would crash
+  // immediately.
+  std::string plugin_name = WideToUTF8(info.name);
+  if (!(plugin_name == "Shockwave Flash" ||  // CG drawing + Carbon events.
+        plugin_name == "Picasa")) {          // No drawing or event handling.
+    return false;
+  }
+
   // Hierarchy check
   // (we're loading plugins hierarchically from Library folders, so plugins we
   //  encounter earlier must override plugins we encounter later)
-
-  // first, test to make sure the user really wants plugins
-
   for (size_t i = 0; i < plugins_.size(); ++i) {
     if (plugins_[i].path.BaseName() == info.path.BaseName()) {
       return false;  // We already have a loaded plugin higher in the hierarchy.
