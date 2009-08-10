@@ -78,6 +78,7 @@ WebInspector.HeapProfilerPanel.prototype = {
     },
 
     handleKeyEvent: function(event) {
+        this.sidebarTree.handleKeyEvent(event);
     },
 
     addSnapshot: function(snapshot) {
@@ -182,25 +183,35 @@ WebInspector.HeapSnapshotView = function(snapshot)
 
     this.element.addStyleClass("heap-snapshot-view");
 
+    this.showCountAsPercent = true;
+    this.showSizeAsPercent = true;
+
     var columns = { "cons": { title: WebInspector.UIString("Constructor"), disclosure: true, sortable: true },
                     "count": { title: WebInspector.UIString("Count"), width: "54px", sortable: true },
                     "size": { title: WebInspector.UIString("Size"), width: "72px", sort: "descending", sortable: true } };
 
     this.dataGrid = new WebInspector.DataGrid(columns);
     this.dataGrid.addEventListener("sorting changed", this._sortData, this);
+    this.dataGrid.element.addEventListener("mousedown", this._mouseDownInDataGrid.bind(this), true);
     this.element.appendChild(this.dataGrid.element);
 
     this.snapshot = snapshot;
     this.snapshotDataGridList = this.createSnapshotDataGridList();
     this.snapshotDataGridList.sort(WebInspector.HeapSnapshotDataGridList.propertyComparator("objectsSize", false));
 
+    this.percentButton = document.createElement("button");
+    this.percentButton.className = "percent-time-status-bar-item status-bar-item";
+    this.percentButton.addEventListener("click", this._percentClicked.bind(this), false);
+
     this.refresh();
+
+    this._updatePercentButton();
 };
 
 WebInspector.HeapSnapshotView.prototype = {
     get statusBarItems()
     {
-        return [];
+        return [this.percentButton];
     },
 
     get snapshot()
@@ -230,6 +241,49 @@ WebInspector.HeapSnapshotView.prototype = {
             this.dataGrid.appendChild(children[index]);
     },
 
+    refreshShowAsPercents: function()
+    {
+        this._updatePercentButton();
+        this.refreshVisibleData();
+    },
+
+    refreshVisibleData: function()
+    {
+        var child = this.dataGrid.children[0];
+        while (child) {
+            child.refresh();
+            child = child.traverseNextNode(false, null, true);
+        }
+    },
+
+    _mouseDownInDataGrid: function(event)
+    {
+        if (event.detail < 2)
+            return;
+
+        var cell = event.target.enclosingNodeOrSelfWithNodeName("td");
+        if (!cell || (!cell.hasStyleClass("count-column") && !cell.hasStyleClass("size-column")))
+            return;
+
+        if (cell.hasStyleClass("count-column"))
+            this.showCountAsPercent = !this.showCountAsPercent;
+        else if (cell.hasStyleClass("size-column"))
+            this.showSizeAsPercent = !this.showSizeAsPercent;
+
+        this.refreshShowAsPercents();
+
+        event.preventDefault();
+        event.stopPropagation();
+    },
+
+    _percentClicked: function(event)
+    {
+        var currentState = this.showCountAsPercent && this.showSizeAsPercent;
+        this.showCountAsPercent = !currentState;
+        this.showSizeAsPercent = !currentState;
+        this.refreshShowAsPercents();
+    },
+
     _sortData: function()
     {
         var sortAscending = this.dataGrid.sortOrder === "ascending";
@@ -243,6 +297,17 @@ WebInspector.HeapSnapshotView.prototype = {
         this.snapshotDataGridList.sort(WebInspector.HeapSnapshotDataGridList.propertyComparator(sortProperty, sortAscending));
 
         this.refresh();
+    },
+
+    _updatePercentButton: function()
+    {
+        if (this.showCountAsPercent && this.showSizeAsPercent) {
+            this.percentButton.title = WebInspector.UIString("Show absolute counts and sized.");
+            this.percentButton.addStyleClass("toggled-on");
+        } else {
+            this.percentButton.title = WebInspector.UIString("Show counts and sizes as percentages.");
+            this.percentButton.removeStyleClass("toggled-on");
+        }
     }
 };
 
@@ -281,7 +346,7 @@ WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
     {
         if (this._subTitle)
             return this._subTitle;
-        return WebInspector.UIString("Used %s of %s", Number.bytesToString(this.snapshot.used), Number.bytesToString(this.snapshot.capacity));
+        return WebInspector.UIString("Used %s of %s (%.0f%)", Number.bytesToString(this.snapshot.used, null, false), Number.bytesToString(this.snapshot.capacity, null, false), this.snapshot.used / this.snapshot.capacity * 100.0);
     },
 
     set subtitle(x)
@@ -312,11 +377,30 @@ WebInspector.HeapSnapshotDataGridNode.prototype = {
     get data()
     {
         var data = {
-            cons: this.constructorName,
-            count: this.objectsCount,
-            size: Number.bytesToString(this.objectsSize)
+            cons: this.constructorName
         };
+
+        if (this.snapshotView.showCountAsPercent)
+            data["count"] = WebInspector.UIString("%.2f%%", this.countPercent);
+        else
+            data["count"] = this.objectsCount;
+
+        if (this.snapshotView.showSizeAsPercent)
+            data["size"] = WebInspector.UIString("%.2f%%", this.sizePercent);
+        else
+            data["size"] = Number.bytesToString(this.objectsSize);
+
         return data;
+    },
+
+    get countPercent()
+    {
+        return this.objectsCount / this.list.objectsCount * 100.0;
+    },
+
+    get sizePercent()
+    {
+        return this.objectsSize / this.list.objectsSize * 100.0;
     }
 };
 
@@ -360,6 +444,26 @@ WebInspector.HeapSnapshotDataGridList.prototype = {
 
         this.children.sort(comparator);
         this.lastComparator = comparator;
+    },
+
+    get objectsCount() {
+        if (!this._objectsCount) {
+            this._objectsCount = 0;
+            for (var i = 0, n = this.children.length; i < n; ++i) {
+                this._objectsCount += this.children[i].objectsCount;
+            }
+        }
+        return this._objectsCount;
+    },
+
+    get objectsSize() {
+        if (!this._objectsSize) {
+            this._objectsSize = 0;
+            for (var i = 0, n = this.children.length; i < n; ++i) {
+                this._objectsSize += this.children[i].objectsSize;
+            }
+        }
+        return this._objectsSize;
     }
 };
 
