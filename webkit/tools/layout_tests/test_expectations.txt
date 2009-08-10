@@ -777,7 +777,10 @@ BUG5641 LINUX WIN : LayoutTests/svg/batik/text/textEffect3.svg = FAIL
 BUG8763 LINUX WIN : LayoutTests/svg/custom/use-on-g-containing-foreignObject-and-image.svg = FAIL
 
 BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = FAIL
+
+// smiley.png should be shown with xml:base and xml:base on parent.
 BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-07-t.svg = FAIL
+
 BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = FAIL
 
 // Radial gradients with offset focal points are not implemented in Skia.
