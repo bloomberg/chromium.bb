@@ -596,11 +596,10 @@ bool WebViewImpl::KeyEvent(const WebKeyboardEvent& event) {
   if (!handler)
     return KeyEventDefault(event);
 
-#if defined(OS_WIN)
-  // TODO(pinkerton): figure out these keycodes on non-windows
-  if (((event.modifiers == 0) && (event.windowsKeyCode == VK_APPS)) ||
+#if defined(OS_WIN) || defined(OS_LINUX)
+  if (((event.modifiers == 0) && (event.windowsKeyCode == VKEY_APPS)) ||
       ((event.modifiers == WebInputEvent::ShiftKey) &&
-       (event.windowsKeyCode == VK_F10))) {
+       (event.windowsKeyCode == VKEY_F10))) {
     SendContextMenuEvent(event);
     return true;
   }
@@ -731,7 +730,7 @@ bool WebViewImpl::CharEvent(const WebKeyboardEvent& event) {
 * This function is an ugly copy/paste and should be cleaned up when the
 * WebKitWin version is cleaned: https://bugs.webkit.org/show_bug.cgi?id=20438
 */
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // TODO(pinkerton): implement on non-windows
 bool WebViewImpl::SendContextMenuEvent(const WebKeyboardEvent& event) {
   static const int kContextMenuMargin = 1;
@@ -741,7 +740,11 @@ bool WebViewImpl::SendContextMenuEvent(const WebKeyboardEvent& event) {
     return false;
 
   IntPoint coords(-1, -1);
+#if defined(OS_WIN)
   int right_aligned = ::GetSystemMetrics(SM_MENUDROPALIGNMENT);
+#else
+  int right_aligned = 0;
+#endif
   IntPoint location;
 
   // The context menu event was generated from the keyboard, so show the
