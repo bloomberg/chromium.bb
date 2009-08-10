@@ -2190,7 +2190,6 @@ BUG9797 WIN DEBUG : LayoutTests/traversal/node-iterator-009.html = CRASH PASS
 
 // Failed in WebKit merge 42287:42324
 BUG9916 WIN LINUX : LayoutTests/css2.1/t0803-c5502-mrgn-r-02-c.html = FAIL
-BUG9916 WIN LINUX : LayoutTests/css2.1/t0803-c5505-mrgn-02-c.html = FAIL
 BUG9916 WIN LINUX : LayoutTests/fast/block/float/013.html = FAIL
 BUG9916 : LayoutTests/http/tests/xmlhttprequest/set-dangerous-headers.html = FAIL
 BUG9916 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FAIL
