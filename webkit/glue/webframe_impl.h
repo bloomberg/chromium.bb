@@ -64,16 +64,6 @@ struct WindowFeatures;
 class WebFrameImpl : public WebKit::WebFrame,
                      public base::RefCounted<WebFrameImpl> {
  public:
-  WebFrameImpl();
-  ~WebFrameImpl();
-
-  static int live_object_count() {
-    return live_object_count_;
-  }
-
-  // Called by the WebViewImpl to initialize its main frame:
-  void InitMainFrame(WebViewImpl* webview_impl);
-
   // WebFrame methods:
   virtual WebKit::WebString name() const;
   virtual WebKit::WebURL url() const;
@@ -175,11 +165,20 @@ class WebFrameImpl : public WebKit::WebFrame,
   virtual WebKit::WebString contentAsText(size_t max_chars) const;
   virtual WebKit::WebString contentAsMarkup() const;
 
+  WebFrameImpl();
+  ~WebFrameImpl();
+
+  static int live_object_count() {
+    return live_object_count_;
+  }
+
+  // Called by the WebViewImpl to initialize its main frame:
+  void InitMainFrame(WebViewImpl* webview_impl);
+
   PassRefPtr<WebCore::Frame> CreateChildFrame(
       const WebCore::FrameLoadRequest&,
       WebCore::HTMLFrameOwnerElement* owner_element);
 
-  // WebFrameImpl
   void Layout();
   void Paint(skia::PlatformCanvas* canvas, const WebKit::WebRect& rect);
 
@@ -352,9 +351,6 @@ class WebFrameImpl : public WebKit::WebFrame,
   // was searched.
   bool ShouldScopeMatches(const string16& search_text);
 
-  // Only for test_shell
-  int PendingFrameUnloadEventCount() const;
-
   // Determines whether to invalidate the content area and scrollbar.
   void InvalidateIfNecessary();
 
@@ -362,11 +358,6 @@ class WebFrameImpl : public WebKit::WebFrame,
   void ClearPasswordListeners();
 
   void LoadJavaScriptURL(const WebCore::KURL& url);
-
-  // Callback function for download of alternate error pages.  If the server is
-  // down or we take too long to download the page, |html| will be empty.
-  void AltErrorPageFinished(const GURL& unreachable_url,
-                            const std::string& html);
 
   // Valid between calls to BeginPrint() and EndPrint(). Containts the print
   // information. Is used by PrintPage().
