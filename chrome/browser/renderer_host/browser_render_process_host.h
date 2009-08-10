@@ -136,9 +136,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Does this process have backgrounded priority.
   bool backgrounded_;
 
-  // Is true only when the process had a render view created.
-  bool view_created_;
-
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.
   scoped_refptr<RenderWidgetHelper> widget_helper_;

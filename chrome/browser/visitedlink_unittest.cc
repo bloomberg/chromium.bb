@@ -565,7 +565,6 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
     rvh_factory_.set_render_process_host_factory(&vc_rph_factory_);
     profile_.reset(new VisitCountingProfile(event_listener_.get()));
     RenderViewHostTestHarness::SetUp();
-    rvh()->CreateRenderView();
   }
 
   VisitCountingProfile* profile() const {
@@ -648,6 +647,8 @@ TEST_F(VisitedLinkEventsTest, Coalescense) {
 
 TEST_F(VisitedLinkRelayTest, Basics) {
   VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
+  rvh()->CreateRenderView();
+
   // Add a few URLs.
   master->AddURL(GURL("http://acidtests.org/"));
   master->AddURL(GURL("http://google.com/"));
@@ -670,6 +671,7 @@ TEST_F(VisitedLinkRelayTest, Basics) {
 
 TEST_F(VisitedLinkRelayTest, TabVisibility) {
   VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
+  rvh()->CreateRenderView();
 
   // Simulate tab becoming inactive.
   rvh()->WasHidden();
@@ -710,5 +712,32 @@ TEST_F(VisitedLinkRelayTest, TabVisibility) {
 
   // We should have only one more reset event.
   EXPECT_EQ(1, profile()->add_event_count());
+  EXPECT_EQ(1, profile()->reset_event_count());
+}
+
+TEST_F(VisitedLinkRelayTest, WebViewReadiness) {
+  VisitedLinkMaster* master = profile_->GetVisitedLinkMaster();
+
+  // Add a few URLs.
+  master->AddURL(GURL("http://acidtests.org/"));
+  master->AddURL(GURL("http://google.com/"));
+  master->AddURL(GURL("http://chromium.org/"));
+
+  WaitForCoalescense();
+
+  std::set<GURL> deleted_urls;
+  deleted_urls.insert(GURL("http://acidtests.org/"));
+  master->DeleteURLs(deleted_urls);
+
+  // We shouldn't have any events, because RenderView hasn't been created,
+  // and we ensure that updates are sent until it is.
+  EXPECT_EQ(0, profile()->add_event_count());
+  EXPECT_EQ(0, profile()->reset_event_count());
+
+  rvh()->CreateRenderView();
+
+  // We should now have just a reset event: adds are eaten up by a reset
+  // that followed.
+  EXPECT_EQ(0, profile()->add_event_count());
   EXPECT_EQ(1, profile()->reset_event_count());
 }

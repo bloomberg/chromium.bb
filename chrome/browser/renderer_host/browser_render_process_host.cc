@@ -135,37 +135,48 @@ static const unsigned kVisitedLinkBufferThreshold = 50;
 // This class manages buffering and sending visited link hashes (fingerprints)
 // to renderer based on widget visibility.
 // As opposed to the VisitedLinkEventListener in profile.cc, which coalesces to
-// reduce the rate of messages being send to render processes, this class
+// reduce the rate of messages being sent to render processes, this class
 // ensures that the updates occur only when explicitly requested. This is
 // used by BrowserRenderProcessHost to only send Add/Reset link events to the
-// renderers when their tabs are visible.
+// renderers when their tabs are visible and the corresponding RenderViews are
+// created.
 class VisitedLinkUpdater {
  public:
-  VisitedLinkUpdater() : threshold_reached_(false) {}
+  VisitedLinkUpdater() : reset_needed_(false), has_receiver_(false) {}
 
-  void Buffer(const VisitedLinkCommon::Fingerprints& links) {
-    if (threshold_reached_)
+  // Buffers |links| to update, but doesn't actually relay them.
+  void AddLinks(const VisitedLinkCommon::Fingerprints& links) {
+    if (reset_needed_)
       return;
 
     if (pending_.size() + links.size() > kVisitedLinkBufferThreshold) {
-      threshold_reached_ = true;
       // Once the threshold is reached, there's no need to store pending visited
-      // links.
-      pending_.clear();
+      // link updates -- we opt for resetting the state for all links.
+      AddReset();
       return;
     }
 
     pending_.insert(pending_.end(), links.begin(), links.end());
   }
 
-  void Clear() {
+  // Tells the updater that sending individual link updates is no longer
+  // necessary and the visited state for all links should be reset.
+  void AddReset() {
+    reset_needed_ = true;
     pending_.clear();
   }
 
+  // Sends visited link update messages: a list of links whose visited state
+  // changed or reset of visited state for all links.
   void Update(IPC::Channel::Sender* sender) {
-    if (threshold_reached_) {
+    DCHECK(sender);
+
+    if (!has_receiver_)
+      return;
+
+    if (reset_needed_) {
       sender->Send(new ViewMsg_VisitedLink_Reset());
-      threshold_reached_ = false;
+      reset_needed_ = false;
       return;
     }
 
@@ -177,8 +188,16 @@ class VisitedLinkUpdater {
     pending_.clear();
   }
 
+  // Notifies the updater that it is now safe to send visited state updates.
+  void ReceiverReady(IPC::Channel::Sender* sender) {
+    has_receiver_ = true;
+    // Go ahead and send whatever we already have buffered up.
+    Update(sender);
+  }
+
  private:
-  bool threshold_reached_;
+  bool reset_needed_;
+  bool has_receiver_;
   VisitedLinkCommon::Fingerprints pending_;
 };
 
@@ -196,7 +215,6 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
     : RenderProcessHost(profile),
       visible_widgets_(0),
       backgrounded_(true),
-      view_created_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
@@ -524,16 +542,14 @@ void BrowserRenderProcessHost::ReceivedBadMessage(uint16 msg_type) {
 }
 
 void BrowserRenderProcessHost::ViewCreated() {
-  view_created_ = true;
-  visited_link_updater_->Update(this);
+  visited_link_updater_->ReceiverReady(this);
 }
 
 void BrowserRenderProcessHost::WidgetRestored() {
   // Verify we were properly backgrounded.
   DCHECK_EQ(backgrounded_, (visible_widgets_ == 0));
   visible_widgets_++;
-  if (view_created_)
-    visited_link_updater_->Update(this);
+  visited_link_updater_->Update(this);
   SetBackgrounded(false);
 }
 
@@ -561,7 +577,7 @@ void BrowserRenderProcessHost::AddWord(const std::wstring& word) {
 
 void BrowserRenderProcessHost::AddVisitedLinks(
     const VisitedLinkCommon::Fingerprints& links) {
-  visited_link_updater_->Buffer(links);
+  visited_link_updater_->AddLinks(links);
   if (visible_widgets_ == 0)
     return;
 
@@ -569,8 +585,11 @@ void BrowserRenderProcessHost::AddVisitedLinks(
 }
 
 void BrowserRenderProcessHost::ResetVisitedLinks() {
-  visited_link_updater_->Clear();
-  Send(new ViewMsg_VisitedLink_Reset());
+  visited_link_updater_->AddReset();
+  if (visible_widgets_ == 0)
+    return;
+
+  visited_link_updater_->Update(this);
 }
 
 base::ProcessHandle BrowserRenderProcessHost::GetRendererProcessHandle() {
