@@ -27,6 +27,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   using DownloadShelfContextMenu::OPEN_WHEN_COMPLETE;
   using DownloadShelfContextMenu::ALWAYS_OPEN_TYPE;
   using DownloadShelfContextMenu::CANCEL;
+  using DownloadShelfContextMenu::REMOVE_ITEM;
 };
 
 
@@ -114,6 +115,8 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     actionId = DownloadShelfContextMenuMac::ALWAYS_OPEN_TYPE;
   } else if (action == @selector(handleReveal:)) {
     actionId = DownloadShelfContextMenuMac::SHOW_IN_FOLDER;
+  } else if (action == @selector(handleRemove:)) {
+    actionId = DownloadShelfContextMenuMac::REMOVE_ITEM;
   } else if (action == @selector(handleCancel:)) {
     actionId = DownloadShelfContextMenuMac::CANCEL;
   } else {
@@ -141,6 +144,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (IBAction)handleReveal:(id)sender {
   menuBridge_->ExecuteItemCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER);
+}
+
+- (IBAction)handleRemove:(id)sender {
+  menuBridge_->ExecuteItemCommand(DownloadShelfContextMenuMac::REMOVE_ITEM);
 }
 
 - (IBAction)handleCancel:(id)sender {
