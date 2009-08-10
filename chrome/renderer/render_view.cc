@@ -1602,6 +1602,7 @@ WebNavigationPolicy RenderView::PolicyForNavigationAction(
       last_top_level_navigation_page_id_ != page_id_ &&
       // Not interested in reloads.
       type != WebKit::WebNavigationTypeReload &&
+      type != WebKit::WebNavigationTypeFormSubmitted &&
       // Must be a top level frame.
       frame->parent() == NULL) {
     // Skip if navigation is on the same page (using '#').

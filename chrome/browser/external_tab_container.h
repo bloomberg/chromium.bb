@@ -36,7 +36,11 @@ class ExternalTabContainer : public TabContentsDelegate,
   TabContents* tab_contents() const { return tab_contents_; }
 
   // Temporary hack so we can send notifications back
-  void set_tab_handle(int handle) { tab_handle_ = handle; }
+  void set_tab_handle(int handle) {
+    tab_handle_ = handle;
+    if (automation_profile_.get())
+      automation_profile_->set_tab_handle(handle);
+  }
 
   bool Init(Profile* profile,
             HWND parent,

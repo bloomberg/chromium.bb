@@ -15,7 +15,8 @@ class CookieStore;
 // Automation overrides for profile settings.
 class AutomationProfileImpl : public Profile {
  public:
-  AutomationProfileImpl() : original_profile_(NULL) {
+  AutomationProfileImpl() : original_profile_(NULL),
+                            tab_handle_(0) {
   }
 
   void Initialize(Profile* original_profile,
