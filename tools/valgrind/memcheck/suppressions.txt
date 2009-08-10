@@ -312,16 +312,6 @@
    fun:_ZNK7WebCore14SimpleFontData21platformWidthForGlyphEt
 }
 {
-   # src/webkit/tools/test_shell/node_leak_test.cc:44
-   NodeLeakTest_leak_todo
-   Memcheck:Leak
-   fun:_Znwj
-   ...
-   fun:_ZN9file_util12AppendToPathEPSbIwSt11char_traitsIwESaIwEERKS3_
-   fun:*src_webkit_tools_test_shell_node_leak_test.cc*NodeLeakTest5SetUpEv
-   fun:_ZN7testing4Test3RunEv
-}
-{
    # http://crbug.com/9246
    webcore_renderText_leak_todo
    Memcheck:Leak
