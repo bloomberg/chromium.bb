@@ -16,6 +16,7 @@
 
 #if defined(OS_LINUX)
 typedef struct _cairo cairo_t;
+typedef struct _GdkPixbuf GdkPixbuf;
 #endif
 
 namespace gfx {
@@ -186,6 +187,9 @@ class Canvas : public skia::PlatformCanvas {
   // invoked anytime you plan on drawing directly to the cairo context. Be
   // sure and set the matrix back to the identity when done.
   void ApplySkiaMatrixToCairoContext(cairo_t* cr);
+
+  // Draw the pixbuf in its natural size at (x, y).
+  void DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y);
 #endif
 
   // Compute the size required to draw some text with the provided font.

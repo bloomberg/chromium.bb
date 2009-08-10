@@ -24,6 +24,7 @@ class Size;
 }  // namespace gfx
 
 class CustomDrawButton;
+class GtkThemeProvider;
 class TabContents;
 class ThemeProvider;
 
@@ -194,6 +195,7 @@ class TabRendererGtk : public AnimationDelegate {
   // corresponding objects in the underlying model.
   struct TabData {
     SkBitmap favicon;
+    bool is_default_favicon;
     string16 title;
     bool loading;
     bool crashed;
@@ -342,7 +344,7 @@ class TabRendererGtk : public AnimationDelegate {
   // The offset used to paint the tab theme images.
   int background_offset_x_;
 
-  ThemeProvider* theme_provider_;
+  GtkThemeProvider* theme_provider_;
 
   // The close button.
   scoped_ptr<CustomDrawButton> close_button_;

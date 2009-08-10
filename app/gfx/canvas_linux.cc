@@ -234,4 +234,10 @@ void Canvas::DrawStringInt(const std::wstring& text,
   // NOTE: beginPlatformPaint returned its surface, we shouldn't destroy it.
 }
 
+void Canvas::DrawGdkPixbuf(GdkPixbuf* pixbuf, int x, int y) {
+  cairo_t* cr = beginPlatformPaint();
+  gdk_cairo_set_source_pixbuf(cr, pixbuf, x, y);
+  cairo_paint(cr);
+}
+
 }  // namespace gfx

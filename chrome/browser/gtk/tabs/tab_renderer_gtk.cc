@@ -11,8 +11,9 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/custom_button.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
@@ -253,19 +254,29 @@ TabRendererGtk::~TabRendererGtk() {
 
 void TabRendererGtk::UpdateData(TabContents* contents, bool loading_only) {
   DCHECK(contents);
+
+  theme_provider_ = GtkThemeProvider::GetFrom(contents->profile());
+
   if (!loading_only) {
     data_.title = contents->GetTitle();
     data_.off_the_record = contents->profile()->IsOffTheRecord();
     data_.crashed = contents->is_crashed();
     data_.favicon = contents->GetFavIcon();
+    // This is kind of a hacky way to determine whether our icon is the default
+    // favicon. But the plumbing that would be necessary to do it right would
+    // be a good bit of work and would sully code for other platforms which
+    // don't care to custom-theme the favicon. Hopefully the default favicon
+    // will eventually be chromium-themable and this code will go away.
+    data_.is_default_favicon =
+        (data_.favicon.pixelRef() ==
+        ResourceBundle::GetSharedInstance().GetBitmapNamed(
+            IDR_DEFAULT_FAVICON)->pixelRef());
   }
 
   // Loading state also involves whether we show the favicon, since that's where
   // we display the throbber.
   data_.loading = contents->is_loading();
   data_.show_icon = contents->ShouldDisplayFavIcon();
-
-  theme_provider_ = contents->profile()->GetThemeProvider();
 }
 
 void TabRendererGtk::UpdateFromModel() {
@@ -644,15 +655,21 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
                             true);
     } else {
       if (!data_.favicon.isNull()) {
-        // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
-        // to using that class to render the favicon).
-        canvas->DrawBitmapInt(data_.favicon, 0, 0,
-                              data_.favicon.width(),
-                              data_.favicon.height(),
-                              favicon_bounds_.x(),
-                              favicon_bounds_.y() + fav_icon_hiding_offset_,
-                              kFavIconSize, kFavIconSize,
-                              true);
+        if (data_.is_default_favicon && theme_provider_->UseGtkTheme()) {
+          GdkPixbuf* favicon = bookmark_utils::GetDefaultFavicon(true);
+          canvas->DrawGdkPixbuf(favicon, favicon_bounds_.x(),
+                                favicon_bounds_.y() + fav_icon_hiding_offset_);
+        } else {
+          // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
+          // to using that class to render the favicon).
+          canvas->DrawBitmapInt(data_.favicon, 0, 0,
+                                data_.favicon.width(),
+                                data_.favicon.height(),
+                                favicon_bounds_.x(),
+                                favicon_bounds_.y() + fav_icon_hiding_offset_,
+                                kFavIconSize, kFavIconSize,
+                                true);
+        }
       }
     }
     canvas->restore();
