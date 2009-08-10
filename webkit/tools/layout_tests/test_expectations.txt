@@ -2016,7 +2016,6 @@ BUG10475 WIN LINUX : LayoutTests/fast/forms/range-thumb-height-percentage.html =
 
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
-BUG10476 WIN LINUX : LayoutTests/editing/selection/5136696.html = FAIL PASS
 BUG10476 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = FAIL PASS
 
 // Merge WebKit 42133:42199 regressions
