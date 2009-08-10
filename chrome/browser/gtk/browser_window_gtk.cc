@@ -1625,7 +1625,9 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
       }
     }
   } else if (event->button == 2) {
-    gdk_window_lower(GTK_WIDGET(browser->window_)->window);
+    if (has_hit_titlebar || has_hit_edge) {
+      gdk_window_lower(GTK_WIDGET(browser->window_)->window);
+    }
     return TRUE;
   } else if (event->button == 3) {
     if (has_hit_titlebar) {
