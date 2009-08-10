@@ -2848,9 +2848,10 @@ BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom
 BUG18896 LINUX DEBUG : LayoutTests/svg/css/crash-css-generated-content.xhtml = FAIL
 
 // Test failures from WebKit merge 46894 to 46977
-BUG18939 LINUX : LayoutTests/editing/selection/5213963.html = FAIL
-BUG18939 LINUX MAC : LayoutTests/fast/js/JSON-stringify-replacer.html = FAIL
-BUG18939 LINUX MAC : LayoutTests/fast/js/function-declaration.html = FAIL
-BUG18939 LINUX MAC : LayoutTests/fast/js/prototypes.html = FAIL
+BUG18939 WIN LINUX : LayoutTests/editing/selection/5213963.html = FAIL
+BUG18939 : LayoutTests/fast/js/JSON-stringify-replacer.html = FAIL
+BUG18939 : LayoutTests/fast/js/function-declaration.html = FAIL
+BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
 BUG18939 MAC : LayoutTests/editing/execCommand/toggle-compound-styles.html = FAIL
 BUG18939 MAC : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH PASS
+BUG18939 WIN : LayoutTests/media/controls-right-click-on-timebar.html = FAIL
