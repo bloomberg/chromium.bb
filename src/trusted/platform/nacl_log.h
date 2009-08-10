@@ -70,6 +70,12 @@ void  NaClLogEnableTimestamp(void);
 
 void  NaClLogDisableTimestamp(void);
 
+/*
+ * Users of NaClLogV should add ATTRIBUTE_FORMAT_PRINTF(m,n) to their
+ * function prototype, where m is the argument position of the format
+ * string and n is the position of the first argument to be consumed
+ * by the format specifier.
+ */
 void NaClLogV(int         detail_level,
               char const  *fmt,
               va_list     ap);
@@ -94,6 +100,9 @@ void NaClLogUnlock(void);
  * Caller is responsible for grabbing the NaClLog mutex lock (via
  * NaClLogLock) before calling NaClLogV_mu or NaClLog_mu and for
  * releasing it (via NaClLogUnlock) afterward.
+ *
+ * Users of NaClLogV_mu should also use ATTRIBUTE_FORMAT_PRINTF as
+ * above.
  */
 void  NaClLogV_mu(int         detail_level,
                   char const  *fmt,
