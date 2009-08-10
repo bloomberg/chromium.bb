@@ -23,8 +23,15 @@
 #include <atlprint.h>   // NOLINT
 #include <atlscrl.h>    // NOLINT
 
-// Note these headers are order sensitive.
 #include "base/at_exit.h"
+#include "base/basictypes.h"
+#include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/logging.h"
+#include "base/string_util.h"
+#include "base/time.h"
+
+// Note these headers are order sensitive.
 #include "media/base/factory.h"
 #include "media/base/pipeline_impl.h"
 #include "media/player/movie.h"
@@ -43,10 +50,41 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 
+// Enable timing code by turning on TESTING macro.
+// #define TESTING 1
+
+#ifdef TESTING
+#define _CRT_SECURE_NO_WARNINGS
+#include <windows.h>  // NOLINT
+#include <stdio.h>    // NOLINT
+#include <process.h>  // NOLINT
+#include <string.h>   // NOLINT
+
+// Fetch current time as milliseconds.
+// Return as double for high duration and precision.
+static inline double GetTime() {
+  LARGE_INTEGER perf_time, perf_hz;
+  QueryPerformanceFrequency(&perf_hz);  // May change with speed step.
+  QueryPerformanceCounter(&perf_time);
+  return perf_time.QuadPart * 1000.0 / perf_hz.QuadPart;  // Convert to ms.
+}
+#endif
+
+namespace switches {
+const wchar_t kExit[] = L"exit";
+}  // namespace switches
+
+
 CAppModule g_module;
 
-int Run(wchar_t* cmd_line, int cmd_show) {
+int Run(wchar_t* win_cmd_line, int cmd_show) {
   base::AtExitManager exit_manager;
+
+  // Windows version of Init uses OS to fetch command line.
+  CommandLine::Init(0, NULL);
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+
+  std::vector<std::wstring> filenames(cmd_line->GetLooseValues());
 
   CMessageLoop the_loop;
   g_module.AddMessageLoop(&the_loop);
@@ -59,13 +97,13 @@ int Run(wchar_t* cmd_line, int cmd_show) {
 
   wnd_main.ShowWindow(cmd_show);
 
-  wchar_t* url = NULL;
-  if (cmd_line && *cmd_line) {
-    url = cmd_line;
+  if (!filenames.empty()) {
+    const wchar_t* url = filenames[0].c_str();
+    wnd_main.MovieOpenFile(url);
   }
 
-  if (url) {
-    wnd_main.MovieOpenFile(url);
+  if (cmd_line->HasSwitch(switches::kExit)) {
+    wnd_main.OnOptionsExit(0, 0, 0);
   }
 
   int result = the_loop.Run();
@@ -78,6 +116,9 @@ int Run(wchar_t* cmd_line, int cmd_show) {
 
 int WINAPI _tWinMain(HINSTANCE instance, HINSTANCE /*previous_instance*/,
                      wchar_t* cmd_line, int cmd_show) {
+#ifdef TESTING
+  double player_time_start = GetTime();
+#endif
   INITCOMMONCONTROLSEX iccx;
   iccx.dwSize = sizeof(iccx);
   iccx.dwICC = ICC_COOL_CLASSES | ICC_BAR_CLASSES;
@@ -92,6 +133,15 @@ int WINAPI _tWinMain(HINSTANCE instance, HINSTANCE /*previous_instance*/,
   int result = Run(cmd_line, cmd_show);
 
   g_module.Term();
+#ifdef TESTING
+  double player_time_end = GetTime();
+  char outputbuf[512];
+  _snprintf_s(outputbuf, sizeof(outputbuf),
+              "player time %5.2f ms\n",
+              player_time_end - player_time_start);
+  OutputDebugStringA(outputbuf);
+  printf("%s", outputbuf);
+#endif
   return result;
 }
 

@@ -140,7 +140,7 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     UpdateLayout();
   }
 
-  void UpdateTitleBar(wchar_t* lpstrTitle) {
+  void UpdateTitleBar(const wchar_t* lpstrTitle) {
     CString strDefault;
     strDefault.LoadString(IDR_MAINFRAME);
     CString strTitle = strDefault;
@@ -409,13 +409,13 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
     PostMessage(WM_CLOSE);
   }
 
-  bool IsMovie(wchar_t* file_name) {
+  bool IsMovie(const wchar_t* file_name) {
     if (_tcsstr(file_name, L".bmp"))
       return false;
     return true;
   }
 
-  bool MovieOpenFile(wchar_t* file_name) {
+  bool MovieOpenFile(const wchar_t* file_name) {
     bool success = false;
 
     if (m_bPrintPreview)
