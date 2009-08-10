@@ -46,11 +46,6 @@
           ],
           # Disable warning: "'this' : used in base member initialization list."
           'msvs_disabled_warnings': [4355],
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'AdditionalOptions': '/MP',
-            },
-          },
         },
       },
     ],
