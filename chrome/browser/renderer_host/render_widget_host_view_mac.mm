@@ -23,6 +23,7 @@ using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 
 @interface RenderWidgetHostViewCocoa (Private)
++ (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
 - (void)cancelChildPopups;
 @end
@@ -495,6 +496,10 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
   // (See <https://bugs.webkit.org/show_bug.cgi?id=25119>).
   if ([theEvent type] == NSKeyDown)
     [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+
+  // Possibly autohide the cursor.
+  if ([RenderWidgetHostViewCocoa shouldAutohideCursorForEvent:theEvent])
+    [NSCursor setHiddenUntilMouseMoves:YES];
 }
 
 - (void)scrollWheel:(NSEvent *)theEvent {
@@ -665,6 +670,13 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
 
 - (RenderWidgetHostViewMac*)renderWidgetHostViewMac {
   return renderWidgetHostView_;
+}
+
+// Determine whether we should autohide the cursor (i.e., hide it until mouse
+// move) for the given event. Customize here to be more selective about which
+// key presses to autohide on.
++ (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event {
+  return ([event type] == NSKeyDown) ? YES : NO;
 }
 
 
