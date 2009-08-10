@@ -243,16 +243,18 @@ pre_base_env.Replace(TARGET_ROOT = TARGET_ROOT)
 
 # ----------------------------------------------------------
 EXTRA_ENV = [('XAUTHORITY', None),
-              ('HOME', None),
-              ('DISPLAY', None),
-              ('SSH_TTY', None),
-              ('KRB5CCNAME', None),
-              ]
+             ('HOME', None),
+             ('DISPLAY', None),
+             ('SSH_TTY', None),
+             ('KRB5CCNAME', None),
+             ]
 
 def DemoSelLdrNacl(env,
                    target,
                    nexe,
                    log_verbosity=2,
+                   sel_ldr_flags=['-d'],
+                   emulator=[],
                    args=[]):
 
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
@@ -264,8 +266,8 @@ def DemoSelLdrNacl(env,
   sel_ldr = trusted_env.File('${STAGING_DIR}/'
                              + '${PROGPREFIX}sel_ldr${PROGSUFFIX}')
   deps = [sel_ldr, nexe]
-  command = ['${SOURCES[0].abspath}', '-d', '-f',
-             '${SOURCES[1].abspath}', '--'] + args
+  command = (emulator + ['${SOURCES[0].abspath}'] + sel_ldr_flags +
+             ['-f', '${SOURCES[1].abspath}', '--'] + args)
 
   # NOT: since most of the demos use X11 we need to make sure
   #      some env vars are set for tag, val in extra_env:
@@ -286,6 +288,8 @@ if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
 # ----------------------------------------------------------
 def CommandSelLdrTestNacl(env, name, command,
                           log_verbosity=2,
+                          sel_ldr_flags=['-d'],
+                          emulator=[],
                           size='medium',
                           **extra):
 
@@ -297,7 +301,7 @@ def CommandSelLdrTestNacl(env, name, command,
   trusted_env = env['TRUSTED_ENV']
   sel_ldr = trusted_env.File('${STAGING_DIR}/'
                              + '${PROGPREFIX}sel_ldr${PROGSUFFIX}')
-  command = [sel_ldr, '-d', '-f'] + command
+  command = emulator + [sel_ldr] + sel_ldr_flags  + ['-f'] + command
 
   # NOTE(robertm): log handling is a little magical
   # We do not pass these via flags because those are not usable for sel_ldr
@@ -725,6 +729,7 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
   linux_env.Replace(CC=os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED'),
                     CXX=os.getenv('ARM_CXX', 'NO-ARM-CXX-SPECIFIED'),
                     LD=os.getenv('ARM_LD', 'NO-ARM-LD-SPECIFIED'),
+                    EMULATOR=os.getenv('ARM_EMU', 'NO-ARM-EMU-SPECIFIED'),
                     ASFLAGS=[],
                     LIBPATH=['${LIB_DIR}',
                              os.getenv('ARM_LIB_DIR', '').split()],
@@ -774,43 +779,50 @@ nacl_env = pre_base_env.Clone(
     LIBS = ['${EXTRA_LIBS}'],
 )
 
+# limit the majority of test to x86 for now
+if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
+  nacl_env.Append(
+      BUILD_SCONSCRIPTS = [
+          ####  ALPHABETICALLY SORTED ####
+          'common/console/nacl.scons',
 
-nacl_env.Append(
-    BUILD_SCONSCRIPTS = [
-      ####  ALPHABETICALLY SORTED ####
-      'common/console/nacl.scons',
+          'tests/app_lib/nacl.scons',
+          'tests/autoloader/nacl.scons',
+          'tests/contest_issues/nacl.scons',
+          'tests/earth/nacl.scons',
+          'tests/fib/nacl.scons',
+          'tests/file/nacl.scons',
+          'tests/hello_world/nacl.scons',
+          'tests/imc_shm_mmap/nacl.scons',
+          'tests/life/nacl.scons',
+          'tests/mandel/nacl.scons',
+          'tests/mandel_nav/nacl.scons',
+          'tests/many/nacl.scons',
+          'tests/mmap/nacl.scons',
+          'tests/native_worker/nacl.scons',
+          'tests/noop/nacl.scons',
+          'tests/nrd_xfer/nacl.scons',
+          'tests/null/nacl.scons',
+          'tests/nullptr/nacl.scons',
+          'tests/selenium_dummy/nacl.scons',
+          'tests/srpc/nacl.scons',
+          'tests/srpc_hw/nacl.scons',
+          'tests/syscalls/nacl.scons',
+          'tests/threads/nacl.scons',
+          'tests/tone/nacl.scons',
+          'tests/vim/nacl.scons',
+          'tests/voronoi/nacl.scons',
 
-      'tests/app_lib/nacl.scons',
-      'tests/autoloader/nacl.scons',
-      'tests/contest_issues/nacl.scons',
-      'tests/earth/nacl.scons',
-      'tests/fib/nacl.scons',
-      'tests/file/nacl.scons',
-      'tests/hello_world/nacl.scons',
-      'tests/imc_shm_mmap/nacl.scons',
-      'tests/life/nacl.scons',
-      'tests/mandel/nacl.scons',
-      'tests/mandel_nav/nacl.scons',
-      'tests/many/nacl.scons',
-      'tests/mmap/nacl.scons',
-      'tests/native_worker/nacl.scons',
-      'tests/noop/nacl.scons',
-      'tests/nrd_xfer/nacl.scons',
-      'tests/null/nacl.scons',
-      'tests/nullptr/nacl.scons',
-      'tests/selenium_dummy/nacl.scons',
-      'tests/srpc/nacl.scons',
-      'tests/srpc_hw/nacl.scons',
-      'tests/syscalls/nacl.scons',
-      'tests/threads/nacl.scons',
-      'tests/tone/nacl.scons',
-      'tests/vim/nacl.scons',
-      'tests/voronoi/nacl.scons',
+          'tools/tests/nacl.scons',
+          ####  ALPHABETICALLY SORTED ####
+          ],
+      )
 
-      'tools/tests/nacl.scons',
-      ####  ALPHABETICALLY SORTED ####
-   ],
-)
+if nacl_env['BUILD_ARCHITECTURE'] == 'arm':
+  nacl_env.Append(
+      BUILD_SCONSCRIPTS = [
+          'tests/arm_service_runtime/nacl.scons',
+      ])
 
 environment_list.append(nacl_env)
 

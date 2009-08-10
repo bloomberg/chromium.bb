@@ -85,6 +85,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
     return os.path.abspath(sdk_mode[len('custom:'):])
 
   else:
+    print 'unknown sdk mode [%s]' % sdk_mode
     assert 0
 
 
@@ -146,17 +147,17 @@ def _SetEnvForX86Sdk(env, sdk_path):
 
 def _SetEnvForSdkManually(env):
   env.Replace(# replace header and lib paths
-              NACL_SDK_INCLUDE=os.getenv(NACL_SDK_INCLUDE,
+              NACL_SDK_INCLUDE=os.getenv('NACL_SDK_INCLUDE',
                                          'MISSING_SDK_INCLUDE'),
-              NACL_SDK_LIB=os.getenv(NACL_SDK_LIB, 'MISSING_SDK_LIB'),
+              NACL_SDK_LIB=os.getenv('NACL_SDK_LIB', 'MISSING_SDK_LIB'),
               # Replace the normal unix tools with the NaCl ones.
-              CC=os.getenv(NACL_SDK_CC, 'MISSING_SDK_CC'),
-              CXX=os.getenv(NACL_SDK_CXX, 'MISSING_SDK_CXX'),
-              AR=os.getenv(NACL_SDK_AR, 'MISSING_SDK_AR'),
-              AS=os.getenv(NACL_SDK_AS, 'MISSING_SDK_AS'),
+              CC=os.getenv('NACL_SDK_CC', 'MISSING_SDK_CC'),
+              CXX=os.getenv('NACL_SDK_CXX', 'MISSING_SDK_CXX'),
+              AR=os.getenv('NACL_SDK_AR', 'MISSING_SDK_AR'),
+              AS=os.getenv('NACL_SDK_AS', 'MISSING_SDK_AS'),
               # NOTE: use g++ for linking so we can handle c AND c++
-              LINK=os.getenv(NACL_SDK_LINK, 'MISSING_SDK_LINK'),
-              RANLIB=os.getenv(NACL_SDK_RANLIB, 'MISSING_SDK_RANLIB'),
+              LINK=os.getenv('NACL_SDK_LINK', 'MISSING_SDK_LINK'),
+              RANLIB=os.getenv('NACL_SDK_RANLIB', 'MISSING_SDK_RANLIB'),
               )
 
 
@@ -223,11 +224,10 @@ def generate(env):
   )
 
   # Determine where to get the SDK from.
-  sdk_root_dir = _GetNaclSdkRoot(env, sdk_mode)
-  if sdk_root_dir:
-    _SetEnvForX86Sdk(env, sdk_root_dir)
-  else:
+  if sdk_mode == 'manual':
     _SetEnvForSdkManually(env)
+  else:
+    _SetEnvForX86Sdk(env, _GetNaclSdkRoot(env, sdk_mode))
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
 
