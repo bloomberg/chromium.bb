@@ -43,6 +43,7 @@
 - (void)openFiles:(NSAppleEventDescriptor*)event
         withReply:(NSAppleEventDescriptor*)reply;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
+- (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
 - (BOOL)shouldQuitWithInProgressDownloads;
 @end
 
@@ -247,80 +248,89 @@
   [self openPendingURLs];
 }
 
-// Check all browsers for in progress downloads, and if we find any, prompt the
+// Helper function for populating and displaying the in progress downloads at
+// exit alert panel.
+- (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount {
+  NSString* descriptionText = nil;
+  NSString* waitTitle = nil;
+  NSString* exitTitle = nil;
+
+  // Set the dialog text based on whether or not there are multiple downloads.
+  if (downloadCount == 1) {
+    // Dialog text.
+    descriptionText =
+        base::SysWideToNSString(
+            l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE));
+
+    // Cancel download and exit button text.
+    exitTitle =
+        base::SysWideToNSString(
+            l10n_util::GetString(
+                IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+
+    // Wait for download button text.
+    waitTitle =
+        base::SysWideToNSString(
+            l10n_util::GetString(
+                IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+  } else {
+    // Dialog text.
+    descriptionText =
+        base::SysWideToNSString(
+            l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE,
+                                  downloadCount));
+
+    // Cancel downloads and exit button text.
+    exitTitle =
+        base::SysWideToNSString(
+            l10n_util::GetString(
+                IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+
+    // Wait for downloads button text.
+    waitTitle =
+        base::SysWideToNSString(
+            l10n_util::GetString(
+                IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+  }
+
+  // 'waitButton' is the default choice.
+  int choice = NSRunAlertPanel(nil, descriptionText, waitTitle, exitTitle, nil);
+  return choice == NSAlertDefaultReturn ? YES : NO;
+}
+
+// Check all profiles for in progress downloads, and if we find any, prompt the
 // user to see if we should continue to exit (and thus cancel the downloads), or
 // if we should wait.
 - (BOOL)shouldQuitWithInProgressDownloads {
-  BrowserList::const_iterator it = BrowserList::begin();
-  for (; it != BrowserList::end(); ++it) {
-    Browser* browser = *it;
-    Profile* profile = browser->profile();
-    if (!profile)
-      continue;
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return YES;
 
+  ProfileManager::const_iterator it = profile_manager->begin();
+  for (; it != profile_manager->end(); ++it) {
+    Profile* profile = *it;
     DownloadManager* download_manager = profile->GetDownloadManager();
-    if (!download_manager || download_manager->in_progress_count() == 0)
-      continue;
+    if (download_manager && download_manager->in_progress_count() > 0) {
+      int downloadCount = download_manager->in_progress_count();
+      if ([self userWillWaitForInProgressDownloads:downloadCount]) {
+        // Create a new browser window (if necessary) and navigate to the
+        // downloads page if the user chooses to wait.
+        Browser* browser = BrowserList::FindBrowserWithProfile(profile);
+        if (!browser) {
+          browser = Browser::Create(profile);
+          browser->window()->Show();
+        }
+        DCHECK(browser);
+        browser->ShowDownloadsTab();
+        return NO;
+      }
 
-    // There are downloads in progress so run the dialog asking if we should
-    // exit. There can be multiple windows (i.e. browsers) open, but we don't
-    // want to prompt for each one. Use the first browser with downloads in
-    // progress.
-    NSString* descriptionText = nil;
-    NSString* waitButton = nil;
-    NSString* exitButton = nil;
-
-    // Set the dialog text based on whether or not there are multiple downloads.
-    if (download_manager->in_progress_count() == 1) {
-      // Dialog text.
-      descriptionText =
-          base::SysWideToNSString(
-              l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_TITLE));
-
-      // Cancel downloads and exit button text.
-      exitButton =
-          base::SysWideToNSString(
-              l10n_util::GetString(
-                  IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
-
-      // Wait for downloads button text.
-      waitButton =
-          base::SysWideToNSString(
-              l10n_util::GetString(
-                  IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
-    } else {
-      // Dialog text.
-      descriptionText =
-          base::SysWideToNSString(
-              l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_TITLE,
-                                    download_manager->in_progress_count()));
-
-      // Cancel downloads and exit button text.
-      exitButton =
-          base::SysWideToNSString(
-              l10n_util::GetString(
-                  IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
-
-      // Wait for downloads button text.
-      waitButton =
-          base::SysWideToNSString(
-              l10n_util::GetString(
-                  IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
+      // User wants to exit.
+      return YES;
     }
-
-    // 'waitButton' is the default choice.
-    int choice = NSRunAlertPanel(nil, descriptionText,
-                                 waitButton, exitButton, nil);
-    if (choice == NSAlertDefaultReturn) {
-      // We're not going to exit, so show the user the download page so they can
-      // see the in progress downloads.
-      browser->ShowDownloadsTab();
-      return NO;
-    }
-    break;
   }
 
-  // Okay to exit.
+  // No profiles or active downloads found, okay to exit.
   return YES;
 }
 
