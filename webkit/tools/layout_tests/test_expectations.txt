@@ -2857,4 +2857,4 @@ BUG18939 MAC : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = C
 BUG18939 WIN : LayoutTests/media/controls-right-click-on-timebar.html = FAIL
 
 // Flakiness from WebKit merge to 46977
-BUG18966 LINUX : LayoutTests/fast/overflow/overflow-float-stacking.html = PASS FAIL
+BUG18966 LINUX : LayoutTests/fast/overflow/overflow-float-stacking.html = PASS CRASH
