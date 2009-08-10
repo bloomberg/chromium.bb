@@ -109,14 +109,14 @@ ICustomDestinationList : public IUnknown {
 #endif  // __ICustomDestinationList_INTERFACE_DEFINED__
 
 // Class IDs used in this file.
-// These class IDs should be defined in an anonymous namespace to avoid
-// potential conflicts with ones defined in "shell32.lib" of Microsoft SDK 7.0.
+// These class IDs must be defined in an anonymous namespace to avoid
+// conflicts with ones defined in "shell32.lib" of Visual Studio 2008.
 // TODO(hbono): Bug 16903: to be deleted them when we use Windows SDK 7.0.
-EXTERN_C const CLSID CLSID_DestinationList = {
+const CLSID CLSID_DestinationList = {
   0x77f10cf0, 0x3db5, 0x4966, {0xb5, 0x20, 0xb7, 0xc5, 0x4f, 0xd3, 0x5e, 0xd6}
 };
 
-EXTERN_C const CLSID CLSID_EnumerableObjectCollection = {
+const CLSID CLSID_EnumerableObjectCollection = {
   0x2d3468c1, 0x36a7, 0x43b6, {0xac, 0x24, 0xd3, 0xf0, 0x2f, 0xd9, 0x60, 0x7a}
 };
 
@@ -712,11 +712,14 @@ void JumpList::OnFavIconDataAvailable(
     GURL icon_url) {
   // Attach the received data to the ShellLinkItem object.
   // This data will be decoded by JumpListUpdateTask.
-  if (know_favicon && data.get() && !data->data.empty())
-    icon_urls_.front().second->SetIconData(data);
+  if (know_favicon && data.get() && !data->data.empty()) {
+    if (!icon_urls_.empty() && icon_urls_.front().second)
+      icon_urls_.front().second->SetIconData(data);
+  }
 
   // if we need to load more fav icons, we send another query and exit.
-  icon_urls_.pop_front();
+  if (!icon_urls_.empty())
+    icon_urls_.pop_front();
   if (StartLoadingFavIcon())
     return;
 
