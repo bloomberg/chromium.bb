@@ -30,9 +30,11 @@
 
 Import('env')
 
-crt1_target = env.ComponentObject('crt1', [ 'crt1.S' ])
-crti_target = env.ComponentObject('crti', [ 'crti.S' ])
-crtn_target = env.ComponentObject('crtn', [ 'crtn.S' ])
+# TODO(ARM_PORT)
+if env.get('TARGET_ARCHITECTURE') == 'x86':
+  crt1_target = env.ComponentObject('crt1', [ 'crt1.S' ])
+  crti_target = env.ComponentObject('crti', [ 'crti.S' ])
+  crtn_target = env.ComponentObject('crtn', [ 'crtn.S' ])
 
-# NOTE: must use crt1_target rather than 'crt1' - don't know why
-env.AddObjectToSdk([crt1_target, crti_target, crtn_target])
+  # NOTE: must use crt1_target rather than 'crt1' - don't know why
+  env.AddObjectToSdk([crt1_target, crti_target, crtn_target])

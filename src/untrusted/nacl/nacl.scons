@@ -38,7 +38,7 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 # object files.  Placing multiple definitions in one file may result in
 # object code bloat or possibly multiple definitions.
 
-sources = [
+sources_c = [
     'av_wait.c',
     'close.c',
     'dup.c',
@@ -77,37 +77,43 @@ sources = [
     'unlink.c',
     'wait.c',
     'write.c',
-    # Assembly source files
-    'nacl_clock.S',
-    'nacl_close.S',
-    'nacl_exit.S',
-    'nacl_fstat.S',
-    'nacl_getdents.S',
-    'nacl_getpid.S',
-    'nacl_gettimeofday.S',
-    'nacl_imc_accept.S',
-    'nacl_imc_connect.S',
-    'nacl_imc_makeboundsock.S',
-    'nacl_imc_mem_obj_create.S',
-    'nacl_imc_recvmsg.S',
-    'nacl_imc_sendmsg.S',
-    'nacl_imc_socketpair.S',
-    'nacl_lseek.S',
-    'nacl_mmap.S',
-    'nacl_multimedia.S',
-    'nacl_null.S',
-    'nacl_open.S',
-    'nacl_read.S',
-    'nacl_sched_yield.S',
-    'nacl_srpc_get_fd.S',
-    'nacl_stat.S',
-    'nacl_sysbrk.S',
-    'nacl_sysconf.S',
-    'nacl_tls.S',
-    'nacl_unmap.S',
-    'nacl_write.S',
-]
+    ]
 
-env.ComponentLibrary('libnacl', sources)
+# TODO(ARM_PORT)
+if env.get('TARGET_ARCHITECTURE') == 'x86':
+  sources_asm = [
+      'nacl_clock.S',
+      'nacl_close.S',
+      'nacl_exit.S',
+      'nacl_fstat.S',
+      'nacl_getdents.S',
+      'nacl_getpid.S',
+      'nacl_gettimeofday.S',
+      'nacl_imc_accept.S',
+      'nacl_imc_connect.S',
+      'nacl_imc_makeboundsock.S',
+      'nacl_imc_mem_obj_create.S',
+      'nacl_imc_recvmsg.S',
+      'nacl_imc_sendmsg.S',
+      'nacl_imc_socketpair.S',
+      'nacl_lseek.S',
+      'nacl_mmap.S',
+      'nacl_multimedia.S',
+      'nacl_null.S',
+      'nacl_open.S',
+      'nacl_read.S',
+      'nacl_sched_yield.S',
+      'nacl_srpc_get_fd.S',
+      'nacl_stat.S',
+      'nacl_sysbrk.S',
+      'nacl_sysconf.S',
+      'nacl_tls.S',
+      'nacl_unmap.S',
+      'nacl_write.S',
+    ]
+else:
+  sources_asm = []
+
+env.ComponentLibrary('libnacl', sources_asm + sources_c)
 
 env.AddLibraryToSdk(['libnacl'])

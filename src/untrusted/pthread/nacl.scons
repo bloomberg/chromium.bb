@@ -30,18 +30,21 @@
 
 Import('env')
 
-nc_threads_source_files = [
-    # C source files
+sources_c = [
     'nc_thread.c',
     'nc_mutex.c',
     'nc_condvar.c',
     'nc_semaphore.c',
     'nc_hash.c',
-    # Assembly source files
-    'nacl_mutex.S',
 ]
 
-env.ComponentLibrary('libpthread', nc_threads_source_files)
+# TODO(ARM_PORT)
+if env.get('TARGET_ARCHITECTURE') == 'x86':
+  sources_asm = ['nacl_mutex.S',]
+else:
+  sources_asm = []
+
+env.ComponentLibrary('libpthread', sources_asm + sources_asm)
 
 env.AddLibraryToSdk(['libpthread'])
 
