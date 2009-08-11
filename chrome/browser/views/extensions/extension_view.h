@@ -59,6 +59,10 @@ class ExtensionView : public views::NativeViewHost {
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View *parent, views::View *child);
 
+  // Call after extension process crash to re-initialize view, so that
+  // extension content can be rendered again.
+  void RecoverCrashedExtension();
+
  private:
   friend class ExtensionHost;
 

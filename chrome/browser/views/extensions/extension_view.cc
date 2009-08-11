@@ -145,6 +145,11 @@ void ExtensionView::ViewHierarchyChanged(bool is_add,
     CreateWidgetHostView();
 }
 
+void ExtensionView::RecoverCrashedExtension() {
+  CleanUp();
+  CreateWidgetHostView();
+}
+
 void ExtensionView::HandleMouseEvent() {
   if (container_)
     container_->OnExtensionMouseEvent(this);

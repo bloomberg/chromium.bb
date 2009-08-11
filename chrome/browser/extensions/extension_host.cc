@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
@@ -16,6 +17,9 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
@@ -25,8 +29,56 @@
 #include "chrome/common/url_constants.h"
 
 #include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 #include "webkit/glue/context_menu.h"
+
+namespace {
+
+class CrashedExtensionInfobarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  CrashedExtensionInfobarDelegate(TabContents* tab_contents,
+                                  ExtensionHost* extension_host)
+      : ConfirmInfoBarDelegate(tab_contents),
+        extension_host_(extension_host) {
+  }
+
+  virtual std::wstring GetMessageText() const {
+    return l10n_util::GetStringF(IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE,
+        UTF8ToWide(extension_host_->extension()->name()));
+  }
+
+  virtual SkBitmap* GetIcon() const {
+    // TODO(erikkay): Create extension-specific icon. http://crbug.com/14591
+    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_INFOBAR_PLUGIN_CRASHED);
+  }
+
+  virtual int GetButtons() const {
+    return BUTTON_OK;
+  }
+
+  virtual std::wstring GetButtonLabel(
+      ConfirmInfoBarDelegate::InfoBarButton button) const {
+    if (button == BUTTON_OK)
+      return l10n_util::GetString(IDS_EXTENSION_CRASHED_INFOBAR_RESTART_BUTTON);
+    return ConfirmInfoBarDelegate::GetButtonLabel(button);
+  }
+
+  virtual bool Accept() {
+    extension_host_->RecoverCrashedExtension();
+    return true;
+  }
+
+ private:
+  ExtensionHost* extension_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrashedExtensionInfobarDelegate);
+};
+
+}  // namespace
+
 
 // static
 bool ExtensionHost::enable_dom_automation_ = false;
@@ -110,6 +162,21 @@ void ExtensionHost::Observe(NotificationType type,
   NavigateToURL(url_);
 }
 
+void ExtensionHost::RecoverCrashedExtension() {
+  DCHECK(!IsRenderViewLive());
+#if defined(TOOLKIT_VIEWS)
+  if (view_.get()) {
+    // The view should call us back to CreateRenderView, which is the place
+    // where we create the render process and fire notification.
+    view_->RecoverCrashedExtension();
+  } else {
+    CreateRenderView(NULL);
+  }
+#else
+  CreateRenderView(NULL);
+#endif
+}
+
 void ExtensionHost::UpdatePreferredWidth(int pref_width) {
 #if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
   if (view_.get())
@@ -119,9 +186,17 @@ void ExtensionHost::UpdatePreferredWidth(int pref_width) {
 
 void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
   DCHECK_EQ(render_view_host_, render_view_host);
+  Browser* browser = GetBrowser();
+  if (browser) {
+    TabContents* current_tab = browser->GetSelectedTabContents();
+    if (current_tab) {
+      current_tab->AddInfoBar(
+          new CrashedExtensionInfobarDelegate(current_tab, this));
+    }
+  }
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_PROCESS_CRASHED,
-      Source<ExtensionsService>(profile_->GetExtensionsService()),
+      Source<Profile>(profile_),
       Details<ExtensionHost>(this));
 }
 
