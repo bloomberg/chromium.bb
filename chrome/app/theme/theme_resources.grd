@@ -350,6 +350,14 @@
         <include name="IDR_THEME_TOOLBAR" file="theme_toolbar_default2.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INCOGNITO" file="theme_frame_default_incognito2.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default_inactive2.png" type="BINDATA" />
+
+        <include name="IDR_COMPACTNAV_CHROME" file="compactnav_chrome.png" type="BINDATA" />
+        <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
+        <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
+        <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
+
+        <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY" file="statusbar_battery.png" type="BINDATA" />
       </if>
 
       <if expr="not pp_ifdef('chromeos')">

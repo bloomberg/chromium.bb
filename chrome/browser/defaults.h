@@ -14,8 +14,11 @@ namespace browser_defaults {
 
 #if defined(OS_LINUX)
 
-// Whether the size of the autocomplete's font should be changed.
-extern const bool kForceAutocompleteEditFontSize;
+// Size of the font in pixels used in the autocomplete box for normal windows.
+extern const double kAutocompleteEditFontPixelSize;
+
+// Size of the font in pixels used in the autocomplete box for popup windows.
+extern const double kAutocompleteEditFontPixelSizeInPopup;
 
 // Size of the font used in the autocomplete popup.
 extern const int kAutocompletePopupFontSize;

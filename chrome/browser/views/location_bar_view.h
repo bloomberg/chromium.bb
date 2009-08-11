@@ -238,8 +238,8 @@ class LocationBarView : public LocationBar,
   class ShowFirstRunBubbleTask;
 
   class LocationBarImageView : public views::ImageView,
-                               public InfoBubbleDelegate  {
-  public:
+                               public InfoBubbleDelegate {
+   public:
     LocationBarImageView();
     virtual ~LocationBarImageView();
 
@@ -254,10 +254,10 @@ class LocationBarView : public LocationBar,
 
     virtual void ShowInfoBubble() = 0;
 
-  protected:
+   protected:
     void ShowInfoBubbleImpl(const std::wstring& text, SkColor text_color);
 
-  private:
+   private:
     friend class ShowInfoBubbleTask;
 
     // The currently shown info bubble if any.
@@ -319,7 +319,7 @@ class LocationBarView : public LocationBar,
   // PageActionImageView is used to display the icon for a given PageAction
   // and notify the extension when the icon is clicked.
   class PageActionImageView : public LocationBarImageView {
-  public:
+   public:
     PageActionImageView(
         LocationBarView* owner, Profile* profile,
         const PageAction* page_action);
@@ -339,7 +339,7 @@ class LocationBarView : public LocationBar,
     // A callback for when the image has loaded.
     void OnImageLoaded(SkBitmap* image, size_t index);
 
-  private:
+   private:
     // We load the images for the PageActions on the file thread. These tasks
     // help with that.
     class LoadImageTask;

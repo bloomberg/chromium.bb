@@ -27,15 +27,6 @@
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/views/tabs/tab_overview_types.h"
-#include "chrome/common/x11_util.h"
-#endif
-
 namespace {
 
 const int kDefaultAnimationDurationMs = 100;
@@ -721,10 +712,6 @@ void TabStripGtk::Init() {
 
   newtab_button_.reset(MakeNewTabButton());
 
-#if defined(OS_CHROMEOS)
-  tab_overview_button_.reset(MakeTabOverviewButton());
-#endif
-
   gtk_widget_show_all(tabstrip_.get());
 
   bounds_ = GetInitialWidgetBounds(tabstrip_.get());
@@ -764,9 +751,6 @@ void TabStripGtk::Layout() {
   }
 
   LayoutNewTabButton(static_cast<double>(tab_right), current_unselected_width_);
-#if defined(OS_CHROMEOS)
-  LayoutTabOverviewButton();
-#endif
   gtk_widget_queue_draw(tabstrip_.get());
 }
 
@@ -1243,12 +1227,7 @@ void TabStripGtk::LayoutNewTabButton(double last_tab_right,
     // We're shrinking tabs, so we need to anchor the New Tab button to the
     // right edge of the TabStrip's bounds, rather than the right edge of the
     // right-most Tab, otherwise it'll bounce when animating.
-#if defined(OS_CHROMEOS)
-    bounds.set_x(bounds_.width() - newtab_button_->width() -
-                 tab_overview_button_->width());
-#else
     bounds.set_x(bounds_.width() - newtab_button_->width());
-#endif
   } else {
     bounds.set_x(Round(last_tab_right - kTabHOffset) + kNewTabButtonHOffset);
   }
@@ -1257,13 +1236,6 @@ void TabStripGtk::LayoutNewTabButton(double last_tab_right,
   gtk_fixed_move(GTK_FIXED(tabstrip_.get()), newtab_button_->widget(),
                  bounds.x(), bounds.y());
 }
-
-#if defined OS_CHROMEOS
-void TabStripGtk::LayoutTabOverviewButton() {
-  gtk_fixed_move(GTK_FIXED(tabstrip_.get()), tab_overview_button_->widget(),
-                 bounds_.width() - tab_overview_button_->width(), 0);
-}
-#endif
 
 void TabStripGtk::GetDesiredTabWidths(int tab_count,
                                       int pinned_tab_count,
@@ -1290,9 +1262,6 @@ void TabStripGtk::GetDesiredTabWidths(int tab_count,
     available_width = bounds_.width();
     available_width -=
         (kNewTabButtonHOffset + newtab_button_->width());
-#if defined(OS_CHROMEOS)
-    available_width -= tab_overview_button_->width();
-#endif
   } else {
     // Interesting corner case: if |available_width_for_tabs_| > the result
     // of the calculation in the conditional arm above, the strip is in
@@ -1679,9 +1648,6 @@ void TabStripGtk::AnimationLayout(double unselected_width) {
     tab_x = end_of_tab + GetTabHOffset(i + 1);
   }
   LayoutNewTabButton(tab_x, unselected_width);
-#if defined(OS_CHROMEOS)
-  LayoutTabOverviewButton();
-#endif
   gtk_widget_queue_draw(tabstrip_.get());
 }
 
@@ -1779,12 +1745,6 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event,
   // Paint the New Tab button.
   gtk_container_propagate_expose(GTK_CONTAINER(tabstrip->tabstrip_.get()),
       tabstrip->newtab_button_->widget(), event);
-
-#if defined(OS_CHROMEOS)
-  // Paint the tab overview button.
-  gtk_container_propagate_expose(GTK_CONTAINER(tabstrip->tabstrip_.get()),
-      tabstrip->tab_overview_button_->widget(), event);
-#endif
 
   // Paint the tabs in reverse order, so they stack to the left.
   TabGtk* selected_tab = NULL;
@@ -1970,34 +1930,3 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
 
   return button;
 }
-
-#if defined(OS_CHROMEOS)
-CustomDrawButton* TabStripGtk::MakeTabOverviewButton() {
-  CustomDrawButton* button =
-      new CustomDrawButton(IDR_TAB_OVERVIEW_BUTTON_ICON, 0, 0, 0);
-
-  g_signal_connect(G_OBJECT(button->widget()), "clicked",
-                   G_CALLBACK(OnTabOverviewButtonClicked), this);
-  GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
-  gtk_fixed_put(GTK_FIXED(tabstrip_.get()), button->widget(), 0, 0);
-
-  return button;
-}
-
-// static
-void TabStripGtk::OnTabOverviewButtonClicked(GtkWidget* widget,
-                                             TabStripGtk* tabstrip) {
-  Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);  // In order for the user to click on the tab there should
-                    // be an active browser.
-  TabOverviewTypes::Message message;
-  message.set_type(TabOverviewTypes::Message::WM_SWITCH_TO_OVERVIEW_MODE);
-  GtkWidget* browser_widget = GTK_WIDGET(
-      static_cast<BrowserWindowGtk*>(browser->window())->GetNativeHandle());
-  message.set_param(0, x11_util::GetX11WindowFromGtkWidget(browser_widget));
-  TabOverviewTypes::instance()->SendMessage(message);
-
-  UserMetrics::RecordAction(L"TabOverview_PressedTabOverviewButton",
-                            tabstrip->model_->profile());
-}
-#endif

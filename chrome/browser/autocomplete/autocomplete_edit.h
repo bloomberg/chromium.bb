@@ -32,9 +32,9 @@ class AutocompleteEditController {
   // for |url|, which the controller can check for existence.  See comments on
   // AutocompleteResult::GetAlternateNavURL().
   virtual void OnAutocompleteAccept(const GURL& url,
-      WindowOpenDisposition disposition,
-      PageTransition::Type transition,
-      const GURL& alternate_nav_url) = 0;
+                                    WindowOpenDisposition disposition,
+                                    PageTransition::Type transition,
+                                    const GURL& alternate_nav_url) = 0;
 
   // Called when anything has changed that might affect the layout or contents
   // of the views around the edit, including the text of the edit and the

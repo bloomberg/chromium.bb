@@ -140,14 +140,12 @@ void AutocompleteEditViewGtk::Init() {
   text_view_ = gtk_text_view_new_with_buffer(text_buffer_);
   if (popup_window_mode_)
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view_), false);
-  if (browser_defaults::kForceAutocompleteEditFontSize) {
-    // Until we switch to vector graphics, force the font size.
-    const double kFontSize = 13.4;  // 13.4px == 10pt @ 96dpi
-    // On Windows, popups have a font size 5/6 the size of non-popups.
-    const double kPopupWindowFontSize = kFontSize * 5.0 / 6.0;
-    gtk_util::ForceFontSizePixels(text_view_,
-        popup_window_mode_ ? kPopupWindowFontSize : kFontSize);
-  }
+
+  // Until we switch to vector graphics, force the font size.
+  gtk_util::ForceFontSizePixels(text_view_,
+      popup_window_mode_ ?
+      browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
+      browser_defaults::kAutocompleteEditFontPixelSize);
 
   // The text view was floating.  It will now be owned by the alignment.
   gtk_container_add(GTK_CONTAINER(alignment_.get()), text_view_);

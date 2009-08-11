@@ -19,6 +19,11 @@
 #include "chrome/common/pref_member.h"
 #include "chrome/common/x11_util.h"
 
+#ifdef OS_CHROMEOS
+class CompactNavigationBar;
+class StatusAreaView;
+#endif
+
 class BookmarkBarGtk;
 class Browser;
 class BrowserTitlebar;
@@ -338,6 +343,9 @@ class BrowserWindowGtk : public BrowserWindow,
   bool drag_active_;
   // Controls interactions with the window manager for popup panels.
   PanelController* panel_controller_;
+
+  CompactNavigationBar* compact_navigation_bar_;
+  StatusAreaView* status_area_;
 #endif
 
   // A map which translates an X Window ID into its respective GtkWindow.

@@ -318,11 +318,6 @@ class TabStripGtk : public TabStripModelObserver,
   // during animations, so we can't use current_unselected_width_.
   void LayoutNewTabButton(double last_tab_right, double unselected_width);
 
-#if defined(OS_CHROMEOS)
-  // Positions the tab overview button.
-  void LayoutTabOverviewButton();
-#endif
-
   // -- Link Drag & Drop ------------------------------------------------------
 
   // Returns the bounds to render the drop at, in screen coordinates. Sets
@@ -370,15 +365,6 @@ class TabStripGtk : public TabStripModelObserver,
   // Optionally a full Layout will be performed, specified by |layout|.
   void FinishAnimation(TabAnimation* animation, bool layout);
 
-#if defined(OS_CHROMEOS)
-  // Creates and returns the tab overview button.
-  CustomDrawButton* MakeTabOverviewButton();
-
-  // Invoked when the user clicks the tab overview button.
-  static void OnTabOverviewButtonClicked(GtkWidget* widget,
-                                         TabStripGtk* tabstrip);
-#endif
-
   NotificationRegistrar registrar_;
 
   // The Tabs we contain, and their last generated "good" bounds.
@@ -422,11 +408,6 @@ class TabStripGtk : public TabStripModelObserver,
 
   // The New Tab button.
   scoped_ptr<CustomDrawButton> newtab_button_;
-
-#if defined(OS_CHROMEOS)
-  // The tab overview button.
-  scoped_ptr<CustomDrawButton> tab_overview_button_;
-#endif
 
   // Valid for the lifetime of a drag over us.
   scoped_ptr<DropInfo> drop_info_;
