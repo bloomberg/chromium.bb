@@ -85,6 +85,7 @@ void CookiesView::Init() {
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   remove_button_ = gtk_dialog_add_button(
       GTK_DIALOG(dialog_),

@@ -67,6 +67,8 @@ FontsLanguagesWindowGtk::FontsLanguagesWindowGtk(Profile* profile)
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
+
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
