@@ -49,6 +49,7 @@ using ::base::TimeDelta;
 
 namespace o3d {
 
+namespace {
 //----------------------------------------------------------------------
 // These are helper classes for the little multithreaded test harness
 // below.
@@ -207,6 +208,366 @@ class TestProvider {
 };
 
 //----------------------------------------------------------------------
+// This is a helper class that handles connecting to the MessageQueue
+// and issuing commands to it.
+class TextureUpdateHelper {
+ public:
+  TextureUpdateHelper() : o3d_handle_(nacl::kInvalidHandle) {}
+
+  // Connects to the MessageQueue.
+  bool ConnectToO3D(const char* o3d_address,
+                    nacl::Handle my_socket_handle);
+
+  // Makes a request for a shared memory buffer.
+  bool RequestSharedMemory(size_t requested_size,
+                           int* shared_mem_id,
+                           void** shared_mem_address);
+
+  // Makes a request to update a texture.
+  bool RequestTextureUpdate(unsigned int texture_id,
+                            int level,
+                            int shared_memory_id,
+                            size_t offset,
+                            size_t number_of_bytes);
+
+  // Makes a request to update a portion of a texture.
+  bool RequestTextureRectUpdate(unsigned int texture_id,
+                                int level,
+                                int x,
+                                int y,
+                                int width,
+                                int height,
+                                int shared_memory_id,
+                                size_t offset,
+                                size_t number_of_bytes);
+
+  // Registers a client-allocated shared memory segment with O3D,
+  // returning O3D's shared memory ID for later updating. Returns -1
+  // upon failure.
+  int RegisterSharedMemory(nacl::Handle shared_memory,
+                           size_t shared_memory_size);
+
+  // Unregisters a previously-registered client-allocated shared
+  // memory segment.
+  bool UnregisterSharedMemory(int shared_memory_id);
+
+ private:
+  // Handle of the socket that's connected to o3d.
+  nacl::Handle o3d_handle_;
+
+  bool ReceiveBooleanResponse();
+};  // TextureUpdateHelper
+
+// Waits for a message with a single integer value.  If the value is 0 it
+// returns false otherwise returns true.
+bool TextureUpdateHelper::ReceiveBooleanResponse() {
+  int response = 0;
+  nacl::IOVec vec;
+  vec.base = &response;
+  vec.length = sizeof(response);
+
+  nacl::MessageHeader header;
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = 0;
+  header.handle_count = 0;
+
+  int result = nacl::ReceiveDatagram(o3d_handle_, &header, 0);
+
+  EXPECT_EQ(sizeof(response), static_cast<unsigned>(result));
+  if (result != sizeof(response)) {
+    return false;
+  }
+
+  return (response ? true : false);
+}
+
+
+// Send the initial handshake message to O3D.
+bool TextureUpdateHelper::ConnectToO3D(const char* o3d_address,
+                                       nacl::Handle my_socket_handle) {
+  nacl::Handle pair[2];
+
+  if (nacl::SocketPair(pair) != 0) {
+    return false;
+  }
+
+  MessageHello msg;
+  nacl::MessageHeader header;
+  nacl::IOVec vec;
+  vec.base = &msg;
+  vec.length = sizeof(msg);
+
+  nacl::SocketAddress socket_address;
+  ::base::snprintf(socket_address.path,
+                   sizeof(socket_address.path),
+                   "%s", o3d_address);
+
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = &pair[1];
+  header.handle_count = 1;
+  int result = nacl::SendDatagramTo(my_socket_handle,
+                                    &header,
+                                    0,
+                                    &socket_address);
+
+  EXPECT_EQ(sizeof(msg), static_cast<size_t>(result));
+  if (static_cast<size_t>(result) != sizeof(msg)) {
+    return false;
+  }
+
+  // The socket handle we established the connection with o3d with.
+  o3d_handle_ = pair[0];
+
+  bool response = ReceiveBooleanResponse();
+
+  EXPECT_TRUE(response);
+
+  // We don't need to have that handle open anymore since the server has it now.
+  result = nacl::Close(pair[1]);
+
+  return response;
+}
+
+// Sends the server a request to allocate shared memory.  It received back
+// from the server a shared memory handle which it then uses to map the shared
+// memory into this process' address space.  The server also returns a unique
+// id for the shared memory which can be used to identify the buffer in
+// subsequent communcations with the server.
+bool TextureUpdateHelper::RequestSharedMemory(size_t requested_size,
+                                              int* shared_mem_id,
+                                              void** shared_mem_address) {
+  if (o3d_handle_ == nacl::kInvalidHandle) {
+    return false;
+  }
+
+  MessageAllocateSharedMemory msg(requested_size);
+  nacl::MessageHeader header;
+  nacl::IOVec vec;
+
+  vec.base = &msg;
+  vec.length = sizeof(msg);
+
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = NULL;
+  header.handle_count = 0;
+
+  // Send message.
+  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
+  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
+  if (static_cast<unsigned>(result) != vec.length) {
+    return false;
+  }
+
+  // Wait for a message back from the server containing the handle to the
+  // shared memory object.
+  nacl::Handle shared_memory;
+  int shared_memory_id = -1;
+  nacl::IOVec shared_memory_vec;
+  shared_memory_vec.base = &shared_memory_id;
+  shared_memory_vec.length = sizeof(shared_memory_id);
+  header.iov = &shared_memory_vec;
+  header.iov_length = 1;
+  header.handles = &shared_memory;
+  header.handle_count = 1;
+  result = nacl::ReceiveDatagram(o3d_handle_, &header, 0);
+
+  EXPECT_LT(0, result);
+  EXPECT_EQ(0, header.flags & nacl::kMessageTruncated);
+  EXPECT_EQ(1U, header.handle_count);
+  EXPECT_EQ(1U, header.iov_length);
+
+  if (result < 0 ||
+      header.flags & nacl::kMessageTruncated ||
+      header.handle_count != 1 ||
+      header.iov_length != 1) {
+    return false;
+  }
+
+  // Map the shared memory object to our address space.
+  void* shared_region = nacl::Map(0,
+                                  requested_size,
+                                  nacl::kProtRead | nacl::kProtWrite,
+                                  nacl::kMapShared,
+                                  shared_memory,
+                                  0);
+
+  EXPECT_TRUE(shared_region != NULL);
+
+  if (shared_region == NULL) {
+    return false;
+  }
+
+  *shared_mem_address = shared_region;
+  *shared_mem_id = shared_memory_id;
+
+  return true;
+}
+
+// Sends a message to O3D to update the contents of the texture bitmap
+// using the data stored in shared memory.  We pass in the shared memory handle
+// returned by the server as well as an offset from the start of the shared
+// memory buffer where the new texture data is.
+bool TextureUpdateHelper::RequestTextureUpdate(unsigned int texture_id,
+                                               int level,
+                                               int shared_memory_id,
+                                               size_t offset,
+                                               size_t number_of_bytes) {
+  MessageUpdateTexture2D msg(
+      texture_id, level, shared_memory_id, offset, number_of_bytes);
+
+  nacl::MessageHeader header;
+  nacl::IOVec vec;
+
+  vec.base = &msg;
+  vec.length = sizeof(msg);
+
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = NULL;
+  header.handle_count = 0;
+
+  // Send message.
+  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
+
+  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
+
+  if (static_cast<unsigned>(result) != vec.length) {
+    return false;
+  }
+
+  // Wait for a response from the server.  If the server returns true then
+  // the texture update was successfully procesed.
+  bool texture_updated = ReceiveBooleanResponse();
+
+  EXPECT_TRUE(texture_updated);
+
+  return texture_updated;
+}
+
+// Sends a message to O3D to update the a potion of the contents of a texture
+// using the data stored in shared memory.
+bool TextureUpdateHelper::RequestTextureRectUpdate(unsigned int texture_id,
+                                                   int level,
+                                                   int x,
+                                                   int y,
+                                                   int width,
+                                                   int height,
+                                                   int shared_memory_id,
+                                                   size_t offset,
+                                                   size_t number_of_bytes) {
+  MessageUpdateTexture2DRect msg(
+      texture_id, level, x, y, width, height,
+      shared_memory_id, offset, number_of_bytes);
+
+  nacl::MessageHeader header;
+  nacl::IOVec vec;
+
+  vec.base = &msg;
+  vec.length = sizeof(msg);
+
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = NULL;
+  header.handle_count = 0;
+
+  // Send message.
+  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
+
+  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
+
+  if (static_cast<unsigned>(result) != vec.length) {
+    return false;
+  }
+
+  // Wait for a response from the server.  If the server returns true then
+  // the texture update was successfully procesed.
+  bool texture_updated = ReceiveBooleanResponse();
+
+  EXPECT_TRUE(texture_updated);
+
+  return texture_updated;
+}
+
+// Registers a client-allocated shared memory segment with O3D. It
+// receives back a shared memory ID for later texture updating.
+// Returns -1 upon failure.
+int TextureUpdateHelper::RegisterSharedMemory(nacl::Handle shared_memory,
+                                              size_t shared_memory_size) {
+  if (o3d_handle_ == nacl::kInvalidHandle) {
+    return false;
+  }
+
+  MessageRegisterSharedMemory msg(static_cast<int32>(shared_memory_size));
+
+  nacl::MessageHeader header;
+  nacl::IOVec vec;
+
+  vec.base = &msg;
+  vec.length = sizeof(msg);
+
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = &shared_memory;
+  header.handle_count = 1;
+
+  // Send message.
+  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
+  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
+  if (static_cast<unsigned>(result) != vec.length) {
+    return -1;
+  }
+
+  // Wait for a message back from the server containing the ID of the
+  // shared memory object.
+  nacl::MessageHeader reply_header;
+  int shared_memory_id = -1;
+  nacl::IOVec shared_memory_vec;
+  shared_memory_vec.base = &shared_memory_id;
+  shared_memory_vec.length = sizeof(shared_memory_id);
+  reply_header.iov = &shared_memory_vec;
+  reply_header.iov_length = 1;
+  reply_header.handles = NULL;
+  reply_header.handle_count = 0;
+
+  result = nacl::ReceiveDatagram(o3d_handle_, &reply_header, 0);
+  EXPECT_EQ(shared_memory_vec.length, static_cast<unsigned>(result));
+  EXPECT_EQ(0, reply_header.flags & nacl::kMessageTruncated);
+  EXPECT_EQ(0U, reply_header.handle_count);
+  EXPECT_EQ(1U, reply_header.iov_length);
+
+  return shared_memory_id;
+}
+
+// Unregisters a previously-registered client-allocated shared
+// memory segment.
+bool TextureUpdateHelper::UnregisterSharedMemory(int shared_memory_id) {
+  MessageUnregisterSharedMemory msg(shared_memory_id);
+  nacl::MessageHeader header;
+  nacl::IOVec vec;
+
+  vec.base = &msg;
+  vec.length = sizeof(msg);
+  header.iov = &vec;
+  header.iov_length = 1;
+  header.handles = NULL;
+  header.handle_count = 0;
+
+  // Send message.
+  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
+  EXPECT_EQ(static_cast<int>(vec.length), result);
+  // Read back the boolean reply from the O3D plugin
+  bool reply = ReceiveBooleanResponse();
+  EXPECT_TRUE(reply);
+  return reply;
+}
+
+
+}  // anonymous namespace.
+
+//----------------------------------------------------------------------
 // This is the main class containing all of the other ones. It knows
 // how to run multiple concurrent PerThreadConnectedTests.
 class MessageQueueTest : public testing::Test {
@@ -326,360 +687,6 @@ void MessageQueueTest::RunTests(int num_threads,
   delete watchdog;
   delete time_source;
   delete message_queue;
-}
-
-//----------------------------------------------------------------------
-// This is a helper class that handles connecting to the MessageQueue
-// and issuing commands to it.
-class TextureUpdateHelper {
- public:
-  TextureUpdateHelper() : o3d_handle_(nacl::kInvalidHandle) {}
-
-  // Connects to the MessageQueue.
-  bool ConnectToO3D(const char* o3d_address,
-                    nacl::Handle my_socket_handle);
-
-  // Makes a request for a shared memory buffer.
-  bool RequestSharedMemory(size_t requested_size,
-                           int* shared_mem_id,
-                           void** shared_mem_address);
-
-  // Makes a request to update a texture.
-  bool RequestTextureUpdate(unsigned int texture_id,
-                            int level,
-                            int shared_memory_id,
-                            size_t offset,
-                            size_t number_of_bytes);
-
-  // Registers a client-allocated shared memory segment with O3D,
-  // returning O3D's shared memory ID for later updating. Returns -1
-  // upon failure.
-  int RegisterSharedMemory(nacl::Handle shared_memory,
-                           size_t shared_memory_size);
-
-  // Unregisters a previously-registered client-allocated shared
-  // memory segment.
-  bool UnregisterSharedMemory(int shared_memory_id);
-
- private:
-  // Handle of the socket that's connected to o3d.
-  nacl::Handle o3d_handle_;
-
-  bool ReceiveBooleanResponse();
-};  // TextureUpdateHelper
-
-// Waits for a message with a single integer value.  If the value is 0 it
-// returns false otherwise returns true.
-bool TextureUpdateHelper::ReceiveBooleanResponse() {
-  int response = 0;
-  nacl::IOVec vec;
-  vec.base = &response;
-  vec.length = sizeof(response);
-
-  nacl::MessageHeader header;
-  header.iov = &vec;
-  header.iov_length = 1;
-  header.handles = 0;
-  header.handle_count = 0;
-
-  int result = nacl::ReceiveDatagram(o3d_handle_, &header, 0);
-
-  EXPECT_EQ(sizeof(response), static_cast<unsigned>(result));
-  if (result != sizeof(response)) {
-    return false;
-  }
-
-  return (response ? true : false);
-}
-
-
-// Send the initial handshake message to O3D.
-bool TextureUpdateHelper::ConnectToO3D(const char* o3d_address,
-                                       nacl::Handle my_socket_handle) {
-  nacl::Handle pair[2];
-
-  if (nacl::SocketPair(pair) != 0) {
-    return false;
-  }
-
-  char buffer[128];
-  int message_size = 0;
-  MessageQueue::MessageId *msg_id =
-      reinterpret_cast<MessageQueue::MessageId*>(buffer);
-  *msg_id = MessageQueue::HELLO;
-  message_size += sizeof(*msg_id);
-
-  nacl::MessageHeader header;
-  nacl::IOVec vec;
-  vec.base = buffer;
-  vec.length = message_size;
-
-  nacl::SocketAddress socket_address;
-  ::base::snprintf(socket_address.path,
-                   sizeof(socket_address.path),
-                   "%s", o3d_address);
-
-  header.iov = &vec;
-  header.iov_length = 1;
-  header.handles = &pair[1];
-  header.handle_count = 1;
-  int result = nacl::SendDatagramTo(my_socket_handle,
-                                    &header,
-                                    0,
-                                    &socket_address);
-
-  EXPECT_EQ(message_size, result);
-  if (result != message_size) {
-    return false;
-  }
-
-  // The socket handle we established the connection with o3d with.
-  o3d_handle_ = pair[0];
-
-  bool response = ReceiveBooleanResponse();
-
-  EXPECT_TRUE(response);
-
-  // We don't need to have that handle open anymore since the server has it now.
-  result = nacl::Close(pair[1]);
-
-  return response;
-}
-
-// Sends the server a request to allocate shared memory.  It received back
-// from the server a shared memory handle which it then uses to map the shared
-// memory into this process' address space.  The server also returns a unique
-// id for the shared memory which can be used to identify the buffer in
-// subsequent communcations with the server.
-bool TextureUpdateHelper::RequestSharedMemory(size_t requested_size,
-                                              int* shared_mem_id,
-                                              void** shared_mem_address) {
-  if (o3d_handle_ == nacl::kInvalidHandle) {
-    return false;
-  }
-
-  MessageQueue::MessageId message_id = MessageQueue::ALLOCATE_SHARED_MEMORY;
-
-  nacl::MessageHeader header;
-  nacl::IOVec vec;
-  char buffer[256];
-  char *buffer_ptr = &buffer[0];
-
-  // Message contains the ID and one argument (the size of the shared memory
-  // buffer to be allocated).
-  *(reinterpret_cast<MessageQueue::MessageId*>(buffer_ptr)) = message_id;
-  buffer_ptr += sizeof(message_id);
-  *(reinterpret_cast<size_t*>(buffer_ptr)) = requested_size;
-  buffer_ptr += sizeof(requested_size);
-
-  vec.base = buffer;
-  vec.length = buffer_ptr - &buffer[0];
-
-  header.iov = &vec;
-  header.iov_length = 1;
-  header.handles = NULL;
-  header.handle_count = 0;
-
-  // Send message.
-  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
-  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
-  if (static_cast<unsigned>(result) != vec.length) {
-    return false;
-  }
-
-  // Wait for a message back from the server containing the handle to the
-  // shared memory object.
-  nacl::Handle shared_memory;
-  int shared_memory_id = -1;
-  nacl::IOVec shared_memory_vec;
-  shared_memory_vec.base = &shared_memory_id;
-  shared_memory_vec.length = sizeof(shared_memory_id);
-  header.iov = &shared_memory_vec;
-  header.iov_length = 1;
-  header.handles = &shared_memory;
-  header.handle_count = 1;
-  result = nacl::ReceiveDatagram(o3d_handle_, &header, 0);
-
-  EXPECT_LT(0, result);
-  EXPECT_EQ(0, header.flags & nacl::kMessageTruncated);
-  EXPECT_EQ(1U, header.handle_count);
-  EXPECT_EQ(1U, header.iov_length);
-
-  if (result < 0 ||
-      header.flags & nacl::kMessageTruncated ||
-      header.handle_count != 1 ||
-      header.iov_length != 1) {
-    return false;
-  }
-
-  // Map the shared memory object to our address space.
-  void* shared_region = nacl::Map(0,
-                                  requested_size,
-                                  nacl::kProtRead | nacl::kProtWrite,
-                                  nacl::kMapShared,
-                                  shared_memory,
-                                  0);
-
-  EXPECT_TRUE(shared_region != NULL);
-
-  if (shared_region == NULL) {
-    return false;
-  }
-
-  *shared_mem_address = shared_region;
-  *shared_mem_id = shared_memory_id;
-
-  return true;
-}
-
-// Sends a message to O3D to update the contents of the texture bitmap
-// using the data stored in shared memory.  We pass in the shared memory handle
-// returned by the server as well as an offset from the start of the shared
-// memory buffer where the new texture data is.
-bool TextureUpdateHelper::RequestTextureUpdate(unsigned int texture_id,
-                                               int level,
-                                               int shared_memory_id,
-                                               size_t offset,
-                                               size_t number_of_bytes) {
-  MessageQueue::MessageId message_id = MessageQueue::UPDATE_TEXTURE2D;
-
-  nacl::MessageHeader header;
-  nacl::IOVec vec;
-  char buffer[256];
-  char *buffer_ptr = &buffer[0];
-
-  // Message contains the message ID and two arguments, the id of the Texture
-  // object in O3D and the offset in the shared memory region where the
-  // bitmap is stored.
-  *(reinterpret_cast<MessageQueue::MessageId*>(buffer_ptr)) = message_id;
-  buffer_ptr += sizeof(message_id);
-  *(reinterpret_cast<unsigned int*>(buffer_ptr)) = texture_id;
-  buffer_ptr += sizeof(texture_id);
-  *(reinterpret_cast<int*>(buffer_ptr)) = level;
-  buffer_ptr += sizeof(level);
-  *(reinterpret_cast<int*>(buffer_ptr)) = shared_memory_id;
-  buffer_ptr += sizeof(shared_memory_id);
-  *(reinterpret_cast<size_t*>(buffer_ptr)) = offset;
-  buffer_ptr += sizeof(offset);
-  *(reinterpret_cast<size_t*>(buffer_ptr)) = number_of_bytes;
-  buffer_ptr += sizeof(number_of_bytes);
-
-  vec.base = buffer;
-  vec.length = buffer_ptr - &buffer[0];
-
-  header.iov = &vec;
-  header.iov_length = 1;
-  header.handles = NULL;
-  header.handle_count = 0;
-
-
-  // Send message.
-  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
-
-  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
-
-  if (static_cast<unsigned>(result) != vec.length) {
-    return false;
-  }
-
-  // Wait for a response from the server.  If the server returns true then
-  // the texture update was successfully procesed.
-  bool texture_updated = ReceiveBooleanResponse();
-
-  EXPECT_TRUE(texture_updated);
-
-  return texture_updated;
-}
-
-// Registers a client-allocated shared memory segment with O3D. It
-// receives back a shared memory ID for later texture updating.
-// Returns -1 upon failure.
-int TextureUpdateHelper::RegisterSharedMemory(nacl::Handle shared_memory,
-                                              size_t shared_memory_size) {
-  if (o3d_handle_ == nacl::kInvalidHandle) {
-    return false;
-  }
-
-  MessageQueue::MessageId message_id = MessageQueue::REGISTER_SHARED_MEMORY;
-
-  nacl::MessageHeader header;
-  nacl::IOVec vec;
-  char buffer[256];
-  char *buffer_ptr = &buffer[0];
-
-  // Message contains the ID and one argument (the size of the shared memory
-  // buffer which has been allocated).
-  *(reinterpret_cast<MessageQueue::MessageId*>(buffer_ptr)) = message_id;
-  buffer_ptr += sizeof(message_id);
-  *(reinterpret_cast<size_t*>(buffer_ptr)) = shared_memory_size;
-  buffer_ptr += sizeof(shared_memory_size);
-
-  vec.base = buffer;
-  vec.length = buffer_ptr - &buffer[0];
-
-  header.iov = &vec;
-  header.iov_length = 1;
-  header.handles = &shared_memory;
-  header.handle_count = 1;
-
-  // Send message.
-  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
-  EXPECT_EQ(vec.length, static_cast<unsigned>(result));
-  if (static_cast<unsigned>(result) != vec.length) {
-    return -1;
-  }
-
-  // Wait for a message back from the server containing the ID of the
-  // shared memory object.
-  nacl::MessageHeader reply_header;
-  int shared_memory_id = -1;
-  nacl::IOVec shared_memory_vec;
-  shared_memory_vec.base = &shared_memory_id;
-  shared_memory_vec.length = sizeof(shared_memory_id);
-  reply_header.iov = &shared_memory_vec;
-  reply_header.iov_length = 1;
-  reply_header.handles = NULL;
-  reply_header.handle_count = 0;
-
-  result = nacl::ReceiveDatagram(o3d_handle_, &reply_header, 0);
-  EXPECT_EQ(shared_memory_vec.length, static_cast<unsigned>(result));
-  EXPECT_EQ(0, reply_header.flags & nacl::kMessageTruncated);
-  EXPECT_EQ(0U, reply_header.handle_count);
-  EXPECT_EQ(1U, reply_header.iov_length);
-
-  return shared_memory_id;
-}
-
-// Unregisters a previously-registered client-allocated shared
-// memory segment.
-bool TextureUpdateHelper::UnregisterSharedMemory(int shared_memory_id) {
-  MessageQueue::MessageId message_id = MessageQueue::UNREGISTER_SHARED_MEMORY;
-  nacl::MessageHeader header;
-  nacl::IOVec vec;
-  char buffer[256];
-  char *buffer_ptr = &buffer[0];
-
-  // Message contains the message ID and the ID of the shared memory
-  // segment to release
-  *(reinterpret_cast<MessageQueue::MessageId*>(buffer_ptr)) = message_id;
-  buffer_ptr += sizeof(message_id);
-  *(reinterpret_cast<int*>(buffer_ptr)) = shared_memory_id;
-  buffer_ptr += sizeof(shared_memory_id);
-
-  vec.base = buffer;
-  vec.length = buffer_ptr - buffer;
-  header.iov = &vec;
-  header.iov_length = 1;
-  header.handles = NULL;
-  header.handle_count = 0;
-
-  // Send message.
-  int result = nacl::SendDatagram(o3d_handle_, &header, 0);
-  EXPECT_EQ(static_cast<int>(vec.length), result);
-  // Read back the boolean reply from the O3D plugin
-  bool reply = ReceiveBooleanResponse();
-  EXPECT_TRUE(reply);
-  return reply;
 }
 
 //----------------------------------------------------------------------
@@ -810,7 +817,7 @@ TEST_F(MessageQueueTest, UpdateTexture2D) {
         FAIL_TEST("Memory request failed");
       }
 
-      int texture_buffer_size = 128*128*4;
+      int texture_buffer_size = 128 * 128 * 4;
 
       if (!helper.RequestTextureUpdate(texture_id_,
                                        0,
@@ -847,6 +854,92 @@ TEST_F(MessageQueueTest, UpdateTexture2D) {
   Provider provider(texture->id());
   RunTests(1, TimeDelta::FromSeconds(1), &provider);
 }
+
+// Tests a request to update a texture.
+TEST_F(MessageQueueTest, UpdateTexture2DRect) {
+  class UpdateTexture2DRectTest : public PerThreadConnectedTest {
+   private:
+    int texture_id_;
+
+   public:
+    explicit UpdateTexture2DRectTest(int texture_id) {
+      texture_id_ = texture_id;
+    }
+
+    void Run(MessageQueue* queue,
+             nacl::Handle socket_handle) {
+      String socket_addr = queue->GetSocketAddress();
+      TextureUpdateHelper helper;
+      if (!helper.ConnectToO3D(socket_addr.c_str(),
+                               socket_handle)) {
+        FAIL_TEST("Failed to connect to O3D");
+      }
+
+      void *shared_mem_address = NULL;
+      int shared_mem_id = -1;
+      bool memory_ok = helper.RequestSharedMemory(65536,
+                                                  &shared_mem_id,
+                                                  &shared_mem_address);
+      if (shared_mem_id == -1) {
+        FAIL_TEST("Shared memory id was -1");
+      }
+
+      if (shared_mem_address == NULL) {
+        FAIL_TEST("Shared memory address was NULL");
+      }
+
+      if (!memory_ok) {
+        FAIL_TEST("Memory request failed");
+      }
+
+      const int kLevel = 0;
+      const int kX = 10;
+      const int kY = 11;
+      const int kWidth = 12;
+      const int kHeight = 13;
+      const int kTextureRectSize = kWidth * kHeight * 4;
+
+      if (!helper.RequestTextureRectUpdate(texture_id_,
+                                           kLevel,
+                                           kX,
+                                           kY,
+                                           kWidth,
+                                           kHeight,
+                                           shared_mem_id,
+                                           0,
+                                           kTextureRectSize)) {
+        FAIL_TEST("RequestTextureRectUpdate failed");
+      }
+
+      Pass();
+    }
+  };
+
+  class Provider : public TestProvider {
+   private:
+    int texture_id_;
+
+   public:
+    explicit Provider(int texture_id) : texture_id_(texture_id) {}
+
+    virtual PerThreadConnectedTest* CreateTest() {
+      return new UpdateTexture2DRectTest(texture_id_);
+    }
+  };
+
+  Texture2D* texture = pack()->CreateTexture2D(128,
+                                               128,
+                                               Texture::ARGB8,
+                                               0,
+                                               false);
+
+  ASSERT_TRUE(texture != NULL);
+
+  Provider provider(texture->id());
+  RunTests(1, TimeDelta::FromSeconds(1), &provider);
+}
+
+namespace {
 
 // This helper class is used for both single-threaded and concurrent
 // shared memory registration / unregistration tests.
@@ -896,6 +989,8 @@ class SharedMemoryRegisterUnregisterTest : public PerThreadConnectedTest {
     Pass();
   }
 };
+
+}  // anonymous namespace.
 
 // Tests that a simple shared memory registration and unregistration
 // pair appear to work.

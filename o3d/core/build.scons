@@ -74,6 +74,7 @@ cross_inputs = [
     'cross/matrix4_composition.cc',
     'cross/matrix4_scale.cc',
     'cross/matrix4_translation.cc',
+    'cross/message_commands.cc',
     'cross/message_queue.cc',
     'cross/named_object.cc',
     'cross/object_base.cc',

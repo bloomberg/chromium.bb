@@ -210,6 +210,7 @@ tests = [
     'core/cross/matrix4_composition_test.cc',
     'core/cross/matrix4_scale_test.cc',
     'core/cross/matrix4_translation_test.cc',
+    'core/cross/message_commands_test.cc',
     'core/cross/message_queue_test.cc',
     'core/cross/object_base_test.cc',
     'core/cross/pack_test.cc',

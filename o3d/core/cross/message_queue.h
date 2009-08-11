@@ -40,6 +40,7 @@
 #include <vector>
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "core/cross/types.h"
+#include "core/cross/message_commands.h"
 
 namespace o3d {
 
@@ -48,17 +49,17 @@ class ObjectManager;
 
 // Structure keeping information about shared memory regions created on the
 // request of a client connection.
-typedef struct {
+struct SharedMemoryInfo {
   // Unique (to the MessageQueue object that created it) id of the shared
   // memory buffer.
-  int buffer_id_;
+  int buffer_id;
   // Handle to the shared memory.
-  nacl::Handle shared_memory_handle_;
+  nacl::Handle shared_memory_handle;
   // Address to which it maps in the local memory space.
-  void* mapped_address_;
+  void* mapped_address;
   // Size in bytes
-  int32 size_;
-} SharedMemoryInfo;
+  int32 size;
+};
 
 // The ConnectedClient class holds information about clients that have made
 // contact with the this instance of the server.
@@ -97,8 +98,9 @@ class ConnectedClient {
   nacl::Handle client_handle_;
 
   std::vector<SharedMemoryInfo> shared_memory_array_;
-};
 
+  DISALLOW_COPY_AND_ASSIGN(ConnectedClient);
+};
 
 // The MessageQueue class handles the communcation between external code and
 // O3D.  It provides methods for initializing the communcation channel
@@ -106,20 +108,6 @@ class ConnectedClient {
 // the NativeClient Inter-Module Communication (IMC) library.
 class MessageQueue {
  public:
-  enum MessageId {
-    INVALID_ID = 0,
-    HELLO,                     // Handshake between the client and the server
-    ALLOCATE_SHARED_MEMORY,    // Request to allocate a shared memory buffer
-    UPDATE_TEXTURE2D,          // Request to update a 2D texture bitmap
-    REGISTER_SHARED_MEMORY,    // Register a client-allocated shared memory
-                               // buffer, returning a shared memory ID
-    UNREGISTER_SHARED_MEMORY,  // Unregister a client-allocated shared
-                               // memory ID
-    MAX_NUM_IDS,
-
-    ID_FORCE_DWORD = 0x7fffffff  // Forces a 32-bit size enum
-  };
-
   // Creates a MessageQueue that is able to receive messages and execute calls
   // to the given Client object.
   explicit MessageQueue(ServiceLocator* service_locator);
@@ -156,7 +144,7 @@ class MessageQueue {
   //   Client.
   bool ProcessClientRequest(ConnectedClient* client,
                             int message_length,
-                            MessageId message_id,
+                            IMCMessage::MessageId message_id,
                             nacl::MessageHeader* header,
                             nacl::Handle* handles);
 
@@ -170,86 +158,17 @@ class MessageQueue {
   //   true if the new client connected successfully.
   bool ProcessHelloMessage(nacl::MessageHeader* header, nacl::Handle* handles);
 
-  // Processes a request by a connected client to allocate a shared memory
-  // buffer.  The size of the requested buffer is determined from the data
-  // passed in the message.  Once the memory is allocated, a message containing
-  // the shared memory handle is sent back to the client.
-  // Parameters:
-  //   client - pointer to the ConnectedClient the request came from.
-  //   message_length - length of the received message in bytes.
-  //   message_id - id of the request received by the message
-  //   header - message header containing information about the received
-  //            message.
-  //   handles - the array of handles referenced by the header.
-  // Returns:
-  //   true if the message is properly formed and is succesfully handled by the
-  //   Client.
-  bool ProcessAllocateSharedMemory(ConnectedClient* client,
-                                   int message_length,
-                                   MessageId message_id,
-                                   nacl::MessageHeader* header,
-                                   nacl::Handle* handles);
-
-  // Processes a request by a connected client to update the contents of the
-  // bitmap corresponding to a Texture2D object.
-  // Parameters:
-  //   client - pointer to the ConnectedClient the request came from.
-  //   message_length - length of the received message in bytes.
-  //   message_id - id of the request received by the message
-  //   header - message header containing information about the received
-  //            message.
-  //   handles - the array of handles referenced by the header.
-  // Returns:
-  //   true if the message is properly formed and is succesfully handled by the
-  //   Client.
-  bool ProcessUpdateTexture2D(ConnectedClient* client,
-                              int message_length,
-                              MessageId message_id,
-                              nacl::MessageHeader* header,
-                              nacl::Handle* handles);
-
-  // Processes a request by a connected client to register a
-  // client-allocated shared memory buffer with O3D.  The size of the
-  // buffer is determined from the data passed in the message.  Once
-  // the shared memory buffer has been mapped and registered, a
-  // message containing the shared memory ID is sent back to the
-  // client. This ID can be used to update the contents of a Texture2D
-  // object.
-  // Parameters:
-  //   client - pointer to the ConnectedClient the request came from.
-  //   message_length - length of the received message in bytes.
-  //   message_id - id of the request received by the message
-  //   header - message header containing information about the received
-  //            message.
-  //   handles - the array of handles referenced by the header.
-  // Returns:
-  //   true if the message is properly formed and is succesfully handled by the
-  //   Client.
-  bool ProcessRegisterSharedMemory(ConnectedClient* client,
-                                   int message_length,
-                                   MessageId message_id,
-                                   nacl::MessageHeader* header,
-                                   nacl::Handle* handles);
-
-  // Processes a request by a connected client to unregister a shared
-  // memory buffer previously registered with O3D. The shared memory
-  // buffer is referenced by the ID returned from
-  // RegisterSharedMemory.
-  // Parameters:
-  //   client - pointer to the ConnectedClient the request came from.
-  //   message_length - length of the received message in bytes.
-  //   message_id - id of the request received by the message
-  //   header - message header containing information about the received
-  //            message.
-  //   handles - the array of handles referenced by the header.
-  // Returns:
-  //   true if the message is properly formed and is succesfully handled by the
-  //   Client.
-  bool ProcessUnregisterSharedMemory(ConnectedClient* client,
-                                     int message_length,
-                                     MessageId message_id,
-                                     nacl::MessageHeader* header,
-                                     nacl::Handle* handles);
+  // Declare all the message processing functions. For each type of message
+  // will declare a function called Process<MessageName>.
+  #define O3D_IMC_MESSAGE_OP(id, class_name)  \
+      bool Process ## class_name(             \
+          ConnectedClient* client,            \
+          int message_length,                 \
+          nacl::MessageHeader* header,        \
+          nacl::Handle* handles,              \
+          const class_name& message);
+  O3D_IMC_MESSAGE_LIST(O3D_IMC_MESSAGE_OP)
+  #undef O3D_IMC_MESSAGE_OP
 
   // Sends a true of false (1 or 0) message using the given socket handle.
   // Parameters:
@@ -271,10 +190,8 @@ class MessageQueue {
   //   false in every other case.
   bool ReceiveMessageFromSocket(nacl::Handle socket,
                                 nacl::MessageHeader* header,
-                                MessageId* message_id,
+                                IMCMessage::MessageId* message_id,
                                 int* message_length);
-
- private:
 
   ServiceLocator* service_locator_;
   ObjectManager* object_manager_;
@@ -296,6 +213,8 @@ class MessageQueue {
   // us to create multiple instances of the MessageQueue, each with a unique
   // address.
   static int next_message_queue_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 };
 
 
