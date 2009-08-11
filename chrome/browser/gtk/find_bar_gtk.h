@@ -11,6 +11,8 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/gtk/focus_store_gtk.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
 
 class Browser;
@@ -25,7 +27,8 @@ class TabContentsContainerGtk;
 // Currently this class contains both a model and a view.  We may want to
 // eventually pull out the model specific bits and share with Windows.
 class FindBarGtk : public FindBar,
-                   public FindBarTesting {
+                   public FindBarTesting,
+                   public NotificationObserver {
  public:
   explicit FindBarGtk(Browser* browser);
   virtual ~FindBarGtk();
@@ -59,6 +62,11 @@ class FindBarGtk : public FindBar,
   // Methods from FindBarTesting.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
                                     bool* fully_visible);
+
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   void InitWidgets();
@@ -169,6 +177,8 @@ class FindBarGtk : public FindBar,
   int current_fixed_width_;
 
   scoped_ptr<NineBox> dialog_background_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(FindBarGtk);
 };

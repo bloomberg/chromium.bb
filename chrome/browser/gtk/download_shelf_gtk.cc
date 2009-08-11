@@ -61,9 +61,8 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   // event box so we can color the background.
 
   // Create the top border.
-  GtkWidget* top_border = gtk_event_box_new();
-  gtk_widget_set_size_request(GTK_WIDGET(top_border), 0, 1);
-  gtk_widget_modify_bg(top_border, GTK_STATE_NORMAL, &kBorderColor);
+  top_border_ = gtk_event_box_new();
+  gtk_widget_set_size_request(GTK_WIDGET(top_border_), 0, 1);
 
   // Create |hbox_|.
   hbox_.Own(gtk_hbox_new(FALSE, kDownloadItemPadding));
@@ -79,7 +78,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   gtk_container_add(GTK_CONTAINER(padding), hbox_.get());
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), top_border, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), top_border_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), padding_bg_, FALSE, FALSE, 0);
 
   // Put the shelf in an event box so it gets its own window, which makes it
@@ -179,6 +178,13 @@ void DownloadShelfGtk::Observe(NotificationType type,
     GdkColor color = theme_provider_->GetGdkColor(
         BrowserThemeProvider::COLOR_TOOLBAR);
     gtk_widget_modify_bg(padding_bg_, GTK_STATE_NORMAL, &color);
+
+    if (theme_provider_->UseGtkTheme()) {
+      GdkColor color = theme_provider_->GetBorderColor();
+      gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
+    } else {
+      gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &kBorderColor);
+    }
   }
 }
 

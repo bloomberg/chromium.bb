@@ -31,10 +31,6 @@ const int kCornerSize = 4;
 // Milliseconds before we hide the status bubble widget when you mouseout.
 const int kHideDelay = 250;
 
-// Number of times that the background color should be counted when trying to
-// calculate the border color in GTK theme mode.
-const int kBgWeight = 3;
-
 // Reverses a point in RTL mode.
 GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
   GdkPoint point = {ltr ? x : width - x, y};
@@ -211,19 +207,7 @@ void StatusBubbleGtk::UserChangedTheme() {
     gtk_widget_modify_fg(label_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, NULL);
 
-    // Creates a weighted average between the text and base color where
-    // the base color counts more than once.
-    GtkStyle* style = gtk_rc_get_style(container_.get());
-    border_color_.pixel = 0;
-    border_color_.red = (style->text[GTK_STATE_NORMAL].red +
-                         (style->bg[GTK_STATE_NORMAL].red * kBgWeight)) /
-                         (1 + kBgWeight);
-    border_color_.green = (style->text[GTK_STATE_NORMAL].green +
-                           (style->bg[GTK_STATE_NORMAL].green * kBgWeight)) /
-                          (1 + kBgWeight);
-    border_color_.blue = (style->text[GTK_STATE_NORMAL].blue +
-                          (style->bg[GTK_STATE_NORMAL].blue * kBgWeight)) /
-                         (1 + kBgWeight);
+    border_color_ = theme_provider_->GetBorderColor();
   } else {
     // TODO(erg): This is the closest to "text that will look good on a
     // toolbar" that I can find. Maybe in later iterations of the theme system,

@@ -71,6 +71,9 @@ class DownloadShelfGtk : public DownloadShelf,
   // for an explanation of the widget layout.
   OwnedWidgetGtk shelf_;
 
+  // Top level event box which draws the one pixel border.
+  GtkWidget* top_border_;
+
   // A GtkEventBox which we color.
   GtkWidget* padding_bg_;
 

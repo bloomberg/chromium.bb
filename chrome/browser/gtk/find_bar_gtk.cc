@@ -21,6 +21,7 @@
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "webkit/api/public/gtk/WebInputEventFactory.h"
 
@@ -150,7 +151,6 @@ void FindBarGtk::InitWidgets() {
   fixed_.Own(gtk_fixed_new());
   border_ = gtk_event_box_new();
   gtk_widget_set_size_request(border_, 1, 1);
-  gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &kFrameBorderColor);
 
   gtk_fixed_put(GTK_FIXED(widget()), border_, 0, 0);
   gtk_fixed_put(GTK_FIXED(widget()), slide_widget(), 0, 0);
@@ -234,6 +234,10 @@ void FindBarGtk::InitWidgets() {
                                                           &kTextBorderColorAA,
                                                           1, 1, 1, 0);
   gtk_util::CenterWidgetInHBox(hbox, border_bin_aa, true, 0);
+
+  theme_provider_->InitThemesFor(this);
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 
   // We take care to avoid showing the slide animator widget.
   gtk_widget_show_all(container_);
@@ -388,6 +392,19 @@ void FindBarGtk::RestoreSavedFocus() {
 
 FindBarTesting* FindBarGtk::GetFindBarTesting() {
   return this;
+}
+
+void FindBarGtk::Observe(NotificationType type,
+                         const NotificationSource& source,
+                         const NotificationDetails& details) {
+  DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
+
+  if (theme_provider_->UseGtkTheme()) {
+    GdkColor color = theme_provider_->GetBorderColor();
+    gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &color);
+  } else {
+    gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &kFrameBorderColor);
+  }
 }
 
 bool FindBarGtk::GetFindBarWindowInfo(gfx::Point* position,

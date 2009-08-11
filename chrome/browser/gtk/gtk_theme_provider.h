@@ -58,6 +58,10 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // GdkColor.
   GdkColor GetGdkColor(int id);
 
+  // A weighted average between the text color and the background color of a
+  // label. Used for borders between GTK stuff and the webcontent.
+  GdkColor GetBorderColor();
+
  private:
   // Load theme data from preferences, possibly picking colors from GTK.
   virtual void LoadThemePrefs();
