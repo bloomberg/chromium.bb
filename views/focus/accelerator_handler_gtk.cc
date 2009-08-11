@@ -33,6 +33,7 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   if (!widget) {
     // During dnd we get events for windows we don't control (such as the
     // window being dragged).
+    gtk_main_do_event(event);
     return true;
   }
   FocusManager* focus_manager = widget->GetFocusManager();
