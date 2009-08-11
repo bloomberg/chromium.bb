@@ -71,23 +71,31 @@ SRC_APP_PATH="${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}"
 
 if [ "${USE_SVN}" = "1" ] ; then
   # Visible in the about:version page.
-  SVN_INFO=$(svn info "${TOP}")
+  SVN_INFO=$(svn info "${TOP}" 2>/dev/null || true)
   SVN_REVISION=$(echo "${SVN_INFO}" | sed -Ene 's/^Revision: (.*)$/\1/p')
   if [ -z "${SVN_REVISION}" ] ; then
-    echo "Could not determine svn revision.  This may be OK." >&2
-    # TODO: check for git, and get the version number from it?
-  fi
-
-  # Grab the path to the source root in the Subversion repository by taking the
-  # URL to the source root directory and the repository root, and removing the
-  # latter from the former.  This ensures that SVN_PATH will contain a useful
-  # path regardless of the Subversion server, mirror, and authentication scheme
-  # in use.
-  SVN_URL=$(echo "${SVN_INFO}" | sed -Ene 's/^URL: (.*)$/\1/p')
-  SVN_ROOT=$(echo "${SVN_INFO}" | sed -Ene 's/^Repository Root: (.*)$/\1/p')
-  if [ -n "${SVN_ROOT}" ] && \
-     [ "${SVN_URL:0:${#SVN_ROOT}}" = "${SVN_ROOT}" ] ; then
-    SVN_PATH="${SVN_URL:${#SVN_ROOT}}"
+    GIT_INFO=$(git log -1 --grep=git-svn-id --format=%b 2>/dev/null || true)
+    SVN_REVISION=$(echo "${GIT_INFO}" \
+        | sed -Ene 's/^git-svn-id: .*@([0-9]+).*$/\1/p')
+    # Finding the revision for git and svn has failed.
+    if [ -z "${SVN_REVISION}" ] ; then
+      echo "Could not determine svn revision.  This may be OK." >&2
+    else
+      SVN_PATH=$(echo "${GIT_INFO}" \
+          | sed -Ene 's%^git-svn-id: .*/chrome/(.*)@.*$%/\1%p')
+    fi
+  else
+    # Grab the path to the source root in the Subversion repository by taking
+    # the URL to the source root directory and the repository root, and
+    # removing the latter from the former.  This ensures that SVN_PATH will
+    # contain a useful path regardless of the Subversion server, mirror, and
+    # authentication scheme in use.
+    SVN_URL=$(echo "${SVN_INFO}" | sed -Ene 's/^URL: (.*)$/\1/p')
+    SVN_ROOT=$(echo "${SVN_INFO}" | sed -Ene 's/^Repository Root: (.*)$/\1/p')
+    if [ -n "${SVN_ROOT}" ] && \
+       [ "${SVN_URL:0:${#SVN_ROOT}}" = "${SVN_ROOT}" ] ; then
+      SVN_PATH="${SVN_URL:${#SVN_ROOT}}"
+    fi
   fi
 fi
 
