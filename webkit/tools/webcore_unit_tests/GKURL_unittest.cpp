@@ -101,8 +101,8 @@ TEST(GKURL, SameGetters) {
     EXPECT_EQ(cases[i].pass, gurl.pass());
     EXPECT_EQ(cases[i].last_path_component, gurl.lastPathComponent());
     EXPECT_EQ(cases[i].query, gurl.query());
-    EXPECT_EQ(cases[i].ref, gurl.ref());
-    EXPECT_EQ(cases[i].has_ref, gurl.hasRef());
+    EXPECT_EQ(cases[i].ref, gurl.fragmentIdentifier());
+    EXPECT_EQ(cases[i].has_ref, gurl.hasFragmentIdentifier());
 
     // UTF-16
     string16 wstr(UTF8ToUTF16(cases[i].url));
@@ -118,8 +118,8 @@ TEST(GKURL, SameGetters) {
     EXPECT_EQ(cases[i].pass, gurl.pass());
     EXPECT_EQ(cases[i].last_path_component, gurl.lastPathComponent());
     EXPECT_EQ(cases[i].query, gurl.query());
-    EXPECT_EQ(cases[i].ref, gurl.ref());
-    EXPECT_EQ(cases[i].has_ref, gurl.hasRef());
+    EXPECT_EQ(cases[i].ref, gurl.fragmentIdentifier());
+    EXPECT_EQ(cases[i].has_ref, gurl.hasFragmentIdentifier());
   }
 }
 
@@ -157,9 +157,9 @@ TEST(GKURL, DifferentGetters) {
     // Want to compare UCS-16 refs (or to NULL).
     if (cases[i].ref) {
       EXPECT_EQ(webkit_glue::StdWStringToString(UTF8ToWide(cases[i].ref)),
-                gurl.ref());
+                gurl.fragmentIdentifier());
     } else {
-      EXPECT_TRUE(gurl.ref().isNull());
+      EXPECT_TRUE(gurl.fragmentIdentifier().isNull());
     }
   }
 }
@@ -446,26 +446,26 @@ TEST(GKURL, Ref) {
 
   // Basic ref setting.
   WebCore::KURL cur("http://foo/bar");
-  cur.setRef("asdf");
+  cur.setFragmentIdentifier("asdf");
   EXPECT_STREQ("http://foo/bar#asdf", cur.string().utf8().data());
   cur = gurl;
-  cur.setRef("asdf");
+  cur.setFragmentIdentifier("asdf");
   EXPECT_STREQ("http://foo/bar#asdf", cur.string().utf8().data());
 
   // Setting a ref to the empty string will set it to "#".
   cur = WebCore::KURL("http://foo/bar");
-  cur.setRef("");
+  cur.setFragmentIdentifier("");
   EXPECT_STREQ("http://foo/bar#", cur.string().utf8().data());
   cur = gurl;
-  cur.setRef("");
+  cur.setFragmentIdentifier("");
   EXPECT_STREQ("http://foo/bar#", cur.string().utf8().data());
 
   // Setting the ref to the null string will clear it altogether.
   cur = WebCore::KURL("http://foo/bar");
-  cur.setRef(WebCore::String());
+  cur.setFragmentIdentifier(WebCore::String());
   EXPECT_STREQ("http://foo/bar", cur.string().utf8().data());
   cur = gurl;
-  cur.setRef(WebCore::String());
+  cur.setFragmentIdentifier(WebCore::String());
   EXPECT_STREQ("http://foo/bar", cur.string().utf8().data());
 }
 
