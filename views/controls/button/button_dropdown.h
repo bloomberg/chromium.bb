@@ -30,10 +30,11 @@ class ButtonDropDown : public ImageButton {
   virtual bool GetAccessibleState(AccessibilityTypes::State* state);
 
  private:
-  // Overridden from Button
+  // Overridden from CustomButton
   virtual bool OnMousePressed(const MouseEvent& e);
   virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
   virtual bool OnMouseDragged(const MouseEvent& e);
+  virtual void OnMouseExited(const MouseEvent& e);
 
   // Overridden from View. Used to display the right-click menu, as triggered
   // by the keyboard, for instance. Using the member function ShowDropDownMenu
@@ -41,6 +42,12 @@ class ButtonDropDown : public ImageButton {
   virtual void ShowContextMenu(int x,
                                int y,
                                bool is_mouse_gesture);
+
+  // Overridden from CustomButton. Returns true if the button should become
+  // pressed when a user holds the mouse down over the button. For this
+  // implementation, both left and right mouse buttons can trigger a change
+  // to the PUSHED state.
+  virtual bool ShouldEnterPushedState(const MouseEvent& e);
 
   // Internal function to show the dropdown menu
   void ShowDropDownMenu(gfx::NativeView window);

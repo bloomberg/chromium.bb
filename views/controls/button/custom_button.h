@@ -76,6 +76,11 @@ class CustomButton : public Button,
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const Animation* animation);
 
+  // Returns true if the button should become pressed when the user
+  // holds the mouse down over the button. For this implementation,
+  // we simply return IsTriggerableEvent(e).
+  virtual bool ShouldEnterPushedState(const MouseEvent& e);
+
   // The button state (defined in implementation)
   ButtonState state_;
 

@@ -52,12 +52,14 @@ bool ButtonDropDown::OnMousePressed(const MouseEvent& e) {
                                              GetWidget()->GetNativeView()),
         kMenuTimerDelay);
   }
-
   return ImageButton::OnMousePressed(e);
 }
 
 void ButtonDropDown::OnMouseReleased(const MouseEvent& e, bool canceled) {
-  ImageButton::OnMouseReleased(e, canceled);
+  if (e.IsLeftMouseButton() || (e.IsRightMouseButton() &&
+                                !HitTest(e.location()))) {
+    ImageButton::OnMouseReleased(e, canceled);
+  }
 
   if (canceled)
     return;
@@ -67,13 +69,10 @@ void ButtonDropDown::OnMouseReleased(const MouseEvent& e, bool canceled) {
 
   if (IsEnabled() && e.IsRightMouseButton() && HitTest(e.location())) {
     show_menu_factory_.RevokeAll();
-    // Make the button look depressed while the menu is open.
-    // NOTE: SetState() schedules a paint, but it won't occur until after the
-    //       context menu message loop has terminated, so we PaintNow() to
-    //       update the appearance synchronously.
-    SetState(BS_PUSHED);
-    PaintNow();
     ShowDropDownMenu(GetWidget()->GetNativeView());
+    // Set the state back to normal after the drop down menu is closed.
+    if (state_ != BS_DISABLED)
+      SetState(BS_NORMAL);
   }
 }
 
@@ -93,6 +92,14 @@ bool ButtonDropDown::OnMouseDragged(const MouseEvent& e) {
   return result;
 }
 
+void ButtonDropDown::OnMouseExited(const MouseEvent& e) {
+  // Starting a drag results in a MouseExited, we need to ignore it.
+  // A right click release triggers an exit event. We want to
+  // remain in a PUSHED state until the drop down menu closes.
+  if (state_ != BS_DISABLED && !InDrag() && state_ != BS_PUSHED)
+    SetState(BS_NORMAL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // ButtonDropDown - Menu functions
@@ -109,6 +116,13 @@ void ButtonDropDown::ShowContextMenu(int x, int y, bool is_mouse_gesture) {
   PaintNow();
   ShowDropDownMenu(GetWidget()->GetNativeView());
   SetState(BS_HOT);
+}
+
+bool ButtonDropDown::ShouldEnterPushedState(const MouseEvent& e) {
+  // Enter PUSHED state on press with Left or Right mouse button. Remain
+  // in this state while the context menu is open.
+  return ((MouseEvent::EF_LEFT_BUTTON_DOWN |
+    MouseEvent::EF_RIGHT_BUTTON_DOWN) & e.GetFlags()) != 0;
 }
 
 void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {

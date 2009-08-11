@@ -97,7 +97,7 @@ bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
 
 bool CustomButton::OnMousePressed(const MouseEvent& e) {
   if (state_ != BS_DISABLED) {
-    if (IsTriggerableEvent(e) && HitTest(e.location()))
+    if (ShouldEnterPushedState(e) && HitTest(e.location()))
       SetState(BS_PUSHED);
     RequestFocus();
   }
@@ -108,7 +108,7 @@ bool CustomButton::OnMouseDragged(const MouseEvent& e) {
   if (state_ != BS_DISABLED) {
     if (!HitTest(e.location()))
       SetState(BS_NORMAL);
-    else if (IsTriggerableEvent(e))
+    else if (ShouldEnterPushedState(e))
       SetState(BS_PUSHED);
     else
       SetState(BS_HOT);
@@ -212,6 +212,10 @@ void CustomButton::ViewHierarchyChanged(bool is_add, View *parent,
 
 void CustomButton::AnimationProgressed(const Animation* animation) {
   SchedulePaint();
+}
+
+bool CustomButton::ShouldEnterPushedState(const MouseEvent& e) {
+  return IsTriggerableEvent(e);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
