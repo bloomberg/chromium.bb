@@ -44,7 +44,7 @@ if env.get('TARGET_ARCHITECTURE') == 'x86':
 else:
   sources_asm = []
 
-env.ComponentLibrary('libpthread', sources_asm + sources_asm)
+env.ComponentLibrary('libpthread', sources_c + sources_asm)
 
 env.AddLibraryToSdk(['libpthread'])
 
