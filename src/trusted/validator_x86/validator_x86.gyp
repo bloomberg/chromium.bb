@@ -82,6 +82,7 @@
         'nc_inst_state.c',
         'nc_inst_trans.c',
         'ncop_exps.c',
+        'nc_read_segment.c',
         'ncvalidate.c',
       ],
       'actions': [

@@ -105,6 +105,7 @@ env.ComponentLibrary('ncvalidate', ['nacl_cpuid.c',
                                     'nc_inst_state.c',
                                     'nc_inst_trans.c',
                                     'ncop_exps.c',
+                                    'nc_read_segment.c',
                                     'ncvalidate.c'])
 
 env.ComponentLibrary('ncdis_util', ['ncdis_util.c'])
@@ -151,7 +152,8 @@ if env['TARGET_SUBARCH'] == '32':
   if env['BUILD_SUBARCH'] == '32':
     ncdecode_tests = env.ComponentProgram('ncdecode_tests',
                                           ['ncdecode_tests.c'],
-                                          EXTRA_LIBS=['ncvalidate', 'ncdis_util'])
+                                          EXTRA_LIBS=['ncvalidate',
+                                                      'ncdis_util'])
 
     node = env.CommandTestAgainstGoldenOutput(
         'ncdecode_tests.out',
@@ -266,6 +268,21 @@ ncdis_internal_test = env.CommandTestAgainstGoldenOutput(
     stdout_golden=ncdis_iter_internal_golden)
 
 env.AddNodeToTestSuite(ncdis_internal_test,
+                       ['small_tests'],
+                       NCDIS_ITER_TEST_NAME)
+
+# Test that we can textually define a code segment using hex values.
+ncdis_iter_hex_txt = env.File(TESTDATA_DIR + "test_hex.txt")
+
+ncdis_iter_hex_golden = env.File(TESTDATA_DIR + "test_hex.gold")
+
+ncdis_iter_hex_test = env.CommandTestAgainstGoldenOutput(
+    NCDIS_ITER_TEST_NAME + "_hex.out",
+    [ncdis[0], "-use_iter", "-hex_text=-"],
+    stdin=ncdis_iter_hex_txt,
+    stdout_golden=ncdis_iter_hex_golden)
+
+env.AddNodeToTestSuite(ncdis_iter_hex_test,
                        ['small_tests'],
                        NCDIS_ITER_TEST_NAME)
 

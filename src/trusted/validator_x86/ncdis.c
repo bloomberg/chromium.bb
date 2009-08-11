@@ -44,6 +44,7 @@
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
+#include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
@@ -150,6 +151,12 @@ static uint32_t FLAGS_decode_pc = 0;
  */
 static char* FLAGS_commands = "";
 
+/* Flag defining the name of a hex text to be used as the code segment. Assumes
+ * that the pc associated with the code segment is defined by
+ * FLAGS_decode_pc.
+ */
+static char* FLAGS_hex_text = "";
+
 /* Flag, when used in combination with the commands flag, will turn
  * on input copy rules, making the genrated output contain comments
  * and the command line arguments as part of the corresponding
@@ -231,6 +238,7 @@ int GrokFlags(int argc, const char *argv[]) {
     if (GrokBoolFlag("-not_nc", arg, &FLAGS_not_nc) ||
         GrokUint32HexFlag("-pc", arg, &FLAGS_decode_pc) ||
         GrokCstringFlag("-commands", arg, &FLAGS_commands) ||
+        GrokCstringFlag("-hex_text", arg, &FLAGS_hex_text) ||
         GrokBoolFlag("-self_document", arg, &FLAGS_self_document) ||
         GrokBoolFlag("-use_iter", arg, &FLAGS_use_iter) ||
         GrokBoolFlag("-internal", arg, &FLAGS_internal)) {
@@ -429,6 +437,21 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
     }
     AnalyzeSegment(FLAGS_decode_instruction, FLAGS_decode_pc,
                    FLAGS_decode_instruction_size);
+  } else if (0 != strcmp(FLAGS_hex_text, "")) {
+    uint8_t bytes[MAX_INPUT_LINE];
+    size_t num_bytes;
+    if (0 == strcmp(FLAGS_hex_text, "-")) {
+      num_bytes = NcReadHexText(stdin, bytes, MAX_INPUT_LINE);
+      AnalyzeSegment(bytes, FLAGS_decode_pc, (MemorySize) num_bytes);
+    } else {
+      FILE* input = fopen(FLAGS_hex_text, "r");
+      if (NULL == input) {
+        Fatal("Can't open hex text file: %s\n", FLAGS_hex_text);
+      }
+      num_bytes = NcReadHexText(input, bytes, MAX_INPUT_LINE);
+      fclose(input);
+      AnalyzeSegment(bytes, FLAGS_decode_pc, (MemorySize) num_bytes);
+    }
   } else if (0 != strcmp(FLAGS_commands, "")) {
     /* Use the given input file to find command line arguments,
      * and process.
