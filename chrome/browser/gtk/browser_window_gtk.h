@@ -369,6 +369,9 @@ class BrowserWindowGtk : public BrowserWindow,
   // first time.  This is to work around a compiz bug.
   bool maximize_after_show_;
 
+  // The accelerator group used to handle accelerators, owned by this object.
+  GtkAccelGroup* accel_group_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowGtk);
 };
 

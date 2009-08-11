@@ -7,6 +7,8 @@
 #include <gdk/gdkkeysyms.h>
 #include <X11/XF86keysym.h>
 
+#include <string>
+
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/base_paths_linux.h"
@@ -420,7 +422,8 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
        frame_cursor_(NULL),
        is_active_(true),
        last_click_time_(0),
-       maximize_after_show_(false) {
+       maximize_after_show_(false),
+       accel_group_(NULL) {
   use_custom_frame_.Init(prefs::kUseCustomChromeFrame,
       browser_->profile()->GetPrefs(), this);
 
@@ -696,6 +699,19 @@ void BrowserWindowGtk::Close() {
     return;
 
   SaveWindowPosition();
+
+  if (accel_group_) {
+    // Disconnecting the keys we connected to our accelerator group frees the
+    // closures allocated in ConnectAccelerators.
+    for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
+      gtk_accel_group_disconnect_key(accel_group_,
+                                     kAcceleratorMap[i].keyval,
+                                     kAcceleratorMap[i].modifier_type);
+    }
+    gtk_window_remove_accel_group(window_, accel_group_);
+    g_object_unref(accel_group_);
+    accel_group_ = NULL;
+  }
 
   GtkWidget* window = GTK_WIDGET(window_);
   // To help catch bugs in any event handlers that might get fired during the
@@ -1534,14 +1550,12 @@ void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
 }
 
 void BrowserWindowGtk::ConnectAccelerators() {
-  GtkAccelGroup* accel_group = gtk_accel_group_new();
-  gtk_window_add_accel_group(window_, accel_group);
-  // Drop the initial ref on |accel_group| so |window_| will own it.
-  g_object_unref(accel_group);
+  accel_group_ = gtk_accel_group_new();
+  gtk_window_add_accel_group(window_, accel_group_);
 
   for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
     gtk_accel_group_connect(
-        accel_group,
+        accel_group_,
         kAcceleratorMap[i].keyval,
         kAcceleratorMap[i].modifier_type,
         GtkAccelFlags(0),
