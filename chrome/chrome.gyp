@@ -1459,6 +1459,8 @@
         'browser/privacy_blacklist/blacklist_io.cc',
         'browser/privacy_blacklist/blacklist_store.h',
         'browser/privacy_blacklist/blacklist_store.cc',
+        'browser/privacy_blacklist/blocked_response.h',
+        'browser/privacy_blacklist/blocked_response.cc',
         'browser/process_singleton.h',
         'browser/process_singleton_linux.cc',
         'browser/process_singleton_mac.cc',

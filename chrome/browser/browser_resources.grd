@@ -46,6 +46,8 @@ without changes to the corresponding grd file. aa1 -->
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MERGE_AND_SYNC_HTML" file="sync\resources\merge_and_sync.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NEW_TAB_P13N_HTML" file="sync\resources\new_tab_personalization.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_BLACKLIST_HTML" file="resources\privacy_blacklist_block.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_BLACKLIST_IMAGE" file="resources\privacy_blacklist_block.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

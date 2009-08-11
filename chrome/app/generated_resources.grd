@@ -4686,6 +4686,17 @@ each locale. -->
       Open Files
     </message>
 
+    <!-- Privacy Blacklist -->
+    <message name="IDS_BLACKLIST_TITLE" desc="Title of the page displayed when a page is blocked.">
+      Blocked Resource    
+    </message>
+    <message name="IDS_BLACKLIST_MESSAGE" desc="Message shown instead of a blocked element.">
+      The following Privacy Blacklists prevented this content from showing:
+    </message>
+    <message name="IDS_BLACKLIST_UNBLOCK" desc="Prompt to unblock a blacklisted element.">
+      Click to unblock
+    </message>
+
     <message translateable="false" name="IDS_GLEN" desc="Glen">
       Glen
     </message>

@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/shared_memory.h"
 #include "base/stl_util-inl.h"
 #include "base/time.h"
 #include "chrome/browser/cert_store.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
+#include "chrome/browser/privacy_blacklist/blocked_response.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/async_resource_handler.h"
 #include "chrome/browser/renderer_host/buffered_resource_handler.h"
@@ -191,7 +193,7 @@ class RVHDelegateNotificationTask : public Task {
 
 // Consults the RendererSecurity policy to determine whether the
 // ResourceDispatcherHost should service this request.  A request might be
-// disallowed if the renderer is not authorized to restrive the request URL or
+// disallowed if the renderer is not authorized to retrieve the request URL or
 // if the renderer is attempting to upload an unauthorized file.
 bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
                           int process_id,
@@ -410,22 +412,54 @@ void ResourceDispatcherHost::BeginRequest(
   Blacklist::Match* match = context && context->blacklist() ?
       context->blacklist()->findMatch(request_data.url) : NULL;
   if (match && match->IsBlocked(request_data.url)) {
-    // TODO(idanan): Send a ResourceResponse to replace the blocked resource
-    // instead of the FAILED return code below.
-    delete match;
-    URLRequestStatus status(URLRequestStatus::FAILED, net::ERR_ABORTED);
+    // This is a special path where calling happens without the URLRequest
+    // being created, so we must delete the match ourselves. Ensures this
+    // happens by using a scoped pointer.
+    scoped_ptr<Blacklist::Match> match_scope(match);
+
+    URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+    std::string data =
+        request_data.resource_type != ResourceType::SUB_RESOURCE ?
+        BlockedResponse::GetHTML(match) : BlockedResponse::GetImage(match);
+
     if (sync_result) {
       SyncLoadResult result;
       result.status = status;
+      result.final_url = request_data.url;
+      result.data.swap(data);
       ViewHostMsg_SyncLoad::WriteReplyParams(sync_result, result);
       receiver_->Send(sync_result);
     } else {
-      // Tell the renderer that this request was disallowed.
-      receiver_->Send(new ViewMsg_Resource_RequestComplete(
-          route_id,
-          request_id,
-          status,
-          std::string()));  // No connection, security info not needed.
+      bool success = false;
+      base::SharedMemory shared;
+      if (shared.Create(std::wstring(), false, false, data.size())) {
+        if (shared.Map(data.size())) {
+          std::copy(data.c_str(), data.c_str() + data.size(),
+                    static_cast<std::string::value_type*>(shared.memory()));
+          base::SharedMemoryHandle handle;
+          if (shared.GiveToProcess(receiver_->handle(), &handle)) {
+            ResourceResponseHead header;
+            header.mime_type = "text/html";
+            header.content_length = -1;
+            header.status = status;
+            receiver_->Send(new ViewMsg_Resource_ReceivedResponse(
+                route_id, request_id, header));
+            receiver_->Send(new ViewMsg_Resource_DataReceived(
+                route_id, request_id, handle, data.size()));
+            receiver_->Send(new ViewMsg_Resource_RequestComplete(
+                route_id, request_id, status, std::string()));
+            success = true;
+          }
+        }
+      }
+      if (!success) {
+        // Cannot send a substitution response, just cancel.
+        receiver_->Send(new ViewMsg_Resource_RequestComplete(
+            route_id,
+            request_id,
+            URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_FAILED),
+            std::string()));
+      }
     }
     return;
   }
