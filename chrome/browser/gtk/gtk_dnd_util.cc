@@ -4,7 +4,10 @@
 
 #include "chrome/browser/gtk/gtk_dnd_util.h"
 
+#include "base/string_util.h"
 #include "base/logging.h"
+#include "base/pickle.h"
+#include "googleurl/src/gurl.h"
 
 // static
 GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
@@ -106,4 +109,43 @@ void GtkDndUtil::AddTargetToList(GtkTargetList* targets, int target_code) {
     default:
       NOTREACHED() << " Unexpected target code: " << target_code;
   }
+}
+
+// static
+bool GtkDndUtil::ExtractNamedURL(GtkSelectionData* selection_data,
+                                 GURL* url,
+                                 string16* title) {
+  Pickle data(reinterpret_cast<char*>(selection_data->data),
+              selection_data->length);
+  void* iter = NULL;
+  std::string title_utf8, url_utf8;
+  if (!data.ReadString(&iter, &title_utf8) ||
+      !data.ReadString(&iter, &url_utf8)) {
+    return false;
+  }
+
+  GURL gurl(url_utf8);
+  if (!gurl.is_valid())
+    return false;
+
+  *url = gurl;
+  *title = UTF8ToUTF16(title_utf8);
+  return true;
+}
+
+// static void
+bool GtkDndUtil::ExtractURIList(GtkSelectionData* selection_data,
+                                std::vector<GURL>* urls) {
+  gchar** uris = gtk_selection_data_get_uris(selection_data);
+  if (!uris)
+    return false;
+
+  for (size_t i = 0; uris[i] != NULL; ++i) {
+    GURL url(uris[i]);
+    if (url.is_valid())
+      urls->push_back(url);
+  }
+
+  g_strfreev(uris);
+  return true;
 }

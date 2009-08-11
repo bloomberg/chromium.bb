@@ -291,36 +291,23 @@ std::vector<const BookmarkNode*> GetNodesFromSelection(
 
 bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
     BookmarkModel* model, const BookmarkNode* parent, int idx) {
-  Pickle data(reinterpret_cast<char*>(selection_data->data),
-              selection_data->length);
-  void* iter = NULL;
-  std::string title_utf8, url_utf8;
-  bool rv = data.ReadString(&iter, &title_utf8);
-  rv = rv && data.ReadString(&iter, &url_utf8);
-  if (rv) {
-    GURL url(url_utf8);
-    if (title_utf8.empty())
-      title_utf8 = GetNameForURL(url);
-    model->AddURL(parent, idx, UTF8ToWide(title_utf8), url);
-  }
-  return rv;
+  GURL url;
+  string16 title;
+  if (!GtkDndUtil::ExtractNamedURL(selection_data, &url, &title))
+    return false;
+
+  model->AddURL(parent, idx, UTF16ToWideHack(title), url);
+  return true;
 }
 
 bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
     BookmarkModel* model, const BookmarkNode* parent, int idx) {
-  gchar** uris = gtk_selection_data_get_uris(selection_data);
-  if (!uris) {
-    NOTREACHED();
-    return false;
+  std::vector<GURL> urls;
+  GtkDndUtil::ExtractURIList(selection_data, &urls);
+  for (size_t i = 0; i < urls.size(); ++i) {
+    std::string title = GetNameForURL(urls[i]);
+    model->AddURL(parent, idx++, UTF8ToWide(title), urls[i]);
   }
-
-  for (size_t i = 0; uris[i] != NULL; ++i) {
-    GURL url(uris[i]);
-    std::string title = GetNameForURL(url);
-    model->AddURL(parent, idx++, UTF8ToWide(title), url);
-  }
-
-  g_strfreev(uris);
   return true;
 }
 

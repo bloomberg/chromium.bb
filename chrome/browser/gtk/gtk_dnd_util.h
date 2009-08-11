@@ -6,6 +6,11 @@
 #define CHROME_BROWSER_GTK_GTK_DND_UTIL_H_
 
 #include <gtk/gtk.h>
+#include <vector>
+
+#include "base/string16.h"
+
+class GURL;
 
 class GtkDndUtil {
  public:
@@ -44,6 +49,17 @@ class GtkDndUtil {
   // Set the accepted targets list for |dest|. The |target_codes| array should
   // be sorted in preference order and should be terminated with -1.
   static void SetDestTargetList(GtkWidget* dest, const int* target_codes);
+
+  // Extracts data of type CHROME_NAMED_URL from |selection_data| into
+  // |url| and |title|. Returns true if the url/title were safely extracted
+  // and the url is valid.
+  static bool ExtractNamedURL(GtkSelectionData* selection_data,
+                              GURL* url,
+                              string16* title);
+
+  // Extracts data of type TEXT_URI_LIST from |selection_data| into |urls|.
+  static bool ExtractURIList(GtkSelectionData* selection_data,
+                             std::vector<GURL>* urls);
 
  private:
   GtkDndUtil();
