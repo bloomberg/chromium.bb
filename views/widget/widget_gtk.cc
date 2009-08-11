@@ -237,20 +237,13 @@ void WidgetGtk::GetBounds(gfx::Rect* out, bool including_frame) const {
   int x = 0, y = 0, w, h;
   if (GTK_IS_WINDOW(widget_)) {
     gtk_window_get_position(GTK_WINDOW(widget_), &x, &y);
+    // NOTE: this doesn't include frame decorations, but it should be good
+    // enough for our uses.
     gtk_window_get_size(GTK_WINDOW(widget_), &w, &h);
   } else {
-    // TODO: make sure this is right. Docs indicate gtk_window_get_position
-    // returns a value useful to the window manager, which may not be the same
-    // as the actual location on the screen.
     GetWidgetPositionOnScreen(widget_, &x, &y);
     w = widget_->allocation.width;
     h = widget_->allocation.height;
-  }
-
-  if (including_frame) {
-    // TODO: Docs indicate it isn't possible to get at this value. We may need
-    // to turn off all decorations so that the frame is always of a 0x0 size.
-    NOTIMPLEMENTED();
   }
 
   return out->SetRect(x, y, w, h);
