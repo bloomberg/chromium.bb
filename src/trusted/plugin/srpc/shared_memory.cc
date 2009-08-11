@@ -214,7 +214,6 @@ void SharedMemory::LoadMethods() {
 bool SharedMemory::Init(struct PortableHandleInitializer* init_info) {
   struct SharedMemoryInitializer *shm_init_info =
       static_cast<SharedMemoryInitializer*>(init_info);
-  struct nacl_abi_stat st;
   bool allocated_memory = false;
 
   if (NULL == shm_init_info->desc_) {
@@ -251,65 +250,11 @@ bool SharedMemory::Init(struct PortableHandleInitializer* init_info) {
     return false;
   }
 
-  // Set size from stat call.
-  int rval = desc()->vtbl->Fstat(desc(), plugin_->effp_, &st);
-  if (0 == rval) {
-    void* map_addr = NULL;
-    size_t size = st.nacl_abi_st_size;
-    // When probing by VirtualAlloc/mmap, use the same granularity
-    // as the Map virtual function (64KB).
-    size_t rounded_size = NaClRoundAllocPage(size);
-    // Set the object size.
-    size_ = rounded_size;
-    dprintf(("SharedMemory::Init: size 0x%08x\n", (unsigned) rounded_size));
-
-    // Find an address range to map the object into.
-    const int kMaxTries = 10;
-    int tries = 0;
-    do {
-      ++tries;
-#if NACL_WINDOWS
-      map_addr = VirtualAlloc(NULL, rounded_size, MEM_RESERVE, PAGE_READWRITE);
-      if (NULL == map_addr ||!VirtualFree(map_addr, 0, MEM_RELEASE)) {
-        continue;
-      }
-#else
-      map_addr = mmap(NULL,
-                      rounded_size,
-                      PROT_READ | PROT_WRITE,
-                      MAP_SHARED | MAP_ANONYMOUS,
-                      0,
-                      0);
-      dprintf(("SharedMemory::Init: trying addr %p %d\n",
-               static_cast<void *>(map_addr), errno));
-      if (MAP_FAILED == map_addr || munmap(map_addr, size)) {
-        map_addr = NULL;
-        continue;
-      }
-#endif
-      dprintf(("SharedMemory::Init: trying addr %p\n",
-               static_cast<void *>(map_addr)));
-      rval = desc()->vtbl->Map(desc(),
-                               plugin_->effp_,
-                               map_addr,
-                               rounded_size,
-                               NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                               NACL_ABI_MAP_SHARED,
-                               0);
-      dprintf(("SharedMemory::Init: result 0x%08x\n", rval));
-      if (!NaClIsNegErrno(rval)) {
-        map_addr = reinterpret_cast<void*>(rval);
-        break;
-      }
-    } while (NULL == map_addr && tries < kMaxTries);
-    dprintf(("SharedMemory::Init: addr %p\n", static_cast<void *>(map_addr)));
-    map_addr_ = map_addr;
-  } else {
-    dprintf(("SharedMemory::Init: Fstat failed\n"));
-    map_addr_ = NULL;
-  }
-
-  if (NULL == map_addr_) {
+  int rval = NaClDescMapDescriptor(desc(),
+                                   plugin_->effp_,
+                                   &map_addr_,
+                                   &size_);
+  if (rval || (NULL == map_addr_)) {
     return false;
   }
 

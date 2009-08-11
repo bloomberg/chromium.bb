@@ -32,15 +32,6 @@
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
-int32_t NPP_WriteReady(NPP instance, NPStream* stream) {
-  return 0;
-}
-
-int32_t NPP_Write(NPP instance, NPStream* stream, int32_t offset, int32_t len,
-                  void* buffer) {
-  return -1;
-}
-
 void NPP_Print(NPP instance, NPPrint* print_info) {
 }
 

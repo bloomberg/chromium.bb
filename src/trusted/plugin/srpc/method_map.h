@@ -38,6 +38,8 @@
 #include <limits.h>
 #include <map>
 
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+
 namespace nacl_srpc {
 
 class Plugin;
@@ -49,7 +51,7 @@ void FreeSrpcArg(NaClSrpcArg* arg);
 // A utility class that builds and deletes parameter vectors used in
 // rpcs.
 class SrpcParams {
-public:
+ public:
 
   SrpcParams() : exception_info_(NULL) {
     memset(ins, 0, sizeof(ins));
@@ -57,7 +59,7 @@ public:
   }
 
   SrpcParams(const char* in_types, const char* out_types)
-      : exception_info_(NULL){
+      : exception_info_(NULL) {
     if (!Init(in_types, out_types)) {
       FreeAll();
     }
@@ -99,7 +101,7 @@ public:
     return exception_info_;
   }
 
-private:
+ private:
   void FreeAll() {
     FreeArguments(ins);
     FreeArguments(outs);
@@ -150,7 +152,7 @@ typedef bool(*RpcFunction)(void *obj, SrpcParams *params);
 // MethodInfo records the method names and type signatures of an SRPC server.
 class MethodInfo {
  public:
-   // statically defined method - called through a pointer
+  // statically defined method - called through a pointer
   MethodInfo(const RpcFunction function_ptr,
              const char* name,
              const char* ins,
@@ -181,17 +183,17 @@ class MethodInfo {
 
 class MethodMap {
  public:
-  MethodMap() {};
+  MethodMap() {}
   ~MethodMap();
   MethodInfo* GetMethod(int method_id);
   void AddMethod(int method_id, MethodInfo *info);
 
  private:
   std::map<int, MethodInfo*> method_map_;
-
 };
 
 
 }  // namespace nacl_srpc
 
-#endif // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_METHOD_MAP_H
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_METHOD_MAP_H
+

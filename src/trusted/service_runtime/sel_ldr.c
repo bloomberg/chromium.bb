@@ -40,10 +40,12 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 int NaClAppCtor(struct NaClApp  *nap) {
   NaClThreadStartupCheck();
@@ -763,6 +765,73 @@ static int NaClSecureChannelShutdownRpc(struct NaClSrpcChannel  *chan,
   _exit(0);
 }
 
+/*
+ * This RPC is invoked by the plugin when the nexe is downloaded as a stream
+ * and not as a file. The only argument is a handle to a shared memory buffer
+ * that contains the nexe.
+ */
+static int NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
+                             struct NaClSrpcArg      **in_args,
+                             struct NaClSrpcArg      **out_args) {
+  struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
+  NaClSrpcImcDescType nexe_binary = in_args[0]->u.hval;
+  struct GioMemoryFile gf;
+  void* map_addr = NULL;
+  size_t rounded_size;
+  NaClErrorCode errcode;
+
+  int rval = NaClDescMapDescriptor(nexe_binary,
+                                   (struct NaClDescEffector*)&chan->eff,
+                                   &map_addr,
+                                   &rounded_size);
+
+  if (0 != rval) {
+    return NACL_SRPC_RESULT_NO_MEMORY;
+  }
+
+  if (!GioMemoryFileCtor(&gf, map_addr, rounded_size)) {
+    return NACL_SRPC_RESULT_NO_MEMORY;
+  }
+
+  errcode = NaClAppLoadFile((struct Gio *) &gf,
+                            nap,
+                            NACL_ABI_MISMATCH_OPTION_ABORT);
+  if (LOAD_OK != errcode) {
+    nap->module_load_status = errcode;
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+
+  GioMemoryFileDtor((struct Gio *)&gf);
+
+  /*
+   * Finish setting up the NaCl App.  This includes dup'ing
+   * descriptors 0-2 and making them available to the NaCl App.
+   */
+  errcode = NaClAppPrepareToLaunch(nap, 0, 1, 2);
+  if (LOAD_OK != errcode) {
+    nap->module_load_status = errcode;
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+
+  rval = nexe_binary->vtbl->Unmap(nexe_binary,
+                                  (struct NaClDescEffector*)&chan->eff,
+                                  map_addr,
+                                  rounded_size);
+  if (0 != rval) {
+    /* Fail the request even though we could go on. */
+    return NACL_SRPC_RESULT_NO_MEMORY;
+  }
+
+  rval = nexe_binary->vtbl->Close(nexe_binary,
+                                  (struct NaClDescEffector*)&chan->eff);
+  if (0 != rval) {
+    /* Fail the request even though we could go on. */
+    return NACL_SRPC_RESULT_NO_MEMORY;
+  }
+
+  return NACL_SRPC_RESULT_OK;
+}
+
 static int NaClSecureChannelSetOriginRpc(struct NaClSrpcChannel   *chan,
                                          struct NaClSrpcArg       **in_args,
                                          struct NaClSrpcArg       **out_args) {
@@ -827,6 +896,7 @@ void WINAPI NaClSecureChannelThread(void *state) {
     { "start_module::i", NaClSecureChannelStartModuleRpc, },
     { "set_origin:s:", NaClSecureChannelSetOriginRpc, },
     { "log:is:", NaClSecureChannelLog, },
+    { "load_module:h:", NaClLoadModuleRpc, },
     /* add additional calls here.  upcall set up?  start module signal? */
     { (char const *) NULL, (int (*)(struct NaClSrpcChannel *,
                                     struct NaClSrpcArg **,

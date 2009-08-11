@@ -96,7 +96,7 @@ static NTSETLDT set_ldt_entries;
 static struct NaClMutex nacl_ldt_mutex;
 
 int NaClLdtInitPlatformSpecific() {
-  HMODULE hmod = GetModuleHandle("ntdll.dll");
+  HMODULE hmod = GetModuleHandleA("ntdll.dll");
   /*
    * query_information_process is used to examine LDT entries to find a free
    * selector, etc.

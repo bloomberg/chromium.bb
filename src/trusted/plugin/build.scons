@@ -146,16 +146,24 @@ nacl_npplugin_inputs = [
 ]
 
 if env['TARGET_PLATFORM'] == 'WINDOWS':
-  nacl_npplugin_inputs += [
-      'nacl_plugin.def',
-      env.RES('nacl_plugin.rc'),
-  ]
+  if not env.Bit('chrome'):
+    nacl_npplugin_inputs += [
+        'nacl_plugin.def',
+        env.RES('nacl_plugin.rc'),
+    ]
 
 npGoogleNaClPlugin = 'npGoogleNaClPlugin'
 
 if not env.Bit('mac'):
-  plugin = env.ComponentLibrary(npGoogleNaClPlugin, nacl_npplugin_inputs,
-                             no_import_lib = True)
+  if env.Bit('chrome'):
+    plugin = env.ComponentLibrary(npGoogleNaClPlugin,
+                                  nacl_npplugin_inputs,
+                                  COMPONENT_STATIC=True)
+  else:
+    plugin = env.ComponentLibrary(npGoogleNaClPlugin, 
+                                  nacl_npplugin_inputs,
+                                  no_import_lib=True)
+
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite([plugin[0]])
 else:

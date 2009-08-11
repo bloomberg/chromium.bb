@@ -45,6 +45,7 @@ int SrtSocket::kHardShutdownIdent;
 int SrtSocket::kSetOriginIdent;
 int SrtSocket::kStartModuleIdent;
 int SrtSocket::kLogIdent;
+int SrtSocket::kLoadModule;
 
 // NB: InitializeIdentifiers is not thread-safe.
 void SrtSocket::InitializeIdentifiers(
@@ -59,6 +60,8 @@ void SrtSocket::InitializeIdentifiers(
     kStartModuleIdent =
         PortablePluginInterface::GetStrIdentifierCallback("start_module");
     kLogIdent = PortablePluginInterface::GetStrIdentifierCallback("log");
+    kLoadModule =
+        PortablePluginInterface::GetStrIdentifierCallback("load_module");
     initialized = true;
   }
 }
@@ -129,6 +132,27 @@ bool SrtSocket::SetOrigin(std::string origin) {
 }
 
 
+bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
+  if (!(connected_socket()->HasMethod(kLoadModule, METHOD_CALL))) {
+    dprintf(("No load_module method was found\n"));
+    return false;
+  }
+  SrpcParams params;
+  bool success;
+  success = connected_socket()->InitParams(kLoadModule,
+                                           METHOD_CALL,
+                                           &params);
+  if (!success) {
+    return false;
+  }
+
+  params.Input(0)->u.hval = desc;
+
+  bool rpc_result = connected_socket()->Invoke(kLoadModule,
+                                               METHOD_CALL,
+                                               &params);
+  return rpc_result;
+}
 
 // make the start_module rpc
 bool SrtSocket::StartModule(int *load_status) {

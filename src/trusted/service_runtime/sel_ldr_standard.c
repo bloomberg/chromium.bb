@@ -493,6 +493,12 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   struct NaClAppThread  *natp;
   uintptr_t             stack_ptr;
 
+  /*
+   * Set an exception handler so Windows won't show a message box if
+   * an exception occurs
+   */
+  WINDOWS_EXCEPTION_TRY;
+
   retval = 0;  /* fail */
   CHECK(argc > 0);
   CHECK(NULL != argv);
@@ -594,6 +600,7 @@ cleanup:
   free(argv_len);
   free(envv_len);
 
+  WINDOWS_EXCEPTION_CATCH;
   return retval;
 }
 

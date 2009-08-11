@@ -194,7 +194,9 @@ struct timezone {
  * printf macros for intptr_t and uintptr_t, int{8,16,32,64}
  */
 #if !NACL_WINDOWS
+#ifndef __STDC_FORMAT_MACROS
 # define __STDC_FORMAT_MACROS  /* C++ */
+#endif
 # include <inttypes.h>
 #else
 # define __PRIPTR_PREFIX "l"
@@ -230,12 +232,14 @@ struct timezone {
 
 # define __PRI64_PREFIX "I64"
 
+#ifndef CHROME_BUILD  /* avoid conflicts with Chrome src/base/format_macros.h */
 # define PRId64 __PRI64_PREFIX "d"
 # define PRIi64 __PRI64_PREFIX "i"
 # define PRIo64 __PRI64_PREFIX "o"
 # define PRIu64 __PRI64_PREFIX "u"
 # define PRIx64 __PRI64_PREFIX "x"
 # define PRIX64 __PRI64_PREFIX "X"
+#endif
 
 #endif
 

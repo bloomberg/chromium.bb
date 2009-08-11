@@ -67,6 +67,8 @@ class Plugin : public PortableHandle {
 
   // Load from the local URL saved in local_url_.
   bool Load();
+  // Load nexe binary from the provided buffer.
+  bool Load(const void* buffer, int32_t size);
 
   // Log a message by sending it to the service runtime.
   bool LogAtServiceRuntime(int severity, std::string msg);
@@ -89,7 +91,7 @@ class Plugin : public PortableHandle {
 
   bool Init(struct PortableHandleInitializer* init_info);
   void LoadMethods();
-  //overriding virtual methods
+  // overriding virtual methods
   virtual bool InvokeEx(int method_id, CallType call_type, SrpcParams* params);
   virtual bool HasMethodEx(int method_id, CallType call_type);
   virtual bool InitParamsEx(int method_id,
@@ -101,9 +103,8 @@ class Plugin : public PortableHandle {
   int32_t width();
   int32_t height();
 
-
  private:
-   // Functions exported through MethodMap
+  // Functions exported through MethodMap
   static bool UrlAsNaClDesc(void* obj, SrpcParams* params);
   static bool ShmFactory(void* obj, SrpcParams* params);
 

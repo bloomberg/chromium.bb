@@ -134,6 +134,10 @@ NPError NPP_New(NPMIMEType plugin_type,
   if (instance->pdata == NULL) {
     return NPERR_OUT_OF_MEMORY_ERROR;
   }
+#ifdef CHROME_BUILD
+  // NaCl is a windowless plugin
+  NPN_SetValue(instance, NPPVpluginWindowBool, false);
+#endif
   return NPERR_NO_ERROR;
 }
 
@@ -226,6 +230,25 @@ NPError NPP_NewStream(NPP instance, NPMIMEType type,
   return NPERR_GENERIC_ERROR;
 }
 
+int32_t NPP_WriteReady(NPP instance, NPStream* stream) {
+  DebugPrintf("NPP_WriteReady \n");
+  if ((NULL == instance) || (NULL == instance->pdata)) {
+    return 0;
+  }
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  return module->WriteReady(stream);
+}
+
+int32_t NPP_Write(NPP instance, NPStream* stream, int32_t offset, int32_t len,
+                  void* buffer) {
+  DebugPrintf("NPP_Write: offset %d, len %d\n", offset, len);
+  if ((NULL == instance) || (NULL == instance->pdata)) {
+    return -1;
+  }
+  nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
+  return module->Write(stream, offset, len, buffer);
+}
+
 void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* filename) {
   DebugPrintf("NPP_StreamAsFile: %s\n", filename);
   if (instance == NULL) {
@@ -300,53 +323,3 @@ void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
     module->URLNotify(url, reason, notify_data);
   }
 }
-
-
-namespace nacl {
-
-bool CheckExecutableVersion(NPP instance, const char *filename) {
-  FILE *f;
-  NPError ret = NPERR_GENERIC_ERROR;
-  static uint8_t const kInvalidAbiVersion = UINT8_MAX;
-  uint8_t nacl_abi_version = kInvalidAbiVersion;
-  // initialize it, since the compiler does not know that the variable
-  // will not be used unless it is set by the fread.
-
-  f = fopen(filename, "rb");
-  if (NULL != f) {
-    if (0 == fseek(f, EI_ABIVERSION, SEEK_SET)) {
-      if (1 == fread(&nacl_abi_version, 1, 1, f)) {
-        if (EF_NACL_ABIVERSION == nacl_abi_version) {
-          ret = NPERR_NO_ERROR;
-        } else {
-          ret = NPERR_INCOMPATIBLE_VERSION_ERROR;
-        }
-      }
-    }
-    fclose(f);
-  }
-  if (NPERR_NO_ERROR != ret) {
-    const char *alert;
-    char buf[256];
-
-    if (NPERR_INCOMPATIBLE_VERSION_ERROR == ret) {
-      SNPRINTF(buf, sizeof buf,
-        "alert('Load failed: ABI version mismatch:"
-        " expected %d, got %d\\n');",
-        EF_NACL_ABIVERSION, nacl_abi_version);
-      alert = buf;
-    } else {
-      alert = "alert('Load failed: Generic file error.\\n');";
-    }
-    NPObject* window;
-    NPN_GetValue(instance, NPNVWindowNPObject, &window);
-    NPString script;
-    script.utf8characters = alert;
-    script.utf8length = strlen(script.utf8characters);
-    NPVariant result;
-    NPN_Evaluate(instance, window, &script, &result);
-  }
-  return (NPERR_NO_ERROR == ret);
-}
-
-}  // namespace nacl

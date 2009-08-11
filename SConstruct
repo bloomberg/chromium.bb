@@ -389,6 +389,19 @@ if ARGUMENTS.get('pp', 0):
   pre_base_env.Append(PRINT_CMD_LINE_FUNC = CommandPrettyPrinter)
 
 # ----------------------------------------------------------
+DeclareBit('chrome',
+           'Build the plugin as a static library to be linked with Chrome')
+pre_base_env.SetBitFromOption('chrome', False)
+if pre_base_env.Bit('chrome'):
+  pre_base_env.Append(
+    CPPDEFINES = [
+        ['CHROME_BUILD', 1],
+    ],
+  )
+  # To build for Chrome sdl=none must be used
+  ARGUMENTS['sdl'] = 'none'
+
+# ----------------------------------------------------------
 base_env = pre_base_env.Clone()
 base_env.Append(
   BUILD_SUBTYPE = '',

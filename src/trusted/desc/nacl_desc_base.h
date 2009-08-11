@@ -552,6 +552,11 @@ int NaClDescSemWaitNotImplemented(struct NaClDesc         *vself,
 int NaClDescGetValueNotImplemented(struct NaClDesc          *vself,
                                    struct NaClDescEffector  *effp);
 
+int NaClDescMapDescriptor(struct NaClDesc *desc,
+                          struct NaClDescEffector *effector,
+                          void** addr,
+                          size_t* size);
+
 EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_BASE_H_
