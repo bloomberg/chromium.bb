@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_
 
 #include <gdk/gdk.h>
+
+#include <map>
 #include <vector>
+#include <string>
 
 #include "base/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
@@ -18,18 +21,17 @@
 
 class RenderWidgetHost;
 // A conveience wrapper class for GtkIMContext;
-class RenderWidgetHostViewGtkIMContext;
+class GtkIMContextWrapper;
 
 typedef struct _GtkClipboard GtkClipboard;
 typedef struct _GtkSelectionData GtkSelectionData;
-typedef struct _GtkIMContext GtkIMContext;
 
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
 class RenderWidgetHostViewGtk : public RenderWidgetHostView {
  public:
-  RenderWidgetHostViewGtk(RenderWidgetHost* widget);
+  explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
   ~RenderWidgetHostViewGtk();
 
   // Initialize this object for use as a drawing area.
@@ -124,7 +126,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   bool was_focused_before_grab_;
 
   // A conveience wrapper object for GtkIMContext;
-  scoped_ptr<RenderWidgetHostViewGtkIMContext> im_context_;
+  scoped_ptr<GtkIMContextWrapper> im_context_;
 
   // Helper class that lets us allocate plugin containers and move them.
   GtkPluginContainerManager plugin_container_manager_;

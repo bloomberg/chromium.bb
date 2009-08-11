@@ -1481,6 +1481,8 @@
         'browser/renderer_host/download_throttling_resource_handler.h',
         'browser/renderer_host/file_system_accessor.cc',
         'browser/renderer_host/file_system_accessor.h',
+        'browser/renderer_host/gtk_im_context_wrapper.cc',
+        'browser/renderer_host/gtk_im_context_wrapper.h',
         'browser/renderer_host/render_process_host.cc',
         'browser/renderer_host/render_process_host.h',
         'browser/renderer_host/render_sandbox_host_linux.h',
