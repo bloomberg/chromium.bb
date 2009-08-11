@@ -29,6 +29,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/gtk/about_chrome_dialog.h"
 #include "chrome/browser/gtk/active_window_watcher.h"
 #include "chrome/browser/gtk/bookmark_bar_gtk.h"
@@ -995,9 +996,6 @@ void BrowserWindowGtk::TabDetachedAt(TabContents* contents, int index) {
   UpdateDevToolsForContents(NULL);
 }
 
-// TODO(estade): this function should probably be unforked from the BrowserView
-// function of the same name by having a shared partial BrowserWindow
-// implementation.
 void BrowserWindowGtk::TabSelectedAt(TabContents* old_contents,
                                      TabContents* new_contents,
                                      int index,
@@ -1016,8 +1014,11 @@ void BrowserWindowGtk::TabSelectedAt(TabContents* old_contents,
   new_contents->DidBecomeSelected();
   // TODO(estade): after we manage browser activation, add a check to make sure
   // we are the active browser before calling RestoreFocus().
-  if (!browser_->tabstrip_model()->closing_all())
+  if (!browser_->tabstrip_model()->closing_all()) {
     new_contents->view()->RestoreFocus();
+    if (new_contents->find_ui_active())
+      browser_->find_bar()->find_bar()->SetFocusAndSelection();
+  }
 
   // Update all the UI bits.
   UpdateTitleBar();

@@ -14,6 +14,7 @@
 @class TabView;
 @class TabStripView;
 
+class Browser;
 class TabStripModelObserverBridge;
 class TabStripModel;
 class TabContents;
@@ -38,6 +39,7 @@ class ToolbarModel;
   scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server drags
   NSButton* newTabButton_;  // weak, obtained from the nib.
   scoped_ptr<TabStripModelObserverBridge> bridge_;
+  Browser* browser_;  // weak
   TabStripModel* tabModel_;  // weak
   // access to the TabContentsControllers (which own the parent view
   // for the toolbar and associated tab contents) given an index. This needs
@@ -49,7 +51,7 @@ class ToolbarModel;
   scoped_nsobject<NSMutableArray> tabArray_;
 
   // These values are only used during a drag, and override tab positioning.
-  TabView* placeholderTab_; // weak. Tab being dragged
+  TabView* placeholderTab_;  // weak. Tab being dragged
   NSRect placeholderFrame_;  // Frame to use
   CGFloat placeholderStretchiness_; // Vertical force shown by streching tab.
   // Frame targets for all the current views.
@@ -84,7 +86,7 @@ class ToolbarModel;
 // you have retained them.
 - (id)initWithView:(TabStripView*)view
         switchView:(NSView*)switchView
-             model:(TabStripModel*)model;
+           browser:(Browser*)browser;
 
 // Return the view for the currently selected tab.
 - (NSView *)selectedTabView;

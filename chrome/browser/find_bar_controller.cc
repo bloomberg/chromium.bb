@@ -97,10 +97,6 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
     // reason.
     gfx::Rect new_pos = find_bar_->GetDialogPosition(gfx::Rect());
     find_bar_->SetDialogPosition(new_pos, false);
-
-    // Only modify focus and selection if Find is active, otherwise the Find
-    // Bar will interfere with user input.
-    find_bar_->SetFocusAndSelection();
   }
 
   UpdateFindBarForCurrentResult();

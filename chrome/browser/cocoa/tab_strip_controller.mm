@@ -10,6 +10,8 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
+#include "chrome/browser/find_bar.h"
+#include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
@@ -53,12 +55,13 @@ static const float kUseFullAvailableWidth = -1.0;
 
 - (id)initWithView:(TabStripView*)view
         switchView:(NSView*)switchView
-             model:(TabStripModel*)model {
-  DCHECK(view && switchView && model);
+           browser:(Browser*)browser {
+  DCHECK(view && switchView && browser);
   if ((self = [super init])) {
     tabView_ = view;
     switchView_ = switchView;
-    tabModel_ = model;
+    browser_ = browser;
+    tabModel_ = browser_->tabstrip_model();
     bridge_.reset(new TabStripModelObserverBridge(tabModel_, self));
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
@@ -493,6 +496,9 @@ static const float kUseFullAvailableWidth = -1.0;
   if (newContents) {
     newContents->DidBecomeSelected();
     newContents->view()->RestoreFocus();
+
+    if (newContents->find_ui_active())
+      browser_->find_bar()->find_bar()->SetFocusAndSelection();
   }
 }
 

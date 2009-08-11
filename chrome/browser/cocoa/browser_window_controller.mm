@@ -158,7 +158,7 @@ willPositionSheet:(NSWindow*)sheet
     tabStripController_.reset([[TabStripController alloc]
                                 initWithView:[self tabStripView]
                                   switchView:[self tabContentArea]
-                                       model:browser_->tabstrip_model()]);
+                                     browser:browser_.get()]);
 
     // Create the infobar container view, so we can pass it to the
     // ToolbarController.
