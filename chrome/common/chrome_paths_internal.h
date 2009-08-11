@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_CHROME_PATHS_INTERNAL_H_
 #define CHROME_COMMON_CHROME_PATHS_INTERNAL_H_
 
+#include "build/build_config.h"
+
 class FilePath;
 
 namespace chrome {
@@ -12,6 +14,11 @@ namespace chrome {
 // Get the path to the user's data directory, regardless of whether
 // DIR_USER_DATA has been overridden by a command-line option.
 bool GetDefaultUserDataDirectory(FilePath* result);
+
+#if defined(OS_LINUX)
+// Get the path to the user's cache directory.
+bool GetUserCacheDirectory(FilePath* result);
+#endif
 
 // Get the path to the user's documents directory.
 bool GetUserDocumentsDirectory(FilePath* result);

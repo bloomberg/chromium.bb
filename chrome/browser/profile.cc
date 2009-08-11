@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -534,6 +533,11 @@ ProfileImpl::ProfileImpl(const FilePath& path)
     blacklist_ = new Blacklist(path);
   }
 
+  if (!PathService::IsOverridden(chrome::DIR_USER_DATA))
+    PathService::Get(chrome::DIR_USER_CACHE, &base_cache_path_);
+  if (base_cache_path_.empty())
+    base_cache_path_ = path_;
+
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::THEME_INSTALLED,
                  NotificationService::AllSources());
@@ -790,7 +794,7 @@ URLRequestContext* ProfileImpl::GetRequestContext() {
   if (!request_context_) {
     FilePath cookie_path = GetPath();
     cookie_path = cookie_path.Append(chrome::kCookieFilename);
-    FilePath cache_path = GetPath();
+    FilePath cache_path = base_cache_path_;
     int max_size;
     GetCacheParameters(kNormalContext, &cache_path, &max_size);
 
@@ -821,7 +825,7 @@ URLRequestContext* ProfileImpl::GetRequestContext() {
 
 URLRequestContext* ProfileImpl::GetRequestContextForMedia() {
   if (!media_request_context_) {
-    FilePath cache_path = GetPath();
+    FilePath cache_path = base_cache_path_;
     int max_size;
     GetCacheParameters(kMediaContext, &cache_path, &max_size);
 

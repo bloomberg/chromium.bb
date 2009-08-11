@@ -419,6 +419,7 @@ class ProfileImpl : public Profile,
   NotificationRegistrar registrar_;
 
   FilePath path_;
+  FilePath base_cache_path_;
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
   scoped_refptr<ExtensionsService> extensions_service_;
