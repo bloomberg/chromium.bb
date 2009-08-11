@@ -54,4 +54,9 @@ void BuildExprNodeVector(struct NcInstState* state);
  */
 Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64);
 
+/* Given a 32-bit register, return the corresponding 64-bit register.
+ * Returns RegUnknown if no such register exists.
+ */
+OperandKind NcGet64For32BitRegister(OperandKind reg32);
+
 #endif   /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_TRANS_H_ */

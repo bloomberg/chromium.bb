@@ -227,16 +227,20 @@ static const OperandKind RegisterTable64[REGISTER_TABLE_SIZE] = {
  */
 typedef const OperandKind RegisterTableGroup[REGISTER_TABLE_SIZE];
 
-Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64) {
+OperandKind NcGet64For32BitRegister(OperandKind reg32) {
 #if NACL_TARGET_SUBARCH == 64
   int i;
   for (i = 0; i < REGISTER_TABLE_SIZE; ++i) {
     if (reg32 == RegisterTable32[i]) {
-      return reg64 == RegisterTable64[i];
+      return RegisterTable64[i];
     }
   }
 #endif
-  return FALSE;
+  return RegUnknown;
+}
+
+Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64) {
+  return reg64 == NcGet64For32BitRegister(reg32);
 }
 
 /* Define the set of available registers, categorized by size.
