@@ -307,7 +307,7 @@ function initStep2(clientElements) {
 
 function reportResult(result, msg) {
   o3djs.BROWSER_ONLY;
-  document.getElementById('result').innerHTML = result ?
+  o3djs.util.getElementById('result').innerHTML = result ?
       '<font color="green">success</font>' :
       '<font color="red">failure: ' + msg + '</font>';
   window.g_testResult = result;  // for selenium testing.
