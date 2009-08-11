@@ -32,6 +32,7 @@
 /* Descriptors to model instructions, opcodes, and instruction operands. */
 
 #include <stdio.h>
+#include <assert.h>
 
 #define NEEDSNACLINSTTYPESTRING
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
@@ -329,6 +330,24 @@ const char* OpcodePrefixName(OpcodePrefix prefix) {
   return prefix < OpcodePrefixEnumSize
       ? g_OpcodePrefixName[prefix]
       : "OpcodePrefix???";
+}
+
+uint8_t NcGetOpcodeNumberOperands(Opcode* opcode) {
+  uint8_t operands = opcode->num_operands;
+  if (operands > 0 &&
+      (opcode->operands[0].flags & OpFlag(OperandExtendsOpcode))) {
+    --operands;
+  }
+  return operands;
+}
+
+Operand* NcGetOpcodeOperand(Opcode* opcode, uint8_t index) {
+  if (opcode->num_operands > 0 &&
+      (opcode->operands[0].flags & OpFlag(OperandExtendsOpcode))) {
+    ++index;
+  }
+  assert(index < opcode->num_operands);
+  return &opcode->operands[index];
 }
 
 void PrintOperand(FILE* f, Operand* operand) {

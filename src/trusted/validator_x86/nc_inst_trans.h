@@ -54,6 +54,11 @@ void BuildExprNodeVector(struct NcInstState* state);
  */
 Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64);
 
+/* Returns true iff the given (non-64 bit) subregister is a subpart
+ * of the corresponding 64-bit register.
+ */
+Bool NcIs64Subregister(OperandKind subreg, OperandKind reg64);
+
 /* Given a 32-bit register, return the corresponding 64-bit register.
  * Returns RegUnknown if no such register exists.
  */

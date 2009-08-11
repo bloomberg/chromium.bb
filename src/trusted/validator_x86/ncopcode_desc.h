@@ -690,6 +690,19 @@ typedef struct Opcode {
   struct Opcode* next_rule;
 } Opcode;
 
+/* Returns the number of logical operands an Opcode has. That is,
+ * returns field num_operands unless the first operand is
+ * a special encoding that extends the opcode.
+ */
+uint8_t NcGetOpcodeNumberOperands(Opcode* opcode);
+
+/* Returns the indexed logical operand for the opcode. That is,
+ * returns the index-th operand unless the first operand is
+ * a special encoding that extends the opcode. In the latter
+ * case, the (index+1)-th operand is returned.
+ */
+Operand* NcGetOpcodeOperand(Opcode* opcode, uint8_t index);
+
 /* Print out the given operand structure to the given file. */
 void PrintOperand(FILE* f, Operand* operand);
 
