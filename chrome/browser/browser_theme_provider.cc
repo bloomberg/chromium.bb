@@ -258,52 +258,95 @@ SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
   }
 }
 
+const std::string BrowserThemeProvider::GetColorKey(int id) {
+  switch (id) {
+    case COLOR_FRAME:
+      return kColorFrame;
+    case COLOR_FRAME_INACTIVE:
+      return kColorFrameInactive;
+    case COLOR_FRAME_INCOGNITO:
+      return kColorFrameIncognito;
+    case COLOR_FRAME_INCOGNITO_INACTIVE:
+      return kColorFrameIncognitoInactive;
+    case COLOR_TOOLBAR:
+      return kColorToolbar;
+    case COLOR_TAB_TEXT:
+      return kColorTabText;
+    case COLOR_BACKGROUND_TAB_TEXT:
+      return kColorBackgroundTabText;
+    case COLOR_BOOKMARK_TEXT:
+      return kColorBookmarkText;
+    case COLOR_NTP_BACKGROUND:
+      return kColorNTPBackground;
+    case COLOR_NTP_TEXT:
+      return kColorNTPText;
+    case COLOR_NTP_LINK:
+      return kColorNTPLink;
+    case COLOR_NTP_SECTION:
+      return kColorNTPSection;
+    case COLOR_NTP_SECTION_TEXT:
+      return kColorNTPSectionText;
+    case COLOR_NTP_SECTION_LINK:
+      return kColorNTPSectionLink;
+    case COLOR_CONTROL_BACKGROUND:
+      return kColorControlBackground;
+    case COLOR_BUTTON_BACKGROUND:
+      return kColorButtonBackground;
+    default:
+      NOTREACHED() << "Unknown color requested";
+      return "";
+  }
+}
+
+SkColor BrowserThemeProvider::GetDefaultColor(int id) {
+  switch (id) {
+    case COLOR_FRAME:
+      return kDefaultColorFrame;
+    case COLOR_FRAME_INACTIVE:
+      return kDefaultColorFrameInactive;
+    case COLOR_FRAME_INCOGNITO:
+      return kDefaultColorFrameIncognito;
+    case COLOR_FRAME_INCOGNITO_INACTIVE:
+      return kDefaultColorFrameIncognitoInactive;
+    case COLOR_TOOLBAR:
+      return kDefaultColorToolbar;
+    case COLOR_TAB_TEXT:
+      return kDefaultColorTabText;
+    case COLOR_BACKGROUND_TAB_TEXT:
+      return kDefaultColorBackgroundTabText;
+    case COLOR_BOOKMARK_TEXT:
+      return kDefaultColorBookmarkText;
+    case COLOR_NTP_BACKGROUND:
+      return kDefaultColorNTPBackground;
+    case COLOR_NTP_TEXT:
+      return kDefaultColorNTPText;
+    case COLOR_NTP_LINK:
+      return kDefaultColorNTPLink;
+    case COLOR_NTP_SECTION:
+      return kDefaultColorNTPSection;
+    case COLOR_NTP_SECTION_TEXT:
+      return kDefaultColorNTPSectionText;
+    case COLOR_NTP_SECTION_LINK:
+      return kDefaultColorNTPSectionLink;
+    case COLOR_CONTROL_BACKGROUND:
+      return kDefaultColorControlBackground;
+    case COLOR_BUTTON_BACKGROUND:
+      return kDefaultColorButtonBackground;
+    default:
+      // Return a debugging red color.
+      return 0xffff0000;
+  }
+}
+
 SkColor BrowserThemeProvider::GetColor(int id) {
   DCHECK(CalledOnValidThread());
 
   // TODO(glen): Figure out if we need to tint these. http://crbug.com/11578
-  switch (id) {
-    case COLOR_FRAME:
-      return FindColor(kColorFrame, kDefaultColorFrame);
-    case COLOR_FRAME_INACTIVE:
-      return FindColor(kColorFrameInactive, kDefaultColorFrameInactive);
-    case COLOR_FRAME_INCOGNITO:
-      return FindColor(kColorFrameIncognito, kDefaultColorFrameIncognito);
-    case COLOR_FRAME_INCOGNITO_INACTIVE:
-      return FindColor(kColorFrameIncognitoInactive,
-                       kDefaultColorFrameIncognitoInactive);
-    case COLOR_TOOLBAR:
-      return FindColor(kColorToolbar, kDefaultColorToolbar);
-    case COLOR_TAB_TEXT:
-      return FindColor(kColorTabText, kDefaultColorTabText);
-    case COLOR_BACKGROUND_TAB_TEXT:
-      return FindColor(kColorBackgroundTabText, kDefaultColorBackgroundTabText);
-    case COLOR_BOOKMARK_TEXT:
-      return FindColor(kColorBookmarkText, kDefaultColorBookmarkText);
-    case COLOR_NTP_BACKGROUND:
-      return (colors_.find(kColorNTPBackground) != colors_.end()) ?
-          colors_[kColorNTPBackground] :
-          kDefaultColorNTPBackground;
-    case COLOR_NTP_TEXT:
-      return FindColor(kColorNTPText, kDefaultColorNTPText);
-    case COLOR_NTP_LINK:
-      return FindColor(kColorNTPLink, kDefaultColorNTPLink);
-    case COLOR_NTP_SECTION:
-      return FindColor(kColorNTPSection, kDefaultColorNTPSection);
-    case COLOR_NTP_SECTION_TEXT:
-      return FindColor(kColorNTPSectionText, kDefaultColorNTPSectionText);
-    case COLOR_NTP_SECTION_LINK:
-      return FindColor(kColorNTPSectionLink, kDefaultColorNTPSectionLink);
-    case COLOR_CONTROL_BACKGROUND:
-      return FindColor(kColorControlBackground, kDefaultColorControlBackground);
-    case COLOR_BUTTON_BACKGROUND:
-      return FindColor(kColorButtonBackground, kDefaultColorButtonBackground);
-    default:
-      NOTREACHED() << "Unknown color requested";
-  }
-
-  // Return a debugging red color.
-  return 0xffff0000;
+  ColorMap::iterator color_iter = colors_.find(GetColorKey(id));
+  if (color_iter != colors_.end())
+    return color_iter->second;
+  else
+    return GetDefaultColor(id);
 }
 
 bool BrowserThemeProvider::GetDisplayProperty(int id, int* result) {
@@ -968,11 +1011,6 @@ void BrowserThemeProvider::LoadThemePrefs() {
     GenerateTabImages();
     UserMetrics::RecordAction(L"Themes_loaded", profile_);
   }
-}
-
-SkColor BrowserThemeProvider::FindColor(const char* id,
-                                        SkColor default_color) {
-  return (colors_.find(id) != colors_.end()) ? colors_[id] : default_color;
 }
 
 void BrowserThemeProvider::ClearCaches() {

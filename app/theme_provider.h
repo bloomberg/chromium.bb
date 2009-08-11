@@ -82,8 +82,14 @@ class ThemeProvider {
   //
   // The bitmap is not assumed to exist. If a theme does not provide an image,
   // this function will return nil.
-
   virtual NSImage* GetNSImageNamed(int id) = 0;
+
+  // Gets the NSColor with the specified |id|.
+  //
+  // The color is not assumed to exist. If a theme does not provide an color,
+  // this function will return nil.
+  virtual NSColor* GetNSColor(int id) = 0;
+
   // Gets the NSColor for tinting with the specified |id|.
   //
   // The tint is not assumed to exist. If a theme does not provide a tint with

@@ -67,6 +67,33 @@ NSImage* BrowserThemeProvider::GetNSImageNamed(int id) {
   return empty_image;
 }
 
+NSColor* BrowserThemeProvider::GetNSColor(int id) {
+  DCHECK(CalledOnValidThread());
+
+  // Check to see if we already have the color in the cache.
+  NSColorMap::const_iterator found = nscolor_cache_.find(id);
+  if (found != nscolor_cache_.end())
+    return found->second;
+
+  ColorMap::iterator color_iter = colors_.find(GetColorKey(id));
+  if (color_iter != colors_.end()) {
+    const SkColor& sk_color = color_iter->second;
+
+    NSColor* color = [NSColor colorWithCalibratedRed:SkColorGetR(sk_color)
+                                               green:SkColorGetG(sk_color)
+                                                blue:SkColorGetB(sk_color)
+                                               alpha:SkColorGetA(sk_color)];
+
+    // We loaded successfully.  Cache the color.
+    if (color) {
+      nscolor_cache_[id] = [color retain];
+      return color;
+    }
+  }
+
+  return nil;
+}
+
 NSColor* BrowserThemeProvider::GetNSColorTint(int id) {
   DCHECK(CalledOnValidThread());
 

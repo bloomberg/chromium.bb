@@ -160,6 +160,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id);
 #elif defined(OS_MACOSX)
   virtual NSImage* GetNSImageNamed(int id);
+  virtual NSColor* GetNSColor(int id);
   virtual NSColor* GetNSColorTint(int id);
 #endif
 
@@ -242,6 +243,12 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Returns the default tint for the given tint |id| TINT_* enum value.
   skia::HSL GetDefaultTint(int id);
 
+  // Returns the string key for the given color |id| COLOR_* enum value.
+  const std::string GetColorKey(int id);
+
+  // Returns the default color for the given color |id| COLOR_* enum value.
+  SkColor GetDefaultColor(int id);
+
   // Get the specified tint - |id| is one of the TINT_* enum values.
   skia::HSL GetTint(int id);
 
@@ -282,8 +289,6 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
 
   // Save the id of the last theme installed.
   void SaveThemeID(const std::string& id);
-
-  SkColor FindColor(const char* id, SkColor default_color);
 
   // Frees generated images and clears the image cache.
   void ClearCaches();
