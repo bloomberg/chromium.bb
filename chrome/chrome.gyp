@@ -68,9 +68,11 @@
       ['OS=="mac"', {
         'conditions': [
           ['branding=="Chrome"', {
-            'bundle_id': 'com.google.Chrome',
+            'mac_bundle_id': 'com.google.Chrome',
+            'mac_creator': 'rimZ',
           }, {  # else: branding!="Chrome"
-            'bundle_id': 'org.chromium.Chromium',
+            'mac_bundle_id': 'org.chromium.Chromium',
+            'mac_creator': 'Cr24',
           }],  # branding
         ],  # conditions
       }],  # OS=="mac"
@@ -3038,7 +3040,8 @@
             #   CFBundleName of CHROMIUM_SHORT_NAME
             # Xcode then replaces these values with the branded values we set
             # as settings on the target.
-            'CHROMIUM_BUNDLE_ID': '<(bundle_id)',
+            'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+            'CHROMIUM_CREATOR': '<(mac_creator)',
             'CHROMIUM_SHORT_NAME': '<(branding)',
           },
           'mac_bundle_resources': [
@@ -4462,7 +4465,7 @@
             ['exclude', '.*'],
           ],
           'xcode_settings': {
-            'CHROMIUM_BUNDLE_ID': '<(bundle_id)',
+            'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
             'CHROMIUM_SHORT_NAME': '<(branding)',
             'INFOPLIST_FILE': 'app/helper-Info.plist',
           },

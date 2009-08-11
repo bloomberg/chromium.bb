@@ -155,7 +155,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>${CHROMIUM_CREATOR}</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
