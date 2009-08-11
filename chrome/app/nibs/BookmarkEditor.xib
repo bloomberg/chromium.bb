@@ -301,7 +301,7 @@
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 			</object>
 			<object class="NSCustomObject" id="764065517">
-				<string key="NSClassName">BookmarkEditorLocalizer</string>
+				<string key="NSClassName">ChromeUILocalizer</string>
 			</object>
 			<object class="NSCustomObject" id="12470901">
 				<string key="NSClassName">GTMUILocalizerAndLayoutTweaker</string>
@@ -761,14 +761,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/bookmark_editor_controller.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">BookmarkEditorLocalizer</string>
-					<string key="superclassName">ChromeUILocalizer</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">../xcodebuild/chrome.build/DerivedSources/Debug/xib_localizers/bookmark_editor_localizer.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

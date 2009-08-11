@@ -5,30 +5,14 @@
 #ifndef CHROME_BROWSER_COCOA_UI_LOCALIZER_H_
 #define CHROME_BROWSER_COCOA_UI_LOCALIZER_H_
 
-#include "base/basictypes.h"
-#include "base/string16.h"
 #import "third_party/GTM/AppKit/GTMUILocalizer.h"
 
 @class NSString;
 
-namespace ui_localizer {
-
-struct ResourceMap {
-  const char* const name;
-  unsigned int label_id;
-  unsigned int label_arg_id;
-};
-
-NSString* LocalizedStringForKeyFromMapList(NSString* key,
-                                           const ResourceMap* map_list,
-                                           size_t map_list_len);
-
-}  // namespace ui_localizer
-
 // A base class for generated localizers.
 //
-// To use this, have the build run generate_localizer on your xib file (see
-// chrome.gyp).  Then add an instance of the generated subclass to the xib.
+// To use this, include your xib file in the list generate_localizer scans (see
+// chrome.gyp).  Then add an instance of ChromeUILocalizer to the xib.
 // Connect the owner_ outlet of the instance to the "File's Owner" of the xib.
 // It expects the owner_ outlet to be an instance or subclass of
 // NSWindowController or NSViewController.  It will then localize any items in

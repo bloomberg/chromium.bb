@@ -20,8 +20,6 @@
       '../webkit/webkit.gyp:inspector_resources',
     ],
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
-    'mac_xib_localizer_tool_path': '<(DEPTH)/build/mac/generate_localizer',
-    'mac_xib_localizers_dir': '<(INTERMEDIATE_DIR)/xib_localizers',
     # TODO(mmoss) This might need to go somewhere more general, then we can use
     # it to also rewrite app/locales/locales.gyp with a helper script.
     'locales': [
@@ -2091,87 +2089,36 @@
             ],
           },
           'actions': [
-            # This block of actions are used to extract the localization data
-            # from xib files and generate a localizer out of it.
             {
+              # This action is used to extract the localization data from xib
+              # files and generate table for the ui localizer from it.
+              'variables': {
+                'xib_localizer_tool_path':
+                    '<(DEPTH)/build/mac/generate_localizer',
+                'xib_files_to_scan': [
+                  # The xib that need localization
+                  'app/nibs/BookmarkBar.xib',
+                  'app/nibs/BookmarkEditor.xib',
+                  'app/nibs/BookmarkNameFolder.xib',
+                  'app/nibs/MainMenu.xib',
+                  'app/nibs/TabView.xib',
+                  'app/nibs/Toolbar.xib',
+                  # TODO(tvl): add other xibs as needed
+                ],
+              },
               'action_name': 'process_bookmark_bar_xib',
               'process_outputs_as_sources': 1,
               'inputs': [
-                '<(mac_xib_localizer_tool_path)',
-                'app/nibs/BookmarkBar.xib'
+                '<(xib_localizer_tool_path)',
+                '<@(xib_files_to_scan)',
               ],
               'outputs': [
-                '<(mac_xib_localizers_dir)/bookmark_bar_localizer.h',
-                '<(mac_xib_localizers_dir)/bookmark_bar_localizer.mm',
+                '<(INTERMEDIATE_DIR)/ui_localizer_table.h',
               ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
+              'action': ['<(xib_localizer_tool_path)',
+                          '<@(_outputs)',
+                          '<@(xib_files_to_scan)'],
             },
-            {
-              'action_name': 'process_bookmark_editor_xib',
-              'process_outputs_as_sources': 1,
-              'inputs': [
-                '<(mac_xib_localizer_tool_path)',
-                'app/nibs/BookmarkEditor.xib'
-              ],
-              'outputs': [
-                '<(mac_xib_localizers_dir)/bookmark_editor_localizer.h',
-                '<(mac_xib_localizers_dir)/bookmark_editor_localizer.mm',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-            },
-            {
-              'action_name': 'process_bookmark_name_folder_xib',
-              'process_outputs_as_sources': 1,
-              'inputs': [
-                '<(mac_xib_localizer_tool_path)',
-                'app/nibs/BookmarkNameFolder.xib'
-              ],
-              'outputs': [
-                '<(mac_xib_localizers_dir)/bookmark_name_folder_localizer.h',
-                '<(mac_xib_localizers_dir)/bookmark_name_folder_localizer.mm',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-            },
-            {
-              'action_name': 'process_mainmenu_xib',
-              'process_outputs_as_sources': 1,
-              'inputs': [
-                '<(mac_xib_localizer_tool_path)',
-                'app/nibs/MainMenu.xib'
-              ],
-              'outputs': [
-                '<(mac_xib_localizers_dir)/main_menu_localizer.h',
-                '<(mac_xib_localizers_dir)/main_menu_localizer.mm',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-            },
-            {
-              'action_name': 'process_tab_view_xib',
-              'process_outputs_as_sources': 1,
-              'inputs': [
-                '<(mac_xib_localizer_tool_path)',
-                'app/nibs/TabView.xib'
-              ],
-              'outputs': [
-                '<(mac_xib_localizers_dir)/tab_view_localizer.h',
-                '<(mac_xib_localizers_dir)/tab_view_localizer.mm',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-            },
-            {
-              'action_name': 'process_toolbar_xib',
-              'process_outputs_as_sources': 1,
-              'inputs': [
-                '<(mac_xib_localizer_tool_path)',
-                'app/nibs/Toolbar.xib'
-              ],
-              'outputs': [
-                '<(mac_xib_localizers_dir)/toolbar_localizer.h',
-                '<(mac_xib_localizers_dir)/toolbar_localizer.mm',
-              ],
-              'action': ['<@(_inputs)', '<@(_outputs)'],
-            },
-            # TODO(tvl): add other xibs
           ],
         }],
         ['OS=="win"', {

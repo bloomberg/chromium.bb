@@ -6,53 +6,33 @@
 
 #import <Foundation/Foundation.h>
 
+#include <stdlib.h>
 #include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/logging.h"
+#include "grit/app_strings.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
-namespace ui_localizer {
+struct UILocalizerResourceMap {
+  const char* const name;
+  unsigned int label_id;
+  unsigned int label_arg_id;
+};
 
-NSString* LocalizedStringForKeyFromMapList(NSString* key,
-                                           const ResourceMap* map_list,
-                                           size_t map_list_len) {
-  DCHECK(key != nil);
-  DCHECK(map_list != NULL);
 
-  // Look up the string for the resource id to fetch.
-  const char* utf8_key = [key UTF8String];
-  if (utf8_key) {
-    // If we end up with enough string constants in here, look at using bsearch
-    // to speed up the searching.
-    for (size_t i = 0; i < map_list_len; ++i) {
-      int strcmp_result = strcmp(utf8_key, map_list[i].name);
-      if (strcmp_result == 0) {
-        // Do we need to build the string, or just fetch it?
-        if (map_list[i].label_arg_id != 0) {
-          const string16 label_arg(
-              l10n_util::GetStringUTF16(map_list[i].label_arg_id));
-          return l10n_util::GetNSStringFWithFixup(map_list[i].label_id,
-                                                  label_arg);
-        }
+namespace {
 
-        return l10n_util::GetNSStringWithFixup(map_list[i].label_id);
-      }
-
-      // If we've passed where the string would be, give up.
-      if (strcmp_result < 0)
-        break;
-    }
-  }
-
-  // Sanity check, there shouldn't be any strings with this id that aren't
-  // in our map.
-  DLOG_IF(WARNING, [key hasPrefix:@"^ID"]) << "Key '" << utf8_key
-      << "' wasn't in the resource map?";
-
-  // If we didn't find anything, this string doesn't need localizing.
-  return nil;
+// Utility function for bsearch on a ResourceMap table
+int ResourceMapCompare(const void* utf8Void,
+                       const void* resourceMapVoid) {
+  const char* utf8_key = reinterpret_cast<const char*>(utf8Void);
+  const UILocalizerResourceMap* res_map =
+      reinterpret_cast<const UILocalizerResourceMap*> (resourceMapVoid);
+  return strcmp(utf8_key, res_map->name);
 }
 
-}  // namespace ui_localizer
+}  // namespace
 
 @interface GTMUILocalizer (PrivateAdditions)
 - (void)localizedObjects;
@@ -69,17 +49,49 @@ NSString* LocalizedStringForKeyFromMapList(NSString* key,
  @end
 
 @implementation ChromeUILocalizer
+
 - (void)awakeFromNib {
   // The GTM base is bundle based, since don't need the bundle, use this
   // override to bypass the bundle lookup and directly do the localization
   // calls.
   [self localizedObjects];
 }
-#ifndef NDEBUG
-// Catch anyone that uses this directly.
+
 - (NSString *)localizedStringForString:(NSString *)string {
-  LOG(FATAL) << "Don't use ChromeUILocalizer directly.";
-  return @"Don't use ChromeUILocalizer directly.";
+
+  // Include the table here so it is a local static.  This header provides
+  // kUIResources and kUIResourcesSize.
+#include "ui_localizer_table.h"
+
+  // Look up the string for the resource id to fetch.
+  const char* utf8_key = [string UTF8String];
+  if (utf8_key) {
+    const void* valVoid = bsearch(utf8_key,
+                                  kUIResources,
+                                  kUIResourcesSize,
+                                  sizeof(UILocalizerResourceMap),
+                                  ResourceMapCompare);
+    const UILocalizerResourceMap* val =
+        reinterpret_cast<const UILocalizerResourceMap*>(valVoid);
+    if (val) {
+      // Do we need to build the string, or just fetch it?
+      if (val->label_arg_id != 0) {
+        const string16 label_arg(l10n_util::GetStringUTF16(val->label_arg_id));
+        return l10n_util::GetNSStringFWithFixup(val->label_id,
+                                                label_arg);
+      }
+
+      return l10n_util::GetNSStringWithFixup(val->label_id);
+    }
+
+    // Sanity check, there shouldn't be any strings with this id that aren't
+    // in our map.
+    DLOG_IF(WARNING, [string hasPrefix:@"^ID"]) << "Key '" << utf8_key
+        << "' wasn't in the resource map?";
+  }
+
+  // If we didn't find anything, this string doesn't need localizing.
+  return nil;
 }
-#endif
+
 @end

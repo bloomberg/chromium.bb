@@ -8,9 +8,9 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
+			<integer value="1"/>
 			<integer value="18"/>
 			<integer value="4"/>
-			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -303,7 +303,7 @@
 				</object>
 			</object>
 			<object class="NSCustomObject" id="849863465">
-				<string key="NSClassName">BookmarkBarLocalizer</string>
+				<string key="NSClassName">ChromeUILocalizer</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -901,28 +901,22 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>buttonContextMenu_</string>
 							<string>buttonView_</string>
-							<string>delegate_</string>
 							<string>offTheSideButton_</string>
+							<string>resizeDelegate_</string>
+							<string>urlDelegate_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenu</string>
 							<string>NSView</string>
-							<string>id</string>
 							<string>NSButton</string>
+							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/bookmark_bar_controller.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">BookmarkBarLocalizer</string>
-					<string key="superclassName">ChromeUILocalizer</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">../xcodebuild/chrome.build/DerivedSources/Debug/xib_localizers/bookmark_bar_localizer.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

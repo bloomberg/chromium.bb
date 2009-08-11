@@ -271,7 +271,7 @@
 				</object>
 			</object>
 			<object class="NSCustomObject" id="208901833">
-				<string key="NSClassName">TabViewLocalizer</string>
+				<string key="NSClassName">ChromeUILocalizer</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -846,14 +846,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/tab_view.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">TabViewLocalizer</string>
-					<string key="superclassName">ChromeUILocalizer</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">../xcodebuild/chrome.build/DerivedSources/Debug/xib_localizers/tab_view_localizer.h</string>
 					</object>
 				</object>
 			</object>
