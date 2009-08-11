@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "manifest_parser.h"
+#include "webkit/appcache/manifest_parser.h"
 
 #include "base/logging.h"
 #include "base/string_util.h"
