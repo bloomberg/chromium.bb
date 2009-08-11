@@ -183,16 +183,15 @@ void AudioRendererImpl::OnRequestPacket(size_t bytes_in_buffer,
   OnNotifyPacketReady();
 }
 
-void AudioRendererImpl::OnStateChanged(AudioOutputStream::State state,
-                                       int info) {
+void AudioRendererImpl::OnStateChanged(ViewMsg_AudioStreamState state) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   AutoLock auto_lock(lock_);
   if (stopped_)
     return;
 
-  switch (state) {
-    case AudioOutputStream::STATE_ERROR:
+  switch (state.state) {
+    case ViewMsg_AudioStreamState::kError:
       // We receive this error if we counter an hardware error on the browser
       // side. We can proceed with ignoring the audio stream.
       // TODO(hclam): We need more handling of these kind of error. For example
@@ -201,8 +200,8 @@ void AudioRendererImpl::OnStateChanged(AudioOutputStream::State state,
       host()->BroadcastMessage(media::kMsgDisableAudio);
       break;
     // TODO(hclam): handle these events.
-    case AudioOutputStream::STATE_STARTED:
-    case AudioOutputStream::STATE_PAUSED:
+    case ViewMsg_AudioStreamState::kPlaying:
+    case ViewMsg_AudioStreamState::kPaused:
       break;
     default:
       NOTREACHED();
@@ -242,7 +241,7 @@ void AudioRendererImpl::OnCreateStream(
 void AudioRendererImpl::OnPlay() {
   DCHECK(MessageLoop::current() == io_loop_);
 
-  filter_->Send(new ViewHostMsg_StartAudioStream(0, stream_id_));
+  filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
 }
 
 void AudioRendererImpl::OnPause() {
@@ -309,7 +308,7 @@ void AudioRendererImpl::OnNotifyPacketReady() {
         if (filled > preroll_bytes_) {
           prerolling_ = false;
           preroll_bytes_ = 0;
-          filter_->Send(new ViewHostMsg_StartAudioStream(0, stream_id_));
+          filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
         } else {
           preroll_bytes_ -= filled;
         }

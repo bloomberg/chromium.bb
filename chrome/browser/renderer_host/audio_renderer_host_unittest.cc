@@ -14,6 +14,7 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
 
 namespace {
@@ -43,9 +44,9 @@ class MockAudioRendererHost : public AudioRendererHost {
   MOCK_METHOD3(OnStreamCreated,
                void(int routing_id, int stream_id, int length));
 
-  MOCK_METHOD4(OnStreamStateChanged,
+  MOCK_METHOD3(OnStreamStateChanged,
                void(int routing_id, int stream_id,
-                    AudioOutputStream::State state, int info));
+                    ViewMsg_AudioStreamState state));
 
   MOCK_METHOD4(OnStreamVolume,
                void(int routing_id, int stream_id, double left, double right));
@@ -95,8 +96,8 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   void OnStreamStateChanged(const IPC::Message& msg, int stream_id,
-                            AudioOutputStream::State state, int info) {
-    OnStreamStateChanged(msg.routing_id(), stream_id, state, info);
+                            ViewMsg_AudioStreamState state) {
+    OnStreamStateChanged(msg.routing_id(), stream_id, state);
   }
 
   void OnStreamVolume(const IPC::Message& msg, int stream_id,
@@ -206,10 +207,9 @@ TEST_F(AudioRendererHostTest, MockStreamDataConversation) {
                       2 * kPacketSize + 3 * kStep, _));
   EXPECT_CALL(*host_,
       OnRequestPacket(kRouteId, current_stream_id_, 3 * kPacketSize, _));
-  EXPECT_CALL(*host_, OnStreamStateChanged(kRouteId,
-                                           current_stream_id_,
-                                           AudioOutputStream::STATE_STARTED,
-                                           0));
+  ViewMsg_AudioStreamState state;
+  EXPECT_CALL(*host_, OnStreamStateChanged(kRouteId, current_stream_id_, _))
+      .WillOnce(SaveArg<2>(&state));
 
   source->NotifyPacketReady(kPacketSize);
   source->NotifyPacketReady(kPacketSize);
@@ -217,7 +217,7 @@ TEST_F(AudioRendererHostTest, MockStreamDataConversation) {
   source->NotifyPacketReady(kStep);
   source->NotifyPacketReady(kStep);
   source->NotifyPacketReady(kStep);
-  source->Start();
+  source->Play();
+  EXPECT_EQ(ViewMsg_AudioStreamState::kPlaying, state.state);
   source->Close();
 }
-

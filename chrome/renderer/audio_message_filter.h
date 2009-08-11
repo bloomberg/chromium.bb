@@ -12,8 +12,8 @@
 
 #include "base/id_map.h"
 #include "base/shared_memory.h"
+#include "chrome/common/render_messages.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "media/audio/audio_output.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
@@ -25,7 +25,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
                                  const base::Time& message_timestamp) = 0;
 
     // Called when state of an audio stream has changed in the browser process.
-    virtual void OnStateChanged(AudioOutputStream::State state, int info) = 0;
+    virtual void OnStateChanged(ViewMsg_AudioStreamState state) = 0;
 
     // Called when an audio stream has been created in the browser process.
     virtual void OnCreated(base::SharedMemoryHandle handle, size_t length) = 0;
@@ -69,8 +69,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   // Received when internal state of browser process' audio output device has
   // changed.
-  void OnStreamStateChanged(int stream_id, AudioOutputStream::State state,
-                            int info);
+  void OnStreamStateChanged(int stream_id, ViewMsg_AudioStreamState state);
 
   // Notification of volume property of an audio output stream.
   void OnStreamVolume(int stream_id, double left, double right);

@@ -23,10 +23,9 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
     message_timestamp_ = message_timestamp;
   }
 
-  virtual void OnStateChanged(AudioOutputStream::State state, int info) {
+  virtual void OnStateChanged(ViewMsg_AudioStreamState state) {
     state_changed_received_ = true;
     state_ = state;
-    info_ = info;
   }
 
   virtual void OnCreated(base::SharedMemoryHandle handle, size_t length) {
@@ -47,8 +46,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
     message_timestamp_ = base::Time();
 
     state_changed_received_ = false;
-    state_ = AudioOutputStream::STATE_ERROR;
-    info_ = 0;
+    state_.state = ViewMsg_AudioStreamState::kError;
 
     created_received_ = false;
     handle_ = base::SharedMemory::NULLHandle();
@@ -64,8 +62,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
   const base::Time& message_timestamp() { return message_timestamp_; }
 
   bool state_changed_received() { return state_changed_received_; }
-  AudioOutputStream::State state() { return state_; }
-  int info() { return info_; }
+  ViewMsg_AudioStreamState state() { return state_; }
 
   bool created_received() { return created_received_; }
   base::SharedMemoryHandle handle() { return handle_; }
@@ -81,8 +78,7 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
   base::Time message_timestamp_;
 
   bool state_changed_received_;
-  AudioOutputStream::State state_;
-  int info_;
+  ViewMsg_AudioStreamState state_;
 
   bool created_received_;
   base::SharedMemoryHandle handle_;
@@ -120,17 +116,13 @@ TEST(AudioMessageFilterTest, Basic) {
   delegate.Reset();
 
   // ViewMsg_NotifyAudioStreamStateChanged
-  const AudioOutputStream::State kState = AudioOutputStream::STATE_STARTED;
-  const int kStateInfo = 100;
+  const ViewMsg_AudioStreamState kState =
+      { ViewMsg_AudioStreamState::kPlaying };
   EXPECT_FALSE(delegate.state_changed_received());
   filter->OnMessageReceived(
-      ViewMsg_NotifyAudioStreamStateChanged(kRouteId,
-                                            stream_id,
-                                            kState,
-                                            kStateInfo));
+      ViewMsg_NotifyAudioStreamStateChanged(kRouteId, stream_id, kState));
   EXPECT_TRUE(delegate.state_changed_received());
-  EXPECT_TRUE(kState == delegate.state());
-  EXPECT_EQ(kStateInfo, delegate.info());
+  EXPECT_TRUE(kState.state == delegate.state().state);
   delegate.Reset();
 
   // ViewMsg_NotifyAudioStreamCreated

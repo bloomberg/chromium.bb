@@ -31,7 +31,7 @@
 //          .--------->  [ Stopped ]  <--------.
 //          |                ^                 |
 //          |                |                 |
-//    *[ Created ]  -->  [ Started ]  -->  [ Paused ]
+//    *[ Created ]  -->  [ Playing ]  -->  [ Paused ]
 //                           ^                 |
 //                           |                 |
 //                           `-----------------`
@@ -48,8 +48,8 @@
 //      |    <<<<<< RequestAudioPacket <<<<<<<<        |
 //      |    >>>>>>> AudioPacketReady >>>>>>>>>        |
 //      |                                              |
-//      |    >>>>>>>>>>>>> Start >>>>>>>>>>>>>>        |
-//      |    <<<<<<<<<<<< Started <<<<<<<<<<<<<        |  time
+//      |    >>>>>>>>>>>>> Play >>>>>>>>>>>>>>>        |
+//      |    <<<<<<<<<<<< Playing <<<<<<<<<<<<<        |  time
 //      |                   ...                        |
 //      |    <<<<<< RequestAudioPacket <<<<<<<<        |
 //      |    >>>>>>> AudioPacketReady >>>>>>>>>        |
@@ -126,9 +126,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
   virtual void Send(IPC::Message* message);
 
   // A helper method for sending error IPC messages.
-  virtual void SendErrorMessage(int32 render_view_id,
-                                int32 stream_id,
-                                int info);
+  virtual void SendErrorMessage(int32 render_view_id, int32 stream_id);
 
   // A helper method for calling OnDestroySource on IO thread.
   virtual void DestroySource(IPCAudioSource* source);
@@ -143,6 +141,15 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
   // via IPC.
   class IPCAudioSource : public AudioOutputStream::AudioSourceCallback {
    public:
+    // Internal state of the source.
+    enum State {
+      kCreated,
+      kPlaying,
+      kPaused,
+      kClosed,
+      kError,
+    };
+
     // Factory method for creating an IPCAudioSource, returns NULL if failed.
     // The IPCAudioSource object will have an internal state of
     // AudioOutputStream::STATE_CREATED after creation.
@@ -170,7 +177,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
     // Starts the playback of this audio output stream. The internal state will
     // be updated to AudioOutputStream::STATE_STARTED and the state update is
     // sent to the renderer.
-    void Start();
+    void Play();
 
     // Pause this audio output stream. The audio output stream will stop
     // reading from the |push_source_|. The internal state will be updated
@@ -236,7 +243,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
     size_t decoded_packet_size_;
     size_t buffer_capacity_;
 
-    AudioOutputStream::State state_;
+    State state_;
     base::SharedMemory shared_memory_;
     PushSource push_source_;
 
@@ -269,11 +276,11 @@ class AudioRendererHost : public base::RefCountedThreadSafe<AudioRendererHost> {
                       const ViewHostMsg_Audio_CreateStream& params);
 
   // Starts buffering for the audio output stream. Delegates the start method
-  // call to the corresponding IPCAudioSource::Start().
+  // call to the corresponding IPCAudioSource::Play().
   // ViewMsg_NotifyAudioStreamStateChanged with
   // AudioOutputStream::AUDIO_STREAM_ERROR is sent back to renderer if the
   // required IPCAudioSource is not found.
-  void OnStartStream(const IPC::Message& msg, int stream_id);
+  void OnPlayStream(const IPC::Message& msg, int stream_id);
 
   // Pauses the audio output stream. Delegates the pause method call to the
   // corresponding IPCAudioSource::Pause(),

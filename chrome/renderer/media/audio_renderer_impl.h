@@ -118,7 +118,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
   void OnRequestPacket(size_t bytes_in_buffer,
                        const base::Time& message_timestamp);
-  void OnStateChanged(AudioOutputStream::State state, int info);
+  void OnStateChanged(ViewMsg_AudioStreamState state);
   void OnCreated(base::SharedMemoryHandle handle, size_t length);
   void OnVolume(double left, double right);
 

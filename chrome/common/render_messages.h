@@ -82,6 +82,20 @@ struct ViewMsg_Navigate_Params {
   base::Time request_time;
 };
 
+// Current status of the audio output stream in the browser process. Browser
+// sends information about the current playback state and error to the
+// renderer process using this type.
+struct ViewMsg_AudioStreamState {
+  enum State {
+    kPlaying,
+    kPaused,
+    kError
+  };
+
+  // Carries the current playback state.
+  State state;
+};
+
 // Parameters structure for ViewHostMsg_FrameNavigate, which has too many data
 // parameters to be reasonably put in a predefined IPC message.
 struct ViewHostMsg_FrameNavigate_Params {
@@ -1805,44 +1819,34 @@ struct ParamTraits<gfx::NativeView> {
 #endif  // defined(OS_POSIX)
 
 template <>
-struct ParamTraits<AudioOutputStream::State> {
-  typedef AudioOutputStream::State param_type;
+struct ParamTraits<ViewMsg_AudioStreamState> {
+  typedef ViewMsg_AudioStreamState param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
+    m->WriteInt(p.state);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     int type;
     if (!m->ReadInt(iter, &type))
       return false;
-    *p = static_cast<AudioOutputStream::State>(type);
+    p->state = static_cast<ViewMsg_AudioStreamState::State>(type);
     return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
     std::wstring state;
-    switch (p) {
-     case AudioOutputStream::STATE_CREATED:
-       state = L"AudioOutputStream::STATE_CREATED";
+    switch (p.state) {
+     case ViewMsg_AudioStreamState::kPlaying:
+       state = L"ViewMsg_AudioStreamState::kPlaying";
        break;
-     case AudioOutputStream::STATE_STARTED:
-       state = L"AudioOutputStream::STATE_STARTED";
+     case ViewMsg_AudioStreamState::kPaused:
+       state = L"ViewMsg_AudioStreamState::kPaused";
        break;
-     case AudioOutputStream::STATE_PAUSED:
-       state = L"AudioOutputStream::STATE_PAUSED";
-       break;
-     case AudioOutputStream::STATE_STOPPED:
-       state = L"AudioOutputStream::STATE_STOPPED";
-       break;
-     case AudioOutputStream::STATE_CLOSED:
-       state = L"AudioOutputStream::STATE_CLOSED";
-       break;
-     case AudioOutputStream::STATE_ERROR:
-       state = L"AudioOutputStream::STATE_ERROR";
+     case ViewMsg_AudioStreamState::kError:
+       state = L"ViewMsg_AudioStreamState::kError";
        break;
      default:
       state = L"UNKNOWN";
       break;
     }
-
     LogParam(state, l);
   }
 };

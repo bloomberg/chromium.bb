@@ -41,15 +41,6 @@
 // a given AudioOutputStream might or might not talk directly to hardware.
 class AudioOutputStream {
  public:
-  enum State {
-    STATE_CREATED = 0,  // The output stream is created.
-    STATE_STARTED,      // The output stream is started.
-    STATE_PAUSED,       // The output stream is paused.
-    STATE_STOPPED,      // The output stream is stopped.
-    STATE_CLOSED,       // The output stream is closed.
-    STATE_ERROR,        // The output stream is in error state.
-  };
-
   // Audio sources must implement AudioSourceCallback. This interface will be
   // called in a random thread which very likely is a high priority thread. Do
   // not rely on using this thread TLS or make calls that alter the thread

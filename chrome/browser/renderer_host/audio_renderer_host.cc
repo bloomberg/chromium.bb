@@ -68,15 +68,14 @@ AudioRendererHost::IPCAudioSource::IPCAudioSource(
       hardware_packet_size_(hardware_packet_size),
       decoded_packet_size_(decoded_packet_size),
       buffer_capacity_(buffer_capacity),
-      state_(AudioOutputStream::STATE_CREATED),
+      state_(kCreated),
       push_source_(hardware_packet_size),
       outstanding_request_(false),
       last_copied_bytes_(0) {
 }
 
 AudioRendererHost::IPCAudioSource::~IPCAudioSource() {
-  DCHECK(AudioOutputStream::STATE_STOPPED == state_ ||
-         AudioOutputStream::STATE_CREATED == state_);
+  DCHECK(kClosed == state_ || kCreated == state_);
 }
 
 // static
@@ -158,29 +157,29 @@ AudioRendererHost::IPCAudioSource*
     delete source;
   }
 
-  host->SendErrorMessage(route_id, stream_id, 0);
+  host->SendErrorMessage(route_id, stream_id);
   return NULL;
 }
 
-void AudioRendererHost::IPCAudioSource::Start() {
+void AudioRendererHost::IPCAudioSource::Play() {
   // We can start from created or paused state.
-  if (!stream_ ||
-      (state_ != AudioOutputStream::STATE_CREATED &&
-       state_ != AudioOutputStream::STATE_PAUSED))
+  if (!stream_ || (state_ != kCreated && state_ != kPaused))
     return;
 
   stream_->Start(this);
 
   // Update the state and notify renderer.
-  state_ = AudioOutputStream::STATE_STARTED;
+  state_ = kPaused;
+
+  ViewMsg_AudioStreamState state;
+  state.state = ViewMsg_AudioStreamState::kPlaying;
   host_->Send(new ViewMsg_NotifyAudioStreamStateChanged(
-      route_id_, stream_id_, state_, 0));
+      route_id_, stream_id_, state));
 }
 
 void AudioRendererHost::IPCAudioSource::Pause() {
   // We can pause from started state.
-  if (!stream_ ||
-      state_ != AudioOutputStream::STATE_STARTED)
+  if (!stream_ || state_ != kPlaying)
     return;
 
   // TODO(hclam): use stop to simulate pause, make sure the AudioOutpusStream
@@ -188,9 +187,12 @@ void AudioRendererHost::IPCAudioSource::Pause() {
   stream_->Stop();
 
   // Update the state and notify renderer.
-  state_ = AudioOutputStream::STATE_PAUSED;
+  state_ = kPaused;
+
+  ViewMsg_AudioStreamState state;
+  state.state = ViewMsg_AudioStreamState::kPaused;
   host_->Send(new ViewMsg_NotifyAudioStreamStateChanged(
-      route_id_, stream_id_, state_, 0));
+      route_id_, stream_id_, state));
 }
 
 void AudioRendererHost::IPCAudioSource::Close() {
@@ -203,7 +205,7 @@ void AudioRendererHost::IPCAudioSource::Close() {
   stream_ = NULL;
 
   // Update the current state.
-  state_ = AudioOutputStream::STATE_STOPPED;
+  state_ = kClosed;
 }
 
 void AudioRendererHost::IPCAudioSource::SetVolume(double left, double right) {
@@ -243,7 +245,7 @@ void AudioRendererHost::IPCAudioSource::OnClose(AudioOutputStream* stream) {
 
 void AudioRendererHost::IPCAudioSource::OnError(AudioOutputStream* stream,
                                                 int code) {
-  host_->SendErrorMessage(route_id_, stream_id_, code);
+  host_->SendErrorMessage(route_id_, stream_id_);
   // The following method call would cause this object to be destroyed on IO
   // thread.
   host_->DestroySource(this);
@@ -379,7 +381,7 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 
   IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateAudioStream, OnCreateStream)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_StartAudioStream, OnStartStream)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PlayAudioStream, OnPlayStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PauseAudioStream, OnPauseStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CloseAudioStream, OnCloseStream)
     IPC_MESSAGE_HANDLER(ViewHostMsg_NotifyAudioPacketReady, OnNotifyPacketReady)
@@ -394,7 +396,7 @@ bool AudioRendererHost::IsAudioRendererHostMessage(
     const IPC::Message& message) {
   switch (message.type()) {
     case ViewHostMsg_CreateAudioStream::ID:
-    case ViewHostMsg_StartAudioStream::ID:
+    case ViewHostMsg_PlayAudioStream::ID:
     case ViewHostMsg_PauseAudioStream::ID:
     case ViewHostMsg_CloseAudioStream::ID:
     case ViewHostMsg_NotifyAudioPacketReady::ID:
@@ -432,17 +434,17 @@ void AudioRendererHost::OnCreateStream(
         std::make_pair(
             SourceID(source->route_id(), source->stream_id()), source));
   } else {
-    SendErrorMessage(msg.routing_id(), stream_id, 0);
+    SendErrorMessage(msg.routing_id(), stream_id);
   }
 }
 
-void AudioRendererHost::OnStartStream(const IPC::Message& msg, int stream_id) {
+void AudioRendererHost::OnPlayStream(const IPC::Message& msg, int stream_id) {
   DCHECK(MessageLoop::current() == io_loop_);
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
-    source->Start();
+    source->Play();
   } else {
-    SendErrorMessage(msg.routing_id(), stream_id, 0);
+    SendErrorMessage(msg.routing_id(), stream_id);
   }
 }
 
@@ -452,7 +454,7 @@ void AudioRendererHost::OnPauseStream(const IPC::Message& msg, int stream_id) {
   if (source) {
     source->Pause();
   } else {
-    SendErrorMessage(msg.routing_id(), stream_id, 0);
+    SendErrorMessage(msg.routing_id(), stream_id);
   }
 }
 
@@ -471,7 +473,7 @@ void AudioRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
   if (source) {
     source->SetVolume(left_channel, right_channel);
   } else {
-    SendErrorMessage(msg.routing_id(), stream_id, 0);
+    SendErrorMessage(msg.routing_id(), stream_id);
   }
 }
 
@@ -481,7 +483,7 @@ void AudioRendererHost::OnGetVolume(const IPC::Message& msg, int stream_id) {
   if (source) {
     source->GetVolume();
   } else {
-    SendErrorMessage(msg.routing_id(), stream_id, 0);
+    SendErrorMessage(msg.routing_id(), stream_id);
   }
 }
 
@@ -492,7 +494,7 @@ void AudioRendererHost::OnNotifyPacketReady(const IPC::Message& msg,
   if (source) {
     source->NotifyPacketReady(packet_size);
   } else {
-    SendErrorMessage(msg.routing_id(), stream_id, 0);
+    SendErrorMessage(msg.routing_id(), stream_id);
   }
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (IPC::Logging::current() && IPC::Logging::current()->Enabled()) {
@@ -571,9 +573,11 @@ void AudioRendererHost::Send(IPC::Message* message) {
 }
 
 void AudioRendererHost::SendErrorMessage(int32 render_view_id,
-                                         int32 stream_id, int info) {
+                                         int32 stream_id) {
+  ViewMsg_AudioStreamState state;
+  state.state = ViewMsg_AudioStreamState::kError;
   Send(new ViewMsg_NotifyAudioStreamStateChanged(
-      render_view_id, stream_id, AudioOutputStream::STATE_ERROR, info));
+      render_view_id, stream_id, state));
 }
 
 void AudioRendererHost::DestroySource(IPCAudioSource* source) {

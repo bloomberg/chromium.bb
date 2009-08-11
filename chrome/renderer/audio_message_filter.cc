@@ -116,15 +116,14 @@ void AudioMessageFilter::OnStreamCreated(int stream_id,
 }
 
 void AudioMessageFilter::OnStreamStateChanged(int stream_id,
-                                              AudioOutputStream::State state,
-                                              int info) {
+                                              ViewMsg_AudioStreamState state) {
   Delegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
         " audio renderer.";
     return;
   }
-  delegate->OnStateChanged(state, info);
+  delegate->OnStateChanged(state);
 }
 
 void AudioMessageFilter::OnStreamVolume(int stream_id,

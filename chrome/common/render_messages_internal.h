@@ -554,11 +554,9 @@ IPC_BEGIN_MESSAGES(View)
 
   // Notification message sent from AudioRendererHost to renderer for state
   // update after the renderer has requested a Create/Start/Close.
-  IPC_MESSAGE_ROUTED3(ViewMsg_NotifyAudioStreamStateChanged,
+  IPC_MESSAGE_ROUTED2(ViewMsg_NotifyAudioStreamStateChanged,
                       int /* stream id */,
-                      AudioOutputStream::State /* new state */,
-                      int /* additional information (e.g. platform specific
-                             error code*/)
+                      ViewMsg_AudioStreamState /* new state */)
 
   IPC_MESSAGE_ROUTED3(ViewMsg_NotifyAudioStreamVolume,
                       int /* stream id */,
@@ -1413,7 +1411,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       size_t /* packet size */)
 
   // Start buffering the audio stream specified by (render_view_id, stream_id).
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_StartAudioStream,
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_PlayAudioStream,
                       int /* stream_id */)
 
   // Pause the audio stream specified by (render_view_id, stream_id).
