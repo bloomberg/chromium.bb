@@ -33,8 +33,7 @@ class OpenURLsPopupObserver : public BrowserList::Observer {
 // there's no explicit profile given.
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   std::vector<GURL> urls;
-  urls.push_back(GURL("http://www.google.com"));
-  urls.push_back(GURL("http://dev.chromium.org"));
+  urls.push_back(GURL("http://localhost"));
 
   // Note that in our testing we do not ever query the BrowserList for the "last
   // active" browser. That's because the browsers are set as "active" by
