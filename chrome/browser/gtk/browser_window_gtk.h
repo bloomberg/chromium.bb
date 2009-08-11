@@ -162,7 +162,7 @@ class BrowserWindowGtk : public BrowserWindow,
     return browser_.get();
   }
 
-  GtkWindow* window() { return window_; }
+  GtkWindow* window() const { return window_; }
 
   static void RegisterUserPrefs(PrefService* prefs);
 

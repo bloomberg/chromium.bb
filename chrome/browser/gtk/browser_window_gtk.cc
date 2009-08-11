@@ -21,6 +21,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -977,6 +978,13 @@ void BrowserWindowGtk::Observe(NotificationType type,
       // Do nothing if we're in the process of closing the browser window.
       if (!window_)
         break;
+
+      // If there's an app modal dialog (e.g., JS alert), try to redirect
+      // the user's attention to the window owning the dialog.
+      if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
+        Singleton<AppModalDialogQueue>()->ActivateModalDialog();
+        break;
+      }
 
       // If we lose focus to an info bubble, we don't want to seem inactive.
       // However we can only control this when we are painting a custom

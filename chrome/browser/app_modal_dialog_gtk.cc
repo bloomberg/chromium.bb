@@ -10,6 +10,8 @@
 #include "app/message_box_flags.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
@@ -60,6 +62,17 @@ void OnDialogResponse(GtkDialog* dialog, gint response_id,
       NOTREACHED();
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
+
+  // Now that the dialog is gone, we can put all the  windows into separate
+  // window groups so other dialogs are no longer app modal.
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    GtkWindowGroup* window_group = gtk_window_group_new();
+    BrowserWindowGtk* window = static_cast<BrowserWindowGtk*>((*it)->window());
+    gtk_window_group_add_window(window_group, window->window());
+    g_object_unref(window_group);
+  }
+
   delete app_modal_dialog;
 }
 
@@ -98,6 +111,16 @@ void AppModalDialog::CreateAndShowDialog() {
     default:
       NOTREACHED();
   }
+
+  // We want the alert to be app modal so put all the browser windows into the
+  // same window group.
+  GtkWindowGroup* window_group = gtk_window_group_new();
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    BrowserWindowGtk* window = static_cast<BrowserWindowGtk*>((*it)->window());
+    gtk_window_group_add_window(window_group, window->window());
+  }
+  g_object_unref(window_group);
 
   GtkWindow* window = tab_contents_->view()->GetTopLevelNativeWindow();
   dialog_ = gtk_message_dialog_new(window, GTK_DIALOG_MODAL,
