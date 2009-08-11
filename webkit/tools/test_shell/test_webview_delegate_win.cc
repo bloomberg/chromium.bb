@@ -41,6 +41,10 @@ using WebKit::WebRect;
 
 // WebViewDelegate -----------------------------------------------------------
 
+TestWebViewDelegate::~TestWebViewDelegate() {
+  RevokeDragDrop(shell_->webViewWnd());
+}
+
 WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     WebView* webview,
     const GURL& url,

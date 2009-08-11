@@ -369,8 +369,7 @@ bool TestShell::Initialize(const std::wstring& startingURL) {
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), tool_item, -1 /* append */);
 
   gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0);
-  m_webViewHost.reset(
-      WebViewHost::Create(vbox, delegate_.get(), *TestShell::web_prefs_));
+  m_webViewHost.reset(WebViewHost::Create(vbox, delegate_, *TestShell::web_prefs_));
 
   // Enables output of "EDDITING DELEGATE: " debugging lines in the layout test
   // output.
@@ -477,7 +476,7 @@ void TestShell::DestroyWindow(gfx::NativeWindow windowHandle) {
 WebWidget* TestShell::CreatePopupWidget(WebView* webview) {
   GtkWidget* popupwindow = gtk_window_new(GTK_WINDOW_POPUP);
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
-  WebWidgetHost* host = WebWidgetHost::Create(vbox, popup_delegate_.get());
+  WebWidgetHost* host = WebWidgetHost::Create(vbox, popup_delegate_);
   gtk_container_add(GTK_CONTAINER(popupwindow), vbox);
   m_popupHost = host;
 

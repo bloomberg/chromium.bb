@@ -84,6 +84,9 @@ void SelectionClipboardGetContents(GtkClipboard* clipboard,
 
 // WebViewDelegate -----------------------------------------------------------
 
+TestWebViewDelegate::~TestWebViewDelegate() {
+}
+
 WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     WebView* webview,
     const GURL& url,

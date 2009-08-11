@@ -23,6 +23,9 @@ using WebKit::WebWidget;
 
 // WebViewDelegate -----------------------------------------------------------
 
+TestWebViewDelegate::~TestWebViewDelegate() {
+}
+
 WebWidget* TestWebViewDelegate::CreatePopupWidgetWithInfo(
     WebView* webview,
     const WebPopupMenuInfo& info) {
