@@ -175,7 +175,8 @@ class LoginHandlerGtk : public LoginHandler,
     if (!WasAuthHandled(true)) {
       request_loop_->PostTask(FROM_HERE, NewRunnableMethod(
           this, &LoginHandlerGtk::CancelAuthDeferred));
-      SendNotifications();
+      ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(
+          this, &LoginHandlerGtk::SendNotifications));
     }
 
     // Delete this object once all InvokeLaters have been called.
