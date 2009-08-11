@@ -120,39 +120,6 @@ static gboolean gtk_chrome_link_button_expose(GtkWidget* widget,
   return TRUE;
 }
 
-static gboolean gtk_chrome_link_button_button_press(GtkWidget* widget,
-                                                    GdkEventButton* event) {
-  GtkButton* button;
-
-  if (event->type == GDK_BUTTON_PRESS) {
-    button = GTK_BUTTON(widget);
-
-    if (button->focus_on_click && !GTK_WIDGET_HAS_FOCUS (widget))
-      gtk_widget_grab_focus(widget);
-
-    if (event->button == 1 || event->button == 2)
-      gtk_button_pressed(button);
-  }
-
-  return TRUE;
-}
-
-static gboolean gtk_chrome_link_button_button_release(GtkWidget* widget,
-                                                      GdkEventButton* event) {
-  GtkButton* button = GTK_BUTTON(widget);
-  GtkChromeLinkButton* link_button = GTK_CHROME_LINK_BUTTON(widget);
-
-  free(link_button->click_button_event);
-  link_button->click_button_event = static_cast<GdkEventButton*>(
-      malloc(sizeof(GdkEventButton)));
-  *link_button->click_button_event = *event;
-
-  if (event->button == 1 || event->button == 2)
-    gtk_button_released(button);
-
-  return TRUE;
-}
-
 static void gtk_chrome_link_button_enter(GtkButton* button) {
   GtkWidget* widget = GTK_WIDGET(button);
   GtkChromeLinkButton* link_button = GTK_CHROME_LINK_BUTTON(button);
@@ -161,10 +128,7 @@ static void gtk_chrome_link_button_enter(GtkButton* button) {
 
 static void gtk_chrome_link_button_leave(GtkButton* button) {
   GtkWidget* widget = GTK_WIDGET(button);
-  GtkChromeLinkButton* link_button = GTK_CHROME_LINK_BUTTON(button);
   gdk_window_set_cursor(widget->window, NULL);
-  free(link_button->click_button_event);
-  link_button->click_button_event = NULL;
 }
 
 static void gtk_chrome_link_button_destroy(GtkObject* object) {
@@ -185,9 +149,6 @@ static void gtk_chrome_link_button_destroy(GtkObject* object) {
     button->hand_cursor = NULL;
   }
 
-  free(button->click_button_event);
-  button->click_button_event = NULL;
-
   free(button->text);
   button->text = NULL;
 
@@ -203,8 +164,6 @@ static void gtk_chrome_link_button_class_init(
   GtkObjectClass* object_class =
       reinterpret_cast<GtkObjectClass*>(link_button_class);
   widget_class->expose_event = &gtk_chrome_link_button_expose;
-  widget_class->button_press_event = &gtk_chrome_link_button_button_press;
-  widget_class->button_release_event = &gtk_chrome_link_button_button_release;
   button_class->enter = &gtk_chrome_link_button_enter;
   button_class->leave = &gtk_chrome_link_button_leave;
   object_class->destroy = &gtk_chrome_link_button_destroy;
@@ -223,7 +182,6 @@ static void gtk_chrome_link_button_init(GtkChromeLinkButton* button) {
   button->native_markup = NULL;
   button->using_native_theme = TRUE;
   button->hand_cursor = gdk_cursor_new(GDK_HAND2);
-  button->click_button_event = NULL;
   button->text = NULL;
 
   gtk_container_add(GTK_CONTAINER(button), button->label);
@@ -252,11 +210,6 @@ void gtk_chrome_link_button_set_use_gtk_theme(GtkChromeLinkButton* button,
     if (GTK_WIDGET_VISIBLE(button))
       gtk_widget_queue_draw(GTK_WIDGET(button));
   }
-}
-
-const GdkEventButton* gtk_chrome_link_button_get_event_for_click(
-    GtkChromeLinkButton* button) {
-  return button->click_button_event;
 }
 
 G_END_DECLS

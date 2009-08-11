@@ -78,8 +78,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       model_(browser->toolbar_model()),
       browser_(browser),
       window_(window),
-      profile_(NULL),
-      last_release_event_flags_(0) {
+      profile_(NULL) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
@@ -443,8 +442,6 @@ CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
                               localized_tooltip.c_str());
   g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnButtonClick), this);
-  g_signal_connect(button->widget(), "button-release-event",
-                   G_CALLBACK(OnButtonRelease), this);
 
   gtk_box_pack_start(GTK_BOX(toolbar_), button->widget(), FALSE, FALSE, 0);
   return button;
@@ -626,15 +623,7 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button,
   DCHECK_NE(tag, -1) << "Unexpected button click callback";
   toolbar->browser_->ExecuteCommandWithDisposition(tag,
       event_utils::DispositionFromEventFlags(
-          toolbar->last_release_event_flags_));
-}
-
-// static
-gboolean BrowserToolbarGtk::OnButtonRelease(GtkWidget* button,
-                                            GdkEventButton* event,
-                                            BrowserToolbarGtk* toolbar) {
-  toolbar->last_release_event_flags_ = event->state;
-  return FALSE;
+      reinterpret_cast<GdkEventButton*>(gtk_get_current_event())->state));
 }
 
 // static

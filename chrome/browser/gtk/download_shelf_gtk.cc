@@ -101,6 +101,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
       GTK_CHROME_LINK_BUTTON(link_button), FALSE);
   g_signal_connect(link_button, "clicked",
                    G_CALLBACK(OnButtonClick), this);
+  gtk_util::SetButtonTriggersNavigation(link_button);
   // Until we switch to vector graphics, force the font size.
   // 13.4px == 10pt @ 96dpi
   gtk_util::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(link_button)->label,

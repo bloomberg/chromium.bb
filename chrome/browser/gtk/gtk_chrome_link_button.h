@@ -43,7 +43,6 @@ struct _GtkChromeLinkButton {
   gchar* native_markup;
   gboolean using_native_theme;
   GdkCursor* hand_cursor;
-  GdkEventButton* click_button_event;
   gchar* text;
   gboolean uses_markup;
 };
@@ -62,12 +61,6 @@ GtkWidget* gtk_chrome_link_button_new_with_markup(const char* markup);
 // is TRUE.
 void gtk_chrome_link_button_set_use_gtk_theme(GtkChromeLinkButton* button,
                                               gboolean use_gtk);
-
-// Call this from within a "clicked" handler to get the release event that
-// triggered the click. It will return NULL if the click was triggered by a
-// keyboard event.
-const GdkEventButton* gtk_chrome_link_button_get_event_for_click(
-    GtkChromeLinkButton* button);
 
 GType gtk_chrome_link_button_get_type();
 

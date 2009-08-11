@@ -13,6 +13,7 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -49,6 +50,7 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
 
   SetTooltip();
+  gtk_util::SetButtonTriggersNavigation(widget());
 
   if (theme_provider_) {
     theme_provider_->InitThemesFor(this);
@@ -146,8 +148,12 @@ gboolean GoButtonGtk::OnClicked(GtkButton* widget, GoButtonGtk* button) {
     button->ChangeMode(MODE_GO, true);
   } else if (button->visible_mode_ == MODE_GO && button->stop_timer_.empty()) {
     // If the go button is visible and not within the double click timer, go.
-    if (button->browser_)
-      button->browser_->ExecuteCommand(IDC_GO);
+    GdkEventButton* event =
+        reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
+    if (button->browser_) {
+      button->browser_->ExecuteCommandWithDisposition(IDC_GO,
+          event_utils::DispositionFromEventFlags(event->state));
+    }
 
     // Figure out the system double-click time.
     if (button->button_delay_ == 0) {

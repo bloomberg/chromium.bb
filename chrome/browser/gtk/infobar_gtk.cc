@@ -188,6 +188,7 @@ class LinkInfoBar : public InfoBar {
         GTK_CHROME_LINK_BUTTON(link_button), FALSE);
     g_signal_connect(link_button, "clicked",
                      G_CALLBACK(OnLinkClick), this);
+    gtk_util::SetButtonTriggersNavigation(link_button);
 
     // If link_offset is npos, we right-align the link instead of embedding it
     // in the text.
@@ -220,8 +221,7 @@ class LinkInfoBar : public InfoBar {
  private:
   static void OnLinkClick(GtkWidget* button, LinkInfoBar* link_info_bar) {
     const GdkEventButton* button_click_event =
-        gtk_chrome_link_button_get_event_for_click(
-            GTK_CHROME_LINK_BUTTON(button));
+        reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
     WindowOpenDisposition disposition = CURRENT_TAB;
     if (button_click_event) {
       disposition = event_utils::DispositionFromEventFlags(

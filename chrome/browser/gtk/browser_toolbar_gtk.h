@@ -120,10 +120,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // Gtk callback for the "clicked" signal.
   static void OnButtonClick(GtkWidget* button, BrowserToolbarGtk* toolbar);
 
-  // Gtk callback for the "button-release-event" signal.
-  static gboolean OnButtonRelease(GtkWidget* button, GdkEventButton* event,
-                                  BrowserToolbarGtk* toolbar);
-
   // Gtk callback to intercept mouse clicks to the menu buttons.
   static gboolean OnMenuButtonPressEvent(GtkWidget* button,
                                          GdkEventButton* event,
@@ -198,9 +194,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;
-
-  // The event state the last time we observed a button release event.
-  int last_release_event_flags_;
 
   NotificationRegistrar registrar_;
 

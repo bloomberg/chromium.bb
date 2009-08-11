@@ -142,9 +142,8 @@ class BookmarkBarGtk : public AnimationDelegate,
   static gboolean OnButtonPressed(GtkWidget* sender,
                                   GdkEventButton* event,
                                   BookmarkBarGtk* bar);
-  static gboolean OnButtonReleased(GtkWidget* sender,
-                                   GdkEventButton* event,
-                                   BookmarkBarGtk* bar);
+  static void OnClicked(GtkWidget* sender,
+                        BookmarkBarGtk* bar);
   static void OnButtonDragBegin(GtkWidget* widget,
                                 GdkDragContext* drag_context,
                                 BookmarkBarGtk* bar);
@@ -157,9 +156,8 @@ class BookmarkBarGtk : public AnimationDelegate,
                               BookmarkBarGtk* bar);
 
   // GtkButton callbacks for folder buttons.
-  static gboolean OnFolderButtonReleased(GtkWidget* sender,
-                                         GdkEventButton* event,
-                                         BookmarkBarGtk* bar);
+  static void OnFolderClicked(GtkWidget* sender,
+                              BookmarkBarGtk* bar);
 
   // GtkToolbar callbacks.
   static gboolean OnToolbarExpose(GtkWidget* widget, GdkEventExpose* event,
@@ -215,10 +213,6 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;
-
-  // Whether we should ignore the next button release event (because we were
-  // dragging).
-  bool ignore_button_release_;
 
   // The BookmarkNode from the model being dragged. NULL when we aren't
   // dragging.

@@ -82,7 +82,6 @@ BookmarkBarGtk::BookmarkBarGtk(Profile* profile, Browser* browser,
       window_(window),
       model_(NULL),
       instructions_(NULL),
-      ignore_button_release_(false),
       dragged_node_(NULL),
       toolbar_drop_item_(NULL),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
@@ -437,8 +436,9 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
     // button.
     g_signal_connect(G_OBJECT(button), "button-press-event",
                      G_CALLBACK(OnButtonPressed), this);
-    g_signal_connect(G_OBJECT(button), "button-release-event",
-                     G_CALLBACK(OnButtonReleased), this);
+    g_signal_connect(G_OBJECT(button), "clicked",
+                     G_CALLBACK(OnClicked), this);
+    gtk_util::SetButtonTriggersNavigation(button);
   } else {
     // TODO(erg): This button can also be a drop target.
     ConnectFolderButtonEvents(button);
@@ -470,8 +470,8 @@ void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
   // button.
   g_signal_connect(G_OBJECT(widget), "button-press-event",
                    G_CALLBACK(OnButtonPressed), this);
-  g_signal_connect(G_OBJECT(widget), "button-release-event",
-                   G_CALLBACK(OnFolderButtonReleased), this);
+  g_signal_connect(G_OBJECT(widget), "clicked",
+                   G_CALLBACK(OnFolderClicked), this);
 }
 
 const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {
@@ -534,10 +534,6 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
 gboolean BookmarkBarGtk::OnButtonPressed(GtkWidget* sender,
                                          GdkEventButton* event,
                                          BookmarkBarGtk* bar) {
-  if (sender != bar->other_bookmarks_button_ &&
-      sender != bar->bookmark_toolbar_.get())
-    bar->ignore_button_release_ = false;
-
   if (event->button == 3) {
     const BookmarkNode* node = bar->GetNodeForToolButton(sender);
     DCHECK(node);
@@ -549,24 +545,14 @@ gboolean BookmarkBarGtk::OnButtonPressed(GtkWidget* sender,
 }
 
 // static
-gboolean BookmarkBarGtk::OnButtonReleased(GtkWidget* sender,
-                                          GdkEventButton* event,
-                                          BookmarkBarGtk* bar) {
-  if (bar->ignore_button_release_) {
-    // Don't handle this message; it was a drag.
-    bar->ignore_button_release_ = false;
-    return FALSE;
-  }
-
-  // Don't take any action if the user releases outside the button.
-  if (event->x < 0 || event->y < 0 || event->x >= sender->allocation.width ||
-      event->y >= sender->allocation.height) {
-    return FALSE;
-  }
-
+void BookmarkBarGtk::OnClicked(GtkWidget* sender,
+                               BookmarkBarGtk* bar) {
   const BookmarkNode* node = bar->GetNodeForToolButton(sender);
   DCHECK(node);
   DCHECK(bar->page_navigator_);
+
+  GdkEventButton* event =
+      reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
 
   if (node->is_url()) {
     bar->page_navigator_->OpenURL(
@@ -580,9 +566,6 @@ gboolean BookmarkBarGtk::OnButtonReleased(GtkWidget* sender,
   }
 
   UserMetrics::RecordAction(L"ClickedBookmarkBarURLButton", bar->profile_);
-
-  // Allow other handlers to run so the button state is updated correctly.
-  return FALSE;
 }
 
 // static
@@ -592,10 +575,6 @@ void BookmarkBarGtk::OnButtonDragBegin(GtkWidget* button,
   // The parent tool item might be removed during the drag. Ref it so |button|
   // won't get destroyed.
   g_object_ref(button->parent);
-
-  // Signal to any future OnButtonReleased calls that we're dragging instead of
-  // pressing.
-  bar->ignore_button_release_ = true;
 
   const BookmarkNode* node = bar->GetNodeForToolButton(button);
   DCHECK(!bar->dragged_node_);
@@ -640,15 +619,8 @@ void BookmarkBarGtk::OnButtonDragGet(GtkWidget* widget, GdkDragContext* context,
 }
 
 // static
-gboolean BookmarkBarGtk::OnFolderButtonReleased(GtkWidget* sender,
-                                                GdkEventButton* event,
-                                                BookmarkBarGtk* bar) {
-  if (bar->ignore_button_release_) {
-    // Don't handle this message; it was a drag.
-    bar->ignore_button_release_ = false;
-    return FALSE;
-  }
-
+void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender,
+                                     BookmarkBarGtk* bar) {
   const BookmarkNode* node = bar->GetNodeForToolButton(sender);
   DCHECK(node);
   DCHECK(bar->page_navigator_);
@@ -660,10 +632,9 @@ gboolean BookmarkBarGtk::OnFolderButtonReleased(GtkWidget* sender,
                                  node,
                                  0,
                                  false));
+  GdkEventButton* event =
+      reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
   bar->current_menu_->Popup(sender, event->button, event->time);
-
-  // Allow other handlers to run so the button state is updated correctly.
-  return FALSE;
 }
 
 // static

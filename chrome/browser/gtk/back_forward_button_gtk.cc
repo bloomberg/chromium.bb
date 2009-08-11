@@ -24,7 +24,6 @@ static const int kMenuTimerDelay = 500;
 BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
     : browser_(browser),
       is_forward_(is_forward),
-      last_release_event_flags_(0),
       show_menu_factory_(this) {
   int normal, active, highlight, depressed, tooltip;
   const char* stock;
@@ -59,8 +58,6 @@ BackForwardButtonGtk::BackForwardButtonGtk(Browser* browser, bool is_forward)
                    G_CALLBACK(OnClick), this);
   g_signal_connect(widget(), "button-press-event",
                    G_CALLBACK(OnButtonPress), this);
-  g_signal_connect(widget(), "button-release-event",
-                   G_CALLBACK(OnButtonRelease), this);
   gtk_widget_add_events(widget(), GDK_POINTER_MOTION_MASK);
   g_signal_connect(widget(), "motion-notify-event",
                    G_CALLBACK(OnMouseMove), this);
@@ -96,19 +93,17 @@ void BackForwardButtonGtk::ShowBackForwardMenu() {
 void BackForwardButtonGtk::OnClick(GtkWidget* widget,
                                    BackForwardButtonGtk* button) {
   button->show_menu_factory_.RevokeAll();
+  GdkEventButton* event =
+      reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
 
-  DCHECK(button->last_release_event_flags_ != 0);
   button->browser_->ExecuteCommandWithDisposition(
       button->is_forward_ ? IDC_FORWARD : IDC_BACK,
-      event_utils::DispositionFromEventFlags(
-          button->last_release_event_flags_));
+      event_utils::DispositionFromEventFlags(event->state));
 }
 
 // static
 gboolean BackForwardButtonGtk::OnButtonPress(GtkWidget* widget,
     GdkEventButton* event, BackForwardButtonGtk* button) {
-  button->last_release_event_flags_ = 0;
-
   if (event->button == 3)
     button->ShowBackForwardMenu();
 
@@ -120,13 +115,6 @@ gboolean BackForwardButtonGtk::OnButtonPress(GtkWidget* widget,
       button->show_menu_factory_.NewRunnableMethod(
           &BackForwardButtonGtk::ShowBackForwardMenu),
       kMenuTimerDelay);
-  return FALSE;
-}
-
-// static
-gboolean BackForwardButtonGtk::OnButtonRelease(GtkWidget* widget,
-    GdkEventButton* event, BackForwardButtonGtk* button) {
-  button->last_release_event_flags_ = event->state;
   return FALSE;
 }
 
