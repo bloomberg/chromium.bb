@@ -58,7 +58,7 @@ class BrowserProcessSubThread : public ChromeThread {
       : ChromeThread(identifier) {
   }
 
-  ~BrowserProcessSubThread() {
+  virtual ~BrowserProcessSubThread() {
     // We cannot rely on our base class to stop the thread since we want our
     // CleanUp function to run.
     Stop();
@@ -90,6 +90,26 @@ class BrowserProcessSubThread : public ChromeThread {
   // Note: We don't use scoped_ptr because the destructor runs on the wrong
   // thread.
   NotificationService* notification_service_;
+};
+
+class IOThread : public BrowserProcessSubThread {
+ public:
+  IOThread() : BrowserProcessSubThread(ChromeThread::IO) {}
+
+  virtual ~IOThread() {
+    // We cannot rely on our base class to stop the thread since we want our
+    // CleanUp function to run.
+    Stop();
+  }
+
+ protected:
+  virtual void CleanUp() {
+    // URLFetcher and URLRequest instances must NOT outlive the IO thread.
+    base::LeakTracker<URLRequest>::CheckForLeaks();
+    base::LeakTracker<URLFetcher>::CheckForLeaks();
+
+    BrowserProcessSubThread::CleanUp();
+  }
 };
 
 }  // namespace
@@ -172,13 +192,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
     resource_dispatcher_host()->Shutdown();
   }
 
-  // Shutdown DNS prefetching now to ensure that network stack objects
-  // living on the IO thread get destroyed before the IO thread goes away.
-  if (io_thread_.get()) {
-    io_thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableFunction(chrome_browser_net::EnsureDnsPrefetchShutdown));
-  }
-
 #if defined(OS_LINUX)
   // The IO thread must outlive the BACKGROUND_X11 thread.
   background_x11_thread_.reset();
@@ -187,7 +200,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // Need to stop io_thread_ before resource_dispatcher_host_, since
   // io_thread_ may still deref ResourceDispatcherHost and handle resource
   // request before going away.
-  io_thread_.reset();
+  ResetIOThread();
 
   // Clean up state that lives on the file_thread_ before it goes away.
   if (resource_dispatcher_host_.get()) {
@@ -307,13 +320,28 @@ void BrowserProcessImpl::CreateIOThread() {
   background_x11_thread_.swap(background_x11_thread);
 #endif
 
-  scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(ChromeThread::IO));
+  scoped_ptr<base::Thread> thread(new IOThread);
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))
     return;
   io_thread_.swap(thread);
+}
+
+void BrowserProcessImpl::ResetIOThread() {
+  if (io_thread_.get()) {
+    io_thread_->message_loop()->PostTask(FROM_HERE,
+        NewRunnableFunction(CleanupOnIOThread));
+  }
+  io_thread_.reset();
+}
+
+// static
+void BrowserProcessImpl::CleanupOnIOThread() {
+  // Shutdown DNS prefetching now to ensure that network stack objects
+  // living on the IO thread get destroyed before the IO thread goes away.
+  chrome_browser_net::EnsureDnsPrefetchShutdown();
+  // TODO(eroman): can this be merged into IOThread::CleanUp() ?
 }
 
 void BrowserProcessImpl::CreateFileThread() {

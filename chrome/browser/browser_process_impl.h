@@ -193,7 +193,11 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateResourceDispatcherHost();
   void CreatePrefService();
   void CreateMetricsService();
+
   void CreateIOThread();
+  void ResetIOThread();
+  static void CleanupOnIOThread();
+
   void CreateFileThread();
   void CreateDBThread();
   void CreateTemplateURLModel();

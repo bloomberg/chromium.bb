@@ -10,6 +10,7 @@
 #ifndef CHROME_BROWSER_URL_FETCHER_H_
 #define CHROME_BROWSER_URL_FETCHER_H_
 
+#include "base/leak_tracker.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/net/url_fetcher_protect.h"
@@ -162,6 +163,8 @@ class URLFetcher {
   scoped_refptr<Core> core_;
 
   static Factory* factory_;
+
+  base::LeakTracker<URLFetcher> leak_tracker_;
 
   DISALLOW_EVIL_CONSTRUCTORS(URLFetcher);
 };
