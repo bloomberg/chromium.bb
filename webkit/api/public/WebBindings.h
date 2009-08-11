@@ -53,6 +53,9 @@ namespace WebKit {
         // NPN_Enumerate
         WEBKIT_API static bool enumerate(NPP id, NPObject* obj, NPIdentifier** identifier, uint32_t* val);
 
+        // NPN_Evaluate
+        WEBKIT_API static bool evaluate(NPP npp, NPObject* npObject, NPString* npScript, NPVariant* result);
+
         // NPN_EvaluateHelper
         WEBKIT_API static bool evaluateHelper(NPP npp, bool popups_allowed, NPObject* npobj, NPString* npscript, NPVariant* result);
 

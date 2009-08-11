@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "net/base/net_util.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugininfo.h"
@@ -21,6 +22,7 @@
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
+using WebKit::WebBindings;
 
 namespace NPAPI
 {
@@ -75,30 +77,30 @@ void PluginHost::InitializeHostFuncs() {
   host_funcs_.forceredraw = &NPN_ForceRedraw;
 
   // These come from the Javascript Engine
-  host_funcs_.getstringidentifier = NPN_GetStringIdentifier;
-  host_funcs_.getstringidentifiers = NPN_GetStringIdentifiers;
-  host_funcs_.getintidentifier = NPN_GetIntIdentifier;
-  host_funcs_.identifierisstring = NPN_IdentifierIsString;
-  host_funcs_.utf8fromidentifier = NPN_UTF8FromIdentifier;
-  host_funcs_.intfromidentifier = NPN_IntFromIdentifier;
-  host_funcs_.createobject = NPN_CreateObject;
-  host_funcs_.retainobject = NPN_RetainObject;
-  host_funcs_.releaseobject = NPN_ReleaseObject;
-  host_funcs_.invoke = NPN_Invoke;
-  host_funcs_.invokeDefault = NPN_InvokeDefault;
-  host_funcs_.evaluate = NPN_Evaluate;
-  host_funcs_.getproperty = NPN_GetProperty;
-  host_funcs_.setproperty = NPN_SetProperty;
-  host_funcs_.removeproperty = NPN_RemoveProperty;
-  host_funcs_.hasproperty = NPN_HasProperty;
-  host_funcs_.hasmethod = NPN_HasMethod;
-  host_funcs_.releasevariantvalue = NPN_ReleaseVariantValue;
-  host_funcs_.setexception = NPN_SetException;
-  host_funcs_.pushpopupsenabledstate = &NPN_PushPopupsEnabledState;
-  host_funcs_.poppopupsenabledstate = &NPN_PopPopupsEnabledState;
-  host_funcs_.enumerate = &NPN_Enumerate;
-  host_funcs_.pluginthreadasynccall = &NPN_PluginThreadAsyncCall;
-  host_funcs_.construct = &NPN_Construct;
+  host_funcs_.getstringidentifier = WebBindings::getStringIdentifier;
+  host_funcs_.getstringidentifiers = WebBindings::getStringIdentifiers;
+  host_funcs_.getintidentifier = WebBindings::getIntIdentifier;
+  host_funcs_.identifierisstring = WebBindings::identifierIsString;
+  host_funcs_.utf8fromidentifier = WebBindings::utf8FromIdentifier;
+  host_funcs_.intfromidentifier = WebBindings::intFromIdentifier;
+  host_funcs_.createobject = WebBindings::createObject;
+  host_funcs_.retainobject = WebBindings::retainObject;
+  host_funcs_.releaseobject = WebBindings::releaseObject;
+  host_funcs_.invoke = WebBindings::invoke;
+  host_funcs_.invokeDefault = WebBindings::invokeDefault;
+  host_funcs_.evaluate = WebBindings::evaluate;
+  host_funcs_.getproperty = WebBindings::getProperty;
+  host_funcs_.setproperty = WebBindings::setProperty;
+  host_funcs_.removeproperty = WebBindings::removeProperty;
+  host_funcs_.hasproperty = WebBindings::hasProperty;
+  host_funcs_.hasmethod = WebBindings::hasMethod;
+  host_funcs_.releasevariantvalue = WebBindings::releaseVariantValue;
+  host_funcs_.setexception = WebBindings::setException;
+  host_funcs_.pushpopupsenabledstate = NPN_PushPopupsEnabledState;
+  host_funcs_.poppopupsenabledstate = NPN_PopPopupsEnabledState;
+  host_funcs_.enumerate = WebBindings::enumerate;
+  host_funcs_.pluginthreadasynccall = NPN_PluginThreadAsyncCall;
+  host_funcs_.construct = WebBindings::construct;
 
 }
 
@@ -677,7 +679,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
     // described here:
     // <http://www.mozilla.org/projects/plugins/npruntime.html#browseraccess>
     if (np_object) {
-      NPN_RetainObject(np_object);
+      WebBindings::retainObject(np_object);
       void **v = (void **)value;
       *v = np_object;
       rv = NPERR_NO_ERROR;
@@ -694,7 +696,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
     // described here:
     // <http://www.mozilla.org/projects/plugins/npruntime.html#browseraccess>
     if (np_object) {
-      NPN_RetainObject(np_object);
+      WebBindings::retainObject(np_object);
       void **v = (void **)value;
       *v = np_object;
       rv = NPERR_NO_ERROR;

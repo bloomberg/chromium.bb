@@ -8,9 +8,12 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/npobject_proxy.h"
 #include "chrome/plugin/plugin_channel_base.h"
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/plugins/nphostapi.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/webkit_glue.h"
+
+using WebKit::WebBindings;
 
 // true if the current process is a plugin process, false if it's a renderer
 // process.
@@ -200,7 +203,7 @@ void CreateNPVariantParam(const NPVariant& variant,
   }
 
   if (release)
-    NPN_ReleaseVariantValue(const_cast<NPVariant*>(&variant));
+    WebBindings::releaseVariantValue(const_cast<NPVariant*>(&variant));
 }
 
 void CreateNPVariant(const NPVariant_Param& param,
@@ -247,7 +250,7 @@ void CreateNPVariant(const NPVariant_Param& param,
       result->type = NPVariantType_Object;
       result->value.objectValue =
           reinterpret_cast<NPObject*>(param.npobject_pointer);
-      NPN_RetainObject(result->value.objectValue);
+      WebBindings::retainObject(result->value.objectValue);
       break;
     default:
       NOTREACHED();

@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 
+#include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/cpp_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,9 +14,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "npruntime_priv.h"  // for NPN_InitializeVariantWithStringCopy
 MSVC_POP_WARNING();
 
-#if USE(JSC)
-#define _NPN_InitializeVariantWithStringCopy NPN_InitializeVariantWithStringCopy
-#endif
+using WebKit::WebBindings;
 
 // Creates a std::string from an NPVariant of string type.  If the NPVariant
 // is not a string, empties the std::string.
@@ -60,7 +59,7 @@ void CheckObject(const NPVariant& actual) {
 
 NPObject* MockNPAllocate(NPP npp, NPClass* aClass) {
   // This is a mock allocate method that mimics the behavior
-  // of NPN_CreateObject when allocate() is NULL
+  // of WebBindings::createObject when allocate() is NULL
 
   ++g_allocate_call_count;
   // Ignore npp and NPClass
@@ -83,7 +82,7 @@ static NPClass void_class = { NP_CLASS_STRUCT_VERSION,
 NPObject* MakeVoidObject() {
   g_allocate_call_count = 0;
   g_deallocate_call_count = 0;
-  return NPN_CreateObject(NULL, &void_class);
+  return WebBindings::createObject(NULL, &void_class);
 }
 
 TEST(CppVariantTest, NewVariantHasNullType) {
@@ -122,7 +121,7 @@ TEST(CppVariantTest, CopyConstructorIncrementsRefCount) {
   CppVariant dest = source;
   EXPECT_EQ(3U, dest.value.objectValue->referenceCount);
   EXPECT_EQ(1, g_allocate_call_count);
-  NPN_ReleaseObject(object);
+  WebBindings::releaseObject(object);
   source.SetNull();
   CheckObject(dest);
 }
@@ -154,7 +153,7 @@ TEST(CppVariantTest, AssignmentIncrementsRefCount) {
   EXPECT_EQ(3U, dest.value.objectValue->referenceCount);
   EXPECT_EQ(1, g_allocate_call_count);
 
-  NPN_ReleaseObject(object);
+  WebBindings::releaseObject(object);
   source.SetNull();
   CheckObject(dest);
 }
@@ -174,7 +173,7 @@ TEST(CppVariantTest, DestroyingCopyDoesNotCorruptSource) {
   {
     CppVariant dest2 = source;
   }
-  NPN_ReleaseObject(object);
+  WebBindings::releaseObject(object);
   CheckObject(source);
 }
 
@@ -186,37 +185,37 @@ TEST(CppVariantTest, CopiesTypeAndValueToNPVariant) {
   cpp.CopyToNPVariant(&np);
   EXPECT_EQ(cpp.type, np.type);
   EXPECT_EQ(cpp.value.boolValue, np.value.boolValue);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   cpp.Set(17);
   cpp.CopyToNPVariant(&np);
   EXPECT_EQ(cpp.type, np.type);
   EXPECT_EQ(cpp.value.intValue, np.value.intValue);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   cpp.Set(3.1415);
   cpp.CopyToNPVariant(&np);
   EXPECT_EQ(cpp.type, np.type);
   EXPECT_EQ(cpp.value.doubleValue, np.value.doubleValue);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   cpp.Set("test value");
   cpp.CopyToNPVariant(&np);
   CheckString("test value", np);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   cpp.SetNull();
   cpp.CopyToNPVariant(&np);
   EXPECT_EQ(cpp.type, np.type);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   NPObject *object = MakeVoidObject();
   cpp.Set(object);
   cpp.CopyToNPVariant(&np);
-  NPN_ReleaseObject(object);
+  WebBindings::releaseObject(object);
   cpp.SetNull();
   CheckObject(np);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 }
 
 TEST(CppVariantTest, SetsTypeAndValueFromNPVariant) {
@@ -226,37 +225,37 @@ TEST(CppVariantTest, SetsTypeAndValueFromNPVariant) {
   VOID_TO_NPVARIANT(np);
   cpp.Set(np);
   EXPECT_EQ(np.type, cpp.type);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   NULL_TO_NPVARIANT(np);
   cpp.Set(np);
   EXPECT_EQ(np.type, cpp.type);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   BOOLEAN_TO_NPVARIANT(true, np);
   cpp.Set(np);
   EXPECT_EQ(np.type, cpp.type);
   EXPECT_EQ(np.value.boolValue, cpp.value.boolValue);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   INT32_TO_NPVARIANT(15, np);
   cpp.Set(np);
   EXPECT_EQ(np.type, cpp.type);
   EXPECT_EQ(np.value.intValue, cpp.value.intValue);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   DOUBLE_TO_NPVARIANT(2.71828, np);
   cpp.Set(np);
   EXPECT_EQ(np.type, cpp.type);
   EXPECT_EQ(np.value.doubleValue, cpp.value.doubleValue);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   NPString np_ascii_str = { "1st test value",
                             static_cast<uint32_t>(strlen("1st test value")) };
   _NPN_InitializeVariantWithStringCopy(&np, &np_ascii_str);
   cpp.Set(np);
   CheckString("1st test value", cpp);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   // Test characters represented in 2/3/4 bytes in UTF-8
   // Greek alpha, Chinese number 1 (horizontal bar),
@@ -267,12 +266,13 @@ TEST(CppVariantTest, SetsTypeAndValueFromNPVariant) {
   _NPN_InitializeVariantWithStringCopy(&np, &np_intl_str);
   cpp.Set(np);
   CheckString("\xce\xb1\xe4\xb8\x80\xf0\x90\x90\x84", cpp);
-  NPN_ReleaseVariantValue(&np);
+  WebBindings::releaseVariantValue(&np);
 
   NPObject *obj = MakeVoidObject();
   OBJECT_TO_NPVARIANT(obj, np);  // Doesn't make a copy.
   cpp.Set(np);
-  NPN_ReleaseVariantValue(&np);  // or NPN_ReleaseObject but NOT both
+  // Use this or WebBindings::releaseObject but NOT both.
+  WebBindings::releaseVariantValue(&np);
   CheckObject(cpp);
 }
 
@@ -318,7 +318,7 @@ TEST(CppVariantTest, SetsSimpleTypesAndValues) {
 
   NPObject* obj = MakeVoidObject();
   cpp.Set(obj);
-  NPN_ReleaseObject(obj);
+  WebBindings::releaseObject(obj);
   CheckObject(cpp);
 }
 
@@ -341,7 +341,7 @@ TEST(CppVariantTest, FreeDataReleasesObject) {
   EXPECT_EQ(0, g_deallocate_call_count);
 
   cpp.Set(object);
-  NPN_ReleaseObject(object);
+  WebBindings::releaseObject(object);
   EXPECT_EQ(0, g_deallocate_call_count);
   cpp.FreeData();
   EXPECT_EQ(1, g_deallocate_call_count);
@@ -428,6 +428,6 @@ TEST(CppVariantTest, IsTypeFunctionsWork) {
   EXPECT_FALSE(cpp.isNull());
   EXPECT_FALSE(cpp.isEmpty());
   EXPECT_TRUE(cpp.isObject());
-  NPN_ReleaseObject(obj);
+  WebBindings::releaseObject(obj);
   CheckObject(cpp);
 }
