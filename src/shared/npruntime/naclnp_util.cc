@@ -66,7 +66,7 @@ int NaClNP_Init(int* argc, char* argv[]) {
 }
 
 int NaClNP_MainLoop(unsigned flags) {
-  if (g_npp.ndata == NULL) {
+  if (NULL == g_npp.ndata) {
     return -1;
   }
   nacl::NPNavigator* navigator = NaClNP_GetNavigator();
@@ -80,7 +80,7 @@ int NaClNP_MainLoop(unsigned flags) {
 
 NPObject* NaClNPN_CreateArray(NPP npp) {
   nacl::NPNavigator* navigator = static_cast<nacl::NPNavigator*>(npp->ndata);
-  if (navigator == NULL) {
+  if (NULL == navigator) {
     return NULL;
   }
   return navigator->CreateArray();
@@ -90,7 +90,7 @@ NPError NaClNPN_OpenURL(NPP npp, const char* url, void* notify_data,
                         void (*notify)(const char* url, void* notify_data,
                                        nacl::HtpHandle handle)) {
   nacl::NPNavigator* navigator = static_cast<nacl::NPNavigator*>(npp->ndata);
-  if (navigator == NULL) {
+  if (NULL == navigator) {
     return NPERR_GENERIC_ERROR;
   }
   return navigator->OpenURL(url, notify_data, notify);

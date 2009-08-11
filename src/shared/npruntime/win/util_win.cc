@@ -41,8 +41,13 @@ int GetPID() {
 }
 
 Handle OpenFile(const char* filename) {
-  return CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL,
-                     OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  return CreateFileA(filename,
+                     GENERIC_READ,
+                     FILE_SHARE_READ,
+                     NULL,
+                     OPEN_EXISTING,
+                     FILE_ATTRIBUTE_NORMAL,
+                     NULL);
 }
 
 int ReadFile(Handle handle, void* buffer, size_t length) {

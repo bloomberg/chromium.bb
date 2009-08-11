@@ -48,22 +48,22 @@ void NPN_MemFree(void* ptr) {
 }
 
 void NPN_Status(NPP instance, const char* message) {
-  if (instance == NULL || message == NULL) {
+  if (NULL == instance || NULL == message) {
     return;
   }
   nacl::NPNavigator* navigator = NaClNP_GetNavigator();
-  if (!navigator) {
+  if (NULL == navigator) {
     return;
   }
   navigator->SetStatus(message);
 }
 
 NPError NPN_GetValue(NPP instance, NPNVariable variable, void* value) {
-  if (instance == NULL) {
+  if (NULL == instance) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
   nacl::NPNavigator* navigator = NaClNP_GetNavigator();
-  if (!navigator) {
+  if (NULL == navigator) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
   switch (variable) {
@@ -81,7 +81,7 @@ NPError NPN_GetValue(NPP instance, NPNVariable variable, void* value) {
 
 NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
   nacl::NPNavigator* navigator = NaClNP_GetNavigator();
-  if (!navigator) {
+  if (NULL == navigator) {
     return NULL;
   }
   return const_cast<char*>(navigator->GetStringIdentifier(name));
@@ -90,7 +90,7 @@ NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
 void NPN_GetStringIdentifiers(const NPUTF8** names, int32_t nameCount,
                               NPIdentifier* identifiers) {
   nacl::NPNavigator* navigator = NaClNP_GetNavigator();
-  if (!navigator) {
+  if (NULL == navigator) {
     return;
   }
   for (int32_t i = 0; i < nameCount; ++i) {
@@ -134,7 +134,7 @@ int32_t NPN_IntFromIdentifier(NPIdentifier identifier) {
 }
 
 NPObject* NPN_CreateObject(NPP npp, NPClass* aClass) {
-  if (!npp || !aClass) {
+  if (NULL == npp || NULL == aClass) {
     return NULL;
   }
   NPObject* object;
@@ -158,11 +158,11 @@ NPObject* NPN_RetainObject(NPObject* object) {
 }
 
 void NPN_ReleaseObject(NPObject* object) {
-  if (!object) {
+  if (NULL == object) {
     return;
   }
   int32_t count = --(object->referenceCount);
-  if (count == 0) {
+  if (0 == count) {
     if (object->_class && object->_class->deallocate) {
       object->_class->deallocate(object);
     } else {
@@ -171,40 +171,66 @@ void NPN_ReleaseObject(NPObject* object) {
   }
 }
 
-bool NPN_Invoke(NPP npp, NPObject* object, NPIdentifier methodName,
-                const NPVariant* args, uint32_t argCount, NPVariant* result) {
-  if (!npp || !object || !object->_class || !object->_class->invoke) {
+bool NPN_Invoke(NPP npp,
+                NPObject* object,
+                NPIdentifier methodName,
+                const NPVariant* args,
+                uint32_t argCount,
+                NPVariant* result) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
+      NULL == object->_class->invoke) {
     return false;
   }
   return object->_class->invoke(object, methodName, args, argCount, result);
 }
 
-bool NPN_InvokeDefault(NPP npp, NPObject* object, const NPVariant* args,
-                       uint32_t argCount, NPVariant* result) {
-  if (!npp || !object || !object->_class || !object->_class->invokeDefault) {
+bool NPN_InvokeDefault(NPP npp,
+                       NPObject* object,
+                       const NPVariant* args,
+                       uint32_t argCount,
+                       NPVariant* result) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
+      NULL == object->_class->invokeDefault) {
     return false;
   }
   return object->_class->invokeDefault(object, args, argCount, result);
 }
 
-bool NPN_GetProperty(NPP npp, NPObject* object, NPIdentifier propertyName,
+bool NPN_GetProperty(NPP npp,
+                     NPObject* object,
+                     NPIdentifier propertyName,
                      NPVariant* result) {
-  if (!npp || !object || !object->_class || !object->_class->getProperty) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
+      NULL == object->_class->getProperty) {
     return false;
   }
   return object->_class->getProperty(object, propertyName, result);
 }
 
-bool NPN_SetProperty(NPP npp, NPObject* object, NPIdentifier propertyName,
+bool NPN_SetProperty(NPP npp,
+                     NPObject* object,
+                     NPIdentifier propertyName,
                      const NPVariant* value) {
-  if (!npp || !object || !object->_class || !object->_class->setProperty) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
+      NULL == object->_class->setProperty) {
     return false;
   }
   return object->_class->setProperty(object, propertyName, value);
 }
 
 bool NPN_RemoveProperty(NPP npp, NPObject* object, NPIdentifier propertyName) {
-  if (!npp || !object || !object->_class || !object->_class->removeProperty) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
+      NULL == object->_class->removeProperty) {
     return false;
   }
   return object->_class->removeProperty(object, propertyName);
@@ -214,13 +240,15 @@ bool NPN_RemoveProperty(NPP npp, NPObject* object, NPIdentifier propertyName) {
 // The following two functions for NPObject are supported in the NPAPI
 // version 0.19 and newer. Note currently we are using 0.18.
 
-bool NPN_Enumerate(NPP npp, NPObject* object, NPIdentifier** identifier,
+bool NPN_Enumerate(NPP npp,
+                   NPObject* object,
+                   NPIdentifier** identifier,
                    uint32_t* count) {
-  if (!npp || !object || !object->_class) {
+  if (NULL == npp || NULL == object || NULL == object->_class) {
     return false;
   }
   if (!NP_CLASS_STRUCT_VERSION_HAS_ENUM(object->_class) ||
-      !object->_class->enumerate) {
+      NULL == object->_class->enumerate) {
     *identifier = 0;
     *count = 0;
     return true;
@@ -228,11 +256,16 @@ bool NPN_Enumerate(NPP npp, NPObject* object, NPIdentifier** identifier,
   return object->_class->enumerate(object, identifier, count);
 }
 
-bool NPN_Construct(NPP npp, NPObject* object, const NPVariant* args,
-                   uint32_t argCount, NPVariant* result) {
-  if (!npp || !object || !object->_class ||
+bool NPN_Construct(NPP npp,
+                   NPObject* object,
+                   const NPVariant* args,
+                   uint32_t argCount,
+                   NPVariant* result) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
       !NP_CLASS_STRUCT_VERSION_HAS_CTOR(object->_class) ||
-      !object->_class->construct) {
+      NULL == object->_class->construct) {
     return false;
   }
   return object->_class->construct(object, args, argCount, result);
@@ -241,14 +274,20 @@ bool NPN_Construct(NPP npp, NPObject* object, const NPVariant* args,
 #endif
 
 bool NPN_HasProperty(NPP npp, NPObject* object, NPIdentifier propertyName) {
-  if (!npp || !object || !object->_class || !object->_class->hasProperty) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
+      NULL == object->_class->hasProperty) {
     return false;
   }
   return object->_class->hasProperty(object, propertyName);
 }
 
 bool NPN_HasMethod(NPP npp, NPObject* object, NPIdentifier methodName) {
-  if (!npp || !object || !object->_class || !object->_class->hasMethod) {
+  if (NULL == npp ||
+      NULL == object ||
+      NULL == object->_class ||
+      NULL == object->_class->hasMethod) {
     return false;
   }
   return object->_class->hasMethod(object, methodName);
@@ -279,7 +318,7 @@ void NPN_ReleaseVariantValue(NPVariant* variant) {
 }
 
 void NPN_SetException(NPObject* object, const NPUTF8* message) {
-  if (object == NULL) {
+  if (NULL == object) {
     return;
   }
   if (nacl::NPObjectProxy::IsInstance(object)) {
@@ -288,7 +327,7 @@ void NPN_SetException(NPObject* object, const NPUTF8* message) {
     return;
   }
   nacl::NPNavigator* navigator = NaClNP_GetNavigator();
-  if (navigator == NULL) {
+  if (NULL == navigator) {
     return;
   }
   nacl::NPObjectStub* stub = navigator->LookupStub(object);
@@ -298,7 +337,7 @@ void NPN_SetException(NPObject* object, const NPUTF8* message) {
 }
 
 void NPN_InvalidateRect(NPP instance, NPRect* invalid_rect) {
-  if (instance == NULL) {
+  if (NULL == instance) {
     return;
   }
   if (nacl::NPNavigator* navigator = NaClNP_GetNavigator()) {
@@ -307,7 +346,7 @@ void NPN_InvalidateRect(NPP instance, NPRect* invalid_rect) {
 }
 
 void NPN_ForceRedraw(NPP instance) {
-  if (instance == NULL) {
+  if (NULL == instance) {
     return;
   }
   if (nacl::NPNavigator* navigator = NaClNP_GetNavigator()) {

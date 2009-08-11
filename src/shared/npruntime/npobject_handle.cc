@@ -104,7 +104,7 @@ NPClass NPHandleObject::np_class = {
 NPObject* NPHandleObject::last_allocated;
 
 NPHandleObject::NPHandleObject(NPBridge* bridge, HtpHandle handle) {
-  if (id_handle == NULL) {
+  if (NULL == id_handle) {
     id_handle = NPN_GetStringIdentifier("handle");
   }
   handle_ = handle;
@@ -129,8 +129,9 @@ bool NPHandleObject::Invoke(NPIdentifier name,
   return false;
 }
 
-bool NPHandleObject::InvokeDefault(const NPVariant* args, uint32_t arg_count,
-                                  NPVariant* variant) {
+bool NPHandleObject::InvokeDefault(const NPVariant* args,
+                                   uint32_t arg_count,
+                                   NPVariant* variant) {
   return true;
 }
 
@@ -145,9 +146,10 @@ bool NPHandleObject::GetProperty(NPIdentifier name, NPVariant* variant) {
     if (char* hex = static_cast<char*>(NPN_MemAlloc(kHandleStringLength))) {
 #if NACL_WINDOWS
       _snprintf_s(hex, kHandleStringLength, kHandleStringLength,
-                  "0x%p", (void*) handle_);
+                  "0x%p", reinterpret_cast<void*>(handle_));
 #else
-      snprintf(hex, kHandleStringLength, "%p", (void*) handle_);
+      snprintf(hex, kHandleStringLength, "%p",
+               reinterpret_cast<void*>(handle_));
 #endif
 
       STRINGZ_TO_NPVARIANT(hex, *variant);

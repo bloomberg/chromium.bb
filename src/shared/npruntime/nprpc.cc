@@ -44,7 +44,7 @@ void* RpcStack::Push(NPIdentifier name) {
     assert(utf8 != NULL);
     size_t length = strlen(utf8) + 1;
     void* buffer = Alloc(length);
-    if (buffer != NULL) {
+    if (NULL != buffer) {
       memmove(buffer, utf8, length);
     }
     NPN_MemFree(utf8);
@@ -82,7 +82,7 @@ NPIdentifier RpcArg::GetIdentifier() {
 void* RpcStack::Push(const NPVariant& variant, bool param) {
   if (NPVARIANT_IS_STRING(variant)) {
     void* buffer = Alloc(NPVARIANT_TO_STRING(variant).utf8length + 1);
-    if (buffer != NULL) {
+    if (NULL != buffer) {
       // Note in Safari under OS X, strings are not terminated by zero.
       memmove(buffer,
               NPVARIANT_TO_STRING(variant).utf8characters,
@@ -98,7 +98,7 @@ void* RpcStack::Push(const NPVariant& variant, bool param) {
   if (NPVARIANT_IS_HANDLE(variant)) {
     NPCapability* capability =
         static_cast<NPCapability*>(Alloc(sizeof(NPCapability)));
-    if (capability != NULL) {
+    if (NULL != capability) {
       bridge_->add_handle(NPVARIANT_TO_HANDLE(variant));
       capability->pid = NPCapability::kHandle;
       capability->object = NULL;
@@ -141,7 +141,7 @@ const NPVariant* RpcArg::GetVariant(bool param) {
   } else if (NPVARIANT_IS_OBJECT(*variant)) {
     NPCapability* capability = reinterpret_cast<NPCapability*>(opt_);
     opt_ = Step(opt_, sizeof(NPCapability));
-    if (opt_ == NULL) {
+    if (NULL == opt_) {
       NULL_TO_NPVARIANT(*variant);
     } else if (!capability->IsHandle()) {
       NPObject* object = bridge_->CreateProxy(*capability);
@@ -171,7 +171,7 @@ const NPVariant* RpcArg::GetVariant(bool param) {
 void* RpcStack::Push(NPObject* object) {
   NPCapability* capability =
       static_cast<NPCapability*>(Alloc(sizeof(NPCapability)));
-  if (capability == NULL) {
+  if (NULL == capability) {
     return NULL;
   }
   if (NPHandleObject::IsInstance(object)) {
@@ -188,7 +188,7 @@ void* RpcStack::Push(NPObject* object) {
 NPObject* RpcArg::GetObject() {
   NPCapability* capability = reinterpret_cast<NPCapability*>(opt_);
   opt_ = Step(opt_, sizeof(NPCapability));
-  if (opt_ == NULL) {
+  if (NULL == opt_) {
     return NULL;
   }
   if (capability->IsHandle()) {
@@ -199,7 +199,7 @@ NPObject* RpcArg::GetObject() {
 
 const char* RpcArg::GetString() {
   const char* string = reinterpret_cast<const char*>(base_);
-  if (base_ == NULL) {
+  if (NULL == base_) {
     return NULL;
   }
   size_t length = strnlen(string, limit_ - base_);
@@ -207,7 +207,7 @@ const char* RpcArg::GetString() {
     return NULL;
   }
   base_ = Step(base_, length + 1);
-  if (base_ == NULL) {
+  if (NULL == base_) {
     return NULL;
   }
   return string;
@@ -216,7 +216,7 @@ const char* RpcArg::GetString() {
 NPCapability* RpcArg::GetCapability() {
   NPCapability* capability = reinterpret_cast<NPCapability*>(base_);
   base_ = Step(base_, sizeof(NPCapability));
-  if (base_ == NULL) {
+  if (NULL == base_) {
     return NULL;
   }
   return capability;
@@ -225,7 +225,7 @@ NPCapability* RpcArg::GetCapability() {
 NPSize* RpcArg::GetSize() {
   NPSize* size = reinterpret_cast<NPSize*>(base_);
   base_ = Step(base_, sizeof(*size));
-  if (base_ == NULL) {
+  if (NULL == base_) {
     return NULL;
   }
   return size;
@@ -234,7 +234,7 @@ NPSize* RpcArg::GetSize() {
 NPRect* RpcArg::GetRect() {
   NPRect* rect = reinterpret_cast<NPRect*>(base_);
   base_ = Step(base_, sizeof(*rect));
-  if (base_ == NULL) {
+  if (NULL == base_) {
     return NULL;
   }
   return rect;

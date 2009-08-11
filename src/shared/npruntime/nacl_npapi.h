@@ -62,7 +62,10 @@
 #include <nacl/nacl_htp_c.h>
 #endif  // __cplusplus
 #else
-/* from third_party primarily for tests/npapi_bridge/ which build in a non nacl env*/
+/*
+ * from third_party primarily for tests/npapi_bridge/ which build in a
+ * non nacl env
+ */
 #include "native_client/src/third_party/npapi/files/include/npapi.h"
 #include "native_client/src/third_party/npapi/files/include/npruntime.h"
 #ifdef __cplusplus

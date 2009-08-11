@@ -32,10 +32,11 @@
 
 // NaCl-NPAPI Interface
 
+#include <stdlib.h>
+#include <utility>
+
 #include "native_client/src/include/portability_string.h"
 
-
-#include <stdlib.h>
 #include "native_client/src/shared/npruntime/npnavigator.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
@@ -50,7 +51,7 @@ NPNavigator::NPNavigator(NPP npp, int* argc, char* argv[])
       bitmap_shm_(kInvalidHtpHandle) {
   if (3 <= *argc_) {
     // The last two arguments are the handle number for the connection to the
-    // plungin, and for the size of NPVariant in the plugin.
+    // plugin, and for the size of NPVariant in the plugin.
     // TODO(robertm): explain reinterpret_cast vs static_cast
 #if NACL_WINDOWS
     set_channel(reinterpret_cast<Handle>(STRTOULL(argv[*argc - 2], NULL, 10)));
@@ -64,7 +65,7 @@ NPNavigator::NPNavigator(NPP npp, int* argc, char* argv[])
 
 NPNavigator::~NPNavigator() {
   std::set<const NPUTF8*, StringCompare>::iterator i;
-  for (i = string_set_.begin(); i != string_set_.end(); ++i) {
+  for (i = string_set_.begin(); string_set_.end() != i; ++i) {
     free(const_cast<char*>(*i));
   }
   Close(bitmap_shm_);
@@ -118,7 +119,7 @@ int NPNavigator::New(RpcHeader* request, int len) {
       argc, argn, argv,
       NULL);
 
-  if (request->error_code == NPERR_NO_ERROR) {
+  if (NPERR_NO_ERROR == request->error_code) {
     NPObject* object = NPP_GetScriptableInstance(npp());
     if (object) {
       NPCapability capability;
@@ -128,7 +129,7 @@ int NPNavigator::New(RpcHeader* request, int len) {
       ++vecp;
     }
 
-    if (bitmap_shm_ != kInvalidHtpHandle &&
+    if (kInvalidHtpHandle != bitmap_shm_ &&
         0 < window_size->width && window_size->height) {
       window_.window = reinterpret_cast<void*>(bitmap_shm_);
       window_.x = 0;
@@ -238,7 +239,7 @@ NPObject* NPNavigator::CreateArray() {
   ++vecp;
   int length;
   RpcHeader* reply = Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  if (NULL == reply) {
     return NULL;
   }
   RpcArg result(this, reply, length);
@@ -246,10 +247,12 @@ NPObject* NPNavigator::CreateArray() {
   return result.GetObject();
 }
 
-NPError NPNavigator::OpenURL(const char* url, void* notify_data,
-                             void (*notify)(const char* url, void* notify_data,
+NPError NPNavigator::OpenURL(const char* url,
+                             void* notify_data,
+                             void (*notify)(const char* url,
+                                            void* notify_data,
                                             HtpHandle handle)) {
-  if (notify_ != NULL || url == NULL || notify == NULL) {
+  if (NULL != notify_ || NULL == url || NULL == notify) {
     return NPERR_GENERIC_ERROR;
   }
 
@@ -265,11 +268,11 @@ NPError NPNavigator::OpenURL(const char* url, void* notify_data,
   ++vecp;
   int length;
   RpcHeader* reply = Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  if (NULL == reply) {
     return NPERR_GENERIC_ERROR;
   }
   NPError nperr = static_cast<NPError>(reply->error_code);
-  if (nperr == NPERR_NO_ERROR) {
+  if (NPERR_NO_ERROR == nperr) {
     notify_ = notify;
     notify_data_ = notify_data;
     url_ = STRDUP(url);
@@ -292,13 +295,15 @@ int NPNavigator::URLNotify(RpcHeader* request, int len) {
   }
   arg.Step(sizeof(RpcHeader));
   uint32_t reason = request->error_code;
-  if (reason != NPRES_DONE) {
+  if (NPRES_DONE != reason) {
     Close(received_handle);
     received_handle = kInvalidHtpHandle;
     // Cleanup, ensuring that the notify_ callback won't get a closed
     // handle; This is also how the callback knows that there was a
     // problem.
   }
+  // Only one notify_ is allowed, making it impossible to handle multiple
+  // simultaneous GetURLNotify or PostURLNotify calls.
   if (notify_) {
     notify_(url_, notify_data_, received_handle);
     notify_ = 0;
@@ -310,16 +315,21 @@ int NPNavigator::URLNotify(RpcHeader* request, int len) {
   return Respond(request, vecv, vecp - vecv);
 }
 
+// BUG: This does not appear to correctly maintain identifiers across
+// multiple plugins or between browser identifiers and plugin identifiers.
 const NPUTF8* NPNavigator::GetStringIdentifier(const NPUTF8* name) {
   std::set<const NPUTF8*, StringCompare>::iterator i;
   i = string_set_.find(name);
-  if (i != string_set_.end()) {
+  if (string_set_.end() != i) {
     return *i;
   }
   name = STRDUP(name);
-  if (!name) {
+  if (NULL == name) {
     return NULL;
   }
+  // This returns the index of the string in a locally maintained identifier
+  // pool, whereas the browser, etc., may have interned the string in a
+  // different place in another table.
   std::pair<std::set<const NPUTF8*, StringCompare>::iterator, bool> result;
   result = string_set_.insert(name);
   return *result.first;

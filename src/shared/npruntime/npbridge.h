@@ -225,8 +225,8 @@ class NPBridge {
   // and the size of the response message is stored in the buffer pointed by
   // the length parameter. Wait() returns NULL on failure.
   // Internally, Wait() processes the requests received from the remote peer
-  // while waiting for the response. If request is NULL, Wait() simply processes
-  // the received requests.
+  // while waiting for the response. If request is NULL, Wait() simply
+  // processes the received requests.
   RpcHeader* Wait(const RpcHeader* request, int* length);
 
   // Dispatches the received request to the NPObject stub. The NPNavigator
@@ -250,9 +250,9 @@ class NPBridge {
     return time(NULL) - waiting_since_;
   }
 
-  // Creates an NPObject stub for the specified object. On success, CreateStub()
-  // returns 1 and NPCapability for the stub is filled in the buffer pointed by
-  // the cap parameter. CreateStub() returns 0 on failure.
+  // Creates an NPObject stub for the specified object. On success,
+  // CreateStub() returns 1 and NPCapability for the stub is filled in the
+  // buffer pointed by the cap parameter. CreateStub() returns 0 on failure.
   int CreateStub(NPObject* object, NPCapability* cap);
 
   // Returns the NPObject stub that corresponds to the specified object.

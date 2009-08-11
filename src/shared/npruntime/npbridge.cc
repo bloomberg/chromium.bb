@@ -69,7 +69,7 @@ NPBridge::~NPBridge() {
   // Note proxy objects are deleted by Navigator.
   for (std::map<const NPCapability, NPObjectProxy*>::iterator i =
           proxy_map_.begin();
-       i != proxy_map_.end();
+       proxy_map_.end() != i;
        ++i) {
     NPObjectProxy* proxy = (*i).second;
     proxy->Detach();
@@ -80,17 +80,17 @@ NPObjectStub* NPBridge::LookupStub(NPObject* object) {
   assert(object);
   std::map<NPObject*, NPObjectStub*>::iterator i;
   i = stub_map_.find(object);
-  if (i != stub_map_.end()) {
+  if (stub_map_.end() != i) {
     return (*i).second;
   }
   return NULL;
 }
 
 NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
-  if (capability.object == NULL) {
+  if (NULL == capability.object) {
     return NULL;
   }
-  if (capability.pid == GetPID()) {
+  if (GetPID() == capability.pid) {
     return NULL;
   }
   std::map<const NPCapability, NPObjectProxy*>::iterator i;
@@ -103,10 +103,10 @@ NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
 
 int NPBridge::CreateStub(NPObject* object, NPCapability* cap) {
   NPObjectStub* stub = NULL;
-  if (object != NULL) {
+  if (NULL != object) {
     if (NPObjectProxy::IsInstance(object)) {  // object can be a proxy
       NPObjectProxy* proxy = static_cast<NPObjectProxy*>(object);
-      if (proxy->capability().pid == peer_pid()) {
+      if (peer_pid() == proxy->capability().pid) {
         *cap = proxy->capability();
         return 0;
       }
@@ -120,7 +120,7 @@ int NPBridge::CreateStub(NPObject* object, NPCapability* cap) {
     stub = new(std::nothrow) NPObjectStub(this, object);
   }
   cap->pid = GetPID();
-  if (!stub) {
+  if (NULL == stub) {
     cap->object = NULL;
     return 0;
   }
@@ -130,7 +130,7 @@ int NPBridge::CreateStub(NPObject* object, NPCapability* cap) {
 }
 
 NPObject* NPBridge::CreateProxy(const NPCapability& capability) {
-  if (capability.object == NULL) {
+  if (NULL == capability.object) {
     return NULL;
   }
   if (capability.pid == GetPID()) {  // capability can be of my process
@@ -145,13 +145,13 @@ NPObject* NPBridge::CreateProxy(const NPCapability& capability) {
 
   std::map<const NPCapability, NPObjectProxy*>::iterator i;
   i = proxy_map_.find(capability);
-  if (i != proxy_map_.end()) {
+  if (proxy_map_.end() != i) {
     NPObjectProxy* proxy = (*i).second;
     NPN_RetainObject(proxy);
     return proxy;
   }
   NPObjectProxy* proxy = new(std::nothrow) NPObjectProxy(this, capability);
-  if (!proxy) {
+  if (NULL == proxy) {
     return NULL;
   }
   AddProxy(proxy);
@@ -167,12 +167,12 @@ void NPBridge::RemoveProxy(NPObjectProxy* proxy) {
 }
 
 NPObjectStub* NPBridge::GetStub(const NPCapability& capability) {
-  if (capability.pid != GetPID()) {
+  if (GetPID() != capability.pid) {
     return NULL;
   }
   std::map<NPObject*, NPObjectStub*>::iterator i;
   i = stub_map_.find(capability.object);
-  if (i == stub_map_.end()) {
+  if (stub_map_.end() == i) {
     return NULL;
   }
   return (*i).second;
@@ -184,7 +184,7 @@ void NPBridge::RemoveStub(NPObjectStub* stub) {
 
 RpcHeader* NPBridge::Request(RpcHeader* request, IOVec* iov, size_t iov_length,
                              int* length) {
-  if (channel_ == kInvalidHtpHandle) {
+  if (kInvalidHtpHandle == channel_) {
     return NULL;
   }
   assert(iov[0].base == request);
@@ -220,7 +220,7 @@ RpcHeader* NPBridge::Wait(const RpcHeader* request, int* length) {
     waiting_since_ = time(NULL);
     int result = ReceiveDatagram(channel_, &message, 0);
     waiting_since_ = 0;
-    if (result == -1) {
+    if (-1 == result) {
       Close(channel_);
       channel_ = kInvalidHtpHandle;
       return NULL;
@@ -236,7 +236,7 @@ RpcHeader* NPBridge::Wait(const RpcHeader* request, int* length) {
     handle_count_ = message.handle_count;
     if (request && header->Equals(*request)) {
       // Received the response for the request.
-      if (length != 0) {
+      if (0 != length) {
         *length = result;
       }
       return header;
@@ -244,7 +244,7 @@ RpcHeader* NPBridge::Wait(const RpcHeader* request, int* length) {
     RpcStack stack(this);
     stack.Alloc(result);
     result = Dispatch(header, result);
-    if (result == -1) {
+    if (-1 == result) {
       // Send back a truncated header to indicate failure.
       clear_handle_count();
       IOVec iov = {
@@ -253,7 +253,7 @@ RpcHeader* NPBridge::Wait(const RpcHeader* request, int* length) {
       };
       Respond(request, &iov, 1);
     }
-    if (header->type == RPC_DESTROY) {
+    if (RPC_DESTROY == header->type) {
       return NULL;
     }
   }
@@ -271,11 +271,11 @@ int NPBridge::Dispatch(RpcHeader* request, int len) {
   switch (request->type) {
     case RPC_SET_EXCEPTION: {
       NPObjectStub* stub = GetStub(*capability);
-      if (stub != NULL) {
+      if (NULL != stub) {
         return stub->Dispatch(request, len);
       }
       NPObjectProxy* proxy = LookupProxy(*capability);
-      if (proxy != NULL) {
+      if (NULL != proxy) {
         return proxy->SetException(request, len);
       }
       break;
@@ -292,7 +292,7 @@ int NPBridge::Dispatch(RpcHeader* request, int len) {
     case RPC_ENUMERATION:
     case RPC_CONSTRUCT: {
       NPObjectStub* stub = GetStub(*capability);
-      if (stub != NULL) {
+      if (NULL != stub) {
          return stub->Dispatch(request, len);
       }
       break;

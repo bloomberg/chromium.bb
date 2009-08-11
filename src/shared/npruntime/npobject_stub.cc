@@ -40,11 +40,11 @@
 
 static void DebugPrintf(const char *fmt, ...) {
   va_list argptr;
-  fprintf (stderr, "@@@ STUB ");
+  fprintf(stderr, "@@@ STUB ");
 
-  va_start (argptr, fmt);
-  vfprintf (stderr, fmt, argptr);
-  va_end (argptr);
+  va_start(argptr, fmt);
+  vfprintf(stderr, fmt, argptr);
+  va_end(argptr);
   fflush(stderr);
 }
 
@@ -121,12 +121,13 @@ int NPObjectStub::Dispatch(RpcHeader* request, int len) {
 
   RpcStack stack(bridge_);
   char converted_variant[kNPVariantSizeMax];
-  if (request->error_code != false && return_variant) {
+  if (NPERR_NO_ERROR != request->error_code && return_variant) {
     if (bridge_->peer_npvariant_size() == sizeof(NPVariant)) {
       vecp->base = &variant;
       vecp->length = sizeof(variant);
     } else {
-      ConvertNPVariants(&variant, converted_variant,
+      ConvertNPVariants(&variant,
+                        converted_variant,
                         bridge_->peer_npvariant_size(),
                         1);
       vecp->base = converted_variant;
@@ -137,14 +138,15 @@ int NPObjectStub::Dispatch(RpcHeader* request, int len) {
     vecp = stack.SetIOVec(vecp);
   }
   int length = bridge_->Respond(request, vecv, vecp - vecv);
-  if (request->error_code != false && return_variant &&
+  if (NPERR_NO_ERROR != request->error_code &&
+      return_variant &&
       NPVARIANT_IS_STRING(variant)) {
     // We cannot call NPN_ReleaseVariantValue() before bridge_->Respond()
     // completes since NPN_ReleaseVariantValue() changes the variant type to
     // NPVariantType_Void.
     NPN_ReleaseVariantValue(&variant);
   }
-  if (request->type == RPC_DEALLOCATE) {
+  if (RPC_DEALLOCATE == request->type) {
     delete this;
   }
   return length;
@@ -168,7 +170,8 @@ bool NPObjectStub::HasMethod(RpcArg* arg) {
   return NPN_HasMethod(bridge_->npp(), object_, name);
 }
 
-bool NPObjectStub::Invoke(uint32_t arg_count, RpcArg* arg,
+bool NPObjectStub::Invoke(uint32_t arg_count,
+                          RpcArg* arg,
                           NPVariant* variant) {
   arg->StepOption(sizeof(NPIdentifier) + arg_count * sizeof(NPVariant));
   NPIdentifier name = arg->GetIdentifier();
@@ -181,8 +184,12 @@ bool NPObjectStub::Invoke(uint32_t arg_count, RpcArg* arg,
       arg->GetVariant(true);
     }
   }
-  bool return_value = NPN_Invoke(bridge_->npp(), object_, name,
-                                 args, arg_count, variant);
+  bool return_value = NPN_Invoke(bridge_->npp(),
+                                 object_,
+                                 name,
+                                 args,
+                                 arg_count,
+                                 variant);
   for (uint32_t i = 0; i < arg_count; ++i) {
     if (NPVARIANT_IS_OBJECT(args[i])) {
       NPObject* object = NPVARIANT_TO_OBJECT(args[i]);
@@ -204,8 +211,11 @@ bool NPObjectStub::InvokeDefault(uint32_t arg_count,
       arg->GetVariant(true);
     }
   }
-  bool return_value = NPN_InvokeDefault(bridge_->npp(), object_,
-                                        args, arg_count, variant);
+  bool return_value = NPN_InvokeDefault(bridge_->npp(),
+                                        object_,
+                                        args,
+                                        arg_count,
+                                        variant);
   for (uint32_t i = 0; i < arg_count; ++i) {
     if (NPVARIANT_IS_OBJECT(args[i])) {
       NPObject* object = NPVARIANT_TO_OBJECT(args[i]);
@@ -254,11 +264,14 @@ bool NPObjectStub::RemoveProperty(RpcArg* arg) {
 }
 
 bool NPObjectStub::Enumeration(RpcArg* arg) {
+  // TODO(sehr): need implementation for this method.
   return false;
 }
 
-bool NPObjectStub::Construct(uint32_t arg_count, RpcArg* arg,
+bool NPObjectStub::Construct(uint32_t arg_count,
+                             RpcArg* arg,
                              NPVariant* variant) {
+  // TODO(sehr): need implementation for this method.
   return false;
 }
 

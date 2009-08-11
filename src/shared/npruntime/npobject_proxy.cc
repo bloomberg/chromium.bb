@@ -31,6 +31,9 @@
 
 
 // NaCl-NPAPI Interface
+// Ojbect proxying allows scripting objects across two different processes.
+// The "proxy" side is in the process scripting the object.
+// The "stub" side is in the process implementing the object.
 
 #include <stdarg.h>
 
@@ -38,11 +41,11 @@
 
 static void DebugPrintf(const char *fmt, ...) {
   va_list argptr;
-  fprintf (stderr, "@@@ PROXY ");
+  fprintf(stderr, "@@@ PROXY ");
 
-  va_start (argptr, fmt);
-  vfprintf (stderr, fmt, argptr);
-  va_end (argptr);
+  va_start(argptr, fmt);
+  vfprintf(stderr, fmt, argptr);
+  va_end(argptr);
   fflush(stderr);
 }
 
@@ -53,55 +56,69 @@ NPObject* Alloc(NPP npp, NPClass* aClass) {
 }
 
 void Deallocate(NPObject* object) {
-  delete static_cast<nacl::NPObjectProxy*>(object);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  delete npobj;
 }
 
 // Invalidate is called after NPP_Destroy...
 void Invalidate(NPObject* object) {
-  return static_cast<nacl::NPObjectProxy*>(object)->Invalidate();
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->Invalidate();
 }
 
 bool HasMethod(NPObject* object, NPIdentifier name) {
-  return static_cast<nacl::NPObjectProxy*>(object)->HasMethod(name);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->HasMethod(name);
 }
 
-bool Invoke(NPObject* object, NPIdentifier name,
-            const NPVariant* args, uint32_t arg_count,
+bool Invoke(NPObject* object,
+            NPIdentifier name,
+            const NPVariant* args,
+            uint32_t arg_count,
             NPVariant* result) {
-  return static_cast<nacl::NPObjectProxy*>(object)->Invoke(
-      name, args, arg_count, result);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->Invoke(name, args, arg_count, result);
 }
 
-bool InvokeDefault(NPObject* object, const NPVariant* args, uint32_t arg_count,
+bool InvokeDefault(NPObject* object,
+                   const NPVariant* args,
+                   uint32_t arg_count,
                    NPVariant* result) {
-  return static_cast<nacl::NPObjectProxy*>(object)->InvokeDefault(
-      args, arg_count, result);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->InvokeDefault(args, arg_count, result);
 }
 
 bool HasProperty(NPObject* object, NPIdentifier name) {
-  return static_cast<nacl::NPObjectProxy*>(object)->HasProperty(name);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->HasProperty(name);
 }
 
 bool GetProperty(NPObject* object, NPIdentifier name, NPVariant* result) {
-  return static_cast<nacl::NPObjectProxy*>(object)->GetProperty(name, result);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->GetProperty(name, result);
 }
 
 bool SetProperty(NPObject* object, NPIdentifier name, const NPVariant* value) {
-  return static_cast<nacl::NPObjectProxy*>(object)->SetProperty(name, value);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->SetProperty(name, value);
 }
 
 bool RemoveProperty(NPObject* object, NPIdentifier name) {
-  return static_cast<nacl::NPObjectProxy*>(object)->RemoveProperty(name);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->RemoveProperty(name);
 }
 
 bool Enumeration(NPObject* object, NPIdentifier* *value, uint32_t* count) {
-    return static_cast<nacl::NPObjectProxy*>(object)->Enumeration(value, count);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->Enumeration(value, count);
 }
 
-bool Construct(NPObject* object, const NPVariant* args, uint32_t arg_count,
+bool Construct(NPObject* object,
+               const NPVariant* args,
+               uint32_t arg_count,
                NPVariant* result) {
-  return static_cast<nacl::NPObjectProxy*>(object)->Construct(args, arg_count,
-                                                        result);
+  nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  return npobj->Construct(args, arg_count, result);
 }
 
 }  // namespace
@@ -154,7 +171,7 @@ NPObjectProxy::NPObjectProxy(NPBridge* bridge, const NPCapability& capability)
 }
 
 NPObjectProxy::~NPObjectProxy() {
-  if (bridge_ == NULL) {
+  if (NULL == bridge_) {
     return;
   }
   RpcHeader request;
@@ -175,7 +192,7 @@ NPObjectProxy::~NPObjectProxy() {
 void NPObjectProxy::Invalidate() {
   DebugPrintf("Invalidate\n");
   // Note Invalidate() can be called after NPP_Destroy() is called.
-  if (bridge_ == NULL) {
+  if (NULL == bridge_) {
     return;
   }
   RpcHeader request;
@@ -195,7 +212,7 @@ void NPObjectProxy::Invalidate() {
 bool NPObjectProxy::HasMethod(NPIdentifier name) {
   DebugPrintf("HasMethod %p\n", name);
   RpcStack stack(bridge_);
-  if (stack.Push(name) == NULL) {
+  if (NULL == stack.Push(name)) {
     return false;
   }
   RpcHeader request;
@@ -239,11 +256,11 @@ bool NPObjectProxy::Invoke(NPIdentifier name,
                       bridge_->peer_npvariant_size(),
                       arg_count);
   }
-  if (stack.Push(name) == NULL) {
+  if (NULL == stack.Push(name)) {
     return false;
   }
   for (uint32_t i = 0; i < arg_count; ++i) {
-    if (stack.Push(args[i], true) == NULL) {
+    if (NULL == stack.Push(args[i], true)) {
       return false;
     }
   }
@@ -262,7 +279,7 @@ bool NPObjectProxy::Invoke(NPIdentifier name,
   vecp->length = sizeof name;
   ++vecp;
   if (0 < arg_count) {
-    if (bridge_->peer_npvariant_size() == sizeof(NPVariant)) {
+    if (sizeof(NPVariant) == bridge_->peer_npvariant_size()) {
       vecp->base = const_cast<NPVariant*>(args);
       vecp->length = arg_count * sizeof(NPVariant);
     } else {
@@ -274,12 +291,12 @@ bool NPObjectProxy::Invoke(NPIdentifier name,
   vecp = stack.SetIOVec(vecp);
   int length;
   RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  if (NULL == reply) {
     return false;
   }
   RpcArg result(bridge_, reply, length);
   result.Step(sizeof(RpcHeader));
-  if (reply->error_code != false) {
+  if (NPERR_NO_ERROR != reply->error_code) {
     result.StepOption(sizeof(NPVariant));
     *variant = *result.GetVariant(false);
     return true;
@@ -287,7 +304,8 @@ bool NPObjectProxy::Invoke(NPIdentifier name,
   return false;
 }
 
-bool NPObjectProxy::InvokeDefault(const NPVariant* args, uint32_t arg_count,
+bool NPObjectProxy::InvokeDefault(const NPVariant* args,
+                                  uint32_t arg_count,
                                   NPVariant* variant) {
   DebugPrintf("InvokeDefault\n");
   RpcStack stack(bridge_);
@@ -296,13 +314,13 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args, uint32_t arg_count,
   if (kParamMax < arg_count) {
     return false;
   }
-  if (bridge_->peer_npvariant_size() != sizeof(NPVariant)) {
+  if (sizeof(NPVariant) != bridge_->peer_npvariant_size()) {
     ConvertNPVariants(args, converted_args,
                       bridge_->peer_npvariant_size(),
                       arg_count);
   }
   for (uint32_t i = 0; i < arg_count; ++i) {
-    if (stack.Push(args[i], true) == NULL) {
+    if (NULL == stack.Push(args[i], true)) {
       return false;
     }
   }
@@ -318,7 +336,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args, uint32_t arg_count,
   vecp->length = sizeof capability_;
   ++vecp;
   if (0 < arg_count) {
-    if (bridge_->peer_npvariant_size() == sizeof(NPVariant)) {
+    if (sizeof(NPVariant) == bridge_->peer_npvariant_size()) {
       vecp->base = const_cast<NPVariant*>(args);
       vecp->length = arg_count * sizeof(NPVariant);
     } else {
@@ -330,12 +348,12 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args, uint32_t arg_count,
   vecp = stack.SetIOVec(vecp);
   int length;
   RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  if (NULL == reply) {
     return false;
   }
   RpcArg result(bridge_, reply, length);
   result.Step(sizeof(RpcHeader));
-  if (reply->error_code != false) {
+  if (NPERR_NO_ERROR != reply->error_code) {
     result.StepOption(sizeof(NPVariant));
     *variant = *result.GetVariant(false);
     return true;
@@ -346,7 +364,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args, uint32_t arg_count,
 bool NPObjectProxy::HasProperty(NPIdentifier name) {
   DebugPrintf("HasProperty %p\n", name);
   RpcStack stack(bridge_);
-  if (stack.Push(name) == NULL) {
+  if (NULL == stack.Push(name)) {
     return false;
   }
   RpcHeader request;
@@ -365,7 +383,7 @@ bool NPObjectProxy::HasProperty(NPIdentifier name) {
   vecp = stack.SetIOVec(vecp);
   int length;
   RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  if (NULL == reply) {
     return false;
   }
   return reply->error_code ? true : false;
@@ -374,7 +392,7 @@ bool NPObjectProxy::HasProperty(NPIdentifier name) {
 bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
   DebugPrintf("GetProperty %p\n", name);
   RpcStack stack(bridge_);
-  if (stack.Push(name) == NULL) {
+  if (NULL == stack.Push(name)) {
     return false;
   }
   RpcHeader request;
@@ -393,12 +411,12 @@ bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
   vecp = stack.SetIOVec(vecp);
   int length;
   RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  if (NULL == reply) {
     return false;
   }
   RpcArg result(bridge_, reply, length);
   result.Step(sizeof(RpcHeader));
-  if (reply->error_code != false) {
+  if (NPERR_NO_ERROR != reply->error_code) {
     result.StepOption(sizeof(NPVariant));
     *variant = *result.GetVariant(false);
     return true;
@@ -410,15 +428,15 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
   DebugPrintf("SetProperty %p\n", name);
   RpcStack stack(bridge_);
   char converted_value[kNPVariantSizeMax];
-  if (bridge_->peer_npvariant_size() != sizeof(NPVariant)) {
+  if (sizeof(NPVariant) != bridge_->peer_npvariant_size()) {
     ConvertNPVariants(value, converted_value,
                       bridge_->peer_npvariant_size(),
                       1);
   }
-  if (stack.Push(name) == NULL) {
+  if (NULL == stack.Push(name)) {
     return false;
   }
-  if (stack.Push(*value, true) == NULL) {
+  if (NULL == stack.Push(*value, true)) {
     return false;
   }
   RpcHeader request;
@@ -434,7 +452,7 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
   vecp->base = &name;
   vecp->length = sizeof name;
   ++vecp;
-  if (bridge_->peer_npvariant_size() == sizeof(NPVariant)) {
+  if (sizeof(NPVariant) == bridge_->peer_npvariant_size()) {
     vecp->base = const_cast<NPVariant*>(value);
     vecp->length = sizeof(NPVariant);
   } else {
@@ -445,7 +463,7 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
   vecp = stack.SetIOVec(vecp);
   int length;
   RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  if (NULL == reply) {
     return false;
   }
   return reply->error_code ? true : false;
@@ -454,7 +472,7 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
 bool NPObjectProxy::RemoveProperty(NPIdentifier name) {
   DebugPrintf("RemoveProperty %p\n", name);
   RpcStack stack(bridge_);
-  if (stack.Push(name) == NULL) {
+  if (NULL == stack.Push(name)) {
     return false;
   }
   RpcHeader request;
@@ -473,18 +491,21 @@ bool NPObjectProxy::RemoveProperty(NPIdentifier name) {
   vecp = stack.SetIOVec(vecp);
   int length;
   RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  if (NULL == reply) {
     return false;
   }
   return reply->error_code ? true : false;
 }
 
 bool NPObjectProxy::Enumeration(NPIdentifier* *value, uint32_t* count) {
+  // TODO(sehr): shouldn't this API do something?
   return false;
 }
 
-bool NPObjectProxy::Construct(const NPVariant* args, uint32_t arg_count,
+bool NPObjectProxy::Construct(const NPVariant* args,
+                              uint32_t arg_count,
                               NPVariant* result) {
+  // TODO(sehr): shouldn't this API do something?
   return false;
 }
 
