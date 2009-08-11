@@ -450,24 +450,6 @@
    fun:_ZN19TestWebViewDelegate24UpdateSelectionClipboardEb
 }
 {
-   # real leak; see http://crbug.com/10738
-   bug_10738
-   Memcheck:Leak
-   ...
-   fun:_ZN20NavigationController22NavigateToPendingEntryEb
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-}
-{
-   # see http://crbug.com/10748
-   bug_10748
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN22RendererSecurityPolicy3AddEi
-   fun:_ZN24BrowserRenderProcessHost4InitEv
-   fun:_ZN14RenderViewHost16CreateRenderViewEv
-}
-{
    # Possible NSS leak, see http://crbug.com/10750
    bug_10750
    Memcheck:Leak
