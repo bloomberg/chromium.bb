@@ -151,8 +151,6 @@ void WidgetGtk::Init(GtkWidget* parent,
                         GDK_KEY_PRESS_MASK |
                         GDK_KEY_RELEASE_MASK);
 
-  root_view_->OnWidgetCreated();
-
   SetRootViewForWidget(widget_, root_view_.get());
 
   MessageLoopForUI::current()->AddObserver(this);
@@ -538,7 +536,6 @@ void WidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 
 void WidgetGtk::OnDestroy() {
   widget_ = window_contents_ = NULL;
-  root_view_->OnWidgetDestroyed();
   if (delete_on_destroy_)
     delete this;
 }
