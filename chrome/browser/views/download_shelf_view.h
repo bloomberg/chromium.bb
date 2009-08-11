@@ -81,6 +81,12 @@ class DownloadShelfView : public DownloadShelf,
   // Returns true if the shelf is wide enough to show the first download item.
   bool CanFitFirstDownloadItem();
 
+  // Called on theme change.
+  void UpdateButtonColors();
+
+  // Overridden from views::View.
+  virtual void ThemeChanged();
+
   // The browser for this shelf.
   Browser* browser_;
 

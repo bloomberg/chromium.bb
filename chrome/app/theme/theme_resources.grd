@@ -247,6 +247,7 @@
       <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
       <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
       <include name="IDR_HOME" file="home.png" type="BINDATA" />
       <include name="IDR_HOME_NOBORDER" file="home_noborder.png" type="BINDATA" />
       <include name="IDR_HOME_H" file="home_h.png" type="BINDATA" />

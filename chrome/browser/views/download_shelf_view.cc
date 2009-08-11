@@ -72,7 +72,8 @@ int CenterPosition(int size, int target_size) {
 }  // namespace
 
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
-    : browser_(browser), parent_(parent) {
+    : browser_(browser),
+      parent_(parent) {
   parent->AddChildView(this);
   Init();
 }
@@ -99,6 +100,7 @@ void DownloadShelfView::Init() {
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+  UpdateButtonColors();
   AddChildView(close_button_);
 
   new_item_animation_.reset(new SlideAnimation(this));
@@ -282,6 +284,20 @@ bool DownloadShelfView::CanFitFirstDownloadItem() {
 
   gfx::Size item_size = (*download_views_.rbegin())->GetPreferredSize();
   return item_size.width() < available_width;
+}
+
+void DownloadShelfView::UpdateButtonColors() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (GetThemeProvider()) {
+    close_button_->SetBackground(
+        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
+  }
+}
+
+void DownloadShelfView::ThemeChanged() {
+  UpdateButtonColors();
 }
 
 void DownloadShelfView::LinkActivated(views::Link* source, int event_flags) {
