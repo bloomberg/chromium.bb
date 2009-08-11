@@ -845,6 +845,32 @@ WebScreenInfo TestWebViewDelegate::screenInfo() {
   return WebScreenInfo();
 }
 
+// Public methods ------------------------------------------------------------
+
+TestWebViewDelegate::TestWebViewDelegate(TestShell* shell)
+    : policy_delegate_enabled_(false),
+      policy_delegate_is_permissive_(false),
+      policy_delegate_should_notify_done_(false),
+      shell_(shell),
+      top_loading_frame_(NULL),
+      page_id_(-1),
+      last_page_id_updated_(-1),
+#if defined(OS_LINUX)
+      cursor_type_(GDK_X_CURSOR),
+#endif
+      smart_insert_delete_enabled_(true),
+#if defined(OS_WIN)
+      select_trailing_whitespace_enabled_(true),
+#else
+      select_trailing_whitespace_enabled_(false),
+#endif
+      block_redirects_(false) {
+}
+
+void TestWebViewDelegate::Reset() {
+  *this = TestWebViewDelegate(shell_);
+}
+
 void TestWebViewDelegate::SetSmartInsertDeleteEnabled(bool enabled) {
   smart_insert_delete_enabled_ = enabled;
   // In upstream WebKit, smart insert/delete is mutually exclusive with select
@@ -865,6 +891,12 @@ void TestWebViewDelegate::RegisterDragDrop() {
   DCHECK(!drop_delegate_);
   drop_delegate_ = new TestDropDelegate(shell_->webViewWnd(),
                                         shell_->webView());
+#endif
+}
+
+void TestWebViewDelegate::RevokeDragDrop() {
+#if defined(OS_WIN)
+  ::RevokeDragDrop(shell_->webViewWnd());
 #endif
 }
 

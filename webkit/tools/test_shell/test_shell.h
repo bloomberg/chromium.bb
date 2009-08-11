@@ -324,8 +324,8 @@ private:
 
     scoped_ptr<TestNavigationController> navigation_controller_;
 
-    scoped_refptr<TestWebViewDelegate> delegate_;
-    scoped_refptr<TestWebViewDelegate> popup_delegate_;
+    scoped_ptr<TestWebViewDelegate> delegate_;
+    scoped_ptr<TestWebViewDelegate> popup_delegate_;
 
     const TestParams* test_params_;
 

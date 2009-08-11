@@ -845,10 +845,9 @@ class WebViewDelegate : virtual public WebKit::WebWidgetClient {
   virtual void DidAddHistoryItem() { }
 
   WebViewDelegate() { }
-  virtual ~WebViewDelegate() { }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebViewDelegate);
+ protected:
+  ~WebViewDelegate() { }
 };
 
 #endif  // WEBKIT_GLUE_WEBVIEW_DELEGATE_H_

@@ -1246,10 +1246,6 @@ WebViewDelegate* WebViewImpl::GetDelegate() {
   return delegate_;
 }
 
-void WebViewImpl::SetDelegate(WebViewDelegate* delegate) {
-  delegate_ = delegate;
-}
-
 WebFrame* WebViewImpl::GetMainFrame() {
   return main_frame();
 }
