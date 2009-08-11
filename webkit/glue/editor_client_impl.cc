@@ -110,11 +110,16 @@ bool EditorClientImpl::smartInsertDeleteEnabled() {
 
 bool EditorClientImpl::isSelectTrailingWhitespaceEnabled() {
   if (use_editor_delegate_) {
-  WebViewDelegate* d = web_view_->delegate();
-  if (d)
-    return d->IsSelectTrailingWhitespaceEnabled();
+    WebViewDelegate* d = web_view_->delegate();
+    if (d)
+      return d->IsSelectTrailingWhitespaceEnabled();
   }
+
+#if defined(OS_WIN)
   return true;
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
+  return false;
+#endif
 }
 
 bool EditorClientImpl::ShouldSpellcheckByDefault() {
