@@ -108,20 +108,6 @@ static bool DownloadPathIsDangerous(const FilePath& download_path) {
   return (download_path == desktop_dir);
 }
 
-// Helper to determine if a download is a Chrome extension. We should be able to
-// just use the mime type, but even our own servers are not setup to serve the
-// right headers yet, so we have a short-term file extension heuristic, too.
-static bool IsChromeExtension(const FilePath& path,
-                              const std::string& mime_type) {
-  // If the server says it is an extension, it is definitely an extension.
-  if (mime_type == Extension::kMimeType)
-    return true;
-
-  // Otherwise, it is an extension if it has the right, err, extension.
-  return path.Extension().size() > 1 &&
-         path.Extension().substr(1) == chrome::kExtensionFileExtension;
-}
-
 // DownloadItem implementation -------------------------------------------------
 
 // Constructor for reading from the history service.
@@ -584,7 +570,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // b) They are an extension that is not from the gallery
     if (IsDangerous(info->suggested_path.BaseName()))
       info->is_dangerous = true;
-    else if (IsChromeExtension(info->path, info->mime_type) &&
+    else if (info->mime_type == Extension::kMimeType &&
              !ExtensionsService::IsDownloadFromGallery(info->url,
                                                        info->referrer_url)) {
       info->is_dangerous = true;
@@ -864,7 +850,7 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
     extension = extension.substr(1);
 
   // Handle chrome extensions explicitly and skip the shell execute.
-  if (IsChromeExtension(download->full_path(), download->mime_type())) {
+  if (download->mime_type() == Extension::kMimeType) {
     OpenChromeExtension(download->full_path(), download->url(),
                         download->referrer_url());
     download->set_auto_opened(true);
@@ -1243,7 +1229,7 @@ void DownloadManager::OpenDownload(const DownloadItem* download,
                                    gfx::NativeView parent_window) {
   // Open Chrome extensions with ExtensionsService. For everything else do shell
   // execute.
-  if (IsChromeExtension(download->full_path(), download->mime_type())) {
+  if (download->mime_type() == Extension::kMimeType) {
     OpenChromeExtension(download->full_path(), download->url(),
                         download->referrer_url());
   } else {
