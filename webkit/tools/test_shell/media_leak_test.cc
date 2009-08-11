@@ -16,7 +16,7 @@ class MediaLeakTest : public TestShellTest {
 
 // This test plays a Theora video file for 1 second. It tries to expose
 // memory leaks during a normal playback.
-TEST_F(MediaLeakTest, DISABLED_VideoBear) {
+TEST_F(MediaLeakTest, VideoBear) {
   FilePath media_file;
   ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &media_file));
   media_file = media_file.Append(FILE_PATH_LITERAL("webkit"))
