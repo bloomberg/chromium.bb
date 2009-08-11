@@ -12,6 +12,8 @@
 #include "app/slide_animation.h"
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/point.h"
+#include "base/string_util.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_dnd_util.h"
@@ -1889,7 +1891,62 @@ gboolean TabStripGtk::OnDragDataReceived(GtkWidget* widget,
 
 // static
 void TabStripGtk::OnNewTabClicked(GtkWidget* widget, TabStripGtk* tabstrip) {
-  tabstrip->model_->delegate()->AddBlankTab(true);
+  GdkEvent* event = gtk_get_current_event();
+  DCHECK_EQ(event->type, GDK_BUTTON_RELEASE);
+  int mouse_button = event->button.button;
+  gdk_event_free(event);
+
+  switch (mouse_button) {
+    case 1:
+      tabstrip->model_->delegate()->AddBlankTab(true);
+      break;
+    case 2: {
+      // On middle-click, try to parse the PRIMARY selection as a URL and load
+      // it instead of creating a blank page.
+      GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
+      DCHECK(clipboard);
+      gchar* selection_text = gtk_clipboard_wait_for_text(clipboard);
+      if (!selection_text)
+        return;
+
+      // Use autocomplete to clean up the text, going so far as to turn it into
+      // a search query if necessary.
+      AutocompleteController controller(tabstrip->model_->profile());
+      controller.Start(UTF8ToWide(selection_text),
+                       EmptyWString(),  // desired_tld
+                       true,            // prevent_inline_autocomplete
+                       false,           // prefer_keyword
+                       true);           // synchronous_only
+      g_free(selection_text);
+      const AutocompleteResult& result = controller.result();
+      AutocompleteResult::const_iterator it = result.default_match();
+      if (it == result.end())
+        return;
+
+      GURL url(it->destination_url);
+      if (!url.is_valid())
+        return;
+
+      TabContents* contents =
+          tabstrip->model_->delegate()->CreateTabContentsForURL(
+              url,
+              GURL(),  // referrer
+              tabstrip->model_->profile(),
+              PageTransition::TYPED,
+              false,   // defer_load
+              NULL);   // instance
+      tabstrip->model_->AddTabContents(
+          contents,
+          -1,     // index
+          false,  // force_index
+          PageTransition::TYPED,
+          true);  // foreground
+      break;
+    }
+    default:
+      NOTREACHED() << "Got click on new tab button with unhandled mouse "
+                   << "button " << mouse_button;
+  }
 }
 
 void TabStripGtk::SetTabBounds(TabGtk* tab, const gfx::Rect& bounds) {
@@ -1904,6 +1961,8 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
   CustomDrawButton* button = new CustomDrawButton(IDR_NEWTAB_BUTTON,
       IDR_NEWTAB_BUTTON_P, IDR_NEWTAB_BUTTON_H, 0);
 
+  // Let the middle mouse button initiate clicks as well.
+  gtk_util::SetButtonTriggersNavigation(button->widget());
   g_signal_connect(G_OBJECT(button->widget()), "clicked",
                    G_CALLBACK(OnNewTabClicked), this);
   GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
