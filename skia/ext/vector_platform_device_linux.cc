@@ -82,7 +82,7 @@ void VectorPlatformDevice::drawPaint(const SkDraw& draw,
   // Bypass the current transformation matrix.
   LoadIdentityTransformToContext();
 
-  // FIXME(myhuang): Is there a better way to do this?
+  // TODO(myhuang): Is there a better way to do this?
   SkRect rect;
   rect.fLeft = 0;
   rect.fTop = 0;
@@ -142,9 +142,17 @@ void VectorPlatformDevice::drawPath(const SkDraw& draw,
       } break;
 
       case SkPath::kQuad_Verb: {  // iter.next returns 3 points
+        // Degree elevation (quadratic to cubic).
+        // c1 = (2 * p1 + p0) / 3
+        // c2 = (2 * p1 + p2) / 3
+        current_points[1].scale(2.);  // p1 *= 2.0;
+        SkScalar c1_X = (current_points[1].fX + current_points[0].fX) / 3.;
+        SkScalar c1_Y = (current_points[1].fY + current_points[0].fY) / 3.;
+        SkScalar c2_X = (current_points[1].fX + current_points[2].fX) / 3.;
+        SkScalar c2_Y = (current_points[1].fY + current_points[2].fY) / 3.;
         cairo_curve_to(context_,
-                       current_points[1].fX, current_points[1].fY,
-                       current_points[2].fX, current_points[2].fY,
+                       c1_X, c1_Y,
+                       c2_X, c2_Y,
                        current_points[2].fX, current_points[2].fY);
       } break;
 
@@ -236,8 +244,8 @@ void VectorPlatformDevice::drawPoints(const SkDraw& draw,
   cairo_stroke(context_);
 }
 
-// TODO(myhuang): Support font family.
-// TODO(myhuang): Support Stroke/Fill better.
+// TODO(myhuang): Embed fonts/texts into PDF surface.
+// Please NOTE that len records text's length in byte, not uint16_t.
 void VectorPlatformDevice::drawPosText(const SkDraw& draw,
                                        const void* text,
                                        size_t len,
@@ -248,7 +256,8 @@ void VectorPlatformDevice::drawPosText(const SkDraw& draw,
   SkASSERT(text);
   SkASSERT(pos);
   SkASSERT(paint.getTextEncoding() == SkPaint::kGlyphID_TextEncoding);
-  SkASSERT(scalarsPerPos == 2);  // Each pos contains x and y.
+  // Each pos should contain either only x, or (x, y).
+  SkASSERT((scalarsPerPos == 1) || (scalarsPerPos == 2));
 
   if (!len)
     return;
@@ -256,33 +265,21 @@ void VectorPlatformDevice::drawPosText(const SkDraw& draw,
   // Text color.
   ApplyPaintColor(paint);
 
-  cairo_set_font_size(context_, paint.getTextSize());
+  const uint16_t* glyphIDs = static_cast<const uint16_t*>(text);
 
-  SkTypeface* typeface = paint.getTypeface();
-  SkASSERT(typeface);
-
-  cairo_font_slant_t font_slant =
-    typeface->isItalic() ? CAIRO_FONT_SLANT_ITALIC : CAIRO_FONT_SLANT_NORMAL;
-
-  cairo_font_weight_t font_weight =
-    typeface->isBold() ? CAIRO_FONT_WEIGHT_BOLD : CAIRO_FONT_WEIGHT_NORMAL;
-
-  cairo_select_font_face(context_, "", font_slant, font_weight);
-
-  // FIXME(myhuang): We now draw glyphs one by one.
-  // Maybe we should draw them altogether in the future.
-  const uint16_t* glyphIDs = reinterpret_cast<const uint16_t*>(text);
-  // scalarsPerPos should be 2 here in the loop!
-  for (size_t i = 0; i < len / scalarsPerPos; ++i) {
+  // Draw each glyph by its path.
+  for (size_t i = 0; i < len / sizeof(uint16_t); ++i) {
     uint16_t glyphID = glyphIDs[i];
-
-    cairo_glyph_t glyph;
-    glyph.index = glyphID;
-    glyph.x = pos[i * scalarsPerPos + 0];
-    glyph.y = pos[i * scalarsPerPos + 1];
-    cairo_glyph_path(context_, &glyph, 1);
+    SkPath textPath;
+    paint.getTextPath(&glyphID,
+                      sizeof(uint16_t),
+                      pos[i * scalarsPerPos],
+                      (scalarsPerPos == 1) ?
+                        constY :
+                        pos[i * scalarsPerPos + 1],
+                      &textPath);
+    drawPath(draw, textPath, paint);
   }
-  DoPaintStyle(paint);
 }
 
 void VectorPlatformDevice::drawRect(const SkDraw& draw,
