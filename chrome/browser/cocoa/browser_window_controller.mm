@@ -62,6 +62,7 @@ const int kWindowGradientHeight = 24;
 - (void)setBottomCornerRounded:(BOOL)rounded;
 
 - (NSRect)_growBoxRect;
+
 @end
 
 
@@ -238,7 +239,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 // Called when the window meets the criteria to be closed (ie,
-// |-windowShoudlClose:| returns YES). We must be careful to preserve the
+// |-windowShouldClose:| returns YES). We must be careful to preserve the
 // semantics of BrowserWindow::Close() and not call the Browser's dtor directly
 // from this method.
 - (void)windowWillClose:(NSNotification*)notification {
@@ -253,6 +254,28 @@ willPositionSheet:(NSWindow*)sheet
              afterDelay:0];
 }
 
+// Checks if there are any tabs with sheets open, and if so, raises one of
+// the tabs with a sheet and returns NO.
+- (BOOL)shouldCloseWithOpenPerTabSheets {
+  // This is O(n_open_sheets * n_tabs), i.e. O(n**2). Since people probably
+  // won't have 100 tabs open, and not every tab will have a sheet, this is ok.
+  for (NSView* view in
+      [[tabStripController_ sheetController] viewsWithAttachedSheets]) {
+    [tabStripController_ gtm_systemRequestsVisibilityForView:view];
+    return NO;
+  }
+
+  return YES;
+}
+
+- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
+  [tabStripController_ attachConstrainedWindow:window];
+}
+
+- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
+  [tabStripController_ removeConstrainedWindow:window];
+}
+
 // Called when the user wants to close a window or from the shutdown process.
 // The Browser object is in control of whether or not we're allowed to close. It
 // may defer closing due to several states, such as onUnload handlers needing to
@@ -260,6 +283,11 @@ willPositionSheet:(NSWindow*)sheet
 // required to get us to the closing state and (by watching for all the tabs
 // going away) will again call to close the window when it's finally ready.
 - (BOOL)windowShouldClose:(id)sender {
+  // Do not close a window with open sheets, as required by
+  // GTMWindowSheetController.
+  if (![self shouldCloseWithOpenPerTabSheets])
+    return NO;
+
   // Disable updates while closing all tabs to avoid flickering.
   base::ScopedNSDisableScreenUpdates disabler;
   // Give beforeunload handlers the chance to cancel the close before we hide
@@ -420,7 +448,14 @@ willPositionSheet:(NSWindow*)sheet
     if (oldState != newState)
       [item setState:newState];
   }
+}
 
+- (BOOL)supportsFullscreen {
+  // TODO(avi, thakis): GTMWindowSheetController has no api to move
+  // tabsheets between windows. Until then, we have to prevent having to
+  // move a tabsheet between windows, e.g. no fullscreen toggling
+  NSArray* a = [[tabStripController_ sheetController] viewsWithAttachedSheets];
+  return [a count] == 0;
 }
 
 // Called to validate menu and toolbar items when this window is key. All the
@@ -451,6 +486,9 @@ willPositionSheet:(NSWindow*)sheet
           // We have to ask the Browser manually if we can restore. The
           // command updater doesn't know.
           enable &= browser_->CanRestoreTab();
+          break;
+        case IDC_FULLSCREEN:
+          enable &= [self supportsFullscreen];
           break;
       }
 
@@ -505,6 +543,10 @@ willPositionSheet:(NSWindow*)sheet
     offset += [[self downloadShelf] height];
 
   return offset;
+}
+
+- (GTMWindowSheetController*)sheetController {
+  return [tabStripController_ sheetController];
 }
 
 - (LocationBar*)locationBar {
@@ -784,6 +826,9 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)setFullscreen:(BOOL)fullscreen {
+  if (![self supportsFullscreen])
+      return;
+
   fullscreen_ = fullscreen;
   if (fullscreen) {
     // Move content to a new fullscreen window
@@ -861,25 +906,26 @@ willPositionSheet:(NSWindow*)sheet
   // TabContents.
 #if 0
 // TODO(pinkerton):Update as more things become window-specific
-  contents_container_->SetTabContents(new_contents);
+  contents_container_->SetTabContents(newContents);
 #endif
 
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
 #if 0
 // TODO(pinkerton):Update as more things become window-specific
-  toolbar_->SetProfile(new_contents->profile());
-  UpdateToolbar(new_contents, true);
-  UpdateUIForContents(new_contents);
+  toolbar_->SetProfile(newContents->profile());
+  UpdateToolbar(newContents, true);
+  UpdateUIForContents(newContents);
 #endif
 }
 
 - (void)tabChangedWithContents:(TabContents*)contents
                        atIndex:(NSInteger)index
                    loadingOnly:(BOOL)loading {
-  // Update titles if this is the currently selected tab.
-  if (index == browser_->tabstrip_model()->selected_index())
+  if (index == browser_->tabstrip_model()->selected_index()) {
+    // Update titles if this is the currently selected tab.
     windowShim_->UpdateTitleBar();
+  }
 }
 
 - (void)userChangedTheme {

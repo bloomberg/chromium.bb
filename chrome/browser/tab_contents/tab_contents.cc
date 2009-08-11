@@ -771,7 +771,6 @@ void TabContents::ShowPageInfo(const GURL& url,
   delegate_->ShowPageInfo(profile(), url, ssl, show_history);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
 ConstrainedWindow* TabContents::CreateConstrainedDialog(
       ConstrainedWindowDelegate* delegate) {
   ConstrainedWindow* window =
@@ -779,7 +778,6 @@ ConstrainedWindow* TabContents::CreateConstrainedDialog(
   child_windows_.push_back(window);
   return window;
 }
-#endif
 
 void TabContents::AddNewContents(TabContents* new_contents,
                                  WindowOpenDisposition disposition,

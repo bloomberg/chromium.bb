@@ -28,7 +28,7 @@
 
   // All following variables are valid for the duration of a drag.
   // These are released on mouseUp:
-  BOOL isTheOnlyTab_;  // Is this the only tab in the window?
+  BOOL moveWindowOnDrag_;  // Set if the only tab of a window is dragged.
   BOOL tabWasDragged_;  // Has the tab been dragged?
   BOOL draggingWithinTabStrip_;  // Did drag stay in the current tab strip?
   BOOL chromeIsVisible_;

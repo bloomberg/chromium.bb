@@ -245,7 +245,7 @@ void MemoryDetails::StartFetch() {
   NOTIMPLEMENTED();
 }
 
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && defined(TOOLKIT_VIEWS))
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 // This should prompt the user if she wants to allow more than one concurrent
 // download per tab. Until this is in place, always allow multiple downloads.
 class DownloadRequestDialogDelegateStub
@@ -253,7 +253,7 @@ class DownloadRequestDialogDelegateStub
  public:
   explicit DownloadRequestDialogDelegateStub(
     DownloadRequestManager::TabDownloadState* host)
-      : DownloadRequestDialogDelegate(host) { DoAccept(); }
+      : DownloadRequestDialogDelegate(host) { DoCancel(); }
 
   virtual void CloseWindow() {}
 };

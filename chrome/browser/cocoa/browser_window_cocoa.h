@@ -90,6 +90,9 @@ class BrowserWindowCocoa : public BrowserWindow,
   // Adds the given FindBar cocoa controller to this browser window.
   void AddFindBar(FindBarCocoaController* find_bar_cocoa_controller);
 
+  // Returns the cocoa-world BrowserWindowController
+  BrowserWindowController* cocoa_controller() { return controller_; }
+
  protected:
   virtual void DestroyBrowser();
 

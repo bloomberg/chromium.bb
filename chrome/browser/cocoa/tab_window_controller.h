@@ -20,6 +20,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_nsobject.h"
+
 @class TabStripView;
 @class TabView;
 
@@ -31,6 +33,7 @@
   NSView* cachedContentView_;  // Used during dragging for identifying which
                                // view is the proper content area in the overlay
                                // (weak)
+  scoped_nsobject<NSMutableSet> lockedTabs_;
 }
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) NSView* tabContentArea;
@@ -99,6 +102,8 @@
 // default implementation returns YES.
 - (BOOL)isNormalWindow;
 
+- (BOOL)isTabDraggable:(NSView*)tabView;
+- (void)setTab:(NSView*)tabView isDraggable:(BOOL)draggable;
 
 @end
 

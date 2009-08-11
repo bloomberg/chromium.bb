@@ -10,11 +10,13 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
+#import "third_party/GTM/AppKit/GTMWindowSheetController.h"
 
 @class TabView;
 @class TabStripView;
 
 class Browser;
+class ConstrainedWindowMac;
 class TabStripModelObserverBridge;
 class TabStripModel;
 class TabContents;
@@ -31,7 +33,9 @@ class ToolbarModel;
 // the single child of the contentView is swapped around to hold the contents
 // (toolbar and all) representing that tab.
 
-@interface TabStripController : NSObject <TabControllerTarget> {
+@interface TabStripController :
+  NSObject<TabControllerTarget,
+           GTMWindowSheetControllerDelegate> {
  @private
   TabContents* currentTab_;   // weak, tab for which we're showing state
   TabStripView* tabView_;  // weak
@@ -77,6 +81,9 @@ class ToolbarModel;
   // Array of subviews which are permanent (and which should never be removed),
   // such as the new-tab button, but *not* the tabs themselves.
   scoped_nsobject<NSMutableArray> permanentSubviews_;
+
+  // Manages per-tab sheets.
+  scoped_nsobject<GTMWindowSheetController> sheetController_;
 }
 
 // Initialize the controller with a view and browser that contains
@@ -127,6 +134,14 @@ class ToolbarModel;
 
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;
+
+// Returns the (lazily created) window sheet controller of this window. Used
+// for the per-tab sheets.
+- (GTMWindowSheetController*)sheetController;
+
+- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
+- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
+
 @end
 
 // Notification sent when the number of tabs changes. The object will be this

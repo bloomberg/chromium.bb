@@ -15,6 +15,13 @@
 @synthesize tabStripView = tabStripView_;
 @synthesize tabContentArea = tabContentArea_;
 
+- (id)initWithWindow:(NSWindow *)window {
+  if ((self = [super initWithWindow:window]) != nil) {
+    lockedTabs_.reset([[NSMutableSet alloc] initWithCapacity:10]);
+  }
+  return self;
+}
+
 - (void)windowDidLoad {
   if ([self isNormalWindow]) {
     // Place the tab bar above the content box and add it to the view hierarchy
@@ -174,6 +181,17 @@
   // subclass must implement
   NOTIMPLEMENTED();
   return YES;
+}
+
+- (BOOL)isTabDraggable:(NSView*)tabView {
+  return ![lockedTabs_ containsObject:tabView];
+}
+
+- (void)setTab:(NSView*)tabView isDraggable:(BOOL)draggable {
+  if (draggable)
+    [lockedTabs_ removeObject:tabView];
+  else
+    [lockedTabs_ addObject:tabView];
 }
 
 @end

@@ -22,8 +22,10 @@
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
+class ConstrainedWindowMac;
 @class DownloadShelfController;
 @class FindBarCocoaController;
+@class GTMWindowSheetController;
 @class InfoBarContainerController;
 class LocationBar;
 class StatusBubble;
@@ -136,6 +138,17 @@ class TabStripModelObserverBridge;
 
 // Delegate method for the status bubble to query about its vertical offset.
 - (float)verticalOffsetForStatusBubble;
+
+// Returns the (lazily created) window sheet controller of this window. Used
+// for the per-tab sheets.
+- (GTMWindowSheetController*)sheetController;
+
+// Checks if there are any tabs with sheets open, and if so, raises one of
+// the tabs with a sheet and returns NO.
+- (BOOL)shouldCloseWithOpenPerTabSheets;
+
+- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
+- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
 
 @end
 

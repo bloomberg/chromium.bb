@@ -14,6 +14,8 @@
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/constrained_window_mac.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/tab_cell.h"
 #import "chrome/browser/cocoa/tab_contents_controller.h"
@@ -49,6 +51,7 @@ static const float kUseFullAvailableWidth = -1.0;
 - (BOOL)useFullWidthForLayout;
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
+- (NSInteger)indexForContentsView:(NSView*)view;
 @end
 
 @implementation TabStripController
@@ -136,6 +139,28 @@ static const float kUseFullAvailableWidth = -1.0;
   } else {
     [switchView_ addSubview:newView];
   }
+
+  // Make sure the new tabs's sheets are visible (necessary when a background
+  // tab opened a sheet while it was in the background and now becomes active).
+  TabContents* newTab = tabModel_->GetTabContentsAt(index);
+  DCHECK(newTab);
+  if (newTab) {
+    TabContents::ConstrainedWindowList::iterator it, end;
+    end = newTab->constrained_window_end();
+    NSWindowController* controller = [[newView window] windowController];
+    DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
+
+    for (it = newTab->constrained_window_begin(); it != end; ++it) {
+      ConstrainedWindow* constrainedWindow = *it;
+      static_cast<ConstrainedWindowMac*>(constrainedWindow)->Realize(
+          static_cast<BrowserWindowController*>(controller));
+    }
+  }
+
+  // Tell per-tab sheet manager about currently selected tab.
+  if (sheetController_.get()) {
+    [sheetController_ setActiveView:newView];
+  }
 }
 
 // Create a new tab view and set its cell correctly so it draws the way we want
@@ -168,6 +193,18 @@ static const float kUseFullAvailableWidth = -1.0;
   }
   return -1;
 }
+
+// Returns the index of the contents subview |view|. Returns -1 if not present.
+- (NSInteger)indexForContentsView:(NSView*)view {
+  NSInteger index = 0;
+  for (TabContentsController* current in tabContentsArray_.get()) {
+    if ([current view] == view)
+      return index;
+    ++index;
+  }
+  return -1;
+}
+
 
 // Returns the view at the given index, using the array of TabControllers to
 // get the associated view. Returns nil if out of range.
@@ -781,5 +818,70 @@ static const float kUseFullAvailableWidth = -1.0;
 
   [tabView_ setSubviews:subviews];
 }
+
+- (GTMWindowSheetController*)sheetController {
+  if (!sheetController_.get())
+    sheetController_.reset([[GTMWindowSheetController alloc]
+        initWithWindow:[switchView_ window] delegate:self]);
+  return sheetController_.get();
+}
+
+- (void)gtm_systemRequestsVisibilityForView:(NSView*)view {
+  // This implementation is required by GTMWindowSheetController.
+
+  // Raise window...
+  [[switchView_ window] makeKeyAndOrderFront:self];
+
+  // ...and raise a tab with a sheet.
+  NSInteger index = [self indexForContentsView:view];
+  DCHECK(index >= 0);
+  if (index >= 0)
+    tabModel_->SelectTabContentsAt(index, false /* not a user gesture */);
+}
+
+- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
+  // TODO(thakis, avi): Figure out how to make this work when tabs are dragged
+  // out or if fullscreen mode is toggled.
+
+  // View hierarchy of the contents view:
+  // NSView  -- switchView, same for all tabs
+  // +-  NSView  -- TabContentsController's view
+  //     +- NSBox
+  //        +- TabContentsViewCocoa
+  // We use the TabContentsController's view in |swapInTabAtIndex|, so we have
+  // to pass it to the sheet controller here.
+  NSView* tabContentsView =
+      [[window->owner()->GetNativeView() superview] superview];
+  window->delegate()->RunSheet([self sheetController], tabContentsView);
+
+  // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
+  // between windows. Until then, we have to prevent having to move a tabsheet
+  // between windows, e.g. no tearing off of tabs.
+  NSInteger index = [self indexForContentsView:tabContentsView];
+  BrowserWindowController* controller =
+      (BrowserWindowController*)[[switchView_ window] windowController];
+  DCHECK(controller != nil);
+  DCHECK(index >= 0);
+  if (index >= 0) {
+    [controller setTab:[self viewAtIndex:index] isDraggable:NO];
+  }
+}
+
+- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
+  NSView* tabContentsView =
+      [[window->owner()->GetNativeView() superview] superview];
+
+  // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
+  // between windows. Until then, we have to prevent having to move a tabsheet
+  // between windows, e.g. no tearing off of tabs.
+  NSInteger index = [self indexForContentsView:tabContentsView];
+  BrowserWindowController* controller =
+      (BrowserWindowController*)[[switchView_ window] windowController];
+  DCHECK(index >= 0);
+  if (index >= 0) {
+    [controller setTab:[self viewAtIndex:index] isDraggable:YES];
+  }
+}
+
 
 @end

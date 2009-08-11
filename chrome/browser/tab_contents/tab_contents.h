@@ -337,7 +337,6 @@ class TabContents : public PageNavigator,
 
   // Window management ---------------------------------------------------------
 
-#if defined(OS_WIN) || defined(OS_LINUX)
   // Create a new window constrained to this TabContents' clip and visibility.
   // The window is initialized by using the supplied delegate to obtain basic
   // window characteristics, and the supplied view for the content. The window
@@ -345,7 +344,6 @@ class TabContents : public PageNavigator,
   // within the contents.
   ConstrainedWindow* CreateConstrainedDialog(
       ConstrainedWindowDelegate* delegate);
-#endif
 
   // Adds a new tab or window with the given already-created contents
   void AddNewContents(TabContents* new_contents,
@@ -365,6 +363,16 @@ class TabContents : public PageNavigator,
 
   // Returns the number of constrained windows in this tab.  Used by tests.
   size_t constrained_window_count() { return child_windows_.size(); }
+
+  typedef std::vector<ConstrainedWindow*> ConstrainedWindowList;
+
+  // Return an iterator for the first constrained window in this tab contents.
+  ConstrainedWindowList::iterator constrained_window_begin()
+  { return child_windows_.begin(); }
+
+  // Return an iterator for the last constrained window in this tab contents.
+  ConstrainedWindowList::iterator constrained_window_end()
+  { return child_windows_.end(); }
 
   // Views and focus -----------------------------------------------------------
   // TODO(brettw): Most of these should be removed and the caller should call
@@ -660,7 +668,6 @@ class TabContents : public PageNavigator,
   // up at the next animation step if the throbber is going.
   void SetNotWaitingForResponse() { waiting_for_response_ = false; }
 
-  typedef std::vector<ConstrainedWindow*> ConstrainedWindowList;
   ConstrainedWindowList child_windows_;
 
   // Expires InfoBars that need to be expired, according to the state carried

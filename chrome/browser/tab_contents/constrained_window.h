@@ -19,9 +19,8 @@ typedef views::WindowDelegate ConstrainedWindowDelegate;
 class ConstrainedWindowGtkDelegate;
 typedef ConstrainedWindowGtkDelegate ConstrainedWindowDelegate;
 #elif defined(OS_MACOSX)
-// TODO(port): Change this type when Mac gets ConstrainedWindows. It is here
-// only to make things compile. There is no user or consumer of this type.
-typedef void* ConstrainedWindowDelegate;
+class ConstrainedWindowMacDelegate;
+typedef ConstrainedWindowMacDelegate ConstrainedWindowDelegate;
 #endif
 
 class TabContents;

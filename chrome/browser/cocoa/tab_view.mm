@@ -86,6 +86,17 @@ static const CGFloat kControlPoint2Multiplier = 3.0/8.0;
   return nil;
 }
 
+// Returns |YES| if this tab can be torn away into a new window.
+- (BOOL)canBeDragged {
+  NSWindowController *controller = [sourceWindow_ windowController];
+  if ([controller isKindOfClass:[TabWindowController class]]) {
+    TabWindowController* realController =
+        static_cast<TabWindowController*>(controller);
+    return [realController isTabDraggable:self];
+  }
+  return YES;
+}
+
 // Handle clicks and drags in this button. We get here because we have
 // overridden acceptsFirstMouse: and the click is within our bounds.
 // TODO(pinkerton/alcor): This routine needs *a lot* of work to marry Cole's
@@ -124,7 +135,8 @@ static const double kDragStartDistance = 3.0;
   // unit tests might have |-numberOfTabs| reporting zero since the model
   // won't be fully hooked up. We need to be prepared for that and not send
   // them into the "magnetic" codepath.
-  isTheOnlyTab_ = [sourceController_ numberOfTabs] <= 1;
+  moveWindowOnDrag_ =
+      [sourceController_ numberOfTabs] <= 1 || ![self canBeDragged];
 
   dragOrigin_ = [NSEvent mouseLocation];
 
@@ -148,11 +160,20 @@ static const double kDragStartDistance = 3.0;
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent {
+  // Special-case this to keep the logic below simpler.
+  if (moveWindowOnDrag_) {
+    NSPoint thisPoint = [NSEvent mouseLocation];
+    NSPoint origin = sourceWindowFrame_.origin;
+    origin.x += (thisPoint.x - dragOrigin_.x);
+    origin.y += (thisPoint.y - dragOrigin_.y);
+    [sourceWindow_ setFrameOrigin:NSMakePoint(origin.x, origin.y)];
+    return;
+  }
+
   // First, go through the magnetic drag cycle. We break out of this if
-  // "stretchiness" ever exceeds the a set amount.
+  // "stretchiness" ever exceeds a set amount.
   tabWasDragged_ = YES;
 
-  if (isTheOnlyTab_) draggingWithinTabStrip_ = NO;
   if (draggingWithinTabStrip_) {
     NSRect frame = [self frame];
     NSPoint thisPoint = [NSEvent mouseLocation];
@@ -190,7 +211,6 @@ static const double kDragStartDistance = 3.0;
   // appropriate class, and visible (obviously).
   if (![targets count]) {
     for (NSWindow* window in [NSApp windows]) {
-      if (window == sourceWindow_ && isTheOnlyTab_) continue;
       if (window == dragWindow_) continue;
       if (![window isVisible]) continue;
       NSWindowController *controller = [window windowController];
@@ -235,16 +255,13 @@ static const double kDragStartDistance = 3.0;
 
   // Create or identify the dragged controller.
   if (!draggedController_) {
-    if (isTheOnlyTab_) {
-      draggedController_ = sourceController_;
-      dragWindow_ = [draggedController_ window];
-    } else {
-      // Detach from the current window and put it in a new window.
-      draggedController_ = [sourceController_ detachTabToNewWindow:self];
-      dragWindow_ = [draggedController_ window];
-      [dragWindow_ setAlphaValue:0.0];
-    }
+    // Detach from the current window and put it in a new window.
+    draggedController_ = [sourceController_ detachTabToNewWindow:self];
+    dragWindow_ = [draggedController_ window];
+    [dragWindow_ setAlphaValue:0.0];
 
+    // If dragging the tab only moves the current window, do not show overlay
+    // so that sheets stay on top of the window.
     // Bring the target window to the front and make sure it has a border.
     [dragWindow_ setLevel:NSFloatingWindowLevel];
     [dragWindow_ orderFront:nil];
@@ -255,10 +272,8 @@ static const double kDragStartDistance = 3.0;
     [draggedController_ showNewTabButton:NO];
     //if (![targets count])
     //  [dragOverlay_ setHasShadow:NO];
-    if (!isTheOnlyTab_) {
-      tearTime_ = [NSDate timeIntervalSinceReferenceDate];
-      tearOrigin_ = sourceWindowFrame_.origin;
-    }
+    tearTime_ = [NSDate timeIntervalSinceReferenceDate];
+    tearOrigin_ = sourceWindowFrame_.origin;
   }
 
   float tearProgress = [NSDate timeIntervalSinceReferenceDate] - tearTime_;
@@ -348,6 +363,10 @@ static const double kDragStartDistance = 3.0;
   // The drag/click is done. If the user dragged the mouse, finalize the drag
   // and clean up.
 
+  // Special-case this to keep the logic below simpler.
+  if (moveWindowOnDrag_)
+    return;
+
   // We are now free to re-display the new tab button in the window we're
   // dragging. It will show when the next call to -layoutTabs (which happens
   // indrectly by several of the calls below, such as removing the placeholder).
@@ -369,6 +388,7 @@ static const double kDragStartDistance = 3.0;
                     fromController:draggedController_];
     [targetController_ showWindow:nil];
   } else {
+    // Tab dragging did move window only.
     [dragWindow_ setAlphaValue:1.0];
     [dragOverlay_ setHasShadow:NO];
     [dragWindow_ setHasShadow:YES];

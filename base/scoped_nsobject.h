@@ -73,4 +73,60 @@ class scoped_nsobject {
   DISALLOW_COPY_AND_ASSIGN(scoped_nsobject);
 };
 
+// Specialization to make scoped_nsobject<id> work.
+template<>
+class scoped_nsobject<id> {
+ public:
+  typedef id element_type;
+
+  explicit scoped_nsobject(id object = nil)
+      : object_(object) {
+  }
+
+  ~scoped_nsobject() {
+    [object_ release];
+  }
+
+  void reset(id object = nil) {
+    [object_ release];
+    object_ = object;
+  }
+
+  bool operator==(id that) const {
+    return object_ == that;
+  }
+
+  bool operator!=(id that) const {
+    return object_ != that;
+  }
+
+  operator id() const {
+    return object_;
+  }
+
+  id get() const {
+    return object_;
+  }
+
+  void swap(scoped_nsobject& that) {
+    id temp = that.object_;
+    that.object_ = object_;
+    object_ = temp;
+  }
+
+  // scoped_nsobject<>::release() is like scoped_ptr<>::release.  It is NOT
+  // a wrapper for [object_ release].  To force a scoped_nsobject<> object to
+  // call [object_ release], use scoped_nsobject<>::reset().
+  id release() {
+    id temp = object_;
+    object_ = nil;
+    return temp;
+  }
+
+ private:
+  id object_;
+
+  DISALLOW_COPY_AND_ASSIGN(scoped_nsobject);
+};
+
 #endif  // BASE_SCOPED_NSOBJECT_H_

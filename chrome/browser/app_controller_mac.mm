@@ -18,6 +18,8 @@
 #include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
+#import "chrome/browser/cocoa/browser_window_cocoa.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/history_menu_bridge.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
@@ -27,6 +29,7 @@
 #import "chrome/browser/cocoa/ui_localizer.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -106,6 +109,45 @@
 
   // Set up the command updater for when there are no windows open
   [self initMenuState];
+}
+
+// Checks if there are any tabs with sheets open, and if so, raises one of
+// the tabs with a sheet and returns NO.
+- (BOOL)shouldQuitWithOpenPerTabSheets {
+  BrowserList::const_iterator it = BrowserList::begin();
+  for (; it != BrowserList::end(); ++it) {
+    Browser* browser = *it;
+    BrowserWindowCocoa* window =
+        static_cast<BrowserWindowCocoa*>(browser->window());
+
+    // Could do this more nicely with a method e.g. on BWC. If I decide for
+    // keeping it this way, at least add a DCHECK().
+    BrowserWindowController* controller =
+        (BrowserWindowController*)[window->GetNativeHandle() windowController];
+
+    if (![controller shouldCloseWithOpenPerTabSheets])
+      return NO;
+  }
+
+  return YES;
+}
+
+// We do not use the normal application teardown process -- this function is
+// not called by the system but by us in |quit:|. |NSTerminateLater| is not a
+// return value that is supported by |quit:|.
+- (NSApplicationTerminateReply)applicationShouldTerminate:
+    (NSApplication *)sender {
+  // Do not quit if any per-tab sheets are open, as required by
+  // GTMWindowSheetController.
+  if (![self shouldQuitWithOpenPerTabSheets])
+      return NSTerminateCancel;
+
+  // Check for in-progress downloads, and prompt the user if they really want to
+  // quit (and thus cancel the downloads).
+  if (![self shouldQuitWithInProgressDownloads])
+    return NSTerminateCancel;
+
+  return NSTerminateNow;
 }
 
 // Called when the app is shutting down. Clean-up as appropriate.
@@ -338,6 +380,9 @@
 // the app and leave things on the stack in an unfinalized state. We need to
 // post a quit message to our run loop so the stack can gracefully unwind.
 - (IBAction)quit:(id)sender {
+  if ([self applicationShouldTerminate:NSApp] == NSTerminateCancel)
+    return;
+
   // TODO(pinkerton):
   // since we have to roll it ourselves, ask the delegate (ourselves, really)
   // if we should terminate. For example, we might not want to if the user
@@ -345,11 +390,6 @@
   // require posting UI and may require spinning up another run loop to
   // handle it. If it says to continue, post the quit message, otherwise
   // go back to normal.
-
-  // Check for in-progress downloads, and prompt the user if they really want to
-  // quit (and thus cancel the downloads).
-  if (![self shouldQuitWithInProgressDownloads])
-    return;
 
   NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
   [em removeEventHandlerForEventClass:kInternetEventClass
