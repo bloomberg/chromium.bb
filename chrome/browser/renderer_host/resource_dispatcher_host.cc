@@ -256,6 +256,7 @@ ResourceDispatcherHost::ResourceDispatcherHost(MessageLoop* io_loop)
       safe_browsing_(new SafeBrowsingService),
       webkit_thread_(new WebKitThread),
       request_id_(-1),
+      plugin_service_(PluginService::GetInstance()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_runner_(this)),
       is_shutdown_(false),
       max_outstanding_requests_cost_per_process_(
@@ -467,7 +468,7 @@ void ResourceDispatcherHost::BeginRequest(
   // requests.  Does nothing if they are already loaded.
   // TODO(mpcomplete): This takes 200 ms!  Investigate parallelizing this by
   // starting the load earlier in a BG thread.
-  PluginService::GetInstance()->LoadChromePlugins(this);
+  plugin_service_->LoadChromePlugins(this);
 
   // Construct the event handler.
   scoped_refptr<ResourceHandler> handler;
@@ -667,7 +668,7 @@ void ResourceDispatcherHost::BeginDownload(const GURL& url,
 
   // Ensure the Chrome plugins are loaded, as they may intercept network
   // requests.  Does nothing if they are already loaded.
-  PluginService::GetInstance()->LoadChromePlugins(this);
+  plugin_service_->LoadChromePlugins(this);
   URLRequest* request = new URLRequest(url, this);
 
   request_id_--;
@@ -733,7 +734,7 @@ void ResourceDispatcherHost::BeginSaveFile(const GURL& url,
 
   // Ensure the Chrome plugins are loaded, as they may intercept network
   // requests.  Does nothing if they are already loaded.
-  PluginService::GetInstance()->LoadChromePlugins(this);
+  plugin_service_->LoadChromePlugins(this);
 
   scoped_refptr<ResourceHandler> handler =
       new SaveFileResourceHandler(process_id,
@@ -1257,6 +1258,53 @@ void ResourceDispatcherHost::BeginRequestInternal(URLRequest* request) {
         TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
         this, &ResourceDispatcherHost::UpdateLoadStates);
   }
+}
+
+// This test mirrors the decision that WebKit makes in
+// WebFrameLoaderClient::dispatchDecidePolicyForMIMEType.
+// static.
+bool ResourceDispatcherHost::ShouldDownload(
+    const std::string& mime_type, const std::string& content_disposition) {
+  std::string type = StringToLowerASCII(mime_type);
+  std::string disposition = StringToLowerASCII(content_disposition);
+
+  // First, examine content-disposition.
+  if (!disposition.empty()) {
+    bool should_download = true;
+
+    // Some broken sites just send ...
+    //    Content-Disposition: ; filename="file"
+    // ... screen those out here.
+    if (disposition[0] == ';')
+      should_download = false;
+
+    if (disposition.compare(0, 6, "inline") == 0)
+      should_download = false;
+
+    // Some broken sites just send ...
+    //    Content-Disposition: filename="file"
+    // ... without a disposition token... Screen those out.
+    if (disposition.compare(0, 8, "filename") == 0)
+      should_download = false;
+
+    // Also in use is Content-Disposition: name="file"
+    if (disposition.compare(0, 4, "name") == 0)
+      should_download = false;
+
+    // We have a content-disposition of "attachment" or unknown.
+    // RFC 2183, section 2.8 says that an unknown disposition
+    // value should be treated as "attachment".
+    if (should_download)
+      return true;
+  }
+
+  // MIME type checking.
+  if (net::IsSupportedMimeType(type))
+    return false;
+
+  // Finally, check the plugin service.
+  bool allow_wildcard = false;
+  return !plugin_service_->HavePluginFor(type, allow_wildcard);
 }
 
 bool ResourceDispatcherHost::PauseRequestIfNeeded(ExtraRequestInfo* info) {

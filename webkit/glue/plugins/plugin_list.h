@@ -74,9 +74,6 @@ class PluginList {
   // the first time.
   static PluginList* Singleton();
 
-  // Returns true iff the plugin list has been loaded already.
-  static bool PluginsLoaded();
-
   // Clear the plugins_loaded_ bit to force a refresh next time we retrieve
   // plugins.
   static void ResetPluginsLoaded();

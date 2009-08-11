@@ -141,8 +141,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // Not handled in the IO thread on Mac.
   void OnGetScreenInfo(gfx::NativeViewId window, IPC::Message* reply);
 #endif
-  void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
-  void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
+  void OnGetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
   void OnGetPluginPath(const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,

@@ -45,11 +45,7 @@ class PluginService
   // Returns the PluginService singleton.
   static PluginService* GetInstance();
 
-  // Returns true iff the plugin list has been loaded.
-  bool PluginsLoaded();
-
-  // Loads the plugin list.  Must be called on the file thread only since it may
-  // have to crawl the disk.
+  // Gets the list of available plugins.
   void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
 
   // Load all the plugins that should be loaded for the lifetime of the browser

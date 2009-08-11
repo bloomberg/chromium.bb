@@ -33,11 +33,6 @@ PluginList* PluginList::Singleton() {
   return singleton;
 }
 
-//static
-bool PluginList::PluginsLoaded() {
-  return g_singleton.Pointer()->plugins_loaded_;
-}
-
 // static
 void PluginList::ResetPluginsLoaded() {
   // We access the singleton directly, and not through Singleton(), since
