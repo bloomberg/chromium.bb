@@ -31,7 +31,7 @@
 #ifndef WebFontInfo_h
 #define WebFontInfo_h
 
-#include "../WebString.h"
+#include "../WebCString.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -47,7 +47,7 @@ namespace WebKit {
         //
         // Returns: the font family or an empty string if the request could not be
         // satisfied.
-        WEBKIT_API static WebString familyForChars(const WebUChar* characters, size_t numCharacters);
+        WEBKIT_API static WebCString familyForChars(const WebUChar* characters, size_t numCharacters);
     };
 
 } // namespace WebKit

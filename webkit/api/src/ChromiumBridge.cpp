@@ -208,8 +208,13 @@ String ChromiumBridge::getFontFamilyForCharacters(const UChar* characters, size_
 {
     if (webKitClient()->sandboxSupport())
         return webKitClient()->sandboxSupport()->getFontFamilyForCharacters(characters, numCharacters);
-    else
-        return WebFontInfo::familyForChars(characters, numCharacters);
+    else {
+        WebCString family = WebFontInfo::familyForChars(characters, numCharacters);
+        if (family.data())
+            return WebString::fromUTF8(family.data());
+        else
+            return WebString();
+    }
 }
 #endif
 

@@ -21,38 +21,20 @@
 #include "base/unix_domain_socket_posix.h"
 #include "chrome/common/sandbox_methods_linux.h"
 #include "webkit/api/public/gtk/WebFontInfo.h"
-#include "webkit/api/public/WebData.h"
-#include "webkit/api/public/WebKit.h"
-#include "webkit/api/public/WebKitClient.h"
-#include "webkit/api/public/WebStorageArea.h"
-#include "webkit/api/public/WebStorageNamespace.h"
 
 #include "SkFontHost_fontconfig_direct.h"
 #include "SkFontHost_fontconfig_ipc.h"
 
-using WebKit::WebClipboard;
-using WebKit::WebData;
+using WebKit::WebCString;
 using WebKit::WebFontInfo;
-using WebKit::WebKitClient;
-using WebKit::WebLocalizedString;
-using WebKit::WebMimeRegistry;
-using WebKit::WebPluginInfo;
-using WebKit::WebPluginListBuilder;
-using WebKit::WebSandboxSupport;
-using WebKit::WebStorageArea;
-using WebKit::WebStorageNamespace;
-using WebKit::WebString;
-using WebKit::WebThemeEngine;
 using WebKit::WebUChar;
-using WebKit::WebURL;
-using WebKit::WebURLLoader;
 
 // http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
 
 // BEWARE: code in this file run across *processes* (not just threads).
 
 // This code runs in a child process
-class SandboxIPCProcess : public WebKitClient {
+class SandboxIPCProcess  {
  public:
   // lifeline_fd: this is the read end of a pipe which the browser process
   //   holds the other end of. If the browser process dies, it's descriptors are
@@ -64,8 +46,6 @@ class SandboxIPCProcess : public WebKitClient {
       : lifeline_fd_(lifeline_fd),
         browser_socket_(browser_socket),
         font_config_(new FontConfigDirect()) {
-    WebKit::initialize(this);
-
     base::InjectiveMultimap multimap;
     multimap.push_back(base::InjectionArc(0, lifeline_fd, false));
     multimap.push_back(base::InjectionArc(0, browser_socket, false));
@@ -104,93 +84,6 @@ class SandboxIPCProcess : public WebKitClient {
       }
     }
   }
-
-  // ---------------------------------------------------------------------------
-  // WebKitClient impl...
-
-  virtual WebClipboard* clipboard() { return NULL; }
-  virtual WebMimeRegistry* mimeRegistry() { return NULL; }
-  virtual WebSandboxSupport* sandboxSupport() { return NULL; }
-  virtual bool sandboxEnabled() { return true; }
-  virtual WebThemeEngine* themeEngine() { return NULL; }
-
-  virtual WebStorageNamespace* createLocalStorageNamespace(
-      const WebString& path) { return 0; }
-  virtual WebStorageNamespace* createSessionStorageNamespace() { return 0; }
-
-  virtual unsigned long long visitedLinkHash(const char*, size_t) { return 0; }
-  virtual bool isLinkVisited(unsigned long long) { return false; }
-
-  virtual WebKit::WebMessagePortChannel* createMessagePortChannel() {
-    return NULL;
-  }
-
-  virtual void setCookies(const WebURL&, const WebURL&, const WebString&) { }
-  virtual WebString cookies(const WebURL&, const WebURL&) {
-    return WebString();
-  }
-
-  virtual void prefetchHostName(const WebString&) { }
-
-  virtual WebURLLoader* createURLLoader() { return NULL; }
-
-  virtual void getPluginList(bool refresh, WebPluginListBuilder*) { }
-
-  virtual void decrementStatsCounter(const char*) { }
-  virtual void incrementStatsCounter(const char*) { }
-
-  virtual void traceEventBegin(const char* name, void*, const char*) { }
-  virtual void traceEventEnd(const char* name, void*, const char*) { }
-
-  virtual WebData loadResource(const char*) { return WebData(); }
-  virtual WebString queryLocalizedString(WebLocalizedString::Name) {
-    return WebString();
-  }
-  virtual WebString queryLocalizedString(WebLocalizedString::Name, int) {
-    return WebString();
-  }
-
-  virtual void suddenTerminationChanged(bool) { }
-
-  virtual WebString defaultLocale() { return WebString(); }
-
-  virtual double currentTime() { return 0; }
-
-  virtual void setSharedTimerFiredFunction(void (*)()) { }
-  virtual void setSharedTimerFireTime(double) { }
-  virtual void stopSharedTimer() { }
-
-  virtual void callOnMainThread(void (*)()) { }
-
-  virtual base::PlatformFile databaseOpenFile(
-    const WebString& fileName, int desiredFlags) {
-      return base::kInvalidPlatformFileValue;
-  }
-  virtual bool databaseDeleteFile(const WebString& fileName) {
-    return false;
-  }
-  virtual long databaseGetFileAttributes(const WebString& fileName) {
-    return -1;
-  }
-  virtual long long databaseGetFileSize(const WebString& fileName) {
-    return 0;
-  }
-
-  bool fileExists(const WebString& path) { return false; }
-  bool deleteFile(const WebString& path) { return false; }
-  bool deleteEmptyDirectory(const WebString& path) { return false; }
-  bool getFileSize(const WebString& path, long long& result) {
-    return false;
-  }
-  bool getFileModificationTime(const WebString& path, time_t& result) {
-    return false;
-  }
-  WebString directoryName(const WebString& path) { return WebString(); }
-  WebString pathByAppendingComponent(const WebString& path,
-                                     const WebString& component) {
-    return WebString();
-  }
-  bool makeAllDirectories(const WebString& path) { return false; }
 
  private:
   // ---------------------------------------------------------------------------
@@ -318,11 +211,14 @@ class SandboxIPCProcess : public WebKitClient {
       chars[i] = c;
     }
 
-    const WebString family = WebFontInfo::familyForChars(chars.get(), num_chars);
-    const std::string family_utf8 = UTF16ToUTF8(family);
+    WebCString family = WebFontInfo::familyForChars(chars.get(), num_chars);
 
     Pickle reply;
-    reply.WriteString(family_utf8);
+    if (family.data()) {
+      reply.WriteString(family.data());
+    } else {
+      reply.WriteString("");
+    }
     SendRendererReply(fds, reply, -1);
   }
 
