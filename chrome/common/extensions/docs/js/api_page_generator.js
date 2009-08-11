@@ -21,6 +21,9 @@ var REQUEST_TIMEOUT = 2000;
 function staticResource(name) { return "static/" + name + ".html"; }
 
 // Base name of this page. (i.e. "tabs", "overview", etc...).
+var pageBase;
+
+// The name of this page that will be shown on the page in various places.
 var pageName;
 
 // Data to feed as context into the template.
@@ -52,13 +55,13 @@ function extend(obj, obj2) {
  */
 function renderPage() {
   var pathParts = document.location.href.split(/\/|\./);
-  pageName = pathParts[pathParts.length - 2];
-  if (!pageName) {
+  pageBase = pathParts[pathParts.length - 2];
+  if (!pageBase) {
     alert("Empty page name for: " + document.location.href);
     return;
   }
 
-  pageName = pageName.replace(/([A-Z])/g, " $1");
+  pageName = pageBase.replace(/([A-Z])/g, " $1");
   pageName = pageName.substring(0, 1).toUpperCase() + pageName.substring(1);
 
   // Fetch the api template and insert into the <body>.
@@ -72,7 +75,7 @@ function renderPage() {
 
 function fetchStatic() {
   // Fetch the static content and insert into the "static" <div>.
-  fetchContent(staticResource(pageName), function(overviewContent) {
+  fetchContent(staticResource(pageBase), function(overviewContent) {
     document.getElementById("static").innerHTML = overviewContent;
     fetchSchema();
 
@@ -153,7 +156,7 @@ function renderTemplate(schemaContent) {
   });
 
   schema.each(function(module) {
-    if (module.namespace == pageName) {
+    if (module.namespace == pageBase) {
       // This page is an api page. Setup types and apiDefinition.
       pageData.apiDefinition = module;
       preprocessApi(pageData, schema);

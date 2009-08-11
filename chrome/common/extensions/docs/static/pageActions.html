@@ -1,5 +1,28 @@
 <!-- BEGIN AUTHORED CONTENT -->
-<p class="todo"> 
-[PENDING: API Module Overview Goes Here]
+<p>Page actions are a simple way to represent actions that can be taken on a page ("Email this page", "Share with Facebook", etc).</p>
+
+<h3>Status</h3>
+<p>First version implemented.</p>
+
+<h3>User interface</h3>
+<p>Page actions are displayed in the right side of the Omnibox. New actions get added to the left of the star:</p>
+
+<img src="images/pageaction-omnibar-icons.png">
+
+<p>A maximum of 8 (?) actions can appear at the top level, any additional ones overflow into a drop-down menu:</p>
+
+<h3>Manifest</h3>
+
+<p>Developers can include page actions in the manifest using the following syntax:</p>
+
+<pre>"page_actions": [
+    {
+      "id": "myaction",  // chosen by developer, and should be unique within their extension
+      "name": "Do action",
+      "icons": ["favicon.png", "favicon2.png"]
+    }
+  ]</pre>
+
+<p>Supported icon image formats include for example png, bmp, ico, jpg, gif. If an image larger than 16x16 is specified, it will be resized to fit.</p>
 </p>
 <!-- END AUTHORED CONTENT -->

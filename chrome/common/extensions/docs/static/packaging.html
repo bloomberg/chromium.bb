@@ -1,0 +1,44 @@
+<p>Extensions are packaged as signed zip files with the file extension "crx" (eg myextension.crx). Each extension has its own unique key pair. The public key is used as the unique identifier for the extension and the private key is kept private and used to sign each version of the extension.</p>
+
+<h3>Packaging an Extension</h3>
+
+<p>To package an extension:</p>
+<ol>
+<li>Close all your Chrome windows</li>
+<li>Open a command line and type: <pre>&lt;path-to-chrome&gt;\chrome.exe --pack-extension=&lt;path\to\extension\folder&gt;</li>
+</ol>
+
+<img src="images/create-package.png">
+
+<h4>Note</h4>
+<ul>
+<li>In Windows XP, you can find <path-to-chrome> by right-clicking on your Google Chrome shortcut and selecting Properties -> Shortcut and then pressing Find Target.</li>
+<li>In Vista, you can do the same by right-clicking your Google Chrome shortcut and selecting Open File Location.</li>
+</ul>
+
+<p>The packager creates two files: a crx file (myextension.crx), which is the actual extension that can be installed, and a private key (myextension.pem). You should keep the private key secret and in a safe place.</p>
+
+<h4>IMPORTANT: Do not lose the private key. You will need it later for two things</h4>
+<ol>
+<li>If you want to create a new version of the extension, you'll need the original private key (see below).<li>
+<li>In the future, Google will implement a gallery service for extensions. You'll need your private key if you want to import an existing extension into that gallery.</li>
+</ol>
+
+<h3>Updating an Extension</h3>
+
+<p>To create an updated version of your extension:</p>
+<ol>
+<li>Increase the version number in manifest.json</li>
+<li>Close all your Chrome windows</li>
+<li>Run <path-to-chrome>\chrome.exe --pack-extension=<path\to\extension\folder> --pack-extension-key=<path\to\extension-key>, specifying the private key file you created earlier for the second parameter.</li>
+</ol>
+
+<p>If the updated extension is successfully packaged, you'll see  a dialog like this</p>
+
+<img src="images/package-success.png">
+
+<h3>Tips and Tricks</h3>
+
+<ul>
+<li>In build 3.0.195 and later, you can use the --no-message-box command line flag to suppress the dialog. This is useful if you're packing extensions in non-interactive scripts.</li>
+</ul>

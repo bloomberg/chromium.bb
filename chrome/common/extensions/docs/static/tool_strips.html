@@ -1,0 +1,44 @@
+<!-- BEGIN AUTHORED CONTENT -->
+<p>Toolstrips allow you to add UI to Chrome's toolbar area. Toolstrips are nothing more than (very small) HTML pages, so anything you can do with HTML/CSS/JavaScript, you can do with toolstrips.<p>
+
+<h3>Status</h3>
+<p>Implementation in progress.</p>
+
+<h3>Details</h3>
+<p>Register your toolstrips in the extension manifest, like this:</p>
+
+<pre>{
+  "name": "My First Extension",
+  "version": "1.0",
+  "description": "The first extension that I made.",
+  "toolstrips": [
+    "one_toolstrip.html",
+    "two_toolstrip.html"
+  ]
+}</pre>
+
+<p>You can create buttons that look like the bookmark bar buttons using this template:</p>
+
+<pre>&lt;div class="toolstrip-button"&gt;
+  &lt;!-- Image is optional and should be a 16x16 icon. --&gt;
+  &lt;img src="path/to/some_icon.png">
+  &lt;span&gt;My Button&lt;/span&gt;
+&lt;/div&gt;</pre>
+
+<h3>Debugging Tips</h3>
+
+<ul>
+<li>You can right click on a toolstrip to get a web inspector.</li>
+<li>alert(), prompt(), and confirm() don't work yet. Sorry about that.</li>
+<li>You can run toolstrips in the main content area by loading their URL, which would be something like chrome-extension://0000000000000000000000000000000000000000/my_toolstrip.html</li>
+</ul>
+
+<h3>Design Tips</h3>
+
+<ul>
+<li>Try not to use too much space. Toolbar real estate is precious and users tend to prefer extensions to use as little of it as possible.</li>
+<li>The toolbar automatically detects how much space a toolstrip needs and reflows. So you can resize your toolstrip dynamically if you need a little more room temporarily.</li>
+<li>If you need to do more extensive UI, use the tab contents area or a pop up window.</li>
+<li>Remember that there can be multiple instances of a given toolstrip page running at one time. Each browser window has its own toolstrip. If you need long-running application logic, try Background Pages.</li>
+</ul>
+<!-- END AUTHORED CONTENT -->

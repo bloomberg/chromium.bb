@@ -1,0 +1,40 @@
+<!-- BEGIN AUTHORED CONTENT -->
+<p>A common need for extensions is to have a single long-running script to manage some task or state. Toolstrips don't quite fit this need, because there can be multiple toolstrips active at any one time (one per browser window). Background pages to the rescue.</p>
+
+<p>The background page is similar to a toolstrip, in that it is an HTML page that runs in the extension process. The difference is that the background page exists for the lifetime of your extension, and there is only one instance of it active at a time.</p>
+
+<h3>Status</h3>
+
+<p>Implemented.</p>
+
+<h3>Details</h3>
+
+<p>Register your background page in the extension manifest, like this:</p>
+
+<pre>{
+  "name": "My First Extension",
+  "version": "1.0",
+  "description": "The first extension that I made.",
+  "background_page": "background.html",
+  "toolstrips": ["toolstrip.html"]
+}</pre>
+
+<p>Your toolstrip will likely contain only the necessary code to display the toolstrip UI, with all your extension logic contained in the background page.  You can communicate between your various pages using direct script calls, similar to how frames can communicate.  The chrome.self.getViews() function returns a list of window objects for every active page belonging to your extension.</p>
+
+<h3>Example</h3>
+
+<pre>background_page.html (snippet):
+  function updateUI(checked) {
+    var views = chrome.self.getViews();
+    for (var i in views) {
+      if (views[i].enableCheckbox)
+        views[i].enableCheckbox(checked);
+    }
+  }
+
+toolstrip.html (snippet):
+  function enableCheckbox(checked) {
+    var elm = document.getElementById('checkbox');
+    elm.checked = checked;
+  }</pre>
+<!-- END AUTHORED CONTENT -->

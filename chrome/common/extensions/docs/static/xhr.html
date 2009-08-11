@@ -1,0 +1,16 @@
+<!-- BEGIN AUTHORED CONTENT -->
+<p>The standard XMLHttpRequest object can be used to communicate with multiple origins (ie domains) from an extension. You must pre-register the domains you want to talk to in the manifest, like so:</p>
+
+<pre>{
+  "name": "My First Extension",
+  "version": "1.0",
+  "description": "The first extension that I made.",
+  "permissions": [
+    "http://www.blogger.com",
+    "http://*.google.com"
+  ]
+}</pre>
+
+<h3>Status</h3>
+<p>Implemented, but we don't yet enforce the permissions; all origins are allowed for now.</p>
+<!-- END AUTHORED CONTENT -->
