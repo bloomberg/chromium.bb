@@ -1,25 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 # Copyright (c) 2009 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-# This script expects the following environment variables to be set.  Xcode
-# normally sets them:
-#
-# CONFIGURATION - Release or Debug; this script only operates when Release.
-# SRCROOT - /path/to/chrome/src/chrome
-# BUILT_PRODUTS_DIR - /path/to/chrome/src/xcodebuild/Release
-#
-# The script also takes a single argument defining the branding type.
-#
-# To test this script without running an entire build:
-#
-# cd /path/to/chrome/src/chrome
-# CONFIGURATION=Release \
-#     SRCROOT=$(pwd) \
-#     BUILT_PRODUCTS_DIR=$(pwd)/../xcodebuild/Release \
-#     ../build/mac/dump_app_syms Chromium
 
 # Make sure we got the header to write into passed to us
 if [ $# -ne 1 ]; then
@@ -42,43 +25,37 @@ SRC_APP_NAME=$("${BRAND_SCRIPT}" "${BUILD_BRANDING}" PRODUCT_FULLNAME)
 . "${TOP}/chrome/VERSION"
 
 BREAKPAD_DUMP_SYMS="${BUILT_PRODUCTS_DIR}/dump_syms"
+BREAKPAD_PRODUCT_ID="${BUILD_BRANDING}_Mac"
 FULL_VERSION="${MAJOR}.${MINOR}.${BUILD}.${PATCH}"
-ARCH="i386"
+SRC_APP_PATH="${BUILT_PRODUCTS_DIR}/${SRC_APP_NAME}.app"
+# Created by the build/mac/strip_from_xcode script.
+UNSTRIPPED_APP="${SRC_APP_PATH}.dSYM/Contents/Resources/DWARF/${SRC_APP_NAME}"
+APP_SYMBOL_FILE="${BUILT_PRODUCTS_DIR}/${SRC_APP_NAME}-${FULL_VERSION}-i386.breakpad"
 
-DSYM_TAR_PATH="${BUILT_PRODUCTS_DIR}/${SRC_APP_NAME}.dSYM.tar.bz2"
+# Only run dump_syms if the file has changed since we last did a dump.
+if [ "${UNSTRIPPED_APP}" -nt "${APP_SYMBOL_FILE}" ] ; then
+  "${BREAKPAD_DUMP_SYMS}" -a i386 "${UNSTRIPPED_APP}" > "${APP_SYMBOL_FILE}"
+fi
+APP_DSYM_NAME="${SRC_APP_NAME}.app.dSYM"
 
-declare -a DSYMS
+# Do the same thing for chrome_dll.
 
-for SRC_BUNDLE in "${SRC_APP_NAME}.app" \
-                  "${SRC_APP_NAME} Framework.framework" \
-                  "${SRC_APP_NAME} Helper.app" ; do
-  SRC_STEM=$(echo "${SRC_BUNDLE}" | sed -Ee 's/^(.*)\..*$/\1/')
-  SRC_BUNDLE_PATH="${BUILT_PRODUCTS_DIR}/${SRC_BUNDLE}"
-  DSYM_NAME="${SRC_BUNDLE}.dSYM"
-  DSYM_PATH="${BUILT_PRODUCTS_DIR}/${DSYM_NAME}"
-  DWARF_PATH="${DSYM_PATH}/Contents/Resources/DWARF/${SRC_STEM}"
-  BPAD_SYM_NAME="${SRC_STEM}-${FULL_VERSION}-${ARCH}.breakpad"
-  BPAD_SYM_PATH="${BUILT_PRODUCTS_DIR}/${BPAD_SYM_NAME}"
+SRC_DYLIB_NAME="${SRC_APP_NAME} Framework"
+SRC_DYLIB_PATH="${BUILT_PRODUCTS_DIR}/${SRC_DYLIB_NAME}.framework"
+UNSTRIPPED_DYLIB="${SRC_DYLIB_PATH}.dSYM/Contents/Resources/DWARF/${SRC_DYLIB_NAME}"
+DYLIB_SYMBOL_FILE="${BUILT_PRODUCTS_DIR}/${SRC_DYLIB_NAME}-${FULL_VERSION}-i386.breakpad"
+if [ "${UNSTRIPPED_DYLIB}" -nt "${DYLIB_SYMBOL_FILE}" ] ; then
+  "${BREAKPAD_DUMP_SYMS}" -a i386 "${UNSTRIPPED_DYLIB}" > "${DYLIB_SYMBOL_FILE}"
+fi
+DYLIB_DSYM_NAME="${SRC_DYLIB_NAME}.framework.dSYM"
 
-  # Only run dump_syms if the file has changed since the last dump.
-  if [ "${DWARF_PATH}" -nt "${BPAD_SYM_PATH}" ] ; then
-    "${BREAKPAD_DUMP_SYMS}" -a "${ARCH}" "${DWARF_PATH}" > "${BPAD_SYM_PATH}"
-  fi
+DSYM_TAR_PATH="${BUILT_PRODUCTS_DIR}/${APP_DSYM_NAME}.tar.bz2"
 
-  # Remove the .dSYM archive if the file has changed since the archive was
-  # last generated.  This will cause a new .dSYM archive to be created.
-  if [ "${DWARF_PATH}" -nt "${DSYM_TAR_PATH}" ] ; then
-    rm -f "${DSYM_TAR_PATH}"
-  fi
-
-  # Push the .dSYM bundle onto the DSYMS array so that it will be included in
-  # the .dSYM archive if a new one is needed
-  DSYMS[${#DSYMS[@]}]="${DSYM_NAME}"
-done
-
-# Create the archive of .dSYM bundles.
-if [ ! -e "${DSYM_TAR_PATH}" ] ; then
-  # Change directory so that absolute paths aren't included in the archive.
+# Make a .tar.bz2 out of the .dSYM
+if [ "${BUILT_PRODUCTS_DIR}/${APP_DSYM_NAME}" -nt "${DSYM_TAR_PATH}" ] ||
+   [ "${BUILT_PRODUCTS_DIR}/${DYLIB_DSYM_NAME}" -nt "${DSYM_TAR_PATH}" ] ; then
+  # Change directory so when building the tar, we don't include the build dir
+  # in the tar paths.
   (cd "${BUILT_PRODUCTS_DIR}" &&
-   tar --owner 0 --group 0 -jcf "${DSYM_TAR_PATH}" "${DSYMS[@]}")
+   tar -jcf "${DSYM_TAR_PATH}" "${APP_DSYM_NAME}" "${DYLIB_DSYM_NAME}")
 fi

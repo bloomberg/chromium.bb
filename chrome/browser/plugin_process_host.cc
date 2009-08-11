@@ -335,10 +335,11 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 
   // build command line for plugin, we have to quote the plugin's path to deal
   // with spaces.
-  std::wstring exe_path = GetChildPath();
-  if (exe_path.empty()) {
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  std::wstring exe_path =
+      browser_command_line.GetSwitchValue(switches::kBrowserSubprocessPath);
+  if (exe_path.empty() && !PathService::Get(base::FILE_EXE, &exe_path))
     return false;
-  }
 
   CommandLine cmd_line(exe_path);
   if (logging::DialogsAreSuppressed())
@@ -366,8 +367,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
     switches::kUseLowFragHeapCrt,
     switches::kEnableStatsTable,
   };
-
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {
     if (browser_command_line.HasSwitch(switch_names[i])) {

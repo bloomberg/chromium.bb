@@ -9,18 +9,14 @@ set -e
 # Pull off the optional args
 USE_BREAKPAD=0
 USE_KEYSTONE=0
-USE_SVN=1
 OPTERR=0
-while getopts ":b:k:s:" an_opt ; do
+while getopts ":b:k:" an_opt ; do
   case $an_opt in
     b)
       USE_BREAKPAD=$OPTARG
       ;;
     k)
       USE_KEYSTONE=$OPTARG
-      ;;
-    s)
-      USE_SVN=$OPTARG
       ;;
     \?)
       echo "Unknown option $OPTARG"
@@ -38,7 +34,7 @@ while getopts ":b:k:s:" an_opt ; do
 done
 shift $(($OPTIND - 1))
 
-# Make sure the branding argument was supplied.
+# Make sure we got the header to write into passed to us
 if [ $# -ne 1 ]; then
   echo "error: missing branding as an argument" >&2
   exit 1
@@ -49,7 +45,7 @@ fi
 # because:
 #
 # 1. Xcode wants to do the Info.plist work before it runs any build phases,
-#    this means if we were to generate a .h file for INFOPLIST_PREFIX_HEADER
+#    this means if we were to generate a .h file for INFOPLIST_PREFIX_HEADER 
 #    we'd have to put it in another target so it runs in time.
 # 2. Xcode also doesn't check to see if the header being used as a prefix for
 #    the Info.plist has changed.  So even if we updated it, it's only looking
@@ -67,37 +63,23 @@ BRAND_SCRIPT="${TOP}/build/branding_value.sh"
 set -x
 
 APP_NAME=$("${BRAND_SCRIPT}" "${BUILD_BRANDING}" PRODUCT_FULLNAME)
-SRC_APP_PATH="${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}"
+SRC_APP_PATH="${BUILT_PRODUCTS_DIR}/${APP_NAME}.app"
 
-if [ "${USE_SVN}" = "1" ] ; then
-  # Visible in the about:version page.
-  SVN_INFO=$(svn info "${TOP}")
-  SVN_REVISION=$(echo "${SVN_INFO}" | sed -Ene 's/^Revision: (.*)$/\1/p')
-  if [ -z "${SVN_REVISION}" ] ; then
-    echo "Could not determine svn revision.  This may be OK." >&2
-    # TODO: check for git, and get the version number from it?
-  fi
-
-  # Grab the path to the source root in the Subversion repository by taking the
-  # URL to the source root directory and the repository root, and removing the
-  # latter from the former.  This ensures that SVN_PATH will contain a useful
-  # path regardless of the Subversion server, mirror, and authentication scheme
-  # in use.
-  SVN_URL=$(echo "${SVN_INFO}" | sed -Ene 's/^URL: (.*)$/\1/p')
-  SVN_ROOT=$(echo "${SVN_INFO}" | sed -Ene 's/^Repository Root: (.*)$/\1/p')
-  if [ -n "${SVN_ROOT}" ] && \
-     [ "${SVN_URL:0:${#SVN_ROOT}}" = "${SVN_ROOT}" ] ; then
-    SVN_PATH="${SVN_URL:${#SVN_ROOT}}"
-  fi
+# Visible in the about:version page.
+SVN_REVISION=$(svn info "${SRCROOT}" | grep "Revision:" | cut -d" " -f2-)
+if [ -z "${SVN_REVISION}" ] ; then
+  echo "Could not determine svn revision.  This may be OK." >&2
+  # TODO: check for git, and get the version number from it?
 fi
 
-# Pull in the Chrome version number.
+# Pull in the chrome version number
 . "${TOP}/chrome/VERSION"
 FULL_VERSION="${MAJOR}.${MINOR}.${BUILD}.${PATCH}"
+SHORT_VERSION="${MAJOR}.${MINOR}.${BUILD}"
 
-# Fetch the copyright.
+# Fetch the copyright
 COPYRIGHT_STRING=$("${BRAND_SCRIPT}" "${BUILD_BRANDING}" COPYRIGHT)
-# Map (c) or (C) to the copyright symbol.
+# Map (c) or (C) to the copyright sign
 COPYRIGHT_STRING=$(echo "${COPYRIGHT_STRING}" | sed -e $'s/([cC])/\302\251/g')
 
 # Build the full copyright string
@@ -110,25 +92,17 @@ TMP_INFO_PLIST_DEFAULTS="${TEMP_DIR}/Info"
 TMP_INFO_PLIST="${TMP_INFO_PLIST_DEFAULTS}.plist"
 cp "${SRC_APP_PATH}/${INFO_PLIST_PATH}" "${TMP_INFO_PLIST}"
 
-# Save off the Subversion revision number and source root path in case they're
-# needed.
+# Save off the svn version number in case we need it
 if [ ! -z "${SVN_REVISION}" ] ; then
   defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-      SVNRevision -string "${SVN_REVISION}"
-else
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" SVNRevision || true
-fi
-if [ ! -z "${SVN_PATH}" ] ; then
-  defaults write "${TMP_INFO_PLIST_DEFAULTS}" SVNPath -string "${SVN_PATH}"
-else
-  defaults delete "${TMP_INFO_PLIST_DEFAULTS}" SVNPath || true
+    SVNRevision -string "${SVN_REVISION}"
 fi
 
 # Add public version info so "Get Info" works
 defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
     CFBundleGetInfoString -string "${LONG_COPYRIGHT}"
 defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
-    CFBundleShortVersionString -string "${FULL_VERSION}"
+    CFBundleShortVersionString -string "${SHORT_VERSION}"
 # Honor the 429496.72.95 limit.  The maximum comes from splitting 2^32 - 1 into
 # 6, 2, 2 digits.  The limitation was present in Tiger, but it could have been
 # fixed in later OS release, but hasn't been tested (it's easy enough to find
@@ -141,7 +115,7 @@ defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
 defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
     NSHumanReadableCopyright -string "${COPYRIGHT_STRING}"
 
-# Add or remove the Breakpad keys.
+# Add/Remove the breakpad keys
 if [ "${USE_BREAKPAD}" = "1" ] ; then
   defaults write "${TMP_INFO_PLIST_DEFAULTS}" \
       BreakpadURL "https://clients2.google.com/cr/report"
@@ -165,7 +139,7 @@ else
   defaults delete "${TMP_INFO_PLIST_DEFAULTS}" BreakpadSkipConfirm || true
 fi
 
-# Add or remove the Keystone keys (only supported in release builds).
+# Add/Remove keystone keys (only supported in release builds)
 if [ "${USE_KEYSTONE}" = "1" ] && [ "${CONFIGURATION}" = "Release" ] ; then
   KEYSTONE_URL="https://tools.google.com/service/update2"
   KEYSTONE_APP_ID=$(defaults read "${TMP_INFO_PLIST_DEFAULTS}" \
@@ -186,6 +160,3 @@ fi
 # might have done.
 plutil -convert xml1 "${TMP_INFO_PLIST}"
 cp "${TMP_INFO_PLIST}" "${SRC_APP_PATH}/${INFO_PLIST_PATH}"
-
-# Clean up.
-rm -f "${TMP_INFO_PLIST}"

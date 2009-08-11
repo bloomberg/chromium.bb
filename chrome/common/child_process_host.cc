@@ -4,17 +4,13 @@
 
 #include "chrome/common/child_process_host.h"
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/plugin_messages.h"
@@ -67,67 +63,6 @@ ChildProcessHost::~ChildProcessHost() {
 
   if (handle())
     ProcessWatcher::EnsureProcessTerminated(handle());
-}
-
-// static
-std::wstring ChildProcessHost::GetChildPath() {
-  std::wstring child_path = CommandLine::ForCurrentProcess()->GetSwitchValue(
-      switches::kBrowserSubprocessPath);
-  if (!child_path.empty())
-    return child_path;
-
-#if !defined(OS_MACOSX)
-  // On most platforms, the child executable is the same as the current
-  // executable.
-  PathService::Get(base::FILE_EXE, &child_path);
-  return child_path;
-#else
-  // On the Mac, the child executable lives at a predefined location within
-  // the current app bundle.
-
-  FilePath path;
-  if (!PathService::Get(base::FILE_EXE, &path))
-    return child_path;
-
-  // Figure out the current executable name.  In a browser, this will be
-  // "Chromium" or "Google Chrome".  The child name will be the browser
-  // executable name with " Helper" appended.  The child app bundle name will
-  // be that name with ".app" appended.
-  FilePath::StringType child_exe_name = path.BaseName().value();
-  const FilePath::StringType child_suffix = FILE_PATH_LITERAL(" Helper");
-
-  if (child_exe_name.size() > child_suffix.size()) {
-    size_t test_suffix_pos = child_exe_name.size() - child_suffix.size();
-    const FilePath::CharType* test_suffix =
-        child_exe_name.c_str() + test_suffix_pos;
-    if (strcmp(test_suffix, child_suffix.c_str()) == 0) {
-      // FILE_EXE already ends with the child suffix and therefore already
-      // refers to the child process path.  Just return it.
-      return path.ToWStringHack();
-    }
-  }
-
-  child_exe_name.append(child_suffix);
-  FilePath::StringType child_app_name = child_exe_name;
-  child_app_name.append(FILE_PATH_LITERAL(".app"));
-  // The renderer app bundle lives in the browser app bundle's Resources
-  // directory.  Take off the executable name.
-  path = path.DirName();
-
-  // Take off the MacOS component, after verifying that's what's there.
-  FilePath::StringType macos = path.BaseName().value();
-  DCHECK_EQ(macos, FILE_PATH_LITERAL("MacOS"));
-  path = path.DirName();
-
-  // Append the components to get to the sub-app bundle's executable.
-  path = path.Append(FILE_PATH_LITERAL("Resources"));
-  path = path.Append(child_app_name);
-  path = path.Append(FILE_PATH_LITERAL("Contents"));
-  path = path.Append(FILE_PATH_LITERAL("MacOS"));
-  path = path.Append(child_exe_name);
-
-  return path.ToWStringHack();
-#endif  // OS_MACOSX
 }
 
 bool ChildProcessHost::CreateChannel() {

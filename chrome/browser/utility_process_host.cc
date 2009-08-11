@@ -52,7 +52,12 @@ bool UtilityProcessHost::StartWebResourceUnpacker(const std::string& data) {
 }
 
 std::wstring UtilityProcessHost::GetUtilityProcessCmd() {
-  return GetChildPath();
+  std::wstring exe_path = CommandLine::ForCurrentProcess()->GetSwitchValue(
+      switches::kBrowserSubprocessPath);
+  if (exe_path.empty()) {
+    PathService::Get(base::FILE_EXE, &exe_path);
+  }
+  return exe_path;
 }
 
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {

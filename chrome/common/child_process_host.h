@@ -22,13 +22,6 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
  public:
   virtual ~ChildProcessHost();
 
-  // Returns the pathname to be used for a child process.  If a subprocess
-  // pathname was specified on the command line, that will be used.  Otherwise,
-  // the default child process pathname will be returned.  On most platforms,
-  // this will be the same as the currently-executing process.  On failure,
-  // returns an empty wstring.
-  static std::wstring GetChildPath();
-
   // ResourceDispatcherHost::Receiver implementation:
   virtual bool Send(IPC::Message* msg);
 
