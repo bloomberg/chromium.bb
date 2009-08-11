@@ -850,7 +850,8 @@ LocationBar* BrowserWindowGtk::GetLocationBar() const {
 }
 
 void BrowserWindowGtk::SetFocusToLocationBar() {
-  GetLocationBar()->FocusLocation();
+  if (!IsFullscreen())
+    GetLocationBar()->FocusLocation();
 }
 
 void BrowserWindowGtk::UpdateStopGoState(bool is_loading, bool force) {
