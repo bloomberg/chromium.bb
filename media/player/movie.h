@@ -66,23 +66,11 @@ class Movie : public Singleton<Movie> {
   // Get Enable/Disable draw state.
   bool GetDrawEnable();
 
-  // Enable/Disable swscaler.
-  void SetSwscalerEnable(bool enable_swscaler);
-
-  // Get Enable/Disable swscaler state.
-  bool GetSwscalerEnable();
-
   // Enable/Disable dump yuv file.
   void SetDumpYuvFileEnable(bool enable_dump_yuv_file);
 
   // Get Enable/Disable dump yuv file state.
   bool GetDumpYuvFileEnable();
-
-  // Enable/Disable OpenMP.
-  void SetOpenMpEnable(bool enable_openmp);
-
-  // Get Enable/Disable OpenMP state.
-  bool GetOpenMpEnable();
 
  private:
   // Only allow Singleton to create and delete Movie.
@@ -94,11 +82,9 @@ class Movie : public Singleton<Movie> {
   scoped_ptr<base::Thread> thread_;
 
   bool enable_audio_;
-  bool enable_swscaler_;
   bool enable_draw_;
   bool enable_dump_yuv_file_;
   bool enable_pause_;
-  bool enable_openmp_;
   int max_threads_;
   float play_rate_;
   HBITMAP movie_dib_;

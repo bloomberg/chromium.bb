@@ -32,8 +32,6 @@
 #define ID_PLAY_PLAY                    32781
 #define ID_PLAY_PLAY_PAUSE              32782
 #define ID_OPTIONS_EXIT                 32840
-#define ID_OPTIONS_OPENMP               32790
-#define ID_OPTIONS_SWSCALER             32791
 #define ID_OPTIONS_DRAW                 32792
 #define ID_OPTIONS_AUDIO                32793
 #define ID_OPTIONS_DUMPYUVFILE          32794
