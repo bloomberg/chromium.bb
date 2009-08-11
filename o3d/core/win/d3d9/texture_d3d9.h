@@ -59,7 +59,10 @@ class Texture2DD3D9 : public Texture2D {
   // creation fails then it returns NULL otherwise it returns a pointer to the
   // newly created Texture object.
   static Texture2DD3D9* Create(ServiceLocator* service_locator,
-                               Bitmap* bitmap,
+                               Texture::Format format,
+                               int levels,
+                               int width,
+                               int height,
                                RendererD3D9* renderer,
                                bool enable_render_surfaces);
 
@@ -106,13 +109,20 @@ class Texture2DD3D9 : public Texture2D {
   // Initializes the Texture2DD3D9 from a DX9 texture.
   Texture2DD3D9(ServiceLocator* service_locator,
                 IDirect3DTexture9* tex,
-                const Bitmap& bitmap,
+                Texture::Format format,
+                int levels,
+                int width,
+                int height,
                 bool resize_to_pot,
                 bool enable_render_surfaces);
 
   // Updates a mip level, sending it from the backing bitmap to Direct3D,
   // rescaling it if resize_to_pot_ is set.
   void UpdateBackedMipLevel(unsigned int level);
+
+  // Whether or not this texture needs to be resized from NPOT to pot behind
+  // the scenes.
+  bool resize_to_pot_;
 
   // A pointer to the Direct3D 2D texture object containing this texture.
   CComPtr<IDirect3DTexture9> d3d_texture_;
@@ -132,7 +142,9 @@ class TextureCUBED3D9 : public TextureCUBE {
   // creation fails then it returns NULL otherwise it returns a pointer to the
   // newly created Texture object.
   static TextureCUBED3D9* Create(ServiceLocator* service_locator,
-                                 Bitmap* bitmap,
+                                 Texture::Format format,
+                                 int levels,
+                                 int edge_length,
                                  RendererD3D9* renderer,
                                  bool enable_render_surfaces);
 
@@ -183,9 +195,15 @@ class TextureCUBED3D9 : public TextureCUBE {
  private:
   TextureCUBED3D9(ServiceLocator* service_locator,
                   IDirect3DCubeTexture9* tex,
-                  const Bitmap& bitmap,
+                  int edge_length,
+                  Texture::Format format,
+                  int levels,
                   bool resize_to_pot,
                   bool enable_render_surfaces);
+
+  // Whether or not this texture needs to be resized from NPOT to pot behind
+  // the scenes.
+  bool resize_to_pot_;
 
   // Updates a mip level, sending it from the backing bitmap to Direct3D,
   // rescaling it if resize_to_pot_ is set.
@@ -194,8 +212,8 @@ class TextureCUBED3D9 : public TextureCUBE {
   // A pointer to the Direct3D cube texture object containing this texture.
   CComPtr<IDirect3DCubeTexture9> d3d_cube_texture_;
 
-  // A bitmap used to back the NPOT textures on POT-only hardware.
-  Bitmap::Ref backing_bitmap_;
+  // Bitmaps used to back the NPOT textures on POT-only hardware.
+  Bitmap::Ref backing_bitmaps_[NUMBER_OF_FACES];
 
   DISALLOW_COPY_AND_ASSIGN(TextureCUBED3D9);
 };

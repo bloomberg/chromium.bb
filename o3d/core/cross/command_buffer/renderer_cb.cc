@@ -292,25 +292,6 @@ Effect::Ref RendererCB::CreateEffect() {
   return Effect::Ref(new EffectCB(service_locator(), this));
 }
 
-// Attempts to create a Texture with the given bitmap, automatically
-// determining whether the to create a 2D texture, cube texture, etc. If
-// creation fails the method returns NULL.
-// Parameters:
-//  bitmap: The bitmap specifying the dimensions, format and content of the
-//          new texture. The created texture takes ownership of the bitmap
-//          data.
-// Returns:
-//  A ref-counted pointer to the texture or NULL if it did not load.
-Texture::Ref RendererCB::CreatePlatformSpecificTextureFromBitmap(
-    Bitmap *bitmap) {
-  if (bitmap->is_cubemap()) {
-    return Texture::Ref(TextureCUBECB::Create(service_locator(), bitmap,
-                                              false));
-  } else {
-    return Texture::Ref(Texture2DCB::Create(service_locator(), bitmap, false));
-  }
-}
-
 // Creates and returns a platform-specific Texture2D object.  It allocates
 // the necessary resources to store texture data for the given image size
 // and format.
@@ -320,12 +301,8 @@ Texture2D::Ref RendererCB::CreatePlatformSpecificTexture2D(
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->set_format(format);
-  bitmap->set_width(width);
-  bitmap->set_height(height);
-  bitmap->set_num_mipmaps(levels);
-  return Texture2D::Ref(Texture2DCB::Create(service_locator(), bitmap,
+  return Texture2D::Ref(Texture2DCB::Create(service_locator(), format, levels,
+                                            width, height,
                                             enable_render_surfaces));
 }
 
@@ -337,13 +314,8 @@ TextureCUBE::Ref RendererCB::CreatePlatformSpecificTextureCUBE(
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->set_format(format);
-  bitmap->set_width(edge);
-  bitmap->set_height(edge);
-  bitmap->set_num_mipmaps(levels);
-  bitmap->set_is_cubemap(true);
-  return TextureCUBE::Ref(TextureCUBECB::Create(service_locator(), bitmap,
+  return TextureCUBE::Ref(TextureCUBECB::Create(service_locator(), format,
+                                                levels, edge,
                                                 enable_render_surfaces));
 }
 

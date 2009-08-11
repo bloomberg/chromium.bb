@@ -57,11 +57,8 @@ Texture2D::Texture2D(ServiceLocator* service_locator,
                      int height,
                      Format format,
                      int levels,
-                     bool alpha_is_one,
-                     bool resize_to_pot,
                      bool enable_render_surfaces)
-    : Texture(service_locator, format, levels, alpha_is_one,
-              resize_to_pot, enable_render_surfaces),
+    : Texture(service_locator, format, levels, enable_render_surfaces),
       locked_levels_(0) {
   RegisterReadOnlyParamRef(kWidthParamName, &width_param_);
   RegisterReadOnlyParamRef(kHeightParamName, &height_param_);
@@ -171,7 +168,7 @@ void Texture2D::SetFromBitmap(const Bitmap& bitmap) {
   DCHECK(bitmap.image_data());
   if (bitmap.width() != static_cast<unsigned>(width()) ||
       bitmap.height() != static_cast<unsigned>(height()) ||
-      bitmap.format() != format() || bitmap.is_cubemap()) {
+      bitmap.format() != format()) {
     O3D_ERROR(service_locator())
         << "bitmap must be the same format and dimensions as texture";
     return;
@@ -254,11 +251,8 @@ TextureCUBE::TextureCUBE(ServiceLocator* service_locator,
                          int edge_length,
                          Format format,
                          int levels,
-                         bool alpha_is_one,
-                         bool resize_to_pot,
                          bool enable_render_surfaces)
-    : Texture(service_locator, format, levels, alpha_is_one,
-              resize_to_pot, enable_render_surfaces) {
+    : Texture(service_locator, format, levels, enable_render_surfaces) {
   for (unsigned int i = 0; i < 6; ++i) {
     locked_levels_[i] = 0;
   }
@@ -378,11 +372,11 @@ void TextureCUBE::DrawImage(const Bitmap& src_img,
                       mip_length, mip_length, components);
 }
 
-void TextureCUBE::SetFromBitmap(const Bitmap& bitmap) {
+void TextureCUBE::SetFromBitmap(CubeFace face, const Bitmap& bitmap) {
   DCHECK(bitmap.image_data());
   if (bitmap.width() != static_cast<unsigned>(edge_length()) ||
       bitmap.height() != static_cast<unsigned>(edge_length()) ||
-      bitmap.format() != format() || !bitmap.is_cubemap()) {
+      bitmap.format() != format()) {
     O3D_ERROR(service_locator())
         << "bitmap must be the same format and dimensions as texture";
     return;
@@ -390,13 +384,11 @@ void TextureCUBE::SetFromBitmap(const Bitmap& bitmap) {
 
   int last_level = std::min<int>(bitmap.num_mipmaps(), levels());
   for (int level = 0; level < last_level; ++level) {
-    for (int face = FACE_POSITIVE_X; face < NUMBER_OF_FACES; ++face) {
-      SetRect(static_cast<CubeFace>(face), level, 0, 0,
-              image::ComputeMipDimension(level, edge_length()),
-              image::ComputeMipDimension(level, edge_length()),
-              bitmap.GetFaceMipData(static_cast<CubeFace>(face), level),
-              bitmap.GetMipPitch(level));
-    }
+    SetRect(face, level, 0, 0,
+            image::ComputeMipDimension(level, edge_length()),
+            image::ComputeMipDimension(level, edge_length()),
+            bitmap.GetMipData(level),
+            bitmap.GetMipPitch(level));
   }
 }
 

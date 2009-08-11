@@ -115,21 +115,6 @@ namespace o3d {
   %]
   void GenerateMips(int source_level, int num_levels);
 
-  %[
-    Sets the content of the texture to the content of the bitmap. The texture
-    and the bitmap must be the same dimensions and the same format.
-
-    \param bitmap The bitmap to copy data from.
-  %]
-  [userglue]
-  void SetFromBitmap(Bitmap bitmap);
-
-  [verbatim=cpp_glue] %{
-    void userglue_method_SetFromBitmap(o3d::Texture* self,
-                                       o3d::Bitmap* bitmap) {
-      self->SetFromBitmap(*bitmap);
-    }
-  %}
 };  // Texture
 
 %[
@@ -238,6 +223,22 @@ namespace o3d {
                   int height);
 
   %[
+    Sets the content of the texture to the content of the bitmap. The texture
+    and the bitmap must be the same dimensions and the same format.
+
+    \param bitmap The bitmap to copy data from.
+  %]
+  [userglue]
+  void SetFromBitmap(Bitmap bitmap);
+
+  [verbatim=cpp_glue] %{
+    void userglue_method_SetFromBitmap(o3d::Texture2D* self,
+                                       o3d::Bitmap* bitmap) {
+      self->SetFromBitmap(*bitmap);
+    }
+  %}
+
+  %[
     Copy pixels from source bitmap to certain mip level.
     Scales if the width and height of source and dest do not match.
 
@@ -294,12 +295,13 @@ namespace o3d {
 
     The names of each of the six faces of a cube map texture.
   %]
-  enum CubeFace { FACE_POSITIVE_X,
-                  FACE_NEGATIVE_X,
-                  FACE_POSITIVE_Y,
-                  FACE_NEGATIVE_Y,
-                  FACE_POSITIVE_Z,
-                  FACE_NEGATIVE_Z };
+  enum CubeFace {
+    FACE_POSITIVE_X,
+    FACE_NEGATIVE_X,
+    FACE_POSITIVE_Y,
+    FACE_NEGATIVE_Y,
+    FACE_POSITIVE_Z,
+    FACE_NEGATIVE_Z };
 
   %[
     The length of each edge of the cube, in texels.
@@ -380,6 +382,24 @@ namespace o3d {
                   int y,
                   int width,
                   int height);
+
+  %[
+    Sets the content of a face of the texture to the content of the bitmap. The
+    texture and the bitmap must be the same dimensions and the same format.
+
+    \param face The face to set.
+    \param bitmap The bitmap to copy data from.
+  %]
+  [userglue]
+  void SetFromBitmap(CubeFace face, Bitmap bitmap);
+
+  [verbatim=cpp_glue] %{
+    void userglue_method_SetFromBitmap(o3d::TextureCUBE* self,
+                                       o3d::TextureCUBE::CubeFace face,
+                                       o3d::Bitmap* bitmap) {
+      self->SetFromBitmap(face, *bitmap);
+    }
+  %}
 
   %[
     Copy pixels from source bitmap to certain mip level.

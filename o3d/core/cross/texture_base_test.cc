@@ -49,11 +49,8 @@ class MockTexture : public Texture {
   MockTexture(ServiceLocator* service_locator,
               Texture::Format format,
               int levels,
-              bool alpha_is_one,
-              bool resize_to_pot,
               bool enable_render_surfaces)
-      : Texture(service_locator, format, levels, alpha_is_one, resize_to_pot,
-                enable_render_surfaces) {
+      : Texture(service_locator, format, levels, enable_render_surfaces) {
   }
 
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices() {
@@ -92,8 +89,6 @@ TEST_F(TextureTest, Basic) {
       g_service_locator,
       Texture::XRGB8,
       1,
-      false,
-      false,
       false));
   ASSERT_TRUE(texture != NULL);
   EXPECT_EQ(texture->format(), Texture::XRGB8);

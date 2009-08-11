@@ -82,7 +82,10 @@ class Texture2DGL : public Texture2D {
   // newly created Texture object.
   // The created texture takes ownership of the bitmap data.
   static Texture2DGL* Create(ServiceLocator* service_locator,
-                             Bitmap *bitmap,
+                             Texture::Format format,
+                             int levels,
+                             int width,
+                             int height,
                              bool enable_render_surfaces);
 
   // Returns the implementation-specific texture handle for this texture.
@@ -118,7 +121,10 @@ class Texture2DGL : public Texture2D {
   // The texture takes ownership of the bitmap data.
   Texture2DGL(ServiceLocator* service_locator,
               GLint texture,
-              const Bitmap &bitmap,
+              Texture::Format format,
+              int levels,
+              int width,
+              int height,
               bool resize_npot,
               bool enable_render_surfaces);
 
@@ -131,6 +137,10 @@ class Texture2DGL : public Texture2D {
     DCHECK_LT(static_cast<int>(level), levels());
     return (has_levels_ & (1 << level)) != 0;
   }
+
+  // Whether or not this texture needs to be resized from NPOT to pot behind
+  // the scenes.
+  bool resize_to_pot_;
 
   RendererGL* renderer_;
 
@@ -157,7 +167,9 @@ class TextureCUBEGL : public TextureCUBE {
 
   // Create a new Cube texture from scratch.
   static TextureCUBEGL* Create(ServiceLocator* service_locator,
-                               Bitmap *bitmap,
+                               Texture::Format format,
+                               int levels,
+                               int edge_length,
                                bool enable_render_surfaces);
 
   // Overridden from TextureCUBE
@@ -205,7 +217,9 @@ class TextureCUBEGL : public TextureCUBE {
   // Creates a texture from a pre-existing GL texture object.
   TextureCUBEGL(ServiceLocator* service_locator,
                 GLint texture,
-                const Bitmap &bitmap,
+                Texture::Format format,
+                int levels,
+                int edge_length,
                 bool resize_to_pot,
                 bool enable_render_surfaces);
 
@@ -219,14 +233,17 @@ class TextureCUBEGL : public TextureCUBE {
     return (has_levels_[face] & (1 << level)) != 0;
   }
 
+  // Whether or not this texture needs to be resized from NPOT to pot behind
+  // the scenes.
+  bool resize_to_pot_;
+
   RendererGL* renderer_;
 
   // The handle of the OpenGL texture object.
   GLuint gl_texture_;
 
-  // A bitmap used to back the NPOT textures on POT-only hardware, and to back
-  // the pixel buffer for Lock().
-  Bitmap::Ref backing_bitmap_;
+  // Bitmaps used to back the NPOT textures on POT-only hardware.
+  Bitmap::Ref backing_bitmaps_[NUMBER_OF_FACES];
 
   // Bitfields that indicates mip levels that are currently stored in the
   // backing bitmap, one per face.

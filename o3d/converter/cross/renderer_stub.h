@@ -95,9 +95,6 @@ class RendererStub : public Renderer {
   explicit RendererStub(ServiceLocator* service_locator);
 
   // Overridden from Renderer.
-  virtual Texture::Ref CreatePlatformSpecificTextureFromBitmap(Bitmap* bitmap);
-
-  // Overridden from Renderer.
   virtual void SetBackBufferPlatformSpecific();
 
   // Overridden from Renderer.

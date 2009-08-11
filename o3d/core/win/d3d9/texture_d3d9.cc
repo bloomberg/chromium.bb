@@ -82,20 +82,23 @@ static D3DCUBEMAP_FACES DX9CubeFace(TextureCUBE::CubeFace face) {
   return D3DCUBEMAP_FACE_FORCE_DWORD;
 }
 
-// Constructs an Direct3D texture object.  Out variable return the status of
+// Constructs an Direct3D texture object.  Out variable returns the status of
 // the constructed texture including if resize to POT is required, and the
 // actual mip dimensions used.
 HRESULT CreateTexture2DD3D9(RendererD3D9* renderer,
-                            Bitmap* bitmap,
+                            Texture::Format format,
+                            int levels,
+                            int width,
+                            int height,
                             bool enable_render_surfaces,
                             bool* resize_to_pot,
                             unsigned int* mip_width,
                             unsigned int* mip_height,
                             IDirect3DTexture9** d3d_texture) {
   IDirect3DDevice9 *d3d_device = renderer->d3d_device();
-  *resize_to_pot = !renderer->supports_npot() && !bitmap->IsPOT();
-  *mip_width = bitmap->width();
-  *mip_height = bitmap->height();
+  *resize_to_pot = !renderer->supports_npot() && !image::IsPOT(width, height);
+  *mip_width = width;
+  *mip_height = height;
 
   if (*resize_to_pot) {
     *mip_width = image::ComputePOTSize(*mip_width);
@@ -104,56 +107,59 @@ HRESULT CreateTexture2DD3D9(RendererD3D9* renderer,
 
   DWORD usage = (enable_render_surfaces) ? D3DUSAGE_RENDERTARGET : 0;
   D3DPOOL pool = (enable_render_surfaces) ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED;
-  D3DFORMAT format = DX9Format(bitmap->format());
+  D3DFORMAT d3d_format = DX9Format(format);
 
   HRESULT tex_result = d3d_device->CreateTexture(*mip_width,
                                                  *mip_height,
-                                                 bitmap->num_mipmaps(),
+                                                 levels,
                                                  usage,
-                                                 format,
+                                                 d3d_format,
                                                  pool,
                                                  d3d_texture,
                                                  NULL);
   if (!HR(tex_result)) {
     DLOG(ERROR) << "2D texture creation failed with the following parameters: "
                 << "(" << *mip_width << " x " << *mip_height << ") x "
-                << bitmap->num_mipmaps() << "; format = " << format;
+                << levels << "; format = " << format;
   }
   return tex_result;
 }
 
-// Constructs an Direct3D cube texture object.  Out variable return the
+// Constructs an Direct3D cube texture object.  Out variable returns the
 // status of the constructed texture including if resize to POT is required,
 // and the actual mip edge length used.
 HRESULT CreateTextureCUBED3D9(RendererD3D9* renderer,
-                              Bitmap* bitmap,
+                              int edge_length,
+                              Texture::Format format,
+                              int levels,
                               bool enable_render_surfaces,
                               bool* resize_to_pot,
                               unsigned int* edge_width,
                               IDirect3DCubeTexture9** d3d_texture) {
   IDirect3DDevice9 *d3d_device = renderer->d3d_device();
-  *resize_to_pot = !renderer->supports_npot() && !bitmap->IsPOT();
-  *edge_width = bitmap->width();
+  *resize_to_pot = !renderer->supports_npot() &&
+                   !image::IsPOT(edge_length, edge_length);
+  *edge_width = edge_length;
   if (*resize_to_pot) {
     *edge_width = image::ComputePOTSize(*edge_width);
   }
 
   DWORD usage = (enable_render_surfaces) ? D3DUSAGE_RENDERTARGET : 0;
   D3DPOOL pool = (enable_render_surfaces) ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED;
-  D3DFORMAT format = DX9Format(bitmap->format());
+  D3DFORMAT d3d_format = DX9Format(format);
 
   HRESULT tex_result = d3d_device->CreateCubeTexture(*edge_width,
-                                                     bitmap->num_mipmaps(),
+                                                     levels,
                                                      usage,
-                                                     format,
+                                                     d3d_format,
                                                      pool,
                                                      d3d_texture,
                                                      NULL);
   if (!HR(tex_result)) {
     DLOG(ERROR) << "CUBE texture creation failed with the following "
                 << "parameters: "
-                << "(" << edge_width << " x " << edge_width << ") x "
-                << bitmap->num_mipmaps() << "; format = " << format;
+                << "(" << *edge_width << " x " << *edge_width << ") x "
+                << levels << "; format = " << format;
   }
 
   return tex_result;
@@ -329,17 +335,19 @@ void SetTextureFaceRect(
 // Constructs a 2D texture object from the given (existing) D3D 2D texture.
 Texture2DD3D9::Texture2DD3D9(ServiceLocator* service_locator,
                              IDirect3DTexture9* tex,
-                             const Bitmap &bitmap,
+                             Texture::Format format,
+                             int levels,
+                             int width,
+                             int height,
                              bool resize_to_pot,
                              bool enable_render_surfaces)
     : Texture2D(service_locator,
-                bitmap.width(),
-                bitmap.height(),
-                bitmap.format(),
-                bitmap.num_mipmaps(),
-                bitmap.CheckAlphaIsOne(),
-                resize_to_pot,
+                width,
+                height,
+                format,
+                levels,
                 enable_render_surfaces),
+      resize_to_pot_(resize_to_pot),
       d3d_texture_(tex),
       backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
   DCHECK(tex);
@@ -350,16 +358,21 @@ Texture2DD3D9::Texture2DD3D9(ServiceLocator* service_locator,
 // returns it.  This is the safe way to create a Texture2DD3D9 object that
 // contains a valid D3D9 texture.
 Texture2DD3D9* Texture2DD3D9::Create(ServiceLocator* service_locator,
-                                     Bitmap* bitmap,
+                                     Texture::Format format,
+                                     int levels,
+                                     int width,
+                                     int height,
                                      RendererD3D9* renderer,
                                      bool enable_render_surfaces) {
-  DCHECK_NE(bitmap->format(), Texture::UNKNOWN_FORMAT);
-  DCHECK(!bitmap->is_cubemap());
+  DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
   CComPtr<IDirect3DTexture9> d3d_texture;
   bool resize_to_pot;
   unsigned int mip_width, mip_height;
   if (!HR(CreateTexture2DD3D9(renderer,
-                              bitmap,
+                              format,
+                              levels,
+                              width,
+                              height,
                               enable_render_surfaces,
                               &resize_to_pot,
                               &mip_width,
@@ -371,23 +384,14 @@ Texture2DD3D9* Texture2DD3D9::Create(ServiceLocator* service_locator,
 
   Texture2DD3D9 *texture = new Texture2DD3D9(service_locator,
                                              d3d_texture,
-                                             *bitmap,
+                                             format,
+                                             levels,
+                                             width,
+                                             height,
                                              resize_to_pot,
                                              enable_render_surfaces);
-
-  texture->backing_bitmap_->SetFrom(bitmap);
-  if (texture->backing_bitmap_->image_data()) {
-    for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
-      texture->UpdateBackedMipLevel(i);
-      mip_width = std::max(1U, mip_width >> 1);
-      mip_height = std::max(1U, mip_height >> 1);
-    }
-    if (!resize_to_pot)
-      texture->backing_bitmap_->FreeData();
-  } else {
-    if (resize_to_pot) {
-      texture->backing_bitmap_->AllocateData();
-    }
+  if (resize_to_pot) {
+    texture->backing_bitmap_->AllocateData();
   }
 
   return texture;
@@ -637,7 +641,10 @@ bool Texture2DD3D9::OnResetDevice() {
     bool resize_to_pot;
     unsigned int mip_width, mip_height;
     return HR(CreateTexture2DD3D9(renderer_d3d9,
-                                  backing_bitmap_,
+                                  format(),
+                                  levels(),
+                                  width(),
+                                  height(),
                                   render_surfaces_enabled(),
                                   &resize_to_pot,
                                   &mip_width,
@@ -654,36 +661,42 @@ const Texture::RGBASwizzleIndices& Texture2DD3D9::GetABGR32FSwizzleIndices() {
 // Constructs a cube texture object from the given (existing) D3D Cube texture.
 TextureCUBED3D9::TextureCUBED3D9(ServiceLocator* service_locator,
                                  IDirect3DCubeTexture9* tex,
-                                 const Bitmap& bitmap,
+                                 int edge_length,
+                                 Texture::Format format,
+                                 int levels,
                                  bool resize_to_pot,
                                  bool enable_render_surfaces)
     : TextureCUBE(service_locator,
-                  bitmap.width(),
-                  bitmap.format(),
-                  bitmap.num_mipmaps(),
-                  bitmap.CheckAlphaIsOne(),
-                  resize_to_pot,
+                  edge_length,
+                  format,
+                  levels,
                   enable_render_surfaces),
-      d3d_cube_texture_(tex),
-      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
+      resize_to_pot_(resize_to_pot),
+      d3d_cube_texture_(tex) {
+  for (int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
+    backing_bitmaps_[ii] = Bitmap::Ref(new Bitmap(service_locator));
+  }
 }
 
 // Attempts to create a D3D9 CubeTexture with the given specs.  If creation
 // fails the method returns NULL.  Otherwise, it wraps around the newly created
 // texture a TextureCUBED3D9 object and returns a pointer to it.
 TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
-                                         Bitmap *bitmap,
+                                         Texture::Format format,
+                                         int levels,
+                                         int edge_length,
                                          RendererD3D9 *renderer,
                                          bool enable_render_surfaces) {
-  DCHECK_NE(bitmap->format(), Texture::UNKNOWN_FORMAT);
-  DCHECK(bitmap->is_cubemap());
-  DCHECK_EQ(bitmap->width(), bitmap->height());
+  DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
+  DCHECK_GE(levels, 1);
 
   CComPtr<IDirect3DCubeTexture9> d3d_texture;
   bool resize_to_pot;
   unsigned int edge;
   if (!HR(CreateTextureCUBED3D9(renderer,
-                                bitmap,
+                                edge_length,
+                                format,
+                                levels,
                                 enable_render_surfaces,
                                 &resize_to_pot,
                                 &edge,
@@ -694,24 +707,14 @@ TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
 
   TextureCUBED3D9 *texture = new TextureCUBED3D9(service_locator,
                                                  d3d_texture,
-                                                 *bitmap,
+                                                 edge_length,
+                                                 format,
+                                                 levels,
                                                  resize_to_pot,
                                                  enable_render_surfaces);
-
-  texture->backing_bitmap_->SetFrom(bitmap);
-  if (texture->backing_bitmap_->image_data()) {
-    for (int face = 0; face < 6; ++face) {
-      unsigned int mip_edge = edge;
-      for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
-        texture->UpdateBackedMipLevel(static_cast<CubeFace>(face), i);
-        mip_edge = std::max(1U, mip_edge >> 1);
-      }
-    }
-    if (!resize_to_pot)
-      texture->backing_bitmap_->FreeData();
-  } else {
-    if (resize_to_pot) {
-      texture->backing_bitmap_->AllocateData();
+  if (resize_to_pot) {
+    for (int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
+      texture->backing_bitmaps_[ii]->AllocateData();
     }
   }
 
@@ -735,13 +738,13 @@ TextureCUBED3D9::~TextureCUBED3D9() {
 
 void TextureCUBED3D9::UpdateBackedMipLevel(TextureCUBE::CubeFace face,
                                            unsigned int level) {
+  Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
   DCHECK_LT(level, static_cast<unsigned int>(levels()));
-  DCHECK(backing_bitmap_->image_data());
-  DCHECK(backing_bitmap_->is_cubemap());
-  DCHECK_EQ(backing_bitmap_->width(), edge_length());
-  DCHECK_EQ(backing_bitmap_->height(), edge_length());
-  DCHECK_EQ(backing_bitmap_->format(), format());
-  DCHECK_EQ(backing_bitmap_->num_mipmaps(), levels());
+  DCHECK(backing_bitmap->image_data());
+  DCHECK_EQ(backing_bitmap->width(), edge_length());
+  DCHECK_EQ(backing_bitmap->height(), edge_length());
+  DCHECK_EQ(backing_bitmap->format(), format());
+  DCHECK_EQ(backing_bitmap->num_mipmaps(), levels());
 
   unsigned int mip_edge = std::max(1, edge_length() >> level);
   unsigned int rect_edge = mip_edge;
@@ -762,7 +765,7 @@ void TextureCUBED3D9::UpdateBackedMipLevel(TextureCUBE::CubeFace face,
   DCHECK(out_rect.pBits);
   uint8* dst = static_cast<uint8*>(out_rect.pBits);
 
-  const uint8 *mip_data = backing_bitmap_->GetFaceMipData(face, level);
+  const uint8 *mip_data = backing_bitmap->GetMipData(level);
   if (resize_to_pot_) {
     image::Scale(mip_edge, mip_edge, format(), mip_data,
                  rect_edge, rect_edge,
@@ -870,11 +873,12 @@ void TextureCUBED3D9::SetRect(TextureCUBE::CubeFace face,
   }
 
   if (resize_to_pot_) {
-    DCHECK(backing_bitmap_->image_data());
+    Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
+    DCHECK(backing_bitmap->image_data());
     DCHECK(!compressed);
     // We need to update the backing mipmap and then use that to update the
     // texture.
-    backing_bitmap_->SetFaceRect(face,
+    backing_bitmap->SetRect(
         level, dst_left, dst_top, src_width, src_height, src_data, src_pitch);
     UpdateBackedMipLevel(face, level);
   } else {
@@ -916,8 +920,9 @@ bool TextureCUBED3D9::Lock(
     return false;
   }
   if (resize_to_pot_) {
-    DCHECK(backing_bitmap_->image_data());
-    *texture_data = backing_bitmap_->GetFaceMipData(face, level);
+    Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
+    DCHECK(backing_bitmap->image_data());
+    *texture_data = backing_bitmap->GetMipData(level);
     unsigned int mip_width = image::ComputeMipDimension(level, edge_length());
     unsigned int mip_height = mip_width;
     *pitch = image::ComputePitch(format(), mip_width);
@@ -988,7 +993,9 @@ bool TextureCUBED3D9::OnResetDevice() {
     bool resize_to_pot;
     unsigned int mip_edge;
     return HR(CreateTextureCUBED3D9(renderer_d3d9,
-                                    backing_bitmap_,
+                                    edge_length(),
+                                    format(),
+                                    levels(),
                                     render_surfaces_enabled(),
                                     &resize_to_pot,
                                     &mip_edge,

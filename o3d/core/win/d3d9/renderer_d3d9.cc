@@ -1606,30 +1606,6 @@ ParamCache* RendererD3D9::CreatePlatformSpecificParamCache() {
   return new ParamCacheD3D9(service_locator());
 }
 
-// Attempts to create a Texture with the given bitmap, automatically
-// determining whether the to create a 2D texture, cube texture, etc. If
-// creation fails the method returns NULL.
-// Parameters:
-//  bitmap: The bitmap specifying the dimensions, format and content of the
-//          new texture. The created texture takes ownership of the bitmap
-//          data.
-// Returns:
-//  A ref-counted pointer to the texture or NULL if it did not load.
-Texture::Ref RendererD3D9::CreatePlatformSpecificTextureFromBitmap(
-    Bitmap* bitmap) {
-  if (bitmap->is_cubemap()) {
-    return Texture::Ref(TextureCUBED3D9::Create(service_locator(),
-                                                bitmap,
-                                                this,
-                                                false));
-  } else {
-    return Texture::Ref(Texture2DD3D9::Create(service_locator(),
-                                              bitmap,
-                                              this,
-                                              false));
-  }
-}
-
 // Attempts to create a Texture2D with the given specs.  If creation fails
 // then the method returns NULL.
 Texture2D::Ref RendererD3D9::CreatePlatformSpecificTexture2D(
@@ -1638,32 +1614,26 @@ Texture2D::Ref RendererD3D9::CreatePlatformSpecificTexture2D(
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->set_format(format);
-  bitmap->set_width(width);
-  bitmap->set_height(height);
-  bitmap->set_num_mipmaps(levels);
   return Texture2D::Ref(Texture2DD3D9::Create(service_locator(),
-                                              bitmap,
+                                              format,
+                                              levels,
+                                              width,
+                                              height,
                                               this,
                                               enable_render_surfaces));
 }
 
-// Attempts to create a Texture2D with the given specs.  If creation fails
+// Attempts to create a TextureCUBE with the given specs.  If creation fails
 // then the method returns NULL.
 TextureCUBE::Ref RendererD3D9::CreatePlatformSpecificTextureCUBE(
     int edge_length,
     Texture::Format format,
     int levels,
     bool enable_render_surfaces) {
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->set_format(format);
-  bitmap->set_width(edge_length);
-  bitmap->set_height(edge_length);
-  bitmap->set_num_mipmaps(levels);
-  bitmap->set_is_cubemap(true);
   return TextureCUBE::Ref(TextureCUBED3D9::Create(service_locator(),
-                                                  bitmap,
+                                                  format,
+                                                  levels,
+                                                  edge_length,
                                                   this,
                                                   enable_render_surfaces));
 }
@@ -1744,7 +1714,7 @@ Bitmap::Ref RendererD3D9::TakeScreenshot() {
                    surface_description.Width,
                    surface_description.Height,
                    1,
-                   false);
+                   Bitmap::IMAGE);
   bitmap->SetRect(0, 0, 0,
                   surface_description.Width,
                   surface_description.Height,

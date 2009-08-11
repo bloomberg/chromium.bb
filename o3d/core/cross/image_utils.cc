@@ -37,15 +37,17 @@
 #include "core/cross/precompile.h"
 
 #include "core/cross/image_utils.h"
+#include "core/cross/pointer_utils.h"
+#include "core/cross/math_utilities.h"
 
 namespace o3d {
 namespace image {
 
 // Computes the size of the buffer containing a an image, given its width,
 // height and format.
-unsigned int ComputeBufferSize(unsigned int width,
-                               unsigned int height,
-                               Texture::Format format) {
+size_t ComputeBufferSize(unsigned int width,
+                         unsigned int height,
+                         Texture::Format format) {
   DCHECK(CheckImageDimensions(width, height));
   unsigned int pixels = width * height;
   switch (format) {
@@ -75,12 +77,12 @@ unsigned int ComputeBufferSize(unsigned int width,
 
 // Gets the size of the buffer containing a mip-map chain, given its base
 // width, height, format and number of mip-map levels.
-unsigned int ComputeMipChainSize(unsigned int base_width,
-                                 unsigned int base_height,
-                                 Texture::Format format,
-                                 unsigned int num_mipmaps) {
+size_t ComputeMipChainSize(unsigned int base_width,
+                           unsigned int base_height,
+                           Texture::Format format,
+                           unsigned int num_mipmaps) {
   DCHECK(CheckImageDimensions(base_width, base_height));
-  unsigned int total_size = 0;
+  size_t total_size = 0;
   unsigned int mip_width = base_width;
   unsigned int mip_height = base_height;
   for (unsigned int i = 0; i < num_mipmaps; ++i) {
@@ -122,22 +124,21 @@ bool ScaleUpToPOT(unsigned int width,
 }
 
 unsigned int GetNumComponentsForFormat(o3d::Texture::Format format) {
-  unsigned int components = 0;
   switch (format) {
     case o3d::Texture::XRGB8:
     case o3d::Texture::ARGB8:
-      components = 4;
-      break;
     case o3d::Texture::ABGR16F:
-    case o3d::Texture::R32F:
     case o3d::Texture::ABGR32F:
+      return 4;
+    case o3d::Texture::R32F:
+      return 1;
     case o3d::Texture::DXT1:
     case o3d::Texture::DXT3:
     case o3d::Texture::DXT5:
     case o3d::Texture::UNKNOWN_FORMAT:
       break;
   }
-  return components;
+  return 0;
 }
 
 namespace {
@@ -400,15 +401,19 @@ void LanczosResize1D(const uint8* src, int src_x, int src_y,
 //   src_height: height of the source image
 //   src_data: address of the source image data
 //   components: number of components in the image.
+template <typename OriginalType,
+          typename WorkType,
+          WorkType convert_to_work(OriginalType value),
+          OriginalType convert_to_original(WorkType)>
 void FilterTexel(unsigned int x,
                  unsigned int y,
                  unsigned int dst_width,
                  unsigned int dst_height,
-                 uint8 *dst_data,
+                 void *dst_data,
                  int dst_pitch,
                  unsigned int src_width,
                  unsigned int src_height,
-                 const uint8 *src_data,
+                 const void *src_data,
                  int src_pitch,
                  unsigned int components) {
   DCHECK(image::CheckImageDimensions(src_width, src_height));
@@ -420,6 +425,12 @@ void FilterTexel(unsigned int x,
   DCHECK_LE(static_cast<int>(src_width), src_pitch);
   DCHECK_LE(static_cast<int>(dst_width), dst_pitch);
 
+  const OriginalType* src = static_cast<const OriginalType*>(src_data);
+  OriginalType* dst = static_cast<OriginalType*>(dst_data);
+
+  DCHECK_EQ(src_pitch % (components * sizeof(*src)), 0);
+  DCHECK_EQ(dst_pitch % (components * sizeof(*dst)), 0);
+
   src_pitch /= components;
   dst_pitch /= components;
   // the texel at (x, y) represents the square of texture coordinates
@@ -429,10 +440,12 @@ void FilterTexel(unsigned int x,
   // x
   // [floor(y*src_h/dst_h), ceil((y+1)*src_h/dst_h)-1]
   // from the previous level.
-  unsigned int src_min_x = (x*src_width)/dst_width;
-  unsigned int src_max_x = ((x+1)*src_width+dst_width-1)/dst_width - 1;
-  unsigned int src_min_y = (y*src_height)/dst_height;
-  unsigned int src_max_y = ((y+1)*src_height+dst_height-1)/dst_height - 1;
+  unsigned int src_min_x = (x * src_width) / dst_width;
+  unsigned int src_max_x =
+      ((x + 1) * src_width + dst_width - 1) / dst_width - 1;
+  unsigned int src_min_y = (y * src_height) / dst_height;
+  unsigned int src_max_y =
+      ((y + 1) * src_height + dst_height - 1) / dst_height - 1;
 
   // Find the contribution of source each texel, by computing the coverage of
   // the destination texel on the source texel. We do all the computations in
@@ -446,7 +459,7 @@ void FilterTexel(unsigned int x,
   // Instead of dynamically allocating a buffer for each pixel on the heap,
   // just allocate the worst case on the stack.
   DCHECK_LE(components, 4u);
-  uint64 accum[4] = {0};
+  WorkType accum[4] = {0};
   for (unsigned int src_x = src_min_x; src_x <= src_max_x; ++src_x) {
     for (unsigned int src_y = src_min_y; src_y <= src_max_y; ++src_y) {
       // The contribution of a fully covered texel is 1/(m_x*m_y) where m_x is
@@ -480,19 +493,117 @@ void FilterTexel(unsigned int x,
       }
       DCHECK(y_contrib > 0);
       DCHECK(y_contrib <= dst_height);
-      unsigned int contrib = x_contrib * y_contrib;
+      WorkType contrib = static_cast<WorkType>(x_contrib * y_contrib);
       for (unsigned int c = 0; c < components; ++c) {
-        accum[c] +=
-            contrib * src_data[(src_y * src_pitch + src_x) * components + c];
+        accum[c] += contrib *
+          convert_to_work(src[(src_y * src_pitch + src_x) * components + c]);
       }
     }
   }
   for (unsigned int c = 0; c < components; ++c) {
-    uint64 value = accum[c] / (src_height * src_width);
-    DCHECK_LE(value, 255u);
-    dst_data[(y * dst_pitch + x) * components + c] =
-        static_cast<uint8>(value);
+    WorkType value = accum[c] / static_cast<WorkType>(src_height * src_width);
+    dst[(y * dst_pitch + x) * components + c] = convert_to_original(value);
   }
+}
+
+template <typename OriginalType,
+          typename WorkType,
+          typename FilterType,
+          WorkType convert_to_work(OriginalType value),
+          OriginalType convert_from_work(WorkType),
+          FilterType convert_to_filter(OriginalType value),
+          OriginalType convert_from_filter(FilterType)>
+void GenerateMip(unsigned int components,
+                 unsigned int src_width,
+                 unsigned int src_height,
+                 const void *src_data,
+                 int src_pitch,
+                 void *dst_data,
+                 int dst_pitch) {
+  unsigned int mip_width = std::max(1U, src_width >> 1);
+  unsigned int mip_height = std::max(1U, src_height >> 1);
+
+  const OriginalType* src = static_cast<const OriginalType*>(src_data);
+  OriginalType* dst = static_cast<OriginalType*>(dst_data);
+
+  if (mip_width * 2 == src_width && mip_height * 2 == src_height) {
+    DCHECK_EQ(src_pitch % (components * sizeof(*src)), 0);
+    DCHECK_EQ(dst_pitch % (components * sizeof(*dst)), 0);
+    src_pitch /= components;
+    dst_pitch /= components;
+    // Easy case: every texel maps to exactly 4 texels in the previous level.
+    for (unsigned int y = 0; y < mip_height; ++y) {
+      for (unsigned int x = 0; x < mip_width; ++x) {
+        for (unsigned int c = 0; c < components; ++c) {
+          // Average the 4 texels.
+          unsigned int offset = (y * 2 * src_pitch + x * 2) * components + c;
+          WorkType value = convert_to_work(src[offset]);        // (2x, 2y)
+          value += convert_to_work(src[offset + components]);   // (2x+1, 2y)
+          value += convert_to_work(src[offset + src_width * components]);
+                                                                // (2x, 2y+1)
+          value += convert_to_work(src[offset + (src_width + 1) * components]);
+                                                                // (2x+1, 2y+1)
+          dst[(y * dst_pitch + x) * components + c] =
+              convert_from_work(value / static_cast<WorkType>(4));
+        }
+      }
+    }
+  } else {
+    for (unsigned int y = 0; y < mip_height; ++y) {
+      for (unsigned int x = 0; x < mip_width; ++x) {
+        FilterTexel<OriginalType,
+                    FilterType,
+                    convert_to_filter,
+                    convert_from_filter>(
+            x, y, mip_width, mip_height, dst_data, dst_pitch,
+            src_width, src_height, src_data, src_pitch, components);
+      }
+    }
+  }
+}
+
+uint32 UInt8ToUInt32(uint8 value) {
+  return static_cast<uint32>(value);
+};
+
+uint8 UInt32ToUInt8(uint32 value) {
+  return static_cast<uint8>(value);
+};
+
+uint64 UInt8ToUInt64(uint8 value) {
+  return static_cast<uint64>(value);
+};
+
+uint8 UInt64ToUInt8(uint64 value) {
+  return static_cast<uint8>(value);
+};
+
+float FloatToFloat(float value) {
+  return value;
+}
+
+double FloatToDouble(float value) {
+  return static_cast<double>(value);
+}
+
+float DoubleToFloat(double value) {
+  return static_cast<float>(value);
+}
+
+float HalfToFloat(uint16 value) {
+    return Vectormath::Aos::HalfToFloat(value);
+}
+
+uint16 FloatToHalf(float value) {
+    return Vectormath::Aos::FloatToHalf(value);
+}
+
+double HalfToDouble(uint16 value) {
+    return static_cast<double>(Vectormath::Aos::HalfToFloat(value));
+}
+
+uint16 DoubleToHalf(double value) {
+    return Vectormath::Aos::FloatToHalf(static_cast<float>(value));
 }
 
 }  // anonymous namespace
@@ -595,34 +706,31 @@ bool GenerateMipmap(unsigned int src_width,
     DLOG(ERROR) << "Mip-map generation not supported for format: " << format;
     return false;
   }
-  unsigned int mip_width = std::max(1U, src_width >> 1);
-  unsigned int mip_height = std::max(1U, src_height >> 1);
 
-  if (mip_width * 2 == src_width && mip_height * 2 == src_height) {
-    src_pitch /= components;
-    dst_pitch /= components;
-    // Easy case: every texel maps to exactly 4 texels in the previous level.
-    for (unsigned int y = 0; y < mip_height; ++y) {
-      for (unsigned int x = 0; x < mip_width; ++x) {
-        for (unsigned int c = 0; c < components; ++c) {
-          // Average the 4 texels.
-          unsigned int offset = (y * 2 * src_pitch + x * 2) * components + c;
-          unsigned int value = src_data[offset];                 // (2x, 2y)
-          value += src_data[offset + components];                // (2x+1, 2y)
-          value += src_data[offset + src_width * components];    // (2x, 2y+1)
-          value +=
-              src_data[offset + (src_width + 1) * components];   // (2x+1, 2y+1)
-          dst_data[(y * dst_pitch + x) * components + c] = value / 4;
-        }
-      }
-    }
-  } else {
-    for (unsigned int y = 0; y < mip_height; ++y) {
-      for (unsigned int x = 0; x < mip_width; ++x) {
-        FilterTexel(x, y, mip_width, mip_height, dst_data, dst_pitch,
-                    src_width, src_height, src_data, src_pitch, components);
-      }
-    }
+  switch (format) {
+    case Texture::ARGB8:
+    case Texture::XRGB8:
+      GenerateMip<uint8, uint32, uint64,
+                  UInt8ToUInt32, UInt32ToUInt8,
+                  UInt8ToUInt64, UInt64ToUInt8>(
+        components, src_width, src_height, src_data, src_pitch,
+        dst_data, dst_pitch);
+      break;
+    case Texture::ABGR16F:
+      GenerateMip<uint16, float, double,
+                  HalfToFloat, FloatToHalf,
+                  HalfToDouble, DoubleToHalf>(
+        components, src_width, src_height, src_data, src_pitch,
+        dst_data, dst_pitch);
+      break;
+    case Texture::ABGR32F:
+    case Texture::R32F:
+      GenerateMip<float, float, double,
+                  FloatToFloat, FloatToFloat,
+                  FloatToDouble, DoubleToFloat>(
+        components, src_width, src_height, src_data, src_pitch,
+        dst_data, dst_pitch);
+      break;
   }
   return true;
 }

@@ -65,19 +65,46 @@ Bitmap::Bitmap(ServiceLocator* service_locator)
       width_(0),
       height_(0),
       num_mipmaps_(0),
-      is_cubemap_(false) {}
+      semantic_(IMAGE) {
+}
 
-unsigned int Bitmap::GetMipSize(unsigned int level) const {
+size_t Bitmap::GetMipSize(unsigned int level) const {
   unsigned int mip_width = std::max(1U, width() >> level);
   unsigned int mip_height = std::max(1U, height() >> level);
   return image::ComputeMipChainSize(mip_width, mip_height, format(), 1);
+}
+
+void Bitmap::SetContents(Texture::Format format,
+                         unsigned int num_mipmaps,
+                         unsigned int width,
+                         unsigned int height,
+                         Bitmap::Semantic semantic,
+                         scoped_array<uint8>* image_data) {
+  DCHECK(image_data);
+  image_data_.reset();
+  format_ = format;
+  num_mipmaps_ = num_mipmaps;
+  width_ = width;
+  height_ = height;
+  semantic_ = semantic;
+  image_data_.swap(*image_data);
+}
+
+void Bitmap::SetFrom(Bitmap *source) {
+  DCHECK(source);
+  SetContents(source->format(),
+              source->num_mipmaps(),
+              source->width(),
+              source->height(),
+              source->semantic(),
+              &source->image_data_);
 }
 
 void Bitmap::Allocate(Texture::Format format,
                       unsigned int width,
                       unsigned int height,
                       unsigned int num_mipmaps,
-                      bool cube_map) {
+                      Bitmap::Semantic semantic) {
   DCHECK(image::CheckImageDimensions(width, height));
   switch (format) {
     case Texture::XRGB8:
@@ -93,7 +120,6 @@ void Bitmap::Allocate(Texture::Format format,
       DLOG(FATAL) << "Trying to allocate a bitmap with invalid format";
       break;
   }
-  DCHECK(!cube_map || (width == height));
   DCHECK_LE(num_mipmaps, image::ComputeMipMapCount(width, height));
   DCHECK_GT(num_mipmaps, 0u);
 
@@ -101,27 +127,14 @@ void Bitmap::Allocate(Texture::Format format,
   width_ = width;
   height_ = height;
   num_mipmaps_ = num_mipmaps;
-  is_cubemap_ = cube_map;
+  semantic_ = semantic;
   AllocateData();
 }
 
 uint8 *Bitmap::GetMipData(unsigned int level) const {
   DCHECK(level < num_mipmaps_);
-  DCHECK(!is_cubemap_);
   if (!image_data_.get()) return NULL;
   uint8 *data = image_data_.get();
-  return data + GetMipChainSize(level);
-}
-
-uint8 *Bitmap::GetFaceMipData(TextureCUBE::CubeFace face,
-                              unsigned int level) const {
-  DCHECK(level < num_mipmaps_);
-  if (!image_data_.get()) return NULL;
-  uint8 *data = image_data_.get();
-  if (is_cubemap()) {
-    data += (face - TextureCUBE::FACE_POSITIVE_X) *
-        GetMipChainSize(num_mipmaps_);
-  }
   return data + GetMipChainSize(level);
 }
 
@@ -164,52 +177,14 @@ void Bitmap::SetRect(
   }
 }
 
-void Bitmap::SetFaceRect(
-    TextureCUBE::CubeFace face,
-    int level,
-    unsigned dst_left,
-    unsigned dst_top,
-    unsigned src_width,
-    unsigned src_height,
-    const void* src_data,
-    int src_pitch) {
-  DCHECK(src_data);
-  DCHECK(level < static_cast<int>(num_mipmaps()) && level >= 0);
-  unsigned mip_width = image::ComputeMipDimension(level, width());
-  unsigned mip_height = image::ComputeMipDimension(level, height());
-  DCHECK(dst_left + src_width <= mip_width &&
-         dst_top + src_height <= mip_height);
-  bool compressed = Texture::IsCompressedFormat(format());
-  bool entire_rect = dst_left == 0 && dst_top == 0 &&
-                     src_width == mip_width && src_height == mip_height;
-  DCHECK(!compressed || entire_rect);
-
-  uint8* dst =
-      GetFaceMipData(face, level) +
-      image::ComputeMipChainSize(mip_width, dst_top, format(), 1) +
-      image::ComputeMipChainSize(dst_left, 1, format(), 1);
-
-  const uint8* src = static_cast<const uint8*>(src_data);
-  if (!compressed) {
-    unsigned bytes_per_line = image::ComputePitch(format(), src_width);
-    int dst_pitch = image::ComputePitch(format(), mip_width);
-    for (unsigned yy = 0; yy < src_height; ++yy) {
-      memcpy(dst, src, bytes_per_line);
-      src += src_pitch;
-      dst += dst_pitch;
-    }
-  } else {
-    memcpy(dst,
-           src,
-           image::ComputeMipChainSize(mip_width, mip_height, format(), 1));
-  }
-}
-
-
-bool Bitmap::LoadFromStream(MemoryReadStream *stream,
+bool Bitmap::LoadFromStream(ServiceLocator* service_locator,
+                            MemoryReadStream *stream,
                             const String &filename,
                             image::ImageFileType file_type,
-                            bool generate_mipmaps) {
+                            BitmapRefArray* bitmaps) {
+  DCHECK(stream);
+  DCHECK(bitmaps);
+  BitmapRefArray::size_type first = bitmaps->size();
   bool success = false;
   // If we don't know what type to load, try to detect it based on the file
   // name.
@@ -219,16 +194,16 @@ bool Bitmap::LoadFromStream(MemoryReadStream *stream,
 
   switch (file_type) {
     case image::TGA:
-      success = LoadFromTGAStream(stream, filename, generate_mipmaps);
+      success = LoadFromTGAStream(service_locator, stream, filename, bitmaps);
       break;
     case image::DDS:
-      success = LoadFromDDSStream(stream, filename, generate_mipmaps);
+      success = LoadFromDDSStream(service_locator, stream, filename, bitmaps);
       break;
     case image::PNG:
-      success = LoadFromPNGStream(stream, filename, generate_mipmaps);
+      success = LoadFromPNGStream(service_locator, stream, filename, bitmaps);
       break;
     case image::JPEG:
-      success = LoadFromJPEGStream(stream, filename, generate_mipmaps);
+      success = LoadFromJPEGStream(service_locator, stream, filename, bitmaps);
       break;
     case image::UNKNOWN:
     default:
@@ -243,28 +218,34 @@ bool Bitmap::LoadFromStream(MemoryReadStream *stream,
     // We will try all the loaders, one by one, starting by the ones that can
     // have an early detect based on magic strings.  We Seek(0) after each try
     // since each attempt changes the stream read position.
-    success = LoadFromDDSStream(stream, filename, generate_mipmaps);
+    success = LoadFromDDSStream(service_locator, stream, filename, bitmaps);
     if (!success) {
       stream->Seek(0);
-      success = LoadFromPNGStream(stream, filename, generate_mipmaps);
+      success = LoadFromPNGStream(service_locator, stream, filename, bitmaps);
     }
 
     if (!success) {
       stream->Seek(0);
-      success = LoadFromJPEGStream(stream, filename, generate_mipmaps);
+      success = LoadFromJPEGStream(service_locator, stream, filename, bitmaps);
     }
 
     if (!success) {
       stream->Seek(0);
-      success = LoadFromTGAStream(stream, filename, generate_mipmaps);
+      success = LoadFromTGAStream(service_locator, stream, filename, bitmaps);
     }
   }
 
   if (success) {
-    Features* features = service_locator()->GetService<Features>();
+    Features* features = service_locator->GetService<Features>();
     DCHECK(features);
     if (features->flip_textures()) {
-      FlipVertically();
+      // Only flip the bitmaps we added.
+      for (BitmapRefArray::size_type ii = first; ii < bitmaps->size(); ++ii) {
+        Bitmap* bitmap = (*bitmaps)[ii].Get();
+        if (bitmap->semantic() == IMAGE) {
+          bitmap->FlipVertically();
+        }
+      }
     }
   } else {
     DLOG(ERROR) << "Failed to load image \"" << filename
@@ -275,9 +256,11 @@ bool Bitmap::LoadFromStream(MemoryReadStream *stream,
 
 // Given an arbitrary bitmap file, load it all into memory and then call our
 // stream loader
-bool Bitmap::LoadFromFile(const FilePath &filepath,
+bool Bitmap::LoadFromFile(ServiceLocator* service_locator,
+                          const FilePath &filepath,
                           image::ImageFileType file_type,
-                          bool generate_mipmaps) {
+                          BitmapRefArray* bitmaps) {
+  DCHECK(bitmaps);
   // Open the file.
   bool result = false;
   String filename = FilePathToUTF8(filepath);
@@ -304,8 +287,8 @@ bool Bitmap::LoadFromFile(const FilePath &filepath,
         } else {
           // And create the bitmap from a memory stream
           MemoryReadStream stream(file_contents, file_length);
-          result = LoadFromStream(&stream, filename, file_type,
-                                  generate_mipmaps);
+          result = LoadFromStream(service_locator,
+                                  &stream, filename, file_type, bitmaps);
         }
       }
     }
@@ -319,7 +302,9 @@ bool Bitmap::LoadFromFile(const FilePath &filepath,
 // decide which image format it is and call the correct loading function.
 bool Bitmap::LoadFromRawData(RawData *raw_data,
                              image::ImageFileType file_type,
-                             bool generate_mipmaps) {
+                             BitmapRefArray* bitmaps) {
+  DCHECK(raw_data);
+  DCHECK(bitmaps);
   String filename = raw_data->uri();
 
   // GetData() returns NULL if it, for example, cannot open the temporary data
@@ -332,7 +317,8 @@ bool Bitmap::LoadFromRawData(RawData *raw_data,
 
   MemoryReadStream stream(data, raw_data->GetLength());
 
-  return LoadFromStream(&stream, filename, file_type, generate_mipmaps);
+  return LoadFromStream(raw_data->service_locator(),
+                        &stream, filename, file_type, bitmaps);
 }
 
 void Bitmap::DrawImage(const Bitmap& src_img,
@@ -462,48 +448,38 @@ bool Bitmap::CheckAlphaIsOne() const {
     case Texture::XRGB8:
       return true;
     case Texture::ARGB8: {
-      int faces = is_cubemap() ? 6 : 1;
-      for (int face = 0; face < faces; ++face) {
-        for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-          const uint8 *data = GetFaceMipData(
-              static_cast<TextureCUBE::CubeFace>(face),
-              level) + 3;
-          const uint8* end = data + image::ComputeBufferSize(
-              std::max(1U, width() >> level),
-              std::max(1U, height() >> level),
-              format());
-          while (data < end) {
-            if (*data != 255) {
-              return false;
-            }
-            data += 4;
+      for (unsigned int level = 0; level < num_mipmaps(); ++level) {
+        const uint8* data = GetMipData(level) + 3;
+        const uint8* end = data + image::ComputeBufferSize(
+            std::max(1U, width() >> level),
+            std::max(1U, height() >> level),
+            format());
+        while (data < end) {
+          if (*data != 255) {
+            return false;
           }
+          data += 4;
         }
       }
       break;
     }
     case Texture::DXT1: {
-      int faces = is_cubemap() ? 6 : 1;
-      for (int face = 0; face < faces; ++face) {
-        for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-          const uint8 *data = GetFaceMipData(
-              static_cast<TextureCUBE::CubeFace>(face),
-              level);
-          const uint8* end = data + image::ComputeBufferSize(
-              std::max(1U, width() >> level),
-              std::max(1U, height() >> level),
-              format());
-          DCHECK((end - data) % 8 == 0);
-          while (data < end) {
-            int color0 = static_cast<int>(data[0]) |
-                         static_cast<int>(data[1]) << 8;
-            int color1 = static_cast<int>(data[2]) |
-                         static_cast<int>(data[3]) << 8;
-            if (color0 < color1) {
-              return false;
-            }
-            data += 8;
+      for (unsigned int level = 0; level < num_mipmaps(); ++level) {
+        const uint8* data = GetMipData(level);
+        const uint8* end = data + image::ComputeBufferSize(
+            std::max(1U, width() >> level),
+            std::max(1U, height() >> level),
+            format());
+        DCHECK((end - data) % 8 == 0);
+        while (data < end) {
+          int color0 = static_cast<int>(data[0]) |
+                       static_cast<int>(data[1]) << 8;
+          int color1 = static_cast<int>(data[2]) |
+                       static_cast<int>(data[3]) << 8;
+          if (color0 < color1) {
+            return false;
           }
+          data += 8;
         }
       }
       break;
@@ -512,22 +488,17 @@ bool Bitmap::CheckAlphaIsOne() const {
     case Texture::DXT5:
       return false;
     case Texture::ABGR16F: {
-      int faces = is_cubemap() ? 6 : 1;
-      for (int face = 0; face < faces; ++face) {
-        for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-          const uint8 *data = GetFaceMipData(
-              static_cast<TextureCUBE::CubeFace>(face),
-              level) + 6;
-          const uint8* end = data + image::ComputeBufferSize(
-              std::max(1U, width() >> level),
-              std::max(1U, height() >> level),
-              format());
-          while (data < end) {
-            if (data[0] != 0x00 || data[1] != 0x3C) {
-              return false;
-            }
-            data += 8;
+      for (unsigned int level = 0; level < num_mipmaps(); ++level) {
+        const uint8* data = GetMipData(level) + 6;
+        const uint8* end = data + image::ComputeBufferSize(
+            std::max(1U, width() >> level),
+            std::max(1U, height() >> level),
+            format());
+        while (data < end) {
+          if (data[0] != 0x00 || data[1] != 0x3C) {
+            return false;
           }
+          data += 8;
         }
       }
       break;
@@ -535,22 +506,17 @@ bool Bitmap::CheckAlphaIsOne() const {
     case Texture::R32F:
       return true;
     case Texture::ABGR32F: {
-      int faces = is_cubemap() ? 6 : 1;
-      for (int face = 0; face < faces; ++face) {
-        for (unsigned int level = 0; level < num_mipmaps(); ++level) {
-          const uint8* data = GetFaceMipData(
-              static_cast<TextureCUBE::CubeFace>(face),
-              level) + 12;
-          const uint8* end = data + image::ComputeBufferSize(
-              std::max(1U, width() >> level),
-              std::max(1U, height() >> level),
-              format());
-          while (data < end) {
-            if (*(reinterpret_cast<const float*>(data)) != 1.0f) {
-              return false;
-            }
-            data += 16;
+      for (unsigned int level = 0; level < num_mipmaps(); ++level) {
+        const uint8* data = GetMipData(level) + 12;
+        const uint8* end = data + image::ComputeBufferSize(
+            std::max(1U, width() >> level),
+            std::max(1U, height() >> level),
+            format());
+        while (data < end) {
+          if (*(reinterpret_cast<const float*>(data)) != 1.0f) {
+            return false;
           }
+          data += 16;
         }
       }
       break;

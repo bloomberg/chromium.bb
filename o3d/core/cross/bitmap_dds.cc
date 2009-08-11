@@ -248,7 +248,7 @@ static void FlipBGRAImage(unsigned int width,
   DCHECK(image::CheckImageDimensions(width, height));
   DCHECK(format != Texture::DXT1 && format != Texture::DXT3 &&
          format != Texture::DXT5);
-  unsigned int pixel_bytes = image::ComputeMipChainSize(1, 1, format, 1);
+  size_t pixel_bytes = image::ComputeMipChainSize(1, 1, format, 1);
   unsigned int mip_width = width;
   unsigned int mip_height = height;
   // rows are at most as big as the first one.
@@ -271,14 +271,12 @@ static void FlipBGRAImage(unsigned int width,
 }
 
 void Bitmap::FlipVertically() {
-  if (!is_cubemap()) {
-    if (format() == Texture::DXT1 ||
-        format() == Texture::DXT3 ||
-        format() == Texture::DXT5) {
-      FlipDXTCImage(width(), height(), num_mipmaps(), format(), image_data());
-    } else {
-      FlipBGRAImage(width(), height(), num_mipmaps(), format(), image_data());
-    }
+  if (format() == Texture::DXT1 ||
+      format() == Texture::DXT3 ||
+      format() == Texture::DXT5) {
+    FlipDXTCImage(width(), height(), num_mipmaps(), format(), image_data());
+  } else {
+    FlipBGRAImage(width(), height(), num_mipmaps(), format(), image_data());
   }
 }
 
@@ -286,9 +284,10 @@ void Bitmap::FlipVertically() {
 // Load the bitmap data as DXTC compressed data from a DDS stream into the
 // Bitmap object. This routine only supports compressed DDS formats DXT1,
 // DXT3 and DXT5.
-bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
+bool Bitmap::LoadFromDDSStream(ServiceLocator* service_locator,
+                               MemoryReadStream *stream,
                                const String &filename,
-                               bool generate_mipmaps) {
+                               BitmapRefArray* bitmaps) {
   // Verify the file is a true .dds file
   char magic[4];
   size_t bytes_read = stream->Read(magic, sizeof(magic));
@@ -297,7 +296,7 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
     return false;
   }
   if (std::strncmp(magic, "DDS ", 4) != 0) {
-    DLOG(ERROR) << "DDS magic header not rcognised \"" << filename << "\"";
+    DLOG(ERROR) << "DDS magic header not recognized \"" << filename << "\"";
     return false;
   }
   // Get the DirectDraw Surface Descriptor
@@ -390,7 +389,7 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
 
     // Check that the advertised size is correct.
     if (dd_surface_descriptor.dwFlags & DDSD_LINEARSIZE) {
-      unsigned int expected_size =
+      size_t expected_size =
           image::ComputeBufferSize(dds_width, dds_height, format);
       if (expected_size != dd_surface_descriptor.dwLinearSize) {
         DLOG(ERROR) << "Advertised buffer size in \"" << filename
@@ -449,26 +448,13 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
     format = add_filler_alpha ? Texture::XRGB8 : Texture::ARGB8;
   }
 
-  if (is_dxtc && generate_mipmaps) {
-    DLOG(WARNING) << "Disabling mip-map generation for DXTC image.";
-    generate_mipmaps = false;
-  }
+  unsigned int num_bitmaps = is_cubemap ? 6 : 1;
+  size_t face_size = image::ComputeMipChainSize(
+      dds_width, dds_height, format, mip_count);
 
-  // compute buffer size
-  unsigned int num_faces = is_cubemap ? 6 : 1;
-  // power-of-two dimensions.
-  unsigned int final_mip_count =
-      generate_mipmaps ? image::ComputeMipMapCount(
-          dds_width, dds_height) : mip_count;
-  unsigned int face_size = image::ComputeMipChainSize(
-      dds_width, dds_height, format, final_mip_count);
-  unsigned int buffer_size = num_faces * face_size;
+  BitmapRefArray temp_bitmaps;
 
-
-  // Allocate and load bitmap data.
-  scoped_array<uint8> image_data(new uint8[buffer_size]);
-
-  unsigned int disk_face_size =
+  size_t disk_face_size =
       image::ComputeMipChainSize(dds_width, dds_height, format, mip_count);
   if (!is_dxtc) {
     // if reading uncompressed RGB, for example, we shouldn't read alpha channel
@@ -477,57 +463,42 @@ bool Bitmap::LoadFromDDSStream(MemoryReadStream *stream,
     disk_face_size = components_per_pixel * disk_face_size / 4;
   }
 
-  for (unsigned int face = 0; face < num_faces; ++face) {
-    char *data = reinterpret_cast<char*>(image_data.get()) + face_size * face;
+  for (unsigned int face = 0; face < num_bitmaps; ++face) {
+    // Allocate and load bitmap data.
+    scoped_array<uint8> image_data(new uint8[face_size]);
+
+    char *data = reinterpret_cast<char*>(image_data.get());
     bytes_read = stream->Read(data, disk_face_size);
     if (bytes_read != disk_face_size) {
       DLOG(ERROR) << "DDS failed to read image data \"" << filename << "\"";
       return false;
     }
-  }
 
-  // Do pixel conversions on non-DXT images.
-  if (!is_dxtc) {
-    DCHECK(components_per_pixel == 3 || components_per_pixel == 4);
-    unsigned int pixel_count = disk_face_size / components_per_pixel;
-    for (unsigned int face = 0; face < num_faces; ++face) {
-      uint8 *data = image_data.get() + face_size * face;
+    // Do pixel conversions on non-DXT images.
+    if (!is_dxtc) {
+      DCHECK(components_per_pixel == 3 || components_per_pixel == 4);
+      unsigned int pixel_count = disk_face_size / components_per_pixel;
       // convert to four components per pixel if necessary
       if (add_filler_alpha) {
         DCHECK_EQ(components_per_pixel, 3u);
-        image::XYZToXYZA(data, pixel_count);
+        image::XYZToXYZA(image_data.get(), pixel_count);
       } else {
         DCHECK_EQ(components_per_pixel, 4u);
       }
-      if (rgb_to_bgr)
-        image::RGBAToBGRA(data, pixel_count);
-    }
-  }
-
-  if (final_mip_count > mip_count) {
-    // Generate the full mip-map chain using the last mip-map read, for each
-    // face.
-    unsigned int base_mip_width = dds_width >> (mip_count - 1);
-    unsigned int base_mip_height = dds_height >> (mip_count - 1);
-    unsigned int base_mip_offset = image::ComputeMipChainSize(
-        dds_width, dds_height, format, mip_count - 1);
-    for (unsigned int face = 0; face < num_faces; ++face) {
-      uint8 *data = image_data.get() + face_size * face + base_mip_offset;
-      if (!GenerateMipmaps(base_mip_width, base_mip_height, format,
-                           final_mip_count - mip_count, data)) {
-        DLOG(ERROR) << "mip-map generation failed for \"" << filename << "\"";
-        return false;
+      if (rgb_to_bgr) {
+        image::RGBAToBGRA(image_data.get(), pixel_count);
       }
     }
+    Semantic semantic = is_cubemap ? static_cast<Semantic>(face) : IMAGE;
+
+    Bitmap::Ref bitmap(new Bitmap(service_locator));
+    bitmap->SetContents(format, mip_count, dds_width, dds_height, semantic,
+                        &image_data);
+    temp_bitmaps.push_back(bitmap);
   }
 
-  // Update the Bitmap member variables.
-  image_data_.swap(image_data);
-  format_ = format;
-  width_  = dds_width;
-  height_ = dds_height;
-  num_mipmaps_ = final_mip_count;
-  is_cubemap_ = is_cubemap;
+  // Success.
+  bitmaps->insert(bitmaps->end(), temp_bitmaps.begin(), temp_bitmaps.end());
   return true;
 }
 

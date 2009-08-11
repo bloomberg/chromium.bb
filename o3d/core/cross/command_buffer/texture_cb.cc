@@ -103,47 +103,21 @@ void UpdateResourceFromBitmap(RendererCB *renderer,
                               ResourceID texture_id,
                               unsigned int level,
                               TextureCUBE::CubeFace face,
-                              const Bitmap &bitmap,
-                              bool resize_to_pot) {
+                              const Bitmap &bitmap) {
   DCHECK(bitmap.image_data());
   FencedAllocatorWrapper *allocator = renderer->allocator();
   CommandBufferHelper *helper = renderer->helper();
   unsigned int mip_width = std::max(1U, bitmap.width() >> level);
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
-  unsigned char *mip_data = bitmap.GetFaceMipData(face, level);
-  unsigned int mip_size =
+  unsigned char *mip_data = bitmap.GetMipData(level);
+  size_t mip_size =
       image::ComputeBufferSize(mip_width, mip_height, bitmap.format());
-  if (resize_to_pot) {
-    unsigned int pot_width =
-        std::max(1U, image::ComputePOTSize(bitmap.width()) >> level);
-    unsigned int pot_height =
-        std::max(1U, image::ComputePOTSize(bitmap.height()) >> level);
-    unsigned int pot_size = image::ComputeBufferSize(pot_width, pot_height,
-                                                     bitmap.format());
-    unsigned char *buffer = allocator->AllocTyped<unsigned char>(pot_size);
-    // This should succeed for practical purposes: we don't store persistent
-    // data in the transfer buffer, and the maximum texture size 2048x2048
-    // makes 32MB for ABGR16F (the size of the transfer buffer).
-    // TODO: 32MB for the transfer buffer can be big (e.g. if there are
-    // multiple renderers). We'll want to implement a way to upload the texture
-    // by bits that fit into an arbitrarily small buffer, but that is complex
-    // for the NPOT->POT case.
-    DCHECK(buffer);
-    image::Scale(mip_width, mip_height, bitmap.format(), mip_data,
-                 pot_width, pot_height, buffer,
-                 image::ComputePitch(bitmap.format(), pot_width));
-    mip_width = pot_width;
-    mip_height = pot_height;
-    mip_size = pot_size;
-    mip_data = buffer;
-  } else {
-    unsigned char *buffer = allocator->AllocTyped<unsigned char>(mip_size);
-    DCHECK(buffer);
-    memcpy(buffer, mip_data, mip_size);
-    mip_data = buffer;
-  }
+  unsigned char *buffer = allocator->AllocTyped<unsigned char>(mip_size);
+  DCHECK(buffer);
+  memcpy(buffer, mip_data, mip_size);
+  mip_data = buffer;
 
-  unsigned int pitch = image::ComputeBufferSize(mip_width, 1, bitmap.format());
+  size_t pitch = image::ComputeBufferSize(mip_width, 1, bitmap.format());
 
   CommandBufferEntry args[10];
   args[0].value_uint32 = texture_id;
@@ -179,12 +153,12 @@ void CopyBackResourceToBitmap(RendererCB *renderer,
   CommandBufferHelper *helper = renderer->helper();
   unsigned int mip_width = std::max(1U, bitmap.width() >> level);
   unsigned int mip_height = std::max(1U, bitmap.height() >> level);
-  unsigned int mip_size =
+  size_t mip_size =
       image::ComputeBufferSize(mip_width, mip_height, bitmap.format());
   unsigned char *buffer = allocator->AllocTyped<unsigned char>(mip_size);
   DCHECK(buffer);
 
-  unsigned int pitch = image::ComputeBufferSize(mip_width, 1, bitmap.format());
+  size_t pitch = image::ComputeBufferSize(mip_width, 1, bitmap.format());
 
   CommandBufferEntry args[10];
   args[0].value_uint32 = texture_id;
@@ -207,7 +181,7 @@ void CopyBackResourceToBitmap(RendererCB *renderer,
   args[9].value_uint32 = allocator->GetOffset(buffer);
   helper->AddCommand(command_buffer::GET_TEXTURE_DATA, 10, args);
   helper->Finish();
-  memcpy(bitmap.GetFaceMipData(face, level), buffer, mip_size);
+  memcpy(bitmap.GetMipData(level), buffer, mip_size);
   allocator->Free(buffer);
 }
 
@@ -223,23 +197,23 @@ static const unsigned int kMaxTextureSize = 2048;
 // exit.
 Texture2DCB::Texture2DCB(ServiceLocator* service_locator,
                          ResourceID resource_id,
-                         const Bitmap &bitmap,
-                         bool resize_to_pot,
+                         Texture::Format format,
+                         int levels,
+                         int width,
+                         int height,
                          bool enable_render_surfaces)
     : Texture2D(service_locator,
-                bitmap.width(),
-                bitmap.height(),
-                bitmap.format(),
-                bitmap.num_mipmaps(),
-                bitmap.CheckAlphaIsOne(),
-                resize_to_pot,
+                width,
+                height,
+                format,
+                levels,
                 enable_render_surfaces),
       renderer_(static_cast<RendererCB*>(
                     service_locator->GetService<Renderer>())),
       resource_id_(resource_id),
       has_levels_(0),
       backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
-  DCHECK_NE(format(), Texture::UNKNOWN_FORMAT);
+  DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
 }
 
 Texture2DCB::~Texture2DCB() {
@@ -252,65 +226,42 @@ Texture2DCB::~Texture2DCB() {
 
 // Creates a new texture object from scratch.
 Texture2DCB* Texture2DCB::Create(ServiceLocator* service_locator,
-                                 Bitmap *bitmap,
+                                 Texture::Format format,
+                                 int levels,
+                                 int width,
+                                 int height,
                                  bool enable_render_surfaces) {
-  DCHECK_NE(bitmap->format(), Texture::UNKNOWN_FORMAT);
-  DCHECK(!bitmap->is_cubemap());
+  DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
   RendererCB *renderer = static_cast<RendererCB *>(
       service_locator->GetService<Renderer>());
-  texture::Format cb_format = CBFormatFromO3DFormat(bitmap->format());
+  texture::Format cb_format = CBFormatFromO3DFormat(format);
   if (cb_format == texture::NUM_FORMATS) {
     O3D_ERROR(service_locator)
         << "Unsupported format in Texture2DCB::Create.";
     return NULL;
   }
-  if (bitmap->width() > kMaxTextureSize ||
-      bitmap->height() > kMaxTextureSize) {
-    O3D_ERROR(service_locator) << "Texture dimensions (" << bitmap->width()
-                               << ", " << bitmap->height() << ") too big.";
+  if (width > kMaxTextureSize || height > kMaxTextureSize) {
+    O3D_ERROR(service_locator) << "Texture dimensions (" << width
+                               << ", " << height << ") too big.";
     return NULL;
-  }
-
-  bool resize_to_pot = !renderer->supports_npot() && !bitmap->IsPOT();
-
-  unsigned int mip_width = bitmap->width();
-  unsigned int mip_height = bitmap->height();
-  if (resize_to_pot) {
-    mip_width = image::ComputePOTSize(mip_width);
-    mip_height = image::ComputePOTSize(mip_height);
   }
 
   ResourceID texture_id = renderer->texture_ids().AllocateID();
   CommandBufferEntry args[3];
   args[0].value_uint32 = texture_id;
   args[1].value_uint32 =
-      create_texture_2d_cmd::Width::MakeValue(mip_width) |
-      create_texture_2d_cmd::Height::MakeValue(mip_height);
+      create_texture_2d_cmd::Width::MakeValue(width) |
+      create_texture_2d_cmd::Height::MakeValue(height);
   args[2].value_uint32 =
-      create_texture_2d_cmd::Levels::MakeValue(bitmap->num_mipmaps()) |
+      create_texture_2d_cmd::Levels::MakeValue(levels) |
       create_texture_2d_cmd::Format::MakeValue(cb_format) |
       create_texture_2d_cmd::Flags::MakeValue(0);
   renderer->helper()->AddCommand(command_buffer::CREATE_TEXTURE_2D, 3, args);
-  if (bitmap->image_data()) {
-    for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
-      UpdateResourceFromBitmap(renderer, texture_id, i,
-                               TextureCUBE::FACE_POSITIVE_X, *bitmap, true);
-    }
-  }
 
   Texture2DCB *texture = new Texture2DCB(service_locator, texture_id,
-                                         *bitmap, resize_to_pot,
+                                         format, levels, width, height,
                                          enable_render_surfaces);
 
-  // Setup the backing bitmap.
-  texture->backing_bitmap_->SetFrom(bitmap);
-  if (texture->backing_bitmap_->image_data()) {
-    if (resize_to_pot) {
-      texture->has_levels_ = (1 << bitmap->num_mipmaps()) - 1;
-    } else {
-      texture->backing_bitmap_->FreeData();
-    }
-  }
   return texture;
 }
 
@@ -342,7 +293,8 @@ bool Texture2DCB::Lock(int level, void** data, int* pitch) {
   }
   if (!backing_bitmap_->image_data()) {
     DCHECK_EQ(has_levels_, 0);
-    backing_bitmap_->Allocate(format(), width(), height(), levels(), false);
+    backing_bitmap_->Allocate(format(), width(), height(), levels(),
+                              Bitmap::IMAGE);
   }
   *data = backing_bitmap_->GetMipData(level);
   unsigned int mip_width = image::ComputeMipDimension(level, width());
@@ -356,12 +308,10 @@ bool Texture2DCB::Lock(int level, void** data, int* pitch) {
     *pitch = bytes_per_row;
   }
   if (!HasLevel(level)) {
-    DCHECK(!resize_to_pot_);
     DCHECK_EQ(backing_bitmap_->width(), width());
     DCHECK_EQ(backing_bitmap_->height(), height());
     DCHECK_EQ(backing_bitmap_->format(), format());
     DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
-    DCHECK(!backing_bitmap_->is_cubemap());
     CopyBackResourceToBitmap(renderer_, resource_id_, level,
                              TextureCUBE::FACE_POSITIVE_X,
                              *backing_bitmap_.Get());
@@ -391,13 +341,12 @@ bool Texture2DCB::Unlock(int level) {
   DCHECK_EQ(backing_bitmap_->height(), height());
   DCHECK_EQ(backing_bitmap_->format(), format());
   DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
-  DCHECK(!backing_bitmap_->is_cubemap());
   DCHECK(HasLevel(level));
   UpdateResourceFromBitmap(renderer_, resource_id_, level,
                            TextureCUBE::FACE_POSITIVE_X,
-                           *backing_bitmap_.Get(), resize_to_pot_);
+                           *backing_bitmap_.Get());
   locked_levels_ &= ~(1 << level);
-  if (!resize_to_pot_ && (locked_levels_ == 0)) {
+  if (locked_levels_ == 0) {
     backing_bitmap_->FreeData();
     has_levels_ = 0;
   }
@@ -418,22 +367,21 @@ const Texture::RGBASwizzleIndices& Texture2DCB::GetABGR32FSwizzleIndices() {
 // Creates a texture from a pre-existing texture resource.
 TextureCUBECB::TextureCUBECB(ServiceLocator* service_locator,
                              ResourceID resource_id,
-                             const Bitmap &bitmap,
-                             bool resize_to_pot,
+                             Texture::Format format,
+                             int levels,
+                             int edge_length,
                              bool enable_render_surfaces)
     : TextureCUBE(service_locator,
-                  bitmap.width(),
-                  bitmap.format(),
-                  bitmap.num_mipmaps(),
-                  bitmap.CheckAlphaIsOne(),
-                  resize_to_pot,
+                  edge_length,
+                  format,
+                  levels,
                   enable_render_surfaces),
       renderer_(static_cast<RendererCB*>(
                     service_locator->GetService<Renderer>())),
-      resource_id_(resource_id),
-      backing_bitmap_(Bitmap::Ref(new Bitmap(service_locator))) {
-  for (unsigned int i = 0; i < 6; ++i) {
-    has_levels_[i] = 0;
+      resource_id_(resource_id) {
+  for (int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
+    backing_bitmaps_[ii] = Bitmap::Ref(new Bitmap(service_locator));
+    has_levels_[ii] = 0;
   }
 }
 
@@ -447,67 +395,39 @@ TextureCUBECB::~TextureCUBECB() {
 
 // Create a new Cube texture from scratch.
 TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
-                                     Bitmap *bitmap,
+                                     Texture::Format format,
+                                     int levels,
+                                     int edge_length,
                                      bool enable_render_surfaces) {
-  DCHECK_NE(bitmap->format(), Texture::UNKNOWN_FORMAT);
-  DCHECK(bitmap->is_cubemap());
-  DCHECK_EQ(bitmap->width(), bitmap->height());
+  DCHECK_NE(format, Texture::UNKNOWN_FORMAT);
   RendererCB *renderer = static_cast<RendererCB *>(
       service_locator->GetService<Renderer>());
-  texture::Format cb_format = CBFormatFromO3DFormat(bitmap->format());
+  texture::Format cb_format = CBFormatFromO3DFormat(format);
   if (cb_format == texture::NUM_FORMATS) {
     O3D_ERROR(service_locator)
         << "Unsupported format in Texture2DCB::Create.";
     return NULL;
   }
-  if (bitmap->width() > kMaxTextureSize) {
-    O3D_ERROR(service_locator) << "Texture dimensions (" << bitmap->width()
-                               << ", " << bitmap->height() << ") too big.";
+  if (edge_length > kMaxTextureSize) {
+    O3D_ERROR(service_locator) << "Texture dimensions (" << edge_length
+                               << ", " << edge_length << ") too big.";
     return NULL;
-  }
-
-  bool resize_to_pot = !renderer->supports_npot() && !bitmap->IsPOT();
-
-  unsigned int mip_width = bitmap->width();
-  unsigned int mip_height = bitmap->height();
-  if (resize_to_pot) {
-    mip_width = image::ComputePOTSize(mip_width);
-    mip_height = image::ComputePOTSize(mip_height);
   }
 
   ResourceID texture_id = renderer->texture_ids().AllocateID();
   CommandBufferEntry args[3];
   args[0].value_uint32 = texture_id;
-  args[1].value_uint32 = create_texture_cube_cmd::Side::MakeValue(mip_width);
+  args[1].value_uint32 = create_texture_cube_cmd::Side::MakeValue(edge_length);
   args[2].value_uint32 =
-      create_texture_cube_cmd::Levels::MakeValue(bitmap->num_mipmaps()) |
+      create_texture_cube_cmd::Levels::MakeValue(levels) |
       create_texture_cube_cmd::Format::MakeValue(cb_format) |
       create_texture_cube_cmd::Flags::MakeValue(0);
   renderer->helper()->AddCommand(command_buffer::CREATE_TEXTURE_CUBE, 3, args);
-  if (bitmap->image_data()) {
-    for (unsigned int face = 0; face < 6; ++face) {
-      for (unsigned int i = 0; i < bitmap->num_mipmaps(); ++i) {
-        UpdateResourceFromBitmap(renderer, texture_id, i,
-                                 static_cast<CubeFace>(face), *bitmap, true);
-      }
-    }
-  }
 
   TextureCUBECB* texture =
-      new TextureCUBECB(service_locator, texture_id, *bitmap,
-                        resize_to_pot, enable_render_surfaces);
+      new TextureCUBECB(service_locator, texture_id, format, levels,
+                        edge_length, enable_render_surfaces);
 
-  // Setup the backing bitmap.
-  texture->backing_bitmap_->SetFrom(bitmap);
-  if (texture->backing_bitmap_->image_data()) {
-    if (resize_to_pot) {
-      for (unsigned int face = 0; face < 6; ++face) {
-        texture->has_levels_[face] = (1 << bitmap->num_mipmaps()) - 1;
-      }
-    } else {
-      texture->backing_bitmap_->FreeData();
-    }
-  }
   return texture;
 }
 
@@ -539,15 +459,14 @@ bool TextureCUBECB::Lock(CubeFace face, int level, void** data, int* pitch) {
         << "\" is already locked.";
     return false;
   }
-  if (!backing_bitmap_->image_data()) {
-    for (unsigned int i = 0; i < 6; ++i) {
-      DCHECK_EQ(has_levels_[i], 0);
-    }
-    backing_bitmap_->Allocate(format(), edge_length(), edge_length(),
-                             levels(), true);
+  Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
+  if (!backing_bitmap->image_data()) {
+    DCHECK_EQ(has_levels_[face], 0);
+    backing_bitmap->Allocate(format(), edge_length(), edge_length(), levels(),
+                             Bitmap::IMAGE);
   }
-  *data = backing_bitmap_->GetFaceMipData(face, level);
-  unsigned int mip_width  = image::ComputeMipDimension(level, edge_length());
+  *data = backing_bitmap->GetMipData(level);
+  unsigned int mip_width = image::ComputeMipDimension(level, edge_length());
   if (!IsCompressed()) {
     *pitch = image::ComputePitch(format(), mip_width);
   } else {
@@ -559,15 +478,12 @@ bool TextureCUBECB::Lock(CubeFace face, int level, void** data, int* pitch) {
   if (!HasLevel(level, face)) {
     // TODO: add some API so we don't have to copy back the data if we
     // will rewrite it all.
-    DCHECK(!resize_to_pot_);
-    DCHECK_EQ(backing_bitmap_->width(), edge_length());
-    DCHECK_EQ(backing_bitmap_->height(), edge_length());
-    DCHECK_EQ(backing_bitmap_->format(), format());
-    DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
-    DCHECK(backing_bitmap_->is_cubemap());
+    DCHECK_EQ(backing_bitmap->width(), edge_length());
+    DCHECK_EQ(backing_bitmap->height(), edge_length());
+    DCHECK_EQ(backing_bitmap->format(), format());
+    DCHECK_GT(backing_bitmap->num_mipmaps(), level);
     CopyBackResourceToBitmap(renderer_, resource_id_, level,
-                             TextureCUBE::FACE_POSITIVE_X,
-                             *backing_bitmap_.Get());
+                             TextureCUBE::FACE_POSITIVE_X, *backing_bitmap);
     has_levels_[face] |= 1 << level;
   }
   locked_levels_[face] |= 1 << level;
@@ -589,30 +505,19 @@ bool TextureCUBECB::Unlock(CubeFace face, int level) {
         << "\" is not locked.";
     return false;
   }
-  DCHECK(backing_bitmap_->image_data());
-  DCHECK_EQ(backing_bitmap_->width(), edge_length());
-  DCHECK_EQ(backing_bitmap_->height(), edge_length());
-  DCHECK_EQ(backing_bitmap_->format(), format());
-  DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
-  DCHECK(backing_bitmap_->is_cubemap());
+  Bitmap* backing_bitmap = backing_bitmaps_[face].Get();
+  DCHECK(backing_bitmap->image_data());
+  DCHECK_EQ(backing_bitmap->width(), edge_length());
+  DCHECK_EQ(backing_bitmap->height(), edge_length());
+  DCHECK_EQ(backing_bitmap->format(), format());
+  DCHECK_GT(backing_bitmap->num_mipmaps(), level);
   DCHECK(HasLevel(level, face));
   UpdateResourceFromBitmap(renderer_, resource_id_, level, face,
-                           *backing_bitmap_.Get(), resize_to_pot_);
+                           *backing_bitmap);
   locked_levels_[face] &= ~(1 << level);
-  if (!resize_to_pot_) {
-    bool has_locked_level = false;
-    for (unsigned int i = 0; i < 6; ++i) {
-      if (locked_levels_[i]) {
-        has_locked_level = true;
-        break;
-      }
-    }
-    if (!has_locked_level) {
-      backing_bitmap_->FreeData();
-      for (unsigned int i = 0; i < 6; ++i) {
-        has_levels_[i] = 0;
-      }
-    }
+  if (locked_levels_[face] == 0) {
+    backing_bitmap->FreeData();
+    has_levels_[face] = 0;
   }
   return false;
 }

@@ -204,9 +204,6 @@ class RendererGL : public Renderer {
       RenderDepthStencilSurface* depth_surface);
 
   // Overridden from Renderer.
-  virtual Texture::Ref CreatePlatformSpecificTextureFromBitmap(Bitmap* bitmap);
-
-  // Overridden from Renderer.
   virtual Texture2D::Ref CreatePlatformSpecificTexture2D(
       int width,
       int height,

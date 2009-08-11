@@ -58,6 +58,10 @@ enum ImageFileType {
 
 unsigned int GetNumComponentsForFormat(Texture::Format format);
 
+inline bool IsPOT(unsigned width, unsigned height) {
+  return ((width & (width - 1)) == 0) && ((height & (height - 1)) == 0);
+}
+
 inline bool CheckImageDimensions(unsigned int width, unsigned int height) {
   return width <= kMaxImageDimension && height <= kMaxImageDimension;
 }
@@ -83,10 +87,10 @@ inline unsigned ComputeMipDimension(int level, unsigned dimension) {
 
 // Computes the size of the buffer containing a mip-map chain, given its base
 // width, height, format and number of mip-map levels.
-unsigned int ComputeMipChainSize(unsigned int base_width,
-                                 unsigned int base_height,
-                                 Texture::Format format,
-                                 unsigned int num_mipmaps);
+size_t ComputeMipChainSize(unsigned int base_width,
+                           unsigned int base_height,
+                           Texture::Format format,
+                           unsigned int num_mipmaps);
 
 inline int ComputePitch(Texture::Format format, unsigned width) {
   if (Texture::IsCompressedFormat(format)) {
@@ -94,7 +98,7 @@ inline int ComputePitch(Texture::Format format, unsigned width) {
     unsigned bytes_per_block = format == Texture::DXT1 ? 8u : 16u;
     return bytes_per_block * blocks_across;
   } else {
-    return ComputeMipChainSize(width, 1u, format, 1u);
+    return static_cast<int>(ComputeMipChainSize(width, 1u, format, 1u));
   }
 }
 
@@ -107,9 +111,9 @@ inline int ComputeMipPitch(Texture::Format format,
 }
 
 // Computes the number of bytes of a bitmap pixel buffer.
-unsigned int ComputeBufferSize(unsigned int width,
-                               unsigned int height,
-                               Texture::Format format);
+size_t ComputeBufferSize(unsigned int width,
+                         unsigned int height,
+                         Texture::Format format);
 
 // Crop part of an image from src, scale it to an arbitrary size
 // and paste in dest image. Utility function for all DrawImage

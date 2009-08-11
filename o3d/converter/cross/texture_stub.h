@@ -57,8 +57,6 @@ class Texture2DStub : public Texture2D {
                   height,
                   format,
                   levels,
-                  false,
-                  false,
                   enable_render_surfaces) {}
   virtual ~Texture2DStub() {}
 
@@ -119,8 +117,6 @@ class TextureCUBEStub : public TextureCUBE {
                     edge_length,
                     format,
                     levels,
-                    false,
-                    false,
                     enable_render_surfaces) {}
   virtual ~TextureCUBEStub() {}
 

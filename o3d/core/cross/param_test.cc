@@ -55,8 +55,7 @@ namespace {
 class TestTexture : public Texture {
  public:
   explicit TestTexture(ServiceLocator* service_locator)
-      : Texture(service_locator, UNKNOWN_FORMAT, 1, true, false,
-                false) {}
+      : Texture(service_locator, UNKNOWN_FORMAT, 1, false) { }
   void* GetTextureHandle() const { return NULL; }
   virtual const RGBASwizzleIndices& GetABGR32FSwizzleIndices();
   virtual void SetFromBitmap(const Bitmap& bitmap) {

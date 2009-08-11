@@ -132,9 +132,10 @@ METHODDEF(void) my_error_exit(j_common_ptr cinfo) {
 
 // Loads the raw RGB bitmap data from a compressed JPEG stream and converts
 // the result to 24- or 32-bit bitmap data.
-bool Bitmap::LoadFromJPEGStream(MemoryReadStream *stream,
+bool Bitmap::LoadFromJPEGStream(ServiceLocator* service_locator,
+                                MemoryReadStream *stream,
                                 const String &filename,
-                                bool generate_mipmaps) {
+                                BitmapRefArray* bitmaps) {
   // Workspace for libjpeg decompression.
   struct jpeg_decompress_struct cinfo;
   // create our custom error handler.
@@ -198,12 +199,9 @@ bool Bitmap::LoadFromJPEGStream(MemoryReadStream *stream,
     ERREXIT(&cinfo, JERR_QUANT_COMPONENTS);
   }
   unsigned int image_components = 4;
-  unsigned int num_mipmaps =
-      generate_mipmaps ? image::ComputeMipMapCount(width, height) : 1;
   Texture::Format format = Texture::XRGB8;
   // Allocate storage for the pixels.
-  unsigned int image_size =
-      image::ComputeMipChainSize(width, height, format, num_mipmaps);
+  size_t image_size = image::ComputeMipChainSize(width, height, format, 1);
   image_data.reset(new uint8[image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "JPEG memory allocation error \"" << filename << "\"";
@@ -270,21 +268,10 @@ bool Bitmap::LoadFromJPEGStream(MemoryReadStream *stream,
   // Check for jpeg decompression warnings.
   DLOG(WARNING) << "JPEG decompression warnings: " << jerr.pub.num_warnings;
 
-  if (generate_mipmaps) {
-    if (!GenerateMipmaps(width, height, format, num_mipmaps,
-                         image_data.get())) {
-      DLOG(ERROR) << "mip-map generation failed for \"" << filename << "\"";
-      return false;
-    }
-  }
-
   // Success.
-  image_data_.swap(image_data);
-  width_ = width;
-  height_ = height;
-  format_ = format;
-  num_mipmaps_ = num_mipmaps;
-
+  Bitmap::Ref bitmap(new Bitmap(service_locator));
+  bitmap->SetContents(format, 1, width, height, IMAGE, &image_data);
+  bitmaps->push_back(bitmap);
   return true;
 }
 

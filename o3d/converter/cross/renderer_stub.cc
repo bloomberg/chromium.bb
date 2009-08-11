@@ -141,24 +141,6 @@ Sampler::Ref RendererStub::CreateSampler(void) {
   return Sampler::Ref(new SamplerStub(service_locator()));
 }
 
-Texture::Ref RendererStub::CreatePlatformSpecificTextureFromBitmap(
-    Bitmap *bitmap) {
-  if (bitmap->is_cubemap()) {
-    return Texture::Ref(new TextureCUBEStub(service_locator(),
-                                            bitmap->width(),
-                                            bitmap->format(),
-                                            bitmap->num_mipmaps(),
-                                            false));
-  } else {
-    return Texture::Ref(new Texture2DStub(service_locator(),
-                                          bitmap->width(),
-                                          bitmap->height(),
-                                          bitmap->format(),
-                                          bitmap->num_mipmaps(),
-                                          false));
-  }
-}
-
 Texture2D::Ref RendererStub::CreatePlatformSpecificTexture2D(
     int width,
     int height,

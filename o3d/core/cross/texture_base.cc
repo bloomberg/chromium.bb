@@ -48,12 +48,9 @@ const char* Texture::kLevelsParamName =
 Texture::Texture(ServiceLocator* service_locator,
                  Format format,
                  int levels,
-                 bool alpha_is_one,
-                 bool resize_to_pot,
                  bool enable_render_surfaces)
     : ParamObject(service_locator),
-      resize_to_pot_(resize_to_pot),
-      alpha_is_one_(alpha_is_one),
+      alpha_is_one_(false),
       format_(format),
       weak_pointer_manager_(this),
       render_surfaces_enabled_(enable_render_surfaces) {

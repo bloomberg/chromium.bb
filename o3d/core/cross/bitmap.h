@@ -41,7 +41,7 @@
 #define O3D_CORE_CROSS_BITMAP_H_
 
 #include <stdlib.h>
-
+#include <vector>
 #include "base/cross/bits.h"
 #include "core/cross/types.h"
 #include "core/cross/texture.h"
@@ -56,27 +56,27 @@ class RawData;
 class Pack;
 
 // Bitmap provides an API for basic image operations on bitmap images,
-// including scale and crop. The contents of bitmap can be created from
-// a RawData object via LoadFromRawData(), and also can be transfered
-// to mip of a Texure2D or a specific face of TextureCUBE via methods
-// in Texture.
+// including scale and crop. Bitmaps can be created from a RawData object via
+// LoadFromRawData(), and also can be transfered to mips of a Texure2D or a
+// specific face of TextureCUBE via methods in Texture.
 
 class Bitmap : public ParamObject {
  public:
   typedef SmartPointer<Bitmap> Ref;
+  typedef std::vector<Bitmap::Ref> BitmapRefArray;
 
   explicit Bitmap(ServiceLocator* service_locator);
   virtual ~Bitmap() {}
 
   enum Semantic {
-    FACE_POSITIVE_X,
+    FACE_POSITIVE_X,  // NOTE: These must match TextureCUBE::CubeFace
     FACE_NEGATIVE_X,
     FACE_POSITIVE_Y,
     FACE_NEGATIVE_Y,
     FACE_POSITIVE_Z,
     FACE_NEGATIVE_Z,
-    NORMAL,
-    SLICE,
+    IMAGE,            // normal 2d image
+    SLICE,            // a slice of a 3d texture.
   };
 
   // Returns the pitch of the bitmap for a certain level.
@@ -89,7 +89,7 @@ class Bitmap : public ParamObject {
   //   source: the source bitmap.
   void CopyDeepFrom(const Bitmap &source) {
     Allocate(source.format_, source.width_, source.height_,
-             source.num_mipmaps_, source.is_cubemap_);
+             source.num_mipmaps_, source.semantic_);
     memcpy(image_data(), source.image_data(), GetTotalSize());
   }
 
@@ -97,15 +97,7 @@ class Bitmap : public ParamObject {
   // from the source bitmap.
   // Parameters:
   //   source: the source bitmap.
-  void SetFrom(Bitmap *source) {
-    image_data_.reset();
-    format_ = source->format_;
-    width_ = source->width_;
-    height_ = source->height_;
-    num_mipmaps_ = source->num_mipmaps_;
-    is_cubemap_ = source->is_cubemap_;
-    image_data_.swap(source->image_data_);
-  }
+  void SetFrom(Bitmap *source);
 
   // Allocates an uninitialized bitmap with specified parameters.
   // Parameters:
@@ -113,12 +105,11 @@ class Bitmap : public ParamObject {
   //   width: the width of the base image.
   //   height: the height of the base image.
   //   num_mipmaps: the number of mip-maps.
-  //   cube_map: true if creating a cube map.
   void Allocate(Texture::Format format,
                 unsigned int width,
                 unsigned int height,
                 unsigned int num_mipmaps,
-                bool cube_map);
+                Semantic semantic);
 
   // Allocates a bitmap with initialized parameters.
   // data is zero-initialized
@@ -153,31 +144,9 @@ class Bitmap : public ParamObject {
                const void* src_data,
                int src_pitch);
 
-  // Sets a rectangular region of this bitmap.
-  // If the bitmap is a DXT format, the only acceptable values
-  // for left, top, width and height are 0, 0, bitmap->width, bitmap->height
-  //
-  // Parameters:
-  //   level: The mipmap level to modify
-  //   dst_left: The left edge of the rectangular area to modify.
-  //   dst_top: The top edge of the rectangular area to modify.
-  //   width: The width of the rectangular area to modify.
-  //   height: The of the rectangular area to modify.
-  //   src_data: The source pixels.
-  //   src_pitch: If the format is uncompressed this is the number of bytes
-  //      per row of pixels. If compressed this value is unused.
-  void SetFaceRect(TextureCUBE::CubeFace face,
-                   int level,
-                   unsigned dst_left,
-                   unsigned dst_top,
-                   unsigned width,
-                   unsigned height,
-                   const void* src_data,
-                   int src_pitch);
-
   // Gets the total size of the bitmap data, counting all faces and mip levels.
-  unsigned int GetTotalSize() const {
-    return (is_cubemap_ ? 6 : 1) * GetMipChainSize(num_mipmaps_);
+  size_t GetTotalSize() const {
+    return GetMipChainSize(num_mipmaps_);
   }
 
   // Gets the image data for a given mip-map level.
@@ -185,33 +154,22 @@ class Bitmap : public ParamObject {
   //   level: mip level to get.
   uint8 *GetMipData(unsigned int level) const;
 
-  // Gets the image data for a given mip-map level and cube map face.
-  // Parameters:
-  //   face: face of cube to get. This parameter is ignored if
-  //       this bitmap is not a cube map.
-  //   level: mip level to get.
-  uint8 *GetFaceMipData(TextureCUBE::CubeFace face, unsigned int level) const;
-
   // Gets the size of mip.
-  unsigned int GetMipSize(unsigned int level) const;
+  size_t GetMipSize(unsigned int level) const;
 
   uint8 *image_data() const { return image_data_.get(); }
   Texture::Format format() const { return format_; }
   unsigned int width() const { return width_; }
   unsigned int height() const { return height_; }
   unsigned int num_mipmaps() const { return num_mipmaps_; }
-  bool is_cubemap() const { return is_cubemap_; }
+  Semantic semantic() const {
+    return semantic_;
+  }
 
   // Returns whether or not the dimensions of the bitmap are power-of-two.
   bool IsPOT() const {
-    return ((width_ & (width_ - 1)) == 0) && ((height_ & (height_ - 1)) == 0);
+    return image::IsPOT(width_, height_);
   }
-
-  void set_format(Texture::Format format) { format_ = format; }
-  void set_width(unsigned int n) { width_ = n; }
-  void set_height(unsigned int n) { height_ = n; }
-  void set_num_mipmaps(unsigned int n) { num_mipmaps_ = n; }
-  void set_is_cubemap(bool is_cubemap) { is_cubemap_ = is_cubemap; }
 
   // Loads a bitmap from a file.
   // Parameters:
@@ -219,10 +177,11 @@ class Bitmap : public ParamObject {
   //   file_type: the type of file to load. If UNKNOWN, the file type will be
   //              determined from the filename extension, and if it is not a
   //              known extension, all the loaders will be tried.
-  //   generate_mipmaps: whether or not to generate all the mip-map levels.
-  bool LoadFromFile(const FilePath &filepath,
-                    image::ImageFileType file_type,
-                    bool generate_mipmaps);
+  //   bitmaps: An array to hold references to the loaded bitmaps.
+  static bool LoadFromFile(ServiceLocator* service_locator,
+                           const FilePath &filepath,
+                           image::ImageFileType file_type,
+                           BitmapRefArray* bitmaps);
 
   // Loads a bitmap from a RawData object.
   // Parameters:
@@ -231,10 +190,10 @@ class Bitmap : public ParamObject {
   //              will be determined from the extension from raw_data's uri
   //              and if it is not a known extension, all the loaders will
   //              be tried.
-  //   generate_mipmaps: whether or not to generate all the mip-map levels.
-  bool LoadFromRawData(RawData *raw_data,
-                       image::ImageFileType file_type,
-                       bool generate_mipmaps);
+  //   bitmaps: An array to hold references to the loaded bitmaps.
+  static bool LoadFromRawData(RawData *raw_data,
+                              image::ImageFileType file_type,
+                              BitmapRefArray* bitmaps);
 
   // Flips a bitmap vertically in place.
   // This is needed instead of just using DrawImage because flipping DXT formats
@@ -269,7 +228,7 @@ class Bitmap : public ParamObject {
 
   // Gets the size of the buffer containing a mip-map chain, given a number of
   // mip-map levels.
-  unsigned int GetMipChainSize(unsigned int num_mipmaps) const {
+  size_t GetMipChainSize(unsigned int num_mipmaps) const {
     return image::ComputeMipChainSize(width(), height(), format(), num_mipmaps);
   }
 
@@ -279,6 +238,63 @@ class Bitmap : public ParamObject {
  private:
   friend class IClassManager;
   static ObjectBase::Ref Create(ServiceLocator* service_locator);
+
+  // Sets the contents of a Bitmap replacing any previous contents.
+  // Parameters:
+  //   format: Format of the bitmap.
+  //   num_mipmaps: The number of mipmaps.
+  //   width: width in pixels.
+  //   height: height in pixels.
+  //   semantic: the semantic of the bitmap
+  //   image_data: The image data. The bitmap will take ownership of this data.
+  void SetContents(Texture::Format format,
+                   unsigned int num_mipmaps,
+                   unsigned int width,
+                   unsigned int height,
+                   Semantic semantic,
+                   scoped_array<uint8>* image_data);
+
+  // Loads bitmaps from a MemoryReadStream.
+  // Parameters:
+  //   stream: a stream for the bitmap data in one of the known formats
+  //   filename: a filename (or uri) of the original bitmap data
+  //             (may be an empty string)
+  //   file_type: the format of the bitmap data. If UNKNOWN, the file type
+  //              will be determined from the extension of |filename|
+  //              and if it is not a known extension, all the loaders
+  //              will be tried.
+  //   bitmaps: An array to hold references to the loaded bitmaps.
+  static bool LoadFromStream(ServiceLocator* service_locator,
+                             MemoryReadStream *stream,
+                             const String &filename,
+                             image::ImageFileType file_type,
+                             BitmapRefArray* bitmaps);
+
+  static bool LoadFromPNGStream(ServiceLocator* service_locator,
+                                MemoryReadStream *stream,
+                                const String &filename,
+                                BitmapRefArray* bitmaps);
+
+  static bool LoadFromTGAStream(ServiceLocator* service_locator,
+                                MemoryReadStream *stream,
+                                const String &filename,
+                                BitmapRefArray* bitmaps);
+
+  static bool LoadFromDDSStream(ServiceLocator* service_locator,
+                                MemoryReadStream *stream,
+                                const String &filename,
+                                BitmapRefArray* bitmaps);
+
+  static bool LoadFromJPEGStream(ServiceLocator* service_locator,
+                                 MemoryReadStream *stream,
+                                 const String &filename,
+                                 BitmapRefArray* bitmaps);
+
+  bool GenerateMipmaps(unsigned int base_width,
+                       unsigned int base_height,
+                       Texture::Format format,
+                       unsigned int num_mipmaps,
+                       uint8 *data);
 
   // pointer to the raw bitmap data
   scoped_array<uint8> image_data_;
@@ -290,49 +306,14 @@ class Bitmap : public ParamObject {
   int height_;
   // number of mipmap levels in this texture.
   unsigned int num_mipmaps_;
-  // is this cube-map data
-  bool is_cubemap_;
-
-  // Loads a bitmap from a MemoryReadStream.
-  // Parameters:
-  //   stream: a stream for the bitmap data in one of the known formats
-  //   filename: a filename (or uri) of the original bitmap data
-  //             (may be an empty string)
-  //   file_type: the format of the bitmap data. If UNKNOWN, the file type
-  //              will be determined from the extension of |filename|
-  //              and if it is not a known extension, all the loaders
-  //              will be tried.
-  //   generate_mipmaps: whether or not to generate all the mip-map levels.
-  bool LoadFromStream(MemoryReadStream *stream,
-                      const String &filename,
-                      image::ImageFileType file_type,
-                      bool generate_mipmaps);
-
-  bool LoadFromPNGStream(MemoryReadStream *stream,
-                         const String &filename,
-                         bool generate_mipmaps);
-
-  bool LoadFromTGAStream(MemoryReadStream *stream,
-                         const String &filename,
-                         bool generate_mipmaps);
-
-  bool LoadFromDDSStream(MemoryReadStream *stream,
-                         const String &filename,
-                         bool generate_mipmaps);
-
-  bool LoadFromJPEGStream(MemoryReadStream *stream,
-                          const String &filename,
-                          bool generate_mipmaps);
-
-  bool GenerateMipmaps(unsigned int base_width,
-                       unsigned int base_height,
-                       Texture::Format format,
-                       unsigned int num_mipmaps,
-                       uint8 *data);
+  // The purpose of the bitmap
+  Semantic semantic_;
 
   O3D_DECL_CLASS(Bitmap, ParamObject);
   DISALLOW_COPY_AND_ASSIGN(Bitmap);
 };
+
+typedef Bitmap::BitmapRefArray BitmapRefArray;
 
 class BitmapUncompressed : public Bitmap {
  public:

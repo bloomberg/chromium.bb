@@ -88,8 +88,6 @@ class Texture2D : public Texture {
             int height,
             Format format,
             int levels,
-            bool alpha_is_one,
-            bool resize_to_pot,
             bool enable_render_surfaces);
   virtual ~Texture2D();
 
@@ -147,9 +145,9 @@ class Texture2D : public Texture {
                  int dest_width, int dest_height, int dest_mip);
 
   // Sets the contents of the texture from a Bitmap.
-  virtual void SetFromBitmap(const Bitmap& bitmap);
+  void SetFromBitmap(const Bitmap& bitmap);
 
-  // Generates mips.
+  // Overridden from Texture.
   virtual void GenerateMips(int source_level, int num_levels);
 
  protected:
@@ -250,8 +248,6 @@ class TextureCUBE : public Texture {
               int edge_length,
               Format format,
               int levels,
-              bool alpha_is_one,
-              bool resize_to_pot,
               bool enable_render_surfaces);
 
   virtual ~TextureCUBE();
@@ -314,9 +310,9 @@ class TextureCUBE : public Texture {
                  int dest_height, CubeFace face, int dest_mip);
 
   // Sets the contents of the texture from a Bitmap.
-  virtual void SetFromBitmap(const Bitmap& bitmap);
+  void SetFromBitmap(CubeFace face, const Bitmap& bitmap);
 
-  // Generates mips.
+  // Overridden from Texture.
   virtual void GenerateMips(int source_level, int num_levels);
 
  protected:

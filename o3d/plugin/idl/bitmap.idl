@@ -34,14 +34,39 @@ namespace o3d {
 
 %[
   Bitmap provides an interface for basic image operations on bitmap,
-  including scale and crop. The contents of bitmap can be created from
-  RawData via pack.createBitmapFromRawData(), and also can be transfered
-  to mip of a Texure2D or a specific face of TextureCUBE via methods
-  in Texture.
+  including scale and crop. A Bitmap can be created from RawData via
+  pack.createBitmapsFromRawData(), and also can be transferred to mip of a
+  Texure2D or a specific face of TextureCUBE via methods in Texture.
 %]
 
 [nocpp, include="core/cross/bitmap.h"]
 class Bitmap : ParamObject {
+  %[
+    After loading an array of Bitmaps with pack.createBitmapsFromRawData
+    you can inspect their semantic to see what they were intended for. This is
+    mostly to distinguish between 6 bitmaps that are faces of a cubemap and 6
+    bitmaps that are slices of a 3d texture.
+
+    \li FACE_POSITIVE_X, 1 face of a cubemap
+    \li FACE_NEGATIVE_X, 1 face of a cubemap
+    \li FACE_POSITIVE_Y, 1 face of a cubemap
+    \li FACE_NEGATIVE_Y, 1 face of a cubemap
+    \li FACE_POSITIVE_Z, 1 face of a cubemap
+    \li FACE_NEGATIVE_Z, 1 face of a cubemap
+    \li IMAGE, normal 2d image
+    \li SLICE, a slice of a 3d texture.
+  %]
+  enum Semantic {
+    FACE_POSITIVE_X,
+    FACE_NEGATIVE_X,
+    FACE_POSITIVE_Y,
+    FACE_NEGATIVE_Y,
+    FACE_POSITIVE_Z,
+    FACE_NEGATIVE_Z,
+    IMAGE,
+    SLICE
+  };
+
   %[
     Flips a bitmap vertically in place.
   %]
@@ -78,9 +103,9 @@ class Bitmap : ParamObject {
   [getter] int num_mipmaps_;
 
   %[
-    Whether or not the bitmap is a cubemap.
+    The Semantic of the bitmap.
   %]
-  [getter] bool is_cubemap_;
+  [getter] Semantic semantic_;
 };  // Bitmap
 
 }  // namespace o3d

@@ -61,7 +61,10 @@ class Texture2DCB : public Texture2D {
   // created Texture object.
   // The created texture takes ownership of the bitmap data.
   static Texture2DCB* Create(ServiceLocator* service_locator,
-                             Bitmap *bitmap,
+                             Texture::Format format,
+                             int levels,
+                             int width,
+                             int height,
                              bool enable_render_surfaces);
 
   // Overridden from Texture2D
@@ -106,8 +109,10 @@ class Texture2DCB : public Texture2D {
   // The texture takes ownership of the bitmap data.
   Texture2DCB(ServiceLocator* service_locator,
               command_buffer::ResourceID resource_id,
-              const Bitmap &bitmap,
-              bool resize_npot,
+              Texture::Format format,
+              int levels,
+              int width,
+              int height,
               bool enable_render_surfaces);
 
   // Returns true if the backing bitmap has the data for the level.
@@ -138,7 +143,9 @@ class TextureCUBECB : public TextureCUBE {
 
   // Create a new Cube texture from scratch.
   static TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
-                                              Bitmap *bitmap,
+                                              Texture::Format format,
+                                              int levels,
+                                              int edge_length,
                                               bool enable_render_surfaces);
 
   // Overridden from TextureCUBE
@@ -187,8 +194,9 @@ class TextureCUBECB : public TextureCUBE {
   // Creates a texture from a pre-existing texture resource.
   TextureCUBECB(ServiceLocator* service_locator,
                 command_buffer::ResourceID texture,
-                const Bitmap &bitmap,
-                bool resize_to_pot,
+                Texture::Format format,
+                int levels,
+                int edge_length,
                 bool enable_render_surfaces);
 
 
@@ -201,9 +209,8 @@ class TextureCUBECB : public TextureCUBE {
   RendererCB* renderer_;
   command_buffer::ResourceID resource_id_;
 
-  // A bitmap used to back the NPOT textures on POT-only hardware, and to back
-  // the pixel buffer for Lock().
-  Bitmap::Ref backing_bitmap_;
+  // Bitmaps used to back the NPOT textures on POT-only hardware.
+  Bitmap::Ref backing_bitmaps_[NUMBER_OF_FACES];
 
   // Bitfields that indicates mip levels that are currently stored in the
   // backing bitmap, one per face.

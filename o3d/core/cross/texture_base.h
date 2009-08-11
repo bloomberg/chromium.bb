@@ -79,8 +79,6 @@ class Texture : public ParamObject {
   Texture(ServiceLocator* service_locator,
           Format format,
           int levels,
-          bool alpha_is_one,
-          bool resize_to_pot,
           bool enable_render_surfaces);
   virtual ~Texture() {}
 
@@ -114,9 +112,6 @@ class Texture : public ParamObject {
     return render_surfaces_enabled_;
   }
 
-  // Sets the contents of the texture from a Bitmap.
-  virtual void SetFromBitmap(const Bitmap& bitmap) = 0;
-
   // Generates mips.
   virtual void GenerateMips(int source_level, int num_levels) = 0;
 
@@ -137,11 +132,6 @@ class Texture : public ParamObject {
   void set_format(Format format) {
     format_ = format;
   }
-
-  // Whether or not to resize NPOT textures to POT when passing to the
-  // underlying graphics API. This should only be true in the if the texture
-  // is not POT and if it is not compressed.
-  bool resize_to_pot_;
 
   static void RegisterSurface(RenderSurface* surface, Pack* pack);
 

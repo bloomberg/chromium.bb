@@ -322,8 +322,7 @@ typedef Bitmap[] BitmapArray;
     \param raw_data contains the bitmap data in a supported format.
     \return An Array of Bitmaps object.
   %]
-  //BitmapArray CreateBitmapsFromRawData(RawData raw_data);
-  Bitmap CreateBitmapFromRawData(RawData raw_data);
+  BitmapArray CreateBitmapsFromRawData(RawData raw_data);
 };  // Pack
 
 }  // namespace o3d

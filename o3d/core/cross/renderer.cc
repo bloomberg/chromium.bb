@@ -310,15 +310,6 @@ void Renderer::SetViewport(const Float4& rectangle, const Float2& depth_range) {
                       depth_range[1]);
 }
 
-Texture::Ref Renderer::CreateTextureFromBitmap(Bitmap* bitmap) {
-  if (!IsSupportedTextureFormat(bitmap->format(),
-                                features_.Get(),
-                                service_locator())) {
-    return Texture::Ref(NULL);
-  }
-  return CreatePlatformSpecificTextureFromBitmap(bitmap);
-}
-
 Texture2D::Ref Renderer::CreateTexture2D(int width,
                                          int height,
                                          Texture::Format format,

@@ -42,6 +42,7 @@
 #include "import/cross/memory_buffer.h"
 #include "import/cross/memory_stream.h"
 #include "core/cross/file_request.h"
+#include "core/cross/image_utils.h"
 #include "core/cross/render_node.h"
 #include "core/cross/iclass_manager.h"
 #include "core/cross/object_manager.h"
@@ -123,26 +124,20 @@ Texture* Pack::CreateTextureFromFile(const String& uri,
                                      const FilePath& filepath,
                                      image::ImageFileType file_type,
                                      bool generate_mipmaps) {
-  if (!renderer_) {
-    O3D_ERROR(service_locator()) << "No Render Device Available";
-    return NULL;
-  }
-
   String filename = FilePathToUTF8(filepath);
 
   DLOG(INFO) << "CreateTextureFromFile(uri='" << uri
              << "', filename='" << filename << "')";
 
-  // TODO: Add support for volume texture when we have code to load
-  //                  them
-  Bitmap::Ref bitmap(new Bitmap(service_locator()));
-  if (!bitmap->LoadFromFile(filepath, file_type, generate_mipmaps)) {
+  // TODO(gman): Add support for volume texture when we have code to load them.
+  BitmapRefArray bitmaps;
+  if (!Bitmap::LoadFromFile(service_locator(), filepath, file_type, &bitmaps)) {
     O3D_ERROR(service_locator())
         << "Failed to load bitmap file \"" << uri << "\"";
     return NULL;
   }
 
-  return CreateTextureFromBitmap(bitmap, uri);
+  return CreateTextureFromBitmaps(bitmaps, uri, generate_mipmaps);
 }
 
 // Creates a Texture object from a file in the current render context format.
@@ -160,28 +155,87 @@ Texture* Pack::CreateTextureFromFile(const String& uri,
 }
 
 // Creates a Texture object from a bitmap in the current render context format.
-Texture* Pack::CreateTextureFromBitmap(Bitmap *bitmap, const String& uri) {
-  DCHECK(bitmap);
-
-  if (!renderer_) {
-    O3D_ERROR(service_locator()) << "No Render Device Available";
+Texture* Pack::CreateTextureFromBitmaps(
+    const BitmapRefArray& bitmaps, const String& uri, bool generate_mipmaps) {
+  if (bitmaps.empty()) {
     return NULL;
   }
+  unsigned width = bitmaps[0]->width();
+  unsigned height = bitmaps[0]->height();
 
-  if (bitmap->width() > static_cast<unsigned int>(Texture::MAX_DIMENSION) ||
-      bitmap->height() > static_cast<unsigned int>(Texture::MAX_DIMENSION)) {
-    O3D_ERROR(service_locator())
-        << "Texture (uri='" << uri
-        << "', size="  << bitmap->width() << "x" << bitmap->height()
-        << ", mips=" << bitmap->num_mipmaps()<< ") is larger than the "
-        << "maximum texture size which is (" << Texture::MAX_DIMENSION
-        << "x" << Texture::MAX_DIMENSION << ")";
-    return NULL;
+  BitmapRefArray temp_bitmaps;
+  for (BitmapRefArray::size_type ii = 0; ii < bitmaps.size(); ++ii) {
+    temp_bitmaps.push_back(bitmaps[ii]);
+    Bitmap* bitmap = temp_bitmaps[ii].Get();
+    if (bitmap->width() > static_cast<unsigned int>(Texture::MAX_DIMENSION) ||
+        bitmap->height() > static_cast<unsigned int>(Texture::MAX_DIMENSION)) {
+      O3D_ERROR(service_locator())
+          << "Bitmap (uri='" << uri
+          << "', size="  << bitmap->width() << "x" << bitmap->height()
+          << ", mips=" << bitmap->num_mipmaps()<< ") is larger than the "
+          << "maximum texture size which is (" << Texture::MAX_DIMENSION
+          << "x" << Texture::MAX_DIMENSION << ")";
+      return NULL;
+    }
+    if (bitmap->width() != width || bitmap->height() != height) {
+      O3D_ERROR(service_locator()) << "Bitmaps are not all the same dimensions";
+      return NULL;
+    }
+    if (generate_mipmaps) {
+      unsigned total_mips = image::ComputeMipMapCount(
+        bitmap->width(), bitmap->height());
+      // If we don't already have mips and we could use them then make them.
+      if (bitmap->num_mipmaps() == 1 && total_mips > 1) {
+        // Create a new Bitmap with mips
+        Bitmap::Ref new_bitmap(new Bitmap(service_locator()));
+        new_bitmap->Allocate(bitmap->format(),
+                             bitmap->width(),
+                             bitmap->height(),
+                             total_mips,
+                             bitmap->semantic());
+        new_bitmap->SetRect(0, 0, 0, bitmap->width(), bitmap->height(),
+                            bitmap->GetMipData(0), bitmap->GetMipPitch(0));
+        new_bitmap->GenerateMips(0, total_mips - 1);
+        temp_bitmaps[ii] = new_bitmap;
+      }
+    }
   }
 
-  Texture::Ref texture = renderer_->CreateTextureFromBitmap(bitmap);
+  // Figure out what kind of texture to make.
+  // TODO(gman): Refactor to check semantics to distinguish between CUBE and
+  // VOLUME textures.
+  Texture::Ref texture;
+  if (temp_bitmaps.size() == 1) {
+    Bitmap* bitmap = temp_bitmaps[0].Get();
+    Texture2D::Ref texture_2d = renderer_->CreateTexture2D(
+        bitmap->width(),
+        bitmap->height(),
+        bitmap->format(),
+        bitmap->num_mipmaps(),
+        false);
+    if (!texture_2d.IsNull()) {
+      texture = Texture::Ref(texture_2d.Get());
+      texture_2d->SetFromBitmap(*bitmap);
+    }
+  } else if (temp_bitmaps.size() == 6) {
+    Bitmap* bitmap = temp_bitmaps[0].Get();
+    TextureCUBE::Ref texture_cube = renderer_->CreateTextureCUBE(
+        bitmap->width(),
+        bitmap->format(),
+        bitmap->num_mipmaps(),
+        false);
+    if (!texture_cube.IsNull()) {
+      texture = Texture::Ref(texture_cube.Get());
+      for (unsigned ii = 0; ii < 6; ++ii) {
+        texture_cube->SetFromBitmap(static_cast<TextureCUBE::CubeFace>(ii),
+                                    *temp_bitmaps[ii].Get());
+      }
+    }
+  }
 
   if (!texture.IsNull()) {
+    // TODO(gman): remove this. Maybe set the name? or make uri an offical
+    //    Texture param.
     ParamString* param = texture->CreateParam<ParamString>(
         O3D_STRING_CONSTANT("uri"));
     DCHECK(param != NULL);
@@ -191,8 +245,8 @@ Texture* Pack::CreateTextureFromBitmap(Bitmap *bitmap, const String& uri) {
   } else {
     O3D_ERROR(service_locator())
         << "Unable to create texture (uri='" << uri
-        << "', size="  << bitmap->width() << "x" << bitmap->height()
-        << ", mips=" << bitmap->num_mipmaps()<< ")";
+        << "', size="  << width << "x" << height
+        << ", mips=" << temp_bitmaps[0]->num_mipmaps() << ")";
   }
 
   return texture.Get();
@@ -211,20 +265,18 @@ Texture* Pack::CreateTextureFromRawData(RawData *raw_data,
 
   DLOG(INFO) << "CreateTextureFromRawData(uri='" << uri << "')";
 
-
-  Bitmap::Ref bitmap(new Bitmap(service_locator()));
-  if (!bitmap->LoadFromRawData(raw_data, image::UNKNOWN, generate_mips)) {
+  BitmapRefArray bitmap_refs;
+  if (!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmap_refs)) {
     O3D_ERROR(service_locator())
         << "Failed to load bitmap from raw data \"" << uri << "\"";
     return NULL;
   }
 
-  return CreateTextureFromBitmap(bitmap, uri);
+  return CreateTextureFromBitmaps(bitmap_refs, uri, generate_mips);
 }
 
 // Create a bitmap object.
-Bitmap* Pack::CreateBitmap(int width, int height,
-                           Texture::Format format) {
+Bitmap* Pack::CreateBitmap(int width, int height, Texture::Format format) {
   DCHECK(image::CheckImageDimensions(width, height));
 
   Bitmap::Ref bitmap(new Bitmap(service_locator()));
@@ -233,7 +285,7 @@ Bitmap* Pack::CreateBitmap(int width, int height,
         << "Failed to create bitmap object.";
     return NULL;
   }
-  bitmap->Allocate(format, width, height, 1, false);
+  bitmap->Allocate(format, width, height, 1, Bitmap::IMAGE);
   if (!bitmap->image_data()) {
     O3D_ERROR(service_locator())
         << "Failed to allocate memory for bitmap.";
@@ -244,20 +296,18 @@ Bitmap* Pack::CreateBitmap(int width, int height,
 }
 
 // Create a new bitmap object from rawdata.
-Bitmap* Pack::CreateBitmapFromRawData(RawData* raw_data) {
-  Bitmap::Ref bitmap(new Bitmap(service_locator()));
-  if (bitmap.IsNull()) {
-    O3D_ERROR(service_locator())
-        << "Failed to create bitmap object.";
-    return NULL;
-  }
-  if (!bitmap->LoadFromRawData(raw_data, image::UNKNOWN, false)) {
+std::vector<Bitmap*> Pack::CreateBitmapsFromRawData(RawData* raw_data) {
+  BitmapRefArray bitmap_refs;
+  if (!Bitmap::LoadFromRawData(raw_data, image::UNKNOWN, &bitmap_refs)) {
     O3D_ERROR(service_locator())
         << "Failed to load bitmap from raw data.";
-    return NULL;
   }
-  RegisterObject(bitmap);
-  return bitmap.Get();
+  std::vector<Bitmap*> bitmaps(bitmap_refs.size(), NULL);
+  for (BitmapRefArray::size_type ii = 0; ii < bitmap_refs.size(); ++ii) {
+    RegisterObject(bitmap_refs[ii]);
+    bitmaps[ii] = bitmap_refs[ii].Get();
+  }
+  return bitmaps;
 }
 
 // Creates a Texture2D object and allocates the necessary resources for it.

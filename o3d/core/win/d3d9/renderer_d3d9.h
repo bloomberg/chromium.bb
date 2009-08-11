@@ -194,9 +194,6 @@ class RendererD3D9 : public Renderer {
                            float max_z);
 
   // Overridden from Renderer.
-  virtual Texture::Ref CreatePlatformSpecificTextureFromBitmap(Bitmap* bitmap);
-
-  // Overridden from Renderer.
   virtual Texture2D::Ref CreatePlatformSpecificTexture2D(
       int width,
       int height,

@@ -51,9 +51,10 @@ namespace o3d {
 
 // Loads the header information and raw RGB{A} data from an uncompressed
 // 24-bit or 32-bit TGA stream into the Bitmap object.
-bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
+bool Bitmap::LoadFromTGAStream(ServiceLocator* service_locator,
+                               MemoryReadStream *stream,
                                const String &filename,
-                               bool generate_mipmaps) {
+                               BitmapRefArray* bitmaps) {
   // Read the magic header.
   uint8 file_magic[12];
   if (stream->Read(file_magic, sizeof(file_magic)) != sizeof(file_magic)) {
@@ -62,7 +63,7 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
   }
   // Match the first few bytes of the TGA header to confirm we can read this
   // format. Multibyte values are stored little endian.
-  const uint8 kTargaMagic[12] = {
+  static const uint8 kTargaMagic[12] = {
     0,     // ID Length (0 = no ID string present)
     0,     // Color Map Type ( 0 = no color map)
     2,     // Image Type (2 = Uncompressed True Color)
@@ -109,11 +110,9 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
   // pixels contained in the file.
   unsigned int pixel_count = tga_width * tga_height;
   // Allocate storage for the pixels.
-  unsigned int num_mipmaps =
-      generate_mipmaps ? image::ComputeMipMapCount(tga_width, tga_height) : 1;
   Texture::Format format = components == 3 ? Texture::XRGB8 : Texture::ARGB8;
-  unsigned int image_size =
-      image::ComputeMipChainSize(tga_width, tga_height, format, num_mipmaps);
+  size_t image_size =
+      image::ComputeMipChainSize(tga_width, tga_height, format, 1);
   scoped_array<uint8> image_data(new uint8[image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "Targa file memory allocation error \"" << filename << "\"";
@@ -131,26 +130,16 @@ bool Bitmap::LoadFromTGAStream(MemoryReadStream *stream,
     image::XYZToXYZA(image_data.get(), pixel_count);
   }
 
-  if (generate_mipmaps) {
-    if (!GenerateMipmaps(tga_width, tga_height, format, num_mipmaps,
-                         image_data.get())) {
-      DLOG(ERROR) << "mip-map generation failed for \"" << filename << "\"";
-      return false;
-    }
-  }
-
   // Success.
-  image_data_.swap(image_data);
-  width_ = tga_width;
-  height_ = tga_height;
-  format_ = format;
-  num_mipmaps_ = num_mipmaps;
+  Bitmap::Ref bitmap(new Bitmap(service_locator));
+  bitmap->SetContents(format, 1, tga_width, tga_height, IMAGE, &image_data);
+  bitmaps->push_back(bitmap);
 
   // Targas are generally bottom first in memory so flip it.
   //
   // TODO(gman): In truth a targa can be any orientation. We should check
   // that orientation and flip or not flip accordingly.
-  FlipVertically();
+  bitmap->FlipVertically();
 
   return true;
 }

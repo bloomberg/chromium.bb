@@ -692,7 +692,7 @@ Renderer::InitStatus RendererGL::InitCommonGL() {
     return GPU_NOT_UP_TO_SPEC;
   }
 
-  SetSupportsNPOT(GLEW_ARB_texture_non_power_of_two);
+  SetSupportsNPOT(GLEW_ARB_texture_non_power_of_two != 0);
 
 #ifdef OS_MACOSX
   // The Radeon X1600 says it supports NPOT, but in most situations it doesn't.
@@ -1115,7 +1115,7 @@ void RendererGL::Destroy() {
 bool RendererGL::MakeCurrent() {
 #ifdef OS_WIN
   if (!device_context_ || !gl_context_) return false;
-  bool result = ::wglMakeCurrent(device_context_, gl_context_);
+  bool result = ::wglMakeCurrent(device_context_, gl_context_) != 0;
   if (result) current_renderer_ = this;
   return result;
 #endif
@@ -1493,28 +1493,6 @@ ParamCache* RendererGL::CreatePlatformSpecificParamCache() {
 }
 
 
-// Attempts to create a Texture with the given bitmap, automatically
-// determining whether the to create a 2D texture, cube texture, etc. If
-// creation fails the method returns NULL.
-// Parameters:
-//  bitmap: The bitmap specifying the dimensions, format and content of the
-//          new texture. The created texture takes ownership of the bitmap
-//          data.
-// Returns:
-//  A ref-counted pointer to the texture or NULL if it did not load.
-Texture::Ref RendererGL::CreatePlatformSpecificTextureFromBitmap(
-    Bitmap* bitmap) {
-  if (bitmap->is_cubemap()) {
-    return Texture::Ref(TextureCUBEGL::Create(service_locator(),
-                                              bitmap,
-                                              false));
-  } else {
-    return Texture::Ref(Texture2DGL::Create(service_locator(),
-                                            bitmap,
-                                            false));
-  }
-}
-
 Texture2D::Ref RendererGL::CreatePlatformSpecificTexture2D(
     int width,
     int height,
@@ -1523,13 +1501,11 @@ Texture2D::Ref RendererGL::CreatePlatformSpecificTexture2D(
     bool enable_render_surfaces) {
   DLOG(INFO) << "RendererGL CreateTexture2D";
   MakeCurrentLazy();
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->set_format(format);
-  bitmap->set_width(width);
-  bitmap->set_height(height);
-  bitmap->set_num_mipmaps(levels);
   return Texture2D::Ref(Texture2DGL::Create(service_locator(),
-                                            bitmap,
+                                            format,
+                                            levels,
+                                            width,
+                                            height,
                                             enable_render_surfaces));
 }
 
@@ -1540,14 +1516,10 @@ TextureCUBE::Ref RendererGL::CreatePlatformSpecificTextureCUBE(
     bool enable_render_surfaces) {
   DLOG(INFO) << "RendererGL CreateTextureCUBE";
   MakeCurrentLazy();
-  Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->set_format(format);
-  bitmap->set_width(edge_length);
-  bitmap->set_height(edge_length);
-  bitmap->set_num_mipmaps(levels);
-  bitmap->set_is_cubemap(true);
   return TextureCUBE::Ref(TextureCUBEGL::Create(service_locator(),
-                                                bitmap,
+                                                format,
+                                                levels,
+                                                edge_length,
                                                 enable_render_surfaces));
 }
 
@@ -1563,7 +1535,7 @@ RenderDepthStencilSurface::Ref RendererGL::CreateDepthStencilSurface(
 Bitmap::Ref RendererGL::TakeScreenshot() {;
   MakeCurrentLazy();
   Bitmap::Ref bitmap = Bitmap::Ref(new Bitmap(service_locator()));
-  bitmap->Allocate(Texture::ARGB8, width(), height(), 1, false);
+  bitmap->Allocate(Texture::ARGB8, width(), height(), 1, Bitmap::IMAGE);
 
   // Note: glReadPixels captures the alpha component of the frame buffer as well
   // as the color components, the browser usually ignores the alpha channel when

@@ -79,9 +79,11 @@ void StreamFlush(png_structp png_ptr) {
 }  // anonymous namespace
 
 // Loads the raw RGB data from a compressed PNG file.
-bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
+bool Bitmap::LoadFromPNGStream(ServiceLocator* service_locator,
+                               MemoryReadStream *stream,
                                const String &filename,
-                               bool generate_mipmaps) {
+                               BitmapRefArray* bitmaps) {
+  DCHECK(bitmaps);
   // Read the magic header.
   char magic[4];
   size_t bytes_read = stream->Read(magic, sizeof(magic));
@@ -225,11 +227,8 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
   png_read_update_info(png_ptr, info_ptr);
 
   // Allocate storage for the pixels.
-  unsigned int num_mipmaps =
-      generate_mipmaps ? image::ComputeMipMapCount(png_width, png_height) : 1;
-  // Allocate storage for the pixels.
-  unsigned int png_image_size =
-      image::ComputeMipChainSize(png_width, png_height, format, num_mipmaps);
+  size_t png_image_size =
+      image::ComputeMipChainSize(png_width, png_height, format, 1);
   image_data.reset(new uint8[png_image_size]);
   if (image_data.get() == NULL) {
     DLOG(ERROR) << "PNG image memory allocation error \"" << filename << "\"";
@@ -263,20 +262,10 @@ bool Bitmap::LoadFromPNGStream(MemoryReadStream *stream,
   png_free(png_ptr, row_pointers);
   png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
 
-  if (generate_mipmaps) {
-    if (!GenerateMipmaps(png_width, png_height, format, num_mipmaps,
-                         image_data.get())) {
-      DLOG(ERROR) << "Mip-map generation failed for \"" << filename << "\"";
-      return false;
-    }
-  }
-
   // Success.
-  image_data_.swap(image_data);
-  format_ = format;
-  width_ = png_width;
-  height_ = png_height;
-  num_mipmaps_ = num_mipmaps;
+  Bitmap::Ref bitmap(new Bitmap(service_locator));
+  bitmap->SetContents(format, 1, png_width, png_height, IMAGE, &image_data);
+  bitmaps->push_back(bitmap);
   return true;
 }
 
@@ -285,7 +274,6 @@ namespace {
 bool CreatePNGInUInt8Vector(const Bitmap& bitmap, std::vector<uint8>* buffer) {
   DCHECK(bitmap.format() == Texture::ARGB8);
   DCHECK(bitmap.num_mipmaps() == 1);
-  DCHECK(!bitmap.is_cubemap());
 
   png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
                                                 NULL, NULL);
@@ -336,7 +324,7 @@ String Bitmap::ToDataURL() {
     O3D_ERROR(service_locator()) << "Can only get data URL from ARGB8 images.";
     return dataurl::kEmptyDataURL;
   }
-  if (num_mipmaps_ != 1 || is_cubemap_) {
+  if (num_mipmaps_ != 1) {
     O3D_ERROR(service_locator()) <<
         "Can only get data URL from 2d images with no mips.";
     return dataurl::kEmptyDataURL;

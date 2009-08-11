@@ -120,44 +120,6 @@ TEST_F(RendererTest, OffScreen) {
 }
 #endif
 
-// TODO: add InitAndDestroyGL and InitAndDestroyMock
-TEST_F(RendererTest, Creates2DTextureFromBitmap) {
-  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
-  bitmap->Allocate(Texture::ARGB8, 16, 32, 2, false);
-  memset(bitmap->image_data(), 0x34, bitmap->GetTotalSize());
-
-  Client client(g_service_locator);
-  client.Init();
-
-  Texture::Ref texture = g_renderer->CreateTextureFromBitmap(bitmap);
-  ASSERT_TRUE(NULL != texture);
-  EXPECT_EQ(Texture::ARGB8, texture->format());
-  EXPECT_EQ(2, texture->levels());
-
-  Texture2D::Ref texture2D(down_cast<Texture2D*>(texture.Get()));
-  ASSERT_TRUE(NULL != texture2D);
-  EXPECT_EQ(16, texture2D->width());
-  EXPECT_EQ(32, texture2D->height());
-}
-
-TEST_F(RendererTest, CreatesCubeTextureFromBitmap) {
-  Bitmap::Ref bitmap(new Bitmap(g_service_locator));
-  bitmap->Allocate(Texture::ARGB8, 16, 16, 2, true);
-  memset(bitmap->image_data(), 0x34, bitmap->GetTotalSize());
-
-  Client client(g_service_locator);
-  client.Init();
-
-  Texture::Ref texture = g_renderer->CreateTextureFromBitmap(bitmap);
-  ASSERT_TRUE(NULL != texture);
-  EXPECT_EQ(Texture::ARGB8, texture->format());
-  EXPECT_EQ(2, texture->levels());
-
-  TextureCUBE::Ref textureCube(down_cast<TextureCUBE*>(texture.Get()));
-  ASSERT_TRUE(NULL != textureCube);
-  EXPECT_EQ(16, textureCube->edge_length());
-}
-
 // Tests SetViewport
 TEST_F(RendererTest, SetViewport) {
   ErrorStatus error_status(g_service_locator);

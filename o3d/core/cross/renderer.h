@@ -314,17 +314,6 @@ class Renderer {
   // Frees a Param Cache.
   void FreeParamCache(ParamCache* param_cache);
 
-  // Attempts to create a Texture with the given bitmap, automatically
-  // determining whether the to create a 2D texture, cube texture, etc. If
-  // creation fails the method returns NULL.
-  // Parameters:
-  //  bitmap: The bitmap specifying the dimensions, format and content of the
-  //          new texture. The created texture takes ownership of the bitmap
-  //          data.
-  // Returns:
-  //  A ref-counted pointer to the texture or NULL if it did not load.
-  Texture::Ref CreateTextureFromBitmap(Bitmap* bitmap);
-
   // Creates and returns a platform specific Texture2D object.  It allocates
   // the necessary resources to store texture data for the given image size
   // and format.
@@ -533,10 +522,6 @@ class Renderer {
 
   // Creates a platform specific ParamCache.
   virtual ParamCache* CreatePlatformSpecificParamCache() = 0;
-
-  // Platform specific version of CreateTextureFromBitmap.
-  virtual Texture::Ref CreatePlatformSpecificTextureFromBitmap(
-      Bitmap* bitmap) = 0;
 
   // Platform specific version of CreateTexture2D
   virtual Texture2D::Ref CreatePlatformSpecificTexture2D(

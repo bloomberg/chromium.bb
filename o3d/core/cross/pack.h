@@ -44,6 +44,7 @@
 #include "core/cross/transform.h"
 #include "core/cross/types.h"
 #include "core/cross/image_utils.h"
+#include "core/cross/bitmap.h"
 
 class FilePath;
 
@@ -227,12 +228,12 @@ class Pack : public NamedObject {
   //   A pointer to the bitmap obejct.
   Bitmap* CreateBitmap(int width, int height, Texture::Format format);
 
-  // Creates a new Bitmap object from RawData.
+  // Creates a new Bitmaps from RawData.
   // Parameters:
   //   raw_data: contains the bitmap data in one of the know formats.
   // Returns:
-  //   An array of pointers to the bitmap objects.
-  Bitmap* CreateBitmapFromRawData(RawData* raw_data);
+  //   bitmaps: A vector of pointers to bitmaps. If empty there was an error.
+  std::vector<Bitmap*> Pack::CreateBitmapsFromRawData(RawData* raw_data);
 
   // Creates a new Texture2D object of the specified size and format and
   // reserves the necessary resources for it.
@@ -428,7 +429,8 @@ class Pack : public NamedObject {
   Renderer* renderer_;
 
   // helper function
-  Texture* CreateTextureFromBitmap(Bitmap *bitmap, const String& uri);
+  Texture* CreateTextureFromBitmaps(
+      const BitmapRefArray& bitmaps, const String& uri, bool generate_mips);
 
   // The set of objects owned by the pack.  This container contains all of the
   // references that force the lifespan of the contained objects to match

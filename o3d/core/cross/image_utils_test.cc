@@ -119,11 +119,9 @@ TEST_F(ImageTest, ScaleUpToPOT) {
   const unsigned int kPOTHeight = image::ComputePOTSize(kHeight);
   ASSERT_EQ(kPOTHeight, 4u);
   const Texture::Format format = Texture::ARGB8;
-  unsigned int src_size =
-      image::ComputeBufferSize(kWidth, kHeight, format);
+  size_t src_size = image::ComputeBufferSize(kWidth, kHeight, format);
   ASSERT_EQ(sizeof(kScaleUPDataNPOT), src_size);
-  unsigned int dst_size =
-      image::ComputeBufferSize(kPOTWidth, kPOTHeight, format);
+  size_t dst_size = image::ComputeBufferSize(kPOTWidth, kPOTHeight, format);
   ASSERT_EQ(sizeof(kScaleUPDataPOT), dst_size);
   scoped_array<uint8> data(new uint8[dst_size]);
   ASSERT_TRUE(data.get() != NULL);
@@ -173,14 +171,12 @@ TEST_F(ImageTest, GenerateMipmapsPOT) {
   const Texture::Format format = Texture::ARGB8;
   unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
   EXPECT_EQ(3u, mipmaps);
-  unsigned int size =
-      image::ComputeMipChainSize(kWidth, kHeight, format, mipmaps);
+  size_t size = image::ComputeMipChainSize(kWidth, kHeight, format, mipmaps);
   ASSERT_EQ(sizeof(kMipmapDataPOT), size);
   scoped_array<uint8> data(new uint8[size]);
   ASSERT_TRUE(data.get() != NULL);
   // Copy first level into the buffer.
-  unsigned int base_size =
-      image::ComputeMipChainSize(kWidth, kHeight, format, 1);
+  size_t base_size = image::ComputeMipChainSize(kWidth, kHeight, format, 1);
   memcpy(data.get(), kMipmapDataPOT, base_size);
   image::GenerateMipmap(
       kWidth, kHeight, format,
@@ -244,14 +240,12 @@ TEST_F(ImageTest, GenerateMipmapsNPOT) {
   const Texture::Format format = Texture::ARGB8;
   unsigned int mipmaps = image::ComputeMipMapCount(kWidth, kHeight);
   EXPECT_EQ(3u, mipmaps);
-  unsigned int size =
-      image::ComputeMipChainSize(kWidth, kHeight, format, mipmaps);
+  size_t size = image::ComputeMipChainSize(kWidth, kHeight, format, mipmaps);
   ASSERT_EQ(sizeof(kMipmapDataNPOT), size);
   scoped_array<uint8> data(new uint8[size]);
   ASSERT_TRUE(data.get() != NULL);
   // Copy first level into the buffer.
-  unsigned int base_size =
-      image::ComputeMipChainSize(kWidth, kHeight, format, 1);
+  size_t base_size = image::ComputeMipChainSize(kWidth, kHeight, format, 1);
   memcpy(data.get(), kMipmapDataNPOT, base_size);
   image::GenerateMipmap(
       kWidth, kHeight, format,
