@@ -664,9 +664,9 @@ bool MessageQueue::ProcessMessageUpdateTexture2DRect(
     return false;
   }
 
-  unsigned int mip_width =
+  int mip_width =
       image::ComputeMipDimension(message.level, texture_object->width());
-  unsigned int mip_height =
+  int mip_height =
       image::ComputeMipDimension(message.level, texture_object->height());
 
   if (message.x < 0 || message.width < 0 ||
