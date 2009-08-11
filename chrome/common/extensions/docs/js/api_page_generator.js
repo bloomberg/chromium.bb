@@ -171,7 +171,8 @@ function renderTemplate(schemaContent) {
   jstProcess(input, output);
 
   // Show.
-  document.getElementsByTagName("body")[0].style.display = "block";
+  var elm = document.getElementById("hider");
+  elm.parentNode.removeChild(elm);
 
   if (parent && parent.done)
     parent.done();

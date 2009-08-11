@@ -1,6 +1,6 @@
 // Hide body content initially to minimize flashing.
-document.write('<style type="text/css">');
-document.write('body { display:none; }');
+document.write('<style id="hider" type="text/css">');
+document.write('body { display:none!important; }');
 document.write('</style>');
 
 window.onload = function() {
