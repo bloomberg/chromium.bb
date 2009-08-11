@@ -117,7 +117,7 @@ class BitmapScrollBarThumb : public View {
     if (scroll_bar_->IsHorizontal()) {
       thumb_bounds.set_x(track_bounds.x() + position);
     } else {
-      thumb_bounds.set_x(track_bounds.y() + position);
+      thumb_bounds.set_y(track_bounds.y() + position);
     }
     SetBounds(thumb_bounds);
   }
