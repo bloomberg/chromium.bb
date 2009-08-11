@@ -52,7 +52,7 @@ struct ResourceResponse : public base::RefCounted<ResourceResponse> {
 // The resource dispatcher host uses this interface to push load events to the
 // renderer, allowing for differences in the types of IPC messages generated.
 // See the implementations of this interface defined below.
-class ResourceHandler : public base::RefCounted<ResourceHandler> {
+class ResourceHandler : public base::RefCountedThreadSafe<ResourceHandler> {
  public:
   virtual ~ResourceHandler() {}
 

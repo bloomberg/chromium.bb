@@ -75,8 +75,14 @@ PluginService::~PluginService() {
 #endif
 }
 
+bool PluginService::PluginsLoaded() {
+  AutoLock lock(lock_);
+  return NPAPI::PluginList::PluginsLoaded();
+}
+
 void PluginService::GetPlugins(bool refresh,
                                std::vector<WebPluginInfo>* plugins) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   AutoLock lock(lock_);
   NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
 }
@@ -180,6 +186,8 @@ FilePath PluginService::GetPluginPath(const GURL& url,
                                       const std::string& clsid,
                                       std::string* actual_mime_type) {
   AutoLock lock(lock_);
+  DCHECK(NPAPI::PluginList::PluginsLoaded() ||
+         ChromeThread::CurrentlyOn(ChromeThread::FILE));
   bool allow_wildcard = true;
   WebPluginInfo info;
   if (NPAPI::PluginList::Singleton()->GetPluginInfo(url, mime_type, clsid,
@@ -195,12 +203,16 @@ FilePath PluginService::GetPluginPath(const GURL& url,
 bool PluginService::GetPluginInfoByPath(const FilePath& plugin_path,
                                         WebPluginInfo* info) {
   AutoLock lock(lock_);
+  DCHECK(NPAPI::PluginList::PluginsLoaded() ||
+         ChromeThread::CurrentlyOn(ChromeThread::FILE));
   return NPAPI::PluginList::Singleton()->GetPluginInfoByPath(plugin_path, info);
 }
 
 bool PluginService::HavePluginFor(const std::string& mime_type,
                                   bool allow_wildcard) {
   AutoLock lock(lock_);
+  DCHECK(NPAPI::PluginList::PluginsLoaded() ||
+         ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   GURL url;
   WebPluginInfo info;

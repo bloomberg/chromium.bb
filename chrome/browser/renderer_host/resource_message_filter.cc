@@ -288,7 +288,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)  // This hack is Windows-specific.
       IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetPlugins, OnGetPlugins)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPath, OnGetPluginPath)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
@@ -545,8 +545,20 @@ void ResourceMessageFilter::OnLoadFont(LOGFONT font) {
 #endif
 
 void ResourceMessageFilter::OnGetPlugins(bool refresh,
-                                         std::vector<WebPluginInfo>* plugins) {
-  plugin_service_->GetPlugins(refresh, plugins);
+                                         IPC::Message* reply_msg) {
+  ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::OnGetPluginsOnFileThread,
+          refresh, reply_msg));
+}
+
+void ResourceMessageFilter::OnGetPluginsOnFileThread(bool refresh,
+                                                     IPC::Message* reply_msg) {
+  std::vector<WebPluginInfo> plugins;
+  PluginService::GetInstance()->GetPlugins(refresh, &plugins);
+
+  ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
+  ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
 void ResourceMessageFilter::OnGetPluginPath(const GURL& url,
