@@ -101,6 +101,13 @@ class MacKeychainPasswordFormAdapter {
   bool SetKeychainItemCreatorCode(const SecKeychainItemRef& keychain_item,
                                   OSType creator_code);
 
+  // Returns the creator code to be used for a Keychain search, depending on
+  // whether this object was instructed to search only for items it created.
+  // If searches should be restricted in this way, the application-specific
+  // creator code will be returned. Otherwise, 0 will be returned, indicating
+  // a search of all items, regardless of creator.
+  OSType CreatorCodeForSearch();
+
   const MacKeychain* keychain_;
 
   // If true, Keychain searches are restricted to items created by Chrome.

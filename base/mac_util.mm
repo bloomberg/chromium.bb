@@ -4,7 +4,6 @@
 
 #include "base/mac_util.h"
 
-#include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_path.h"
@@ -53,6 +52,35 @@ NSBundle* MainAppBundle() {
   return [NSBundle mainBundle];
 }
 
+void SetOverrideAppBundle(NSBundle* bundle) {
+  if (bundle != g_override_app_bundle) {
+    [g_override_app_bundle release];
+    g_override_app_bundle = [bundle retain];
+  }
+}
+
+void SetOverrideAppBundlePath(const FilePath& file_path) {
+  NSString* path = base::SysUTF8ToNSString(file_path.value());
+  NSBundle* bundle = [NSBundle bundleWithPath:path];
+  DCHECK(bundle) << "failed to load the bundle: " << file_path.value();
+
+  SetOverrideAppBundle(bundle);
+}
+
+OSType CreatorCodeForCFBundleRef(CFBundleRef bundle) {
+  OSType creator;
+  CFBundleGetPackageInfo(bundle, NULL, &creator);
+  return creator;
+}
+
+OSType CreatorCodeForApplication() {
+  CFBundleRef bundle = CFBundleGetMainBundle();
+  if (!bundle)
+    return kUnknownType;
+
+  return CreatorCodeForCFBundleRef(bundle);
+}
+
 FilePath GetUserLibraryPath() {
   NSArray* dirs = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
                                                       NSUserDomainMask, YES);
@@ -67,17 +95,5 @@ FilePath GetUserLibraryPath() {
   return FilePath(library_dir_path);
 }
 
-void SetOverrideAppBundle(NSBundle* bundle) {
-  [g_override_app_bundle release];
-  g_override_app_bundle = [bundle retain];
-}
-
-void SetOverrideAppBundlePath(const FilePath& file_path) {
-  NSString* path = base::SysUTF8ToNSString(file_path.value());
-  NSBundle* bundle = [NSBundle bundleWithPath:path];
-  DCHECK(bundle) << "failed to load the bundle: " << file_path.value();
-
-  SetOverrideAppBundle(bundle);
-}
 
 }  // namespace mac_util

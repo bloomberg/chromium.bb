@@ -8,13 +8,16 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 
 namespace chrome {
 

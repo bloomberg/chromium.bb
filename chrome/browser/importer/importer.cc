@@ -9,12 +9,8 @@
 
 #include "app/gfx/favicon_size.h"
 #include "app/l10n_util.h"
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 #include "base/file_util.h"
 #include "base/gfx/png_encoder.h"
-#include "base/mac_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -26,16 +22,7 @@
 #include "chrome/browser/importer/firefox3_importer.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"
-#if defined(OS_WIN)
-#include "chrome/browser/importer/ie_importer.h"
-#endif
-#if defined(OS_MACOSX)
-#include "chrome/browser/importer/safari_importer.h"
-#endif
 #include "chrome/browser/importer/toolbar_importer.h"
-#if defined(OS_WIN)
-#include "chrome/browser/password_manager/ie7_password.h"
-#endif
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/shell_integration.h"
@@ -54,6 +41,16 @@
 #include "views/window/window.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/gtk/import_lock_dialog_gtk.h"
+#endif
+
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#include "chrome/browser/importer/ie_importer.h"
+#include "chrome/browser/password_manager/ie7_password.h"
+#endif
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#include "chrome/browser/importer/safari_importer.h"
 #endif
 
 using webkit_glue::PasswordForm;

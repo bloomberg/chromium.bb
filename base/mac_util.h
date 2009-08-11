@@ -5,7 +5,9 @@
 #ifndef BASE_MAC_UTIL_H_
 #define BASE_MAC_UTIL_H_
 
-struct FSRef;
+#include <Carbon/Carbon.h>
+#include <string>
+
 class FilePath;
 
 #ifdef __OBJC__
@@ -13,8 +15,6 @@ class FilePath;
 #else
 class NSBundle;
 #endif
-
-#include <string>
 
 namespace mac_util {
 
@@ -29,13 +29,24 @@ bool AmIBundled();
 // aren't a bundle.
 NSBundle* MainAppBundle();
 
-// Returns the ~/Library directory.
-FilePath GetUserLibraryPath();
-
 // Set the bundle that MainAppBundle will return, overriding the default value
 // (Restore the default by calling SetOverrideAppBundle(nil)).
 void SetOverrideAppBundle(NSBundle* bundle);
 void SetOverrideAppBundlePath(const FilePath& file_path);
+
+// Returns the creator code associated with the CFBundleRef at bundle.
+OSType CreatorCodeForCFBundleRef(CFBundleRef bundle);
+
+// Returns the creator code associated with this application, by calling
+// CreatorCodeForCFBundleRef for the application's main bundle.  If this
+// information cannot be determined, returns kUnknownType ('????').  This
+// does not respect the override app bundle because it's based on CFBundle
+// instead of NSBundle, and because callers probably don't want the override
+// app bundle's creator code anyway.
+OSType CreatorCodeForApplication();
+
+// Returns the ~/Library directory.
+FilePath GetUserLibraryPath();
 
 }  // namespace mac_util
 

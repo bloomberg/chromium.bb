@@ -10,14 +10,13 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/mac_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/login_database_mac.h"
 
 using webkit_glue::PasswordForm;
-
-static const OSType kChromeKeychainCreatorCode = 'rimZ';
 
 // Utility class to handle the details of constructing and running a keychain
 // search from a set of attributes.
@@ -438,7 +437,7 @@ void MergePasswordForms(std::vector<PasswordForm*>* keychain_forms,
 std::vector<PasswordForm*> GetPasswordsForForms(
     const MacKeychain& keychain, std::vector<PasswordForm*>* database_forms) {
   MacKeychainPasswordFormAdapter keychain_adapter(&keychain);
-  
+
   std::vector<PasswordForm*> merged_forms;
   for (std::vector<PasswordForm*>::iterator i = database_forms->begin();
        i != database_forms->end();) {
@@ -507,13 +506,12 @@ std::vector<PasswordForm*>
     kSecAuthenticationTypeHTTPBasic,
     kSecAuthenticationTypeHTTPDigest,
   };
-  OSType creator = finds_only_owned_ ? kChromeKeychainCreatorCode : 0;
 
   std::vector<SecKeychainItemRef> matches;
   for (unsigned int i = 0; i < arraysize(supported_auth_types); ++i) {
     KeychainSearch keychain_search(*keychain_);
     keychain_search.Init(NULL, 0, kSecProtocolTypeAny, supported_auth_types[i],
-                         NULL, NULL, NULL, creator);
+                         NULL, NULL, NULL, CreatorCodeForSearch());
     keychain_search.FindMatchingItems(&matches);
   }
 
@@ -547,7 +545,7 @@ bool MacKeychainPasswordFormAdapter::AddPassword(const PasswordForm& form) {
       password.size(), password.c_str(), &new_item);
 
   if (result == noErr) {
-    SetKeychainItemCreatorCode(new_item, kChromeKeychainCreatorCode);
+    SetKeychainItemCreatorCode(new_item, mac_util::CreatorCodeForApplication());
     keychain_->Free(new_item);
   } else if (result == errSecDuplicateItem) {
     // If we collide with an existing item, find and update it instead.
@@ -641,11 +639,9 @@ std::vector<SecKeychainItemRef>
   SecAuthenticationType auth_type = AuthTypeForScheme(scheme);
   const char* auth_domain = (scheme == PasswordForm::SCHEME_HTML) ?
       NULL : security_domain.c_str();
-  OSType creator = finds_only_owned_ ? kChromeKeychainCreatorCode : 0;
-
   KeychainSearch keychain_search(*keychain_);
   keychain_search.Init(server.c_str(), port, protocol, auth_type,
-                       auth_domain, path, username, creator);
+                       auth_domain, path, username, CreatorCodeForSearch());
   keychain_search.FindMatchingItems(&matches);
   return matches;
 }
@@ -703,6 +699,10 @@ bool MacKeychainPasswordFormAdapter::SetKeychainItemCreatorCode(
   OSStatus result = keychain_->ItemModifyAttributesAndData(keychain_item,
                                                            &attrList, 0, NULL);
   return result == noErr;
+}
+
+OSType MacKeychainPasswordFormAdapter::CreatorCodeForSearch() {
+  return finds_only_owned_ ? mac_util::CreatorCodeForApplication() : 0;
 }
 
 #pragma mark -
@@ -813,15 +813,15 @@ void PasswordStoreMac::GetBlacklistLoginsImpl(GetLoginsRequest* request) {
 void PasswordStoreMac::GetAutofillableLoginsImpl(GetLoginsRequest* request) {
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetAutofillableLogins(&database_forms);
-  
+
   std::vector<PasswordForm*> merged_forms =
       internal_keychain_helpers::GetPasswordsForForms(*keychain_,
                                                       &database_forms);
-  
+
   // Clean up any orphaned database entries.
   RemoveDatabaseForms(database_forms);
   STLDeleteElements(&database_forms);
-  
+
   NotifyConsumer(request, merged_forms);
 }
 
@@ -853,12 +853,12 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
 std::vector<PasswordForm*> PasswordStoreMac::GetUnusedKeychainForms() {
   std::vector<PasswordForm*> database_forms;
   login_metadata_db_->GetAutofillableLogins(&database_forms);
-  
+
   MacKeychainPasswordFormAdapter owned_keychain_adapter(keychain_.get());
   owned_keychain_adapter.SetFindsOnlyOwnedItems(true);
   std::vector<PasswordForm*> owned_keychain_forms =
       owned_keychain_adapter.GetAllPasswordFormPasswords();
-  
+
   // Run a merge; anything left in owned_keychain_forms when we are done no
   // longer has a matching database entry.
   std::vector<PasswordForm*> merged_forms;
