@@ -459,24 +459,6 @@
    fun:SECMOD_UnloadUserModule
 }
 {
-   # See http://crbug.com/10755 (1/2)
-   bug_10755
-   Memcheck:Leak
-   fun:_Znwj
-   ...
-   fun:_ZN12RenderThread12RemoveFilterEPN3IPC12ChannelProxy13MessageFilterE
-}
-{
-   # See http://crbug.com/10755 (2/2)
-   bug_10755b
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN3IPC12ChannelProxy5CloseEv
-   fun:_ZN3IPC11SyncChannelD0Ev
-   fun:_ZN11ChildThread7CleanUpEv
-   fun:_ZN12RenderThread7CleanUpEv
-}
-{
    # See http://crbug.com/10758
    bug_10758
    Memcheck:Leak
