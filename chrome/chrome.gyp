@@ -65,7 +65,18 @@
       '../views/controls/label_unittest.cc',
       '../views/controls/table/table_view_unittest.cc',
       '../views/grid_layout_unittest.cc',
-    ]
+    ],
+    'conditions': [
+      ['OS=="mac"', {
+        'conditions': [
+          ['branding=="Chrome"', {
+            'bundle_id': 'com.google.Chrome',
+          }, {  # else: branding!="Chrome"
+            'bundle_id': 'org.chromium.Chromium',
+          }],  # branding
+        ],  # conditions
+      }],  # OS=="mac"
+    ],  # conditions
   },
   'includes': [
     '../build/common.gypi',
@@ -3018,30 +3029,26 @@
           'conditions': [
             ['branding=="Chrome"', {
               'mac_bundle_resources': ['app/theme/google_chrome/app.icns'],
-              'variables': {
-                'bundle_id': 'com.google.Chrome',
-              },
               'copies': [
                 {
-                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/',
-                  'files': ['../third_party/ffmpeg/binaries/chrome/libavcodec.52.dylib',
-                            '../third_party/ffmpeg/binaries/chrome/libavformat.52.dylib',
-                            '../third_party/ffmpeg/binaries/chrome/libavutil.50.dylib',
-                            '<(PRODUCT_DIR)/plugin_carbon_interpose.dylib'],
+                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
+                  'files': [
+                    '../third_party/ffmpeg/binaries/chrome/libavcodec.52.dylib',
+                    '../third_party/ffmpeg/binaries/chrome/libavformat.52.dylib',
+                    '../third_party/ffmpeg/binaries/chrome/libavutil.50.dylib',
+                  ],
                 },
               ],
             }, {  # else: 'branding!="Chrome"
               'mac_bundle_resources': ['app/theme/chromium/app.icns'],
-              'variables': {
-                'bundle_id': 'org.chromium.Chromium',
-              },
               'copies': [
                 {
-                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/',
-                  'files': ['../third_party/ffmpeg/binaries/chromium/libavcodec.52.dylib',
-                            '../third_party/ffmpeg/binaries/chromium/libavformat.52.dylib',
-                            '../third_party/ffmpeg/binaries/chromium/libavutil.50.dylib',
-                            '<(PRODUCT_DIR)/plugin_carbon_interpose.dylib'],
+                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
+                  'files': [
+                    '../third_party/ffmpeg/binaries/chromium/libavcodec.52.dylib',
+                    '../third_party/ffmpeg/binaries/chromium/libavformat.52.dylib',
+                    '../third_party/ffmpeg/binaries/chromium/libavutil.50.dylib',
+                  ],
                 },
               ],
             }],
@@ -3087,10 +3094,13 @@
             'CHROMIUM_BUNDLE_ID': '<(bundle_id)',
             'CHROMIUM_SHORT_NAME': '<(branding)',
           },
-          # Bring in pdfsqueeze and run it on all pdfs
+          'mac_bundle_resources': [
+            '<(PRODUCT_DIR)/<(mac_product_name) Helper.app',
+          ],
           'dependencies': [
+            'helper_app',
+            # Bring in pdfsqueeze and run it on all pdfs
             '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
-            'interpose_dependency_shim',
           ],
           'rules': [
             {
@@ -3111,6 +3121,23 @@
               'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Frameworks',
               'files': ['<(PRODUCT_DIR)/<(mac_product_name) Framework.framework'],
             },
+            {
+              # Copy web inspector resources to the Contents/Resources folder.
+              'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources',
+              'files': ['<(PRODUCT_DIR)/resources/inspector/'],
+            },
+          ],
+          'postbuilds': [
+            {
+              # Modify the Info.plist as needed.  The script explains why this
+              # is needed.  This is also done in the helper_app target.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
+                         '-b<(mac_breakpad)',
+                         '-k<(mac_keystone)',
+                         '-s1',  # Include Subversion information
+                         '<(branding)'],
+            },
           ],
         }, { # else: OS != "mac"
           'conditions': [
@@ -3126,34 +3153,6 @@
               # etc.; should we try to extract from there instead?
               'product_name': 'chrome'
             }],
-          ],
-        }],
-        ['OS=="mac"', {
-          'actions': [
-            {
-              # Mac adds an action to modify the Info.plist to meet our needs
-              # (see the script for why this is done).
-              'action_name': 'tweak_app_infoplist',
-              # We don't list any inputs or outputs because we always want
-              # the script to run.  Why?  Because it does thinks like record
-              # the svn revision into the info.plist, so there is no file to
-              # depend on that will change when ever that changes.
-              'inputs': [],
-              'outputs': [],
-              'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
-                         '-b<(mac_breakpad)',
-                         '-k<(mac_keystone)',
-                         '<(branding)'],
-            },
-          ],
-        }],
-        ['OS=="mac"', {
-          # Copy web inspector resources to the Contents/Resources folder.
-          'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources',
-              'files': ['<(PRODUCT_DIR)/resources/inspector/'],
-            },
           ],
         }],
         ['OS=="linux"', {
@@ -4405,7 +4404,7 @@
               # app bundle, the only dependent of this target.
               # TODO(mark): Fix.
               'mac_bundle_resources/': [
-                ['exclude', ''],
+                ['exclude', '.*'],
               ],
               'direct_dependent_settings': {
                 'mac_bundle_resources': [
@@ -4484,6 +4483,80 @@
     ['OS=="mac"',
       { 'targets': [
         {
+          'target_name': 'helper_app',
+          'type': 'executable',
+          'product_name': '<(mac_product_name) Helper',
+          'mac_bundle': 1,
+          'dependencies': [
+            'chrome_dll',
+            'interpose_dependency_shim',
+          ],
+          'sources': [
+            # chrome_exe_main.mm's main() is the entry point for the "chrome"
+            # (browser app) target.  All it does is jump to chrome_dll's
+            # ChromeMain.  This is appropriate for helper processes too,
+            # because the logic to discriminate between process types at run
+            # time is actually directed by the --type command line argument
+            # processed by ChromeMain.  Sharing chrome_exe_main.mm with the
+            # browser app will suffice for now.
+            'app/chrome_exe_main.mm',
+            'app/helper-Info.plist',
+          ],
+          # TODO(mark): Come up with a fancier way to do this.  It should only
+          # be necessary to list app-Info.plist once, not the three times it is
+          # listed here.
+          'mac_bundle_resources!': [
+            'app/helper-Info.plist',
+          ],
+          # TODO(mark): For now, don't put any resources into this app.  Its
+          # resources directory will be a symbolic link to the browser app's
+          # resources directory.
+          'mac_bundle_resources/': [
+            ['exclude', '.*'],
+          ],
+          'xcode_settings': {
+            'CHROMIUM_BUNDLE_ID': '<(bundle_id)',
+            'CHROMIUM_SHORT_NAME': '<(branding)',
+            'INFOPLIST_FILE': 'app/helper-Info.plist',
+          },
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/Contents/MacOS',
+              'files': [
+                '<(PRODUCT_DIR)/plugin_carbon_interpose.dylib',
+              ],
+            },
+          ],
+          'postbuilds': [
+            {
+              'postbuild_name': 'Make Symbolic Links',
+              'action': ['app/make_mac_app_symlinks'],
+            },
+            {
+              # Modify the Info.plist as needed.  The script explains why this
+              # is needed.  This is also done in the chrome target.  In
+              # this case, -k0 is always used because Keystone never runs
+              # within the helper app.  -s0 is used to avoid placing Subversion
+              # data in the helper app's Info.plist.  It will be present in
+              # the main app's Info.plist, which is sufficient.
+              'postbuild_name': 'Tweak Info.plist',
+              'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
+                         '-b<(mac_breakpad)',
+                         '-k0',
+                         '-s0',
+                         '<(branding)'],
+            },
+          ],
+          'conditions': [
+            ['mac_breakpad==1', {
+              'variables': {
+                # A real .dSYM is needed for dump_syms to operate on.
+                'mac_real_dsym': 1,
+              },
+            }],
+          ],
+        },
+        {
           # Convenience target to build a disk image.
           'target_name': 'build_app_dmg',
           # Don't place this in the 'all' list; most won't want it.
@@ -4551,6 +4624,9 @@
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
             ],
+          },
+          'xcode_settings': {
+            'DYLIB_INSTALL_NAME_BASE': '@executable_path',
           },
         },
       ]

@@ -47,6 +47,7 @@
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/child_process_info.h"
+#include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_service.h"
@@ -201,16 +202,6 @@ class VisitedLinkUpdater {
   VisitedLinkCommon::Fingerprints pending_;
 };
 
-
-// Used for a View_ID where the renderer has not been attached yet
-const int32 kInvalidViewID = -1;
-
-// Get the path to the renderer executable, which is the same as the
-// current executable.
-bool GetRendererPath(std::wstring* cmd_line) {
-  return PathService::Get(base::FILE_EXE, cmd_line);
-}
-
 BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
     : RenderProcessHost(profile),
       visible_widgets_(0),
@@ -307,15 +298,12 @@ bool BrowserRenderProcessHost::Init() {
 
   // Build command line for renderer, we have to quote the executable name to
   // deal with spaces.
-  std::wstring renderer_path =
-      browser_command_line.GetSwitchValue(switches::kBrowserSubprocessPath);
+  std::wstring renderer_path = ChildProcessHost::GetChildPath();
   if (renderer_path.empty()) {
-    if (!GetRendererPath(&renderer_path)) {
-      // Need to reset the channel we created above or others might think the
-      // connection is live.
-      channel_.reset();
-      return false;
-    }
+    // Need to reset the channel we created above or others might think the
+    // connection is live.
+    channel_.reset();
+    return false;
   }
   CommandLine cmd_line(renderer_path);
   if (logging::DialogsAreSuppressed())
