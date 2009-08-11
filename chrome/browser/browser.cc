@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
+#include "chrome/browser/extensions/crashed_extension_infobar.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/location_bar.h"
@@ -189,6 +190,8 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -2098,6 +2101,18 @@ void Browser::Observe(NotificationType type,
           return;
         }
       }
+      break;
+    }
+
+    case NotificationType::EXTENSION_PROCESS_CRASHED: {
+      TabContents* tab_contents = GetSelectedTabContents();
+      if (!tab_contents)
+        break;
+      ExtensionsService* extensions_service =
+          Source<ExtensionsService>(source).ptr();
+      ExtensionHost* extension_host = Details<ExtensionHost>(details).ptr();
+      tab_contents->AddInfoBar(new CrashedExtensionInfoBarDelegate(
+          tab_contents, extensions_service, extension_host->extension()));
       break;
     }
 

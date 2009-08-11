@@ -43,6 +43,9 @@ class ExtensionPrefs {
   void OnExtensionUninstalled(const Extension* extension,
                               bool external_uninstall);
 
+  // Returns extension path based on extension ID, or empty FilePath on error.
+  FilePath GetExtensionPath(const std::string& extension_id);
+
   // Returns base extensions install directory.
   const FilePath& install_directory() const { return install_directory_; }
 
