@@ -144,9 +144,8 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
           content.insert(0, kUserScriptHead);
           content += kUserScriptTail;
         }
-        sources.push_back(WebScriptSource(
-            WebString::fromUTF8(content.c_str(), content.length()),
-            file.url()));
+        sources.push_back(
+            WebScriptSource(WebString::fromUTF8(content), file.url()));
       }
     }
 

@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -40,8 +40,8 @@ namespace WebCore { class CString; }
 #endif
 
 namespace WebKit {
-
     class WebCStringPrivate;
+    class WebString;
 
     // A single-byte string container with unspecified encoding.  It is
     // inexpensive to copy a WebCString object.
@@ -77,6 +77,11 @@ namespace WebKit {
         bool isEmpty() const { return length() == 0; }
         bool isNull() const { return m_private == 0; }
 
+        WEBKIT_API WebString utf16() const;
+
+        WEBKIT_API static WebCString fromUTF16(const WebUChar* data, size_t length);
+        WEBKIT_API static WebCString fromUTF16(const WebUChar* data);
+
 #if WEBKIT_IMPLEMENTATION
         WebCString(const WebCore::CString&);
         WebCString& operator=(const WebCore::CString&);
@@ -97,6 +102,12 @@ namespace WebKit {
         {
             size_t len = length();
             return len ? std::string(data(), len) : std::string();
+        }
+
+        template <class UTF16String>
+        static WebCString fromUTF16(const UTF16String& s)
+        {
+            return fromUTF16(s.data(), s.length());
         }
 #endif
 

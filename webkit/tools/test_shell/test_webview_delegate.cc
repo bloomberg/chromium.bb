@@ -285,7 +285,7 @@ void TestWebViewDelegate::WillSendRequest(
            GetResourceDescription(identifier).c_str(),
            request_url.c_str(),
            GetURLDescription(main_document_url).c_str(),
-           UTF16ToUTF8(request->httpMethod()).c_str(),
+           request->httpMethod().utf8().data(),
            GetResponseDescription(redirect_response).c_str());
   }
 

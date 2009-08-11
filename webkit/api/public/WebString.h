@@ -86,6 +86,7 @@ namespace WebKit {
         WebString(const WebCore::String&);
         WebString& operator=(const WebCore::String&);
         operator WebCore::String() const;
+
         WebString(const WebCore::AtomicString&);
         WebString& operator=(const WebCore::AtomicString&);
         operator WebCore::AtomicString() const;

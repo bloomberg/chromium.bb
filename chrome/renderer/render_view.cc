@@ -927,7 +927,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
     // Top-level navigation.
 
     // Update contents MIME type for main frame.
-    params.contents_mime_type = UTF16ToUTF8(ds->response().mimeType());
+    params.contents_mime_type = ds->response().mimeType().utf8();
 
     params.transition = navigation_state->transition_type();
     if (!PageTransition::IsMainFrame(params.transition)) {

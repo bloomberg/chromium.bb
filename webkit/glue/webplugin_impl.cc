@@ -629,7 +629,8 @@ NPObject* WebPluginImpl::GetPluginElement() {
 void WebPluginImpl::SetCookie(const GURL& url,
                               const GURL& policy_url,
                               const std::string& cookie) {
-  WebKit::webKitClient()->setCookies(url, policy_url, UTF8ToUTF16(cookie));
+  WebKit::webKitClient()->setCookies(
+      url, policy_url, WebString::fromUTF8(cookie));
 }
 
 std::string WebPluginImpl::GetCookies(const GURL& url, const GURL& policy_url) {

@@ -202,7 +202,7 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
   const std::map<std::string, std::string>::const_iterator iter =
       unicode_font_families_.find(key);
   if (iter != unicode_font_families_.end())
-    return WebString::fromUTF8(iter->second.data(), iter->second.size());
+    return WebString::fromUTF8(iter->second);
 
   const std::string family_name =
       renderer_sandbox_support::getFontFamilyForCharacters(characters,

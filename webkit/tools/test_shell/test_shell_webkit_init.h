@@ -101,13 +101,13 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
                           const WebKit::WebURL& first_party_for_cookies,
                           const WebKit::WebString& value) {
     SimpleResourceLoaderBridge::SetCookie(
-        url, first_party_for_cookies, UTF16ToUTF8(value));
+        url, first_party_for_cookies, value.utf8());
   }
 
   virtual WebKit::WebString cookies(
       const WebKit::WebURL& url,
       const WebKit::WebURL& first_party_for_cookies) {
-    return UTF8ToUTF16(SimpleResourceLoaderBridge::GetCookies(
+    return WebKit::WebString::fromUTF8(SimpleResourceLoaderBridge::GetCookies(
         url, first_party_for_cookies));
   }
 

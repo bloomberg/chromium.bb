@@ -50,16 +50,16 @@ void MockWebClipboardImpl::writeHTML(
 
 void MockWebClipboardImpl::writeURL(
     const WebKit::WebURL& url, const WebKit::WebString& title) {
-  m_htmlText = UTF8ToUTF16(
+  m_htmlText = WebString::fromUTF8(
       webkit_glue::WebClipboardImpl::URLToMarkup(url, title));
-  m_plainText = UTF8ToUTF16(url.spec());
+  m_plainText = url.spec().utf16();
   m_writeSmartPaste = false;
 }
 
 void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
     const WebKit::WebURL& url, const WebKit::WebString& title) {
   if (!image.isNull()) {
-    m_htmlText = UTF8ToUTF16(
+    m_htmlText = WebString::fromUTF8(
         webkit_glue::WebClipboardImpl::URLToImageMarkup(url, title));
     m_plainText = m_htmlText;
     m_writeSmartPaste = false;

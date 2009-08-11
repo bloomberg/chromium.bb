@@ -116,7 +116,7 @@ void WebKitClientImpl::getPluginList(bool refresh,
       const WebPluginMimeType& mime_type = plugin.mime_types[j];
 
       builder->addMediaTypeToLastPlugin(
-          UTF8ToUTF16(mime_type.mime_type),
+          WebString::fromUTF8(mime_type.mime_type),
           WideToUTF16Hack(mime_type.description));
 
       for (size_t k = 0; k < mime_type.file_extensions.size(); ++k) {

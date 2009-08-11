@@ -833,7 +833,7 @@ static void EncodeDragData(const WebDragData& data, bool add_data,
     static const char kBackspaceDelimiter('\b');
     if (i != 0)
       utf8.append(1, kBackspaceDelimiter);
-    utf8.append(UTF16ToUTF8(files[i]));
+    utf8.append(files[i].utf8());
   }
 
   STRINGN_TO_NPVARIANT(utf8.data(), utf8.length(), *drag_data);
