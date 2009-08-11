@@ -679,7 +679,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
         }
         *error = errors::kInvalidThemeColors;
         return false;
-        ++iter;
       }
       theme_colors_.reset(
           static_cast<DictionaryValue*>(colors_value->DeepCopy()));
