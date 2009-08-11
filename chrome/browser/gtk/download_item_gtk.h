@@ -11,6 +11,7 @@
 
 #include "app/animation.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/common/notification_observer.h"
@@ -189,8 +190,13 @@ class DownloadItemGtk : public DownloadItem::Observer,
 
   // The file icon for the download. May be null.
   SkBitmap* icon_;
+  // The last download file path for which we requested an icon.
+  FilePath icon_filepath_;
 
   NotificationRegistrar registrar_;
+
+  // The time at which we were insantiated.
+  base::Time creation_time_;
 
   // For canceling an in progress icon request.
   CancelableRequestConsumerT<int, 0> icon_consumer_;

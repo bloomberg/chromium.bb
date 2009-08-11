@@ -185,7 +185,8 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
       download_model_(download_model),
       bounding_widget_(parent_shelf->GetRightBoundingWidget()),
       dangerous_prompt_(NULL),
-      icon_(NULL) {
+      icon_(NULL),
+      creation_time_(base::Time::Now()) {
   InitNineBoxes();
   LoadIcon();
 
@@ -380,6 +381,13 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
     dangerous_prompt_ = NULL;
   }
 
+  if (download->full_path() != icon_filepath_) {
+    // Turns out the file path is "unconfirmed %d.download" for dangerous
+    // downloads. When the download is confirmed, the file is renamed on
+    // another thread, so reload the icon if the download filename changes.
+    LoadIcon();
+  }
+
   switch (download->state()) {
     case DownloadItem::REMOVING:
       parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
@@ -487,8 +495,10 @@ void DownloadItemGtk::OnLoadIconComplete(IconManager::Handle handle,
 }
 
 void DownloadItemGtk::LoadIcon() {
+  icon_consumer_.CancelAllRequests();
   IconManager* im = g_browser_process->icon_manager();
-  im->LoadIcon(get_download()->full_path(),
+  icon_filepath_ = get_download()->full_path();
+  im->LoadIcon(icon_filepath_,
                IconLoader::SMALL, &icon_consumer_,
                NewCallback(this, &DownloadItemGtk::OnLoadIconComplete));
 }
@@ -622,9 +632,11 @@ gboolean DownloadItemGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
 
 // static
 void DownloadItemGtk::OnClick(GtkWidget* widget, DownloadItemGtk* item) {
+  UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
+                           base::Time::Now() - item->creation_time_);
+
   DownloadItem* download = item->get_download();
 
-  // TODO(estade): add clickjacking histogram stuff.
   if (download->state() == DownloadItem::IN_PROGRESS) {
     download->set_open_when_complete(
         !download->open_when_complete());
@@ -653,7 +665,9 @@ gboolean DownloadItemGtk::OnProgressAreaExpose(GtkWidget* widget,
         download_util::SMALL);
   }
 
-  // TODO(estade): draw a default icon if |icon_| is null.
+  // |icon_| may be NULL if it is still loading. If the file is an unrecognized
+  // type then we will get back a generic system icon. Hence there is no need to
+  // use the chromium-specific default download item icon.
   if (download_item->icon_) {
     const int offset = download_util::kSmallProgressIconOffset;
     canvas.DrawBitmapInt(*download_item->icon_,
@@ -713,9 +727,10 @@ gboolean DownloadItemGtk::OnDangerousPromptExpose(GtkWidget* widget,
 }
 
 // static
-// TODO(estade): here and below, add clickjacking histogram code.
 void DownloadItemGtk::OnDangerousAccept(GtkWidget* button,
                                         DownloadItemGtk* item) {
+  UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
+                           base::Time::Now() - item->creation_time_);
   item->get_download()->manager()->DangerousDownloadValidated(
       item->get_download());
 }
@@ -723,6 +738,8 @@ void DownloadItemGtk::OnDangerousAccept(GtkWidget* button,
 // static
 void DownloadItemGtk::OnDangerousDecline(GtkWidget* button,
                                          DownloadItemGtk* item) {
+  UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
+                           base::Time::Now() - item->creation_time_);
   if (item->get_download()->state() == DownloadItem::IN_PROGRESS)
     item->get_download()->Cancel(true);
   item->get_download()->Remove(true);
