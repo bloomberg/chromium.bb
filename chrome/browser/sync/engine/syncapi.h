@@ -51,6 +51,8 @@ typedef uint16 sync_char16;
 #if (defined(OS_WIN) || defined(OS_WINDOWS))
 #if COMPILING_SYNCAPI_LIBRARY
 #define SYNC_EXPORT __declspec(dllexport)
+#elif COMPILING_SYNCAPI_STUB
+#define SYNC_EXPORT
 #else
 #define SYNC_EXPORT __declspec(dllimport)
 #endif

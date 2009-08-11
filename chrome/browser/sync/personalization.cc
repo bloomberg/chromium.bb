@@ -79,11 +79,11 @@ static std::wstring MakeAuthErrorText(AuthErrorState state) {
   }
 }
 
-bool IsP13NDisabled(Profile* profile) {
+bool IsSyncEnabled(Profile* profile) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableP13n))
-    return true;
-  return !profile || profile->GetProfilePersonalization() == NULL;
+  if (!command_line->HasSwitch(switches::kEnableSync))
+    return false;
+  return profile && profile->GetProfilePersonalization() != NULL;
 }
 
 bool NeedsDOMUI(const GURL& url) {

@@ -64,7 +64,7 @@ namespace Personalization {
 
 // Checks if P13N is globally disabled or not, and that |profile| has a valid
 // ProfilePersonalization member (it can be NULL for TestingProfiles).
-bool IsP13NDisabled(Profile* profile);
+bool IsSyncEnabled(Profile* profile);
 
 // Returns whether |url| should be loaded in a DOMUI.
 bool NeedsDOMUI(const GURL& url);

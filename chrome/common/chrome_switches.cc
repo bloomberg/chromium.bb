@@ -372,7 +372,8 @@ const wchar_t kGearsPluginPathOverride[]       = L"gears-plugin-path";
 // Enable the fastback page cache.
 const wchar_t kEnableFastback[]                = L"enable-fastback";
 
-const wchar_t kDisableP13n[]                   = L"disable-p13n";
+// Enable syncing bookmarks to a Google Account.
+const wchar_t kEnableSync[]                   = L"enable-sync";
 
 // Enable support for SDCH filtering (dictionary based expansion of content).
 // Optional argument is *the* only domain name that will have SDCH suppport.

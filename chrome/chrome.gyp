@@ -2225,6 +2225,13 @@
               'msvs_precompiled_source': 'tools/build/win/precompiled_wtl.cc',
             },
           },
+          'conditions': [
+            ['use_syncapi_stub==1', {
+              'sources': [
+                'browser/sync/engine/syncapi_stub.cc',
+              ],
+            }]  # use_syncapi_stub==1
+          ],
         }, {  # 'OS!="win"
           'sources/': [
             # Exclude all of hang_monitor.
@@ -4923,7 +4930,7 @@
           # Windows-only for now; this has issues with scons
           # regarding use of run_all_unittests.cc.
           # TODO(zork): add target to linux build.
-          'target_name': 'live_sync_tests',
+          'target_name': 'sync_integration_tests',
           'type': 'executable',
             'dependencies': [
               'browser',

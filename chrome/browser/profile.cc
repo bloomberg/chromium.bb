@@ -518,7 +518,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   prefs->AddPrefObserver(prefs::kEnableAutoSpellCorrect, this);
 
 #ifdef CHROME_PERSONALIZATION
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableP13n))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync))
     personalization_.reset(Personalization::CreateProfilePersonalization(this));
 #endif
 
