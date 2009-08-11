@@ -78,6 +78,7 @@ class ChromeTests:
     # Recognise the original abbreviations as well as full executable names.
     self._test_list = {
       "base": self.TestBase,            "base_unittests": self.TestBase,
+      "browser": self.TestBrowser,      "browser_tests": self.TestBrowser,
       "googleurl": self.TestGURL,       "googleurl_unittests": self.TestGURL,
       "ipc": self.TestIpc,              "ipc_tests": self.TestIpc,
       "layout": self.TestLayout,        "layout_tests": self.TestLayout,
@@ -224,6 +225,9 @@ class ChromeTests:
 
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
+
+  def TestBrowser(self):
+    return self.SimpleTest("chrome", "browser_tests")
 
   def TestGURL(self):
     return self.SimpleTest("chrome", "googleurl_unittests")
