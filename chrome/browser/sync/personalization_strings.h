@@ -56,6 +56,11 @@ static const wchar_t kMenuLabelStartSync[] = L"Sync my bookmarks...";
 // Login dialog strings.
 static const wchar_t kLoginDialogTitle[] = L"Sync my bookmarks";
 
+// Bookmark bar strings.
+static const wchar_t kBookmarkBarSyncErrorButtonText[] = L"Sync Error";
+static const wchar_t kBookmarkBarErrorTooltip[] =
+    L"Your login details are out of date. Click to re-enter your password.";
+
 #endif  // CHROME_BROWSER_SYNC_PERSONALIZATION_STRINGS_H_
 
 #endif  // CHROME_PERSONALIZATION

@@ -78,8 +78,6 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
     } else if (auth_error != AUTH_ERROR_NONE) {
       GetLabelsForAuthError(auth_error, service, status_label, link_label);
       result_type = SYNC_ERROR;
-    } else {
-      NOTREACHED() << "Setup complete, backend !authenticated, AUTH_ERROR_NONE";
     }
   } else {
     // Either show auth error information with a link to re-login, auth in prog,

@@ -9,6 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/bookmark_menu_controller_views.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/button/menu_button.h"
@@ -33,6 +34,9 @@ class MenuItemView;
 // waits until the HistoryService for the profile has been loaded before
 // creating the BookmarkModel.
 class BookmarkBarView : public views::View,
+#ifdef CHROME_PERSONALIZATION
+                        public ProfileSyncServiceObserver,
+#endif
                         public BookmarkModelObserver,
                         public views::ViewMenuDelegate,
                         public views::ButtonListener,
@@ -101,6 +105,11 @@ class BookmarkBarView : public views::View,
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
+
+#ifdef CHROME_PERSONALIZATION
+  // ProfileSyncServiceObserver method.
+  virtual void OnStateChanged();
+#endif
 
   // Called when fullscreen mode toggles on or off; this affects our layout.
   void OnFullscreenToggled(bool fullscreen);
@@ -383,6 +392,15 @@ class BookmarkBarView : public views::View,
   // Updates the colors for all the buttons in the bookmarks bar.
   void UpdateButtonColors();
 
+#ifdef CHROME_PERSONALIZATION
+  // Determines whether the sync error button should appear on the bookmarks
+  // bar.
+  bool ShouldShowSyncErrorButton();
+
+  // Creates the sync error button and adds it as a child view.
+  views::TextButton* CreateSyncErrorButton();
+#endif
+
   NotificationRegistrar registrar_;
 
   Profile* profile_;
@@ -414,6 +432,15 @@ class BookmarkBarView : public views::View,
 
   // Used to track drops on the bookmark bar view.
   scoped_ptr<DropInfo> drop_info_;
+
+#ifdef CHROME_PERSONALIZATION
+  // The sync re-login indicator which appears when the user needs to re-enter
+  // credentials in order to continue syncing.
+  views::TextButton* sync_error_button_;
+
+  // A pointer to the ProfileSyncService instance if one exists.
+  ProfileSyncService* sync_service_;
+#endif
 
   // Visible if not all the bookmark buttons fit.
   views::MenuButton* overflow_button_;

@@ -42,7 +42,7 @@ class ContentPageView : public OptionsPageView,
   // views::LinkController method.
   virtual void LinkActivated(views::Link* source, int event_flags);
 
-  // ProfileSyncServiceObserver methods.
+  // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
 #endif
 
