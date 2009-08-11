@@ -65,17 +65,17 @@ typedef struct nacl_abi__dirdesc {
  * dirent represents a single directory entry.
  */
 struct nacl_abi_dirent {
-  long           nacl_abi_d_ino;
+  nacl_abi_ino_t nacl_abi_d_ino;
   nacl_abi_off_t nacl_abi_d_off;
-  unsigned short nacl_abi_d_reclen;
-  char           nacl_abi_d_name[MAXNAMLEN+1];
+  uint16_t       nacl_abi_d_reclen;
+  char           nacl_abi_d_name[MAXNAMLEN + 1];
 };
 
 /*
  * external function declarations
  */
-extern nacl_abi_DIR           *nacl_abi_opendir(const char *);
-extern struct nacl_abi_dirent *nacl_abi_readdir(nacl_abi_DIR *);
-extern int                    nacl_abi_closedir(nacl_abi_DIR *);
+extern nacl_abi_DIR           *nacl_abi_opendir(const char *dirpath);
+extern struct nacl_abi_dirent *nacl_abi_readdir(nacl_abi_DIR *direntry);
+extern int                    nacl_abi_closedir(nacl_abi_DIR *direntry);
 
 #endif

@@ -51,84 +51,152 @@
 #define NULL 0
 #endif
 
-/*
- * Some of these use (unsigned) int/long versus int<size>_t.  For
- * reasons why, see the discussion in <bits/types.h> and values in
- * <bits/typesizes.h>
- */
+#define NACL_CONCAT3_(a, b, c) a ## b ## c
+#define NACL_PRI_(fmt, size) NACL_CONCAT3_(PRI, fmt, size)
+
 #ifndef nacl_abi___dev_t_defined
 #define nacl_abi___dev_t_defined
-typedef int64_t       nacl_abi___dev_t;
+typedef int64_t nacl_abi___dev_t;
 #ifndef __native_client__
 typedef nacl_abi___dev_t nacl_abi_dev_t;
 #endif
 #endif
 
+#define PRIdNACL_DEV NACL_PRI_(d, 64)
+#define PRIiNACL_DEV NACL_PRI_(i, 64)
+#define PRIoNACL_DEV NACL_PRI_(o, 64)
+#define PRIuNACL_DEV NACL_PRI_(u, 64)
+#define PRIxNACL_DEV NACL_PRI_(x, 64)
+#define PRIXNACL_DEV NACL_PRI_(X, 64)
+
 #ifndef nacl_abi___ino_t_defined
 #define nacl_abi___ino_t_defined
-typedef unsigned long nacl_abi___ino_t;
+typedef uint32_t nacl_abi___ino_t;
 #ifndef __native_client__
 typedef nacl_abi___ino_t nacl_abi_ino_t;
 #endif
 #endif
 
+#define PRIdNACL_INO NACL_PRI_(d, 32)
+#define PRIiNACL_INO NACL_PRI_(i, 32)
+#define PRIoNACL_INO NACL_PRI_(o, 32)
+#define PRIuNACL_INO NACL_PRI_(u, 32)
+#define PRIxNACL_INO NACL_PRI_(x, 32)
+#define PRIXNACL_INO NACL_PRI_(X, 32)
+
 #ifndef nacl_abi___mode_t_defined
 #define nacl_abi___mode_t_defined
-typedef uint32_t      nacl_abi___mode_t;
+typedef uint32_t nacl_abi___mode_t;
 #ifndef __native_client__
 typedef nacl_abi___mode_t nacl_abi_mode_t;
 #endif
 #endif
 
+#define PRIdNACL_MODE NACL_PRI_(d, 32)
+#define PRIiNACL_MODE NACL_PRI_(i, 32)
+#define PRIoNACL_MODE NACL_PRI_(o, 32)
+#define PRIuNACL_MODE NACL_PRI_(u, 32)
+#define PRIxNACL_MODE NACL_PRI_(x, 32)
+#define PRIXNACL_MODE NACL_PRI_(X, 32)
+
 #ifndef nacl_abi___nlink_t_defined
 #define nacl_abi___nlink_t_defined
-typedef unsigned int  nacl_abi___nlink_t;
+typedef uint32_t nacl_abi___nlink_t;
 #ifndef __native_client__
 typedef nacl_abi___nlink_t nacl_abi_nlink_t;
 #endif
 #endif
 
+#define PRIdNACL_NLINK NACL_PRI_(d, 32)
+#define PRIiNACL_NLINK NACL_PRI_(i, 32)
+#define PRIoNACL_NLINK NACL_PRI_(o, 32)
+#define PRIuNACL_NLINK NACL_PRI_(u, 32)
+#define PRIxNACL_NLINK NACL_PRI_(x, 32)
+#define PRIXNACL_NLINK NACL_PRI_(X, 32)
+
 #ifndef nacl_abi___uid_t_defined
 #define nacl_abi___uid_t_defined
-typedef uint32_t      nacl_abi___uid_t;
+typedef uint32_t nacl_abi___uid_t;
 #ifndef __native_client__
 typedef nacl_abi___uid_t nacl_abi_uid_t;
 #endif
 #endif
 
+#define PRIdNACL_UID NACL_PRI_(d, 32)
+#define PRIiNACL_UID NACL_PRI_(i, 32)
+#define PRIoNACL_UID NACL_PRI_(o, 32)
+#define PRIuNACL_UID NACL_PRI_(u, 32)
+#define PRIxNACL_UID NACL_PRI_(x, 32)
+#define PRIXNACL_UID NACL_PRI_(X, 32)
+
 #ifndef nacl_abi___gid_t_defined
 #define nacl_abi___gid_t_defined
-typedef uint32_t      nacl_abi___gid_t;
+typedef uint32_t nacl_abi___gid_t;
 #ifndef __native_client__
 typedef nacl_abi___gid_t nacl_abi_gid_t;
 #endif
 #endif
 
+#define PRIdNACL_GID NACL_PRI_(d, 32)
+#define PRIiNACL_GID NACL_PRI_(i, 32)
+#define PRIoNACL_GID NACL_PRI_(o, 32)
+#define PRIuNACL_GID NACL_PRI_(u, 32)
+#define PRIxNACL_GID NACL_PRI_(x, 32)
+#define PRIXNACL_GID NACL_PRI_(X, 32)
+
 #ifndef nacl_abi___off_t_defined
 #define nacl_abi___off_t_defined
-typedef long int      nacl_abi__off_t;
+typedef int32_t nacl_abi__off_t;
 #ifndef __native_client__
 typedef nacl_abi__off_t nacl_abi_off_t;
 #endif
 #endif
 
+#define PRIdNACL_OFF NACL_PRI_(d, 32)
+#define PRIiNACL_OFF NACL_PRI_(i, 32)
+#define PRIoNACL_OFF NACL_PRI_(o, 32)
+#define PRIuNACL_OFF NACL_PRI_(u, 32)
+#define PRIxNACL_OFF NACL_PRI_(x, 32)
+#define PRIXNACL_OFF NACL_PRI_(X, 32)
+
 #ifndef nacl_abi___blksize_t_defined
 #define nacl_abi___blksize_t_defined
-typedef long int      nacl_abi___blksize_t;
+typedef int32_t nacl_abi___blksize_t;
 typedef nacl_abi___blksize_t nacl_abi_blksize_t;
 #endif
 
+#define PRIdNACL_BLKSIZE NACL_PRI_(d, 32)
+#define PRIiNACL_BLKSIZE NACL_PRI_(i, 32)
+#define PRIoNACL_BLKSIZE NACL_PRI_(o, 32)
+#define PRIuNACL_BLKSIZE NACL_PRI_(u, 32)
+#define PRIxNACL_BLKSIZE NACL_PRI_(x, 32)
+#define PRIXNACL_BLKSIZE NACL_PRI_(X, 32)
+
 #ifndef nacl_abi___blkcnt_t_defined
 #define nacl_abi___blkcnt_t_defined
-typedef long int      nacl_abi___blkcnt_t;
+typedef int32_t nacl_abi___blkcnt_t;
 typedef nacl_abi___blkcnt_t nacl_abi_blkcnt_t;
 #endif
+
+#define PRIdNACL_BLKCNT NACL_PRI_(d, 32)
+#define PRIiNACL_BLKCNT NACL_PRI_(i, 32)
+#define PRIoNACL_BLKCNT NACL_PRI_(o, 32)
+#define PRIuNACL_BLKCNT NACL_PRI_(u, 32)
+#define PRIxNACL_BLKCNT NACL_PRI_(x, 32)
+#define PRIXNACL_BLKCNT NACL_PRI_(X, 32)
 
 #ifndef nacl_abi___time_t_defined
 #define nacl_abi___time_t_defined
 typedef int32_t       nacl_abi___time_t;
 typedef nacl_abi___time_t nacl_abi_time_t;
 #endif
+
+#define PRIdNACL_TIME NACL_PRI_(d, 32)
+#define PRIiNACL_TIME NACL_PRI_(i, 32)
+#define PRIoNACL_TIME NACL_PRI_(o, 32)
+#define PRIuNACL_TIME NACL_PRI_(u, 32)
+#define PRIxNACL_TIME NACL_PRI_(x, 32)
+#define PRIXNACL_TIME NACL_PRI_(X, 32)
 
 /*
  * stddef.h defines size_t, and we cannot export another definition.

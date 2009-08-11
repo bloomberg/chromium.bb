@@ -76,11 +76,9 @@ else:
 
 # TODO GENERATED CODE
 GENERATED='${TARGET_ROOT}/gen/native_client/src/trusted/service_runtime'
-env.Command(target=GENERATED + '/nacl_syscall_handlers.c',
+env.Command(target=env.File(GENERATED + '/nacl_syscall_handlers.c'),
             source=[syscall_impl, 'nacl_syscall_handlers_gen2.py'],
-            action=[Delete(GENERATED),
-                    Mkdir(GENERATED),
-                    Copy('${TARGET}.tmp', '${SOURCE}'),
+            action=[Copy('${TARGET}.tmp', '${SOURCE}'),
                     Chmod('${TARGET}.tmp', 0755),
                     Action('${PYTHON} ${SOURCES[1]}'
                            ' ${SYSCALL_GEN_FLAGS} < ${SOURCE} >>${TARGET}.tmp'),

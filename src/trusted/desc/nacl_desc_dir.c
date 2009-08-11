@@ -142,7 +142,9 @@ ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
   NaClLog(3, "NaClDescDirDescGetdents(0x%08"PRIxPTR", %"PRIuS"):\n",
           (uintptr_t) dirp, count);
   retval = NaClHostDirGetdents(self->hd, dirp, count);
-  NaClLog(3, "NaClDescDirDescGetdents(d_ino=%lu, d_off=%lu, d_reclen=%u, "
+  NaClLog(3,
+          "NaClDescDirDescGetdents(d_ino=%"PRIuNACL_INO
+          ", d_off=%"PRIuNACL_OFF", d_reclen=%u, "
           "d_name='%s')\n",
           direntp->nacl_abi_d_ino,
           direntp->nacl_abi_d_off,
