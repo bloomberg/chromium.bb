@@ -1,6 +1,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(timsteele): Re-enable ASAP.  http://crbug.com/19002
+#if 0
 #ifdef CHROME_PERSONALIZATION
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -327,3 +329,4 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
 }
 
 #endif  // CHROME_PERSONALIZATION
+#endif
