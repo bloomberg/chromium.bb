@@ -1325,6 +1325,7 @@ class GClient(object):
         self._options.revision = revision_overrides.get(name)
         scm = SCMWrapper(url, self._root_dir, name)
         scm.RunCommand(command, self._options, args, file_list)
+        file_list = [os.path.join(name, file.strip()) for file in file_list]
         self._options.revision = None
       try:
         deps_content = FileRead(os.path.join(self._root_dir, name,
@@ -1368,6 +1369,21 @@ class GClient(object):
           scm = SCMWrapper(url, self._root_dir, d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
+    
+    # Convert all absolute paths to relative.
+    for i in range(len(file_list)):
+      # TODO(phajdan.jr): We should know exactly when the paths are absolute.
+      # It depends on the command being executed (like runhooks vs sync).
+      if not os.path.isabs(file_list[i]):
+        continue
+
+      prefix = os.path.commonprefix([self._root_dir.lower(),
+                                     file_list[i].lower()])
+      file_list[i] = file_list[i][len(prefix):]
+
+      # Strip any leading path separators.
+      while file_list[i].startswith('\\') or file_list[i].startswith('/'):
+        file_list[i] = file_list[i][1:]
 
     is_using_git = IsUsingGit(self._root_dir, entries.keys())
     self._RunHooks(command, file_list, is_using_git)
