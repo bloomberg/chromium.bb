@@ -3759,6 +3759,7 @@
         'browser/cocoa/history_menu_bridge_unittest.mm',
         'browser/cocoa/history_menu_cocoa_controller_unittest.mm',
         'browser/cocoa/nsimage_cache_unittest.mm',
+        'browser/cocoa/page_info_window_controller_unittest.mm',
         'browser/cocoa/preferences_window_controller_unittest.mm',
         'browser/cocoa/rwhvm_editcommand_helper_unittest.mm',
         'browser/cocoa/sad_tab_view_unittest.mm',

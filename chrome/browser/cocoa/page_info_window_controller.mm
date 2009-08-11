@@ -72,7 +72,12 @@
   const NSSize kPageInfoWindowSize = NSMakeSize(460, 235);
   const NSSize kPageInfoWindowWithHistorySize = NSMakeSize(460, 310);
 
-  frame.size = (show ? kPageInfoWindowWithHistorySize : kPageInfoWindowSize);
+  NSSize size = (show ? kPageInfoWindowWithHistorySize : kPageInfoWindowSize);
+
+  // Just setting |size| will cause the window to grow upwards. Shift the
+  // origin up by grow amount, which causes the window to grow downwards.
+  frame.origin.y -= size.height - frame.size.height;
+  frame.size = size;
 
   [window setFrame:frame display:YES animate:YES];
 }
