@@ -356,35 +356,10 @@ bool ForceAntiAliasingOff(LPDIRECT3D9* d3d) {
 }
 
 namespace {
-// Returns whether the ForceSoftwareRenderer value of the Software\Google\o3d
-// key is non-zero.
+// Returns whether to Force the Software Renderer by checking for the existence
+// of the environmen variable O3D_FORCE_SOFTWARE_RENDERER.
 bool IsForceSoftwareRendererEnabled() {
-  HKEY key;
-  if (FAILED(RegOpenKeyEx(HKEY_CURRENT_USER,
-                          TEXT("Software\\Google\\o3d"),
-                          0,
-                          KEY_READ,
-                          &key))) {
-    return false;
-  }
-
-  bool enabled = false;
-  DWORD type;
-  DWORD value;
-  DWORD size = sizeof(value);
-  if (SUCCEEDED(RegQueryValueEx(key,
-                                TEXT("ForceSoftwareRenderer"),
-                                NULL,
-                                &type,
-                                reinterpret_cast<LPBYTE>(&value),
-                                &size))) {
-    if (type == REG_DWORD && size == sizeof(value) && value) {
-      enabled = true;
-    }
-  }
-  RegCloseKey(key);
-
-  return enabled;
+  return getenv("O3D_FORCE_SOFTWARE_RENDERER") != NULL;
 }
 }
 
