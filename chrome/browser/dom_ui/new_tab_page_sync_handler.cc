@@ -83,7 +83,7 @@ DOMMessageHandler* NewTabPageSyncHandler::Attach(DOMUI* dom_ui) {
   return DOMMessageHandler::Attach(dom_ui);
 }
 
-void NewTabPageSyncHandler::RegisterMessages()  {
+void NewTabPageSyncHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("GetSyncMessage",
       NewCallback(this, &NewTabPageSyncHandler::HandleGetSyncMessage));
   dom_ui_->RegisterMessageCallback("SyncLinkClicked",
@@ -150,6 +150,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
     sync_service_->ShowLoginDialog();
   } else {
     // User clicked "Start now" link to begin syncing.
+    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
     sync_service_->EnableForUser();
   }
 }

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/time.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/sync/personalization_strings.h"
 #include "chrome/browser/views/sync/sync_setup_wizard.h"
@@ -96,9 +97,13 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
                 SyncSetupWizard::State end_state,
                 const std::string& args, SyncSetupFlowContainer* container,
                 FlowHandler* handler, ProfileSyncService* service)
-      : container_(container), dialog_start_args_(args),
-        current_state_(start_state), end_state_(end_state),
-        flow_handler_(handler), service_(service) {
+      : container_(container),
+        dialog_start_args_(args),
+        current_state_(start_state),
+        end_state_(end_state),
+        login_start_time_(base::TimeTicks::Now()),
+        flow_handler_(handler),
+        service_(service) {
   }
 
   // Returns true if |this| should transition its state machine to |state|
@@ -111,6 +116,9 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   SyncSetupWizard::State current_state_;
   SyncSetupWizard::State end_state_;  // The goal.
+
+  // Time that the GAIA_LOGIN step was received.
+  base::TimeTicks login_start_time_;
 
   // The handler needed for the entire flow.  We don't own this.
   FlowHandler* flow_handler_;

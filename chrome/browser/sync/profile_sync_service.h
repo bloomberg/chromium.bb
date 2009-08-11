@@ -53,6 +53,29 @@ class ProfileSyncService : public BookmarkModelObserver,
   typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
 
+  enum SyncEventCodes  {
+    MIN_SYNC_EVENT_CODE = 0,
+
+    // Events starting the sync service.
+    START_FROM_NTP = 1,      // Sync was started from the ad in NTP
+    START_FROM_WRENCH = 2,   // Sync was started from the Wrench menu.
+    START_FROM_OPTIONS = 3,  // Sync was started from Wrench->Options.
+
+    // Events regarding cancelation of the signon process of sync.
+    CANCEL_FROM_SIGNON_WIHTOUT_AUTH = 10,   // Cancelled before submitting
+                                            // username and password.
+    CANCEL_DURING_SIGNON = 11,              // Cancelled after auth.
+    CANCEL_DURING_SIGNON_AFTER_MERGE = 12,  // Cancelled during merge.
+
+    // Events resulting in the stoppage of sync service.
+    STOP_FROM_OPTIONS = 20,  // Sync was stopped from Wrench->Options.
+
+    // Miscellaneous events caused by sync service.
+    MERGE_AND_SYNC_NEEDED = 30,
+
+    MAX_SYNC_EVENT_CODE
+  };
+
   explicit ProfileSyncService(Profile* profile);
   virtual ~ProfileSyncService();
 
@@ -168,6 +191,9 @@ class ProfileSyncService : public BookmarkModelObserver,
   // the observer.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Record stats on various events.
+  static void SyncEvent(SyncEventCodes code);
 
  protected:
   // Call this after any of the subsystems being synced (the bookmark
@@ -307,6 +333,9 @@ class ProfileSyncService : public BookmarkModelObserver,
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
+
+  // Time at which error UI is presented for the NTP.
+  base::TimeTicks auth_error_time_;
 
   // The profile whose data we are synchronizing.
   Profile* profile_;

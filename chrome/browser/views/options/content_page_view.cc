@@ -137,8 +137,10 @@ void ContentPageView::ButtonPressed(views::Button* sender) {
     DCHECK(sync_service_);
     if (sync_service_->IsSyncEnabledByUser()) {
       sync_service_->DisableForUser();
+      ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
     } else {
       sync_service_->EnableForUser();
+      ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
     }
 #endif
   }

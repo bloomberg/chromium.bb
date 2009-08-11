@@ -160,6 +160,7 @@ void HandleMenuItemClick(Profile* p) {
       ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, p);
   } else {
     service->EnableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_WRENCH);
   }
 }
 

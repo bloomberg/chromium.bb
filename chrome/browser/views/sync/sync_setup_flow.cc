@@ -4,6 +4,7 @@
 
 #ifdef CHROME_PERSONALIZATION
 
+#include "base/histogram.h"
 #include "base/json_reader.h"
 #include "base/json_writer.h"
 #include "base/string_util.h"
@@ -26,7 +27,7 @@ static const wchar_t* kMergeIFrameXPath = L"//iframe[@id='merge']";
 
 // Helper function to read the JSON string from the Value parameter.
 static std::string GetJsonResponse(const Value* content) {
-  if (!content || !content->IsType(Value::TYPE_LIST))  {
+  if (!content || !content->IsType(Value::TYPE_LIST)) {
     NOTREACHED();
     return std::string();
   }
@@ -142,6 +143,29 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
     prefs->SetBoolean(prefs::kSyncHasSetupCompleted, true);
     prefs->ScheduleSavePersistentPrefs();
   }
+
+  // Record the state at which the user cancelled the signon dialog.
+  switch (current_state_) {
+    case SyncSetupWizard::GAIA_LOGIN:
+      ProfileSyncService::SyncEvent(
+          ProfileSyncService::CANCEL_FROM_SIGNON_WIHTOUT_AUTH);
+      break;
+    case SyncSetupWizard::GAIA_SUCCESS:
+      ProfileSyncService::SyncEvent(
+          ProfileSyncService::CANCEL_DURING_SIGNON);
+      break;
+    case SyncSetupWizard::MERGE_AND_SYNC:
+      ProfileSyncService::SyncEvent(
+          ProfileSyncService::CANCEL_DURING_SIGNON_AFTER_MERGE);
+      break;
+    case SyncSetupWizard::DONE:
+      UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedAuthorizationTime",
+                                 base::TimeTicks::Now() - login_start_time_);
+      break;
+    default:
+      break;
+  }
+
   service_->OnUserCancelledDialog();
   delete this;
 }
@@ -212,7 +236,6 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
   }
   current_state_ = advance_state;
 }
-
 
 // static
 SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,

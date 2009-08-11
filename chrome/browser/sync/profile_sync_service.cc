@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/gfx/png_encoder.h"
+#include "base/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -551,6 +552,10 @@ void ProfileSyncService::OnAuthError() {
     expecting_first_run_auth_needed_event_ = false;
   }
 
+  if (!wizard_.IsVisible()) {
+    auth_error_time_ == base::TimeTicks::Now();
+  }
+
   is_auth_in_progress_ = false;
   // Fan the notification out to interested UI-thread components.
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -559,6 +564,13 @@ void ProfileSyncService::OnAuthError() {
 void ProfileSyncService::ShowLoginDialog() {
   if (wizard_.IsVisible())
     return;
+
+  if (!auth_error_time_.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES("Sync.ReauthorizationTime",
+                             base::TimeTicks::Now() - auth_error_time_);
+    auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
+  }
+
   if (last_auth_error_ != AUTH_ERROR_NONE)
     wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
 }
@@ -806,7 +818,7 @@ std::wstring ProfileSyncService::GetLastSyncedTimeString() const {
   return TimeFormat::TimeElapsed(last_synced);
 }
 
-string16 ProfileSyncService::GetAuthenticatedUsername() const  {
+string16 ProfileSyncService::GetAuthenticatedUsername() const {
   return backend_->GetAuthenticatedUsername();
 }
 
@@ -815,11 +827,19 @@ void ProfileSyncService::OnUserSubmittedAuth(
   last_attempted_user_email_ = username;
   is_auth_in_progress_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+
+  base::TimeTicks start_time = base::TimeTicks::Now();
   backend_->Authenticate(username, password);
+  UMA_HISTOGRAM_TIMES("Sync.AuthorizationTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 void ProfileSyncService::OnUserAcceptedMergeAndSync() {
+  base::TimeTicks start_time = base::TimeTicks::Now();
   bool merge_success = model_associator_->AssociateModels();
+  UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationWithUITime",
+                      base::TimeTicks::Now() - start_time);
+
   wizard_.Step(SyncSetupWizard::DONE);  // TODO(timsteele): error state?
   if (!merge_success) {
     LOG(ERROR) << "Model assocation failed.";
@@ -837,6 +857,7 @@ void ProfileSyncService::OnUserCancelledDialog() {
     // Rollback.
     DisableForUser();
   }
+
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
@@ -854,12 +875,17 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
 
   // Show the sync merge warning dialog if needed.
   if (MergeAndSyncAcceptanceNeeded()) {
+    ProfileSyncService::SyncEvent(MERGE_AND_SYNC_NEEDED);
     wizard_.Step(SyncSetupWizard::MERGE_AND_SYNC);
     return;
   }
 
   // We're ready to merge the models.
+  base::TimeTicks start_time = base::TimeTicks::Now();
   bool merge_success = model_associator_->AssociateModels();
+  UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationTime",
+                      base::TimeTicks::Now() - start_time);
+
   wizard_.Step(SyncSetupWizard::DONE);  // TODO(timsteele): error state?
   if (!merge_success) {
     LOG(ERROR) << "Model assocation failed.";
@@ -877,6 +903,14 @@ void ProfileSyncService::AddObserver(Observer* observer) {
 
 void ProfileSyncService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void ProfileSyncService::SyncEvent(SyncEventCodes code) {
+  static LinearHistogram histogram("Sync.EventCodes", MIN_SYNC_EVENT_CODE,
+                                   MAX_SYNC_EVENT_CODE - 1,
+                                   MAX_SYNC_EVENT_CODE);
+  histogram.SetFlags(kUmaTargetedHistogramFlag);
+  histogram.Add(code);
 }
 
 bool ProfileSyncService::ShouldPushChanges() {
