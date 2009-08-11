@@ -21,7 +21,6 @@ WebViewHost* WebViewHost::Create(GtkWidget* parent_view,
 
   host->view_ = WebWidgetHost::CreateWidget(parent_view, host);
   host->plugin_container_manager_.set_host_widget(host->view_);
-  g_object_set_data(G_OBJECT(host->view_), "webwidgethost", host);
 
   host->webwidget_ = WebView::Create(delegate, prefs);
   host->webwidget_->layout();

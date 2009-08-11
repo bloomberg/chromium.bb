@@ -112,8 +112,8 @@ TestShell::TestShell()
       test_is_pending_(false),
       is_modal_(false),
       dump_stats_table_on_exit_(false) {
-    delegate_ = new TestWebViewDelegate(this);
-    popup_delegate_ = new TestWebViewDelegate(this);
+    delegate_.reset(new TestWebViewDelegate(this));
+    popup_delegate_.reset(new TestWebViewDelegate(this));
     layout_test_controller_.reset(new LayoutTestController(this));
     event_sending_controller_.reset(new EventSendingController(this));
     text_input_controller_.reset(new TextInputController(this));
@@ -126,6 +126,8 @@ TestShell::TestShell()
 }
 
 TestShell::~TestShell() {
+  delegate_->RevokeDragDrop();
+
   // Navigate to an empty page to fire all the destruction logic for the
   // current page.
   LoadURL(L"about:blank");
@@ -134,7 +136,9 @@ TestShell::~TestShell() {
   CallJSGC();
   CallJSGC();
 
-  webView()->SetDelegate(NULL);
+  // Destroy the WebView before the TestWebViewDelegate.
+  m_webViewHost.reset();
+
   PlatformCleanUp();
 
   StatsTable *table = StatsTable::current();
@@ -502,14 +506,11 @@ void TestShell::SizeToDefault() {
 void TestShell::ResetTestController() {
   layout_test_controller_->Reset();
   event_sending_controller_->Reset();
-
-  // Reset state in the test webview delegate.
-  delegate_ = new TestWebViewDelegate(this);
-  webView()->SetDelegate(delegate_);
+  delegate_->Reset();
 }
 
 void TestShell::LoadURL(const wchar_t* url) {
-    LoadURLForFrame(url, NULL);
+  LoadURLForFrame(url, NULL);
 }
 
 bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {

@@ -21,8 +21,7 @@
 #endif
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "base/linked_ptr.h"
 #if defined(OS_MACOSX)
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebPopupMenuInfo.h"
@@ -41,8 +40,7 @@ class GURL;
 class TestShell;
 class WebWidgetHost;
 
-class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
-                            public WebViewDelegate {
+class TestWebViewDelegate : public WebViewDelegate {
  public:
   struct CapturedContextMenuEvent {
     CapturedContextMenuEvent(ContextNodeType in_node_type,
@@ -59,27 +57,6 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   };
 
   typedef std::vector<CapturedContextMenuEvent> CapturedContextMenuEvents;
-
-  TestWebViewDelegate(TestShell* shell)
-    : policy_delegate_enabled_(false),
-      policy_delegate_is_permissive_(false),
-      policy_delegate_should_notify_done_(false),
-      shell_(shell),
-      top_loading_frame_(NULL),
-      page_id_(-1),
-      last_page_id_updated_(-1),
-#if defined(OS_LINUX)
-      cursor_type_(GDK_X_CURSOR),
-#endif
-      smart_insert_delete_enabled_(true),
-#if defined(OS_WIN)
-      select_trailing_whitespace_enabled_(true),
-#else
-      select_trailing_whitespace_enabled_(false),
-#endif
-      block_redirects_(false) {
-  }
-  virtual ~TestWebViewDelegate();
 
   // WebViewDelegate
   virtual WebView* CreateWebView(WebView* webview,
@@ -257,6 +234,9 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   virtual WebKit::WebRect windowResizerRect();
   virtual WebKit::WebScreenInfo screenInfo();
 
+  TestWebViewDelegate(TestShell* shell);
+  void Reset();
+
   void SetSmartInsertDeleteEnabled(bool enabled);
   void SetSelectTrailingWhitespaceEnabled(bool enabled);
 
@@ -283,6 +263,9 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
 
   // Sets the webview as a drop target.
   void RegisterDragDrop();
+  void RevokeDragDrop();
+
+  void ResetDragDrop();
 
   void SetCustomPolicyDelegate(bool is_custom, bool is_permissive);
   void WaitForPolicyDelegate();
@@ -350,7 +333,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
   int page_id_;
   int last_page_id_updated_;
 
-  scoped_ptr<TestShellExtraData> pending_extra_data_;
+  linked_ptr<TestShellExtraData> pending_extra_data_;
 
   // Maps resource identifiers to a descriptive string.
   typedef std::map<uint32, std::string> ResourceMap;
@@ -375,7 +358,7 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
 #endif
 
 #if defined(OS_MACOSX)
-  scoped_ptr<WebKit::WebPopupMenuInfo> popup_menu_info_;
+  linked_ptr<WebKit::WebPopupMenuInfo> popup_menu_info_;
   WebKit::WebRect popup_bounds_;
 #endif
 
@@ -387,8 +370,6 @@ class TestWebViewDelegate : public base::RefCounted<TestWebViewDelegate>,
 
   // true if we should block any redirects
   bool block_redirects_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_WEBVIEW_DELEGATE_H_

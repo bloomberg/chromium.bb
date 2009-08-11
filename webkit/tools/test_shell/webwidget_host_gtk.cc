@@ -33,6 +33,9 @@ using WebKit::WebWidgetClient;
 
 namespace {
 
+// Used to store a backpointer to WebWidgetHost from our GtkWidget.
+const char kWebWidgetHostKey[] = "webwidgethost";
+
 // In response to an invalidation, we call into WebKit to do layout. On
 // Windows, WM_PAINT is a virtual message so any extra invalidates that come up
 // while it's doing layout are implicitly swallowed as soon as we actually do
@@ -83,7 +86,7 @@ class WebWidgetHostGtkWidget {
     g_signal_connect(widget, "expose-event",
                      G_CALLBACK(&HandleExpose), host);
     g_signal_connect(widget, "destroy",
-                     G_CALLBACK(&HandleDestroy), host);
+                     G_CALLBACK(&HandleDestroy), NULL);
     g_signal_connect(widget, "key-press-event",
                      G_CALLBACK(&HandleKeyPress), host);
     g_signal_connect(widget, "key-release-event",
@@ -103,6 +106,7 @@ class WebWidgetHostGtkWidget {
     g_signal_connect(widget, "scroll-event",
                      G_CALLBACK(&HandleScroll), host);
 
+    g_object_set_data(G_OBJECT(widget), kWebWidgetHostKey, host);
     return widget;
   }
 
@@ -152,8 +156,12 @@ class WebWidgetHostGtkWidget {
   }
 
   // The GdkWindow was destroyed.
-  static gboolean HandleDestroy(GtkWidget* widget, WebWidgetHost* host) {
-    host->WindowDestroyed();
+  static gboolean HandleDestroy(GtkWidget* widget, void* unused) {
+    // The associated WebWidgetHost instance may have already been destroyed.
+    WebWidgetHost* host = static_cast<WebWidgetHost*>(
+        g_object_get_data(G_OBJECT(widget), kWebWidgetHostKey));
+    if (host)
+      host->WindowDestroyed();
     return FALSE;
   }
 
@@ -308,6 +316,7 @@ WebWidgetHost::WebWidgetHost()
 }
 
 WebWidgetHost::~WebWidgetHost() {
+  g_object_set_data(G_OBJECT(view_), kWebWidgetHostKey, NULL);
   webwidget_->close();
 }
 
