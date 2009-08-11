@@ -41,6 +41,7 @@
 
   // Display dialog.
   NSWindow* win = [self window];
+  [win center];
   [NSApp runModalForWindow:win];
 }
 

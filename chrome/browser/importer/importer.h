@@ -419,9 +419,6 @@ class ImportObserver {
 };
 
 
-#if !defined(OS_MACOSX)
-// TODO(port): Make StartImportingWithUI portable.
-
 // Shows a UI for importing and begins importing the specified items from
 // source_profile to target_profile. observer is notified when the process is
 // complete, can be NULL. parent is the window to parent the UI to, can be NULL
@@ -434,6 +431,5 @@ void StartImportingWithUI(gfx::NativeWindow parent_window,
                           Profile* target_profile,
                           ImportObserver* observer,
                           bool first_run);
-#endif
 
 #endif  // CHROME_BROWSER_IMPORTER_IMPORTER_H_

@@ -824,8 +824,7 @@ void ImporterHost::DetectSafariProfiles() {
   safari->description = l10n_util::GetString(IDS_IMPORT_FROM_SAFARI);
   safari->source_path.clear();
   safari->app_path.clear();
-  safari->services_supported = HISTORY | FAVORITES | COOKIES | PASSWORDS |
-      SEARCH_ENGINES;
+  safari->services_supported = HISTORY | FAVORITES | HOME_PAGE;
   source_profiles_.push_back(safari);
 }
 #endif  // OS_MACOSX

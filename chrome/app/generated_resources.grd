@@ -2481,6 +2481,19 @@ each locale. -->
       <message name="IDS_IMPORT_PROGRESS_TITLE" desc="Title for the importing progress dialog">
         Importing
       </message>
+
+      <if expr="os == 'darwin'">
+        <message name="IDS_IMPORT_PROGRESS_EXPLANATORY_TEXT_MAC" desc="Text displayed above status items in Import Dialog">
+          Google Chrome is now importing the following items from <ph name="IMPORT_BROWSER_NAME">$1<ex>Safari</ex></ph>:
+        </message>
+        <message name="IDS_IMPORT_IMPORTING_PROGRESS_TEXT_MAC" desc="Status text displayed when an item in the Import Progress Dialog is being imported.">
+          Importing...
+        </message>
+        <message name="IDS_IMPORT_IMPORTING_DONE_TEXT_MAC" desc="Status text displayed when an item in the Import Progress Dialog is done importing.">
+          Done
+        </message>
+      </if>
+
       <message name="IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS" desc="Import status for bookmarks">
         Favorites/Bookmarks
       </message>

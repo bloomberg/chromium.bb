@@ -28,7 +28,7 @@
 // Called when the "Learn More" button is pressed.
 - (IBAction)learnMore:(id)sender;
 
-// Properties for bindings
+// Properties for bindings.
 @property(assign) BOOL userDidCancel;
 @property(assign) BOOL statsEnabled;
 @property(assign) BOOL makeDefaultBrowser;
