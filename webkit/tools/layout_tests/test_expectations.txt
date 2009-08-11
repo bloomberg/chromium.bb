@@ -393,18 +393,18 @@ BUG877986 WIN LINUX : LayoutTests/css2.1/t1204-reset-01-c-o.html = FAIL
 // TODO(deanm): Address all of these via lighttpd if possible, otherwise fork.
 // Maybe flaky and need to be forked?
 // Difference in caching headers
-BUG1234761 : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
+BUG18978 MAC LINUX : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods
-BUG1234761 SKIP : LayoutTests/http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
-BUG1234761 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = FAIL TIMEOUT
-BUG1234761 WIN LINUX MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL TIMEOUT PASS
+BUG18978 SKIP : LayoutTests/http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
+BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = FAIL TIMEOUT
+BUG18978 WIN LINUX MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL TIMEOUT PASS
 // LightTPD doesn't accept unknown HTTP methods and passes CGIs a Content-Type
 // even when a request didn't send the header.
-BUG1234761 : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT CRASH
+BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT CRASH
 // This passes when run in Chrome. It appears to be because of a difference
 // in how lighttpd serves up the svn resource image (or the image
 // contained in the svg image).
-BUG1234761 : LayoutTests/http/tests/security/canvas-remote-read-svg-image.html = FAIL
+BUG18978 : LayoutTests/http/tests/security/canvas-remote-read-svg-image.html = FAIL
 // Another lighttpd quirk.
 BUG8941 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL
 BUG8941 MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL TIMEOUT
@@ -2120,7 +2120,6 @@ BUG9798 MAC : LayoutTests/transitions/transition-timing-function.html = FAIL PAS
 BUG9798 MAC DEBUG : LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/dom/Window/window-lookup-precedence.html = TIMEOUT PASS CRASH
 BUG9798 WIN : LayoutTests/fast/events/tabindex-focus-blur-all.html = FAIL PASS TIMEOUT
-BUG9798 WIN : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-gc.html = CRASH PASS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset-and-css-extension.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/http/tests/mime/standard-mode-loads-stylesheet-with-charset.html = TIMEOUT PASS
@@ -2206,7 +2205,7 @@ BUG10530 : LayoutTests/fast/dom/Window/window-function-frame-getter-precedence.h
 BUG11122 LINUX : LayoutTests/fast/forms/caret-rtl.html = FAIL
 
 // New tests from WebKit Merge 42609:42671
-BUG4363 : LayoutTests/fast/layers/video-layer.html = FAIL
+BUG4363 MAC LINUX : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/forms/input-text-scroll-left-on-blur.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277-2.html = FAIL	
 BUG10760 LINUX : LayoutTests/fast/inline/25277.html = FAIL
@@ -2482,7 +2481,7 @@ BUG15125 MAC SKIP : chrome/fast/text/fake-italic.html = FAIL
 BUG15217 : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT FAIL
 BUG15217 : LayoutTests/fast/js/dictionary-no-cache.html = FAIL
 BUG15217 : LayoutTests/fast/events/prevent-drag-to-navigate.html = TIMEOUT
-BUG15217 : LayoutTests/fast/js/switch-behaviour.html = FAIL
+BUG15217 MAC LINUX : LayoutTests/fast/js/switch-behaviour.html = FAIL
 
 // WebKit 45086:45111
 BUG15270 LINUX WIN : LayoutTests/svg/custom/js-update-image-and-display.svg = FAIL
