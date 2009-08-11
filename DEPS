@@ -87,7 +87,7 @@ deps_os = {
       "/trunk/deps/third_party/cygwin@11984",
 
     "src/third_party/python_24":
-      "/trunk/deps/third_party/python_24@19441",
+      "/trunk/deps/third_party/python_24@22967",
 
     "src/third_party/ffmpeg/binaries/chromium":
       "/trunk/deps/third_party/ffmpeg/binaries/win@22838",
