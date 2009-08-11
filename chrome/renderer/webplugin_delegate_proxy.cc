@@ -208,6 +208,14 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   if (channel_host_) {
     channel_host_->RemoveRoute(instance_id_);
     Send(new PluginMsg_DestroyInstance(instance_id_));
+    // Release the channel host now. If we are is the last reference to the
+    // channel, this avoids a race where this renderer asks a new connection to
+    // the same plugin between now and the time 'this' is actually deleted.
+    // Destroying the channel host is what releases the channel name -> FD
+    // association on POSIX, and if we ask for a new connection before it is
+    // released, the plugin will give us a new FD, and we'll assert when trying
+    // to associate it with the channel name.
+    channel_host_ = NULL;
   }
 
   render_view_->PluginDestroyed(this);
