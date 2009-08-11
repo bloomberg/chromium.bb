@@ -53,6 +53,10 @@ const int kDestTargetList[] = { GtkDndUtil::CHROME_BOOKMARK_ITEM,
                                 GtkDndUtil::TEXT_URI_LIST,
                                 GtkDndUtil::TEXT_PLAIN, -1 };
 
+// Acceptable drag actions for the bookmark bar drag destinations.
+const GdkDragAction kDragAction =
+    GdkDragAction(GDK_ACTION_MOVE | GDK_ACTION_COPY);
+
 void SetToolBarStyle() {
   static bool style_was_set = false;
 
@@ -134,6 +138,8 @@ void BookmarkBarGtk::Init(Profile* profile) {
   // Make the event box transparent so themes can use transparent backgrounds.
   if (!theme_provider_->UseGtkTheme())
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
+  g_signal_connect(event_box_.get(), "button-press-event",
+                   G_CALLBACK(&OnButtonPressed), this);
 
   bookmark_hbox_ = gtk_hbox_new(FALSE, 0);
   gtk_container_add(GTK_CONTAINER(event_box_.get()), bookmark_hbox_);
@@ -151,6 +157,13 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), instructions_,
                      FALSE, FALSE, 0);
 
+  gtk_drag_dest_set(instructions_,
+      GtkDestDefaults(GTK_DEST_DEFAULT_DROP | GTK_DEST_DEFAULT_MOTION),
+      NULL, 0, kDragAction);
+  GtkDndUtil::SetDestTargetList(instructions_, kDestTargetList);
+  g_signal_connect(instructions_, "drag-data-received",
+                   G_CALLBACK(&OnDragReceived), this);
+
   gtk_widget_set_app_paintable(bookmark_hbox_, TRUE);
   g_signal_connect(G_OBJECT(bookmark_hbox_), "expose-event",
                    G_CALLBACK(&OnHBoxExpose), this);
@@ -165,7 +178,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
                      TRUE, TRUE, 0);
 
   gtk_drag_dest_set(bookmark_toolbar_.get(), GTK_DEST_DEFAULT_DROP,
-                    NULL, 0, GDK_ACTION_MOVE);
+                    NULL, 0, kDragAction);
   GtkDndUtil::SetDestTargetList(bookmark_toolbar_.get(), kDestTargetList);
   g_signal_connect(bookmark_toolbar_.get(), "drag-motion",
                    G_CALLBACK(&OnToolbarDragMotion), this);
@@ -173,9 +186,6 @@ void BookmarkBarGtk::Init(Profile* profile) {
                    G_CALLBACK(&OnToolbarDragLeave), this);
   g_signal_connect(bookmark_toolbar_.get(), "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
-  gtk_widget_add_events(bookmark_toolbar_.get(), GDK_BUTTON_PRESS_MASK);
-  g_signal_connect(bookmark_toolbar_.get(), "button-press-event",
-                   G_CALLBACK(&OnButtonPressed), this);
 
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), gtk_vseparator_new(),
                      FALSE, FALSE, 0);
@@ -460,7 +470,7 @@ GtkToolItem* BookmarkBarGtk::CreateBookmarkToolItem(const BookmarkNode* node) {
 }
 
 void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
-  gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_ALL, NULL, 0, GDK_ACTION_MOVE);
+  gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_ALL, NULL, 0, kDragAction);
   GtkDndUtil::SetDestTargetList(widget, kDestTargetList);
   g_signal_connect(widget, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
@@ -478,7 +488,7 @@ const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {
   // First check to see if |button| is special cased.
   if (widget == other_bookmarks_button_)
     return model_->other_node();
-  else if (widget == bookmark_toolbar_.get())
+  else if (widget == event_box_.get())
     return model_->GetBookmarkBarNode();
 
   // Search the contents of |bookmark_toolbar_| for the corresponding widget
@@ -690,7 +700,12 @@ gboolean BookmarkBarGtk::OnToolbarDragMotion(GtkToolbar* toolbar,
                                         index);
   }
 
-  gdk_drag_status(context, GDK_ACTION_MOVE, time);
+  if (target_type ==
+      GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_BOOKMARK_ITEM)) {
+    gdk_drag_status(context, GDK_ACTION_MOVE, time);
+  } else {
+    gdk_drag_status(context, GDK_ACTION_COPY, time);
+  }
 
   return TRUE;
 }
@@ -724,6 +739,9 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
     dest_node = bar->model_->GetBookmarkBarNode();
     index = gtk_toolbar_get_drop_index(
       GTK_TOOLBAR(bar->bookmark_toolbar_.get()), x, y);
+  } else if (widget == bar->instructions_) {
+    dest_node = bar->model_->GetBookmarkBarNode();
+    index = 0;
   } else {
     dest_node = bar->GetNodeForToolButton(widget);
     index = dest_node->GetChildCount();
