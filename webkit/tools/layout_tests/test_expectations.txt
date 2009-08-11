@@ -2844,6 +2844,7 @@ BUG18896 WIN LINUX DEBUG : LayoutTests/fast/canvas/canvas-with-incorrect-args.ht
 BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 BUG18896 WIN DEBUG : LayoutTests/svg/carto.net/window.svg = FAIL
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = FAIL
+BUG18896 MAC WIN DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-dom-clipPathUnits-attr.html = PASS CRASH
 BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom-clipPathUnits-prop.html = FAIL
 BUG18896 LINUX DEBUG : LayoutTests/svg/css/crash-css-generated-content.xhtml = FAIL
 
@@ -2862,3 +2863,7 @@ BUG18966 LINUX : LayoutTests/fast/overflow/overflow-float-stacking.html = PASS C
 // Fallout from webkit roll 46977:47010
 BUG18995 LINUX WIN : LayoutTests/editing/inserting/5994480-2.html = FAIL
 BUG18995 LINUX WIN : LayoutTests/editing/pasteboard/select-element-1.html = FAIL
+
+// Fallout from webkit roll 47010:47034
+BUG19028 MAC : LayoutTests/fast/dom/Window/window-open-parent-no-parent.html = PASS CRASH
+
