@@ -2832,10 +2832,6 @@ BUG18802 WIN : LayoutTests/http/tests/misc/referrer.html = TIMEOUT PASS
 BUG18665 MAC : LayoutTests/security/block-test.html = FAIL
 BUG18665 MAC : LayoutTests/security/block-test-no-port.html = FAIL
 
-// Test failures/flakiness from WebKit merge 46850 to 46894
-BUG18784 LINUX : LayoutTests/fast/overflow/overflow-focus-ring.html = CRASH PASS
-BUG18784 LINUX : LayoutTests/fast/text/drawBidiText.html = FAIL PASS
-
 // Test failures caused by re-enabling skia asserts.
 BUG18896 WIN DEBUG : LayoutTests/fast/backgrounds/svg-as-background-5.html = FAIL
 BUG18896 WIN LINUX DEBUG : LayoutTests/fast/canvas/canvas-with-incorrect-args.html = FAIL
