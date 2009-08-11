@@ -24,12 +24,6 @@ const size_t kMaxDownloadItemCount = 16;
 // Border padding of a download item.
 const int kDownloadItemBorderPadding = 3;
 
-// Width of a download item, must match width in DownloadItem.xib.
-const int kDownloadItemWidth = 200;
-
-// Height of a download item, must match height in DownloadItem.xib.
-const int kDownloadItemHeight = 34;
-
 // Horizontal padding between two download items.
 const int kDownloadItemPadding = 10;
 
@@ -42,6 +36,7 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 - (void)applyContentAreaOffset:(BOOL)apply;
 - (void)showDownloadShelf:(BOOL)enable;
 - (void)resizeDownloadLinkToFit;
+- (void)layoutItems:(BOOL)skipFirst;
 @end
 
 
@@ -71,7 +66,6 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 
   scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
-  // TODO(thakis): left-align for RTL languages?
   [paragraphStyle.get() setAlignment:NSRightTextAlignment];
 
   NSDictionary* linkAttributes = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -102,7 +96,7 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   // Get width required by localized download link text.
   // http://developer.apple.com/documentation/Cocoa/Conceptual/TextLayout/Tasks/StringHeight.html
   [[showAllDownloadsLink_ textContainer] setLineFragmentPadding:0.0];
-  (void)[[showAllDownloadsLink_ layoutManager]glyphRangeForTextContainer:
+  (void)[[showAllDownloadsLink_ layoutManager] glyphRangeForTextContainer:
       [showAllDownloadsLink_ textContainer]];
   NSRect textRect = [[showAllDownloadsLink_ layoutManager]
       usedRectForTextContainer:[showAllDownloadsLink_ textContainer]];
@@ -145,8 +139,7 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   [[download view] removeFromSuperview];
   [downloadItemControllers_ removeObject:download];
 
-  // TODO(thakis): Need to relayout the remaining item views here (
-  // crbug.com/17831 ).
+  [self layoutItems];
 
   // Check to see if we have any downloads remaining and if not, hide the shelf.
   if (![downloadItemControllers_ count])
@@ -196,26 +189,32 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
   return shelfHeight_;
 }
 
-- (void)addDownloadItem:(BaseDownloadItemModel*)model {
-  // TODO(thakis): RTL support?
-  // (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-  // Shift all existing items to the right
+// If |skipFirst| is true, the frame of the leftmost item is not set.
+- (void)layoutItems:(BOOL)skipFirst {
+  CGFloat currentX = 0;
   for (DownloadItemController* itemController
       in downloadItemControllers_.get()) {
     NSRect frame = [[itemController view] frame];
-    frame.origin.x += kDownloadItemWidth + kDownloadItemPadding;
-    [[[itemController view] animator] setFrame:frame];
+    frame.origin.x = currentX;
+    frame.size.width = [itemController preferredSize].width;
+    if (!skipFirst)
+      [[[itemController view] animator] setFrame:frame];
+    currentX += frame.size.width + kDownloadItemPadding;
+    skipFirst = NO;
   }
+}
 
+- (void)layoutItems {
+  [self layoutItems:NO];
+}
+
+- (void)addDownloadItem:(BaseDownloadItemModel*)model {
   // Insert new item at the left.
-  // Start at width 0...
-  NSRect position = NSMakeRect(0, kDownloadItemBorderPadding,
-                               0, kDownloadItemHeight);
   scoped_nsobject<DownloadItemController> controller(
-      [[DownloadItemController alloc] initWithFrame:position
-                                              model:model
-                                              shelf:self]);
-  [downloadItemControllers_ addObject:controller.get()];
+      [[DownloadItemController alloc] initWithModel:model shelf:self]);
+
+  // Adding at index 0 in NSMutableArrays is O(1).
+  [downloadItemControllers_ insertObject:controller.get() atIndex:0];
 
   [itemContainerView_ addSubview:[controller.get() view]];
 
@@ -230,10 +229,13 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
            name:NSViewFrameDidChangeNotification
          object:itemContainerView_];
 
-  // ...then animate in
-  NSRect frame = [[controller.get() view] frame];
-  frame.size.width = kDownloadItemWidth;
+  // Start at width 0...
+  NSSize size = [controller.get() preferredSize];
+  NSRect frame = NSMakeRect(0, kDownloadItemBorderPadding, 0, size.height);
+  [[controller.get() view] setFrame:frame];
 
+  // ...then animate in
+  frame.size.width = size.width;
   [NSAnimationContext beginGrouping];
   [[NSAnimationContext currentContext] setDuration:kDownloadItemOpenDuration];
   [[[controller.get() view] animator] setFrame:frame];
@@ -246,8 +248,13 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
     // Since no user will ever see the item being removed (needs a horizontal
     // screen resolution greater than 3200 at 16 items at 200 pixels each),
     // there's no point in animating the removal.
-    [self remove:[downloadItemControllers_ objectAtIndex:0]];
+    [self remove:[downloadItemControllers_ lastObject]];
   }
+
+  // Finally, move the remaining items to the right. Skip the first item when
+  // laying out the items, so that the longer animation duration we set up above
+  // is not overwritten.
+  [self layoutItems:YES];
 }
 
 @end

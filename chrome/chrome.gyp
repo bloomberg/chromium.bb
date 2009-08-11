@@ -2058,7 +2058,6 @@
             'browser/bookmarks/bookmark_context_menu.cc',
             'browser/bookmarks/bookmark_drop_info.cc',
             'browser/dock_info.cc',
-            'browser/download/download_exe.cc',
             'browser/download/download_request_dialog_delegate_win.cc',
             'browser/jankometer.cc',
             'browser/login_prompt.cc',
@@ -2846,6 +2845,7 @@
         'app/nibs/TabContents.xib',
         'app/nibs/TabView.xib',
         'app/nibs/Toolbar.xib',
+        'app/theme/alert_small.png',
         'app/theme/back_Template.pdf',
         'app/theme/bookmark_bar_folder.png',
         'app/theme/chevron.png', # TODO(jrg): get (and use) a pdf version

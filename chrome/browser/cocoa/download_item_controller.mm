@@ -4,13 +4,19 @@
 
 #import "chrome/browser/cocoa/download_item_controller.h"
 
+#include "app/gfx/text_elider.h"
+#include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/download_item_cell.h"
 #include "chrome/browser/cocoa/download_item_mac.h"
+#import "chrome/browser/cocoa/download_shelf_controller.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
+#include "grit/generated_resources.h"
 
+static const int kTextWidth = 140;            // Pixels
 
 // A class for the chromium-side part of the download shelf context menu.
 
@@ -30,13 +36,15 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   using DownloadShelfContextMenu::REMOVE_ITEM;
 };
 
+@interface DownloadItemController (Private)
+- (void)setState:(DownoadItemState)state;
+@end
 
 // Implementation of DownloadItemController
 
 @implementation DownloadItemController
 
-- (id)initWithFrame:(NSRect)frameRect
-              model:(BaseDownloadItemModel*)downloadModel
+- (id)initWithModel:(BaseDownloadItemModel*)downloadModel
               shelf:(DownloadShelfController*)shelf {
   if ((self = [super initWithNibName:@"DownloadItem"
                               bundle:mac_util::MainAppBundle()])) {
@@ -45,8 +53,8 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     menuBridge_.reset(new DownloadShelfContextMenuMac(downloadModel));
 
     shelf_ = shelf;
-
-    [[self view] setFrame:frameRect];
+    state_ = kNormal;
+    creationTime_ = base::Time::Now();
   }
   return self;
 }
@@ -57,7 +65,24 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel {
-  // TODO(thakis): handling of dangerous downloads -- crbug.com/14667
+  DCHECK_EQ(bridge_->download_model(), downloadModel);
+
+  // Handle dangerous downloads.
+  if (downloadModel->download()->safety_state() == DownloadItem::DANGEROUS) {
+    [self setState:kDangerous];
+
+    // Set label.
+    NSFont* font = [dangerousDownloadLabel_ font];
+    gfx::Font fontChr = gfx::Font::CreateFont(
+        base::SysNSStringToWide([font fontName]), [font pointSize]);
+    string16 elidedFilename = WideToUTF16(ElideFilename(
+        downloadModel->download()->original_name(), fontChr, kTextWidth));
+    NSString* dangerousWarning =
+        l10n_util::GetNSStringFWithFixup(IDS_PROMPT_DANGEROUS_DOWNLOAD,
+                                         elidedFilename);
+    [dangerousDownloadLabel_ setStringValue:dangerousWarning];
+    return;
+  }
 
   // Set the correct popup menu.
   if (downloadModel->download()->state() == DownloadItem::COMPLETE)
@@ -89,18 +114,67 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 - (IBAction)handleButtonClick:(id)sender {
   if ([cell_ isButtonPartPressed]) {
     DownloadItem* download = bridge_->download_model()->download();
-    if (download->state() == DownloadItem::IN_PROGRESS) {
+    if (download->state() == DownloadItem::IN_PROGRESS)
       download->set_open_when_complete(!download->open_when_complete());
-    } else if (download->state() == DownloadItem::COMPLETE) {
+    else if (download->state() == DownloadItem::COMPLETE)
       download_util::OpenDownload(download);
-    }
   } else {
-    // TODO(thakis): Align menu nicely with left view edge
     [NSMenu popUpContextMenu:currentMenu_
                withEvent:[NSApp currentEvent]
                  forView:progressView_];
   }
 }
+
+- (NSSize)preferredSize {
+  if (state_ == kNormal)
+    return [progressView_ frame].size;
+  DCHECK_EQ(kDangerous, state_);
+  return [dangerousDownloadView_ frame].size;
+}
+
+- (void)clearDangerousMode {
+  [self setState:kNormal];
+}
+
+- (BOOL)isDangerousMode {
+  return state_ == kDangerous;
+}
+
+- (void)setState:(DownoadItemState)state {
+  if (state_ == state)
+    return;
+  state_ = state;
+  if (state_ == kNormal) {
+    [progressView_ setHidden:NO];
+    [dangerousDownloadView_ setHidden:YES];
+  } else {
+    DCHECK_EQ(kDangerous, state_);
+    [progressView_ setHidden:YES];
+    [dangerousDownloadView_ setHidden:NO];
+  }
+  [shelf_ layoutItems];
+}
+
+- (IBAction)saveDownload:(id)sender {
+  // The user has confirmed a dangerous download.  We record how quickly the
+  // user did this to detect whether we're being clickjacked.
+  UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
+                           base::Time::Now() - creationTime_);
+  // This will change the state and notify us.
+  bridge_->download_model()->download()->manager()->DangerousDownloadValidated(
+      bridge_->download_model()->download());
+}
+
+- (IBAction)discardDownload:(id)sender {
+  UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
+                           base::Time::Now() - creationTime_);
+  if (bridge_->download_model()->download()->state() ==
+      DownloadItem::IN_PROGRESS)
+    bridge_->download_model()->download()->Cancel(true);
+  bridge_->download_model()->download()->Remove(true);
+  // WARNING: we are deleted at this point.  Don't access 'this'.
+}
+
 
 // Sets the enabled and checked state of a particular menu item for this
 // download. We translate the NSMenuItem selection to menu selections understood

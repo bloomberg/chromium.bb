@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 
 class BaseDownloadItemModel;
 @class DownloadItemCell;
@@ -24,16 +25,28 @@ class DownloadShelfContextMenuMac;
 
   NSMenu* currentMenu_;  // points to one of the two menus above
 
+  // This is shown instead of progressView_ for dangerous downloads.
+  IBOutlet NSView* dangerousDownloadView_;
+  IBOutlet NSTextField* dangerousDownloadLabel_;
+
   scoped_ptr<DownloadItemMac> bridge_;
   scoped_ptr<DownloadShelfContextMenuMac> menuBridge_;
 
   // Weak pointer to the shelf that owns us.
   DownloadShelfController* shelf_;
+  
+  // The time at which this view was created.
+  base::Time creationTime_;
+
+  // The state of this item.
+  enum DownoadItemState {
+    kNormal,
+    kDangerous
+  } state_;
 };
 
 // Takes ownership of |downloadModel|.
-- (id)initWithFrame:(NSRect)frameRect
-              model:(BaseDownloadItemModel*)downloadModel
+- (id)initWithModel:(BaseDownloadItemModel*)downloadModel
               shelf:(DownloadShelfController*)shelf;
 
 // Updates the UI and menu state from |downloadModel|.
@@ -51,6 +64,15 @@ class DownloadShelfContextMenuMac;
 
 // Download item button clicked
 - (IBAction)handleButtonClick:(id)sender;
+
+// Returns the size this item wants to have.
+- (NSSize)preferredSize;
+
+// Handling of dangerous downloads
+- (void)clearDangerousMode;
+- (BOOL)isDangerousMode;
+- (IBAction)saveDownload:(id)sender;
+- (IBAction)discardDownload:(id)sender;
 
 // Context menu handlers.
 - (IBAction)handleOpen:(id)sender;

@@ -25,6 +25,20 @@ DownloadItemMac::~DownloadItemMac() {
 void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
   DCHECK_EQ(download, download_model_->download());
 
+  if ([item_controller_ isDangerousMode] &&
+      download->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
+    // We have been approved.
+    [item_controller_ clearDangerousMode];
+  }
+
+  if (download->full_path() != lastFilePath_) {
+    // Turns out the file path is "unconfirmed %d.download" for dangerous
+    // downloads. When the download is confirmed, the file is renamed on
+    // another thread, so reload the icon if the download filename changes.
+    LoadIcon();
+    lastFilePath_ = download->full_path();
+  }
+
   switch (download_model_->download()->state()) {
     case DownloadItem::REMOVING:
       [item_controller_ remove];  // We're deleted now!
@@ -35,7 +49,7 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
       [item_controller_ setStateFromDownload:download_model_.get()];
       break;
     default:
-        NOTREACHED();
+      NOTREACHED();
   }
 }
 

@@ -145,7 +145,10 @@ static const char* const g_executables[] = {
   "py",
   "rb",
   "sh",
-#endif  // defined(OS_LINUX)
+#elif defined(OS_MACOSX)
+  // TODO(thakis): Figure out what makes sense here -- crbug.com/19096
+  "dmg",
+#endif
 };
 
 void InitializeExeTypes(std::set<std::string>* exe_extensions) {

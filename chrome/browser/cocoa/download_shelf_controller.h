@@ -76,4 +76,7 @@ class DownloadShelf;
 // Return the height of the download shelf.
 - (float)height;
 
+// Re-layouts all download items based on their current state.
+- (void)layoutItems;
+
 @end
