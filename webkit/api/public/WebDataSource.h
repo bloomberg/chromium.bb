@@ -89,6 +89,9 @@ namespace WebKit {
         // extra data pointer to be deleted.
         virtual ExtraData* extraData() const = 0;
         virtual void setExtraData(ExtraData*) = 0;
+
+    protected:
+        ~WebDataSource() { }
     };
 
 } // namespace WebKit

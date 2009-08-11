@@ -50,7 +50,7 @@ namespace WebKit {
         virtual bool tryGetMessage(WebString*, WebMessagePortChannel**) = 0;
 
     protected:
-        virtual ~WebMessagePortChannel() { }
+        ~WebMessagePortChannel() { }
     };
 
 } // namespace WebKit

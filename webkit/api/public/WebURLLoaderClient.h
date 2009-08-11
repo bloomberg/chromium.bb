@@ -60,6 +60,9 @@ namespace WebKit {
 
         // Called when the load completes with an error.
         virtual void didFail(WebURLLoader*, const WebURLError&) = 0;
+
+    protected:
+        ~WebURLLoaderClient() { }
     };
 
 } // namespace WebKit

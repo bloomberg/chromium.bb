@@ -209,6 +209,9 @@ namespace WebKit {
 
         // Callable from a background WebKit thread.
         virtual void callOnMainThread(void (*func)()) = 0;
+
+    protected:
+        ~WebKitClient() { }
     };
 
 } // namespace WebKit

@@ -65,7 +65,10 @@ namespace WebKit {
         virtual void workerContextDestroyed() = 0;
 
         // This can be called on any thread to create a nested worker.
-        virtual WebKit::WebWorker* createWorker(WebKit::WebWorkerClient* client) = 0;
+        virtual WebWorker* createWorker(WebWorkerClient* client) = 0;
+
+    protected:
+        ~WebWorkerClient() { }
     };
 
 } // namespace WebKit

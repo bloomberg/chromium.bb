@@ -37,6 +37,9 @@ namespace WebKit {
     class WebHTTPHeaderVisitor {
     public:
         virtual void visitHeader(const WebString& name, const WebString& value) = 0;
+
+    protected:
+        ~WebHTTPHeaderVisitor() { }
     };
 
 } // namespace WebKit

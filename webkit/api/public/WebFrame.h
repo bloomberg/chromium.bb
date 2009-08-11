@@ -420,6 +420,9 @@ namespace WebKit {
         // Returns HTML text for the contents of this frame.  This is generated
         // from the DOM.
         virtual WebString contentAsMarkup() const = 0;
+
+    protected:
+        ~WebFrame() { }
     };
 
 } // namespace WebKit

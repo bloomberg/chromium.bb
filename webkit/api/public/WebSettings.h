@@ -80,7 +80,7 @@ namespace WebKit {
         virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded() = 0;
 
     protected:
-        virtual ~WebSettings() { }
+        ~WebSettings() { }
     };
 
 } // namespace WebKit

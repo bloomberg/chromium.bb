@@ -88,6 +88,9 @@ namespace WebKit {
 
         // Changes the text direction of the selected input node.
         virtual void setTextDirection(WebTextDirection) = 0;
+
+    protected:
+        ~WebWidget() { }
     };
 
 } // namespace WebKit

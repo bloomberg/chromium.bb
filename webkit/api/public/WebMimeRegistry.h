@@ -49,6 +49,9 @@ namespace WebKit {
         virtual WebString mimeTypeForExtension(const WebString& fileExtension) = 0;
         virtual WebString mimeTypeFromFile(const WebString& filePath) = 0;
         virtual WebString preferredExtensionForMIMEType(const WebString& mimeType) = 0;
+
+    protected:
+        ~WebMimeRegistry() { }
     };
 
 } // namespace WebKit

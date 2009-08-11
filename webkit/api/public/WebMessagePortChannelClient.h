@@ -41,8 +41,9 @@ namespace WebKit {
         // WebMessagePortChannel::tryGetMessage.  Note that this may be called
         // on any thread.
         virtual void messageAvailable() = 0;
+
     protected:
-        virtual ~WebMessagePortChannelClient() { }
+        ~WebMessagePortChannelClient() { }
     };
 
 } // namespace WebKit

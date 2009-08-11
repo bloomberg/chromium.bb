@@ -58,16 +58,13 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
   WebKit::WebClipboard* clipboard() {
-    if (!clipboard_.get()) {
-      // Mock out clipboard calls in layout test mode so that tests don't mess
-      // with each other's copies/pastes when running in parallel.
-      if (TestShell::layout_test_mode()) {
-        clipboard_.reset(new MockWebClipboardImpl());
-      } else {
-        clipboard_.reset(new webkit_glue::WebClipboardImpl());
-      }
+    // Mock out clipboard calls in layout test mode so that tests don't mess
+    // with each other's copies/pastes when running in parallel.
+    if (TestShell::layout_test_mode()) {
+      return &mock_clipboard_;
+    } else {
+      return &real_clipboard_;
     }
-    return clipboard_.get();
   }
 
   virtual WebKit::WebSandboxSupport* sandboxSupport() {
@@ -149,7 +146,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
  private:
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
-  scoped_ptr<WebKit::WebClipboard> clipboard_;
+  MockWebClipboardImpl mock_clipboard_;
+  webkit_glue::WebClipboardImpl real_clipboard_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBKIT_INIT_H_

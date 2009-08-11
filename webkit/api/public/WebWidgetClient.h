@@ -81,6 +81,9 @@ namespace WebKit {
         // Called to query information about the screen where this widget is
         // displayed.
         virtual WebScreenInfo screenInfo() = 0;
+
+    protected:
+        ~WebWidgetClient() { }
     };
 
 } // namespace WebKit

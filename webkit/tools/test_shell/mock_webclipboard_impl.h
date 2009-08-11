@@ -15,7 +15,6 @@
 
 class MockWebClipboardImpl : public WebKit::WebClipboard {
  public:
-  virtual ~MockWebClipboardImpl() {}
   virtual bool isFormatAvailable(WebKit::WebClipboard::Format);
 
   virtual WebKit::WebString readPlainText();
