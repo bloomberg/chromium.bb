@@ -8,7 +8,6 @@
 #include "app/gfx/canvas_paint.h"
 #include "base/base_drag_source.h"
 #include "base/logging.h"
-#include "views/widget/root_view_drop_target.h"
 
 namespace views {
 

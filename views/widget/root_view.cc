@@ -15,11 +15,6 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
-#if defined(OS_WIN)
-#include "base/base_drag_source.h"
-#include "views/widget/root_view_drop_target.h"
-#endif
-
 namespace views {
 
 /////////////////////////////////////////////////////////////////////////////
@@ -257,12 +252,8 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
       mouse_pressed_handler_ = NULL;
     }
 
-#if defined(OS_WIN)
-    if (drop_target_.get())
-      drop_target_->ResetTargetViewIfEquals(child);
-#else
-    NOTIMPLEMENTED();
-#endif
+    if (widget_)
+      widget_->ViewHierarchyChanged(is_add, parent, child);
 
     if (mouse_move_handler_ == child) {
       mouse_move_handler_ = NULL;
@@ -505,28 +496,6 @@ void RootView::SetMouseHandler(View *new_mh) {
   // If we're clearing the mouse handler, clear explicit_mouse_handler as well.
   explicit_mouse_handler_ = (new_mh != NULL);
   mouse_pressed_handler_ = new_mh;
-}
-
-void RootView::OnWidgetCreated() {
-#if defined(OS_WIN)
-  DCHECK(!drop_target_.get());
-  drop_target_ = new RootViewDropTarget(this);
-#else
-  // TODO(port): Port RootViewDropTarget and this goes away.
-  NOTIMPLEMENTED();
-#endif
-}
-
-void RootView::OnWidgetDestroyed() {
-#if defined(OS_WIN)
-  if (drop_target_.get()) {
-    RevokeDragDrop(GetWidget()->GetNativeView());
-    drop_target_ = NULL;
-  }
-#else
-  // TODO(port): Port RootViewDropTarget and this goes away.
-  NOTIMPLEMENTED();
-#endif
 }
 
 void RootView::ProcessMouseDragCanceled() {

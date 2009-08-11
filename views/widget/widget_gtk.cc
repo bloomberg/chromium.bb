@@ -388,6 +388,12 @@ FocusManager* WidgetGtk::GetFocusManager() {
   return focus_manager_.get();
 }
 
+void WidgetGtk::ViewHierarchyChanged(bool is_add, View *parent,
+                                     View *child) {
+  // Needs dnd support (see WidgetWin::ViewHierarchyChanged).
+  NOTIMPLEMENTED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, MessageLoopForUI::Observer implementation:
 

@@ -18,7 +18,6 @@ typedef struct _GdkEventExpose GdkEventExpose;
 namespace views {
 
 class PaintTask;
-class RootViewDropTarget;
 class Widget;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -91,14 +90,6 @@ class RootView : public View,
   virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
   virtual void OnMouseMoved(const MouseEvent& e);
   virtual void SetMouseHandler(View* new_mouse_handler);
-
-  // Invoked when the Widget has been fully initialized.
-  // At the time the constructor is invoked the Widget may not be completely
-  // initialized, when this method is invoked, it is.
-  void OnWidgetCreated();
-
-  // Invoked prior to the Widget being destroyed.
-  void OnWidgetDestroyed();
 
   // Invoked By the Widget if the mouse drag is interrupted by
   // the system. Invokes OnMouseReleased with a value of true for canceled.
@@ -325,11 +316,6 @@ class RootView : public View,
   // The View that contains this RootView. This is used when we have RootView
   // wrapped inside native components, and is used for the focus traversal.
   View* focus_traversable_parent_view_;
-
-#if defined(OS_WIN)
-  // Handles dnd for us.
-  scoped_refptr<RootViewDropTarget> drop_target_;
-#endif
 
   // Storage of strings needed for accessibility.
   std::wstring accessible_name_;

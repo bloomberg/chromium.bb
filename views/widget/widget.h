@@ -143,6 +143,10 @@ class Widget {
   // Returns the FocusManager for this widget.
   // Note that all widgets in a widget hierarchy share the same focus manager.
   virtual FocusManager* GetFocusManager() { return NULL; }
+
+  // Forwarded from the RootView so that the widget can do any cleanup.
+  virtual void ViewHierarchyChanged(bool is_add, View *parent,
+                                    View *child) = 0;
 };
 
 }  // namespace views

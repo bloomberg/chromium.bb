@@ -24,6 +24,7 @@ class Rect;
 
 namespace views {
 
+class DropTargetWin;
 class RootView;
 class TooltipManagerWin;
 class DefaultThemeProvider;
@@ -201,6 +202,8 @@ class WidgetWin : public base::WindowImpl,
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
   virtual FocusManager* GetFocusManager();
+  virtual void ViewHierarchyChanged(bool is_add, View *parent,
+                                    View *child);
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
@@ -484,6 +487,8 @@ class WidgetWin : public base::WindowImpl,
   // WARNING: RootView's destructor calls into the TooltipManager. As such, this
   // must be destroyed AFTER root_view_.
   scoped_ptr<TooltipManagerWin> tooltip_manager_;
+
+  scoped_refptr<DropTargetWin> drop_target_;
 
   // The focus manager keeping track of focus for this Widget and any of its
   // children.  NULL for non top-level widgets.

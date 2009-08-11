@@ -17,6 +17,7 @@
 #include "views/views_delegate.h"
 #include "views/widget/aero_tooltip_manager.h"
 #include "views/widget/default_theme_provider.h"
+#include "views/widget/drop_target_win.h"
 #include "views/widget/root_view.h"
 #include "views/window/window_win.h"
 
@@ -78,7 +79,7 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
   SetWindowSupportsRerouteMouseWheel(GetNativeView());
 
-  root_view_->OnWidgetCreated();
+  drop_target_ = new DropTargetWin(root_view_.get());
 
   if ((window_style() & WS_CHILD) == 0) {
     // Top-level widgets get a FocusManager.
@@ -320,6 +321,12 @@ FocusManager* WidgetWin::GetFocusManager() {
   return NULL;
 }
 
+void WidgetWin::ViewHierarchyChanged(bool is_add, View *parent,
+                                     View *child) {
+  if (drop_target_.get())
+    drop_target_->ResetTargetViewIfEquals(child);
+}
+
 void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
   if (use_layered_buffer_ == use_layered_buffer)
     return;
@@ -432,7 +439,10 @@ void WidgetWin::OnClose() {
 }
 
 void WidgetWin::OnDestroy() {
-  root_view_->OnWidgetDestroyed();
+  if (drop_target_.get()) {
+    RevokeDragDrop(GetNativeView());
+    drop_target_ = NULL;
+  }
 
   RemoveProp(GetNativeView(), kRootViewWindowProperty);
 }

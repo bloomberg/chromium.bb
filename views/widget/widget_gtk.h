@@ -96,6 +96,8 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   virtual const Window* GetWindow() const;
   virtual ThemeProvider* GetThemeProvider() const;
   virtual FocusManager* GetFocusManager();
+  virtual void ViewHierarchyChanged(bool is_add, View *parent,
+                                    View *child);
 
   // MessageLoopForUI::Observer.
   virtual void WillProcessEvent(GdkEvent* event);
