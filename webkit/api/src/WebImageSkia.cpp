@@ -56,7 +56,7 @@ WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
     // Pick the frame closest to |desiredSize|'s area without being smaller,
     // which has the highest bit depth.
     const size_t frameCount = source.frameCount();
-    size_t index;
+    size_t index = 0;  // Default to first frame if none are large enough.
     int frameAreaAtIndex;
     for (size_t i = 0; i < frameCount; ++i) {
         const IntSize frameSize = source.frameSizeAtIndex(i);
