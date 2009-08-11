@@ -317,6 +317,7 @@ bool BrowserRenderProcessHost::Init() {
     switches::kRendererStartupDialog,
     switches::kNoSandbox,
     switches::kTestSandbox,
+    switches::kEnableSeccompSandbox,
 #if !defined (GOOGLE_CHROME_BUILD)
     // This is an unsupported and not fully tested mode, so don't enable it for
     // official Chrome builds.

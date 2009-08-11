@@ -3132,6 +3132,9 @@
               ],
             }],
           ],
+          'dependencies': [
+            '../sandbox/sandbox.gyp:sandbox',
+          ],
         }],
         ['OS=="mac" or OS=="win"', {
           'dependencies': [
@@ -3933,6 +3936,7 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
+            '../sandbox/sandbox.gyp:*',
           ],
           'sources!': [
             # This test is mostly about renaming downloads to safe file

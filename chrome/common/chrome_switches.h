@@ -214,6 +214,8 @@ extern const wchar_t kEnableSessionStorage[];
 
 extern const wchar_t kAllowSandboxDebugging[];
 
+extern const wchar_t kEnableSeccompSandbox[];
+
 extern const wchar_t kDiagnostics[];
 
 extern const wchar_t kDisableCustomJumpList[];

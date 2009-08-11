@@ -4,9 +4,11 @@
 
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 
+#include "base/command_line.h"
 #include "base/debug_util.h"
+#include "sandbox/linux/seccomp/sandbox.h"
 
-// This is a no op class because we do not have a sandbox on linux.
+#include "chrome/common/chrome_switches.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const MainFunctionParams& parameters)
@@ -29,8 +31,15 @@ bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 }
 
 bool RendererMainPlatformDelegate::EnableSandbox() {
-  // The sandbox is started in the zygote process: zygote_main_linux.cc
+  // The setuid sandbox is started in the zygote process: zygote_main_linux.cc
   // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
+  //
+  // The seccomp sandbox is started in the renderer.
+  // http://code.google.com/p/seccompsandbox/
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSeccompSandbox)) {
+    StartSeccompSandbox();
+  }
   return true;
 }
 
