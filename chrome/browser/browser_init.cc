@@ -377,6 +377,7 @@ BrowserInit::LaunchWithProfile::LaunchWithProfile(
     const CommandLine& command_line)
         : cur_dir_(cur_dir),
           command_line_(command_line),
+          profile_(NULL),
           browser_init_(NULL) {
 }
 
@@ -386,6 +387,7 @@ BrowserInit::LaunchWithProfile::LaunchWithProfile(
     BrowserInit* browser_init)
         : cur_dir_(cur_dir),
           command_line_(command_line),
+          profile_(NULL),
           browser_init_(browser_init) {
 }
 
@@ -554,6 +556,12 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
     bool process_startup,
     const std::vector<GURL>& urls) {
   DCHECK(!urls.empty());
+  // If we don't yet have a profile, try to use the one we're given from
+  // |browser|. While we may not end up actually using |browser| (since it
+  // could be a popup window), we can at least use the profile.
+  if (!profile_ && browser)
+    profile_ = browser->profile();
+
   int pin_count = 0;
   if (!browser) {
     std::wstring pin_count_string =
