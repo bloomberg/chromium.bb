@@ -45,7 +45,7 @@ namespace WebKit {
         virtual void lock(bool& invalidateCache, size_t& bytesLeftInQuota);
         virtual void unlock();
         virtual unsigned length();
-        virtual WebString key(unsigned index, bool& keyException);
+        virtual WebString key(unsigned index);
         virtual WebString getItem(const WebString& key);
         virtual void setItem(const WebString& key, const WebString& value, bool& quotaException);
         virtual void removeItem(const WebString& key);

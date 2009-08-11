@@ -59,10 +59,9 @@ namespace WebKit {
         virtual unsigned length() = 0;
 
         // Get a value for a specific key. Valid key indices are 0 through length() - 1.
-        // Indexes may change on any set/removeItem call. KeyException is true if the
-        // index provided was out of range.  When KeyException is true, the returned
-        // string is undefined.
-        virtual WebString key(unsigned index, bool& keyException) = 0;
+        // Indexes may change on any set/removeItem call. Will return null if the index
+        // provided is out of range.
+        virtual WebString key(unsigned index) = 0;
 
         // Get the value that corresponds to a specific key. This returns null if there is
         // no entry for that key.

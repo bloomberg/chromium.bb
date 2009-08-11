@@ -45,18 +45,18 @@ unsigned RendererWebStorageAreaImpl::length() {
   return length;
 }
 
-WebKit::WebString RendererWebStorageAreaImpl::key(unsigned index,
-                                                  bool& key_exception) {
+WebKit::WebString RendererWebStorageAreaImpl::key(unsigned index) {
   EnsureInitializedAndLocked();
   // Right now this is always sync.  We may want to optimize this by fetching
   // chunks of keys rather than single keys (and flushing the cache on every
   // mutation of the storage area) since this will most often be used to fetch
   // all the keys at once.
   string16 key;
+  bool key_is_null;
   RenderThread::current()->Send(
       new ViewHostMsg_DOMStorageKey(storage_area_id_, index,
-                                    &key_exception, &key));
-  return key;
+                                    &key, &key_is_null));
+  return key_is_null ? WebKit::WebString() : WebKit::WebString(key);
 }
 
 WebKit::WebString RendererWebStorageAreaImpl::getItem(

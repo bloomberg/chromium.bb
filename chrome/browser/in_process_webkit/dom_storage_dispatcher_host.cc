@@ -261,11 +261,11 @@ void DOMStorageDispatcherHost::OnKey(int64 storage_area_id, unsigned index,
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  bool key_exception = false;
   WebStorageArea* storage_area = GetStorageArea(storage_area_id);
   CHECK(storage_area);  // TODO(jorlow): Do better than this.
-  string16 key = storage_area->key(index, key_exception);
-  ViewHostMsg_DOMStorageKey::WriteReplyParams(reply_msg, key_exception, key);
+  WebString key = storage_area->key(index);
+  ViewHostMsg_DOMStorageKey::WriteReplyParams(reply_msg, (string16)key,
+                                              key.isNull());
   Send(reply_msg);
 }
 

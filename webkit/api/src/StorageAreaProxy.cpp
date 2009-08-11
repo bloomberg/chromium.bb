@@ -51,12 +51,9 @@ unsigned StorageAreaProxy::length() const
     return m_storageArea->length();
 }
 
-String StorageAreaProxy::key(unsigned index, ExceptionCode& ec) const
+String StorageAreaProxy::key(unsigned index) const
 {
-    bool keyException = false;
-    String value = m_storageArea->key(index, keyException);
-    ec = keyException ? INDEX_SIZE_ERR : 0;
-    return value;
+    return m_storageArea->key(index);
 }
 
 String StorageAreaProxy::getItem(const String& key) const

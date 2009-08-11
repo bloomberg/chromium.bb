@@ -1575,8 +1575,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_DOMStorageKey,
                               int64 /* storage_area_id */,
                               unsigned /* index */,
-                              bool /* key_exception */,
-                              string16 /* key */)
+                              string16 /* key */,
+                              bool /* key_is_null */)
 
   // Get a value based on a key from a storage area.
   // TODO(jorlow): Convert value + value_is_null over to a NullableString16

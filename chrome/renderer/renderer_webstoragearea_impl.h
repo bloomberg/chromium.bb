@@ -21,7 +21,7 @@ class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
   virtual void lock(bool& invalidate_cache, size_t& bytes_left_in_quota);
   virtual void unlock();
   virtual unsigned length();
-  virtual WebKit::WebString key(unsigned index, bool& key_exception);
+  virtual WebKit::WebString key(unsigned index);
   virtual WebKit::WebString getItem(const WebKit::WebString& key);
   virtual void setItem(const WebKit::WebString& key,
                        const WebKit::WebString& value,

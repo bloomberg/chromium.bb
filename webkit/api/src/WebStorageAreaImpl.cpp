@@ -65,17 +65,9 @@ unsigned WebStorageAreaImpl::length()
     return m_storageArea->length();
 }
 
-WebString WebStorageAreaImpl::key(unsigned index, bool& keyException)
+WebString WebStorageAreaImpl::key(unsigned index)
 {
-    int exceptionCode = 0;
-    WebString value = m_storageArea->key(index, exceptionCode);
-    if (exceptionCode != 0) {
-        ASSERT(exceptionCode == WebCore::INDEX_SIZE_ERR);
-        keyException = true;
-    } else {
-        keyException = false;
-    }
-    return value;
+    return m_storageArea->key(index);
 }
 
 WebString WebStorageAreaImpl::getItem(const WebString& key)
