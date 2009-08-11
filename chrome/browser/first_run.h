@@ -70,7 +70,8 @@ class FirstRun {
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
                                        const FilePath& master_prefs_path,
                                        std::vector<std::wstring>* new_tabs,
-                                       int* ping_delay);
+                                       int* ping_delay,
+                                       bool* homepage_defined);
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser
   // shows the bubble once the main message loop gets going. Returns false if
@@ -148,8 +149,12 @@ class FirstRunBrowserProcess : public BrowserProcessImpl {
 // |profile| and perhaps some other tasks.
 // |process_singleton| is used to lock the handling of CopyData messages
 // while the First Run UI is visible.
+// |homepage_defined| true indicates that homepage is defined in master
+// preferences and should not be imported from another browser.
 // Returns true if the user clicked "Start", false if the user pressed "Cancel"
 // or closed the dialog.
-bool OpenFirstRunDialog(Profile* profile, ProcessSingleton* process_singleton);
+bool OpenFirstRunDialog(Profile* profile,
+                        bool homepage_defined,
+                        ProcessSingleton* process_singleton);
 
 #endif  // CHROME_BROWSER_FIRST_RUN_H_

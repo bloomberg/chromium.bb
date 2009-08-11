@@ -61,7 +61,9 @@ class FirstRunController : public ImportObserver {
 };
 
 
-bool OpenFirstRunDialog(Profile* profile, ProcessSingleton* process_singleton) {
+bool OpenFirstRunDialog(Profile* profile,
+                        bool homepage_defined,
+                        ProcessSingleton* process_singleton) {
 // OpenFirstRunDialog is a no-op on non-branded builds.
   FirstRunController* controller = new FirstRunController;
   return controller->DoFirstRun(profile, process_singleton);

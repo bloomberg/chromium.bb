@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,14 +30,15 @@
 #include "views/window/client_view.h"
 #include "views/window/window.h"
 
-FirstRunViewBase::FirstRunViewBase(Profile* profile)
+FirstRunViewBase::FirstRunViewBase(Profile* profile, bool homepage_defined)
     : preferred_width_(0),
       background_image_(NULL),
       separator_1_(NULL),
       default_browser_(NULL),
       separator_2_(NULL),
       importer_host_(NULL),
-      profile_(profile) {
+      profile_(profile),
+      homepage_defined_(homepage_defined) {
   DCHECK(profile);
   SetupControls();
 }
@@ -163,7 +164,10 @@ int FirstRunViewBase::GetDefaultImportItems() const {
   // It is best to avoid importing cookies because there is a bug that make
   // the process take way too much time among other issues. So for the time
   // being we say: TODO(CPU): Bug 1196875
-  return HISTORY | FAVORITES | PASSWORDS | SEARCH_ENGINES | HOME_PAGE;
+  int items = HISTORY | FAVORITES | PASSWORDS | SEARCH_ENGINES;
+  if (!homepage_defined_)
+    items = items | HOME_PAGE;
+  return items;
 };
 
 void FirstRunViewBase::DisableButtons() {

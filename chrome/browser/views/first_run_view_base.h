@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ class ImporterHost;
 class FirstRunViewBase : public views::View,
                          public views::DialogDelegate {
  public:
-  explicit FirstRunViewBase(Profile* profile);
+  explicit FirstRunViewBase(Profile* profile, bool homepage_defined);
   virtual ~FirstRunViewBase();
 
   // Overridden from views::View.
@@ -78,6 +78,9 @@ class FirstRunViewBase : public views::View,
   scoped_refptr<ImporterHost> importer_host_;
   Profile* profile_;
   views::Checkbox* default_browser_;
+
+ protected:
+  bool homepage_defined_;
 
  private:
   // Initializes the controls on the dialog.

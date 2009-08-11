@@ -24,8 +24,9 @@
 FirstRunCustomizeView::FirstRunCustomizeView(Profile* profile,
                                              ImporterHost* importer_host,
                                              CustomizeViewObserver* observer,
-                                             bool default_browser_checked)
-    : FirstRunViewBase(profile),
+                                             bool default_browser_checked,
+                                             bool homepage_defined)
+    : FirstRunViewBase(profile, homepage_defined),
       main_label_(NULL),
       import_cbox_(NULL),
       import_from_combo_(NULL),

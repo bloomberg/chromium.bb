@@ -33,8 +33,8 @@ std::wstring AddBullet(const std::wstring& text) {
 
 }  // namespace
 
-FirstRunView::FirstRunView(Profile* profile)
-    : FirstRunViewBase(profile),
+FirstRunView::FirstRunView(Profile* profile, bool homepage_defined)
+    : FirstRunViewBase(profile, homepage_defined),
       welcome_label_(NULL),
       actions_label_(NULL),
       actions_import_(NULL),
@@ -153,7 +153,8 @@ void FirstRunView::OpenCustomizeDialog() {
       new FirstRunCustomizeView(profile_,
                                 importer_host_,
                                 this,
-                                default_browser_->checked()))->Show();
+                                default_browser_->checked(),
+                                homepage_defined_))->Show();
 }
 
 void FirstRunView::LinkActivated(views::Link* source, int event_flags) {

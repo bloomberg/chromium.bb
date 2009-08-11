@@ -448,15 +448,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
   BrowserInit browser_init;
 
   int rlz_ping_delay = 0;
+  bool homepage_defined = false;
   if (is_first_run) {
     // On first run, we  need to process the master preferences before the
     // browser's profile_manager object is created, but after ResourceBundle
     // is initialized.
     std::vector<std::wstring> first_run_tabs;
     first_run_ui_bypass = !FirstRun::ProcessMasterPreferences(user_data_dir,
-                                                              FilePath(),
-                                                              &first_run_tabs,
-                                                              &rlz_ping_delay);
+        FilePath(), &first_run_tabs, &rlz_ping_delay, &homepage_defined);
     // The master prefs might specify a set of urls to display.
     if (first_run_tabs.size())
       AddFirstRunNewTabs(&browser_init, first_run_tabs);
@@ -607,7 +606,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // preferences are registered, since some of the code that the importer
   // touches reads preferences.
   if (is_first_run && !first_run_ui_bypass) {
-    if (!OpenFirstRunDialog(profile, &process_singleton)) {
+    if (!OpenFirstRunDialog(profile, homepage_defined, &process_singleton)) {
       // The user cancelled the first run dialog box, we should exit Chrome.
       return ResultCodes::NORMAL_EXIT;
     }

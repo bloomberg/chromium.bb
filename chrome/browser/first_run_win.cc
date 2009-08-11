@@ -168,7 +168,8 @@ bool FirstRun::CreateChromeQuickLaunchShortcut() {
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
                                         const FilePath& master_prefs_path,
                                         std::vector<std::wstring>* new_tabs,
-                                        int* ping_delay) {
+                                        int* ping_delay,
+                                        bool* homepage_defined) {
   DCHECK(!user_data_dir.empty());
   FilePath master_prefs = master_prefs_path;
   if (master_prefs.empty()) {
@@ -194,6 +195,8 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       *ping_delay = 90;
     }
   }
+  if (homepage_defined)
+    prefs->GetBoolean(prefs::kHomePage, homepage_defined);
 
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kRequireEula)) {
@@ -351,13 +354,15 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
 }
 
 bool OpenFirstRunDialog(Profile* profile,
+                        bool homepage_defined,
                         ProcessSingleton* process_singleton) {
   DCHECK(profile);
   DCHECK(process_singleton);
 
   // We need the FirstRunView to outlive its parent, as we retrieve the accept
   // state from it after the dialog has been closed.
-  scoped_ptr<FirstRunView> first_run_view(new FirstRunView(profile));
+  scoped_ptr<FirstRunView> first_run_view(new FirstRunView(profile,
+                                                           homepage_defined));
   first_run_view->SetParentOwned(false);
   views::Window* first_run_ui = views::Window::CreateChromeWindow(
       NULL, gfx::Rect(), first_run_view.get());
