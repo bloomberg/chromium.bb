@@ -338,14 +338,16 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
   file.write('OutDirCygwin:=$(shell cygpath -u "$(OutDir)")\n')
   file.write('IntDirCygwin:=$(shell cygpath -u "$(IntDir)")\n')
   # Gather stuff needed to emit all: target.
-  all_outputs = []
+  all_inputs = set()
+  all_outputs = set()
   all_output_dirs = set()
   first_outputs = []
   for rule in rules:
     trigger_files = _FindRuleTriggerFiles(rule, sources)
     for tf in trigger_files:
-      _, outputs = _RuleInputsAndOutputs(rule, tf)
-      all_outputs += outputs
+      inputs, outputs = _RuleInputsAndOutputs(rule, tf)
+      all_inputs.update(set(inputs))
+      all_outputs.update(set(outputs))
       # Only take the first one because make is... limited.
       first_outputs.append(list(outputs)[0])
       # Get the unique output directories for this rule.
@@ -387,10 +389,14 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
          '-j', '${NUMBER_OF_PROCESSORS_PLUS_1}',
          '-f', filename]
   cmd = _PrepareActionRaw(c_data, cmd, True, False)
+  # TODO(bradnelson): this won't be needed if we have a better way to pick
+  #                   the primary input.
+  all_inputs = list(all_inputs)
+  all_inputs.insert(1, filename)
   actions_to_add.append({
       'config_name': config_name,
       'c_data': c_data,
-      'inputs': [filename],
+      'inputs': [_FixPath(i) for i in all_inputs],
       'outputs': [_FixPath(i) for i in all_outputs],
       'description': 'Running %s' % cmd,
       'cmd': cmd,
