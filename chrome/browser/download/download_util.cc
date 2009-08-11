@@ -19,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "net/base/mime_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -242,10 +243,22 @@ void DragDownload(const DownloadItem* download, SkBitmap* icon) {
 
   // Set up our OLE machinery
   scoped_refptr<OSExchangeData> data(new OSExchangeData);
+
+  const FilePath::StringType file_name = download->file_name().value();
   if (icon)
-    drag_utils::CreateDragImageForFile(download->file_name().ToWStringHack(),
-                                       icon, data);
-  data->SetFilename(download->full_path().ToWStringHack());
+    drag_utils::CreateDragImageForFile(file_name, icon, data);
+
+  const FilePath full_path = download->full_path();
+  data->SetFilename(full_path.value());
+
+  std::string mime_type = download->mime_type();
+  if (mime_type.empty())
+    net::GetMimeTypeFromFile(full_path, &mime_type);
+
+  // Add URL so that we can load supported files when dragged to TabContents.
+  if (net::IsSupportedMimeType(mime_type))
+    data->SetURL(GURL(full_path.value()), file_name);
+
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
 
   // Run the drag and drop loop
