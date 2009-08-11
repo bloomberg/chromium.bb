@@ -161,9 +161,9 @@ TEST_F(StartupFileTest, PerfColdGears) {
 }
 #endif
 
-//TEST_F(StartupTest, PerfColdComplexTheme) {
-//  RunStartupTest("warm", "t-theme", false /* warm */,
-//                 false /* not important */, UITest::COMPLEX_THEME);
-//}
+TEST_F(StartupTest, PerfColdComplexTheme) {
+  RunStartupTest("warm", "t-theme", false /* warm */,
+                 false /* not important */, UITest::COMPLEX_THEME);
+}
 
 }  // namespace
