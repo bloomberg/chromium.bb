@@ -106,10 +106,10 @@ TEST_F(NewTabUIStartupTest, DISABLED_PerfWarm) {
                  UITest::DEFAULT_THEME);
 }
 
-TEST_F(NewTabUIStartupTest, ComplexThemeCold) {
-  RunStartupTest("tab_complex_theme_cold", false /* cold */,
-                 false /* not important */,
-                 UITest::COMPLEX_THEME);
-}
+//TEST_F(NewTabUIStartupTest, ComplexThemeCold) {
+//  RunStartupTest("tab_complex_theme_cold", false /* cold */,
+//                 false /* not important */,
+//                 UITest::COMPLEX_THEME);
+//}
 
 }  // namespace
