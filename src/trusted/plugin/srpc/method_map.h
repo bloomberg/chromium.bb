@@ -55,7 +55,7 @@ class SrpcParams {
 
   SrpcParams() : exception_info_(NULL) {
     memset(ins, 0, sizeof(ins));
-    memset(ins, 0, sizeof(outs));
+    memset(outs, 0, sizeof(outs));
   }
 
   SrpcParams(const char* in_types, const char* out_types)
@@ -106,7 +106,7 @@ class SrpcParams {
     FreeArguments(ins);
     FreeArguments(outs);
     memset(ins, 0, sizeof(ins));
-    memset(ins, 0, sizeof(outs));
+    memset(outs, 0, sizeof(outs));
   }
 
   bool FillVec(NaClSrpcArg* vec[], const char* types) {
