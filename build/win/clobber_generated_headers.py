@@ -30,7 +30,6 @@ def total_split(path):
   return list(reversed(components))
 
 for path in sys.argv[1:]:
-  path = os.path.join('src', path)
   path_components = total_split(path)
   try:
     root = grit.grd_reader.Parse(path)
