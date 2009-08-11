@@ -16,26 +16,26 @@
 #include "views/standard_layout.h"
 #include "views/widget/root_view.h"
 
-namespace views {
-
 static const int kMessageWidth = 320;
 static const int kTextfieldStackHorizontalSpacing = 30;
+
+using views::GridLayout;
 
 ///////////////////////////////////////////////////////////////////////////////
 // LoginView, public:
 
 LoginView::LoginView(const std::wstring& explanation)
-    : username_field_(new Textfield),
-      password_field_(new Textfield(Textfield::STYLE_PASSWORD)),
-      username_label_(new Label(
+    : username_field_(new views::Textfield),
+      password_field_(new views::Textfield(views::Textfield::STYLE_PASSWORD)),
+      username_label_(new views::Label(
           l10n_util::GetString(IDS_LOGIN_DIALOG_USERNAME_FIELD))),
-      password_label_(new Label(
+      password_label_(new views::Label(
           l10n_util::GetString(IDS_LOGIN_DIALOG_PASSWORD_FIELD))),
-      message_label_(new Label(explanation)),
+      message_label_(new views::Label(explanation)),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       login_model_(NULL) {
   message_label_->SetMultiLine(true);
-  message_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
+  message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   // Initialize the Grid Layout Manager used for this dialog box.
   GridLayout* layout = CreatePanelGridLayout(this);
@@ -44,7 +44,8 @@ LoginView::LoginView(const std::wstring& explanation)
   // Add the column set for the information message at the top of the dialog
   // box.
   const int single_column_view_set_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
+  views::ColumnSet* column_set =
+      layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::FIXED, kMessageWidth, 0);
 
@@ -120,5 +121,3 @@ void LoginView::OnAutofillDataAvailable(const std::wstring& username,
 void LoginView::FocusFirstField() {
   username_field_->RequestFocus();
 }
-
-}  // namespace

@@ -17,7 +17,6 @@
 #include "net/url_request/url_request.h"
 #include "views/window/dialog_delegate.h"
 
-using views::LoginView;
 using webkit_glue::PasswordForm;
 
 // ----------------------------------------------------------------------------

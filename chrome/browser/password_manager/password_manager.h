@@ -7,8 +7,8 @@
 
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/login_model.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
-#include "chrome/browser/views/login_view.h"
 #include "chrome/common/pref_member.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
@@ -21,7 +21,7 @@ class TabContents;
 // receiving password form data from the renderer and managing the password
 // database through the WebDataService. The PasswordManager is a LoginModel
 // for purposes of supporting HTTP authentication dialogs.
-class PasswordManager : public views::LoginModel {
+class PasswordManager : public LoginModel {
  public:
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -55,7 +55,7 @@ class PasswordManager : public views::LoginModel {
   void ClearProvisionalSave();
 
   // LoginModel implementation.
-  virtual void SetObserver(views::LoginModelObserver* observer) {
+  virtual void SetObserver(LoginModelObserver* observer) {
     observer_ = observer;
   }
 
@@ -92,7 +92,7 @@ class PasswordManager : public views::LoginModel {
   TabContents* tab_contents_;
 
   // The LoginModelObserver (i.e LoginView) requiring autofill.
-  views::LoginModelObserver* observer_;
+  LoginModelObserver* observer_;
 
   // Set to false to disable the password manager (will no longer fill
   // passwords or ask you if you want to save passwords).
