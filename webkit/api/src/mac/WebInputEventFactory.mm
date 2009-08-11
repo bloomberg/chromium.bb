@@ -151,6 +151,11 @@ static int windowsKeyCodeForKeyEvent(NSEvent* event)
     case 62: // Right Ctrl
         return 0x11;
 
+// Begin non-Apple addition ---------------------------------------------------
+    case 63: // Function (no Windows key code)
+        return 0;
+// End non-Apple addition -----------------------------------------------------
+
     // VK_CLEAR (0C) CLEAR key
     case 71: return 0x0C;
 
@@ -186,6 +191,14 @@ static int windowsKeyCodeForKeyEvent(NSEvent* event)
     // VK_DIVIDE (6F) Divide key
     case 75: return 0x6F;
     }
+
+// Begin non-Apple addition ---------------------------------------------------
+    // |-[NSEvent charactersIgnoringModifiers]| isn't allowed for
+    // NSFlagsChanged, and conceivably we may not have caught everything
+    // which causes an NSFlagsChanged above.
+    if ([event type] == NSFlagsChanged)
+        return 0;
+// End non-Apple addition -----------------------------------------------------
 
     NSString* s = [event charactersIgnoringModifiers];
     if ([s length] != 1)
@@ -523,9 +536,13 @@ static NSString* keyIdentifierForKeyEvent(NSEvent* event)
         case 62: // Right Ctrl
             return @"Control";
 
-        default:
-            ASSERT_NOT_REACHED();
-            return @"";
+// Begin non-Apple addition/modification --------------------------------------
+        case 63: // Function
+            return @"Function";
+
+        default: // Unknown, but this may be a strange/new keyboard.
+            return @"Unidentified";
+// End non-Apple addition/modification ----------------------------------------
         }
     }
 
