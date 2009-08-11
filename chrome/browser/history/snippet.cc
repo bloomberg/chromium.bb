@@ -174,6 +174,8 @@ void Snippet::ExtractMatchPositions(const std::string& offsets_str,
       continue;
     const size_t start = atoi(offsets[i + 2].c_str());
     const size_t end = start + atoi(offsets[i + 3].c_str());
+    // Switch to DCHECK after debugging http://crbug.com/15261.
+    CHECK(end >= start);
     AddMatch(start, end, match_positions);
   }
 }
@@ -224,6 +226,10 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
     const size_t match_start = match_positions[i].first;
     const size_t match_end = match_positions[i].second;
 
+    // Switch to DCHECK after debugging http://crbug.com/15261.
+    CHECK(match_end > match_start);
+    CHECK(match_end <= document.size());
+
     // Add the context, if any, to show before the match.
     size_t context_start = match_start;
     MoveByNGraphemes(bi.get(), -kSnippetContext, &context_start);
@@ -231,6 +237,8 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
     if (start < match_start) {
       if (start > 0)
         snippet += kEllipsis;
+      // Switch to DCHECK after debugging http://crbug.com/15261.
+      CHECK(start < document.size());
       snippet += UTF8ToWide(document.substr(start, match_start - start));
     }
 
@@ -249,11 +257,17 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
       // Yes, it's within the window.  Make the end context extend just up
       // to the next match.
       end = match_positions[i + 1].first;
+      // Switch to DCHECK after debugging http://crbug.com/15261.
+      CHECK(end >= match_end);
+      CHECK(end <= document.size());
       snippet += UTF8ToWide(document.substr(match_end, end - match_end));
     } else {
       // No, there's either no next match or the next match is too far away.
       end = match_end;
       MoveByNGraphemes(bi.get(), kSnippetContext, &end);
+      // Switch to DCHECK after debugging http://crbug.com/15261.
+      CHECK(end >= match_end);
+      CHECK(end <= document.size());
       snippet += UTF8ToWide(document.substr(match_end, end - match_end));
       if (end < document.size())
         snippet += kEllipsis;
