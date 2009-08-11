@@ -34,10 +34,11 @@ class ExtensionInstallUI : public CrxInstallerClient {
   virtual void OnInstallFailure(const std::string& error);
   virtual void OnOverinstallAttempted(Extension* extension);
 
-  void ShowThemeInfoBar(Extension* extension);
+  void ShowThemeInfoBar(Extension* new_theme);
 
   Profile* profile_;
   MessageLoop* ui_loop_;
+  std::string previous_theme_id_;  // Used to undo theme installation.
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_

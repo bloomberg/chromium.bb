@@ -37,6 +37,11 @@ void ExtensionInstallUI::ConfirmInstall(CrxInstaller* installer,
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
   // to allow the user to revert if they don't like it.
   if (extension->IsTheme()) {
+    // Remember the current theme in case the user pressed undo.
+    Extension* previous_theme = profile_->GetTheme();
+    if (previous_theme)
+      previous_theme_id_ = previous_theme->id();
+
     installer->ContinueInstall();
     return;
   }
@@ -100,8 +105,8 @@ void ExtensionInstallUI::OnOverinstallAttempted(Extension* extension) {
   ShowThemeInfoBar(extension);
 }
 
-void ExtensionInstallUI::ShowThemeInfoBar(Extension* extension) {
-  if (!extension->IsTheme())
+void ExtensionInstallUI::ShowThemeInfoBar(Extension* new_theme) {
+  if (!new_theme->IsTheme())
     return;
 
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
@@ -124,7 +129,7 @@ void ExtensionInstallUI::ShowThemeInfoBar(Extension* extension) {
 
   // Then either replace that old one or add a new one.
   InfoBarDelegate* new_delegate = new ThemePreviewInfobarDelegate(tab_contents,
-      extension->name());
+      new_theme->name(), previous_theme_id_);
 
   if (old_delegate)
     tab_contents->ReplaceInfoBar(old_delegate, new_delegate);

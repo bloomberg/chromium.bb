@@ -7,8 +7,6 @@
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
-class Extension;
-class ExtensionsService;
 class SkBitmap;
 class TabContents;
 
@@ -20,7 +18,8 @@ class TabContents;
 class ThemePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
   ThemePreviewInfobarDelegate(TabContents* tab_contents,
-                              const std::string& name);
+                              const std::string& name,
+                              const std::string& previous_theme);
   virtual void InfoBarClosed();
   virtual std::wstring GetMessageText() const;
   virtual SkBitmap* GetIcon() const;
@@ -33,6 +32,7 @@ class ThemePreviewInfobarDelegate : public ConfirmInfoBarDelegate {
  private:
   Profile* profile_;
   std::string name_;  // name of theme to install
+  std::string previous_theme_id_;  // used to undo theme install
 };
 
 #endif  // CHROME_BROWSER_VIEWS_EXTENSIONS_THEME_PREVIEW_INFOBAR_DELEGATE_H_

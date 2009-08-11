@@ -6,14 +6,18 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
 
 ThemePreviewInfobarDelegate::ThemePreviewInfobarDelegate(
-    TabContents* tab_contents, const std::string& name)
+    TabContents* tab_contents, const std::string& name,
+    const std::string& previous_theme_id)
          : ConfirmInfoBarDelegate(tab_contents),
-           profile_(tab_contents->profile()), name_(name) {
+           profile_(tab_contents->profile()), name_(name),
+           previous_theme_id_(previous_theme_id) {
 }
 
 void ThemePreviewInfobarDelegate::InfoBarClosed() {
@@ -44,20 +48,27 @@ std::wstring ThemePreviewInfobarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   switch (button) {
     case BUTTON_CANCEL:
-      return l10n_util::GetString(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
+      // TODO(aa): Reusing IDS_UNDO is hack to get around string freeze. This
+      // should be changed back to IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON at some
+      // point.
+      return l10n_util::GetString(IDS_UNDO);
     default:
       return L"";
   }
 }
 
 bool ThemePreviewInfobarDelegate::Cancel() {
-  // Blech, this is a total hack.
-  //
-  // a) We should be uninstalling via ExtensionsService, not
-  //    Profile::ClearTheme().
-  // b) We should be able to view the theme without installing it. This would
-  //    help in edge cases like the user closing the window or tab before making
-  //    a decision.
+  if (!previous_theme_id_.empty()) {
+    ExtensionsService* service = profile_->GetExtensionsService();
+    if (service) {
+      Extension* previous_theme = service->GetExtensionById(previous_theme_id_);
+      if (previous_theme) {
+        profile_->SetTheme(previous_theme);
+        return true;
+      }
+    }
+  }
+
   profile_->ClearTheme();
   return true;
 }
