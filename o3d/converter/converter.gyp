@@ -73,22 +73,8 @@
         ],
         ['OS == "win"',
           {
-            'actions': [
-              {
-                'action_name': 'd3dx9_36_dll_copy',
-                'inputs': [
-                  '$(DXSDK_DIR)/runtime/x86/d3dx9d_36.dll',
-                ],
-                'outputs': [
-                  '<(PRODUCT_DIR)/d3dx9_36.dll',
-                ],
-                'action': [
-                  'cp',
-                  '-f',
-                  '<@(_inputs)',
-                  '<@(_outputs)',
-                ],
-              },
+            'dependencies': [
+              '../build/libs.gyp:dx_dll',
             ],
             'msvs_settings': {
               'VCLinkerTool': {
