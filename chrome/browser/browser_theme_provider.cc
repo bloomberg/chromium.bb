@@ -44,6 +44,7 @@ const char* BrowserThemeProvider::kColorBookmarkText = "bookmark_text";
 const char* BrowserThemeProvider::kColorNTPBackground = "ntp_background";
 const char* BrowserThemeProvider::kColorNTPText = "ntp_text";
 const char* BrowserThemeProvider::kColorNTPLink = "ntp_link";
+const char* BrowserThemeProvider::kColorNTPHeader = "ntp_header";
 const char* BrowserThemeProvider::kColorNTPSection = "ntp_section";
 const char* BrowserThemeProvider::kColorNTPSectionText = "ntp_section_text";
 const char* BrowserThemeProvider::kColorNTPSectionLink = "ntp_section_link";
@@ -105,12 +106,14 @@ const SkColor BrowserThemeProvider::kDefaultColorNTPText =
     SkColorSetRGB(0, 0, 0);
 const SkColor BrowserThemeProvider::kDefaultColorNTPLink =
     SkColorSetRGB(0, 0, 0);
-const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
+const SkColor BrowserThemeProvider::kDefaultColorNTPHeader =
     SkColorSetRGB(75, 140, 220);
+const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
+    SkColorSetRGB(229, 239, 254);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText =
-    SkColorSetRGB(255, 255, 255);
+    SkColorSetRGB(0, 0, 0);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionLink =
-    SkColorSetRGB(127, 148, 173);
+    SkColorSetRGB(16, 50, 105);
 const SkColor BrowserThemeProvider::kDefaultColorControlBackground = NULL;
 const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
 
@@ -282,6 +285,8 @@ const std::string BrowserThemeProvider::GetColorKey(int id) {
       return kColorNTPText;
     case COLOR_NTP_LINK:
       return kColorNTPLink;
+    case COLOR_NTP_HEADER:
+      return kColorNTPHeader;
     case COLOR_NTP_SECTION:
       return kColorNTPSection;
     case COLOR_NTP_SECTION_TEXT:
@@ -322,6 +327,8 @@ SkColor BrowserThemeProvider::GetDefaultColor(int id) {
       return kDefaultColorNTPText;
     case COLOR_NTP_LINK:
       return kDefaultColorNTPLink;
+    case COLOR_NTP_HEADER:
+      return kDefaultColorNTPHeader;
     case COLOR_NTP_SECTION:
       return kDefaultColorNTPSection;
     case COLOR_NTP_SECTION_TEXT:
@@ -340,6 +347,16 @@ SkColor BrowserThemeProvider::GetDefaultColor(int id) {
 
 SkColor BrowserThemeProvider::GetColor(int id) {
   DCHECK(CalledOnValidThread());
+
+  // Special-case NTP header - if the color isn't provided, we fall back to
+  // the section color.
+  if (id == COLOR_NTP_HEADER) {
+    if (colors_.find(kColorNTPHeader) != colors_.end())
+      return colors_[kColorNTPHeader];
+    else if (colors_.find(kColorNTPSection) != colors_.end())
+      return colors_[kColorNTPSection];
+    return GetDefaultColor(id);
+  }
 
   // TODO(glen): Figure out if we need to tint these. http://crbug.com/11578
   ColorMap::iterator color_iter = colors_.find(GetColorKey(id));
@@ -426,15 +443,16 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   SetTintData(extension->GetThemeTints());
   SetDisplayPropertyData(extension->GetThemeDisplayProperties());
   raw_data_.clear();
-  GenerateFrameColors();
-  GenerateFrameImages();
-  GenerateTabImages();
 
   SaveImageData(extension->GetThemeImages());
   SaveColorData();
   SaveTintData();
   SaveDisplayPropertyData();
   SaveThemeID(extension->id());
+
+  GenerateFrameColors();
+  GenerateFrameImages();
+  GenerateTabImages();
 
   NotifyThemeChanged();
   UserMetrics::RecordAction(L"Themes_Installed", profile_);

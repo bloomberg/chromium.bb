@@ -38,6 +38,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   static const char* kColorNTPBackground;
   static const char* kColorNTPText;
   static const char* kColorNTPLink;
+  static const char* kColorNTPHeader;
   static const char* kColorNTPSection;
   static const char* kColorNTPSectionText;
   static const char* kColorNTPSectionLink;
@@ -83,6 +84,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   static const SkColor kDefaultColorNTPBackground;
   static const SkColor kDefaultColorNTPText;
   static const SkColor kDefaultColorNTPLink;
+  static const SkColor kDefaultColorNTPHeader;
   static const SkColor kDefaultColorNTPSection;
   static const SkColor kDefaultColorNTPSectionText;
   static const SkColor kDefaultColorNTPSectionLink;
@@ -114,6 +116,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
     COLOR_NTP_BACKGROUND,
     COLOR_NTP_TEXT,
     COLOR_NTP_LINK,
+    COLOR_NTP_HEADER,
     COLOR_NTP_SECTION,
     COLOR_NTP_SECTION_TEXT,
     COLOR_NTP_SECTION_LINK,

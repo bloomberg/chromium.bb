@@ -16,11 +16,14 @@ body {
 #main {
   background: url(chrome://theme/product_logo?$1) no-repeat 0 8px;
 }
+.thumbnail {
+  border-color: $$1; /* COLOR_NTP_SECTION */
+}
 .thumbnail-container,
 .list > .thumbnail-container > .title,
 .list .title > div,
 .thumbnail-container > .title {
-  color: $8;
+  color: $9;
 }
 .thumbnail-container:focus .thumbnail,
 .thumbnail-container:hover .thumbnail {
@@ -45,14 +48,15 @@ body {
   background-color: $7;
   color: white;
 }
-.tips-title {
-  color: $$1;
-}
 
-/* TODO(arv): The theme does not have the thumbnail outline color in non hover
-   mode
 #recently-closed {
-  border-color:
-  background-color:
+  border-color: $$2; /* color_section_border */
+  background-color: $$1; /* COLOR_NTP_SECTION */
+  color: $$3; /* COLOR_NTP_SECTION_TEXT */
 }
-*/
+#recently-closed span,
+#recently-closed a,
+#recently-closed a:link {
+  color: $$4; /* COLOR_NTP_SECTION_LINK */
+  text-decoration:underline;
+}

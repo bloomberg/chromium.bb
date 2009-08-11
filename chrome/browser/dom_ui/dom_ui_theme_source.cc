@@ -106,12 +106,23 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   SkColor color_section_link =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK);
 
-  // Generate a lighter color.
-  skia::HSL section_lighter;
-  skia::SkColorToHSL(color_section, section_lighter);
-  section_lighter.l += (1 - section_lighter.l) * 0.33;
-  SkColor color_section_lighter =
-      skia::HSLToSkColor(SkColorGetA(color_section), section_lighter);
+  SkColor color_header =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER);
+  // Generate a lighter color for the header gradients.
+  skia::HSL header_lighter;
+  skia::SkColorToHSL(color_header, header_lighter);
+  header_lighter.l += (1 - header_lighter.l) * 0.33;
+  SkColor color_header_gradient_light =
+      skia::HSLToSkColor(SkColorGetA(color_header), header_lighter);
+
+  // Generate section border color from the header color. See
+  // BookmarkBarView::Paint for how we do this for the bookmark bar
+  // borders.
+  SkColor color_section_border =
+      SkColorSetARGB(80,
+                     SkColorGetR(color_header),
+                     SkColorGetG(color_header),
+                     SkColorGetB(color_header));
 
   // Generate the replacements.
   std::vector<string16> subst;
@@ -128,13 +139,15 @@ void DOMUIThemeSource::SendNewTabCSS(int request_id) {
   subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(false)));  // $3
   subst.push_back(UTF8ToUTF16(GetNewTabBackgroundCSS(true)));  // $4
   subst.push_back(UTF8ToUTF16(GetNewTabBackgroundTilingCSS()));  // $5
-  subst.push_back(SkColorToRGBAString(color_section));  // $6
-  subst.push_back(SkColorToRGBAString(color_section_lighter));  // $7
+  subst.push_back(SkColorToRGBAString(color_header));  // $6
+  subst.push_back(SkColorToRGBAString(color_header_gradient_light));  // $7
   subst.push_back(SkColorToRGBAString(color_text));  // $8
   subst.push_back(SkColorToRGBAString(color_link));  // $9
 
-  subst2.push_back(SkColorToRGBAString(color_section_text));  // $$1
-  subst2.push_back(SkColorToRGBAString(color_section_link));  // $$2
+  subst2.push_back(SkColorToRGBAString(color_section));  // $$1
+  subst2.push_back(SkColorToRGBAString(color_section_border));  // $$2
+  subst2.push_back(SkColorToRGBAString(color_section_text));  // $$3
+  subst2.push_back(SkColorToRGBAString(color_section_link));  // $$4
 
   // Get our template.
   static const StringPiece new_tab_theme_css(
