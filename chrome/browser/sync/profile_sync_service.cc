@@ -32,9 +32,13 @@
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 
+// Default sync server URL.	
+static const char kSyncServerUrl[] = "https://clients4.google.com/chrome-sync";	
+
 ProfileSyncService::ProfileSyncService(Profile* profile)
     : last_auth_error_(AUTH_ERROR_NONE),
       profile_(profile),
+      sync_service_url_(kSyncServerUrl),
       backend_initialized_(false),
       expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
@@ -72,8 +76,6 @@ void ProfileSyncService::InitSettings() {
                      << "is invalid: " << value;
       }
     }
-  } else {
-    NOTREACHED() << "--sync-url is required when sync is enabled.";
   }
 
   if (command_line.HasSwitch(switches::kSyncServicePort)) {
