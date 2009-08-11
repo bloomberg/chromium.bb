@@ -1047,3 +1047,11 @@
    fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELj0EEE
    fun:_ZN7WebCore9CSSParser15createStyleRuleEPN3WTF6VectorIPNS_11CSSSelectorELj0EEE
 }
+{
+   bug_18984
+   Memcheck:Free
+   fun:_ZdlPv
+   fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELj0EEE
+   fun:_Z10cssyyparsePv
+   fun:_ZN7WebCore9CSSParser13parseSelectorERKNS_6StringEPNS_8DocumentERNS_15CSSSelectorListE
+}
