@@ -171,10 +171,14 @@ void BrowserToolbarGtk::Init(Profile* profile,
   back_.reset(new BackForwardButtonGtk(browser_, false));
   gtk_box_pack_start(GTK_BOX(back_forward_hbox_), back_->widget(), FALSE,
                      FALSE, 0);
+  g_signal_connect(back_->widget(), "clicked",
+                   G_CALLBACK(OnButtonClick), this);
 
   forward_.reset(new BackForwardButtonGtk(browser_, true));
   gtk_box_pack_start(GTK_BOX(back_forward_hbox_), forward_->widget(), FALSE,
                      FALSE, 0);
+  g_signal_connect(forward_->widget(), "clicked",
+                   G_CALLBACK(OnButtonClick), this);
   gtk_box_pack_start(GTK_BOX(toolbar_), back_forward_hbox_, FALSE, FALSE, 0);
 
   reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
@@ -612,13 +616,21 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
 // static
 void BrowserToolbarGtk::OnButtonClick(GtkWidget* button,
                                       BrowserToolbarGtk* toolbar) {
+  if ((button == toolbar->back_->widget()) ||
+      (button == toolbar->forward_->widget())) {
+    toolbar->location_bar_->Revert();
+    return;
+  }
+
   int tag = -1;
-  if (button == toolbar->reload_->widget())
+  if (button == toolbar->reload_->widget()) {
     tag = IDC_RELOAD;
-  else if (toolbar->home_.get() && button == toolbar->home_->widget())
+    toolbar->location_bar_->Revert();
+  } else if (toolbar->home_.get() && button == toolbar->home_->widget()) {
     tag = IDC_HOME;
-  else if (button == toolbar->star_->widget())
+  } else if (button == toolbar->star_->widget()) {
     tag = IDC_STAR;
+  }
 
   DCHECK_NE(tag, -1) << "Unexpected button click callback";
   toolbar->browser_->ExecuteCommandWithDisposition(tag,
