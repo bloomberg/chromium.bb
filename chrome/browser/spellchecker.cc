@@ -86,6 +86,13 @@ FilePath GetFallbackDictionaryDownloadDirectory() {
   return dict_dir_userdata;
 }
 
+bool SaveBufferToFile(const std::string& data,
+                      FilePath file_to_write) {
+  int num_bytes = data.length();
+  return file_util::WriteFile(file_to_write, data.data(), num_bytes) ==
+      num_bytes;
+}
+
 }
 
 void SpellChecker::SpellCheckLanguages(std::vector<std::string>* languages) {
@@ -204,162 +211,6 @@ int SpellChecker::GetSpellCheckLanguages(
   return -1;
 }
 
-// This is a helper class which acts as a proxy for invoking a task from the
-// file loop back to the IO loop. Invoking a task from file loop to the IO
-// loop directly is not safe as during browser shutdown, the IO loop tears
-// down before the file loop. To avoid a crash, this object is invoked in the
-// UI loop from the file loop, from where it gets the IO thread directly from
-// g_browser_process and invokes the given task in the IO loop if it is not
-// NULL. This object also takes ownership of the given task.
-class UIProxyForIOTask : public Task {
- public:
-  explicit UIProxyForIOTask(Task* spellchecker_flag_set_task)
-      : spellchecker_flag_set_task_(spellchecker_flag_set_task) {
-  }
-
- private:
-  void Run() {
-    // This has been invoked in the UI thread.
-    base::Thread* io_thread = g_browser_process->io_thread();
-    if (io_thread) {  // io_thread has not been torn down yet.
-      MessageLoop* io_loop = io_thread->message_loop();
-      if (io_loop) {
-        io_loop->PostTask(FROM_HERE, spellchecker_flag_set_task_);
-        spellchecker_flag_set_task_ = NULL;
-      }
-    }
-  }
-
-  Task* spellchecker_flag_set_task_;
-  DISALLOW_COPY_AND_ASSIGN(UIProxyForIOTask);
-};
-
-// ############################################################################
-// This part of the spellchecker code is used for downloading spellchecking
-// dictionary if required. This code is included in this file since dictionary
-// is an integral part of spellchecker.
-
-// Design: The spellchecker initializes hunspell_ in the Initialize() method.
-// This is done using the dictionary file on disk, for example, "en-US.bdic".
-// If this file is missing, a |DictionaryDownloadController| object is used to
-// download the missing files asynchronously (using URLFetcher) in the file
-// thread. Initialization of hunspell_ is held off during this process. After
-// the dictionary downloads (or fails to download), corresponding flags are set
-// in spellchecker - in the IO thread. Since IO thread goes first during closing
-// of browser, a proxy task |UIProxyForIOTask| is created in the UI thread,
-// which obtains the IO thread independently and invokes the task in the IO
-// thread if it's not NULL. After the flags are cleared, a (final) attempt is
-// made to initialize hunspell_. If it fails even then (dictionary could not
-// download), no more attempts are made to initialize it.
-
-// ############################################################################
-
-// This object downloads the dictionary files asynchronously by first
-// fetching it to memory using URL fetcher and then writing it to
-// disk using file_util::WriteFile.
-
-class SpellChecker::DictionaryDownloadController
-    : public URLFetcher::Delegate,
-      public base::RefCountedThreadSafe<DictionaryDownloadController> {
- public:
-  DictionaryDownloadController(
-      Task* spellchecker_flag_set_task,
-      const FilePath& dic_file_path,
-      URLRequestContext* url_request_context,
-      MessageLoop* ui_loop)
-      : spellchecker_flag_set_task_(spellchecker_flag_set_task),
-        url_request_context_(url_request_context),
-        ui_loop_(ui_loop) {
-    // Determine dictionary file path and name.
-    dic_zip_file_path_ = dic_file_path.DirName();
-    file_name_ = dic_file_path.BaseName();
-  }
-
-  // Save the file in memory buffer to the designated dictionary file.
-  // returns the number of bytes it could save.
-  // Invoke this on the file thread.
-  void StartDownload() {
-    static const char kDownloadServerUrl[] =
-        "http://cache.pack.google.com/edgedl/chrome/dict/";
-
-    GURL url = GURL(std::string(kDownloadServerUrl) + WideToUTF8(
-                        l10n_util::ToLower(file_name_.ToWStringHack())));
-    fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
-    fetcher_->set_request_context(url_request_context_);
-    fetcher_->Start();
-  }
-
- private:
-  // The file has been downloaded in memory - need to write it down to file.
-  bool SaveBufferToFile(const std::string& data,
-                        FilePath file_to_write) {
-    int num_bytes = data.length();
-    return file_util::WriteFile(file_to_write, data.data(), num_bytes) ==
-        num_bytes;
-  }
-
-  // URLFetcher::Delegate interface.
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data) {
-    DCHECK(source);
-    if ((response_code / 100) == 2 ||
-        response_code == 401 ||
-        response_code == 407) {
-      FilePath file_to_write = dic_zip_file_path_.Append(file_name_);
-      if (!SaveBufferToFile(data, file_to_write)) {
-        // Try saving it to user data/Dictionaries, which almost surely has
-        // write permission. If even this fails, there is nothing to be done.
-        FilePath user_data_dir = GetFallbackDictionaryDownloadDirectory();
-
-        // Create the directory if it does not exist.
-        if (!file_util::PathExists(user_data_dir))
-          file_util::CreateDirectory(user_data_dir);
-
-        file_to_write = user_data_dir.Append(file_name_);
-        SaveBufferToFile(data, file_to_write);
-      }
-    }  // Unsuccessful save is taken care of in SpellChecker::Initialize().
-
-    // Set Flag that dictionary is not downloading anymore.
-    ui_loop_->PostTask(FROM_HERE,
-                       new UIProxyForIOTask(spellchecker_flag_set_task_));
-    fetcher_.reset(NULL);
-  }
-
-  // factory object to invokelater back to spellchecker in io thread on
-  // download completion to change appropriate flags.
-  Task* spellchecker_flag_set_task_;
-
-  // URLRequestContext to be used by URLFetcher. This is obtained from profile.
-  // The ownership remains with the profile.
-  URLRequestContext* url_request_context_;
-
-  // URLFetcher to fetch the file in memory.
-  scoped_ptr<URLFetcher> fetcher_;
-
-  // The file path where both the dic files have to be written locally.
-  FilePath dic_zip_file_path_;
-
-  // The name of the file which has to be stored locally.
-  FilePath file_name_;
-
-  // this invokes back to io loop when downloading is over.
-  MessageLoop* ui_loop_;
-  DISALLOW_COPY_AND_ASSIGN(DictionaryDownloadController);
-};
-
-void SpellChecker::set_file_is_downloading(bool value) {
-  dic_is_downloading_ = value;
-}
-
-// ################################################################
-// This part of the code is used for spell checking.
-// ################################################################
-
 FilePath SpellChecker::GetVersionedFileName(const std::string& input_language,
                                             const FilePath& dict_dir) {
   // The default dictionary version is 1-2. These versions have been augmented
@@ -425,8 +276,7 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
       dic_is_downloading_(false),
       auto_spell_correct_turned_on_(false),
       is_using_platform_spelling_engine_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          dic_download_state_changer_factory_(this)) {
+      fetcher_(NULL) {
   if (SpellCheckerPlatform::SpellCheckerAvailable()) {
     SpellCheckerPlatform::Init();
     if (SpellCheckerPlatform::PlatformSupportsLanguage(language)) {
@@ -437,8 +287,8 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
     }
   }
 
-  // Remember UI loop to later use this as a proxy to get IO loop.
-  ui_loop_ = MessageLoop::current();
+  // Get the corresponding BDIC file name.
+  bdic_file_name_ = GetVersionedFileName(language, dict_dir).BaseName();
 
   // Get File Loop - hunspell gets initialized here.
   base::Thread* file_thread = g_browser_process->file_thread();
@@ -468,18 +318,48 @@ SpellChecker::~SpellChecker() {
 #endif
 }
 
-void SpellChecker::StartDictionaryDownloadInFileThread(
-    const FilePath& file_name) {
-  Task* dic_task = dic_download_state_changer_factory_.NewRunnableMethod(
-      &SpellChecker::set_file_is_downloading, false);
-  ddc_dic_ = new DictionaryDownloadController(dic_task, file_name,
-      url_request_context_, ui_loop_);
-  set_file_is_downloading(true);
-  file_loop_->PostTask(FROM_HERE, NewRunnableMethod(ddc_dic_.get(),
-      &DictionaryDownloadController::StartDownload));
+void SpellChecker::StartDictionaryDownload(const FilePath& file_name) {
+  // Determine URL of file to download.
+  static const char kDownloadServerUrl[] =
+      "http://cache.pack.google.com/edgedl/chrome/dict/";
+  GURL url = GURL(std::string(kDownloadServerUrl) + WideToUTF8(
+      l10n_util::ToLower(bdic_file_name_.ToWStringHack())));
+  fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
+  fetcher_->set_request_context(url_request_context_);
+  dic_is_downloading_ = true;
+  fetcher_->Start();
 }
 
-// Initialize SpellChecker. In this method, if the dicitonary is not present
+void SpellChecker::OnURLFetchComplete(const URLFetcher* source,
+                                      const GURL& url,
+                                      const URLRequestStatus& status,
+                                      int response_code,
+                                      const ResponseCookies& cookies,
+                                      const std::string& data) {
+  DCHECK(source);
+  if ((response_code / 100) == 2 ||
+      response_code == 401 ||
+      response_code == 407) {
+    FilePath file_to_write = given_dictionary_directory_.Append(
+        bdic_file_name_);
+    if (!SaveBufferToFile(data, file_to_write)) {
+      // Try saving it to user data/Dictionaries, which almost surely has
+      // write permission. If even this fails, there is nothing to be done.
+      FilePath user_data_dir = GetFallbackDictionaryDownloadDirectory();
+
+      // Create the directory if it does not exist.
+      if (!file_util::PathExists(user_data_dir))
+        file_util::CreateDirectory(user_data_dir);
+
+      file_to_write = user_data_dir.Append(bdic_file_name_);
+      SaveBufferToFile(data, file_to_write);
+    }
+  }  // Unsuccessful save is taken care of in SpellChecker::Initialize().
+
+  dic_is_downloading_ = false;
+}
+
+// Initialize SpellChecker. In this method, if the dictionary is not present
 // in the local disk, it is fetched asynchronously.
 // TODO(sidchat): After dictionary is downloaded, initialize hunspell in
 // file loop - this is currently being done in the io loop.
@@ -526,7 +406,7 @@ bool SpellChecker::Initialize() {
     // Download the dictionary file.
     if (file_loop_ && url_request_context_) {
       if (!tried_to_download_dictionary_file_) {
-        StartDictionaryDownloadInFileThread(dictionary_file_name_app);
+        StartDictionaryDownload(dictionary_file_name_app);
         tried_to_download_dictionary_file_ = true;
         return false;
       } else {  // There is no dictionary even after trying to download it.
