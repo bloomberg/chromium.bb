@@ -1,5 +1,49 @@
 [
   {
+    "namespace": "extension",
+    "types": [
+      {
+        "id": "Port",
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "onDisconnect": {"type": "object"},
+          "onMessage": {"type": "object"},
+          "postMessage": {"type": "function"}
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "connect",
+        "type": "function",
+        "description": "Attempts to connect to other listeners within the extension (listeners may be toolstrips or the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href='broken'><var>chrome.tabs.connectToTab</var></a>.",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Will be passed into onConnect for extension processes that are listening for the connection event.",
+            "optional": true
+          }
+        ],
+        "returns": {
+          "$ref": "Port",
+          "description": "Port through which messages can be sent and received with the extension."
+        }
+      }
+    ],
+    "events": [
+      {
+        "name": "onConnect",
+        "type": "function",
+        "description": "Fired when a connection is made from either an extension process or a content script.",
+        "parameters": [
+          {"$ref": "Port", "name": "port"}
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "self",
     "types": [
     ],
@@ -211,15 +255,6 @@
           "title": {"type": "string", "optional": true},
           "favIconUrl": {"type": "string", "optional": true}
         }
-      },
-      {
-        "id": "Port",
-        "type": "object",
-        "properties": {
-          "name": {"type": "string"},
-          "onDisconnect": {"type": "object"},
-          "onMessage": {"type": "object"}
-        }
       }
     ],
     "functions": [
@@ -258,7 +293,7 @@
         "parameters": [
           {"type": "integer", "name": "windowId", "minimum": 0, "optional": true},
           {
-            "type": "function", 
+            "type": "function",
             "name": "callback",
             "parameters": [
               {"name": "tab", "$ref": "Tab"}
@@ -273,7 +308,7 @@
         "parameters": [
           {"type": "integer", "name": "windowId", "minimum": 0, "optional": true},
           {
-            "type": "function", 
+            "type": "function",
             "name": "callback",
             "parameters": [
               {"name": "tabs", "type": "array", "items": { "$ref": "Tab" } }
@@ -537,10 +572,10 @@
             "choices": [
               {"type": "string"},
               {"type": "array", "items": {"type": "string"}, "minItems": 1}
-            ] 
+            ]
           },
           {
-            "type": "function", 
+            "type": "function",
             "name": "callback",
             "parameters": [
               {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
@@ -569,7 +604,7 @@
         "description": "Retrieves the entire Bookmarks hierarchy.",
         "parameters": [
           {
-            "type": "function", 
+            "type": "function",
             "name": "callback",
             "parameters": [
               {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
@@ -584,7 +619,7 @@
         "parameters": [
           {"type": "string", "name": "query"},
           {
-            "type": "function", 
+            "type": "function",
             "name": "callback",
             "parameters": [
               {"name": "results", "type": "array", "items": { "$ref": "BookmarkTreeNode"} }
@@ -608,7 +643,7 @@
             }
           },
           {
-            "type": "function", 
+            "type": "function",
             "name": "callback",
             "optional": true,
             "parameters": [

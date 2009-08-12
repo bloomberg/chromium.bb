@@ -119,8 +119,6 @@ function fetchContent(url, onSuccess, onError) {
         if (xhr.responseText) {
           window.clearTimeout(abortTimerId);
           onSuccess(xhr.responseText);
-        } else {
-          handleError("responseText empty.");
         }
       }
     }

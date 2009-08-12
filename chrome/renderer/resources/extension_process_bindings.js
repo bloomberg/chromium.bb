@@ -150,12 +150,17 @@ var chrome = chrome || {};
   }
 
   forEach(apiDefinitions, function(apiDef) {
-    var module = {};
-    chrome[apiDef.namespace] = module;
+    chrome[apiDef.namespace] = chrome[apiDef.namespace] || {};
+    var module = chrome[apiDef.namespace];
     
     // Setup Functions.
     if (apiDef.functions) {
       forEach(apiDef.functions, function(functionDef) {
+        // Module functions may have been defined earlier by hand. Don't clobber
+        // them.
+        if (module[functionDef.name])
+          return;
+
         var apiFunction = {};      
         apiFunction.definition = functionDef;
         apiFunction.name = apiDef.namespace + "." + functionDef.name;;
@@ -176,6 +181,11 @@ var chrome = chrome || {};
     // Setup Events
     if (apiDef.events) {
       forEach(apiDef.events, function(eventDef) {
+        // Module events may have been defined earlier by hand. Don't clobber
+        // them.
+        if (module[eventDef.name])
+          return;
+
         var eventName = apiDef.namespace + "." + eventDef.name;
         module[eventDef.name] = new chrome.Event(eventName);
       });
