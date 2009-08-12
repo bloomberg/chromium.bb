@@ -870,6 +870,10 @@
             # above, instead of ScrollbarThemeChromium.cpp.
             '../third_party/WebKit/WebCore/platform/chromium/ScrollbarThemeChromium.cpp',
 
+            # The Mac uses ImageSourceCG.cpp from platform/graphics/cg, included
+            # by regex above, instead.
+            '../third_party/WebKit/WebCore/platform/graphics/ImageSource.cpp',
+
             # These Skia files aren't currently built on the Mac, which uses
             # CoreGraphics directly for this portion of graphics handling.
             '../third_party/WebKit/WebCore/platform/graphics/skia/FloatPointSkia.cpp',
