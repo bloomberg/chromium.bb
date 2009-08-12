@@ -96,17 +96,15 @@
     return;
   }
 
-  // FIXME(viettrungluu@gmail.com): Don't ask me. I don't know what's going on.
-  // But it yields unquestionably right results (even when the menu has to flip
-  // upwards because you've stupidly dragged the top of the window to the bottom
-  // of the screen) -- this demonstrates that the y-coordinate (in our
-  // superview's coordinates) is right. The x-coordinate (in our coordinates) is
-  // right since the menu appears horizontally in the right place (more or
-  // less). The |- 2.0| factor is an inexplicable fudge to make it approximately
-  // line up. If someone figures out what's going on, please fix this.
-  NSRect frame = [self frame];
-  frame.origin.x = [self convertPoint:frame.origin
-                             fromView:[self superview]].x - 2.0;
+  // FIXME(viettrungluu@gmail.com): We have some fudge factors below to make
+  // things line up (approximately). I wish I knew how to get rid of them. (Note
+  // that our view is flipped, and that frame should be in our coordinates.)
+  // The y/height is very odd, since it doesn't seem to respond to changes the
+  // way that it should. I don't understand it.
+  NSRect frame = [self convertRect:[self frame]
+                          fromView:[self superview]];
+  frame.origin.x -= 2.0;
+  frame.size.height += 10.0;
 
   // Make our pop-up button cell and set things up. This is, as of 10.5, the
   // official Apple-recommended hack. Later, perhaps |-[NSMenu
