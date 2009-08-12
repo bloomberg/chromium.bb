@@ -122,7 +122,7 @@ TimeDelta BlockingDnsLookup(net::HostResolver* resolver,
 
   net::AddressList addresses;
   net::HostResolver::RequestInfo info(hostname, 80);
-  resolver->Resolve(info, &addresses, NULL, NULL);
+  resolver->Resolve(NULL, info, &addresses, NULL, NULL);
 
   return Time::Now() - start;
 }

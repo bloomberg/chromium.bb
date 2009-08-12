@@ -46,8 +46,7 @@ class ResolveProxyMsgHelper {
   // completion to |delegate|. Note that |delegate| must be live throughout
   // our lifespan. If |proxy_service| is NULL, then the current profile's
   // proxy service will be used.
-  explicit ResolveProxyMsgHelper(Delegate* delegate,
-                                 net::ProxyService* proxy_service);
+  ResolveProxyMsgHelper(Delegate* delegate, net::ProxyService* proxy_service);
 
   // Resolve proxies for |url|. Completion is notified through the delegate.
   // If multiple requests are started at the same time, they will run in

@@ -209,7 +209,7 @@ TEST_F(TCPClientSocketPoolTest, Basic) {
   TestCompletionCallback callback;
   ClientSocketHandle handle(pool_.get());
   HostResolver::RequestInfo info("www.google.com", 80);
-  int rv = handle.Init("a", info, 0, &callback);
+  int rv = handle.Init(NULL, "a", info, 0, &callback);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -226,7 +226,7 @@ TEST_F(TCPClientSocketPoolTest, InitHostResolutionFailure) {
   TestSocketRequest req(pool_.get(), &request_order_, &completion_count_);
   HostResolver::RequestInfo info("unresolvable.host.name", 80);
   EXPECT_EQ(ERR_IO_PENDING,
-            req.handle()->Init("a", info, kDefaultPriority, &req));
+            req.handle()->Init(NULL, "a", info, kDefaultPriority, &req));
   EXPECT_EQ(ERR_NAME_NOT_RESOLVED, req.WaitForResult());
 }
 
@@ -236,13 +236,13 @@ TEST_F(TCPClientSocketPoolTest, InitConnectionFailure) {
   TestSocketRequest req(pool_.get(), &request_order_, &completion_count_);
   HostResolver::RequestInfo info("a", 80);
   EXPECT_EQ(ERR_IO_PENDING,
-            req.handle()->Init("a", info, kDefaultPriority, &req));
+            req.handle()->Init(NULL, "a", info, kDefaultPriority, &req));
   EXPECT_EQ(ERR_CONNECTION_FAILED, req.WaitForResult());
 
   // Make the host resolutions complete synchronously this time.
   host_resolver_->set_synchronous_mode(true);
   EXPECT_EQ(ERR_CONNECTION_FAILED,
-            req.handle()->Init("a", info, kDefaultPriority, &req));
+            req.handle()->Init(NULL, "a", info, kDefaultPriority, &req));
 }
 
 TEST_F(TCPClientSocketPoolTest, PendingRequests) {
@@ -348,7 +348,7 @@ TEST_F(TCPClientSocketPoolTest, CancelRequestClearGroup) {
   TestSocketRequest req(pool_.get(), &request_order_, &completion_count_);
   HostResolver::RequestInfo info("www.google.com", 80);
   EXPECT_EQ(ERR_IO_PENDING,
-            req.handle()->Init("a", info, kDefaultPriority, &req));
+            req.handle()->Init(NULL, "a", info, kDefaultPriority, &req));
   req.handle()->Reset();
 
   PlatformThread::Sleep(100);
@@ -367,9 +367,9 @@ TEST_F(TCPClientSocketPoolTest, TwoRequestsCancelOne) {
 
   HostResolver::RequestInfo info("www.google.com", 80);
   EXPECT_EQ(ERR_IO_PENDING,
-            req.handle()->Init("a", info, kDefaultPriority, &req));
+            req.handle()->Init(NULL, "a", info, kDefaultPriority, &req));
   EXPECT_EQ(ERR_IO_PENDING,
-            req2.handle()->Init("a", info, kDefaultPriority, &req2));
+            req2.handle()->Init(NULL, "a", info, kDefaultPriority, &req2));
 
   req.handle()->Reset();
 
@@ -385,12 +385,14 @@ TEST_F(TCPClientSocketPoolTest, ConnectCancelConnect) {
   TestSocketRequest req(pool_.get(), &request_order_, &completion_count_);
 
   HostResolver::RequestInfo info("www.google.com", 80);
-  EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", info, kDefaultPriority, &callback));
+  EXPECT_EQ(ERR_IO_PENDING,
+            handle.Init(NULL, "a", info, kDefaultPriority, &callback));
 
   handle.Reset();
 
   TestCompletionCallback callback2;
-  EXPECT_EQ(ERR_IO_PENDING, handle.Init("a", info, kDefaultPriority, &callback2));
+  EXPECT_EQ(ERR_IO_PENDING,
+            handle.Init(NULL, "a", info, kDefaultPriority, &callback2));
 
   host_resolver_->set_synchronous_mode(true);
   // At this point, handle has two ConnectingSockets out for it.  Due to the
@@ -479,8 +481,8 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
     if (!within_callback_) {
       handle_->Reset();
       within_callback_ = true;
-      int rv = handle_->Init(
-          "a", HostResolver::RequestInfo("www.google.com", 80), 0, this);
+      int rv = handle_->Init(NULL, "a",
+          HostResolver::RequestInfo("www.google.com", 80), 0, this);
       EXPECT_EQ(OK, rv);
     }
   }
@@ -498,8 +500,8 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
 TEST_F(TCPClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle(pool_.get());
   RequestSocketCallback callback(&handle);
-  int rv = handle.Init(
-      "a", HostResolver::RequestInfo("www.google.com", 80), 0, &callback);
+  int rv = handle.Init(NULL, "a",
+      HostResolver::RequestInfo("www.google.com", 80), 0, &callback);
   ASSERT_EQ(ERR_IO_PENDING, rv);
 
   // The callback is going to request "www.google.com". We want it to complete

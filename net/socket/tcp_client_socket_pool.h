@@ -80,7 +80,8 @@ class TCPClientSocketPool : public ClientSocketPool {
 
   // ClientSocketPool methods:
 
-  virtual int RequestSocket(const std::string& group_name,
+  virtual int RequestSocket(LoadLog* load_log,
+                            const std::string& group_name,
                             const HostResolver::RequestInfo& resolve_info,
                             int priority,
                             ClientSocketHandle* handle,

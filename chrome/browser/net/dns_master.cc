@@ -48,7 +48,8 @@ class DnsMaster::LookupRequest {
     // to separate it from real navigations in the observer's callback, and
     // lets the HostResolver know it can de-prioritize it.
     resolve_info.set_is_speculative(true);
-    return resolver_.Resolve(resolve_info, &addresses_, &net_callback_);
+    return resolver_.Resolve(
+        NULL, resolve_info, &addresses_, &net_callback_);
   }
 
  private:

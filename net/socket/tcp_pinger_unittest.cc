@@ -68,7 +68,7 @@ TEST_F(TCPPingerTest, Ping) {
   scoped_refptr<net::HostResolver> resolver(net::CreateSystemHostResolver());
 
   net::HostResolver::RequestInfo info("localhost", listen_port_);
-  int rv = resolver->Resolve(info, &addr, NULL, NULL);
+  int rv = resolver->Resolve(NULL, info, &addr, NULL, NULL);
   EXPECT_EQ(rv, net::OK);
 
   net::TCPPinger pinger(addr);
@@ -84,7 +84,7 @@ TEST_F(TCPPingerTest, PingFail) {
   listen_sock_ = NULL;
 
   net::HostResolver::RequestInfo info("localhost", listen_port_);
-  int rv = resolver->Resolve(info, &addr, NULL, NULL);
+  int rv = resolver->Resolve(NULL, info, &addr, NULL, NULL);
   EXPECT_EQ(rv, net::OK);
 
   net::TCPPinger pinger(addr);

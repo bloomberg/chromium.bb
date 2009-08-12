@@ -57,7 +57,8 @@ class Client {
     driver_->ClientStarted();
     request_info_.url = url_;
     request_info_.method = "GET";
-    int state = transaction_->Start(&request_info_, &connect_callback_);
+    int state = transaction_->Start(
+        NULL, &request_info_, &connect_callback_);
     DCHECK(state == net::ERR_IO_PENDING);
   };
 

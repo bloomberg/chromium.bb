@@ -55,7 +55,7 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
   // Start the request.
   proxy_service_ = GetProxyService();
   int result = proxy_service_->ResolveProxy(
-      req.url, &proxy_info_, &callback_, &req.pac_req);
+      NULL, req.url, &proxy_info_, &callback_, &req.pac_req);
 
   // Completed synchronously.
   if (result != net::ERR_IO_PENDING)
