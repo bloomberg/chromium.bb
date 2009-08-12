@@ -66,6 +66,9 @@ inline bool CheckImageDimensions(unsigned int width, unsigned int height) {
   return width <= kMaxImageDimension && height <= kMaxImageDimension;
 }
 
+// Returns whether or not we can make mips.
+bool CanMakeMips(Texture::Format format);
+
 // Gets the number of mip-maps required for a full chain starting at
 // width x height.
 inline unsigned int ComputeMipMapCount(

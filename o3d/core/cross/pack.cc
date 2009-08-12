@@ -181,7 +181,7 @@ Texture* Pack::CreateTextureFromBitmaps(
       O3D_ERROR(service_locator()) << "Bitmaps are not all the same dimensions";
       return NULL;
     }
-    if (generate_mipmaps) {
+    if (generate_mipmaps && image::CanMakeMips(bitmap->format())) {
       unsigned total_mips = image::ComputeMipMapCount(
         bitmap->width(), bitmap->height());
       // If we don't already have mips and we could use them then make them.

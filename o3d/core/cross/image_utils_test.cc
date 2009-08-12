@@ -72,6 +72,17 @@ TEST_F(ImageTest, ComputePOTSize) {
   EXPECT_EQ(image::ComputePOTSize(4096), 4096u);
 }
 
+TEST_F(ImageTest, CanMakeMips) {
+  EXPECT_TRUE(image::CanMakeMips(Texture::Format::XRGB8));
+  EXPECT_TRUE(image::CanMakeMips(Texture::Format::ARGB8));
+  EXPECT_TRUE(image::CanMakeMips(Texture::Format::ABGR16F));
+  EXPECT_TRUE(image::CanMakeMips(Texture::Format::R32F));
+  EXPECT_TRUE(image::CanMakeMips(Texture::Format::ABGR32F));
+  EXPECT_FALSE(image::CanMakeMips(Texture::Format::DXT1));
+  EXPECT_FALSE(image::CanMakeMips(Texture::Format::DXT3));
+  EXPECT_FALSE(image::CanMakeMips(Texture::Format::DXT5));
+};
+
 static const uint8 kScaleUPDataNPOT[] = {
   // This is a 3x3 image.
   0x75, 0x58, 0x7b, 0x76,

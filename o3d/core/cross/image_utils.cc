@@ -141,6 +141,10 @@ unsigned int GetNumComponentsForFormat(o3d::Texture::Format format) {
   return 0;
 }
 
+bool CanMakeMips(o3d::Texture::Format format) {
+  return GetNumComponentsForFormat(format) != 0;
+}
+
 namespace {
 
 static const float kEpsilon = 0.0001f;
