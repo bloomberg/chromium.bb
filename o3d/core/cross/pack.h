@@ -233,7 +233,7 @@ class Pack : public NamedObject {
   //   raw_data: contains the bitmap data in one of the know formats.
   // Returns:
   //   bitmaps: A vector of pointers to bitmaps. If empty there was an error.
-  std::vector<Bitmap*> Pack::CreateBitmapsFromRawData(RawData* raw_data);
+  std::vector<Bitmap*> CreateBitmapsFromRawData(RawData* raw_data);
 
   // Creates a new Texture2D object of the specified size and format and
   // reserves the necessary resources for it.
