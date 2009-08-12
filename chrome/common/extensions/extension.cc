@@ -952,6 +952,25 @@ std::set<FilePath> Extension::GetBrowserImages() {
   return image_paths;
 }
 
+Extension::PermissionClass Extension::GetPermissionClass() {
+  // Native code can do anything. Highest class.
+  if (!plugins_.empty())
+    return PERMISSION_CLASS_FULL;
+
+  // Access to other sites means the extension can steal cookies (login data)
+  // from those sites.
+  // TODO(mpcomplete): should we only classify for host access outside the
+  // extension's origin? how?
+  if (!host_permissions_.empty() || !content_scripts_.empty())
+    return PERMISSION_CLASS_HIGH;
+
+  // Extension can access history data, bookmarks, other personal info.
+  if (!api_permissions_.empty())
+    return PERMISSION_CLASS_MEDIUM;
+
+  return PERMISSION_CLASS_LOW;
+}
+
 bool Extension::GetBackgroundPageReady() {
   return background_page_ready_ || background_url().is_empty();
 }

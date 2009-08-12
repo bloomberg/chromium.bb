@@ -21,6 +21,14 @@ namespace errors = extension_manifest_errors;
 class ExtensionTest : public testing::Test {
 };
 
+static Value* ValueFromJSON(const std::string& json_string) {
+  std::string error;
+  JSONStringValueSerializer content_scripts(json_string);
+  Value* result = content_scripts.Deserialize(&error);
+  DCHECK(result) << error;
+  return result;
+}
+
 TEST(ExtensionTest, InitFromValueInvalid) {
 #if defined(OS_WIN)
   FilePath path(FILE_PATH_LITERAL("c:\\foo"));
@@ -454,4 +462,76 @@ TEST(ExtensionTest, MimeTypeSniffing) {
   EXPECT_TRUE(net::SniffMimeType(data.c_str(), data.size(),
               GURL("http://www.example.com/foo.crx"), "", &result));
   EXPECT_EQ("application/octet-stream", result);
+}
+
+TEST(ExtensionTest, PermissionClass) {
+#if defined(OS_WIN)
+  FilePath path(FILE_PATH_LITERAL("C:\\foo"));
+#elif defined(OS_POSIX)
+  FilePath path(FILE_PATH_LITERAL("/foo"));
+#endif
+  Extension::ResetGeneratedIdCounter();
+
+  Extension extension(path);
+  std::string error;
+  DictionaryValue bare_manifest;
+  scoped_ptr<DictionaryValue> manifest;
+
+  // Start with a minimalist extension.
+  bare_manifest.SetString(keys::kVersion, "1.0.0.0");
+  bare_manifest.SetString(keys::kName, "my extension");
+  EXPECT_TRUE(extension.InitFromValue(bare_manifest, false, &error));
+  EXPECT_EQ(Extension::PERMISSION_CLASS_LOW, extension.GetPermissionClass());
+
+  // Toolstrips don't affect the permission class.
+  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
+  manifest->Set(keys::kToolstrips, ValueFromJSON(
+      "[\"toolstrip.html\", \"toolstrip2.html\"]"));
+  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
+  EXPECT_EQ(Extension::PERMISSION_CLASS_LOW, extension.GetPermissionClass());
+
+  // Requesting API permissions bumps you to medium.
+  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
+  manifest->Set(keys::kPermissions, ValueFromJSON(
+      "[\"tabs\", \"bookmarks\"]"));
+  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
+  EXPECT_EQ(Extension::PERMISSION_CLASS_MEDIUM, extension.GetPermissionClass());
+
+  // Adding a content script bumps you to high.
+  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
+  manifest->Set(keys::kContentScripts, ValueFromJSON(
+      "[{"
+      "  \"matches\": [\"http://*.google.com/*\"],"
+      "  \"js\": [\"script.js\"]"
+      "}]"));
+  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
+  EXPECT_EQ(Extension::PERMISSION_CLASS_HIGH, extension.GetPermissionClass());
+
+  // ... or asking for a host permission.
+  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
+  manifest->Set(keys::kPermissions, ValueFromJSON(
+      "[\"tabs\", \"http://google.com/*\"]"));
+  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
+  EXPECT_EQ(Extension::PERMISSION_CLASS_HIGH, extension.GetPermissionClass());
+
+  // Using native code (NPAPI) is automatically the max class.
+  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
+  manifest->Set(keys::kPlugins, ValueFromJSON(
+      "[{\"path\": \"harddrive_exploder.dll\"}]"));
+  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
+  EXPECT_EQ(Extension::PERMISSION_CLASS_FULL, extension.GetPermissionClass());
+
+  // Using everything at once should obviously be the max class as well.
+  manifest.reset(static_cast<DictionaryValue*>(bare_manifest.DeepCopy()));
+  manifest->Set(keys::kPlugins, ValueFromJSON(
+      "[{\"path\": \"harddrive_exploder.dll\"}]"));
+  manifest->Set(keys::kPermissions, ValueFromJSON(
+      "[\"tabs\", \"http://google.com/*\"]"));
+  manifest->Set(keys::kContentScripts, ValueFromJSON(
+      "[{"
+      "  \"matches\": [\"http://*.google.com/*\"],"
+      "  \"js\": [\"script.js\"]"
+      "}]"));
+  EXPECT_TRUE(extension.InitFromValue(*manifest, false, &error));
+  EXPECT_EQ(Extension::PERMISSION_CLASS_FULL, extension.GetPermissionClass());
 }

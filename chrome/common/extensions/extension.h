@@ -62,6 +62,15 @@ class Extension {
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
 
+  // A classification of how dangerous an extension can be, based on what it has
+  // access to.
+  enum PermissionClass {
+    PERMISSION_CLASS_LOW = 0,  // green
+    PERMISSION_CLASS_MEDIUM,  // yellow
+    PERMISSION_CLASS_HIGH,  // orange
+    PERMISSION_CLASS_FULL,  // red
+  };
+
   // An NPAPI plugin included in the extension.
   struct PluginInfo {
     FilePath path;  // Path to the plugin.
@@ -204,6 +213,8 @@ class Extension {
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).
   std::set<FilePath> GetBrowserImages();
+
+  PermissionClass GetPermissionClass();
 
 
   // Runtime data:
