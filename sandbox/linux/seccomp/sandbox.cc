@@ -396,7 +396,7 @@ void Sandbox::startSandbox() {
     for (Maps::const_iterator iter = maps.begin(); iter != maps.end(); ++iter){
       Library* library = *iter;
       for (const char **ptr = libs; *ptr; ptr++) {
-        char *name = strstr(iter.name().c_str(), *ptr);
+        const char *name = strstr(iter.name().c_str(), *ptr);
         if (name) {
           char ch = name[strlen(*ptr)];
           if (ch < 'A' || (ch > 'Z' && ch < 'a') || ch > 'z') {
