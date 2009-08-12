@@ -8,6 +8,7 @@
       'ENABLE_CHANNEL_MESSAGING=1',
       'ENABLE_DATABASE=1',
       'ENABLE_DATAGRID=0',
+      'ENABLE_OFFLINE_WEB_APPLICATIONS=1',
       'ENABLE_DASHBOARD_SUPPORT=0',
       'ENABLE_DOM_STORAGE=1',
       'ENABLE_JAVASCRIPT_DEBUGGER=0',
@@ -611,8 +612,10 @@
         # JSC-only.
         ['exclude', '/third_party/WebKit/WebCore/inspector/JavaScript[^/]*\\.cpp$'],
 
-        # ENABLE_OFFLINE_WEB_APPLICATIONS only.
+        # ENABLE_OFFLINE_WEB_APPLICATIONS, exclude most of webcore's impl
         ['exclude', '/third_party/WebKit/WebCore/loader/appcache/'],
+        ['include', '/third_party/WebKit/WebCore/loader/appcache/ApplicationCacheHost\.h$'],
+        ['include', '/third_party/WebKit/WebCore/loader/appcache/DOMApplicationCache\.(h|cpp|idl)$'],
 
         # SVG_FILTERS only.
         ['exclude', '/third_party/WebKit/WebCore/(platform|svg)/graphics/filters/'],
@@ -630,9 +633,6 @@
 
         # JSC-only.
         '../third_party/WebKit/WebCore/inspector/JavaScriptCallFrame.idl',
-
-        # ENABLE_OFFLINE_WEB_APPLICATIONS only.
-        '../third_party/WebKit/WebCore/loader/appcache/DOMApplicationCache.idl',
 
         # ENABLE_GEOLOCATION only.
         '../third_party/WebKit/WebCore/page/Geolocation.idl',
@@ -975,6 +975,8 @@
         'api/public/x11/WebScreenInfoFactory.h',
         'api/public/mac/WebInputEventFactory.h',
         'api/public/mac/WebScreenInfoFactory.h',
+        'api/public/WebApplicationCacheHost.h',
+        'api/public/WebApplicationCacheHostClient.h',
         'api/public/WebBindings.h',
         'api/public/WebCache.h',
         'api/public/WebCanvas.h',
@@ -1036,6 +1038,7 @@
         'api/public/win/WebSandboxSupport.h',
         'api/public/win/WebScreenInfoFactory.h',
         'api/public/win/WebScreenInfoFactory.h',
+        'api/src/ApplicationCacheHost.cpp',
         'api/src/ChromiumBridge.cpp',
         'api/src/ChromiumCurrentTime.cpp',
         'api/src/ChromiumThreading.cpp',

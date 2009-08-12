@@ -20,6 +20,8 @@
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/weburlloader_impl.h"
 
+using WebKit::WebApplicationCacheHost;
+using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebData;
 using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
@@ -84,6 +86,11 @@ static int ToMessageID(WebLocalizedString::Name name) {
 WebKitClientImpl::WebKitClientImpl()
     : main_loop_(MessageLoop::current()),
       shared_timer_func_(NULL) {
+}
+
+WebApplicationCacheHost* WebKitClientImpl::createApplicationCacheHost(
+    WebApplicationCacheHostClient*) {
+  return NULL;
 }
 
 WebThemeEngine* WebKitClientImpl::themeEngine() {

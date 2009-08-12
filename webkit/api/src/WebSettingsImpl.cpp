@@ -230,9 +230,9 @@ void WebSettingsImpl::setTextDirectionSubmenuInclusionBehaviorNeverIncluded()
     m_settings->setTextDirectionSubmenuInclusionBehavior(WebCore::TextDirectionSubmenuNeverIncluded);
 }
 
-void WebSettingsImpl::setOfflineWebApplicationCacheEnabled(bool allow)
+void WebSettingsImpl::setOfflineWebApplicationCacheEnabled(bool enabled)
 {
-    m_settings->setOfflineWebApplicationCacheEnabled(allow);
+    m_settings->setOfflineWebApplicationCacheEnabled(enabled);
 }
 
 } // namespace WebKit

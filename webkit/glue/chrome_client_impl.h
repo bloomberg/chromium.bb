@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_CHROME_CLIENT_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 
 MSVC_PUSH_WARNING_LEVEL(0);
 #include "ChromeClientChromium.h"
@@ -124,6 +125,10 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
 
   virtual void exceededDatabaseQuota(WebCore::Frame*,
                                      const WebCore::String& databaseName);
+
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+  virtual void reachedMaxAppCacheSize(int64_t spaceNeeded) { NOTREACHED(); }
+#endif
 
   virtual void requestGeolocationPermissionForFrame(WebCore::Frame*, WebCore::Geolocation*) { }
 

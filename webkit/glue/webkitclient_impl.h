@@ -57,6 +57,9 @@ class WebKitClientImpl : public WebKit::WebKitClient {
       const WebKit::WebString& path, const WebKit::WebString& component);
   virtual bool makeAllDirectories(const WebKit::WebString& path);
 
+  virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
+      WebKit::WebApplicationCacheHostClient*);
+
  private:
   void DoTimeout() {
     if (shared_timer_func_)

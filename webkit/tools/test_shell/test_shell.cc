@@ -425,7 +425,7 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->remote_fonts_enabled = true;
         web_prefs_->local_storage_enabled = true;
         web_prefs_->session_storage_enabled = true;
-        web_prefs_->application_cache_enabled = true;
+        web_prefs_->application_cache_enabled = false;
     }
 }
 

@@ -41,6 +41,8 @@
 #endif
 
 namespace WebKit {
+    class WebApplicationCacheHost;
+    class WebApplicationCacheHostClient;
     class WebClipboard;
     class WebData;
     class WebMessagePortChannel;
@@ -68,6 +70,12 @@ namespace WebKit {
 
         // May return null on some platforms.
         virtual WebThemeEngine* themeEngine() = 0;
+
+
+        // Application Cache --------------------------------------------
+
+        // May return null if the process type doesn't involve appcaching.
+        virtual WebApplicationCacheHost* createApplicationCacheHost(WebApplicationCacheHostClient*) = 0;
 
 
         // DOM Storage --------------------------------------------------
