@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_GTK_OPTIONS_URL_PICKER_DIALOG_GTK_H_
 #define CHROME_BROWSER_GTK_OPTIONS_URL_PICKER_DIALOG_GTK_H_
 
-#include "app/table_model_observer.h"
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/common/gtk_tree.h"
 
 class GURL;
 class Profile;
 class PossibleURLModel;
 
-class UrlPickerDialogGtk : public TableModelObserver {
+class UrlPickerDialogGtk : public gtk_tree::ModelAdapter::Delegate {
  public:
   typedef Callback1<const GURL&>::Type UrlPickerCallback;
 
@@ -23,6 +23,9 @@ class UrlPickerDialogGtk : public TableModelObserver {
                      GtkWindow* parent);
 
   ~UrlPickerDialogGtk();
+
+  // gtk_tree::ModelAdapter::Delegate implementation.
+  virtual void SetColumnValues(int row, GtkTreeIter* iter);
 
  private:
   // Call the callback based on url entry.
@@ -33,19 +36,6 @@ class UrlPickerDialogGtk : public TableModelObserver {
 
   // Return the entry-formatted url for path in the sorted model.
   std::string GetURLForPath(GtkTreePath* path) const;
-
-  // Set the column values for |row| of |url_table_model_| in the
-  // |history_list_store_| at |iter|.
-  void SetColumnValues(int row, GtkTreeIter* iter);
-
-  // Add the values from |row| of |url_table_model_|.
-  void AddNodeToList(int row);
-
-  // TableModelObserver implementation.
-  virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
 
   // GTK sorting callbacks.
   static gint CompareTitle(GtkTreeModel* model, GtkTreeIter* a, GtkTreeIter* b,
@@ -95,6 +85,7 @@ class UrlPickerDialogGtk : public TableModelObserver {
 
   // The table model.
   scoped_ptr<PossibleURLModel> url_table_model_;
+  scoped_ptr<gtk_tree::ModelAdapter> url_table_adapter_;
 
   // Called if the user selects an url.
   UrlPickerCallback* callback_;

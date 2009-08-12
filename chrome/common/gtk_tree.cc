@@ -4,6 +4,7 @@
 
 #include "chrome/common/gtk_tree.h"
 
+#include "app/table_model.h"
 #include "base/logging.h"
 
 namespace gtk_tree {
@@ -31,6 +32,95 @@ gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
   int row = GetRowNumForPath(child_path);
   gtk_tree_path_free(child_path);
   return row;
+}
+
+void SelectAndFocusRowNum(int row, GtkTreeView* tree_view) {
+  GtkTreeModel* model = gtk_tree_view_get_model(tree_view);
+  if (!model) {
+    NOTREACHED();
+    return;
+  }
+  GtkTreeIter iter;
+  if (!gtk_tree_model_iter_nth_child(model, &iter, NULL, row)) {
+    NOTREACHED();
+    return;
+  }
+  GtkTreePath* path = gtk_tree_model_get_path(model, &iter);
+  gtk_tree_view_set_cursor(tree_view, path, NULL, FALSE);
+  gtk_tree_path_free(path);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//  ModelAdapter
+
+ModelAdapter::ModelAdapter(Delegate* delegate, GtkListStore* list_store,
+                           TableModel* table_model)
+    : delegate_(delegate), list_store_(list_store), table_model_(table_model) {
+  if (table_model)
+    table_model->SetObserver(this);
+}
+
+void ModelAdapter::SetModel(TableModel* table_model) {
+  table_model_ = table_model;
+  table_model_->SetObserver(this);
+}
+
+void ModelAdapter::AddNodeToList(int row) {
+  GtkTreeIter iter;
+  if (row == 0) {
+    gtk_list_store_prepend(list_store_, &iter);
+  } else {
+    GtkTreeIter sibling;
+    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &sibling, NULL,
+                                  row - 1);
+    gtk_list_store_insert_after(list_store_, &iter, &sibling);
+  }
+
+  delegate_->SetColumnValues(row, &iter);
+}
+
+void ModelAdapter::OnModelChanged() {
+  gtk_list_store_clear(list_store_);
+  delegate_->OnModelChanged();
+  for (int i = 0; i < table_model_->RowCount(); ++i)
+    AddNodeToList(i);
+  delegate_->OnAnyModelUpdate();
+}
+
+void ModelAdapter::OnItemsChanged(int start, int length) {
+  GtkTreeIter iter;
+  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,
+                                          NULL, start);
+  for (int i = 0; i < length; ++i) {
+    if (!rv) {
+      NOTREACHED();
+      return;
+    }
+    delegate_->SetColumnValues(start + i, &iter);
+    rv = gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store_), &iter);
+  }
+  delegate_->OnAnyModelUpdate();
+}
+
+void ModelAdapter::OnItemsAdded(int start, int length) {
+  for (int i = 0; i < length; ++i) {
+    AddNodeToList(start + i);
+  }
+  delegate_->OnAnyModelUpdate();
+}
+
+void ModelAdapter::OnItemsRemoved(int start, int length) {
+  GtkTreeIter iter;
+  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,
+                                          NULL, start);
+  for (int i = 0; i < length; ++i) {
+    if (!rv) {
+      NOTREACHED();
+      return;
+    }
+    rv = gtk_list_store_remove(list_store_, &iter);
+  }
+  delegate_->OnAnyModelUpdate();
 }
 
 }  // namespace gtk_tree

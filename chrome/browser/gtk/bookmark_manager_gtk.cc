@@ -274,39 +274,25 @@ void BookmarkManagerGtk::BookmarkNodeFavIconLoaded(BookmarkModel* model,
 }
 
 void BookmarkManagerGtk::OnModelChanged() {
-  BuildRightStore();
+  ResetRightStoreModel();
 }
 
-void BookmarkManagerGtk::OnItemsChanged(int start, int length) {
-  GtkTreeIter iter;
-  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(right_store_), &iter,
-                                          NULL, start);
-  for (int i = 0; i < length; ++i) {
-    if (!rv) {
-      NOTREACHED();
-      return;
-    }
-    SetRightSideColumnValues(start + i, &iter);
-    rv = gtk_tree_model_iter_next(GTK_TREE_MODEL(right_store_), &iter);
-  }
-}
-
-void BookmarkManagerGtk::OnItemsAdded(int start, int length) {
-  for (int i = 0; i < length; ++i) {
-    AddNodeToRightStore(start + i);
-  }
-}
-
-void BookmarkManagerGtk::OnItemsRemoved(int start, int length) {
-  for (int i = 0; i < length; ++i) {
-    GtkTreeIter iter;
-    if (!gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(right_store_), &iter,
-                                       NULL, start + i)) {
-      NOTREACHED();
-      return;
-    }
-    gtk_list_store_remove(right_store_, &iter);
-  }
+void BookmarkManagerGtk::SetColumnValues(int row, GtkTreeIter* iter) {
+  // TODO(estade): building the path could be optimized out when we aren't
+  // showing the path column.
+  const BookmarkNode* node = right_tree_model_->GetNodeForRow(row);
+  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model_, true);
+  std::wstring title =
+      right_tree_model_->GetText(row, IDS_BOOKMARK_TABLE_TITLE);
+  std::wstring url = right_tree_model_->GetText(row, IDS_BOOKMARK_TABLE_URL);
+  std::wstring path = right_tree_model_->GetText(row, IDS_BOOKMARK_TABLE_PATH);
+  gtk_list_store_set(right_store_, iter,
+                     RIGHT_PANE_PIXBUF, pixbuf,
+                     RIGHT_PANE_TITLE, WideToUTF8(title).c_str(),
+                     RIGHT_PANE_URL, WideToUTF8(url).c_str(),
+                     RIGHT_PANE_PATH, WideToUTF8(path).c_str(),
+                     RIGHT_PANE_ID, node->id(), -1);
+  g_object_unref(pixbuf);
 }
 
 // BookmarkManagerGtk, private -------------------------------------------------
@@ -472,6 +458,8 @@ GtkWidget* BookmarkManagerGtk::MakeRightPane() {
   right_store_ = gtk_list_store_new(RIGHT_PANE_NUM,
       GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_INT64);
+  right_tree_adapter_.reset(new gtk_tree::ModelAdapter(this, right_store_,
+                                                       NULL));
 
   title_column_ = gtk_tree_view_column_new();
   gtk_tree_view_column_set_title(title_column_,
@@ -638,9 +626,11 @@ void BookmarkManagerGtk::BuildLeftStore() {
 }
 
 void BookmarkManagerGtk::BuildRightStore() {
-  const BookmarkNode* node = GetFolder();
+  right_tree_adapter_->OnModelChanged();
+}
 
-  gtk_list_store_clear(right_store_);
+void BookmarkManagerGtk::ResetRightStoreModel() {
+  const BookmarkNode* node = GetFolder();
 
   if (node) {
     SaveColumnConfiguration();
@@ -677,10 +667,7 @@ void BookmarkManagerGtk::BuildRightStore() {
     gtk_drag_dest_unset(right_tree_view_);
   }
 
-  right_tree_model_->SetObserver(this);
-
-  for (int i = 0; i < right_tree_model_->RowCount(); ++i)
-    AddNodeToRightStore(i);
+  right_tree_adapter_->SetModel(right_tree_model_.get());
 }
 
 int64 BookmarkManagerGtk::GetRowIDAt(GtkTreeModel* model, GtkTreeIter* iter) {
@@ -733,38 +720,6 @@ std::vector<const BookmarkNode*> BookmarkManagerGtk::GetRightSelection() {
   g_list_free(paths);
 
   return nodes;
-}
-
-void BookmarkManagerGtk::SetRightSideColumnValues(int row, GtkTreeIter* iter) {
-  // TODO(estade): building the path could be optimized out when we aren't
-  // showing the path column.
-  const BookmarkNode* node = right_tree_model_->GetNodeForRow(row);
-  GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model_, true);
-  std::wstring title =
-      right_tree_model_->GetText(row, IDS_BOOKMARK_TABLE_TITLE);
-  std::wstring url = right_tree_model_->GetText(row, IDS_BOOKMARK_TABLE_URL);
-  std::wstring path = right_tree_model_->GetText(row, IDS_BOOKMARK_TABLE_PATH);
-  gtk_list_store_set(right_store_, iter,
-                     RIGHT_PANE_PIXBUF, pixbuf,
-                     RIGHT_PANE_TITLE, WideToUTF8(title).c_str(),
-                     RIGHT_PANE_URL, WideToUTF8(url).c_str(),
-                     RIGHT_PANE_PATH, WideToUTF8(path).c_str(),
-                     RIGHT_PANE_ID, node->id(), -1);
-  g_object_unref(pixbuf);
-}
-
-void BookmarkManagerGtk::AddNodeToRightStore(int row) {
-  GtkTreeIter iter;
-  if (row == 0) {
-    gtk_list_store_prepend(right_store_, &iter);
-  } else {
-    GtkTreeIter sibling;
-    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(right_store_), &sibling,
-                                  NULL, row - 1);
-    gtk_list_store_insert_after(right_store_, &iter, &sibling);
-  }
-
-  SetRightSideColumnValues(row, &iter);
 }
 
 void BookmarkManagerGtk::SizeColumn(GtkTreeViewColumn* column,

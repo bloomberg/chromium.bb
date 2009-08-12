@@ -9,10 +9,10 @@
 
 #include <gtk/gtk.h>
 
-#include "app/table_model_observer.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/common/gtk_tree.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class CookiesTableModel;
@@ -25,18 +25,16 @@ class Profile;
 // Once the CookiesView is shown, it is responsible for deleting itself when the
 // user closes the dialog.
 
-class CookiesView : public TableModelObserver {
+class CookiesView : public gtk_tree::ModelAdapter::Delegate {
  public:
   virtual ~CookiesView();
 
   // Create (if necessary) and show the cookie manager window.
   static void Show(Profile* profile);
 
-  // TableModelObserver implementation.
-  virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
+  // gtk_tree::ModelAdapter::Delegate implementation.
+  virtual void OnAnyModelUpdate();
+  virtual void SetColumnValues(int row, GtkTreeIter* iter);
 
  private:
   // Column ids for |list_store_|.
@@ -72,13 +70,6 @@ class CookiesView : public TableModelObserver {
 
   // Remove any cookies that are currently selected.
   void RemoveSelectedCookies();
-
-  // Set the column values for |row| of |cookies_table_model_| in the
-  // |list_store_| at |iter|.
-  void SetColumnValues(int row, GtkTreeIter* iter);
-
-  // Add the values from |row| of |cookies_table_model_|.
-  void AddNodeToList(int row);
 
   // Compare the value of the given column at the given rows.
   gint CompareRows(GtkTreeModel* model, GtkTreeIter* a, GtkTreeIter* b,
@@ -141,6 +132,7 @@ class CookiesView : public TableModelObserver {
 
   // The Cookies Table model.
   scoped_ptr<CookiesTableModel> cookies_table_model_;
+  scoped_ptr<gtk_tree::ModelAdapter> cookies_table_adapter_;
 
   // A factory to construct Runnable Methods so that we can be called back to
   // re-evaluate the model after the search query string changes.

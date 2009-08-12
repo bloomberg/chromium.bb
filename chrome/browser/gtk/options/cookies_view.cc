@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/time_format.h"
 #include "chrome/browser/cookies_table_model.h"
-#include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -233,8 +232,10 @@ void CookiesView::Init() {
 
   // Initialize model.
   cookies_table_model_.reset(new CookiesTableModel(profile_));
-  cookies_table_model_->SetObserver(this);
-  OnModelChanged();
+  cookies_table_adapter_.reset(
+      new gtk_tree::ModelAdapter(this, list_store_,
+                                 cookies_table_model_.get()));
+  cookies_table_adapter_->OnModelChanged();
 }
 
 void CookiesView::InitStylesAndShow() {
@@ -364,6 +365,10 @@ void CookiesView::RemoveSelectedCookies() {
   }
 }
 
+void CookiesView::OnAnyModelUpdate() {
+  EnableControls();
+}
+
 void CookiesView::SetColumnValues(int row, GtkTreeIter* iter) {
   SkBitmap bitmap = cookies_table_model_->GetIcon(row);
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
@@ -377,60 +382,6 @@ void CookiesView::SetColumnValues(int row, GtkTreeIter* iter) {
                      COL_COOKIE_NAME, WideToUTF8(name).c_str(),
                      -1);
   g_object_unref(pixbuf);
-}
-
-void CookiesView::AddNodeToList(int row) {
-  GtkTreeIter iter;
-  if (row == 0) {
-    gtk_list_store_prepend(list_store_, &iter);
-  } else {
-    GtkTreeIter sibling;
-    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &sibling,
-                                  NULL, row - 1);
-    gtk_list_store_insert_after(list_store_, &iter, &sibling);
-  }
-
-  SetColumnValues(row, &iter);
-}
-
-void CookiesView::OnModelChanged() {
-  gtk_list_store_clear(list_store_);
-  for (int i = 0; i < cookies_table_model_->RowCount(); ++i)
-    AddNodeToList(i);
-  EnableControls();
-}
-
-void CookiesView::OnItemsChanged(int start, int length) {
-  GtkTreeIter iter;
-  if (!gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_),
-                                     &iter, NULL, start)) {
-    NOTREACHED();
-    return;
-  }
-  for (int i = 0; i < length; ++i) {
-    SetColumnValues(start + i, &iter);
-    if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(list_store_), &iter)) {
-      NOTREACHED();
-      return;
-    }
-  }
-}
-
-void CookiesView::OnItemsAdded(int start, int length) {
-  NOTREACHED();
-}
-
-void CookiesView::OnItemsRemoved(int start, int length) {
-  for (int i = 0; i < length; ++i) {
-    GtkTreeIter iter;
-    if (!gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_), &iter,
-                                       NULL, start)) {
-      NOTREACHED();
-      return;
-    }
-    gtk_list_store_remove(list_store_, &iter);
-  }
-  EnableControls();
 }
 
 // Compare the value of the given column at the given rows.

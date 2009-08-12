@@ -150,7 +150,8 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
 
   // Loading data, showing dialog.
   url_table_model_.reset(new PossibleURLModel());
-  url_table_model_->SetObserver(this);
+  url_table_adapter_.reset(new gtk_tree::ModelAdapter(this, history_list_store_,
+                                                      url_table_model_.get()));
   url_table_model_->Reload(profile_);
 
   EnableControls();
@@ -203,48 +204,6 @@ void UrlPickerDialogGtk::SetColumnValues(int row, GtkTreeIter* iter) {
                      COL_DISPLAY_URL, WideToUTF8(url).c_str(),
                      -1);
   g_object_unref(pixbuf);
-}
-
-void UrlPickerDialogGtk::AddNodeToList(int row) {
-  GtkTreeIter iter;
-  if (row == 0) {
-    gtk_list_store_prepend(history_list_store_, &iter);
-  } else {
-    GtkTreeIter sibling;
-    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(history_list_store_), &sibling,
-                                  NULL, row - 1);
-    gtk_list_store_insert_after(history_list_store_, &iter, &sibling);
-  }
-
-  SetColumnValues(row, &iter);
-}
-
-void UrlPickerDialogGtk::OnModelChanged() {
-  gtk_list_store_clear(history_list_store_);
-  for (int i = 0; i < url_table_model_->RowCount(); ++i)
-    AddNodeToList(i);
-}
-
-void UrlPickerDialogGtk::OnItemsChanged(int start, int length) {
-  GtkTreeIter iter;
-  bool rv = gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(history_list_store_),
-                                          &iter, NULL, start);
-  for (int i = 0; i < length; ++i) {
-    if (!rv) {
-      NOTREACHED();
-      return;
-    }
-    SetColumnValues(start + i, &iter);
-    rv = gtk_tree_model_iter_next(GTK_TREE_MODEL(history_list_store_), &iter);
-  }
-}
-
-void UrlPickerDialogGtk::OnItemsAdded(int start, int length) {
-  NOTREACHED();
-}
-
-void UrlPickerDialogGtk::OnItemsRemoved(int start, int length) {
-  NOTREACHED();
 }
 
 // static

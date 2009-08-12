@@ -7,6 +7,11 @@
 
 #include <gtk/gtk.h>
 
+#include "app/table_model_observer.h"
+#include "base/basictypes.h"
+
+class TableModel;
+
 namespace gtk_tree {
 
 // Get the row number corresponding to |path|.
@@ -19,6 +24,54 @@ gint GetRowNumForIter(GtkTreeModel* model, GtkTreeIter* iter);
 // the parent tree model.
 gint GetTreeSortChildRowNumForPath(GtkTreeModel* sort_model,
                                    GtkTreePath* sort_path);
+
+// Select the given row by number.
+void SelectAndFocusRowNum(int row, GtkTreeView* tree_view);
+
+// A helper class for populating a GtkListStore from a TableModel.
+class ModelAdapter : public TableModelObserver {
+ public:
+  class Delegate {
+   public:
+    // Should fill in the column and row.
+    virtual void SetColumnValues(int row, GtkTreeIter* iter) = 0;
+
+    // Called after any change to the TableModel.  Overriding optional.
+    virtual void OnAnyModelUpdate() {}
+
+    // When the TableModel has been completely changed, called by OnModelChanged
+    // after clearing the list store.  Can be overriden by the delegate if it
+    // needs to do extra initialization before the list store is populated.
+    virtual void OnModelChanged() {}
+  };
+
+  // |table_model| may be NULL.
+  explicit ModelAdapter(Delegate* delegate, GtkListStore* list_store,
+                        TableModel* table_model);
+  virtual ~ModelAdapter() {}
+
+  // Replace the TableModel with a different one.  If the list store currenty
+  // has items this would cause weirdness, so this should generally only be
+  // called during the Delegate's OnModelChanged call, or if the adapter was
+  // created with a NULL |table_model|.
+  void SetModel(TableModel* table_model);
+
+  // TableModelObserver implementation.
+  virtual void OnModelChanged();
+  virtual void OnItemsChanged(int start, int length);
+  virtual void OnItemsAdded(int start, int length);
+  virtual void OnItemsRemoved(int start, int length);
+
+ private:
+  // Add the values from |row| of the TableModel.
+  void AddNodeToList(int row);
+
+  Delegate* delegate_;
+  GtkListStore* list_store_;
+  TableModel* table_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModelAdapter);
+};
 
 }  // namespace gtk_tree
 

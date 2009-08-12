@@ -13,6 +13,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
+#include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
 
@@ -270,16 +271,7 @@ int KeywordEditorView::GetSelectedModelRow() const {
 
 void KeywordEditorView::SelectModelRow(int model_row) {
   int row = GetListStoreRowForModelRow(model_row);
-  GtkTreeIter iter;
-  if (!gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(list_store_),
-                                     &iter, NULL, row)) {
-    NOTREACHED();
-    return;
-  }
-  GtkTreePath* path = gtk_tree_model_get_path(GTK_TREE_MODEL(list_store_),
-                                              &iter);
-  gtk_tree_view_set_cursor(GTK_TREE_VIEW(tree_), path, NULL, FALSE);
-  gtk_tree_path_free(path);
+  gtk_tree::SelectAndFocusRowNum(row, GTK_TREE_VIEW(tree_));
 }
 
 void KeywordEditorView::AddNodeToList(int model_row) {

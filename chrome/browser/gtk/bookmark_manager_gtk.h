@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 #include <vector>
 
-#include "app/table_model_observer.h"
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
 #include "base/ref_counted.h"
@@ -16,13 +15,14 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/gtk/bookmark_context_menu.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "chrome/common/gtk_tree.h"
 
 class BookmarkModel;
 class BookmarkTableModel;
 class Profile;
 
 class BookmarkManagerGtk : public BookmarkModelObserver,
-                           public TableModelObserver,
+                           public gtk_tree::ModelAdapter::Delegate,
                            public SelectFileDialog::Listener {
  public:
   virtual ~BookmarkManagerGtk();
@@ -59,11 +59,9 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
 
-  // TableModelObserver implementation.
+  // gtk_tree::ModelAdapter::Delegate implementation.
+  virtual void SetColumnValues(int row, GtkTreeIter* iter);
   virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
 
   // SelectFileDialog::Listener implemenation.
   virtual void FileSelected(const FilePath& path,
@@ -91,6 +89,9 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // whatever folder is selected on the left. It can be called multiple times.
   void BuildRightStore();
 
+  // Reset the TableModel backing the right pane.
+  void ResetRightStoreModel();
+
   // Get the ID of the item at |iter|.
   int64 GetRowIDAt(GtkTreeModel* model, GtkTreeIter* iter);
 
@@ -106,12 +107,6 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
 
   // Get the nodes that are selected in the right tree view.
   std::vector<const BookmarkNode*> GetRightSelection();
-
-  // Set the fields for a row.
-  void SetRightSideColumnValues(int row, GtkTreeIter* iter);
-
-  // Stick update the right store to reflect |row| from |right_tree_model_|.
-  void AddNodeToRightStore(int row);
 
   // Set the size of a column based on the user prefs, and also sets the sizing
   // properties of the column.
@@ -297,6 +292,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   GtkTreeViewColumn* url_column_;
   GtkTreeViewColumn* path_column_;
   scoped_ptr<BookmarkTableModel> right_tree_model_;
+  scoped_ptr<gtk_tree::ModelAdapter> right_tree_adapter_;
 
   // |window_|'s current position and size.
   gfx::Rect window_bounds_;
