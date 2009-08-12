@@ -181,6 +181,8 @@ class BrowserWindowGtk : public BrowserWindow,
   GtkWidget* content_vbox_;
   // VBox that holds everything below the toolbar.
   GtkWidget* render_area_vbox_;
+  // EventBox that holds render_area_vbox_.
+  GtkWidget* render_area_event_box_;
 
   scoped_ptr<Browser> browser_;
 

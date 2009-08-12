@@ -68,6 +68,7 @@
 #include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/views/compact_navigation_bar.h"
@@ -84,8 +85,9 @@ namespace {
 // The number of milliseconds between loading animation frames.
 const int kLoadingAnimationFrameTimeMs = 30;
 
-// Default offset of the contents splitter in pixels.
-const int kDefaultContentsSplitOffset = 400;
+// Default height of dev tools pane when docked to the browser window.  This
+// matches the value in Views.
+const int kDefaultDevToolsHeight = 200;
 
 const char* kBrowserWindowKey = "__BROWSER_WINDOW_GTK__";
 
@@ -407,6 +409,12 @@ GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
   return GDK_LAST_CURSOR;
 }
 
+GdkColor SkColorToGdkColor(const SkColor& color) {
+  GdkColor color_gdk = GDK_COLOR_RGB(SkColorGetR(color), SkColorGetG(color),
+                                     SkColorGetB(color));
+  return color_gdk;
+}
+
 }  // namespace
 
 std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
@@ -438,13 +446,14 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   g_object_unref(gtk_window_get_group(window_));
 
   gtk_util::SetWindowIcon(window_);
-  SetBackgroundColor();
   SetGeometryHints();
   ConnectHandlersToSignals();
   ConnectAccelerators();
   bounds_ = GetInitialWindowBounds(window_);
 
   InitWidgets();
+  // Set the initial background color of widgets.
+  SetBackgroundColor();
   HideUnsupportedWindowFeatures();
 
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
@@ -1400,7 +1409,7 @@ void BrowserWindowGtk::InitWidgets() {
   // The reason is that this area as a whole needs to be grouped in its own
   // GdkWindow hierarchy so that animations originating inside it (infobar,
   // download shelf, find bar) are all clipped to that area. This is why
-  // |render_area_vbox_| is packed in |event_box|.
+  // |render_area_vbox_| is packed in |render_area_event_box_|.
   render_area_vbox_ = gtk_vbox_new(FALSE, 0);
   infobar_container_.reset(new InfoBarContainerGtk(this));
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
@@ -1421,11 +1430,12 @@ void BrowserWindowGtk::InitWidgets() {
   // Restore split offset.
   int split_offset = g_browser_process->local_state()->GetInteger(
       prefs::kDevToolsSplitLocation);
-  if (split_offset == -1) {
-    // Initial load, set to default value.
-    split_offset = kDefaultContentsSplitOffset;
+  if (split_offset != -1) {
+    gtk_paned_set_position(GTK_PANED(contents_split_), split_offset);
+  } else {
+    gtk_widget_set_size_request(devtools_container_->widget(), -1,
+                                kDefaultDevToolsHeight);
   }
-  gtk_paned_set_position(GTK_PANED(contents_split_), split_offset);
   gtk_widget_show_all(render_area_vbox_);
   gtk_widget_hide(devtools_container_->widget());
 
@@ -1445,10 +1455,10 @@ void BrowserWindowGtk::InitWidgets() {
   // proper control layout.
   UpdateCustomFrame();
 
-  GtkWidget* event_box = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(event_box), render_area_vbox_);
-  gtk_widget_show(event_box);
-  gtk_container_add(GTK_CONTAINER(content_vbox_), event_box);
+  render_area_event_box_ = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(render_area_event_box_), render_area_vbox_);
+  gtk_widget_show(render_area_event_box_);
+  gtk_container_add(GTK_CONTAINER(content_vbox_), render_area_event_box_);
   gtk_container_add(GTK_CONTAINER(window_vbox), content_vbox_);
   gtk_container_add(GTK_CONTAINER(window_), window_container_);
   gtk_widget_show(window_container_);
@@ -1510,10 +1520,23 @@ void BrowserWindowGtk::SetBackgroundColor() {
   SkColor frame_color = theme_provider->GetColor(frame_color_id);
 
   // Paint the frame color on the left, right and bottom.
-  GdkColor frame_color_gdk = GDK_COLOR_RGB(SkColorGetR(frame_color),
-      SkColorGetG(frame_color), SkColorGetB(frame_color));
+  GdkColor frame_color_gdk = SkColorToGdkColor(frame_color);
   gtk_widget_modify_bg(GTK_WIDGET(window_), GTK_STATE_NORMAL,
                        &frame_color_gdk);
+
+  // Set the color of the dev tools divider.
+  gtk_widget_modify_bg(render_area_event_box_, GTK_STATE_NORMAL,
+                       &frame_color_gdk);
+  gtk_widget_modify_bg(contents_split_, GTK_STATE_NORMAL, &frame_color_gdk);
+
+  // When the cursor is over the divider, GTK+ normally lightens the background
+  // color by 1.3 (see LIGHTNESS_MULT in gtkstyle.c).  Since we're setting the
+  // color, override the prelight also.
+  skia::HSL hsl = { -1, 0.5, 0.65 };
+  SkColor frame_prelight_color = skia::HSLShift(frame_color, hsl);
+  GdkColor frame_prelight_color_gdk = SkColorToGdkColor(frame_prelight_color);
+  gtk_widget_modify_bg(contents_split_, GTK_STATE_PRELIGHT,
+      &frame_prelight_color_gdk);
 }
 
 void BrowserWindowGtk::OnSizeChanged(int width, int height) {
