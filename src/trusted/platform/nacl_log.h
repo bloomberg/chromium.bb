@@ -103,14 +103,24 @@ void NaClLogUnlock(void);
  *
  * Users of NaClLogV_mu should also use ATTRIBUTE_FORMAT_PRINTF as
  * above.
+ *
+ * Only the first call to NaClLog_mu or NaClLogV_mu after the
+ * NaClLogLock will get a timestamp tag prepended.  No newline
+ * detection is done, so a multi-line output must be (1) split into
+ * multiple calls to NaClLog_mu or NaClLogV_mu so that newlines are
+ * the last character in the format string to the NaClLog_mu or
+ * NaClLogV_mu calls, and (2) are followed by NaClLogTagNext_mu() so
+ * that the next output will know to generate a tag.
  */
-void  NaClLogV_mu(int         detail_level,
-                  char const  *fmt,
-                  va_list     ap);
-
-void  NaClLog_mu(int         detail_level,
+void NaClLogV_mu(int         detail_level,
                  char const  *fmt,
-                 ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+                 va_list     ap);
+
+void NaClLog_mu(int         detail_level,
+                char const  *fmt,
+                ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+
+void NaClLogTagNext_mu(void);
 
 
 EXTERN_C_END

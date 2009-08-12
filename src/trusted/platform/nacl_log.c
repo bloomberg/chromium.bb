@@ -56,7 +56,9 @@
 /*
  * All logging is protected by this mutex.
  */
-static struct NaClMutex  log_mu;
+static struct NaClMutex log_mu;
+static int              tag_output = 0;
+static int              abort_on_unlock = 0;
 
 static int              verbosity = 0;
 static struct Gio       *log_stream = NULL;
@@ -74,11 +76,19 @@ void NaClLogModuleFini(void) {
   NaClMutexDtor(&log_mu);
 }
 
+void NaClLogTagNext_mu(void) {
+  tag_output = 1;
+}
+
 void NaClLogLock(void) {
   NaClMutexLock(&log_mu);
+  NaClLogTagNext_mu();
 }
 
 void NaClLogUnlock(void) {
+  if (abort_on_unlock) {
+    (*gNaClLogAbortBehavior)();
+  }
   NaClMutexUnlock(&log_mu);
 }
 
@@ -139,6 +149,20 @@ void NaClLogDisableTimestamp(void) {
   timestamp_enabled = 0;
 }
 
+static void NaClLogOutputTag_mu(struct Gio *s) {
+  char timestamp[128];
+  int  pid;
+
+  if (timestamp_enabled && tag_output) {
+    pid = GETPID();
+    gprintf(s, "[%d,%u:%s] ",
+            pid,
+            NaClThreadId(),
+            NaClTimeStampString(timestamp, sizeof timestamp));
+    tag_output = 0;
+  }
+}
+
 /*
  * Output a printf-style formatted message if the log verbosity level
  * is set higher than the log output's detail level.  Note that since
@@ -162,26 +186,17 @@ void  NaClLogV_mu(int         detail_level,
                   char const  *fmt,
                   va_list     ap) {
   struct Gio  *s;
-  char        timestamp[128];
 
   s = NaClLogGetGio_mu();
 
   if (detail_level <= verbosity) {
-    if (timestamp_enabled) {
-      int pid;
-      pid = GETPID();
-      gprintf(s, "[%d,%u:%s] ",
-              pid,
-              NaClThreadId(),
-              NaClTimeStampString(timestamp, sizeof timestamp));
-    }
-
+    NaClLogOutputTag_mu(s);
     (void) gvprintf(s, fmt, ap);
     (void) (*s->vtbl->Flush)(s);
   }
 
   if (LOG_FATAL == detail_level) {
-    (*gNaClLogAbortBehavior)();
+    abort_on_unlock = 1;
   }
 }
 
