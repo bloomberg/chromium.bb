@@ -1,6 +1,7 @@
 chrome
 chrome.pak
 chrome_sandbox
+chromium-browser.1
 libavcodec.so.52
 libavformat.so.52
 libavutil.so.50
