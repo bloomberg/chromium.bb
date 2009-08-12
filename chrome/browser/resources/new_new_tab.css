@@ -415,6 +415,7 @@ html[dir='rtl'] .item {
 }
 
 .window-menu {
+  color: rgb(75, 140, 220);
   position: absolute;
   display: none;
   border: 1px solid #999;
@@ -439,12 +440,12 @@ html[dir='rtl'] .item {
 #window-tooltip {
   color: #555;
   pointer-events: none;
-  border: 1px solid rgb(118,118,118);
+  border: 1px solid rgb(118, 118, 118);
   -webkit-border-radius: 3px;
   padding: 0px 3px;
   background: -webkit-gradient(linear, left top, left bottom,
                                from(white),
-                               to(rgb(228,229,240)));
+                               to(rgb(228, 229, 240)));
   width: auto;
   max-width: 300px;
 }
