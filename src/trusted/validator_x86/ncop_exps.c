@@ -405,6 +405,21 @@ int GetExprNodeParentIndex(ExprNodeVector* vector, int index) {
   return 0;
 }
 
+int GetNthNodeKind(ExprNodeVector* vector,
+                   ExprNodeKind kind,
+                   int n) {
+  if (n > 0) {
+    uint32_t i;
+    for (i = 0; i < vector->number_expr_nodes; ++i) {
+      if (kind == vector->node[i].kind) {
+        --n;
+        if (n == 0) return i;
+      }
+    }
+  }
+  return -1;
+}
+
 uint64_t GetExprConstant(ExprNodeVector* vector, int index) {
   ExprNode* node = &vector->node[index];
   switch (node->kind) {

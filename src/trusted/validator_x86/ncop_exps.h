@@ -172,6 +172,11 @@ void SplitExprConstant(uint64_t val, uint32_t* val1, uint32_t* val2);
 /* Returns true if the index points to a constant that is negative. */
 Bool IsExprNegativeConstant(ExprNodeVector* vector, int index);
 
+/* Returns the index of the i-th occurrence of the given kind of node,
+ * or -1 if no such node exists.
+ */
+int GetNthNodeKind(ExprNodeVector* vector, ExprNodeKind kind, int n);
+
 /* Returns the register in the given node. */
 OperandKind GetNodeRegister(ExprNode* node);
 
