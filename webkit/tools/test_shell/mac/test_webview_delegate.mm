@@ -130,12 +130,7 @@ void TestWebViewDelegate::show(WebNavigationPolicy policy) {
 void TestWebViewDelegate::closeWidgetSoon() {
   if (this == shell_->delegate()) {
     NSWindow *win = shell_->mainWnd();
-    // Tell Cocoa to close the window, which will let the window's delegate
-    // handle getting rid of the shell. |shell_| will still be alive for a short
-    // period of time after this call returns (cleanup is done after going back
-    // to the event loop), so we should make sure we don't leave it dangling.
-    [win performClose:nil];
-    shell_ = NULL;
+    [win performSelector:@selector(performClose:) withObject:nil afterDelay:0];
   } else if (this == shell_->popup_delegate()) {
     shell_->ClosePopup();
   }
