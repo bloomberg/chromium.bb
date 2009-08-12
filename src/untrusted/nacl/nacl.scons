@@ -40,13 +40,16 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 
 sources_c = [
     'av_wait.c',
+    'clock.c',
     'close.c',
     'dup.c',
     'execve.c',
     '_execve.c',
+    '_exit.c',
     'fork.c',
     'fstat.c',
     'getdents.c',
+    'getpid.c',
     'gettimeofday.c',
     'imc_accept.c',
     'imc_connect.c',
@@ -62,11 +65,13 @@ sources_c = [
     'lseek.c',
     'mmap.c',
     'munmap.c',
+    'null.c',
     'open.c',
     'pipe.c',
     'read.c',
     'sbrk.c',
     'sched_yield.c',
+    'srpc_get_fd.c',
     'srpc_init.c',
     'srpc_wait.c',
     'stacktrace.c',
@@ -82,16 +87,8 @@ sources_c = [
 # TODO(ARM_PORT)
 if env.get('TARGET_ARCHITECTURE') == 'x86':
   sources_asm = [
-      # TODO: these are non standard and will be eliminated soon
-      #       using simple wrappers and
-      #       native_client/src/untrusted/nacl/syscall_bindings_trampoline.h
-      'nacl_clock.S',
-      'nacl_exit.S',
-      'nacl_getpid.S',
+      # TODO: eliminate this
       'nacl_multimedia.S',
-      'nacl_null.S',
-      'nacl_srpc_get_fd.S',
-      'nacl_tls.S',
     ]
 else:
   sources_asm = []

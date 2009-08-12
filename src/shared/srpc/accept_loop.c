@@ -37,7 +37,8 @@
 
 #define BOUND_SOCKET  3
 
-extern int __srpc_get_fd();
+/* TODO: This file seems to have relative includes and should probably
+   not live in shared/   */
 
 struct worker_state {
   int d;
@@ -51,7 +52,7 @@ static int shutdown_done = 0;
 void __srpc_wait() {
   int       is_embedded;
 
-  is_embedded = (__srpc_get_fd() != -1);
+  is_embedded = (srpc_get_fd() != -1);
   if (is_embedded) {
     pthread_mutex_lock(&shutdown_wait_mu);
     while (!shutdown_done) {
@@ -161,7 +162,7 @@ void __srpc_init() {
   pthread_t acceptor_tid;
   int       is_embedded;
 
-  is_embedded = (__srpc_get_fd() != -1);
+  is_embedded = (srpc_get_fd() != -1);
   if (is_embedded) {
     /*
      * Start the acceptor thread.
