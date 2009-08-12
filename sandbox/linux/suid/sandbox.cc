@@ -121,13 +121,17 @@ static int CloneChrootHelperProcess() {
     fchmod(chroot_dir_fd, 0000 /* no-access */);
 
     struct stat st;
-    if (stat(".", &st))
+    if (fstat(chroot_dir_fd, &st))
       FatalError("stat");
 
     if (st.st_uid || st.st_gid || st.st_mode & S_IWOTH)
       FatalError("Bad permissions on chroot temp directory");
 
-    if (chroot("."))
+    char proc_self_fd_str[128];
+    snprintf(proc_self_fd_str, sizeof(proc_self_fd_str), "/proc/self/fd/%d",
+             chroot_dir_fd);
+
+    if (chroot(proc_self_fd_str))
       FatalError("Cannot chroot into temp directory");
 
     if (chdir("/"))
