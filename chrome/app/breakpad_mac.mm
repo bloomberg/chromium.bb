@@ -42,7 +42,8 @@ void InitCrashReporter() {
 
   // Check for Send stats preference. If preference is not specifically turned
   // on then disable crash reporting.
-  if (!GoogleUpdateSettings::GetCollectStatsConsent()) {
+  bool user_consented = GoogleUpdateSettings::GetCollectStatsConsent();
+  if (!user_consented) {
     LOG(WARNING) << "Breakpad disabled";
     return;
   }
@@ -67,6 +68,15 @@ void InitCrashReporter() {
                       forKey:@BREAKPAD_INSPECTOR_LOCATION];
   [breakpad_config setObject:reporter_location
                       forKey:@BREAKPAD_REPORTER_EXE_LOCATION];
+
+  // Pass crash to Crash Reporter if we're a foreground application [the
+  // browser process].  This is so the user gets notification when Chrome
+  // crashes and also since we get "restart ui" for free.
+  BOOL is_background_app = [[info_dictionary objectForKey:@"LSUIElement"]
+                                isEqualToString:@"1"];
+  if (!is_background_app) {
+    [breakpad_config setObject:@"NO" forKey:@BREAKPAD_SEND_AND_EXIT];
+  }
 
   // Init breakpad
   BreakpadRef breakpad = NULL;
