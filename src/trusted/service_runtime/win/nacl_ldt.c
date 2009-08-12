@@ -37,7 +37,7 @@
 #include <windows.h>
 #include <errno.h>
 #include <stdio.h>
-#include "native_client/src/trusted/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 /* for LDT_ENTRIES */
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"

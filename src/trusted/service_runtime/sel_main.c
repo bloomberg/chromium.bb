@@ -40,11 +40,11 @@
 #include <string.h>
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/nacl_sync.h"
-#include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"

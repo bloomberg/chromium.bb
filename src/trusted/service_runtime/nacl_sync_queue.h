@@ -36,7 +36,7 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SYNC_QUEUE_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_SYNC_QUEUE_H_
 
-#include "native_client/src/trusted/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/trusted/service_runtime/nacl_closure.h"
 
 /**

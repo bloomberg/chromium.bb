@@ -33,13 +33,13 @@
 #include <map>
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
 
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"

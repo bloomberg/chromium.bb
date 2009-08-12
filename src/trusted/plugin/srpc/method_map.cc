@@ -33,9 +33,10 @@
 #include <map>
 #include <string>
 
+#include "native_client/src/shared/platform/nacl_log.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
 
 #include "native_client/src/trusted/plugin/srpc/method_map.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"

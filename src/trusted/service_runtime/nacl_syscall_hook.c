@@ -39,7 +39,7 @@
 #include <errno.h>
 #include <time.h>
 
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"

@@ -58,8 +58,8 @@
 
 #include "native_client/src/include/nacl_base.h"
 
-#include "native_client/src/trusted/platform/nacl_secure_random.h"
-#include "native_client/src/trusted/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_secure_random.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/generic_container/container.h"
 
 EXTERN_C_BEGIN

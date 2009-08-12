@@ -38,7 +38,7 @@
 
 #include <string.h>
 
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/fs/obj_proxy.h"
 
 #define PARANOID  1

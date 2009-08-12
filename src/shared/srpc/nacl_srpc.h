@@ -77,10 +77,10 @@ typedef int NaClSrpcImcDescType;
 #  include "native_client/src/include/nacl_base.h"
 
 #  include "native_client/src/shared/imc/nacl_imc_c.h"
+#  include "native_client/src/shared/platform/nacl_log.h"
 #  include "native_client/src/trusted/desc/nrd_all_modules.h"
 #  include "native_client/src/trusted/desc/nrd_xfer.h"
 #  include "native_client/src/trusted/desc/nrd_xfer_effector.h"
-#  include "native_client/src/trusted/platform/nacl_log.h"
 /*
  * In trusted code we use a NaClDesc to describe the IMC channel.
  * It is this difference between trusted and untrusted code that motivated

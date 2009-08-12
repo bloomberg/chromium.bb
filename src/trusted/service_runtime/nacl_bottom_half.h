@@ -37,7 +37,7 @@
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_BOTTOM_HALF_H_
 
 #include "native_client/src/include/portability.h"  /* uintptr_t */
-#include "native_client/src/trusted/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
 
 struct NaClAppThread;

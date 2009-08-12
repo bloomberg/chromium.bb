@@ -53,8 +53,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_dir.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
-#include "native_client/src/trusted/platform/nacl_global_secure_random.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_global_secure_random.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"

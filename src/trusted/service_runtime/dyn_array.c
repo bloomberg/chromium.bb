@@ -40,11 +40,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/trusted/service_runtime/dyn_array.h"
-
 #if DYN_ARRAY_DEBUG
-# include "native_client/src/trusted/platform/nacl_log.h"
+# include "native_client/src/shared/platform/nacl_log.h"
 #endif
+
+#include "native_client/src/trusted/service_runtime/dyn_array.h"
 
 
 static INLINE int BitsToAllocWords(int nbits) {

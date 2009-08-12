@@ -33,7 +33,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_MULTIMEDIA_SOCKET_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_MULTIMEDIA_SOCKET_H_
 
-#include "native_client/src/trusted/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 

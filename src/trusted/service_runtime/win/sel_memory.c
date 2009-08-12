@@ -38,8 +38,8 @@
 #include <windows.h>
 #include <string.h>
 
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/win/xlate_system_error.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/win/xlate_system_error.h"
 
 #include "native_client/src/trusted/service_runtime/win/mman.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"

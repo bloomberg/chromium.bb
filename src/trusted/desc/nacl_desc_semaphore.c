@@ -39,12 +39,12 @@
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
+#include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_semaphore.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
-
-#include "native_client/src/trusted/platform/nacl_host_desc.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/nacl_semaphore.h"
 
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"

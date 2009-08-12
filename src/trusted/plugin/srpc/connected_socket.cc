@@ -33,10 +33,10 @@
 #include <signal.h>
 #include <string.h>
 
-#include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
 
-#include "native_client/src/trusted/platform/nacl_sync.h"
-#include "native_client/src/trusted/platform/nacl_threads.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc.h"
 
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"

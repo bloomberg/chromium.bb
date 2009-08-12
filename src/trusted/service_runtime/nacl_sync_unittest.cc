@@ -36,9 +36,9 @@
 
 // TODO(robertm): ConditionalVariable should be an abstract base class
 #if NACL_WINDOWS
-# include "native_client/src/trusted/platform/win/condition_variable.h"
+# include "native_client/src/shared/platform/win/condition_variable.h"
 #elif NACL_LINUX || NACL_OSX
-# include "native_client/src/trusted/platform/linux/condition_variable.h"
+# include "native_client/src/shared/platform/linux/condition_variable.h"
 #endif
 
 #include "gtest/gtest.h"

@@ -7,11 +7,11 @@
       'dependencies': [
         '../src/shared/npruntime/npruntime.gyp:*',
         '../src/shared/imc/imc.gyp:*',
+        '../src/shared/platform/platform.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
         '../src/trusted/desc/desc.gyp:*',
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
-        '../src/trusted/platform/platform.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
         '../src/trusted/plugin/plugin.gyp:npGoogleNaClPlugin',
         '../src/trusted/service_runtime/service_runtime.gyp:*',

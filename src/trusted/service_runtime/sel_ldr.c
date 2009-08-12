@@ -34,11 +34,11 @@
  */
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_cleanup.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
-#include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"

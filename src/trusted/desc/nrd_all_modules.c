@@ -35,9 +35,9 @@
  */
 
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/platform/nacl_global_secure_random.h"
-#include "native_client/src/trusted/platform/nacl_secure_random.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_global_secure_random.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_secure_random.h"
 
 void NaClNrdAllModulesInit(void) {
   NaClLogModuleInit();

@@ -36,7 +36,7 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CHECK_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CHECK_H_
 
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 /*
  * We cannot use variadic macros since not all preprocessors provide

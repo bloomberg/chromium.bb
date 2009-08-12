@@ -33,7 +33,7 @@
 #include <string.h>
 #include <string>
 
-#include "native_client/src/trusted/platform/nacl_host_desc.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
@@ -267,4 +267,3 @@ void UrlAsNaClDescNotify::Run(const char *url,
 }
 
 }  // namespace nacl_srpc
-

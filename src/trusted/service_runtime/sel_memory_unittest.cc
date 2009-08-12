@@ -33,7 +33,7 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 // TODO(robertm): eliminate need for this
 #if NACL_WINDOWS

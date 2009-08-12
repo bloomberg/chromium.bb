@@ -36,7 +36,7 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_LINUX_NACL_SYSCALL_INL_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_LINUX_NACL_SYSCALL_INL_H_
 
-#include "native_client/src/trusted/platform/nacl_host_dir.h"
+#include "native_client/src/shared/platform/nacl_host_dir.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 

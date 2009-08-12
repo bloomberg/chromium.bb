@@ -36,7 +36,7 @@
 #include <string>
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/plugin/srpc/srpc_client.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"

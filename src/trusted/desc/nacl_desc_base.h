@@ -43,9 +43,9 @@
 /* For NaClHandle */
 #include "native_client/src/shared/imc/nacl_htp_c.h"
 
-#include "native_client/src/trusted/platform/nacl_interruptible_mutex.h"
-#include "native_client/src/trusted/platform/nacl_interruptible_condvar.h"
-#include "native_client/src/trusted/platform/nacl_semaphore.h"
+#include "native_client/src/shared/platform/nacl_interruptible_condvar.h"
+#include "native_client/src/shared/platform/nacl_interruptible_mutex.h"
+#include "native_client/src/shared/platform/nacl_semaphore.h"
 
 EXTERN_C_BEGIN
 

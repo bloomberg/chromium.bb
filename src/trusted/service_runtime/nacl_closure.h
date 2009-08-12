@@ -36,7 +36,7 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CLOSURE_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CLOSURE_H_
 
-#include "native_client/src/trusted/platform/nacl_sync.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
 
 /*
  * This file contains declarations for simple closures.  They

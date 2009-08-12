@@ -39,8 +39,8 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/platform/nacl_sync.h"
 
 EXTERN_C_BEGIN
 

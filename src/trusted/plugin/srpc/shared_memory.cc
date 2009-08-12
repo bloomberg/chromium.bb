@@ -36,7 +36,7 @@
 
 #include "native_client/src/include/nacl_platform.h"
 
-#include "native_client/src/trusted/platform/nacl_host_desc.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"

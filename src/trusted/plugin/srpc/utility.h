@@ -36,7 +36,7 @@
 #include <setjmp.h>
 #include <signal.h>
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/platform/nacl_threads.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
 
 #define SRPC_PLUGIN_DEBUG 0
 

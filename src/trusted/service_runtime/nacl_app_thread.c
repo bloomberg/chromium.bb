@@ -32,8 +32,8 @@
 /*
  * NaCl Server Runtime user thread state.
  */
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
-#include "native_client/src/trusted/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
@@ -224,4 +224,3 @@ int NaClAppThreadDecRef(struct NaClAppThread *natp) {
   }
   return refcount;
 }
-

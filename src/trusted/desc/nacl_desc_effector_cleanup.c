@@ -36,7 +36,7 @@
  */
 
 #include "native_client/src/trusted/desc/nacl_desc_effector_cleanup.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 static struct NaClDescEffectorVtbl NaClDescEffectorCleanupVtbl;  /* fwd */
 

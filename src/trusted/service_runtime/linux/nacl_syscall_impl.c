@@ -45,16 +45,16 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
 
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_time.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_bound_desc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
-
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/nacl_sync_checked.h"
-#include "native_client/src/trusted/platform/nacl_time.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_closure.h"

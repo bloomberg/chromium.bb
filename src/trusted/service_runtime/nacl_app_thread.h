@@ -36,7 +36,7 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_APP_THREAD_H__ 1
 
-#include "native_client/src/trusted/platform/nacl_threads.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_bottom_half.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 

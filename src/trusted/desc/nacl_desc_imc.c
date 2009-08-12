@@ -41,8 +41,12 @@
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/nacl_sync_checked.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+
+#if NACL_WINDOWS
+# include "native_client/src/shared/platform/win/xlate_system_error.h"
+#endif
 
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
@@ -52,10 +56,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
-
-#if NACL_WINDOWS
-# include "native_client/src/trusted/platform/win/xlate_system_error.h"
-#endif
 
 /*
  * This file contains the implementation of the NaClDescImcDesc

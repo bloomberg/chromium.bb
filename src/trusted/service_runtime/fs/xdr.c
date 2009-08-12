@@ -32,7 +32,7 @@
 /*
  * NaCl file system mini XDR-like serialization of basic file system types.
  */
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #include "native_client/src/trusted/service_runtime/fs/fs.h"

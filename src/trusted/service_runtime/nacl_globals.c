@@ -33,9 +33,9 @@
  * NaCl Server Runtime global scoped objects for handling global resources.
  */
 
-#include "native_client/src/trusted/platform/nacl_interruptible_mutex.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
-#include "native_client/src/trusted/platform/nacl_threads.h"
+#include "native_client/src/shared/platform/nacl_interruptible_mutex.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"

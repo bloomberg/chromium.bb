@@ -49,8 +49,8 @@
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 
-#include "native_client/src/trusted/platform/nacl_host_desc.h"
-#include "native_client/src/trusted/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 int server = 0;
 
