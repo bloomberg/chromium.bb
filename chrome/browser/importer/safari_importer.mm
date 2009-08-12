@@ -179,12 +179,15 @@ void SafariImporter::RecursiveReadBookmarksFolder(
       objectForKey:@"WebBookmarkFileVersion"] != nil;
 
   // We're expecting a list of bookmarks here, if that isn't what we got, fail.
-  if (![type isEqualToString:@"WebBookmarkTypeList"] || !title) {
-    DCHECK(false) << "Type =("
-    << (type ? base::SysNSStringToUTF8(type) : "Null Type")
-    << ") Title=(" << (title ? base::SysNSStringToUTF8(title) : "Null title")
-    << ")";
-    return;
+  if (!is_top_level_bookmarks_container) {
+    // Top level containers sometimes don't have title attributes.
+    if (![type isEqualToString:@"WebBookmarkTypeList"] || !title) {
+      DCHECK(false) << "Type =("
+      << (type ? base::SysNSStringToUTF8(type) : "Null Type")
+      << ") Title=(" << (title ? base::SysNSStringToUTF8(title) : "Null title")
+      << ")";
+      return;
+    }
   }
 
   std::vector<std::wstring> path_elements(parent_path_elements);
