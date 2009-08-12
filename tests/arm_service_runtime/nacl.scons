@@ -30,6 +30,9 @@
 
 Import('env')
 
+# TODO: copy emulator settings from trusted env to the this untrusted env
+env.Append(EMULATOR=env['TRUSTED_ENV']['EMULATOR'])
+
 # NOTE: we do not what anything to be linked with this, hence '-nostdlib'
 env.ComponentProgram('test_exit.nexe',
                      'test_exit.s',
@@ -44,12 +47,11 @@ node = env.CommandSelLdrTestNacl(
      'test_exit.out',
      sel_ldr_flags=['-d', '-I'],
      command=[env.File('test_exit.nexe')],
-     emulator=env['TRUSTED_ENV']['EMULATOR'].split(),
      exit_status='42'
      )
 env.AddNodeToTestSuite(node, ['medium_tests'], 'run_test_exit')
 
-# TOD: The below does not quite work yet.
+# TODO: The below does not quite work yet.
 #      The problem seems to be that the message is written to fd 6 rather
 #      than fd 1 (=stdout)
 #
@@ -57,7 +59,6 @@ node = env.CommandSelLdrTestNacl(
      'test_hello.out',
      sel_ldr_flags=['-d', '-I'],
      command=[env.File('test_hello.nexe')],
-     emulator=env['TRUSTED_ENV']['EMULATOR'].split(),
      stdout_golden=env.File('test_hello.stdout'),
      )
 env.AddNodeToTestSuite(node, ['medium_tests'], 'run_test_hello')

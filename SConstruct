@@ -254,7 +254,6 @@ def DemoSelLdrNacl(env,
                    nexe,
                    log_verbosity=2,
                    sel_ldr_flags=['-d'],
-                   emulator=[],
                    args=[]):
 
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
@@ -266,7 +265,7 @@ def DemoSelLdrNacl(env,
   sel_ldr = trusted_env.File('${STAGING_DIR}/'
                              + '${PROGPREFIX}sel_ldr${PROGSUFFIX}')
   deps = [sel_ldr, nexe]
-  command = (emulator + ['${SOURCES[0].abspath}'] + sel_ldr_flags +
+  command = (['${SOURCES[0].abspath}'] + sel_ldr_flags +
              ['-f', '${SOURCES[1].abspath}', '--'] + args)
 
   # NOT: since most of the demos use X11 we need to make sure
@@ -289,7 +288,6 @@ if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
 def CommandSelLdrTestNacl(env, name, command,
                           log_verbosity=2,
                           sel_ldr_flags=['-d'],
-                          emulator=[],
                           size='medium',
                           **extra):
 
@@ -301,7 +299,7 @@ def CommandSelLdrTestNacl(env, name, command,
   trusted_env = env['TRUSTED_ENV']
   sel_ldr = trusted_env.File('${STAGING_DIR}/'
                              + '${PROGPREFIX}sel_ldr${PROGSUFFIX}')
-  command = emulator + [sel_ldr] + sel_ldr_flags  + ['-f'] + command
+  command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
 
   # NOTE(robertm): log handling is a little magical
   # We do not pass these via flags because those are not usable for sel_ldr
@@ -330,7 +328,8 @@ TEST_TIME_THRESHOLD = {
 
 TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/command_tester.py'
 
-def CommandTestAgainstGoldenOutput(env, name, command, size='small', **extra):
+def CommandTestAgainstGoldenOutput(env, name, command, size='small',
+                                   permit_emultation=True, **extra):
   if not  name.endswith('.out') or name.startswith('$'):
     print "ERROR: bad  test filename for test output ", name
     assert 0
@@ -360,6 +359,10 @@ def CommandTestAgainstGoldenOutput(env, name, command, size='small', **extra):
       extra[e] = '${SOURCES[%d].abspath}' % (len(deps) - 1)
     script_flags.append('--' + e)
     script_flags.append(extra[e])
+
+  if permit_emultation and 'EMULATOR' in env:
+    command = ['${EMULATOR}'] + command
+
 
   # NOTE: "SOURCES[X]" references the scons object in deps[x]
   command = ['${PYTHON}',
@@ -1053,7 +1056,7 @@ MAYBE_RELEVANT_CONFIG = ['BUILD_OS',
                          ]
 
 def DumpCompilerVersion(cc, env):
-  if cc.startswith('gcc') or cc.endswith('gcc') or cc.endswith('gcc.exe'):
+  if 'gcc' in cc:
     env.Execute(env.Action('${CC} --v'))
   elif cc.startswith('cl'):
     import subprocess

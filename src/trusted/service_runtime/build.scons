@@ -345,20 +345,15 @@ unittest_inputs = [
     'sel_ldr_test.cc',
 ]
 
-UNITTEST_OUTPUT = test_env.subst('$TARGET_ROOT/test_results/src/trusted/'
-                                 + 'service_runtime/gtest_output.xml')
-test_env['ENV']['GTEST_OUTPUT'] = 'xml:' + UNITTEST_OUTPUT
-
 unit_tests_exe = test_env.ComponentProgram('service_runtime_tests',
                                            unittest_inputs,
                                            EXTRA_LIBS=['gtest'])
 test_env.Requires(unit_tests_exe, sdl_dll)
 
-# TODO(gregoryd): the "-d" argument does nothing, however Hammer doesn't run
-# the test if it is launched without any arguments.
-node = test_env.Command(UNITTEST_OUTPUT,
-                        [unit_tests_exe],
-                        '$SOURCE -d')
+
+node = test_env.CommandTestAgainstGoldenOutput(
+    'gtest_output.xml.out',
+    command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
 test_env.AddNodeToTestSuite(node, ['small_tests'], 'run_service_runtime_tests')
 
 
@@ -369,11 +364,14 @@ if not env.Bit('windows') or not env.get('COVERAGE_ENABLED'):
   env.Requires(mmap_test_exe, crt)
   env.Requires(mmap_test_exe, sdl_dll)
 
-  # TODO(robertm): This test emits lots of messages to stderr
-  node = env.CommandTestAgainstGoldenOutput(
-      "mmap_test.out",
-      [mmap_test_exe[0], env.File('testdata/hello_world.nexe')])
-  env.AddNodeToTestSuite(node, ['medium_tests'])
+  if env['TARGET_ARCHITECTURE'] == 'x86':
+    # TODO(robertm): This test emits lots of messages to stderr
+    node = env.CommandTestAgainstGoldenOutput (
+        "mmap_test.out",
+        # NOTE: the "[0]" subscript make this work on windows
+        # TODO: maybe move this magic into CommandTestAgainstGoldenOutput()
+        command=[mmap_test_exe[0], env.File('testdata/hello_world.nexe')])
+    env.AddNodeToTestSuite(node, ['medium_tests'])
 
   # also seems to have issues with windows coverage
   nacl_sync_cond_test_exe = env.ComponentProgram(
@@ -382,10 +380,10 @@ if not env.Bit('windows') or not env.get('COVERAGE_ENABLED'):
   env.Requires(nacl_sync_cond_test_exe, crt)
   env.Requires(nacl_sync_cond_test_exe, sdl_dll)
 
+
   node = env.CommandTestAgainstGoldenOutput(
       'nacl_sync_cond_test.out',
-      # NOTE: this is run out of obj/ rather than staging/
-      [nacl_sync_cond_test_exe])
+      command=[nacl_sync_cond_test_exe])
   env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nacl_sync_cond_test')
 
 
@@ -393,7 +391,7 @@ expiration_test_exe = env.ComponentProgram('expiration_test',
                                            ['expiration_test.c'])
 node = env.CommandTestAgainstGoldenOutput(
     'expiration_test.out',
-    [expiration_test_exe])
+    command=[expiration_test_exe])
 env.Requires(expiration_test_exe, crt)
 env.Requires(expiration_test_exe, sdl_dll)
 env.AddNodeToTestSuite(node, ['medium_tests'])
@@ -403,87 +401,72 @@ env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',
                                              ['env_cleanser_test.c'])
 node = env.CommandTestAgainstGoldenOutput(
     'env_cleanser_test.out',
-    [env_cleanser_test_exe])
+    command=[env_cleanser_test_exe])
 env.Requires(env_cleanser_test_exe, crt)
 env.Requires(env_cleanser_test_exe, sdl_dll)
 env.AddNodeToTestSuite(node, ['small_tests'])
+
 
 check_test_exe = env.ComponentProgram('nacl_check_test',
                                       ['nacl_check_test.c'])
 node = env.CommandTestAgainstGoldenOutput(
     'check_test.out',
-    [check_test_exe, '-C'])
+    command=[check_test_exe, '-C'])
 env.Requires(check_test_exe, crt)
 env.Requires(check_test_exe, sdl_dll)
 env.AddNodeToTestSuite(node, ['small_tests'])
 
-abort_exit = '17'  # magic, see nacl_check_test.c
+
+ABORT_EXIT = '17'  # magic, see nacl_check_test.c
+
 
 node = env.CommandTestAgainstGoldenOutput(
     'check_test_death.out',
-    [check_test_exe, '-c'],
-    exit_status=abort_exit)  # abort()
+    command=[check_test_exe, '-c'],
+    exit_status=ABORT_EXIT)  # abort()
 env.AddNodeToTestSuite(node, ['small_tests'])
+
 
 if env.Bit('debug'):
   node = env.CommandTestAgainstGoldenOutput(
       'dcheck_test_death.out',
-      [check_test_exe, '-d'],
-      exit_status=abort_exit)  # abort()
+      command=[check_test_exe, '-d'],
+      exit_status=ABORT_EXIT)  # abort()
 else:
   node = env.CommandTestAgainstGoldenOutput(
       'dcheck_test_death.out',
-      [check_test_exe, '-d'])  # no abort()
+      command=[check_test_exe, '-d'])  # no abort()
 env.AddNodeToTestSuite(node, ['small_tests'])
+
 
 node = env.CommandTestAgainstGoldenOutput(
     'check_test_always_death.out',
-    [check_test_exe, '-s', '0', '-C'])  # no abort
+    command=[check_test_exe, '-s', '0', '-C'])  # no abort
 env.AddNodeToTestSuite(node, ['small_tests'])
+
 
 node = env.CommandTestAgainstGoldenOutput(
     'check_test_always_death.out',
-    [check_test_exe, '-s', '0', '-c'],
-    exit_status=abort_exit)  # abort
+    command=[check_test_exe, '-s', '0', '-c'],
+    exit_status=ABORT_EXIT)  # abort
 env.AddNodeToTestSuite(node, ['small_tests'])
+
 
 node = env.CommandTestAgainstGoldenOutput(
     'dcheck_test_never_death.out',
-    [check_test_exe, '-s', '0', '-d'])  # no abort
+    command=[check_test_exe, '-s', '0', '-d'])  # no abort
 env.AddNodeToTestSuite(node, ['small_tests'])
+
 
 node = env.CommandTestAgainstGoldenOutput(
     'dcheck_test_always_death.out',
-    [check_test_exe, '-s', '1', '-d'],
-    exit_status=abort_exit)  # abort()
+    command=[check_test_exe, '-s', '1', '-d'],
+    exit_status=ABORT_EXIT)  # abort()
 env.AddNodeToTestSuite(node, ['small_tests'])
 
 # ----------------------------------------------------------
 # Integration Tests
 # ----------------------------------------------------------
-node = env.CommandSelLdrTestNacl(
-    "mandel_canned.out",
-    command=[env.File('testdata/mandel.nexe')],
-    stdin='$SCONSTRUCT_DIR/tests/mandel/test.stdin',
-    stdout_golden='$SCONSTRUCT_DIR/tests/mandel/test.stdout')
-env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
-node = env.CommandSelLdrTestNacl(
-    "fib_scalar_canned.out",
-    command=[env.File('testdata/fib_scalar.nexe')],
-    stdin='$SCONSTRUCT_DIR/tests/fib/fib_scalar_test.stdin',
-    stdout_golden='$SCONSTRUCT_DIR/tests/fib/fib_scalar_test.stdout')
-env.AddNodeToTestSuite(node, ['medium_tests'])
-
-
-node = env.CommandSelLdrTestNacl(
-    "fib_array_canned.out",
-    command=[env.File('testdata/fib_array.nexe')],
-    stdin='$SCONSTRUCT_DIR/tests/fib/fib_array_test.stdin',
-    stdout_golden='$SCONSTRUCT_DIR/tests/fib/fib_array_test.stdout')
-env.AddNodeToTestSuite(node, ['medium_tests'])
-
 
 # Doesn't work on windows under coverage.
 # TODO(bradnelson): fix this to work on windows under coverage.
@@ -502,83 +485,126 @@ if not env.Bit('windows') or not env.get('COVERAGE_ENABLED'):
   # is in the RNG, so with this will inherently speed up when the RNG is
   # updated.
 
-
   env.Requires(node, sdl_dll)
   env.AddNodeToTestSuite(node, ['small_tests'], 'obj_proxy_tests')
 
 
-node = env.CommandSelLdrTestNacl(
-    'nacl_log.out',
-    command=[env.File('testdata/hello_world.nexe')],
-    log_golden=env.File('testdata/hello_world.log'),
-    log_filter='"^(Hello, World!)$|^\[[0-9,:.]*\] (e_ident\+1 = ELF)$"')
-env.AddNodeToTestSuite(node, ['medium_tests'])
+# ----------------------------------------------------------
+# Integration Tests With Canned x86 Binaries
+# ----------------------------------------------------------
+
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  node = env.CommandSelLdrTestNacl(
+      "mandel_canned.out",
+      command=[env.File('testdata/mandel.nexe')],
+      stdin='$SCONSTRUCT_DIR/tests/mandel/test.stdin',
+      stdout_golden='$SCONSTRUCT_DIR/tests/mandel/test.stdout')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
+
+
+  node = env.CommandSelLdrTestNacl(
+      "fib_scalar_canned.out",
+      command=[env.File('testdata/fib_scalar.nexe')],
+      stdin='$SCONSTRUCT_DIR/tests/fib/fib_scalar_test.stdin',
+      stdout_golden='$SCONSTRUCT_DIR/tests/fib/fib_scalar_test.stdout')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
+
+
+  node = env.CommandSelLdrTestNacl(
+      "fib_array_canned.out",
+      command=[env.File('testdata/fib_array.nexe')],
+      stdin='$SCONSTRUCT_DIR/tests/fib/fib_array_test.stdin',
+      stdout_golden='$SCONSTRUCT_DIR/tests/fib/fib_array_test.stdout')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
+
+
+  node = env.CommandSelLdrTestNacl(
+      'nacl_log.out',
+      command=[env.File('testdata/hello_world.nexe')],
+      log_golden=env.File('testdata/hello_world.log'),
+      log_filter='"^(Hello, World!)$|^\[[0-9,:.]*\] (e_ident\+1 = ELF)$"')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
 
 # ----------------------------------------------------------
-# Death Tests
+# Death Tests With Canned x86 Binaries
 # ----------------------------------------------------------
+def GetNullPointerExitCode(env):
+  if env.Bit('linux'):
+    return '-11'  # SIGSEGV
+  elif env.Bit('mac'):
+    return '-10'  # SIGBUS
+  elif env.Bit('windows'):
+    return'-1073741819'  # 0x3ffffffB
+  else:
+    assert 0
+    return None
+
+
 ERROR_WHILE_LOADING = '"^(Error while loading).*' +  '(:[^:]*)"'
-
-node = env.CommandSelLdrTestNacl(
-    'integer_overflow_while_madvising.out',
-    command=[env.File('testdata/integer_overflow_while_madvising.nexe')],
-    stderr_golden=env.File('testdata/integer_overflow_while_madvising.stderr'),
-    stderr_filter=ERROR_WHILE_LOADING,
-    exit_status='1')
-env.AddNodeToTestSuite(node, ['medium_tests'])
+NULL_POINTER_EXIT_CODE = GetNullPointerExitCode(env)
 
 
-node = env.CommandSelLdrTestNacl(
-    'negative_memory_hole.out',
-    command=[env.File('testdata/negative_hole.nexe')],
-    stderr_golden=env.File('testdata/negative_hole.stderr'),
-    stderr_filter=ERROR_WHILE_LOADING,
-    exit_status='1')
-env.AddNodeToTestSuite(node, ['medium_tests'])
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  node = env.CommandSelLdrTestNacl(
+      'integer_overflow_while_madvising.out',
+      command=[env.File('testdata/integer_overflow_while_madvising.nexe')],
+      stderr_golden=
+          env.File('testdata/integer_overflow_while_madvising.stderr'),
+      stderr_filter=ERROR_WHILE_LOADING,
+      exit_status='1')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
 
 
-node = env.CommandSelLdrTestNacl(
-    'old_abi.out',
-    command=[env.File('testdata/old_abi.nexe')],
-    stderr_golden=env.File('testdata/old_abi.stderr'),
-    stderr_filter=ERROR_WHILE_LOADING,
-    exit_status='1')
-env.AddNodeToTestSuite(node, ['medium_tests'])
+  node = env.CommandSelLdrTestNacl(
+      'negative_memory_hole.out',
+      command=[env.File('testdata/negative_hole.nexe')],
+      stderr_golden=env.File('testdata/negative_hole.stderr'),
+      stderr_filter=ERROR_WHILE_LOADING,
+      exit_status='1')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
 
 
-node = env.CommandSelLdrTestNacl(
-    'text_too_big.out',
-    command=[env.File('testdata/text_too_big.nexe')],
-    stderr_golden=env.File('testdata/text_too_big.stderr'),
-    stderr_filter=ERROR_WHILE_LOADING,
-    exit_status='1')
-env.AddNodeToTestSuite(node, ['medium_tests'])
+  node = env.CommandSelLdrTestNacl(
+      'old_abi.out',
+      command=[env.File('testdata/old_abi.nexe')],
+      stderr_golden=env.File('testdata/old_abi.stderr'),
+      stderr_filter=ERROR_WHILE_LOADING,
+      exit_status='1')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
 
 
-null_ptr_exit = None
-if env.Bit('linux'):
-  null_ptr_exit = '-11'  # SIGSEGV
-elif env.Bit('mac'):
-  null_ptr_exit = '-10'  # SIGBUS
-elif env.Bit('windows'):
-  null_ptr_exit = '-1073741819'  # 0x3ffffffB
+  node = env.CommandSelLdrTestNacl(
+      'text_too_big.out',
+      command=[env.File('testdata/text_too_big.nexe')],
+      stderr_golden=env.File('testdata/text_too_big.stderr'),
+      stderr_filter=ERROR_WHILE_LOADING,
+      exit_status='1')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
 
-sel_ldr_thread_death_test_exe = env.ComponentProgram(
-    'sel_ldr_thread_death_test',
-    ['sel_ldr_thread_death_test.c'])
 
-node = env.CommandTestAgainstGoldenOutput(
-    'sel_ldr_thread_death_test.out',
-    [sel_ldr_thread_death_test_exe],
-    exit_status=null_ptr_exit)
+  node = env.CommandSelLdrTestNacl(
+      'nullptr.out',
+      # built in tests/nullptr/
+      command=[env.File('testdata/nullptr.nexe')],
+      exit_status=NULL_POINTER_EXIT_CODE)
+  env.AddNodeToTestSuite(node, ['medium_tests'])
+
+
+# ----------------------------------------------------------
+# More Death Tests
+# ----------------------------------------------------------
+# TODO: This acutally works on arm but the signal does not make it through the
+#       emulator. Maybe rewrite to catch the signal internally
+if env['TARGET_ARCHITECTURE'] == 'x86':
+  sel_ldr_thread_death_test_exe = env.ComponentProgram(
+      'sel_ldr_thread_death_test',
+      ['sel_ldr_thread_death_test.c'])
+
+  node = env.CommandTestAgainstGoldenOutput(
+      'sel_ldr_thread_death_test.out',
+      command=[sel_ldr_thread_death_test_exe],
+      exit_status=NULL_POINTER_EXIT_CODE)
 
 # TODO(tuduce): Make it work on windows.
 if not env.Bit('windows'):
   env.AddNodeToTestSuite(node, ['medium_tests'], 'run_ichi')
-
-node = env.CommandSelLdrTestNacl(
-    'nullptr.out',
-    # built in tests/nullptr/
-    command=[env.File('testdata/nullptr.nexe')],
-    exit_status=null_ptr_exit)
-env.AddNodeToTestSuite(node, ['medium_tests'])
