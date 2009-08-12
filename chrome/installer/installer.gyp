@@ -531,6 +531,7 @@
               'process_outputs_as_sources': 1,
               'inputs': [
                 '<(PRODUCT_DIR)/installer/rpm/build.sh',
+                '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
                 '<@(input_files)',
               ],
               'outputs': [
