@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ID_MAP_H__
-#define BASE_ID_MAP_H__
+#ifndef CHROME_COMMON_ID_MAP_H_
+#define CHROME_COMMON_ID_MAP_H_
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
@@ -101,4 +101,4 @@ class IDMap {
   bool check_on_null_data_;
 };
 
-#endif  // BASE_ID_MAP_H__
+#endif  // CHROME_COMMON_ID_MAP_H_

@@ -5,12 +5,12 @@
 #include "db_message_filter.h"
 
 #include "base/atomic_sequence_num.h"
-#include "base/id_map.h"
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/task.h"
 #include "chrome/common/child_process.h"
+#include "chrome/common/id_map.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"

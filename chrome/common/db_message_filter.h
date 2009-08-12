@@ -5,9 +5,9 @@
 #ifndef CHROME_COMMON_DB_MESSAGE_FILTER_H_
 #define CHROME_COMMON_DB_MESSAGE_FILTER_H_
 
-#include "base/id_map.h"
 #include "base/scoped_ptr.h"
 #include "base/waitable_event.h"
+#include "chrome/common/id_map.h"
 #include "ipc/ipc_channel_proxy.h"
 
 class Lock;

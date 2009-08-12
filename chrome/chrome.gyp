@@ -358,6 +358,7 @@
         'common/extensions/user_script.cc',
         'common/extensions/user_script.h',
         'common/gfx/utils.h',
+        'common/id_map.h',
         'common/net/cookie_monster_sqlite.cc',
         'common/net/cookie_monster_sqlite.h',
         'common/net/dns.h',
