@@ -59,7 +59,7 @@ class WaitForResolutionHelper {
 class DnsMasterTest : public testing::Test {
  public:
   DnsMasterTest()
-      : host_resolver_(new net::MockHostResolver()),
+      : host_resolver_(new net::MockCachingHostResolver()),
         default_max_queueing_delay_(TimeDelta::FromMilliseconds(
             DnsPrefetcherInit::kMaxQueueingDelayMs)) {
   }
@@ -69,6 +69,9 @@ class DnsMasterTest : public testing::Test {
 #if defined(OS_WIN)
     net::EnsureWinsockInit();
 #endif
+    // Since we are using a caching HostResolver, the following latencies will
+    // only be incurred by the first request, after which the result will be
+    // cached internally by |host_resolver_|.
     net::RuleBasedHostResolverProc* rules = host_resolver_->rules();
     rules->AddRuleWithLatency("www.google.com", "127.0.0.1", 50);
     rules->AddRuleWithLatency("gmail.google.com.com", "127.0.0.1", 70);
@@ -91,7 +94,7 @@ class DnsMasterTest : public testing::Test {
   MessageLoop loop;
 
  protected:
-  scoped_refptr<net::MockHostResolver> host_resolver_;
+  scoped_refptr<net::MockCachingHostResolver> host_resolver_;
 
   // Shorthand to access TimeDelta of DnsPrefetcherInit::kMaxQueueingDelayMs.
   // (It would be a static constant... except style rules preclude that :-/ ).
@@ -99,76 +102,6 @@ class DnsMasterTest : public testing::Test {
 };
 
 //------------------------------------------------------------------------------
-// Provide a function to create unique (nonexistant) domains at *every* call.
-//------------------------------------------------------------------------------
-static std::string GetNonexistantDomain() {
-  static std::string postfix = ".google.com";
-  static std::string prefix = "www.";
-  static std::string mid = "datecount";
-
-  static int counter = 0;  // Make sure its unique.
-  time_t number = time(NULL);
-  std::ostringstream result;
-  result << prefix << number << mid << ++counter << postfix;
-  return result.str();
-}
-
-//------------------------------------------------------------------------------
-// Use a blocking function to contrast results we get via async services.
-//------------------------------------------------------------------------------
-TimeDelta BlockingDnsLookup(net::HostResolver* resolver,
-                            const std::string& hostname) {
-  Time start = Time::Now();
-
-  net::AddressList addresses;
-  net::HostResolver::RequestInfo info(hostname, 80);
-  resolver->Resolve(NULL, info, &addresses, NULL, NULL);
-
-  return Time::Now() - start;
-}
-
-//------------------------------------------------------------------------------
-
-// First test to be sure the OS is caching lookups, which is the whole premise
-// of DNS prefetching.
-TEST_F(DnsMasterTest, OsCachesLookupsTest) {
-  host_resolver_->rules()->AllowDirectLookup("*.google.com");
-
-  const Time start = Time::Now();
-  int all_lookups = 0;
-  int lookups_with_improvement = 0;
-  // This test can be really flaky on Linux. It should run in much shorter time,
-  // but sometimes it won't and we don't like bogus failures.
-  while (Time::Now() - start < TimeDelta::FromMinutes(1)) {
-    std::string badname;
-    badname = GetNonexistantDomain();
-
-    TimeDelta duration = BlockingDnsLookup(host_resolver_, badname);
-
-    // Produce more than one result and remove the largest one
-    // to reduce flakiness.
-    std::vector<TimeDelta> cached_results;
-    for (int j = 0; j < 3; j++)
-      cached_results.push_back(BlockingDnsLookup(host_resolver_, badname));
-    std::sort(cached_results.begin(), cached_results.end());
-    cached_results.pop_back();
-
-    TimeDelta cached_sum = TimeDelta::FromSeconds(0);
-    for (std::vector<TimeDelta>::const_iterator j = cached_results.begin();
-         j != cached_results.end(); ++j)
-      cached_sum += *j;
-    TimeDelta cached_duration = cached_sum / cached_results.size();
-
-    all_lookups++;
-    if (cached_duration < duration)
-      lookups_with_improvement++;
-    if (all_lookups >= 10)
-      if (lookups_with_improvement * 100 > all_lookups * 75)
-        // Okay, we see the improvement for more than 75% of all lookups.
-        return;
-  }
-  FAIL() << "No substantial improvement in lookup time.";
-}
 
 TEST_F(DnsMasterTest, StartupShutdownTest) {
   scoped_refptr<DnsMaster> testing_master = new DnsMaster(host_resolver_,
