@@ -45,6 +45,7 @@
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_action.h"
@@ -743,6 +744,10 @@ void TabContents::CreateShortcut() {
   if (!entry)
     return;
 
+#if defined(OS_LINUX)
+  // TODO(phajdan.jr): Finish creating shortcuts (UI etc).
+  ShellIntegration::CreateDesktopShortcut(GetURL(), GetTitle());
+#else
   // We only allow one pending install request. By resetting the page id we
   // effectively cancel the pending install request.
   pending_install_.page_id = entry->page_id();
@@ -760,6 +765,7 @@ void TabContents::CreateShortcut() {
   // Request the application info. When done OnDidGetApplicationInfo is invoked
   // and we'll create the shortcut.
   render_view_host()->GetApplicationInfo(pending_install_.page_id);
+#endif
 }
 
 void TabContents::ShowPageInfo(const GURL& url,

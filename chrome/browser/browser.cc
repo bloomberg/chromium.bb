@@ -1114,7 +1114,7 @@ void Browser::OpenFile() {
 
 void Browser::OpenCreateShortcutsDialog() {
   UserMetrics::RecordAction(L"CreateShortcut", profile_);
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   GetSelectedTabContents()->CreateShortcut();
 #else
   NOTIMPLEMENTED();

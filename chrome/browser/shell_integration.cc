@@ -5,8 +5,10 @@
 #include "chrome/browser/shell_integration.h"
 
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/chrome_paths.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ShellIntegration::DefaultBrowserWorker

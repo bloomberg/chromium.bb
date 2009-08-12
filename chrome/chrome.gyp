@@ -3916,6 +3916,7 @@
         'browser/sessions/session_service_test_helper.h',
         'browser/sessions/session_service_unittest.cc',
         'browser/sessions/tab_restore_service_unittest.cc',
+        'browser/shell_integration_unittest.cc',
         'browser/spellcheck_unittest.cc',
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/sync/glue/bookmark_model_worker_unittest.cc',

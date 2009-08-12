@@ -7,8 +7,12 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/string16.h"
 
+class FilePath;
+class GURL;
 class MessageLoop;
 
 class ShellIntegration {
@@ -27,6 +31,22 @@ class ShellIntegration {
   // user. This method is very fast so it can be invoked in the UI thread.
   static bool IsFirefoxDefaultBrowser();
 
+#if defined(OS_LINUX)
+  // Returns filename for .desktop file based on |url|, sanitized for security.
+  static FilePath GetDesktopShortcutFilename(const GURL& url);
+
+  // Returns contents for .desktop file based on |template_contents|, |url|
+  // and |title|. The |template_contents| should be contents of .desktop file
+  // used to launch Chrome.
+  static std::string GetDesktopFileContents(
+      const std::string& template_contents, const GURL& url,
+      const string16& title);
+
+  // Creates a desktop shortcut for |url| with |title|. It is not guaranteed
+  // to exist immediately after returning from this function, because actual
+  // file operation is done on the file thread.
+  static void CreateDesktopShortcut(const GURL& url, const string16& title);
+#endif  // defined(OS_LINUX)
 
   // The current default browser UI state
   enum DefaultBrowserUIState {
