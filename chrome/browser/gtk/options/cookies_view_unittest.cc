@@ -205,6 +205,39 @@ TEST_F(CookiesViewTest, Remove) {
   }
 }
 
+TEST_F(CookiesViewTest, RemoveMultiple) {
+  net::CookieMonster* monster =
+      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  monster->SetCookie(GURL("http://foo0"), "C=1");
+  monster->SetCookie(GURL("http://foo1"), "D=1");
+  monster->SetCookie(GURL("http://foo2"), "B=1");
+  monster->SetCookie(GURL("http://foo3"), "A=1");
+  monster->SetCookie(GURL("http://foo4"), "E=1");
+  monster->SetCookie(GURL("http://foo5"), "G=1");
+  monster->SetCookie(GURL("http://foo6"), "X=1");
+  CookiesView cookies_view(profile_.get());
+  GtkTreeIter iter;
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 1);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 3);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 4);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 5);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_button_));
+
+  EXPECT_STREQ("C,B,X", GetMonsterCookies(monster).c_str());
+  EXPECT_STREQ("C,B,X", GetDisplayedCookies(cookies_view).c_str());
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+  EXPECT_EQ(0, gtk_tree_selection_count_selected_rows(cookies_view.selection_));
+}
+
 TEST_F(CookiesViewTest, Filter) {
   net::CookieMonster* monster =
       profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
@@ -397,4 +430,45 @@ TEST_F(CookiesViewTest, SortFilterRemove) {
   gtk_button_clicked(GTK_BUTTON(cookies_view.remove_button_));
   EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
   EXPECT_STREQ("", GetDisplayedCookies(cookies_view).c_str());
+}
+
+
+TEST_F(CookiesViewTest, SortRemoveMultiple) {
+  net::CookieMonster* monster =
+      profile_->GetRequestContext()->cookie_store()->GetCookieMonster();
+  monster->SetCookie(GURL("http://foo0"), "C=1");
+  monster->SetCookie(GURL("http://foo1"), "D=1");
+  monster->SetCookie(GURL("http://foo2"), "B=1");
+  monster->SetCookie(GURL("http://foo3"), "A=1");
+  monster->SetCookie(GURL("http://foo4"), "E=1");
+  monster->SetCookie(GURL("http://foo5"), "G=1");
+  monster->SetCookie(GURL("http://foo6"), "X=1");
+  CookiesView cookies_view(profile_.get());
+  gtk_tree_sortable_set_sort_column_id(
+      GTK_TREE_SORTABLE(cookies_view.list_sort_),
+      CookiesView::COL_COOKIE_NAME,
+      GTK_SORT_DESCENDING);
+  EXPECT_STREQ("X,G,E,D,C,B,A", GetDisplayedCookies(cookies_view).c_str());
+  EXPECT_STREQ("C,D,B,A,E,G,X", GetMonsterCookies(monster).c_str());
+
+  GtkTreeIter iter;
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 1);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 3);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 4);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+  gtk_tree_model_iter_nth_child(cookies_view.list_sort_, &iter, NULL, 5);
+  gtk_tree_selection_select_iter(cookies_view.selection_, &iter);
+
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_button_));
+
+  EXPECT_STREQ("X,E,A", GetDisplayedCookies(cookies_view).c_str());
+  EXPECT_STREQ("A,E,X", GetMonsterCookies(monster).c_str());
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+  EXPECT_EQ(0, gtk_tree_selection_count_selected_rows(cookies_view.selection_));
 }

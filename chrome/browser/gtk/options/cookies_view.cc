@@ -4,8 +4,8 @@
 
 #include "chrome/browser/gtk/options/cookies_view.h"
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
@@ -350,16 +350,16 @@ void CookiesView::ClearCookieDetails() {
 
 void CookiesView::RemoveSelectedCookies() {
   GList* list = gtk_tree_selection_get_selected_rows(selection_, NULL);
-  std::vector<int> selected_rows;
+  std::set<int> selected_rows;
   GList* node;
   for (node = list; node != NULL; node = node->next) {
-    selected_rows.push_back(gtk_tree::GetTreeSortChildRowNumForPath(
+    selected_rows.insert(gtk_tree::GetTreeSortChildRowNumForPath(
         list_sort_, static_cast<GtkTreePath*>(node->data)));
   }
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
   g_list_free(list);
 
-  for (std::vector<int>::reverse_iterator selected = selected_rows.rbegin();
+  for (std::set<int>::reverse_iterator selected = selected_rows.rbegin();
        selected != selected_rows.rend(); ++selected) {
     cookies_table_model_->RemoveCookies(*selected, 1);
   }

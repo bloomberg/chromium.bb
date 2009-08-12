@@ -142,12 +142,14 @@ class CookiesView : public gtk_tree::ModelAdapter::Delegate {
   FRIEND_TEST(CookiesViewTest, Empty);
   FRIEND_TEST(CookiesViewTest, RemoveAll);
   FRIEND_TEST(CookiesViewTest, Remove);
+  FRIEND_TEST(CookiesViewTest, RemoveMultiple);
   FRIEND_TEST(CookiesViewTest, Filter);
   FRIEND_TEST(CookiesViewTest, FilterRemoveAll);
   FRIEND_TEST(CookiesViewTest, FilterRemove);
   FRIEND_TEST(CookiesViewTest, Sort);
   FRIEND_TEST(CookiesViewTest, SortRemove);
   FRIEND_TEST(CookiesViewTest, SortFilterRemove);
+  FRIEND_TEST(CookiesViewTest, SortRemoveMultiple);
 
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
 };
