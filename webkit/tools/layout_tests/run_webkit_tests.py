@@ -1049,6 +1049,21 @@ def main(options, args):
         "lint succeeded.")
     return
 
+  if options.find_baselines:
+    # Record where we found each baseline, then exit.
+    print("html,txt,checksum,png");
+    for t in test_runner._test_files:
+      (expected_txt_dir, expected_txt_file) = path_utils.ExpectedBaseline(
+          t, '.txt', options.platform)
+      (expected_png_dir, expected_png_file) = path_utils.ExpectedBaseline(
+          t, '.png', options.platform)
+      (expected_checksum_dir,
+          expected_checksum_file) = path_utils.ExpectedBaseline(
+          t, '.checksum', options.platform)
+      print("%s,%s,%s,%s" % (path_utils.RelativeTestFilename(t),
+            expected_txt_dir, expected_checksum_dir, expected_png_dir))
+    return
+
   try:
     test_shell_binary_path = path_utils.TestShellBinaryPath(options.target)
   except path_utils.PathNotFound:
@@ -1185,5 +1200,9 @@ if '__main__' == __name__:
                            default=None,
                            help=("Run a the tests in batches (n), after every "
                                  "n tests, the test shell is relaunched."))
+  option_parser.add_option("", "--find-baselines", action="store_true",
+                           default=False,
+                           help="Prints a table mapping tests to their "
+                                "expected results")
   options, args = option_parser.parse_args()
   main(options, args)

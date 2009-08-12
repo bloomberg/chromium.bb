@@ -170,11 +170,64 @@ def GetPlatformDirs(platform):
 
   return platform_dirs
 
+def ExpectedBaseline(filename, suffix, platform):
+  """Given a test name, finds where the baseline result is located. The
+  result is returned as a pair of values, the absolute path to top of the test
+  results directory, and the relative path from there to the results file.
+
+  Both return values will be in the format appropriate for the
+  current platform (e.g., "\\" for path separators on Windows).
+
+  If the results file is not found, then None will be returned for the
+  directory, but the expected relative pathname will still be returned.
+
+  Args:
+     filename: absolute filename to test file
+     suffix: file suffix of the expected results, including dot; e.g. '.txt'
+         or '.png'.  This should not be None, but may be an empty string.
+     platform: the most-specific directory name to use to build the
+         search list of directories, e.g., 'chromium-win', or
+         'chromium-mac-leopard' (we follow the WebKit format)
+  Returns
+     platform_dir - abs path to the top of the results tree (or test tree),
+         or None if the file doesn't exist.
+     results_filename - relative path from top of tree to the results file
+         (os.path.join of the two gives you the full path to the file, unless
+          None was returned.)
+  """
+  testname = os.path.splitext(RelativeTestFilename(filename))[0]
+
+  # While we still have tests in LayoutTests/, chrome/, and pending/, we need
+  # to strip that outer directory.
+  # TODO(pamg): Once we upstream all of chrome/ and pending/, clean this up.
+  platform_filename = testname + '-expected' + suffix
+  testdir, base_filename = platform_filename.split('/', 1)
+
+  platform_dirs = GetPlatformDirs(platform)
+  for platform_dir in platform_dirs:
+    # TODO(pamg): Clean this up once we upstream everything in chrome/ and
+    # pending/.
+    if os.path.basename(platform_dir).startswith('chromium'):
+      if os.path.exists(os.path.join(platform_dir, platform_filename)):
+        return platform_dir, platform_filename
+    else:
+      if os.path.exists(os.path.join(platform_dir, base_filename)):
+        return platform_dir, base_filename
+
+  # If it wasn't found in a platform directory, return the expected result
+  # in the test directory, even if no such file actually exists.
+  platform_dir = LayoutTestsDir(filename)
+  if os.path.exists(os.path.join(platform_dir, platform_filename)):
+    return platform_dir, platform_filename
+  return None, platform_filename
+
 def ExpectedFilename(filename, suffix, platform):
   """Given a test name, returns an absolute path to its expected results.
 
   If no expected results are found in any of the searched directories, the
-  directory in which the test itself is located will be returned.
+  directory in which the test itself is located will be returned. The return
+  value is in the format appropriate for the platform (e.g., "\\" for
+  path separators on windows).
 
   Args:
      filename: absolute filename to test file
@@ -184,28 +237,11 @@ def ExpectedFilename(filename, suffix, platform):
          search list of directories, e.g., 'chromium-win', or
          'chromium-mac-leopard' (we follow the WebKit format)
   """
-  testname = os.path.splitext(RelativeTestFilename(filename))[0]
-  # While we still have tests in LayoutTests/, chrome/, and pending/, we need
-  # to strip that outer directory.
-  # TODO(pamg): Once we upstream all of chrome/ and pending/, clean this up.
-  testdir, testname = testname.split('/', 1)
-  results_filename = testname + '-expected' + suffix
-
-  platform_dirs = GetPlatformDirs(platform)
-  for platform_dir in platform_dirs:
-    # TODO(pamg): Clean this up once we upstream everything in chrome/ and
-    # pending/.
-    if os.path.basename(platform_dir).startswith('chromium'):
-      platform_file = os.path.join(platform_dir, testdir, results_filename)
-    else:
-      platform_file = os.path.join(platform_dir, results_filename)
-    if os.path.exists(platform_file):
-      return platform_file
-
-  # If it wasn't found in a platform directory, return the expected result
-  # in the test's directory, even if no such file actually exists.
-  return os.path.join(os.path.dirname(filename),
-                      os.path.basename(results_filename))
+  (platform_dir, platform_filename) = ExpectedBaseline(filename, suffix,
+                                                      platform)
+  if platform_dir:
+    return os.path.join(platform_dir, platform_filename)
+  return os.path.join(LayoutTestsDir(filename), platform_filename)
 
 def ImageDiffBinaryPath(target):
   """Gets the full path to the image_diff binary for the target build
