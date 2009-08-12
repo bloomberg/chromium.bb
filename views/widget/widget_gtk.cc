@@ -68,7 +68,8 @@ WidgetGtk::WidgetGtk(Type type)
       last_mouse_event_was_move_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       delete_on_destroy_(true),
-      transparent_(false) {
+      transparent_(false),
+      opacity_(255) {
   if (type_ != TYPE_CHILD)
     focus_manager_.reset(new FocusManager(this));
 }
@@ -135,6 +136,9 @@ void WidgetGtk::Init(GtkWidget* parent,
 
   // Make container here.
   CreateGtkWidget(parent, bounds);
+
+  if (opacity_ != 255)
+    SetOpacity(opacity_);
 
   // Make sure we receive our motion events.
 
@@ -317,8 +321,12 @@ void WidgetGtk::PaintNow(const gfx::Rect& update_rect) {
 }
 
 void WidgetGtk::SetOpacity(unsigned char opacity) {
-  // TODO(port): implement this feature.
-  NOTIMPLEMENTED();
+  opacity_ = opacity;
+  if (widget_) {
+    // We can only set the opacity when the widget has been realized.
+    gdk_window_set_opacity(widget_->window, static_cast<gdouble>(opacity) /
+                           static_cast<gdouble>(255));
+  }
 }
 
 RootView* WidgetGtk::GetRootView() {

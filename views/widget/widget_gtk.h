@@ -253,6 +253,8 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
 
   scoped_ptr<DefaultThemeProvider> default_theme_provider_;
 
+  unsigned char opacity_;
+
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };
 
