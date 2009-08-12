@@ -95,8 +95,11 @@
         'l10n_util_win.cc',
         'l10n_util_win.h',
         'message_box_flags.h',
-        'os_exchange_data_win.cc',
-        'os_exchange_data_gtk.cc',
+        'os_exchange_data_provider_gtk.cc',
+        'os_exchange_data_provider_gtk.h',
+        'os_exchange_data_provider_win.cc',
+        'os_exchange_data_provider_win.h',
+        'os_exchange_data.cc',
         'os_exchange_data.h',
         'resource_bundle.cc',
         'resource_bundle.h',
@@ -131,9 +134,18 @@
               # Note: because of gyp predence rules this has to be defined as
               # 'sources/' rather than 'sources!'.
               'sources/': [
-                ['exclude', '^os_exchange_data_gtk.cc'],
+                ['exclude', '^os_exchange_data.cc'],
                 ['exclude', '^os_exchange_data.h'],
+                ['exclude', '^os_exchange_data_provider_gtk.cc'],
+                ['exclude', '^os_exchange_data_provider_gtk.h'],
                 ['exclude', '^drag_drop_types_gtk.cc'],
+              ],
+            }],
+            ['toolkit_views==1 or chromeos==1', {
+              # Note: because of gyp predence rules this has to be defined as
+              # 'sources/' rather than 'sources!'.
+              'sources/': [
+                ['include', '^os_exchange_data.cc'],
               ],
             }],
           ],

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -12,6 +13,15 @@
 
 typedef testing::Test BookmarkDragDataTest;
 
+namespace {
+
+OSExchangeData::Provider* CloneProvider(const OSExchangeData& data) {
+  return new OSExchangeDataProviderWin(
+      OSExchangeDataProviderWin::GetIDataObject(data));
+}
+
+}  // namespace
+
 // Makes sure BookmarkDragData is initially invalid.
 TEST_F(BookmarkDragDataTest, InitialState) {
   BookmarkDragData data;
@@ -20,9 +30,9 @@ TEST_F(BookmarkDragDataTest, InitialState) {
 
 // Makes sure reading bogus data leaves the BookmarkDragData invalid.
 TEST_F(BookmarkDragDataTest, BogusRead) {
-  scoped_refptr<OSExchangeData> data(new OSExchangeData());
+  OSExchangeData data;
   BookmarkDragData drag_data;
-  EXPECT_FALSE(drag_data.Read(OSExchangeData(data.get())));
+  EXPECT_FALSE(drag_data.Read(OSExchangeData(CloneProvider(data))));
   EXPECT_FALSE(drag_data.is_valid());
 }
 
@@ -32,11 +42,11 @@ TEST_F(BookmarkDragDataTest, JustURL) {
   const GURL url("http://google.com");
   const std::wstring title(L"title");
 
-  scoped_refptr<OSExchangeData> data(new OSExchangeData());
-  data->SetURL(url, title);
+  OSExchangeData data;
+  data.SetURL(url, title);
 
   BookmarkDragData drag_data;
-  EXPECT_TRUE(drag_data.Read(OSExchangeData(data.get())));
+  EXPECT_TRUE(drag_data.Read(OSExchangeData(CloneProvider(data))));
   EXPECT_TRUE(drag_data.is_valid());
   ASSERT_EQ(1, drag_data.elements.size());
   EXPECT_TRUE(drag_data.elements[0].is_url);
@@ -61,13 +71,13 @@ TEST_F(BookmarkDragDataTest, URL) {
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_TRUE(drag_data.elements[0].url == url);
   EXPECT_EQ(title, drag_data.elements[0].title);
-  scoped_refptr<OSExchangeData> data(new OSExchangeData());
-  drag_data.Write(&profile, data.get());
+  OSExchangeData data;
+  drag_data.Write(&profile, &data);
 
   // Now read the data back in.
-  scoped_refptr<OSExchangeData> data2(new OSExchangeData(data.get()));
+  OSExchangeData data2(CloneProvider(data));
   BookmarkDragData read_data;
-  EXPECT_TRUE(read_data.Read(*data2));
+  EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(1, read_data.elements.size());
   EXPECT_TRUE(read_data.elements[0].is_url);
@@ -82,7 +92,7 @@ TEST_F(BookmarkDragDataTest, URL) {
   // Writing should also put the URL and title on the clipboard.
   GURL read_url;
   std::wstring read_title;
-  EXPECT_TRUE(data2->GetURLAndTitle(&read_url, &read_title));
+  EXPECT_TRUE(data2.GetURLAndTitle(&read_url, &read_title));
   EXPECT_TRUE(read_url == url);
   EXPECT_EQ(title, read_title);
 }
@@ -104,13 +114,13 @@ TEST_F(BookmarkDragDataTest, Group) {
   EXPECT_EQ(g12->GetTitle(), drag_data.elements[0].title);
   EXPECT_FALSE(drag_data.elements[0].is_url);
 
-  scoped_refptr<OSExchangeData> data(new OSExchangeData());
-  drag_data.Write(&profile, data.get());
+  OSExchangeData data;
+  drag_data.Write(&profile, &data);
 
   // Now read the data back in.
-  scoped_refptr<OSExchangeData> data2(new OSExchangeData(data.get()));
+  OSExchangeData data2(CloneProvider(data));
   BookmarkDragData read_data;
-  EXPECT_TRUE(read_data.Read(*data2));
+  EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(1, read_data.elements.size());
   EXPECT_EQ(g12->GetTitle(), read_data.elements[0].title);
@@ -141,13 +151,13 @@ TEST_F(BookmarkDragDataTest, GroupWithChild) {
 
   BookmarkDragData drag_data(group);
 
-  scoped_refptr<OSExchangeData> data(new OSExchangeData());
-  drag_data.Write(&profile, data.get());
+  OSExchangeData data;
+  drag_data.Write(&profile, &data);
 
   // Now read the data back in.
-  scoped_refptr<OSExchangeData> data2(new OSExchangeData(data.get()));
+  OSExchangeData data2(CloneProvider(data));
   BookmarkDragData read_data;
-  EXPECT_TRUE(read_data.Read(*data2));
+  EXPECT_TRUE(read_data.Read(data2));
   ASSERT_EQ(1, read_data.elements.size());
   ASSERT_EQ(1, read_data.elements[0].children.size());
   const BookmarkDragData::Element& read_child =
@@ -182,13 +192,13 @@ TEST_F(BookmarkDragDataTest, MultipleNodes) {
   nodes.push_back(group);
   nodes.push_back(url_node);
   BookmarkDragData drag_data(nodes);
-  scoped_refptr<OSExchangeData> data(new OSExchangeData());
-  drag_data.Write(&profile, data.get());
+  OSExchangeData data;
+  drag_data.Write(&profile, &data);
 
   // Read the data back in.
-  scoped_refptr<OSExchangeData> data2(new OSExchangeData(data.get()));
+  OSExchangeData data2(CloneProvider(data));
   BookmarkDragData read_data;
-  EXPECT_TRUE(read_data.Read(*data2));
+  EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
   ASSERT_EQ(2, read_data.elements.size());
   ASSERT_EQ(1, read_data.elements[0].children.size());

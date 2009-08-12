@@ -29,6 +29,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
 #include "views/drag_utils.h"
 #endif
@@ -242,14 +243,15 @@ void DragDownload(const DownloadItem* download, SkBitmap* icon) {
   DCHECK(download);
 
   // Set up our OLE machinery
-  scoped_refptr<OSExchangeData> data(new OSExchangeData);
+  OSExchangeData data;
 
   const FilePath::StringType file_name = download->file_name().value();
   if (icon)
-    drag_utils::CreateDragImageForFile(file_name, icon, data);
+    drag_utils::CreateDragImageForFile(file_name, icon, &data);
+  data.SetFilename(download->full_path().ToWStringHack());
 
   const FilePath full_path = download->full_path();
-  data->SetFilename(full_path.value());
+  data.SetFilename(full_path.value());
 
   std::string mime_type = download->mime_type();
   if (mime_type.empty())
@@ -257,14 +259,14 @@ void DragDownload(const DownloadItem* download, SkBitmap* icon) {
 
   // Add URL so that we can load supported files when dragged to TabContents.
   if (net::IsSupportedMimeType(mime_type))
-    data->SetURL(GURL(full_path.value()), file_name);
+    data.SetURL(GURL(full_path.value()), file_name);
 
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
 
   // Run the drag and drop loop
   DWORD effects;
-  DoDragDrop(data.get(), drag_source.get(), DROPEFFECT_COPY | DROPEFFECT_LINK,
-             &effects);
+  DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source.get(),
+             DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
 #else
   NOTIMPLEMENTED();
 #endif

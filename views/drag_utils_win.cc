@@ -10,6 +10,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/gfx/gdi_util.h"
 
 namespace drag_utils {
@@ -69,10 +70,9 @@ void SetDragImageOnDataObject(const gfx::Canvas& canvas,
   HBITMAP bitmap = CreateBitmapFromCanvas(canvas, width, height);
 
   // Attach 'bitmap' to the data_object.
-  SetDragImageOnDataObject(bitmap, width, height,
-                           cursor_x_offset,
-                           cursor_y_offset,
-                           data_object);
+  SetDragImageOnDataObject(
+      bitmap, width, height, cursor_x_offset, cursor_y_offset,
+      OSExchangeDataProviderWin::GetIDataObject(*data_object));
 }
 
 } // namespace drag_utils

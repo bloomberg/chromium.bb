@@ -8,6 +8,7 @@
 
 #include "app/gfx/canvas_paint.h"
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/browser.h"  // TODO(beng): this dependency is awful.
@@ -132,7 +133,7 @@ void TabContentsViewWin::GetContainerBounds(gfx::Rect* out) const {
 }
 
 void TabContentsViewWin::StartDragging(const WebDropData& drop_data) {
-  scoped_refptr<OSExchangeData> data(new OSExchangeData);
+  OSExchangeData data;
 
   // TODO(tc): Generate an appropriate drag image.
 
@@ -150,10 +151,10 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data) {
           net::GetSuggestedFilename(drop_data.url, "", "", L""));
     }
     file_name = file_name.ReplaceExtension(drop_data.file_extension);
-    data->SetFileContents(file_name.value(), drop_data.file_contents);
+    data.SetFileContents(file_name.value(), drop_data.file_contents);
   }
   if (!drop_data.text_html.empty())
-    data->SetHtml(drop_data.text_html, drop_data.html_base_url);
+    data.SetHtml(drop_data.text_html, drop_data.html_base_url);
   if (drop_data.url.is_valid()) {
     if (drop_data.url.SchemeIs(chrome::kJavaScriptScheme)) {
       // We don't want to allow javascript URLs to be dragged to the desktop,
@@ -170,13 +171,13 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data) {
 
       // Pass in NULL as the profile so that the bookmark always adds the url
       // rather than trying to move an existing url.
-      bm_drag_data.Write(NULL, data);
+      bm_drag_data.Write(NULL, &data);
     } else {
-      data->SetURL(drop_data.url, drop_data.url_title);
+      data.SetURL(drop_data.url, drop_data.url_title);
     }
   }
   if (!drop_data.plain_text.empty())
-    data->SetString(drop_data.plain_text);
+    data.SetString(drop_data.plain_text);
 
   drag_source_ = new WebDragSource(GetNativeView(), tab_contents());
 
@@ -186,7 +187,8 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data) {
   // updates while in the system DoDragDrop loop.
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
-  DoDragDrop(data, drag_source_, DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
+  DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
+             DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 
   drag_source_ = NULL;

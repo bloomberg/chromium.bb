@@ -37,6 +37,8 @@ class ClipboardUtil {
   static bool HasUrl(IDataObject* data_object);
   static bool HasFilenames(IDataObject* data_object);
   static bool HasPlainText(IDataObject* data_object);
+  static bool HasFileContents(IDataObject* data_object);
+  static bool HasHtml(IDataObject* data_object);
 
   /////////////////////////////////////////////////////////////////////////////
   // Helper methods to extract information from an IDataObject.  These methods

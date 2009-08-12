@@ -11,6 +11,7 @@
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "app/resource_bundle.h"
 #include "base/base_drag_source.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -197,11 +198,11 @@ void BookmarkTableView::BeginDrag() {
   // We do this as SelectionBegin starts at the end of the visual order.
   std::reverse(nodes_to_drag.begin(), nodes_to_drag.end());
 
-  scoped_refptr<OSExchangeData> data = new OSExchangeData;
-  BookmarkDragData(nodes_to_drag).Write(profile_, data);
+  OSExchangeData data;
+  BookmarkDragData(nodes_to_drag).Write(profile_, &data);
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
   DWORD effects;
-  DoDragDrop(data, drag_source,
+  DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
              DROPEFFECT_LINK | DROPEFFECT_COPY | DROPEFFECT_MOVE, &effects);
 }
 

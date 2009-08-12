@@ -6,6 +6,7 @@
 
 #include "app/drag_drop_types.h"
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/gfx/point.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -30,9 +31,9 @@ DWORD DropTargetWin::OnDragOver(IDataObject* data_object,
                                 DWORD effect) {
   gfx::Point root_view_location(cursor_position.x, cursor_position.y);
   View::ConvertPointToView(NULL, helper_.root_view(), &root_view_location);
+  OSExchangeData data(new OSExchangeDataProviderWin(data_object));
   int drop_operation =
-      helper_.OnDragOver(OSExchangeData(data_object),
-                         root_view_location,
+      helper_.OnDragOver(data, root_view_location,
                          DragDropTypes::DropEffectToDragOperation(effect));
   return DragDropTypes::DragOperationToDropEffect(drop_operation);
 }
@@ -48,7 +49,7 @@ DWORD DropTargetWin::OnDrop(IDataObject* data_object,
   gfx::Point root_view_location(cursor_position.x, cursor_position.y);
   View::ConvertPointToView(NULL, helper_.root_view(), &root_view_location);
 
-  OSExchangeData data(data_object);
+  OSExchangeData data(new OSExchangeDataProviderWin(data_object));
   int drop_operation = DragDropTypes::DropEffectToDragOperation(effect);
   drop_operation = helper_.OnDragOver(data, root_view_location,
                                       drop_operation);

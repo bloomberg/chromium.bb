@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "app/win_util.h"
 #include "base/base_drag_source.h"
 #include "base/base_drop_target.h"
@@ -127,7 +128,7 @@ DWORD EditDropTarget::OnDragEnter(IDataObject* data_object,
                                   DWORD key_state,
                                   POINT cursor_position,
                                   DWORD effect) {
-  OSExchangeData os_data(data_object);
+  OSExchangeData os_data(new OSExchangeDataProviderWin(data_object));
   drag_has_url_ = os_data.HasURL();
   drag_has_string_ = !drag_has_url_ && os_data.HasString();
   if (drag_has_url_) {
@@ -177,7 +178,7 @@ DWORD EditDropTarget::OnDrop(IDataObject* data_object,
                              DWORD key_state,
                              POINT cursor_position,
                              DWORD effect) {
-  OSExchangeData os_data(data_object);
+  OSExchangeData os_data(new OSExchangeDataProviderWin(data_object));
 
   if (drag_has_url_) {
     GURL url;
@@ -2230,7 +2231,7 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
   if (initiated_drag_ || !win_util::IsDrag(mouse_down_point_, point))
     return;
 
-  scoped_refptr<OSExchangeData> data = new OSExchangeData;
+  OSExchangeData data;
 
   DWORD supported_modes = DROPEFFECT_COPY;
 
@@ -2258,8 +2259,8 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
     std::wstring title;
     SkBitmap favicon;
     model_->GetDataForURLExport(&url, &title, &favicon);
-    drag_utils::SetURLAndDragImage(url, title, favicon, data.get());
-    data->SetURL(url, title);
+    drag_utils::SetURLAndDragImage(url, title, favicon, &data);
+    data.SetURL(url, title);
     supported_modes |= DROPEFFECT_LINK;
     UserMetrics::RecordAction(L"Omnibox_DragURL", model_->profile());
   } else {
@@ -2267,13 +2268,13 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
     UserMetrics::RecordAction(L"Omnibox_DragString", model_->profile());
   }
 
-  data->SetString(GetSelectedText());
+  data.SetString(GetSelectedText());
 
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
   DWORD dropped_mode;
   in_drag_ = true;
-  if (DoDragDrop(data, drag_source, supported_modes, &dropped_mode) ==
-      DRAGDROP_S_DROP) {
+  if (DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
+                 supported_modes, &dropped_mode) == DRAGDROP_S_DROP) {
     if ((dropped_mode == DROPEFFECT_MOVE) && (start_text == GetText())) {
       ScopedFreeze freeze(this, GetTextObjectModel());
       OnBeforePossibleChange();

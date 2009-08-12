@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 
 #include "app/l10n_util.h"
 #include "base/clipboard_util.h"
@@ -48,8 +48,8 @@ static STGMEDIUM* GetStorageForFileDescriptor(
 //
 class FormatEtcEnumerator : public IEnumFORMATETC {
  public:
-  FormatEtcEnumerator(OSExchangeData::StoredData::const_iterator begin,
-                      OSExchangeData::StoredData::const_iterator end);
+  FormatEtcEnumerator(DataObjectImpl::StoredData::const_iterator begin,
+                      DataObjectImpl::StoredData::const_iterator end);
   ~FormatEtcEnumerator();
 
   // IEnumFORMATETC implementation:
@@ -99,8 +99,8 @@ static void CloneFormatEtc(FORMATETC* source, FORMATETC* clone) {
 }
 
 FormatEtcEnumerator::FormatEtcEnumerator(
-    OSExchangeData::StoredData::const_iterator start,
-    OSExchangeData::StoredData::const_iterator end)
+    DataObjectImpl::StoredData::const_iterator start,
+    DataObjectImpl::StoredData::const_iterator end)
     : ref_count_(0), cursor_(0) {
   // Copy FORMATETC data from our source into ourselves.
   while (start != end) {
@@ -200,17 +200,18 @@ FormatEtcEnumerator* FormatEtcEnumerator::CloneFromOther(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OSExchangeData, public:
+// OSExchangeDataProviderWin, public:
 
 // static
-bool OSExchangeData::HasPlainTextURL(IDataObject* source) {
+bool OSExchangeDataProviderWin::HasPlainTextURL(IDataObject* source) {
   std::wstring plain_text;
   return (ClipboardUtil::GetPlainText(source, &plain_text) &&
           !plain_text.empty() && GURL(plain_text).is_valid());
 }
 
 // static
-bool OSExchangeData::GetPlainTextURL(IDataObject* source, GURL* url) {
+bool OSExchangeDataProviderWin::GetPlainTextURL(IDataObject* source,
+                                                GURL* url) {
   std::wstring plain_text;
   if (ClipboardUtil::GetPlainText(source, &plain_text) &&
       !plain_text.empty()) {
@@ -223,29 +224,39 @@ bool OSExchangeData::GetPlainTextURL(IDataObject* source, GURL* url) {
   return false;
 }
 
-OSExchangeData::OSExchangeData()
-    : ref_count_(0) {
+// static
+IDataObject* OSExchangeDataProviderWin::GetIDataObject(
+    const OSExchangeData& data) {
+  return static_cast<const OSExchangeDataProviderWin&>(data.provider()).
+      data_object();
 }
 
-OSExchangeData::OSExchangeData(IDataObject* source)
-    : ref_count_(0) {
-  source_object_ = source;
+OSExchangeDataProviderWin::OSExchangeDataProviderWin(IDataObject* source)
+    : data_(new DataObjectImpl()),
+      source_object_(source) {
 }
 
-OSExchangeData::~OSExchangeData() {
-  STLDeleteContainerPointers(contents_.begin(), contents_.end());
+OSExchangeDataProviderWin::OSExchangeDataProviderWin()
+    : data_(new DataObjectImpl()),
+      source_object_(data_.get()) {
 }
 
-void OSExchangeData::SetString(const std::wstring& data) {
+OSExchangeDataProviderWin::~OSExchangeDataProviderWin() {
+}
+
+void OSExchangeDataProviderWin::SetString(const std::wstring& data) {
   STGMEDIUM* storage = GetStorageForWString(data);
-  contents_.push_back(new StoredDataInfo(CF_UNICODETEXT, storage));
+  data_->contents_.push_back(
+      new DataObjectImpl::StoredDataInfo(CF_UNICODETEXT, storage));
 
   // Also add plain text.
   storage = GetStorageForString(WideToUTF8(data));
-  contents_.push_back(new StoredDataInfo(CF_TEXT, storage));
+  data_->contents_.push_back(
+      new DataObjectImpl::StoredDataInfo(CF_TEXT, storage));
 }
 
-void OSExchangeData::SetURL(const GURL& url, const std::wstring& title) {
+void OSExchangeDataProviderWin::SetURL(const GURL& url,
+                                       const std::wstring& title) {
   // NOTE WELL:
   // Every time you change the order of the first two CLIPFORMATS that get
   // added here, you need to update the EnumerationViaCOM test case in
@@ -257,7 +268,7 @@ void OSExchangeData::SetURL(const GURL& url, const std::wstring& title) {
   x_moz_url_str += '\n';
   x_moz_url_str += title;
   STGMEDIUM* storage = GetStorageForWString(x_moz_url_str);
-  contents_.push_back(new StoredDataInfo(
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetMozUrlFormat()->cfFormat, storage));
 
   // Add a .URL shortcut file for dragging to Explorer.
@@ -269,10 +280,10 @@ void OSExchangeData::SetURL(const GURL& url, const std::wstring& title) {
 
   // Add a UniformResourceLocator link for apps like IE and Word.
   storage = GetStorageForWString(UTF8ToWide(url.spec()));
-  contents_.push_back(new StoredDataInfo(
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetUrlWFormat()->cfFormat, storage));
   storage = GetStorageForString(url.spec());
-  contents_.push_back(new StoredDataInfo(
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetUrlFormat()->cfFormat, storage));
 
   // TODO(beng): (http://b/1085501) add CF_HTML...
@@ -280,12 +291,14 @@ void OSExchangeData::SetURL(const GURL& url, const std::wstring& title) {
   // Also add text representations (these should be last since they're the
   // least preferable).
   storage = GetStorageForWString(UTF8ToWide(url.spec()));
-  contents_.push_back(new StoredDataInfo(CF_UNICODETEXT, storage));
+  data_->contents_.push_back(
+      new DataObjectImpl::StoredDataInfo(CF_UNICODETEXT, storage));
   storage = GetStorageForString(url.spec());
-  contents_.push_back(new StoredDataInfo(CF_TEXT, storage));
+  data_->contents_.push_back(
+      new DataObjectImpl::StoredDataInfo(CF_TEXT, storage));
 }
 
-void OSExchangeData::SetFilename(const std::wstring& full_path) {
+void OSExchangeDataProviderWin::SetFilename(const std::wstring& full_path) {
   const size_t drop_size = sizeof(DROPFILES);
   const size_t bytes = drop_size + (full_path.length() + 2) * sizeof(wchar_t);
   HANDLE hdata = ::GlobalAlloc(GMEM_MOVEABLE, bytes);
@@ -308,51 +321,57 @@ void OSExchangeData::SetFilename(const std::wstring& full_path) {
   storage->pUnkForRelease = NULL;
 
   // Set up the StoredDataInfo
-  StoredDataInfo* info = new StoredDataInfo(CF_HDROP, storage);
-  contents_.push_back(info);
+  DataObjectImpl::StoredDataInfo* info =
+      new DataObjectImpl::StoredDataInfo(CF_HDROP, storage);
+  data_->contents_.push_back(info);
 }
 
-void OSExchangeData::SetPickledData(CLIPFORMAT format, const Pickle& data) {
+void OSExchangeDataProviderWin::SetPickledData(CLIPFORMAT format,
+                                               const Pickle& data) {
   STGMEDIUM* storage = GetStorageForString(
       std::string(static_cast<const char *>(data.data()),
       static_cast<size_t>(data.size())));
-  contents_.push_back(new StoredDataInfo(format, storage));
+  data_->contents_.push_back(
+      new DataObjectImpl::StoredDataInfo(format, storage));
 }
 
-void OSExchangeData::SetFileContents(const std::wstring& filename,
-                                     const std::string& file_contents) {
+void OSExchangeDataProviderWin::SetFileContents(
+    const std::wstring& filename,
+    const std::string& file_contents) {
   // Add CFSTR_FILEDESCRIPTOR
   STGMEDIUM* storage = GetStorageForFileDescriptor(filename);
-  contents_.push_back(new StoredDataInfo(
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetFileDescriptorFormat()->cfFormat, storage));
 
   // Add CFSTR_FILECONTENTS
   storage = GetStorageForBytes(file_contents.data(), file_contents.length());
-  contents_.push_back(new StoredDataInfo(
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetFileContentFormatZero()->cfFormat, storage));
 }
 
-void OSExchangeData::SetHtml(const std::wstring& html, const GURL& base_url) {
+void OSExchangeDataProviderWin::SetHtml(const std::wstring& html,
+                                        const GURL& base_url) {
   // Add both MS CF_HTML and text/html format.  CF_HTML should be in utf-8.
   std::string utf8_html = WideToUTF8(html);
   std::string url = base_url.is_valid() ? base_url.spec() : std::string();
 
   std::string cf_html = ClipboardUtil::HtmlToCFHtml(utf8_html, url);
   STGMEDIUM* storage = GetStorageForBytes(cf_html.c_str(), cf_html.size());
-  contents_.push_back(new StoredDataInfo(
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetHtmlFormat()->cfFormat, storage));
 
   STGMEDIUM* storage_plain = GetStorageForBytes(utf8_html.c_str(),
                                                 utf8_html.size());
-  contents_.push_back(new StoredDataInfo(
+  data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetTextHtmlFormat()->cfFormat, storage_plain));
 }
 
-bool OSExchangeData::GetString(std::wstring* data) const {
+bool OSExchangeDataProviderWin::GetString(std::wstring* data) const {
   return ClipboardUtil::GetPlainText(source_object_, data);
 }
 
-bool OSExchangeData::GetURLAndTitle(GURL* url, std::wstring* title) const {
+bool OSExchangeDataProviderWin::GetURLAndTitle(GURL* url,
+                                               std::wstring* title) const {
   std::wstring url_str;
   bool success = ClipboardUtil::GetUrl(source_object_, &url_str, title);
   if (success) {
@@ -368,7 +387,7 @@ bool OSExchangeData::GetURLAndTitle(GURL* url, std::wstring* title) const {
   return false;
 }
 
-bool OSExchangeData::GetFilename(std::wstring* full_path) const {
+bool OSExchangeDataProviderWin::GetFilename(std::wstring* full_path) const {
   std::vector<std::wstring> filenames;
   bool success = ClipboardUtil::GetFilenames(source_object_, &filenames);
   if (success)
@@ -376,7 +395,8 @@ bool OSExchangeData::GetFilename(std::wstring* full_path) const {
   return success;
 }
 
-bool OSExchangeData::GetPickledData(CLIPFORMAT format, Pickle* data) const {
+bool OSExchangeDataProviderWin::GetPickledData(CLIPFORMAT format,
+                                               Pickle* data) const {
   DCHECK(data);
   FORMATETC format_etc =
       { format, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
@@ -395,13 +415,15 @@ bool OSExchangeData::GetPickledData(CLIPFORMAT format, Pickle* data) const {
   return success;
 }
 
-bool OSExchangeData::GetFileContents(std::wstring* filename,
-                                     std::string* file_contents) const {
+bool OSExchangeDataProviderWin::GetFileContents(
+    std::wstring* filename,
+    std::string* file_contents) const {
   return ClipboardUtil::GetFileContents(source_object_, filename,
                                         file_contents);
 }
 
-bool OSExchangeData::GetHtml(std::wstring* html, GURL* base_url) const {
+bool OSExchangeDataProviderWin::GetHtml(std::wstring* html,
+                                        GURL* base_url) const {
   std::string url;
   bool success = ClipboardUtil::GetHtml(source_object_, html, &url);
   if (success)
@@ -409,27 +431,35 @@ bool OSExchangeData::GetHtml(std::wstring* html, GURL* base_url) const {
   return success;
 }
 
-bool OSExchangeData::HasString() const {
+bool OSExchangeDataProviderWin::HasString() const {
   return ClipboardUtil::HasPlainText(source_object_);
 }
 
-bool OSExchangeData::HasURL() const {
+bool OSExchangeDataProviderWin::HasURL() const {
   return (ClipboardUtil::HasUrl(source_object_) ||
           HasPlainTextURL(source_object_));
 }
 
-bool OSExchangeData::HasFile() const {
+bool OSExchangeDataProviderWin::HasFile() const {
   return ClipboardUtil::HasFilenames(source_object_);
 }
 
-bool OSExchangeData::HasFormat(CLIPFORMAT format) const {
+bool OSExchangeDataProviderWin::HasFileContents() const {
+  return ClipboardUtil::HasFileContents(source_object_);
+}
+
+bool OSExchangeDataProviderWin::HasHtml() const {
+  return ClipboardUtil::HasHtml(source_object_);
+}
+
+bool OSExchangeDataProviderWin::HasCustomFormat(CLIPFORMAT format) const {
   FORMATETC format_etc =
       { format, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
   return (source_object_->QueryGetData(&format_etc) == S_OK);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OSExchangeData, IDataObject implementation:
+// DataObjectImpl, IDataObject implementation:
 
 // The following function, DuplicateMedium, is derived from WCDataObject.cpp
 // in the WebKit source code. This is the license information for the file:
@@ -502,7 +532,15 @@ static void DuplicateMedium(CLIPFORMAT source_clipformat,
     destination->pUnkForRelease->AddRef();
 }
 
-HRESULT OSExchangeData::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
+DataObjectImpl::DataObjectImpl() : ref_count_(0) {
+  STLDeleteContainerPointers(contents_.begin(), contents_.end());
+}
+
+DataObjectImpl::~DataObjectImpl() {
+  STLDeleteContainerPointers(contents_.begin(), contents_.end());
+}
+
+HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
   StoredData::const_iterator iter = contents_.begin();
   while (iter != contents_.end()) {
     if ((*iter)->format_etc.cfFormat == format_etc->cfFormat) {
@@ -515,11 +553,12 @@ HRESULT OSExchangeData::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
   return DV_E_FORMATETC;
 }
 
-HRESULT OSExchangeData::GetDataHere(FORMATETC* format_etc, STGMEDIUM* medium) {
+HRESULT DataObjectImpl::GetDataHere(FORMATETC* format_etc,
+                                    STGMEDIUM* medium) {
   return DATA_E_FORMATETC;
 }
 
-HRESULT OSExchangeData::QueryGetData(FORMATETC* format_etc) {
+HRESULT DataObjectImpl::QueryGetData(FORMATETC* format_etc) {
   StoredData::const_iterator iter = contents_.begin();
   while (iter != contents_.end()) {
     if ((*iter)->format_etc.cfFormat == format_etc->cfFormat)
@@ -529,13 +568,13 @@ HRESULT OSExchangeData::QueryGetData(FORMATETC* format_etc) {
   return DV_E_FORMATETC;
 }
 
-HRESULT OSExchangeData::GetCanonicalFormatEtc(
+HRESULT DataObjectImpl::GetCanonicalFormatEtc(
     FORMATETC* format_etc, FORMATETC* result) {
   format_etc->ptd = NULL;
   return E_NOTIMPL;
 }
 
-HRESULT OSExchangeData::SetData(
+HRESULT DataObjectImpl::SetData(
     FORMATETC* format_etc, STGMEDIUM* medium, BOOL should_release) {
   STGMEDIUM* local_medium = new STGMEDIUM;
   if (should_release) {
@@ -544,8 +583,8 @@ HRESULT OSExchangeData::SetData(
     DuplicateMedium(format_etc->cfFormat, medium, local_medium);
   }
 
-  StoredDataInfo* info =
-      new StoredDataInfo(format_etc->cfFormat, local_medium);
+  DataObjectImpl::StoredDataInfo* info =
+      new DataObjectImpl::StoredDataInfo(format_etc->cfFormat, local_medium);
   info->medium->tymed = format_etc->tymed;
   info->owns_medium = !!should_release;
   contents_.push_back(info);
@@ -553,7 +592,7 @@ HRESULT OSExchangeData::SetData(
   return S_OK;
 }
 
-HRESULT OSExchangeData::EnumFormatEtc(
+HRESULT DataObjectImpl::EnumFormatEtc(
     DWORD direction, IEnumFORMATETC** enumerator) {
   if (direction == DATADIR_GET) {
     FormatEtcEnumerator* e =
@@ -565,23 +604,23 @@ HRESULT OSExchangeData::EnumFormatEtc(
   return E_NOTIMPL;
 }
 
-HRESULT OSExchangeData::DAdvise(
+HRESULT DataObjectImpl::DAdvise(
     FORMATETC* format_etc, DWORD advf, IAdviseSink* sink, DWORD* connection) {
   return OLE_E_ADVISENOTSUPPORTED;
 }
 
-HRESULT OSExchangeData::DUnadvise(DWORD connection) {
+HRESULT DataObjectImpl::DUnadvise(DWORD connection) {
   return OLE_E_ADVISENOTSUPPORTED;
 }
 
-HRESULT OSExchangeData::EnumDAdvise(IEnumSTATDATA** enumerator) {
+HRESULT DataObjectImpl::EnumDAdvise(IEnumSTATDATA** enumerator) {
   return OLE_E_ADVISENOTSUPPORTED;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OSExchangeData, IUnknown implementation:
+// DataObjectImpl, IUnknown implementation:
 
-HRESULT OSExchangeData::QueryInterface(const IID& iid, void** object) {
+HRESULT DataObjectImpl::QueryInterface(const IID& iid, void** object) {
   *object = NULL;
   if (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDataObject)) {
     *object = this;
@@ -592,11 +631,11 @@ HRESULT OSExchangeData::QueryInterface(const IID& iid, void** object) {
   return S_OK;
 }
 
-ULONG OSExchangeData::AddRef() {
+ULONG DataObjectImpl::AddRef() {
   return InterlockedIncrement(&ref_count_);
 }
 
-ULONG OSExchangeData::Release() {
+ULONG DataObjectImpl::Release() {
   if (InterlockedDecrement(&ref_count_) == 0) {
     ULONG copied_refcnt = ref_count_;
     delete this;
@@ -606,7 +645,7 @@ ULONG OSExchangeData::Release() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OSExchangeData, private:
+// DataObjectImpl, private:
 
 static STGMEDIUM* GetStorageForBytes(const char* data, size_t bytes) {
   HANDLE handle = GlobalAlloc(GPTR, static_cast<int>(bytes));
@@ -701,4 +740,18 @@ static STGMEDIUM* GetStorageForFileDescriptor(
   storage->tymed = TYMED_HGLOBAL;
   storage->pUnkForRelease = NULL;
   return storage;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OSExchangeData, public:
+
+// static
+OSExchangeData::Provider* OSExchangeData::CreateProvider() {
+  return new OSExchangeDataProviderWin();
+}
+
+// static
+OSExchangeData::CustomFormat OSExchangeData::RegisterCustomFormat(
+    const std::string& type) {
+  return RegisterClipboardFormat(ASCIIToWide(type).c_str());
 }

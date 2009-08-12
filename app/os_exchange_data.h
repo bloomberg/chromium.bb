@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,15 +7,18 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <objidl.h>
-#include "base/scoped_comptr_win.h"
-#endif
-
+#include <set>
 #include <string>
 #include <vector>
 
+#if defined(OS_WIN)
+#include <objidl.h>
+#elif defined(OS_LINUX)
+#include <gtk/gtk.h>
+#endif
+
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 
 class GURL;
 class Pickle;
@@ -29,25 +32,71 @@ class Pickle;
 //  translating that into something the OS can understand.
 //
 ///////////////////////////////////////////////////////////////////////////////
-#if defined(OS_WIN)
-class OSExchangeData : public IDataObject {
-#else
 class OSExchangeData {
-#endif
  public:
+  // CustomFormats are used for non-standard data types. For example, bookmark
+  // nodes are written using a CustomFormat.
 #if defined(OS_WIN)
-  // Returns true if source has plain text that is a valid url.
-  static bool HasPlainTextURL(IDataObject* source);
-
-  // Returns true if source has plain text that is a valid URL and sets url to
-  // that url.
-  static bool GetPlainTextURL(IDataObject* source, GURL* url);
-
-  explicit OSExchangeData(IDataObject* source);
+  typedef CLIPFORMAT CustomFormat;
+#elif defined(OS_LINUX)
+  typedef GdkAtom CustomFormat;
 #endif
+
+  // Enumeration of the known formats.
+  enum Format {
+    STRING         = 1 << 0,
+    URL            = 1 << 1,
+    FILE_CONTENTS  = 1 << 2,
+    FILE_NAME      = 1 << 3,
+    PICKLED_DATA   = 1 << 4,
+    HTML           = 1 << 5
+  };
+
+  // Provider defines the platform specific part of OSExchangeData that
+  // interacts with the native system.
+  class Provider {
+   public:
+    Provider() {}
+    virtual ~Provider() {}
+
+    virtual void SetString(const std::wstring& data) = 0;
+    virtual void SetURL(const GURL& url, const std::wstring& title) = 0;
+    virtual void SetFilename(const std::wstring& full_path) = 0;
+    virtual void SetPickledData(CustomFormat format, const Pickle& data) = 0;
+    virtual void SetFileContents(const std::wstring& filename,
+                                 const std::string& file_contents) = 0;
+    virtual void SetHtml(const std::wstring& html, const GURL& base_url) = 0;
+
+    virtual bool GetString(std::wstring* data) const = 0;
+    virtual bool GetURLAndTitle(GURL* url, std::wstring* title) const = 0;
+    virtual bool GetFilename(std::wstring* full_path) const = 0;
+    virtual bool GetPickledData(CustomFormat format, Pickle* data) const = 0;
+    virtual bool GetFileContents(std::wstring* filename,
+                                 std::string* file_contents) const = 0;
+    virtual bool GetHtml(std::wstring* html, GURL* base_url) const = 0;
+
+    virtual bool HasString() const = 0;
+    virtual bool HasURL() const = 0;
+    virtual bool HasFile() const = 0;
+    virtual bool HasFileContents() const = 0;
+    virtual bool HasHtml() const = 0;
+    virtual bool HasCustomFormat(
+        OSExchangeData::CustomFormat format) const = 0;
+  };
 
   OSExchangeData();
-  virtual ~OSExchangeData();
+  // Creates an OSExchangeData with the specified provider. OSExchangeData
+  // takes ownership of the supplied provider.
+  explicit OSExchangeData(Provider* provider);
+
+  ~OSExchangeData();
+
+  // Registers the specific string as a possible format for data.
+  static CustomFormat RegisterCustomFormat(const std::string& type);
+
+  // Returns the Provider, which actually stores and manages the data.
+  const Provider& provider() const { return *provider_; }
+  Provider& provider() { return *provider_; }
 
   // These functions add data to the OSExchangeData object of various Chrome
   // types. The OSExchangeData object takes care of translating the data into
@@ -64,10 +113,8 @@ class OSExchangeData {
   void SetURL(const GURL& url, const std::wstring& title);
   // A full path to a file
   void SetFilename(const std::wstring& full_path);
-#if defined(OS_WIN)
   // Adds pickled data of the specified format.
-  void SetPickledData(CLIPFORMAT format, const Pickle& data);
-#endif
+  void SetPickledData(CustomFormat format, const Pickle& data);
   // Adds the bytes of a file (CFSTR_FILECONTENTS and CFSTR_FILEDESCRIPTOR).
   void SetFileContents(const std::wstring& filename,
                        const std::string& file_contents);
@@ -83,9 +130,7 @@ class OSExchangeData {
   bool GetURLAndTitle(GURL* url, std::wstring* title) const;
   // Return the path of a file, if available.
   bool GetFilename(std::wstring* full_path) const;
-#if defined(OS_WIN)
-  bool GetPickledData(CLIPFORMAT format, Pickle* data) const;
-#endif
+  bool GetPickledData(CustomFormat format, Pickle* data) const;
   bool GetFileContents(std::wstring* filename,
                        std::string* file_contents) const;
   bool GetHtml(std::wstring* html, GURL* base_url) const;
@@ -94,70 +139,25 @@ class OSExchangeData {
   // returning anything.
   bool HasString() const;
   bool HasURL() const;
-  bool HasURLTitle() const;
   bool HasFile() const;
-#if defined(OS_WIN)
-  bool HasFormat(CLIPFORMAT format) const;
+  bool HasCustomFormat(CustomFormat format) const;
 
-  // IDataObject implementation:
-  HRESULT __stdcall GetData(FORMATETC* format_etc, STGMEDIUM* medium);
-  HRESULT __stdcall GetDataHere(FORMATETC* format_etc, STGMEDIUM* medium);
-  HRESULT __stdcall QueryGetData(FORMATETC* format_etc);
-  HRESULT __stdcall GetCanonicalFormatEtc(
-      FORMATETC* format_etc, FORMATETC* result);
-  HRESULT __stdcall SetData(
-      FORMATETC* format_etc, STGMEDIUM* medium, BOOL should_release);
-  HRESULT __stdcall EnumFormatEtc(
-      DWORD direction, IEnumFORMATETC** enumerator);
-  HRESULT __stdcall DAdvise(
-      FORMATETC* format_etc, DWORD advf, IAdviseSink* sink, DWORD* connection);
-  HRESULT __stdcall DUnadvise(DWORD connection);
-  HRESULT __stdcall EnumDAdvise(IEnumSTATDATA** enumerator);
+  // Returns true if this OSExchangeData has data for ALL the formats in
+  // |formats| and ALL the custom formats in |custom_formats|.
+  bool HasAllFormats(int formats,
+                     const std::set<CustomFormat>& custom_formats) const;
 
-  // IUnknown implementation:
-  HRESULT __stdcall QueryInterface(const IID& iid, void** object);
-  ULONG __stdcall AddRef();
-  ULONG __stdcall Release();
-#endif
+  // Returns true if this OSExchangeData has data in any of the formats in
+  // |formats| or any custom format in |custom_formats|.
+  bool HasAnyFormat(int formats,
+                     const std::set<CustomFormat>& custom_formats) const;
 
  private:
-#if defined(OS_WIN)
-  // FormatEtcEnumerator only likes us for our StoredDataMap typedef.
-  friend class FormatEtcEnumerator;
+  // Creates the platform specific Provider.
+  static Provider* CreateProvider();
 
-  // Our internal representation of stored data & type info.
-  struct StoredDataInfo {
-    FORMATETC format_etc;
-    STGMEDIUM* medium;
-    bool owns_medium;
-
-    StoredDataInfo(CLIPFORMAT cf, STGMEDIUM* a_medium) {
-      format_etc.cfFormat = cf;
-      format_etc.dwAspect = DVASPECT_CONTENT;
-      format_etc.lindex = -1;
-      format_etc.ptd = NULL;
-      format_etc.tymed = a_medium->tymed;
-
-      owns_medium = true;
-
-      medium = a_medium;
-    }
-
-    ~StoredDataInfo() {
-      if (owns_medium) {
-        ReleaseStgMedium(medium);
-        delete medium;
-      }
-    }
-  };
-
-  typedef std::vector<StoredDataInfo*> StoredData;
-  StoredData contents_;
-
-  ScopedComPtr<IDataObject> source_object_;
-
-  LONG ref_count_;
-#endif
+  // Provides the actual data.
+  scoped_ptr<Provider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OSExchangeData);
 };

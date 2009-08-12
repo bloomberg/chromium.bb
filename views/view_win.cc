@@ -8,6 +8,7 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/path.h"
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/scoped_handle.h"
 #include "base/string_util.h"
 #include "views/accessibility/view_accessibility_wrapper.h"
@@ -22,13 +23,14 @@ void View::DoDrag(const MouseEvent& e, int press_x, int press_y) {
   if (drag_operations == DragDropTypes::DRAG_NONE)
     return;
 
-  scoped_refptr<OSExchangeData> data = new OSExchangeData;
-  WriteDragData(press_x, press_y, data.get());
+  OSExchangeData data;
+  WriteDragData(press_x, press_y, &data);
 
   // Message the RootView to do the drag and drop. That way if we're removed
   // the RootView can detect it and avoid calling us back.
   RootView* root_view = GetRootView();
-  root_view->StartDragForViewFromMouseEvent(this, data, drag_operations);
+  root_view->StartDragForViewFromMouseEvent(
+      this, OSExchangeDataProviderWin::GetIDataObject(data), drag_operations);
 }
 
 ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {

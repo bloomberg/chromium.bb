@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "views/controls/menu/chrome_menu.h"
 
 class Browser;
 class PageNavigator;

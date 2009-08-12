@@ -8,6 +8,7 @@
 
 #include "app/drag_drop_types.h"
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -125,12 +126,12 @@ void BookmarkFolderTreeView::BeginDrag(const BookmarkNode* node) {
   std::vector<const BookmarkNode*> nodes_to_drag;
   nodes_to_drag.push_back(node);
 
-  scoped_refptr<OSExchangeData> data = new OSExchangeData;
-  BookmarkDragData(nodes_to_drag).Write(profile_, data);
+  OSExchangeData data;
+  BookmarkDragData(nodes_to_drag).Write(profile_, &data);
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
   DWORD effects;
   is_dragging_ = true;
-  DoDragDrop(data, drag_source,
+  DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
              DROPEFFECT_LINK | DROPEFFECT_COPY | DROPEFFECT_MOVE, &effects);
   is_dragging_ = false;
 }

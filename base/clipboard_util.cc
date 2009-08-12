@@ -165,6 +165,17 @@ bool ClipboardUtil::HasFilenames(IDataObject* data_object) {
   return SUCCEEDED(data_object->QueryGetData(GetCFHDropFormat()));
 }
 
+bool ClipboardUtil::HasFileContents(IDataObject* data_object) {
+  DCHECK(data_object);
+  return SUCCEEDED(data_object->QueryGetData(GetFileContentFormatZero()));
+}
+
+bool ClipboardUtil::HasHtml(IDataObject* data_object) {
+  DCHECK(data_object);
+  return SUCCEEDED(data_object->QueryGetData(GetHtmlFormat())) ||
+      SUCCEEDED(data_object->QueryGetData(GetTextHtmlFormat()));
+}
+
 bool ClipboardUtil::HasPlainText(IDataObject* data_object) {
   DCHECK(data_object);
   return SUCCEEDED(data_object->QueryGetData(GetPlainTextWFormat())) ||

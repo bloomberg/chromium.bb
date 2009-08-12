@@ -13,6 +13,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
 #include "base/gfx/native_theme.h"
 #include "base/message_loop.h"
@@ -891,6 +892,8 @@ void SubmenuView::PaintChildren(gfx::Canvas* canvas) {
   if (drop_item_ && drop_position_ != MenuDelegate::DROP_ON)
     PaintDropIndicator(canvas, drop_item_, drop_position_);
 }
+
+// TODO(sky): need to add support for new dnd methods for Linux.
 
 bool SubmenuView::CanDrop(const OSExchangeData& data) {
   DCHECK(GetMenuItem()->GetMenuController());
@@ -1835,17 +1838,17 @@ void MenuController::OnMouseDragged(SubmenuView* source,
       gfx::Canvas canvas(item->width(), item->height(), false);
       item->Paint(&canvas, true);
 
-      scoped_refptr<OSExchangeData> data(new OSExchangeData);
-      item->GetDelegate()->WriteDragData(item, data.get());
+      OSExchangeData data;
+      item->GetDelegate()->WriteDragData(item, &data);
       drag_utils::SetDragImageOnDataObject(canvas, item->width(),
                                            item->height(), press_loc.x(),
-                                           press_loc.y(), data);
+                                           press_loc.y(), &data);
 
       scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
       int drag_ops = item->GetDelegate()->GetDragOperations(item);
       DWORD effects;
       StopScrolling();
-      DoDragDrop(data, drag_source,
+      DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
                  DragDropTypes::DragOperationToDropEffect(drag_ops),
                  &effects);
       if (GetActiveInstance() == this) {

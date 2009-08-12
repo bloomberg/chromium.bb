@@ -11,6 +11,13 @@
 #include "chrome/browser/history/history.h"
 #include "googleurl/src/gurl.h"
 
+// TODO(port): Port this file.
+#if defined(TOOLKIT_VIEWS)
+#include "app/os_exchange_data.h"
+#else
+#include "chrome/common/temp_scaffolding_stubs.h"
+#endif
+
 class BookmarkModel;
 class BookmarkNode;
 class OSExchangeData;
@@ -66,6 +73,10 @@ struct BookmarkDragData {
   };
 
   BookmarkDragData() { }
+
+#if defined(TOOLKIT_VIEWS)
+  static OSExchangeData::CustomFormat GetBookmarkCustomFormat();
+#endif
 
   // Created a BookmarkDragData populated from the arguments.
   explicit BookmarkDragData(const BookmarkNode* node);

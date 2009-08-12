@@ -8,6 +8,7 @@
 #include "chrome/browser/tab_contents/web_drop_target.h"
 
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/clipboard_util.h"
 #include "base/gfx/point.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -104,7 +105,7 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   WebDropData::PopulateWebDropData(data_object, &drop_data);
 
   if (drop_data.url.is_empty())
-    OSExchangeData::GetPlainTextURL(data_object, &drop_data.url);
+    OSExchangeDataProviderWin::GetPlainTextURL(data_object, &drop_data.url);
 
   is_drop_target_ = true;
 

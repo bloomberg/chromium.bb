@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/os_exchange_data.h"
+#include "app/os_exchange_data_provider_win.h"
 #include "base/clipboard_util.h"
 #include "base/pickle.h"
 #include "base/ref_counted.h"
@@ -14,32 +15,40 @@
 
 typedef testing::Test OSExchangeDataTest;
 
+namespace {
+
+OSExchangeData::Provider* CloneProvider(const OSExchangeData& data) {
+  return new OSExchangeDataProviderWin(
+      OSExchangeDataProviderWin::GetIDataObject(data));
+}
+
+}  // namespace
+
 // Test setting/getting using the OSExchangeData API
 TEST(OSExchangeDataTest, StringDataGetAndSet) {
-  OSExchangeData* data = new OSExchangeData;
+  OSExchangeData data;
   std::wstring input = L"I can has cheezburger?";
-  data->SetString(input);
+  data.SetString(input);
 
-  OSExchangeData* data2 = new OSExchangeData(data);
+  OSExchangeData data2(CloneProvider(data));
   std::wstring output;
-  EXPECT_TRUE(data2->GetString(&output));
+  EXPECT_TRUE(data2.GetString(&output));
   EXPECT_EQ(input, output);
   std::string url_spec = "http://www.goats.com/";
   GURL url(url_spec);
   std::wstring title;
-  EXPECT_FALSE(data2->GetURLAndTitle(&url, &title));
+  EXPECT_FALSE(data2.GetURLAndTitle(&url, &title));
   // No URLs in |data|, so url should be untouched.
   EXPECT_EQ(url_spec, url.spec());
-  // data gets freed when data2 releases the ref on it
-  delete data2;
 }
 
 // Test getting using the IDataObject COM API
 TEST(OSExchangeDataTest, StringDataAccessViaCOM) {
-  OSExchangeData* data = new OSExchangeData;
+  OSExchangeData data;
   std::wstring input = L"O hai googlz.";
-  data->SetString(input);
-  ScopedComPtr<IDataObject> com_data(data);
+  data.SetString(input);
+  ScopedComPtr<IDataObject> com_data(
+      OSExchangeDataProviderWin::GetIDataObject(data));
 
   FORMATETC format_etc =
       { CF_UNICODETEXT, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
@@ -55,10 +64,11 @@ TEST(OSExchangeDataTest, StringDataAccessViaCOM) {
 
 // Test setting using the IDataObject COM API
 TEST(OSExchangeDataTest, StringDataWritingViaCOM) {
-  OSExchangeData* data = new OSExchangeData;
+  OSExchangeData data;
   std::wstring input = L"http://www.google.com/";
 
-  ScopedComPtr<IDataObject> com_data(data);
+  ScopedComPtr<IDataObject> com_data(
+      OSExchangeDataProviderWin::GetIDataObject(data));
 
   // Store data in the object using the COM SetData API.
   CLIPFORMAT cfstr_ineturl = RegisterClipboardFormat(CFSTR_INETURL);
@@ -78,22 +88,21 @@ TEST(OSExchangeDataTest, StringDataWritingViaCOM) {
 
   // Construct a new object with the old object so that we can use our access
   // APIs.
-  OSExchangeData* data2 = new OSExchangeData(com_data);
-  EXPECT_TRUE(data2->HasURL());
+  OSExchangeData data2(CloneProvider(data));
+  EXPECT_TRUE(data2.HasURL());
   GURL url_from_data;
   std::wstring title;
-  EXPECT_TRUE(data2->GetURLAndTitle(&url_from_data, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(&url_from_data, &title));
   GURL reference_url(input);
   EXPECT_EQ(reference_url.spec(), url_from_data.spec());
-  // deleting data2 will free data because it holds a ref to it.
-  delete data2;
 }
 
 TEST(OSExchangeDataTest, URLDataAccessViaCOM) {
-  OSExchangeData* data = new OSExchangeData;
+  OSExchangeData data;
   GURL url("http://www.google.com/");
-  data->SetURL(url, L"");
-  ScopedComPtr<IDataObject> com_data(data);
+  data.SetURL(url, L"");
+  ScopedComPtr<IDataObject> com_data(
+      OSExchangeDataProviderWin::GetIDataObject(data));
 
   CLIPFORMAT cfstr_ineturl = RegisterClipboardFormat(CFSTR_INETURL);
   FORMATETC format_etc =
@@ -109,14 +118,15 @@ TEST(OSExchangeDataTest, URLDataAccessViaCOM) {
 }
 
 TEST(OSExchangeDataTest, MultipleFormatsViaCOM) {
-  OSExchangeData* data = new OSExchangeData;
+  OSExchangeData data;
   std::string url_spec = "http://www.google.com/";
   GURL url(url_spec);
   std::wstring text = L"O hai googlz.";
-  data->SetURL(url, L"Google");
-  data->SetString(text);
+  data.SetURL(url, L"Google");
+  data.SetString(text);
 
-  ScopedComPtr<IDataObject> com_data(data);
+  ScopedComPtr<IDataObject> com_data(
+      OSExchangeDataProviderWin::GetIDataObject(data));
 
   CLIPFORMAT cfstr_ineturl = RegisterClipboardFormat(CFSTR_INETURL);
   FORMATETC url_format_etc =
@@ -143,15 +153,16 @@ TEST(OSExchangeDataTest, MultipleFormatsViaCOM) {
 }
 
 TEST(OSExchangeDataTest, EnumerationViaCOM) {
-  OSExchangeData* data = new OSExchangeData;
-  data->SetURL(GURL("http://www.google.com/"), L"");
-  data->SetString(L"O hai googlz.");
+  OSExchangeData data;
+  data.SetURL(GURL("http://www.google.com/"), L"");
+  data.SetString(L"O hai googlz.");
 
   CLIPFORMAT cfstr_file_group_descriptor =
       RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR);
   CLIPFORMAT text_x_moz_url = RegisterClipboardFormat(L"text/x-moz-url");
 
-  ScopedComPtr<IDataObject> com_data(data);
+  ScopedComPtr<IDataObject> com_data(
+      OSExchangeDataProviderWin::GetIDataObject(data));
   ScopedComPtr<IEnumFORMATETC> enumerator;
   EXPECT_EQ(S_OK, com_data.get()->EnumFormatEtc(DATADIR_GET,
                                                 enumerator.Receive()));
@@ -231,29 +242,30 @@ TEST(OSExchangeDataTest, EnumerationViaCOM) {
 }
 
 TEST(OSExchangeDataTest, TestURLExchangeFormats) {
-  OSExchangeData* data = new OSExchangeData;
+  OSExchangeData data;
   std::string url_spec = "http://www.google.com/";
   GURL url(url_spec);
   std::wstring url_title = L"Google";
-  data->SetURL(url, url_title);
+  data.SetURL(url, url_title);
   std::wstring output;
 
-  OSExchangeData* data2 = new OSExchangeData(data);
+  OSExchangeData data2(CloneProvider(data));
 
   // URL spec and title should match
   GURL output_url;
   std::wstring output_title;
-  EXPECT_TRUE(data2->GetURLAndTitle(&output_url, &output_title));
+  EXPECT_TRUE(data2.GetURLAndTitle(&output_url, &output_title));
   EXPECT_EQ(url_spec, output_url.spec());
   EXPECT_EQ(url_title, output_title);
   std::wstring output_string;
 
   // URL should be the raw text response
-  EXPECT_TRUE(data2->GetString(&output_string));
+  EXPECT_TRUE(data2.GetString(&output_string));
   EXPECT_EQ(url_spec, WideToUTF8(output_string));
 
   // File contents access via COM
-  ScopedComPtr<IDataObject> com_data(data);
+  ScopedComPtr<IDataObject> com_data(
+      OSExchangeDataProviderWin::GetIDataObject(data));
   {
     CLIPFORMAT cfstr_file_contents =
         RegisterClipboardFormat(CFSTR_FILECONTENTS);
@@ -271,9 +283,6 @@ TEST(OSExchangeDataTest, TestURLExchangeFormats) {
     EXPECT_EQ(file_contents, output);
     ReleaseStgMedium(&medium);
   }
-
-  // Need to manually free data2 since we never stuff it into a COMPtr.
-  delete data2;
 }
 
 TEST(OSExchangeDataTest, TestPickledData) {
@@ -282,14 +291,14 @@ TEST(OSExchangeDataTest, TestPickledData) {
   Pickle saved_pickle;
   saved_pickle.WriteInt(1);
   saved_pickle.WriteInt(2);
-  scoped_refptr<OSExchangeData> data(new OSExchangeData());
-  data->SetPickledData(test_cf, saved_pickle);
+  OSExchangeData data;
+  data.SetPickledData(test_cf, saved_pickle);
 
-  scoped_refptr<OSExchangeData> copy(new OSExchangeData(data.get()));
-  EXPECT_TRUE(copy->HasFormat(test_cf));
+  OSExchangeData copy(CloneProvider(data));
+  EXPECT_TRUE(copy.HasCustomFormat(test_cf));
 
   Pickle restored_pickle;
-  EXPECT_TRUE(copy->GetPickledData(test_cf, &restored_pickle));
+  EXPECT_TRUE(copy.GetPickledData(test_cf, &restored_pickle));
   void* p_iterator = NULL;
   int value;
   EXPECT_TRUE(restored_pickle.ReadInt(&p_iterator, &value));
@@ -299,30 +308,30 @@ TEST(OSExchangeDataTest, TestPickledData) {
 }
 
 TEST(OSExchangeDataTest, FileContents) {
-  scoped_refptr<OSExchangeData> data(new OSExchangeData);
+  OSExchangeData data;
   std::string file_contents("data\0with\0nulls", 15);
-  data->SetFileContents(L"filename.txt", file_contents);
+  data.SetFileContents(L"filename.txt", file_contents);
 
-  scoped_refptr<OSExchangeData> copy(new OSExchangeData(data.get()));
+  OSExchangeData copy(CloneProvider(data));
   std::wstring filename;
   std::string read_contents;
-  EXPECT_TRUE(copy->GetFileContents(&filename, &read_contents));
+  EXPECT_TRUE(copy.GetFileContents(&filename, &read_contents));
   EXPECT_EQ(L"filename.txt", filename);
   EXPECT_EQ(file_contents, read_contents);
 }
 
 TEST(OSExchangeDataTest, Html) {
-  scoped_refptr<OSExchangeData> data(new OSExchangeData);
+  OSExchangeData data;
   GURL url("http://www.google.com/");
   std::wstring html(
       L"<HTML>\n<BODY>\n"
       L"<b>bold.</b> <i><b>This is bold italic.</b></i>\n"
       L"</BODY>\n</HTML>");
-  data->SetHtml(html, url);
+  data.SetHtml(html, url);
 
-  scoped_refptr<OSExchangeData> copy(new OSExchangeData(data.get()));
+  OSExchangeData copy(CloneProvider(data));
   std::wstring read_html;
-  EXPECT_TRUE(copy->GetHtml(&read_html, &url));
+  EXPECT_TRUE(copy.GetHtml(&read_html, &url));
   EXPECT_EQ(html, read_html);
 
   // Check the CF_HTML too.
@@ -335,7 +344,9 @@ TEST(OSExchangeDataTest, Html) {
   expected_cf_html.append("\r\n<!--EndFragment-->\r\n</body>\r\n</html>");
 
   STGMEDIUM medium;
-  EXPECT_EQ(S_OK, data->GetData(ClipboardUtil::GetHtmlFormat(), &medium));
+  IDataObject* data_object = OSExchangeDataProviderWin::GetIDataObject(data);
+  EXPECT_EQ(S_OK,
+            data_object->GetData(ClipboardUtil::GetHtmlFormat(), &medium));
   ScopedHGlobal<char> glob(medium.hGlobal);
   std::string output(glob.get(), glob.Size());
   EXPECT_EQ(expected_cf_html, output);
@@ -343,19 +354,19 @@ TEST(OSExchangeDataTest, Html) {
 }
 
 TEST(OSExchangeDataTest, SetURLWithMaxPath) {
-  scoped_refptr<OSExchangeData> data(new OSExchangeData);
+  OSExchangeData data;
   std::wstring long_title(L'a', MAX_PATH + 1);
-  data->SetURL(GURL("http://google.com"), long_title);
+  data.SetURL(GURL("http://google.com"), long_title);
 }
 
 TEST(OSExchangeDataTest, ProvideURLForPlainTextURL) {
-  scoped_refptr<OSExchangeData> data(new OSExchangeData);
-  data->SetString(L"http://google.com");
+  OSExchangeData data;
+  data.SetString(L"http://google.com");
 
-  scoped_ptr<OSExchangeData> data2(new OSExchangeData(data.get()));
-  ASSERT_TRUE(data2->HasURL());
+  OSExchangeData data2(CloneProvider(data));
+  ASSERT_TRUE(data2.HasURL());
   GURL read_url;
   std::wstring title;
-  EXPECT_TRUE(data2->GetURLAndTitle(&read_url, &title));
+  EXPECT_TRUE(data2.GetURLAndTitle(&read_url, &title));
   EXPECT_EQ(GURL("http://google.com"), read_url);
 }
