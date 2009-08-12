@@ -390,6 +390,21 @@ int GetExprNodeKidIndex(ExprNodeVector* vector, int node, int kid) {
   return node;
 }
 
+int GetExprNodeParentIndex(ExprNodeVector* vector, int index) {
+  int node_rank;
+  int num_kids = 1;
+  while (index > 0) {
+    --index;
+    node_rank = ExprNodeKindRank(vector->node[index].kind);
+    if (node_rank >= num_kids) {
+      return index;
+    } else {
+      num_kids -= (node_rank - 1);
+    }
+  }
+  return 0;
+}
+
 uint64_t GetExprConstant(ExprNodeVector* vector, int index) {
   ExprNode* node = &vector->node[index];
   switch (node->kind) {

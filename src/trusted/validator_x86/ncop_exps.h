@@ -155,6 +155,11 @@ int ExprNodeWidth(ExprNodeVector* vector, int node);
  */
 int GetExprNodeKidIndex(ExprNodeVector* vector, int node, int kid);
 
+/* Given an index in the vector, return the index to its parent.
+ * Note: index must be > 0.
+ */
+int GetExprNodeParentIndex(ExprNodeVector* vector, int node);
+
 /* Given the index of a constant, returns the corresponding constant. */
 uint64_t GetExprConstant(ExprNodeVector* vector, int index);
 
