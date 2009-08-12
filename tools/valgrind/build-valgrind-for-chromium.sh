@@ -1,9 +1,12 @@
 #!/bin/sh
 # Script to build valgrind for use with chromium
 
-SVNDATE='{2009-07-15}'
-SHORTSVNDATE=20090715
-TSAN_SVN_REV='1096'
+# Checkout by date doesn't work unless you specify the friggin' timezone
+VALGRIND_SVN_REV=10771
+# And svn isn't smart enough to figure out what rev of the linked tree to get
+VEX_SVN_REV=1913
+# and TSAN may be out of sync, so you have to check that out by rev anyway
+TSAN_SVN_REV=1111
 
 THISDIR=`dirname $0`
 THISDIR=`cd $THISDIR && /bin/pwd`
@@ -41,7 +44,7 @@ then
 fi
 
 # Desired parent directory for valgrind's bin, include, etc.
-PREFIX="${1:-/usr/local/valgrind-$SHORTSVNDATE}"
+PREFIX="${1:-/usr/local/valgrind-$VALGRIND_SVN_REV}"
 parent_of_prefix="`dirname $PREFIX`"
 if test ! -d "$parent_of_prefix"
 then
@@ -50,25 +53,17 @@ then
 fi
 
 # Check out latest version that following patches known to apply against
-rm -rf valgrind-$SHORTSVNDATE
-svn co -r $SVNDATE svn://svn.valgrind.org/valgrind/trunk valgrind-$SHORTSVNDATE
+rm -rf valgrind-$VALGRIND_SVN_REV
+svn co -r $VALGRIND_SVN_REV svn://svn.valgrind.org/valgrind/trunk valgrind-$VALGRIND_SVN_REV
 
-cd valgrind-$SHORTSVNDATE
+cd valgrind-$VALGRIND_SVN_REV
 
 # Make sure svn gets the right version of the external VEX repo, too
-svn update -r $SVNDATE VEX/
+svn update -r $VEX_SVN_REV VEX/
 
 # Work around bug https://bugs.kde.org/show_bug.cgi?id=162848
 # "fork() not handled properly"
 patch -p0 < "$THISDIR"/fork.patch
-
-# Work around bug https://bugs.kde.org/show_bug.cgi?id=186796
-# "long suppressions truncated"
-patch -p0 < "$THISDIR"/longlines.patch
-
-# Work around bug http://bugs.kde.org/186790
-# "Suppression counts do not include leak suppressions"
-patch -p0 < "$THISDIR"/leak.patch
 
 # Add feature bug https://bugs.kde.org/show_bug.cgi?id=201170
 # "Want --show-possible option so I can ignore the bazillion possible leaks..."
@@ -83,7 +78,6 @@ then
   mkdir tsan/{docs,tests}
   touch tsan/{docs,tests}/Makefile.am
   patch -p 0 < tsan/valgrind.patch
-  patch -p 0 -d VEX < tsan/vex.patch
 fi
 
 sh autogen.sh

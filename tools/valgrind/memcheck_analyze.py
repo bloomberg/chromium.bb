@@ -127,6 +127,8 @@ class ValgrindError:
       if node.localName == "what" or node.localName == "auxwhat":
         description = "".join([n.data for n in node.childNodes
                               if n.nodeType == n.TEXT_NODE])
+      elif node.localName == "xwhat":
+        description = getTextOf(node, "text")
       elif node.localName == "stack":
         self._backtraces.append([description, gatherFrames(node, source_dir)])
         description = None

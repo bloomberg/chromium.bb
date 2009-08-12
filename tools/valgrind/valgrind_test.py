@@ -43,6 +43,10 @@ class ValgrindTool(object):
       shutil.rmtree(self.TMP_DIR)
     os.mkdir(self.TMP_DIR)
 
+  def UseXML(self):
+    # Override if tool prefers nonxml output
+    return True
+
   def ToolName(self):
     raise RuntimeError, "This method should be implemented " \
                         "in the tool-specific subclass"
@@ -71,9 +75,6 @@ class ValgrindTool(object):
     self._parser.add_option("", "--trace_children", action="store_true",
                             default=False,
                             help="also trace child processes")
-    self._parser.add_option("", "--gen_suppressions", action="store_true",
-                            dest="generate_suppressions", default=False,
-                            help="skip analysis and generate suppressions")
     self._parser.add_option("", "--num-callers",
                             dest="num_callers", default=30,
                             help="number of callers to show in stack traces")
@@ -84,10 +85,9 @@ class ValgrindTool(object):
     self._parser.description = __doc__
 
   def ExtendOptionParser(self, parser):
-    if sys.platform == 'darwin':
-      parser.add_option("", "--generate_dsym", action="store_true",
-                            default=False,
-                            help="Generate .dSYM file on Mac if needed. Slow!")
+    parser.add_option("", "--generate_dsym", action="store_true",
+                          default=False,
+                          help="Generate .dSYM file on Mac if needed. Slow!")
 
   def ParseArgv(self, args):
     self.CreateOptionParser()
@@ -118,7 +118,6 @@ class ValgrindTool(object):
 
     self._timeout = int(self._options.timeout)
     self._num_callers = int(self._options.num_callers)
-    self._generate_suppressions = self._options.generate_suppressions
     self._suppressions = self._options.suppressions
     self._source_dir = self._options.source_dir
     self._nocleanup_on_exit = self._options.nocleanup_on_exit
@@ -216,9 +215,6 @@ class ValgrindTool(object):
     proc += self.ToolSpecificFlags()
     proc += self._tool_flags
 
-    if self._generate_suppressions:
-      proc += ["--gen-suppressions=all"]
-
     suppression_count = 0
     for suppression_file in self._suppressions:
       if os.path.exists(suppression_file):
@@ -228,7 +224,15 @@ class ValgrindTool(object):
     if not suppression_count:
       logging.warning("WARNING: NOT USING SUPPRESSIONS!")
 
-    proc += ["--log-file=" + self.TMP_DIR + ("/%s." % tool_name) + "%p"]
+    logfilename = self.TMP_DIR + ("/%s." % tool_name) + "%p"
+    if self.UseXML():
+      if os.system("valgrind --help | grep -q xml-file") == 0:
+        proc += ["--xml=yes", "--xml-file=" + logfilename]
+      else:
+        # TODO(dank): remove once valgrind-3.5 is deployed everywhere
+        proc += ["--xml=yes", "--log-file=" + logfilename]
+    else:
+      proc += ["--log-file=" + logfilename]
 
     # The Valgrind command is constructed.
 
@@ -349,35 +353,12 @@ class Memcheck(ValgrindTool):
     if self._options.track_origins:
       ret += ["--track-origins=yes"];
 
-    """Either generate suppressions or load them.
-    TODO(dkegel): enhance valgrind to support generating
-    suppressions in xml mode.  See
-    http://bugs.kde.org/show_bug.cgi?id=191189
-    """
-    if self._generate_suppressions:
-      ret += ["--gen-suppressions=all"]
-    else:
-      ret += ["--xml=yes"]
-
     return ret
 
   def Analyze(self):
     # Glob all the files in the "valgrind.tmp" directory
     filenames = glob.glob(self.TMP_DIR + "/memcheck.*")
 
-    # TODO(dkegel): use new xml suppressions feature when it lands
-    if self._generate_suppressions:
-      # Just concatenate all the output files.  Lame...
-      for filename in filenames:
-        print "## %s" % filename
-        f = file(filename)
-        while True:
-          line = f.readline()
-          if len(line) == 0:
-            break
-          print line, # comma means don't add newline
-        f.close()
-      return 0
     analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks)
     return analyzer.Report()
 
@@ -389,6 +370,9 @@ class ThreadSanitizer(ValgrindTool):
 
   def ToolName(self):
     return "tsan"
+
+  def UseXML(self):
+    return False
 
   def ExtendOptionParser(self, parser):
     ValgrindTool.ExtendOptionParser(self, parser)
