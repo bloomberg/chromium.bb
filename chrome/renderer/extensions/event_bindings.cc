@@ -79,10 +79,15 @@ class ExtensionImpl : public ExtensionBase {
       std::string event_name(*v8::String::AsciiValue(args[0]));
       bool has_permission =
           ExtensionProcessBindings::CurrentContextHasPermission(event_name);
+#if EXTENSION_TIME_TO_BREAK_API
+      bool allow_api = has_permission;
+#else
+      bool allow_api = true;
+#endif
 
       // Increment the count even if the caller doesn't have permission, so that
       // refcounts stay balanced.
-      if (EventIncrementListenerCount(event_name) == 1 && has_permission) {
+      if (EventIncrementListenerCount(event_name) == 1 && allow_api) {
         EventBindings::GetRenderThread()->Send(
             new ViewHostMsg_ExtensionAddListener(event_name));
       }

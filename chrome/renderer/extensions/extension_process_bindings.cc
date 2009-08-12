@@ -202,8 +202,13 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
     }
 
-    if (!ExtensionProcessBindings::CurrentContextHasPermission(name))
+    if (!ExtensionProcessBindings::CurrentContextHasPermission(name)) {
+#if EXTENSION_TIME_TO_BREAK_API
       return ExtensionProcessBindings::ThrowPermissionDeniedException(name);
+#else
+      ExtensionProcessBindings::ThrowPermissionDeniedException(name);
+#endif
+    }
 
     std::string json_args = *v8::String::Utf8Value(args[1]);
     int request_id = args[2]->Int32Value();
