@@ -1,13 +1,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(timsteele): Re-enable ASAP.  http://crbug.com/19002
-#if 0
 #ifdef CHROME_PERSONALIZATION
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/json_writer.h"
+#include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/sync/personalization.h"
@@ -98,11 +98,22 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
         was_show_html_dialog_called_(false) {
   }
 
+  virtual ~TestBrowserWindowForWizardTest() {
+    if (flow_.get()) {
+      // In real life, the handlers are destroyed by the DOMUI infrastructure,
+      // which calls GetDOMMessageHandlers to take ownership.  This does not
+      // exist in our test, so we perform cleanup manually.
+      std::vector<DOMMessageHandler*> handlers;
+      flow_->GetDOMMessageHandlers(&handlers);
+      STLDeleteElements(&handlers);
+    }
+  }
+
   // We intercept this call to hijack the flow created and then use it to
   // drive the wizard as if we were the HTML page.
   virtual void ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
       gfx::NativeWindow parent_window) {
-    flow_ = static_cast<SyncSetupFlow*>(delegate);
+    flow_.reset(static_cast<SyncSetupFlow*>(delegate));
     was_show_html_dialog_called_ = true;
   }
 
@@ -112,7 +123,9 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
     return ret;
   }
 
-  SyncSetupFlow* flow_;
+  // In real life, this is owned by the view that is opened by the browser.  We
+  // mock all that out, so we need to take ownership so the flow doesn't leak.
+  scoped_ptr<SyncSetupFlow> flow_;
  private:
   bool was_show_html_dialog_called_;
 };
@@ -161,7 +174,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   credentials.Append(new StringValue(auth));
 
   EXPECT_FALSE(wizard_->IsVisible());
-  EXPECT_FALSE(test_window_->flow_);
+  EXPECT_FALSE(test_window_->flow_.get());
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
 
   EXPECT_TRUE(wizard_->IsVisible());
@@ -329,4 +342,4 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
 }
 
 #endif  // CHROME_PERSONALIZATION
-#endif
+
