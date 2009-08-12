@@ -5,12 +5,14 @@
 #include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 ThemePreviewInfobarDelegate::ThemePreviewInfobarDelegate(
     TabContents* tab_contents, const std::string& name,
@@ -32,7 +34,8 @@ std::wstring ThemePreviewInfobarDelegate::GetMessageText() const {
 SkBitmap* ThemePreviewInfobarDelegate::GetIcon() const {
   // TODO(aa): Reply with the theme's icon, but this requires reading it
   // asynchronously from disk.
-  return NULL;
+  return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_INFOBAR_THEME);
 }
 
 ThemePreviewInfobarDelegate*
