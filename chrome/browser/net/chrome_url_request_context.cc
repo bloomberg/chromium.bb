@@ -207,11 +207,10 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOffTheRecord(
       new net::HttpCache(context->host_resolver_, context->proxy_service_, 0);
   context->cookie_store_ = new net::CookieMonster;
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
   // The kNewFtp switch is Windows specific because we have multiple FTP
   // implementations on Windows.
 #if defined(OS_WIN)
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kNewFtp))
     context->ftp_transaction_factory_ =
         new net::FtpNetworkLayer(context->host_resolver_);
