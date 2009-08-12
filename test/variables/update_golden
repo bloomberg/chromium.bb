@@ -1,0 +1,4 @@
+#!/bin/bash
+
+python ../../gyp --debug variables --debug general --format gypd --depth . commands.gyp > commands.gyp.stdout
+cp -f commands.gypd commands.gypd.golden

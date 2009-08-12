@@ -76,11 +76,11 @@ absolute_build_file_paths = False
 
 def ExceptionAppend(e, msg):
   if not e.args:
-    e.args = [msg]
+    e.args = (msg,)
   elif len(e.args) == 1:
-    e.args = [str(e.args[0]) + ' ' + msg]
+    e.args = (str(e.args[0]) + ' ' + msg,)
   else:
-    e.args = [str(e.args[0]) + ' ' + msg, e.args[1:]]
+    e.args = (str(e.args[0]) + ' ' + msg,) + e.args[1:]
 
 
 def GetIncludedBuildFiles(build_file_path, aux_data, included=None):
@@ -121,9 +121,11 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
   if build_file_path in data:
     return data[build_file_path]
 
-  build_file = open(build_file_path)
-  build_file_contents = build_file.read()
-  build_file.close()
+  try:
+    build_file_contents = open(build_file_path).read()
+  except IOError, e:
+    ExceptionAppend(e, "Unable to read %s" % build_file_path)
+    raise
 
   build_file_data = None
   try:
@@ -247,20 +249,24 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   # targets.
   if 'target_defaults' in build_file_data:
     index = 0
-    while index < len(build_file_data['targets']):
-      # This procedure needs to give the impression that target_defaults is
-      # used as defaults, and the individual targets inherit from that.
-      # The individual targets need to be merged into the defaults.  Make
-      # a deep copy of the defaults for each target, merge the target dict
-      # as found in the input file into that copy, and then hook up the
-      # copy with the target-specific data merged into it as the replacement
-      # target dict.
-      old_target_dict = build_file_data['targets'][index]
-      new_target_dict = copy.deepcopy(build_file_data['target_defaults'])
-      MergeDicts(new_target_dict, old_target_dict,
-                 build_file_path, build_file_path)
-      build_file_data['targets'][index] = new_target_dict
-      index = index + 1
+    if 'targets' in build_file_data:
+      while index < len(build_file_data['targets']):
+        # This procedure needs to give the impression that target_defaults is
+        # used as defaults, and the individual targets inherit from that.
+        # The individual targets need to be merged into the defaults.  Make
+        # a deep copy of the defaults for each target, merge the target dict
+        # as found in the input file into that copy, and then hook up the
+        # copy with the target-specific data merged into it as the replacement
+        # target dict.
+        old_target_dict = build_file_data['targets'][index]
+        new_target_dict = copy.deepcopy(build_file_data['target_defaults'])
+        MergeDicts(new_target_dict, old_target_dict,
+                   build_file_path, build_file_path)
+        build_file_data['targets'][index] = new_target_dict
+        index = index + 1
+    else:
+      raise Exception, \
+            "Unable to find targets in build file %s" % build_file_path
 
     # No longer needed.
     del build_file_data['target_defaults']
@@ -324,10 +330,14 @@ def ExpandVariables(input, is_late, variables, build_file):
     variable_re = early_variable_re
   else:
     variable_re = late_variable_re
-  matches = map(None, variable_re.finditer(input))
+
+  # Get the entire list of matches as a list of MatchObject instances.
+  # (using findall here would return strings, and we want
+  # MatchObjects).
+  matches = [match for match in variable_re.finditer(input)]
 
   output = input
-  if matches != None:
+  if matches:
     # Reverse the list of matches so that replacements are done right-to-left.
     # That ensures that earlier replacements won't mess up the string in a
     # way that causes later calls to find the earlier substituted text instead
@@ -335,6 +345,8 @@ def ExpandVariables(input, is_late, variables, build_file):
     matches.reverse()
     for match_group in matches:
       match = match_group.groupdict()
+      gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                      "Matches: %s" % str(match))
       # match['replace'] is the substring to look for, match['type']
       # is the character code for the replacement type (< > <! >! <@
       # >@ <!@ >!@), match['is_array'] contains a '[' for command
@@ -416,9 +428,6 @@ def ExpandVariables(input, is_late, variables, build_file):
                           (contents, p.returncode))
 
         replacement = p_stdout.rstrip()
-        gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                        "Command Replacement '%s' (%d, %d)" %
-                        (replacement, replace_start, replace_end))
       else:
         if not contents in variables:
           raise KeyError, 'Undefined variable ' + contents + \
@@ -469,15 +478,23 @@ def ExpandVariables(input, is_late, variables, build_file):
         else:
           encoded_replacement = replacement
 
-        prefix = output[:replace_start]
-        suffix = output[replace_end:]
-        gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                        "Building '%s' + '%s' + '%s'" %
-                        (prefix, str(encoded_replacement), suffix))
-        output = prefix + str(encoded_replacement) + suffix
-
+        output = output[:replace_start] + str(encoded_replacement) + \
+                 output[replace_end:]
       # Prepare for the next match iteration.
       input = output
+
+    # Look for more matches now that we've replaced some, to deal with
+    # expanding local variables (variables defined in the same
+    # variables block as this one).
+    gyp.DebugOutput(gyp.DEBUG_VARIABLES,
+                    "Found output '%s', recursing." % output)
+    if isinstance(output, list):
+      new_output = []
+      for item in output:
+        new_output.append(ExpandVariables(item, is_late, variables, build_file))
+      output = new_output
+    else:
+      output = ExpandVariables(output, is_late, variables, build_file)
 
   gyp.DebugOutput(gyp.DEBUG_VARIABLES,
                   "Expanding '%s' to '%s'" % (input, output))
@@ -535,13 +552,19 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
             'Variable expansion in this context permits strings only, ' + \
             'found ' + expanded.__class__.__name__
 
-    # TODO(mark): Catch exceptions here to re-raise after providing a little
-    # more error context.  The name of the file being processed and the
-    # condition in quesiton might be nice.
-    if eval(cond_expr_expanded, {'__builtins__': None}, variables):
-      merge_dict = true_dict
-    else:
-      merge_dict = false_dict
+    try:
+      ast_code = compile(cond_expr_expanded, '<string>', 'eval')
+
+      if eval(ast_code, {'__builtins__': None}, variables):
+        merge_dict = true_dict
+      else:
+        merge_dict = false_dict
+    except SyntaxError, e:
+      syntax_error = SyntaxError('%s while evaluating condition \'%s\' in %s '
+                          'at character %d.' %
+                          (str(e.args[0]), e.text, build_file, e.offset),
+                          e.filename, e.lineno, e.offset, e.text)
+      raise syntax_error
 
     if merge_dict != None:
       # Expand variables and nested conditinals in the merge_dict before
@@ -606,6 +629,13 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
   LoadAutomaticVariablesFromDict(variables, the_dict)
 
   if 'variables' in the_dict:
+    # Make sure all the local variables are added to the variables
+    # list before we process them so that you can reference one
+    # variable from another.  They will be fully expanded by recursion
+    # in ExpandVariables.
+    for key, value in the_dict['variables'].iteritems():
+      variables[key] = value
+
     # Handle the associated variables dict first, so that any variable
     # references within can be resolved prior to using them as variables.
     # Pass a copy of the variables dict to avoid having it be tainted.

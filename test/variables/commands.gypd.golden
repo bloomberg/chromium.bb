@@ -1,4 +1,4 @@
-{'included_files': ['commands.gyp'],
+{'included_files': ['commands.gyp', 'commands.gypi'],
  'targets': [{'actions': [{'action': ['echo',
                                       '"3.14159265359 ABCD"',
                                       'ABCD letters_list'],
@@ -15,5 +15,15 @@
                             'var3': 'ABCD',
                             'var4': 'ABCD',
                             'var5': 'letters_',
-                            'var6': 'list'}}],
- 'variables': {'letters_list': 'ABCD', 'pi': 'import math; print math.pi'}}
+                            'var6': 'list'}},
+             {'configurations': {'Default': {}},
+              'default_configuration': 'Default',
+              'target_name': 'dummy',
+              'type': 'none'}],
+ 'variables': {'check_included': 'XYZ',
+               'check_lists': ['XYZ', 'ABCDEFGHIJK'],
+               'included_variable': 'XYZ',
+               'letters_list': 'ABCD',
+               'other_letters': 'ABCDEFG',
+               'pi': 'import math; print math.pi',
+               'third_letters': 'ABCDEFGHIJK'}}

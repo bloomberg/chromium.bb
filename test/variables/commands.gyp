@@ -5,8 +5,18 @@
 {
   'variables': {
     'pi': 'import math; print math.pi',
+    'third_letters': "<(other_letters)HIJK",
     'letters_list': 'ABCD',
+    'other_letters': '<(letters_list)EFG',
+    'check_included': '<(included_variable)',
+    'check_lists': [
+      '<(included_variable)',
+      '<(third_letters)',
+    ],
   },
+  'includes': [
+    'commands.gypi',
+  ],
   'targets': [
     {
       'target_name': 'foo',
