@@ -38,10 +38,10 @@
 #include <sys/nacl_syscalls.h>
 #include <errno.h>
 
-extern int __nacl_read(int desc, void *buf, size_t count);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int read(int desc, void *buf, size_t count) {
-  int retval = __nacl_read(desc, buf, count);
+  int retval = NACL_SYSCALL(read)(desc, buf, count);
   if (retval < 0) {
     errno = -retval;
     return -1;

@@ -37,10 +37,10 @@
 #include <sys/nacl_syscalls.h>
 #include <errno.h>
 
-extern int __nacl_close(int desc);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int close(int desc) {
-  int retval = __nacl_close(desc);
+  int retval = NACL_SYSCALL(close)(desc);
   if (retval < 0) {
     errno = -retval;
     return -1;

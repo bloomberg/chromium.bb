@@ -82,34 +82,16 @@ sources_c = [
 # TODO(ARM_PORT)
 if env.get('TARGET_ARCHITECTURE') == 'x86':
   sources_asm = [
+      # TODO: these are non standard and will be eliminated soon
+      #       using simple wrappers and
+      #       native_client/src/untrusted/nacl/syscall_bindings_trampoline.h
       'nacl_clock.S',
-      'nacl_close.S',
       'nacl_exit.S',
-      'nacl_fstat.S',
-      'nacl_getdents.S',
       'nacl_getpid.S',
-      'nacl_gettimeofday.S',
-      'nacl_imc_accept.S',
-      'nacl_imc_connect.S',
-      'nacl_imc_makeboundsock.S',
-      'nacl_imc_mem_obj_create.S',
-      'nacl_imc_recvmsg.S',
-      'nacl_imc_sendmsg.S',
-      'nacl_imc_socketpair.S',
-      'nacl_lseek.S',
-      'nacl_mmap.S',
       'nacl_multimedia.S',
       'nacl_null.S',
-      'nacl_open.S',
-      'nacl_read.S',
-      'nacl_sched_yield.S',
       'nacl_srpc_get_fd.S',
-      'nacl_stat.S',
-      'nacl_sysbrk.S',
-      'nacl_sysconf.S',
       'nacl_tls.S',
-      'nacl_unmap.S',
-      'nacl_write.S',
     ]
 else:
   sources_asm = []

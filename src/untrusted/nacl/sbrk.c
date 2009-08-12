@@ -32,13 +32,13 @@
 
 #include <errno.h>
 
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+
 /*
  * NaCl low-level brk and sbrk implementation.
  * TODO(sehr,bsy): figure out threading issues and how to provide a thread-safe
  * version of this.
  */
-
-extern void *__NaClSysBrk(void *);
 
 /*
  * TODO(sehr): this should probably be static.
@@ -50,13 +50,13 @@ int __NaClBrk(void  *end_data_segment) {
   void    *ret;
 
   if (0 == __nacl_break) {
-    __nacl_break = __NaClSysBrk(0);
+    __nacl_break = NACL_SYSCALL(sysbrk)(0);
   }
 
   if (end_data_segment == __nacl_break)
     return 0;
   old_break = __nacl_break;
-  ret = __NaClSysBrk(end_data_segment);
+  ret = NACL_SYSCALL(sysbrk)(end_data_segment);
   if (ret == old_break) return -1;
   __nacl_break = ret;
   return 0;
@@ -67,7 +67,7 @@ void  *sbrk(int increment) {
   int   ret;
 
   if (0 == __nacl_break) {
-    __nacl_break = __NaClSysBrk(0);
+    __nacl_break = NACL_SYSCALL(sysbrk)(0);
   }
 
   old_break = __nacl_break;

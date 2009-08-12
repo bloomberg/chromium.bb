@@ -33,16 +33,15 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/nacl_syscalls.h>
-#include <errno.h>
 
-extern void *__nacl_mmap(void *start, size_t length, int prot, int flags,
-                         int desc, off_t offset);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 void *mmap(void *start, size_t length, int prot, int flags,
            int desc, off_t offset) {
-  void *retval =  __nacl_mmap(start, length, prot, flags, desc, offset);
+  void *retval = NACL_SYSCALL(mmap)(start, length, prot, flags, desc, offset);
   if ((uint32_t) retval > 0xffff0000u) {
     /*
      * __nacl_mmap returns an address as its value if it succeeds and

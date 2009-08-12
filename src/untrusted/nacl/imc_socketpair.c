@@ -33,16 +33,15 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/nacl_syscalls.h>
-#include <stdarg.h>
-#include <errno.h>
 
-extern int __nacl_imc_socketpair(int *d2);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-extern int imc_socketpair(int *d2) {
+int imc_socketpair(int *d2) {
   int retval;
-  retval = __nacl_imc_socketpair(d2);
+  retval = NACL_SYSCALL(imc_socketpair)(d2);
 
   if (retval < 0) {
     errno = -retval;

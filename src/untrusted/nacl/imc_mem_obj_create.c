@@ -33,14 +33,14 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/nacl_syscalls.h>
-#include <errno.h>
 
-extern int __nacl_imc_mem_obj_create(size_t nbytes);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int imc_mem_obj_create(size_t nbytes) {
-  int retval = __nacl_imc_mem_obj_create(nbytes);
+  int retval = NACL_SYSCALL(imc_mem_obj_create)(nbytes);
   if (retval < 0) {
     errno = -retval;
     return -1;

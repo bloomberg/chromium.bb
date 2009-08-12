@@ -37,10 +37,10 @@
 #include <sys/nacl_syscalls.h>
 #include <errno.h>
 
-extern off_t __nacl_lseek(int desc, off_t offset, int whence);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 off_t lseek(int desc, off_t offset, int whence) {
-  off_t retval =  __nacl_lseek(desc, offset, whence);
+  off_t retval = NACL_SYSCALL(lseek)(desc, offset, whence);
   if ((int) retval < 0) {
     errno = -(int) retval;
     return (off_t) -1;

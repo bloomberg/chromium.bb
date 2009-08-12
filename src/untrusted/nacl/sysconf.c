@@ -34,15 +34,15 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/nacl_syscalls.h>
-#include <errno.h>
 
-extern int __nacl_sysconf(int name, int *res);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int sysconf(int name) {
   int res;
-  int retval = __nacl_sysconf(name, &res);
+  int retval = NACL_SYSCALL(sysconf)(name, &res);
   if (retval < 0) {
     errno = -retval;
     return -1;

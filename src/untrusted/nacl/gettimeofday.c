@@ -33,14 +33,14 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/times.h>
 #include <sys/nacl_syscalls.h>
-#include <errno.h>
 
-extern int __nacl_gettimeofday(struct timeval *tv, void *tz);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int gettimeofday(struct timeval *tv, void *tz) {
-  int retval = __nacl_gettimeofday(tv, tz);
+  int retval = NACL_SYSCALL(gettimeofday)(tv, tz);
   if (retval < 0) {
     errno = -retval;
     return -1;

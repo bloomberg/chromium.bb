@@ -33,14 +33,14 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/nacl_syscalls.h>
-#include <errno.h>
 
-extern int __nacl_imc_makeboundsock(int *dp);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int imc_makeboundsock(int *dp) {
-  int retval = __nacl_imc_makeboundsock(dp);
+  int retval = NACL_SYSCALL(imc_makeboundsock)(dp);
   if (retval < 0) {
     errno = -retval;
     return -1;

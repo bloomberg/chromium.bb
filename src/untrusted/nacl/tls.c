@@ -37,15 +37,17 @@
 #include <sys/unistd.h>
 #include "native_client/src/untrusted/nacl/tls.h"
 
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+
 /*
  * These stubs provide setup for thread local storage when libpthread is not
  * being used.  Since they are declared as weak symbols, they are overridden
  * if libpthread is used.
  */
-int __pthread_initialize() __attribute__ ((weak));
-int __pthread_shutdown() __attribute__ ((weak));
-int tls_init(void *tdb, int size);
-void __newlib_thread_init();  /* defined in newlib */
+
+extern int __pthread_initialize() __attribute__ ((weak));
+extern int __pthread_shutdown() __attribute__ ((weak));
+extern void __newlib_thread_init();  /* defined in newlib */
 
 /* TODO(gregoryd) - consider using real memcpy and memset */
 static void __pthread_memcpy(void* dest, const void* src, size_t size) {
@@ -84,7 +86,8 @@ int __pthread_initialize_minimal(size_t tdb_size) {
   *(void**)main_tdb = main_tdb;
 
   /* set GS */
-  tls_init(main_tdb, tdb_size);
+  NACL_SYSCALL(tls_init)(main_tdb, tdb_size);
+
   /* initialize newlib's thread-specific pointer. */
   __newlib_thread_init();
   return 0;

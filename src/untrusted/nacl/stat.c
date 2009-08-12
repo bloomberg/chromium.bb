@@ -33,14 +33,14 @@
  * Stat function.
  */
 
+#include <errno.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <errno.h>
 
-extern int __nacl_stat(const char *file, struct stat *st);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int stat(const char *file, struct stat *st) {
-  int retval = __nacl_stat(file, st);
+  int retval = NACL_SYSCALL(stat)(file, st);
   if (retval < 0) {
     errno = -retval;
     return -1;

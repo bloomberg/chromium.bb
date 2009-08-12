@@ -33,15 +33,16 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/nacl_syscalls.h>
-#include <dirent.h>
-#include <errno.h>
 
-extern int __nacl_getdents(int desc, void *dirp, size_t count);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+
+struct dirent;
 
 int getdents(int desc, struct dirent *dirp, size_t count) {
-  int retval = __nacl_getdents(desc, (void *) dirp, count);
+  int retval = NACL_SYSCALL(getdents)(desc, dirp, count);
   if (retval < 0) {
     errno = -retval;
     return -1;

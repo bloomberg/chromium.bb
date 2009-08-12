@@ -32,18 +32,16 @@
 /*
  * Stub routine for fstat for newlib support.
  */
-
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-extern int __nacl_fstat(int fd, struct stat *stbp);
-
-extern int errno;
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int fstat(int file, struct stat *st) {
   int retval;
-  retval = __nacl_fstat(file, st);
+  retval = NACL_SYSCALL(fstat)(file, st);
   if (retval < 0) {
     errno = -retval;
     retval = -1;

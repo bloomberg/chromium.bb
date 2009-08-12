@@ -34,20 +34,20 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/nacl_syscalls.h>
 #include <stdarg.h>
-#include <errno.h>
 
-extern int __nacl_open(char const *pathname, int flags, ...);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-extern int open(char const *pathname, int flags, ...) {
+int open(char const *pathname, int flags, ...) {
   int retval;
   va_list ap;
   mode_t mode;
   va_start(ap, flags);
   mode = va_arg(ap, mode_t);
-  retval = __nacl_open(pathname, flags, mode);
+  retval = NACL_SYSCALL(open)(pathname, flags, mode);
   va_end(ap);
   if (retval < 0) {
     errno = -retval;

@@ -33,14 +33,14 @@
  * Wrapper for syscall.
  */
 
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/nacl_syscalls.h>
-#include <errno.h>
 
-extern int __nacl_imc_recvmsg(int desc, struct NaClImcMsgHdr *nmhp, int flags);
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int imc_recvmsg(int desc, struct NaClImcMsgHdr *nmhp, int flags) {
-  int retval = __nacl_imc_recvmsg(desc, nmhp, flags);
+  int retval = NACL_SYSCALL(imc_recvmsg)(desc, nmhp, flags);
   if (retval < 0) {
     errno = -retval;
     return -1;
