@@ -392,25 +392,6 @@ each locale. -->
         Open &amp;image in new tab
       </message>
 
-      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_MENU" desc="The text label of the Playback Rate submenu">
-        &amp;Playback Rate
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW" desc="The text label of the 0.5x Speed Playback Rate menu item. The slowest of 5 options.">
-        &amp;Slow (0.5x)
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL" desc="The text label of the Normal Speed Playback Rate menu item. The default rate of 5 options.">
-        &amp;Normal (1.0x)
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST" desc="The text label of the 1.25x Sped Up Playback Rate menu item. The 3rd fastest of 5 options.">
-        &amp;Fast (1.25x)
-      </message>      
-      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER" desc="The text label of the 1.5x Sped Up Playback Rate menu item. The 2nd fastest of 5 options.">
-        F&amp;aster (1.5x)
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME" desc="The text label of the 2.0x Sped Up Playback Rate menu item.  The fastest of 5 options.">
-        D&amp;ouble Time (2.0x)
-      </message>
-
       <message name="IDS_CONTENT_CONTEXT_LOOP" desc="The name of the Loop command for audio and video playback in the content area context menu">
         &amp;Loop
       </message>

@@ -180,7 +180,7 @@ WebCore::PlatformMenuDescription
     node_type.type |= ContextNodeType::IMAGE;
   } else if (!r.absoluteMediaURL().isEmpty()) {
     src_url = r.absoluteMediaURL();
-          
+
     // We know that if absoluteMediaURL() is not empty, then this is a media
     // element.
     WebCore::HTMLMediaElement* media_element =
@@ -190,8 +190,6 @@ WebCore::PlatformMenuDescription
     } else if (media_element->hasTagName(WebCore::HTMLNames::audioTag)) {
       node_type.type |= ContextNodeType::AUDIO;
     }
-
-    media_params.playback_rate = media_element->playbackRate();
 
     if (media_element->paused()) {
       media_params.player_state |= ContextMenuMediaParams::PAUSED;

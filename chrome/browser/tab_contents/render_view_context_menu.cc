@@ -29,15 +29,6 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
-// Constants for the standard playback rates provided by the context
-// menu. If another rate is reported, it will be considered unknown and
-// no rate will be selected in the submenu.
-static const double kSlowPlaybackRate = 0.5f;
-static const double kNormalPlaybackRate = 1.0f;
-static const double kFastPlaybackRate = 1.25f;
-static const double kFasterPlaybackRate = 1.50f;
-static const double kDoubleTimePlaybackRate = 2.0f;
-
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,
     const ContextMenuParams& params)
@@ -155,20 +146,6 @@ void RenderViewContextMenu::AppendMediaItems(
 
   AppendCheckboxMenuItem(IDS_CONTENT_CONTEXT_LOOP,
       l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_LOOP));
-
-  StartSubMenu(IDS_CONTENT_CONTEXT_PLAYBACKRATE_MENU,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_MENU));
-  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW));
-  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL));
-  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST));
-  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER));
-  AppendRadioMenuItem(IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME));
-  FinishSubMenu();
 }
 
 void RenderViewContextMenu::AppendPageItems() {
@@ -342,12 +319,6 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_MUTE:
     case IDS_CONTENT_CONTEXT_UNMUTE:
     case IDS_CONTENT_CONTEXT_LOOP:
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_MENU:
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW:
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL:
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST:
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER:
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME:
       return (params_.media_params.player_state &
               ContextMenuMediaParams::IN_ERROR) == 0;
 
@@ -435,23 +406,6 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
 }
 
 bool RenderViewContextMenu::ItemIsChecked(int id) const {
-  // Select the correct playback rate.
-  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW) {
-    return params_.media_params.playback_rate == kSlowPlaybackRate;
-  }
-  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL) {
-    return params_.media_params.playback_rate == kNormalPlaybackRate;
-  }
-  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST) {
-    return params_.media_params.playback_rate == kFastPlaybackRate;
-  }
-  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER) {
-    return params_.media_params.playback_rate == kFasterPlaybackRate;
-  }
-  if (id == IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME) {
-    return params_.media_params.playback_rate == kDoubleTimePlaybackRate;
-  }
-
   // See if the video is set to looping.
   if (id == IDS_CONTENT_CONTEXT_LOOP) {
     return (params_.media_params.player_state &
@@ -579,51 +533,6 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
                             params_.y,
                             MediaPlayerAction(MediaPlayerAction::LOOP));
       }
-      break;
-
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_SLOW:
-      UserMetrics::RecordAction(L"MediaContextMenu_RateSlow", profile_);
-      MediaPlayerActionAt(
-          params_.x,
-          params_.y,
-          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
-                            kSlowPlaybackRate));
-      break;
-
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_NORMAL:
-      UserMetrics::RecordAction(L"MediaContextMenu_RateNormal", profile_);
-      MediaPlayerActionAt(
-          params_.x,
-          params_.y,
-          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
-                            kNormalPlaybackRate));
-      break;
-
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FAST:
-      UserMetrics::RecordAction(L"MediaContextMenu_RateFast", profile_);
-      MediaPlayerActionAt(
-          params_.x,
-          params_.y,
-          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
-                            kFastPlaybackRate));
-      break;
-
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_FASTER:
-      UserMetrics::RecordAction(L"MediaContextMenu_RateFaster", profile_);
-      MediaPlayerActionAt(
-          params_.x,
-          params_.y,
-          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
-                            kFasterPlaybackRate));
-      break;
-
-    case IDS_CONTENT_CONTEXT_PLAYBACKRATE_DOUBLETIME:
-      UserMetrics::RecordAction(L"MediaContextMenu_RateDoubleTime", profile_);
-      MediaPlayerActionAt(
-          params_.x,
-          params_.y,
-          MediaPlayerAction(MediaPlayerAction::SET_PLAYBACK_RATE,
-                            kDoubleTimePlaybackRate));
       break;
 
     case IDS_CONTENT_CONTEXT_BACK:

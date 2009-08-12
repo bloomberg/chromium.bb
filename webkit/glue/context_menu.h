@@ -82,11 +82,8 @@ struct ContextMenuMediaParams {
   // playing, muted, etc.
   int32 player_state;
 
-  // The current playback rate for this media element.
-  double playback_rate;
-
   ContextMenuMediaParams()
-      : player_state(NO_STATE), playback_rate(1.0f) {
+      : player_state(NO_STATE) {
   }
 };
 
@@ -166,19 +163,14 @@ struct MediaPlayerAction {
     UNMUTE = 0x8,
     LOOP = 0x10,
     NO_LOOP = 0x20,
-    SET_PLAYBACK_RATE = 0x40,
   };
 
   // A bitfield representing the actions that the context menu should execute
   // on the originating node.
   int32 command;
 
-  // The new playback rate to set if the action is SET_PLAYBACK_RATE.
-  double playback_rate;
-
-  MediaPlayerAction() : command(NONE), playback_rate(1.0f) {}
-  explicit MediaPlayerAction(int c) : command(c), playback_rate(1.0f) {}
-  MediaPlayerAction(int c, double rate) : command(c), playback_rate(rate) {}
+  MediaPlayerAction() : command(NONE) {}
+  explicit MediaPlayerAction(int c) : command(c) {}
 };
 
 #endif  // WEBKIT_GLUE_CONTEXT_NODE_TYPES_H__

@@ -1820,10 +1820,6 @@ void WebViewImpl::MediaPlayerActionAt(int x,
     if (action.command & MediaPlayerAction::NO_LOOP) {
       media_element->setLoop(false);
     }
-    if (action.command & MediaPlayerAction::SET_PLAYBACK_RATE) {
-      // TODO(ajwong): We should test for overflow.
-      media_element->setPlaybackRate(static_cast<float>(action.playback_rate));
-    }
   }
 }
 
