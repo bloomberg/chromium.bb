@@ -73,14 +73,14 @@ TEST_F(ImageTest, ComputePOTSize) {
 }
 
 TEST_F(ImageTest, CanMakeMips) {
-  EXPECT_TRUE(image::CanMakeMips(Texture::Format::XRGB8));
-  EXPECT_TRUE(image::CanMakeMips(Texture::Format::ARGB8));
-  EXPECT_TRUE(image::CanMakeMips(Texture::Format::ABGR16F));
-  EXPECT_TRUE(image::CanMakeMips(Texture::Format::R32F));
-  EXPECT_TRUE(image::CanMakeMips(Texture::Format::ABGR32F));
-  EXPECT_FALSE(image::CanMakeMips(Texture::Format::DXT1));
-  EXPECT_FALSE(image::CanMakeMips(Texture::Format::DXT3));
-  EXPECT_FALSE(image::CanMakeMips(Texture::Format::DXT5));
+  EXPECT_TRUE(image::CanMakeMips(Texture::XRGB8));
+  EXPECT_TRUE(image::CanMakeMips(Texture::ARGB8));
+  EXPECT_TRUE(image::CanMakeMips(Texture::ABGR16F));
+  EXPECT_TRUE(image::CanMakeMips(Texture::R32F));
+  EXPECT_TRUE(image::CanMakeMips(Texture::ABGR32F));
+  EXPECT_FALSE(image::CanMakeMips(Texture::DXT1));
+  EXPECT_FALSE(image::CanMakeMips(Texture::DXT3));
+  EXPECT_FALSE(image::CanMakeMips(Texture::DXT5));
 };
 
 static const uint8 kScaleUPDataNPOT[] = {
