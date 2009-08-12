@@ -106,6 +106,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     // WebMediaPlayerImpl.
     void PipelineInitializationCallback();
     void PipelineSeekCallback();
+    void PipelineEndedCallback();
     void PipelineErrorCallback();
 
    private:
@@ -117,6 +118,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
     // Notify |webmediaplayer_| that a seek has finished.
     void PipelineSeekTask();
+
+    // Notify |webmediaplayer_| that the media has ended.
+    void PipelineEndedTask();
 
     // Notify |webmediaplayer_| that a pipeline error has been set.
     void PipelineErrorTask();
@@ -219,6 +223,8 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   void OnPipelineInitialize();
 
   void OnPipelineSeek();
+
+  void OnPipelineEnded();
 
   void OnPipelineError();
 

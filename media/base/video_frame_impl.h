@@ -26,6 +26,11 @@ class VideoFrameImpl : public VideoFrame {
   // timestamp and duration are all 0.
   static void CreateEmptyFrame(scoped_refptr<VideoFrame>* frame_out);
 
+  // Allocates YV12 frame based on |width| and |height|, and sets its data to
+  // the YUV equivalent of RGB(0,0,0).
+  static void CreateBlackFrame(int width, int height,
+                               scoped_refptr<VideoFrame>* frame_out);
+
   // Implementation of VideoFrame.
   virtual bool Lock(VideoSurface* surface);
   virtual void Unlock();

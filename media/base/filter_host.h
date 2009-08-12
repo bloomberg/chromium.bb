@@ -57,6 +57,10 @@ class FilterHost {
   // Sets the flag to indicate that we are doing streaming.
   virtual void SetStreaming(bool streaming) = 0;
 
+  // Notifies that this filter has ended, typically only called by filter graph
+  // endpoints such as renderers.
+  virtual void NotifyEnded() = 0;
+
   // Broadcast a message of type |message| to all other filters from |source|.
   virtual void BroadcastMessage(FilterMessage message) = 0;
 

@@ -130,4 +130,46 @@ TEST(VideoFrameImpl, CreateFrame) {
   EXPECT_TRUE(frame->IsEndOfStream());
 }
 
+TEST(VideoFrameImpl, CreateBlackFrame) {
+  const size_t kWidth = 2;
+  const size_t kHeight = 2;
+  const uint8 kExpectedYRow[] = { 0, 0 };
+  const uint8 kExpectedUVRow[] = { 128 };
+
+  scoped_refptr<media::VideoFrame> frame;
+  VideoFrameImpl::CreateBlackFrame(kWidth, kHeight, &frame);
+  ASSERT_TRUE(frame);
+
+  // Test basic properties.
+  EXPECT_EQ(0, frame->GetTimestamp().InMicroseconds());
+  EXPECT_EQ(0, frame->GetDuration().InMicroseconds());
+  EXPECT_FALSE(frame->IsEndOfStream());
+
+  // Test surface properties.
+  VideoSurface surface;
+  EXPECT_TRUE(frame->Lock(&surface));
+  EXPECT_EQ(VideoSurface::YV12, surface.format);
+  EXPECT_EQ(kWidth, surface.width);
+  EXPECT_EQ(kHeight, surface.height);
+  EXPECT_EQ(3u, surface.planes);
+
+  // Test surfaces themselves.
+  for (size_t y = 0; y < surface.height; ++y) {
+    EXPECT_EQ(0, memcmp(kExpectedYRow, surface.data[VideoSurface::kYPlane],
+                        arraysize(kExpectedYRow)));
+    surface.data[VideoSurface::kYPlane] +=
+        surface.strides[VideoSurface::kYPlane];
+  }
+  for (size_t y = 0; y < surface.height / 2; ++y) {
+    EXPECT_EQ(0, memcmp(kExpectedUVRow, surface.data[VideoSurface::kUPlane],
+                        arraysize(kExpectedUVRow)));
+    EXPECT_EQ(0, memcmp(kExpectedUVRow, surface.data[VideoSurface::kVPlane],
+                        arraysize(kExpectedUVRow)));
+    surface.data[VideoSurface::kUPlane] +=
+        surface.strides[VideoSurface::kUPlane];
+    surface.data[VideoSurface::kVPlane] +=
+        surface.strides[VideoSurface::kVPlane];
+  }
+}
+
 }  // namespace media

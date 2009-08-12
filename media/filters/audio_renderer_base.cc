@@ -13,6 +13,8 @@ namespace media {
 
 AudioRendererBase::AudioRendererBase()
     : state_(kUninitialized),
+      recieved_end_of_stream_(false),
+      rendered_end_of_stream_(false),
       pending_reads_(0) {
 }
 
@@ -61,6 +63,8 @@ void AudioRendererBase::Seek(base::TimeDelta time, FilterCallback* callback) {
 
   // Throw away everything and schedule our reads.
   last_fill_buffer_time_ = base::TimeDelta();
+  recieved_end_of_stream_ = false;
+  rendered_end_of_stream_ = false;
 
   // |algorithm_| will request more reads.
   algorithm_->FlushBuffers();
@@ -114,6 +118,15 @@ void AudioRendererBase::Initialize(AudioDecoder* decoder,
   callback->Run();
 }
 
+bool AudioRendererBase::HasEnded() {
+  AutoLock auto_lock(lock_);
+  if (rendered_end_of_stream_) {
+    DCHECK(algorithm_->IsQueueEmpty())
+        << "Audio queue should be empty if we have rendered end of stream";
+  }
+  return recieved_end_of_stream_ && rendered_end_of_stream_;
+}
+
 void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
   AutoLock auto_lock(lock_);
   DCHECK(state_ == kPaused || state_ == kSeeking || state_ == kPlaying);
@@ -121,7 +134,9 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
   --pending_reads_;
 
   // Don't enqueue an end-of-stream buffer because it has no data.
-  if (!buffer_in->IsEndOfStream()) {
+  if (buffer_in->IsEndOfStream()) {
+    recieved_end_of_stream_ = true;
+  } else {
     // Note: Calling this may schedule more reads.
     algorithm_->EnqueueBuffer(buffer_in);
   }
@@ -129,7 +144,7 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
   // Check for our preroll complete condition.
   if (state_ == kSeeking) {
     DCHECK(seek_callback_.get());
-    if (algorithm_->IsQueueFull() || buffer_in->IsEndOfStream()) {
+    if (algorithm_->IsQueueFull() || recieved_end_of_stream_) {
       // Transition into paused whether we have data in |algorithm_| or not.
       // FillBuffer() will play silence if there's nothing to fill.
       state_ = kPaused;
@@ -173,6 +188,14 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
 
     // Do the fill.
     dest_written = algorithm_->FillBuffer(dest, dest_len);
+
+    // Check if we finally reached end of stream by emptying |algorithm_|.
+    if (recieved_end_of_stream_ && algorithm_->IsQueueEmpty()) {
+      if (!rendered_end_of_stream_) {
+        rendered_end_of_stream_ = true;
+        host()->NotifyEnded();
+      }
+    }
 
     // Get the current time.
     last_fill_buffer_time_ = algorithm_->GetTime();

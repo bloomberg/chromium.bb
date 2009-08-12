@@ -176,12 +176,14 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   // Now satisfy the read requests.  Our callback should be executed after
   // exiting this loop.
   const size_t kDataSize = 1024;
+  size_t bytes_buffered = 0;
   while (!read_queue_.empty()) {
     scoped_refptr<DataBuffer> buffer = new DataBuffer(kDataSize);
     buffer->SetDataSize(kDataSize);
     read_queue_.front()->Run(buffer);
     delete read_queue_.front();
     read_queue_.pop_front();
+    bytes_buffered += kDataSize;
   }
 
   MockFilterCallback play_callback;
@@ -198,6 +200,7 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   for (size_t i = 0; i < kMaxQueueSize; ++i) {
     EXPECT_EQ(kDataSize,
               renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
+    bytes_buffered -= kDataSize;
   }
 
   // Make sure the read request queue is full.
@@ -209,8 +212,26 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   delete read_queue_.front();
   read_queue_.pop_front();
 
+  // We shouldn't report ended until all data has been flushed out.
+  EXPECT_FALSE(renderer_->HasEnded());
+
   // We should have one less read request in the queue.
   EXPECT_EQ(kMaxQueueSize - 1, read_queue_.size());
+
+  // Flush the entire internal buffer, which should notify the host we've ended.
+  EXPECT_EQ(0u, bytes_buffered % kDataSize);
+  EXPECT_CALL(host_, NotifyEnded());
+  while (bytes_buffered > 0) {
+    EXPECT_EQ(kDataSize,
+              renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
+    bytes_buffered -= kDataSize;
+  }
+
+  // We should now report ended.
+  EXPECT_TRUE(renderer_->HasEnded());
+
+  // Further reads should return muted audio and not notify any more.
+  EXPECT_EQ(0u, renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
 }
 
 }  // namespace media

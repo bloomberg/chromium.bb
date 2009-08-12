@@ -314,6 +314,10 @@ class VideoRenderer : public MediaFilter {
   // Initialize a VideoRenderer with the given VideoDecoder, executing the
   // callback upon completion.
   virtual void Initialize(VideoDecoder* decoder, FilterCallback* callback) = 0;
+
+  // Returns true if this filter has received and processed an end-of-stream
+  // buffer.
+  virtual bool HasEnded() = 0;
 };
 
 
@@ -330,6 +334,10 @@ class AudioRenderer : public MediaFilter {
   // Initialize a AudioRenderer with the given AudioDecoder, executing the
   // callback upon completion.
   virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback) = 0;
+
+  // Returns true if this filter has received and processed an end-of-stream
+  // buffer.
+  virtual bool HasEnded() = 0;
 
   // Sets the output volume.
   virtual void SetVolume(float volume) = 0;

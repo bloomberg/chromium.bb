@@ -39,6 +39,7 @@ class AudioRendererBase : public AudioRenderer {
 
   // AudioRenderer implementation.
   virtual void Initialize(AudioDecoder* decoder, FilterCallback* callback);
+  virtual bool HasEnded();
 
  protected:
   // Only allow a factory to create this class.
@@ -114,6 +115,10 @@ class AudioRendererBase : public AudioRenderer {
     kError,
   };
   State state_;
+
+  // Keeps track of whether we received and rendered the end of stream buffer.
+  bool recieved_end_of_stream_;
+  bool rendered_end_of_stream_;
 
   // Keeps track of our pending reads.  We *must* have no pending reads before
   // executing the pause callback, otherwise we breach the contract that all

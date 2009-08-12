@@ -112,6 +112,11 @@ void WebMediaPlayerImpl::Proxy::PipelineSeekCallback() {
       &WebMediaPlayerImpl::Proxy::PipelineSeekTask));
 }
 
+void WebMediaPlayerImpl::Proxy::PipelineEndedCallback() {
+  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &WebMediaPlayerImpl::Proxy::PipelineEndedTask));
+}
+
 void WebMediaPlayerImpl::Proxy::PipelineErrorCallback() {
   render_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &WebMediaPlayerImpl::Proxy::PipelineErrorTask));
@@ -140,6 +145,13 @@ void WebMediaPlayerImpl::Proxy::PipelineSeekTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   if (webmediaplayer_) {
     webmediaplayer_->OnPipelineSeek();
+  }
+}
+
+void WebMediaPlayerImpl::Proxy::PipelineEndedTask() {
+  DCHECK(MessageLoop::current() == render_loop_);
+  if (webmediaplayer_) {
+    webmediaplayer_->OnPipelineEnded();
   }
 }
 
@@ -181,7 +193,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
   // Creates the proxy.
   proxy_ = new Proxy(main_loop_, this);
 
-  // Sets the pipeline's error reporting callback.
+  // Set our pipeline callbacks.
+  pipeline_->SetPipelineEndedCallback(NewCallback(proxy_.get(),
+      &WebMediaPlayerImpl::Proxy::PipelineEndedCallback));
   pipeline_->SetPipelineErrorCallback(NewCallback(proxy_.get(),
       &WebMediaPlayerImpl::Proxy::PipelineErrorCallback));
 
@@ -248,9 +262,12 @@ bool WebMediaPlayerImpl::supportsSave() const {
 void WebMediaPlayerImpl::seek(float seconds) {
   DCHECK(MessageLoop::current() == main_loop_);
 
+  // TODO(scherkus): WebKit fires a seek(0) at the very start, however pipeline
+  // already does a seek(0) internally.  Investigate whether doing two seek(0)
+  // at the start impacts startup latency.
+
   // Try to preserve as much accuracy as possible.
   float microseconds = seconds * base::Time::kMicrosecondsPerSecond;
-  if (seconds != 0)
   pipeline_->Seek(
       base::TimeDelta::FromMicroseconds(static_cast<int64>(microseconds)),
       NewCallback(proxy_.get(),
@@ -447,6 +464,13 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
 }
 
 void WebMediaPlayerImpl::OnPipelineSeek() {
+  DCHECK(MessageLoop::current() == main_loop_);
+  if (pipeline_->GetError() == media::PIPELINE_OK) {
+    GetClient()->timeChanged();
+  }
+}
+
+void WebMediaPlayerImpl::OnPipelineEnded() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
     GetClient()->timeChanged();
