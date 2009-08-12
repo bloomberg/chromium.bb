@@ -39,6 +39,6 @@
 
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-pid_t gtepid(void) {
+pid_t getpid(void) {
   return NACL_SYSCALL(getpid)();
 }

@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+/* TODO: local includes */
 #include "nacl_srpc.h"
 #include "nacl_srpc_internal.h"
 
@@ -121,6 +122,7 @@ char* __NaClSrpcBuildSDString(const struct NaClSrpcHandlerDesc methods[],
   p = str;
   for (i = 0; i < method_count; ++i) {
     size_t buf_limit = str + *length - p;
+    /* TODO: use portability_io.h */
 #if NACL_WINDOWS
     p += _snprintf(p, buf_limit, "%s\n", methods[i].entry_fmt);
 #else
@@ -274,9 +276,12 @@ int NaClSrpcServerLoop(NaClHandle socket_desc,
 }
 
 #ifdef __native_client__
+
+/* TODO: move this function out of shared/ */
+#include <sys/nacl_syscalls.h>
+
 int NaClSrpcDefaultServerLoop(void* server_instance_data) {
-  extern int __srpc_get_fd();
-  return NaClSrpcServerLoop(__srpc_get_fd(),
+  return NaClSrpcServerLoop(srpc_get_fd(),
                             __kNaClSrpcHandlers,
                             server_instance_data);
 }

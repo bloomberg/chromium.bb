@@ -34,13 +34,15 @@
  * NaCl simple rpc service main loop
  */
 
+/* TODO: move this file out of shared/ */
+/* TODO: eliminate local includes */
 #include "nacl_srpc.h"
 #include "nacl_srpc_internal.h"
 
-extern int __srpc_get_fd(void);
+#include <sys/nacl_syscalls.h>
 
 int __attribute__ ((weak)) main(int argc, char* argv[]) {
-  int is_embedded = (-1 != __srpc_get_fd());
+  const int is_embedded = (-1 != srpc_get_fd());
 
   if (!is_embedded) {
     /*

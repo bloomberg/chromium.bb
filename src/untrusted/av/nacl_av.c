@@ -45,6 +45,7 @@
 #include <pthread.h>
 #include <nacl/nacl_srpc.h>
 
+/* TODO: eliminate local includes */
 #include "nacl_av.h"
 #include "nacl_av_priv.h"
 
@@ -123,8 +124,7 @@ static inline float gettimeofdayf() {
  * (by invoking nacl_multimedia_bridge).
  */
 void __av_wait() {
-  extern int __srpc_get_fd();
-  int is_embedded = (__srpc_get_fd() != -1);
+  const int is_embedded = (srpc_get_fd() != -1);
   if (is_embedded) {
     pthread_mutex_lock(&init_wait_mu);
     while (!multimedia_init_done) {
