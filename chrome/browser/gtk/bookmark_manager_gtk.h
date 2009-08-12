@@ -77,6 +77,9 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // Set |window_|'s initial size, using its previous size if that was saved.
   void SetInitialWindowSize();
 
+  // Connects the ctrl-w accelerator to the window.
+  void ConnectAccelerators();
+
   // If |left|, then make the organize menu refer to that which is selected in
   // the left pane, otherwise use the right pane selection.
   void ResetOrganizeMenu(bool left);
@@ -269,6 +272,13 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
         OnWindowConfigured(window, event);
   }
   gboolean OnWindowConfigured(GtkWidget* window, GdkEventConfigure* event);
+
+  // Handles an accelerator being pressed.
+  static gboolean OnGtkAccelerator(GtkAccelGroup* accel_group,
+                                   GObject* acceleratable,
+                                   guint keyval,
+                                   GdkModifierType modifier,
+                                   BookmarkManagerGtk* bookmark_manager);
 
   GtkWidget* window_;
   GtkWidget* search_entry_;

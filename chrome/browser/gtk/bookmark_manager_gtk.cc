@@ -307,6 +307,7 @@ BookmarkManagerGtk::BookmarkManagerGtk(Profile* profile)
       sending_delayed_mousedown_(false),
       ignore_rightclicks_(false) {
   InitWidgets();
+  ConnectAccelerators();
   gtk_util::SetWindowIcon(GTK_WINDOW(window_));
 
   model_->AddObserver(this);
@@ -415,6 +416,19 @@ void BookmarkManagerGtk::InitWidgets() {
   gtk_container_add(GTK_CONTAINER(window_), vbox);
 
   ResetOrganizeMenu(true);
+}
+
+void BookmarkManagerGtk::ConnectAccelerators() {
+  GtkAccelGroup* accel_group = gtk_accel_group_new();
+  gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group);
+
+  // Drop the initial ref on |accel_group| so |window_| will own it.
+  g_object_unref(accel_group);
+
+  gtk_accel_group_connect(accel_group,
+                          GDK_w, GDK_CONTROL_MASK, GtkAccelFlags(0),
+                          g_cclosure_new(G_CALLBACK(OnGtkAccelerator),
+                                         this, NULL));
 }
 
 GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
@@ -1386,4 +1400,22 @@ void BookmarkManagerGtk::FileSelected(const FilePath& path,
   } else {
     NOTREACHED();
   }
+}
+
+// static
+gboolean BookmarkManagerGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
+    GObject* acceleratable,
+    guint keyval,
+    GdkModifierType modifier,
+    BookmarkManagerGtk* bookmark_manager) {
+  modifier = static_cast<GdkModifierType>(
+      modifier & gtk_accelerator_get_default_mod_mask());
+  // The only accelerator we have registered is ctrl+w, so any other value is a
+  // non-fatal error.
+  DCHECK_EQ(keyval, static_cast<guint>(GDK_w));
+  DCHECK_EQ(modifier, GDK_CONTROL_MASK);
+
+  gtk_widget_destroy(bookmark_manager->window_);
+
+  return TRUE;
 }
