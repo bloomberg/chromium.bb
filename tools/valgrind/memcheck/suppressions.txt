@@ -942,3 +942,23 @@
    fun:_Z10cssyyparsePv
    fun:_ZN7WebCore9CSSParser13parseSelectorERKNS_6StringEPNS_8DocumentERNS_15CSSSelectorListE
 }
+{
+   bug_19191
+   Memcheck:Leak
+   ...
+   fun:_ZN7WebCore10StringImplC1EPKcjj
+   fun:_ZN3WTF9HashTableIPN7WebCore10StringImplES3_NS_17IdentityExtractorIS3_EENS1_10StringHashENS_10HashTraitsIS3_EES8_E18addPassingHashCodeIPKcSC_NS_24HashSetTranslatorAdapterIS3_S8_SC_NS1_17CStringTranslatorEEEEESt4pairINS_17HashTableIteratorIS3_S3_S5_S6_S8_S8_EEbERKT_RKT0_
+   fun:_ZN3WTF7HashSetIPN7WebCore10StringImplENS1_10StringHashENS_10HashTraitsIS3_EEE3addIPKcNS1_17CStringTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS3_S3_NS_17IdentityExtractorIS3_EES4_S6_S6_EES3_EEbERKT_
+   fun:_ZN7WebCore12AtomicString3addEPKc
+   fun:_ZN7WebCore10XLinkNames4initEv
+}
+{
+   bug_19196
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2v817RegisterExtensionEPNS_9ExtensionE
+   fun:_ZN7WebCore7V8Proxy23registerExtensionWithV8EPN2v89ExtensionE
+   fun:_ZN7WebCore7V8Proxy17registerExtensionEPN2v89ExtensionEi
+   fun:_ZN6WebKit17registerExtensionEPN2v89ExtensionEi
+   fun:_ZN12RenderThread23EnsureWebKitInitializedEv
+}
