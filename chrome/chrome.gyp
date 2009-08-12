@@ -671,7 +671,8 @@
         'browser/automation/automation_window_tracker.h',
         'browser/automation/extension_port_container.cc',
         'browser/automation/extension_port_container.h',
-        'browser/automation/ui_controls.cc',
+        'browser/automation/ui_controls_linux.cc',
+        'browser/automation/ui_controls_win.cc',
         'browser/automation/ui_controls.h',
         'browser/back_forward_menu_model.cc',
         'browser/back_forward_menu_model.h',
@@ -2458,7 +2459,6 @@
           # Exclude files that should be excluded for all non-Windows platforms.
           'sources!': [
             'browser/autocomplete/autocomplete_accessibility.cc',
-            'browser/automation/ui_controls.cc',
             'browser/bookmarks/bookmark_menu_controller.cc',
             'browser/bookmarks/bookmark_menu_controller.h',
             'browser/browser_accessibility.cc',
@@ -3504,6 +3504,45 @@
             #   gtk/gtk.h
             '../build/linux/system.gyp:gtk',
           ],
+        }],
+      ],
+     },
+    {
+      'target_name': 'automated_ui_tests',
+      'type': 'executable',
+      'msvs_guid': 'D2250C20-3A94-4FB9-AF73-11BC5B73884B',
+      'dependencies': [
+        'browser',
+        'renderer',
+        'test_support_common',
+        'test_support_ui',
+        'theme_resources',
+        '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
+        '../third_party/libxml/libxml.gyp:libxml',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/automated_ui_tests/automated_ui_tests.cc',
+        'test/automated_ui_tests/automated_ui_tests.h',
+
+        'tools/build/win/precompiled_wtl.h',
+        'tools/build/win/precompiled_wtl.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'include_dirs': [
+            'third_party/wtl/include',
+          ],
+          'configurations': {
+            'Debug': {
+              'msvs_precompiled_header': 'tools/build/win/precompiled_wtl.h',
+              'msvs_precompiled_source': 'tools/build/win/precompiled_wtl.cc',
+            },
+          },
         }],
       ],
     },
@@ -4923,38 +4962,6 @@
             'test/activex_test_control/chrome_test_control_cp.h',
             'test/activex_test_control/resource.h',
           ],
-        },
-        {
-          'target_name': 'automated_ui_tests',
-          'type': 'executable',
-          'msvs_guid': 'D2250C20-3A94-4FB9-AF73-11BC5B73884B',
-          'dependencies': [
-            'browser',
-            'renderer',
-            'test_support_common',
-            'test_support_ui',
-            'theme_resources',
-            '../base/base.gyp:base',
-            '../skia/skia.gyp:skia',
-            '../third_party/libxml/libxml.gyp:libxml',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'include_dirs': [
-            '..',
-            'third_party/wtl/include',
-          ],
-          'sources': [
-            'test/automated_ui_tests/automated_ui_tests.cc',
-            'test/automated_ui_tests/automated_ui_tests.h',
-            'tools/build/win/precompiled_wtl.h',
-            'tools/build/win/precompiled_wtl.cc',
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'tools/build/win/precompiled_wtl.h',
-              'msvs_precompiled_source': 'tools/build/win/precompiled_wtl.cc',
-            },
-          },
         },
         {
           'target_name': 'automation',

@@ -41,10 +41,19 @@ const wchar_t* const kDebugModeSwitch = L"debug";
 
 const wchar_t* const kWaitSwitch = L"wait-after-action";
 
-const wchar_t* const kDefaultInputFilePath = L"C:\\automated_ui_tests.txt";
+const FilePath::CharType* const kDefaultInputFilePath =
+#if defined(OS_WIN)
+  L"C:\\automated_ui_tests.txt";
+#else
+  "/tmp/automated_ui_tests.txt";
+#endif
 
-const wchar_t* const kDefaultOutputFilePath
-  = L"C:\\automated_ui_tests_error_report.txt";
+const FilePath::CharType* const kDefaultOutputFilePath =
+#if defined(OS_WIN)
+  L"C:\\automated_ui_tests_error_report.txt";
+#else
+  "/tmp/automated_ui_tests_error_report.txt";
+#endif
 
 const int kDebuggingTimeoutMsec = 5000;
 
@@ -52,6 +61,26 @@ const int kDebuggingTimeoutMsec = 5000;
 const int kTestDialogActionsToRun = 7;
 
 void SilentRuntimeReportHandler(const std::string& str) {
+}
+
+FilePath GetInputFilePath() {
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(kInputFilePathSwitch)) {
+    return FilePath::FromWStringHack(
+        parsed_command_line.GetSwitchValue(kInputFilePathSwitch));
+  } else {
+    return FilePath(kDefaultInputFilePath);
+  }
+}
+
+FilePath GetOutputFilePath() {
+  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+  if (parsed_command_line.HasSwitch(kOutputFilePathSwitch)) {
+    return FilePath::FromWStringHack(
+        parsed_command_line.GetSwitchValue(kOutputFilePathSwitch));
+  } else {
+    return FilePath(kDefaultOutputFilePath);
+  }
 }
 
 }  // namespace
@@ -93,7 +122,7 @@ AutomatedUITest::AutomatedUITest()
     if (str.empty()) {
       post_action_delay_ = 1;
     } else {
-      post_action_delay_ = static_cast<int>(StringToInt64(str));
+      post_action_delay_ = static_cast<int>(StringToInt64(WideToUTF16(str)));
     }
   }
   if (base::SysInfo::HasEnvVar(env_vars::kHeadless))
@@ -114,7 +143,7 @@ void AutomatedUITest::RunReproduction() {
     std::wstring num_reproductions_string =
         parsed_command_line.GetSwitchValue(kReproRepeatSwitch);
     std::string test = WideToASCII(num_reproductions_string);
-    num_reproductions = StringToInt64(num_reproductions_string);
+    num_reproductions = StringToInt64(test);
   }
   std::vector<std::string> actions;
   SplitString(action_string, L',', &actions);
@@ -282,12 +311,15 @@ bool AutomatedUITest::DoAction(const std::string & action) {
     did_complete_action = PressDownArrow();
   } else if (LowerCaseEqualsASCII(action, "downloads")) {
     did_complete_action = ShowDownloads();
+// TODO(estade): port.
+#if defined(OS_WIN)
   } else if (LowerCaseEqualsASCII(action, "dragtableft")) {
     did_complete_action = DragActiveTab(false);
   } else if (LowerCaseEqualsASCII(action, "dragtabout")) {
     did_complete_action = DragTabOut();
   } else if (LowerCaseEqualsASCII(action, "dragtabright")) {
     did_complete_action = DragActiveTab(true);
+#endif  // defined(OS_WIN)
   } else if (LowerCaseEqualsASCII(action, "duplicatetab")) {
     did_complete_action = DuplicateTab();
   } else if (LowerCaseEqualsASCII(action, "editsearchengines")) {
@@ -390,7 +422,7 @@ bool AutomatedUITest::DoAction(const std::string & action) {
   xml_writer_.EndElement();
 
   if (post_action_delay_)
-    ::Sleep(1000 * post_action_delay_);
+    PlatformThread::Sleep(1000 * post_action_delay_);
 
   return did_complete_action;
 }
@@ -609,12 +641,7 @@ bool AutomatedUITest::SimulateKeyPressInActiveWindow(wchar_t key, int flags) {
 }
 
 bool AutomatedUITest::InitXMLReader() {
-  std::wstring input_path;
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (parsed_command_line.HasSwitch(kInputFilePathSwitch))
-    input_path = parsed_command_line.GetSwitchValue(kInputFilePathSwitch);
-  else
-    input_path = kDefaultInputFilePath;
+  FilePath input_path = GetInputFilePath();
 
   if (!file_util::ReadFileToString(input_path, &xml_init_file_))
     return false;
@@ -622,16 +649,10 @@ bool AutomatedUITest::InitXMLReader() {
 }
 
 bool AutomatedUITest::WriteReportToFile() {
+  FilePath path = GetOutputFilePath();
   std::ofstream error_file;
-  std::wstring path;
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (parsed_command_line.HasSwitch(kOutputFilePathSwitch))
-    path = parsed_command_line.GetSwitchValue(kOutputFilePathSwitch);
-  else
-    path = kDefaultOutputFilePath;
-
   if (!path.empty())
-    error_file.open(path.c_str(), std::ios::out);
+    error_file.open(path.value().c_str(), std::ios::out);
 
   // Closes all open elements and free the writer. This is required
   // in order to retrieve the contents of the buffer.
@@ -642,16 +663,10 @@ bool AutomatedUITest::WriteReportToFile() {
 }
 
 void AutomatedUITest::AppendToOutputFile(const std::string &append_string) {
+  FilePath path = GetOutputFilePath();
   std::ofstream error_file;
-  std::wstring path;
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (parsed_command_line.HasSwitch(kOutputFilePathSwitch))
-    path = parsed_command_line.GetSwitchValue(kOutputFilePathSwitch);
-  else
-    path = kDefaultOutputFilePath;
-
   if (!path.empty())
-    error_file.open(path.c_str(), std::ios::out | std::ios_base::app);
+    error_file.open(path.value().c_str(), std::ios::out | std::ios_base::app);
 
   error_file << append_string << " ";
   error_file.close();
@@ -702,6 +717,8 @@ void AutomatedUITest::LogInfoMessage(const std::string &info) {
 }
 
 std::wstring AutomatedUITest::GetMostRecentCrashDump() {
+// TODO(estade): port.
+#if defined(OS_WIN)
   std::wstring crash_dump_path;
   int file_count = 0;
   FILETIME most_recent_file_time;
@@ -739,6 +756,10 @@ std::wstring AutomatedUITest::GetMostRecentCrashDump() {
     file_util::AppendToPath(&crash_dump_path, most_recent_file_name);
     return crash_dump_path;
   }
+#else
+  NOTIMPLEMENTED();
+  return std::wstring();
+#endif
 }
 
 bool AutomatedUITest::DidCrash(bool update_total_crashes) {

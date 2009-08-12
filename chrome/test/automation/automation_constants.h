@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_AUTOMATION_AUTOMATION_CONSTANTS_H__
-#define CHROME_TEST_AUTOMATION_AUTOMATION_CONSTANTS_H__
+#ifndef CHROME_TEST_AUTOMATION_AUTOMATION_CONSTANTS_H_
+#define CHROME_TEST_AUTOMATION_AUTOMATION_CONSTANTS_H_
 
 namespace automation {
 // Amount of time to wait before querying the browser.
@@ -25,4 +25,20 @@ enum AutomationMsg_NavigationResponseValues {
   AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED,
 };
 
-#endif  // CHROME_TEST_AUTOMATION_AUTOMATION_CONSTANTS_H__
+#if !defined(OS_WIN)
+
+// WebKit defines a larger set of these in
+// WebKit/WebCore/platform/KeyboardCodes.h but I don't think we want to include
+// that from here, and besides we only care about a subset of those.
+const int VK_TAB = 0x09;
+const int VK_RETURN = 0x0D;
+const int VK_ESCAPE = 0x1B;
+const int VK_SPACE = 0x20;
+const int VK_PRIOR = 0x21;
+const int VK_NEXT = 0x22;
+const int VK_UP = 0x26;
+const int VK_DOWN = 0x28;
+
+#endif  // !defined(OS_WIN)
+
+#endif  // CHROME_TEST_AUTOMATION_AUTOMATION_CONSTANTS_H_

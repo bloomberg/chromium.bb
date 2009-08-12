@@ -50,10 +50,10 @@
 #include "net/proxy/proxy_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
+#include "views/event.h"
 
 #if defined(OS_WIN)
 // TODO(port): Port these headers.
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/external_tab_container.h"
@@ -62,6 +62,7 @@
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 // TODO(port): Port these to the mac.
+#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/login_prompt.h"
 #endif
 
@@ -974,7 +975,11 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowVisible, SetWindowVisible)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
+#endif  // defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
+#endif
+#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowDrag,
                                     WindowSimulateDrag)
 #endif  // defined(OS_WIN)
@@ -1440,6 +1445,15 @@ void AutomationProvider::GetWindowHWND(int handle, HWND* win32_handle) {
 }
 #endif  // defined(OS_WIN)
 
+#if defined(OS_LINUX)
+// TODO(estade): use this implementation for all platforms?
+void AutomationProvider::GetActiveWindow(int* handle) {
+  gfx::NativeWindow window =
+      BrowserList::GetLastActive()->window()->GetNativeHandle();
+  *handle = window_tracker_->Add(window);
+}
+#endif
+
 void AutomationProvider::ExecuteBrowserCommandAsync(int handle, int command,
                                                     bool* success) {
   *success = false;
@@ -1707,7 +1721,9 @@ void AutomationProvider::WindowSimulateDrag(int handle,
     Send(reply_message);
   }
 }
+#endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_LINUX)
 void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
                                                 int handle,
                                                 wchar_t key,
@@ -1724,7 +1740,9 @@ void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
                             ((flags & views::Event::EF_ALT_DOWN) ==
                               views::Event::EF_ALT_DOWN));
 }
+#endif
 
+#if defined(OS_WIN)
 void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
   *view_id = -1;
   if (window_tracker_->ContainsHandle(handle)) {

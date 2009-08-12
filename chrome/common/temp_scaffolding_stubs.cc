@@ -39,7 +39,9 @@ class TabContents;
 
 //--------------------------------------------------------------------------
 
+#if defined(OS_MACOSX)
 void AutomationProvider::GetActiveWindow(int* handle) { NOTIMPLEMENTED(); }
+#endif
 
 void AutomationProvider::ActivateWindow(int handle) { NOTIMPLEMENTED(); }
 

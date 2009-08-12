@@ -1,12 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H__
-#define CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H__
+#ifndef CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
+#define CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
 
 #include <string>
+
+#if defined(OS_WIN)
 #include <wtypes.h>
+#endif
 
 namespace views {
 class View;
@@ -31,8 +34,7 @@ bool SendKeyPressNotifyWhenDone(wchar_t key, bool control, bool shift,
 bool SendKeyDown(wchar_t key);
 bool SendKeyUp(wchar_t key);
 
-// Simulate a mouse move. (x,y) are absolute
-// screen coordinates.
+// Simulate a mouse move. (x,y) are absolute screen coordinates.
 bool SendMouseMove(long x, long y);
 void SendMouseMoveNotifyWhenDone(long x, long y, Task* task);
 
@@ -64,4 +66,4 @@ void MoveMouseToCenterAndPress(views::View* view,
 
 }  // ui_controls
 
-#endif  // CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H__
+#endif  // CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
