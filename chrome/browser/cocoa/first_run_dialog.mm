@@ -23,6 +23,12 @@
     // Bound to the dialog checkbox, default to true.
     stats_enabled_ = YES;
     import_bookmarks_ = YES;
+
+#if !defined(GOOGLE_CHROME_BUILD)
+    // In Chromium builds all stats reporting is disabled so there's no reason
+    // to display the checkbox - the setting is always OFF.
+    usage_stats_checkbox_hidden_ = YES;
+#endif // !GOOGLE_CHROME_BUILD
   }
   return self;
 }

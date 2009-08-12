@@ -15,6 +15,7 @@
   BOOL stats_enabled_;
   BOOL make_default_browser_;
   BOOL import_bookmarks_;
+  BOOL usage_stats_checkbox_hidden_;
   int  browser_import_selected_index_;
   NSArray* browser_import_list_;
 }

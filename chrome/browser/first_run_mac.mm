@@ -120,7 +120,6 @@ bool FirstRunController::DoFirstRun(Profile* profile,
     return false;
   }
 
-// Don't enable stats in Chromium.
 #if defined(GOOGLE_CHROME_BUILD)
   BOOL stats_enabled = [dialog.get() statsEnabled];
 
@@ -132,8 +131,13 @@ bool FirstRunController::DoFirstRun(Profile* profile,
     InitCrashProcessInfo();
   }
 
-  GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
+
+#else
+  // Don't enable stats in Chromium.
+  BOOL stats_enabled = NO;
 #endif  // GOOGLE_CHROME_BUILD
+
+  GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
 
   // If selected set as default browser.
   BOOL make_default_browser = [dialog.get() makeDefaultBrowser];

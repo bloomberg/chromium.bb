@@ -87,13 +87,13 @@
 						<object class="NSButton" id="328877840">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{45, 139}, {235, 18}}</string>
+							<string key="NSFrame">{{45, 139}, {284, 18}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="1019469145">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Make Chrome my default browser</string>
+								<string key="NSContents">Make Google Chrome my default browser</string>
 								<object class="NSFont" key="NSSupport" id="605141190">
 									<string key="NSName">LucidaGrande</string>
 									<double key="NSSize">1.300000e+01</double>
@@ -563,6 +563,70 @@
 					</object>
 					<int key="connectionID">80</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: usage_stats_checkbox_hidden_</string>
+						<reference key="source" ref="533962116"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="533962116"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">hidden: usage_stats_checkbox_hidden_</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">usage_stats_checkbox_hidden_</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">82</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: importBookmarks</string>
+						<reference key="source" ref="21765562"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="21765562"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">enabled: importBookmarks</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">importBookmarks</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">84</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: usage_stats_checkbox_hidden_</string>
+						<reference key="source" ref="772316250"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="772316250"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">hidden: usage_stats_checkbox_hidden_</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">usage_stats_checkbox_hidden_</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">88</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: usage_stats_checkbox_hidden_</string>
+						<reference key="source" ref="575991284"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="575991284"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">hidden: usage_stats_checkbox_hidden_</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">usage_stats_checkbox_hidden_</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">89</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -925,7 +989,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">80</int>
+			<int key="maxID">89</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
