@@ -737,3 +737,11 @@ uint8_t NcInstStateByte(NcInstState* state, uint8_t index) {
   assert(index < state->length);
   return state->mpc[index];
 }
+
+uint8_t NcInstStateOperandSize(NcInstState* state) {
+  return state->operand_size;
+}
+
+uint8_t NcInstStateAddressSize(NcInstState* state) {
+  return state->address_size;
+}

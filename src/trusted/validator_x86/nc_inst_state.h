@@ -82,4 +82,10 @@ uint8_t NcInstStateLength(NcInstState* state);
  */
 uint8_t NcInstStateByte(NcInstState* state, uint8_t index);
 
+/* Returns the operand size (measured in bytes) of the instruction state. */
+uint8_t NcInstStateOperandSize(NcInstState* state);
+
+/* Returns the address size (measured in bits) of the instruction state. */
+uint8_t NcInstStateAddressSize(NcInstState* state);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_STATE_H_ */
