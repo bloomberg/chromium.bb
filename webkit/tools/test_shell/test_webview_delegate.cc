@@ -8,6 +8,8 @@
 
 #include "config.h"
 
+#undef LOG
+
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 #include "base/file_util.h"

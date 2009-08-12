@@ -4,6 +4,8 @@
 
 #include "config.h"
 
+#undef LOG
+
 #include "base/at_exit.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/logging.h"

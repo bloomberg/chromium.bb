@@ -14,14 +14,16 @@
 // The behavior of queuing events and replaying them can be disabled by a
 // layout test by setting eventSender.dragMode to false.
 
-#include "webkit/tools/test_shell/event_sending_controller.h"
-
-#include <queue>
-
 // TODO(darin): This is very wrong.  We should not be including WebCore headers
 // directly like this!!
 #include "config.h"
 #include "KeyboardCodes.h"
+
+#undef LOG
+
+#include "webkit/tools/test_shell/event_sending_controller.h"
+
+#include <queue>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"

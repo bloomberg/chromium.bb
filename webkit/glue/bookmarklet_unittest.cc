@@ -4,6 +4,8 @@
 
 #include "config.h"
 
+#undef LOG
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/file_util.h"
