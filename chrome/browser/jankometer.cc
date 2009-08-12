@@ -178,9 +178,9 @@ class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
   virtual void WillProcessEvent(GdkEvent* event) {
     begin_process_message_ = TimeTicks::Now();
     // TODO(evanm): we want to set queueing_time_ using
-    // event_utils::GetGdkEventTime, but how do you convert that info
+    // gdk_event_get_time, but how do you convert that info
     // into a delta?
-    // guint event_time = event_utils::GetGdkEventTime(event);
+    // guint event_time = gdk_event_get_time(event);
     queueing_time_ = base::TimeDelta::FromMilliseconds(0);
     StartProcessingTimers();
   }
