@@ -144,11 +144,6 @@ class Bitmap : public ParamObject {
                const void* src_data,
                int src_pitch);
 
-  // Gets the total size of the bitmap data, counting all faces and mip levels.
-  size_t GetTotalSize() const {
-    return GetMipChainSize(num_mipmaps_);
-  }
-
   // Gets the image data for a given mip-map level.
   // Parameters:
   //   level: mip level to get.
@@ -296,7 +291,14 @@ class Bitmap : public ParamObject {
                        unsigned int num_mipmaps,
                        uint8 *data);
 
+  // Gets the total size of the bitmap data, counting all faces and mip levels.
+  size_t GetTotalSize() const {
+    return GetMipChainSize(image::ComputeMipMapCount(width_, height_));
+  }
+
   // pointer to the raw bitmap data
+  // NOTE: image_data_ is either NULL or it has space for the maximum number
+  //     of mips for the current size bitmap, even if they are not used.
   scoped_array<uint8> image_data_;
   // format of the texture this is meant to represent.
   Texture::Format format_;
@@ -304,7 +306,7 @@ class Bitmap : public ParamObject {
   int width_;
   // height of the bitmap in pixels.
   int height_;
-  // number of mipmap levels in this texture.
+  // number of valid mipmap levels in this bitmap.
   unsigned int num_mipmaps_;
   // The purpose of the bitmap
   Semantic semantic_;

@@ -393,16 +393,22 @@ void Bitmap::GenerateMips(int source_level, int num_levels) {
     O3D_ERROR(service_locator()) << "source level out of range.";
     return;
   }
-  if (source_level + num_levels >= static_cast<int>(num_mipmaps()) || num_levels < 0) {
+  unsigned int max_mips = image::ComputeMipMapCount(width(), height());
+  if (source_level + num_levels >=
+      static_cast<int>(max_mips) || num_levels < 0) {
     O3D_ERROR(service_locator()) << "num levels out of range.";
     return;
   }
 
-  GenerateMipmaps(image::ComputeMipDimension(source_level, width()),
-                  image::ComputeMipDimension(source_level, height()),
-                  format(),
-                  num_levels,
-                  GetMipData(source_level));
+  if (GenerateMipmaps(image::ComputeMipDimension(source_level, width()),
+                      image::ComputeMipDimension(source_level, height()),
+                      format(),
+                      num_levels,
+                      GetMipData(source_level))) {
+    num_mipmaps_ = std::max(
+        num_mipmaps_,
+        static_cast<unsigned>(source_level + num_levels + 1));
+  }
 }
 
 // NOTE: This only works for Bitmap since Bitmap knows the pitch.

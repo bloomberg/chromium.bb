@@ -75,7 +75,8 @@ class Bitmap : ParamObject {
   %[
     Generates mip maps from the source level to lower levels.
 
-    You can currently only use this on XRGB8 and ARGB8 textures.
+    You can not currently generate mips for DXT textures although you can load
+    them from dds files.
 
     \param source_level The level to use as the source of the mips.
     \param num_levels The number of levels to generate below the source level.
