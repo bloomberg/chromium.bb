@@ -1197,6 +1197,13 @@ if '__main__' == __name__:
                            default=None,
                            help=("Run a the tests in batches (n), after every "
                                  "n tests, the test shell is relaunched."))
+  option_parser.add_option("", "--builder-name",
+                           default=None,
+                           help="The name of the builder running this script.")
+  option_parser.add_option("", "--build-number",
+                           default=None,
+                           help=("The build number of the builder running"
+                                 "this script."))
   option_parser.add_option("", "--find-baselines", action="store_true",
                            default=False,
                            help="Prints a table mapping tests to their "
