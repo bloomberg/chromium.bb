@@ -118,12 +118,9 @@ class TestRunner:
     if options.lint_test_files:
       # Creating the expecations for each platform/target pair does all the
       # test list parsing and ensures it's correct syntax(e.g. no dupes).
-      self._ParseExpectations('win', is_debug_mode=True)
-      self._ParseExpectations('win', is_debug_mode=False)
-      self._ParseExpectations('mac', is_debug_mode=True)
-      self._ParseExpectations('mac', is_debug_mode=False)
-      self._ParseExpectations('linux', is_debug_mode=True)
-      self._ParseExpectations('linux', is_debug_mode=False)
+      for platform in TestExpectationsFile.PLATFORMS:
+        self._ParseExpectations(platform, is_debug_mode=True)
+        self._ParseExpectations(platform, is_debug_mode=False)
     else:
       self._GatherTestFiles(paths)
       self._expectations = self._ParseExpectations(

@@ -14,6 +14,7 @@ to fall back to the base functions.
 import os
 import re
 import subprocess
+import sys
 
 import google.httpd_utils
 import google.path_utils
@@ -37,6 +38,12 @@ def IsNonWindowsPlatformTargettingWindowsResults():
 def GetTestListPlatformName():
   """Returns the name we use to identify the platform in the layout test
   test list files."""
+  #winver = sys.getwindowsversion()
+  #if winver[0] == 6 and winver[1] == 0:
+  #  return "WIN-VISTA"
+  #elif winver[0] == 5 and (winver[1] == 1 or winver[1] == 2):
+  #  return "WIN-XP"
+  #default to returning 'WIN' if it's an unsupported version
   return "WIN"
 
 class PlatformUtility(google.platform_utils_win.PlatformUtility):
@@ -228,13 +235,13 @@ class PlatformUtility(google.platform_utils_win.PlatformUtility):
 
   def TestListPlatformDir(self):
     """Return the platform-specific directory for where the test lists live."""
-    return 'win'
+    return GetTestListPlatformName().lower()
 
   def PlatformDir(self):
     """Returns the most specific directory name where platform-specific
     results live.
     """
-    return 'chromium-win'
+    return 'chromium-' + GetTestListPlatformName().lower()
 
   def PlatformNewResultsDir(self):
     """Returns the directory name in which to output newly baselined tests.

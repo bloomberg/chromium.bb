@@ -183,7 +183,7 @@ class TestExpectationsFile:
   DEFER: Test does not count in our statistics for the current release.
   DEBUG: Expectations apply only to the debug build.
   RELEASE: Expectations apply only to release build.
-  LINUX/WIN/MAC: Expectations apply only to these platforms.
+  LINUX/WIN/WIN-XP/WIN-VISTA/MAC: Expectations apply only to these platforms.
 
   Notes:
     -A test cannot be both SLOW and TIMEOUT
@@ -198,7 +198,7 @@ class TestExpectationsFile:
                    'timeout': TIMEOUT,
                    'crash': CRASH }
 
-  PLATFORMS = [ 'mac', 'linux', 'win' ]
+  PLATFORMS = [ 'mac', 'linux', 'win', 'win-xp', 'win-vista' ]
 
   BUILD_TYPES = [ 'debug', 'release' ]
 
@@ -421,7 +421,7 @@ class TestExpectationsFile:
         self._AddError(lineno, 'Invalid modifier for test: %s' % option,
             test_and_expectations)
 
-    if has_any_platform and not self._platform in options:
+    if has_any_platform and not self._MatchPlatform(options):
       return False
 
     if not has_bug_id and 'wontfix' not in options:
@@ -441,6 +441,19 @@ class TestExpectationsFile:
           test_and_expectations)
 
     return True
+
+  def _MatchPlatform(self, options):
+    """Match the list of options against our specified platform. If any
+    of the options prefix-match self._platform, return True. This handles
+    the case where a test is marked WIN and the platform is WIN-VISTA.
+
+    Args:
+      options: list of options
+    """
+    for opt in options:
+      if self._platform.startswith(opt):
+        return True
+    return False
 
   def _AddToAllExpectations(self, test, options, expectations):
     if not test in self._all_expectations:
