@@ -32,11 +32,6 @@ class NodeLeakTest : public TestShellTest {
   virtual void SetUp() {
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
 
-    std::wstring js_flags =
-        parsed_command_line.GetSwitchValue(test_shell::kJavaScriptFlags);
-    js_flags += L" --expose-gc";
-    webkit_glue::SetJavaScriptFlags(js_flags);
-
     FilePath cache_path = FilePath::FromWStringHack(
         parsed_command_line.GetSwitchValue(test_shell::kCacheDir));
     if (cache_path.empty()) {

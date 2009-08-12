@@ -506,6 +506,7 @@
         'image_decoder_unittest.h',
         'keyboard_unittest.cc',
         'layout_test_controller_unittest.cc',
+        'listener_leak_test.cc',
         'media_leak_test.cc',
         'node_leak_test.cc',
         'plugin_tests.cc',
