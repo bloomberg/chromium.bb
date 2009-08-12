@@ -94,8 +94,7 @@ bool IsSupportedTextureFormat(Texture::Format format,
 }  // anonymous namespace
 
 Renderer::Renderer(ServiceLocator* service_locator)
-    : supports_npot_(false),
-      clear_client_(true),
+    : clear_client_(true),
       need_to_render_(true),
       current_render_surface_(NULL),
       current_depth_surface_(NULL),
@@ -116,7 +115,8 @@ Renderer::Renderer(ServiceLocator* service_locator)
       render_width_(0),
       render_height_(0),
       dest_x_offset_(0),
-      dest_y_offset_(0) {
+      dest_y_offset_(0),
+      supports_npot_(false) {
 }
 
 Renderer::~Renderer() {

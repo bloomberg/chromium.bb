@@ -345,14 +345,15 @@ bool MessageQueue::ProcessClientRequest(ConnectedClient* client,
                                         IMCMessage::MessageId message_id,
                                         nacl::MessageHeader* header,
                                         nacl::Handle* handles) {
-  static size_t expected_message_lengths[] = {
+  static int expected_message_lengths[] = {
     #define O3D_IMC_MESSAGE_OP(id, class_name)  sizeof(class_name),
     O3D_IMC_MESSAGE_LIST(O3D_IMC_MESSAGE_OP)
     #undef O3D_IMC_MESSAGE_OP
   };
 
   if (message_id == IMCMessage::INVALID_ID ||
-      message_id >= arraysize(expected_message_lengths)) {
+      static_cast<unsigned>(message_id) >=
+          arraysize(expected_message_lengths)) {
     LOG(ERROR) << "Unrecognized message id " << message_id;
     return false;
   }

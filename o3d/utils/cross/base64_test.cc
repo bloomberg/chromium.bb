@@ -41,11 +41,11 @@ class Base64Test : public testing::Test {
 };
 
 TEST_F(Base64Test, GetEncodeLength) {
-  EXPECT_EQ(0, base64::GetEncodeLength(0));
-  EXPECT_EQ(4, base64::GetEncodeLength(1));
-  EXPECT_EQ(4, base64::GetEncodeLength(2));
-  EXPECT_EQ(4, base64::GetEncodeLength(3));
-  EXPECT_EQ(8, base64::GetEncodeLength(4));
+  EXPECT_EQ(0u, base64::GetEncodeLength(0));
+  EXPECT_EQ(4u, base64::GetEncodeLength(1));
+  EXPECT_EQ(4u, base64::GetEncodeLength(2));
+  EXPECT_EQ(4u, base64::GetEncodeLength(3));
+  EXPECT_EQ(8u, base64::GetEncodeLength(4));
 }
 
 TEST_F(Base64Test, Encode) {

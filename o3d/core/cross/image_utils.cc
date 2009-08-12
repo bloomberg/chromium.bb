@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2009, Google Inc.
  * All rights reserved.
@@ -432,8 +431,8 @@ void FilterTexel(unsigned int x,
   const OriginalType* src = static_cast<const OriginalType*>(src_data);
   OriginalType* dst = static_cast<OriginalType*>(dst_data);
 
-  DCHECK_EQ(src_pitch % (components * sizeof(*src)), 0);
-  DCHECK_EQ(dst_pitch % (components * sizeof(*dst)), 0);
+  DCHECK_EQ(src_pitch % (components * sizeof(*src)), 0u);
+  DCHECK_EQ(dst_pitch % (components * sizeof(*dst)), 0u);
 
   src_pitch /= components;
   dst_pitch /= components;
@@ -531,8 +530,8 @@ void GenerateMip(unsigned int components,
   OriginalType* dst = static_cast<OriginalType*>(dst_data);
 
   if (mip_width * 2 == src_width && mip_height * 2 == src_height) {
-    DCHECK_EQ(src_pitch % (components * sizeof(*src)), 0);
-    DCHECK_EQ(dst_pitch % (components * sizeof(*dst)), 0);
+    DCHECK_EQ(src_pitch % (components * sizeof(*src)), 0u);
+    DCHECK_EQ(dst_pitch % (components * sizeof(*dst)), 0u);
     src_pitch /= components;
     dst_pitch /= components;
     // Easy case: every texel maps to exactly 4 texels in the previous level.
@@ -734,6 +733,10 @@ bool GenerateMipmap(unsigned int src_width,
                   FloatToDouble, DoubleToFloat>(
         components, src_width, src_height, src_data, src_pitch,
         dst_data, dst_pitch);
+      break;
+    default:
+      DLOG(ERROR) << "Mip-map generation not supported for format: " << format;
+      return false;
       break;
   }
   return true;

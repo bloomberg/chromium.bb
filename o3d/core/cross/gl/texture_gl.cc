@@ -217,7 +217,7 @@ static bool CreateGLImages(GLenum target,
   temp_data.reset(new uint8[size]);
   memset(temp_data.get(), 0, size);
 
-  for (unsigned int i = 0; i < levels; ++i) {
+  for (int i = 0; i < levels; ++i) {
     if (gl_format) {
       glTexImage2D(target, i, internal_format, mip_width, mip_height,
                    0, gl_format, type, temp_data.get());
