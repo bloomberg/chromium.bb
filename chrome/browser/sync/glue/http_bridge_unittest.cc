@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(timsteele): Re-enable ASAP.  http://crbug.com/19002
-#if 0
 #ifdef CHROME_PERSONALIZATION
 
 #include "base/thread.h"
@@ -20,7 +18,8 @@ const char16 kDocRoot[] = L"chrome/test/data";
 
 class HttpBridgeTest : public testing::Test {
  public:
-  HttpBridgeTest() : io_thread_("HttpBridgeTest IO thread") {
+  HttpBridgeTest() : io_thread_("HttpBridgeTest IO thread"),
+      fake_default_request_context_(NULL) {
   }
 
   virtual void SetUp() {
@@ -30,24 +29,30 @@ class HttpBridgeTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    io_thread_loop()->ReleaseSoon(FROM_HERE, fake_default_request_context_);
     io_thread_.Stop();
+    fake_default_request_context_ = NULL;
   }
 
   HttpBridge* BuildBridge() {
-    if (!request_context_) {
-      request_context_ = new HttpBridge::RequestContext(
-          new TestURLRequestContext());
+    if (!fake_default_request_context_) {
+      fake_default_request_context_ = new TestURLRequestContext();
+      fake_default_request_context_->AddRef();
     }
-    HttpBridge* bridge = new HttpBridge(request_context_,
-                                        io_thread_.message_loop());
+    HttpBridge* bridge = new HttpBridge(
+        new HttpBridge::RequestContext(fake_default_request_context_),
+        io_thread_.message_loop());
     bridge->use_io_loop_for_testing_ = true;
     return bridge;
   }
 
   MessageLoop* io_thread_loop() { return io_thread_.message_loop(); }
  private:
+  // A make-believe "default" request context, as would be returned by
+  // Profile::GetDefaultRequestContext().  Created lazily by BuildBridge.
+  TestURLRequestContext* fake_default_request_context_;
+
   // Separate thread for IO used by the HttpBridge.
-  scoped_refptr<HttpBridge::RequestContext> request_context_;
   base::Thread io_thread_;
 };
 
@@ -82,8 +87,9 @@ class ShuntedHttpBridge : public HttpBridge {
 
 // Test the HttpBridge without actually making any network requests.
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
+  scoped_refptr<TestURLRequestContext> ctx(new TestURLRequestContext());
   scoped_refptr<HttpBridge> http_bridge(new ShuntedHttpBridge(
-      new TestURLRequestContext(), io_thread_loop(), this));
+      ctx, io_thread_loop(), this));
   http_bridge->SetUserAgent("bob");
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");
@@ -168,4 +174,3 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
 }
 
 #endif  // CHROME_PERSONALIZATION
-#endif
