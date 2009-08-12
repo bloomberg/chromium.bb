@@ -80,6 +80,7 @@ namespace WebKit {
         virtual void setDatabasesEnabled(bool);
         virtual void setAllowUniversalAccessFromFileURLs(bool);
         virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
+        virtual void setOfflineWebApplicationCacheEnabled(bool);
 
     private:
         WebCore::Settings* m_settings;

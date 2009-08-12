@@ -1411,6 +1411,7 @@ void WebViewImpl::SetPreferences(const WebPreferences& preferences) {
   settings->setXSSAuditorEnabled(preferences.xss_auditor_enabled);
   settings->setLocalStorageEnabled(preferences.local_storage_enabled);
   settings->setSessionStorageEnabled(preferences.session_storage_enabled);
+  settings->setOfflineWebApplicationCacheEnabled(preferences.application_cache_enabled);
 
   // This setting affects the behavior of links in an editable region:
   // clicking the link should select it rather than navigate to it.

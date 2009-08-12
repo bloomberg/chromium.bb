@@ -223,6 +223,8 @@ extern const wchar_t kDisableCustomJumpList[];
 extern const wchar_t kGoogleInternalCrashReporting[];
 
 extern const wchar_t kEnableDatabases[];
+
+extern const wchar_t kEnableApplicationCache[];
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

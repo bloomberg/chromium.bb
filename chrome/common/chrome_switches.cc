@@ -569,4 +569,7 @@ const wchar_t kGoogleInternalCrashReporting[] =
 
 // Enables HTML5 DB support.
 const wchar_t kEnableDatabases[] = L"enable-databases";
+
+// Enable ApplicationCache. Still mostly not there.
+const wchar_t kEnableApplicationCache[] = L"enable-application-cache";
 }  // namespace switches

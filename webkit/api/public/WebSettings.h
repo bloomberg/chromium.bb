@@ -78,6 +78,7 @@ namespace WebKit {
         virtual void setDatabasesEnabled(bool) = 0;
         virtual void setAllowUniversalAccessFromFileURLs(bool) = 0;
         virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded() = 0;
+        virtual void setOfflineWebApplicationCacheEnabled(bool) = 0;
 
     protected:
         ~WebSettings() { }

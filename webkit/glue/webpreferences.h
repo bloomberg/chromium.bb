@@ -44,6 +44,7 @@ struct WebPreferences {
   bool xss_auditor_enabled;
   bool local_storage_enabled;
   bool session_storage_enabled;
+  bool application_cache_enabled;
 
   // TODO(tc): User style sheets will not work in chrome because it tries to
   // load the style sheet using a request without a frame.
@@ -83,6 +84,7 @@ struct WebPreferences {
         xss_auditor_enabled(false),
         local_storage_enabled(false),
         session_storage_enabled(false),
+        application_cache_enabled(false),
         user_style_sheet_enabled(false) {
   }
 };

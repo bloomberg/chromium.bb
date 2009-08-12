@@ -1624,6 +1624,7 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.xss_auditor_enabled);
     WriteParam(m, p.local_storage_enabled);
     WriteParam(m, p.session_storage_enabled);
+    WriteParam(m, p.application_cache_enabled);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -1656,7 +1657,8 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->remote_fonts_enabled) &&
         ReadParam(m, iter, &p->xss_auditor_enabled) &&
         ReadParam(m, iter, &p->local_storage_enabled) &&
-        ReadParam(m, iter, &p->session_storage_enabled);
+        ReadParam(m, iter, &p->session_storage_enabled) &&
+        ReadParam(m, iter, &p->application_cache_enabled);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<WebPreferences>");
