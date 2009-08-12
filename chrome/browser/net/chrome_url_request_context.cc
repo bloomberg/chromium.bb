@@ -136,7 +136,7 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
   }
   context->http_transaction_factory_ = cache;
 
-  // The kNewFtp switch is Windows specific only because we have multiple FTP
+  // The kNewFtp switch is Windows specific because we have multiple FTP
   // implementations on Windows.
 #if defined(OS_WIN)
   if (command_line.HasSwitch(switches::kNewFtp))
@@ -206,6 +206,17 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOffTheRecord(
   context->http_transaction_factory_ =
       new net::HttpCache(context->host_resolver_, context->proxy_service_, 0);
   context->cookie_store_ = new net::CookieMonster;
+
+  // The kNewFtp switch is Windows specific because we have multiple FTP
+  // implementations on Windows.
+#if defined(OS_WIN)
+  if (command_line.HasSwitch(switches::kNewFtp))
+    context->ftp_transaction_factory_ =
+        new net::FtpNetworkLayer(context->host_resolver_);
+#else
+  context->ftp_transaction_factory_ =
+      new net::FtpNetworkLayer(context->host_resolver_);
+#endif
 
   return context;
 }
