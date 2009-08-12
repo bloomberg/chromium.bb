@@ -31,12 +31,6 @@ const int kCornerSize = 4;
 // Milliseconds before we hide the status bubble widget when you mouseout.
 const int kHideDelay = 250;
 
-// Reverses a point in RTL mode.
-GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
-  GdkPoint point = {ltr ? x : width - x, y};
-  return point;
-}
-
 enum FrameType {
   FRAME_MASK,
   FRAME_STROKE,
@@ -48,6 +42,7 @@ enum FrameType {
 std::vector<GdkPoint> MakeFramePolygonPoints(int width,
                                              int height,
                                              FrameType type) {
+  using gtk_util::MakeBidiGdkPoint;
   std::vector<GdkPoint> points;
 
   bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;

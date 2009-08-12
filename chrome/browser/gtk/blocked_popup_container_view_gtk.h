@@ -105,6 +105,11 @@ class BlockedPopupContainerViewGtk : public BlockedPopupContainerView,
   // The popup menu with options to launch blocked popups.
   scoped_ptr<MenuGtk> launch_menu_;
 
+  // Cached allocation of |container_|. We keep this on hand so that we can
+  // reset the widget's shape when the width/height change.
+  int notification_width_;
+  int notification_height_;
+
   DISALLOW_COPY_AND_ASSIGN(BlockedPopupContainerViewGtk);
 };
 

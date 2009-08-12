@@ -14,6 +14,7 @@
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 
 namespace {
@@ -38,11 +39,6 @@ const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 
 const gchar* kInfoBubbleToplevelKey = "__INFO_BUBBLE_TOPLEVEL__";
 
-GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
-  GdkPoint point = {ltr ? x : width - x, y};
-  return point;
-}
-
 enum FrameType {
   FRAME_MASK,
   FRAME_STROKE,
@@ -57,6 +53,7 @@ enum FrameType {
 std::vector<GdkPoint> MakeFramePolygonPoints(int width,
                                              int height,
                                              FrameType type) {
+  using gtk_util::MakeBidiGdkPoint;
   std::vector<GdkPoint> points;
 
   bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;

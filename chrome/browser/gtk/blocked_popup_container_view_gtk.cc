@@ -22,18 +22,57 @@ namespace {
 // The minimal border around the edge of the notification.
 const int kSmallPadding = 2;
 
-// Size of the border painted in kBorderColor
-const int kBorderPadding = 1;
-
 // Color of the border.
-const double kBorderColor[] = { 190.0 / 255, 205.0 / 255, 223.0 / 255 };
+const GdkColor kBorderColor = GDK_COLOR_RGB(190, 205, 223);
 
 // Color of the gradient in the background.
 const double kBackgroundColorTop[] = { 246.0 / 255, 250.0 / 255, 1.0 };
 const double kBackgroundColorBottom[] = { 219.0 / 255, 235.0 / 255, 1.0 };
 
 // Rounded corner radius (in pixels).
-const int kBackgroundCornerRadius = 4;
+const int kCornerSize = 4;
+
+enum FrameType {
+  FRAME_MASK,
+  FRAME_STROKE,
+};
+
+std::vector<GdkPoint> MakeFramePolygonPoints(int width,
+                                             int height,
+                                             FrameType type) {
+  using gtk_util::MakeBidiGdkPoint;
+  std::vector<GdkPoint> points;
+
+  bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
+  // If we have a stroke, we have to offset some of our points by 1 pixel.
+  // We have to inset by 1 pixel when we draw horizontal lines that are on the
+  // bottom or when we draw vertical lines that are closer to the end (end is
+  // right for ltr).
+  int y_off = (type == FRAME_MASK) ? 0 : -1;
+  // We use this one for LTR.
+  int x_off_l = ltr ? y_off : 0;
+  // We use this one for RTL.
+  int x_off_r = !ltr ? -y_off : 0;
+
+  // Bottom left corner.
+  points.push_back(MakeBidiGdkPoint(0, height + y_off, width, ltr));
+
+  // Top left (rounded) corner.
+  points.push_back(MakeBidiGdkPoint(x_off_r, kCornerSize - 1, width, ltr));
+  points.push_back(MakeBidiGdkPoint(kCornerSize + x_off_r - 1, 0, width, ltr));
+
+  // Top right (rounded) corner.
+  points.push_back(MakeBidiGdkPoint(
+      width - kCornerSize + 1 + x_off_l, 0, width, ltr));
+  points.push_back(MakeBidiGdkPoint(
+      width + x_off_l, kCornerSize - 1, width, ltr));
+
+  // Bottom right corner.
+  points.push_back(MakeBidiGdkPoint(
+      width + x_off_l, height + y_off, width, ltr));
+
+  return points;
+}
 
 }  // namespace
 
@@ -150,7 +189,9 @@ BlockedPopupContainerViewGtk::BlockedPopupContainerViewGtk(
     BlockedPopupContainer* container)
     : model_(container),
       theme_provider_(GtkThemeProvider::GetFrom(container->profile())),
-      close_button_(CustomDrawButton::CloseButton(theme_provider_)) {
+      close_button_(CustomDrawButton::CloseButton(theme_provider_)),
+      notification_width_(-1),
+      notification_height_(-1) {
   Init();
 
   registrar_.Add(this,
@@ -223,13 +264,30 @@ gboolean BlockedPopupContainerViewGtk::OnContainerExpose(
   int width = widget->allocation.width;
   int height = widget->allocation.height;
 
-  // Clip to our damage rect
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, event->area.x, event->area.y,
-                  event->area.width, event->area.height);
-  cairo_clip(cr);
+  // Update our window shape if we need to.
+  if (container->notification_width_ != widget->allocation.width ||
+      container->notification_height_ != widget->allocation.height) {
+    // We need to update the shape of the status bubble whenever our GDK
+    // window changes shape.
+    std::vector<GdkPoint> mask_points = MakeFramePolygonPoints(
+        widget->allocation.width, widget->allocation.height, FRAME_MASK);
+    GdkRegion* mask_region = gdk_region_polygon(&mask_points[0],
+                                                mask_points.size(),
+                                                GDK_EVEN_ODD_RULE);
+    gdk_window_shape_combine_region(widget->window, mask_region, 0, 0);
+    gdk_region_destroy(mask_region);
+
+    container->notification_width_ = widget->allocation.width;
+    container->notification_height_ = widget->allocation.height;
+  }
 
   if (!container->theme_provider_->UseGtkTheme()) {
+    // Clip to our damage rect.
+    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(event->window));
+    cairo_rectangle(cr, event->area.x, event->area.y,
+                    event->area.width, event->area.height);
+    cairo_clip(cr);
+
     // TODO(erg): We draw the gradient background only when GTK themes are
     // off. This isn't a perfect solution as this isn't themed! The views
     // version doesn't appear to be themed either, so at least for now,
@@ -247,30 +305,24 @@ gboolean BlockedPopupContainerViewGtk::OnContainerExpose(
     cairo_set_source(cr, pattern);
     cairo_paint(cr);
     cairo_pattern_destroy(pattern);
+
+    cairo_destroy(cr);
   }
 
-  // TODO(erg): We need to figure out the border situation, too. We aren't
-  // provided a color from the theme system and the Windows implementation
-  // still uses constants for color. See the status bubble, too.
+  GdkDrawable* drawable = GDK_DRAWABLE(event->window);
+  GdkGC* gc = gdk_gc_new(drawable);
+  if (container->theme_provider_->UseGtkTheme()) {
+    GdkColor color = container->theme_provider_->GetBorderColor();
+    gdk_gc_set_rgb_fg_color(gc, &color);
+  } else {
+    gdk_gc_set_rgb_fg_color(gc, &kBorderColor);
+  }
 
-  // Sets up our stroke pen.
-  cairo_set_source_rgb(cr, kBorderColor[0], kBorderColor[1], kBorderColor[2]);
-  cairo_set_line_width(cr, 1.5);
+  // Stroke the frame border.
+  std::vector<GdkPoint> points = MakeFramePolygonPoints(
+      widget->allocation.width, widget->allocation.height, FRAME_STROKE);
+  gdk_draw_lines(drawable, gc, &points[0], points.size());
 
-  // Draws rounded corners around the edge of the notification, clockwise
-  // starting from the bottom left. (A bezier curve with control points at 90
-  // degree angles forms a circular arc.)
-  cairo_move_to(cr, 0, height);
-  cairo_line_to(cr, 0, kBackgroundCornerRadius);
-  cairo_curve_to(cr, 0, kBackgroundCornerRadius,
-                 0, 0, kBackgroundCornerRadius, 0);
-  cairo_line_to(cr, width - kBackgroundCornerRadius, 0);
-  cairo_curve_to(cr, width - kBackgroundCornerRadius, 0,
-                 width, 0, width, kBackgroundCornerRadius);
-  cairo_line_to(cr, width, height);
-  cairo_stroke(cr);
-
-  cairo_destroy(cr);
-
+  g_object_unref(gc);
   return FALSE;  // Allow subwidgets to paint.
 }

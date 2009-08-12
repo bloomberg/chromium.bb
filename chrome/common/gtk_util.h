@@ -156,6 +156,10 @@ gfx::Point ScreenPoint(GtkWidget* widget);
 // Get the current location of the mouse cursor relative to the widget.
 gfx::Point ClientPoint(GtkWidget* widget);
 
+// Reverses a point in RTL mode. Used in making vectors of GdkPoints for window
+// shapes.
+GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

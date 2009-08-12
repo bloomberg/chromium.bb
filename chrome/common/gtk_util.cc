@@ -501,4 +501,9 @@ gfx::Point ClientPoint(GtkWidget* widget) {
   return gfx::Point(x, y);
 }
 
+GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {
+  GdkPoint point = {ltr ? x : width - x, y};
+  return point;
+}
+
 }  // namespace gtk_util
