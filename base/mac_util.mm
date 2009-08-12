@@ -68,7 +68,7 @@ void SetOverrideAppBundlePath(const FilePath& file_path) {
 }
 
 OSType CreatorCodeForCFBundleRef(CFBundleRef bundle) {
-  OSType creator;
+  OSType creator = kUnknownType;
   CFBundleGetPackageInfo(bundle, NULL, &creator);
   return creator;
 }
