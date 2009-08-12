@@ -36,11 +36,17 @@
 #include "nouveau_resource.h"
 #include "nouveau_pushbuf.h"
 
+#define CALPB_BUFFERS 4
+#define CALPB_BUFSZ   16384
 struct nouveau_pushbuf_priv {
 	struct nouveau_pushbuf base;
 
 	int use_cal;
-	struct nouveau_bo *buffer;
+	uint32_t cal_suffix0;
+	uint32_t cal_suffix1;
+	struct nouveau_bo *buffer[CALPB_BUFFERS];
+	int current;
+	int current_offset;
 
 	unsigned *pushbuf;
 	unsigned  size;

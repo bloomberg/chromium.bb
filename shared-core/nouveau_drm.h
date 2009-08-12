@@ -150,9 +150,11 @@ struct drm_nouveau_gem_pushbuf_call {
 	uint32_t offset;
 	uint32_t nr_buffers;
 	uint32_t nr_relocs;
-	uint32_t pad0;
+	uint32_t nr_dwords;
 	uint64_t buffers;
 	uint64_t relocs;
+	uint32_t suffix0;
+	uint32_t suffix1;
 };
 
 struct drm_nouveau_gem_pin {
