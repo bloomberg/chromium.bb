@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/gtk/tab_contents_drag_source.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
@@ -93,6 +94,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
     : TabContentsView(tab_contents),
       views::WidgetGtk(TYPE_CHILD),
       ignore_next_char_event_(false) {
+  drag_source_.reset(new TabContentsDragSource(this));
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -159,14 +161,7 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
 }
 
 void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
-  NOTIMPLEMENTED();
-
-  // Until we have d'n'd implemented, just immediately pretend we're
-  // already done with the drag and drop so we don't get stuck
-  // thinking we're in mid-drag.
-  // TODO(port): remove me when the above NOTIMPLEMENTED is fixed.
-  if (tab_contents()->render_view_host())
-    tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+  drag_source_->StartDragging(drop_data, &last_mouse_down_);
 }
 
 void TabContentsViewGtk::OnContentsDestroy() {
@@ -175,20 +170,8 @@ void TabContentsViewGtk::OnContentsDestroy() {
   // can be moved into OnDestroy which is a Windows message handler as the
   // window is being torn down.
 
-  // When a tab is closed all its child plugin windows are destroyed
-  // automatically. This happens before plugins get any notification that its
-  // instances are tearing down.
-  //
-  // Plugins like Quicktime assume that their windows will remain valid as long
-  // as they have plugin instances active. Quicktime crashes in this case
-  // because its windowing code cleans up an internal data structure that the
-  // handler for NPP_DestroyStream relies on.
-  //
-  // The fix is to detach plugin windows from web contents when it is going
-  // away. This will prevent the plugin windows from getting destroyed
-  // automatically. The detached plugin windows will get cleaned up in proper
-  // sequence as part of the usual cleanup when the plugin instance goes away.
-  NOTIMPLEMENTED();
+  // We don't want to try to handle drag events from this point on.
+  drag_source_.reset();
 }
 
 void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
@@ -277,6 +260,12 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   MessageLoop::current()->SetNestableTasksAllowed(true);
   context_menu_->RunMenuAt(screen_point.x(), screen_point.y());
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
+}
+
+gboolean TabContentsViewGtk::OnButtonPress(GtkWidget* widget,
+                                           GdkEventButton* event) {
+  last_mouse_down_ = *event;
+  return views::WidgetGtk::OnButtonPress(widget, event);
 }
 
 void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,

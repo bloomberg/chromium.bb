@@ -1204,6 +1204,8 @@
         'browser/gtk/status_bubble_gtk.h',
         'browser/gtk/tab_contents_container_gtk.cc',
         'browser/gtk/tab_contents_container_gtk.h',
+        'browser/gtk/tab_contents_drag_source.cc',
+        'browser/gtk/tab_contents_drag_source.h',
         'browser/gtk/tabs/dragged_tab_controller_gtk.cc',
         'browser/gtk/tabs/dragged_tab_controller_gtk.h',
         'browser/gtk/tabs/dragged_tab_gtk.cc',
@@ -2368,6 +2370,8 @@
                 ['include', '^browser/gtk/list_store_favicon_loader.h'],
                 ['include', '^browser/gtk/menu_gtk.cc'],
                 ['include', '^browser/gtk/menu_gtk.h'],
+                ['include', '^browser/gtk/tab_contents_drag_source.cc'],
+                ['include', '^browser/gtk/tab_contents_drag_source.h'],
 
                 # Other excluded stuff.
                 ['exclude', '^browser/autocomplete/autocomplete_popup_view_gtk.cc'],

@@ -12,6 +12,7 @@
 
 class RenderViewContextMenuWin;
 class SadTabView;
+class TabContentsDragSource;
 namespace views {
 class NativeViewHost;
 }
@@ -58,6 +59,7 @@ class TabContentsViewGtk : public TabContentsView,
   // Signal handlers -----------------------------------------------------------
 
   // Overridden from views::WidgetGtk:
+  virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 
   // Handles notifying the TabContents and other operations when the window was
@@ -80,6 +82,12 @@ class TabContentsViewGtk : public TabContentsView,
 
   // The context menu. Callbacks are asynchronous so we need to keep it around.
   scoped_ptr<RenderViewContextMenuWin> context_menu_;
+
+  // Handles drags from this TabContentsView.
+  scoped_ptr<TabContentsDragSource> drag_source_;
+
+  // The event for the last mouse down we handled. We need this for drags.
+  GdkEventButton last_mouse_down_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };

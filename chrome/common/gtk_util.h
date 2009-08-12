@@ -150,6 +150,12 @@ GtkWidget* IndentWidget(GtkWidget* content);
 // based on GtkSettings (which itself comes from XSETTINGS).
 void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs);
 
+// Get the current location of the mouse cursor relative to the screen.
+gfx::Point ScreenPoint(GtkWidget* widget);
+
+// Get the current location of the mouse cursor relative to the widget.
+gfx::Point ClientPoint(GtkWidget* widget);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

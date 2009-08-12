@@ -8,7 +8,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "base/mime_util.h"
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/sad_tab_gtk.h"
+#include "chrome/browser/gtk/tab_contents_drag_source.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
@@ -189,21 +189,6 @@ int GdkEventKeyToLayoutIndependentKeyval(const GdkEventKey* event) {
   return event->keyval;
 }
 
-// Get the current location of the mouse cursor relative to the screen.
-gfx::Point ScreenPoint(GtkWidget* widget) {
-  int x, y;
-  gdk_display_get_pointer(gtk_widget_get_display(widget), NULL, &x, &y,
-                          NULL);
-  return gfx::Point(x, y);
-}
-
-// Get the current location of the mouse cursor relative to the widget.
-gfx::Point ClientPoint(GtkWidget* widget) {
-  int x, y;
-  gtk_widget_get_pointer(widget, &x, &y);
-  return gfx::Point(x, y);
-}
-
 }  // namespace
 
 // A helper class that handles DnD for drops in the renderer. In GTK parlance,
@@ -302,7 +287,8 @@ class WebDragDest {
       }
     } else if (data_requests_ == 0) {
       tab_contents_->render_view_host()->
-          DragTargetDragOver(ClientPoint(widget_), ScreenPoint(widget_));
+          DragTargetDragOver(gtk_util::ClientPoint(widget_),
+                             gtk_util::ScreenPoint(widget_));
       drag_over_time_ = time;
     }
 
@@ -364,7 +350,8 @@ class WebDragDest {
       // |x| and |y| are seemingly arbitrary at this point.
       tab_contents_->render_view_host()->
           DragTargetDragEnter(*drop_data_.get(),
-                              ClientPoint(widget_), ScreenPoint(widget_));
+                              gtk_util::ClientPoint(widget_),
+                              gtk_util::ScreenPoint(widget_));
       drag_over_time_ = time;
     }
   }
@@ -389,7 +376,8 @@ class WebDragDest {
     method_factory_.RevokeAll();
 
     tab_contents_->render_view_host()->
-        DragTargetDrop(ClientPoint(widget_), ScreenPoint(widget_));
+        DragTargetDrop(gtk_util::ClientPoint(widget_),
+                       gtk_util::ScreenPoint(widget_));
 
     // The second parameter is just an educated guess, but at least we will
     // get the drag-end animation right sometimes.
@@ -437,9 +425,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
     : TabContentsView(tab_contents),
       floating_(gtk_floating_container_new()),
       fixed_(gtk_fixed_new()),
-      popup_view_(NULL),
-      drag_failed_(false),
-      drag_widget_(NULL) {
+      popup_view_(NULL) {
   g_signal_connect(fixed_, "size-allocate",
                    G_CALLBACK(OnSizeAllocate), this);
   g_signal_connect(floating_.get(), "set-floating-position",
@@ -450,15 +436,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
   gtk_widget_show(floating_.get());
   registrar_.Add(this, NotificationType::TAB_CONTENTS_CONNECTED,
                  Source<TabContents>(tab_contents));
-
-  // Renderer source DnD.
-  drag_widget_ = gtk_invisible_new();
-  g_signal_connect(drag_widget_, "drag-failed",
-                   G_CALLBACK(OnDragFailedThunk), this);
-  g_signal_connect(drag_widget_, "drag-end", G_CALLBACK(OnDragEndThunk), this);
-  g_signal_connect(drag_widget_, "drag-data-get",
-                   G_CALLBACK(OnDragDataGetThunk), this);
-  g_object_ref_sink(drag_widget_);
+  drag_source_.reset(new TabContentsDragSource(this));
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -577,24 +555,7 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
 
 void TabContentsViewGtk::OnContentsDestroy() {
   // We don't want to try to handle drag events from this point on.
-  g_signal_handlers_disconnect_by_func(drag_widget_,
-      reinterpret_cast<gpointer>(OnDragFailedThunk), this);
-  g_signal_handlers_disconnect_by_func(drag_widget_,
-      reinterpret_cast<gpointer>(OnDragEndThunk), this);
-  g_signal_handlers_disconnect_by_func(drag_widget_,
-      reinterpret_cast<gpointer>(OnDragDataGetThunk), this);
-
-  // Break the current drag, if any.
-  if (drop_data_.get()) {
-    gtk_grab_add(drag_widget_);
-    gtk_grab_remove(drag_widget_);
-    MessageLoopForUI::current()->RemoveObserver(this);
-    drop_data_.reset();
-  }
-
-  gtk_widget_destroy(drag_widget_);
-  g_object_unref(drag_widget_);
-  drag_widget_ = NULL;
+  drag_source_.reset();
 }
 
 void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
@@ -704,23 +665,6 @@ void TabContentsViewGtk::Observe(NotificationType type,
   }
 }
 
-void TabContentsViewGtk::WillProcessEvent(GdkEvent* event) {
-  // No-op.
-}
-
-void TabContentsViewGtk::DidProcessEvent(GdkEvent* event) {
-  if (event->type != GDK_MOTION_NOTIFY)
-    return;
-
-  GdkEventMotion* event_motion = reinterpret_cast<GdkEventMotion*>(event);
-  gfx::Point client = ClientPoint(GetContentNativeView());
-
-  if (tab_contents()->render_view_host()) {
-    tab_contents()->render_view_host()->DragSourceMovedTo(
-        client.x(), client.y(), event_motion->x_root, event_motion->y_root);
-  }
-}
-
 void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   context_menu_.reset(new RenderViewContextMenuGtk(tab_contents(), params,
                                                    last_mouse_down_.time));
@@ -733,143 +677,7 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
 void TabContentsViewGtk::StartDragging(const WebDropData& drop_data) {
   DCHECK(GetContentNativeView());
 
-  int targets_mask = 0;
-
-  if (!drop_data.plain_text.empty())
-    targets_mask |= GtkDndUtil::TEXT_PLAIN;
-  if (drop_data.url.is_valid()) {
-    targets_mask |= GtkDndUtil::TEXT_URI_LIST;
-    targets_mask |= GtkDndUtil::CHROME_NAMED_URL;
-  }
-  if (!drop_data.text_html.empty())
-    targets_mask |= GtkDndUtil::TEXT_HTML;
-  if (!drop_data.file_contents.empty())
-    targets_mask |= GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS;
-
-  if (targets_mask == 0) {
-    NOTIMPLEMENTED();
-    if (tab_contents()->render_view_host())
-      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
-  }
-
-  drop_data_.reset(new WebDropData(drop_data));
-
-  GtkTargetList* list = GtkDndUtil::GetTargetListFromCodeMask(targets_mask);
-  if (targets_mask & GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS) {
-    drag_file_mime_type_ = gdk_atom_intern(
-        mime_util::GetDataMimeType(drop_data.file_contents).c_str(), FALSE);
-    gtk_target_list_add(list, drag_file_mime_type_,
-                        0, GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS);
-  }
-
-  drag_failed_ = false;
-  // If we don't pass an event, GDK won't know what event time to start grabbing
-  // mouse events. Technically it's the mouse motion event and not the mouse
-  // down event that causes the drag, but there's no reliable way to know
-  // *which* motion event initiated the drag, so this will have to do.
-  // TODO(estade): This can sometimes be very far off, e.g. if the user clicks
-  // and holds and doesn't start dragging for a long time. I doubt it matters
-  // much, but we should probably look into the possibility of getting the
-  // initiating event from webkit.
-  gtk_drag_begin(drag_widget_, list, GDK_ACTION_COPY,
-                 1,  // Drags are always initiated by the left button.
-                 reinterpret_cast<GdkEvent*>(&last_mouse_down_));
-  MessageLoopForUI::current()->AddObserver(this);
-  // The drag adds a ref; let it own the list.
-  gtk_target_list_unref(list);
-}
-
-void TabContentsViewGtk::OnDragDataGet(
-    GdkDragContext* context, GtkSelectionData* selection_data,
-    guint target_type, guint time) {
-  const int bits_per_byte = 8;
-
-  switch (target_type) {
-    case GtkDndUtil::TEXT_PLAIN: {
-      std::string utf8_text = UTF16ToUTF8(drop_data_->plain_text);
-      gtk_selection_data_set_text(selection_data, utf8_text.c_str(),
-                                  utf8_text.length());
-      break;
-    }
-
-    case GtkDndUtil::TEXT_URI_LIST: {
-      gchar* uri_array[2];
-      uri_array[0] = strdup(drop_data_->url.spec().c_str());
-      uri_array[1] = NULL;
-      gtk_selection_data_set_uris(selection_data, uri_array);
-      free(uri_array[0]);
-      break;
-    }
-
-    case GtkDndUtil::TEXT_HTML: {
-      // TODO(estade): change relative links to be absolute using
-      // |html_base_url|.
-      std::string utf8_text = UTF16ToUTF8(drop_data_->text_html);
-      gtk_selection_data_set(selection_data,
-          GtkDndUtil::GetAtomForTarget(GtkDndUtil::TEXT_HTML),
-          bits_per_byte,
-          reinterpret_cast<const guchar*>(utf8_text.c_str()),
-          utf8_text.length());
-      break;
-    }
-
-    case GtkDndUtil::CHROME_NAMED_URL: {
-      Pickle pickle;
-      pickle.WriteString(UTF16ToUTF8(drop_data_->url_title));
-      pickle.WriteString(drop_data_->url.spec());
-      gtk_selection_data_set(selection_data,
-          GtkDndUtil::GetAtomForTarget(GtkDndUtil::CHROME_NAMED_URL),
-          bits_per_byte,
-          reinterpret_cast<const guchar*>(pickle.data()),
-          pickle.size());
-      break;
-    }
-
-    case GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS: {
-      gtk_selection_data_set(selection_data,
-          drag_file_mime_type_, bits_per_byte,
-          reinterpret_cast<const guchar*>(drop_data_->file_contents.data()),
-          drop_data_->file_contents.length());
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
-}
-
-gboolean TabContentsViewGtk::OnDragFailed() {
-  drag_failed_ = true;
-
-  gfx::Point root = ScreenPoint(GetContentNativeView());
-  gfx::Point client = ClientPoint(GetContentNativeView());
-
-  if (tab_contents()->render_view_host()) {
-    tab_contents()->render_view_host()->DragSourceCancelledAt(
-        client.x(), client.y(), root.x(), root.y());
-  }
-
-  // Let the native failure animation run.
-  return FALSE;
-}
-
-void TabContentsViewGtk::OnDragEnd() {
-  MessageLoopForUI::current()->RemoveObserver(this);
-
-  if (!drag_failed_) {
-    gfx::Point root = ScreenPoint(GetContentNativeView());
-    gfx::Point client = ClientPoint(GetContentNativeView());
-
-    if (tab_contents()->render_view_host()) {
-      tab_contents()->render_view_host()->DragSourceEndedAt(
-          client.x(), client.y(), root.x(), root.y());
-    }
-  }
-
-  if (tab_contents()->render_view_host())
-      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
-
-  drop_data_.reset();
+  drag_source_->StartDragging(drop_data, &last_mouse_down_);
 }
 
 // -----------------------------------------------------------------------------

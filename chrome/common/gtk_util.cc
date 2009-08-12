@@ -488,4 +488,17 @@ void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs) {
     g_free(rgba_style);
 }
 
+gfx::Point ScreenPoint(GtkWidget* widget) {
+  int x, y;
+  gdk_display_get_pointer(gtk_widget_get_display(widget), NULL, &x, &y,
+                          NULL);
+  return gfx::Point(x, y);
+}
+
+gfx::Point ClientPoint(GtkWidget* widget) {
+  int x, y;
+  gtk_widget_get_pointer(widget, &x, &y);
+  return gfx::Point(x, y);
+}
+
 }  // namespace gtk_util
