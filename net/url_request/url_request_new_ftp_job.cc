@@ -101,6 +101,11 @@ void URLRequestNewFtpJob::Kill() {
   URLRequestJob::Kill();
 }
 
+net::LoadState URLRequestNewFtpJob::GetLoadState() const {
+  return transaction_.get() ?
+      transaction_->GetLoadState() : net::LOAD_STATE_IDLE;
+}
+
 bool URLRequestNewFtpJob::ReadRawData(net::IOBuffer* buf,
                                       int buf_size,
                                       int *bytes_read) {

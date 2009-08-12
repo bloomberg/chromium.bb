@@ -30,6 +30,7 @@ class URLRequestNewFtpJob : public URLRequestJob {
   // URLRequestJob methods:
   virtual void Start();
   virtual void Kill();
+  virtual net::LoadState GetLoadState() const;
 
   // TODO(ibrar):  Yet to give another look at this function.
   virtual uint64 GetUploadProgress() const { return 0; }
