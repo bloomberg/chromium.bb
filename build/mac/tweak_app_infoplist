@@ -75,14 +75,14 @@ if [ "${USE_SVN}" = "1" ] ; then
   SVN_REVISION=$(echo "${SVN_INFO}" | sed -Ene 's/^Revision: (.*)$/\1/p')
   if [ -z "${SVN_REVISION}" ] ; then
     GIT_INFO=$(git log -1 --grep=git-svn-id --format=%b 2>/dev/null || true)
-    SVN_REVISION=$(echo "${GIT_INFO}" \
-        | sed -Ene 's/^git-svn-id: .*@([0-9]+).*$/\1/p')
+    SVN_REVISION=$(echo "${GIT_INFO}" | \
+                   sed -Ene 's/^git-svn-id: .*@([0-9]+).*$/\1/p')
     # Finding the revision for git and svn has failed.
     if [ -z "${SVN_REVISION}" ] ; then
       echo "Could not determine svn revision.  This may be OK." >&2
     else
-      SVN_PATH=$(echo "${GIT_INFO}" \
-          | sed -Ene 's%^git-svn-id: .*/chrome/(.*)@.*$%/\1%p')
+      SVN_PATH=$(echo "${GIT_INFO}" | \
+                 sed -Ene 's%^git-svn-id: .*/chrome/(.*)@.*$%/\1%p')
     fi
   else
     # Grab the path to the source root in the Subversion repository by taking
