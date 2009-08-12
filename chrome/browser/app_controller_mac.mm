@@ -26,7 +26,6 @@
 #import "chrome/browser/cocoa/preferences_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
-#import "chrome/browser/cocoa/ui_localizer.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -263,17 +262,6 @@
   // will be the signal to exit.
   DCHECK(g_browser_process);
   g_browser_process->AddRefModule();
-
-  // TODO: move this into the MainMenu.xib once we clean up the startup order
-  // dependencies so that works.  http://crbug.com/17380
-  // Create the localizer for the main menu. We can't do this in the nib
-  // because it's too early. Do it before we create any bookmark menus as well,
-  // just in case one has a title that matches any of our strings (unlikely,
-  // but technically possible).
-  scoped_nsobject<ChromeUILocalizer> localizer(
-      [[ChromeUILocalizer alloc] initWithBundle:nil]);
-  [localizer localizeObject:[NSApplication sharedApplication]
-                recursively:YES];
 
   bookmarkMenuBridge_.reset(new BookmarkMenuBridge());
   historyMenuBridge_.reset(new HistoryMenuBridge([self defaultProfile]));

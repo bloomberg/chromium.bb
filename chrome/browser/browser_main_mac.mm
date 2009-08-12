@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #import "chrome/app/keystone_glue.h"
 #include "chrome/browser/browser_main_win.h"
+#include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
 
 namespace Platform {
@@ -20,8 +22,17 @@ namespace Platform {
 // load the main nib directly. The main event loop is run from common code using
 // the MessageLoop API, which works out ok for us because it's a wrapper around
 // CFRunLoop.
-void WillInitializeMainMessageLoop(const CommandLine& command_line) {
+void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
   [NSApplication sharedApplication];
+  // Before we load the nib, we need to start up the resource bundle so we have
+  // the strings avaiable for localization.
+  if (!parameters.ui_task) {
+    ResourceBundle::InitSharedInstance(std::wstring());
+    // We only load the theme resources in the browser process, since this is
+    // the browser process, load them.
+    ResourceBundle::GetSharedInstance().LoadThemeResources();
+  }
+  // Now load the nib.
   [NSBundle loadNibNamed:@"MainMenu" owner:NSApp];
 
   // This is a no-op if the KeystoneRegistration framework is not present.

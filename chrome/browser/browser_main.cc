@@ -118,13 +118,13 @@
 
 namespace Platform {
 
-void WillInitializeMainMessageLoop(const CommandLine & command_line);
+void WillInitializeMainMessageLoop(const MainFunctionParams& parameters);
 void WillTerminate();
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 // Perform any platform-specific work that needs to be done before the main
 // message loop is created and initialized.
-void WillInitializeMainMessageLoop(const CommandLine & command_line) {
+void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
 }
 
 // Perform platform-specific work that needs to be done after the main event
@@ -299,7 +299,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Do platform-specific things (such as finishing initializing Cocoa)
   // prior to instantiating the message loop. This could be turned into a
   // broadcast notification.
-  Platform::WillInitializeMainMessageLoop(parsed_command_line);
+  Platform::WillInitializeMainMessageLoop(parameters);
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
 
@@ -392,13 +392,17 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
 
-  // During first run we read the google_update registry key to find what
-  // language the user selected when downloading the installer. This
-  // becomes our default language in the prefs.
   if (is_first_run) {
+#if !defined(OS_MACOSX)
+    // During first run we read the google_update registry key to find what
+    // language the user selected when downloading the installer. This
+    // becomes our default language in the prefs.
+    // Mac doesn't need this because it is always using language that Cocoa
+    // selected from the user's language list (in System Preferences).
     std::wstring install_lang;
     if (GoogleUpdateSettings::GetLanguage(&install_lang))
       local_state->SetString(prefs::kApplicationLocale, install_lang);
+#endif  // defined(OS_MACOSX)
     if (GoogleUpdateSettings::GetCollectStatsConsent())
       local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
   }
@@ -427,12 +431,17 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
+  // Mac starts it earlier in Platform::WillInitializeMainMessageLoop (because
+  // it is needed when loading the MainMenu.nib and the language doesn't depend
+  // on anything since it comes from Cocoa.
+#if !defined(OS_MACOSX)
   if (!parameters.ui_task) {
     ResourceBundle::InitSharedInstance(
         local_state->GetString(prefs::kApplicationLocale));
     // We only load the theme dll in the browser process.
     ResourceBundle::GetSharedInstance().LoadThemeResources();
   }
+#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_WIN)
   // This is experimental code. See first_run_win.cc for more info.

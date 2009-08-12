@@ -220,15 +220,12 @@ namespace l10n_util {
 // Represents the locale-specific text direction.
 static TextDirection g_text_direction = UNKNOWN_DIRECTION;
 
+// On the Mac, we don't want to test preferences or ICU for the language,
+// we want to use whatever Cocoa is using when it loaded the main nib file.
+// It handles all the mapping and fallbacks for us, we just need to ask.
+// See l10n_util_mac for that implementation.
+#if !defined(OS_MACOSX)
 std::string GetApplicationLocale(const std::wstring& pref_locale) {
-#if defined(OS_MACOSX)
-  // On the mac, we don't want to test preferences or ICU for the language,
-  // we want to use whatever Cocoa is using when it loaded the main nib file.
-  // It handles all the mapping and fallbacks for us, we just need to ask
-  // Cocoa.
-  // TODO(pinkerton): break this out into a .mm and ask Cocoa.
-  return "en";
-#else
   FilePath locale_path;
   PathService::Get(app::DIR_LOCALES, &locale_path);
   std::string resolved_locale;
@@ -269,8 +266,8 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   NOTREACHED();
 
   return std::string();
-#endif
 }
+#endif  // !defined(OS_MACOSX)
 
 string16 GetDisplayNameForLocale(const std::string& locale_code,
                                  const std::string& display_locale,

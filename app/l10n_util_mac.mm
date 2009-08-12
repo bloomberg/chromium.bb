@@ -8,6 +8,13 @@
 
 namespace l10n_util {
 
+std::string GetApplicationLocale(const std::wstring& pref_locale) {
+  // NOTE: The Win/Linux version of this calls out to CheckAndResolveLocale
+  // to do some remapping. Since Mac is using real locales that Cocoa has
+  // to be able to load, that shouldn't be needed.
+  return [[[NSLocale currentLocale] localeIdentifier] UTF8String];
+}
+
 // Remove the Windows-style accelerator marker and change "..." into an
 // ellipsis.  Returns the result in an autoreleased NSString.
 NSString* FixUpWindowsStyleLabel(const string16& label) {
