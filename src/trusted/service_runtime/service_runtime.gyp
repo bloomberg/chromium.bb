@@ -53,25 +53,27 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
-    'rules': [
-    {
-      'rule_name': 'cygwin_assembler',
-      'msvs_cygwin_shell': 0,
-      'extension': 'S',
-      'inputs': [
-        '..\\..\\third_party\\gnu_binutils\\files\\as.exe',
-      ],
-      'outputs': [
-        '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj',
-      ],
-      'action':
-        # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
-        ['cl /E /I..\..\..\.. /DNACL_BLOCK_SHIFT=5 /DNACL_WINDOWS=1 <(RULE_INPUT_PATH) | <@(_inputs) -defsym @feat.00=1 -o <(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
-      'message': 'Building assembly file <(RULE_INPUT_PATH)',
-      'process_outputs_as_sources': 1,
-    },
-  ],
-
+    'conditions': [
+      ['OS=="win"', {
+        'rules': [
+        {
+          'rule_name': 'cygwin_assembler',
+          'msvs_cygwin_shell': 0,
+          'extension': 'S',
+          'inputs': [
+            '..\\..\\third_party\\gnu_binutils\\files\\as.exe',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj',
+          ],
+          'action':
+            # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
+            ['cl /E /I..\..\..\.. /DNACL_BLOCK_SHIFT=5 /DNACL_WINDOWS=1 <(RULE_INPUT_PATH) | <@(_inputs) -defsym @feat.00=1 -o <(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
+          'message': 'Building assembly file <(RULE_INPUT_PATH)',
+          'process_outputs_as_sources': 1,
+        },],
+      }],
+    ],
   },
   'targets': [
     {

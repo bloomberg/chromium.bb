@@ -67,7 +67,7 @@
       '../../shared/srpc/srpc.gyp:nonnacl_srpc',
       '../desc/desc.gyp:nrd_xfer',
       '../../shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-      '../platform/platform.gyp:platform',
+      '../../shared/platform/platform.gyp:platform',
       '../service_runtime/service_runtime.gyp:gio',
       '../service_runtime/service_runtime.gyp:expiration',
       ],

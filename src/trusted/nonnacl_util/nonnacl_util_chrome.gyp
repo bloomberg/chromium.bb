@@ -41,6 +41,7 @@
       ],
       'include_dirs': [
         '../../../../third_party/skia/include/config',
+        '../../../../third_party/skia/include/core',
       ],
       'sources': [
         'sel_ldr_launcher_chrome.cc',

@@ -29,7 +29,7 @@
 
 {
   'includes': [
-    '../nonnacl_util.gypi',
+    '../../../../build/common.gypi',
   ],
   'targets': [
     {

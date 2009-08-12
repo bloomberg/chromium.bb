@@ -64,6 +64,8 @@ void NPN_Version(int* plugin_major, int* plugin_minor, int* netscape_major, int*
   *netscape_minor = LOBYTE(NPNFuncs.version);
 }
 
+#if !defined(CHROME_BUILD)
+
 NPError NPN_GetURLNotify(NPP instance, const char *url, const char *target, void* notifyData)
 {
   int navMinorVers = NPNFuncs.version & 0xFF;
@@ -228,6 +230,8 @@ void NPN_ForceRedraw(NPP instance)
   NPNFuncs.forceredraw(instance);
 }
 
+#endif
+
 NPIdentifier NPN_GetStringIdentifier(const NPUTF8 *name)
 {
   return NPNFuncs.getstringidentifier(name);
@@ -345,6 +349,7 @@ void NPN_SetException(NPObject* obj, const NPUTF8 *message)
   NPNFuncs.setexception(obj, message);
 }
 
+#if !defined(CHROME_BUILD)
 #if 1 <= NP_VERSION_MAJOR || 19 <= NP_VERSION_MINOR
 
 void NPN_PluginThreadAsyncCall(NPP npp, void (*func)(void *), void *userData)
@@ -352,4 +357,5 @@ void NPN_PluginThreadAsyncCall(NPP npp, void (*func)(void *), void *userData)
   NPNFuncs.pluginthreadasynccall(npp, func, userData);
 }
 
+#endif
 #endif
