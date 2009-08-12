@@ -69,6 +69,7 @@ class URLRequestAutomationJob : public URLRequestJob {
 
   std::string mime_type_;
   scoped_refptr<net::HttpResponseHeaders> headers_;
+  std::string redirect_url_;
 
   static int instance_count_;
 

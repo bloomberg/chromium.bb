@@ -208,7 +208,8 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
                             WindowOpenDisposition disposition,
                             const gfx::Rect& initial_pos,
                             bool user_gesture) {
-  if (disposition == NEW_POPUP || disposition == NEW_WINDOW) {
+  if (disposition == NEW_POPUP || disposition == NEW_WINDOW ||
+      disposition == NEW_FOREGROUND_TAB) {
     Browser::BuildPopupWindowHelper(source, new_contents, initial_pos,
                                     Browser::TYPE_POPUP,
                                     tab_contents_->profile(), true);

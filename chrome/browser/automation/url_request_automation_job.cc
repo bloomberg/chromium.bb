@@ -185,16 +185,14 @@ int URLRequestAutomationJob::GetResponseCode() const {
 
 bool URLRequestAutomationJob::IsRedirectResponse(
     GURL* location, int* http_status_code) {
-  if (!request_->response_headers())
-    return false;
+  static const int kHttpRedirectResponseCode = 301;
 
-  std::string value;
-  if (!request_->response_headers()->IsRedirect(&value))
-    return false;
-
-  *location = request_->url().Resolve(value);
-  *http_status_code = request_->response_headers()->response_code();
-  return true;
+  if (!redirect_url_.empty()) {
+    *http_status_code = kHttpRedirectResponseCode;
+    *location = GURL(redirect_url_);
+    return true;
+  }
+  return false;
 }
 
 int URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message) {
@@ -231,6 +229,14 @@ void URLRequestAutomationJob::OnRequestStarted(
   set_expected_content_size(response.content_length);
   mime_type_ = response.mime_type;
 
+  redirect_url_ = response.redirect_url;
+
+  GURL url_for_cookies =
+      GURL(redirect_url_.empty() ? request_->url().spec().c_str() :
+          redirect_url_.c_str());
+
+  URLRequestContext* ctx = request_->context();
+
   if (!response.headers.empty()) {
     headers_ = new net::HttpResponseHeaders(response.headers);
 
@@ -246,16 +252,28 @@ void URLRequestAutomationJob::OnRequestStarted(
     }
 
     if (response_cookies.size()) {
-      URLRequestContext* ctx = request_->context();
       if (ctx && ctx->cookie_store() &&
           ctx->cookie_policy()->CanSetCookie(
-              request_->url(), request_->first_party_for_cookies())) {
+              url_for_cookies, request_->first_party_for_cookies())) {
         net::CookieOptions options;
         options.set_include_httponly();
-        ctx->cookie_store()->SetCookiesWithOptions(request_->url(),
+        ctx->cookie_store()->SetCookiesWithOptions(url_for_cookies,
                                                    response_cookies,
                                                    options);
       }
+    }
+  }
+
+  if (ctx && ctx->cookie_store() && !response.persistent_cookies.empty() &&
+      ctx->cookie_policy()->CanSetCookie(
+          url_for_cookies, request_->first_party_for_cookies())) {
+    StringTokenizer cookie_parser(response.persistent_cookies, ";");
+
+    while (cookie_parser.GetNext()) {
+      net::CookieOptions options;
+      ctx->cookie_store()->SetCookieWithOptions(url_for_cookies,
+                                                cookie_parser.token(),
+                                                options);
     }
   }
 
@@ -358,4 +376,3 @@ void URLRequestAutomationJob::DisconnectFromMessageFilter() {
     message_filter_ = NULL;
   }
 }
-
