@@ -2828,9 +2828,6 @@ BUG18740 WIN : LayoutTests/http/tests/security/credentials-in-referer.html = PAS
 BUG18794 WIN MAC : LayoutTests/http/tests/mime/standard-mode-does-not-load-stylesheet-with-text-plain.html = TIMEOUT PASS
 BUG18802 WIN : LayoutTests/http/tests/misc/referrer.html = TIMEOUT PASS
 
-BUG18665 MAC : LayoutTests/security/block-test.html = FAIL
-BUG18665 MAC : LayoutTests/security/block-test-no-port.html = FAIL
-
 // Test failures caused by re-enabling skia asserts.
 BUG18896 WIN DEBUG : LayoutTests/fast/backgrounds/svg-as-background-5.html = FAIL
 BUG18896 WIN LINUX DEBUG : LayoutTests/fast/canvas/canvas-with-incorrect-args.html = FAIL
