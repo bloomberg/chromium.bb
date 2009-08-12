@@ -64,10 +64,6 @@
 # include <sys/time.h>
 #endif  /*NACL_WINDOWS*/
 
-#if NACL_OSX
-#include "osx/port_osx.h"
-#endif
-
 /* MSVC supports "inline" only in C++ */
 #if NACL_WINDOWS
 # define INLINE __inline
