@@ -220,7 +220,7 @@ static bool CreateGLImages(GLenum target,
   for (unsigned int i = 0; i < levels; ++i) {
     if (gl_format) {
       glTexImage2D(target, i, internal_format, mip_width, mip_height,
-                   0, format, type, temp_data.get());
+                   0, gl_format, type, temp_data.get());
       if (glGetError() != GL_NO_ERROR) {
         DLOG(ERROR) << "glTexImage2D failed";
         return false;
@@ -733,12 +733,6 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
                             unsigned src_height,
                             const void* src_data,
                             int src_pitch) {
-  if (static_cast<int>(face) < 0 || static_cast<int>(face) >= NUMBER_OF_FACES) {
-    O3D_ERROR(service_locator())
-        << "Trying to SetRect invalid face " << face << " on Texture \""
-        << name() << "\"";
-    return;
-  }
   if (level >= levels() || level < 0) {
     O3D_ERROR(service_locator())
         << "Trying to SetRect non-existent level " << level
@@ -812,7 +806,7 @@ void TextureCUBEGL::SetRect(TextureCUBE::CubeFace face,
       }
     } else {
       glCompressedTexSubImage2D(
-          GL_TEXTURE_2D, level, 0, 0, src_width, src_height,
+          gl_face, level, 0, 0, src_width, src_height,
           gl_internal_format,
           image::ComputeMipChainSize(src_width, src_height, format(), 1),
           src_data);
