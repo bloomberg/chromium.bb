@@ -12,6 +12,16 @@
 
 namespace {
 
+// How to round off the popup's corners.  Goal is to match star and go
+// buttons.
+const CGFloat kPopupRoundingRadius = 4.0;
+
+// How far to offset the image column from the left.
+const CGFloat kImageXOffset = 8.0;
+
+// How far to offset the text column from the left.
+const CGFloat kTextXOffset = 33.0;
+
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
   return [NSColor controlBackgroundColor];
@@ -236,8 +246,9 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
                                                backing:NSBackingStoreBuffered
                                                  defer:YES]);
     [popup_ setMovableByWindowBackground:NO];
-    [popup_ setOpaque:YES];
-    [popup_ setHasShadow:YES];
+    // The window will have rounded borders.
+    [popup_ setAlphaValue:1.0];
+    [popup_ setOpaque:NO];
     [popup_ setLevel:NSNormalWindowLevel];
 
     AutocompleteMatrix* matrix =
@@ -295,8 +306,15 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   // field_.  The edit view could expose helper methods for attaching
   // the window to the field.
 
-  // Locate |field_| on the screen.
+  // Locate |field_| on the screen, and pad the left and right sides
+  // by the height to make it wide enough to include the star and go
+  // buttons.
+  // TODO(shess): This assumes that those buttons will be square.
+  // Better to plumb through so that this code can get the rect from
+  // the toolbar controller?
   NSRect r = [field_ convertRect:[field_ bounds] toView:nil];
+  r.origin.x -= r.size.height;
+  r.size.width += 2 * r.size.height;
   r.origin = [[field_ window] convertBaseToScreen:r.origin];
   DCHECK_GT(r.size.width, 0.0);
 
@@ -371,6 +389,41 @@ void AutocompletePopupViewMac::AcceptInput() {
     return HoveredBackgroundColor();
   }
   return BackgroundColor();
+}
+
+// The default NSButtonCell drawing leaves the image flush left and
+// the title next to the image.  This spaces things out to line up
+// with the star button and autocomplete field.
+// TODO(shess): Determine if the star button can change size (other
+// than scaling coordinates), in which case this needs to be more
+// dynamic.
+- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
+  [[self backgroundColor] set];
+  NSRectFill(cellFrame);
+
+  // Put the image centered vertically but in a fixed column.
+  // TODO(shess) Currently, the images are all 16x16 png files, so
+  // left-justified works out fine.  If that changes, it may be
+  // appropriate to align them on their centers instead of their
+  // left-hand sides.
+  NSImage* image = [self image];
+  if (image) {
+    NSRect imageRect = cellFrame;
+    imageRect.size = [image size];
+    imageRect.origin.y +=
+        floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2);
+    imageRect.origin.x += kImageXOffset;
+    [self drawImage:image withFrame:imageRect inView:controlView];
+  }
+
+  // Adjust the title position to be lined up under the field's text.
+  NSAttributedString* title = [self attributedTitle];
+  if (title) {
+    NSRect titleRect = cellFrame;
+    titleRect.size.width -= kTextXOffset;
+    titleRect.origin.x += kTextXOffset;
+    [self drawTitle:title withFrame:titleRect inView:controlView];
+  }
 }
 
 @end
@@ -452,6 +505,36 @@ void AutocompletePopupViewMac::AcceptInput() {
 }
 - (void)mouseExited:(NSEvent*)theEvent {
   [self highlightRowAt:-1];
+}
+
+// This handles drawing the decorations of the rounded popup window,
+// calling on NSMatrix to draw the actual contents.
+- (void)drawRect:(NSRect)rect {
+  // Background clear so we can round the corners.
+  [[NSColor clearColor] set];
+  NSRectFill([self frame]);
+
+  // The toolbar items we're mirroring for shape are inset slightly
+  // for width.  I don't know why, which is why I didn't make this a
+  // constant, yet.  The factor of 0.5 on both dimensions is to put
+  // the stroke down the middle of the pixels.
+  const NSRect border(NSInsetRect([self bounds], 1.5, 0.5));
+  NSBezierPath* path =
+      [NSBezierPath bezierPathWithRoundedRect:border
+                                      xRadius:kPopupRoundingRadius
+                                      yRadius:kPopupRoundingRadius];
+
+  // Draw the matrix clipped to our border.
+  [NSGraphicsContext saveGraphicsState];
+  [path addClip];
+  [super drawRect:rect];
+  [NSGraphicsContext restoreGraphicsState];
+
+  // Put a border over that.
+  // TODO(shess): Theme the color?
+  [[NSColor lightGrayColor] setStroke];
+  [path setLineWidth:1.0];
+  [path stroke];
 }
 
 @end
