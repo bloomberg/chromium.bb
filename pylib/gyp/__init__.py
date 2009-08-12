@@ -4,6 +4,7 @@ import copy
 import gyp.input
 import optparse
 import os.path
+import re
 import shlex
 import sys
 
