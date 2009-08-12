@@ -7,6 +7,8 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -250,6 +252,24 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   void HandleDragDataReceived(GdkDragContext* context, gint x, gint y,
                               GtkSelectionData* selection_data,
                               guint target_type, guint time);
+
+  static void HandleInsertTextThunk(GtkTextBuffer* buffer,
+                                    GtkTextIter* location,
+                                    const gchar* text,
+                                    gint len,
+                                    gpointer self) {
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+        HandleInsertText(buffer, location, text, len);
+  }
+  void HandleInsertText(GtkTextBuffer* buffer,
+                        GtkTextIter* location,
+                        const gchar* text,
+                        gint len);
+
+  static void HandleBackSpaceThunk(GtkTextView* text_view, gpointer self) {
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->HandleBackSpace();
+  }
+  void HandleBackSpace();
 
   // Actual implementation of SelectAll(), but also provides control over
   // whether the PRIMARY selection is set to the selected text (in SelectAll(),

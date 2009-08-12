@@ -7,6 +7,8 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
+#include <algorithm>
+
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
@@ -150,10 +152,13 @@ void AutocompleteEditViewGtk::Init() {
   // The text view was floating.  It will now be owned by the alignment.
   gtk_container_add(GTK_CONTAINER(alignment_.get()), text_view_);
 
-  // TODO(deanm): This will probably have to be handled differently with the
-  // tab to search business.  Maybe we should just eat the tab characters.
-  // We want the tab key to move focus, not insert a tab.
-  gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(text_view_), false);
+  // Allows inserting tab characters when pressing tab key, to prevent
+  // |text_view_| from moving focus.
+  // Tab characters will be filtered out by our "insert-text" signal handler
+  // attached to |text_buffer_| object.
+  // Tab key events will be handled by our "key-press-event" signal handler for
+  // tab to search feature.
+  gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(text_view_), TRUE);
 
   faded_text_tag_ = gtk_text_buffer_create_tag(text_buffer_,
       NULL, "foreground", kTextBaseColor, NULL);
@@ -172,6 +177,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleBeginUserActionThunk), this);
   g_signal_connect(text_buffer_, "end-user-action",
                    G_CALLBACK(&HandleEndUserActionThunk), this);
+  g_signal_connect(text_buffer_, "insert-text",
+                   G_CALLBACK(&HandleInsertTextThunk), this);
   // We connect to key press and release for special handling of a few keys.
   g_signal_connect(text_view_, "key-press-event",
                    G_CALLBACK(&HandleKeyPressThunk), this);
@@ -200,6 +207,8 @@ void AutocompleteEditViewGtk::Init() {
       text_buffer_, "mark-set", G_CALLBACK(&HandleMarkSetThunk), this);
   g_signal_connect(text_view_, "drag-data-received",
                    G_CALLBACK(&HandleDragDataReceivedThunk), this);
+  g_signal_connect(text_view_, "backspace",
+                   G_CALLBACK(&HandleBackSpaceThunk), this);
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
@@ -500,73 +509,41 @@ void AutocompleteEditViewGtk::HandleBeginUserAction() {
 }
 
 void AutocompleteEditViewGtk::HandleEndUserAction() {
-  // Eat any newline / paragraphs that might have come in, for example in a
-  // copy and paste.  We want to make sure our widget stays single line.
-  for (;;) {
-    GtkTextIter cur;
-    gtk_text_buffer_get_start_iter(text_buffer_, &cur);
-
-    // If there is a line ending, this should put us right before the newline
-    // or carriage return / newline (or Unicode) sequence.  If not, we're done.
-    if (gtk_text_iter_forward_to_line_end(&cur) == FALSE)
-      break;
-
-    // Stepping to the next cursor position should put us on the other side of
-    // the newline / paragraph / etc sequence, and then delete this range.
-    GtkTextIter next_line = cur;
-    gtk_text_iter_forward_cursor_position(&next_line);
-    gtk_text_buffer_delete(text_buffer_, &cur, &next_line);
-
-    // We've invalidated our iterators, gotta start again.
-  }
-
   OnAfterPossibleChange();
 }
 
 gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
                                                  GdkEventKey* event) {
-  // This is very similar to the special casing of the return key in the
-  // GtkTextView key_press default handler.  TODO(deanm): We do however omit
-  // some IME related code, this might become a problem if an IME wants to
-  // handle enter.  We can get at the im_context and do it ourselves if needed.
-  if (event->keyval == GDK_Return ||
-      event->keyval == GDK_ISO_Enter ||
-      event->keyval == GDK_KP_Enter ||
-      event->keyval == GDK_Tab ||
-     (event->keyval == GDK_Escape &&
-       (event->state & gtk_accelerator_get_default_mod_mask()) == 0)) {
-    // Handle IME. This is basically taken from GtkTextView and reworked a bit.
-    GtkTextIter iter;
-    GtkTextView* text_view = GTK_TEXT_VIEW(text_view_);
-    GtkTextMark* insert = gtk_text_buffer_get_insert(text_buffer_);
-    gtk_text_buffer_get_iter_at_mark(text_buffer_, &iter, insert);
-    gboolean can_insert = gtk_text_iter_can_insert(&iter, text_view->editable);
-    if (gtk_im_context_filter_keypress(text_view->im_context, event)) {
-      // The IME handled it, do the follow up IME handling.
-      if (!can_insert) {
-        gtk_im_context_reset(text_view->im_context);
-      } else {
-        text_view->need_im_reset = TRUE;
-      }
+  GtkWidgetClass* klass = GTK_WIDGET_GET_CLASS(widget);
+
+  // Call the default handler, so that IME can work as normal.
+  // New line and tab characters will be filtered out by our "insert-text"
+  // signal handler attached to |text_buffer_| object.
+  klass->key_press_event(widget, event);
+
+  if ((event->keyval == GDK_Tab || event->keyval == GDK_ISO_Left_Tab ||
+       event->keyval == GDK_KP_Tab) && !(event->state & GDK_CONTROL_MASK)) {
+    if (model_->is_keyword_hint() && !model_->keyword().empty()) {
+      model_->AcceptKeyword();
     } else {
-      // Ok, not handled by the IME, we can handle it.
-      if (event->keyval == GDK_Tab) {
-        if (model_->is_keyword_hint() && !model_->keyword().empty()) {
-          model_->AcceptKeyword();
-        } else {
-          return FALSE;  // Let GtkTextView handle the tab focus change.
-        }
-      } else if (event->keyval == GDK_Escape) {
-        model_->OnEscapeKeyPressed();
-      } else {
-        bool alt_held = (event->state & GDK_MOD1_MASK);
-        model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
-      }
+      // Handle move focus by ourselves.
+      static guint signal_id = g_signal_lookup("move-focus", GTK_TYPE_WIDGET);
+      g_signal_emit(widget, signal_id, 0, (event->state & GDK_SHIFT_MASK) ?
+                    GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
     }
-    return TRUE;  // Don't propagate into GtkTextView.
+  } else if (event->keyval == GDK_Return ||
+             event->keyval == GDK_ISO_Enter ||
+             event->keyval == GDK_KP_Enter) {
+    bool alt_held = (event->state & GDK_MOD1_MASK);
+    model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
+  } else if (event->keyval == GDK_Escape &&
+             (event->state & gtk_accelerator_get_default_mod_mask()) == 0) {
+    model_->OnEscapeKeyPressed();
   }
 
-  return FALSE;  // Propagate into GtkTextView.
+  // Stop propagating the event to prevent the default handler from being
+  // called again.
+  return TRUE;
 }
 
 gboolean AutocompleteEditViewGtk::HandleKeyRelease(GtkWidget* widget,
@@ -644,9 +621,11 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
   else if (step != GTK_MOVEMENT_DISPLAY_LINES)
     return;  // Propagate into GtkTextView
   model_->OnUpOrDownKeyPressed(move_amount);
+
   // move-cursor doesn't use a signal accumulator on the return value (it
   // just ignores then), so we have to stop the propagation.
-  g_signal_stop_emission_by_name(text_view_, "move-cursor");
+  static guint signal_id = g_signal_lookup("move-cursor", GTK_TYPE_TEXT_VIEW);
+  g_signal_stop_emission(text_view_, signal_id, 0);
 }
 
 void AutocompleteEditViewGtk::HandleViewSizeRequest(GtkRequisition* req) {
@@ -760,8 +739,65 @@ void AutocompleteEditViewGtk::HandleDragDataReceived(
   if (model_->CanPasteAndGo(CollapseWhitespace(possible_url, true))) {
     model_->PasteAndGo();
     gtk_drag_finish(context, TRUE, TRUE, time);
-    g_signal_stop_emission_by_name(text_view_, "drag-data-received");
+
+    static guint signal_id =
+        g_signal_lookup("drag-data-received", GTK_TYPE_WIDGET);
+    g_signal_stop_emission(text_view_, signal_id, 0);
   }
+}
+
+void AutocompleteEditViewGtk::HandleInsertText(
+    GtkTextBuffer* buffer, GtkTextIter* location, const gchar* text, gint len) {
+  std::string filtered_text;
+  filtered_text.reserve(len);
+
+  // Filter out new line and tab characters.
+  // |text| is guaranteed to be a valid UTF-8 string, so it's safe here to
+  // filter byte by byte.
+  for (gint i = 0; i < len; ++i) {
+    gchar c = text[i];
+    if (c == '\n' || c == '\r' || c == '\t')
+      continue;
+
+    filtered_text.push_back(c);
+  }
+
+  if (filtered_text.length()) {
+    // Call the default handler to insert filtered text.
+    GtkTextBufferClass* klass = GTK_TEXT_BUFFER_GET_CLASS(buffer);
+    klass->insert_text(buffer, location, filtered_text.data(),
+                       static_cast<gint>(filtered_text.length()));
+  }
+
+  // Stop propagating the signal emission to prevent the default handler from
+  // being called again.
+  static guint signal_id = g_signal_lookup("insert-text", GTK_TYPE_TEXT_BUFFER);
+  g_signal_stop_emission(buffer, signal_id, 0);
+}
+
+void AutocompleteEditViewGtk::HandleBackSpace() {
+  // Checks if it's currently in keyword search mode.
+  if (model_->is_keyword_hint() || model_->keyword().empty())
+    return;  // Propgate into GtkTextView.
+
+  GtkTextIter sel_start, sel_end;
+  // Checks if there is some text selected.
+  if (gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end))
+    return;  // Propgate into GtkTextView.
+
+  GtkTextIter start;
+  gtk_text_buffer_get_start_iter(text_buffer_, &start);
+
+  if (!gtk_text_iter_equal(&start, &sel_start))
+    return;  // Propgate into GtkTextView.
+
+  // We're showing a keyword and the user pressed backspace at the beginning
+  // of the text. Delete the selected keyword.
+  model_->ClearKeyword(GetText());
+
+  // Stop propagating the signal emission into GtkTextView.
+  static guint signal_id = g_signal_lookup("backspace", GTK_TYPE_TEXT_VIEW);
+  g_signal_stop_emission(text_view_, signal_id, 0);
 }
 
 void AutocompleteEditViewGtk::SelectAllInternal(bool reversed,
