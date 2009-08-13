@@ -46,7 +46,7 @@ class InterfaceTraits {
   static const InterfaceId kInterfaceId;
 
  private:
-  static const char unique_;
+  static char unique_;
 
   InterfaceTraits();
   DISALLOW_COPY_AND_ASSIGN(InterfaceTraits);
@@ -57,7 +57,7 @@ const void* const InterfaceTraits<Interface>::kInterfaceId =
     &InterfaceTraits<Interface>::unique_;
 
 template <typename Interface>
-const char InterfaceTraits<Interface>::unique_ = 0;
+char InterfaceTraits<Interface>::unique_ = 0;
 
 }  // namespace o3d
 
