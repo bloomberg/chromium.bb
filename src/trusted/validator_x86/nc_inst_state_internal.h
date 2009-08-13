@@ -48,27 +48,6 @@ struct NcSegment;
 /* Defines the type used to align OpExpressionNodes when memory allocating. */
 typedef uint64_t OpExpressionElement;
 
-/* Defines the number of OpExpressionElement's to preallocate
- * for each iterator state.
- */
-#define OpExpressionWorkspaceSize 30
-
-/* Defines a memory allocation workspace for generating expression trees
- * associated with the currently matched instruction of the instruction
- * iterator. This workspace assumes that only allocations are done, and
- * no corresponding frees are done.
- */
-typedef struct OpExpressionWorkspace {
-  /* Holds the index into field space, where the next memory request
-   * can be allocated from.
-   */
-  size_t next_available;
-  /* A chunk of memory to allocate space for the generated expression
-   * trees of a matched instruction.
-   */
-  OpExpressionElement space[OpExpressionWorkspaceSize];
-} OpExpressionWorkspace;
-
 /* Model data needed to decode an x86 instruction. */
 struct NcInstState {
   /* Define the start location for the bytes defining the instruction. */
@@ -120,10 +99,6 @@ struct NcInstState {
   struct Opcode* opcode;
   /* The corresponding expression tree denoted by the matched instruction. */
   ExprNodeVector nodes;
-  /* The workspace to use to allocate nodes in the expression tree of
-   * field opcode_exp.
-   */
-  OpExpressionWorkspace workspace;
 };
 
 /* Model of an instruction iterator. */

@@ -75,7 +75,6 @@ static void NcInstStateInit(NcInstIter* iter, NcInstState* state) {
   state->opcode = NULL;
   state->is_nacl_legal = TRUE;
   state->nodes.number_expr_nodes = 0;
-  state->workspace.next_available = 0;
 }
 
 /* Computes the number of bytes defined for operands of the matched
