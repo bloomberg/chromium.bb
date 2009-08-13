@@ -762,9 +762,6 @@ willPositionSheet:(NSWindow*)sheet
 - (void)toggleBookmarkBar {
   BookmarkBarController* bar = [toolbarController_ bookmarkBarController];
   [bar toggleBookmarkBar];
-
-  [(BackgroundGradientView*)[toolbarController_ view]
-      setShowsDivider:![bar isBookmarkBarVisible]];
 }
 
 - (BOOL)isDownloadShelfVisible {
