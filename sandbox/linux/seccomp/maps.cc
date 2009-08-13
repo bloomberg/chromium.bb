@@ -103,8 +103,10 @@ Maps::Maps(const std::string& maps_file) :
     // obtained from /proc/self/maps, we instead fork() a child process and
     // use mremap() to uncover the obscured data.
     int tmp_fds[4];
-    pipe(tmp_fds);
-    pipe(tmp_fds + 2);
+    if (pipe(tmp_fds))
+      abort();
+    if (pipe(tmp_fds + 2))
+      abort();
     pid_ = fork();
     if (pid_ >= 0) {
       // Set up read and write file descriptors for exchanging data
