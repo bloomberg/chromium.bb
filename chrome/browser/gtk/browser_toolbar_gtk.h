@@ -43,6 +43,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // to which we attach our accelerators.
   void Init(Profile* profile, GtkWindow* top_level_window);
 
+  // Set the various widgets' ViewIDs.
+  void SetViewIDs();
+
   // Adds this GTK toolbar into a sizing box.
   void AddToolbarToBox(GtkWidget* box);
 

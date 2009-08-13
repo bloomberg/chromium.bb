@@ -25,6 +25,7 @@
 #include "chrome/browser/gtk/gtk_dnd_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -200,14 +201,16 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_widget_set_size_request(event_box_.get(), -1, 0);
 
   slide_animation_.reset(new SlideAnimation(this));
+
+  ViewIDUtil::SetID(widget(), VIEW_ID_BOOKMARK_BAR);
 }
 
 void BookmarkBarGtk::AddBookmarkbarToBox(GtkWidget* box) {
-  gtk_box_pack_start(GTK_BOX(box), event_box_.get(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(box), widget(), FALSE, FALSE, 0);
 }
 
 void BookmarkBarGtk::Show(bool animate) {
-  gtk_widget_show_all(event_box_.get());
+  gtk_widget_show_all(widget());
   if (animate) {
     slide_animation_->Show();
   } else {
@@ -229,7 +232,7 @@ void BookmarkBarGtk::Hide(bool animate) {
   if (slide_animation_->IsShowing() && animate) {
     slide_animation_->Hide();
   } else {
-    gtk_widget_hide(event_box_.get());
+    gtk_widget_hide(widget());
     slide_animation_->Reset(0);
     AnimationProgressed(slide_animation_.get());
   }
@@ -394,7 +397,7 @@ void BookmarkBarGtk::AnimationEnded(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
   if (!slide_animation_->IsShowing())
-    gtk_widget_hide(event_box_.get());
+    gtk_widget_hide(widget());
 }
 
 void BookmarkBarGtk::Observe(NotificationType type,
@@ -482,6 +485,8 @@ void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
                    G_CALLBACK(OnButtonPressed), this);
   g_signal_connect(G_OBJECT(widget), "clicked",
                    G_CALLBACK(OnFolderClicked), this);
+
+  ViewIDUtil::SetID(widget, VIEW_ID_BOOKMARK_MENU);
 }
 
 const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {

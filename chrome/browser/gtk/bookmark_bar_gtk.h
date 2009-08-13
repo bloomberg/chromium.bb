@@ -12,6 +12,7 @@
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -42,6 +43,9 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // Returns the current browser.
   Browser* browser() const { return browser_; }
+
+  // Returns the top level widget.
+  GtkWidget* widget() const { return event_box_.get(); }
 
   // Sets the PageNavigator that is used when the user selects an entry on
   // the bookmark bar.

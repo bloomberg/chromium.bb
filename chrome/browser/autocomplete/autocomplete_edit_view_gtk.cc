@@ -21,6 +21,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/gtk_util.h"
@@ -220,6 +221,8 @@ void AutocompleteEditViewGtk::Init() {
   // themes.
   SetBaseColor();
 #endif
+
+  ViewIDUtil::SetID(widget(), VIEW_ID_AUTOCOMPLETE);
 }
 
 void AutocompleteEditViewGtk::SetFocus() {

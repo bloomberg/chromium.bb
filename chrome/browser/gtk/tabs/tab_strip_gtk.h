@@ -13,6 +13,7 @@
 #include "base/task.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/tabs/tab_gtk.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -24,7 +25,8 @@ class GtkThemeProvider;
 class TabStripGtk : public TabStripModelObserver,
                     public TabGtk::TabDelegate,
                     public MessageLoopForUI::Observer,
-                    public NotificationObserver {
+                    public NotificationObserver,
+                    public ViewIDUtil::Delegate {
  public:
   class TabAnimation;
 
@@ -85,6 +87,9 @@ class TabStripGtk : public TabStripModelObserver,
   // Should only be called after both the tabstrip and |widget| have been
   // allocated.
   gfx::Point GetTabStripOriginForWidget(GtkWidget* widget);
+
+  // ViewIDUtil::Delegate implementation ---------------------------------------
+  virtual GtkWidget* GetWidgetForViewID(ViewID id);
 
  protected:
   // TabStripModelObserver implementation:

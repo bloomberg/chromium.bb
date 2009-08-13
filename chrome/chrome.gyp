@@ -1227,6 +1227,8 @@
         'browser/gtk/task_manager_gtk.h',
         'browser/gtk/toolbar_star_toggle_gtk.cc',
         'browser/gtk/toolbar_star_toggle_gtk.h',
+        'browser/gtk/view_id_util.cc',
+        'browser/gtk/view_id_util.h',
         'browser/hang_monitor/hung_plugin_action.cc',
         'browser/hang_monitor/hung_plugin_action.h',
         'browser/hang_monitor/hung_window_detector.cc',
@@ -3435,12 +3437,8 @@
           ],
         }, { # OS != "win"
           'sources!': [
-            'test/in_process_browser_test.cc',
-            'test/in_process_browser_test.h',
             'test/perf/mem_usage.cc',
             'test/perf/mem_usage.h',
-            'test/ui_test_utils.cc',
-            'test/ui_test_utils.h',
           ],
         }],
       ],
@@ -3851,6 +3849,7 @@
         'browser/gtk/go_button_gtk_unittest.cc',
         'browser/gtk/options/cookies_view_unittest.cc',
         'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
+        'browser/gtk/view_id_util_unittest.cc',
         'browser/history/expire_history_backend_unittest.cc',
         'browser/history/history_backend_unittest.cc',
         'browser/history/history_querying_unittest.cc',
@@ -4799,13 +4798,10 @@
           ],
           'sources': [
             'test/browser/run_all_unittests.cc',
-            'test/in_process_browser_test.cc',
-            'test/in_process_browser_test.h',
             'test/browser/browser_test_launcher_out_of_proc.cc',
             'test/browser/browser_test_runner.cc',
             'test/browser/browser_test_runner.h',
             'test/unit/chrome_test_suite.h',
-            'test/ui_test_utils.cc',
             # browser_tests_sources is defined in 'variables' at the top of the
             # file.
             '<@(browser_tests_sources)',

@@ -722,6 +722,8 @@ void TabStripGtk::Init() {
     drop_indicator_width = gdk_pixbuf_get_width(drop_image);
     drop_indicator_height = gdk_pixbuf_get_height(drop_image);
   }
+
+  ViewIDUtil::SetDelegateForWidget(widget(), this);
 }
 
 void TabStripGtk::Show() {
@@ -846,6 +848,26 @@ gfx::Point TabStripGtk::GetTabStripOriginForWidget(GtkWidget* target) {
     y += target->allocation.y;
   }
   return gfx::Point(x, y);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ViewIDUtil::Delegate implementation
+
+GtkWidget* TabStripGtk::GetWidgetForViewID(ViewID view_id) {
+  if (GetTabCount() > 0) {
+    if (view_id == VIEW_ID_TAB_LAST) {
+      return GetTabAt(GetTabCount() - 1)->widget();
+    } else if ((view_id >= VIEW_ID_TAB_0) && (view_id < VIEW_ID_TAB_LAST)) {
+      int index = view_id - VIEW_ID_TAB_0;
+      if (index >= 0 && index < GetTabCount()) {
+        return GetTabAt(index)->widget();
+      } else {
+        return NULL;
+      }
+    }
+  }
+
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

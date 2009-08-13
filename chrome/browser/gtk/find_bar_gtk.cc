@@ -19,6 +19,7 @@
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
@@ -92,6 +93,7 @@ FindBarGtk::FindBarGtk(Browser* browser)
       ignore_changed_signal_(false),
       current_fixed_width_(-1) {
   InitWidgets();
+  ViewIDUtil::SetID(text_entry_, VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
 
   dialog_background_.reset(new NineBox(browser->profile()->GetThemeProvider(),
                                        0, IDR_THEME_TOOLBAR, 0,

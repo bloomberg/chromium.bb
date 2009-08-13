@@ -28,6 +28,7 @@
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/toolbar_star_toggle_gtk.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -271,6 +272,21 @@ void BrowserToolbarGtk::Init(Profile* profile,
       gtk_widget_hide(home_->widget());
     }
   }
+
+  SetViewIDs();
+}
+
+void BrowserToolbarGtk::SetViewIDs() {
+  ViewIDUtil::SetID(widget(), VIEW_ID_TOOLBAR);
+  ViewIDUtil::SetID(back_->widget(), VIEW_ID_BACK_BUTTON);
+  ViewIDUtil::SetID(forward_->widget(), VIEW_ID_FORWARD_BUTTON);
+  ViewIDUtil::SetID(reload_->widget(), VIEW_ID_RELOAD_BUTTON);
+  ViewIDUtil::SetID(home_->widget(), VIEW_ID_HOME_BUTTON);
+  ViewIDUtil::SetID(star_->widget(), VIEW_ID_STAR_BUTTON);
+  ViewIDUtil::SetID(location_bar_->widget(), VIEW_ID_LOCATION_BAR);
+  ViewIDUtil::SetID(go_->widget(), VIEW_ID_GO_BUTTON);
+  ViewIDUtil::SetID(page_menu_button_.get(), VIEW_ID_PAGE_MENU);
+  ViewIDUtil::SetID(app_menu_button_.get(), VIEW_ID_APP_MENU);
 }
 
 void BrowserToolbarGtk::AddToolbarToBox(GtkWidget* box) {
