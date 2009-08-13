@@ -8,6 +8,12 @@
 #include <windows.h>
 #endif
 
+#if defined(USE_SYSTEM_SQLITE)
+#include <sqlite3.h>
+#else
+#include "third_party/sqlite/preprocessed/sqlite3.h"
+#endif
+
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -20,7 +26,6 @@
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_message.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
 
 const int kNumDeleteRetries = 5;
 const int kDelayDeleteRetryMs = 100;

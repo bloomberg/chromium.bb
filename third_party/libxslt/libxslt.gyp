@@ -22,12 +22,15 @@
           'type': 'settings',
           'direct_dependent_settings': {
             'cflags': [
-              '<!@(python ../../build/linux/pkg_config_wrapper.py --cflags libxslt)',
+              '<!@(pkg-config --cflags libxslt)',
             ],
           },
           'link_settings': {
+            'ldflags': [
+              '<!@(pkg-config --libs-only-L --libs-only-other libxslt)',
+            ],
             'libraries': [
-              '<!@(python ../../build/linux/pkg_config_wrapper.py --libs libxslt)',
+              '<!@(pkg-config --libs-only-l libxslt)',
             ],
           },
         }, { # else: OS != "linux" or ! use_system_libxslt

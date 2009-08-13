@@ -8,12 +8,16 @@
 #include <string>
 #include <vector>
 
+#if defined(USE_SYSTEM_SQLITE)
+#include <sqlite3.h>
+#else
+#include "third_party/sqlite/preprocessed/sqlite3.h"
+#endif
+
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-
-#include "third_party/sqlite/preprocessed/sqlite3.h"
 
 // forward declarations of classes defined here
 class FilePath;

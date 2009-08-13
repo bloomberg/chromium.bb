@@ -334,6 +334,7 @@
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/webkit.gyp:glue',
@@ -551,6 +552,9 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+          ],
+          'export_dependent_settings': [
+            '../third_party/sqlite/sqlite.gyp:sqlite',
           ],
           'link_settings': {
             'libraries': [

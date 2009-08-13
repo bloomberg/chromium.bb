@@ -4,10 +4,15 @@
 
 #include "chrome/common/sqlite_compiled_statement.h"
 
+#if defined(USE_SYSTEM_SQLITE)
+#include <sqlite3.h>
+#else
+#include "third_party/sqlite/preprocessed/sqlite3.h"
+#endif
+
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/common/sqlite_utils.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
 
 // SqliteStatementCache -------------------------------------------------------
 

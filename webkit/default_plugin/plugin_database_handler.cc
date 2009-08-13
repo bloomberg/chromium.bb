@@ -4,12 +4,18 @@
 
 #include "webkit/default_plugin/plugin_database_handler.h"
 
+#if defined(USE_SYSTEM_LIBXML)
+#include <parser.h>
+#include <xpath.h>
+#else
+#include "third_party/libxml/include/libxml/parser.h"
+#include "third_party/libxml/include/libxml/xpath.h"
+#endif
+
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "third_party/libxml/include/libxml/parser.h"
-#include "third_party/libxml/include/libxml/xpath.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/default_plugin/plugin_main.h"
 
