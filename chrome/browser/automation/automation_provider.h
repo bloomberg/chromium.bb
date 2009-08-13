@@ -177,11 +177,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                           int flags,
                           bool press_escape_en_route,
                           IPC::Message* reply_message);
-  void WindowSimulateClick(const IPC::Message& message,
-                          int handle,
-                          POINT click,
-                          int flags);
 #endif  // defined(OS_WIN)
+  void WindowSimulateClick(const IPC::Message& message,
+                           int handle,
+                           const gfx::Point& click,
+                           int flags);
   void WindowSimulateKeyPress(const IPC::Message& message,
                               int handle,
                               wchar_t key,

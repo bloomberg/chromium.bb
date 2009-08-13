@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gfx/point.h"
 #include "base/gfx/rect.h"
 #include "base/string16.h"
 #include "chrome/common/navigation_types.h"
@@ -389,16 +390,20 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* AutocompleteEdit handle */)
 
 #if defined(OS_WIN)
-  // TODO(port): Port this message.
+  // TODO(estade): This message is defined later on for Mac and Linux. This is
+  // to avoid adding a new IPC in the middle for those platforms (see comment
+  // at top). The message is exactly the same, so they should be remerged when
+  // all messages in this file have been made cross-platform (at which point we
+  // will need to check in new reference builds).
   //
   // This message requests that a mouse click be performed in window coordinate
   // space.
   // Request:
   //   int - the handle of the window that's the context for this click
-  //   POINT - the point to click
+  //   gfx::Point - the point to click
   //   int - the flags which identify the mouse button(s) for the click, as
   //       defined in chrome/views/event.h
-  IPC_MESSAGE_ROUTED3(AutomationMsg_WindowClick, int, POINT, int)
+  IPC_MESSAGE_ROUTED3(AutomationMsg_WindowClick, int, gfx::Point, int)
 #endif  // defined(OS_WIN)
 
   // This message requests that a key press be performed.
@@ -987,5 +992,11 @@ IPC_BEGIN_MESSAGES(Automation)
   // See AutomationMsg_SetFilteredInet.
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_GetFilteredInetHitCount,
                              int /* hit_count */)
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  // See previous definition of this message for explanation of why it is
+  // defined twice.
+  IPC_MESSAGE_ROUTED3(AutomationMsg_WindowClick, int, gfx::Point, int)
+#endif
 
 IPC_END_MESSAGES(Automation)

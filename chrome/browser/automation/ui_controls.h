@@ -5,11 +5,16 @@
 #ifndef CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
 #define CHROME_BROWSER_AUTOMATION_UI_CONTROLS_H_
 
+#include "build/build_config.h"
+
 #include <string>
 
 #if defined(OS_WIN)
 #include <wtypes.h>
 #endif
+
+#include "base/gfx/native_widget_types.h"
+#include "base/gfx/point.h"
 
 namespace views {
 class View;
@@ -24,7 +29,8 @@ namespace ui_controls {
 // Once the generated event is processed the Task is Run (and deleted).
 
 // Send a key press with/without modifier keys.
-bool SendKeyPress(wchar_t key, bool control, bool shift, bool alt);
+bool SendKeyPress(gfx::NativeWindow window, wchar_t key, bool control,
+                  bool shift, bool alt);
 bool SendKeyPressNotifyWhenDone(wchar_t key, bool control, bool shift,
                                 bool alt, Task* task);
 
@@ -55,7 +61,8 @@ bool SendMouseEvents(MouseButton type, int state);
 void SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task);
 
 // Simulate a single mouse click with given button type.
-bool SendMouseClick(MouseButton type);
+bool SendMouseClick(gfx::NativeWindow window, const gfx::Point& point,
+                    MouseButton type);
 
 // A combination of SendMouseMove to the middle of the view followed by
 // SendMouseEvents.

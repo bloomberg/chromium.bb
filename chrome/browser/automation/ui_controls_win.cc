@@ -295,7 +295,8 @@ bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
 
 // public functions -----------------------------------------------------------
 
-bool SendKeyPress(wchar_t key, bool control, bool shift, bool alt) {
+bool SendKeyPress(gfx::NativeWindow window, wchar_t key, bool control,
+                  bool shift, bool alt) {
   return SendKeyPressImpl(key, control, shift, alt, NULL);
 }
 
@@ -328,7 +329,8 @@ void SendMouseEventsNotifyWhenDone(MouseButton type, int state, Task* task) {
   SendMouseEventsImpl(type, state, task);
 }
 
-bool SendMouseClick(MouseButton type) {
+bool SendMouseClick(gfx::NativeWindow window, const gfx::Point& point,
+                    MouseButton type) {
   return SendMouseEventsImpl(type, UP | DOWN, NULL);
 }
 

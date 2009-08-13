@@ -38,8 +38,7 @@ bool ActivateTabByClick(AutomationProxy* automation,
   if (!browser_window->GetViewBounds(VIEW_ID_TAB_0 + tab_index, &bounds, true))
     return false;
 
-  POINT click(bounds.CenterPoint().ToPOINT());
-  if (!browser_window->SimulateOSClick(click,
+  if (!browser_window->SimulateOSClick(bounds.CenterPoint(),
                                        views::Event::EF_LEFT_BUTTON_DOWN))
     return false;
 
@@ -83,8 +82,7 @@ TEST_F(FindInPageTest, CrashEscHandlers) {
   // Click on the location bar so that Find box loses focus.
   gfx::Rect bounds;
   EXPECT_TRUE(window->GetViewBounds(VIEW_ID_LOCATION_BAR, &bounds, false));
-  POINT click(bounds.CenterPoint().ToPOINT());
-  EXPECT_TRUE(window->SimulateOSClick(click,
+  EXPECT_TRUE(window->SimulateOSClick(bounds.CenterPoint(),
                                       views::Event::EF_LEFT_BUTTON_DOWN));
   ::Sleep(kActionDelayMs);
   int focused_view_id;

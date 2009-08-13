@@ -27,14 +27,14 @@ bool WindowProxy::GetHWND(HWND* handle) const {
 
   return sender_->Send(new AutomationMsg_WindowHWND(0, handle_, handle));
 }
+#endif  // defined(OS_WIN)
 
-bool WindowProxy::SimulateOSClick(const POINT& click, int flags) {
+bool WindowProxy::SimulateOSClick(const gfx::Point& click, int flags) {
   if (!is_valid()) return false;
 
   return sender_->Send(
       new AutomationMsg_WindowClick(0, handle_, click, flags));
 }
-#endif  // defined(OS_WIN)
 
 bool WindowProxy::GetWindowTitle(string16* text) {
   if (!is_valid()) return false;

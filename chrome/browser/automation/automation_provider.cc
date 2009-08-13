@@ -973,10 +973,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowViewBounds, WindowGetViewBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowBounds, SetWindowBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowVisible, SetWindowVisible)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
-#endif  // defined(OS_WIN)
 #if defined(OS_WIN) || defined(OS_LINUX)
+    IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
 #endif
 #if defined(OS_WIN)
@@ -1490,11 +1488,10 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
                                              gfx::Rect* bounds) {
   *success = false;
 
-#if defined(OS_WIN)
-  void* iter = NULL;
-  if (window_tracker_->ContainsHandle(handle)) {
-    HWND hwnd = window_tracker_->GetResource(handle);
-    views::RootView* root_view = views::WidgetWin::FindRootView(hwnd);
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  if (window) {
+#if defined(TOOLKIT_VIEWS)
+    views::RootView* root_view = views::WidgetWin::FindRootView(window);
     if (root_view) {
       views::View* view = root_view->GetViewByID(view_id);
       if (view) {
@@ -1508,11 +1505,10 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
         bounds->set_origin(point);
       }
     }
-  }
 #else
-  // TODO(port): Enable when window_tracker is ported.
-  NOTIMPLEMENTED();
+    NOTIMPLEMENTED();
 #endif
+  }
 }
 
 #if defined(OS_WIN)
@@ -1620,17 +1616,17 @@ class WindowDragResponseTask : public Task {
 
   DISALLOW_COPY_AND_ASSIGN(WindowDragResponseTask);
 };
+#endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_LINUX)
 void AutomationProvider::WindowSimulateClick(const IPC::Message& message,
                                              int handle,
-                                             POINT click,
+                                             const gfx::Point& click,
                                              int flags) {
-  HWND hwnd = 0;
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
 
-  if (window_tracker_->ContainsHandle(handle)) {
-    hwnd = window_tracker_->GetResource(handle);
-
-    ui_controls::SendMouseMove(click.x, click.y);
+  if (window) {
+    ui_controls::SendMouseMove(click.x(), click.y());
 
     ui_controls::MouseButton button = ui_controls::LEFT;
     if ((flags & views::Event::EF_LEFT_BUTTON_DOWN) ==
@@ -1645,17 +1641,20 @@ void AutomationProvider::WindowSimulateClick(const IPC::Message& message,
     } else {
       NOTREACHED();
     }
-    ui_controls::SendMouseClick(button);
+    ui_controls::SendMouseClick(window, click, button);
   }
 }
+#endif
 
+#if defined(OS_WIN)
 void AutomationProvider::WindowSimulateDrag(int handle,
                                             std::vector<POINT> drag_path,
                                             int flags,
                                             bool press_escape_en_route,
                                             IPC::Message* reply_message) {
   bool succeeded = false;
-  if (browser_tracker_->ContainsHandle(handle) && (drag_path.size() > 1)) {
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  if (window && (drag_path.size() > 1)) {
     succeeded = true;
 
     UINT down_message = 0;
@@ -1703,7 +1702,7 @@ void AutomationProvider::WindowSimulateDrag(int handle,
 
     if (press_escape_en_route) {
       // Press Escape.
-      ui_controls::SendKeyPress(VK_ESCAPE,
+      ui_controls::SendKeyPress(window, VK_ESCAPE,
                                ((flags & views::Event::EF_CONTROL_DOWN)
                                 == views::Event::EF_CONTROL_DOWN),
                                ((flags & views::Event::EF_SHIFT_DOWN) ==
@@ -1728,11 +1727,12 @@ void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
                                                 int handle,
                                                 wchar_t key,
                                                 int flags) {
-  if (!window_tracker_->ContainsHandle(handle))
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  if (!window)
     return;
 
   // The key event is sent to whatever window is active.
-  ui_controls::SendKeyPress(key,
+  ui_controls::SendKeyPress(window, key,
                            ((flags & views::Event::EF_CONTROL_DOWN) ==
                               views::Event::EF_CONTROL_DOWN),
                             ((flags & views::Event::EF_SHIFT_DOWN) ==

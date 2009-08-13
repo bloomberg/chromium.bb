@@ -1015,12 +1015,14 @@ void Browser::OverrideEncoding(int encoding_id) {
 
 void Browser::Cut() {
   UserMetrics::RecordAction(L"Cut", profile_);
-  ui_controls::SendKeyPress(L'X', true, false, false);
+  ui_controls::SendKeyPress(window()->GetNativeHandle(), L'X', true, false,
+                            false);
 }
 
 void Browser::Copy() {
   UserMetrics::RecordAction(L"Copy", profile_);
-  ui_controls::SendKeyPress(L'C', true, false, false);
+  ui_controls::SendKeyPress(window()->GetNativeHandle(), L'C', true, false,
+                            false);
 }
 
 void Browser::CopyCurrentPageURL() {
@@ -1049,7 +1051,8 @@ void Browser::CopyCurrentPageURL() {
 
 void Browser::Paste() {
   UserMetrics::RecordAction(L"Paste", profile_);
-  ui_controls::SendKeyPress(L'V', true, false, false);
+  ui_controls::SendKeyPress(window()->GetNativeHandle(), L'V', true, false,
+                            false);
 }
 #endif  // #if defined(OS_WIN)
 

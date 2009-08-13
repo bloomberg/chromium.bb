@@ -51,8 +51,7 @@ class BlockedPopupContainerInteractiveTest : public UITest {
     // Simulate a click of the actual link to force user_gesture to be
     // true; if we don't, the resulting popup will be constrained, which
     // isn't what we want to test.
-    POINT link_point(tab_view_bounds.CenterPoint().ToPOINT());
-    ASSERT_TRUE(window->SimulateOSClick(link_point,
+    ASSERT_TRUE(window->SimulateOSClick(tab_view_bounds.CenterPoint(),
                                         views::Event::EF_LEFT_BUTTON_DOWN));
   }
 

@@ -21,6 +21,7 @@ class BrowserProxy;
 class WindowProxy;
 
 namespace gfx {
+  class Point;
   class Rect;
 }
 
@@ -41,14 +42,14 @@ class WindowProxy : public AutomationResourceProxy {
   // Gets the outermost HWND that corresponds to the given window.
   // Returns true if the call was successful.
   bool GetHWND(HWND* handle) const;
+#endif  // defined(OS_WIN)
 
   // Simulates a click at the OS level. |click| is in the window's coordinates
   // and |flags| specifies which buttons are pressed (as defined in
   // chrome/views/event.h).  Note that this is equivalent to the user moving
   // the mouse and pressing the button.  So if there is a window on top of this
   // window, the top window is clicked.
-  bool SimulateOSClick(const POINT& click, int flags);
-#endif  // defined(OS_WIN)
+  bool SimulateOSClick(const gfx::Point& click, int flags);
 
   // Get the title of the top level window.
   bool GetWindowTitle(string16* text);

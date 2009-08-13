@@ -93,8 +93,7 @@ TEST_F(HistoryTester, DISABLED_VerifyHistoryLength) {
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
 
-#if defined(OS_WIN)
-// This test requires simulated mouse click, which is possible only for Windows.
+#if defined(OS_WIN) || defined(OS_LINUX)
 TEST_F(HistoryTester, DISABLED_ConsiderRedirectAfterGestureAsUserInitiated) {
   // Test the history length for the following page transition.
   //
@@ -116,15 +115,15 @@ TEST_F(HistoryTester, DISABLED_ConsiderRedirectAfterGestureAsUserInitiated) {
   gfx::Rect tab_view_bounds;
   ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
                                     true));
-  POINT point(tab_view_bounds.CenterPoint().ToPOINT());
   ASSERT_TRUE(
-      window->SimulateOSClick(point, views::Event::EF_LEFT_BUTTON_DOWN));
+      window->SimulateOSClick(tab_view_bounds.CenterPoint(),
+                              views::Event::EF_LEFT_BUTTON_DOWN));
 
-    NavigateToURL(GURL("javascript:redirectToPage12()"));
+  NavigateToURL(GURL("javascript:redirectToPage12()"));
   WaitForFinish("History_Length_Test_12", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, action_max_timeout_ms());
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 TEST_F(HistoryTester, DISABLED_ConsiderSlowRedirectAsUserInitiated) {
   // Test the history length for the following page transition.
