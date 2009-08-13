@@ -33,11 +33,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <sys/nacl_syscalls.h>
 #include <time.h>
 #include <unistd.h>
 
-
-extern void __nacl_null(void);
 
 int main(int  ac,
          char **av) {
@@ -59,7 +58,7 @@ int main(int  ac,
   }
   gettimeofday(&time_start, (void *) NULL);
   for (i = num_rep; --i >= 0; ) {
-    __nacl_null();
+    null_syscall();
   }
   gettimeofday(&time_end, (void *) NULL);
   time_elapsed.tv_sec = time_end.tv_sec - time_start.tv_sec;
