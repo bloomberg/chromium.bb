@@ -16,7 +16,7 @@ typedef BrowserWithTestWindowTest BrowserCommandsTest;
 
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
 // IDC_SELECT_LAST_TAB.
-TEST_F(BrowserCommandsTest, DISABLED_TabNavigationAccelerators) {
+TEST_F(BrowserCommandsTest, TabNavigationAccelerators) {
   GURL about_blank(chrome::kAboutBlankURL);
 
   // Create three tabs.
