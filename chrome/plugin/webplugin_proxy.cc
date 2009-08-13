@@ -29,6 +29,7 @@
 #include "chrome/plugin/webplugin_delegate_stub.h"
 #include "skia/ext/platform_device.h"
 #include "webkit/api/public/WebBindings.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webplugin_delegate.h"
 
 #if defined(OS_WIN)
@@ -625,6 +626,9 @@ void WebPluginProxy::SetWindowlessBuffer(
                           delegate_->GetRect().height());
     CGContextScaleCTM(background_context_, 1, -1);
   }
+
+  static_cast<WebPluginDelegateImpl*>(delegate_)->UpdateContext(
+      windowless_context_);
 }
 #elif defined (OS_LINUX)
 void WebPluginProxy::UpdateTransform() {

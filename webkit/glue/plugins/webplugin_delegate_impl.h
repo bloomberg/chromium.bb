@@ -88,6 +88,12 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   virtual const gfx::Rect& GetClipRect() const { return clip_rect_; }
   virtual int GetQuirks() const { return quirks_; }
 
+#if defined(OS_MACOSX)
+  // Informs the delegate that the context used for painting windowless plugins
+  // has changed.
+  virtual void UpdateContext(gfx::NativeDrawingContext context);
+#endif
+
  private:
   friend class DeleteTask<WebPluginDelegateImpl>;
 

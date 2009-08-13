@@ -131,6 +131,7 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
   FakePluginWindowTracker* window_tracker =
       FakePluginWindowTracker::SharedInstance();
   cg_context_.window = window_tracker->GenerateFakeWindowForDelegate(this);
+  cg_context_.context = NULL;
   Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
   SetWindowBounds(cg_context_.window, kWindowContentRgn, &window_bounds);
   window_.window = &cg_context_;
@@ -164,6 +165,17 @@ void WebPluginDelegateImpl::UpdateGeometry(
     const gfx::Rect& clip_rect) {
   DCHECK(windowless_);
   WindowlessUpdateGeometry(window_rect, clip_rect);
+}
+
+void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
+  // Flash on the Mac apparently caches the context from the struct it recieves
+  // in NPP_SetWindow, and continue to use it even when the contents of the
+  // struct have changed, so we need to call NPP_SetWindow again if the context
+  // changes.
+  if (context != cg_context_.context) {
+    cg_context_.context = context;
+    WindowlessSetWindow(true);
+  }
 }
 
 void WebPluginDelegateImpl::Paint(CGContextRef context, const gfx::Rect& rect) {
@@ -249,6 +261,11 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
 
 void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
                                             const gfx::Rect& damage_rect) {
+  // If we somehow get a paint before we've set up the plugin window, bail.
+  if (!cg_context_.context)
+    return;
+  DCHECK(cg_context_.context == context);
+
   static StatsRate plugin_paint("Plugin.Paint");
   StatsScope<StatsRate> scope(plugin_paint);
 
@@ -259,15 +276,6 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
                                         graphicsContextWithGraphicsPort:context
                                         flipped:YES]];
   CGContextSaveGState(context);
-
-  cg_context_.context = context;
-  if (window_.window == NULL)
-    windowless_needs_set_window_ = true;
-
-  window_.window = &cg_context_;
-
-  if (windowless_needs_set_window_)
-    WindowlessSetWindow(false);
 
   NPEvent paint_event;
   paint_event.what = updateEvt;
@@ -323,18 +331,11 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   window_.width = window_rect_.width();
   window_.x = 0;
   window_.y = 0;
-  window_.type = NPWindowTypeWindow;
-
-  if (!force_set_window)
-    // Reset this flag before entering the instance in case of side-effects.
-    windowless_needs_set_window_ = false;
 
   UpdateDummyWindowBoundsWithOffset(cg_context_.window, window_rect_.x(),
                                     window_rect_.y(), window_rect_.width(),
                                     window_rect_.height());
 
-  if (!force_set_window)
-    windowless_needs_set_window_ = false;
   NPError err = instance()->NPP_SetWindow(&window_);
   DCHECK(err == NPERR_NO_ERROR);
 }
@@ -479,6 +480,9 @@ static void UpdateWindowLocation(WindowRef window, const WebMouseEvent& event) {
 
 bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
                                              WebCursorInfo* cursor) {
+  // If we somehow get an event before we've set up the plugin window, bail.
+  if (!cg_context_.context)
+    return false;
   DCHECK(windowless_) << "events should only be received in windowless mode";
   DCHECK(cursor != NULL);
 
