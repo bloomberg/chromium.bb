@@ -107,9 +107,11 @@ NSString* const kUserClosedAboutNotification =
   // Don't let someone click "Update Now" twice!
   [updateNowButton_ setEnabled:NO];
   [spinner_ startAnimation:self];
-  if ([[self defaultKeystoneGlue] startUpdate:self])
+  if ([[self defaultKeystoneGlue] startUpdate:self]) {
+    // Clear any previous error message from the throbber area.
+    [updateCompleted_ setStringValue:@""];
     [spinner_ startAnimation:self];
-  else {
+  } else {
     // TODO(jrg): localize.
     // IDS_UPGRADE_ERROR doesn't work here; we don't have an error number, and
     // "server not available" is too specific.
