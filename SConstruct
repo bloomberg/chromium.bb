@@ -752,6 +752,9 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                     CCFLAGS=['-march=armv6'],
                     LINKFLAGS=ARGUMENTS.get('ARM_LINKFLAGS', ''),
                     )
+
+  linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'ssl', 'crypto'])
+
   # NOTE(pmarch): eliminate the need for this
   linux_env.Append(CPPDEFINES=['NACL_ARM'])
 else:

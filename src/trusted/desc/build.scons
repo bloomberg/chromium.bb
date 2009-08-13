@@ -79,7 +79,7 @@ crt = env.Replicate('.', '$VC80_DIR/vc/redist/Debug_NonRedist/'
 crt += env.Replicate('.', '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
 
 # TODO: add comment
-if env['TARGET_PLATFORM'] == 'WINDOWS':
+if env.get('TARGET_PLATFORM') == 'WINDOWS':
   env.Append(LIBS = [ 'ws2_32', 'advapi32' ])
 
 nrd_tester = env.ComponentProgram('nrd_xfer_test', 'nrd_xfer_test.c',
@@ -91,7 +91,8 @@ nrd_tester = env.ComponentProgram('nrd_xfer_test', 'nrd_xfer_test.c',
                                               'platform',
                                               'gio'])
 
-if env.Bit('linux'):
+# we cannot run shell scripts in the emulator
+if env.Bit('linux') and env.get('BUILD_ARCHITECTURE') == 'x86':
    node = env.CommandTestAgainstGoldenOutput(
     'nrd_xfer_test.out',
     [env.File('nrd_xfer_test.sh'), nrd_tester[0]])
