@@ -168,6 +168,8 @@ function renderTemplate(schemaContent) {
   var output = document.getElementsByTagName("html")[0];
   jstProcess(input, output);
 
+  selectCurrentPageOnLeftNav();
+  
   // Show.
   var elm = document.getElementById("hider");
   elm.parentNode.removeChild(elm);
@@ -181,6 +183,25 @@ function serializePage() {
  return s.serializeToString(document);
 }
 
+// Select the current page on the left nav. Note: if already rendered, this 
+// will not effect any nodes.
+function selectCurrentPageOnLeftNav() {
+  var pathParts = document.location.href.split(/\//);
+  var pageBase = pathParts[pathParts.length - 1];
+  var leftNav = document.getElementById("leftNav");
+  var results = document.evaluate('.//li/a', leftNav, null,
+      XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
+  while(node = results.iterateNext()) {
+    if (node.href.match(pageBase + "$")) {
+      var parent = node.parentNode;
+      parent.className = "leftNavSelected";
+      parent.removeChild(node);
+      parent.appendChild(node.firstChild);
+      break;
+    }
+  }
+}
+
 function setupPageData(pageData, schema) {
   // Add a list of modules for the master TOC.
   pageData.apiModules = [];
@@ -192,11 +213,18 @@ function setupPageData(pageData, schema) {
     pageData.apiModules.push(m);
   });
   pageData.apiModules.sort(function(a, b) { return a.name > b.name; });
+  
+  // Set the page title (in order of preference).
+  pageData.pageTitle = getDataFromPageHTML("pageData-title") || 
+                       pageData.pageTitle || 
+                       pageName;
+}
 
-  if (!pageData.pageTitle) {
-    pageData.pageTitle = pageName;
-    pageData.h1Header = pageName;
-  }
+function getDataFromPageHTML(id) {
+  var node = document.getElementById(id);
+  if (!node)
+    return;
+  return node.innerHTML;
 }
 
 /**

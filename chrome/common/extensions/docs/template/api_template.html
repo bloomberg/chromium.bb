@@ -3,14 +3,6 @@
 
     <!-- API HEADER -->
     <div id="pageHeader">
-      <!-- BREADCRUMB -->
-      <!-- TODO: Fix these hrefs -->
-      <div id="breadcrumbs">
-        <a href="index.html">Google Chrome Extensions</a> &gt;
-        <a href="reference_index.html">Reference</a> &gt;
-        <a href="api_index.html">chrome.* APIs</a> &gt;
-        <span jscontent="h1Header">chrome.apiname</span>
-      </div>
       <div id="searchbox">
         <form action="http://www.google.com/cse" id="cse-search-box">
           <div>
@@ -27,7 +19,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1 jscontent="h1Header">chrome.apiname</h1>
+        <h1 jscontent="pageTitle">chrome.apiname</h1>
       </div>
     </div> <!-- /pageHeader -->
           
@@ -40,24 +32,26 @@
           <li> <a href="overview.html">Overview</a></li>
           <li>Reference 
             <ul>
-              <li><a href="manifest.html">Manifest</a>
-              <li><a href="toolstrip.html">Toolstrips</a>
-              <li><a href="pageActions.html">Page actions</a>
-              <li><a href="background_pages.html">Background pages</a>
-              <li><a href="content_scripts.html">Content scripts</a>
-              <li><a href="extension.html">Extension</a>
-              <li><a href="tabs.html">Tabs</a>
-              <li><a href="windows.html">Windows</a>
-              <li><a href="self.html">Self</a>
-              <li><a href="npapi.html">NPAPI Plugins</a>
-              <li><a href="packaging.html">Packaging</a>
-              <li><a href="autoupdate.html">Autoupdate</a>
+              <li><a href="manifest.html">Manifest</a></li>
+              <li><a href="toolstrip.html">Toolstrips</a></li>
+              <li><a href="pageActions.html">Page actions</a></li>
+              <li><a href="background_pages.html">Background pages</a></li>
+              <li><a href="content_scripts.html">Content scripts</a></li>
+              <li><a href="extension.html">Extension</a></li>
+              <li><a href="tabs.html">Tabs</a></li>
+              <li><a href="windows.html">Windows</a></li>
+              <li><a href="self.html">Self</a></li>
+              <li><a href="npapi.html">NPAPI Plugins</a></li>
+              <li><a href="packaging.html">Packaging</a></li>
+              <li><a href="autoupdate.html">Autoupdate</a></li>
             </ul>
+          </li>
           <li>Samples
             <ul>
-              <li>[sample 1]
-              <li>[sample 2]
+              <li>[sample 1]</li>
+              <li>[sample 2]</li>
             </ul>
+          </li>
         </ul>
       </div>
     
@@ -115,7 +109,7 @@
         <div class="apiPage" jsselect="apiDefinition">
         
           <!-- METHODS -->
-          <div class="apiGroup" id="methods">
+          <div jsdisplay="functions && functions.length > 0" class="apiGroup" id="methods">
             <a name="#methods"></a>
             <h2>Methods</h2>
 
@@ -267,7 +261,7 @@
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div class="apiGroup" id="events">
+          <div jsdisplay="events && events.length > 0" class="apiGroup" id="events">
             <a name="#events"></a>
             <h2 id="events">Events</h2>
 

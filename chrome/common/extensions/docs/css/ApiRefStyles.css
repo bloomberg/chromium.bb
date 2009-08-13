@@ -3,7 +3,11 @@
  * So we should probably have a common CSS file, plus this one, and then
  * one for handwritten pages.
  */
-.todo {
+.pageData {
+  display: none;
+}
+ 
+ .todo {
   color: red;
 }
 
@@ -146,6 +150,10 @@ p#classSummary {
   list-style-type:none;
   margin:0;
   padding:0.2em 0 0.2em 1em;
+}
+
+.leftNavSelected {
+  background-color: rgb(229, 236, 249);
 }
 
 #mainColumn {
