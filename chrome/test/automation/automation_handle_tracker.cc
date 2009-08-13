@@ -57,7 +57,6 @@ void AutomationHandleTracker::InvalidateHandle(AutomationHandle handle) {
 
 AutomationResourceProxy* AutomationHandleTracker::GetResource(
     AutomationHandle handle) {
-  DCHECK(handle);
   AutoLock lock(map_lock_);
   HandleToObjectMap::iterator iter = handle_to_object_.find(handle);
   if (iter == handle_to_object_.end())
