@@ -1361,21 +1361,26 @@ void BrowserWindowGtk::InitWidgets() {
   titlebar_.reset(new BrowserTitlebar(this, window_));
 
 #if defined(OS_CHROMEOS) && defined(COMPACT_NAV_BAR)
-  // Make a box that we'll later insert the compact navigation bar into. The
-  // tabstrip must go into an hbox with our box so that they can get arranged
-  // horizontally.
-  GtkWidget* titlebar_hbox = gtk_hbox_new(FALSE, 0);
-  GtkWidget* navbar_hbox = gtk_hbox_new(FALSE, 0);
-  GtkWidget* status_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_widget_show(navbar_hbox);
-  gtk_widget_show(titlebar_hbox);
-  gtk_widget_show(status_hbox);
-  gtk_box_pack_start(GTK_BOX(titlebar_hbox), navbar_hbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(titlebar_hbox), titlebar_->widget(), TRUE, TRUE,
-                     0);
-  gtk_box_pack_start(GTK_BOX(titlebar_hbox), status_hbox, FALSE, FALSE, 0);
+  GtkWidget* titlebar_hbox = NULL;
+  GtkWidget* navbar_hbox = NULL;
+  GtkWidget* status_hbox = NULL;
+  if (browser_->type() == Browser::TYPE_NORMAL) {
+    // Make a box that we'll later insert the compact navigation bar into. The
+    // tabstrip must go into an hbox with our box so that they can get arranged
+    // horizontally.
+    titlebar_hbox = gtk_hbox_new(FALSE, 0);
+    navbar_hbox = gtk_hbox_new(FALSE, 0);
+    status_hbox = gtk_hbox_new(FALSE, 0);
+    gtk_widget_show(navbar_hbox);
+    gtk_widget_show(titlebar_hbox);
+    gtk_widget_show(status_hbox);
+    gtk_box_pack_start(GTK_BOX(titlebar_hbox), navbar_hbox, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(titlebar_hbox), titlebar_->widget(), TRUE, TRUE,
+                       0);
+    gtk_box_pack_start(GTK_BOX(titlebar_hbox), status_hbox, FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(window_vbox), titlebar_hbox, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(window_vbox), titlebar_hbox, FALSE, FALSE, 0);
+  }
 
 #else
   // Insert the tabstrip into the window.
@@ -1391,7 +1396,9 @@ void BrowserWindowGtk::InitWidgets() {
   toolbar_->Init(browser_->profile(), window_);
   toolbar_->AddToolbarToBox(content_vbox_);
 #if defined(OS_CHROMEOS) && defined(COMPACT_NAV_BAR)
-  gtk_widget_hide(toolbar_->widget());
+  if (browser_->type() == Browser::TYPE_NORMAL) {
+    gtk_widget_hide(toolbar_->widget());
+  }
 #endif
 
   bookmark_bar_.reset(new BookmarkBarGtk(browser_->profile(), browser_.get(),
@@ -1465,41 +1472,44 @@ void BrowserWindowGtk::InitWidgets() {
   browser_->tabstrip_model()->AddObserver(this);
 
 #if defined(OS_CHROMEOS) && defined(COMPACT_NAV_BAR)
-  // Create the compact navigation bar. This must be done after adding
-  // everything to the window since it's done in Views, which expects to call
-  // realize (requiring a window) in the Init function.
-  views::WidgetGtk* clb_widget =
-      new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
-  clb_widget->set_delete_on_destroy(true);
-  // Must initialize with a NULL parent since the widget will assume the parent
-  // is also a WidgetGtk. Then we can parent the native widget afterwards.
-  clb_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
-  gtk_widget_reparent(clb_widget->GetNativeView(), navbar_hbox);
+  if (browser_->type() == Browser::TYPE_NORMAL) {
+    // Create the compact navigation bar. This must be done after adding
+    // everything to the window since it's done in Views, which expects to call
+    // realize (requiring a window) in the Init function.
+    views::WidgetGtk* clb_widget =
+        new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
+    clb_widget->set_delete_on_destroy(true);
+    // Must initialize with a NULL parent since the widget will assume the
+    // parent is also a WidgetGtk. Then we can parent the native widget
+    // afterwards.
+    clb_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
+    gtk_widget_reparent(clb_widget->GetNativeView(), navbar_hbox);
 
-  compact_navigation_bar_ = new CompactNavigationBar(browser_.get());
+    compact_navigation_bar_ = new CompactNavigationBar(browser_.get());
 
-  clb_widget->SetContentsView(compact_navigation_bar_);
-  compact_navigation_bar_->Init();
+    clb_widget->SetContentsView(compact_navigation_bar_);
+    compact_navigation_bar_->Init();
 
-  // Create the status area.
-  views::WidgetGtk* status_widget =
-      new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
-  status_widget->set_delete_on_destroy(true);
-  status_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
-  gtk_widget_reparent(status_widget->GetNativeView(), status_hbox);
-  status_area_ = new StatusAreaView(browser());
-  status_widget->SetContentsView(status_area_);
-  status_area_->Init();
+    // Create the status area.
+    views::WidgetGtk* status_widget =
+        new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
+    status_widget->set_delete_on_destroy(true);
+    status_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
+    gtk_widget_reparent(status_widget->GetNativeView(), status_hbox);
+    status_area_ = new StatusAreaView(browser());
+    status_widget->SetContentsView(status_area_);
+    status_area_->Init();
 
-  // Must be after Init.
-  gtk_widget_set_size_request(clb_widget->GetNativeView(),
-      compact_navigation_bar_->GetPreferredSize().width(), 20);
-  gfx::Size status_area_size = status_area_->GetPreferredSize();
-  gtk_widget_set_size_request(status_widget->GetNativeView(),
-                              status_area_size.width(),
-                              status_area_size.height());
-  clb_widget->Show();
-  status_widget->Show();
+    // Must be after Init.
+    gtk_widget_set_size_request(clb_widget->GetNativeView(),
+        compact_navigation_bar_->GetPreferredSize().width(), 20);
+    gfx::Size status_area_size = status_area_->GetPreferredSize();
+    gtk_widget_set_size_request(status_widget->GetNativeView(),
+                                status_area_size.width(),
+                                status_area_size.height());
+    clb_widget->Show();
+    status_widget->Show();
+  }
 #endif  // OS_CHROMEOS
 }
 

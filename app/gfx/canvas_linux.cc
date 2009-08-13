@@ -124,53 +124,9 @@ Canvas::Canvas() : skia::PlatformCanvas() {
 Canvas::~Canvas() {
 }
 
-// static
-void Canvas::SizeStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           int* width, int* height, int flags) {
-  cairo_surface_t* surface =
-      cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
-  cairo_t* cr = cairo_create(surface);
-  PangoLayout* layout = pango_cairo_create_layout(cr);
-
-  if (flags & NO_ELLIPSIS) {
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_NONE);
-  } else {
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
-  }
-
-  if (flags & TEXT_ALIGN_CENTER) {
-    pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-  } else if (flags & TEXT_ALIGN_RIGHT) {
-    pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
-  }
-
-  if (flags & MULTI_LINE) {
-    pango_layout_set_wrap(layout,
-        (flags & CHARACTER_BREAK) ? PANGO_WRAP_WORD_CHAR : PANGO_WRAP_WORD);
-  }
-
-  std::string utf8 = WideToUTF8(text);
-  pango_layout_set_text(layout, utf8.data(), utf8.size());
-  PangoFontDescription* desc = PangoFontFromGfxFont(font);
-  pango_layout_set_font_description(layout, desc);
-
-  pango_layout_get_size(layout, width, height);
-  *width /= PANGO_SCALE;
-  *height /= PANGO_SCALE;
-  g_object_unref(layout);
-  pango_font_description_free(desc);
-  cairo_destroy(cr);
-  cairo_surface_destroy(surface);
-}
-
-void Canvas::DrawStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           const SkColor& color, int x, int y, int w, int h,
-                           int flags) {
-  cairo_t* cr = beginPlatformPaint();
-  PangoLayout* layout = pango_cairo_create_layout(cr);
-
+static void SetupPangoLayout(PangoLayout* layout,
+                             const gfx::Font& font,
+                             int flags) {
   if (!cairo_font_options)
     UpdateCairoFontOptions();
   // This needs to be done early on; it has no effect when called just before
@@ -182,38 +138,71 @@ void Canvas::DrawStringInt(const std::wstring& text,
   // scope out RTL characters.
   pango_layout_set_auto_dir(layout, FALSE);
 
+  if (flags & Canvas::NO_ELLIPSIS) {
+    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_NONE);
+  } else {
+    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+  }
+
+  if (flags & Canvas::TEXT_ALIGN_CENTER) {
+    pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
+  } else if (flags & Canvas::TEXT_ALIGN_RIGHT) {
+    pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
+  }
+
+  if (flags & Canvas::MULTI_LINE) {
+    pango_layout_set_wrap(layout,
+        (flags & Canvas::CHARACTER_BREAK) ?
+            PANGO_WRAP_WORD_CHAR : PANGO_WRAP_WORD);
+  }
+
+  PangoFontDescription* desc = PangoFontFromGfxFont(font);
+  pango_layout_set_font_description(layout, desc);
+  pango_font_description_free(desc);
+}
+
+// static
+void Canvas::SizeStringInt(const std::wstring& text,
+                           const gfx::Font& font,
+                           int* width, int* height, int flags) {
+  cairo_surface_t* surface =
+      cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
+  cairo_t* cr = cairo_create(surface);
+  PangoLayout* layout = pango_cairo_create_layout(cr);
+
+  SetupPangoLayout(layout, font, flags);
+
+  std::string utf8 = WideToUTF8(text);
+  pango_layout_set_text(layout, utf8.data(), utf8.size());
+
+  pango_layout_get_size(layout, width, height);
+  *width /= PANGO_SCALE;
+  *height /= PANGO_SCALE;
+
+  g_object_unref(layout);
+  cairo_destroy(cr);
+  cairo_surface_destroy(surface);
+}
+
+void Canvas::DrawStringInt(const std::wstring& text,
+                           const gfx::Font& font,
+                           const SkColor& color, int x, int y, int w, int h,
+                           int flags) {
+  cairo_t* cr = beginPlatformPaint();
+  PangoLayout* layout = pango_cairo_create_layout(cr);
+
+  SetupPangoLayout(layout, font, flags);
+
+  pango_layout_set_width(layout, w * PANGO_SCALE);
+  pango_layout_set_height(layout, h * PANGO_SCALE);
+
   cairo_set_source_rgb(cr,
                        SkColorGetR(color) / 255.0,
                        SkColorGetG(color) / 255.0,
                        SkColorGetB(color) / 255.0);
 
-  // TODO(deanm): Implement the rest of the Canvas flags.
-  if (!(flags & Canvas::NO_ELLIPSIS))
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
-
-  pango_layout_set_width(layout, w * PANGO_SCALE);
-  pango_layout_set_height(layout, h * PANGO_SCALE);
-
-  if (flags & TEXT_ALIGN_CENTER) {
-    pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-  } else if (flags & TEXT_ALIGN_RIGHT) {
-    pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
-  }
-
-  if (flags & MULTI_LINE) {
-    pango_layout_set_wrap(layout,
-        (flags & CHARACTER_BREAK) ? PANGO_WRAP_WORD_CHAR : PANGO_WRAP_WORD);
-  }
-
-  if (flags & NO_ELLIPSIS)
-    pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_NONE);
-
   std::string utf8 = WideToUTF8(text);
   pango_layout_set_text(layout, utf8.data(), utf8.size());
-
-  PangoFontDescription* desc = PangoFontFromGfxFont(font);
-  pango_layout_set_font_description(layout, desc);
-  pango_font_description_free(desc);
 
   int width, height;
   pango_layout_get_size(layout, &width, &height);

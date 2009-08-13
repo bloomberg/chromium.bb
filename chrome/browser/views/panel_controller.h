@@ -14,6 +14,7 @@ typedef unsigned long XID;
 
 namespace views {
 class ImageButton;
+class ImageView;
 class Label;
 class MouseEvent;
 class WidgetGtk;
@@ -49,10 +50,12 @@ class PanelController : public views::ButtonListener {
     void OnFocusIn();
     void OnFocusOut();
 
+    views::ImageView* title_icon() { return title_icon_; }
     views::Label* title_label() { return title_label_; }
     views::ImageButton* close_button() { return close_button_; }
 
    private:
+    views::ImageView* title_icon_;
     views::Label* title_label_;
     views::ImageButton* close_button_;
     PanelController* panel_controller_;

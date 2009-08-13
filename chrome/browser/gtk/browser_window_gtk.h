@@ -169,6 +169,8 @@ class BrowserWindowGtk : public BrowserWindow,
 
   GtkWindow* window() const { return window_; }
 
+  gfx::Rect bounds() const { return bounds_; }
+
   static void RegisterUserPrefs(PrefService* prefs);
 
  protected:
