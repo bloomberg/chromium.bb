@@ -2861,7 +2861,12 @@ BUG19028 MAC : LayoutTests/fast/dom/Window/window-open-parent-no-parent.html = P
 BUG19064 : LayoutTests/fast/harness/override-preferences.html = FAIL
 BUG19064 : LayoutTests/fast/harness/override-preferences-2.html = FAIL
 
-// Fallout from webkit 
+// Fallout from webkit 47041:47189
 BUG19247 : LayoutTests/fast/events/set-event-in-another-frame.html = FAIL
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
 
+BUG_LEVIN : LayoutTests/fast/dom/Window/window-property-shadowing.html = FAIL
+BUG_LEVIN MAC : LayoutTests/editing/selection/caret-rtl.html = CRASH
+BUG_LEVIN : LayoutTests/fast/canvas/canvas-zoom.html = FAIL
+BUG_LEVIN : LayoutTests/fast/dom/Geolocation/enabled.html = FAIL
+BUG_LEVIN : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT

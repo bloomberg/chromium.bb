@@ -4,6 +4,8 @@
 
 #include "config.h"
 
+#undef LOG
+
 #include "webkit/glue/entity_map.h"
 
 #include "base/hash_tables.h"
