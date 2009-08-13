@@ -28,7 +28,7 @@ namespace {
 // Usage Flags: -enable-logging -dump-histograms-on-exit
 class TabSwitchingUITest : public UITest {
  public:
-   TabSwitchingUITest() {
+  TabSwitchingUITest() {
     PathService::Get(base::DIR_EXE, &path_prefix_);
     path_prefix_ = path_prefix_.DirName();
     path_prefix_ = path_prefix_.DirName();
@@ -65,7 +65,7 @@ class TabSwitchingUITest : public UITest {
     // Now open the corresponding log file and collect average and std dev from
     // the histogram stats generated for RenderWidgetHostHWND_WhiteoutDuration
     FilePath log_file_name;
-    PathService::Get(chrome::DIR_LOGS, &log_file_name);
+    ASSERT_TRUE(PathService::Get(chrome::DIR_LOGS, &log_file_name));
     log_file_name = log_file_name.AppendASCII("chrome_debug.log");
 
     bool log_has_been_dumped = false;
