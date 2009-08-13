@@ -10,6 +10,9 @@
 static const NSTimeInterval kMinTimeout = 0.01;
 static const NSTimeInterval kMaxTimeout = 3600.0;
 
+// Drag distance threshold to activate click-hold; should be >= 0.
+static const CGFloat kDragDistThreshold = 2.5;
+
 @implementation ClickHoldButtonCell
 
 // Overrides:
@@ -51,6 +54,7 @@ static const NSTimeInterval kMaxTimeout = 3600.0;
   NSPoint currPoint = [controlView convertPoint:[originalEvent locationInWindow]
                                        fromView:nil];
   NSPoint lastPoint = currPoint;
+  NSPoint firstPoint = currPoint;
   NSTimeInterval timeout =
       MAX(MIN(clickHoldTimeout_, kMaxTimeout), kMinTimeout);
   NSDate* clickHoldBailTime = [NSDate dateWithTimeIntervalSinceNow:timeout];
@@ -70,9 +74,16 @@ static const NSTimeInterval kMaxTimeout = 3600.0;
     currPoint = [controlView convertPoint:[event locationInWindow]
                                  fromView:nil];
 
-    // Time-out or drag.
-    if (!event || (activateOnDrag_ && ([event type] == NSLeftMouseDragged))) {
+    // Time-out.
+    if (!event) {
       state = kStopClickHold;
+
+    // Drag? (If distance meets threshold.)
+    } else if (activateOnDrag_ && ([event type] == NSLeftMouseDragged)) {
+      CGFloat dx = currPoint.x - firstPoint.x;
+      CGFloat dy = currPoint.y - firstPoint.y;
+      if ((dx*dx + dy*dy) >= (kDragDistThreshold*kDragDistThreshold))
+        state = kStopClickHold;
 
     // Mouse up.
     } else if ([event type] == NSLeftMouseUp) {
