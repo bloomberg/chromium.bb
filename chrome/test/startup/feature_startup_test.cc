@@ -43,6 +43,8 @@ class NewTabUIStartupTest : public UITest {
   // we should report cold timings.
   void RunStartupTest(const char* label, bool want_warm, bool important,
                       int profile_type) {
+    profile_type_ = profile_type;
+
     // Install the location of the test profile file.
     set_template_user_data(UITest::ComputeTypicalUserDataSource(
         profile_type).ToWStringHack());
