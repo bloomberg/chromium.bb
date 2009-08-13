@@ -32,6 +32,23 @@ void AnimateClosingForDelegate(GtkWidget* infobar_widget,
     infobar->AnimateClose();
 }
 
+// If |infobar_widget| matches |info_bar_delegate|, then close the infobar w/o
+// an animation.
+void ClosingForDelegate(GtkWidget* infobar_widget, gpointer info_bar_delegate) {
+  InfoBarDelegate* delegate =
+      static_cast<InfoBarDelegate*>(info_bar_delegate);
+  InfoBar* infobar = reinterpret_cast<InfoBar*>(
+      g_object_get_data(G_OBJECT(infobar_widget), "info-bar"));
+
+  if (!infobar) {
+    NOTREACHED();
+    return;
+  }
+
+  if (delegate == infobar->delegate())
+    infobar->Close();
+}
+
 // Get the height of the widget and add it to |userdata|, but only if it is in
 // the process of closing.
 void SumClosingBarHeight(GtkWidget* widget, gpointer userdata) {
@@ -73,6 +90,8 @@ void InfoBarContainerGtk::ChangeTabContents(TabContents* contents) {
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED, source);
     registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
                    source);
+    registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_REPLACED,
+                   source);
   }
 }
 
@@ -94,7 +113,14 @@ void InfoBarContainerGtk::Observe(NotificationType type,
   if (type == NotificationType::TAB_CONTENTS_INFOBAR_ADDED) {
     AddInfoBar(Details<InfoBarDelegate>(details).ptr(), true);
   } else if (type == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED) {
-    RemoveInfoBar(Details<InfoBarDelegate>(details).ptr());
+    RemoveInfoBar(Details<InfoBarDelegate>(details).ptr(), true);
+  } else if (type == NotificationType::TAB_CONTENTS_INFOBAR_REPLACED) {
+    std::pair<InfoBarDelegate*, InfoBarDelegate*>* delegates =
+        Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details).ptr();
+
+    // By not animating the removal/addition, this appears to be a replace.
+    RemoveInfoBar(delegates->first, false);
+    AddInfoBar(delegates->second, false);
   } else {
     NOTREACHED();
   }
@@ -120,7 +146,13 @@ void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
     infobar->Open();
 }
 
-void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate) {
-  gtk_container_foreach(GTK_CONTAINER(widget()),
-                        AnimateClosingForDelegate, delegate);
+void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
+                                        bool animate) {
+  if (animate) {
+    gtk_container_foreach(GTK_CONTAINER(widget()),
+                          AnimateClosingForDelegate, delegate);
+  } else {
+    gtk_container_foreach(GTK_CONTAINER(widget()), ClosingForDelegate,
+                          delegate);
+  }
 }

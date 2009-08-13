@@ -50,12 +50,12 @@ class InfoBarContainerGtk : public NotificationObserver {
 
   // Adds an InfoBar for the specified delegate, in response to a notification
   // from the selected TabContents.
-  void AddInfoBar(InfoBarDelegate* delegate, bool animated);
+  void AddInfoBar(InfoBarDelegate* delegate, bool animate);
 
   // Removes an InfoBar for the specified delegate, in response to a
   // notification from the selected TabContents. The InfoBar's disappearance
   // will be animated.
-  void RemoveInfoBar(InfoBarDelegate* delegate);
+  void RemoveInfoBar(InfoBarDelegate* delegate, bool animate);
 
   NotificationRegistrar registrar_;
 
