@@ -575,8 +575,16 @@ void TabContentsViewGtk::OnTabCrashed() {
 }
 
 void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
-  // This function is a hack and should go away. In any case we don't manually
-  // control the size of the contents on linux, so do nothing.
+  // We don't normally need to manually set the size of of widgets in GTK+,
+  // but this is used when creating background tabs.  When a tab is created in
+  // the background, we need to set the size so WebKit can properly compute
+  // the scrolling offset if a #ref is provided.
+  if (tab_contents()->render_widget_host_view()) {
+    GtkWidget* widget =
+        tab_contents()->render_widget_host_view()->GetNativeView();
+    widget->allocation.width = size.width();
+    widget->allocation.height = size.height();
+  }
 }
 
 void TabContentsViewGtk::Focus() {
