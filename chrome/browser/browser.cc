@@ -1503,6 +1503,17 @@ TabContents* Browser::CreateTabContentsForURL(
   TabContents* contents = new TabContents(profile, instance,
                                           MSG_ROUTING_NONE, NULL);
 
+  // Ensure that the new TabContentsView begins at the same size as the
+  // previous TabContentsView if it existed.  Otherwise, the initial WebKit
+  // layout will be performed based on a width of 0 pixels, causing a
+  // very long, narrow, inaccurate layout.  Because some scripts on pages (as
+  // well as WebKit's anchor link location calculation) are run on the initial
+  // layout and not recalculated later, we need to ensure the first layout is
+  // performed with sane view dimensions even when we're opening a new
+  // background tab.
+  if (TabContents* old_contents = tabstrip_model_.GetSelectedTabContents())
+    contents->view()->SizeContents(old_contents->view()->GetContainerSize());
+
   if (!defer_load) {
     // Load the initial URL before adding the new tab contents to the tab strip
     // so that the tab contents has navigation state.
@@ -1820,6 +1831,18 @@ void Browser::AddNewContents(TabContents* source,
                             initial_pos, user_gesture);
     browser->window()->Show();
   } else if (disposition != SUPPRESS_OPEN) {
+    // Ensure that the new TabContentsView begins at the same size as the
+    // previous TabContentsView if it existed.  Otherwise, the initial WebKit
+    // layout will be performed based on a width of 0 pixels, causing a
+    // very long, narrow, inaccurate layout.  Because some scripts on pages (as
+    // well as WebKit's anchor link location calculation) are run on the
+    // initial layout and not recalculated later, we need to ensure the first
+    // layout is performed with sane view dimensions even when we're opening a
+    // new background tab.
+    if (TabContents* old_contents = tabstrip_model_.GetSelectedTabContents()) {
+      new_contents->view()->SizeContents(
+          old_contents->view()->GetContainerSize());
+    }
     tabstrip_model_.AddTabContents(new_contents, -1, false,
                                    PageTransition::LINK,
                                    disposition == NEW_FOREGROUND_TAB);
