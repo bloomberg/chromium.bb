@@ -82,6 +82,11 @@
           'defines': [
             'GOOGLE_PROTOBUF_NO_RTTI',
           ],
+          'direct_dependent_settings': {
+            'defines': [
+              'GOOGLE_PROTOBUF_NO_RTTI',
+            ],
+          },
         }],
       ],
 
