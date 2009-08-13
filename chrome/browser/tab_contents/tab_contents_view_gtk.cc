@@ -582,8 +582,11 @@ void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
   if (tab_contents()->render_widget_host_view()) {
     GtkWidget* widget =
         tab_contents()->render_widget_host_view()->GetNativeView();
-    widget->allocation.width = size.width();
-    widget->allocation.height = size.height();
+    // During unit tests, |widget| can be NULL.
+    if (widget) {
+      widget->allocation.width = size.width();
+      widget->allocation.height = size.height();
+    }
   }
 }
 
