@@ -421,21 +421,26 @@ class Rebaseliner(object):
     if not filename:
       return False
 
-    status_output = RunShell(['svn', 'status', filename], False)
+    parent_dir, basename = os.path.split(filename)
+    original_dir = os.getcwd()
+    os.chdir(parent_dir)
+    status_output = RunShell(['svn', 'status', basename], False)
+    os.chdir(original_dir)
     output = status_output.upper()
     if output.startswith('A') or output.startswith('M'):
       logging.info('  File already added to SVN: "%s"', filename)
       return True
 
     if output.find('IS NOT A WORKING COPY') >= 0:
-      parent_dir = os.path.split(filename)[0]
       logging.info('  File is not a working copy, add its parent: "%s"',
                    parent_dir)
       return self._SvnAdd(parent_dir)
 
-    add_output = RunShell(['svn', 'add', filename], True)
+    os.chdir(parent_dir)
+    add_output = RunShell(['svn', 'add', basename], True)
+    os.chdir(original_dir)
     output = add_output.upper().rstrip()
-    if output.startswith('A') and output.find(filename.upper()) >= 0:
+    if output.startswith('A') and output.find(basename.upper()) >= 0:
       logging.info('  Added new file: "%s"', filename)
       return True
 
