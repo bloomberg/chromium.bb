@@ -117,7 +117,7 @@ def DownloadSdk(env):
     url = [
         env.subst(env.get(
             'NATIVE_CLIENT_SDK_URL',
-            'http://nativeclient.googlecode.com/svn/data/sdk_tarballs/'
+            'http://nativeclient.googlecode.com/svn/data/sdk_tarballs_new/'
             'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')),
         env.get('NATIVE_CLIENT_SDK_USERNAME'),
         env.get('NATIVE_CLIENT_SDK_PASSWORD'),
