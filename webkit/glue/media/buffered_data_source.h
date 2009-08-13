@@ -29,7 +29,9 @@ namespace webkit_glue {
 // resource loader bridge and does the actual resource loading. This object
 // does buffering internally, it defers the resource loading if buffer is
 // full and un-defers the resource loading if it is under buffered.
-class BufferedResourceLoader : public webkit_glue::ResourceLoaderBridge::Peer {
+class BufferedResourceLoader :
+    public base::RefCountedThreadSafe<BufferedResourceLoader>,
+    public webkit_glue::ResourceLoaderBridge::Peer {
  public:
   // |bridge_factory| - Factory to create a ResourceLoaderBridge.
   // |url| - URL for the resource to be loaded.
@@ -234,7 +236,7 @@ class BufferedDataSource : public media::DataSource {
 
   // Reset |loader_| with |loader| and starts it. This task is posted from
   // callback method from the current buffered resource loader.
-  void SwapLoaderTask(BufferedResourceLoader* loader);
+  void SwapLoaderTask(scoped_refptr<BufferedResourceLoader> loader);
 
   // This task monitors the current active read request. If the current read
   // request has timed out, this task will destroy the current loader and
@@ -289,10 +291,10 @@ class BufferedDataSource : public media::DataSource {
   scoped_ptr<webkit_glue::MediaResourceLoaderBridgeFactory> bridge_factory_;
 
   // A resource loader for the media resource.
-  scoped_ptr<BufferedResourceLoader> loader_;
+  scoped_refptr<BufferedResourceLoader> loader_;
 
   // A resource loader that probes the server's ability to serve range requests.
-  scoped_ptr<BufferedResourceLoader> probe_loader_;
+  scoped_refptr<BufferedResourceLoader> probe_loader_;
 
   // Callback method from the pipeline for initialization.
   scoped_ptr<media::FilterCallback> initialize_callback_;

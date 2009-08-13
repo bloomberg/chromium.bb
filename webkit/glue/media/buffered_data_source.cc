@@ -122,6 +122,10 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback) {
                                               first_byte_position_,
                                               last_byte_position_));
 
+  // Increment the reference count right before we start the request. This
+  // reference will be release when this request has ended.
+  AddRef();
+
   // And start the resource loading.
   bridge_->Start(this);
 }
@@ -135,9 +139,13 @@ void BufferedResourceLoader::Stop() {
   buffer_.reset();
 
   if (bridge_.get()) {
-    // Cancel the resource request.
+    // Cancel the request. This method call will cancel the request
+    // asynchronously. We may still get data or messages until we receive
+    // a response completed message.
+    if (deferred_)
+      bridge_->SetDefersLoading(false);
+    deferred_ = false;
     bridge_->Cancel();
-    bridge_.reset();
   }
 }
 
@@ -198,10 +206,14 @@ bool BufferedResourceLoader::OnReceivedRedirect(
     const GURL& new_url,
     const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
   DCHECK(bridge_.get());
-  DCHECK(start_callback_.get());
 
   // Saves the new URL.
   url_ = new_url;
+
+  // The load may have been stopped and |start_callback| is destroyed.
+  // In this case we shouldn't do anything.
+  if (!start_callback_.get())
+    return true;
 
   // If we got redirected to an unsupported protocol then stop.
   if (!IsSchemeSupported(new_url)) {
@@ -216,7 +228,11 @@ void BufferedResourceLoader::OnReceivedResponse(
     const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
     bool content_filtered) {
   DCHECK(bridge_.get());
-  DCHECK(start_callback_.get());
+
+  // The loader may have been stopped and |start_callback| is destroyed.
+  // In this case we shouldn't do anything.
+  if (!start_callback_.get())
+    return;
 
   int64 first_byte_position = -1;
   int64 last_byte_position = -1;
@@ -268,7 +284,11 @@ void BufferedResourceLoader::OnReceivedResponse(
 
 void BufferedResourceLoader::OnReceivedData(const char* data, int len) {
   DCHECK(bridge_.get());
-  DCHECK(buffer_.get());
+
+  // If this loader has been stopped, |buffer_| would be destroyed.
+  // In this case we shouldn't do anything.
+  if (!buffer_.get())
+    return;
 
   // Writes more data to |buffer_|.
   buffer_->Append(len, reinterpret_cast<const uint8*>(data));
@@ -285,37 +305,41 @@ void BufferedResourceLoader::OnReceivedData(const char* data, int len) {
 void BufferedResourceLoader::OnCompletedRequest(
     const URLRequestStatus& status, const std::string& security_info) {
   DCHECK(bridge_.get());
-  DCHECK(buffer_.get());
 
   // Saves the information that the request has completed.
   completed_ = true;
-
-  // After the response has completed, we don't need the bridge any more.
-  bridge_.reset();
 
   // If there is a start callback, calls it.
   if (start_callback_.get()) {
     DoneStart(status.os_error());
   }
 
-  // If there is a pending read but the request has ended, returns with what we
-  // have.
+  // If there is a pending read but the request has ended, returns with what
+  // we have.
   if (HasPendingRead()) {
-    // If the request has failed, then fail the read.
-    if (!status.is_success()) {
-      DoneRead(net::ERR_FAILED);
-      return;
-    }
+    // Make sure we have a valid buffer before we satisfy a read request.
+    DCHECK(buffer_.get());
 
-    // Otherwise try to fulfill with what is in the buffer.
-    if (CanFulfillRead())
-      ReadInternal();
-    else
-      DoneRead(net::ERR_CACHE_MISS);
+    if (status.is_success()) {
+      // Try to fulfill with what is in the buffer.
+      if (CanFulfillRead())
+        ReadInternal();
+      else
+        DoneRead(net::ERR_CACHE_MISS);
+    } else {
+      // If the request has failed, then fail the read.
+      DoneRead(net::ERR_FAILED);
+    }
   }
 
   // There must not be any outstanding read request.
-  DCHECK(!read_callback_.get());
+  DCHECK(!HasPendingRead());
+
+  // We incremented the reference count when the loader was started. We balance
+  // that reference here so that we get destroyed. This is also the only safe
+  // place to destroy the ResourceLoaderBridge.
+  bridge_.reset();
+  Release();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -557,8 +581,8 @@ void BufferedDataSource::InitializeTask() {
   // TODO(hclam): Only request 1 byte for this probe request, it may be useful
   // that we perform a suffix range request and fetch the index. That way we
   // can minimize the number of requests made.
-  loader_.reset(CreateLoader(-1, -1));
-  probe_loader_.reset(CreateLoader(1, 1));
+  loader_ = CreateLoader(-1, -1);
+  probe_loader_ = CreateLoader(1, 1);
 
   loader_->Start(NewCallback(this, &BufferedDataSource::InitialStartCallback));
   probe_loader_->Start(
@@ -618,11 +642,12 @@ void BufferedDataSource::StopTask() {
   stop_task_finished_ = true;
 }
 
-void BufferedDataSource::SwapLoaderTask(BufferedResourceLoader* loader) {
+void BufferedDataSource::SwapLoaderTask(
+    scoped_refptr<BufferedResourceLoader> loader) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader);
 
-  loader_.reset(loader);
+  loader_ = loader;
   loader_->Start(NewCallback(this,
                              &BufferedDataSource::PartialReadStartCallback));
 }

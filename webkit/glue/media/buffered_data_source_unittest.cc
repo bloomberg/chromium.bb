@@ -36,6 +36,14 @@ const int kDataSize = 1024;
 
 namespace webkit_glue {
 
+// Submit a request completed event to the resource loader due to request
+// being canceled. Pretending the event is from external.
+ACTION_P(RequestCanceled, loader) {
+  URLRequestStatus status;
+  status.set_status(URLRequestStatus::CANCELED);
+  loader->OnCompletedRequest(status, "");
+}
+
 class BufferedResourceLoaderTest : public testing::Test {
  public:
   BufferedResourceLoaderTest() {
@@ -56,8 +64,8 @@ class BufferedResourceLoaderTest : public testing::Test {
     first_position_ = first_position;
     last_position_ = last_position;
 
-    loader_.reset(new BufferedResourceLoader(&bridge_factory_, gurl_,
-                                             first_position_, last_position_));
+    loader_ = new BufferedResourceLoader(&bridge_factory_, gurl_,
+                                         first_position_, last_position_);
     EXPECT_EQ(gurl_.spec(), loader_->GetURLForDebugging());
   }
 
@@ -103,9 +111,10 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   void StopWhenLoad() {
     InSequence s;
-    EXPECT_CALL(*bridge_, Cancel());
+    EXPECT_CALL(*bridge_, Cancel())
+        .WillOnce(RequestCanceled(loader_));
     EXPECT_CALL(*bridge_, OnDestroy())
-      .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
+        .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
     loader_->Stop();
   }
 
@@ -137,7 +146,7 @@ class BufferedResourceLoaderTest : public testing::Test {
   int64 first_position_;
   int64 last_position_;
 
-  scoped_ptr<BufferedResourceLoader> loader_;
+  scoped_refptr<BufferedResourceLoader> loader_;
   StrictMock<MockMediaResourceLoaderBridgeFactory> bridge_factory_;
   scoped_ptr<StrictMock<MockResourceLoaderBridge> > bridge_;
 
@@ -159,7 +168,8 @@ TEST_F(BufferedResourceLoaderTest, MissingHttpHeader) {
   Start();
 
   EXPECT_CALL(*this, StartCallback(net::ERR_INVALID_RESPONSE));
-  EXPECT_CALL(*bridge_, Cancel());
+  EXPECT_CALL(*bridge_, Cancel())
+      .WillOnce(RequestCanceled(loader_));
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
 
@@ -173,7 +183,8 @@ TEST_F(BufferedResourceLoaderTest, BadHttpResponse) {
   Start();
 
   EXPECT_CALL(*this, StartCallback(net::ERR_FAILED));
-  EXPECT_CALL(*bridge_, Cancel());
+  EXPECT_CALL(*bridge_, Cancel())
+      .WillOnce(RequestCanceled(loader_));
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
 
@@ -188,7 +199,8 @@ TEST_F(BufferedResourceLoaderTest, NotPartialRange) {
   Start();
 
   EXPECT_CALL(*this, StartCallback(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
-  EXPECT_CALL(*bridge_, Cancel());
+  EXPECT_CALL(*bridge_, Cancel())
+      .WillOnce(RequestCanceled(loader_));
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
 
@@ -291,9 +303,9 @@ TEST_F(BufferedResourceLoaderTest, ReadOutsideBuffer) {
   // The following call cannot be fulfilled now.
   ReadLoader(25, 10, buffer);
 
+  EXPECT_CALL(*this, ReadCallback(5));
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
-  EXPECT_CALL(*this, ReadCallback(5));
   URLRequestStatus status;
   status.set_status(URLRequestStatus::SUCCESS);
   loader_->OnCompletedRequest(status, "");
@@ -308,9 +320,9 @@ TEST_F(BufferedResourceLoaderTest, RequestFailedWhenRead) {
   InSequence s;
 
   ReadLoader(10, 10, buffer);
+  EXPECT_CALL(*this, ReadCallback(net::ERR_FAILED));
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
-  EXPECT_CALL(*this, ReadCallback(net::ERR_FAILED));
   URLRequestStatus status;
   status.set_status(URLRequestStatus::FAILED);
   loader_->OnCompletedRequest(status, "");
@@ -323,17 +335,12 @@ class MockBufferedResourceLoader : public BufferedResourceLoader {
   MockBufferedResourceLoader() : BufferedResourceLoader() {
   }
 
-  ~MockBufferedResourceLoader() {
-    OnDestroy();
-  }
-
   MOCK_METHOD1(Start, void(net::CompletionCallback* read_callback));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD4(Read, void(int64 position, int read_size, uint8* buffer,
                           net::CompletionCallback* callback));
   MOCK_METHOD0(content_length, int64());
   MOCK_METHOD0(instance_size, int64());
-  MOCK_METHOD0(OnDestroy, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBufferedResourceLoader);
@@ -384,7 +391,6 @@ class BufferedDataSourceTest : public testing::Test {
     message_loop_.reset(MessageLoop::current());
     bridge_factory_.reset(
         new StrictMock<MockMediaResourceLoaderBridgeFactory>());
-    ReleaseLoader();
     factory_ = MockBufferedDataSource::CreateFactory(message_loop_.get(),
                                                      bridge_factory_.get());
 
@@ -423,8 +429,8 @@ class BufferedDataSourceTest : public testing::Test {
     data_source_->set_host(&host_);
 
     // Creates the first mock loader to be injected.
-    loader_.reset(new StrictMock<MockBufferedResourceLoader>());
-    probe_loader_.reset(new StrictMock<MockBufferedResourceLoader>());
+    loader_ = new StrictMock<MockBufferedResourceLoader>();
+    probe_loader_ = new StrictMock<MockBufferedResourceLoader>();
 
     InSequence s;
     StrictMock<media::MockFilterCallback> callback;
@@ -503,16 +509,11 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void StopDataSource() {
-    if (loader_.get()) {
+    if (loader_) {
       InSequence s;
       EXPECT_CALL(*loader_, Stop());
       EXPECT_CALL(*probe_loader_, Stop());
     }
-
-    EXPECT_CALL(*loader_, OnDestroy())
-       .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseLoader));
-    EXPECT_CALL(*probe_loader_, OnDestroy())
-       .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseProbeLoader));
 
     data_source_->Stop();
     message_loop_->RunAllPending();
@@ -520,14 +521,6 @@ class BufferedDataSourceTest : public testing::Test {
 
   void ReleaseBridgeFactory() {
     bridge_factory_.release();
-  }
-
-  void ReleaseLoader() {
-    loader_.release();
-  }
-
-  void ReleaseProbeLoader() {
-    probe_loader_.release();
   }
 
   void InvokeStartCallback(net::CompletionCallback* callback) {
@@ -544,7 +537,7 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void ReadDataSourceHit(int64 position, int size, int read_size) {
-    EXPECT_TRUE(loader_.get() != NULL);
+    EXPECT_TRUE(loader_);
 
     InSequence s;
     // Expect the read is delegated to the resource loader.
@@ -567,7 +560,7 @@ class BufferedDataSourceTest : public testing::Test {
   }
 
   void ReadDataSourceMiss(int64 position, int size) {
-    EXPECT_TRUE(loader_.get() != NULL);
+    EXPECT_TRUE(loader_);
 
     InSequence s;
     // 1. Reply with a cache miss for the read.
@@ -582,8 +575,6 @@ class BufferedDataSourceTest : public testing::Test {
     EXPECT_CALL(*loader_, Stop());
     EXPECT_CALL(*data_source_, CreateLoader(position, -1))
         .WillOnce(Return(new_loader));
-    EXPECT_CALL(*loader_, OnDestroy())
-        .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseLoader));
 
     // 3. Then the new loader will be started.
     EXPECT_CALL(*new_loader, Start(NotNull()))
@@ -607,12 +598,11 @@ class BufferedDataSourceTest : public testing::Test {
     // Make sure data is correct.
     EXPECT_EQ(0, memcmp(buffer_, data_ + static_cast<int>(position), size));
 
-    EXPECT_TRUE(loader_.get() == NULL);
-    loader_.reset(new_loader);
+    loader_ = new_loader;
   }
 
   void ReadDataSourceFailed(int64 position, int size, int error) {
-    EXPECT_TRUE(loader_.get() != NULL);
+    EXPECT_TRUE(loader_);
 
     InSequence s;
     // 1. Expect the read is delegated to the resource loader.
@@ -646,8 +636,6 @@ class BufferedDataSourceTest : public testing::Test {
     EXPECT_CALL(*loader_, Stop());
     EXPECT_CALL(*data_source_, CreateLoader(position, -1))
         .WillOnce(Return(new_loader));
-    EXPECT_CALL(*loader_, OnDestroy())
-        .WillOnce(Invoke(this, &BufferedDataSourceTest::ReleaseLoader));
 
     // 3. Then the new loader will be started.
     EXPECT_CALL(*new_loader, Start(NotNull()))
@@ -676,16 +664,15 @@ class BufferedDataSourceTest : public testing::Test {
     // Make sure data is correct.
     EXPECT_EQ(0, memcmp(buffer_, data_ + static_cast<int>(position), size));
 
-    EXPECT_TRUE(loader_.get() == NULL);
-    loader_.reset(new_loader);
+    loader_ = new_loader;
   }
 
   MOCK_METHOD1(ReadCallback, void(size_t size));
 
   scoped_ptr<StrictMock<MockMediaResourceLoaderBridgeFactory> >
       bridge_factory_;
-  scoped_ptr<StrictMock<MockBufferedResourceLoader> > loader_;
-  scoped_ptr<StrictMock<MockBufferedResourceLoader> > probe_loader_;
+  scoped_refptr<StrictMock<MockBufferedResourceLoader> > loader_;
+  scoped_refptr<StrictMock<MockBufferedResourceLoader> > probe_loader_;
   scoped_refptr<MockBufferedDataSource > data_source_;
   scoped_refptr<media::FilterFactory> factory_;
 
