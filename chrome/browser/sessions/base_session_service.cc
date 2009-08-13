@@ -156,7 +156,7 @@ SessionCommand* BaseSessionService::CreateUpdateTabNavigationCommand(
   int bytes_written = 0;
 
   WriteStringToPickle(pickle, &bytes_written, max_state_size,
-                      entry.virtual_url().spec());
+                      entry.display_url().spec());
 
   WriteString16ToPickle(pickle, &bytes_written, max_state_size, entry.title());
 
@@ -215,7 +215,7 @@ bool BaseSessionService::RestoreUpdateTabNavigationCommand(
 }
 
 bool BaseSessionService::ShouldTrackEntry(const NavigationEntry& entry) {
-  return entry.virtual_url().is_valid();
+  return entry.display_url().is_valid();
 }
 
 bool BaseSessionService::ShouldTrackEntry(const TabNavigation& navigation) {

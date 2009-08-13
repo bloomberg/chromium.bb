@@ -44,18 +44,18 @@ TEST_F(NavigationEntryTest, NavigationEntryUniqueIDs) {
 
 // Test URL accessors
 TEST_F(NavigationEntryTest, NavigationEntryURLs) {
-  // Start with no virtual_url (even if a url is set)
-  EXPECT_FALSE(entry1_.get()->has_virtual_url());
-  EXPECT_FALSE(entry2_.get()->has_virtual_url());
+  // Start with no display_url (even if a url is set)
+  EXPECT_FALSE(entry1_.get()->has_display_url());
+  EXPECT_FALSE(entry2_.get()->has_display_url());
 
   EXPECT_EQ(GURL(), entry1_.get()->url());
-  EXPECT_EQ(GURL(), entry1_.get()->virtual_url());
+  EXPECT_EQ(GURL(), entry1_.get()->display_url());
   EXPECT_TRUE(entry1_.get()->GetTitleForDisplay(NULL).empty());
 
-  // Setting URL affects virtual_url and GetTitleForDisplay
+  // Setting URL affects display_url and GetTitleForDisplay
   entry1_.get()->set_url(GURL("http://www.google.com"));
   EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->url());
-  EXPECT_EQ(GURL("http://www.google.com/"), entry1_.get()->virtual_url());
+  EXPECT_EQ(GURL("http://www.google.com/"), entry1_.get()->display_url());
   EXPECT_EQ(ASCIIToUTF16("http://www.google.com/"),
             entry1_.get()->GetTitleForDisplay(NULL));
 
@@ -63,13 +63,13 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   entry1_.get()->set_title(ASCIIToUTF16("Google"));
   EXPECT_EQ(ASCIIToUTF16("Google"), entry1_.get()->GetTitleForDisplay(NULL));
 
-  // Setting virtual_url doesn't affect URL
-  entry2_.get()->set_virtual_url(GURL("display:url"));
-  EXPECT_TRUE(entry2_.get()->has_virtual_url());
+  // Setting display_url doesn't affect URL
+  entry2_.get()->set_display_url(GURL("display:url"));
+  EXPECT_TRUE(entry2_.get()->has_display_url());
   EXPECT_EQ(GURL("test:url"), entry2_.get()->url());
-  EXPECT_EQ(GURL("display:url"), entry2_.get()->virtual_url());
+  EXPECT_EQ(GURL("display:url"), entry2_.get()->display_url());
 
-  // Having a title set in constructor overrides virtual URL
+  // Having a title set in constructor overrides display URL
   EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->GetTitleForDisplay(NULL));
 
   // User typed URL is independent of the others

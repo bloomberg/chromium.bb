@@ -309,7 +309,7 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
       return true;
 
     case IDS_CONTENT_CONTEXT_FULLSCREEN:
-      // TODO(ajwong): Enable fullscreen after we actually implement this.
+      // TODO(ajwong): Enable fullsceren after we actually implement this.
       return false;
 
     // Media control commands should all be disabled if the player is in an
@@ -718,8 +718,8 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   // Don't inspect about:network, about:memory, etc.
   // However, we do want to inspect about:blank, which is often
   // used by ordinary web pages.
-  if (active_entry->virtual_url().SchemeIs(chrome::kAboutScheme) &&
-      !LowerCaseEqualsASCII(active_entry->virtual_url().path(), "blank"))
+  if (active_entry->display_url().SchemeIs(chrome::kAboutScheme) &&
+      !LowerCaseEqualsASCII(active_entry->display_url().path(), "blank"))
     return false;
 
   // Don't enable the web inspector if JavaScript is disabled

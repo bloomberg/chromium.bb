@@ -434,7 +434,7 @@ PluginInstaller* TabContents::GetPluginInstaller() {
 const GURL& TabContents::GetURL() const {
   // We may not have a navigation entry yet
   NavigationEntry* entry = controller_.GetActiveEntry();
-  return entry ? entry->virtual_url() : GURL::EmptyGURL();
+  return entry ? entry->display_url() : GURL::EmptyGURL();
 }
 
 const string16& TabContents::GetTitle() const {
@@ -1353,7 +1353,7 @@ void TabContents::UpdateMaxPageIDIfNecessary(SiteInstance* site_instance,
 }
 
 void TabContents::UpdateHistoryForNavigation(
-    const GURL& virtual_url,
+    const GURL& display_url,
     const NavigationController::LoadCommittedDetails& details,
     const ViewHostMsg_FrameNavigate_Params& params) {
   if (profile()->IsOffTheRecord())
@@ -1363,17 +1363,17 @@ void TabContents::UpdateHistoryForNavigation(
   HistoryService* hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
   if (hs) {
     if (PageTransition::IsMainFrame(params.transition) &&
-        virtual_url != params.url) {
-      // Hack on the "virtual" URL so that it will appear in history. For some
+        display_url != params.url) {
+      // Hack on the "display" URL so that it will appear in history. For some
       // types of URLs, we will display a magic URL that is different from where
       // the page is actually navigated. We want the user to see in history
-      // what they saw in the URL bar, so we add the virtual URL as a redirect.
-      // This only applies to the main frame, as the virtual URL doesn't apply
+      // what they saw in the URL bar, so we add the display URL as a redirect.
+      // This only applies to the main frame, as the display URL doesn't apply
       // to sub-frames.
       std::vector<GURL> redirects = params.redirects;
       if (!redirects.empty())
-        redirects.back() = virtual_url;
-      hs->AddPage(virtual_url, this, params.page_id, params.referrer,
+        redirects.back() = display_url;
+      hs->AddPage(display_url, this, params.page_id, params.referrer,
                   params.transition, redirects, details.did_replace_entry);
     } else {
       hs->AddPage(params.url, this, params.page_id, params.referrer,
@@ -1408,7 +1408,7 @@ bool TabContents::UpdateTitleForEntry(NavigationEntry* entry,
     HistoryService* hs =
         profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
     if (hs)
-      hs->SetPageTitle(entry->virtual_url(), final_title);
+      hs->SetPageTitle(entry->display_url(), final_title);
 
     // Don't allow the title to be saved again for explicitly set ones.
     received_page_title_ = explicit_set;
@@ -2000,7 +2000,7 @@ void TabContents::DidStopLoading(RenderViewHost* rvh) {
     base::TimeDelta elapsed = base::TimeTicks::Now() - current_load_start_;
 
     details.reset(new LoadNotificationDetails(
-        entry->virtual_url(),
+        entry->display_url(),
         entry->transition_type(),
         elapsed,
         &controller_,

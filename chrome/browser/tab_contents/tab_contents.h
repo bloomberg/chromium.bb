@@ -727,7 +727,7 @@ class TabContents : public PageNavigator,
 
   // Called by OnMsgNavigate to update history state. Overridden by subclasses
   // that don't want to be added to history.
-  virtual void UpdateHistoryForNavigation(const GURL& virtual_url,
+  virtual void UpdateHistoryForNavigation(const GURL& display_url,
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 

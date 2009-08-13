@@ -21,14 +21,14 @@ NavigationEntry* TabNavigation::ToNavigationEntry(int page_id) const {
       // Use a transition type of reload so that we don't incorrectly
       // increase the typed count.
       PageTransition::RELOAD);
-  entry->set_virtual_url(url_);
+  entry->set_display_url(url_);
   entry->set_content_state(state_);
   entry->set_has_post_data(type_mask_ & TabNavigation::HAS_POST_DATA);
   return entry;
 }
 
 void TabNavigation::SetFromNavigationEntry(const NavigationEntry& entry) {
-  url_ = entry.virtual_url();
+  url_ = entry.display_url();
   referrer_ = entry.referrer();
   title_ = entry.title();
   state_ = entry.content_state();

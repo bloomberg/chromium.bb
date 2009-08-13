@@ -219,7 +219,7 @@ class NavigationEntry {
   }
 
   // The actual URL of the page. For some about pages, this may be a scary
-  // data: URL or something like that. Use virtual_url() below for showing to
+  // data: URL or something like that. Use display_url() below for showing to
   // the user.
   void set_url(const GURL& url) {
     url_ = url;
@@ -237,22 +237,22 @@ class NavigationEntry {
     return referrer_;
   }
 
-  // The virtual URL, when nonempty, will override the actual URL of the page
+  // The display URL, when nonempty, will override the actual URL of the page
   // when we display it to the user. This allows us to have nice and friendly
   // URLs that the user sees for things like about: URLs, but actually feed
   // the renderer a data URL that results in the content loading.
   //
-  // virtual_url() will return the URL to display to the user in all cases, so
+  // display_url() will return the URL to display to the user in all cases, so
   // if there is no overridden display URL, it will return the actual one.
-  void set_virtual_url(const GURL& url) {
-    virtual_url_ = (url == url_) ? GURL() : url;
+  void set_display_url(const GURL& url) {
+    display_url_ = (url == url_) ? GURL() : url;
     cached_display_title_.clear();
   }
-  bool has_virtual_url() const {
-    return !virtual_url_.is_empty();
+  bool has_display_url() const {
+    return !display_url_.is_empty();
   }
-  const GURL& virtual_url() const {
-    return virtual_url_.is_empty() ? url_ : virtual_url_;
+  const GURL& display_url() const {
+    return display_url_.is_empty() ? url_ : display_url_;
   }
 
   // The title as set by the page. This will be empty if there is no title set.
@@ -385,7 +385,7 @@ class NavigationEntry {
   PageType page_type_;
   GURL url_;
   GURL referrer_;
-  GURL virtual_url_;
+  GURL display_url_;
   string16 title_;
   FaviconStatus favicon_;
   std::string content_state_;
@@ -398,7 +398,7 @@ class NavigationEntry {
 
   // This is a cached version of the result of GetTitleForDisplay. It prevents
   // us from having to do URL formatting on the URL evey time the title is
-  // displayed. When the URL, virtual URL, or title is set, this should be
+  // displayed. When the URL, display URL, or title is set, this should be
   // cleared to force a refresh.
   string16 cached_display_title_;
 
