@@ -66,7 +66,7 @@ std::wstring PrintViewManager::RenderSourceName() {
 GURL PrintViewManager::RenderSourceUrl() {
   NavigationEntry* entry = owner_.controller().GetActiveEntry();
   if (entry)
-    return entry->display_url();
+    return entry->virtual_url();
   else
     return GURL();
 }

@@ -38,7 +38,7 @@ std::wstring ToolbarModel::GetText() {
       // Explicitly hide the URL for this tab.
       url = GURL();
     } else if (entry) {
-      url = entry->display_url();
+      url = entry->virtual_url();
     }
   }
   return net::FormatUrl(url, languages, true, UnescapeRule::NORMAL, NULL, NULL);

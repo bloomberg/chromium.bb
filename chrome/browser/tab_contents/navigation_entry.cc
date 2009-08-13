@@ -74,15 +74,15 @@ const string16& NavigationEntry::GetTitleForDisplay(
   if (!cached_display_title_.empty())
     return cached_display_title_;
 
-  // Use the display URL first if any, and fall back on using the real URL.
+  // Use the virtual URL first if any, and fall back on using the real URL.
   std::wstring languages;
   if (navigation_controller) {
       languages = navigation_controller->profile()->GetPrefs()->GetString(
           prefs::kAcceptLanguages);
   }
-  if (!display_url_.is_empty()) {
+  if (!virtual_url_.is_empty()) {
     cached_display_title_ = WideToUTF16Hack(net::FormatUrl(
-        display_url_, languages));
+        virtual_url_, languages));
   } else if (!url_.is_empty()) {
     cached_display_title_ = WideToUTF16Hack(net::FormatUrl(url_, languages));
   }
@@ -90,5 +90,5 @@ const string16& NavigationEntry::GetTitleForDisplay(
 }
 
 bool NavigationEntry::IsViewSourceMode() const {
-  return display_url_.SchemeIs(chrome::kViewSourceScheme);
+  return virtual_url_.SchemeIs(chrome::kViewSourceScheme);
 }
