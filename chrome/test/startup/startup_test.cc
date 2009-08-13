@@ -29,15 +29,6 @@ class StartupTest : public UITest {
 
   void RunStartupTest(const char* graph, const char* trace,
       bool test_cold, bool important, int profile_type) {
-    profile_type_ = profile_type;
-
-    // Sets the profile data for the run.  For now, this is only used for
-    // the complex theme test.
-    if (profile_type == UITest::COMPLEX_THEME) {
-      set_template_user_data(UITest::ComputeTypicalUserDataSource(
-          profile_type).ToWStringHack());
-    }
-
     const int kNumCyclesMax = 20;
     int numCycles = kNumCyclesMax;
 // It's ok for unit test code to use getenv(), isn't it?
@@ -73,6 +64,13 @@ class StartupTest : public UITest {
         NOTIMPLEMENTED() << "gears not enabled yet";
 #endif
       }
+
+      // Sets the profile data for the run.  For now, this is only used for
+      // the complex theme test.
+      if (profile_type == UITest::COMPLEX_THEME)
+        set_template_user_data(UITest::ComputeTypicalUserDataSource(
+            profile_type).ToWStringHack());
+
       UITest::SetUp();
       TimeTicks end_time = TimeTicks::Now();
       timings[i] = end_time - browser_launch_time_;
@@ -85,10 +83,6 @@ class StartupTest : public UITest {
         // Re-use the profile data after first run so that the noise from
         // creating databases doesn't impact all the runs.
         clear_profile_ = false;
-        // Destroy template_user_data_ for complex theme so we don't try to
-        // rewrite each time through.
-        if (profile_type == UITest::COMPLEX_THEME)
-          set_template_user_data(L"");
       }
     }
 
@@ -167,9 +161,9 @@ TEST_F(StartupFileTest, PerfColdGears) {
 }
 #endif
 
-TEST_F(StartupTest, PerfColdComplexTheme) {
-  RunStartupTest("warm", "t-theme", false /* warm */,
-                 false /* not important */, UITest::COMPLEX_THEME);
-}
+//TEST_F(StartupTest, PerfColdComplexTheme) {
+//  RunStartupTest("warm", "t-theme", false /* warm */,
+//                 false /* not important */, UITest::COMPLEX_THEME);
+//}
 
 }  // namespace
