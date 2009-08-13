@@ -343,7 +343,7 @@ class InputApi(object):
 
   def ReadFile(self, file, mode='r'):
     """Reads an arbitrary file.
-    
+
     Deny reading anything outside the repository.
     """
     if isinstance(file, AffectedFile):
@@ -372,7 +372,6 @@ class AffectedFile(object):
     self._local_root = repository_root
     self._is_directory = None
     self._properties = {}
-    self.scm = ''
 
   def ServerPath(self):
     """Returns a path string that identifies the file in the SCM system.
@@ -413,7 +412,7 @@ class AffectedFile(object):
 
   def IsTextFile(self):
     """Returns True if the file is a text file and not a binary file.
-    
+
     Deleted files are not text file."""
     raise NotImplementedError()  # Implement when needed
 
@@ -458,7 +457,6 @@ class SvnAffectedFile(AffectedFile):
     AffectedFile.__init__(self, *args, **kwargs)
     self._server_path = None
     self._is_text_file = None
-    self.scm = 'svn'
 
   def ServerPath(self):
     if self._server_path is None:
@@ -505,7 +503,6 @@ class GitAffectedFile(AffectedFile):
     AffectedFile.__init__(self, *args, **kwargs)
     self._server_path = None
     self._is_text_file = None
-    self.scm = 'git'
 
   def ServerPath(self):
     if self._server_path is None:
@@ -547,7 +544,7 @@ class Change(object):
 
   Used directly by the presubmit scripts to query the current change being
   tested.
-  
+
   Instance members:
     tags: Dictionnary of KEY=VALUE pairs found in the change description.
     self.KEY: equivalent to tags['KEY']
@@ -567,6 +564,7 @@ class Change(object):
     self._local_root = local_root
     self.issue = issue
     self.patchset = patchset
+    self.scm = ''
 
     # From the description text, build up a dictionary of key/value pairs
     # plus the description minus all key/value or "tag" lines.
@@ -681,9 +679,30 @@ class Change(object):
 class SvnChange(Change):
   _AFFECTED_FILES = SvnAffectedFile
 
+  def __init__(self, *args, **kwargs):
+    Change.__init__(self, *args, **kwargs)
+    self.scm = 'svn'
+
+  def GetAllModifiedFiles(self):
+    """Get all modified files."""
+    changelists = gcl.GetModifiedFiles()
+    all_modified_files = []
+    for cl in changelists.values():
+      all_modified_files.extend([f[1] for f in cl])
+    return all_modified_files
+
+  def GetModifiedFiles(self):
+    """Get modified files in the current CL."""
+    changelists = gcl.GetModifiedFiles()
+    return [f[1] for f in changelists[self.Name()]]
+
 
 class GitChange(Change):
   _AFFECTED_FILES = GitAffectedFile
+
+  def __init__(self, *args, **kwargs):
+    Change.__init__(self, *args, **kwargs)
+    self.scm = 'git'
 
 
 def ListRelevantPresubmitFiles(files, root):

@@ -88,6 +88,42 @@ def CheckChangeHasNoCR(input_api, output_api, source_file_filter=None):
   return []
 
 
+def CheckSvnModifiedDirectories(input_api, output_api, source_file_filter=None):
+  """Checks for files in svn modified directories.
+
+  They will get submitted on accident because svn commits recursively by
+  default, and that's very dangerous.
+  """
+  if input_api.change.scm != 'svn':
+    return []
+
+  errors = []
+  current_cl_files = input_api.change.GetModifiedFiles()
+  all_modified_files = input_api.change.GetAllModifiedFiles()
+  # Filter out files in the current CL.
+  modified_files = [f for f in all_modified_files if f not in current_cl_files]
+  modified_abspaths = [input_api.os_path.abspath(f) for f in modified_files]
+
+  for f in input_api.AffectedFiles(source_file_filter):
+    if f.Action() == 'M' and f.IsDirectory():
+      curpath = f.AbsoluteLocalPath()
+      bad_files = []
+      # Check if any of the modified files in other CLs are under curpath.
+      for i in xrange(len(modified_files)):
+        abspath = modified_abspaths[i]
+        if input_api.os_path.commonprefix([curpath, abspath]) == curpath:
+          bad_files.append(modified_files[i])
+      if bad_files:
+        if input_api.is_committing:
+          error_type = output_api.PresubmitPromptWarning
+        else:
+          error_type = output_api.PresubmitNotifyResult
+        errors.append(error_type(
+            "Potential accidental commits in changelist %s:" % f.LocalPath(),
+            items=bad_files))
+  return errors
+
+
 def CheckChangeHasOnlyOneEol(input_api, output_api, source_file_filter=None):
   """Checks the files ends with one and only one \n (LF)."""
   eof_files = []
@@ -220,8 +256,10 @@ def CheckSvnForCommonMimeTypes(input_api, output_api):
 
 def CheckSvnProperty(input_api, output_api, prop, expected, affected_files):
   """Checks that affected_files files have prop=expected."""
-  bad = filter(lambda f: f.scm == 'svn' and f.Property(prop) != expected,
-               affected_files)
+  if input_api.change.scm != 'svn':
+    return []
+
+  bad = filter(lambda f: f.Property(prop) != expected, affected_files)
   if bad:
     if input_api.is_committing:
       type = output_api.PresubmitError

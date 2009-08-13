@@ -35,10 +35,12 @@ def CheckChangeOnUpload(input_api, output_api):
   def setUp(self):
     super_mox.SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(presubmit, 'warnings')
-    # Stub out 'os' but keep os.path.dirname/join/normpath/splitext and os.sep.
+    # Stub out 'os' but keep os.path.commonprefix/dirname/join/normpath/splitext
+    # and os.sep.
     os_sep = presubmit.os.sep
-    os_path_join = presubmit.os.path.join
+    os_path_commonprefix = presubmit.os.path.commonprefix
     os_path_dirname = presubmit.os.path.dirname
+    os_path_join = presubmit.os.path.join
     os_path_normpath = presubmit.os.path.normpath
     os_path_splitext = presubmit.os.path.splitext
     self.mox.StubOutWithMock(presubmit, 'os')
@@ -55,6 +57,7 @@ def CheckChangeOnUpload(input_api, output_api):
     def MockAbsPath(f):
       return f
     presubmit.os.path.abspath = MockAbsPath
+    presubmit.os.path.commonprefix = os_path_commonprefix
     self.fake_root_dir = self.RootDir()
     self.mox.StubOutWithMock(presubmit.gclient, 'CaptureSVNInfo')
     self.mox.StubOutWithMock(presubmit.gcl, 'GetSVNFileProperty')
@@ -394,7 +397,7 @@ def CheckChangeOnCommit(input_api, output_api):
                                   'PRESUBMIT.py')).AndReturn(False)
     presubmit.random.randint(0, 4).AndReturn(0)
     self.mox.ReplayAll()
-    
+
     output = StringIO.StringIO()
     input = StringIO.StringIO('y\n')
     # Always fail.
@@ -451,7 +454,7 @@ def CheckChangeOnUpload(input_api, output_api):
   if 'TEST' in input_api.change.tags:
     return [output_api.PresubmitError('Tag parsing failed. 3')]
   if input_api.change.DescriptionText() != 'Blah Blah':
-    return [output_api.PresubmitError('Tag parsing failed. 4 ' + 
+    return [output_api.PresubmitError('Tag parsing failed. 4 ' +
                                       input_api.change.DescriptionText())]
   if (input_api.change.FullDescriptionText() !=
       'Blah Blah\\n\\nSTORY=http://tracker.com/42\\nBUG=boo\\n'):
@@ -490,7 +493,7 @@ def CheckChangeOnCommit(input_api, output_api):
                                 mox.IgnoreArg(),
                                 None, False).AndReturn(False)
     self.mox.ReplayAll()
-    
+
     self.assertEquals(True,
                       presubmit.Main(['presubmit', '--root',
                                       self.fake_root_dir]))
@@ -897,7 +900,6 @@ class AffectedFileUnittest(PresubmitTestsBase):
     members = [
       'AbsoluteLocalPath', 'Action', 'IsDirectory', 'IsTextFile', 'LocalPath',
       'NewContents', 'OldContents', 'OldFileTempPath', 'Property', 'ServerPath',
-      'scm',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.AffectedFile('a', 'b'), members)
@@ -974,7 +976,7 @@ class GclChangeUnittest(PresubmitTestsBase):
         'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
         'DescriptionText', 'FullDescriptionText', 'LocalPaths', 'Name',
         'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
-        'issue', 'patchset', 'tags',
+        'issue', 'patchset', 'scm', 'tags',
     ]
     # If this test fails, you should add the relevant test.
     self.mox.ReplayAll()
@@ -993,6 +995,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def MockInputApi(self, change, committing):
     input_api = self.mox.CreateMock(presubmit.InputApi)
     input_api.cStringIO = presubmit.cStringIO
+    input_api.os_path = presubmit.os.path
     input_api.re = presubmit.re
     input_api.traceback = presubmit.traceback
     input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
@@ -1013,6 +1016,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckChangeHasNoCrAndHasOnlyOneEol', 'CheckChangeHasNoTabs',
       'CheckChangeHasQaField', 'CheckChangeHasTestedField',
       'CheckChangeHasTestField', 'CheckChangeSvnEolStyle',
+      'CheckSvnModifiedDirectories',
       'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
       'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
@@ -1091,7 +1095,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def SvnPropertyTest(self, check, property, value1, value2, committing,
                       error_type, use_source_file):
-    input_api1 = self.MockInputApi(None, committing)
+    change1 = presubmit.SvnChange('mychange', '', self.fake_root_dir, [], 0, 0)
+    input_api1 = self.MockInputApi(change1, committing)
     files1 = [
       presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
       presubmit.SvnAffectedFile('foo.cc', 'M'),
@@ -1104,7 +1109,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
                                      property).AndReturn(value1)
     presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo.cc'),
                                      property).AndReturn(value1)
-    input_api2 = self.MockInputApi(None, committing)
+    change2 = presubmit.SvnChange('mychange', '', self.fake_root_dir, [], 0, 0)
+    input_api2 = self.MockInputApi(change2, committing)
     files2 = [
       presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
       presubmit.SvnAffectedFile('foo.cc', 'M'),
@@ -1113,7 +1119,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       input_api2.AffectedSourceFiles(None).AndReturn(files2)
     else:
       input_api2.AffectedFiles(include_deleted=False).AndReturn(files2)
-    
+
     presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo/bar.cc'),
                                      property).AndReturn(value2)
     presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo.cc'),
@@ -1142,7 +1148,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                          'Bleh', '',
                          presubmit.OutputApi.PresubmitError,
                          True)
-  
+
   def testCannedCheckChangeHasTestField(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasTestField,
                          'Foo\nTEST=did some stuff', 'Foo\n',
@@ -1179,7 +1185,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
             presubmit_canned_checks.CheckChangeHasNoStrayWhitespace(x, y),
         'Foo', 'Foo ',
         presubmit.OutputApi.PresubmitPromptWarning)
-    
+
 
   def testCheckChangeHasOnlyOneEol(self):
     self.ReadFileTest(presubmit_canned_checks.CheckChangeHasOnlyOneEol,
@@ -1190,7 +1196,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ReadFileTest(presubmit_canned_checks.CheckChangeHasNoCR,
                       "Hey!\nHo!\n", "Hey!\r\nHo!\r\n",
                       presubmit.OutputApi.PresubmitPromptWarning)
- 
+
   def testCheckChangeHasNoCrAndHasOnlyOneEol(self):
     self.ReadFileTest(
         presubmit_canned_checks.CheckChangeHasNoCrAndHasOnlyOneEol,
@@ -1222,6 +1228,32 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.SvnPropertyTest(presubmit_canned_checks.CheckChangeSvnEolStyle,
                          'svn:eol-style', 'LF', '', False,
                          presubmit.OutputApi.PresubmitNotifyResult, True)
+
+  def testCannedCheckSvnAccidentalSubmission(self):
+    modified_dir_file = 'foo/'
+    accidental_submssion_file = 'foo/bar.cc'
+
+    change = self.mox.CreateMock(presubmit.SvnChange)
+    change.scm = 'svn'
+    change.GetModifiedFiles().AndReturn([modified_dir_file])
+    change.GetAllModifiedFiles().AndReturn([modified_dir_file,
+                                            accidental_submssion_file])
+    input_api = self.MockInputApi(change, True)
+
+    affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    affected_file.Action().AndReturn('M')
+    affected_file.IsDirectory().AndReturn(True)
+    affected_file.AbsoluteLocalPath().AndReturn(accidental_submssion_file)
+    affected_file.LocalPath().AndReturn(accidental_submssion_file)
+    input_api.AffectedFiles(None).AndReturn([affected_file])
+
+    self.mox.ReplayAll()
+
+    check = presubmit_canned_checks.CheckSvnModifiedDirectories
+    results = check(input_api, presubmit.OutputApi, None)
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCheckSvnForCommonMimeTypes(self):
     self.mox.StubOutWithMock(presubmit_canned_checks, 'CheckSvnProperty')
