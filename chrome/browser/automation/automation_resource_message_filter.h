@@ -25,12 +25,13 @@ class AutomationResourceMessageFilter
  public:
   // Information needed to send IPCs through automation.
   struct AutomationDetails {
-    AutomationDetails() : tab_handle(0) {}
+    AutomationDetails() : tab_handle(0), ref_count(1) {}
     AutomationDetails(int tab, AutomationResourceMessageFilter* flt)
-      : tab_handle(tab), filter(flt) {
+      : tab_handle(tab), ref_count(1), filter(flt) {
     }
 
     int tab_handle;
+    int ref_count;
     scoped_refptr<AutomationResourceMessageFilter> filter;
   };
 

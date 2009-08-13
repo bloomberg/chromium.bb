@@ -133,17 +133,32 @@ void AutomationResourceMessageFilter::UnRegisterRenderView(
 void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(
     int renderer_pid, int renderer_id,
     int tab_handle, AutomationResourceMessageFilter* filter) {
-  DCHECK(filtered_render_views_.find(RendererId(renderer_pid, renderer_id)) ==
-      filtered_render_views_.end());
-  filtered_render_views_[RendererId(renderer_pid, renderer_id)] =
-      AutomationDetails(tab_handle, filter);
+  RenderViewMap::iterator automation_details_iter(
+      filtered_render_views_.find(RendererId(renderer_pid, renderer_id)));
+  if (automation_details_iter != filtered_render_views_.end()) {
+    DCHECK(automation_details_iter->second.ref_count > 0);
+    automation_details_iter->second.ref_count++;
+  } else {
+    filtered_render_views_[RendererId(renderer_pid, renderer_id)] =
+        AutomationDetails(tab_handle, filter);
+  }
 }
 
 void AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread(
     int renderer_pid, int renderer_id) {
-  DCHECK(filtered_render_views_.find(RendererId(renderer_pid, renderer_id)) !=
-      filtered_render_views_.end());
-  filtered_render_views_.erase(RendererId(renderer_pid, renderer_id));
+  RenderViewMap::iterator automation_details_iter(
+      filtered_render_views_.find(RendererId(renderer_pid, renderer_id)));
+
+  if (automation_details_iter == filtered_render_views_.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  automation_details_iter->second.ref_count--;
+
+  if (automation_details_iter->second.ref_count <= 0) {
+    filtered_render_views_.erase(RendererId(renderer_pid, renderer_id));
+  }
 }
 
 bool AutomationResourceMessageFilter::LookupRegisteredRenderView(
