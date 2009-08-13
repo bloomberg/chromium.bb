@@ -391,7 +391,8 @@ Texture2DD3D9* Texture2DD3D9::Create(ServiceLocator* service_locator,
                                              resize_to_pot,
                                              enable_render_surfaces);
   if (resize_to_pot) {
-    texture->backing_bitmap_->AllocateData();
+    texture->backing_bitmap_->Allocate(format, width, height, levels, 
+                                       Bitmap::IMAGE);
   }
 
   return texture;
@@ -714,7 +715,8 @@ TextureCUBED3D9* TextureCUBED3D9::Create(ServiceLocator* service_locator,
                                                  enable_render_surfaces);
   if (resize_to_pot) {
     for (int ii = 0; ii < static_cast<int>(NUMBER_OF_FACES); ++ii) {
-      texture->backing_bitmaps_[ii]->AllocateData();
+      texture->backing_bitmaps_[ii]->Allocate(
+          format, edge_length, edge_length, levels, Bitmap::IMAGE);
     }
   }
 

@@ -333,7 +333,8 @@ Texture2DGL* Texture2DGL::Create(ServiceLocator* service_locator,
   // If the hardware does not support npot textures, allocate a 0-initialized
   // mip-chain here for use during Texture2DGL::Lock.
   if (resize_to_pot) {
-    texture->backing_bitmap_->AllocateData();
+    texture->backing_bitmap_->Allocate(format, width, height, levels,
+                                       Bitmap::IMAGE);
     texture->has_levels_ = (1 << levels) - 1;
   }
   CHECK_GL_ERROR();
@@ -667,7 +668,8 @@ TextureCUBEGL* TextureCUBEGL::Create(ServiceLocator* service_locator,
   // mip-chain here for use during TextureCUBEGL::Lock.
   if (resize_to_pot) {
     for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
-      texture->backing_bitmaps_[face]->AllocateData();
+      texture->backing_bitmaps_[face]->Allocate(
+          format, edge_length, edge_length, levels, Bitmap::IMAGE);
       texture->has_levels_[face] = (1 << levels) - 1;
     }
   }
