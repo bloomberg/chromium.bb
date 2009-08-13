@@ -21,6 +21,7 @@ const wchar_t* kPermissions = L"permissions";
 const wchar_t* kPlugins = L"plugins";
 const wchar_t* kPluginsPath = L"path";
 const wchar_t* kPluginsPublic = L"public";
+const wchar_t* kPrivacyBlacklists = L"privacy_blacklists";
 const wchar_t* kPublicKey = L"key";
 const wchar_t* kRunAt = L"run_at";
 const wchar_t* kSignature = L"signature";
@@ -108,6 +109,10 @@ const char* kInvalidPluginsPath =
     "Invalid value for 'plugins[*].path'.";
 const char* kInvalidPluginsPublic =
     "Invalid value for 'plugins[*].public'.";
+const char* kInvalidPrivacyBlacklists =
+    "Invalid value for 'privacy_blacklists'.";
+const char* kInvalidPrivacyBlacklistsPath =
+    "Invalid value for 'privacy_blacklists[*]'.";
 const char* kInvalidBackground =
     "Invalid value for 'background'.";
 const char* kInvalidRunAt =

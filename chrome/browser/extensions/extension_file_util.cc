@@ -239,11 +239,23 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
     }
   }
 
+  // Validate claimed plugin paths.
   for (size_t i = 0; i < extension->plugins().size(); ++i) {
     const Extension::PluginInfo& plugin = extension->plugins()[i];
     if (!file_util::PathExists(plugin.path)) {
       *error = StringPrintf("Could not load '%s' for plugin.",
                             WideToUTF8(plugin.path.ToWStringHack()).c_str());
+      return NULL;
+    }
+  }
+
+  // Validate claimed privacy blacklists paths.
+  for (size_t i = 0; i < extension->privacy_blacklists().size(); ++i) {
+    const Extension::PrivacyBlacklistInfo& blacklist =
+        extension->privacy_blacklists()[i];
+    if (!file_util::PathExists(blacklist.path)) {
+      *error = StringPrintf("Could not load '%s' for privacy blacklist.",
+                            WideToUTF8(blacklist.path.ToWStringHack()).c_str());
       return NULL;
     }
   }

@@ -22,6 +22,7 @@ namespace extension_manifest_keys {
   extern const wchar_t* kPlugins;
   extern const wchar_t* kPluginsPath;
   extern const wchar_t* kPluginsPublic;
+  extern const wchar_t* kPrivacyBlacklists;
   extern const wchar_t* kPublicKey;
   extern const wchar_t* kSignature;
   extern const wchar_t* kRunAt;
@@ -67,6 +68,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidPlugins;
   extern const char* kInvalidPluginsPath;
   extern const char* kInvalidPluginsPublic;
+  extern const char* kInvalidPrivacyBlacklists;
+  extern const char* kInvalidPrivacyBlacklistsPath;
 
   extern const char* kInvalidBackground;
   extern const char* kInvalidRunAt;

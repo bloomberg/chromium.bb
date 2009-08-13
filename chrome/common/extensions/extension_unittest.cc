@@ -52,8 +52,8 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   JSONFileValueSerializer serializer(extensions_path);
   scoped_ptr<DictionaryValue> valid_value(
       static_cast<DictionaryValue*>(serializer.Deserialize(&error)));
+  EXPECT_EQ("", error);
   ASSERT_TRUE(valid_value.get());
-  ASSERT_EQ("", error);
   ASSERT_TRUE(extension.InitFromValue(*valid_value, true, &error));
   ASSERT_EQ("", error);
 
@@ -216,6 +216,21 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   permissions->Set(0, Value::CreateStringValue("file:///C:/foo.txt"));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermissionScheme));
+
+  // Test invalid privacy blacklists list.
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value->SetInteger(keys::kPrivacyBlacklists, 42);
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_EQ(errors::kInvalidPrivacyBlacklists, error);
+
+  // Test invalid privacy blacklists list item.
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  ListValue* privacy_blacklists = NULL;
+  input_value->GetList(keys::kPrivacyBlacklists, &privacy_blacklists);
+  ASSERT_FALSE(NULL == privacy_blacklists);
+  privacy_blacklists->Set(0, Value::CreateIntegerValue(42));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPrivacyBlacklistsPath));
 }
 
 TEST(ExtensionTest, InitFromValueValid) {

@@ -71,6 +71,10 @@ class Extension {
     PERMISSION_CLASS_FULL,  // red
   };
 
+  struct PrivacyBlacklistInfo {
+    FilePath path;  // Path to the plain-text blacklist.
+  };
+
   // An NPAPI plugin included in the extension.
   struct PluginInfo {
     FilePath path;  // Path to the plugin.
@@ -182,6 +186,9 @@ class Extension {
   const std::string& description() const { return description_; }
   const UserScriptList& content_scripts() const { return content_scripts_; }
   const PageActionMap& page_actions() const { return page_actions_; }
+  const std::vector<PrivacyBlacklistInfo>& privacy_blacklists() const {
+    return privacy_blacklists_;
+  }
   const std::vector<PluginInfo>& plugins() const { return plugins_; }
   const GURL& background_url() const { return background_url_; }
   const std::vector<ToolstripInfo>& toolstrips() const { return toolstrips_; }
@@ -284,6 +291,9 @@ class Extension {
   // A list of page actions.
   PageActionMap page_actions_;
 
+  // Optional list of privacy blacklistrom.
+  std::vector<PrivacyBlacklistInfo> privacy_blacklists_;
+
   // Optional list of NPAPI plugins and associated properties.
   std::vector<PluginInfo> plugins_;
 
@@ -324,7 +334,7 @@ class Extension {
 
   // URL for fetching an update manifest
   GURL update_url_;
- 
+
 
   // Runtime data:
 
