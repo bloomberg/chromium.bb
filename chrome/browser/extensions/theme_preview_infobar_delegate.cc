@@ -50,11 +50,15 @@ int ThemePreviewInfobarDelegate::GetButtons() const {
 std::wstring ThemePreviewInfobarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   switch (button) {
-    case BUTTON_CANCEL:
+    case BUTTON_CANCEL: {
       // TODO(aa): Reusing IDS_UNDO is hack to get around string freeze. This
       // should be changed back to IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON at some
       // point.
-      return l10n_util::GetString(IDS_UNDO);
+      std::wstring undo_text = l10n_util::GetString(IDS_UNDO);
+      undo_text.erase(std::remove(undo_text.begin(), undo_text.end(), L'&'),
+                      undo_text.end());
+      return undo_text;
+    }
     default:
       return L"";
   }
