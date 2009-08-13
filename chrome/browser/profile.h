@@ -487,8 +487,8 @@ namespace __gnu_cxx {
 
 template<>
 struct hash<Profile*> {
-  size_t operator()(Profile* const& p) const {
-    return std::tr1::hash<long>()(reinterpret_cast<long>(p));
+  std::size_t operator()(Profile* const& p) const {
+    return reinterpret_cast<std::size_t>(p);
   }
 };
 

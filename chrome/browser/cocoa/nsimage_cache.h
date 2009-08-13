@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COCOA_IMAGE_CACHE_H_
-#define CHROME_BROWSER_COCOA_IMAGE_CACHE_H_
+#ifndef CHROME_BROWSER_COCOA_NSIMAGE_CACHE_H_
+#define CHROME_BROWSER_COCOA_NSIMAGE_CACHE_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -21,6 +21,6 @@ NSImage *ImageNamed(NSString* name);
 // Clears the cache.
 void Clear(void);
 
-}
+}  // namespace nsimage_cache
 
-#endif  // CHROME_BROWSER_COCOA_IMAGE_CACHE_H_
+#endif  // CHROME_BROWSER_COCOA_NSIMAGE_CACHE_H_
