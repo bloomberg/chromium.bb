@@ -67,6 +67,13 @@ void PluginList::LoadPluginsFromDir(const FilePath &path) {
 }
 
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info) {
+  // The Gears plugin is Safari-specific, and causes crashes, so don't load it.
+  for (std::vector<WebPluginMimeType>::const_iterator i =
+           info.mime_types.begin(); i != info.mime_types.end(); ++i) {
+    if (i->mime_type == "application/x-googlegears")
+      return false;
+  }
+
   // For now, only load plugins that we know are working reasonably well.
   // Anything using QuickDraw-based drawing, for example, would crash
   // immediately.
