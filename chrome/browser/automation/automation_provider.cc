@@ -1490,7 +1490,7 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
 
   gfx::NativeWindow window = window_tracker_->GetResource(handle);
   if (window) {
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN)
     views::RootView* root_view = views::WidgetWin::FindRootView(window);
     if (root_view) {
       views::View* view = root_view->GetViewByID(view_id);
@@ -1512,7 +1512,6 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
 }
 
 #if defined(OS_WIN)
-
 // This task enqueues a mouse event on the event loop, so that the view
 // that it's being sent to can do the requisite post-processing.
 class MouseEventTask : public Task {
