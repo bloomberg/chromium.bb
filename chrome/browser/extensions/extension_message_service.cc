@@ -61,6 +61,7 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
   args.Set(1, Value::CreateStringValue(channel_name));
   args.Set(2, Value::CreateStringValue(tab_json));
   args.Set(3, Value::CreateStringValue(extension_id));
+  CHECK(port.sender);
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(
       port.routing_id, ExtensionMessageService::kDispatchOnConnect, args));
 }
@@ -263,11 +264,19 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
     return false;
   }
 
+  // Add extra paranoid CHECKs, since we have crash reports of this being NULL.
+  // http://code.google.com/p/chromium/issues/detail?id=19067
+  CHECK(receiver.sender);
+
   linked_ptr<MessageChannel> channel(new MessageChannel);
   channel->opener = MessagePort(source, MSG_ROUTING_CONTROL);
   channel->receiver = receiver;
 
+  CHECK(receiver.sender);
+
   channels_[GET_CHANNEL_ID(receiver_port_id)] = channel;
+
+  CHECK(receiver.sender);
 
   // Include info about the opener's tab (if it was a tab).
   std::string tab_json = "null";
@@ -277,6 +286,8 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
     DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(contents);
     JSONWriter::Write(tab_value, false, &tab_json);
   }
+
+  CHECK(receiver.sender);
 
   // Send the connect event to the receiver.  Give it the opener's port ID (the
   // opener has the opposite port ID).
