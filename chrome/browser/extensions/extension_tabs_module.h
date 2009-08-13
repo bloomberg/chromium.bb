@@ -98,5 +98,8 @@ class DetectTabLanguageFunction : public AsyncExtensionFunction,
                        const NotificationDetails& details);
   NotificationRegistrar registrar_;
 };
+class CaptureVisibleTabFunction : public SyncExtensionFunction {
+  virtual bool RunImpl();
+};
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TABS_MODULE_H__

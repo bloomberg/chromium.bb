@@ -1,0 +1,9 @@
+{
+  "name": "Test Screenshot Extension",
+  "version": "1.0",
+  "description": "Test extension for testing screenshot functionality",
+  "toolstrips": [
+    "toolstrip.html"
+  ],
+  "permissions": ["tabs"]
+}

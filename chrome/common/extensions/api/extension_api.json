@@ -398,6 +398,18 @@
             ]
           }
         ]
+      },
+      {
+        "name": "captureVisibleTab",
+        "type": "function",
+        "description": "Captures the visible area of the visible tab in the given window.",
+        "parameters": [
+          {"type": "integer", "name": "windowId", "minimum": 0, "optional": true, "description": "The target window. If <var>null</var> or <var>undefined</var>, the 'current' window will be assumed."},
+          {"type": "function", "name": "callback", "parameters": [
+              {"type": "string", "name": "dataUrl", "description": "a data url encoding of the captured tab."}
+            ]
+          }
+        ]
       }
     ],
     "events": [

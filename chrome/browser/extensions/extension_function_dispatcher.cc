@@ -105,6 +105,8 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<RemoveTabFunction>;
   factories_[tabs::kDetectTabLanguageFunction] =
       &NewExtensionFunction<DetectTabLanguageFunction>;
+  factories_[tabs::kCaptureVisibleTabFunction] =
+      &NewExtensionFunction<CaptureVisibleTabFunction>;
 
   // Page Actions.
   factories_[page_actions::kEnablePageActionFunction] =

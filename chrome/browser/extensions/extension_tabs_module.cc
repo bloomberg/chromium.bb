@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
+#include "base/gfx/jpeg_codec.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -12,12 +13,18 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/backing_store.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "net/base/base64.h"
+#include "skia/ext/image_operations.h"
+#include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 
 namespace keys = extension_tabs_module_constants;
@@ -612,6 +619,82 @@ bool RemoveTabFunction::RunImpl() {
     return false;
 
   browser->CloseTabContents(contents);
+  return true;
+}
+
+bool CaptureVisibleTabFunction::RunImpl() {
+  Browser* browser;
+  // windowId defaults to "current" window.
+  int window_id = -1;
+
+  if (!args_->IsType(Value::TYPE_NULL)) {
+    EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&window_id));
+    browser = GetBrowserInProfileWithId(profile(), window_id, &error_);
+  } else {
+    browser = dispatcher()->GetBrowser();
+  }
+
+  if (!browser) {
+    error_ = keys::kNoCurrentWindowError;
+    return false;
+  }
+
+  SkBitmap screen_capture;
+#if defined(OS_WIN)
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  if (!tab_contents) {
+    error_ = keys::kInternalVisibleTabCaptureError;
+    return false;
+  }
+  RenderViewHost* render_view_host = tab_contents->render_view_host();
+  BackingStore* backing_store = render_view_host->GetBackingStore(false);
+  if (!backing_store) {
+    error_ = keys::kInternalVisibleTabCaptureError;
+    return false;
+  }
+  skia::PlatformCanvas temp_canvas;
+  if (!temp_canvas.initialize(backing_store->size().width(),
+                              backing_store->size().height(), true)) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kInternalVisibleTabCaptureError, "");
+    return false;
+  }
+  HDC temp_dc = temp_canvas.beginPlatformPaint();
+  BitBlt(temp_dc,
+         0, 0, backing_store->size().width(), backing_store->size().height(),
+         backing_store->hdc(), 0, 0, SRCCOPY);
+  temp_canvas.endPlatformPaint();
+
+  screen_capture = temp_canvas.getTopPlatformDevice().accessBitmap(false);
+#else
+  // TODO(port)
+  error_ = keys::kNotImplementedError;
+  return false;
+#endif
+  scoped_refptr<RefCountedBytes> jpeg_data(new RefCountedBytes);
+  SkAutoLockPixels screen_capture_lock(screen_capture);
+  bool encoded = JPEGCodec::Encode(
+      reinterpret_cast<unsigned char*>(screen_capture.getAddr32(0, 0)),
+      JPEGCodec::FORMAT_BGRA, screen_capture.width(),
+      screen_capture.height(),
+      static_cast<int>(screen_capture.rowBytes()), 90,
+      &jpeg_data->data);
+  if (!encoded) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(
+        keys::kInternalVisibleTabCaptureError, "");
+    return false;
+  }
+
+  std::string base64_result;
+  std::string stream_as_string;
+  stream_as_string.resize(jpeg_data->data.size());
+  memcpy(&stream_as_string[0],
+      reinterpret_cast<const char*>(&jpeg_data->data[0]),
+      jpeg_data->data.size());
+
+  net::Base64Encode(stream_as_string, &base64_result);
+  base64_result.insert(0, "data:image/jpg;base64,");
+  result_.reset(new StringValue(base64_result));
   return true;
 }
 

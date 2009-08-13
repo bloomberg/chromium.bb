@@ -40,6 +40,9 @@ const char kWindowNotFoundError[] = "No window with id: *.";
 const char kTabNotFoundError[] = "No tab with id: *.";
 const char kNoSelectedTabError[] = "No selected tab";
 const char kInvalidUrlError[] = "Invalid url: \"*\".";
+const char kInternalVisibleTabCaptureError[] = 
+    "Internal error while trying to capture visible region of the current tab";
+const char kNotImplementedError[] = "This call is not yet implemented";
 
 const char kGetWindowFunction[] = "windows.get";
 const char kGetCurrentWindowFunction[] = "windows.getCurrent";
@@ -57,5 +60,6 @@ const char kUpdateTabFunction[] = "tabs.update";
 const char kMoveTabFunction[] = "tabs.move";
 const char kRemoveTabFunction[] = "tabs.remove";
 const char kDetectTabLanguageFunction[] = "tabs.detectLanguage";
+const char kCaptureVisibleTabFunction[] = "tabs.captureVisibleTab";
 
 }  // namespace extension_tabs_module_constants

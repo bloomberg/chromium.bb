@@ -46,6 +46,8 @@ extern const char kWindowNotFoundError[];
 extern const char kTabNotFoundError[];
 extern const char kNoSelectedTabError[];
 extern const char kInvalidUrlError[];
+extern const char kInternalVisibleTabCaptureError[];
+extern const char kNotImplementedError[];
 
 // Function names, Windows API.
 extern const char kGetWindowFunction[];
@@ -65,6 +67,7 @@ extern const char kUpdateTabFunction[];
 extern const char kMoveTabFunction[];
 extern const char kRemoveTabFunction[];
 extern const char kDetectTabLanguageFunction[];
+extern const char kCaptureVisibleTabFunction[];
 
 };  // namespace extension_tabs_module_constants
 

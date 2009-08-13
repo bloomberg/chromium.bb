@@ -422,6 +422,18 @@ TEST_F(ExtensionAPIClientTest, RemoveTab) {
                "tabs.remove", "2");
 }
 
+TEST_F(ExtensionAPIClientTest, CaptureVisibleTab) {
+  ExpectJsFail("chrome.tabs.captureVisibleTab(0);",
+               "Uncaught Error: Parameter 1 is required.");
+
+  ExpectJsFail("chrome.tabs.captureVisibleTab(function(){}, 0)",
+               "Uncaught Error: Invalid value for argument 0. "
+               "Expected 'integer' but got 'function'.");
+
+  ExpectJsPass("chrome.tabs.captureVisibleTab(null, function(img){});",
+               "tabs.captureVisibleTab", "null");
+}
+
 // Bookmark API tests
 // TODO(erikkay) add more variations here
 
