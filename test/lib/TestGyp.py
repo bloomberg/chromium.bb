@@ -38,6 +38,15 @@ class TestGypBase(TestCommon.TestCommon):
 
   build_tool = None
 
+  _exe = TestCommon.exe_suffix
+  _obj = TestCommon.obj_suffix
+  shobj_ = TestCommon.shobj_prefix
+  _shobj = TestCommon.shobj_suffix
+  lib_ = TestCommon.lib_prefix
+  _lib = TestCommon.lib_suffix
+  dll_ = TestCommon.dll_prefix
+  _dll = TestCommon.dll_suffix
+
   def __init__(self, gyp=None, *args, **kw):
     self.origin_cwd = os.path.abspath(os.path.dirname(sys.argv[0]))
 
@@ -173,25 +182,25 @@ class TestGypMake(TestGypBase):
   """
   format = 'make'
   build_tool = 'make'
-  def build_all(self, gyp_file):
+  def build_all(self, gyp_file, **kw):
     """
     Builds the Make 'all' target to build all targets for the Makefiles
     generated from the specified gyp_file.
     """
-    self.run_build(gyp_file, 'all')
-  def build_default(self, gyp_file):
+    self.run_build(gyp_file, 'all', **kw)
+  def build_default(self, gyp_file, **kw):
     """
     Runs Make with no additional command-line arguments to get the
     default build for the Makefiles generated from the specified gyp_file.
     """
-    self.run_build(gyp_file)
-  def build_target(self, gyp_file, target):
+    self.run_build(gyp_file, **kw)
+  def build_target(self, gyp_file, target, **kw):
     """
     Runs a Make build with the specified target on the command line
     to build just that target using the Makefile generated from the
     specified gyp_file.
     """
-    self.run_build(gyp_file, target)
+    self.run_build(gyp_file, target, **kw)
   def run_build(self, gyp_file, *args, **kw):
     """
     Runs a Make build using the Makefiles generated from the specified
@@ -199,7 +208,7 @@ class TestGypMake(TestGypBase):
     """
     if self.configuration:
       args += ('BUILDTYPE=' + self.configuration,)
-    return self.run(program=self.build_tool, arguments=args)
+    return self.run(program=self.build_tool, arguments=args, **kw)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by Make.
@@ -216,7 +225,7 @@ class TestGypMSVS(TestGypBase):
   """
   format = 'msvs'
   build_tool = 'devenv'
-  def build_all(self, gyp_file):
+  def build_all(self, gyp_file, **kw):
     """
     Runs devenv.exe with no target-specific options to get the "all"
     build for the Visual Studio configuration generated from the
@@ -225,20 +234,20 @@ class TestGypMSVS(TestGypBase):
     (NOTE:  This is the same as the default, our generated Visual Studio
     configuration doesn't create an explicit "all" target.)
     """
-    return self.run_build(gyp_file)
-  def build_default(self, gyp_file):
+    return self.run_build(gyp_file, **kw)
+  def build_default(self, gyp_file, **kw):
     """
     Runs devenv.exe with no target-specific options to get the default
     build for the Visual Studio configuration generated from the
     specified gyp_file.
     """
-    return self.run_build(gyp_file)
-  def build_target(self, gyp_file, target):
+    return self.run_build(gyp_file, **kw)
+  def build_target(self, gyp_file, target, **kw):
     """
     Uses the devenv.exe /Project option to build the specified target with
     the Visual Studio configuration generated from the specified gyp_file.
     """
-    return self.run_build(gyp_file, '/Project', target)
+    return self.run_build(gyp_file, '/Project', target, **kw)
   def initialize_build_tool(self):
     """
     Initializes the Visual Studio .build_tool parameter, searching %PATH%
@@ -265,13 +274,14 @@ class TestGypMSVS(TestGypBase):
     args = (gyp_file.replace('.gyp', '.sln'), '/Build', configuration) + args
     if self.configuration:
       args += ('/ProjectConfig', self.configuration,)
-    return self.run(program=self.build_tool, arguments=args)
+    return self.run(program=self.build_tool, arguments=args, **kw)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by Visual Studio.
     """
     configuration = self.configuration or 'Default'
-    program = self.workpath(configuration, '%s.exe' % name)
+    # Enclosing the name in a list avoids prepending the original dir.
+    program = [os.path.join(configuration, '%s.exe' % name)]
     return self.run(program=program, *args, **kw)
 
 
@@ -281,26 +291,26 @@ class TestGypSCons(TestGypBase):
   """
   format = 'scons'
   build_tool = 'scons'
-  def build_all(self, gyp_file):
+  def build_all(self, gyp_file, **kw):
     """
     Builds the scons 'all' target to build all targets for the
     SCons configuration generated from the specified gyp_file.
     """
-    self.run_build(gyp_file, 'all')
-  def build_default(self, gyp_file):
+    self.run_build(gyp_file, 'all', **kw)
+  def build_default(self, gyp_file, **kw):
     """
     Runs scons with no additional command-line arguments to get the
     default build for the SCons configuration generated from the
     specified gyp_file.
     """
-    self.run_build(gyp_file)
-  def build_target(self, gyp_file, target):
+    self.run_build(gyp_file, **kw)
+  def build_target(self, gyp_file, target, **kw):
     """
     Runs a scons build with the specified target on the command line to
     build just that target using the SCons configuration generated from
     the specified gyp_file.
     """
-    self.run_build(gyp_file, target)
+    self.run_build(gyp_file, target, **kw)
   def run_build(self, gyp_file, *args, **kw):
     """
     Runs a scons build using the SCons configuration generated from the
@@ -308,7 +318,7 @@ class TestGypSCons(TestGypBase):
     """
     if self.configuration:
       args += ('--mode=' + self.configuration,)
-    return self.run(program=self.build_tool, arguments=args)
+    return self.run(program=self.build_tool, arguments=args, **kw)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by scons.
@@ -325,24 +335,24 @@ class TestGypXcode(TestGypBase):
   """
   format = 'xcode'
   build_tool = 'xcodebuild'
-  def build_all(self, gyp_file):
+  def build_all(self, gyp_file, **kw):
     """
     Uses the xcodebuild -alltargets option to build all targets for the
     .xcodeproj generated from the specified gyp_file.
     """
-    return self.run_build(gyp_file, '-alltargets')
-  def build_default(self, gyp_file):
+    return self.run_build(gyp_file, '-alltargets', **kw)
+  def build_default(self, gyp_file, **kw):
     """
     Runs xcodebuild with no target-specific options to get the default
     build for the .xcodeproj generated from the specified gyp_file.
     """
-    return self.run_build(gyp_file)
-  def build_target(self, gyp_file, target):
+    return self.run_build(gyp_file, **kw)
+  def build_target(self, gyp_file, target, **kw):
     """
     Uses the xcodebuild -target option to build the specified target
     with the .xcodeproj generated from the specified gyp_file.
     """
-    return self.run_build(gyp_file, '-target', target)
+    return self.run_build(gyp_file, '-target', target, **kw)
   def run_build(self, gyp_file, *args, **kw):
     """
     Runs an xcodebuild using the .xcodeproj generated from the specified
@@ -352,14 +362,15 @@ class TestGypXcode(TestGypBase):
     if self.configuration:
       args += ('-configuration', self.configuration)
     args += ('SYMROOT=$SRCROOT/build',) + args
-    return self.run(program=self.build_tool, arguments=args)
+    return self.run(program=self.build_tool, arguments=args, **kw)
   def run_built_executable(self, name, *args, **kw):
     """
     Runs an executable built by xcodebuild.
     """
     configuration = self.configuration or 'Default'
     os.environ['DYLD_LIBRARY_PATH'] = self.workpath('build', configuration)
-    program = self.workpath('build', configuration, name)
+    # Enclosing the name in a list avoids prepending the original dir.
+    program = [os.path.join('build', configuration, name)]
     return self.run(program=program, *args, **kw)
 
 
