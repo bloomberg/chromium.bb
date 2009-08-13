@@ -30,6 +30,7 @@
  */
 
 #include <stdint.h>
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 
 uint32_t NaClGetSp(void) {
   uint32_t sp;
@@ -39,3 +40,7 @@ uint32_t NaClGetSp(void) {
   return sp;
 }
 
+tick_t get_ticks() {
+  /* TODO: NYI */
+  return 0;
+ }
