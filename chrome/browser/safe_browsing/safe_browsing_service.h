@@ -169,7 +169,7 @@ class SafeBrowsingService
   // PowerObserver notifications
   // We defer SafeBrowsing work for a short duration when the computer comes
   // out of a suspend state to avoid thrashing the disk.
-  void OnPowerStateChange(base::SystemMonitor*) {};
+  void OnPowerStateChange(base::SystemMonitor*) {}
   void OnSuspend(base::SystemMonitor*);
   void OnResume(base::SystemMonitor*);
 

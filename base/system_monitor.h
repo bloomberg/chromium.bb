@@ -16,7 +16,6 @@
 #endif  // !OS_WIN
 
 #include "base/observer_list_threadsafe.h"
-#include "base/singleton.h"
 #if defined(ENABLE_BATTERY_MONITORING)
 #include "base/timer.h"
 #endif  // defined(ENABLE_BATTERY_MONITORING)
@@ -28,12 +27,8 @@ namespace base {
 // TODO(mbelshe):  Add support beyond just power management.
 class SystemMonitor {
  public:
-  // Access to the Singleton
-  static SystemMonitor* Get() {
-    // Uses the LeakySingletonTrait because cleanup is optional.
-    return
-        Singleton<SystemMonitor, LeakySingletonTraits<SystemMonitor> >::get();
-  }
+  // Retrieves the Singleton.
+  static SystemMonitor* Get();
 
   // Start the System Monitor within a process.  This method
   // is provided so that the battery check can be deferred.
@@ -67,7 +62,7 @@ class SystemMonitor {
   // lengthy operations are needed, the observer should take care to invoke
   // the operation on an appropriate thread.
   class PowerObserver {
-  public:
+   public:
     // Notification of a change in power status of the computer, such
     // as from switching between battery and A/C power.
     virtual void OnPowerStateChange(SystemMonitor*) = 0;
