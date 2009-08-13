@@ -13,6 +13,7 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -32,13 +33,14 @@
 
 namespace {
 // The following strings are the possible outcomes of the toast experiment
-// as recorded in the  |client| field.
-const wchar_t kToastExpBaseGroup[] =         L"TS00";
-const wchar_t kToastExpQualifyGroup[] =      L"TS01";
-const wchar_t kToastExpCancelGroup[] =       L"TS02";
-const wchar_t kToastExpUninstallGroup[] =    L"TS04";
-const wchar_t kToastExpTriesOkGroup[] =      L"TS18";
-const wchar_t kToastExpTriesErrorGroup[] =   L"TS28";
+// as recorded in the  |client| field. Previously the groups used "TSxx" but
+// the data captured is not valid.
+const wchar_t kToastExpQualifyGroup[] =      L"TT01";
+const wchar_t kToastExpCancelGroup[] =       L"TT02";
+const wchar_t kToastExpUninstallGroup[] =    L"TT04";
+const wchar_t kToastExpTriesOkGroup[] =      L"TT18";
+const wchar_t kToastExpTriesErrorGroup[] =   L"TT28";
+const wchar_t kToastExpBaseGroup[] =         L"TT80";
 
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
@@ -411,20 +413,21 @@ void GoogleChromeDistribution::LaunchUserExperiment(
   if ((installer_util::NEW_VERSION_UPDATED != status) || system_install)
     return;
 
-  // If user has not opted-in for usage stats we don't do the experiments.
+  // If user has not opted-in for usage stats  we don't do the experiments.
   if (!GoogleUpdateSettings::GetCollectStatsConsent())
     return;
 
   std::wstring brand;
   if (GoogleUpdateSettings::GetBrand(&brand) && (brand == L"CHXX")) {
     // The user automatically qualifies for the experiment.
+    LOG(INFO) << "Experiment qualification bypass";
   } else {
     // Time to verify the conditions for the experiment.
     std::wstring client_info;
     if (GoogleUpdateSettings::GetClient(&client_info)) {
       // The user might be participating on another experiment. The only
       // users eligible for this experiment are that have no client info
-      // or the client info is "TS00".
+      // or the client info is "TT80".
       if (client_info != kToastExpBaseGroup)
         return;
     }
@@ -432,6 +435,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     std::wstring lang;
     if (!GoogleUpdateSettings::GetLanguage(&lang) || (lang != L"en-GB"))
       return;
+    LOG(INFO) << "User in experiment locale";
     // Check browser usage inactivity by the age of the last-write time of the
     // chrome user data directory. Ninety days is our trigger.
     std::wstring user_data_dir = installer::GetChromeUserDataPath();
@@ -441,7 +445,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
       return;
     // At this point the user qualifies for the experiment, however we need to
     // tag a control group, which is at random 50% of the population.
-    if (::GetTickCount() & 0x1) {
+    if (base::RandDouble() > 0.5) {
       // We tag the user, but it wont participate in the experiment.
       GoogleUpdateSettings::SetClient(kToastExpQualifyGroup);
       LOG(INFO) << "User is toast experiment control group";
