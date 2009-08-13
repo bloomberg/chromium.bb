@@ -14,7 +14,7 @@ SRC_DIR=`pwd`
 while `test ! -d "${SRC_DIR}/site_scons" -o \
        -e "${SRC_DIR}/site_scons/site_tools/component_setup.py"`; do
   PARENT_DIR="$(dirname ${SRC_DIR})"
-  if `test "${SRC_DIR}" == "${PARENT_DIR}"`; then
+  if `test "${SRC_DIR}" = "${PARENT_DIR}"`; then
     echo "ERROR: hammer must be run in a directory with site_scons under" >&2
     echo "       the root of the project tree." >&2
     exit 1
