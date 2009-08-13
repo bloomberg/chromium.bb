@@ -154,9 +154,10 @@ WebCore::ImageDecoder* ImageDecoderTest::SetupDecoder(
     // Make sure the image decoder doesn't fail when we ask for the frame buffer
     // for this partial image.
     decoder->setData(shared_contents.get(), false);
-    EXPECT_NE(static_cast<WebCore::RGBA32Buffer*>(NULL),
-              decoder->frameBufferAtIndex(0)) << path;
     EXPECT_FALSE(decoder->failed()) << path;
+    // NOTE: We can't check that frame 0 is non-NULL, because if this is an ICO
+    // and we haven't yet supplied enough data to read the directory, there is
+    // no framecount and thus no first frame.
 
     // Make sure passing the complete image results in successful decoding.
     shared_contents->append(

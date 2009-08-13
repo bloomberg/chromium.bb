@@ -50,7 +50,7 @@ TEST_F(ICOImageDecoderTest, Decoding) {
 }
 
 #ifndef CALCULATE_MD5_SUMS
-TEST_F(ICOImageDecoderTest, DISABLED_ChunkedDecoding) {
+TEST_F(ICOImageDecoderTest, ChunkedDecoding) {
   TestChunkedDecoding();
 }
 #endif
