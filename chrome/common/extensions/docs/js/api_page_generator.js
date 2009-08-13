@@ -23,14 +23,23 @@ function staticResource(name) { return "static/" + name + ".html"; }
 // Base name of this page. (i.e. "tabs", "overview", etc...).
 var pageBase;
 
-// The name of this page that will be shown on the page in various places.
+// Data to feed as context into the template.
+var pageData = {};
+
+// The full extension api schema
+var schema;
+
+// The current module for this page (if this page is an api module);
+var module;
+
+// Mapping from typeId to module.
+var typeModule = {};
+
+// Auto-created page name as default
 var pageName;
 
-// Data to feed as context into the template.
-var pageData = null;
-
-// Schema Types (Referenced via $ref).
-var types = {};
+// If this page is an apiModule, the title of the api module
+var apiModuleTitle;
 
 Array.prototype.each = function(f) {
   for (var i = 0; i < this.length; i++) {
@@ -60,7 +69,7 @@ function renderPage() {
     alert("Empty page name for: " + document.location.href);
     return;
   }
-
+  
   pageName = pageBase.replace(/([A-Z])/g, " $1");
   pageName = pageName.substring(0, 1).toUpperCase() + pageName.substring(1);
 
@@ -88,7 +97,11 @@ function fetchStatic() {
 function fetchSchema() {
   // Now the page is composed with the authored content, we fetch the schema
   // and populate the templates.
-  fetchContent(SCHEMA, renderTemplate, function(error) {
+  fetchContent(SCHEMA, function(schemaContent) {
+    schema = JSON.parse(schemaContent);
+    renderTemplate();
+    
+  }, function(error) {
     alert("Failed to load " + SCHEMA);
   });
 }
@@ -134,34 +147,21 @@ function fetchContent(url, onSuccess, onError) {
   }
 }
 
-/**
- * Parses the content in |schemaContent| to json, find appropriate api, adds any
- * additional required values, renders to html via JSTemplate, and unhides the
- * <body>.
- * This uses the root <html> element (the entire document) as the template.
- */
-function renderTemplate(schemaContent) {
-  pageData = {};
-  var schema = JSON.parse(schemaContent);
-
-  // Find all defined types
-  schema.each(function(module) {
-    if (module.types) {
-      module.types.each(function(t) {
-        types[t.id] = t;
+function renderTemplate() {
+  schema.each(function(mod) {
+    if (mod.namespace == pageBase) {
+      // This page is an api page. Setup types and apiDefinition.
+      module = mod;
+      apiModuleTitle = "chrome." + module.namespace + " API Reference";  
+      pageData.apiDefinition = module;
+    }
+    
+    if (mod.types) {
+      mod.types.each(function(type) {
+        typeModule[type.id] = mod;
       });
     }
   });
-
-  schema.each(function(module) {
-    if (module.namespace == pageBase) {
-      // This page is an api page. Setup types and apiDefinition.
-      pageData.apiDefinition = module;
-      preprocessApi(pageData, schema);
-    }
-  });
-
-  setupPageData(pageData, schema);
 
   // Render to template
   var input = new JsEvalContext(pageData);
@@ -170,9 +170,9 @@ function renderTemplate(schemaContent) {
 
   selectCurrentPageOnLeftNav();
   
-  // Show.
-  var elm = document.getElementById("hider");
-  elm.parentNode.removeChild(elm);
+  // Show
+  if (window.postRender)
+    window.postRender();
 
   if (parent && parent.done)
     parent.done();
@@ -202,23 +202,10 @@ function selectCurrentPageOnLeftNav() {
   }
 }
 
-function setupPageData(pageData, schema) {
-  // Add a list of modules for the master TOC.
-  pageData.apiModules = [];
-  schema.each(function(s) {
-    var m = {};
-    m.module = s.namespace;
-    m.name = s.namespace.substring(0, 1).toUpperCase() +
-             s.namespace.substring(1);
-    pageData.apiModules.push(m);
-  });
-  pageData.apiModules.sort(function(a, b) { return a.name > b.name; });
-  
-  // Set the page title (in order of preference).
-  pageData.pageTitle = getDataFromPageHTML("pageData-title") || 
-                       pageData.pageTitle || 
-                       pageName;
-}
+/*
+ * Template Callout Functions
+ * The jstProcess() will call out to these functions from within the page template
+ */
 
 function getDataFromPageHTML(id) {
   var node = document.getElementById(id);
@@ -227,127 +214,74 @@ function getDataFromPageHTML(id) {
   return node.innerHTML;
 }
 
-/**
- * Augment the |module| with additional values that are required by the
- * template. |schema| is the full schema (including all modules).
- */
-function preprocessApi(pageData, schema) {
-  var module = pageData.apiDefinition;
-  pageData.pageTitle = "chrome." + module.namespace + " API Reference";
-  pageData.h1Header = "chrome." + module.namespace
-  module.functions.each(function(f) {
-    f.fullName = "chrome." + module.namespace + "." + f.name;
-    linkTypeReferences(f.parameters);
-    assignTypeNames(f.parameters);
-
-    // Look for a callback that defines parameters.
-    if (f.parameters.length > 0) {
-      var lastParam = f.parameters[f.parameters.length - 1];
-      if (lastParam.type == "function" && lastParam.parameters) {
-        linkTypeReferences(lastParam.parameters);
-        assignTypeNames(lastParam.parameters);        
-        f.callbackParameters = lastParam.parameters;
-        f.callbackSignature = generateSignatureString(lastParam.parameters);
-        f.callbackParameters.each(function(p) {
-          addPropertyListIfObject(p);
-        });
-      }
-    }
-
-    // Setup any type: "object" pameters to have an array of params (rather than 
-    // named properties).
-    f.parameters.each(function(param) {
-      addPropertyListIfObject(param);
-    });
-
-    // Setup return typeName & _propertyList, if any.
-    if (f.returns) {
-      linkTypeReference(f.returns);
-      f.returns.typeName = typeName(f.returns);
-      addPropertyListIfObject(f.returns);
-    }
-  });
-
-  module.events.each(function(e) {
-    linkTypeReferences(e.parameters);
-    assignTypeNames(e.parameters);    
-    e.callSignature = generateSignatureString(e.parameters);
-    e.parameters.each(function(p) {
-      addPropertyListIfObject(p);
-    });
-  });
+function isArray(type) {
+  return type.type == 'array';
 }
 
-/*
- * For function, callback and event parameters, we want to document the
- * properties of any "object" type. This takes an param, and if it is an
- * "object" type, creates a "_parameterList" property in the form as
- * |parameters| list used by the template.
- */
-function addPropertyListIfObject(object) {
-  if (object.type != "object" || !object.properties)
-    return;
+function getTypeRef(type) {
+  return type["$ref"];
+}
 
+function getTypeRefPage(type) {
+  return typeModule[type.$ref].namespace + ".html";
+}
+
+function getPageTitle() {
+  return getDataFromPageHTML("pageData-title") || 
+         apiModuleTitle || 
+         pageName;
+}
+
+function getFullyQualifiedFunctionName(func) {
+  return "chrome." + module.namespace + "." + func.name;
+}
+
+function hasCallback(parameters) {
+  return (parameters.length > 0 &&
+          parameters[parameters.length - 1].type == "function");
+}
+
+function getCallbackParameters(parameters) {
+  return parameters[parameters.length - 1];
+}
+
+function shouldExpandObject(object) {
+  return (object.type == "object" && object.properties)
+}
+
+function getPropertyListFromObject(object) {
   var propertyList = [];
   for (var p in object.properties) {
     var prop = object.properties[p];
     prop.name = p;
     propertyList.push(prop);
   }
-  assignTypeNames(propertyList);
-  object._propertyList = propertyList;
+  return propertyList;
 }
 
-function linkTypeReferences(parameters) {
-  parameters.each(function(p) {
-    linkTypeReference(p, types);
-  });
-}
-
-function linkTypeReference(schema) {
+function getTypeName(schema) {
   if (schema.$ref)
-    extend(schema, types[schema.$ref]);
-}
-
-/**
- * Assigns a typeName(param) to each of the |parameters|.
- */
-function assignTypeNames(parameters) {
-  parameters.each(function(p) {
-    p.typeName = typeName(p);
-  });
-}
-
-/**
- * Generates a short text summary of the |schema| type
- */
-function typeName(schema) {
-  if (schema.$ref)
-    schema = types[schema.$ref];
+    return schema.$ref;
 
   if (schema.choices) {
     var typeNames = [];
     schema.choices.each(function(c) {
-      typeNames.push(typeName(c));
+      typeNames.push(getTypeName(c));
     });
 
     return typeNames.join(" or ");
   }
 
   if (schema.type == "array")
-    return "array of " + typeName(schema.items);
+    return "array of " + getTypeName(schema.items);
 
   return schema.type;
 }
 
-/** 
- * Generates a simple string representation of the signature of a function
- * whose |parameters| are json schemas.
- */
-function generateSignatureString(parameters) {
+function getSignatureString(parameters) {
   var retval = [];
   parameters.each(function(param, i) {
-    retval.push(param.typeName + " " + param.name);
+    retval.push(getTypeName(param) + " " + param.name);
   });
 
   return retval.join(", ");	

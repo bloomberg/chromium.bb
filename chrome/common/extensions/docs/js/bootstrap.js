@@ -10,5 +10,12 @@ window.onload = function() {
   if (window.location.search == "?regenerate" ||
       navigator.userAgent.indexOf("Chrome") > -1) {
     window.renderPage();
+  } else {
+    postRender();
   }
+}
+
+function postRender() {
+  var elm = document.getElementById("hider");
+  elm.parentNode.removeChild(elm);
 }

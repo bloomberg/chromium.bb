@@ -5,6 +5,7 @@
       {
         "id": "Port",
         "type": "object",
+        "description": "An object which allows two way communication with other pages.",
         "properties": {
           "name": {"type": "string"},
           "onDisconnect": {"type": "object"},
@@ -153,7 +154,7 @@
         "parameters": [
           {
             "type": "object",
-            "name": "CreateData",
+            "name": "createData",
             "properties": {
               "url": {"type": "string", "optional": true},
               "left": {"type": "integer", "optional": true},
@@ -183,7 +184,7 @@
           {"type": "integer", "name": "windowId", "minimum": 0},
           {
             "type": "object",
-            "name": "UpdateInfo",
+            "name": "updateInfo",
             "properties": {
               "left": {"type": "integer", "optional": true},
               "top": {"type": "integer", "optional": true},
@@ -282,7 +283,6 @@
           {"type": "string", "name": "name", "optional": true}
         ],
         "returns": {
-          "name": "Port",
           "$ref": "Port"
         }
       },
@@ -323,7 +323,7 @@
         "parameters": [
           {
             "type": "object",
-            "name": "CreateProperties",
+            "name": "createProperties",
             "properties": {
               "windowId": {"type": "integer", "minimum": 0, "optional": true},
               "index": {"type": "integer", "minimum": 0, "optional": true},
@@ -349,7 +349,7 @@
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
             "type": "object",
-            "name": "UpdateProperties",
+            "name": "updateProperties",
             "properties": {
               "url": {"type": "string", "optional": true},
               "selected": {"type": "boolean", "optional": true}
@@ -366,7 +366,7 @@
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
             "type": "object",
-            "name": "MoveProperties",
+            "name": "moveProperties",
             "properties": {
               "windowId": {"type": "integer", "minimum": 0, "optional": true},
               "index": {"type": "integer", "minimum": 0}
@@ -429,7 +429,7 @@
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
             "type": "object",
-            "name": "ChangedProps",
+            "name": "changedProps",
             "properties": {
               "tabId": {"type": "integer", "name": "tabId", "minimum": 0},
               "status": {"type": "string"},
@@ -744,7 +744,7 @@
           {"type": "string", "name": "id"},
           {
             "type": "object",
-            "name": "RemoveInfo",
+            "name": "removeInfo",
             "properties": {
               "parentId": { "type": "integer" },
               "index": { "type": "integer" }
@@ -760,7 +760,7 @@
           {"type": "string", "name": "id"},
           {
             "type": "object",
-            "name": "ChangeInfo"
+            "name": "changeInfo"
           }
         ]
       },
@@ -772,7 +772,7 @@
           {"type": "string", "name": "id"},
           {
             "type": "object",
-            "name": "MoveInfo",
+            "name": "moveInfo",
             "properties": {
               "parentId": { "type": "integer" },
               "index": { "type": "integer" },
