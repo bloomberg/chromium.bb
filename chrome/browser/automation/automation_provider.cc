@@ -33,6 +33,7 @@
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/browser/login_prompt.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -63,7 +64,6 @@
 #if defined(OS_WIN) || defined(OS_LINUX)
 // TODO(port): Port these to the mac.
 #include "chrome/browser/automation/ui_controls.h"
-#include "chrome/browser/login_prompt.h"
 #endif
 
 #if defined(OS_WIN)

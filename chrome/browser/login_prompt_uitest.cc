@@ -17,6 +17,8 @@ namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
 
+}  // namespace
+
 class LoginPromptTest : public UITest {
  protected:
   LoginPromptTest()
@@ -57,8 +59,6 @@ wstring ExpectedTitleFromAuth(wstring username, wstring password) {
   // The TestServer sets the title to username/password on successful login.
   return username + L"/" + password;
 }
-
-}  // namespace
 
 // Test that "Basic" HTTP authentication works.
 TEST_F(LoginPromptTest, TestBasicAuth) {

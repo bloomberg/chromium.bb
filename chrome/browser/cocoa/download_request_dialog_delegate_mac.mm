@@ -30,9 +30,9 @@
   }
   return self;
 }
-- (void) alertDidEnd:(NSAlert *)alert
-          returnCode:(int)returnCode
-         contextInfo:(void *)contextInfo {
+- (void)alertDidEnd:(NSAlert *)alert
+         returnCode:(int)returnCode
+        contextInfo:(void *)contextInfo {
   target_->SheetDidEnd(returnCode);
 }
 @end
@@ -82,11 +82,11 @@ void DownloadRequestDialogDelegateMac::CloseWindow() {
 void DownloadRequestDialogDelegateMac::DeleteDelegate() {
   if (is_sheet_open()) {
     // Close sheet if it's still open.
-    [NSApp endSheet:[(NSAlert*)sheet() window]];  // class SheetDidEnd().
+    [NSApp endSheet:[(NSAlert*)sheet() window]];  // calls SheetDidEnd().
     DCHECK(responded_);
   }
   if (!responded_) {
-    // Happens if the sheet was never visible
+    // Happens if the sheet was never visible.
     responded_ = true;
     DoCancel();
   }

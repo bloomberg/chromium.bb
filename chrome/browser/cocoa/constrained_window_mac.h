@@ -71,13 +71,27 @@ class ConstrainedWindowMacDelegateSystemSheet
 class ConstrainedWindowMacDelegateCustomSheet
     : public ConstrainedWindowMacDelegate {
  public:
-  ConstrainedWindowMacDelegateCustomSheet(
-      NSWindow* customSheet, id delegate, SEL didEndSelector)
+  ConstrainedWindowMacDelegateCustomSheet()
+    : customSheet_(nil),
+      delegate_(nil),
+      didEndSelector_(NULL) { }
+
+  ConstrainedWindowMacDelegateCustomSheet(id delegate, SEL didEndSelector)
     : customSheet_(nil),
       delegate_([delegate retain]),
       didEndSelector_(didEndSelector) { }
 
  protected:
+  // For when you need to delay initalization after the constructor call.
+  void init(NSWindow* sheet, id delegate, SEL didEndSelector) {
+    DCHECK(!delegate_.get());
+    DCHECK(!didEndSelector_);
+    customSheet_.reset([sheet retain]);
+    delegate_.reset([delegate retain]);
+    didEndSelector_ = didEndSelector;
+    DCHECK(delegate_.get());
+    DCHECK(didEndSelector_);
+  }
   void set_sheet(NSWindow* sheet) { customSheet_.reset([sheet retain]); }
   NSWindow* sheet() { return customSheet_; }
 

@@ -29,7 +29,8 @@ void ConstrainedWindowMacDelegateCustomSheet::RunSheet(
     GTMWindowSheetController* sheetController,
     NSView* view) {
   [sheetController beginSheet:customSheet_.get()
-                 modalForView:view modalDelegate:delegate_.get()
+                 modalForView:view
+                modalDelegate:delegate_.get()
                didEndSelector:didEndSelector_
                   contextInfo:NULL];
 }

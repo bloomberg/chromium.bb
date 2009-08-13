@@ -23,6 +23,7 @@
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
+#include "chrome/browser/login_prompt.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
@@ -61,9 +62,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-#include "chrome/browser/login_prompt.h"
-#endif
 
 // Uncomment to enable logging of request traffic.
 // #define LOG_RESOURCE_DISPATCHER_REQUESTS
