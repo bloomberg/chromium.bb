@@ -12,7 +12,6 @@
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
-#include "views/controls/message_box_view.h"
 
 @interface SheetCallback : NSObject {
   DownloadRequestDialogDelegateMac* target_;  // weak
