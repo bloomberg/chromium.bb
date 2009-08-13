@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 
+#include "app/gfx/font.h"
+#include "app/resource_bundle.h"
 #include "base/clipboard.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -363,7 +365,9 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   NSString* ss = base::SysWideToNSString(display_text);
   NSMutableAttributedString* as =
       [[[NSMutableAttributedString alloc] initWithString:ss] autorelease];
-  [as addAttribute:NSFontAttributeName value:[field_ font]
+  NSFont* font = ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::BaseFont).nativeFont();
+  [as addAttribute:NSFontAttributeName value:font
              range:NSMakeRange(0, [as length])];
 
   url_parse::Parsed parts;
