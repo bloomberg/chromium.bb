@@ -144,6 +144,7 @@ void TabContentsViewMac::SizeContents(const gfx::Size& size) {
 
 void TabContentsViewMac::Focus() {
   [[cocoa_view_.get() window] makeFirstResponder:GetContentNativeView()];
+  [[cocoa_view_.get() window] makeKeyAndOrderFront:GetContentNativeView()];
 }
 
 void TabContentsViewMac::SetInitialFocus() {

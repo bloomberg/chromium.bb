@@ -716,9 +716,9 @@ const int kDisabledIndex = 1;
         GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
         GURL(), NEW_WINDOW, PageTransition::LINK);
   } else {
-    browser->AddTabWithURL(
+    browser->OpenURL(
         GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)),
-        GURL(), PageTransition::LINK, true, -1, false, NULL);
+        GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   }
 }
 
