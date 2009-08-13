@@ -2870,3 +2870,5 @@ BUG_LEVIN MAC : LayoutTests/editing/selection/caret-rtl.html = CRASH
 BUG_LEVIN : LayoutTests/fast/canvas/canvas-zoom.html = FAIL
 BUG_LEVIN : LayoutTests/fast/dom/Geolocation/enabled.html = FAIL
 BUG_LEVIN : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT
+BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
+BUG_LEVIN WIN : LayoutTests/media/controls-drag-timebar.html = FAIL
