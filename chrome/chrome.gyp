@@ -589,6 +589,7 @@
         'chrome_strings',
         'theme_resources',
         '../app/app.gyp:app_resources',
+        '../app/app.gyp:app_strings',
         '../media/media.gyp:media',
         '../net/net.gyp:net_resources',
         '../printing/printing.gyp:printing',
