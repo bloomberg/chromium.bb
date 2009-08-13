@@ -57,6 +57,7 @@
 #define STRICT
 #include <windows.h>
 #undef STRICT
+#include <mbstring.h>
 #endif
 
 static void
@@ -2059,7 +2060,13 @@ FcEndElement(void *userData, const XML_Char *name)
 			FcConfigMessage (parse, FcSevereError, "GetModuleFileName failed");
 			break;
 		}
-		p = strrchr (data, '\\');
+		/*
+		 * Must use the multi-byte aware function to search
+		 * for backslash because East Asian double-byte code
+		 * pages have characters with backslash as the second
+		 * byte.
+		 */
+		p = _mbsrchr (data, '\\');
 		if (p) *p = '\0';
 		strcat (data, "\\fonts");
 	}
@@ -2072,7 +2079,7 @@ FcEndElement(void *userData, const XML_Char *name)
 			FcConfigMessage (parse, FcSevereError, "GetModuleFileName failed");
 			break;
 		}
-		p = strrchr (data, '\\');
+		p = _mbsrchr (data, '\\');
 		if (p) *p = '\0';
 		strcat (data, "\\..\\share\\fonts");
 	}
