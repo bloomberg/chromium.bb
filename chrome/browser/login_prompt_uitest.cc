@@ -55,7 +55,8 @@ class LoginPromptTest : public UITest {
   wstring password_bad_;
 };
 
-wstring ExpectedTitleFromAuth(wstring username, wstring password) {
+wstring ExpectedTitleFromAuth(const wstring& username,
+                              const wstring& password) {
   // The TestServer sets the title to username/password on successful login.
   return username + L"/" + password;
 }
