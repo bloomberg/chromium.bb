@@ -2031,7 +2031,10 @@ FcEndElement(void *userData, const XML_Char *name)
 {
     FcConfigParse   *parse = userData;
     FcChar8	    *data;
-    
+#ifdef _WIN32
+    FcChar8         buffer[1000];
+#endif
+
     if (!parse->pstack)
 	return;
     switch (parse->pstack->element) {
@@ -2050,18 +2053,10 @@ FcEndElement(void *userData, const XML_Char *name)
 	if (strcmp (data, "CUSTOMFONTDIR") == 0)
 	{
 		char *p;
-		FcStrFree (data);
-		data = malloc (1000);
-		if (!data)
-		{
-			FcConfigMessage (parse, FcSevereError, "out of memory");
-			break;
-		}
-		FcMemAlloc (FC_MEM_STRING, 1000);
-		if(!GetModuleFileName(NULL, data, 1000))
+		data = buffer;
+		if (!GetModuleFileName (NULL, buffer, sizeof (buffer) - 20))
 		{
 			FcConfigMessage (parse, FcSevereError, "GetModuleFileName failed");
-			FcStrFree (data);
 			break;
 		}
 		p = strrchr (data, '\\');
@@ -2071,18 +2066,10 @@ FcEndElement(void *userData, const XML_Char *name)
 	else if (strcmp (data, "APPSHAREFONTDIR") == 0)
 	{
 		char *p;
-		FcStrFree (data);
-		data = malloc (1000);
-		if (!data)
-		{
-			FcConfigMessage (parse, FcSevereError, "out of memory");
-			break;
-		}
-		FcMemAlloc (FC_MEM_STRING, 1000);
-		if(!GetModuleFileName(NULL, data, 1000))
+		data = buffer;
+		if (!GetModuleFileName (NULL, buffer, sizeof (buffer) - 20))
 		{
 			FcConfigMessage (parse, FcSevereError, "GetModuleFileName failed");
-			FcStrFree (data);
 			break;
 		}
 		p = strrchr (data, '\\');
@@ -2092,19 +2079,11 @@ FcEndElement(void *userData, const XML_Char *name)
 	else if (strcmp (data, "WINDOWSFONTDIR") == 0)
 	{
 	    int rc;
-	    FcStrFree (data);
-	    data = malloc (1000);
-	    if (!data)
-	    {
-		FcConfigMessage (parse, FcSevereError, "out of memory");
-		break;
-	    }
-	    FcMemAlloc (FC_MEM_STRING, 1000);
-	    rc = GetSystemWindowsDirectory (data, 800);
-	    if (rc == 0 || rc > 800)
+	    data = buffer;
+	    rc = GetSystemWindowsDirectory (buffer, sizeof (buffer) - 20);
+	    if (rc == 0 || rc > sizeof (buffer) - 20)
 	    {
 		FcConfigMessage (parse, FcSevereError, "GetSystemWindowsDirectory failed");
-		FcStrFree (data);
 		break;
 	    }
 	    if (data [strlen (data) - 1] != '\\')
