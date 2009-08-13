@@ -48,7 +48,7 @@ layer at (0,0) size 800x600
       RenderSVGText {text} at (765,112) size 90x14 contains 1 chunk(s)
         RenderSVGInlineText {#text} at (0,-11) size 90x14
           chunk 1 text run 1 at (765.00,112.00) startOffset 0 endOffset 18 width 90.00: "This is selnumber2"
-    RenderImage {image} at (0,0) size 410x307
+    RenderSVGImage {image} at (39.06,117.19) size 320.31x239.84
     RenderSVGContainer {g} at (471.11,237.56) size 312.39x213.74 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(550.00,20.00)}]
       RenderSVGText {text} at (220,212) size 419x74 contains 4 chunk(s)
         RenderSVGInlineText {#text} at (0,-11) size 197x14

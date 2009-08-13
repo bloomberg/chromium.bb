@@ -768,19 +768,21 @@ BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
 BUG8635 LINUX WIN : LayoutTests/svg/custom/pattern-y-offset.svg = FAIL
 BUG8635 LINUX WIN : LayoutTests/svg/batik/paints/patternRegions.svg = FAIL
 BUG8635 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-mask-01-b.svg = FAIL
-BUG8635 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = FAIL
 BUG8635 LINUX WIN : LayoutTests/svg/custom/pattern-cycle-detection.svg = FAIL
+
+// Shows garbage instead of an image
+BUG8635 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = FAIL
 
 BUG5641 LINUX WIN : LayoutTests/svg/batik/text/textEffect.svg = FAIL
 BUG5641 LINUX WIN : LayoutTests/svg/batik/text/textEffect3.svg = FAIL
 
 BUG8763 LINUX WIN : LayoutTests/svg/custom/use-on-g-containing-foreignObject-and-image.svg = FAIL
 
-BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = FAIL
-
 // smiley.png should be shown with xml:base and xml:base on parent.
 BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-07-t.svg = FAIL
 
+// Not showing images when they should be
+BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = FAIL
 BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = FAIL
 
 // Radial gradients with offset focal points are not implemented in Skia.
@@ -1816,7 +1818,7 @@ BUG10434 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
 // Regression from merge 41268:41286
 // We don't render linear gradient on text stroke.
 BUG10435 LINUX : LayoutTests/fast/canvas/canvas-text-alignment.html = FAIL
-BUG10435 LINUX : LayoutTests/svg/carto.net/scrollbar.svg = TIMEOUT FAIL
+BUG10435 LINUX : LayoutTests/svg/carto.net/scrollbar.svg = TIMEOUT PASS
 BUG10435 MAC : LayoutTests/editing/pasteboard/copy-standalone-image.html = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
@@ -1942,8 +1944,7 @@ BUG10463 WIN LINUX : LayoutTests/editing/selection/hit-test-anonymous.html = FAI
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL CRASH
 BUG10463 WIN : LayoutTests/svg/W3C-SVG-1.1/animate-elem-36-t.svg = FAIL
-SLOW BUG10463 WIN : LayoutTests/svg/carto.net/scrollbar.svg = FAIL
-BUG10463 WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH FAIL
+BUG10463 WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH PASS
 BUG10463 WIN : LayoutTests/svg/custom/focus-ring.svg = FAIL
 BUG10463 WIN : LayoutTests/svg/custom/image-parent-translation.xhtml = FAIL
 BUG10463 WIN LINUX : LayoutTests/svg/custom/js-update-image.svg = FAIL
