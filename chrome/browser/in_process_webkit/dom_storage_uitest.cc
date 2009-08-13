@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(jorlow): Reenable when https://bugs.webkit.org/show_bug.cgi?id=28094
-//               is fixed.  Until then, this will cause crashes even if the
-//               individual tests are disabled.
-#if 0
-
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_layout_test.h"
 
@@ -76,5 +71,3 @@ TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
   for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
     RunLayoutTest(kSubDirFiles[i], false);
 }
-
-#endif
