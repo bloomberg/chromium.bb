@@ -655,16 +655,8 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-#if NACL_ARM
-  /* TODO(petr): an ARM nacl module gets seg fault in a libc function if "%.*s"
-   * directive is used, probably it is beacuse the SEL is pushed up to
-   * address 1<<28 */
-  NaClLog(4, "In NaClSysWrite(%d, %*s, %"PRIdS")\n",
-          d, (int) count, (char *) sysaddr, count);
-#else
   NaClLog(4, "In NaClSysWrite(%d, %.*s, %"PRIdS")\n",
           d, (int) count, (char *) sysaddr, count);
-#endif
 
   ndp = NaClGetDesc(natp->nap, d);
   if (NULL == ndp) {

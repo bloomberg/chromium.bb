@@ -34,7 +34,8 @@
  */
 
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/sel_rt.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 
 
 uint16_t NaClGetCs(void) {
@@ -120,3 +121,20 @@ uint32_t NaClGetEbx(void) {
   _asm mov result, ebx;
   return result;
 }
+
+
+/*
+ * this function is OS-independent as well as all above; however, because of
+ * different assembly syntax it must be split into linux and win versions
+ */
+tick_t get_ticks() {
+  tick_t  t = 0;
+  uint32_t  t_high, t_low;
+
+  __asm rdtsc;
+  __asm mov t_high, edx;
+  __asm mov t_low, eax;
+  t = (((tick_t) t_high) << 32) | t_low;
+  return t;
+}
+

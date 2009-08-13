@@ -305,8 +305,6 @@ if sdl_mode != 'none':
       sdl_dll += env.Replicate('.', '$SDL_DIR/lib64/libSDL-1.2.so.0')
       # add AddPluginPrerequisite if you build a 64-bit plugin
 if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
-  # TODO(petr): sel_ldr must be placed in upper part of its address space
-  # so there is a place for nacl module in the bottom
   SEL_LDR_NODE = env.ComponentProgram('sel_ldr', 'sel_main.c')
   # we need this to build the plugin, so register it here
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])

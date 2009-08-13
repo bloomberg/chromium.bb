@@ -56,8 +56,6 @@ uint32_t NaClGetTlsThreadIdx(struct NaClThreadContext *user);
 
 void NaClSetTlsThreadIdx(struct NaClThreadContext *user, uint32_t tls_idx);
 
-void NaClLoadTlsHook(struct NaClApp *nap);
-
 extern char NaClReadTP_start;
 extern char NaClReadTP_end;
 

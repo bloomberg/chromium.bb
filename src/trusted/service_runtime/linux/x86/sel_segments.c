@@ -36,7 +36,7 @@
 #include <stdint.h>
 
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_rt.h"
-
+#include "native_client/src/trusted/service_runtime/sel_util.h"
 
 uint16_t NaClGetCs(void) {
   uint16_t seg1;
@@ -122,3 +122,14 @@ uint32_t NaClGetEbx(void) {
   asm("movl %%ebx, %0" : "=r" (ebx) : );
   return ebx;
 }
+
+/*
+ * this function is OS-independent as well as all above; however, because of
+ * different assembly syntax it must be split into linux and win versions
+ */
+tick_t get_ticks() {
+  tick_t  t = 0;
+  asm volatile("rdtsc" : "=A" (t));
+  return t;
+}
+

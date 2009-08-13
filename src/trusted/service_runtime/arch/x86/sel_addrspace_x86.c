@@ -29,9 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
-#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
+#include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
 int NaClAllocateSpace(void **mem, size_t size) {
@@ -40,6 +41,39 @@ int NaClAllocateSpace(void **mem, size_t size) {
     NaClLog(2, "NaClAlloccaterSpace: NaCl_page_alloc failed\n");
     return LOAD_NO_MEMORY;
   }
+  return LOAD_OK;
+}
+
+
+NaClErrorCode NaClMprotectNullRegion(struct NaClApp *nap,
+                                     uintptr_t start_addr) {
+  int err;
+
+  NaClLog(3,
+          ("NULL detection region start 0x%08"PRIxPTR
+           ", size 0x%08x, end 0x%08"PRIxPTR"\n"),
+          start_addr, NACL_SYSCALL_START_ADDR,
+          start_addr + NACL_SYSCALL_START_ADDR);
+  if ((err = NaCl_mprotect((void *) start_addr,
+                           NACL_SYSCALL_START_ADDR,
+                           PROT_NONE)) != 0) {
+    NaClLog(LOG_ERROR, ("NaClMemoryProtection:"
+                        " NaCl_mprotect(0x%08"PRIxPTR", 0x%08x, 0x%x) failed,"
+                        " error %d (NULL pointer guard page)\n"),
+            start_addr, NACL_SYSCALL_START_ADDR, PROT_NONE,
+            err);
+    return LOAD_MPROTECT_FAIL;
+  }
+  if (!NaClVmmapAdd(&nap->mem_map,
+                    (start_addr - nap->mem_start) >> NACL_PAGESHIFT,
+                    NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
+                    PROT_NONE,
+                    (struct NaClMemObj *) NULL)) {
+    NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
+                        " (NULL pointer guard page)\n"));
+    return LOAD_MPROTECT_FAIL;
+  }
+
   return LOAD_OK;
 }
 

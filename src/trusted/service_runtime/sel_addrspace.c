@@ -112,6 +112,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   int       err;
 
   start_addr = nap->mem_start;
+
   /*
    * The first NACL_SYSCALL_START_ADDR bytes are mapped as PROT_NONE.
    * This enables NULL pointer checking, and provides additional protection
@@ -120,42 +121,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    * need to round it to be so.
    */
 
-  /*
-   * In ARM implementation kernel does not allow us to mmap address space at
-   * address 0x0, so we mmap it at the start of a trampoline region.
-   * The following code mprotects the region starting from the beginning of nacl
-   * module address space up to the start of a trampoline region. As in ARM, we
-   * do not mmap this region we do not need to mprotect it.
-   */
-/* TODO(petr): provide helper function to factor this piece out
- * generalize function so it can be called for each region
- */
-#if !NACL_ARM
-  NaClLog(3,
-          ("NULL detection region start 0x%08"PRIxPTR
-           ", size 0x%08x, end 0x%08"PRIxPTR"\n"),
-          start_addr, NACL_SYSCALL_START_ADDR,
-          start_addr + NACL_SYSCALL_START_ADDR);
-  if ((err = NaCl_mprotect((void *) start_addr,
-                           NACL_SYSCALL_START_ADDR,
-                           PROT_NONE)) != 0) {
-    NaClLog(LOG_ERROR, ("NaClMemoryProtection:"
-                        " NaCl_mprotect(0x%08"PRIxPTR", 0x%08x, 0x%x) failed,"
-                        " error %d (NULL pointer guard page)\n"),
-            start_addr, NACL_SYSCALL_START_ADDR, PROT_NONE,
-            err);
-    return LOAD_MPROTECT_FAIL;
-  }
-  if (!NaClVmmapAdd(&nap->mem_map,
-                    (start_addr - nap->mem_start) >> NACL_PAGESHIFT,
-                    NACL_SYSCALL_START_ADDR >> NACL_PAGESHIFT,
-                    PROT_NONE,
-                    (struct NaClMemObj *) NULL)) {
-    NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
-                        " (NULL pointer guard page)\n"));
-    return LOAD_MPROTECT_FAIL;
-  }
-#endif
+  err = NaClMprotectNullRegion(nap, start_addr);
+  if (err != LOAD_OK) return err;
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
   /*

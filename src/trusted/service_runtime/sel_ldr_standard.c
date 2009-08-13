@@ -71,15 +71,6 @@ struct NaClPhdrChecks nacl_phdr_check_data[] = {
   { PT_LOAD, PF_R, PCA_NONE, 0, 0, },
   /* data/bss */
   { PT_LOAD, PF_R|PF_W, PCA_NONE, 0, 0, },
-#if NACL_ARM
-  /* TODO(petr): real arm modules may have different headers,
-   * this table may change */
-  { PT_ARM_EXIDX, PF_R, PCA_NONE, 0, 0, },
-
-  { PT_NOTE, PF_R, PCA_IGNORE, 0, 0, },
-
-  { PT_TLS, PF_R, PCA_NONE, 0, 0, },
-#endif
   /*
    * allow optional GNU stack permission marker, but require that the
    * stack is non-executable.
@@ -429,7 +420,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio                 *gp,
 
   NaClLoadTrampoline(nap);
 
-#if NACL_ARM
   /*
    * This is necessary for ARM arch as we keep TLS pointer in register r9 or in
    * nacl_tls_idx varible. TLS hook is a piece of code patched into a trampoline
@@ -437,10 +427,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio                 *gp,
    * very simple piece of code, so we do not go to service runtime to perform
    * it.
    */
-  NaClLog(2, "Installing tls hook\n");
-
   NaClLoadTlsHook(nap);
-#endif
 
   NaClLog(2, "Installing springboard\n");
 

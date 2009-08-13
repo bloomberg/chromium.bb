@@ -55,3 +55,14 @@ int NaClAllocateSpace(void **mem, size_t size) {
   return LOAD_OK;
 }
 
+NaClErrorCode NaClMprotectNullRegion(struct NaClApp *nap,
+                                     uintptr_t start_addr) {
+  /*
+   * In ARM implementation kernel does not allow us to mmap address space at
+   * address 0x0, so we mmap it at the start of a trampoline region.
+   * Therefore, there is not need to mprotect this region
+   */
+  UNREFERENCED_PARAMETER(start_addr);
+  return LOAD_OK;
+}
+

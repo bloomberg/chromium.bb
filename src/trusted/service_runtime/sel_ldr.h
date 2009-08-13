@@ -403,9 +403,11 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      sys_tdb,
                                    size_t         tdb_size) NACL_WUR;
 
-void  NaClLoadTrampoline(struct NaClApp *nap);
+void NaClLoadTrampoline(struct NaClApp *nap);
 
-void  NaClLoadSpringboard(struct NaClApp  *nap);
+void NaClLoadTlsHook(struct NaClApp *nap);
+
+void NaClLoadSpringboard(struct NaClApp  *nap);
 
 static const uintptr_t kNaClBadAddress = (uintptr_t) -1;
 
@@ -633,3 +635,4 @@ void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 EXTERN_C_END
 
 #endif
+

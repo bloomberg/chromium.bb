@@ -97,6 +97,9 @@ static INLINE size_t NaClTruncPageNumDownToMapMultiple(size_t npages) {
   return npages & ~(NACL_PAGES_PER_MAP - 1);
 }
 
+typedef uint64_t tick_t;
+tick_t get_ticks();
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_SEL_UTIL_H_ */

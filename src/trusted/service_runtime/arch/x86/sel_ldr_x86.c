@@ -115,7 +115,7 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   nap->text_region_bytes += page_pad;
 }
 
-void  NaClLoadSpringboard(struct NaClApp  *nap) {
+void NaClLoadSpringboard(struct NaClApp  *nap) {
   /*
    * patch in springboard.S code into space in place of
    * the last syscall in the trampoline region.
@@ -139,3 +139,13 @@ void  NaClLoadSpringboard(struct NaClApp  *nap) {
 
   nap->springboard_addr += NACL_HALT_LEN; /* skip the hlt */
 }
+
+
+void NaClLoadTlsHook(struct NaClApp  *nap) {
+  /*
+   * x86 does not require TLS hook to be loaded in trampoline region, that is
+   * why it must be empty.
+   */
+  UNREFERENCED_PARAMETER(nap);
+}
+

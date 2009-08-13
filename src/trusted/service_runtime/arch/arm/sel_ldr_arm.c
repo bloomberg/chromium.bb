@@ -116,6 +116,8 @@ void NaClLoadTlsHook(struct NaClApp *nap) {
   struct NaClPatch      abs32;
   uintptr_t tls_hook_addr;
 
+  NaClLog(2, "Installing tls hook\n");
+
   patch_info.rel32 = 0;
   patch_info.num_rel32 = 0;
   patch_info.abs32 = &abs32;
