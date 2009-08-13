@@ -228,7 +228,6 @@ void userglue_method_send(void *plugin_data,
   PluginObject *plugin_object = static_cast<PluginObject *>(plugin_data);
   StreamManager *stream_manager = plugin_object->stream_manager();
   StreamManager::FinishedCallback *callback = NULL;
-  bool result = false;
 
   if (request->done()) {
     request->set_success(false);

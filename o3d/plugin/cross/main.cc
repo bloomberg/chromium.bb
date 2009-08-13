@@ -49,10 +49,10 @@ namespace o3d {
 NPError NP_GetValue(void *instance, NPPVariable variable, void *value) {
   switch (variable) {
     case NPPVpluginNameString:
-      *static_cast<char **>(value) = O3D_PLUGIN_NAME;
+      *static_cast<char **>(value) = const_cast<char*>(O3D_PLUGIN_NAME);
       break;
     case NPPVpluginDescriptionString:
-      *static_cast<char **>(value) = O3D_PLUGIN_DESCRIPTION;
+      *static_cast<char **>(value) = const_cast<char*>(O3D_PLUGIN_DESCRIPTION);
       break;
     default:
       return NPERR_INVALID_PARAM;
@@ -170,7 +170,7 @@ NPError EXPORT_SYMBOL OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
 }
 
 char * EXPORT_SYMBOL NP_GetMIMEDescription(void) {
-  return O3D_PLUGIN_MIME_TYPE "::O3D MIME";
+  return const_cast<char*>(O3D_PLUGIN_MIME_TYPE "::O3D MIME");
 }
 
 }  // namespace o3d / extern "C"

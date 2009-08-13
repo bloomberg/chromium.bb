@@ -484,7 +484,8 @@ class NPV8Object : public NPObject {
     // Due to a bug in Chrome, need to filter out any properties that
     // are functions. See comment in HasProperty.
     int num_non_function_properties = 0;
-    for (int i = 0; i != v8_names->Length(); ++i) {
+    int length = v8_names->Length();
+    for (int i = 0; i < length; ++i) {
       Local<Value> v8_property_value =
           v8_object->Get(v8_names->Get(Int32::New(i)));
       if (!v8_property_value->IsFunction()) {

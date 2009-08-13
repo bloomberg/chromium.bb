@@ -68,11 +68,12 @@
             'SK_BUILD_FOR_MAC',
           ],
           'xcode_settings': {
+            'WARNING_CFLAGS': ['-Wno-deprecated-declarations'],
             'CFLAGS': ['-gstabs+',
                        '-fno-eliminate-unused-debug-symbols',
                        '-mmacosx-version-min=10.4'],
             'WARNING_CXXFLAGS': ['-Wstrict-aliasing',
-                                 '-Wno-deprecated'],
+                                 '-Wno-deprecated',],
           },
         },
       },

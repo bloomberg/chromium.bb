@@ -19,6 +19,12 @@
         {
           'destination': '<(PRODUCT_DIR)',
           'conditions' : [
+            [ 'OS=="mac"',
+              {
+                'files': [
+                ],
+              },
+            ],
             [ 'OS=="win"',
               {
                 'files': [

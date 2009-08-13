@@ -75,6 +75,9 @@
         ],
         ['OS == "mac"',
           {
+            'dependencies': [
+              '../../breakpad/breakpad.gyp:breakpad',
+            ],
             'sources': [
               'mac/config_mac.mm',
               'mac/main_mac.mm',
@@ -82,13 +85,24 @@
               'mac/plugin_logging-mac.mm',
               'mac/plugin_mac.h',
               'mac/plugin_mac.mm',
+              'mac/graphics_utils_mac.mm',
+            ],
+            'mac_framework_dirs': [
+              '../../breakpad/src/client/mac/build/Release',
             ],
             'defines': [
               'XP_MACOSX=1',
             ],
             'link_settings': {
               'libraries': [
+                '$(SDKROOT)/System/Library/Frameworks/AGL.framework',
                 '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+                '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
+                '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+                '$(SDKROOT)/System/Library/Frameworks/QuickTime.framework',
+                '../../breakpad/src/client/mac/build/Release/Breakpad.framework',
+                '../../third_party/cg/files/mac/Cg.framework',
+                '../../third_party/glew/files/lib/libGLEW.a',
               ],
             },
           },

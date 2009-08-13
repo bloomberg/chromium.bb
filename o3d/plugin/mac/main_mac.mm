@@ -530,7 +530,7 @@ NPError InitializePlugin() {
 // Cannot actually fail -
 void Mac_SetBestEventModel(NPP instance, PluginObject* obj) {
   NPError err = NPERR_NO_ERROR;
-  NPEventModel event_model = NPEventModelCarbon;
+  NPEventModel model_to_use = NPEventModelCarbon;
   NPBool supportsCocoaEventModel = FALSE;
   NPBool supportsCarbonEventModel = FALSE;
 
@@ -566,7 +566,7 @@ void Mac_SetBestEventModel(NPP instance, PluginObject* obj) {
   // Cocoa event model spec does not supply sufficient window
   // information in its Cocoa NPP_SetWindow calls for us to bind an
   // AGL context to the browser window.
-  NPEventModel model_to_use =
+  model_to_use =
       (supportsCarbonEventModel) ? NPEventModelCarbon : NPEventModelCocoa;
   NPN_SetValue(instance, NPPVpluginEventModel,
                reinterpret_cast<void*>(model_to_use));

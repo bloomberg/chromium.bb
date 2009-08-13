@@ -174,7 +174,8 @@ bool UseSoftwareRenderer() {
                      NULL);
 
     use_software_renderer = false;
-    for (int i = 0; i < arraysize(softwareRenderList); ++i) {
+    int list_count = arraysize(softwareRenderList);
+    for (int i = 0; i < list_count; ++i) {
       GPUInfo &softwareRenderInfo = softwareRenderList[i];
       if (vendorID == softwareRenderInfo.vendorID
         && deviceID == softwareRenderInfo.deviceID) {
