@@ -227,10 +227,11 @@ void WebDevToolsAgentImpl::EvaluateJavaScript(
 }
 
 void WebDevToolsAgentImpl::ClearConsoleMessages() {
-  Page* page = web_view_impl_->page();
-  if (page) {
-    page->inspectorController()->clearConsoleMessages();
-  }
+// TODO(pfeldman): restore once migrated to DOMAgent.
+//  Page* page = web_view_impl_->page();
+//  if (page) {
+//    page->inspectorController()->clearConsoleMessages();
+//  }
 }
 
 void WebDevToolsAgentImpl::GetResourceContent(
