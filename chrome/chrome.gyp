@@ -3625,7 +3625,6 @@
           'sources!': [
             # TODO(port)
             'browser/login_prompt_uitest.cc',
-            'test/reliability/page_load_test.cc',
             'test/ui/layout_plugin_uitest.cc',
           ],
         }, { # else: OS != "linux"

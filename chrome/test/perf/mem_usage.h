@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_PERF_MEM_USAGE_H__
-#define CHROME_TEST_PERF_MEM_USAGE_H__
+#ifndef CHROME_TEST_PERF_MEM_USAGE_H_
+#define CHROME_TEST_PERF_MEM_USAGE_H_
 
 // Get memory information for the process with given process ID.
 //
@@ -40,4 +40,5 @@ size_t GetSystemCommitCharge();
 
 // Get and print memory usage information for running chrome processes.
 void PrintChromeMemoryUsageInfo();
-#endif  // CHROME_TEST_PERF_MEM_USAGE_H__
+
+#endif  // CHROME_TEST_PERF_MEM_USAGE_H_

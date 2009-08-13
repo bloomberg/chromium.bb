@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug_util.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -114,13 +115,7 @@ void InitChromeLogging(const CommandLine& command_line,
     log_mode = logging::LOG_NONE;
   }
 
-#if defined(OS_POSIX)
-  std::string log_file_name = WideToUTF8(GetLogFileName());
-#elif defined(OS_WIN)
-  std::wstring log_file_name = GetLogFileName();
-#endif
-
-  logging::InitLogging(log_file_name.c_str(),
+  logging::InitLogging(GetLogFileName().value().c_str(),
                        log_mode,
                        logging::LOCK_LOG_FILE,
                        delete_old_log_file);
@@ -165,16 +160,16 @@ void CleanupChromeLogging() {
   chrome_logging_initialized_ = false;
 }
 
-std::wstring GetLogFileName() {
+FilePath GetLogFileName() {
   std::wstring filename = base::SysInfo::GetEnvVar(env_vars::kLogFileName);
-  if (filename != L"")
-    return filename;
+  if (!filename.empty())
+    return FilePath::FromWStringHack(filename);
 
-  const std::wstring log_filename(L"chrome_debug.log");
-  std::wstring log_path;
+  const FilePath log_filename(FILE_PATH_LITERAL("chrome_debug.log"));
+  FilePath log_path;
 
   if (PathService::Get(chrome::DIR_LOGS, &log_path)) {
-    file_util::AppendToPath(&log_path, log_filename);
+    log_path = log_path.Append(log_filename);
     return log_path;
   } else {
     // error with path service, just use some default file somewhere
@@ -194,11 +189,7 @@ size_t GetFatalAssertions(AssertionList* assertions) {
   size_t assertion_count = 0;
 
   std::ifstream log_file;
-#if defined(OS_WIN)
-  log_file.open(GetLogFileName().c_str());
-#elif defined(OS_POSIX)
-  log_file.open(WideToUTF8(GetLogFileName()).c_str());
-#endif
+  log_file.open(GetLogFileName().value().c_str());
   if (!log_file.is_open())
     return 0;
 

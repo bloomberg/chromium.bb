@@ -45,8 +45,9 @@ namespace {
 TEST_F(ChromeLoggingTest, LogFileName) {
   SaveEnvironmentVariable(std::wstring());
 
-  std::wstring filename = logging::GetLogFileName();
-  ASSERT_NE(std::wstring::npos, filename.find(L"chrome_debug.log"));
+  FilePath filename = logging::GetLogFileName();
+  ASSERT_NE(FilePath::StringType::npos,
+            filename.value().find(FILE_PATH_LITERAL("chrome_debug.log")));
 
   RestoreEnvironmentVariable();
 }
@@ -55,8 +56,9 @@ TEST_F(ChromeLoggingTest, LogFileName) {
 TEST_F(ChromeLoggingTest, EnvironmentLogFileName) {
   SaveEnvironmentVariable(std::wstring(L"test value"));
 
-  std::wstring filename = logging::GetLogFileName();
-  ASSERT_EQ(std::wstring(L"test value"), filename);
+  FilePath filename = logging::GetLogFileName();
+  ASSERT_EQ(FilePath(FILE_PATH_LITERAL("test value")).value(),
+            filename.value());
 
   RestoreEnvironmentVariable();
 }

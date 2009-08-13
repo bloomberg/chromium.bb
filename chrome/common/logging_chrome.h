@@ -11,6 +11,7 @@
 #include "base/logging.h"
 
 class CommandLine;
+class FilePath;
 
 namespace logging {
 
@@ -34,7 +35,7 @@ void InitChromeLogging(const CommandLine& command_line,
 void CleanupChromeLogging();
 
 // Returns the fully-qualified name of the log file.
-std::wstring GetLogFileName();
+FilePath GetLogFileName();
 
 // Returns true when error/assertion dialogs are to be shown,
 // false otherwise.
