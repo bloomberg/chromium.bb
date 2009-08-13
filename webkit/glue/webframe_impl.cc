@@ -1045,6 +1045,16 @@ int WebFrameImpl::printBegin(const WebSize& page_size) {
   return print_context_->pageCount();
 }
 
+float WebFrameImpl::getPrintPageShrink(int page) {
+  // Ensure correct state.
+  if (!print_context_.get() || page < 0) {
+    NOTREACHED();
+    return 0;
+  }
+
+  return print_context_->getPageShrink(page);
+}
+
 float WebFrameImpl::printPage(int page, WebCanvas* canvas) {
   // Ensure correct state.
   if (!print_context_.get() || page < 0 || !frame() || !frame()->document()) {

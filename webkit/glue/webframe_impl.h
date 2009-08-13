@@ -147,6 +147,7 @@ class WebFrameImpl : public WebKit::WebFrame,
   virtual WebKit::WebString selectionAsMarkup() const;
   virtual int printBegin(const WebKit::WebSize& page_size);
   virtual float printPage(int page_to_print, WebKit::WebCanvas* canvas);
+  virtual float getPrintPageShrink(int page);
   virtual void printEnd();
   virtual bool find(
       int identifier, const WebKit::WebString& search_text,
