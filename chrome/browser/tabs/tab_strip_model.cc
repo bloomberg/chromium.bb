@@ -16,6 +16,7 @@
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
@@ -387,6 +388,19 @@ void TabStripModel::AddTabContents(TabContents* contents,
   InsertTabContentsAt(index, contents, foreground, inherit_group);
   if (inherit_group && transition == PageTransition::TYPED)
     contents_data_.at(index)->reset_group_on_select = true;
+
+  // Ensure that the new TabContentsView begins at the same size as the
+  // previous TabContentsView if it existed.  Otherwise, the initial WebKit
+  // layout will be performed based on a width of 0 pixels, causing a
+  // very long, narrow, inaccurate layout.  Because some scripts on pages (as
+  // well as WebKit's anchor link location calculation) are run on the
+  // initial layout and not recalculated later, we need to ensure the first
+  // layout is performed with sane view dimensions even when we're opening a
+  // new background tab.
+  if (TabContents* old_contents = GetSelectedTabContents()) {
+    if (!foreground)
+      contents->view()->SizeContents(old_contents->view()->GetContainerSize());
+  }
 }
 
 void TabStripModel::CloseSelectedTab() {
