@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+"""
+Verifies building a target and a subsidiary dependent target from a
+.gyp file in a subdirectory, without specifying an explicit output build
+directory, and using the generated solution or project file at the top
+of the tree as the entry point.
+
+There is a difference here in the default behavior of the underlying
+build tools.  Specifically, when building the entire "solution", Xcode
+puts the output of each project relative to the .xcodeproj directory,
+while Visual Studio (and our implementations of SCons and Make) put it
+in a build directory relative to the "solution"--that is, the entry-point
+from which you built the entire tree.
+"""
+
+import TestGyp
+
+test = TestGyp.TestGyp()
+
+test.run_gyp('prog1.gyp')
+
+test.build_default('prog1.gyp')
+
+test.run_built_executable('prog1', stdout="Hello from prog1.c\n")
+
+import sys
+if sys.platform in ('darwin',):
+  chdir = 'subdir'
+else:
+  chdir = None
+test.run_built_executable('prog2',
+                          chdir=chdir,
+                          stdout="Hello from prog2.c\n")
+
+test.pass_test()

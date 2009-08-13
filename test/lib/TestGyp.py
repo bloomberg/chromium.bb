@@ -325,7 +325,8 @@ class TestGypSCons(TestGypBase):
     """
     configuration = self.configuration or 'Default'
     os.environ['LD_LIBRARY_PATH'] = self.workpath(configuration, 'lib')
-    program = self.workpath(configuration, name)
+    # Enclosing the name in a list avoids prepending the original dir.
+    program = [os.path.join(configuration, name)]
     return self.run(program=program, *args, **kw)
 
 
