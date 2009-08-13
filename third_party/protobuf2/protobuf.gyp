@@ -73,6 +73,18 @@
         'src/src/google/protobuf/compiler/parser.cc',
       ],
 
+      'conditions': [
+        ['OS != "win"', {
+          # src/src/google/protobuf/generated_message_reflection.h can figure
+          # out whether RTTI is enabled or disabled via compiler-defined macros
+          # when building with MSVC.  For other compilers, this macro must be
+          # defined to suppress the use of dynamic_cast<>, which requires RTTI.
+          'defines': [
+            'GOOGLE_PROTOBUF_NO_RTTI',
+          ],
+        }],
+      ],
+
       'include_dirs': [
         '.',
         'src/src',
