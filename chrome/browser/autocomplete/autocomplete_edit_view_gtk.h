@@ -374,6 +374,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   NotificationRegistrar registrar_;
 #endif
 
+  // If a character is inserted, store it in this variable so that it can
+  // be used later in "key-press-event" signal handler to determine if a Tab or
+  // Enter key event is handled by IME or not.
+  char char_inserted_;
+
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };
 
