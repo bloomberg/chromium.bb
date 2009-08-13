@@ -2512,6 +2512,8 @@ void RenderView::SetTooltipText(WebView* webview,
 
 void RenderView::DidChangeSelection(bool is_empty_selection) {
 #if defined(OS_LINUX)
+  if (!handling_input_event_)
+      return;
   // TODO(estade): investigate incremental updates to the selection so that we
   // don't send the entire selection over IPC every time.
   if (!is_empty_selection) {

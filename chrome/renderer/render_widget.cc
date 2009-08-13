@@ -54,6 +54,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread, bool activatable)
       is_hidden_(false),
       needs_repainting_on_restore_(false),
       has_focus_(false),
+      handling_input_event_(false),
       closing_(false),
       ime_is_active_(false),
       ime_control_enable_ime_(true),
@@ -292,8 +293,11 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
 
   const char* data;
   int data_length;
-  if (!message.ReadData(&iter, &data, &data_length))
+  handling_input_event_ = true;
+  if (!message.ReadData(&iter, &data, &data_length)) {
+    handling_input_event_ = false;
     return;
+  }
 
   const WebInputEvent* input_event =
       reinterpret_cast<const WebInputEvent*>(data);
@@ -306,6 +310,7 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   response->WriteBool(processed);
 
   Send(response);
+  handling_input_event_ = false;
 }
 
 void RenderWidget::OnMouseCaptureLost() {

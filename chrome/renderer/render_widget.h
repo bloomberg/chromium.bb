@@ -260,6 +260,9 @@ class RenderWidget : public IPC::Channel::Listener,
   // Indicates whether we have been focused/unfocused by the browser.
   bool has_focus_;
 
+  // Are we currently handling an input event?
+  bool handling_input_event_;
+
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.
   bool closing_;
