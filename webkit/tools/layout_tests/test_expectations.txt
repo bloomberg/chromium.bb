@@ -2861,3 +2861,7 @@ BUG19028 MAC : LayoutTests/fast/dom/Window/window-open-parent-no-parent.html = P
 BUG19064 : LayoutTests/fast/harness/override-preferences.html = FAIL
 BUG19064 : LayoutTests/fast/harness/override-preferences-2.html = FAIL
 
+// Fallout from webkit 
+BUG19247 : LayoutTests/fast/events/set-event-in-another-frame.html = FAIL
+BUG19248 : LayoutTests/fast/js/const.html = FAIL
+
