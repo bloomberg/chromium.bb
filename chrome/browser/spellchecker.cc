@@ -375,11 +375,11 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
 #endif
       tried_to_download_dictionary_file_(false),
       file_loop_(NULL),
+      ui_loop_(MessageLoop::current()),
       url_request_context_(request_context),
       obtaining_dictionary_(false),
       auto_spell_correct_turned_on_(false),
-      is_using_platform_spelling_engine_(false),
-      ui_loop_(MessageLoop::current()),
+      is_using_platform_spelling_engine_(false),      
       fetcher_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           on_dictionary_save_complete_callback_factory_(this)) {
