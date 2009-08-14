@@ -700,13 +700,13 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       // English (Australia)
       "en-AU",
       // L"Google's " - to be added.
-      L"mission is to organize the world's information and make it "
+      L"mission is to organise the world's information and make it "
       L"universally accessible and useful."
     }, {
       // English (United Kingdom)
       "en-GB",
       // L"Google's " - to be added.
-      L"mission is to organize the world's information and make it "
+      L"mission is to organise the world's information and make it "
       L"universally accessible and useful."
     }, {
       // English (United States)
@@ -716,7 +716,9 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     }, {
       // Spanish
       "es-ES",
-      L"La misi\x00F3n de Google es organizar la informaci\x00F3n mundial "
+      L"La misi\x00F3n de "
+      // L"Google" - to be added.
+      L" es organizar la informaci\x00F3n mundial "
       L"para que resulte universalmente accesible y \x00FAtil."
     }, {
       // Estonian
@@ -801,14 +803,18 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     }, {
       // Portuguese (Brazil)
       "pt-BR",
-      L"A miss\x00E3o do Google \x00E9 organizar as informa\x00E7\x00F5"
+      L"A miss\x00E3o do "
+      // L"Google " - to be added.
+      L"\x00E9 organizar as informa\x00E7\x00F5"
       L"es do mundo todo e torn\x00E1-las acess\x00EDveis e "
       // L"\x00FAteis " - to be added.
       L"em car\x00E1ter universal."
     }, {
       // Portuguese (Portugal)
       "pt-PT",
-      L"O Google tem por miss\x00E3o organizar a informa\x00E7\x00E3o do "
+      L"O "
+      // L"Google " - to be added.
+      L"tem por miss\x00E3o organizar a informa\x00E7\x00E3o do "
       L"mundo e torn\x00E1-la universalmente acess\x00EDvel e \x00FAtil"
     }, {
       // Romanian
@@ -840,7 +846,7 @@ TEST_F(SpellCheckTest, SpellCheckText) {
       L"aby boli v\x0161eobecne dostupn\x00E9 a u\x017Eito\x010Dn\x00E9."
     }, {
       // Slovenian
-      "sl-SL",
+      "sl-SI",
       // L"Googlovo " - to be added.
       L"poslanstvo je organizirati svetovne informacije in "
       L"omogo\x010Diti njihovo dostopnost in s tem uporabnost za vse."
@@ -871,6 +877,7 @@ TEST_F(SpellCheckTest, SpellCheckText) {
   ASSERT_FALSE(hunspell_directory.empty());
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+    fprintf(stderr, "%s(): %s\n", __FUNCTION__, kTestCases[i].language);
     scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
         hunspell_directory, kTestCases[i].language, NULL, FilePath()));
 
@@ -885,7 +892,7 @@ TEST_F(SpellCheckTest, SpellCheckText) {
                                                 &misspelling_start,
                                                 &misspelling_length, NULL);
 
-    EXPECT_EQ(true, result);
+    EXPECT_EQ(true, result) << kTestCases[i].language;
     EXPECT_EQ(0, misspelling_start);
     EXPECT_EQ(0, misspelling_length);
   }
