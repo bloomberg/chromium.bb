@@ -67,13 +67,13 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
+#include "webkit/api/src/WebInputEventConversion.h"
 #include "webkit/api/src/WebSettingsImpl.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/context_menu_client_impl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dragclient_impl.h"
 #include "webkit/glue/editor_client_impl.h"
-#include "webkit/glue/event_conversion.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/image_resource_fetcher.h"
@@ -95,6 +95,9 @@ MSVC_POP_WARNING();
 
 using namespace WebCore;
 
+using WebKit::PlatformKeyboardEventBuilder;
+using WebKit::PlatformMouseEventBuilder;
+using WebKit::PlatformWheelEventBuilder;
 using WebKit::WebCanvas;
 using WebKit::WebCompositionCommand;
 using WebKit::WebCompositionCommandConfirm;
@@ -432,7 +435,7 @@ void WebViewImpl::MouseMove(const WebMouseEvent& event) {
   // our ChromeClientImpl to receive changes to the mouse position and
   // tooltip text, and mouseMoved handles all of that.
   main_frame()->frame()->eventHandler()->mouseMoved(
-      MakePlatformMouseEvent(main_frame()->frameview(), event));
+      PlatformMouseEventBuilder(main_frame()->frameview(), event));
 }
 
 void WebViewImpl::MouseLeave(const WebMouseEvent& event) {
@@ -444,7 +447,7 @@ void WebViewImpl::MouseLeave(const WebMouseEvent& event) {
   delegate_->UpdateTargetURL(this, GURL());
 
   main_frame()->frame()->eventHandler()->handleMouseMoveEvent(
-      MakePlatformMouseEvent(main_frame()->frameview(), event));
+      PlatformMouseEventBuilder(main_frame()->frameview(), event));
 }
 
 void WebViewImpl::MouseDown(const WebMouseEvent& event) {
@@ -474,7 +477,7 @@ void WebViewImpl::MouseDown(const WebMouseEvent& event) {
   }
 
   main_frame()->frame()->eventHandler()->handleMousePressEvent(
-      MakePlatformMouseEvent(main_frame()->frameview(), event));
+      PlatformMouseEventBuilder(main_frame()->frameview(), event));
 
   if (clicked_node.get() && clicked_node == GetFocusedNode()) {
     // Focus has not changed, show the autocomplete popup.
@@ -502,7 +505,7 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
 
   page_->contextMenuController()->clearContextMenu();
 
-  MakePlatformMouseEvent pme(main_frame()->frameview(), event);
+  PlatformMouseEventBuilder pme(main_frame()->frameview(), event);
 
   // Find the right target frame. See issue 1186900.
   HitTestResult result = HitTestResultForWindowPos(pme.pos());
@@ -556,7 +559,7 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
 
   mouseCaptureLost();
   main_frame()->frame()->eventHandler()->handleMouseReleaseEvent(
-      MakePlatformMouseEvent(main_frame()->frameview(), event));
+      PlatformMouseEventBuilder(main_frame()->frameview(), event));
 
 #if defined(OS_WIN)
   // Dispatch the contextmenu event regardless of if the click was swallowed.
@@ -567,7 +570,7 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
 }
 
 void WebViewImpl::MouseWheel(const WebMouseWheelEvent& event) {
-  MakePlatformWheelEvent platform_event(main_frame()->frameview(), event);
+  PlatformWheelEventBuilder platform_event(main_frame()->frameview(), event);
   main_frame()->frame()->eventHandler()->handleWheelEvent(platform_event);
 }
 
@@ -610,7 +613,7 @@ bool WebViewImpl::KeyEvent(const WebKeyboardEvent& event) {
   if (event.windowsKeyCode == base::VKEY_CAPITAL)
     handler->capsLockStateMayHaveChanged();
 
-  MakePlatformKeyboardEvent evt(event);
+  PlatformKeyboardEventBuilder evt(event);
 
   if (WebInputEvent::RawKeyDown == event.type) {
     if (handler->keyEvent(evt) && !evt.isSystemKey()) {
@@ -666,7 +669,8 @@ bool WebViewImpl::AutocompleteHandleKeyEvent(const WebKeyboardEvent& event) {
   if (!autocomplete_popup_->isInterestedInEventForKey(event.windowsKeyCode))
     return false;
 
-  if (autocomplete_popup_->handleKeyEvent(MakePlatformKeyboardEvent(event))) {
+  if (autocomplete_popup_->handleKeyEvent(
+          PlatformKeyboardEventBuilder(event))) {
       // We need to ignore the next Char event after this otherwise pressing
       // enter when selecting an item in the menu will go to the page.
       if (WebInputEvent::RawKeyDown == event.type)
@@ -699,8 +703,8 @@ bool WebViewImpl::CharEvent(const WebKeyboardEvent& event) {
   if (!handler)
     return KeyEventDefault(event);
 
-  MakePlatformKeyboardEvent evt(event);
-  if (!evt.IsCharacterKey())
+  PlatformKeyboardEventBuilder evt(event);
+  if (!evt.isCharacterKey())
     return true;
 
   // Safari 3.1 does not pass off windows system key messages (WM_SYSCHAR) to
@@ -787,7 +791,7 @@ bool WebViewImpl::SendContextMenuEvent(const WebKeyboardEvent& event) {
   mouse_event.y = coords.y();
   mouse_event.type = WebInputEvent::MouseUp;
 
-  MakePlatformMouseEvent platform_event(view, mouse_event);
+  PlatformMouseEventBuilder platform_event(view, mouse_event);
 
   context_menu_allowed_ = true;
   bool handled =
@@ -1340,7 +1344,7 @@ void WebViewImpl::SetInitialFocus(bool reverse) {
       keyboard_event.modifiers = WebInputEvent::ShiftKey;
     // VK_TAB which is only defined on Windows.
     keyboard_event.windowsKeyCode = 0x09;
-    MakePlatformKeyboardEvent platform_event(keyboard_event);
+    PlatformKeyboardEventBuilder platform_event(keyboard_event);
     RefPtr<KeyboardEvent> webkit_event =
         KeyboardEvent::create(platform_event, NULL);
     page()->focusController()->setInitialFocus(

@@ -58,8 +58,8 @@
 #include "webkit/api/public/WebURLLoader.h"
 #include "webkit/api/public/WebURLLoaderClient.h"
 #include "webkit/api/public/WebURLResponse.h"
+#include "webkit/api/src/WebInputEventConversion.h"
 #include "webkit/glue/chrome_client_impl.h"
-#include "webkit/glue/event_conversion.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/webkit_glue.h"
@@ -76,7 +76,9 @@ using WebKit::WebData;
 using WebKit::WebHTTPBody;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
+using WebKit::WebKeyboardEventBuilder;
 using WebKit::WebMouseEvent;
+using WebKit::WebMouseEventBuilder;
 using WebKit::WebString;
 using WebKit::WebURLError;
 using WebKit::WebURLLoader;
@@ -872,8 +874,8 @@ void WebPluginImpl::handleMouseEvent(WebCore::MouseEvent* event) {
   // in the call to HandleEvent. See http://b/issue?id=1362948
   WebCore::FrameView* parent_view = static_cast<WebCore::FrameView*>(parent());
 
-  WebMouseEvent web_event;
-  if (!ToWebMouseEvent(*parent_view, *event, &web_event))
+  WebMouseEventBuilder web_event(parent_view, *event);
+  if (web_event.type == WebInputEvent::Undefined)
     return;
 
   if (event->type() == WebCore::eventNames().mousedownEvent) {
@@ -907,8 +909,8 @@ void WebPluginImpl::handleMouseEvent(WebCore::MouseEvent* event) {
 }
 
 void WebPluginImpl::handleKeyboardEvent(WebCore::KeyboardEvent* event) {
-  WebKeyboardEvent web_event;
-  if (!ToWebKeyboardEvent(*event, &web_event))
+  WebKeyboardEventBuilder web_event(*event);
+  if (web_event.type == WebInputEvent::Undefined)
     return;
   // TODO(pkasting): http://b/1119691 See above.
   WebCursorInfo cursor_info;

@@ -41,7 +41,6 @@
 #if defined(OS_WIN)
 #include "webkit/api/public/win/WebInputEventFactory.h"
 #endif
-#include "webkit/glue/event_conversion.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webframe_impl.h"

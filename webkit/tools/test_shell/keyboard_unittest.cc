@@ -16,13 +16,14 @@ MSVC_POP_WARNING();
 
 #include "base/string_util.h"
 #include "webkit/glue/editor_client_impl.h"
-#include "webkit/glue/event_conversion.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/api/public/WebInputEvent.h"
+#include "webkit/api/src/WebInputEventConversion.h"
 
 using WebCore::PlatformKeyboardEvent;
 using WebCore::KeyboardEvent;
 
+using WebKit::PlatformKeyboardEventBuilder;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 
@@ -40,8 +41,8 @@ class KeyboardTest : public testing::Test {
       PlatformKeyboardEvent::Type key_type) {
     EditorClientImpl editor_impl(NULL);
 
-    MakePlatformKeyboardEvent evt(keyboard_event);
-    evt.SetKeyType(key_type);
+    PlatformKeyboardEventBuilder evt(keyboard_event);
+    evt.setKeyType(key_type);
     RefPtr<KeyboardEvent> keyboardEvent = KeyboardEvent::create(evt, NULL);
     return editor_impl.interpretKeyEvent(keyboardEvent.get());
   }
