@@ -295,8 +295,8 @@ bool TextureUpdateHelper::ConnectToO3D(const char* o3d_address,
   MessageHello msg;
   nacl::MessageHeader header;
   nacl::IOVec vec;
-  vec.base = &msg;
-  vec.length = sizeof(msg);
+  vec.base = &msg.msg;
+  vec.length = sizeof(msg.msg);
 
   nacl::SocketAddress socket_address;
   ::base::snprintf(socket_address.path,
@@ -312,8 +312,8 @@ bool TextureUpdateHelper::ConnectToO3D(const char* o3d_address,
                                     0,
                                     &socket_address);
 
-  EXPECT_EQ(sizeof(msg), static_cast<size_t>(result));
-  if (static_cast<size_t>(result) != sizeof(msg)) {
+  EXPECT_EQ(sizeof(msg.msg), static_cast<size_t>(result));
+  if (static_cast<size_t>(result) != sizeof(msg.msg)) {
     return false;
   }
 
@@ -346,8 +346,8 @@ bool TextureUpdateHelper::RequestSharedMemory(size_t requested_size,
   nacl::MessageHeader header;
   nacl::IOVec vec;
 
-  vec.base = &msg;
-  vec.length = sizeof(msg);
+  vec.base = &msg.msg;
+  vec.length = sizeof(msg.msg);
 
   header.iov = &vec;
   header.iov_length = 1;
@@ -421,8 +421,8 @@ bool TextureUpdateHelper::RequestTextureUpdate(unsigned int texture_id,
   nacl::MessageHeader header;
   nacl::IOVec vec;
 
-  vec.base = &msg;
-  vec.length = sizeof(msg);
+  vec.base = &msg.msg;
+  vec.length = sizeof(msg.msg);
 
   header.iov = &vec;
   header.iov_length = 1;
@@ -465,8 +465,8 @@ bool TextureUpdateHelper::RequestTextureRectUpdate(unsigned int texture_id,
   nacl::MessageHeader header;
   nacl::IOVec vec;
 
-  vec.base = &msg;
-  vec.length = sizeof(msg);
+  vec.base = &msg.msg;
+  vec.length = sizeof(msg.msg);
 
   header.iov = &vec;
   header.iov_length = 1;
@@ -505,8 +505,8 @@ int TextureUpdateHelper::RegisterSharedMemory(nacl::Handle shared_memory,
   nacl::MessageHeader header;
   nacl::IOVec vec;
 
-  vec.base = &msg;
-  vec.length = sizeof(msg);
+  vec.base = &msg.msg;
+  vec.length = sizeof(msg.msg);
 
   header.iov = &vec;
   header.iov_length = 1;
@@ -548,8 +548,8 @@ bool TextureUpdateHelper::UnregisterSharedMemory(int shared_memory_id) {
   nacl::MessageHeader header;
   nacl::IOVec vec;
 
-  vec.base = &msg;
-  vec.length = sizeof(msg);
+  vec.base = &msg.msg;
+  vec.length = sizeof(msg.msg);
   header.iov = &vec;
   header.iov_length = 1;
   header.handles = NULL;

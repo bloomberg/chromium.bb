@@ -35,16 +35,16 @@
 #include "core/cross/message_commands.h"
 
 namespace o3d {
-
-const char* IMCMessage::GetMessageDescription(IMCMessage::MessageId id) {
-  const char* const message_descriptions[] = {
+namespace imc {
+const char* GetMessageDescription(MessageId id) {
+  static const char* const message_descriptions[] = {
     #define O3D_IMC_MESSAGE_OP(id, class_name)  #id,
     O3D_IMC_MESSAGE_LIST(O3D_IMC_MESSAGE_OP)
     #undef O3D_IMC_MESSAGE_OP
   };
   return message_descriptions[id];
 }
-
+}  // namespace imc
 }  // namespace o3d
 
 

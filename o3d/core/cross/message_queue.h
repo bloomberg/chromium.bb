@@ -144,7 +144,7 @@ class MessageQueue {
   //   Client.
   bool ProcessClientRequest(ConnectedClient* client,
                             int message_length,
-                            IMCMessage::MessageId message_id,
+                            imc::MessageId message_id,
                             nacl::MessageHeader* header,
                             nacl::Handle* handles);
 
@@ -166,7 +166,7 @@ class MessageQueue {
           int message_length,                 \
           nacl::MessageHeader* header,        \
           nacl::Handle* handles,              \
-          const class_name& message);
+          const class_name::Msg& message);
   O3D_IMC_MESSAGE_LIST(O3D_IMC_MESSAGE_OP)
   #undef O3D_IMC_MESSAGE_OP
 
@@ -190,7 +190,7 @@ class MessageQueue {
   //   false in every other case.
   bool ReceiveMessageFromSocket(nacl::Handle socket,
                                 nacl::MessageHeader* header,
-                                IMCMessage::MessageId* message_id,
+                                imc::MessageId* message_id,
                                 int* message_length);
 
   ServiceLocator* service_locator_;

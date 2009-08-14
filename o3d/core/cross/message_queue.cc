@@ -221,13 +221,13 @@ bool MessageQueue::CheckForNewMessages() {
   // ReceiveMessageFromSocket also returns true if there are no
   // messages in the queue in which case message_length will be equal
   // to -1.
-  IMCMessage::MessageId message_id;
+  imc::MessageId message_id;
   int message_length = 0;
   if (ReceiveMessageFromSocket(server_socket_handle_,
                                &header,
                                &message_id,
                                &message_length)) {
-    if (message_id == IMCMessage::HELLO) {
+    if (message_id == imc::HELLO) {
       ProcessHelloMessage(&header, handles);
 #ifdef OS_WIN
       metric_imc_hello_msg.Set(true);
@@ -277,9 +277,9 @@ bool MessageQueue::CheckForNewMessages() {
 // return the ID in message_id.
 bool MessageQueue::ReceiveMessageFromSocket(nacl::Handle socket,
                                             nacl::MessageHeader* header,
-                                            IMCMessage::MessageId* message_id,
+                                            imc::MessageId* message_id,
                                             int* length) {
-  *message_id = IMCMessage::INVALID_ID;
+  *message_id = imc::INVALID_ID;
 
   // Check if there's a new message but don't block waiting for it.
   int message_length = nacl::ReceiveDatagram(socket,
@@ -324,10 +324,10 @@ bool MessageQueue::ReceiveMessageFromSocket(nacl::Handle socket,
     }
 
     // Extract the ID of the message just received.
-    IMCMessage::MessageId id_found =
-      *(reinterpret_cast<IMCMessage::MessageId*>(header->iov[0].base));
-    if (id_found <= IMCMessage::INVALID_ID ||
-        id_found >= IMCMessage::MAX_NUM_IDS) {
+    imc::MessageId id_found =
+      *(reinterpret_cast<imc::MessageId*>(header->iov[0].base));
+    if (id_found <= imc::INVALID_ID ||
+        id_found >= imc::MAX_NUM_IDS) {
       LOG(ERROR) << "Unknown ID found in message :" << id_found;
     }
     *message_id = id_found;
@@ -342,16 +342,16 @@ bool MessageQueue::ReceiveMessageFromSocket(nacl::Handle socket,
 
 bool MessageQueue::ProcessClientRequest(ConnectedClient* client,
                                         int message_length,
-                                        IMCMessage::MessageId message_id,
+                                        imc::MessageId message_id,
                                         nacl::MessageHeader* header,
                                         nacl::Handle* handles) {
   static int expected_message_lengths[] = {
-    #define O3D_IMC_MESSAGE_OP(id, class_name)  sizeof(class_name),
+    #define O3D_IMC_MESSAGE_OP(id, class_name)  sizeof(class_name::Msg),
     O3D_IMC_MESSAGE_LIST(O3D_IMC_MESSAGE_OP)
     #undef O3D_IMC_MESSAGE_OP
   };
 
-  if (message_id == IMCMessage::INVALID_ID ||
+  if (message_id == imc::INVALID_ID ||
       static_cast<unsigned>(message_id) >=
           arraysize(expected_message_lengths)) {
     LOG(ERROR) << "Unrecognized message id " << message_id;
@@ -360,15 +360,15 @@ bool MessageQueue::ProcessClientRequest(ConnectedClient* client,
 
   if (message_length != expected_message_lengths[message_id]) {
     LOG(ERROR) << "Bad message length for "
-               << IMCMessage::GetMessageDescription(message_id);
+               << imc::GetMessageDescription(message_id);
     return false;
   }
 
   switch (message_id) {
     #define O3D_IMC_MESSAGE_OP(id, class_name) \
-      case IMCMessage::id: return Process ## class_name( \
+      case imc::id: return Process ## class_name( \
           client, message_length, header, handles, \
-          *static_cast<const class_name*>(header->iov[0].base));
+          *static_cast<const class_name::Msg*>(header->iov[0].base));
     O3D_IMC_MESSAGE_LIST(O3D_IMC_MESSAGE_OP)
     #undef O3D_IMC_MESSAGE_OP
     default:
@@ -443,7 +443,7 @@ bool MessageQueue::ProcessMessageInvalidId(
     int message_length,
     nacl::MessageHeader* header,
     nacl::Handle* handles,
-    const MessageInvalidId& message) {
+    const MessageInvalidId::Msg& message) {
   return false;
 }
 
@@ -452,7 +452,7 @@ bool MessageQueue::ProcessMessageHello(
     int message_length,
     nacl::MessageHeader* header,
     nacl::Handle* handles,
-    const MessageHello& message) {
+    const MessageHello::Msg& message) {
   // Hello is handled special.
   return false;
 }
@@ -467,7 +467,7 @@ bool MessageQueue::ProcessMessageAllocateSharedMemory(
     int message_length,
     nacl::MessageHeader* header,
     nacl::Handle* handles,
-    const MessageAllocateSharedMemory& message) {
+    const MessageAllocateSharedMemory::Msg& message) {
 
   if (header->iov_length != 1 ||
       header->handle_count != 0) {
@@ -477,10 +477,10 @@ bool MessageQueue::ProcessMessageAllocateSharedMemory(
 
   int32 mem_size = message.mem_size;
   if (mem_size <= 0 ||
-      mem_size > MessageAllocateSharedMemory::kMaxSharedMemSize) {
+      mem_size > MessageAllocateSharedMemory::Msg::kMaxSharedMemSize) {
     LOG(ERROR) << "Invalid mem size requested: " << mem_size
                << "(max size = "
-               << MessageAllocateSharedMemory::kMaxSharedMemSize << ")";
+               << MessageAllocateSharedMemory::Msg::kMaxSharedMemSize << ")";
     return false;
   }
 
@@ -547,90 +547,12 @@ bool MessageQueue::ProcessMessageUpdateTexture2D(
     int message_length,
     nacl::MessageHeader* header,
     nacl::Handle* handles,
-    const MessageUpdateTexture2D& message) {
+    const MessageUpdateTexture2D::Msg& message) {
   // Check the length of the message to make sure it contains the size of
   // the requested buffer.
   if (header->iov_length != 1 ||
       header->handle_count != 0) {
-    LOG(ERROR) << "Malformed message for UPDATE_TEXTURE";
-    SendBooleanResponse(client->client_handle(), false);
-    return false;
-  }
-
-  // Check that this client did actually allocate the shared memory
-  // corresponding to this handle.
-  const SharedMemoryInfo* info =
-      client->GetSharedMemoryInfo(message.shared_memory_id);
-  if (info == NULL) {
-    O3D_ERROR(service_locator_)
-        << "shared memory id " << message.shared_memory_id << " not found";
-    SendBooleanResponse(client->client_handle(), false);
-    return false;
-  }
-
-  // Check that the Id passed in actually corresponds to a texture.
-  Texture2D* texture_object =
-      object_manager_->GetById<Texture2D>(message.texture_id);
-
-  if (texture_object == NULL) {
-    O3D_ERROR(service_locator_)
-        << "Texture with id " << message.texture_id << " not found";
-    SendBooleanResponse(client->client_handle(), false);
-    return false;
-  }
-
-  // Check that we will not be reading past the end of the allocated shared
-  // memory.
-  // TODO(gman): Comment this back in.
-  //if (message.offset + message.number_of_bytes > info->size) {
-  //  O3D_ERROR(service_locator_)
-  //      << "Offset + texture size exceed allocated shared memory size ("
-  //      << message.offset << " + " << message.number_of_bytes << " > "
-  //      << info->size;
-  //  SendBooleanResponse(client->client_handle(), false);
-  //  return false;
-  //}
-
-  unsigned int mip_width =
-      image::ComputeMipDimension(message.level, texture_object->width());
-  unsigned int mip_height =
-      image::ComputeMipDimension(message.level, texture_object->height());
-
-  if (static_cast<unsigned>(message.number_of_bytes) !=
-      image::ComputeMipChainSize(mip_width, mip_height,
-                                 texture_object->format(), 1)) {
-    // TODO(gman): comment this back in and return false.
-    //O3D_ERROR(service_locator_)
-    //    << "texture_size does not match size of texture level ("
-    //    << message.offset << " + " << message.number_of_bytes << " > "
-    //    << info->size;
-    //SendBooleanResponse(client->client_handle(), false);
-    //return false;
-    SendBooleanResponse(client->client_handle(), true);
-    return true;
-  }
-
-  void *target_address =
-      static_cast<char*>(info->mapped_address) + message.offset;
-  texture_object->SetRect(
-      message.level, 0, 0, mip_width, mip_height, target_address,
-      image::ComputePitch(texture_object->format(), mip_width));
-
-  SendBooleanResponse(client->client_handle(), true);
-  return true;
-}
-
-bool MessageQueue::ProcessMessageUpdateTexture2DRect(
-    ConnectedClient* client,
-    int message_length,
-    nacl::MessageHeader* header,
-    nacl::Handle* handles,
-    const MessageUpdateTexture2DRect& message) {
-  // Check the length of the message to make sure it contains the size of
-  // the requested buffer.
-  if (header->iov_length != 1 ||
-      header->handle_count != 0) {
-    LOG(ERROR) << "Malformed message for UPDATE_TEXTURE_RECT";
+    LOG(ERROR) << "Malformed message for UPDATE_TEXTURE2D";
     SendBooleanResponse(client->client_handle(), false);
     return false;
   }
@@ -661,8 +583,86 @@ bool MessageQueue::ProcessMessageUpdateTexture2DRect(
   // memory.
   if (message.offset + message.number_of_bytes > info->size) {
     O3D_ERROR(service_locator_)
-        << "Offset + texture size exceed allocated shared memory size ("
+        << "Offset + texture size exceeds allocated shared memory size ("
         << message.offset << " + " << message.number_of_bytes << " > "
+        << info->size;
+    SendBooleanResponse(client->client_handle(), false);
+    return false;
+  }
+
+  unsigned int mip_width =
+      image::ComputeMipDimension(message.level, texture_object->width());
+  unsigned int mip_height =
+      image::ComputeMipDimension(message.level, texture_object->height());
+
+  void *target_address =
+      PointerFromVoidPointer<void*>(info->mapped_address, message.offset);
+
+  int pitch = image::ComputePitch(texture_object->format(), mip_width);
+  int rows = message.number_of_bytes / pitch;
+
+  texture_object->SetRect(
+      message.level, 0, 0, mip_width, rows, target_address, pitch);
+
+  int remain = message.number_of_bytes % pitch;
+  if (remain) {
+    int width = remain / image::ComputePitch(texture_object->format(), 1);
+    texture_object->SetRect(
+      message.level, rows, 0, width, 1,
+        AddPointerOffset<void*>(target_address, rows * pitch), pitch);
+  }
+
+  SendBooleanResponse(client->client_handle(), true);
+  return true;
+}
+
+bool MessageQueue::ProcessMessageUpdateTexture2DRect(
+    ConnectedClient* client,
+    int message_length,
+    nacl::MessageHeader* header,
+    nacl::Handle* handles,
+    const MessageUpdateTexture2DRect::Msg& message) {
+  // Check the length of the message to make sure it contains the size of
+  // the requested buffer.
+  if (header->iov_length != 1 ||
+      header->handle_count != 0) {
+    LOG(ERROR) << "Malformed message for UPDATE_TEXTURE2D_RECT";
+    SendBooleanResponse(client->client_handle(), false);
+    return false;
+  }
+
+  // Check that this client did actually allocate the shared memory
+  // corresponding to this handle.
+  const SharedMemoryInfo* info =
+      client->GetSharedMemoryInfo(message.shared_memory_id);
+  if (info == NULL) {
+    O3D_ERROR(service_locator_)
+        << "shared memory id " << message.shared_memory_id << " not found";
+    SendBooleanResponse(client->client_handle(), false);
+    return false;
+  }
+
+  // Check that the Id passed in actually corresponds to a texture.
+  Texture2D* texture_object =
+      object_manager_->GetById<Texture2D>(message.texture_id);
+
+  if (texture_object == NULL) {
+    O3D_ERROR(service_locator_)
+        << "Texture with id " << message.texture_id << " not found";
+    SendBooleanResponse(client->client_handle(), false);
+    return false;
+  }
+
+  // Check that we will not be reading past the end of the allocated shared
+  // memory.
+  int32 number_of_bytes =
+      (message.height - 1) * message.pitch +
+      image::ComputePitch(texture_object->format(), message.width);
+  if (message.offset + number_of_bytes > info->size) {
+    O3D_ERROR(service_locator_)
+        << "Offset + size as computed by width, height and pitch"
+        << " exceeds allocated shared memory size ("
+        << message.offset << " + " << number_of_bytes << " > "
         << info->size;
     SendBooleanResponse(client->client_handle(), false);
     return false;
@@ -685,24 +685,13 @@ bool MessageQueue::ProcessMessageUpdateTexture2DRect(
     return false;
   }
 
-  if (static_cast<unsigned>(message.number_of_bytes) !=
-      image::ComputeMipChainSize(message.width, message.height,
-                                 texture_object->format(),
-                                 1)) {
-    O3D_ERROR(service_locator_)
-        << "number of bytes does not match size of texture rect ("
-        << message.offset << " + " << message.number_of_bytes << " > "
-        << info->size;
-    SendBooleanResponse(client->client_handle(), false);
-    return false;
-  }
-
   void *target_address =
-      static_cast<char*>(info->mapped_address) + message.offset;
+      PointerFromVoidPointer<void*>(info->mapped_address, message.offset);
   texture_object->SetRect(
-      message.level, message.x, message.y, message.width, message.height,
+      message.level, message.x, message.y,
+      message.width, message.height,
       target_address,
-      image::ComputePitch(texture_object->format(), mip_width));
+      message.pitch);
 
   SendBooleanResponse(client->client_handle(), true);
   return true;
@@ -719,7 +708,7 @@ bool MessageQueue::ProcessMessageRegisterSharedMemory(
     int message_length,
     nacl::MessageHeader* header,
     nacl::Handle* handles,
-    const MessageRegisterSharedMemory& message) {
+    const MessageRegisterSharedMemory::Msg& message) {
   if (header->iov_length != 1 ||
       header->handle_count != 1) {
     LOG(ERROR) << "Malformed message for REGISTER_SHARED_MEMORY";
@@ -728,10 +717,10 @@ bool MessageQueue::ProcessMessageRegisterSharedMemory(
 
   int32 mem_size = message.mem_size;
   if (mem_size <= 0 ||
-      mem_size > MessageRegisterSharedMemory::kMaxSharedMemSize) {
+      mem_size > MessageRegisterSharedMemory::Msg::kMaxSharedMemSize) {
     LOG(ERROR) << "Invalid mem size sent: " << mem_size
                << "(max size = "
-               << MessageRegisterSharedMemory::kMaxSharedMemSize << ")";
+               << MessageRegisterSharedMemory::Msg::kMaxSharedMemSize << ")";
     return false;
   }
 
@@ -793,7 +782,7 @@ bool MessageQueue::ProcessMessageUnregisterSharedMemory(
     int message_length,
     nacl::MessageHeader* header,
     nacl::Handle* handles,
-    const MessageUnregisterSharedMemory& message) {
+    const MessageUnregisterSharedMemory::Msg& message) {
   if (header->iov_length != 1 ||
       header->handle_count != 0) {
     LOG(ERROR) << "Malformed message for UNREGISTER_SHARED_MEMORY";
