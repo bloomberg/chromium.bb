@@ -95,6 +95,109 @@ bool SaveBufferToFile(const std::string& data,
 
 }
 
+// This is a helper class which acts as a proxy for invoking a task from the
+// file loop back to the IO loop. Invoking a task from file loop to the IO
+// loop directly is not safe as during browser shutdown, the IO loop tears
+// down before the file loop. To avoid a crash, this object is invoked in the
+// UI loop from the file loop, from where it gets the IO thread directly from
+// g_browser_process and invokes the given task in the IO loop if it is not
+// NULL. This object also takes ownership of the given task.
+class UIProxyForIOTask : public Task {
+ public:
+  explicit UIProxyForIOTask(Task* on_dictionary_save_complete_callback_task)
+      : on_dictionary_save_complete_callback_task_(
+            on_dictionary_save_complete_callback_task) {
+  }
+
+ private:
+  void Run();
+
+  Task* on_dictionary_save_complete_callback_task_;
+  DISALLOW_COPY_AND_ASSIGN(UIProxyForIOTask);
+};
+
+void UIProxyForIOTask::Run() {
+  // This has been invoked in the UI thread.
+  base::Thread* io_thread = g_browser_process->io_thread();
+  if (io_thread) {  // io_thread has not been torn down yet.
+    MessageLoop* io_loop = io_thread->message_loop();
+    io_loop->PostTask(FROM_HERE,
+                      on_dictionary_save_complete_callback_task_);
+    on_dictionary_save_complete_callback_task_ = NULL;
+  }
+}
+
+// Design: The spellchecker initializes hunspell_ in the Initialize() method.
+// This is done using the dictionary file on disk, e.g. "en-US_1_1.bdic".
+// Initialization of hunspell_ is held off during this process. If the
+// dictionaryis not available, we first attempt to download and save it. After
+// the dictionary is downloaded and saved to disk (or the attempt to do so
+// fails)), corresponding flags are set
+// in spellchecker - in the IO thread. Since IO thread goes first during closing
+// of browser, a proxy task |UIProxyForIOTask| is created in the UI thread,
+// which obtains the IO thread independently and invokes the task in the IO
+// thread if it's not NULL. After the flags are cleared, a (final) attempt is
+// made to initialize hunspell_. If it fails even then (dictionary could not
+// download), no more attempts are made to initialize it.
+class SaveDictionaryTask : public Task {
+ public:
+  SaveDictionaryTask(Task* on_dictionary_save_complete_callback_task,
+                     const FilePath& first_attempt_file_name,
+                     const FilePath& fallback_file_name,
+                     const std::string& data,
+                     MessageLoop* ui_loop)
+      : on_dictionary_save_complete_callback_task_(
+            on_dictionary_save_complete_callback_task),
+        first_attempt_file_name_(first_attempt_file_name),
+        fallback_file_name_(fallback_file_name),
+        data_(data),
+        ui_loop_(ui_loop) {
+  }
+
+ private:
+  void Run();
+
+  bool SaveBufferToFile(const std::string& data,
+                        FilePath file_to_write) {
+    int num_bytes = data.length();
+    return file_util::WriteFile(file_to_write, data.data(), num_bytes) ==
+        num_bytes;
+  }
+
+  // factory object to invokelater back to spellchecker in io thread on
+  // download completion to change appropriate flags.
+  Task* on_dictionary_save_complete_callback_task_;
+
+  // The file which will be stored in the first attempt.
+  FilePath first_attempt_file_name_;
+
+  // The file which will be stored as a fallback.
+  FilePath fallback_file_name_;
+
+  // The buffer which has to be stored to disk.
+  std::string data_;
+
+  // This invokes back to io loop when downloading is over.
+  MessageLoop* ui_loop_;
+  DISALLOW_COPY_AND_ASSIGN(SaveDictionaryTask);
+};
+
+void SaveDictionaryTask::Run() {
+  if (!SaveBufferToFile(data_, first_attempt_file_name_)) {
+    // Try saving it to |fallback_file_name_|, which almost surely has
+    // write permission. If even this fails, there is nothing to be done.
+    FilePath fallback_dir = fallback_file_name_.DirName();
+    // Create the directory if it does not exist.
+    if (!file_util::PathExists(fallback_dir))
+      file_util::CreateDirectory(fallback_dir);
+    SaveBufferToFile(data_, fallback_file_name_);
+  } // Unsuccessful save is taken care of in SpellChecker::Initialize().
+
+  // Set Flag that dictionary is not downloading anymore.
+  ui_loop_->PostTask(FROM_HERE,
+      new UIProxyForIOTask(on_dictionary_save_complete_callback_task_));
+}
+
 void SpellChecker::SpellCheckLanguages(std::vector<std::string>* languages) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(g_supported_spellchecker_languages);
        ++i)
@@ -273,10 +376,13 @@ SpellChecker::SpellChecker(const FilePath& dict_dir,
       tried_to_download_dictionary_file_(false),
       file_loop_(NULL),
       url_request_context_(request_context),
-      dic_is_downloading_(false),
+      obtaining_dictionary_(false),
       auto_spell_correct_turned_on_(false),
       is_using_platform_spelling_engine_(false),
-      fetcher_(NULL) {
+      fetcher_(NULL),
+      ui_loop_(MessageLoop::current()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          on_dictionary_save_complete_callback_factory_(this)) {
   if (SpellCheckerPlatform::SpellCheckerAvailable()) {
     SpellCheckerPlatform::Init();
     if (SpellCheckerPlatform::PlatformSupportsLanguage(language)) {
@@ -326,7 +432,7 @@ void SpellChecker::StartDictionaryDownload(const FilePath& file_name) {
       l10n_util::ToLower(bdic_file_name_.ToWStringHack())));
   fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
   fetcher_->set_request_context(url_request_context_);
-  dic_is_downloading_ = true;
+  obtaining_dictionary_ = true;
   fetcher_->Start();
 }
 
@@ -337,26 +443,22 @@ void SpellChecker::OnURLFetchComplete(const URLFetcher* source,
                                       const ResponseCookies& cookies,
                                       const std::string& data) {
   DCHECK(source);
-  if ((response_code / 100) == 2 ||
+  if (!((response_code / 100) == 2 ||
       response_code == 401 ||
-      response_code == 407) {
-    FilePath file_to_write = given_dictionary_directory_.Append(
-        bdic_file_name_);
-    if (!SaveBufferToFile(data, file_to_write)) {
-      // Try saving it to user data/Dictionaries, which almost surely has
-      // write permission. If even this fails, there is nothing to be done.
-      FilePath user_data_dir = GetFallbackDictionaryDownloadDirectory();
+      response_code == 407)) {
+    obtaining_dictionary_ = false;
+    return;
+  }
 
-      // Create the directory if it does not exist.
-      if (!file_util::PathExists(user_data_dir))
-        file_util::CreateDirectory(user_data_dir);
-
-      file_to_write = user_data_dir.Append(bdic_file_name_);
-      SaveBufferToFile(data, file_to_write);
-    }
-  }  // Unsuccessful save is taken care of in SpellChecker::Initialize().
-
-  dic_is_downloading_ = false;
+  // Save the file in the file thread, and not here, the IO thread.
+  FilePath first_attempt_file_name = given_dictionary_directory_.Append(
+      bdic_file_name_);
+  FilePath user_data_dir = GetFallbackDictionaryDownloadDirectory();
+  FilePath fallback_file_name = user_data_dir.Append(bdic_file_name_);
+  Task* dic_task = on_dictionary_save_complete_callback_factory_.
+      NewRunnableMethod(&SpellChecker::OnDictionarySaveComplete);
+  file_loop_->PostTask(FROM_HERE, new SaveDictionaryTask(dic_task,
+      first_attempt_file_name, fallback_file_name, data, ui_loop_));
 }
 
 // Initialize SpellChecker. In this method, if the dictionary is not present
@@ -366,7 +468,7 @@ void SpellChecker::OnURLFetchComplete(const URLFetcher* source,
 // Bug: http://b/issue?id=1123096
 bool SpellChecker::Initialize() {
   // Return false if the dictionary files are downloading.
-  if (dic_is_downloading_)
+  if (obtaining_dictionary_)
     return false;
 
   // Return false if tried to init and failed - don't try multiple times in
@@ -596,21 +698,23 @@ class AddWordToCustomDictionaryTask : public Task {
   }
 
  private:
-  void Run() {
-    // Add the word with a new line. Note that, although this would mean an
-    // extra line after the list of words, this is potentially harmless and
-    // faster, compared to verifying everytime whether to append a new line
-    // or not.
-    word_ += "\n";
-    FILE* f = file_util::OpenFile(file_name_, "a+");
-    if (f != NULL)
-      fputs(word_.c_str(), f);
-    file_util::CloseFile(f);
-  }
+  void Run();
 
   FilePath file_name_;
   std::string word_;
 };
+
+void AddWordToCustomDictionaryTask::Run() {
+  // Add the word with a new line. Note that, although this would mean an
+  // extra line after the list of words, this is potentially harmless and
+  // faster, compared to verifying everytime whether to append a new line
+  // or not.
+  word_ += "\n";
+  FILE* f = file_util::OpenFile(file_name_, "a+");
+  if (f != NULL)
+    fputs(word_.c_str(), f);
+  file_util::CloseFile(f);
+}
 
 void SpellChecker::AddWord(const std::wstring& word) {
   if (is_using_platform_spelling_engine_) {

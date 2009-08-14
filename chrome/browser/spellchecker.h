@@ -158,6 +158,10 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // OnURLFetchComplete() function is invoked.
   void StartDictionaryDownload(const FilePath& file_name);
 
+  // This method is called in the IO thread after dictionary download has
+  // completed in FILE thread.
+  void OnDictionarySaveComplete(){ obtaining_dictionary_ = false; }
+
   // The given path to the directory whether SpellChecker first tries to
   // download the spellcheck bdic dictionary file.
   FilePath given_dictionary_directory_;
@@ -201,11 +205,14 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // File Thread Message Loop.
   MessageLoop* file_loop_;
 
+  // UI Thread Message Loop.
+  MessageLoop* ui_loop_;
+
   // Used for requests. MAY BE NULL which means don't try to download.
   URLRequestContext* url_request_context_;
 
-  // Set when the dictionary file is currently downloading.
-  bool dic_is_downloading_;
+  // True when we're downloading or saving a dictionary.
+  bool obtaining_dictionary_;
 
   // Remember state for auto spell correct.
   bool auto_spell_correct_turned_on_;
@@ -216,6 +223,11 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
 
   // URLFetcher to download a file in memory.
   scoped_ptr<URLFetcher> fetcher_;
+
+  // Used for generating callbacks to spellchecker, since spellchecker is a
+  // non-reference counted object.
+  ScopedRunnableMethodFactory<SpellChecker>
+      on_dictionary_save_complete_callback_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellChecker);
 };
