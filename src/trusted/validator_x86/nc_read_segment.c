@@ -71,7 +71,7 @@ static size_t NcReadHexData(FILE* file, uint8_t* mbase, size_t mbase_size,
                             char input_line[MAX_INPUT_LINE]) {
   size_t count = 0;
   char mini_buf[3];
-  size_t mini_buf_index;
+  size_t mini_buf_index = 0;
   char *next;
   char ch;
   while (count < mbase_size) {
