@@ -1927,6 +1927,19 @@ each locale. -->
         Server's certificate is invalid
       </message>
 
+      <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_TITLE" desc="Title of the error page for a certificate signed using a weak signature algorithm">
+        The site's security certificate is signed using a weak signature algorithm!
+      </message>
+      <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DETAILS" desc="Details of the error page for a certificate signed using a weak signature algorithm">
+        You attempted to reach &lt;strong&gt;<ph name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presented a certificate signed using a weak signature algorithm. This means that the security credentials the server presented could have been forged, and the server may not be the server you expected (you may be communicating with an attacker). You should not proceed.
+      </message>
+      <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_EXTRA_INFO_2" desc="2nd paragraph of extra information for a X509 certificate signed using a weak signature algorithm">
+        In this case, the server certificate or an intermediate CA certificate presented to your browser is signed using a weak signature algorithm such as RSA-MD2. Recent research by computer scientists showed the signature algorithm is weaker than previously believed, and the signature algorithm is rarely used by trustworthy websites today. This certificate could have been forged. You should not proceed past this point.
+      </message>
+      <message name="IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DESCRIPTION" desc="Description of the error page for a certificate signed using a weak signature algorithm">
+        Server's certificate is signed using a weak signature algorithm
+      </message>
+
       <message name="IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE" desc="Title of the error page for an unknown ssl error">
         Unknown server certificate error
       </message>

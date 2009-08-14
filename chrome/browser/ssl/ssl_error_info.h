@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_ERROR_INFO_H__
-#define CHROME_BROWSER_SSL_ERROR_INFO_H__
+#ifndef CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_
+#define CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_
 
 #include <string>
 #include <vector>
@@ -27,6 +27,7 @@ class SSLErrorInfo {
     CERT_UNABLE_TO_CHECK_REVOCATION,
     CERT_REVOKED,
     CERT_INVALID,
+    CERT_WEAK_SIGNATURE_ALGORITHM,
     MIXED_CONTENTS,
     UNSAFE_CONTENTS,
     UNKNOWN
@@ -64,7 +65,7 @@ class SSLErrorInfo {
     return extra_information_;
   }
 
-private:
+ private:
   SSLErrorInfo(const std::wstring& title,
                const std::wstring& details,
                const std::wstring& short_description,
@@ -78,4 +79,4 @@ private:
   std::vector<std::wstring> extra_information_;
 };
 
-#endif  // CHROME_BROWSER_SSL_ERROR_INFO_H__
+#endif  // CHROME_BROWSER_SSL_SSL_ERROR_INFO_H_

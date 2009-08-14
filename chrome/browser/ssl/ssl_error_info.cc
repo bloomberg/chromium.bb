@@ -153,6 +153,20 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       short_description =
           l10n_util::GetString(IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION);
       break;
+    case CERT_WEAK_SIGNATURE_ALGORITHM:
+      title =
+          l10n_util::GetString(IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_TITLE);
+      details = l10n_util::GetStringF(
+          IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DETAILS,
+          UTF8ToWide(request_url.host()));
+      short_description = l10n_util::GetString(
+          IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DESCRIPTION);
+      extra_info.push_back(
+          l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_1));
+      extra_info.push_back(
+          l10n_util::GetString(
+              IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_EXTRA_INFO_2));
+      break;
     case MIXED_CONTENTS:
       title = l10n_util::GetString(IDS_SSL_MIXED_CONTENT_TITLE);
       details = l10n_util::GetString(IDS_SSL_MIXED_CONTENT_DETAILS);
@@ -199,6 +213,8 @@ SSLErrorInfo::ErrorType SSLErrorInfo::NetErrorToErrorType(int net_error) {
       return CERT_REVOKED;
     case net::ERR_CERT_INVALID:
       return CERT_INVALID;
+    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
+      return CERT_WEAK_SIGNATURE_ALGORITHM;
     default:
       NOTREACHED();
       return UNKNOWN;
@@ -217,7 +233,8 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
     net::CERT_STATUS_NO_REVOCATION_MECHANISM,
     net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
     net::CERT_STATUS_REVOKED,
-    net::CERT_STATUS_INVALID
+    net::CERT_STATUS_INVALID,
+    net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM
   };
 
   const ErrorType kErrorTypes[] = {
@@ -227,7 +244,8 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
     CERT_NO_REVOCATION_MECHANISM,
     CERT_UNABLE_TO_CHECK_REVOCATION,
     CERT_REVOKED,
-    CERT_INVALID
+    CERT_INVALID,
+    CERT_WEAK_SIGNATURE_ALGORITHM
   };
   DCHECK(arraysize(kErrorFlags) == arraysize(kErrorTypes));
 

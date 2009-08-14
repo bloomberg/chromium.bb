@@ -84,10 +84,11 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   // For now we handle the DENIED as the UNKNOWN, which means a blocking
   // page is shown to the user every time he comes back to the page.
 
-  switch(handler->cert_error()) {
+  switch (handler->cert_error()) {
     case net::ERR_CERT_COMMON_NAME_INVALID:
     case net::ERR_CERT_DATE_INVALID:
     case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
       OnOverridableCertError(handler);
       break;
     case net::ERR_CERT_NO_REVOCATION_MECHANISM:

@@ -75,6 +75,7 @@ SecurityFilterPeer*
     case net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
     case net::ERR_CERT_REVOKED:
     case net::ERR_CERT_INVALID:
+    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
     case net::ERR_INSECURE_RESPONSE:
       if (ResourceType::IsFrame(resource_type))
         return CreateSecurityFilterPeerForFrame(peer, os_error);
