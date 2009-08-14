@@ -64,10 +64,10 @@ class SelectFileDialogImpl : public SelectFileDialog {
   void FileNotSelected(GtkWidget* dialog);
 
   GtkWidget* CreateFileOpenDialog(const std::string& title,
-      gfx::NativeWindow parent);
+      const FilePath& default_path, gfx::NativeWindow parent);
 
   GtkWidget* CreateMultiFileOpenDialog(const std::string& title,
-      gfx::NativeWindow parent);
+      const FilePath& default_path, gfx::NativeWindow parent);
 
   GtkWidget* CreateSaveAsDialog(const std::string& title,
       const FilePath& default_path, gfx::NativeWindow parent);
@@ -183,12 +183,11 @@ void SelectFileDialogImpl::SelectFile(
   GtkWidget* dialog = NULL;
   switch (type) {
     case SELECT_OPEN_FILE:
-      DCHECK(default_path.empty());
-      dialog = CreateFileOpenDialog(title_string, owning_window);
+      dialog = CreateFileOpenDialog(title_string, default_path, owning_window);
       break;
     case SELECT_OPEN_MULTI_FILE:
-      DCHECK(default_path.empty());
-      dialog = CreateMultiFileOpenDialog(title_string, owning_window);
+      dialog = CreateMultiFileOpenDialog(title_string, default_path,
+                                         owning_window);
       break;
     case SELECT_SAVEAS_FILE:
       dialog = CreateSaveAsDialog(title_string, default_path, owning_window);
@@ -302,11 +301,10 @@ void SelectFileDialogImpl::FileNotSelected(GtkWidget* dialog) {
 }
 
 GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
-    gfx::NativeWindow parent) {
+    const FilePath& default_path, gfx::NativeWindow parent) {
   std::string title_string = !title.empty() ? title :
         l10n_util::GetStringUTF8(IDS_OPEN_FILE_DIALOG_TITLE);
 
-  // TODO(estade): do we want to set the open directory to some sort of default?
   GtkWidget* dialog =
       gtk_file_chooser_dialog_new(title_string.c_str(), parent,
                                   GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -315,7 +313,12 @@ GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
                                   NULL);
 
   AddFilters(GTK_FILE_CHOOSER(dialog));
-  if (!last_opened_path_->empty()) {
+  if (!default_path.empty()) {
+    // If the file doesn't exist, this will just switch to the correct
+    // directory. That's good enough.
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
+                                  default_path.value().c_str());
+  } else if (!last_opened_path_->empty()) {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
                                         last_opened_path_->value().c_str());
   }
@@ -326,11 +329,12 @@ GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
 }
 
 GtkWidget* SelectFileDialogImpl::CreateMultiFileOpenDialog(
-    const std::string& title, gfx::NativeWindow parent) {
+    const std::string& title,
+    const FilePath& default_path,
+    gfx::NativeWindow parent) {
   std::string title_string = !title.empty() ? title :
         l10n_util::GetStringUTF8(IDS_OPEN_FILES_DIALOG_TITLE);
 
-  // TODO(estade): do we want to set the open directory to some sort of default?
   GtkWidget* dialog =
       gtk_file_chooser_dialog_new(title_string.c_str(), parent,
                                   GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -339,7 +343,12 @@ GtkWidget* SelectFileDialogImpl::CreateMultiFileOpenDialog(
                                   NULL);
 
   AddFilters(GTK_FILE_CHOOSER(dialog));
-  if (!last_opened_path_->empty()) {
+  if (!default_path.empty()) {
+    // If the file doesn't exist, this will just switch to the correct
+    // directory. That's good enough.
+    gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(dialog),
+                                  default_path.value().c_str());
+  } else if (!last_opened_path_->empty()) {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
                                         last_opened_path_->value().c_str());
   }
@@ -362,17 +371,18 @@ GtkWidget* SelectFileDialogImpl::CreateSaveAsDialog(const std::string& title,
                                   NULL);
 
   AddFilters(GTK_FILE_CHOOSER(dialog));
-  // Since we expect that the file will not already exist, we use
-  // set_current_folder() followed by set_current_name().
-  if (last_saved_path_->empty()) {
+  if (!default_path.empty()) {
+    // Since the file may not already exist, we use
+    // set_current_folder() followed by set_current_name(), as per the
+    // recommendation of the GTK docs.
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
         default_path.DirName().value().c_str());
-  } else {
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
+        default_path.BaseName().value().c_str());
+  } else if (!last_saved_path_->empty()) {
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
                                         last_saved_path_->value().c_str());
   }
-  gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog),
-      default_path.BaseName().value().c_str());
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
   g_signal_connect(G_OBJECT(dialog), "response",
                    G_CALLBACK(OnSelectSingleFileDialogResponse), this);
