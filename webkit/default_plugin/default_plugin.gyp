@@ -26,6 +26,7 @@
           ],
           'include_dirs': [
             '../..',
+            '../../chrome/third_party/wtl/include',
             # TODO(bradnelson): this should fall out of the dependencies.
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],

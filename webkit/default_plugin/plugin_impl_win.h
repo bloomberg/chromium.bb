@@ -5,11 +5,10 @@
 #ifndef WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_WIN_H_
 #define WEBKIT_DEFAULT_PLUGIN_PLUGIN_IMPL_WIN_H_
 
-#include <atlbase.h>
-#include <atlwin.h>
 #include <string>
 #include <vector>
 
+#include "base/window_impl.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/default_plugin/install_dialog.h"
 #include "webkit/default_plugin/plugin_database_handler.h"
@@ -36,7 +35,7 @@ class PluginDatabaseHandler;
 // Provides the plugin installation functionality. This class is
 // instantiated with the information like the mime type of the
 // target plugin, the display mode, etc.
-class PluginInstallerImpl : public CWindowImpl<PluginInstallerImpl> {
+class PluginInstallerImpl : public base::WindowImpl {
  public:
   static const int kRefreshPluginsMessage  = WM_APP + 1;
   static const int kInstallMissingPluginMessage = WM_APP + 2;
@@ -47,7 +46,7 @@ class PluginInstallerImpl : public CWindowImpl<PluginInstallerImpl> {
   explicit PluginInstallerImpl(int16 mode);
   virtual ~PluginInstallerImpl();
 
-  BEGIN_MSG_MAP(PluginInstallerImpl)
+  BEGIN_MSG_MAP_EX(PluginInstallerImpl)
     MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackGround)
     MESSAGE_HANDLER(WM_PAINT, OnPaint)
     MESSAGE_HANDLER(WM_LBUTTONDOWN, OnLButtonDown)
@@ -151,7 +150,6 @@ class PluginInstallerImpl : public CWindowImpl<PluginInstallerImpl> {
   // activex.
   int16 NPP_HandleEvent(void* event);
 
-  HWND window() const { return m_hWnd; }
   const std::string& mime_type() const { return mime_type_; }
 
   // Replaces a resource string with the placeholder passed in as an argument
@@ -375,7 +373,7 @@ class PluginInstallerImpl : public CWindowImpl<PluginInstallerImpl> {
   std::string activex_clsid_;
   CComObject<ActiveXInstaller>* activex_installer_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PluginInstallerImpl);
+  DISALLOW_COPY_AND_ASSIGN(PluginInstallerImpl);
 };
 
 
