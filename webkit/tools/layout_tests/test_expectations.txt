@@ -2000,7 +2000,6 @@ BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = T
 BUG10478 MAC : LayoutTests/fast/events/standalone-image-drag-to-editable.html = FAIL PASS
 
 // These tests were affected by rolling out WebKit i8n patches.
-BUG9768 LINUX WIN : LayoutTests/fast/block/positioning/047.html = FAIL
 // Was only WIN, also fail on LINUX since merge 43346:43361
 BUG9768 LINUX WIN : LayoutTests/fast/css/rtl-ordering.html = FAIL
 // Was only WIN, also fail on LINUX since merge 43346:43361
@@ -2161,7 +2160,6 @@ BUG9797 WIN DEBUG : LayoutTests/traversal/node-iterator-009.html = CRASH PASS
 
 // Failed in WebKit merge 42287:42324
 BUG9916 WIN LINUX : LayoutTests/css2.1/t0803-c5502-mrgn-r-02-c.html = FAIL
-BUG9916 WIN LINUX : LayoutTests/fast/block/float/013.html = FAIL
 BUG9916 : LayoutTests/http/tests/xmlhttprequest/set-dangerous-headers.html = FAIL
 BUG9916 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FAIL
 
@@ -2354,9 +2352,6 @@ BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test2.html = F
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test3.html = FAIL
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test4.html = FAIL
 
-// New test, added in http://trac.webkit.org/changeset/43793, fails for us.
-BUG12104 WIN LINUX : LayoutTests/fast/backgrounds/background-clip-text.html = FAIL
-
 // New test, added in http://trac.webkit.org/changeset/43822, fails for us
 BUG12197 : LayoutTests/editing/pasteboard/get-data-text-plain-drop.html = FAIL
 
@@ -2388,7 +2383,6 @@ BUG12477 : LayoutTests/http/tests/security/drag-over-remote-content-iframe.html 
 
 // WebKit 44202:44252 introduced new tests
 BUG12881 WIN LINUX : LayoutTests/fast/forms/isindex-placeholder.html = FAIL
-BUG12881 WIN LINUX : LayoutTests/fast/box-shadow/border-radius-big.html = FAIL
 BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-constraints.html = FAIL
 BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-split-inline.html = FAIL
 
