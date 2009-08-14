@@ -507,6 +507,9 @@ void WebMediaPlayerImpl::OnPipelineError() {
       SetNetworkState(WebMediaPlayer::DecodeError);
       break;
   }
+
+  // Repaint to trigger UI update.
+  Repaint();
 }
 
 void WebMediaPlayerImpl::SetNetworkState(

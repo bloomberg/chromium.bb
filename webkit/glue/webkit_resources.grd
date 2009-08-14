@@ -23,9 +23,11 @@
       <include name="IDR_DEVTOOLS_INJECT_JS" file="devtools\js\inject.js" type="BINDATA" />
       <include name="IDR_DEVTOOLS_INJECT_WEBKIT_JS" file="..\..\third_party\WebKit\WebCore\inspector\front-end\InjectedScript.js" type="BINDATA" />
       <include name="IDR_MEDIA_PLAY_BUTTON" file="resources\media_play.png" type="BINDATA" />
+      <include name="IDR_MEDIA_PLAY_BUTTON_DISABLED" file="resources\media_play_disabled.png" type="BINDATA" />
       <include name="IDR_MEDIA_PAUSE_BUTTON" file="resources\media_pause.png" type="BINDATA" />
       <include name="IDR_MEDIA_SOUND_FULL_BUTTON" file="resources\media_sound_full.png" type="BINDATA" />
       <include name="IDR_MEDIA_SOUND_NONE_BUTTON" file="resources\media_sound_none.png" type="BINDATA" />
+      <include name="IDR_MEDIA_SOUND_DISABLED" file="resources\media_sound_disabled.png" type="BINDATA" />
       <include name="IDR_MEDIA_SLIDER_THUMB" file="resources\media_slider_thumb.png" type="BINDATA" />
 
       <if expr="os == 'linux2'">
