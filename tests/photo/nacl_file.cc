@@ -53,6 +53,16 @@
 
 #define MAX_NACL_FILES  16
 
+extern "C" int srpc_get_fd();
+extern "C" int __real_open(char const *pathname, int flags, int perms);
+extern "C" int __wrap_open(char const *pathname, int flags, int perms);
+extern "C" int __real_close(int dd);
+extern "C" int __wrap_close(int dd);
+extern "C" int __real_read(int, void *, size_t);
+extern "C" int __wrap_read(int, void *, size_t);
+extern "C" off_t __real_lseek(int, off_t, int);
+extern "C" off_t __wrap_lseek(int dd, off_t offset, int whence);
+
 static pthread_mutex_t nacl_file_mu = PTHREAD_MUTEX_INITIALIZER;
 #if defined(PTHREAD_COND_INITIALIZER)
 static pthread_cond_t nacl_file_cv = PTHREAD_COND_INITIALIZER;
@@ -130,12 +140,7 @@ struct NaCl_fake_file {
 
 static struct NaCl_fake_file nacl_files[MAX_NACL_FILES];
 
-extern "C" int __srpc_get_fd();
-extern "C" int __nacl_open(char const *pathname, int flags, int perms);
-extern "C" int open(char *pathname, int mode, int perms);
-
-
-int open(char *pathname, int mode, int perms) {
+int __wrap_open(char const *pathname, int mode, int perms) {
   int found = 0;
   int d = -1;
   struct nacl_file_map *entry;
@@ -143,11 +148,11 @@ int open(char *pathname, int mode, int perms) {
   int dd;
 
   if (-1 == nacl_file_embedded) {
-    nacl_file_embedded = __srpc_get_fd() != -1;
+    nacl_file_embedded = srpc_get_fd() != -1;
   }
 
   if (!nacl_file_embedded) {
-    return __nacl_open(pathname, mode, perms);
+    return __real_open(pathname, mode, perms);
   }
 
   if (mode != O_RDONLY) {
@@ -196,17 +201,14 @@ int open(char *pathname, int mode, int perms) {
   return dd;
 }
 
-extern "C" int __nacl_close(int dd);
-extern "C" int close(int dd);
-
-int close(int dd) {
+int __wrap_close(int dd) {
   // struct nacl_file_map *entry;
 
   if (-1 == nacl_file_embedded) {
-    nacl_file_embedded = __srpc_get_fd() != -1;
+    nacl_file_embedded = srpc_get_fd() != -1;
   }
   if (!nacl_file_embedded) {
-    return __nacl_close(dd);
+    return __real_close(dd);
   }
   pthread_mutex_lock(&nacl_file_mu);
   nacl_files[dd].real_fd = -1;
@@ -214,17 +216,13 @@ int close(int dd) {
   return 0;
 }
 
-extern "C" int __nacl_read(int, void *, size_t);
-extern "C" off_t __nacl_lseek(int, off_t, int);
-extern "C" int read(int dd, void *buf, size_t count);
-
-int read(int dd, void *buf, size_t count) {
+int __wrap_read(int dd, void *buf, size_t count) {
   int got;
   if (-1 == nacl_file_embedded) {
-    nacl_file_embedded = __srpc_get_fd() != -1;
+    nacl_file_embedded = srpc_get_fd() != -1;
   }
   if (!nacl_file_embedded) {
-    return __nacl_read(dd, buf, count);
+    return __real_read(dd, buf, count);
   }
   if ((dd < 0) ||
       (dd >= static_cast<int>(sizeof(nacl_files) / sizeof(nacl_files[0]))) ||
@@ -233,8 +231,8 @@ int read(int dd, void *buf, size_t count) {
     return -1;
   }
   pthread_mutex_lock(&nacl_files[dd].mu);
-  (void) __nacl_lseek(nacl_files[dd].real_fd, nacl_files[dd].pos, SEEK_SET);
-  got = __nacl_read(nacl_files[dd].real_fd, buf, count);
+  (void) __real_lseek(nacl_files[dd].real_fd, nacl_files[dd].pos, SEEK_SET);
+  got = __real_read(nacl_files[dd].real_fd, buf, count);
   if (got > 0) {
     nacl_files[dd].pos += got;
   }
@@ -242,14 +240,12 @@ int read(int dd, void *buf, size_t count) {
   return got;
 }
 
-extern "C" off_t lseek(int dd, off_t offset, int whence);
-
-off_t lseek(int dd, off_t offset, int whence) {
+off_t __wrap_lseek(int dd, off_t offset, int whence) {
   if (-1 == nacl_file_embedded) {
-    nacl_file_embedded = __srpc_get_fd() != -1;
+    nacl_file_embedded = srpc_get_fd() != -1;
   }
   if (!nacl_file_embedded) {
-    return __nacl_lseek(dd, offset, whence);
+    return __real_lseek(dd, offset, whence);
   }
   if ((dd < 0) ||
       (dd >= static_cast<int>(sizeof(nacl_files) / sizeof(nacl_files[0]))) ||
@@ -260,14 +256,14 @@ off_t lseek(int dd, off_t offset, int whence) {
   pthread_mutex_lock(&nacl_files[dd].mu);
   switch (whence) {
     case SEEK_SET:
-      offset = __nacl_lseek(nacl_files[dd].real_fd, offset, SEEK_SET);
+      offset = __real_lseek(nacl_files[dd].real_fd, offset, SEEK_SET);
       break;
     case SEEK_CUR:
       offset = nacl_files[dd].pos + offset;
-      offset = __nacl_lseek(nacl_files[dd].real_fd, offset, SEEK_SET);
+      offset = __real_lseek(nacl_files[dd].real_fd, offset, SEEK_SET);
       break;
     case SEEK_END:
-      offset = __nacl_lseek(nacl_files[dd].real_fd, offset, SEEK_END);
+      offset = __real_lseek(nacl_files[dd].real_fd, offset, SEEK_END);
       break;
   }
   if (-1 != offset) {
@@ -276,4 +272,3 @@ off_t lseek(int dd, off_t offset, int whence) {
   pthread_mutex_unlock(&nacl_files[dd].mu);
   return offset;
 }
-

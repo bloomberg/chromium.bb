@@ -47,16 +47,20 @@ CCFLAGS := -D_REENTRANT -DSDL -DELF -DPACKAGE=\"naclquake\" -DVERSION=\"1.0.9\" 
 # if nacl target, copy nexe to "nacl_quake" for quake.html to launch
 # and add nacl_file.c to list of files for browser support.
 ifeq (nacl,$(filter nacl,$(MAKECMDGOALS)))
-POST_BUILD = cp $(EXE_NAME) nacl_quake
-FILES := nacl_file.c
+  CCFLAGS += -Xlinker --wrap -Xlinker read
+  CCFLAGS += -Xlinker --wrap -Xlinker open
+  CCFLAGS += -Xlinker --wrap -Xlinker close
+  CCFLAGS += -Xlinker --wrap -Xlinker lseek
+  POST_BUILD = cp $(EXE_NAME) nacl_quake
+  FILES := nacl_file.c
 else
-FILES :=
+  FILES :=
 endif
 
 ifeq (release,$(filter release,$(MAKECMDGOALS)))
-OPT := -O2
+  OPT := -O2
 else
-OPT := -O0 -g
+  OPT := -O0 -g
 endif
 
 X86_SRCS :=  snd_mixa.S sys_dosa.S d_draw.S d_draw16.S d_parta.S d_polysa.S\
