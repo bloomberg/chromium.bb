@@ -38,6 +38,9 @@ const char* kCouldNotUnzipExtension = "Could not unzip extension.";
 const char* kPathNamesMustBeAbsoluteOrLocalError =
     "Path names must not be absolute or contain '..'.";
 
+// A limit to stop us passing dangerously large canvases to the browser.
+const int kMaxImageCanvas = 4096 * 4096;
+
 }  // namespace
 
 static SkBitmap DecodeImage(const FilePath& path) {
@@ -52,7 +55,11 @@ static SkBitmap DecodeImage(const FilePath& path) {
   const unsigned char* data =
       reinterpret_cast<const unsigned char*>(file_contents.data());
   webkit_glue::ImageDecoder decoder;
-  return decoder.Decode(data, file_contents.length());
+  SkBitmap bitmap = decoder.Decode(data, file_contents.length());
+  Sk64 bitmap_size = bitmap.getSize64();
+  if (!bitmap_size.is32() || bitmap_size.get32() > kMaxImageCanvas)
+    return SkBitmap();
+  return bitmap;
 }
 
 static bool PathContainsParentDirectory(const FilePath& path) {
