@@ -42,6 +42,9 @@
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
                                    uint32_t             new_prog_ctr) {
+  struct NaClApp  *nap;
+  struct NaClThreadContext  *context;
+
   natp->sys.stack_ptr = (NaClGetSp() & ~0xf) + 4;
 
   /*
@@ -50,13 +53,14 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * need to adjust the stack
    */
   natp->user.stack_ptr -= 16;
+  nap = natp->nap;
+  context = &natp->user;
+  context->spring_addr = NaClSysToUser(nap,
+                                       nap->mem_start + nap->springboard_addr);
+  context->new_eip = new_prog_ctr;
+  context->sysret = 0; /* not used to return */
 
-  NaClSwitch(
-      0, /* nothing to return */
-      new_prog_ctr,
-      NaClSysToUser(natp->nap, natp->nap->springboard_addr),
-      (uint32_t)&natp->user,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  NaClSwitch(context);
 }
 
 /*
@@ -64,10 +68,15 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
  */
 NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
                               uint32_t             new_prog_ctr) {
-  NaClSwitch(
-      natp->sysret,
-      new_prog_ctr,
-      NaClSysToUser(natp->nap, natp->nap->springboard_addr),
-      (uint32_t)&natp->user,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  struct NaClApp  *nap;
+  struct NaClThreadContext  *context;
+
+  nap = natp->nap;
+  context = &natp->user;
+  context->spring_addr = NaClSysToUser(nap,
+                                       nap->mem_start + nap->springboard_addr);
+  context->new_eip = new_prog_ctr;
+  context->sysret = natp->sysret;
+
+  NaClSwitch(context);
 }

@@ -41,7 +41,7 @@
  * main, or something that main invokes early.
  */
 void NaClThreadStartupCheck() {
-  CHECK(sizeof(struct NaClThreadContext) == 44);
+  CHECK(sizeof(struct NaClThreadContext) == 0x34);
 }
 
 

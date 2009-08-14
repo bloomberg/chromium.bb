@@ -98,7 +98,10 @@ NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
   uint32_t                  sysnum;
   uintptr_t                 stack_ptr;
 
-#if NACL_BUILD_SUBARCH == 64
+/* TODO(petr): split into arch-specific functions */
+#if NACL_ARM
+  stack_ptr = (uintptr_t) user->stack_ptr;
+#elif NACL_BUILD_SUBARCH == 64
   stack_ptr = (uintptr_t) user->stack_ptr.ptr_64;
 #else
   stack_ptr = (uintptr_t) user->stack_ptr.ptr_32.ptr;
@@ -156,7 +159,10 @@ NORETURN void NaClSyscallCSegHook(int32_t ldt_ix) {
     tramp_ret = aligned_tramp_ret;
   }
 
-#if NACL_BUILD_SUBARCH == 64
+/* TODO(petr): split into arch-specific functions */
+#if NACL_ARM
+  user->stack_ptr += NACL_CALL_STEP;
+#elif NACL_BUILD_SUBARCH == 64
   user->stack_ptr.ptr_64 += NACL_CALL_STEP; /* call, lcall */
 #else
   user->stack_ptr.ptr_32.ptr += NACL_CALL_STEP; /* call, lcall */

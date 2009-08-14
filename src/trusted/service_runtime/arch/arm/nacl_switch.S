@@ -40,21 +40,17 @@ IDENTIFIER(NaClSwitch):
    * module. This happens when a main nacl thread is created and starting to
    * execute the nacle code, or when nacl module is returning from a system
    * call. This piece of code lives in a service runtime part of address space.
-   * the first four arguments are in register r0-r3
+   * the one and only argument is in register r0
    *
-   * r0 -- syscall return value
-   * r1 -- new pc
-   * r2 -- springboard address
-   * r3 -- user NaClThreadContext -- pointer to register values
-   * == stack ==
-   * rest of arguments
+   * r0 -- address of thread context (struct NaClThreadContext)
    */
 
-  /* TODO(petr): clear registers r0,r1,r3, CPSR (status register keeps flags)
-   * and SPSR (saved program status register) which holds CPSR before the
+  /* TODO(petr): clear registers r0,r1,r3, lr, CPSR (status register keeps
+   * flags) and SPSR (saved program status register) which holds CPSR before the
    * exception occurs. This might be necessary to avoid information leak.
    * (see bsy)
    */
-  ldmia r3, {r4, r5, r6, r7, r8, r9, r10, fp, sp}
+  ldmia r0!, {r4, r5, r6, r7, r8, r9, r10, fp, sp}
+  add r0, #4 /* skip prog_ctr in struct NaClThreadContext */
+  ldmia r0, {r0, r1, pc}
 
-  bx r2 /* springboard */
