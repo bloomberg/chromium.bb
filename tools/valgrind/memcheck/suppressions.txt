@@ -238,6 +238,28 @@
    fun:gtk_clipboard_set_text
    fun:_ZN23AutocompleteEditViewGtk20SavePrimarySelectionERKSs
 }
+{
+   # Maybe this is a widget caught in the middle of being destroyed?
+   bug_19369
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_datalist_id_set_data_full
+   fun:g_object_freeze_notify
+   fun:gtk_widget_unparent
+   fun:gtk_bin_remove
+   fun:g_cclosure_marshal_VOID__OBJECT
+   fun:g_type_class_meta_marshal
+   fun:g_closure_invoke
+   fun:signal_emit_unlocked_R
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gtk_container_remove
+   fun:gtk_widget_dispose
+   fun:g_object_run_dispose
+   fun:gtk_object_destroy
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -528,7 +550,7 @@
    Memcheck:Leak
    fun:_Znwj
    fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
-   fun:_ZN10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   ...
    fun:_ZN3net13TCPConnectJob13DoResolveHostEv
 }
 {
@@ -736,8 +758,6 @@
    fun:*
    fun:g_object_newv
    fun:g_object_new_valist
-   ...
-   fun:gtk_window_realize
 }
 {
    bug_16584
@@ -952,6 +972,7 @@
    Memcheck:Free
    fun:_ZdlPv
    fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELj0EEE
+   ...
    fun:_ZN7WebCore9CSSParser15createStyleRuleEPN3WTF6VectorIPNS_11CSSSelectorELj0EEE
 }
 {
@@ -981,4 +1002,35 @@
    fun:_ZN7WebCore7V8Proxy17registerExtensionEPN2v89ExtensionEi
    fun:_ZN6WebKit17registerExtensionEPN2v89ExtensionEi
    fun:_ZN12RenderThread23EnsureWebKitInitializedEv
+}
+{
+   bug_19371
+   Memcheck:Leak
+   fun:_Znwj
+   fun:_ZN4base13WaitableEvent7EnqueueEPNS0_6WaiterE
+   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
+   fun:_ZN4base13WaitableEvent4WaitEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+}
+{
+   bug_19377
+   Memcheck:Leak
+   fun:calloc
+   fun:event_base_new
+   fun:_ZN4base19MessagePumpLibeventC1Ev
+   fun:_ZN11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base6Thread10ThreadMainEv
+}
+{
+   bug_19385
+   Memcheck:Leak
+   fun:realloc
+   fun:epoll_add
+   fun:event_add
+   fun:_ZN4base19MessagePumpLibevent4InitEv
+   fun:_ZN4base19MessagePumpLibeventC1Ev
+   fun:_ZN11MessageLoopC1ENS_4TypeE
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_Z10ThreadFuncPv
+   fun:start_thread
 }
