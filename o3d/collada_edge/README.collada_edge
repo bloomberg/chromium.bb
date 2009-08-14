@@ -1,0 +1,25 @@
+Collada_edge tool is a command line utility that could add additional edges
+to represent the outline of the model based on user's specification.
+This tool is independent from o3d.
+
+It is able to read COLLADA file as DAE text files, and then outputs a DAE
+with a different name specified by the user.
+
+In order to compile and run this tool, you need FCollada and vectormath lib
+installed.
+
+The command line arguments are as follows:
+
+Usage: ColladaEdgeConditioner <infile.dae> <outifle.dae>
+                              [-sharpEdgeThreshold t]
+                              [-sharpEdgeColor r,g,b]
+
+-sharpEdgeThreshold t  : sharp edge threshold defined by dihedral
+                         angle. Edges with a angle smaller than t
+                         will be defined as a sharp edge.
+-sharpEdgeColor r,g,b  : color of addtional edges.
+                         default value is 1,0,0 .(no space)
+
+ColladaEdgeConditioner checks all polygon edges in <infile.dae> and add
+addtional edges to the model if normal angle of certain edge is larger
+than the pre-defined threshold.
