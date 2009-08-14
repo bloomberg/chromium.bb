@@ -584,7 +584,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // b) They are an extension that is not from the gallery
     if (IsDangerous(info->suggested_path.BaseName()))
       info->is_dangerous = true;
-    else if (IsChromeExtension(info->path, info->mime_type) &&
+    else if (IsChromeExtension(info->suggested_path, info->mime_type) &&
              !ExtensionsService::IsDownloadFromGallery(info->url,
                                                        info->referrer_url)) {
       info->is_dangerous = true;
