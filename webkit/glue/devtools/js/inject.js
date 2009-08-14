@@ -14,55 +14,6 @@ goog.provide('devtools.Injected');
  * @constructor.
  */
 devtools.Injected = function() {
-  /**
-   * This cache contains mapping from object it to an object instance for
-   * all results of the evaluation / console logs.
-   */
-  this.cachedConsoleObjects_ = {};
-
-  /**
-   * Last id for the cache above.
-   */
-  this.lastCachedConsoleObjectId_ = 1;
-};
-
-
-/**
- * Caches console object for subsequent calls to getConsoleObjectProperties.
- * @param {Object} obj Object to cache.
- * @return {Object} console object wrapper.
- */
-devtools.Injected.prototype.wrapConsoleObject = function(obj) {
-  var type = typeof obj;
-  if ((type == 'object' && obj != null) || type == 'function') {
-    var objId = '#consoleobj#' + this.lastCachedConsoleObjectId_++;
-    this.cachedConsoleObjects_[objId] = obj;
-    var result = { ___devtools_id : objId };
-    result.___devtools_class_name = Object.describe(obj, true);
-    // Loop below fills dummy object with properties for completion.
-    for (var name in obj) {
-      result[name] = '';
-    }
-    return result;
-  }
-  return obj;
-};
-
-
-/**
- * Caches console object for subsequent calls to getConsoleObjectProperties.
- * @param {Object} obj Object to cache.
- * @return {string} Console object wrapper serialized into a JSON string.
- */
-devtools.Injected.prototype.serializeConsoleObject = function(obj) {
-  var result = this.wrapConsoleObject(obj);
-  return JSON.stringify(result,
-      function (key, value) {
-        if (value === undefined) {
-         return 'undefined';
-        }
-        return value;
-      });
 };
 
 
@@ -90,19 +41,6 @@ devtools.Injected.prototype.InjectedScript = function(method, var_args) {
 // Plugging into upstreamed support.
 InjectedScript._window = function() {
   return contentWindow;
-};
-
-
-InjectedScript._nodeForId = function(nodeId) {
-  return DevToolsAgentHost.getNodeForId(nodeId);
-};
-
-
-InjectedScript._objectForId = function(id) {
-  if (typeof id == 'number') {
-    return DevToolsAgentHost.getNodeForId(id);
-  }
-  return devtools$$obj.cachedConsoleObjects_[id];
 };
 
 

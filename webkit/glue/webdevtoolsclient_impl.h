@@ -24,7 +24,6 @@ class String;
 
 class BoundObject;
 class JsDebuggerAgentBoundObj;
-class JsDomAgentBoundObj;
 class JsNetAgentBoundObj;
 class JsToolsAgentBoundObj;
 class ToolsAgentNativeDelegateImpl;
@@ -74,7 +73,6 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
   WebDevToolsClientDelegate* delegate_;
   OwnPtr<CppBoundClass> debugger_command_executor_obj_;
   OwnPtr<JsDebuggerAgentBoundObj> debugger_agent_obj_;
-  OwnPtr<JsDomAgentBoundObj> dom_agent_obj_;
   OwnPtr<JsToolsAgentBoundObj> tools_agent_obj_;
   bool loaded_;
   Vector<std::string> pending_incoming_messages_;

@@ -13,18 +13,32 @@ devtools.InspectorControllerImpl = function() {
   devtools.InspectorController.call(this);
   this.frame_element_id_ = 1;
 
-  this.installInjectedScriptDelegate_('getStyles', true);
-  this.installInjectedScriptDelegate_('getComputedStyle', true);
-  this.installInjectedScriptDelegate_('getInlineStyle', true);
+  this.installInspectorControllerDelegate_('clearMessages');
+  this.installInspectorControllerDelegate_('storeLastActivePanel');
+  this.installInspectorControllerDelegate_('highlightDOMNode');
+  this.installInspectorControllerDelegate_('hideDOMNodeHighlight');
+  this.installInspectorControllerDelegate_('getChildNodes');
+  this.installInspectorControllerDelegate_('setAttribute');
+  this.installInspectorControllerDelegate_('removeAttribute');
+  this.installInspectorControllerDelegate_('setTextNodeValue');
+
+  this.installInjectedScriptDelegate_('getStyles');
+  this.installInjectedScriptDelegate_('getComputedStyle');
+  this.installInjectedScriptDelegate_('getInlineStyle');
   this.installInjectedScriptDelegate_('applyStyleText');
   this.installInjectedScriptDelegate_('setStyleText');
   this.installInjectedScriptDelegate_('toggleStyleEnabled');
   this.installInjectedScriptDelegate_('applyStyleRuleText');
   this.installInjectedScriptDelegate_('addStyleSelector');
   this.installInjectedScriptDelegate_('setStyleProperty');
-  this.installInjectedScriptDelegate_('getPrototypes', true);
-  this.installInjectedScriptDelegate_('getProperties', true);
-  this.installInjectedScriptDelegate_('setPropertyValue', true);
+  this.installInjectedScriptDelegate_('getPrototypes');
+  this.installInjectedScriptDelegate_('getProperties');
+  this.installInjectedScriptDelegate_('setPropertyValue');
+
+  this.installInjectedScriptDelegate_('evaluate');
+  this.installInjectedScriptDelegate_('addInspectedNode');
+  this.installInjectedScriptDelegate_('performSearch');
+  this.installInjectedScriptDelegate_('searchCanceled');
 };
 goog.inherits(devtools.InspectorControllerImpl,
     devtools.InspectorController);
@@ -59,24 +73,6 @@ devtools.InspectorControllerImpl.prototype.attach = function() {
  */
 devtools.InspectorControllerImpl.prototype.detach = function() {
   DevToolsHost.undockWindow();
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.storeLastActivePanel = function(panel) {
-  RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.Callback.wrap(undefined),
-      'InspectorController', JSON.stringify(['storeLastActivePanel', panel]));
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.clearMessages = function() {
-  RemoteToolsAgent.ClearConsoleMessages();
 };
 
 
@@ -130,25 +126,8 @@ devtools.InspectorControllerImpl.prototype.addResourceSourceToFrame =
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorControllerImpl.prototype.hideDOMNodeHighlight = function() {
-  RemoteToolsAgent.HideDOMNodeHighlight();
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.highlightDOMNode =
-    function(hoveredNode) {
-  RemoteToolsAgent.HighlightDOMNode(hoveredNode.id_);
-};
-
-
-/**
- * {@inheritDoc}.
- */
 devtools.InspectorControllerImpl.prototype.inspectedWindow = function() {
-  return devtools.tools.getDomAgent().getWindow();
+  return null;
 };
 
 
@@ -268,14 +247,11 @@ devtools.InspectorControllerImpl.prototype.storeLastActivePanel =
 
 /**
  * Installs delegating handler into the inspector controller.
- * @param {number} argsCound Number of the arguments in the delegating call
- *     excluding callback.
  * @param {string} methodName Method to install delegating handler for.
- * @parma {boolean} unwrap Replace first argument with its id.
  */
 devtools.InspectorControllerImpl.prototype.installInjectedScriptDelegate_ =
-    function(methodName, unwrap) {
-  this[methodName] = goog.bind(this.callInjectedScript_, this, unwrap,
+    function(methodName) {
+  this[methodName] = goog.bind(this.callInjectedScript_, this,
       methodName);
 };
 
@@ -285,20 +261,37 @@ devtools.InspectorControllerImpl.prototype.installInjectedScriptDelegate_ =
  * implementation.
  */
 devtools.InspectorControllerImpl.prototype.callInjectedScript_ =
-    function(unwrap, methodName, var_arg) {
+    function(methodName, var_arg) {
   var allArgs = Array.prototype.slice.call(arguments);
   var callback = allArgs[allArgs.length - 1];
-  var args = Array.prototype.slice.call(allArgs, 1, allArgs.length - 1);
-  if (unwrap) {
-    if (args[1].id_) {
-      args[1] = args[1].id_;
-    } else if (args[1].objectId && args[1].objectId.id_) {
-      args[1].objectId = args[1].objectId.id_;
-    }
-  }
+  var args = Array.prototype.slice.call(allArgs, 0, allArgs.length - 1);
   RemoteToolsAgent.ExecuteUtilityFunction(
       devtools.InspectorControllerImpl.parseWrap_(callback),
       'InjectedScript', JSON.stringify(args));
+};
+
+
+/**
+ * Installs delegating handler into the inspector controller.
+ * @param {string} methodName Method to install delegating handler for.
+ */
+devtools.InspectorControllerImpl.prototype.installInspectorControllerDelegate_
+    = function(methodName) {
+  this[methodName] = goog.bind(this.callInspectorController_, this,
+      methodName);
+};
+
+
+/**
+ * Bound function with the installInjectedScriptDelegate_ actual
+ * implementation.
+ */
+devtools.InspectorControllerImpl.prototype.callInspectorController_ =
+    function(methodName, var_arg) {
+  var args = Array.prototype.slice.call(arguments);
+  RemoteToolsAgent.ExecuteUtilityFunction(
+      devtools.InspectorControllerImpl.parseWrap_(undefined),
+      'InspectorController', JSON.stringify(args));
 };
 
 

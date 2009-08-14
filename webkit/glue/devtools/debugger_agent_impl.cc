@@ -190,62 +190,6 @@ String DebuggerAgentImpl::ExecuteUtilityFunction(
   }
 }
 
-String DebuggerAgentImpl::EvaluateJavaScript(
-    v8::Handle<v8::Context> utility_context,
-    const String& source,
-    String* exception) {
-  v8::HandleScope scope;
-  ASSERT(!utility_context.IsEmpty());
-  if (utility_context.IsEmpty()) {
-    *exception = "No window utility context.";
-    return "";
-  }
-
-  v8::Handle<v8::Value> res_obj;
-  { // Do evaluate.
-    DebuggerAgentManager::UtilityContextScope utility_scope;
-    v8::Handle<v8::Context> v8Context =
-        V8Proxy::context(GetPage()->mainFrame());
-    if (v8Context.IsEmpty()) {
-      *exception = "No window context.";
-      return "";
-    }
-    V8Proxy* proxy = V8Proxy::retrieve(GetPage()->mainFrame());
-    v8::Context::Scope context_scope(v8Context);
-    v8::TryCatch try_catch;
-    v8::Handle<v8::Script> script = proxy->compileScript(
-        v8ExternalString(source),
-        String(),  // url
-        0);  // source start
-    res_obj = proxy->runScript(script, true);
-    if (try_catch.HasCaught()) {
-      v8::Handle<v8::String> msg = try_catch.Message()->Get();
-      if (!msg.IsEmpty()) {
-        *exception = WebCore::toWebCoreString(msg);
-      } else {
-        *exception = "Failed to evaluate.";
-      }
-      return "";
-    }
-    DCHECK(!res_obj.IsEmpty());
-  }
-
-  { // Wrap the result.
-    v8::Context::Scope context_scope(utility_context);
-
-    v8::Handle<v8::Object> devtools = v8::Local<v8::Object>::Cast(
-        utility_context->Global()->Get(v8::String::New("devtools$$obj")));
-    v8::Handle<v8::Function> function = v8::Local<v8::Function>::Cast(
-        devtools->Get(v8::String::New("serializeConsoleObject")));
-
-    v8::Handle<v8::Value> args[] = {
-      res_obj
-    };
-    res_obj = function->Call(devtools, 1, args);
-    return WebCore::toWebCoreStringWithNullCheck(res_obj);
-  }
-}
-
 WebCore::Page* DebuggerAgentImpl::GetPage() {
   return web_view_impl_->page();
 }

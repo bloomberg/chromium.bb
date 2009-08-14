@@ -10,21 +10,9 @@
 // Tools agent provides API for enabling / disabling other agents as well as
 // API for auxiliary UI functions such as dom elements highlighting.
 #define TOOLS_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4) \
-  /* Highlights Dom node with given ID */ \
-  METHOD1(HighlightDOMNode, int /* node_id */) \
-  \
-  /* Clears Dom Node highlight. */ \
-  METHOD0(HideDOMNodeHighlight) \
-  \
   /* Requests that utility js function is executed with the given args. */ \
   METHOD3(ExecuteUtilityFunction, int /* call_id */, \
       String /* function_name */, String /* json_args */) \
-  \
-  /* Requests that the js source is executed within the inspected page. */ \
-  METHOD2(EvaluateJavaScript, int /* call_id */, String /* source*/) \
-  \
-  /* Clears cached console messages. */ \
-  METHOD0(ClearConsoleMessages) \
   \
   /* Requests that the agent sends content of the resource with given id to the
      delegate. */ \
@@ -38,17 +26,10 @@ DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
 #define TOOLS_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, \
     METHOD4) \
   /* Updates focused node on the client. */ \
-  METHOD1(UpdateFocusedNode, int /* node_id */) \
-  \
-  /* Updates focused node on the client. */ \
   METHOD1(FrameNavigate, std::string /* url */) \
   \
   /* Response to the GetNodeProperties. */ \
   METHOD3(DidExecuteUtilityFunction, int /* call_id */, String /* result */, \
-      String /* exception */) \
-  \
-  /* Response to the EvaluateJavaScript. */ \
-  METHOD3(DidEvaluateJavaScript, int /* call_id */, String /* result */, \
       String /* exception */) \
   \
   /* Sends InspectorFrontend message to be dispatched on client. */ \

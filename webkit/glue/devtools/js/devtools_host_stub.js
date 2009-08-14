@@ -81,107 +81,6 @@ RemoteDebuggerAgentStub.prototype.GetNextLogLines = function() {
 /**
  * @constructor
  */
-RemoteDomAgentStub = function() {
-};
-
-
-RemoteDomAgentStub.sendDocumentElement_ = function() {
-  RemoteDomAgent.SetDocumentElement([
-    1,       // id
-    1,       // type = Node.ELEMENT_NODE,
-    'HTML',  // nodeName
-    '',      // nodeValue
-    ['foo','bar'],  // attributes
-    2,       // childNodeCount
-  ]);
-};
-
-
-RemoteDomAgentStub.sendChildNodes_ = function(id) {
-  if (id == 1) {
-    RemoteDomAgent.SetChildNodes(id,
-      [
-        [
-         2,       // id
-         1,       // type = Node.ELEMENT_NODE,
-         'DIV',   // nodeName
-         '',      // nodeValue
-         ['foo','bar'],  // attributes
-         1,       // childNodeCount
-        ],
-        [
-         3,  // id
-         3,  // type = Node.TEXT_NODE,
-         '', // nodeName
-         'Text', // nodeValue
-        ]
-      ]);
-  } else if (id == 2) {
-    RemoteDomAgent.SetChildNodes(id,
-      [
-        [
-        4,       // id
-        1,       // type = Node.ELEMENT_NODE,
-        'span',   // nodeName
-        '',      // nodeValue
-        ['foo','bar'],  // attributes
-        0,       // childNodeCount
-      ]
-    ]);
-  }
-};
-
-
-RemoteDomAgentStub.prototype.GetDocumentElement = function(callId) {
-  setTimeout(function() {
-    RemoteDomAgentStub.sendDocumentElement_();
-  }, 0);
-};
-
-
-RemoteDomAgentStub.prototype.GetChildNodes = function(callId, id) {
-  setTimeout(function() {
-    RemoteDomAgentStub.sendChildNodes_(id);
-    RemoteDomAgent.DidGetChildNodes(callId);
-  }, 0);
-};
-
-
-RemoteDomAgentStub.prototype.SetAttribute = function(callId) {
-  setTimeout(function() {
-    RemoteDomAgent.DidApplyDomChange(callId, true);
-  }, 0);
-};
-
-
-RemoteDomAgentStub.prototype.RemoveAttribute = function(callId) {
-  setTimeout(function() {
-    RemoteDomAgent.DidApplyDomChange(callId, true);
-  }, 0);
-};
-
-
-RemoteDomAgentStub.prototype.SetTextNodeValue = function(callId) {
-  setTimeout(function() {
-    RemoteDomAgent.DidApplyDomChange(callId, true);
-  }, 0);
-};
-
-
-RemoteDomAgentStub.prototype.PerformSearch = function(callId, query) {
-  setTimeout(function() {
-    RemoteDomAgent.DidPerformSearch(callId, [1]);
-  }, 0);
-};
-
-
-RemoteDomAgentStub.prototype.DiscardBindings = function() {
-};
-
-
-/**
- * @constructor
- */
 RemoteToolsAgentStub = function() {
 };
 
@@ -256,18 +155,6 @@ RemoteToolsAgentStub.prototype.ExecuteUtilityFunction = function(callId,
     RemoteToolsAgent.DidExecuteUtilityFunction(callId,
         JSON.stringify(result), '');
   }, 0);
-};
-
-
-RemoteToolsAgentStub.prototype.GetNodePrototypes = function(callId, nodeId) {
-  setTimeout(function() {
-    RemoteToolsAgent.DidGetNodePrototypes(callId,
-        JSON.stringify());
-  }, 0);
-};
-
-
-RemoteToolsAgentStub.prototype.ClearConsoleMessages = function() {
 };
 
 
@@ -384,12 +271,7 @@ function addDummyResource() {
 
 
 DevToolsHostStub.prototype.loaded = function() {
-  RemoteDomAgentStub.sendDocumentElement_();
-  RemoteDomAgentStub.sendChildNodes_(1);
-  RemoteDomAgentStub.sendChildNodes_(2);
-  devtools.tools.updateFocusedNode_(4);
   addDummyResource();
-
   uiTests.runAllTests();
 };
 
@@ -417,7 +299,6 @@ if (!window['DevToolsHost']) {
   window['RemoteDebuggerAgent'] = new RemoteDebuggerAgentStub();
   window['RemoteDebuggerCommandExecutor'] =
       new RemoteDebuggerCommandExecutorStub();
-  window['RemoteDomAgent'] = new RemoteDomAgentStub();
   window['RemoteToolsAgent'] = new RemoteToolsAgentStub();
   window['DevToolsHost'] = new DevToolsHostStub();
 }

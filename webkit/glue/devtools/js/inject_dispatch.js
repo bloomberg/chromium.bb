@@ -40,14 +40,7 @@ var dispatch = function(method, var_args) {
   // Handle all messages with non-primitieve arguments here.
   var args = Array.prototype.slice.call(arguments);
 
-  // Serialize objects here.
-  if (method == 'addMessageToConsole') {
-    // Skip first argument since it is serializable.
-    // Method has index 0, first argument has index 1. Skip both.
-    for (var i = 2; i < args.length; ++i) {
-      args[i] = devtools$$obj.wrapConsoleObject(args[i]);
-    }
-  } else if (method == 'inspectedWindowCleared' ||
+  if (method == 'inspectedWindowCleared' ||
       method == 'reset' ||
       method == 'setAttachedWindow') {
     // Filter out messages we don't need here.

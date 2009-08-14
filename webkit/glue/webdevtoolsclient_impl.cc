@@ -30,7 +30,6 @@
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent.h"
 #include "webkit/glue/devtools/devtools_rpc_js.h"
-#include "webkit/glue/devtools/dom_agent.h"
 #include "webkit/glue/devtools/tools_agent.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsclient_delegate.h"
@@ -44,8 +43,6 @@ using WebKit::WebString;
 
 DEFINE_RPC_JS_BOUND_OBJ(DebuggerAgent, DEBUGGER_AGENT_STRUCT,
     DebuggerAgentDelegate, DEBUGGER_AGENT_DELEGATE_STRUCT)
-DEFINE_RPC_JS_BOUND_OBJ(DomAgent, DOM_AGENT_STRUCT,
-    DomAgentDelegate, DOM_AGENT_DELEGATE_STRUCT)
 DEFINE_RPC_JS_BOUND_OBJ(ToolsAgent, TOOLS_AGENT_STRUCT,
     ToolsAgentDelegate, TOOLS_AGENT_DELEGATE_STRUCT)
 
@@ -148,7 +145,6 @@ WebDevToolsClientImpl::WebDevToolsClientImpl(
       delegate, frame, L"RemoteDebuggerCommandExecutor"));
   debugger_agent_obj_.set(new JsDebuggerAgentBoundObj(
       this, frame, L"RemoteDebuggerAgent"));
-  dom_agent_obj_.set(new JsDomAgentBoundObj(this, frame, L"RemoteDomAgent"));
   tools_agent_obj_.set(
       new JsToolsAgentBoundObj(this, frame, L"RemoteToolsAgent"));
 

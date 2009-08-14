@@ -29,7 +29,6 @@
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
-#include "webkit/glue/devtools/dom_agent_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_delegate.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
@@ -61,7 +60,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       document_(NULL),
       attached_(false) {
   debugger_agent_delegate_stub_.set(new DebuggerAgentDelegateStub(this));
-  dom_agent_delegate_stub_.set(new DomAgentDelegateStub(this));
   tools_agent_delegate_stub_.set(new ToolsAgentDelegateStub(this));
   tools_agent_native_delegate_stub_.set(new ToolsAgentNativeDelegateStub(this));
 }
@@ -87,7 +85,6 @@ void WebDevToolsAgentImpl::Attach() {
                             debugger_agent_delegate_stub_.get(),
                             this));
   Page* page = web_view_impl_->page();
-  dom_agent_impl_.set(new DomAgentImpl(dom_agent_delegate_stub_.get()));
 
   // We are potentially attaching to the running page -> init agents with
   // Document if any.
@@ -99,17 +96,20 @@ void WebDevToolsAgentImpl::Attach() {
       InitDevToolsAgentHost();
     }
 
-    dom_agent_impl_->SetDocument(doc);
-
     InspectorController* ic = web_view_impl_->page()->inspectorController();
     // Unhide resources panel if necessary.
     tools_agent_delegate_stub_->SetResourcesPanelEnabled(
         ic->resourceTrackingEnabled());
     v8::HandleScope scope;
+    v8::Context::Scope context_scope(utility_context_);
+
     ScriptState* state = scriptStateFromPage(web_view_impl_->page());
+    v8::Handle<v8::Object> injected_script = v8::Local<v8::Object>::Cast(
+        utility_context_->Global()->Get(v8::String::New("InjectedScript")));
     ic->setFrontendProxyObject(
         state,
-        ScriptObject(state, utility_context_->Global()));
+        ScriptObject(state, utility_context_->Global()),
+        ScriptObject(state, injected_script));
     // Allow controller to send messages to the frontend.
     ic->setWindowVisible(true, false);
   }
@@ -120,10 +120,8 @@ void WebDevToolsAgentImpl::Detach() {
   // Prevent controller from sending messages to the frontend.
   InspectorController* ic = web_view_impl_->page()->inspectorController();
   ic->setWindowVisible(false, false);
-  HideDOMNodeHighlight();
   devtools_agent_host_.set(NULL);
   debugger_agent_impl_.set(NULL);
-  dom_agent_impl_.set(NULL);
   attached_ = false;
 }
 
@@ -148,7 +146,6 @@ void WebDevToolsAgentImpl::SetMainFrameDocumentReady(bool ready) {
     debugger_agent_impl_->ResetUtilityContext(doc, &utility_context_);
     InitDevToolsAgentHost();
   }
-  dom_agent_impl_->SetDocument(doc);
 }
 
 void WebDevToolsAgentImpl::DidCommitLoadForFrame(
@@ -186,25 +183,6 @@ void WebDevToolsAgentImpl::ForceRepaint() {
   delegate_->ForceRepaint();
 }
 
-void WebDevToolsAgentImpl::HighlightDOMNode(int node_id) {
-  if (!attached_) {
-    return;
-  }
-  Node* node = dom_agent_impl_->GetNodeForId(node_id);
-  if (!node) {
-    return;
-  }
-  Page* page = web_view_impl_->page();
-  page->inspectorController()->highlight(node);
-}
-
-void WebDevToolsAgentImpl::HideDOMNodeHighlight() {
-  Page* page = web_view_impl_->page();
-  if (page) {
-    page->inspectorController()->hideHighlight();
-  }
-}
-
 void WebDevToolsAgentImpl::ExecuteUtilityFunction(
       int call_id,
       const String& function_name,
@@ -215,23 +193,6 @@ void WebDevToolsAgentImpl::ExecuteUtilityFunction(
       function_name, json_args, &exception);
   tools_agent_delegate_stub_->DidExecuteUtilityFunction(call_id,
       result, exception);
-}
-
-void WebDevToolsAgentImpl::EvaluateJavaScript(
-    int call_id,
-    const WebCore::String& source) {
-  String exception;
-  String result = debugger_agent_impl_->EvaluateJavaScript(utility_context_,
-      source, &exception);
-  tools_agent_delegate_stub_->DidEvaluateJavaScript(call_id, result, exception);
-}
-
-void WebDevToolsAgentImpl::ClearConsoleMessages() {
-// TODO(pfeldman): restore once migrated to DOMAgent.
-//  Page* page = web_view_impl_->page();
-//  if (page) {
-//    page->inspectorController()->clearConsoleMessages();
-//  }
 }
 
 void WebDevToolsAgentImpl::GetResourceContent(
@@ -284,21 +245,10 @@ void WebDevToolsAgentImpl::DispatchMessageFromClient(
           *message.get())) {
     return;
   }
-
-  if (DomAgentDispatch::Dispatch(
-      dom_agent_impl_.get(), class_name, method_name, *message.get())) {
-    return;
-  }
 }
 
 void WebDevToolsAgentImpl::InspectElement(int x, int y) {
-  Node* node = web_view_impl_->GetNodeForWindowPos(x, y);
-  if (!node) {
-    return;
-  }
-
-  int node_id = dom_agent_impl_->PushNodePathToClient(node);
-  tools_agent_delegate_stub_->UpdateFocusedNode(node_id);
+  // TODO(pfeldman): implement using new inspector controller API.
 }
 
 void WebDevToolsAgentImpl::SendRpcMessage(
@@ -314,9 +264,6 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
   devtools_agent_host_->AddProtoFunction(
       "dispatch",
       WebDevToolsAgentImpl::JsDispatchOnClient);
-  devtools_agent_host_->AddProtoFunction(
-      "getNodeForId",
-      WebDevToolsAgentImpl::JsGetNodeForId);
   devtools_agent_host_->Build();
 
   v8::HandleScope scope;
@@ -340,16 +287,6 @@ v8::Handle<v8::Value> WebDevToolsAgentImpl::JsDispatchOnClient(
       v8::External::Cast(*args.Data())->Value());
   agent->tools_agent_delegate_stub_->DispatchOnClient(message);
   return v8::Undefined();
-}
-
-// static
-v8::Handle<v8::Value> WebDevToolsAgentImpl::JsGetNodeForId(
-    const v8::Arguments& args) {
-  int node_id = static_cast<int>(args[0]->NumberValue());
-  WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  Node* node = agent->dom_agent_impl_->GetNodeForId(node_id);
-  return V8DOMWrapper::convertToV8Object(V8ClassIndex::NODE, node);
 }
 
 // static

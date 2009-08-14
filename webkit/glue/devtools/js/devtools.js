@@ -10,7 +10,6 @@
 goog.provide('devtools.Tools');
 
 goog.require('devtools.DebuggerAgent');
-goog.require('devtools.DomAgent');
 
 
 /**
@@ -36,11 +35,8 @@ devtools.dispatch = function(remoteName, methodName, msg) {
 
 
 devtools.ToolsAgent = function() {
-  RemoteToolsAgent.DidEvaluateJavaScript = devtools.Callback.processCallback;
   RemoteToolsAgent.DidExecuteUtilityFunction =
       devtools.Callback.processCallback;
-  RemoteToolsAgent.UpdateFocusedNode =
-      goog.bind(this.updateFocusedNode_, this);
   RemoteToolsAgent.FrameNavigate =
       goog.bind(this.frameNavigate_, this);
   RemoteToolsAgent.DispatchOnClient =
@@ -48,7 +44,6 @@ devtools.ToolsAgent = function() {
   RemoteToolsAgent.SetResourcesPanelEnabled =
       goog.bind(this.setResourcesPanelEnabled_, this);
   this.debuggerAgent_ = new devtools.DebuggerAgent();
-  this.domAgent_ = new devtools.DomAgent();
 };
 
 
@@ -57,10 +52,7 @@ devtools.ToolsAgent = function() {
  */
 devtools.ToolsAgent.prototype.reset = function() {
   DevToolsHost.reset();
-  this.domAgent_.reset();
   this.debuggerAgent_.reset();
-
-  this.domAgent_.getDocumentElementAsync();
 };
 
 
@@ -72,16 +64,7 @@ devtools.ToolsAgent.prototype.reset = function() {
  */
 devtools.ToolsAgent.prototype.evaluateJavaScript = function(script,
     opt_callback) {
-  var callbackId = devtools.Callback.wrap(function(result, exception) {
-    if (opt_callback) {
-      if (exception) {
-        opt_callback(exception, true /* result is exception */);
-      } else {
-        opt_callback(JSON.parse(result), false);
-      }
-    }
-  });
-  RemoteToolsAgent.EvaluateJavaScript(callbackId, script);
+  InspectorController.evaluate(script, opt_callback || function() {});
 };
 
 
@@ -90,24 +73,6 @@ devtools.ToolsAgent.prototype.evaluateJavaScript = function(script,
  */
 devtools.ToolsAgent.prototype.getDebuggerAgent = function() {
   return this.debuggerAgent_;
-};
-
-/**
- * DomAgent accessor.
- * @return {devtools.DomAgent} Dom agent instance.
- */
-devtools.ToolsAgent.prototype.getDomAgent = function() {
-  return this.domAgent_;
-};
-
-
-/**
- * @see tools_agent.h
- * @private
- */
-devtools.ToolsAgent.prototype.updateFocusedNode_ = function(nodeId) {
-  var node = this.domAgent_.getNodeForId(nodeId);
-  WebInspector.updateFocusedNode(node);
 };
 
 
@@ -251,94 +216,6 @@ var webkitUpdateChildren =
 
 
 /**
- * @override
- */
-WebInspector.ElementsTreeElement.prototype.updateChildren = function() {
-  var self = this;
-  devtools.tools.getDomAgent().getChildNodesAsync(this.representedObject,
-      function() {
-        webkitUpdateChildren.call(self);
-      });
-};
-
-
-/**
- * @override
- */
-WebInspector.ElementsPanel.prototype.performSearch = function(query) {
-  this.searchCanceled();
-  devtools.tools.getDomAgent().performSearch(query,
-      goog.bind(this.performSearchCallback_, this));
-};
-
-
-WebInspector.ElementsPanel.prototype.performSearchCallback_ = function(nodes) {
-  for (var i = 0; i < nodes.length; ++i) {
-    var treeElement = this.treeOutline.findTreeElement(nodes[i]);
-    if (treeElement)
-      treeElement.highlighted = true;
-  }
-
-  if (nodes.length) {
-    this.currentSearchResultIndex_ = 0;
-    this.focusedDOMNode = nodes[0];
-  }
-
-  this.searchResultCount_ = nodes.length;
-};
-
-
-/**
- * @override
- */
-WebInspector.ElementsPanel.prototype.searchCanceled = function() {
-  this.currentSearchResultIndex_ = 0;
-  this.searchResultCount_ = 0;
-  devtools.tools.getDomAgent().searchCanceled(
-      goog.bind(this.searchCanceledCallback_, this));
-};
-
-
-WebInspector.ElementsPanel.prototype.searchCanceledCallback_ = function(nodes) {
-  for (var i = 0; i < nodes.length; i++) {
-    var treeElement = this.treeOutline.findTreeElement(nodes[i]);
-    if (treeElement)
-      treeElement.highlighted = false;
-  }
-};
-
-
-/**
- * @override
- */
-WebInspector.ElementsPanel.prototype.jumpToNextSearchResult = function() {
-  if (!this.searchResultCount_)
-    return;
-
-  if (++this.currentSearchResultIndex_ >= this.searchResultCount_)
-    this.currentSearchResultIndex_ = 0;
-
-  this.focusedDOMNode = devtools.tools.getDomAgent().
-      getSearchResultNode(this.currentSearchResultIndex_);
-};
-
-
-/**
- * @override
- */
-WebInspector.ElementsPanel.prototype.jumpToPreviousSearchResult = function() {
-  if (!this.searchResultCount_)
-    return;
-
-  if (--this.currentSearchResultIndex_ < 0)
-    this.currentSearchResultIndex_ = this.searchResultCount_ - 1;
-
-  this.focusedDOMNode = devtools.tools.getDomAgent().
-      getSearchResultNode(this.currentSearchResultIndex_);
-};
-
-
-/**
  * This override is necessary for adding script source asynchronously.
  * @override
  */
@@ -378,39 +255,6 @@ WebInspector.ScriptView.prototype.didResolveScriptSource_ = function() {
   this.sourceFrame.addEventListener(
       "syntax highlighting complete", this._syntaxHighlightingComplete, this);
   this.sourceFrame.syntaxHighlightJavascript();
-};
-
-
-/**
- * Callback function used with the getNodeProperties.
- */
-WebInspector.didGetNodePropertiesAsync_ = function(treeOutline, constructor,
-    nodeId, path, json) {
-  var props = JSON.parse(json);
-  var properties = [];
-  var obj = {};
-  obj.devtools$$nodeId_ = nodeId;
-  obj.devtools$$path_ = path;
-  for (var i = 0; i < props.length; i += 4) {
-    var type = props[i];
-    var name = props[i + 1];
-    var value = props[i + 2];
-    var className = props[i + 3];
-    properties.push(name);
-    if (type == 'object' || type == 'function') {
-      // fake object is going to be replaced on expand.
-      obj[name] = new WebInspector.UnresolvedPropertyValue(type, className);
-    } else {
-      obj[name] = value;
-    }
-  }
-  properties.sort();
-  treeOutline.removeChildren();
-
-  for (var i = 0; i < properties.length; ++i) {
-    var propertyName = properties[i];
-    treeOutline.appendChild(new constructor(obj, propertyName));
-  }
 };
 
 
@@ -653,17 +497,6 @@ WebInspector.ResourcesPanel.prototype.__defineGetter__(
 WebInspector.ScriptsPanel.prototype.__defineGetter__(
     'searchableViews',
     WebInspector.searchableViews_);
-
-
-WebInspector.ConsoleView.prototype.doEvalInWindow =
-    function(expression, callback) {
-  if (!expression ) {
-    // Empty expression should evaluate to the global object for completions to
-    // work.
-    expression = "this";
-  }
-  devtools.tools.evaluateJavaScript(expression, callback);
-};
 
 
 WebInspector.ScriptsPanel.prototype.doEvalInCallFrame =

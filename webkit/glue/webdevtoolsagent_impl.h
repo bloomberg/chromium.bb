@@ -11,7 +11,6 @@
 
 #include "v8.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
-#include "webkit/glue/devtools/dom_agent.h"
 #include "webkit/glue/devtools/tools_agent.h"
 #include "webkit/glue/webdevtoolsagent.h"
 
@@ -28,8 +27,6 @@ class WebFrame;
 class BoundObject;
 class DebuggerAgentDelegateStub;
 class DebuggerAgentImpl;
-class DomAgentImpl;
-class NetAgentImpl;
 class Value;
 class WebDevToolsAgentDelegate;
 class WebFrameImpl;
@@ -45,16 +42,10 @@ class WebDevToolsAgentImpl
   virtual ~WebDevToolsAgentImpl();
 
   // ToolsAgent implementation.
-  virtual void HighlightDOMNode(int node_id);
-  virtual void HideDOMNodeHighlight();
   virtual void ExecuteUtilityFunction(
       int call_id,
       const WebCore::String& function_name,
       const WebCore::String& json_args);
-  virtual void EvaluateJavaScript(
-      int call_id,
-      const WebCore::String& source);
-  virtual void ClearConsoleMessages();
   virtual void GetResourceContent(
       int call_id,
       int identifier);
@@ -88,7 +79,6 @@ class WebDevToolsAgentImpl
 
  private:
   static v8::Handle<v8::Value> JsDispatchOnClient(const v8::Arguments& args);
-  static v8::Handle<v8::Value> JsGetNodeForId(const v8::Arguments& args);
   void DisposeUtilityContext();
 
   void InitDevToolsAgentHost();
@@ -98,11 +88,9 @@ class WebDevToolsAgentImpl
   WebViewImpl* web_view_impl_;
   WebCore::Document* document_;
   OwnPtr<DebuggerAgentDelegateStub> debugger_agent_delegate_stub_;
-  OwnPtr<DomAgentDelegateStub> dom_agent_delegate_stub_;
   OwnPtr<ToolsAgentDelegateStub> tools_agent_delegate_stub_;
   OwnPtr<ToolsAgentNativeDelegateStub> tools_agent_native_delegate_stub_;
   OwnPtr<DebuggerAgentImpl> debugger_agent_impl_;
-  OwnPtr<DomAgentImpl> dom_agent_impl_;
   bool attached_;
   // TODO(pfeldman): This should not be needed once GC styles issue is fixed
   // for matching rules.
