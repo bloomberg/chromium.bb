@@ -15,6 +15,7 @@ var extensionDataFormat = {
       "name": "Extension Name",
       "description": "Extension long format description",
       "version": "1.0.231",
+      "enabled": "true",
       "content_scripts": [
         {
           "js": ["script1_file1.js", "script1_file2.js"],
@@ -49,6 +50,7 @@ var extensionDataFormat = {
       "name": "Extension Name",
       "description": "Extension long format description",
       "version": "1.0.231",
+      "enabled": "true",
       "content_scripts": [
         {
           "js": ["script1_file1.js", "script1_file2.js"],
@@ -126,6 +128,15 @@ function sendInspectMessage(viewData) {
 function handleReloadExtension(node) {
   // Tell the C++ ExtensionDOMHandler to reload the extension.
   chrome.send('reload', [node.extensionId]);
+}
+
+/**
+ * Handles a 'reenable' button getting clicked.
+ */
+function handleEnableExtension(node) {
+  // Tell the C++ ExtensionDOMHandler to reload the extension.
+  chrome.send('enable', [node.extensionId]);
+  requestExtensionsData();
 }
 
 /**
@@ -247,10 +258,19 @@ th.desc {
 
         <div jsdisplay="extensions.length > 0">
           <div class="extension" jsselect="extensions">
-            <div class="extension-name" jscontent="name">Extension Name</div>
+            <div class="extension-name">
+              <span jscontent="name">Extension Name</span>
+              <span jsdisplay="!enabled">(Disabled)</span>
+            </div>
             <div class="extension-actions">
               <button
                 jsvalues=".extensionId:id"
+                jsdisplay="!enabled"
+                onclick="handleEnableExtension(this)"
+                >Enable</button>
+              <button
+                jsvalues=".extensionId:id"
+                jsdisplay="enabled"
                 onclick="handleReloadExtension(this)"
                 >Reload</button>
               <button

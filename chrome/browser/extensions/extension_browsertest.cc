@@ -42,14 +42,15 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   size_t num_before = service->extensions()->size();
-  registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
-                 NotificationService::AllSources());
-  service->LoadExtension(path);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
-      kTimeoutMs);
-  ui_test_utils::RunMessageLoop();
-  registrar_.Remove(this, NotificationType::EXTENSIONS_LOADED,
-                    NotificationService::AllSources());
+  {
+    NotificationRegistrar registrar;
+    registrar.Add(this, NotificationType::EXTENSIONS_LOADED,
+                  NotificationService::AllSources());
+    service->LoadExtension(path);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
+    ui_test_utils::RunMessageLoop();
+  }
   size_t num_after = service->extensions()->size();
   if (num_after != (num_before + 1))
     return false;
@@ -57,21 +58,26 @@ bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
   return WaitForExtensionHostsToLoad();
 }
 
-bool ExtensionBrowserTest::InstallExtension(const FilePath& path) {
+bool ExtensionBrowserTest::InstallExtension(const FilePath& path,
+                                            int expected_change) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
 
-  registrar_.Add(this, NotificationType::EXTENSIONS_LOADED,
-                 NotificationService::AllSources());
-  service->InstallExtension(path);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
-      kTimeoutMs);
-  ui_test_utils::RunMessageLoop();
-  registrar_.Remove(this, NotificationType::EXTENSIONS_LOADED,
-                    NotificationService::AllSources());
+  {
+    NotificationRegistrar registrar;
+    registrar.Add(this, NotificationType::EXTENSIONS_LOADED,
+                  NotificationService::AllSources());
+    registrar.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
+                  NotificationService::AllSources());
+    service->InstallExtension(path);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
+    ui_test_utils::RunMessageLoop();
+  }
+
   size_t num_after = service->extensions()->size();
-  if (num_after != (num_before + 1)) {
+  if (num_after != (num_before + expected_change)) {
     std::cout << "Num extensions before: " << IntToString(num_before) << " "
               << "num after: " << IntToString(num_after) << " "
               << "Installed extensions follow:\n";
@@ -147,11 +153,16 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
 }
 
 void ExtensionBrowserTest::Observe(NotificationType type,
-                     const NotificationSource& source,
-                     const NotificationDetails& details) {
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSIONS_LOADED:
       std::cout << "Got EXTENSION_LOADED notification.\n";
+      MessageLoopForUI::current()->Quit();
+      break;
+
+    case NotificationType::EXTENSION_UPDATE_DISABLED:
+      std::cout << "Got EXTENSIONS_DISABLED_LOAD notification.\n";
       MessageLoopForUI::current()->Quit();
       break;
 

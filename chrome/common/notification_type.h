@@ -603,6 +603,10 @@ class NotificationType {
     // Sent when new extensions are loaded. The details are an ExtensionList*.
     EXTENSIONS_LOADED,
 
+    // Sent when attempting to load a new extension, but they are disabled. The
+    // details are an Extension*.
+    EXTENSION_UPDATE_DISABLED,
+
     // Sent when a new theme is installed. The details are an Extension.
     THEME_INSTALLED,
 

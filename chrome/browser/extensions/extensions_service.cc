@@ -118,7 +118,7 @@ void ExtensionsService::InstallExtension(const FilePath& extension_path) {
 
 void ExtensionsService::UpdateExtension(const std::string& id,
                                         const FilePath& extension_path) {
-  if (!GetExtensionById(id)) {
+  if (!GetExtensionByIdInternal(id, true, true)) {
     LOG(WARNING) << "Will not update extension " << id << " because it is not "
                  << "installed";
     return;
@@ -142,7 +142,7 @@ void ExtensionsService::ReloadExtension(const std::string& extension_id) {
 
 void ExtensionsService::UninstallExtension(const std::string& extension_id,
                                            bool external_uninstall) {
-  Extension* extension = GetExtensionById(extension_id);
+  Extension* extension = GetExtensionByIdInternal(extension_id, true, true);
 
   // Callers should not send us nonexistant extensions.
   DCHECK(extension);
@@ -157,6 +157,29 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
   }
 
   UnloadExtension(extension_id);
+}
+
+void ExtensionsService::EnableExtension(const std::string& extension_id) {
+  Extension* extension = GetExtensionByIdInternal(extension_id, false, true);
+  if (!extension) {
+    NOTREACHED() << "Trying to enable an extension that isn't disabled.";
+    return;
+  }
+
+  // Move it over to the enabled list.
+  extension_prefs_->SetExtensionState(extension, Extension::ENABLED);
+  extensions_.push_back(extension);
+  ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
+                                           disabled_extensions_.end(),
+                                           extension);
+  disabled_extensions_.erase(iter);
+
+  ExtensionList extensions;
+  extensions.push_back(extension);
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSIONS_LOADED,
+      Source<ExtensionsService>(this),
+      Details<ExtensionList>(&extensions));
 }
 
 void ExtensionsService::LoadExtension(const FilePath& extension_path) {
@@ -213,17 +236,22 @@ void ExtensionsService::CheckForExternalUpdates() {
 }
 
 void ExtensionsService::UnloadExtension(const std::string& extension_id) {
-  Extension* extension = NULL;
-  ExtensionList::iterator iter;
-  for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
-    if ((*iter)->id() == extension_id) {
-      extension = *iter;
-      break;
-    }
-  }
+  scoped_ptr<Extension> extension(
+      GetExtensionByIdInternal(extension_id, true, true));
 
   // Callers should not send us nonexistant extensions.
-  CHECK(extension);
+  CHECK(extension.get());
+
+  ExtensionList::iterator iter = std::find(disabled_extensions_.begin(),
+                                           disabled_extensions_.end(),
+                                           extension.get());
+  if (iter != disabled_extensions_.end()) {
+    // It's disabled, so don't send the unload notification.
+    disabled_extensions_.erase(iter);
+    return;
+  }
+
+  iter = std::find(extensions_.begin(), extensions_.end(), extension.get());
 
   // Remove the extension from our list.
   extensions_.erase(iter);
@@ -231,9 +259,7 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   // Tell other services the extension is gone.
   NotificationService::current()->Notify(NotificationType::EXTENSION_UNLOADED,
                                          Source<ExtensionsService>(this),
-                                         Details<Extension>(extension));
-
-  delete extension;
+                                         Details<Extension>(extension.get()));
 }
 
 void ExtensionsService::UnloadAllExtensions() {
@@ -277,32 +303,56 @@ void ExtensionsService::OnExtensionsLoaded(ExtensionList* new_extensions) {
   // - --load-extension
   // - externally installed extensions
   ExtensionList enabled_extensions;
+  ExtensionList disabled_extensions;
   for (ExtensionList::iterator iter = new_extensions->begin();
        iter != new_extensions->end(); ++iter) {
+    // Extensions that get enabled get added to extensions_ and deleted later.
+    // Anything skipped must be deleted now so we don't leak.
+    scoped_ptr<Extension> extension(*iter);
     if (extensions_enabled() ||
-        (*iter)->IsTheme() ||
-        (*iter)->location() == Extension::LOAD ||
-        Extension::IsExternalLocation((*iter)->location())) {
-      Extension* old = GetExtensionById((*iter)->id());
+        extension->IsTheme() ||
+        extension->location() == Extension::LOAD ||
+        Extension::IsExternalLocation(extension->location())) {
+      Extension* old = GetExtensionById(extension->id());
       if (old) {
-        if ((*iter)->version()->CompareTo(*(old->version())) > 0) {
+        if (extension->version()->CompareTo(*(old->version())) > 0) {
+          bool higher_permissions =
+              (extension->GetPermissionClass() > old->GetPermissionClass());
+
           // To upgrade an extension in place, unload the old one and
           // then load the new one.
-          // TODO(erikkay) issue 12399
           UnloadExtension(old->id());
+          old = NULL;
+
+          if (higher_permissions) {
+            // Extension was upgraded to a high permission class. Disable it and
+            // notify the user.
+            extension_prefs_->SetExtensionState(extension.get(),
+                                                Extension::DISABLED);
+            NotificationService::current()->Notify(
+                NotificationType::EXTENSION_UPDATE_DISABLED,
+                Source<ExtensionsService>(this),
+                Details<Extension>(extension.get()));
+          }
         } else {
           // We already have the extension of the same or older version.
           LOG(WARNING) << "Duplicate extension load attempt: " << (*iter)->id();
-          delete *iter;
           continue;
         }
       }
-      enabled_extensions.push_back(*iter);
-      extensions_.push_back(*iter);
-    } else {
-      // Extensions that get enabled get added to extensions_ and deleted later.
-      // Anything skipped must be deleted now so we don't leak.
-      delete *iter;
+
+      switch (extension_prefs_->GetExtensionState(extension->id())) {
+        case Extension::ENABLED:
+          enabled_extensions.push_back(extension.get());
+          extensions_.push_back(extension.release());
+          break;
+        case Extension::DISABLED:
+          disabled_extensions.push_back(extension.get());
+          disabled_extensions_.push_back(extension.release());
+          break;
+        default:
+          break;
+      }
     }
   }
 
@@ -346,7 +396,6 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension) {
   OnExtensionsLoaded(list);
 }
 
-
 void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
   Extension* extension = GetExtensionById(id);
   if (extension && extension->IsTheme()) {
@@ -357,12 +406,23 @@ void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
   }
 }
 
-Extension* ExtensionsService::GetExtensionById(const std::string& id) {
+Extension* ExtensionsService::GetExtensionByIdInternal(const std::string& id,
+                                                       bool include_enabled,
+                                                       bool include_disabled) {
   std::string lowercase_id = StringToLowerASCII(id);
-  for (ExtensionList::const_iterator iter = extensions_.begin();
-      iter != extensions_.end(); ++iter) {
-    if ((*iter)->id() == lowercase_id)
-      return *iter;
+  if (include_enabled) {
+    for (ExtensionList::const_iterator iter = extensions_.begin();
+        iter != extensions_.end(); ++iter) {
+      if ((*iter)->id() == lowercase_id)
+        return *iter;
+    }
+  }
+  if (include_disabled) {
+    for (ExtensionList::const_iterator iter = disabled_extensions_.begin();
+        iter != disabled_extensions_.end(); ++iter) {
+      if ((*iter)->id() == lowercase_id)
+        return *iter;
+    }
   }
   return NULL;
 }

@@ -87,14 +87,20 @@ class ExtensionsService
   virtual ~ExtensionsService();
 
   // Gets the list of currently installed extensions.
-  virtual const ExtensionList* extensions() const {
-    return &extensions_;
+  virtual const ExtensionList* extensions() const { return &extensions_; }
+  virtual const ExtensionList* disabled_extensions() const {
+    return &disabled_extensions_;
   }
 
   const FilePath& install_directory() const { return install_directory_; }
 
   // Initialize and start all installed extensions.
   void Init();
+
+  // Look up an extension by ID.
+  Extension* GetExtensionById(const std::string& id) {
+    return GetExtensionByIdInternal(id, true, false);
+  }
 
   // Install the extension file at |extension_path|.  Will install as an
   // update if an older version is already installed.
@@ -123,6 +129,11 @@ class ExtensionsService
   void UninstallExtension(const std::string& extension_id,
                           bool external_uninstall);
 
+  // Enable a previously disabled extension and reload it. The extension should
+  // already exist in the extension prefs.
+  // TODO(mpcomplete): add DisableExtension.
+  void EnableExtension(const std::string& extension_id);
+
   // Load the extension from the directory |extension_path|.
   void LoadExtension(const FilePath& extension_path);
 
@@ -143,9 +154,6 @@ class ExtensionsService
 
   // Scan the extension directory and clean up the cruft.
   void GarbageCollectExtensions();
-
-  // Lookup an extension by |id|.
-  virtual Extension* GetExtensionById(const std::string& id);
 
   // Lookup an extension by |url|.  This uses the host of the URL as the id.
   Extension* GetExtensionByURL(const GURL& url);
@@ -202,6 +210,12 @@ class ExtensionsService
   bool is_ready() { return ready_; }
 
  private:
+  // Look up an extension by ID, optionally including either or both of enabled
+  // and disabled extensions.
+  Extension* GetExtensionByIdInternal(const std::string& id,
+                                      bool include_enabled,
+                                      bool include_disabled);
+
   // The profile this ExtensionsService is part of.
   Profile* profile_;
 
@@ -213,6 +227,9 @@ class ExtensionsService
 
   // The current list of installed extensions.
   ExtensionList extensions_;
+
+  // The list of installed extensions that have been disabled.
+  ExtensionList disabled_extensions_;
 
   // The full path to the directory where extensions are installed.
   FilePath install_directory_;

@@ -33,9 +33,11 @@ class Extension {
   };
 
   enum State {
-    DISABLED,
+    DISABLED = 0,
     ENABLED,
     KILLBIT,  // Don't install/upgrade (applies to external extensions only).
+
+    NUM_STATES
   };
 
   enum InstallType {

@@ -2,6 +2,7 @@
   "id": "bjafgdebaacbbbecmhlhpofkepfkgcpa",
   "version": "1.0",
   "name": "My extension 3",
+  "enabled": true,
   "description": "",
   "permissions": [],
   "content_scripts": [

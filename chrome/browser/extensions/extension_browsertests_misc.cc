@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Incognito) {
   Browser::OpenURLOffTheRecord(browser()->profile(),
                                GURL(chrome::kChromeUIExtensionsURL));
 
-  ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("good.crx")));
+  ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("good.crx"), 1));
   UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
 }
 
@@ -414,4 +414,50 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
+}
+
+// Tests the process of updating an extension to one that requires higher
+// permissions.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UpdatePermissions) {
+  TabContents* contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(contents);
+
+  // Install the initial version, which should happen just fine.
+  ASSERT_TRUE(InstallExtension(
+      test_data_dir_.AppendASCII("permissions-low-v1.crx"), 1));
+  DCHECK_EQ(0, contents->infobar_delegate_count());
+
+  // Upgrade to a version that wants more permissions. We should disable the
+  // extension and prompt the user to reenable.
+  ASSERT_TRUE(InstallExtension(
+      test_data_dir_.AppendASCII("permissions-high-v2.crx"), -1));
+  EXPECT_EQ(1, contents->infobar_delegate_count());
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  EXPECT_EQ(0u, service->extensions()->size());
+  ASSERT_EQ(1u, service->disabled_extensions()->size());
+
+  // Now try reenabling it, which should also dismiss the infobar.
+  service->EnableExtension(service->disabled_extensions()->at(0)->id());
+  EXPECT_EQ(0, contents->infobar_delegate_count());
+  EXPECT_EQ(1u, service->extensions()->size());
+  EXPECT_EQ(0u, service->disabled_extensions()->size());
+}
+
+// Tests that we can uninstall a disabled extension.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UninstallDisabled) {
+  // Install and upgrade, so that we have a disabled extension.
+  ASSERT_TRUE(InstallExtension(
+      test_data_dir_.AppendASCII("permissions-low-v1.crx"), 1));
+  ASSERT_TRUE(InstallExtension(
+      test_data_dir_.AppendASCII("permissions-high-v2.crx"), -1));
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  EXPECT_EQ(0u, service->extensions()->size());
+  ASSERT_EQ(1u, service->disabled_extensions()->size());
+
+  // Now try uninstalling it.
+  UninstallExtension(service->disabled_extensions()->at(0)->id());
+  EXPECT_EQ(0u, service->extensions()->size());
+  EXPECT_EQ(0u, service->disabled_extensions()->size());
 }

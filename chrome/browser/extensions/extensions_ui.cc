@@ -77,6 +77,8 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandleInspectMessage));
   dom_ui_->RegisterMessageCallback("reload",
       NewCallback(this, &ExtensionsDOMHandler::HandleReloadMessage));
+  dom_ui_->RegisterMessageCallback("enable",
+      NewCallback(this, &ExtensionsDOMHandler::HandleEnableMessage));
   dom_ui_->RegisterMessageCallback("uninstall",
       NewCallback(this, &ExtensionsDOMHandler::HandleUninstallMessage));
 }
@@ -93,7 +95,15 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
     // themes.
     if (!(*extension)->IsTheme()) {
       extensions_list->Append(CreateExtensionDetailValue(
-          *extension, GetActivePagesForExtension((*extension)->id())));
+          *extension, GetActivePagesForExtension((*extension)->id()), true));
+    }
+  }
+  extensions = extensions_service_->disabled_extensions();
+  for (ExtensionList::const_iterator extension = extensions->begin();
+       extension != extensions->end(); ++extension) {
+    if (!(*extension)->IsTheme()) {
+      extensions_list->Append(CreateExtensionDetailValue(
+          *extension, GetActivePagesForExtension((*extension)->id()), false));
     }
   }
   results.Set(L"extensions", extensions_list);
@@ -130,6 +140,15 @@ void ExtensionsDOMHandler::HandleReloadMessage(const Value* value) {
   std::string extension_id;
   CHECK(list->GetString(0, &extension_id));
   extensions_service_->ReloadExtension(extension_id);
+}
+
+void ExtensionsDOMHandler::HandleEnableMessage(const Value* value) {
+  CHECK(value->IsType(Value::TYPE_LIST));
+  const ListValue* list = static_cast<const ListValue*>(value);
+  CHECK(list->GetSize() == 1);
+  std::string extension_id;
+  CHECK(list->GetString(0, &extension_id));
+  extensions_service_->EnableExtension(extension_id);
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
@@ -187,13 +206,15 @@ DictionaryValue* ExtensionsDOMHandler::CreateContentScriptDetailValue(
 
 // Static
 DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
-    const Extension *extension, const std::vector<ExtensionPage>& pages) {
+    const Extension *extension, const std::vector<ExtensionPage>& pages,
+    bool enabled) {
   DictionaryValue* extension_data = new DictionaryValue();
 
   extension_data->SetString(L"id", extension->id());
   extension_data->SetString(L"name", extension->name());
   extension_data->SetString(L"description", extension->description());
   extension_data->SetString(L"version", extension->version()->GetString());
+  extension_data->SetBoolean(L"enabled", enabled);
 
   // Add list of content_script detail DictionaryValues
   ListValue *content_script_list = new ListValue();

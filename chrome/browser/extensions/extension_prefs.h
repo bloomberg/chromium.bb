@@ -43,6 +43,12 @@ class ExtensionPrefs {
   void OnExtensionUninstalled(const Extension* extension,
                               bool external_uninstall);
 
+  // Returns the state (enabled/disabled) of the given extension.
+  Extension::State GetExtensionState(const std::string& extension_id);
+
+  // Called to change the extension's state when it is enabled/disabled.
+  void SetExtensionState(Extension* extension, Extension::State);
+
   // Returns base extensions install directory.
   const FilePath& install_directory() const { return install_directory_; }
 
@@ -72,6 +78,9 @@ class ExtensionPrefs {
 
   // Ensures and returns a mutable dictionary for extension |id|'s prefs.
   DictionaryValue* GetOrCreateExtensionPref(const std::string& id);
+
+  // Same as above, but returns NULL if it doesn't exist.
+  DictionaryValue* GetExtensionPref(const std::string& id);
 
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.
@@ -105,6 +114,10 @@ class InstalledExtensions {
   // version directory and the location. Blacklisted extensions won't trigger
   // the callback.
   void VisitInstalledExtensions(Callback *callback);
+
+  // Same as above, but only for the given extension.
+  void VisitInstalledExtension(const std::string& extension_id,
+                               Callback *callback);
 
  private:
   // A copy of the extensions pref dictionary so that this can be passed

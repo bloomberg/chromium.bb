@@ -23,6 +23,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
+#include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/location_bar.h"
@@ -187,6 +188,8 @@ Browser::Browser(Type type, Profile* profile)
   tabstrip_model_.AddObserver(this);
 
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
@@ -2078,6 +2081,14 @@ void Browser::Observe(NotificationType type,
           Source<NavigationController>(source).ptr())
         UpdateToolbar(false);
       break;
+
+    case NotificationType::EXTENSION_UPDATE_DISABLED: {
+      // Show the UI.
+      ExtensionsService* service = Source<ExtensionsService>(source).ptr();
+      Extension* extension = Details<Extension>(details).ptr();
+      ShowExtensionDisabledUI(service, profile_, extension);
+      break;
+    }
 
     case NotificationType::EXTENSION_UNLOADED: {
       // Close any tabs from the unloaded extension.

@@ -2,6 +2,7 @@
   "id": "behllobkkfkfnphdnhnkndlbkcpglgmj",
   "version": "1.0.0.0",
   "name": "My extension 1",
+  "enabled": true,
   "description": "The first extension that I made.",
   "permissions": ["http://*.google.com/*", "https://*.google.com/*"],
   "content_scripts": [

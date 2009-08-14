@@ -57,7 +57,8 @@ class ExtensionsDOMHandler : public DOMMessageHandler {
   // Extension Detail JSON Struct for page. (static for ease of testing).
   static DictionaryValue* CreateExtensionDetailValue(
       const Extension *extension,
-      const std::vector<ExtensionPage>&);
+      const std::vector<ExtensionPage>&,
+      bool enabled);
 
   // ContentScript JSON Struct for page. (static for ease of testing).
   static DictionaryValue* CreateContentScriptDetailValue(
@@ -73,6 +74,9 @@ class ExtensionsDOMHandler : public DOMMessageHandler {
 
   // Callback for "reload" message.
   void HandleReloadMessage(const Value* value);
+
+  // Callback for "enable" message.
+  void HandleEnableMessage(const Value* value);
 
   // Callback for "uninstall" message.
   void HandleUninstallMessage(const Value* value);

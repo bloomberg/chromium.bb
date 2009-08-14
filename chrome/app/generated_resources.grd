@@ -2063,8 +2063,16 @@ each locale. -->
       <message name="IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON" desc="Text displayed on the button to undo a theme installation and go back to the previous theme.">
         Undo
       </message>
-      
-      <!-- Extesion install prompt -->
+
+      <!-- Extension disabled info bar -->
+      <message name="IDS_EXTENSION_DISABLED_INFOBAR_LABEL" desc="Text displayed on an infobar when an extension was disabled due to a new upgrade requiring an explicit permission check from the user.">
+        The newest version of the extension "<ph name="EXTENSION_NAME">$1<ex>Flashblock</ex></ph>" requires more permissions, so it has been disabled.
+      </message>
+      <message name="IDS_EXTENSION_DISABLED_INFOBAR_ENABLE_BUTTON" desc="Text displayed on the button to re-enable the disabled extension.">
+        Reenable
+      </message>
+
+      <!-- Extension install prompt -->
       <message name="IDS_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window">
         Confirm Installation
       </message>

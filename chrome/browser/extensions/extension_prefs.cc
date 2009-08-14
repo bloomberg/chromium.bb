@@ -299,7 +299,7 @@ void ExtensionPrefs::SetShelfToolstripOrder(const URLList& urls) {
 }
 
 void ExtensionPrefs::OnExtensionInstalled(Extension* extension) {
-  std::string id = extension->id();
+  const std::string& id = extension->id();
   UpdateExtensionPref(id, kPrefState,
                       Value::CreateIntegerValue(Extension::ENABLED));
   UpdateExtensionPref(id, kPrefLocation,
@@ -326,12 +326,37 @@ void ExtensionPrefs::OnExtensionUninstalled(const Extension* extension,
   }
 }
 
+Extension::State ExtensionPrefs::GetExtensionState(
+    const std::string& extension_id) {
+  DictionaryValue* extension = GetExtensionPref(extension_id);
+
+  // If the extension doesn't have a pref, it's a --load-extension.
+  if (!extension)
+    return Extension::ENABLED;
+
+  int state = -1;
+  if (!extension->GetInteger(kPrefState, &state) ||
+      state < 0 || state >= Extension::NUM_STATES) {
+    LOG(ERROR) << "Bad or missing pref 'state' for extension '"
+               << extension_id << "'";
+    return Extension::ENABLED;
+  }
+  return static_cast<Extension::State>(state);
+}
+
+void ExtensionPrefs::SetExtensionState(Extension* extension,
+                                       Extension::State state) {
+  UpdateExtensionPref(extension->id(), kPrefState,
+                      Value::CreateIntegerValue(state));
+  prefs_->SavePersistentPrefs();
+}
+
 bool ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
                                          const std::wstring& key,
                                          Value* data_value) {
   DictionaryValue* extension = GetOrCreateExtensionPref(extension_id);
   if (!extension->Set(key, data_value)) {
-    NOTREACHED() << L"Cannot modify key: '" << key.c_str()
+    NOTREACHED() << "Cannot modify key: '" << key.c_str()
                  << "' for extension: '" << extension_id.c_str() << "'";
     return false;
   }
@@ -357,5 +382,14 @@ DictionaryValue* ExtensionPrefs::GetOrCreateExtensionPref(
     extension = new DictionaryValue();
     dict->Set(id, extension);
   }
+  return extension;
+}
+
+DictionaryValue* ExtensionPrefs::GetExtensionPref(
+    const std::string& extension_id) {
+  const DictionaryValue* dict = prefs_->GetDictionary(kExtensionsPref);
+  DictionaryValue* extension = NULL;
+  std::wstring id = ASCIIToWide(extension_id);
+  dict->GetDictionary(id, &extension);
   return extension;
 }

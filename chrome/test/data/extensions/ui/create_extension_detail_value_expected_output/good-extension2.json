@@ -2,6 +2,7 @@
   "id": "hpiknbiabeeppbpihjehijgoemciehgk",
   "version": "2",
   "name": "My extension 2",
+  "enabled": true,
   "description": "",
   "permissions": [],
   "content_scripts": [],

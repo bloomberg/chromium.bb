@@ -44,13 +44,14 @@ namespace {
     EXPECT_TRUE(extension.InitFromValue(*extension_data, true, &error));
     EXPECT_EQ("", error);
 
-    scoped_ptr<DictionaryValue>expected_output_data(DeserializeJSONTestData(
+    scoped_ptr<DictionaryValue> expected_output_data(DeserializeJSONTestData(
         expected_output_path, &error));
     EXPECT_EQ("", error);
 
     // Produce test output.
     scoped_ptr<DictionaryValue> actual_output_data(
-        ExtensionsDOMHandler::CreateExtensionDetailValue(&extension, pages));
+        ExtensionsDOMHandler::CreateExtensionDetailValue(&extension, pages,
+                                                         true));
 
     // Compare the outputs.
     return expected_output_data->Equals(actual_output_data.get());
