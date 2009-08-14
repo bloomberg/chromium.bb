@@ -978,6 +978,14 @@ void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* dat
       d->DidReceiveDocumentData(webframe_, data, length);
   }
 
+  // If we are sending data to WebCore::MediaDocument, we should stop here
+  // and cancel the request.
+  if (webframe_->frame()->document() &&
+      webframe_->frame()->document()->isMediaDocument()) {
+    loader->cancelMainResourceLoad(
+        pluginWillHandleLoadError(loader->response()));
+  }
+
   // The plugin widget could have been created in the webframe_->DidReceiveData
   // function.
   if (plugin_widget_.get()) {
