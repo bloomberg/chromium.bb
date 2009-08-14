@@ -422,6 +422,11 @@ class Rebaseliner(object):
       return False
 
     parent_dir, basename = os.path.split(filename)
+    if parent_dir == filename:
+      logging.info("No svn checkout found. Assuming it's a git repo and not "
+                   "adding")
+      return True
+
     original_dir = os.getcwd()
     os.chdir(parent_dir)
     status_output = RunShell(['svn', 'status', basename], False)
