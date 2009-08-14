@@ -2835,3 +2835,6 @@ BUG_LEVIN WIN LINUX : LayoutTests/tables/mozilla/bugs/bug106158-1.html = FAIL
 // Fallout from webkit 47265:47277
 BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
 BUG_MBELSHE LINUX : LayoutTests/fast/overflow/image-selection-highlight.html = CRASH
+
+BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/001.xml = FAIL
+BUG19397 LINUX DEBUG : LayoutTests/svg/hixie/perf/002.xml = FAIL
