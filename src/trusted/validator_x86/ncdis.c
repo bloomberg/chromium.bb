@@ -440,17 +440,18 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
   } else if (0 != strcmp(FLAGS_hex_text, "")) {
     uint8_t bytes[MAX_INPUT_LINE];
     size_t num_bytes;
+    PcAddress pc;
     if (0 == strcmp(FLAGS_hex_text, "-")) {
-      num_bytes = NcReadHexText(stdin, bytes, MAX_INPUT_LINE);
-      AnalyzeSegment(bytes, FLAGS_decode_pc, (MemorySize) num_bytes);
+      num_bytes = NcReadHexTextWithPc(stdin, &pc, bytes, MAX_INPUT_LINE);
+      AnalyzeSegment(bytes, pc, (MemorySize) num_bytes);
     } else {
       FILE* input = fopen(FLAGS_hex_text, "r");
       if (NULL == input) {
         Fatal("Can't open hex text file: %s\n", FLAGS_hex_text);
       }
-      num_bytes = NcReadHexText(input, bytes, MAX_INPUT_LINE);
+      num_bytes = NcReadHexTextWithPc(input, &pc, bytes, MAX_INPUT_LINE);
       fclose(input);
-      AnalyzeSegment(bytes, FLAGS_decode_pc, (MemorySize) num_bytes);
+      AnalyzeSegment(bytes, pc, (MemorySize) num_bytes);
     }
   } else if (0 != strcmp(FLAGS_commands, "")) {
     /* Use the given input file to find command line arguments,
