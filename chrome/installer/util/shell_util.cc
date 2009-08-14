@@ -347,20 +347,6 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
   return false;
 }
 
-// This method checks if user specific default browser registry entry exists.
-// (i.e. Software\Clients\StartMenuInternet\Chromium.<user>)
-bool UserSpecificDefaultBrowserEntryExists() {
-  std::wstring suffix;
-  if (!ShellUtil::GetUserSpecificDefaultBrowserSuffix(&suffix))
-    return false;
-
-  std::wstring start_menu_entry(ShellUtil::kRegStartMenuInternet);
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  start_menu_entry.append(L"\\" + dist->GetApplicationName() + suffix);
-  RegKey key(HKEY_LOCAL_MACHINE, start_menu_entry.c_str());
-  return key.Valid();
-}
-
 // This method tries to figure out if another user has already registered her
 // own copy of Chrome so that we can avoid overwriting it and append current
 // user's login name to default browser registry entries. This function is
@@ -451,15 +437,10 @@ const wchar_t* ShellUtil::kRegUrlProtocol = L"URL Protocol";
 
 const wchar_t* ShellUtil::kChromeExtProgIdDesc = L"Chrome Extension Installer";
 
-bool ShellUtil::AdminNeededForRegistryCleanup() {
+bool ShellUtil::AdminNeededForRegistryCleanup(const std::wstring& suffix) {
   bool cleanup_needed = false;
   std::list<RegistryEntry*> entries;
   STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
-  RegistryEntry::GetProgIdEntries(L"chrome.exe", L"", &entries);
-  RegistryEntry::GetSystemEntries(L"chrome.exe", L"", &entries);
-
-  std::wstring suffix;
-  GetUserSpecificDefaultBrowserSuffix(&suffix);
   RegistryEntry::GetProgIdEntries(L"chrome.exe", suffix, &entries);
   RegistryEntry::GetSystemEntries(L"chrome.exe", suffix, &entries);
   for (std::list<RegistryEntry*>::const_iterator itr = entries.begin();
@@ -609,7 +590,12 @@ bool ShellUtil::GetUserSpecificDefaultBrowserSuffix(std::wstring* entry) {
     return false;
   entry->assign(L".");
   entry->append(user_name);
-  return true;
+
+  std::wstring start_menu_entry(ShellUtil::kRegStartMenuInternet);
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  start_menu_entry.append(L"\\" + dist->GetApplicationName() + *entry);
+  RegKey key(HKEY_LOCAL_MACHINE, start_menu_entry.c_str());
+  return key.Valid();
 }
 
 bool ShellUtil::MakeChromeDefault(int shell_change,
@@ -628,7 +614,12 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
         (void**)&pAAR);
     if (SUCCEEDED(hr)) {
       BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-      hr = pAAR->SetAppAsDefaultAll(dist->GetApplicationName().c_str());
+      std::wstring app_name = dist->GetApplicationName();
+      std::wstring suffix;
+      if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(&suffix))
+        app_name += suffix;
+
+      hr = pAAR->SetAppAsDefaultAll(app_name.c_str());
       pAAR->Release();
     }
     if (!SUCCEEDED(hr)) {
@@ -645,8 +636,8 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
   std::list<RegistryEntry*> entries;
   STLElementDeleter<std::list<RegistryEntry*>> entries_deleter(&entries);
   std::wstring suffix;
-  if (UserSpecificDefaultBrowserEntryExists())
-    GetUserSpecificDefaultBrowserSuffix(&suffix);
+  if (!GetUserSpecificDefaultBrowserSuffix(&suffix))
+    suffix = L"";
   RegistryEntry::GetUserEntries(chrome_exe, suffix, &entries);
   // Change the default browser for current user.
   if ((shell_change & ShellUtil::CURRENT_USER) &&
@@ -673,9 +664,9 @@ bool ShellUtil::RegisterChromeBrowser(const std::wstring& chrome_exe,
   if (!unique_suffix.empty()) {
     suffix = unique_suffix;
   } else if (InstallUtil::IsPerUserInstall(chrome_exe.c_str()) &&
-             (UserSpecificDefaultBrowserEntryExists() ||
-              AnotherUserHasDefaultBrowser(chrome_exe))) {
-    GetUserSpecificDefaultBrowserSuffix(&suffix);
+             !GetUserSpecificDefaultBrowserSuffix(&suffix) &&
+             !AnotherUserHasDefaultBrowser(chrome_exe)) {
+    suffix = L"";
   }
 
   // Check if Chromium is already registered with this suffix.

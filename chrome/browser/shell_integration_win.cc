@@ -73,20 +73,20 @@ bool ShellIntegration::IsDefaultBrowser() {
 
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     std::wstring app_name = dist->GetApplicationName();
-    std::wstring app_name_with_suffix;
-    ShellUtil::GetUserSpecificDefaultBrowserSuffix(&app_name_with_suffix);
-    app_name_with_suffix = app_name + app_name_with_suffix;
+    // If a user specific default browser entry exists, we check for that
+    // app name being default. If not, then default browser is just called
+    // Google Chrome or Chromium so we do not append suffix to app name.
+    std::wstring suffix;
+    if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(&suffix))
+      app_name += suffix;
+
     for (int i = 0; i < _countof(kChromeProtocols); i++) {
       BOOL result = TRUE;
       hr = pAAR->QueryAppIsDefault(kChromeProtocols[i].c_str(), AT_URLPROTOCOL,
-          AL_EFFECTIVE, app_name_with_suffix.c_str(), &result);
+          AL_EFFECTIVE, app_name.c_str(), &result);
       if (!SUCCEEDED(hr) || (result == FALSE)) {
-        hr = pAAR->QueryAppIsDefault(kChromeProtocols[i].c_str(),
-            AT_URLPROTOCOL, AL_EFFECTIVE, app_name.c_str(), &result);
-        if (!SUCCEEDED(hr) || (result == FALSE)) {
-          pAAR->Release();
-          return false;
-        }
+        pAAR->Release();
+        return false;
       }
     }
     pAAR->Release();

@@ -78,7 +78,7 @@ class ShellUtil {
 
   // Checks if we need Admin rights for registry cleanup by checking if any
   // entry exists in HKLM.
-  static bool AdminNeededForRegistryCleanup();
+  static bool AdminNeededForRegistryCleanup(const std::wstring& suffix);
 
   // Create Chrome shortcut on Desktop
   // If shell_change is CURRENT_USER, the shortcut is created in the
@@ -143,7 +143,9 @@ class ShellUtil {
   // to Chromium default browser entry in the registry to create a unique name
   // if there are multiple users on the machine, each with their own copy of
   // Chromium that they want to set as default browser.
-  // This suffix value is assigned to |entry|.
+  // This suffix value is assigned to |entry|. The function also checks for
+  // existence of Default Browser registry key with this suffix and
+  // returns true if it exists. In all other cases it returns false.
   static bool GetUserSpecificDefaultBrowserSuffix(std::wstring* entry);
 
   // Make Chrome default browser.
