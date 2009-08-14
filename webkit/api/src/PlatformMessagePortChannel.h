@@ -41,7 +41,7 @@
 #include <wtf/Threading.h>
 
 namespace WebKit {
-class WebMessagePortChannel;
+    class WebMessagePortChannel;
 }
 
 namespace WebCore {

@@ -35,7 +35,7 @@
 #include "../public/WebSettings.h"
 
 namespace WebCore {
-class Settings;
+    class Settings;
 }
 
 namespace WebKit {
