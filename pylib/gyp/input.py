@@ -74,15 +74,6 @@ non_configuration_keys = []
 # Controls how the generator want the build file paths.
 absolute_build_file_paths = False
 
-def ExceptionAppend(e, msg):
-  if not e.args:
-    e.args = (msg,)
-  elif len(e.args) == 1:
-    e.args = (str(e.args[0]) + ' ' + msg,)
-  else:
-    e.args = (str(e.args[0]) + ' ' + msg,) + e.args[1:]
-
-
 def GetIncludedBuildFiles(build_file_path, aux_data, included=None):
   """Return a list of all build files included into build_file_path.
 
@@ -124,7 +115,7 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
   try:
     build_file_contents = open(build_file_path).read()
   except IOError, e:
-    ExceptionAppend(e, "Unable to read %s" % build_file_path)
+    gyp.common.ExceptionAppend(e, "Unable to read %s" % build_file_path)
     raise
 
   build_file_data = None
@@ -134,7 +125,7 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
     e.filename = build_file_path
     raise
   except Exception, e:
-    ExceptionAppend(e, 'while reading ' + build_file_path)
+    gyp.common.ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
   data[build_file_path] = build_file_data
@@ -149,7 +140,8 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
       LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
                                     aux_data, variables, None)
   except Exception, e:
-    ExceptionAppend(e, 'while reading includes of ' + build_file_path)
+    gyp.common.ExceptionAppend(e,
+                               'while reading includes of ' + build_file_path)
     raise
 
   return build_file_data

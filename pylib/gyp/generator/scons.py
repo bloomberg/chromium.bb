@@ -426,8 +426,28 @@ def GenerateSConscript(output_filename, spec, build_file):
   if copies:
     fp.write(_copy_action_template)
   for copy in copies:
-    destdir = copy['destination']
-    files = copy['files']
+    destdir = None
+    files = None
+    try:
+      destdir = copy['destination']
+    except KeyError, e:
+      gyp.common.ExceptionAppend(
+        e,
+        "Required 'destination' key missing for 'copies' in %s." % build_file)
+      raise
+    try:
+      files = copy['files']
+    except KeyError, e:
+      gyp.common.ExceptionAppend(
+        e, "Required 'files' key missing for 'copies' in %s." % build_file)
+      raise
+    if not files:
+      raise Exception(
+        "Required 'files' key is empty for 'copies' in %s." % build_file)
+    if not destdir:
+      raise Exception(
+        "Required 'destination' key is empty for 'copies' in %s." % build_file)
+
     fmt = ('\n'
            '_outputs = env.Command(%s,\n'
            '    %s,\n'
