@@ -179,6 +179,7 @@ binaries_env.Append(
         'compiler/antlr',
         'compiler/technique',
         'converter',
+        'converter_edge',
         'core',
         'import',
         'ipc',
