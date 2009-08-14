@@ -95,6 +95,7 @@ const int TestServerLauncher::kBadHTTPSPort = 9666;
 const wchar_t TestServerLauncher::kCertIssuerName[] = L"Test CA";
 
 TestServerLauncher::TestServerLauncher() : process_handle_(NULL),
+                                           forking_(false),
                                            connection_attempts_(10),
                                            connection_timeout_(1000)
 #if defined(OS_LINUX)
@@ -107,6 +108,7 @@ TestServerLauncher::TestServerLauncher() : process_handle_(NULL),
 TestServerLauncher::TestServerLauncher(int connection_attempts,
                                        int connection_timeout)
                         : process_handle_(NULL),
+                          forking_(false),
                           connection_attempts_(connection_attempts),
                           connection_timeout_(connection_timeout)
 #if defined(OS_LINUX)
@@ -222,6 +224,8 @@ bool TestServerLauncher::Start(Protocol protocol,
     command_line.append(file_root_url);
     command_line.append(L"\"");
   }
+  // Deliberately do not pass the --forking flag. It breaks the tests
+  // on Windows.
 
   if (!base::LaunchApp(command_line, false, true, &process_handle_)) {
     LOG(ERROR) << "Failed to launch " << command_line;
@@ -238,6 +242,8 @@ bool TestServerLauncher::Start(Protocol protocol,
     command_line.push_back("-f");
   if (!cert_path.value().empty())
     command_line.push_back("--https=" + WideToUTF8(cert_path.ToWStringHack()));
+  if (forking_)
+    command_line.push_back("--forking");
 
   base::file_handle_mapping_vector no_mappings;
   LOG(INFO) << "Trying to launch " << command_line[0] << " ...";

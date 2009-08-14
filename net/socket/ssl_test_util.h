@@ -37,6 +37,10 @@ class TestServerLauncher {
   // Load the test root cert, if it hasn't been loaded yet.
   bool LoadTestRootCert();
 
+  // Tells the server to enable/disable servicing each request
+  // in a separate process. Takes effect only if called before Start.
+  void set_forking(bool forking) { forking_ = forking; }
+
   // Start src/net/tools/testserver/testserver.py and
   // ask it to serve the given protocol.
   // If protocol is HTTP, and cert_path is not empty, serves HTTPS.
@@ -105,6 +109,9 @@ class TestServerLauncher {
   FilePath python_runtime_;
 
   base::ProcessHandle process_handle_;
+
+  // True if the server should handle each request in a separate process.
+  bool forking_;
 
   // Number of tries and timeout for each try used for WaitToStart.
   int connection_attempts_;

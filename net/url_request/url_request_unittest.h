@@ -242,6 +242,9 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
       : launcher_(connection_attempts, connection_timeout) { }
 
  public:
+  void set_forking(bool forking) {
+    launcher_.set_forking(forking);
+  }
 
   // Used with e.g. HTTPTestServer::SendQuit()
   bool WaitToFinish(int milliseconds) {
@@ -380,6 +383,18 @@ class HTTPTestServer : public BaseTestServer {
                                        loop, 10, 1000);
   }
 
+  static scoped_refptr<HTTPTestServer> CreateForkingServer(
+      const std::wstring& document_root) {
+    scoped_refptr<HTTPTestServer> test_server =
+        new HTTPTestServer(10, 1000);
+    test_server->set_forking(true);
+    FilePath no_cert;
+    FilePath docroot = FilePath::FromWStringHack(document_root);
+    if (!StartTestServer(test_server.get(), docroot, no_cert, std::wstring()))
+      return NULL;
+    return test_server;
+  }
+
   static scoped_refptr<HTTPTestServer> CreateServerWithFileRootURL(
       const std::wstring& document_root,
       const std::wstring& file_root_url,
@@ -391,12 +406,18 @@ class HTTPTestServer : public BaseTestServer {
     test_server->loop_ = loop;
     FilePath no_cert;
     FilePath docroot = FilePath::FromWStringHack(document_root);
-    if (!test_server->Start(net::TestServerLauncher::ProtoHTTP,
-                            kDefaultHostName, kHTTPDefaultPort,
-                            docroot, no_cert, file_root_url)) {
+    if (!StartTestServer(test_server.get(), docroot, no_cert, file_root_url))
       return NULL;
-    }
     return test_server;
+  }
+
+  static bool StartTestServer(HTTPTestServer* server,
+                              const FilePath& document_root,
+                              const FilePath& cert_path,
+                              const std::wstring& file_root_url) {
+    return server->Start(net::TestServerLauncher::ProtoHTTP, kDefaultHostName,
+                         kHTTPDefaultPort, document_root, cert_path,
+                         file_root_url, "", "");
   }
 
   // A subclass may wish to send the request in a different manner
