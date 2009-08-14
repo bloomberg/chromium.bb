@@ -168,8 +168,10 @@ String DebuggerAgentImpl::ExecuteUtilityFunction(
 
   DebuggerAgentManager::UtilityContextScope utility_scope;
 
-  v8::Handle<v8::Function> function = v8::Local<v8::Function>::Cast(
-      context->Global()->Get(v8::String::New("devtools$$dispatch")));
+  v8::Handle<v8::Value> dispatch_function =
+      context->Global()->Get(v8::String::New("devtools$$dispatch"));
+  ASSERT(dispatch_function->IsFunction());
+  v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatch_function);
 
   v8::Handle<v8::String> function_name_wrapper = v8::Handle<v8::String>(
       v8::String::New(function_name.utf8().data()));
