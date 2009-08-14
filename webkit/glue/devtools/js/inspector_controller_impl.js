@@ -290,7 +290,7 @@ devtools.InspectorControllerImpl.prototype.callInspectorController_ =
     function(methodName, var_arg) {
   var args = Array.prototype.slice.call(arguments);
   RemoteToolsAgent.ExecuteUtilityFunction(
-      devtools.InspectorControllerImpl.parseWrap_(undefined),
+      devtools.Callback.wrap(function(){}),
       'InspectorController', JSON.stringify(args));
 };
 

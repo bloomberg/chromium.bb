@@ -112,3 +112,10 @@ Object.describe = function(obj, abbreviated)
         return String(obj);
     }
 }
+
+Function.prototype.bind = function(thisObject)
+{
+    var func = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+    return function() { return func.apply(thisObject, args.concat(Array.prototype.slice.call(arguments, 0))) };
+}

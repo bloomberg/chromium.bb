@@ -136,16 +136,16 @@ devtools.ToolsAgent.prototype.setResourcesPanelEnabled_ = function(enabled) {
   if (enabled) {
     panel.enableToggleButton.title =
         WebInspector.UIString("Resource tracking enabled. Click to disable.");
-    panel.enableToggleButton.addStyleClass("toggled-on");
-    panel.largerResourcesButton.removeStyleClass("hidden");
-    panel.sortingSelectElement.removeStyleClass("hidden");
+    panel.enableToggleButton.toggled = true;
+    panel.largerResourcesButton.visible = true;
+    panel.sortingSelectElement.visible = false;
     panel.panelEnablerView.visible = false;
   } else {
     panel.enableToggleButton.title =
         WebInspector.UIString("Resource tracking disabled. Click to enable.");
-    panel.enableToggleButton.removeStyleClass("toggled-on");
-    panel.largerResourcesButton.addStyleClass("hidden");
-    panel.sortingSelectElement.addStyleClass("hidden");
+    panel.enableToggleButton.toggled = false;
+    panel.largerResourcesButton.visible = false;
+    panel.sortingSelectElement.visible = false;
     panel.panelEnablerView.visible = true;
   }
 };
@@ -421,7 +421,7 @@ WebInspector.DebuggedObjectTreeElement.inherits(
  */
 WebInspector.DebuggedObjectTreeElement.prototype.onpopulate =
     function() {
-  var obj = this.property.childObject;
+  var obj = this.property.value.objectId;
   devtools.tools.getDebuggerAgent().resolveChildren(obj,
       goog.bind(this.didResolveChildren_, this), false /* no intrinsic */ );
 };
@@ -451,18 +451,14 @@ WebInspector.DebuggedObjectTreeElement.prototype.didResolveChildren_ =
 WebInspector.DebuggedObjectTreeElement.addResolvedChildren = function(
     resolvedObject, treeElementContainer, treeElementConstructor) {
   var object = resolvedObject.resolvedValue;
-  var names = [];
-  for (var name in object) {
-    names.push(name);
-  }
-  names.sort();
+  var names = Object.sortedProperties(object);
   for (var i = 0; i < names.length; i++) {
+    var childObject = object[names[i]];
     var property = {};
     property.name = names[i];
-    property.childObject = object[property.name];
-    property.type = typeof property.childObject;
-    property.hasChildren = property.type == 'object' && Object.hasProperties(property.childObject);
-    property.textContent = Object.describe(property.childObject, true);
+    property.value = new WebInspector.ObjectProxy(childObject, [], 0,
+        Object.describe(childObject, true),
+        typeof childObject == 'object' && Object.hasProperties(childObject));
     treeElementContainer.appendChild(new treeElementConstructor(property));
   }
 };
@@ -514,7 +510,7 @@ WebInspector.ScriptsPanel.prototype.doEvalInCallFrame =
   var oldShow = WebInspector.ScriptsPanel.prototype.show;
   WebInspector.ScriptsPanel.prototype.show =  function() {
     devtools.tools.getDebuggerAgent().initUI();
-    this.enableToggleButton.addStyleClass('hidden');
+    this.enableToggleButton.visible = false;
     oldShow.call(this);
   };
 })();
@@ -558,7 +554,7 @@ WebInspector.ScriptsPanel.prototype.doEvalInCallFrame =
   var oldShow = WebInspector.ProfilesPanel.prototype.show;
   WebInspector.ProfilesPanel.prototype.show = function() {
     devtools.tools.getDebuggerAgent().initializeProfiling();
-    this.enableToggleButton.addStyleClass('hidden');
+    this.enableToggleButton.visible = false;
     oldShow.call(this);
     // Show is called on every show event of a panel, so
     // we only need to intercept it once.
@@ -605,26 +601,7 @@ WebInspector.UIString = function(string) {
     }
     return result;
   };
-
-  // This is needed to evaluate 'instanceof' against win.Node, etc.
-  // Need a real window, not just InspectorController.inspectedWindow wrapper.
-  var oldType = Object.type;
-  Object.type = function(obj) {
-    return oldType.call(this, obj, window);
-  };
 })();
-
-
-Object.sortedProperties = function(obj) {
-  var properties = [];
-  for (var prop in obj) {
-    if (prop != '___devtools_id' && prop != '___devtools_class_name') {
-      properties.push(prop);
-    }
-  }
-  properties.sort();
-  return properties;
-};
 
 
 // Highlight extension content scripts in the scripts list.
@@ -685,18 +662,6 @@ WebInspector.ConsoleView.prototype._formatobject = function(object, elem) {
     glassPane.parentElement.removeChild(glassPane);
   };
 })();
-
-
-// We do not inspect DOM nodes using $ shortcuts yet.
-WebInspector.ConsoleView.prototype.addInspectedNode = function(node) {
-};
-
-
-// Stub until moved to async access in WebKit.
-WebInspector.StylePropertiesSection.prototype._doesSelectorAffectSelectedNode =
-    function() {
-  return true;
-};
 
 
 (function() {
