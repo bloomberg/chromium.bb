@@ -88,7 +88,7 @@ const wchar_t kNoPageDownSwitch[] = L"nopagedown";
 const wchar_t kSaveDebugLogSwitch[] = L"savedebuglog";
 
 const char kDefaultServerUrl[] = "http://urllist.com";
-std::string server_url;
+std::string g_server_url;
 const char kTestPage1[] = "page1.html";
 const char kTestPage2[] = "page2.html";
 const char crash_url[] = "about:crash";
@@ -100,25 +100,25 @@ const char kV8LogFileDefaultName[] = "v8.log";
 // String name of local chrome dll for looking up file information.
 const wchar_t kChromeDll[] = L"chrome.dll";
 
-bool append_page_id = false;
-int32 start_page;
-int32 end_page;
-FilePath url_file_path;
-int32 start_index = 1;
-int32 end_index = kint32max;
-int32 iterations = 1;
-bool memory_usage = false;
-bool continuous_load = false;
-bool browser_existing = false;
-bool page_down = true;
-GURL end_url;
-FilePath log_file_path;
-int timeout_ms = -1;
-bool save_debug_log = false;
-FilePath chrome_log_path;
-FilePath v8_log_path;
-FilePath test_log_path;
-bool stand_alone = false;
+bool g_append_page_id = false;
+int32 g_start_page;
+int32 g_end_page;
+FilePath g_url_file_path;
+int32 g_start_index = 1;
+int32 g_end_index = kint32max;
+int32 g_iterations = 1;
+bool g_memory_usage = false;
+bool g_continuous_load = false;
+bool g_browser_existing = false;
+bool g_page_down = true;
+std::string g_end_url;
+FilePath g_log_file_path;
+int g_timeout_ms = -1;
+bool g_save_debug_log = false;
+FilePath g_chrome_log_path;
+FilePath g_v8_log_path;
+FilePath g_test_log_path;
+bool g_stand_alone = false;
 
 class PageLoadTest : public UITest {
  public:
@@ -146,17 +146,18 @@ class PageLoadTest : public UITest {
     show_window_ = true;
   }
 
-  // Accept URL as string here because the url may also act as a test id
+  // Accept URL as std::string here because the url may also act as a test id
   // and needs to be logged in its original format even if invalid.
-  void NavigateToURLLogResult(const GURL& url,
+  void NavigateToURLLogResult(const std::string& url_string,
                               std::ofstream& log_file,
                               NavigationMetrics* metrics_output) {
+    GURL url(url_string);
     NavigationMetrics metrics = {NAVIGATION_ERROR};
     std::ofstream test_log;
 
     // Create a test log.
-    test_log_path = FilePath(FILE_PATH_LITERAL("test_log.log"));
-    test_log.open(test_log_path.value().c_str());
+    g_test_log_path = FilePath(FILE_PATH_LITERAL("test_log.log"));
+    test_log.open(g_test_log_path.value().c_str());
 
 // TODO(estade): port.
 #if defined(OS_WIN)
@@ -174,9 +175,9 @@ class PageLoadTest : public UITest {
     test_log << "Test Start: ";
     test_log << base::TimeFormatFriendlyDateAndTime(time_now) << std::endl;
 
-    if (!continuous_load && !browser_existing) {
+    if (!g_continuous_load && !g_browser_existing) {
       LaunchBrowserAndServer();
-      browser_existing = true;
+      g_browser_existing = true;
     }
 
     // Log Browser Launched time.
@@ -192,12 +193,12 @@ class PageLoadTest : public UITest {
       // TabProxy should be released before Browser is closed.
       scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
       if (tab_proxy.get()) {
-        result = tab_proxy->NavigateToURLWithTimeout(url, timeout_ms,
+        result = tab_proxy->NavigateToURLWithTimeout(url, g_timeout_ms,
                                                      &is_timeout);
       }
 
       if (!is_timeout && result == AUTOMATION_MSG_NAVIGATION_SUCCESS) {
-        if (page_down) {
+        if (g_page_down) {
           // Page down twice.
           scoped_refptr<BrowserProxy> browser(
               automation()->GetBrowserWindow(0));
@@ -227,9 +228,9 @@ class PageLoadTest : public UITest {
     test_log << "navigate_complete_seconds=";
     test_log << (time_now.ToDoubleT() - time_start) << std::endl;
 
-    if (!continuous_load) {
+    if (!g_continuous_load) {
       CloseBrowserAndServer();
-      browser_existing = false;
+      g_browser_existing = false;
     }
 
     // Log end of test time.
@@ -270,7 +271,7 @@ class PageLoadTest : public UITest {
     }
 
     if (log_file.is_open()) {
-      log_file << url.spec();
+      log_file << url_string;
       switch (metrics.result) {
         case NAVIGATION_ERROR:
           log_file << " error";
@@ -305,7 +306,7 @@ class PageLoadTest : public UITest {
     // Close test log.
     test_log.close();
 
-    if (log_file.is_open() && save_debug_log && !continuous_load)
+    if (log_file.is_open() && g_save_debug_log && !g_continuous_load)
       SaveDebugLogs(log_file);
 
 // TODO(estade): port.
@@ -327,33 +328,33 @@ class PageLoadTest : public UITest {
   }
 
   void NavigateThroughPageID(std::ofstream& log_file) {
-    if (append_page_id) {
+    if (g_append_page_id) {
       // For usage 2
-      for (int i = start_page; i <= end_page; ++i) {
-        const char* server = server_url.empty() ? kDefaultServerUrl :
-            server_url.c_str();
+      for (int i = g_start_page; i <= g_end_page; ++i) {
+        const char* server = g_server_url.empty() ? kDefaultServerUrl :
+            g_server_url.c_str();
         std::string test_page_url(
             StringPrintf("%s/page?id=%d", server, i));
-        NavigateToURLLogResult(GURL(test_page_url), log_file, NULL);
+        NavigateToURLLogResult(test_page_url, log_file, NULL);
       }
     } else {
       // Don't run if single process mode.
       // Also don't run if running as a standalone program which is for
       // distributed testing, to avoid mistakenly hitting web sites with many
       // instances.
-      if (in_process_renderer() || stand_alone)
+      if (in_process_renderer() || g_stand_alone)
         return;
       // For usage 1
       NavigationMetrics metrics;
-      if (timeout_ms == -1)
-        timeout_ms = 2000;
+      if (g_timeout_ms == -1)
+        g_timeout_ms = 2000;
 
       // Though it would be nice to test the page down code path in usage 1,
       // enabling page down adds several seconds to the test and does not seem
       // worth the tradeoff. It is also potentially disruptive when running the
       // test in the background as it will send the event to the window that
       // has focus.
-      page_down = false;
+      g_page_down = false;
 
       FilePath sample_data_dir = GetSampleDataDir();
       FilePath test_page_1 = sample_data_dir.AppendASCII(kTestPage1);
@@ -362,7 +363,11 @@ class PageLoadTest : public UITest {
       GURL test_url_1 = net::FilePathToFileURL(test_page_1);
       GURL test_url_2 = net::FilePathToFileURL(test_page_2);
 
-      NavigateToURLLogResult(test_url_1, log_file, &metrics);
+      // Convert back to string so that all calls to navigate are the same.
+      const std::string test_url_1_string = test_url_1.spec();
+      const std::string test_url_2_string = test_url_2.spec();
+
+      NavigateToURLLogResult(test_url_1_string, log_file, &metrics);
       // Verify everything is fine
       EXPECT_EQ(NAVIGATION_SUCCESS, metrics.result);
       EXPECT_EQ(0, metrics.crash_dump_count);
@@ -375,7 +380,7 @@ class PageLoadTest : public UITest {
       EXPECT_EQ(0, metrics.plugin_crash_count);
 
       // Go to "about:crash"
-      NavigateToURLLogResult(GURL(crash_url), log_file, &metrics);
+      NavigateToURLLogResult(crash_url, log_file, &metrics);
       // Found a crash dump
       EXPECT_EQ(1, metrics.crash_dump_count) << kFailedNoCrashService;
       // Browser did not crash, and exited cleanly.
@@ -386,7 +391,7 @@ class PageLoadTest : public UITest {
       EXPECT_EQ(1, metrics.renderer_crash_count);
       EXPECT_EQ(0, metrics.plugin_crash_count);
 
-      NavigateToURLLogResult(test_url_2, log_file, &metrics);
+      NavigateToURLLogResult(test_url_2_string, log_file, &metrics);
       // The data on previous crash should be cleared and we should get
       // metrics for a successful page load.
       EXPECT_EQ(NAVIGATION_SUCCESS, metrics.result);
@@ -423,11 +428,11 @@ class PageLoadTest : public UITest {
 
   // For usage 3
   void NavigateThroughURLList(std::ofstream& log_file) {
-    std::ifstream file(url_file_path.value().c_str());
+    std::ifstream file(g_url_file_path.value().c_str());
     ASSERT_TRUE(file.is_open());
 
     for (int line_index = 1;
-         line_index <= end_index && !file.eof();
+         line_index <= g_end_index && !file.eof();
          ++line_index) {
       std::string url_str;
       std::getline(file, url_str);
@@ -435,8 +440,8 @@ class PageLoadTest : public UITest {
       if (file.fail())
         break;
 
-      if (start_index <= line_index) {
-        NavigateToURLLogResult(GURL(url_str), log_file, NULL);
+      if (g_start_index <= line_index) {
+        NavigateToURLLogResult(url_str, log_file, NULL);
       }
     }
 
@@ -447,7 +452,7 @@ class PageLoadTest : public UITest {
   // Call the base class's SetUp method and initialize our own class members.
   virtual void SetUp() {
     UITest::SetUp();
-    browser_existing = true;
+    g_browser_existing = true;
 
 // TODO(estade): port.
 #if defined(OS_WIN)
@@ -483,7 +488,7 @@ class PageLoadTest : public UITest {
     if (!log_path.empty()) {
       FilePath saved_log_file_path =
           ConstructSavedDebugLogPath(log_path, index);
-      if (file_util::Move(log_file_path, saved_log_file_path)) {
+      if (file_util::Move(log_path, saved_log_file_path)) {
         log_file << " " << log_id << "=" << saved_log_file_path.value();
       }
     }
@@ -493,9 +498,9 @@ class PageLoadTest : public UITest {
   // paths in the log_file provided.
   void SaveDebugLogs(std::ofstream& log_file) {
     static int url_count = 1;
-    SaveDebugLog(chrome_log_path, L"chrome_log", log_file, url_count);
-    SaveDebugLog(v8_log_path, L"v8_log", log_file, url_count);
-    SaveDebugLog(test_log_path, L"test_log", log_file, url_count);
+    SaveDebugLog(g_chrome_log_path, L"chrome_log", log_file, url_count);
+    SaveDebugLog(g_v8_log_path, L"v8_log", log_file, url_count);
+    SaveDebugLog(g_test_log_path, L"test_log", log_file, url_count);
     url_count++;
   }
 
@@ -624,12 +629,12 @@ class PageLoadTest : public UITest {
 TEST_F(PageLoadTest, MAYBE_Reliability) {
   std::ofstream log_file;
 
-  if (!log_file_path.empty()) {
-    log_file.open(log_file_path.value().c_str());
+  if (!g_log_file_path.empty()) {
+    log_file.open(g_log_file_path.value().c_str());
   }
 
-  for (int k = 0; k < iterations; ++k) {
-    if (url_file_path.empty()) {
+  for (int k = 0; k < g_iterations; ++k) {
+    if (g_url_file_path.empty()) {
       NavigateThroughPageID(log_file);
     } else {
       NavigateThroughURLList(log_file);
@@ -637,13 +642,13 @@ TEST_F(PageLoadTest, MAYBE_Reliability) {
 
 // TODO(estade): port.
 #if defined(OS_WIN)
-    if (memory_usage)
+    if (g_memory_usage)
       PrintChromeMemoryUsageInfo();
 #endif  // defined(OS_WIN)
   }
 
-  if (!end_url.is_empty()) {
-    NavigateToURLLogResult(end_url, log_file, NULL);
+  if (!g_end_url.empty()) {
+    NavigateToURLLogResult(g_end_url, log_file, NULL);
   }
 
   log_file.close();
@@ -657,7 +662,7 @@ namespace {
 
 void SetPageRange(const CommandLine& parsed_command_line) {
   // If calling into this function, we are running as a standalone program.
-  stand_alone = true;
+  g_stand_alone = true;
 
   // Since we use --enable-dcheck for reliability tests, suppress the error
   // dialog in the test process.
@@ -667,62 +672,62 @@ void SetPageRange(const CommandLine& parsed_command_line) {
     ASSERT_TRUE(parsed_command_line.HasSwitch(kEndPageSwitch));
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kStartPageSwitch)), &start_page));
+            kStartPageSwitch)), &g_start_page));
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kEndPageSwitch)), &end_page));
-    ASSERT_TRUE(start_page > 0 && end_page > 0);
-    ASSERT_TRUE(start_page < end_page);
-    append_page_id = true;
+            kEndPageSwitch)), &g_end_page));
+    ASSERT_TRUE(g_start_page > 0 && g_end_page > 0);
+    ASSERT_TRUE(g_start_page < g_end_page);
+    g_append_page_id = true;
   } else {
     ASSERT_FALSE(parsed_command_line.HasSwitch(kEndPageSwitch));
   }
 
   if (parsed_command_line.HasSwitch(kSiteSwitch)) {
-    server_url = WideToUTF8(parsed_command_line.GetSwitchValue(kSiteSwitch));
+    g_server_url = WideToUTF8(parsed_command_line.GetSwitchValue(kSiteSwitch));
   }
 
   if (parsed_command_line.HasSwitch(kStartIndexSwitch)) {
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kStartIndexSwitch)), &start_index));
-    ASSERT_GT(start_index, 0);
+            kStartIndexSwitch)), &g_start_index));
+    ASSERT_GT(g_start_index, 0);
   }
 
   if (parsed_command_line.HasSwitch(kEndIndexSwitch)) {
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kEndIndexSwitch)), &end_index));
-    ASSERT_GT(end_index, 0);
+            kEndIndexSwitch)), &g_end_index));
+    ASSERT_GT(g_end_index, 0);
   }
 
-  ASSERT_TRUE(end_index >= start_index);
+  ASSERT_TRUE(g_end_index >= g_start_index);
 
   if (parsed_command_line.HasSwitch(kListSwitch)) {
-    url_file_path = FilePath::FromWStringHack(
+    g_url_file_path = FilePath::FromWStringHack(
         parsed_command_line.GetSwitchValue(kListSwitch));
   }
 
   if (parsed_command_line.HasSwitch(kIterationSwitch)) {
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kIterationSwitch)), &iterations));
-    ASSERT_GT(iterations, 0);
+            kIterationSwitch)), &g_iterations));
+    ASSERT_GT(g_iterations, 0);
   }
 
   if (parsed_command_line.HasSwitch(kMemoryUsageSwitch))
-    memory_usage = true;
+    g_memory_usage = true;
 
   if (parsed_command_line.HasSwitch(kContinuousLoadSwitch))
-    continuous_load = true;
+    g_continuous_load = true;
 
   if (parsed_command_line.HasSwitch(kEndURLSwitch)) {
-    end_url = GURL(WideToUTF8(
-        parsed_command_line.GetSwitchValue(kEndURLSwitch)));
+    g_end_url = WideToUTF8(
+        parsed_command_line.GetSwitchValue(kEndURLSwitch));
   }
 
   if (parsed_command_line.HasSwitch(kLogFileSwitch)) {
-    log_file_path =
+    g_log_file_path =
         FilePath::FromWStringHack(
             parsed_command_line.GetSwitchValue(kLogFileSwitch));
   }
@@ -730,29 +735,29 @@ void SetPageRange(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(kTimeoutSwitch)) {
     ASSERT_TRUE(
         StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kTimeoutSwitch)), &timeout_ms));
-    ASSERT_GT(timeout_ms, 0);
+            kTimeoutSwitch)), &g_timeout_ms));
+    ASSERT_GT(g_timeout_ms, 0);
   }
 
   if (parsed_command_line.HasSwitch(kNoPageDownSwitch))
-    page_down = false;
+    g_page_down = false;
 
   if (parsed_command_line.HasSwitch(kSaveDebugLogSwitch)) {
-    save_debug_log = true;
-    chrome_log_path = logging::GetLogFileName();
+    g_save_debug_log = true;
+    g_chrome_log_path = logging::GetLogFileName();
     // We won't get v8 log unless --no-sandbox is specified.
     if (parsed_command_line.HasSwitch(switches::kNoSandbox)) {
-      PathService::Get(base::DIR_CURRENT, &v8_log_path);
-      v8_log_path = v8_log_path.AppendASCII(kV8LogFileDefaultName);
+      PathService::Get(base::DIR_CURRENT, &g_v8_log_path);
+      g_v8_log_path = g_v8_log_path.AppendASCII(kV8LogFileDefaultName);
       // The command line switch may override the default v8 log path.
       if (parsed_command_line.HasSwitch(switches::kJavaScriptFlags)) {
         CommandLine v8_command_line(
             parsed_command_line.GetSwitchValue(switches::kJavaScriptFlags));
         if (v8_command_line.HasSwitch(kV8LogFileSwitch)) {
-          v8_log_path = FilePath::FromWStringHack(
+          g_v8_log_path = FilePath::FromWStringHack(
               v8_command_line.GetSwitchValue(kV8LogFileSwitch));
-          if (!file_util::AbsolutePath(&v8_log_path)) {
-            v8_log_path = FilePath();
+          if (!file_util::AbsolutePath(&g_v8_log_path)) {
+            g_v8_log_path = FilePath();
           }
         }
       }
