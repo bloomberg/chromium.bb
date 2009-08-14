@@ -1,44 +1,102 @@
-<p>Extensions are packaged as signed zip files with the file extension "crx" (eg myextension.crx). Each extension has its own unique key pair. The public key is used as the unique identifier for the extension and the private key is kept private and used to sign each version of the extension.</p>
+<div id="pageData-title" class="pageData">Packaging</div>
 
-<h3>Packaging an Extension</h3>
+<p>
+Extensions are packaged as signed zip files
+with the file extension "crx"
+(for example, <code>myextension.crx</code>).
+Each extension has its own unique key pair.
+The public key is used as the unique identifier for the extension.
+The private key is kept private
+and used to sign each version of the extension.
+</p>
+
+<!--
+[PENDING: Perhaps mention that once the gallery is up,
+creating and updating a package will be much easier.
+Also refer to instructions on submitting an extension
+for inclusion in the gallery.]
+-->
+
+<h2>Creating a package</h2>
 
 <p>To package an extension:</p>
 <ol>
 <li>Close all your Chrome windows</li>
-<li>Open a command line and type: <pre>&lt;path-to-chrome&gt;\chrome.exe --pack-extension=&lt;path\to\extension\folder&gt;</li>
+<li>Execute Chrome, using the <code>--pack-extension</code> option
+to specify the path to the extension's folder:
+<pre>chrome.exe --pack-extension=<em>ext-folder-path</em></pre>
+</li>
 </ol>
 
-<img src="images/create-package.png">
+<p>The packager creates two files:
+a <code>.crx</code> file,
+which is the actual extension that can be installed,
+and a <code>.pem</code> file,
+which contains the private key.
+</p>
 
-<h4>Note</h4>
+<p>
+<b>Do not lose the private key!</b>
+Keep the <code>.pem</code> file secret and in a safe place.
+You'll need it later if you want to do any of the following:
+</p>
 <ul>
-<li>In Windows XP, you can find <path-to-chrome> by right-clicking on your Google Chrome shortcut and selecting Properties -> Shortcut and then pressing Find Target.</li>
-<li>In Vista, you can do the same by right-clicking your Google Chrome shortcut and selecting Open File Location.</li>
+<li><a href="#update">Update</a> the extension</li>
+<li>Import the extension into the extensions gallery,
+once the gallery becomes available</li>
 </ul>
 
-<p>The packager creates two files: a crx file (myextension.crx), which is the actual extension that can be installed, and a private key (myextension.pem). You should keep the private key secret and in a safe place.</p>
+<p>
+If the extension is successfully packaged, you'll see a dialog like this
+that tells you where to find
+the <code>.crx</code> and <code>.pem</code> files:</p>
+</p>
 
-<h4>IMPORTANT: Do not lose the private key. You will need it later for two things</h4>
-<ol>
-<li>If you want to create a new version of the extension, you'll need the original private key (see below).<li>
-<li>In the future, Google will implement a gallery service for extensions. You'll need your private key if you want to import an existing extension into that gallery.</li>
-</ol>
+<img src="images/create-package.png" />
 
-<h3>Updating an Extension</h3>
+
+<h3>Finding the path to Chrome</h3>
+
+<p>
+If <code>chrome.exe</code> isn't already in your path,
+you need to specify the complete path to it.
+Here's how:
+</p>
+
+<ul>
+<li>
+In Windows XP, right-click your Google Chrome shortcut,
+choose <b>Properties > Shortcut</b>,
+and then choose <b>Find Target</b>.
+</li>
+<li>
+In Vista, right-click your Google Chrome shortcut
+and select <b>Open File Location</b>.
+</li>
+</ul>
+
+
+<h2 id="update">Updating a package</h2>
 
 <p>To create an updated version of your extension:</p>
 <ol>
-<li>Increase the version number in manifest.json</li>
-<li>Close all your Chrome windows</li>
-<li>Run <path-to-chrome>\chrome.exe --pack-extension=<path\to\extension\folder> --pack-extension-key=<path\to\extension-key>, specifying the private key file you created earlier for the second parameter.</li>
+<li>Increase the version number in <code>manifest.json</code>.</li>
+<li>Close all your Chrome windows.</li>
+<li>Execute Chrome, using the <code>--pack-extension</code>
+and <code>--pack-extension-key</code> options.
+The value of the key option should be the path to
+the already generated <code>.pem</code> file for this extension.
+
+<pre>chrome.exe --pack-extension=<em>ext-folder-path</em> --pack-extension-key=<em>ext-key-path</em></pre>
+</li>
 </ol>
 
-<p>If the updated extension is successfully packaged, you'll see  a dialog like this</p>
+<p>If the updated extension is successfully packaged, you'll see a dialog like this:</p>
 
 <img src="images/package-success.png">
 
-<h3>Tips and Tricks</h3>
+<h2>Tips and Tricks</h2>
 
 <ul>
-<li>In build 3.0.195 and later, you can use the --no-message-box command line flag to suppress the dialog. This is useful if you're packing extensions in non-interactive scripts.</li>
+<li>In build 3.0.195 and later, you can use the <code>--no-message-box</code> command line flag to suppress the dialog. This is useful if you're packing extensions in non-interactive scripts.</li>
 </ul>

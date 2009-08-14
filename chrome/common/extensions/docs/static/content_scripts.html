@@ -10,7 +10,7 @@
   <li>Find and process <a href="http://microformats.org/">microformat</a> data in the DOM
 </ul>
 
-<h3 id="registration">Registration</h3>
+<h2 id="registration">Registration</h2>
 
 <p>Content scripts are registered in an extension's <a href="manifest.html">manifest.json</a> file, like so:
 
@@ -59,11 +59,11 @@
   </tr>
 </table>
 
-<h3 id="match_patterns">Match Patterns</h3>
+<h2 id="match_patterns">Match patterns</h2>
 
-<p>TODO</p>
+<p class="comment">TODO</p>
 
-<h3 id="execution_environment">Execution Environment</h3>
+<h2 id="execution_environment">Execution environment</h2>
 
 <p>Content scripts execute in a special environment called an <em>isolated world</em>. They have access to the DOM of the page they are injected into, but not to any JavaScript variables or functions created by the page. It looks to each content script as if there is no other JavaScript executing on the page it is running on. The same is true in reverse: JavaScript running on the page cannot call any functions or access any variables defined by content scripts.
 
@@ -99,7 +99,7 @@ document.getElementById("button").onclick = function() {
 
 <p>Another important benefit of isolated worlds is that they completely separate the JavaScript on the page from the JavaScript in extensions. This allows us to offer extra functionality to content scripts that should not be accessible from web pages without worrying about web pages accessing it.
 
-<h3 id="messaging">Messaging</h3>
+<h2 id="messaging">Messaging</h2>
 
 <p>Content scripts can communicate with their parent extension using message passing. The content script opens a channel to the extension using the <a href="extension.html#connect">chrome.extension.connect()</a> method and then sends messages back and forth to it. The messages can contain any valid JSON object (null, boolean, number, string, array, or object).
 
@@ -107,9 +107,9 @@ document.getElementById("button").onclick = function() {
 
 <p>When a channel is opened from a content script to an extension, the <a href="extension.html#onConnect">onConnect</a> event is fired in all views in the extension. Any view can receive the event. The event contains a <a href="extension.html#port">Port</a> object, which can be used by the extension view to communicate back to the content script.
 
-<p>[TODO: Complete this]
+<p class="comment">[TODO: Complete this]</p>
 
-<h3 id="hostPageCommuncation">Communication with the embedding page</h3>
+<h2 id="hostPageCommuncation">Communication with the embedding page</h2>
 
 <p>Although the execution environments of content scripts and the pages that host them are isolated from each other, they share access to the page's DOM. If the page wishes to communicate with the content script (or with the extension via the content script), it must do so through the shared DOM.</p>
 
