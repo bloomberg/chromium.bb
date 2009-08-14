@@ -649,7 +649,7 @@ repaint_output(struct wlsc_output *output)
 	while (&es->link != &ec->surface_list) {
 		wlsc_surface_draw(es);
 		es = container_of(es->link.next,
-				   struct wlsc_surface, link);
+				  struct wlsc_surface, link);
 	}
 
 	eid = container_of(ec->input_device_list.next,
@@ -691,12 +691,21 @@ repaint(void *data)
 static void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 {
-	struct wl_event_loop *loop;
+	struct wlsc_output *output;
+	int fd;
 
 	compositor->repaint_needed = 1;
-	if (!compositor->repaint_on_timeout) {
-		loop = wl_display_get_event_loop(compositor->wl_display);
-		wl_event_loop_add_idle(loop, repaint, compositor);
+	if (compositor->repaint_on_timeout)
+		return;
+
+	fd = eglGetDisplayFD(compositor->display);
+	output = container_of(compositor->output_list.next,
+			      struct wlsc_output, link);
+	while (&output->link != &compositor->output_list) {
+		drmModePageFlip(fd, output->crtc_id,
+				output->fb_id[output->current ^ 1], output);
+		output = container_of(output->link.next,
+				      struct wlsc_output, link);
 	}
 }
 
