@@ -56,50 +56,52 @@
     
       <div id="mainColumn">
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" jsselect="apiDefinition">
+        <div id="toc" jsdisplay="showPageTOC()">
           <p>Contents</p>
           <ol>
-            <li>
-              <a href="#overview">Description</a>
+            <li jsselect="getStaticTOC()">
+              <a jscontent="name"
+                 jsvalues=".href:'#' + href">h2Name</a>
               <ol>
-                <li><a href="#overview-properties">Properties</a></li>
-                <li><a href="#overview-examples">Examples</a></li>
-              </ol>
-            </li>
-            <li jsdisplay="functions && functions.length > 0">
-              <a href="#methods">Methods</a>    
-              <ol>
-                <li jsselect="functions">
+                <li jsselect="$this.children">
                   <a jscontent="name"
-                     jsvalues=".href:'#method-' + name"
-                     href="#method-anchor">methodName</a>
+                     jsvalues=".href:'#' + href">h3Name</a>
                 </li>
               </ol>
             </li>
-            <li jsdisplay="events && events.length > 0">
-              <a href="#events">Events</a>
-              <ol>
-                <li jsselect="events">
-                  <a jscontent="name"
-                     jsvalues=".href:'#event-' + name"
-                     href="#event-anchor">eventName</a>
-                </li>
-              </ol>
-            </li>
-            <li jsdisplay="types && types.length > 0">
-              <a href="#types">Types</a>
-              <ol>
-                <li jsselect="types">
-                  <a jscontent="id"
-                     jsvalues=".href:'#type-' + id"
-                     href="#id-anchor">id</a>
-                </li>
-              </ol>
-            </li>
+            <div jsselect="apiDefinition">
+              <li jsdisplay="functions && functions.length > 0">
+                <a href="#methods">Methods</a>    
+                <ol>
+                  <li jsselect="functions">
+                    <a jscontent="name"
+                       jsvalues=".href:'#method-' + name"
+                       href="#method-anchor">methodName</a>
+                  </li>
+                </ol>
+              </li>
+              <li jsdisplay="events && events.length > 0">
+                <a href="#events">Events</a>
+                <ol>
+                  <li jsselect="events">
+                    <a jscontent="name"
+                       jsvalues=".href:'#event-' + name"
+                       href="#event-anchor">eventName</a>
+                  </li>
+                </ol>
+              </li>
+              <li jsdisplay="types && types.length > 0">
+                <a href="#types">Types</a>
+                <ol>
+                  <li jsselect="types">
+                    <a jscontent="id"
+                       jsvalues=".href:'#type-' + id"
+                       href="#id-anchor">id</a>
+                  </li>
+                </ol>
+              </li>
+            </div>
           </ol>
-          [PENDING: links to all h2s and h3s should go here -- would it be possible
-          to link to overview h3s, as well? if so, how should we create their
-          anchor/id values?]
         </div>  
         <!-- /TABLE OF CONTENTS -->
 

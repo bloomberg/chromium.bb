@@ -47,9 +47,24 @@ Array.prototype.each = function(f) {
   }
 }
 
-/*
- * Assigns all keys & values of |obj2| to |obj1|.
- */
+// Visits each item in the list in-order. Stops when f returns any truthy
+// value and returns that node.
+Array.prototype.select = function(f) {
+  for (var i = 0; i < this.length; i++) {
+    if (f(this[i], i))
+      return this[i];
+  }
+}
+
+Array.prototype.map = function(f) {
+  var retval = [];
+  for (var i = 0; i < this.length; i++) {
+    retval.push(f(this[i], i));
+  }
+  return retval;
+}
+
+// Assigns all keys & values of |obj2| to |obj1|.
 function extend(obj, obj2) {
   for (var k in obj2) {
     obj[k] = obj2[k];
@@ -183,23 +198,41 @@ function serializePage() {
  return s.serializeToString(document);
 }
 
+function evalXPathFromNode(expression, node) {
+  var results = document.evaluate(expression, node, null,
+      XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+  var retval = [];
+  while(n = results.iterateNext()) {
+    retval.push(n);
+  }
+  
+  return retval;
+}
+
+function evalXPathFromId(expression, id) {
+  return evalXPathFromNode(expression, document.getElementById(id));
+}
+
 // Select the current page on the left nav. Note: if already rendered, this 
 // will not effect any nodes.
 function selectCurrentPageOnLeftNav() {
-  var pathParts = document.location.href.split(/\//);
-  var pageBase = pathParts[pathParts.length - 1];
-  var leftNav = document.getElementById("leftNav");
-  var results = document.evaluate('.//li/a', leftNav, null,
-      XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null);
-  while(node = results.iterateNext()) {
-    if (node.href.match(pageBase + "$")) {
+  function finalPathPart(str) {
+    var pathParts = str.split(/\//);
+    var lastPart = pathParts[pathParts.length - 1];
+    return lastPart.split(/\?/)[0];
+  }
+  
+  var pageBase = finalPathPart(document.location.href);
+  
+  evalXPathFromId(".//li/a", "leftNav").select(function(node) {
+    if (pageBase == finalPathPart(node.href)) {
       var parent = node.parentNode;
       parent.className = "leftNavSelected";
       parent.removeChild(node);
       parent.appendChild(node.firstChild);
-      break;
-    }
-  }
+      return true;
+    }  
+  });
 }
 
 /*
@@ -220,6 +253,34 @@ function isArray(type) {
 
 function getTypeRef(type) {
   return type["$ref"];
+}
+
+function showPageTOC() {
+  return module || getDataFromPageHTML('pageData-showTOC');
+}
+
+function getStaticTOC() {
+  var staticHNodes = evalXPathFromId(".//h2|h3", "static");
+  var retval = [];
+  var lastH2;
+  
+  staticHNodes.each(function(n, i) {
+    var anchorName = n.nodeName + "-" + i;
+    var a = document.createElement('a');
+    a.name = anchorName;
+    n.parentNode.insertBefore(a, n);
+    var dataNode = { name: n.innerHTML, href: anchorName };
+    
+    if (n.nodeName == "H2") {
+      retval.push(dataNode);
+      lastH2 = dataNode;
+      lastH2.children = [];
+    } else {
+      lastH2.children.push(dataNode);
+    }
+  });
+   
+  return retval;
 }
 
 function getTypeRefPage(type) {
