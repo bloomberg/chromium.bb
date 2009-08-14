@@ -652,6 +652,245 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
   }
 }
 
+// This test verifies our spellchecker can split a text into words and check
+// the spelling of each word in the text.
+TEST_F(SpellCheckTest, SpellCheckText) {
+  static const struct {
+    const char* language;
+    const wchar_t* input;
+  } kTestCases[] = {
+    {
+      // Catalan
+      "ca-ES",
+      L"La missi\x00F3 de Google \x00E9s organitzar la informaci\x00F3 "
+      L"del m\x00F3n i fer que sigui \x00FAtil i accessible universalment."
+    }, {
+      // Czech
+      "cs-CZ",
+      L"Posl\x00E1n\x00EDm spole\x010Dnosti Google je "
+      L"uspo\x0159\x00E1\x0064\x0061t informace z cel\x00E9ho sv\x011Bta "
+      L"tak, aby byly v\x0161\x0065obecn\x011B p\x0159\x00EDstupn\x00E9 "
+      L"a u\x017Eite\x010Dn\x00E9."
+    }, {
+      // Danish
+      "da-DK",
+      L"Googles "
+      L"mission er at organisere verdens information og g\x00F8re den "
+      L"almindeligt tilg\x00E6ngelig og nyttig."
+    }, {
+      // German
+      "de-DE",
+      L"Das Ziel von Google besteht darin, die auf der Welt vorhandenen "
+      L"Informationen zu organisieren und allgemein zug\x00E4nglich und "
+      L"nutzbar zu machen."
+    }, {
+      // Greek
+      "el-GR",
+      L"\x0391\x03C0\x03BF\x03C3\x03C4\x03BF\x03BB\x03AE "
+      L"\x03C4\x03B7\x03C2 Google \x03B5\x03AF\x03BD\x03B1\x03B9 "
+      L"\x03BD\x03B1 \x03BF\x03C1\x03B3\x03B1\x03BD\x03CE\x03BD\x03B5\x03B9 "
+      L"\x03C4\x03B9\x03C2 "
+      L"\x03C0\x03BB\x03B7\x03C1\x03BF\x03C6\x03BF\x03C1\x03AF\x03B5\x03C2 "
+      L"\x03C4\x03BF\x03C5 \x03BA\x03CC\x03C3\x03BC\x03BF\x03C5 "
+      L"\x03BA\x03B1\x03B9 \x03BD\x03B1 \x03C4\x03B9\x03C2 "
+      L"\x03BA\x03B1\x03B8\x03B9\x03C3\x03C4\x03AC "
+      L"\x03C0\x03C1\x03BF\x03C3\x03B2\x03AC\x03C3\x03B9\x03BC\x03B5\x03C2 "
+      L"\x03BA\x03B1\x03B9 \x03C7\x03C1\x03AE\x03C3\x03B9\x03BC\x03B5\x03C2."
+    }, {
+      // English (Australia)
+      "en-AU",
+      // L"Google's " - to be added.
+      L"mission is to organize the world's information and make it "
+      L"universally accessible and useful."
+    }, {
+      // English (United Kingdom)
+      "en-GB",
+      // L"Google's " - to be added.
+      L"mission is to organize the world's information and make it "
+      L"universally accessible and useful."
+    }, {
+      // English (United States)
+      "en-US",
+      L"Google's mission is to organize the world's information and make it "
+      L"universally accessible and useful."
+    }, {
+      // Spanish
+      "es-ES",
+      L"La misi\x00F3n de Google es organizar la informaci\x00F3n mundial "
+      L"para que resulte universalmente accesible y \x00FAtil."
+    }, {
+      // Estonian
+      "et-EE",
+      // L"Google'ile " - to be added.
+      L"\x00FClesanne on korraldada maailma teavet ja teeb selle "
+      L"k\x00F5igile k\x00E4ttesaadavaks ja kasulikuks.",
+    }, {
+      // French
+      "fr-FR",
+      L"Google a pour mission d'organiser les informations \x00E0 "
+      L"l'\x00E9\x0063helle mondiale dans le but de les rendre accessibles "
+      L"et utiles \x00E0 tous."
+    }, {
+      // Hebrew
+      "he-IL",
+      L"\x05D4\x05DE\x05E9\x05D9\x05DE\x05D4 \x05E9\x05DC Google "
+      L"\x05D4\x05D9\x05D0 \x05DC\x05D0\x05E8\x05D2\x05DF "
+      L"\x05D0\x05EA \x05D4\x05DE\x05D9\x05D3\x05E2 "
+      L"\x05D4\x05E2\x05D5\x05DC\x05DE\x05D9 "
+      L"\x05D5\x05DC\x05D4\x05E4\x05D5\x05DA \x05D0\x05D5\x05EA\x05D5 "
+      L"\x05DC\x05D6\x05DE\x05D9\x05DF "
+      L"\x05D5\x05E9\x05D9\x05DE\x05D5\x05E9\x05D9 \x05D1\x05DB\x05DC "
+      L"\x05D4\x05E2\x05D5\x05DC\x05DD."
+    }, {
+      // Hindi
+      "hi-IN",
+      L"Google \x0915\x093E \x092E\x093F\x0936\x0928 "
+      L"\x0926\x0941\x0928\x093F\x092F\x093E \x0915\x0940 "
+      L"\x091C\x093E\x0928\x0915\x093E\x0930\x0940 \x0915\x094B "
+      L"\x0935\x094D\x092F\x0935\x0938\x094D\x0925\x093F\x0924 "
+      L"\x0915\x0930\x0928\x093E \x0914\x0930 \x0909\x0938\x0947 "
+      L"\x0938\x093E\x0930\x094D\x0935\x092D\x094C\x092E\x093F\x0915 "
+      L"\x0930\x0942\x092A \x0938\x0947 \x092A\x0939\x0941\x0901\x091A "
+      L"\x092E\x0947\x0902 \x0914\x0930 \x0909\x092A\x092F\x094B\x0917\x0940 "
+      L"\x092C\x0928\x093E\x0928\x093E \x0939\x0948."
+    }, {
+      // Croatian
+      "hr-HR",
+      // L"Googleova " - to be added.
+      L"je misija organizirati svjetske informacije i u\x010Diniti ih "
+      // L"univerzalno " - to be added.
+      L"pristupa\x010Dnima i korisnima."
+    }, {
+      // Indonesian
+      "id-ID",
+      L"Misi Google adalah untuk mengelola informasi dunia dan membuatnya "
+      L"dapat diakses dan bermanfaat secara universal."
+    }, {
+      // Italian
+      "it-IT",
+      L"La missione di Google \x00E8 organizzare le informazioni a livello "
+      L"mondiale e renderle universalmente accessibili e fruibili."
+    }, {
+      // Lithuanian
+      "lt-LT",
+      L"\x201EGoogle\x201C tikslas \x2013 rinkti ir sisteminti pasaulio "
+      L"informacij\x0105 bei padaryti j\x0105 prieinam\x0105 ir "
+      L"nauding\x0105 visiems."
+    }, {
+      // Latvian
+      "lv-LV",
+      L"Google uzdevums ir k\x0101rtot pasaules inform\x0101"
+      L"ciju un padar\x012Bt to univers\x0101li pieejamu un noder\x012Bgu."
+    }, {
+      // Norwegian
+      "nb-NO",
+      // L"Googles " - to be added.
+      L"m\x00E5l er \x00E5 organisere informasjonen i verden og "
+      L"gj\x00F8re den tilgjengelig og nyttig for alle."
+    }, {
+      // Dutch
+      "nl-NL",
+      L"Het doel van Google is om alle informatie wereldwijd toegankelijk "
+      L"en bruikbaar te maken."
+    }, {
+      // Polish
+      "pl-PL",
+      L"Misj\x0105 Google jest uporz\x0105" L"dkowanie \x015Bwiatowych "
+      L"zasob\x00F3w informacji, aby sta\x0142y si\x0119 one powszechnie "
+      L"dost\x0119pne i u\x017Cyteczne."
+    }, {
+      // Portuguese (Brazil)
+      "pt-BR",
+      L"A miss\x00E3o do Google \x00E9 organizar as informa\x00E7\x00F5"
+      L"es do mundo todo e torn\x00E1-las acess\x00EDveis e "
+      // L"\x00FAteis " - to be added.
+      L"em car\x00E1ter universal."
+    }, {
+      // Portuguese (Portugal)
+      "pt-PT",
+      L"O Google tem por miss\x00E3o organizar a informa\x00E7\x00E3o do "
+      L"mundo e torn\x00E1-la universalmente acess\x00EDvel e \x00FAtil"
+    }, {
+      // Romanian
+      "ro-RO",
+      L"Misiunea Google este de "
+      // L"a " - to be added.
+      L"organiza informa\x0163iile lumii \x015Fi de "
+      // L"a " - to be added.
+      L"le face accesibile \x015Fi utile la nivel universal."
+    }, {
+      // Russian
+      "ru-RU",
+      L"\x041C\x0438\x0441\x0441\x0438\x044F Google "
+      L"\x0441\x043E\x0441\x0442\x043E\x0438\x0442 \x0432 "
+      L"\x043E\x0440\x0433\x0430\x043D\x0438\x0437\x0430\x0446\x0438\x0438 "
+      L"\x043C\x0438\x0440\x043E\x0432\x043E\x0439 "
+      L"\x0438\x043D\x0444\x043E\x0440\x043C\x0430\x0446\x0438\x0438, "
+      L"\x043E\x0431\x0435\x0441\x043F\x0435\x0447\x0435\x043D\x0438\x0438 "
+      L"\x0435\x0435 "
+      L"\x0434\x043E\x0441\x0442\x0443\x043F\x043D\x043E\x0441\x0442\x0438 "
+      L"\x0438 \x043F\x043E\x043B\x044C\x0437\x044B \x0434\x043B\x044F "
+      L"\x0432\x0441\x0435\x0445."
+    }, {
+      // Slovak
+      "sk-SK",
+      L"Spolo\x010Dnos\x0165 Google si dala za \x00FAlohu usporiada\x0165 "
+      L"inform\x00E1\x0063ie "
+      L"z cel\x00E9ho sveta a zabezpe\x010Di\x0165, "
+      L"aby boli v\x0161eobecne dostupn\x00E9 a u\x017Eito\x010Dn\x00E9."
+    }, {
+      // Slovenian
+      "sl-SL",
+      // L"Googlovo " - to be added.
+      L"poslanstvo je organizirati svetovne informacije in "
+      L"omogo\x010Diti njihovo dostopnost in s tem uporabnost za vse."
+    }, {
+      // Swedish
+      "sv-SE",
+      L"Googles m\x00E5ls\x00E4ttning \x00E4r att ordna v\x00E4rldens "
+      L"samlade information och g\x00F6ra den tillg\x00E4nglig f\x00F6r alla."
+    }, {
+      // Turkish
+      "tr-TR",
+      // L"Google\x2019\x0131n " - to be added.
+      L"misyonu, d\x00FCnyadaki t\x00FCm bilgileri "
+      L"organize etmek ve evrensel olarak eri\x015Filebilir ve "
+      L"kullan\x0131\x015Fl\x0131 k\x0131lmakt\x0131r."
+    }, {
+      // Vietnamese
+      "vi-VN",
+      L"Nhi\x1EC7m v\x1EE5 c\x1EE7\x0061 "
+      L"Google la \x0111\x1EC3 t\x1ED5 ch\x1EE9\x0063 "
+      L"c\x00E1\x0063 th\x00F4ng tin c\x1EE7\x0061 "
+      L"th\x1EBF gi\x1EDBi va l\x00E0m cho n\x00F3 universal c\x00F3 "
+      L"th\x1EC3 truy c\x1EADp va h\x1EEFu d\x1EE5ng h\x01A1n."
+    },
+  };
+
+  FilePath hunspell_directory = GetHunspellDirectory();
+  ASSERT_FALSE(hunspell_directory.empty());
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
+    scoped_refptr<SpellChecker> spell_checker(new SpellChecker(
+        hunspell_directory, kTestCases[i].language, NULL, FilePath()));
+
+    size_t input_length = 0;
+    if (kTestCases[i].input != NULL)
+      input_length = wcslen(kTestCases[i].input);
+
+    int misspelling_start = 0;
+    int misspelling_length = 0;
+    bool result = spell_checker->SpellCheckWord(kTestCases[i].input,
+                                                static_cast<int>(input_length),
+                                                &misspelling_start,
+                                                &misspelling_length, NULL);
+
+    EXPECT_EQ(true, result);
+    EXPECT_EQ(0, misspelling_start);
+    EXPECT_EQ(0, misspelling_length);
+  }
+}
+
 // This test Adds words to the SpellChecker and veifies that it remembers them.
 TEST_F(SpellCheckTest, DISABLED_SpellCheckAddToDictionary_EN_US) {
   static const struct {
