@@ -656,12 +656,12 @@ BUG13907 SKIP : LayoutTests/media/media-load-event.html = FAIL
 // We don't support MP2 audio so skip this test.
 BUG13907 SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL
 // This test crashes in debug build not in release build.
-BUG13907 WIN : LayoutTests/media/video-buffered.html = FAIL CRASH
+BUG13907 WIN : LayoutTests/media/video-buffered.html = FAIL CRASH TIMEOUT
 BUG13907 WIN : LayoutTests/media/video-can-play-type.html = FAIL
 // This test crashes in debug build.
 BUG13907 WIN : LayoutTests/media/video-click-dblckick-standalone.html = PASS TIMEOUT CRASH
 // This test sometimes crashes in debug build.
-BUG13907 WIN : LayoutTests/media/video-currentTime-set.html = FAIL CRASH
+BUG13907 WIN : LayoutTests/media/video-currentTime-set.html = FAIL CRASH TIMEOUT
 // This test crashes in debug build.
 BUG13907 WIN : LayoutTests/media/video-currentTime-set2.html = PASS FAIL CRASH TIMEOUT
 // This test is flaky.
@@ -671,15 +671,15 @@ BUG13907 WIN DEBUG : LayoutTests/media/video-document-types.html = FAIL CRASH
 BUG13907 WIN RELEASE : LayoutTests/media/video-document-types.html = PASS FAIL
 BUG13907 WIN : LayoutTests/media/video-loop.html = FAIL CRASH
 // This test is flaky too.	
-BUG13907 WIN : LayoutTests/media/video-played-collapse.html = FAIL
+BUG13907 WIN : LayoutTests/media/video-played-collapse.html = FAIL TIMEOUT
 // This test crashes in debug build.
-BUG13907 WIN : LayoutTests/media/video-played.html = FAIL CRASH
+BUG13907 WIN : LayoutTests/media/video-played.html = FAIL CRASH TIMEOUT
 // This test is flaky.
-BUG13907 WIN : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRASH
+BUG13907 WIN : LayoutTests/media/video-seek-past-end-paused.html = PASS FAIL CRASH TIMEOUT
 // This test crashes in debug build.
 BUG13907 WIN : LayoutTests/media/video-seek-past-end-playing.html = PASS FAIL CRASH TIMEOUT
-BUG13907 WIN : LayoutTests/media/video-size-intrinsic-scale.html = FAIL
-BUG13907 WIN : LayoutTests/media/video-source-type-params.html = FAIL CRASH
+BUG13907 WIN : LayoutTests/media/video-size-intrinsic-scale.html = FAIL TIMEOUT
+BUG13907 WIN : LayoutTests/media/video-source-type-params.html = FAIL CRASH TIMEOUT
 BUG13907 WIN : LayoutTests/media/video-source.html = PASS CRASH
 BUG13907 WIN : LayoutTests/media/video-src-remove.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-src-set.html = PASS CRASH
@@ -2510,7 +2510,7 @@ BUG15267 WIN LINUX : LayoutTests/transitions/cancel-transition.html = PASS FAIL
 BUG15425 WIN : LayoutTests/dom/html/level2/html/HTMLElement142.html = PASS CRASH
 
 // WebKit 45287:45352 New tests
-BUG15649 : LayoutTests/media/video-canvas-source.html = FAIL
+BUG15649 : LayoutTests/media/video-canvas-source.html = FAIL TIMEOUT
 
 // Webkit 45403:45431
 BUG15733 LINUX WIN : LayoutTests/compositing/repaint/content-into-overflow.html = FAIL
@@ -2603,7 +2603,7 @@ BUG16240 WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = P
 BUG16240 MAC : LayoutTests/http/tests/cache/subresource-expiration.html = PASS TIMEOUT
 
 // Failing due to r20652.
-BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL CRASH
+BUG16779 BUG16742 : LayoutTests/media/video-error-abort.html = FAIL CRASH TIMEOUT
 
 // HTML5 DataGrid bindings are not enabled yet because the feature's not fully implemented.
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = FAIL
@@ -2613,36 +2613,36 @@ BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridDataSource-basic.htm
 
 // Disabling since try bots use Chromium FFmpeg DLLs, which means we can no
 // longer decode WebKit's test clips because they use H.264, AAC, etc.
-BUG16779 : LayoutTests/media/media-startTime.html = FAIL
-BUG16779 : LayoutTests/media/progress-event.html = FAIL
-BUG16779 : LayoutTests/media/remove-from-document.html = FAIL CRASH
-BUG16779 : LayoutTests/media/video-append-source.html = FAIL
+BUG16779 : LayoutTests/media/media-startTime.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/progress-event.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/remove-from-document.html = FAIL CRASH TIMEOUT
+BUG16779 : LayoutTests/media/video-append-source.html = FAIL TIMEOUT
 BUG16779 : LayoutTests/media/video-aspect-ratio.html = FAIL
-BUG16779 : LayoutTests/media/video-autoplay.html = FAIL
-BUG16779 : LayoutTests/media/video-controls-transformed.html = FAIL
-BUG16779 : LayoutTests/media/video-controls-zoomed.html = FAIL
-BUG16779 : LayoutTests/media/video-controls.html = FAIL
-BUG16779 : LayoutTests/media/video-currentTime.html = FAIL
-BUG16779 : LayoutTests/media/video-dom-autoplay.html = FAIL
-BUG16779 : LayoutTests/media/video-dom-src.html = FAIL
+BUG16779 : LayoutTests/media/video-autoplay.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-controls-transformed.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-controls-zoomed.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-controls.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-currentTime.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-dom-autoplay.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-dom-src.html = FAIL TIMEOUT
 BUG16779 : LayoutTests/media/video-layer-crash.html = FAIL
-BUG16779 : LayoutTests/media/video-load-networkState.html = FAIL
-BUG16779 : LayoutTests/media/video-load-readyState.html = FAIL
-BUG16779 : LayoutTests/media/video-muted.html = FAIL
-BUG16779 : LayoutTests/media/video-no-autoplay.html = FAIL
-BUG16779 : LayoutTests/media/video-pause-empty-events.html = FAIL
-BUG16779 : LayoutTests/media/video-play-empty-events.html = FAIL
-BUG16779 : LayoutTests/media/video-played-reset.html = FAIL
-BUG16779 : LayoutTests/media/video-seekable.html = FAIL
-BUG16779 : LayoutTests/media/video-seeking.html = FAIL
-BUG16779 : LayoutTests/media/video-size.html = FAIL
-BUG16779 : LayoutTests/media/video-source-add-src.html = FAIL
-BUG16779 : LayoutTests/media/video-source-error.html = FAIL
-BUG16779 : LayoutTests/media/video-src-change.html = FAIL CRASH
-BUG16779 : LayoutTests/media/video-src-invalid-remove.html = FAIL CRASH
-BUG16779 : LayoutTests/media/video-timeupdate-during-playback.html = FAIL CRASH
+BUG16779 : LayoutTests/media/video-load-networkState.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-load-readyState.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-muted.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-no-autoplay.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-pause-empty-events.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-play-empty-events.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-played-reset.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-seekable.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-seeking.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-size.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-source-add-src.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-source-error.html = FAIL TIMEOUT
+BUG16779 : LayoutTests/media/video-src-change.html = FAIL CRASH TIMEOUT
+BUG16779 : LayoutTests/media/video-src-invalid-remove.html = FAIL CRASH TIMEOUT
+BUG16779 : LayoutTests/media/video-timeupdate-during-playback.html = FAIL CRASH TIMEOUT
 BUG16779 : LayoutTests/media/video-transformed.html = FAIL
-BUG16779 : LayoutTests/media/video-volume.html = FAIL
+BUG16779 : LayoutTests/media/video-volume.html = FAIL TIMEOUT
 BUG16779 : LayoutTests/media/video-zoom.html = FAIL
 
 // Failure since WebKit merge 45873:45916
@@ -2731,7 +2731,7 @@ BUG16823 MAC : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 // Failures from WebKit merge 45916:45936
 BUG16850 LINUX WIN : LayoutTests/fast/css/rem-dynamic-scaling.html = FAIL CRASH
 BUG16850 LINUX WIN : LayoutTests/fast/css/rem-units-on-root.html = FAIL
-BUG16850 WIN : LayoutTests/media/progress-event-total.html = FAIL
+BUG16850 WIN : LayoutTests/media/progress-event-total.html = FAIL TIMEOUT
 
 // Failures from WebKit merge 45936:45958
 BUG18676 LINUX MAC : LayoutTests/fast/js/instanceof-operator.html = CRASH FAIL
@@ -2754,7 +2754,7 @@ BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
 
 // New tests from WebKit merge 46087:46125
 BUG17255 LINUX WIN : LayoutTests/fast/box-shadow/spread.html = FAIL
-BUG13907 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
+BUG13907 WIN : LayoutTests/media/audio-constructor-autobuffer.html = FAIL TIMEOUT
 
 // Test failures from WebKit merge r46143:46194
 BUG17397 SKIP WIN : LayoutTests/media/audio-no-installed-engines.html = FAIL
@@ -2778,7 +2778,7 @@ BUG17509 LINUX : LayoutTests/fast/loader/local-image-from-local.html = FAIL
 BUG17635 MAC : LayoutTests/fast/css/only-child-pseudo-class.html = PASS FAIL
 
 // Test failures from WebKit merge 46288:46363
-BUG17942 WIN LINUX : LayoutTests/media/video-source-type.html = PASS FAIL CRASH
+BUG17942 WIN LINUX : LayoutTests/media/video-source-type.html = PASS FAIL CRASH TIMEOUT
 BUG17942 WIN LINUX : LayoutTests/traversal/acid3-test-2.html = CRASH PASS
 BUG17942 WIN : LayoutTests/fast/replaced/image-map-2.html = CRASH PASS
 BUG17942 LINUX : LayoutTests/transforms/2d/compound-2d-transforms.html = CRASH PASS
@@ -2843,7 +2843,7 @@ BUG18939 : LayoutTests/fast/js/function-declaration.html = FAIL
 BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
 BUG18939 MAC : LayoutTests/editing/execCommand/toggle-compound-styles.html = FAIL
 BUG18939 MAC : LayoutTests/fast/dom/offset-parent-positioned-and-inline.html = CRASH PASS
-BUG18939 WIN : LayoutTests/media/controls-right-click-on-timebar.html = FAIL
+BUG18939 WIN : LayoutTests/media/controls-right-click-on-timebar.html = FAIL TIMEOUT
 
 // Flakiness from WebKit merge to 46977
 BUG18966 LINUX : LayoutTests/fast/overflow/overflow-float-stacking.html = PASS CRASH
@@ -2869,4 +2869,4 @@ BUG_LEVIN : LayoutTests/fast/canvas/canvas-zoom.html = FAIL
 BUG_LEVIN : LayoutTests/fast/dom/Geolocation/enabled.html = FAIL
 BUG_LEVIN : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT
 BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
-BUG_LEVIN WIN : LayoutTests/media/controls-drag-timebar.html = FAIL
+BUG_LEVIN WIN : LayoutTests/media/controls-drag-timebar.html = FAIL TIMEOUT
