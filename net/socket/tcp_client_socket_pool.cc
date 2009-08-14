@@ -89,7 +89,7 @@ int TCPConnectJob::DoLoop(int result) {
 int TCPConnectJob::DoResolveHost() {
   set_load_state(LOAD_STATE_RESOLVING_HOST);
   next_state_ = kStateResolveHostComplete;
-  return resolver_.Resolve(NULL, resolve_info_, &addresses_, &callback_);
+  return resolver_.Resolve(resolve_info_, &addresses_, &callback_, NULL);
 }
 
 int TCPConnectJob::DoResolveHostComplete(int result) {
@@ -149,14 +149,14 @@ TCPClientSocketPool::TCPClientSocketPool(
 TCPClientSocketPool::~TCPClientSocketPool() {}
 
 int TCPClientSocketPool::RequestSocket(
-    LoadLog* load_log,
     const std::string& group_name,
     const HostResolver::RequestInfo& resolve_info,
     int priority,
     ClientSocketHandle* handle,
-    CompletionCallback* callback) {
+    CompletionCallback* callback,
+    LoadLog* load_log) {
   return base_->RequestSocket(
-      load_log, group_name, resolve_info, priority, handle, callback);
+      group_name, resolve_info, priority, handle, callback, load_log);
 }
 
 void TCPClientSocketPool::CancelRequest(

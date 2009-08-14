@@ -49,7 +49,7 @@ class DnsMaster::LookupRequest {
     // lets the HostResolver know it can de-prioritize it.
     resolve_info.set_is_speculative(true);
     return resolver_.Resolve(
-        NULL, resolve_info, &addresses_, &net_callback_);
+        resolve_info, &addresses_, &net_callback_, NULL);
   }
 
  private:

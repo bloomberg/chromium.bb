@@ -80,12 +80,12 @@ class TCPClientSocketPool : public ClientSocketPool {
 
   // ClientSocketPool methods:
 
-  virtual int RequestSocket(LoadLog* load_log,
-                            const std::string& group_name,
+  virtual int RequestSocket(const std::string& group_name,
                             const HostResolver::RequestInfo& resolve_info,
                             int priority,
                             ClientSocketHandle* handle,
-                            CompletionCallback* callback);
+                            CompletionCallback* callback,
+                            LoadLog* load_log);
 
   virtual void CancelRequest(const std::string& group_name,
                              const ClientSocketHandle* handle);
