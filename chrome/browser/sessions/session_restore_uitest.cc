@@ -94,8 +94,8 @@ TEST_F(SessionRestoreUITest, Basic) {
   // NOTE: Don't use GetActiveWindow here, when run with the screen locked
   // active windows returns NULL.
   int window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count) &&
-              window_count == 1);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
   ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
@@ -119,8 +119,8 @@ TEST_F(SessionRestoreUITest, RestoresForwardAndBackwardNavs) {
   // NOTE: Don't use GetActiveWindow here, when run with the screen locked
   // active windows returns NULL.
   int window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count) &&
-              window_count == 1);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
   ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_timeout_ms()));
@@ -158,11 +158,12 @@ TEST_F(SessionRestoreUITest, RestoresCrossSiteForwardAndBackwardNavs) {
   // NOTE: Don't use GetActiveWindow here, when run with the screen locked
   // active windows returns NULL.
   int window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count) &&
-              window_count == 1);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   int tab_count;
-  ASSERT_TRUE(browser_proxy->GetTabCount(&tab_count) && tab_count == 1);
+  ASSERT_TRUE(browser_proxy->GetTabCount(&tab_count));
+  ASSERT_EQ(1, tab_count);
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
   ASSERT_TRUE(tab_proxy->WaitForTabToBeRestored(action_max_timeout_ms()));
 
@@ -190,8 +191,8 @@ TEST_F(SessionRestoreUITest, TwoTabsSecondSelected) {
   // NOTE: Don't use GetActiveWindow here, when run with the screen locked
   // active windows returns NULL.
   int window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count) &&
-              window_count == 1);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
 
   ASSERT_TRUE(browser_proxy->AppendTab(url2_));
@@ -199,8 +200,8 @@ TEST_F(SessionRestoreUITest, TwoTabsSecondSelected) {
   QuitBrowserAndRestore(2);
   browser_proxy = NULL;
 
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count) &&
-              window_count == 1);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
   browser_proxy = automation()->GetBrowserWindow(0);
 
   int tab_count;
@@ -232,8 +233,8 @@ TEST_F(SessionRestoreUITest, ClosedTabStaysClosed) {
   // NOTE: Don't use GetActiveWindow here, when run with the screen locked
   // active windows returns NULL.
   int window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count) &&
-              window_count == 1);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetTab(0));
 
@@ -260,8 +261,8 @@ TEST_F(SessionRestoreUITest, DontRestoreWhileIncognito) {
 
   // Make sure we have one window.
   int initial_window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&initial_window_count) &&
-              initial_window_count == 1);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&initial_window_count));
+  ASSERT_EQ(1, initial_window_count);
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
 
@@ -303,13 +304,13 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 
   // Make sure we have one window.
   int window_count;
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count) &&
-              window_count == 1);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
 
   // Open a second window.
   ASSERT_TRUE(automation()->OpenNewBrowserWindow(true));
-  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count) &&
-              window_count == 2);
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(2, window_count);
 
   // Close it.
   CloseWindow(1, 2);
