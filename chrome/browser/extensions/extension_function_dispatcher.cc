@@ -226,14 +226,10 @@ ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
 }
 
 Browser* ExtensionFunctionDispatcher::GetBrowser() {
-  DCHECK(delegate_);
-
-  Browser* retval = delegate_->GetBrowser();
-  return retval;
+  return delegate_->GetBrowser();
 }
 
 ExtensionHost* ExtensionFunctionDispatcher::GetExtensionHost() {
-  DCHECK(delegate_);
   return delegate_->GetExtensionHost();
 }
 
