@@ -575,10 +575,10 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
 }
 
 bool WebPluginDelegateProxy::BackgroundChanged(
-    gfx::NativeDrawingContext hdc,
+    gfx::NativeDrawingContext context,
     const gfx::Rect& rect) {
 #if defined(OS_WIN)
-  HBITMAP hbitmap = static_cast<HBITMAP>(GetCurrentObject(hdc, OBJ_BITMAP));
+  HBITMAP hbitmap = static_cast<HBITMAP>(GetCurrentObject(context, OBJ_BITMAP));
   if (hbitmap == NULL) {
     NOTREACHED();
     return true;
@@ -592,7 +592,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   }
 
   XFORM xf;
-  if (!GetWorldTransform(hdc, &xf)) {
+  if (!GetWorldTransform(context, &xf)) {
     NOTREACHED();
     return true;
   }
@@ -626,8 +626,54 @@ bool WebPluginDelegateProxy::BackgroundChanged(
   // implement this.
   return true;
 #else
-  NOTIMPLEMENTED();
-  return true;
+  cairo_surface_t* page_surface = cairo_get_target(context);
+  DCHECK_EQ(cairo_surface_get_type(page_surface), CAIRO_SURFACE_TYPE_IMAGE);
+  DCHECK_EQ(cairo_image_surface_get_format(page_surface), CAIRO_FORMAT_ARGB32);
+
+  const unsigned char* page_bytes = cairo_image_surface_get_data(page_surface);
+  int page_stride = cairo_image_surface_get_stride(page_surface);
+
+  // Transform context coordinates into surface coordinates.
+  double page_x_double = rect.x();
+  double page_y_double = rect.y();
+  cairo_user_to_device(context, &page_x_double, &page_y_double);
+  int page_x = page_x_double;
+  int page_y = page_y_double;
+
+  // Following comments from the Windows section, apparently the damage rect
+  // can be larger than the image surface.
+  int width = std::min(cairo_image_surface_get_width(page_surface),
+                       rect.width());
+  int height = std::min(cairo_image_surface_get_height(page_surface),
+                        rect.height());
+
+  skia::PlatformDevice& device =
+      background_store_canvas_->getTopPlatformDevice();
+  cairo_surface_t* bg_surface = cairo_get_target(device.beginPlatformPaint());
+  DCHECK_EQ(cairo_surface_get_type(bg_surface), CAIRO_SURFACE_TYPE_IMAGE);
+  DCHECK_EQ(cairo_image_surface_get_format(bg_surface), CAIRO_FORMAT_ARGB32);
+
+  const unsigned char* bg_bytes = cairo_image_surface_get_data(bg_surface);
+  int bg_stride = cairo_image_surface_get_stride(bg_surface);
+  int bg_x = rect.x() - plugin_rect_.x();
+  int bg_y = rect.y() - plugin_rect_.y();
+
+  // rect is supposed to have been intersected with the plugin rect.
+  DCHECK_LE(width, cairo_image_surface_get_width(bg_surface));
+  DCHECK_LE(height, cairo_image_surface_get_height(bg_surface));
+
+  static const int kBPP = 4;  // ARGB32 = 4 bytes per pixel.
+
+  for (int y = 0; y < height; ++y) {
+    int page_offset = page_x * kBPP + page_stride * (page_y + y);
+    int bg_offset = bg_x * kBPP + bg_stride * (bg_y + y);
+    if (memcmp(page_bytes + page_offset,
+               bg_bytes + bg_offset,
+               width * kBPP) != 0)
+      return true;
+  }
+
+  return false;
 #endif
 }
 
